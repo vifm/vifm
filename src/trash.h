@@ -38,10 +38,6 @@ int nentries;
  * returned. */
 int set_trash_dir(const char trash_dir[]);
 
-/* Tries to create trash directory.  Returns zero on success, otherwise non-zero
- * value is returned. */
-int try_create_trash_dir(const char trash_dir[]);
-
 /* Empties specified trash directory. */
 void trash_empty(const char trash_dir[]);
 

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 28
+*vifm-app.txt*    For Vifm version 0.8  Last change: 2015 Dec 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3133,7 +3133,11 @@ Use |vifm-trash| directory.
                                                *vifm-'trashdir'*
 trashdir
 type: string
-default: "%r/.vifm-Trash,$VIFM/Trash" or if $VIFM/Trash doesn't exist
+default: on *nix:
+         "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash" or if $VIFM/Trash
+         doesn't exist
+         "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
+         on Windows:
          "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
 
 List of trash directory path specifications, separated with commas.
@@ -3142,6 +3146,12 @@ or a path relative to a mount point root, when list element starts with "%r/".
 Value of the option can contain environment variables (of form "$envname"),
 which will be expanded (prepend $ with a slash to prevent expansion).
 Environment variables are expanded when the option is set.
+
+On *nix, if element ends with "%u", the mark is replaced with real user ID and
+permissions are set so that only that only owner is able to use it.
+Note that even this setup is not completely secure when combined with "%r/"
+and it's overall safer to keep files in home directory, but that implies cost
+of copying files between partitions.
 
 When new file gets cut (deleted) vifm traverses each element of the option in
 the order of their appearance and uses first trash directory that it was able

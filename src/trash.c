@@ -18,7 +18,8 @@
 
 #include "trash.h"
 
-#include <sys/stat.h> /* stat */
+#include <sys/stat.h> /* stat chmod() */
+#include <unistd.h> /* getuid() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -45,7 +46,7 @@
 #include "undo.h"
 
 #define ROOTED_SPEC_PREFIX "%r/"
-#define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1)
+#define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1U)
 
 /* Describes file location relative to one of registered trash directories.
  * Argument for get_resident_type_traverser().*/
@@ -60,7 +61,7 @@ TrashResidentType;
 /* Client of the traverse_specs() function.  Should return non-zero to stop
  * traversal. */
 typedef int (*traverser)(const char base_path[], const char trash_dir[],
-		void *arg);
+		int user_specific, void *arg);
 
 /* List of trash directories. */
 typedef struct
@@ -79,7 +80,8 @@ typedef struct
 get_list_of_trashes_traverser_state;
 
 static int validate_spec(const char spec[]);
-static int create_trash_dir(const char trash_dir[]);
+static int create_trash_dir(const char trash_dir[], int user_specific);
+static int try_create_trash_dir(const char trash_dir[], int user_specific);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[]);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
@@ -89,14 +91,15 @@ static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[]);
 static void remove_from_trash(const char trash_name[]);
 static int pick_trash_dir_traverser(const char base_path[],
-		const char trash_dir[], void *arg);
+		const char trash_dir[], int user_specific, void *arg);
 static int is_rooted_trash_dir(const char spec[]);
 static TrashResidentType get_resident_type(const char path[]);
 static int get_resident_type_traverser(const char path[],
-		const char trash_dir[], void *arg);
+		const char trash_dir[], int user_specific, void *arg);
 static int is_trash_directory_traverser(const char path[],
-		const char trash_dir[], void *arg);
+		const char trash_dir[], int user_specific, void *arg);
 static void traverse_specs(const char base_path[], traverser client, void *arg);
+static char * expand_uid(const char spec[], int *expanded);
 static char * get_rooted_trash_dir(const char base_path[], const char spec[]);
 static char * format_root_spec(const char spec[], const char mount_point[]);
 
@@ -161,31 +164,37 @@ set_trash_dir(const char new_specs[])
 static int
 validate_spec(const char spec[])
 {
-	if(is_path_absolute(spec))
+	int valid = 1;
+	int with_uid;
+	char *const expanded_spec = expand_uid(spec, &with_uid);
+
+	if(is_path_absolute(expanded_spec))
 	{
-		if(create_trash_dir(spec) != 0)
+		if(create_trash_dir(expanded_spec, with_uid) != 0)
 		{
-			return 0;
+			valid = 0;
 		}
 	}
-	else if(!is_rooted_trash_dir(spec))
+	else if(!is_rooted_trash_dir(expanded_spec))
 	{
 		show_error_msgf("Error Setting Trash Directory",
-				"The path specification is of incorrect format: %s", spec);
-		return 0;
+				"The path specification is of incorrect format: %s", expanded_spec);
+		valid = 0;
 	}
-	return 1;
+
+	free(expanded_spec);
+	return valid;
 }
 
 /* Ensures existence of trash directory.  Displays error message dialog, if
  * directory creation failed.  Returns zero on success, otherwise non-zero value
  * is returned. */
 static int
-create_trash_dir(const char trash_dir[])
+create_trash_dir(const char trash_dir[], int user_specific)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_create_trash_dir(trash_dir) != 0)
+	if(try_create_trash_dir(trash_dir, 0) != 0)
 	{
 		show_error_msgf("Error Setting Trash Directory",
 				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
@@ -195,17 +204,30 @@ create_trash_dir(const char trash_dir[])
 	return 0;
 }
 
-int
-try_create_trash_dir(const char trash_dir[])
+/* Tries to create trash directory.  Returns zero on success, otherwise non-zero
+ * value is returned. */
+static int
+try_create_trash_dir(const char trash_dir[], int user_specific)
 {
 	LOG_FUNC_ENTER;
 
-	if(is_dir_writable(trash_dir))
+	if(!is_dir_writable(trash_dir))
 	{
-		return 0;
+		if(make_path(trash_dir, 0777) != 0)
+		{
+			return 1;
+		}
 	}
 
-	return make_path(trash_dir, 0777);
+	if(user_specific)
+	{
+		if(chmod(trash_dir, 0700) != 0)
+		{
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 void
@@ -224,7 +246,7 @@ empty_trash_dirs(void)
 {
 	const trashes_list list = get_list_of_trashes();
 	int i;
-	for(i = 0; i < list.ntrashes; i++)
+	for(i = 0; i < list.ntrashes; ++i)
 	{
 		empty_trash_dir(list.trashes[i]);
 	}
@@ -382,13 +404,13 @@ get_list_of_trashes(void)
 	};
 
 	int i;
-	for(i = 0; i < nspecs; i++)
+	for(i = 0; i < nspecs; ++i)
 	{
-		const char *const spec = specs[i];
+		int with_uid;
+		char *const spec = expand_uid(specs[i], &with_uid);
 		if(is_rooted_trash_dir(spec))
 		{
-			get_list_of_trashes_traverser_state state =
-			{
+			get_list_of_trashes_traverser_state state = {
 				.list = &list,
 				.spec = spec,
 			};
@@ -399,6 +421,7 @@ get_list_of_trashes(void)
 			list.ntrashes = add_to_string_array(&list.trashes, list.ntrashes, 1,
 					spec);
 		}
+		free(spec);
 	}
 
 	return list;
@@ -435,7 +458,7 @@ is_trash_valid(const char trash_dir[])
 int
 exists_in_trash(const char trash_name[])
 {
-	return path_exists(trash_name, DEREF);
+	return path_exists(trash_name, NODEREF);
 }
 
 int
@@ -545,9 +568,9 @@ pick_trash_dir(const char base_path[])
  * the base_path. */
 static int
 pick_trash_dir_traverser(const char base_path[], const char trash_dir[],
-		void *arg)
+		int user_specific, void *arg)
 {
-	if(try_create_trash_dir(trash_dir) == 0)
+	if(try_create_trash_dir(trash_dir, user_specific) == 0)
 	{
 		char **const result = arg;
 		*result = strdup(trash_dir);
@@ -595,7 +618,7 @@ get_resident_type(const char path[])
  * directories.  Accepts pointer to TrashResidentType as argument. */
 static int
 get_resident_type_traverser(const char path[], const char trash_dir[],
-		void *arg)
+		int user_specific, void *arg)
 {
 	if(path_starts_with(path, trash_dir))
 	{
@@ -626,7 +649,7 @@ is_trash_directory(const char path[])
  * directories. */
 static int
 is_trash_directory_traverser(const char path[], const char trash_dir[],
-		void *arg)
+		int user_specific, void *arg)
 {
 	if(stroscmp(path, trash_dir) == 0)
 	{
@@ -643,12 +666,13 @@ static void
 traverse_specs(const char base_path[], traverser client, void *arg)
 {
 	int i;
-	for(i = 0; i < nspecs; i++)
+	for(i = 0; i < nspecs; ++i)
 	{
 		char *to_free = NULL;
 		const char *trash_dir;
+		int with_uid;
 
-		const char *const spec = specs[i];
+		char *const spec = expand_uid(specs[i], &with_uid);
 		if(is_rooted_trash_dir(spec))
 		{
 			to_free = get_rooted_trash_dir(base_path, spec);
@@ -659,14 +683,38 @@ traverse_specs(const char base_path[], traverser client, void *arg)
 			trash_dir = spec;
 		}
 
-		if(trash_dir != NULL && client(base_path, trash_dir, arg))
+		if(trash_dir != NULL && client(base_path, trash_dir, with_uid, arg))
 		{
 			free(to_free);
+			free(spec);
 			break;
 		}
 
 		free(to_free);
+		free(spec);
 	}
+}
+
+/* Expands trailing %u into real user ID.  Sets *expanded to reflect the fact
+ * whether expansion took place.  Returns newly allocated string. */
+static char *
+expand_uid(const char spec[], int *expanded)
+{
+#ifndef _WIN32
+	char *copy = strdup(spec);
+	*expanded = cut_suffix(copy, "%u");
+	if(*expanded)
+	{
+		char uid_str[32];
+		size_t len = strlen(copy);
+		snprintf(uid_str, sizeof(uid_str), "%lu", (unsigned long)getuid());
+		(void)strappend(&copy, &len, uid_str);
+	}
+	return copy;
+#else
+	*expanded = 0;
+	return strdup(spec);
+#endif
 }
 
 /* Expands rooted trash directory specification into a string.  Returns NULL on
@@ -689,7 +737,8 @@ get_rooted_trash_dir(const char base_path[], const char spec[])
 static char *
 format_root_spec(const char spec[], const char mount_point[])
 {
-	return format_str("%s/%s", mount_point, spec + ROOTED_SPEC_PREFIX_LEN);
+	return format_str("%s%s%s", mount_point,
+			ends_with_slash(mount_point) ? "" : "/", spec + ROOTED_SPEC_PREFIX_LEN);
 }
 
 const char *
@@ -719,7 +768,7 @@ trash_prune_dead_entries(void)
 	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(!path_exists(trash_list[i].trash_name, DEREF))
+		if(!path_exists(trash_list[i].trash_name, NODEREF))
 		{
 			free(trash_list[i].path);
 			free(trash_list[i].trash_name);

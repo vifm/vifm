@@ -133,6 +133,13 @@
 	Added optional argument for --logging parameter that specifies path to
 	startup log.  Thanks to Cosmin Popescu (a.k.a. cosminadrianpopescu).
 
+	Added handling of "%u" in trash specification on *nix, which is replaced
+	with real user ID.  Thanks to Regis.
+
+	Changed default value of 'trashdir' on *nix again, this time to
+	"%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash".  This way it's safer for
+	privacy, although using %r is not very safe in general.  Thanks to Regis.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -414,6 +421,8 @@
 
 	Fixed silent (effectively) ignoring of incomplete regexp argument (as in
 	:filter/something, this is different from :s/a).
+
+	Fixed forgetting of broken symbolic links that went into trash.
 
 0.8-beta to 0.8
 
