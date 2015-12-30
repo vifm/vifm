@@ -415,6 +415,8 @@
 	Fixed silent (effectively) ignoring of incomplete regexp argument (as in
 	:filter/something, this is different from :s/a).
 
+	Fixed forgetting of broken symbolic links that went into trash.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

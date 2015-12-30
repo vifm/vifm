@@ -45,7 +45,7 @@
 #include "undo.h"
 
 #define ROOTED_SPEC_PREFIX "%r/"
-#define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1)
+#define ROOTED_SPEC_PREFIX_LEN (sizeof(ROOTED_SPEC_PREFIX) - 1U)
 
 /* Describes file location relative to one of registered trash directories.
  * Argument for get_resident_type_traverser().*/
@@ -435,7 +435,7 @@ is_trash_valid(const char trash_dir[])
 int
 exists_in_trash(const char trash_name[])
 {
-	return path_exists(trash_name, DEREF);
+	return path_exists(trash_name, NODEREF);
 }
 
 int
@@ -719,7 +719,7 @@ trash_prune_dead_entries(void)
 	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(!path_exists(trash_list[i].trash_name, DEREF))
+		if(!path_exists(trash_list[i].trash_name, NODEREF))
 		{
 			free(trash_list[i].path);
 			free(trash_list[i].trash_name);
