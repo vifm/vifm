@@ -80,6 +80,7 @@ get_list_of_trashes_traverser_state;
 
 static int validate_spec(const char spec[]);
 static int create_trash_dir(const char trash_dir[]);
+static int try_create_trash_dir(const char trash_dir[]);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[]);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
@@ -195,7 +196,9 @@ create_trash_dir(const char trash_dir[])
 	return 0;
 }
 
-int
+/* Tries to create trash directory.  Returns zero on success, otherwise non-zero
+ * value is returned. */
+static int
 try_create_trash_dir(const char trash_dir[])
 {
 	LOG_FUNC_ENTER;
@@ -224,7 +227,7 @@ empty_trash_dirs(void)
 {
 	const trashes_list list = get_list_of_trashes();
 	int i;
-	for(i = 0; i < list.ntrashes; i++)
+	for(i = 0; i < list.ntrashes; ++i)
 	{
 		empty_trash_dir(list.trashes[i]);
 	}
@@ -382,13 +385,12 @@ get_list_of_trashes(void)
 	};
 
 	int i;
-	for(i = 0; i < nspecs; i++)
+	for(i = 0; i < nspecs; ++i)
 	{
 		const char *const spec = specs[i];
 		if(is_rooted_trash_dir(spec))
 		{
-			get_list_of_trashes_traverser_state state =
-			{
+			get_list_of_trashes_traverser_state state = {
 				.list = &list,
 				.spec = spec,
 			};
@@ -643,7 +645,7 @@ static void
 traverse_specs(const char base_path[], traverser client, void *arg)
 {
 	int i;
-	for(i = 0; i < nspecs; i++)
+	for(i = 0; i < nspecs; ++i)
 	{
 		char *to_free = NULL;
 		const char *trash_dir;
