@@ -18,7 +18,7 @@
 
 #include "trash.h"
 
-#include <sys/stat.h> /* stat */
+#include <sys/stat.h> /* stat chmod() */
 #include <unistd.h> /* getuid() */
 
 #include <assert.h> /* assert() */
@@ -61,7 +61,7 @@ TrashResidentType;
 /* Client of the traverse_specs() function.  Should return non-zero to stop
  * traversal. */
 typedef int (*traverser)(const char base_path[], const char trash_dir[],
-		void *arg);
+		int user_specific, void *arg);
 
 /* List of trash directories. */
 typedef struct
@@ -80,8 +80,8 @@ typedef struct
 get_list_of_trashes_traverser_state;
 
 static int validate_spec(const char spec[]);
-static int create_trash_dir(const char trash_dir[]);
-static int try_create_trash_dir(const char trash_dir[]);
+static int create_trash_dir(const char trash_dir[], int user_specific);
+static int try_create_trash_dir(const char trash_dir[], int user_specific);
 static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[]);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
@@ -91,13 +91,13 @@ static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[]);
 static void remove_from_trash(const char trash_name[]);
 static int pick_trash_dir_traverser(const char base_path[],
-		const char trash_dir[], void *arg);
+		const char trash_dir[], int user_specific, void *arg);
 static int is_rooted_trash_dir(const char spec[]);
 static TrashResidentType get_resident_type(const char path[]);
 static int get_resident_type_traverser(const char path[],
-		const char trash_dir[], void *arg);
+		const char trash_dir[], int user_specific, void *arg);
 static int is_trash_directory_traverser(const char path[],
-		const char trash_dir[], void *arg);
+		const char trash_dir[], int user_specific, void *arg);
 static void traverse_specs(const char base_path[], traverser client, void *arg);
 static char * expand_uid(const char spec[], int *expanded);
 static char * get_rooted_trash_dir(const char base_path[], const char spec[]);
@@ -164,31 +164,37 @@ set_trash_dir(const char new_specs[])
 static int
 validate_spec(const char spec[])
 {
-	if(is_path_absolute(spec))
+	int valid = 1;
+	int with_uid;
+	char *const expanded_spec = expand_uid(spec, &with_uid);
+
+	if(is_path_absolute(expanded_spec))
 	{
-		if(create_trash_dir(spec) != 0)
+		if(create_trash_dir(expanded_spec, with_uid) != 0)
 		{
-			return 0;
+			valid = 0;
 		}
 	}
-	else if(!is_rooted_trash_dir(spec))
+	else if(!is_rooted_trash_dir(expanded_spec))
 	{
 		show_error_msgf("Error Setting Trash Directory",
-				"The path specification is of incorrect format: %s", spec);
-		return 0;
+				"The path specification is of incorrect format: %s", expanded_spec);
+		valid = 0;
 	}
-	return 1;
+
+	free(expanded_spec);
+	return valid;
 }
 
 /* Ensures existence of trash directory.  Displays error message dialog, if
  * directory creation failed.  Returns zero on success, otherwise non-zero value
  * is returned. */
 static int
-create_trash_dir(const char trash_dir[])
+create_trash_dir(const char trash_dir[], int user_specific)
 {
 	LOG_FUNC_ENTER;
 
-	if(try_create_trash_dir(trash_dir) != 0)
+	if(try_create_trash_dir(trash_dir, 0) != 0)
 	{
 		show_error_msgf("Error Setting Trash Directory",
 				"Could not set trash directory to %s: %s", trash_dir, strerror(errno));
@@ -201,16 +207,27 @@ create_trash_dir(const char trash_dir[])
 /* Tries to create trash directory.  Returns zero on success, otherwise non-zero
  * value is returned. */
 static int
-try_create_trash_dir(const char trash_dir[])
+try_create_trash_dir(const char trash_dir[], int user_specific)
 {
 	LOG_FUNC_ENTER;
 
-	if(is_dir_writable(trash_dir))
+	if(!is_dir_writable(trash_dir))
 	{
-		return 0;
+		if(make_path(trash_dir, 0777) != 0)
+		{
+			return 1;
+		}
 	}
 
-	return make_path(trash_dir, 0777);
+	if(user_specific)
+	{
+		if(chmod(trash_dir, 0700) != 0)
+		{
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 void
@@ -551,9 +568,9 @@ pick_trash_dir(const char base_path[])
  * the base_path. */
 static int
 pick_trash_dir_traverser(const char base_path[], const char trash_dir[],
-		void *arg)
+		int user_specific, void *arg)
 {
-	if(try_create_trash_dir(trash_dir) == 0)
+	if(try_create_trash_dir(trash_dir, user_specific) == 0)
 	{
 		char **const result = arg;
 		*result = strdup(trash_dir);
@@ -601,7 +618,7 @@ get_resident_type(const char path[])
  * directories.  Accepts pointer to TrashResidentType as argument. */
 static int
 get_resident_type_traverser(const char path[], const char trash_dir[],
-		void *arg)
+		int user_specific, void *arg)
 {
 	if(path_starts_with(path, trash_dir))
 	{
@@ -632,7 +649,7 @@ is_trash_directory(const char path[])
  * directories. */
 static int
 is_trash_directory_traverser(const char path[], const char trash_dir[],
-		void *arg)
+		int user_specific, void *arg)
 {
 	if(stroscmp(path, trash_dir) == 0)
 	{
@@ -666,7 +683,7 @@ traverse_specs(const char base_path[], traverser client, void *arg)
 			trash_dir = spec;
 		}
 
-		if(trash_dir != NULL && client(base_path, trash_dir, arg))
+		if(trash_dir != NULL && client(base_path, trash_dir, with_uid, arg))
 		{
 			free(to_free);
 			free(spec);

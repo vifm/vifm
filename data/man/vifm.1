@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 28, 2015" "vifm 0.8"
+.TH VIFM 1 "December 30, 2015" "vifm 0.8"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3806,6 +3806,9 @@ relative to a mount point root when list element starts with "%r/".
 Value of the option can contain environment variables (of form "$envname"),
 which will be expanded (prepend $ with a slash to prevent expansion).
 Environment variables are expanded when the option is set.
+
+If element ends with "%u", the mark is replaced with real user ID and
+permissions are set so that only that only owner is able to use it.
 
 When new file gets cut (deleted) vifm traverses each element of the option in
 the order of their appearance and uses first trash directory that it was able
