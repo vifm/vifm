@@ -700,6 +700,7 @@ traverse_specs(const char base_path[], traverser client, void *arg)
 static char *
 expand_uid(const char spec[], int *expanded)
 {
+#ifndef _WIN32
 	char *copy = strdup(spec);
 	*expanded = cut_suffix(copy, "%u");
 	if(*expanded)
@@ -710,6 +711,10 @@ expand_uid(const char spec[], int *expanded)
 		(void)strappend(&copy, &len, uid_str);
 	}
 	return copy;
+#else
+	*expanded = 0;
+	return strdup(spec);
+#endif
 }
 
 /* Expands rooted trash directory specification into a string.  Returns NULL on

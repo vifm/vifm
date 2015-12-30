@@ -3797,9 +3797,12 @@ Use trash directory.  See "Trash directory" section below.
 .BI 'trashdir'
 type: string
 .br
-default: "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash" or if $VIFM/Trash
+default: on *nix:
+         "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash" or if $VIFM/Trash
          doesn't exist
          "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
+         on Windows:
+         "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
 .br
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to trash directory or a path
@@ -3808,7 +3811,7 @@ Value of the option can contain environment variables (of form "$envname"),
 which will be expanded (prepend $ with a slash to prevent expansion).
 Environment variables are expanded when the option is set.
 
-If element ends with "%u", the mark is replaced with real user ID and
+On *nix, if element ends with "%u", the mark is replaced with real user ID and
 permissions are set so that only that only owner is able to use it.
 .br
 .B Note

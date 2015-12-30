@@ -506,6 +506,13 @@ store_config_paths(void)
 {
 	LOG_FUNC_ENTER;
 
+	const char *const trash_dir_fmt =
+#ifndef _WIN32
+			"%%r/.vifm-Trash-%%u,%s/" TRASH ",%%r/.vifm-Trash";
+#else
+			"%%r/.vifm-Trash,%s/" TRASH;
+#endif
+
 	char *fuse_home;
 	const char *trash_base = path_exists_at(env_get(VIFM_EV), TRASH, DEREF)
 	                       ? cfg.config_dir
@@ -518,8 +525,7 @@ store_config_paths(void)
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), env_get(VIFM_EV));
 	snprintf(cfg.colors_dir, sizeof(cfg.colors_dir), "%s/colors/",
 			cfg.config_dir);
-	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir),
-			"%%r/.vifm-Trash-%%u,%s/" TRASH ",%%r/.vifm-Trash", trash_base);
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), trash_dir_fmt, trash_base);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, base);
 
 	fuse_home = format_str("%s/fuse/", base);
