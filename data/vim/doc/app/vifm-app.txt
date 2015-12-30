@@ -3133,8 +3133,9 @@ Use |vifm-trash| directory.
                                                *vifm-'trashdir'*
 trashdir
 type: string
-default: "%r/.vifm-Trash,$VIFM/Trash" or if $VIFM/Trash doesn't exist
-         "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
+default: "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash" or if $VIFM/Trash
+         doesn't exist
+         "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
 
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to |vifm-trash| directory
@@ -3145,6 +3146,9 @@ Environment variables are expanded when the option is set.
 
 If element ends with "%u", the mark is replaced with real user ID and
 permissions are set so that only that only owner is able to use it.
+Note that even this setup is not completely secure when combined with "%r/"
+and it's overall safer to keep files in home directory, but that implies cost
+of copying files between partitions.
 
 When new file gets cut (deleted) vifm traverses each element of the option in
 the order of their appearance and uses first trash directory that it was able

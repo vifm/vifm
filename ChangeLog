@@ -136,6 +136,10 @@
 	Added handling of "%u" in trash specification, which is replaced with real
 	user ID.  Thanks to Regis.
 
+	Changed default value of 'trashdir' again, this time to
+	"%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash".  This way it's safer for
+	privacy, although using %r is not very safe in general.  Thanks to Regis.
+
 	Do not finish argument parsing after finding --help or --version,
 	continue and validate the rest of command-line.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
