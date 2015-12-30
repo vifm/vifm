@@ -90,7 +90,11 @@ CC ?= gcc
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include $(B)../config.h
 CFLAGS += -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED -Wno-char-subscripts
-LDFLAGS := -lpthread --coverage
+LDFLAGS := -lpthread
+ifeq (,$(findstring clang,$(CC)))
+    # clang is inconvenient with regard to this flag, don't do coverage with it
+    LDFLAGS += --coverage
+endif
 ifdef unix_env
     LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' $(B)../src/Makefile)
     LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' $(B)../src/Makefile)
@@ -148,7 +152,9 @@ $(B)bin/build/$(BINSUBDIR)/stic.o: stic/stic.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(B)stic/stic.h.gch: stic/stic.h | $(B)stic
+ifeq (,$(findstring clang,$(CC)))
 	$(CC) -c -o $@ $(CFLAGS) $<
+endif
 
 $(B)stic $(B)bin/$(BINSUBDIR)/:
 	mkdir -p $@
