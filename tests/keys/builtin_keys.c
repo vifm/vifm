@@ -11,7 +11,7 @@
 #include "../../src/modes/modes.h"
 
 #ifdef TEST
-#define printf(...)
+#define printf(...) do {} while(0)
 #endif
 
 int last; /* 1 = k, 2 = j, 3 = yank, 4 = delete */
