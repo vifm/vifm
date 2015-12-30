@@ -715,7 +715,8 @@ get_rooted_trash_dir(const char base_path[], const char spec[])
 static char *
 format_root_spec(const char spec[], const char mount_point[])
 {
-	return format_str("%s/%s", mount_point, spec + ROOTED_SPEC_PREFIX_LEN);
+	return format_str("%s%s%s", mount_point,
+			ends_with_slash(mount_point) ? "" : "/", spec + ROOTED_SPEC_PREFIX_LEN);
 }
 
 const char *
