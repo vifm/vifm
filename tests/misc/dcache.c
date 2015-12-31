@@ -53,8 +53,8 @@ TEST(outdated_data_is_not_returned)
 	entry.mtime = time(NULL) + 1;
 
 	dcache_get_of(&entry, &size, &nitems);
-	assert_ulong_equal(DCACHE_UNKNOWN, size);
-	assert_ulong_equal(DCACHE_UNKNOWN, nitems);
+	assert_ulong_equal((unsigned long)DCACHE_UNKNOWN, size);
+	assert_ulong_equal((unsigned long)DCACHE_UNKNOWN, nitems);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
