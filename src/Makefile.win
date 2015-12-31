@@ -2,6 +2,16 @@ CC = $(CROSS)gcc
 WINDRES = $(CROSS)windres
 STRIP = $(CROSS)strip
 
+# function to get absolute path to parent directory of a path
+getparentdir = $(abspath $(dir $1))
+# function to get last but one element of the list
+last_but_one = $(word $(words $(wordlist 2, $(words $1), $1)), $1)
+# determine location of this Makefile
+src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
+
+# lookup for out-of-tree builds
+VPATH := $(src_dir)
+
 CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS) -include ../config.h
 CFLAGS += -D_FILE_OFFSET_BITS=64 -pipe
 ifeq ($(RELEASE),1)
@@ -73,6 +83,11 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
 
+# determine list of output directories that don't exist at the moment
+out_dirs := $(sort $(dir $(vifm_OBJECTS)))
+out_dirs := $(filter-out $(wildcard $(out_dirs)) ./, $(out_dirs))
+out_dirs := $(addprefix $(abspath .)/,$(out_dirs))
+
 win_helper_SOURCES := win_helper.c
 win_helper_OBJECTS := $(win_helper_SOURCES:.c=.o)
 win_helper_EXECUTABLE := win_helper.exe
@@ -93,7 +108,7 @@ ifeq ($(RELEASE),1)
 endif
 
 vifm.res: vifm.rc ../data/graphics/vifm.ico
-	$(WINDRES) --use-temp-file -i ./vifm.rc -o vifm.res
+	$(WINDRES) --use-temp-file -i $(src_dir)/vifm.rc -o vifm.res
 
 vifmres.o: vifm.res
 	$(WINDRES) --use-temp-file -i ./vifm.res -o vifmres.o
@@ -112,17 +127,17 @@ endif
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info
-	@./update-compile-info $(UNDER_VCS)
+	@$(src_dir)/update-compile-info $(UNDER_VCS)
 
 # No action needed for this target.
 update_compile_info:
 
-%.o: %.c | ../config.h
+%.o: %.c | ../config.h $(out_dirs)
 	$(CC) $(CFLAGS) $< -o $@
 
-../data/vifm-help.txt: ../data/man/vifm.1
+../data/vifm-help.txt: $(src_dir)/../data/man/vifm.1 | $(abspath ../data/)
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
-		$(MANGEN) -Tascii -man ../data/man/vifm.1 | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		$(MANGEN) -Tascii -man $< | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt
@@ -141,6 +156,9 @@ tags.c: ../data/vim/doc/app/vifm-app.txt
 		' $(dir $<)/tags > $@; \
 		dos2unix "$@"; \
 	fi
+
+$(out_dirs) $(abspath ../data/):
+	mkdir -p $@
 
 check:
 	make -C ../tests
