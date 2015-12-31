@@ -251,7 +251,7 @@
 	Changed plugin to do not depend on location of vifm.  g:vifm_home is
 	ignored from now on.  Thanks to aleksejrs.
 
-	Rewritten expression parser to prevent side-effects from occurring until
+	Rewrote expression parser to prevent side-effects from occurring until
 	syntax is checked.
 
 	Put right-hand side of user-defined commands into separate scope of
@@ -425,6 +425,9 @@
 	Fixed forgetting of broken symbolic links that went into trash.
 
 	Fixed silent ignoring of unmatched quote among :set arguments.
+
+	Fixed picking wrong partition for deletion under symlinked paths.  Thanks
+	to aleksejrs.
 
 0.8-beta to 0.8
 

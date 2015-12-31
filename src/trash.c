@@ -559,7 +559,20 @@ gen_trash_name(const char base_path[], const char name[])
 char *
 pick_trash_dir(const char base_path[])
 {
+	char real_path[PATH_MAX];
 	char *trash_dir = NULL;
+
+	/* We want all links resolved to do not mistakenly attribute removed files to
+	 * location of a symbolic link. */
+	if(os_realpath(base_path, real_path) == real_path)
+	{
+		/* If realpath() fails, just go with the original path. */
+#ifdef _WIN32
+		to_forward_slash(real_path);
+#endif
+		base_path = real_path;
+	}
+
 	traverse_specs(base_path, &pick_trash_dir_traverser, &trash_dir);
 	return trash_dir;
 }
