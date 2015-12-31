@@ -1406,6 +1406,13 @@ extract_option(const char args[], char buf[], int replace)
 			*buf++ = *args++;
 		}
 	}
+
+	if(quote != 0)
+	{
+		/* Probably an unmatched quote. */
+		return NULL;
+	}
+
 	*buf = '\0';
 	return args;
 }

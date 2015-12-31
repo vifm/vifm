@@ -424,6 +424,8 @@
 
 	Fixed forgetting of broken symbolic links that went into trash.
 
+	Fixed silent ignoring of unmatched quote among :set arguments.
+
 0.8-beta to 0.8
 
 	Added handling of Ctrl-L to sort dialog.  Thanks to filterfalse.

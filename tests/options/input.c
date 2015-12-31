@@ -28,6 +28,12 @@ TEST(comments)
 	assert_string_equal("/var/fuse", value);
 }
 
+TEST(unmatched_quote)
+{
+	assert_failure(set_options("fusehome='/tmp", OPT_GLOBAL));
+	assert_failure(set_options("fusehome=\"/var/fuse", OPT_GLOBAL));
+}
+
 TEST(print_all_pseudo_option)
 {
 	assert_success(set_options("all", OPT_GLOBAL));
