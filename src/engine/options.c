@@ -303,6 +303,13 @@ set_options(const char args[], OPT_SCOPE scope)
 		args = extract_option(args, buf, 1);
 		if(args == NULL)
 			return -1;
+
+		if(*args == '\0' && *buf == '\0')
+		{
+			/* Stop on reacing comment. */
+			break;
+		}
+
 		if(scope == OPT_ANY)
 		{
 			const int error = process_option(buf, scope, OPT_LOCAL, &print);
@@ -1244,8 +1251,9 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 	{
 		*start = args;
 		args = extract_option(args, buf, 0);
-		if(args == NULL)
+		if(args == NULL || (*args == '\0' && *buf == '\0'))
 		{
+			/* Just exit on error or reacing comment. */
 			vle_compl_add_match(buf);
 			return;
 		}
@@ -1320,12 +1328,20 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 }
 
 /* Extracts next option from option list.  Returns NULL on error and next call
- * start position on success. */
+ * start position on success.  Buffer is set to an empty string on reaching
+ * trailing comment. */
 static const char *
 extract_option(const char args[], char buf[], int replace)
 {
 	int quote = 0;
 	int slash = 0;
+
+	if(*args == '\"' && strchr(args + 1, '"') == NULL)
+	{
+		/* This is a comment. */
+		*buf = '\0';
+		return args + strlen(args);
+	}
 
 	while(*args != '\0')
 	{
