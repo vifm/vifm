@@ -18,7 +18,8 @@
 #
 # By default tests are built in release mode.
 #
-# make              -- runs all tests
+# make              -- builds and runs all tests
+# make build        -- builds all tests without running them
 # make <dir>        -- runs specific test suite
 # make <dir>.<name> -- runs specific fixture
 #
@@ -39,7 +40,11 @@ ifeq ($(OS),Windows_NT)
         win_env := true
     endif
 else
-    unix_env := true
+    ifeq ($(CROSS),)
+        unix_env := true
+    else
+        win_env := true
+    endif
 endif
 
 # build directory
@@ -69,7 +74,7 @@ ifndef win_env
 endif
 
 ifdef DEBUG
-BINSUBDIR := debug
+    BINSUBDIR := debug
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
@@ -79,8 +84,11 @@ vifm_obj := $(vifm_src:%.c=$(B)%.o) $(B)bin/build/$(BINSUBDIR)/stubs.o
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
 vifm_obj += $(B)../src/compile_info.o
 
+ifdef unix_env
+    make_args := -C $(B)../src/
+endif
 ifdef win_env
-    make_arg   := -f Makefile.win
+    make_args  := -C $(B)../src/ -f $(abspath ../src/Makefile.win)
     exe_suffix := .exe
 endif
 
@@ -108,6 +116,12 @@ ifdef unix_env
 endif
 ifdef win_env
     LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
+    # this part is in conditional
+    ifeq ($(OS),Windows_NT)
+        LDFLAGS += -lpdcurses
+    else
+        LDFLAGS += -lcurses
+    endif
 endif
 
 ifdef DEBUG
@@ -140,10 +154,10 @@ clean:
 	$(RM) -r $(B)bin/ $(B)sandbox/
 	$(RM) $(B)stic/stic.h.d $(B)stic/stic.h.gch
 
-$(vifm_src:.c=.o): | $(vifm_bin)
+$(vifm_obj): | $(vifm_bin)
 
 $(vifm_bin): $(vifm_src)
-	$(MAKE) -C $(B)../src/ $(make_arg) vifm$(exe_suffix)
+	$(MAKE) $(make_args) vifm$(exe_suffix)
 
 $(B)bin/build/$(BINSUBDIR)/stubs.o: stubs.c
 	$(CC) -c -o $@ $(CFLAGS) $<

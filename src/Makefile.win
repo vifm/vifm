@@ -166,8 +166,14 @@ tags.c: ../data/vim/doc/app/vifm-app.txt
 $(out_dirs) $(abspath ../data/):
 	mkdir -p $@
 
-check:
-	make -C ../tests
+# only builds tests without running them
+tests: ../config.h
+	mkdir -p "$(abspath ../tests)"
+	make -C $(src_dir)/../tests/ B="$(abspath ../tests)/" build
+
+# runs the tests, building them before if needed
+check: tests
+	make -C $(src_dir)/../tests/ B="$(abspath ../tests)/"
 
 clean:
 	-$(RM) compile_info.c tags.c
