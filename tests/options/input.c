@@ -16,6 +16,24 @@ TEST(colon)
 	assert_string_equal("/var/fuse", value);
 }
 
+TEST(comments)
+{
+	optval_t val = { .str_val = "/home/tmp" };
+	set_option("fusehome", val, OPT_GLOBAL);
+
+	assert_true(set_options("fusehome=/tmp \"bla", OPT_GLOBAL) == 0);
+	assert_string_equal("/tmp", value);
+
+	assert_true(set_options("fusehome:/var/fuse \"comment", OPT_GLOBAL) == 0);
+	assert_string_equal("/var/fuse", value);
+}
+
+TEST(unmatched_quote)
+{
+	assert_failure(set_options("fusehome='/tmp", OPT_GLOBAL));
+	assert_failure(set_options("fusehome=\"/var/fuse", OPT_GLOBAL));
+}
+
 TEST(print_all_pseudo_option)
 {
 	assert_success(set_options("all", OPT_GLOBAL));

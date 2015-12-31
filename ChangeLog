@@ -26,7 +26,7 @@
 	Added %pc macro that splits preview command in two pices: preview command
 	and clear command.  Thanks to Tomek K. (a.k.a. TomiCode).
 
-	Added set of :*Vim commands to vifm ran from Vim plugin, which overrule
+	Added set of :*Vim commands to vifm run from Vim plugin, which overrule
 	initial :*Vifm command behaviour.  Thanks to Ross Hadden (a.k.a.
 	rosshadden).
 
@@ -103,9 +103,9 @@
 	Thanks to filterfalse.
 
 	Added 'iooptions' option to configure file system operations.  Contains
-	only "fastfilecloning" for btrfs so far.
+	only "fastfilecloning" for btrfs so far.  Thanks to aleksejrs.
 
-	Added "v" key to menu mode that loads current contants into quickfix list
+	Added "v" key to menu mode that loads current contents into quickfix list
 	of editor (Vim compatible one is assumed).  Thanks to filterfalse.
 
 	Added && and || operators to expression parser.  Thanks to filterfalse.
@@ -423,6 +423,8 @@
 	:filter/something, this is different from :s/a).
 
 	Fixed forgetting of broken symbolic links that went into trash.
+
+	Fixed silent ignoring of unmatched quote among :set arguments.
 
 0.8-beta to 0.8
 

@@ -45,6 +45,8 @@ static const cmd_add_t commands[] = {
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 	{ .name = "invert",     .abbr = NULL,  .handler = invert_cmd,     .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 0,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
+	{ .name = "set",        .abbr = "se",  .handler = call_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,       .comment = 1,
+		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = NOT_DEF, .bg = 0,     },
 	{ .name = "substitute", .abbr = "s",   .handler = substitute_cmd, .id = -1,    .range = 0,    .cust_sep = 1,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 3,       .bg = 0,     },
 	{ .name = "quit",       .abbr = "q",   .handler = quit_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
@@ -702,6 +704,14 @@ TEST(non_printable_arg)
 	/* \x0C is Ctrl-L. */
 	assert_int_equal(0, execute_cmd("call \x0C"));
 	assert_string_equal("\x0C", arg);
+}
+
+TEST(closing_double_quote_is_taken_as_comment)
+{
+	/* That's result of ambiguity of parsing, instead real :set doesn't have
+	 * comments enabled for engine/cmds, but engine/set handles the comments. */
+	assert_success(execute_cmd("set \"  string  \""));
+	assert_string_equal("\"  string", arg);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

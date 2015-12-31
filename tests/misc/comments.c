@@ -1,7 +1,8 @@
 #include <stic.h>
 
-#include "../../src/utils/env.h"
+#include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/utils/env.h"
 #include "../../src/cmd_core.h"
 
 #include "utils.h"
@@ -23,10 +24,22 @@ TEST(trailing_comments)
 
 	init_commands();
 
+	opt_handlers_setup();
+
 	assert_success(exec_command("let $a = 4 \"", &lwin, CIT_COMMAND));
 	assert_string_equal("4", env_get("a"));
+	assert_success(exec_command("let $a = \" 4 \"", &lwin, CIT_COMMAND));
+	assert_string_equal(" 4 ", env_get("a"));
+	assert_failure(exec_command("echo \" 4 \"", &lwin, CIT_COMMAND));
+	assert_success(exec_command("exe \" 4 \"", &lwin, CIT_COMMAND));
 	assert_success(exec_command("unlet $a \"comment", &lwin, CIT_COMMAND));
 	assert_string_equal(NULL, env_get("a"));
+
+	assert_success(exec_command("set statusline=\"  %t%= %A %15E %20d  \"", &lwin,
+				CIT_COMMAND));
+	assert_string_equal("  %t%= %A %15E %20d  ", cfg.status_line);
+
+	opt_handlers_teardown();
 
 	reset_cmds();
 
