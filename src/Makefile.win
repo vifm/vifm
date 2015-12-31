@@ -149,6 +149,7 @@ check:
 	make -C ../tests
 
 clean:
+	-$(RM) compile_info.c tags.c
 	-$(RM) $(addsuffix *.o, $(DIRS))
 	-$(RM) $(addsuffix *.d, $(DIRS))
 	-$(RM) *.res *.exe
