@@ -179,7 +179,7 @@ TEST(if_true_else_if_else_condition)
 TEST(if_true_elseif_else_condition)
 {
 	const char *const COMMANDS = " | if 1 == 1"
-	                             " | elseif 2 == 2"
+	                             " | elseif 2 == \"   \""
 	                             " |     let $"VAR_B" = '"VAR_B"'"
 	                             " | else"
 	                             " |     let $"VAR_C" = '"VAR_C"'"
@@ -194,7 +194,7 @@ TEST(if_true_elseif_else_condition)
 
 TEST(if_false_elseif_true_else_condition)
 {
-	const char *const COMMANDS = " | if 1 == 0"
+	const char *const COMMANDS = " | if 1 == \"87  \""
 	                             " | elseif 2 == 2"
 	                             " |     let $"VAR_B" = '"VAR_B"'"
 	                             " | else"

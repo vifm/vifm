@@ -246,6 +246,28 @@ TEST(cust_sep)
 	free_string_array(args, count);
 }
 
+TEST(double_quotes_arg_position)
+{
+	int count;
+	char **args;
+	int (*argvp)[2];
+
+	args = dispatch_line("\"c\"", &count, ' ', 0, 0, 1, NULL, &argvp);
+	free_string_array(args, count);
+	assert_int_equal(1, count);
+	assert_int_equal(0, argvp[0][0]);
+	assert_int_equal(3, argvp[0][1]);
+	free(argvp);
+
+	args = dispatch_line("\"c \"", &count, ' ', 0, 0, 1, NULL, &argvp);
+	assert_int_equal(1, count);
+	assert_string_equal("\"c", args[0]);
+	free_string_array(args, count);
+	assert_int_equal(0, argvp[0][0]);
+	assert_int_equal(2, argvp[0][1]);
+	free(argvp);
+}
+
 TEST(comment_quotes_enabled)
 {
 	int count;
