@@ -108,7 +108,10 @@ vifmres.o: vifm.res
 	echo '#define _GNU_SOURCE 1' >> ../config.h; \
 	echo '#define PACKAGE_SYSCONF_DIR ""' >> ../config.h; \
 	echo '#define ENABLE_REMOTE_CMDS 1' >> ../config.h; \
-#	echo '#define HAVE_FILE_PROG' >> ../config.h; \
+#	echo '#define HAVE_FILE_PROG' >> ../config.h;
+ifeq ($(OS),Windows_NT) # this is for MinGW (probably fixed in MinGW-w64)
+	@echo '#define BROKEN_SWPRINTF' >> ../config.h
+endif
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))
 compile_info.c: update_compile_info

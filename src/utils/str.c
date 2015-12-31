@@ -616,10 +616,10 @@ vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...)
 
 	va_start(ap, format);
 
-#if !defined(_WIN32) || defined(_WIN64)
-	result = vswprintf(str, len, format, ap);
-#else
+#ifdef BROKEN_SWPRINTF
 	result = vswprintf(str, format, ap);
+#else
+	result = vswprintf(str, len, format, ap);
 #endif
 
 	va_end(ap);
