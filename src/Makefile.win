@@ -23,7 +23,13 @@ endif
 MANGEN := groff
 UNDER_VCS := $(shell [ "`which git 2> /dev/null`" -a -d ../.git ] && echo 1)
 
-LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
+LIBS := -lregex -lnetapi32 -lpthread -lws2_32
+ifeq ($(OS),Windows_NT)
+    LIBS += -lpdcurses
+else
+    # new versions of MXE name pdcurses this way
+    LIBS += -lcurses
+endif
 
 DIRS := ./ compat/ cfg/ engine/ int/ io/ io/private/ menus/ modes/
 DIRS += modes/dialogs/ ui/ utils/
