@@ -25,11 +25,6 @@ TEST(concatenation)
 	ASSERT_OK("\"NV\" . \"AR\"", "NVAR");
 }
 
-TEST(not_closed_error)
-{
-	ASSERT_FAIL("\"test", PE_MISSING_QUOTE);
-}
-
 TEST(double_quote_escaping_ok)
 {
 	ASSERT_OK("\"\\\"\"", "\"");
