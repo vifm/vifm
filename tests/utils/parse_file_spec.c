@@ -181,9 +181,9 @@ TEST(colon_in_name_with_linenum)
 TEST(win_absolute_path_without_linenum, IF(windows))
 {
 	int line_num;
-	char *const path = parse_file_spec("c:/home/user", &line_num);
+	char *const path = parse_file_spec(TEST_DATA_PATH, &line_num);
 
-	assert_string_equal("c:/home/user", path);
+	assert_string_equal(TEST_DATA_PATH, path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
 
 	free(path);
