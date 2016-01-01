@@ -47,80 +47,80 @@ TEST(addition_start)
 
 TEST(addition_match)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("autocmd DirEnter '" SANDBOX_PATH "' let $a = 1",
 				&lwin, CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
 TEST(addition_no_match)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("autocmd DirEnter '" SANDBOX_PATH "' let $a = 1",
 				&lwin, CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, TEST_DATA_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 }
 
 TEST(remove_exact_match)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("autocmd DirEnter '" SANDBOX_PATH "' let $a = 1",
 				&lwin, CIT_COMMAND));
 	assert_success(exec_commands("autocmd! DirEnter '" SANDBOX_PATH "'", &lwin,
 				CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 }
 
 TEST(remove_event_match)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("autocmd DirEnter '" SANDBOX_PATH "' let $a = 1",
 				&lwin, CIT_COMMAND));
 	assert_success(exec_commands("autocmd! DirEnter", &lwin, CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 }
 
 TEST(remove_path_match)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("autocmd DirEnter '" SANDBOX_PATH "' let $a = 1",
 				&lwin, CIT_COMMAND));
 	assert_success(exec_commands("autocmd! * '" SANDBOX_PATH "'", &lwin,
 				CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 }
 
 TEST(remove_all)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("autocmd DirEnter '" SANDBOX_PATH "' let $a = 1",
 				&lwin, CIT_COMMAND));
 	assert_success(exec_commands("autocmd!", &lwin, CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 }
 
 TEST(remove_too_many_args)
@@ -130,12 +130,12 @@ TEST(remove_too_many_args)
 
 TEST(extra_slash_is_fine)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("auto DirEnter '" SANDBOX_PATH "/' let $a = 1",
 				&lwin, CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
@@ -148,41 +148,41 @@ TEST(error_on_wrong_event_name)
 
 TEST(envvars_are_expanded)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
-	env_set("path", SANDBOX_PATH);
-	assert_success(exec_commands("autocmd DirEnter $path let $a = 1", &lwin,
+	env_set("dir", SANDBOX_PATH);
+	assert_success(exec_commands("autocmd DirEnter $dir let $a = 1", &lwin,
 				CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
 TEST(pattern_negation)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("auto DirEnter '!" SANDBOX_PATH "' let $a = 1",
 				&lwin, CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, TEST_DATA_PATH) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
 TEST(tail_pattern)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("auto DirEnter existing-files let $a = 1", &lwin,
 				CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, TEST_DATA_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, TEST_DATA_PATH "/existing-files/")
 			>= 0);
 	assert_string_equal("1", env_get("a"));
@@ -190,19 +190,19 @@ TEST(tail_pattern)
 
 TEST(multiple_patterns_addition)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("auto DirEnter '" SANDBOX_PATH ",ab' let $a = 1",
 				&lwin, CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
 TEST(multiple_patterns_removal)
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands(
 				"auto DirEnter '" SANDBOX_PATH "," TEST_DATA_PATH "' let $a = 1", &lwin,
@@ -211,10 +211,10 @@ TEST(multiple_patterns_removal)
 				"auto! DirEnter '" SANDBOX_PATH "," TEST_DATA_PATH "'", &lwin,
 				CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
 	assert_true(change_directory(curr_view, TEST_DATA_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 }
 
 TEST(multiple_patterns_correct_expansion)
@@ -222,29 +222,29 @@ TEST(multiple_patterns_correct_expansion)
 	/* Each pattern should be expanded on its own, not all pattern string should
 	 * be expanded and then broken into patterns. */
 
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("let $c = ','", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands(
 				"auto DirEnter '" SANDBOX_PATH "$c" TEST_DATA_PATH "' let $a = 1", &lwin,
 				CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 }
 
 /* Windows has various limitations on characters used in file names. */
 TEST(tilde_is_expanded_after_negation, IF(not_windows))
 {
-	assert_success(exec_commands("let $a = ''", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
 	assert_success(os_mkdir(SANDBOX_PATH"/~", 0700));
 
 	assert_success(exec_commands("auto DirEnter !~ let $a = 1", &lwin,
 				CIT_COMMAND));
 
-	assert_string_equal("", env_get("a"));
+	assert_string_equal("x", env_get("a"));
 	assert_true(change_directory(curr_view, SANDBOX_PATH"/~") >= 0);
 	assert_string_equal("1", env_get("a"));
 

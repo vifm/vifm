@@ -275,8 +275,8 @@ TEST(or_operator_is_attributed_to_if)
 
 TEST(or_operator_is_attributed_to_let)
 {
-	(void)exec_commands("let $a = ''", &lwin, CIT_COMMAND);
-	assert_string_equal("", env_get("a"));
+	(void)exec_commands("let $a = 'x'", &lwin, CIT_COMMAND);
+	assert_string_equal("x", env_get("a"));
 	(void)exec_commands("let $a = 0 || 1", &lwin, CIT_COMMAND);
 	assert_string_equal("1", env_get("a"));
 }

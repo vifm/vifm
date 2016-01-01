@@ -802,32 +802,25 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 		}
 		else
 		{
-			char *p;
-			char t;
+			char *const partial_path = strdup(src);
+			char *part = partial_path + (is_path_absolute(src) ? 2 : 0);
+			char *state = NULL;
 
-			p = strchr(src + 2, '/');
-			do
+			while((part = split_and_get(part, '/', &state)) != NULL)
 			{
-				t = *p;
-				*p = '\0';
-
-				if(!is_dir(src))
+				if(!is_dir(partial_path))
 				{
-					wchar_t *const utf16_path = utf8_to_utf16(src);
+					wchar_t *const utf16_path = utf8_to_utf16(partial_path);
 					if(!CreateDirectoryW(utf16_path, NULL))
 					{
 						free(utf16_path);
-						*p = t;
+						free(partial_path);
 						return -1;
 					}
 					free(utf16_path);
 				}
-
-				*p = t;
-				if((p = strchr(p + 1, '/')) == NULL)
-					p = (char *)src + strlen(src);
 			}
-			while(t != '\0');
+			free(partial_path);
 			return 0;
 		}
 #endif
