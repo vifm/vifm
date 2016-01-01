@@ -6,13 +6,20 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/str.h"
 #include "../../src/status.h"
 
 #include "utils.h"
 
 SETUP()
 {
+	update_string(&cfg.shell, "");
 	assert_success(init_status(&cfg));
+}
+
+TEARDOWN()
+{
+	update_string(&cfg.shell, NULL);
 }
 
 TEST(size_does_not_clobber_nitems)

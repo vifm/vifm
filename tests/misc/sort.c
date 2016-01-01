@@ -44,10 +44,14 @@ SETUP()
 	rwin.dir_entry[0].type = FT_REG;
 	rwin.dir_entry[1].name = strdup("АААААААААА");
 	rwin.dir_entry[1].type = FT_REG;
+
+	update_string(&cfg.shell, "");
 }
 
 TEARDOWN()
 {
+	update_string(&cfg.shell, NULL);
+
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 }
