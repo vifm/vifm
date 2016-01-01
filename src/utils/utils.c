@@ -47,6 +47,7 @@
 #include "../ui/cancellation.h"
 #include "../background.h"
 #include "../registers.h"
+#include "../status.h"
 #include "env.h"
 #include "file_streams.h"
 #include "fs.h"
@@ -65,7 +66,11 @@ int
 vifm_system(char command[])
 {
 #ifdef _WIN32
-	system("cls");
+	/* The check is primarily for tests, otherwise screen is reset. */
+	if(curr_stats.load_stage != 0)
+	{
+		system("cls");
+	}
 #endif
 	LOG_INFO_MSG("Shell command: %s", command);
 	return run_in_shell_no_cls(command);
