@@ -591,7 +591,7 @@ parse_file_spec(const char spec[], int *line_num)
 
 		while(!path_exists(path_buf, NODEREF) && strchr(path_buf, ':') != NULL)
 		{
-			break_at(path_buf, ':');
+			break_atr(path_buf, ':');
 		}
 	}
 
