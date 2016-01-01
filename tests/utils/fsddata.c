@@ -1,6 +1,7 @@
 #include <stic.h>
 
-#include <stdio.h> /* remove() */
+#include <unistd.h> /* rmdir() */
+
 #include <string.h> /* strdup() */
 
 #include "../../src/compat/os.h"
@@ -57,7 +58,7 @@ TEST(path_is_invalidated_in_fsddata)
 	assert_failure(fsddata_get(fsdd, SANDBOX_PATH, &ptr));
 	assert_failure(fsddata_get(fsdd, SANDBOX_PATH "/dir", &ptr));
 
-	assert_success(remove(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 	fsddata_free(fsdd);
 }
 

@@ -1,7 +1,8 @@
 #include <stic.h>
 
+#include <unistd.h> /* rmdir() */
+
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* remove() */
 
 #include "../../src/compat/os.h"
 #include "../../src/utils/fsdata.h"
@@ -84,8 +85,8 @@ TEST(siblings_are_independent)
 	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir2", &data, sizeof(data)));
 	assert_true(data == 1);
 
-	assert_success(remove(SANDBOX_PATH "/dir1"));
-	assert_success(remove(SANDBOX_PATH "/dir2"));
+	assert_success(rmdir(SANDBOX_PATH "/dir1"));
+	assert_success(rmdir(SANDBOX_PATH "/dir2"));
 	fsdata_free(fsd);
 }
 
@@ -103,7 +104,7 @@ TEST(set_does_not_work_for_path_that_do_not_exist_anymore)
 	fsdata_t *const fsd = fsdata_create(0);
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
-	assert_success(remove(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 	assert_failure(fsdata_set(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	fsdata_free(fsd);
 }
@@ -121,7 +122,7 @@ TEST(end_value_is_preferred_over_intermediate_value)
 	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	assert_true(data == 1);
 
-	assert_success(remove(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 	fsdata_free(fsd);
 }
 
@@ -136,7 +137,7 @@ TEST(intermediate_value_is_returned_if_end_value_is_not_found)
 	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &data, sizeof(data)));
 	assert_true(data == 0);
 
-	assert_success(remove(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 	fsdata_free(fsd);
 }
 
@@ -154,7 +155,7 @@ TEST(path_is_invalidated_in_fsdata)
 	assert_failure(fsdata_get(fsd, SANDBOX_PATH, &ptr, sizeof(ptr)));
 	assert_failure(fsdata_get(fsd, SANDBOX_PATH "/dir", &ptr, sizeof(ptr)));
 
-	assert_success(remove(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 	fsdata_free(fsd);
 }
 
