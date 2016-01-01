@@ -24,6 +24,7 @@
 #include <ntdef.h>
 #include <winioctl.h>
 
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strcpy() strdup() strlen() */
@@ -162,6 +163,12 @@ char *
 os_realpath(const char path[], char resolved_path[])
 {
 	char *const resolved = resolve_mount_points(path);
+
+	if(!path_exists(path, NODEREF))
+	{
+		errno = ENOENT;
+		return NULL;
+	}
 
 	if(!is_path_absolute(resolved))
 	{
