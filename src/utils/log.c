@@ -23,7 +23,7 @@
 #include <errno.h> /* errno */
 #include <stdarg.h>
 #include <stdio.h> /* stderr fprintf() */
-#include <string.h> /* sterror() */
+#include <string.h> /* strerror() */
 #include <time.h>
 
 #include "../compat/fs_limits.h"
