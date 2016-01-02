@@ -862,14 +862,14 @@ reopen_term_stdout(void)
 	outfd = dup(STDOUT_FILENO);
 	if(outfd == -1)
 	{
-		fprintf(stderr, "Failed to store original output stream.");
+		fprintf(stderr, "Failed to store original output stream.\n");
 		return NULL;
 	}
 
 	fp = fdopen(outfd, "w");
 	if(fp == NULL)
 	{
-		fprintf(stderr, "Failed to open original output stream.");
+		fprintf(stderr, "Failed to open original output stream.\n");
 		return NULL;
 	}
 
@@ -877,14 +877,14 @@ reopen_term_stdout(void)
 	if(ttyfd == -1)
 	{
 		fclose(fp);
-		fprintf(stderr, "Failed to open terminal for output.");
+		fprintf(stderr, "Failed to open terminal for output.\n");
 		return NULL;
 	}
 	if(dup2(ttyfd, STDOUT_FILENO) == -1)
 	{
 		close(ttyfd);
 		fclose(fp);
-		fprintf(stderr, "Failed to setup terminal as standard output stream.");
+		fprintf(stderr, "Failed to setup terminal as standard output stream.\n");
 		return NULL;
 	}
 
@@ -899,7 +899,7 @@ reopen_term_stdin(void)
 
 	if(close(STDIN_FILENO))
 	{
-		fprintf(stderr, "Failed to close original input stream.");
+		fprintf(stderr, "Failed to close original input stream.\n");
 		return 1;
 	}
 
@@ -911,7 +911,7 @@ reopen_term_stdin(void)
 			close(ttyfd);
 		}
 
-		fprintf(stderr, "Failed to open terminal for input.");
+		fprintf(stderr, "Failed to open terminal for input.\n");
 		return 1;
 	}
 
