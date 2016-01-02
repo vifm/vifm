@@ -543,6 +543,7 @@ EXTRA_DIST = \
 						 menus/volumes_menu.c \
 						 vifm.rc \
 						 win_helper.c \
+						 utils/fswatch_win.c \
 						 utils/utils_win.c \
 						 utils/utils_win.h \
 						 utils/windefs.h \
