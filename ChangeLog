@@ -2,6 +2,8 @@
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
 
+	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
+
 0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using
