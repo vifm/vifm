@@ -1,4 +1,4 @@
-0.8 to current
+0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using
 	named pipes instead of insecure UDP sockets.
@@ -388,8 +388,8 @@
 
 	Fixed running vifm on Windows 10.  Thanks to th1rdey3.
 
-	Fixed leading and collecting error messages on file operations via system
-	calls.
+	Fixed leaking memory on collecting error messages on file operations via
+	system calls.
 
 	Fixed navigation back in history from custom view.
 
