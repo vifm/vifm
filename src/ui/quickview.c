@@ -63,6 +63,8 @@ typedef struct
 {
 	FILE *fp;          /* Output preview stream. */
 	int n;             /* Current line number (zero based). */
+	int ndirs;         /* Number of seen directories. */
+	int nfiles;        /* Number of seen files. */
 	int max;           /* Maximum line number. */
 	char prefix[4096]; /* Prefix character for each tree level. */
 }
@@ -258,7 +260,13 @@ view_dir(const char path[], int max_lines)
 			.max = max_lines,
 		};
 
-		(void)print_dir_tree(&s, path, 0);
+		if(print_dir_tree(&s, path, 0) == 0 && s.n != 0)
+		{
+			/* Print summary only if we visited the whole subtree. */
+			fprintf(fp, "\n%d director%s, %d file%s",
+					s.ndirs, (s.ndirs == 1) ? "y" : "ies",
+					s.nfiles, (s.nfiles == 1) ? "" : "s");
+		}
 
 		if(s.n == 0)
 		{
@@ -301,6 +309,15 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 	{
 		const int last_entry = (i == len - 1);
 		char *const full_path = format_str("%s/%s", path, lst[i]);
+
+		if(is_dir(full_path))
+		{
+			++s->ndirs;
+		}
+		else
+		{
+			++s->nfiles;
+		}
 
 		/* If is_dir_empty() returns non-zero than we know that it's directory and
 		 * no additional checks are needed. */

@@ -31,8 +31,10 @@ TEST(empty_dir_produces_single_line_and_dirs_have_trailing_slash)
 	fp = qv_view_dir("empty-dir");
 	lines = read_file_lines(fp, &nlines);
 
-	assert_int_equal(1, nlines);
+	assert_int_equal(3, nlines);
 	assert_string_equal("empty-dir/", lines[0]);
+	assert_string_equal("", lines[1]);
+	assert_string_equal("0 directories, 0 files", lines[2]);
 
 	free_string_array(lines, nlines);
 	fclose(fp);
@@ -52,9 +54,11 @@ TEST(single_file_is_displayed_correctly_file_without_slash)
 	fp = qv_view_dir("dir");
 	lines = read_file_lines(fp, &nlines);
 
-	assert_int_equal(2, nlines);
+	assert_int_equal(4, nlines);
 	assert_string_equal("dir/", lines[0]);
 	assert_string_equal("`-- file", lines[1]);
+	assert_string_equal("", lines[2]);
+	assert_string_equal("0 directories, 1 file", lines[3]);
 
 	free_string_array(lines, nlines);
 	fclose(fp);
@@ -75,9 +79,11 @@ TEST(single_subdir_is_displayed_correctly)
 	fp = qv_view_dir("dir");
 	lines = read_file_lines(fp, &nlines);
 
-	assert_int_equal(2, nlines);
+	assert_int_equal(4, nlines);
 	assert_string_equal("dir/", lines[0]);
 	assert_string_equal("`-- nested/", lines[1]);
+	assert_string_equal("", lines[2]);
+	assert_string_equal("1 directory, 0 files", lines[3]);
 
 	free_string_array(lines, nlines);
 	fclose(fp);
@@ -99,10 +105,12 @@ TEST(multiple_nested_dirs_treated_correctly)
 	fp = qv_view_dir("dir");
 	lines = read_file_lines(fp, &nlines);
 
-	assert_int_equal(3, nlines);
+	assert_int_equal(5, nlines);
 	assert_string_equal("dir/", lines[0]);
 	assert_string_equal("`-- nested1/", lines[1]);
 	assert_string_equal("    `-- nested2/", lines[2]);
+	assert_string_equal("", lines[3]);
+	assert_string_equal("2 directories, 0 files", lines[4]);
 
 	free_string_array(lines, nlines);
 	fclose(fp);
@@ -125,10 +133,12 @@ TEST(multiple_files_treated_correctly)
 	fp = qv_view_dir("dir");
 	lines = read_file_lines(fp, &nlines);
 
-	assert_int_equal(3, nlines);
+	assert_int_equal(5, nlines);
 	assert_string_equal("dir/", lines[0]);
 	assert_string_equal("|-- file1", lines[1]);
 	assert_string_equal("`-- file2", lines[2]);
+	assert_string_equal("", lines[3]);
+	assert_string_equal("0 directories, 2 files", lines[4]);
 
 	free_string_array(lines, nlines);
 	fclose(fp);
@@ -153,12 +163,14 @@ TEST(multiple_non_empty_dirs_have_correct_prefixes_plus_sorting)
 	fp = qv_view_dir("dir");
 	lines = read_file_lines(fp, &nlines);
 
-	assert_int_equal(5, nlines);
+	assert_int_equal(7, nlines);
 	assert_string_equal("dir/", lines[0]);
 	assert_string_equal("|-- sub1/", lines[1]);
 	assert_string_equal("|   `-- file", lines[2]);
 	assert_string_equal("`-- sub2/", lines[3]);
 	assert_string_equal("    `-- file", lines[4]);
+	assert_string_equal("", lines[5]);
+	assert_string_equal("2 directories, 2 files", lines[6]);
 
 	free_string_array(lines, nlines);
 	fclose(fp);
