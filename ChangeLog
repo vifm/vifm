@@ -1,4 +1,4 @@
-0.8 to current
+0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using
 	named pipes instead of insecure UDP sockets.
