@@ -46,7 +46,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE stderr fdopen() fprintf() snprintf() */
 #include <stdlib.h> /* atoi() free() */
-#include <string.h> /* strchr() strdup() strlen() strncmp() */
+#include <string.h> /* strchr() strdup() strerror() strlen() strncmp() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -92,7 +92,7 @@ static int clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs);
 static void free_mnt_entry(struct mntent *entry);
 static int starts_with_list_item(const char str[], const char list[]);
 static int find_path_prefix_index(const char path[], const char list[]);
-static const char * get_tty_name(void);
+static int open_tty(int oflags);
 
 void
 pause_shell(void)
@@ -862,29 +862,30 @@ reopen_term_stdout(void)
 	outfd = dup(STDOUT_FILENO);
 	if(outfd == -1)
 	{
-		fprintf(stderr, "Failed to store original output stream.");
+		fprintf(stderr, "Failed to store original output stream.\n");
 		return NULL;
 	}
 
 	fp = fdopen(outfd, "w");
 	if(fp == NULL)
 	{
-		fprintf(stderr, "Failed to open original output stream.");
+		fprintf(stderr, "Failed to open original output stream.\n");
 		return NULL;
 	}
 
-	ttyfd = open(get_tty_name(), O_WRONLY);
+	ttyfd = open_tty(O_WRONLY);
 	if(ttyfd == -1)
 	{
+		fprintf(stderr, "Failed to open terminal for output: %s\n",
+				strerror(errno));
 		fclose(fp);
-		fprintf(stderr, "Failed to open terminal for output.");
 		return NULL;
 	}
 	if(dup2(ttyfd, STDOUT_FILENO) == -1)
 	{
 		close(ttyfd);
 		fclose(fp);
-		fprintf(stderr, "Failed to setup terminal as standard output stream.");
+		fprintf(stderr, "Failed to setup terminal as standard output stream.\n");
 		return NULL;
 	}
 
@@ -899,11 +900,11 @@ reopen_term_stdin(void)
 
 	if(close(STDIN_FILENO))
 	{
-		fprintf(stderr, "Failed to close original input stream.");
+		fprintf(stderr, "Failed to close original input stream.\n");
 		return 1;
 	}
 
-	ttyfd = open(get_tty_name(), O_RDONLY);
+	ttyfd = open_tty(O_RDONLY);
 	if(ttyfd != STDIN_FILENO)
 	{
 		if(ttyfd != -1)
@@ -911,41 +912,44 @@ reopen_term_stdin(void)
 			close(ttyfd);
 		}
 
-		fprintf(stderr, "Failed to open terminal for input.");
+		fprintf(stderr, "Failed to open terminal for input.\n");
 		return 1;
 	}
 
 	return 0;
 }
 
-/* Retrieves a best guess on path to controlling terminal.  This might not work
- * if all the standard streams are redirected, in which case /dev/tty is used,
- * which can't be passed around between processes, so some applications won't
- * work in this (quite rare) case.  Returns the path. */
-static const char *
-get_tty_name(void)
+/* Opens controlling terminal doing its best at guessing its name.  This might
+ * not work if all the standard streams are redirected, in which case /dev/tty
+ * is used, which can't be passed around between processes, so some applications
+ * won't work in this (quite rare) case.  Returns opened file descriptor or -1
+ * on error. */
+static int
+open_tty(int oflags)
 {
-	const char *tty_name = NULL;
+	int fd = -1;
+
+	/* XXX: we might be better off duplicating descriptor if possible. */
 
 	if(isatty(STDIN_FILENO))
 	{
-		tty_name = ttyname(STDIN_FILENO);
+		fd = open(ttyname(STDIN_FILENO), oflags);
 	}
-	else if(isatty(STDOUT_FILENO))
+	if(fd == -1 && isatty(STDOUT_FILENO))
 	{
-		tty_name = ttyname(STDOUT_FILENO);
+		fd = open(ttyname(STDOUT_FILENO), oflags);
 	}
-	else if(isatty(STDERR_FILENO))
+	if(fd == -1 && isatty(STDERR_FILENO))
 	{
-		tty_name = ttyname(STDERR_FILENO);
+		fd = open(ttyname(STDERR_FILENO), oflags);
 	}
 
-	if(tty_name == NULL)
+	if(fd == -1)
 	{
-		tty_name = "/dev/tty";
+		fd = open("/dev/tty", oflags);
 	}
 
-	return tty_name;
+	return fd;
 }
 
 FILE *
