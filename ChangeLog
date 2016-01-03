@@ -4,6 +4,9 @@
 
 	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
 
+	Fixed :autocmd being not whole line command (was terminated by |).  Thanks
+	to aleksejrs.
+
 0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using
