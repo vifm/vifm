@@ -528,6 +528,13 @@ TEST(prefixed_local_option_name_is_completed)
 	assert_wstring_equal(L"echo &l:path", stats.line);
 }
 
+TEST(autocmd_name_completion_is_case_insensitive)
+{
+	prepare_for_line_completion(L"autocmd dir");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"autocmd DirEnter", stats.line);
+}
+
 static void
 create_executable(const char file[])
 {
