@@ -83,7 +83,7 @@ static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
 static void complete_winrun(const char str[]);
 static void complete_from_string_list(const char str[], const char *list[],
-		size_t list_len);
+		size_t list_len, int ignore_case);
 static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
@@ -192,7 +192,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		if(argc <= 1 && !cmd_ends_with_space(args))
 		{
 			static const char *events[] = { "DirEnter" };
-			complete_from_string_list(args, events, ARRAY_LEN(events));
+			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
 	}
 	else
@@ -362,7 +362,7 @@ complete_selective_sync(const char str[])
 		"all",
 	};
 
-	complete_from_string_list(str, lines, ARRAY_LEN(lines));
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }
 
 static void
@@ -398,7 +398,7 @@ complete_history(const char str[])
 		":", "cmd",
 		"=", "filter",
 	};
-	complete_from_string_list(str, lines, ARRAY_LEN(lines));
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }
 
 /* Completes available inversion kinds. */
@@ -406,7 +406,7 @@ static void
 complete_invert(const char str[])
 {
 	static const char *lines[] = {"f", "s", "o"};
-	complete_from_string_list(str, lines, ARRAY_LEN(lines));
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }
 
 /* Completes either user or group name for the :chown command. */
@@ -613,18 +613,23 @@ static void
 complete_winrun(const char str[])
 {
 	static const char *win_marks[] = { "^", "$", "%", ".", "," };
-	complete_from_string_list(str, win_marks, ARRAY_LEN(win_marks));
+	complete_from_string_list(str, win_marks, ARRAY_LEN(win_marks), 0);
 }
 
 /* Performs str completion using items in the list of length list_len. */
 static void
-complete_from_string_list(const char str[], const char *list[], size_t list_len)
+complete_from_string_list(const char str[], const char *list[], size_t list_len,
+		int ignore_case)
 {
 	size_t i;
 	const size_t len = strlen(str);
 	for(i = 0; i < list_len; ++i)
 	{
-		if(strncmp(str, list[i], len) == 0)
+		const int cmp = ignore_case
+		              ? strncasecmp(str, list[i], len)
+		              : strncmp(str, list[i], len);
+
+		if(cmp == 0)
 		{
 			vle_compl_add_match(list[i]);
 		}

@@ -57,6 +57,19 @@ TEST(addition_match)
 	assert_string_equal("1", env_get("a"));
 }
 
+TEST(autocmd_is_whole_line_command)
+{
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands(
+				"autocmd DirEnter '" SANDBOX_PATH "' let $a = 1 | let $a = 2",
+				&lwin, CIT_COMMAND));
+
+	assert_string_equal("x", env_get("a"));
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	assert_string_equal("2", env_get("a"));
+}
+
 TEST(addition_no_match)
 {
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
