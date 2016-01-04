@@ -255,7 +255,7 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 	while(regexec(re, no_esc + no_esc_pos, 1, &match, 0) == 0);
 
 	/* Abort if there were no non-empty matches. */
-	if(next == NULL)
+	if(overhead == 0)
 	{
 		free(processed);
 		return 0;
