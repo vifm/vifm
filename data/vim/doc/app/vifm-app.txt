@@ -1122,7 +1122,19 @@ The builtin commands are:
       - *  - never matches a slash (i.e., can signify single directory level)
       - ** - matches any character (i.e., can match path of arbitrary depth)
 
-    {cmd} is :command or several of them separated with '|'.
+    {cmd} is a :command or several of them separated with '|'.
+
+    Examples of patterns:
+      - `conf.d`      - matches conf.d directory anywhere
+      - `*.d`         - matches directories ending with ".d" anywhere
+      - `**.git`      - matches something.git, but not .git anywhere
+      - `**/.git/**`  - matches /path/.git/objects, but not /path/.git
+      - `**/.git/**/` - matches /path/.git/ only (because of trailing slash)
+      - `/etc/*`      - matches /etc/conf.d/, /etc/X11, but not /etc/X11/fs
+      - `/etc/**/*.d` - matches /etc/conf.d, /etc/X11/conf.d, etc.
+      - `/etc/**/*`   - matches /etc/ itself and any file below it
+      - `/etc/**/**`  - matches /etc/ itself and any file below it
+
 :au[tocmd] [{event}] [{pat}]
     list those autocommands that match given event-pattern combination.
     {event} and {pat} can be omitted to list all autocommands.  To list any
