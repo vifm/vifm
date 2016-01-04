@@ -152,11 +152,16 @@ static char *
 add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 		const int offsets[], const regex_t *re)
 {
+	/* XXX: this might benefit from a rewrite, logic of when escape sequences are
+	 *      copied is unclear (sometimes along with first matched character,
+	 *      sometimes before the match). */
+
 	regmatch_t match;
-	char *next = NULL;
+	char *next;
 	char *processed;
 	int no_esc_pos = 0;
 	int overhead = 0;
+	int offset;
 
 	if(regexec(re, no_esc, 1, &match, 0) != 0)
 	{
@@ -168,8 +173,18 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 	}
 
 	/* Before the first match. */
-	strncpy(processed, line, offsets[match.rm_so]);
-	next = processed + offsets[match.rm_so];
+	if(match.rm_so != 0 && no_esc[match.rm_so] == '\0')
+	{
+		/* This is needed to handle possibility of immediate break from the loop
+		 * below. */
+		offset = correct_offset(line, offsets, match.rm_so);
+	}
+	else
+	{
+		offset = offsets[match.rm_so];
+	}
+	strncpy(processed, line, offset);
+	next = processed + offset;
 
 	/* All matches. */
 	do
@@ -240,15 +255,16 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 	while(regexec(re, no_esc + no_esc_pos, 1, &match, 0) == 0);
 
 	/* Abort if there were no non-empty matches. */
-	if(next == NULL)
+	if(overhead == 0)
 	{
 		free(processed);
 		return 0;
 	}
 
 	/* After the last match. */
-	strcpy(next,
-			line + (no_esc_pos == 0 ? 0 : correct_offset(line, offsets, no_esc_pos)));
+	strcpy(next, line +
+			(no_esc_pos == 0 ? (size_t)(next - processed) :
+			 correct_offset(line, offsets, no_esc_pos)));
 
 	return processed;
 }

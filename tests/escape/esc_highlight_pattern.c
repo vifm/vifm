@@ -142,5 +142,14 @@ TEST(empty_match_is_fine)
 	free(actual);
 }
 
+TEST(trailing_empty_match_is_fine)
+{
+	const char *const input = "data \033(B\033[m";
+	const char *const expected = input;
+	char *const actual = esc_highlight_pattern(input, &re3c);
+	assert_string_equal(expected, actual);
+	free(actual);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
