@@ -226,7 +226,10 @@ restore_term_title(void)
 #else
 	if(title_state.title[0] != '\0')
 	{
-		char *const title = format_str("\033]2;%s\007", title_state.title);
+		char *const fmt = (title_state.kind == TK_REGULAR)
+		                ? "\033]2;%s\007"
+		                : "\033k%s\033\134";
+		char *const title = format_str(fmt, title_state.title);
 		putp(title);
 		fflush(stdout);
 		free(title);
