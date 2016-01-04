@@ -104,7 +104,7 @@ glob_to_regex(const char glob[], int extended)
 		}
 		else if(extended && starts_with_lit(glob, "/**/"))
 		{
-			if(strappend(&result, &result_len, "(/|/.*/)") != 0)
+			if(strappend(&result, &result_len, "(/|/.*/|$)") != 0)
 			{
 				break;
 			}
