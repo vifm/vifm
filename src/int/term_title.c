@@ -51,6 +51,7 @@ typedef enum
 }
 TitleKind;
 
+static void ensure_initialized(void);
 static TitleKind get_title_kind();
 static void save_term_title();
 static void restore_term_title();
@@ -111,18 +112,18 @@ static struct
 }
 title_state;
 
+int
+term_title_restorable(void)
+{
+	ensure_initialized();
+
+	return (title_state.title[0] != '\0');
+}
+
 void
 set_term_title(const char *title_part)
 {
-	if(!title_state.initialized)
-	{
-		title_state.kind = get_title_kind();
-		if(title_state.kind != TK_ABSENT)
-		{
-			save_term_title();
-		}
-		title_state.initialized = 1;
-	}
+	ensure_initialized();
 
 	if(title_state.kind == TK_ABSENT)
 	{
@@ -137,6 +138,24 @@ set_term_title(const char *title_part)
 	{
 		set_terminal_title(title_part);
 	}
+}
+
+/* Makes sure that global title_state structure is initialized with valid
+ * values. */
+static void
+ensure_initialized(void)
+{
+	if(title_state.initialized)
+	{
+		return;
+	}
+
+	title_state.kind = get_title_kind();
+	if(title_state.kind == TK_REGULAR)
+	{
+		save_term_title();
+	}
+	title_state.initialized = 1;
 }
 
 /* Checks if we can alter terminal emulator title.  Returns kind of writes we

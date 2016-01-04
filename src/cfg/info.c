@@ -981,6 +981,7 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 	fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
 	fprintf(fp, "=%slaststatus\n", cfg.display_statusline ? "" : "no");
+	fprintf(fp, "=%stitle\n", cfg.set_title ? "" : "no");
 	fprintf(fp, "=lines=%d\n", cfg.lines);
 	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
 	fprintf(fp, "=mintimeoutlen=%d\n", cfg.min_timeout_len);

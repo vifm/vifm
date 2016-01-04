@@ -99,6 +99,7 @@ const char *tags[] = {
 	"vifm-'tabstop'",
 	"vifm-'timefmt'",
 	"vifm-'timeoutlen'",
+	"vifm-'title'",
 	"vifm-'tm'",
 	"vifm-'to'",
 	"vifm-'trash'",

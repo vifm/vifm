@@ -33,6 +33,7 @@
 #include "cfg/config.h"
 #include "engine/options.h"
 #include "engine/text_buffer.h"
+#include "int/term_title.h"
 #include "modes/view.h"
 #include "ui/column_view.h"
 #include "ui/fileview.h"
@@ -176,6 +177,7 @@ static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
+static void title_handler(OPT_OP op, optval_t val);
 static void trash_handler(OPT_OP op, optval_t val);
 static void trashdir_handler(OPT_OP op, optval_t val);
 static void tuioptions_handler(OPT_OP op, optval_t val);
@@ -496,6 +498,10 @@ options[] = {
 	{ "timeoutlen", "tm",
 	  OPT_INT, 0, NULL, &timeoutlen_handler, NULL,
 	  { .ref.int_val = &cfg.timeout_len },
+	},
+	{ "title", "",
+	  OPT_BOOL, 0, NULL, &title_handler, NULL,
+	  { .ref.int_val = &cfg.set_title },
 	},
 	{ "trash", "",
 	  OPT_BOOL, 0, NULL, &trash_handler, NULL,
@@ -2179,6 +2185,21 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 	}
 
 	cfg.timeout_len = val.int_val;
+}
+
+/* Whether to update terminal title according to current location or not. */
+static void
+title_handler(OPT_OP op, optval_t val)
+{
+	cfg.set_title = val.bool_val;
+	if(cfg.set_title)
+	{
+		ui_view_title_update(curr_view);
+	}
+	else
+	{
+		set_term_title(NULL);
+	}
 }
 
 static void
