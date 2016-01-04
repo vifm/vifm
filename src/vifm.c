@@ -273,6 +273,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 3;
 
+	/* Trigger auto-commands for initial directories. */
 	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
 	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
 
@@ -539,6 +540,7 @@ vifm_restart(void)
 
 	curr_stats.restart_in_progress = 0;
 
+	/* Trigger auto-commands for initial directories. */
 	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
 	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
 

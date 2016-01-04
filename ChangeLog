@@ -8,6 +8,9 @@
 
 	Case insensitive completion of autocommand name for :autocmd command.
 
+	Allow /**/ in :autocmd pattern to match end of the path.  Thanks to
+	aleksejrs.
+
 	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
 
 	Fixed :autocmd being not whole line command (was terminated by |).  Thanks

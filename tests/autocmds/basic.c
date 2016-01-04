@@ -94,6 +94,10 @@ TEST(zero_length_start_match_double_asterisk)
 	vle_aucmd_execute("cd", "/home/user/repo/.git", NULL);
 	assert_string_equal(NULL, action);
 
+	vle_aucmd_execute("cd", "repo.git", NULL);
+	assert_string_equal("action", action);
+	action = NULL;
+
 	assert_success(vle_aucmd_on_execute("cd", "**git", "action", &handler));
 
 	vle_aucmd_execute("cd", "/home/user/repo/git", NULL);
@@ -105,6 +109,57 @@ TEST(zero_length_path_prefix)
 	assert_success(vle_aucmd_on_execute("cd", "/etc/**/*.d", "action", &handler));
 
 	vle_aucmd_execute("cd", "/etc/conf.d", NULL);
+	assert_string_equal("action", action);
+
+	action = NULL;
+
+	vle_aucmd_execute("cd", "/etc/X11/conf.d", NULL);
+	assert_string_equal("action", action);
+}
+
+TEST(sub_tree_doublestar)
+{
+	assert_success(vle_aucmd_on_execute("cd", "/etc/**/**", "action", &handler));
+
+	vle_aucmd_execute("cd", "/etc/", NULL);
+	assert_string_equal("action", action);
+
+	action = NULL;
+
+	vle_aucmd_execute("cd", "/etc", NULL);
+	assert_string_equal("action", action);
+
+	action = NULL;
+
+	vle_aucmd_execute("cd", "/etc/something", NULL);
+	assert_string_equal("action", action);
+
+	action = NULL;
+
+	vle_aucmd_execute("cd", "/etc/something/else", NULL);
+	assert_string_equal("action", action);
+}
+
+TEST(sub_tree_star)
+{
+	assert_success(vle_aucmd_on_execute("cd", "/etc/**/*", "action", &handler));
+
+	vle_aucmd_execute("cd", "/etc/", NULL);
+	assert_string_equal("action", action);
+
+	action = NULL;
+
+	vle_aucmd_execute("cd", "/etc", NULL);
+	assert_string_equal("action", action);
+
+	action = NULL;
+
+	vle_aucmd_execute("cd", "/etc/something", NULL);
+	assert_string_equal("action", action);
+
+	action = NULL;
+
+	vle_aucmd_execute("cd", "/etc/something/else", NULL);
 	assert_string_equal("action", action);
 }
 
