@@ -267,12 +267,10 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread_on_restart)
 	assert_int_equal(SK_NONE, lwin.sort[0]);
 
 	/* ls-like view blocks view column updates. */
-	lwin.ls_view = 1;
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	curr_stats.restart_in_progress = 1;
 	read_info_file(1);
 	curr_stats.restart_in_progress = 0;
-	lwin.ls_view = 0;
 
 	assert_true(lwin.custom.unsorted);
 	assert_int_equal(SK_NONE, lwin.sort[0]);

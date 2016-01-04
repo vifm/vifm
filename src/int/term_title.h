@@ -19,8 +19,12 @@
 #ifndef VIFM__INT__TERM_TITLE_H__
 #define VIFM__INT__TERM_TITLE_H__
 
-/* Updates terminal title. If title_part is NULL, resets terminal title. */
-void set_term_title(const char *title_part);
+/* Determines whether terminal title can be restored.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int term_title_restorable(void);
+
+/* Updates terminal title.  If title_part is NULL, resets terminal title. */
+void term_title_update(const char title_part[]);
 
 #endif /* VIFM__INT__TERM_TITLE_H__ */
 

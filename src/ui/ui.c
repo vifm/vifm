@@ -1400,9 +1400,9 @@ ui_view_title_update(FileView *view)
 	title = format_view_title(view,
 			cfg.shorten_title_paths ? &replace_home_part : &path_identity);
 
-	if(view == selected)
+	if(view == selected && cfg.set_title)
 	{
-		set_term_title(title);
+		term_title_update(title);
 	}
 
 	print_view_title(view, view == selected, title);

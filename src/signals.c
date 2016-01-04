@@ -154,7 +154,7 @@ shutdown_nicely(int sig, const char descr[])
   LOG_FUNC_ENTER;
 
 	endwin();
-	set_term_title(NULL);
+	term_title_update(NULL);
 	fuse_unmount_all();
 	write_info_file();
 	fprintf(stdout, "Vifm killed by signal: %d (%s).\n", sig, descr);

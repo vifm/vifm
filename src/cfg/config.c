@@ -42,6 +42,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "../int/term_title.h"
 #include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/ui.h"
@@ -180,6 +181,8 @@ cfg_init(void)
 	cfg.display_statusline = 1;
 
 	cfg.border_filler = strdup(" ");
+
+	cfg.set_title = term_title_restorable();
 
 	cfg.chase_links = 0;
 

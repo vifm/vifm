@@ -3170,6 +3170,14 @@ default: 1000
 The time in milliseconds that is waited for a mapped key in case of already
 typed key sequence is ambiguous.  See also |vifm-'mintimeoutlen'|.
 
+                                               *vifm-'title'*
+title
+type: boolean
+default: true when title can be restored, false otherwise
+
+When enabled title of the terminal or terminal multiplexer's window is
+updated according to current location.
+
                                                *vifm-'tuioptions'* *vifm-'to'*
 tuioptions to
 type: charset

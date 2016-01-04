@@ -625,7 +625,7 @@ vifm_leave(int exit_code, int cquit)
 		exit_code = EXIT_FAILURE;
 	}
 
-	set_term_title(NULL);
+	term_title_update(NULL);
 	exit(exit_code);
 }
 

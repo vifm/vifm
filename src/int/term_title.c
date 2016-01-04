@@ -51,9 +51,10 @@ typedef enum
 }
 TitleKind;
 
-static TitleKind get_title_kind();
-static void save_term_title();
-static void restore_term_title();
+static void ensure_initialized(void);
+static TitleKind get_title_kind(void);
+static void save_term_title(void);
+static void restore_term_title(void);
 #if !defined(_WIN32) && defined(HAVE_X11)
 static int get_x11_disp_and_win(Display **disp, Window *win);
 static void get_x11_window_title(Display *disp, Window win, char *buf,
@@ -111,18 +112,18 @@ static struct
 }
 title_state;
 
-void
-set_term_title(const char *title_part)
+int
+term_title_restorable(void)
 {
-	if(!title_state.initialized)
-	{
-		title_state.kind = get_title_kind();
-		if(title_state.kind != TK_ABSENT)
-		{
-			save_term_title();
-		}
-		title_state.initialized = 1;
-	}
+	ensure_initialized();
+
+	return (title_state.title[0] != '\0');
+}
+
+void
+term_title_update(const char title_part[])
+{
+	ensure_initialized();
 
 	if(title_state.kind == TK_ABSENT)
 	{
@@ -139,10 +140,28 @@ set_term_title(const char *title_part)
 	}
 }
 
+/* Makes sure that global title_state structure is initialized with valid
+ * values. */
+static void
+ensure_initialized(void)
+{
+	if(title_state.initialized)
+	{
+		return;
+	}
+
+	title_state.kind = get_title_kind();
+	if(title_state.kind == TK_REGULAR)
+	{
+		save_term_title();
+	}
+	title_state.initialized = 1;
+}
+
 /* Checks if we can alter terminal emulator title.  Returns kind of writes we
  * should do. */
 static TitleKind
-get_title_kind()
+get_title_kind(void)
 {
 #ifdef _WIN32
 	return TK_REGULAR;
@@ -176,7 +195,7 @@ get_title_kind()
 
 /* stores current terminal title into title_state.title */
 static void
-save_term_title()
+save_term_title(void)
 {
 #ifdef _WIN32
 	GetConsoleTitleW(title_state.title, ARRAY_LEN(title_state.title));
@@ -199,7 +218,7 @@ save_term_title()
 
 /* restores terminal title from title_state.title */
 static void
-restore_term_title()
+restore_term_title(void)
 {
 #ifdef _WIN32
 	if(title_state.title[0] != L'\0')
@@ -207,7 +226,10 @@ restore_term_title()
 #else
 	if(title_state.title[0] != '\0')
 	{
-		char *const title = format_str("\033]2;%s\007", title_state.title);
+		char *const fmt = (title_state.kind == TK_REGULAR)
+		                ? "\033]2;%s\007"
+		                : "\033k%s\033\134";
+		char *const title = format_str(fmt, title_state.title);
 		putp(title);
 		fflush(stdout);
 		free(title);
