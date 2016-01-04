@@ -11,6 +11,9 @@
 
 	Fixed possible crash on writing vifminfo file on exiting.
 
+	Fixed memory corruption on handlnig empty matches of searches in view
+	mode.  Thanks to filterfalse.
+
 0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using

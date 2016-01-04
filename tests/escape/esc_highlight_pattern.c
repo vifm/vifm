@@ -13,6 +13,7 @@ static regex_t re1c;
 static regex_t re2c;
 static regex_t re3c;
 static regex_t re4c;
+static regex_t re5c;
 
 SETUP()
 {
@@ -20,10 +21,12 @@ SETUP()
 	assert_success(regcomp(&re2c, "ab", 0));
 	assert_success(regcomp(&re3c, "$", 0));
 	assert_success(regcomp(&re4c, "a?", REG_EXTENDED));
+	assert_success(regcomp(&re5c, "^", 0));
 }
 
 TEARDOWN()
 {
+	regfree(&re5c);
 	regfree(&re4c);
 	regfree(&re3c);
 	regfree(&re2c);
@@ -126,6 +129,15 @@ TEST(non_empty_match_after_empty_matche_with_esc)
 	const char *const input = "\033[7,1m" " a";
 	const char *const expected = "\033[7,1m" " " INV_START "a" INV_END;
 	char *const actual = esc_highlight_pattern(input, &re4c);
+	assert_string_equal(expected, actual);
+	free(actual);
+}
+
+TEST(empty_match_is_fine)
+{
+	const char *const input = "foo \033[31m bar vifm";
+	const char *const expected = input;
+	char *const actual = esc_highlight_pattern(input, &re5c);
 	assert_string_equal(expected, actual);
 	free(actual);
 }
