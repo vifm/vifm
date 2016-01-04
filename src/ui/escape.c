@@ -155,7 +155,7 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 	regmatch_t match;
 	char *next = NULL;
 	char *processed;
-	int shift = 0;
+	int no_esc_pos = 0;
 	int overhead = 0;
 
 	if(regexec(re, no_esc, 1, &match, 0) != 0)
@@ -178,8 +178,8 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 		void *ptr;
 		const int empty_match = (match.rm_so == match.rm_eo);
 
-		match.rm_so += shift;
-		match.rm_eo += shift;
+		match.rm_so += no_esc_pos;
+		match.rm_eo += no_esc_pos;
 
 		so_offset = offsets[match.rm_so];
 
@@ -187,27 +187,33 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 		{
 			if(no_esc[match.rm_eo] == '\0')
 			{
-				shift = match.rm_eo;
+				no_esc_pos = match.rm_eo;
 				break;
 			}
 		}
 
 		/* Between matches. */
-		if(shift != 0)
+		if(no_esc_pos != 0)
 		{
-			const int corrected = correct_offset(line, offsets, shift);
+			const int corrected = correct_offset(line, offsets, no_esc_pos);
 			strncpy(next, line + corrected, so_offset - corrected);
 		}
 
 		if(empty_match)
 		{
-			const int corrected = (shift == 0)
-			                    ? (size_t)(next - processed)
-			                    : correct_offset(line, offsets, shift);
-			const int len = offsets[match.rm_so + 1] - corrected;
-			strncpy(next, line + corrected, len);
+			/* Copy single character after the match to advance forward. */
+
+			/* Position inside the line string. */
+			const int esc_pos = (no_esc_pos == 0)
+			                  ? (size_t)(next - processed)
+			                  : correct_offset(line, offsets, no_esc_pos);
+			/* Number of characters to copy from the line string. */
+			const int len = (match.rm_so == 0)
+			              ? utf8_chrw(no_esc)
+			              : correct_offset(line, offsets, match.rm_so + 1) - esc_pos;
+			strncpy(next, line + esc_pos, len);
 			next += len;
-			++shift;
+			++no_esc_pos;
 		}
 		else
 		{
@@ -227,11 +233,11 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 			next = processed + so_offset + overhead;
 			next = add_highlighted_substr(line + so_offset, match_len, next);
 
-			shift = match.rm_eo;
+			no_esc_pos = match.rm_eo;
 			overhead += new_overhead;
 		}
 	}
-	while(regexec(re, no_esc + shift, 1, &match, 0) == 0);
+	while(regexec(re, no_esc + no_esc_pos, 1, &match, 0) == 0);
 
 	/* Abort if there were no non-empty matches. */
 	if(next == NULL)
@@ -241,7 +247,8 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 	}
 
 	/* After the last match. */
-	strcpy(next, line + (shift == 0 ? 0 : correct_offset(line, offsets, shift)));
+	strcpy(next,
+			line + (no_esc_pos == 0 ? 0 : correct_offset(line, offsets, no_esc_pos)));
 
 	return processed;
 }
