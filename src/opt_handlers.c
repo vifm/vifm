@@ -2198,7 +2198,7 @@ title_handler(OPT_OP op, optval_t val)
 	}
 	else
 	{
-		set_term_title(NULL);
+		term_title_update(NULL);
 	}
 }
 

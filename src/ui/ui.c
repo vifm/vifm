@@ -1402,7 +1402,7 @@ ui_view_title_update(FileView *view)
 
 	if(view == selected && cfg.set_title)
 	{
-		set_term_title(title);
+		term_title_update(title);
 	}
 
 	print_view_title(view, view == selected, title);

@@ -52,9 +52,9 @@ typedef enum
 TitleKind;
 
 static void ensure_initialized(void);
-static TitleKind get_title_kind();
-static void save_term_title();
-static void restore_term_title();
+static TitleKind get_title_kind(void);
+static void save_term_title(void);
+static void restore_term_title(void);
 #if !defined(_WIN32) && defined(HAVE_X11)
 static int get_x11_disp_and_win(Display **disp, Window *win);
 static void get_x11_window_title(Display *disp, Window win, char *buf,
@@ -121,7 +121,7 @@ term_title_restorable(void)
 }
 
 void
-set_term_title(const char *title_part)
+term_title_update(const char title_part[])
 {
 	ensure_initialized();
 
@@ -161,7 +161,7 @@ ensure_initialized(void)
 /* Checks if we can alter terminal emulator title.  Returns kind of writes we
  * should do. */
 static TitleKind
-get_title_kind()
+get_title_kind(void)
 {
 #ifdef _WIN32
 	return TK_REGULAR;
@@ -195,7 +195,7 @@ get_title_kind()
 
 /* stores current terminal title into title_state.title */
 static void
-save_term_title()
+save_term_title(void)
 {
 #ifdef _WIN32
 	GetConsoleTitleW(title_state.title, ARRAY_LEN(title_state.title));
@@ -218,7 +218,7 @@ save_term_title()
 
 /* restores terminal title from title_state.title */
 static void
-restore_term_title()
+restore_term_title(void)
 {
 #ifdef _WIN32
 	if(title_state.title[0] != L'\0')
