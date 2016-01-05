@@ -27,7 +27,7 @@
 #endif
 
 #include <sys/select.h> /* select() FD_SET FD_ZERO */
-#include <sys/stat.h> /* O_RDONLY O_WRONLY S_* */
+#include <sys/stat.h> /* O_* S_* */
 #include <sys/time.h> /* timeval futimens() utimes() */
 #include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* waitpid */
@@ -92,7 +92,7 @@ static int clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs);
 static void free_mnt_entry(struct mntent *entry);
 static int starts_with_list_item(const char str[], const char list[]);
 static int find_path_prefix_index(const char path[], const char list[]);
-static int open_tty(int oflags);
+static int open_tty(void);
 
 void
 pause_shell(void)
@@ -873,7 +873,7 @@ reopen_term_stdout(void)
 		return NULL;
 	}
 
-	ttyfd = open_tty(O_WRONLY);
+	ttyfd = open_tty();
 	if(ttyfd == -1)
 	{
 		fprintf(stderr, "Failed to open terminal for output: %s\n",
@@ -904,7 +904,7 @@ reopen_term_stdin(void)
 		return 1;
 	}
 
-	ttyfd = open_tty(O_RDONLY);
+	ttyfd = open_tty();
 	if(ttyfd != STDIN_FILENO)
 	{
 		if(ttyfd != -1)
@@ -925,7 +925,7 @@ reopen_term_stdin(void)
  * won't work in this (quite rare) case.  Returns opened file descriptor or -1
  * on error. */
 static int
-open_tty(int oflags)
+open_tty(void)
 {
 	int fd = -1;
 
@@ -933,20 +933,20 @@ open_tty(int oflags)
 
 	if(isatty(STDIN_FILENO))
 	{
-		fd = open(ttyname(STDIN_FILENO), oflags);
+		fd = open(ttyname(STDIN_FILENO), O_RDWR);
 	}
 	if(fd == -1 && isatty(STDOUT_FILENO))
 	{
-		fd = open(ttyname(STDOUT_FILENO), oflags);
+		fd = open(ttyname(STDOUT_FILENO), O_RDWR);
 	}
 	if(fd == -1 && isatty(STDERR_FILENO))
 	{
-		fd = open(ttyname(STDERR_FILENO), oflags);
+		fd = open(ttyname(STDERR_FILENO), O_RDWR);
 	}
 
 	if(fd == -1)
 	{
-		fd = open("/dev/tty", oflags);
+		fd = open("/dev/tty", O_RDWR);
 	}
 
 	return fd;

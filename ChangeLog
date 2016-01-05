@@ -23,6 +23,9 @@
 
 	Fixed secondary column of very custom view (%U).  Thanks to filterfalse.
 
+	Fixed reopening terminal for output, read-only mode somehow caused hangs.
+	Thanks to aleksejrs.
+
 0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using
