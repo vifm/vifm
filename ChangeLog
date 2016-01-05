@@ -26,6 +26,8 @@
 	Fixed reopening terminal for output, read-only mode somehow caused hangs.
 	Thanks to aleksejrs.
 
+	Fixed possible (effectively) hang on reading directory change events.
+
 0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using
