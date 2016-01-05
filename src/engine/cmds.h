@@ -146,6 +146,10 @@ int execute_cmd(const char cmd[]);
 /* Returns -1 on error and USER_CMD_ID for user defined commands. */
 int get_cmd_id(const char cmd[]);
 
+/* Parses cmd to find beginning of arguments.  Returns pointer within the cmd or
+ * NULL if command is unknown or command-line is invalid. */
+const char * get_cmd_args(const char cmd[]);
+
 /* Returns command id */
 int get_cmd_info(const char cmd[], cmd_info_t *info);
 

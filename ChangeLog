@@ -11,6 +11,9 @@
 	Allow /**/ in :autocmd pattern to match end of the path.  Thanks to
 	aleksejrs.
 
+	Don't trigger DirEnter on exiting custom-view (when we technically stay in
+	the same directory).  Thanks to aleksejrs.
+
 	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
 
 	Fixed :autocmd being not whole line command (was terminated by |).  Thanks
@@ -27,6 +30,9 @@
 	Thanks to aleksejrs.
 
 	Fixed possible (effectively) hang on reading directory change events.
+
+	Fixed parsing of commands which names are not followed by spaces with
+	regard to pipe symbols (|).  Thanks to aleksejrs.
 
 0.8 to 0.8.1-beta
 

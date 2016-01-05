@@ -1134,7 +1134,12 @@ change_directory(FileView *view, const char directory[])
 		{
 			reset_local_options(view);
 		}
-		vle_aucmd_execute("DirEnter", view->curr_dir, view);
+
+		if(!was_in_custom_view ||
+				strcmp(view->curr_dir, view->custom.orig_dir) != 0)
+		{
+			vle_aucmd_execute("DirEnter", view->curr_dir, view);
+		}
 	}
 
 	return 0;
