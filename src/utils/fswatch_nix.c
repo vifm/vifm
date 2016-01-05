@@ -115,14 +115,15 @@ fswatch_free(fswatch_t *w)
 int
 fswatch_changed(fswatch_t *w, int *error)
 {
+	enum { MAX_READS = 100 };
 	enum { BUF_LEN = (10 * (sizeof(struct inotify_event) + NAME_MAX + 1)) };
 
 	char buf[BUF_LEN];
 	int nread;
-	int changed;
+	int changed = 0;
+	int nreads = 0;
 	const time_t now = time(NULL);
 
-	changed = 0;
 	*error = 0;
 	do
 	{
@@ -150,6 +151,13 @@ fswatch_changed(fswatch_t *w, int *error)
 			{
 				changed = 1;
 			}
+		}
+
+		/* Limit maximum number of reads to ensure that we won't spend all our time
+		 * in this loop. */
+		if(++nreads > MAX_READS)
+		{
+			break;
 		}
 	}
 	while(nread != 0);
