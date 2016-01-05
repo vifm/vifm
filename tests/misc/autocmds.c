@@ -247,6 +247,38 @@ TEST(multiple_patterns_correct_expansion)
 	assert_string_equal("x", env_get("a"));
 }
 
+TEST(direnter_is_not_triggered_on_leaving_custom_view_to_original_path)
+{
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	replace_string(&curr_view->custom.orig_dir, curr_view->curr_dir);
+	curr_view->curr_dir[0] = '\0';
+
+	assert_success(exec_commands(
+				"auto DirEnter '" SANDBOX_PATH "' let $a = 1", &lwin, CIT_COMMAND));
+
+	assert_string_equal("x", env_get("a"));
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	assert_string_equal("x", env_get("a"));
+}
+
+TEST(direnter_ist_triggered_on_leaving_custom_view_to_different_path)
+{
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	replace_string(&curr_view->custom.orig_dir, curr_view->curr_dir);
+	curr_view->curr_dir[0] = '\0';
+
+	assert_success(exec_commands(
+				"auto DirEnter '" TEST_DATA_PATH "' let $a = 1", &lwin, CIT_COMMAND));
+
+	assert_string_equal("x", env_get("a"));
+	assert_true(change_directory(curr_view, TEST_DATA_PATH) >= 0);
+	assert_string_equal("1", env_get("a"));
+}
+
 /* Windows has various limitations on characters used in file names. */
 TEST(tilde_is_expanded_after_negation, IF(not_windows))
 {
