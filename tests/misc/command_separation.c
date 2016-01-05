@@ -35,6 +35,11 @@ TEST(pipe)
 	assert_int_equal(0, line_pos(buf, buf, ' ', 1));
 	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 1));
 	assert_int_equal(4, line_pos(buf, buf + 9, ' ', 1));
+
+	buf = "filter!/a|b/";
+	assert_int_equal(0, line_pos(buf, buf, ' ', 1));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 1));
+	assert_int_equal(5, line_pos(buf, buf + 9, ' ', 1));
 }
 
 TEST(two_commands)
@@ -136,6 +141,37 @@ TEST(comments_and_bar)
 
 	assert_string_equal("echo 1 \"comment | echo 2", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
+
+	free_string_array(cmds);
+}
+
+TEST(no_space_before_first_arg)
+{
+	char **cmds = break_cmdline(
+			"filter!/(важность-(важное|неважное-topics)|срочность-(не)\?срочное)$/",
+			0);
+
+	assert_string_equal(
+			"filter!/(важность-(важное|неважное-topics)|срочность-(не)\?срочное)$/",
+			cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+
+	free_string_array(cmds);
+}
+
+TEST(empty_command_at_front)
+{
+	const char *const COMMANDS = " | if 1 == 1"
+	                             " |     let $a = 'a'"
+	                             " | endif";
+
+	char **cmds = break_cmdline(COMMANDS, 0);
+
+	assert_string_equal("", cmds[0]);
+	assert_string_equal("if 1 == 1 ", cmds[1]);
+	assert_string_equal("let $a = 'a' ", cmds[2]);
+	assert_string_equal("endif", cmds[3]);
+	assert_string_equal(NULL, cmds[4]);
 
 	free_string_array(cmds);
 }

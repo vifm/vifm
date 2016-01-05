@@ -28,6 +28,9 @@
 
 	Fixed possible (effectively) hang on reading directory change events.
 
+	Fixed parsing of commands which names are not followed by spaces with
+	regard to pipe symbols (|).  Thanks to aleksejrs.
+
 0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using

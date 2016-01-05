@@ -433,6 +433,14 @@ get_cmd_id(const char cmd[])
 	return get_cmd_info(cmd, &info);
 }
 
+const char *
+get_cmd_args(const char cmd[])
+{
+	cmd_info_t info = {};
+	(void)get_cmd_info(cmd, &info);
+	return info.raw_args;
+}
+
 /* Initializes command info structure with reasonable defaults. */
 static void
 init_cmd_info(cmd_info_t *cmd_info)
@@ -472,8 +480,7 @@ get_cmd_info(const char cmd[], cmd_info_t *info)
 	if(c == NULL)
 		return -1;
 
-	if(parse_tail(c, cmd, &cmd_info) == NULL)
-		return -1;
+	cmd_info.raw_args = (char *)parse_tail(c, cmd, &cmd_info);
 
 	*info = cmd_info;
 	return c->id;

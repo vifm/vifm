@@ -682,8 +682,22 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 	int count;
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
 
+	const char *args = get_cmd_args(begin);
+	if(args >= end)
+	{
+		return 0;
+	}
+	if(args == NULL)
+	{
+		count = 0;
+	}
+	else
+	{
+		begin = args;
+		count = 1;
+	}
+
 	state = BEGIN;
-	count = 0;
 	while(begin != end)
 	{
 		switch(state)
