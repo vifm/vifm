@@ -21,7 +21,7 @@
 
 	Fixed possible crash on writing vifminfo file on exiting.
 
-	Fixed memory corruption on handlnig empty matches of searches in view
+	Fixed memory corruption on handling empty matches of searches in view
 	mode.  Thanks to filterfalse.
 
 	Fixed secondary column of very custom view (%U).  Thanks to filterfalse.

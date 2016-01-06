@@ -228,7 +228,7 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 			              : correct_offset(line, offsets, match.rm_so + 1) - esc_pos;
 			strncpy(next, line + esc_pos, len);
 			next += len;
-			++no_esc_pos;
+			no_esc_pos += utf8_chrw(&no_esc[no_esc_pos]);
 		}
 		else
 		{
