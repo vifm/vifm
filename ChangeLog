@@ -2,6 +2,8 @@
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
 
+	Added more filetype definitions into sample vifmrc.  Thanks to aleksejrs.
+
 	Added 'title' option to control whether title of terminal should be set.
 	Enabled by default if old title can be restored.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).

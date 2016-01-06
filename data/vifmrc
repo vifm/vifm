@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 26 Sep, 2015)
+" Sample configuration file for vifm (last updated: 06 Jan, 2016)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -177,7 +177,7 @@ filextype *.djvu
         \ apvlv %f,
 
 " Audio
-filetype *.wav,*.mp3,*.flac,*.ogg,*.m4a,*.wma,*.ape,*.ac3
+filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus
        \ {Play using ffplay}
        \ ffplay -nodisp %c,
        \ {Play using MPlayer}
@@ -187,14 +187,18 @@ fileviewer *.mp3 mp3info
 fileviewer *.flac soxi
 
 " Video
-filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
+filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+         \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+         \*.as[fx]
         \ {View using ffplay}
-        \ ffplay -fs %c,
+        \ ffplay -fs %c:p,
         \ {View using Dragon}
         \ dragon %f,
         \ {View using mplayer}
         \ mplayer %f,
-fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv,*.m2v,*.mov,*.webm,*.ts,*.m4v
+fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+          \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+          \*.as[fx]
          \ ffprobe -pretty %c 2>&1
 
 " Web
@@ -214,7 +218,7 @@ filetype *.o nm %f | less
 filetype *.[1-8] man ./%c
 fileviewer *.[1-8] man ./%c | col -b
 
-" Image
+" Images
 filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
         \ {View in sxiv}
         \ sxiv,
@@ -222,12 +226,38 @@ filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
         \ gpicview %c,
         \ {View in shotwell}
         \ shotwell,
-fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm convert -identify %f -verbose /dev/null
+fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
+         \ convert -identify %f -verbose /dev/null
+
+" OpenRaster
+filextype *.ora
+        \ {Edit in MyPaint}
+        \ mypaint %f,
+
+" Mindmap
+filextype *.vym
+        \ {Open with VYM}
+        \ vym %f &,
 
 " MD5
 filetype *.md5
        \ {Check MD5 hash sum}
-       \ md5sum -c %f,
+       \ md5sum -c %f %S,
+
+" SHA1
+filetype *.sha1
+       \ {Check SHA1 hash sum}
+       \ sha1sum -c %f %S,
+
+" SHA256
+filetype *.sha256
+       \ {Check SHA256 hash sum}
+       \ sha256sum -c %f %S,
+
+" SHA512
+filetype *.sha512
+       \ {Check SHA512 hash sum}
+       \ sha512sum -c %f %S,
 
 " GPG signature
 filetype *.asc
@@ -239,7 +269,7 @@ filetype *.torrent ktorrent %f &
 fileviewer *.torrent dumptorrent -v %c
 
 " FuseZipMount
-filetype *.zip,*.jar,*.war,*.ear,*.oxt
+filetype *.zip,*.jar,*.war,*.ear,*.oxt,*.apkg
        \ {Mount with fuse-zip}
        \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
        \ {View contents}
