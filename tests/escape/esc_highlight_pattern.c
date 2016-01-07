@@ -151,5 +151,14 @@ TEST(trailing_empty_match_is_fine)
 	free(actual);
 }
 
+TEST(empty_match_with_utf8_character)
+{
+	const char *const input = "б";
+	const char *const expected = input;
+	char *const actual = esc_highlight_pattern(input, &re5c);
+	assert_string_equal(expected, actual);
+	free(actual);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

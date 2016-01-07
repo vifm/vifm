@@ -2,6 +2,8 @@
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
 
+	Added more filetype definitions into sample vifmrc.  Thanks to aleksejrs.
+
 	Added 'title' option to control whether title of terminal should be set.
 	Enabled by default if old title can be restored.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
@@ -14,6 +16,9 @@
 	Don't trigger DirEnter on exiting custom-view (when we technically stay in
 	the same directory).  Thanks to aleksejrs.
 
+	Somewhat align options in conflict resolution dialog.  Patch by Svyatoslav
+	Mishyn (a.k.a. juef).
+
 	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
 
 	Fixed :autocmd being not whole line command (was terminated by |).  Thanks
@@ -21,7 +26,7 @@
 
 	Fixed possible crash on writing vifminfo file on exiting.
 
-	Fixed memory corruption on handlnig empty matches of searches in view
+	Fixed memory corruption on handling empty matches of searches in view
 	mode.  Thanks to filterfalse.
 
 	Fixed secondary column of very custom view (%U).  Thanks to filterfalse.
