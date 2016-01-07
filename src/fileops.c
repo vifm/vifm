@@ -2033,8 +2033,8 @@ prompt_what_to_do(const char fname[])
 		append        = { .key = 'a', .descr = "[a]ppend to the end          \n" },
 		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
 		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
-		merge         = { .key = 'm', .descr = "[m]erge     " },
-		merge_all     = { .key = 'M', .descr = " [M]erge all     \n" },
+		merge         = { .key = 'm', .descr = "[m]erge " },
+		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
 		escape        = { .key = '\x03', .descr = "\nEsc or Ctrl-C to cancel" };
 
 	char msg[PATH_MAX];
