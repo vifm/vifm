@@ -182,7 +182,6 @@ filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus
        \ ffplay -nodisp %c,
        \ {Play using MPlayer}
        \ mplayer %f,
-       \ ffplay %c,
 fileviewer *.mp3 mp3info
 fileviewer *.flac soxi
 
