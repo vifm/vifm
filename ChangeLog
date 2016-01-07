@@ -16,6 +16,9 @@
 	Don't trigger DirEnter on exiting custom-view (when we technically stay in
 	the same directory).  Thanks to aleksejrs.
 
+	Somewhat align options in conflict resolution dialog.  Patch by Svyatoslav
+	Mishyn (a.k.a. juef).
+
 	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
 
 	Fixed :autocmd being not whole line command (was terminated by |).  Thanks

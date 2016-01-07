@@ -2023,17 +2023,19 @@ put_continue(int force)
 static void
 prompt_what_to_do(const char fname[])
 {
+	/* Strange spacing is for left alignment.  Doesn't look nice here, but it is
+	 * problematic to get such alignment otherwise. */
 	static const response_variant
-		rename        = { .key = 'r', .descr = "[r]ename (also Enter)\n" },
+		rename        = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
 		enter         = { .key = '\r', .descr = "" },
 		skip          = { .key = 's', .descr = "[s]kip " },
-		skip_all      = { .key = 'S', .descr = " [S]kip all\n" },
-		append        = { .key = 'a', .descr = "[a]ppend to the end\n" },
+		skip_all      = { .key = 'S', .descr = " [S]kip all          \n" },
+		append        = { .key = 'a', .descr = "[a]ppend to the end          \n" },
 		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
 		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
-		merge         = { .key = 'm', .descr = "[m]erge " },
-		merge_all     = { .key = 'M', .descr = " [M]erge all\n" },
-		escape        = { .key = '\x03', .descr = "Esc or Ctrl-C to cancel" };
+		merge         = { .key = 'm', .descr = "[m]erge     " },
+		merge_all     = { .key = 'M', .descr = " [M]erge all     \n" },
+		escape        = { .key = '\x03', .descr = "\nEsc or Ctrl-C to cancel" };
 
 	char msg[PATH_MAX];
 	char response;
