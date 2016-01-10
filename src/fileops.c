@@ -1938,9 +1938,15 @@ put_next(const char dest_name[], int force)
 TSTATIC int
 merge_dirs(const char src[], const char dst[], ops_t *ops)
 {
+	struct stat st;
 	DIR *dir;
 	struct dirent *d;
 	int result;
+
+	if(os_stat(src, &st) != 0)
+	{
+		return -1;
+	}
 
 	dir = os_opendir(src);
 	if(dir == NULL)
@@ -1995,6 +2001,12 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	{
 		add_operation(OP_RMDIR, NULL, NULL, src, "");
 	}
+
+	/* Clone file properties as the last step, because modifying directory affects
+	 * timestamps and permissions can affect operations. */
+	clone_timestamps(dst, src, &st);
+	(void)chmod(dst, st.st_mode);
+
 	return result;
 }
 

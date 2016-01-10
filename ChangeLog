@@ -19,6 +19,9 @@
 	Somewhat align options in conflict resolution dialog.  Patch by Svyatoslav
 	Mishyn (a.k.a. juef).
 
+	Copy timestamps and permissions on merging directories.  Thanks to
+	willemw12.
+
 	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
 
 	Fixed :autocmd being not whole line command (was terminated by |).  Thanks
@@ -1468,7 +1471,7 @@
 	manually.
 
 	Fixed ignoring command-line commands that entered by a mapping: ignore
-	only commands entirely entered by a mapping, not finished by one. Thanks
+	only commands entirely entered by a mapping, not finished by one.  Thanks
 	to Евгений Жаров (a.k.a. ezharov).
 
 	Fixed segmentation failure when invalid bookmark name is used with quote

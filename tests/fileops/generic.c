@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/time.h> /* timeval utimes() */
 #include <unistd.h> /* unlink() */
 
 #include <stddef.h> /* NULL */
@@ -112,6 +113,7 @@ TEST(merge_directories)
 TEST(merge_directories_creating_intermediate_parent_dirs)
 {
 #ifndef _WIN32
+	struct stat src, dst;
 	replace_string(&cfg.shell, "/bin/sh");
 #else
 	replace_string(&cfg.shell, "cmd");
@@ -132,6 +134,19 @@ TEST(merge_directories_creating_intermediate_parent_dirs)
 		create_empty_dir("second");
 		create_empty_dir("second/nested1");
 
+#ifndef _WIN32
+		{
+			struct timeval tv[2];
+			tv[0].tv_sec = 1;
+			tv[0].tv_usec = 2;
+			tv[1].tv_sec = 3;
+			tv[1].tv_usec = 4;
+			utimes("first/nested1", tv);
+		}
+		assert_success(chmod("first/nested1", 0700));
+		assert_success(os_stat("first/nested1", &src));
+#endif
+
 		cmd_group_begin("undo msg");
 
 		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", "."));
@@ -140,6 +155,15 @@ TEST(merge_directories_creating_intermediate_parent_dirs)
 		ops_free(ops);
 
 		cmd_group_end();
+
+#ifndef _WIN32
+		{
+			assert_success(os_stat("second/nested1", &dst));
+			assert_success(memcmp(&src.st_atim, &dst.st_atim, sizeof(src.st_atim)));
+			assert_success(memcmp(&src.st_mtim, &dst.st_mtim, sizeof(src.st_mtim)));
+			assert_success(memcmp(&src.st_mode, &dst.st_mode, sizeof(src.st_mode)));
+		}
+#endif
 
 		/* Original directory must be deleted. */
 		assert_false(file_exists("first"));
