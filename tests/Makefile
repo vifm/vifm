@@ -28,6 +28,8 @@
 # make DEBUG=valgrind ... -- builds debug version and run it under valgrind (see
 #                            valgrind-report file after a run)
 #
+# make VERBOSE=1 ... -- print all build commands
+#
 # make clean -- removes various built artifacts
 #
 # "B" variable might be set to run tests out of the source tree.
@@ -93,6 +95,24 @@ ifdef win_env
 endif
 
 CC = gcc
+
+# handling of verbosity (non-verbose by default)
+ifdef VERBOSE
+    V = 1
+else
+    V = 0
+endif
+ACTUAL_CC := $(CC)
+CC_0 = @echo "Compiling $@..."; $(ACTUAL_CC)
+CC_1 = $(ACTUAL_CC)
+LD_0 = @echo "Linking $@..."; $(ACTUAL_CC)
+LD_1 = $(ACTUAL_CC)
+AT_0 = @
+AT_1 =
+# redefine commands according to verbosity state
+override CC = $(CC_$(V))
+override LD = $(LD_$(V))
+AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include $(B)../config.h
@@ -170,7 +190,7 @@ ifeq (,$(findstring clang,$(CC)))
 endif
 
 $(B)stic $(B)bin/$(BINSUBDIR)/:
-	mkdir -p $@
+	$(AT)mkdir -p $@
 
 # this function of two arguments (array and element) returns index of the
 # element in the array
@@ -203,17 +223,17 @@ deps += $$($1.obj:.o=.d)
 
 $$($1.bin): $$($1.obj) $(B)bin/build/$(BINSUBDIR)/stic.o $(vifm_obj) \
           | $(vifm_bin) $(B)bin/$(BINSUBDIR)/
-	$(CC) -o $$@ $$^ $(LDFLAGS)
+	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
 $(B)bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $(B)stic/stic.h.gch \
                                    $(B)bin/build/$(BINSUBDIR)/$1/filelist \
                                  | $(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1
-	$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
-	                -DTESTID=$$(call pos, $$($1.obj), $$@) \
-	                -DMAXTESTID=$$(words $$($1.obj)) $$< \
-	                -DSUITE_NAME="$1" \
-	                -DTEST_DATA_PATH='"$(TEST_DATA_PATH)"' \
-	                -DSANDBOX_PATH='"$(SANDBOX_PATH)/$1"' \
+	$$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
+	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
+	                 -DMAXTESTID=$$(words $$($1.obj)) $$< \
+	                 -DSUITE_NAME="$1" \
+	                 -DTEST_DATA_PATH='"$(TEST_DATA_PATH)"' \
+	                 -DSANDBOX_PATH='"$(SANDBOX_PATH)/$1"' \
 
 $(B)bin/build/$(BINSUBDIR)/$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)/$1
 	@if [ ! -f "$$@" -o "$$$$(cat $$@ 2> /dev/null)" != '$$($1.src)' ]; then \
@@ -222,7 +242,7 @@ $(B)bin/build/$(BINSUBDIR)/$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)/$1
 	fi
 
 $(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1:
-	mkdir -p $$@
+	$(AT)mkdir -p $$@
 
 $1: $$($1.bin)
 ifeq ($B,)
