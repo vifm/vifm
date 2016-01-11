@@ -1938,9 +1938,15 @@ put_next(const char dest_name[], int force)
 TSTATIC int
 merge_dirs(const char src[], const char dst[], ops_t *ops)
 {
+	struct stat st;
 	DIR *dir;
 	struct dirent *d;
 	int result;
+
+	if(os_stat(src, &st) != 0)
+	{
+		return -1;
+	}
 
 	dir = os_opendir(src);
 	if(dir == NULL)
@@ -1995,6 +2001,12 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	{
 		add_operation(OP_RMDIR, NULL, NULL, src, "");
 	}
+
+	/* Clone file properties as the last step, because modifying directory affects
+	 * timestamps and permissions can affect operations. */
+	clone_timestamps(dst, src, &st);
+	(void)chmod(dst, st.st_mode);
+
 	return result;
 }
 
@@ -2033,8 +2045,8 @@ prompt_what_to_do(const char fname[])
 		append        = { .key = 'a', .descr = "[a]ppend to the end          \n" },
 		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
 		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
-		merge         = { .key = 'm', .descr = "[m]erge     " },
-		merge_all     = { .key = 'M', .descr = " [M]erge all     \n" },
+		merge         = { .key = 'm', .descr = "[m]erge " },
+		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
 		escape        = { .key = '\x03', .descr = "\nEsc or Ctrl-C to cancel" };
 
 	char msg[PATH_MAX];

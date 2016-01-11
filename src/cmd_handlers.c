@@ -1132,7 +1132,7 @@ clone_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_error("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
 		return clone_files(curr_view, NULL, -1, 0, 1) != 0;

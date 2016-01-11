@@ -96,7 +96,6 @@ Possible things to add.
     $_ env var and Alt-T combination as in bash shell.
     Rename existing file option on name conflicts.
     Support of command line arguments like ~/some.ssh/server/path (for FUSE).
-    Invalidate calculated directory size if its modification time changed.
     Add search history for less-like mode.
     Update visible symbolic links in the other pane on updating current pane
         (to show broken links to the user).

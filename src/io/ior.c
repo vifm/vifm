@@ -34,6 +34,7 @@
 #include "../utils/log.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "../background.h"
 #include "private/ioe.h"
 #include "private/ioeta.h"
@@ -367,10 +368,6 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 				result = (iop_mkdir(&args) == 0) ? VR_OK : VR_ERROR;
 				cp_args->result = args.result;
 			}
-			else if(cp)
-			{
-				result = VR_SKIP_DIR_LEAVE;
-			}
 			break;
 		case VA_FILE:
 			{
@@ -419,6 +416,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 						(void)ioe_errlst_append(&cp_args->result.errors, dst_full_path,
 								errno, strerror(errno));
 					}
+					clone_timestamps(dst_full_path, full_path, &st);
 				}
 				else
 				{
