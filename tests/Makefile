@@ -76,11 +76,11 @@ ifndef win_env
 endif
 
 ifdef DEBUG
-    BINSUBDIR := debug
+    BINSUBDIR := debug/
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
-vifm_obj := $(vifm_src:%.c=$(B)%.o) $(B)bin/build/$(BINSUBDIR)/stubs.o
+vifm_obj := $(vifm_src:%.c=$(B)%.o) $(B)bin/build/$(BINSUBDIR)stubs.o
 
 # make sure that there is one compile_info.c object file in the list
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
@@ -178,10 +178,10 @@ $(vifm_obj): | $(vifm_bin)
 $(vifm_bin): $(vifm_src)
 	$(MAKE) $(make_args) vifm$(exe_suffix)
 
-$(B)bin/build/$(BINSUBDIR)/stubs.o: stubs.c
+$(B)bin/build/$(BINSUBDIR)stubs.o: stubs.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)bin/build/$(BINSUBDIR)/stic.o: stic/stic.c
+$(B)bin/build/$(BINSUBDIR)stic.o: stic/stic.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(B)stic/stic.h.gch: stic/stic.h | $(B)stic
@@ -189,7 +189,7 @@ ifeq (,$(findstring clang,$(CC)))
 	$(CC) -c -o $@ $(CFLAGS) $<
 endif
 
-$(B)stic $(B)bin/$(BINSUBDIR)/:
+$(B)stic $(B)bin/$(BINSUBDIR):
 	$(AT)mkdir -p $@
 
 # this function of two arguments (array and element) returns index of the
@@ -214,20 +214,20 @@ TEST_DATA_PATH := $(abspath .)/test-data
 define suite_template
 
 $1.src := $$(sort $$(wildcard $1/*.c))
-$1.obj := $$($1.src:%.c=$(B)bin/build/$(BINSUBDIR)/%.o)
-$1.bin := $(B)bin/$(BINSUBDIR)/$1$(exe_suffix)
+$1.obj := $$($1.src:%.c=$(B)bin/build/$(BINSUBDIR)%.o)
+$1.bin := $(B)bin/$(BINSUBDIR)$1$(exe_suffix)
 $1.fixtures := $$(subst /,.,\
                         $$(patsubst %.c,%,$$(filter-out %/suite.c,$$($1.src))))
 
 deps += $$($1.obj:.o=.d)
 
-$$($1.bin): $$($1.obj) $(B)bin/build/$(BINSUBDIR)/stic.o $(vifm_obj) \
-          | $(vifm_bin) $(B)bin/$(BINSUBDIR)/
+$$($1.bin): $$($1.obj) $(B)bin/build/$(BINSUBDIR)stic.o $(vifm_obj) \
+          | $(vifm_bin) $(B)bin/$(BINSUBDIR)
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
-$(B)bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $(B)stic/stic.h.gch \
-                                   $(B)bin/build/$(BINSUBDIR)/$1/filelist \
-                                 | $(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1
+$(B)bin/build/$(BINSUBDIR)$1/%.o: $1/%.c $(B)stic/stic.h.gch \
+                                  $(B)bin/build/$(BINSUBDIR)$1/filelist \
+                                | $(B)bin/build/$(BINSUBDIR)$1 $(B)sandbox/$1
 	$$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
 	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                 -DMAXTESTID=$$(words $$($1.obj)) $$< \
@@ -235,12 +235,12 @@ $(B)bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $(B)stic/stic.h.gch \
 	                 -DTEST_DATA_PATH='"$(TEST_DATA_PATH)"' \
 	                 -DSANDBOX_PATH='"$(SANDBOX_PATH)/$1"' \
 
-$(B)bin/build/$(BINSUBDIR)/$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)/$1
+$(B)bin/build/$(BINSUBDIR)$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)$1
 	@if [ ! -f "$$@" -o "$$$$(cat $$@ 2> /dev/null)" != '$$($1.src)' ]; then \
 		echo -n '$$($1.src)' > $$@; \
 	fi
 
-$(B)bin/build/$(BINSUBDIR)/$1 $(B)sandbox/$1:
+$(B)bin/build/$(BINSUBDIR)$1 $(B)sandbox/$1:
 	$(AT)mkdir -p $$@
 
 $1: $$($1.bin)
