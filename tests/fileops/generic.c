@@ -16,6 +16,7 @@
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
+static void perform_merge(int op);
 static void create_empty_dir(const char dir[]);
 static void create_empty_file(const char file[]);
 static int file_exists(const char file[]);
@@ -110,10 +111,9 @@ TEST(merge_directories)
 	stats_update_shell_type("/bin/sh");
 }
 
-TEST(merge_directories_creating_intermediate_parent_dirs)
+TEST(merge_directories_creating_intermediate_parent_dirs_move)
 {
 #ifndef _WIN32
-	struct stat src, dst;
 	replace_string(&cfg.shell, "/bin/sh");
 #else
 	replace_string(&cfg.shell, "cmd");
@@ -124,59 +124,115 @@ TEST(merge_directories_creating_intermediate_parent_dirs)
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
 	{
-		ops_t *ops;
-
-		create_empty_dir("first");
-		create_empty_dir("first/nested1");
-		create_empty_dir("first/nested1/nested2");
-		create_empty_file("first/nested1/nested2/file");
-
-		create_empty_dir("second");
-		create_empty_dir("second/nested1");
-
-#ifndef _WIN32
-		{
-			struct timeval tv[2];
-			tv[0].tv_sec = 1;
-			tv[0].tv_usec = 2;
-			tv[1].tv_sec = 3;
-			tv[1].tv_usec = 4;
-			utimes("first/nested1", tv);
-		}
-		assert_success(chmod("first/nested1", 0700));
-		assert_success(os_stat("first/nested1", &src));
-#endif
-
-		cmd_group_begin("undo msg");
-
-		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", "."));
-		ops->crp = CRP_OVERWRITE_ALL;
-		assert_success(merge_dirs("first", "second", ops));
-		ops_free(ops);
-
-		cmd_group_end();
-
-#ifndef _WIN32
-		{
-			assert_success(os_stat("second/nested1", &dst));
-			assert_success(memcmp(&src.st_atim, &dst.st_atim, sizeof(src.st_atim)));
-			assert_success(memcmp(&src.st_mtim, &dst.st_mtim, sizeof(src.st_mtim)));
-			assert_success(memcmp(&src.st_mode, &dst.st_mode, sizeof(src.st_mode)));
-		}
-#endif
+		perform_merge(OP_MOVEF);
 
 		/* Original directory must be deleted. */
 		assert_false(file_exists("first"));
-
-		assert_true(file_exists("second/nested1/nested2/file"));
-
-		assert_success(unlink("second/nested1/nested2/file"));
-		assert_success(rmdir("second/nested1/nested2"));
-		assert_success(rmdir("second/nested1"));
-		assert_success(rmdir("second"));
 	}
 
 	stats_update_shell_type("/bin/sh");
+}
+
+TEST(merge_directories_creating_intermediate_parent_dirs_copy)
+{
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+#else
+	replace_string(&cfg.shell, "cmd");
+#endif
+
+	stats_update_shell_type(cfg.shell);
+
+	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
+			++cfg.use_system_calls)
+	{
+		perform_merge(OP_COPYF);
+
+		/* Original directory must still exist. */
+		assert_success(unlink("first/nested1/nested2/file"));
+		assert_success(rmdir("first/nested1/nested2"));
+		assert_success(rmdir("first/nested1"));
+		assert_success(rmdir("first"));
+	}
+
+	stats_update_shell_type("/bin/sh");
+}
+
+static void
+perform_merge(int op)
+{
+#ifndef _WIN32
+	struct stat src, dst;
+#endif
+
+	ops_t *ops;
+
+	create_empty_dir("first");
+	create_empty_dir("first/nested1");
+	create_empty_dir("first/nested1/nested2");
+	create_empty_file("first/nested1/nested2/file");
+
+	create_empty_dir("second");
+	create_empty_dir("second/nested1");
+
+#ifndef _WIN32
+	{
+		struct timeval tv[2];
+		gettimeofday(&tv[0], NULL);
+		tv[1] = tv[0];
+
+		/* This might be Linux-specific, but for the test to work properly access
+		 * time should be newer than modification time, in which case it's not
+		 * changed on listing directory. */
+		tv[0].tv_sec += 3;
+		tv[0].tv_usec += 4;
+		tv[1].tv_sec += 1;
+		tv[1].tv_usec += 2;
+		utimes("first/nested1", tv);
+	}
+	assert_success(chmod("first/nested1", 0700));
+	assert_success(os_stat("first/nested1", &src));
+#endif
+
+	cmd_group_begin("undo msg");
+
+	assert_non_null(ops = ops_alloc(op, 0, "merge", ".", "."));
+	ops->crp = CRP_OVERWRITE_ALL;
+	if(op == OP_MOVEF)
+	{
+		assert_success(merge_dirs("first", "second", ops));
+	}
+	else
+	{
+		if(!cfg.use_system_calls)
+		{
+			assert_success(
+					perform_operation(op, ops, NULL, "first/nested1", "second/"));
+		}
+		else
+		{
+			assert_success(perform_operation(op, ops, NULL, "first", "second"));
+		}
+	}
+	ops_free(ops);
+
+	cmd_group_end();
+
+#ifndef _WIN32
+	{
+		assert_success(os_stat("second/nested1", &dst));
+		assert_success(memcmp(&src.st_atim, &dst.st_atim, sizeof(src.st_atim)));
+		assert_success(memcmp(&src.st_mtim, &dst.st_mtim, sizeof(src.st_mtim)));
+		assert_success(memcmp(&src.st_mode, &dst.st_mode, sizeof(src.st_mode)));
+	}
+#endif
+
+	assert_true(file_exists("second/nested1/nested2/file"));
+
+	assert_success(unlink("second/nested1/nested2/file"));
+	assert_success(rmdir("second/nested1/nested2"));
+	assert_success(rmdir("second/nested1"));
+	assert_success(rmdir("second"));
 }
 
 static void
