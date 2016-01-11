@@ -271,7 +271,9 @@ UNDER_VCS = @IN_GIT_REPO@
 
 runtests:
 	echo 'mkdir -p $(abs_builddir)/../tests/' > $@_
-	echo '$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/' >> $@_
+	echo \
+		'$(MAKE) -C $(abs_srcdir)/../tests B=$(abs_builddir)/../tests/ CC="$(CC)"' \
+		>> $@_
 	chmod +x $@_
 	mv $@_ $@
 

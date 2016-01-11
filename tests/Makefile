@@ -92,8 +92,7 @@ ifdef win_env
     exe_suffix := .exe
 endif
 
-# enable override by defining environment variable
-CC ?= gcc
+CC = gcc
 
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include $(B)../config.h
