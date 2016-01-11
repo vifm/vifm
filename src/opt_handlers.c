@@ -1947,7 +1947,6 @@ sorting_changed(FileView *view)
 	view->matches = 0;
 	fview_sorting_updated(view);
 	resort_view(view);
-	fview_cursor_redraw(view);
 }
 
 /* Handles global 'sortorder' option and corrects ordering for primary sorting
@@ -2125,8 +2124,7 @@ static void
 resort_view(FileView * view)
 {
 	resort_dir_list(1, view);
-	draw_dir_list(view);
-	refresh_view_win(view);
+	ui_view_schedule_redraw(curr_view);
 }
 
 static void
