@@ -237,7 +237,6 @@ $(B)bin/build/$(BINSUBDIR)/$1/%.o: $1/%.c $(B)stic/stic.h.gch \
 
 $(B)bin/build/$(BINSUBDIR)/$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)/$1
 	@if [ ! -f "$$@" -o "$$$$(cat $$@ 2> /dev/null)" != '$$($1.src)' ]; then \
-		echo -n '$$($1.src)'; \
 		echo -n '$$($1.src)' > $$@; \
 	fi
 
