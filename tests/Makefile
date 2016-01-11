@@ -32,7 +32,8 @@
 #
 # make clean -- removes various built artifacts
 #
-# "B" variable might be set to run tests out of the source tree.
+# "B" variable might be set to build tree root to run tests out of the source
+# tree.
 
 # determine kind of OS that is running
 ifeq ($(OS),Windows_NT)
@@ -49,8 +50,10 @@ else
     endif
 endif
 
-# build directory
+# path to build tree
 B ?=
+# path to storage for intermediate build files
+BUILD := $(B)bin/build/$(BINSUBDIR)
 
 # engine
 suites += abbrevs autocmds commands completion keys options parsing variables
@@ -80,7 +83,7 @@ ifdef DEBUG
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
-vifm_obj := $(vifm_src:%.c=$(B)%.o) $(B)bin/build/$(BINSUBDIR)stubs.o
+vifm_obj := $(vifm_src:%.c=$(B)%.o) $(BUILD)stubs.o
 
 # make sure that there is one compile_info.c object file in the list
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
@@ -178,10 +181,10 @@ $(vifm_obj): | $(vifm_bin)
 $(vifm_bin): $(vifm_src)
 	$(MAKE) $(make_args) vifm$(exe_suffix)
 
-$(B)bin/build/$(BINSUBDIR)stubs.o: stubs.c
+$(BUILD)stubs.o: stubs.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)bin/build/$(BINSUBDIR)stic.o: stic/stic.c
+$(BUILD)stic.o: stic/stic.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(B)stic/stic.h.gch: stic/stic.h | $(B)stic
@@ -214,20 +217,19 @@ TEST_DATA_PATH := $(abspath .)/test-data
 define suite_template
 
 $1.src := $$(sort $$(wildcard $1/*.c))
-$1.obj := $$($1.src:%.c=$(B)bin/build/$(BINSUBDIR)%.o)
+$1.obj := $$($1.src:%.c=$(BUILD)%.o)
 $1.bin := $(B)bin/$(BINSUBDIR)$1$(exe_suffix)
 $1.fixtures := $$(subst /,.,\
                         $$(patsubst %.c,%,$$(filter-out %/suite.c,$$($1.src))))
 
 deps += $$($1.obj:.o=.d)
 
-$$($1.bin): $$($1.obj) $(B)bin/build/$(BINSUBDIR)stic.o $(vifm_obj) \
+$$($1.bin): $$($1.obj) $(BUILD)stic.o $(vifm_obj) \
           | $(vifm_bin) $(B)bin/$(BINSUBDIR)
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
-$(B)bin/build/$(BINSUBDIR)$1/%.o: $1/%.c $(B)stic/stic.h.gch \
-                                  $(B)bin/build/$(BINSUBDIR)$1/filelist \
-                                | $(B)bin/build/$(BINSUBDIR)$1 $(B)sandbox/$1
+$(BUILD)$1/%.o: $1/%.c $(B)stic/stic.h.gch $(BUILD)$1/filelist \
+              | $(BUILD)$1 $(B)sandbox/$1
 	$$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
 	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                 -DMAXTESTID=$$(words $$($1.obj)) $$< \
@@ -235,12 +237,12 @@ $(B)bin/build/$(BINSUBDIR)$1/%.o: $1/%.c $(B)stic/stic.h.gch \
 	                 -DTEST_DATA_PATH='"$(TEST_DATA_PATH)"' \
 	                 -DSANDBOX_PATH='"$(SANDBOX_PATH)/$1"' \
 
-$(B)bin/build/$(BINSUBDIR)$1/filelist: $1/. | $(B)bin/build/$(BINSUBDIR)$1
+$(BUILD)$1/filelist: $1/. | $(BUILD)$1
 	@if [ ! -f "$$@" -o "$$$$(cat $$@ 2> /dev/null)" != '$$($1.src)' ]; then \
 		echo -n '$$($1.src)' > $$@; \
 	fi
 
-$(B)bin/build/$(BINSUBDIR)$1 $(B)sandbox/$1:
+$(BUILD)$1 $(B)sandbox/$1:
 	$(AT)mkdir -p $$@
 
 $1: $$($1.bin)
