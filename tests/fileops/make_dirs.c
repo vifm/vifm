@@ -32,7 +32,7 @@ TEST(make_dirs_does_nothing_for_custom_view)
 	assert_true(flist_custom_finish(&lwin, 0) == 0);
 
 	make_dirs(&lwin, paths, 1, 0);
-	assert_false(path_exists(path, NODEREF));
+	assert_false(path_exists("dir", NODEREF));
 
 	for(i = 0; i < lwin.list_rows; ++i)
 	{
@@ -49,7 +49,7 @@ TEST(make_dirs_does_nothing_for_duplicated_names)
 	char *paths[] = {path, path};
 
 	make_dirs(&lwin, paths, 2, 0);
-	assert_false(path_exists(path, NODEREF));
+	assert_false(path_exists("dir", NODEREF));
 }
 
 TEST(make_dirs_does_nothing_for_empty_names)
@@ -59,7 +59,7 @@ TEST(make_dirs_does_nothing_for_empty_names)
 	char *paths[] = {path, empty};
 
 	make_dirs(&lwin, paths, 2, 0);
-	assert_false(path_exists(path, NODEREF));
+	assert_false(path_exists("dir", NODEREF));
 }
 
 TEST(make_dirs_does_nothing_for_existing_names)
@@ -69,7 +69,7 @@ TEST(make_dirs_does_nothing_for_existing_names)
 	char *paths[] = {path, empty};
 
 	make_dirs(&lwin, paths, 2, 0);
-	assert_false(path_exists(path, NODEREF));
+	assert_false(path_exists("not-exist", NODEREF));
 }
 
 TEST(make_dirs_creates_one_dir)
@@ -81,7 +81,7 @@ TEST(make_dirs_creates_one_dir)
 		char *paths[] = {path};
 
 		make_dirs(&lwin, paths, 1, 0);
-		assert_true(is_dir(path));
+		assert_true(is_dir("dir"));
 
 		assert_success(rmdir("dir"));
 	}
@@ -96,7 +96,7 @@ TEST(make_dirs_creates_sub_dirs_by_rel_path)
 		char *paths[] = {path};
 
 		make_dirs(&lwin, paths, 1, 1);
-		assert_true(is_dir(path));
+		assert_true(is_dir("parent/child"));
 
 		assert_success(rmdir("parent/child"));
 		assert_success(rmdir("parent"));
@@ -112,7 +112,7 @@ TEST(make_dirs_creates_sub_dirs_by_abs_path)
 		char *paths[] = {path};
 
 		make_dirs(&lwin, paths, 1, 1);
-		assert_true(is_dir(path));
+		assert_true(is_dir(SANDBOX_PATH "/parent/child"));
 
 		assert_success(rmdir("parent/child"));
 		assert_success(rmdir("parent"));
