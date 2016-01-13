@@ -22,6 +22,9 @@
 	Copy timestamps and permissions on merging directories.  Thanks to
 	willemw12.
 
+	Less blinking on resorting.  Annoying if directory is resorted from
+	autocommand.
+
 	Fixed reopening controlling terminal across users.  Thanks to aleksejrs.
 
 	Fixed :autocmd being not whole line command (was terminated by |).  Thanks
