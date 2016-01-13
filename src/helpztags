@@ -6,6 +6,7 @@
 # Version: 0.4
 #
 # xaizek: disallow bar symbol (|) in tags as Vim does
+# xaizek: warn about duplicated tags
 
 # Please use following command for generate a manual file:
 # pod2man -c "User Commands" -s 1 -q none -r "vim 6.2" -d "September 2003" helpztags helpztags.1
