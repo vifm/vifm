@@ -1116,15 +1116,11 @@ move_window(FileView *view, int horizontally, int first)
 	split_view(split_type);
 	if(view != desired_view)
 	{
-		switch_windows();
+		/* Switch two panes saving current windows as the active one (left/top or
+		 * right/bottom). */
+		switch_panes_content();
+		go_to_other_pane();
 	}
-}
-
-void
-switch_windows(void)
-{
-	switch_panes_content();
-	go_to_other_pane();
 }
 
 void

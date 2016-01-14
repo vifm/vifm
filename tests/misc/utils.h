@@ -15,6 +15,9 @@ void view_setup(FileView *view);
 /* Frees resources of the view. */
 void view_teardown(FileView *view);
 
+/* Creates file at the path. */
+void create_file(const char path[]);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -372,21 +372,12 @@ static file_hi_t * clone_color_scheme_highlights(const col_scheme_t *from);
 static void reset_color_scheme_colors(col_scheme_t *cs);
 static int source_cs(const char name[]);
 static void get_cs_path(const char name[], char buf[], size_t buf_size);
+static void check_color_scheme(col_scheme_t *cs);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dir_map_exists(void);
 
 /* Mapping of color schemes associations onto file system tree. */
 static fsddata_t *dir_map;
-
-void
-check_color_scheme(col_scheme_t *cs)
-{
-	if(cs->state == CSS_BROKEN)
-	{
-		reset_color_scheme_colors(cs);
-		cs->state = CSS_DEFAULTED;
-	}
-}
 
 int
 cs_have_no_extensions(void)
@@ -848,12 +839,24 @@ get_cs_path(const char name[], char buf[], size_t buf_size)
 	(void)cut_suffix(buf, ".vifm");
 }
 
+/* Checks whether colorscheme is in unusable state and resets it to normal
+ * state. */
+static void
+check_color_scheme(col_scheme_t *cs)
+{
+	if(cs->state == CSS_BROKEN)
+	{
+		reset_color_scheme_colors(cs);
+		cs->state = CSS_DEFAULTED;
+	}
+}
+
 /* Loads color scheme settings into color pairs. */
 static void
 load_color_pairs(col_scheme_t *cs)
 {
 	int i;
-	for(i = 0; i < MAXNUM_COLOR; i++)
+	for(i = 0; i < MAXNUM_COLOR; ++i)
 	{
 		cs->pair[i] = colmgr_get_pair(cs->color[i].fg, cs->color[i].bg);
 	}

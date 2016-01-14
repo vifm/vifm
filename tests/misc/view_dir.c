@@ -2,13 +2,13 @@
 
 #include <unistd.h> /* rmdir() */
 
-#include <stdio.h> /* fclose() fopen() remove() */
+#include <stdio.h> /* remove() */
 
 #include "../../src/compat/os.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/utils/string_array.h"
 
-static void create_file(const char file[]);
+#include "utils.h"
 
 SETUP()
 {
@@ -180,16 +180,6 @@ TEST(multiple_non_empty_dirs_have_correct_prefixes_plus_sorting)
 	assert_success(rmdir("dir/sub1"));
 	assert_success(rmdir("dir/sub2"));
 	assert_success(rmdir("dir"));
-}
-
-static void
-create_file(const char file[])
-{
-	FILE *const f = fopen(file, "w");
-	if(f != NULL)
-	{
-		fclose(f);
-	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

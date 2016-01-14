@@ -552,6 +552,8 @@ EXTRA_DIST = \
 						 compat/wcwidth.c \
 						 compat/wcwidth.h \
 						 Makefile.win \
+						 lcovrc \
+						 gcov.css \
 						 ../data/graphics/vifm-old.ico \
 						 ../data/graphics/vifm-old.png \
 						 ../data/graphics/vifm.ico \

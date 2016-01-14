@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <stddef.h> /* NULL */
+#include <stdio.h> /* fclose() fopen() */
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
@@ -93,6 +94,17 @@ view_teardown(FileView *view)
 	filter_dispose(&view->local_filter.filter);
 	filter_dispose(&view->auto_filter);
 	filter_dispose(&view->manual_filter);
+}
+
+void
+create_file(const char path[])
+{
+	FILE *const f = fopen(path, "w");
+	assert_non_null(f);
+	if(f != NULL)
+	{
+		fclose(f);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
