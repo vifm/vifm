@@ -287,5 +287,27 @@ TEST(user_command_is_executed_in_separated_scope)
 	assert_failure(exec_commands("cmd", &lwin, CIT_COMMAND));
 }
 
+TEST(tr_extends_second_field)
+{
+	assert_success(chdir(SANDBOX_PATH));
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+
+	create_file(SANDBOX_PATH "/a b");
+
+	lwin.list_rows = 1;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a b");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+
+	(void)exec_commands("tr/ ?<>\\\\:*|\"/_", &lwin, CIT_COMMAND);
+
+	assert_success(remove(SANDBOX_PATH "/a_b"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

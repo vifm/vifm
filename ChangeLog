@@ -45,6 +45,9 @@
 	Fixed parsing of commands which names are not followed by spaces with
 	regard to pipe symbols (|).  Thanks to aleksejrs.
 
+	Fixed extending second :tr argument, which could cause failure in build
+	with assertions.  Thanks to octos.
+
 0.8 to 0.8.1-beta
 
 	Turned remote commands back on by default after their rewrite using

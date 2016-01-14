@@ -3394,8 +3394,9 @@ tr_cmd(const cmd_info_t *cmd_info)
 		while(sl < pl)
 		{
 			buf[sl] = buf[sl - 1];
-			sl++;
+			++sl;
 		}
+		buf[sl] = '\0';
 	}
 
 	mark_selected(curr_view);
