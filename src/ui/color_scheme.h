@@ -106,8 +106,6 @@ void complete_colorschemes(const char name[]);
 
 const char * attrs_to_str(int attrs);
 
-void check_color_scheme(col_scheme_t *cs);
-
 /* Associates colorscheme specified by its name with the given path. */
 void assoc_dir(const char name[], const char dir[]);
 
