@@ -414,10 +414,6 @@ void refresh_view_win(FileView *view);
  * (horizontally/vertically, left-top/right-bottom). */
 void move_window(FileView *view, int horizontally, int first);
 
-/* Switches two panes saving current windows as the active one (left/top or
- * right/bottom). */
-void switch_windows(void);
-
 /* Swaps current and other views. */
 void switch_panes(void);
 
