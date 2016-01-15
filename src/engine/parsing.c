@@ -145,7 +145,7 @@ static void skip_whitespace_tokens(const char **in);
 static void get_next(const char **in);
 
 /* This contains information about the last tokens read. */
-struct
+static struct
 {
 	TOKENS_TYPE type; /* Type of the token. */
 	char c;           /* Last character of the token. */
