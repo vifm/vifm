@@ -204,12 +204,14 @@ perform_merge(int op)
 	}
 	else
 	{
+#ifndef _WIN32
 		if(!cfg.use_system_calls)
 		{
 			assert_success(
 					perform_operation(op, ops, NULL, "first/nested1", "second/"));
 		}
 		else
+#endif
 		{
 			assert_success(perform_operation(op, ops, NULL, "first", "second"));
 		}

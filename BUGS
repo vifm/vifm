@@ -1,27 +1,8 @@
-Selection isn't cleared on keys in normal mode.
-
-%s macro depends on undocumented external dependency (script called
-screen-open-region-with-program).
-
-When output of something like `:filter?` fills whole screen two character
-positions filled with border color are left (in left and right top corners).
-It also displays only beginning of a message, there is no way to scroll it.
-
-gid/uid are displayed as -1 on some file systems.
-
-:apropos command doesn't escape its arguments, thus characters like | are
-passed directory to a shell.
-
-:filetype checks doesn't expand ~ and environment variables.
-
-Fix wildmenu case sensitivity on Windows (or maybe it's OK as it is).
-
-Screen split title cannot be overwritten when it's run from `:shell`.
-
-:change->Name renames only one file even when several are selected.
-
-On OpenBSD there might be issues with non-ascii characters.
-
-"*" at the beginning of a glob doesn't match empty string (e.g. "*doc" should
-match "doc", but it won't).  This is a limitation of turning list of globs into
-single regular expression.
+* On OpenBSD there might be issues with non-ascii characters.
+* Duplicate detection lags in custom views on :substitute.
+* :clone! is useless.
+* :change->Name renames only one file even when several are selected.
+* "*" at the beginning of a glob doesn't match empty string.
+* :filetype checks don't expand ~ and environment variables.
+* :apropos command doesn't escape its arguments.
+* gid/uid are displayed as -1 on some file systems.

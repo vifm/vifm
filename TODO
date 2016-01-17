@@ -1,167 +1,212 @@
-Basic things that need to be done.
-    Termcap or terminfo support for keybindings (do we need this? curses does).
-    Backgrounding of commands with job control (pause/resume/kill).
-    Maybe remove 'trash' option, since we have two commands for deletion.
-    Templates for :touch.
-    Mouse support.
-    Wrapping of lines in the menus.
-    IPC among all running vifm instances (share settings among instances).
-    Make status bar able to display error and info messages at the same time.
-    Command to create multiple copies of selected one with ability to rename
-        it (e.g. a -> :hub b c -> a b c, a -> :hub! b c -> b c).
-    Add :increment and :decrement commands, which should work in two modes
-        in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
-    Improve ga and gA commands to recalculate sizes of modified directories
-        only, and maybe update size of all parent cached directories. And maybe
-        show somehow in the TUI calculation process. Maybe cache in vifminfo.
-    Better remove confirmation messages (should contain list of files).
-    Better failed operation messages (list of errors, not just one first error).
-    Process shell pause request for running in %s.
-    Filtering in menus.
-    Search match highlight in menus.
-    For 'syscalls', vifm should ask for standard retry/ignore/abort actions on
-        error (done for file/directory removal).
-    Queueing of file operations.
+Basic things:
+  * Menu shortcut to put current line into command-line.
+  * Merged directory history for both panes.
+  * Improve ga and gA commands. (partially done)
+  * Queueing of file operations.
+  * Backgrounding of commands with job control (pause/resume/kill). (partially
+    done)
+  * Display parsing errors in dialog that indicate the error, don't rely on
+    status bar.
+  * Remove trash option, since we have two commands for deletion.
+  * Abort/retry/ignore kind of actions for i/o for 'syscalls'. (partially
+    done)
+  * Search match highlight in menus.
+  * Filtering in menus.
+  * Process shell pause request for running in %s.
+  * Responsive TUI during blocking operations.
+  * Better failed operation messages (partially done)
+  * Better removal confirmation messages.
+  * Make status bar able to display error and info messages at the same time.
+  * Command to create multiple copies of selected file
 
-Documentation.
-    Better documentation.
-    Maybe divide vifm.txt in several files (if it becomes too big).
-    Document single and double quotes treating in the command-line mode.
-    Document name conflict resolution options.
+Documentation:
+  * Document non-forking requirement for 'vicmd' on :rename and alike
+    commands.
+  * State the need of *nix tools on Windows more explicitly.
+  * Describe 'shell', $SHELL and `:shell` relationships.
+  * Document single and double quotes treating in the command-line mode.
+  * Divide docs into several files (as it's quite big now).
+  * Document name conflict resolution options.
+  * Generally better documentation. (partially done)
+  * Add separate section on bookmarks.
 
-Windows.
-    Make :chmod accept arguments.
-    Make properties dialog change file attributes recursively.
-    Add a command to create .lnk files.
-    Follow targets of .lnk files.
-    Make 'fastrun' understand file extensions on Windows (to ignore them).
-    Maybe read first bytes of files and threat files as executable if first
-        two bytes equal to '#!'.
-    Make 'slowfs' option available on Windows and provide a support for builtin
-        file system time 'winnetwork', which will mean network resources.
-    Maybe sort completion items ignoring their case on Windows.
-    Handle numpad keys better, just like corresponding non-numpad keys.
+Vi(m) specific features:
+  * Add support for directory completion for some of :set options.
+  * 'wildignore' ('wig') option
+  * Think about dot normal mode command.
+  * Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
+  * Add support of n flag for :substitute command.
+  * :let mapleader and <leader> support.
+  * Ctrl-W F key.
+  * Add support of [count] for Ctrl-E/Ctrl-Y/H/M/L.
+  * nrformats option as in Vim.
+  * Better registers support. (partially done)
+  * Add support of ^= in :set command for more option kinds.
+  * Better ranges (add support for search patterns).
+  * :map without arguments.
+  * Lazy redraw support.
+  * Expand environment variables for :edit command.
+  * Don't move cursor on search failure.
+  * Completion of first argument for :map commands.
+  * Make gU2U and similar commands work as in Vim.
+  * Change file list filters to use fold levels.
+  * Quickfix list support
+  * /, ?, n, N as selectors.
+  * Fix '' to go back to all jumps G gg links (in one directory?).
+  * Maybe make zf and zd more Vim-like.
+  * Kinda macros like in Vim (qa ... q).
+  * Add =~ and !~ operators to expressions.
+  * Add titleold option.
+  * Support hex and octal numbers in :set.
+  * Add %p and %P macros to rulerformat option.
 
-Vi(m) specific features that need to be added.
-    Fix '' to go back to all jumps G gg links (in one directory?).
-    Change file list filters to use fold levels instead of just
-        the dot filter and regular expression filter (what does this mean?).
-    Better registers support.
-    /, ?, n, N as selectors.
-    Make n, N, / and ? with count behave like Vim on nowrapscan and match fail
-        (this means "don't move cursor on search failure").
-    :map without arguments
-    Better ranges (add support for search patterns).
-    Ctrl-W F key.
-    'wildignore' ('wig') option (also think about it in context of file
-        filtering).
-    Kinda macros like in Vim (qa ... q).
-    Something like <silent> in Vim (no command blinking in the command-line)
-    :let mapleader and <leader> support.
-    Completion of first argument for :map commands.
-    Support hex and octal numbers in :set
-    Add support of ^= in :set command for more option kinds.
-    Add support for directory completion for some of :set options.
-    Add support of 'n' flag for :substitute command.
-    Expand environment variables for :edit command.
-    Think about dot normal mode command.
-    Add support of [count] for Ctrl-E/Ctrl-Y/H/M/L.
-    Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
-    Quickfix list support (to navigate through file list produced by :find or
-        :locate with :cn, :cp and alike).
-    Maybe add 'titleold' option.
-    Maybe add "%p" and "%P" macros to 'rulerformat' option.
-    Make gU2U and similar commands work as in Vim.
-    Lazy redraw support (useful for mappings and udf).
-    'nrformats' option as in Vim.
+Windows:
+  * Make properties dialog change file attributes recursively.
+  * Make :chmod accept arguments.
+  * Add command to create .lnk files.
+  * Sort completion items ignoring their case on Windows.
+  * Handle numpad keys better, just like corresponding non-numpad keys.
+  * Follow targets of .lnk files.
+  * Make 'fastrun' understand file extensions on Windows (to ignore them).
+  * Make 'slowfs' option available on Windows
+  * Support more of pdcurses specific keys (e.g. <a-bs>, <s-bs>).
+  * Read first bytes of files and treat '#!' files as executable.
 
-Possible things to add.
-    Use system wide mimetypes file. /etc/mailcap?
-    Virtual File System - currently vifm can use fuse to mount most
-        file systems.
-    Make :undolist more interactive.
-    Maybe something like :g/.../com and :v/.../com in Vim.
-    Add g/ and g? commands (search, but don't select files).
-    Reverse searching (/ for search, g/ for selecting, g!/ for selecting
-        reverse)
-    Improve sorting (iext; choosing multiple sorting keys in dialog).
-    Add :mksession command and 'sessionoptions' option.
-    Position macros for user defined commands (%1, %2, ..., %9). Something
-        like %!1 could be used for mandatory parameters.
-    Some key to (un)select all files with extension of current file.
-    Maybe we should not reread configuration files on :restart when
-        --no-configs was passed on startup.
-    'wildmode' option.
-    A macro to redirect command output into view pane.
-    $_ env var and Alt-T combination as in bash shell.
-    Rename existing file option on name conflicts.
-    Support of command line arguments like ~/some.ssh/server/path (for FUSE).
-    Add search history for less-like mode.
-    Update visible symbolic links in the other pane on updating current pane
-        (to show broken links to the user).
-    Highlight first line of command-editing buffer of vifm in different
-        color, like gitcommit syntax file does.
-    Parse escape sequences in menus as in preview.
+Possible things to add:
+  * Add macros for marks.
+  * Make package for Cygwin.
+  * Position macros for user defined commands (%1, %2, ..., %9).
+  * Improve sorting (iext; choosing multiple sorting keys in dialog).
+    (partially done)
+  * Consider escaping of tilde in paths.
+  * Wrapping of lines in the menus.
+  * Something like :g/.../com and :v/.../com in Vim.
+  * Don't reread config files on :restart for --no-configs session.
+  * Add tabs.
+  * Better renaming keys.
+  * Quad-view + tabs
+  * Add a general file preview script.
+  * A more convenient shortcut for the :filter command (at least :filt).
+  * Multiselect for items (menu and/or file list).
+  * inotify support on Linux. (partially done)
+  * :filter !filter-tool
+  * Add short description to key menu.
+  * Use system wide mimetypes file. /etc/mailcap?
+  * :select/unselect commands.
+  * Add "|" command to menu to process list with external tool.
+  * "Blow directory" command to replace directory with its content.
+  * Some key to (un)select all files with extension of current file.
+  * $_ env var and Alt-T combination as in bash shell.
+  * Select contents of a register "xgs, current behaviour on gs.
+  * Templates for :touch.
+  * Reverse searching
+  * Add g/ and g? commands (search, but don't select files).
+  * IPC among all running vifm instances (share settings among instances).
+  * More flexible control over displaying file size.
+  * { and } keys to skip to files/directories.
+  * Parse escape sequences in menus as in preview.
+  * Virtual File System - currently vifm can use FUSE to mount most file
+    systems.
+  * ]s/[s || ]t/[t || ]h/[h to go to the next/previous selected file.
+  * Add removable media managing.
+  * Something to control behaviour of menu picks.
+  * Like gv but to select just pasted files (gp?).
+  * Compare content of panes like C-x d in Midnight Commander.
+  * Option suggestions.
+  * g~<selector> and g?.
+  * Command autocompletion.
+  * Add trashes bang to list empty trashes or all of them.
+  * 'wildmode' option.
+  * Try to make it work in monochrome terminal.
+  * Support of command line arguments like ~/some.ssh/server/path (for FUSE).
+  * Treat `:filter pattern` as `:filter \<pattern\>`.
+  * Add search history for less-like mode.
+  * "Rename existing file" option on name conflicts.
+  * Make use of new job information in :jobs menu.
+  * Update visible symlinks in the other pane on updating current pane.
+  * Try drawing progress bar in progress dialog.
+  * Mouse support. (partially done)
+  * Possibility to make colorful background per column.
+  * Add a key to menu mode to repeat command and update menu.
+  * Extract vim plugin part of install to vifm.vim README.
+  * A macro to redirect command output into view pane.
+  * File access history.
+  * Make :alink, :copy, ... accept globs (e.g. :co *.c).
+  * Highlight first line of command-editing buffer in different color.
+  * Output numbers on :hi if it were numbers in color scheme.
+  * Add timestamps to history items.
 
-Other (questionable) things.
-    Use mimetypes in FILETYPE.
-    %p/%I macro to prompt user for input.
-    Maybe inotify support on Linux.
-    Command like ' but that executes bookmark ?
-    Maybe we should add a command to view screen ?
-    Make directory stack menu interactive ?
-    Maybe add + and - commands to undo by commands, not command groups.
-    Remove items from :history command menu?
-    :edit, etc. in the menus.
-    :alias
-    Like gv but to select just pasted files (gp?).
-    Modify marks on rename operations.
-    :toupper and :tolower
-    Maybe accept regular expressions as second argument of :colo command.
-    Make :alink, :copy, ... accept globs (e.g. :co *.c).
-    Option to trigger completion on slash in command-line.
-    Live preview of color schemes.
-    "Blow directory" command to replace directory with its content.
-    Add file selector based on file extensions.
-    Add a key to menu mode to repeat command and update menu.
-    :edit - select the file after exiting editor?
-    Add a builtin function (or variable?) to get number of selected files
-        in a view (at least in current).  To be used in udf commands to
-        make a choice between using %b and %f.  Or maybe adding a macro
-        for this is a better way to go?
-    Use custom title for fuse mounts, e.g.:
-        - fuse://...
-        - /../fuse_file/...
+Questionable things:
+  * Full client-server operation of vifm (separate core from TUI).
+  * %p/%I macro to prompt user for input.
+  * Maybe re-position cursor after :!ls%u.
+  * Remove items from :history command menu?
+  * Maybe use @path syntax to load custom views.
+  * Add + and - commands to undo by commands, not command groups.
+  * :edit, etc. in the menus.
+  * Modify marks on rename operations.
+  * Remove delay on file overwrite.
+  * Make :undolist more interactive.
+  * Add GUI interface one day.
+  * Use custom title for fuse mounts
+  * Option to trigger completion on slash in command-line.
+  * Add file selector based on file extensions.
+  * :edit - select the file after exiting editor?
+  * Ability to enter a mount with multiple vifm instances without
+    reunpacking/reconnecting.
+  * Consider conflict resolution for :move and alike.
+  * Builtin function (or variable?) to get number of selected files.
+  * Make directory stack menu interactive?
+  * Key like ' but that executes bookmark?
+  * Tree-like view with support of foldings (for each directory).
+  * Consider adding "da" to remove all elements in :bmarks menu.
+  * Add a command to view screen.
+  * Command like :run[ &].
+  * Add :set to menu mode command-line.
+  * Add :mksession command and 'sessionoptions' option.
+  * Add :keepsel prefix.
+  * Termcap or terminfo support for keybindings
+  * Use mimetypes for matching file types.
+  * Add :increment and :decrement commands.
+  * Consider changing "dd" to "d" in menus.
+  * Consider caching directory sizes in vifminfo.
+  * Shell alias execution (and completion)
+  * Decide whether redefining command shortcuts like :fil should be allowed.
+  * Ability to hide command line when not active.
+  * Add tags to angle bracket maps in vimdoc.
+  * :alias
+  * Live preview of color schemes.
+  * More customizable trash.
+  * Add :toupper and :tolower functions.
+  * More trash-like trash.
+  * Accept regexps as second argument of :colo command.
 
-Code improvements.
-    Write more tests.
-    Improve logging (print back trace in some cases, increase verbosity).
-    Add logging levels.
-    Stay at the same file in some cases.
-    Replace a lot of fields in cmd_add_t struct with a set of bit flags.
-    Maybe move startup and initialization code out of config.c and vifm.c
-        to a separate file.
-    Get rid of repeatable `menu->win_rows - 3` in menu.c.
-    Get rid of repeatable `(menu->win_rows - 3 + 1)/2 - 1` in menu.c.
-    Think about window_rows and window_width members of FileView: why
-        do they contain (rows - 1) and (width - 1) ?
-    Reduce number of magic numbers.
-    List of errors, which are accumulated and shown at appropriate time (try
-        sourcing colorscheme with scripting errors to understand the issue).
-    Fix code duplication related to composing of undo messages.
-    Maybe show "An error occurred" message on fail to build menus like
-        apropos or locate instead of "No files found" (check that list is
-        empty AND an error occurred).
-    Continue replacing calls like `snprintf(foo, sizeof(foo), "%s", line)` with
-        copy_str().
-    Maybe allow specifying limit of input characters for command-line prompt
-        submode.  Would it make conflict resolution prompt easier to use?
-    Maybe pass var by pointer to var_free and cleanup the structure.
-    Write more tests for get_lines functions in string_array.c
-    Add a function to count number of elements in a NULL terminated array of
-        pointers.
-    Separate filelist data from view data (extract into separate structure).
-    Create separate utilities for engine/ part to make them self-consistent.
-    Maybe extract history related code out of filelist.c to separate file.
-    Move all histories from configuration to status (they are not configuration,
-        right?).
+Code improvements:
+  * Write more tests for get_lines functions in string_array.c
+  * Write more tests. (partially done)
+  * Replace calls like `snprintf(foo, sizeof(foo), "%s", line)` with
+    copy_str(). (partially done)
+  * Consider mentioning libncursesw5-dev in configuration error for
+    Debian-based systems.
+  * Extract history related code out of filelist.c to separate file.
+  * Reduce number of magic numbers. (partially done)
+  * Add function to count suze of NULL-terminated array.
+  * Think about window_rows and window_width members of FileView.
+  * Intermediate language for scripting. (partially done)
+  * Replace a lot of fields in cmd_add_t struct with a set of bit flags.
+  * Create separate utilities for engine/ part to make them self-contained.
+  * Fix code duplication related to composing of undo messages.
+  * Share common part of tests.
+  * Allow limiting input length for command-line prompt submode.
+  * Move all histories from config to status (they are not configs, right?).
+  * Get rid of repeatable `menu->win_rows - 3` in menu.c.
+  * Separate filelist data from view data (extract into separate structure).
+  * Improve logging (print back trace in some cases, increase verbosity).
+  * Try reimplementing cmd_core.c:line_pos by calling dispatch_line.
+  * Sane asynchronous signals handling.
+  * Move startup and init code out of config.c and vifm.c to separate file.
+  * Show "An error occurred" message on fail to build menus.
+  * Consider not using {} initializer.
+  * Note skipped tests in the tests output.
+  * Pass var by pointer to var_free and cleanup the structure.
+  * Logging levels.
