@@ -51,12 +51,14 @@ typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 /* Initializes command-line mode. */
 void init_cmdline_mode(void);
 
-void enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd,
+/* Enters command-line editing mode with specified submode.  cmd specifies
+ * initial value, ptr is submode-specific data to be passed back. */
+void enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[],
 		void *ptr);
 
 /* Enters command-line editing mode with prompt submode activated.  cmd
- * specifies initial value, cb - callback called on success, complete -
- * completion function, allow_ee - whether issuing external editor is
+ * specifies initial value, cb is callback called on success, complete is
+ * completion function, allow_ee specifies whether issuing external editor is
  * allowed. */
 void enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee);

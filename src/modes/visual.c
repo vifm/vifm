@@ -634,7 +634,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	enter_cmdline_mode(CLS_COMMAND, L"", NULL);
+	enter_cmdline_mode(CLS_COMMAND, "", NULL);
 }
 
 static void
@@ -985,7 +985,7 @@ activate_search(int count, int back, int external)
 	else
 	{
 		const CmdLineSubmode submode = back ? CLS_VBSEARCH : CLS_VFSEARCH;
-		enter_cmdline_mode(submode, L"", NULL);
+		enter_cmdline_mode(submode, "", NULL);
 	}
 }
 

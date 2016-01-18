@@ -523,7 +523,7 @@ cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 	menu->match_dir = NONE;
 	free(menu->regexp);
 	menu->regexp = NULL;
-	enter_cmdline_mode(CLS_MENU_FSEARCH, L"", menu);
+	enter_cmdline_mode(CLS_MENU_FSEARCH, "", menu);
 }
 
 static void
@@ -532,7 +532,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	cmds_conf.begin = 1;
 	cmds_conf.current = menu->pos;
 	cmds_conf.end = menu->len;
-	enter_cmdline_mode(CLS_MENU_COMMAND, L"", menu);
+	enter_cmdline_mode(CLS_MENU_COMMAND, "", menu);
 }
 
 static void
@@ -542,7 +542,7 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 	last_search_backward = 1;
 	menu->match_dir = NONE;
 	free(menu->regexp);
-	enter_cmdline_mode(CLS_MENU_BSEARCH, L"", menu);
+	enter_cmdline_mode(CLS_MENU_BSEARCH, "", menu);
 }
 
 /* Populates very custom (unsorted) view with list of files. */

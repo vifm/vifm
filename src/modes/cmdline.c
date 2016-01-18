@@ -533,10 +533,18 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd, void *ptr)
+enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 {
+	wchar_t *wcmd;
 	const wchar_t *prompt;
 	complete_cmd_func complete_func;
+
+	wcmd = to_wide_force(cmd);
+	if(wcmd == NULL)
+	{
+		show_error_msg("Error", "Not enough memory");
+		return;
+	}
 
 	sub_mode_ptr = ptr;
 	sub_mode = cl_sub_mode;
@@ -565,7 +573,8 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd, void *ptr)
 	}
 
 	complete_func = (sub_mode == CLS_FILTER) ? NULL : complete_cmd;
-	prepare_cmdline_mode(prompt, cmd, complete_func);
+	prepare_cmdline_mode(prompt, wcmd, complete_func);
+	free(wcmd);
 }
 
 void
