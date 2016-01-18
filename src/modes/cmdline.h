@@ -20,8 +20,6 @@
 #ifndef VIFM__MODES__CMDLINE_H__
 #define VIFM__MODES__CMDLINE_H__
 
-#include <stddef.h> /* wchar_t */
-
 #include "../utils/test_helpers.h"
 
 /* Submodes of command-line mode. */
@@ -60,12 +58,14 @@ void enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[],
  * specifies initial value, cb is callback called on success, complete is
  * completion function, allow_ee specifies whether issuing external editor is
  * allowed. */
-void enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
+void enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee);
 
 void redraw_cmdline(void);
 
 #ifdef TEST
+#include <stddef.h> /* wchar_t */
+
 #include "../compat/fs_limits.h"
 
 typedef enum
