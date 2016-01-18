@@ -682,7 +682,7 @@ filelist_khandler(menu_info *m, const wchar_t keys[])
 			show_error_msg("Command insertion", "No valid filename found");
 			return KHR_REFRESH_WINDOW;
 		}
-		menu_morph_into_cmdline(path);
+		menu_morph_into_cmdline(path, 1);
 		free(path);
 		return KHR_MORPHED_MENU;
 	}

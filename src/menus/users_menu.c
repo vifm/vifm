@@ -67,7 +67,7 @@ users_khandler(menu_info *m, const wchar_t keys[])
 	else if(wcscmp(keys, L"c") == 0)
 	{
 		/* Insert whole line. */
-		menu_morph_into_cmdline(m->items[m->pos]);
+		menu_morph_into_cmdline(m->items[m->pos],1);
 		return KHR_MORPHED_MENU;
 	}
 	return KHR_UNHANDLED;

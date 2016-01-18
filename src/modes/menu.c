@@ -947,28 +947,28 @@ load_menu_pos(void)
 }
 
 void
-menu_morph_into_cmdline(const char cmd[])
+menu_morph_into_cmdline(const char input[], int external)
 {
-	/* cmd might point to part of menu data. */
-	char *cmd_copy;
+	/* input might point to part of menu data. */
+	char *input_copy;
 
-	if(cmd[0] == '\0')
+	if(input[0] == '\0')
 	{
 		show_error_msg("Command insertion", "Ignoring empty command");
 		return;
 	}
 
-	cmd_copy = format_str("!%s", cmd);
-	if(cmd_copy == NULL)
+	input_copy = external ? format_str("!%s", input) : strdup(input);
+	if(input_copy == NULL)
 	{
 		show_error_msg("Error", "Not enough memory");
 		return;
 	}
 
 	leave_menu_mode(0);
-	enter_cmdline_mode(CLS_COMMAND, cmd_copy, NULL);
+	enter_cmdline_mode(CLS_COMMAND, input_copy, NULL);
 
-	free(cmd_copy);
+	free(input_copy);
 }
 
 /* Leaves menu mode, possibly resetting selection.  Does nothing if current mode

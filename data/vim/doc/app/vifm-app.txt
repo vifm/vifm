@@ -3808,6 +3808,9 @@ Selecting command executes it with empty arguments (|vifm-%a|).
 
 Type dd on a command to remove.
 
+c leaves menu preserving file selection and inserts right-hand side of
+selected command into command-line.
+
 Marks menu~
 
 Selecting a mark navigates to it.
