@@ -1,3 +1,8 @@
+0.8.1 to current
+
+	Added c key to :file menu that instead of running command inserts it into
+	command-line.  Thanks to filterfalse.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.

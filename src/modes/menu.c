@@ -64,7 +64,6 @@ static void menu_select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 
 static int key_handler(wchar_t key);
-static void leave_menu_mode(void);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
 static int can_scroll_menu_up(const menu_info *menu);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -107,10 +106,9 @@ static void cmd_zl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zz(key_info_t key_info, keys_info_t *keys_info);
 static int all_lines_visible(const menu_info *const menu);
-
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
-
+static void leave_menu_mode(int reset_selection);
 static int search_menu(menu_info *m, int start_pos);
 static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
@@ -274,7 +272,7 @@ key_handler(wchar_t key)
 	if(pass_combination_to_khandler(shortcut) && menu->len == 0)
 	{
 		show_error_msg("No more items in the menu", "Menu will be closed");
-		leave_menu_mode();
+		leave_menu_mode(1);
 	}
 
 	return 0;
@@ -325,19 +323,6 @@ menu_redraw(void)
 }
 
 static void
-leave_menu_mode(void)
-{
-	reset_popup_menu(menu);
-
-	clean_selected_files(view);
-	redraw_view(view);
-
-	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
-
-	update_ui_on_leaving();
-}
-
-static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_menu_up(menu))
@@ -363,7 +348,7 @@ can_scroll_menu_up(const menu_info *menu)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_menu_mode();
+	leave_menu_mode(1);
 }
 
 static void
@@ -650,7 +635,7 @@ dump_into_custom_view(int very)
 		return;
 	}
 
-	leave_menu_mode();
+	leave_menu_mode(1);
 }
 
 static void
@@ -659,7 +644,7 @@ cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 	if(pass_combination_to_khandler(L"dd") && menu->len == 0)
 	{
 		show_error_msg("Menu is closing", "No more items in the menu");
-		leave_menu_mode();
+		leave_menu_mode(1);
 	}
 }
 
@@ -690,7 +675,10 @@ pass_combination_to_khandler(const wchar_t keys[])
 			wrefresh(menu_win);
 			return 1;
 		case KHR_CLOSE_MENU:
-			leave_menu_mode();
+			leave_menu_mode(1);
+			return 1;
+		case KHR_MORPHED_MENU:
+			assert(!vle_mode_is(MENU_MODE) && "Wrong use of KHR_MORPHED_MENU.");
 			return 1;
 		case KHR_UNHANDLED:
 			return 0;
@@ -940,7 +928,7 @@ goto_cmd(const cmd_info_t *cmd_info)
 static int
 quit_cmd(const cmd_info_t *cmd_info)
 {
-	leave_menu_mode();
+	leave_menu_mode(1);
 	return 0;
 }
 
@@ -956,6 +944,55 @@ load_menu_pos(void)
 {
 	menu->top = saved_top;
 	menu->pos = saved_pos;
+}
+
+void
+menu_morph_into_cmdline(const char cmd[])
+{
+	/* cmd might point to part of menu data. */
+	char *cmd_copy;
+
+	if(cmd[0] == '\0')
+	{
+		show_error_msg("Command insertion", "Ignoring empty command");
+		return;
+	}
+
+	cmd_copy = format_str("!%s", cmd);
+	if(cmd_copy == NULL)
+	{
+		show_error_msg("Error", "Not enough memory");
+		return;
+	}
+
+	leave_menu_mode(0);
+	enter_cmdline_mode(CLS_COMMAND, cmd_copy, NULL);
+
+	free(cmd_copy);
+}
+
+/* Leaves menu mode, possibly resetting selection.  Does nothing if current mode
+ * isn't menu mode. */
+static void
+leave_menu_mode(int reset_selection)
+{
+	/* Some menu implementation could have switched mode from one of handlers. */
+	if(!vle_mode_is(MENU_MODE))
+	{
+		return;
+	}
+
+	reset_popup_menu(menu);
+
+	if(reset_selection)
+	{
+		clean_selected_files(view);
+		redraw_view(view);
+	}
+
+	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
+
+	update_ui_on_leaving();
 }
 
 int

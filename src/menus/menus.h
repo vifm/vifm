@@ -36,6 +36,7 @@ typedef enum
 {
 	KHR_REFRESH_WINDOW, /* Menu window refresh is needed. */
 	KHR_CLOSE_MENU,     /* Menu mode should be left. */
+	KHR_MORPHED_MENU,   /* Menu was morphed menu_morph_into_cmdline. */
 	KHR_UNHANDLED,      /* Passed key wasn't handled. */
 }
 KHandlerResponse;

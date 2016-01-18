@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 17
+*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3847,6 +3847,9 @@ Filetype menu~
 
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
+
+c leaves menu preserving file selection and inserts command after :! in
+command-line mode.
 
 Grep, find, locate, bookmarks and user menu with navigation (%M macro)~
 

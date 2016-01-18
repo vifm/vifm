@@ -19,12 +19,14 @@
 
 #include "filetypes_menu.h"
 
+#include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strlen() */
 
 #include "../compat/fs_limits.h"
 #include "../int/file_magic.h"
+#include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../ui/fileview.h"
 #include "../ui/ui.h"
@@ -41,6 +43,7 @@ static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
 static int execute_filetype_cb(FileView *view, menu_info *m);
+static KHandlerResponse filetypes_khandler(menu_info *m, const wchar_t keys[]);
 static void fill_menu_from_records(menu_info *m,
 		const assoc_records_t *records);
 static int max_desc_len(const assoc_records_t *records);
@@ -62,6 +65,7 @@ show_file_menu(FileView *view, int background)
 			strdup("No programs set for this filetype"));
 
 	m.execute_handler = &execute_filetype_cb;
+	m.key_handler = &filetypes_khandler;
 	m.extra_data = (background ? 1 : 0);
 
 	max_len = MAX(max_desc_len(&ft), max_desc_len(&magic));
@@ -149,6 +153,23 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	clean_selected_files(view);
 	redraw_view(view);
 	return 0;
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+filetypes_khandler(menu_info *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"c") == 0)
+	{
+		const char *prog_str = after_first(m->data[m->pos], '|');
+		if(prog_str[0] != '\0')
+		{
+			menu_morph_into_cmdline(prog_str);
+			return KHR_MORPHED_MENU;
+		}
+	}
+	return KHR_UNHANDLED;
 }
 
 int

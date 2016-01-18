@@ -43,6 +43,10 @@ void save_menu_pos(void);
 
 void load_menu_pos(void);
 
+/* Leaves menu and starts command-line mode.  To be used from keyboard
+ * handlers, which in this case must return KHR_MORPHED_MENU. */
+void menu_morph_into_cmdline(const char cmd[]);
+
 /* Performs search of pattern among menu items.  NULL pattern requests use of
  * results of the last used pattern.  Returns new value for save_msg flag. */
 int search_menu_list(const char pattern[], menu_info *m);
