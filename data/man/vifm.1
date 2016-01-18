@@ -4623,6 +4623,14 @@ mode except for grep menu.  Pressing Enter key has the same effect.
 
 e \- open selected path in the editor, stays in menu mode.
 
+c \- leave menu preserving file selection and insert file name after :! in
+command-line mode.
+
+.B User menu without navigation (%m macro)
+
+c leaves menu preserving file selection and inserts whole line after :! in
+command-line mode.
+
 .B Grep menu
 
 Selecting file (via Enter or l key) opens it in editor set by 'vicmd' at given

@@ -1,7 +1,7 @@
 0.8.1 to current
 
-	Added c key to :file menu that instead of running command inserts it into
-	command-line.  Thanks to filterfalse.
+	Added c key to menus that inserts parts of menu line into command-line.
+	Thanks to filterfalse.
 
 0.8.1-beta to 0.8.1
 

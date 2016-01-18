@@ -672,6 +672,21 @@ filelist_khandler(menu_info *m, const wchar_t keys[])
 		(void)goto_selected_file(curr_view, m->items[m->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
+	else if(wcscmp(keys, L"c") == 0)
+	{
+		/* Insert just file name. */
+		int line_num;
+		char *const path = parse_file_spec(m->items[m->pos], &line_num);
+		if(path == NULL)
+		{
+			show_error_msg("Command insertion", "No valid filename found");
+			return KHR_REFRESH_WINDOW;
+		}
+		menu_morph_into_cmdline(path);
+		free(path);
+		return KHR_MORPHED_MENU;
+	}
+
 	return KHR_UNHANDLED;
 }
 

@@ -3860,6 +3860,15 @@ gf                                             *vifm-m_gf*
 e                                              *vifm-m_e*
     open selected path in the editor, stays in menu mode.
 
+c                                              *vifm-m_c*
+    leave menu preserving file selection and insert file name after :! in
+    command-line mode.
+
+User menu without navigation (%m macro)~
+
+c leaves menu preserving file selection and inserts whole line after :! in
+command-line mode.
+
 Grep menu~
 
 Selecting file (via Enter or l key) opens it in editor set by |vifm-'vicmd'|
