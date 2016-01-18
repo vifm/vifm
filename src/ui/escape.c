@@ -23,7 +23,7 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* isdigit() */
+#include <ctype.h> /* iscntrl() isdigit() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() malloc() realloc() strtol() */
 #include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen()
@@ -618,10 +618,10 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 		}
 		*screen_width = 0;
 	}
-	else if((unsigned char)str[0] < (unsigned char)' ')
+	else if(iscntrl((unsigned char)str[0]))
 	{
 		buf[0] = '^';
-		buf[1] = ('A' - 1) + str[0];
+		buf[1] = str[0] ^ 64;
 		buf[2] = '\0';
 		*screen_width = 2;
 	}
