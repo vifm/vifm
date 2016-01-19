@@ -112,14 +112,23 @@ commands_khandler(menu_info *m, const wchar_t keys[])
 	}
 	else if(wcscmp(keys, L"c") == 0)
 	{
-		const char *rhs = skip_whitespace(after_first(m->items[m->pos], ' '));
+		const char *const rhs = skip_whitespace(after_first(m->items[m->pos], ' '));
 		/* Insert command RHS. */
 		if(rhs[0] == ':')
 		{
 			menu_morph_into_cmdline(CLS_COMMAND, skip_whitespace(rhs + 1), 0);
 		}
+		else if(rhs[0] == '/')
+		{
+			menu_morph_into_cmdline(CLS_FSEARCH, rhs + 1, 0);
+		}
+		else if(rhs[0] == '=')
+		{
+			menu_morph_into_cmdline(CLS_FILTER, rhs + 1, 0);
+		}
 		else
 		{
+			/* filter commands go here. */
 			menu_morph_into_cmdline(CLS_COMMAND, rhs, (rhs[0] != '!'));
 		}
 		return KHR_MORPHED_MENU;
