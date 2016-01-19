@@ -3885,6 +3885,9 @@ Command-line history menu~
 Selecting an item executes it as command-line command, search query or local
 filter.
 
+c leaves menu preserving file selection and inserts line into command-line of
+appropriate kind.
+
 Volumes menu~
 
 Selecting a drive navigates previously active pane to the root of that drive.

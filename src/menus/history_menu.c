@@ -23,6 +23,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
+#include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
 #include "../utils/string_array.h"
@@ -43,6 +44,7 @@ HistoryType;
 static int show_history(FileView *view, HistoryType type, hist_t *hist,
 		const char title[]);
 static int execute_history_cb(FileView *view, menu_info *m);
+static KHandlerResponse history_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_cmdhistory_menu(FileView *view)
@@ -83,6 +85,7 @@ show_history(FileView *view, HistoryType type, hist_t *hist, const char title[])
 
 	init_menu_info(&m, strdup(title), strdup("History disabled or empty"));
 	m.execute_handler = &execute_history_cb;
+	m.key_handler = &history_khandler;
 	m.extra_data = type;
 
 	for(i = 0; i <= hist->pos; ++i)
@@ -124,6 +127,33 @@ execute_history_cb(FileView *view, menu_info *m)
 	}
 
 	return 0;
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+history_khandler(menu_info *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"c") == 0)
+	{
+		/* Initialize to prevent possible compiler warnings. */
+		CmdLineSubmode submode = CLS_COMMAND;
+		switch((HistoryType)m->extra_data)
+		{
+			case CMDHISTORY:     submode = CLS_COMMAND; break;
+			case FSEARCHHISTORY: submode = CLS_FSEARCH; break;
+			case BSEARCHHISTORY: submode = CLS_BSEARCH; break;
+			case FILTERHISTORY:  submode = CLS_FILTER; break;
+
+			case PROMPTHISTORY:
+				/* Can't edit prompt input. */
+				return KHR_UNHANDLED;
+		}
+
+		menu_morph_into_cmdline(submode, m->items[m->pos], 0);
+		return KHR_MORPHED_MENU;
+	}
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
