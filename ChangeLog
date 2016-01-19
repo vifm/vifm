@@ -3,6 +3,8 @@
 	Added c key to menus that inserts parts of menu line into command-line.
 	Thanks to filterfalse.
 
+	Apply local filter on picking element of `:history filter` menu.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.

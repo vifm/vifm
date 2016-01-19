@@ -29,57 +29,54 @@
 #include "../cmd_core.h"
 #include "menus.h"
 
-enum
+/* Concrete type of displayed history. */
+typedef enum
 {
-	CMDHISTORY_MENU,
-	FSEARCHHISTORY_MENU,
-	BSEARCHHISTORY_MENU,
-	PROMPTHISTORY_MENU,
-	FILTERHISTORY_MENU,
-};
+	CMDHISTORY,     /* Command history. */
+	FSEARCHHISTORY, /* Forward search history. */
+	BSEARCHHISTORY, /* Backward search history. */
+	PROMPTHISTORY,  /* Prompt input history. */
+	FILTERHISTORY,  /* Local filter history. */
+}
+HistoryType;
 
-static int show_history(FileView *view, int type, hist_t *hist,
+static int show_history(FileView *view, HistoryType type, hist_t *hist,
 		const char title[]);
 static int execute_history_cb(FileView *view, menu_info *m);
 
 int
 show_cmdhistory_menu(FileView *view)
 {
-	return show_history(view, CMDHISTORY_MENU, &cfg.cmd_hist,
-			"Command Line History");
+	return show_history(view, CMDHISTORY, &cfg.cmd_hist, "Command Line History");
 }
 
 int
 show_fsearchhistory_menu(FileView *view)
 {
-	return show_history(view, FSEARCHHISTORY_MENU, &cfg.search_hist,
-			"Search History");
+	return show_history(view, FSEARCHHISTORY, &cfg.search_hist, "Search History");
 }
 
 int
 show_bsearchhistory_menu(FileView *view)
 {
-	return show_history(view, BSEARCHHISTORY_MENU, &cfg.search_hist,
-			"Search History");
+	return show_history(view, BSEARCHHISTORY, &cfg.search_hist, "Search History");
 }
 
 int
 show_prompthistory_menu(FileView *view)
 {
-	return show_history(view, PROMPTHISTORY_MENU, &cfg.prompt_hist,
-			"Prompt History");
+	return show_history(view, PROMPTHISTORY, &cfg.prompt_hist, "Prompt History");
 }
 
 int
 show_filterhistory_menu(FileView *view)
 {
-	return show_history(view, FILTERHISTORY_MENU, &cfg.filter_hist,
-			"Filter History");
+	return show_history(view, FILTERHISTORY, &cfg.filter_hist, "Filter History");
 }
 
 /* Returns non-zero if status bar message should be saved. */
 static int
-show_history(FileView *view, int type, hist_t *hist, const char title[])
+show_history(FileView *view, HistoryType type, hist_t *hist, const char title[])
 {
 	int i;
 	static menu_info m;
@@ -88,7 +85,7 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 	m.execute_handler = &execute_history_cb;
 	m.extra_data = type;
 
-	for(i = 0; i <= hist->pos; i++)
+	for(i = 0; i <= hist->pos; ++i)
 	{
 		m.len = add_to_string_array(&m.items, m.len, 1, hist->items[i]);
 	}
@@ -96,22 +93,33 @@ show_history(FileView *view, int type, hist_t *hist, const char title[])
 	return display_menu(&m, view);
 }
 
+/* Callback that is invoked when menu item is selected.  Should return non-zero
+ * to stay in menu mode. */
 static int
 execute_history_cb(FileView *view, menu_info *m)
 {
-	switch(m->extra_data)
+	const char *const line = m->items[m->pos];
+
+	switch((HistoryType)m->extra_data)
 	{
-		case CMDHISTORY_MENU:
-			cfg_save_command_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, CIT_COMMAND);
+		case CMDHISTORY:
+			cfg_save_command_history(line);
+			exec_commands(line, view, CIT_COMMAND);
 			break;
-		case FSEARCHHISTORY_MENU:
-			cfg_save_search_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, CIT_FSEARCH_PATTERN);
+		case FSEARCHHISTORY:
+			cfg_save_search_history(line);
+			exec_commands(line, view, CIT_FSEARCH_PATTERN);
 			break;
-		case BSEARCHHISTORY_MENU:
-			cfg_save_search_history(m->items[m->pos]);
-			exec_commands(m->items[m->pos], view, CIT_BSEARCH_PATTERN);
+		case BSEARCHHISTORY:
+			cfg_save_search_history(line);
+			exec_commands(line, view, CIT_BSEARCH_PATTERN);
+			break;
+		case FILTERHISTORY:
+			cfg_save_filter_history(line);
+			exec_commands(line, view, CIT_FILTER_PATTERN);
+			break;
+		case PROMPTHISTORY:
+			/* Can't replay prompt input. */
 			break;
 	}
 

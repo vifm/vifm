@@ -131,9 +131,9 @@ form_filetype_data_entry(assoc_record_t prog)
 	return result;
 }
 
-/* Callback that is called when menu item is selected.  Should return non-zero
+/* Callback that is invoked when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
-int
+static int
 execute_filetype_cb(FileView *view, menu_info *m)
 {
 	if(view->dir_entry[view->list_pos].type == FT_DIR && m->pos == 0)

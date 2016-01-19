@@ -3882,7 +3882,8 @@ See above for "gf" and "e" keys description.
 
 Command-line history menu~
 
-Selecting an item will execute it as command-line command or search query.
+Selecting an item executes it as command-line command, search query or local
+filter.
 
 Volumes menu~
 
