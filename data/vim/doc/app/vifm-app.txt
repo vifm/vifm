@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 18
+*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1099,7 +1099,7 @@ The builtin commands are:
     each next link a corresponding name from the argument list.
 
                                                *vifm-:apropos*
-:apropos manpage
+:apropos keyword...
     create a menu of items returned by the apropos command.  Selecting an item
     in the menu opens corresponding man page.  By default the command relies
     on the external "apropos" utility, which can be customized by altering
