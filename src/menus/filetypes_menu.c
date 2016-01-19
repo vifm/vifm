@@ -165,7 +165,7 @@ filetypes_khandler(menu_info *m, const wchar_t keys[])
 		const char *prog_str = after_first(m->data[m->pos], '|');
 		if(prog_str[0] != '\0')
 		{
-			menu_morph_into_cmdline(prog_str, 1);
+			menu_morph_into_cmdline(CLS_COMMAND, prog_str, 1);
 			return KHR_MORPHED_MENU;
 		}
 	}

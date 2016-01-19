@@ -22,6 +22,7 @@
 #include <string.h> /* strdup() */
 
 #include "../ui/ui.h"
+#include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "menus.h"
 
@@ -67,7 +68,7 @@ users_khandler(menu_info *m, const wchar_t keys[])
 	else if(wcscmp(keys, L"c") == 0)
 	{
 		/* Insert whole line. */
-		menu_morph_into_cmdline(m->items[m->pos],1);
+		menu_morph_into_cmdline(CLS_COMMAND, m->items[m->pos], 1);
 		return KHR_MORPHED_MENU;
 	}
 	return KHR_UNHANDLED;

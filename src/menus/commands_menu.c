@@ -28,6 +28,7 @@
 
 #include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
+#include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
@@ -115,11 +116,11 @@ commands_khandler(menu_info *m, const wchar_t keys[])
 		/* Insert command RHS. */
 		if(rhs[0] == ':')
 		{
-			menu_morph_into_cmdline(skip_whitespace(rhs + 1), 0);
+			menu_morph_into_cmdline(CLS_COMMAND, skip_whitespace(rhs + 1), 0);
 		}
 		else
 		{
-			menu_morph_into_cmdline(rhs, (rhs[0] != '!'));
+			menu_morph_into_cmdline(CLS_COMMAND, rhs, (rhs[0] != '!'));
 		}
 		return KHR_MORPHED_MENU;
 	}

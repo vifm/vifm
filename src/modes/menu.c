@@ -947,7 +947,8 @@ load_menu_pos(void)
 }
 
 void
-menu_morph_into_cmdline(const char input[], int external)
+menu_morph_into_cmdline(CmdLineSubmode submode, const char input[],
+		int external)
 {
 	/* input might point to part of menu data. */
 	char *input_copy;
@@ -966,7 +967,7 @@ menu_morph_into_cmdline(const char input[], int external)
 	}
 
 	leave_menu_mode(0);
-	enter_cmdline_mode(CLS_COMMAND, input_copy, NULL);
+	enter_cmdline_mode(submode, input_copy, NULL);
 
 	free(input_copy);
 }
