@@ -28,6 +28,7 @@
 
 #include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
+#include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
@@ -97,8 +98,9 @@ execute_commands_cb(FileView *view, menu_info *m)
 static KHandlerResponse
 commands_khandler(menu_info *m, const wchar_t keys[])
 {
-	if(wcscmp(keys, L"dd") == 0) /* Remove element. */
+	if(wcscmp(keys, L"dd") == 0)
 	{
+		/* Remove element. */
 		char cmd_buf[512];
 
 		break_at(m->items[m->pos], ' ');
@@ -107,6 +109,29 @@ commands_khandler(menu_info *m, const wchar_t keys[])
 
 		remove_current_item(m);
 		return KHR_REFRESH_WINDOW;
+	}
+	else if(wcscmp(keys, L"c") == 0)
+	{
+		const char *const rhs = skip_whitespace(after_first(m->items[m->pos], ' '));
+		/* Insert command RHS. */
+		if(rhs[0] == ':')
+		{
+			menu_morph_into_cmdline(CLS_COMMAND, skip_whitespace(rhs + 1), 0);
+		}
+		else if(rhs[0] == '/')
+		{
+			menu_morph_into_cmdline(CLS_FSEARCH, rhs + 1, 0);
+		}
+		else if(rhs[0] == '=')
+		{
+			menu_morph_into_cmdline(CLS_FILTER, rhs + 1, 0);
+		}
+		else
+		{
+			/* filter commands go here. */
+			menu_morph_into_cmdline(CLS_COMMAND, rhs, (rhs[0] != '!'));
+		}
+		return KHR_MORPHED_MENU;
 	}
 	return KHR_UNHANDLED;
 }

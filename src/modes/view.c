@@ -926,14 +926,14 @@ static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	vi->search_repeat = key_info.count;
-	enter_cmdline_mode(CLS_VWFSEARCH, L"", NULL);
+	enter_cmdline_mode(CLS_VWFSEARCH, "", NULL);
 }
 
 static void
 cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 {
 	vi->search_repeat = key_info.count;
-	enter_cmdline_mode(CLS_VWBSEARCH, L"", NULL);
+	enter_cmdline_mode(CLS_VWBSEARCH, "", NULL);
 }
 
 /* Toggles automatic forwarding of file. */

@@ -22,6 +22,7 @@
 
 #include "../ui/ui.h"
 #include "../menus/menus.h"
+#include "cmdline.h"
 
 /* Initiailizes menu mode. */
 void init_menu_mode(void);
@@ -42,6 +43,12 @@ void update_menu(void);
 void save_menu_pos(void);
 
 void load_menu_pos(void);
+
+/* Leaves menu and starts command-line mode.  external flag shows whether
+ * cmd should be prepended with ":!".  To be used from keyboard handlers, which
+ * in this case must return KHR_MORPHED_MENU. */
+void menu_morph_into_cmdline(CmdLineSubmode submode, const char input[],
+		int external);
 
 /* Performs search of pattern among menu items.  NULL pattern requests use of
  * results of the last used pattern.  Returns new value for save_msg flag. */

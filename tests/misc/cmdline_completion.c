@@ -436,6 +436,12 @@ TEST(abbreviations)
 
 TEST(bang_abs_path_completion)
 {
+#if defined(_WIN32) && !defined(_WIN64)
+#define WPRINTF_MBSTR L"S"
+#else
+#define WPRINTF_MBSTR L"s"
+#endif
+
 	wchar_t cmd[PATH_MAX];
 	char cwd[PATH_MAX];
 
@@ -455,6 +461,8 @@ TEST(bang_abs_path_completion)
 	assert_int_equal(2, vle_compl_get_count());
 
 	assert_success(unlink("exec-for-completion" SUFFIX));
+
+#undef WPRINTF_MBSTR
 }
 
 TEST(bmark_tags_are_completed)

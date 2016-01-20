@@ -22,9 +22,12 @@
 #include <string.h> /* strdup() */
 
 #include "../ui/ui.h"
+#include "../modes/cmdline.h"
+#include "../modes/menu.h"
 #include "menus.h"
 
 static int execute_users_cb(FileView *view, menu_info *m);
+static KHandlerResponse users_khandler(menu_info *m, const wchar_t keys[]);
 
 int
 show_user_menu(FileView *view, const char command[], int navigate)
@@ -34,10 +37,7 @@ show_user_menu(FileView *view, const char command[], int navigate)
 	m.extra_data = navigate;
 
 	m.execute_handler = &execute_users_cb;
-	if(navigate)
-	{
-		m.key_handler = &filelist_khandler;
-	}
+	m.key_handler = &users_khandler;
 
 	return capture_output_to_menu(view, command, 1, &m);
 }
@@ -53,6 +53,25 @@ execute_users_cb(FileView *view, menu_info *m)
 		(void)goto_selected_file(view, m->items[m->pos], 0);
 	}
 	return 0;
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+users_khandler(menu_info *m, const wchar_t keys[])
+{
+	const int navigate = m->extra_data;
+	if(navigate)
+	{
+		return filelist_khandler(m, keys);
+	}
+	else if(wcscmp(keys, L"c") == 0)
+	{
+		/* Insert whole line. */
+		menu_morph_into_cmdline(CLS_COMMAND, m->items[m->pos], 1);
+		return KHR_MORPHED_MENU;
+	}
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

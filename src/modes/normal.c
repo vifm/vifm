@@ -528,19 +528,23 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 {
-	wchar_t buf[16] = L".!";
+	char prefix[16];
 	if(key_info.count != NO_COUNT_GIVEN && key_info.count != 1)
 	{
 		if(curr_view->list_pos + key_info.count >= curr_view->list_rows)
 		{
-			wcscpy(buf, L".,$!");
+			strcpy(prefix, ".,$!");
 		}
 		else
 		{
-			vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
+			snprintf(prefix, ARRAY_LEN(prefix), ".,.+%d!", key_info.count - 1);
 		}
 	}
-	enter_cmdline_mode(CLS_COMMAND, buf, NULL);
+	else
+	{
+		strcpy(prefix, ".!");
+	}
+	enter_cmdline_mode(CLS_COMMAND, prefix, NULL);
 }
 
 /* Processes !<selector> normal mode command.  Processes results of applying
@@ -1260,9 +1264,7 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_equal(key_info_t key_info, keys_info_t *keys_info)
 {
-	wchar_t *previous = to_wide(curr_view->local_filter.filter.raw);
-	enter_cmdline_mode(CLS_FILTER, previous, NULL);
-	free(previous);
+	enter_cmdline_mode(CLS_FILTER, curr_view->local_filter.filter.raw, NULL);
 }
 
 static void
@@ -1299,12 +1301,13 @@ cmd_zero(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
-	wchar_t buf[16] = L"";
+	char prefix[16];
+	prefix[0] = '\0';
 	if(key_info.count != NO_COUNT_GIVEN)
 	{
-		vifm_swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
+		snprintf(prefix, ARRAY_LEN(prefix), ".,.+%d", key_info.count - 1);
 	}
-	enter_cmdline_mode(CLS_COMMAND, buf, NULL);
+	enter_cmdline_mode(CLS_COMMAND, prefix, NULL);
 }
 
 static void
@@ -1711,7 +1714,7 @@ activate_search(int count, int back, int external)
 	else
 	{
 		const CmdLineSubmode submode = back ? CLS_BSEARCH : CLS_FSEARCH;
-		enter_cmdline_mode(submode, L"", NULL);
+		enter_cmdline_mode(submode, "", NULL);
 	}
 }
 

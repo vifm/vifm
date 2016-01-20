@@ -533,50 +533,11 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const wchar_t *cmd, void *ptr)
-{
-	const wchar_t *prompt;
-	complete_cmd_func complete_func;
-
-	sub_mode_ptr = ptr;
-	sub_mode = cl_sub_mode;
-	sub_mode_allows_ee = 0;
-
-	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
-	{
-		prompt = L":";
-	}
-	else if(sub_mode == CLS_FILTER)
-	{
-		prompt = L"=";
-	}
-	else if(is_forward_search(sub_mode))
-	{
-		prompt = L"/";
-	}
-	else if(is_backward_search(sub_mode))
-	{
-		prompt = L"?";
-	}
-	else
-	{
-		assert(0 && "Unknown command line submode.");
-		prompt = L"E";
-	}
-
-	complete_func = (sub_mode == CLS_FILTER) ? NULL : complete_cmd;
-	prepare_cmdline_mode(prompt, cmd, complete_func);
-}
-
-void
-enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
-		complete_cmd_func complete, int allow_ee)
+enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 {
 	wchar_t *wcmd;
-
-	sub_mode_ptr = cb;
-	sub_mode = CLS_PROMPT;
-	sub_mode_allows_ee = allow_ee;
+	const wchar_t *wprompt;
+	complete_cmd_func complete_func;
 
 	wcmd = to_wide_force(cmd);
 	if(wcmd == NULL)
@@ -585,7 +546,60 @@ enter_prompt_mode(const wchar_t prompt[], const char cmd[], prompt_cb cb,
 		return;
 	}
 
-	prepare_cmdline_mode(prompt, wcmd, complete);
+	sub_mode_ptr = ptr;
+	sub_mode = cl_sub_mode;
+	sub_mode_allows_ee = 0;
+
+	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
+	{
+		wprompt = L":";
+	}
+	else if(sub_mode == CLS_FILTER)
+	{
+		wprompt = L"=";
+	}
+	else if(is_forward_search(sub_mode))
+	{
+		wprompt = L"/";
+	}
+	else if(is_backward_search(sub_mode))
+	{
+		wprompt = L"?";
+	}
+	else
+	{
+		assert(0 && "Unknown command line submode.");
+		wprompt = L"E";
+	}
+
+	complete_func = (sub_mode == CLS_FILTER) ? NULL : complete_cmd;
+	prepare_cmdline_mode(wprompt, wcmd, complete_func);
+	free(wcmd);
+}
+
+void
+enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
+		complete_cmd_func complete, int allow_ee)
+{
+	wchar_t *wprompt;
+	wchar_t *wcmd;
+
+	sub_mode_ptr = cb;
+	sub_mode = CLS_PROMPT;
+	sub_mode_allows_ee = allow_ee;
+
+	wprompt = to_wide_force(prompt);
+	wcmd = to_wide_force(cmd);
+	if(wprompt == NULL || wcmd == NULL)
+	{
+		show_error_msg("Error", "Not enough memory");
+	}
+	else
+	{
+		prepare_cmdline_mode(wprompt, wcmd, complete);
+	}
+
+	free(wprompt);
 	free(wcmd);
 }
 

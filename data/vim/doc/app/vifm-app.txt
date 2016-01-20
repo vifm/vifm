@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 17
+*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1099,7 +1099,7 @@ The builtin commands are:
     each next link a corresponding name from the argument list.
 
                                                *vifm-:apropos*
-:apropos manpage
+:apropos keyword...
     create a menu of items returned by the apropos command.  Selecting an item
     in the menu opens corresponding man page.  By default the command relies
     on the external "apropos" utility, which can be customized by altering
@@ -3808,6 +3808,9 @@ Selecting command executes it with empty arguments (|vifm-%a|).
 
 Type dd on a command to remove.
 
+c leaves menu preserving file selection and inserts right-hand side of
+selected command into command-line.
+
 Marks menu~
 
 Selecting a mark navigates to it.
@@ -3848,6 +3851,9 @@ Filetype menu~
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
 
+c leaves menu preserving file selection and inserts command after :! in
+command-line mode.
+
 Grep, find, locate, bookmarks and user menu with navigation (%M macro)~
 
 gf                                             *vifm-m_gf*
@@ -3856,6 +3862,15 @@ gf                                             *vifm-m_gf*
 
 e                                              *vifm-m_e*
     open selected path in the editor, stays in menu mode.
+
+c                                              *vifm-m_c*
+    leave menu preserving file selection and insert file name after :! in
+    command-line mode.
+
+User menu without navigation (%m macro)~
+
+c leaves menu preserving file selection and inserts whole line after :! in
+command-line mode.
 
 Grep menu~
 
@@ -3867,7 +3882,11 @@ See above for "gf" and "e" keys description.
 
 Command-line history menu~
 
-Selecting an item will execute it as command-line command or search query.
+Selecting an item executes it as command-line command, search query or local
+filter.
+
+c leaves menu preserving file selection and inserts line into command-line of
+appropriate kind.
 
 Volumes menu~
 
@@ -4187,7 +4206,7 @@ Specifies type of text alignment within a column.  Two types are supported:
  - dynamic align
 
     It's like left alignment, but when the text is bigger than the column,
-    the alignment is made at the right (so the of part of the field is always
+    the alignment is made at the right (so the part of the field is always
     visible). >
 
      set viewcolumns=*{name}

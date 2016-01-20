@@ -945,7 +945,7 @@ rename_current_file(FileView *view, int name_only)
 	}
 
 	clean_selected_files(view);
-	enter_prompt_mode(L"New name: ", filename, rename_file_cb,
+	enter_prompt_mode("New name: ", filename, rename_file_cb,
 			complete_filename_only, 1);
 }
 
@@ -1561,12 +1561,14 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 void
 change_owner(void)
 {
-	mark_selection_or_current(curr_view);
 #ifndef _WIN32
-	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner, 0);
+	complete_cmd_func complete_func = &complete_owner;
 #else
-	enter_prompt_mode(L"New owner: ", "", change_owner_cb, NULL, 0);
+	complete_cmd_func complete_func = NULL;
 #endif
+
+	mark_selection_or_current(curr_view);
+	enter_prompt_mode("New owner: ", "", &change_owner_cb, complete_func, 0);
 }
 
 #ifndef _WIN32
@@ -1625,12 +1627,14 @@ change_group_cb(const char new_group[])
 void
 change_group(void)
 {
-	mark_selection_or_current(curr_view);
 #ifndef _WIN32
-	enter_prompt_mode(L"New group: ", "", change_group_cb, &complete_group, 0);
+	complete_cmd_func complete_func = &complete_group;
 #else
-	enter_prompt_mode(L"New group: ", "", change_group_cb, NULL, 0);
+	complete_cmd_func complete_func = NULL;
 #endif
+
+	mark_selection_or_current(curr_view);
+	enter_prompt_mode("New group: ", "", &change_group_cb, complete_func, 0);
 }
 
 #ifndef _WIN32
@@ -1718,7 +1722,7 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	enter_prompt_mode(L"Link target: ", linkto, &change_link_cb,
+	enter_prompt_mode("Link target: ", linkto, &change_link_cb,
 			&complete_filename, 0);
 	return 0;
 }
@@ -1734,11 +1738,10 @@ complete_filename(const char str[], void *arg)
 static void
 prompt_dest_name(const char *src_name)
 {
-	wchar_t buf[256];
+	char prompt[128 + PATH_MAX];
 
-	vifm_swprintf(buf, ARRAY_LEN(buf), L"New name for %" WPRINTF_MBSTR L": ",
-			src_name);
-	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL, 0);
+	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
+	enter_prompt_mode(prompt, src_name, put_confirm_cb, NULL, 0);
 }
 
 /* The force argument enables overwriting/replacing/merging.  Returns 0 on

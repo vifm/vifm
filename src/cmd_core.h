@@ -38,7 +38,7 @@ typedef enum
 	CIT_VBSEARCH_PATTERN,  /* Backward search in visual mode. */
 	CIT_VWFSEARCH_PATTERN, /* Forward search in view mode. */
 	CIT_VWBSEARCH_PATTERN, /* Backward search in view mode. */
-	CIT_FILTER_PATTERN,    /* Filter value. */
+	CIT_FILTER_PATTERN,    /* Local filter value. */
 	CIT_PROMPT_INPUT,      /* Response to an arbitrary input request. */
 }
 CmdInputType;

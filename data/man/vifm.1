@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 17, 2016" "vifm 0.8.1"
+.TH VIFM 1 "January 19, 2016" "vifm 0.8.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1255,7 +1255,7 @@ next link a corresponding name from the argument list.
 .TP
 .BI "                                         :apropos"
 .TP
-.BI ":apropos manpage"
+.BI ":apropos keyword..."
 create a menu of items returned by the apropos command.  Selecting an item in
 the menu opens corresponding man page.  By default the command relies on the
 external "apropos" utility, which can be customized by altering value of
@@ -4563,6 +4563,9 @@ automatically to allow view several pages one by one.
 
 Type dd on an abbreviation to remove it.
 
+c leaves menu preserving file selection and inserts right-hand side of
+selected command into command-line.
+
 .B Color scheme menu
 
 Selecting name of a color scheme applies it the same way as if
@@ -4613,12 +4616,23 @@ top of the stack.
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
 
+c leaves menu preserving file selection and inserts command after :! in
+command-line mode.
+
 .B Grep, find, locate, bookmarks and user menu with navigation (%M macro)
 
 gf \- navigate previously active view to currently selected item.  Leaves menu
 mode except for grep menu.  Pressing Enter key has the same effect.
 
 e \- open selected path in the editor, stays in menu mode.
+
+c \- leave menu preserving file selection and insert file name after :! in
+command-line mode.
+
+.B User menu without navigation (%m macro)
+
+c leaves menu preserving file selection and inserts whole line after :! in
+command-line mode.
 
 .B Grep menu
 
@@ -4630,7 +4644,11 @@ See above for "gf" and "e" keys description.
 
 .B Command-line history menu
 
-Selecting an item will execute it as command-line command or search query.
+Selecting an item executes it as command-line command, search query or local
+filter.
+
+c leaves menu preserving file selection and inserts line into command-line of
+appropriate kind.
 
 .B Volumes menu
 
@@ -4974,7 +4992,7 @@ right align (default)
 dynamic align
 
 It's like left alignment, but when the text is bigger than the column, the
-alignment is made at the right (so the of part of the field is always visible).
+alignment is made at the right (so the part of the field is always visible).
 
 .EX
   set viewcolumns=*{name}
