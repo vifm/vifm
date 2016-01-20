@@ -537,6 +537,13 @@ update_screen(UpdateType update_kind)
 	curr_stats.need_update = UT_NONE;
 
 	update_views(update_kind == UT_FULL);
+	/* Redraw message dialog over updated panes.  It's not very nice to do it
+	 * here, but for sure better then blocking pane updates by checking for
+	 * message mode. */
+	if(vle_mode_is(MSG_MODE))
+	{
+		redraw_msg_dialog(0);
+	}
 
 	update_stat_window(curr_view);
 
