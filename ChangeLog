@@ -5,6 +5,9 @@
 
 	Apply local filter on picking element of `:history filter` menu.
 
+	Display more meaningful message on failure to extract option name (unknown
+	option: string).
+
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 

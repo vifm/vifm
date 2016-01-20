@@ -377,7 +377,14 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 			return 0;
 		}
 
-		vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", optname);
+		if(optname[0] == '\0')
+		{
+			vle_tb_append_linef(vle_err, "%s: %s", "No valid option name in", arg);
+		}
+		else
+		{
+			vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", optname);
+		}
 		return 1;
 	}
 
