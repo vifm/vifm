@@ -5,6 +5,9 @@
 
 	Apply local filter on picking element of `:history filter` menu.
 
+	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
+	to aleksejrs.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
