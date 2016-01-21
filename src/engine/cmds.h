@@ -159,7 +159,7 @@ int complete_cmd(const char cmd[], void *arg);
 void add_builtin_commands(const cmd_add_t *cmds, int count);
 
 /* Returns pointer to the first character of the last argument in cmd. */
-char * get_last_argument(const char cmd[], size_t *len);
+char * get_last_argument(const char cmd[], int quotes, size_t *len);
 
 /* Last element is followed by a NULL */
 char ** list_udf(void);
