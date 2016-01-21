@@ -223,7 +223,7 @@ execute_cmd(const char cmd[])
 
 	/* Set background flag and remove background mark from raw arguments, when
 	 * command supports backgrounding. */
-	last_arg = get_last_argument(cmd_info.raw_args, 1, &last_arg_len);
+	last_arg = get_last_argument(cmd_info.raw_args, cur->quote, &last_arg_len);
 	if(cur->bg && *last_arg == '&' && *vle_cmds_at_arg(last_arg + 1) == '\0')
 	{
 		cmd_info.bg = 1;

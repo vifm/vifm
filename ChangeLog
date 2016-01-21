@@ -16,6 +16,8 @@
 
 	Fixed resetting statusbar contents on displaying message dialog.
 
+	Fixed parsing background mark after quote (as in `:put " &`).
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.

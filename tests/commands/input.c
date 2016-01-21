@@ -6,6 +6,7 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
 
+static int dummy_handler(const cmd_info_t* cmd_info);
 static int goto_cmd(const cmd_info_t* cmd_info);
 static int exec_cmd(const cmd_info_t* cmd_info);
 static int call_cmd(const cmd_info_t* cmd_info);
@@ -49,6 +50,8 @@ static const cmd_add_t commands[] = {
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = NOT_DEF, .bg = 0,     },
 	{ .name = "substitute", .abbr = "s",   .handler = substitute_cmd, .id = -1,    .range = 0,    .cust_sep = 1,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 3,       .bg = 0,     },
+	{ .name = "put",        .abbr = "pu",  .handler = dummy_handler,  .id = -1,    .range = 0,    .cust_sep = 0,
+		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 1,       .bg = 1,     },
 	{ .name = "quit",       .abbr = "q",   .handler = quit_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 };
@@ -56,6 +59,12 @@ static const cmd_add_t commands[] = {
 SETUP()
 {
 	add_builtin_commands(commands, ARRAY_LEN(commands));
+}
+
+static int
+dummy_handler(const cmd_info_t* cmd_info)
+{
+	return 0;
 }
 
 static int
@@ -712,6 +721,11 @@ TEST(closing_double_quote_is_taken_as_comment)
 	 * comments enabled for engine/cmds, but engine/set handles the comments. */
 	assert_success(execute_cmd("set \"  string  \""));
 	assert_string_equal("\"  string", arg);
+}
+
+TEST(background_mark_is_removed_properly_in_presence_of_a_quote)
+{
+	assert_success(execute_cmd("put \" &"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -309,5 +309,13 @@ TEST(tr_extends_second_field)
 	assert_success(remove(SANDBOX_PATH "/a_b"));
 }
 
+TEST(put_bg_cmd_is_parsed_correctly)
+{
+	/* Simulate custom view to force failure of the command. */
+	lwin.curr_dir[0] = '\0';
+
+	assert_int_equal(0, exec_commands("put \" &", &lwin, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
