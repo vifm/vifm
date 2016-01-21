@@ -1087,7 +1087,7 @@ cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 {
-	registers_t *reg;
+	reg_t *reg;
 
 	if(key_info.reg == NO_REG_GIVEN)
 	{

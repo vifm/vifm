@@ -119,7 +119,7 @@ filter_single(int *quoted, char c, char data)
 
 	if(c == 'r')
 	{
-		registers_t *reg = find_register(tolower(data));
+		reg_t *reg = find_register(tolower(data));
 		if(reg != NULL && reg->num_files == 1)
 		{
 			return c;
@@ -442,7 +442,7 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 		const char mod[], int key, int *well_formed, int for_shell)
 {
 	int i;
-	registers_t *reg;
+	reg_t *reg;
 
 	*well_formed = 1;
 	reg = find_register(tolower(key));

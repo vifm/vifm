@@ -797,7 +797,7 @@ invert_selection(FileView *view)
 }
 
 void
-flist_sel_restore(FileView *view, registers_t *reg)
+flist_sel_restore(FileView *view, reg_t *reg)
 {
 	int i;
 	trie_t selection_trie = trie_create();

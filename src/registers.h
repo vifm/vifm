@@ -30,7 +30,7 @@ typedef struct
 	int num_files; /* Number of files in the register. */
 	char **files;  /* List of full paths of files. */
 }
-registers_t;
+reg_t;
 
 /* Null terminated list of all valid register names. */
 extern const char valid_registers[];
@@ -44,7 +44,7 @@ int register_exists(int reg_name);
 
 /* Retrieves register structure by register name.  Returns the structure or NULL
  * if register name is incorrect. */
-registers_t * find_register(int reg_name);
+reg_t * find_register(int reg_name);
 
 /* Appends path to the file to register specified by name.  Might fail for
  * duplicate, non-existing path or wrong register name.  Returns zero when file

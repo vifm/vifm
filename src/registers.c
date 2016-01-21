@@ -41,7 +41,7 @@
 #define NUM_REGISTERS (2 + NUM_LETTER_REGISTERS)
 
 /* Data of all registers. */
-static registers_t registers[NUM_REGISTERS];
+static reg_t registers[NUM_REGISTERS];
 
 /* Names of registers + names of 26 uppercase register names + termination null
  * character. */
@@ -83,7 +83,7 @@ register_exists(int reg_name)
 	return 0;
 }
 
-registers_t *
+reg_t *
 find_register(int reg_name)
 {
 	int i;
@@ -98,7 +98,7 @@ find_register(int reg_name)
 }
 
 static int
-check_for_duplicate_file_names(registers_t *reg, const char file[])
+check_for_duplicate_file_names(reg_t *reg, const char file[])
 {
 	int i;
 	for(i = 0; i < reg->num_files; ++i)
@@ -114,7 +114,7 @@ check_for_duplicate_file_names(registers_t *reg, const char file[])
 int
 append_to_register(int reg_name, const char file[])
 {
-	registers_t *reg;
+	reg_t *reg;
 
 	if(reg_name == BLACKHOLE_REG_NAME)
 	{
@@ -150,7 +150,7 @@ clear_registers(void)
 void
 clear_register(int reg_name)
 {
-	registers_t *const reg = find_register(reg_name);
+	reg_t *const reg = find_register(reg_name);
 	if(reg == NULL)
 	{
 		return;
@@ -165,7 +165,7 @@ void
 pack_register(int reg_name)
 {
 	int j, i;
-	registers_t *const reg = find_register(reg_name);
+	reg_t *const reg = find_register(reg_name);
 	if(reg == NULL)
 	{
 		return;
@@ -190,7 +190,7 @@ list_registers_content(const char registers[])
 
 	while(*registers != '\0')
 	{
-		registers_t *reg = find_register(*registers++);
+		reg_t *reg = find_register(*registers++);
 		char reg_str[16];
 		int i;
 
@@ -261,7 +261,7 @@ clean_regs_with_trash(const char trash_dir[])
 void
 update_unnamed_reg(int reg_name)
 {
-	registers_t *unnamed, *reg;
+	reg_t *unnamed, *reg;
 	int i;
 
 	if(reg_name == UNNAMED_REG_NAME)

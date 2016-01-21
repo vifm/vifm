@@ -245,7 +245,7 @@ static char rename_file_ext[NAME_MAX];
 static struct
 {
 	/* TODO: give some fields of this structure normal names (not "x" and "y"). */
-	registers_t *reg;  /* Register used for the operation. */
+	reg_t *reg;        /* Register used for the operation. */
 	FileView *view;    /* View in which operation takes place. */
 	CopyMoveLikeOp op; /* Type of current operation. */
 	int x;             /* Index of the next file of the register to process. */
@@ -2147,7 +2147,7 @@ put_files_bg(FileView *view, int reg_name, int move)
 	size_t task_desc_len;
 	int i;
 	bg_args_t *args;
-	registers_t *reg;
+	reg_t *reg;
 
 	/* Check that operation generally makes sense given our input. */
 
@@ -2571,7 +2571,7 @@ static int
 initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		int reg_name)
 {
-	registers_t *reg;
+	reg_t *reg;
 	int i;
 
 	if(!can_add_files_to_view(view))

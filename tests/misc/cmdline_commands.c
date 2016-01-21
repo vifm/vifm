@@ -84,7 +84,7 @@ free_view(FileView *view)
 
 TEST(yank_works_with_ranges)
 {
-	registers_t *reg;
+	reg_t *reg;
 
 	init_registers();
 
