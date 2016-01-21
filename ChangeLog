@@ -8,6 +8,9 @@
 	Display more meaningful message on failure to extract option name (unknown
 	option: string).
 
+	Handle register specified for gs normal mode command.  Select files listed
+	in that register.  Thanks to filterfalse.
+
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 
