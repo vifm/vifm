@@ -1085,7 +1085,7 @@ cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 {
-	flist_sel_restore(curr_view);
+	flist_sel_restore(curr_view, NULL);
 }
 
 /* Handles gU<selector>, gUgU and gUU normal mode commands, which convert file

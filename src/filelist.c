@@ -71,6 +71,7 @@
 #include "filtering.h"
 #include "macros.h"
 #include "opt_handlers.h"
+#include "registers.h"
 #include "running.h"
 #include "sort.h"
 #include "status.h"
@@ -796,16 +797,28 @@ invert_selection(FileView *view)
 }
 
 void
-flist_sel_restore(FileView *view)
+flist_sel_restore(FileView *view, registers_t *reg)
 {
 	int i;
 	trie_t selection_trie = trie_create();
 
 	erase_selection(view);
 
-	for(i = 0; i < view->nsaved_selection; ++i)
+	if(reg == NULL)
 	{
-		(void)trie_put(selection_trie, view->saved_selection[i]);
+		int i;
+		for(i = 0; i < view->nsaved_selection; ++i)
+		{
+			(void)trie_put(selection_trie, view->saved_selection[i]);
+		}
+	}
+	else
+	{
+		int i;
+		for(i = 0; i < reg->num_files; ++i)
+		{
+			(void)trie_put(selection_trie, reg->files[i]);
+		}
 	}
 
 	for(i = 0; i < view->list_rows; ++i)
