@@ -2159,7 +2159,7 @@ put_files_bg(FileView *view, int reg_name, int move)
 	reg = find_register(tolower(reg_name));
 	if(reg == NULL || reg->num_files < 1)
 	{
-		status_bar_error("Register is empty");
+		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
 		return 1;
 	}
 
