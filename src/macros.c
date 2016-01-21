@@ -120,7 +120,7 @@ filter_single(int *quoted, char c, char data)
 	if(c == 'r')
 	{
 		reg_t *reg = find_register(tolower(data));
-		if(reg != NULL && reg->num_files == 1)
+		if(reg != NULL && reg->nfiles == 1)
 		{
 			return c;
 		}
@@ -454,12 +454,12 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 		mod--;
 	}
 
-	for(i = 0; i < reg->num_files; i++)
+	for(i = 0; i < reg->nfiles; ++i)
 	{
 		const char *const modified = apply_mods(reg->files[i], curr_dir, mod,
 				for_shell);
 		expanded = append_path_to_expanded(expanded, quotes, modified);
-		if(i != reg->num_files - 1)
+		if(i != reg->nfiles - 1)
 		{
 			expanded = append_to_expanded(expanded, " ");
 		}

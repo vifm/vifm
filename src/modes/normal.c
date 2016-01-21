@@ -1096,7 +1096,7 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	reg = find_register(tolower(key_info.reg));
-	if(reg == NULL || reg->num_files < 1)
+	if(reg == NULL || reg->nfiles < 1)
 	{
 		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
 		curr_stats.save_msg = 1;

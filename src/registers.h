@@ -26,9 +26,9 @@
 /* Holds register data. */
 typedef struct
 {
-	int name;      /* Name of the register. */
-	int num_files; /* Number of files in the register. */
-	char **files;  /* List of full paths of files. */
+	int name;     /* Name of the register. */
+	int nfiles;   /* Number of files in the register. */
+	char **files; /* List of full paths of files. */
 }
 reg_t;
 

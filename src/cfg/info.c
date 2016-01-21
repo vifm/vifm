@@ -1279,7 +1279,7 @@ write_registers(FILE *const fp, char *regs[], int nregs)
 		if(reg != NULL)
 		{
 			int j;
-			for(j = 0; j < reg->num_files; j++)
+			for(j = 0; j < reg->nfiles; ++j)
 			{
 				if(reg->files[j] != NULL)
 				{

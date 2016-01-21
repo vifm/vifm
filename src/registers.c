@@ -64,7 +64,7 @@ init_registers(void)
 	for(i = 0; i < NUM_REGISTERS; i++)
 	{
 		registers[i].name = valid_registers[i];
-		registers[i].num_files = 0;
+		registers[i].nfiles = 0;
 		registers[i].files = NULL;
 	}
 }
@@ -101,7 +101,7 @@ static int
 check_for_duplicate_file_names(reg_t *reg, const char file[])
 {
 	int i;
-	for(i = 0; i < reg->num_files; ++i)
+	for(i = 0; i < reg->nfiles; ++i)
 	{
 		if(stroscmp(file, reg->files[i]) == 0)
 		{
@@ -133,7 +133,7 @@ append_to_register(int reg_name, const char file[])
 		return 1;
 	}
 
-	reg->num_files = add_to_string_array(&reg->files, reg->num_files, 1, file);
+	reg->nfiles = add_to_string_array(&reg->files, reg->nfiles, 1, file);
 	return 0;
 }
 
@@ -156,9 +156,9 @@ clear_register(int reg_name)
 		return;
 	}
 
-	free_string_array(reg->files, reg->num_files);
+	free_string_array(reg->files, reg->nfiles);
 	reg->files = NULL;
-	reg->num_files = 0;
+	reg->nfiles = 0;
 }
 
 void
@@ -172,14 +172,14 @@ pack_register(int reg_name)
 	}
 
 	j = 0;
-	for(i = 0; i < reg->num_files; ++i)
+	for(i = 0; i < reg->nfiles; ++i)
 	{
 		if(reg->files[i] != NULL)
 		{
 			reg->files[j++] = reg->files[i];
 		}
 	}
-	reg->num_files = j;
+	reg->nfiles = j;
 }
 
 char **
@@ -194,7 +194,7 @@ list_registers_content(const char registers[])
 		char reg_str[16];
 		int i;
 
-		if(reg == NULL || reg->num_files <= 0)
+		if(reg == NULL || reg->nfiles <= 0)
 		{
 			continue;
 		}
@@ -202,7 +202,7 @@ list_registers_content(const char registers[])
 		snprintf(reg_str, sizeof(reg_str), "\"%c", reg->name);
 		len = add_to_string_array(&list, len, 1, reg_str);
 
-		i = reg->num_files;
+		i = reg->nfiles;
 		while(i-- > 0)
 		{
 			len = add_to_string_array(&list, len, 1, reg->files[i]);
@@ -220,7 +220,7 @@ rename_in_registers(const char old[], const char new[])
 	for(i = 0; i < NUM_REGISTERS; ++i)
 	{
 		int j;
-		const int n = registers[i].num_files;
+		const int n = registers[i].nfiles;
 		for(j = 0; j < n; ++j)
 		{
 			if(stroscmp(registers[i].files[j], old) != 0)
@@ -240,7 +240,7 @@ clean_regs_with_trash(const char trash_dir[])
 	for(i = 0; i < NUM_REGISTERS; ++i)
 	{
 		int j, needs_packing = 0;
-		const int n = registers[i].num_files;
+		const int n = registers[i].nfiles;
 		for(j = 0; j < n; ++j)
 		{
 			if(!trash_contains(trash_dir, registers[i].files[j]))
@@ -275,10 +275,10 @@ update_unnamed_reg(int reg_name)
 
 	clear_register(UNNAMED_REG_NAME);
 
-	unnamed->num_files = reg->num_files;
-	unnamed->files = reallocarray(unnamed->files, unnamed->num_files,
+	unnamed->nfiles = reg->nfiles;
+	unnamed->files = reallocarray(unnamed->files, unnamed->nfiles,
 			sizeof(char *));
-	for(i = 0; i < unnamed->num_files; ++i)
+	for(i = 0; i < unnamed->nfiles; ++i)
 	{
 		unnamed->files[i] = strdup(reg->files[i]);
 	}

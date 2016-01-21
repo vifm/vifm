@@ -1863,7 +1863,7 @@ put_next(const char dest_name[], int force)
 		op = merge ? OP_COPYF : OP_COPY;
 	}
 
-	progress_msg("Putting files", put_confirm.x, put_confirm.reg->num_files);
+	progress_msg("Putting files", put_confirm.x, put_confirm.reg->nfiles);
 
 	/* Merging directory on move requires special handling as it can't be done by
 	 * move operation itself. */
@@ -2157,7 +2157,7 @@ put_files_bg(FileView *view, int reg_name, int move)
 	}
 
 	reg = find_register(tolower(reg_name));
-	if(reg == NULL || reg->num_files < 1)
+	if(reg == NULL || reg->nfiles < 1)
 	{
 		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
 		return 1;
@@ -2172,7 +2172,7 @@ put_files_bg(FileView *view, int reg_name, int move)
 
 	task_desc_len = snprintf(task_desc, sizeof(task_desc), "%cut in %s: ",
 			move ? 'P' : 'p', replace_home_part(flist_get_dir(view)));
-	for(i = 0; i < reg->num_files; ++i)
+	for(i = 0; i < reg->nfiles; ++i)
 	{
 		char *const src = reg->files[i];
 		const char *dst_name;
@@ -2580,7 +2580,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	}
 
 	reg = find_register(tolower(reg_name));
-	if(reg == NULL || reg->num_files < 1)
+	if(reg == NULL || reg->nfiles < 1)
 	{
 		status_bar_error("Register is empty");
 		return 1;
@@ -2595,7 +2595,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
-	for(i = 0; i < reg->num_files && !ui_cancellation_requested(); ++i)
+	for(i = 0; i < reg->nfiles && !ui_cancellation_requested(); ++i)
 	{
 		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
 	}
@@ -2673,7 +2673,7 @@ put_files_i(FileView *view, int start)
 
 	ui_cancellation_reset();
 
-	while(put_confirm.x < put_confirm.reg->num_files)
+	while(put_confirm.x < put_confirm.reg->nfiles)
 	{
 		const int put_result = put_next("", 0);
 		if(put_result > 0)

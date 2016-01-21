@@ -815,7 +815,7 @@ flist_sel_restore(FileView *view, reg_t *reg)
 	else
 	{
 		int i;
-		for(i = 0; i < reg->num_files; ++i)
+		for(i = 0; i < reg->nfiles; ++i)
 		{
 			(void)trie_put(selection_trie, reg->files[i]);
 		}
