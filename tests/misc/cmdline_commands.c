@@ -84,7 +84,7 @@ free_view(FileView *view)
 
 TEST(yank_works_with_ranges)
 {
-	registers_t *reg;
+	reg_t *reg;
 
 	init_registers();
 
@@ -95,9 +95,9 @@ TEST(yank_works_with_ranges)
 	reg = find_register(DEFAULT_REG_NAME);
 	assert_non_null(reg);
 
-	assert_int_equal(0, reg->num_files);
+	assert_int_equal(0, reg->nfiles);
 	(void)exec_commands("%yank", &lwin, CIT_COMMAND);
-	assert_int_equal(1, reg->num_files);
+	assert_int_equal(1, reg->nfiles);
 
 	clear_registers();
 }

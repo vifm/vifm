@@ -26,6 +26,7 @@
 #include <sys/types.h> /* ssize_t */
 
 #include <assert.h> /* assert() */
+#include <ctype.h> /* tolower() */
 #include <stddef.h> /* size_t wchar_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* free() */
@@ -1081,11 +1082,28 @@ cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 }
 #endif
 
-/* Restores previous selection of files. */
+/* Restores previous selection of files or selects files listed in a
+ * register. */
 static void
 cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 {
-	flist_sel_restore(curr_view);
+	reg_t *reg;
+
+	if(key_info.reg == NO_REG_GIVEN)
+	{
+		flist_sel_restore(curr_view, NULL);
+		return;
+	}
+
+	reg = find_register(tolower(key_info.reg));
+	if(reg == NULL || reg->nfiles < 1)
+	{
+		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	flist_sel_restore(curr_view, reg);
 }
 
 /* Handles gU<selector>, gUgU and gUU normal mode commands, which convert file

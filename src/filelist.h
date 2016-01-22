@@ -27,6 +27,7 @@
 
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
+#include "registers.h"
 
 /* Type of contiguous area of file list. */
 typedef enum
@@ -141,8 +142,9 @@ void clean_selected_files(FileView *view);
 void erase_selection(FileView *view);
 /* Inverts selection of files in the view. */
 void invert_selection(FileView *view);
-/* Reselects previously selected entries. */
-void flist_sel_restore(FileView *view);
+/* Reselects previously selected entries.  When reg is NULL, saved selection is
+ * restored, otherwise list of files to restore is taken from the register. */
+void flist_sel_restore(FileView *view, reg_t *reg);
 /* Counts number of selected files and writes saves the number in
  * view->selected_files. */
 void recount_selected_files(FileView *view);

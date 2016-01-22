@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 19
+*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 21
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -445,8 +445,11 @@ av                                             *vifm-av*
 gv                                             *vifm-gv*
     go to visual mode restoring last selection.
 
-gs                                             *vifm-gs*
-    restore last t selection, like gv for visual mode selection.
+[reg]gs                                        *vifm-gs*
+    when no register is specified, restore last t selection (similar to what
+    gv does for visual mode selection).  If register is present, then all
+    files listed in that register and which are visible in current view are
+    selected.
 
 
 gu<selector>                                   *vifm-gu*

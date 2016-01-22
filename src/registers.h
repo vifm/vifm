@@ -23,46 +23,58 @@
 /* Name of the default register. */
 #define DEFAULT_REG_NAME '"'
 
+/* Holds register data. */
 typedef struct
 {
-	int name;
-	int num_files;
-	char **files;
+	int name;     /* Name of the register. */
+	int nfiles;   /* Number of files in the register. */
+	char **files; /* List of full paths of files. */
 }
-registers_t;
+reg_t;
 
 /* Null terminated list of all valid register names. */
 extern const char valid_registers[];
 
+/* Initializes registers unit. */
 void init_registers(void);
 
-/* Checks whether register with the key name exists (A-Z will be rejected).
+/* Checks whether register with specified name exists (A-Z is rejected).
  * Returns non-zero if it exists, otherwise zero is returned. */
-int register_exists(int key);
+int register_exists(int reg_name);
 
-registers_t * find_register(int key);
+/* Retrieves register structure by register name.  Returns the structure or NULL
+ * if register name is incorrect. */
+reg_t * find_register(int reg_name);
 
 /* Appends path to the file to register specified by name.  Might fail for
  * duplicate, non-existing path or wrong register name.  Returns zero when file
  * is added, otherwise non-zero is returned. */
-int append_to_register(int reg, const char file[]);
+int append_to_register(int reg_name, const char file[]);
 
 /* Clears all registers.  Pair of init_registers(). */
 void clear_registers(void);
 
-void clear_register(int reg);
+/* Clears register with specified name or does nothing if name is incorrect. */
+void clear_register(int reg_name);
 
-void pack_register(int reg);
+/* Packs registers file list by removing NULL entries in its list of files. */
+void pack_register(int reg_name);
 
+/* Formats array of strings describing contents of registers specified in the
+ * registers string (each character is processed as register name).  Returns
+ * NULL terminated list of strings or NULL if there is not enough memory. */
 char ** list_registers_content(const char registers[]);
 
+/* Replaces records of the old path with the new path in all registers. */
 void rename_in_registers(const char old[], const char new[]);
 
 /* Ensures that registers don't refer to files in specified trash directory or
  * to any of trash directories if trash_dir is NULL. */
 void clean_regs_with_trash(const char trash_dir[]);
 
-void update_unnamed_reg(int reg);
+/* Populates default (unnamed) register with contents of the specified
+ * register. */
+void update_unnamed_reg(int reg_name);
 
 #endif /* VIFM__REGISTERS_H__ */
 

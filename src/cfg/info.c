@@ -1275,11 +1275,11 @@ write_registers(FILE *const fp, char *regs[], int nregs)
 	}
 	for(i = 0; valid_registers[i] != '\0'; i++)
 	{
-		const registers_t *const reg = find_register(valid_registers[i]);
+		const reg_t *const reg = find_register(valid_registers[i]);
 		if(reg != NULL)
 		{
 			int j;
-			for(j = 0; j < reg->num_files; j++)
+			for(j = 0; j < reg->nfiles; ++j)
 			{
 				if(reg->files[j] != NULL)
 				{

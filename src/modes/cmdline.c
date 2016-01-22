@@ -1944,7 +1944,7 @@ next_dot_completion(void)
 
 	if(input_stat.dot_pos <= cfg.cmd_hist.pos)
 	{
-		last = get_last_argument(cfg.cmd_hist.items[input_stat.dot_pos++], &len);
+		last = get_last_argument(cfg.cmd_hist.items[input_stat.dot_pos++], 1, &len);
 	}
 	else
 	{
