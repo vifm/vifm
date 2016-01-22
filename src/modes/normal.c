@@ -210,6 +210,9 @@ static void cmd_zo(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zr(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_right_curly_bracket(key_info_t key_info,
+		keys_info_t *keys_info);
 static void pick_files(FileView *view, int end, keys_info_t *keys_info);
 static void selector_S(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
@@ -381,6 +384,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
 	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
 	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
+	{L"{", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_curly_bracket}}},
+	{L"}", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_curly_bracket}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
@@ -419,6 +424,8 @@ static keys_add_info_t selectors[] = {
 	{L"s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_s}}},
 	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
 	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
+	{L"{", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_curly_bracket}}},
+	{L"}", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_curly_bracket}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -1978,6 +1985,22 @@ static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	pick_or_move(keys_info, flist_find_group(curr_view, 1));
+}
+
+/* Moves cursor to the beginning of the previous group of files defined by them
+ * being directory or files. */
+static void
+cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_find_dir_group(curr_view, 0));
+}
+
+/* Moves cursor to the beginning of the next group of files defined by them
+ * being directory or files. */
+static void
+cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_find_dir_group(curr_view, 1));
 }
 
 /* Redraw with file in top of list. */

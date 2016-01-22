@@ -91,6 +91,10 @@ int get_end_of_line(const FileView *view);
  * Returns determined position (might point to the last/first entry in corner
  * cases). */
 int flist_find_group(FileView *view, int next);
+/* Finds position of the next/previous group defined by entries being files or
+ * directories.  Returns determined position (might point to the last/first
+ * entry in corner cases). */
+int flist_find_dir_group(FileView *view, int next);
 
 /* Appearance related functions. */
 

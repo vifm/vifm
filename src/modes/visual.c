@@ -138,6 +138,9 @@ static void cmd_zd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_right_curly_bracket(key_info_t key_info,
+		keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
@@ -235,6 +238,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
 	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
 	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
+	{L"{", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_curly_bracket}}},
+	{L"}", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_curly_bracket}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
@@ -1121,6 +1126,22 @@ static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_pos(flist_find_group(view, 1));
+}
+
+/* Moves cursor to the beginning of the previous group of files defined by them
+ * being directory or files. */
+static void
+cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(flist_find_dir_group(view, 0));
+}
+
+/* Moves cursor to the beginning of the next group of files defined by them
+ * being directory or files. */
+static void
+cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(flist_find_dir_group(view, 1));
 }
 
 static void

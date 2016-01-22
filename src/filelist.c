@@ -856,6 +856,30 @@ flist_find_group(FileView *view, int next)
 	return pos;
 }
 
+int
+flist_find_dir_group(FileView *view, int next)
+{
+	const int correction = next ? -1 : 0;
+	const int lb = correction;
+	const int ub = view->list_rows + correction;
+	const int inc = next ? +1 : -1;
+
+	int pos = curr_view->list_pos;
+	dir_entry_t *pentry = &curr_view->dir_entry[pos];
+	const int is_dir = is_directory_entry(pentry);
+	while(pos > lb && pos < ub)
+	{
+		dir_entry_t *nentry;
+		pos += inc;
+		nentry = &curr_view->dir_entry[pos];
+		if(is_dir != is_directory_entry(nentry))
+		{
+			break;
+		}
+	}
+	return pos;
+}
+
 /* Finds pointer to the beginning of the last extension of the file name.
  * Returns the pointer, which might point to the NUL byte if there are no
  * extensions. */

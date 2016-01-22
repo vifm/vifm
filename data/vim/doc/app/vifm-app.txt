@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 21
+*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 22
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -559,6 +559,15 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 )                                              *vifm-)*
     goto next group.  See ( key description above.
+
+
+{                                              *vifm-{*
+    similar to ( key, but always considers whether entry is file or
+    directory and thus speeds up navigation to closest previous entry of
+    the opposite type.
+
+}                                              *vifm-}*
+    same as {, but in forward direction.
 
 Using Count~
                                                *vifm-count* *vifm-[count]*
