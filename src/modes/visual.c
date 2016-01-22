@@ -1107,18 +1107,20 @@ cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 	accept_and_leave(0);
 }
 
+/* Moves cursor to the beginning of the previous group of files defined by the
+ * primary sorting key. */
 static void
 cmd_left_paren(key_info_t key_info, keys_info_t *keys_info)
 {
-	int pos = cmd_paren(0, view->list_rows, -1);
-	goto_pos(pos);
+	goto_pos(flist_find_group(view, 0));
 }
 
+/* Moves cursor to the beginning of the next group of files defined by the
+ * primary sorting key. */
 static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
-	int pos = cmd_paren(-1, view->list_rows - 1, +1);
-	goto_pos(pos);
+	goto_pos(flist_find_group(view, 1));
 }
 
 static void
