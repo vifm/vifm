@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2015 July 26
+" Last Change: 2016 January 23
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -88,22 +88,43 @@ function! s:StartVifm(editcmd, ...)
 	call map(pickargs, 'shellescape(v:val, 1)')
 	let pickargsstr = join(pickargs, ' ')
 
-	" Gvim cannot handle ncurses so run vifm in a terminal.
-	if has('gui_running')
-		execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir
-		      \ pickargsstr
+	if !has('nvim')
+		" Gvim cannot handle ncurses so run vifm in a terminal.
+		if has('gui_running')
+			execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir
+			      \ pickargsstr
+		else
+			execute 'silent !' g:vifm_exec g:vifm_exec_args ldir rdir pickargsstr
+		endif
+
+		" Execution of external command might have left Vim's window cleared, force
+		" redraw before doing anything else.
+		redraw!
+
+		call s:HandleRunResults(v:shell_error, listf, typef, a:editcmd)
 	else
-		execute 'silent !' g:vifm_exec g:vifm_exec_args ldir rdir pickargsstr
+		" Work around handicapped neovim...
+		let callback = { 'listf': listf, 'typef' : typef, 'editcmd' : a:editcmd }
+		function! callback.on_exit(id, code)
+			buffer #
+			silent! bdelete! #
+			call s:HandleRunResults(a:code, self.listf, self.typef, self.editcmd)
+		endfunction
+		enew
+		call termopen(g:vifm_exec . ' ' . g:vifm_exec_args . ' ' . ldir . ' ' . rdir
+		             \. ' ' . pickargsstr, callback)
+		startinsert
 	endif
 
-	" Executioin of external command might have left Vim's window cleared, force
-	" redraw before doing anything else.
-	redraw!
+endfunction
 
-	if v:shell_error != 0
-		echohl WarningMsg | echo 'Got non-zero code from vifm' | echohl None
-		call delete(listf)
-		call delete(typef)
+function! s:HandleRunResults(exitcode, listf, typef, editcmd)
+	if a:exitcode != 0
+		echohl WarningMsg
+		echo 'Got non-zero code from vifm: ' . a:exitcode
+		echohl None
+		call delete(a:listf)
+		call delete(a:typef)
 		return
 	endif
 
@@ -111,18 +132,18 @@ function! s:StartVifm(editcmd, ...)
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
 
-	if !file_readable(listf)
+	if !file_readable(a:listf)
 		echohl WarningMsg | echo 'Failed to read list of files' | echohl None
-		call delete(listf)
-		call delete(typef)
+		call delete(a:listf)
+		call delete(a:typef)
 		return
 	endif
 
-	let flist = readfile(listf)
-	call delete(listf)
+	let flist = readfile(a:listf)
+	call delete(a:listf)
 
-	let opentype = file_readable(typef) ? readfile(typef) : []
-	call delete(typef)
+	let opentype = file_readable(a:typef) ? readfile(a:typef) : []
+	call delete(a:typef)
 
 	call map(flist, 'fnameescape(v:val)')
 
