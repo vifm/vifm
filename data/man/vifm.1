@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 21, 2016" "vifm 0.8.1"
+.TH VIFM 1 "January 22, 2016" "vifm 0.8.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -641,6 +641,13 @@ vifm uses size, uid, ...
 .TP
 .BI )
 goto next group.  See ( key description above.
+.TP
+.BI {
+similar to ( key, but always considers whether entry is file or directory and
+thus speeds up navigation to closest previous entry of the opposite type.
+.TP
+.BI }
+same as {, but in forward direction.
 .\" ---------------------------------------------------------------------------
 .SH Using Count
 .\" ---------------------------------------------------------------------------

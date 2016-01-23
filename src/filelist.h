@@ -87,6 +87,14 @@ void go_to_start_of_line(FileView *view);
 int get_start_of_line(const FileView *view);
 /* Returns position of the last file in current line. */
 int get_end_of_line(const FileView *view);
+/* Finds position of the next/previous group defined by primary sorting key.
+ * Returns determined position (might point to the last/first entry in corner
+ * cases). */
+int flist_find_group(FileView *view, int next);
+/* Finds position of the next/previous group defined by entries being files or
+ * directories.  Returns determined position (might point to the last/first
+ * entry in corner cases). */
+int flist_find_dir_group(FileView *view, int next);
 
 /* Appearance related functions. */
 

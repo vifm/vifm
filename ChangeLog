@@ -3,6 +3,10 @@
 	Added c key to menus that inserts parts of menu line into command-line.
 	Thanks to filterfalse.
 
+	Added { and } keys to normal and visual modes.  They act similar to ( and
+	), but always act consider whether entry is a file or directory.  Thanks
+	to octos.
+
 	Apply local filter on picking element of `:history filter` menu.
 
 	Display more meaningful message on failure to extract option name (unknown

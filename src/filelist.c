@@ -40,6 +40,7 @@
 #include <string.h> /* memcmp() memcpy() memset() strcat() strcmp() strcpy()
                        strdup() strlen() */
 #include <time.h> /* localtime() */
+#include <wctype.h> /* towupper() */
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
@@ -62,6 +63,7 @@
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/test_helpers.h"
@@ -97,6 +99,7 @@ static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, predicate_func pred);
 static void navigate_to_history_pos(FileView *view, int pos);
+static const char * get_last_ext(const char name[]);
 static void save_selection(FileView *view);
 static int navigate_to_file_in_custom_view(FileView *view, const char dir[],
 		const char file[]);
@@ -711,6 +714,180 @@ get_end_of_line(const FileView *view)
 	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
 	pos += (view->column_count - 1) - pos%view->column_count;
 	return MIN(pos, view->list_rows - 1);
+}
+
+int
+flist_find_group(FileView *view, int next)
+{
+	/* TODO: refactor/simplify this function (flist_find_group()). */
+
+	const int correction = next ? -1 : 0;
+	const int lb = correction;
+	const int ub = view->list_rows + correction;
+	const int inc = next ? +1 : -1;
+
+	int pos = view->list_pos;
+	dir_entry_t *pentry = &view->dir_entry[pos];
+	const char *ext = get_last_ext(pentry->name);
+	size_t char_width = utf8_chrw(pentry->name);
+	wchar_t ch = towupper(get_first_wchar(pentry->name));
+	const SortingKey sorting_key = abs(view->sort[0]);
+	const int is_dir = is_directory_entry(pentry);
+	const char *const type_str = get_type_str(pentry->type);
+	regmatch_t pmatch = { .rm_so = 0, .rm_eo = 0 };
+#ifndef _WIN32
+	char perms[16];
+	get_perm_string(perms, sizeof(perms), pentry->mode);
+#endif
+	if(sorting_key == SK_BY_GROUPS)
+	{
+		pmatch = get_group_match(&view->primary_group, pentry->name);
+	}
+	while(pos > lb && pos < ub)
+	{
+		dir_entry_t *nentry;
+		pos += inc;
+		nentry = &view->dir_entry[pos];
+		switch(sorting_key)
+		{
+			case SK_BY_FILEEXT:
+				if(is_directory_entry(nentry))
+				{
+					if(strncmp(pentry->name, nentry->name, char_width) != 0)
+					{
+						return pos;
+					}
+				}
+				if(strcmp(get_last_ext(nentry->name), ext) != 0)
+				{
+					return pos;
+				}
+				break;
+			case SK_BY_EXTENSION:
+				if(strcmp(get_last_ext(nentry->name), ext) != 0)
+					return pos;
+				break;
+			case SK_BY_GROUPS:
+				{
+					regmatch_t nmatch = get_group_match(&view->primary_group,
+							nentry->name);
+
+					if(pmatch.rm_eo - pmatch.rm_so != nmatch.rm_eo - nmatch.rm_so ||
+							(pmatch.rm_eo != pmatch.rm_so &&
+							 strncmp(pentry->name + pmatch.rm_so, nentry->name + nmatch.rm_so,
+								 pmatch.rm_eo - pmatch.rm_so + 1U) != 0))
+						return pos;
+				}
+				break;
+			case SK_BY_NAME:
+				if(strncmp(pentry->name, nentry->name, char_width) != 0)
+					return pos;
+				break;
+			case SK_BY_INAME:
+				if((wchar_t)towupper(get_first_wchar(nentry->name)) != ch)
+					return pos;
+				break;
+			case SK_BY_SIZE:
+				if(nentry->size != pentry->size)
+					return pos;
+				break;
+			case SK_BY_NITEMS:
+				if(entry_get_nitems(view, nentry) != entry_get_nitems(view, pentry))
+					return pos;
+				break;
+			case SK_BY_TIME_ACCESSED:
+				if(nentry->atime != pentry->atime)
+					return pos;
+				break;
+			case SK_BY_TIME_CHANGED:
+				if(nentry->ctime != pentry->ctime)
+					return pos;
+				break;
+			case SK_BY_TIME_MODIFIED:
+				if(nentry->mtime != pentry->mtime)
+					return pos;
+				break;
+			case SK_BY_DIR:
+				if(is_dir != is_directory_entry(nentry))
+				{
+					return pos;
+				}
+				break;
+			case SK_BY_TYPE:
+				if(get_type_str(nentry->type) != type_str)
+				{
+					return pos;
+				}
+				break;
+#ifndef _WIN32
+			case SK_BY_GROUP_NAME:
+			case SK_BY_GROUP_ID:
+				if(nentry->gid != pentry->gid)
+					return pos;
+				break;
+			case SK_BY_OWNER_NAME:
+			case SK_BY_OWNER_ID:
+				if(nentry->uid != pentry->uid)
+					return pos;
+				break;
+			case SK_BY_MODE:
+				if(nentry->mode != pentry->mode)
+					return pos;
+				break;
+			case SK_BY_PERMISSIONS:
+				{
+					char nperms[16];
+					get_perm_string(nperms, sizeof(nperms), nentry->mode);
+					if(strcmp(nperms, perms) != 0)
+					{
+						return pos;
+					}
+					break;
+				}
+			case SK_BY_NLINKS:
+				if(nentry->nlinks != pentry->nlinks)
+				{
+					return pos;
+				}
+				break;
+#endif
+		}
+	}
+	return pos;
+}
+
+int
+flist_find_dir_group(FileView *view, int next)
+{
+	const int correction = next ? -1 : 0;
+	const int lb = correction;
+	const int ub = view->list_rows + correction;
+	const int inc = next ? +1 : -1;
+
+	int pos = curr_view->list_pos;
+	dir_entry_t *pentry = &curr_view->dir_entry[pos];
+	const int is_dir = is_directory_entry(pentry);
+	while(pos > lb && pos < ub)
+	{
+		dir_entry_t *nentry;
+		pos += inc;
+		nentry = &curr_view->dir_entry[pos];
+		if(is_dir != is_directory_entry(nentry))
+		{
+			break;
+		}
+	}
+	return pos;
+}
+
+/* Finds pointer to the beginning of the last extension of the file name.
+ * Returns the pointer, which might point to the NUL byte if there are no
+ * extensions. */
+static const char *
+get_last_ext(const char name[])
+{
+	const char *const ext = strrchr(name, '.');
+	return (ext == NULL) ? (name + strlen(name)) : (ext + 1);
 }
 
 void
