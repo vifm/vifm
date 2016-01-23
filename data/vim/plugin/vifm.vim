@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2015 July 26
+" Last Change: 2016 January 23
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -101,7 +101,9 @@ function! s:StartVifm(editcmd, ...)
 	redraw!
 
 	if v:shell_error != 0
-		echohl WarningMsg | echo 'Got non-zero code from vifm' | echohl None
+		echohl WarningMsg
+		echo 'Got non-zero code from vifm: ' . a:exitcode
+		echohl None
 		call delete(listf)
 		call delete(typef)
 		return

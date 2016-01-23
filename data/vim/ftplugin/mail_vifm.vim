@@ -1,6 +1,6 @@
 " Mail file type extension to pick files for attachments via vifm
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: March 30, 2015
+" Last Change: January 23, 2016
 
 " Insert attachment picked via vifm after 'Subject' header
 function! s:AddMailAttacments()
@@ -17,7 +17,9 @@ function! s:AddMailAttacments()
 	redraw!
 
 	if v:shell_error != 0
-		echohl WarningMsg | echo 'Got non-zero code from vifm' | echohl None
+		echohl WarningMsg
+		echo 'Got non-zero code from vifm: ' . v:shell_error
+		echohl None
 		call delete(l:listf)
 		return
 	endif
