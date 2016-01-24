@@ -343,6 +343,7 @@ parse_received_arguments(char *argv[])
 	}
 
 	(void)vifm_chdir(argv[0]);
+	opterr = 0;
 	args_parse(&args, argc, argv, argv[0]);
 	args_process(&args, 0);
 

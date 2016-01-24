@@ -25,6 +25,8 @@
 	Fixed using plugin in neovim, which has broken `system()` and :! commands.
 	Thanks to Artur Shaik (a.k.a. artur-shaik).
 
+	Fixed polluting screen of server with messages about invalid arguments.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
