@@ -233,7 +233,7 @@ try_create_trash_dir(const char trash_dir[], int user_specific)
 void
 trash_empty_all(void)
 {
-	clean_regs_with_trash(NULL);
+	regs_remove_trashed_files(NULL);
 	empty_trash_dirs();
 	clean_cmds_with_trash(NULL);
 	remove_trash_entries(NULL);
@@ -257,7 +257,7 @@ empty_trash_dirs(void)
 void
 trash_empty(const char trash_dir[])
 {
-	clean_regs_with_trash(trash_dir);
+	regs_remove_trashed_files(trash_dir);
 	empty_trash_dir(trash_dir);
 	clean_cmds_with_trash(trash_dir);
 	remove_trash_entries(trash_dir);

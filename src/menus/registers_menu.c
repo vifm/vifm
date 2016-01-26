@@ -31,9 +31,11 @@ show_register_menu(FileView *view, const char registers[])
 	static menu_info m;
 	init_menu_info(&m, strdup("Registers"), strdup("Registers are empty"));
 
-	m.items = list_registers_content(registers);
+	m.items = regs_list(registers);
 	while(m.items[m.len] != NULL)
-		m.len++;
+	{
+		++m.len;
+	}
 
 	return display_menu(&m, view);
 }

@@ -312,7 +312,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_REG)
 		{
-			append_to_register(line_val[0], line_val + 1);
+			regs_append(line_val[0], line_val + 1);
 		}
 		else if(type == LINE_TYPE_LWIN_FILT)
 		{
@@ -754,8 +754,10 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_REG)
 			{
-				if(register_exists(line_val[0]))
+				if(regs_exists(line_val[0]))
+				{
 					continue;
+				}
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
 		}
@@ -1275,7 +1277,7 @@ write_registers(FILE *const fp, char *regs[], int nregs)
 	}
 	for(i = 0; valid_registers[i] != '\0'; i++)
 	{
-		const reg_t *const reg = find_register(valid_registers[i]);
+		const reg_t *const reg = regs_find(valid_registers[i]);
 		if(reg != NULL)
 		{
 			int j;

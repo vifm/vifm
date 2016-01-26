@@ -76,10 +76,10 @@ setup_rwin(void)
 static void
 setup_registers(void)
 {
-	init_registers();
-	append_to_register('z', "existing-files/a");
-	append_to_register('z', "existing-files/b");
-	append_to_register('z', "existing-files/c");
+	regs_init();
+	regs_append('z', "existing-files/a");
+	regs_append('z', "existing-files/b");
+	regs_append('z', "existing-files/c");
 }
 
 SETUP_ONCE()
@@ -112,7 +112,7 @@ TEARDOWN()
 		free(rwin.dir_entry[i].name);
 	dynarray_free(rwin.dir_entry);
 
-	clear_registers();
+	regs_reset();
 }
 
 TEST(colon_p)

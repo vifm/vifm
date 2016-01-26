@@ -58,7 +58,7 @@ const char valid_registers[] = {
 ARRAY_GUARD(valid_registers, NUM_REGISTERS + NUM_LETTER_REGISTERS + 1);
 
 void
-init_registers(void)
+regs_init(void)
 {
 	int i;
 	for(i = 0; i < NUM_REGISTERS; i++)
@@ -70,7 +70,7 @@ init_registers(void)
 }
 
 int
-register_exists(int reg_name)
+regs_exists(int reg_name)
 {
 	int i;
 	for(i = 0; i < NUM_REGISTERS; ++i)
@@ -84,7 +84,7 @@ register_exists(int reg_name)
 }
 
 reg_t *
-find_register(int reg_name)
+regs_find(int reg_name)
 {
 	int i;
 	for(i = 0; i < NUM_REGISTERS; ++i)
@@ -112,7 +112,7 @@ check_for_duplicate_file_names(reg_t *reg, const char file[])
 }
 
 int
-append_to_register(int reg_name, const char file[])
+regs_append(int reg_name, const char file[])
 {
 	reg_t *reg;
 
@@ -120,7 +120,7 @@ append_to_register(int reg_name, const char file[])
 	{
 		return 0;
 	}
-	if((reg = find_register(reg_name)) == NULL)
+	if((reg = regs_find(reg_name)) == NULL)
 	{
 		return 1;
 	}
@@ -138,19 +138,19 @@ append_to_register(int reg_name, const char file[])
 }
 
 void
-clear_registers(void)
+regs_reset(void)
 {
 	const char *p = valid_registers;
 	while(*p != '\0')
 	{
-		clear_register(*p++);
+		regs_clear(*p++);
 	}
 }
 
 void
-clear_register(int reg_name)
+regs_clear(int reg_name)
 {
-	reg_t *const reg = find_register(reg_name);
+	reg_t *const reg = regs_find(reg_name);
 	if(reg == NULL)
 	{
 		return;
@@ -162,10 +162,10 @@ clear_register(int reg_name)
 }
 
 void
-pack_register(int reg_name)
+regs_pack(int reg_name)
 {
 	int j, i;
-	reg_t *const reg = find_register(reg_name);
+	reg_t *const reg = regs_find(reg_name);
 	if(reg == NULL)
 	{
 		return;
@@ -183,14 +183,14 @@ pack_register(int reg_name)
 }
 
 char **
-list_registers_content(const char registers[])
+regs_list(const char registers[])
 {
 	char **list = NULL;
 	size_t len = 0;
 
 	while(*registers != '\0')
 	{
-		reg_t *reg = find_register(*registers++);
+		reg_t *reg = regs_find(*registers++);
 		char reg_str[16];
 		int i;
 
@@ -214,7 +214,7 @@ list_registers_content(const char registers[])
 }
 
 void
-rename_in_registers(const char old[], const char new[])
+regs_rename_contents(const char old[], const char new[])
 {
 	int i;
 	for(i = 0; i < NUM_REGISTERS; ++i)
@@ -234,7 +234,7 @@ rename_in_registers(const char old[], const char new[])
 }
 
 void
-clean_regs_with_trash(const char trash_dir[])
+regs_remove_trashed_files(const char trash_dir[])
 {
 	int i;
 	for(i = 0; i < NUM_REGISTERS; ++i)
@@ -253,13 +253,13 @@ clean_regs_with_trash(const char trash_dir[])
 		}
 		if(needs_packing)
 		{
-			pack_register(registers[i].name);
+			regs_pack(registers[i].name);
 		}
 	}
 }
 
 void
-update_unnamed_reg(int reg_name)
+regs_update_unnamed(int reg_name)
 {
 	reg_t *unnamed, *reg;
 	int i;
@@ -267,13 +267,13 @@ update_unnamed_reg(int reg_name)
 	if(reg_name == UNNAMED_REG_NAME)
 		return;
 
-	if((reg = find_register(reg_name)) == NULL)
+	if((reg = regs_find(reg_name)) == NULL)
 		return;
 
-	if((unnamed = find_register(UNNAMED_REG_NAME)) == NULL)
+	if((unnamed = regs_find(UNNAMED_REG_NAME)) == NULL)
 		return;
 
-	clear_register(UNNAMED_REG_NAME);
+	regs_clear(UNNAMED_REG_NAME);
 
 	unnamed->nfiles = reg->nfiles;
 	unnamed->files = reallocarray(unnamed->files, unnamed->nfiles,

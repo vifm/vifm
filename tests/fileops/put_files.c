@@ -5,12 +5,12 @@
 
 SETUP()
 {
-	init_registers();
+	regs_init();
 }
 
 TEARDOWN()
 {
-	clear_registers();
+	regs_reset();
 }
 
 TEST(put_files_bg_fails_on_wrong_register)
@@ -25,8 +25,8 @@ TEST(put_files_bg_fails_on_empty_register)
 
 TEST(put_files_bg_fails_on_identical_names_in_a_register)
 {
-	assert_success(append_to_register('a', TEST_DATA_PATH "/existing-files/a"));
-	assert_success(append_to_register('a', TEST_DATA_PATH "/rename/a"));
+	assert_success(regs_append('a', TEST_DATA_PATH "/existing-files/a"));
+	assert_success(regs_append('a', TEST_DATA_PATH "/rename/a"));
 
 	assert_true(put_files_bg(&lwin, 'a', 0));
 }

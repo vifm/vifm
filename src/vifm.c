@@ -144,7 +144,7 @@ main(int argc, char *argv[])
 	}
 
 	init_filelists();
-	init_registers();
+	regs_init();
 	cfg_discover_paths();
 	reinit_logger(cfg.log_file);
 
@@ -504,7 +504,7 @@ vifm_restart(void)
 	clean_stack();
 
 	/* Registers. */
-	clear_registers();
+	regs_reset();
 
 	/* Clear all marks and bookmarks. */
 	clear_all_marks();

@@ -3806,7 +3806,7 @@ get_reg(const char arg[], int *reg)
 	{
 		return CMDS_ERR_TRAILING_CHARS;
 	}
-	if(!register_exists(arg[0]))
+	if(!regs_exists(arg[0]))
 	{
 		return CMDS_ERR_TRAILING_CHARS;
 	}

@@ -572,13 +572,13 @@ yank_files(FileView *view, int reg)
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(append_to_register(reg, full_path) == 0)
+		if(regs_append(reg, full_path) == 0)
 		{
 			++nyanked_files;
 		}
 	}
 
-	update_unnamed_reg(reg);
+	regs_update_unnamed(reg);
 
 	status_bar_messagef("%d file%s yanked", nyanked_files,
 			(nyanked_files == 1) ? "" : "s");
@@ -669,7 +669,7 @@ delete_files(FileView *view, int reg, int use_trash)
 					if(result == 0)
 					{
 						add_operation(OP_MOVE, NULL, NULL, full_path, dest);
-						append_to_register(reg, dest);
+						regs_append(reg, dest);
 					}
 					free(dest);
 				}
@@ -713,7 +713,7 @@ delete_files(FileView *view, int reg, int use_trash)
 		ops_advance(ops, result == 0);
 	}
 
-	update_unnamed_reg(reg);
+	regs_update_unnamed(reg);
 
 	cmd_group_end();
 
@@ -740,7 +740,7 @@ prepare_register(int reg)
 	}
 	else
 	{
-		clear_register(reg);
+		regs_clear(reg);
 	}
 	return reg;
 }
@@ -2156,7 +2156,7 @@ put_files_bg(FileView *view, int reg_name, int move)
 		return 0;
 	}
 
-	reg = find_register(tolower(reg_name));
+	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
 		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
@@ -2579,7 +2579,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		return 0;
 	}
 
-	reg = find_register(tolower(reg_name));
+	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
 		status_bar_error("Register is empty");
@@ -2690,7 +2690,7 @@ put_files_i(FileView *view, int start)
 		put_confirm.x++;
 	}
 
-	pack_register(put_confirm.reg->name);
+	regs_pack(put_confirm.reg->name);
 
 	status_bar_messagef("%d file%s inserted%s", put_confirm.y,
 			(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());

@@ -223,7 +223,7 @@ TEST(r_well_formed)
 
 	chdir(TEST_DATA_PATH "/existing-files");
 
-	init_registers();
+	regs_init();
 
 	p = valid_registers;
 	while(*p != '\0')
@@ -233,9 +233,9 @@ TEST(r_well_formed)
 		const char key = *p++;
 		snprintf(line, sizeof(line), "%%r%c", key);
 
-		append_to_register(key, "a");
-		append_to_register(key, "b");
-		append_to_register(key, "c");
+		regs_append(key, "a");
+		regs_append(key, "b");
+		regs_append(key, "c");
 
 		expanded = expand_macros(line, NULL, NULL, 0);
 		if(key == '_')
@@ -249,7 +249,7 @@ TEST(r_well_formed)
 		free(expanded);
 	}
 
-	clear_registers();
+	regs_reset();
 }
 
 TEST(r_ill_formed)
@@ -259,11 +259,11 @@ TEST(r_ill_formed)
 
 	chdir(TEST_DATA_PATH "/existing-files");
 
-	init_registers();
+	regs_init();
 
-	append_to_register(DEFAULT_REG_NAME, "a");
-	append_to_register(DEFAULT_REG_NAME, "b");
-	append_to_register(DEFAULT_REG_NAME, "c");
+	regs_append(DEFAULT_REG_NAME, "a");
+	regs_append(DEFAULT_REG_NAME, "b");
+	regs_append(DEFAULT_REG_NAME, "c");
 
 	key = '\0';
 	do
@@ -281,7 +281,7 @@ TEST(r_ill_formed)
 	}
 	while(key != '\0');
 
-	clear_registers();
+	regs_reset();
 }
 
 TEST(with_quotes)
@@ -324,17 +324,17 @@ TEST(with_quotes)
 	free(expanded);
 
 	chdir(TEST_DATA_PATH "/existing-files");
-	init_registers();
+	regs_init();
 
-	append_to_register(DEFAULT_REG_NAME, "a");
-	append_to_register(DEFAULT_REG_NAME, "b");
-	append_to_register(DEFAULT_REG_NAME, "c");
+	regs_append(DEFAULT_REG_NAME, "a");
+	regs_append(DEFAULT_REG_NAME, "b");
+	regs_append(DEFAULT_REG_NAME, "c");
 
 	expanded = expand_macros("/%\"r ", "", NULL, 1);
 	assert_string_equal("/\"a\" \"b\" \"c\" ", expanded);
 	free(expanded);
 
-	clear_registers();
+	regs_reset();
 }
 
 TEST(single_percent_sign)
@@ -413,12 +413,12 @@ TEST(singly_not_expanded_multiple_macros_multiple_files)
 TEST(singly_no_crash_on_wrong_register_name)
 {
 	chdir(TEST_DATA_PATH "/spaces-in-names");
-	init_registers();
+	regs_init();
 
-	assert_success(append_to_register('r', "spaces in the middle"));
+	assert_success(regs_append('r', "spaces in the middle"));
 	free(ma_expand_single("%r "));
 
-	clear_registers();
+	regs_reset();
 }
 
 TEST(singly_expanded_single_file_register)
@@ -426,29 +426,29 @@ TEST(singly_expanded_single_file_register)
 	char *expanded;
 
 	chdir(TEST_DATA_PATH "/spaces-in-names");
-	init_registers();
+	regs_init();
 
-	assert_success(append_to_register('r', "spaces in the middle"));
+	assert_success(regs_append('r', "spaces in the middle"));
 	expanded = ma_expand_single("%rr");
 	assert_string_equal("spaces in the middle", expanded);
 	free(expanded);
 
-	clear_registers();
+	regs_reset();
 }
 
 TEST(singly_not_expanded_multiple_files_register)
 {
 	char *expanded;
 
-	init_registers();
+	regs_init();
 
-	append_to_register('r', "a");
-	append_to_register('r', "b");
+	regs_append('r', "a");
+	regs_append('r', "b");
 	expanded = ma_expand_single("%rr");
 	assert_string_equal("", expanded);
 	free(expanded);
 
-	clear_registers();
+	regs_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
