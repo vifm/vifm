@@ -1,5 +1,4 @@
 Basic things:
-  * Menu shortcut to put current line into command-line.
   * Merged directory history for both panes.
   * Improve ga and gA commands. (partially done)
   * Queueing of file operations.
@@ -97,13 +96,11 @@ Possible things to add:
   * "Blow directory" command to replace directory with its content.
   * Some key to (un)select all files with extension of current file.
   * $_ env var and Alt-T combination as in bash shell.
-  * Select contents of a register "xgs, current behaviour on gs.
   * Templates for :touch.
   * Reverse searching
   * Add g/ and g? commands (search, but don't select files).
   * IPC among all running vifm instances (share settings among instances).
   * More flexible control over displaying file size.
-  * { and } keys to skip to files/directories.
   * Parse escape sequences in menus as in preview.
   * Virtual File System - currently vifm can use FUSE to mount most file
     systems.
@@ -165,6 +162,7 @@ Questionable things:
   * Add :set to menu mode command-line.
   * Add :mksession command and 'sessionoptions' option.
   * Add :keepsel prefix.
+  * Consider asking more often before performing file operations.
   * Termcap or terminfo support for keybindings
   * Use mimetypes for matching file types.
   * Add :increment and :decrement commands.

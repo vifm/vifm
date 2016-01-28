@@ -285,7 +285,7 @@ typedef struct
 	char sort[SK_COUNT], sort_g[SK_COUNT];
 	/* Sorting groups (comma-separated list of regular expressions). */
 	char *sort_groups, *sort_groups_g;
-	/* Primary group is compiled form. */
+	/* Primary group in compiled form. */
 	regex_t primary_group;
 
 	int history_num;

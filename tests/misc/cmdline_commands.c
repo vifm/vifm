@@ -86,20 +86,20 @@ TEST(yank_works_with_ranges)
 {
 	reg_t *reg;
 
-	init_registers();
+	regs_init();
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(&lwin, 0) == 0);
 
-	reg = find_register(DEFAULT_REG_NAME);
+	reg = regs_find(DEFAULT_REG_NAME);
 	assert_non_null(reg);
 
 	assert_int_equal(0, reg->nfiles);
 	(void)exec_commands("%yank", &lwin, CIT_COMMAND);
 	assert_int_equal(1, reg->nfiles);
 
-	clear_registers();
+	regs_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -36,45 +36,45 @@ reg_t;
 extern const char valid_registers[];
 
 /* Initializes registers unit. */
-void init_registers(void);
+void regs_init(void);
 
 /* Checks whether register with specified name exists (A-Z is rejected).
  * Returns non-zero if it exists, otherwise zero is returned. */
-int register_exists(int reg_name);
+int regs_exists(int reg_name);
 
 /* Retrieves register structure by register name.  Returns the structure or NULL
  * if register name is incorrect. */
-reg_t * find_register(int reg_name);
+reg_t * regs_find(int reg_name);
 
 /* Appends path to the file to register specified by name.  Might fail for
  * duplicate, non-existing path or wrong register name.  Returns zero when file
  * is added, otherwise non-zero is returned. */
-int append_to_register(int reg_name, const char file[]);
+int regs_append(int reg_name, const char file[]);
 
-/* Clears all registers.  Pair of init_registers(). */
-void clear_registers(void);
+/* Clears all registers.  Pair of regs_init(). */
+void regs_reset(void);
 
 /* Clears register with specified name or does nothing if name is incorrect. */
-void clear_register(int reg_name);
+void regs_clear(int reg_name);
 
 /* Packs registers file list by removing NULL entries in its list of files. */
-void pack_register(int reg_name);
+void regs_pack(int reg_name);
 
 /* Formats array of strings describing contents of registers specified in the
  * registers string (each character is processed as register name).  Returns
  * NULL terminated list of strings or NULL if there is not enough memory. */
-char ** list_registers_content(const char registers[]);
+char ** regs_list(const char registers[]);
 
 /* Replaces records of the old path with the new path in all registers. */
-void rename_in_registers(const char old[], const char new[]);
+void regs_rename_contents(const char old[], const char new[]);
 
 /* Ensures that registers don't refer to files in specified trash directory or
  * to any of trash directories if trash_dir is NULL. */
-void clean_regs_with_trash(const char trash_dir[]);
+void regs_remove_trashed_files(const char trash_dir[]);
 
 /* Populates default (unnamed) register with contents of the specified
  * register. */
-void update_unnamed_reg(int reg_name);
+void regs_update_unnamed(int reg_name);
 
 #endif /* VIFM__REGISTERS_H__ */
 

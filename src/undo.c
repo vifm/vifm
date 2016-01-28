@@ -683,7 +683,7 @@ change_filename_in_trash(cmd_t *cmd, const char *filename)
 	old = cmd->buf2;
 	cmd->buf2 = new;
 
-	rename_in_registers(filename, new);
+	regs_rename_contents(filename, new);
 
 	update_entry(&cmd->do_op.src, old, cmd->buf2);
 	update_entry(&cmd->do_op.dst, old, cmd->buf2);

@@ -144,7 +144,7 @@ main(int argc, char *argv[])
 	}
 
 	init_filelists();
-	init_registers();
+	regs_init();
 	cfg_discover_paths();
 	reinit_logger(cfg.log_file);
 
@@ -343,6 +343,7 @@ parse_received_arguments(char *argv[])
 	}
 
 	(void)vifm_chdir(argv[0]);
+	opterr = 0;
 	args_parse(&args, argc, argv, argv[0]);
 	args_process(&args, 0);
 
@@ -503,7 +504,7 @@ vifm_restart(void)
 	clean_stack();
 
 	/* Registers. */
-	clear_registers();
+	regs_reset();
 
 	/* Clear all marks and bookmarks. */
 	clear_all_marks();

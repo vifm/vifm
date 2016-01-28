@@ -154,15 +154,15 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 
 	setup_custom_view(&lwin);
 
-	init_registers();
+	regs_init();
 
 	assert_success(chdir(TEST_DATA_PATH));
-	assert_success(append_to_register('r', "existing-files/b"));
+	assert_success(regs_append('r', "existing-files/b"));
 	expanded = expand_macros("%rr:p", NULL, NULL, 0);
 	assert_string_equal("/path/existing-files/b", expanded);
 	free(expanded);
 
-	clear_registers();
+	regs_reset();
 }
 
 TEST(dir_macros_are_expanded_to_orig_dir)

@@ -94,7 +94,7 @@ assoc_records_t ft_get_all_programs(const char file[]);
 
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated programs either for X or non-X associations and depending on
- * current execution environment. */
+ * current execution environment.  Takes over ownership of the matcher. */
 void ft_set_programs(struct matcher_t *matcher, const char programs[],
 		int for_x, int in_x);
 
