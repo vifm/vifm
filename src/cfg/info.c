@@ -929,12 +929,22 @@ static int
 assoc_exists(assoc_list_t *assocs, const char pattern[], const char cmd[])
 {
 	int i;
+
+	if(*cmd == '{')
+	{
+		const char *const descr_end = strchr(cmd + 1, '}');
+		if(descr_end != NULL)
+		{
+			cmd = descr_end + 1;
+		}
+	}
+
 	for(i = 0; i < assocs->count; ++i)
 	{
 		int j;
 
 		const assoc_t assoc = assocs->list[i];
-		if(strcmp(matcher_get_expr(assoc.matcher), pattern) == 0)
+		if(strcmp(matcher_get_expr(assoc.matcher), pattern) != 0)
 		{
 			continue;
 		}

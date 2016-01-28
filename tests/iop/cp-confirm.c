@@ -1,9 +1,5 @@
 #include <stic.h>
 
-#include <sys/types.h> /* stat */
-#include <sys/stat.h> /* stat */
-#include <unistd.h> /* lstat() */
-
 #include "../../src/compat/fs_limits.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"

@@ -43,7 +43,7 @@ void matcher_free(matcher_t *matcher);
  * zero is returned. */
 int matcher_matches(matcher_t *matcher, const char path[]);
 
-/* Gets original matcher expression.  Returns the expression.*/
+/* Gets original matcher expression.  Returns the expression. */
 const char * matcher_get_expr(const matcher_t *matcher);
 
 /* Checks whether everything matched by the m is also matched by the like.
