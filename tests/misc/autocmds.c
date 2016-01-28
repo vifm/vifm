@@ -21,6 +21,7 @@ SETUP()
 	update_string(&cfg.slow_fs_list, "");
 
 	init_commands();
+	opt_handlers_setup();
 
 	view_setup(&lwin);
 }
@@ -28,6 +29,8 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+
+	opt_handlers_teardown();
 
 	update_string(&cfg.slow_fs_list, NULL);
 
