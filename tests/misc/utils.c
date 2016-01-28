@@ -16,6 +16,15 @@
 void
 opt_handlers_setup(void)
 {
+	update_string(&lwin.view_columns, "");
+	update_string(&lwin.view_columns_g, "");
+	update_string(&lwin.sort_groups, "");
+	update_string(&lwin.sort_groups_g, "");
+	update_string(&rwin.view_columns, "");
+	update_string(&rwin.view_columns_g, "");
+	update_string(&rwin.sort_groups, "");
+	update_string(&rwin.sort_groups_g, "");
+
 	update_string(&cfg.slow_fs_list, "");
 	update_string(&cfg.apropos_prg, "");
 	update_string(&cfg.cd_path, "");
@@ -53,6 +62,15 @@ opt_handlers_teardown(void)
 	update_string(&cfg.locate_prg, NULL);
 	update_string(&cfg.border_filler, NULL);
 	update_string(&cfg.shell, NULL);
+
+	update_string(&lwin.view_columns, NULL);
+	update_string(&lwin.view_columns_g, NULL);
+	update_string(&lwin.sort_groups, NULL);
+	update_string(&lwin.sort_groups_g, NULL);
+	update_string(&rwin.view_columns, NULL);
+	update_string(&rwin.view_columns_g, NULL);
+	update_string(&rwin.sort_groups, NULL);
+	update_string(&rwin.sort_groups_g, NULL);
 }
 
 void

@@ -7,6 +7,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/modes/modes.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/path.h"
@@ -315,6 +316,19 @@ TEST(put_bg_cmd_is_parsed_correctly)
 	lwin.curr_dir[0] = '\0';
 
 	assert_int_equal(0, exec_commands("put \" &", &lwin, CIT_COMMAND));
+}
+
+TEST(wincmd_can_switch_views)
+{
+	curr_view = &rwin;
+	other_view = &lwin;
+
+	init_modes();
+	opt_handlers_setup();
+	assert_int_equal(0, exec_commands("wincmd h", &lwin, CIT_COMMAND));
+	opt_handlers_teardown();
+
+	assert_true(curr_view == &lwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

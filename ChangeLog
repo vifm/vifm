@@ -29,6 +29,8 @@
 
 	Fixed duplicated filetype entries in vifminfo.  Thanks to aleksejrs.
 
+	Fixed switching views via :wincmd.  Thanks to fogine.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
