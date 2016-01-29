@@ -930,7 +930,16 @@ finish:
 static int
 is_out_of_arg(const char cmd[], const char pos[])
 {
-	return get_cmdline_location(cmd, pos) == CLL_OUT_OF_ARG;
+	const CmdLineLocation location = get_cmdline_location(cmd, pos);
+
+	if(location == CLL_NO_QUOTING && get_cmd_args_type(cmd) == CAT_EXPR &&
+			pos != cmd && *pos == '|' && pos[-1] != '|' && pos[1] != '|')
+	{
+		/* For "*[^|]|[^|]*" report that we're out of argument. */
+		return 1;
+	}
+
+	return location == CLL_OUT_OF_ARG;
 }
 
 CmdLineLocation

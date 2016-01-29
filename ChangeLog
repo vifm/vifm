@@ -15,6 +15,8 @@
 	Handle register specified for gs normal mode command.  Select files listed
 	in that register.  Thanks to filterfalse.
 
+	More accurate parsing of bar not surrounded with whitespace.
+
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 
