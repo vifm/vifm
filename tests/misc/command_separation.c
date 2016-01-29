@@ -111,6 +111,17 @@ TEST(whole_line_command_cmdline_is_not_broken)
 	free_string_array(cmds);
 }
 
+TEST(bar_is_skipped_when_not_surrounded_with_spaces)
+{
+	char **cmds = break_cmdline("let $a = paneisat('left')|endif", 0);
+
+	assert_string_equal("let $a = paneisat('left')", cmds[0]);
+	assert_string_equal("endif", cmds[1]);
+	assert_string_equal(NULL, cmds[2]);
+
+	free_string_array(cmds);
+}
+
 TEST(bar_escaping_is_preserved_for_whole_line_commands)
 {
 	char **cmds = break_cmdline("!\\|\\||\\|\\|", 0);

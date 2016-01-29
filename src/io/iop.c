@@ -283,7 +283,8 @@ iop_cp(io_args_t *const args)
 
 	char block[BLOCK_SIZE];
 	FILE *in, *out;
-	size_t nread;
+	/* Suppress possible false-positive compiler warning. */
+	size_t nread = (size_t)-1;
 	int error;
 	int cloned;
 	struct stat src_st;

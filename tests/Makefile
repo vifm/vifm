@@ -126,14 +126,15 @@ ifeq (,$(findstring clang,$(CC)))
     LDFLAGS += --coverage
 endif
 ifdef unix_env
-    LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' $(B)../src/Makefile)
-    LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' $(B)../src/Makefile)
-    CFLAGS  += $(shell sed -n '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(B)../src/Makefile)
+    MF := $(B)../src/Makefile
+    ifneq ($(wildcard $(MF)),)
+        LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' $(MF))
+        LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        CFLAGS  += $(shell sed -n '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        CFLAGS  += $(shell sed -n '/SANITIZERS_CFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+    endif
+
     CFLAGS  += -I/usr/include/ncursesw
-
-    CFLAGS  += $(shell sed -n '/SANITIZERS_CFLAGS =/{s/^[^=]*=//p;q}' \
-               $(B)../src/Makefile)
-
     export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env

@@ -732,7 +732,11 @@ static void
 aucmd_action_handler(const char action[], void *arg)
 {
 	FileView *view = arg;
+	FileView *tmp_curr, *tmp_other;
+
+	ui_view_pick(view, &tmp_curr, &tmp_other);
 	(void)exec_commands(action, view, CIT_COMMAND);
+	ui_view_unpick(view, tmp_curr, tmp_other);
 }
 
 /* Handler of list callback for autocommands. */

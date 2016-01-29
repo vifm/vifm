@@ -7,11 +7,13 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/engine/functions.h"
 #include "../../src/modes/modes.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/ops.h"
@@ -320,15 +322,43 @@ TEST(put_bg_cmd_is_parsed_correctly)
 
 TEST(wincmd_can_switch_views)
 {
-	curr_view = &rwin;
-	other_view = &lwin;
-
 	init_modes();
 	opt_handlers_setup();
-	assert_int_equal(0, exec_commands("wincmd h", &lwin, CIT_COMMAND));
-	opt_handlers_teardown();
 
+	curr_view = &rwin;
+	other_view = &lwin;
+	assert_int_equal(0, exec_commands("wincmd h", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	assert_int_equal(0, exec_commands("execute 'wincmd h'", curr_view,
+				CIT_COMMAND));
+	assert_true(curr_view == &lwin);
+
+	init_builtin_functions();
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	assert_int_equal(0,
+			exec_commands("if paneisat('left') == 0 | execute 'wincmd h' | endif",
+				curr_view, CIT_COMMAND));
+	assert_true(curr_view == &lwin);
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	assert_int_equal(0,
+			exec_commands("if paneisat('left') == 0 "
+			             "|    execute 'wincmd h' "
+			             "|    let $a = paneisat('left') "
+			             "|endif",
+				curr_view, CIT_COMMAND));
+	assert_true(curr_view == &lwin);
+	assert_string_equal("1", env_get("a"));
+
+	function_reset_all();
+
+	opt_handlers_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
