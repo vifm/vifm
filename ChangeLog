@@ -31,6 +31,9 @@
 
 	Fixed switching views via :wincmd.  Thanks to fogine.
 
+	Fixed executing commands on new view after switching it (related to
+	sequences of commands separated via bar symbol).
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.

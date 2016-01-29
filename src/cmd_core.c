@@ -504,7 +504,6 @@ execute_command(FileView *view, const char command[], int menu)
 {
 	int id;
 	int result;
-	FileView *tmp_curr, *tmp_other;
 
 	if(command == NULL)
 	{
@@ -549,12 +548,8 @@ execute_command(FileView *view, const char command[], int menu)
 		cmd_group_end();
 	}
 
-	ui_view_pick(view, &tmp_curr, &tmp_other);
-
 	keep_view_selection = 0;
 	result = execute_cmd(command);
-
-	ui_view_unpick(view, tmp_curr, tmp_other);
 
 	if(result >= 0)
 		return result;

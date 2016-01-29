@@ -345,6 +345,17 @@ TEST(wincmd_can_switch_views)
 				curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
+	curr_view = &rwin;
+	other_view = &lwin;
+	assert_int_equal(0,
+			exec_commands("if paneisat('left') == 0 "
+			             "|    execute 'wincmd h' "
+			             "|    let $a = paneisat('left') "
+			             "|endif",
+				curr_view, CIT_COMMAND));
+	assert_true(curr_view == &lwin);
+	assert_string_equal("1", env_get("a"));
+
 	function_reset_all();
 
 	opt_handlers_teardown();
