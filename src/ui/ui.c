@@ -1154,7 +1154,7 @@ ui_view_pick(FileView *view, FileView **old_curr, FileView **old_other)
 void
 ui_view_unpick(FileView *view, FileView *old_curr, FileView *old_other)
 {
-	if(curr_view != old_curr)
+	if(curr_view != view)
 	{
 		/* Do nothing if view roles were switched from outside. */
 		return;
