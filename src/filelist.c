@@ -1203,7 +1203,7 @@ change_directory(FileView *view, const char directory[])
 		copy_str(dir_dup, sizeof(dir_dup), view->curr_dir);
 	}
 
-	location_changed = stroscmp(dir_dup, view->curr_dir) != 0;
+	location_changed = (stroscmp(dir_dup, flist_get_dir(view)) != 0);
 
 	if(location_changed)
 	{
@@ -1325,11 +1325,7 @@ change_directory(FileView *view, const char directory[])
 			reset_local_options(view);
 		}
 
-		if(!was_in_custom_view ||
-				strcmp(view->curr_dir, view->custom.orig_dir) != 0)
-		{
-			vle_aucmd_execute("DirEnter", view->curr_dir, view);
-		}
+		vle_aucmd_execute("DirEnter", view->curr_dir, view);
 	}
 
 	return 0;
@@ -1709,8 +1705,6 @@ flist_custom_finish(FileView *view, int very)
 	sort_dir_list(0, view);
 
 	flist_ensure_pos_is_valid(view);
-
-	filters_dir_updated(view);
 
 	return 0;
 }

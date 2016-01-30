@@ -17,6 +17,10 @@
 
 	More accurate parsing of bar not surrounded with whitespace.
 
+	Be consistent with regard to when local state is changed and do not reset
+	neither local options nor local filter on entering/leaving custom view.
+	Thanks to filterfalse.
+
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 

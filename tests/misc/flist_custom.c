@@ -10,11 +10,13 @@
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
 #include "../../src/compat/os.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/macros.h"
@@ -324,6 +326,41 @@ TEST(parent_link_has_correct_origin_field)
 	assert_string_equal("..", lwin.dir_entry[0].name);
 	assert_string_equal(TEST_DATA_PATH "/existing-files",
 			lwin.dir_entry[0].origin);
+}
+
+TEST(custom_view_does_not_reset_local_state)
+{
+	opt_handlers_setup();
+	fview_init();
+	lwin.columns = columns_create();
+
+	assert_success(exec_commands("set sort=+iname", &lwin, CIT_COMMAND));
+	assert_int_equal(SK_BY_INAME, lwin.sort[0]);
+
+	local_filter_apply(&lwin, "b");
+
+	/* Neither on entering it. */
+	assert_success(exec_commands("setl sort=-mtime", &lwin, CIT_COMMAND));
+	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
+	setup_custom_view(&lwin);
+	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
+	assert_false(filter_is_empty(&lwin.local_filter.filter));
+
+	assert_success(exec_commands("setl sort=-mtime", &lwin, CIT_COMMAND));
+	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
+
+	curr_stats.load_stage = 1;
+	assert_success(change_directory(&lwin, lwin.custom.orig_dir));
+	curr_stats.load_stage = 0;
+
+	/* Nor on leaving it. */
+	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
+	assert_false(filter_is_empty(&lwin.local_filter.filter));
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
+	opt_handlers_teardown();
+	columns_clear_column_descs();
 }
 
 static void
