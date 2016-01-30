@@ -156,10 +156,10 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 
 	regs_init();
 
-	assert_success(chdir(TEST_DATA_PATH));
-	assert_success(regs_append('r', "existing-files/b"));
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	assert_success(regs_append('r', "b"));
 	expanded = expand_macros("%rr:p", NULL, NULL, 0);
-	assert_string_equal("/path/existing-files/b", expanded);
+	assert_string_equal(TEST_DATA_PATH "/existing-files/b", expanded);
 	free(expanded);
 
 	regs_reset();
@@ -172,11 +172,11 @@ TEST(dir_macros_are_expanded_to_orig_dir)
 	setup_custom_view(&lwin);
 
 	expanded = expand_macros("%d", NULL, NULL, 0);
-	assert_string_equal("/path", expanded);
+	assert_string_equal(TEST_DATA_PATH "/existing-files", expanded);
 	free(expanded);
 
 	expanded = expand_macros("%D", NULL, NULL, 0);
-	assert_string_equal("/path", expanded);
+	assert_string_equal(TEST_DATA_PATH "/existing-files", expanded);
 	free(expanded);
 }
 
@@ -322,13 +322,15 @@ TEST(parent_link_has_correct_origin_field)
 	cfg.dot_dirs = 0;
 
 	assert_string_equal("..", lwin.dir_entry[0].name);
-	assert_string_equal("/path", lwin.dir_entry[0].origin);
+	assert_string_equal(TEST_DATA_PATH "/existing-files",
+			lwin.dir_entry[0].origin);
 }
 
 static void
 setup_custom_view(FileView *view)
 {
 	assert_false(flist_custom_active(view));
+	strcpy(view->curr_dir, TEST_DATA_PATH "/existing-files");
 	flist_custom_start(view, "test");
 	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(view, 0) == 0);
