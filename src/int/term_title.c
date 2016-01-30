@@ -357,8 +357,11 @@ set_xlib_stubs(void)
 static void
 unload_xlib(void)
 {
-	(void)dlclose(xlib_handle);
-	xlib_handle = NULL;
+	if(xlib_handle != NULL)
+	{
+		(void)dlclose(xlib_handle);
+		xlib_handle = NULL;
+	}
 }
 
 /* XOpenDisplay() function stub, which does nothing. */
