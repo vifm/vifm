@@ -9195,6 +9195,7 @@ $as_echo "#define ENABLE_REMOTE_CMDS 1" >>confdefs.h
 fi
 
 if test "$use_dyn_libX11" = "yes"; then
+	ORIG_LIBS="$LIBS"
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
 $as_echo_n "checking for dlopen in -ldl... " >&6; }
 if ${ac_cv_lib_dl_dlopen+:} false; then :
@@ -9232,10 +9233,14 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlopen" >&5
 $as_echo "$ac_cv_lib_dl_dlopen" >&6; }
 if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
-  use_dyn_libX11=yes
+
+				 use_dyn_libX11=yes
+				 LIBS="$LIBS -ldl"
+
 else
   use_dyn_libX11=no
 fi
+
 
 	ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
 if test "x$ac_cv_header_dlfcn_h" = xyes; then :
@@ -9259,6 +9264,12 @@ else
   use_dyn_libX11=no
 fi
 
+
+	if test "$use_dyn_libX11" != "yes"; then
+		LIBS="$ORIG_LIBS"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"libdl seems to don't work as expected.  No dynamic X11.\"" >&5
+$as_echo "$as_me: WARNING: \"libdl seems to don't work as expected.  No dynamic X11.\"" >&2;}
+	fi
 fi
 
 if test "$use_libX11" = "yes"; then
@@ -9320,7 +9331,6 @@ fi
 $as_echo "#define HAVE_X11 1" >>confdefs.h
 
 		if test "$use_dyn_libX11" = "yes"; then
-			LIBS="$LIBS -ldl"
 
 $as_echo "#define DYN_X11 1" >>confdefs.h
 
