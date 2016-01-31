@@ -654,10 +654,21 @@ if test "$remote_cmds" = "yes"; then
 fi
 
 if test "$use_dyn_libX11" = "yes"; then
-	AC_CHECK_LIB(dl, dlopen, [use_dyn_libX11=yes], [use_dyn_libX11=no])
+	ORIG_LIBS="$LIBS"
+	AC_CHECK_LIB(dl, dlopen,
+				 [
+				 use_dyn_libX11=yes
+				 LIBS="$LIBS -ldl"
+				 ], [use_dyn_libX11=no])
+
 	AC_CHECK_HEADER([dlfcn.h], [], [use_dyn_libX11=no])
 	AC_CHECK_FUNC([dlsym], [], [use_dyn_libX11=no])
 	AC_CHECK_FUNC([dlclose], [], [use_dyn_libX11=no])
+
+	if test "$use_dyn_libX11" != "yes"; then
+		LIBS="$ORIG_LIBS"
+		AC_MSG_WARN(["libdl seems to don't work as expected.  No dynamic X11."])
+	fi
 fi
 
 if test "$use_libX11" = "yes"; then
@@ -667,7 +678,6 @@ if test "$use_libX11" = "yes"; then
 		AC_CHECK_HEADER([X11/Xutil.h], [], [AC_MSG_ERROR([X11/Xutil.h header not found.])])
 		AC_DEFINE([HAVE_X11], [1], [use X11 to determine terminal emulator title])
 		if test "$use_dyn_libX11" = "yes"; then
-			LIBS="$LIBS -ldl"
 			AC_DEFINE([DYN_X11], [1], [load libX11 dynamically])
 		else
 			LIBS="$LIBS -lX11"
