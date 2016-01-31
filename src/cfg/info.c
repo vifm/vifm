@@ -73,6 +73,7 @@ static char * convert_old_trash_path(const char trash_path[]);
 static void write_options(FILE *const fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
+static void write_doubling_commas(FILE *fp, const char str[]);
 static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
 		int ncmds);
 static void write_marks(FILE *const fp, const char non_conflicting_marks[],
@@ -1078,20 +1079,35 @@ write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
 
 			if(ft_record.description[0] == '\0')
 			{
-				fprintf(fp, "%c%s\n\t%s\n", mark, matcher_get_expr(assoc.matcher),
-						ft_record.command);
+				fprintf(fp, "%c%s\n\t", mark, matcher_get_expr(assoc.matcher));
 			}
 			else
 			{
-				fprintf(fp, "%c%s\n\t{%s}%s\n", mark, matcher_get_expr(assoc.matcher),
-						ft_record.description, ft_record.command);
+				fprintf(fp, "%c%s\n\t{%s}", mark, matcher_get_expr(assoc.matcher),
+						ft_record.description);
 			}
+			write_doubling_commas(fp, ft_record.command);
+			fputc('\n', fp);
 		}
 	}
 
 	for(i = 0; i < prev_count; i += 2)
 	{
 		fprintf(fp, "%c%s\n\t%s\n", mark, prev[i], prev[i + 1]);
+	}
+}
+
+/* Prints the string into the file doubling commas in process. */
+static void
+write_doubling_commas(FILE *fp, const char str[])
+{
+	while(*str != '\0')
+	{
+		if(*str == ',')
+		{
+			fputc(',', fp);
+		}
+		fputc(*str++, fp);
 	}
 }
 
@@ -1346,9 +1362,10 @@ remove_leading_whitespace(char line[])
 	}
 }
 
-/* Returns pointer to a statically allocated buffer */
+/* Escapes spaces in the string.  Returns pointer to a statically allocated
+ * buffer. */
 static const char *
-escape_spaces(const char *str)
+escape_spaces(const char str[])
 {
 	static char buf[4096];
 	char *p;

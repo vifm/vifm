@@ -66,6 +66,7 @@ static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc_record(assoc_record_t *record);
+static void undouble_commas(char s[]);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
@@ -370,6 +371,7 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		const char cmd[])
 {
 	int i;
+	char *undoubled;
 
 	if(*cmd == '{')
 	{
@@ -379,6 +381,9 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 			cmd = descr_end + 1;
 		}
 	}
+
+	undoubled = strdup(cmd);
+	undouble_commas(undoubled);
 
 	for(i = 0; i < assocs->count; ++i)
 	{
@@ -393,14 +398,38 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		for(j = 0; j < assoc.records.count; ++j)
 		{
 			const assoc_record_t ft_record = assoc.records.list[j];
-			if(strcmp(ft_record.command, cmd) == 0)
+			if(strcmp(ft_record.command, undoubled) == 0)
 			{
+				free(undoubled);
 				return 1;
 			}
 		}
 	}
 
+	free(undoubled);
 	return 0;
+}
+
+/* Updates the string in place to squash double commas into single one. */
+static void
+undouble_commas(char s[])
+{
+	char *p;
+
+	p = s;
+	while(s[0] != '\0')
+	{
+		if(s[0] == ',' && s[1] == ',')
+		{
+			++s;
+		}
+		*p++ = s[0];
+		if(s[0] != '\0')
+		{
+			++s;
+		}
+	}
+	*p = '\0';
 }
 
 void
@@ -444,7 +473,7 @@ ft_assoc_record_add_all(assoc_records_t *assocs, const assoc_records_t *src)
 
 	assocs->list = p;
 
-	for(i = 0; i < src_count; i++)
+	for(i = 0; i < src_count; ++i)
 	{
 		assocs->list[assocs->count + i].command = strdup(src->list[i].command);
 		assocs->list[assocs->count + i].description =
