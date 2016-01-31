@@ -70,11 +70,10 @@ static void update_info_file(const char filename[]);
 static void process_hist_entry(FileView *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
-static int assoc_exists(assoc_list_t *assocs, const char pattern[],
-		const char cmd[]);
 static void write_options(FILE *const fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
+static void write_doubling_commas(FILE *fp, const char str[]);
 static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
 		int ncmds);
 static void write_marks(FILE *const fp, const char non_conflicting_marks[],
@@ -579,7 +578,7 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(!assoc_exists(&filetypes, line_val, line2))
+					if(!ft_assoc_exists(&filetypes, line_val, line2))
 					{
 						nft = add_to_string_array(&ft, nft, 2, line_val, line2);
 					}
@@ -589,7 +588,7 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(!assoc_exists(&xfiletypes, line_val, line2))
+					if(!ft_assoc_exists(&xfiletypes, line_val, line2))
 					{
 						nfx = add_to_string_array(&fx, nfx, 2, line_val, line2);
 					}
@@ -599,7 +598,7 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(!assoc_exists(&fileviewers, line_val, line2))
+					if(!ft_assoc_exists(&fileviewers, line_val, line2))
 					{
 						nfv = add_to_string_array(&fv, nfv, 2, line_val, line2);
 					}
@@ -923,44 +922,6 @@ convert_old_trash_path(const char trash_path[])
 	return strdup(trash_path);
 }
 
-/* Checks that given pair of pattern and command exists in specified list of
- * associations.  Returns non-zero if so, otherwise zero is returned. */
-static int
-assoc_exists(assoc_list_t *assocs, const char pattern[], const char cmd[])
-{
-	int i;
-
-	if(*cmd == '{')
-	{
-		const char *const descr_end = strchr(cmd + 1, '}');
-		if(descr_end != NULL)
-		{
-			cmd = descr_end + 1;
-		}
-	}
-
-	for(i = 0; i < assocs->count; ++i)
-	{
-		int j;
-
-		const assoc_t assoc = assocs->list[i];
-		if(strcmp(matcher_get_expr(assoc.matcher), pattern) != 0)
-		{
-			continue;
-		}
-
-		for(j = 0; j < assoc.records.count; ++j)
-		{
-			const assoc_record_t ft_record = assoc.records.list[j];
-			if(strcmp(ft_record.command, cmd) == 0)
-			{
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
-
 /* Writes current values of all options into vifminfo file. */
 static void
 write_options(FILE *const fp)
@@ -1118,20 +1079,35 @@ write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
 
 			if(ft_record.description[0] == '\0')
 			{
-				fprintf(fp, "%c%s\n\t%s\n", mark, matcher_get_expr(assoc.matcher),
-						ft_record.command);
+				fprintf(fp, "%c%s\n\t", mark, matcher_get_expr(assoc.matcher));
 			}
 			else
 			{
-				fprintf(fp, "%c%s\n\t{%s}%s\n", mark, matcher_get_expr(assoc.matcher),
-						ft_record.description, ft_record.command);
+				fprintf(fp, "%c%s\n\t{%s}", mark, matcher_get_expr(assoc.matcher),
+						ft_record.description);
 			}
+			write_doubling_commas(fp, ft_record.command);
+			fputc('\n', fp);
 		}
 	}
 
 	for(i = 0; i < prev_count; i += 2)
 	{
 		fprintf(fp, "%c%s\n\t%s\n", mark, prev[i], prev[i + 1]);
+	}
+}
+
+/* Prints the string into the file doubling commas in process. */
+static void
+write_doubling_commas(FILE *fp, const char str[])
+{
+	while(*str != '\0')
+	{
+		if(*str == ',')
+		{
+			fputc(',', fp);
+		}
+		fputc(*str++, fp);
 	}
 }
 
@@ -1386,9 +1362,10 @@ remove_leading_whitespace(char line[])
 	}
 }
 
-/* Returns pointer to a statically allocated buffer */
+/* Escapes spaces in the string.  Returns pointer to a statically allocated
+ * buffer. */
 static const char *
-escape_spaces(const char *str)
+escape_spaces(const char str[])
 {
 	static char buf[4096];
 	char *p;

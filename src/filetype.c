@@ -55,18 +55,19 @@ static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
 static void assoc_programs(matcher_t *matcher, const assoc_records_t *programs,
 		int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
-TSTATIC void replace_double_comma(char cmd[]);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers);
-static assoc_records_t clone_assoc_records(const assoc_records_t *records);
+static assoc_records_t clone_assoc_records(const assoc_records_t *records,
+		const char pattern[], const assoc_list_t *dst);
 static void reset_all_list(void);
 static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc_record(assoc_record_t *record);
+static void undouble_commas(char s[]);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
@@ -162,7 +163,8 @@ assoc_programs(matcher_t *matcher, const assoc_records_t *programs, int for_x,
 {
 	const assoc_t assoc = {
 		.matcher = matcher,
-		.records = clone_assoc_records(programs),
+		.records = clone_assoc_records(programs, matcher_get_expr(matcher),
+				for_x ? &xfiletypes : &filetypes),
 	};
 
 	register_assoc(assoc, for_x, in_x);
@@ -257,7 +259,8 @@ assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers)
 {
 	const assoc_t assoc = {
 		.matcher = matcher,
-		.records = clone_assoc_records(viewers),
+		.records = clone_assoc_records(viewers, matcher_get_expr(matcher),
+				&fileviewers),
 	};
 
 	add_assoc(&fileviewers, assoc);
@@ -265,10 +268,21 @@ assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers)
 
 /* Clones list of association records.  Returns the clone. */
 static assoc_records_t
-clone_assoc_records(const assoc_records_t *records)
+clone_assoc_records(const assoc_records_t *records, const char pattern[],
+		const assoc_list_t *dst)
 {
+	int i;
 	assoc_records_t list = {};
-	ft_assoc_record_add_all(&list, records);
+
+	for(i = 0; i < records->count; ++i)
+	{
+		if(!ft_assoc_exists(dst, pattern, records->list[i].command))
+		{
+			ft_assoc_record_add(&list, records->list[i].command,
+					records->list[i].description);
+		}
+	}
+
 	return list;
 }
 
@@ -366,6 +380,72 @@ free_assoc_record(assoc_record_t *record)
 	safe_free(&record->description);
 }
 
+int
+ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
+		const char cmd[])
+{
+	int i;
+	char *undoubled;
+
+	if(*cmd == '{')
+	{
+		const char *const descr_end = strchr(cmd + 1, '}');
+		if(descr_end != NULL)
+		{
+			cmd = descr_end + 1;
+		}
+	}
+
+	undoubled = strdup(cmd);
+	undouble_commas(undoubled);
+
+	for(i = 0; i < assocs->count; ++i)
+	{
+		int j;
+
+		const assoc_t assoc = assocs->list[i];
+		if(strcmp(matcher_get_expr(assoc.matcher), pattern) != 0)
+		{
+			continue;
+		}
+
+		for(j = 0; j < assoc.records.count; ++j)
+		{
+			const assoc_record_t ft_record = assoc.records.list[j];
+			if(strcmp(ft_record.command, undoubled) == 0)
+			{
+				free(undoubled);
+				return 1;
+			}
+		}
+	}
+
+	free(undoubled);
+	return 0;
+}
+
+/* Updates the string in place to squash double commas into single one. */
+static void
+undouble_commas(char s[])
+{
+	char *p;
+
+	p = s;
+	while(s[0] != '\0')
+	{
+		if(s[0] == ',' && s[1] == ',')
+		{
+			++s;
+		}
+		*p++ = s[0];
+		if(s[0] != '\0')
+		{
+			++s;
+		}
+	}
+	*p = '\0';
+}
+
 void
 ft_assoc_record_add(assoc_records_t *records, const char *command,
 		const char *description)
@@ -407,7 +487,7 @@ ft_assoc_record_add_all(assoc_records_t *assocs, const assoc_records_t *src)
 
 	assocs->list = p;
 
-	for(i = 0; i < src_count; i++)
+	for(i = 0; i < src_count; ++i)
 	{
 		assocs->list[assocs->count + i].command = strdup(src->list[i].command);
 		assocs->list[assocs->count + i].description =
