@@ -21,6 +21,9 @@
 	neither local options nor local filter on entering/leaving custom view.
 	Thanks to filterfalse.
 
+	Disallow adding duplicated filetype/fileviewer entries (just ignore them
+	as they wouldn't be used due to order priority anyway).
+
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 

@@ -54,12 +54,17 @@ TEST(filetypes_are_deduplicated)
 	/* Add a filetype. */
 	m = matcher_alloc("*.c", 0, 1, &error);
 	assert_non_null(m);
-	ft_set_programs(m, "{Description}command", 0, 1);
+	ft_set_programs(m, "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Write it first time. */
 	write_info_file();
 	/* And remember size of the file. */
 	assert_success(stat(SANDBOX_PATH "/vifminfo", &first));
+
+	/* Add filetype again (as if it was read from vifmrc). */
+	m = matcher_alloc("*.c", 0, 1, &error);
+	assert_non_null(m);
+	ft_set_programs(m, "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Update vifminfo second time. */
 	write_info_file();

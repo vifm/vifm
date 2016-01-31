@@ -60,7 +60,8 @@ static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers);
-static assoc_records_t clone_assoc_records(const assoc_records_t *records);
+static assoc_records_t clone_assoc_records(const assoc_records_t *records,
+		const char pattern[], const assoc_list_t *dst);
 static void reset_all_list(void);
 static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
@@ -162,7 +163,8 @@ assoc_programs(matcher_t *matcher, const assoc_records_t *programs, int for_x,
 {
 	const assoc_t assoc = {
 		.matcher = matcher,
-		.records = clone_assoc_records(programs),
+		.records = clone_assoc_records(programs, matcher_get_expr(matcher),
+				for_x ? &xfiletypes : &filetypes),
 	};
 
 	register_assoc(assoc, for_x, in_x);
@@ -257,7 +259,8 @@ assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers)
 {
 	const assoc_t assoc = {
 		.matcher = matcher,
-		.records = clone_assoc_records(viewers),
+		.records = clone_assoc_records(viewers, matcher_get_expr(matcher),
+				&fileviewers),
 	};
 
 	add_assoc(&fileviewers, assoc);
@@ -265,10 +268,21 @@ assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers)
 
 /* Clones list of association records.  Returns the clone. */
 static assoc_records_t
-clone_assoc_records(const assoc_records_t *records)
+clone_assoc_records(const assoc_records_t *records, const char pattern[],
+		const assoc_list_t *dst)
 {
+	int i;
 	assoc_records_t list = {};
-	ft_assoc_record_add_all(&list, records);
+
+	for(i = 0; i < records->count; ++i)
+	{
+		if(!ft_assoc_exists(dst, pattern, records->list[i].command))
+		{
+			ft_assoc_record_add(&list, records->list[i].command,
+					records->list[i].description);
+		}
+	}
+
 	return list;
 }
 
