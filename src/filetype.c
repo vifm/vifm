@@ -365,6 +365,44 @@ free_assoc_record(assoc_record_t *record)
 	safe_free(&record->description);
 }
 
+int
+ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
+		const char cmd[])
+{
+	int i;
+
+	if(*cmd == '{')
+	{
+		const char *const descr_end = strchr(cmd + 1, '}');
+		if(descr_end != NULL)
+		{
+			cmd = descr_end + 1;
+		}
+	}
+
+	for(i = 0; i < assocs->count; ++i)
+	{
+		int j;
+
+		const assoc_t assoc = assocs->list[i];
+		if(strcmp(matcher_get_expr(assoc.matcher), pattern) != 0)
+		{
+			continue;
+		}
+
+		for(j = 0; j < assoc.records.count; ++j)
+		{
+			const assoc_record_t ft_record = assoc.records.list[j];
+			if(strcmp(ft_record.command, cmd) == 0)
+			{
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 void
 ft_assoc_record_add(assoc_records_t *records, const char *command,
 		const char *description)
