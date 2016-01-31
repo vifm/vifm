@@ -55,7 +55,6 @@ static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
 static void assoc_programs(matcher_t *matcher, const assoc_records_t *programs,
 		int for_x, int in_x);
 static assoc_records_t parse_command_list(const char cmds[], int with_descr);
-TSTATIC void replace_double_comma(char cmd[]);
 static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static assoc_records_t clone_all_matching_records(const char file[],
 		const assoc_list_t *record_list);
