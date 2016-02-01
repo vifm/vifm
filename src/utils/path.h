@@ -69,12 +69,13 @@ char * replace_home_part(const char path[]);
 /* Same as replace_home_part(), but doesn't perform trailing slash trimming. */
 char * replace_home_part_strict(const char path[]);
 
-/* Expands tilde in the front of the path.  Returns newly allocated string
- * without tilde. */
+/* Expands tilde in the front of the path.  Does nothing for paths without
+ * tilde.  Returns newly allocated string without tilde. */
 char * expand_tilde(const char path[]);
 
-/* Expands tilde in the front of the path.  Can free the path.  Returns the path
- * or newly allocated string without tilde. */
+/* Expands tilde in the front of the path.  Can free the path.  Does nothing for
+ * paths without tilde.  Returns the path or newly allocated string without
+ * tilde. */
 char * replace_tilde(char path[]);
 
 /* Find beginning of the last component in the path ignoring trailing
