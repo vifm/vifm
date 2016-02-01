@@ -24,6 +24,8 @@
 	Disallow adding duplicated filetype/fileviewer entries (just ignore them
 	as they wouldn't be used due to order priority anyway).
 
+	Expand tilde in first argument of :bmark! command.  Thanks to Marcos Cruz.
+
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 
