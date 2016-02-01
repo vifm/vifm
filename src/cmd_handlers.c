@@ -1432,7 +1432,7 @@ static char *
 make_bmark_path(const char path[])
 {
 	char *ret;
-	char *const expanded = ma_expand_single(path);
+	char *const expanded = replace_tilde(ma_expand_single(path));
 
 	if(is_path_absolute(expanded))
 	{

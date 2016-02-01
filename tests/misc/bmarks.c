@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
-#include <string.h> /* strcmp() strcpy() */
+#include <string.h> /* strcmp() strcpy() strlen() */
 
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
@@ -126,6 +126,14 @@ TEST(not_all_macros_are_expanded)
 				CIT_COMMAND));
 	assert_int_equal(1, count_bmarks());
 	assert_string_equal("/", path);
+}
+
+TEST(tilde_is_expanded)
+{
+	assert_success(exec_commands("bmark! ~ tag", &lwin, CIT_COMMAND));
+	assert_int_equal(1, count_bmarks());
+	assert_false(path[0] == '~');
+	assert_false(path[strlen(path) - 1] == '~');
 }
 
 static int
