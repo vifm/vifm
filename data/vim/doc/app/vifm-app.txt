@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Jan 22
+*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Feb 01
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2457,7 +2457,7 @@ There are five possible ways to write them:
 
 The last form is implicitly refers to one of others.  |vifm-:highlight| does not
 accept undecorated form, while |vifm-:filetype|, |vifm-:filextype| and
-|vifm-:fileviewer| treat it as list of name globals.
+|vifm-:fileviewer| treat it as list of name globs.
 
 Regular expression patterns are case insensitive by default.
 
