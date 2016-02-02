@@ -41,6 +41,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -83,7 +84,7 @@ static void print_tree_entry(tree_print_state_t *s, const char path[]);
 static void print_entry_prefix(tree_print_state_t *s);
 static char ** list_sorted_files(const char path[], int *len);
 static int path_sorter(const void *first, const void *second);
-static void view_stream(FILE *fp, int wrapped);
+TSTATIC void view_stream(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static void write_message(const char msg[]);
@@ -485,22 +486,24 @@ path_sorter(const void *first, const void *second)
 /* Displays contents read from the fp in the other pane starting from the second
  * line and second column.  The wrapped parameter determines whether lines
  * should be wrapped. */
-static void
+TSTATIC void
 view_stream(FILE *fp, int wrapped)
 {
+	const size_t left = ui_qv_left(other_view);
+	const size_t top = ui_qv_top(other_view);
 	const size_t max_width = ui_qv_width(other_view);
 	const size_t max_height = ui_qv_height(other_view);
 
 	const col_scheme_t *cs = ui_view_get_cs(other_view);
 	char line[PREVIEW_LINE_BUF_LEN];
 	int line_continued = 0;
-	size_t y = ui_qv_top(other_view);
+	size_t y = top;
 	const char *res = get_line(fp, line, sizeof(line));
 	esc_state state;
 
 	esc_state_init(&state, &cs->color[WIN_COLOR]);
 
-	while(res != NULL && y <= max_height)
+	while(res != NULL && y < top + max_height)
 	{
 		int offset;
 		int printed;
@@ -510,12 +513,12 @@ view_stream(FILE *fp, int wrapped)
 			skip_until_eol(fp);
 		}
 
-		offset = esc_print_line(line, other_view->win, ui_qv_left(other_view), y,
-				max_width, 0, &state, &printed);
+		offset = esc_print_line(line, other_view->win, left, y, max_width, 0,
+				&state, &printed);
 		y += !wrapped || (!line_continued || printed);
 		line_continued = line[len - 1] != '\n';
 
-		if(!wrapped || shift_line(line, len, offset))
+		if(y < top + max_height && (!wrapped || shift_line(line, len, offset)))
 		{
 			res = get_line(fp, line, sizeof(line));
 		}
