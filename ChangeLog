@@ -51,6 +51,12 @@
 	Fixed handling of doubled commas on reading/writing filetypes from/to
 	vifminfo.
 
+	Fixed displaying of extra file line in quick view when 'tuioptions'
+	doesn't contain "p" flag.  Thanks to aleksejrs.
+
+	Fixed description of 'sort' to reflect rename of "type" into "dir".
+	Thanks to Marcos Cruz.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.

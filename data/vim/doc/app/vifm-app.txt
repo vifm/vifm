@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Feb 01
+*vifm-app.txt*    For Vifm version 0.8.1  Last change: 2016 Feb 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3040,17 +3040,23 @@ information on time keys.
 
 '+' means ascending sort for this key, and '-' means descending sort.
 
-Value of the option is checked to include default sorting key (name on
-*nix, iname on Windows).  When it is absent, the key is appended to the
-value of the option.
-
-Type key is somewhat similar in this regard but it's not added implicitly:
-when "type" is not specified, sorting behaves as if it was the first key in
+"dir" key is somewhat similar in this regard but it's not added implicitly:
+when "dir" is not specified, sorting behaves as if it was the first key in
 the list.  That's why if one wants sorting algorithm to mix directories and
-files, "type" should be appended to sorting option, for example like this: >
- set sort+=type
+files, "dir" should be appended to sorting option, for example like this: >
+ set sort+=dir
 or >
- set sort=-size,type
+ set sort=-size,dir
+
+This option also changes view columns according to primary sorting key set,
+unless |vifm-'viewcolumns'| option is not empty.
+
+Value of the option is checked to include "dir" key and default sorting key
+"(name" on *nix, "iname" on Windows).  Here is what happens if one of them is
+missing:
+ - "dir" key is added at the beginning;
+ - default key is added at the end.
+All other keys are left untouched (at most they are moved).
 
 This option also changes view columns according to primary sorting key set,
 unless |vifm-'viewcolumns'| option is not empty.

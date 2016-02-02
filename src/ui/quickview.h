@@ -22,6 +22,7 @@
 
 #include <stdio.h> /* FILE */
 
+#include "../utils/test_helpers.h"
 #include "ui.h"
 
 void quick_view_file(FileView *view);
@@ -44,6 +45,10 @@ const char * qv_get_viewer(const char path[]);
 /* Previews directory, actual preview is to be read from returned stream.
  * Returns the stream or NULL on error. */
 FILE * qv_view_dir(const char path[]);
+
+TSTATIC_DEFS(
+	void view_stream(FILE *fp, int wrapped);
+);
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */
 
