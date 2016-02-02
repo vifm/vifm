@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 01, 2016" "vifm 0.8.1"
+.TH VIFM 1 "February 02, 2016" "vifm 0.8.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3639,29 +3639,22 @@ information on time keys.
 
 \(aq+\(aq means ascending sort for this key, and '\-' means descending sort.
 
-In case "name" ("iname" on Windows) is skipped, it will be added at the end
-automatically.
-
-Value of the option is checked to include default sorting key (name on *nix,
-iname on Windows).  When it is absent, the key is appended to the value of the
-option.
-
-Type key is somewhat similar in this regard but it's added implicitly:
-when "type" is not specified, sorting behaves as if it was the first key in
+"dir" key is somewhat similar in this regard but it's added implicitly:
+when "dir" is not specified, sorting behaves as if it was the first key in
 the list.  That's why if one wants sorting algorithm to mix directories and
-files, "type" should be appended to sorting option, for example like this:
+files, "dir" should be appended to sorting option, for example like this:
 .EX
 
-  set sort+=type
+  set sort+=dir
 
 .EE
 or
 .EX
 
-  set sort=-size,type
+  set sort=-size,dir
 .EE
 
-Value of the option is checked to include type key and default sorting
+Value of the option is checked to include dir key and default sorting
 key (name on *nix, iname on Windows).  Here is what happens if one of them is
 missing:
 .RS
