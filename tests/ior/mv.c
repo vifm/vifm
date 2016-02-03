@@ -1,7 +1,6 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() */
 
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* remove() */
