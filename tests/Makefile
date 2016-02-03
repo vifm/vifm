@@ -50,6 +50,10 @@ else
     endif
 endif
 
+ifdef DEBUG
+    BINSUBDIR := debug/
+endif
+
 # path to build tree
 B ?=
 # path to storage for intermediate build files
@@ -76,10 +80,6 @@ ifndef unix_env
 endif
 ifndef win_env
     vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
-endif
-
-ifdef DEBUG
-    BINSUBDIR := debug/
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
