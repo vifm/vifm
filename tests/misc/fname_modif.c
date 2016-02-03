@@ -82,13 +82,10 @@ setup_registers(void)
 	regs_append('z', "existing-files/c");
 }
 
-SETUP_ONCE()
-{
-	assert_success(chdir(TEST_DATA_PATH));
-}
-
 SETUP()
 {
+	assert_success(chdir(TEST_DATA_PATH));
+
 	setup_lwin();
 	setup_rwin();
 

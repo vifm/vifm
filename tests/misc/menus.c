@@ -6,13 +6,17 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/menus/menus.h"
+#include "../../src/utils/fs.h"
 
 static int not_windows(void);
 
 TEST(can_navigate_to_broken_symlink, IF(not_windows))
 {
+	char *saved_cwd;
+
 	strcpy(lwin.curr_dir, ".");
 
+	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
 	/* symlink() is not available on Windows, but other code is fine. */
@@ -22,9 +26,10 @@ TEST(can_navigate_to_broken_symlink, IF(not_windows))
 
 	/* Were trying to open broken link, which will fail, but the parsing part
 	 * should succeed. */
+	restore_cwd(saved_cwd);
 	assert_success(goto_selected_file(&lwin, SANDBOX_PATH "/broken-link:", 1));
 
-	assert_success(remove("broken-link"));
+	assert_success(remove(SANDBOX_PATH "/broken-link"));
 }
 
 static int

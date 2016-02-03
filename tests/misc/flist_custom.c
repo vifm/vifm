@@ -15,6 +15,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -29,6 +30,22 @@
 static void setup_custom_view(FileView *view);
 static int not_windows(void);
 
+static char test_data[PATH_MAX];
+
+SETUP_ONCE()
+{
+	char cwd[PATH_MAX];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	if(is_path_absolute(TEST_DATA_PATH))
+	{
+		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
+	}
+	else
+	{
+		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
+	}
+}
 SETUP()
 {
 	update_string(&cfg.fuse_home, "no");
@@ -109,6 +126,10 @@ TEST(reload_considers_local_filter)
 
 TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 {
+	char test_file[PATH_MAX];
+
+	assert_non_null(os_realpath(TEST_DATA_PATH "/existing-files/a", test_file));
+
 	assert_success(chdir(SANDBOX_PATH));
 
 	/* symlink() is not available on Windows, but other code is fine. */
@@ -119,7 +140,7 @@ TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 	assert_false(flist_custom_active(&lwin));
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, test_file);
 	flist_custom_add(&lwin, "./broken-link");
 	assert_true(flist_custom_finish(&lwin, 0) == 0);
 
@@ -153,6 +174,7 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 TEST(register_macros_are_expanded_relatively_to_orig_dir)
 {
 	char *expanded;
+	char path[PATH_MAX];
 
 	setup_custom_view(&lwin);
 
@@ -161,7 +183,8 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 	assert_success(regs_append('r', "b"));
 	expanded = expand_macros("%rr:p", NULL, NULL, 0);
-	assert_string_equal(TEST_DATA_PATH "/existing-files/b", expanded);
+	snprintf(path, sizeof(path), "%s/existing-files/b", test_data);
+	assert_string_equal(path, expanded);
 	free(expanded);
 
 	regs_reset();
@@ -170,15 +193,18 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 TEST(dir_macros_are_expanded_to_orig_dir)
 {
 	char *expanded;
+	char path[PATH_MAX];
+
+	snprintf(path, sizeof(path), "%s/existing-files", test_data);
 
 	setup_custom_view(&lwin);
 
 	expanded = expand_macros("%d", NULL, NULL, 0);
-	assert_string_equal(TEST_DATA_PATH "/existing-files", expanded);
+	assert_string_equal(path, expanded);
 	free(expanded);
 
 	expanded = expand_macros("%D", NULL, NULL, 0);
-	assert_string_equal(TEST_DATA_PATH "/existing-files", expanded);
+	assert_string_equal(path, expanded);
 	free(expanded);
 }
 
@@ -279,16 +305,20 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread_on_restart)
 
 	opt_handlers_teardown();
 
-	assert_success(remove("vifminfo"));
+	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }
 
 TEST(location_is_saved_on_entering_custom_view)
 {
 	char cwd[PATH_MAX];
+	char *saved_cwd;
 
 	cfg_resize_histories(10);
 
-	/* Set sandbox directory as working directory. */
+	curr_stats.ch_pos = 1;
+
+	/* Set test data directory as current directory. */
+	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
 	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), cwd);
@@ -296,6 +326,7 @@ TEST(location_is_saved_on_entering_custom_view)
 	/* Put specific history entry and make sure it's used. */
 	save_view_history(&lwin, lwin.curr_dir, "b", 1);
 	load_dir_list(&lwin, 0);
+	assert_string_equal(lwin.curr_dir, cwd);
 	assert_string_equal("b", lwin.dir_entry[lwin.list_pos].name);
 
 	/* Pick different entry. */
@@ -303,6 +334,7 @@ TEST(location_is_saved_on_entering_custom_view)
 	assert_string_equal("c", lwin.dir_entry[lwin.list_pos].name);
 
 	/* Go into custom view (load_stage enables saving history). */
+	restore_cwd(saved_cwd);
 	curr_stats.load_stage = 2;
 	setup_custom_view(&lwin);
 	curr_stats.load_stage = 0;
@@ -312,10 +344,14 @@ TEST(location_is_saved_on_entering_custom_view)
 	assert_string_equal("c", lwin.dir_entry[lwin.list_pos].name);
 
 	cfg_resize_histories(0U);
+
+	curr_stats.ch_pos = 0;
 }
 
 TEST(parent_link_has_correct_origin_field)
 {
+	char path[PATH_MAX];
+
 	/* This directory entry is added separately and thus can stray from the
 	 * others. */
 
@@ -324,8 +360,8 @@ TEST(parent_link_has_correct_origin_field)
 	cfg.dot_dirs = 0;
 
 	assert_string_equal("..", lwin.dir_entry[0].name);
-	assert_string_equal(TEST_DATA_PATH "/existing-files",
-			lwin.dir_entry[0].origin);
+	snprintf(path, sizeof(path), "%s/existing-files", test_data);
+	assert_string_equal(path, lwin.dir_entry[0].origin);
 }
 
 TEST(custom_view_does_not_reset_local_state)
@@ -367,7 +403,8 @@ static void
 setup_custom_view(FileView *view)
 {
 	assert_false(flist_custom_active(view));
-	strcpy(view->curr_dir, TEST_DATA_PATH "/existing-files");
+	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s/existing-files",
+			test_data);
 	flist_custom_start(view, "test");
 	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(view, 0) == 0);
