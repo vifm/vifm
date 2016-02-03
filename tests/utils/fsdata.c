@@ -7,6 +7,12 @@
 #include "../../src/compat/os.h"
 #include "../../src/utils/fsdata.h"
 
+#ifndef _WIN32
+#define ROOT "/"
+#else
+#define ROOT "C:/"
+#endif
+
 TEST(freeing_null_fsdata_is_ok)
 {
 	fsdata_free(NULL);
@@ -165,10 +171,10 @@ TEST(root_can_carry_data)
 	char big_data[128];
 	fsdata_t *const fsd = fsdata_create(0);
 
-	assert_success(fsdata_set(fsd, "/", big_data, sizeof(big_data)));
+	assert_success(fsdata_set(fsd, ROOT, big_data, sizeof(big_data)));
 
 	/* This can try to use overwriten pointers. */
-	assert_success(fsdata_invalidate(fsd, "/"));
+	assert_success(fsdata_invalidate(fsd, ROOT));
 
 	fsdata_free(fsd);
 }
@@ -180,11 +186,11 @@ TEST(data_size_can_change)
 	char big_data[128];
 	fsdata_t *const fsd = fsdata_create(0);
 
-	assert_success(fsdata_set(fsd, "/", small_data, sizeof(small_data)));
-	assert_success(fsdata_set(fsd, "/", big_data, sizeof(big_data)));
+	assert_success(fsdata_set(fsd, ROOT, small_data, sizeof(small_data)));
+	assert_success(fsdata_set(fsd, ROOT, big_data, sizeof(big_data)));
 
 	/* This can try to use overwriten pointers. */
-	assert_success(fsdata_invalidate(fsd, "/"));
+	assert_success(fsdata_invalidate(fsd, ROOT));
 
 	fsdata_free(fsd);
 }
