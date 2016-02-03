@@ -76,6 +76,12 @@ void
 ui_sb_quick_msgf(const char format[], ...)
 {
 	va_list ap;
+
+	if(curr_stats.load_stage < 2)
+	{
+		return;
+	}
+
 	va_start(ap, format);
 
 	checked_wmove(status_bar, 0, 0);

@@ -5,15 +5,41 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() */
 
+#include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/utils.h"
 
 #define DEFAULT_LINENUM 1
 
 static int windows(void);
 
+static char *saved_cwd;
+static char test_data[PATH_MAX];
+
+SETUP_ONCE()
+{
+	char cwd[PATH_MAX];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	if(is_path_absolute(TEST_DATA_PATH))
+	{
+		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
+	}
+	else
+	{
+		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
+	}
+}
+
 SETUP()
 {
+	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH));
+}
+
+TEARDOWN()
+{
+	restore_cwd(saved_cwd);
 }
 
 TEST(empty_path_without_linenum)
@@ -41,9 +67,9 @@ TEST(empty_path_with_linenum)
 TEST(absolute_path_without_linenum)
 {
 	int line_num;
-	char *const path = parse_file_spec(TEST_DATA_PATH, &line_num);
+	char *const path = parse_file_spec(test_data, &line_num);
 
-	assert_string_equal(TEST_DATA_PATH, path);
+	assert_string_equal(test_data, path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
 
 	free(path);
@@ -59,10 +85,15 @@ TEST(tilde_path_is_expanded)
 
 TEST(absolute_path_with_linenum)
 {
-	int line_num;
-	char *const path = parse_file_spec(TEST_DATA_PATH ":1234:", &line_num);
+	char spec[PATH_MAX];
 
-	assert_string_equal(TEST_DATA_PATH, path);
+	int line_num;
+	char *path;
+
+	snprintf(spec, sizeof(spec), "%s:1234:", test_data);
+	path = parse_file_spec(spec, &line_num);
+
+	assert_string_equal(test_data, path);
 	assert_int_equal(1234, line_num);
 
 	free(path);
@@ -125,10 +156,15 @@ TEST(empty_path_linenum_no_trailing_colon)
 
 TEST(absolute_path_linenum_no_trailing_colon)
 {
-	int line_num;
-	char *const path = parse_file_spec(TEST_DATA_PATH ":1234", &line_num);
+	char spec[PATH_MAX];
 
-	assert_string_equal(TEST_DATA_PATH, path);
+	int line_num;
+	char *path;
+
+	snprintf(spec, sizeof(spec), "%s:1234", test_data);
+	path = parse_file_spec(spec, &line_num);
+
+	assert_string_equal(test_data, path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
 
 	free(path);
@@ -181,9 +217,9 @@ TEST(colon_in_name_with_linenum)
 TEST(win_absolute_path_without_linenum, IF(windows))
 {
 	int line_num;
-	char *const path = parse_file_spec(TEST_DATA_PATH, &line_num);
+	char *const path = parse_file_spec(test_data, &line_num);
 
-	assert_string_equal(TEST_DATA_PATH, path);
+	assert_string_equal(test_data, path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
 
 	free(path);
@@ -231,5 +267,6 @@ windows(void)
 	return 0;
 #endif
 }
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

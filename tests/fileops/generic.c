@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/time.h> /* timeval utimes() */
-#include <unistd.h> /* unlink() */
+#include <unistd.h> /* chdir() unlink() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
@@ -21,9 +21,12 @@ static void create_empty_dir(const char dir[]);
 static void create_empty_file(const char file[]);
 static int file_exists(const char file[]);
 
+static char *saved_cwd;
+
 SETUP()
 {
-	assert_int_equal(0, chdir(SANDBOX_PATH));
+	saved_cwd = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
 
 	/* lwin */
 	strcpy(lwin.curr_dir, ".");
@@ -60,7 +63,7 @@ TEARDOWN()
 
 	filter_dispose(&rwin.local_filter.filter);
 
-	assert_int_equal(0, chdir("../.."));
+	restore_cwd(saved_cwd);
 }
 
 TEST(merge_directories)

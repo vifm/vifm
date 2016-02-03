@@ -11,6 +11,7 @@
 #include "../../src/modes/modes.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
@@ -35,6 +36,33 @@ static const cmd_add_t commands[] = {
 static int called;
 static int bg;
 static char *arg;
+
+static char sandbox[PATH_MAX];
+static char test_data[PATH_MAX];
+
+SETUP_ONCE()
+{
+	char cwd[PATH_MAX];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	if(is_path_absolute(SANDBOX_PATH))
+	{
+		snprintf(sandbox, sizeof(sandbox), "%s", SANDBOX_PATH);
+	}
+	else
+	{
+		snprintf(sandbox, sizeof(sandbox), "%s/%s", cwd, SANDBOX_PATH);
+	}
+
+	if(is_path_absolute(TEST_DATA_PATH))
+	{
+		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
+	}
+	else
+	{
+		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
+	}
+}
 
 SETUP()
 {
@@ -210,23 +238,30 @@ TEST(shell_invocation_works_in_udf)
 
 TEST(double_cd_uses_same_base_for_rel_paths)
 {
-	assert_success(chdir(TEST_DATA_PATH));
+	char path[PATH_MAX];
 
-	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	assert_success(chdir(test_data));
+
+	strcpy(lwin.curr_dir, test_data);
 	strcpy(rwin.curr_dir, "..");
 
 	assert_success(exec_commands("cd read rename", &lwin, CIT_COMMAND));
 
-	assert_true(paths_are_equal(lwin.curr_dir, TEST_DATA_PATH "/read"));
-	assert_true(paths_are_equal(rwin.curr_dir, TEST_DATA_PATH "/rename"));
+	snprintf(path, sizeof(path), "%s/read", test_data);
+	assert_true(paths_are_equal(lwin.curr_dir, path));
+	snprintf(path, sizeof(path), "%s/rename", test_data);
+	assert_true(paths_are_equal(rwin.curr_dir, path));
 }
 
 TEST(cpmv_does_not_crash_on_wrong_list_access)
 {
-	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/existing-files", test_data);
 
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
+	assert_success(chdir(path));
+
+	strcpy(lwin.curr_dir, path);
+	strcpy(rwin.curr_dir, sandbox);
 
 	lwin.list_rows = 3;
 	lwin.list_pos = 0;
@@ -247,9 +282,12 @@ TEST(cpmv_does_not_crash_on_wrong_list_access)
 	 * file list and access memory beyond array boundaries. */
 	(void)exec_commands("co .", &lwin, CIT_COMMAND);
 
-	assert_success(remove(SANDBOX_PATH "/a"));
-	assert_success(remove(SANDBOX_PATH "/b"));
-	assert_success(remove(SANDBOX_PATH "/c"));
+	snprintf(path, sizeof(path), "%s/a", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/b", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/c", sandbox);
+	assert_success(remove(path));
 }
 
 TEST(or_operator_is_attributed_to_echo)
@@ -292,11 +330,14 @@ TEST(user_command_is_executed_in_separated_scope)
 
 TEST(tr_extends_second_field)
 {
-	assert_success(chdir(SANDBOX_PATH));
+	char path[PATH_MAX];
 
-	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	assert_success(chdir(sandbox));
 
-	create_file(SANDBOX_PATH "/a b");
+	strcpy(lwin.curr_dir, sandbox);
+
+	snprintf(path, sizeof(path), "%s/a b", sandbox);
+	create_file(path);
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
@@ -309,7 +350,8 @@ TEST(tr_extends_second_field)
 
 	(void)exec_commands("tr/ ?<>\\\\:*|\"/_", &lwin, CIT_COMMAND);
 
-	assert_success(remove(SANDBOX_PATH "/a_b"));
+	snprintf(path, sizeof(path), "%s/a_b", sandbox);
+	assert_success(remove(path));
 }
 
 TEST(put_bg_cmd_is_parsed_correctly)

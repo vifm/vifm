@@ -233,6 +233,11 @@ ior_mv(io_args_t *const args)
 		case EISDIR:
 		case ENOTEMPTY:
 		case EEXIST:
+#ifdef _WIN32
+		/* For MXE builds running in Wine. */
+		case EPERM:
+		case EACCES:
+#endif
 			if(crs == IO_CRS_REPLACE_ALL)
 			{
 				int error;

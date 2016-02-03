@@ -35,6 +35,7 @@ static void create_executable(const char file[]);
 static int dquotes_allowed_in_paths(void);
 
 static line_stats_t stats;
+static char *saved_cwd;
 
 SETUP()
 {
@@ -69,11 +70,14 @@ SETUP()
 	add_option("path", "pt", OPT_STR, OPT_GLOBAL, 0, NULL, &dummy_handler, def);
 	add_option("path", "pt", OPT_STR, OPT_LOCAL, 0, NULL, &dummy_handler, def);
 
+	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 }
 
 TEARDOWN()
 {
+	restore_cwd(saved_cwd);
+
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
 
@@ -161,7 +165,7 @@ TEST(spaces_escaping_leading)
 {
 	char *mb;
 
-	assert_int_equal(0, chdir("../spaces-in-names"));
+	assert_success(chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch \\ ");
 	assert_success(line_completion(&stats));
@@ -175,18 +179,23 @@ TEST(spaces_escaping_everywhere)
 {
 	char *mb;
 
-	assert_int_equal(0, chdir("../spaces-in-names"));
+	assert_success(chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch \\ s");
 	assert_success(line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
-#ifndef _WIN32
-	assert_string_equal("touch \\ spaces\\ everywhere\\ ", mb);
-#else
-	/* Files can't have trailing whitespace on Windows. */
-	assert_string_equal("touch \\ spaces\\ everywhere", mb);
-#endif
+	/* Whether trailing space is there depends on file system and OS. */
+	if(access("\\ spaces\\ everywhere\\ ", F_OK) == 0)
+	{
+		assert_string_equal("touch \\ spaces\\ everywhere\\ ", mb);
+	}
+	/* Only one condition is true, but don't use else to make one of asserts fail
+	 * if there are too files somehow. */
+	if(access("\\ spaces\\ everywhere", F_OK) == 0)
+	{
+		assert_string_equal("touch \\ spaces\\ everywhere", mb);
+	}
 	free(mb);
 }
 
@@ -194,18 +203,23 @@ TEST(spaces_escaping_trailing)
 {
 	char *mb;
 
-	assert_int_equal(0, chdir("../spaces-in-names"));
+	assert_success(chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch e");
 	assert_success(line_completion(&stats));
 
 	mb = to_multibyte(stats.line);
-#ifndef _WIN32
-	assert_string_equal("touch ends-with-space\\ ", mb);
-#else
-	/* Files can't have trailing whitespace on Windows. */
-	assert_string_equal("touch ends-with-space", mb);
-#endif
+	/* Whether trailing space is there depends on file system and OS. */
+	if(access("ends-with-space\\ ", F_OK) == 0)
+	{
+		assert_string_equal("touch ends-with-space\\ ", mb);
+	}
+	/* Only one condition is true, but don't use else to make one of asserts fail
+	 * if there are too files somehow. */
+	if(access("ends-with-space", F_OK) == 0)
+	{
+		assert_string_equal("touch ends-with-space", mb);
+	}
 	free(mb);
 }
 
@@ -213,7 +227,7 @@ TEST(spaces_escaping_middle)
 {
 	char *mb;
 
-	assert_int_equal(0, chdir("../spaces-in-names"));
+	assert_success(chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch s");
 	assert_success(line_completion(&stats));
@@ -232,7 +246,7 @@ TEST(squoted_completion)
 
 TEST(squoted_completion_escaping)
 {
-	assert_int_equal(0, chdir("../quotes-in-names"));
+	assert_success(chdir("../quotes-in-names"));
 
 	prepare_for_line_completion(L"touch 's-quote");
 	assert_success(line_completion(&stats));
@@ -248,7 +262,7 @@ TEST(dquoted_completion)
 
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 {
-	assert_int_equal(0, chdir("../quotes-in-names"));
+	assert_success(chdir("../quotes-in-names"));
 
 	prepare_for_line_completion(L"touch \"d-quote");
 	assert_success(line_completion(&stats));
@@ -259,7 +273,7 @@ TEST(last_match_is_properly_escaped)
 {
 	char *match;
 
-	assert_int_equal(0, chdir("../quotes-in-names"));
+	assert_success(chdir("../quotes-in-names"));
 
 	prepare_for_line_completion(L"touch 's-quote-''-in");
 	assert_success(line_completion(&stats));
@@ -325,7 +339,7 @@ TEST(dirs_are_completed_with_trailing_slash)
 {
 	char *match;
 
-	assert_int_equal(0, chdir("../"));
+	assert_success(chdir("../"));
 
 	prepare_for_line_completion(L"cd r");
 	assert_success(line_completion(&stats));
@@ -342,8 +356,6 @@ TEST(dirs_are_completed_with_trailing_slash)
 	match = vle_compl_next();
 	assert_string_equal("read/", match);
 	free(match);
-
-	assert_int_equal(0, chdir("read/"));
 }
 
 TEST(function_name_completion)
@@ -445,6 +457,8 @@ TEST(bang_abs_path_completion)
 	wchar_t cmd[PATH_MAX];
 	char cwd[PATH_MAX];
 
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
 	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
@@ -484,6 +498,8 @@ TEST(bmark_path_is_completed)
 {
 	bmarks_clear();
 
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 	create_executable("exec-for-completion" SUFFIX);
 

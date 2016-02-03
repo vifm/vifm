@@ -2,9 +2,9 @@
 
 #include <stic.h>
 
-#include <unistd.h> /* F_OK access() chdir() */
+#include <unistd.h> /* F_OK access() */
 
-#include <stdio.h> /* FILE fclose() fopen() */
+#include <stdio.h> /* FILE fclose() fopen() snprintf() */
 
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
@@ -14,39 +14,38 @@
 void
 create_non_empty_dir(const char dir[], const char file[])
 {
+	char path[PATH_MAX];
+
 	create_empty_dir(dir);
 
-	assert_success(chdir(dir));
-	create_empty_file(file);
-	assert_success(chdir(".."));
+	snprintf(path, sizeof(path), "%s/%s", dir, file);
+	create_empty_file(path);
 }
 
 void
-create_empty_nested_dir(const char dir[],
-		const char nested_dir[])
+create_empty_nested_dir(const char dir[], const char nested_dir[])
 {
+	char path[PATH_MAX];
+
 	create_empty_dir(dir);
 
-	assert_success(chdir(dir));
-	create_empty_dir(nested_dir);
-	assert_success(chdir(".."));
+	snprintf(path, sizeof(path), "%s/%s", dir, nested_dir);
+	create_empty_dir(path);
 }
 
 void
 create_non_empty_nested_dir(const char root_dir[], const char nested_dir[],
 		const char file[])
 {
+	char path[PATH_MAX];
+
 	create_empty_dir(root_dir);
 
-	assert_success(chdir(root_dir));
-	{
-		create_empty_dir(nested_dir);
+	snprintf(path, sizeof(path), "%s/%s", root_dir, nested_dir);
+	create_empty_dir(path);
 
-		assert_success(chdir(nested_dir));
-		create_empty_file(file);
-		assert_success(chdir(".."));
-	}
-	assert_success(chdir(".."));
+	snprintf(path, sizeof(path), "%s/%s/%s", root_dir, nested_dir, file);
+	create_empty_file(path);
 }
 
 void

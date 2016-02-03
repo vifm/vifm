@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() */
-
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
@@ -15,8 +13,7 @@
 #include "../../src/marks.h"
 #include "../../src/registers.h"
 
-static void init_view(FileView *view);
-static void free_view(FileView *view);
+#include "utils.h"
 
 SETUP()
 {
@@ -28,8 +25,8 @@ SETUP()
 	update_string(&cfg.slow_fs_list, "no");
 	update_string(&cfg.fuse_home, "");
 
-	init_view(&lwin);
-	init_view(&rwin);
+	view_setup(&lwin);
+	view_setup(&rwin);
 }
 
 TEARDOWN()
@@ -39,47 +36,8 @@ TEARDOWN()
 
 	reset_cmds();
 
-	free_view(&lwin);
-	free_view(&rwin);
-}
-
-static void
-init_view(FileView *view)
-{
-	filter_init(&view->local_filter.filter, 1);
-	filter_init(&view->manual_filter, 1);
-	filter_init(&view->auto_filter, 1);
-
-	view->dir_entry = NULL;
-	view->list_rows = 0;
-
-	view->window_rows = 1;
-	view->sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(view, view->sort);
-}
-
-static void
-free_view(FileView *view)
-{
-	int i;
-
-	filter_dispose(&view->local_filter.filter);
-	filter_dispose(&view->manual_filter);
-	filter_dispose(&view->auto_filter);
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free_dir_entry(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-
-	for(i = 0; i < view->custom.entry_count; ++i)
-	{
-		free_dir_entry(view, &view->custom.entries[i]);
-	}
-	dynarray_free(view->custom.entries);
-	view->custom.entries = NULL;
-	view->custom.entry_count = 0;
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(yank_works_with_ranges)

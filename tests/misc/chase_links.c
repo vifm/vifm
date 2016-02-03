@@ -11,6 +11,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -89,7 +90,8 @@ TEST(link_is_not_resolved_by_default, IF(not_windows))
 	assert_success(symlink("dir", "dir-link"));
 #endif
 
-	assert_true(change_directory(curr_view, SANDBOX_PATH "/dir-link") >= 0);
+	assert_non_null(get_cwd(curr_view->curr_dir, sizeof(curr_view->curr_dir)));
+	assert_true(change_directory(curr_view, "dir-link") >= 0);
 	assert_string_equal("dir-link", get_last_path_component(curr_view->curr_dir));
 
 	/* Go out of the directory so that we can remove it. */
@@ -108,7 +110,8 @@ TEST(chase_links_causes_link_to_be_resolved, IF(not_windows))
 	assert_success(symlink("dir", "dir-link"));
 #endif
 
-	assert_true(change_directory(curr_view, SANDBOX_PATH "/dir-link") >= 0);
+	assert_non_null(get_cwd(curr_view->curr_dir, sizeof(curr_view->curr_dir)));
+	assert_true(change_directory(curr_view, "dir-link") >= 0);
 	assert_string_equal("dir", get_last_path_component(curr_view->curr_dir));
 
 	/* Go out of the directory so that we can remove it. */
@@ -120,6 +123,8 @@ TEST(chase_links_causes_link_to_be_resolved, IF(not_windows))
 
 TEST(chase_links_is_not_affected_by_chdir, IF(not_windows))
 {
+	char pwd[PATH_MAX];
+
 	assert_success(os_mkdir("dir", 0700));
 
 	/* symlink() is not available on Windows, but other code is fine. */
@@ -127,10 +132,13 @@ TEST(chase_links_is_not_affected_by_chdir, IF(not_windows))
 	assert_success(symlink("dir", "dir-link"));
 #endif
 
-	assert_true(change_directory(curr_view, SANDBOX_PATH "/dir-link") >= 0);
+	assert_non_null(get_cwd(pwd, sizeof(pwd)));
+	strcpy(curr_view->curr_dir, pwd);
+
+	assert_true(change_directory(curr_view, "dir-link") >= 0);
 	assert_success(chdir(".."));
 	assert_true(change_directory(curr_view, "..") >= 0);
-	assert_true(paths_are_equal(curr_view->curr_dir, SANDBOX_PATH));
+	assert_true(paths_are_equal(curr_view->curr_dir, pwd));
 
 	assert_success(rmdir("dir"));
 	assert_success(remove("dir-link"));

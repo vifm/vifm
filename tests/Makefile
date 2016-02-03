@@ -30,6 +30,8 @@
 #
 # make VERBOSE=1 ... -- print all build commands
 #
+# make TEST_RUN_PREFIX=wine -- run command prefix
+#
 # make clean -- removes various built artifacts
 #
 # "B" variable might be set to build tree root to run tests out of the source
@@ -48,6 +50,10 @@ else
     else
         win_env := true
     endif
+endif
+
+ifdef DEBUG
+    BINSUBDIR := debug/
 endif
 
 # path to build tree
@@ -76,10 +82,6 @@ ifndef unix_env
 endif
 ifndef win_env
     vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
-endif
-
-ifdef DEBUG
-    BINSUBDIR := debug/
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
@@ -206,13 +208,18 @@ pos = $(strip $(eval T := ) \
                              $(eval T := $T $(elem)))) \
               $i)
 
-ifeq ($B,)
-    SANDBOX_PATH := $(abspath .)/sandbox
+ifeq (,$(findstring wine,$(TEST_RUN_PREFIX)))
+    ifeq ($B,)
+        SANDBOX_PATH := $(abspath .)/sandbox
+    else
+        SANDBOX_PATH := $(B)sandbox
+    endif
+    TEST_DATA_PATH := $(abspath .)/test-data
 else
-    SANDBOX_PATH := $(B)sandbox
+    SANDBOX_PATH := sandbox
+    TEST_DATA_PATH := test-data
 endif
 
-TEST_DATA_PATH := $(abspath .)/test-data
 
 # suite definition template, takes single argument: name of the suite
 define suite_template

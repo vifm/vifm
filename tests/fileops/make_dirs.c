@@ -9,14 +9,13 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
 
 SETUP()
 {
-	assert_success(chdir(SANDBOX_PATH));
-
-	strcpy(lwin.curr_dir, ".");
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
 }
 
 TEST(make_dirs_does_nothing_for_custom_view)
@@ -81,9 +80,9 @@ TEST(make_dirs_creates_one_dir)
 		char *paths[] = {path};
 
 		make_dirs(&lwin, paths, 1, 0);
-		assert_true(is_dir("dir"));
+		assert_true(is_dir(SANDBOX_PATH "/dir"));
 
-		assert_success(rmdir("dir"));
+		assert_success(rmdir(SANDBOX_PATH "/dir"));
 	}
 }
 
@@ -96,26 +95,38 @@ TEST(make_dirs_creates_sub_dirs_by_rel_path)
 		char *paths[] = {path};
 
 		make_dirs(&lwin, paths, 1, 1);
-		assert_true(is_dir("parent/child"));
+		assert_true(is_dir(SANDBOX_PATH "/parent/child"));
 
-		assert_success(rmdir("parent/child"));
-		assert_success(rmdir("parent"));
+		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
+		assert_success(rmdir(SANDBOX_PATH "/parent"));
 	}
 }
 
 TEST(make_dirs_creates_sub_dirs_by_abs_path)
 {
+	char cwd[PATH_MAX];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
 	{
-		char path[] = SANDBOX_PATH "/parent/child";
+		char path[PATH_MAX];
 		char *paths[] = {path};
+
+		if(is_path_absolute(SANDBOX_PATH))
+		{
+			snprintf(path, sizeof(path), "%s/parent/child", SANDBOX_PATH);
+		}
+		else
+		{
+			snprintf(path, sizeof(path), "%s/%s/parent/child", cwd, SANDBOX_PATH);
+		}
 
 		make_dirs(&lwin, paths, 1, 1);
 		assert_true(is_dir(SANDBOX_PATH "/parent/child"));
 
-		assert_success(rmdir("parent/child"));
-		assert_success(rmdir("parent"));
+		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
+		assert_success(rmdir(SANDBOX_PATH "/parent"));
 	}
 }
 

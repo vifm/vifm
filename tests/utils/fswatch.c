@@ -1,17 +1,36 @@
 #include <stic.h>
 
-#include <stdio.h> /* remove() */
+#include <stdio.h> /* remove() snprintf() */
 
 #include "../../src/compat/os.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/fswatch.h"
+#include "../../src/utils/path.h"
 
 static int using_inotify(void);
+
+static char sandbox[PATH_MAX];
+
+SETUP_ONCE()
+{
+	char cwd[PATH_MAX];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	if(is_path_absolute(SANDBOX_PATH))
+	{
+		snprintf(sandbox, sizeof(sandbox), "%s", SANDBOX_PATH);
+	}
+	else
+	{
+		snprintf(sandbox, sizeof(sandbox), "%s/%s/", cwd, SANDBOX_PATH);
+	}
+}
 
 TEST(watch_is_created_for_existing_directory)
 {
 	fswatch_t *watch;
 
-	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+	assert_non_null(watch = fswatch_create(sandbox));
 	fswatch_free(watch);
 }
 
@@ -19,8 +38,8 @@ TEST(two_watches_for_the_same_directory)
 {
 	fswatch_t *watch1, *watch2;
 
-	assert_non_null(watch1 = fswatch_create(SANDBOX_PATH));
-	assert_non_null(watch2 = fswatch_create(SANDBOX_PATH));
+	assert_non_null(watch1 = fswatch_create(sandbox));
+	assert_non_null(watch2 = fswatch_create(sandbox));
 	fswatch_free(watch2);
 	fswatch_free(watch1);
 }
@@ -30,7 +49,7 @@ TEST(events_are_accumulated, IF(using_inotify))
 	fswatch_t *watch;
 	int error;
 
-	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 	remove(SANDBOX_PATH "/testdir");
@@ -47,7 +66,7 @@ TEST(started_as_not_changed)
 	fswatch_t *watch;
 	int error;
 
-	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+	assert_non_null(watch = fswatch_create(sandbox));
 
 	assert_false(fswatch_changed(watch, &error));
 	assert_false(error);
@@ -60,7 +79,7 @@ TEST(handles_several_events_in_a_row, IF(using_inotify))
 	fswatch_t *watch;
 	int error;
 
-	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 	assert_true(fswatch_changed(watch, &error));
@@ -79,7 +98,7 @@ TEST(to_many_events_causes_banning_of_same_events, IF(using_inotify))
 	int error;
 	int i;
 
-	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 
@@ -107,7 +126,7 @@ TEST(file_recreation_removes_ban, IF(using_inotify))
 	int error;
 	int i;
 
-	assert_non_null(watch = fswatch_create(SANDBOX_PATH));
+	assert_non_null(watch = fswatch_create(sandbox));
 
 	os_mkdir(SANDBOX_PATH "/testdir", 0700);
 

@@ -241,6 +241,8 @@ str_to_upper(const char str[], char buf[], size_t buf_len)
 static int
 transform_ascii_str(const char str[], int (*f)(int), char buf[], size_t buf_len)
 {
+	int too_small;
+
 	if(buf_len == 0U)
 	{
 		return 1;
@@ -251,8 +253,10 @@ transform_ascii_str(const char str[], int (*f)(int), char buf[], size_t buf_len)
 		*buf++ = f(*str++);
 		--buf_len;
 	}
+	/* Check comes before the assignment to allow buf == str. */
+	too_small = (*str != '\0');
 	*buf = '\0';
-	return *str != '\0';
+	return too_small;
 }
 
 /* Transforms characters of the string to while they fit in the buffer by

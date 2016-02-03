@@ -1,13 +1,14 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() */
 
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* remove() */
+#include <string.h> /* strcmp() */
 
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/utils.h"
 
@@ -345,7 +346,7 @@ TEST(case_insensitive_rename, IF(windows))
 			.arg1.src = SANDBOX_PATH "/a-file",
 			.arg2.dst = SANDBOX_PATH "/A-file",
 		};
-		assert_true(ior_mv(&args) == 0);
+		assert_success(ior_mv(&args));
 	}
 
 	delete_file(SANDBOX_PATH "/A-file");
@@ -360,7 +361,8 @@ not_windows(void)
 static int
 windows(void)
 {
-	return get_env_type() == ET_WIN;
+	return (env_get("_") == NULL || strcmp(env_get("_"), "/usr/bin/wine") != 0)
+	    && get_env_type() == ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

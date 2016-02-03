@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() */
-
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
@@ -18,8 +16,6 @@ static void free_view(FileView *view);
 
 SETUP()
 {
-	assert_success(chdir(SANDBOX_PATH));
-
 	curr_view = &lwin;
 	other_view = &rwin;
 

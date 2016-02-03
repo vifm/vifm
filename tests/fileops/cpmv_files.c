@@ -16,8 +16,11 @@
 static void free_view(FileView *view);
 static int not_windows(void);
 
+static char *saved_cwd;
+
 SETUP()
 {
+	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
 	/* lwin */
@@ -48,7 +51,7 @@ TEARDOWN()
 	free_view(&lwin);
 	free_view(&rwin);
 
-	assert_int_equal(0, chdir("../.."));
+	restore_cwd(saved_cwd);
 
 	filter_dispose(&rwin.local_filter.filter);
 }
@@ -126,10 +129,15 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 {
 	assert_false(flist_custom_active(&rwin));
 
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
 	flist_custom_start(&rwin, "test");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/rename/a");
 	assert_true(flist_custom_finish(&rwin, 0) == 0);
+
+	assert_success(chdir(SANDBOX_PATH));
 
 	curr_view = &rwin;
 	other_view = &lwin;
@@ -154,7 +162,8 @@ TEST(cpmv_crash_on_wrong_list_access)
 
 	free_view(&lwin);
 
-	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
 	strcpy(rwin.curr_dir, SANDBOX_PATH);
@@ -174,7 +183,7 @@ TEST(cpmv_crash_on_wrong_list_access)
 	lwin.dir_entry[2].selected = 1;
 	lwin.selected_files = 3;
 
-	check_marking(curr_view, 0, NULL);
+	check_marking(&lwin, 0, NULL);
 
 	/* cpmv used to use presence of the argument as indication of availability of
 	 * file list and access memory beyond array boundaries. */
