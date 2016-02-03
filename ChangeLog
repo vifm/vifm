@@ -57,6 +57,9 @@
 	Fixed description of 'sort' to reflect rename of "type" into "dir".
 	Thanks to Marcos Cruz.
 
+	Fixed tab completion for single-executable Windows build, which didn't
+	work in the last release and could cause crash.  Thanks to Reva Revadigar.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
