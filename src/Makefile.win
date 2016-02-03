@@ -169,11 +169,11 @@ $(out_dirs) $(abspath ../data/):
 # only builds tests without running them
 tests: ../config.h
 	mkdir -p "$(abspath ../tests)"
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' build
+	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)' build
 
 # runs the tests, building them before if needed
 check: tests
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)'
+	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)'
 
 clean:
 	-$(RM) compile_info.c tags.c
