@@ -26,6 +26,8 @@
 
 	Expand tilde in first argument of :bmark! command.  Thanks to Marcos Cruz.
 
+	Truncate menu titles that don't feet the screen.  Thanks to aleksejrs.
+
 	Fixed redrawing message dialog when 'relativenumber' option is on.  Thanks
 	to aleksejrs.
 
