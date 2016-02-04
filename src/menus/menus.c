@@ -65,6 +65,7 @@ static void draw_menu_item(menu_info *m, char buf[], int off,
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void normalize_top(menu_info *m);
+static void draw_menu_frame(const menu_info *m);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
@@ -463,15 +464,9 @@ draw_menu(menu_info *m)
 
 	x = m->top;
 
-	box(menu_win, 0, 0);
-	wattron(menu_win, A_BOLD);
-	checked_wmove(menu_win, 0, 3);
-	wprint(menu_win, " ");
-	wprint(menu_win, m->title);
-	wprint(menu_win, " ");
-	wattroff(menu_win, A_BOLD);
+	draw_menu_frame(m);
 
-	for(i = 1; x < m->len; i++, x++)
+	for(i = 1; x < m->len; ++i, ++x)
 	{
 		int z, off;
 		char *buf;
@@ -535,6 +530,30 @@ static void
 normalize_top(menu_info *m)
 {
 	m->top = MAX(0, MIN(m->len - (m->win_rows - 2), m->top));
+}
+
+/* Draws box and title of the menu. */
+static void
+draw_menu_frame(const menu_info *m)
+{
+	const size_t title_len = getmaxx(menu_win) - 2*4;
+	char *const title = strdup(m->title);
+
+	if(utf8_strsw(title) > title_len)
+	{
+		const size_t len = utf8_nstrsnlen(title, title_len - 3);
+		strcpy(title + len, "...");
+	}
+
+	box(menu_win, 0, 0);
+	wattron(menu_win, A_BOLD);
+	checked_wmove(menu_win, 0, 3);
+	wprint(menu_win, " ");
+	wprint(menu_win, title);
+	wprint(menu_win, " ");
+	wattroff(menu_win, A_BOLD);
+
+	free(title);
 }
 
 int
