@@ -65,6 +65,9 @@
 	Fixed tab completion for single-executable Windows build, which didn't
 	work in the last release and could cause crash.  Thanks to Reva Revadigar.
 
+	Fix memory leak on resolving symlinked path Windows.  Thanks to Hendrik
+	Jaeger (a.k.a. henk).
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.
@@ -397,7 +400,7 @@
 	Fixed choosing user vs. default shell on Windows (was reversed), related
 	to %S, %i and alike macros.
 
-	Fixed loosing view sorting on failed attempt to load custom view.  Thanks
+	Fixed losing view sorting on failed attempt to load custom view.  Thanks
 	to filterfalse.
 
 	Fixed not restoring 'sort' value on leaving unsorted custom view.
@@ -3513,7 +3516,7 @@
 
 	Fixed bug with sorting symbolic links by name.
 
-	Fixed bug with loosing selection before running command from visual mode.
+	Fixed bug with losing selection before running command from visual mode.
 
 	Fixed bugs with registers and segmentation fault.
 

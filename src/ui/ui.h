@@ -346,7 +346,7 @@ WINDOW *lborder;
 WINDOW *mborder;
 WINDOW *rborder;
 
-/* Updates the ruler with infomation from the view. */
+/* Updates the ruler with information from the view. */
 void ui_ruler_update(FileView *view);
 
 /* Sets text to be displayed on the ruler.  Real window update is postponed for

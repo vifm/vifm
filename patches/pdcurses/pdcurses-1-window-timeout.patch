@@ -5,7 +5,7 @@ This patch has been taken from:
 https://sourceforge.net/p/pdcurses/bugs/79/
 
 Three window related functions didn't copy _delayms member of the
-WINDOW structure, thus loosing delay length.  Patch is for 3.4
+WINDOW structure, thus losing delay length.  Patch is for 3.4
 release version and fixes the bug (but there might be more similar
 bugs).
 

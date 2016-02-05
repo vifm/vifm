@@ -313,7 +313,7 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 	int has_duplicate;
 	int result;
 
-	/* The loop finds longest match of the input (keys) amoung registered
+	/* The loop finds longest match of the input (keys) among registered
 	 * shortcuts. */
 	curr = root;
 	while(*keys != L'\0')

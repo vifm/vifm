@@ -147,7 +147,7 @@ esc_highlight_pattern(const char line[], const regex_t *re)
 
 /* Forms new line with highlights of matcher of the re regular expression using
  * escape sequences that invert colors.  Returns NULL when no match found or
- * memory allocation error occured. */
+ * memory allocation error occurred. */
 static char *
 add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 		const int offsets[], const regex_t *re)

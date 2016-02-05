@@ -110,7 +110,7 @@ genhtml_desc_html=0
 # Use gcov's --all-blocks option if non-zero
 #geninfo_gcov_all_blocks = 1
 
-# Specify compatiblity modes (same as --compat option of geninfo).
+# Specify compatibility modes (same as --compat option of geninfo).
 #geninfo_compat = libtool=on, hammer=auto, split_crc=auto
 
 # Adjust path to source files by removing or changing path components that

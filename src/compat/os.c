@@ -167,6 +167,7 @@ os_realpath(const char path[], char resolved_path[])
 	if(!path_exists(path, NODEREF))
 	{
 		errno = ENOENT;
+		free(resolved);
 		return NULL;
 	}
 

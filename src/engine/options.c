@@ -306,7 +306,7 @@ set_options(const char args[], OPT_SCOPE scope)
 
 		if(*args == '\0' && *buf == '\0')
 		{
-			/* Stop on reacing comment. */
+			/* Stop on reaching comment. */
 			break;
 		}
 
@@ -1260,7 +1260,7 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 		args = extract_option(args, buf, 0);
 		if(args == NULL || (*args == '\0' && *buf == '\0'))
 		{
-			/* Just exit on error or reacing comment. */
+			/* Just exit on error or reaching comment. */
 			vle_compl_add_match(buf);
 			return;
 		}

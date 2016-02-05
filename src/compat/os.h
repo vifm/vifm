@@ -59,7 +59,7 @@
 #define os_lstat os_stat
 
 /* Windows has tmpfile(), but (prepare yourself) it requires administrative
- * priviledges... */
+ * privileges... */
 #define os_tmpfile win_tmpfile
 
 struct stat;

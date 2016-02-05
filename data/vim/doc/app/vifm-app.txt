@@ -2992,7 +2992,7 @@ Currently this means don't check if directory has changed, skip check if
 target of symbolic links exists, assume that link target located on slow fs
 to be a directory (allows entering directories and navigating to files via
 |vifm-gf|).  If you set the option to "*", it means all the systems are
-considered slow (usefull for cygwin, where all the checks might render vifm
+considered slow (useful for cygwin, where all the checks might render vifm
 very slow if there are network mounts).
 
 Example for autofs root /mnt/autofs: >
@@ -4106,7 +4106,7 @@ and for this reason the following rules apply during lookup:
 
 vifm has a builtin support of automated FUSE file system mounts.  It is
 implemented using file associations mechanism.  To enable automated mounts, one
-needs to use a specially formated program line in |vifm-:filetype| or
+needs to use a specially formatted program line in |vifm-:filetype| or
 |vifm-:filextype| commands.  Currently two formats are supported:
 
 1) FUSE_MOUNT                                  *vifm-FUSE_MOUNT*

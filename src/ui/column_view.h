@@ -59,7 +59,7 @@ CropType;
 struct columns_list_t;
 typedef struct columns_list_t *columns_t;
 
-/* A column callback function, which sould fill the buf with column text. */
+/* A column callback function, which should fill the buf with column text. */
 typedef void (*column_func)(int id, const void *data, size_t buf_len,
 		char buf[]);
 
