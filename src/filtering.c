@@ -302,7 +302,7 @@ get_unfiltered_pos(const FileView *const view, int pos)
 	return -1;
 }
 
-/* Loads full list of files into unfiltered list of the view.  Returns positon
+/* Loads full list of files into unfiltered list of the view.  Returns position
  * of file under cursor in the unfiltered list. */
 static int
 load_unfiltered_list(FileView *const view)

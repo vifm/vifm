@@ -2537,7 +2537,7 @@ vifm v0.7.0 is out!
 And as it was promised vifm is back on Windows!
 
 This release breaks compatibility a little, which was done intentionally to
-make vifm more vi-like.  I hope that wont make too much discomfort for users,
+make vifm more vi-like.  I hope that won't make too much discomfort for users,
 at least I tried to reduce discomfort as much as I can.  In particular, an
 utility program named vifmrc-converter is shipped with vifm now.  It's main
 purpose is to automatically convert configuration files (vifmrc, vifminfo,

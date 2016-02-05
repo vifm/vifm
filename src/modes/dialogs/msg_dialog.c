@@ -550,7 +550,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	}
 }
 
-/* Counts number of sub-lines (seperated by new-line character in the msg.  Sets
+/* Counts number of sub-lines (separated by new-line character in the msg.  Sets
  * *max_len to the length of the longest sub-line.  Returns total number of
  * sub-lines, which can be zero is msg is an empty line. */
 static size_t

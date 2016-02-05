@@ -400,7 +400,7 @@
 	Fixed choosing user vs. default shell on Windows (was reversed), related
 	to %S, %i and alike macros.
 
-	Fixed loosing view sorting on failed attempt to load custom view.  Thanks
+	Fixed losing view sorting on failed attempt to load custom view.  Thanks
 	to filterfalse.
 
 	Fixed not restoring 'sort' value on leaving unsorted custom view.
@@ -3516,7 +3516,7 @@
 
 	Fixed bug with sorting symbolic links by name.
 
-	Fixed bug with loosing selection before running command from visual mode.
+	Fixed bug with losing selection before running command from visual mode.
 
 	Fixed bugs with registers and segmentation fault.
 

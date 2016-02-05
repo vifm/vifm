@@ -213,7 +213,7 @@ sub add_to_attrmap
     my $attrs = shift;
 
     if (exists($extcol->{$ext}) && $extcol->{$ext} ne $attrs) {
-        warn 'Different attributes for extention in different cases: '.
+        warn 'Different attributes for extension in different cases: '.
                 $ext;
     }
 

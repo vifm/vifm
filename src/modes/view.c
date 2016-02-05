@@ -80,7 +80,7 @@ typedef struct
 	int line;         /* Current real line number. */
 	int linev;        /* Current virtual line number. */
 
-	/* Dimentions, units of actions. */
+	/* Dimensions, units of actions. */
 	int win_size; /* Scroll window size. */
 	int half_win; /* Height of a "page" (can be changed). */
 	int width;    /* Last width used for breaking lines. */
