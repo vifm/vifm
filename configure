@@ -741,6 +741,7 @@ enable_desktop_files
 enable_remote_cmds
 enable_developer
 enable_coverage
+enable_build_timestamp
 with_sanitize
 '
       ac_precious_vars='build_alias
@@ -1384,6 +1385,9 @@ Optional Features:
                           [default=disabled]
   --enable-coverage       enables coverage information generation
                           [default=disabled]
+  --disable-build-timestamp
+                          disables embedding build-timestamp information into
+                          executable [default=enabled]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -9168,6 +9172,14 @@ else
 fi
 
 
+# Check whether --enable-build-timestamp was given.
+if test "${enable_build_timestamp+set}" = set; then :
+  enableval=$enable_build_timestamp; build_timestamp=$enableval
+else
+  build_timestamp=yes
+fi
+
+
 
 # Check whether --with-sanitize was given.
 if test "${with_sanitize+set}" = set; then :
@@ -9348,6 +9360,12 @@ fi
 if test "$coverage" = "yes"; then
 	CFLAGS="$CFLAGS --coverage"
 	LDFLAGS="$LDFLAGS --coverage"
+fi
+
+if test "$build_timestamp" = "yes"; then
+
+$as_echo "#define WITH_BUILD_TIMESTAMP 1" >>confdefs.h
+
 fi
 
 if test -n "$sanitize" -a "$sanitize" != "basic" -a "$sanitize" != "thread" -a \

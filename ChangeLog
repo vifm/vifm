@@ -9,6 +9,9 @@
 
 	Apply local filter on picking element of `:history filter` menu.
 
+	Added --disable-build-timestamp option to configure script to perform
+	reproducible build.  Thanks to Hendrik Jaeger (a.k.a. henk).
+
 	Display more meaningful message on failure to extract option name (unknown
 	option: string).
 

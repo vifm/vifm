@@ -168,6 +168,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define to 1 to embed compilation date into executable. */
+#undef WITH_BUILD_TIMESTAMP
+
 /* Enable extensions in header files on OS X. */
 #undef _DARWIN_C_SOURCE
 

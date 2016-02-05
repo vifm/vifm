@@ -40,7 +40,9 @@ fill_version_info(char **list)
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x++] = format_str("Git info: %s", GIT_INFO);
+#ifdef WITH_BUILD_TIMESTAMP
 	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
+#endif
 	list[x++] = strdup("");
 
 #ifdef ENABLE_EXTENDED_KEYS
