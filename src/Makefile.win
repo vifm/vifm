@@ -12,8 +12,8 @@ src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
 # lookup for out-of-tree builds
 VPATH := $(src_dir)
 
-CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS) -include ../config.h
-CFLAGS += -D_FILE_OFFSET_BITS=64 -pipe
+CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
+CFLAGS += -include ../config.h -D_FILE_OFFSET_BITS=64 -pipe
 ifeq ($(RELEASE),1)
     CFLAGS += -O2
 else
@@ -143,7 +143,8 @@ update_compile_info:
 
 ../data/vifm-help.txt: $(src_dir)/../data/man/vifm.1 | $(abspath ../data/)
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
-		$(MANGEN) -Tascii -man $< | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		$(MANGEN) -Tascii -man $< | \
+		    sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt
@@ -169,11 +170,13 @@ $(out_dirs) $(abspath ../data/):
 # only builds tests without running them
 tests: ../config.h
 	mkdir -p "$(abspath ../tests)"
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)' build
+	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
+	     TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)' build
 
 # runs the tests, building them before if needed
 check: tests
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)'
+	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
+	     TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)'
 
 clean:
 	-$(RM) compile_info.c tags.c
