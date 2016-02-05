@@ -149,7 +149,7 @@ TEST(intermediate_value_is_returned_if_end_value_is_not_found)
 
 TEST(path_is_invalidated_in_fsdata)
 {
-	void *ptr;
+	void *ptr = NULL;
 	fsdata_t *const fsd = fsdata_create(0);
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 

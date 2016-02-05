@@ -118,7 +118,7 @@ TEST(get_returns_previously_set_data)
 TEST(set_overwrites_previous_data)
 {
 	const trie_t trie = trie_create();
-	void *data;
+	void *data = NULL;
 
 	assert_int_equal(0, trie_set(trie, "str", trie));
 	assert_true(trie_set(trie, "str", &data) > 0);
