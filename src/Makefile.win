@@ -12,8 +12,8 @@ src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
 # lookup for out-of-tree builds
 VPATH := $(src_dir)
 
-CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS) -include ../config.h
-CFLAGS += -D_FILE_OFFSET_BITS=64 -pipe
+CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
+CFLAGS += -include ../config.h -D_FILE_OFFSET_BITS=64 -pipe
 ifeq ($(RELEASE),1)
     CFLAGS += -O2
 else
@@ -126,6 +126,7 @@ vifmres.o: vifm.res
 	echo '#define _GNU_SOURCE 1' >> ../config.h; \
 	echo '#define PACKAGE_SYSCONF_DIR ""' >> ../config.h; \
 	echo '#define ENABLE_REMOTE_CMDS 1' >> ../config.h; \
+	echo '#define WITH_BUILD_TIMESTAMP 1' >> ../config.h; \
 #	echo '#define HAVE_FILE_PROG' >> ../config.h;
 ifeq ($(OS),Windows_NT) # this is for MinGW (probably fixed in MinGW-w64)
 	@echo '#define BROKEN_SWPRINTF' >> ../config.h
@@ -143,7 +144,8 @@ update_compile_info:
 
 ../data/vifm-help.txt: $(src_dir)/../data/man/vifm.1 | $(abspath ../data/)
 	@if [ "x$$(which $(MANGEN))" != "x" -a "x$$(which sed)" != "x" ]; then \
-		$(MANGEN) -Tascii -man $< | sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
+		$(MANGEN) -Tascii -man $< | \
+		    sed -e 's/.\x08//g' -e 's/\x1b\[[0-9]*m//g' -e 's/\r//g' >| '$@'; \
 	fi
 
 tags.c: ../data/vim/doc/app/vifm-app.txt
@@ -169,11 +171,13 @@ $(out_dirs) $(abspath ../data/):
 # only builds tests without running them
 tests: ../config.h
 	mkdir -p "$(abspath ../tests)"
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)' build
+	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
+	     TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)' build
 
 # runs the tests, building them before if needed
 check: tests
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)'
+	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
+	     TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)'
 
 clean:
 	-$(RM) compile_info.c tags.c

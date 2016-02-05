@@ -52,6 +52,9 @@ when building with Cygwin):
 
       --[disable]/enable-coverage - enables code coverage generation.
 
+      --disable/[enable]-build-timestamp - disables embedding compilation date
+          into executable.
+
       --with-sanitize=basic|thread|leak - enables address and undefined, thread
           or leaks sanitizers respecitively.
 

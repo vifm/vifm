@@ -31,6 +31,7 @@ TEST(buffer_can_be_not_null)
 	if(fp == NULL)
 	{
 		assert_fail("Failed to open file");
+		free(line);
 		return;
 	}
 

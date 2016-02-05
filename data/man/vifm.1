@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 02, 2016" "vifm 0.8.1"
+.TH VIFM 1 "February 05, 2016" "vifm 0.8.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3820,11 +3820,11 @@ Use trash directory.  See "Trash directory" section below.
 type: string
 .br
 default: on *nix:
-         "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash" or if $VIFM/Trash
-         doesn't exist
-         "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
+   "%r/.vifm-Trash-%u,$VIFM/Trash,%r/.vifm-Trash"
+   or if $VIFM/Trash doesn't exist
+   "%r/.vifm-Trash-%u,$XDG_DATA_HOME/vifm/Trash,%r/.vifm-Trash"
          on Windows:
-         "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
+   "%r/.vifm-Trash,$XDG_DATA_HOME/vifm/Trash"
 .br
 List of trash directory path specifications, separated with commas.
 Each list item either defines an absolute path to trash directory or a path

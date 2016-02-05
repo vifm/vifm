@@ -19,7 +19,6 @@ AC_PROG_CC
 AM_PROG_CC_STDC
 AC_HEADER_STDC
 AM_PROG_CC_C_O
-AC_CONFIG_MACRO_DIR([m4])
 
 AC_LANG(C)
 
@@ -634,6 +633,14 @@ AC_ARG_ENABLE(coverage,
 	[coverage=$enableval],
 	[coverage=no])
 
+AC_ARG_ENABLE(build-timestamp,
+	AS_HELP_STRING(
+		[--disable-build-timestamp],
+		[disables embedding build-timestamp information into executable
+		 @<:@default=enabled@:>@     ]),
+	[build_timestamp=$enableval],
+	[build_timestamp=yes])
+
 AC_ARG_WITH(sanitize,
 	AS_HELP_STRING(
 			[--with-sanitize=basic|thread|leak],
@@ -692,6 +699,11 @@ fi
 if test "$coverage" = "yes"; then
 	CFLAGS="$CFLAGS --coverage"
 	LDFLAGS="$LDFLAGS --coverage"
+fi
+
+if test "$build_timestamp" = "yes"; then
+	AC_DEFINE([WITH_BUILD_TIMESTAMP], [1],
+			  [Define to 1 to embed compilation date into executable.])
 fi
 
 dnl Handle sanitizers options
