@@ -433,6 +433,13 @@ resize_all(void)
 	wresize(rborder, border_height, 1);
 	mvwin(rborder, 1, screen_x - 1);
 
+	/* These need a resize at least after terminal size was zero or they grow and
+	 * produce bad looking effect. */
+	wresize(ltop_line1, 1, 1);
+	wresize(ltop_line2, 1, 1);
+	wresize(rtop_line1, 1, 1);
+	wresize(rtop_line2, 1, 1);
+
 	if(curr_stats.number_of_windows == 1)
 	{
 		only_layout(&lwin, screen_x, screen_y);

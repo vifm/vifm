@@ -65,8 +65,11 @@
 	Fixed tab completion for single-executable Windows build, which didn't
 	work in the last release and could cause crash.  Thanks to Reva Revadigar.
 
-	Fix memory leak on resolving symlinked path Windows.  Thanks to Hendrik
+	Fixed memory leak on resolving symlinked path Windows.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
+
+	Fixed TUI glitches in the form of borders after shrinking terminal to
+	smallest possible height and restoring it back.
 
 0.8.1-beta to 0.8.1
 
