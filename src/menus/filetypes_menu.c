@@ -56,7 +56,7 @@ show_file_menu(FileView *view, int background)
 	int i;
 	int max_len;
 
-	char *const typed_name = get_typed_current_fpath(view);
+	char *const typed_name = get_typed_entry_fpath(get_current_entry(view));
 	assoc_records_t ft = ft_get_all_programs(typed_name);
 	assoc_records_t magic = get_magic_handlers(typed_name);
 	free(typed_name);

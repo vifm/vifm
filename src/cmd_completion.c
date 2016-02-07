@@ -434,7 +434,7 @@ complete_chown(const char *str)
 static void
 complete_filetype(const char *str)
 {
-	char *const typed_fname = get_typed_current_fpath(curr_view);
+	char *const typed_fname = get_typed_entry_fpath(get_current_entry(curr_view));
 	assoc_records_t ft = ft_get_all_programs(typed_fname);
 
 	complete_progs(str, ft);

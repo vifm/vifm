@@ -1416,13 +1416,11 @@ win_to_unix_time(FILETIME ft)
 #endif
 
 char *
-get_typed_current_fpath(const FileView *view)
+get_typed_entry_fpath(const dir_entry_t *entry)
 {
-	dir_entry_t *entry;
 	const char *type_suffix;
 	char full_path[PATH_MAX];
 
-	entry = get_current_entry((FileView *)view);
 	type_suffix = is_directory_entry(entry) ? "/" : "";
 
 	get_full_path_of(entry, sizeof(full_path), full_path);
