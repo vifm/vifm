@@ -74,7 +74,7 @@ suites += bmarks env escape fileops filetype filter misc undo utils
 vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/
 vifm_src += modes/ ui/ utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
-vifm_src += ../src/./tags.c
+vifm_src := $(filter-out %/tags.c, $(vifm_src))
 
 # filter out generally non-testable or sources for another platform
 vifm_src := $(filter-out %/vifm.c %/win_helper.c, $(vifm_src))
@@ -86,7 +86,7 @@ ifndef win_env
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
-vifm_obj := $(vifm_src:%.c=$(B)%.o) $(BUILD)stubs.o
+vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o) $(BUILD)stubs.o
 
 # make sure that there is one compile_info.c object file in the list
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))

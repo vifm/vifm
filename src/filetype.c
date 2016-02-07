@@ -62,7 +62,7 @@ static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers);
 static assoc_records_t clone_assoc_records(const assoc_records_t *records,
 		const char pattern[], const assoc_list_t *dst);
-static void reset_all_list(void);
+static void reset_all_lists(void);
 static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
@@ -305,12 +305,12 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 void
 ft_reset(int in_x)
 {
-	reset_all_list();
+	reset_all_lists();
 	add_defaults(in_x);
 }
 
 static void
-reset_all_list(void)
+reset_all_lists(void)
 {
 	reset_list(&filetypes);
 	reset_list(&xfiletypes);

@@ -407,7 +407,7 @@ run_file(FileView *view, int dont_execute)
 		clean_selected_files(view);
 	}
 
-	typed_fname = get_typed_current_fpath(view);
+	typed_fname = get_typed_entry_fpath(get_current_entry(view));
 	multi_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
@@ -421,14 +421,14 @@ run_file(FileView *view, int dont_execute)
 		char *typed_fname;
 		const char *entry_prog_cmd;
 
-		if(!path_exists(entry->name, DEREF))
+		if(!path_exists_at(entry->origin, entry->name, DEREF))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					entry->name);
 			return;
 		}
 
-		typed_fname = get_typed_entry_fname(entry);
+		typed_fname = get_typed_entry_fpath(entry);
 		entry_prog_cmd = ft_get_program(typed_fname);
 		free(typed_fname);
 
@@ -510,7 +510,7 @@ run_selection_separately(FileView *view, int dont_execute)
 		char *typed_fname;
 		const char *entry_prog_cmd;
 
-		typed_fname = get_typed_entry_fname(entry);
+		typed_fname = get_typed_entry_fpath(entry);
 		entry_prog_cmd = ft_get_program(typed_fname);
 		free(typed_fname);
 
@@ -1120,7 +1120,7 @@ set_pwd_in_screen(const char path[])
 int
 run_with_filetype(FileView *view, const char beginning[], int background)
 {
-	char *const typed_fname = get_typed_current_fpath(view);
+	char *const typed_fname = get_typed_entry_fpath(get_current_entry(view));
 	assoc_records_t ft = ft_get_all_programs(typed_fname);
 	assoc_records_t magic = get_magic_handlers(typed_fname);
 	free(typed_fname);
