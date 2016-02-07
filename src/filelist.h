@@ -178,14 +178,11 @@ void save_view_history(FileView *view, const char path[], const char file[],
 int is_in_view_history(FileView *view, const char *path);
 void clean_positions_in_history(FileView *view);
 
-/* Typed (with trailing slash for directories) file name functions. */
+/* Typed (with trailing slash for directories) file name function. */
 
 /* Gets typed path for the entry.  On return allocates memory, that should be
  * freed by the caller. */
 char * get_typed_entry_fpath(const dir_entry_t *entry);
-/* Gets typed filename (not path, just name) for the entry.  Allocates memory,
- * that should be freed by the caller. */
-char * get_typed_entry_fname(const dir_entry_t *entry);
 
 /* Custom file list functions. */
 

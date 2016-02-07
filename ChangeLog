@@ -71,6 +71,11 @@
 	Fixed TUI glitches in the form of borders after shrinking terminal to
 	smallest possible height and restoring it back.
 
+	Fixed processing of path regexps for filetypes when operating on
+	selection.  Thanks to aleksejrs.
+
+	Fixed running multiple files in custom view.
+
 0.8.1-beta to 0.8.1
 
 	Added summary to builtin tree implementation.  Thanks to aleksejrs.

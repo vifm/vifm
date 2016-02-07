@@ -421,14 +421,14 @@ run_file(FileView *view, int dont_execute)
 		char *typed_fname;
 		const char *entry_prog_cmd;
 
-		if(!path_exists(entry->name, DEREF))
+		if(!path_exists_at(entry->origin, entry->name, DEREF))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					entry->name);
 			return;
 		}
 
-		typed_fname = get_typed_entry_fname(entry);
+		typed_fname = get_typed_entry_fpath(entry);
 		entry_prog_cmd = ft_get_program(typed_fname);
 		free(typed_fname);
 
@@ -510,7 +510,7 @@ run_selection_separately(FileView *view, int dont_execute)
 		char *typed_fname;
 		const char *entry_prog_cmd;
 
-		typed_fname = get_typed_entry_fname(entry);
+		typed_fname = get_typed_entry_fpath(entry);
 		entry_prog_cmd = ft_get_program(typed_fname);
 		free(typed_fname);
 

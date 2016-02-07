@@ -1427,13 +1427,6 @@ get_typed_entry_fpath(const dir_entry_t *entry)
 	return format_str("%s%s", full_path, type_suffix);
 }
 
-char *
-get_typed_entry_fname(const dir_entry_t *entry)
-{
-	const char *const name = entry->name;
-	return is_directory_entry(entry) ? format_str("%s/", name) : strdup(name);
-}
-
 int
 flist_custom_active(const FileView *view)
 {
