@@ -1,0 +1,148 @@
+#!/bin/bash
+
+# this is a MXE part of deploy script, which should be run after GNU/Linux and
+# regular Windows builds are done
+#
+# the script is expected to be run from the root of the repository
+#
+# configuration:
+#  * REMOTE_NAME   -- ssh-friendly remote Windows machine address
+#  * REMOTE_DIR    -- absolute path on remote Windows machine
+#  * W32_DIR       -- root directory where Win32 build happens
+#  * W64_DIR       -- root directory where Win64 build happens
+#  * W32_BUILD_SCR -- script that builds Win32 release
+#  * W64_BUILD_SCR -- script that builds Win64 release
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $(basename $0) version"
+    exit 1
+fi
+
+version="$1"
+
+REMOTE_NAME="${REMOTE_NAME:-win}"
+REMOTE_DIR="${REMOTE_DIR:-/cygdrive/c/dev/vifm}"
+W32_DIR="${W32_DIR:-../vifm-mxe-w32/}"
+W64_DIR="${W64_DIR:-../vifm-mxe-w64}"
+W32_BUILD_SCR="${W32_BUILD_SCR:-../build_release_x86}"
+W64_BUILD_SCR="${W64_BUILD_SCR:-../build_release_x64}"
+
+set -e
+
+echo ::: BUILDING... :::
+
+( cd "$W32_DIR" && "$W32_BUILD_SCR" "$version" )
+( cd "$W64_DIR" && "$W64_BUILD_SCR" "$version" )
+
+echo ::: CLEANING UP REMOTE DIRECTORIES... :::
+
+ssh "$REMOTE_NAME" bash - << EOF
+rm -rf "$REMOTE_DIR/w32/" "$REMOTE_DIR/w64/"
+mkdir -p "$REMOTE_DIR/w32/" "$REMOTE_DIR/w64/"
+EOF
+
+echo ::: COPYING EXECUTABLES TO THE REMOTE... :::
+
+scp "$W32_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_DIR/w32/"
+scp "$W64_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_DIR/w64/"
+
+echo ::: PACKAGING SINGLE-EXECUTABLE VERSIONS... :::
+
+maindir="vifm-w32-$version-binary"
+w32="vifm-w32-se-$version-binary"
+w64="vifm-w64-se-$version-binary"
+
+ssh "$REMOTE_NAME" bash - << EOF
+cd "$REMOTE_DIR/"
+
+rm -rf "$w32.zip" "$w32"
+cp -r "$maindir" "$w32"
+chmod -R u=rw,go=r,a+X "$w32"
+rm "$w32"/*.dll
+cp w32/*.exe "$w32"
+zip -9 -r "$w32.zip" "$w32"
+
+rm -rf "$w64.zip" "$w64"
+cp -r "$maindir" "$w64"
+chmod -R u=rw,go=r,a+X "$w64"
+rm "$w64"/*.dll
+cp w64/*.exe "$w64"
+zip -9 -r "$w64.zip" "$w64"
+EOF
+
+echo ::: COPYING SINGLE-EXECUTABLE VERSIONS LOCALLY... :::
+
+scp "$REMOTE_NAME:$REMOTE_DIR/$w32.zip" "$REMOTE_NAME:$REMOTE_DIR/$w64.zip" .
+chmod -x "$w32.zip" "$w64.zip"
+
+echo ::: VERIFYING PACKAGES... :::
+
+unzip "$w32.zip"
+unzip "$w64.zip"
+
+x32_exe='PE32 executable (console) Intel 80386 (stripped to external PDB), for MS Windows'
+x64_exe='PE32+ executable (console) x86-64 (stripped to external PDB), for MS Windows'
+
+ret=0
+
+if [ "$(file -b "$w32/vifm.exe")" != "$x32_exe" ]; then
+    echo "ERROR: Wrong type of $w32/vifm.exe:"
+    file -b "$w32/vifm.exe"
+    ret=1
+fi
+if [ "$(file -b "$w32/win_helper.exe")" != "$x32_exe" ]; then
+    echo "ERROR: Wrong type of $w32/win_helper.exe:"
+    file -b "$w32/win_helper.exe"
+    ret=1
+fi
+if [ "$(file -b "$w64/vifm.exe")" != "$x64_exe" ]; then
+    echo "ERROR: Wrong type of $w64/vifm.exe:"
+    file -b "$w64/vifm.exe"
+    ret=1
+fi
+if [ "$(file -b "$w64/win_helper.exe")" != "$x64_exe" ]; then
+    echo "ERROR: Wrong type of $w64/win_helper.exe:"
+    file -b "$w64/win_helper.exe"
+    ret=1
+fi
+
+rm -rf "$w32" "$w64"
+
+if [ "$ret" -ne 0 ]; then
+    exit "$ret"
+fi
+
+echo ::: COPYING TESTS... :::
+
+rm -r "$W32_DIR/tests/bin/build" "$W64_DIR/tests/bin/build"
+
+scp -r "$W32_DIR/tests/bin" "$W32_DIR/tests/test-data" \
+       "$REMOTE_NAME:$REMOTE_DIR/w32/"
+scp -r "$W64_DIR/tests/bin" "$W64_DIR/tests/test-data" \
+       "$REMOTE_NAME:$REMOTE_DIR/w64/"
+
+echo ::: RUNNING TESTS... :::
+
+ssh "$REMOTE_NAME" bash - << EOF
+cd "$REMOTE_DIR/w32/"
+for test in bin/*; do
+    basename="\${test#*/}"
+    name="\${basename%.*}"
+    mkdir -p "sandbox/\$name"
+    if ! \$test -s; then
+        exit 1
+    fi
+done
+
+cd "$REMOTE_DIR/w64/"
+for test in bin/*; do
+    basename="\${test#*/}"
+    name="\${basename%.*}"
+    mkdir -p "sandbox/\$name"
+    if ! \$test -s; then
+        exit 1
+    fi
+done
+EOF
+
+echo SUCCESS: everything is fine
