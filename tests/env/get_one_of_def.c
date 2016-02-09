@@ -20,14 +20,14 @@ SETUP()
 TEST(empty_list_returns_def)
 {
 	const char *result;
-	result = env_get_one_of_def(DEFAULT_VAL, NULL);
+	result = env_get_one_of_def(DEFAULT_VAL, (const char *)NULL);
 	assert_string_equal(DEFAULT_VAL, result);
 }
 
 TEST(none_exist_returns_def)
 {
 	const char *result;
-	result = env_get_one_of_def(DEFAULT_VAL, VAR_A, VAR_B, NULL);
+	result = env_get_one_of_def(DEFAULT_VAL, VAR_A, VAR_B, (const char *)NULL);
 	assert_string_equal(DEFAULT_VAL, result);
 }
 
@@ -35,7 +35,7 @@ TEST(last_exists_returns_it)
 {
 	const char *result;
 	env_set(VAR_B, VAR_B_VAL);
-	result = env_get_one_of_def(DEFAULT_VAL, VAR_A, VAR_B, NULL);
+	result = env_get_one_of_def(DEFAULT_VAL, VAR_A, VAR_B, (const char *)NULL);
 	assert_string_equal(VAR_B_VAL, result);
 }
 
@@ -44,7 +44,7 @@ TEST(all_exist_returns_first)
 	const char *result;
 	env_set(VAR_A, VAR_A_VAL);
 	env_set(VAR_B, VAR_B_VAL);
-	result = env_get_one_of_def(DEFAULT_VAL, VAR_A, VAR_B, NULL);
+	result = env_get_one_of_def(DEFAULT_VAL, VAR_A, VAR_B, (const char *)NULL);
 	assert_string_equal(VAR_A_VAL, result);
 }
 
