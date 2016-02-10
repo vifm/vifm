@@ -1,11 +1,11 @@
-0.8.1 to current
+0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
 	Thanks to filterfalse.
 
 	Added { and } keys to normal and visual modes.  They act similar to ( and
-	), but always act consider whether entry is a file or directory.  Thanks
-	to octos.
+	), but always consider whether entry is a file or directory.  Thanks to
+	octos.
 
 	Apply local filter on picking element of `:history filter` menu.
 
@@ -65,7 +65,7 @@
 	Fixed tab completion for single-executable Windows build, which didn't
 	work in the last release and could cause crash.  Thanks to Reva Revadigar.
 
-	Fixed memory leak on resolving symlinked path Windows.  Thanks to Hendrik
+	Fixed memory leak on resolving symlinked path on Windows.  Thanks to Hendrik
 	Jaeger (a.k.a. henk).
 
 	Fixed TUI glitches in the form of borders after shrinking terminal to

@@ -746,7 +746,7 @@ const char *
 get_tmpdir(void)
 {
 	return env_get_one_of_def("/tmp/", "TMPDIR", "TEMP", "TEMPDIR", "TMP",
-			(char *)NULL);
+			(const char *)NULL);
 }
 
 #ifdef _WIN32

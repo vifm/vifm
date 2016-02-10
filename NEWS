@@ -1,3 +1,46 @@
+February 10, 2016
+=================
+
+vifm v0.8.1a
+------------
+
+This is a bugfix release to primarily address messed up single-executable
+builds for Windows.  Tab completion doesn't work there and can cause crashes.
+Also 64-bit build somehow contains 32-bit executables.  Thanks to Reva Revadigar
+for reporting the issue.
+
+On the bright side, this gives a chance for fixing bugs discovered after the
+release.
+
+There was also time to add some functional changes, which also made it into this
+release:
+ - added c key to menus that inserts parts of menu line into command-line
+   (thanks to filterfalse);
+ - added { and } keys to normal and visual modes.  They act similar to ( and),
+   but always consider whether entry is a file or directory (thanks to octos);
+ - added --disable-build-timestamp option to configure script to perform
+   reproducible build (thanks to Hendrik Jaeger, a.k.a. henk);
+ - apply local filter on picking element of `:history filter` menu;
+ - handle register specified for gs normal mode command.  Select files listed
+   in that register (thanks to filterfalse);
+ - be consistent with regard to when local state is changed and do not reset
+   neither local options nor local filter on entering/leaving custom view
+   (thanks to filterfalse);
+ - disallow adding duplicated filetype/fileviewer entries (just ignore them
+   as they wouldn't be used due to order priority anyway).
+
+Other notable fixes:
+ - fixed storing filetypes in vifminfo, which could create duplicates (thanks to
+   aleksejrs);
+ - fixed --with-dyn-x11 configuration option, which failed to enable dynamic
+   use of the library (thanks to Badalisc and Hendrik Jaeger, a.k.a. henk);
+ - fixed using plugin in neovim, which has broken `system()` and :! commands
+   (thanks to Artur Shaik, a.k.a. artur-shaik).
+
+See change log for the full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 January 17, 2016
 ================
 
