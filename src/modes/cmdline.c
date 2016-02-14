@@ -69,11 +69,12 @@
 
 #ifndef TEST
 
+/* History search mode. */
 typedef enum
 {
-	HIST_NONE,
-	HIST_GO,
-	HIST_SEARCH
+	HIST_NONE,   /* No search in history is active. */
+	HIST_GO,     /* Retrieving items from history one by one. */
+	HIST_SEARCH  /* Retrieving items that match entered prefix skipping others. */
 }
 HIST;
 
@@ -2122,7 +2123,23 @@ complete_prev(const hist_t *hist, size_t len)
 		{
 			return;
 		}
+
 		++input_stat.cmd_pos;
+
+		/* Handle the case when the most recent history item equals current input.
+		 * This can happen if command-line mode was given some initial input
+		 * string.  Initially cmd_pos is -1, no need to check anything if history
+		 * contains only one element as even if it's equal input line won't be
+		 * changed. */
+		if(input_stat.cmd_pos == 0 && hist->pos != 0)
+		{
+			wchar_t *const wide_item = to_wide(hist->items[0]);
+			if(wcscmp(input_stat.line, wide_item) == 0)
+			{
+				++input_stat.cmd_pos;
+			}
+			free(wide_item);
+		}
 	}
 	else
 	{
@@ -2130,15 +2147,13 @@ complete_prev(const hist_t *hist, size_t len)
 		int len = input_stat.hist_search_len;
 		while(++pos <= hist->pos)
 		{
-			wchar_t *buf;
-
-			buf = to_wide(hist->items[pos]);
-			if(wcsncmp(input_stat.line, buf, len) == 0)
+			wchar_t *const wide_item = to_wide(hist->items[pos]);
+			if(wcsncmp(input_stat.line, wide_item, len) == 0)
 			{
-				free(buf);
+				free(wide_item);
 				break;
 			}
-			free(buf);
+			free(wide_item);
 		}
 		if(pos > hist->pos)
 			return;
