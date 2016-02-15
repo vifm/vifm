@@ -200,7 +200,7 @@ static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_delete(key_info_t key_info, keys_info_t *keys_info);
 static void update_cursor(void);
 static void search_prev(void);
-static void complete_prev(line_stats_t *stat, const hist_t *hist, size_t len);
+TSTATIC void complete_prev(line_stats_t *stat, const hist_t *hist, size_t len);
 static int replace_input_line(line_stats_t *stat, const char new[]);
 static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
@@ -2109,7 +2109,7 @@ search_prev(void)
 	}
 }
 
-static void
+TSTATIC void
 complete_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 {
 	if(hist_is_empty(hist))

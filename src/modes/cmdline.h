@@ -64,8 +64,9 @@ void enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
 void redraw_cmdline(void);
 
 #ifdef TEST
-#include <stddef.h> /* wchar_t */
+#include <stddef.h> /* size_t wchar_t */
 
+#include "../cfg/hist.h"
 #include "../compat/fs_limits.h"
 
 typedef enum
@@ -108,6 +109,7 @@ line_stats_t;
 TSTATIC_DEFS(
 	int line_completion(line_stats_t *stat);
 	const wchar_t * extract_abbrev(line_stats_t *stat, int *pos, int *no_remap);
+	void complete_prev(line_stats_t *stat, const hist_t *hist, size_t len);
 )
 
 #endif /* VIFM__MODES__CMDLINE_H__ */
