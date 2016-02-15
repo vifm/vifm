@@ -160,7 +160,7 @@ static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void search_next(void);
-static void complete_next(const hist_t *hist, size_t len);
+static void complete_next(line_stats_t *stat, const hist_t *hist, size_t len);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info);
@@ -200,9 +200,9 @@ static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_delete(key_info_t key_info, keys_info_t *keys_info);
 static void update_cursor(void);
 static void search_prev(void);
-static void complete_prev(const hist_t *hist, size_t len);
-static int replace_input_line(const char new[]);
-static void update_cmdline(void);
+static void complete_prev(line_stats_t *stat, const hist_t *hist, size_t len);
+static int replace_input_line(line_stats_t *stat, const char new[]);
+static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
@@ -1407,7 +1407,7 @@ restore_user_input(void)
 	input_stat.cmd_pos = -1;
 	(void)replace_wstring(&input_stat.line, input_stat.line_buf);
 	input_stat.len = wcslen(input_stat.line);
-	update_cmdline();
+	update_cmdline(&input_stat);
 }
 
 /* Replaces *str with a copy of the with string.  *str can be NULL or equal to
@@ -1466,47 +1466,47 @@ search_next(void)
 {
 	if(sub_mode == CLS_COMMAND)
 	{
-		complete_next(&cfg.cmd_hist, cfg.history_len);
+		complete_next(&input_stat, &cfg.cmd_hist, cfg.history_len);
 	}
 	else if(input_stat.search_mode)
 	{
-		complete_next(&cfg.search_hist, cfg.history_len);
+		complete_next(&input_stat, &cfg.search_hist, cfg.history_len);
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		complete_next(&cfg.prompt_hist, cfg.history_len);
+		complete_next(&input_stat, &cfg.prompt_hist, cfg.history_len);
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
-		complete_next(&cfg.filter_hist, cfg.history_len);
+		complete_next(&input_stat, &cfg.filter_hist, cfg.history_len);
 	}
 }
 
 static void
-complete_next(const hist_t *hist, size_t len)
+complete_next(line_stats_t *stat, const hist_t *hist, size_t len)
 {
 	if(hist_is_empty(hist))
 	{
 		return;
 	}
 
-	if(input_stat.history_search != HIST_SEARCH)
+	if(stat->history_search != HIST_SEARCH)
 	{
-		if(input_stat.cmd_pos <= 0)
+		if(stat->cmd_pos <= 0)
 		{
 			restore_user_input();
 			return;
 		}
-		--input_stat.cmd_pos;
+		--stat->cmd_pos;
 	}
 	else
 	{
-		int pos = input_stat.cmd_pos;
-		int len = input_stat.hist_search_len;
+		int pos = stat->cmd_pos;
+		int len = stat->hist_search_len;
 		while(--pos >= 0)
 		{
 			wchar_t *const buf = to_wide(hist->items[pos]);
-			if(wcsncmp(input_stat.line, buf, len) == 0)
+			if(wcsncmp(stat->line, buf, len) == 0)
 			{
 				free(buf);
 				break;
@@ -1518,16 +1518,16 @@ complete_next(const hist_t *hist, size_t len)
 			restore_user_input();
 			return;
 		}
-		input_stat.cmd_pos = pos;
+		stat->cmd_pos = pos;
 	}
 
-	(void)replace_input_line(hist->items[input_stat.cmd_pos]);
+	(void)replace_input_line(stat, hist->items[stat->cmd_pos]);
 
-	update_cmdline();
+	update_cmdline(stat);
 
-	if(input_stat.cmd_pos > (int)len - 1)
+	if(stat->cmd_pos > (int)len - 1)
 	{
-		input_stat.cmd_pos = len - 1;
+		stat->cmd_pos = len - 1;
 	}
 }
 
@@ -2093,62 +2093,62 @@ search_prev(void)
 {
 	if(sub_mode == CLS_COMMAND)
 	{
-		complete_prev(&cfg.cmd_hist, cfg.history_len);
+		complete_prev(&input_stat, &cfg.cmd_hist, cfg.history_len);
 	}
 	else if(input_stat.search_mode)
 	{
-		complete_prev(&cfg.search_hist, cfg.history_len);
+		complete_prev(&input_stat, &cfg.search_hist, cfg.history_len);
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		complete_prev(&cfg.prompt_hist, cfg.history_len);
+		complete_prev(&input_stat, &cfg.prompt_hist, cfg.history_len);
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
-		complete_prev(&cfg.filter_hist, cfg.history_len);
+		complete_prev(&input_stat, &cfg.filter_hist, cfg.history_len);
 	}
 }
 
 static void
-complete_prev(const hist_t *hist, size_t len)
+complete_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 {
 	if(hist_is_empty(hist))
 	{
 		return;
 	}
 
-	if(input_stat.history_search != HIST_SEARCH)
+	if(stat->history_search != HIST_SEARCH)
 	{
-		if(input_stat.cmd_pos == hist->pos)
+		if(stat->cmd_pos == hist->pos)
 		{
 			return;
 		}
 
-		++input_stat.cmd_pos;
+		++stat->cmd_pos;
 
 		/* Handle the case when the most recent history item equals current input.
 		 * This can happen if command-line mode was given some initial input
 		 * string.  Initially cmd_pos is -1, no need to check anything if history
 		 * contains only one element as even if it's equal input line won't be
 		 * changed. */
-		if(input_stat.cmd_pos == 0 && hist->pos != 0)
+		if(stat->cmd_pos == 0 && hist->pos != 0)
 		{
 			wchar_t *const wide_item = to_wide(hist->items[0]);
-			if(wcscmp(input_stat.line, wide_item) == 0)
+			if(wcscmp(stat->line, wide_item) == 0)
 			{
-				++input_stat.cmd_pos;
+				++stat->cmd_pos;
 			}
 			free(wide_item);
 		}
 	}
 	else
 	{
-		int pos = input_stat.cmd_pos;
-		int len = input_stat.hist_search_len;
+		int pos = stat->cmd_pos;
+		int len = stat->hist_search_len;
 		while(++pos <= hist->pos)
 		{
 			wchar_t *const wide_item = to_wide(hist->items[pos]);
-			if(wcsncmp(input_stat.line, wide_item, len) == 0)
+			if(wcsncmp(stat->line, wide_item, len) == 0)
 			{
 				free(wide_item);
 				break;
@@ -2157,22 +2157,22 @@ complete_prev(const hist_t *hist, size_t len)
 		}
 		if(pos > hist->pos)
 			return;
-		input_stat.cmd_pos = pos;
+		stat->cmd_pos = pos;
 	}
 
-	(void)replace_input_line(hist->items[input_stat.cmd_pos]);
+	(void)replace_input_line(stat, hist->items[stat->cmd_pos]);
 
-	update_cmdline();
+	update_cmdline(stat);
 
-	if(input_stat.cmd_pos > (int)len - 1)
+	if(stat->cmd_pos > (int)len - 1)
 	{
-		input_stat.cmd_pos = len - 1;
+		stat->cmd_pos = len - 1;
 	}
 }
 
 /* Returns 0 on success. */
 static int
-replace_input_line(const char new[])
+replace_input_line(line_stats_t *stat, const char new[])
 {
 	wchar_t *const wide_new = to_wide(new);
 	if(wide_new == NULL)
@@ -2180,9 +2180,9 @@ replace_input_line(const char new[])
 		return 1;
 	}
 
-	free(input_stat.line);
-	input_stat.line = wide_new;
-	input_stat.len = wcslen(wide_new);
+	free(stat->line);
+	stat->line = wide_new;
+	stat->len = wcslen(wide_new);
 	return 0;
 }
 
@@ -2251,12 +2251,11 @@ cmd_up(key_info_t key_info, keys_info_t *keys_info)
 #endif /* ENABLE_EXTENDED_KEYS */
 
 static void
-update_cmdline(void)
+update_cmdline(line_stats_t *stat)
 {
 	int required_height;
-	input_stat.curs_pos = input_stat.prompt_wid +
-			vifm_wcswidth(input_stat.line, input_stat.len);
-	input_stat.index = input_stat.len;
+	stat->curs_pos = stat->prompt_wid + vifm_wcswidth(stat->line, stat->len);
+	stat->index = stat->len;
 
 	required_height = get_required_height();
 	if(required_height >= getmaxy(status_bar))
@@ -2264,7 +2263,7 @@ update_cmdline(void)
 		update_cmdline_size();
 	}
 
-	update_cmdline_text(&input_stat);
+	update_cmdline_text(stat);
 }
 
 /* Gets status bar height required to display all its content.  Returns the
