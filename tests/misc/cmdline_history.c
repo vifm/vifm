@@ -35,7 +35,7 @@ TEST(yank_works_with_ranges)
 
 	stats.line = wcsdup(L"newer");
 	stats.history_search = HIST_GO;
-	complete_prev(&stats, &hist, 10U);
+	hist_prev(&stats, &hist, 10U);
 	assert_wstring_equal(L"older", stats.line);
 
 	hist_reset(&hist, 10U);
