@@ -54,7 +54,7 @@ void hist_trunc(hist_t *hist, size_t new_size, size_t removed_count);
 int hist_contains(const hist_t *hist, const char item[]);
 
 /* Adds new item to the front of the history, thus it becomes its first
- * element.  If item already present in histoyr list, it's moved.  Returns zero
+ * element.  If item already present in history list, it's moved.  Returns zero
  * when item is added/moved or rejected, on failure non-zero is returned. */
 int hist_add(hist_t *hist, const char item[], size_t size);
 

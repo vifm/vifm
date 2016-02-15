@@ -69,11 +69,12 @@
 
 #ifndef TEST
 
+/* History search mode. */
 typedef enum
 {
-	HIST_NONE,
-	HIST_GO,
-	HIST_SEARCH
+	HIST_NONE,   /* No search in history is active. */
+	HIST_GO,     /* Retrieving items from history one by one. */
+	HIST_SEARCH  /* Retrieving items that match entered prefix skipping others. */
 }
 HIST;
 
@@ -158,8 +159,7 @@ static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
 static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
-static void search_next(void);
-static void complete_next(const hist_t *hist, size_t len);
+static void hist_next(line_stats_t *stat, const hist_t *hist, size_t len);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info);
@@ -198,10 +198,10 @@ static void cmd_home(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_delete(key_info_t key_info, keys_info_t *keys_info);
 static void update_cursor(void);
-static void search_prev(void);
-static void complete_prev(const hist_t *hist, size_t len);
-static int replace_input_line(const char new[]);
-static void update_cmdline(void);
+TSTATIC void hist_prev(line_stats_t *stat, const hist_t *hist, size_t len);
+static int replace_input_line(line_stats_t *stat, const char new[]);
+static const hist_t * pick_hist(void);
+static void update_cmdline(line_stats_t *stat);
 static int get_required_height(void);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
@@ -1406,7 +1406,7 @@ restore_user_input(void)
 	input_stat.cmd_pos = -1;
 	(void)replace_wstring(&input_stat.line, input_stat.line_buf);
 	input_stat.len = wcslen(input_stat.line);
-	update_cmdline();
+	update_cmdline(&input_stat);
 }
 
 /* Replaces *str with a copy of the with string.  *str can be NULL or equal to
@@ -1438,7 +1438,7 @@ cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 
 	input_stat.history_search = HIST_GO;
 
-	search_next();
+	hist_next(&input_stat, pick_hist(), cfg.history_len);
 }
 
 #ifdef ENABLE_EXTENDED_KEYS
@@ -1456,56 +1456,37 @@ cmd_down(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.hist_search_len = input_stat.len;
 	}
 
-	search_next();
+	hist_next(&input_stat, pick_hist(), cfg.history_len);
 }
 #endif /* ENABLE_EXTENDED_KEYS */
 
+/* Puts next element in the history or restores user input if end of history has
+ * been reached.  hist can be NULL, in which case nothing happens. */
 static void
-search_next(void)
+hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 {
-	if(sub_mode == CLS_COMMAND)
-	{
-		complete_next(&cfg.cmd_hist, cfg.history_len);
-	}
-	else if(input_stat.search_mode)
-	{
-		complete_next(&cfg.search_hist, cfg.history_len);
-	}
-	else if(sub_mode == CLS_PROMPT)
-	{
-		complete_next(&cfg.prompt_hist, cfg.history_len);
-	}
-	else if(sub_mode == CLS_FILTER)
-	{
-		complete_next(&cfg.filter_hist, cfg.history_len);
-	}
-}
-
-static void
-complete_next(const hist_t *hist, size_t len)
-{
-	if(hist_is_empty(hist))
+	if(hist == NULL || hist_is_empty(hist))
 	{
 		return;
 	}
 
-	if(input_stat.history_search != HIST_SEARCH)
+	if(stat->history_search != HIST_SEARCH)
 	{
-		if(input_stat.cmd_pos <= 0)
+		if(stat->cmd_pos <= 0)
 		{
 			restore_user_input();
 			return;
 		}
-		--input_stat.cmd_pos;
+		--stat->cmd_pos;
 	}
 	else
 	{
-		int pos = input_stat.cmd_pos;
-		int len = input_stat.hist_search_len;
+		int pos = stat->cmd_pos;
+		int len = stat->hist_search_len;
 		while(--pos >= 0)
 		{
 			wchar_t *const buf = to_wide(hist->items[pos]);
-			if(wcsncmp(input_stat.line, buf, len) == 0)
+			if(wcsncmp(stat->line, buf, len) == 0)
 			{
 				free(buf);
 				break;
@@ -1517,16 +1498,16 @@ complete_next(const hist_t *hist, size_t len)
 			restore_user_input();
 			return;
 		}
-		input_stat.cmd_pos = pos;
+		stat->cmd_pos = pos;
 	}
 
-	(void)replace_input_line(hist->items[input_stat.cmd_pos]);
+	(void)replace_input_line(stat, hist->items[stat->cmd_pos]);
 
-	update_cmdline();
+	update_cmdline(stat);
 
-	if(input_stat.cmd_pos > (int)len - 1)
+	if(stat->cmd_pos > (int)len - 1)
 	{
-		input_stat.cmd_pos = len - 1;
+		stat->cmd_pos = len - 1;
 	}
 }
 
@@ -2087,77 +2068,10 @@ update_cursor(void)
 			input_stat.curs_pos%line_width);
 }
 
-static void
-search_prev(void)
-{
-	if(sub_mode == CLS_COMMAND)
-	{
-		complete_prev(&cfg.cmd_hist, cfg.history_len);
-	}
-	else if(input_stat.search_mode)
-	{
-		complete_prev(&cfg.search_hist, cfg.history_len);
-	}
-	else if(sub_mode == CLS_PROMPT)
-	{
-		complete_prev(&cfg.prompt_hist, cfg.history_len);
-	}
-	else if(sub_mode == CLS_FILTER)
-	{
-		complete_prev(&cfg.filter_hist, cfg.history_len);
-	}
-}
-
-static void
-complete_prev(const hist_t *hist, size_t len)
-{
-	if(hist_is_empty(hist))
-	{
-		return;
-	}
-
-	if(input_stat.history_search != HIST_SEARCH)
-	{
-		if(input_stat.cmd_pos == hist->pos)
-		{
-			return;
-		}
-		++input_stat.cmd_pos;
-	}
-	else
-	{
-		int pos = input_stat.cmd_pos;
-		int len = input_stat.hist_search_len;
-		while(++pos <= hist->pos)
-		{
-			wchar_t *buf;
-
-			buf = to_wide(hist->items[pos]);
-			if(wcsncmp(input_stat.line, buf, len) == 0)
-			{
-				free(buf);
-				break;
-			}
-			free(buf);
-		}
-		if(pos > hist->pos)
-			return;
-		input_stat.cmd_pos = pos;
-	}
-
-	(void)replace_input_line(hist->items[input_stat.cmd_pos]);
-
-	update_cmdline();
-
-	if(input_stat.cmd_pos > (int)len - 1)
-	{
-		input_stat.cmd_pos = len - 1;
-	}
-}
-
-/* Returns 0 on success. */
+/* Replaces current input with specified string.  Returns zero on success,
+ * otherwise non-zero is returned. */
 static int
-replace_input_line(const char new[])
+replace_input_line(line_stats_t *stat, const char new[])
 {
 	wchar_t *const wide_new = to_wide(new);
 	if(wide_new == NULL)
@@ -2165,9 +2079,9 @@ replace_input_line(const char new[])
 		return 1;
 	}
 
-	free(input_stat.line);
-	input_stat.line = wide_new;
-	input_stat.len = wcslen(wide_new);
+	free(stat->line);
+	stat->line = wide_new;
+	stat->len = wcslen(wide_new);
 	return 0;
 }
 
@@ -2181,7 +2095,7 @@ cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 
 	input_stat.history_search = HIST_GO;
 
-	search_prev();
+	hist_prev(&input_stat, pick_hist(), cfg.history_len);
 }
 
 /* Swaps the order of two characters. */
@@ -2231,17 +2145,103 @@ cmd_up(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.hist_search_len = input_stat.len;
 	}
 
-	search_prev();
+	hist_prev(&input_stat, pick_hist(), cfg.history_len);
 }
 #endif /* ENABLE_EXTENDED_KEYS */
 
+/* Puts previous element in the history.  hist can be NULL, in which case
+ * nothing happens. */
+TSTATIC void
+hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
+{
+	if(hist == NULL || hist_is_empty(hist))
+	{
+		return;
+	}
+
+	if(stat->history_search != HIST_SEARCH)
+	{
+		if(stat->cmd_pos == hist->pos)
+		{
+			return;
+		}
+
+		++stat->cmd_pos;
+
+		/* Handle the case when the most recent history item equals current input.
+		 * This can happen if command-line mode was given some initial input
+		 * string.  Initially cmd_pos is -1, no need to check anything if history
+		 * contains only one element as even if it's equal input line won't be
+		 * changed. */
+		if(stat->cmd_pos == 0 && hist->pos != 0)
+		{
+			wchar_t *const wide_item = to_wide(hist->items[0]);
+			if(wcscmp(stat->line, wide_item) == 0)
+			{
+				++stat->cmd_pos;
+			}
+			free(wide_item);
+		}
+	}
+	else
+	{
+		int pos = stat->cmd_pos;
+		int len = stat->hist_search_len;
+		while(++pos <= hist->pos)
+		{
+			wchar_t *const wide_item = to_wide(hist->items[pos]);
+			if(wcsncmp(stat->line, wide_item, len) == 0)
+			{
+				free(wide_item);
+				break;
+			}
+			free(wide_item);
+		}
+		if(pos > hist->pos)
+			return;
+		stat->cmd_pos = pos;
+	}
+
+	(void)replace_input_line(stat, hist->items[stat->cmd_pos]);
+
+	update_cmdline(stat);
+
+	if(stat->cmd_pos > (int)len - 1)
+	{
+		stat->cmd_pos = len - 1;
+	}
+}
+
+/* Picks history depending on sub_mode.  Returns picked history or NULL. */
+static const hist_t *
+pick_hist(void)
+{
+	if(sub_mode == CLS_COMMAND)
+	{
+		return &cfg.cmd_hist;
+	}
+	if(input_stat.search_mode)
+	{
+		return &cfg.search_hist;
+	}
+	if(sub_mode == CLS_PROMPT)
+	{
+		return &cfg.prompt_hist;
+	}
+	if(sub_mode == CLS_FILTER)
+	{
+		return &cfg.filter_hist;
+	}
+	return NULL;
+}
+
+/* Updates command-line properties and redraws it. */
 static void
-update_cmdline(void)
+update_cmdline(line_stats_t *stat)
 {
 	int required_height;
-	input_stat.curs_pos = input_stat.prompt_wid +
-			vifm_wcswidth(input_stat.line, input_stat.len);
-	input_stat.index = input_stat.len;
+	stat->curs_pos = stat->prompt_wid + vifm_wcswidth(stat->line, stat->len);
+	stat->index = stat->len;
 
 	required_height = get_required_height();
 	if(required_height >= getmaxy(status_bar))
@@ -2249,7 +2249,7 @@ update_cmdline(void)
 		update_cmdline_size();
 	}
 
-	update_cmdline_text(&input_stat);
+	update_cmdline_text(stat);
 }
 
 /* Gets status bar height required to display all its content.  Returns the
@@ -2412,6 +2412,8 @@ dquoted_arg_hook(const char match[])
 	return escape_for_dquotes(match, 1);
 }
 
+/* Recalculates some numeric fields of the stat structure that depend on input
+ * string length. */
 static void
 update_line_stat(line_stats_t *stat, int new_len)
 {

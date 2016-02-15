@@ -1,3 +1,7 @@
+0.8.1a to current
+
+	Fixed kind of a duplicate of first history element on =.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
