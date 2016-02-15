@@ -151,6 +151,32 @@ TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 	assert_success(remove("broken-link"));
 }
 
+TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
+{
+	char test_dir[PATH_MAX];
+
+	assert_non_null(os_realpath(TEST_DATA_PATH "/existing-files", test_dir));
+
+	assert_success(chdir(SANDBOX_PATH));
+
+	/* symlink() is not available on Windows, but other code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(test_dir, "dir-link"));
+#endif
+	(void)test_dir;
+
+	assert_false(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "./dir-link");
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
+
+	assert_int_equal(1, lwin.list_rows);
+	assert_true(is_directory_entry(&lwin.dir_entry[0]));
+
+	assert_success(remove("dir-link"));
+}
+
 TEST(locally_filtered_files_are_not_lost_on_reload)
 {
 	filters_view_reset(&lwin);
