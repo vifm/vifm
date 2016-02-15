@@ -2068,7 +2068,8 @@ update_cursor(void)
 			input_stat.curs_pos%line_width);
 }
 
-/* Returns 0 on success. */
+/* Replaces current input with specified string.  Returns zero on success,
+ * otherwise non-zero is returned. */
 static int
 replace_input_line(line_stats_t *stat, const char new[])
 {
@@ -2234,6 +2235,7 @@ pick_hist(void)
 	return NULL;
 }
 
+/* Updates command-line properties and redraws it. */
 static void
 update_cmdline(line_stats_t *stat)
 {
@@ -2410,6 +2412,8 @@ dquoted_arg_hook(const char match[])
 	return escape_for_dquotes(match, 1);
 }
 
+/* Recalculates some numeric fields of the stat structure that depend on input
+ * string length. */
 static void
 update_line_stat(line_stats_t *stat, int new_len)
 {
