@@ -3,6 +3,7 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* memset() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -17,6 +18,8 @@ SETUP()
 	char cwd[PATH_MAX];
 
 	assert_success(chdir(SANDBOX_PATH));
+
+	update_string(&cfg.slow_fs_list, "");
 
 	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
 
@@ -53,6 +56,8 @@ TEARDOWN()
 	(void)rmdir("1");
 	(void)rmdir("2");
 	(void)rmdir("3");
+
+	update_string(&cfg.slow_fs_list, NULL);
 }
 
 TEST(exact_match_is_preferred)

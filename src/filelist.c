@@ -2950,9 +2950,19 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 int
 is_directory_entry(const dir_entry_t *entry)
 {
-	return (entry->type == FT_DIR)
-	    || (entry->type == FT_LINK &&
-	        get_symlink_type(entry->name) != SLT_UNKNOWN);
+	if(entry->type == FT_DIR)
+	{
+		return 1;
+	}
+
+	if(entry->type == FT_LINK)
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		return (get_symlink_type(full_path) != SLT_UNKNOWN);
+	}
+
+	return 0;
 }
 
 int

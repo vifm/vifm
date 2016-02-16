@@ -77,8 +77,10 @@ TEST(symlink_to_dir)
 	lwin.sort[0] = SK_BY_INAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	replace_string(&lwin.dir_entry[2].name, "self");
 	lwin.dir_entry[2].type = FT_LINK;
+	lwin.dir_entry[2].origin = lwin.curr_dir;
 
 	cfg.slow_fs_list = strdup("");
 
