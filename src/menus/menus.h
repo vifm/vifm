@@ -71,6 +71,8 @@ typedef struct menu_info
 	/* Text displayed by display_menu() function in case menu is empty, it can be
 	 * NULL if this cannot happen and will be freed by reset_popup_menu(). */
 	char *empty_msg;
+	/* Number of times to repeat search. */
+	int search_repeat;
 }
 menu_info;
 
@@ -131,6 +133,17 @@ int menu_to_custom_view(menu_info *m, FileView *view, int very);
  * if status bar message should be saved. */
 int capture_output(FileView *view, const char cmd[], int user_sh, menu_info *m,
 		int custom_view, int very_custom_view);
+
+/* Performs search in requested direction.  Either continues the previous one or
+ * restarts it. */
+void menus_search(menu_info *m, int backward);
+
+/* Performs search of pattern among menu items.  NULL pattern requests use of
+ * the last used pattern.  Returns new value for save_msg flag. */
+int search_menu_list(const char pattern[], menu_info *m);
+
+/* Prints results or error message about search operation to the user. */
+void menu_print_search_msg(const menu_info *m);
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

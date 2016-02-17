@@ -48,6 +48,7 @@
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
+#include "../utils/regexp.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
@@ -70,6 +71,10 @@ static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
+static int search_menu(menu_info *m, int start_pos);
+static int search_menu_forwards(menu_info *m, int start_pos);
+static int search_menu_backwards(menu_info *m, int start_pos);
+static int get_match_index(const menu_info *m);
 
 static void
 show_position_in_menu(menu_info *m)
@@ -179,6 +184,7 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->extra_data = 0;
 	m->execute_handler = NULL;
 	m->empty_msg = empty_msg;
+	m->search_repeat = 0;
 }
 
 void
@@ -783,6 +789,284 @@ capture_output(FileView *view, const char cmd[], int user_sh, menu_info *m,
 	}
 
 	return capture_output_to_menu(view, cmd, user_sh, m);
+}
+
+void
+menus_search(menu_info *m, int backward)
+{
+	if(m->regexp == NULL)
+	{
+		status_bar_error("No search pattern set");
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	m->match_dir = backward ? UP : DOWN;
+	(void)search_menu_list(NULL, m);
+	wrefresh(menu_win);
+
+	if(m->matching_entries > 0)
+	{
+		status_bar_messagef("(%d of %d) %c%s", get_match_index(m),
+				m->matching_entries, backward ? '?' : '/', m->regexp);
+	}
+
+	curr_stats.save_msg = 1;
+}
+
+int
+search_menu_list(const char pattern[], menu_info *m)
+{
+	int save = 0;
+	int i;
+
+	if(pattern != NULL)
+	{
+		m->regexp = strdup(pattern);
+		if(search_menu(m, m->pos) != 0)
+		{
+			draw_menu(m);
+			move_to_menu_pos(m->pos, m);
+			return 1;
+		}
+		draw_menu(m);
+	}
+
+	for(i = 0; i < m->search_repeat; ++i)
+	{
+		switch(m->match_dir)
+		{
+			case NONE:
+			case DOWN:
+				save = search_menu_forwards(m, m->pos + 1);
+				break;
+			case UP:
+				save = search_menu_backwards(m, m->pos - 1);
+				break;
+			default:
+				break;
+		}
+	}
+	return save;
+}
+
+/* Goes through all menu items and marks those that match search pattern.
+ * Returns non-zero on error. */
+static int
+search_menu(menu_info *m, int start_pos)
+{
+	int cflags;
+	regex_t re;
+	int err;
+	int i;
+
+	if(m->matches == NULL)
+	{
+		m->matches = reallocarray(NULL, m->len, sizeof(int));
+	}
+
+	memset(m->matches, 0, sizeof(int)*m->len);
+	m->matching_entries = 0;
+
+	if(m->regexp[0] == '\0')
+	{
+		return 0;
+	}
+
+	cflags = get_regexp_cflags(m->regexp);
+	err = regcomp(&re, m->regexp, cflags);
+	if(err != 0)
+	{
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		regfree(&re);
+		return -1;
+	}
+
+	for(i = 0; i < m->len; ++i)
+	{
+		if(regexec(&re, m->items[i], 0, NULL, 0) == 0)
+		{
+			m->matches[i] = 1;
+			++m->matching_entries;
+		}
+	}
+	regfree(&re);
+	return 0;
+}
+
+/* Looks for next matching element in forward direction from current position.
+ * Returns new value for save_msg flag. */
+static int
+search_menu_forwards(menu_info *m, int start_pos)
+{
+	/* FIXME: code duplication with search_menu_backwards. */
+
+	int match_up = -1;
+	int match_down = -1;
+	int i;
+
+	for(i = 0; i < m->len; ++i)
+	{
+		if(!m->matches[i])
+		{
+			continue;
+		}
+
+		if(match_up < 0 && i < start_pos)
+		{
+			match_up = i;
+		}
+		if(match_down < 0 && i >= start_pos)
+		{
+			match_down = i;
+		}
+	}
+
+	if(match_up > -1 || match_down > -1)
+	{
+		int pos;
+
+		if(!cfg.wrap_scan && match_down <= -1)
+		{
+			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+			return 1;
+		}
+
+		pos = (match_down > -1) ? match_down : match_up;
+
+		clean_menu_position(m);
+		move_to_menu_pos(pos, m);
+		menu_print_search_msg(m);
+	}
+	else
+	{
+		move_to_menu_pos(m->pos, m);
+		if(!cfg.wrap_scan)
+		{
+			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+		}
+		else
+		{
+			menu_print_search_msg(m);
+		}
+	}
+	return 1;
+}
+
+/* Looks for next matching element in backward direction from current position.
+ * Returns new value for save_msg flag. */
+static int
+search_menu_backwards(menu_info *m, int start_pos)
+{
+	/* FIXME: code duplication with search_menu_forwards. */
+
+	int match_up = -1;
+	int match_down = -1;
+	int i;
+
+	for(i = m->len - 1; i > -1; --i)
+	{
+		if(!m->matches[i])
+		{
+			continue;
+		}
+
+		if(match_up < 0 && i <= start_pos)
+		{
+			match_up = i;
+		}
+		if(match_down < 0 && i > start_pos)
+		{
+			match_down = i;
+		}
+	}
+
+	if(match_up > -1 || match_down > -1)
+	{
+		int pos;
+
+		if(!cfg.wrap_scan && match_up <= -1)
+		{
+			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+			return 1;
+		}
+
+		pos = (match_up > -1) ? match_up : match_down;
+
+		clean_menu_position(m);
+		move_to_menu_pos(pos, m);
+		menu_print_search_msg(m);
+	}
+	else
+	{
+		move_to_menu_pos(m->pos, m);
+		if(!cfg.wrap_scan)
+		{
+			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+		}
+		else
+		{
+			menu_print_search_msg(m);
+		}
+	}
+	return 1;
+}
+
+void
+menu_print_search_msg(const menu_info *m)
+{
+	int cflags;
+	regex_t re;
+	int err;
+
+	/* Can be NULL after regex compilation failure. */
+	if(m->regexp == NULL)
+	{
+		return;
+	}
+
+	cflags = get_regexp_cflags(m->regexp);
+	err = regcomp(&re, m->regexp, cflags);
+
+	if(err != 0)
+	{
+		status_bar_errorf("Regexp (%s) error: %s", m->regexp,
+				get_regexp_error(err, &re));
+		regfree(&re);
+		return;
+	}
+
+	regfree(&re);
+
+	if(m->matching_entries > 0)
+	{
+		status_bar_messagef("%d of %d %s", get_match_index(m), m->matching_entries,
+				(m->matching_entries == 1) ? "match" : "matches");
+	}
+	else
+	{
+		status_bar_errorf("No matches for: %s", m->regexp);
+	}
+}
+
+/* Calculates the index of the current match from the list of matches.  Returns
+ * the index. */
+static int
+get_match_index(const menu_info *m)
+{
+	int n, i;
+
+	n = (m->matches[0] ? 1 : 0);
+	i = 0;
+	while(i++ < m->pos)
+	{
+		if(m->matches[i])
+		{
+			++n;
+		}
+	}
+
+	return n;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -50,10 +50,6 @@ void load_menu_pos(void);
 void menu_morph_into_cmdline(CmdLineSubmode submode, const char input[],
 		int external);
 
-/* Performs search of pattern among menu items.  NULL pattern requests use of
- * results of the last used pattern.  Returns new value for save_msg flag. */
-int search_menu_list(const char pattern[], menu_info *m);
-
 /* Allows running regular command-line mode commands from menu mode. */
 void execute_cmdline_command(const char cmd[]);
 
@@ -61,9 +57,6 @@ void execute_cmdline_command(const char cmd[]);
  * greater than or equal to number of lines in the menu, which should be
  * threated correctly. */
 int get_last_visible_line(const menu_info *m);
-
-/* Prints results or error message about search operation to the user. */
-void menu_print_search_msg(const menu_info *m);
 
 #endif /* VIFM__MODES__MENU_H__ */
 
