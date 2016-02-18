@@ -74,6 +74,7 @@ static size_t chars_in_str(const char s[], char c);
 static int search_menu(menu_info *m, int start_pos);
 static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
+static int navigate_to_match(menu_info *m, int pos);
 static int get_match_index(const menu_info *m);
 
 static void
@@ -895,8 +896,6 @@ search_menu(menu_info *m, int start_pos)
 static int
 search_menu_forwards(menu_info *m, int start_pos)
 {
-	/* FIXME: code duplication with search_menu_backwards. */
-
 	int match_up = -1;
 	int match_down = -1;
 	int i;
@@ -924,21 +923,7 @@ search_menu_forwards(menu_info *m, int start_pos)
 		return 1;
 	}
 
-	if(match_up > -1 || match_down > -1)
-	{
-		clean_menu_position(m);
-		move_to_menu_pos((match_down > -1) ? match_down : match_up, m);
-		menu_print_search_msg(m);
-	}
-	else
-	{
-		move_to_menu_pos(m->pos, m);
-		if(cfg.wrap_scan)
-		{
-			menu_print_search_msg(m);
-		}
-	}
-	return 1;
+	return navigate_to_match(m, (match_down > -1) ? match_down : match_up);
 }
 
 /* Looks for next matching element in backward direction from current position.
@@ -946,8 +931,6 @@ search_menu_forwards(menu_info *m, int start_pos)
 static int
 search_menu_backwards(menu_info *m, int start_pos)
 {
-	/* FIXME: code duplication with search_menu_forwards. */
-
 	int match_up = -1;
 	int match_down = -1;
 	int i;
@@ -975,10 +958,19 @@ search_menu_backwards(menu_info *m, int start_pos)
 		return 1;
 	}
 
-	if(match_up > -1 || match_down > -1)
+	return navigate_to_match(m, (match_up > -1) ? match_up : match_down);
+}
+
+/* Tries to navigate to menu search match specified via pos argument.  If pos is
+ * negative, match wasn't found and the message is printed.  Returns new value
+ * for save_msg flag. */
+static int
+navigate_to_match(menu_info *m, int pos)
+{
+	if(pos > -1)
 	{
 		clean_menu_position(m);
-		move_to_menu_pos((match_up > -1) ? match_up : match_down, m);
+		move_to_menu_pos(pos, m);
 		menu_print_search_msg(m);
 	}
 	else
