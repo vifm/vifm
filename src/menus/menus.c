@@ -918,30 +918,22 @@ search_menu_forwards(menu_info *m, int start_pos)
 		}
 	}
 
+	if(!cfg.wrap_scan && match_down <= -1)
+	{
+		status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+		return 1;
+	}
+
 	if(match_up > -1 || match_down > -1)
 	{
-		int pos;
-
-		if(!cfg.wrap_scan && match_down <= -1)
-		{
-			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
-			return 1;
-		}
-
-		pos = (match_down > -1) ? match_down : match_up;
-
 		clean_menu_position(m);
-		move_to_menu_pos(pos, m);
+		move_to_menu_pos((match_down > -1) ? match_down : match_up, m);
 		menu_print_search_msg(m);
 	}
 	else
 	{
 		move_to_menu_pos(m->pos, m);
-		if(!cfg.wrap_scan)
-		{
-			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
-		}
-		else
+		if(cfg.wrap_scan)
 		{
 			menu_print_search_msg(m);
 		}
@@ -977,30 +969,22 @@ search_menu_backwards(menu_info *m, int start_pos)
 		}
 	}
 
+	if(!cfg.wrap_scan && match_up <= -1)
+	{
+		status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+		return 1;
+	}
+
 	if(match_up > -1 || match_down > -1)
 	{
-		int pos;
-
-		if(!cfg.wrap_scan && match_up <= -1)
-		{
-			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
-			return 1;
-		}
-
-		pos = (match_up > -1) ? match_up : match_down;
-
 		clean_menu_position(m);
-		move_to_menu_pos(pos, m);
+		move_to_menu_pos((match_up > -1) ? match_up : match_down, m);
 		menu_print_search_msg(m);
 	}
 	else
 	{
 		move_to_menu_pos(m->pos, m);
-		if(!cfg.wrap_scan)
-		{
-			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
-		}
-		else
+		if(cfg.wrap_scan)
 		{
 			menu_print_search_msg(m);
 		}
