@@ -24,12 +24,14 @@
 
 #include "../ui/ui.h"
 
-enum
+/* Variants of search direction. */
+typedef enum
 {
-	NONE,
-	UP,
-	DOWN
-};
+	NONE, /* There was no search. */
+	UP,   /* Backward search. */
+	DOWN  /* Forward search. */
+}
+MatchDir;
 
 /* Result of handling key sequence by menu-specific shortcut handler. */
 typedef enum
@@ -49,7 +51,7 @@ typedef struct menu_info
 	int pos; /* Menu item under the cursor. */
 	int hor_pos;
 	int win_rows;
-	int match_dir;
+	MatchDir match_dir; /* Search direction. */
 	/* Number of menu entries that actually match the regexp. */
 	int matching_entries;
 	int *matches;

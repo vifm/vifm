@@ -843,8 +843,6 @@ search_menu_list(const char pattern[], menu_info *m)
 			case UP:
 				save = search_menu_backwards(m, m->pos - 1);
 				break;
-			default:
-				break;
 		}
 	}
 	return save;
