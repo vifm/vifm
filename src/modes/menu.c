@@ -496,7 +496,7 @@ cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 0;
-	menu->match_dir = NONE;
+	menu->backward_search = 0;
 	free(menu->regexp);
 	menu->regexp = NULL;
 	enter_cmdline_mode(CLS_MENU_FSEARCH, "", menu);
@@ -516,7 +516,7 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 {
 	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 1;
-	menu->match_dir = NONE;
+	menu->backward_search = 0;
 	free(menu->regexp);
 	enter_cmdline_mode(CLS_MENU_BSEARCH, "", menu);
 }

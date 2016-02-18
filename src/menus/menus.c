@@ -172,7 +172,7 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->pos = 0;
 	m->hor_pos = 0;
 	m->win_rows = getmaxy(menu_win);
-	m->match_dir = NONE;
+	m->backward_search = 0;
 	m->matching_entries = 0;
 	m->matches = NULL;
 	m->regexp = NULL;
@@ -801,7 +801,7 @@ menus_search(menu_info *m, int backward)
 		return;
 	}
 
-	m->match_dir = backward ? UP : DOWN;
+	m->backward_search = backward;
 	(void)search_menu_list(NULL, m);
 	wrefresh(menu_win);
 
@@ -834,15 +834,13 @@ search_menu_list(const char pattern[], menu_info *m)
 
 	for(i = 0; i < m->search_repeat; ++i)
 	{
-		switch(m->match_dir)
+		if(m->backward_search)
 		{
-			case NONE:
-			case DOWN:
-				save = search_menu_forwards(m, m->pos + 1);
-				break;
-			case UP:
-				save = search_menu_backwards(m, m->pos - 1);
-				break;
+			save = search_menu_backwards(m, m->pos - 1);
+		}
+		else
+		{
+			save = search_menu_forwards(m, m->pos + 1);
 		}
 	}
 	return save;
