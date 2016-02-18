@@ -516,7 +516,7 @@ cmd_question(key_info_t key_info, keys_info_t *keys_info)
 {
 	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 1;
-	menu->backward_search = 0;
+	menu->backward_search = 1;
 	free(menu->regexp);
 	enter_cmdline_mode(CLS_MENU_BSEARCH, "", menu);
 }
