@@ -19,8 +19,6 @@
 
 #include "menu.h"
 
-#include <regex.h>
-
 #include <curses.h>
 
 #include <assert.h> /* assert() */
@@ -41,7 +39,6 @@
 #include "../ui/ui.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
-#include "../utils/regexp.h"
 #include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
@@ -97,7 +94,6 @@ static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
-static void search(int backward);
 static void cmd_zb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zL(key_info_t key_info, keys_info_t *keys_info);
@@ -109,17 +105,12 @@ static int all_lines_visible(const menu_info *const menu);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static void leave_menu_mode(int reset_selection);
-static int search_menu(menu_info *m, int start_pos);
-static int search_menu_forwards(menu_info *m, int start_pos);
-static int search_menu_backwards(menu_info *m, int start_pos);
-static int get_match_index(const menu_info *m);
 
 static FileView *view;
 static menu_info *menu;
 static int last_search_backward;
 static int was_redraw;
 static int saved_top, saved_pos;
-static int search_repeat;
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -503,9 +494,9 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
+	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 0;
-	menu->match_dir = NONE;
+	menu->backward_search = 0;
 	free(menu->regexp);
 	menu->regexp = NULL;
 	enter_cmdline_mode(CLS_MENU_FSEARCH, "", menu);
@@ -523,9 +514,9 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_question(key_info_t key_info, keys_info_t *keys_info)
 {
-	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
+	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 1;
-	menu->match_dir = NONE;
+	menu->backward_search = 1;
 	free(menu->regexp);
 	enter_cmdline_mode(CLS_MENU_BSEARCH, "", menu);
 }
@@ -611,10 +602,11 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
+	key_info.count = def_count(key_info.count);
 	while(key_info.count-- > 0)
-		search(!last_search_backward);
+	{
+		menus_search(menu, !last_search_backward);
+	}
 }
 
 /* Populates custom view with list of files. */
@@ -731,10 +723,11 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
+	key_info.count = def_count(key_info.count);
 	while(key_info.count-- > 0)
-		search(last_search_backward);
+	{
+		menus_search(menu, last_search_backward);
+	}
 }
 
 /* Handles current content of the menu to Vim as quickfix list. */
@@ -796,29 +789,6 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 
 	pclose(vim_stdin);
 	recover_after_shellout();
-}
-
-static void
-search(int backward)
-{
-	if(menu->regexp != NULL)
-	{
-		menu->match_dir = backward ? UP : DOWN;
-		(void)search_menu_list(NULL, menu);
-		wrefresh(menu_win);
-
-		if(menu->matching_entries > 0)
-		{
-			status_bar_messagef("(%d of %d) %c%s", get_match_index(menu),
-					menu->matching_entries,
-					backward ? '?' : '/', menu->regexp);
-		}
-	}
-	else
-	{
-		status_bar_error("No search pattern set");
-	}
-	curr_stats.save_msg = 1;
 }
 
 static void
@@ -996,198 +966,6 @@ leave_menu_mode(int reset_selection)
 	update_ui_on_leaving();
 }
 
-int
-search_menu_list(const char pattern[], menu_info *m)
-{
-	int save = 0;
-	int i;
-
-	if(pattern != NULL)
-	{
-		m->regexp = strdup(pattern);
-		if(search_menu(m, m->pos) != 0)
-		{
-			draw_menu(m);
-			move_to_menu_pos(m->pos, m);
-			return 1;
-		}
-		draw_menu(m);
-	}
-
-	for(i = 0; i < search_repeat; ++i)
-	{
-		switch(m->match_dir)
-		{
-			case NONE:
-			case DOWN:
-				save = search_menu_forwards(m, m->pos + 1);
-				break;
-			case UP:
-				save = search_menu_backwards(m, m->pos - 1);
-				break;
-			default:
-				break;
-		}
-	}
-	return save;
-}
-
-/* Returns non-zero on error */
-static int
-search_menu(menu_info *m, int start_pos)
-{
-	int cflags;
-	regex_t re;
-	int err;
-
-	if(m->matches == NULL)
-	{
-		m->matches = reallocarray(NULL, m->len, sizeof(int));
-	}
-
-	memset(m->matches, 0, sizeof(int)*m->len);
-	m->matching_entries = 0;
-
-	if(m->regexp[0] == '\0')
-		return 0;
-
-	cflags = get_regexp_cflags(m->regexp);
-	if((err = regcomp(&re, m->regexp, cflags)) == 0)
-	{
-		int x;
-		for(x = 0; x < m->len; x++)
-		{
-			if(regexec(&re, m->items[x], 0, NULL, 0) != 0)
-				continue;
-			m->matches[x] = 1;
-
-			m->matching_entries++;
-		}
-		regfree(&re);
-		return 0;
-	}
-	else
-	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
-		regfree(&re);
-		return -1;
-	}
-}
-
-static int
-search_menu_forwards(menu_info *m, int start_pos)
-{
-	/* FIXME: code duplication with search_menu_backwards. */
-
-	int match_up = -1;
-	int match_down = -1;
-	int x;
-
-	for(x = 0; x < m->len; x++)
-	{
-		if(!m->matches[x])
-			continue;
-
-		if(match_up < 0)
-		{
-			if(x < start_pos)
-				match_up = x;
-		}
-		if(match_down < 0)
-		{
-			if(x >= start_pos)
-				match_down = x;
-		}
-	}
-
-	if(match_up > -1 || match_down > -1)
-	{
-		int pos;
-
-		if(!cfg.wrap_scan && match_down <= -1)
-		{
-			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
-			return 1;
-		}
-
-		pos = (match_down > -1) ? match_down : match_up;
-
-		clean_menu_position(m);
-		move_to_menu_pos(pos, m);
-		menu_print_search_msg(m);
-	}
-	else
-	{
-		move_to_menu_pos(m->pos, m);
-		if(!cfg.wrap_scan)
-		{
-			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
-		}
-		else
-		{
-			menu_print_search_msg(m);
-		}
-	}
-	return 1;
-}
-
-static int
-search_menu_backwards(menu_info *m, int start_pos)
-{
-	/* FIXME: code duplication with search_menu_forwards. */
-
-	int match_up = -1;
-	int match_down = -1;
-	int x;
-
-	for(x = m->len - 1; x > -1; x--)
-	{
-		if(!m->matches[x])
-			continue;
-
-		if(match_up < 0)
-		{
-			if(x <= start_pos)
-				match_up = x;
-		}
-		if(match_down < 0)
-		{
-			if(x > start_pos)
-				match_down = x;
-		}
-	}
-
-	if(match_up > -1 || match_down > -1)
-	{
-		int pos;
-
-		if(!cfg.wrap_scan && match_up <= -1)
-		{
-			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
-			return 1;
-		}
-
-		pos = (match_up > -1) ? match_up : match_down;
-
-		clean_menu_position(m);
-		move_to_menu_pos(pos, m);
-		menu_print_search_msg(m);
-	}
-	else
-	{
-		move_to_menu_pos(m->pos, m);
-		if(!cfg.wrap_scan)
-		{
-			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
-		}
-		else
-		{
-			menu_print_search_msg(m);
-		}
-	}
-	return 1;
-}
-
 void
 execute_cmdline_command(const char cmd[])
 {
@@ -1196,63 +974,6 @@ execute_cmdline_command(const char cmd[])
 		status_bar_error("An error occurred while trying to execute command");
 	}
 	init_cmds(0, &cmds_conf);
-}
-
-void
-menu_print_search_msg(const menu_info *m)
-{
-	int cflags;
-	regex_t re;
-	int err;
-
-	/* Can be NULL after regex compilation failure. */
-	if(m->regexp == NULL)
-	{
-		return;
-	}
-
-	cflags = get_regexp_cflags(m->regexp);
-	err = regcomp(&re, m->regexp, cflags);
-
-	if(err != 0)
-	{
-		status_bar_errorf("Regexp (%s) error: %s", m->regexp,
-				get_regexp_error(err, &re));
-		regfree(&re);
-		return;
-	}
-
-	regfree(&re);
-
-	if(m->matching_entries > 0)
-	{
-		status_bar_messagef("%d of %d %s", get_match_index(m), m->matching_entries,
-				(m->matching_entries == 1) ? "match" : "matches");
-	}
-	else
-	{
-		status_bar_errorf("No matches for: %s", m->regexp);
-	}
-}
-
-/* Calculates the index of the current match from the list of matches.  Returns
- * the index. */
-static int
-get_match_index(const menu_info *m)
-{
-	int n, i;
-
-	n = (m->matches[0] ? 1 : 0);
-	i = 0;
-	while(i++ < m->pos)
-	{
-		if(m->matches[i])
-		{
-			++n;
-		}
-	}
-
-	return n;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

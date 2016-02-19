@@ -5,6 +5,9 @@
 	Fixed displaying size for symbolic links to directories on changing views
 	and determining whether they point to a directory in custom views.
 
+	Fixed backward search in menus, which was performed in the opposite
+	direction.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
