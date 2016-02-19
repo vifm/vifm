@@ -74,6 +74,7 @@ menu_info;
  * NULL if this cannot happen and will be freed by reset_popup_menu(). */
 void init_menu_info(menu_info *m, char title[], char empty_msg[]);
 
+/* Frees resources associated with the menu and clears menu window. */
 void reset_popup_menu(menu_info *m);
 
 void setup_menu(void);

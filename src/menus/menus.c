@@ -122,7 +122,8 @@ clean_menu_position(menu_info *m)
 	char *buf;
 	col_attr_t col;
 
-	x = getmaxx(menu_win) + utf8_stro(m->items[m->pos]);
+	x = (curr_stats.load_stage == 0) ? 100 : getmaxx(menu_win);
+	x += utf8_stro(m->items[m->pos]);
 
 	buf = malloc(x + 2);
 
@@ -269,7 +270,8 @@ move_to_menu_pos(int pos, menu_info *m)
 	if(redraw)
 		draw_menu(m);
 
-	x = getmaxx(menu_win) + utf8_stro(m->items[pos]);
+	x = (curr_stats.load_stage == 0) ? 100 : getmaxx(menu_win);
+	x += utf8_stro(m->items[pos]);
 	buf = malloc(x + 2);
 	if(buf == NULL)
 		return;
@@ -823,7 +825,7 @@ search_menu_list(const char pattern[], menu_info *m)
 
 	if(pattern != NULL)
 	{
-		m->regexp = strdup(pattern);
+		replace_string(&m->regexp, pattern);
 		if(search_menu(m, m->pos) != 0)
 		{
 			draw_menu(m);
