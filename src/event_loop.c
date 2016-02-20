@@ -46,6 +46,7 @@
 #include "filelist.h"
 #include "ipc.h"
 #include "status.h"
+#include "vifm.h"
 
 static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
@@ -108,7 +109,15 @@ event_loop(const int *quit)
 
 			check_background_jobs();
 
-			got_input = get_char_async_loop(status_bar, &c, timeout) != ERR;
+			got_input = (get_char_async_loop(status_bar, &c, timeout) != ERR);
+
+			/* This loop can be infinite if terminal becomes not available, so force
+			 * checking terminal state here. */
+			if(!got_input && !ui_term_is_alive())
+			{
+				vifm_finish("Terminal is not available.");
+			}
+
 			if(!got_input && input_buf_pos == 0)
 			{
 				timeout = cfg.timeout_len;

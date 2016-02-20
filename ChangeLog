@@ -8,6 +8,8 @@
 	Fixed backward search in menus, which was performed in the opposite
 	direction.
 
+	Fixed hanging on sudden terminal loss.  Thanks to aleksejrs.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.

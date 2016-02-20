@@ -358,6 +358,10 @@ void ui_ruler_set(const char val[]);
  * term_state in status structure. */
 void ui_update_term_state(void);
 
+/* Performs a quick check whether terminal is functional.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int ui_term_is_alive(void);
+
 /* Checks whether given character was pressed, ignores any other characters. */
 int ui_char_pressed(wint_t c);
 
@@ -369,7 +373,7 @@ float get_splitter_pos(int max);
  * argument). */
 void update_screen(UpdateType update_kind);
 
-/* Swaps curr_view and other_view pointers (activa and inactive panes).  Also
+/* Swaps curr_view and other_view pointers (active and inactive panes).  Also
  * updates things (including UI) that are bound to views. */
 void change_window(void);
 
