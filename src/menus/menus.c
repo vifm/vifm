@@ -91,12 +91,12 @@ remove_current_item(menu_info *m)
 
 	if(m->matches != NULL)
 	{
-		if(m->matches[m->pos])
+		if(m->matches[m->pos][0] >= 0)
 		{
 			--m->matching_entries;
 		}
 		memmove(m->matches + m->pos, m->matches + m->pos + 1,
-				sizeof(int)*((m->len - 1) - m->pos));
+				sizeof(*m->matches)*((m->len - 1) - m->pos));
 	}
 
 	--m->len;
@@ -374,7 +374,7 @@ draw_menu_item(menu_info *m, int pos, int line, int clear)
 	/* Calculate color for the line. */
 	int attrs;
 	col_attr_t col = cfg.cs.color[WIN_COLOR];
-	if(cfg.hl_search && m->matches != NULL && m->matches[pos])
+	if(cfg.hl_search && m->matches != NULL && m->matches[pos][0] >= 0)
 	{
 		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
 	}
@@ -757,10 +757,10 @@ search_menu(menu_info *m, int start_pos)
 
 	if(m->matches == NULL)
 	{
-		m->matches = reallocarray(NULL, m->len, sizeof(int));
+		m->matches = reallocarray(NULL, m->len, sizeof(*m->matches));
 	}
 
-	memset(m->matches, 0, sizeof(int)*m->len);
+	memset(m->matches, -1, 2*sizeof(**m->matches)*m->len);
 	m->matching_entries = 0;
 
 	if(m->regexp[0] == '\0')
@@ -779,9 +779,12 @@ search_menu(menu_info *m, int start_pos)
 
 	for(i = 0; i < m->len; ++i)
 	{
-		if(regexec(&re, m->items[i], 0, NULL, 0) == 0)
+		regmatch_t matches[1];
+		if(regexec(&re, m->items[i], 1, matches, 0) == 0)
 		{
-			m->matches[i] = 1;
+			m->matches[i][0] = matches[0].rm_so;
+			m->matches[i][1] = matches[0].rm_eo;
+
 			++m->matching_entries;
 		}
 	}
@@ -800,7 +803,7 @@ search_menu_forwards(menu_info *m, int start_pos)
 
 	for(i = 0; i < m->len; ++i)
 	{
-		if(!m->matches[i])
+		if(m->matches[i][0] < 0)
 		{
 			continue;
 		}
@@ -835,7 +838,7 @@ search_menu_backwards(menu_info *m, int start_pos)
 
 	for(i = m->len - 1; i > -1; --i)
 	{
-		if(!m->matches[i])
+		if(m->matches[i][0] < 0)
 		{
 			continue;
 		}
@@ -926,11 +929,11 @@ get_match_index(const menu_info *m)
 {
 	int n, i;
 
-	n = (m->matches[0] ? 1 : 0);
+	n = (m->matches[0][0] >= 0 ? 1 : 0);
 	i = 0;
 	while(i++ < m->pos)
 	{
-		if(m->matches[i])
+		if(m->matches[i][0] >= 0)
 		{
 			++n;
 		}

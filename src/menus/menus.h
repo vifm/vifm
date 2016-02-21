@@ -45,7 +45,9 @@ typedef struct menu_info
 	int backward_search; /* Search direction. */
 	/* Number of menu entries that actually match the regexp. */
 	int matching_entries;
-	int *matches;
+	/* Start and end positions of search match.  If there is no match, values are
+	 * equal to -1. */
+	short int (*matches)[2];
 	char *regexp;
 	char *title;
 	char *args;
