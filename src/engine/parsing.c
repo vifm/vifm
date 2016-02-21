@@ -1114,7 +1114,8 @@ parse_sequence(const char **in, const char first[], const char other[],
 static expr_t
 parse_funccall(const char **in)
 {
-	char name[NAME_LENGTH_MAX];
+	char *name;
+	size_t name_len;
 	expr_t result = { .op_type = OP_CALL };
 
 	if(!isalpha(last_token.c))
@@ -1123,33 +1124,28 @@ parse_funccall(const char **in)
 		return null_expr;
 	}
 
-	name[0] = last_token.c;
-	name[1] = '\0';
+	name = strdup(last_token.str);
+	name_len = strlen(name);
 	get_next(in);
 	while(last_token.type == SYM && isalnum(last_token.c))
 	{
-		strcatch(name, last_token.c);
+		if(strappendch(&name, &name_len, last_token.c) != 0)
+		{
+			free(name);
+			last_error = PE_INTERNAL;
+			return null_expr;
+		}
 		get_next(in);
 	}
 
-	if(last_token.type != LPAREN)
+	if(last_token.type != LPAREN || !function_registered(name))
 	{
+		free(name);
 		last_error = PE_INVALID_EXPRESSION;
 		return null_expr;
 	}
 
-	if(!function_registered(name))
-	{
-		last_error = PE_INVALID_EXPRESSION;
-		return null_expr;
-	}
-
-	result.func = strdup(name);
-	if(result.func == NULL)
-	{
-		last_error = PE_INTERNAL;
-		return null_expr;
-	}
+	result.func = name;
 
 	get_next(in);
 	skip_whitespace_tokens(in);
