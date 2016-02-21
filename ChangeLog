@@ -1,5 +1,7 @@
 0.8.1a to current
 
+	Added highlighting of search matches in menus.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

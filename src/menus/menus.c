@@ -65,6 +65,8 @@ static void show_position_in_menu(const menu_info *m);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
 static void draw_menu_item(menu_info *m, int pos, int line, int clear);
+static void draw_search_match(char str[], int start, int end, int line,
+		int width, int attrs);
 static void normalize_top(menu_info *m);
 static void draw_menu_frame(const menu_info *m);
 static void output_handler(const char line[], void *arg);
@@ -408,14 +410,16 @@ draw_menu_item(menu_info *m, int pos, int line, int clear)
 	checked_wmove(menu_win, line, 2);
 	if(utf8_strsw(item_tail) > (size_t)(width - 2))
 	{
-		size_t len = utf8_nstrsnlen(item_tail, width - 1 - 4 + 1);
+		void *p;
+		const size_t len = utf8_nstrsnlen(item_tail, width - 3 - 2 + 1);
 		memset(item_tail + len, ' ', strlen(item_tail) - len);
-		if(strlen(item_tail) > len + 3)
+		p = realloc(item_tail, len + 4);
+		if(p != NULL)
 		{
-			item_tail[len + 3] = '\0';
+			item_tail = p;
+			strcpy(item_tail + len - 1, "...");
 		}
 		wprint(menu_win, item_tail);
-		mvwaddstr(menu_win, line, width - 3, "...");
 	}
 	else
 	{
@@ -423,11 +427,64 @@ draw_menu_item(menu_info *m, int pos, int line, int clear)
 		item_tail[len] = '\0';
 		wprint(menu_win, item_tail);
 	}
-	waddstr(menu_win, " ");
 
 	wattroff(menu_win, attrs);
 
+	if(m->matches != NULL && m->matches[pos][0] >= 0)
+	{
+		draw_search_match(item_tail, m->matches[pos][0] - m->hor_pos,
+				m->matches[pos][1] - m->hor_pos, line, width, attrs);
+	}
+
 	free(item_tail);
+}
+
+/* Draws search match highlight on the element. */
+static void
+draw_search_match(char str[], int start, int end, int line, int width,
+		int attrs)
+{
+	const int len = strlen(str);
+
+	if(end <= 0)
+	{
+		/* Match is completely at the left. */
+
+		checked_wmove(menu_win, line, 2);
+		wprinta(menu_win, "<<<", attrs ^ A_REVERSE);
+	}
+	else if(start >= len)
+	{
+		/* Match is completely at the right. */
+
+		checked_wmove(menu_win, line, width - 3);
+		wprinta(menu_win, ">>>", attrs ^ A_REVERSE);
+	}
+	else
+	{
+		/* Match is at least partially visible. */
+
+		char c;
+		int match_start;
+
+		if(start < 0)
+		{
+			start = 0;
+		}
+		if(end < len)
+		{
+			str[end] = '\0';
+		}
+
+		/* Calculate number of screen characters before the match. */
+		c = str[start];
+		str[start] = '\0';
+		match_start = utf8_strsw(str);
+		str[start] = c;
+
+		checked_wmove(menu_win, line, 2 + match_start);
+		wprinta(menu_win, str + start, attrs ^ (A_REVERSE | A_UNDERLINE));
+	}
 }
 
 /* Ensures that value of m->top lies in a correct range. */
