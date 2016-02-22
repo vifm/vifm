@@ -4,6 +4,9 @@
 
 	Added :noh[lsearch] command to menu mode.
 
+	Changed order of initialization to perform autocommands before startup
+	commands on launch.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
