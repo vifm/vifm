@@ -124,6 +124,7 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->win_rows = getmaxy(menu_win);
 	m->backward_search = 0;
 	m->matching_entries = 0;
+	m->search_highlight = 1;
 	m->matches = NULL;
 	m->regexp = NULL;
 	m->title = title;
@@ -376,7 +377,8 @@ draw_menu_item(menu_info *m, int pos, int line, int clear)
 	/* Calculate color for the line. */
 	int attrs;
 	col_attr_t col = cfg.cs.color[WIN_COLOR];
-	if(cfg.hl_search && m->matches != NULL && m->matches[pos][0] >= 0)
+	if(cfg.hl_search && m->search_highlight &&
+			m->matches != NULL && m->matches[pos][0] >= 0)
 	{
 		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
 	}
@@ -430,7 +432,7 @@ draw_menu_item(menu_info *m, int pos, int line, int clear)
 
 	wattroff(menu_win, attrs);
 
-	if(m->matches != NULL && m->matches[pos][0] >= 0)
+	if(m->search_highlight && m->matches != NULL && m->matches[pos][0] >= 0)
 	{
 		draw_search_match(item_tail, m->matches[pos][0] - m->hor_pos,
 				m->matches[pos][1] - m->hor_pos, line, width, attrs);
@@ -778,6 +780,8 @@ search_menu_list(const char pattern[], menu_info *m)
 
 	if(pattern != NULL)
 	{
+		/* Reactivate match highlighting on search. */
+		m->search_highlight = 1;
 		replace_string(&m->regexp, pattern);
 		if(search_menu(m, m->pos) != 0)
 		{
@@ -927,8 +931,18 @@ navigate_to_match(menu_info *m, int pos)
 {
 	if(pos > -1)
 	{
-		clean_menu_position(m);
-		move_to_menu_pos(pos, m);
+		if(!m->search_highlight)
+		{
+			/* Might need to highlight other items, so redraw whole menu. */
+			m->search_highlight = 1;
+			m->pos = pos;
+			draw_menu(m);
+		}
+		else
+		{
+			clean_menu_position(m);
+			move_to_menu_pos(pos, m);
+		}
 		menu_print_search_msg(m);
 	}
 	else
@@ -997,6 +1011,13 @@ get_match_index(const menu_info *m)
 	}
 
 	return n;
+}
+
+void
+menus_reset_search_highlight(menu_info *m)
+{
+	m->search_highlight = 0;
+	redraw_menu(m);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

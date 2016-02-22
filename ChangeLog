@@ -2,6 +2,8 @@
 
 	Added highlighting of search matches in menus.
 
+	Added :noh[lsearch] command to menu mode.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

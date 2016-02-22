@@ -103,6 +103,7 @@ static void cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zz(key_info_t key_info, keys_info_t *keys_info);
 static int all_lines_visible(const menu_info *const menu);
 static int goto_cmd(const cmd_info_t *cmd_info);
+static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static void leave_menu_mode(int reset_selection);
 
@@ -173,6 +174,8 @@ static const cmd_add_t commands[] = {
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "exit",             .abbr = "exi",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "nohlsearch",       .abbr = "noh",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = nohlsearch_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "xit",              .abbr = "x",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -892,6 +895,14 @@ goto_cmd(const cmd_info_t *cmd_info)
 	clean_menu_position(menu);
 	move_to_menu_pos(cmd_info->end, menu);
 	wrefresh(menu_win);
+	return 0;
+}
+
+/* Disables highlight of search result matches. */
+static int
+nohlsearch_cmd(const cmd_info_t *cmd_info)
+{
+	menus_reset_search_highlight(menu);
 	return 0;
 }
 
