@@ -2624,7 +2624,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 		{
 			if(curr_stats.load_stage >= 3 && pane_in_dir(curr_view, expanded_path))
 			{
-				file = curr_view->dir_entry[curr_view->list_pos].name;
+				file = get_current_file_name(curr_view);
 			}
 			else
 			{
