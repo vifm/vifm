@@ -1,3 +1,4 @@
+* Better to check for existance of $HOME.
 * On OpenBSD there might be issues with non-ascii characters.
 * Duplicate detection lags in custom views on :substitute.
 * :clone! is useless.

@@ -9,7 +9,6 @@ Basic things:
   * Remove trash option, since we have two commands for deletion.
   * Abort/retry/ignore kind of actions for i/o for 'syscalls'. (partially
     done)
-  * Search match highlight in menus.
   * Filtering in menus.
   * Process shell pause request for running in %s.
   * Responsive TUI during blocking operations.
@@ -49,7 +48,7 @@ Vi(m) specific features:
   * Completion of first argument for :map commands.
   * Make gU2U and similar commands work as in Vim.
   * Change file list filters to use fold levels.
-  * Quickfix list support
+  * Quickfix list support.
   * /, ?, n, N as selectors.
   * Fix '' to go back to all jumps G gg links (in one directory?).
   * Maybe make zf and zd more Vim-like.
