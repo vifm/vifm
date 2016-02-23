@@ -45,7 +45,11 @@ typedef struct menu_info
 	int backward_search; /* Search direction. */
 	/* Number of menu entries that actually match the regexp. */
 	int matching_entries;
-	int *matches;
+	/* Whether search highlight matches are currently highlighted. */
+	int search_highlight;
+	/* Start and end positions of search match.  If there is no match, values are
+	 * equal to -1. */
+	short int (*matches)[2];
 	char *regexp;
 	char *title;
 	char *args;
@@ -138,6 +142,9 @@ int search_menu_list(const char pattern[], menu_info *m);
 
 /* Prints results or error message about search operation to the user. */
 void menu_print_search_msg(const menu_info *m);
+
+/* Reset search highlight of a menu. */
+void menus_reset_search_highlight(menu_info *m);
 
 #endif /* VIFM__MENUS__MENUS_H__ */
 

@@ -1,5 +1,12 @@
 0.8.1a to current
 
+	Added highlighting of search matches in menus.
+
+	Added :noh[lsearch] command to menu mode.
+
+	Changed order of initialization to perform autocommands before startup
+	commands on launch.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
@@ -9,6 +16,8 @@
 	direction.
 
 	Fixed hanging on sudden terminal loss.  Thanks to aleksejrs.
+
+	Fixed crash on using extremely long function name.
 
 0.8.1 to 0.8.1a
 

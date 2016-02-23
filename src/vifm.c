@@ -259,10 +259,6 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 2;
 
-	exec_startup_commands(&vifm_args);
-	update_screen(UT_FULL);
-	modes_update();
-
 	/* Update histories of the views to ensure that their current directories,
 	 * which might have been set using command-line parameters, are stored in the
 	 * history.  This is not done automatically as history manipulation should be
@@ -271,11 +267,16 @@ main(int argc, char *argv[])
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
 
-	curr_stats.load_stage = 3;
-
 	/* Trigger auto-commands for initial directories. */
 	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
 	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
+
+	exec_startup_commands(&vifm_args);
+
+	update_screen(UT_FULL);
+	modes_update();
+
+	curr_stats.load_stage = 3;
 
 	event_loop(&quit);
 

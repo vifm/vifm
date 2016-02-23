@@ -279,7 +279,10 @@ char *
 get_current_file_name(FileView *view)
 {
 	if(view->list_pos == -1)
-		return "";
+	{
+		static char empty_string[1];
+		return empty_string;
+	}
 	return view->dir_entry[view->list_pos].name;
 }
 

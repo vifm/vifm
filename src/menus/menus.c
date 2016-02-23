@@ -61,10 +61,12 @@
 #include "../search.h"
 #include "../status.h"
 
-static void draw_menu_item(menu_info *m, char buf[], int off,
-		const col_attr_t *col);
+static void show_position_in_menu(const menu_info *m);
 static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(FileView *view, const char path[]);
+static void draw_menu_item(menu_info *m, int pos, int line, int clear);
+static void draw_search_match(char str[], int start, int end, int line,
+		int width, int attrs);
 static void normalize_top(menu_info *m);
 static void draw_menu_frame(const menu_info *m);
 static void output_handler(const char line[], void *arg);
@@ -76,15 +78,6 @@ static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
 static int navigate_to_match(menu_info *m, int pos);
 static int get_match_index(const menu_info *m);
-
-static void
-show_position_in_menu(menu_info *m)
-{
-	char pos_buf[POS_WIN_MIN_WIDTH + 1];
-	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
-
-	ui_ruler_set(pos_buf);
-}
 
 void
 remove_current_item(menu_info *m)
@@ -100,15 +93,15 @@ remove_current_item(menu_info *m)
 
 	if(m->matches != NULL)
 	{
-		if(m->matches[m->pos])
+		if(m->matches[m->pos][0] >= 0)
 		{
 			--m->matching_entries;
 		}
 		memmove(m->matches + m->pos, m->matches + m->pos + 1,
-				sizeof(int)*((m->len - 1) - m->pos));
+				sizeof(*m->matches)*((m->len - 1) - m->pos));
 	}
 
-	m->len--;
+	--m->len;
 	draw_menu(m);
 
 	move_to_menu_pos(m->pos, m);
@@ -117,52 +110,7 @@ remove_current_item(menu_info *m)
 void
 clean_menu_position(menu_info *m)
 {
-	int x, z;
-	int off = 0;
-	char *buf;
-	col_attr_t col;
-
-	x = (curr_stats.load_stage == 0) ? 100 : getmaxx(menu_win);
-	x += utf8_stro(m->items[m->pos]);
-
-	buf = malloc(x + 2);
-
-	/* TODO: check if this can ever be false. */
-	if(m->items[m->pos] != NULL)
-	{
-		z = m->hor_pos;
-		while(z-- > 0 && m->items[m->pos][off] != '\0')
-		{
-			size_t l = utf8_chrw(m->items[m->pos] + off);
-			off += l;
-			x -= l - 1;
-		}
-		snprintf(buf, x, " %s", m->items[m->pos] + off);
-	}
-	else
-	{
-		buf[0] = '\0';
-	}
-
-	for(z = 0; buf[z] != '\0'; z++)
-		if(buf[z] == '\t')
-			buf[z] = ' ';
-
-	for(z = strlen(buf); z < x; z++)
-		buf[z] = ' ';
-
-	buf[x] = ' ';
-	buf[x + 1] = '\0';
-
-	col = cfg.cs.color[WIN_COLOR];
-
-	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
-	{
-		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
-	}
-
-	draw_menu_item(m, buf, off, &col);
-	free(buf);
+	draw_menu_item(m, m->pos, m->current, 1);
 }
 
 void
@@ -176,6 +124,7 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->win_rows = getmaxy(menu_win);
 	m->backward_search = 0;
 	m->matching_entries = 0;
+	m->search_highlight = 1;
 	m->matches = NULL;
 	m->regexp = NULL;
 	m->title = title;
@@ -223,20 +172,17 @@ setup_menu(void)
 void
 move_to_menu_pos(int pos, menu_info *m)
 {
-	/* TODO: refactor this function move_to_menu_pos() */
-
-	int redraw = 0;
-	int x, z;
-	char *buf = NULL;
-	col_attr_t col;
-	int off = 0;
+	int redraw;
 
 	pos = MIN(m->len - 1, MAX(0, pos));
 	if(pos < 0)
+	{
 		return;
+	}
 
 	normalize_top(m);
 
+	redraw = 0;
 	if(pos > get_last_visible_line(m))
 	{
 		m->top = pos - (m->win_rows - 2 - 1);
@@ -266,85 +212,28 @@ move_to_menu_pos(int pos, menu_info *m)
 	}
 
 	m->current = 1 + (pos - m->top);
+	m->pos = pos;
 
 	if(redraw)
-		draw_menu(m);
-
-	x = (curr_stats.load_stage == 0) ? 100 : getmaxx(menu_win);
-	x += utf8_stro(m->items[pos]);
-	buf = malloc(x + 2);
-	if(buf == NULL)
-		return;
-	/* TODO: check if this can be false. */
-	if(m->items[pos] != NULL)
 	{
-		z = m->hor_pos;
-		while(z-- > 0 && m->items[pos][off] != '\0')
-		{
-			size_t l = utf8_chrw(m->items[pos] + off);
-			off += l;
-			x -= l - 1;
-		}
-
-		snprintf(buf, x, " %s", m->items[pos] + off);
+		draw_menu(m);
 	}
 	else
 	{
-		buf[0] = '\0';
+		draw_menu_item(m, m->pos, m->current, 0);
 	}
 
-	for(z = 0; buf[z] != '\0'; z++)
-		if(buf[z] == '\t')
-			buf[z] = ' ';
-
-	for(z = strlen(buf); z < x; z++)
-		buf[z] = ' ';
-
-	buf[x] = ' ';
-	buf[x + 1] = '\0';
-
-	col = cfg.cs.color[WIN_COLOR];
-
-	if(cfg.hl_search && m->matches != NULL && m->matches[pos])
-	{
-		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
-	}
-
-	mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
-	m->pos = pos;
-
-	draw_menu_item(m, buf, off, &col);
-	free(buf);
 	show_position_in_menu(m);
 }
 
-/* Draws single menu item at current position. */
+/* Displays current menu position on a ruler. */
 static void
-draw_menu_item(menu_info *m, char buf[], int off, const col_attr_t *col)
+show_position_in_menu(const menu_info *m)
 {
-	wattrset(menu_win, COLOR_PAIR(colmgr_get_pair(col->fg, col->bg)) | col->attr);
+	char pos_buf[POS_WIN_MIN_WIDTH + 1];
+	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
 
-	checked_wmove(menu_win, m->current, 1);
-	if(utf8_strsw(m->items[m->pos] + off) > (size_t)(getmaxx(menu_win) - 4))
-	{
-		size_t len = utf8_nstrsnlen(buf, getmaxx(menu_win) - 3 - 4 + 1);
-		memset(buf + len, ' ', strlen(buf) - len);
-		if(strlen(buf) > len + 3)
-		{
-			buf[len + 3] = '\0';
-		}
-		wprint(menu_win, buf);
-		mvwaddstr(menu_win, m->current, getmaxx(menu_win) - 5, "...");
-	}
-	else
-	{
-		size_t len = utf8_nstrsnlen(buf, getmaxx(menu_win) - 4 + 1);
-		buf[len] = '\0';
-		wprint(menu_win, buf);
-	}
-	waddstr(menu_win, " ");
-
-	wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col->fg, col->bg)) | col->attr);
+	ui_ruler_set(pos_buf);
 }
 
 void
@@ -461,76 +350,142 @@ goto_selected_directory(FileView *view, const char path[])
 void
 draw_menu(menu_info *m)
 {
-	int i;
-	int win_len;
-	int x, y;
-
-	getmaxyx(menu_win, y, x);
-	win_len = x;
-	werase(menu_win);
+	int i, pos;
+	const int y = getmaxy(menu_win);
 
 	normalize_top(m);
 
-	x = m->top;
-
+	werase(menu_win);
 	draw_menu_frame(m);
 
-	for(i = 1; x < m->len; ++i, ++x)
+	for(i = 0, pos = m->top; i < y - 2 && pos < m->len; ++i, ++pos)
 	{
-		int z, off;
-		char *buf;
-		char *ptr = NULL;
-		col_attr_t col;
+		draw_menu_item(m, pos, i + 1, 0);
+	}
+}
 
-		chomp(m->items[x]);
-		if((ptr = strchr(m->items[x], '\n')) || (ptr = strchr(m->items[x], '\r')))
-			*ptr = '\0';
+/* Draws single menu item at position specified by line argument.  Non-zero
+ * clear argument suppresses drawing current items in different color. */
+static void
+draw_menu_item(menu_info *m, int pos, int line, int clear)
+{
+	int i;
+	int off;
+	char *item_tail;
+	const int width = (curr_stats.load_stage == 0) ? 100 : getmaxx(menu_win) - 2;
 
-		col = cfg.cs.color[WIN_COLOR];
+	/* Calculate color for the line. */
+	int attrs;
+	col_attr_t col = cfg.cs.color[WIN_COLOR];
+	if(cfg.hl_search && m->search_highlight &&
+			m->matches != NULL && m->matches[pos][0] >= 0)
+	{
+		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
+	}
+	if(!clear && pos == m->pos)
+	{
+		mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
+	}
+	attrs = COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 
-		if(cfg.hl_search && m->matches != NULL && m->matches[x])
+	/* Calculate offset of m->hor_pos's character in item text. */
+	off = 0;
+	i = m->hor_pos;
+	while(i-- > 0 && m->items[pos][off] != '\0')
+	{
+		off += utf8_chrw(m->items[pos] + off);
+	}
+
+	item_tail = strdup(m->items[pos] + off);
+	replace_char(item_tail, '\t', ' ');
+
+	wattron(menu_win, attrs);
+
+	/* Clear the area. */
+	checked_wmove(menu_win, line, 1);
+	if(curr_stats.load_stage != 0)
+	{
+		wprintw(menu_win, "%*s", width, "");
+	}
+
+	/* Draw visible part of item. */
+	checked_wmove(menu_win, line, 2);
+	if(utf8_strsw(item_tail) > (size_t)(width - 2))
+	{
+		void *p;
+		const size_t len = utf8_nstrsnlen(item_tail, width - 3 - 2 + 1);
+		memset(item_tail + len, ' ', strlen(item_tail) - len);
+		p = realloc(item_tail, len + 4);
+		if(p != NULL)
 		{
-			mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
+			item_tail = p;
+			strcpy(item_tail + len - 1, "...");
+		}
+		wprint(menu_win, item_tail);
+	}
+	else
+	{
+		const size_t len = utf8_nstrsnlen(item_tail, width - 2 + 1);
+		item_tail[len] = '\0';
+		wprint(menu_win, item_tail);
+	}
+
+	wattroff(menu_win, attrs);
+
+	if(m->search_highlight && m->matches != NULL && m->matches[pos][0] >= 0)
+	{
+		draw_search_match(item_tail, m->matches[pos][0] - m->hor_pos,
+				m->matches[pos][1] - m->hor_pos, line, width, attrs);
+	}
+
+	free(item_tail);
+}
+
+/* Draws search match highlight on the element. */
+static void
+draw_search_match(char str[], int start, int end, int line, int width,
+		int attrs)
+{
+	const int len = strlen(str);
+
+	if(end <= 0)
+	{
+		/* Match is completely at the left. */
+
+		checked_wmove(menu_win, line, 2);
+		wprinta(menu_win, "<<<", attrs ^ A_REVERSE);
+	}
+	else if(start >= len)
+	{
+		/* Match is completely at the right. */
+
+		checked_wmove(menu_win, line, width - 3);
+		wprinta(menu_win, ">>>", attrs ^ A_REVERSE);
+	}
+	else
+	{
+		/* Match is at least partially visible. */
+
+		char c;
+		int match_start;
+
+		if(start < 0)
+		{
+			start = 0;
+		}
+		if(end < len)
+		{
+			str[end] = '\0';
 		}
 
-		wattron(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+		/* Calculate number of screen characters before the match. */
+		c = str[start];
+		str[start] = '\0';
+		match_start = utf8_strsw(str);
+		str[start] = c;
 
-		z = m->hor_pos;
-		off = 0;
-		while(z-- > 0 && m->items[x][off] != '\0')
-		{
-			size_t l = utf8_chrw(m->items[x] + off);
-			off += l;
-		}
-
-		buf = strdup(m->items[x] + off);
-		for(z = 0; buf[z] != '\0'; z++)
-			if(buf[z] == '\t')
-				buf[z] = ' ';
-
-		checked_wmove(menu_win, i, 2);
-		if(utf8_strsw(buf) > (size_t)(win_len - 4))
-		{
-			size_t len = utf8_nstrsnlen(buf, win_len - 3 - 4);
-			memset(buf + len, ' ', strlen(buf) - len);
-			buf[len + 3] = '\0';
-			wprint(menu_win, buf);
-			mvwaddstr(menu_win, i, win_len - 5, "...");
-		}
-		else
-		{
-			const size_t len = utf8_nstrsnlen(buf, win_len - 4);
-			buf[len] = '\0';
-			wprint(menu_win, buf);
-		}
-		waddstr(menu_win, " ");
-
-		free(buf);
-
-		wattroff(menu_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
-
-		if(i + 3 > y)
-			break;
+		checked_wmove(menu_win, line, 2 + match_start);
+		wprinta(menu_win, str + start, attrs ^ (A_REVERSE | A_UNDERLINE));
 	}
 }
 
@@ -825,6 +780,8 @@ search_menu_list(const char pattern[], menu_info *m)
 
 	if(pattern != NULL)
 	{
+		/* Reactivate match highlighting on search. */
+		m->search_highlight = 1;
 		replace_string(&m->regexp, pattern);
 		if(search_menu(m, m->pos) != 0)
 		{
@@ -861,10 +818,10 @@ search_menu(menu_info *m, int start_pos)
 
 	if(m->matches == NULL)
 	{
-		m->matches = reallocarray(NULL, m->len, sizeof(int));
+		m->matches = reallocarray(NULL, m->len, sizeof(*m->matches));
 	}
 
-	memset(m->matches, 0, sizeof(int)*m->len);
+	memset(m->matches, -1, 2*sizeof(**m->matches)*m->len);
 	m->matching_entries = 0;
 
 	if(m->regexp[0] == '\0')
@@ -883,9 +840,12 @@ search_menu(menu_info *m, int start_pos)
 
 	for(i = 0; i < m->len; ++i)
 	{
-		if(regexec(&re, m->items[i], 0, NULL, 0) == 0)
+		regmatch_t matches[1];
+		if(regexec(&re, m->items[i], 1, matches, 0) == 0)
 		{
-			m->matches[i] = 1;
+			m->matches[i][0] = matches[0].rm_so;
+			m->matches[i][1] = matches[0].rm_eo;
+
 			++m->matching_entries;
 		}
 	}
@@ -904,7 +864,7 @@ search_menu_forwards(menu_info *m, int start_pos)
 
 	for(i = 0; i < m->len; ++i)
 	{
-		if(!m->matches[i])
+		if(m->matches[i][0] < 0)
 		{
 			continue;
 		}
@@ -939,7 +899,7 @@ search_menu_backwards(menu_info *m, int start_pos)
 
 	for(i = m->len - 1; i > -1; --i)
 	{
-		if(!m->matches[i])
+		if(m->matches[i][0] < 0)
 		{
 			continue;
 		}
@@ -971,8 +931,18 @@ navigate_to_match(menu_info *m, int pos)
 {
 	if(pos > -1)
 	{
-		clean_menu_position(m);
-		move_to_menu_pos(pos, m);
+		if(!m->search_highlight)
+		{
+			/* Might need to highlight other items, so redraw whole menu. */
+			m->search_highlight = 1;
+			m->pos = pos;
+			draw_menu(m);
+		}
+		else
+		{
+			clean_menu_position(m);
+			move_to_menu_pos(pos, m);
+		}
 		menu_print_search_msg(m);
 	}
 	else
@@ -1030,17 +1000,24 @@ get_match_index(const menu_info *m)
 {
 	int n, i;
 
-	n = (m->matches[0] ? 1 : 0);
+	n = (m->matches[0][0] >= 0 ? 1 : 0);
 	i = 0;
 	while(i++ < m->pos)
 	{
-		if(m->matches[i])
+		if(m->matches[i][0] >= 0)
 		{
 			++n;
 		}
 	}
 
 	return n;
+}
+
+void
+menus_reset_search_highlight(menu_info *m)
+{
+	m->search_highlight = 0;
+	redraw_menu(m);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
