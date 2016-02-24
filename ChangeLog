@@ -7,6 +7,8 @@
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
+	Do not reset completion on terminal resize.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
