@@ -49,6 +49,7 @@
 #include "int/term_title.h"
 #include "int/vim.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "modes/cmdline.h"
 #include "modes/modes.h"
 #include "modes/view.h"
 #include "ui/cancellation.h"
@@ -180,7 +181,7 @@ main(int argc, char *argv[])
 
 	init_background();
 
-	init_fileops();
+	init_fileops(&enter_prompt_mode, &prompt_msg_custom);
 
 	set_view_path(&lwin, vifm_args.lwin_path);
 	set_view_path(&rwin, vifm_args.rwin_path);

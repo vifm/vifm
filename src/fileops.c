@@ -47,7 +47,6 @@
 #include "io/ioeta.h"
 #include "io/ionotif.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "modes/cmdline.h"
 #include "modes/modes.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
@@ -261,9 +260,16 @@ static struct
 }
 put_confirm;
 
+/* Filename editing function. */
+static line_prompt_func line_prompt;
+/* Function to choose from one of options. */
+static options_prompt_func options_prompt;
+
 void
-init_fileops(void)
+init_fileops(line_prompt_func line_func, options_prompt_func options_func)
 {
+	line_prompt = line_func;
+	options_prompt = options_func;
 	ionotif_register(&io_progress_changed);
 }
 
@@ -946,8 +952,8 @@ rename_current_file(FileView *view, int name_only)
 	}
 
 	clean_selected_files(view);
-	enter_prompt_mode("New name: ", filename, rename_file_cb,
-			complete_filename_only, 1);
+	line_prompt("New name: ", filename, rename_file_cb, complete_filename_only,
+			1);
 }
 
 TSTATIC int
@@ -1563,13 +1569,13 @@ void
 change_owner(void)
 {
 #ifndef _WIN32
-	complete_cmd_func complete_func = &complete_owner;
+	fo_complete_cmd_func complete_func = &complete_owner;
 #else
-	complete_cmd_func complete_func = NULL;
+	fo_complete_cmd_func complete_func = NULL;
 #endif
 
 	mark_selection_or_current(curr_view);
-	enter_prompt_mode("New owner: ", "", &change_owner_cb, complete_func, 0);
+	line_prompt("New owner: ", "", &change_owner_cb, complete_func, 0);
 }
 
 #ifndef _WIN32
@@ -1629,13 +1635,13 @@ void
 change_group(void)
 {
 #ifndef _WIN32
-	complete_cmd_func complete_func = &complete_group;
+	fo_complete_cmd_func complete_func = &complete_group;
 #else
-	complete_cmd_func complete_func = NULL;
+	fo_complete_cmd_func complete_func = NULL;
 #endif
 
 	mark_selection_or_current(curr_view);
-	enter_prompt_mode("New group: ", "", &change_group_cb, complete_func, 0);
+	line_prompt("New group: ", "", &change_group_cb, complete_func, 0);
 }
 
 #ifndef _WIN32
@@ -1723,8 +1729,7 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	enter_prompt_mode("Link target: ", linkto, &change_link_cb,
-			&complete_filename, 0);
+	line_prompt("Link target: ", linkto, &change_link_cb, &complete_filename, 0);
 	return 0;
 }
 
@@ -1742,7 +1747,7 @@ prompt_dest_name(const char *src_name)
 	char prompt[128 + PATH_MAX];
 
 	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
-	enter_prompt_mode(prompt, src_name, put_confirm_cb, NULL, 0);
+	line_prompt(prompt, src_name, put_confirm_cb, NULL, 0);
 }
 
 /* Merges src into dst.  Returns zero on success, otherwise non-zero is
@@ -1900,7 +1905,7 @@ prompt_what_to_do(const char fname[])
 	modes_update();
 
 	snprintf(msg, sizeof(msg), "Name conflict for %s.  What to do?", fname);
-	response = prompt_msg_custom("File Conflict", msg, responses);
+	response = options_prompt("File Conflict", msg, responses);
 	handle_prompt_response(fname, response);
 }
 

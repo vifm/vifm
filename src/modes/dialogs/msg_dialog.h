@@ -25,7 +25,7 @@
 #include <stdio.h> /* FILE */
 
 /* Definition of a dialog option. */
-typedef struct
+typedef struct response_variant
 {
 	char key;          /* Corresponding key. */
 	const char *descr; /* Description to be displayed. */
