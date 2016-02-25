@@ -47,7 +47,6 @@
 #include "io/ioeta.h"
 #include "io/ionotif.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "modes/cmdline.h"
 #include "modes/modes.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
@@ -187,6 +186,7 @@ static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char base_dir[], const char target_dir[]);
 static int put_files_i(FileView *view, int start);
+static int put_next(int force);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
 static int rename_marked(FileView *view, const char desc[], const char lhs[],
@@ -244,12 +244,11 @@ static char rename_file_ext[NAME_MAX];
  * the process. */
 static struct
 {
-	/* TODO: give some fields of this structure normal names (not "x" and "y"). */
 	reg_t *reg;        /* Register used for the operation. */
 	FileView *view;    /* View in which operation takes place. */
 	CopyMoveLikeOp op; /* Type of current operation. */
-	int x;             /* Index of the next file of the register to process. */
-	int y;             /* Number of successfully processed files. */
+	int index;         /* Index of the next file of the register to process. */
+	int processed;     /* Number of successfully processed files. */
 	int skip_all;      /* Skip all conflicting files/directories. */
 	int overwrite_all; /* Overwrite all future conflicting files/directories. */
 	int append;        /* Whether we're appending ending of a file or not. */
@@ -257,12 +256,20 @@ static struct
 	int merge;         /* Merge conflicting directory once. */
 	int merge_all;     /* Merge all conflicting directories. */
 	ops_t *ops;        /* Currently running operation. */
+	char *dest_name;   /* Name of destination file. */
 }
 put_confirm;
 
+/* Filename editing function. */
+static line_prompt_func line_prompt;
+/* Function to choose from one of options. */
+static options_prompt_func options_prompt;
+
 void
-init_fileops(void)
+init_fileops(line_prompt_func line_func, options_prompt_func options_func)
 {
+	line_prompt = line_func;
+	options_prompt = options_func;
 	ionotif_register(&io_progress_changed);
 }
 
@@ -945,8 +952,8 @@ rename_current_file(FileView *view, int name_only)
 	}
 
 	clean_selected_files(view);
-	enter_prompt_mode("New name: ", filename, rename_file_cb,
-			complete_filename_only, 1);
+	line_prompt("New name: ", filename, rename_file_cb, complete_filename_only,
+			1);
 }
 
 TSTATIC int
@@ -1562,13 +1569,13 @@ void
 change_owner(void)
 {
 #ifndef _WIN32
-	complete_cmd_func complete_func = &complete_owner;
+	fo_complete_cmd_func complete_func = &complete_owner;
 #else
-	complete_cmd_func complete_func = NULL;
+	fo_complete_cmd_func complete_func = NULL;
 #endif
 
 	mark_selection_or_current(curr_view);
-	enter_prompt_mode("New owner: ", "", &change_owner_cb, complete_func, 0);
+	line_prompt("New owner: ", "", &change_owner_cb, complete_func, 0);
 }
 
 #ifndef _WIN32
@@ -1628,13 +1635,13 @@ void
 change_group(void)
 {
 #ifndef _WIN32
-	complete_cmd_func complete_func = &complete_group;
+	fo_complete_cmd_func complete_func = &complete_group;
 #else
-	complete_cmd_func complete_func = NULL;
+	fo_complete_cmd_func complete_func = NULL;
 #endif
 
 	mark_selection_or_current(curr_view);
-	enter_prompt_mode("New group: ", "", &change_group_cb, complete_func, 0);
+	line_prompt("New group: ", "", &change_group_cb, complete_func, 0);
 }
 
 #ifndef _WIN32
@@ -1722,8 +1729,7 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	enter_prompt_mode("Link target: ", linkto, &change_link_cb,
-			&complete_filename, 0);
+	line_prompt("Link target: ", linkto, &change_link_cb, &complete_filename, 0);
 	return 0;
 }
 
@@ -1741,199 +1747,7 @@ prompt_dest_name(const char *src_name)
 	char prompt[128 + PATH_MAX];
 
 	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
-	enter_prompt_mode(prompt, src_name, put_confirm_cb, NULL, 0);
-}
-
-/* The force argument enables overwriting/replacing/merging.  Returns 0 on
- * success, otherwise non-zero is returned. */
-static int
-put_next(const char dest_name[], int force)
-{
-	char *filename;
-	struct stat src_st;
-	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
-	int from_trash;
-	int op;
-	int move;
-	int success;
-	int merge;
-
-	/* TODO: refactor this function (put_next()) */
-
-	if(ui_cancellation_requested())
-	{
-		return -1;
-	}
-
-	force = force || put_confirm.overwrite_all || put_confirm.merge_all;
-	merge = put_confirm.merge || put_confirm.merge_all;
-
-	filename = put_confirm.reg->files[put_confirm.x];
-	chosp(filename);
-	if(os_lstat(filename, &src_st) != 0)
-	{
-		/* File isn't there, assume that it's fine and don't error in this case. */
-		return 0;
-	}
-
-	from_trash = is_under_trash(filename);
-	move = from_trash || put_confirm.op == CMLO_MOVE;
-
-	copy_str(src_buf, sizeof(src_buf), filename);
-
-	if(dest_name[0] == '\0')
-	{
-		if(from_trash)
-		{
-			dest_name = get_real_name_from_trash_name(src_buf);
-		}
-		else
-		{
-			dest_name = find_slashr(src_buf) + 1;
-		}
-	}
-
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
-			dest_name);
-	chosp(dst_buf);
-
-	if(!put_confirm.append && path_exists(dst_buf, DEREF))
-	{
-		if(force)
-		{
-			struct stat dst_st;
-
-			if(paths_are_equal(src_buf, dst_buf))
-			{
-				/* Skip if destination matches source. */
-				return 0;
-			}
-
-			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
-					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
-			{
-				if(perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
-							NULL) != 0)
-				{
-					return 0;
-				}
-
-				/* Schedule view update to reflect changes in UI. */
-				ui_view_schedule_reload(put_confirm.view);
-			}
-			else if(!cfg.use_system_calls && get_env_type() == ET_UNIX)
-			{
-				remove_last_path_component(dst_buf);
-			}
-		}
-		else if(put_confirm.skip_all)
-		{
-			return 0;
-		}
-		else
-		{
-			struct stat dst_st;
-			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
-					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
-			prompt_what_to_do(dest_name);
-			return 1;
-		}
-	}
-
-	if(put_confirm.op == CMLO_LINK_REL || put_confirm.op == CMLO_LINK_ABS)
-	{
-		op = OP_SYMLINK;
-		if(put_confirm.op == CMLO_LINK_REL)
-		{
-			copy_str(src_buf, sizeof(src_buf),
-					make_rel_path(filename, put_confirm.view->curr_dir));
-		}
-	}
-	else if(put_confirm.append)
-	{
-		op = move ? OP_MOVEA : OP_COPYA;
-		put_confirm.append = 0;
-	}
-	else if(move)
-	{
-		op = merge ? OP_MOVEF : OP_MOVE;
-	}
-	else
-	{
-		op = merge ? OP_COPYF : OP_COPY;
-	}
-
-	progress_msg("Putting files", put_confirm.x, put_confirm.reg->nfiles);
-
-	/* Merging directory on move requires special handling as it can't be done by
-	 * move operation itself. */
-	if(move && merge)
-	{
-		char dst_path[PATH_MAX];
-
-		success = 1;
-
-		cmd_group_continue();
-
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.view->curr_dir,
-				dest_name);
-
-		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
-		{
-			success = 0;
-		}
-
-		cmd_group_end();
-	}
-	else
-	{
-		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
-					dst_buf) == 0);
-	}
-
-	ops_advance(put_confirm.ops, success);
-
-	if(success)
-	{
-		char *msg, *p;
-		size_t len;
-
-		/* For some reason "mv" sometimes returns 0 on cancellation. */
-		if(!path_exists(dst_buf, DEREF))
-		{
-			return -1;
-		}
-
-		cmd_group_continue();
-
-		msg = replace_group_msg(NULL);
-		len = strlen(msg);
-		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
-		if(p == NULL)
-			len = COMMAND_GROUP_INFO_LEN;
-		else
-			msg = p;
-
-		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
-				(msg[len - 2] != ':') ? ", " : "", dest_name);
-		replace_group_msg(msg);
-		free(msg);
-
-		if(!(move && merge))
-		{
-			add_operation(op, NULL, NULL, src_buf, dst_buf);
-		}
-
-		cmd_group_end();
-		put_confirm.y++;
-		if(move)
-		{
-			free(put_confirm.reg->files[put_confirm.x]);
-			put_confirm.reg->files[put_confirm.x] = NULL;
-		}
-	}
-
-	return 0;
+	line_prompt(prompt, src_name, put_confirm_cb, NULL, 0);
 }
 
 /* Merges src into dst.  Returns zero on success, otherwise non-zero is
@@ -2016,9 +1830,20 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 static void
 put_confirm_cb(const char dest_name[])
 {
-	if(!is_null_or_empty(dest_name) && put_next(dest_name, 0) == 0)
+	if(is_null_or_empty(dest_name))
 	{
-		put_confirm.x++;
+		return;
+	}
+
+	if(replace_string(&put_confirm.dest_name, dest_name) != 0)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	if(put_next(0) == 0)
+	{
+		++put_confirm.index;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 }
@@ -2027,9 +1852,9 @@ put_confirm_cb(const char dest_name[])
 static void
 put_continue(int force)
 {
-	if(put_next("", force) == 0)
+	if(put_next(force) == 0)
 	{
-		++put_confirm.x;
+		++put_confirm.index;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 }
@@ -2080,7 +1905,7 @@ prompt_what_to_do(const char fname[])
 	modes_update();
 
 	snprintf(msg, sizeof(msg), "Name conflict for %s.  What to do?", fname);
-	response = prompt_msg_custom("File Conflict", msg, responses);
+	response = options_prompt("File Conflict", msg, responses);
 	handle_prompt_response(fname, response);
 }
 
@@ -2099,7 +1924,7 @@ handle_prompt_response(const char fname[], char response)
 			put_confirm.skip_all = 1;
 		}
 
-		put_confirm.x++;
+		++put_confirm.index;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 	else if(response == 'o')
@@ -2631,6 +2456,7 @@ static void
 reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
+	free(put_confirm.dest_name);
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
 	put_confirm.ops = get_ops(main_op, descr, base_dir, target_dir);
@@ -2673,9 +2499,13 @@ put_files_i(FileView *view, int start)
 
 	ui_cancellation_reset();
 
-	while(put_confirm.x < put_confirm.reg->nfiles)
+	while(put_confirm.index < put_confirm.reg->nfiles)
 	{
-		const int put_result = put_next("", 0);
+		int put_result;
+
+		update_string(&put_confirm.dest_name, NULL);
+
+		put_result = put_next(0);
 		if(put_result > 0)
 		{
 			/* In this case put_next() takes care of interacting with a user. */
@@ -2683,22 +2513,215 @@ put_files_i(FileView *view, int start)
 		}
 		else if(put_result < 0)
 		{
-			status_bar_messagef("%d file%s inserted%s", put_confirm.y,
-					(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
+			status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+					(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
 			return 1;
 		}
-		put_confirm.x++;
+		++put_confirm.index;
 	}
 
 	regs_pack(put_confirm.reg->name);
 
-	status_bar_messagef("%d file%s inserted%s", put_confirm.y,
-			(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
+	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+			(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
 
 	free_ops(put_confirm.ops);
 	ui_view_schedule_reload(put_confirm.view);
 
 	return 1;
+}
+
+/* The force argument enables overwriting/replacing/merging.  Returns 0 on
+ * success, otherwise non-zero is returned. */
+static int
+put_next(int force)
+{
+	char *filename;
+	const char *dest_name;
+	struct stat src_st;
+	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
+	int from_trash;
+	int op;
+	int move;
+	int success;
+	int merge;
+
+	/* TODO: refactor this function (put_next()) */
+
+	if(ui_cancellation_requested())
+	{
+		return -1;
+	}
+
+	force = force || put_confirm.overwrite_all || put_confirm.merge_all;
+	merge = put_confirm.merge || put_confirm.merge_all;
+
+	filename = put_confirm.reg->files[put_confirm.index];
+	chosp(filename);
+	if(os_lstat(filename, &src_st) != 0)
+	{
+		/* File isn't there, assume that it's fine and don't error in this case. */
+		return 0;
+	}
+
+	from_trash = is_under_trash(filename);
+	move = from_trash || put_confirm.op == CMLO_MOVE;
+
+	copy_str(src_buf, sizeof(src_buf), filename);
+
+	dest_name = put_confirm.dest_name;
+	if(dest_name == NULL)
+	{
+		if(from_trash)
+		{
+			dest_name = get_real_name_from_trash_name(src_buf);
+		}
+		else
+		{
+			dest_name = find_slashr(src_buf) + 1;
+		}
+	}
+
+	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
+			dest_name);
+	chosp(dst_buf);
+
+	if(!put_confirm.append && path_exists(dst_buf, DEREF))
+	{
+		if(force)
+		{
+			struct stat dst_st;
+
+			if(paths_are_equal(src_buf, dst_buf))
+			{
+				/* Skip if destination matches source. */
+				return 0;
+			}
+
+			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
+					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
+			{
+				if(perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
+							NULL) != 0)
+				{
+					return 0;
+				}
+
+				/* Schedule view update to reflect changes in UI. */
+				ui_view_schedule_reload(put_confirm.view);
+			}
+			else if(!cfg.use_system_calls && get_env_type() == ET_UNIX)
+			{
+				remove_last_path_component(dst_buf);
+			}
+		}
+		else if(put_confirm.skip_all)
+		{
+			return 0;
+		}
+		else
+		{
+			struct stat dst_st;
+			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
+					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
+			prompt_what_to_do(dest_name);
+			return 1;
+		}
+	}
+
+	if(put_confirm.op == CMLO_LINK_REL || put_confirm.op == CMLO_LINK_ABS)
+	{
+		op = OP_SYMLINK;
+		if(put_confirm.op == CMLO_LINK_REL)
+		{
+			copy_str(src_buf, sizeof(src_buf),
+					make_rel_path(filename, put_confirm.view->curr_dir));
+		}
+	}
+	else if(put_confirm.append)
+	{
+		op = move ? OP_MOVEA : OP_COPYA;
+		put_confirm.append = 0;
+	}
+	else if(move)
+	{
+		op = merge ? OP_MOVEF : OP_MOVE;
+	}
+	else
+	{
+		op = merge ? OP_COPYF : OP_COPY;
+	}
+
+	progress_msg("Putting files", put_confirm.index, put_confirm.reg->nfiles);
+
+	/* Merging directory on move requires special handling as it can't be done by
+	 * move operation itself. */
+	if(move && merge)
+	{
+		char dst_path[PATH_MAX];
+
+		success = 1;
+
+		cmd_group_continue();
+
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.view->curr_dir,
+				dest_name);
+
+		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
+		{
+			success = 0;
+		}
+
+		cmd_group_end();
+	}
+	else
+	{
+		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
+					dst_buf) == 0);
+	}
+
+	ops_advance(put_confirm.ops, success);
+
+	if(success)
+	{
+		char *msg, *p;
+		size_t len;
+
+		/* For some reason "mv" sometimes returns 0 on cancellation. */
+		if(!path_exists(dst_buf, DEREF))
+		{
+			return -1;
+		}
+
+		cmd_group_continue();
+
+		msg = replace_group_msg(NULL);
+		len = strlen(msg);
+		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
+		if(p == NULL)
+			len = COMMAND_GROUP_INFO_LEN;
+		else
+			msg = p;
+
+		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
+				(msg[len - 2] != ':') ? ", " : "", dest_name);
+		replace_group_msg(msg);
+		free(msg);
+
+		if(!(move && merge))
+		{
+			add_operation(op, NULL, NULL, src_buf, dst_buf);
+		}
+
+		cmd_group_end();
+		++put_confirm.processed;
+		if(move)
+		{
+			update_string(&put_confirm.reg->files[put_confirm.index], NULL);
+		}
+	}
+
+	return 0;
 }
 
 /* off can be NULL */

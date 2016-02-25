@@ -318,11 +318,16 @@ def_handler(wchar_t key)
 		return 0;
 	}
 
+	/* There is no need for resetting completion because of terminal dimensions
+	 * change (note also that iswprint(KEY_RESIZE) might return false). */
+	if(key == KEY_RESIZE)
+	{
+		return 0;
+	}
+
 	stop_completion();
 
-	/* iswprint(KEY_RESIZE) can return true, but we really don't want to mess up
-	 * input because terminal dimensions changed. */
-	if(key != L'\r' && (!iswprint(key) || key == KEY_RESIZE))
+	if(key != L'\r' && !iswprint(key))
 	{
 		return 0;
 	}
