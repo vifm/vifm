@@ -245,12 +245,11 @@ static char rename_file_ext[NAME_MAX];
  * the process. */
 static struct
 {
-	/* TODO: give some fields of this structure normal names (not "y"). */
 	reg_t *reg;        /* Register used for the operation. */
 	FileView *view;    /* View in which operation takes place. */
 	CopyMoveLikeOp op; /* Type of current operation. */
 	int index;         /* Index of the next file of the register to process. */
-	int y;             /* Number of successfully processed files. */
+	int processed;     /* Number of successfully processed files. */
 	int skip_all;      /* Skip all conflicting files/directories. */
 	int overwrite_all; /* Overwrite all future conflicting files/directories. */
 	int append;        /* Whether we're appending ending of a file or not. */
@@ -2509,8 +2508,8 @@ put_files_i(FileView *view, int start)
 		}
 		else if(put_result < 0)
 		{
-			status_bar_messagef("%d file%s inserted%s", put_confirm.y,
-					(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
+			status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+					(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
 			return 1;
 		}
 		++put_confirm.index;
@@ -2518,8 +2517,8 @@ put_files_i(FileView *view, int start)
 
 	regs_pack(put_confirm.reg->name);
 
-	status_bar_messagef("%d file%s inserted%s", put_confirm.y,
-			(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
+	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+			(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
 
 	free_ops(put_confirm.ops);
 	ui_view_schedule_reload(put_confirm.view);
@@ -2710,7 +2709,7 @@ put_next(int force)
 		}
 
 		cmd_group_end();
-		put_confirm.y++;
+		++put_confirm.processed;
 		if(move)
 		{
 			update_string(&put_confirm.reg->files[put_confirm.index], NULL);
