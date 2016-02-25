@@ -245,11 +245,11 @@ static char rename_file_ext[NAME_MAX];
  * the process. */
 static struct
 {
-	/* TODO: give some fields of this structure normal names (not "x" and "y"). */
+	/* TODO: give some fields of this structure normal names (not "y"). */
 	reg_t *reg;        /* Register used for the operation. */
 	FileView *view;    /* View in which operation takes place. */
 	CopyMoveLikeOp op; /* Type of current operation. */
-	int x;             /* Index of the next file of the register to process. */
+	int index;         /* Index of the next file of the register to process. */
 	int y;             /* Number of successfully processed files. */
 	int skip_all;      /* Skip all conflicting files/directories. */
 	int overwrite_all; /* Overwrite all future conflicting files/directories. */
@@ -1839,7 +1839,7 @@ put_confirm_cb(const char dest_name[])
 
 	if(put_next(0) == 0)
 	{
-		++put_confirm.x;
+		++put_confirm.index;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 }
@@ -1850,7 +1850,7 @@ put_continue(int force)
 {
 	if(put_next(force) == 0)
 	{
-		++put_confirm.x;
+		++put_confirm.index;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 }
@@ -1920,7 +1920,7 @@ handle_prompt_response(const char fname[], char response)
 			put_confirm.skip_all = 1;
 		}
 
-		put_confirm.x++;
+		++put_confirm.index;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 	else if(response == 'o')
@@ -2495,7 +2495,7 @@ put_files_i(FileView *view, int start)
 
 	ui_cancellation_reset();
 
-	while(put_confirm.x < put_confirm.reg->nfiles)
+	while(put_confirm.index < put_confirm.reg->nfiles)
 	{
 		int put_result;
 
@@ -2513,7 +2513,7 @@ put_files_i(FileView *view, int start)
 					(put_confirm.y == 1) ? "" : "s", get_cancellation_suffix());
 			return 1;
 		}
-		put_confirm.x++;
+		++put_confirm.index;
 	}
 
 	regs_pack(put_confirm.reg->name);
@@ -2552,7 +2552,7 @@ put_next(int force)
 	force = force || put_confirm.overwrite_all || put_confirm.merge_all;
 	merge = put_confirm.merge || put_confirm.merge_all;
 
-	filename = put_confirm.reg->files[put_confirm.x];
+	filename = put_confirm.reg->files[put_confirm.index];
 	chosp(filename);
 	if(os_lstat(filename, &src_st) != 0)
 	{
@@ -2648,7 +2648,7 @@ put_next(int force)
 		op = merge ? OP_COPYF : OP_COPY;
 	}
 
-	progress_msg("Putting files", put_confirm.x, put_confirm.reg->nfiles);
+	progress_msg("Putting files", put_confirm.index, put_confirm.reg->nfiles);
 
 	/* Merging directory on move requires special handling as it can't be done by
 	 * move operation itself. */
@@ -2713,8 +2713,7 @@ put_next(int force)
 		put_confirm.y++;
 		if(move)
 		{
-			free(put_confirm.reg->files[put_confirm.x]);
-			put_confirm.reg->files[put_confirm.x] = NULL;
+			update_string(&put_confirm.reg->files[put_confirm.index], NULL);
 		}
 	}
 
