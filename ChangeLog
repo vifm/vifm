@@ -21,6 +21,9 @@
 
 	Fixed crash on using extremely long function name.
 
+	Fixed overwriting files after editing destination file name.  Thanks to
+	rbong.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.

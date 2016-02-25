@@ -257,6 +257,7 @@ static struct
 	int merge;         /* Merge conflicting directory once. */
 	int merge_all;     /* Merge all conflicting directories. */
 	ops_t *ops;        /* Currently running operation. */
+	char *dest_name;   /* Name of destination file. */
 }
 put_confirm;
 
@@ -1747,9 +1748,10 @@ prompt_dest_name(const char *src_name)
 /* The force argument enables overwriting/replacing/merging.  Returns 0 on
  * success, otherwise non-zero is returned. */
 static int
-put_next(const char dest_name[], int force)
+put_next(int force)
 {
 	char *filename;
+	const char *dest_name;
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
@@ -1781,7 +1783,8 @@ put_next(const char dest_name[], int force)
 
 	copy_str(src_buf, sizeof(src_buf), filename);
 
-	if(dest_name[0] == '\0')
+	dest_name = put_confirm.dest_name;
+	if(dest_name == NULL)
 	{
 		if(from_trash)
 		{
@@ -2016,9 +2019,20 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 static void
 put_confirm_cb(const char dest_name[])
 {
-	if(!is_null_or_empty(dest_name) && put_next(dest_name, 0) == 0)
+	if(is_null_or_empty(dest_name))
 	{
-		put_confirm.x++;
+		return;
+	}
+
+	if(replace_string(&put_confirm.dest_name, dest_name) != 0)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	if(put_next(0) == 0)
+	{
+		++put_confirm.x;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
 	}
 }
@@ -2027,7 +2041,7 @@ put_confirm_cb(const char dest_name[])
 static void
 put_continue(int force)
 {
-	if(put_next("", force) == 0)
+	if(put_next(force) == 0)
 	{
 		++put_confirm.x;
 		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
@@ -2631,6 +2645,7 @@ static void
 reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
+	free(put_confirm.dest_name);
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
 	put_confirm.ops = get_ops(main_op, descr, base_dir, target_dir);
@@ -2675,7 +2690,11 @@ put_files_i(FileView *view, int start)
 
 	while(put_confirm.x < put_confirm.reg->nfiles)
 	{
-		const int put_result = put_next("", 0);
+		int put_result;
+
+		update_string(&put_confirm.dest_name, NULL);
+
+		put_result = put_next(0);
 		if(put_result > 0)
 		{
 			/* In this case put_next() takes care of interacting with a user. */
