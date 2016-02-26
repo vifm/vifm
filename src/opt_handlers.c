@@ -187,6 +187,7 @@ static void vixcmd_handler(OPT_OP op, optval_t val);
 static void vifminfo_handler(OPT_OP op, optval_t val);
 static void vimhelp_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
+static void wildstyle_handler(OPT_OP op, optval_t val);
 static void wordchars_handler(OPT_OP op, optval_t val);
 static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
@@ -308,6 +309,13 @@ static const char *vifminfo_set[] = {
 	"phistory",
 	"fhistory",
 };
+
+/* Possible values of 'wildstyle'. */
+static const char *wildstyle_vals[] = {
+	"bar",
+	"popup",
+};
+ARRAY_GUARD(wildstyle_vals, 2);
 
 /* Empty value to satisfy default initializer. */
 static char empty_val[] = "";
@@ -538,6 +546,11 @@ options[] = {
 	{ "wildmenu", "wmnu",
 	  OPT_BOOL, 0, NULL, &wildmenu_handler, NULL,
 	  { .ref.bool_val = &cfg.wild_menu },
+	},
+	{ "wildstyle", "",
+	  OPT_ENUM, ARRAY_LEN(wildstyle_vals), wildstyle_vals, &wildstyle_handler,
+		NULL,
+	  { .ref.enum_item = &cfg.wild_popup },
 	},
 	{ "wordchars", "",
 	  OPT_STRLIST, 0, NULL, &wordchars_handler, NULL,
@@ -2288,6 +2301,14 @@ static void
 wildmenu_handler(OPT_OP op, optval_t val)
 {
 	cfg.wild_menu = val.bool_val;
+}
+
+/* Wild menu style, which defines how it's presented. */
+static void
+wildstyle_handler(OPT_OP op, optval_t val)
+{
+	/* There are only two possible values. */
+	cfg.wild_popup = (val.enum_item == 1);
 }
 
 /* Handles setting value of 'wordchars' by parsing list of ranges into character

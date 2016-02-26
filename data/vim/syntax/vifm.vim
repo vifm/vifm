@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: January 04, 2016
+" Last Change: February 26, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -123,7 +123,7 @@ syntax keyword vifmOption contained aproposprg autochpos cdpath cd chaselinks
 		\ sort sortgroups sortorder sortnumbers shell sh shortmess shm slowfs
 		\ smartcase scs statusline stl syscalls tabstop timefmt timeoutlen title tm
 		\ trash trashdir ts tuioptions to undolevels ul vicmd viewcolumns vifminfo
-		\ vimhelp vixcmd wildmenu wmnu wordchars wrap wrapscan ws
+		\ vimhelp vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nochaselinks

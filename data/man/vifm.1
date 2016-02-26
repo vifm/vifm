@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 10, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "February 26, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3951,6 +3951,15 @@ default: false
 .br
 Controls whether possible matches of completion will be shown above the command
 line.
+.TP
+.BI 'wildstyle'
+type: enumeration
+.br
+default: bar
+.br
+Picks presentation style of wild menu.  Possible values:
+ - bar   - one-line with left-to-right cursor
+ - popup - multi-line with top-to-bottom cursor
 .TP
 .BI 'wordchars'
 type: string list

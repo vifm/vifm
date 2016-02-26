@@ -141,6 +141,8 @@ static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void do_completion(void);
 static void draw_wild_menu(int op);
+static int draw_wild_bar(int *last_pos, int *pos, int *len);
+static int draw_wild_popup(int *last_pos, int *pos, int *len);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static int is_input_line_empty(void);
@@ -1016,9 +1018,8 @@ draw_wild_menu(int op)
 {
 	static int last_pos;
 
-	const char ** list = vle_compl_get_list();
 	int pos = vle_compl_get_pos();
-	int count = vle_compl_get_count() - 1;
+	const int count = vle_compl_get_count() - 1;
 	int i;
 	int len = getmaxx(stdscr);
 
@@ -1039,59 +1040,13 @@ draw_wild_menu(int op)
 		last_pos = 0;
 	if(last_pos == 0 && pos == count - 1)
 		last_pos = count;
-	if(pos < last_pos)
-	{
-		int l = len;
-		while(last_pos > 0 && l > 2)
-		{
-			last_pos--;
-			l -= strlen(list[last_pos]);
-			if(last_pos != 0)
-				l -= 2;
-		}
-		if(l < 2)
-			last_pos++;
-	}
 
 	werase(stat_win);
-	checked_wmove(stat_win, 0, 0);
 
-	for(i = last_pos; i < count && len > 0; i++)
-	{
-		len -= strlen(list[i]);
-		if(i != 0)
-			len -= 2;
+	i = cfg.wild_popup
+	  ? draw_wild_popup(&last_pos, &pos, &len)
+	  : draw_wild_bar(&last_pos, &pos, &len);
 
-		if(i == last_pos && last_pos > 0)
-		{
-			wprintw(stat_win, "< ");
-		}
-		else if(i > last_pos)
-		{
-			if(len < 2)
-			{
-				wprintw(stat_win, " >");
-				break;
-			}
-			wprintw(stat_win, "  ");
-		}
-
-		if(i == pos)
-		{
-			col_attr_t col;
-			col = cfg.cs.color[STATUS_LINE_COLOR];
-			mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-
-			wbkgdset(stat_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
-		}
-		wprint(stat_win, list[i]);
-		if(i == pos)
-		{
-			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
-					cfg.cs.color[STATUS_LINE_COLOR].attr);
-			pos = -pos;
-		}
-	}
 	if(pos > 0 && pos != count)
 	{
 		last_pos = pos;
@@ -1103,6 +1058,118 @@ draw_wild_menu(int op)
 	wrefresh(stat_win);
 
 	update_cursor();
+}
+
+/* Draws wild menu as a bar.  Returns index of the last displayed item. */
+static int
+draw_wild_bar(int *last_pos, int *pos, int *len)
+{
+	int i;
+
+	const char **const list = vle_compl_get_list();
+	const int count = vle_compl_get_count() - 1;
+
+	wresize(stat_win, 1, 0);
+	checked_wmove(stat_win, 0, 0);
+
+	if(*pos < *last_pos)
+	{
+		int l = *len;
+		while(*last_pos > 0 && l > 2)
+		{
+			--*last_pos;
+			l -= strlen(list[*last_pos]);
+			if(*last_pos != 0)
+				l -= 2;
+		}
+		if(l < 2)
+			++*last_pos;
+	}
+
+	for(i = *last_pos; i < count && *len > 0; ++i)
+	{
+		*len -= strlen(list[i]);
+		if(i != 0)
+			*len -= 2;
+
+		if(i == *last_pos && *last_pos > 0)
+		{
+			wprintw(stat_win, "< ");
+		}
+		else if(i > *last_pos)
+		{
+			if(*len < 2)
+			{
+				wprintw(stat_win, " >");
+				break;
+			}
+			wprintw(stat_win, "  ");
+		}
+
+		if(i == *pos)
+		{
+			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
+			mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
+
+			wbkgdset(stat_win,
+					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+		}
+		wprint(stat_win, list[i]);
+		if(i == *pos)
+		{
+			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
+					cfg.cs.color[STATUS_LINE_COLOR].attr);
+			*pos = -*pos;
+		}
+	}
+
+	return i;
+}
+
+/* Draws wild menu as a popup.  Returns index of the last displayed item. */
+static int
+draw_wild_popup(int *last_pos, int *pos, int *len)
+{
+	int i;
+	int j;
+
+	const char **const list = vle_compl_get_list();
+	const int count = vle_compl_get_count() - 1;
+	const int max_height = getmaxy(stdscr) - get_required_height() -
+		ui_stat_job_bar_height();
+	const int height = MIN(count, MIN(10, max_height));
+
+	if(*pos < *last_pos)
+	{
+		*last_pos = MAX(0, *last_pos - height);
+	}
+
+	wresize(stat_win, height, getmaxx(stdscr));
+	ui_stat_reposition(get_required_height());
+
+	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
+	{
+		checked_wmove(stat_win, j, 0);
+
+		if(i == *pos)
+		{
+			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
+			mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
+
+			wbkgdset(stat_win,
+					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+		}
+		wprint(stat_win, list[i]);
+		wclrtoeol(stat_win);
+		if(i == *pos)
+		{
+			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
+					cfg.cs.color[STATUS_LINE_COLOR].attr);
+			*pos = -*pos;
+		}
+	}
+
+	return i;
 }
 
 static void
@@ -2478,6 +2545,12 @@ stop_history_completion(void)
 	{
 		if(cfg.display_statusline)
 		{
+			if(cfg.wild_popup)
+			{
+				/* Multi-line popup could mess these up. */
+				ui_view_schedule_redraw(curr_view);
+				ui_view_schedule_redraw(other_view);
+			}
 			update_stat_window(curr_view);
 		}
 		else

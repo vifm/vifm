@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Feb 10
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Feb 26
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3303,6 +3303,15 @@ default: false
 
 Controls whether possible matches of completion will be shown above the
 command line.
+
+                                               *vifm-'wildstyle'*
+wildstyle
+type: enumeration
+default: bar
+
+Picks presentation style of wild menu.  Possible values:
+ - bar   - one-line with left-to-right cursor
+ - popup - multi-line with top-to-bottom cursor
 
                                                *vifm-'wordchars'*
 wordchars

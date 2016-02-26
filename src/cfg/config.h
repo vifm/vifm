@@ -109,7 +109,11 @@ typedef struct config_t
 	int follow_links; /* Follow links on l or Enter. */
 	int confirm; /* Ask user about permanent deletion of files. */
 	int fast_run;
+
+	/* Whether wild menu should be used. */
 	int wild_menu;
+	/* Whether wild menu should be a popup instead of a bar. */
+	int wild_popup;
 	int ignore_case;
 	int smart_case;
 	int hl_search;
