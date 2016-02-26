@@ -27,7 +27,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strcpy() strdup() strlen() */
+#include <string.h> /* memset() strcpy() strdup() strlen() */
 #include <stdio.h> /* FILE snprintf() */
 #include <wchar.h> /* _waccess() _wchmod() _wmkdir() _wrename() _wsystem() */
 
@@ -272,9 +272,24 @@ resolve_mount_points(const char path[])
 int
 os_stat(const char path[], struct stat *buf)
 {
+	struct _stat st;
 	wchar_t *const utf16_path = utf8_to_utf16(path);
-	const int result = _wstat(utf16_path, (struct _stat *)buf);
+	const int result = _wstat(utf16_path, &st);
 	free(utf16_path);
+
+	memset(buf, 0, sizeof(*buf));
+	buf->st_dev = st.st_dev;
+	buf->st_ino = st.st_ino;
+	buf->st_mode = st.st_mode;
+	buf->st_nlink = st.st_nlink;
+	buf->st_uid = st.st_uid;
+	buf->st_gid = st.st_gid;
+	buf->st_rdev = st.st_rdev;
+	buf->st_size = st.st_size;
+	buf->st_atime = st.st_atime;
+	buf->st_mtime = st.st_mtime;
+	buf->st_ctime = st.st_ctime;
+
 	return result;
 }
 
