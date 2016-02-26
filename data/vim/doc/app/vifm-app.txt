@@ -2643,7 +2643,7 @@ this option.  "../" disappears at the moment at least one file is created.
 
                                                *vifm-'dirsize'*
 dirsize
-type: enum
+type: enumeration
 default: size
 
 Controls how size of directories is displayed in file views.  The following
