@@ -621,9 +621,13 @@ redraw_cmdline(void)
 	{
 		update_screen(UT_FULL);
 		if(prev_mode == SORT_MODE)
+		{
 			redraw_sort_dialog();
+		}
 		else if(prev_mode == ATTR_MODE)
+		{
 			redraw_attr_dialog();
+		}
 	}
 
 	line_width = getmaxx(stdscr);

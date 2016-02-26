@@ -40,10 +40,11 @@ typedef enum
 }
 CmdLineSubmode;
 
-typedef void (*prompt_cb)(const char renponse[]);
+/* Callback for prompt input. */
+typedef void (*prompt_cb)(const char response[]);
 
 /* Custom prompt line completion function.  arg is user supplied value, which is
- * passed through. */
+ * passed through.  Should return completion offset. */
 typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 
 /* Initializes command-line mode. */
@@ -61,6 +62,7 @@ void enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[],
 void enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee);
 
+/* Redraws UI elements of the command-line mode. */
 void redraw_cmdline(void);
 
 #ifdef TEST
