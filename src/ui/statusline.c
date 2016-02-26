@@ -117,11 +117,6 @@ update_stat_window_old(FileView *view)
 	size_t print_width;
 	char *filename;
 
-	if(!cfg.display_statusline)
-	{
-		return;
-	}
-
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
 	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
