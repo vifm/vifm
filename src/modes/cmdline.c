@@ -1070,7 +1070,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 {
 	int i;
 
-	const char **const list = vle_compl_get_list();
+	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 
 	wresize(stat_win, 1, 0);
@@ -1082,7 +1082,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 		while(*last_pos > 0 && l > 2)
 		{
 			--*last_pos;
-			l -= strlen(list[*last_pos]);
+			l -= strlen(items[*last_pos].text);
 			if(*last_pos != 0)
 				l -= 2;
 		}
@@ -1092,7 +1092,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 
 	for(i = *last_pos; i < count && *len > 0; ++i)
 	{
-		*len -= strlen(list[i]);
+		*len -= strlen(items[i].text);
 		if(i != 0)
 			*len -= 2;
 
@@ -1118,7 +1118,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 			wbkgdset(stat_win,
 					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 		}
-		wprint(stat_win, list[i]);
+		wprint(stat_win, items[i].text);
 		if(i == *pos)
 		{
 			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
@@ -1137,7 +1137,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	int i;
 	int j;
 
-	const char **const list = vle_compl_get_list();
+	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 	const int max_height = getmaxy(stdscr) - get_required_height() -
 		ui_stat_job_bar_height();
@@ -1163,7 +1163,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 			wbkgdset(stat_win,
 					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 		}
-		wprint(stat_win, list[i]);
+		wprint(stat_win, items[i].text);
 		wclrtoeol(stat_win);
 		if(i == *pos)
 		{

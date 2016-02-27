@@ -34,7 +34,7 @@
  *   static DA_INSTANCE(array); */
 #define DA_INSTANCE(da) size_t da##_count__ = 0U
 
-/* Obtains lvalue of array size, it's type is size_t. */
+/* Obtains lvalue of array size, its type is size_t. */
 #define DA_SIZE(da) *(&da##_count__)
 
 /* Extends array capacity (not size) by at least one more element.  Returns
@@ -81,6 +81,32 @@
 			free(da); \
 			da = NULL; \
 		} \
+	} \
+	while(0)
+
+/* Removes all elements starting from and including the item. */
+#define DA_REMOVE_AFTER(da, item) \
+	do \
+	{ \
+		const typeof(da) it = item; \
+		assert(it >= da && "Wrong item pointer."); \
+		assert(it - da <= (ptrdiff_t)da##_count__ && "Wrong item pointer."); \
+		da##_count__ = it - da; \
+		if(da##_count__ == 0) \
+		{ \
+			free(da); \
+			da = NULL; \
+		} \
+	} \
+	while(0)
+
+/* Empties the array freeing allocated memory. */
+#define DA_REMOVE_ALL(da) \
+	do \
+	{ \
+		da##_count__ = 0; \
+		free(da); \
+		da = NULL; \
 	} \
 	while(0)
 

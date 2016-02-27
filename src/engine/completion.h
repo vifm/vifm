@@ -19,6 +19,14 @@
 #ifndef VIFM__ENGINE__COMPLETION_H__
 #define VIFM__ENGINE__COMPLETION_H__
 
+/* Single completion item. */
+typedef struct
+{
+	char *text;  /* Item text. */
+	char *descr; /* Description of the item. */
+}
+vle_compl_t;
+
 /* Match addition hook function signature.  Must return newly allocated
  * string. */
 typedef char * (*vle_compl_add_path_hook_f)(const char match[]);
@@ -65,7 +73,9 @@ int vle_compl_get_count(void);
 
 void vle_compl_set_order(int reversed);
 
-const char ** vle_compl_get_list(void);
+/* Retrieves list of completion items.  Returns the list of size
+ * vle_compl_get_count().  The array is managed by the unit. */
+const vle_compl_t * vle_compl_get_items(void);
 
 int vle_compl_get_pos(void);
 
