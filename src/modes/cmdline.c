@@ -52,6 +52,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
+#include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../cmd_completion.h"
 #include "../cmd_core.h"
@@ -143,6 +144,7 @@ static void do_completion(void);
 static void draw_wild_menu(int op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
 static int draw_wild_popup(int *last_pos, int *pos, int *len);
+static void draw_popup_line(const char item[], const char descr[]);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static int is_input_line_empty(void);
@@ -1153,8 +1155,6 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 
 	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
 	{
-		checked_wmove(stat_win, j, 0);
-
 		if(i == *pos)
 		{
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
@@ -1163,8 +1163,10 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 			wbkgdset(stat_win,
 					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 		}
-		wprint(stat_win, items[i].text);
-		wclrtoeol(stat_win);
+
+		checked_wmove(stat_win, j, 0);
+		draw_popup_line(items[i].text, items[i].descr);
+
 		if(i == *pos)
 		{
 			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
@@ -1174,6 +1176,34 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	}
 
 	return i;
+}
+
+/* Draws single wild popup line. */
+static void
+draw_popup_line(const char item[], const char descr[])
+{
+	char *left, *right, *line;
+	size_t width_left;
+
+	if(utf8_strsw(item) >= (size_t)getmaxx(stat_win))
+	{
+		char *const line = right_ellipsis(strdup(item), getmaxx(stat_win));
+		wprint(stat_win, line);
+		free(line);
+		return;
+	}
+
+	left = right_ellipsis(strdup(item), getmaxx(stat_win) - 3);
+	width_left = getmaxx(stat_win) - 2 - utf8_strsw(left);
+	right = right_ellipsis(strdup(descr), width_left);
+
+	line = format_str("%s  %*s", left, (int)width_left, right);
+	free(left);
+	free(right);
+
+	wprint(stat_win, line);
+
+	free(line);
 }
 
 static void
