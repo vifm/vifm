@@ -1260,8 +1260,8 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 		args = extract_option(args, buf, 0);
 		if(args == NULL || (*args == '\0' && *buf == '\0'))
 		{
-			/* Just exit on error or reaching comment. */
-			vle_compl_add_match(buf);
+			/* Just exit on error or reaching a comment. */
+			vle_compl_add_match(buf, "");
 			return;
 		}
 	}
@@ -1319,7 +1319,7 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
-			vle_compl_put_match(escape_chars(get_value(opt), " |"));
+			vle_compl_put_match(escape_chars(get_value(opt), " |"), "");
 		}
 	}
 
@@ -1458,7 +1458,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo,
 
 	if(pseudo && strncmp(buf, "all", len) == 0)
 	{
-		vle_compl_add_match("all");
+		vle_compl_add_match("all", "pseudo-option that groups others");
 	}
 
 	for(i = 0U; i < option_count; ++i)
@@ -1472,7 +1472,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo,
 
 		if(strncmp(buf, opt->name, len) == 0)
 		{
-			vle_compl_add_match(get_opt_full_name(opt));
+			vle_compl_add_match(get_opt_full_name(opt), "");
 		}
 	}
 }
@@ -1520,7 +1520,7 @@ complete_list_value(const opt_t *opt, const char beginning[])
 	{
 		if(strncmp(beginning, opt->vals[i], len) == 0)
 		{
-			vle_compl_add_match(opt->vals[i]);
+			vle_compl_add_match(opt->vals[i], "");
 		}
 	}
 
@@ -1540,7 +1540,7 @@ complete_char_value(const opt_t *opt, const char beginning[])
 		if(strchr(beginning, vals[i]) == NULL)
 		{
 			const char char_str[] = { vals[i], '\0' };
-			vle_compl_add_match(char_str);
+			vle_compl_add_match(char_str, "");
 		}
 	}
 

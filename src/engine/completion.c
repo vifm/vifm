@@ -47,7 +47,7 @@ static int order;
 /* Function called . */
 static vle_compl_add_path_hook_f add_path_hook = &strdup;
 
-static int add_match(char match[]);
+static int add_match(char match[], const char descr[]);
 static void group_unique_sort(size_t start_index, size_t len);
 static int sorter(const void *first, const void *second);
 static void remove_duplicates(vle_compl_t arr[], size_t count);
@@ -71,22 +71,22 @@ vle_compl_reset(void)
 }
 
 int
-vle_compl_add_match(const char match[])
+vle_compl_add_match(const char match[], const char descr[])
 {
-	return vle_compl_put_match(strdup(match));
+	return vle_compl_put_match(strdup(match), descr);
 }
 
 int
-vle_compl_put_match(char match[])
+vle_compl_put_match(char match[], const char descr[])
 {
-	return add_match(match);
+	return add_match(match, descr);
 }
 
 int
 vle_compl_add_path_match(const char path[])
 {
 	char *const match = add_path_hook(path);
-	return add_match(match);
+	return add_match(match, "");
 }
 
 int
@@ -94,7 +94,7 @@ vle_compl_put_path_match(char path[])
 {
 	if(add_path_hook == &strdup)
 	{
-		return add_match(path);
+		return add_match(path, "");
 	}
 	else
 	{
@@ -108,7 +108,7 @@ vle_compl_put_path_match(char path[])
  * by the match.  Errors if match is NULL.  Returns zero on success, otherwise
  * non-zero is returned. */
 static int
-add_match(char match[])
+add_match(char match[], const char descr[])
 {
 	vle_compl_t *item;
 
@@ -126,7 +126,7 @@ add_match(char match[])
 	}
 
 	item->text = match;
-	item->descr = strdup("");
+	item->descr = strdup(descr);
 	if(item->descr == NULL)
 	{
 		return 1;
@@ -141,7 +141,7 @@ add_match(char match[])
 int
 vle_compl_add_last_match(const char origin[])
 {
-	return vle_compl_add_match(origin);
+	return vle_compl_add_match(origin, "");
 }
 
 int

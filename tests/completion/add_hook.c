@@ -96,8 +96,8 @@ TEST(set_add_path_hook_does_not_affect_non_path_functions)
 	char *match;
 
 	vle_compl_set_add_path_hook(&add_dquotes);
-	assert_int_equal(0, vle_compl_add_match("a b"));
-	assert_int_equal(0, vle_compl_add_match("a b c"));
+	assert_int_equal(0, vle_compl_add_match("a b", ""));
+	assert_int_equal(0, vle_compl_add_match("a b c", ""));
 	vle_compl_finish_group();
 	assert_int_equal(0, vle_compl_add_last_match("a"));
 

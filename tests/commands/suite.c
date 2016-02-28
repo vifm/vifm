@@ -63,8 +63,8 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	const char *arg;
 
 	vle_compl_reset();
-	vle_compl_add_match("followlinks");
-	vle_compl_add_match("fastrun");
+	vle_compl_add_match("followlinks", "");
+	vle_compl_add_match("fastrun", "");
 	vle_compl_finish_group();
 	vle_compl_add_last_match("f");
 

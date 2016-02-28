@@ -231,7 +231,7 @@ bmarks_complete(int n, char *tags[], const char str[])
 		{
 			if(strncmp(tag, str, len) == 0 && !is_in_string_array(tags, n, tag))
 			{
-				vle_compl_add_match(tag);
+				vle_compl_add_match(tag, "");
 			}
 		}
 	}

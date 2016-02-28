@@ -827,7 +827,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 		else if(cur->name[0] == '\0')
 			;
 		else
-			vle_compl_add_match(cur->name);
+			vle_compl_add_match(cur->name, "");
 		cur = cur->next;
 	}
 
@@ -838,7 +838,7 @@ void
 add_builtin_commands(const cmd_add_t *cmds, int count)
 {
 	int i;
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; ++i)
 	{
 		int ret_code;
 		assert(cmds[i].min_args >= 0);

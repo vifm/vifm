@@ -64,7 +64,10 @@ typedef struct
 }
 col_scheme_t;
 
+/* Names of highlight groups.  Contains MAXNUM_COLOR elements. */
 extern char *HI_GROUPS[];
+/* Descriptions of highlight groups.  Contains MAXNUM_COLOR elements. */
+extern const char *HI_GROUPS_DESCR[];
 extern char *LIGHT_COLOR_NAMES[8];
 extern char *XTERM256_COLOR_NAMES[256];
 
