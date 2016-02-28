@@ -83,9 +83,9 @@ void reset_options_to_default(void);
 void clear_options(void);
 
 /* Adds an option.  The scope can't be OPT_ANY here. */
-void add_option(const char name[], const char abbr[], OPT_TYPE type,
-		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler,
-		optval_t def);
+void add_option(const char name[], const char abbr[], const char descr[],
+		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[],
+		opt_handler handler, optval_t def);
 
 /* Sets option value without calling its change handler.  Asserts for correct
  * option name. */

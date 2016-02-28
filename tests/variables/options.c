@@ -23,15 +23,15 @@ SETUP()
 	init_options(&option_changed);
 
 	def.str_val = "/tmp";
-	add_option("fusehome", "fh", OPT_STR, OPT_GLOBAL, 0, NULL, &fusehome_handler,
-			def);
+	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+			&fusehome_handler, def);
 
 	def.int_val = 0;
-	add_option("number", "nu", OPT_BOOL, OPT_GLOBAL, 0, NULL, &number_handler,
-			def);
-	add_option("numberwidth", "nuw", OPT_INT, OPT_GLOBAL, 0, NULL,
+	add_option("number", "nu", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
+			&number_handler, def);
+	add_option("numberwidth", "nuw", "descr", OPT_INT, OPT_GLOBAL, 0, NULL,
 			&numberwidth_global, def);
-	add_option("numberwidth", "nuw", OPT_INT, OPT_LOCAL, 0, NULL,
+	add_option("numberwidth", "nuw", "descr", OPT_INT, OPT_LOCAL, 0, NULL,
 			&numberwidth_local, def);
 
 	fuse_home = NULL;

@@ -59,8 +59,9 @@ typedef void (*mod_t)(char buffer[], char value);
 typedef void (*opt_traverse)(opt_t *opt);
 
 static void reset_options(OPT_SCOPE scope);
-static opt_t * add_option_inner(const char name[], OPT_TYPE type,
-		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler);
+static opt_t * add_option_inner(const char name[], const char descr[],
+		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[],
+		opt_handler handler);
 static void print_if_changed(opt_t *opt);
 static int process_option(const char arg[], OPT_SCOPE real_scope,
 		OPT_SCOPE scope, int *print);
@@ -173,15 +174,16 @@ clear_options(void)
 }
 
 void
-add_option(const char name[], const char abbr[], OPT_TYPE type, OPT_SCOPE scope,
-		int val_count, const char *vals[], opt_handler handler, optval_t def)
+add_option(const char name[], const char abbr[], const char descr[],
+		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[],
+		opt_handler handler, optval_t def)
 {
 	opt_t *full;
 
 	assert(name != NULL);
 	assert(abbr != NULL);
 
-	full = add_option_inner(name, type, scope, val_count, vals, handler);
+	full = add_option_inner(name, descr, type, scope, val_count, vals, handler);
 	if(full == NULL)
 	{
 		return;
@@ -193,7 +195,8 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, OPT_SCOPE scope,
 		const char *const full_name = full->name;
 
 		opt_t *abbreviated;
-		abbreviated = add_option_inner(abbr, type, scope, val_count, vals, handler);
+		abbreviated = add_option_inner(abbr, descr, type, scope, val_count, vals,
+				handler);
 		if(abbreviated != NULL)
 		{
 			abbreviated->full = full_name;
@@ -233,8 +236,8 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, OPT_SCOPE scope,
 /* Adds option to internal array of option descriptors.  Returns a pointer to
  * the descriptor or NULL on out of memory error. */
 static opt_t *
-add_option_inner(const char name[], OPT_TYPE type, OPT_SCOPE scope,
-		int val_count, const char *vals[], opt_handler handler)
+add_option_inner(const char name[], const char descr[], OPT_TYPE type,
+		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler)
 {
 	opt_t *p;
 
@@ -258,6 +261,7 @@ add_option_inner(const char name[], OPT_TYPE type, OPT_SCOPE scope,
 	}
 
 	p->name = strdup(name);
+	p->descr = descr;
 	p->type = type;
 	p->scope = scope;
 	p->handler = handler;
@@ -1472,7 +1476,7 @@ complete_option_name(const char buf[], int bool_only, int pseudo,
 
 		if(strncmp(buf, opt->name, len) == 0)
 		{
-			vle_compl_add_match(get_opt_full_name(opt), "");
+			vle_compl_add_match(get_opt_full_name(opt), opt->descr);
 		}
 	}
 }

@@ -38,6 +38,7 @@ extern const char OPT_NAME_CHARS[];
 typedef struct
 {
 	char *name;          /* Name of an option. */
+	const char *descr;   /* Option description. */
 	OPT_TYPE type;       /* Option type. */
 	OPT_SCOPE scope;     /* Scope: local or global. */
 	optval_t val;        /* Current value of an option. */
