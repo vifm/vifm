@@ -133,10 +133,10 @@ function_complete_name(const char str[], const char **start)
 	len = strlen(str);
 	for(i = 0U; i < function_count; ++i)
 	{
-		const char *const name = functions[i].name;
-		if(starts_withn(name, str, len))
+		const function_t *const func = &functions[i];
+		if(starts_withn(func->name, str, len))
 		{
-			vle_compl_put_match(format_str("%s(", name), "");
+			vle_compl_put_match(format_str("%s(", func->name), func->descr);
 		}
 	}
 	vle_compl_finish_group();

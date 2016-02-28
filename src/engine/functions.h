@@ -37,8 +37,9 @@ typedef var_t (*function_ptr_t)(const call_info_t *call_info);
 /* Function description. */
 typedef struct
 {
-	const char *name; /* Name of a function. */
-	size_t arg_count; /* Required number of arguments. */
+	const char *name;   /* Name of a function. */
+	const char *descr;  /* Brief description. */
+	size_t arg_count;   /* Required number of arguments. */
 	function_ptr_t ptr; /* Pointer to function implementation. */
 }
 function_t;

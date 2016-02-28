@@ -12,13 +12,13 @@ static var_t dummy(const call_info_t *call_info);
 
 SETUP_ONCE()
 {
-	static const function_t function_a = { "a", 1, &dummy };
-	static const function_t function_b = { "b", 2, &dummy };
-	static const function_t function_c = { "c", 0, &dummy };
+	static const function_t function_a = { "a", "adescr", 1, &dummy };
+	static const function_t function_b = { "b", "bdescr", 2, &dummy };
+	static const function_t function_c = { "c", "cdescr", 0, &dummy };
 
-	assert_int_equal(0, function_register(&function_a));
-	assert_int_equal(0, function_register(&function_b));
-	assert_int_equal(0, function_register(&function_c));
+	assert_success(function_register(&function_a));
+	assert_success(function_register(&function_b));
+	assert_success(function_register(&function_c));
 }
 
 TEARDOWN_ONCE()
