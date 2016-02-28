@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 26, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "February 28, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3291,7 +3291,9 @@ type: boolean
 .br
 default: true
 .br
-Follow links on l or Enter.
+Follow links on l or Enter.  That is navigate to destination file instead of
+treating the link as if it were target file.  Doesn't affects links to
+directories, which are always entered (use gf key for directories).
 .TP
 .BI 'fusehome'
 type: string
@@ -3353,8 +3355,7 @@ type: integer
 .br
 default: 15
 .br
-Maximum number of directories in the view history and lines in the prompt,
-command line and search histories.
+Maximum number of stored items in all histories.
 .TP
 .BI "'hlsearch' 'hls'"
 type: boolean
