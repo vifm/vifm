@@ -193,7 +193,6 @@ static int rename_marked(FileView *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 static void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
-static int edit_file(const char filepath[], int force_changed);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[], int to_trash);
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
@@ -206,6 +205,7 @@ static int can_read_selected_files(FileView *view);
 static int check_dir_path(const FileView *view, const char path[], char buf[]);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
+static int edit_file(const char filepath[], int force_changed);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
 static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
@@ -3181,40 +3181,6 @@ is_copy_list_ok(const char *dst, int count, char **list)
 	return 1;
 }
 
-/* Edits the filepath in the editor checking whether it was changed.  Returns
- * negative value on error, zero when no changes were detected and positive
- * number otherwise. */
-static int
-edit_file(const char filepath[], int force_changed)
-{
-	struct stat st_before, st_after;
-
-	if(!force_changed && os_stat(filepath, &st_before) != 0)
-	{
-		show_error_msgf("Error Editing File",
-				"Could not stat file \"%s\" before edit: %s", filepath,
-				strerror(errno));
-		return -1;
-	}
-
-	if(vim_view_file(filepath, -1, -1, 0) != 0)
-	{
-		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
-				filepath);
-		return -1;
-	}
-
-	if(!force_changed && os_stat(filepath, &st_after) != 0)
-	{
-		show_error_msgf("Error Editing File",
-				"Could not stat file \"%s\" after edit: %s", filepath, strerror(errno));
-		return -1;
-	}
-
-	return force_changed || memcmp(&st_after.st_mtime, &st_before.st_mtime,
-			sizeof(st_after.st_mtime)) != 0;
-}
-
 int
 cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 		int force)
@@ -3640,6 +3606,40 @@ edit_list(size_t count, char **orig, int *nlines, int ignore_change)
 
 	unlink(rename_file);
 	return list;
+}
+
+/* Edits the filepath in the editor checking whether it was changed.  Returns
+ * negative value on error, zero when no changes were detected and positive
+ * number otherwise. */
+static int
+edit_file(const char filepath[], int force_changed)
+{
+	struct stat st_before, st_after;
+
+	if(!force_changed && os_stat(filepath, &st_before) != 0)
+	{
+		show_error_msgf("Error Editing File",
+				"Could not stat file \"%s\" before edit: %s", filepath,
+				strerror(errno));
+		return -1;
+	}
+
+	if(vim_view_file(filepath, -1, -1, 0) != 0)
+	{
+		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
+				filepath);
+		return -1;
+	}
+
+	if(!force_changed && os_stat(filepath, &st_after) != 0)
+	{
+		show_error_msgf("Error Editing File",
+				"Could not stat file \"%s\" after edit: %s", filepath, strerror(errno));
+		return -1;
+	}
+
+	return force_changed || memcmp(&st_after.st_mtime, &st_before.st_mtime,
+			sizeof(st_after.st_mtime)) != 0;
 }
 
 /* Gets string representation of a copy/move-like operation.  Returns the
