@@ -92,6 +92,7 @@ typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 typedef struct
 {
 	const char *name, *abbr;
+	const char *descr;
 	int id; /* -1 here means that this command don't require completion of args */
 	cmd_handler handler;
 	int range;

@@ -20,12 +20,16 @@ static cmd_info_t cmdi;
 
 static const cmd_add_t commands[] = {
 	{ .name = "",       .abbr = NULL, .handler = dummy_cmd,  .id = -1,    .range = 1,    .cust_sep = 0,
+		.descr = "descr",
 		.emark = 0,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 0, },
 	{ .name = "delete", .abbr = "d",  .handler = delete_cmd, .id = 1,     .range = 1,    .cust_sep = 0,
+		.descr = "descr",
 		.emark = 1,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 1, },
 	{ .name = "yank",   .abbr = "y",  .handler = dummy_cmd,  .id = -10,   .range = 0,    .cust_sep = 0,
+		.descr = "descr",
 		.emark = 0,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 1, },
 	{ .name = "windo",            .abbr = NULL,    .emark = 0,  .id = COM_WINDO,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.descr = "descr",
 		.handler = dummy_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 };
 

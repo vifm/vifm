@@ -14,8 +14,10 @@ static cmd_info_t cmdi;
 
 static const cmd_add_t commands[] = {
 	{ .name = "",       .abbr = NULL, .handler = goto_cmd,   .id = -1,    .range = 1,    .cust_sep = 0,
+		.descr = "descr",
 		.emark = 0,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 0, },
 	{ .name = "delete", .abbr = "d",  .handler = delete_cmd, .id = -1,    .range = 1,    .cust_sep = 0,
+		.descr = "descr",
 		.emark = 1,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 1, },
 };
 
@@ -41,6 +43,7 @@ TEST(builtin)
 {
 	cmd_add_t command = {
 		.name = "", .abbr = NULL, .id = -1,    .handler = goto_cmd, .range = 1,    .cust_sep = 0,
+		.descr = "descr",
 		.emark = 0, .expand = 0,  .qmark = 0,  .regexp = 0,         .min_args = 0, .max_args = 0,
 	};
 

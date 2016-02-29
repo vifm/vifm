@@ -39,6 +39,7 @@ SETUP()
 {
 	cmd_add_t command = {
 		.name = "<USERCMD>", .abbr = NULL, .handler = usercmd_cmd, .cust_sep = 0,
+		.descr = "descr",
 		.id = -1,            .range = 1,   .emark = 0,             .qmark = 0,
 		.expand = 0,         .regexp = 0,  .min_args = 0,          .max_args = 0,
 	};
