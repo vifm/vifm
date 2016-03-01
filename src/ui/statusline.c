@@ -369,9 +369,11 @@ check_expanded_str(const char buf[], int skip, int *nexpansions)
 }
 
 int
-ui_stat_reposition(int statusbar_height)
+ui_stat_reposition(int statusbar_height, int force_stat_win)
 {
-	const int stat_line_height = cfg.display_statusline ? getmaxy(stat_win) : 0;
+	const int stat_line_height = (force_stat_win || cfg.display_statusline)
+	                           ? getmaxy(stat_win)
+	                           : 0;
 	const int job_bar_height = ui_stat_job_bar_height();
 	const int y = getmaxy(stdscr)
 	            - statusbar_height
@@ -381,7 +383,7 @@ ui_stat_reposition(int statusbar_height)
 	mvwin(job_bar, y, 0);
 	wresize(job_bar, job_bar_height, getmaxx(job_bar));
 
-	if(cfg.display_statusline)
+	if(force_stat_win || cfg.display_statusline)
 	{
 		mvwin(stat_win, y + job_bar_height, 0);
 		return 1;

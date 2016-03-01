@@ -375,7 +375,8 @@ update_cmdline_size(void)
 
 		if(prev_mode != MENU_MODE)
 		{
-			if(ui_stat_reposition(required_height))
+			if(ui_stat_reposition(required_height,
+						cfg.wild_menu && cfg.wild_popup && input_stat.complete_continue))
 			{
 				ui_stat_refresh();
 			}
@@ -1151,7 +1152,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	}
 
 	wresize(stat_win, height, getmaxx(stdscr));
-	ui_stat_reposition(get_required_height());
+	ui_stat_reposition(get_required_height(), 1);
 
 	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
 	{

@@ -50,7 +50,7 @@ static int multiline_status_bar;
 void
 clean_status_bar(void)
 {
-	(void)ui_stat_reposition(1);
+	(void)ui_stat_reposition(1, 0);
 
 	werase(status_bar);
 	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
@@ -207,7 +207,7 @@ status_bar_message_i(const char message[], int error)
 		return;
 	}
 
-	(void)ui_stat_reposition(lines);
+	(void)ui_stat_reposition(lines, 0);
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
 	if(lines == 1)
 	{

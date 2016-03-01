@@ -29,9 +29,10 @@
 void update_stat_window(FileView *view);
 
 /* Puts status line where it's suppose to be according to other elements (also
- * moves job bar).  Does nothing if displaying status line is disabled.  Returns
- * non-zero if status line is visible, and zero otherwise. */
-int ui_stat_reposition(int statusbar_height);
+ * moves job bar).  If displaying status line is disabled, force flag can help
+ * ignore it for this call.  Returns non-zero if status line is visible, and
+ * zero otherwise. */
+int ui_stat_reposition(int statusbar_height, int force_stat_win);
 
 /* Updates content of status line on the screen (also updates job bar). */
 void ui_stat_refresh(void);

@@ -462,7 +462,7 @@ resize_all(void)
 	correct_size(&rwin);
 
 	wresize(stat_win, 1, screen_x);
-	(void)ui_stat_reposition(1);
+	(void)ui_stat_reposition(1, 0);
 
 	wresize(job_bar, 1, screen_x);
 
