@@ -220,7 +220,7 @@ static void update_line_stat(line_stats_t *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
 static void stop_dot_completion(void);
-static void stop_history_completion(void);
+static void stop_regular_completion(void);
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -1977,7 +1977,7 @@ cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	stop_history_completion();
+	stop_regular_completion();
 
 	if(hist_is_empty(&cfg.cmd_hist))
 	{
@@ -2553,54 +2553,38 @@ wcsdel(wchar_t *src, int pos, int len)
 	return src;
 }
 
+/* Disables all active completions. */
 static void
 stop_completion(void)
 {
 	stop_dot_completion();
-	stop_history_completion();
+	stop_regular_completion();
 }
 
+/* Disables dot completion if it's active. */
 static void
 stop_dot_completion(void)
 {
 	input_stat.dot_pos = -1;
 }
 
+/* Disables tab completion if it's active. */
 static void
-stop_history_completion(void)
+stop_regular_completion(void)
 {
 	if(!input_stat.complete_continue)
+	{
 		return;
+	}
 
 	input_stat.complete_continue = 0;
 	vle_compl_reset();
 	if(cfg.wild_menu &&
 			(sub_mode != CLS_MENU_COMMAND && input_stat.complete != NULL))
 	{
-		if(cfg.display_statusline)
-		{
-			if(cfg.wild_popup)
-			{
-				/* Multi-line popup could mess these up. */
-				ui_view_schedule_redraw(curr_view);
-				ui_view_schedule_redraw(other_view);
-			}
-			update_stat_window(curr_view);
-		}
-		else
-		{
-			touchwin(lwin.win);
-			touchwin(rwin.win);
-			touchwin(lborder);
-			touchwin(mborder);
-			touchwin(rborder);
-			wnoutrefresh(lwin.win);
-			wnoutrefresh(rwin.win);
-			wnoutrefresh(lborder);
-			wnoutrefresh(mborder);
-			wnoutrefresh(rborder);
-			doupdate();
-		}
+		update_stat_window(curr_view);
+		update_cmdline_size();
+		update_all_windows();
 	}
 }
 
