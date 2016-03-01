@@ -8,32 +8,36 @@
 
 static void dummy_handler(OPT_OP op, optval_t val);
 
-static const char cpoptions_charset[] = "abc";
-static const char * cpoptions_vals = cpoptions_charset;
-
-static const char * sort_enum[] = {
-	"ext",
-	"name",
-	"gid",
-	"gname",
-	"mode",
-	"uid",
-	"uname",
-	"size",
-	"atime",
-	"ctime",
-	"mtime",
+static const char *cpoptions_vals[][2] = {
+	{ "abc", "descr" },
+	{ "a", "descr" },
+	{ "b", "descr" },
+	{ "c", "descr" },
 };
 
-static const char * vifminfo_set[] = {
-	"options",
-	"filetypes",
-	"commands",
-	"bookmarks",
-	"tui",
-	"dhistory",
-	"state",
-	"cs",
+static const char *sort_enum[][2] = {
+	{ "ext",   "descr" },
+	{ "name",  "descr" },
+	{ "gid",   "descr" },
+	{ "gname", "descr" },
+	{ "mode",  "descr" },
+	{ "uid",   "descr" },
+	{ "uname", "descr" },
+	{ "size",  "descr" },
+	{ "atime", "descr" },
+	{ "ctime", "descr" },
+	{ "mtime", "descr" },
+};
+
+static const char *vifminfo_set[][2] = {
+	{ "options",   "descr" },
+	{ "filetypes", "descr" },
+	{ "commands",  "descr" },
+	{ "bookmarks", "descr" },
+	{ "tui",       "descr" },
+	{ "dhistory",  "descr" },
+	{ "state",     "descr" },
+	{ "cs",        "descr" },
 };
 
 SETUP()
@@ -45,7 +49,7 @@ SETUP()
 
 	val.str_val = "bc";
 	add_option("cpoptions", "cpo", "descr", OPT_CHARSET, OPT_GLOBAL,
-			ARRAY_LEN(cpoptions_charset) - 1, &cpoptions_vals, dummy_handler, val);
+			ARRAY_LEN(cpoptions_vals), cpoptions_vals, dummy_handler, val);
 
 	val.bool_val = 0;
 	add_option("fastrun", "fr", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,

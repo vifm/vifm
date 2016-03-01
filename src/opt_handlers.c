@@ -221,99 +221,169 @@ static const char *sort_enum[] = {
 };
 ARRAY_GUARD(sort_enum, 1 + SK_COUNT);
 
-static const char cpoptions_list[] = "fst";
-static const char * cpoptions_vals = cpoptions_list;
-#define cpoptions_count (ARRAY_LEN(cpoptions_list) - 1)
+/* Possible values of 'cpoptions'. */
+static const char *cpoptions_vals[][2] = {
+	{ "fst", "all cpoptions values" },
+	{ "f", "leave files that match filter by default" },
+	{ "s", "use selection for yy, dd and DD, when present" },
+	{ "t", "switch active pane via <tab>" },
+};
 
 /* Possible values of 'dotdirs'. */
-static const char *dotdirs_vals[] = {
-	"rootparent",
-	"nonrootparent",
+static const char *dotdirs_vals[][2] = {
+	{ "rootparent",    "show .. in FS root" },
+	{ "nonrootparent", "show .. in non-root directories" },
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
 /* Possible flags of 'iooptions'. */
-static const char *iooptions_vals[] = {
-	"fastfilecloning",
+static const char *iooptions_vals[][2] = {
+	{ "fastfilecloning", "use COW if FS supports it" },
 };
 
 /* Possible flags of 'shortmess' and their count. */
-static const char shortmess_list[] = "Tp";
-static const char *shortmess_vals = shortmess_list;
-#define shortmess_count (ARRAY_LEN(shortmess_list) - 1)
+static const char *shortmess_vals[][2] = {
+	{ "Tp", "all shortmess values" },
+	{ "T", "shorten too long status bar messages" },
+	{ "p", "substitute home path with ~ in view title" },
+};
 
 /* Possible flags of 'tuioptions' and their count. */
-static const char tuioptions_list[] = "ps";
-static const char *tuioptions_vals = tuioptions_list;
-#define tuioptions_count (ARRAY_LEN(tuioptions_list) - 1)
+static const char *tuioptions_vals[][2] = {
+	{ "ps", "all tuioptions values" },
+	{ "p", "use padding in views and preview" },
+	{ "s", "display side borders" },
+};
 
 /* Possible values of 'dirsize' option. */
-static const char *dirsize_enum[] = {
-	"size",
-	"nitems",
+static const char *dirsize_enum[][2] = {
+	{ "size",   "size of directory or its files" },
+	{ "nitems", "number of files in directory" },
 };
 
 /* Possible keys of 'fillchars' option. */
-static const char *fillchars_enum[] = {
-	"vborder:",
+static const char *fillchars_enum[][2] = {
+	{ "vborder:", "filler of vertical borders" },
 };
 
 /* Possible values of 'sort' option. */
-static const char *sort_types[] = {
-	"ext",   "+ext",   "-ext",
-	"name",  "+name",  "-name",
-	"size",  "+size",  "-size",
-	"atime", "+atime", "-atime",
-	"ctime", "+ctime", "-ctime",
-	"mtime", "+mtime", "-mtime",
-	"iname", "+iname", "-iname",
-	"dir",     "+dir",     "-dir",
-	"type",    "+type",    "-type",
-	"fileext", "+fileext", "-fileext",
-	"nitems",  "+nitems",  "-nitems",
-	"groups",  "+groups",  "-groups",
+static const char *sort_types[][2] = {
+	{ "ext",  "by file/directory extension" },
+	{ "+ext", "by file/directory extension" },
+	{ "-ext", "by file/directory extension" },
+
+	{ "name",  "by name (case-sensitive)" },
+	{ "+name", "by name (case-sensitive)" },
+	{ "-name", "by name (case-sensitive)" },
+
+	{ "size",  "by size" },
+	{ "+size", "by size" },
+	{ "-size", "by size" },
+
+	{ "atime",  "by access time" },
+	{ "+atime", "by access time" },
+	{ "-atime", "by access time" },
+
 #ifndef _WIN32
-	"gid",    "+gid",    "-gid",
-	"gname",  "+gname",  "-gname",
-	"mode",   "+mode",   "-mode",
-	"uid",    "+uid",    "-uid",
-	"uname",  "+uname",  "-uname",
-	"perms",  "+perms",  "-perms",
-	"nlinks", "+nlinks", "-nlinks",
+	{ "ctime",  "by change time" },
+	{ "+ctime", "by change time" },
+	{ "-ctime", "by change time" },
+#else
+	{ "ctime",  "by creation time" },
+	{ "+ctime", "by creation time" },
+	{ "-ctime", "by creation time" },
+#endif
+
+	{ "mtime",  "by modification time" },
+	{ "+mtime", "by modification time" },
+	{ "-mtime", "by modification time" },
+
+	{ "iname",  "by name (case-insensitive)" },
+	{ "+iname", "by name (case-insensitive)" },
+	{ "-iname", "by name (case-insensitive)" },
+
+	{ "dir",  "by `is directory` predicate" },
+	{ "+dir", "by `is directory` predicate" },
+	{ "-dir", "by `is directory` predicate" },
+
+	{ "type",  "by file type" },
+	{ "+type", "by file type" },
+	{ "-type", "by file type" },
+
+	{ "fileext",  "by file (no directories) extension" },
+	{ "+fileext", "by file (no directories) extension" },
+	{ "-fileext", "by file (no directories) extension" },
+
+	{ "nitems",  "by number of files in directory" },
+	{ "+nitems", "by number of files in directory" },
+	{ "-nitems", "by number of files in directory" },
+
+	{ "groups",  "by 'sortgroups' match" },
+	{ "+groups", "by 'sortgroups' match" },
+	{ "-groups", "by 'sortgroups' match" },
+
+#ifndef _WIN32
+	{ "gid",  "by group ID" },
+	{ "+gid", "by group ID" },
+	{ "-gid", "by group ID" },
+
+	{ "gname",  "by group name" },
+	{ "+gname", "by group name" },
+	{ "-gname", "by group name" },
+
+	{ "mode",  "by file mode" },
+	{ "+mode", "by file mode" },
+	{ "-mode", "by file mode" },
+
+	{ "uid",  "by user ID" },
+	{ "+uid", "by user ID" },
+	{ "-uid", "by user ID" },
+
+	{ "uname",  "by user name" },
+	{ "+uname", "by user name" },
+	{ "-uname", "by user name" },
+
+	{ "perms",  "by permissions" },
+	{ "+perms", "by permissions" },
+	{ "-perms", "by permissions" },
+
+	{ "nlinks",  "by number of hard-links" },
+	{ "+nlinks", "by number of hard-links" },
+	{ "-nlinks", "by number of hard-links" },
 #endif
 };
 ARRAY_GUARD(sort_types, SK_COUNT*3);
 
 /* Possible values of 'sortorder' option. */
-static const char *sortorder_enum[] = {
-	"ascending",
-	"descending",
+static const char *sortorder_enum[][2] = {
+	{ "ascending",  "increasing ordering" },
+	{ "descending", "decreasing ordering" },
 };
 
 /* Possible values of 'vifminfo' option. */
-static const char *vifminfo_set[] = {
-	"options",
-	"filetypes",
-	"commands",
-	"bookmarks",
-	"bmarks",
-	"tui",
-	"dhistory",
-	"state",
-	"cs",
-	"savedirs",
-	"chistory",
-	"shistory",
-	"dirstack",
-	"registers",
-	"phistory",
-	"fhistory",
+static const char *vifminfo_set[][2] = {
+	{ "options",   "values of options" },
+	{ "filetypes", "file associations" },
+	{ "commands",  "user-defined :commands" },
+	{ "bookmarks", "marks (e.g. 'a)" },
+	{ "bmarks",    "bookmarks" },
+	{ "tui",       "state of TUI" },
+	{ "dhistory",  "directory history" },
+	{ "state",     "filters and terminal multiplexer" },
+	{ "cs",        "current colorscheme" },
+	{ "savedirs",  "restore last visited directory" },
+	{ "chistory",  "cmdline history" },
+	{ "shistory",  "search history" },
+	{ "dirstack",  "directory stack" },
+	{ "registers", "contents of registers" },
+	{ "phistory",  "prompt history" },
+	{ "fhistory",  "local filter history" },
 };
 
 /* Possible values of 'wildstyle'. */
-static const char *wildstyle_vals[] = {
-	"bar",
-	"popup",
+static const char *wildstyle_vals[][2] = {
+	{ "bar",   "single-line bar" },
+	{ "popup", "multi-line popup" },
 };
 ARRAY_GUARD(wildstyle_vals, 2);
 
@@ -329,7 +399,7 @@ static struct opt_data_t
 	const char *descr;          /* Brief option description. */
 	OPT_TYPE type;              /* Option type (boolean, integer, etc.). */
 	int val_count;              /* Size of vals. */
-	const char **vals;          /* Array of possible values. */
+	const char *(*vals)[2];     /* Array of possible values. */
 	opt_handler global_handler; /* Global option handler. */
 	opt_handler local_handler;  /* Local option handler (can be NULL). */
 	optinit_t initializer;      /* Definition of source of initial value. */
@@ -366,7 +436,8 @@ options[] = {
 	  { .ref.bool_val = &cfg.confirm },
 	},
 	{ "cpoptions", "cpo", "compatibility options",
-	  OPT_CHARSET, cpoptions_count, &cpoptions_vals, &cpoptions_handler, NULL,
+	  OPT_CHARSET, ARRAY_LEN(cpoptions_vals), cpoptions_vals, &cpoptions_handler,
+		NULL,
 	  { .init = &init_cpoptions },
 	},
 	{ "deleteprg", "", "permanent file deletion program",
@@ -472,7 +543,8 @@ options[] = {
 	  { .ref.str_val = &cfg.shell },
 	},
 	{ "shortmess", "shm", "things to shorten in TUI",
-	  OPT_CHARSET, shortmess_count, &shortmess_vals, &shortmess_handler, NULL,
+	  OPT_CHARSET, ARRAY_LEN(shortmess_vals), shortmess_vals, &shortmess_handler,
+		NULL,
 	  { .init = &init_shortmess },
 	},
 #ifndef _WIN32
@@ -522,7 +594,8 @@ options[] = {
 	  { .init = &init_trashdir },
 	},
 	{ "tuioptions", "to", "TUI look tweaks",
-	  OPT_CHARSET, tuioptions_count, &tuioptions_vals, &tuioptions_handler, NULL,
+	  OPT_CHARSET, ARRAY_LEN(tuioptions_vals), tuioptions_vals,
+		&tuioptions_handler, NULL,
 	  { .init = &init_tuioptions },
 	},
 	{ "undolevels", "ul", "number of file operations to remember",

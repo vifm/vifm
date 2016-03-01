@@ -28,7 +28,6 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/str.h"
-#include "../utils/string_array.h"
 #include "completion.h"
 #include "text_buffer.h"
 
@@ -60,7 +59,7 @@ typedef void (*opt_traverse)(opt_t *opt);
 
 static void reset_options(OPT_SCOPE scope);
 static opt_t * add_option_inner(const char name[], const char descr[],
-		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[],
+		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[][2],
 		opt_handler handler);
 static void print_if_changed(opt_t *opt);
 static int process_option(const char arg[], OPT_SCOPE real_scope,
@@ -175,7 +174,7 @@ clear_options(void)
 
 void
 add_option(const char name[], const char abbr[], const char descr[],
-		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[],
+		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[][2],
 		opt_handler handler, optval_t def)
 {
 	opt_t *full;
@@ -221,9 +220,16 @@ add_option(const char name[], const char abbr[], const char descr[],
 #ifndef NDEBUG
 	switch(type)
 	{
+		int i;
+
 		case OPT_CHARSET:
-			assert((size_t)full->val_count == strlen(*full->vals) &&
+			assert((size_t)full->val_count == 1U + strlen(full->vals[0][0]) &&
 					"Number of character set items is incorrect.");
+			for(i = 1; i < full->val_count; ++i)
+			{
+				assert(full->vals[i][0][0] != '\0' && full->vals[i][0][1] == '\0' &&
+						"Incorrect character set item.");
+			}
 			break;
 
 		default:
@@ -237,7 +243,7 @@ add_option(const char name[], const char abbr[], const char descr[],
  * the descriptor or NULL on out of memory error. */
 static opt_t *
 add_option_inner(const char name[], const char descr[], OPT_TYPE type,
-		OPT_SCOPE scope, int val_count, const char *vals[], opt_handler handler)
+		OPT_SCOPE scope, int val_count, const char *vals[][2], opt_handler handler)
 {
 	opt_t *p;
 
@@ -756,7 +762,7 @@ set_set(opt_t *opt, const char value[])
 	}
 	else if(opt->type == OPT_CHARSET)
 	{
-		const size_t valid_len = strspn(value, *opt->vals);
+		const size_t valid_len = strspn(value, *opt->vals[0]);
 		if(valid_len != strlen(value))
 		{
 			vle_tb_append_linef(vle_err, "Illegal character: <%c>", value[valid_len]);
@@ -832,7 +838,7 @@ set_add(opt_t *opt, const char value[])
 	}
 	else if(opt->type == OPT_CHARSET)
 	{
-		const size_t valid_len = strspn(value, *opt->vals);
+		const size_t valid_len = strspn(value, *opt->vals[0]);
 		if(valid_len != strlen(value))
 		{
 			vle_tb_append_linef(vle_err, "Illegal character: <%c>", value[valid_len]);
@@ -1164,12 +1170,20 @@ str_remove(char old[], const char value[])
 	return changed;
 }
 
-/* Returns index of the value in the list of options value, or -1 if value name
+/* Returns index of the value in the list of option values, or -1 if value name
  * is wrong. */
 static int
 find_val(const opt_t *opt, const char value[])
 {
-	return string_array_pos((char **)opt->vals, opt->val_count, value);
+	int i;
+	for(i = 0; i < opt->val_count; ++i)
+	{
+		if(strcmp(opt->vals[i][0], value) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 
 /* Prints value of the given option to text buffer. */
@@ -1222,7 +1236,7 @@ get_value(const opt_t *opt)
 	}
 	else if(opt->type == OPT_ENUM)
 	{
-		copy_str(buf, sizeof(buf), opt->vals[opt->val.enum_item]);
+		copy_str(buf, sizeof(buf), opt->vals[opt->val.enum_item][0]);
 	}
 	else if(opt->type == OPT_SET)
 	{
@@ -1234,7 +1248,7 @@ get_value(const opt_t *opt)
 			{
 				char *p = buf + strlen(buf);
 				snprintf(p, sizeof(buf) - (p - buf), "%s%s",
-						first ? "" : ",", opt->vals[i]);
+						first ? "" : ",", opt->vals[i][0]);
 				first = 0;
 			}
 		}
@@ -1522,9 +1536,9 @@ complete_list_value(const opt_t *opt, const char beginning[])
 
 	for(i = 0; i < opt->val_count; ++i)
 	{
-		if(strncmp(beginning, opt->vals[i], len) == 0)
+		if(strncmp(beginning, opt->vals[i][0], len) == 0)
 		{
-			vle_compl_add_match(opt->vals[i], "");
+			vle_compl_add_match(opt->vals[i][0], opt->vals[i][1]);
 		}
 	}
 
@@ -1536,15 +1550,12 @@ complete_list_value(const opt_t *opt, const char beginning[])
 static int
 complete_char_value(const opt_t *opt, const char beginning[])
 {
-	const char *vals = *opt->vals;
 	int i;
-
-	for(i = 0; i < opt->val_count; ++i)
+	for(i = 1; i < opt->val_count; ++i)
 	{
-		if(strchr(beginning, vals[i]) == NULL)
+		if(strchr(beginning, *opt->vals[i][0]) == NULL)
 		{
-			const char char_str[] = { vals[i], '\0' };
-			vle_compl_add_match(char_str, "");
+			vle_compl_add_match(opt->vals[i][0], opt->vals[i][1]);
 		}
 	}
 
