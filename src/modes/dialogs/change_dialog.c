@@ -43,6 +43,10 @@ static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void goto_line(int line);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_o(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
@@ -65,6 +69,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
+	{L"o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_o}}},
+	{L"g", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_g}}},
+	{L"p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
@@ -105,7 +113,7 @@ enter_change_mode(FileView *active_view)
 	bottom = 4;
 #endif
 	curr = 2;
-	col = 6;
+	col = 5;
 	step = 2;
 
 	redraw_change_dialog();
@@ -123,15 +131,15 @@ redraw_change_dialog(void)
 	box(change_win, 0, 0);
 
 	mvwaddstr(change_win, 0, (x - 20)/2, " Change Current File ");
-	mvwaddstr(change_win, 2, 4, " [ ] Name");
+	mvwaddstr(change_win, 2, 3, " [ ] n Name");
 #ifndef _WIN32
-	mvwaddstr(change_win, 4, 4, " [ ] Owner");
-	mvwaddstr(change_win, 6, 4, " [ ] Group");
-	mvwaddstr(change_win, 8, 4, " [ ] Permissions");
+	mvwaddstr(change_win, 4, 3, " [ ] o Owner");
+	mvwaddstr(change_win, 6, 3, " [ ] g Group");
+	mvwaddstr(change_win, 8, 3, " [ ] p Permissions");
 #else
-	mvwaddstr(change_win, 4, 4, " [ ] Properties");
+	mvwaddstr(change_win, 4, 3, " [ ] p Properties");
 #endif
-	mvwaddch(change_win, 2, 6, '*');
+	mvwaddch(change_win, 2, 5, '*');
 
 	getmaxyx(stdscr, y, x);
 	mvwin(change_win, (y - getmaxy(change_win))/2, (x - getmaxx(change_win))/2);
@@ -238,6 +246,34 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 
 	print_at_pos();
 	wrefresh(change_win);
+}
+
+static void
+cmd_n(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(1);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_o(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(2);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_g(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(3);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_p(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(4);
+	cmd_ctrl_m(key_info, keys_info);
 }
 
 static void
