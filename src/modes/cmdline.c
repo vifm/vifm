@@ -362,31 +362,36 @@ def_handler(wchar_t key)
 	return 0;
 }
 
+/* Make sure status bar size is taken into account in the TUI. */
 static void
 update_cmdline_size(void)
 {
 	const int required_height = get_required_height();
-	if(required_height >= getmaxy(status_bar))
+	if(required_height < getmaxy(status_bar))
 	{
-		const int screen_height = getmaxy(stdscr);
+		/* Do not shrink status bar. */
+		return;
+	}
 
-		mvwin(status_bar, screen_height - required_height, 0);
-		wresize(status_bar, required_height, line_width);
+	/* This handles case when status bar didn't get larger to cover corner case
+	 * updates (e.g. first redraw). */
 
-		if(prev_mode != MENU_MODE)
+	mvwin(status_bar, getmaxy(stdscr) - required_height, 0);
+	wresize(status_bar, required_height, line_width);
+
+	if(prev_mode != MENU_MODE)
+	{
+		if(ui_stat_reposition(required_height,
+					cfg.wild_menu && cfg.wild_popup && input_stat.complete_continue))
 		{
-			if(ui_stat_reposition(required_height,
-						cfg.wild_menu && cfg.wild_popup && input_stat.complete_continue))
-			{
-				ui_stat_refresh();
-			}
+			ui_stat_refresh();
 		}
-		else
-		{
-			wresize(menu_win, screen_height - required_height, getmaxx(stdscr));
-			update_menu();
-			wrefresh(menu_win);
-		}
+	}
+	else
+	{
+		wresize(menu_win, getmaxy(stdscr) - required_height, getmaxx(stdscr));
+		update_menu();
+		wrefresh(menu_win);
 	}
 }
 
