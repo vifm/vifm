@@ -84,10 +84,31 @@ static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
-static void goto_line(int line);
 static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
+#ifndef _WIN32
+static void cmd_r(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_o(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
+#endif
+static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_a(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
+static void goto_line(int line);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
@@ -110,6 +131,27 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_e}}},
+	{L"f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_f}}},
+	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
+	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
+	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
+	{L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
+#ifndef _WIN32
+	{L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_r}}},
+	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_R}}},
+	{L"M", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
+	{L"p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
+	{L"o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_o}}},
+	{L"O", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
+	{L"L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
+#endif
+	{L"s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_s}}},
+	{L"i", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
+	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
+	{L"a", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_a}}},
+	{L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_c}}},
+	{L"m", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_m}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
@@ -148,7 +190,7 @@ enter_sort_mode(FileView *active_view)
 	top = 4;
 	bottom = top + SK_COUNT - 1;
 	curr = top + indexes[abs(view->sort[0])];
-	col = 6;
+	col = 4;
 
 	redraw_sort_dialog();
 }
@@ -169,34 +211,34 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, 0, (getmaxx(sort_win) - 6)/2, " Sort ");
 	mvwaddstr(sort_win, top - 2, 2, " Sort files by:");
 	cy = top;
-	mvwaddstr(sort_win, cy++, 4, " [   ] Extension");
-	mvwaddstr(sort_win, cy++, 4, " [   ] File Extension");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Type");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Dir");
+	mvwaddstr(sort_win, cy++, 2, " [   ] e Extension");
+	mvwaddstr(sort_win, cy++, 2, " [   ] f File Extension");
+	mvwaddstr(sort_win, cy++, 2, " [   ] n Name");
+	mvwaddstr(sort_win, cy++, 2, " [   ] N Name (ignore case)");
+	mvwaddstr(sort_win, cy++, 2, " [   ] t Type");
+	mvwaddstr(sort_win, cy++, 2, " [   ] d Dir");
 #ifndef _WIN32
-	mvwaddstr(sort_win, cy++, 4, " [   ] Group ID");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Group Name");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Mode");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Permissions");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Owner ID");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Owner Name");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Links Count");
+	mvwaddstr(sort_win, cy++, 2, " [   ] r Group ID");
+	mvwaddstr(sort_win, cy++, 2, " [   ] R Group Name");
+	mvwaddstr(sort_win, cy++, 2, " [   ] M Mode");
+	mvwaddstr(sort_win, cy++, 2, " [   ] p Permissions");
+	mvwaddstr(sort_win, cy++, 2, " [   ] o Owner ID");
+	mvwaddstr(sort_win, cy++, 2, " [   ] O Owner Name");
+	mvwaddstr(sort_win, cy++, 2, " [   ] L Links Count");
 #endif
-	mvwaddstr(sort_win, cy++, 4, " [   ] Size");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Item Count");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Groups");
-	mvwaddstr(sort_win, cy++, 4, " [   ] Time Accessed");
+	mvwaddstr(sort_win, cy++, 2, " [   ] s Size");
+	mvwaddstr(sort_win, cy++, 2, " [   ] i Item Count");
+	mvwaddstr(sort_win, cy++, 2, " [   ] u Groups");
+	mvwaddstr(sort_win, cy++, 2, " [   ] a Time Accessed");
 #ifndef _WIN32
-	mvwaddstr(sort_win, cy++, 4, " [   ] Time Changed");
+	mvwaddstr(sort_win, cy++, 2, " [   ] c Time Changed");
 #else
-	mvwaddstr(sort_win, cy++, 4, " [   ] Time Created");
+	mvwaddstr(sort_win, cy++, 2, " [   ] c Time Created");
 #endif
-	mvwaddstr(sort_win, cy++, 4, " [   ] Time Modified");
+	mvwaddstr(sort_win, cy++, 2, " [   ] m Time Modified");
 	assert(cy - top == SK_COUNT &&
 			"Sort dialog and sort options should not diverge");
-	mvwaddstr(sort_win, curr, 6, caps[descending]);
+	mvwaddstr(sort_win, curr, 4, caps[descending]);
 
 	wrefresh(sort_win);
 }
@@ -260,20 +302,6 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-goto_line(int line)
-{
-	if(line > bottom)
-		line = bottom;
-	if(curr == line)
-		return;
-
-	clear_at_pos();
-	curr = line;
-	print_at_pos();
-	wrefresh(sort_win);
-}
-
-static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	descending = !descending;
@@ -308,6 +336,162 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 	if(curr < top)
 		curr = top;
 
+	print_at_pos();
+	wrefresh(sort_win);
+}
+
+static void
+cmd_e(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 0);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_f(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 1);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_n(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 2);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_N(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 3);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_t(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 4);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_d(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 5);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+#ifndef _WIN32
+
+static void
+cmd_r(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 6);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_R(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 7);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_M(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 8);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_p(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 9);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_o(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 10);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_O(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 11);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_L(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 12);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+#endif
+
+static void
+cmd_s(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 13 + CORRECTION);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_i(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 14 + CORRECTION);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_u(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 15 + CORRECTION);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_a(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 16 + CORRECTION);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_c(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 17 + CORRECTION);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+static void
+cmd_m(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 18 + CORRECTION);
+	cmd_ctrl_m(key_info, keys_info);
+}
+
+/* Moves cursor to the specified line and updates the dialog. */
+static void
+goto_line(int line)
+{
+	if(line > bottom)
+	{
+		line = bottom;
+	}
+	if(curr == line)
+	{
+		return;
+	}
+
+	clear_at_pos();
+	curr = line;
 	print_at_pos();
 	wrefresh(sort_win);
 }
