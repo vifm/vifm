@@ -4,6 +4,8 @@
 
 	Added :noh[lsearch] command to menu mode.
 
+	Added quick shortcuts to dialogs.  Patch by oo-.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
