@@ -84,7 +84,6 @@ static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
-static void goto_line(int line);
 static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -107,6 +106,7 @@ static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
+static void goto_line(int line);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
@@ -298,20 +298,6 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-goto_line(int line)
-{
-	if(line > bottom)
-		line = bottom;
-	if(curr == line)
-		return;
-
-	clear_at_pos();
-	curr = line;
-	print_at_pos();
-	wrefresh(sort_win);
-}
-
-static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	descending = !descending;
@@ -481,6 +467,25 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 18 + CORRECTION);
 	cmd_ctrl_m(key_info, keys_info);
+}
+
+/* Moves cursor to the specified line and updates the dialog. */
+static void
+goto_line(int line)
+{
+	if(line > bottom)
+	{
+		line = bottom;
+	}
+	if(curr == line)
+	{
+		return;
+	}
+
+	clear_at_pos();
+	curr = line;
+	print_at_pos();
+	wrefresh(sort_win);
 }
 
 static void
