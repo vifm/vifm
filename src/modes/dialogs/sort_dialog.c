@@ -93,6 +93,7 @@ static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
+#ifndef _WIN32
 static void cmd_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
@@ -100,6 +101,7 @@ static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
+#endif
 static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
@@ -135,6 +137,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
 	{L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
+#ifndef _WIN32
 	{L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_r}}},
 	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_R}}},
 	{L"M", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
@@ -142,6 +145,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_o}}},
 	{L"O", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
+#endif
 	{L"s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_s}}},
 	{L"i", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
 	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
@@ -378,6 +382,8 @@ cmd_d(key_info_t key_info, keys_info_t *keys_info)
 	cmd_ctrl_m(key_info, keys_info);
 }
 
+#ifndef _WIN32
+
 static void
 cmd_r(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -426,6 +432,8 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 	goto_line(top + 12);
 	cmd_ctrl_m(key_info, keys_info);
 }
+
+#endif
 
 static void
 cmd_s(key_info_t key_info, keys_info_t *keys_info)
