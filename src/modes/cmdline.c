@@ -2583,8 +2583,8 @@ stop_regular_completion(void)
 	if(cfg.wild_menu &&
 			(sub_mode != CLS_MENU_COMMAND && input_stat.complete != NULL))
 	{
-		update_stat_window(curr_view);
-		update_cmdline_size();
+		update_stat_window(curr_view, 1);
+		ui_stat_reposition(get_required_height(), 0);
 		update_all_windows();
 	}
 }

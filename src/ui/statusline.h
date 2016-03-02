@@ -26,7 +26,8 @@
 /* Status line managing.  Job bar is considered as a continuation of status bar,
  * but its visibility is controlled separately. */
 
-void update_stat_window(FileView *view);
+/* Redraw contents of stat line (possibly lazily). */
+void update_stat_window(FileView *view, int lazy_redraw);
 
 /* Puts status line where it's suppose to be according to other elements (also
  * moves job bar).  If displaying status line is disabled, force flag can help

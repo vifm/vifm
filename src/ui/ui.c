@@ -552,7 +552,7 @@ update_screen(UpdateType update_kind)
 		redraw_msg_dialog(0);
 	}
 
-	update_stat_window(curr_view);
+	update_stat_window(curr_view, 0);
 
 	if(!is_status_bar_multiline())
 	{
