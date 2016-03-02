@@ -24,9 +24,9 @@
 #include <string.h> /* strdup() */
 
 #include "../compat/reallocarray.h"
+#include "../utils/darray.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
-#include "../utils/string_array.h"
 
 static enum
 {
@@ -36,8 +36,10 @@ static enum
 }
 state = NOT_STARTED;
 
-static char **lines;
-static int count;
+/* List of completion items. */
+static vle_compl_t *items;
+/* Declarations to enable use of DA_* on items. */
+static DA_INSTANCE(items);
 static int curr = -1;
 static int group_begin;
 static int order;
@@ -45,18 +47,23 @@ static int order;
 /* Function called . */
 static vle_compl_add_path_hook_f add_path_hook = &strdup;
 
-static int add_match(char match[]);
+static int add_match(char match[], const char descr[]);
 static void group_unique_sort(size_t start_index, size_t len);
 static int sorter(const void *first, const void *second);
-static size_t remove_duplicates(char **arr, size_t count);
+static void remove_duplicates(vle_compl_t arr[], size_t count);
 
 void
 vle_compl_reset(void)
 {
-	free_string_array(lines, count);
-	lines = NULL;
+	size_t i;
 
-	count = 0;
+	for(i = 0U; i < DA_SIZE(items); ++i)
+	{
+		free(items[i].text);
+		free(items[i].descr);
+	}
+	DA_REMOVE_ALL(items);
+
 	state = NOT_STARTED;
 	curr = -1;
 	group_begin = 0;
@@ -64,22 +71,22 @@ vle_compl_reset(void)
 }
 
 int
-vle_compl_add_match(const char match[])
+vle_compl_add_match(const char match[], const char descr[])
 {
-	return vle_compl_put_match(strdup(match));
+	return vle_compl_put_match(strdup(match), descr);
 }
 
 int
-vle_compl_put_match(char match[])
+vle_compl_put_match(char match[], const char descr[])
 {
-	return add_match(match);
+	return add_match(match, descr);
 }
 
 int
 vle_compl_add_path_match(const char path[])
 {
 	char *const match = add_path_hook(path);
-	return add_match(match);
+	return add_match(match, "");
 }
 
 int
@@ -87,7 +94,7 @@ vle_compl_put_path_match(char path[])
 {
 	if(add_path_hook == &strdup)
 	{
-		return add_match(path);
+		return add_match(path, "");
 	}
 	else
 	{
@@ -101,9 +108,10 @@ vle_compl_put_path_match(char path[])
  * by the match.  Errors if match is NULL.  Returns zero on success, otherwise
  * non-zero is returned. */
 static int
-add_match(char match[])
+add_match(char match[], const char descr[])
 {
-	char **p;
+	vle_compl_t *item;
+
 	assert(state != COMPLETING);
 
 	if(match == NULL)
@@ -111,16 +119,20 @@ add_match(char match[])
 		return -1;
 	}
 
-	p = reallocarray(lines, count + 1, sizeof(*lines));
-	if(p == NULL)
+	item = DA_EXTEND(items);
+	if(item == NULL)
 	{
-		free(match);
-		return -1;
+		return 1;
 	}
-	lines = p;
 
-	lines[count] = match;
-	count++;
+	item->text = match;
+	item->descr = strdup(descr);
+	if(item->descr == NULL)
+	{
+		return 1;
+	}
+
+	DA_COMMIT(items);
 
 	state = FILLING_LIST;
 	return 0;
@@ -129,7 +141,7 @@ add_match(char match[])
 int
 vle_compl_add_last_match(const char origin[])
 {
-	return vle_compl_add_match(origin);
+	return vle_compl_add_match(origin, "");
 }
 
 int
@@ -141,14 +153,14 @@ vle_compl_add_last_path_match(const char origin[])
 void
 vle_compl_finish_group(void)
 {
-	const size_t n_group_items = count - group_begin;
+	const size_t n_group_items = DA_SIZE(items) - group_begin;
 	group_unique_sort(group_begin, n_group_items);
 }
 
 void
 vle_compl_unite_groups(void)
 {
-	group_unique_sort(0, count);
+	group_unique_sort(0, DA_SIZE(items));
 }
 
 /* Sorts items of the list in range [start_index, start_index + len) with
@@ -156,7 +168,7 @@ vle_compl_unite_groups(void)
 static void
 group_unique_sort(size_t start_index, size_t len)
 {
-	char **const group_start = lines + start_index;
+	vle_compl_t *const group_start = items + start_index;
 
 	assert(state != COMPLETING);
 
@@ -164,91 +176,109 @@ group_unique_sort(size_t start_index, size_t len)
 	{
 		qsort(group_start, len, sizeof(*group_start), &sorter);
 	}
-	count = start_index + remove_duplicates(group_start, len);
-	group_begin = count;
+	remove_duplicates(group_start, len);
+	group_begin = DA_SIZE(items);
 }
 
+/* qsort() comparison criterion implementation.  Returns standard < 0, = 0,
+ * > 0.*/
 static int
 sorter(const void *first, const void *second)
 {
-	const char *stra = *(const char **)first;
-	const char *strb = *(const char **)second;
-	size_t lena = strlen(stra), lenb = strlen(strb);
-	if(stroscmp(stra, "./") == 0)
-		return -1;
-	if(stroscmp(strb, "./") == 0)
+	const char *const stra = ((const vle_compl_t *)first)->text;
+	const char *const strb = ((const vle_compl_t *)second)->text;
+	const size_t lena = strlen(stra);
+	const size_t lenb = strlen(strb);
+
+	if(strcmp(stra, "./") == 0 || strcmp(strb, "./") == 0)
+	{
 		return 1;
+	}
+
 	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
 	{
 		size_t len = MIN(lena - 1, lenb - 1);
-		/* compare case sensitive strings even on Windows */
-		int res = strncmp(stra, strb, len);
-		if(res == 0)
+		/* Compare case sensitive strings even on Windows. */
+		if(strncmp(stra, strb, len) == 0)
+		{
 			return lena - lenb;
+		}
 	}
-	/* compare case sensitive strings even on Windows */
+
+	/* Compare case sensitive strings even on Windows. */
 	return strcmp(stra, strb);
 }
 
 char *
 vle_compl_next(void)
 {
-	assert(state != NOT_STARTED);
+	assert(state != NOT_STARTED && "Invalid unit state.");
 	state = COMPLETING;
 
 	if(curr == -1)
 	{
-		size_t n_group_items = count - group_begin;
-		count = group_begin + remove_duplicates(lines + group_begin, n_group_items);
+		const size_t n_group_items = DA_SIZE(items) - group_begin;
+		remove_duplicates(items + group_begin, n_group_items);
 	}
 
-	if(count == 2)
+	if(DA_SIZE(items) == 2)
 	{
-		int t = (curr == -1) ? 0 : curr;
+		const int idx = (curr == -1) ? 0 : curr;
 		curr = 0;
-		return strdup(lines[t]);
+		return strdup(items[idx].text);
 	}
 
-	if(!order) /* straight order */
+	if(!order)
 	{
-		curr = (curr + 1) % count;
+		/* Straight order. */
+		curr = (curr + 1) % DA_SIZE(items);
 	}
-	else /* reverse order */
+	else
 	{
+		/* Reverse order. */
 		if(curr == -1)
-			curr = count - 2;
+		{
+			curr = DA_SIZE(items) - 2U;
+		}
 		else
-			curr--;
+		{
+			--curr;
+		}
 		if(curr < 0)
-			curr = count - 1;
+		{
+			curr = DA_SIZE(items) - 1U;
+		}
 	}
-	return strdup(lines[curr]);
+	return strdup(items[curr].text);
 }
 
-/* Removes series consecutive duplicates.
- * Returns new count. */
-static size_t
-remove_duplicates(char **arr, size_t count)
+/* Removes series of consecutive duplicates. */
+static void
+remove_duplicates(vle_compl_t arr[], size_t count)
 {
 	size_t i, j;
-	j = 1;
-	for(i = j; i < count; i++)
+	j = 1U;
+	for(i = j; i < count; ++i)
 	{
-		/* compare case sensitive strings even on Windows */
-		if(strcmp(arr[i], arr[j - 1]) == 0)
+		/* Compare case sensitive strings even on Windows. */
+		if(strcmp(arr[i].text, arr[j - 1].text) == 0)
 		{
-			free(arr[i]);
+			free(arr[i].text);
+			free(arr[i].descr);
 			continue;
 		}
 		arr[j++] = arr[i];
 	}
-	return (count == 0) ? 0 : j;
+	if(count != 0U)
+	{
+		DA_REMOVE_AFTER(items, &arr[j]);
+	}
 }
 
 int
 vle_compl_get_count(void)
 {
-	return count;
+	return DA_SIZE(items);
 }
 
 void
@@ -257,10 +287,10 @@ vle_compl_set_order(int reversed)
 	order = reversed;
 }
 
-const char **
-vle_compl_get_list(void)
+const vle_compl_t *
+vle_compl_get_items(void)
 {
-	return (const char **)lines;
+	return items;
 }
 
 int
@@ -272,12 +302,16 @@ vle_compl_get_pos(void)
 void
 vle_compl_rewind(void)
 {
-	assert(state == COMPLETING);
+	assert(state == COMPLETING && "Invalid unit state.");
 
-	if(count == 2)
+	if(DA_SIZE(items) == 2)
+	{
 		curr = 1;
-	else if(count > 2)
-		curr = count - 2;
+	}
+	else if(DA_SIZE(items) > 2)
+	{
+		curr = DA_SIZE(items) - 2;
+	}
 }
 
 void

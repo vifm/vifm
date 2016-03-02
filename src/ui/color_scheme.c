@@ -69,15 +69,38 @@ char *HI_GROUPS[] = {
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
+const char *HI_GROUPS_DESCR[] = {
+	[WIN_COLOR]          = "base highlight of every window",
+	[DIRECTORY_COLOR]    = "directories and links to directories",
+	[LINK_COLOR]         = "symbolic links",
+	[BROKEN_LINK_COLOR]  = "dangling symbolic links",
+	[SOCKET_COLOR]       = "sockets",
+	[DEVICE_COLOR]       = "device file",
+	[FIFO_COLOR]         = "pipe",
+	[EXECUTABLE_COLOR]   = "executable file",
+	[SELECTED_COLOR]     = "selected item",
+	[CURR_LINE_COLOR]    = "cursor in active pane",
+	[TOP_LINE_COLOR]     = "base top line highlight",
+	[TOP_LINE_SEL_COLOR] = "active window title",
+	[STATUS_LINE_COLOR]  = "status line",
+	[WILD_MENU_COLOR]    = "completion box",
+	[CMD_LINE_COLOR]     = "status/command-line bar",
+	[ERROR_MSG_COLOR]    = "error message",
+	[BORDER_COLOR]       = "horizontal borders",
+	[OTHER_LINE_COLOR]   = "cursor in inactive pane",
+	[JOB_LINE_COLOR]     = "job bar",
+};
+ARRAY_GUARD(HI_GROUPS_DESCR, ARRAY_LEN(HI_GROUPS));
+
 char *LIGHT_COLOR_NAMES[8] = {
-	[COLOR_BLACK] = "lightblack",
-	[COLOR_RED] = "lightred",
-	[COLOR_GREEN] = "lightgreen",
-	[COLOR_YELLOW] = "lightyellow",
-	[COLOR_BLUE] = "lightblue",
+	[COLOR_BLACK]   = "lightblack",
+	[COLOR_RED]     = "lightred",
+	[COLOR_GREEN]   = "lightgreen",
+	[COLOR_YELLOW]  = "lightyellow",
+	[COLOR_BLUE]    = "lightblue",
 	[COLOR_MAGENTA] = "lightmagenta",
-	[COLOR_CYAN] = "lightcyan",
-	[COLOR_WHITE] = "lightwhite",
+	[COLOR_CYAN]    = "lightcyan",
+	[COLOR_WHITE]   = "lightwhite",
 };
 
 char *XTERM256_COLOR_NAMES[256] = {
@@ -879,7 +902,7 @@ complete_colorschemes(const char name[])
 		{
 			if(strnoscmp(name, schemes[i], len) == 0)
 			{
-				vle_compl_add_match(schemes[i]);
+				vle_compl_add_match(schemes[i], "");
 			}
 		}
 	}

@@ -50,6 +50,7 @@ CMD_TYPE;
 typedef struct cmd_t
 {
 	char *name;
+	const char *descr; /* Brief description of the command. */
 	int id;
 	CMD_TYPE type;
 	int passed;
@@ -70,7 +71,8 @@ typedef struct cmd_t
 	int quote;
 
 	struct cmd_t *next;
-}cmd_t;
+}
+cmd_t;
 
 typedef struct
 {
@@ -78,7 +80,8 @@ typedef struct
 	cmd_add_t user_cmd_handler;
 	cmd_handler command_handler;
 	int udf_count;
-}inner_t;
+}
+inner_t;
 
 /* List of characters, which are treated as range separators. */
 static const char *RANGE_SEPARATORS = ",;";
@@ -118,14 +121,17 @@ init_cmds(int udf, cmds_conf_t *conf)
 	static cmd_add_t commands[] = {
 		{
 			.name = "comclear",   .abbr = "comc", .handler = comclear_cmd,   .id = COMCLEAR_CMD_ID,   .quote = 0,
+			.descr = "remove all user-defined :commands",
 			.range = 0,           .emark = 0,     .qmark = 0,                .regexp = 0,             .select = 0,
 			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = 0,
 		}, {
 			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,    .quote = 0,
+			.descr = "display/define user-defined :command",
 			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
 			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = NOT_DEF,
 		}, {
 			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd, .id = DELCOMMAND_CMD_ID, .quote = 0,
+			.descr = "undefine user-defined :command",
 			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
 			.expand = 0,          .bg = 0,        .min_args = 1,             .max_args = 1,
 		}
@@ -826,8 +832,10 @@ complete_cmd_name(const char cmd_name[], int user_only)
 			;
 		else if(cur->name[0] == '\0')
 			;
+		else if(cur->type == USER_CMD)
+			vle_compl_add_match(cur->name, cur->cmd);
 		else
-			vle_compl_add_match(cur->name);
+			vle_compl_add_match(cur->name, cur->descr);
 		cur = cur->next;
 	}
 
@@ -838,7 +846,7 @@ void
 add_builtin_commands(const cmd_add_t *cmds, int count)
 {
 	int i;
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; ++i)
 	{
 		int ret_code;
 		assert(cmds[i].min_args >= 0);
@@ -914,6 +922,7 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 	if((new = insert_cmd(cur)) == NULL)
 		return -1;
 	new->name = strdup(name);
+	new->descr = conf->descr;
 	new->id = conf->id;
 	new->handler = conf->handler;
 	new->type = abbr ? BUILTIN_ABBR : BUILTIN_CMD;
@@ -1028,6 +1037,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	}
 
 	new->name = strdup(cmd_name);
+	new->descr = NULL;
 	new->id = USER_CMD_ID;
 	new->type = USER_CMD;
 	new->passed = 0;

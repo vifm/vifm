@@ -1046,6 +1046,7 @@ write_options(FILE *const fp)
 
 	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
 	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
+	fprintf(fp, "=wildstyle=%s\n", cfg.wild_popup ? "popup" : "bar");
 	fprintf(fp, "=wordchars=%s\n",
 			escape_spaces(get_option_value("wordchars", OPT_GLOBAL)));
 	fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");

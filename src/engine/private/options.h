@@ -37,17 +37,18 @@ extern const char OPT_NAME_CHARS[];
  * have the full member set to the name member of other structure. */
 typedef struct
 {
-	char *name;          /* Name of an option. */
-	OPT_TYPE type;       /* Option type. */
-	OPT_SCOPE scope;     /* Scope: local or global. */
-	optval_t val;        /* Current value of an option. */
-	optval_t def;        /* Default value of an option. */
-	opt_handler handler; /* A pointer to option handler. */
-	int val_count;       /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
-	const char **vals;   /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
+	char *name;             /* Name of an option. */
+	const char *descr;      /* Option description. */
+	OPT_TYPE type;          /* Option type. */
+	OPT_SCOPE scope;        /* Scope: local or global. */
+	optval_t val;           /* Current value of an option. */
+	optval_t def;           /* Default value of an option. */
+	opt_handler handler;    /* A pointer to option handler. */
+	int val_count;          /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
+	const char *(*vals)[2]; /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
 
 	/* This is not a pointer because they change on inserting options. */
-	const char *full;    /* Points to full name of the option. */
+	const char *full;       /* Points to full name of the option. */
 }
 opt_t;
 

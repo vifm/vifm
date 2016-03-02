@@ -123,7 +123,7 @@ string_array_pos(char *array[], size_t len, const char item[])
 	size_t i = len;
 	if(item != NULL)
 	{
-		for(i = 0; i < len; i++)
+		for(i = 0U; i < len; ++i)
 		{
 			if(strcmp(array[i], item) == 0)
 			{

@@ -16,6 +16,7 @@ SETUP()
 {
 	static const cmd_add_t move = {
 		.name = "move",       .abbr = "m", .emark = 1,  .id = -1,      .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
+		.descr = "descr",
 		.handler = &move_cmd, .qmark = 1,  .expand = 0, .cust_sep = 0, .min_args = 0, .max_args = NOT_DEF, .select = 1,
 	};
 

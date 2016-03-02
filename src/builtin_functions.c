@@ -48,15 +48,15 @@ static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 
 static const function_t functions[] = {
-	/* Name        Argc  Handler  */
-	{ "executable",  1, &executable_builtin },
-	{ "expand",      1, &expand_builtin },
-	{ "filetype",    1, &filetype_builtin },
-	{ "getpanetype", 0, &getpanetype_builtin},
-	{ "has",         1, &has_builtin },
-	{ "layoutis",    1, &layoutis_builtin },
-	{ "paneisat",    1, &paneisat_builtin },
-	{ "system",      1, &system_builtin },
+	/* Name          Description                 Argc  Handler  */
+	{ "executable",  "check for executable file",  1, &executable_builtin },
+	{ "expand",      "expand macros in a string",  1, &expand_builtin },
+	{ "filetype",    "retrieve type of a file",    1, &filetype_builtin },
+	{ "getpanetype", "retrieve type of file list", 0, &getpanetype_builtin},
+	{ "has",         "check for specific ability", 1, &has_builtin },
+	{ "layoutis",    "query current layout",       1, &layoutis_builtin },
+	{ "paneisat",    "query pane location",        1, &paneisat_builtin },
+	{ "system",      "execute external command",   1, &system_builtin },
 };
 
 void

@@ -137,6 +137,7 @@ cfg_init(void)
 	cfg.use_term_multiplexer = 0;
 	cfg.use_vim_help = 0;
 	cfg.wild_menu = 0;
+	cfg.wild_popup = 0;
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;

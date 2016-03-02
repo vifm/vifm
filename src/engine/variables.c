@@ -724,17 +724,17 @@ complete_variables(const char *cmd, const char **start)
 	size_t len;
 	assert(initialized && "Variables unit is not initialized.");
 
-	/* currently we support only environment variables */
+	/* Currently we support only environment variables. */
 	if(*cmd != '$')
 	{
 		*start = cmd;
-		vle_compl_add_match(cmd);
+		vle_compl_add_match(cmd, "");
 		return;
 	}
-	cmd++;
+	++cmd;
 	*start = cmd;
 
-	/* add all variables that start with given beginning */
+	/* Add all variables that start with given beginning. */
 	len = strlen(cmd);
 	for(i = 0U; i < nvars; ++i)
 	{
@@ -743,7 +743,7 @@ complete_variables(const char *cmd, const char **start)
 		if(vars[i].removed)
 			continue;
 		if(strnoscmp(vars[i].name, cmd, len) == 0)
-			vle_compl_add_match(vars[i].name);
+			vle_compl_add_match(vars[i].name, vars[i].val);
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(cmd);

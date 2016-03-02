@@ -8,32 +8,36 @@
 
 static void dummy_handler(OPT_OP op, optval_t val);
 
-static const char cpoptions_charset[] = "abc";
-static const char * cpoptions_vals = cpoptions_charset;
-
-static const char * sort_enum[] = {
-	"ext",
-	"name",
-	"gid",
-	"gname",
-	"mode",
-	"uid",
-	"uname",
-	"size",
-	"atime",
-	"ctime",
-	"mtime",
+static const char *cpoptions_vals[][2] = {
+	{ "abc", "descr" },
+	{ "a", "descr" },
+	{ "b", "descr" },
+	{ "c", "descr" },
 };
 
-static const char * vifminfo_set[] = {
-	"options",
-	"filetypes",
-	"commands",
-	"bookmarks",
-	"tui",
-	"dhistory",
-	"state",
-	"cs",
+static const char *sort_enum[][2] = {
+	{ "ext",   "descr" },
+	{ "name",  "descr" },
+	{ "gid",   "descr" },
+	{ "gname", "descr" },
+	{ "mode",  "descr" },
+	{ "uid",   "descr" },
+	{ "uname", "descr" },
+	{ "size",  "descr" },
+	{ "atime", "descr" },
+	{ "ctime", "descr" },
+	{ "mtime", "descr" },
+};
+
+static const char *vifminfo_set[][2] = {
+	{ "options",   "descr" },
+	{ "filetypes", "descr" },
+	{ "commands",  "descr" },
+	{ "bookmarks", "descr" },
+	{ "tui",       "descr" },
+	{ "dhistory",  "descr" },
+	{ "state",     "descr" },
+	{ "cs",        "descr" },
 };
 
 SETUP()
@@ -44,42 +48,42 @@ SETUP()
 	init_options(&option_changed);
 
 	val.str_val = "bc";
-	add_option("cpoptions", "cpo", OPT_CHARSET, OPT_GLOBAL,
-			ARRAY_LEN(cpoptions_charset) - 1, &cpoptions_vals, dummy_handler, val);
+	add_option("cpoptions", "cpo", "descr", OPT_CHARSET, OPT_GLOBAL,
+			ARRAY_LEN(cpoptions_vals), cpoptions_vals, dummy_handler, val);
 
 	val.bool_val = 0;
-	add_option("fastrun", "fr", OPT_BOOL, OPT_GLOBAL, 0, NULL, dummy_handler,
-			val);
+	add_option("fastrun", "fr", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
+			dummy_handler, val);
 
 	val.str_val = "fusehome-default";
-	add_option("fusehome", "fh", OPT_STR, OPT_GLOBAL, 0, NULL, dummy_handler,
-			val);
+	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+			dummy_handler, val);
 
 	val.str_val = "%r/.vifm-Trash,$HOME/.vifm/Trash";
-	add_option("trashdir", "td", OPT_STRLIST, OPT_GLOBAL, 0, NULL, dummy_handler,
-			val);
+	add_option("trashdir", "td", "descr", OPT_STRLIST, OPT_GLOBAL, 0, NULL,
+			dummy_handler, val);
 
 	val.enum_item = 1;
-	add_option("sort", "so", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
+	add_option("sort", "so", "descr", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
 			sort_enum, &dummy_handler, val);
 
 	/* Parsing unit doesn't accept options with underscores, although options unit
 	 * doesn't reject them.  Should it? */
 	val.enum_item = 1;
-	add_option("so_rt", "", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
+	add_option("so_rt", "", "descr", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
 			sort_enum, &dummy_handler, val);
 
 	val.int_val = 2;
-	add_option("tabstop", "ts", OPT_INT, OPT_GLOBAL, 0, NULL, &dummy_handler,
-			val);
+	add_option("tabstop", "ts", "descr", OPT_INT, OPT_GLOBAL, 0, NULL,
+			&dummy_handler, val);
 
 	val.int_val = 8;
-	add_option("tabstop", "ts", OPT_INT, OPT_LOCAL, 0, NULL, &dummy_handler,
-			val);
+	add_option("tabstop", "ts", "descr", OPT_INT, OPT_LOCAL, 0, NULL,
+			&dummy_handler, val);
 
 	val.set_items = 0x81;
-	add_option("vifminfo", "", OPT_SET, OPT_GLOBAL, ARRAY_LEN(vifminfo_set),
-			vifminfo_set, &dummy_handler, val);
+	add_option("vifminfo", "", "descr", OPT_SET, OPT_GLOBAL,
+			ARRAY_LEN(vifminfo_set), vifminfo_set, &dummy_handler, val);
 }
 
 TEARDOWN()

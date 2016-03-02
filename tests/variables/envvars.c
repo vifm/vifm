@@ -13,8 +13,8 @@ static var_t dummy(const call_info_t *call_info);
 
 SETUP_ONCE()
 {
-	static const function_t function_a = { "a", 1, &dummy };
-	assert_int_equal(0, function_register(&function_a));
+	static const function_t function_a = { "a", "descr", 1, &dummy };
+	assert_success(function_register(&function_a));
 }
 
 SETUP()

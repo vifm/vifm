@@ -462,7 +462,7 @@ resize_all(void)
 	correct_size(&rwin);
 
 	wresize(stat_win, 1, screen_x);
-	(void)ui_stat_reposition(1);
+	(void)ui_stat_reposition(1, 0);
 
 	wresize(job_bar, 1, screen_x);
 
@@ -552,7 +552,7 @@ update_screen(UpdateType update_kind)
 		redraw_msg_dialog(0);
 	}
 
-	update_stat_window(curr_view);
+	update_stat_window(curr_view, 0);
 
 	if(!is_status_bar_multiline())
 	{

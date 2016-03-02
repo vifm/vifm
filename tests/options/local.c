@@ -17,12 +17,12 @@ SETUP()
 	optval_t val;
 
 	val.bool_val = fastrun_local = 0;
-	add_option("fastrun", "", OPT_BOOL, OPT_LOCAL, 0, NULL, &fastrun_handler,
-			val);
+	add_option("fastrun", "", "descr", OPT_BOOL, OPT_LOCAL, 0, NULL,
+			&fastrun_handler, val);
 
 	val.str_val = "fusehome-default-local";
-	add_option("fusehome", "fh", OPT_STR, OPT_LOCAL, 0, NULL, &fusehome_handler,
-			val);
+	add_option("fusehome", "fh", "descr", OPT_STR, OPT_LOCAL, 0, NULL,
+			&fusehome_handler, val);
 }
 
 static void

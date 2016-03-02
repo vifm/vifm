@@ -65,10 +65,12 @@ SETUP()
 	execute_cmd("command foo c");
 
 	init_options(&option_changed);
-	add_option("fusehome", "fh", OPT_STR, OPT_GLOBAL, 0, NULL, &dummy_handler,
-			def);
-	add_option("path", "pt", OPT_STR, OPT_GLOBAL, 0, NULL, &dummy_handler, def);
-	add_option("path", "pt", OPT_STR, OPT_LOCAL, 0, NULL, &dummy_handler, def);
+	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+			&dummy_handler, def);
+	add_option("path", "pt", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+			&dummy_handler, def);
+	add_option("path", "pt", "descr", OPT_STR, OPT_LOCAL, 0, NULL,
+			&dummy_handler, def);
 
 	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));

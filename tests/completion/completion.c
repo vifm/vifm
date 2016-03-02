@@ -8,8 +8,8 @@ TEST(general)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("abc"));
-	assert_int_equal(0, vle_compl_add_match("acd"));
+	assert_int_equal(0, vle_compl_add_match("abc", ""));
+	assert_int_equal(0, vle_compl_add_match("acd", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
@@ -35,8 +35,8 @@ TEST(sorting)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("acd"));
-	assert_int_equal(0, vle_compl_add_match("abc"));
+	assert_int_equal(0, vle_compl_add_match("acd", ""));
+	assert_int_equal(0, vle_compl_add_match("abc", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
@@ -61,7 +61,7 @@ TEST(one_element_completion)
 
 	vle_compl_finish_group();
 
-	assert_int_equal(0, vle_compl_add_match("a"));
+	assert_int_equal(0, vle_compl_add_match("a", ""));
 
 	buf = vle_compl_next();
 	assert_string_equal("a", buf);
@@ -81,7 +81,7 @@ TEST(one_unambiguous_completion)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("abcd"));
+	assert_int_equal(0, vle_compl_add_match("abcd", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
@@ -98,7 +98,7 @@ TEST(rewind_one_unambiguous_completion)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("abcd"));
+	assert_int_equal(0, vle_compl_add_match("abcd", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
@@ -124,8 +124,8 @@ TEST(rewind_completion)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("acd"));
-	assert_int_equal(0, vle_compl_add_match("abc"));
+	assert_int_equal(0, vle_compl_add_match("acd", ""));
+	assert_int_equal(0, vle_compl_add_match("abc", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
@@ -169,8 +169,8 @@ TEST(order)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("aa"));
-	assert_int_equal(0, vle_compl_add_match("az"));
+	assert_int_equal(0, vle_compl_add_match("aa", ""));
+	assert_int_equal(0, vle_compl_add_match("az", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("a"));
@@ -194,9 +194,9 @@ TEST(umbiguous_begin)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("sort"));
-	assert_int_equal(0, vle_compl_add_match("sortorder"));
-	assert_int_equal(0, vle_compl_add_match("sortnumbers"));
+	assert_int_equal(0, vle_compl_add_match("sort", ""));
+	assert_int_equal(0, vle_compl_add_match("sortorder", ""));
+	assert_int_equal(0, vle_compl_add_match("sortnumbers", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("sort"));
@@ -226,9 +226,9 @@ TEST(two_matches)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("mountpoint"));
+	assert_int_equal(0, vle_compl_add_match("mountpoint", ""));
 	vle_compl_finish_group();
-	assert_int_equal(0, vle_compl_add_match("mount"));
+	assert_int_equal(0, vle_compl_add_match("mount", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("mount"));
@@ -254,9 +254,9 @@ TEST(removes_duplicates)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("mou"));
-	assert_int_equal(0, vle_compl_add_match("mount"));
-	assert_int_equal(0, vle_compl_add_match("mount"));
+	assert_int_equal(0, vle_compl_add_match("mou", ""));
+	assert_int_equal(0, vle_compl_add_match("mount", ""));
+	assert_int_equal(0, vle_compl_add_match("mount", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(0, vle_compl_add_last_match("m"));

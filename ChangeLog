@@ -6,6 +6,10 @@
 
 	Added quick shortcuts to dialogs.  Patch by oo-.
 
+	Added 'wildstyle' option to control the way wild menu is displayed.
+	Enables displaying it as a menu with one item per line.  Thanks to
+	santhoshr and octos.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

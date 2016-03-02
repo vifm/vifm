@@ -1441,7 +1441,7 @@ fview_position_updated(FileView *view)
 	draw_cell(view, &cdt, print_width, print_width);
 
 	refresh_view_win(view);
-	update_stat_window(view);
+	update_stat_window(view, 0);
 
 	if(curr_stats.view)
 	{

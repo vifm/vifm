@@ -41,7 +41,7 @@
 
 #include "../utils/str.h"
 
-static void update_stat_window_old(FileView *view);
+static void update_stat_window_old(FileView *view, int lazy_redraw);
 TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
 char * expand_view_macros(FileView *view, const char format[],
 		const char macros[]);
@@ -62,7 +62,7 @@ static bg_op_t **bar_jobs;
 static int job_bar_changed;
 
 void
-update_stat_window(FileView *view)
+update_stat_window(FileView *view, int lazy_redraw)
 {
 	int x;
 	char *buf;
@@ -82,7 +82,7 @@ update_stat_window(FileView *view)
 
 	if(cfg.status_line[0] == '\0')
 	{
-		update_stat_window_old(view);
+		update_stat_window_old(view, lazy_redraw);
 		return;
 	}
 
@@ -97,7 +97,15 @@ update_stat_window(FileView *view)
 	werase(stat_win);
 	checked_wmove(stat_win, 0, 0);
 	wprint(stat_win, buf);
-	wrefresh(stat_win);
+
+	if(lazy_redraw)
+	{
+		wnoutrefresh(stat_win);
+	}
+	else
+	{
+		wrefresh(stat_win);
+	}
 
 	free(buf);
 }
@@ -105,7 +113,7 @@ update_stat_window(FileView *view)
 /* Formats status line in the "old way" (before introduction of 'statusline'
  * option). */
 static void
-update_stat_window_old(FileView *view)
+update_stat_window_old(FileView *view, int lazy_redraw)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
 	char name_buf[160*2 + 1];
@@ -116,11 +124,6 @@ update_stat_window_old(FileView *view)
 	int cur_x;
 	size_t print_width;
 	char *filename;
-
-	if(!cfg.display_statusline)
-	{
-		return;
-	}
 
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
@@ -166,7 +169,14 @@ update_stat_window_old(FileView *view)
 		id_buf[0] = '\0';
 	mvwaddstr(stat_win, 0, cur_x, id_buf);
 
-	wrefresh(stat_win);
+	if(lazy_redraw)
+	{
+		wnoutrefresh(stat_win);
+	}
+	else
+	{
+		wrefresh(stat_win);
+	}
 }
 
 /* Expands view macros to be displayed on the status line according to the
@@ -374,9 +384,11 @@ check_expanded_str(const char buf[], int skip, int *nexpansions)
 }
 
 int
-ui_stat_reposition(int statusbar_height)
+ui_stat_reposition(int statusbar_height, int force_stat_win)
 {
-	const int stat_line_height = cfg.display_statusline ? 1 : 0;
+	const int stat_line_height = (force_stat_win || cfg.display_statusline)
+	                           ? getmaxy(stat_win)
+	                           : 0;
 	const int job_bar_height = ui_stat_job_bar_height();
 	const int y = getmaxy(stdscr)
 	            - statusbar_height
@@ -386,7 +398,7 @@ ui_stat_reposition(int statusbar_height)
 	mvwin(job_bar, y, 0);
 	wresize(job_bar, job_bar_height, getmaxx(job_bar));
 
-	if(cfg.display_statusline)
+	if(force_stat_win || cfg.display_statusline)
 	{
 		mvwin(stat_win, y + job_bar_height, 0);
 		return 1;

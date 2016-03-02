@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Feb 10
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Feb 28
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2629,6 +2629,19 @@ files are removed as usual, otherwise this command is invoked on each file by
 appending its name.  If the command doesn't remove files, they will remain on
 the file system.
 
+                                               *vifm-'dirsize'*
+dirsize
+type: enumeration
+default: size
+
+Controls how size of directories is displayed in file views.  The following
+values are possible:
+ - size   - size of directory (i.e., size used to store list of files)
+ - nitems - number of entries in the directory (excluding . and ..)
+
+Size obtained via ga/gA overwrites this setting so seeing count of files and
+occasionally size of directories is possible.
+
                                                *vifm-'dotdirs'*
 dotdirs
 type: set
@@ -2640,19 +2653,6 @@ Controls displaying of dot directories.  The following values are possible:
 
 Note that empty directories always contain "../" entry regardless of value of
 this option.  "../" disappears at the moment at least one file is created.
-
-                                               *vifm-'dirsize'*
-dirsize
-type: enum
-default: size
-
-Controls how size of directories is displayed in file views.  The following
-values are possible:
- - size   - size of directory (i.e., size used to store list of files)
- - nitems - number of entries in the directory (excluding . and ..)
-
-Size obtained via ga/gA overwrites this setting so seeing count of files and
-occasionally size of directories is possible.
 
                                                *vifm-'fastrun'*
 fastrun
@@ -2721,7 +2721,9 @@ followlinks
 type: boolean
 default: true
 
-Follow links on l or Enter.
+Follow links on l or Enter.  That is navigate to destination file instead of
+treating the link as if it were target file.  Doesn't affects links to
+directories, which are always entered (use |vifm-gf| for directories).
 
                                                *vifm-'fusehome'*
 fusehome
@@ -2777,8 +2779,7 @@ history hi
 type: integer
 default: 15
 
-Maximum number of directories in the view history and lines in the prompt,
-command line and search histories.
+Maximum number of stored items in all histories.
 
                                                *vifm-'hlsearch'* *vifm-'hls'*
 hlsearch hls
@@ -3303,6 +3304,15 @@ default: false
 
 Controls whether possible matches of completion will be shown above the
 command line.
+
+                                               *vifm-'wildstyle'*
+wildstyle
+type: enumeration
+default: bar
+
+Picks presentation style of wild menu.  Possible values:
+ - bar   - one-line with left-to-right cursor
+ - popup - multi-line with top-to-bottom cursor
 
                                                *vifm-'wordchars'*
 wordchars

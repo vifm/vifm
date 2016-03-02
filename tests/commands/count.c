@@ -13,7 +13,7 @@ static int wincmd_cmd(const cmd_info_t* cmd_info);
 static cmd_info_t cmdi;
 
 static const cmd_add_t commands[] = {
-	{ .name = "wincmd", .abbr = "winc", .handler = &wincmd_cmd, .id = -1,    .range = 1,    .cust_sep = 0,
+	{ .name = "wincmd", .abbr = "winc", .handler = &wincmd_cmd, .id = -1,    .range = 1,    .cust_sep = 0, .descr = "descr",
 		.emark = 0,       .qmark = 0,     .expand = 0,            .regexp = 0, .min_args = 1, .max_args = 1, .bg = 0,     },
 };
 

@@ -82,8 +82,8 @@ static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
 static void complete_winrun(const char str[]);
-static void complete_from_string_list(const char str[], const char *list[],
-		size_t list_len, int ignore_case);
+static void complete_from_string_list(const char str[], const char *items[][2],
+		size_t item_count, int ignore_case);
 static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
@@ -191,7 +191,9 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		/* Complete only first argument. */
 		if(argc <= 1 && !cmd_ends_with_space(args))
 		{
-			static const char *events[] = { "DirEnter" };
+			static const char *events[][2] = {
+				{ "DirEnter", "occurs on directory change" },
+			};
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
 	}
@@ -354,12 +356,12 @@ complete_colorscheme(const char *str, size_t arg_num)
 static void
 complete_selective_sync(const char str[])
 {
-	static const char *lines[] = {
-		"location",
-		"cursorpos",
-		"localopts",
-		"filters",
-		"all",
+	static const char *lines[][2] = {
+		{ "location",  "current directory" },
+		{ "cursorpos", "cursor position" },
+		{ "localopts", "values of view-specific options" },
+		{ "filters",   "all filters" },
+		{ "all",       "as much as possible" },
 	};
 
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
@@ -379,7 +381,7 @@ complete_help(const char *str)
 	{
 		if(strstr(tags[i], str) != NULL)
 		{
-			vle_compl_add_match(tags[i]);
+			vle_compl_add_match(tags[i], "");
 		}
 	}
 	vle_compl_finish_group();
@@ -390,13 +392,25 @@ complete_help(const char *str)
 static void
 complete_history(const char str[])
 {
-	static const char *lines[] = {
-		".", "dir",
-		"@", "input",
-		"/", "search", "fsearch",
-		"?", "bsearch",
-		":", "cmd",
-		"=", "filter",
+	static const char *lines[][2] = {
+		{ ".",       "directory visit history" },
+		{ "dir",     "directory visit history" },
+
+		{ "@",       "prompt input (e.g. file name)" },
+		{ "input",   "prompt input (e.g. file name)" },
+
+		{ "/",       "search patterns (forward)" },
+		{ "search",  "search patterns (forward)" },
+		{ "fsearch", "search patterns (forward)" },
+
+		{ "?",       "search patterns (backward)" },
+		{ "bsearch", "search patterns (backward)" },
+
+		{ ":",       "command-line commands" },
+		{ "cmd",     "command-line commands" },
+
+		{ "=",       "local filter patterns" },
+		{ "filter",  "local filter patterns" },
 	};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }
@@ -405,7 +419,11 @@ complete_history(const char str[])
 static void
 complete_invert(const char str[])
 {
-	static const char *lines[] = {"f", "s", "o"};
+	static const char *lines[][2] = {
+		{ "f", "filter state" },
+		{ "s", "file selection" },
+		{ "o", "primary sorting key" },
+	};
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }
 
@@ -456,14 +474,14 @@ complete_progs(const char *str, assoc_records_t records)
 
 	for(i = 0; i < records.count; i++)
 	{
-		char command[NAME_MAX];
+		const assoc_record_t *const assoc = &records.list[i];
+		char cmd[NAME_MAX];
 
-		(void)extract_cmd_name(records.list[i].command, 1, sizeof(command),
-				command);
+		(void)extract_cmd_name(assoc->command, 1, sizeof(cmd), cmd);
 
-		if(strnoscmp(command, str, len) == 0)
+		if(strnoscmp(cmd, str, len) == 0)
 		{
-			vle_compl_put_match(escape_chars(command, "|"));
+			vle_compl_put_match(escape_chars(cmd, "|"), assoc->description);
 		}
 	}
 }
@@ -478,12 +496,12 @@ complete_highlight_groups(const char *str)
 	{
 		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
 		{
-			vle_compl_add_match(HI_GROUPS[i]);
+			vle_compl_add_match(HI_GROUPS[i], HI_GROUPS_DESCR[i]);
 		}
 	}
 	if(strncmp(str, "clear", len) == 0)
 	{
-		vle_compl_add_match("clear");
+		vle_compl_add_match("clear", "restore default colors");
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
@@ -498,19 +516,19 @@ complete_highlight_arg(const char *str)
 	size_t len = strlen((equal == NULL) ? str : ++equal);
 	if(equal == NULL)
 	{
-		static const char *args[] = {
-			"cterm",
-			"ctermfg",
-			"ctermbg",
+		static const char *const args[][2] = {
+			{ "cterm",   "text attributes" },
+			{ "ctermfg", "foreground color" },
+			{ "ctermbg", "background color" },
 		};
 
 		size_t i;
 
 		for(i = 0U; i < ARRAY_LEN(args); ++i)
 		{
-			if(strncmp(str, args[i], len) == 0)
+			if(strncmp(str, args[i][0], len) == 0)
 			{
-				vle_compl_add_match(args[i]);
+				vle_compl_add_match(args[i][0], args[i][1]);
 			}
 		}
 	}
@@ -518,13 +536,13 @@ complete_highlight_arg(const char *str)
 	{
 		if(strncmp(str, "cterm", equal - str - 1) == 0)
 		{
-			static const char *STYLES[] = {
-				"bold",
-				"underline",
-				"reverse",
-				"inverse",
-				"standout",
-				"none",
+			static const char *const STYLES[][2] = {
+				{ "bold",      "bold text, lighter color" },
+				{ "underline", "underlined text" },
+				{ "reverse",   "reversed colors" },
+				{ "inverse",   "reversed colors" },
+				{ "standout",  "like bold or similar to it" },
+				{ "none",      "no attributes" },
 			};
 
 			size_t i;
@@ -539,9 +557,9 @@ complete_highlight_arg(const char *str)
 
 			for(i = 0U; i < ARRAY_LEN(STYLES); ++i)
 			{
-				if(strncasecmp(equal, STYLES[i], len) == 0)
+				if(strncasecmp(equal, STYLES[i][0], len) == 0)
 				{
-					vle_compl_add_match(STYLES[i]);
+					vle_compl_add_match(STYLES[i][0], STYLES[i][1]);
 				}
 			}
 		}
@@ -551,25 +569,25 @@ complete_highlight_arg(const char *str)
 
 			if(strncasecmp(equal, "default", len) == 0)
 			{
-				vle_compl_add_match("default");
+				vle_compl_add_match("default", "default or transparent color");
 			}
 			if(strncasecmp(equal, "none", len) == 0)
 			{
-				vle_compl_add_match("none");
+				vle_compl_add_match("none", "no specific attributes");
 			}
 
 			for(i = 0U; i < ARRAY_LEN(XTERM256_COLOR_NAMES); ++i)
 			{
 				if(strncasecmp(equal, XTERM256_COLOR_NAMES[i], len) == 0)
 				{
-					vle_compl_add_match(XTERM256_COLOR_NAMES[i]);
+					vle_compl_add_match(XTERM256_COLOR_NAMES[i], "");
 				}
 			}
 			for(i = 0U; i < ARRAY_LEN(LIGHT_COLOR_NAMES); ++i)
 			{
 				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
 				{
-					vle_compl_add_match(LIGHT_COLOR_NAMES[i]);
+					vle_compl_add_match(LIGHT_COLOR_NAMES[i], "");
 				}
 			}
 		}
@@ -597,7 +615,7 @@ complete_envvar(const char str[])
 			if(equal != NULL)
 			{
 				*equal = '\0';
-				vle_compl_add_match(*p);
+				vle_compl_add_match(*p, equal + 1);
 				*equal = '=';
 			}
 		}
@@ -612,26 +630,32 @@ complete_envvar(const char str[])
 static void
 complete_winrun(const char str[])
 {
-	static const char *win_marks[] = { "^", "$", "%", ".", "," };
+	static const char *win_marks[][2] = {
+		{ "^", "left/top view" },
+		{ "$", "right/bottom view" },
+		{ "%", "both views" },
+		{ ".", "active view" },
+		{ ",", "inactive view" },
+	};
 	complete_from_string_list(str, win_marks, ARRAY_LEN(win_marks), 0);
 }
 
-/* Performs str completion using items in the list of length list_len. */
+/* Performs str completion using items in the list of length item_count. */
 static void
-complete_from_string_list(const char str[], const char *list[], size_t list_len,
-		int ignore_case)
+complete_from_string_list(const char str[], const char *items[][2],
+		size_t item_count, int ignore_case)
 {
 	size_t i;
-	const size_t len = strlen(str);
-	for(i = 0; i < list_len; ++i)
+	const size_t prefix_len = strlen(str);
+	for(i = 0U; i < item_count; ++i)
 	{
 		const int cmp = ignore_case
-		              ? strncasecmp(str, list[i], len)
-		              : strncmp(str, list[i], len);
+		              ? strncasecmp(str, items[i][0], prefix_len)
+		              : strncmp(str, items[i][0], prefix_len);
 
 		if(cmp == 0)
 		{
-			vle_compl_add_match(list[i]);
+			vle_compl_add_match(items[i][0], items[i][1]);
 		}
 	}
 	vle_compl_finish_group();
@@ -886,7 +910,7 @@ is_dirent_targets_exec(const struct dirent *d)
 void
 complete_user_name(const char *str)
 {
-	struct passwd* pw;
+	struct passwd *pw;
 	size_t len;
 
 	len = strlen(str);
@@ -895,7 +919,7 @@ complete_user_name(const char *str)
 	{
 		if(strncmp(pw->pw_name, str, len) == 0)
 		{
-			vle_compl_add_match(pw->pw_name);
+			vle_compl_add_match(pw->pw_name, "");
 		}
 	}
 	vle_compl_finish_group();
@@ -905,7 +929,7 @@ complete_user_name(const char *str)
 void
 complete_group_name(const char *str)
 {
-	struct group* gr;
+	struct group *gr;
 	size_t len = strlen(str);
 
 	setgrent();
@@ -913,7 +937,7 @@ complete_group_name(const char *str)
 	{
 		if(strncmp(gr->gr_name, str, len) == 0)
 		{
-			vle_compl_add_match(gr->gr_name);
+			vle_compl_add_match(gr->gr_name, "");
 		}
 	}
 	vle_compl_finish_group();
@@ -956,7 +980,7 @@ complete_with_shared(const char *server, const char *file)
 				strcat(buf, "/");
 				if(strnoscmp(buf, file, len) == 0)
 				{
-					vle_compl_put_match(shell_like_escape(buf, 1));
+					vle_compl_put_match(shell_like_escape(buf, 1), "");
 				}
 				p++;
 			}

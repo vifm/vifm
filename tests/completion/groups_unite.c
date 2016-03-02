@@ -8,13 +8,13 @@ TEST(unite_removes_duplicates)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("echo"));
+	assert_int_equal(0, vle_compl_add_match("echo", ""));
 	vle_compl_finish_group();
-	assert_int_equal(0, vle_compl_add_match("ec"));
+	assert_int_equal(0, vle_compl_add_match("ec", ""));
 	vle_compl_finish_group();
-	assert_int_equal(0, vle_compl_add_match("echo"));
+	assert_int_equal(0, vle_compl_add_match("echo", ""));
 	vle_compl_finish_group();
-	assert_int_equal(0, vle_compl_add_match("e"));
+	assert_int_equal(0, vle_compl_add_match("e", ""));
 
 	assert_int_equal(4, vle_compl_get_count());
 
@@ -39,11 +39,11 @@ TEST(unite_sorts)
 {
 	char *buf;
 
-	assert_int_equal(0, vle_compl_add_match("ecz"));
+	assert_int_equal(0, vle_compl_add_match("ecz", ""));
 	vle_compl_finish_group();
-	assert_int_equal(0, vle_compl_add_match("ecj"));
+	assert_int_equal(0, vle_compl_add_match("ecj", ""));
 	vle_compl_finish_group();
-	assert_int_equal(0, vle_compl_add_match("eca"));
+	assert_int_equal(0, vle_compl_add_match("eca", ""));
 	vle_compl_finish_group();
 
 	assert_int_equal(3, vle_compl_get_count());
