@@ -119,7 +119,6 @@ static void *sub_mode_ptr;
 static int sub_mode_allows_ee;
 
 static int def_handler(wchar_t key);
-static void update_cmdline_size(void);
 static void update_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
 static void set_local_filter(const char value[]);
@@ -212,6 +211,7 @@ static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
 static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
+static void update_cmdline_size(void);
 TSTATIC int line_completion(line_stats_t *stat);
 static char * escaped_arg_hook(const char match[]);
 static char * squoted_arg_hook(const char match[]);
@@ -360,39 +360,6 @@ def_handler(wchar_t key)
 	update_cmdline_text(&input_stat);
 
 	return 0;
-}
-
-/* Make sure status bar size is taken into account in the TUI. */
-static void
-update_cmdline_size(void)
-{
-	const int required_height = get_required_height();
-	if(required_height < getmaxy(status_bar))
-	{
-		/* Do not shrink status bar. */
-		return;
-	}
-
-	/* This handles case when status bar didn't get larger to cover corner case
-	 * updates (e.g. first redraw). */
-
-	mvwin(status_bar, getmaxy(stdscr) - required_height, 0);
-	wresize(status_bar, required_height, line_width);
-
-	if(prev_mode != MENU_MODE)
-	{
-		if(ui_stat_reposition(required_height,
-					cfg.wild_menu && cfg.wild_popup && input_stat.complete_continue))
-		{
-			ui_stat_refresh();
-		}
-	}
-	else
-	{
-		wresize(menu_win, getmaxy(stdscr) - required_height, getmaxx(stdscr));
-		update_menu();
-		wrefresh(menu_win);
-	}
 }
 
 /* Update test displayed on the command line and cursor. */
@@ -2413,7 +2380,40 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 	return 0;
 }
 
-/* Returns non-zero on error */
+/* Make sure status bar size is taken into account in the TUI. */
+static void
+update_cmdline_size(void)
+{
+	const int required_height = get_required_height();
+	if(required_height < getmaxy(status_bar))
+	{
+		/* Do not shrink status bar. */
+		return;
+	}
+
+	/* This handles case when status bar didn't get larger to cover corner case
+	 * updates (e.g. first redraw). */
+
+	mvwin(status_bar, getmaxy(stdscr) - required_height, 0);
+	wresize(status_bar, required_height, line_width);
+
+	if(prev_mode != MENU_MODE)
+	{
+		if(ui_stat_reposition(required_height,
+					cfg.wild_menu && cfg.wild_popup && input_stat.complete_continue))
+		{
+			ui_stat_refresh();
+		}
+	}
+	else
+	{
+		wresize(menu_win, getmaxy(stdscr) - required_height, getmaxx(stdscr));
+		update_menu();
+		wrefresh(menu_win);
+	}
+}
+
+/* Returns non-zero on error. */
 TSTATIC int
 line_completion(line_stats_t *stat)
 {
