@@ -89,24 +89,36 @@ cmd_info_t;
 
 typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 
+/* Possible flags for cmd_add_t::flags field. */
+enum
+{
+	HAS_RANGE            = 0x0001, /* Handles ranges. */
+	HAS_CUST_SEP         = 0x0002, /* Custom separator of arguments. */
+	HAS_EMARK            = 0x0004, /* Supports emark flag. */
+	HAS_ENVVARS          = 0x0008, /* Expand environment variables. */
+	HAS_SELECTION_SCOPE  = 0x0010, /* Select files in a range. */
+	HAS_BG_FLAG          = 0x0020, /* Background (can have " &" at the end). */
+	HAS_REGEXP_ARGS      = 0x0040, /* Process /.../-arguments. */
+	HAS_QUOTED_ARGS      = 0x0080, /* Process '- and "-quoted args. */
+	HAS_COMMENT          = 0x0100, /* Trailing comment is allowed. */
+
+	/* Must be at most one of these. */
+	HAS_QMARK_NO_ARGS    = 0x0200, /* No args after qmark. */
+	HAS_QMARK_WITH_ARGS  = 0x0400, /* Args after qmark are allowed. */
+
+	/* Must be at most one of these. */
+	HAS_MACROS_FOR_CMD   = 0x0800, /* Expand macros without special escaping. */
+	HAS_MACROS_FOR_SHELL = 0x1000, /* Expand macros with shell escaping. */
+};
+
 typedef struct
 {
 	const char *name, *abbr;
 	const char *descr;
 	int id; /* -1 here means that this command don't require completion of args */
 	cmd_handler handler;
-	int range;
-	int cust_sep; /* custom separator of arguments */
-	int emark;
-	int qmark; /* 1 - no args after qmark, other value - args are allowed */
 	int min_args, max_args;
-	/* 0x01 - expand macros, 0x02 - expand envvars, 0x04 - expand for shell */
-	int expand;
-	int regexp;
-	int select; /* select files in range */
-	int bg; /* background */
-	int quote; /* whether need to take care of single and double quotes in args */
-	int comment; /* Whether trailing comment is allowed for the command. */
+	int flags; /* Set of HAS_* flags. */
 }
 cmd_add_t;
 

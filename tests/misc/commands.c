@@ -27,10 +27,12 @@ static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
 
 static const cmd_add_t commands[] = {
-	{ .name = "builtin", .abbr = NULL, .handler = builtin_cmd, .id = -1,    .range = 0,    .cust_sep = 0,
-		.emark = 1,        .qmark = 0,   .expand = 0,            .regexp = 0, .min_args = 0, .max_args = 0, .bg = 1, },
-	{ .name = "onearg",  .abbr = NULL, .handler = builtin_cmd, .id = -1,    .range = 0,    .cust_sep = 0,
-		.emark = 0,        .qmark = 0,   .expand = 0,            .regexp = 0, .min_args = 1, .max_args = 1, .bg = 0, },
+	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = HAS_EMARK | HAS_BG_FLAG,
+	  .handler = &builtin_cmd, .min_args = 0, .max_args = 0, },
+	{ .name = "onearg",        .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = 0,
+	  .handler = &builtin_cmd, .min_args = 1, .max_args = 1, },
 };
 
 static int called;

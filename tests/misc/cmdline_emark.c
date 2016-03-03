@@ -13,8 +13,9 @@
 static int builtin_cmd(const cmd_info_t* cmd_info);
 
 static const cmd_add_t commands[] = {
-	{ .name = "builtin", .abbr = NULL, .handler = builtin_cmd, .id = -1,    .range = 0,    .cust_sep = 0,
-		.emark = 1,        .qmark = 0,   .expand = 0,            .regexp = 0, .min_args = 0, .max_args = 0, .bg = 0, },
+	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = HAS_EMARK,
+	  .handler = &builtin_cmd, .min_args = 0, .max_args = 0, },
 };
 
 static int called;

@@ -15,9 +15,10 @@ static int move_cmd_called;
 SETUP()
 {
 	static const cmd_add_t move = {
-		.name = "move",       .abbr = "m", .emark = 1,  .id = -1,      .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
-		.descr = "descr",
-		.handler = &move_cmd, .qmark = 1,  .expand = 0, .cust_sep = 0, .min_args = 0, .max_args = NOT_DEF, .select = 1,
+	  .name = "move",       .abbr = "m",   .id = -1,            .descr = "descr",
+	  .flags = HAS_EMARK | HAS_RANGE | HAS_BG_FLAG | HAS_QUOTED_ARGS
+	         | HAS_QMARK_NO_ARGS | HAS_SELECTION_SCOPE,
+	  .handler = &move_cmd, .min_args = 0, .max_args = NOT_DEF,
 	};
 
 	add_builtin_commands(&move, 1);
