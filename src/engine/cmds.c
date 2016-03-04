@@ -55,20 +55,25 @@ typedef struct cmd_t
 	CMD_TYPE type;
 	int passed;
 
-	cmd_handler handler;
-	char *cmd;
+	cmd_handler handler; /* Handler for builtin commands. */
+	char *cmd;           /* Command-line for user-defined commands. */
 
-	int range;
-	int cust_sep;
-	int emark;
-	int comment;   /* Whether trailing comment is allowed for the command. */
-	int qmark;
-	int expand;
 	int min_args, max_args;
-	int regexp;
-	int select;
-	int bg;
-	int quote;
+
+	unsigned int range : 1;            /* Handles ranges. */
+	unsigned int cust_sep : 1;         /* Custom separator of arguments. */
+	unsigned int emark : 1;            /* Supports emark flag. */
+	unsigned int envvars : 1;          /* Expand environment variables. */
+	unsigned int select : 1;           /* Select files in a range. */
+	unsigned int bg : 1;               /* Bg (can have " &" at the end). */
+	unsigned int regexp : 1;           /* Process /.../-arguments. */
+	unsigned int quote : 1;            /* Process '- and "-quoted args. */
+	unsigned int comment : 1;          /* Trailing comment is allowed. */
+	unsigned int qmark : 1;            /* No args after qmark. */
+	unsigned int args_after_qmark : 1; /* Args after qmark are allowed. */
+	unsigned int macros_for_cmd : 1;   /* Expand macros w/o special escaping. */
+	unsigned int macros_for_shell : 1; /* Expand macros with shell escaping. */
+	unsigned int : 0;                  /* Padding. */
 
 	struct cmd_t *next;
 }
@@ -106,6 +111,7 @@ static void complete_cmd_name(const char cmd_name[], int user_only);
 TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
+static void init_command_flags(cmd_t *cmd, int flags);
 static const char * get_user_cmd_name(const char cmd[], char buf[],
 		size_t buf_len);
 static int is_correct_name(const char name[]);
@@ -120,20 +126,20 @@ init_cmds(int udf, cmds_conf_t *conf)
 {
 	static cmd_add_t commands[] = {
 		{
-			.name = "comclear",   .abbr = "comc", .handler = comclear_cmd,   .id = COMCLEAR_CMD_ID,   .quote = 0,
+			.name = "comclear",   .abbr = "comc", .handler = comclear_cmd,   .id = COMCLEAR_CMD_ID,
 			.descr = "remove all user-defined :commands",
-			.range = 0,           .emark = 0,     .qmark = 0,                .regexp = 0,             .select = 0,
-			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = 0,
+			.flags = 0,
+			.min_args = 0,             .max_args = 0,
 		}, {
-			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,    .quote = 0,
+			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,
 			.descr = "display/define user-defined :command",
-			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
-			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = NOT_DEF,
+			.flags = HAS_EMARK,
+			.min_args = 0,             .max_args = NOT_DEF,
 		}, {
-			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd, .id = DELCOMMAND_CMD_ID, .quote = 0,
+			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd, .id = DELCOMMAND_CMD_ID,
 			.descr = "undefine user-defined :command",
-			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
-			.expand = 0,          .bg = 0,        .min_args = 1,             .max_args = 1,
+			.flags = HAS_EMARK,
+			.min_args = 1,             .max_args = 1,
 		}
 	};
 
@@ -237,28 +243,26 @@ execute_cmd(const char cmd[])
 	}
 
 	if(cur->select)
-		cc->select_range(cur->id, &cmd_info);
-
-	if(cur->expand)
 	{
-		if(cur->expand & 1)
-		{
-			cmd_info.args = cc->expand_macros(cmd_info.raw_args, cur->expand & 4,
-					&cmd_info.usr1, &cmd_info.usr2);
-		}
-		if(cur->expand & 2)
-		{
-			char *const p = cmd_info.args;
-			cmd_info.args = cc->expand_envvars(p ? p : cmd_info.raw_args);
-			free(p);
-		}
+		cc->select_range(cur->id, &cmd_info);
 	}
 
-	/* This handles both !cur->expand and malformed value of cur->expand. */
+	if(cur->macros_for_cmd || cur->macros_for_shell)
+	{
+		cmd_info.args = cc->expand_macros(cmd_info.raw_args, cur->macros_for_shell,
+				&cmd_info.usr1, &cmd_info.usr2);
+	}
+	if(cur->envvars)
+	{
+		char *const p = cmd_info.args;
+		cmd_info.args = cc->expand_envvars(p ? p : cmd_info.raw_args);
+		free(p);
+	}
 	if(cmd_info.args == NULL)
 	{
 		cmd_info.args = strdup(cmd_info.raw_args);
 	}
+
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
 			cur->regexp, cur->quote, cur->comment, NULL, &cmd_info.argvp);
 	if(cmd_info.argc > 0)
@@ -284,7 +288,7 @@ execute_cmd(const char cmd[])
 	{
 		execution_code = CMDS_ERR_NO_QMARK_ALLOWED;
 	}
-	else if(cmd_info.qmark && cur->qmark == 1 && *cmd_info.args != '\0')
+	else if(cmd_info.qmark && !cur->args_after_qmark && *cmd_info.args != '\0')
 	{
 		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
@@ -843,7 +847,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 }
 
 void
-add_builtin_commands(const cmd_add_t *cmds, int count)
+add_builtin_commands(const cmd_add_t cmds[], int count)
 {
 	int i;
 	for(i = 0; i < count; ++i)
@@ -919,27 +923,22 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 		return -1;
 	}
 
-	if((new = insert_cmd(cur)) == NULL)
+	new = insert_cmd(cur);
+	if(new == NULL)
+	{
 		return -1;
+	}
+
 	new->name = strdup(name);
 	new->descr = conf->descr;
 	new->id = conf->id;
 	new->handler = conf->handler;
 	new->type = abbr ? BUILTIN_ABBR : BUILTIN_CMD;
 	new->passed = 0;
-	new->range = conf->range;
-	new->cust_sep = conf->cust_sep;
-	new->emark = conf->emark;
-	new->comment = conf->comment;
-	new->qmark = conf->qmark;
-	new->expand = conf->expand;
+	new->cmd = NULL;
 	new->min_args = conf->min_args;
 	new->max_args = conf->max_args;
-	new->regexp = conf->regexp;
-	new->select = conf->select;
-	new->bg = conf->bg;
-	new->quote = conf->quote;
-	new->cmd = NULL;
+	init_command_flags(new, conf->flags);
 
 	return 0;
 }
@@ -1042,21 +1041,37 @@ command_cmd(const cmd_info_t *cmd_info)
 	new->type = USER_CMD;
 	new->passed = 0;
 	new->cmd = strdup(args);
-	new->range = inner->user_cmd_handler.range;
-	new->cust_sep = inner->user_cmd_handler.cust_sep;
-	new->emark = inner->user_cmd_handler.emark;
-	new->comment = inner->user_cmd_handler.comment;
-	new->qmark = inner->user_cmd_handler.qmark;
-	new->expand = inner->user_cmd_handler.expand;
 	new->min_args = inner->user_cmd_handler.min_args;
 	new->max_args = inner->user_cmd_handler.max_args;
-	new->regexp = inner->user_cmd_handler.regexp;
-	new->select = inner->user_cmd_handler.select;
-	new->bg = inner->user_cmd_handler.bg;
-	new->quote = inner->user_cmd_handler.quote;
+	init_command_flags(new, inner->user_cmd_handler.flags);
 
-	inner->udf_count++;
+	++inner->udf_count;
 	return 0;
+}
+
+/* Initializes flag fields of *cmd from set of HAS_* flags. */
+static void
+init_command_flags(cmd_t *cmd, int flags)
+{
+	assert((flags & (HAS_QMARK_NO_ARGS | HAS_QMARK_WITH_ARGS)) !=
+			(HAS_QMARK_NO_ARGS | HAS_QMARK_WITH_ARGS) && "Wrong flags combination.");
+	assert((flags & (HAS_MACROS_FOR_CMD | HAS_MACROS_FOR_SHELL)) !=
+			(HAS_MACROS_FOR_CMD | HAS_MACROS_FOR_SHELL) &&
+			"Wrong flags combination.");
+
+	cmd->range = ((flags & HAS_RANGE) != 0);
+	cmd->cust_sep = ((flags & HAS_CUST_SEP) != 0);
+	cmd->emark = ((flags & HAS_EMARK) != 0);
+	cmd->envvars = ((flags & HAS_ENVVARS) != 0);
+	cmd->select = ((flags & HAS_SELECTION_SCOPE) != 0);
+	cmd->bg = ((flags & HAS_BG_FLAG) != 0);
+	cmd->regexp = ((flags & HAS_REGEXP_ARGS) != 0);
+	cmd->quote = ((flags & HAS_QUOTED_ARGS) != 0);
+	cmd->comment = ((flags & HAS_COMMENT) != 0);
+	cmd->qmark = ((flags & (HAS_QMARK_NO_ARGS | HAS_QMARK_WITH_ARGS)) != 0);
+	cmd->args_after_qmark = ((flags & HAS_QMARK_WITH_ARGS) != 0);
+	cmd->macros_for_cmd = ((flags & HAS_MACROS_FOR_CMD) != 0);
+	cmd->macros_for_shell = ((flags & HAS_MACROS_FOR_SHELL) != 0);
 }
 
 static const char *
@@ -1096,13 +1111,17 @@ is_correct_name(const char name[])
 	return 1;
 }
 
+/* Allocates new command node and inserts it after the specified one.  Returns
+ * new uninitialized node or NULL on error. */
 static cmd_t *
 insert_cmd(cmd_t *after)
 {
-	cmd_t *new;
-  new = malloc(sizeof(*new));
+	cmd_t *const new = malloc(sizeof(*new));
 	if(new == NULL)
+	{
 		return NULL;
+	}
+
 	new->next = after->next;
 	after->next = new;
 	return new;

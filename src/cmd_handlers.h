@@ -53,7 +53,7 @@ enum
 	COM_VNOREMAP,
 };
 
-/* List of command handlers. */
+/* Specification of builtin commands. */
 extern const cmd_add_t cmds_list[];
 /* Number of elements in cmds_list. */
 extern const size_t cmds_list_size;
