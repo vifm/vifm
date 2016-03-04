@@ -169,6 +169,7 @@ static keys_add_info_t builtin_cmds[] = {
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
+/* Specification of builtin commands. */
 static const cmd_add_t commands[] = {
 	{ .name = "",                  .abbr = NULL,    .id = -1,
 	  .descr = "navigate to specific line",

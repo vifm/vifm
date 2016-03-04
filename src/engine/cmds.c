@@ -847,7 +847,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 }
 
 void
-add_builtin_commands(const cmd_add_t *cmds, int count)
+add_builtin_commands(const cmd_add_t cmds[], int count)
 {
 	int i;
 	for(i = 0; i < count; ++i)

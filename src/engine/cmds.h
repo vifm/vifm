@@ -46,7 +46,7 @@ enum
 	CMDS_ERR_CUSTOM,
 };
 
-/* Constants related to Command ids. */
+/* Constants related to command ids. */
 enum
 {
 	/* Builtin commands have negative ids. */
@@ -111,20 +111,25 @@ enum
 	HAS_MACROS_FOR_SHELL = 0x1000, /* Expand macros with shell escaping. */
 };
 
+/* New commands specification for add_builtin_commands(). */
 typedef struct
 {
-	const char *name, *abbr;
-	const char *descr;
-	int id; /* -1 here means that this command don't require completion of args */
-	cmd_handler handler;
-	int min_args, max_args;
-	int flags; /* Set of HAS_* flags. */
+	const char *name;        /* Full command name. */
+	const char *abbr;        /* Command prefix (can be NULL). */
+	const char *descr;       /* Brief description (stored as a pointer). */
+	int id;                  /* Command id.  Doesn't need to be unique.  Negative
+	                            value means absence of arg completion.  Use, for
+	                            example, -1 for all commands without
+	                            completion. */
+	cmd_handler handler;     /* Function invoked to run the command. */
+	int min_args, max_args;  /* Minimum and maximum bounds on number of args. */
+	int flags;               /* Set of HAS_* flags. */
 }
 cmd_add_t;
 
 typedef struct
 {
-	void *inner; /* should be NULL on first call of init_cmds() */
+	void *inner; /* Should be NULL on first call of init_cmds(). */
 
 	int begin;   /* The lowest valid number of the range. */
 	int current; /* Current position between [begin; end]. */
@@ -169,7 +174,9 @@ int get_cmd_info(const char cmd[], cmd_info_t *info);
 /* Returns offset in cmd, where completion elements should be pasted. */
 int complete_cmd(const char cmd[], void *arg);
 
-void add_builtin_commands(const cmd_add_t *cmds, int count);
+/* Registers all commands in the array pointed to by cmds of length at least
+ * count. */
+void add_builtin_commands(const cmd_add_t cmds[], int count);
 
 /* Returns pointer to the first character of the last argument in cmd. */
 char * get_last_argument(const char cmd[], int quotes, size_t *len);
