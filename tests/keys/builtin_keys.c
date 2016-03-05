@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h> /* wcsdup() */
 
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
@@ -119,14 +118,6 @@ init_builtin_keys(void)
 
 	curr = add_selector(L"if", VISUAL_MODE);
 	curr->data.handler = keys_if;
-
-	curr = add_cmd(L"o", NORMAL_MODE);
-	curr->type = BUILTIN_CMD;
-	curr->data.cmd = wcsdup(L":only");
-
-	curr = add_cmd(L"v", NORMAL_MODE);
-	curr->type = BUILTIN_CMD;
-	curr->data.cmd = wcsdup(L":vsplit");
 
 	curr = add_cmd(L"<", NORMAL_MODE);
 	curr->type = BUILTIN_NIM_KEYS;

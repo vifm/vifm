@@ -171,8 +171,10 @@ free_tree(key_chunk_t *root)
 		free_chunk(root->next);
 	}
 
-	if(root->conf.type == USER_CMD || root->conf.type == BUILTIN_CMD)
+	if(root->conf.type == USER_CMD)
+	{
 		free(root->conf.data.cmd);
+	}
 }
 
 static void
@@ -499,7 +501,7 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 {
 	const key_conf_t *const conf = &curr->conf;
 
-	if(conf->type != USER_CMD && conf->type != BUILTIN_CMD)
+	if(conf->type != USER_CMD)
 	{
 		const int result = execute_mapping_handler(conf, key_info, keys_info);
 		const int finish_dispatching = result != 0
