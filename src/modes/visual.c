@@ -100,6 +100,7 @@ static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void delete(key_info_t key_info, int use_trash);
 static void cmd_av(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_cw(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gA(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ga(key_info_t key_info, keys_info_t *keys_info);
@@ -206,7 +207,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
 	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
-	{L"cw", {BUILTIN_CMD, FOLLOWED_BY_NONE, {.cmd = L":rename\r"}}},
+	{L"cw", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cw}}},
 	{L"gA", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gA}}},
 	{L"ga", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
@@ -742,6 +743,17 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 		view->list_pos = ub;
 
 	enter_attr_mode(view);
+}
+
+/* Renames selected files of the view. */
+static void
+cmd_cw(key_info_t key_info, keys_info_t *keys_info)
+{
+	update_marks(view);
+	leave_visual_mode(0, 1, 0);
+
+	check_marking(view, 0, NULL);
+	(void)rename_files(view, NULL, 0, 0);
 }
 
 static void
