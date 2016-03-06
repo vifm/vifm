@@ -324,7 +324,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				}
 				else
 				{
-					LOG_INFO_MSG("Unmatched %]", c);
+					LOG_INFO_MSG("Unmatched %%]");
 					ok = 0;
 				}
 				break;

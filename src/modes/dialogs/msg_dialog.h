@@ -21,6 +21,7 @@
 #define VIFM__MODES__DIALOGS__MSG_DIALOG_H__
 
 #include "../../ui/ui.h"
+#include "../../utils/macros.h"
 
 #include <stdio.h> /* FILE */
 
@@ -42,7 +43,8 @@ void redraw_msg_dialog(int lazy);
 void show_error_msg(const char title[], const char message[]);
 
 /* Same as show_error_msg(...), but with format. */
-void show_error_msgf(const char title[], const char format[], ...);
+void show_error_msgf(const char title[], const char format[], ...)
+	_gnuc_printf(2, 3);
 
 /* Same as show_error_msg(...), but asks about future errors.  Returns non-zero
  * when user asks to skip error messages that left. */
@@ -50,7 +52,8 @@ int prompt_error_msg(const char title[], const char message[]);
 
 /* Same as show_error_msgf(...), but asks about future errors.  Returns non-zero
  * when user asks to skip error messages that left. */
-int prompt_error_msgf(const char title[], const char format[], ...);
+int prompt_error_msgf(const char title[], const char format[], ...)
+	_gnuc_printf(2, 3);
 
 /* Asks user to confirm some action by answering "Yes" or "No".  Returns
  * non-zero when user answers yes, otherwise zero is returned. */
@@ -68,7 +71,7 @@ char prompt_msg_custom(const char title[], const char message[],
 /* Draws centered formatted message with specified title and control message on
  * error_win. */
 void draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
-		const char format[], ...);
+		const char format[], ...) _gnuc_printf(4, 5);
 
 /* Checks with the user that deletion is permitted.  Returns non-zero if so,
  * otherwise zero is returned. */

@@ -19,6 +19,8 @@
 #ifndef VIFM__UTILS__LOG_H__
 #define VIFM__UTILS__LOG_H__
 
+#include "macros.h"
+
 #define LOG_FUNC_ENTER \
     { \
         log_prefix(__FILE__, __FUNCTION__, __LINE__); \
@@ -55,7 +57,7 @@ void reinit_logger(const char log_path[]);
 void log_prefix(const char *file, const char *func, int line);
 void log_vifm_state(void);
 void log_serror(const char *file, const char *func, int line, int no);
-void log_msg(const char *msg, ...);
+void log_msg(const char msg[], ...) _gnuc_printf(1, 2);
 void log_cwd(void);
 
 #endif /* VIFM__UTILS__LOG_H__ */

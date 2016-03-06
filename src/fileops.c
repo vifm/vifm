@@ -406,8 +406,10 @@ io_progress_fg(const io_progress_t *const state, int progress)
 		format_pretty_path(ops->base_dir, estim->item, pretty_path,
 				sizeof(pretty_path));
 		draw_msgf(title, ctrl_msg, pdata->width,
-				"In %s\nestimating...\nItems: %d\nOverall: %s\nCurrent: %s",
-				ops->target_dir, estim->total_items, total_size_str, pretty_path);
+				"In %s\nestimating...\nItems: %" PRINTF_ULL "\n"
+				"Overall: %s\nCurrent: %s",
+				ops->target_dir, (unsigned long long)estim->total_items, total_size_str,
+				pretty_path);
 		pdata->width = getmaxx(error_win);
 		return;
 	}
@@ -433,23 +435,27 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	{
 		/* Simplified message for unknown total size. */
 		draw_msgf(title, ctrl_msg, pdata->width,
-				"Location: %s\nItem:     %d of %d\nOverall:  %s\n"
+				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
+				"Overall:  %s\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s",
-				replace_home_part(ops->target_dir), item_num, estim->total_items,
-				total_size_str, item_name, src_path, as_part);
+				replace_home_part(ops->target_dir), item_num,
+				(unsigned long long)estim->total_items, total_size_str, item_name,
+				src_path, as_part);
 	}
 	else
 	{
 		char *const file_progress = format_file_progress(estim, IO_PRECISION);
 
 		draw_msgf(title, ctrl_msg, pdata->width,
-				"Location: %s\nItem:     %d of %d\nOverall:  %s/%s (%2d%%)\n"
+				"Location: %s\nItem:     %d of %" PRINTF_ULL "\n"
+				"Overall:  %s/%s (%2d%%)\n"
 				" \n" /* Space is on purpose to preserve empty line. */
 				"file %s\nfrom %s%s%s",
-				replace_home_part(ops->target_dir), item_num, estim->total_items,
-				current_size_str, total_size_str, progress/IO_PRECISION, item_name,
-				src_path, as_part, file_progress);
+				replace_home_part(ops->target_dir), item_num,
+				(unsigned long long)estim->total_items, current_size_str,
+				total_size_str, progress/IO_PRECISION, item_name, src_path, as_part,
+				file_progress);
 
 		free(file_progress);
 	}
@@ -480,8 +486,8 @@ io_progress_fg_sb(const io_progress_t *const state, int progress)
 	switch(state->stage)
 	{
 		case IO_PS_ESTIMATING:
-			suffix = format_str("estimating... %d; %s %s", estim->total_items,
-					total_size_str, pretty_path);
+			suffix = format_str("estimating... %" PRINTF_ULL "; %s %s",
+					(unsigned long long)estim->total_items, total_size_str, pretty_path);
 			break;
 		case IO_PS_IN_PROGRESS:
 			(void)friendly_size_notation(estim->current_byte,
@@ -490,13 +496,17 @@ io_progress_fg_sb(const io_progress_t *const state, int progress)
 			if(progress < 0)
 			{
 				/* Simplified message for unknown total size. */
-				suffix = format_str("%d of %d; %s %s", estim->current_item + 1,
-						estim->total_items, total_size_str, pretty_path);
+				suffix = format_str("%" PRINTF_ULL " of %" PRINTF_ULL "; %s %s",
+						(unsigned long long)estim->current_item + 1U,
+						(unsigned long long)estim->total_items, total_size_str,
+						pretty_path);
 			}
 			else
 			{
-				suffix = format_str("%d of %d; %s/%s (%2d%%) %s",
-						estim->current_item + 1, estim->total_items, current_size_str,
+				suffix = format_str("%" PRINTF_ULL " of %" PRINTF_ULL "; "
+						"%s/%s (%2d%%) %s",
+						(unsigned long long)estim->current_item + 1,
+						(unsigned long long)estim->total_items, current_size_str,
 						total_size_str, progress/IO_PRECISION, pretty_path);
 			}
 			break;
@@ -4043,7 +4053,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 		go_to_first_file(view, names, count);
 	}
 
-	status_bar_messagef("%d director%s created", n, (n == 1) ? "y" : "ies",
+	status_bar_messagef("%d director%s created%s", n, (n == 1) ? "y" : "ies",
 			get_cancellation_suffix());
 }
 
