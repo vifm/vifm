@@ -81,22 +81,12 @@ describe_abbrev(const wchar_t lhs[], const wchar_t rhs[], int no_remap,
 	enum { LHS_MIN_WIDTH = 13 };
 	const char map_mark = no_remap ? '*' : ' ';
 
-	vle_textbuf *const descr = vle_tb_create();
+	char *const keys = wstr_to_spec(rhs);
+	char *const descr = format_str("%-*ls %3c    %s", offset + LHS_MIN_WIDTH, lhs,
+			map_mark, keys);
+	free(keys);
 
-	const size_t rhs_len = wcslen(rhs);
-	size_t seq_len;
-	size_t i;
-
-	vle_tb_appendf(descr, "%-*ls %3c    ", offset + LHS_MIN_WIDTH, lhs, map_mark);
-
-	for(i = 0U; i < rhs_len; i += seq_len)
-	{
-		vle_tb_append(descr, wchar_to_spec(&rhs[i], &seq_len));
-	}
-
-	vle_tb_append_line(descr, "");
-
-	return vle_tb_release(descr);
+	return descr;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

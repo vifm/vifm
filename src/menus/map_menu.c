@@ -82,56 +82,24 @@ static void
 add_mapping_item(menu_info *m, const wchar_t map_info[])
 {
 	enum { MAP_WIDTH = 10 };
-	size_t len;
-	int i, str_len, buf_len;
+
 	const wchar_t *rhs;
-	char *item;
+	char *mb_lhs, *mb_rhs;
 
-	str_len = wcslen(map_info);
-	rhs = map_info + str_len + 1;
-
-	buf_len = 0;
-	for(i = 0; i < str_len; i += len)
-	{
-		buf_len += strlen(wchar_to_spec(map_info + i, &len));
-	}
-
+	rhs = map_info + wcslen(map_info) + 1;
 	if(rhs[0] == L'\0')
 	{
 		rhs = L"<nop>";
 	}
 
-	buf_len += 1 + wcslen(rhs)*4 + 1;
+	mb_lhs = wstr_to_spec(map_info);
+	mb_rhs = wstr_to_spec(rhs);
 
 	m->items = reallocarray(m->items, m->len + 1, sizeof(char *));
-	item = malloc(buf_len + MAP_WIDTH);
-	item[0] = '\0';
-	m->items[m->len] = item;
+	m->items[m->len] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
 
-	for(i = 0; i < str_len; i += len)
-	{
-		strcat(item, wchar_to_spec(map_info + i, &len));
-	}
-
-	for(i = strlen(item); i < MAP_WIDTH; i++)
-	{
-		strcat(item, " ");
-	}
-
-	strcat(item, " ");
-
-	for(i = 0; rhs[i] != L'\0'; i += len)
-	{
-		if(rhs[i] == L' ')
-		{
-			strcat(item, " ");
-			len = 1;
-		}
-		else
-		{
-			strcat(item, wchar_to_spec(rhs + i, &len));
-		}
-	}
+	free(mb_lhs);
+	free(mb_rhs);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

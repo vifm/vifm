@@ -28,6 +28,7 @@
 #include <wchar.h> /* wcscpy() wcslen() */
 
 #include "compat/reallocarray.h"
+#include "engine/text_buffer.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 
@@ -42,6 +43,7 @@ key_pair_t;
 
 static int notation_sorter(const void *first, const void *second);
 static const key_pair_t * find_notation(const wchar_t str[]);
+static const char * wchar_to_spec(const wchar_t c[], size_t *len);
 
 /* All notation fields must be written in lower case. */
 static key_pair_t key_pairs[] = {
@@ -594,7 +596,35 @@ find_notation(const wchar_t str[])
 	return NULL;
 }
 
-const char *
+char *
+wstr_to_spec(const wchar_t str[])
+{
+	vle_textbuf *const descr = vle_tb_create();
+
+	const size_t str_len = wcslen(str);
+	size_t seq_len;
+	size_t i;
+
+	for(i = 0U; i < str_len; i += seq_len)
+	{
+		if(str[i] == L' ')
+		{
+			vle_tb_append(descr, " ");
+			seq_len = 1U;
+		}
+		else
+		{
+			vle_tb_append(descr, wchar_to_spec(&str[i], &seq_len));
+		}
+	}
+
+	return vle_tb_release(descr);
+}
+
+/* Converts unicode character(s) starting at c into string form representing
+ * corresponding key.  Upon exit *len is set to number of used characters from
+ * the string.  Returns pointer to internal buffer. */
+static const char *
 wchar_to_spec(const wchar_t c[], size_t *len)
 {
 	/* TODO: refactor this function wchar_to_spec() */
