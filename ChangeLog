@@ -21,6 +21,9 @@
 
 	Expand environment variables for :edit.  Thanks to filterfalse.
 
+	Don't print just table header on `:cabbr something`, print message that no
+	matches found instead.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

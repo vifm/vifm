@@ -1135,6 +1135,7 @@ list_abbrevs(const char prefix[])
 	const wchar_t *lhs, *rhs;
 	int no_remap;
 	vle_textbuf *msg;
+	int seen_match;
 
 	state = NULL;
 	if(!vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
@@ -1149,6 +1150,7 @@ list_abbrevs(const char prefix[])
 	wide_prefix = to_wide(prefix);
 	prefix_len = wcslen(wide_prefix);
 
+	seen_match = 0;
 	state = NULL;
 	while(vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
 	{
@@ -1157,10 +1159,18 @@ list_abbrevs(const char prefix[])
 			char *const descr = describe_abbrev(lhs, rhs, no_remap, 0);
 			vle_tb_append_line(msg, descr);
 			free(descr);
+			seen_match = 1;
 		}
 	}
 
-	status_bar_message(vle_tb_get_data(msg));
+	if(seen_match)
+	{
+		status_bar_message(vle_tb_get_data(msg));
+	}
+	else
+	{
+		status_bar_message("No abbreviation found");
+	}
 	vle_tb_free(msg);
 
 	free(wide_prefix);
