@@ -59,6 +59,10 @@ void ui_stat_job_bar_redraw(void);
  * needed. */
 void ui_stat_job_bar_check_for_updates(void);
 
+/* Draws single popup line with text and its description.  Attributes and cursor
+ * should be managed outside this function. */
+void ui_stat_draw_popup_line(const char item[], const char descr[]);
+
 TSTATIC_DEFS(
 	char * expand_status_line_macros(FileView *view, const char format[]);
 )

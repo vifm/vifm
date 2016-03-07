@@ -606,5 +606,32 @@ take_job_descr_snapshot(void)
 	return descrs;
 }
 
+void
+ui_stat_draw_popup_line(const char item[], const char descr[])
+{
+	char *left, *right, *line;
+	size_t width_left;
+
+	if(utf8_strsw(item) >= (size_t)getmaxx(stat_win))
+	{
+		char *const line = right_ellipsis(strdup(item), getmaxx(stat_win));
+		wprint(stat_win, line);
+		free(line);
+		return;
+	}
+
+	left = right_ellipsis(strdup(item), getmaxx(stat_win) - 3);
+	width_left = getmaxx(stat_win) - 2 - utf8_strsw(left);
+	right = right_ellipsis(strdup(descr), width_left);
+
+	line = format_str("%s  %*s", left, (int)width_left, right);
+	free(left);
+	free(right);
+
+	wprint(stat_win, line);
+
+	free(line);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
