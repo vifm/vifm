@@ -748,32 +748,36 @@ combine_counts(int count_a, int count_b)
 	}
 }
 
+/* Returns NULL on error. */
 TSTATIC key_conf_t *
 add_cmd(const wchar_t keys[], int mode)
 {
 	key_chunk_t *curr = add_keys_inner(&builtin_cmds_root[mode], keys);
-	return &curr->conf;
+	return (curr == NULL) ? NULL : &curr->conf;
 }
 
 int
-add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode, int no_r)
+add_user_keys(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
 {
-	key_chunk_t *curr;
+	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
+	if(curr == NULL)
+	{
+		return -1;
+	}
 
-	curr = add_keys_inner(&user_cmds_root[mode], keys);
 	if(curr->conf.type == USER_CMD)
 	{
 		free((void*)curr->conf.data.cmd);
 	}
 
 	curr->conf.type = USER_CMD;
-	curr->conf.data.cmd = vifm_wcsdup(cmd);
+	curr->conf.data.cmd = vifm_wcsdup(rhs);
 	curr->no_remap = no_r;
 	return 0;
 }
 
 int
-has_user_keys(const wchar_t *keys, int mode)
+has_user_keys(const wchar_t keys[], int mode)
 {
 	return find_user_keys(keys, mode) != NULL;
 }
@@ -836,6 +840,7 @@ find_user_keys(const wchar_t *keys, int mode)
 	return (curr->conf.type == USER_CMD) ? curr : NULL;
 }
 
+/* Returns NULL on error. */
 TSTATIC key_conf_t *
 add_selector(const wchar_t keys[], int mode)
 {
