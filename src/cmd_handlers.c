@@ -3781,7 +3781,7 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	{
 		int save_msg;
 		keys = substitute_specs(cmd_info->args);
-		save_msg = show_map_menu(curr_view, map_type, list_cmds(mode), keys);
+		save_msg = show_map_menu(curr_view, map_type, mode, keys);
 		free(keys);
 		return save_msg != 0;
 	}

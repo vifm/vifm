@@ -4,7 +4,6 @@
 
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
-#include "../../src/utils/str.h"
 
 static void process_suggestion(const wchar_t item[], const char descr[]);
 

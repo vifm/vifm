@@ -27,76 +27,61 @@
 #include <wchar.h> /* wcsncmp() wcslen() */
 
 #include "../compat/reallocarray.h"
+#include "../engine/keys.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../bracket_notation.h"
 #include "menus.h"
 
-static void add_mapping_item(menu_info *m, const wchar_t map_info[]);
+static void add_mapping_item(const wchar_t lhs[], const wchar_t rhs[]);
+
+/* Menu object is global to make it available in add_mapping_item(). */
+static menu_info m;
+
+/* Prefix to check LHS against. */
+static const wchar_t *prefix;
+/* Length of the prefix string. */
+static size_t prefix_len;
 
 int
-show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
+show_map_menu(FileView *view, const char mode_str[], int mode,
 		const wchar_t start[])
 {
-	int x;
-	const size_t start_len = wcslen(start);
-
-	static menu_info m;
 	init_menu_info(&m, format_str("Mappings for %s mode", mode_str),
 			strdup("No mappings found"));
 
-	x = 0;
-	while(list[x] != NULL)
-	{
-		if(list[x][0] != '\0')
-		{
-			if(wcsncmp(start, list[x], start_len) == 0)
-			{
-				add_mapping_item(&m, list[x]);
-				++m.len;
-			}
-		}
-		else if(m.len != 0)
-		{
-			m.len = add_to_string_array(&m.items, m.len, 1, "");
-		}
+	prefix = start;
+	prefix_len = wcslen(prefix);
 
-		free(list[x]);
-		++x;
-	}
-	free(list);
-
-	if(m.len > 0 && m.items[m.len - 1][0] == '\0')
-	{
-		free(m.items[m.len - 1]);
-		--m.len;
-	}
+	list_cmds(mode, &add_mapping_item);
 
 	return display_menu(&m, view);
 }
 
-/* Adds map_info to the menu after pre-formatting.  Map_info is assumed to be
- * non-empty. */
+/* Adds matching key information to the menu after pre-formatting. */
 static void
-add_mapping_item(menu_info *m, const wchar_t map_info[])
+add_mapping_item(const wchar_t lhs[], const wchar_t rhs[])
 {
 	enum { MAP_WIDTH = 10 };
 
-	const wchar_t *rhs;
 	char *mb_lhs, *mb_rhs;
 
-	rhs = map_info + wcslen(map_info) + 1;
-	if(rhs[0] == L'\0')
+	if(wcsncmp(prefix, lhs, prefix_len) != 0)
+	{
+		return;
+	}
+
+	if(rhs[0] == L'\0' && lhs[0] != L'\0')
 	{
 		rhs = L"<nop>";
 	}
 
-	mb_lhs = wstr_to_spec(map_info);
+	mb_lhs = wstr_to_spec(lhs);
 	mb_rhs = wstr_to_spec(rhs);
 
-	m->items = reallocarray(m->items, m->len + 1, sizeof(char *));
-	m->items[m->len] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
+	m.items = reallocarray(m.items, m.len + 1, sizeof(char *));
+	m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
 
 	free(mb_lhs);
 	free(mb_rhs);

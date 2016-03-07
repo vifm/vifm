@@ -48,6 +48,10 @@ typedef struct key_chunk_t
 }
 key_chunk_t;
 
+/* Callback of traverse_children(). */
+typedef void (*traverse_func)(const key_chunk_t *chunk, const wchar_t lhs[],
+		void *arg);
+
 static key_chunk_t *builtin_cmds_root;
 static key_chunk_t *selectors_root;
 static key_chunk_t *user_cmds_root;
@@ -92,7 +96,8 @@ static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
 static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
-static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
+static void list_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
+		void *arg);
 static void inc_counter(const keys_info_t *const keys_info, const size_t by);
 static int is_recursive(void);
 static int execute_mapping_handler(const key_conf_t *const info,
@@ -101,8 +106,10 @@ static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
 static void keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 		const wchar_t prefix[], vle_keys_suggest_cb cb);
-static void suggest_children(const key_chunk_t *chunk, const wchar_t prefix[],
-		vle_keys_suggest_cb cb);
+static void traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		traverse_func cb, void *param);
+static void suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
+		void *arg);
 
 void
 init_keys(int modes_count, int *key_mode_flags)
@@ -934,128 +941,42 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 	return curr;
 }
 
-wchar_t **
-list_cmds(int mode)
+void
+list_cmds(int mode, vle_keys_list_cb cb)
 {
-	int i, j;
-	int count;
-	wchar_t **result;
+	const key_chunk_t *user = &user_cmds_root[mode];
+	const key_chunk_t *builtin = &builtin_cmds_root[mode];
 
-	count = user_cmds_root[mode].children_count;
-	count += 1;
-	count += builtin_cmds_root[mode].children_count;
-	result = calloc(count + 1, sizeof(*result));
-	if(result == NULL)
-		return NULL;
-
-	if(fill_list(&user_cmds_root[mode], 0, result) < 0)
+	/* Don't traverse empty tries. */
+	if(user->children_count != 0U)
 	{
-		free_wstring_array(result, count);
-		return NULL;
-	}
+		traverse_children(user, L"", &list_chunk, cb);
 
-	j = -1;
-	for(i = 0; i < count && result[i] != NULL; i++)
-	{
-		if(result[i][0] == L'\0')
+		/* Put separator only when it's needed. */
+		if(builtin->children_count != 0U)
 		{
-			free(result[i]);
-			result[i] = NULL;
-			if(j == -1)
-				j = i;
-		}
-	}
-	if(j == -1)
-		j = i;
-
-	result[j++] = vifm_wcsdup(L"");
-
-	if(fill_list(&builtin_cmds_root[mode], 0, result + j) < 0)
-	{
-		free_wstring_array(result, count);
-		return NULL;
-	}
-
-	for(i = j; i < count && result[i] != NULL; i++)
-	{
-		if(result[i][0] == L'\0')
-		{
-			free(result[i]);
-			result[i] = NULL;
+			cb(L"", L"");
 		}
 	}
 
-	return result;
+	if(builtin->children_count != 0U)
+	{
+		traverse_children(builtin, L"", &list_chunk, cb);
+	}
 }
 
-static int
-fill_list(const key_chunk_t *curr, size_t len, wchar_t **list)
+/* Invokes list callback (in arg) for leaf chunks. */
+static void
+list_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 {
-	size_t i;
-	const key_chunk_t *child;
-	size_t count;
-
-	count = curr->children_count;
-	if(curr->conf.type == USER_CMD)
-		count++;
-	if(count == 0)
-		count = 1;
-
-	for(i = 0; i < count; i++)
+	if(chunk->children_count == 0 || chunk->conf.type == USER_CMD)
 	{
-		wchar_t *t;
+		const wchar_t *rhs;
+		vle_keys_list_cb cb = arg;
 
-		t = reallocarray(list[i], len + 1, sizeof(wchar_t));
-		if(t == NULL)
-			return -1;
-
-		list[i] = t;
-		if(len > 0)
-			t[len - 1] = curr->key;
-		t[len] = L'\0';
+		rhs = (chunk->conf.type == USER_CMD) ? chunk->conf.data.cmd : L"<built in>";
+		cb(lhs, rhs);
 	}
-
-	i = 0;
-	if(curr->children_count == 0 || curr->conf.type == USER_CMD)
-	{
-		const wchar_t *s;
-		wchar_t *t;
-
-		s = (curr->conf.type == USER_CMD) ? curr->conf.data.cmd : L"<built in>";
-		t = reallocarray(list[0], len + 1 + wcslen(s) + 1, sizeof(wchar_t));
-		if(t == NULL)
-			return -1;
-
-		list[0] = t;
-		t[wcslen(t) + 1] = L'\0';
-		wcscpy(t + wcslen(t) + 1, s);
-		if(curr->children_count == 0)
-			return 1;
-
-		list++;
-		i = 1;
-	}
-
-	child = curr->child;
-	while(child != NULL)
-	{
-		int filled = fill_list(child, len + 1, list);
-		if(filled < 0)
-			return -1;
-
-		list += filled;
-		i += filled;
-
-		child = child->next;
-	}
-
-	while(i < count--)
-	{
-		free(*list);
-		*list++ = NULL;
-	}
-
-	return i;
 }
 
 size_t
@@ -1200,7 +1121,7 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 
 	if(*keys == L'\0')
 	{
-		suggest_children(curr, prefix, cb);
+		traverse_children(curr, prefix, &suggest_chunk, cb);
 	}
 
 	if(curr->conf.type == BUILTIN_WAIT_POINT)
@@ -1221,11 +1142,10 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 	}
 }
 
-/* Invokes cb for each child in the tree with root chunk appending intermediate
- * keys to the prefix. */
+/* Visit every child of the tree and calls cb with param on it. */
 static void
-suggest_children(const key_chunk_t *chunk, const wchar_t prefix[],
-		vle_keys_suggest_cb cb)
+traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		traverse_func cb, void *param)
 {
 	const key_chunk_t *child;
 
@@ -1235,15 +1155,23 @@ suggest_children(const key_chunk_t *chunk, const wchar_t prefix[],
 	item[prefix_len] = chunk->key;
 	item[prefix_len + 1U] = L'\0';
 
-	if(chunk->children_count == 0 || chunk->conf.type == USER_CMD ||
-			chunk->conf.followed != FOLLOWED_BY_NONE)
-	{
-		cb(item, (chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
-	}
+	cb(chunk, item, param);
 
 	for(child = chunk->child; child != NULL; child = child->next)
 	{
-		suggest_children(child, item, cb);
+		traverse_children(child, item, cb, param);
+	}
+}
+
+/* Invokes suggestion callback (in arg) for leaf chunks. */
+static void
+suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
+{
+	if(chunk->children_count == 0 || chunk->conf.type == USER_CMD ||
+			chunk->conf.followed != FOLLOWED_BY_NONE)
+	{
+		vle_keys_suggest_cb cb = arg;
+		cb(lhs, (chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
 	}
 }
 

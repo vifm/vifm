@@ -190,22 +190,6 @@ keys_gg(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	wchar_t **list, **p;
-	list = list_cmds(NORMAL_MODE);
-
-	if(list == NULL)
-	{
-		printf("%s\n", "error");
-		return;
-	}
-	
-	p = list;
-	while(*p != NULL)
-	{
-		printf("%ls\n", *p);
-		free(*p++);
-	}
-	free(list);
 }
 
 static void

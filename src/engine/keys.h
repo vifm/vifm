@@ -95,6 +95,8 @@ keys_info_t;
 
 /* Handler for builtin keys. */
 typedef void (*vle_keys_handler)(key_info_t key_info, keys_info_t *keys_info);
+/* Type of function invoked by list_cmds(). */
+typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[]);
 /* Callback invoked by vle_keys_suggest() to report completions. */
 typedef void (*vle_keys_suggest_cb)(const wchar_t item[], const char descr[]);
 /* User-provided suggestion callback for multikeys. */
@@ -199,14 +201,8 @@ int remove_user_keys(const wchar_t *keys, int mode);
 
 /*
  * Lists all commands of the given mode with description.
- *
- * Every line is like L"command\0description\0".
- *
- * End of list could be determined by the NULL element.
- * Caller should free array and all its elements using free().
- * Returns NULL on error.
  */
-wchar_t ** list_cmds(int mode);
+void list_cmds(int mode, vle_keys_list_cb cb);
 
 /*
  * Returns number of processed keys.
