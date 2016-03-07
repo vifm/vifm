@@ -45,7 +45,8 @@ typedef struct key_chunk_t
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
 	struct key_chunk_t *prev, *next;
-}key_chunk_t;
+}
+key_chunk_t;
 
 static key_chunk_t *builtin_cmds_root;
 static key_chunk_t *selectors_root;
@@ -98,6 +99,10 @@ static int execute_mapping_handler(const key_conf_t *const info,
 		key_info_t key_info, keys_info_t *const keys_info);
 static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
+static void keys_suggest(const key_chunk_t *root, const wchar_t keys[],
+		const wchar_t prefix[], vle_keys_suggest_cb cb);
+static void suggest_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		vle_keys_suggest_cb cb);
 
 void
 init_keys(int modes_count, int *key_mode_flags)
@@ -323,14 +328,12 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *p;
 		int number_in_the_middle = 0;
 
-		p = curr->child;
-		while(p != NULL && p->key < *keys)
+		for(p = curr->child; p != NULL && p->key < *keys; p = p->next)
 		{
 			if(p->conf.type == BUILTIN_NIM_KEYS)
 			{
 				number_in_the_middle = 1;
 			}
-			p = p->next;
 		}
 
 		if(p == NULL || p->key != *keys)
@@ -338,13 +341,12 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 			if(curr == root)
 				return KEYS_UNKNOWN;
 
-			while(p != NULL)
+			for(; p != NULL; p = p->next)
 			{
 				if(p->conf.type == BUILTIN_NIM_KEYS)
 				{
 					number_in_the_middle = 1;
 				}
-				p = p->next;
 			}
 
 			if(curr->conf.followed != FOLLOWED_BY_NONE &&
@@ -378,15 +380,12 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 				return result;
 			if(IS_KEYS_RET_CODE(result))
 			{
-				if(result == KEYS_WAIT_SHORT)
-					return KEYS_UNKNOWN;
-
-				return result;
+				return (result == KEYS_WAIT_SHORT) ? KEYS_UNKNOWN : result;
 			}
 			inc_counter(keys_info, keys - keys_start);
 			return execute_keys_general(keys, 0, keys_info->mapped, no_remap);
 		}
-		keys++;
+		++keys;
 		curr = p;
 	}
 
@@ -901,6 +900,8 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->conf.data.handler = NULL;
 			c->conf.data.cmd = NULL;
 			c->conf.followed = FOLLOWED_BY_NONE;
+			c->conf.suggest = NULL;
+			c->conf.descr = NULL;
 			c->prev = prev;
 			c->next = p;
 			c->child = NULL;
@@ -1119,6 +1120,131 @@ post_execute_mapping_handler(const keys_info_t *const keys_info)
 {
 	inside_mapping -= keys_info->mapped != 0;
 	assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");
+}
+
+void
+vle_keys_suggest(const wchar_t keys[], vle_keys_suggest_cb cb)
+{
+	keys_suggest(&user_cmds_root[vle_mode_get()], keys, L"key: ", cb);
+	keys_suggest(&builtin_cmds_root[vle_mode_get()], keys, L"key: ", cb);
+}
+
+/* Looks up possible continuations of keys for the given root and calls cb on
+ * them. */
+static void
+keys_suggest(const key_chunk_t *root, const wchar_t keys[],
+		const wchar_t prefix[], vle_keys_suggest_cb cb)
+{
+	const key_chunk_t *curr = root;
+
+	while(*keys != L'\0')
+	{
+		const key_chunk_t *p;
+		int number_in_the_middle = 0;
+
+		/* Look up current key among children of current node (might be root), while
+		 * inspecting NIM as well. */
+		for(p = curr->child; p != NULL && p->key < *keys; p = p->next)
+		{
+			if(p->conf.type == BUILTIN_NIM_KEYS)
+			{
+				number_in_the_middle = 1;
+			}
+		}
+
+		/* Go to the next character if a match found. */
+		if(p != NULL && p->key == *keys)
+		{
+			++keys;
+			curr = p;
+			continue;
+		}
+
+		/* No match for the first character is fatal for the lookup. */
+		if(curr == root)
+		{
+			return;
+		}
+
+		/* Need to inspect all children for NIM. */
+		for(; p != NULL && !number_in_the_middle; p = p->next)
+		{
+			if(p->conf.type == BUILTIN_NIM_KEYS)
+			{
+				number_in_the_middle = 1;
+			}
+		}
+
+		/* Give up if this isn't one of cases where next character is not presented
+		 * in the tree by design. */
+		if(curr->conf.followed != FOLLOWED_BY_NONE &&
+				(!number_in_the_middle || !is_at_count(keys)))
+		{
+			break;
+		}
+
+		/* Skip over number in the middle, if any. */
+		if(number_in_the_middle)
+		{
+			int count;
+			const wchar_t *new_keys = get_count(keys, &count);
+			if(new_keys != keys)
+			{
+				keys = new_keys;
+				continue;
+			}
+		}
+
+		break;
+	}
+
+	if(*keys == L'\0')
+	{
+		suggest_children(curr, prefix, cb);
+	}
+
+	if(curr->conf.type == BUILTIN_WAIT_POINT)
+	{
+		if(curr->conf.followed == FOLLOWED_BY_SELECTOR)
+		{
+			/* Suggest selectors. */
+			keys_suggest(&selectors_root[vle_mode_get()], keys, L"sel: ", cb);
+		}
+		else if(curr->conf.followed == FOLLOWED_BY_MULTIKEY)
+		{
+			/* Invoke optional external function to provide suggestions. */
+			if(curr->conf.suggest != NULL)
+			{
+				curr->conf.suggest(cb);
+			}
+		}
+	}
+}
+
+/* Invokes cb for each child in the tree with root chunk appending intermediate
+ * keys to the prefix. */
+static void
+suggest_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		vle_keys_suggest_cb cb)
+{
+	const key_chunk_t *child;
+
+	const size_t prefix_len = wcslen(prefix);
+	wchar_t item[prefix_len + 1U + 1U];
+	wcscpy(item, prefix);
+	item[prefix_len] = chunk->key;
+	item[prefix_len + 1U] = L'\0';
+
+	if(chunk->children_count == 0 || chunk->conf.type == USER_CMD ||
+			chunk->conf.followed != FOLLOWED_BY_NONE)
+	{
+		cb(item, (chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
+	}
+
+	for(child = chunk->child; child != NULL; child = child->next)
+	{
+		suggest_children(child, item, cb);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

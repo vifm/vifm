@@ -54,7 +54,8 @@ typedef enum
 	FOLLOWED_BY_NONE,
 	FOLLOWED_BY_SELECTOR,
 	FOLLOWED_BY_MULTIKEY,
-}FOLLOWED_BY;
+}
+FOLLOWED_BY;
 
 typedef enum
 {
@@ -70,14 +71,16 @@ typedef enum
 	KS_NOT_A_SELECTOR,
 	KS_SELECTOR_AND_CMD,
 	KS_ONLY_SELECTOR,
-}KEYS_SELECTOR;
+}
+KEYS_SELECTOR;
 
 typedef struct
 {
 	int count; /* repeat count, maybe equal NO_COUNT_GIVEN */
 	int reg;   /* number of selected register */
 	int multi; /* multi key */
-}key_info_t;
+}
+key_info_t;
 
 typedef struct
 {
@@ -87,32 +90,44 @@ typedef struct
 	int after_wait; /* after short timeout */
 	int mapped;     /* not users input */
 	int recursive;  /* the key is from recursive call of execute_keys_*(...) */
-}keys_info_t;
+}
+keys_info_t;
 
-typedef void (*keys_handler)(key_info_t key_info, keys_info_t *keys_info);
-
-typedef struct
-{
-	KEYS_TYPE type;
-	FOLLOWED_BY followed; /* what type of key should we wait for */
-	union
-	{
-		keys_handler handler;
-		wchar_t *cmd;
-	}data;
-}key_conf_t;
-
-typedef struct
-{
-	const wchar_t keys[5];
-	key_conf_t info;
-}keys_add_info_t;
+/* Handler for builtin keys. */
+typedef void (*vle_keys_handler)(key_info_t key_info, keys_info_t *keys_info);
+/* Callback invoked by vle_keys_suggest() to report completions. */
+typedef void (*vle_keys_suggest_cb)(const wchar_t item[], const char descr[]);
+/* User-provided suggestion callback for multikeys. */
+typedef void (*vle_suggest_func)(vle_keys_suggest_cb cb);
 
 /*
  * Type of callback that handles all keys uncaught by shortcuts.  Should return
  * zero on success and non-zero on error.
  */
 typedef int (*default_handler)(wchar_t key);
+
+typedef struct
+{
+	KEYS_TYPE type;
+	FOLLOWED_BY followed;       /* What type of key should we wait for. */
+	union
+	{
+		vle_keys_handler handler; /* Handler for builtin commands. */
+		wchar_t *cmd;             /* Mapped value for user-defined keys. */
+	}
+	data;
+	vle_suggest_func suggest;   /* Suggestion function (can be NULL).  Invoked for
+	                               multikeys. */
+	const char *descr;          /* Brief description of the key. */
+}
+key_conf_t;
+
+typedef struct
+{
+	const wchar_t keys[5];
+	key_conf_t info;
+}
+keys_add_info_t;
 
 /*
  * Assumed that key_mode_flags is an array of at least modes_count items
@@ -203,6 +218,10 @@ size_t get_key_counter(void);
  * Returns non-zero if so, otherwise zero is returned.
  */
 int is_inside_mapping(void);
+
+/* Invokes cb for each possible keys continuation.  Intended to be used on
+ * KEYS_WAIT and KEYS_WAIT_SHORT returns. */
+void vle_keys_suggest(const wchar_t keys[], vle_keys_suggest_cb cb);
 
 TSTATIC_DEFS(
 	/*
