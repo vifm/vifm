@@ -82,12 +82,12 @@ static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
-	{L"y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_l}}},
+	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_m}}},
+	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_n}}},
+	{L"y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_y}}},
 };
 
 /* Mode that was active before the dialog. */

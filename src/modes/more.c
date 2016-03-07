@@ -101,33 +101,33 @@ static int viewport_height;
 
 /* List of builtin keys. */
 static keys_add_info_t builtin_keys[] = {
-	{WK_CTRL_c, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_CTRL_j, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
-	{WK_CTRL_l, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_ctrl_l}}},
+	{WK_CTRL_c, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_leave}}},
+	{WK_CTRL_j, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_down_line}}},
+	{WK_CTRL_l, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_l}}},
 
-	{WK_COLON,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_colon}}},
-	{WK_ESCAPE, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_RETURN, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_SPACE,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
+	{WK_COLON,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_colon}}},
+	{WK_ESCAPE, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_leave}}},
+	{WK_RETURN, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_leave}}},
+	{WK_SPACE,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_down_screen}}},
 
-	{WK_G,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_bottom}}},
-	{WK_b,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_screen}}},
-	{WK_d,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_page}}},
-	{WK_f,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
-	{WK_g,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_top}}},
-	{WK_j,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
-	{WK_k,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
-	{WK_q,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_u,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_page}}},
+	{WK_G,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_bottom}}},
+	{WK_b,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_up_screen}}},
+	{WK_d,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_down_page}}},
+	{WK_f,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_down_screen}}},
+	{WK_g,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_top}}},
+	{WK_j,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_down_line}}},
+	{WK_k,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_up_line}}},
+	{WK_q,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_leave}}},
+	{WK_u,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_up_page}}},
 
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BACKSPACE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
-	{{KEY_DOWN},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
-	{{KEY_UP},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
-	{{KEY_HOME},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_top}}},
-	{{KEY_END},       {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_bottom}}},
-	{{KEY_NPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
-	{{KEY_PPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_screen}}},
+	{{KEY_BACKSPACE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_up_line}}},
+	{{KEY_DOWN},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_down_line}}},
+	{{KEY_UP},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_up_line}}},
+	{{KEY_HOME},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_top}}},
+	{{KEY_END},       {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_bottom}}},
+	{{KEY_NPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_down_screen}}},
+	{{KEY_PPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_up_screen}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

@@ -111,30 +111,30 @@ static const char *attr_strings[ATTR_COUNT] = {
 ARRAY_GUARD(attr_strings, ATTR_COUNT);
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
 	/* return */
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_m}}},
+	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_j}}},
+	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_k}}},
 	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
-	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
-	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
+	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_space}}},
+	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_G}}},
+	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_gg}}},
+	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_space}}},
+	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_j}}},
+	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_k}}},
+	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_m}}},
+	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_space}}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_gg}}},
+	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_G}}},
+	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_k}}},
+	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_j}}},
+	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_m}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
