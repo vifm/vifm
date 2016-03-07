@@ -3099,17 +3099,17 @@ normal_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark)
 	{
-		(void)execute_keys_timed_out_no_remap(wide);
+		(void)vle_keys_exec_timed_out_no_remap(wide);
 	}
 	else
 	{
-		(void)execute_keys_timed_out(wide);
+		(void)vle_keys_exec_timed_out(wide);
 	}
 
 	/* Force leaving command-line mode if the wide contains unfinished ":". */
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		(void)execute_keys_timed_out(L"\x03");
+		(void)vle_keys_exec_timed_out(L"\x03");
 	}
 
 	free(wide);
@@ -3693,20 +3693,20 @@ unmap_cmd(const cmd_info_t *cmd_info)
 	subst = substitute_specs(cmd_info->argv[0]);
 	if(cmd_info->emark)
 	{
-		result = remove_user_keys(subst, CMDLINE_MODE) != 0;
+		result = (vle_keys_user_remove(subst, CMDLINE_MODE) != 0);
 	}
-	else if(!has_user_keys(subst, NORMAL_MODE))
+	else if(!vle_keys_user_exists(subst, NORMAL_MODE))
 	{
 		result = -1;
 	}
-	else if(!has_user_keys(subst, VISUAL_MODE))
+	else if(!vle_keys_user_exists(subst, VISUAL_MODE))
 	{
 		result = -2;
 	}
 	else
 	{
-		result = remove_user_keys(subst, NORMAL_MODE) != 0;
-		result += remove_user_keys(subst, VISUAL_MODE) != 0;
+		result = (vle_keys_user_remove(subst, NORMAL_MODE) != 0);
+		result += (vle_keys_user_remove(subst, VISUAL_MODE) != 0);
 	}
 	free(subst);
 
@@ -3793,7 +3793,7 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	rhs = vle_cmds_at_arg(raw_rhs + 1);
 	keys = substitute_specs(cmd_info->args);
 	mapping = substitute_specs(rhs);
-	result = add_user_keys(keys, mapping, mode, no_remap);
+	result = vle_keys_user_add(keys, mapping, mode, no_remap);
 	free(mapping);
 	free(keys);
 
@@ -3857,7 +3857,7 @@ do_unmap(const char *keys, int mode)
 	wchar_t *subst;
 
 	subst = substitute_specs(keys);
-	result = remove_user_keys(subst, mode);
+	result = vle_keys_user_remove(subst, mode);
 	free(subst);
 
 	if(result != 0)
@@ -3890,7 +3890,7 @@ wincmd_cmd(const cmd_info_t *cmd_info)
 	wcmd = to_wide(cmd);
 	free(cmd);
 
-	(void)execute_keys_timed_out(wcmd);
+	(void)vle_keys_exec_timed_out(wcmd);
 	free(wcmd);
 	return 0;
 }

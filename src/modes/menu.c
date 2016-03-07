@@ -258,12 +258,12 @@ init_menu_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
 
-	set_def_handler(MENU_MODE, key_handler);
+	vle_keys_set_def_handler(MENU_MODE, key_handler);
 
 	init_cmds(0, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));

@@ -161,14 +161,14 @@ keys_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 	key_is_mapped = keys_info->mapped;
-	is_in_maping_state = is_inside_mapping();
+	is_in_maping_state = vle_keys_inside_mapping();
 }
 
 static void
 keys_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	key_is_mapped = keys_info->mapped;
-	is_in_maping_state = is_inside_mapping();
+	is_in_maping_state = vle_keys_inside_mapping();
 	printf("(%d)m in register '%c' with multikey '%c'\n",
 			key_info.count, key_info.reg, key_info.multi);
 }
@@ -291,7 +291,7 @@ keys_quit(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_norm(key_info_t key_info, keys_info_t *keys_info)
 {
-	execute_keys_timed_out(L"ZZ");
+	vle_keys_exec_timed_out(L"ZZ");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

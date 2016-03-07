@@ -54,7 +54,7 @@ show_map_menu(FileView *view, const char mode_str[], int mode,
 	prefix = start;
 	prefix_len = wcslen(prefix);
 
-	list_cmds(mode, &add_mapping_item);
+	vle_keys_list(mode, &add_mapping_item);
 
 	return display_menu(&m, view);
 }

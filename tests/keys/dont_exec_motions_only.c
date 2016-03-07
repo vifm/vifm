@@ -5,9 +5,9 @@
 
 TEST(dont_exec_motions)
 {
-	assert_int_equal(KEYS_WAIT, execute_keys(L"d"));
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"ds")));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"s"));
+	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"d"));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"ds")));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"s"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

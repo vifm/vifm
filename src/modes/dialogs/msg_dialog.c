@@ -113,9 +113,9 @@ init_msg_dialog_mode(void)
 {
 	int ret_code;
 
-	set_def_handler(MSG_MODE, def_handler);
+	vle_keys_set_def_handler(MSG_MODE, def_handler);
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MSG_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), MSG_MODE);
 	assert(ret_code == 0 && "Failed to register msg dialog keys.");
 
 	(void)ret_code;

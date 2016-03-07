@@ -136,7 +136,7 @@ modmore_init(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_keys, ARRAY_LEN(builtin_keys), MORE_MODE);
+	ret_code = vle_keys_add(builtin_keys, ARRAY_LEN(builtin_keys), MORE_MODE);
 	assert(ret_code == 0 && "Failed to initialize more mode keys.");
 
 	(void)ret_code;

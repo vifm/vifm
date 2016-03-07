@@ -171,13 +171,13 @@ event_loop(const int *quit)
 			}
 		}
 
-		counter = get_key_counter();
+		counter = vle_keys_counter();
 		if(!got_input && last_result == KEYS_WAIT_SHORT)
 		{
 			hide_suggestion_box();
 
-			last_result = execute_keys_timed_out(input_buf);
-			counter = get_key_counter() - counter;
+			last_result = vle_keys_exec_timed_out(input_buf);
+			counter = vle_keys_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
@@ -197,9 +197,9 @@ event_loop(const int *quit)
 				hide_suggestion_box();
 			}
 
-			last_result = execute_keys(input_buf);
+			last_result = vle_keys_exec(input_buf);
 
-			counter = get_key_counter() - counter;
+			counter = vle_keys_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{

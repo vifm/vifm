@@ -11,24 +11,24 @@ static int nitems;
 
 SETUP()
 {
-	add_user_keys(L"hi", L"j", NORMAL_MODE, 0);
-	add_user_keys(L"hi2", L"hi", NORMAL_MODE, 0);
+	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, 0);
+	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, 0);
 
-	add_user_keys(L"ho", L"j", NORMAL_MODE, 0);
-	add_user_keys(L"ha2", L"ho", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, 0);
 
 	nitems = 0;
 }
 
 TEST(normal_mode_user_keys_delimiter)
 {
-	list_cmds(NORMAL_MODE, &process_listing);
+	vle_keys_list(NORMAL_MODE, &process_listing);
 	assert_int_equal(21, nitems);
 }
 
 TEST(visual_mode_no_user_keys_no_delimiter)
 {
-	list_cmds(VISUAL_MODE, &process_listing);
+	vle_keys_list(VISUAL_MODE, &process_listing);
 	assert_int_equal(4, nitems);
 }
 

@@ -167,7 +167,7 @@ init_sort_dialog_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), SORT_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), SORT_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;

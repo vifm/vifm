@@ -296,9 +296,9 @@ init_cmdline_mode(void)
 {
 	int ret_code;
 
-	set_def_handler(CMDLINE_MODE, &def_handler);
+	vle_keys_set_def_handler(CMDLINE_MODE, &def_handler);
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
@@ -639,7 +639,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.search_mode = 0;
 	input_stat.dot_pos = -1;
 	input_stat.line_edited = 0;
-	input_stat.entered_by_mapping = is_inside_mapping();
+	input_stat.entered_by_mapping = vle_keys_inside_mapping();
 
 	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
 			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
@@ -1358,11 +1358,11 @@ exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos)
 
 	if(no_remap)
 	{
-		(void)execute_keys_timed_out_no_remap(abbrev_rhs);
+		(void)vle_keys_exec_timed_out_no_remap(abbrev_rhs);
 	}
 	else
 	{
-		(void)execute_keys_timed_out(abbrev_rhs);
+		(void)vle_keys_exec_timed_out(abbrev_rhs);
 	}
 }
 

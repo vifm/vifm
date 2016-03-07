@@ -87,7 +87,7 @@ keys_info_t;
 
 /* Handler for builtin keys. */
 typedef void (*vle_keys_handler)(key_info_t key_info, keys_info_t *keys_info);
-/* Type of function invoked by list_cmds(). */
+/* Type of function invoked by vle_keys_list(). */
 typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[]);
 /* Callback invoked by vle_keys_suggest() to report completions. */
 typedef void (*vle_keys_suggest_cb)(const wchar_t item[], const char descr[]);
@@ -123,64 +123,64 @@ keys_add_info_t;
 
 /* Initializes the unit.  Assumed that key_mode_flags is an array of at least
  * modes_count items. */
-void init_keys(int modes_count, int *key_mode_flags);
+void vle_keys_init(int modes_count, int *key_mode_flags);
 
-/* Frees all memory allocated by the unit removing all keys. */
-void clear_keys(void);
+/* Frees all memory allocated by the unit and returns it to initial state. */
+void vle_keys_reset(void);
 
 /* Removes just user-defined keys (leaving builtin keys intact). */
-void clear_user_keys(void);
+void vle_keys_user_clear(void);
 
 /* Set handler for unregistered keys.  handler can be NULL to remove it. */
-void set_def_handler(int mode, default_handler handler);
+void vle_keys_set_def_handler(int mode, default_handler handler);
 
 /* Process sequence of keys.  Return value:
  *  - 0 - success
  *  - KEYS_*
  *  - something else from the default key handler */
-int execute_keys(const wchar_t keys[]);
+int vle_keys_exec(const wchar_t keys[]);
 
-/* Same as execute_keys(), but disallows map processing in RHS of maps. */
-int execute_keys_no_remap(const wchar_t keys[]);
+/* Same as vle_keys_exec(), but disallows map processing in RHS of maps. */
+int vle_keys_exec_no_remap(const wchar_t keys[]);
 
-/* Same as execute_keys(), but assumes that key wait timeout has expired. */
-int execute_keys_timed_out(const wchar_t keys[]);
+/* Same as vle_keys_exec(), but assumes that key wait timeout has expired. */
+int vle_keys_exec_timed_out(const wchar_t keys[]);
 
-/* Same as execute_keys_no_remap(), but assumes that key wait timeout has
+/* Same as vle_keys_exec_no_remap(), but assumes that key wait timeout has
  * expired. */
-int execute_keys_timed_out_no_remap(const wchar_t keys[]);
+int vle_keys_exec_timed_out_no_remap(const wchar_t keys[]);
 
 /* Registers cmds[0 .. len-1] commands for the mode.  Returns non-zero on error,
  * otherwise zero is returned. */
-int add_cmds(keys_add_info_t *cmds, size_t len, int mode);
+int vle_keys_add(keys_add_info_t *cmds, size_t len, int mode);
 
 /* Registers cmds[0 .. len-1] selectors for the mode.  Returns non-zero on
  * error, otherwise zero is returned. */
-int add_selectors(keys_add_info_t *cmds, size_t len, int mode);
+int vle_keys_add_selectors(keys_add_info_t *cmds, size_t len, int mode);
 
 /* Registers user key mapping.  Returns non-zero or error, otherwise zero is
  * returned. */
-int add_user_keys(const wchar_t keys[], const wchar_t rhs[], int mode,
+int vle_keys_user_add(const wchar_t keys[], const wchar_t rhs[], int mode,
 		int no_r);
 
 /* Checks whether given user mapping exists.  Returns non-zero if so, otherwise
  * zero is returned. */
-int has_user_keys(const wchar_t keys[], int mode);
+int vle_keys_user_exists(const wchar_t keys[], int mode);
 
 /* Removes user mapping from the mode.  Returns non-zero if given key sequence
  * wasn't found. */
-int remove_user_keys(const wchar_t *keys, int mode);
+int vle_keys_user_remove(const wchar_t keys[], int mode);
 
 /* Lists all keys of the given mode with description. */
-void list_cmds(int mode, vle_keys_list_cb cb);
+void vle_keys_list(int mode, vle_keys_list_cb cb);
 
 /* Retrieves number of keys processed so far.  Clients are expected to use
  * difference of returned values.  Returns the number. */
-size_t get_key_counter(void);
+size_t vle_keys_counter(void);
 
 /* Checks whether a mapping handler is currently been executed.  Returns
  * non-zero if so, otherwise zero is returned. */
-int is_inside_mapping(void);
+int vle_keys_inside_mapping(void);
 
 /* Invokes cb for each possible keys continuation.  Intended to be used on
  * KEYS_WAIT and KEYS_WAIT_SHORT returns. */

@@ -16,14 +16,14 @@ SETUP()
 		MF_USES_COUNT
 	};
 
-	init_keys(MODES_COUNT, mode_flags);
+	vle_keys_init(MODES_COUNT, mode_flags);
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	init_builtin_keys();
 }
 
 TEARDOWN()
 {
-	clear_keys();
+	vle_keys_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

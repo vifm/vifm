@@ -11,11 +11,11 @@ static int nsuggestions;
 
 SETUP()
 {
-	add_user_keys(L"hi", L"j", NORMAL_MODE, 0);
-	add_user_keys(L"hi2", L"hi", NORMAL_MODE, 0);
+	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, 0);
+	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, 0);
 
-	add_user_keys(L"ho", L"j", NORMAL_MODE, 0);
-	add_user_keys(L"ha2", L"ho", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, 0);
 
 	nsuggestions = 0;
 }

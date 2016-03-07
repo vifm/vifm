@@ -112,7 +112,7 @@ static void suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
 		void *arg);
 
 void
-init_keys(int modes_count, int *key_mode_flags)
+vle_keys_init(int modes_count, int *key_mode_flags)
 {
 	assert(key_mode_flags != NULL);
 	assert(modes_count > 0);
@@ -134,13 +134,20 @@ init_keys(int modes_count, int *key_mode_flags)
 }
 
 void
-clear_keys(void)
+vle_keys_reset(void)
 {
 	free_forest(builtin_cmds_root, max_modes);
 	free_forest(user_cmds_root, max_modes);
 	free_forest(selectors_root, max_modes);
 
 	free(def_handlers);
+
+	builtin_cmds_root = NULL;
+	selectors_root = NULL;
+	user_cmds_root = NULL;
+	max_modes = 0;
+	mode_flags = NULL;
+	def_handlers = NULL;
 }
 
 /* Releases array of trees of length size including trees. */
@@ -156,7 +163,7 @@ free_forest(key_chunk_t *forest, size_t size)
 }
 
 void
-clear_user_keys(void)
+vle_keys_user_clear(void)
 {
 	int i;
 
@@ -203,35 +210,35 @@ free_chunk(key_chunk_t *chunk)
 }
 
 void
-set_def_handler(int mode, default_handler handler)
+vle_keys_set_def_handler(int mode, default_handler handler)
 {
 	def_handlers[mode] = handler;
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys(const wchar_t keys[])
+vle_keys_exec(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 0, 0, 0);
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys_no_remap(const wchar_t keys[])
+vle_keys_exec_no_remap(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 0, 0, 1);
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys_timed_out(const wchar_t keys[])
+vle_keys_exec_timed_out(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 1, 0, 0);
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys_timed_out_no_remap(const wchar_t keys[])
+vle_keys_exec_timed_out_no_remap(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 1, 0, 1);
 }
@@ -757,7 +764,7 @@ add_cmd(const wchar_t keys[], int mode)
 }
 
 int
-add_user_keys(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
+vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
 {
 	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
 	if(curr == NULL)
@@ -777,13 +784,13 @@ add_user_keys(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
 }
 
 int
-has_user_keys(const wchar_t keys[], int mode)
+vle_keys_user_exists(const wchar_t keys[], int mode)
 {
 	return find_user_keys(keys, mode) != NULL;
 }
 
 int
-remove_user_keys(const wchar_t *keys, int mode)
+vle_keys_user_remove(const wchar_t keys[], int mode)
 {
 	key_chunk_t *curr, *p;
 
@@ -849,7 +856,7 @@ add_selector(const wchar_t keys[], int mode)
 }
 
 int
-add_cmds(keys_add_info_t *cmds, size_t len, int mode)
+vle_keys_add(keys_add_info_t *cmds, size_t len, int mode)
 {
 	int result = 0;
 	size_t i;
@@ -869,7 +876,7 @@ add_cmds(keys_add_info_t *cmds, size_t len, int mode)
 }
 
 int
-add_selectors(keys_add_info_t *cmds, size_t len, int mode)
+vle_keys_add_selectors(keys_add_info_t *cmds, size_t len, int mode)
 {
 	int result = 0;
 	size_t i;
@@ -947,7 +954,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 }
 
 void
-list_cmds(int mode, vle_keys_list_cb cb)
+vle_keys_list(int mode, vle_keys_list_cb cb)
 {
 	const key_chunk_t *user = &user_cmds_root[mode];
 	const key_chunk_t *builtin = &builtin_cmds_root[mode];
@@ -985,7 +992,7 @@ list_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 }
 
 size_t
-get_key_counter(void)
+vle_keys_counter(void)
 {
 	return counter;
 }
@@ -1007,13 +1014,13 @@ inc_counter(const keys_info_t *const keys_info, const size_t by)
 static int
 is_recursive(void)
 {
-	return enters_counter > 1;
+	return (enters_counter > 1);
 }
 
 int
-is_inside_mapping(void)
+vle_keys_inside_mapping(void)
 {
-	return inside_mapping != 0;
+	return (inside_mapping != 0);
 }
 
 /* Executes handler for a mapping, if any.  Error or success code is

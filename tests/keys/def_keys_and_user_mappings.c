@@ -10,14 +10,14 @@ static int counter;
 
 SETUP()
 {
-	set_def_handler(CMDLINE_MODE, &handler);
-	add_user_keys(L"s", L":shell", NORMAL_MODE, 0);
-	add_user_keys(L"q", L"toto", CMDLINE_MODE, 0);
+	vle_keys_set_def_handler(CMDLINE_MODE, &handler);
+	vle_keys_user_add(L"s", L":shell", NORMAL_MODE, 0);
+	vle_keys_user_add(L"q", L"toto", CMDLINE_MODE, 0);
 }
 
 TEARDOWN()
 {
-	set_def_handler(CMDLINE_MODE, NULL);
+	vle_keys_set_def_handler(CMDLINE_MODE, NULL);
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 }
 
@@ -37,8 +37,8 @@ TEST(cmd_line)
 {
 	counter = 0;
 
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"s")));
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"q")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"s")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"q")));
 
 	assert_true(counter == 9);
 }

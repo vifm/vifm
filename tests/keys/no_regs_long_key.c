@@ -14,11 +14,11 @@ SETUP()
 		MF_USES_COUNT
 	};
 
-	clear_keys();
-	init_keys(MODES_COUNT, mode_flags);
+	vle_keys_reset();
+	vle_keys_init(MODES_COUNT, mode_flags);
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
-	set_def_handler(CMDLINE_MODE, def_handler);
-	add_user_keys(L"asdf", L"ddd", CMDLINE_MODE, 0);
+	vle_keys_set_def_handler(CMDLINE_MODE, def_handler);
+	vle_keys_user_add(L"asdf", L"ddd", CMDLINE_MODE, 0);
 }
 
 static int
@@ -29,10 +29,10 @@ def_handler(const wchar_t keys)
 
 TEST(asdf)
 {
-	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"a"));
-	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"as"));
-	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"asd"));
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"asdf")));
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"a"));
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"as"));
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"asd"));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"asdf")));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

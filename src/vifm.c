@@ -464,7 +464,7 @@ vifm_restart(void)
 	curr_stats.restart_in_progress = 1;
 
 	/* All user mappings in all modes. */
-	clear_user_keys();
+	vle_keys_user_clear();
 
 	/* User defined commands. */
 	execute_cmd("comclear");
