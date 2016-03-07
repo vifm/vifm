@@ -20,7 +20,6 @@
 #include "event_loop.h"
 
 #include <curses.h>
-
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
@@ -31,6 +30,7 @@
 
 #include "cfg/config.h"
 #include "compat/curses.h"
+#include "engine/completion.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -43,6 +43,7 @@
 #include "utils/macros.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "bracket_notation.h"
 #include "filelist.h"
 #include "ipc.h"
 #include "status.h"
@@ -56,6 +57,10 @@ static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 static void reset_input_buf(wchar_t curr_input_buf[],
 		size_t *curr_input_buf_pos);
+static void display_suggestion_box(const wchar_t input[]);
+static void process_suggestion(const wchar_t item[], const char descr[]);
+static void draw_suggestion_box(void);
+static void hide_suggestion_box(void);
 
 /* Current input buffer. */
 static const wchar_t *curr_input_buf;
@@ -118,7 +123,7 @@ event_loop(const int *quit)
 				vifm_finish("Terminal is not available.");
 			}
 
-			if(!got_input && input_buf_pos == 0)
+			if(!got_input && (input_buf_pos == 0 || last_result == KEYS_WAIT))
 			{
 				timeout = cfg.timeout_len;
 				continue;
@@ -169,6 +174,8 @@ event_loop(const int *quit)
 		counter = get_key_counter();
 		if(!got_input && last_result == KEYS_WAIT_SHORT)
 		{
+			hide_suggestion_box();
+
 			last_result = execute_keys_timed_out(input_buf);
 			counter = get_key_counter() - counter;
 			assert(counter <= input_buf_pos);
@@ -185,6 +192,11 @@ event_loop(const int *quit)
 				curr_stats.save_msg = 0;
 			}
 
+			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
+			{
+				hide_suggestion_box();
+			}
+
 			last_result = execute_keys(input_buf);
 
 			counter = get_key_counter() - counter;
@@ -198,6 +210,8 @@ event_loop(const int *quit)
 
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
+				display_suggestion_box(input_buf);
+
 				if(got_input)
 				{
 					modupd_input_bar(input_buf);
@@ -427,6 +441,70 @@ reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 {
 	*curr_input_buf_pos = 0;
 	curr_input_buf[0] = L'\0';
+}
+
+/* Composes and draws suggestion box. */
+static void
+display_suggestion_box(const wchar_t input[])
+{
+	/* Display suggestions only for main modes and don't do this for ESC because
+	 * it's prefix for other keys. */
+	if(NONE(vle_mode_is, NORMAL_MODE, VISUAL_MODE) || wcscmp(input, L"\033") == 0)
+	{
+		return;
+	}
+
+	/* Fill completion list with suggestions. */
+	vle_compl_reset();
+	vle_keys_suggest(input, &process_suggestion);
+	vle_compl_finish_group();
+
+	draw_suggestion_box();
+}
+
+/* Inserts key suggestion into completion list. */
+static void
+process_suggestion(const wchar_t item[], const char descr[])
+{
+	vle_compl_put_match(wstr_to_spec(item), descr);
+}
+
+/* Draws suggestion box and all its items (from completion list). */
+static void
+draw_suggestion_box(void)
+{
+	int i;
+
+	const vle_compl_t *const items = vle_compl_get_items();
+	const int count = vle_compl_get_count();
+	const int max_height = getmaxy(stdscr) - getmaxy(status_bar) -
+		ui_stat_job_bar_height() - 2;
+	const int height = MIN(count, max_height);
+
+	wresize(stat_win, height, getmaxx(stdscr));
+	ui_stat_reposition(getmaxy(status_bar), 1);
+
+	for(i = 0; i < height; ++i)
+	{
+		checked_wmove(stat_win, i, 0);
+		ui_stat_draw_popup_line(items[i].text, items[i].descr);
+	}
+
+	wrefresh(stat_win);
+}
+
+/* Removes suggestion box from the screen. */
+static void
+hide_suggestion_box(void)
+{
+	if(NONE(vle_mode_is, NORMAL_MODE, VISUAL_MODE))
+	{
+		return;
+	}
+
+	update_stat_window(curr_view, 1);
+	ui_stat_reposition(getmaxy(status_bar), 0);
+	update_all_windows();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
