@@ -21,8 +21,6 @@
 
 #include <stddef.h> /* size_t wchar_t */
 
-#include "../utils/test_helpers.h"
-
 enum
 {
 	NO_COUNT_GIVEN = -1,
@@ -56,15 +54,6 @@ typedef enum
 	FOLLOWED_BY_MULTIKEY,
 }
 FollowedBy;
-
-typedef enum
-{
-	BUILTIN_WAIT_POINT, /* Infinite wait of next key press. */
-	BUILTIN_KEYS,
-	BUILTIN_NIM_KEYS,   /* NIM - number in the middle. */
-	USER_CMD,           /* User mapping. */
-}
-KeyType;
 
 typedef struct
 {
@@ -100,17 +89,18 @@ typedef int (*default_handler)(wchar_t key);
 
 typedef struct
 {
-	KeyType type;
-	FollowedBy followed;        /* What type of key should we wait for. */
 	union
 	{
 		vle_keys_handler handler; /* Handler for builtin commands. */
 		wchar_t *cmd;             /* Mapped value for user-defined keys. */
 	}
 	data;
+	FollowedBy followed;        /* What type of key should we wait for. */
 	vle_suggest_func suggest;   /* Suggestion function (can be NULL).  Invoked for
 	                               multikeys. */
 	const char *descr;          /* Brief description of the key. */
+	int nim;                    /* Whether additional count in the middle is
+	                               allowed. */
 }
 key_conf_t;
 
@@ -152,11 +142,11 @@ int vle_keys_exec_timed_out_no_remap(const wchar_t keys[]);
 
 /* Registers cmds[0 .. len-1] commands for the mode.  Returns non-zero on error,
  * otherwise zero is returned. */
-int vle_keys_add(keys_add_info_t *cmds, size_t len, int mode);
+int vle_keys_add(keys_add_info_t cmds[], size_t len, int mode);
 
 /* Registers cmds[0 .. len-1] selectors for the mode.  Returns non-zero on
  * error, otherwise zero is returned. */
-int vle_keys_add_selectors(keys_add_info_t *cmds, size_t len, int mode);
+int vle_keys_add_selectors(keys_add_info_t cmds[], size_t len, int mode);
 
 /* Registers user key mapping.  Returns non-zero or error, otherwise zero is
  * returned. */
@@ -185,11 +175,6 @@ int vle_keys_inside_mapping(void);
 /* Invokes cb for each possible keys continuation.  Intended to be used on
  * KEYS_WAIT and KEYS_WAIT_SHORT returns. */
 void vle_keys_suggest(const wchar_t keys[], vle_keys_suggest_cb cb);
-
-TSTATIC_DEFS(
-	key_conf_t * add_cmd(const wchar_t keys[], int mode);
-	key_conf_t * add_selector(const wchar_t keys[], int mode);
-)
 
 #endif /* VIFM__ENGINE__KEYS_H__ */
 

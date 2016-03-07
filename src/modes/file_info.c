@@ -62,15 +62,15 @@ static FileView *view;
 static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
-	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_l}}},
+	{L"\x03", {{&cmd_ctrl_c}}},
+	{L"\x0c", {{&cmd_ctrl_l}}},
 	/* return */
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L"\x0d", {{&cmd_ctrl_c}}},
 	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
-	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {&cmd_ctrl_c}}},
+	{L"\x1b", {{&cmd_ctrl_c}}},
+	{L"ZQ", {{&cmd_ctrl_c}}},
+	{L"ZZ", {{&cmd_ctrl_c}}},
+	{L"q", {{&cmd_ctrl_c}}},
 };
 
 void

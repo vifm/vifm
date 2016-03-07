@@ -8,6 +8,7 @@
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
+#include "../../src/utils/macros.h"
 
 #ifdef TEST
 #define printf(...) do {} while(0)
@@ -38,122 +39,60 @@ static void keys_v(key_info_t key_info, keys_info_t *keys_info);
 static void keys_quit(key_info_t key_info, keys_info_t *keys_info);
 static void keys_norm(key_info_t key_info, keys_info_t *keys_info);
 
+static keys_add_info_t normal_cmds[] = {
+	{L":",         {{&keys_colon}}},
+	{L"m",         {{&keys_m}, FOLLOWED_BY_MULTIKEY}},
+	{L"'",         {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
+	{L"H",         {{&keys_H}}},
+	{L"gu",        {{&keys_gu}, FOLLOWED_BY_SELECTOR}},
+	{L"guu",       {{&keys_gu}}},
+	{L"gugu",      {{&keys_gu}}},
+	{L"j",         {{&keys_j}}},
+	{L"k",         {{&keys_k}}},
+	{L"i",         {{&keys_i}}},
+	{L"<",       {{&keys_ctrl_w_less_than}, .nim = 1}},
+	{L"d",         {{&keys_delete_selector}, FOLLOWED_BY_SELECTOR}},
+	{L"dd",        {{&keys_delete}, .nim = 1}},
+	{L"v",         {{&keys_v}}},
+	{L"y",         {{&keys_yank_selector}, FOLLOWED_BY_SELECTOR}},
+	{L"ZQ",        {{&keys_quit}}},
+	{L"ZZ",        {{&keys_quit}}},
+	{L"norm",      {{&keys_norm}}},
+};
+
+static keys_add_info_t normal_selectors[] = {
+	{L"gg",        {{&keys_gg}}},
+	{L"'",         {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
+};
+
+static keys_add_info_t visual_cmds[] = {
+	{L"j",         {{&keys_j}}},
+	{L"k",         {{&keys_k}}},
+	{L"v",         {{&keys_v}}},
+	{L"ZZ",        {{&keys_quit}}},
+};
+
+static keys_add_info_t common_selectors[] = {
+	{L"j",         {{&keys_j}}},
+	{L"k",         {{&keys_k}}},
+	{L"s",         {{&keys_s}}},
+	{L"if",        {{&keys_if}}},
+};
+
 void
 init_builtin_keys(void)
 {
-	key_conf_t *curr;
+	assert_success(vle_keys_add(normal_cmds, ARRAY_LEN(normal_cmds),
+				NORMAL_MODE));
+	assert_success(vle_keys_add(visual_cmds, ARRAY_LEN(visual_cmds),
+				VISUAL_MODE));
 
-	curr = add_cmd(L":", NORMAL_MODE);
-	curr->data.handler = keys_colon;
-
-	curr = add_cmd(L"m", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_m;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L"'", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_quote;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_selector(L"gg", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_gg;
-	curr->followed = FOLLOWED_BY_NONE;
-
-	curr = add_selector(L"'", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_quote;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L"H", NORMAL_MODE);
-	curr->data.handler = keys_H;
-
-	curr = add_cmd(L"gu", NORMAL_MODE);
-	curr->data.handler = keys_gu;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-	curr->type = BUILTIN_WAIT_POINT;
-
-	curr = add_cmd(L"guu", NORMAL_MODE);
-	curr->data.handler = keys_gu;
-
-	curr = add_cmd(L"gugu", NORMAL_MODE);
-	curr->data.handler = keys_gu;
-
-	curr = add_cmd(L"j", NORMAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_selector(L"j", NORMAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_cmd(L"j", VISUAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_selector(L"j", VISUAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_cmd(L"k", NORMAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_selector(L"k", NORMAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_cmd(L"k", VISUAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_selector(L"k", VISUAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_selector(L"s", NORMAL_MODE);
-	curr->data.handler = keys_s;
-
-	curr = add_selector(L"s", VISUAL_MODE);
-	curr->data.handler = keys_s;
-
-	curr = add_cmd(L"i", NORMAL_MODE);
-	curr->data.handler = keys_i;
-
-	curr = add_selector(L"if", NORMAL_MODE);
-	curr->data.handler = keys_if;
-
-	curr = add_selector(L"if", VISUAL_MODE);
-	curr->data.handler = keys_if;
-
-	curr = add_cmd(L"<", NORMAL_MODE);
-	curr->type = BUILTIN_NIM_KEYS;
-	curr->data.handler = keys_ctrl_w_less_than;
-
-	curr = add_cmd(L"d", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_delete_selector;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-
-	curr = add_cmd(L"dd", NORMAL_MODE);
-	curr->data.handler = keys_delete;
-	curr->type = BUILTIN_NIM_KEYS;
-
-	curr = add_cmd(L"v", NORMAL_MODE);
-	curr->data.handler = keys_v;
-
-	curr = add_cmd(L"v", VISUAL_MODE);
-	curr->data.handler = keys_v;
-
-	curr = add_cmd(L"y", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_yank_selector;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-
-	curr = add_cmd(L"ZQ", NORMAL_MODE);
-	curr->data.handler = keys_quit;
-
-	curr = add_cmd(L"ZZ", NORMAL_MODE);
-	curr->data.handler = keys_quit;
-
-	curr = add_cmd(L"ZZ", VISUAL_MODE);
-	curr->data.handler = keys_quit;
-
-	curr = add_cmd(L"norm", NORMAL_MODE);
-	curr->data.handler = keys_norm;
+	assert_success(vle_keys_add_selectors(normal_selectors,
+				ARRAY_LEN(normal_selectors), NORMAL_MODE));
+	assert_success(vle_keys_add_selectors(common_selectors,
+				ARRAY_LEN(common_selectors), NORMAL_MODE));
+	assert_success(vle_keys_add_selectors(common_selectors,
+				ARRAY_LEN(common_selectors), VISUAL_MODE));
 }
 
 static void
