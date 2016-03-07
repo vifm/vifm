@@ -38,14 +38,14 @@ enum
 
 enum
 {
-	KEYS_UNKNOWN = -1024,
-	KEYS_WAIT = -2048,
+	KEYS_UNKNOWN    = -1024,
+	KEYS_WAIT       = -2048,
 	KEYS_WAIT_SHORT = -4096,
 };
 
 #define IS_KEYS_RET_CODE(c) \
 		({ \
-			int tmp = (c); \
+			const int tmp = (c); \
 			tmp == KEYS_UNKNOWN || tmp == KEYS_WAIT || tmp == KEYS_WAIT_SHORT; \
 		})
 
@@ -55,7 +55,7 @@ typedef enum
 	FOLLOWED_BY_SELECTOR,
 	FOLLOWED_BY_MULTIKEY,
 }
-FOLLOWED_BY;
+FollowedBy;
 
 typedef enum
 {
@@ -64,15 +64,7 @@ typedef enum
 	BUILTIN_NIM_KEYS,   /* NIM - number in the middle. */
 	USER_CMD,           /* User mapping. */
 }
-KEYS_TYPE;
-
-typedef enum
-{
-	KS_NOT_A_SELECTOR,
-	KS_SELECTOR_AND_CMD,
-	KS_ONLY_SELECTOR,
-}
-KEYS_SELECTOR;
+KeyType;
 
 typedef struct
 {
@@ -108,8 +100,8 @@ typedef int (*default_handler)(wchar_t key);
 
 typedef struct
 {
-	KEYS_TYPE type;
-	FOLLOWED_BY followed;       /* What type of key should we wait for. */
+	KeyType type;
+	FollowedBy followed;        /* What type of key should we wait for. */
 	union
 	{
 		vle_keys_handler handler; /* Handler for builtin commands. */
