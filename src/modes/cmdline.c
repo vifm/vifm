@@ -1114,7 +1114,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 	const int max_height = getmaxy(stdscr) - get_required_height() -
-		ui_stat_job_bar_height();
+		ui_stat_job_bar_height() - 1;
 	const int height = MIN(count, MIN(10, max_height));
 
 	if(*pos < *last_pos)
