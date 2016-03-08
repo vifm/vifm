@@ -49,6 +49,7 @@
 #include "../status.h"
 #include "../types.h"
 #include "modes.h"
+#include "wk.h"
 
 static void leave_file_info_mode(void);
 static int print_item(const char label[], const char path[], int curr_y);
@@ -62,15 +63,13 @@ static FileView *view;
 static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {{&cmd_ctrl_c}}},
-	{L"\x0c", {{&cmd_ctrl_l}}},
-	/* return */
-	{L"\x0d", {{&cmd_ctrl_c}}},
-	/* escape */
-	{L"\x1b", {{&cmd_ctrl_c}}},
-	{L"ZQ", {{&cmd_ctrl_c}}},
-	{L"ZZ", {{&cmd_ctrl_c}}},
-	{L"q", {{&cmd_ctrl_c}}},
+	{WK_C_c,    {{&cmd_ctrl_c}}},
+	{WK_C_l,    {{&cmd_ctrl_l}}},
+	{WK_CR,     {{&cmd_ctrl_c}}},
+	{WK_ESC,    {{&cmd_ctrl_c}}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}}},
+	{WK_q,      {{&cmd_ctrl_c}}},
 };
 
 void

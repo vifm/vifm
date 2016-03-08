@@ -25,6 +25,7 @@
 #include <time.h> /* time_t time() */
 
 #include "compat/fs_limits.h"
+#include "modes/wk.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -289,8 +290,8 @@ goto_mark(FileView *view, char mark)
 		case '\'':
 			navigate_back(view);
 			return 0;
-		case '\x03': /* Ctrl-C. */
-		case '\x1b': /* Escape. */
+		case NC_C_c:
+		case NC_ESC:
 			fview_cursor_redraw(view);
 			return 0;
 

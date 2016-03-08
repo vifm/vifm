@@ -67,6 +67,7 @@
 #include "modes.h"
 #include "normal.h"
 #include "visual.h"
+#include "wk.h"
 
 #ifndef TEST
 
@@ -144,7 +145,7 @@ static void draw_wild_menu(int op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
 static int draw_wild_popup(int *last_pos, int *pos, int *len);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static int is_input_line_empty(void);
 static void expand_abbrev(void);
 TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
@@ -222,23 +223,53 @@ static void stop_dot_completion(void);
 static void stop_regular_completion(void);
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03",         {{&cmd_ctrl_c}}},
-	{L"\x07",         {{&cmd_ctrl_g}}},
-	/* backspace */
-	{L"\x08",         {{&cmd_ctrl_h}}},
-	{L"\x09",         {{&cmd_ctrl_i}}},
-	{L"\x0b",         {{&cmd_ctrl_k}}},
-	{L"\x0d",         {{&cmd_ctrl_m}}},
-	{L"\x0e",         {{&cmd_ctrl_n}}},
-	{L"\x10",         {{&cmd_ctrl_p}}},
-	{L"\x14",         {{&cmd_ctrl_t}}},
-	/* escape */
-	{L"\x1b",         {{&cmd_ctrl_c}}},
-	/* escape escape */
-	{L"\x1b\x1b",     {{&cmd_ctrl_c}}},
-	{L"\x1d",         {{&cmd_ctrl_rb}}},
-	/* ascii Delete */
-	{L"\x7f",         {{&cmd_ctrl_h}}},
+	{WK_C_c,             {{&cmd_ctrl_c}}},
+	{WK_C_g,             {{&cmd_ctrl_g}}},
+	{WK_C_h,             {{&cmd_ctrl_h}}},
+	{WK_C_i,             {{&cmd_ctrl_i}}},
+	{WK_C_k,             {{&cmd_ctrl_k}}},
+	{WK_CR,              {{&cmd_return}}},
+	{WK_C_n,             {{&cmd_ctrl_n}}},
+	{WK_C_p,             {{&cmd_ctrl_p}}},
+	{WK_C_t,             {{&cmd_ctrl_t}}},
+	{WK_ESC,             {{&cmd_ctrl_c}}},
+	{WK_ESC WK_ESC,      {{&cmd_ctrl_c}}},
+	{WK_C_RB,            {{&cmd_ctrl_rb}}},
+	{WK_C_USCORE,        {{&cmd_ctrl_underscore}}},
+	{WK_DELETE,          {{&cmd_ctrl_h}}},
+	{WK_ESC L"[Z",       {{&cmd_shift_tab}}},
+	{WK_C_b,             {{&cmd_left}}},
+	{WK_C_f,             {{&cmd_right}}},
+	{WK_C_a,             {{&cmd_home}}},
+	{WK_C_e,             {{&cmd_end}}},
+	{WK_C_d,             {{&cmd_delete}}},
+	{WK_C_u,             {{&cmd_ctrl_u}}},
+	{WK_C_w,             {{&cmd_ctrl_w}}},
+	{WK_C_x WK_SLASH,    {{&cmd_ctrl_xslash}}},
+	{WK_C_x WK_a,        {{&cmd_ctrl_xa}}},
+	{WK_C_x WK_c,        {{&cmd_ctrl_xc}}},
+	{WK_C_x WK_d,        {{&cmd_ctrl_xd}}},
+	{WK_C_x WK_e,        {{&cmd_ctrl_xe}}},
+	{WK_C_x WK_m,        {{&cmd_ctrl_xm}}},
+	{WK_C_x WK_r,        {{&cmd_ctrl_xr}}},
+	{WK_C_x WK_t,        {{&cmd_ctrl_xt}}},
+	{WK_C_x WK_C_x WK_c, {{&cmd_ctrl_xxc}}},
+	{WK_C_x WK_C_x WK_d, {{&cmd_ctrl_xxd}}},
+	{WK_C_x WK_C_x WK_e, {{&cmd_ctrl_xxe}}},
+	{WK_C_x WK_C_x WK_r, {{&cmd_ctrl_xxr}}},
+	{WK_C_x WK_C_x WK_t, {{&cmd_ctrl_xxt}}},
+	{WK_C_x WK_EQUALS,   {{&cmd_ctrl_xequals}}},
+#ifndef __PDCURSES__
+	{WK_ESC WK_b,     {{&cmd_meta_b}}},
+	{WK_ESC WK_d,     {{&cmd_meta_d}}},
+	{WK_ESC WK_f,     {{&cmd_meta_f}}},
+	{WK_ESC WK_DOT,   {{&cmd_meta_dot}}},
+#else
+	{{ALT_B},         {{&cmd_meta_b}}},
+	{{ALT_D},         {{&cmd_meta_d}}},
+	{{ALT_F},         {{&cmd_meta_f}}},
+	{{ALT_PERIOD},    {{&cmd_meta_dot}}},
+#endif
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_BACKSPACE}, {{&cmd_ctrl_h}}},
 	{{KEY_DOWN},      {{&cmd_down}}},
@@ -250,45 +281,6 @@ static keys_add_info_t builtin_cmds[] = {
 	{{KEY_DC},        {{&cmd_delete}}},
 	{{KEY_BTAB},      {{&cmd_shift_tab}}},
 #endif /* ENABLE_EXTENDED_KEYS */
-	{L"\x1b"L"[Z",    {{&cmd_shift_tab}}},
-	/* ctrl b */
-	{L"\x02",         {{&cmd_left}}},
-	/* ctrl f */
-	{L"\x06",         {{&cmd_right}}},
-	/* ctrl a */
-	{L"\x01",         {{&cmd_home}}},
-	/* ctrl e */
-	{L"\x05",         {{&cmd_end}}},
-	/* ctrl d */
-	{L"\x04",         {{&cmd_delete}}},
-	{L"\x15",         {{&cmd_ctrl_u}}},
-	{L"\x17",         {{&cmd_ctrl_w}}},
-	{L"\x18"L"/",     {{&cmd_ctrl_xslash}}},
-	{L"\x18"L"a",     {{&cmd_ctrl_xa}}},
-	{L"\x18"L"c",     {{&cmd_ctrl_xc}}},
-	{L"\x18\x18"L"c", {{&cmd_ctrl_xxc}}},
-	{L"\x18"L"d",     {{&cmd_ctrl_xd}}},
-	{L"\x18\x18"L"d", {{&cmd_ctrl_xxd}}},
-	{L"\x18"L"e",     {{&cmd_ctrl_xe}}},
-	{L"\x18\x18"L"e", {{&cmd_ctrl_xxe}}},
-	{L"\x18"L"m",     {{&cmd_ctrl_xm}}},
-	{L"\x18"L"r",     {{&cmd_ctrl_xr}}},
-	{L"\x18\x18"L"r", {{&cmd_ctrl_xxr}}},
-	{L"\x18"L"t",     {{&cmd_ctrl_xt}}},
-	{L"\x18\x18"L"t", {{&cmd_ctrl_xxt}}},
-	{L"\x18"L"=",     {{&cmd_ctrl_xequals}}},
-#ifndef __PDCURSES__
-	{L"\x1b"L"b",     {{&cmd_meta_b}}},
-	{L"\x1b"L"d",     {{&cmd_meta_d}}},
-	{L"\x1b"L"f",     {{&cmd_meta_f}}},
-	{L"\x1b"L".",     {{&cmd_meta_dot}}},
-#else
-	{{ALT_B},         {{&cmd_meta_b}}},
-	{{ALT_D},         {{&cmd_meta_d}}},
-	{{ALT_F},         {{&cmd_meta_f}}},
-	{{ALT_PERIOD},    {{&cmd_meta_dot}}},
-#endif
-	{L"\x1f",         {{&cmd_ctrl_underscore}}},
 };
 
 void
@@ -1167,9 +1159,9 @@ cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
-	/* TODO: refactor this cmd_ctrl_m() function. */
+	/* TODO: refactor this cmd_return() function. */
 	char *input;
 
 	stop_completion();

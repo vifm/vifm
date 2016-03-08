@@ -48,6 +48,7 @@
 #include "io/ionotif.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
+#include "modes/wk.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
@@ -1886,7 +1887,7 @@ prompt_what_to_do(const char fname[])
 		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
 		merge         = { .key = 'm', .descr = "[m]erge " },
 		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
-		escape        = { .key = '\x03', .descr = "\nEsc or Ctrl-C to cancel" };
+		escape        = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
 
 	char msg[PATH_MAX];
 	char response;
@@ -1962,7 +1963,7 @@ handle_prompt_response(const char fname[], char response)
 		put_confirm.merge_all = 1;
 		put_continue(1);
 	}
-	else if(response != '\x03')
+	else if(response != NC_C_c)
 	{
 		prompt_what_to_do(fname);
 	}

@@ -38,6 +38,7 @@
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"
+#include "../wk.h"
 
 /* enumeration of properties */
 enum
@@ -60,7 +61,7 @@ static int get_first_file_index(void);
 static int get_selection_size(int first_file_index);
 static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void set_attrs(FileView *view, const int *attrs,
 		const int *origin_attrs);
 static void files_attrib(FileView *view, DWORD add, DWORD sub,
@@ -111,30 +112,28 @@ static const char *attr_strings[ATTR_COUNT] = {
 ARRAY_GUARD(attr_strings, ATTR_COUNT);
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {{&cmd_ctrl_c}}},
-	/* return */
-	{L"\x0d", {{&cmd_ctrl_m}}},
-	{L"\x0e", {{&cmd_j}}},
-	{L"\x10", {{&cmd_k}}},
-	/* escape */
-	{L"\x1b", {{&cmd_ctrl_c}}},
-	{L" ", {{&cmd_space}}},
-	{L"G", {{&cmd_G}}},
-	{L"ZQ", {{&cmd_ctrl_c}}},
-	{L"ZZ", {{&cmd_ctrl_c}}},
-	{L"gg", {{&cmd_gg}}},
-	{L"h", {{&cmd_space}}},
-	{L"j", {{&cmd_j}}},
-	{L"k", {{&cmd_k}}},
-	{L"l", {{&cmd_ctrl_m}}},
-	{L"q", {{&cmd_ctrl_c}}},
-	{L"t", {{&cmd_space}}},
+	{WK_C_c,    {{&cmd_ctrl_c}}},
+	{WK_CR,     {{&cmd_return}}},
+	{WK_C_n,    {{&cmd_j}}},
+	{WK_C_p,    {{&cmd_k}}},
+	{WK_ESC,    {{&cmd_ctrl_c}}},
+	{WK_SPACE,  {{&cmd_space}}},
+	{WK_G,      {{&cmd_G}}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}}},
+	{WK_g WK_g, {{&cmd_gg}}},
+	{WK_h,      {{&cmd_space}}},
+	{WK_j,      {{&cmd_j}}},
+	{WK_k,      {{&cmd_k}}},
+	{WK_l,      {{&cmd_return}}},
+	{WK_q,      {{&cmd_ctrl_c}}},
+	{WK_t,      {{&cmd_space}}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_HOME}, {{&cmd_gg}}},
-	{{KEY_END}, {{&cmd_G}}},
-	{{KEY_UP}, {{&cmd_k}}},
-	{{KEY_DOWN}, {{&cmd_j}}},
-	{{KEY_RIGHT}, {{&cmd_ctrl_m}}},
+	{{KEY_HOME},  {{&cmd_gg}}},
+	{{KEY_END},   {{&cmd_G}}},
+	{{KEY_UP},    {{&cmd_k}}},
+	{{KEY_DOWN},  {{&cmd_j}}},
+	{{KEY_RIGHT}, {{&cmd_return}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -368,7 +367,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 
 /* leaves properties change dialog after changing file attributes */
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(changed)
 	{

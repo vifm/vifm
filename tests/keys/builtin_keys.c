@@ -8,6 +8,7 @@
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 #include "../../src/utils/macros.h"
 
 #ifdef TEST
@@ -40,43 +41,43 @@ static void keys_quit(key_info_t key_info, keys_info_t *keys_info);
 static void keys_norm(key_info_t key_info, keys_info_t *keys_info);
 
 static keys_add_info_t normal_cmds[] = {
-	{L":",         {{&keys_colon}}},
-	{L"m",         {{&keys_m}, FOLLOWED_BY_MULTIKEY}},
-	{L"'",         {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
-	{L"H",         {{&keys_H}}},
-	{L"gu",        {{&keys_gu}, FOLLOWED_BY_SELECTOR}},
-	{L"guu",       {{&keys_gu}}},
-	{L"gugu",      {{&keys_gu}}},
-	{L"j",         {{&keys_j}}},
-	{L"k",         {{&keys_k}}},
-	{L"i",         {{&keys_i}}},
-	{L"<",       {{&keys_ctrl_w_less_than}, .nim = 1}},
-	{L"d",         {{&keys_delete_selector}, FOLLOWED_BY_SELECTOR}},
-	{L"dd",        {{&keys_delete}, .nim = 1}},
-	{L"v",         {{&keys_v}}},
-	{L"y",         {{&keys_yank_selector}, FOLLOWED_BY_SELECTOR}},
-	{L"ZQ",        {{&keys_quit}}},
-	{L"ZZ",        {{&keys_quit}}},
-	{L"norm",      {{&keys_norm}}},
+	{WK_COLON,            {{&keys_colon}}},
+	{WK_m,                {{&keys_m}, FOLLOWED_BY_MULTIKEY}},
+	{WK_QUOTE,            {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
+	{WK_H,                {{&keys_H}}},
+	{WK_g WK_u,           {{&keys_gu}, FOLLOWED_BY_SELECTOR}},
+	{WK_g WK_u WK_u,      {{&keys_gu}}},
+	{WK_g WK_u WK_g WK_u, {{&keys_gu}}},
+	{WK_j,                {{&keys_j}}},
+	{WK_k,                {{&keys_k}}},
+	{WK_i,                {{&keys_i}}},
+	{WK_C_w WK_LT,        {{&keys_ctrl_w_less_than}, .nim = 1}},
+	{WK_d,                {{&keys_delete_selector}, FOLLOWED_BY_SELECTOR}},
+	{WK_d WK_d,           {{&keys_delete}, .nim = 1}},
+	{WK_v,                {{&keys_v}}},
+	{WK_y,                {{&keys_yank_selector}, FOLLOWED_BY_SELECTOR}},
+	{WK_Z WK_Q,           {{&keys_quit}}},
+	{WK_Z WK_Z,           {{&keys_quit}}},
+	{WK_n WK_o WK_r WK_m, {{&keys_norm}}},
 };
 
 static keys_add_info_t normal_selectors[] = {
-	{L"gg",        {{&keys_gg}}},
-	{L"'",         {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
+	{WK_g WK_g,           {{&keys_gg}}},
+	{WK_QUOTE,            {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
 };
 
 static keys_add_info_t visual_cmds[] = {
-	{L"j",         {{&keys_j}}},
-	{L"k",         {{&keys_k}}},
-	{L"v",         {{&keys_v}}},
-	{L"ZZ",        {{&keys_quit}}},
+	{WK_j,                {{&keys_j}}},
+	{WK_k,                {{&keys_k}}},
+	{WK_v,                {{&keys_v}}},
+	{WK_Z WK_Z,           {{&keys_quit}}},
 };
 
 static keys_add_info_t common_selectors[] = {
-	{L"j",         {{&keys_j}}},
-	{L"k",         {{&keys_k}}},
-	{L"s",         {{&keys_s}}},
-	{L"if",        {{&keys_if}}},
+	{WK_j,                {{&keys_j}}},
+	{WK_k,                {{&keys_k}}},
+	{WK_s,                {{&keys_s}}},
+	{WK_i WK_f,           {{&keys_if}}},
 };
 
 void

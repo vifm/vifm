@@ -34,6 +34,7 @@
 #include "../../filelist.h"
 #include "../../status.h"
 #include "../modes.h"
+#include "../wk.h"
 
 static FileView *view;
 static int top, bottom, curr, col;
@@ -81,7 +82,7 @@ ARRAY_GUARD(indexes, 1 + SK_COUNT);
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
@@ -113,52 +114,50 @@ static void print_at_pos(void);
 static void clear_at_pos(void);
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {{&cmd_ctrl_c}}},
-	{L"\x0c", {{&cmd_ctrl_l}}},
-	/* return */
-	{L"\x0d", {{&cmd_ctrl_m}}},
-	{L"\x0e", {{&cmd_j}}},
-	{L"\x10", {{&cmd_k}}},
-	/* escape */
-	{L"\x1b", {{&cmd_ctrl_c}}},
-	{L"G", {{&cmd_G}}},
-	{L"ZQ", {{&cmd_ctrl_c}}},
-	{L"ZZ", {{&cmd_ctrl_c}}},
-	{L"gg", {{&cmd_gg}}},
-	{L"h", {{&cmd_h}}},
-	{L" ", {{&cmd_h}}},
-	{L"j", {{&cmd_j}}},
-	{L"k", {{&cmd_k}}},
-	{L"l", {{&cmd_ctrl_m}}},
-	{L"q", {{&cmd_ctrl_c}}},
-	{L"e", {{&cmd_e}}},
-	{L"f", {{&cmd_f}}},
-	{L"n", {{&cmd_n}}},
-	{L"N", {{&cmd_N}}},
-	{L"t", {{&cmd_t}}},
-	{L"d", {{&cmd_d}}},
+	{WK_C_c,    {{&cmd_ctrl_c}}},
+	{WK_C_l,    {{&cmd_ctrl_l}}},
+	{WK_CR,     {{&cmd_return}}},
+	{WK_C_n,    {{&cmd_j}}},
+	{WK_C_p,    {{&cmd_k}}},
+	{WK_ESC,    {{&cmd_ctrl_c}}},
+	{WK_G,      {{&cmd_G}}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}}},
+	{WK_g WK_g, {{&cmd_gg}}},
+	{WK_h,      {{&cmd_h}}},
+	{WK_SPACE,  {{&cmd_h}}},
+	{WK_j,      {{&cmd_j}}},
+	{WK_k,      {{&cmd_k}}},
+	{WK_l,      {{&cmd_return}}},
+	{WK_q,      {{&cmd_ctrl_c}}},
+	{WK_e,      {{&cmd_e}}},
+	{WK_f,      {{&cmd_f}}},
+	{WK_n,      {{&cmd_n}}},
+	{WK_N,      {{&cmd_N}}},
+	{WK_t,      {{&cmd_t}}},
+	{WK_d,      {{&cmd_d}}},
 #ifndef _WIN32
-	{L"r", {{&cmd_r}}},
-	{L"R", {{&cmd_R}}},
-	{L"M", {{&cmd_M}}},
-	{L"p", {{&cmd_p}}},
-	{L"o", {{&cmd_o}}},
-	{L"O", {{&cmd_O}}},
-	{L"L", {{&cmd_L}}},
+	{WK_r,      {{&cmd_r}}},
+	{WK_R,      {{&cmd_R}}},
+	{WK_M,      {{&cmd_M}}},
+	{WK_p,      {{&cmd_p}}},
+	{WK_o,      {{&cmd_o}}},
+	{WK_O,      {{&cmd_O}}},
+	{WK_L,      {{&cmd_L}}},
 #endif
-	{L"s", {{&cmd_s}}},
-	{L"i", {{&cmd_i}}},
-	{L"u", {{&cmd_u}}},
-	{L"a", {{&cmd_a}}},
-	{L"c", {{&cmd_c}}},
-	{L"m", {{&cmd_m}}},
+	{WK_s,      {{&cmd_s}}},
+	{WK_i,      {{&cmd_i}}},
+	{WK_u,      {{&cmd_u}}},
+	{WK_a,      {{&cmd_a}}},
+	{WK_c,      {{&cmd_c}}},
+	{WK_m,      {{&cmd_m}}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_UP}, {{&cmd_k}}},
-	{{KEY_DOWN}, {{&cmd_j}}},
-	{{KEY_LEFT}, {{&cmd_h}}},
-	{{KEY_RIGHT}, {{&cmd_ctrl_m}}},
-	{{KEY_HOME}, {{&cmd_gg}}},
-	{{KEY_END}, {{&cmd_G}}},
+	{{KEY_UP},    {{&cmd_k}}},
+	{{KEY_DOWN},  {{&cmd_j}}},
+	{{KEY_LEFT},  {{&cmd_h}}},
+	{{KEY_RIGHT}, {{&cmd_return}}},
+	{{KEY_HOME},  {{&cmd_gg}}},
+	{{KEY_END},   {{&cmd_G}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -267,7 +266,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	size_t i;
 
@@ -344,42 +343,42 @@ static void
 cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 0);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 1);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 2);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 3);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_t(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 4);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 5);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 #ifndef _WIN32
@@ -388,49 +387,49 @@ static void
 cmd_r(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 6);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_R(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 7);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 8);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_p(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 9);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_o(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 10);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_O(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 11);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 12);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 #endif
@@ -439,42 +438,42 @@ static void
 cmd_s(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 13 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 14 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 15 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_a(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 16 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 17 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 18 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 /* Moves cursor to the specified line and updates the dialog. */

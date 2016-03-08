@@ -33,11 +33,12 @@
 #include "../../fileops.h"
 #include "../../status.h"
 #include "../modes.h"
+#include "../wk.h"
 #include "attr_dialog.h"
 
 static void leave_change_mode(int clean_selection);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
@@ -54,31 +55,29 @@ static FileView *view;
 static int top, bottom, step, curr, col;
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {{&cmd_ctrl_c}}},
-	/* return */
-	{L"\x0d", {{&cmd_ctrl_m}}},
-	{L"\x0e", {{&cmd_j}}},
-	{L"\x10", {{&cmd_k}}},
-	/* escape */
-	{L"\x1b", {{&cmd_ctrl_c}}},
-	{L"G", {{&cmd_G}}},
-	{L"ZQ", {{&cmd_ctrl_c}}},
-	{L"ZZ", {{&cmd_ctrl_c}}},
-	{L"gg", {{&cmd_gg}}},
-	{L"j", {{&cmd_j}}},
-	{L"k", {{&cmd_k}}},
-	{L"l", {{&cmd_ctrl_m}}},
-	{L"q", {{&cmd_ctrl_c}}},
-	{L"n", {{&cmd_n}}},
-	{L"o", {{&cmd_o}}},
-	{L"g", {{&cmd_g}}},
-	{L"p", {{&cmd_p}}},
+	{WK_C_c,    {{&cmd_ctrl_c}}},
+	{WK_CR,     {{&cmd_return}}},
+	{WK_C_n,    {{&cmd_j}}},
+	{WK_C_p,    {{&cmd_k}}},
+	{WK_ESC,    {{&cmd_ctrl_c}}},
+	{WK_G,      {{&cmd_G}}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}}},
+	{WK_g WK_g, {{&cmd_gg}}},
+	{WK_j,      {{&cmd_j}}},
+	{WK_k,      {{&cmd_k}}},
+	{WK_l,      {{&cmd_return}}},
+	{WK_q,      {{&cmd_ctrl_c}}},
+	{WK_n,      {{&cmd_n}}},
+	{WK_o,      {{&cmd_o}}},
+	{WK_g,      {{&cmd_g}}},
+	{WK_p,      {{&cmd_p}}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_UP}, {{&cmd_k}}},
-	{{KEY_DOWN}, {{&cmd_j}}},
-	{{KEY_RIGHT}, {{&cmd_ctrl_m}}},
-	{{KEY_HOME}, {{&cmd_gg}}},
-	{{KEY_END}, {{&cmd_G}}},
+	{{KEY_UP},    {{&cmd_k}}},
+	{{KEY_DOWN},  {{&cmd_j}}},
+	{{KEY_RIGHT}, {{&cmd_return}}},
+	{{KEY_HOME},  {{&cmd_gg}}},
+	{{KEY_END},   {{&cmd_G}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -166,7 +165,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_change_mode(0);
 
@@ -237,28 +236,28 @@ static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(1);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_o(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(2);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_g(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(3);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_p(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(4);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 /* Moves cursor to the specified line and updates the dialog. */

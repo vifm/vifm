@@ -160,6 +160,7 @@ vifm_SOURCES = \
 	modes/normal.c modes/normal.h \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
+	modes/wk.h \
 	\
 	ui/cancellation.c ui/cancellation.h \
 	ui/color_manager.c ui/color_manager.h \

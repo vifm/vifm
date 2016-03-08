@@ -59,6 +59,7 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/dialogs/sort_dialog.h"
 #include "modes/modes.h"
+#include "modes/wk.h"
 #include "ui/color_manager.h"
 #include "ui/color_scheme.h"
 #include "ui/colors.h"
@@ -3109,7 +3110,7 @@ normal_cmd(const cmd_info_t *cmd_info)
 	/* Force leaving command-line mode if the wide contains unfinished ":". */
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		(void)vle_keys_exec_timed_out(L"\x03");
+		(void)vle_keys_exec_timed_out(WK_C_c);
 	}
 
 	free(wide);
@@ -3886,7 +3887,7 @@ wincmd_cmd(const cmd_info_t *cmd_info)
 	}
 
 	count = (cmd_info->count <= 1) ? 1 : cmd_info->count;
-	cmd = format_str("\x17%d%s", count, cmd_info->args);
+	cmd = format_str("%c%d%s", NC_C_w, count, cmd_info->args);
 	wcmd = to_wide(cmd);
 	free(cmd);
 

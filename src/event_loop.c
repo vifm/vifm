@@ -35,6 +35,7 @@
 #include "engine/mode.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
+#include "modes/wk.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
@@ -143,13 +144,13 @@ event_loop(const int *quit)
 				wait_for_enter = 0;
 				curr_stats.save_msg = 0;
 				clean_status_bar();
-				if(c == L'\x0d')
+				if(c == WC_CR)
 				{
 					continue;
 				}
 			}
 
-			if(c == L'\x1a') /* Ctrl-Z */
+			if(c == WC_C_z)
 			{
 				def_prog_mode();
 				endwin();
