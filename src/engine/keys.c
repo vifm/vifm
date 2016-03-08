@@ -923,6 +923,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->conf.suggest = NULL;
 			c->conf.descr = NULL;
 			c->conf.nim = 0;
+			c->conf.skip_suggestion = 0;
 			c->prev = prev;
 			c->next = p;
 			c->child = NULL;
@@ -1186,6 +1187,11 @@ traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 static void
 suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 {
+	if(chunk->conf.skip_suggestion)
+	{
+		return;
+	}
+
 	if(chunk->children_count == 0 || chunk->type == USER_CMD ||
 			chunk->conf.followed != FOLLOWED_BY_NONE)
 	{

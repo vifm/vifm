@@ -101,6 +101,7 @@ typedef struct
 	const char *descr;          /* Brief description of the key. */
 	int nim;                    /* Whether additional count in the middle is
 	                               allowed. */
+	int skip_suggestion;        /* Do not print this among suggestions. */
 }
 key_conf_t;
 

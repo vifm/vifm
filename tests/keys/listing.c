@@ -23,7 +23,7 @@ SETUP()
 TEST(normal_mode_user_keys_delimiter)
 {
 	vle_keys_list(NORMAL_MODE, &process_listing);
-	assert_int_equal(21, nitems);
+	assert_int_equal(22, nitems);
 }
 
 TEST(visual_mode_no_user_keys_no_delimiter)

@@ -48,6 +48,7 @@ static keys_add_info_t normal_cmds[] = {
 	{WK_g WK_u,           {{&keys_gu}, FOLLOWED_BY_SELECTOR}},
 	{WK_g WK_u WK_u,      {{&keys_gu}}},
 	{WK_g WK_u WK_g WK_u, {{&keys_gu}}},
+	{WK_g WK_u WK_g WK_g, {{&keys_gu}, .skip_suggestion = 1}},
 	{WK_j,                {{&keys_j}}},
 	{WK_k,                {{&keys_k}}},
 	{WK_i,                {{&keys_i}}},
