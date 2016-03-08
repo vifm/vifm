@@ -41,7 +41,7 @@ TEST(builtin_keys_with_prefix_are_listed)
 TEST(selectors_are_completed_from_beginning)
 {
 	vle_keys_suggest(L"d", &process_suggestion);
-	assert_int_equal(8, nsuggestions);
+	assert_int_equal(7, nsuggestions);
 }
 
 TEST(selectors_are_completed_with_prefix)

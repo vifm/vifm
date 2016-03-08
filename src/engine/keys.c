@@ -1135,7 +1135,12 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 
 	if(*keys == L'\0')
 	{
-		traverse_children(curr, prefix, &suggest_chunk, cb);
+		/* Suggest all children. */
+		const key_chunk_t *child;
+		for(child = curr->child; child != NULL; child = child->next)
+		{
+			traverse_children(child, prefix, &suggest_chunk, cb);
+		}
 	}
 
 	if(curr->type == BUILTIN_WAIT_POINT)
