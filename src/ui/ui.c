@@ -618,6 +618,8 @@ clear_border(WINDOW *border)
 	{
 		mvwaddstr(border, i, 0, cfg.border_filler);
 	}
+
+	wnoutrefresh(border);
 }
 
 /* Updates (redraws or reloads) views. */

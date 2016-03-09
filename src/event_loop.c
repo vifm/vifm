@@ -503,9 +503,7 @@ hide_suggestion_box(void)
 		return;
 	}
 
-	update_stat_window(curr_view, 1);
-	ui_stat_reposition(getmaxy(status_bar), 0);
-	update_all_windows();
+	update_screen(UT_REDRAW);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
