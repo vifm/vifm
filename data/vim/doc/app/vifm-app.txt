@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Feb 28
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1361,7 +1361,8 @@ The builtin commands are:
     space.  See |vifm-:let| for definition of <expr>.
 
 :[range]e[dit] [file...]                       *vifm-:edit* *vifm-:e*
-    open selected or passed file(s) in editor.  Accepts macros.
+    open selected or passed file(s) in editor.  Macros and environment
+    variables are expanded.
 
 :el[se]                                        *vifm-:else* *vifm-:el*
     execute commands until next matching |vifm-:endif| if all other conditions

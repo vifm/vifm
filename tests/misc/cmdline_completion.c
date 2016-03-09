@@ -15,6 +15,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
 #include "../../src/modes/cmdline.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
@@ -559,6 +560,16 @@ TEST(autocmd_name_completion_is_case_insensitive)
 	prepare_for_line_completion(L"autocmd dir");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"autocmd DirEnter", stats.line);
+}
+
+TEST(envvars_are_completed_for_edit)
+{
+	env_set("RRRRRARE_VARIABLE1", "1");
+	env_set("RRRRRARE_VARIABLE2", "2");
+
+	prepare_for_line_completion(L"edit $RRRRRARE_VARIA");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"edit $RRRRRARE_VARIABLE1", stats.line);
 }
 
 static void
