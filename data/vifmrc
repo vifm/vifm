@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 06 Jan, 2016)
+" Sample configuration file for vifm (last updated: 09 Mar, 2016)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -416,8 +416,8 @@ nnoremap A cw
 " Open console in current directory
 nnoremap ,t :!xterm &<cr>
 
-" Open vim to edit vifmrc and apply settings after returning to vifm
-nnoremap ,c :write | execute ':!vim $MYVIFMRC' | restart<cr>
+" Open editor to edit vifmrc and apply settings after returning to vifm
+nnoremap ,c :write | edit $MYVIFMRC | restart<cr>
 " Open gvim to edit vifmrc
 nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
 

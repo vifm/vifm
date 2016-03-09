@@ -43,7 +43,6 @@ Vi(m) specific features:
   * Better ranges (add support for search patterns).
   * :map without arguments.
   * Lazy redraw support.
-  * Expand environment variables for :edit command.
   * Don't move cursor on search failure.
   * Completion of first argument for :map commands.
   * Make gU2U and similar commands work as in Vim.

@@ -404,7 +404,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "edit",              .abbr = "e",     .id = COM_EDIT,
 	  .descr = "edit files",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD
-	         | HAS_SELECTION_SCOPE,
+	         | HAS_SELECTION_SCOPE | HAS_ENVVARS,
 	  .handler = &edit_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "else",              .abbr = "el",    .id = COM_ELSE_STMT,
 	  .descr = "start alternative control-flow",
