@@ -43,7 +43,7 @@ key_pair_t;
 
 static int notation_sorter(const void *first, const void *second);
 static const key_pair_t * find_notation(const wchar_t str[]);
-static const char * wchar_to_spec(const wchar_t c[], size_t *len);
+static const char * wchar_to_spec(const wchar_t c[], size_t *len, int bs);
 
 /* All notation fields must be written in lower case. */
 static key_pair_t key_pairs[] = {
@@ -614,7 +614,7 @@ wstr_to_spec(const wchar_t str[])
 		}
 		else
 		{
-			vle_tb_append(descr, wchar_to_spec(&str[i], &seq_len));
+			vle_tb_append(descr, wchar_to_spec(&str[i], &seq_len, (i == 0U)));
 		}
 	}
 
@@ -625,7 +625,7 @@ wstr_to_spec(const wchar_t str[])
  * corresponding key.  Upon exit *len is set to number of used characters from
  * the string.  Returns pointer to internal buffer. */
 static const char *
-wchar_to_spec(const wchar_t c[], size_t *len)
+wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 {
 	/* TODO: refactor this function wchar_to_spec() */
 
@@ -635,7 +635,6 @@ wchar_to_spec(const wchar_t c[], size_t *len)
 	switch(*c)
 	{
 		case L' ':          strcpy(buf, "<space>");    break;
-		case L'\b':         strcpy(buf, "<bs>");       break;
 		case L'\r':         strcpy(buf, "<cr>");       break;
 		case L'\n':         strcpy(buf, "<c-j>");      break;
 		case L'\177':       strcpy(buf, "<del>");      break;
@@ -649,7 +648,15 @@ wchar_to_spec(const wchar_t c[], size_t *len)
 		case KEY_BTAB:      strcpy(buf, "<s-tab>");    break;
 		case KEY_PPAGE:     strcpy(buf, "<pageup>");   break;
 		case KEY_NPAGE:     strcpy(buf, "<pagedown>"); break;
-		case KEY_BACKSPACE: strcpy(buf, "<bs>");       break;
+
+		case KEY_BACKSPACE:
+		case L'\b':
+			if(!bs)
+			{
+				goto def;
+			}
+			strcpy(buf, "<bs>");
+			break;
 
 		case L'\033':
 			if(c[1] == L'[' && c[2] == 'Z')
@@ -669,6 +676,7 @@ wchar_to_spec(const wchar_t c[], size_t *len)
 			break;
 
 		default:
+		def:
 			if(*c == '\n' || (*c > L' ' && *c < 256))
 			{
 				buf[0] = *c;

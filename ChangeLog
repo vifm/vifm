@@ -24,6 +24,8 @@
 	Don't print just table header on `:cabbr something`, print message that no
 	matches found instead.
 
+	Display <c-h> as <bs> only at the beginning of key sequence.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
