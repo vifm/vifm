@@ -1004,6 +1004,15 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "nonrootparent,");
 	fprintf(fp, "\n");
 
+	fprintf(fp, "%s", "=suggestoptions=");
+	if(cfg.suggestions & SF_NORMAL)
+		fprintf(fp, "%s", "normal,");
+	if(cfg.suggestions & SF_VISUAL)
+		fprintf(fp, "%s", "visual,");
+	if(cfg.suggestions & SF_VIEW)
+		fprintf(fp, "%s", "view,");
+	fprintf(fp, "\n");
+
 	fprintf(fp, "%s", "=iooptions=");
 	if(cfg.fast_file_cloning)
 		fprintf(fp, "%s", "fastfilecloning,");

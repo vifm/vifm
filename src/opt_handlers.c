@@ -173,6 +173,7 @@ static void add_column(columns_t columns, column_info_t column_info);
 static int map_name(const char name[], void *arg);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
+static void suggestoptions_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
@@ -235,6 +236,14 @@ static const char *dotdirs_vals[][2] = {
 	{ "nonrootparent", "show .. in non-root directories" },
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
+
+/* Possible values of 'suggestoptions'. */
+static const char *suggestoptions_vals[][2] = {
+	{ "normal", "display in normal mode" },
+	{ "visual", "display in visual mode" },
+	{ "view",   "display in view mode" },
+};
+ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 
 /* Possible flags of 'iooptions'. */
 static const char *iooptions_vals[][2] = {
@@ -564,6 +573,11 @@ options[] = {
 	{ "statusline", "stl", "format of the status line",
 	  OPT_STR, 0, NULL, &statusline_handler, NULL,
 	  { .ref.str_val = &cfg.status_line },
+	},
+	{ "suggestoptions", "", "when to display key suggestions",
+	  OPT_SET, ARRAY_LEN(suggestoptions_vals), suggestoptions_vals,
+		&suggestoptions_handler, NULL,
+	  { .ref.set_items = &cfg.suggestions },
 	},
 	{ "syscalls", "", "use system calls for file operations",
 	  OPT_BOOL, 0, NULL, &syscalls_handler, NULL,
@@ -2220,6 +2234,13 @@ static void
 statusline_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.status_line, val.str_val);
+}
+
+/* Sets when to display key suggestions. */
+static void
+suggestoptions_handler(OPT_OP op, optval_t val)
+{
+	cfg.suggestions = val.set_items;
 }
 
 /* Makes vifm prefer to perform file-system operations with external

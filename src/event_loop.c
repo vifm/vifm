@@ -62,6 +62,7 @@ static void display_suggestion_box(const wchar_t input[]);
 static void process_suggestion(const wchar_t item[], const char descr[]);
 static void draw_suggestion_box(void);
 static void hide_suggestion_box(void);
+static int should_display_suggestion_box(void);
 
 /* Current input buffer. */
 static const wchar_t *curr_input_buf;
@@ -448,9 +449,8 @@ reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 static void
 display_suggestion_box(const wchar_t input[])
 {
-	/* Display suggestions only for main modes and don't do this for ESC because
-	 * it's prefix for other keys. */
-	if(NONE(vle_mode_is, NORMAL_MODE, VISUAL_MODE) || wcscmp(input, L"\033") == 0)
+	/* Don't do this for ESC because it's prefix for other keys. */
+	if(!should_display_suggestion_box() || wcscmp(input, L"\033") == 0)
 	{
 		return;
 	}
@@ -498,12 +498,30 @@ draw_suggestion_box(void)
 static void
 hide_suggestion_box(void)
 {
-	if(NONE(vle_mode_is, NORMAL_MODE, VISUAL_MODE))
+	if(should_display_suggestion_box())
 	{
-		return;
+		update_screen(UT_REDRAW);
 	}
+}
 
-	update_screen(UT_REDRAW);
+/* Checks whether suggestion box should be displayed.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+should_display_suggestion_box(void)
+{
+	if((cfg.suggestions & SF_NORMAL) && vle_mode_is(NORMAL_MODE))
+	{
+		return 1;
+	}
+	if((cfg.suggestions & SF_VISUAL) && vle_mode_is(VISUAL_MODE))
+	{
+		return 1;
+	}
+	if((cfg.suggestions & SF_VIEW) && vle_mode_is(VIEW_MODE))
+	{
+		return 1;
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

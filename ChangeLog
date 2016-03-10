@@ -10,6 +10,8 @@
 	Enables displaying it as a menu with one item per line.  Thanks to
 	santhoshr and octos.
 
+	Added 'suggestoptions' option to control displaying of key suggestions.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

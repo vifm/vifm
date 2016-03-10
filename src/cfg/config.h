@@ -49,6 +49,16 @@ typedef enum
 }
 DotDirs;
 
+/* Possible flags that regulate key suggestions. */
+typedef enum
+{
+	SF_NORMAL            = 1 << 0, /* Display in normal mode. */
+	SF_VISUAL            = 1 << 1, /* Display in visual mode. */
+	SF_VIEW              = 1 << 2, /* Display in view mode. */
+	NUM_SUGGESTION_FLAGS =      3  /* Number of flags. */
+}
+SuggestionFlags;
+
 /* What should be displayed as size of a directory in a view by default. */
 typedef enum
 {
@@ -114,6 +124,10 @@ typedef struct config_t
 	int wild_menu;
 	/* Whether wild menu should be a popup instead of a bar. */
 	int wild_popup;
+
+	/* Combination of SuggestionFlags, configures when to show key suggestions. */
+	int suggestions;
+
 	int ignore_case;
 	int smart_case;
 	int hl_search;

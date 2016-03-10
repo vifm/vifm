@@ -3135,6 +3135,17 @@ On Windows file properties include next flags (upper case means flag is on):
 Example: >
  set statusline="  %t%= %A %10u:%-7g %15s %20d "
 <
+                                               *vifm-'suggestoptions'*
+suggestoptions
+type: set
+default:
+
+Controls when key suggestions are displayed.  The following values are
+available:
+ - normal - in normal mode;
+ - visual - in visual mode;
+ - view   - in view mode.
+
                                                *vifm-'syscalls'*
 syscalls
 type: boolean
