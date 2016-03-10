@@ -25,6 +25,7 @@
 #include <assert.h> /* assert() */
 #include <signal.h> /* signal() */
 #include <stddef.h> /* NULL size_t wchar_t */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strncpy() */
 #include <wchar.h> /* wint_t wcslen() wcscmp() */
 
@@ -59,7 +60,8 @@ static void check_view_for_changes(FileView *view);
 static void reset_input_buf(wchar_t curr_input_buf[],
 		size_t *curr_input_buf_pos);
 static void display_suggestion_box(const wchar_t input[]);
-static void process_suggestion(const wchar_t item[], const char descr[]);
+static void process_suggestion(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
 static void draw_suggestion_box(void);
 static void hide_suggestion_box(void);
 static int should_display_suggestion_box(void);
@@ -465,9 +467,18 @@ display_suggestion_box(const wchar_t input[])
 
 /* Inserts key suggestion into completion list. */
 static void
-process_suggestion(const wchar_t item[], const char descr[])
+process_suggestion(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 {
-	vle_compl_put_match(wstr_to_spec(item), descr);
+	if(rhs[0] != '\0')
+	{
+		char *const mb_rhs = wstr_to_spec(rhs);
+		vle_compl_put_match(wstr_to_spec(lhs), mb_rhs);
+		free(mb_rhs);
+	}
+	else
+	{
+		vle_compl_put_match(wstr_to_spec(lhs), descr);
+	}
 }
 
 /* Draws suggestion box and all its items (from completion list). */

@@ -1,13 +1,17 @@
 #include <stic.h>
 
-#include <stddef.h> /* wchar_t */
+#include <stddef.h> /* NULL wchar_t */
+#include <wchar.h> /* wcscmp() */
 
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
-static void process_suggestion(const wchar_t item[], const char descr[]);
+static void process_suggestion(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
 
 static int nsuggestions;
+static const wchar_t *rhs;
+static const char *descr;
 
 SETUP()
 {
@@ -18,6 +22,7 @@ SETUP()
 	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, 0);
 
 	nsuggestions = 0;
+	descr = NULL;
 }
 
 TEST(all_keys_are_listed_no_selectors)
@@ -50,10 +55,20 @@ TEST(selectors_are_completed_with_prefix)
 	assert_int_equal(1, nsuggestions);
 }
 
+TEST(descr_of_user_defined_keys_is_rhs)
+{
+	vle_keys_suggest(L"ha", &process_suggestion);
+	assert_int_equal(1, nsuggestions);
+	assert_int_equal(0, wcscmp(rhs, L"ho"));
+	assert_string_equal("", descr);
+}
+
 static void
-process_suggestion(const wchar_t item[], const char descr[])
+process_suggestion(const wchar_t lhs[], const wchar_t r[], const char d[])
 {
 	++nsuggestions;
+	rhs = r;
+	descr = d;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

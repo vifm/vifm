@@ -1187,16 +1187,21 @@ traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 static void
 suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 {
+	vle_keys_suggest_cb cb = arg;
+
 	if(chunk->conf.skip_suggestion)
 	{
 		return;
 	}
 
-	if(chunk->children_count == 0 || chunk->type == USER_CMD ||
+	if(chunk->type == USER_CMD)
+	{
+		cb(lhs, chunk->conf.data.cmd, "");
+	}
+	else if(chunk->children_count == 0 ||
 			chunk->conf.followed != FOLLOWED_BY_NONE)
 	{
-		vle_keys_suggest_cb cb = arg;
-		cb(lhs, (chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
+		cb(lhs, L"", (chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
 	}
 }
 
