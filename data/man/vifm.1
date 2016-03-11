@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 09, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "March 11, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3160,8 +3160,9 @@ type: boolean
 .br
 default: true
 .br
-Ask about permanent deletion of files (on D or :delete! command or on undo/redo
-operation).
+Ask for confirmation on file deletion.  Like on d key or :delete command.
+Permanent removal with D key, :delete! command or on undo/redo operation always
+requires confirmation.
 .TP
 .BI "'cpoptions' 'cpo'"
 type: charset

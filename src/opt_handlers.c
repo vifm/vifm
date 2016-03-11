@@ -431,7 +431,7 @@ options[] = {
 	  OPT_INT, 0, NULL, &columns_handler, NULL,
 	  { .ref.int_val = &cfg.columns },
 	},
-	{ "confirm", "cf", "confirm file deletion",
+	{ "confirm", "cf", "ask for file deletion confirmation",
 	  OPT_BOOL, 0, NULL, &confirm_handler, NULL,
 	  { .ref.bool_val = &cfg.confirm },
 	},

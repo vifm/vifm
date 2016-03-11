@@ -272,11 +272,11 @@ op_none(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(cfg.confirm && !curr_stats.confirmed && (ops == NULL || !ops->bg))
+	if(!curr_stats.confirmed && (ops == NULL || !ops->bg))
 	{
 		curr_stats.confirmed = prompt_msg("Permanent deletion",
 				"Are you sure?  If you're undoing a command and want to see file "
-				"names, use :undolist! command");
+				"names, use :undolist! command.");
 		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
 	}
