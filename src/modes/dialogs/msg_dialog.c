@@ -604,10 +604,11 @@ int
 confirm_deletion(int use_trash)
 {
 	curr_stats.confirmed = 0;
-	if(!use_trash && cfg.confirm)
+	if(!use_trash || cfg.confirm)
 	{
-		const int proceed = prompt_msg("Permanent deletion",
-				"Are you sure you want to delete files permanently?");
+		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
+		const int proceed = prompt_msg(title,
+				"Are you sure you want to delete file(s)?");
 
 		if(!proceed)
 		{

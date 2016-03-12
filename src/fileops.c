@@ -776,15 +776,16 @@ delete_files_bg(FileView *view, int use_trash)
 	args->use_trash = use_trash;
 
 	general_prepare_for_bg_task(view, args);
-	if(cfg.confirm)
+	if(!use_trash || cfg.confirm)
 	{
-		char msg[512];
+		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
+		char perm_del_msg[512];
 
-		snprintf(msg, sizeof(msg), "Are you sure about removing %ld file%s "
-				"irreversibly?", (long)args->sel_list_len,
-				(args->sel_list_len == 1) ? "" : "s");
+		snprintf(perm_del_msg, sizeof(perm_del_msg),
+				"Are you sure about removing %ld file%s?",
+				(long)args->sel_list_len, (args->sel_list_len == 1) ? "" : "s");
 
-		if(!prompt_msg("Permanent deletion", msg))
+		if(!prompt_msg(title, perm_del_msg))
 		{
 			free_bg_args(args);
 			return 0;

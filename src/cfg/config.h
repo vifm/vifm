@@ -104,10 +104,10 @@ typedef struct config_t
 
 	col_scheme_t cs;
 
-	int undo_levels; /* Maximum number of changes that can be undone. */
+	int undo_levels;  /* Maximum number of changes that can be undone. */
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
 	int follow_links; /* Follow links on l or Enter. */
-	int confirm; /* Ask user about permanent deletion of files. */
+	int confirm;      /* Prompt user about file deletion. */
 	int fast_run;
 
 	/* Whether wild menu should be used. */

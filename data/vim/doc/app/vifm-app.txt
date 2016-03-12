@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 09
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2600,6 +2600,10 @@ default: true
 
 Ask about permanent deletion of files (on D or :delete! command or on
 undo/redo operation).
+
+Ask for confirmation on file deletion.  Like on |vifm-d| key or |vifm-:delete|
+command.  Permanent removal with |vifm-D| key, :delete! command or on
+undo/redo operation always requires confirmation.
 
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo
