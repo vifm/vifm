@@ -63,13 +63,13 @@ static FileView *view;
 static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
-	{WK_C_c,    {{&cmd_ctrl_c}}},
-	{WK_C_l,    {{&cmd_ctrl_l}}},
-	{WK_CR,     {{&cmd_ctrl_c}}},
-	{WK_ESC,    {{&cmd_ctrl_c}}},
-	{WK_Z WK_Q, {{&cmd_ctrl_c}}},
-	{WK_Z WK_Z, {{&cmd_ctrl_c}}},
-	{WK_q,      {{&cmd_ctrl_c}}},
+	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_C_l,    {{&cmd_ctrl_l}, .descr = "redraw"}},
+	{WK_CR,     {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_ESC,    {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_q,      {{&cmd_ctrl_c}, .descr = "hide file info"}},
 };
 
 void
