@@ -223,63 +223,63 @@ static void stop_dot_completion(void);
 static void stop_regular_completion(void);
 
 static keys_add_info_t builtin_cmds[] = {
-	{WK_C_c,             {{&cmd_ctrl_c}}},
-	{WK_C_g,             {{&cmd_ctrl_g}}},
-	{WK_C_h,             {{&cmd_ctrl_h}}},
-	{WK_C_i,             {{&cmd_ctrl_i}}},
-	{WK_C_k,             {{&cmd_ctrl_k}}},
-	{WK_CR,              {{&cmd_return}}},
-	{WK_C_n,             {{&cmd_ctrl_n}}},
-	{WK_C_p,             {{&cmd_ctrl_p}}},
-	{WK_C_t,             {{&cmd_ctrl_t}}},
-	{WK_ESC,             {{&cmd_ctrl_c}}},
-	{WK_ESC WK_ESC,      {{&cmd_ctrl_c}}},
-	{WK_C_RB,            {{&cmd_ctrl_rb}}},
-	{WK_C_USCORE,        {{&cmd_ctrl_underscore}}},
-	{WK_DELETE,          {{&cmd_ctrl_h}}},
-	{WK_ESC L"[Z",       {{&cmd_shift_tab}}},
-	{WK_C_b,             {{&cmd_left}}},
-	{WK_C_f,             {{&cmd_right}}},
-	{WK_C_a,             {{&cmd_home}}},
-	{WK_C_e,             {{&cmd_end}}},
-	{WK_C_d,             {{&cmd_delete}}},
-	{WK_C_u,             {{&cmd_ctrl_u}}},
-	{WK_C_w,             {{&cmd_ctrl_w}}},
-	{WK_C_x WK_SLASH,    {{&cmd_ctrl_xslash}}},
-	{WK_C_x WK_a,        {{&cmd_ctrl_xa}}},
-	{WK_C_x WK_c,        {{&cmd_ctrl_xc}}},
-	{WK_C_x WK_d,        {{&cmd_ctrl_xd}}},
-	{WK_C_x WK_e,        {{&cmd_ctrl_xe}}},
-	{WK_C_x WK_m,        {{&cmd_ctrl_xm}}},
-	{WK_C_x WK_r,        {{&cmd_ctrl_xr}}},
-	{WK_C_x WK_t,        {{&cmd_ctrl_xt}}},
-	{WK_C_x WK_C_x WK_c, {{&cmd_ctrl_xxc}}},
-	{WK_C_x WK_C_x WK_d, {{&cmd_ctrl_xxd}}},
-	{WK_C_x WK_C_x WK_e, {{&cmd_ctrl_xxe}}},
-	{WK_C_x WK_C_x WK_r, {{&cmd_ctrl_xxr}}},
-	{WK_C_x WK_C_x WK_t, {{&cmd_ctrl_xxt}}},
-	{WK_C_x WK_EQUALS,   {{&cmd_ctrl_xequals}}},
+	{WK_C_c,             {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
+	{WK_C_g,             {{&cmd_ctrl_g}, .descr = "edit cmdline in editor"}},
+	{WK_C_h,             {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
+	{WK_C_i,             {{&cmd_ctrl_i}, .descr = "start/continue completion"}},
+	{WK_C_k,             {{&cmd_ctrl_k}, .descr = "remove line part to the right"}},
+	{WK_CR,              {{&cmd_return}, .descr = "execute/accept input"}},
+	{WK_C_n,             {{&cmd_ctrl_n}, .descr = "recall next history item"}},
+	{WK_C_p,             {{&cmd_ctrl_p}, .descr = "recall previous history item"}},
+	{WK_C_t,             {{&cmd_ctrl_t}, .descr = "swap adjacent characters"}},
+	{WK_ESC,             {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
+	{WK_ESC WK_ESC,      {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
+	{WK_C_RB,            {{&cmd_ctrl_rb}, .descr = "expand abbreviation"}},
+	{WK_C_USCORE,        {{&cmd_ctrl_underscore}, .descr = "reset completion"}},
+	{WK_DELETE,          {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
+	{WK_ESC L"[Z",       {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
+	{WK_C_b,             {{&cmd_left},   .descr = "move cursor to the left"}},
+	{WK_C_f,             {{&cmd_right},  .descr = "move cursor to the right"}},
+	{WK_C_a,             {{&cmd_home},   .descr = "move cursor to the beginning"}},
+	{WK_C_e,             {{&cmd_end},    .descr = "move cursor to the end"}},
+	{WK_C_d,             {{&cmd_delete}, .descr = "delete current character"}},
+	{WK_C_u,             {{&cmd_ctrl_u}, .descr = "remove line part to the left"}},
+	{WK_C_w,             {{&cmd_ctrl_w}, .descr = "remove word to the left"}},
+	{WK_C_x WK_SLASH,    {{&cmd_ctrl_xslash}, .descr = "insert last search pattern"}},
+	{WK_C_x WK_a,        {{&cmd_ctrl_xa}, .descr = "insert automatic filter value"}},
+	{WK_C_x WK_c,        {{&cmd_ctrl_xc}, .descr = "insert current file name"}},
+	{WK_C_x WK_d,        {{&cmd_ctrl_xd}, .descr = "insert current directory path"}},
+	{WK_C_x WK_e,        {{&cmd_ctrl_xe}, .descr = "insert current file extension"}},
+	{WK_C_x WK_m,        {{&cmd_ctrl_xm}, .descr = "insert manual filter value"}},
+	{WK_C_x WK_r,        {{&cmd_ctrl_xr}, .descr = "insert root of current file name"}},
+	{WK_C_x WK_t,        {{&cmd_ctrl_xt}, .descr = "insert name of current directory"}},
+	{WK_C_x WK_C_x WK_c, {{&cmd_ctrl_xxc}, .descr = "insert other file name"}},
+	{WK_C_x WK_C_x WK_d, {{&cmd_ctrl_xxd}, .descr = "insert other directory path"}},
+	{WK_C_x WK_C_x WK_e, {{&cmd_ctrl_xxe}, .descr = "insert other file extension"}},
+	{WK_C_x WK_C_x WK_r, {{&cmd_ctrl_xxr}, .descr = "insert root of other file name"}},
+	{WK_C_x WK_C_x WK_t, {{&cmd_ctrl_xxt}, .descr = "insert name of other directory"}},
+	{WK_C_x WK_EQUALS,   {{&cmd_ctrl_xequals}, .descr = "insert local filter value"}},
 #ifndef __PDCURSES__
-	{WK_ESC WK_b,     {{&cmd_meta_b}}},
-	{WK_ESC WK_d,     {{&cmd_meta_d}}},
-	{WK_ESC WK_f,     {{&cmd_meta_f}}},
-	{WK_ESC WK_DOT,   {{&cmd_meta_dot}}},
+	{WK_ESC WK_b,     {{&cmd_meta_b}, .descr = "move cursor to previous word"}},
+	{WK_ESC WK_d,     {{&cmd_meta_d}, .descr = "remove next word"}},
+	{WK_ESC WK_f,     {{&cmd_meta_f}, .descr = "move cursor to next word"}},
+	{WK_ESC WK_DOT,   {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
 #else
-	{{ALT_B},         {{&cmd_meta_b}}},
-	{{ALT_D},         {{&cmd_meta_d}}},
-	{{ALT_F},         {{&cmd_meta_f}}},
-	{{ALT_PERIOD},    {{&cmd_meta_dot}}},
+	{{ALT_B},         {{&cmd_meta_b}, .descr = "move cursor to previous word"}},
+	{{ALT_D},         {{&cmd_meta_d}, .descr = "remove next word"}},
+	{{ALT_F},         {{&cmd_meta_f}, .descr = "move cursor to next word"}},
+	{{ALT_PERIOD},    {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BACKSPACE}, {{&cmd_ctrl_h}}},
-	{{KEY_DOWN},      {{&cmd_down}}},
-	{{KEY_UP},        {{&cmd_up}}},
-	{{KEY_LEFT},      {{&cmd_left}}},
-	{{KEY_RIGHT},     {{&cmd_right}}},
-	{{KEY_HOME},      {{&cmd_home}}},
-	{{KEY_END},       {{&cmd_end}}},
-	{{KEY_DC},        {{&cmd_delete}}},
-	{{KEY_BTAB},      {{&cmd_shift_tab}}},
+	{{KEY_BACKSPACE}, {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
+	{{KEY_DOWN},      {{&cmd_down},   .descr = "prefix-complete next history item"}},
+	{{KEY_UP},        {{&cmd_up},     .descr = "prefix-complete previous history item"}},
+	{{KEY_LEFT},      {{&cmd_left},   .descr = "move cursor to the left"}},
+	{{KEY_RIGHT},     {{&cmd_right},  .descr = "move cursor to the right"}},
+	{{KEY_HOME},      {{&cmd_home},   .descr = "move cursor to the beginning"}},
+	{{KEY_END},       {{&cmd_end},    .descr = "move cursor to the end"}},
+	{{KEY_DC},        {{&cmd_delete}, .descr = "delete current character"}},
+	{{KEY_BTAB},      {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -1834,15 +1834,17 @@ static void
 cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!input_stat.complete_continue)
+	{
 		return;
-	vle_compl_rewind();
+	}
 
-	if(!input_stat.complete_continue)
-		draw_wild_menu(1);
+	/* Restore initial user input (before completion). */
+	vle_compl_rewind();
 	input_stat.reverse_completion = 0;
-	do_completion();
-	if(cfg.wild_menu)
-		draw_wild_menu(0);
+	if(input_stat.complete != NULL)
+	{
+		line_completion(&input_stat);
+	}
 
 	stop_completion();
 }
