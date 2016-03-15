@@ -83,12 +83,12 @@ static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
-	{WK_C_c, {{&cmd_ctrl_c}}},
-	{WK_C_l, {{&cmd_ctrl_l}}},
-	{WK_C_m, {{&cmd_ctrl_m}}},
-	{WK_ESC, {{&cmd_ctrl_c}}},
-	{WK_n,   {{&cmd_n}}},
-	{WK_y,   {{&cmd_y}}},
+	{WK_C_c, {{&cmd_ctrl_c}, .descr = "cancel"}},
+	{WK_C_l, {{&cmd_ctrl_l}, .descr = "redraw"}},
+	{WK_C_m, {{&cmd_ctrl_m}, .descr = "agree to the query"}},
+	{WK_ESC, {{&cmd_ctrl_c}, .descr = "cancel"}},
+	{WK_n,   {{&cmd_n},      .descr = "deny the query"}},
+	{WK_y,   {{&cmd_y},      .descr = "confirm the query"}},
 };
 
 /* Mode that was active before the dialog. */
