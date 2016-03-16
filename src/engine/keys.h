@@ -76,15 +76,13 @@ keys_info_t;
 
 /* Handler for builtin keys. */
 typedef void (*vle_keys_handler)(key_info_t key_info, keys_info_t *keys_info);
-/* Type of function invoked by vle_keys_list(). */
-typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[]);
-/* Callback invoked by vle_keys_suggest() to report completions.  rhs is
+/* Type of function invoked by vle_keys_list() and vle_keys_suggest().  rhs is
  * provided for user-defined keys and is empty otherwise.  Description is empty
  * for user-defined keys or when not set. */
-typedef void (*vle_keys_suggest_cb)(const wchar_t lhs[], const wchar_t rhs[],
+typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 /* User-provided suggestion callback for multikeys. */
-typedef void (*vle_suggest_func)(vle_keys_suggest_cb cb);
+typedef void (*vle_suggest_func)(vle_keys_list_cb cb);
 
 /* Type of callback that handles all keys uncaught by shortcuts.  Should return
  * zero on success and non-zero on error. */
@@ -178,7 +176,7 @@ int vle_keys_inside_mapping(void);
 
 /* Invokes cb for each possible keys continuation.  Intended to be used on
  * KEYS_WAIT and KEYS_WAIT_SHORT returns. */
-void vle_keys_suggest(const wchar_t keys[], vle_keys_suggest_cb cb);
+void vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb);
 
 #endif /* VIFM__ENGINE__KEYS_H__ */
 

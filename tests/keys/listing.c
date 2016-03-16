@@ -5,7 +5,8 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
-static void process_listing(const wchar_t lhs[], const wchar_t rhs[]);
+static void process_listing(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
 
 static int nitems;
 
@@ -33,7 +34,7 @@ TEST(visual_mode_no_user_keys_no_delimiter)
 }
 
 static void
-process_listing(const wchar_t lhs[], const wchar_t rhs[])
+process_listing(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 {
 	++nitems;
 }

@@ -117,7 +117,7 @@ static int execute_mapping_handler(const key_conf_t *const info,
 static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
 static void keys_suggest(const key_chunk_t *root, const wchar_t keys[],
-		const wchar_t prefix[], vle_keys_suggest_cb cb);
+		const wchar_t prefix[], vle_keys_list_cb cb);
 static void traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 		traverse_func cb, void *param);
 static void suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
@@ -970,7 +970,7 @@ vle_keys_list(int mode, vle_keys_list_cb cb)
 		/* Put separator only when it's needed. */
 		if(builtin->children_count != 0U)
 		{
-			cb(L"", L"");
+			cb(L"", L"", "");
 		}
 	}
 
@@ -986,11 +986,10 @@ list_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 {
 	if(chunk->children_count == 0 || chunk->type == USER_CMD)
 	{
-		const wchar_t *rhs;
+		const wchar_t *rhs = (chunk->type == USER_CMD) ? chunk->conf.data.cmd : L"";
+		const char *descr = (chunk->conf.descr == NULL) ? "" : chunk->conf.descr;
 		vle_keys_list_cb cb = arg;
-
-		rhs = (chunk->type == USER_CMD) ? chunk->conf.data.cmd : L"<built in>";
-		cb(lhs, rhs);
+		cb(lhs, rhs, descr);
 	}
 }
 
@@ -1059,7 +1058,7 @@ post_execute_mapping_handler(const keys_info_t *const keys_info)
 }
 
 void
-vle_keys_suggest(const wchar_t keys[], vle_keys_suggest_cb cb)
+vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb)
 {
 	keys_suggest(&user_cmds_root[vle_mode_get()], keys, L"key: ", cb);
 	keys_suggest(&builtin_cmds_root[vle_mode_get()], keys, L"key: ", cb);
@@ -1069,7 +1068,7 @@ vle_keys_suggest(const wchar_t keys[], vle_keys_suggest_cb cb)
  * them. */
 static void
 keys_suggest(const key_chunk_t *root, const wchar_t keys[],
-		const wchar_t prefix[], vle_keys_suggest_cb cb)
+		const wchar_t prefix[], vle_keys_list_cb cb)
 {
 	const key_chunk_t *curr = root;
 
@@ -1187,7 +1186,7 @@ traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 static void
 suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 {
-	vle_keys_suggest_cb cb = arg;
+	vle_keys_list_cb cb = arg;
 
 	if(chunk->conf.skip_suggestion)
 	{

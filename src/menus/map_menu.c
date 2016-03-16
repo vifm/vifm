@@ -34,7 +34,8 @@
 #include "../bracket_notation.h"
 #include "menus.h"
 
-static void add_mapping_item(const wchar_t lhs[], const wchar_t rhs[]);
+static void add_mapping_item(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
 
 /* Menu object is global to make it available in add_mapping_item(). */
 static menu_info m;
@@ -61,30 +62,39 @@ show_map_menu(FileView *view, const char mode_str[], int mode,
 
 /* Adds matching key information to the menu after pre-formatting. */
 static void
-add_mapping_item(const wchar_t lhs[], const wchar_t rhs[])
+add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 {
-	enum { MAP_WIDTH = 10 };
+	enum { MAP_WIDTH = 11 };
 
-	char *mb_lhs, *mb_rhs;
+	char *mb_lhs;
 
 	if(wcsncmp(prefix, lhs, prefix_len) != 0)
 	{
 		return;
 	}
 
-	if(rhs[0] == L'\0' && lhs[0] != L'\0')
+	/* Handle empty RHS, but don't affect separator line. */
+	if(rhs[0] == L'\0' && lhs[0] != L'\0' && descr[0] == '\0')
 	{
 		rhs = L"<nop>";
 	}
 
 	mb_lhs = wstr_to_spec(lhs);
-	mb_rhs = wstr_to_spec(rhs);
 
 	m.items = reallocarray(m.items, m.len + 1, sizeof(char *));
-	m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
+
+	if(rhs[0] == L'\0')
+	{
+		m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, descr);
+	}
+	else
+	{
+		char *const mb_rhs = wstr_to_spec(rhs);
+		m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
+		free(mb_rhs);
+	}
 
 	free(mb_lhs);
-	free(mb_rhs);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
