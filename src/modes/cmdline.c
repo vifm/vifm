@@ -1100,14 +1100,13 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 static int
 draw_wild_popup(int *last_pos, int *pos, int *len)
 {
-	int i;
-	int j;
-
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 	const int max_height = getmaxy(stdscr) - get_required_height() -
 		ui_stat_job_bar_height() - 1;
 	const int height = MIN(count, MIN(10, max_height));
+	size_t max_title_width;
+	int i, j;
 
 	if(*pos < *last_pos)
 	{
@@ -1116,6 +1115,16 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 
 	wresize(stat_win, height, getmaxx(stdscr));
 	ui_stat_reposition(get_required_height(), 1);
+
+	max_title_width = 0U;
+	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
+	{
+		const size_t width = utf8_strsw(items[i].text);
+		if(width > max_title_width)
+		{
+			max_title_width = width;
+		}
+	}
 
 	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
 	{
@@ -1129,7 +1138,8 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 		}
 
 		checked_wmove(stat_win, j, 0);
-		ui_stat_draw_popup_line(items[i].text, items[i].descr);
+		ui_stat_draw_popup_line(stat_win, items[i].text, items[i].descr,
+				max_title_width);
 
 		if(i == *pos)
 		{

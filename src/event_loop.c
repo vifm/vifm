@@ -44,6 +44,7 @@
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bracket_notation.h"
@@ -493,6 +494,7 @@ draw_suggestion_box(void)
 	const int max_height = getmaxy(stdscr) - getmaxy(status_bar) -
 		ui_stat_job_bar_height() - 2;
 	const int height = MIN(count, max_height);
+	size_t max_title_width;
 	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
 
 	wresize(stat_win, height, getmaxx(stdscr));
@@ -501,10 +503,21 @@ draw_suggestion_box(void)
 	wbkgdset(stat_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 	werase(stat_win);
 
+	max_title_width = 0U;
+	for(i = 0; i < height; ++i)
+	{
+		const size_t width = utf8_strsw(items[i].text);
+		if(width > max_title_width)
+		{
+			max_title_width = width;
+		}
+	}
+
 	for(i = 0; i < height; ++i)
 	{
 		checked_wmove(stat_win, i, 0);
-		ui_stat_draw_popup_line(items[i].text, items[i].descr);
+		ui_stat_draw_popup_line(stat_win, items[i].text, items[i].descr,
+				max_title_width);
 	}
 
 	wrefresh(stat_win);

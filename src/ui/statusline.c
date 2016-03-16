@@ -607,28 +607,35 @@ take_job_descr_snapshot(void)
 }
 
 void
-ui_stat_draw_popup_line(const char item[], const char descr[])
+ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
+		size_t max_width)
 {
 	char *left, *right, *line;
+	const size_t text_width = utf8_strsw(item);
+	const size_t win_width = getmaxx(win);
+	const int align_columns = (max_width <= win_width/4);
+	const char *const fmt = align_columns ? "%-*s  %-*s" : "%-*s  %*s";
 	size_t width_left;
+	size_t item_width;
 
-	if(utf8_strsw(item) >= (size_t)getmaxx(stat_win))
+	if(text_width >= win_width)
 	{
-		char *const line = right_ellipsis(strdup(item), getmaxx(stat_win));
-		wprint(stat_win, line);
+		char *const line = right_ellipsis(strdup(item), win_width);
+		wprint(win, line);
 		free(line);
 		return;
 	}
 
-	left = right_ellipsis(strdup(item), getmaxx(stat_win) - 3);
-	width_left = getmaxx(stat_win) - 2 - utf8_strsw(left);
+	left = right_ellipsis(strdup(item), win_width - 3);
+	item_width = align_columns ? max_width : utf8_strsw(left);
+	width_left = win_width - 2 - MAX(item_width, utf8_strsw(left));
 	right = right_ellipsis(strdup(descr), width_left);
 
-	line = format_str("%s  %*s", left, (int)width_left, right);
+	line = format_str(fmt, (int)item_width, left, (int)width_left, right);
 	free(left);
 	free(right);
 
-	wprint(stat_win, line);
+	wprint(win, line);
 
 	free(line);
 }
