@@ -37,6 +37,7 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/wk.h"
+#include "ui/color_manager.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
@@ -492,9 +493,13 @@ draw_suggestion_box(void)
 	const int max_height = getmaxy(stdscr) - getmaxy(status_bar) -
 		ui_stat_job_bar_height() - 2;
 	const int height = MIN(count, max_height);
+	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
 
 	wresize(stat_win, height, getmaxx(stdscr));
 	ui_stat_reposition(getmaxy(status_bar), 1);
+
+	wbkgdset(stat_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+	werase(stat_win);
 
 	for(i = 0; i < height; ++i)
 	{

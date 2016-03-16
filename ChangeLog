@@ -14,6 +14,8 @@
 
 	Added description of builtin keys to :map menus.
 
+	Added SuggestBox highlight group for key suggestion box.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

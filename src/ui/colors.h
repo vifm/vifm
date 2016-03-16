@@ -52,6 +52,7 @@ enum
 	BORDER_COLOR,       /* Vertical border lines. */
 	OTHER_LINE_COLOR,   /* Line under the cursor in the other pane. */
 	JOB_LINE_COLOR,     /* Line that displays status of background jobs. */
+	SUGGEST_BOX_COLOR,  /* Style of suggestion box. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 
