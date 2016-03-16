@@ -65,6 +65,7 @@ static void display_suggestion_box(const wchar_t input[]);
 static void process_suggestion(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 static void draw_suggestion_box(void);
+static WINDOW * prepare_suggestion_box(int height);
 static void hide_suggestion_box(void);
 static int should_display_suggestion_box(void);
 
@@ -462,6 +463,9 @@ display_suggestion_box(const wchar_t input[])
 	/* Fill completion list with suggestions. */
 	vle_compl_reset();
 	vle_keys_suggest(input, &process_suggestion);
+	/* Completion grouping removes duplicates.  Because user-defined keys are
+	 * reported first, this has an effect of leaving only them in the resulting
+	 * list, which is correct as they have higher priority. */
 	vle_compl_finish_group();
 
 	draw_suggestion_box();
@@ -487,21 +491,16 @@ process_suggestion(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 static void
 draw_suggestion_box(void)
 {
-	int i;
+	/* TODO: consider possibility of multicolumn display. */
 
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count();
 	const int max_height = getmaxy(stdscr) - getmaxy(status_bar) -
 		ui_stat_job_bar_height() - 2;
 	const int height = MIN(count, max_height);
+	WINDOW *const win = prepare_suggestion_box(height);
 	size_t max_title_width;
-	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
-
-	wresize(stat_win, height, getmaxx(stdscr));
-	ui_stat_reposition(getmaxy(status_bar), 1);
-
-	wbkgdset(stat_win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
-	werase(stat_win);
+	int i;
 
 	max_title_width = 0U;
 	for(i = 0; i < height; ++i)
@@ -515,12 +514,37 @@ draw_suggestion_box(void)
 
 	for(i = 0; i < height; ++i)
 	{
-		checked_wmove(stat_win, i, 0);
-		ui_stat_draw_popup_line(stat_win, items[i].text, items[i].descr,
+		checked_wmove(win, i, 0);
+		ui_stat_draw_popup_line(win, items[i].text, items[i].descr,
 				max_title_width);
 	}
 
-	wrefresh(stat_win);
+	wrefresh(win);
+}
+
+/* Picks window to use for suggestion box and prepares it for displaying data.
+ * Returns picked window. */
+static WINDOW *
+prepare_suggestion_box(int height)
+{
+	WINDOW *win;
+	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
+
+	if((cfg.suggestions & SF_OTHERPANE) && curr_stats.number_of_windows == 2)
+	{
+		win = other_view->win;
+	}
+	else
+	{
+		wresize(stat_win, height, getmaxx(stdscr));
+		ui_stat_reposition(getmaxy(status_bar), 1);
+		win = stat_win;
+	}
+
+	wbkgdset(win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+	werase(win);
+
+	return win;
 }
 
 /* Removes suggestion box from the screen. */

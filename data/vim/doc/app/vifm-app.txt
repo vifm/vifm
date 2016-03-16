@@ -3144,9 +3144,10 @@ default:
 
 Controls when key suggestions are displayed.  The following values are
 available:
- - normal - in normal mode;
- - visual - in visual mode;
- - view   - in view mode.
+ - normal    - in normal mode;
+ - visual    - in visual mode;
+ - view      - in view mode;
+ - otherpane - use other pane to display suggestions, when available.
 
                                                *vifm-'syscalls'*
 syscalls

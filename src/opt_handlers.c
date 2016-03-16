@@ -239,9 +239,10 @@ ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
 /* Possible values of 'suggestoptions'. */
 static const char *suggestoptions_vals[][2] = {
-	{ "normal", "display in normal mode" },
-	{ "visual", "display in visual mode" },
-	{ "view",   "display in view mode" },
+	{ "normal",    "display in normal mode" },
+	{ "visual",    "display in visual mode" },
+	{ "view",      "display in view mode" },
+	{ "otherpane", "use other pane for suggestions, if available" },
 };
 ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 

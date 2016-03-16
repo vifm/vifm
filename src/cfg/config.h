@@ -55,7 +55,8 @@ typedef enum
 	SF_NORMAL            = 1 << 0, /* Display in normal mode. */
 	SF_VISUAL            = 1 << 1, /* Display in visual mode. */
 	SF_VIEW              = 1 << 2, /* Display in view mode. */
-	NUM_SUGGESTION_FLAGS =      3  /* Number of flags. */
+	SF_OTHERPANE         = 1 << 3, /* Display list in other pane, if available. */
+	NUM_SUGGESTION_FLAGS =      4  /* Number of flags. */
 }
 SuggestionFlags;
 

@@ -1011,6 +1011,8 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "visual,");
 	if(cfg.suggestions & SF_VIEW)
 		fprintf(fp, "%s", "view,");
+	if(cfg.suggestions & SF_OTHERPANE)
+		fprintf(fp, "%s", "otherpane,");
 	fprintf(fp, "\n");
 
 	fprintf(fp, "%s", "=iooptions=");
