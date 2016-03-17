@@ -1013,6 +1013,8 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "view,");
 	if(cfg.suggestions & SF_OTHERPANE)
 		fprintf(fp, "%s", "otherpane,");
+	if(cfg.suggestions & SF_DELAY)
+		fprintf(fp, "%s", "delay,");
 	fprintf(fp, "\n");
 
 	fprintf(fp, "%s", "=iooptions=");

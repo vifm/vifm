@@ -132,6 +132,12 @@ event_loop(const int *quit)
 
 			if(!got_input && (input_buf_pos == 0 || last_result == KEYS_WAIT))
 			{
+				if((cfg.suggestions & SF_DELAY) &&
+						(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT))
+				{
+					display_suggestion_box(input_buf);
+				}
+
 				timeout = cfg.timeout_len;
 				continue;
 			}
@@ -217,7 +223,10 @@ event_loop(const int *quit)
 
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
-				display_suggestion_box(input_buf);
+				if(!(cfg.suggestions & SF_DELAY) || last_result == KEYS_WAIT_SHORT)
+				{
+					display_suggestion_box(input_buf);
+				}
 
 				if(got_input)
 				{
