@@ -468,7 +468,10 @@ display_suggestion_box(const wchar_t input[])
 	 * list, which is correct as they have higher priority. */
 	vle_compl_finish_group();
 
-	draw_suggestion_box();
+	if(vle_compl_get_count() != 0)
+	{
+		draw_suggestion_box();
+	}
 }
 
 /* Inserts key suggestion into completion list. */
