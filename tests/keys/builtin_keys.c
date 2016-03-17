@@ -23,6 +23,7 @@ int is_in_maping_state; /* for : and m */
 
 static void keys_colon(key_info_t key_info, keys_info_t *keys_info);
 static void keys_m(key_info_t key_info, keys_info_t *keys_info);
+static void m_suggest(vle_keys_list_cb cb);
 static void keys_quote(key_info_t key_info, keys_info_t *keys_info);
 static void keys_gg(key_info_t key_info, keys_info_t *keys_info);
 static void keys_H(key_info_t key_info, keys_info_t *keys_info);
@@ -42,7 +43,7 @@ static void keys_norm(key_info_t key_info, keys_info_t *keys_info);
 
 static keys_add_info_t normal_cmds[] = {
 	{WK_COLON,            {{&keys_colon}}},
-	{WK_m,                {{&keys_m}, FOLLOWED_BY_MULTIKEY}},
+	{WK_m,                {{&keys_m}, FOLLOWED_BY_MULTIKEY, .suggest = &m_suggest}},
 	{WK_QUOTE,            {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
 	{WK_H,                {{&keys_H}}},
 	{WK_g WK_u,           {{&keys_gu}, FOLLOWED_BY_SELECTOR}},
@@ -112,6 +113,13 @@ keys_m(key_info_t key_info, keys_info_t *keys_info)
 	is_in_maping_state = vle_keys_inside_mapping();
 	printf("(%d)m in register '%c' with multikey '%c'\n",
 			key_info.count, key_info.reg, key_info.multi);
+}
+
+static void
+m_suggest(vle_keys_list_cb cb)
+{
+	cb(L"a", L"this dir", "");
+	cb(L"z", L"that dir", "");
 }
 
 static void

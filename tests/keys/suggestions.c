@@ -63,6 +63,12 @@ TEST(descr_of_user_defined_keys_is_rhs)
 	assert_string_equal("", descr);
 }
 
+TEST(custom_suggestions)
+{
+	vle_keys_suggest(L"m", &process_suggestion);
+	assert_int_equal(2, nsuggestions);
+}
+
 static void
 process_suggestion(const wchar_t lhs[], const wchar_t r[], const char d[])
 {

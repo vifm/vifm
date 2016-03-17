@@ -80,6 +80,7 @@ static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void call_incdec(int count);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
+static void sug_quote(vle_keys_list_cb cb);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
@@ -181,7 +182,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_x,        {{&cmd_ctrl_x}, .descr = "decrement number in names"}},
 	{WK_C_y,        {{&cmd_ctrl_y}, .descr = "scroll one line up"}},
 	{WK_ESC,        {{&cmd_ctrl_c}, .descr = "abort visual mode"}},
-	{WK_QUOTE,      {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "navigate to mark"}},
+	{WK_QUOTE,      {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "navigate to mark", .suggest = &sug_quote}},
 	{WK_CARET,      {{&cmd_zero},      .descr = "go to first column"}},
 	{WK_DOLLAR,     {{&cmd_dollar},    .descr = "go to last column"}},
 	{WK_PERCENT,    {{&cmd_percent},   .descr = "go to [count]% position"}},
@@ -223,7 +224,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_j,          {{&cmd_j},  .descr = "go to item below"}},
 	{WK_k,          {{&cmd_k},  .descr = "go to item above"}},
 	{WK_l,          {{&cmd_l},  .descr = "open selection/go to item to the right"}},
-	{WK_m,          {{&cmd_m}, FOLLOWED_BY_MULTIKEY, .descr = "set a mark"}},
+	{WK_m,          {{&cmd_m}, FOLLOWED_BY_MULTIKEY, .descr = "set a mark", .suggest = &sug_quote}},
 	{WK_n,          {{&cmd_n},  .descr = "go to next search match"}},
 	{WK_o,          {{&cmd_O},  .descr = "switch active selection bound"}},
 	{WK_q WK_COLON, {{&cmd_q_colon},    .descr = "edit cmdline in editor"}},
@@ -583,11 +584,18 @@ cmd_O(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 {
-	int pos;
-	pos = check_mark_directory(view, key_info.multi);
-	if(pos < 0)
-		return;
-	goto_pos(pos);
+	const int pos = check_mark_directory(view, key_info.multi);
+	if(pos >= 0)
+	{
+		goto_pos(pos);
+	}
+}
+
+/* Suggests only marks that point into current view. */
+static void
+sug_quote(vle_keys_list_cb cb)
+{
+	suggest_marks(cb, 1);
 }
 
 /* Move cursor to the last column in ls-view sub-mode selecting or unselecting

@@ -113,6 +113,8 @@ static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void go_to_other_window(void);
 static int try_switch_into_view_mode(void);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
+static void sug_cmd_quote(vle_keys_list_cb cb);
+static void sug_sel_quote(vle_keys_list_cb cb);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_equal(key_info_t key_info, keys_info_t *keys_info);
@@ -282,7 +284,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_x,           {{&cmd_ctrl_x}, .descr = "decrement number in names"}},
 	{WK_C_y,           {{&cmd_ctrl_y}, .descr = "scroll one line up"}},
 	{WK_ESC,           {{&cmd_ctrl_c}, .descr = "reset selection and highlight"}},
-	{WK_QUOTE,         {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "navigate to mark"}},
+	{WK_QUOTE,         {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "navigate to mark", .suggest = &sug_cmd_quote}},
 	{WK_SPACE,         {{&cmd_space},  .descr = "switch pane"}},
 	{WK_EM,            {{&cmd_emark_selector}, FOLLOWED_BY_SELECTOR, .descr = "make cmdline range"}},
 	{WK_EM WK_EM,      {{&cmd_emarkemark}, .descr = "make cmdline range"}},
@@ -344,7 +346,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_j,             {{&cmd_j},  .descr = "go to item below"}},
 	{WK_k,             {{&cmd_k},  .descr = "go to item above"}},
 	{WK_l,             {{&cmd_l},  .descr = "open file/go to item to the right"}},
-	{WK_m,             {{&cmd_m}, FOLLOWED_BY_MULTIKEY, .descr = "set a mark"}},
+	{WK_m,             {{&cmd_m}, FOLLOWED_BY_MULTIKEY, .descr = "set a mark", .suggest = &sug_cmd_quote}},
 	{WK_n,             {{&cmd_n},  .descr = "go to next search match"}},
 	{WK_p,             {{&cmd_p},  .descr = "put files by copying them"}},
 	{WK_r WK_l,        {{&cmd_rl}, .descr = "put files creating relative symlinks"}},
@@ -396,7 +398,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 static keys_add_info_t selectors[] = {
-	{WK_QUOTE,   {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "to mark"}},
+	{WK_QUOTE,   {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "to mark", .suggest = &sug_sel_quote}},
 	{WK_PERCENT, {{&cmd_percent},   .descr = "to [count]% position"}},
 	{WK_CARET,   {{&cmd_zero},      .descr = "to first column"}},
 	{WK_DOLLAR,  {{&cmd_dollar},    .descr = "to last column"}},
@@ -1256,6 +1258,20 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 			flist_set_pos(curr_view, 0);
 		}
 	}
+}
+
+/* Suggests marks located anywhere. */
+static void
+sug_cmd_quote(vle_keys_list_cb cb)
+{
+	suggest_marks(cb, 0);
+}
+
+/* Suggests only marks that point into current view. */
+static void
+sug_sel_quote(vle_keys_list_cb cb)
+{
+	suggest_marks(cb, 1);
 }
 
 /* Move cursor to the last column in ls-view sub-mode. */
