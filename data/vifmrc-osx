@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 09 Mar, 2016)
+" Sample configuration file for vifm on OSX (last updated: 16 Mar, 2016)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -72,6 +72,11 @@ set timefmt=%m/%d\ %H:%M
 " Show list of matches on tab completion in command-line mode
 
 set wildmenu
+
+" Display key suggestions in normal, visual and view modes.  In other view,
+" when available.
+
+set suggestoptions=normal,visual,view,otherpane
 
 " Ignore case in search patterns unless it contains at least one uppercase
 " letter

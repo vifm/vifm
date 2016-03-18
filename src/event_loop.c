@@ -20,29 +20,34 @@
 #include "event_loop.h"
 
 #include <curses.h>
-
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
 #include <signal.h> /* signal() */
 #include <stddef.h> /* NULL size_t wchar_t */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memmove() strncpy() */
 #include <wchar.h> /* wint_t wcslen() wcscmp() */
 
 #include "cfg/config.h"
 #include "compat/curses.h"
+#include "engine/completion.h"
 #include "engine/keys.h"
 #include "engine/mode.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
+#include "modes/wk.h"
+#include "ui/color_manager.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "bracket_notation.h"
 #include "filelist.h"
 #include "ipc.h"
 #include "status.h"
@@ -56,6 +61,13 @@ static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 static void reset_input_buf(wchar_t curr_input_buf[],
 		size_t *curr_input_buf_pos);
+static void display_suggestion_box(const wchar_t input[]);
+static void process_suggestion(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
+static void draw_suggestion_box(void);
+static WINDOW * prepare_suggestion_box(int height);
+static void hide_suggestion_box(void);
+static int should_display_suggestion_box(void);
 
 /* Current input buffer. */
 static const wchar_t *curr_input_buf;
@@ -118,8 +130,14 @@ event_loop(const int *quit)
 				vifm_finish("Terminal is not available.");
 			}
 
-			if(!got_input && input_buf_pos == 0)
+			if(!got_input && (input_buf_pos == 0 || last_result == KEYS_WAIT))
 			{
+				if((cfg.suggestions & SF_DELAY) &&
+						(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT))
+				{
+					display_suggestion_box(input_buf);
+				}
+
 				timeout = cfg.timeout_len;
 				continue;
 			}
@@ -138,13 +156,13 @@ event_loop(const int *quit)
 				wait_for_enter = 0;
 				curr_stats.save_msg = 0;
 				clean_status_bar();
-				if(c == L'\x0d')
+				if(c == WC_CR)
 				{
 					continue;
 				}
 			}
 
-			if(c == L'\x1a') /* Ctrl-Z */
+			if(c == WC_C_z)
 			{
 				def_prog_mode();
 				endwin();
@@ -166,11 +184,13 @@ event_loop(const int *quit)
 			}
 		}
 
-		counter = get_key_counter();
+		counter = vle_keys_counter();
 		if(!got_input && last_result == KEYS_WAIT_SHORT)
 		{
-			last_result = execute_keys_timed_out(input_buf);
-			counter = get_key_counter() - counter;
+			hide_suggestion_box();
+
+			last_result = vle_keys_exec_timed_out(input_buf);
+			counter = vle_keys_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
@@ -185,9 +205,14 @@ event_loop(const int *quit)
 				curr_stats.save_msg = 0;
 			}
 
-			last_result = execute_keys(input_buf);
+			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
+			{
+				hide_suggestion_box();
+			}
 
-			counter = get_key_counter() - counter;
+			last_result = vle_keys_exec(input_buf);
+
+			counter = vle_keys_counter() - counter;
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
@@ -198,6 +223,11 @@ event_loop(const int *quit)
 
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
+				if(!(cfg.suggestions & SF_DELAY) || last_result == KEYS_WAIT_SHORT)
+				{
+					display_suggestion_box(input_buf);
+				}
+
 				if(got_input)
 				{
 					modupd_input_bar(input_buf);
@@ -427,6 +457,136 @@ reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 {
 	*curr_input_buf_pos = 0;
 	curr_input_buf[0] = L'\0';
+}
+
+/* Composes and draws suggestion box. */
+static void
+display_suggestion_box(const wchar_t input[])
+{
+	/* Don't do this for ESC because it's prefix for other keys. */
+	if(!should_display_suggestion_box() || wcscmp(input, L"\033") == 0)
+	{
+		return;
+	}
+
+	/* Fill completion list with suggestions. */
+	vle_compl_reset();
+	vle_keys_suggest(input, &process_suggestion);
+	/* Completion grouping removes duplicates.  Because user-defined keys are
+	 * reported first, this has an effect of leaving only them in the resulting
+	 * list, which is correct as they have higher priority. */
+	vle_compl_finish_group();
+
+	if(vle_compl_get_count() != 0)
+	{
+		draw_suggestion_box();
+	}
+}
+
+/* Inserts key suggestion into completion list. */
+static void
+process_suggestion(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
+{
+	if(rhs[0] != '\0')
+	{
+		char *const mb_rhs = wstr_to_spec(rhs);
+		vle_compl_put_match(wstr_to_spec(lhs), mb_rhs);
+		free(mb_rhs);
+	}
+	else
+	{
+		vle_compl_put_match(wstr_to_spec(lhs), descr);
+	}
+}
+
+/* Draws suggestion box and all its items (from completion list). */
+static void
+draw_suggestion_box(void)
+{
+	/* TODO: consider possibility of multicolumn display. */
+
+	const vle_compl_t *const items = vle_compl_get_items();
+	const int count = vle_compl_get_count();
+	const int max_height = getmaxy(stdscr) - getmaxy(status_bar) -
+		ui_stat_job_bar_height() - 2;
+	const int height = MIN(count, max_height);
+	WINDOW *const win = prepare_suggestion_box(height);
+	size_t max_title_width;
+	int i;
+
+	max_title_width = 0U;
+	for(i = 0; i < height; ++i)
+	{
+		const size_t width = utf8_strsw(items[i].text);
+		if(width > max_title_width)
+		{
+			max_title_width = width;
+		}
+	}
+
+	for(i = 0; i < height; ++i)
+	{
+		checked_wmove(win, i, 0);
+		ui_stat_draw_popup_line(win, items[i].text, items[i].descr,
+				max_title_width);
+	}
+
+	wrefresh(win);
+}
+
+/* Picks window to use for suggestion box and prepares it for displaying data.
+ * Returns picked window. */
+static WINDOW *
+prepare_suggestion_box(int height)
+{
+	WINDOW *win;
+	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
+
+	if((cfg.suggestions & SF_OTHERPANE) && curr_stats.number_of_windows == 2)
+	{
+		win = other_view->win;
+	}
+	else
+	{
+		wresize(stat_win, height, getmaxx(stdscr));
+		ui_stat_reposition(getmaxy(status_bar), 1);
+		win = stat_win;
+	}
+
+	wbkgdset(win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+	werase(win);
+
+	return win;
+}
+
+/* Removes suggestion box from the screen. */
+static void
+hide_suggestion_box(void)
+{
+	if(should_display_suggestion_box())
+	{
+		update_screen(UT_REDRAW);
+	}
+}
+
+/* Checks whether suggestion box should be displayed.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+should_display_suggestion_box(void)
+{
+	if((cfg.suggestions & SF_NORMAL) && vle_mode_is(NORMAL_MODE))
+	{
+		return 1;
+	}
+	if((cfg.suggestions & SF_VISUAL) && vle_mode_is(VISUAL_MODE))
+	{
+		return 1;
+	}
+	if((cfg.suggestions & SF_VIEW) && vle_mode_is(VIEW_MODE))
+	{
+		return 1;
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

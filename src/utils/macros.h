@@ -27,21 +27,26 @@
  * programming in Linux) */
 #if __GNUC__ > 3
 #undef inline
-#define inline inline     __attribute__ ((always_inline))
-#define _gnuc_noinline    __attribute__ ((noinline))
-#define _gnuc_pure        __attribute__ ((pure))
-#define _gnuc_const       __attribute__ ((const))
-#define _gnuc_noreturn    __attribute__ ((noreturn))
-#define _gnuc_malloc      __attribute__ ((malloc))
-#define _gnuc_must_check  __attribute__ ((must_check))
-#define _gnuc_deprecated  __attribute__ ((deprecated))
-#define _gnuc_used        __attribute__ ((used))
-#define _gnuc_unused      __attribute__ ((unused))
-#define _gnuc_packed      __attribute__ ((packed))
-#define _gnuc_align(x)    __attribute__ ((aligned(x)))
-#define _gnuc_align_max   __attribute__ ((aligned))
-#define _gnuc_likely(x)   __builtin_expect (!!(x), 1)
-#define _gnuc_unlikely(x) __builtin_expect (!!(x), 0)
+#define inline inline      __attribute__ ((always_inline))
+#define _gnuc_noinline     __attribute__ ((noinline))
+#define _gnuc_pure         __attribute__ ((pure))
+#define _gnuc_const        __attribute__ ((const))
+#define _gnuc_noreturn     __attribute__ ((noreturn))
+#define _gnuc_malloc       __attribute__ ((malloc))
+#define _gnuc_must_check   __attribute__ ((must_check))
+#define _gnuc_deprecated   __attribute__ ((deprecated))
+#define _gnuc_used         __attribute__ ((used))
+#define _gnuc_unused       __attribute__ ((unused))
+#define _gnuc_packed       __attribute__ ((packed))
+#define _gnuc_align(x)     __attribute__ ((aligned(x)))
+#define _gnuc_align_max    __attribute__ ((aligned))
+#if defined(BROKEN_SWPRINTF) || defined(__clang__)
+#define _gnuc_printf(m, n) __attribute__ ((format(printf, (m), (n))));
+#else
+#define _gnuc_printf(m, n) __attribute__ ((format(gnu_printf, (m), (n))));
+#endif
+#define _gnuc_likely(x)    __builtin_expect (!!(x), 1)
+#define _gnuc_unlikely(x)  __builtin_expect (!!(x), 0)
 #else
 #define _gnuc_noinline
 #define _gnuc_pure
@@ -55,6 +60,7 @@
 #define _gnuc_packed
 #define _gnuc_align(x)
 #define _gnuc_align_max
+#define _gnuc_printf(m, n)
 #define _gnuc_likely(x)   (x)
 #define _gnuc_unlikely(x) (x)
 #endif

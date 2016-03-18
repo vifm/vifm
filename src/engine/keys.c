@@ -31,8 +31,17 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/test_helpers.h"
 #include "mode.h"
+
+/* Type of key chunk. */
+typedef enum
+{
+	BUILTIN_WAIT_POINT, /* Infinite wait of next key press. */
+	BUILTIN_KEYS,       /* Normal builtin key. */
+	BUILTIN_NIM_KEYS,   /* NIM - number in the middle. */
+	USER_CMD,           /* User mapping. */
+}
+KeyType;
 
 typedef struct key_chunk_t
 {
@@ -41,11 +50,17 @@ typedef struct key_chunk_t
 	size_t children_count;
 	int enters;            /* To prevent stack overflow and manager lifetime. */
 	int deleted;           /* Postpone free() call for proper lazy deletion. */
+	KeyType type;          /* General key type. */
 	key_conf_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
 	struct key_chunk_t *prev, *next;
-}key_chunk_t;
+}
+key_chunk_t;
+
+/* Callback of traverse_children(). */
+typedef void (*traverse_func)(const key_chunk_t *chunk, const wchar_t lhs[],
+		void *arg);
 
 static key_chunk_t *builtin_cmds_root;
 static key_chunk_t *selectors_root;
@@ -90,17 +105,26 @@ static const wchar_t * get_count(const wchar_t keys[], int *count);
 static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
 static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
+static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
+		size_t len);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
-static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
+static void list_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
+		void *arg);
 static void inc_counter(const keys_info_t *const keys_info, const size_t by);
 static int is_recursive(void);
 static int execute_mapping_handler(const key_conf_t *const info,
 		key_info_t key_info, keys_info_t *const keys_info);
 static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
+static void keys_suggest(const key_chunk_t *root, const wchar_t keys[],
+		const wchar_t prefix[], vle_keys_list_cb cb);
+static void traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		traverse_func cb, void *param);
+static void suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
+		void *arg);
 
 void
-init_keys(int modes_count, int *key_mode_flags)
+vle_keys_init(int modes_count, int *key_mode_flags)
 {
 	assert(key_mode_flags != NULL);
 	assert(modes_count > 0);
@@ -122,13 +146,20 @@ init_keys(int modes_count, int *key_mode_flags)
 }
 
 void
-clear_keys(void)
+vle_keys_reset(void)
 {
 	free_forest(builtin_cmds_root, max_modes);
 	free_forest(user_cmds_root, max_modes);
 	free_forest(selectors_root, max_modes);
 
 	free(def_handlers);
+
+	builtin_cmds_root = NULL;
+	selectors_root = NULL;
+	user_cmds_root = NULL;
+	max_modes = 0;
+	mode_flags = NULL;
+	def_handlers = NULL;
 }
 
 /* Releases array of trees of length size including trees. */
@@ -144,7 +175,7 @@ free_forest(key_chunk_t *forest, size_t size)
 }
 
 void
-clear_user_keys(void)
+vle_keys_user_clear(void)
 {
 	int i;
 
@@ -171,8 +202,10 @@ free_tree(key_chunk_t *root)
 		free_chunk(root->next);
 	}
 
-	if(root->conf.type == USER_CMD || root->conf.type == BUILTIN_CMD)
+	if(root->type == USER_CMD)
+	{
 		free(root->conf.data.cmd);
+	}
 }
 
 static void
@@ -189,35 +222,35 @@ free_chunk(key_chunk_t *chunk)
 }
 
 void
-set_def_handler(int mode, default_handler handler)
+vle_keys_set_def_handler(int mode, default_handler handler)
 {
 	def_handlers[mode] = handler;
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys(const wchar_t keys[])
+vle_keys_exec(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 0, 0, 0);
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys_no_remap(const wchar_t keys[])
+vle_keys_exec_no_remap(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 0, 0, 1);
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys_timed_out(const wchar_t keys[])
+vle_keys_exec_timed_out(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 1, 0, 0);
 }
 
 /* This function should never be called from this module, only externally. */
 int
-execute_keys_timed_out_no_remap(const wchar_t keys[])
+vle_keys_exec_timed_out_no_remap(const wchar_t keys[])
 {
 	return execute_keys_general_wrapper(keys, 1, 0, 1);
 }
@@ -321,14 +354,12 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *p;
 		int number_in_the_middle = 0;
 
-		p = curr->child;
-		while(p != NULL && p->key < *keys)
+		for(p = curr->child; p != NULL && p->key < *keys; p = p->next)
 		{
-			if(p->conf.type == BUILTIN_NIM_KEYS)
+			if(p->type == BUILTIN_NIM_KEYS)
 			{
 				number_in_the_middle = 1;
 			}
-			p = p->next;
 		}
 
 		if(p == NULL || p->key != *keys)
@@ -336,13 +367,12 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 			if(curr == root)
 				return KEYS_UNKNOWN;
 
-			while(p != NULL)
+			for(; p != NULL; p = p->next)
 			{
-				if(p->conf.type == BUILTIN_NIM_KEYS)
+				if(p->type == BUILTIN_NIM_KEYS)
 				{
 					number_in_the_middle = 1;
 				}
-				p = p->next;
 			}
 
 			if(curr->conf.followed != FOLLOWED_BY_NONE &&
@@ -363,32 +393,29 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 				}
 			}
 
-			if(curr->conf.type == BUILTIN_WAIT_POINT)
+			if(curr->type == BUILTIN_WAIT_POINT)
 			{
 				return KEYS_UNKNOWN;
 			}
 
 			has_duplicate = root == &user_cmds_root[vle_mode_get()] &&
 					contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
-			result = execute_next_keys(curr, curr->conf.type == USER_CMD ? keys : L"",
+			result = execute_next_keys(curr, curr->type == USER_CMD ? keys : L"",
 					&key_info, keys_info, has_duplicate, no_remap);
-			if(curr->conf.type == USER_CMD)
+			if(curr->type == USER_CMD)
 				return result;
 			if(IS_KEYS_RET_CODE(result))
 			{
-				if(result == KEYS_WAIT_SHORT)
-					return KEYS_UNKNOWN;
-
-				return result;
+				return (result == KEYS_WAIT_SHORT) ? KEYS_UNKNOWN : result;
 			}
 			inc_counter(keys_info, keys - keys_start);
 			return execute_keys_general(keys, 0, keys_info->mapped, no_remap);
 		}
-		keys++;
+		++keys;
 		curr = p;
 	}
 
-	if(*keys == '\0' && curr->conf.type != BUILTIN_WAIT_POINT &&
+	if(*keys == '\0' && curr->type != BUILTIN_WAIT_POINT &&
 			curr->children_count > 0 && curr->conf.data.handler != NULL &&
 			!keys_info->after_wait)
 	{
@@ -434,7 +461,7 @@ contains_chain(key_chunk_t *root, const wchar_t *begin, const wchar_t *end)
 		curr = p;
 	}
 	return (curr->conf.followed == FOLLOWED_BY_NONE &&
-			curr->conf.type != BUILTIN_WAIT_POINT);
+			curr->type != BUILTIN_WAIT_POINT);
 }
 
 /* Handles the rest of the keys after first one has been determined (in curr).
@@ -448,8 +475,8 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 
 	if(*keys == L'\0')
 	{
-		int wait_point = (conf->type == BUILTIN_WAIT_POINT);
-		wait_point = wait_point || (conf->type == USER_CMD &&
+		int wait_point = (curr->type == BUILTIN_WAIT_POINT);
+		wait_point = wait_point || (curr->type == USER_CMD &&
 				conf->followed != FOLLOWED_BY_NONE);
 
 		if(wait_point)
@@ -465,7 +492,7 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 			return KEYS_UNKNOWN;
 		}
 	}
-	else if(conf->type != USER_CMD)
+	else if(curr->type != USER_CMD)
 	{
 		int result;
 
@@ -499,7 +526,7 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 {
 	const key_conf_t *const conf = &curr->conf;
 
-	if(conf->type != USER_CMD && conf->type != BUILTIN_CMD)
+	if(curr->type != USER_CMD)
 	{
 		const int result = execute_mapping_handler(conf, key_info, keys_info);
 		const int finish_dispatching = result != 0
@@ -740,38 +767,34 @@ combine_counts(int count_a, int count_b)
 	}
 }
 
-TSTATIC key_conf_t *
-add_cmd(const wchar_t keys[], int mode)
-{
-	key_chunk_t *curr = add_keys_inner(&builtin_cmds_root[mode], keys);
-	return &curr->conf;
-}
-
 int
-add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode, int no_r)
+vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
 {
-	key_chunk_t *curr;
+	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
+	if(curr == NULL)
+	{
+		return -1;
+	}
 
-	curr = add_keys_inner(&user_cmds_root[mode], keys);
-	if(curr->conf.type == USER_CMD)
+	if(curr->type == USER_CMD)
 	{
 		free((void*)curr->conf.data.cmd);
 	}
 
-	curr->conf.type = USER_CMD;
-	curr->conf.data.cmd = vifm_wcsdup(cmd);
+	curr->type = USER_CMD;
+	curr->conf.data.cmd = vifm_wcsdup(rhs);
 	curr->no_remap = no_r;
 	return 0;
 }
 
 int
-has_user_keys(const wchar_t *keys, int mode)
+vle_keys_user_exists(const wchar_t keys[], int mode)
 {
 	return find_user_keys(keys, mode) != NULL;
 }
 
 int
-remove_user_keys(const wchar_t *keys, int mode)
+vle_keys_user_remove(const wchar_t keys[], int mode)
 {
 	key_chunk_t *curr, *p;
 
@@ -779,7 +802,7 @@ remove_user_keys(const wchar_t *keys, int mode)
 		return -1;
 
 	free(curr->conf.data.cmd);
-	curr->conf.type = BUILTIN_WAIT_POINT;
+	curr->type = BUILTIN_WAIT_POINT;
 	curr->conf.data.handler = NULL;
 
 	p = curr;
@@ -805,7 +828,7 @@ remove_user_keys(const wchar_t *keys, int mode)
 		curr = parent;
 	}
 	while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
-			curr->parent->conf.type == BUILTIN_WAIT_POINT &&
+			curr->parent->type == BUILTIN_WAIT_POINT &&
 			curr->parent->children_count == 0);
 
 	return 0;
@@ -825,51 +848,49 @@ find_user_keys(const wchar_t *keys, int mode)
 		curr = p;
 		keys++;
 	}
-	return (curr->conf.type == USER_CMD) ? curr : NULL;
-}
-
-TSTATIC key_conf_t *
-add_selector(const wchar_t keys[], int mode)
-{
-	key_chunk_t *curr = add_keys_inner(&selectors_root[mode], keys);
-	return &curr->conf;
+	return (curr->type == USER_CMD) ? curr : NULL;
 }
 
 int
-add_cmds(keys_add_info_t *cmds, size_t len, int mode)
+vle_keys_add(keys_add_info_t cmds[], size_t len, int mode)
+{
+	return add_list_of_keys(&builtin_cmds_root[mode], cmds, len);
+}
+
+int
+vle_keys_add_selectors(keys_add_info_t cmds[], size_t len, int mode)
+{
+	return add_list_of_keys(&selectors_root[mode], cmds, len);
+}
+
+/* Registers cmds[0 .. len-1] keys specified tree.  Returns non-zero on error,
+ * otherwise zero is returned. */
+static int
+add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[], size_t len)
 {
 	int result = 0;
 	size_t i;
 
-	for(i = 0; i < len; i++)
+	for(i = 0U; i < len; ++i)
 	{
-		key_conf_t *curr;
-
-		curr = add_cmd(cmds[i].keys, mode);
+		key_chunk_t *const curr = add_keys_inner(root, cmds[i].keys);
 		if(curr == NULL)
+		{
 			result = -1;
+			continue;
+		}
+
+		curr->conf = cmds[i].info;
+		if(curr->conf.nim)
+		{
+			curr->type = BUILTIN_NIM_KEYS;
+		}
 		else
-			*curr = cmds[i].info;
-	}
-
-	return result;
-}
-
-int
-add_selectors(keys_add_info_t *cmds, size_t len, int mode)
-{
-	int result = 0;
-	size_t i;
-
-	for(i = 0; i < len; i++)
-	{
-		key_conf_t *curr;
-
-		curr = add_selector(cmds[i].keys, mode);
-		if(curr == NULL)
-			result = -1;
-		else
-			*curr = cmds[i].info;
+		{
+			curr->type = (curr->conf.followed == FOLLOWED_BY_NONE)
+			           ? BUILTIN_KEYS
+			           : BUILTIN_WAIT_POINT;
+		}
 	}
 
 	return result;
@@ -895,10 +916,14 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			if(c == NULL)
 				return NULL;
 			c->key = *keys;
-			c->conf.type = (keys[1] == L'\0') ? BUILTIN_KEYS : BUILTIN_WAIT_POINT;
+			c->type = (keys[1] == L'\0') ? BUILTIN_KEYS : BUILTIN_WAIT_POINT;
 			c->conf.data.handler = NULL;
 			c->conf.data.cmd = NULL;
 			c->conf.followed = FOLLOWED_BY_NONE;
+			c->conf.suggest = NULL;
+			c->conf.descr = NULL;
+			c->conf.nim = 0;
+			c->conf.skip_suggestion = 0;
 			c->prev = prev;
 			c->next = p;
 			c->child = NULL;
@@ -931,132 +956,45 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 	return curr;
 }
 
-wchar_t **
-list_cmds(int mode)
+void
+vle_keys_list(int mode, vle_keys_list_cb cb)
 {
-	int i, j;
-	int count;
-	wchar_t **result;
+	const key_chunk_t *user = &user_cmds_root[mode];
+	const key_chunk_t *builtin = &builtin_cmds_root[mode];
 
-	count = user_cmds_root[mode].children_count;
-	count += 1;
-	count += builtin_cmds_root[mode].children_count;
-	result = calloc(count + 1, sizeof(*result));
-	if(result == NULL)
-		return NULL;
-
-	if(fill_list(&user_cmds_root[mode], 0, result) < 0)
+	/* Don't traverse empty tries. */
+	if(user->children_count != 0U)
 	{
-		free_wstring_array(result, count);
-		return NULL;
-	}
+		traverse_children(user, L"", &list_chunk, cb);
 
-	j = -1;
-	for(i = 0; i < count && result[i] != NULL; i++)
-	{
-		if(result[i][0] == L'\0')
+		/* Put separator only when it's needed. */
+		if(builtin->children_count != 0U)
 		{
-			free(result[i]);
-			result[i] = NULL;
-			if(j == -1)
-				j = i;
-		}
-	}
-	if(j == -1)
-		j = i;
-
-	result[j++] = vifm_wcsdup(L"");
-
-	if(fill_list(&builtin_cmds_root[mode], 0, result + j) < 0)
-	{
-		free_wstring_array(result, count);
-		return NULL;
-	}
-
-	for(i = j; i < count && result[i] != NULL; i++)
-	{
-		if(result[i][0] == L'\0')
-		{
-			free(result[i]);
-			result[i] = NULL;
+			cb(L"", L"", "");
 		}
 	}
 
-	return result;
+	if(builtin->children_count != 0U)
+	{
+		traverse_children(builtin, L"", &list_chunk, cb);
+	}
 }
 
-static int
-fill_list(const key_chunk_t *curr, size_t len, wchar_t **list)
+/* Invokes list callback (in arg) for leaf chunks. */
+static void
+list_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
 {
-	size_t i;
-	const key_chunk_t *child;
-	size_t count;
-
-	count = curr->children_count;
-	if(curr->conf.type == USER_CMD)
-		count++;
-	if(count == 0)
-		count = 1;
-
-	for(i = 0; i < count; i++)
+	if(chunk->children_count == 0 || chunk->type == USER_CMD)
 	{
-		wchar_t *t;
-
-		t = reallocarray(list[i], len + 1, sizeof(wchar_t));
-		if(t == NULL)
-			return -1;
-
-		list[i] = t;
-		if(len > 0)
-			t[len - 1] = curr->key;
-		t[len] = L'\0';
+		const wchar_t *rhs = (chunk->type == USER_CMD) ? chunk->conf.data.cmd : L"";
+		const char *descr = (chunk->conf.descr == NULL) ? "" : chunk->conf.descr;
+		vle_keys_list_cb cb = arg;
+		cb(lhs, rhs, descr);
 	}
-
-	i = 0;
-	if(curr->children_count == 0 || curr->conf.type == USER_CMD)
-	{
-		const wchar_t *s;
-		wchar_t *t;
-
-		s = (curr->conf.type == USER_CMD) ? curr->conf.data.cmd : L"<built in>";
-		t = reallocarray(list[0], len + 1 + wcslen(s) + 1, sizeof(wchar_t));
-		if(t == NULL)
-			return -1;
-
-		list[0] = t;
-		t[wcslen(t) + 1] = L'\0';
-		wcscpy(t + wcslen(t) + 1, s);
-		if(curr->children_count == 0)
-			return 1;
-
-		list++;
-		i = 1;
-	}
-
-	child = curr->child;
-	while(child != NULL)
-	{
-		int filled = fill_list(child, len + 1, list);
-		if(filled < 0)
-			return -1;
-
-		list += filled;
-		i += filled;
-
-		child = child->next;
-	}
-
-	while(i < count--)
-	{
-		free(*list);
-		*list++ = NULL;
-	}
-
-	return i;
 }
 
 size_t
-get_key_counter(void)
+vle_keys_counter(void)
 {
 	return counter;
 }
@@ -1078,13 +1016,13 @@ inc_counter(const keys_info_t *const keys_info, const size_t by)
 static int
 is_recursive(void)
 {
-	return enters_counter > 1;
+	return (enters_counter > 1);
 }
 
 int
-is_inside_mapping(void)
+vle_keys_inside_mapping(void)
 {
-	return inside_mapping != 0;
+	return (inside_mapping != 0);
 }
 
 /* Executes handler for a mapping, if any.  Error or success code is
@@ -1117,6 +1055,153 @@ post_execute_mapping_handler(const keys_info_t *const keys_info)
 {
 	inside_mapping -= keys_info->mapped != 0;
 	assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");
+}
+
+void
+vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb)
+{
+	keys_suggest(&user_cmds_root[vle_mode_get()], keys, L"key: ", cb);
+	keys_suggest(&builtin_cmds_root[vle_mode_get()], keys, L"key: ", cb);
+}
+
+/* Looks up possible continuations of keys for the given root and calls cb on
+ * them. */
+static void
+keys_suggest(const key_chunk_t *root, const wchar_t keys[],
+		const wchar_t prefix[], vle_keys_list_cb cb)
+{
+	const key_chunk_t *curr = root;
+
+	while(*keys != L'\0')
+	{
+		const key_chunk_t *p;
+		int number_in_the_middle = 0;
+
+		/* Look up current key among children of current node (might be root), while
+		 * inspecting NIM as well. */
+		for(p = curr->child; p != NULL && p->key < *keys; p = p->next)
+		{
+			if(p->type == BUILTIN_NIM_KEYS)
+			{
+				number_in_the_middle = 1;
+			}
+		}
+
+		/* Go to the next character if a match found. */
+		if(p != NULL && p->key == *keys)
+		{
+			++keys;
+			curr = p;
+			continue;
+		}
+
+		/* No match for the first character is fatal for the lookup. */
+		if(curr == root)
+		{
+			return;
+		}
+
+		/* Need to inspect all children for NIM. */
+		for(; p != NULL && !number_in_the_middle; p = p->next)
+		{
+			if(p->type == BUILTIN_NIM_KEYS)
+			{
+				number_in_the_middle = 1;
+			}
+		}
+
+		/* Give up if this isn't one of cases where next character is not presented
+		 * in the tree by design. */
+		if(curr->conf.followed != FOLLOWED_BY_NONE &&
+				(!number_in_the_middle || !is_at_count(keys)))
+		{
+			break;
+		}
+
+		/* Skip over number in the middle, if any. */
+		if(number_in_the_middle)
+		{
+			int count;
+			const wchar_t *new_keys = get_count(keys, &count);
+			if(new_keys != keys)
+			{
+				keys = new_keys;
+				continue;
+			}
+		}
+
+		break;
+	}
+
+	if(*keys == L'\0')
+	{
+		/* Suggest all children. */
+		const key_chunk_t *child;
+		for(child = curr->child; child != NULL; child = child->next)
+		{
+			traverse_children(child, prefix, &suggest_chunk, cb);
+		}
+	}
+
+	if(curr->type == BUILTIN_WAIT_POINT)
+	{
+		if(curr->conf.followed == FOLLOWED_BY_SELECTOR)
+		{
+			/* Suggest selectors. */
+			keys_suggest(&selectors_root[vle_mode_get()], keys, L"sel: ", cb);
+		}
+		else if(curr->conf.followed == FOLLOWED_BY_MULTIKEY)
+		{
+			/* Invoke optional external function to provide suggestions. */
+			if(curr->conf.suggest != NULL)
+			{
+				curr->conf.suggest(cb);
+			}
+		}
+	}
+}
+
+/* Visit every child of the tree and calls cb with param on it. */
+static void
+traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		traverse_func cb, void *param)
+{
+	const key_chunk_t *child;
+
+	const size_t prefix_len = wcslen(prefix);
+	wchar_t item[prefix_len + 1U + 1U];
+	wcscpy(item, prefix);
+	item[prefix_len] = chunk->key;
+	item[prefix_len + 1U] = L'\0';
+
+	cb(chunk, item, param);
+
+	for(child = chunk->child; child != NULL; child = child->next)
+	{
+		traverse_children(child, item, cb, param);
+	}
+}
+
+/* Invokes suggestion callback (in arg) for leaf chunks. */
+static void
+suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[], void *arg)
+{
+	vle_keys_list_cb cb = arg;
+
+	if(chunk->conf.skip_suggestion)
+	{
+		return;
+	}
+
+	if(chunk->type == USER_CMD)
+	{
+		cb(lhs, chunk->conf.data.cmd, "");
+	}
+	else if(chunk->children_count == 0 ||
+			chunk->conf.followed != FOLLOWED_BY_NONE)
+	{
+		cb(lhs, L"", (chunk->conf.descr == NULL) ? "" : chunk->conf.descr);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

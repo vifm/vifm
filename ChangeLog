@@ -10,6 +10,12 @@
 	Enables displaying it as a menu with one item per line.  Thanks to
 	santhoshr and octos.
 
+	Added 'suggestoptions' option to control displaying of key suggestions.
+
+	Added description of builtin keys to :map menus.
+
+	Added SuggestBox highlight group for key suggestion box.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
@@ -20,6 +26,11 @@
 	Do not reset completion on terminal resize.
 
 	Expand environment variables for :edit.  Thanks to filterfalse.
+
+	Don't print just table header on `:cabbr something`, print message that no
+	matches found instead.
+
+	Display <c-h> as <bs> only at the beginning of key sequence.
 
 	Fixed kind of a duplicate of first history element on =.
 

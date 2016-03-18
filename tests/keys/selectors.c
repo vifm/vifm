@@ -8,8 +8,8 @@ extern int last_selector_count;
 /* This should be a macro to see what test have failed. */
 #define check(wait, full, sel_count, cmd_count) \
 	{ \
-		assert_int_equal(KEYS_WAIT, execute_keys(wait)); \
-		assert_int_equal(0, execute_keys(full)); \
+		assert_int_equal(KEYS_WAIT, vle_keys_exec(wait)); \
+		assert_int_equal(0, vle_keys_exec(full)); \
 		assert_int_equal((sel_count), last_selector_count); \
 		assert_int_equal((cmd_count), last_command_count); \
 	}
@@ -28,12 +28,12 @@ TEST(with_number_ok)
 
 TEST(with_zero_number_fail)
 {
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"d0"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"d0k"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"d01"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"d01k"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"d012"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"d012k"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"d0"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"d0k"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"d01"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"d01k"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"d012"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"d012k"));
 }
 
 TEST(with_number_before_and_in_the_middle_ok)

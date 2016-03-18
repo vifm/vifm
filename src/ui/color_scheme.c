@@ -66,6 +66,7 @@ char *HI_GROUPS[] = {
 	[BORDER_COLOR]       = "Border",
 	[OTHER_LINE_COLOR]   = "OtherLine",
 	[JOB_LINE_COLOR]     = "JobLine",
+	[SUGGEST_BOX_COLOR]  = "SuggestBox",
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
@@ -89,6 +90,7 @@ const char *HI_GROUPS_DESCR[] = {
 	[BORDER_COLOR]       = "horizontal borders",
 	[OTHER_LINE_COLOR]   = "cursor in inactive pane",
 	[JOB_LINE_COLOR]     = "job bar",
+	[SUGGEST_BOX_COLOR]  = "suggestion box",
 };
 ARRAY_GUARD(HI_GROUPS_DESCR, ARRAY_LEN(HI_GROUPS));
 
@@ -384,6 +386,7 @@ static const col_attr_t default_cs[] = {
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 	[JOB_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, A_BOLD | A_REVERSE      },
+	[SUGGEST_BOX_COLOR]  = { COLOR_CYAN,    COLOR_BLACK, A_BOLD | A_REVERSE      },
 };
 ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 

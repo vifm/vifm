@@ -19,6 +19,8 @@
 #ifndef VIFM__ENGINE__TEXT_BUFFER_H__
 #define VIFM__ENGINE__TEXT_BUFFER_H__
 
+#include "../utils/macros.h"
+
 /* Typical usage examples:
  *
  * vle_textbuf *msg = vle_tb_create();
@@ -66,7 +68,8 @@ void vle_tb_clear(vle_textbuf *tb);
 void vle_tb_append(vle_textbuf *tb, const char str[]);
 
 /* Appends formatted string to specified buffer. */
-void vle_tb_appendf(vle_textbuf *tb, const char format[], ...);
+void vle_tb_appendf(vle_textbuf *tb, const char format[], ...)
+	_gnuc_printf(2, 3);
 
 /* Appends the string to specified buffer. */
 void vle_tb_append(vle_textbuf *tb, const char str[]);
@@ -76,7 +79,8 @@ void vle_tb_append_line(vle_textbuf *tb, const char str[]);
 
 /* Appends formatted line (terminated with newline character) to specified
  * buffer. */
-void vle_tb_append_linef(vle_textbuf *tb, const char format[], ...);
+void vle_tb_append_linef(vle_textbuf *tb, const char format[], ...)
+	_gnuc_printf(2, 3);
 
 /* Returns pointer to a read-only string, which may become invalid on any other
  * call of functions in this module.  Never returns NULL, only empty string. */

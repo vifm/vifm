@@ -193,7 +193,7 @@ process_cancel_request(pid_t pid)
 	{
 		if(kill(pid, SIGINT) != 0)
 		{
-			LOG_SERROR_MSG(errno, "Failed to send SIGINT to %llu",
+			LOG_SERROR_MSG(errno, "Failed to send SIGINT to %" PRINTF_ULL,
 					(unsigned long long)pid);
 		}
 	}

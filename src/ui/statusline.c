@@ -324,7 +324,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				}
 				else
 				{
-					LOG_INFO_MSG("Unmatched %]", c);
+					LOG_INFO_MSG("Unmatched %%]");
 					ok = 0;
 				}
 				break;
@@ -604,6 +604,40 @@ take_job_descr_snapshot(void)
 	}
 
 	return descrs;
+}
+
+void
+ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
+		size_t max_width)
+{
+	char *left, *right, *line;
+	const size_t text_width = utf8_strsw(item);
+	const size_t win_width = getmaxx(win);
+	const int align_columns = (max_width <= win_width/4);
+	const char *const fmt = align_columns ? "%-*s  %-*s" : "%-*s  %*s";
+	size_t width_left;
+	size_t item_width;
+
+	if(text_width >= win_width)
+	{
+		char *const line = right_ellipsis(strdup(item), win_width);
+		wprint(win, line);
+		free(line);
+		return;
+	}
+
+	left = right_ellipsis(strdup(item), win_width - 3);
+	item_width = align_columns ? max_width : utf8_strsw(left);
+	width_left = win_width - 2 - MAX(item_width, utf8_strsw(left));
+	right = right_ellipsis(strdup(descr), width_left);
+
+	line = format_str(fmt, (int)item_width, left, (int)width_left, right);
+	free(left);
+	free(right);
+
+	wprint(win, line);
+
+	free(line);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

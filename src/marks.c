@@ -25,6 +25,7 @@
 #include <time.h> /* time_t time() */
 
 #include "compat/fs_limits.h"
+#include "modes/wk.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
@@ -289,8 +290,8 @@ goto_mark(FileView *view, char mark)
 		case '\'':
 			navigate_back(view);
 			return 0;
-		case '\x03': /* Ctrl-C. */
-		case '\x1b': /* Escape. */
+		case NC_C_c:
+		case NC_ESC:
 			fview_cursor_redraw(view);
 			return 0;
 
@@ -395,6 +396,49 @@ is_empty(const mark_t *mark)
 	return mark == NULL
 	    || mark->directory == NULL
 	    || mark->file == NULL;
+}
+
+void
+suggest_marks(mark_suggest_cb cb, int local_only)
+{
+	int active_marks[NUM_MARKS];
+	const int count = init_active_marks(valid_marks, active_marks);
+	int i;
+
+	for(i = 0; i < count; ++i)
+	{
+		char *descr;
+		const char *file = "";
+		const char *suffix = "";
+		const int m = active_marks[i];
+		const wchar_t mark_name[] = {
+			L'm', L'a', L'r', L'k', L':', L' ', index2mark(m), L'\0'
+		};
+		const mark_t *const mark = get_mark(m);
+
+		if(local_only && check_mark_directory(curr_view, index2mark(m)) == -1)
+		{
+			continue;
+		}
+
+		if(is_valid_mark(m) && !is_parent_dir(mark->file))
+		{
+			char path[PATH_MAX];
+			file = mark->file;
+			snprintf(path, sizeof(path), "%s/%s", mark->directory, file);
+			if(is_dir(path))
+			{
+				suffix = "/";
+			}
+		}
+
+		descr = format_str("%s%s%s%s", replace_home_part(mark->directory),
+				(file[0] != '\0') ? "/" : "", file, suffix);
+
+		cb(mark_name, L"", descr);
+
+		free(descr);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -69,6 +69,7 @@
 #include "modes.h"
 #include "view.h"
 #include "visual.h"
+#include "wk.h"
 
 static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
@@ -83,7 +84,7 @@ static void cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
@@ -112,6 +113,8 @@ static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void go_to_other_window(void);
 static int try_switch_into_view_mode(void);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
+static void sug_cmd_quote(vle_keys_list_cb cb);
+static void sug_sel_quote(vle_keys_list_cb cb);
 static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_equal(key_info_t key_info, keys_info_t *keys_info);
@@ -121,7 +124,7 @@ static void cmd_zero(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_semicolon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_question(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_C(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_F(key_info_t key_info, keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward, keys_info_t *keys_info);
@@ -226,212 +229,207 @@ static int last_fast_search_backward = -1;
 static int search_repeat;
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
-	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x04", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
-	{L"\x05", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
-	{L"\x06", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
-	{L"\x07", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
-	{L"\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
-	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x0f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_o}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"\x12", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_r}}},
-	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
-	{L"\x17\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
-	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wH}}},
-	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wJ}}},
-	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wK}}},
-	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wL}}},
-	{L"\x17"L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
-	{L"\x17\x08", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
-	{L"\x17h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
-	{L"\x17\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
-	{L"\x17j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
-	{L"\x17\x0b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
-	{L"\x17k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
-	{L"\x17\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
-	{L"\x17l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
-	{L"\x17\x0f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
-	{L"\x17o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
-	{L"\x17\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
-	{L"\x17p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
-	{L"\x17\x13", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
-	{L"\x17s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
-	{L"\x17\x14", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wt}}},
-	{L"\x17t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wt}}},
-	{L"\x17\x16", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
-	{L"\x17v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
-	{L"\x17\x17", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
-	{L"\x17w", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
-	{L"\x17\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
-	{L"\x17x", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
-	{L"\x17\x1a", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wz}}},
-	{L"\x17z", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wz}}},
-	{L"\x17=", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wequal}}},
-	{L"\x17<", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wless}}},
-	{L"\x17>", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wgreater}}},
-	{L"\x17+", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wplus}}},
-	{L"\x17-", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wminus}}},
-	{L"\x17|", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wpipe}}},
-	{L"\x17_", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wpipe}}},
-	{L"\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_x}}},
-	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
-#ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BTAB, 0}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
+	{WK_C_a,           {{&cmd_ctrl_a}, .descr = "increment number in names"}},
+	{WK_C_b,           {{&cmd_ctrl_b}, .descr = "scroll page up"}},
+	{WK_C_c,           {{&cmd_ctrl_c}, .descr = "reset selection and highlight"}},
+	{WK_C_d,           {{&cmd_ctrl_d}, .descr = "scroll half-page down"}},
+	{WK_C_e,           {{&cmd_ctrl_e}, .descr = "scroll one line down"}},
+	{WK_C_f,           {{&cmd_ctrl_f}, .descr = "scroll page down"}},
+	{WK_C_g,           {{&cmd_ctrl_g}, .descr = "display file info"}},
+	{WK_C_i,           {{&cmd_ctrl_i}, .descr = "switch pane/history forward"}},
+	{WK_C_l,           {{&cmd_ctrl_l}, .descr = "redraw"}},
+	{WK_C_m,           {{&cmd_return}, .descr = "open current item(s)"}},
+	{WK_C_n,           {{&cmd_j},      .descr = "go to item below"}},
+	{WK_C_o,           {{&cmd_ctrl_o}, .descr = "history backward"}},
+	{WK_C_p,           {{&cmd_k},      .descr = "go to item above"}},
+	{WK_C_r,           {{&cmd_ctrl_r}, .descr = "redo operation"}},
+	{WK_C_u,           {{&cmd_ctrl_u}, .descr = "scroll half-page up"}},
+	{WK_C_w WK_H,      {{&cmd_ctrl_wH}, .descr = "move window to the left"}},
+	{WK_C_w WK_J,      {{&cmd_ctrl_wJ}, .descr = "move window to the bottom"}},
+	{WK_C_w WK_K,      {{&cmd_ctrl_wK}, .descr = "move window to the top"}},
+	{WK_C_w WK_L,      {{&cmd_ctrl_wL}, .descr = "move window to the right"}},
+	{WK_C_w WK_C_b,    {{&cmd_ctrl_wb}, .descr = "go to bottom-right window"}},
+	{WK_C_w WK_b,      {{&cmd_ctrl_wb}, .descr = "go to bottom-right window"}},
+	{WK_C_w WK_C_h,    {{&cmd_ctrl_wh}, .descr = "go to left window"}},
+	{WK_C_w WK_h,      {{&cmd_ctrl_wh}, .descr = "go to left window"}},
+	{WK_C_w WK_C_j,    {{&cmd_ctrl_wj}, .descr = "go to bottom window"}},
+	{WK_C_w WK_j,      {{&cmd_ctrl_wj}, .descr = "go to bottom window"}},
+	{WK_C_w WK_C_k,    {{&cmd_ctrl_wk}, .descr = "go to top window"}},
+	{WK_C_w WK_k,      {{&cmd_ctrl_wk}, .descr = "go to top window"}},
+	{WK_C_w WK_C_l,    {{&cmd_ctrl_wl}, .descr = "go to right window"}},
+	{WK_C_w WK_l,      {{&cmd_ctrl_wl}, .descr = "go to right window"}},
+	{WK_C_w WK_C_o,    {{&cmd_ctrl_wo}, .descr = "single-pane mode"}},
+	{WK_C_w WK_o,      {{&cmd_ctrl_wo}, .descr = "single-pane mode"}},
+	{WK_C_w WK_C_p,    {{&cmd_ctrl_ww}, .descr = "go to other pane"}},
+	{WK_C_w WK_p,      {{&cmd_ctrl_ww}, .descr = "go to other pane"}},
+	{WK_C_w WK_C_s,    {{&cmd_ctrl_ws}, .descr = "horizontal split layout"}},
+	{WK_C_w WK_s,      {{&cmd_ctrl_ws}, .descr = "horizontal split layout"}},
+	{WK_C_w WK_C_t,    {{&cmd_ctrl_wt}, .descr = "go to top-left window"}},
+	{WK_C_w WK_t,      {{&cmd_ctrl_wt}, .descr = "go to top-left window"}},
+	{WK_C_w WK_C_v,    {{&cmd_ctrl_wv}, .descr = "vertical split layout"}},
+	{WK_C_w WK_v,      {{&cmd_ctrl_wv}, .descr = "vertical split layout"}},
+	{WK_C_w WK_C_w,    {{&cmd_ctrl_ww}, .descr = "go to other pane"}},
+	{WK_C_w WK_w,      {{&cmd_ctrl_ww}, .descr = "go to other pane"}},
+	{WK_C_w WK_C_x,    {{&cmd_ctrl_wx}, .descr = "exchange panes"}},
+	{WK_C_w WK_x,      {{&cmd_ctrl_wx}, .descr = "exchange panes"}},
+	{WK_C_w WK_C_z,    {{&cmd_ctrl_wz}, .descr = "exit preview/view modes"}},
+	{WK_C_w WK_z,      {{&cmd_ctrl_wz}, .descr = "exit preview/view modes"}},
+	{WK_C_w WK_EQUALS, {{&normal_cmd_ctrl_wequal},   .nim = 1, .descr = "size panes equally"}},
+	{WK_C_w WK_LT,     {{&normal_cmd_ctrl_wless},    .nim = 1, .descr = "decrease pane size by one"}},
+	{WK_C_w WK_GT,     {{&normal_cmd_ctrl_wgreater}, .nim = 1, .descr = "increase pane size by one"}},
+	{WK_C_w WK_PLUS,   {{&normal_cmd_ctrl_wplus},    .nim = 1, .descr = "increase pane size by one"}},
+	{WK_C_w WK_MINUS,  {{&normal_cmd_ctrl_wminus},   .nim = 1, .descr = "decrease pane size by one"}},
+	{WK_C_w WK_BAR,    {{&normal_cmd_ctrl_wpipe},    .nim = 1, .descr = "maximize pane size"}},
+	{WK_C_w WK_USCORE, {{&normal_cmd_ctrl_wpipe},    .nim = 1, .descr = "maximize pane size"}},
+	{WK_C_x,           {{&cmd_ctrl_x}, .descr = "decrement number in names"}},
+	{WK_C_y,           {{&cmd_ctrl_y}, .descr = "scroll one line up"}},
+	{WK_ESC,           {{&cmd_ctrl_c}, .descr = "reset selection and highlight"}},
+	{WK_QUOTE,         {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "navigate to mark", .suggest = &sug_cmd_quote}},
+	{WK_SPACE,         {{&cmd_space},  .descr = "switch pane"}},
+	{WK_EM,            {{&cmd_emark_selector}, FOLLOWED_BY_SELECTOR, .descr = "make cmdline range"}},
+	{WK_EM WK_EM,      {{&cmd_emarkemark}, .descr = "make cmdline range"}},
+	{WK_CARET,         {{&cmd_zero},    .descr = "go to first column"}},
+	{WK_DOLLAR,        {{&cmd_dollar},  .descr = "go to last column"}},
+	{WK_PERCENT,       {{&cmd_percent}, .descr = "go to [count]% position"}},
+	{WK_EQUALS,        {{&cmd_equal},   .descr = "edit local filter"}},
+	{WK_COMMA,         {{&cmd_comma},   .descr = "repeat char-search backward"}},
+	{WK_DOT,           {{&cmd_dot},     .descr = "repeat last cmdline command"}},
+	{WK_ZERO,          {{&cmd_zero},    .descr = "go to first column"}},
+	{WK_COLON,         {{&cmd_colon},   .descr = "go to cmdline mode"}},
+	{WK_SCOLON,        {{&cmd_semicolon}, .descr = "repeat char-search forward"}},
+	{WK_SLASH,         {{&cmd_slash},     .descr = "search forward"}},
+	{WK_QM,            {{&cmd_qmark},     .descr = "search backward"}},
+	{WK_C,             {{&cmd_C}, .descr = "clone files"}},
+	{WK_F,             {{&cmd_F}, FOLLOWED_BY_MULTIKEY, .descr = "char-search backward"}},
+	{WK_G,             {{&cmd_G}, .descr = "go to the last item"}},
+	{WK_H,             {{&cmd_H}, .descr = "go to top of viewport"}},
+	{WK_L,             {{&cmd_L}, .descr = "go to bottom of viewport"}},
+	{WK_M,             {{&cmd_M}, .descr = "go to middle of viewport"}},
+	{WK_N,             {{&cmd_N}, .descr = "go to previous search match"}},
+	{WK_P,             {{&cmd_P}, .descr = "put files by moving them"}},
+	{WK_V,             {{&cmd_V}, .descr = "go to visual mode"}},
+	{WK_Y,             {{&cmd_yy}, .descr = "yank files"}},
+	{WK_Z WK_Q,        {{&cmd_ZQ}, .descr = "exit without saving state"}},
+	{WK_Z WK_Z,        {{&cmd_ZZ}, .descr = "exit the application"}},
+	{WK_a WK_l,        {{&cmd_al}, .descr = "put files creating absolute symlinks"}},
+	{WK_a WK_v,        {{&cmd_av}, .descr = "go to visual amend mode"}},
+	{WK_c WK_W,        {{&cmd_cW}, .descr = "rename root of current file"}},
+	{WK_c WK_l,        {{&cmd_cl}, .descr = "change symlink target"}},
+	{WK_c WK_p,        {{&cmd_cp}, .descr = "change file permissions/attributes"}},
+	{WK_c WK_w,        {{&cmd_cw}, .descr = "rename files"}},
+	{WK_D WK_D,        {{&cmd_DD}, .nim = 1, .descr = "remove files permanently"}},
+	{WK_d WK_d,        {{&cmd_dd}, .nim = 1, .descr = "remove files"}},
+	{WK_D,             {{&cmd_D_selector}, FOLLOWED_BY_SELECTOR, .descr = "remove files permanently"}},
+	{WK_d,             {{&cmd_d_selector}, FOLLOWED_BY_SELECTOR, .descr = "remove files"}},
+	{WK_e,             {{&cmd_e}, .descr = "explore file contents"}},
+	{WK_f,             {{&cmd_f}, FOLLOWED_BY_MULTIKEY, .descr = "char-search forward"}},
+	{WK_g WK_A,        {{&cmd_gA}, .descr = "(re)calculate size"}},
+	{WK_g WK_a,        {{&cmd_ga}, .descr = "calculate size"}},
+	{WK_g WK_f,        {{&cmd_gf}, .descr = "navigate to link target"}},
+	{WK_g WK_g,        {{&cmd_gg}, .descr = "go to the first item"}},
+	{WK_g WK_h,        {{&cmd_gh}, .descr = "go to parent directory"}},
+	{WK_g WK_j,        {{&cmd_j},  .descr = "go to item below"}},
+	{WK_g WK_k,        {{&cmd_k},  .descr = "go to item above"}},
+	{WK_g WK_l,        {{&cmd_return}, .descr = "open current item(s)"}},
+	{WK_g WK_s,        {{&cmd_gs}, .descr = "restore/make selection"}},
+	{WK_g WK_U,        {{&cmd_gU}, FOLLOWED_BY_SELECTOR, .descr = "convert to uppercase"}},
+	{WK_g WK_u,        {{&cmd_gu}, FOLLOWED_BY_SELECTOR, .descr = "convert to lowercase"}},
+	{WK_g WK_U WK_U,      {{&cmd_gU}, .descr = "convert to uppercase"}},
+	{WK_g WK_u WK_u,      {{&cmd_gu}, .descr = "convert to lowercase"}},
+	{WK_g WK_U WK_g WK_U, {{&cmd_gU}, .descr = "convert to uppercase"}},
+	{WK_g WK_u WK_g WK_u, {{&cmd_gu}, .descr = "convert to lowercase"}},
+	{WK_g WK_U WK_g WK_g, {{&cmd_gUgg}, .skip_suggestion = 1, .descr = "convert to uppercase"}},
+	{WK_g WK_u WK_g WK_g, {{&cmd_gugg}, .skip_suggestion = 1, .descr = "convert to lowercase"}},
+	{WK_g WK_v,        {{&cmd_gv}, .descr = "restore visual mode"}},
+	{WK_h,             {{&cmd_h},  .descr = "go to parent directory/item to the left"}},
+	{WK_i,             {{&cmd_i},  .descr = "open file, but don't execute it"}},
+	{WK_j,             {{&cmd_j},  .descr = "go to item below"}},
+	{WK_k,             {{&cmd_k},  .descr = "go to item above"}},
+	{WK_l,             {{&cmd_l},  .descr = "open file/go to item to the right"}},
+	{WK_m,             {{&cmd_m}, FOLLOWED_BY_MULTIKEY, .descr = "set a mark", .suggest = &sug_cmd_quote}},
+	{WK_n,             {{&cmd_n},  .descr = "go to next search match"}},
+	{WK_p,             {{&cmd_p},  .descr = "put files by copying them"}},
+	{WK_r WK_l,        {{&cmd_rl}, .descr = "put files creating relative symlinks"}},
+	{WK_q WK_COLON,    {{&cmd_q_colon},    .descr = "edit cmdline in editor"}},
+	{WK_q WK_SLASH,    {{&cmd_q_slash},    .descr = "edit forward search pattern in editor"}},
+	{WK_q WK_QM,       {{&cmd_q_question}, .descr = "edit backward search pattern in editor"}},
+	{WK_q WK_EQUALS,   {{&cmd_q_equals},   .descr = "edit local filter pattern in editor"}},
+	{WK_t,             {{&cmd_t},            .descr = "select current file"}},
+	{WK_u,             {{&cmd_u},            .descr = "undo file operation"}},
+	{WK_y WK_y,        {{&cmd_yy}, .nim = 1, .descr = "yank files"}},
+	{WK_y,             {{&cmd_y_selector}, FOLLOWED_BY_SELECTOR, .descr = "yank files"}},
+	{WK_v,             {{&cmd_V},  .descr = "go to visual mode"}},
+	{WK_z WK_M,        {{&cmd_zM}, .descr = "apply filename filters only"}},
+	{WK_z WK_O,        {{&cmd_zO}, .descr = "remove filename filters (except local one)"}},
+	{WK_z WK_R,        {{&cmd_zR}, .descr = "filter no files"}},
+	{WK_z WK_a,        {{&cmd_za}, .descr = "toggle dot files visibility"}},
+	{WK_z WK_d,        {{&cmd_zd}, .descr = "exclude custom view entry"}},
+	{WK_z WK_b,        {{&normal_cmd_zb}, .descr = "push cursor to the bottom"}},
+	{WK_z WK_f,        {{&cmd_zf}, .descr = "add current file to filter"}},
+	{WK_z WK_m,        {{&cmd_zm}, .descr = "hide dot files"}},
+	{WK_z WK_o,        {{&cmd_zo}, .descr = "show dot files"}},
+	{WK_z WK_r,        {{&cmd_zr}, .descr = "clear local filter"}},
+	{WK_z WK_t,        {{&normal_cmd_zt},   .descr = "push cursor to the top"}},
+	{WK_z WK_z,        {{&normal_cmd_zz},   .descr = "center cursor position"}},
+	{WK_LP,            {{&cmd_left_paren},  .descr = "go to previous group of files"}},
+	{WK_RP,            {{&cmd_right_paren}, .descr = "go to next group of files"}},
+	{WK_LCB,           {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir"}},
+	{WK_RCB,           {{&cmd_right_curly_bracket}, .descr = "go to next file/dir"}},
+#ifndef _WIN32
+	{WK_c WK_g,        {{&cmd_cg}, .descr = "change group"}},
+	{WK_c WK_o,        {{&cmd_co}, .descr = "change owner"}},
 #else
-	{L"\033"L"[Z", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
+	{WK_g WK_r,        {{&cmd_gr}, .descr = "open file with rights evaluation"}},
 #endif
-	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
-	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
-	{L"!", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_emark_selector}}},
-	{L"!!", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_emarkemark}}},
-	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
-	{L"$", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dollar}}},
-	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
-	{L"=", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_equal}}},
-	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
-	{L".", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dot}}},
-	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
-	{L":", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
-	{L";", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
-	{L"/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
-	{L"?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_question}}},
-	{L"C", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_C}}},
-	{L"F", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
-	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{L"H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
-	{L"L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
-	{L"M", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
-	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
-	{L"P", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_P}}},
-	{L"V", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_V}}},
-	{L"Y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZQ}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZZ}}},
-	{L"al", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_al}}},
-	{L"av", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_av}}},
-	{L"cW", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cW}}},
-#ifndef _WIN32
-	{L"cg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cg}}},
-#endif
-	{L"cl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cl}}},
-#ifndef _WIN32
-	{L"co", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_co}}},
-#endif
-	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
-	{L"cw", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cw}}},
-	{L"DD", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_DD}}},
-	{L"dd", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
-	{L"D", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_D_selector}}},
-	{L"d", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_d_selector}}},
-	{L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_e}}},
-	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
-	{L"gA", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gA}}},
-	{L"ga", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
-	{L"gf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
-	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{L"gh", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gh}}},
-	{L"gj", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"gk", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"gl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-#ifdef _WIN32
-	{L"gr", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gr}}},
-#endif
-	{L"gs", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gs}}},
-	{L"gU", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gU}}},
-	{L"gUgU", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
-	{L"gUgg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gUgg}}},
-	{L"gUU", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
-	{L"gu", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gu}}},
-	{L"gugg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gugg}}},
-	{L"gugu", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
-	{L"guu", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
-	{L"gv", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
-	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
-	{L"i", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
-	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
-	{L"m", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_m}}},
-	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
-	{L"p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
-	{L"rl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_rl}}},
-	{L"q:", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_colon}}},
-	{L"q/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_slash}}},
-	{L"q?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_question}}},
-	{L"q=", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q_equals}}},
-	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
-	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
-	{L"yy", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
-	{L"y", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_y_selector}}},
-	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_V}}},
-	{L"zM", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zM}}},
-	{L"zO", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zO}}},
-	{L"zR", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zR}}},
-	{L"za", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_za}}},
-	{L"zd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zd}}},
-	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
-	{L"zf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
-	{L"zm", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zm}}},
-	{L"zo", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zo}}},
-	{L"zr", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zr}}},
-	{L"zt", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zt}}},
-	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
-	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
-	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
-	{L"{", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_curly_bracket}}},
-	{L"}", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_curly_bracket}}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_PPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
-	{{KEY_NPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
-	{{KEY_LEFT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
-	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
-	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{{WC_C_w, KEY_BACKSPACE}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},
+	{{KEY_PPAGE},             {{&cmd_ctrl_b},  .descr = "scroll page up"}},
+	{{KEY_NPAGE},             {{&cmd_ctrl_f},  .descr = "scroll page down"}},
+	{{KEY_LEFT},              {{&cmd_h},       .descr = "go to parent directory/item to the left"}},
+	{{KEY_DOWN},              {{&cmd_j},       .descr = "go to item below"}},
+	{{KEY_UP},                {{&cmd_k},       .descr = "go to item above"}},
+	{{KEY_RIGHT},             {{&cmd_l},       .descr = "open file/go to item to the right"}},
+	{{KEY_HOME},              {{&cmd_gg},      .descr = "go to the first item"}},
+	{{KEY_END},               {{&cmd_G},       .descr = "go to the last item"}},
+	{{KEY_BTAB},              {{&cmd_shift_tab}, .descr = "previous completion item"}},
+#else
+	{WK_ESC L"[Z",            {{&cmd_shift_tab}, .descr = "previous completion item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
 static keys_add_info_t selectors[] = {
-	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
-	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
-	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
-	{L"$", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dollar}}},
-	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
-	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
-	{L";", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}}, /* Ctrl-N */
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}}, /* Ctrl-P */
-	{L"F", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
-	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{L"H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
-	{L"L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
-	{L"M", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
-	{L"S", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_S}}},
-	{L"a", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_a}}},
-	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
-	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
-	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
-	{L"s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_s}}},
-	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
-	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
-	{L"{", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_curly_bracket}}},
-	{L"}", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_curly_bracket}}},
+	{WK_QUOTE,   {{&cmd_quote}, FOLLOWED_BY_MULTIKEY, .descr = "to mark", .suggest = &sug_sel_quote}},
+	{WK_PERCENT, {{&cmd_percent},   .descr = "to [count]% position"}},
+	{WK_CARET,   {{&cmd_zero},      .descr = "to first column"}},
+	{WK_DOLLAR,  {{&cmd_dollar},    .descr = "to last column"}},
+	{WK_COMMA,   {{&cmd_comma},     .descr = "to previous char-search match"}},
+	{WK_ZERO,    {{&cmd_zero},      .descr = "to first column"}},
+	{WK_SCOLON,  {{&cmd_semicolon}, .descr = "to next char-search match"}},
+	{WK_C_n,     {{&cmd_j},         .descr = "to item below"}},
+	{WK_C_p,     {{&cmd_k},         .descr = "to item above"}},
+	{WK_F,       {{&cmd_F}, FOLLOWED_BY_MULTIKEY, .descr = "to char-search match forward"}},
+	{WK_G,       {{&cmd_G},         .descr = "to the last item"}},
+	{WK_H,       {{&cmd_H},         .descr = "to top of viewport"}},
+	{WK_L,       {{&cmd_L},         .descr = "to bottom of viewport"}},
+	{WK_M,       {{&cmd_M},         .descr = "to middle of viewport"}},
+	{WK_S,       {{&selector_S},    .descr = "non-selected files"}},
+	{WK_a,       {{&selector_a},    .descr = "all files"}},
+	{WK_f,       {{&cmd_f}, FOLLOWED_BY_MULTIKEY, .descr = "to char-search match backward"}},
+	{WK_g WK_g,  {{&cmd_gg}, .descr = "to the first item"}},
+	{WK_h,       {{&cmd_h},  .descr = "to item to the left"}},
+	{WK_j,       {{&cmd_j},  .descr = "to item below"}},
+	{WK_k,       {{&cmd_k},  .descr = "to item above"}},
+	{WK_l,       {{&cmd_l},  .descr = "to item to the right"}},
+	{WK_s,       {{&selector_s},      .descr = "selected files"}},
+	{WK_LP,      {{&cmd_left_paren},  .descr = "to previous group of files"}},
+	{WK_RP,      {{&cmd_right_paren}, .descr = "to next group of files"}},
+	{WK_LCB,     {{&cmd_left_curly_bracket},  .descr = "to previous file/dir"}},
+	{WK_RCB,     {{&cmd_right_curly_bracket}, .descr = "to next file/dir"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{{KEY_DOWN}, {{&cmd_j},  .descr = "to item below"}},
+	{{KEY_UP},   {{&cmd_k},  .descr = "to item above"}},
+	{{KEY_HOME}, {{&cmd_gg}, .descr = "to the first item"}},
+	{{KEY_END},  {{&cmd_G},  .descr = "go to the last item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -440,10 +438,11 @@ init_normal_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), NORMAL_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), NORMAL_MODE);
 	assert(ret_code == 0);
 
-	ret_code = add_selectors(selectors, ARRAY_LEN(selectors), NORMAL_MODE);
+	ret_code = vle_keys_add_selectors(selectors, ARRAY_LEN(selectors),
+			NORMAL_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
@@ -604,7 +603,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 
 /* Enters directory or runs file. */
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	open_file(curr_view, FHE_RUN);
 	clean_selected_files(curr_view);
@@ -1261,6 +1260,20 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
+/* Suggests marks located anywhere. */
+static void
+sug_cmd_quote(vle_keys_list_cb cb)
+{
+	suggest_marks(cb, 0);
+}
+
+/* Suggests only marks that point into current view. */
+static void
+sug_sel_quote(vle_keys_list_cb cb)
+{
+	suggest_marks(cb, 1);
+}
+
 /* Move cursor to the last column in ls-view sub-mode. */
 static void
 cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
@@ -1355,7 +1368,7 @@ cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 
 /* Search backward. */
 static void
-cmd_question(key_info_t key_info, keys_info_t *keys_info)
+cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 {
 	activate_search(key_info.count, 1, 0);
 }
@@ -1619,7 +1632,7 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		cmd_ctrl_m(key_info, keys_info);
+		cmd_return(key_info, keys_info);
 	}
 }
 

@@ -21,8 +21,6 @@
 
 #include <stddef.h> /* size_t wchar_t */
 
-#include "../utils/test_helpers.h"
-
 enum
 {
 	NO_COUNT_GIVEN = -1,
@@ -38,14 +36,14 @@ enum
 
 enum
 {
-	KEYS_UNKNOWN = -1024,
-	KEYS_WAIT = -2048,
+	KEYS_UNKNOWN    = -1024,
+	KEYS_WAIT       = -2048,
 	KEYS_WAIT_SHORT = -4096,
 };
 
 #define IS_KEYS_RET_CODE(c) \
 		({ \
-			int tmp = (c); \
+			const int tmp = (c); \
 			tmp == KEYS_UNKNOWN || tmp == KEYS_WAIT || tmp == KEYS_WAIT_SHORT; \
 		})
 
@@ -54,170 +52,133 @@ typedef enum
 	FOLLOWED_BY_NONE,
 	FOLLOWED_BY_SELECTOR,
 	FOLLOWED_BY_MULTIKEY,
-}FOLLOWED_BY;
-
-typedef enum
-{
-	BUILTIN_WAIT_POINT, /* infinite wait of next key press */
-	BUILTIN_KEYS,
-	BUILTIN_NIM_KEYS,   /* NIM - number in the middle */
-	BUILTIN_CMD,
-	USER_CMD,           /* User mapping. */
 }
-KEYS_TYPE;
-
-typedef enum
-{
-	KS_NOT_A_SELECTOR,
-	KS_SELECTOR_AND_CMD,
-	KS_ONLY_SELECTOR,
-}KEYS_SELECTOR;
+FollowedBy;
 
 typedef struct
 {
-	int count; /* repeat count, maybe equal NO_COUNT_GIVEN */
-	int reg;   /* number of selected register */
-	int multi; /* multi key */
-}key_info_t;
+	int count; /* Repeat count, may be equal NO_COUNT_GIVEN. */
+	int reg;   /* Number of selected register. */
+	int multi; /* Multikey. */
+}
+key_info_t;
 
 typedef struct
 {
-	int selector;   /* selector passed */
-	int count;      /* count of selected items */
-	int *indexes;   /* item indexes */
-	int after_wait; /* after short timeout */
-	int mapped;     /* not users input */
-	int recursive;  /* the key is from recursive call of execute_keys_*(...) */
-}keys_info_t;
+	int selector;   /* Selector passed. */
+	int count;      /* Count of selected items. */
+	int *indexes;   /* Item indexes. */
+	int after_wait; /* After short timeout. */
+	int mapped;     /* Not users input. */
+	int recursive;  /* The key is from recursive call of execute_keys_*(...). */
+}
+keys_info_t;
 
-typedef void (*keys_handler)(key_info_t key_info, keys_info_t *keys_info);
+/* Handler for builtin keys. */
+typedef void (*vle_keys_handler)(key_info_t key_info, keys_info_t *keys_info);
+/* Type of function invoked by vle_keys_list() and vle_keys_suggest().  rhs is
+ * provided for user-defined keys and is empty otherwise.  Description is empty
+ * for user-defined keys or when not set. */
+typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
+/* User-provided suggestion callback for multikeys. */
+typedef void (*vle_suggest_func)(vle_keys_list_cb cb);
+
+/* Type of callback that handles all keys uncaught by shortcuts.  Should return
+ * zero on success and non-zero on error. */
+typedef int (*default_handler)(wchar_t key);
 
 typedef struct
 {
-	KEYS_TYPE type;
-	FOLLOWED_BY followed; /* what type of key should we wait for */
 	union
 	{
-		keys_handler handler;
-		wchar_t *cmd;
-	}data;
-}key_conf_t;
+		vle_keys_handler handler; /* Handler for builtin commands. */
+		wchar_t *cmd;             /* Mapped value for user-defined keys. */
+	}
+	data;
+	FollowedBy followed;        /* What type of key should we wait for. */
+	vle_suggest_func suggest;   /* Suggestion function (can be NULL).  Invoked for
+	                               multikeys. */
+	const char *descr;          /* Brief description of the key. */
+	int nim;                    /* Whether additional count in the middle is
+	                               allowed. */
+	int skip_suggestion;        /* Do not print this among suggestions. */
+}
+key_conf_t;
 
 typedef struct
 {
 	const wchar_t keys[5];
 	key_conf_t info;
-}keys_add_info_t;
+}
+keys_add_info_t;
 
-/*
- * Type of callback that handles all keys uncaught by shortcuts.  Should return
- * zero on success and non-zero on error.
- */
-typedef int (*default_handler)(wchar_t key);
+/* Initializes the unit.  Assumed that key_mode_flags is an array of at least
+ * modes_count items. */
+void vle_keys_init(int modes_count, int *key_mode_flags);
 
-/*
- * Assumed that key_mode_flags is an array of at least modes_count items
- */
-void init_keys(int modes_count, int *key_mode_flags);
+/* Frees all memory allocated by the unit and returns it to initial state. */
+void vle_keys_reset(void);
 
-/*
- * Frees all allocated memory
- */
-void clear_keys(void);
+/* Removes just user-defined keys (leaving builtin keys intact). */
+void vle_keys_user_clear(void);
 
-/*
- * Frees allocated memory
- */
-void clear_user_keys(void);
+/* Set handler for unregistered keys.  handler can be NULL to remove it. */
+void vle_keys_set_def_handler(int mode, default_handler handler);
 
-/*
- * handler could be NULL to remove default handler
- */
-void set_def_handler(int mode, default_handler handler);
-
-/*
- * Return value:
+/* Process sequence of keys.  Return value:
  *  - 0 - success
  *  - KEYS_*
- *  - something else from the default key handler
- */
-int execute_keys(const wchar_t keys[]);
+ *  - something else from the default key handler */
+int vle_keys_exec(const wchar_t keys[]);
 
-/*
- * See execute_keys(...) comments.
- */
-int execute_keys_no_remap(const wchar_t keys[]);
+/* Same as vle_keys_exec(), but disallows map processing in RHS of maps. */
+int vle_keys_exec_no_remap(const wchar_t keys[]);
 
-/*
- * See execute_keys(...) comments.
- */
-int execute_keys_timed_out(const wchar_t keys[]);
+/* Same as vle_keys_exec(), but assumes that key wait timeout has expired. */
+int vle_keys_exec_timed_out(const wchar_t keys[]);
 
-/*
- * See execute_keys(...) comments.
- */
-int execute_keys_timed_out_no_remap(const wchar_t keys[]);
+/* Same as vle_keys_exec_no_remap(), but assumes that key wait timeout has
+ * expired. */
+int vle_keys_exec_timed_out_no_remap(const wchar_t keys[]);
 
-/*
- * Returns not zero on error
- */
-int add_cmds(keys_add_info_t *cmds, size_t len, int mode);
+/* Registers cmds[0 .. len-1] commands for the mode.  Returns non-zero on error,
+ * otherwise zero is returned. */
+int vle_keys_add(keys_add_info_t cmds[], size_t len, int mode);
 
-/*
- * Returns not zero on error
- */
-int add_selectors(keys_add_info_t *cmds, size_t len, int mode);
+/* Registers cmds[0 .. len-1] selectors for the mode.  Returns non-zero on
+ * error, otherwise zero is returned. */
+int vle_keys_add_selectors(keys_add_info_t cmds[], size_t len, int mode);
 
-/*
- * Returns not zero when can't find user keys
- */
-int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode, int no_r);
+/* Registers user key mapping.  Returns non-zero or error, otherwise zero is
+ * returned. */
+int vle_keys_user_add(const wchar_t keys[], const wchar_t rhs[], int mode,
+		int no_r);
 
-/*
- * Returns not zero if such mapping exists
- */
-int has_user_keys(const wchar_t *keys, int mode);
+/* Checks whether given user mapping exists.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int vle_keys_user_exists(const wchar_t keys[], int mode);
 
-/*
- * Returns not zero on error
- */
-int remove_user_keys(const wchar_t *keys, int mode);
+/* Removes user mapping from the mode.  Returns non-zero if given key sequence
+ * wasn't found. */
+int vle_keys_user_remove(const wchar_t keys[], int mode);
 
-/*
- * Lists all commands of the given mode with description.
- *
- * Every line is like L"command\0description\0".
- *
- * End of list could be determined by the NULL element.
- * Caller should free array and all its elements using free().
- * Returns NULL on error.
- */
-wchar_t ** list_cmds(int mode);
+/* Lists all keys of the given mode with description. */
+void vle_keys_list(int mode, vle_keys_list_cb cb);
 
-/*
- * Returns number of processed keys.
- */
-size_t get_key_counter(void);
+/* Retrieves number of keys processed so far.  Clients are expected to use
+ * difference of returned values.  Returns the number. */
+size_t vle_keys_counter(void);
 
-/*
- * Checks whether a mapping handler is currently been executed.
- * Returns non-zero if so, otherwise zero is returned.
- */
-int is_inside_mapping(void);
+/* Checks whether a mapping handler is currently been executed.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int vle_keys_inside_mapping(void);
 
-TSTATIC_DEFS(
-	/*
-	 * Returns NULL on error
-	 */
-	key_conf_t * add_cmd(const wchar_t keys[], int mode);
-
-	/*
-	 * Returns NULL on error
-	 */
-	key_conf_t* add_selector(const wchar_t keys[], int mode);
-)
+/* Invokes cb for each possible keys continuation.  Intended to be used on
+ * KEYS_WAIT and KEYS_WAIT_SHORT returns. */
+void vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb);
 
 #endif /* VIFM__ENGINE__KEYS_H__ */
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
 /* vim: set cinoptions+=t0 filetype=c : */

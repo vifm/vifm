@@ -23,6 +23,7 @@
 #include <inttypes.h> /* PRIu64 */
 #include <stddef.h> /* size_t wchar_t */
 
+#include "macros.h"
 #include "test_helpers.h"
 
 #if defined(_WIN32) && !defined(_WIN64)
@@ -220,7 +221,7 @@ int is_null_or_empty(const char string[]);
 /* Formats string like printf, but instead of printing it, allocates memory and
  * and prints it there.  Returns newly allocated string, which should be freed
  * by the caller, or NULL if there is not enough memory. */
-char * format_str(const char format[], ...);
+char * format_str(const char format[], ...) _gnuc_printf(1, 2);
 
 /* Replaces all occurrences of horizontal tabulation character with appropriate
  * number of spaces.  The max parameter designates the maximum number of screen

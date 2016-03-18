@@ -27,111 +27,74 @@
 #include <wchar.h> /* wcsncmp() wcslen() */
 
 #include "../compat/reallocarray.h"
+#include "../engine/keys.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../bracket_notation.h"
 #include "menus.h"
 
-static void add_mapping_item(menu_info *m, const wchar_t map_info[]);
+static void add_mapping_item(const wchar_t lhs[], const wchar_t rhs[],
+		const char descr[]);
+
+/* Menu object is global to make it available in add_mapping_item(). */
+static menu_info m;
+
+/* Prefix to check LHS against. */
+static const wchar_t *prefix;
+/* Length of the prefix string. */
+static size_t prefix_len;
 
 int
-show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
+show_map_menu(FileView *view, const char mode_str[], int mode,
 		const wchar_t start[])
 {
-	int x;
-	const size_t start_len = wcslen(start);
-
-	static menu_info m;
 	init_menu_info(&m, format_str("Mappings for %s mode", mode_str),
 			strdup("No mappings found"));
 
-	x = 0;
-	while(list[x] != NULL)
-	{
-		if(list[x][0] != '\0')
-		{
-			if(wcsncmp(start, list[x], start_len) == 0)
-			{
-				add_mapping_item(&m, list[x]);
-				++m.len;
-			}
-		}
-		else if(m.len != 0)
-		{
-			m.len = add_to_string_array(&m.items, m.len, 1, "");
-		}
+	prefix = start;
+	prefix_len = wcslen(prefix);
 
-		free(list[x]);
-		++x;
-	}
-	free(list);
-
-	if(m.len > 0 && m.items[m.len - 1][0] == '\0')
-	{
-		free(m.items[m.len - 1]);
-		--m.len;
-	}
+	vle_keys_list(mode, &add_mapping_item);
 
 	return display_menu(&m, view);
 }
 
-/* Adds map_info to the menu after pre-formatting.  Map_info is assumed to be
- * non-empty. */
+/* Adds matching key information to the menu after pre-formatting. */
 static void
-add_mapping_item(menu_info *m, const wchar_t map_info[])
+add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 {
-	enum { MAP_WIDTH = 10 };
-	size_t len;
-	int i, str_len, buf_len;
-	const wchar_t *rhs;
-	char *item;
+	enum { MAP_WIDTH = 11 };
 
-	str_len = wcslen(map_info);
-	rhs = map_info + str_len + 1;
+	char *mb_lhs;
 
-	buf_len = 0;
-	for(i = 0; i < str_len; i += len)
+	if(wcsncmp(prefix, lhs, prefix_len) != 0)
 	{
-		buf_len += strlen(wchar_to_spec(map_info + i, &len));
+		return;
 	}
 
-	if(rhs[0] == L'\0')
+	/* Handle empty RHS, but don't affect separator line. */
+	if(rhs[0] == L'\0' && lhs[0] != L'\0' && descr[0] == '\0')
 	{
 		rhs = L"<nop>";
 	}
 
-	buf_len += 1 + wcslen(rhs)*4 + 1;
+	mb_lhs = wstr_to_spec(lhs);
 
-	m->items = reallocarray(m->items, m->len + 1, sizeof(char *));
-	item = malloc(buf_len + MAP_WIDTH);
-	item[0] = '\0';
-	m->items[m->len] = item;
+	m.items = reallocarray(m.items, m.len + 1, sizeof(char *));
 
-	for(i = 0; i < str_len; i += len)
+	if(rhs[0] == L'\0')
 	{
-		strcat(item, wchar_to_spec(map_info + i, &len));
+		m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, descr);
+	}
+	else
+	{
+		char *const mb_rhs = wstr_to_spec(rhs);
+		m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, mb_rhs);
+		free(mb_rhs);
 	}
 
-	for(i = strlen(item); i < MAP_WIDTH; i++)
-	{
-		strcat(item, " ");
-	}
-
-	strcat(item, " ");
-
-	for(i = 0; rhs[i] != L'\0'; i += len)
-	{
-		if(rhs[i] == L' ')
-		{
-			strcat(item, " ");
-			len = 1;
-		}
-		else
-		{
-			strcat(item, wchar_to_spec(rhs + i, &len));
-		}
-	}
+	free(mb_lhs);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -36,28 +36,9 @@
 #include "../utils/utf8.h"
 #include "cmdline.h"
 #include "modes.h"
+#include "wk.h"
 
 /* Provide more readable definitions of key codes. */
-
-#define WK_CTRL_c L"\x03"
-#define WK_CTRL_j L"\x0a"
-#define WK_CTRL_l L"\x0c"
-#define WK_CTRL_m L"\x0d"
-
-#define WK_COLON L":"
-#define WK_ESCAPE L"\x1b"
-#define WK_RETURN WK_CTRL_m
-#define WK_SPACE L" "
-
-#define WK_G L"G"
-#define WK_b L"b"
-#define WK_d L"d"
-#define WK_f L"f"
-#define WK_g L"g"
-#define WK_j L"j"
-#define WK_k L"k"
-#define WK_q L"q"
-#define WK_u L"u"
 
 static void calc_vlines_wrapped(void);
 static void leave_more_mode(void);
@@ -101,33 +82,33 @@ static int viewport_height;
 
 /* List of builtin keys. */
 static keys_add_info_t builtin_keys[] = {
-	{WK_CTRL_c, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_CTRL_j, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
-	{WK_CTRL_l, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_ctrl_l}}},
+	{WK_C_c,   {{&cmd_leave},     .descr = "leave more mode"}},
+	{WK_C_j,   {{&cmd_down_line}, .descr = "scroll one line down"}},
+	{WK_C_l,   {{&cmd_ctrl_l},    .descr = "redraw"}},
 
-	{WK_COLON,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_colon}}},
-	{WK_ESCAPE, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_RETURN, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_SPACE,  {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
+	{WK_COLON, {{&cmd_colon},       .descr = "switch to cmdline mode"}},
+	{WK_ESC,   {{&cmd_leave},       .descr = "leave more mode"}},
+	{WK_CR,    {{&cmd_leave},       .descr = "leave more mode"}},
+	{WK_SPACE, {{&cmd_down_screen}, .descr = "scroll one screen down"}},
 
-	{WK_G,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_bottom}}},
-	{WK_b,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_screen}}},
-	{WK_d,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_page}}},
-	{WK_f,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
-	{WK_g,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_top}}},
-	{WK_j,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
-	{WK_k,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
-	{WK_q,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_leave}}},
-	{WK_u,      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_page}}},
+	{WK_G,     {{&cmd_bottom},      .descr = "scroll to the end"}},
+	{WK_b,     {{&cmd_up_screen},   .descr = "scroll one screen up"}},
+	{WK_d,     {{&cmd_down_page},   .descr = "scroll page down"}},
+	{WK_f,     {{&cmd_down_screen}, .descr = "scroll one screen down"}},
+	{WK_g,     {{&cmd_top},         .descr = "scroll to the beginning"}},
+	{WK_j,     {{&cmd_down_line},   .descr = "scroll one line down"}},
+	{WK_k,     {{&cmd_up_line},     .descr = "scroll one line up"}},
+	{WK_q,     {{&cmd_leave},       .descr = "leave more mode"}},
+	{WK_u,     {{&cmd_up_page},     .descr = "scroll page up"}},
 
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BACKSPACE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
-	{{KEY_DOWN},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_line}}},
-	{{KEY_UP},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_line}}},
-	{{KEY_HOME},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_top}}},
-	{{KEY_END},       {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_bottom}}},
-	{{KEY_NPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_down_screen}}},
-	{{KEY_PPAGE},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = &cmd_up_screen}}},
+	{{KEY_BACKSPACE}, {{&cmd_up_line},     .descr = "scroll one line up"}},
+	{{KEY_DOWN},      {{&cmd_down_line},   .descr = "scroll one line down"}},
+	{{KEY_UP},        {{&cmd_up_line},     .descr = "scroll one line up"}},
+	{{KEY_HOME},      {{&cmd_top},         .descr = "scroll to the beginning"}},
+	{{KEY_END},       {{&cmd_bottom},      .descr = "scroll to the end"}},
+	{{KEY_NPAGE},     {{&cmd_down_screen}, .descr = "scroll one screen down"}},
+	{{KEY_PPAGE},     {{&cmd_up_screen},   .descr = "scroll one screen up"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -136,7 +117,7 @@ modmore_init(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_keys, ARRAY_LEN(builtin_keys), MORE_MODE);
+	ret_code = vle_keys_add(builtin_keys, ARRAY_LEN(builtin_keys), MORE_MODE);
 	assert(ret_code == 0 && "Failed to initialize more mode keys.");
 
 	(void)ret_code;

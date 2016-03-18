@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: February 26, 2016
+" Last Change: March 16, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -67,7 +67,7 @@ syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
 syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
-		\ TopLine TopLineSel StatusLine JobLine Fifo ErrorMsg
+		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
@@ -121,9 +121,10 @@ syntax keyword vifmOption contained aproposprg autochpos cdpath cd chaselinks
 		\ laststatus lines locateprg ls lsview mintimeoutlen number nu numberwidth
 		\ nuw relativenumber rnu rulerformat ruf runexec scrollbind scb scrolloff so
 		\ sort sortgroups sortorder sortnumbers shell sh shortmess shm slowfs
-		\ smartcase scs statusline stl syscalls tabstop timefmt timeoutlen title tm
-		\ trash trashdir ts tuioptions to undolevels ul vicmd viewcolumns vifminfo
-		\ vimhelp vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
+		\ smartcase scs statusline stl suggestoptions syscalls tabstop timefmt
+		\ timeoutlen title tm trash trashdir ts tuioptions to undolevels ul vicmd
+		\ viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wildstyle wordchars wrap
+		\ wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nochaselinks

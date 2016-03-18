@@ -55,14 +55,14 @@ show_marks_menu(FileView *view, const char marks[])
 	m.len = init_active_marks(marks, active_marks);
 
 	max_len = 0;
-	i = 0;
-	while(i < m.len)
+	for(i = 0; i < m.len; ++i)
 	{
 		const mark_t *const mark = get_mark(active_marks[i]);
 		const size_t len = utf8_strsw(mark->directory);
 		if(len > max_len)
+		{
 			max_len = len;
-		i++;
+		}
 	}
 	max_len = MIN(max_len + 3, (size_t)(getmaxx(menu_win) - 5 - 2 - 10));
 
@@ -72,13 +72,12 @@ show_marks_menu(FileView *view, const char marks[])
 		char item_buf[PATH_MAX];
 		char *with_tilde;
 		int overhead;
-		int j;
 		const mark_t *mark;
 		const char *file;
 		const char *suffix = "";
+		const int mn = active_marks[i];
 
-		j = active_marks[i];
-		mark = get_mark(active_marks[i]);
+		mark = get_mark(mn);
 
 		with_tilde = replace_home_part(mark->directory);
 		if(utf8_strsw(with_tilde) > max_len - 3)
@@ -87,7 +86,7 @@ show_marks_menu(FileView *view, const char marks[])
 			strcpy(with_tilde + width, "...");
 		}
 
-		if(!is_valid_mark(j))
+		if(!is_valid_mark(mn))
 		{
 			file = "[invalid]";
 		}
@@ -109,7 +108,7 @@ show_marks_menu(FileView *view, const char marks[])
 		}
 
 		overhead = utf8_strso(with_tilde);
-		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(j),
+		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(mn),
 				(int)(max_len + overhead), with_tilde, file, suffix);
 
 		i = add_to_string_array(&m.items, i, 1, item_buf);

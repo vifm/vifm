@@ -34,6 +34,7 @@
 #include "../../filelist.h"
 #include "../../status.h"
 #include "../modes.h"
+#include "../wk.h"
 
 static FileView *view;
 static int top, bottom, curr, col;
@@ -81,7 +82,7 @@ ARRAY_GUARD(indexes, 1 + SK_COUNT);
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
@@ -113,52 +114,54 @@ static void print_at_pos(void);
 static void clear_at_pos(void);
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	/* return */
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
-	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
-	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_e}}},
-	{L"f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_f}}},
-	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
-	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
-	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
-	{L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
+	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_C_l,    {{&cmd_ctrl_l}, .descr = "redraw"}},
+	{WK_CR,     {{&cmd_return}, .descr = "apply selected sorting"}},
+	{WK_C_n,    {{&cmd_j},      .descr = "go to item below"}},
+	{WK_C_p,    {{&cmd_k},      .descr = "go to item above"}},
+	{WK_ESC,    {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_G,      {{&cmd_G},      .descr = "go to the last item"}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_g WK_g, {{&cmd_gg},     .descr = "go to the first item"}},
+	{WK_h,      {{&cmd_h},      .descr = "toggle ordering"}},
+	{WK_SPACE,  {{&cmd_h},      .descr = "toggle ordering"}},
+	{WK_j,      {{&cmd_j},      .descr = "go to item below"}},
+	{WK_k,      {{&cmd_k},      .descr = "go to item above"}},
+	{WK_l,      {{&cmd_return}, .descr = "apply selected sorting"}},
+	{WK_q,      {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_e,      {{&cmd_e},      .descr = "sort by extension"}},
+	{WK_f,      {{&cmd_f},      .descr = "sort by file extension"}},
+	{WK_n,      {{&cmd_n},      .descr = "sort by name"}},
+	{WK_N,      {{&cmd_N},      .descr = "sort by name (ignore case)"}},
+	{WK_t,      {{&cmd_t},      .descr = "sort by file type"}},
+	{WK_d,      {{&cmd_d},      .descr = "sort by file/directory trait"}},
 #ifndef _WIN32
-	{L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_r}}},
-	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_R}}},
-	{L"M", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
-	{L"p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
-	{L"o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_o}}},
-	{L"O", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
-	{L"L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
+	{WK_r,      {{&cmd_r},      .descr = "sort by group id"}},
+	{WK_R,      {{&cmd_R},      .descr = "sort by group name"}},
+	{WK_M,      {{&cmd_M},      .descr = "sort by file mode"}},
+	{WK_p,      {{&cmd_p},      .descr = "sort by file permissions"}},
+	{WK_o,      {{&cmd_o},      .descr = "sort by owner id"}},
+	{WK_O,      {{&cmd_O},      .descr = "sort by owner name"}},
+	{WK_L,      {{&cmd_L},      .descr = "sort by number of hard-links"}},
 #endif
-	{L"s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_s}}},
-	{L"i", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
-	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
-	{L"a", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_a}}},
-	{L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_c}}},
-	{L"m", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_m}}},
+	{WK_s,      {{&cmd_s},      .descr = "sort by size"}},
+	{WK_i,      {{&cmd_i},      .descr = "sort by number of files in directory"}},
+	{WK_u,      {{&cmd_u},      .descr = "sort by 'sortgroups' match"}},
+	{WK_a,      {{&cmd_a},      .descr = "sort by access time"}},
+	{WK_m,      {{&cmd_m},      .descr = "by modification time"}},
+#ifndef _WIN32
+	{WK_c,      {{&cmd_c},      .descr = "by change time"}},
+#else
+	{WK_c,      {{&cmd_c},      .descr = "by creation time"}},
+#endif
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{{KEY_LEFT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
-	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{{KEY_UP},    {{&cmd_k},      .descr = "go to item above"}},
+	{{KEY_DOWN},  {{&cmd_j},      .descr = "go to item below"}},
+	{{KEY_LEFT},  {{&cmd_h},      .descr = "toggle ordering"}},
+	{{KEY_RIGHT}, {{&cmd_return}, .descr = "apply selected sorting"}},
+	{{KEY_HOME},  {{&cmd_gg},     .descr = "go to the first item"}},
+	{{KEY_END},   {{&cmd_G},      .descr = "go to the last item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -167,7 +170,7 @@ init_sort_dialog_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), SORT_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), SORT_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
@@ -267,7 +270,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	size_t i;
 
@@ -344,42 +347,42 @@ static void
 cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 0);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 1);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 2);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 3);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_t(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 4);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 5);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 #ifndef _WIN32
@@ -388,49 +391,49 @@ static void
 cmd_r(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 6);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_R(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 7);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 8);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_p(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 9);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_o(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 10);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_O(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 11);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 12);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 #endif
@@ -439,42 +442,42 @@ static void
 cmd_s(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 13 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 14 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 15 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_a(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 16 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 17 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 18 + CORRECTION);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 /* Moves cursor to the specified line and updates the dialog. */

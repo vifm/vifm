@@ -59,6 +59,12 @@ void ui_stat_job_bar_redraw(void);
  * needed. */
 void ui_stat_job_bar_check_for_updates(void);
 
+/* Draws single popup line with text and its description.  Attributes and cursor
+ * should be managed outside this function.  max_width is the maximum width of
+ * item, and is used to choose formatting style. */
+void ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
+		size_t max_width);
+
 TSTATIC_DEFS(
 	char * expand_status_line_macros(FileView *view, const char format[]);
 )

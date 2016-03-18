@@ -20,6 +20,7 @@
 #ifndef VIFM__MARKS_H__
 #define VIFM__MARKS_H__
 
+#include <stddef.h> /* wchar_t */
 #include <time.h> /* time_t */
 
 #include "ui/ui.h"
@@ -31,6 +32,10 @@
 
 /* Special file name value for "directory marks". */
 #define NO_MARK_FILE ".."
+
+/* Callback for suggest_marks() function invoked per active mark. */
+typedef void (*mark_suggest_cb)(const wchar_t text[], const wchar_t value[],
+		const char descr[]);
 
 /* Structure that describes mark data. */
 typedef struct
@@ -91,6 +96,9 @@ int check_mark_directory(FileView *view, char m);
  * mark index is active.  active_marks should be an array of at least NUM_MARKS
  * items.  Returns number of active makrs. */
 int init_active_marks(const char marks[], int active_marks[]);
+
+/* List active marks.  Local marks are those that point into current view. */
+void suggest_marks(mark_suggest_cb cb, int local_only);
 
 TSTATIC_DEFS(
 	mark_t * get_mark_by_name(const char mark);

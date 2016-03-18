@@ -46,6 +46,7 @@
 #include "../status.h"
 #include "cmdline.h"
 #include "modes.h"
+#include "wk.h"
 
 static const int SCROLL_GAP = 2;
 
@@ -70,14 +71,14 @@ static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
 static int can_scroll_menu_down(const menu_info *menu);
 static void change_menu_top(menu_info *const menu, int delta);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void update_ui_on_leaving(void);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static int get_effective_menu_scroll_offset(const menu_info *menu);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_question(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_B(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_H(key_info_t key_info, keys_info_t *keys_info);
@@ -114,58 +115,56 @@ static int was_redraw;
 static int saved_top, saved_pos;
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x04", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
-	{L"\x05", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
-	{L"\x06", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
-	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	/* return */
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
-	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
-	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
-	{L":", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
-	{L"?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_question}}},
-	{L"B", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_B}}},
-	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{L"H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
-	{L"L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
-	{L"M", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
-	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
-	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
-	{L"gf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
-	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
-	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_v}}},
-	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zb}}},
-	{L"zH", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zH}}},
-	{L"zL", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zL}}},
-	{L"zh", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zh}}},
-	{L"zl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zl}}},
-	{L"zt", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zt}}},
-	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zz}}},
+	{WK_C_b,    {{&cmd_ctrl_b}, .descr = "scroll page up"}},
+	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
+	{WK_C_d,    {{&cmd_ctrl_d}, .descr = "scroll half-page down"}},
+	{WK_C_e,    {{&cmd_ctrl_e}, .descr = "scroll one line down"}},
+	{WK_C_f,    {{&cmd_ctrl_f}, .descr = "scroll page down"}},
+	{WK_C_l,    {{&cmd_ctrl_l}, .descr = "redraw"}},
+	{WK_CR,     {{&cmd_return}, .descr = "pick current item"}},
+	{WK_C_n,    {{&cmd_j},      .descr = "go to item below"}},
+	{WK_C_p,    {{&cmd_k},      .descr = "go to item above"}},
+	{WK_C_u,    {{&cmd_ctrl_u}, .descr = "scroll half-page up"}},
+	{WK_C_y,    {{&cmd_ctrl_y}, .descr = "scroll one line up"}},
+	{WK_ESC,    {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
+	{WK_SLASH,  {{&cmd_slash},  .descr = "search forward"}},
+	{WK_COLON,  {{&cmd_colon},  .descr = "go to cmdline mode"}},
+	{WK_QM,     {{&cmd_qmark},  .descr = "search backward"}},
+	{WK_B,      {{&cmd_B},      .descr = "make unsorted custom view"}},
+	{WK_G,      {{&cmd_G},      .descr = "go to the last item"}},
+	{WK_H,      {{&cmd_H},      .descr = "go to top of viewport"}},
+	{WK_L,      {{&cmd_L},      .descr = "go to bottom of viewport"}},
+	{WK_M,      {{&cmd_M},      .descr = "go to middle of viewport"}},
+	{WK_N,      {{&cmd_N},      .descr = "go to previous search match"}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
+	{WK_b,      {{&cmd_b},      .descr = "make custom view"}},
+	{WK_d WK_d, {{&cmd_dd},     .descr = "remove files"}},
+	{WK_g WK_f, {{&cmd_gf},     .descr = "navigate to file location"}},
+	{WK_g WK_g, {{&cmd_gg},     .descr = "go to the first item"}},
+	{WK_j,      {{&cmd_j},      .descr = "go to item below"}},
+	{WK_k,      {{&cmd_k},      .descr = "go to item above"}},
+	{WK_l,      {{&cmd_return}, .descr = "pick current item"}},
+	{WK_n,      {{&cmd_n},      .descr = "go to next search match"}},
+	{WK_q,      {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
+	{WK_v,      {{&cmd_v},      .descr = "use items as Vim quickfix list"}},
+	{WK_z WK_b, {{&cmd_zb},     .descr = "push cursor to the bottom"}},
+	{WK_z WK_H, {{&cmd_zH},     .descr = "scroll page left"}},
+	{WK_z WK_L, {{&cmd_zL},     .descr = "scroll page right"}},
+	{WK_z WK_h, {{&cmd_zh},     .descr = "scroll one column left"}},
+	{WK_z WK_l, {{&cmd_zl},     .descr = "scroll one column right"}},
+	{WK_z WK_t, {{&cmd_zt},     .descr = "push cursor to the top"}},
+	{WK_z WK_z, {{&cmd_zz},     .descr = "center cursor position"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_PPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
-	{{KEY_NPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
-	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{{L'z', KEY_LEFT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zh}}},
-	{{L'z', KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zl}}},
+	{{KEY_PPAGE},       {{&cmd_ctrl_b}, .descr = "scroll page up"}},
+	{{KEY_NPAGE},       {{&cmd_ctrl_f}, .descr = "scroll page down"}},
+	{{KEY_UP},          {{&cmd_k},      .descr = "go to item above"}},
+	{{KEY_DOWN},        {{&cmd_j},      .descr = "go to item below"}},
+	{{KEY_RIGHT},       {{&cmd_return}, .descr = "pick current item"}},
+	{{KEY_HOME},        {{&cmd_gg},     .descr = "go to the first item"}},
+	{{KEY_END},         {{&cmd_G},      .descr = "go to the last item"}},
+	{{WC_z, KEY_LEFT},  {{&cmd_zh},     .descr = "scroll one column left"}},
+	{{WC_z, KEY_RIGHT}, {{&cmd_zl},     .descr = "scroll one column right"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -258,12 +257,12 @@ init_menu_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
 
-	set_def_handler(MENU_MODE, key_handler);
+	vle_keys_set_def_handler(MENU_MODE, key_handler);
 
 	init_cmds(0, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
@@ -427,7 +426,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	static menu_info *saved_menu;
 
@@ -526,7 +525,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_question(key_info_t key_info, keys_info_t *keys_info)
+cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 {
 	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 1;

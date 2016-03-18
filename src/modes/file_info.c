@@ -49,6 +49,7 @@
 #include "../status.h"
 #include "../types.h"
 #include "modes.h"
+#include "wk.h"
 
 static void leave_file_info_mode(void);
 static int print_item(const char label[], const char path[], int curr_y);
@@ -62,15 +63,13 @@ static FileView *view;
 static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	/* return */
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_C_l,    {{&cmd_ctrl_l}, .descr = "redraw"}},
+	{WK_CR,     {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_ESC,    {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}, .descr = "hide file info"}},
+	{WK_q,      {{&cmd_ctrl_c}, .descr = "hide file info"}},
 };
 
 void
@@ -78,7 +77,8 @@ init_file_info_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), FILE_INFO_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds),
+			FILE_INFO_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;

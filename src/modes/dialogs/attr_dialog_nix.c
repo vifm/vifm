@@ -46,6 +46,7 @@
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"
+#include "../wk.h"
 
 static const char * get_title(void);
 static int is_one_file_selected(int first_file_index);
@@ -53,7 +54,7 @@ static int get_first_file_index(void);
 static int get_selection_size(int first_file_index);
 static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void set_perm_string(FileView *view, const int *perms,
 		const int *origin_perms);
 static void chmod_file_in_list(FileView *view, int pos, const char *mode,
@@ -81,30 +82,28 @@ static int origin_perms[13];
 static int adv_perms[3];
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	/* return */
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
-	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
-	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
+	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_CR,     {{&cmd_return}, .descr = "update permissions"}},
+	{WK_C_n,    {{&cmd_j},      .descr = "go to item below"}},
+	{WK_C_p,    {{&cmd_k},      .descr = "go to item above"}},
+	{WK_ESC,    {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_SPACE,  {{&cmd_space},  .descr = "toggle current item"}},
+	{WK_G,      {{&cmd_G},      .descr = "go to the last item"}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_g WK_g, {{&cmd_gg},     .descr = "go to the first item"}},
+	{WK_h,      {{&cmd_space},  .descr = "toggle current item"}},
+	{WK_j,      {{&cmd_j},      .descr = "go to item below"}},
+	{WK_k,      {{&cmd_k},      .descr = "go to item above"}},
+	{WK_l,      {{&cmd_return}, .descr = "update permissions"}},
+	{WK_q,      {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_t,      {{&cmd_space},  .descr = "toggle current item"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{{KEY_HOME},  {{&cmd_gg},     .descr = "go to the first item"}},
+	{{KEY_END},   {{&cmd_G},      .descr = "go to the last item"}},
+	{{KEY_UP},    {{&cmd_k},      .descr = "go to item above"}},
+	{{KEY_DOWN},  {{&cmd_j},      .descr = "go to item below"}},
+	{{KEY_RIGHT}, {{&cmd_return}, .descr = "update permissions"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -113,7 +112,7 @@ init_attr_dialog_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), ATTR_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), ATTR_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
@@ -398,7 +397,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	char path[PATH_MAX];
 

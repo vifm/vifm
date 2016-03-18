@@ -6,8 +6,8 @@ extern int last_command_count;
 
 #define check(wait, full, cmd_count) \
 	{ \
-		assert_int_equal(KEYS_WAIT, execute_keys(wait)); \
-		assert_int_equal(0, execute_keys(full)); \
+		assert_int_equal(KEYS_WAIT, vle_keys_exec(wait)); \
+		assert_int_equal(0, vle_keys_exec(full)); \
 		assert_int_equal((cmd_count), last_command_count); \
 	}
 
@@ -25,12 +25,12 @@ TEST(with_number_ok)
 
 TEST(with_zero_number_fail)
 {
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"0"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"0<"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"01"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"01<"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"012"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"012<"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"0"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"0<"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"01"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"01<"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"012"));
+	assert_int_equal(KEYS_UNKNOWN, vle_keys_exec(L"012<"));
 }
 
 TEST(with_number_before_and_in_the_middle_ok)

@@ -19,22 +19,24 @@
 #ifndef VIFM__UI__STATUSBAR_H__
 #define VIFM__UI__STATUSBAR_H__
 
+#include "../utils/macros.h"
+
 /* Managing status bar. */
 
 void clean_status_bar(void);
 
 /* Immediately (UI is updated) displays message on the status bar without
  * storing it in message history. */
-void ui_sb_quick_msgf(const char format[], ...);
+void ui_sb_quick_msgf(const char format[], ...) _gnuc_printf(1, 2);
 
 /* Repeats last message if message is NULL. */
 void status_bar_message(const char message[]);
 
-void status_bar_messagef(const char format[], ...);
+void status_bar_messagef(const char format[], ...) _gnuc_printf(1, 2);
 
 void status_bar_error(const char message[]);
 
-void status_bar_errorf(const char message[], ...);
+void status_bar_errorf(const char message[], ...) _gnuc_printf(1, 2);
 
 int is_status_bar_multiline(void);
 

@@ -95,6 +95,7 @@ const char *tags[] = {
 	"vifm-'sortorder'",
 	"vifm-'statusline'",
 	"vifm-'stl'",
+	"vifm-'suggestoptions'",
 	"vifm-'syscalls'",
 	"vifm-'tabstop'",
 	"vifm-'timefmt'",

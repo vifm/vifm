@@ -67,6 +67,7 @@
 #include "modes.h"
 #include "normal.h"
 #include "visual.h"
+#include "wk.h"
 
 #ifndef TEST
 
@@ -143,9 +144,8 @@ static void do_completion(void);
 static void draw_wild_menu(int op);
 static int draw_wild_bar(int *last_pos, int *pos, int *len);
 static int draw_wild_popup(int *last_pos, int *pos, int *len);
-static void draw_popup_line(const char item[], const char descr[]);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static int is_input_line_empty(void);
 static void expand_abbrev(void);
 TSTATIC const wchar_t * extract_abbrev(line_stats_t *stat, int *pos,
@@ -223,73 +223,64 @@ static void stop_dot_completion(void);
 static void stop_regular_completion(void);
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x07",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
-	/* backspace */
-	{L"\x08",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
-	{L"\x09",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
-	{L"\x0b",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_k}}},
-	{L"\x0d",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_n}}},
-	{L"\x10",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_p}}},
-	{L"\x14",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_t}}},
-	/* escape */
-	{L"\x1b",         {BUILTIN_WAIT_POINT, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	/* escape escape */
-	{L"\x1b\x1b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x1d",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_rb}}},
-	/* ascii Delete */
-	{L"\x7f",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
-#ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BACKSPACE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
-	{{KEY_DOWN},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_down}}},
-	{{KEY_UP},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_up}}},
-	{{KEY_LEFT},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
-	{{KEY_RIGHT},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
-	{{KEY_HOME},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
-	{{KEY_END},       {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
-  {{KEY_DC},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
-  {{KEY_BTAB},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
-#endif /* ENABLE_EXTENDED_KEYS */
-	{L"\x1b"L"[Z",    {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
-	/* ctrl b */
-	{L"\x02",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
-	/* ctrl f */
-	{L"\x06",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
-	/* ctrl a */
-	{L"\x01",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
-	/* ctrl e */
-	{L"\x05",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
-	/* ctrl d */
-	{L"\x04",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
-	{L"\x15",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
-	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
-	{L"\x18"L"/",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xslash}}},
-	{L"\x18"L"a",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xa}}},
-	{L"\x18"L"c",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xc}}},
-	{L"\x18\x18"L"c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxc}}},
-	{L"\x18"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xd}}},
-	{L"\x18\x18"L"d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxd}}},
-	{L"\x18"L"e",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xe}}},
-	{L"\x18\x18"L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxe}}},
-	{L"\x18"L"m",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xm}}},
-	{L"\x18"L"r",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xr}}},
-	{L"\x18\x18"L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxr}}},
-	{L"\x18"L"t",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xt}}},
-	{L"\x18\x18"L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xxt}}},
-	{L"\x18"L"=",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_xequals}}},
+	{WK_C_c,             {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
+	{WK_C_g,             {{&cmd_ctrl_g}, .descr = "edit cmdline in editor"}},
+	{WK_C_h,             {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
+	{WK_C_i,             {{&cmd_ctrl_i}, .descr = "start/continue completion"}},
+	{WK_C_k,             {{&cmd_ctrl_k}, .descr = "remove line part to the right"}},
+	{WK_CR,              {{&cmd_return}, .descr = "execute/accept input"}},
+	{WK_C_n,             {{&cmd_ctrl_n}, .descr = "recall next history item"}},
+	{WK_C_p,             {{&cmd_ctrl_p}, .descr = "recall previous history item"}},
+	{WK_C_t,             {{&cmd_ctrl_t}, .descr = "swap adjacent characters"}},
+	{WK_ESC,             {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
+	{WK_ESC WK_ESC,      {{&cmd_ctrl_c}, .descr = "leave cmdline mode"}},
+	{WK_C_RB,            {{&cmd_ctrl_rb}, .descr = "expand abbreviation"}},
+	{WK_C_USCORE,        {{&cmd_ctrl_underscore}, .descr = "reset completion"}},
+	{WK_DELETE,          {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
+	{WK_ESC L"[Z",       {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
+	{WK_C_b,             {{&cmd_left},   .descr = "move cursor to the left"}},
+	{WK_C_f,             {{&cmd_right},  .descr = "move cursor to the right"}},
+	{WK_C_a,             {{&cmd_home},   .descr = "move cursor to the beginning"}},
+	{WK_C_e,             {{&cmd_end},    .descr = "move cursor to the end"}},
+	{WK_C_d,             {{&cmd_delete}, .descr = "delete current character"}},
+	{WK_C_u,             {{&cmd_ctrl_u}, .descr = "remove line part to the left"}},
+	{WK_C_w,             {{&cmd_ctrl_w}, .descr = "remove word to the left"}},
+	{WK_C_x WK_SLASH,    {{&cmd_ctrl_xslash}, .descr = "insert last search pattern"}},
+	{WK_C_x WK_a,        {{&cmd_ctrl_xa}, .descr = "insert automatic filter value"}},
+	{WK_C_x WK_c,        {{&cmd_ctrl_xc}, .descr = "insert current file name"}},
+	{WK_C_x WK_d,        {{&cmd_ctrl_xd}, .descr = "insert current directory path"}},
+	{WK_C_x WK_e,        {{&cmd_ctrl_xe}, .descr = "insert current file extension"}},
+	{WK_C_x WK_m,        {{&cmd_ctrl_xm}, .descr = "insert manual filter value"}},
+	{WK_C_x WK_r,        {{&cmd_ctrl_xr}, .descr = "insert root of current file name"}},
+	{WK_C_x WK_t,        {{&cmd_ctrl_xt}, .descr = "insert name of current directory"}},
+	{WK_C_x WK_C_x WK_c, {{&cmd_ctrl_xxc}, .descr = "insert other file name"}},
+	{WK_C_x WK_C_x WK_d, {{&cmd_ctrl_xxd}, .descr = "insert other directory path"}},
+	{WK_C_x WK_C_x WK_e, {{&cmd_ctrl_xxe}, .descr = "insert other file extension"}},
+	{WK_C_x WK_C_x WK_r, {{&cmd_ctrl_xxr}, .descr = "insert root of other file name"}},
+	{WK_C_x WK_C_x WK_t, {{&cmd_ctrl_xxt}, .descr = "insert name of other directory"}},
+	{WK_C_x WK_EQUALS,   {{&cmd_ctrl_xequals}, .descr = "insert local filter value"}},
 #ifndef __PDCURSES__
-	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
-	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
-	{L"\x1b"L"f",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
-	{L"\x1b"L".",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_dot}}},
+	{WK_ESC WK_b,     {{&cmd_meta_b}, .descr = "move cursor to previous word"}},
+	{WK_ESC WK_d,     {{&cmd_meta_d}, .descr = "remove next word"}},
+	{WK_ESC WK_f,     {{&cmd_meta_f}, .descr = "move cursor to next word"}},
+	{WK_ESC WK_DOT,   {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
 #else
-	{{ALT_B},         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
-	{{ALT_D},         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
-	{{ALT_F},         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
-	{{ALT_PERIOD},    {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_dot}}},
+	{{ALT_B},         {{&cmd_meta_b}, .descr = "move cursor to previous word"}},
+	{{ALT_D},         {{&cmd_meta_d}, .descr = "remove next word"}},
+	{{ALT_F},         {{&cmd_meta_f}, .descr = "move cursor to next word"}},
+	{{ALT_PERIOD},    {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
 #endif
-	{L"\x1f",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_underscore}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_BACKSPACE}, {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
+	{{KEY_DOWN},      {{&cmd_down},   .descr = "prefix-complete next history item"}},
+	{{KEY_UP},        {{&cmd_up},     .descr = "prefix-complete previous history item"}},
+	{{KEY_LEFT},      {{&cmd_left},   .descr = "move cursor to the left"}},
+	{{KEY_RIGHT},     {{&cmd_right},  .descr = "move cursor to the right"}},
+	{{KEY_HOME},      {{&cmd_home},   .descr = "move cursor to the beginning"}},
+	{{KEY_END},       {{&cmd_end},    .descr = "move cursor to the end"}},
+	{{KEY_DC},        {{&cmd_delete}, .descr = "delete current character"}},
+	{{KEY_BTAB},      {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
+#endif /* ENABLE_EXTENDED_KEYS */
 };
 
 void
@@ -297,9 +288,9 @@ init_cmdline_mode(void)
 {
 	int ret_code;
 
-	set_def_handler(CMDLINE_MODE, &def_handler);
+	vle_keys_set_def_handler(CMDLINE_MODE, &def_handler);
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
@@ -640,7 +631,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.search_mode = 0;
 	input_stat.dot_pos = -1;
 	input_stat.line_edited = 0;
-	input_stat.entered_by_mapping = is_inside_mapping();
+	input_stat.entered_by_mapping = vle_keys_inside_mapping();
 
 	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
 			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
@@ -1109,14 +1100,13 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 static int
 draw_wild_popup(int *last_pos, int *pos, int *len)
 {
-	int i;
-	int j;
-
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 	const int max_height = getmaxy(stdscr) - get_required_height() -
-		ui_stat_job_bar_height();
+		ui_stat_job_bar_height() - 1;
 	const int height = MIN(count, MIN(10, max_height));
+	size_t max_title_width;
+	int i, j;
 
 	if(*pos < *last_pos)
 	{
@@ -1125,6 +1115,16 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 
 	wresize(stat_win, height, getmaxx(stdscr));
 	ui_stat_reposition(get_required_height(), 1);
+
+	max_title_width = 0U;
+	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
+	{
+		const size_t width = utf8_strsw(items[i].text);
+		if(width > max_title_width)
+		{
+			max_title_width = width;
+		}
+	}
 
 	for(i = *last_pos, j = 0; i < count && j < height; ++i, ++j)
 	{
@@ -1138,7 +1138,8 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 		}
 
 		checked_wmove(stat_win, j, 0);
-		draw_popup_line(items[i].text, items[i].descr);
+		ui_stat_draw_popup_line(stat_win, items[i].text, items[i].descr,
+				max_title_width);
 
 		if(i == *pos)
 		{
@@ -1149,34 +1150,6 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	}
 
 	return i;
-}
-
-/* Draws single wild popup line. */
-static void
-draw_popup_line(const char item[], const char descr[])
-{
-	char *left, *right, *line;
-	size_t width_left;
-
-	if(utf8_strsw(item) >= (size_t)getmaxx(stat_win))
-	{
-		char *const line = right_ellipsis(strdup(item), getmaxx(stat_win));
-		wprint(stat_win, line);
-		free(line);
-		return;
-	}
-
-	left = right_ellipsis(strdup(item), getmaxx(stat_win) - 3);
-	width_left = getmaxx(stat_win) - 2 - utf8_strsw(left);
-	right = right_ellipsis(strdup(descr), width_left);
-
-	line = format_str("%s  %*s", left, (int)width_left, right);
-	free(left);
-	free(right);
-
-	wprint(stat_win, line);
-
-	free(line);
 }
 
 static void
@@ -1196,9 +1169,9 @@ cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
-	/* TODO: refactor this cmd_ctrl_m() function. */
+	/* TODO: refactor this cmd_return() function. */
 	char *input;
 
 	stop_completion();
@@ -1387,11 +1360,11 @@ exec_abbrev(const wchar_t abbrev_rhs[], int no_remap, int pos)
 
 	if(no_remap)
 	{
-		(void)execute_keys_timed_out_no_remap(abbrev_rhs);
+		(void)vle_keys_exec_timed_out_no_remap(abbrev_rhs);
 	}
 	else
 	{
-		(void)execute_keys_timed_out(abbrev_rhs);
+		(void)vle_keys_exec_timed_out(abbrev_rhs);
 	}
 }
 
@@ -1871,15 +1844,17 @@ static void
 cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!input_stat.complete_continue)
+	{
 		return;
-	vle_compl_rewind();
+	}
 
-	if(!input_stat.complete_continue)
-		draw_wild_menu(1);
+	/* Restore initial user input (before completion). */
+	vle_compl_rewind();
 	input_stat.reverse_completion = 0;
-	do_completion();
-	if(cfg.wild_menu)
-		draw_wild_menu(0);
+	if(input_stat.complete != NULL)
+	{
+		line_completion(&input_stat);
+	}
 
 	stop_completion();
 }
@@ -2588,9 +2563,10 @@ stop_regular_completion(void)
 	if(cfg.wild_menu &&
 			(sub_mode != CLS_MENU_COMMAND && input_stat.complete != NULL))
 	{
-		update_stat_window(curr_view, 1);
-		ui_stat_reposition(get_required_height(), 0);
-		update_all_windows();
+		update_screen(UT_REDRAW);
+		update_cmdline_size();
+		update_cmdline_text(&input_stat);
+		curs_set(TRUE);
 	}
 }
 

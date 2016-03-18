@@ -4,6 +4,7 @@
 /data/vifm-help.txt
 /src/compile_info.c
 /src/runtests
+/src/test-suite.log
 
 # created during build process
 /tests/bin/

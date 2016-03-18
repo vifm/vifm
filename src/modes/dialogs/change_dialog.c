@@ -33,11 +33,12 @@
 #include "../../fileops.h"
 #include "../../status.h"
 #include "../modes.h"
+#include "../wk.h"
 #include "attr_dialog.h"
 
 static void leave_change_mode(int clean_selection);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
@@ -54,31 +55,29 @@ static FileView *view;
 static int top, bottom, step, curr, col;
 
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	/* return */
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	/* escape */
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
-	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
-	{L"o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_o}}},
-	{L"g", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_g}}},
-	{L"p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
+	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_CR,     {{&cmd_return}, .descr = "perform selected action"}},
+	{WK_C_n,    {{&cmd_j},      .descr = "go to item below"}},
+	{WK_C_p,    {{&cmd_k},      .descr = "go to item above"}},
+	{WK_ESC,    {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_G,      {{&cmd_G},      .descr = "go to the last item"}},
+	{WK_Z WK_Q, {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_Z WK_Z, {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_g WK_g, {{&cmd_gg},     .descr = "go to the first item"}},
+	{WK_j,      {{&cmd_j},      .descr = "go to item below"}},
+	{WK_k,      {{&cmd_k},      .descr = "go to item above"}},
+	{WK_l,      {{&cmd_return}, .descr = "perform selected action"}},
+	{WK_q,      {{&cmd_ctrl_c}, .descr = "close the dialog"}},
+	{WK_n,      {{&cmd_n},      .descr = "rename file"}},
+	{WK_o,      {{&cmd_o},      .descr = "change owner"}},
+	{WK_g,      {{&cmd_g},      .descr = "change group"}},
+	{WK_p,      {{&cmd_p},      .descr = "change file permissions/attributes"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
-	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{{KEY_UP},    {{&cmd_k},      .descr = "go to item above"}},
+	{{KEY_DOWN},  {{&cmd_j},      .descr = "go to item below"}},
+	{{KEY_RIGHT}, {{&cmd_return}, .descr = "perform selected action"}},
+	{{KEY_HOME},  {{&cmd_gg},     .descr = "go to the first item"}},
+	{{KEY_END},   {{&cmd_G},      .descr = "go to the last item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -87,7 +86,7 @@ init_change_dialog_mode(void)
 {
 	int ret_code;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CHANGE_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), CHANGE_MODE);
 	assert(ret_code == 0);
 
 	(void)ret_code;
@@ -166,7 +165,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_change_mode(0);
 
@@ -237,28 +236,28 @@ static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(1);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_o(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(2);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_g(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(3);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_p(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(4);
-	cmd_ctrl_m(key_info, keys_info);
+	cmd_return(key_info, keys_info);
 }
 
 /* Moves cursor to the specified line and updates the dialog. */

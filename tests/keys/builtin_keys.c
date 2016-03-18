@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h> /* wcsdup() */
 
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
+#include "../../src/utils/macros.h"
 
 #ifdef TEST
 #define printf(...) do {} while(0)
@@ -22,6 +23,7 @@ int is_in_maping_state; /* for : and m */
 
 static void keys_colon(key_info_t key_info, keys_info_t *keys_info);
 static void keys_m(key_info_t key_info, keys_info_t *keys_info);
+static void m_suggest(vle_keys_list_cb cb);
 static void keys_quote(key_info_t key_info, keys_info_t *keys_info);
 static void keys_gg(key_info_t key_info, keys_info_t *keys_info);
 static void keys_H(key_info_t key_info, keys_info_t *keys_info);
@@ -39,130 +41,61 @@ static void keys_v(key_info_t key_info, keys_info_t *keys_info);
 static void keys_quit(key_info_t key_info, keys_info_t *keys_info);
 static void keys_norm(key_info_t key_info, keys_info_t *keys_info);
 
+static keys_add_info_t normal_cmds[] = {
+	{WK_COLON,            {{&keys_colon}}},
+	{WK_m,                {{&keys_m}, FOLLOWED_BY_MULTIKEY, .suggest = &m_suggest}},
+	{WK_QUOTE,            {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
+	{WK_H,                {{&keys_H}}},
+	{WK_g WK_u,           {{&keys_gu}, FOLLOWED_BY_SELECTOR}},
+	{WK_g WK_u WK_u,      {{&keys_gu}}},
+	{WK_g WK_u WK_g WK_u, {{&keys_gu}}},
+	{WK_g WK_u WK_g WK_g, {{&keys_gu}, .skip_suggestion = 1}},
+	{WK_j,                {{&keys_j}}},
+	{WK_k,                {{&keys_k}}},
+	{WK_i,                {{&keys_i}}},
+	{WK_C_w WK_LT,        {{&keys_ctrl_w_less_than}, .nim = 1}},
+	{WK_d,                {{&keys_delete_selector}, FOLLOWED_BY_SELECTOR}},
+	{WK_d WK_d,           {{&keys_delete}, .nim = 1}},
+	{WK_v,                {{&keys_v}}},
+	{WK_y,                {{&keys_yank_selector}, FOLLOWED_BY_SELECTOR}},
+	{WK_Z WK_Q,           {{&keys_quit}}},
+	{WK_Z WK_Z,           {{&keys_quit}}},
+	{WK_n WK_o WK_r WK_m, {{&keys_norm}}},
+};
+
+static keys_add_info_t normal_selectors[] = {
+	{WK_g WK_g,           {{&keys_gg}}},
+	{WK_QUOTE,            {{&keys_quote}, FOLLOWED_BY_MULTIKEY}},
+};
+
+static keys_add_info_t visual_cmds[] = {
+	{WK_j,                {{&keys_j}}},
+	{WK_k,                {{&keys_k}}},
+	{WK_v,                {{&keys_v}}},
+	{WK_Z WK_Z,           {{&keys_quit}}},
+};
+
+static keys_add_info_t common_selectors[] = {
+	{WK_j,                {{&keys_j}}},
+	{WK_k,                {{&keys_k}}},
+	{WK_s,                {{&keys_s}}},
+	{WK_i WK_f,           {{&keys_if}}},
+};
+
 void
 init_builtin_keys(void)
 {
-	key_conf_t *curr;
+	assert_success(vle_keys_add(normal_cmds, ARRAY_LEN(normal_cmds),
+				NORMAL_MODE));
+	assert_success(vle_keys_add(visual_cmds, ARRAY_LEN(visual_cmds),
+				VISUAL_MODE));
 
-	curr = add_cmd(L":", NORMAL_MODE);
-	curr->data.handler = keys_colon;
-
-	curr = add_cmd(L"m", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_m;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L"'", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_quote;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_selector(L"gg", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_gg;
-	curr->followed = FOLLOWED_BY_NONE;
-
-	curr = add_selector(L"'", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_quote;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L"H", NORMAL_MODE);
-	curr->data.handler = keys_H;
-
-	curr = add_cmd(L"gu", NORMAL_MODE);
-	curr->data.handler = keys_gu;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-	curr->type = BUILTIN_WAIT_POINT;
-
-	curr = add_cmd(L"guu", NORMAL_MODE);
-	curr->data.handler = keys_gu;
-
-	curr = add_cmd(L"gugu", NORMAL_MODE);
-	curr->data.handler = keys_gu;
-
-	curr = add_cmd(L"j", NORMAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_selector(L"j", NORMAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_cmd(L"j", VISUAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_selector(L"j", VISUAL_MODE);
-	curr->data.handler = keys_j;
-
-	curr = add_cmd(L"k", NORMAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_selector(L"k", NORMAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_cmd(L"k", VISUAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_selector(L"k", VISUAL_MODE);
-	curr->data.handler = keys_k;
-
-	curr = add_selector(L"s", NORMAL_MODE);
-	curr->data.handler = keys_s;
-
-	curr = add_selector(L"s", VISUAL_MODE);
-	curr->data.handler = keys_s;
-
-	curr = add_cmd(L"i", NORMAL_MODE);
-	curr->data.handler = keys_i;
-
-	curr = add_selector(L"if", NORMAL_MODE);
-	curr->data.handler = keys_if;
-
-	curr = add_selector(L"if", VISUAL_MODE);
-	curr->data.handler = keys_if;
-
-	curr = add_cmd(L"o", NORMAL_MODE);
-	curr->type = BUILTIN_CMD;
-	curr->data.cmd = wcsdup(L":only");
-
-	curr = add_cmd(L"v", NORMAL_MODE);
-	curr->type = BUILTIN_CMD;
-	curr->data.cmd = wcsdup(L":vsplit");
-
-	curr = add_cmd(L"<", NORMAL_MODE);
-	curr->type = BUILTIN_NIM_KEYS;
-	curr->data.handler = keys_ctrl_w_less_than;
-
-	curr = add_cmd(L"d", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_delete_selector;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-
-	curr = add_cmd(L"dd", NORMAL_MODE);
-	curr->data.handler = keys_delete;
-	curr->type = BUILTIN_NIM_KEYS;
-
-	curr = add_cmd(L"v", NORMAL_MODE);
-	curr->data.handler = keys_v;
-
-	curr = add_cmd(L"v", VISUAL_MODE);
-	curr->data.handler = keys_v;
-
-	curr = add_cmd(L"y", NORMAL_MODE);
-	curr->type = BUILTIN_WAIT_POINT;
-	curr->data.handler = keys_yank_selector;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-
-	curr = add_cmd(L"ZQ", NORMAL_MODE);
-	curr->data.handler = keys_quit;
-
-	curr = add_cmd(L"ZZ", NORMAL_MODE);
-	curr->data.handler = keys_quit;
-
-	curr = add_cmd(L"ZZ", VISUAL_MODE);
-	curr->data.handler = keys_quit;
-
-	curr = add_cmd(L"norm", NORMAL_MODE);
-	curr->data.handler = keys_norm;
+	assert_success(vle_keys_add_selectors(normal_selectors,
+				ARRAY_LEN(normal_selectors), NORMAL_MODE));
+	assert_success(vle_keys_add_selectors(common_selectors,
+				ARRAY_LEN(common_selectors), NORMAL_MODE));
+	assert_success(vle_keys_add_selectors(common_selectors,
+				ARRAY_LEN(common_selectors), VISUAL_MODE));
 }
 
 static void
@@ -170,16 +103,23 @@ keys_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 	key_is_mapped = keys_info->mapped;
-	is_in_maping_state = is_inside_mapping();
+	is_in_maping_state = vle_keys_inside_mapping();
 }
 
 static void
 keys_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	key_is_mapped = keys_info->mapped;
-	is_in_maping_state = is_inside_mapping();
+	is_in_maping_state = vle_keys_inside_mapping();
 	printf("(%d)m in register '%c' with multikey '%c'\n",
 			key_info.count, key_info.reg, key_info.multi);
+}
+
+static void
+m_suggest(vle_keys_list_cb cb)
+{
+	cb(L"a", L"this dir", "");
+	cb(L"z", L"that dir", "");
 }
 
 static void
@@ -199,22 +139,6 @@ keys_gg(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	wchar_t **list, **p;
-	list = list_cmds(NORMAL_MODE);
-
-	if(list == NULL)
-	{
-		printf("%s\n", "error");
-		return;
-	}
-	
-	p = list;
-	while(*p != NULL)
-	{
-		printf("%ls\n", *p);
-		free(*p++);
-	}
-	free(list);
 }
 
 static void
@@ -316,7 +240,7 @@ keys_quit(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_norm(key_info_t key_info, keys_info_t *keys_info)
 {
-	execute_keys_timed_out(L"ZZ");
+	vle_keys_exec_timed_out(L"ZZ");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

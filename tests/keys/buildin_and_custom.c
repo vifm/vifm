@@ -5,77 +5,77 @@
 
 SETUP()
 {
-	add_user_keys(L"jo", L"k", NORMAL_MODE, 0);
-	add_user_keys(L"jl", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"jo", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"jl", L"k", NORMAL_MODE, 0);
 
-	add_user_keys(L"S", L"dd", NORMAL_MODE, 0);
-	add_user_keys(L"Sj", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"S", L"dd", NORMAL_MODE, 0);
+	vle_keys_user_add(L"Sj", L"k", NORMAL_MODE, 0);
 
-	add_user_keys(L"dp", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"dp", L"k", NORMAL_MODE, 0);
 
-	add_user_keys(L"ZD", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ZD", L"k", NORMAL_MODE, 0);
 
-	add_user_keys(L"abc", L"", NORMAL_MODE, 0);
+	vle_keys_user_add(L"abc", L"", NORMAL_MODE, 0);
 }
 
 TEST(builtin_key_at_sequence_begin)
 {
-	assert_true(execute_keys(L"j") == KEYS_WAIT_SHORT);
-	assert_false(IS_KEYS_RET_CODE(execute_keys_timed_out(L"j")));
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"jl")));
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"jo")));
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"jjo")));
+	assert_true(vle_keys_exec(L"j") == KEYS_WAIT_SHORT);
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"j")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"jl")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"jo")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"jjo")));
 }
 
 TEST(increase_counter_right)
 {
 	size_t counter;
 
-	counter = get_key_counter();
-	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"j"));
-	assert_int_equal(counter, get_key_counter());
+	counter = vle_keys_counter();
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"j"));
+	assert_int_equal(counter, vle_keys_counter());
 
-	counter = get_key_counter();
-	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"jj"));
-	assert_int_equal(counter + 1, get_key_counter());
+	counter = vle_keys_counter();
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"jj"));
+	assert_int_equal(counter + 1, vle_keys_counter());
 
-	counter = get_key_counter();
-	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"S"));
-	assert_int_equal(counter, get_key_counter());
+	counter = vle_keys_counter();
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"S"));
+	assert_int_equal(counter, vle_keys_counter());
 
-	counter = get_key_counter();
-	assert_false(IS_KEYS_RET_CODE(execute_keys_timed_out(L"S")));
-	assert_int_equal(counter + 1, get_key_counter());
+	counter = vle_keys_counter();
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"S")));
+	assert_int_equal(counter + 1, vle_keys_counter());
 
-	counter = get_key_counter();
-	assert_false(IS_KEYS_RET_CODE(execute_keys_timed_out(L"abc")));
-	assert_int_equal(counter + 3, get_key_counter());
+	counter = vle_keys_counter();
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"abc")));
+	assert_int_equal(counter + 3, vle_keys_counter());
 }
 
 TEST(cancel_reg_with_esc_or_ctrl_c)
 {
-	assert_int_equal(KEYS_WAIT, execute_keys(L"\""));
-	assert_int_equal(0, execute_keys(L"\""L"\x03"));
-	assert_int_equal(0, execute_keys(L"\""L"\x1b"));
+	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"\""));
+	assert_int_equal(0, vle_keys_exec(L"\""L"\x03"));
+	assert_int_equal(0, vle_keys_exec(L"\""L"\x1b"));
 }
 
 TEST(udm_and_builtin_selector)
 {
-	assert_int_equal(KEYS_WAIT, execute_keys(L"d"));
+	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"d"));
 }
 
 TEST(udm_and_builtin_wait_point)
 {
-	assert_int_equal(KEYS_WAIT, execute_keys(L"Z"));
+	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"Z"));
 }
 
 TEST(counter_no_change_on_reenter)
 {
 	size_t counter;
 
-	counter = get_key_counter();
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"norm")));
-	assert_int_equal(counter + 4, get_key_counter());
+	counter = vle_keys_counter();
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"norm")));
+	assert_int_equal(counter + 4, vle_keys_counter());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

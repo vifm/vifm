@@ -36,6 +36,7 @@
 #include "../../utils/utf8.h"
 #include "../../event_loop.h"
 #include "../../status.h"
+#include "../wk.h"
 
 /* Kinds of dialogs. */
 typedef enum
@@ -82,12 +83,12 @@ static size_t determine_width(const char msg[]);
 
 /* List of builtin key bindings. */
 static keys_add_info_t builtin_cmds[] = {
-	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
-	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
-	{L"y", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+	{WK_C_c, {{&cmd_ctrl_c}, .descr = "cancel"}},
+	{WK_C_l, {{&cmd_ctrl_l}, .descr = "redraw"}},
+	{WK_C_m, {{&cmd_ctrl_m}, .descr = "agree to the query"}},
+	{WK_ESC, {{&cmd_ctrl_c}, .descr = "cancel"}},
+	{WK_n,   {{&cmd_n},      .descr = "deny the query"}},
+	{WK_y,   {{&cmd_y},      .descr = "confirm the query"}},
 };
 
 /* Mode that was active before the dialog. */
@@ -113,9 +114,9 @@ init_msg_dialog_mode(void)
 {
 	int ret_code;
 
-	set_def_handler(MSG_MODE, def_handler);
+	vle_keys_set_def_handler(MSG_MODE, def_handler);
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MSG_MODE);
+	ret_code = vle_keys_add(builtin_cmds, ARRAY_LEN(builtin_cmds), MSG_MODE);
 	assert(ret_code == 0 && "Failed to register msg dialog keys.");
 
 	(void)ret_code;
@@ -183,7 +184,7 @@ handle_response(Result r)
 	/* Map result to corresponding input key to omit branching per handler. */
 	static const char r_to_c[] = {
 		[R_OK]     = '\r',
-		[R_CANCEL] = '\x03',
+		[R_CANCEL] = NC_C_c,
 		[R_YES]    = 'y',
 		[R_NO]     = 'n',
 	};

@@ -28,6 +28,7 @@
 #include <wchar.h> /* wcscpy() wcslen() */
 
 #include "compat/reallocarray.h"
+#include "engine/text_buffer.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 
@@ -42,6 +43,7 @@ key_pair_t;
 
 static int notation_sorter(const void *first, const void *second);
 static const key_pair_t * find_notation(const wchar_t str[]);
+static const char * wchar_to_spec(const wchar_t c[], size_t *len, int bs);
 
 /* All notation fields must be written in lower case. */
 static key_pair_t key_pairs[] = {
@@ -594,8 +596,36 @@ find_notation(const wchar_t str[])
 	return NULL;
 }
 
-const char *
-wchar_to_spec(const wchar_t c[], size_t *len)
+char *
+wstr_to_spec(const wchar_t str[])
+{
+	vle_textbuf *const descr = vle_tb_create();
+
+	const size_t str_len = wcslen(str);
+	size_t seq_len;
+	size_t i;
+
+	for(i = 0U; i < str_len; i += seq_len)
+	{
+		if(str[i] == L' ')
+		{
+			vle_tb_append(descr, " ");
+			seq_len = 1U;
+		}
+		else
+		{
+			vle_tb_append(descr, wchar_to_spec(&str[i], &seq_len, (i == 0U)));
+		}
+	}
+
+	return vle_tb_release(descr);
+}
+
+/* Converts unicode character(s) starting at c into string form representing
+ * corresponding key.  Upon exit *len is set to number of used characters from
+ * the string.  Returns pointer to internal buffer. */
+static const char *
+wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 {
 	/* TODO: refactor this function wchar_to_spec() */
 
@@ -605,7 +635,6 @@ wchar_to_spec(const wchar_t c[], size_t *len)
 	switch(*c)
 	{
 		case L' ':          strcpy(buf, "<space>");    break;
-		case L'\b':         strcpy(buf, "<bs>");       break;
 		case L'\r':         strcpy(buf, "<cr>");       break;
 		case L'\n':         strcpy(buf, "<c-j>");      break;
 		case L'\177':       strcpy(buf, "<del>");      break;
@@ -619,7 +648,15 @@ wchar_to_spec(const wchar_t c[], size_t *len)
 		case KEY_BTAB:      strcpy(buf, "<s-tab>");    break;
 		case KEY_PPAGE:     strcpy(buf, "<pageup>");   break;
 		case KEY_NPAGE:     strcpy(buf, "<pagedown>"); break;
-		case KEY_BACKSPACE: strcpy(buf, "<bs>");       break;
+
+		case KEY_BACKSPACE:
+		case L'\b':
+			if(!bs)
+			{
+				goto def;
+			}
+			strcpy(buf, "<bs>");
+			break;
 
 		case L'\033':
 			if(c[1] == L'[' && c[2] == 'Z')
@@ -639,6 +676,7 @@ wchar_to_spec(const wchar_t c[], size_t *len)
 			break;
 
 		default:
+		def:
 			if(*c == '\n' || (*c > L' ' && *c < 256))
 			{
 				buf[0] = *c;

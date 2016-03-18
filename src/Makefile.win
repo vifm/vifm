@@ -130,6 +130,8 @@ vifmres.o: vifm.res
 #	echo '#define HAVE_FILE_PROG' >> ../config.h;
 ifeq ($(OS),Windows_NT) # this is for MinGW (probably fixed in MinGW-w64)
 	@echo '#define BROKEN_SWPRINTF' >> ../config.h
+else
+	@echo '#define __USE_MINGW_ANSI_STDIO 1' >> ../config.h
 endif
 
 version.o: $(filter-out version.o, $(vifm_OBJECTS))

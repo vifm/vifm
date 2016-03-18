@@ -47,6 +47,7 @@
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/modes.h"
 #include "../modes/view.h"
+#include "../modes/wk.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -222,8 +223,6 @@ ui_update_term_state(void)
 int
 ui_char_pressed(wint_t c)
 {
-	static const wint_t CTRL_C = L'\x03';
-
 	wint_t pressed = L'\0';
 	const int cancellation_state = ui_cancellation_pause();
 
@@ -231,7 +230,7 @@ ui_char_pressed(wint_t c)
 	wtimeout(status_bar, 0);
 	if(compat_wget_wch(status_bar, &pressed) != ERR)
 	{
-		if(pressed != c && pressed != CTRL_C)
+		if(pressed != c && pressed != NC_C_c)
 		{
 			compat_unget_wch(pressed);
 		}
@@ -239,7 +238,7 @@ ui_char_pressed(wint_t c)
 
 	ui_cancellation_resume(cancellation_state);
 
-	if(c != CTRL_C && pressed == CTRL_C)
+	if(c != NC_C_c && pressed == NC_C_c)
 	{
 		ui_cancellation_request();
 	}
@@ -619,6 +618,8 @@ clear_border(WINDOW *border)
 	{
 		mvwaddstr(border, i, 0, cfg.border_filler);
 	}
+
+	wnoutrefresh(border);
 }
 
 /* Updates (redraws or reloads) views. */
@@ -1685,7 +1686,7 @@ ui_view_wipe(FileView *view)
 	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
 	wattrset(view->win, COLOR_PAIR(colmgr_get_pair(bg, bg)));
 
-	memset(line_filler, '\x09', sizeof(line_filler));
+	memset(line_filler, '\t', sizeof(line_filler));
 	for(i = 0; i < height; ++i)
 	{
 		mvwaddstr(view->win, i, 0, line_filler);

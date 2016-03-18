@@ -7,18 +7,18 @@ extern int last;
 
 SETUP()
 {
-	add_user_keys(L"abc", L"", NORMAL_MODE, 0);
+	vle_keys_user_add(L"abc", L"", NORMAL_MODE, 0);
 }
 
 TEST(nop_no_follow_ok)
 {
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"abc")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"abc")));
 }
 
 TEST(nop_followed_ok)
 {
 	last = 0;
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L"abcj")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"abcj")));
 	assert_int_equal(2, last);
 }
 

@@ -100,7 +100,7 @@ init_modes(void)
 
 	int i;
 
-	init_keys(MODES_COUNT, (int*)&mode_flags);
+	vle_keys_init(MODES_COUNT, (int*)&mode_flags);
 
 	for(i = 0; i < MODES_COUNT; ++i)
 	{
