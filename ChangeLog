@@ -16,6 +16,9 @@
 
 	Added SuggestBox highlight group for key suggestion box.
 
+	Added :write command to menus, that writes all menu lines into specified
+	file.  Thanks to gtors.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
@@ -31,6 +34,11 @@
 	matches found instead.
 
 	Display <c-h> as <bs> only at the beginning of key sequence.
+
+	Better terminal buffer title for plugin in neovim.  Thanks to
+	randomizedthinking.
+
+	Enabled wildmenu for menus.
 
 	Fixed kind of a duplicate of first history element on =.
 

@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2016 January 23
+" Last Change: 2016 March 18
 
 " vifm and vifm.vim can be found at http://vifm.info/
 
@@ -113,9 +113,9 @@ function! s:StartVifm(editcmd, ...)
 		enew
 		call termopen(g:vifm_exec . ' ' . g:vifm_exec_args . ' ' . ldir . ' ' . rdir
 		             \. ' ' . pickargsstr, callback)
+		execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
 		startinsert
 	endif
-
 endfunction
 
 function! s:HandleRunResults(exitcode, listf, typef, editcmd)

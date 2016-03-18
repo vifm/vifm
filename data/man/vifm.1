@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 16, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "March 18, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3784,7 +3784,9 @@ available:
  - normal    - in normal mode;
  - visual    - in visual mode;
  - view      - in view mode;
- - otherpane - use other pane to display suggestions, when available.
+ - otherpane - use other pane to display suggestions, when available;
+ - delay     - display suggestions after a small delay (to do not annoy if you \
+just want to type a fast shortcut consisting of multiple keys).
 .TP
 .BI 'syscalls'
 type: boolean
@@ -4527,6 +4529,20 @@ a file anyway.  On the other hand with directories there are two options:
 navigate to a directory or inside of it.  To allow both use cases, the first
 one is used on paths like "dir" and the second one for "dir/".
 
+.B Commands
+
+.BI :range
+navigate to a menu line.
+.TP
+.BI ":exi[t][!] :q[uit][!] :x[it][!]"
+leave menu mode.
+.TP
+.BI :noh[lsearch]
+reset search match highlighting.
+.TP
+.BI ":w[rite] {dest}"
+write all menu lines into file specified by {dest}.
+.LP
 .B General
 
 j, Ctrl-N \- move down.

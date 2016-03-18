@@ -803,8 +803,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		int (*argvp)[2];
 		int last_arg = 0;
 
-		argv = dispatch_line(args, &argc, ' ', 0, 1, 0, &last_arg,
-				&argvp);
+		argv = dispatch_line(args, &argc, ' ', 0, 1, 0, &last_arg, &argvp);
 
 		cmd_info->args = (char *)args;
 		cmd_info->argc = argc;

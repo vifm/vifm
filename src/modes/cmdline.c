@@ -1001,7 +1001,7 @@ draw_wild_menu(int op)
 		return;
 	}
 
-	if(sub_mode == CLS_MENU_COMMAND || input_stat.complete == NULL || count < 2)
+	if(input_stat.complete == NULL || count < 2)
 	{
 		return;
 	}
@@ -2423,7 +2423,7 @@ line_completion(line_stats_t *stat)
 		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
-		if(sub_mode == CLS_COMMAND)
+		if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 		{
 			const CmdLineLocation ipt = get_cmdline_location(line_mb,
 					line_mb + strlen(line_mb));
@@ -2560,10 +2560,16 @@ stop_regular_completion(void)
 
 	input_stat.complete_continue = 0;
 	vle_compl_reset();
-	if(cfg.wild_menu &&
-			(sub_mode != CLS_MENU_COMMAND && input_stat.complete != NULL))
+	if(cfg.wild_menu && input_stat.complete != NULL)
 	{
-		update_screen(UT_REDRAW);
+		if(sub_mode == CLS_MENU_COMMAND)
+		{
+			menu_redraw();
+		}
+		else
+		{
+			update_screen(UT_REDRAW);
+		}
 		update_cmdline_size();
 		update_cmdline_text(&input_stat);
 		curs_set(TRUE);

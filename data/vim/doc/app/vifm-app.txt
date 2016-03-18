@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 16
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -21,7 +21,7 @@
 |vifm-functions|          List of builtin functions with description.
 |vifm-startup|            Determining of environment variables on startup.
 |vifm-configure|          Configuration of vifm.
-|vifm-menus-and-dialogs|  Keys for menus and dialogs.
+|vifm-menus-and-dialogs|  Keys and commands for menus and dialogs.
 |vifm-custom-views|       Differences between regular and custom views.
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            Some details about ls-like view.
@@ -1389,7 +1389,7 @@ The builtin commands are:
     command.  See |vifm-:let| for definition of <expr>.
 
 :exi[t][!]                                     *vifm-:exit* *vifm-:exi*
-    same as :quit.
+    same as |vifm-:quit|.
 
                                                *vifm-:file* *vifm-:f*
 :f[ile][ &]
@@ -3147,7 +3147,9 @@ available:
  - normal    - in normal mode;
  - visual    - in visual mode;
  - view      - in view mode;
- - otherpane - use other pane to display suggestions, when available.
+ - otherpane - use other pane to display suggestions, when available;
+ - delay     - display suggestions after a small delay (to do not annoy if you
+               just want to type a fast shortcut consisting of multiple keys).
 
                                                *vifm-'syscalls'*
 syscalls
@@ -3773,6 +3775,23 @@ have trailing slashes so "file/" won't work and one can only navigate to
 a file anyway.  On the other hand with directories there are two options:
 navigate to a directory or inside of it.  To allow both use cases, the first
 one is used on paths like "dir" and the second one for "dir/".
+
+Commands~
+
+:range                                         *vifm-m_:range*
+    navigate to a menu line.
+
+:exi[t][!]                                     *vifm-m_:exit* *vifm-m_:exi*
+:q[uit][!]                                     *vifm-m_:quit* *vifm-m_:q*
+:x[it][!]                                      *vifm-m_:xit*  *vifm-m_:x*
+    leave menu mode.
+
+:noh[lsearch]                                  *vifm-m_:nohlsearch*
+                                               *vifm-m_:noh*
+    reset search match highlighting.
+
+:w[rite] {dest}                                *vifm-m_:write* *vifm-m_:w*
+    write all menu lines into file specified by {dest}.
 
 General~
 
