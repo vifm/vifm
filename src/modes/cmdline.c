@@ -2423,7 +2423,7 @@ line_completion(line_stats_t *stat)
 		vle_compl_reset();
 
 		compl_func_arg = CPP_NONE;
-		if(sub_mode == CLS_COMMAND)
+		if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 		{
 			const CmdLineLocation ipt = get_cmdline_location(line_mb,
 					line_mb + strlen(line_mb));

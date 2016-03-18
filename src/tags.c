@@ -556,6 +556,8 @@ const char *tags[] = {
 	"vifm-m_:q",
 	"vifm-m_:quit",
 	"vifm-m_:range",
+	"vifm-m_:w",
+	"vifm-m_:write",
 	"vifm-m_:x",
 	"vifm-m_:xit",
 	"vifm-m_?",

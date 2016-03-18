@@ -22,10 +22,11 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
+#include <errno.h> /* errno */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdio.h> /* pclose() popen() */
 #include <stdlib.h> /* free() */
-#include <string.h>
+#include <string.h> /* strerror() */
 
 #include "../cfg/config.h"
 #include "../compat/reallocarray.h"
@@ -42,6 +43,7 @@
 #include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
+#include "../cmd_completion.h"
 #include "../filelist.h"
 #include "../status.h"
 #include "cmdline.h"
@@ -50,8 +52,6 @@
 
 static const int SCROLL_GAP = 2;
 
-static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
-		void *extra_arg);
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * menu_expand_macros(const char str[], int for_shell, int *usr1,
@@ -106,6 +106,7 @@ static int all_lines_visible(const menu_info *const menu);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
+static int write_cmd(const cmd_info_t *cmd_info);
 static void leave_menu_mode(int reset_selection);
 
 static FileView *view;
@@ -176,7 +177,7 @@ static const cmd_add_t commands[] = {
 	  .handler = &goto_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "exit",              .abbr = "exi",   .id = -1,
 	  .descr = "exit the application",
-	  .flags = HAS_EMARK,
+	  .flags = 0,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "nohlsearch",        .abbr = "noh",   .id = -1,
 	  .descr = "reset highlighting of search matches",
@@ -184,11 +185,15 @@ static const cmd_add_t commands[] = {
 	  .handler = &nohlsearch_cmd,  .min_args = 0,   .max_args = 0, },
 	{ .name = "quit",              .abbr = "q",     .id = -1,
 	  .descr = "exit the application",
-	  .flags = HAS_EMARK,
+	  .flags = 0,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "write",             .abbr = "w",     .id = COM_MENU_WRITE,
+	  .descr = "write all menu lines into a file",
+	  .flags = HAS_QUOTED_ARGS,
+	  .handler = &write_cmd,       .min_args = 1,   .max_args = 1, },
 	{ .name = "xit",               .abbr = "x",     .id = -1,
 	  .descr = "exit the application",
-	  .flags = HAS_EMARK,
+	  .flags = 0,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 };
 
@@ -203,12 +208,6 @@ static cmds_conf_t cmds_conf = {
 	.select_range = &menu_select_range,
 	.skip_at_beginning = &skip_at_beginning,
 };
-
-static int
-complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
-{
-	return 0;
-}
 
 static int
 swap_range(void)
@@ -797,7 +796,8 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 
 	for(i = 0; i < menu->len; ++i)
 	{
-		fprintf(vim_stdin, "%s\n", menu->items[i]);
+		fputs(menu->items[i], vim_stdin);
+		putc('\n', vim_stdin);
 	}
 
 	pclose(vim_stdin);
@@ -920,6 +920,29 @@ static int
 quit_cmd(const cmd_info_t *cmd_info)
 {
 	leave_menu_mode(1);
+	return 0;
+}
+
+/* Writes all menu lines into file specified as argument. */
+static int
+write_cmd(const cmd_info_t *cmd_info)
+{
+	int i;
+	FILE *const f = fopen(expand_tilde(cmd_info->argv[0]), "w");
+
+	if(f == NULL)
+	{
+		show_error_msg("Failed to open output file", strerror(errno));
+		return 0;
+	}
+
+	for(i = 0; i < menu->len; ++i)
+	{
+		fputs(menu->items[i], f);
+		putc('\n', f);
+	}
+
+	fclose(f);
 	return 0;
 }
 

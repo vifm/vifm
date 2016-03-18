@@ -16,6 +16,9 @@
 
 	Added SuggestBox highlight group for key suggestion box.
 
+	Added :write command to menus, that writes all menu lines into specified
+	file.  Thanks to gtors.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

@@ -3788,6 +3788,9 @@ Commands~
                                                *vifm-m_:noh*
     reset search match highlighting.
 
+:w[rite] {dest}                                *vifm-m_:write* *vifm-m_:w*
+    write all menu lines into file specified by {dest}.
+
 General~
 
 j, Ctrl-N - move down.                         *vifm-m_j* *vifm-m_CTRL-N*
