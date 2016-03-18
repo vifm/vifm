@@ -38,6 +38,8 @@
 	Better terminal buffer title for plugin in neovim.  Thanks to
 	randomizedthinking.
 
+	Enabled wildmenu for menus.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
