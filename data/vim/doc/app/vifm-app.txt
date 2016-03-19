@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 18
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4282,7 +4282,7 @@ Width specifier~
 It's a number followed by a percent sign, two numbers (second one should be
 less than or equal to the first one) separated with a dot or a single number.
 
-Specifies column width and its units. There are tree size types:
+Specifies column width and its units. There are three size types:
  - absolute size - column width is specified in characters >
      set viewcolumns=-100{name},20.15{ext}
 <  results in two columns with lengths of 100 and 20 and a reserved space of
@@ -4318,7 +4318,7 @@ Cropping specifier~
 It's from one to three dots after closing curly brace in column format.
 
 Specifies type of text truncation if it doesn't fit in the column.  Currently
-tree types are supported:
+three types are supported:
  - truncation - text is truncated >
      set viewcolumns=-{name}.
 <  results in truncation of names that are too long too fit in the view.
