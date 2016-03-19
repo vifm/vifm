@@ -498,10 +498,13 @@ view_stream(FILE *fp, int wrapped)
 	char line[PREVIEW_LINE_BUF_LEN];
 	int line_continued = 0;
 	size_t y = top;
-	const char *res = get_line(fp, line, sizeof(line));
+	const char *res;
 	esc_state state;
 
 	esc_state_init(&state, &cs->color[WIN_COLOR]);
+
+	skip_bom(fp);
+	res = get_line(fp, line, sizeof(line));
 
 	while(res != NULL && y < top + max_height)
 	{

@@ -40,6 +40,8 @@
 
 	Enabled wildmenu for menus.
 
+	Skip UTF-8 BOM for file preview.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

@@ -31,13 +31,19 @@
  * eof is reached and on not enough memory error (in this case the buffer is
  * freed by the function). */
 char * read_line(FILE *fp, char buffer[]);
+
 /* Reads line from file stream to buffer of predefined size, which should be at
  * least one character.  The bufsz parameters includes terminating null
  * character.  Newline character is preserved.  Returns value of the buf on
  * success, otherwise NULL is returned. */
 char * get_line(FILE *fp, char buf[], size_t bufsz);
+
 /* Skips file stream content until and including eol character. */
 void skip_until_eol(FILE *fp);
+
+/* Skips file stream content until after BOM, if any.  Recovers only the last
+ * read character. */
+void skip_bom(FILE *fp);
 
 #endif /* VIFM__UTILS__FILE_STREAMS_H__ */
 

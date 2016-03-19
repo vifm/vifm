@@ -116,7 +116,7 @@ TEST(cp_dir_invokes_ionotif)
 		assert_success(ior_cp(&args));
 	}
 
-	assert_int_equal(6, invoked_eta);
+	assert_int_equal(7, invoked_eta);
 	assert_true(invoked_progress >= 1);
 }
 
@@ -155,7 +155,7 @@ TEST(rm_dir_invokes_ionotif)
 		assert_success(ior_rm(&args));
 	}
 
-	assert_int_equal(6, invoked_eta);
+	assert_int_equal(7, invoked_eta);
 	assert_true(invoked_progress >= 1);
 }
 
