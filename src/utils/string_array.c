@@ -383,17 +383,18 @@ break_into_lines(char text[], size_t text_len, int *nlines)
 int
 write_file_of_lines(const char filepath[], char *strs[], size_t nstrs)
 {
-	FILE *fp;
 	size_t i;
 
-	if((fp = os_fopen(filepath, "w")) == NULL)
+	FILE *const fp = os_fopen(filepath, "w");
+	if(fp == NULL)
 	{
 		return 1;
 	}
 
-	for(i = 0U; i < nstrs; i++)
+	for(i = 0U; i < nstrs; ++i)
 	{
-		fprintf(fp, "%s\n", strs[i]);
+		fputs(strs[i], fp);
+		putc('\n', fp);
 	}
 
 	fclose(fp);
