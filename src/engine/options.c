@@ -93,7 +93,7 @@ static char * str_add(char old[], const char value[]);
 static int str_remove(char old[], const char value[]);
 static int find_val(const opt_t *opt, const char value[]);
 static int set_print(const opt_t *opt);
-static const char * extract_option(const char args[], char buf[], int replace);
+static char * extract_option(const char **argsp, int replace);
 static char * skip_alphas(const char str[]);
 static void complete_option_name(const char buf[], int bool_only, int pseudo,
 		OPT_SCOPE scope);
@@ -307,32 +307,37 @@ set_options(const char args[], OPT_SCOPE scope)
 
 	while(*args != '\0')
 	{
-		char buf[1024];
 		int print;
 
-		args = extract_option(args, buf, 1);
-		if(args == NULL)
+		char *const opt = extract_option(&args, 1);
+		if(args == NULL || opt == NULL)
+		{
+			free(opt);
 			return -1;
+		}
 
-		if(*args == '\0' && *buf == '\0')
+		if(*args == '\0' && *opt == '\0')
 		{
 			/* Stop on reaching comment. */
+			free(opt);
 			break;
 		}
 
 		if(scope == OPT_ANY)
 		{
-			const int error = process_option(buf, scope, OPT_LOCAL, &print);
+			const int error = process_option(opt, scope, OPT_LOCAL, &print);
 			errors += error;
 			if(!print && !error)
 			{
-				errors += process_option(buf, scope, OPT_GLOBAL, &print);
+				errors += process_option(opt, scope, OPT_GLOBAL, &print);
 			}
 		}
 		else
 		{
-			errors += process_option(buf, scope, scope, &print);
+			errors += process_option(opt, scope, scope, &print);
 		}
+
+		free(opt);
 	}
 	return errors;
 }
@@ -948,21 +953,21 @@ notify_option_update(opt_t *opt, OPT_OP op, optval_t val)
 static int
 set_op(opt_t *opt, const char value[], SetOp op)
 {
-	char val[1024];
 	const char *p;
 	const int old_val = opt->val.set_items;
 	int new_val = (op == SO_SET) ? 0 : old_val;
 
 	while(*value != '\0')
 	{
+		char *val;
 		int i;
-		p = strchr(value, ',');
-		if(p == NULL)
-			p = value + strlen(value);
 
-		copy_str(val, p - value + 1, value);
+		p = until_first(value, ',');
 
+		val = format_str("%.*s", (int)(p - value), value);
 		i = find_val(opt, val);
+		free(val);
+
 		if(i != -1)
 		{
 			if(op == SO_SET || op == SO_ADD)
@@ -1190,17 +1195,15 @@ find_val(const opt_t *opt, const char value[])
 static int
 set_print(const opt_t *opt)
 {
-	char buf[1024];
 	if(opt->type == OPT_BOOL)
 	{
-		snprintf(buf, sizeof(buf), "%s%s",
-				opt->val.bool_val ? "  " : "no", opt->name);
+		vle_tb_append_linef(vle_err, "%s%s", opt->val.bool_val ? "  " : "no",
+				opt->name);
 	}
 	else
 	{
-		snprintf(buf, sizeof(buf), "  %s=%s", opt->name, get_value(opt));
+		vle_tb_append_linef(vle_err, "  %s=%s", opt->name, get_value(opt));
 	}
-	vle_tb_append_line(vle_err, buf);
 	return 0;
 }
 
@@ -1263,35 +1266,42 @@ get_value(const opt_t *opt)
 void
 complete_options(const char args[], const char **start, OPT_SCOPE scope)
 {
-	char buf[1024];
 	int bool_only;
 	int is_value_completion;
 	opt_t *opt = NULL;
-	char * p;
+	char *last_opt = strdup("");
+	char *p;
 
 	/* Skip all options except the last one. */
 	*start = args;
-	buf[0] = '\0';
 	while(*args != '\0')
 	{
-		*start = args;
-		args = extract_option(args, buf, 0);
-		if(args == NULL || (*args == '\0' && *buf == '\0'))
+		free(last_opt);
+		last_opt = extract_option(&args, 0);
+
+		if(args == NULL || (*args == '\0' && is_null_or_empty(last_opt)))
 		{
 			/* Just exit on error or reaching a comment. */
-			vle_compl_add_match(buf, "");
+			if(last_opt != NULL)
+			{
+				vle_compl_put_match(last_opt, "");
+			}
+			else
+			{
+				vle_compl_add_match("", "");
+			}
 			return;
 		}
 	}
-	if(strlen(buf) != (size_t)(args - *start))
+	if(strlen(last_opt) != (size_t)(args - *start))
 	{
 		*start = args;
-		buf[0] = '\0';
+		last_opt[0] = '\0';
 	}
 
 	bool_only = 0;
 
-	p = skip_alphas(buf);
+	p = skip_alphas(last_opt);
 	is_value_completion =  (p[0] == '=' || p[0] == ':');
 	is_value_completion |= (p[0] == '-' && p[1] == '=');
 	is_value_completion |= (p[0] == '+' && p[1] == '=');
@@ -1300,34 +1310,34 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 	{
 		char t = *p;
 		*p = '\0';
-		opt = get_option(buf, scope);
+		opt = get_option(last_opt, scope);
 		*p++ = t;
 		if(t != '=' && t != ':')
 			p++;
 		if(opt != NULL && (opt->type == OPT_SET || opt->type == OPT_STRLIST))
 		{
-			char *t = strrchr(buf, ',');
+			char *t = strrchr(last_opt, ',');
 			if(t != NULL)
 				p = t + 1;
 		}
-		*start += p - buf;
+		*start += p - last_opt;
 	}
-	else if(strncmp(buf, "no", 2) == 0)
+	else if(strncmp(last_opt, "no", 2) == 0)
 	{
 		*start += 2;
-		memmove(buf, buf + 2, strlen(buf) - 2 + 1);
+		memmove(last_opt, last_opt + 2, strlen(last_opt) - 2 + 1);
 		bool_only = 1;
 	}
-	else if(strncmp(buf, "inv", 3) == 0)
+	else if(strncmp(last_opt, "inv", 3) == 0)
 	{
 		*start += 3;
-		memmove(buf, buf + 3, strlen(buf) - 3 + 1);
+		memmove(last_opt, last_opt + 3, strlen(last_opt) - 3 + 1);
 		bool_only = 1;
 	}
 
 	if(!is_value_completion)
 	{
-		complete_option_name(buf, bool_only, !bool_only, scope);
+		complete_option_name(last_opt, bool_only, !bool_only, scope);
 	}
 	else if(opt != NULL)
 	{
@@ -1348,40 +1358,54 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 	}
 	else
 	{
-		vle_compl_add_last_match(is_value_completion ? p : buf);
+		vle_compl_add_last_match(is_value_completion ? p : last_opt);
 	}
+
+	free(last_opt);
 }
 
-/* Extracts next option from option list.  Returns NULL on error and next call
- * start position on success.  Buffer is set to an empty string on reaching
- * trailing comment. */
-static const char *
-extract_option(const char args[], char buf[], int replace)
+/* Extracts next option from option list.  Returns NULL on error and option
+ * string on success.  On reaching trailing comment, empty string is returned.
+ * *argsp is advanced according to parsing. */
+static char *
+extract_option(const char **argsp, int replace)
 {
 	int quote = 0;
 	int slash = 0;
 
+	const char *args = *argsp;
+	char *opt = NULL;
+	size_t opt_len = 0U;
+
 	if(*args == '\"' && strchr(args + 1, '"') == NULL)
 	{
 		/* This is a comment. */
-		*buf = '\0';
-		return args + strlen(args);
+		*argsp = args + strlen(args);
+		return strdup("");
 	}
 
 	while(*args != '\0')
 	{
 		if(slash == 1)
 		{
-			*buf++ = *args++;
+			if(strappendch(&opt, &opt_len, *args++) != 0)
+			{
+				goto error;
+			}
+
 			slash = 0;
 		}
 		else if(*args == '\\')
 		{
 			slash = 1;
 			if(replace && (quote == 0 || quote == 2))
-				args++;
-			else
-				*buf++ = *args++;
+			{
+				++args;
+			}
+			else if(strappendch(&opt, &opt_len, *args++) != 0)
+			{
+				goto error;
+			}
 		}
 		else if(*args == ' ' && quote == 0)
 		{
@@ -1389,20 +1413,31 @@ extract_option(const char args[], char buf[], int replace)
 			args = skip_whitespace(args);
 			if(char_is_one_of(ENDING_CHARS, *args))
 			{
-				*buf++ = *args++;
+				if(strappendch(&opt, &opt_len, *args++) != 0)
+				{
+					goto error;
+				}
 				if(*args != '\0' && !isspace(*args))
 				{
-					buf -= args - p - 1;
-					strcpy(buf, p);
-					return NULL;
+					opt_len -= args - p - 1U;
+					if(strappend(&opt, &opt_len, p) != 0)
+					{
+						goto error;
+					}
+					*argsp = NULL;
+					return opt;
 				}
 				args = skip_whitespace(args);
 			}
 			else if(char_is_one_of(MIDDLE_CHARS, *args))
 			{
-					while(*args != '\0' && !isspace(*args))
-						*buf++ = *args++;
-					*buf = '\0';
+				while(*args != '\0' && !isspace(*args))
+				{
+					if(strappendch(&opt, &opt_len, *args++) != 0)
+					{
+						goto error;
+					}
+				}
 			}
 			break;
 		}
@@ -1426,20 +1461,25 @@ extract_option(const char args[], char buf[], int replace)
 			quote = 0;
 			args++;
 		}
-		else
+		else if(strappendch(&opt, &opt_len, *args++) != 0)
 		{
-			*buf++ = *args++;
+			goto error;
 		}
 	}
 
 	if(quote != 0)
 	{
 		/* Probably an unmatched quote. */
-		return NULL;
+		goto error;
 	}
 
-	*buf = '\0';
-	return args;
+	*argsp = args;
+	return opt;
+
+error:
+	free(opt);
+	*argsp = NULL;
+	return NULL;
 }
 
 /* Returns pointer to the first non-alpha character in the string. */

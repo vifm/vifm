@@ -41,6 +41,7 @@
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../cmd_completion.h"
@@ -927,22 +928,11 @@ quit_cmd(const cmd_info_t *cmd_info)
 static int
 write_cmd(const cmd_info_t *cmd_info)
 {
-	int i;
-	FILE *const f = fopen(expand_tilde(cmd_info->argv[0]), "w");
-
-	if(f == NULL)
+	const char *const no_tilde = expand_tilde(cmd_info->argv[0]);
+	if(write_file_of_lines(no_tilde, menu->items, menu->len) != 0)
 	{
 		show_error_msg("Failed to open output file", strerror(errno));
-		return 0;
 	}
-
-	for(i = 0; i < menu->len; ++i)
-	{
-		fputs(menu->items[i], f);
-		putc('\n', f);
-	}
-
-	fclose(f);
 	return 0;
 }
 

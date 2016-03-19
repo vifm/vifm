@@ -29,6 +29,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "file_streams.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
 static char * read_seekable_stream(FILE *const fp, size_t *read);
@@ -237,6 +238,7 @@ read_nonseekable_stream(FILE *fp, size_t *read)
 	{
 		char *last_allocated_block = content;
 		size_t len = 0U, piece_len;
+		skip_bom(fp);
 		while((piece_len = fread(content + len, 1, PIECE_LEN, fp)) != 0U)
 		{
 			const size_t new_size = len + piece_len + PIECE_LEN + 1U;
@@ -278,7 +280,10 @@ static char *
 read_seekable_stream(FILE *const fp, size_t *read)
 {
 	char *content;
-	const size_t len = get_remaining_stream_size(fp);
+	size_t len;
+
+	skip_bom(fp);
+	len = get_remaining_stream_size(fp);
 
 	*read = 0UL;
 
@@ -378,17 +383,18 @@ break_into_lines(char text[], size_t text_len, int *nlines)
 int
 write_file_of_lines(const char filepath[], char *strs[], size_t nstrs)
 {
-	FILE *fp;
 	size_t i;
 
-	if((fp = os_fopen(filepath, "w")) == NULL)
+	FILE *const fp = os_fopen(filepath, "w");
+	if(fp == NULL)
 	{
 		return 1;
 	}
 
-	for(i = 0U; i < nstrs; i++)
+	for(i = 0U; i < nstrs; ++i)
 	{
-		fprintf(fp, "%s\n", strs[i]);
+		fputs(strs[i], fp);
+		putc('\n', fp);
 	}
 
 	fclose(fp);

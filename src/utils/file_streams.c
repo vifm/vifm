@@ -117,5 +117,31 @@ get_char(FILE *fp)
 	return c;
 }
 
+void
+skip_bom(FILE *fp)
+{
+	int c;
+
+	c = fgetc(fp);
+	if(c != 0xef)
+	{
+		ungetc(c, fp);
+		return;
+	}
+
+	c = fgetc(fp);
+	if(c != 0xbb)
+	{
+		ungetc(c, fp);
+		return;
+	}
+
+	c = fgetc(fp);
+	if(c != 0xbf)
+	{
+		ungetc(c, fp);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

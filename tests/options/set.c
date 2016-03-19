@@ -45,5 +45,26 @@ TEST(assignment_to_empty)
 	assert_int_equal(0x00, vifminfo);
 }
 
+TEST(huge_set_value)
+{
+	assert_success(set_options("vifminfo=optionsfiletypescommandsbookmarksoptions"
+				"filetypescommandsbooptionsfiletypescommandsbookmarksoptionsfiletypesco"
+				"mmandsbooptionsfiletypescommandsbookmarksoptionsfiletypescommandsboopt"
+				"ionsfiletypescommandsbookmarksoptionsfiletypescommandsbookmarksoptions"
+				"filetypescommandsbookmarksoptionsfiletypescommandsbookmarksoptionsfile"
+				"typescommandsbookmarksoptionsfiletypescommandsbookmarksoptionsfiletype"
+				"scommandsbookmarksoptionsfiletypescommandsbookmarksoptionsfiletypescom"
+				"mandsbookmarksoptionsfiletypescommandsbookmarksoptionsfiletypescommand"
+				"sbookmarksoptionsfiletypescommandsbookmarksoptionsfiletypescommandsboo"
+				"kmarksoptionsfiletypescommandsbookmarksoptionsfiletypescommandsbookmar"
+				"ksoptionsfiletypescommandsbookmarksoptionsfiletypescommandsbookmarksop"
+				"tionsfiletypescommandsbookmarksoptionsfiletypescommandsbookmarksoption"
+				"sfiletypescommandsbookmarksoptionsfiletypescommandsbookmarksoptionsfil"
+				"etypescommandsbookmarksoptionsfiletypescommandsbookmarksoptionsfiletyp"
+				"escommandsbookmarksoptionsfiletypescommandsbookmarksoptionsfiletypesco"
+				"mmandsbookmarksoptionsfiletypescommandsbookmarksoptionsfiletypescomman"
+				"dsbookmarksoptionsfiletypescommandsbookmarks", OPT_GLOBAL));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

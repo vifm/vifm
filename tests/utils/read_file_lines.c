@@ -53,5 +53,42 @@ TEST(binary_data_is_fully_read)
 	free_string_array(lines, nlines);
 }
 
+TEST(bom_is_skipped)
+{
+	int nlines;
+	char **lines = read_file_of_lines(TEST_DATA_PATH "/read/utf8-bom", &nlines);
+
+	assert_true(lines != NULL);
+	assert_int_equal(2, nlines);
+
+	free_string_array(lines, nlines);
+}
+
+TEST(bom_is_skipped_for_file)
+{
+	FILE *fp = fopen(TEST_DATA_PATH "/read/utf8-bom", "rb");
+	int nlines;
+	char **lines = read_file_lines(fp, &nlines);
+
+	assert_true(lines != NULL);
+	assert_int_equal(2, nlines);
+
+	free_string_array(lines, nlines);
+	fclose(fp);
+}
+
+TEST(bom_is_skipped_for_stream)
+{
+	FILE *fp = fopen(TEST_DATA_PATH "/read/utf8-bom", "rb");
+	int nlines;
+	char **lines = read_stream_lines(fp, &nlines);
+
+	assert_true(lines != NULL);
+	assert_int_equal(2, nlines);
+
+	free_string_array(lines, nlines);
+	fclose(fp);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
