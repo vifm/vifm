@@ -238,7 +238,7 @@ TEST(files_are_sorted_undecorated)
 {
 	assert_success(chdir(SANDBOX_PATH));
 
-	cfg.decorations[FT_DIR][1] = '/';
+	cfg.decorations[FT_DIR][1][0] = '/';
 
 	lwin.sort[0] = SK_BY_NAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);

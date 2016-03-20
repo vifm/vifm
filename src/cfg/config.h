@@ -151,7 +151,8 @@ typedef struct config_t
 	int columns; /* Terminal width in characters. */
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
 	int dot_dirs;
-	char decorations[FT_COUNT][2]; /* File type specific refixes and suffixes. */
+	/* File type specific prefixes and suffixes ('classify'). */
+	char decorations[FT_COUNT][2][9];
 	int filter_inverted_by_default; /* Default inversion value for :filter. */
 
 	/* Invocation formats for external applications. */

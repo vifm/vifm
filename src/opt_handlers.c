@@ -102,7 +102,7 @@ static void autochpos_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
 static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
-static int str_to_classify(const char str[], char decorations[FT_COUNT][2]);
+static int str_to_classify(const char str[], char decorations[FT_COUNT][2][9]);
 static const char * pick_out_decoration(const char classify_item[],
 		FileType *type);
 static void columns_handler(OPT_OP op, optval_t val);
@@ -719,8 +719,8 @@ classify_to_str(void)
 	buf[0] = '\0';
 	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
-		const char prefix[2] = { cfg.decorations[filetype][DECORATION_PREFIX] };
-		const char suffix[2] = { cfg.decorations[filetype][DECORATION_SUFFIX] };
+		const char prefix[2] = { cfg.decorations[filetype][DECORATION_PREFIX][0] };
+		const char suffix[2] = { cfg.decorations[filetype][DECORATION_SUFFIX][0] };
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
 			if(buf[0] != '\0')
@@ -1162,7 +1162,7 @@ chaselinks_handler(OPT_OP op, optval_t val)
 static void
 classify_handler(OPT_OP op, optval_t val)
 {
-	char decorations[FT_COUNT][2] = {};
+	char decorations[FT_COUNT][2][9] = {};
 
 	if(str_to_classify(val.str_val, decorations) == 0)
 	{
@@ -1187,7 +1187,7 @@ classify_handler(OPT_OP op, optval_t val)
  * It's assumed that decorations array is zeroed.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-str_to_classify(const char str[], char decorations[FT_COUNT][2])
+str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
 {
 	char *saveptr;
 	char *str_copy;
@@ -1228,8 +1228,8 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2])
 
 		if(!error_encountered)
 		{
-			decorations[type][DECORATION_PREFIX] = token[0];
-			decorations[type][DECORATION_SUFFIX] = suffix[0];
+			decorations[type][DECORATION_PREFIX][0] = token[0];
+			decorations[type][DECORATION_SUFFIX][0] = suffix[0];
 		}
 	}
 	free(str_copy);

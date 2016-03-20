@@ -909,7 +909,7 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 	const size_t width = utf8_strsw(buf);
 
 	const FileType type = ui_view_entry_target_type(entry);
-	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
+	const size_t prefix_len = strlen(cfg.decorations[type][DECORATION_PREFIX]);
 
 	const char *const fname = get_last_path_component(full_column) + prefix_len;
 	const size_t name_offset = fname - full_column;
@@ -1387,8 +1387,8 @@ get_filename_width(const FileView *view, int i)
 static size_t
 get_filetype_decoration_width(FileType type)
 {
-	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
-	const size_t suffix_len = cfg.decorations[type][DECORATION_SUFFIX] != '\0';
+	const size_t prefix_len = strlen(cfg.decorations[type][DECORATION_PREFIX]);
+	const size_t suffix_len = strlen(cfg.decorations[type][DECORATION_SUFFIX]);
 	return prefix_len + suffix_len;
 }
 

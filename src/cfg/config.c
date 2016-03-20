@@ -205,7 +205,7 @@ cfg_init(void)
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
 
 	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
-	cfg.decorations[FT_DIR][DECORATION_SUFFIX] = '/';
+	cfg.decorations[FT_DIR][DECORATION_SUFFIX][0] = '/';
 
 	cfg.fast_file_cloning = 0;
 }
