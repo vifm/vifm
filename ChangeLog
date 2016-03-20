@@ -42,6 +42,9 @@
 
 	Skip UTF-8 BOM for file preview.
 
+	Allow suffixes and prefixes in 'classify' to be of up to eight characters
+	in length.  Thanks to elricbk.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

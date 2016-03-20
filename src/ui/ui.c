@@ -1334,8 +1334,8 @@ format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	const FileType type = ui_view_entry_target_type(entry);
 
-	const char prefix[2] = { cfg.decorations[type][DECORATION_PREFIX][0] };
-	const char suffix[2] = { cfg.decorations[type][DECORATION_SUFFIX][0] };
+	const char *const prefix = cfg.decorations[type][DECORATION_PREFIX];
+	const char *const suffix = cfg.decorations[type][DECORATION_SUFFIX];
 
 	snprintf(buf, buf_len, "%s%s%s", prefix, entry->name, suffix);
 }

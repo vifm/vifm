@@ -719,8 +719,8 @@ classify_to_str(void)
 	buf[0] = '\0';
 	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
-		const char prefix[2] = { cfg.decorations[filetype][DECORATION_PREFIX][0] };
-		const char suffix[2] = { cfg.decorations[filetype][DECORATION_SUFFIX][0] };
+		const char *const prefix = cfg.decorations[filetype][DECORATION_PREFIX];
+		const char *const suffix = cfg.decorations[filetype][DECORATION_SUFFIX];
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
 			if(buf[0] != '\0')
@@ -1214,22 +1214,22 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
 		}
 		else
 		{
-			if(strlen(token) > 1)
+			if(strlen(token) > 8)
 			{
-				vle_tb_append_linef(vle_err, "Invalid prefix: %s", token);
+				vle_tb_append_linef(vle_err, "Too long prefix: %s", token);
 				error_encountered = 1;
 			}
-			if(strlen(suffix) > 1)
+			if(strlen(suffix) > 8)
 			{
-				vle_tb_append_linef(vle_err, "Invalid suffix: %s", suffix);
+				vle_tb_append_linef(vle_err, "Too long suffix: %s", suffix);
 				error_encountered = 1;
 			}
 		}
 
 		if(!error_encountered)
 		{
-			decorations[type][DECORATION_PREFIX][0] = token[0];
-			decorations[type][DECORATION_SUFFIX][0] = suffix[0];
+			strcpy(decorations[type][DECORATION_PREFIX], token);
+			strcpy(decorations[type][DECORATION_SUFFIX], suffix);
 		}
 	}
 	free(str_copy);

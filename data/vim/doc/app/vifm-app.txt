@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 19
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2582,10 +2582,10 @@ Specifies file name prefixes and suffixes depending on file types.  The format
 is: [{prefix}]:{filetype}:[{suffix}].  Either {prefix} or {suffix} or both of
 them can be omitted (which is the default for all unspecified file types),
 this means empty {prefix} and/or {suffix}.  {prefix} and {suffix} should
-consist exactly of one character. Elements are separated by commas.  Neither
-prefixes nor suffixes are part of file names, so they don't affect commands
-which operate on file names in any way. Comma (',') character should not be
-used.  List of file type names can be found in the description of
+consist of at most eight characters.  Elements are separated by commas.
+Neither prefixes nor suffixes are part of file names, so they don't affect
+commands which operate on file names in any way. Comma (',') character should
+not be used.  List of file type names can be found in the description of
 |vifm-filetype()| function.
 
                                                *vifm-'columns'* *vifm-'co'*
