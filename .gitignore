@@ -12,6 +12,8 @@
 # autotools generated files
 /autom4te.cache/
 /src/Makefile
+/src/runtests.log
+/src/runtests.trs
 /Makefile
 /config.h
 /config.log
