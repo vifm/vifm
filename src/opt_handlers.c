@@ -1196,8 +1196,20 @@ classify_handler(OPT_OP op, optval_t val)
 
 	if(str_to_classify(val.str_val, decorations) == 0)
 	{
+		int i;
+
 		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged");
 		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
+
+		/* Reset cached indexes for name-dependent decorations. */
+		for(i = 0; i < lwin.list_rows; ++i)
+		{
+			lwin.dir_entry[i].name_dec_num = -1;
+		}
+		for(i = 0; i < rwin.list_rows; ++i)
+		{
+			rwin.dir_entry[i].name_dec_num = -1;
+		}
 
 		/* 'classify' option affects columns layout, hence views must be reloaded as
 		 * loading list of files performs calculation of filename properties. */

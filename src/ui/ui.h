@@ -173,6 +173,8 @@ typedef struct dir_entry_t
 	int marked;       /* Whether file should be processed. */
 
 	int hi_num;       /* File highlighting parameters cache (initially -1). */
+	int name_dec_num; /* File decoration parameters cache (initially -1).  The
+	                     value is shifted by one, 0 means type decoration. */
 }
 dir_entry_t;
 

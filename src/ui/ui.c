@@ -28,6 +28,7 @@
 #include <sys/time.h> /* gettimeofday() */
 #include <unistd.h>
 
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t wchar_t */
@@ -1342,29 +1343,34 @@ void
 ui_get_decors(const dir_entry_t *entry, const char **prefix,
 		const char **suffix)
 {
-	int name_dec_num = 0;
-
-	if(cfg.name_dec_count != 0)
+	if(entry->name_dec_num == -1)
 	{
 		/* Find a match and cache the result. */
 
-		char full_path[PATH_MAX];
-		int i;
-
-		get_full_path_of(entry, sizeof(full_path), full_path);
-
-		for(i = 0; i < cfg.name_dec_count; ++i)
+		((dir_entry_t *)entry)->name_dec_num = 0;
+		if(cfg.name_dec_count != 0)
 		{
-			const file_dec_t *const file_dec = &cfg.name_decs[i];
-			if(matcher_matches(file_dec->matcher, full_path))
+			char full_path[PATH_MAX];
+			int i;
+
+			get_full_path_of(entry, sizeof(full_path), full_path);
+
+			for(i = 0; i < cfg.name_dec_count; ++i)
 			{
-				name_dec_num = i + 1;
-				break;
+				const file_dec_t *const file_dec = &cfg.name_decs[i];
+				if(matcher_matches(file_dec->matcher, full_path))
+				{
+					if(matcher_matches(file_dec->matcher, full_path))
+					{
+						((dir_entry_t *)entry)->name_dec_num = i + 1;
+						break;
+					}
+				}
 			}
 		}
 	}
 
-	if(name_dec_num == 0)
+	if(entry->name_dec_num == 0)
 	{
 		const FileType type = ui_view_entry_target_type(entry);
 		*prefix = cfg.decorations[type][DECORATION_PREFIX];
@@ -1372,8 +1378,11 @@ ui_get_decors(const dir_entry_t *entry, const char **prefix,
 	}
 	else
 	{
-		*prefix = cfg.name_decs[name_dec_num - 1].prefix;
-		*suffix = cfg.name_decs[name_dec_num - 1].suffix;
+		assert(entry->name_dec_num - 1 >= 0 && "Wrong index.");
+		assert(entry->name_dec_num - 1 < cfg.name_dec_count && "Wrong index.");
+
+		*prefix = cfg.name_decs[entry->name_dec_num - 1].prefix;
+		*suffix = cfg.name_decs[entry->name_dec_num - 1].suffix;
 	}
 }
 
