@@ -40,8 +40,10 @@
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
+#include "utils/darray.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/matcher.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -103,8 +105,9 @@ static void cdpath_handler(OPT_OP op, optval_t val);
 static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
 static int str_to_classify(const char str[], char decorations[FT_COUNT][2][9]);
-static const char * pick_out_decoration(const char classify_item[],
-		FileType *type);
+static const char * pick_out_decoration(char classify_item[], FileType *type,
+		const char **expr);
+static int validate_decorations(const char prefix[], const char suffix[]);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
@@ -718,7 +721,7 @@ const char *
 classify_to_str(void)
 {
 	static char *classify;
-	int filetype;
+	int ft, i;
 	size_t len = 0;
 	int memerr = 0;
 
@@ -729,10 +732,24 @@ classify_to_str(void)
 
 	classify[0] = '\0';
 
-	for(filetype = 0; filetype < FT_COUNT; ++filetype)
+	/* Name-dependent decorations. */
+	for(i = 0; i < cfg.name_dec_count && !memerr; ++i)
 	{
-		const char *const prefix = cfg.decorations[filetype][DECORATION_PREFIX];
-		const char *const suffix = cfg.decorations[filetype][DECORATION_SUFFIX];
+		const file_dec_t *const name_dec = &cfg.name_decs[i];
+		char *const addition = format_str("%s%s::%s::%s",
+				classify[0] != '\0' ? "," : "", name_dec->prefix,
+				matcher_get_expr(name_dec->matcher), name_dec->suffix);
+
+		memerr |= (addition == NULL || strappend(&classify, &len, addition) != 0);
+
+		free(addition);
+	}
+
+	/* Type-dependent decorations. */
+	for(ft = 0; ft < FT_COUNT; ++ft)
+	{
+		const char *const prefix = cfg.decorations[ft][DECORATION_PREFIX];
+		const char *const suffix = cfg.decorations[ft][DECORATION_SUFFIX];
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
 			char item[64];
@@ -741,7 +758,7 @@ classify_to_str(void)
 				memerr |= strappendch(&classify, &len, ',');
 			}
 			(void)snprintf(item, sizeof(item), "%s:%s:%s", prefix,
-					get_type_str(filetype), suffix);
+					get_type_str(ft), suffix);
 			memerr |= strappend(&classify, &len, item);
 		}
 	}
@@ -1206,6 +1223,9 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
 	char *str_copy;
 	char *token;
 	int error_encountered;
+	file_dec_t *name_decs = NULL;
+	DA_INSTANCE(name_decs);
+	int i;
 
 	str_copy = strdup(str);
 	if(str_copy == NULL)
@@ -1219,42 +1239,83 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
 	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
 	{
 		FileType type;
-		const char *suffix = pick_out_decoration(token, &type);
+		const char *expr = NULL;
+		const char *suffix = pick_out_decoration(token, &type, &expr);
+
 		if(suffix == NULL)
 		{
 			vle_tb_append_linef(vle_err, "Invalid filetype: %s", token);
 			error_encountered = 1;
 		}
-		else
+		else if(expr != NULL)
 		{
-			if(strlen(token) > 8)
+			file_dec_t *name_dec;
+
+			char *error;
+			matcher_t *const m = matcher_alloc(expr, 0, 1, &error);
+			if(m == NULL)
 			{
-				vle_tb_append_linef(vle_err, "Too long prefix: %s", token);
+				vle_tb_append_linef(vle_err, "Wrong pattern (%s): %s", expr, error);
+				free(error);
 				error_encountered = 1;
 			}
-			if(strlen(suffix) > 8)
+			else
 			{
-				vle_tb_append_linef(vle_err, "Too long suffix: %s", suffix);
-				error_encountered = 1;
+				name_dec = DA_EXTEND(name_decs);
+				if(name_dec == NULL)
+				{
+					vle_tb_append_line(vle_err, "Not enough memory");
+					error_encountered = 1;
+				}
+				name_dec->matcher = m;
+
+				error_encountered |= validate_decorations(token, suffix);
+
+				if(!error_encountered)
+				{
+					DA_COMMIT(name_decs);
+					strcpy(name_dec->prefix, token);
+					strcpy(name_dec->suffix, suffix);
+				}
+				else
+				{
+					matcher_free(m);
+				}
 			}
 		}
-
-		if(!error_encountered)
+		else
 		{
-			strcpy(decorations[type][DECORATION_PREFIX], token);
-			strcpy(decorations[type][DECORATION_SUFFIX], suffix);
+			error_encountered |= validate_decorations(token, suffix);
+
+			if(!error_encountered)
+			{
+				strcpy(decorations[type][DECORATION_PREFIX], token);
+				strcpy(decorations[type][DECORATION_SUFFIX], suffix);
+			}
 		}
 	}
 	free(str_copy);
+
+	for(i = 0; i < cfg.name_dec_count; ++i)
+	{
+		matcher_free(cfg.name_decs[i].matcher);
+	}
+	free(cfg.name_decs);
+
+	cfg.name_decs = name_decs;
+	cfg.name_dec_count = DA_SIZE(name_decs);
 
 	return error_encountered;
 }
 
 /* Puts '\0' after prefix end and returns pointer to the suffix beginning or
- * NULL on unknown filetype specifier. */
+ * NULL on unknown filetype specifier.  Sets *expr if this is a name-dependent
+ * specification. */
 static const char *
-pick_out_decoration(const char classify_item[], FileType *type)
+pick_out_decoration(char classify_item[], FileType *type, const char **expr)
 {
+	char *left, *right;
+
 	int filetype;
 	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
@@ -1268,7 +1329,37 @@ pick_out_decoration(const char classify_item[], FileType *type)
 			return &item_name[strlen(name)];
 		}
 	}
+
+	left = strstr(classify_item, "::");
+	right = (left == NULL) ? NULL : strstr(left + 2, "::");
+	if(right != NULL)
+	{
+		*left = '\0';
+		*right = '\0';
+		*expr = left + 2;
+		return right + 2;
+	}
+
 	return NULL;
+}
+
+/* Checks whether decorations are well-formated and prints errors if they
+ * aren't.  Returns zero if everything is OK, otherwise non-zero is returned. */
+static int
+validate_decorations(const char prefix[], const char suffix[])
+{
+	int error = 0;
+	if(strlen(prefix) > 8)
+	{
+		vle_tb_append_linef(vle_err, "Too long prefix: %s", prefix);
+		error = 1;
+	}
+	if(strlen(suffix) > 8)
+	{
+		vle_tb_append_linef(vle_err, "Too long suffix: %s", suffix);
+		error = 1;
+	}
+	return error;
 }
 
 /* Handles updates of the global 'columns' option, which reflects width of
