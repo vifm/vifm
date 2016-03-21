@@ -112,7 +112,7 @@ static void format_nlinks(int id, const void *data, size_t buf_len, char buf[]);
 static size_t calculate_column_width(FileView *view);
 static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
-static size_t get_filetype_decoration_width(FileType type);
+static size_t get_filetype_decoration_width(const dir_entry_t *entry);
 static int move_curr_line(FileView *view);
 static void reset_view_columns(FileView *view);
 
@@ -906,16 +906,19 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 		char buf[], size_t buf_len, AlignType align, int line, int col,
 		int line_attrs)
 {
+	size_t name_offset, lo, ro;
+	const char *fname;
+
 	const size_t width = utf8_strsw(buf);
 
-	const FileType type = ui_view_entry_target_type(entry);
-	const size_t prefix_len = strlen(cfg.decorations[type][DECORATION_PREFIX]);
+	const char *prefix, *suffix;
+	ui_get_decors(entry, &prefix, &suffix);
 
-	const char *const fname = get_last_path_component(full_column) + prefix_len;
-	const size_t name_offset = fname - full_column;
+	fname = get_last_path_component(full_column) + strlen(prefix);
+	name_offset = fname - full_column;
 
-	size_t lo = name_offset + entry->match_left;
-	size_t ro = name_offset + entry->match_right;
+	lo = name_offset + entry->match_left;
+	ro = name_offset + entry->match_right;
 
 	if(align == AT_LEFT && buf_len < ro)
 	{
@@ -1044,8 +1047,8 @@ static void
 format_name(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
-	const FileView *view = cdt->view;
-	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
+	FileView *view = cdt->view;
+	dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
 	if(flist_custom_active(view))
 	{
 		get_short_path_of(view, entry, 1, buf_len + 1, buf);
@@ -1367,7 +1370,6 @@ static size_t
 get_filename_width(const FileView *view, int i)
 {
 	const dir_entry_t *const entry = &view->dir_entry[i];
-	const FileType target_type = ui_view_entry_target_type(entry);
 	size_t name_len;
 	if(flist_custom_active(view))
 	{
@@ -1379,17 +1381,17 @@ get_filename_width(const FileView *view, int i)
 	{
 		name_len = utf8_strsw(entry->name);
 	}
-	return name_len + get_filetype_decoration_width(target_type);
+	return name_len + get_filetype_decoration_width(entry);
 }
 
-/* Returns additional number of characters which are needed to display names of
- * files of specific type. */
+/* Retrieves additional number of characters which are needed to display names
+ * of the entry.  Returns the number. */
 static size_t
-get_filetype_decoration_width(FileType type)
+get_filetype_decoration_width(const dir_entry_t *entry)
 {
-	const size_t prefix_len = strlen(cfg.decorations[type][DECORATION_PREFIX]);
-	const size_t suffix_len = strlen(cfg.decorations[type][DECORATION_SUFFIX]);
-	return prefix_len + suffix_len;
+	const char *prefix, *suffix;
+	ui_get_decors(entry, &prefix, &suffix);
+	return strlen(prefix) + strlen(suffix);
 }
 
 void

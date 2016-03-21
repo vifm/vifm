@@ -449,6 +449,11 @@ void ui_view_resize(FileView *view, int to);
  * type dependent name decorations. */
 void format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[]);
 
+/* Retrieves decorations for file entry.  Sets *prefix and *suffix to strings
+ * stored in global configuration. */
+void ui_get_decors(const dir_entry_t *entry, const char **prefix,
+		const char **suffix);
+
 /* Moves cursor to position specified by coordinates checking result of the
  * movement. */
 void checked_wmove(WINDOW *win, int y, int x);

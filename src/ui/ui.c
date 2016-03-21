@@ -51,6 +51,7 @@
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../utils/matcher.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
@@ -1332,12 +1333,48 @@ set_splitter(int pos)
 void
 format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
-	const FileType type = ui_view_entry_target_type(entry);
-
-	const char *const prefix = cfg.decorations[type][DECORATION_PREFIX];
-	const char *const suffix = cfg.decorations[type][DECORATION_SUFFIX];
-
+	const char *prefix, *suffix;
+	ui_get_decors(entry, &prefix, &suffix);
 	snprintf(buf, buf_len, "%s%s%s", prefix, entry->name, suffix);
+}
+
+void
+ui_get_decors(const dir_entry_t *entry, const char **prefix,
+		const char **suffix)
+{
+	int name_dec_num = 0;
+
+	if(cfg.name_dec_count != 0)
+	{
+		/* Find a match and cache the result. */
+
+		char full_path[PATH_MAX];
+		int i;
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		for(i = 0; i < cfg.name_dec_count; ++i)
+		{
+			const file_dec_t *const file_dec = &cfg.name_decs[i];
+			if(matcher_matches(file_dec->matcher, full_path))
+			{
+				name_dec_num = i + 1;
+				break;
+			}
+		}
+	}
+
+	if(name_dec_num == 0)
+	{
+		const FileType type = ui_view_entry_target_type(entry);
+		*prefix = cfg.decorations[type][DECORATION_PREFIX];
+		*suffix = cfg.decorations[type][DECORATION_SUFFIX];
+	}
+	else
+	{
+		*prefix = cfg.name_decs[name_dec_num - 1].prefix;
+		*suffix = cfg.name_decs[name_dec_num - 1].suffix;
+	}
 }
 
 void
