@@ -171,7 +171,7 @@ parse_glob(matcher_t *m, int strip, char **error)
 	re = globs_to_regex(m->raw);
 	if(re == NULL)
 	{
-		replace_string(error, "Failed convert globs into regexp.");
+		replace_string(error, "Failed to convert globs into regexp.");
 		return 1;
 	}
 
