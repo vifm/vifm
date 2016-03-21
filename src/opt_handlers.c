@@ -708,32 +708,45 @@ static void
 init_classify(optval_t *val)
 {
 	val->str_val = (char *)classify_to_str();
+	if(val->str_val == NULL)
+	{
+		val->str_val = "";
+	}
 }
 
 const char *
 classify_to_str(void)
 {
-	static char buf[64];
-	size_t len = 0;
+	static char *classify;
 	int filetype;
-	buf[0] = '\0';
+	size_t len = 0;
+	int memerr = 0;
+
+	if(classify == NULL && (classify = strdup("")) == NULL)
+	{
+		return NULL;
+	}
+
+	classify[0] = '\0';
+
 	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
 		const char *const prefix = cfg.decorations[filetype][DECORATION_PREFIX];
 		const char *const suffix = cfg.decorations[filetype][DECORATION_SUFFIX];
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
-			if(buf[0] != '\0')
+			char item[64];
+			if(classify[0] != '\0')
 			{
-				(void)strncat(buf + len, ",", sizeof(buf) - len - 1);
-				len += strlen(buf + len);
+				memerr |= strappendch(&classify, &len, ',');
 			}
-			(void)snprintf(buf + len, sizeof(buf) - len, "%s:%s:%s", prefix,
+			(void)snprintf(item, sizeof(item), "%s:%s:%s", prefix,
 					get_type_str(filetype), suffix);
-			len += strlen(buf + len);
+			memerr |= strappend(&classify, &len, item);
 		}
 	}
-	return buf;
+
+	return memerr ? NULL : classify;
 }
 
 /* Composes initial value for 'cpoptions' option from a set of configuration
