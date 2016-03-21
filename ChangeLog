@@ -19,6 +19,9 @@
 	Added :write command to menus, that writes all menu lines into specified
 	file.  Thanks to gtors.
 
+	Added support of patterns to 'classify' option, so that files can now be
+	decorated based on their names.  Thanks to elricbk.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

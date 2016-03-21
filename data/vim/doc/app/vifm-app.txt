@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 20
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 21
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2447,9 +2447,9 @@ Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
 --------------------------------------------------------------------------------
 *vifm-patterns*
 
-|vifm-:highlight|, |vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands
-support both globs and regular expressions as patterns to match file names or
-full paths.
+|vifm-:highlight|, |vifm-:filetype|, |vifm-:filextype|, |vifm-:fileviewer|
+commands and |vifm-'classify'| option support both globs and regular expressions
+as patterns to match file names or full paths.
 
 There are five possible ways to write them:
  1. {comma-seperated-name-globs}
@@ -2458,9 +2458,10 @@ There are five possible ways to write them:
  4. //path-regular-expression//[iI]
  5. undecorated-pattern
 
-The last form is implicitly refers to one of others.  |vifm-:highlight| does not
+The last form is implicitly refers to one of the others.  |vifm-:highlight| does not
 accept undecorated form, while |vifm-:filetype|, |vifm-:filextype| and
-|vifm-:fileviewer| treat it as list of name globs.
+|vifm-:fileviewer| treat it as list of name globs.  |vifm-'classify'| treates
+fifth form as a glob.
 
 Regular expression patterns are case insensitive by default.
 
@@ -2578,15 +2579,24 @@ classify
 type: string list
 default: ":dir:/"
 
-Specifies file name prefixes and suffixes depending on file types.  The format
-is: [{prefix}]:{filetype}:[{suffix}].  Either {prefix} or {suffix} or both of
-them can be omitted (which is the default for all unspecified file types),
-this means empty {prefix} and/or {suffix}.  {prefix} and {suffix} should
-consist of at most eight characters.  Elements are separated by commas.
-Neither prefixes nor suffixes are part of file names, so they don't affect
-commands which operate on file names in any way. Comma (',') character should
-not be used.  List of file type names can be found in the description of
-|vifm-filetype()| function.
+Specifies file name prefixes and suffixes depending on file type or name.
+The format is either of:
+  - [{prefix}]:{filetype}:[{suffix}]
+  - [{prefix}]::{pattern}::[{suffix}]
+Possible {pattern} forms are described in |vifm-patterns|.
+
+Priority rules:
+  - file name patterns have priority over type patterns
+  - file name patterns are matched in left-to-right order of their appearance
+    in this option
+
+Either {prefix} or {suffix} or both can be omitted (which is the default for
+all unspecified file types), this means empty {prefix} and/or {suffix}.
+{prefix} and {suffix} should consist of at most eight characters.  Elements
+are separated by commas.  Neither prefixes nor suffixes are part of file names,
+so they don't affect commands which operate on file names in any way.  Comma
+(',') character should not be used.  List of file type names can be found in
+the description of |vifm-filetype()| function.
 
                                                *vifm-'columns'* *vifm-'co'*
 columns co
