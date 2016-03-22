@@ -67,6 +67,9 @@
 
 	Fixed crash on very long option value on :set.  Thanks to aleksejrs.
 
+	Fixed displaying non-latin characters in LHS of mapping in map menus.
+	Thanks to filterfalse.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.

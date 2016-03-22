@@ -21,7 +21,7 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* tolower() */
+#include <ctype.h> /* iscntrl() tolower() */
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strcpy() strlen() */
@@ -629,7 +629,7 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 {
 	/* TODO: refactor this function wchar_to_spec() */
 
-	static char buf[32];
+	static char buf[256];
 
 	*len = 1;
 	switch(*c)
@@ -723,10 +723,17 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 				buf[2] += (*c - KEY_F0)/10;
 				buf[3] += (*c - KEY_F0)%10;
 			}
-			else
+			else if(iscntrl(*c))
 			{
 				strcpy(buf, "<c-A>");
 				buf[3] = tolower(buf[3] + *c - 1);
+			}
+			else
+			{
+				const wchar_t wchar[] = { *c, L'\0' };
+				char char_buf[wcstombs(NULL, wchar, 0) + 1];
+				wcstombs(char_buf, wchar, sizeof(char_buf));
+				strcpy(buf, char_buf);
 			}
 			break;
 	}
