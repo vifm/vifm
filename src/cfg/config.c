@@ -34,7 +34,7 @@
 
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memmove() memset() strdup() */
@@ -205,7 +205,10 @@ cfg_init(void)
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
 
 	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
-	cfg.decorations[FT_DIR][DECORATION_SUFFIX] = '/';
+	cfg.decorations[FT_DIR][DECORATION_SUFFIX][0] = '/';
+
+	cfg.name_decs = NULL;
+	cfg.name_dec_count = 0;
 
 	cfg.fast_file_cloning = 0;
 }

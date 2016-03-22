@@ -200,6 +200,7 @@ init_flist(FileView *view)
 	view->dir_entry[0].name = strdup("");
 	view->dir_entry[0].type = FT_DIR;
 	view->dir_entry[0].hi_num = -1;
+	view->dir_entry[0].name_dec_num = -1;
 	view->dir_entry[0].origin = &view->curr_dir[0];
 	view->list_rows = 1;
 }
@@ -2380,6 +2381,7 @@ merge_entries(dir_entry_t *new, const dir_entry_t *prev)
 	if(new->type == prev->type)
 	{
 		new->hi_num = prev->hi_num;
+		new->name_dec_num = prev->name_dec_num;
 	}
 }
 
@@ -2497,6 +2499,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 
 	entry->type = FT_UNK;
 	entry->hi_num = -1;
+	entry->name_dec_num = -1;
 
 	/* All files start as unselected, unmatched and unmarked. */
 	entry->selected = 0;
@@ -3233,8 +3236,11 @@ fentry_rename(dir_entry_t *entry, const char to[])
 	 * after reloading, as cursor will be positioned on the file with the same
 	 * name. */
 	(void)replace_string(&entry->name, to);
-	/* Name change can affect name specific highlight, so reset the cache. */
+
+	/* Name change can affect name specific highlight and decorations, so reset
+	 * the caches. */
 	entry->hi_num = -1;
+	entry->name_dec_num = -1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

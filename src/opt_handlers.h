@@ -70,8 +70,8 @@ void load_view_columns_option(FileView *view, const char value[]);
 /* Updates geometry related options. */
 void load_geometry(void);
 
-/* Returns pointer to a statically allocated string containing string
- * representation of the 'classify' option value. */
+/* Formats string with representation of the 'classify' option value.  Returns
+ * NULL on error or pointer, which is valid until the next invocation. */
 const char * classify_to_str(void);
 
 #endif /* VIFM__OPT_HANDLERS_H__ */

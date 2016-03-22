@@ -40,8 +40,10 @@
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
+#include "utils/darray.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/matcher.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -79,6 +81,7 @@ typedef struct
 optinit_t;
 
 static void init_classify(optval_t *val);
+static char * double_commas(const char str[]);
 static void init_cpoptions(optval_t *val);
 static void init_dirsize(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
@@ -102,9 +105,10 @@ static void autochpos_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
 static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
-static int str_to_classify(const char str[], char decorations[FT_COUNT][2]);
-static const char * pick_out_decoration(const char classify_item[],
-		FileType *type);
+static int str_to_classify(const char str[], char decorations[FT_COUNT][2][9]);
+static const char * pick_out_decoration(char classify_item[], FileType *type,
+		const char **expr);
+static int validate_decorations(const char prefix[], const char suffix[]);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
@@ -708,32 +712,80 @@ static void
 init_classify(optval_t *val)
 {
 	val->str_val = (char *)classify_to_str();
+	if(val->str_val == NULL)
+	{
+		val->str_val = "";
+	}
 }
 
 const char *
 classify_to_str(void)
 {
-	static char buf[64];
+	static char *classify;
+	int ft, i;
 	size_t len = 0;
-	int filetype;
-	buf[0] = '\0';
-	for(filetype = 0; filetype < FT_COUNT; ++filetype)
+	int memerr = 0;
+
+	if(classify == NULL && (classify = strdup("")) == NULL)
 	{
-		const char prefix[2] = { cfg.decorations[filetype][DECORATION_PREFIX] };
-		const char suffix[2] = { cfg.decorations[filetype][DECORATION_SUFFIX] };
+		return NULL;
+	}
+
+	classify[0] = '\0';
+
+	/* Name-dependent decorations. */
+	for(i = 0; i < cfg.name_dec_count && !memerr; ++i)
+	{
+		const file_dec_t *const name_dec = &cfg.name_decs[i];
+		char *const doubled = double_commas(matcher_get_expr(name_dec->matcher));
+		char *const addition = format_str("%s%s::%s::%s",
+				classify[0] != '\0' ? "," : "", name_dec->prefix, doubled,
+				name_dec->suffix);
+
+		memerr |= (addition == NULL || strappend(&classify, &len, addition) != 0);
+
+		free(addition);
+		free(doubled);
+	}
+
+	/* Type-dependent decorations. */
+	for(ft = 0; ft < FT_COUNT; ++ft)
+	{
+		const char *const prefix = cfg.decorations[ft][DECORATION_PREFIX];
+		const char *const suffix = cfg.decorations[ft][DECORATION_SUFFIX];
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
-			if(buf[0] != '\0')
+			char item[64];
+			if(classify[0] != '\0')
 			{
-				(void)strncat(buf + len, ",", sizeof(buf) - len - 1);
-				len += strlen(buf + len);
+				memerr |= strappendch(&classify, &len, ',');
 			}
-			(void)snprintf(buf + len, sizeof(buf) - len, "%s:%s:%s", prefix,
-					get_type_str(filetype), suffix);
-			len += strlen(buf + len);
+			(void)snprintf(item, sizeof(item), "%s:%s:%s", prefix,
+					get_type_str(ft), suffix);
+			memerr |= strappend(&classify, &len, item);
 		}
 	}
-	return buf;
+
+	return memerr ? NULL : classify;
+}
+
+/* Clones string passed as the argument doubling commas in the process.  Returns
+ * cloned value. */
+static char *
+double_commas(const char str[])
+{
+	char *const doubled = malloc(strlen(str)*2 + 1);
+	char *p = doubled;
+	while(*str != '\0')
+	{
+		*p++ = *str++;
+		if(p[-1] == ',')
+		{
+			*p++ = ',';
+		}
+	}
+	*p = '\0';
+	return doubled;
 }
 
 /* Composes initial value for 'cpoptions' option from a set of configuration
@@ -1162,12 +1214,24 @@ chaselinks_handler(OPT_OP op, optval_t val)
 static void
 classify_handler(OPT_OP op, optval_t val)
 {
-	char decorations[FT_COUNT][2] = {};
+	char decorations[FT_COUNT][2][9] = {};
 
 	if(str_to_classify(val.str_val, decorations) == 0)
 	{
+		int i;
+
 		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged");
 		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
+
+		/* Reset cached indexes for name-dependent decorations. */
+		for(i = 0; i < lwin.list_rows; ++i)
+		{
+			lwin.dir_entry[i].name_dec_num = -1;
+		}
+		for(i = 0; i < rwin.list_rows; ++i)
+		{
+			rwin.dir_entry[i].name_dec_num = -1;
+		}
 
 		/* 'classify' option affects columns layout, hence views must be reloaded as
 		 * loading list of files performs calculation of filename properties. */
@@ -1187,12 +1251,15 @@ classify_handler(OPT_OP op, optval_t val)
  * It's assumed that decorations array is zeroed.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-str_to_classify(const char str[], char decorations[FT_COUNT][2])
+str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
 {
 	char *saveptr;
 	char *str_copy;
 	char *token;
 	int error_encountered;
+	file_dec_t *name_decs = NULL;
+	DA_INSTANCE(name_decs);
+	int i;
 
 	str_copy = strdup(str);
 	if(str_copy == NULL)
@@ -1203,45 +1270,86 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2])
 
 	error_encountered = 0;
 	saveptr = NULL;
-	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
+	for(token = str_copy; (token = split_and_get_dc(token, &saveptr));)
 	{
 		FileType type;
-		const char *suffix = pick_out_decoration(token, &type);
+		const char *expr = NULL;
+		const char *suffix = pick_out_decoration(token, &type, &expr);
+
 		if(suffix == NULL)
 		{
 			vle_tb_append_linef(vle_err, "Invalid filetype: %s", token);
 			error_encountered = 1;
 		}
-		else
+		else if(expr != NULL)
 		{
-			if(strlen(token) > 1)
+			file_dec_t *name_dec;
+
+			char *error;
+			matcher_t *const m = matcher_alloc(expr, 0, 1, &error);
+			if(m == NULL)
 			{
-				vle_tb_append_linef(vle_err, "Invalid prefix: %s", token);
+				vle_tb_append_linef(vle_err, "Wrong pattern (%s): %s", expr, error);
+				free(error);
 				error_encountered = 1;
 			}
-			if(strlen(suffix) > 1)
+			else
 			{
-				vle_tb_append_linef(vle_err, "Invalid suffix: %s", suffix);
-				error_encountered = 1;
+				name_dec = DA_EXTEND(name_decs);
+				if(name_dec == NULL)
+				{
+					vle_tb_append_line(vle_err, "Not enough memory");
+					error_encountered = 1;
+				}
+				name_dec->matcher = m;
+
+				error_encountered |= validate_decorations(token, suffix);
+
+				if(!error_encountered)
+				{
+					DA_COMMIT(name_decs);
+					strcpy(name_dec->prefix, token);
+					strcpy(name_dec->suffix, suffix);
+				}
+				else
+				{
+					matcher_free(m);
+				}
 			}
 		}
-
-		if(!error_encountered)
+		else
 		{
-			decorations[type][DECORATION_PREFIX] = token[0];
-			decorations[type][DECORATION_SUFFIX] = suffix[0];
+			error_encountered |= validate_decorations(token, suffix);
+
+			if(!error_encountered)
+			{
+				strcpy(decorations[type][DECORATION_PREFIX], token);
+				strcpy(decorations[type][DECORATION_SUFFIX], suffix);
+			}
 		}
 	}
 	free(str_copy);
+
+	for(i = 0; i < cfg.name_dec_count; ++i)
+	{
+		matcher_free(cfg.name_decs[i].matcher);
+	}
+	free(cfg.name_decs);
+
+	cfg.name_decs = name_decs;
+	cfg.name_dec_count = DA_SIZE(name_decs);
 
 	return error_encountered;
 }
 
 /* Puts '\0' after prefix end and returns pointer to the suffix beginning or
- * NULL on unknown filetype specifier. */
+ * NULL on unknown filetype specifier.  Sets *expr if this is a name-dependent
+ * specification. */
 static const char *
-pick_out_decoration(const char classify_item[], FileType *type)
+pick_out_decoration(char classify_item[], FileType *type, const char **expr)
 {
+	char *left, *right;
+
 	int filetype;
 	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
@@ -1255,7 +1363,37 @@ pick_out_decoration(const char classify_item[], FileType *type)
 			return &item_name[strlen(name)];
 		}
 	}
+
+	left = strstr(classify_item, "::");
+	right = (left == NULL) ? NULL : strstr(left + 2, "::");
+	if(right != NULL)
+	{
+		*left = '\0';
+		*right = '\0';
+		*expr = left + 2;
+		return right + 2;
+	}
+
 	return NULL;
+}
+
+/* Checks whether decorations are well-formated and prints errors if they
+ * aren't.  Returns zero if everything is OK, otherwise non-zero is returned. */
+static int
+validate_decorations(const char prefix[], const char suffix[])
+{
+	int error = 0;
+	if(strlen(prefix) > 8)
+	{
+		vle_tb_append_linef(vle_err, "Too long prefix: %s", prefix);
+		error = 1;
+	}
+	if(strlen(suffix) > 8)
+	{
+		vle_tb_append_linef(vle_err, "Too long suffix: %s", suffix);
+		error = 1;
+	}
+	return error;
 }
 
 /* Handles updates of the global 'columns' option, which reflects width of

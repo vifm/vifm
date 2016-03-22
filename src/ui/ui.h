@@ -173,6 +173,8 @@ typedef struct dir_entry_t
 	int marked;       /* Whether file should be processed. */
 
 	int hi_num;       /* File highlighting parameters cache (initially -1). */
+	int name_dec_num; /* File decoration parameters cache (initially -1).  The
+	                     value is shifted by one, 0 means type decoration. */
 }
 dir_entry_t;
 
@@ -448,6 +450,11 @@ void ui_view_resize(FileView *view, int to);
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */
 void format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[]);
+
+/* Retrieves decorations for file entry.  Sets *prefix and *suffix to strings
+ * stored in global configuration. */
+void ui_get_decors(const dir_entry_t *entry, const char **prefix,
+		const char **suffix);
 
 /* Moves cursor to position specified by coordinates checking result of the
  * movement. */

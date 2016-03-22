@@ -926,6 +926,8 @@ convert_old_trash_path(const char trash_path[])
 static void
 write_options(FILE *const fp)
 {
+	const char *str;
+
 	fputs("\n# Options:\n", fp);
 	fprintf(fp, "=aproposprg=%s\n", escape_spaces(cfg.apropos_prg));
 	fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
@@ -1024,7 +1026,8 @@ write_options(FILE *const fp)
 
 	fprintf(fp, "=dirsize=%s", cfg.view_dir_size == VDS_SIZE ? "size" : "nitems");
 
-	fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));
+	str = classify_to_str();
+	fprintf(fp, "=classify=%s\n", escape_spaces(str == NULL ? "" : str));
 
 	fprintf(fp, "=vifminfo=options");
 	if(cfg.vifm_info & VIFMINFO_FILETYPES)

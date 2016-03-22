@@ -137,12 +137,6 @@ echo ":global-test-result: $res" >> $trs_file
 echo ":recheck: $recheck" >> $trs_file
 echo ":copy-in-global-log: $gcopy" >> $trs_file
 
-# Local Variables:
-# mode: shell-script
-# sh-indentation: 2
-# eval: (add-hook 'write-file-hooks 'time-stamp)
-# time-stamp-start: "scriptversion="
-# time-stamp-format: "%:y-%02m-%02d.%02H"
-# time-stamp-time-zone: "UTC"
-# time-stamp-end: "; # UTC"
-# End:
+if test $estatus != 0; then
+    sed -e "s/^/$log_file:\t/" "$log_file"
+fi

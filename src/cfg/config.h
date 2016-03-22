@@ -76,6 +76,15 @@ enum
 	DECORATION_SUFFIX, /* The symbol, which is appended to file name. */
 };
 
+/* File decoration description. */
+typedef struct
+{
+	struct matcher_t *matcher; /* Name matcher object. */
+	char prefix[9];            /* File name prefix. */
+	char suffix[9];            /* File name suffix. */
+}
+file_dec_t;
+
 typedef struct config_t
 {
 	char home_dir[PATH_MAX];   /* Ends with a slash. */
@@ -151,7 +160,12 @@ typedef struct config_t
 	int columns; /* Terminal width in characters. */
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
 	int dot_dirs;
-	char decorations[FT_COUNT][2]; /* File type specific refixes and suffixes. */
+	/* File type specific prefixes and suffixes ('classify'). */
+	char decorations[FT_COUNT][2][9];
+	/* File name specific prefixes and suffixes ('classify'). */
+	file_dec_t *name_decs;
+	/* Size of name_decs array. */
+	int name_dec_count;
 	int filter_inverted_by_default; /* Default inversion value for :filter. */
 
 	/* Invocation formats for external applications. */
