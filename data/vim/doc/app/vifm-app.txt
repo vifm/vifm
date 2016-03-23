@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 22
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 23
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3151,14 +3151,16 @@ suggestoptions
 type: set
 default:
 
-Controls when key suggestions are displayed.  The following values are
-available:
+Controls when, for what and how suggestions are displayed.  The following
+values are available:
  - normal    - in normal mode;
  - visual    - in visual mode;
  - view      - in view mode;
  - otherpane - use other pane to display suggestions, when available;
  - delay     - display suggestions after a small delay (to do not annoy if you
-               just want to type a fast shortcut consisting of multiple keys).
+               just want to type a fast shortcut consisting of multiple keys);
+ - keys      - include shortcuts (commands and selectors);
+ - marks     - include marks.
 
                                                *vifm-'syscalls'*
 syscalls

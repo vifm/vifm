@@ -57,7 +57,9 @@ typedef enum
 	SF_VIEW              = 1 << 2, /* Display in view mode. */
 	SF_OTHERPANE         = 1 << 3, /* Display list in other pane, if available. */
 	SF_DELAY             = 1 << 4, /* Postpone suggestions by small delay. */
-	NUM_SUGGESTION_FLAGS =      5  /* Number of flags. */
+	SF_KEYS              = 1 << 5, /* Include keys suggestions in results. */
+	SF_MARKS             = 1 << 6, /* Include marks suggestions in results. */
+	NUM_SUGGESTION_FLAGS =      7  /* Number of flags. */
 }
 SuggestionFlags;
 

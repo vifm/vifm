@@ -176,7 +176,8 @@ int vle_keys_inside_mapping(void);
 
 /* Invokes cb for each possible keys continuation.  Intended to be used on
  * KEYS_WAIT and KEYS_WAIT_SHORT returns. */
-void vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb);
+void vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb,
+		int custom_only);
 
 #endif /* VIFM__ENGINE__KEYS_H__ */
 

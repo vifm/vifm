@@ -469,9 +469,9 @@ display_suggestion_box(const wchar_t input[])
 		return;
 	}
 
-	/* Fill completion list with suggestions. */
+	/* Fill completion list with suggestions of keys and marks. */
 	vle_compl_reset();
-	vle_keys_suggest(input, &process_suggestion);
+	vle_keys_suggest(input, &process_suggestion, !(cfg.suggestions & SF_KEYS));
 	/* Completion grouping removes duplicates.  Because user-defined keys are
 	 * reported first, this has an effect of leaving only them in the resulting
 	 * list, which is correct as they have higher priority. */

@@ -248,6 +248,8 @@ static const char *suggestoptions_vals[][2] = {
 	{ "view",      "display in view mode" },
 	{ "otherpane", "use other pane for suggestions, if available" },
 	{ "delay",     "display suggestions after a short delay" },
+	{ "keys",      "include keys suggestions in results" },
+	{ "marks",     "include marks suggestions in results" },
 };
 ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 

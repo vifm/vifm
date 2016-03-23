@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 22, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "March 23, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3790,14 +3790,16 @@ type: set
 .br
 default:
 .br
-Controls when key suggestions are displayed.  The following values are
-available:
+Controls when, for what and how suggestions are displayed.  The following
+values are available:
  - normal    - in normal mode;
  - visual    - in visual mode;
  - view      - in view mode;
  - otherpane - use other pane to display suggestions, when available;
  - delay     - display suggestions after a small delay (to do not annoy if you \
-just want to type a fast shortcut consisting of multiple keys).
+just want to type a fast shortcut consisting of multiple keys);
+ - keys      - include shortcuts (commands and selectors);
+ - marks     - include marks.
 .TP
 .BI 'syscalls'
 type: boolean

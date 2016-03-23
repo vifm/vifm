@@ -117,7 +117,7 @@ static int execute_mapping_handler(const key_conf_t *const info,
 static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
 static void keys_suggest(const key_chunk_t *root, const wchar_t keys[],
-		const wchar_t prefix[], vle_keys_list_cb cb);
+		const wchar_t prefix[], vle_keys_list_cb cb, int custom_only);
 static void traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 		traverse_func cb, void *param);
 static void suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
@@ -1058,17 +1058,19 @@ post_execute_mapping_handler(const keys_info_t *const keys_info)
 }
 
 void
-vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb)
+vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb, int custom_only)
 {
-	keys_suggest(&user_cmds_root[vle_mode_get()], keys, L"key: ", cb);
-	keys_suggest(&builtin_cmds_root[vle_mode_get()], keys, L"key: ", cb);
+	keys_suggest(&user_cmds_root[vle_mode_get()], keys, L"key: ", cb,
+			custom_only);
+	keys_suggest(&builtin_cmds_root[vle_mode_get()], keys, L"key: ", cb,
+			custom_only);
 }
 
 /* Looks up possible continuations of keys for the given root and calls cb on
  * them. */
 static void
 keys_suggest(const key_chunk_t *root, const wchar_t keys[],
-		const wchar_t prefix[], vle_keys_list_cb cb)
+		const wchar_t prefix[], vle_keys_list_cb cb, int custom_only)
 {
 	const key_chunk_t *curr = root;
 
@@ -1133,7 +1135,7 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 		break;
 	}
 
-	if(*keys == L'\0')
+	if(!custom_only && *keys == L'\0')
 	{
 		/* Suggest all children. */
 		const key_chunk_t *child;
@@ -1148,7 +1150,8 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 		if(curr->conf.followed == FOLLOWED_BY_SELECTOR)
 		{
 			/* Suggest selectors. */
-			keys_suggest(&selectors_root[vle_mode_get()], keys, L"sel: ", cb);
+			keys_suggest(&selectors_root[vle_mode_get()], keys, L"sel: ", cb,
+					custom_only);
 		}
 		else if(curr->conf.followed == FOLLOWED_BY_MULTIKEY)
 		{
