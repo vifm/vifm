@@ -10,7 +10,7 @@
 	Enables displaying it as a menu with one item per line.  Thanks to
 	santhoshr and octos.
 
-	Added 'suggestoptions' option to control displaying of key suggestions.
+	Added 'suggestoptions' option to control displaying of suggestions.
 
 	Added description of builtin keys to :map menus.
 

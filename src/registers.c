@@ -26,6 +26,7 @@
 #include "compat/reallocarray.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
@@ -281,6 +282,33 @@ regs_update_unnamed(int reg_name)
 	for(i = 0; i < unnamed->nfiles; ++i)
 	{
 		unnamed->files[i] = strdup(reg->files[i]);
+	}
+}
+
+void
+regs_suggest(regs_suggest_cb cb, int max_entries_per_reg)
+{
+	wchar_t reg_name[] = L"reg: X";
+	const char *registers = valid_registers;
+
+	while(*registers != '\0')
+	{
+		reg_t *const reg = regs_find(*registers++);
+		int i;
+
+		if(reg == NULL || reg->nfiles <= 0)
+		{
+			continue;
+		}
+
+		reg_name[5] = reg->name;
+		cb(reg_name, L"", replace_home_part(reg->files[reg->nfiles - 1]));
+
+		i = MIN(max_entries_per_reg - 1, reg->nfiles - 1);
+		while(i-- > 0)
+		{
+			cb(L"", L"", replace_home_part(reg->files[i]));
+		}
 	}
 }
 

@@ -208,5 +208,63 @@ TEST(classify_suffix_prefix_lengths)
 				CIT_COMMAND));
 }
 
+TEST(suggestoptions_all_values)
+{
+	cfg.suggestions = 0;
+	cfg.sug_maxregfiles = 0;
+
+	assert_success(exec_commands("set suggestoptions=normal,visual,view,otherpane"
+				",delay,keys,marks,registers", &lwin, CIT_COMMAND));
+
+	assert_int_equal(SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
+			SF_KEYS | SF_MARKS | SF_REGISTERS, cfg.suggestions);
+	assert_int_equal(5, cfg.sug_maxregfiles);
+}
+
+TEST(suggestoptions_wrong_value)
+{
+	cfg.suggestions = 0;
+	cfg.sug_maxregfiles = 0;
+
+	assert_failure(exec_commands("set suggestoptions=asdf", &lwin, CIT_COMMAND));
+
+	assert_int_equal(0, cfg.suggestions);
+	assert_int_equal(0, cfg.sug_maxregfiles);
+}
+
+TEST(suggestoptions_empty_value)
+{
+	assert_success(exec_commands("set suggestoptions=normal", &lwin,
+				CIT_COMMAND));
+
+	cfg.suggestions = SF_NORMAL;
+	cfg.sug_maxregfiles = 0;
+
+	assert_success(exec_commands("set suggestoptions=", &lwin, CIT_COMMAND));
+
+	assert_int_equal(0, cfg.suggestions);
+	assert_int_equal(5, cfg.sug_maxregfiles);
+}
+
+TEST(suggestoptions_registers_number)
+{
+	cfg.suggestions = SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
+					SF_KEYS | SF_MARKS | SF_REGISTERS;
+	cfg.sug_maxregfiles = 4;
+
+	assert_failure(exec_commands("set suggestoptions=registers:-4", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(4, cfg.sug_maxregfiles);
+
+	assert_failure(exec_commands("set suggestoptions=registers:0", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(4, cfg.sug_maxregfiles);
+
+	assert_success(exec_commands("set suggestoptions=registers:1", &lwin,
+				CIT_COMMAND));
+
+	assert_int_equal(1, cfg.sug_maxregfiles);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

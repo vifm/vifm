@@ -20,6 +20,8 @@
 #ifndef VIFM__REGISTERS_H__
 #define VIFM__REGISTERS_H__
 
+#include <stddef.h> /* wchar_t */
+
 /* Name of the default register. */
 #define DEFAULT_REG_NAME '"'
 
@@ -31,6 +33,10 @@ typedef struct
 	char **files; /* List of full paths of files. */
 }
 reg_t;
+
+/* Callback for regs_suggest() function invoked per active register. */
+typedef void (*regs_suggest_cb)(const wchar_t text[], const wchar_t value[],
+		const char descr[]);
 
 /* Null terminated list of all valid register names. */
 extern const char valid_registers[];
@@ -75,6 +81,9 @@ void regs_remove_trashed_files(const char trash_dir[]);
 /* Populates default (unnamed) register with contents of the specified
  * register. */
 void regs_update_unnamed(int reg_name);
+
+/* Lists active registers. */
+void regs_suggest(regs_suggest_cb cb, int max_entries_per_reg);
 
 #endif /* VIFM__REGISTERS_H__ */
 

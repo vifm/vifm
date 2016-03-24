@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 23
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 24
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3148,19 +3148,21 @@ Example: >
 <
                                                *vifm-'suggestoptions'*
 suggestoptions
-type: set
+type: string list
 default:
 
 Controls when, for what and how suggestions are displayed.  The following
 values are available:
- - normal    - in normal mode;
- - visual    - in visual mode;
- - view      - in view mode;
- - otherpane - use other pane to display suggestions, when available;
- - delay     - display suggestions after a small delay (to do not annoy if you
-               just want to type a fast shortcut consisting of multiple keys);
- - keys      - include shortcuts (commands and selectors);
- - marks     - include marks.
+ - normal          - in normal mode;
+ - visual          - in visual mode;
+ - view            - in view mode;
+ - otherpane       - use other pane to display suggestions, when available;
+ - delay           - display suggestions after a small delay (to do not annoy
+                     if you just want to type a fast shortcut consisting of
+                     multiple keys);
+ - keys            - include shortcuts (commands and selectors);
+ - marks           - include marks;
+ - registers[:num] - include registers, at most num files (5 by default).
 
                                                *vifm-'syscalls'*
 syscalls

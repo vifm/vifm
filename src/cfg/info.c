@@ -1021,6 +1021,17 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "keys,");
 	if(cfg.suggestions & SF_MARKS)
 		fprintf(fp, "%s", "marks,");
+	if(cfg.suggestions & SF_REGISTERS)
+	{
+		if(cfg.sug_maxregfiles == 5)
+		{
+			fprintf(fp, "%s", "registers,");
+		}
+		else
+		{
+			fprintf(fp, "registers:%d,", cfg.sug_maxregfiles);
+		}
+	}
 	fprintf(fp, "\n");
 
 	fprintf(fp, "%s", "=iooptions=");

@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 23 Mar, 2016)
+" Sample configuration file for vifm (last updated: 24 Mar, 2016)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -73,10 +73,10 @@ set timefmt=%m/%d\ %H:%M
 
 set wildmenu
 
-" Display suggestions in normal, visual and view modes for keys and marks.  In
-" other view, when available.
+" Display suggestions in normal, visual and view modes for keys, marks and
+" registers (at most 5 files).  In other view, when available.
 
-set suggestoptions=normal,visual,view,otherpane,keys,marks
+set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
 
 " Ignore case in search patterns unless it contains at least one uppercase
 " letter

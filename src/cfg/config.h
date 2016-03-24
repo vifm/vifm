@@ -59,7 +59,8 @@ typedef enum
 	SF_DELAY             = 1 << 4, /* Postpone suggestions by small delay. */
 	SF_KEYS              = 1 << 5, /* Include keys suggestions in results. */
 	SF_MARKS             = 1 << 6, /* Include marks suggestions in results. */
-	NUM_SUGGESTION_FLAGS =      7  /* Number of flags. */
+	SF_REGISTERS         = 1 << 7, /* Include registers suggestions in results. */
+	NUM_SUGGESTION_FLAGS =      8  /* Number of flags. */
 }
 SuggestionFlags;
 
@@ -140,6 +141,8 @@ typedef struct config_t
 
 	/* Combination of SuggestionFlags, configures when to show key suggestions. */
 	int suggestions;
+	/* Maximum number of register files to display in suggestions. */
+	int sug_maxregfiles;
 
 	int ignore_case;
 	int smart_case;

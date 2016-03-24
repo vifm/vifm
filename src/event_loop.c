@@ -50,6 +50,7 @@
 #include "bracket_notation.h"
 #include "filelist.h"
 #include "ipc.h"
+#include "registers.h"
 #include "status.h"
 #include "vifm.h"
 
@@ -463,6 +464,8 @@ reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 static void
 display_suggestion_box(const wchar_t input[])
 {
+	size_t prefix;
+
 	/* Don't do this for ESC because it's prefix for other keys. */
 	if(!should_display_suggestion_box() || wcscmp(input, L"\033") == 0)
 	{
@@ -476,6 +479,16 @@ display_suggestion_box(const wchar_t input[])
 	 * reported first, this has an effect of leaving only them in the resulting
 	 * list, which is correct as they have higher priority. */
 	vle_compl_finish_group();
+
+	/* Handle registers suggestions. */
+	prefix = wcsspn(input, L"0123456789");
+	if((cfg.suggestions & SF_REGISTERS) &&
+			input[prefix] == L'"' && input[prefix + 1U] == L'\0')
+	{
+		/* No vle_compl_finish_group() after this to prevent sorting and
+		 * deduplication. */
+		regs_suggest(&process_suggestion, cfg.sug_maxregfiles);
+	}
 
 	if(vle_compl_get_count() != 0)
 	{

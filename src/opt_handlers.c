@@ -178,6 +178,8 @@ static int map_name(const char name[], void *arg);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void suggestoptions_handler(OPT_OP op, optval_t val);
+static int read_int(const char line[], int *i);
+static void reset_suggestoptions(void);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
@@ -250,6 +252,7 @@ static const char *suggestoptions_vals[][2] = {
 	{ "delay",     "display suggestions after a short delay" },
 	{ "keys",      "include keys suggestions in results" },
 	{ "marks",     "include marks suggestions in results" },
+	{ "registers", "include registers suggestions in results" },
 };
 ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 
@@ -268,8 +271,8 @@ static const char *shortmess_vals[][2] = {
 /* Possible flags of 'tuioptions' and their count. */
 static const char *tuioptions_vals[][2] = {
 	{ "ps", "all tuioptions values" },
-	{ "p", "use padding in views and preview" },
-	{ "s", "display side borders" },
+	{ "p",  "use padding in views and preview" },
+	{ "s",  "display side borders" },
 };
 
 /* Possible values of 'dirsize' option. */
@@ -583,9 +586,9 @@ options[] = {
 	  { .ref.str_val = &cfg.status_line },
 	},
 	{ "suggestoptions", "", "when to display key suggestions",
-	  OPT_SET, ARRAY_LEN(suggestoptions_vals), suggestoptions_vals,
+	  OPT_STRLIST, ARRAY_LEN(suggestoptions_vals), suggestoptions_vals,
 		&suggestoptions_handler, NULL,
-	  { .ref.set_items = &cfg.suggestions },
+	  { .ref.str_val = &empty },
 	},
 	{ "syscalls", "", "use system calls for file operations",
 	  OPT_BOOL, 0, NULL, &syscalls_handler, NULL,
@@ -1508,6 +1511,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
+	/* XXX: we shouldn't reset this value unless format is correct. */
 	(void)replace_string(&cfg.border_filler, " ");
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
@@ -2382,7 +2386,103 @@ statusline_handler(OPT_OP op, optval_t val)
 static void
 suggestoptions_handler(OPT_OP op, optval_t val)
 {
-	cfg.suggestions = val.set_items;
+	int new_value = 0;
+	int maxregfiles = 5;
+
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(strcmp(part, "normal") == 0)         new_value |= SF_NORMAL;
+		else if(strcmp(part, "visual") == 0)    new_value |= SF_VISUAL;
+		else if(strcmp(part, "view") == 0)      new_value |= SF_VIEW;
+		else if(strcmp(part, "otherpane") == 0) new_value |= SF_OTHERPANE;
+		else if(strcmp(part, "delay") == 0)     new_value |= SF_DELAY;
+		else if(strcmp(part, "keys") == 0)      new_value |= SF_KEYS;
+		else if(strcmp(part, "marks") == 0)     new_value |= SF_MARKS;
+		else if(starts_with_lit(part, "registers:"))
+		{
+			const char *const num = after_first(part, ':');
+			new_value |= SF_REGISTERS;
+			if(!read_int(after_first(part, ':'), &maxregfiles))
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"registers\" value: %s",
+						num);
+				break;
+			}
+			if(maxregfiles <= 0)
+			{
+				vle_tb_append_line(vle_err,
+						"Must be at least one displayed register file");
+				break;
+			}
+		}
+		else if(strcmp(part, "registers") == 0) new_value |= SF_REGISTERS;
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err,
+					"Invalid key for 'suggestoptions' option: %s", part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		cfg.suggestions = new_value;
+		cfg.sug_maxregfiles = maxregfiles;
+	}
+	else
+	{
+		reset_suggestoptions();
+	}
+}
+
+/* Converts line to a number.  Handles overflow/underflow.  Returns non-zero on
+ * success and zero otherwise. */
+static int
+read_int(const char line[], int *i)
+{
+	char *endptr;
+	const long l = strtol(line, &endptr, 10);
+
+	*i = (l > INT_MAX) ? INT_MAX : ((l < INT_MIN) ? INT_MIN : l);
+
+	return *line != '\0' && *endptr == '\0';
+}
+
+/* Sets value of 'suggestoptions' based on current configuration values. */
+static void
+reset_suggestoptions(void)
+{
+	optval_t val;
+	vle_textbuf *const descr = vle_tb_create();
+
+	if(cfg.suggestions & SF_NORMAL)    vle_tb_appendf(descr, "%s", "normal,");
+	if(cfg.suggestions & SF_VISUAL)    vle_tb_appendf(descr, "%s", "visual,");
+	if(cfg.suggestions & SF_VIEW)      vle_tb_appendf(descr, "%s", "view,");
+	if(cfg.suggestions & SF_OTHERPANE) vle_tb_appendf(descr, "%s", "otherpane,");
+	if(cfg.suggestions & SF_DELAY)     vle_tb_appendf(descr, "%s", "delay,");
+	if(cfg.suggestions & SF_KEYS)      vle_tb_appendf(descr, "%s", "keys,");
+	if(cfg.suggestions & SF_MARKS)     vle_tb_appendf(descr, "%s", "marks,");
+	if(cfg.suggestions & SF_REGISTERS)
+	{
+		if(cfg.sug_maxregfiles == 5)
+		{
+			vle_tb_appendf(descr, "%s", "registers,");
+		}
+		else
+		{
+			vle_tb_appendf(descr, "registers:%d,", cfg.sug_maxregfiles);
+		}
+	}
+
+	val.str_val = (char *)vle_tb_get_data(descr);
+	set_option("suggestoptions", val, OPT_GLOBAL);
+
+	vle_tb_free(descr);
 }
 
 /* Makes vifm prefer to perform file-system operations with external
