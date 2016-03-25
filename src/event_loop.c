@@ -474,7 +474,7 @@ is_input_buf_empty(void)
 	return curr_input_buf_pos == NULL || *curr_input_buf_pos == 0;
 }
 
-/* Empties input buf and resets input position. */
+/* Empties input buffer and resets input position. */
 static void
 reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 {
