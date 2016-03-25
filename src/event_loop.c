@@ -357,6 +357,13 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			ipc_check();
 			wtimeout(win, MIN(cfg.min_timeout_len, timeout)/IPC_F);
 
+			if(suggestions_are_visible)
+			{
+				/* Redraw suggestion box as it might have been hidden due to other
+				 * redraws. */
+				display_suggestion_box(curr_input_buf);
+			}
+
 			result = compat_wget_wch(win, c);
 			if(result != ERR)
 			{
