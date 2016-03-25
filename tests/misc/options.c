@@ -146,7 +146,7 @@ TEST(fails_to_set_sort_group_with_wrong_regexp)
 
 TEST(classify_parsing_of_types)
 {
-	const char decorations[FT_COUNT][2][9] = {
+	const char type_decs[FT_COUNT][2][9] = {
 		[FT_DIR][DECORATION_PREFIX][0] = '-',
 		[FT_DIR][DECORATION_SUFFIX][0] = '1',
 		[FT_REG][DECORATION_PREFIX][0] = '*',
@@ -157,7 +157,7 @@ TEST(classify_parsing_of_types)
 				CIT_COMMAND));
 
 	assert_int_equal(0,
-			memcmp(&cfg.decorations, &decorations, sizeof(cfg.decorations)));
+			memcmp(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs)));
 	assert_int_equal(0, cfg.name_dec_count);
 
 	assert_string_equal("-:dir:1,*:reg:/",
@@ -166,7 +166,7 @@ TEST(classify_parsing_of_types)
 
 TEST(classify_parsing_of_exprs)
 {
-	const char decorations[FT_COUNT][2][9] = {};
+	const char type_decs[FT_COUNT][2][9] = {};
 
 	assert_success(
 			exec_commands(
@@ -174,7 +174,7 @@ TEST(classify_parsing_of_exprs)
 				&lwin, CIT_COMMAND));
 
 	assert_int_equal(0,
-			memcmp(&cfg.decorations, &decorations, sizeof(cfg.decorations)));
+			memcmp(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs)));
 	assert_int_equal(4, cfg.name_dec_count);
 	assert_string_equal("*", cfg.name_decs[0].prefix);
 	assert_string_equal("/", cfg.name_decs[0].suffix);
@@ -191,21 +191,103 @@ TEST(classify_parsing_of_exprs)
 
 TEST(classify_suffix_prefix_lengths)
 {
-	char decorations[FT_COUNT][2][9];
-	memcpy(&decorations, &cfg.decorations, sizeof(cfg.decorations));
+	char type_decs[FT_COUNT][2][9];
+	memcpy(&type_decs, &cfg.type_decs, sizeof(cfg.type_decs));
 
 	assert_failure(exec_commands("set classify=123456789::{*.c}::/", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(0,
-			memcmp(&cfg.decorations, &decorations, sizeof(cfg.decorations)));
+			memcmp(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs)));
 
 	assert_failure(exec_commands("set classify=::{*.c}::123456789", &lwin,
 				CIT_COMMAND));
 	assert_int_equal(0,
-			memcmp(&cfg.decorations, &decorations, sizeof(cfg.decorations)));
+			memcmp(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs)));
 
 	assert_success(exec_commands("set classify=12345678::{*.c}::12345678", &lwin,
 				CIT_COMMAND));
+}
+
+TEST(suggestoptions_all_values)
+{
+	cfg.sug.flags = 0;
+	cfg.sug.maxregfiles = 0;
+	cfg.sug.delay = 0;
+
+	assert_success(exec_commands("set suggestoptions=normal,visual,view,otherpane"
+				",delay,keys,marks,registers", &lwin, CIT_COMMAND));
+
+	assert_int_equal(SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
+			SF_KEYS | SF_MARKS | SF_REGISTERS, cfg.sug.flags);
+	assert_int_equal(5, cfg.sug.maxregfiles);
+	assert_int_equal(500, cfg.sug.delay);
+}
+
+TEST(suggestoptions_wrong_value)
+{
+	cfg.sug.flags = 0;
+	cfg.sug.maxregfiles = 0;
+	cfg.sug.delay = 0;
+
+	assert_failure(exec_commands("set suggestoptions=asdf", &lwin, CIT_COMMAND));
+
+	assert_int_equal(0, cfg.sug.flags);
+	assert_int_equal(0, cfg.sug.maxregfiles);
+	assert_int_equal(0, cfg.sug.delay);
+}
+
+TEST(suggestoptions_empty_value)
+{
+	assert_success(exec_commands("set suggestoptions=normal", &lwin,
+				CIT_COMMAND));
+
+	cfg.sug.flags = SF_NORMAL;
+	cfg.sug.maxregfiles = 0;
+	cfg.sug.delay = 0;
+
+	assert_success(exec_commands("set suggestoptions=", &lwin, CIT_COMMAND));
+
+	assert_int_equal(0, cfg.sug.flags);
+	assert_int_equal(5, cfg.sug.maxregfiles);
+	assert_int_equal(500, cfg.sug.delay);
+}
+
+TEST(suggestoptions_registers_number)
+{
+	cfg.sug.flags = SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
+					SF_KEYS | SF_MARKS | SF_REGISTERS;
+	cfg.sug.maxregfiles = 4;
+
+	assert_failure(exec_commands("set suggestoptions=registers:-4", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(4, cfg.sug.maxregfiles);
+
+	assert_failure(exec_commands("set suggestoptions=registers:0", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(4, cfg.sug.maxregfiles);
+
+	assert_success(exec_commands("set suggestoptions=registers:1", &lwin,
+				CIT_COMMAND));
+
+	assert_int_equal(1, cfg.sug.maxregfiles);
+}
+
+TEST(suggestoptions_delay_number)
+{
+	cfg.sug.delay = 4;
+
+	assert_failure(exec_commands("set suggestoptions=delay:-4", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(4, cfg.sug.delay);
+
+	assert_success(exec_commands("set suggestoptions=delay:0", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(0, cfg.sug.delay);
+
+	assert_success(exec_commands("set suggestoptions=delay:100", &lwin,
+				CIT_COMMAND));
+
+	assert_int_equal(100, cfg.sug.delay);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

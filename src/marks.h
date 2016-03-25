@@ -97,7 +97,7 @@ int check_mark_directory(FileView *view, char m);
  * items.  Returns number of active makrs. */
 int init_active_marks(const char marks[], int active_marks[]);
 
-/* List active marks.  Local marks are those that point into current view. */
+/* Lists active marks.  Local marks are those that point into current view. */
 void suggest_marks(mark_suggest_cb cb, int local_only);
 
 TSTATIC_DEFS(

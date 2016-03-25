@@ -1007,16 +1007,40 @@ write_options(FILE *const fp)
 	fprintf(fp, "\n");
 
 	fprintf(fp, "%s", "=suggestoptions=");
-	if(cfg.suggestions & SF_NORMAL)
+	if(cfg.sug.flags & SF_NORMAL)
 		fprintf(fp, "%s", "normal,");
-	if(cfg.suggestions & SF_VISUAL)
+	if(cfg.sug.flags & SF_VISUAL)
 		fprintf(fp, "%s", "visual,");
-	if(cfg.suggestions & SF_VIEW)
+	if(cfg.sug.flags & SF_VIEW)
 		fprintf(fp, "%s", "view,");
-	if(cfg.suggestions & SF_OTHERPANE)
+	if(cfg.sug.flags & SF_OTHERPANE)
 		fprintf(fp, "%s", "otherpane,");
-	if(cfg.suggestions & SF_DELAY)
-		fprintf(fp, "%s", "delay,");
+	if(cfg.sug.flags & SF_KEYS)
+		fprintf(fp, "%s", "keys,");
+	if(cfg.sug.flags & SF_MARKS)
+		fprintf(fp, "%s", "marks,");
+	if(cfg.sug.flags & SF_DELAY)
+	{
+		if(cfg.sug.delay == 500)
+		{
+			fprintf(fp, "%s", "delay,");
+		}
+		else
+		{
+			fprintf(fp, "delay:%d,", cfg.sug.delay);
+		}
+	}
+	if(cfg.sug.flags & SF_REGISTERS)
+	{
+		if(cfg.sug.maxregfiles == 5)
+		{
+			fprintf(fp, "%s", "registers,");
+		}
+		else
+		{
+			fprintf(fp, "registers:%d,", cfg.sug.maxregfiles);
+		}
+	}
 	fprintf(fp, "\n");
 
 	fprintf(fp, "%s", "=iooptions=");

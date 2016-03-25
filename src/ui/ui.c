@@ -1373,8 +1373,8 @@ ui_get_decors(const dir_entry_t *entry, const char **prefix,
 	if(entry->name_dec_num == 0)
 	{
 		const FileType type = ui_view_entry_target_type(entry);
-		*prefix = cfg.decorations[type][DECORATION_PREFIX];
-		*suffix = cfg.decorations[type][DECORATION_SUFFIX];
+		*prefix = cfg.type_decs[type][DECORATION_PREFIX];
+		*suffix = cfg.type_decs[type][DECORATION_SUFFIX];
 	}
 	else
 	{

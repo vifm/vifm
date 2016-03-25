@@ -386,7 +386,7 @@ static const col_attr_t default_cs[] = {
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 	[OTHER_LINE_COLOR]   = { -1,            -1,          -1                      },
 	[JOB_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, A_BOLD | A_REVERSE      },
-	[SUGGEST_BOX_COLOR]  = { COLOR_CYAN,    COLOR_BLACK, A_BOLD | A_REVERSE      },
+	[SUGGEST_BOX_COLOR]  = { -1,            -1,          A_BOLD                  },
 };
 ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 

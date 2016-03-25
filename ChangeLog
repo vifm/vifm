@@ -10,7 +10,7 @@
 	Enables displaying it as a menu with one item per line.  Thanks to
 	santhoshr and octos.
 
-	Added 'suggestoptions' option to control displaying of key suggestions.
+	Added 'suggestoptions' option to control displaying of suggestions.
 
 	Added description of builtin keys to :map menus.
 
@@ -66,6 +66,9 @@
 	Fixed querying file information on 64-bit Windows.  Thanks to santhoshr.
 
 	Fixed crash on very long option value on :set.  Thanks to aleksejrs.
+
+	Fixed displaying non-latin characters in LHS of mapping in map menus.
+	Thanks to filterfalse.
 
 0.8.1 to 0.8.1a
 

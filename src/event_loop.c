@@ -50,6 +50,7 @@
 #include "bracket_notation.h"
 #include "filelist.h"
 #include "ipc.h"
+#include "registers.h"
 #include "status.h"
 #include "vifm.h"
 
@@ -74,6 +75,9 @@ static const wchar_t *curr_input_buf;
 /* Current position in current input buffer. */
 static const size_t *curr_input_buf_pos;
 
+/* Whether suggestion box is active. */
+static int suggestions_are_visible;
+
 void
 event_loop(const int *quit)
 {
@@ -89,6 +93,7 @@ event_loop(const int *quit)
 
 	int last_result = 0;
 	int wait_for_enter = 0;
+	int wait_for_suggestion = 0;
 	int timeout = cfg.timeout_len;
 
 	input_buf[0] = L'\0';
@@ -117,11 +122,15 @@ event_loop(const int *quit)
 		 * waiting for the next key after timeout. */
 		do
 		{
+			const int actual_timeout = wait_for_suggestion
+			                         ? MIN(timeout, cfg.sug.delay)
+			                         : timeout;
+
 			modes_periodic();
 
 			check_background_jobs();
 
-			got_input = (get_char_async_loop(status_bar, &c, timeout) != ERR);
+			got_input = (get_char_async_loop(status_bar, &c, actual_timeout) != ERR);
 
 			/* This loop can be infinite if terminal becomes not available, so force
 			 * checking terminal state here. */
@@ -130,20 +139,27 @@ event_loop(const int *quit)
 				vifm_finish("Terminal is not available.");
 			}
 
+			/* If suggestion delay timed out, reset it and wait the rest of the
+			 * timeout. */
+			if(!got_input && wait_for_suggestion)
+			{
+				wait_for_suggestion = 0;
+				timeout -= actual_timeout;
+				display_suggestion_box(input_buf);
+				continue;
+			}
+			wait_for_suggestion = 0;
+
 			if(!got_input && (input_buf_pos == 0 || last_result == KEYS_WAIT))
 			{
-				if((cfg.suggestions & SF_DELAY) &&
-						(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT))
-				{
-					display_suggestion_box(input_buf);
-				}
-
 				timeout = cfg.timeout_len;
 				continue;
 			}
 			break;
 		}
 		while(1);
+
+		suggestions_are_visible = 0;
 
 		/* Ensure that current working directory is set correctly (some pieces of
 		 * code rely on this). */
@@ -223,9 +239,9 @@ event_loop(const int *quit)
 
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
-				if(!(cfg.suggestions & SF_DELAY) || last_result == KEYS_WAIT_SHORT)
+				if(should_display_suggestion_box())
 				{
-					display_suggestion_box(input_buf);
+					wait_for_suggestion = 1;
 				}
 
 				if(got_input)
@@ -341,6 +357,13 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			ipc_check();
 			wtimeout(win, MIN(cfg.min_timeout_len, timeout)/IPC_F);
 
+			if(suggestions_are_visible)
+			{
+				/* Redraw suggestion box as it might have been hidden due to other
+				 * redraws. */
+				display_suggestion_box(curr_input_buf);
+			}
+
 			result = compat_wget_wch(win, c);
 			if(result != ERR)
 			{
@@ -451,7 +474,7 @@ is_input_buf_empty(void)
 	return curr_input_buf_pos == NULL || *curr_input_buf_pos == 0;
 }
 
-/* Empties input buf and resets input position. */
+/* Empties input buffer and resets input position. */
 static void
 reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 {
@@ -463,23 +486,36 @@ reset_input_buf(wchar_t curr_input_buf[], size_t *curr_input_buf_pos)
 static void
 display_suggestion_box(const wchar_t input[])
 {
+	size_t prefix;
+
 	/* Don't do this for ESC because it's prefix for other keys. */
 	if(!should_display_suggestion_box() || wcscmp(input, L"\033") == 0)
 	{
 		return;
 	}
 
-	/* Fill completion list with suggestions. */
+	/* Fill completion list with suggestions of keys and marks. */
 	vle_compl_reset();
-	vle_keys_suggest(input, &process_suggestion);
+	vle_keys_suggest(input, &process_suggestion, !(cfg.sug.flags & SF_KEYS));
 	/* Completion grouping removes duplicates.  Because user-defined keys are
 	 * reported first, this has an effect of leaving only them in the resulting
 	 * list, which is correct as they have higher priority. */
 	vle_compl_finish_group();
 
+	/* Handle registers suggestions. */
+	prefix = wcsspn(input, L"0123456789");
+	if((cfg.sug.flags & SF_REGISTERS) &&
+			input[prefix] == L'"' && input[prefix + 1U] == L'\0')
+	{
+		/* No vle_compl_finish_group() after this to prevent sorting and
+		 * deduplication. */
+		regs_suggest(&process_suggestion, cfg.sug.maxregfiles);
+	}
+
 	if(vle_compl_get_count() != 0)
 	{
 		draw_suggestion_box();
+		suggestions_are_visible = 1;
 	}
 }
 
@@ -542,7 +578,7 @@ prepare_suggestion_box(int height)
 	WINDOW *win;
 	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
 
-	if((cfg.suggestions & SF_OTHERPANE) && curr_stats.number_of_windows == 2)
+	if((cfg.sug.flags & SF_OTHERPANE) && curr_stats.number_of_windows == 2)
 	{
 		win = other_view->win;
 	}
@@ -574,15 +610,15 @@ hide_suggestion_box(void)
 static int
 should_display_suggestion_box(void)
 {
-	if((cfg.suggestions & SF_NORMAL) && vle_mode_is(NORMAL_MODE))
+	if((cfg.sug.flags & SF_NORMAL) && vle_mode_is(NORMAL_MODE))
 	{
 		return 1;
 	}
-	if((cfg.suggestions & SF_VISUAL) && vle_mode_is(VISUAL_MODE))
+	if((cfg.sug.flags & SF_VISUAL) && vle_mode_is(VISUAL_MODE))
 	{
 		return 1;
 	}
-	if((cfg.suggestions & SF_VIEW) && vle_mode_is(VIEW_MODE))
+	if((cfg.sug.flags & SF_VIEW) && vle_mode_is(VIEW_MODE))
 	{
 		return 1;
 	}

@@ -57,7 +57,10 @@ typedef enum
 	SF_VIEW              = 1 << 2, /* Display in view mode. */
 	SF_OTHERPANE         = 1 << 3, /* Display list in other pane, if available. */
 	SF_DELAY             = 1 << 4, /* Postpone suggestions by small delay. */
-	NUM_SUGGESTION_FLAGS =      5  /* Number of flags. */
+	SF_KEYS              = 1 << 5, /* Include keys suggestions in results. */
+	SF_MARKS             = 1 << 6, /* Include marks suggestions in results. */
+	SF_REGISTERS         = 1 << 7, /* Include registers suggestions in results. */
+	NUM_SUGGESTION_FLAGS =      8  /* Number of flags. */
 }
 SuggestionFlags;
 
@@ -69,7 +72,7 @@ typedef enum
 }
 ViewDirSize;
 
-/* Indexes for cfg.decorations. */
+/* Indexes for cfg.type_decs. */
 enum
 {
 	DECORATION_PREFIX, /* The symbol, which is prepended to file name. */
@@ -136,8 +139,18 @@ typedef struct config_t
 	/* Whether wild menu should be a popup instead of a bar. */
 	int wild_popup;
 
-	/* Combination of SuggestionFlags, configures when to show key suggestions. */
-	int suggestions;
+	/* Settings related to suggestions. */
+	struct
+	{
+		/* Combination of SuggestionFlags, configures when and how to show
+		 * suggestions. */
+		int flags;
+		/* Maximum number of register files to display in suggestions. */
+		int maxregfiles;
+		/* Delay before displaying suggestions (in milliseconds). */
+		int delay;
+	}
+	sug;
 
 	int ignore_case;
 	int smart_case;
@@ -161,7 +174,7 @@ typedef struct config_t
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
 	int dot_dirs;
 	/* File type specific prefixes and suffixes ('classify'). */
-	char decorations[FT_COUNT][2][9];
+	char type_decs[FT_COUNT][2][9];
 	/* File name specific prefixes and suffixes ('classify'). */
 	file_dec_t *name_decs;
 	/* Size of name_decs array. */

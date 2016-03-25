@@ -105,7 +105,7 @@ static void autochpos_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
 static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
-static int str_to_classify(const char str[], char decorations[FT_COUNT][2][9]);
+static int str_to_classify(const char str[], char type_decs[FT_COUNT][2][9]);
 static const char * pick_out_decoration(char classify_item[], FileType *type,
 		const char **expr);
 static int validate_decorations(const char prefix[], const char suffix[]);
@@ -178,6 +178,8 @@ static int map_name(const char name[], void *arg);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void suggestoptions_handler(OPT_OP op, optval_t val);
+static int read_int(const char line[], int *i);
+static void reset_suggestoptions(void);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
@@ -248,6 +250,9 @@ static const char *suggestoptions_vals[][2] = {
 	{ "view",      "display in view mode" },
 	{ "otherpane", "use other pane for suggestions, if available" },
 	{ "delay",     "display suggestions after a short delay" },
+	{ "keys",      "include keys suggestions in results" },
+	{ "marks",     "include marks suggestions in results" },
+	{ "registers", "include registers suggestions in results" },
 };
 ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 
@@ -266,8 +271,8 @@ static const char *shortmess_vals[][2] = {
 /* Possible flags of 'tuioptions' and their count. */
 static const char *tuioptions_vals[][2] = {
 	{ "ps", "all tuioptions values" },
-	{ "p", "use padding in views and preview" },
-	{ "s", "display side borders" },
+	{ "p",  "use padding in views and preview" },
+	{ "s",  "display side borders" },
 };
 
 /* Possible values of 'dirsize' option. */
@@ -581,9 +586,9 @@ options[] = {
 	  { .ref.str_val = &cfg.status_line },
 	},
 	{ "suggestoptions", "", "when to display key suggestions",
-	  OPT_SET, ARRAY_LEN(suggestoptions_vals), suggestoptions_vals,
+	  OPT_STRLIST, ARRAY_LEN(suggestoptions_vals), suggestoptions_vals,
 		&suggestoptions_handler, NULL,
-	  { .ref.set_items = &cfg.suggestions },
+	  { .ref.str_val = &empty },
 	},
 	{ "syscalls", "", "use system calls for file operations",
 	  OPT_BOOL, 0, NULL, &syscalls_handler, NULL,
@@ -751,8 +756,8 @@ classify_to_str(void)
 	/* Type-dependent decorations. */
 	for(ft = 0; ft < FT_COUNT; ++ft)
 	{
-		const char *const prefix = cfg.decorations[ft][DECORATION_PREFIX];
-		const char *const suffix = cfg.decorations[ft][DECORATION_SUFFIX];
+		const char *const prefix = cfg.type_decs[ft][DECORATION_PREFIX];
+		const char *const suffix = cfg.type_decs[ft][DECORATION_SUFFIX];
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
 			char item[64];
@@ -1214,16 +1219,16 @@ chaselinks_handler(OPT_OP op, optval_t val)
 static void
 classify_handler(OPT_OP op, optval_t val)
 {
-	char decorations[FT_COUNT][2][9] = {};
+	char type_decs[FT_COUNT][2][9] = {};
 
-	if(str_to_classify(val.str_val, decorations) == 0)
+	if(str_to_classify(val.str_val, type_decs) == 0)
 	{
 		int i;
 
-		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged");
-		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
+		assert(sizeof(cfg.type_decs) == sizeof(type_decs) && "Arrays diverged");
+		memcpy(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs));
 
-		/* Reset cached indexes for name-dependent decorations. */
+		/* Reset cached indexes for name-dependent type_decs. */
 		for(i = 0; i < lwin.list_rows; ++i)
 		{
 			lwin.dir_entry[i].name_dec_num = -1;
@@ -1251,7 +1256,7 @@ classify_handler(OPT_OP op, optval_t val)
  * It's assumed that decorations array is zeroed.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
+str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 {
 	char *saveptr;
 	char *str_copy;
@@ -1323,8 +1328,8 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
 
 			if(!error_encountered)
 			{
-				strcpy(decorations[type][DECORATION_PREFIX], token);
-				strcpy(decorations[type][DECORATION_SUFFIX], suffix);
+				strcpy(type_decs[type][DECORATION_PREFIX], token);
+				strcpy(type_decs[type][DECORATION_SUFFIX], suffix);
 			}
 		}
 	}
@@ -1506,6 +1511,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
+	/* XXX: we shouldn't reset this value unless format is correct. */
 	(void)replace_string(&cfg.border_filler, " ");
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
@@ -2380,7 +2386,131 @@ statusline_handler(OPT_OP op, optval_t val)
 static void
 suggestoptions_handler(OPT_OP op, optval_t val)
 {
-	cfg.suggestions = val.set_items;
+	int new_value = 0;
+	int maxregfiles = 5;
+	int delay = 500;
+
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(strcmp(part, "normal") == 0)         new_value |= SF_NORMAL;
+		else if(strcmp(part, "visual") == 0)    new_value |= SF_VISUAL;
+		else if(strcmp(part, "view") == 0)      new_value |= SF_VIEW;
+		else if(strcmp(part, "otherpane") == 0) new_value |= SF_OTHERPANE;
+		else if(strcmp(part, "keys") == 0)      new_value |= SF_KEYS;
+		else if(strcmp(part, "marks") == 0)     new_value |= SF_MARKS;
+		else if(starts_with_lit(part, "delay:"))
+		{
+			const char *const num = after_first(part, ':');
+			new_value |= SF_DELAY;
+			if(!read_int(after_first(part, ':'), &delay))
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"delay\" value: %s",
+						num);
+				break;
+			}
+			if(delay < 0)
+			{
+				vle_tb_append_line(vle_err, "Delay can't be negative");
+				break;
+			}
+		}
+		else if(starts_with_lit(part, "registers:"))
+		{
+			const char *const num = after_first(part, ':');
+			new_value |= SF_REGISTERS;
+			if(!read_int(after_first(part, ':'), &maxregfiles))
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"registers\" value: %s",
+						num);
+				break;
+			}
+			if(maxregfiles <= 0)
+			{
+				vle_tb_append_line(vle_err,
+						"Must be at least one displayed register file");
+				break;
+			}
+		}
+		else if(strcmp(part, "delay") == 0)     new_value |= SF_DELAY;
+		else if(strcmp(part, "registers") == 0) new_value |= SF_REGISTERS;
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err,
+					"Invalid key for 'suggestoptions' option: %s", part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		cfg.sug.flags = new_value;
+		cfg.sug.maxregfiles = maxregfiles;
+		cfg.sug.delay = delay;
+	}
+	else
+	{
+		reset_suggestoptions();
+	}
+}
+
+/* Converts line to a number.  Handles overflow/underflow.  Returns non-zero on
+ * success and zero otherwise. */
+static int
+read_int(const char line[], int *i)
+{
+	char *endptr;
+	const long l = strtol(line, &endptr, 10);
+
+	*i = (l > INT_MAX) ? INT_MAX : ((l < INT_MIN) ? INT_MIN : l);
+
+	return *line != '\0' && *endptr == '\0';
+}
+
+/* Sets value of 'suggestoptions' based on current configuration values. */
+static void
+reset_suggestoptions(void)
+{
+	optval_t val;
+	vle_textbuf *const descr = vle_tb_create();
+
+	if(cfg.sug.flags & SF_NORMAL)    vle_tb_appendf(descr, "%s", "normal,");
+	if(cfg.sug.flags & SF_VISUAL)    vle_tb_appendf(descr, "%s", "visual,");
+	if(cfg.sug.flags & SF_VIEW)      vle_tb_appendf(descr, "%s", "view,");
+	if(cfg.sug.flags & SF_OTHERPANE) vle_tb_appendf(descr, "%s", "otherpane,");
+	if(cfg.sug.flags & SF_KEYS)      vle_tb_appendf(descr, "%s", "keys,");
+	if(cfg.sug.flags & SF_MARKS)     vle_tb_appendf(descr, "%s", "marks,");
+	if(cfg.sug.flags & SF_DELAY)
+	{
+		if(cfg.sug.delay == 500)
+		{
+			vle_tb_appendf(descr, "%s", "delay,");
+		}
+		else
+		{
+			vle_tb_appendf(descr, "delay:%d,", cfg.sug.delay);
+		}
+	}
+	if(cfg.sug.flags & SF_REGISTERS)
+	{
+		if(cfg.sug.maxregfiles == 5)
+		{
+			vle_tb_appendf(descr, "%s", "registers,");
+		}
+		else
+		{
+			vle_tb_appendf(descr, "registers:%d,", cfg.sug.maxregfiles);
+		}
+	}
+
+	val.str_val = (char *)vle_tb_get_data(descr);
+	set_option("suggestoptions", val, OPT_GLOBAL);
+
+	vle_tb_free(descr);
 }
 
 /* Makes vifm prefer to perform file-system operations with external

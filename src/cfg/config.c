@@ -138,7 +138,11 @@ cfg_init(void)
 	cfg.use_vim_help = 0;
 	cfg.wild_menu = 0;
 	cfg.wild_popup = 0;
-	cfg.suggestions = 0;
+
+	cfg.sug.flags = 0;
+	cfg.sug.maxregfiles = 5;
+	cfg.sug.delay = 500;
+
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
@@ -204,8 +208,8 @@ cfg_init(void)
 
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
 
-	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
-	cfg.decorations[FT_DIR][DECORATION_SUFFIX][0] = '/';
+	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
+	cfg.type_decs[FT_DIR][DECORATION_SUFFIX][0] = '/';
 
 	cfg.name_decs = NULL;
 	cfg.name_dec_count = 0;

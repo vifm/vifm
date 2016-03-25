@@ -1264,14 +1264,20 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 static void
 sug_cmd_quote(vle_keys_list_cb cb)
 {
-	suggest_marks(cb, 0);
+	if(cfg.sug.flags & SF_MARKS)
+	{
+		suggest_marks(cb, 0);
+	}
 }
 
 /* Suggests only marks that point into current view. */
 static void
 sug_sel_quote(vle_keys_list_cb cb)
 {
-	suggest_marks(cb, 1);
+	if(cfg.sug.flags & SF_MARKS)
+	{
+		suggest_marks(cb, 1);
+	}
 }
 
 /* Move cursor to the last column in ls-view sub-mode. */
