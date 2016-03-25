@@ -128,7 +128,7 @@ cfg_init(void)
 	cfg.sort_numbers = 0;
 	cfg.follow_links = 1;
 	cfg.fast_run = 0;
-	cfg.confirm = 1;
+	cfg.confirm = CONFIRM_DELETE | CONFIRM_PERM_DELETE;
 	cfg.vi_command = strdup("vim");
 	cfg.vi_cmd_bg = 0;
 	cfg.vi_x_command = strdup("");
@@ -1047,6 +1047,14 @@ cfg_parent_dir_is_visible(int in_root)
 {
 	return ((in_root && (cfg.dot_dirs & DD_ROOT_PARENT)) ||
 			(!in_root && (cfg.dot_dirs & DD_NONROOT_PARENT)));
+}
+
+int
+cfg_confirm_delete(int to_trash)
+{
+	return to_trash
+	     ? (cfg.confirm & CONFIRM_DELETE)
+	     : (cfg.confirm & CONFIRM_PERM_DELETE);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

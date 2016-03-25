@@ -934,7 +934,6 @@ write_options(FILE *const fp)
 	fprintf(fp, "=cdpath=%s\n", cfg.cd_path);
 	fprintf(fp, "=%schaselinks\n", cfg.chase_links ? "" : "no");
 	fprintf(fp, "=columns=%d\n", cfg.columns);
-	fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
 	fprintf(fp, "=cpoptions=%s%s%s\n",
 			cfg.filter_inverted_by_default ? "f" : "",
 			cfg.selection_is_primary ? "s" : "",
@@ -998,6 +997,13 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width_g);
 	fprintf(fp, "=[%srelativenumber\n", (lwin.num_type_g & NT_REL) ? "" : "no");
 	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type_g & NT_REL) ? "" : "no");
+
+	fprintf(fp, "%s", "=confirm=");
+	if(cfg.confirm & CONFIRM_DELETE)
+		fprintf(fp, "%s", "delete,");
+	if(cfg.confirm & CONFIRM_PERM_DELETE)
+		fprintf(fp, "%s", "permdelete,");
+	fprintf(fp, "\n");
 
 	fprintf(fp, "%s", "=dotdirs=");
 	if(cfg.dot_dirs & DD_ROOT_PARENT)

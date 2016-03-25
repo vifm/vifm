@@ -79,6 +79,13 @@ enum
 	DECORATION_SUFFIX, /* The symbol, which is appended to file name. */
 };
 
+/* Operations that require user confirmation. */
+enum
+{
+	CONFIRM_DELETE      = 1, /* Deletion to trash. */
+	CONFIRM_PERM_DELETE = 2, /* Permanent deletion. */
+};
+
 /* File decoration description. */
 typedef struct
 {
@@ -131,8 +138,9 @@ typedef struct config_t
 	int undo_levels;  /* Maximum number of changes that can be undone. */
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
 	int follow_links; /* Follow links on l or Enter. */
-	int confirm;      /* Prompt user about file deletion. */
 	int fast_run;
+
+	int confirm; /* About which operations user should be asked (CONFIRM_*). */
 
 	/* Whether wild menu should be used. */
 	int wild_menu;
@@ -294,6 +302,11 @@ int cfg_is_word_wchar(wchar_t c);
 /* Whether ../ directory should appear in file list.  Returns non-zero if so,
  * and zero otherwise. */
 int cfg_parent_dir_is_visible(int in_root);
+
+/* Checks whether file deletion (possibly into trash) requires user confirmation
+ * according to current configuration.  Returns non-zero if so, otherwise zero
+ * is returned. */
+int cfg_confirm_delete(int to_trash);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 

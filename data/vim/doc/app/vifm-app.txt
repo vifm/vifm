@@ -2606,15 +2606,13 @@ Terminal width in characters.
 
                                                *vifm-'confirm'* *vifm-'cf'*
 confirm cf
-type: boolean
-default: true
+type: set
+default: deletion,permdeletion
 
-Ask about permanent deletion of files (on D or :delete! command or on
-undo/redo operation).
-
-Ask for confirmation on file deletion.  Like on |vifm-d| key or |vifm-:delete|
-command.  Permanent removal with |vifm-D| key, :delete! command or on
-undo/redo operation always requires confirmation.
+Defines which operations require confirmation:
+ - deletion     - moving files to trash (on |vifm-d| or |vifm-:delete|);
+ - permdeletion - permanent deletion of files (on |vifm-D| or :delete!
+                  command or on undo/redo operation).
 
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo

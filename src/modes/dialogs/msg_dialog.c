@@ -605,7 +605,7 @@ int
 confirm_deletion(int use_trash)
 {
 	curr_stats.confirmed = 0;
-	if(!use_trash || cfg.confirm)
+	if(cfg_confirm_delete(use_trash))
 	{
 		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
 		const int proceed = prompt_msg(title,

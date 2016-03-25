@@ -236,6 +236,12 @@ static const char *cpoptions_vals[][2] = {
 	{ "t", "switch active pane via <tab>" },
 };
 
+/* Possible values of 'confirm'. */
+static const char *confirm_vals[][2] = {
+	{ "delete",     "confirm moving to trash" },
+	{ "permdelete", "confirm permanent removal" },
+};
+
 /* Possible values of 'dotdirs'. */
 static const char *dotdirs_vals[][2] = {
 	{ "rootparent",    "show .. in FS root" },
@@ -451,8 +457,8 @@ options[] = {
 	  OPT_INT, 0, NULL, &columns_handler, NULL,
 	  { .ref.int_val = &cfg.columns },
 	},
-	{ "confirm", "cf", "ask for file deletion confirmation",
-	  OPT_BOOL, 0, NULL, &confirm_handler, NULL,
+	{ "confirm", "cf", "confirm file operations",
+	  OPT_SET, ARRAY_LEN(confirm_vals), confirm_vals, &confirm_handler, NULL,
 	  { .ref.bool_val = &cfg.confirm },
 	},
 	{ "cpoptions", "cpo", "compatibility options",
@@ -1438,7 +1444,7 @@ columns_handler(OPT_OP op, optval_t val)
 static void
 confirm_handler(OPT_OP op, optval_t val)
 {
-	cfg.confirm = val.bool_val;
+	cfg.confirm = val.set_items;
 }
 
 /* Parses set of compatibility flags and changes configuration accordingly. */
