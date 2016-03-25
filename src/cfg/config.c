@@ -141,6 +141,7 @@ cfg_init(void)
 
 	cfg.suggestions = 0;
 	cfg.sug_maxregfiles = 5;
+	cfg.sug_delay = 500;
 
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;

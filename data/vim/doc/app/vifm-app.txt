@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 24
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 25
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3157,9 +3157,10 @@ values are available:
  - visual          - in visual mode;
  - view            - in view mode;
  - otherpane       - use other pane to display suggestions, when available;
- - delay           - display suggestions after a small delay (to do not annoy
+ - delay[:num]     - display suggestions after a small delay (to do not annoy
                      if you just want to type a fast shortcut consisting of
-                     multiple keys);
+                     multiple keys), num specifies the delay in ms (500 by
+                     default);
  - keys            - include shortcuts (commands and selectors);
  - marks           - include marks;
  - registers[:num] - include registers, at most num files (5 by default).

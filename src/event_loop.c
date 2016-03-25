@@ -75,6 +75,9 @@ static const wchar_t *curr_input_buf;
 /* Current position in current input buffer. */
 static const size_t *curr_input_buf_pos;
 
+/* Whether suggestion box is active. */
+static int suggestions_are_visible;
+
 void
 event_loop(const int *quit)
 {
@@ -90,6 +93,7 @@ event_loop(const int *quit)
 
 	int last_result = 0;
 	int wait_for_enter = 0;
+	int wait_for_suggestion = 0;
 	int timeout = cfg.timeout_len;
 
 	input_buf[0] = L'\0';
@@ -118,11 +122,15 @@ event_loop(const int *quit)
 		 * waiting for the next key after timeout. */
 		do
 		{
+			const int actual_timeout = wait_for_suggestion
+			                         ? MIN(timeout, cfg.sug_delay)
+			                         : timeout;
+
 			modes_periodic();
 
 			check_background_jobs();
 
-			got_input = (get_char_async_loop(status_bar, &c, timeout) != ERR);
+			got_input = (get_char_async_loop(status_bar, &c, actual_timeout) != ERR);
 
 			/* This loop can be infinite if terminal becomes not available, so force
 			 * checking terminal state here. */
@@ -131,20 +139,27 @@ event_loop(const int *quit)
 				vifm_finish("Terminal is not available.");
 			}
 
+			/* If suggestion delay timed out, reset it and wait the rest of the
+			 * timeout. */
+			if(!got_input && wait_for_suggestion)
+			{
+				wait_for_suggestion = 0;
+				timeout -= actual_timeout;
+				display_suggestion_box(input_buf);
+				continue;
+			}
+			wait_for_suggestion = 0;
+
 			if(!got_input && (input_buf_pos == 0 || last_result == KEYS_WAIT))
 			{
-				if((cfg.suggestions & SF_DELAY) &&
-						(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT))
-				{
-					display_suggestion_box(input_buf);
-				}
-
 				timeout = cfg.timeout_len;
 				continue;
 			}
 			break;
 		}
 		while(1);
+
+		suggestions_are_visible = 0;
 
 		/* Ensure that current working directory is set correctly (some pieces of
 		 * code rely on this). */
@@ -224,9 +239,9 @@ event_loop(const int *quit)
 
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
-				if(!(cfg.suggestions & SF_DELAY) || last_result == KEYS_WAIT_SHORT)
+				if(should_display_suggestion_box())
 				{
-					display_suggestion_box(input_buf);
+					wait_for_suggestion = 1;
 				}
 
 				if(got_input)
@@ -493,6 +508,7 @@ display_suggestion_box(const wchar_t input[])
 	if(vle_compl_get_count() != 0)
 	{
 		draw_suggestion_box();
+		suggestions_are_visible = 1;
 	}
 }
 

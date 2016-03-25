@@ -1015,12 +1015,21 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "view,");
 	if(cfg.suggestions & SF_OTHERPANE)
 		fprintf(fp, "%s", "otherpane,");
-	if(cfg.suggestions & SF_DELAY)
-		fprintf(fp, "%s", "delay,");
 	if(cfg.suggestions & SF_KEYS)
 		fprintf(fp, "%s", "keys,");
 	if(cfg.suggestions & SF_MARKS)
 		fprintf(fp, "%s", "marks,");
+	if(cfg.suggestions & SF_DELAY)
+	{
+		if(cfg.sug_delay == 500)
+		{
+			fprintf(fp, "%s", "delay,");
+		}
+		else
+		{
+			fprintf(fp, "delay:%d,", cfg.sug_delay);
+		}
+	}
 	if(cfg.suggestions & SF_REGISTERS)
 	{
 		if(cfg.sug_maxregfiles == 5)

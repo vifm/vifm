@@ -2388,6 +2388,7 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 {
 	int new_value = 0;
 	int maxregfiles = 5;
+	int delay = 500;
 
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
@@ -2398,9 +2399,24 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 		else if(strcmp(part, "visual") == 0)    new_value |= SF_VISUAL;
 		else if(strcmp(part, "view") == 0)      new_value |= SF_VIEW;
 		else if(strcmp(part, "otherpane") == 0) new_value |= SF_OTHERPANE;
-		else if(strcmp(part, "delay") == 0)     new_value |= SF_DELAY;
 		else if(strcmp(part, "keys") == 0)      new_value |= SF_KEYS;
 		else if(strcmp(part, "marks") == 0)     new_value |= SF_MARKS;
+		else if(starts_with_lit(part, "delay:"))
+		{
+			const char *const num = after_first(part, ':');
+			new_value |= SF_DELAY;
+			if(!read_int(after_first(part, ':'), &delay))
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"delay\" value: %s",
+						num);
+				break;
+			}
+			if(delay < 0)
+			{
+				vle_tb_append_line(vle_err, "Delay can't be negative");
+				break;
+			}
+		}
 		else if(starts_with_lit(part, "registers:"))
 		{
 			const char *const num = after_first(part, ':');
@@ -2418,6 +2434,7 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 				break;
 			}
 		}
+		else if(strcmp(part, "delay") == 0)     new_value |= SF_DELAY;
 		else if(strcmp(part, "registers") == 0) new_value |= SF_REGISTERS;
 		else
 		{
@@ -2433,6 +2450,7 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 	{
 		cfg.suggestions = new_value;
 		cfg.sug_maxregfiles = maxregfiles;
+		cfg.sug_delay = delay;
 	}
 	else
 	{
@@ -2464,9 +2482,19 @@ reset_suggestoptions(void)
 	if(cfg.suggestions & SF_VISUAL)    vle_tb_appendf(descr, "%s", "visual,");
 	if(cfg.suggestions & SF_VIEW)      vle_tb_appendf(descr, "%s", "view,");
 	if(cfg.suggestions & SF_OTHERPANE) vle_tb_appendf(descr, "%s", "otherpane,");
-	if(cfg.suggestions & SF_DELAY)     vle_tb_appendf(descr, "%s", "delay,");
 	if(cfg.suggestions & SF_KEYS)      vle_tb_appendf(descr, "%s", "keys,");
 	if(cfg.suggestions & SF_MARKS)     vle_tb_appendf(descr, "%s", "marks,");
+	if(cfg.suggestions & SF_DELAY)
+	{
+		if(cfg.sug_delay == 500)
+		{
+			vle_tb_appendf(descr, "%s", "delay,");
+		}
+		else
+		{
+			vle_tb_appendf(descr, "delay:%d,", cfg.sug_delay);
+		}
+	}
 	if(cfg.suggestions & SF_REGISTERS)
 	{
 		if(cfg.sug_maxregfiles == 5)

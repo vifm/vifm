@@ -143,6 +143,8 @@ typedef struct config_t
 	int suggestions;
 	/* Maximum number of register files to display in suggestions. */
 	int sug_maxregfiles;
+	/* Delay before displaying suggestions (in milliseconds). */
+	int sug_delay;
 
 	int ignore_case;
 	int smart_case;
