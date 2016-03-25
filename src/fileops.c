@@ -787,7 +787,7 @@ delete_files_bg(FileView *view, int use_trash)
 	args->use_trash = use_trash;
 
 	general_prepare_for_bg_task(view, args);
-	if(!use_trash || cfg.confirm)
+	if(cfg_confirm_delete(use_trash))
 	{
 		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
 		char perm_del_msg[512];

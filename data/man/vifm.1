@@ -3169,13 +3169,16 @@ so they don't affect commands which operate on file names in any way.  Comma
 found in the description of filetype() function.
 .TP
 .BI "'confirm' 'cf'"
-type: boolean
+type: set
 .br
-default: true
+default: deletion,permdeletion
 .br
-Ask for confirmation on file deletion.  Like on d key or :delete command.
-Permanent removal with D key, :delete! command or on undo/redo operation always
-requires confirmation.
+Defines which operations require confirmation:
+.br
+ \- deletion     \- moving files to trash (on d or :delete);
+.br
+ \- permdeletion \- permanent deletion of files (on D or :delete! command or on
+undo/redo operation).
 .TP
 .BI "'cpoptions' 'cpo'"
 type: charset
@@ -3185,14 +3188,15 @@ default: "fst"
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
 .br
-f \- when included, running :filter command results in not inverted (matching
-files are filtered out) and :filter! in inverted (matching files are left)
-filter, when omitted, meaning of the exclamation mark changes to the opposite;
+ \- f \- when included, running :filter command results in not inverted
+(matching files are filtered out) and :filter! in inverted (matching files are
+left) filter, when omitted, meaning of the exclamation mark changes to the
+opposite;
 .br
-s \- when included, yy, dd and DD normal mode commands act on selection, \
+ \- s \- when included, yy, dd and DD normal mode commands act on selection, \
 otherwise they operate on current file only;
 .br
-t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
+ \- t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
 pane, otherwise <tab> and <c-i> go forward in the view history.
 .TP
 .BI 'deleteprg'

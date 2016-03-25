@@ -25,9 +25,8 @@
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
-	Changed meaning of 'confirm' option.  Now confirmation of permanent deletion
-	is mandatory and 'confirm' controls regular file deletion.  Thanks to
-	Losiara.
+	Changed type of 'confirm' option.  Now it's a set that picks which
+	operations should be confirmed.  Thanks to Losiara and mvucBmM0.
 
 	Do not reset completion on terminal resize.
 

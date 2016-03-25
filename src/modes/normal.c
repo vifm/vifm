@@ -1521,7 +1521,7 @@ static int
 delete_confirmed(int use_trash)
 {
 	curr_stats.confirmed = 0;
-	if(cfg.confirm)
+	if(cfg_confirm_delete(use_trash))
 	{
 		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
 		if(!prompt_msg(title, "Are you sure you want to delete file(s)?"))
