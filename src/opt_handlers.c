@@ -2448,9 +2448,9 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 
 	if(part == NULL)
 	{
-		cfg.suggestions = new_value;
-		cfg.sug_maxregfiles = maxregfiles;
-		cfg.sug_delay = delay;
+		cfg.sug.flags = new_value;
+		cfg.sug.maxregfiles = maxregfiles;
+		cfg.sug.delay = delay;
 	}
 	else
 	{
@@ -2478,32 +2478,32 @@ reset_suggestoptions(void)
 	optval_t val;
 	vle_textbuf *const descr = vle_tb_create();
 
-	if(cfg.suggestions & SF_NORMAL)    vle_tb_appendf(descr, "%s", "normal,");
-	if(cfg.suggestions & SF_VISUAL)    vle_tb_appendf(descr, "%s", "visual,");
-	if(cfg.suggestions & SF_VIEW)      vle_tb_appendf(descr, "%s", "view,");
-	if(cfg.suggestions & SF_OTHERPANE) vle_tb_appendf(descr, "%s", "otherpane,");
-	if(cfg.suggestions & SF_KEYS)      vle_tb_appendf(descr, "%s", "keys,");
-	if(cfg.suggestions & SF_MARKS)     vle_tb_appendf(descr, "%s", "marks,");
-	if(cfg.suggestions & SF_DELAY)
+	if(cfg.sug.flags & SF_NORMAL)    vle_tb_appendf(descr, "%s", "normal,");
+	if(cfg.sug.flags & SF_VISUAL)    vle_tb_appendf(descr, "%s", "visual,");
+	if(cfg.sug.flags & SF_VIEW)      vle_tb_appendf(descr, "%s", "view,");
+	if(cfg.sug.flags & SF_OTHERPANE) vle_tb_appendf(descr, "%s", "otherpane,");
+	if(cfg.sug.flags & SF_KEYS)      vle_tb_appendf(descr, "%s", "keys,");
+	if(cfg.sug.flags & SF_MARKS)     vle_tb_appendf(descr, "%s", "marks,");
+	if(cfg.sug.flags & SF_DELAY)
 	{
-		if(cfg.sug_delay == 500)
+		if(cfg.sug.delay == 500)
 		{
 			vle_tb_appendf(descr, "%s", "delay,");
 		}
 		else
 		{
-			vle_tb_appendf(descr, "delay:%d,", cfg.sug_delay);
+			vle_tb_appendf(descr, "delay:%d,", cfg.sug.delay);
 		}
 	}
-	if(cfg.suggestions & SF_REGISTERS)
+	if(cfg.sug.flags & SF_REGISTERS)
 	{
-		if(cfg.sug_maxregfiles == 5)
+		if(cfg.sug.maxregfiles == 5)
 		{
 			vle_tb_appendf(descr, "%s", "registers,");
 		}
 		else
 		{
-			vle_tb_appendf(descr, "registers:%d,", cfg.sug_maxregfiles);
+			vle_tb_appendf(descr, "registers:%d,", cfg.sug.maxregfiles);
 		}
 	}
 

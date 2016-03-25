@@ -139,9 +139,9 @@ cfg_init(void)
 	cfg.wild_menu = 0;
 	cfg.wild_popup = 0;
 
-	cfg.suggestions = 0;
-	cfg.sug_maxregfiles = 5;
-	cfg.sug_delay = 500;
+	cfg.sug.flags = 0;
+	cfg.sug.maxregfiles = 5;
+	cfg.sug.delay = 500;
 
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;

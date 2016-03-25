@@ -595,7 +595,7 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 static void
 sug_quote(vle_keys_list_cb cb)
 {
-	if(cfg.suggestions & SF_MARKS)
+	if(cfg.sug.flags & SF_MARKS)
 	{
 		suggest_marks(cb, 1);
 	}

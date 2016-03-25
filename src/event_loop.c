@@ -123,7 +123,7 @@ event_loop(const int *quit)
 		do
 		{
 			const int actual_timeout = wait_for_suggestion
-			                         ? MIN(timeout, cfg.sug_delay)
+			                         ? MIN(timeout, cfg.sug.delay)
 			                         : timeout;
 
 			modes_periodic();
@@ -496,7 +496,7 @@ display_suggestion_box(const wchar_t input[])
 
 	/* Fill completion list with suggestions of keys and marks. */
 	vle_compl_reset();
-	vle_keys_suggest(input, &process_suggestion, !(cfg.suggestions & SF_KEYS));
+	vle_keys_suggest(input, &process_suggestion, !(cfg.sug.flags & SF_KEYS));
 	/* Completion grouping removes duplicates.  Because user-defined keys are
 	 * reported first, this has an effect of leaving only them in the resulting
 	 * list, which is correct as they have higher priority. */
@@ -504,12 +504,12 @@ display_suggestion_box(const wchar_t input[])
 
 	/* Handle registers suggestions. */
 	prefix = wcsspn(input, L"0123456789");
-	if((cfg.suggestions & SF_REGISTERS) &&
+	if((cfg.sug.flags & SF_REGISTERS) &&
 			input[prefix] == L'"' && input[prefix + 1U] == L'\0')
 	{
 		/* No vle_compl_finish_group() after this to prevent sorting and
 		 * deduplication. */
-		regs_suggest(&process_suggestion, cfg.sug_maxregfiles);
+		regs_suggest(&process_suggestion, cfg.sug.maxregfiles);
 	}
 
 	if(vle_compl_get_count() != 0)
@@ -578,7 +578,7 @@ prepare_suggestion_box(int height)
 	WINDOW *win;
 	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
 
-	if((cfg.suggestions & SF_OTHERPANE) && curr_stats.number_of_windows == 2)
+	if((cfg.sug.flags & SF_OTHERPANE) && curr_stats.number_of_windows == 2)
 	{
 		win = other_view->win;
 	}
@@ -610,15 +610,15 @@ hide_suggestion_box(void)
 static int
 should_display_suggestion_box(void)
 {
-	if((cfg.suggestions & SF_NORMAL) && vle_mode_is(NORMAL_MODE))
+	if((cfg.sug.flags & SF_NORMAL) && vle_mode_is(NORMAL_MODE))
 	{
 		return 1;
 	}
-	if((cfg.suggestions & SF_VISUAL) && vle_mode_is(VISUAL_MODE))
+	if((cfg.sug.flags & SF_VISUAL) && vle_mode_is(VISUAL_MODE))
 	{
 		return 1;
 	}
-	if((cfg.suggestions & SF_VIEW) && vle_mode_is(VIEW_MODE))
+	if((cfg.sug.flags & SF_VIEW) && vle_mode_is(VIEW_MODE))
 	{
 		return 1;
 	}

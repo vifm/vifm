@@ -210,30 +210,30 @@ TEST(classify_suffix_prefix_lengths)
 
 TEST(suggestoptions_all_values)
 {
-	cfg.suggestions = 0;
-	cfg.sug_maxregfiles = 0;
-	cfg.sug_delay = 0;
+	cfg.sug.flags = 0;
+	cfg.sug.maxregfiles = 0;
+	cfg.sug.delay = 0;
 
 	assert_success(exec_commands("set suggestoptions=normal,visual,view,otherpane"
 				",delay,keys,marks,registers", &lwin, CIT_COMMAND));
 
 	assert_int_equal(SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
-			SF_KEYS | SF_MARKS | SF_REGISTERS, cfg.suggestions);
-	assert_int_equal(5, cfg.sug_maxregfiles);
-	assert_int_equal(500, cfg.sug_delay);
+			SF_KEYS | SF_MARKS | SF_REGISTERS, cfg.sug.flags);
+	assert_int_equal(5, cfg.sug.maxregfiles);
+	assert_int_equal(500, cfg.sug.delay);
 }
 
 TEST(suggestoptions_wrong_value)
 {
-	cfg.suggestions = 0;
-	cfg.sug_maxregfiles = 0;
-	cfg.sug_delay = 0;
+	cfg.sug.flags = 0;
+	cfg.sug.maxregfiles = 0;
+	cfg.sug.delay = 0;
 
 	assert_failure(exec_commands("set suggestoptions=asdf", &lwin, CIT_COMMAND));
 
-	assert_int_equal(0, cfg.suggestions);
-	assert_int_equal(0, cfg.sug_maxregfiles);
-	assert_int_equal(0, cfg.sug_delay);
+	assert_int_equal(0, cfg.sug.flags);
+	assert_int_equal(0, cfg.sug.maxregfiles);
+	assert_int_equal(0, cfg.sug.delay);
 }
 
 TEST(suggestoptions_empty_value)
@@ -241,53 +241,53 @@ TEST(suggestoptions_empty_value)
 	assert_success(exec_commands("set suggestoptions=normal", &lwin,
 				CIT_COMMAND));
 
-	cfg.suggestions = SF_NORMAL;
-	cfg.sug_maxregfiles = 0;
-	cfg.sug_delay = 0;
+	cfg.sug.flags = SF_NORMAL;
+	cfg.sug.maxregfiles = 0;
+	cfg.sug.delay = 0;
 
 	assert_success(exec_commands("set suggestoptions=", &lwin, CIT_COMMAND));
 
-	assert_int_equal(0, cfg.suggestions);
-	assert_int_equal(5, cfg.sug_maxregfiles);
-	assert_int_equal(500, cfg.sug_delay);
+	assert_int_equal(0, cfg.sug.flags);
+	assert_int_equal(5, cfg.sug.maxregfiles);
+	assert_int_equal(500, cfg.sug.delay);
 }
 
 TEST(suggestoptions_registers_number)
 {
-	cfg.suggestions = SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
+	cfg.sug.flags = SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
 					SF_KEYS | SF_MARKS | SF_REGISTERS;
-	cfg.sug_maxregfiles = 4;
+	cfg.sug.maxregfiles = 4;
 
 	assert_failure(exec_commands("set suggestoptions=registers:-4", &lwin,
 				CIT_COMMAND));
-	assert_int_equal(4, cfg.sug_maxregfiles);
+	assert_int_equal(4, cfg.sug.maxregfiles);
 
 	assert_failure(exec_commands("set suggestoptions=registers:0", &lwin,
 				CIT_COMMAND));
-	assert_int_equal(4, cfg.sug_maxregfiles);
+	assert_int_equal(4, cfg.sug.maxregfiles);
 
 	assert_success(exec_commands("set suggestoptions=registers:1", &lwin,
 				CIT_COMMAND));
 
-	assert_int_equal(1, cfg.sug_maxregfiles);
+	assert_int_equal(1, cfg.sug.maxregfiles);
 }
 
 TEST(suggestoptions_delay_number)
 {
-	cfg.sug_delay = 4;
+	cfg.sug.delay = 4;
 
 	assert_failure(exec_commands("set suggestoptions=delay:-4", &lwin,
 				CIT_COMMAND));
-	assert_int_equal(4, cfg.sug_delay);
+	assert_int_equal(4, cfg.sug.delay);
 
 	assert_success(exec_commands("set suggestoptions=delay:0", &lwin,
 				CIT_COMMAND));
-	assert_int_equal(0, cfg.sug_delay);
+	assert_int_equal(0, cfg.sug.delay);
 
 	assert_success(exec_commands("set suggestoptions=delay:100", &lwin,
 				CIT_COMMAND));
 
-	assert_int_equal(100, cfg.sug_delay);
+	assert_int_equal(100, cfg.sug.delay);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

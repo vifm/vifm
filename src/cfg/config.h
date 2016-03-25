@@ -139,12 +139,18 @@ typedef struct config_t
 	/* Whether wild menu should be a popup instead of a bar. */
 	int wild_popup;
 
-	/* Combination of SuggestionFlags, configures when to show key suggestions. */
-	int suggestions;
-	/* Maximum number of register files to display in suggestions. */
-	int sug_maxregfiles;
-	/* Delay before displaying suggestions (in milliseconds). */
-	int sug_delay;
+	/* Settings related to suggestions. */
+	struct
+	{
+		/* Combination of SuggestionFlags, configures when and how to show
+		 * suggestions. */
+		int flags;
+		/* Maximum number of register files to display in suggestions. */
+		int maxregfiles;
+		/* Delay before displaying suggestions (in milliseconds). */
+		int delay;
+	}
+	sug;
 
 	int ignore_case;
 	int smart_case;
