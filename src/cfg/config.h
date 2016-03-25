@@ -72,7 +72,7 @@ typedef enum
 }
 ViewDirSize;
 
-/* Indexes for cfg.decorations. */
+/* Indexes for cfg.type_decs. */
 enum
 {
 	DECORATION_PREFIX, /* The symbol, which is prepended to file name. */
@@ -174,7 +174,7 @@ typedef struct config_t
 	/* Controls displaying of dot directories.  Combination of DotDirs flags. */
 	int dot_dirs;
 	/* File type specific prefixes and suffixes ('classify'). */
-	char decorations[FT_COUNT][2][9];
+	char type_decs[FT_COUNT][2][9];
 	/* File name specific prefixes and suffixes ('classify'). */
 	file_dec_t *name_decs;
 	/* Size of name_decs array. */

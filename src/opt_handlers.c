@@ -105,7 +105,7 @@ static void autochpos_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
 static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
-static int str_to_classify(const char str[], char decorations[FT_COUNT][2][9]);
+static int str_to_classify(const char str[], char type_decs[FT_COUNT][2][9]);
 static const char * pick_out_decoration(char classify_item[], FileType *type,
 		const char **expr);
 static int validate_decorations(const char prefix[], const char suffix[]);
@@ -756,8 +756,8 @@ classify_to_str(void)
 	/* Type-dependent decorations. */
 	for(ft = 0; ft < FT_COUNT; ++ft)
 	{
-		const char *const prefix = cfg.decorations[ft][DECORATION_PREFIX];
-		const char *const suffix = cfg.decorations[ft][DECORATION_SUFFIX];
+		const char *const prefix = cfg.type_decs[ft][DECORATION_PREFIX];
+		const char *const suffix = cfg.type_decs[ft][DECORATION_SUFFIX];
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
 			char item[64];
@@ -1219,16 +1219,16 @@ chaselinks_handler(OPT_OP op, optval_t val)
 static void
 classify_handler(OPT_OP op, optval_t val)
 {
-	char decorations[FT_COUNT][2][9] = {};
+	char type_decs[FT_COUNT][2][9] = {};
 
-	if(str_to_classify(val.str_val, decorations) == 0)
+	if(str_to_classify(val.str_val, type_decs) == 0)
 	{
 		int i;
 
-		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged");
-		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
+		assert(sizeof(cfg.type_decs) == sizeof(type_decs) && "Arrays diverged");
+		memcpy(&cfg.type_decs, &type_decs, sizeof(cfg.type_decs));
 
-		/* Reset cached indexes for name-dependent decorations. */
+		/* Reset cached indexes for name-dependent type_decs. */
 		for(i = 0; i < lwin.list_rows; ++i)
 		{
 			lwin.dir_entry[i].name_dec_num = -1;
@@ -1256,7 +1256,7 @@ classify_handler(OPT_OP op, optval_t val)
  * It's assumed that decorations array is zeroed.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
+str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 {
 	char *saveptr;
 	char *str_copy;
@@ -1328,8 +1328,8 @@ str_to_classify(const char str[], char decorations[FT_COUNT][2][9])
 
 			if(!error_encountered)
 			{
-				strcpy(decorations[type][DECORATION_PREFIX], token);
-				strcpy(decorations[type][DECORATION_SUFFIX], suffix);
+				strcpy(type_decs[type][DECORATION_PREFIX], token);
+				strcpy(type_decs[type][DECORATION_SUFFIX], suffix);
 			}
 		}
 	}

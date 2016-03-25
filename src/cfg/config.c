@@ -208,8 +208,8 @@ cfg_init(void)
 
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
 
-	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
-	cfg.decorations[FT_DIR][DECORATION_SUFFIX][0] = '/';
+	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
+	cfg.type_decs[FT_DIR][DECORATION_SUFFIX][0] = '/';
 
 	cfg.name_decs = NULL;
 	cfg.name_dec_count = 0;
