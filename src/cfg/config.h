@@ -86,6 +86,14 @@ enum
 	CONFIRM_PERM_DELETE = 2, /* Permanent deletion. */
 };
 
+/* Custom view configuration. */
+enum
+{
+	CVO_AUTOCMDS    = 1, /* Trigger autocommands on entering/leaving [v]cv. */
+	CVO_LOCALOPTS   = 2, /* Reset local options on entering/leaving [v]cv. */
+	CVO_LOCALFILTER = 4, /* Reset local filter on entering/leaving [v]cv. */
+};
+
 /* File decoration description. */
 typedef struct
 {
@@ -237,6 +245,9 @@ typedef struct config_t
 
 	/* Controls use of fast file cloning for file systems that support it. */
 	int fast_file_cloning;
+
+	/* Whether various things should be reset on entering/leaving custom views. */
+	int cvoptions;
 }
 config_t;
 

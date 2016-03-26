@@ -2634,6 +2634,17 @@ s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act o
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
     pane, otherwise <c-i> goes forward in the view history.
 
+                                               *vifm-'cvoptions'*
+cvoptions
+type: set
+default:
+
+Specifies whether entering/leaving custom views triggers events that normally
+happen on entering/leaving directories:
+ - autocmds    - trigger autocommands on entering/leaving custom views;
+ - localopts   - reset local options on entering/leaving custom views;
+ - localfilter - reset local filter on entering/leaving custom views.
+
                                                *vifm-'deleteprg'*
 deleteprg
 type: string

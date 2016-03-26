@@ -112,6 +112,7 @@ static int validate_decorations(const char prefix[], const char suffix[]);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
+static void cvoptions_handler(OPT_OP op, optval_t val);
 static void deleteprg_handler(OPT_OP op, optval_t val);
 static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
@@ -234,6 +235,13 @@ static const char *cpoptions_vals[][2] = {
 	{ "f", "leave files that match filter by default" },
 	{ "s", "use selection for yy, dd and DD, when present" },
 	{ "t", "switch active pane via <tab>" },
+};
+
+/* Possible values of 'cvoptions'. */
+static const char *cvoptions_vals[][2] = {
+	{ "autocmds", "trigger autocommands on entering/leaving custom views" },
+	{ "localopts", "reset local options on entering/leaving custom views" },
+	{ "localfilter", "reset local filter on entering/leaving custom views" },
 };
 
 /* Possible values of 'confirm'. */
@@ -465,6 +473,11 @@ options[] = {
 	  OPT_CHARSET, ARRAY_LEN(cpoptions_vals), cpoptions_vals, &cpoptions_handler,
 		NULL,
 	  { .init = &init_cpoptions },
+	},
+	{ "cvoptions", "", "",
+	  OPT_SET, ARRAY_LEN(cvoptions_vals), cvoptions_vals, &cvoptions_handler,
+		NULL,
+	  { .ref.int_val = &cfg.cvoptions },
 	},
 	{ "deleteprg", "", "permanent file deletion program",
 	  OPT_STR, 0, NULL, &deleteprg_handler, NULL,
@@ -1480,6 +1493,13 @@ cpoptions_handler(OPT_OP op, optval_t val)
 		}
 		++p;
 	}
+}
+
+/* Assigns new value for 'cvoptions'. */
+static void
+cvoptions_handler(OPT_OP op, optval_t val)
+{
+	cfg.cvoptions = val.set_items;
 }
 
 /* Handles updates of the 'deleteprg' option. */

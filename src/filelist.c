@@ -114,6 +114,7 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
+static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
@@ -1296,7 +1297,6 @@ change_directory(FileView *view, const char directory[])
 
 	if(location_changed)
 	{
-		filters_dir_updated(view);
 		free_saved_selection(view);
 	}
 	else
@@ -1321,17 +1321,10 @@ change_directory(FileView *view, const char directory[])
 		revert_very_custom(view);
 	}
 
-	if(location_changed)
+	if(location_changed || was_in_custom_view)
 	{
-		/* Stage check is to skip body of the if in tests. */
-		if(curr_stats.load_stage > 0)
-		{
-			reset_local_options(view);
-		}
-
-		vle_aucmd_execute("DirEnter", view->curr_dir, view);
+		on_location_change(view, location_changed);
 	}
-
 	return 0;
 }
 
@@ -1697,11 +1690,33 @@ flist_custom_finish(FileView *view, int very)
 		revert_very_custom(view);
 	}
 
+	on_location_change(view, 0);
+
 	sort_dir_list(0, view);
 
 	flist_ensure_pos_is_valid(view);
 
 	return 0;
+}
+
+/* Perform actions on view location change.  Force activates all actions
+ * unconditionally otherwise they are checked against cvoptions. */
+static void
+on_location_change(FileView *view, int force)
+{
+	if(force || (cfg.cvoptions & CVO_LOCALFILTER))
+	{
+		filters_dir_updated(view);
+	}
+	/* Stage check is to skip body of the if in tests. */
+	if(curr_stats.load_stage > 0 && (force || (cfg.cvoptions & CVO_LOCALOPTS)))
+	{
+		reset_local_options(view);
+	}
+	if(force || (cfg.cvoptions & CVO_AUTOCMDS))
+	{
+		vle_aucmd_execute("DirEnter", view->curr_dir, view);
+	}
 }
 
 /* Applies very custom view specific changes to the view. */

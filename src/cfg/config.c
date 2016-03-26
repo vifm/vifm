@@ -215,6 +215,7 @@ cfg_init(void)
 	cfg.name_dec_count = 0;
 
 	cfg.fast_file_cloning = 0;
+	cfg.cvoptions = 0;
 }
 
 void

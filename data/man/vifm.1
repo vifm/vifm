@@ -3201,6 +3201,17 @@ otherwise they operate on current file only;
  \- t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
 pane, otherwise <tab> and <c-i> go forward in the view history.
 .TP
+.BI 'cvoptions'
+type: set
+.br
+default:
+.br
+Specifies whether entering/leaving custom views triggers events that normally
+happen on entering/leaving directories:
+ \- autocmds    \- trigger autocommands on entering/leaving custom views;
+ \- localopts   \- reset local options on entering/leaving custom views;
+ \- localfilter \- reset local filter on entering/leaving custom views.
+.TP
 .BI 'deleteprg'
 type: string
 .br

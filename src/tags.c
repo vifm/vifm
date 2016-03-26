@@ -41,6 +41,7 @@ const char *tags[] = {
 	"vifm-'confirm'",
 	"vifm-'cpo'",
 	"vifm-'cpoptions'",
+	"vifm-'cvoptions'",
 	"vifm-'deleteprg'",
 	"vifm-'dirsize'",
 	"vifm-'dotdirs'",
