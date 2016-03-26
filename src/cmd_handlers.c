@@ -236,8 +236,8 @@ static int substitute_cmd(const cmd_info_t *cmd_info);
 static int sync_cmd(const cmd_info_t *cmd_info);
 static int sync_selectively(const cmd_info_t *cmd_info);
 static int parse_sync_properties(const cmd_info_t *cmd_info, int *location,
-		int *cursor_pos, int *local_options, int *filters);
-static void sync_location(const char path[], int sync_cursor_pos,
+		int *cursor_pos, int *local_options, int *filters, int *filelist);
+static void sync_location(const char path[], int cv, int sync_cursor_pos,
 		int sync_filters);
 static void sync_local_opts(void);
 static void sync_filters(void);
@@ -3481,8 +3481,6 @@ substitute_cmd(const cmd_info_t *cmd_info)
 static int
 sync_cmd(const cmd_info_t *cmd_info)
 {
-	char dst_path[PATH_MAX];
-
 	if(cmd_info->emark && cmd_info->argc != 0)
 	{
 		return sync_selectively(cmd_info);
@@ -3493,9 +3491,17 @@ sync_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_TRAILING_CHARS;
 	}
 
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", flist_get_dir(curr_view),
-			(cmd_info->argc > 0) ? cmd_info->argv[0] : "");
-	sync_location(dst_path, cmd_info->emark, 0);
+	if(cmd_info->argc > 0)
+	{
+		char dst_path[PATH_MAX];
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", flist_get_dir(curr_view),
+				cmd_info->argv[0]);
+		sync_location(dst_path, 0, cmd_info->emark, 0);
+	}
+	else
+	{
+		sync_location(flist_get_dir(curr_view), 0, cmd_info->emark, 0);
+	}
 
 	return 0;
 }
@@ -3505,9 +3511,10 @@ sync_cmd(const cmd_info_t *cmd_info)
 static int
 sync_selectively(const cmd_info_t *cmd_info)
 {
-	int location = 0, cursor_pos = 0, local_options = 0, filters = 0;
+	int location = 0, cursor_pos = 0, local_options = 0, filters = 0,
+			filelist = 0;
 	if(parse_sync_properties(cmd_info, &location, &cursor_pos, &local_options,
-				&filters) != 0)
+				&filters, &filelist) != 0)
 	{
 		return 1;
 	}
@@ -3518,7 +3525,8 @@ sync_selectively(const cmd_info_t *cmd_info)
 	}
 	if(location)
 	{
-		sync_location(flist_get_dir(curr_view), cursor_pos, filters);
+		filelist = filelist && flist_custom_active(curr_view);
+		sync_location(flist_get_dir(curr_view), filelist, cursor_pos, filters);
 	}
 	if(local_options)
 	{
@@ -3533,7 +3541,7 @@ sync_selectively(const cmd_info_t *cmd_info)
  * non-zero is returned and error message is displayed on the status bar. */
 static int
 parse_sync_properties(const cmd_info_t *cmd_info, int *location,
-		int *cursor_pos, int *local_options, int *filters)
+		int *cursor_pos, int *local_options, int *filters, int *filelist)
 {
 	int i;
 	for(i = 0; i < cmd_info->argc; ++i)
@@ -3555,12 +3563,18 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 		{
 			*filters = 1;
 		}
+		else if(strcmp(property, "filelist") == 0)
+		{
+			*location = 1;
+			*filelist = 1;
+		}
 		else if(strcmp(property, "all") == 0)
 		{
 			*location = 1;
 			*cursor_pos = 1;
 			*local_options = 1;
 			*filters = 1;
+			*filelist = 1;
 		}
 		else
 		{
@@ -3575,22 +3589,36 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 /* Mirrors location (directory and maybe cursor position plus local filter) of
  * the current view to the other one. */
 static void
-sync_location(const char path[], int sync_cursor_pos, int sync_filters)
+sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
 {
 	if(!cd_is_possible(path) || change_directory(other_view, path) < 0)
 	{
 		return;
 	}
 
-	/* Normally changing location resets local filter.  Prevent this by
-	 * synchronizing it here (after directory changing, but before loading list of
-	 * files, hence no extra work). */
-	if(sync_filters)
+	if(cv)
 	{
-		local_filter_apply(other_view, curr_view->local_filter.filter.raw);
+		flist_custom_clone(other_view, curr_view);
+		if(sync_filters)
+		{
+			local_filter_apply(other_view, curr_view->local_filter.filter.raw);
+			replace_dir_entries(other_view, &other_view->custom.entries,
+					&other_view->custom.entry_count, other_view->dir_entry,
+					other_view->list_rows);
+		}
 	}
+	else
+	{
+		/* Normally changing location resets local filter.  Prevent this by
+		 * synchronizing it here (after directory changing, but before loading list
+		 * of files, hence no extra work). */
+		if(sync_filters)
+		{
+			local_filter_apply(other_view, curr_view->local_filter.filter.raw);
+		}
 
-	populate_dir_list(other_view, 0);
+		populate_dir_list(other_view, 0);
+	}
 
 	if(sync_cursor_pos)
 	{

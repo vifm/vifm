@@ -361,6 +361,7 @@ complete_selective_sync(const char str[])
 		{ "cursorpos", "cursor position" },
 		{ "localopts", "values of view-specific options" },
 		{ "filters",   "all filters" },
+		{ "filelist",  "list of files for custom views" },
 		{ "all",       "as much as possible" },
 	};
 

@@ -5,12 +5,12 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
-
-static void init_view(FileView *view);
-static void free_view(FileView *view);
+#include "utils.h"
 
 SETUP()
 {
@@ -21,8 +21,8 @@ SETUP()
 
 	cfg.slow_fs_list = strdup("");
 
-	init_view(&lwin);
-	init_view(&rwin);
+	view_setup(&lwin);
+	view_setup(&rwin);
 }
 
 TEARDOWN()
@@ -32,35 +32,8 @@ TEARDOWN()
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;
 
-	free_view(&lwin);
-	free_view(&rwin);
-}
-
-static void
-init_view(FileView *view)
-{
-	filter_init(&view->local_filter.filter, 1);
-	filter_init(&view->manual_filter, 1);
-	filter_init(&view->auto_filter, 1);
-
-	view->dir_entry = NULL;
-	view->list_rows = 0;
-
-	view->window_rows = 1;
-	view->sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(view, view->sort);
-}
-
-static void
-free_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free(view->dir_entry[i].name);
-	}
-	dynarray_free(view->dir_entry);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(sync_syncs_local_filter)
@@ -73,6 +46,33 @@ TEST(sync_syncs_local_filter)
 	assert_success(exec_commands("sync! location filters", curr_view,
 				CIT_COMMAND));
 	assert_string_equal("a", other_view->local_filter.filter.raw);
+}
+
+TEST(sync_syncs_filelist)
+{
+	char cwd[PATH_MAX];
+	char test_data[PATH_MAX];
+
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	if(is_path_absolute(TEST_DATA_PATH))
+	{
+		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
+	}
+	else
+	{
+		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
+	}
+
+	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			"%s/existing-files", test_data);
+	flist_custom_start(curr_view, "test");
+	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(curr_view, 0) == 0);
+
+	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+
+	assert_true(flist_custom_active(other_view));
+	assert_int_equal(curr_view->list_rows, other_view->list_rows);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

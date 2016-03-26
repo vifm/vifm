@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 25, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "March 26, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2456,7 +2456,7 @@ change the other pane to the current pane directory and synchronize cursor
 position.
 
 .TP
-.BI ":sync! [location | cursorpos | localopts | filters | all]..."
+.BI ":sync! [location | cursorpos | localopts | filters | filelist | all]..."
 change enumerated properties of the other pane to match corresponding properties
 of the current pane.  Arguments have the following meanings:
 .RS
@@ -2469,6 +2469,8 @@ cursorpos \- cursor position (doesn't make sense without "location");
 localopts \- all local options;
 .IP \- 2
 filters \- all filters;
+.IP \- 2
+filelist \- list of files for custom view (implies "location");
 .IP \- 2
 all \- all of the above.
 .RE

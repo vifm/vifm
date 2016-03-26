@@ -198,6 +198,8 @@ void flist_custom_add(FileView *view, const char path[]);
 int flist_custom_finish(FileView *view, int very);
 /* Removes selected files from custom view. */
 void flist_custom_exclude(FileView *view);
+/* Clones list of files from from view to to view. */
+void flist_custom_clone(FileView *to, const FileView *from);
 
 /* Other functions. */
 

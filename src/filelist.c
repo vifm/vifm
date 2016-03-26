@@ -1768,6 +1768,58 @@ is_in_list(FileView *view, const dir_entry_t *entry, void *arg)
 	return !is_in_string_array(list->items, list->nitems, full_path);
 }
 
+void
+flist_custom_clone(FileView *to, const FileView *from)
+{
+	dir_entry_t *dst, *src;
+	int nentries;
+	int i;
+
+	assert(flist_custom_active(from) && to->custom.paths_cache == NULL_TRIE &&
+			"Wrong state of destination view.");
+
+	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
+	replace_string(&to->custom.title, from->custom.title);
+	to->custom.unsorted = from->custom.unsorted;
+	memcpy(&to->custom.unsorted, &from->custom.unsorted,
+			sizeof(to->custom.unsorted));
+	to->curr_dir[0] = '\0';
+
+	if(custom_list_is_incomplete(from))
+	{
+		src = from->custom.entries;
+		nentries = from->custom.entry_count;
+	}
+	else
+	{
+		src = from->dir_entry;
+		nentries = from->list_rows;
+	}
+
+	dst = dynarray_extend(NULL, nentries*sizeof(*dst));
+
+	for(i = 0; i < nentries; ++i)
+	{
+		dst[i] = src[i];
+		dst[i].name = strdup(dst[i].name);
+		if(dst[i].origin == from->curr_dir)
+		{
+			dst[i].origin = to->curr_dir;
+		}
+		else
+		{
+			dst[i].origin = strdup(dst[i].origin);
+		}
+	}
+
+	free_dir_entries(to, &to->custom.entries, &to->custom.entry_count);
+	free_dir_entries(to, &to->dir_entry, &to->list_rows);
+	to->dir_entry = dst;
+	to->list_rows = nentries;
+
+	to->filtered = 0;
+}
+
 const char *
 flist_get_dir(const FileView *view)
 {

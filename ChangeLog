@@ -22,6 +22,9 @@
 	Added support of patterns to 'classify' option, so that files can now be
 	decorated based on their names.  Thanks to elricbk.
 
+	Added "filelist" parameter to :sync! that enables synchronization of
+	custom view.  Thanks to filterfalse.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
