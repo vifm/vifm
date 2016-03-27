@@ -46,6 +46,7 @@ SETUP_ONCE()
 		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
 	}
 }
+
 SETUP()
 {
 	update_string(&cfg.fuse_home, "no");

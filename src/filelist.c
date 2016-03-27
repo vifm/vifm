@@ -114,6 +114,7 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
+static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
@@ -1296,7 +1297,6 @@ change_directory(FileView *view, const char directory[])
 
 	if(location_changed)
 	{
-		filters_dir_updated(view);
 		free_saved_selection(view);
 	}
 	else
@@ -1321,17 +1321,10 @@ change_directory(FileView *view, const char directory[])
 		revert_very_custom(view);
 	}
 
-	if(location_changed)
+	if(location_changed || was_in_custom_view)
 	{
-		/* Stage check is to skip body of the if in tests. */
-		if(curr_stats.load_stage > 0)
-		{
-			reset_local_options(view);
-		}
-
-		vle_aucmd_execute("DirEnter", view->curr_dir, view);
+		on_location_change(view, location_changed);
 	}
-
 	return 0;
 }
 
@@ -1697,11 +1690,33 @@ flist_custom_finish(FileView *view, int very)
 		revert_very_custom(view);
 	}
 
+	on_location_change(view, 0);
+
 	sort_dir_list(0, view);
 
 	flist_ensure_pos_is_valid(view);
 
 	return 0;
+}
+
+/* Perform actions on view location change.  Force activates all actions
+ * unconditionally otherwise they are checked against cvoptions. */
+static void
+on_location_change(FileView *view, int force)
+{
+	if(force || (cfg.cvoptions & CVO_LOCALFILTER))
+	{
+		filters_dir_updated(view);
+	}
+	/* Stage check is to skip body of the if in tests. */
+	if(curr_stats.load_stage > 0 && (force || (cfg.cvoptions & CVO_LOCALOPTS)))
+	{
+		reset_local_options(view);
+	}
+	if(force || (cfg.cvoptions & CVO_AUTOCMDS))
+	{
+		vle_aucmd_execute("DirEnter", view->curr_dir, view);
+	}
 }
 
 /* Applies very custom view specific changes to the view. */
@@ -1766,6 +1781,58 @@ is_in_list(FileView *view, const dir_entry_t *entry, void *arg)
 	char full_path[PATH_MAX];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 	return !is_in_string_array(list->items, list->nitems, full_path);
+}
+
+void
+flist_custom_clone(FileView *to, const FileView *from)
+{
+	dir_entry_t *dst, *src;
+	int nentries;
+	int i;
+
+	assert(flist_custom_active(from) && to->custom.paths_cache == NULL_TRIE &&
+			"Wrong state of destination view.");
+
+	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
+	replace_string(&to->custom.title, from->custom.title);
+	to->custom.unsorted = from->custom.unsorted;
+	memcpy(&to->custom.unsorted, &from->custom.unsorted,
+			sizeof(to->custom.unsorted));
+	to->curr_dir[0] = '\0';
+
+	if(custom_list_is_incomplete(from))
+	{
+		src = from->custom.entries;
+		nentries = from->custom.entry_count;
+	}
+	else
+	{
+		src = from->dir_entry;
+		nentries = from->list_rows;
+	}
+
+	dst = dynarray_extend(NULL, nentries*sizeof(*dst));
+
+	for(i = 0; i < nentries; ++i)
+	{
+		dst[i] = src[i];
+		dst[i].name = strdup(dst[i].name);
+		if(dst[i].origin == from->curr_dir)
+		{
+			dst[i].origin = to->curr_dir;
+		}
+		else
+		{
+			dst[i].origin = strdup(dst[i].origin);
+		}
+	}
+
+	free_dir_entries(to, &to->custom.entries, &to->custom.entry_count);
+	free_dir_entries(to, &to->dir_entry, &to->list_rows);
+	to->dir_entry = dst;
+	to->list_rows = nentries;
+
+	to->filtered = 0;
 }
 
 const char *

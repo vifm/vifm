@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: March 25, 2016
+" Last Change: March 26, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -115,9 +115,9 @@ syntax case match
 
 " Options
 syntax keyword vifmOption contained aproposprg autochpos cdpath cd chaselinks
-		\ classify columns co confirm cf cpoptions cpo deleteprg dotdirs dirsize
-		\ fastrun fillchars fcs findprg followlinks fusehome gdefault grepprg
-		\ history hi hlsearch hls iec ignorecase ic iooptions incsearch is
+		\ classify columns co confirm cf cpoptions cpo cvoptions deleteprg dotdirs
+		\ dirsize fastrun fillchars fcs findprg followlinks fusehome gdefault
+		\ grepprg history hi hlsearch hls iec ignorecase ic iooptions incsearch is
 		\ laststatus lines locateprg ls lsview mintimeoutlen number nu numberwidth
 		\ nuw relativenumber rnu rulerformat ruf runexec scrollbind scb scrolloff so
 		\ sort sortgroups sortorder sortnumbers shell sh shortmess shm slowfs

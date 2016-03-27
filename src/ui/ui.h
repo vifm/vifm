@@ -189,10 +189,11 @@ typedef struct
 	/* Parameters related to custom filling. */
 	struct
 	{
-		/* File entries. */
-		dir_entry_t *entries;
-		/* Number of file entries. */
-		int entry_count;
+		/* This is temporary storage for custom list entries used during its
+		 * construction as well as storage for unfiltered custom list if local
+		 * filter is not empty. */
+		dir_entry_t *entries; /* File entries. */
+		int entry_count;      /* Number of file entries. */
 
 		/* Directory we were in before custom view activation. */
 		char *orig_dir;
@@ -205,7 +206,7 @@ typedef struct
 		char sort[SK_COUNT];
 
 		/* Names of files in custom view while it's being composed.  Used for
-		 * duplicate elimination. */
+		 * duplicate elimination during construction of custom list. */
 		trie_t paths_cache;
 	}
 	custom;
@@ -233,7 +234,7 @@ typedef struct
 	int filtered;  /* number of files filtered out and not shown in list */
 	int selected_files; /* Number of currently selected files. */
 	int local_cs; /* Whether directory-specific color scheme is in use. */
-	dir_entry_t *dir_entry;
+	dir_entry_t *dir_entry; /* Must be handled via dynarray unit. */
 
 	int nsaved_selection;   /* Number of items in saved_selection. */
 	char **saved_selection; /* Names of selected files. */

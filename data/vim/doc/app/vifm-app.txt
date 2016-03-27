@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 25
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 26
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2069,13 +2069,14 @@ yet supported) and might be changed in future releases, or get an alias.
 :sync!
     change the other pane to the current pane directory and synchronize
     cursor position.
-:sync! [location | cursorpos | localopts | filters | all]...
+:sync! [location | cursorpos | localopts | filters | filelist | all]...
     change enumerated properties of the other pane to match corresponding
     properties of the current pane.  Arguments have the following meanings:
      - location - current directory of the pane;
      - cursorpos - cursor position (doesn't make sense without "location");
      - localopts - all local options;
      - filters - all filters;
+     - filelist - list of files for custom view implies "location");
      - all - all of the above.
 
 :touch file...                                 *vifm-:touch*
@@ -2632,6 +2633,17 @@ s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act o
                                                *vifm-cpo-t*
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
     pane, otherwise <c-i> goes forward in the view history.
+
+                                               *vifm-'cvoptions'*
+cvoptions
+type: set
+default:
+
+Specifies whether entering/leaving custom views triggers events that normally
+happen on entering/leaving directories:
+ - autocmds    - trigger autocommands on entering/leaving custom views;
+ - localopts   - reset local options on entering/leaving custom views;
+ - localfilter - reset local filter on entering/leaving custom views.
 
                                                *vifm-'deleteprg'*
 deleteprg
