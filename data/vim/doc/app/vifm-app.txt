@@ -3170,7 +3170,7 @@ values are available:
  - delay[:num]     - display suggestions after a small delay (to do not annoy
                      if you just want to type a fast shortcut consisting of
                      multiple keys), num specifies the delay in ms (500 by
-                     default);
+                     default), |vifm-'timeoutlen'| at most;
  - keys            - include shortcuts (commands and selectors);
  - marks           - include marks;
  - registers[:num] - include registers, at most num files (5 by default).
