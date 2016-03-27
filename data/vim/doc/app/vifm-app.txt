@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 26
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2608,12 +2608,12 @@ Terminal width in characters.
                                                *vifm-'confirm'* *vifm-'cf'*
 confirm cf
 type: set
-default: deletion,permdeletion
+default: delete,permdelete
 
 Defines which operations require confirmation:
- - deletion     - moving files to trash (on |vifm-d| or |vifm-:delete|);
- - permdeletion - permanent deletion of files (on |vifm-D| or :delete!
-                  command or on undo/redo operation).
+ - delete     - moving files to trash (on |vifm-d| or |vifm-:delete|);
+ - permdelete - permanent deletion of files (on |vifm-D| or :delete!
+                command or on undo/redo operation).
 
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo
