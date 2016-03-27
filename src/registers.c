@@ -294,18 +294,19 @@ regs_suggest(regs_suggest_cb cb, int max_entries_per_reg)
 	while(*registers != '\0')
 	{
 		reg_t *const reg = regs_find(*registers++);
-		int i;
+		int i, max = max_entries_per_reg;
 
 		if(reg == NULL || reg->nfiles <= 0)
 		{
 			continue;
 		}
 
-		reg_name[5] = reg->name;
-		cb(reg_name, L"", replace_home_part(reg->files[reg->nfiles - 1]));
+		i = reg->nfiles - 1;
 
-		i = MIN(max_entries_per_reg - 1, reg->nfiles - 1);
-		while(i-- > 0)
+		reg_name[5] = reg->name;
+		cb(reg_name, L"", replace_home_part(reg->files[i]));
+
+		while(--max > 0 && i-- > 0)
 		{
 			cb(L"", L"", replace_home_part(reg->files[i]));
 		}
