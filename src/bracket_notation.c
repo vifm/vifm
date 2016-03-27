@@ -21,11 +21,12 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
-#include <ctype.h> /* iscntrl() tolower() */
+#include <ctype.h> /* tolower() */
 #include <stddef.h> /* NULL size_t wchar_t */
 #include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strcpy() strlen() */
 #include <wchar.h> /* wcscpy() wcslen() */
+#include <wctype.h> /* iswcntrl() */
 
 #include "compat/reallocarray.h"
 #include "engine/text_buffer.h"
@@ -723,7 +724,7 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 				buf[2] += (*c - KEY_F0)/10;
 				buf[3] += (*c - KEY_F0)%10;
 			}
-			else if(iscntrl(*c))
+			else if(iswcntrl(*c))
 			{
 				strcpy(buf, "<c-A>");
 				buf[3] = tolower(buf[3] + *c - 1);
