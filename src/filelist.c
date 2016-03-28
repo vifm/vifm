@@ -1833,6 +1833,11 @@ flist_custom_clone(FileView *to, const FileView *from)
 	to->list_rows = nentries;
 
 	to->filtered = 0;
+
+	if(to->custom.unsorted)
+	{
+		apply_very_custom(to);
+	}
 }
 
 const char *
