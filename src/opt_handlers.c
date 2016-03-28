@@ -1108,6 +1108,7 @@ clone_local_options(const FileView *from, FileView *to)
 
 	memcpy(to->sort, from->sort, sizeof(to->sort));
 	memcpy(to->sort_g, from->sort_g, sizeof(to->sort_g));
+	sorting_changed(to);
 
 	to->ls_view_g = from->ls_view_g;
 	fview_set_lsview(to, from->ls_view);
@@ -2374,9 +2375,20 @@ map_name(const char name[], void *arg)
 	if(*name == '\0')
 	{
 		const FileView *const view = arg;
-		const char *const sort = curr_stats.restart_in_progress
-		                       ? ui_view_sort_list_get(view)
-		                       : view->sort;
+
+		const char *sort;
+
+		if(curr_stats.restart_in_progress)
+		{
+			sort = ui_view_sort_list_get(view);
+		}
+		else
+		{
+			sort = (flist_custom_active(view) && view->custom.unsorted)
+			      ? (char *)view->custom.sort
+			      : (char *)view->sort;
+		}
+
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
 
