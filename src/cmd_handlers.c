@@ -3523,14 +3523,14 @@ sync_selectively(const cmd_info_t *cmd_info)
 	{
 		sync_filters();
 	}
+	if(local_options)
+	{
+		sync_local_opts();
+	}
 	if(location)
 	{
 		filelist = filelist && flist_custom_active(curr_view);
 		sync_location(flist_get_dir(curr_view), filelist, cursor_pos, filters);
-	}
-	if(local_options)
-	{
-		sync_local_opts();
 	}
 
 	return 0;
