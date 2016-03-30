@@ -601,25 +601,25 @@ is_in_view_history(FileView *view, const char *path)
 	return 0;
 }
 
-static void
-check_view_dir_history(FileView *view)
+void
+flist_hist_lookup(FileView *view, const FileView *source)
 {
 	int pos = 0;
 	int rel_pos = -1;
 
-	if(cfg.history_len > 0 && view->history_num > 0 && curr_stats.ch_pos)
+	if(cfg.history_len > 0 && source->history_num > 0 && curr_stats.ch_pos)
 	{
 		int x;
 		int found = 0;
-		x = view->history_pos;
-		if(stroscmp(view->history[x].dir, view->curr_dir) == 0 &&
-				view->history[x].file[0] == '\0')
+		x = source->history_pos;
+		if(stroscmp(source->history[x].dir, view->curr_dir) == 0 &&
+				source->history[x].file[0] == '\0')
 			x--;
 		for(; x >= 0; x--)
 		{
-			if(view->history[x].dir[0] == '\0')
+			if(source->history[x].dir[0] == '\0')
 				break;
-			if(stroscmp(view->history[x].dir, view->curr_dir) == 0)
+			if(stroscmp(source->history[x].dir, view->curr_dir) == 0)
 			{
 				found = 1;
 				break;
@@ -627,8 +627,8 @@ check_view_dir_history(FileView *view)
 		}
 		if(found)
 		{
-			pos = find_file_pos_in_list(view, view->history[x].file);
-			rel_pos = view->history[x].rel_pos;
+			pos = find_file_pos_in_list(view, source->history[x].file);
+			rel_pos = source->history[x].rel_pos;
 		}
 		else if(path_starts_with(view->last_dir, view->curr_dir) &&
 				stroscmp(view->last_dir, view->curr_dir) != 0 &&
@@ -2036,7 +2036,7 @@ populate_dir_list_internal(FileView *view, int reload)
 	 * the current line. */
 	if(!reload)
 	{
-		check_view_dir_history(view);
+		flist_hist_lookup(view, view);
 	}
 
 	fview_dir_updated(view);

@@ -54,6 +54,9 @@
 	Allow suffixes and prefixes in 'classify' to be of up to eight characters
 	in length.  Thanks to elricbk.
 
+	Use original (before custom view) cursor position on :sync! in custom
+	views.  Thanks to filterfalse.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

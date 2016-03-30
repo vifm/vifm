@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 27, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "March 31, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2453,7 +2453,8 @@ to the current directory.  Using macros is allowed.
 .TP
 .BI ":sync!"
 change the other pane to the current pane directory and synchronize cursor
-position.
+position.  If current pane displays custom list of files, position before
+entering it is used (current one might not make any sense).
 
 .TP
 .BI ":sync! [location | cursorpos | localopts | filters | filelist | all]..."
