@@ -634,11 +634,11 @@ flist_hist_lookup(FileView *view, const FileView *source)
 				stroscmp(view->last_dir, view->curr_dir) != 0 &&
 				strchr(view->last_dir + strlen(view->curr_dir) + 1, '/') == NULL)
 		{
-			char buf[NAME_MAX];
-			snprintf(buf, sizeof(buf), "%s/",
-					view->last_dir + strlen(view->curr_dir));
+			/* This handles positioning of cursor on directory we just left by doing
+			 * `cd ..` or equivalent. */
 
-			pos = find_file_pos_in_list(view, buf);
+			const char *const dir_name = view->last_dir + strlen(view->curr_dir) + 1U;
+			pos = find_file_pos_in_list(view, dir_name);
 			rel_pos = -1;
 		}
 		else
