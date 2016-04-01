@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 27
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Mar 31
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2068,7 +2068,8 @@ yet supported) and might be changed in future releases, or get an alias.
     relative to the current directory.  Using of macros is allowed.
 :sync!
     change the other pane to the current pane directory and synchronize
-    cursor position.
+    cursor position.  If current pane displays custom list of files, position
+    before entering it is used (current one might not make any sense).
 :sync! [location | cursorpos | localopts | filters | filelist | all]...
     change enumerated properties of the other pane to match corresponding
     properties of the current pane.  Arguments have the following meanings:

@@ -3523,14 +3523,14 @@ sync_selectively(const cmd_info_t *cmd_info)
 	{
 		sync_filters();
 	}
+	if(local_options)
+	{
+		sync_local_opts();
+	}
 	if(location)
 	{
 		filelist = filelist && flist_custom_active(curr_view);
 		sync_location(flist_get_dir(curr_view), filelist, cursor_pos, filters);
-	}
-	if(local_options)
-	{
-		sync_local_opts();
 	}
 
 	return 0;
@@ -3622,12 +3622,19 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
 
 	if(sync_cursor_pos)
 	{
-		const int offset = (curr_view->list_pos - curr_view->top_line);
-		const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
+		if(flist_custom_active(curr_view))
+		{
+			flist_hist_lookup(other_view, curr_view);
+		}
+		else
+		{
+			const int offset = (curr_view->list_pos - curr_view->top_line);
+			const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
 
-		ensure_file_is_selected(other_view, get_current_file_name(curr_view));
-		other_view->top_line = MAX(0, curr_view->list_pos - shift);
-		(void)consider_scroll_offset(other_view);
+			ensure_file_is_selected(other_view, get_current_file_name(curr_view));
+			other_view->top_line = MAX(0, curr_view->list_pos - shift);
+			(void)consider_scroll_offset(other_view);
+		}
 
 		save_view_history(other_view, NULL, NULL, -1);
 	}
