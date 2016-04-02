@@ -620,16 +620,21 @@ ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
 
 	if(text_width >= win_width)
 	{
-		char *const line = right_ellipsis(strdup(item), win_width);
+		char *const line = strdup(item);
+		right_ellipsis(line, win_width);
 		wprint(win, line);
 		free(line);
 		return;
 	}
 
-	left = right_ellipsis(strdup(item), win_width - 3);
+	left = strdup(item);
+	right_ellipsis(left, win_width - 3);
+
 	item_width = align_columns ? max_width : utf8_strsw(left);
 	width_left = win_width - 2 - MAX(item_width, utf8_strsw(left));
-	right = right_ellipsis(strdup(descr), width_left);
+
+	right = strdup(descr);
+	right_ellipsis(right, width_left);
 
 	line = format_str(fmt, (int)item_width, left, (int)width_left, right);
 	free(left);
