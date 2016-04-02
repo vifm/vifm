@@ -1331,7 +1331,10 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 					vle_tb_append_line(vle_err, "Not enough memory");
 					error_encountered = 1;
 				}
-				name_dec->matcher = m;
+				else
+				{
+					name_dec->matcher = m;
+				}
 
 				error_encountered |= validate_decorations(token, suffix);
 
