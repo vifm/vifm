@@ -73,9 +73,10 @@ static int indexes[] = {
 	[SK_BY_SIZE]          = 13 + CORRECTION,
 	[SK_BY_NITEMS]        = 14 + CORRECTION,
 	[SK_BY_GROUPS]        = 15 + CORRECTION,
-	[SK_BY_TIME_ACCESSED] = 16 + CORRECTION,
-	[SK_BY_TIME_CHANGED]  = 17 + CORRECTION,
-	[SK_BY_TIME_MODIFIED] = 18 + CORRECTION,
+	[SK_BY_TARGET]        = 16 + CORRECTION,
+	[SK_BY_TIME_ACCESSED] = 17 + CORRECTION,
+	[SK_BY_TIME_CHANGED]  = 18 + CORRECTION,
+	[SK_BY_TIME_MODIFIED] = 19 + CORRECTION,
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -106,6 +107,7 @@ static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_T(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
@@ -148,6 +150,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_s,      {{&cmd_s},      .descr = "sort by size"}},
 	{WK_i,      {{&cmd_i},      .descr = "sort by number of files in directory"}},
 	{WK_u,      {{&cmd_u},      .descr = "sort by 'sortgroups' match"}},
+	{WK_T,      {{&cmd_T},      .descr = "sort by symbolic link target"}},
 	{WK_a,      {{&cmd_a},      .descr = "sort by access time"}},
 	{WK_m,      {{&cmd_m},      .descr = "by modification time"}},
 #ifndef _WIN32
@@ -232,6 +235,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 2, " [   ] s Size");
 	mvwaddstr(sort_win, cy++, 2, " [   ] i Item Count");
 	mvwaddstr(sort_win, cy++, 2, " [   ] u Groups");
+	mvwaddstr(sort_win, cy++, 2, " [   ] T Link Target");
 	mvwaddstr(sort_win, cy++, 2, " [   ] a Time Accessed");
 #ifndef _WIN32
 	mvwaddstr(sort_win, cy++, 2, " [   ] c Time Changed");
@@ -460,23 +464,30 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-cmd_a(key_info_t key_info, keys_info_t *keys_info)
+cmd_T(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 16 + CORRECTION);
 	cmd_return(key_info, keys_info);
 }
 
 static void
-cmd_c(key_info_t key_info, keys_info_t *keys_info)
+cmd_a(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 17 + CORRECTION);
 	cmd_return(key_info, keys_info);
 }
 
 static void
-cmd_m(key_info_t key_info, keys_info_t *keys_info)
+cmd_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + 18 + CORRECTION);
+	cmd_return(key_info, keys_info);
+}
+
+static void
+cmd_m(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + 19 + CORRECTION);
 	cmd_return(key_info, keys_info);
 }
 

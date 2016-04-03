@@ -87,6 +87,7 @@ typedef enum
 #ifndef _WIN32
 	SK_BY_NLINKS,
 #endif
+	SK_BY_TARGET,
 	/* New elements *must* be added here to keep values stored in existing
 	 * vifminfo files valid.  Don't forget to update SK_LAST below. */
 }
@@ -102,11 +103,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-#ifndef _WIN32
-	SK_LAST = SK_BY_NLINKS,
-#else
-	SK_LAST = SK_BY_GROUPS,
-#endif
+	SK_LAST = SK_BY_TARGET,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,

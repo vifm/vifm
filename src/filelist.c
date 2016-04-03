@@ -784,6 +784,35 @@ flist_find_group(FileView *view, int next)
 						return pos;
 				}
 				break;
+			case SK_BY_TARGET:
+				if((nentry->type == FT_LINK) != (pentry->type == FT_LINK))
+				{
+					/* One of the entries is not a link. */
+					return pos;
+				}
+				if(nentry->type == FT_LINK)
+				{
+					/* Both entries are symbolic links. */
+					char full_path[PATH_MAX];
+					char nlink[PATH_MAX], plink[PATH_MAX];
+
+					get_full_path_of(nentry, sizeof(full_path), full_path);
+					if(get_link_target(full_path, nlink, sizeof(nlink)) != 0)
+					{
+						return pos;
+					}
+					get_full_path_of(pentry, sizeof(full_path), full_path);
+					if(get_link_target(full_path, plink, sizeof(plink)) != 0)
+					{
+						return pos;
+					}
+
+					if(stroscmp(nlink, plink) != 0)
+					{
+						return pos;
+					}
+				}
+				break;
 			case SK_BY_NAME:
 				if(strncmp(pentry->name, nentry->name, char_width) != 0)
 					return pos;
