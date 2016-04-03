@@ -3993,6 +3993,8 @@ Sort dialog ~
 h, Space - switch ascending/descending.
 q - close dialog
 
+One shortcut per sorting key (see the dialog).
+
 Attributes (permissions or properties) dialog~
 
 h, Space - check/uncheck.
