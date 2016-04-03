@@ -928,11 +928,12 @@ quit_cmd(const cmd_info_t *cmd_info)
 static int
 write_cmd(const cmd_info_t *cmd_info)
 {
-	const char *const no_tilde = expand_tilde(cmd_info->argv[0]);
+	char *const no_tilde = expand_tilde(cmd_info->argv[0]);
 	if(write_file_of_lines(no_tilde, menu->items, menu->len) != 0)
 	{
 		show_error_msg("Failed to open output file", strerror(errno));
 	}
+	free(no_tilde);
 	return 0;
 }
 

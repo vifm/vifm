@@ -734,7 +734,7 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 				const wchar_t wchar[] = { *c, L'\0' };
 				char char_buf[wcstombs(NULL, wchar, 0) + 1];
 				wcstombs(char_buf, wchar, sizeof(char_buf));
-				strcpy(buf, char_buf);
+				copy_str(buf, sizeof(buf), char_buf);
 			}
 			break;
 	}
