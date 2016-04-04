@@ -53,6 +53,9 @@ TEST(sync_syncs_filelist)
 	char cwd[PATH_MAX];
 	char test_data[PATH_MAX];
 
+	lwin.window_rows = 1;
+	rwin.window_rows = 1;
+
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 	if(is_path_absolute(TEST_DATA_PATH))
 	{
@@ -67,12 +70,17 @@ TEST(sync_syncs_filelist)
 			"%s/existing-files", test_data);
 	flist_custom_start(curr_view, "test");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/c");
 	assert_true(flist_custom_finish(curr_view, 0) == 0);
+	curr_view->list_pos = 2;
 
-	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("sync! filelist cursorpos", curr_view,
+				CIT_COMMAND));
 
 	assert_true(flist_custom_active(other_view));
 	assert_int_equal(curr_view->list_rows, other_view->list_rows);
+	assert_int_equal(curr_view->list_pos, other_view->list_pos);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -3622,7 +3622,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
 
 	if(sync_cursor_pos)
 	{
-		if(flist_custom_active(curr_view))
+		if(flist_custom_active(curr_view) && !flist_custom_active(other_view))
 		{
 			flist_hist_lookup(other_view, curr_view);
 		}
