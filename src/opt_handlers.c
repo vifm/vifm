@@ -165,7 +165,7 @@ static void set_sort(FileView *view, char sort_keys[], char order[]);
 static void sortgroups_global(OPT_OP op, optval_t val);
 static void sortgroups_local(OPT_OP op, optval_t val);
 static void set_sortgroups(FileView *view, char **opt, char value[]);
-static void sorting_changed(FileView *view);
+static void sorting_changed(FileView *view, int defer_slow);
 static void sortorder_global(OPT_OP op, optval_t val);
 static void sortorder_local(OPT_OP op, optval_t val);
 static void set_sortorder(FileView *view, int ascending, char sort_keys[]);
@@ -1097,7 +1097,7 @@ load_view_options(FileView *view)
 }
 
 void
-clone_local_options(const FileView *from, FileView *to)
+clone_local_options(const FileView *from, FileView *to, int defer_slow)
 {
 	const char *sort;
 
@@ -1118,7 +1118,7 @@ clone_local_options(const FileView *from, FileView *to)
 	     : (char *)from->sort;
 	memcpy(to->sort, sort, sizeof(to->sort));
 	memcpy(to->sort_g, from->sort_g, sizeof(to->sort_g));
-	sorting_changed(to);
+	sorting_changed(to, defer_slow);
 
 	to->ls_view_g = from->ls_view_g;
 	fview_set_lsview(to, from->ls_view);
@@ -2139,7 +2139,7 @@ set_sort(FileView *view, char sort_keys[], char order[])
 
 	if(sort_keys == view->sort)
 	{
-		sorting_changed(view);
+		sorting_changed(view, 0);
 	}
 
 	load_sort_option_inner(view, sort_keys);
@@ -2167,11 +2167,11 @@ sortgroups_local(OPT_OP op, optval_t val)
 	char *const value = strdup(val.str_val);
 
 	set_sortgroups(curr_view, &curr_view->sort_groups, value);
-	sorting_changed(curr_view);
+	sorting_changed(curr_view, 0);
 	if(curr_stats.global_local_settings)
 	{
 		set_sortgroups(other_view, &other_view->sort_groups, value);
-		sorting_changed(other_view);
+		sorting_changed(other_view, 0);
 	}
 
 	free(value);
@@ -2230,12 +2230,15 @@ set_sortgroups(FileView *view, char **opt, char value[])
 
 /* Reacts on changes of view sorting. */
 static void
-sorting_changed(FileView *view)
+sorting_changed(FileView *view, int defer_slow)
 {
 	/* Reset search results, which might be outdated after resorting. */
 	view->matches = 0;
 	fview_sorting_updated(view);
-	resort_view(view);
+	if(!defer_slow)
+	{
+		resort_view(view);
+	}
 }
 
 /* Handles global 'sortorder' option and corrects ordering for primary sorting

@@ -51,8 +51,10 @@ void reset_local_options(FileView *view);
 /* Loads view-specific settings into corresponding options. */
 void load_view_options(FileView *view);
 
-/* Clones all local options of *from into *to. */
-void clone_local_options(const FileView *from, FileView *to);
+/* Clones all local options of *from into *to.  The defer_slow flag might be
+ * used to postpone updates related to options, which will either be applied
+ * from the outside or should be skipped. */
+void clone_local_options(const FileView *from, FileView *to, int defer_slow);
 
 /* Handles various kinds of :set command displaying output/errors.  At least one
  * of global and local must be set on call.  Returns negative number on error,
