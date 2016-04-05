@@ -239,7 +239,7 @@ static int parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 		int *cursor_pos, int *local_options, int *filters, int *filelist);
 static void sync_location(const char path[], int cv, int sync_cursor_pos,
 		int sync_filters);
-static void sync_local_opts(void);
+static void sync_local_opts(int defer_slow);
 static void sync_filters(void);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
@@ -3525,7 +3525,7 @@ sync_selectively(const cmd_info_t *cmd_info)
 	}
 	if(local_options)
 	{
-		sync_local_opts();
+		sync_local_opts(location);
 	}
 	if(location)
 	{
@@ -3622,7 +3622,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
 
 	if(sync_cursor_pos)
 	{
-		if(flist_custom_active(curr_view))
+		if(flist_custom_active(curr_view) && !flist_custom_active(other_view))
 		{
 			flist_hist_lookup(other_view, curr_view);
 		}
@@ -3645,9 +3645,9 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
 /* Sets local options of the other view to be equal to options of the current
  * one. */
 static void
-sync_local_opts(void)
+sync_local_opts(int defer_slow)
 {
-	clone_local_options(curr_view, other_view);
+	clone_local_options(curr_view, other_view, defer_slow);
 	ui_view_schedule_redraw(other_view);
 }
 
