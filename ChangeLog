@@ -29,6 +29,9 @@
 	considered to be equal to entering/leaving directories.  Thanks to
 	filterfalse.
 
+	Added "target" sorting key, which sorts files by symbolic link targets.
+	Thanks to Marcos Cruz.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

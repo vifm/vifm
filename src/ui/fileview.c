@@ -97,6 +97,7 @@ static void format_nitems(int id, const void *data, size_t buf_len, char buf[]);
 static void format_primary_group(int id, const void *data, size_t buf_len,
 		char buf[]);
 static void format_type(int id, const void *data, size_t buf_len, char buf[]);
+static void format_target(int id, const void *data, size_t buf_len, char buf[]);
 static void format_ext(int id, const void *data, size_t buf_len, char buf[]);
 static void format_fileext(int id, const void *data, size_t buf_len,
 		char buf[]);
@@ -129,6 +130,7 @@ fview_init(void)
 		{ SK_BY_NITEMS, &format_nitems },
 		{ SK_BY_GROUPS, &format_primary_group },
 		{ SK_BY_TYPE,   &format_type },
+		{ SK_BY_TARGET, &format_target },
 
 		{ SK_BY_EXTENSION,     &format_ext },
 		{ SK_BY_FILEEXT,       &format_fileext },
@@ -1149,6 +1151,25 @@ format_type(int id, const void *data, size_t buf_len, char buf[])
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	snprintf(buf, buf_len, " %s", get_type_str(entry->type));
+}
+
+/* Symbolic link target format callback for column_view unit. */
+static void
+format_target(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+	char full_path[PATH_MAX];
+
+	buf[0] = '\0';
+
+	if(entry->type != FT_LINK || !symlinks_available())
+	{
+		return;
+	}
+
+	get_full_path_of(entry, sizeof(full_path), full_path);
+	(void)get_link_target(full_path, buf, buf_len);
 }
 
 /* File or directory extension format callback for column_view unit. */

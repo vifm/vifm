@@ -73,9 +73,10 @@ static int indexes[] = {
 	[SK_BY_SIZE]          = 13 + CORRECTION,
 	[SK_BY_NITEMS]        = 14 + CORRECTION,
 	[SK_BY_GROUPS]        = 15 + CORRECTION,
-	[SK_BY_TIME_ACCESSED] = 16 + CORRECTION,
-	[SK_BY_TIME_CHANGED]  = 17 + CORRECTION,
-	[SK_BY_TIME_MODIFIED] = 18 + CORRECTION,
+	[SK_BY_TARGET]        = 16 + CORRECTION,
+	[SK_BY_TIME_ACCESSED] = 17 + CORRECTION,
+	[SK_BY_TIME_CHANGED]  = 18 + CORRECTION,
+	[SK_BY_TIME_MODIFIED] = 19 + CORRECTION,
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -106,6 +107,7 @@ static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_T(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_a(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
@@ -148,6 +150,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_s,      {{&cmd_s},      .descr = "sort by size"}},
 	{WK_i,      {{&cmd_i},      .descr = "sort by number of files in directory"}},
 	{WK_u,      {{&cmd_u},      .descr = "sort by 'sortgroups' match"}},
+	{WK_T,      {{&cmd_T},      .descr = "sort by symbolic link target"}},
 	{WK_a,      {{&cmd_a},      .descr = "sort by access time"}},
 	{WK_m,      {{&cmd_m},      .descr = "by modification time"}},
 #ifndef _WIN32
@@ -232,6 +235,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 2, " [   ] s Size");
 	mvwaddstr(sort_win, cy++, 2, " [   ] i Item Count");
 	mvwaddstr(sort_win, cy++, 2, " [   ] u Groups");
+	mvwaddstr(sort_win, cy++, 2, " [   ] T Link Target");
 	mvwaddstr(sort_win, cy++, 2, " [   ] a Time Accessed");
 #ifndef _WIN32
 	mvwaddstr(sort_win, cy++, 2, " [   ] c Time Changed");
@@ -346,42 +350,42 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 0);
+	goto_line(top + indexes[SK_BY_EXTENSION]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 1);
+	goto_line(top + indexes[SK_BY_FILEEXT]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 2);
+	goto_line(top + indexes[SK_BY_NAME]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 3);
+	goto_line(top + indexes[SK_BY_INAME]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_t(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 4);
+	goto_line(top + indexes[SK_BY_TYPE]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 5);
+	goto_line(top + indexes[SK_BY_DIR]);
 	cmd_return(key_info, keys_info);
 }
 
@@ -390,49 +394,49 @@ cmd_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_r(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 6);
+	goto_line(top + indexes[SK_BY_GROUP_ID]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_R(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 7);
+	goto_line(top + indexes[SK_BY_GROUP_NAME]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 8);
+	goto_line(top + indexes[SK_BY_MODE]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_p(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 9);
+	goto_line(top + indexes[SK_BY_PERMISSIONS]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_o(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 10);
+	goto_line(top + indexes[SK_BY_OWNER_ID]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_O(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 11);
+	goto_line(top + indexes[SK_BY_OWNER_NAME]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 12);
+	goto_line(top + indexes[SK_BY_NLINKS]);
 	cmd_return(key_info, keys_info);
 }
 
@@ -441,42 +445,49 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_s(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 13 + CORRECTION);
+	goto_line(top + indexes[SK_BY_SIZE]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 14 + CORRECTION);
+	goto_line(top + indexes[SK_BY_NITEMS]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 15 + CORRECTION);
+	goto_line(top + indexes[SK_BY_GROUPS]);
+	cmd_return(key_info, keys_info);
+}
+
+static void
+cmd_T(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + indexes[SK_BY_TARGET]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 16 + CORRECTION);
+	goto_line(top + indexes[SK_BY_TIME_ACCESSED]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 17 + CORRECTION);
+	goto_line(top + indexes[SK_BY_TIME_CHANGED]);
 	cmd_return(key_info, keys_info);
 }
 
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_line(top + 18 + CORRECTION);
+	goto_line(top + indexes[SK_BY_TIME_MODIFIED]);
 	cmd_return(key_info, keys_info);
 }
 

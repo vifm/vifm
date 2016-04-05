@@ -217,6 +217,7 @@ static const char *sort_enum[] = {
 	[SK_BY_FILEEXT]       = "fileext",
 	[SK_BY_NITEMS]        = "nitems",
 	[SK_BY_GROUPS]        = "groups",
+	[SK_BY_TARGET]        = "target",
 #ifndef _WIN32
 	[SK_BY_GROUP_ID]      = "gid",
 	[SK_BY_GROUP_NAME]    = "gname",
@@ -355,6 +356,10 @@ static const char *sort_types[][2] = {
 	{ "groups",  "by 'sortgroups' match" },
 	{ "+groups", "by 'sortgroups' match" },
 	{ "-groups", "by 'sortgroups' match" },
+
+	{ "target",  "by symbolic link target" },
+	{ "+target", "by symbolic link target" },
+	{ "-target", "by symbolic link target" },
 
 #ifndef _WIN32
 	{ "gid",  "by group ID" },

@@ -29,6 +29,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "ui/ui.h"
+#include "utils/fs.h"
 #include "utils/fsdata.h"
 #include "utils/path.h"
 #include "utils/regexp.h"
@@ -69,6 +70,7 @@ static int compare_file_sizes(const dir_entry_t *f, int fdir,
 static int compare_item_count(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
 static int compare_group(const char f[], const char s[], regex_t *regex);
+static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
 
 void
 sort_view(FileView *v)
@@ -319,6 +321,10 @@ sort_dir_list(const void *one, const void *two)
 			retval = compare_group(first->name, second->name, sort_data);
 			break;
 
+		case SK_BY_TARGET:
+			retval = compare_targets(first, second);
+			break;
+
 		case SK_BY_TIME_MODIFIED:
 			retval = first->mtime - second->mtime;
 			break;
@@ -435,6 +441,41 @@ compare_group(const char f[], const char s[], regex_t *regex)
 	return strcmp(fname, sname);
 }
 
+/* Compares two file names according to symbolic link target.  Returns standard
+ * -1, 0, 1 for comparisons. */
+static int
+compare_targets(const dir_entry_t *f, const dir_entry_t *s)
+{
+	char full_path[PATH_MAX];
+	char nlink[PATH_MAX], plink[PATH_MAX];
+
+	if((f->type == FT_LINK) != (s->type == FT_LINK))
+	{
+		/* One of the entries is not a link. */
+		return (f->type == FT_LINK) ? 1 : -1;
+	}
+	if(f->type != FT_LINK)
+	{
+		/* Both entries are not symbolic links. */
+		return 0;
+	}
+
+	/* Both entries are symbolic links. */
+
+	get_full_path_of(f, sizeof(full_path), full_path);
+	if(get_link_target(full_path, nlink, sizeof(nlink)) != 0)
+	{
+		return 0;
+	}
+	get_full_path_of(s, sizeof(full_path), full_path);
+	if(get_link_target(full_path, plink, sizeof(plink)) != 0)
+	{
+		return 0;
+	}
+
+	return stroscmp(nlink, plink);
+}
+
 /* Compares names of two file entries.  Returns positive value if a is greater
  * than b, zero if they are equal, otherwise negative value is returned. */
 static int
@@ -517,6 +558,7 @@ get_secondary_key(SortingKey primary_key)
 #endif
 		case SK_BY_TYPE:
 		case SK_BY_NITEMS:
+		case SK_BY_TARGET:
 		case SK_BY_TIME_MODIFIED:
 		case SK_BY_TIME_ACCESSED:
 		case SK_BY_TIME_CHANGED:

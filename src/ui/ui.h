@@ -62,31 +62,32 @@
  * updated accordingly. */
 typedef enum
 {
-	SK_BY_EXTENSION = 1,
-	SK_BY_NAME,
+	SK_BY_EXTENSION = 1,  /* Extension of files and directories. */
+	SK_BY_NAME,           /* Name (including extension). */
 #ifndef _WIN32
-	SK_BY_GROUP_ID,
-	SK_BY_GROUP_NAME,
-	SK_BY_MODE,
-	SK_BY_OWNER_ID,
-	SK_BY_OWNER_NAME,
+	SK_BY_GROUP_ID,       /* Group id. */
+	SK_BY_GROUP_NAME,     /* Group name. */
+	SK_BY_MODE,           /* File mode (file type + permissions) in octal. */
+	SK_BY_OWNER_ID,       /* Owner id. */
+	SK_BY_OWNER_NAME,     /* Owner name. */
 #endif
-	SK_BY_SIZE,
-	SK_BY_TIME_ACCESSED,
-	SK_BY_TIME_CHANGED,
-	SK_BY_TIME_MODIFIED,
-	SK_BY_INAME,
+	SK_BY_SIZE,           /* Size. */
+	SK_BY_TIME_ACCESSED,  /* Time accessed (e.g. read, executed). */
+	SK_BY_TIME_CHANGED,   /* Time changed (changes in metadata, e.g. mode). */
+	SK_BY_TIME_MODIFIED,  /* Time modified (when file contents is changed). */
+	SK_BY_INAME,          /* Name (including extension, ignores case). */
 #ifndef _WIN32
-	SK_BY_PERMISSIONS,
+	SK_BY_PERMISSIONS,    /* Permissions string. */
 #endif
-	SK_BY_DIR,
-	SK_BY_TYPE,
-	SK_BY_FILEEXT,
-	SK_BY_NITEMS,
-	SK_BY_GROUPS,
+	SK_BY_DIR,            /* Directory grouping (directory < file). */
+	SK_BY_TYPE,           /* File type (dir/reg/exe/link/char/block/sock/fifo). */
+	SK_BY_FILEEXT,        /* Extension of files only. */
+	SK_BY_NITEMS,         /* Number of items in a directory (zero for files). */
+	SK_BY_GROUPS,         /* Groups extracted via regexps from 'sortgroups'. */
 #ifndef _WIN32
-	SK_BY_NLINKS,
+	SK_BY_NLINKS,         /* Number of hard links. */
 #endif
+	SK_BY_TARGET,         /* Symbolic link target (empty for other file types). */
 	/* New elements *must* be added here to keep values stored in existing
 	 * vifminfo files valid.  Don't forget to update SK_LAST below. */
 }
@@ -102,11 +103,7 @@ enum
 #endif
 
 	/* Value of the last sort option. */
-#ifndef _WIN32
-	SK_LAST = SK_BY_NLINKS,
-#else
-	SK_LAST = SK_BY_GROUPS,
-#endif
+	SK_LAST = SK_BY_TARGET,
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,
