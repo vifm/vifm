@@ -1674,8 +1674,7 @@ flist_custom_finish(FileView *view, int very)
 		{
 			init_dir_entry(view, dir_entry, "..");
 			dir_entry->type = FT_DIR;
-			dir_entry->origin = strdup((view->curr_dir[0] != '\0') ? view->curr_dir :
-					view->custom.orig_dir);
+			dir_entry->origin = strdup(flist_get_dir(view));
 			++view->custom.entry_count;
 		}
 	}
