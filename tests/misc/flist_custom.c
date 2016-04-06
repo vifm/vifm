@@ -84,6 +84,20 @@ TEST(duplicates_are_not_added)
 	assert_int_equal(1, lwin.list_rows);
 }
 
+TEST(parent_dir_is_not_added_to_very_custom_view)
+{
+	opt_handlers_setup();
+
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+	assert_int_equal(1, lwin.list_rows);
+	cfg.dot_dirs = 0;
+
+	opt_handlers_teardown();
+}
+
 TEST(custom_view_replaces_custom_view_fine)
 {
 	assert_false(flist_custom_active(&lwin));
