@@ -444,7 +444,7 @@ static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_screen(UT_FULL);
-	curs_set(FALSE);
+	curs_set(0);
 }
 
 static void

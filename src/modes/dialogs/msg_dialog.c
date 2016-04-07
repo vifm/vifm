@@ -477,7 +477,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	size_t wctrl_msg;
 	size_t i;
 
-	curs_set(FALSE);
+	curs_set(0);
 
 	getmaxyx(stdscr, sh, sw);
 

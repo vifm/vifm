@@ -190,7 +190,7 @@ enter_sort_mode(FileView *active_view)
 	vle_mode_set(SORT_MODE, VMT_SECONDARY);
 
 	wattroff(view->win, COLOR_PAIR(cfg.cs.pair[CURR_LINE_COLOR]) | A_BOLD);
-	curs_set(FALSE);
+	curs_set(0);
 	update_all_windows();
 
 	top = 4;
