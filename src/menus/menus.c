@@ -161,7 +161,7 @@ void
 setup_menu(void)
 {
 	scrollok(menu_win, FALSE);
-	curs_set(FALSE);
+	curs_set(0);
 	werase(menu_win);
 	werase(status_bar);
 	werase(ruler_win);

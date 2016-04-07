@@ -386,7 +386,7 @@ input_line_changed(void)
 
 	/* Hide cursor during view update, otherwise user might notice it blinking in
 	 * wrong place. */
-	curs_set(FALSE);
+	curs_set(0);
 
 	set_view_port();
 
@@ -465,7 +465,7 @@ input_line_changed(void)
 		menu_redraw();
 	}
 
-	curs_set(TRUE);
+	curs_set(1);
 }
 
 /* Updates value of the local filter of the current view. */
@@ -599,7 +599,7 @@ redraw_cmdline(void)
 	line_width = getmaxx(stdscr);
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
-	curs_set(TRUE);
+	curs_set(1);
 
 	if(input_stat.complete_continue && cfg.wild_menu)
 	{
@@ -650,7 +650,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
-	curs_set(TRUE);
+	curs_set(1);
 
 	curr_stats.save_msg = 1;
 
@@ -734,7 +734,7 @@ leave_cmdline_mode(void)
 	input_stat.initial_line = NULL;
 	input_stat.line_buf = NULL;
 
-	curs_set(FALSE);
+	curs_set(0);
 	curr_stats.save_msg = 0;
 	clean_status_bar();
 
@@ -2572,7 +2572,7 @@ stop_regular_completion(void)
 		}
 		update_cmdline_size();
 		update_cmdline_text(&input_stat);
-		curs_set(TRUE);
+		curs_set(1);
 	}
 }
 

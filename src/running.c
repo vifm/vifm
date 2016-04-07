@@ -858,7 +858,7 @@ shellout(const char command[], ShellPause pause, int use_term_multiplexer)
 
 	if(curr_stats.load_stage != 0)
 	{
-		curs_set(FALSE);
+		curs_set(0);
 	}
 
 	return result;

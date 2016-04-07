@@ -1666,7 +1666,7 @@ flist_custom_finish(FileView *view, int very)
 		return 1;
 	}
 
-	if(cfg_parent_dir_is_visible(0))
+	if(!very && cfg_parent_dir_is_visible(0))
 	{
 		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
 				view->custom.entry_count);
@@ -1674,8 +1674,7 @@ flist_custom_finish(FileView *view, int very)
 		{
 			init_dir_entry(view, dir_entry, "..");
 			dir_entry->type = FT_DIR;
-			dir_entry->origin = strdup((view->curr_dir[0] != '\0') ? view->curr_dir :
-					view->custom.orig_dir);
+			dir_entry->origin = strdup(flist_get_dir(view));
 			++view->custom.entry_count;
 		}
 	}

@@ -138,7 +138,7 @@ setup_ncurses_interface(void)
 	nonl();
 	raw();
 
-	curs_set(FALSE);
+	curs_set(0);
 
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* screen is too small to be useful*/
@@ -469,7 +469,7 @@ resize_all(void)
 
 	update_statusbar_layout();
 
-	curs_set(FALSE);
+	curs_set(0);
 }
 
 /* Calculates height available for main area that contains file lists.  Returns

@@ -191,7 +191,7 @@ vim_view_file(const char filename[], int line, int column, int allow_forking)
 #endif
 
 	result = run_vim(cmd, bg && allow_forking, allow_forking);
-	curs_set(FALSE);
+	curs_set(0);
 
 	return result;
 }

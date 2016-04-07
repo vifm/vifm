@@ -300,7 +300,7 @@ redraw_attr_dialog(void)
 		waddstr(change_win, "...");
 	}
 
-	curs_set(TRUE);
+	curs_set(1);
 	checked_wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
@@ -380,7 +380,7 @@ static void
 leave_attr_mode(void)
 {
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
-	curs_set(FALSE);
+	curs_set(0);
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(view);

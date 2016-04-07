@@ -60,6 +60,9 @@
 	Use original (before custom view) cursor position on :sync! in custom
 	views.  Thanks to filterfalse.
 
+	Never add parent entry (..) to very custom view (%U).  Thanks to
+	filterfalse.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

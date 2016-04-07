@@ -3628,10 +3628,16 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
 		}
 		else
 		{
+			char curr_file_path[PATH_MAX];
+
 			const int offset = (curr_view->list_pos - curr_view->top_line);
 			const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
 
-			ensure_file_is_selected(other_view, get_current_file_name(curr_view));
+			get_current_full_path(curr_view, sizeof(curr_file_path), curr_file_path);
+			break_atr(curr_file_path, '/');
+			navigate_to_file(other_view, curr_file_path,
+					get_current_file_name(curr_view), 1);
+
 			other_view->top_line = MAX(0, curr_view->list_pos - shift);
 			(void)consider_scroll_offset(other_view);
 		}
