@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 03
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2454,8 +2454,8 @@ commands and |vifm-'classify'| option support both globs and regular expressions
 as patterns to match file names or full paths.
 
 There are five possible ways to write them:
- 1. {comma-seperated-name-globs}
- 2. {{comma-seperated-path-globs}}
+ 1. {comma-separated-name-globs}
+ 2. {{comma-separated-path-globs}}
  3. /name-regular-expression/[iI]
  4. //path-regular-expression//[iI]
  5. undecorated-pattern
