@@ -1935,7 +1935,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 	}
 
 	records = vle_cmds_next_arg(cmd_info->args);
-	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
+	in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 	ft_set_programs(m, records, for_x, in_x);
 	return 0;
 }

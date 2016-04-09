@@ -100,5 +100,13 @@ TEST(wrong_flag)
 	assert_int_equal(1, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 }
 
+TEST(negation)
+{
+	const char *const COMMANDS = "highlight !/^\\./i ctermfg=red";
+
+	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal("!/^\\./i", matcher_get_expr(cfg.cs.file_hi[0].matcher));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
