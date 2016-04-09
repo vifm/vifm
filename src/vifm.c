@@ -246,9 +246,9 @@ main(int argc, char *argv[])
 		}
 	}
 	/* Load colors in any case to load color pairs. */
-	load_color_scheme_colors();
+	cs_load_pairs();
 
-	write_color_scheme_file();
+	cs_write();
 	setup_signals();
 
 	/* Ensure trash directories exist, it might not have been called during
@@ -450,9 +450,9 @@ load_scheme(void)
 		cs_rename_all();
 	}
 
-	if(color_scheme_exists(curr_stats.color_scheme))
+	if(cs_exists(curr_stats.color_scheme))
 	{
-		load_primary_color_scheme(curr_stats.color_scheme);
+		cs_load_primary(curr_stats.color_scheme);
 	}
 }
 
@@ -525,18 +525,18 @@ vifm_restart(void)
 
 	/* Color schemes. */
 	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&
-			color_scheme_exists(curr_stats.color_scheme))
+			cs_exists(curr_stats.color_scheme))
 	{
-		if(load_primary_color_scheme(curr_stats.color_scheme) != 0)
+		if(cs_load_primary(curr_stats.color_scheme) != 0)
 		{
-			load_def_scheme();
+			cs_load_defaults();
 		}
 	}
 	else
 	{
-		load_def_scheme();
+		cs_load_defaults();
 	}
-	load_color_scheme_colors();
+	cs_load_pairs();
 
 	cfg_load();
 	exec_startup_commands(&vifm_args);

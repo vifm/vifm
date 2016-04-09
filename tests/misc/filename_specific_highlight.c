@@ -9,14 +9,14 @@
 SETUP_ONCE()
 {
 	init_commands();
-	reset_color_scheme(&cfg.cs);
+	cs_reset(&cfg.cs);
 	lwin.list_rows = 0;
 	rwin.list_rows = 0;
 }
 
 SETUP()
 {
-	reset_color_scheme(&cfg.cs);
+	cs_reset(&cfg.cs);
 	curr_stats.cs = &cfg.cs;
 }
 

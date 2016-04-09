@@ -344,7 +344,7 @@ complete_colorscheme(const char *str, size_t arg_num)
 {
 	if(arg_num == 0)
 	{
-		complete_colorschemes(str);
+		cs_complete(str);
 	}
 	else if(arg_num == 1)
 	{

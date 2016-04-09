@@ -73,24 +73,24 @@ extern char *XTERM256_COLOR_NAMES[256];
 
 /* Loads primary color scheme specified by the name.  Returns new value for
  * curr_stats.save_msg. */
-int load_primary_color_scheme(const char name[]);
+int cs_load_primary(const char name[]);
 
 /* Loads configured color scheme color pairs, so they actually visible on a
  * screen. */
-void load_color_scheme_colors(void);
+void cs_load_pairs(void);
 
-void load_def_scheme(void);
+void cs_load_defaults(void);
 
 /* Resets color scheme to default builtin values and reloads them. */
-void reset_color_scheme(col_scheme_t *cs);
+void cs_reset(col_scheme_t *cs);
 
 /* Copies data from *from to *to. */
-void assign_color_scheme(col_scheme_t *to, const col_scheme_t *from);
+void cs_assign(col_scheme_t *to, const col_scheme_t *from);
 
 /* The color scheme with the longest matching directory path is the one that
  * is chosen.  Return non-zero if non-default colorscheme should be used for the
  * specified directory, otherwise zero is returned. */
-int check_directory_for_color_scheme(int left, const char dir[]);
+int cs_load_local(int left, const char dir[]);
 
 /* Checks whether local colorschemes do not have file extensions. */
 int cs_have_no_extensions(void);
@@ -100,41 +100,41 @@ void cs_rename_all(void);
 
 /* Lists names of all color schemes.  Allocates an array of strings, which
  * should be freed by the caller.  Always sets *len.  Returns NULL on error. */
-char ** list_color_schemes(int *len);
+char ** cs_list(int *len);
 
 /* Returns non-zero if colorscheme named name exists. */
-int color_scheme_exists(const char name[]);
+int cs_exists(const char name[]);
 
-void complete_colorschemes(const char name[]);
+void cs_complete(const char name[]);
 
-const char * attrs_to_str(int attrs);
+const char * cs_attrs_to_str(int attrs);
 
 /* Associates colorscheme specified by its name with the given path. */
-void assoc_dir(const char name[], const char dir[]);
+void cs_assoc_dir(const char name[], const char dir[]);
 
 /* Aborts if color schemes directory exists, otherwise creates one containing
  * "Default" color scheme. */
-void write_color_scheme_file(void);
+void cs_write(void);
 
 /* Converts color specified by an integer to a string and writes result in a
  * buffer of length buf_len pointed to by str_buf. */
-void color_to_str(int color, size_t buf_len, char str_buf[]);
+void cs_color_to_str(int color, size_t buf_len, char str_buf[]);
 
-void mix_colors(col_attr_t *base, const col_attr_t *mixup);
+void cs_mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
 /* Registers pattern-highlight pair for active color scheme.  Returns new value
  * for curr_stats.save_msg. */
-int add_file_hi(struct matcher_t *matcher, const col_attr_t *hi);
+int cs_add_file_hi(struct matcher_t *matcher, const col_attr_t *hi);
 
 /* Gets filename specific highlight.  hi_hint can't be NULL and should be equal
  * to -1 initially.  Returns NULL if nothing was found, otherwise returns
  * pointer to one of color scheme's highlights. */
-const col_attr_t * get_file_hi(const col_scheme_t *cs, const char fname[],
+const col_attr_t * cs_get_file_hi(const col_scheme_t *cs, const char fname[],
 		int *hi_hint);
 
 /* Checks that color is non-empty (e.g. set from outside).  Returns non-zero if
  * so, otherwise zero is returned. */
-int is_color_set(const col_attr_t *color);
+int cs_is_color_set(const col_attr_t *color);
 
 #endif /* VIFM__UI__COLOR_SCHEME_H__ */
 

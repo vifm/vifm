@@ -1079,7 +1079,7 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 		if(i == *pos)
 		{
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
-			mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
+			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
 
 			wbkgdset(stat_win,
 					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
@@ -1131,7 +1131,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 		if(i == *pos)
 		{
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
-			mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
+			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
 
 			wbkgdset(stat_win,
 					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);

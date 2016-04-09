@@ -153,7 +153,7 @@ setup_ncurses_interface(void)
 	start_color();
 	use_default_colors();
 
-	load_def_scheme();
+	cs_load_defaults();
 
 	create_windows();
 
@@ -1546,10 +1546,8 @@ fixup_titles_attributes(const FileView *view, int active_view)
 {
 	if(active_view)
 	{
-		col_attr_t col;
-
-		col = cfg.cs.color[TOP_LINE_COLOR];
-		mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
+		col_attr_t col = cfg.cs.color[TOP_LINE_COLOR];
+		cs_mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
 
 		wbkgdset(view->title, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) |
 				(col.attr & A_REVERSE));

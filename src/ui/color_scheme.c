@@ -459,7 +459,7 @@ cs_rename_all(void)
 }
 
 char **
-list_color_schemes(int *len)
+cs_list(int *len)
 {
 	char **const list = list_color_scheme_files(len);
 	int i, j;
@@ -510,7 +510,7 @@ list_color_scheme_files(int *len)
 }
 
 int
-color_scheme_exists(const char name[])
+cs_exists(const char name[])
 {
 	char cs_path[PATH_MAX];
 	get_cs_path(name, cs_path, sizeof(cs_path));
@@ -518,7 +518,7 @@ color_scheme_exists(const char name[])
 }
 
 void
-write_color_scheme_file(void)
+cs_write(void)
 {
 	FILE *fp;
 	char def_cs_path[PATH_MAX];
@@ -595,18 +595,18 @@ write_color_scheme_file(void)
 			continue;
 		}
 
-		color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf);
-		color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf);
+		cs_color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf);
+		cs_color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf);
 
 		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
-				attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
+				cs_attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
 	}
 
 	fclose(fp);
 }
 
 void
-color_to_str(int color, size_t buf_len, char str_buf[])
+cs_color_to_str(int color, size_t buf_len, char str_buf[])
 {
 	if(color == -1)
 	{
@@ -623,17 +623,17 @@ color_to_str(int color, size_t buf_len, char str_buf[])
 }
 
 int
-load_primary_color_scheme(const char name[])
+cs_load_primary(const char name[])
 {
 	col_scheme_t prev_cs = {};
 
-	if(!color_scheme_exists(name))
+	if(!cs_exists(name))
 	{
 		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
 		return 0;
 	}
 
-	assign_color_scheme(&prev_cs, &cfg.cs);
+	cs_assign(&prev_cs, &cfg.cs);
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.state = CSS_LOADING;
 
@@ -670,12 +670,12 @@ restore_primary_color_scheme(const col_scheme_t *cs)
 {
 	free_color_scheme_highlights(&cfg.cs);
 	cfg.cs = *cs;
-	load_color_scheme_colors();
+	cs_load_pairs();
 	update_screen(UT_FULL);
 }
 
 void
-load_color_scheme_colors(void)
+cs_load_pairs(void)
 {
 	ensure_dir_map_exists();
 
@@ -685,7 +685,7 @@ load_color_scheme_colors(void)
 }
 
 void
-load_def_scheme(void)
+cs_load_defaults(void)
 {
 	fsddata_free(dir_map);
 	dir_map = NULL;
@@ -716,7 +716,7 @@ reset_to_default_color_scheme(col_scheme_t *cs)
 }
 
 void
-reset_color_scheme(col_scheme_t *cs)
+cs_reset(col_scheme_t *cs)
 {
 	reset_color_scheme_colors(cs);
 	free_color_scheme_highlights(cs);
@@ -724,7 +724,7 @@ reset_color_scheme(col_scheme_t *cs)
 }
 
 void
-assign_color_scheme(col_scheme_t *to, const col_scheme_t *from)
+cs_assign(col_scheme_t *to, const col_scheme_t *from)
 {
 	free_color_scheme_highlights(to);
 	*to = *from;
@@ -781,7 +781,7 @@ clone_color_scheme_highlights(const col_scheme_t *from)
 }
 
 int
-check_directory_for_color_scheme(int left, const char dir[])
+cs_load_local(int left, const char dir[])
 {
 	char *p;
 	char t;
@@ -793,7 +793,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 	}
 
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
-	assign_color_scheme(curr_stats.cs, &cfg.cs);
+	cs_assign(curr_stats.cs, &cfg.cs);
 
 	/* TODO: maybe use split_and_get() here as in io/iop:iop_mkdir(). */
 	p = (char *)dir;
@@ -805,7 +805,7 @@ check_directory_for_color_scheme(int left, const char dir[])
 		t = *p;
 		*p = '\0';
 
-		if(fsddata_get(dir_map, dir, &name) == 0 && color_scheme_exists(name))
+		if(fsddata_get(dir_map, dir, &name) == 0 && cs_exists(name))
 		{
 			(void)source_cs(name);
 			altered = 1;
@@ -889,7 +889,7 @@ load_color_pairs(col_scheme_t *cs)
 }
 
 void
-complete_colorschemes(const char name[])
+cs_complete(const char name[])
 {
 	int i;
 	size_t len;
@@ -897,9 +897,9 @@ complete_colorschemes(const char name[])
 	char **schemes;
 
 	len = strlen(name);
-	schemes = list_color_schemes(&schemes_len);
+	schemes = cs_list(&schemes_len);
 
-	for(i = 0; i < schemes_len; i++)
+	for(i = 0; i < schemes_len; ++i)
 	{
 		if(schemes[i][0] != '.' || name[0] == '.')
 		{
@@ -917,7 +917,7 @@ complete_colorschemes(const char name[])
 }
 
 const char *
-attrs_to_str(int attrs)
+cs_attrs_to_str(int attrs)
 {
 	static char result[64];
 	result[0] = '\0';
@@ -937,7 +937,7 @@ attrs_to_str(int attrs)
 }
 
 void
-assoc_dir(const char name[], const char dir[])
+cs_assoc_dir(const char name[], const char dir[])
 {
 	char *const copy = strdup(name);
 
@@ -960,7 +960,7 @@ ensure_dir_map_exists(void)
 }
 
 void
-mix_colors(col_attr_t *base, const col_attr_t *mixup)
+cs_mix_colors(col_attr_t *base, const col_attr_t *mixup)
 {
 	if(mixup->fg != -1)
 	{
@@ -979,7 +979,7 @@ mix_colors(col_attr_t *base, const col_attr_t *mixup)
 }
 
 int
-add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
+cs_add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
 {
 	void *p;
 	file_hi_t *file_hi;
@@ -1004,7 +1004,7 @@ add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
 }
 
 const col_attr_t *
-get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
+cs_get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 {
 	int i;
 
@@ -1028,7 +1028,7 @@ get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 }
 
 int
-is_color_set(const col_attr_t *color)
+cs_is_color_set(const col_attr_t *color)
 {
 	return color->fg != -1 || color->bg != -1 || color->attr != -1;
 }

@@ -41,7 +41,7 @@ show_colorschemes_menu(FileView *view)
 			strdup("No color schemes found"));
 	m.execute_handler = &execute_colorscheme_cb;
 
-	m.items = list_color_schemes(&m.len);
+	m.items = cs_list(&m.len);
 
 	qsort(m.items, m.len, sizeof(*m.items), &sorter);
 
@@ -70,7 +70,7 @@ sorter(const void *first, const void *second)
 static int
 execute_colorscheme_cb(FileView *view, menu_info *m)
 {
-	load_primary_color_scheme(m->items[m->pos]);
+	cs_load_primary(m->items[m->pos]);
 	return 0;
 }
 

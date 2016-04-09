@@ -634,12 +634,12 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 
 	if(entry->selected)
 	{
-		mix_colors(&col, &cs->color[SELECTED_COLOR]);
+		cs_mix_colors(&col, &cs->color[SELECTED_COLOR]);
 	}
 
-	if(is_color_set(&cs->color[OTHER_LINE_COLOR]))
+	if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
 	{
-		mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
+		cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 	}
 
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
@@ -997,18 +997,18 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 
 	if(entry->selected)
 	{
-		mix_colors(&col, &cs->color[SELECTED_COLOR]);
+		cs_mix_colors(&col, &cs->color[SELECTED_COLOR]);
 	}
 
 	if(current)
 	{
 		if(view == curr_view)
 		{
-			mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
+			cs_mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
 		}
-		else if(is_color_set(&cs->color[OTHER_LINE_COLOR]))
+		else if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
 		{
-			mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
+			cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 		}
 	}
 
@@ -1028,7 +1028,7 @@ mix_in_file_hi(const FileView *view, dir_entry_t *entry, int type_hi,
 	if(type_hi != WIN_COLOR)
 	{
 		const col_scheme_t *cs = ui_view_get_cs(view);
-		mix_colors(col, &cs->color[type_hi]);
+		cs_mix_colors(col, &cs->color[type_hi]);
 	}
 }
 
@@ -1037,10 +1037,10 @@ static void
 mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
-	const col_attr_t *color = get_file_hi(cs, entry->name, &entry->hi_num);
+	const col_attr_t *color = cs_get_file_hi(cs, entry->name, &entry->hi_num);
 	if(color != NULL)
 	{
-		mix_colors(col, color);
+		cs_mix_colors(col, color);
 	}
 }
 
@@ -1356,8 +1356,7 @@ calculate_column_width(FileView *view)
 void
 fview_dir_updated(FileView *view)
 {
-	view->local_cs = check_directory_for_color_scheme(view == &lwin,
-			view->curr_dir);
+	view->local_cs = cs_load_local(view == &lwin, view->curr_dir);
 }
 
 void
