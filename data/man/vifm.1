@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 08, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "April 09, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2970,16 +2970,19 @@ full paths.
 There are five possible ways to write them:
 .RS 2
 .IP 1. 3
-{comma-separated-name-globs}
+[!]{comma-separated-name-globs}
 .IP 2. 3
-{{comma-separated-path-globs}}
+[!]{{comma-separated-path-globs}}
 .IP 3. 3
-/name-regular-expression/[iI]
+[!]/name-regular-expression/[iI]
 .IP 4. 3
-//path-regular-expression//[iI]
+[!]//path-regular-expression//[iI]
 .IP 5. 3
 undecorated-pattern
 .RE
+
+Four first forms can include leading exclamation mark that negates pattern
+matching.
 
 The last form is implicitly refers to one of others.  :highlight does not accept
 undecorated form, while :filetype, :filextype, :fileviewer and 'classify' treat

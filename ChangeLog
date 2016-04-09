@@ -32,6 +32,10 @@
 	Added "target" sorting key, which sorts files by symbolic link targets.
 	Thanks to Marcos Cruz.
 
+	Added negation to patterns with explicitly specified type (surrounded by
+	{} or //).  Put exclamation mark to invert pattern match.  Thanks to Marcos
+	Cruz.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
