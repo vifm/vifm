@@ -40,19 +40,11 @@ TEST(multiple_choice_separated)
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
-	assert_true(viewer != NULL);
-	if(viewer != NULL)
-	{
-		assert_string_equal("prog1", viewer);
-	}
+	assert_string_equal("prog1", viewer);
 
 	ft_init(&prog2_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
-	assert_true(viewer != NULL);
-	if(viewer != NULL)
-	{
-		assert_string_equal("prog2", viewer);
-	}
+	assert_string_equal("prog2", viewer);
 
 	ft_init(&nothing_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
@@ -67,19 +59,11 @@ TEST(multiple_choice_joined)
 
 	ft_init(&prog1_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
-	assert_true(viewer != NULL);
-	if(viewer != NULL)
-	{
-		assert_string_equal("prog1", viewer);
-	}
+	assert_string_equal("prog1", viewer);
 
 	ft_init(&prog2_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
-	assert_true(viewer != NULL);
-	if(viewer != NULL)
-	{
-		assert_string_equal("prog2", viewer);
-	}
+	assert_string_equal("prog2", viewer);
 
 	ft_init(&nothing_available);
 	viewer = ft_get_viewer("file.version.tar.bz2");
