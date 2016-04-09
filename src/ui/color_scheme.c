@@ -390,15 +390,15 @@ static const col_attr_t default_cs[] = {
 };
 ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 
-static char ** list_color_scheme_files(int *len);
-static void restore_primary_color_scheme(const col_scheme_t *cs);
-static void reset_to_default_color_scheme(col_scheme_t *cs);
-static void free_color_scheme_highlights(col_scheme_t *cs);
-static file_hi_t * clone_color_scheme_highlights(const col_scheme_t *from);
-static void reset_color_scheme_colors(col_scheme_t *cs);
+static char ** list_cs_files(int *len);
+static void restore_primary_cs(const col_scheme_t *cs);
+static void reset_to_default_cs(col_scheme_t *cs);
+static void free_cs_highlights(col_scheme_t *cs);
+static file_hi_t * clone_cs_highlights(const col_scheme_t *from);
+static void reset_cs_colors(col_scheme_t *cs);
 static int source_cs(const char name[]);
 static void get_cs_path(const char name[], char buf[], size_t buf_size);
-static void check_color_scheme(col_scheme_t *cs);
+static void check_cs(col_scheme_t *cs);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dir_map_exists(void);
 
@@ -409,7 +409,7 @@ int
 cs_have_no_extensions(void)
 {
 	int len;
-	char **list = list_color_scheme_files(&len);
+	char **list = list_cs_files(&len);
 	int i;
 
 	/* Check if extensions are in use. */
@@ -461,7 +461,7 @@ cs_rename_all(void)
 char **
 cs_list(int *len)
 {
-	char **const list = list_color_scheme_files(len);
+	char **const list = list_cs_files(len);
 	int i, j;
 	int new_names;
 
@@ -498,7 +498,7 @@ cs_list(int *len)
  * strings, which should be freed by the caller.  Always sets *len.  Returns
  * NULL on error. */
 static char **
-list_color_scheme_files(int *len)
+list_cs_files(int *len)
 {
 	char **list = NULL;
 	*len = 0;
@@ -639,36 +639,36 @@ cs_load_primary(const char name[])
 
 	if(source_cs(name) != 0)
 	{
-		restore_primary_color_scheme(&prev_cs);
+		restore_primary_cs(&prev_cs);
 		show_error_msgf("Color Scheme Sourcing",
 				"An error occurred on loading color scheme: \"%s\"", name);
 		cfg.cs.state = CSS_NORMAL;
 		return 0;
 	}
 	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
-	check_color_scheme(&cfg.cs);
+	check_cs(&cfg.cs);
 
 	update_attributes();
 
 	if(cfg.cs.state == CSS_DEFAULTED)
 	{
-		restore_primary_color_scheme(&prev_cs);
+		restore_primary_cs(&prev_cs);
 		show_error_msgf("Color Scheme Error",
 				"\"%s\" color scheme is not supported by the terminal, restored \"%s\"",
 				name, prev_cs.name);
 		return 0;
 	}
 
-	free_color_scheme_highlights(&prev_cs);
+	free_cs_highlights(&prev_cs);
 	cfg.cs.state = CSS_NORMAL;
 	return 0;
 }
 
 /* Restore previous state of primary color scheme. */
 static void
-restore_primary_color_scheme(const col_scheme_t *cs)
+restore_primary_cs(const col_scheme_t *cs)
 {
-	free_color_scheme_highlights(&cfg.cs);
+	free_cs_highlights(&cfg.cs);
 	cfg.cs = *cs;
 	cs_load_pairs();
 	update_screen(UT_FULL);
@@ -693,9 +693,9 @@ cs_load_defaults(void)
 	lwin.local_cs = 0;
 	rwin.local_cs = 0;
 
-	reset_to_default_color_scheme(&cfg.cs);
-	reset_to_default_color_scheme(&lwin.cs);
-	reset_to_default_color_scheme(&rwin.cs);
+	reset_to_default_cs(&cfg.cs);
+	reset_to_default_cs(&lwin.cs);
+	reset_to_default_cs(&rwin.cs);
 
 	load_color_pairs(&cfg.cs);
 	load_color_pairs(&lwin.cs);
@@ -705,9 +705,9 @@ cs_load_defaults(void)
 /* Completely resets the cs to builtin default color scheme.  Changes: colors,
  * name, state. */
 static void
-reset_to_default_color_scheme(col_scheme_t *cs)
+reset_to_default_cs(col_scheme_t *cs)
 {
-	reset_color_scheme_colors(cs);
+	reset_cs_colors(cs);
 
 	copy_str(cs->name, sizeof(cs->name), DEF_CS_NAME);
 	copy_str(cs->dir, sizeof(cs->dir), "/");
@@ -718,22 +718,22 @@ reset_to_default_color_scheme(col_scheme_t *cs)
 void
 cs_reset(col_scheme_t *cs)
 {
-	reset_color_scheme_colors(cs);
-	free_color_scheme_highlights(cs);
+	reset_cs_colors(cs);
+	free_cs_highlights(cs);
 	load_color_pairs(cs);
 }
 
 void
 cs_assign(col_scheme_t *to, const col_scheme_t *from)
 {
-	free_color_scheme_highlights(to);
+	free_cs_highlights(to);
 	*to = *from;
-	to->file_hi = clone_color_scheme_highlights(from);
+	to->file_hi = clone_cs_highlights(from);
 }
 
 /* Resets color scheme to default builtin values. */
 static void
-reset_color_scheme_colors(col_scheme_t *cs)
+reset_cs_colors(col_scheme_t *cs)
 {
 	size_t i;
 	for(i = 0U; i < ARRAY_LEN(default_cs); ++i)
@@ -745,7 +745,7 @@ reset_color_scheme_colors(col_scheme_t *cs)
 /* Frees data structures of the color scheme that are related to filename
  * specific highlight. */
 static void
-free_color_scheme_highlights(col_scheme_t *cs)
+free_cs_highlights(col_scheme_t *cs)
 {
 	int i;
 
@@ -764,7 +764,7 @@ free_color_scheme_highlights(col_scheme_t *cs)
 /* Clones filename specific highlight array of the *from color scheme and
  * returns it. */
 static file_hi_t *
-clone_color_scheme_highlights(const col_scheme_t *from)
+clone_cs_highlights(const col_scheme_t *from)
 {
 	int i;
 	file_hi_t *const file_hi = reallocarray(NULL, from->file_hi_count + 1,
@@ -823,7 +823,7 @@ cs_load_local(int left, const char dir[])
 		return 0;
 	}
 
-	check_color_scheme(curr_stats.cs);
+	check_cs(curr_stats.cs);
 	load_color_pairs(curr_stats.cs);
 
 	return 1;
@@ -868,11 +868,11 @@ get_cs_path(const char name[], char buf[], size_t buf_size)
 /* Checks whether colorscheme is in unusable state and resets it to normal
  * state. */
 static void
-check_color_scheme(col_scheme_t *cs)
+check_cs(col_scheme_t *cs)
 {
 	if(cs->state == CSS_BROKEN)
 	{
-		reset_color_scheme_colors(cs);
+		reset_cs_colors(cs);
 		cs->state = CSS_DEFAULTED;
 	}
 }
