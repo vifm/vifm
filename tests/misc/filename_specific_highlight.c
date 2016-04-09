@@ -9,14 +9,14 @@
 SETUP_ONCE()
 {
 	init_commands();
-	reset_color_scheme(&cfg.cs);
+	cs_reset(&cfg.cs);
 	lwin.list_rows = 0;
 	rwin.list_rows = 0;
 }
 
 SETUP()
 {
-	reset_color_scheme(&cfg.cs);
+	cs_reset(&cfg.cs);
 	curr_stats.cs = &cfg.cs;
 }
 
@@ -98,6 +98,14 @@ TEST(wrong_flag)
 	const char *const COMMANDS = "highlight /^\\./x ctermfg=red";
 
 	assert_int_equal(1, exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+}
+
+TEST(negation)
+{
+	const char *const COMMANDS = "highlight !/^\\./i ctermfg=red";
+
+	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_string_equal("!/^\\./i", matcher_get_expr(cfg.cs.file_hi[0].matcher));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

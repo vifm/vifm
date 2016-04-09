@@ -170,7 +170,7 @@ TEST(classify_parsing_of_exprs)
 
 	assert_success(
 			exec_commands(
-				"set classify=*::{*.c}::/,123::*.c,,*.b::753,b::/.*-.*/i::q,-::*::1",
+				"set classify=*::!{*.c}::/,123::*.c,,*.b::753,b::/.*-.*/i::q,-::*::1",
 				&lwin, CIT_COMMAND));
 
 	assert_int_equal(0,
@@ -185,7 +185,7 @@ TEST(classify_parsing_of_exprs)
 	assert_string_equal("-", cfg.name_decs[3].prefix);
 	assert_string_equal("1", cfg.name_decs[3].suffix);
 
-	assert_string_equal("*::{*.c}::/,123::*.c,,*.b::753,b::/.*-.*/i::q,-::*::1",
+	assert_string_equal("*::!{*.c}::/,123::*.c,,*.b::753,b::/.*-.*/i::q,-::*::1",
 			get_option_value("classify", OPT_GLOBAL));
 }
 

@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: March 26, 2016
+" Last Change: April 09, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -256,11 +256,11 @@ syntax region vifmSubcommandN start='\s*\(\s*\n\s*\\\)\?:\?\s*\S\+'
 		\ contains=vifmStatementCN
 " Non-empty pattern or form {*.ext,*.e} or /regex/[iI], possibly multi-line.
 syntax region vifmPattern contained
-		\ start='\(\s\|\w\)\zs/[^/]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ start='\(\s\|\w\)\zs!\?/[^/]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='/[iI]*\ze\s\|/\ze\S\+\s'
 		\ contains=vifmComment,vifmInlineComment,vifmNotComment
 syntax region vifmPattern contained
-		\ start='{[^}]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='}\ze\s\|}\ze\S\+\s'
+		\ start='!\?{[^}]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='}\ze\s\|}\ze\S\+\s'
 		\ contains=vifmComment,vifmInlineComment,vifmNotComment
 syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'

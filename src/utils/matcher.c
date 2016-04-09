@@ -37,6 +37,7 @@ struct matcher_t
 	int globs;     /* Whether original pattern is globs or regexp. */
 	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */
+	int negated;   /* Whether match is inverted. */
 	regex_t regex; /* The expression in compiled form. */
 };
 
@@ -45,18 +46,22 @@ static int compile_expr(matcher_t *m, int strip, int cs_by_def, char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
 static int parse_re(matcher_t *m, int strip, int cs_by_def, char **error);
 static void free_matcher_items(matcher_t *matcher);
+static int is_negated(const char **expr);
 static int is_re_expr(const char expr[]);
 static int is_globs_expr(const char expr[]);
 
 matcher_t *
 matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 {
+	const char *orig_expr = expr;
+	const int negated = is_negated(&expr);
 	const int re = is_re_expr(expr), glob = is_globs_expr(expr);
 	int strip;
 	const int full_path = is_full_path(expr, re, glob, &strip);
 	matcher_t *matcher, m = {
 		.raw = strdup(expr + strip),
 		.globs = !(re || (!glob && !glob_by_def)),
+		.negated = negated,
 		.full_path = full_path,
 	};
 
@@ -74,7 +79,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 		return NULL;
 	}
 
-	m.expr = strdup(expr);
+	m.expr = strdup(orig_expr);
 	if(m.expr == NULL)
 	{
 		replace_string(error, "Failed to clone match expr.");
@@ -260,7 +265,7 @@ matcher_matches(matcher_t *matcher, const char path[])
 		path = get_last_path_component(path);
 	}
 
-	return (regexec(&matcher->regex, path, 0, NULL, 0) == 0);
+	return (regexec(&matcher->regex, path, 0, NULL, 0) == 0)^matcher->negated;
 }
 
 const char *
@@ -299,7 +304,21 @@ matcher_includes(const matcher_t *like, const matcher_t *m)
 int
 matcher_is_expr(const char str[])
 {
+	(void)is_negated(&str);
 	return is_re_expr(str) || is_globs_expr(str);
+}
+
+/* Checks whether *expr specifies negated pattern.  Adjusts pointer if so.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_negated(const char **expr)
+{
+	if(**expr == '!' && (is_re_expr(*expr + 1) || is_globs_expr(*expr + 1)))
+	{
+		++*expr;
+		return 1;
+	}
+	return 0;
 }
 
 /* Checks whether expr is a regular expression file name pattern.  Returns

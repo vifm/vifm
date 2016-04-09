@@ -380,11 +380,11 @@ draw_menu_item(menu_info *m, int pos, int line, int clear)
 	if(cfg.hl_search && m->search_highlight &&
 			m->matches != NULL && m->matches[pos][0] >= 0)
 	{
-		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
+		cs_mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
 	}
 	if(!clear && pos == m->pos)
 	{
-		mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
+		cs_mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
 	}
 	attrs = COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 

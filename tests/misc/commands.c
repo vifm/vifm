@@ -17,6 +17,7 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
+#include "../../src/filetype.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
@@ -25,6 +26,8 @@
 static int builtin_cmd(const cmd_info_t* cmd_info);
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
+static void check_filetype(void);
+static int prog_exists(const char name[]);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -423,6 +426,65 @@ TEST(yank_works_with_ranges)
 	assert_int_equal(1, reg->nfiles);
 
 	regs_reset();
+}
+
+TEST(filetype_accepts_negated_patterns)
+{
+	ft_init(&prog_exists);
+
+	assert_success(exec_commands("filetype !{*.tar} prog", &lwin, CIT_COMMAND));
+
+	check_filetype();
+
+	ft_reset(0);
+}
+
+TEST(filextype_accepts_negated_patterns)
+{
+	ft_init(&prog_exists);
+	curr_stats.exec_env_type = EET_EMULATOR_WITH_X;
+
+	assert_success(exec_commands("filextype !{*.tar} prog", &lwin, CIT_COMMAND));
+
+	check_filetype();
+
+	curr_stats.exec_env_type = EET_LINUX_NATIVE;
+	ft_reset(1);
+}
+
+TEST(fileviewer_accepts_negated_patterns)
+{
+	const char *viewer;
+
+	ft_init(&prog_exists);
+
+	assert_success(exec_commands("fileviewer !{*.tar} view", &lwin, CIT_COMMAND));
+
+	viewer = ft_get_viewer("file.version.tar.bz2");
+	assert_string_equal("view", viewer);
+
+	ft_reset(0);
+}
+
+static void
+check_filetype(void)
+{
+	assoc_records_t ft;
+
+	ft = ft_get_all_programs("file.version.tar");
+	assert_int_equal(0, ft.count);
+	ft_assoc_records_free(&ft);
+
+	ft = ft_get_all_programs("file.version.tar.bz");
+	assert_int_equal(1, ft.count);
+	assert_string_equal("prog", ft.list[0].command);
+	ft_assoc_records_free(&ft);
+}
+
+static int
+prog_exists(const char name[])
+{
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

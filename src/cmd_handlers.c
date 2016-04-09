@@ -1432,7 +1432,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		return show_colorschemes_menu(curr_view) != 0;
 	}
 
-	if(!color_scheme_exists(cmd_info->argv[0]))
+	if(!cs_exists(cmd_info->argv[0]))
 	{
 		status_bar_errorf("Cannot find colorscheme %s" , cmd_info->argv[0]);
 		return 1;
@@ -1464,25 +1464,25 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 			return 1;
 		}
 
-		assoc_dir(cmd_info->argv[0], directory);
+		cs_assoc_dir(cmd_info->argv[0], directory);
 		free(directory);
 
-		lwin.local_cs = check_directory_for_color_scheme(1, lwin.curr_dir);
-		rwin.local_cs = check_directory_for_color_scheme(0, rwin.curr_dir);
+		lwin.local_cs = cs_load_local(1, lwin.curr_dir);
+		rwin.local_cs = cs_load_local(0, rwin.curr_dir);
 		redraw_lists();
 		return 0;
 	}
 	else
 	{
-		const int cs_load_result = load_primary_color_scheme(cmd_info->argv[0]);
+		const int cs_load_result = cs_load_primary(cmd_info->argv[0]);
 
 		if(!lwin.local_cs)
 		{
-			assign_color_scheme(&lwin.cs, &cfg.cs);
+			cs_assign(&lwin.cs, &cfg.cs);
 		}
 		if(!rwin.local_cs)
 		{
-			assign_color_scheme(&rwin.cs, &cfg.cs);
+			cs_assign(&rwin.cs, &cfg.cs);
 		}
 		redraw_lists();
 		update_all_windows();
@@ -1935,7 +1935,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 	}
 
 	records = vle_cmds_next_arg(cmd_info->args);
-	in_x = curr_stats.exec_env_type == EET_EMULATOR_WITH_X;
+	in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 	ft_set_programs(m, records, for_x, in_x);
 	return 0;
 }
@@ -2263,7 +2263,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clear") == 0)
 	{
-		reset_color_scheme(curr_stats.cs);
+		cs_reset(curr_stats.cs);
 		fview_view_cs_reset(&lwin);
 		fview_view_cs_reset(&rwin);
 
@@ -2310,7 +2310,7 @@ highlight_file(const cmd_info_t *cmd_info)
 	}
 
 	result = parse_and_apply_highlight(cmd_info, &color);
-	result += add_file_hi(matcher, &color);
+	result += cs_add_file_hi(matcher, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
 	curr_stats.need_update = UT_REDRAW;
@@ -2444,11 +2444,11 @@ get_hi_str(const char title[], const col_attr_t *col)
 
 	char fg_buf[16], bg_buf[16];
 
-	color_to_str(col->fg, sizeof(fg_buf), fg_buf);
-	color_to_str(col->bg, sizeof(bg_buf), bg_buf);
+	cs_color_to_str(col->fg, sizeof(fg_buf), fg_buf);
+	cs_color_to_str(col->bg, sizeof(bg_buf), bg_buf);
 
 	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s", title,
-			attrs_to_str(col->attr), fg_buf, bg_buf);
+			cs_attrs_to_str(col->attr), fg_buf, bg_buf);
 
 	return buf;
 }
