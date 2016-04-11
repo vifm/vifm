@@ -4,6 +4,10 @@
 # available
 # see https://www.gnu.org/software/automake/manual/automake.html#CVS
 
+# Usage: without arguments updates timestamps unconditionally
+#        with at least one argument (not analyzed) checks timestamps and skips
+#        updates if everything is up-to-date
+
 next_second()
 {
     echo Waiting for time change...
@@ -15,6 +19,33 @@ update()
     echo "Updating $@"
     touch "$@"
 }
+
+# checks whether timestamps are OK, OK looks like this:
+# configure.ac
+#    < aclocal.m4
+#        < configure config.h.in `find . -name Makefile.in -print`
+everything_is_up_to_date()
+{
+    if [ ! configure.ac -ot aclocal.m4 ]; then
+        echo 'configure.ac is not older than aclocal.m4'
+        return 1
+    fi
+
+    for file in configure config.h.in `find . -name Makefile.in -print`; do
+        if [ ! aclocal.m4 -ot "$file" ]; then
+            echo "aclocal.m4 is not older than $file"
+            return 1
+        fi
+    done
+
+    return 0
+}
+
+if [ $# -gt 0 ]; then
+    if everything_is_up_to_date; then
+        exit 0
+    fi
+fi
 
 next_second
 
