@@ -396,7 +396,10 @@ ui_stat_reposition(int statusbar_height, int force_stat_win)
 	            - job_bar_height;
 
 	mvwin(job_bar, y, 0);
-	wresize(job_bar, job_bar_height, getmaxx(job_bar));
+	if(job_bar_height != 0)
+	{
+		wresize(job_bar, job_bar_height, getmaxx(job_bar));
+	}
 
 	if(force_stat_win || cfg.display_statusline)
 	{

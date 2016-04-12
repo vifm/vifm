@@ -92,6 +92,9 @@
 	Fixed updating view columns after local options synchronization via
 	:sync!.  Thanks to filterfalse.
 
+	Fixed possible crash on Windows on displaying job bar (e.g. after :empty).
+	Thanks to Reva Revadigar.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
