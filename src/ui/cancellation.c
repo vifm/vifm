@@ -110,7 +110,12 @@ ui_cancellation_pause(void)
 		return 0;
 	}
 
-	raw();
+	/* The check is here for tests, which are running with uninitialized
+	 * curses. */
+	if(curr_stats.load_stage > 0)
+	{
+		raw();
+	}
 	return 1;
 }
 
@@ -120,7 +125,12 @@ ui_cancellation_resume(int state)
 	if(state)
 	{
 		assert(ui_cancellation_enabled() && "Invalid cancellation resume");
-		noraw();
+		/* The check is here for tests, which are running with uninitialized
+		 * curses. */
+		if(curr_stats.load_stage > 0)
+		{
+			noraw();
+		}
 	}
 }
 
