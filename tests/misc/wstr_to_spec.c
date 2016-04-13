@@ -1,17 +1,30 @@
 #include <stic.h>
 
+#include <locale.h> /* setlocale() */
 #include <stdlib.h> /* free() */
 
 #include "../../src/bracket_notation.h"
+#include "../../src/utils/utils.h"
 
-TEST(non_ascii_chars_are_handled_correctly)
+static int locale_works(void);
+
+SETUP_ONCE()
+{
+	(void)setlocale(LC_ALL, "");
+	if(!locale_works())
+	{
+		(void)setlocale(LC_ALL, "en_US.utf8");
+	}
+}
+
+TEST(non_ascii_chars_are_handled_correctly, IF(locale_works))
 {
 	char *const spec = wstr_to_spec(L"П");
 	assert_string_equal("П", spec);
 	free(spec);
 }
 
-TEST(more_non_ascii_chars_are_handled_correctly)
+TEST(more_non_ascii_chars_are_handled_correctly, IF(locale_works))
 {
 	char *spec;
 
@@ -82,6 +95,12 @@ TEST(more_non_ascii_chars_are_handled_correctly)
 	spec = wstr_to_spec(L"ю");
 	assert_string_equal("ю", spec);
 	free(spec);
+}
+
+static int
+locale_works(void)
+{
+	return (vifm_wcwidth(L'丝') == 2);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
