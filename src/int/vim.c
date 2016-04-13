@@ -128,7 +128,8 @@ vim_edit_selection(void)
 TSTATIC char *
 format_edit_selection_cmd(int *bg)
 {
-	char *const files = expand_macros("%f", NULL, NULL, 1);
+	const char *const fmt = (get_env_type() == ET_WIN) ? "%\"f" : "%f";
+	char *const files = expand_macros(fmt, NULL, NULL, 1);
 	char *const cmd = format_str("%s %s", cfg_get_vicmd(bg), files);
 	free(files);
 	return cmd;
