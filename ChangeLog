@@ -97,6 +97,8 @@
 	Fixed possible crash on Windows on displaying job bar (e.g. after :empty).
 	Thanks to Reva Revadigar.
 
+	Fixed escaping on Windows when opening files via :edit.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
