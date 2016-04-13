@@ -661,12 +661,6 @@ skip_char(const char str[], char c)
 char *
 escape_chars(const char string[], const char chars[])
 {
-	return escape_chars_with(string, chars, '\\');
-}
-
-char *
-escape_chars_with(const char string[], const char chars[], char with)
-{
 	size_t len;
 	size_t i;
 	char *ret, *dup;
@@ -675,11 +669,11 @@ escape_chars_with(const char string[], const char chars[], char with)
 
 	dup = ret = malloc(len*2 + 2 + 1);
 
-	for(i = 0; i < len; ++i)
+	for(i = 0; i < len; i++)
 	{
-		if(string[i] == with || char_is_one_of(chars, string[i]))
+		if(string[i] == '\\' || char_is_one_of(chars, string[i]))
 		{
-			*dup++ = with;
+			*dup++ = '\\';
 		}
 		*dup++ = string[i];
 	}

@@ -187,13 +187,10 @@ win_make_sh_cmd(const char cmd[])
 
 	if(curr_stats.shell_type == ST_CMD)
 	{
-		/* Documentation in `cmd /?` is rather confusing, but this seems to work in
-		 * most cases (even in presence of both arguments with spaces and special
-		 * characters. */
+		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
+		 * special characters work at the same time. */
 		const char *const fmt = (cmd[0] == '"') ? "%s /C \"%s\"" : "%s /C %s";
-		char *const escaped = escape_chars_with(cmd, "&<>()@^|", '^');
-		snprintf(buf, sizeof(buf), fmt, cfg.shell, escaped);
-		free(escaped);
+		snprintf(buf, sizeof(buf), fmt, cfg.shell, cmd);
 	}
 	else
 	{

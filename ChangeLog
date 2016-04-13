@@ -67,6 +67,8 @@
 	Never add parent entry (..) to very custom view (%U).  Thanks to
 	filterfalse.
 
+	Removed caret escaping on Windows...  Thanks to Reva Revadigar.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
