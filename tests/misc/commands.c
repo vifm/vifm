@@ -28,6 +28,7 @@ static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
 static void check_filetype(void);
 static int prog_exists(const char name[]);
+static void add_some_files_to_view(FileView *view);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -466,6 +467,103 @@ TEST(fileviewer_accepts_negated_patterns)
 	ft_reset(0);
 }
 
+TEST(select_fails_for_wrong_pattern)
+{
+	assert_failure(exec_commands("select /**/", &lwin, CIT_COMMAND));
+}
+
+TEST(select_fails_for_pattern_and_range)
+{
+	assert_failure(exec_commands("1,$select *.c", &lwin, CIT_COMMAND));
+}
+
+TEST(select_selects_matching_files)
+{
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_appends_matching_files_to_selection)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_success(exec_commands("select *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_bang_unselects_nonmatching_files)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_success(exec_commands("select! *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_noargs_selects_current_file)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+	lwin.list_pos = 2;
+
+	assert_success(exec_commands("select", &lwin, CIT_COMMAND));
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("select", &lwin, CIT_COMMAND));
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("select!", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_can_select_range)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+
+	assert_success(exec_commands("2,$select", &lwin, CIT_COMMAND));
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("2,$select!", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
 static void
 check_filetype(void)
 {
@@ -485,6 +583,22 @@ static int
 prog_exists(const char name[])
 {
 	return 1;
+}
+
+static void
+add_some_files_to_view(FileView *view)
+{
+	view->list_rows = 3;
+	view->list_pos = 0;
+	view->dir_entry = dynarray_cextend(NULL,
+			view->list_rows*sizeof(*view->dir_entry));
+	view->dir_entry[0].name = strdup("a.c");
+	view->dir_entry[0].origin = &view->curr_dir[0];
+	view->dir_entry[1].name = strdup("b.cc");
+	view->dir_entry[1].origin = &view->curr_dir[0];
+	view->dir_entry[2].name = strdup("c.c");
+	view->dir_entry[2].origin = &view->curr_dir[0];
+	view->selected_files = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

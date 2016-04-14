@@ -225,6 +225,9 @@ static int restore_cmd(const cmd_info_t *cmd_info);
 static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
+static int select_cmd(const cmd_info_t *cmd_info);
+static void select_by_range(const cmd_info_t *cmd_info);
+static int select_by_pattern(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
@@ -635,6 +638,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "view/toggle terminal multiplexer support",
 	  .flags = HAS_COMMENT | HAS_QMARK_NO_ARGS,
 	  .handler = &screen_cmd,      .min_args = 0,   .max_args = 0, },
+	{ .name = "select",            .abbr = NULL,    .id = -1,
+	  .descr = "select files matching pattern or range",
+	  .flags = HAS_EMARK | HAS_RANGE | HAS_REGEXP_ARGS,
+	  .handler = &select_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
 	/* engine/set unit handles comments to resolve parsing ambiguity. */
 	{ .name = "set",               .abbr = "se",    .id = COM_SET,
 	  .descr = "set global and local options",
@@ -1754,7 +1761,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 	{
 		int i;
 
-		for(i = 0; i < curr_view->list_rows; i++)
+		for(i = 0; i < curr_view->list_rows; ++i)
 		{
 			struct stat st;
 			if(curr_view->dir_entry[i].selected == 0)
@@ -3329,6 +3336,106 @@ screen_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 	cfg_set_use_term_multiplexer(!cfg.use_term_multiplexer);
+	return 0;
+}
+
+/* Selects files that match passed in expression. */
+static int
+select_cmd(const cmd_info_t *cmd_info)
+{
+	cmds_preserve_selection();
+
+	/* If no arguments are passed, select the range. */
+	if(cmd_info->argc == 0)
+	{
+		select_by_range(cmd_info);
+		return 0;
+	}
+
+	if(cmd_info->begin != NOT_DEF)
+	{
+		status_bar_error("Either range or argument should be supplied.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	return select_by_pattern(cmd_info);
+}
+
+/* Selects entries in the given range. */
+static void
+select_by_range(const cmd_info_t *cmd_info)
+{
+	/* Append to previous selection unless ! is specified. */
+	if(cmd_info->emark)
+	{
+		erase_selection(curr_view);
+	}
+
+	if(cmd_info->begin == NOT_DEF)
+	{
+		if(!curr_view->dir_entry[curr_view->list_pos].selected)
+		{
+			curr_view->dir_entry[curr_view->list_pos].selected = 1;
+			++curr_view->selected_files;
+		}
+	}
+	else
+	{
+		int i;
+		for(i = cmd_info->begin; i <= cmd_info->end; ++i)
+		{
+			if(!curr_view->dir_entry[i].selected)
+			{
+				curr_view->dir_entry[i].selected = 1;
+				++curr_view->selected_files;
+			}
+		}
+	}
+
+	ui_view_schedule_redraw(curr_view);
+}
+
+/* Selects entries that match given pattern. */
+static int
+select_by_pattern(const cmd_info_t *cmd_info)
+{
+	int i;
+	char *error;
+	matcher_t *m = matcher_alloc(cmd_info->args, 0, 1, &error);
+	if(m == NULL)
+	{
+		status_bar_errorf("Pattern error: %s", error);
+		free(error);
+		return CMDS_ERR_CUSTOM;
+	}
+
+	/* Append to previous selection unless ! is specified. */
+	if(cmd_info->emark)
+	{
+		erase_selection(curr_view);
+	}
+
+	for(i = 0; i < curr_view->list_rows; ++i)
+	{
+		char file_path[PATH_MAX];
+
+		if(curr_view->dir_entry[i].selected)
+		{
+			continue;
+		}
+
+		get_full_path_at(curr_view, i, sizeof(file_path), file_path);
+
+		if(matcher_matches(m, file_path))
+		{
+			curr_view->dir_entry[i].selected = 1;
+			++curr_view->selected_files;
+		}
+	}
+
+	ui_view_schedule_redraw(curr_view);
+
+	matcher_free(m);
 	return 0;
 }
 

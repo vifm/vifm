@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 09
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 14
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1967,6 +1967,15 @@ order using the '.' operator.  Any whitespace is ignored.
 
 Note: the command is called screen for historical reasons (when tmux wasn't
 yet supported) and might be changed in future releases, or get an alias.
+
+                                               *vifm-:select*
+:[range]select
+    select files in the given range (current file if no range is given).
+:select [{pattern}]
+    select files that match specified pattern.  Possible {pattern} forms are
+    described in |vifm-patterns|.
+:[range]select! [{pattern}]
+    same as above, but resets previously selected items before proceeding.
 
                                                *vifm-:set* *vifm-:se*
 :se[t]

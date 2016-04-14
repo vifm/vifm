@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 09, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "April 14, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2324,6 +2324,18 @@ display whether integration with terminal multiplexers is enabled.
 .LP
 Note: the command is called screen for historical reasons (when tmux wasn't yet
 supported) and might be changed in future releases, or get an alias.
+.TP
+.BI "                                         :select"
+.TP
+.BI ":[range]select"
+select files in the given range (current file if no range is given).
+.TP
+.BI ":select [{pattern}]"
+select files that match specified pattern.  Possible {pattern} forms are
+described in "Patterns" section below.
+.TP
+.BI ":[range]select! [{pattern}]"
+same as above, but resets previously selected items before proceeding.
 .TP
 .BI "                                         :set"
 .TP
