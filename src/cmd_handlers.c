@@ -248,8 +248,8 @@ static int touch_cmd(const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int trashes_cmd(const cmd_info_t *cmd_info);
 static int undolist_cmd(const cmd_info_t *cmd_info);
-static int unmap_cmd(const cmd_info_t *cmd_info);
 static int unlet_cmd(const cmd_info_t *cmd_info);
+static int unmap_cmd(const cmd_info_t *cmd_info);
 static int view_cmd(const cmd_info_t *cmd_info);
 static int vifm_cmd(const cmd_info_t *cmd_info);
 static int vmap_cmd(const cmd_info_t *cmd_info);
@@ -697,14 +697,14 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display list of operations",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &undolist_cmd,    .min_args = 0,   .max_args = 0, },
-	{ .name = "unmap",             .abbr = "unm",   .id = -1,
-	  .descr = "unmap keys in normal and visual modes",
-	  .flags = HAS_EMARK,
-	  .handler = &unmap_cmd,       .min_args = 1,   .max_args = 1, },
 	{ .name = "unlet",             .abbr = "unl",   .id = COM_UNLET,
 	  .descr = "undefine variable",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &unlet_cmd,       .min_args = 1,   .max_args = NOT_DEF, },
+	{ .name = "unmap",             .abbr = "unm",   .id = -1,
+	  .descr = "unmap keys in normal and visual modes",
+	  .flags = HAS_EMARK,
+	  .handler = &unmap_cmd,       .min_args = 1,   .max_args = 1, },
 	{ .name = "version",           .abbr = "ve",    .id = -1,
 	  .descr = "display version information",
 	  .flags = HAS_COMMENT,
@@ -3834,6 +3834,18 @@ undolist_cmd(const cmd_info_t *cmd_info)
 }
 
 static int
+unlet_cmd(const cmd_info_t *cmd_info)
+{
+	vle_tb_clear(vle_err);
+	if(unlet_variables(cmd_info->args) != 0 && !cmd_info->emark)
+	{
+		status_bar_error(vle_tb_get_data(vle_err));
+		return 1;
+	}
+	return 0;
+}
+
+static int
 unmap_cmd(const cmd_info_t *cmd_info)
 {
 	int result;
@@ -3866,18 +3878,6 @@ unmap_cmd(const cmd_info_t *cmd_info)
 	else
 		status_bar_error("Error");
 	return result != 0;
-}
-
-static int
-unlet_cmd(const cmd_info_t *cmd_info)
-{
-	vle_tb_clear(vle_err);
-	if(unlet_variables(cmd_info->args) != 0 && !cmd_info->emark)
-	{
-		status_bar_error(vle_tb_get_data(vle_err));
-		return 1;
-	}
-	return 0;
 }
 
 static int
