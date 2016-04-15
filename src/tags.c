@@ -317,6 +317,7 @@ const char *tags[] = {
 	"vifm-:unlet",
 	"vifm-:unm",
 	"vifm-:unmap",
+	"vifm-:unselect",
 	"vifm-:ve",
 	"vifm-:version",
 	"vifm-:vie",

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 14
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 15
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2112,6 +2112,13 @@ yet supported) and might be changed in future releases, or get an alias.
 :unl[et][!] $ENV_VAR1 $ENV_VAR2 ...            *vifm-:unlet* *vifm-:unl*
     remove environment variables.  Use "!" to omit displaying of warnings
     about nonexistent variables.
+
+                                               *vifm-:unselect*
+:[range]unselect
+    unselect files in the given range (current file if no range is given).
+:unselect [{pattern}]
+    unselect files that match specified pattern.  Possible {pattern} forms are
+    described in |vifm-patterns|.
 
 :ve[rsion]                                     *vifm-:version* *vifm-:ve*
     display menu with version information.

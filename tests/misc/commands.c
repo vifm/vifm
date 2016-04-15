@@ -564,6 +564,68 @@ TEST(select_can_select_range)
 	assert_true(lwin.dir_entry[2].selected);
 }
 
+TEST(unselect_fails_for_wrong_pattern)
+{
+	assert_failure(exec_commands("unselect /**/", &lwin, CIT_COMMAND));
+}
+
+TEST(unselect_fails_for_pattern_and_range)
+{
+	assert_failure(exec_commands("1,$unselect *.c", &lwin, CIT_COMMAND));
+}
+
+TEST(unselect_unselects_matching_files)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_success(exec_commands("unselect *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(unselect_noargs_unselects_current_file)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	lwin.list_pos = 2;
+	assert_success(exec_commands("unselect", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	lwin.list_pos = 1;
+	assert_success(exec_commands("unselect", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(unselect_can_unselect_range)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 3;
+
+	assert_success(exec_commands("2,$unselect", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
 static void
 check_filetype(void)
 {

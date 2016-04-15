@@ -226,8 +226,6 @@ static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
-static void select_by_range(const cmd_info_t *cmd_info);
-static int select_by_pattern(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
@@ -250,6 +248,9 @@ static int trashes_cmd(const cmd_info_t *cmd_info);
 static int undolist_cmd(const cmd_info_t *cmd_info);
 static int unlet_cmd(const cmd_info_t *cmd_info);
 static int unmap_cmd(const cmd_info_t *cmd_info);
+static int unselect_cmd(const cmd_info_t *cmd_info);
+static void select_unselect_by_range(const cmd_info_t *cmd_info, int select);
+static int select_unselect_by_pattern(const cmd_info_t *cmd_info, int select);
 static int view_cmd(const cmd_info_t *cmd_info);
 static int vifm_cmd(const cmd_info_t *cmd_info);
 static int vmap_cmd(const cmd_info_t *cmd_info);
@@ -642,7 +643,7 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "select files matching pattern or range",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_REGEXP_ARGS,
 	  .handler = &select_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
-	/* engine/set unit handles comments to resolve parsing ambiguity. */
+	/* engine/options unit handles comments to resolve parsing ambiguity. */
 	{ .name = "set",               .abbr = "se",    .id = COM_SET,
 	  .descr = "set global and local options",
 	  .flags = 0,
@@ -705,6 +706,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "unmap keys in normal and visual modes",
 	  .flags = HAS_EMARK,
 	  .handler = &unmap_cmd,       .min_args = 1,   .max_args = 1, },
+	{ .name = "unselect",          .abbr = NULL,    .id = -1,
+	  .descr = "unselect files matching pattern or range",
+	  .flags = HAS_RANGE | HAS_REGEXP_ARGS,
+	  .handler = &unselect_cmd,    .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "version",           .abbr = "ve",    .id = -1,
 	  .descr = "display version information",
 	  .flags = HAS_COMMENT,
@@ -3339,7 +3344,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* Selects files that match passed in expression. */
+/* Selects files that match passed in expression or range. */
 static int
 select_cmd(const cmd_info_t *cmd_info)
 {
@@ -3348,7 +3353,13 @@ select_cmd(const cmd_info_t *cmd_info)
 	/* If no arguments are passed, select the range. */
 	if(cmd_info->argc == 0)
 	{
-		select_by_range(cmd_info);
+		/* Append to previous selection unless ! is specified. */
+		if(cmd_info->emark)
+		{
+			erase_selection(curr_view);
+		}
+
+		select_unselect_by_range(cmd_info, 1);
 		return 0;
 	}
 
@@ -3358,85 +3369,7 @@ select_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 
-	return select_by_pattern(cmd_info);
-}
-
-/* Selects entries in the given range. */
-static void
-select_by_range(const cmd_info_t *cmd_info)
-{
-	/* Append to previous selection unless ! is specified. */
-	if(cmd_info->emark)
-	{
-		erase_selection(curr_view);
-	}
-
-	if(cmd_info->begin == NOT_DEF)
-	{
-		if(!curr_view->dir_entry[curr_view->list_pos].selected)
-		{
-			curr_view->dir_entry[curr_view->list_pos].selected = 1;
-			++curr_view->selected_files;
-		}
-	}
-	else
-	{
-		int i;
-		for(i = cmd_info->begin; i <= cmd_info->end; ++i)
-		{
-			if(!curr_view->dir_entry[i].selected)
-			{
-				curr_view->dir_entry[i].selected = 1;
-				++curr_view->selected_files;
-			}
-		}
-	}
-
-	ui_view_schedule_redraw(curr_view);
-}
-
-/* Selects entries that match given pattern. */
-static int
-select_by_pattern(const cmd_info_t *cmd_info)
-{
-	int i;
-	char *error;
-	matcher_t *m = matcher_alloc(cmd_info->args, 0, 1, &error);
-	if(m == NULL)
-	{
-		status_bar_errorf("Pattern error: %s", error);
-		free(error);
-		return CMDS_ERR_CUSTOM;
-	}
-
-	/* Append to previous selection unless ! is specified. */
-	if(cmd_info->emark)
-	{
-		erase_selection(curr_view);
-	}
-
-	for(i = 0; i < curr_view->list_rows; ++i)
-	{
-		char file_path[PATH_MAX];
-
-		if(curr_view->dir_entry[i].selected)
-		{
-			continue;
-		}
-
-		get_full_path_at(curr_view, i, sizeof(file_path), file_path);
-
-		if(matcher_matches(m, file_path))
-		{
-			curr_view->dir_entry[i].selected = 1;
-			++curr_view->selected_files;
-		}
-	}
-
-	ui_view_schedule_redraw(curr_view);
-
-	matcher_free(m);
-	return 0;
+	return select_unselect_by_pattern(cmd_info, 1);
 }
 
 /* Updates/displays global and local options. */
@@ -3878,6 +3811,104 @@ unmap_cmd(const cmd_info_t *cmd_info)
 	else
 		status_bar_error("Error");
 	return result != 0;
+}
+
+/* Unselects files that match passed in expression or range. */
+static int
+unselect_cmd(const cmd_info_t *cmd_info)
+{
+	cmds_preserve_selection();
+
+	/* If no arguments are passed, unselect the range. */
+	if(cmd_info->argc == 0)
+	{
+		select_unselect_by_range(cmd_info, 0);
+		return 0;
+	}
+
+	if(cmd_info->begin != NOT_DEF)
+	{
+		status_bar_error("Either range or argument should be supplied.");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	return select_unselect_by_pattern(cmd_info, 0);
+}
+
+/* Selects or unselects entries in the given range. */
+static void
+select_unselect_by_range(const cmd_info_t *cmd_info, int select)
+{
+	select = (select != 0);
+
+	if(cmd_info->begin == NOT_DEF)
+	{
+		if((curr_view->dir_entry[curr_view->list_pos].selected != 0) != select)
+		{
+			curr_view->dir_entry[curr_view->list_pos].selected = select;
+			curr_view->selected_files += (select ? 1 : -1);
+		}
+	}
+	else
+	{
+		int i;
+		for(i = cmd_info->begin; i <= cmd_info->end; ++i)
+		{
+			if((curr_view->dir_entry[i].selected != 0) != select)
+			{
+				curr_view->dir_entry[i].selected = select;
+				curr_view->selected_files += (select ? 1 : -1);
+			}
+		}
+	}
+
+	ui_view_schedule_redraw(curr_view);
+}
+
+/* Selects or unselects entries that match given pattern. */
+static int
+select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
+{
+	int i;
+	char *error;
+	matcher_t *const m = matcher_alloc(cmd_info->args, 0, 1, &error);
+	if(m == NULL)
+	{
+		status_bar_errorf("Pattern error: %s", error);
+		free(error);
+		return CMDS_ERR_CUSTOM;
+	}
+
+	select = (select != 0);
+
+	/* Append to previous selection unless ! is specified. */
+	if(select && cmd_info->emark)
+	{
+		erase_selection(curr_view);
+	}
+
+	for(i = 0; i < curr_view->list_rows; ++i)
+	{
+		char file_path[PATH_MAX];
+
+		if((curr_view->dir_entry[i].selected != 0) == select)
+		{
+			continue;
+		}
+
+		get_full_path_at(curr_view, i, sizeof(file_path), file_path);
+
+		if(matcher_matches(m, file_path))
+		{
+			curr_view->dir_entry[i].selected = select;
+			curr_view->selected_files += (select ? 1 : -1);
+		}
+	}
+
+	ui_view_schedule_redraw(curr_view);
+
+	matcher_free(m);
+	return 0;
 }
 
 static int
