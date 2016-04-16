@@ -89,7 +89,7 @@ static int is_dir_entry(const char full_path[], int type);
 static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
 #endif
-static int selection_is_consistent(const FileView *const view);
+static int selection_is_consistent(FileView *view);
 static void execute_file(const char full_path[], int elevate);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
@@ -322,37 +322,31 @@ run_win_executable_as_evaluated(const char full_path[])
 /* Returns non-zero if selection doesn't mix files and directories, otherwise
  * zero is returned. */
 static int
-selection_is_consistent(const FileView *const view)
+selection_is_consistent(FileView *view)
 {
-	if(view->selected_files > 1)
-	{
-		int files = 0, dirs = 0;
-		int i;
-		for(i = 0; i < view->list_rows; i++)
-		{
-			char full[PATH_MAX];
-			const dir_entry_t *const curr = &view->dir_entry[i];
-			if(!curr->selected)
-			{
-				continue;
-			}
+	int files = 0, dirs = 0;
+	dir_entry_t *entry;
 
-			get_full_path_of(curr, sizeof(full), full);
-			if(is_dir_entry(full, curr->type))
-			{
-				dirs++;
-			}
-			else
-			{
-				files++;
-			}
-		}
-		if(dirs > 0 && files > 0)
+	if(view->selected_files < 2)
+	{
+		return 1;
+	}
+
+	entry = NULL;
+	while(iter_selected_entries(view, &entry))
+	{
+		char full[PATH_MAX];
+		get_full_path_of(entry, sizeof(full), full);
+		if(is_dir_entry(full, entry->type))
 		{
-			return 0;
+			++dirs;
+		}
+		else
+		{
+			++files;
 		}
 	}
-	return 1;
+	return (dirs == 0 || files == 0);
 }
 
 /* Executes file, specified by the full_path.  Changes type of slashes on
