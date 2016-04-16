@@ -52,7 +52,7 @@ TEST(filetypes_are_deduplicated)
 	init_commands();
 
 	/* Add a filetype. */
-	m = matcher_alloc("*.c", 0, 1, &error);
+	m = matcher_alloc("*.c", 0, 1, "", &error);
 	assert_non_null(m);
 	ft_set_programs(m, "{Description}com,,mand,{descr2}cmd", 0, 1);
 
@@ -62,7 +62,7 @@ TEST(filetypes_are_deduplicated)
 	assert_success(stat(SANDBOX_PATH "/vifminfo", &first));
 
 	/* Add filetype again (as if it was read from vifmrc). */
-	m = matcher_alloc("*.c", 0, 1, &error);
+	m = matcher_alloc("*.c", 0, 1, "", &error);
 	assert_non_null(m);
 	ft_set_programs(m, "{Description}com,,mand,{descr2}cmd", 0, 1);
 

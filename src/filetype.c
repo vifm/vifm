@@ -324,7 +324,7 @@ static void
 add_defaults(int in_x)
 {
 	char *error;
-	matcher_t *const m = matcher_alloc("{*/}", 0, 1, &error);
+	matcher_t *const m = matcher_alloc("{*/}", 0, 1, "", &error);
 	assert(m != NULL && "Failed to allocate builtin matcher!");
 
 	new_records_type = ART_BUILTIN;

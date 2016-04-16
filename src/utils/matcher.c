@@ -42,20 +42,23 @@ struct matcher_t
 };
 
 static int is_full_path(const char expr[], int re, int glob, int *strip);
-static int compile_expr(matcher_t *m, int strip, int cs_by_def, char **error);
+static int compile_expr(matcher_t *m, int strip, int cs_by_def,
+		const char on_empty_re[], char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
-static int parse_re(matcher_t *m, int strip, int cs_by_def, char **error);
+static int parse_re(matcher_t *m, int strip, int cs_by_def,
+		const char on_empty_re[], char **error);
 static void free_matcher_items(matcher_t *matcher);
-static int is_negated(const char **expr);
-static int is_re_expr(const char expr[]);
+static int is_negated(const char **expr, int allow_empty);
+static int is_re_expr(const char expr[], int allow_empty);
 static int is_globs_expr(const char expr[]);
 
 matcher_t *
-matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
+matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
+		const char on_empty_re[], char **error)
 {
 	const char *orig_expr = expr;
-	const int negated = is_negated(&expr);
-	const int re = is_re_expr(expr), glob = is_globs_expr(expr);
+	const int negated = is_negated(&expr, 1);
+	const int re = is_re_expr(expr, 1), glob = is_globs_expr(expr);
 	int strip;
 	const int full_path = is_full_path(expr, re, glob, &strip);
 	matcher_t *matcher, m = {
@@ -73,7 +76,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def, char **error)
 		return NULL;
 	}
 
-	if(compile_expr(&m, strip, cs_by_def, error) != 0)
+	if(compile_expr(&m, strip, cs_by_def, on_empty_re, error) != 0)
 	{
 		free(m.raw);
 		return NULL;
@@ -114,7 +117,7 @@ is_full_path(const char expr[], int re, int glob, int *strip)
 	if(re)
 	{
 		const char *const s = strrchr(expr, '/') - 1;
-		full_path = (expr[1] == '/' && s != expr + 1 && *s == '/');
+		full_path = (expr[1] == '/' && s > expr + 1 && *s == '/');
 		*strip = full_path ? 2 : 1;
 	}
 	else if(glob)
@@ -130,7 +133,8 @@ is_full_path(const char expr[], int re, int glob, int *strip)
  * equivalent regexp.  Returns zero on success or non-zero on error with *error
  * containing description of it. */
 static int
-compile_expr(matcher_t *m, int strip, int cs_by_def, char **error)
+compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
+		char **error)
 {
 	int err;
 
@@ -143,7 +147,7 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, char **error)
 	}
 	else
 	{
-		if(parse_re(m, strip, cs_by_def, error) != 0)
+		if(parse_re(m, strip, cs_by_def, on_empty_re, error) != 0)
 		{
 			return 1;
 		}
@@ -190,11 +194,14 @@ parse_glob(matcher_t *m, int strip, char **error)
 /* Parses regexp flags.  Returns zero on success or non-zero on error with
  * *error containing description of it. */
 static int
-parse_re(matcher_t *m, int strip, int cs_by_def, char **error)
+parse_re(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
+		char **error)
 {
 	if(strip != 0)
 	{
-		char *const flags = strrchr(m->raw, '/') + 1;
+		char *flags = strrchr(m->raw, '/');
+		flags = (flags == NULL) ? (m->raw + strlen(m->raw)) : (flags + 1);
+
 		if(parse_case_flag(flags, &cs_by_def) != 0)
 		{
 			replace_string(error, "Failed to parse flags.");
@@ -203,6 +210,11 @@ parse_re(matcher_t *m, int strip, int cs_by_def, char **error)
 
 		/* Cut the flags off by replacing traling slash(es) with null character. */
 		flags[-strip] = '\0';
+	}
+
+	if(m->raw[0] == '\0')
+	{
+		replace_string(&m->raw, on_empty_re);
 	}
 
 	m->cflags = REG_EXTENDED | (cs_by_def ? 0 : REG_ICASE);
@@ -304,16 +316,17 @@ matcher_includes(const matcher_t *like, const matcher_t *m)
 int
 matcher_is_expr(const char str[])
 {
-	(void)is_negated(&str);
-	return is_re_expr(str) || is_globs_expr(str);
+	(void)is_negated(&str, 0);
+	return is_re_expr(str, 0) || is_globs_expr(str);
 }
 
 /* Checks whether *expr specifies negated pattern.  Adjusts pointer if so.
  * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_negated(const char **expr)
+is_negated(const char **expr, int allow_empty)
 {
-	if(**expr == '!' && (is_re_expr(*expr + 1) || is_globs_expr(*expr + 1)))
+	if(**expr == '!' &&
+			(is_re_expr(*expr + 1, allow_empty) || is_globs_expr(*expr + 1)))
 	{
 		++*expr;
 		return 1;
@@ -324,12 +337,12 @@ is_negated(const char **expr)
 /* Checks whether expr is a regular expression file name pattern.  Returns
  * non-zero if so, otherwise zero is returned. */
 static int
-is_re_expr(const char expr[])
+is_re_expr(const char expr[], int allow_empty)
 {
 	const char *e = strrchr(expr, '/');
 	return expr[0] == '/'                        /* Starts with slash. */
 	    && e != NULL && e != expr                /* Has second slash. */
-	    && e - expr > 1                          /* Not empty pattern. */
+	    && (allow_empty || e - expr > 1)         /* Not empty pattern. */
 	    && strspn(e + 1, "iI") == strlen(e + 1); /* Has only correct flags. */
 }
 
@@ -338,7 +351,7 @@ is_re_expr(const char expr[])
 static int
 is_globs_expr(const char expr[])
 {
-	return surrounded_with(expr, '{', '}');
+	return surrounded_with(expr, '{', '}') && expr[2] != '\0';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
