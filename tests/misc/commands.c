@@ -43,12 +43,12 @@ static int called;
 static int bg;
 static char *arg;
 
+static char cwd[PATH_MAX];
 static char sandbox[PATH_MAX];
 static char test_data[PATH_MAX];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	if(is_path_absolute(SANDBOX_PATH))
@@ -658,6 +658,32 @@ TEST(select_and_unselect_use_last_pattern)
 	assert_true(lwin.dir_entry[2].selected);
 
 	cfg_resize_histories(0);
+}
+
+TEST(select_and_unselect_accept_external_command)
+{
+	strcpy(lwin.curr_dir, cwd);
+	assert_success(chdir(cwd));
+
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select !echo a.c", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("select!!echo c.c", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("unselect !echo c.c", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
 }
 
 static void

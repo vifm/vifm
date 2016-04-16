@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 15
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 16
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1971,12 +1971,16 @@ yet supported) and might be changed in future releases, or get an alias.
                                                *vifm-:select*
 :[range]select
     select files in the given range (current file if no range is given).
-:select [{pattern}]
+:select {pattern}
     select files that match specified pattern.  Possible {pattern} forms are
     described in |vifm-patterns|.
 :select //[iI]
     same as item above, but reuses last search pattern.
-:[range]select! [{pattern}]
+:select !{external command}
+    select files from the list supplied by external command.  Files are
+    matched by full paths, relative paths are converted to absolute ones
+    beforehand.
+:[range]select! [{pattern}|!{external command}]
     same as above, but resets previously selected items before proceeding.
 
                                                *vifm-:set* *vifm-:se*
@@ -2118,9 +2122,13 @@ yet supported) and might be changed in future releases, or get an alias.
                                                *vifm-:unselect*
 :[range]unselect
     unselect files in the given range (current file if no range is given).
-:unselect [{pattern}]
+:unselect {pattern}
     unselect files that match specified pattern.  Possible {pattern} forms are
     described in |vifm-patterns|.
+:unselect !{external command}
+    unselect files from the list supplied by external command.  Files are
+    matched by full paths, relative paths are converted to absolute ones
+    beforehand.
 :unselect //[iI]
     same as item above, but reuses last search pattern.
 

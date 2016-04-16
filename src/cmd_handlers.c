@@ -27,9 +27,10 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
+#include <errno.h>
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* pclose() popen() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
 #include <string.h> /* strchr() strcmp() strcasecmp() strcpy() strdup() strlen()
                        strrchr() */
@@ -250,6 +251,8 @@ static int unlet_cmd(const cmd_info_t *cmd_info);
 static int unmap_cmd(const cmd_info_t *cmd_info);
 static int unselect_cmd(const cmd_info_t *cmd_info);
 static void select_unselect_by_range(const cmd_info_t *cmd_info, int select);
+static int select_unselect_by_filter(const cmd_info_t *cmd_info, int select);
+static int read_list_in(const char cmd[], char ***files, int *nfiles);
 static int select_unselect_by_pattern(const cmd_info_t *cmd_info, int select);
 static int view_cmd(const cmd_info_t *cmd_info);
 static int vifm_cmd(const cmd_info_t *cmd_info);
@@ -3369,6 +3372,11 @@ select_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 
+	if(cmd_info->args[0] == '!')
+	{
+		return select_unselect_by_filter(cmd_info, 1);
+	}
+
 	return select_unselect_by_pattern(cmd_info, 1);
 }
 
@@ -3832,6 +3840,11 @@ unselect_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 
+	if(cmd_info->args[0] == '!')
+	{
+		return select_unselect_by_filter(cmd_info, 0);
+	}
+
 	return select_unselect_by_pattern(cmd_info, 0);
 }
 
@@ -3863,6 +3876,111 @@ select_unselect_by_range(const cmd_info_t *cmd_info, int select)
 	}
 
 	ui_view_schedule_redraw(curr_view);
+}
+
+/* Selects or unselects entries that match list of files supplied by external
+ * utility. */
+static int
+select_unselect_by_filter(const cmd_info_t *cmd_info, int select)
+{
+	trie_t selection_trie;
+	char **files;
+	int nfiles;
+	int i;
+
+	int err = read_list_in(cmd_info->args + 1, &files, &nfiles);
+	if(err != 0)
+	{
+		return err;
+	}
+
+	/* Append to previous selection unless ! is specified. */
+	if(select && cmd_info->emark)
+	{
+		erase_selection(curr_view);
+	}
+
+	if(nfiles == 0)
+	{
+		free_string_array(files, nfiles);
+		return 0;
+	}
+
+	/* Compose trie out of absolute paths of files to [un]select. */
+	selection_trie = trie_create();
+	for(i = 0; i < nfiles; ++i)
+	{
+		char canonic_path[PATH_MAX];
+		if(to_canonic_path(files[i], canonic_path, sizeof(canonic_path)) == 0)
+		{
+			(void)trie_put(selection_trie, canonic_path);
+		}
+	}
+	free_string_array(files, nfiles);
+
+	/* [un]select files that match the list. */
+	select = (select != 0);
+	for(i = 0; i < curr_view->list_rows; ++i)
+	{
+		char full_path[PATH_MAX];
+		void *ignored_data;
+
+		if((curr_view->dir_entry[i].selected != 0) == select)
+		{
+			continue;
+		}
+
+		get_full_path_at(curr_view, i, sizeof(full_path), full_path);
+		if(trie_get(selection_trie, full_path, &ignored_data) == 0)
+		{
+			curr_view->dir_entry[i].selected = select;
+			curr_view->selected_files += (select ? 1 : -1);
+		}
+	}
+
+	trie_free(selection_trie);
+
+	ui_view_schedule_redraw(curr_view);
+	return 0;
+}
+
+/* Executes external command capturing its output as list of lines.  Sets *files
+ * and *nfiles.  Returns zero on success, otherwise engine/cmds error code is
+ * returned. */
+static int
+read_list_in(const char cmd[], char ***files, int *nfiles)
+{
+	char *shell_cmd;
+	FILE *cmd_stdout;
+	int ec;
+
+	(void)set_sigchld(1);
+
+	shell_cmd = format_str("%s 2>&1", cmd);
+	cmd_stdout = popen(shell_cmd, "r");
+	free(shell_cmd);
+
+	if(cmd_stdout == NULL)
+	{
+		(void)set_sigchld(0);
+		status_bar_error("Failed to start external command");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	*nfiles = 0;
+	*files = read_stream_lines(cmd_stdout, nfiles);
+
+	ec = pclose(cmd_stdout);
+	(void)set_sigchld(0);
+
+	if(WEXITSTATUS(ec) != 0)
+	{
+		free_string_array(*files, *nfiles);
+		status_bar_error("External command failed");
+		return CMDS_ERR_CUSTOM;
+	}
+
+	return 0;
 }
 
 /* Selects or unselects entries that match given pattern. */
@@ -3906,9 +4024,9 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 		}
 	}
 
-	ui_view_schedule_redraw(curr_view);
-
 	matcher_free(m);
+
+	ui_view_schedule_redraw(curr_view);
 	return 0;
 }
 
