@@ -68,6 +68,10 @@ SETUP_ONCE()
 	{
 		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
 	}
+
+	/* Emulate proper history initialization. */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
 }
 
 SETUP()
@@ -624,6 +628,36 @@ TEST(unselect_can_unselect_range)
 	assert_true(lwin.dir_entry[0].selected);
 	assert_false(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(select_and_unselect_use_last_pattern)
+{
+	add_some_files_to_view(&lwin);
+
+	cfg_resize_histories(5);
+
+	cfg_save_search_history(".*\\.C");
+	assert_success(exec_commands("select! //I", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	cfg_save_search_history(".*\\.c$");
+	assert_success(exec_commands("select //", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	cfg_save_search_history("a.c");
+	assert_success(exec_commands("unselect ////", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	cfg_resize_histories(0);
 }
 
 static void

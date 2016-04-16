@@ -1974,6 +1974,8 @@ yet supported) and might be changed in future releases, or get an alias.
 :select [{pattern}]
     select files that match specified pattern.  Possible {pattern} forms are
     described in |vifm-patterns|.
+:select //[iI]
+    same as item above, but reuses last search pattern.
 :[range]select! [{pattern}]
     same as above, but resets previously selected items before proceeding.
 
@@ -2119,6 +2121,8 @@ yet supported) and might be changed in future releases, or get an alias.
 :unselect [{pattern}]
     unselect files that match specified pattern.  Possible {pattern} forms are
     described in |vifm-patterns|.
+:unselect //[iI]
+    same as item above, but reuses last search pattern.
 
 :ve[rsion]                                     *vifm-:version* *vifm-:ve*
     display menu with version information.

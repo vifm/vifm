@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 15, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "April 16, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2334,6 +2334,9 @@ select files in the given range (current file if no range is given).
 select files that match specified pattern.  Possible {pattern} forms are
 described in "Patterns" section below.
 .TP
+.BI ":select //[iI]"
+same as item above, but reuses last search pattern.
+.TP
 .BI ":[range]select! [{pattern}]"
 same as above, but resets previously selected items before proceeding.
 .TP
@@ -2531,6 +2534,9 @@ unselect files in the given range (current file if no range is given).
 .BI ":unselect [{pattern}]"
 unselect files that match specified pattern.  Possible {pattern} forms are
 described in "Patterns" section below.
+.TP
+.BI ":unselect //[iI]"
+same as item above, but reuses last search pattern.
 .TP
 .BI "                                         :version"
 .TP

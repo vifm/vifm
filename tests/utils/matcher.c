@@ -161,8 +161,6 @@ TEST(empty_regexp)
 	assert_true(matcher_matches(m, "/tmp/a.Ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
 	matcher_free(m);
-
-	assert_non_null(m = matcher_alloc("{}", 0, 1, "", &error));
 }
 
 static void

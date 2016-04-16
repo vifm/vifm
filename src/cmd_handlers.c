@@ -3871,7 +3871,8 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 {
 	int i;
 	char *error;
-	matcher_t *const m = matcher_alloc(cmd_info->args, 0, 1, "", &error);
+	matcher_t *const m = matcher_alloc(cmd_info->args, 0, 1,
+			cfg_get_last_search_pattern(), &error);
 	if(m == NULL)
 	{
 		status_bar_errorf("Pattern error: %s", error);
