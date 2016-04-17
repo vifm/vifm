@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: April 15, 2016
+" Last Change: April 17, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -18,8 +18,8 @@ syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
 		\ e[dit] el[se] empty en[dif] exi[t] file filter fin[d] fini[sh] gr[ep]
 		\ h[elp] his[tory] jobs locate ls lstrash marks mes[sages] mkdir m[ove]
 		\ noh[lsearch] on[ly] popd pushd pu[t] pw[d] q[uit] redr[aw] reg[isters]
-		\ rename restart restore rlink screen select sh[ell] sor[t] sp[lit]
-		\ s[ubstitute] touch tr trashes sync undol[ist] unselect ve[rsion] vie[w]
+		\ rename restart restore rlink screen sh[ell] sor[t] sp[lit]
+		\ s[ubstitute] touch tr trashes sync undol[ist] ve[rsion] vie[w]
 		\ vifm vs[plit] winc[md] w[rite] wq x[it] y[ank] nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else
@@ -49,6 +49,8 @@ syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 syntax keyword vifmExprCommand contained if ec[ho] elsei[f] exe[cute]
 syntax keyword vifmNormalCommand contained norm[al]
 		\ nextgroup=vifmColonSubcommand
+syntax keyword vifmSelectCommands contained select unselect skipwhite
+		\ nextgroup=vifmPattern
 
 " List of event names for autocommands (case insensitive)
 syntax case ignore
@@ -148,7 +150,7 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmInlineComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
 		\,vifmCdCommandSt,vifmSet,vifmArgument,vifmSoCommandSt,vifmPrefixCommands
-		\,vifmAutocmdCommand,vifmAutoEvent
+		\,vifmAutocmdCommand,vifmAutoEvent,vifmSelectCommands
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
@@ -165,7 +167,7 @@ syntax region vifmStatementC start='\(\s\|:\)*'
 		\,vifmComment,vifmInlineComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
 		\,vifmCdCommandSt,vifmSet,vifmArgument,vifmSoCommand,vifmSoCommandSt
 		\,vifmInvertCommand,vifmInvertCommandSt,vifmPrefixCommands
-		\,vifmAutocmdCommand,vifmAutoEvent
+		\,vifmAutocmdCommand,vifmAutoEvent,vifmSelectCommands
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment,vifmInlineComment,vifmNotComment
@@ -358,6 +360,7 @@ syntax match vifmHiClear contained /\s*\<clear\>\s*/
 
 " Highlight
 highlight link vifmAutocmdCommand Statement
+highlight link vifmSelectCommands Statement
 highlight link vifmComment Comment
 highlight link vifmInlineComment Comment
 highlight link vifmCommand Statement
