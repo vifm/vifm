@@ -3372,7 +3372,7 @@ select_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 
-	if(cmd_info->args[0] == '!')
+	if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
 	{
 		return select_unselect_by_filter(cmd_info, 1);
 	}
@@ -3840,7 +3840,7 @@ unselect_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_CUSTOM;
 	}
 
-	if(cmd_info->args[0] == '!')
+	if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
 	{
 		return select_unselect_by_filter(cmd_info, 0);
 	}

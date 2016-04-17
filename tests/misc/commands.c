@@ -630,6 +630,18 @@ TEST(unselect_can_unselect_range)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(select_and_unselect_and_pattern_ambiguity)
+{
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select !{*.c}", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("unselect !/\\.c/", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
 TEST(select_and_unselect_use_last_pattern)
 {
 	add_some_files_to_view(&lwin);
