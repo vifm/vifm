@@ -38,7 +38,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* snprintf() */
-#include <string.h> /* strdup() strlen() strncasecmp() strncmp() strrchr() */
+#include <string.h> /* memcpy() strdup() strlen() strncasecmp() strncmp()
+                       strrchr() */
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
@@ -178,6 +179,36 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		start = dollar + 1;
 		complete_envvar(start);
+	}
+	else if(id == COM_SELECT)
+	{
+		cmd_info_t exec_info = *cmd_info;
+		char *exec_argv[exec_info.argc];
+
+		/* Make sure that it's a filter-argument. */
+		if(args[0] != '!' || char_is_one_of("/{", cmd_info->args[1]))
+		{
+			return start - args;
+		}
+
+		/* Fake !-command completion by hiding "!" in front and calling this
+		 * function again. */
+		++exec_info.args;
+		if(exec_info.args[0] == '\0')
+		{
+			exec_info.argc = 0;
+		}
+
+		exec_info.argv = exec_argv;
+		memcpy(exec_argv, argv, sizeof(exec_argv));
+		++exec_argv[0];
+
+		if(arg_pos != 0)
+		{
+			--arg_pos;
+		}
+
+		return complete_args(COM_EXECUTE, &exec_info, arg_pos, extra_arg) + 1;
 	}
 	else if(id == COM_WINDO)
 		;

@@ -572,6 +572,36 @@ TEST(envvars_are_completed_for_edit)
 	assert_wstring_equal(L"edit $RRRRRARE_VARIABLE1", stats.line);
 }
 
+TEST(select_is_completed)
+{
+	env_set("RRRRRARE_VARIABLE1", "1");
+	env_set("RRRRRARE_VARIABLE2", "2");
+
+	prepare_for_line_completion(L"select $RRRRRARE_VARIA");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"select $RRRRRARE_VARIA", stats.line);
+
+	prepare_for_line_completion(L"select !/$RRRRRARE_VARIA");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"select !/$RRRRRARE_VARIA", stats.line);
+
+	prepare_for_line_completion(L"select !cmd some-arg");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"select !cmd some-arg", stats.line);
+
+	/* Check that not memory violations occur here. */
+	prepare_for_line_completion(L"select !cmd ");
+	assert_success(line_completion(&stats));
+
+	prepare_for_line_completion(L"select!!$RRRRRARE_VARIA");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"select!!$RRRRRARE_VARIABLE1", stats.line);
+
+	prepare_for_line_completion(L"unselect !cat $RRRRRARE_VARIA");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"unselect !cat $RRRRRARE_VARIABLE1", stats.line);
+}
+
 static void
 create_executable(const char file[])
 {
