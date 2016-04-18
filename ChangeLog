@@ -36,6 +36,9 @@
 	{} or //).  Put exclamation mark to invert pattern match.  Thanks to Marcos
 	Cruz.
 
+	Added :select and :unselect commands.  Thanks to filterfalse, Russell
+	Urquhart and Marcos Cruz.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

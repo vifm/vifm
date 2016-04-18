@@ -71,7 +71,9 @@ enum
  * command handler (cmd_handler). */
 typedef struct cmd_info_t
 {
-	int begin, end; /* Parsed range of the command. */
+	int begin, end; /* Parsed range of the command.  They are either valid and
+	                   define range with both boundaries included or equal to
+	                   NOT_DEF if no range was given. */
 	int count;      /* Parsed [count] of the command. */
 	int emark, qmark, bg;
 	char sep;

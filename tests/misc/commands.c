@@ -28,6 +28,7 @@ static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
 static void check_filetype(void);
 static int prog_exists(const char name[]);
+static void add_some_files_to_view(FileView *view);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -42,12 +43,12 @@ static int called;
 static int bg;
 static char *arg;
 
+static char cwd[PATH_MAX];
 static char sandbox[PATH_MAX];
 static char test_data[PATH_MAX];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	if(is_path_absolute(SANDBOX_PATH))
@@ -67,6 +68,10 @@ SETUP_ONCE()
 	{
 		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
 	}
+
+	/* Emulate proper history initialization. */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
 }
 
 SETUP()
@@ -466,6 +471,233 @@ TEST(fileviewer_accepts_negated_patterns)
 	ft_reset(0);
 }
 
+TEST(select_fails_for_wrong_pattern)
+{
+	assert_failure(exec_commands("select /**/", &lwin, CIT_COMMAND));
+}
+
+TEST(select_fails_for_pattern_and_range)
+{
+	assert_failure(exec_commands("1,$select *.c", &lwin, CIT_COMMAND));
+}
+
+TEST(select_selects_matching_files)
+{
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_appends_matching_files_to_selection)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_success(exec_commands("select *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_bang_unselects_nonmatching_files)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_success(exec_commands("select! *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_noargs_selects_current_file)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+	lwin.list_pos = 2;
+
+	assert_success(exec_commands("select", &lwin, CIT_COMMAND));
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("select", &lwin, CIT_COMMAND));
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("select!", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(select_can_select_range)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+
+	assert_success(exec_commands("2,$select", &lwin, CIT_COMMAND));
+	assert_int_equal(3, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("2,$select!", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+}
+
+TEST(unselect_fails_for_wrong_pattern)
+{
+	assert_failure(exec_commands("unselect /**/", &lwin, CIT_COMMAND));
+}
+
+TEST(unselect_fails_for_pattern_and_range)
+{
+	assert_failure(exec_commands("1,$unselect *.c", &lwin, CIT_COMMAND));
+}
+
+TEST(unselect_unselects_matching_files)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_success(exec_commands("unselect *.c", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(unselect_noargs_unselects_current_file)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 2;
+
+	lwin.list_pos = 2;
+	assert_success(exec_commands("unselect", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	lwin.list_pos = 1;
+	assert_success(exec_commands("unselect", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(unselect_can_unselect_range)
+{
+	add_some_files_to_view(&lwin);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 3;
+
+	assert_success(exec_commands("2,$unselect", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(select_and_unselect_and_pattern_ambiguity)
+{
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select !{*.c}", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("unselect !/\\.c/", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
+TEST(select_and_unselect_use_last_pattern)
+{
+	add_some_files_to_view(&lwin);
+
+	cfg_resize_histories(5);
+
+	cfg_save_search_history(".*\\.C");
+	assert_success(exec_commands("select! //I", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	cfg_save_search_history(".*\\.c$");
+	assert_success(exec_commands("select //", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	cfg_save_search_history("a.c");
+	assert_success(exec_commands("unselect ////", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	cfg_resize_histories(0);
+}
+
+TEST(select_and_unselect_accept_external_command)
+{
+	strcpy(lwin.curr_dir, cwd);
+	assert_success(chdir(cwd));
+
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select !echo a.c", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("select!!echo c.c", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("unselect !echo c.c", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
 static void
 check_filetype(void)
 {
@@ -485,6 +717,22 @@ static int
 prog_exists(const char name[])
 {
 	return 1;
+}
+
+static void
+add_some_files_to_view(FileView *view)
+{
+	view->list_rows = 3;
+	view->list_pos = 0;
+	view->dir_entry = dynarray_cextend(NULL,
+			view->list_rows*sizeof(*view->dir_entry));
+	view->dir_entry[0].name = strdup("a.c");
+	view->dir_entry[0].origin = &view->curr_dir[0];
+	view->dir_entry[1].name = strdup("b.cc");
+	view->dir_entry[1].origin = &view->curr_dir[0];
+	view->dir_entry[2].name = strdup("c.c");
+	view->dir_entry[2].origin = &view->curr_dir[0];
+	view->selected_files = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

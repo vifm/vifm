@@ -10,7 +10,7 @@ TEST(glob)
 	char *error;
 	matcher_t *m;
 
-	assert_non_null(m = matcher_alloc("{*.ext}", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("{*.ext}", 0, 1, "", &error));
 	assert_null(error);
 
 	check_glob(m);
@@ -23,7 +23,7 @@ TEST(regexp)
 	char *error;
 	matcher_t *m;
 
-	assert_non_null(m = matcher_alloc("/^x*$/", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("/^x*$/", 0, 1, "", &error));
 	assert_null(error);
 
 	check_regexp(m);
@@ -36,7 +36,7 @@ TEST(defaulted_glob)
 	char *error;
 	matcher_t *m;
 
-	assert_non_null(m = matcher_alloc("*.ext", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("*.ext", 0, 1, "", &error));
 	assert_null(error);
 
 	check_glob(m);
@@ -49,7 +49,7 @@ TEST(defaulted_regexp)
 	char *error;
 	matcher_t *m;
 
-	assert_non_null(m = matcher_alloc("^x*$", 0, 0, &error));
+	assert_non_null(m = matcher_alloc("^x*$", 0, 0, "", &error));
 	assert_null(error);
 
 	check_regexp(m);
@@ -62,7 +62,7 @@ TEST(full_path_glob)
 	char *error;
 	matcher_t *m;
 
-	assert_non_null(m = matcher_alloc("{{/tmp/[^/].ext}}", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("{{/tmp/[^/].ext}}", 0, 1, "", &error));
 	assert_null(error);
 
 	assert_true(matcher_matches(m, "/tmp/a.ext"));
@@ -81,7 +81,8 @@ TEST(full_path_regexp)
 	char *error;
 	matcher_t *m;
 
-	assert_non_null(m = matcher_alloc("//^/tmp/[^/]+\\.ext$//", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("//^/tmp/[^/]+\\.ext$//", 0, 1, "",
+				&error));
 	assert_null(error);
 
 	assert_true(matcher_matches(m, "/tmp/a.ext"));
@@ -100,40 +101,65 @@ TEST(matcher_negation)
 	char *error;
 	matcher_t *m;
 
-	assert_non_null(m = matcher_alloc("!{*.ext}", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("!{*.ext}", 0, 1, "", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "file.ext2"));
 	assert_false(matcher_matches(m, "name.ext"));
 	matcher_free(m);
 
-	assert_non_null(m = matcher_alloc("!/^x*$/", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("!/^x*$/", 0, 1, "", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "axxxxx"));
 	assert_false(matcher_matches(m, "xxxxx"));
 	matcher_free(m);
 
-	assert_non_null(m = matcher_alloc("!*.ext", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("!*.ext", 0, 1, "", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "!abc.ext"));
 	assert_false(matcher_matches(m, "!abc.ext2"));
 	matcher_free(m);
 
-	assert_non_null(m = matcher_alloc("!x*$", 0, 0, &error));
+	assert_non_null(m = matcher_alloc("!x*$", 0, 0, "", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "a!xx"));
 	assert_false(matcher_matches(m, "xx"));
 	matcher_free(m);
 
-	assert_non_null(m = matcher_alloc("!{{/tmp/[^/].ext}}", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("!{{/tmp/[^/].ext}}", 0, 1, "", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/tmp/a.ext1"));
 	assert_false(matcher_matches(m, "/tmp/a.ext"));
 	matcher_free(m);
 
-	assert_non_null(m = matcher_alloc("!//^/tmp/[^/]+\\.ext$//", 0, 1, &error));
+	assert_non_null(m = matcher_alloc("!//^/tmp/[^/]+\\.ext$//", 0, 1, "",
+				&error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/bin/ab.ext"));
 	assert_false(matcher_matches(m, "/tmp/ab.ext"));
+	matcher_free(m);
+}
+
+TEST(empty_regexp)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("//", 0, 1, ".*\\.ext", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "/tmp/a.ext"));
+	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	matcher_free(m);
+
+	assert_non_null(m = matcher_alloc("//i", 0, 1, ".*\\.ext", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "/tmp/a.Ext"));
+	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	matcher_free(m);
+
+	assert_non_null(m = matcher_alloc("////I", 0, 1, "tmp/.*\\.Ext", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "/tmp/a.Ext"));
+	assert_false(matcher_matches(m, "/tmp/a.axt"));
 	matcher_free(m);
 }
 

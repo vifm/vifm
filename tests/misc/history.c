@@ -22,6 +22,13 @@
 	assert_string_equal(str, rwin.history[(i) + 1].dir); \
 	assert_string_equal((str) + 1, rwin.history[(i) + 1].file);
 
+SETUP_ONCE()
+{
+	/* Emulate proper history initialization. */
+	cfg_resize_histories(INITIAL_SIZE);
+	cfg_resize_histories(0);
+}
+
 SETUP()
 {
 	/* lwin */

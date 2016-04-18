@@ -149,7 +149,7 @@ read_info_file(int reread)
 					continue;
 				}
 
-				m = matcher_alloc(line_val, 0, 1, &error);
+				m = matcher_alloc(line_val, 0, 1, "", &error);
 				if(m == NULL)
 				{
 					/* Ignore error description. */
@@ -167,7 +167,7 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *error;
-				matcher_t *const m = matcher_alloc(line_val, 0, 1, &error);
+				matcher_t *const m = matcher_alloc(line_val, 0, 1, "", &error);
 				if(m == NULL)
 				{
 					/* Ignore error description. */

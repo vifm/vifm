@@ -1321,7 +1321,7 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 			file_dec_t *name_dec;
 
 			char *error;
-			matcher_t *const m = matcher_alloc(expr, 0, 1, &error);
+			matcher_t *const m = matcher_alloc(expr, 0, 1, "", &error);
 			if(m == NULL)
 			{
 				vle_tb_append_linef(vle_err, "Wrong pattern (%s): %s", expr, error);

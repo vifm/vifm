@@ -40,7 +40,7 @@ TEST(set)
 	assert_int_equal(0, complete_cmd("se", NULL));
 
 	buf = vle_compl_next();
-	assert_string_equal("set", buf);
+	assert_string_equal("select", buf);
 	free(buf);
 }
 

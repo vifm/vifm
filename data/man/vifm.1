@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 09, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "April 17, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2325,6 +2325,25 @@ display whether integration with terminal multiplexers is enabled.
 Note: the command is called screen for historical reasons (when tmux wasn't yet
 supported) and might be changed in future releases, or get an alias.
 .TP
+.BI "                                         :select"
+.TP
+.BI ":[range]select"
+select files in the given range (current file if no range is given).
+.TP
+.BI ":select {pattern}"
+select files that match specified pattern.  Possible {pattern} forms are
+described in "Patterns" section below.
+.TP
+.BI ":select //[iI]"
+same as item above, but reuses last search pattern.
+.TP
+.BI ":select !{external command}"
+select files from the list supplied by external command.  Files are matched by
+full paths, relative paths are converted to absolute ones beforehand.
+.TP
+.BI ":[range]select! [{pattern}]"
+same as above, but resets previously selected items before proceeding.
+.TP
 .BI "                                         :set"
 .TP
 .BI :se[t]
@@ -2510,6 +2529,22 @@ display list of latest changes.  Use "!" to see actual commands.
 .BI ":unl[et][!] $ENV_VAR1 $ENV_VAR2 ..."
 remove environment variables. Add ! to omit displaying of warnings about
 nonexistent variables.
+.TP
+.BI "                                         :unselect"
+.TP
+.BI ":[range]unselect"
+unselect files in the given range (current file if no range is given).
+.TP
+.BI ":unselect {pattern}"
+unselect files that match specified pattern.  Possible {pattern} forms are
+described in "Patterns" section below.
+.TP
+.BI ":unselect !{external command}"
+unselect files from the list supplied by external command.  Files are matched by
+full paths, relative paths are converted to absolute ones beforehand.
+.TP
+.BI ":unselect //[iI]"
+same as item above, but reuses last search pattern.
 .TP
 .BI "                                         :version"
 .TP

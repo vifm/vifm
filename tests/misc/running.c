@@ -88,7 +88,7 @@ TEST(full_path_regexps_are_handled_for_selection)
 	 * being used by the code. */
 
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
-	m = matcher_alloc(pattern, 0, 1, &error);
+	m = matcher_alloc(pattern, 0, 1, "", &error);
 	assert_non_null(m);
 	ft_set_programs(m, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
 
@@ -108,7 +108,7 @@ TEST(full_path_regexps_are_handled_for_selection2)
 	 * being used by the code. */
 
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
-	m = matcher_alloc(pattern, 0, 1, &error);
+	m = matcher_alloc(pattern, 0, 1, "", &error);
 	assert_non_null(m);
 	ft_set_programs(m, "echo %c &", 0, 1);
 

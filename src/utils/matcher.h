@@ -27,11 +27,12 @@
 /* Opaque matcher type. */
 typedef struct matcher_t matcher_t;
 
-/* Parses matcher expression and allocates matcher.  Returns matcher on success,
- * otherwise NULL is returned and *error is initialized with newly allocated
- * string describing the error. */
+/* Parses matcher expression and allocates matcher.  on_empty_re string is used
+ * if passed in regexp is empty.  Returns matcher on success, otherwise NULL is
+ * returned and *error is initialized with newly allocated string describing the
+ * error. */
 matcher_t * matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
-		char **error);
+		const char on_empty_re[], char **error);
 
 /* Makes a copy of existing matcher.  Returns the clone, or NULL on error.  */
 matcher_t * matcher_clone(const matcher_t *matcher);
