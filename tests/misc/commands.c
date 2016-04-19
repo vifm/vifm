@@ -68,10 +68,6 @@ SETUP_ONCE()
 	{
 		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
 	}
-
-	/* Emulate proper history initialization. */
-	cfg_resize_histories(5);
-	cfg_resize_histories(0);
 }
 
 SETUP()
@@ -80,6 +76,11 @@ SETUP()
 
 	view_setup(&lwin);
 	view_setup(&rwin);
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
 
 	curr_view = &lwin;
 	other_view = &rwin;

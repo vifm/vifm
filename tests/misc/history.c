@@ -22,13 +22,6 @@
 	assert_string_equal(str, rwin.history[(i) + 1].dir); \
 	assert_string_equal((str) + 1, rwin.history[(i) + 1].file);
 
-SETUP_ONCE()
-{
-	/* Emulate proper history initialization. */
-	cfg_resize_histories(INITIAL_SIZE);
-	cfg_resize_histories(0);
-}
-
 SETUP()
 {
 	/* lwin */
@@ -50,6 +43,11 @@ SETUP()
 			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
 	rwin.dir_entry[0].origin = &rwin.curr_dir[0];
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(INITIAL_SIZE);
+	cfg_resize_histories(0);
 
 	cfg_resize_histories(INITIAL_SIZE);
 }
