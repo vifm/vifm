@@ -679,6 +679,13 @@ TEST(select_and_unselect_accept_external_command)
 
 	add_some_files_to_view(&lwin);
 
+#ifdef _WIN32
+	/* Work around `echo` in cmd.exe, which outputs trailing spaces... */
+	replace_string(&lwin.dir_entry[0].name, "a.c ");
+	replace_string(&lwin.dir_entry[1].name, "b.cc ");
+	replace_string(&lwin.dir_entry[2].name, "c.c ");
+#endif
+
 	assert_success(exec_commands("select !echo a.c", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
 	assert_true(lwin.dir_entry[0].selected);
