@@ -41,6 +41,16 @@ TEST(directory_size_is_calculated_in_bg)
 	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
 }
 
+TEST(parent_dir_entry_triggers_calculation_of_current_dir)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/various-sizes");
+	setup_single_entry(&lwin, "..");
+	lwin.user_selection = 1;
+
+	calculate_size_bg(&lwin, 0);
+	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
+}
+
 static void
 setup_single_entry(FileView *view, const char name[])
 {

@@ -4288,8 +4288,16 @@ static void
 update_dir_entry_size(const FileView *view, int index, int force)
 {
 	char full_path[PATH_MAX];
+	const dir_entry_t *const entry = &view->dir_entry[index];
 
-	get_full_path_at(view, index, sizeof(full_path), full_path);
+	if(is_parent_dir(entry->name))
+	{
+		copy_str(full_path, sizeof(full_path), entry->origin);
+	}
+	else
+	{
+		get_full_path_of(entry, sizeof(full_path), full_path);
+	}
 	start_dir_size_calc(full_path, force);
 }
 

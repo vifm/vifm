@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 17, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "April 20, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -502,7 +502,8 @@ enters view mode (works only after activating view pane with :view command).
 .TP
 .BI ga
 calculate directory size.  Uses cached directory sizes when possible for better
-performance.
+performance.  As a special case calculating size of ".." entry results in
+calculation of size of current directory.
 .TP
 .BI gA
 like ga, but force update.  Ignores old values of directory sizes.

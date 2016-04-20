@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 16
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -420,7 +420,8 @@ Shift-Tab                                      *vifm-SHIFT-Tab*
 
 ga                                             *vifm-ga*
     calculate directory size.  Uses cached directory sizes when possible
-    for better performance.
+    for better performance.  As a special case calculating size of ".." entry
+    results in calculation of size of current directory.
 gA                                             *vifm-gA*
     like ga, but force update.  Ignores old values of directory sizes.
 
