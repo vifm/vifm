@@ -4272,7 +4272,7 @@ calculate_size_bg(const FileView *view, int force)
 		return;
 	}
 
-	for(i = 0; i < view->list_rows; i++)
+	for(i = 0; i < view->list_rows; ++i)
 	{
 		const dir_entry_t *const entry = &view->dir_entry[i];
 
@@ -4342,8 +4342,6 @@ dir_size(char path[], int force)
 	redraw_after_path_change(&rwin, path);
 }
 
-/* Calculates size of a directory possibly using cache of known sizes.  Returns
- * size of a directory or zero on error. */
 uint64_t
 calculate_dir_size(const char path[], int force_update)
 {
@@ -4355,7 +4353,7 @@ calculate_dir_size(const char path[], int force_update)
 	dir = os_opendir(path);
 	if(dir == NULL)
 	{
-		return 0;
+		return 0U;
 	}
 
 	if(!ends_with_slash(path))
