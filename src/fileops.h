@@ -157,8 +157,9 @@ int make_files(FileView *view, char **names, int count);
 /* Returns new value for save_msg flag. */
 int restore_files(FileView *view);
 
-/* Calculates size of a directory specified by path.  Forcing disables using
- * previously cached values.  Returns the size. */
+/* Calculates size of a directory specified by path possibly using cache of
+ * known sizes.  Forcing disables using previously cached values.  Returns size
+ * of a directory or zero on error. */
 uint64_t calculate_dir_size(const char path[], int force);
 
 /* Initiates background calculation of directory sizes.  Forcing disables using

@@ -45,6 +45,9 @@
 	Changed type of 'confirm' option.  Now it's a set that picks which
 	operations should be confirmed.  Thanks to Losiara and mvucBmM0.
 
+	Changed ga/gA effect on ".." entry to calculate size of current directory.
+	Thanks to aleksejrs.
+
 	Do not reset completion on terminal resize.
 
 	Expand environment variables for :edit.  Thanks to filterfalse.

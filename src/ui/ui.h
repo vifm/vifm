@@ -24,6 +24,7 @@
 
 #include <curses.h>
 #include <regex.h> /* regex_t */
+#include <pthread.h> /* pthread_mutex_t */
 
 #include <stddef.h> /* size_t wchar_t */
 #include <stdint.h> /* uint64_t uint32_t */
@@ -315,9 +316,12 @@ typedef struct
 	 * microseconds.  Real resolution is bigger than microsecond, but it's not
 	 * critical. */
 
-	uint64_t postponed_redraw;      /* Time of last redraw request. */
-	uint64_t postponed_reload;      /* Time of last redraw request. */
-	uint64_t postponed_full_reload; /* Time of last full redraw request. */
+	uint64_t postponed_redraw;         /* Time of last redraw request. */
+	uint64_t postponed_reload;         /* Time of last redraw request. */
+	uint64_t postponed_full_reload;    /* Time of last full redraw request. */
+	pthread_mutex_t *timestamps_mutex; /* Protects access to above variables.
+	                                      This is a pointer, because mutexes
+	                                      shouldn't be copied*/
 
 	uint64_t last_redraw; /* Time of last redraw. */
 	uint64_t last_reload; /* Time of last [full] reload. */

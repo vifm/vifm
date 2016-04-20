@@ -68,10 +68,6 @@ SETUP_ONCE()
 	{
 		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
 	}
-
-	/* Emulate proper history initialization. */
-	cfg_resize_histories(5);
-	cfg_resize_histories(0);
 }
 
 SETUP()
@@ -80,6 +76,11 @@ SETUP()
 
 	view_setup(&lwin);
 	view_setup(&rwin);
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -678,6 +679,13 @@ TEST(select_and_unselect_accept_external_command)
 	assert_success(chdir(cwd));
 
 	add_some_files_to_view(&lwin);
+
+#ifdef _WIN32
+	/* Work around `echo` in cmd.exe, which outputs trailing spaces... */
+	replace_string(&lwin.dir_entry[0].name, "a.c ");
+	replace_string(&lwin.dir_entry[1].name, "b.cc ");
+	replace_string(&lwin.dir_entry[2].name, "c.c ");
+#endif
 
 	assert_success(exec_commands("select !echo a.c", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);
