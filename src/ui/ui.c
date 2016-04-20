@@ -26,6 +26,7 @@
 #include <termios.h> /* struct winsize */
 #endif
 #include <sys/time.h> /* gettimeofday() */
+#include <pthread.h> /* PTHREAD_* pthread_* */
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
@@ -79,6 +80,14 @@ static WINDOW *ltop_line1;
 static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
+
+/* Mutexes for views, located out of FileView so that they are never moved nor
+ * copied, which would yield undefined behaviour. */
+static pthread_mutex_t lwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t rwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+FileView lwin = { .timestamps_mutex = &lwin_timestamps_mutex };
+FileView rwin = { .timestamps_mutex = &rwin_timestamps_mutex };
 
 static void create_windows(void);
 static void update_geometry(void);
@@ -1742,19 +1751,25 @@ ui_view_wipe(FileView *view)
 void
 ui_view_schedule_redraw(FileView *view)
 {
+	pthread_mutex_lock(view->timestamps_mutex);
 	view->postponed_redraw = get_updated_time(view->postponed_redraw);
+	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
 void
 ui_view_schedule_reload(FileView *view)
 {
+	pthread_mutex_lock(view->timestamps_mutex);
 	view->postponed_reload = get_updated_time(view->postponed_reload);
+	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
 void
 ui_view_schedule_full_reload(FileView *view)
 {
+	pthread_mutex_lock(view->timestamps_mutex);
 	view->postponed_full_reload = get_updated_time(view->postponed_full_reload);
+	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
 /* Gets updated timestamp ensuring that it differs from the previous value.
@@ -1781,6 +1796,8 @@ ui_view_query_scheduled_event(FileView *view)
 {
 	UiUpdateEvent event;
 
+	pthread_mutex_lock(view->timestamps_mutex);
+
 	if(view->postponed_full_reload != view->last_reload)
 	{
 		event = UUE_FULL_RELOAD;
@@ -1801,6 +1818,8 @@ ui_view_query_scheduled_event(FileView *view)
 	view->last_redraw = view->postponed_redraw;
 	view->last_reload = view->postponed_reload;
 	view->postponed_full_reload = view->postponed_reload;
+
+	pthread_mutex_unlock(view->timestamps_mutex);
 
 	return event;
 }
