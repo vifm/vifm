@@ -75,6 +75,8 @@
 
 	Removed caret escaping on Windows...  Thanks to Reva Revadigar.
 
+	Silently ignore tries to remove parent entry (..).  Thanks to aleksejrs.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

@@ -155,8 +155,6 @@ static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
 static void delete(key_info_t key_info, int use_trash);
 static void cmd_D_selector(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d_selector(key_info_t key_info, keys_info_t *keys_info);
-static void delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
-		int use_trash);
 static void call_delete(key_info_t key_info, keys_info_t *keys_info,
 		int use_trash);
 static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
@@ -1471,11 +1469,6 @@ delete(key_info_t key_info, int use_trash)
 		return;
 	}
 
-	if(!confirm_deletion(use_trash))
-	{
-		return;
-	}
-
 	if(key_info.count != NO_COUNT_GIVEN)
 	{
 		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
@@ -1494,46 +1487,33 @@ delete(key_info_t key_info, int use_trash)
 static void
 cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!can_change_view_files(curr_view))
+	if(can_change_view_files(curr_view))
 	{
-		return;
-	}
-
-	if(confirm_deletion(0))
-	{
-		delete_with_selector(key_info, keys_info, 0);
+		call_delete(key_info, keys_info, 0);
 	}
 }
 
 static void
 cmd_d_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(confirm_deletion(1))
-	{
-		delete_with_selector(key_info, keys_info, 1);
-	}
-}
-
-/* Removes (permanently or just moving to trash) files using selector.
- * Processes d<selector> and D<selector> normal mode commands.  On moving to
- * trash files are put in specified register (unnamed by default). */
-static void
-delete_with_selector(key_info_t key_info, keys_info_t *keys_info, int use_trash)
-{
-	if(keys_info->count != 0)
-	{
-		call_delete(key_info, keys_info, use_trash);
-	}
+	call_delete(key_info, keys_info, 1);
 }
 
 /* Invokes actual file deletion procedure. */
 static void
 call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {
+	int count;
+
 	check_marking(curr_view, keys_info->count, keys_info->indexes);
-	curr_stats.save_msg = delete_files(curr_view, def_reg(key_info.reg),
-			use_trash);
-	free_list_of_file_indexes(keys_info);
+	count = flist_count_marked(curr_view);
+
+	if(count != 0 && confirm_deletion(use_trash))
+	{
+		curr_stats.save_msg = delete_files(curr_view, def_reg(key_info.reg),
+				use_trash);
+		free_list_of_file_indexes(keys_info);
+	}
 }
 
 static void

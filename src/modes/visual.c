@@ -704,12 +704,14 @@ cmd_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 delete(key_info_t key_info, int use_trash)
 {
-	if(confirm_deletion(use_trash))
-	{
-		int save_msg;
+	int count;
 
-		check_marking(view, 0, NULL);
-		save_msg = delete_files(view, def_reg(key_info.reg), use_trash);
+	check_marking(view, 0, NULL);
+	count = flist_count_marked(view);
+
+	if(count != 0 && confirm_deletion(use_trash))
+	{
+		const int save_msg = delete_files(view, def_reg(key_info.reg), use_trash);
 		accept_and_leave(save_msg);
 	}
 }
