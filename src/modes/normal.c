@@ -155,7 +155,6 @@ static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
 static void delete(key_info_t key_info, int use_trash);
 static void cmd_D_selector(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d_selector(key_info_t key_info, keys_info_t *keys_info);
-static int delete_confirmed(int use_trash);
 static void delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
 		int use_trash);
 static void call_delete(key_info_t key_info, keys_info_t *keys_info,
@@ -1500,7 +1499,7 @@ cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
-	if(delete_confirmed(0))
+	if(confirm_deletion(0))
 	{
 		delete_with_selector(key_info, keys_info, 0);
 	}
@@ -1509,29 +1508,10 @@ cmd_D_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_d_selector(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(delete_confirmed(1))
+	if(confirm_deletion(1))
 	{
 		delete_with_selector(key_info, keys_info, 1);
 	}
-}
-
-/* Confirms with the user whether deletion of files should take place.  Returns
- * non-zero if so, otherwise zero is returned. */
-static int
-delete_confirmed(int use_trash)
-{
-	curr_stats.confirmed = 0;
-	if(cfg_confirm_delete(use_trash))
-	{
-		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
-		if(!prompt_msg(title, "Are you sure you want to delete file(s)?"))
-		{
-			return 0;
-		}
-		curr_stats.confirmed = 1;
-	}
-
-	return 1;
 }
 
 /* Removes (permanently or just moving to trash) files using selector.
