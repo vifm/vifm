@@ -1508,7 +1508,7 @@ call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 	check_marking(curr_view, keys_info->count, keys_info->indexes);
 	count = flist_count_marked(curr_view);
 
-	if(count != 0 && confirm_deletion(use_trash))
+	if(count != 0 && confirm_deletion(count, use_trash))
 	{
 		curr_stats.save_msg = delete_files(curr_view, def_reg(key_info.reg),
 				use_trash);

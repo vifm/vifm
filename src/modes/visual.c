@@ -709,7 +709,7 @@ delete(key_info_t key_info, int use_trash)
 	check_marking(view, 0, NULL);
 	count = flist_count_marked(view);
 
-	if(count != 0 && confirm_deletion(use_trash))
+	if(count != 0 && confirm_deletion(count, use_trash))
 	{
 		const int save_msg = delete_files(view, def_reg(key_info.reg), use_trash);
 		accept_and_leave(save_msg);

@@ -77,6 +77,9 @@
 
 	Silently ignore tries to remove parent entry (..).  Thanks to aleksejrs.
 
+	A bit better delete confirmation messages with number of files to be
+	deleted.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
