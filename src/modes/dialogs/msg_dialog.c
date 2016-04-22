@@ -602,14 +602,16 @@ determine_width(const char msg[])
 }
 
 int
-confirm_deletion(int use_trash)
+confirm_deletion(int nfiles, int use_trash)
 {
 	curr_stats.confirmed = 0;
 	if(cfg_confirm_delete(use_trash))
 	{
 		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
-		const int proceed = prompt_msg(title,
-				"Are you sure you want to delete file(s)?");
+		char *const msg = format_str("Are you sure you want to delete %d file%s?",
+				nfiles, (nfiles == 1) ? "" : "s");
+		const int proceed = prompt_msg(title, msg);
+		free(msg);
 
 		if(!proceed)
 		{

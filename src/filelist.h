@@ -282,6 +282,9 @@ void mark_selected(FileView *view);
 /* Same as mark_selected() function, but when selection is absent current file
  * is marked. */
 void mark_selection_or_current(FileView *view);
+/* Counts number of marked files that can be procesed (thus excluding parent
+ * directory, which is "..").  Returns the count. */
+int flist_count_marked(FileView *const view);
 /* Removes dead entries (those that refer to non-existing files) or those that
  * do not match local filter from the view.  Returns number of erased
  * entries. */

@@ -3280,6 +3280,19 @@ mark_selection_or_current(FileView *view)
 	mark_selected(view);
 }
 
+int
+flist_count_marked(FileView *const view)
+{
+	int i;
+	int count = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		const dir_entry_t *const entry = &view->dir_entry[i];
+		count += (entry->marked && !is_parent_dir(entry->name));
+	}
+	return count;
+}
+
 void
 flist_set(FileView *view, const char title[], const char path[], char *lines[],
 		int nlines)
