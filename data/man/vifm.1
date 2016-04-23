@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 20, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "April 23, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4456,6 +4456,8 @@ Examples:
 .\" ---------------------------------------------------------------------------
 USAGE               RESULT        DESCRIPTION
 
+chooseopt({opt})    String        Queries choose parameters passed on startup.
+.br
 executable({expr})  Integer       Checks whether {expr} command available.
 .br
 expand({expr})      String        Expands special keywords in {expr}.
@@ -4471,6 +4473,14 @@ layoutis({type})    Integer       Checks whether layout is of type {type}.
 paneisat({loc})     Integer       Checks whether current pane is at {loc}.
 .br
 system({command})   String        Executes shell command and returns its output.
+
+.BI chooseopt({opt})
+
+Retrieves values of options related to file choosing.  {opt} can be one of:
+    files      returns argument of \-\-choose-files or empty string
+    dir        returns argument of \-\-choose-dir or empty string
+    cmd        returns argument of \-\-on-choose or empty string
+    delimiter  returns argument of \-\-delimiter or the default one (\\n)
 
 .BI executable({expr})
 

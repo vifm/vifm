@@ -37,6 +37,7 @@
 #include "macros.h"
 #include "types.h"
 
+static var_t chooseopt_builtin(const call_info_t *call_info);
 static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
@@ -49,6 +50,7 @@ static var_t system_builtin(const call_info_t *call_info);
 
 static const function_t functions[] = {
 	/* Name          Description                 Argc  Handler  */
+	{ "chooseopt",   "query choose options",       1, &chooseopt_builtin },
 	{ "executable",  "check for executable file",  1, &executable_builtin },
 	{ "expand",      "expand macros in a string",  1, &expand_builtin },
 	{ "filetype",    "retrieve type of a file",    1, &filetype_builtin },
@@ -69,6 +71,41 @@ init_builtin_functions(void)
 		assert(result == 0 && "Builtin function registration error");
 		(void)result;
 	}
+}
+
+/* Retrieves values of options related to file choosing as a string.  On unknown
+ * arguments empty string is returned. */
+static var_t
+chooseopt_builtin(const call_info_t *call_info)
+{
+	var_val_t var_val = { .string = NULL };
+	char *type;
+
+	type = var_to_string(call_info->argv[0]);
+	if(strcmp(type, "files") == 0)
+	{
+		var_val.string = curr_stats.chosen_files_out;
+	}
+	else if(strcmp(type, "dir") == 0)
+	{
+		var_val.string = curr_stats.chosen_dir_out;
+	}
+	else if(strcmp(type, "cmd") == 0)
+	{
+		var_val.string = curr_stats.on_choose;
+	}
+	else if(strcmp(type, "delimiter") == 0)
+	{
+		var_val.string = curr_stats.output_delimiter;
+	}
+	free(type);
+
+	if(var_val.string == NULL)
+	{
+		var_val.string = "";
+	}
+
+	return var_new(VTYPE_STRING, var_val);
 }
 
 /* Checks whether executable exists at absolute path orin directories listed in
