@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 20
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Apr 23
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3703,6 +3703,7 @@ Examples: >
 
 USAGE               RESULT        DESCRIPTION	~
 
+chooseopt({opt})    String        Queries choose parameters passed on startup.
 executable({expr})  Integer       Checks whether {expr} command available.
 expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
@@ -3712,6 +3713,14 @@ layoutis({type})    Integer       Checks whether layout is of type {type}.
 paneisat({loc})     Integer       Checks whether current pane is at {loc}.
 system({command})   String        Executes shell command and returns its output.
 
+
+chooseopt({opt})                               *vifm-chooseopt()*
+
+Retrieves values of options related to file choosing.  {opt} can be one of:
+    files      returns argument of |vifm---choose-files| or empty string
+    dir        returns argument of |vifm---choose-dir| or empty string
+    cmd        returns argument of |vifm---on-choose| or empty string
+    delimiter  returns argument of |vifm---delimiter| or the default one ("\n")
 
 executable({expr})                             *vifm-executable()*
 

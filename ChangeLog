@@ -39,6 +39,9 @@
 	Added :select and :unselect commands.  Thanks to filterfalse, Russell
 	Urquhart and Marcos Cruz.
 
+	Added chooseopt() builtin function that retrieves various parameters of
+	file choosing.  Thanks to Von Welch.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

@@ -125,7 +125,7 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->view = 0;
 	stats->graphics_preview = 0;
-	stats->preview_cleanup = NULL;
+	update_string(&stats->preview_cleanup, NULL);
 	stats->clear_preview = 0;
 
 	stats->msg_head = 0;
@@ -154,11 +154,11 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->original_stdout = NULL;
 
-	stats->chosen_files_out = NULL;
-	stats->chosen_dir_out = NULL;
+	update_string(&stats->chosen_files_out, NULL);
+	update_string(&stats->chosen_dir_out , NULL);
 	(void)replace_string(&stats->output_delimiter, "\n");
 
-	stats->on_choose = NULL;
+	update_string(&stats->on_choose, NULL);
 
 	stats->preview_hint = NULL;
 

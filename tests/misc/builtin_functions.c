@@ -9,6 +9,7 @@
 #include "../../src/engine/parsing.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/str.h"
+#include "../../src/args.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
@@ -188,6 +189,53 @@ TEST(getpanetype_for_very_custom_view)
 	ASSERT_OK("getpanetype()", "very-custom");
 
 	opt_handlers_teardown();
+}
+
+TEST(chooseopt_options_are_not_set)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", NULL };
+
+	assert_success(init_status(&cfg));
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	args_process(&args, 0);
+	args_process(&args, 1);
+
+	ASSERT_OK("chooseopt('files')", "");
+	ASSERT_OK("chooseopt('dir')", "");
+	ASSERT_OK("chooseopt('cmd')", "");
+	ASSERT_OK("chooseopt('delimiter')", "\n");
+
+	assert_success(reset_status(&cfg));
+
+	args_free(&args);
+}
+
+TEST(chooseopt_options_are_set)
+{
+	args_t args = { };
+	char *argv[] = { "vifm",
+	                 "--choose-files", "files-file",
+	                 "--choose-dir", "dir-file",
+	                 "--on-choose", "cmd",
+	                 "--delimiter", "delim",
+	                 NULL };
+
+	assert_success(init_status(&cfg));
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	args_process(&args, 0);
+	args_process(&args, 1);
+
+	ASSERT_OK("chooseopt('files')", "/files-file");
+	ASSERT_OK("chooseopt('dir')", "/dir-file");
+	ASSERT_OK("chooseopt('cmd')", "cmd");
+	ASSERT_OK("chooseopt('delimiter')", "delim");
+
+	assert_success(reset_status(&cfg));
+
+	args_free(&args);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

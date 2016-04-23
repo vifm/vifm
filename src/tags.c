@@ -465,6 +465,7 @@ const char *tags[] = {
 	"vifm-c_Up",
 	"vifm-cancellation",
 	"vifm-cg",
+	"vifm-chooseopt()",
 	"vifm-cl",
 	"vifm-clientserver",
 	"vifm-co",
