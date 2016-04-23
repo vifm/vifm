@@ -4,9 +4,11 @@
 #include <string.h> /* strdup() */
 #include <wchar.h> /* wcsdup() wcslen() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
+#include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
@@ -29,10 +31,14 @@ SETUP()
 	init_commands();
 
 	add_builtin_commands(commands, ARRAY_LEN(commands));
+
+	assert_success(init_status(&cfg));
 }
 
 TEARDOWN()
 {
+	assert_success(reset_status(&cfg));
+
 	reset_cmds();
 }
 
@@ -43,13 +49,13 @@ builtin_cmd(const cmd_info_t* cmd_info)
 	return 0;
 }
 
-TEST(repeat_of_no_command_prints_message)
+TEST(repeat_of_no_command_prints_a_message)
 {
 	called = 0;
 	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
 	assert_int_equal(1, called);
 
-	assert_string_equal(NULL, curr_stats.last_cmdline_command);
+	update_string(&curr_stats.last_cmdline_command, NULL);
 
 	called = 0;
 	assert_int_equal(1, exec_commands("!!", &lwin, CIT_COMMAND));
@@ -62,28 +68,20 @@ TEST(double_emark_repeats_last_command)
 	(void)exec_commands("builtin", &lwin, CIT_COMMAND);
 	assert_int_equal(1, called);
 
-	free(curr_stats.last_cmdline_command);
-	curr_stats.last_cmdline_command = strdup("builtin");
+	update_string(&curr_stats.last_cmdline_command, "builtin");
 
 	called = 0;
 	assert_int_equal(0, exec_commands("!!", &lwin, CIT_COMMAND));
 	assert_int_equal(1, called);
-
-	free(curr_stats.last_cmdline_command);
-	curr_stats.last_cmdline_command = NULL;
 }
 
 TEST(single_emark_without_args_fails)
 {
-	free(curr_stats.last_cmdline_command);
-	curr_stats.last_cmdline_command = strdup("builtin");
+	update_string(&curr_stats.last_cmdline_command, "builtin");
 
 	called = 0;
 	assert_false(exec_commands("!", &lwin, CIT_COMMAND) == 0);
 	assert_int_equal(0, called);
-
-	free(curr_stats.last_cmdline_command);
-	curr_stats.last_cmdline_command = NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
