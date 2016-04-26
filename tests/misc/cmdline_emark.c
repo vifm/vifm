@@ -32,12 +32,14 @@ SETUP()
 
 	add_builtin_commands(commands, ARRAY_LEN(commands));
 
+	update_string(&cfg.shell, "");
 	assert_success(init_status(&cfg));
 }
 
 TEARDOWN()
 {
 	assert_success(reset_status(&cfg));
+	update_string(&cfg.shell, NULL);
 
 	reset_cmds();
 }

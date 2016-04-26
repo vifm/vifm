@@ -1,4 +1,4 @@
-/* vifm
+/*
  * Copyright (C) 2011 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -67,6 +67,13 @@ size_t utf8_stro(const char str[]);
  * Returns the overhead. */
 size_t utf8_strso(const char str[]);
 
+/* Copies as many full utf-8 characters from source to destination as size of
+ * destination buffer permits.  Returns number of actually copied bytes
+ * including terminating null character. */
+size_t utf8_strcpy(char dst[], const char src[], size_t dst_len);
+
+#ifdef _WIN32
+
 /* Converts utf-8 to utf-16 string.  Returns newly allocated utf-8 string. */
 wchar_t * utf8_to_utf16(const char utf8[]);
 
@@ -81,10 +88,7 @@ size_t utf8_widen_len(const char utf8[]);
 /* Converts utf-16 to utf-8 string. Returns newly allocated utf-16 string. */
 char * utf8_from_utf16(const wchar_t utf16[]);
 
-/* Copies as many full utf-8 characters from source to destination as size of
- * destination buffer permits.  Returns number of actually copied bytes
- * including terminating null character. */
-size_t utf8_strcpy(char dst[], const char src[], size_t dst_len);
+#endif
 
 #endif /* VIFM__UTILS__UTF8_H__ */
 
