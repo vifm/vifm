@@ -6,6 +6,7 @@
 #include <string.h> /* strlen() */
 #include <wchar.h>
 
+#include "../../src/utils/str.h"
 #include "../../src/utils/utf8.h"
 #include "../../src/utils/utils.h"
 
@@ -71,6 +72,29 @@ TEST(length_is_less_or_equal_to_string_length, IF(locale_works))
 		assert_true(utf8_nstrsnlen(str, i) <= i);
 	}
 }
+
+#ifdef _WIN32
+
+TEST(utf16_roundtrip, IF(locale_works))
+{
+	const wchar_t str[] = { 0x79d8, 0 };
+
+	char *const utf8 = utf8_from_utf16(str);
+	wchar_t *const utf16 = utf8_to_utf16(utf8);
+	assert_true(wcscmp(str, utf16) == 0);
+	free(utf16);
+	free(utf8);
+}
+
+TEST(first_char, IF(locale_works))
+{
+	const wchar_t str[] = { 0x79d8, 0 };
+	char *const utf8 = utf8_from_utf16(str);
+	assert_int_equal(0x79d8, get_first_wchar(utf8));
+	free(utf8);
+}
+
+#endif
 
 static int
 locale_works(void)

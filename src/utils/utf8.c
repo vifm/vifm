@@ -18,6 +18,10 @@
 
 #include "utf8.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t wchar_t */
 #include <stdlib.h> /* malloc() */
@@ -30,7 +34,6 @@
 static size_t guess_char_width(char c);
 static wchar_t utf8_char_to_wchar(const char str[], size_t char_width);
 static size_t chrsw(const char str[], size_t char_width);
-static size_t utf8_narrowed_len(const wchar_t utf16[]);
 
 size_t
 utf8_chrw(const char str[])
@@ -232,192 +235,6 @@ utf8_strso(const char str[])
 	return overhead;
 }
 
-wchar_t *
-utf8_to_utf16(const char utf8[])
-{
-	size_t size = utf8_widen_len(utf8);
-
-	wchar_t *const utf16 = reallocarray(NULL, size + 1, sizeof(wchar_t));
-
-	wchar_t *t = utf16;
-	const char *p = utf8;
-	unsigned char c;
-	while((c = *p++) != '\0')
-	{
-		wchar_t wc;
-		if(c < 0x80)
-		{
-			wc = c;
-		}
-		else if((c & 0xe0) == 0xc0)
-		{
-			wc = ((c & 0x1f) << 6) | ((*p++) & 0x3f);
-		}
-		else if((c & 0xf0) == 0xe0)
-		{
-			wc = ((c & 0x0f) << 12) | ((p[0] & 0x3f) << 6) | (p[1] & 0x3f);
-			p += 2;
-		}
-		else
-		{
-			const unsigned int r32 = ((c & 0x07) << 18)
-			                       | ((p[0] & 0x3f) << 12)
-			                       | ((p[1] & 0x3f) << 6)
-			                       | (p[2] & 0x3f);
-			p += 3;
-			*t++ = 0xd800 | (((r32 - 0x10000) >> 10) & 0x3ff);
-			wc = 0xdc00 | (r32 & 0x3ff);
-		}
-		*t++ = wc;
-	}
-	*t = 0;
-
-	return utf16;
-}
-
-wchar_t
-utf8_first_char(const char utf8[])
-{
-	/* This code is a copy of utf8_to_utf16() loop body, which is hard to share
-	 * between these two functions.  Luckily this shouldn't require much updates
-	 * in the future. */
-
-	unsigned char c = *utf8++;
-	wchar_t wc;
-
-	if(c < 0x80)
-	{
-		wc = c;
-	}
-	else if((c & 0xe0) == 0xc0)
-	{
-		wc = ((c & 0x1f) << 6) | (utf8[0] & 0x3f);
-	}
-	else if((c & 0xf0) == 0xe0)
-	{
-		wc = ((c & 0x0f) << 12) | ((utf8[0] & 0x3f) << 6) | (utf8[1] & 0x3f);
-	}
-	else
-	{
-		const unsigned int r32 = ((c & 0x07) << 18)
-		                       | ((utf8[0] & 0x3f) << 12)
-		                       | ((utf8[1] & 0x3f) << 6)
-		                       | (utf8[2] & 0x3f);
-		wc = 0xd800 | (((r32 - 0x10000) >> 10) & 0x3ff);
-	}
-
-	return wc;
-}
-
-size_t
-utf8_widen_len(const char utf8[])
-{
-	size_t size = 0;
-	const char *p = utf8;
-	unsigned char c;
-	while((c = *p++) != '\0')
-	{
-		++size;
-		if(c < 0x80)
-		{
-			/* Do nothing. */
-		}
-		else if((c&0xe0) == 0xc0)
-		{
-			++p;
-		}
-		else if((c&0xf0) == 0xe0)
-		{
-			p += 2;
-		}
-		else
-		{
-			p += 3;
-			/* Surrogate. */
-			++size;
-		}
-	}
-	return size;
-}
-
-char *
-utf8_from_utf16(const wchar_t utf16[])
-{
-	const size_t size = utf8_narrowed_len(utf16);
-
-	char *const utf8 = malloc(size + 1);
-
-	const wchar_t *p = utf16;
-	char *t = utf8;
-	unsigned short int c;
-	while((c = *p++) != 0)
-	{
-		if(c < 0x80)
-		{
-			/* 7 bit (ascii). */
-			*t++ = (char)c;
-		}
-		else if(c < 0x0800)
-		{
-			/* 11 bit. */
-			*t++ = (char)(0xc0 | (c >> 6));
-			*t++ = (char)(0x80 | (c & 0x3f));
-		}
-		else if((c&0xf8) != 0xd8)
-		{
-			/* 16 bit. */
-			*t++ = (char)(0xe0 | (c >> 12));
-			*t++ = (char)(0x80 | ((c >> 6) & 0x3f));
-			*t++ = (char)(0x80 | (c & 0x3f));
-		}
-		else
-		{
-			/* 21 bit - surrogate pair. */
-			const unsigned short int c1 = (*p ? *p++ : 0xdc);
-			/* utf-32 character. */
-			const unsigned int d = (((c & 0x3ff) << 10) | (c1 & 0x3ff)) + 0x10000;
-			*t++ = (char)(0xf0 | ((d >> 18) & 0x7));
-			*t++ = (char)(0x80 | ((d >> 12) & 0x3f));
-			*t++ = (char)(0x80 | ((d >> 6) & 0x3f));
-			*t++ = (char)(0x80 | (d & 0x3f));
-		}
-	}
-	*t = '\0';
-
-	return utf8;
-}
-
-/* Calculate how many utf8 chars are needed to store given utf-16 string.
- * Returns the number. */
-static size_t
-utf8_narrowed_len(const wchar_t utf16[])
-{
-	const wchar_t *p = utf16;
-	size_t len = 0;
-	unsigned short int c;
-	while((c = *p++) != 0)
-	{
-		if(c < 0x80)
-		{
-			++len;
-		}
-		else if(c < 0x0800)
-		{
-			len += 2;
-		}
-		else if((c & 0xf8) != 0xd8)
-		{
-			len += 3;
-		}
-		else
-		{
-			++p;
-			len += 4;
-		}
-	}
-	return len;
-}
-
 size_t
 utf8_strcpy(char dst[], const char src[], size_t dst_len)
 {
@@ -444,6 +261,48 @@ utf8_strcpy(char dst[], const char src[], size_t dst_len)
 	*dst = '\0';
 	return len - (dst_len - 1U);
 }
+
+#ifdef _WIN32
+
+wchar_t
+utf8_first_char(const char utf8[])
+{
+	const size_t len = strlen(utf8);
+	wchar_t wc;
+	(void)MultiByteToWideChar(CP_UTF8, 0, utf8, len, &wc, 1);
+	return wc;
+}
+
+wchar_t *
+utf8_to_utf16(const char utf8[])
+{
+	const size_t len = strlen(utf8);
+	const int size = MultiByteToWideChar(CP_UTF8, 0, utf8, len, NULL, 0);
+	wchar_t *const utf16 = reallocarray(NULL, size + 1, sizeof(wchar_t));
+	(void)MultiByteToWideChar(CP_UTF8, 0, utf8, len, utf16, size);
+	utf16[size] = L'\0';
+	return utf16;
+}
+
+size_t
+utf8_widen_len(const char utf8[])
+{
+	return MultiByteToWideChar(CP_UTF8, 0, utf8, strlen(utf8), NULL, 0);
+}
+
+char *
+utf8_from_utf16(const wchar_t utf16[])
+{
+	const size_t len = wcslen(utf16);
+	const int size = WideCharToMultiByte(CP_UTF8, 0, utf16, len, NULL, 0, NULL,
+			NULL);
+	char *const utf8 = malloc(size + 1);
+	(void)WideCharToMultiByte(CP_UTF8, 0, utf16, len, utf8, size, NULL, NULL);
+	utf8[size] = '\0';
+	return utf8;
+}
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
