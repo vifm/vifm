@@ -1039,7 +1039,6 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 
-	wresize(stat_win, 1, 0);
 	checked_wmove(stat_win, 0, 0);
 
 	if(*pos < *last_pos)
