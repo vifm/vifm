@@ -119,6 +119,9 @@
 	Fixed possible unexpectedly long timeouts when waiting for a key on
 	Windows (due to limitation of pdcurses).
 
+	Fixed displaying of wide (CJK) in pdcurses on Windows.  Thanks to Reva
+	Revadigar.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
