@@ -342,6 +342,12 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 	{
 		int i;
 
+		int delay_slice = DIV_ROUND_UP(MIN(cfg.min_timeout_len, timeout), IPC_F);
+#ifdef __PDCURSES__
+		/* pdcurses performs delays in 50 ms intervals (1/20 of a second). */
+		delay_slice = MAX(50, delay_slice);
+#endif
+
 		if(should_check_views_for_changes())
 		{
 			check_view_for_changes(curr_view);
@@ -350,12 +356,13 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 
 		process_scheduled_updates();
 
-		for(i = 0; i < IPC_F; ++i)
+		for(i = 0; i < IPC_F && timeout > 0; ++i)
 		{
 			int result;
 
 			ipc_check();
-			wtimeout(win, MIN(cfg.min_timeout_len, timeout)/IPC_F);
+			wtimeout(win, delay_slice);
+			timeout -= delay_slice;
 
 			if(suggestions_are_visible)
 			{
@@ -372,8 +379,6 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 
 			process_scheduled_updates();
 		}
-
-		timeout -= cfg.min_timeout_len;
 	}
 	while(timeout > 0);
 

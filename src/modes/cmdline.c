@@ -1011,8 +1011,6 @@ draw_wild_menu(int op)
 	if(last_pos == 0 && pos == count - 1)
 		last_pos = count;
 
-	werase(stat_win);
-
 	i = cfg.wild_popup
 	  ? draw_wild_popup(&last_pos, &pos, &len)
 	  : draw_wild_bar(&last_pos, &pos, &len);
@@ -1039,8 +1037,8 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 	const vle_compl_t *const items = vle_compl_get_items();
 	const int count = vle_compl_get_count() - 1;
 
-	wresize(stat_win, 1, 0);
 	checked_wmove(stat_win, 0, 0);
+	werase(stat_win);
 
 	if(*pos < *last_pos)
 	{
@@ -1114,6 +1112,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 	}
 
 	wresize(stat_win, height, getmaxx(stdscr));
+	werase(stat_win);
 	ui_stat_reposition(get_required_height(), 1);
 
 	max_title_width = 0U;
