@@ -240,6 +240,39 @@ TEST(regex_inclusion_case_is_taken_into_account)
 	matcher_free(m1);
 }
 
+TEST(mime_type_pattern)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("<text/plain>", 0, 1, "", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, TEST_DATA_PATH "/read/dos-line-endings"));
+	assert_false(matcher_matches(m, TEST_DATA_PATH "/read/binary-data"));
+	matcher_free(m);
+}
+
+TEST(mime_type_inclusion)
+{
+	char *error;
+	matcher_t *m, *m1, *m2;
+
+	assert_non_null(m = matcher_alloc("<a/b,c/Dd>", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(m1 = matcher_alloc("<c/dd>", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(m2 = matcher_alloc("<c/d>", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_true(matcher_includes(m, m));
+	assert_true(matcher_includes(m, m1));
+	assert_false(matcher_includes(m, m2));
+
+	matcher_free(m2);
+	matcher_free(m1);
+	matcher_free(m);
+}
+
 static void
 check_glob(matcher_t *m)
 {
