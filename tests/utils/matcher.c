@@ -163,6 +163,83 @@ TEST(empty_regexp)
 	matcher_free(m);
 }
 
+TEST(expr_includes_itself)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("*.c", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_true(matcher_includes(m, m));
+
+	matcher_free(m);
+}
+
+TEST(different_exprs_match_inclusion)
+{
+	char *error;
+	matcher_t *m1, *m2;
+
+	assert_non_null(m1 = matcher_alloc("*.c", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(m2 = matcher_alloc("/.*\\.c/", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_false(matcher_includes(m1, m2));
+
+	matcher_free(m2);
+	matcher_free(m1);
+}
+
+TEST(global_match_inclusion)
+{
+	char *error;
+	matcher_t *m1, *m2;
+
+	assert_non_null(m1 = matcher_alloc("*.cpp,*.c", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(m2 = matcher_alloc("*.c", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_true(matcher_includes(m1, m2));
+
+	matcher_free(m2);
+	matcher_free(m1);
+}
+
+TEST(global_match_no_inclusion)
+{
+	char *error;
+	matcher_t *m1, *m2;
+
+	assert_non_null(m1 = matcher_alloc("*.cpp,*.c", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(m2 = matcher_alloc("*.hpp", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_false(matcher_includes(m1, m2));
+
+	matcher_free(m2);
+	matcher_free(m1);
+}
+
+TEST(regex_inclusion_case_is_taken_into_account)
+{
+	char *error;
+	matcher_t *m1, *m2;
+
+	assert_non_null(m1 = matcher_alloc("/a/I", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(m2 = matcher_alloc("/A/I", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_false(matcher_includes(m1, m2));
+
+	matcher_free(m2);
+	matcher_free(m1);
+}
+
 static void
 check_glob(matcher_t *m)
 {
