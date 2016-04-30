@@ -295,22 +295,9 @@ matcher_includes(const matcher_t *like, const matcher_t *m)
 		return 0;
 	}
 
-	if(m->cflags & REG_ICASE)
-	{
-		if(strcasestr(like->raw, m->raw) != NULL)
-		{
-			return 1;
-		}
-	}
-	else
-	{
-		if(strstr(like->raw, m->raw) != NULL)
-		{
-			return 1;
-		}
-	}
-
-	return 0;
+	return (m->cflags & REG_ICASE)
+	     ? (strcasestr(like->raw, m->raw) != NULL)
+	     : (strstr(like->raw, m->raw) != NULL);
 }
 
 int
