@@ -250,6 +250,12 @@ TEST(mime_type_pattern)
 	assert_true(matcher_matches(m, TEST_DATA_PATH "/read/dos-line-endings"));
 	assert_false(matcher_matches(m, TEST_DATA_PATH "/read/binary-data"));
 	matcher_free(m);
+
+	assert_non_null(m = matcher_alloc("<text/*>", 0, 1, "", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, TEST_DATA_PATH "/read/dos-line-endings"));
+	assert_false(matcher_matches(m, TEST_DATA_PATH "/read/binary-data"));
+	matcher_free(m);
 }
 
 TEST(mime_type_inclusion)

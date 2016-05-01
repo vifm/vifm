@@ -24,7 +24,6 @@
 #include <stdlib.h> /* free() malloc() */
 #include <string.h> /* strdup() strlen() strrchr() strspn() */
 
-#include "../compat/fs_limits.h"
 #include "../int/file_magic.h"
 #include "globs.h"
 #include "path.h"
@@ -61,8 +60,6 @@ static int parse_glob(matcher_t *m, int strip, char **error);
 static int parse_re(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static void free_matcher_items(matcher_t *matcher);
-static int mime_matcher_includes(const matcher_t *matcher,
-		const matcher_t *like);
 static int is_negated(const char **expr, int allow_empty);
 static int is_re_expr(const char expr[], int allow_empty);
 static int is_globs_expr(const char expr[]);
@@ -177,6 +174,7 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 
 	switch(m->type)
 	{
+		case MT_MIME:
 		case MT_GLOBS:
 			if(parse_glob(m, strip, error) != 0)
 			{
@@ -189,13 +187,6 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 				return 1;
 			}
 			break;
-		case MT_MIME:
-			if(strip != 0)
-			{
-				/* Cut off trailing ">". */
-				m->raw[strlen(m->raw) - 1U] = '\0';
-			}
-			return 0;
 	}
 
 	err = regcomp(&m->regex, m->raw, m->cflags);
@@ -311,10 +302,7 @@ free_matcher_items(matcher_t *matcher)
 {
 	free(matcher->expr);
 	free(matcher->raw);
-	if(matcher->type != MT_MIME)
-	{
-		regfree(&matcher->regex);
-	}
+	regfree(&matcher->regex);
 }
 
 int
@@ -322,29 +310,13 @@ matcher_matches(matcher_t *matcher, const char path[])
 {
 	if(matcher->type == MT_MIME)
 	{
-		int match = 0;
-		const char *mimetype = NULL;
-
-		mimetype = get_mimetype(path);
-		if(mimetype != NULL)
+		path = get_mimetype(path);
+		if(path == NULL)
 		{
-			char *const free_this = strdup(matcher->raw);
-			char *pat = free_this, *state = NULL;
-			while((pat = split_and_get_dc(pat, &state)) != NULL)
-			{
-				if(strcasecmp(pat, mimetype) == 0)
-				{
-					match = 1;
-					break;
-				}
-			}
-			free(free_this);
+			return matcher->negated;
 		}
-
-		return match^matcher->negated;
 	}
-
-	if(!matcher->full_path)
+	else if(!matcher->full_path)
 	{
 		path = get_last_path_component(path);
 	}
@@ -367,45 +339,9 @@ matcher_includes(const matcher_t *matcher, const matcher_t *like)
 		return 0;
 	}
 
-	if(matcher->type == MT_MIME)
-	{
-		return mime_matcher_includes(matcher, like);
-	}
-
 	return (matcher->cflags & REG_ICASE)
 	     ? (strcasestr(matcher->raw, like->raw) != NULL)
 	     : (strstr(matcher->raw, like->raw) != NULL);
-}
-
-/* Checks that all mime types of the like present in the matcher. */
-static int
-mime_matcher_includes(const matcher_t *matcher, const matcher_t *like)
-{
-	int matched_all = 1;
-	char *const free_this = strdup(like->raw);
-	char *alike = free_this, *state = NULL;
-	while((alike = split_and_get_dc(alike, &state)) != NULL)
-	{
-		int match = 0;
-		char *const free_this = strdup(matcher->raw);
-		char *master = free_this, *state = NULL;
-		while((master = split_and_get_dc(master, &state)) != NULL)
-		{
-			if(strcasecmp(alike, master) == 0)
-			{
-				match = 1;
-			}
-		}
-		free(free_this);
-
-		if(!match)
-		{
-			matched_all = 0;
-			break;
-		}
-	}
-	free(free_this);
-	return matched_all;
 }
 
 int
