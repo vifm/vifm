@@ -131,13 +131,15 @@ endif
 ifdef unix_env
     MF := $(B)../src/Makefile
     ifneq ($(wildcard $(MF)),)
-        LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' $(MF))
-        LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' $(MF))
-        CFLAGS  += $(shell sed -n '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        LDFLAGS += $(shell sed -n    '/LIBS =/{s/^[^=]*=//p;q}' $(MF))
+        LDFLAGS += $(shell sed -n '/LDFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+
+        CFLAGS  += $(shell sed -n          '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        CFLAGS  += $(shell sed -n      '/TESTS_CFLAGS =/{s/^[^=]*=//p;q}' $(MF))
         CFLAGS  += $(shell sed -n '/SANITIZERS_CFLAGS =/{s/^[^=]*=//p;q}' $(MF))
     endif
 
-    CFLAGS  += -I/usr/include/ncursesw
+    CFLAGS += -I/usr/include/ncursesw
     export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env

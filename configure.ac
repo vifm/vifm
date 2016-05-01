@@ -37,6 +37,10 @@ case "$host_os" in
 		;;
 esac
 
+dnl pass some CFLAGS to tests
+TESTS_CFLAGS="$CFLAGS"
+AC_SUBST([TESTS_CFLAGS])
+
 AC_DEFINE([_XOPEN_SOURCE_EXTENDED], [1],
           [Define to 1 to enable wide functions of ncurses in some environments.])
 
