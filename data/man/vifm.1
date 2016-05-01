@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 23, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "Mayl 01, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3014,6 +3014,8 @@ There are five possible ways to write them:
 .IP 4. 3
 [!]//path-regular-expression//[iI]
 .IP 5. 3
+[!]<comma-separated-mime-type-globs>
+.IP 6. 3
 undecorated-pattern
 .RE
 
@@ -3028,6 +3030,9 @@ Regular expression patterns are case insensitive by default.
 
 "Globs" section below provides short overview of globs and some important points
 that one needs to know about them.
+
+Mime type matching is essentially globs matching applied to mime type of a file
+instead of its name/path.  Note: mime types aren't detected on Windows.
 .\" ---------------------------------------------------------------------------
 .SH Globs
 .\" ---------------------------------------------------------------------------
