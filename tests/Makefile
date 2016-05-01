@@ -123,6 +123,7 @@ AT = $(AT_$(V))
 # setup compile and link flags (partially depends on OS)
 CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include $(B)../config.h
 CFLAGS += -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED -Wno-char-subscripts
+CFLAGS += -fsigned-char
 LDFLAGS := -lpthread
 ifeq (,$(findstring clang,$(CC)))
     # clang is inconvenient with regard to this flag, don't do coverage with it
@@ -131,13 +132,15 @@ endif
 ifdef unix_env
     MF := $(B)../src/Makefile
     ifneq ($(wildcard $(MF)),)
-        LDFLAGS += $(shell sed -n     '/LIBS =/{s/^[^=]*=//p;q}' $(MF))
-        LDFLAGS += $(shell sed -n  '/LDFLAGS =/{s/^[^=]*=//p;q}' $(MF))
-        CFLAGS  += $(shell sed -n '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        LDFLAGS += $(shell sed -n    '/LIBS =/{s/^[^=]*=//p;q}' $(MF))
+        LDFLAGS += $(shell sed -n '/LDFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+
+        CFLAGS  += $(shell sed -n          '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        CFLAGS  += $(shell sed -n      '/TESTS_CFLAGS =/{s/^[^=]*=//p;q}' $(MF))
         CFLAGS  += $(shell sed -n '/SANITIZERS_CFLAGS =/{s/^[^=]*=//p;q}' $(MF))
     endif
 
-    CFLAGS  += -I/usr/include/ncursesw
+    CFLAGS += -I/usr/include/ncursesw
     export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env

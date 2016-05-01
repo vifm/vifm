@@ -26,7 +26,7 @@ TEARDOWN()
 
 TEST(suggestion_does_not_print_empty_lines)
 {
-	chdir(TEST_DATA_PATH "/existing-files");
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 
 	regs_append('a', "a");
 	regs_append('a', "b");
@@ -40,7 +40,7 @@ TEST(suggestion_does_not_print_empty_lines)
 
 TEST(suggestion_trims_extra_lines_single_reg)
 {
-	chdir(TEST_DATA_PATH "/existing-files");
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 
 	regs_append('a', "a");
 	regs_append('a', "b");
@@ -54,7 +54,7 @@ TEST(suggestion_trims_extra_lines_single_reg)
 
 TEST(suggestion_trims_extra_lines_multiple_regs)
 {
-	chdir(TEST_DATA_PATH "/existing-files");
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 
 	regs_append('a', "a");
 	regs_append('a', "b");

@@ -221,7 +221,7 @@ TEST(r_well_formed)
 {
 	const char *p;
 
-	chdir(TEST_DATA_PATH "/existing-files");
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 
 	regs_init();
 
@@ -257,7 +257,7 @@ TEST(r_ill_formed)
 	char key;
 	char expected[] = "a b cx";
 
-	chdir(TEST_DATA_PATH "/existing-files");
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 
 	regs_init();
 
@@ -323,7 +323,7 @@ TEST(with_quotes)
 	assert_string_equal(" a m M s ", expanded);
 	free(expanded);
 
-	chdir(TEST_DATA_PATH "/existing-files");
+	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 	regs_init();
 
 	regs_append(DEFAULT_REG_NAME, "a");
@@ -412,7 +412,7 @@ TEST(singly_not_expanded_multiple_macros_multiple_files)
 
 TEST(singly_no_crash_on_wrong_register_name)
 {
-	chdir(TEST_DATA_PATH "/spaces-in-names");
+	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
 	regs_init();
 
 	assert_success(regs_append('r', "spaces in the middle"));
@@ -425,7 +425,7 @@ TEST(singly_expanded_single_file_register)
 {
 	char *expanded;
 
-	chdir(TEST_DATA_PATH "/spaces-in-names");
+	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
 	regs_init();
 
 	assert_success(regs_append('r', "spaces in the middle"));

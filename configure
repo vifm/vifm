@@ -636,6 +636,7 @@ AWK_PROG
 COL_PROG
 MANGEN_PROG
 HAVE_FILE_PROG
+TESTS_CFLAGS
 host_os
 host_vendor
 host_cpu
@@ -6200,6 +6201,11 @@ case "$host_os" in
 		OSX_HOST=
 		;;
 esac
+
+CFLAGS="$CFLAGS -fsigned-char"
+
+TESTS_CFLAGS="$CFLAGS"
+
 
 
 $as_echo "#define _XOPEN_SOURCE_EXTENDED 1" >>confdefs.h

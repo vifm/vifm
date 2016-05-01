@@ -122,6 +122,9 @@
 	Fixed displaying of wide (CJK) in pdcurses on Windows.  Thanks to Reva
 	Revadigar.
 
+	Fixed for architectures on which `char` is unsigned by default.  Thanks to
+	Ondrej Novy (a.k.a. onovy).
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
