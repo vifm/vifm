@@ -1,9 +1,11 @@
 #include <stic.h>
 
+#include "../../src/int/file_magic.h"
 #include "../../src/utils/matcher.h"
 
 static void check_glob(matcher_t *m);
 static void check_regexp(matcher_t *m);
+static int has_mime_type_detection(void);
 
 TEST(glob)
 {
@@ -240,7 +242,7 @@ TEST(regex_inclusion_case_is_taken_into_account)
 	matcher_free(m1);
 }
 
-TEST(mime_type_pattern)
+TEST(mime_type_pattern, IF(has_mime_type_detection))
 {
 	char *error;
 	matcher_t *m;
@@ -258,7 +260,7 @@ TEST(mime_type_pattern)
 	matcher_free(m);
 }
 
-TEST(mime_type_inclusion)
+TEST(mime_type_inclusion, IF(has_mime_type_detection))
 {
 	char *error;
 	matcher_t *m, *m1, *m2;
@@ -299,6 +301,12 @@ check_regexp(matcher_t *m)
 	assert_false(matcher_matches(m, "y"));
 	assert_false(matcher_matches(m, "xy"));
 	assert_false(matcher_matches(m, "yx"));
+}
+
+static int
+has_mime_type_detection(void)
+{
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
