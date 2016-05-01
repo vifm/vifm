@@ -351,7 +351,7 @@ static int
 show_mime_type(FileView *view, int curr_y)
 {
 	char full_path[PATH_MAX];
-	const char* mimetype = NULL;
+	const char *mimetype = NULL;
 
 	get_current_full_path(view, sizeof(full_path), full_path);
 	mimetype = get_mimetype(full_path);
@@ -359,7 +359,9 @@ show_mime_type(FileView *view, int curr_y)
 	mvwaddstr(menu_win, curr_y, 2, "Mime Type: ");
 
 	if(mimetype == NULL)
+	{
 		mimetype = "Unknown";
+	}
 
 	mvwaddstr(menu_win, curr_y, 13, mimetype);
 

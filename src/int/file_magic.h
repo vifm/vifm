@@ -22,9 +22,9 @@
 #include "../filetype.h"
 
 /* Returns pointer to a statically allocated buffer. */
-const char * get_mimetype(const char *file);
+const char * get_mimetype(const char file[]);
 /* Caller shouldn't free anything. */
-assoc_records_t get_magic_handlers(const char *file);
+assoc_records_t get_magic_handlers(const char file[]);
 
 #endif /* VIFM__INT__FILE_MAGIC_H__ */
 
