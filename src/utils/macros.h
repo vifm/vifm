@@ -71,6 +71,14 @@
     /* Fake use to suppress "Unused local variable" warning. */ \
     enum { x##_array_guard_fake_use = (size_t)(x##_array_guard*)0 }
 
+/* Make sure nobody else defined MIN/MAX macros. */
+#ifdef MIN
+#undef MIN
+#endif
+#ifdef MAX
+#undef MAX
+#endif
+
 #define MIN(a,b) ({ \
 										typeof(a) _a = (a); \
 										typeof(b) _b = (b); \
