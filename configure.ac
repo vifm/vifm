@@ -37,6 +37,9 @@ case "$host_os" in
 		;;
 esac
 
+dnl code relies on `char` being `signed char`
+CFLAGS="$CFLAGS -fsigned-char"
+
 dnl pass some CFLAGS to tests
 TESTS_CFLAGS="$CFLAGS"
 AC_SUBST([TESTS_CFLAGS])
