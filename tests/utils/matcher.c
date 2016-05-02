@@ -242,6 +242,38 @@ TEST(regex_inclusion_case_is_taken_into_account)
 	matcher_free(m1);
 }
 
+TEST(globs_are_cloned)
+{
+	char *error;
+	matcher_t *m, *clone;
+
+	assert_non_null(m = matcher_alloc("{*.ext}", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(clone = matcher_clone(m));
+
+	check_glob(m);
+	matcher_free(m);
+
+	check_glob(clone);
+	matcher_free(clone);
+}
+
+TEST(regexps_are_cloned)
+{
+	char *error;
+	matcher_t *m, *clone;
+
+	assert_non_null(m = matcher_alloc("/^x*$/", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(clone = matcher_clone(m));
+
+	check_regexp(m);
+	matcher_free(m);
+
+	check_regexp(clone);
+	matcher_free(clone);
+}
+
 TEST(mime_type_pattern, IF(has_mime_type_detection))
 {
 	char *error;
