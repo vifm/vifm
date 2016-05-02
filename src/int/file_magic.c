@@ -39,24 +39,23 @@
 
 static assoc_records_t handlers;
 
-static int get_gtk_mimetype(const char *filename, char *buf);
-static int get_magic_mimetype(const char *filename, char *buf);
-static int get_file_mimetype(const char *filename, char *buf, size_t buf_sz);
-static assoc_records_t get_handlers(const char *mime_type);
+static int get_gtk_mimetype(const char filename[], char buf[]);
+static int get_magic_mimetype(const char filename[], char buf[]);
+static int get_file_mimetype(const char filename[], char buf[], size_t buf_sz);
+static assoc_records_t get_handlers(const char mime_type[]);
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
-static void parse_app_dir(const char *directory, const char *mime_type,
+static void parse_app_dir(const char directory[], const char mime_type[],
 		assoc_records_t *result);
 #endif
 
 assoc_records_t
-get_magic_handlers(const char *file)
+get_magic_handlers(const char file[])
 {
 	return get_handlers(get_mimetype(file));
 }
 
-/* Returns pointer to a statically allocated buffer. */
 const char *
-get_mimetype(const char *file)
+get_mimetype(const char file[])
 {
 	static char mimetype[128];
 
@@ -65,7 +64,9 @@ get_mimetype(const char *file)
 		if(get_magic_mimetype(file, mimetype) == -1)
 		{
 			if(get_file_mimetype(file, mimetype, sizeof(mimetype)) == -1)
+			{
 				return NULL;
+			}
 		}
 	}
 
@@ -73,7 +74,7 @@ get_mimetype(const char *file)
 }
 
 static int
-get_gtk_mimetype(const char *filename, char *buf)
+get_gtk_mimetype(const char filename[], char buf[])
 {
 #ifdef HAVE_LIBGTK
 	GFile *file;
@@ -103,7 +104,7 @@ get_gtk_mimetype(const char *filename, char *buf)
 }
 
 static int
-get_magic_mimetype(const char *filename, char *buf)
+get_magic_mimetype(const char filename[], char buf[])
 {
 #ifdef HAVE_LIBMAGIC
 	magic_t magic;
@@ -140,7 +141,7 @@ get_magic_mimetype(const char *filename, char *buf)
 }
 
 static int
-get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
+get_file_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
 #ifdef HAVE_FILE_PROG
 	FILE *pipe;
@@ -170,7 +171,7 @@ get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
 }
 
 static assoc_records_t
-get_handlers(const char *mime_type)
+get_handlers(const char mime_type[])
 {
 	ft_assoc_records_free(&handlers);
 
@@ -184,7 +185,7 @@ get_handlers(const char *mime_type)
 
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 static void
-parse_app_dir(const char *directory, const char *mime_type,
+parse_app_dir(const char directory[], const char mime_type[],
 		assoc_records_t *result)
 {
 	assoc_records_t desktop_assocs = parse_desktop_files(directory, mime_type);

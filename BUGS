@@ -3,6 +3,7 @@
 * Duplicate detection lags in custom views on :substitute.
 * :clone! is useless.
 * :change->Name renames only one file even when several are selected.
+* There is no sshfs like FUSE for servers that provide only scp.
 * "*" at the beginning of a glob doesn't match empty string.
 * :filetype checks don't expand ~ and environment variables.
 * :apropos command doesn't escape its arguments.

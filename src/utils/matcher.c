@@ -22,19 +22,29 @@
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strlen() strrchr() strspn() */
+#include <string.h> /* strdup() strlen() strrchr() strspn() */
 
+#include "../int/file_magic.h"
 #include "globs.h"
 #include "path.h"
 #include "regexp.h"
 #include "str.h"
 
+/* Type of a matcher. */
+typedef enum
+{
+	MT_REGEX, /* Regular expression. */
+	MT_GLOBS, /* List of globs (translated to regular expression). */
+	MT_MIME,  /* List of mime types. */
+}
+MType;
+
 /* Wrapper for a regular expression, its state and compiled form. */
 struct matcher_t
 {
+	MType type;    /* Type of the matcher's pattern. */
 	char *expr;    /* User-entered pattern. */
-	char *raw;     /* Raw regular expression. */
-	int globs;     /* Whether original pattern is globs or regexp. */
+	char *raw;     /* Raw stripped value (regular expression or mime types). */
 	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */
 	int negated;   /* Whether match is inverted. */
@@ -42,6 +52,8 @@ struct matcher_t
 };
 
 static int is_full_path(const char expr[], int re, int glob, int *strip);
+static MType determine_type(const char expr[], int re, int glob,
+		int glob_by_def, int *strip);
 static int compile_expr(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
@@ -51,6 +63,7 @@ static void free_matcher_items(matcher_t *matcher);
 static int is_negated(const char **expr, int allow_empty);
 static int is_re_expr(const char expr[], int allow_empty);
 static int is_globs_expr(const char expr[]);
+static int is_mime_expr(const char expr[]);
 
 matcher_t *
 matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
@@ -61,9 +74,10 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 	const int re = is_re_expr(expr, 1), glob = is_globs_expr(expr);
 	int strip;
 	const int full_path = is_full_path(expr, re, glob, &strip);
+
 	matcher_t *matcher, m = {
+		.type = determine_type(expr, re, glob, glob_by_def, &strip),
 		.raw = strdup(expr + strip),
-		.globs = !(re || (!glob && !glob_by_def)),
 		.negated = negated,
 		.full_path = full_path,
 	};
@@ -129,6 +143,26 @@ is_full_path(const char expr[], int re, int glob, int *strip)
 	return full_path;
 }
 
+/* Determines type of the matcher for given expression.  Returns the type. */
+static MType
+determine_type(const char expr[], int re, int glob, int glob_by_def, int *strip)
+{
+	if(re)
+	{
+		return MT_REGEX;
+	}
+	if(glob)
+	{
+		return MT_GLOBS;
+	}
+	if(is_mime_expr(expr))
+	{
+		*strip = 1;
+		return MT_MIME;
+	}
+	return glob_by_def ? MT_GLOBS : MT_REGEX;
+}
+
 /* Compiles m->raw into regular expression.  Also replaces global with
  * equivalent regexp.  Returns zero on success or non-zero on error with *error
  * containing description of it. */
@@ -138,19 +172,21 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 {
 	int err;
 
-	if(m->globs)
+	switch(m->type)
 	{
-		if(parse_glob(m, strip, error) != 0)
-		{
-			return 1;
-		}
-	}
-	else
-	{
-		if(parse_re(m, strip, cs_by_def, on_empty_re, error) != 0)
-		{
-			return 1;
-		}
+		case MT_MIME:
+		case MT_GLOBS:
+			if(parse_glob(m, strip, error) != 0)
+			{
+				return 1;
+			}
+			break;
+		case MT_REGEX:
+			if(parse_re(m, strip, cs_by_def, on_empty_re, error) != 0)
+			{
+				return 1;
+			}
+			break;
 	}
 
 	err = regcomp(&m->regex, m->raw, m->cflags);
@@ -232,11 +268,9 @@ matcher_clone(const matcher_t *matcher)
 		return NULL;
 	}
 
+	*clone = *matcher;
 	clone->expr = strdup(matcher->expr);
 	clone->raw = strdup(matcher->raw);
-	clone->globs = matcher->globs;
-	clone->full_path = matcher->full_path;
-	clone->cflags = matcher->cflags;
 
 	err = regcomp(&clone->regex, matcher->raw, matcher->cflags);
 
@@ -272,7 +306,15 @@ free_matcher_items(matcher_t *matcher)
 int
 matcher_matches(matcher_t *matcher, const char path[])
 {
-	if(!matcher->full_path)
+	if(matcher->type == MT_MIME)
+	{
+		path = get_mimetype(path);
+		if(path == NULL)
+		{
+			return matcher->negated;
+		}
+	}
+	else if(!matcher->full_path)
 	{
 		path = get_last_path_component(path);
 	}
@@ -287,37 +329,24 @@ matcher_get_expr(const matcher_t *matcher)
 }
 
 int
-matcher_includes(const matcher_t *like, const matcher_t *m)
+matcher_includes(const matcher_t *matcher, const matcher_t *like)
 {
-	if(m->globs != like->globs || m->cflags != like->cflags ||
-			m->full_path != like->full_path)
+	if(matcher->type != like->type || matcher->cflags != like->cflags ||
+			matcher->full_path != like->full_path)
 	{
 		return 0;
 	}
 
-	if(m->cflags & REG_ICASE)
-	{
-		if(strcasestr(like->raw, m->raw) != NULL)
-		{
-			return 1;
-		}
-	}
-	else
-	{
-		if(strstr(like->raw, m->raw) != NULL)
-		{
-			return 1;
-		}
-	}
-
-	return 0;
+	return (matcher->cflags & REG_ICASE)
+	     ? (strcasestr(matcher->raw, like->raw) != NULL)
+	     : (strstr(matcher->raw, like->raw) != NULL);
 }
 
 int
 matcher_is_expr(const char str[])
 {
 	(void)is_negated(&str, 0);
-	return is_re_expr(str, 0) || is_globs_expr(str);
+	return is_re_expr(str, 0) || is_globs_expr(str) || is_mime_expr(str);
 }
 
 /* Checks whether *expr specifies negated pattern.  Adjusts pointer if so.
@@ -326,7 +355,8 @@ static int
 is_negated(const char **expr, int allow_empty)
 {
 	if(**expr == '!' &&
-			(is_re_expr(*expr + 1, allow_empty) || is_globs_expr(*expr + 1)))
+			(is_re_expr(*expr + 1, allow_empty) || is_globs_expr(*expr + 1) ||
+			 is_mime_expr(*expr + 1)))
 	{
 		++*expr;
 		return 1;
@@ -352,6 +382,14 @@ static int
 is_globs_expr(const char expr[])
 {
 	return surrounded_with(expr, '{', '}') && expr[2] != '\0';
+}
+
+/* Checks whether expr is a mime type pattern.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_mime_expr(const char expr[])
+{
+	return surrounded_with(expr, '<', '>') && expr[2] != '\0';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

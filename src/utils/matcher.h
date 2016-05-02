@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-/* Small abstraction over matcher driven by a regular expression that accepts
- * both globs and regular expressions as patterns. */
+/* Small abstraction for matching files by globs, regular expressions or mime
+ * types. */
 
 #ifndef VIFM__UTILS__MATCHER_H__
 #define VIFM__UTILS__MATCHER_H__
@@ -47,9 +47,9 @@ int matcher_matches(matcher_t *matcher, const char path[]);
 /* Gets original matcher expression.  Returns the expression. */
 const char * matcher_get_expr(const matcher_t *matcher);
 
-/* Checks whether everything matched by the m is also matched by the like.
+/* Checks whether everything matched by the matcher is also matched by the like.
  * Returns non-zero if so, otherwise zero is returned. */
-int matcher_includes(const matcher_t *like, const matcher_t *m);
+int matcher_includes(const matcher_t *matcher, const matcher_t *like);
 
 /* Checks whether given string is a match expression.  Returns non-zero if so,
  * otherwise zero is returned. */
