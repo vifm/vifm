@@ -254,7 +254,7 @@ TEST(r_well_formed)
 
 TEST(r_ill_formed)
 {
-	char key;
+	unsigned char key;
 	char expected[] = "a b cx";
 
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
