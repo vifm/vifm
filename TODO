@@ -59,6 +59,7 @@ Vi(m) specific features:
 
 Windows:
   * Make properties dialog change file attributes recursively.
+  * Setup automatic Windows builds for master branch. (partially done)
   * Make :chmod accept arguments.
   * Add command to create .lnk files.
   * Sort completion items ignoring their case on Windows.
@@ -89,7 +90,6 @@ Possible things to add:
   * :filter !filter-tool
   * Add short description to key menu.
   * Use system wide mimetypes file. /etc/mailcap?
-  * :select/unselect commands.
   * Add "|" command to menu to process list with external tool.
   * "Blow directory" command to replace directory with its content.
   * Some key to (un)select all files with extension of current file.
@@ -117,6 +117,7 @@ Possible things to add:
   * Support of command line arguments like ~/some.ssh/server/path (for FUSE).
   * Treat `:filter pattern` as `:filter \<pattern\>`.
   * Add search history for less-like mode.
+  * Add a flag to 'grepprg' to enable parsing of `ag -H ...` output.
   * "Rename existing file" option on name conflicts.
   * Make use of new job information in :jobs menu.
   * Update visible symlinks in the other pane on updating current pane.
@@ -163,7 +164,6 @@ Questionable things:
   * Add :keepsel prefix.
   * Consider asking more often before performing file operations.
   * Termcap or terminfo support for keybindings
-  * Use mimetypes for matching file types.
   * Add :increment and :decrement commands.
   * Consider changing "dd" to "d" in menus.
   * Consider caching directory sizes in vifminfo.
@@ -173,6 +173,7 @@ Questionable things:
   * Add tags to angle bracket maps in vimdoc.
   * :alias
   * Live preview of color schemes.
+  * A way to scroll suggestion results.
   * More customizable trash.
   * Add :toupper and :tolower functions.
   * More trash-like trash.
@@ -201,6 +202,7 @@ Code improvements:
   * Try reimplementing cmd_core.c:line_pos by calling dispatch_line.
   * Sane asynchronous signals handling.
   * Move startup and init code out of config.c and vifm.c to separate file.
+  * Consider using curses panes, not just windows.
   * Show "An error occurred" message on fail to build menus.
   * Consider not using {} initializer.
   * Note skipped tests in the tests output.
