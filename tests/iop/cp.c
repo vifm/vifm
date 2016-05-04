@@ -15,7 +15,6 @@
 #include "utils.h"
 
 static void file_is_copied(const char original[]);
-
 static int not_windows(void);
 
 TEST(dir_is_not_copied)
@@ -412,7 +411,7 @@ TEST(dir_symlink_copy_is_symlink, IF(not_windows))
 	}
 }
 
-/* Windows lacks definitions some declarations. */
+/* Windows lacks definitions of some declarations. */
 #ifndef _WIN32
 
 /* No named fifo in file systems on Windows. */
@@ -444,8 +443,19 @@ TEST(fifo_is_copied, IF(not_windows))
 	assert_int_equal(0, args.result.errors.error_count);
 }
 
-/* No named sockets in file systems on Windows. */
-TEST(socket_is_copied, IF(not_windows))
+static int
+can_create_sockets(void)
+{
+	if(mknod(SANDBOX_PATH "/sock", S_IFSOCK | 0755, 0) != 0)
+	{
+		return 0;
+	}
+	remove(SANDBOX_PATH "/sock");
+	return 1;
+}
+
+/* Socket creation might not be available on some file systems. */
+TEST(socket_is_copied, IF(can_create_sockets))
 {
 	struct stat st;
 
