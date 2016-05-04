@@ -6,6 +6,7 @@
 
 #include <stdio.h> /* FILE fclose() fopen() snprintf() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
