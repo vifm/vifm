@@ -179,6 +179,9 @@ perform_merge(int op)
 	create_empty_dir("second/nested1");
 
 #ifndef _WIN32
+	/* Something about GNU Hurd differs, so skip this workaround there.  Really
+	 * need to figure out what's wrong with this thing... */
+#ifndef __gnu_hurd__
 	{
 		struct timeval tv[2];
 		gettimeofday(&tv[0], NULL);
@@ -193,6 +196,7 @@ perform_merge(int op)
 		tv[1].tv_usec += 2;
 		utimes("first/nested1", tv);
 	}
+#endif
 	assert_success(chmod("first/nested1", 0700));
 	assert_success(os_stat("first/nested1", &src));
 #endif
