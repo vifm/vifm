@@ -195,8 +195,12 @@ $(BUILD)stic.o: stic/stic.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(B)stic/stic.h.gch: stic/stic.h | $(B)stic
+# don't precompile header with clang (on OS X gcc is likely to be a symlink to
+# clang) because it handles macros in a different way
 ifeq (,$(findstring clang,$(CC)))
+ifneq (Darwin,$(shell uname -s))
 	$(CC) -c -o $@ $(CFLAGS) $<
+endif
 endif
 
 $(B)stic $(B)bin/$(BINSUBDIR):
