@@ -1046,7 +1046,9 @@ update_term_size(void)
 		LOG_SERROR_MSG(errno, "Failed to query terminal size.");
 		vifm_finish("Terminal error.");
 	}
-	if(ws.ws_row <= 0 || ws.ws_col <= 0)
+	/* Allow 0 as GNU Hurd returns this, is_term_resized() returns false then, but
+	 * everything works. */
+	if(ws.ws_row < 0 || ws.ws_col < 0)
 	{
 		LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
 		vifm_finish("Terminal is unable to run vifm.");
