@@ -5,6 +5,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/utils.h"

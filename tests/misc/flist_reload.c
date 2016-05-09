@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"

@@ -6,6 +6,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"

@@ -5,6 +5,7 @@
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"

@@ -2,6 +2,7 @@
 
 #include <stdio.h> /* remove() snprintf() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/fswatch.h"

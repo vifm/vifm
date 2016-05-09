@@ -8,6 +8,7 @@
 #include <string.h>
 #include <wchar.h> /* wcsdup() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/abbrevs.h"
 #include "../../src/engine/cmds.h"
