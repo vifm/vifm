@@ -179,9 +179,9 @@ perform_merge(int op)
 	create_empty_dir("second/nested1");
 
 #ifndef _WIN32
-	/* Something about GNU Hurd differs, so skip this workaround there.  Really
-	 * need to figure out what's wrong with this thing... */
-#ifndef __gnu_hurd__
+	/* Something about GNU Hurd and OS X differs, so skip this workaround there.
+	 * Really need to figure out what's wrong with this thing... */
+#if !defined(__gnu_hurd__) && !defined(__APPLE__)
 	{
 		struct timeval tv[2];
 		gettimeofday(&tv[0], NULL);
@@ -230,6 +230,10 @@ perform_merge(int op)
 #ifndef _WIN32
 	{
 		assert_success(os_stat("second/nested1", &dst));
+#ifndef HAVE_STRUCT_STAT_ST_MTIM
+#define st_atim st_atime
+#define st_mtim st_mtime
+#endif
 		assert_success(memcmp(&src.st_atim, &dst.st_atim, sizeof(src.st_atim)));
 		assert_success(memcmp(&src.st_mtim, &dst.st_mtim, sizeof(src.st_mtim)));
 		assert_success(memcmp(&src.st_mode, &dst.st_mode, sizeof(src.st_mode)));

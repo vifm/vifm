@@ -132,12 +132,12 @@ endif
 ifdef unix_env
     MF := $(B)../src/Makefile
     ifneq ($(wildcard $(MF)),)
-        LDFLAGS += $(shell sed -n    '/LIBS =/{s/^[^=]*=//p;q}' $(MF))
-        LDFLAGS += $(shell sed -n '/LDFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        LDFLAGS += $(shell grep -m1    'LIBS =' $(MF) | sed 's/^[^=]*=//')
+        LDFLAGS += $(shell grep -m1 'LDFLAGS =' $(MF) | sed 's/^[^=]*=//')
 
-        CFLAGS  += $(shell sed -n          '/CPPFLAGS =/{s/^[^=]*=//p;q}' $(MF))
-        CFLAGS  += $(shell sed -n      '/TESTS_CFLAGS =/{s/^[^=]*=//p;q}' $(MF))
-        CFLAGS  += $(shell sed -n '/SANITIZERS_CFLAGS =/{s/^[^=]*=//p;q}' $(MF))
+        CFLAGS  += $(shell grep -m1          'CPPFLAGS =' $(MF) | sed 's/^[^=]*=//')
+        CFLAGS  += $(shell grep -m1      'TESTS_CFLAGS =' $(MF) | sed 's/^[^=]*=//')
+        CFLAGS  += $(shell grep -m1 'SANITIZERS_CFLAGS =' $(MF) | sed 's/^[^=]*=//')
     endif
 
     CFLAGS += -I/usr/include/ncursesw
@@ -195,8 +195,12 @@ $(BUILD)stic.o: stic/stic.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(B)stic/stic.h.gch: stic/stic.h | $(B)stic
+# don't precompile header with clang (on OS X gcc is likely to be a symlink to
+# clang) because it handles macros in a different way
 ifeq (,$(findstring clang,$(CC)))
+ifneq (Darwin,$(shell uname -s))
 	$(CC) -c -o $@ $(CFLAGS) $<
+endif
 endif
 
 $(B)stic $(B)bin/$(BINSUBDIR):
