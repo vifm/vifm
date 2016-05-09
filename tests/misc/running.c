@@ -6,6 +6,7 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"

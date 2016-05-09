@@ -1,7 +1,6 @@
 #include <stic.h>
 
-#include <limits.h> /* PATH_MAX */
-
+#include "../../src/compat/fs_limits.h"
 #include "../../src/utils/path.h"
 
 static int windows(void);
