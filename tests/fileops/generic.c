@@ -179,9 +179,9 @@ perform_merge(int op)
 	create_empty_dir("second/nested1");
 
 #ifndef _WIN32
-	/* Something about GNU Hurd differs, so skip this workaround there.  Really
-	 * need to figure out what's wrong with this thing... */
-#ifndef __gnu_hurd__
+	/* Something about GNU Hurd and OS X differs, so skip this workaround there.
+	 * Really need to figure out what's wrong with this thing... */
+#if !defined(__gnu_hurd__) && !defined(__APPLE__)
 	{
 		struct timeval tv[2];
 		gettimeofday(&tv[0], NULL);
