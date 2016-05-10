@@ -23,7 +23,9 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
+#include <stdlib.h> /* RAND_MAX rand() */
 #include <string.h> /* strcat() strdup() strlen() */
+#include <time.h> /* time() */
 #include <unistd.h>
 
 #include "../cfg/config.h"
@@ -47,6 +49,7 @@ TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
 static char * parse_view_macros(FileView *view, const char **format,
 		const char macros[], int opt);
 static int expand_num(char buf[], size_t buf_len, int val);
+static const char * get_tip(void);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
 static int is_job_bar_visible(void);
 static void update_job_bar(void);
@@ -184,7 +187,7 @@ update_stat_window_old(FileView *view, int lazy_redraw)
 TSTATIC char *
 expand_status_line_macros(FileView *view, const char format[])
 {
-	return expand_view_macros(view, format, "tAugsEd-lLS%[]");
+	return expand_view_macros(view, format, "tAugsEd-lLSz%[]");
 }
 
 /* Expands possibly limited set of view macros.  Returns newly allocated string,
@@ -305,6 +308,9 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 			case '%':
 				copy_str(buf, sizeof(buf), "%");
 				break;
+			case 'z':
+				copy_str(buf, sizeof(buf), get_tip());
+				break;
 			case '[':
 				{
 					char *const opt_str = parse_view_macros(view, format, macros, 1);
@@ -369,6 +375,59 @@ expand_num(char buf[], size_t buf_len, int val)
 {
 	snprintf(buf, buf_len, "%d", val);
 	return (val == 0);
+}
+
+/* Picks tip to be displayed.  Returns pointer to the tip. */
+static const char *
+get_tip(void)
+{
+	enum { SECS_PER_MIN = 60 };
+
+	static time_t last_time;
+	static int need_to_shuffle = 1;
+	static unsigned int last_item = 0;
+	static const char *tips[] = {
+	  "Space after :command name is sometimes optional: :chmod+x",
+	  "[count]h moves several directories up, e.g. for `cd ../..`: 2h",
+	  ":set options without completions are completed with current value",
+	  ":help command completes matches by substring match",
+	  "'classify' can be used to decorate names with chars/icons",
+	  "You can rename files recursively via `:rename!`",
+	  "t key toggles selection of current file",
+	  ":sync command navigates to the same location on the other panel",
+	  "Enter key leaves visual mode preserving selection",
+	  "Enable 'runexec' option to run executable files via l/Enter",
+	  "Various FUSE file-systems can be used to extend functionality",
+	  "Trailing slash in :file[x]type, :filter and = matches directories only",
+	  ":edit forwards argument to editor, e.g.: :edit +set\\ filetype=sh script",
+	  "Use :nmap/:vmap/etc. for short information on available mappings",
+	};
+
+	time_t now;
+
+	if(need_to_shuffle)
+	{
+		/* Fisher-Yates ("Knuth") shuffle algorithm implementation that mildly
+		 * considers potential biases (not important here, but why not). */
+		unsigned int i;
+		for(i = 0U; i < ARRAY_LEN(tips) - 1U; ++i)
+		{
+			const unsigned int j =
+				i + (rand()/(RAND_MAX + 1.0))*(ARRAY_LEN(tips) - i);
+			const char *const t = tips[i];
+			tips[i] = tips[j];
+			tips[j] = t;
+		}
+		need_to_shuffle = 0;
+	}
+
+	now = time(NULL);
+	if(now > last_time + SECS_PER_MIN)
+	{
+		last_time = now;
+		last_item = (last_item + 1U)%ARRAY_LEN(tips);
+	}
+	return tips[last_item];
 }
 
 /* Examines expansion buffer to check whether expansion took place.  Updates

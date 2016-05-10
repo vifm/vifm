@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 01
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3175,6 +3175,7 @@ are supported:
          files are selected, except that it will never show size of ../ in
          visual mode, since it cannot be selected
     %d - file modification date (uses |vifm-'timefmt'| option)
+    %z - short tips/tricks/hints that chosen randomly after one minute period
     all |vifm-'rulerformat'| macros
 Percent sign can be followed by optional minimum field width.  Add '-' before
 minimum field width if you want field to be right aligned.

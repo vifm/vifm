@@ -45,6 +45,9 @@
 	Added mime type patterns (!<list-of-globs>).  Thanks to Ross Hadden (a.k.a.
 	rosshadden).
 
+	Added %z 'statusline' macro that inserts text of a short tip picked at
+	random.  Thanks to qinghao (a.k.a. haobug).
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
