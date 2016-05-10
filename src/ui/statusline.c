@@ -249,7 +249,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 #ifndef _WIN32
 				get_perm_string(buf, sizeof(buf), entry->mode);
 #else
-				snprintf(buf, sizeof(buf), "%s", attr_str_long(entry->attrs));
+				copy_str(buf, sizeof(buf), attr_str_long(entry->attrs));
 #endif
 				break;
 			case 'u':
@@ -303,7 +303,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				skip = expand_num(buf, sizeof(buf), view->list_rows);
 				break;
 			case '%':
-				snprintf(buf, sizeof(buf), "%%");
+				copy_str(buf, sizeof(buf), "%");
 				break;
 			case '[':
 				{
