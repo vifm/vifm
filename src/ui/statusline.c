@@ -17,6 +17,7 @@
  */
 
 #include "statusline.h"
+#include "private/statusline.h"
 
 #include <curses.h> /* mvwin() wbkgdset() werase() */
 
@@ -43,8 +44,6 @@
 
 static void update_stat_window_old(FileView *view, int lazy_redraw);
 TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
-char * expand_view_macros(FileView *view, const char format[],
-		const char macros[]);
 static char * parse_view_macros(FileView *view, const char **format,
 		const char macros[], int opt);
 static int expand_num(char buf[], size_t buf_len, int val);
