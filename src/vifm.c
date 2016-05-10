@@ -29,11 +29,12 @@
 #include <unistd.h>
 
 #include <errno.h> /* errno */
-#include <locale.h> /* setlocale */
+#include <locale.h> /* setlocale() LC_ALL */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* fprintf() fputs() puts() snprintf() */
-#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() system() */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS exit() srand() system() */
 #include <string.h>
+#include <time.h> /* time() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
@@ -136,6 +137,7 @@ main(int argc, char *argv[])
 	}
 
 	(void)setlocale(LC_ALL, "");
+	srand(time(NULL));
 
 	cfg_init();
 
