@@ -46,7 +46,7 @@ addons:
   coverity_scan:
     project:
       name: ksteen/vifm
-      version: 0.8
+      version: 0.8.1a
       description: "Build submitted via Travis CI"
     notification_email: xaizek@openmailbox.org
     build_command_prepend: ./configure
