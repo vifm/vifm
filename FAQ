@@ -25,14 +25,13 @@ A: Follow this steps:
 
 --------------------------------------------------------------------------------
 
-Q: How can one access FTP with vifm?
+Q: How to browse FTP in vifm?
 
-A: Since vifm tries to adhere to the Unix philosophy VFS (Virtual File System)
-probably will not be added.  To access FTP on a Unix-like system use FUSE file
-system (see curlftpfs project at http://curlftpfs.sourceforge.net).  FUSE isn't
-implemented for Windows, so Windows users should use one of programs that bind
-FTP connections to file system (for example FTPDrive at
-http://www.killprog.com/fdrve.html).
+A: Use CurlFTPFS FUSE filesystem on *nix, which you can find here:
+     http://curlftpfs.sourceforge.net/
+   And on Windows you need to use FTPDrive, which will mount a FTP remote as
+   a drive for you. Get it here:
+     http://www.killprog.com/fdrve.html
 
 --------------------------------------------------------------------------------
 
@@ -99,16 +98,6 @@ Q: vifm expands range in a wrong way in user defined commands (like in
    do to fix it?
 
 A: See answer for the previous question.
-
---------------------------------------------------------------------------------
-
-Q: How to browse FTP in vifm?
-
-A: Use CurlFTPFS FUSE filesystem on *nix, which you can find here:
-     http://curlftpfs.sourceforge.net/
-   And on Windows you need to use FTPDrive, which will mount a FTP remote as
-   a drive for you. Get it here:
-     http://www.killprog.com/fdrve.html
 
 --------------------------------------------------------------------------------
 
