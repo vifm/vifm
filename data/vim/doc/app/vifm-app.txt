@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 10
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 12
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4051,9 +4051,9 @@ Item states:
 X - means that it has different value for files in selection.
                                                {only for *nix}
 d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
-    chmod program.  If you want to remove execute right from all files, but
-    preserve it for directories, set all execute flags to 'd' and check
-    'Set Recursively' flag.
+    chmod program.  If you want to remove execute permission bit from all
+    files, but preserve it for directories, set all execute flags to 'd'
+    and check 'Set Recursively' flag.
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*
