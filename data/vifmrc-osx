@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 24 Mar, 2016)
+" Sample configuration file for vifm on OSX (last updated: 11 May, 2016)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -101,7 +101,7 @@ set slowfs=curlftpfs
 
 " Set custom status line look
 
-set statusline="  %t%= %A %10u:%-7g %15s %20d  "
+set statusline="  Hint: %z%= %A %10u:%-7g %15s %20d  "
 
 " ------------------------------------------------------------------------------
 

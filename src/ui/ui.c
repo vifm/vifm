@@ -1041,7 +1041,7 @@ update_term_size(void)
 #ifndef _WIN32
 	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
 
-	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
+	if(ioctl(STDIN_FILENO, TIOCGWINSZ, &ws) == -1)
 	{
 		LOG_SERROR_MSG(errno, "Failed to query terminal size.");
 		vifm_finish("Terminal error.");
