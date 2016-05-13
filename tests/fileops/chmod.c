@@ -18,6 +18,7 @@ static void alloc_file_list(FileView *view, const char filename[]);
 static void free_file_list(FileView *view);
 static mode_t perms_to_mode(const int perms[13]);
 static mode_t get_perms(const char path[]);
+static int not_osx(void);
 
 static mode_t mask;
 
@@ -81,7 +82,7 @@ set_file_perms(const int perms[13])
 	assert_success(unlink(SANDBOX_PATH "/file"));
 }
 
-TEST(reset_executable_bits_from_files_only)
+TEST(reset_executable_bits_from_files_only, IF(not_osx))
 {
 	FILE *f;
 
@@ -188,6 +189,16 @@ get_perms(const char path[])
 	struct stat st;
 	assert_success(stat(path, &st));
 	return (st.st_mode & 0777);
+}
+
+static int
+not_osx(void)
+{
+#ifndef __APPLE__
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 #endif
