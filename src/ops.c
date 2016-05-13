@@ -678,8 +678,9 @@ op_chmodr(ops_t *ops, void *data, const char *src, const char *dst)
 	escaped = shell_like_escape(src, 0);
 	snprintf(cmd, sizeof(cmd), "chmod -R %s %s", (char *)data, escaped);
 	free(escaped);
-	start_background_job(cmd, 0);
-	return 0;
+
+	LOG_INFO_MSG("Running chmodr command: \"%s\"", cmd);
+	return background_and_wait_for_errors(cmd, 1);
 }
 #else
 static int

@@ -21,6 +21,7 @@
 #define VIFM__MODES__DIALOGS__ATTR_DIALOG_NIX_H__
 
 #include "../../ui/ui.h"
+#include "../../utils/test_helpers.h"
 
 /* Initializes attributes dialog mode. */
 void init_attr_dialog_mode(void);
@@ -30,6 +31,11 @@ void enter_attr_mode(FileView *active_view);
 void redraw_attr_dialog(void);
 
 void files_chmod(FileView *view, const char *mode, int recurse_dirs);
+
+TSTATIC_DEFS(
+	void set_perm_string(FileView *view, const int perms[13],
+			const int origin_perms[13], int adv_perms[3]);
+)
 
 #endif /* VIFM__MODES__DIALOGS__ATTR_DIALOG_NIX_H__ */
 

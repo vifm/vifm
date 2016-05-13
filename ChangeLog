@@ -131,6 +131,9 @@
 	Fixed for architectures on which `char` is unsigned by default.  Thanks to
 	Ondrej Novy (a.k.a. onovy).
 
+	Fixed unconditional resetting of executable permission when using cp
+	dialog.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.

@@ -41,6 +41,7 @@
 #include "../../utils/fs.h"
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
+#include "../../utils/test_helpers.h"
 #include "../../filelist.h"
 #include "../../ops.h"
 #include "../../status.h"
@@ -55,8 +56,8 @@ static int get_selection_size(int first_file_index);
 static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
-static void set_perm_string(FileView *view, const int *perms,
-		const int *origin_perms);
+TSTATIC void set_perm_string(FileView *view, const int perms[13],
+		const int origin_perms[13], int adv_perms[3]);
 static void chmod_file_in_list(FileView *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs);
 static void file_chmod(char *path, const char *mode, const char *inv_mode,
@@ -77,7 +78,7 @@ static int step;
 static int col;
 static int changed;
 static int file_is_dir;
-static int perms[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+static int perms[13];
 static int origin_perms[13];
 static int adv_perms[3];
 
@@ -407,13 +408,14 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	get_current_full_path(view, sizeof(path), path);
-	set_perm_string(view, perms, origin_perms);
+	set_perm_string(view, perms, origin_perms, adv_perms);
 
 	leave_attr_mode();
 }
 
-static void
-set_perm_string(FileView *view, const int *perms, const int *origin_perms)
+TSTATIC void
+set_perm_string(FileView *view, const int perms[13], const int origin_perms[13],
+		int adv_perms[3])
 {
 	int i = 0;
 	char *add_perm[] = {"u+r", "u+w", "u+x", "u+s", "g+r", "g+w", "g+x", "g+s",
@@ -429,10 +431,10 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 		adv_perms[0] = -1;
 		adv_perms[1] = -1;
 		adv_perms[2] = -1;
-	}
 
-	perm_str_len += snprintf(perm_str + perm_str_len,
-			sizeof(perm_str) - perm_str_len, "a-x+X,");
+		perm_str_len += snprintf(perm_str + perm_str_len,
+				sizeof(perm_str) - perm_str_len, "a-x+X,");
+	}
 
 	for(i = 0; i < 12; i++)
 	{
