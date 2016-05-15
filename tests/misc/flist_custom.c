@@ -28,10 +28,15 @@
 
 #include "utils.h"
 
-static void setup_custom_view(FileView *view);
+static void column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[]);
+static void setup_custom_view(FileView *view, int very);
 static int not_windows(void);
 
 static char test_data[PATH_MAX];
+static const size_t MAX_WIDTH = 20;
+static char buf1[80 + 1];
+static char buf2[80 + 1];
 
 SETUP_ONCE()
 {
@@ -218,7 +223,7 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 	char *expanded;
 	char path[PATH_MAX];
 
-	setup_custom_view(&lwin);
+	setup_custom_view(&lwin, 0);
 
 	regs_init();
 
@@ -239,7 +244,7 @@ TEST(dir_macros_are_expanded_to_orig_dir)
 
 	snprintf(path, sizeof(path), "%s/existing-files", test_data);
 
-	setup_custom_view(&lwin);
+	setup_custom_view(&lwin, 0);
 
 	expanded = expand_macros("%d", NULL, NULL, 0);
 	assert_string_equal(path, expanded);
@@ -379,7 +384,7 @@ TEST(location_is_saved_on_entering_custom_view)
 	/* Go into custom view (load_stage enables saving history). */
 	restore_cwd(saved_cwd);
 	curr_stats.load_stage = 2;
-	setup_custom_view(&lwin);
+	setup_custom_view(&lwin, 0);
 	curr_stats.load_stage = 0;
 
 	/* Return to previous directory and check that last location was used. */
@@ -399,7 +404,7 @@ TEST(parent_link_has_correct_origin_field)
 	 * others. */
 
 	cfg.dot_dirs = DD_NONROOT_PARENT;
-	setup_custom_view(&lwin);
+	setup_custom_view(&lwin, 0);
 	cfg.dot_dirs = 0;
 
 	assert_string_equal("..", lwin.dir_entry[0].name);
@@ -409,48 +414,83 @@ TEST(parent_link_has_correct_origin_field)
 
 TEST(custom_view_does_not_reset_local_state)
 {
+	int very;
+
 	opt_handlers_setup();
 	fview_init();
-	lwin.columns = columns_create();
 
-	assert_success(exec_commands("set sort=+iname", &lwin, CIT_COMMAND));
-	assert_int_equal(SK_BY_INAME, lwin.sort[0]);
+	columns_set_line_print_func(&column_line_print);
 
-	local_filter_apply(&lwin, "b");
+	for(very = 0; very < 2; ++very)
+	{
+		column_data_t cdt = { .view = &lwin };
 
-	/* Neither on entering it. */
-	assert_success(exec_commands("setl sort=-mtime", &lwin, CIT_COMMAND));
-	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
-	setup_custom_view(&lwin);
-	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
-	assert_false(filter_is_empty(&lwin.local_filter.filter));
+		lwin.columns = columns_create();
 
-	assert_success(exec_commands("setl sort=-mtime", &lwin, CIT_COMMAND));
-	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
+		assert_success(exec_commands("set sort=+iname", &lwin, CIT_COMMAND));
+		assert_int_equal(SK_BY_INAME, lwin.sort[0]);
 
-	curr_stats.load_stage = 1;
-	assert_success(change_directory(&lwin, lwin.custom.orig_dir));
-	curr_stats.load_stage = 0;
+		local_filter_apply(&lwin, "b");
 
-	/* Nor on leaving it. */
-	assert_int_equal(-SK_BY_TIME_MODIFIED, lwin.sort[0]);
-	assert_false(filter_is_empty(&lwin.local_filter.filter));
+		/* Neither on entering it. */
+		assert_success(exec_commands("setl sort=-target", &lwin, CIT_COMMAND));
+		assert_int_equal(-SK_BY_TARGET, lwin.sort[0]);
+		setup_custom_view(&lwin, very);
+		assert_int_equal(very ? SK_NONE : -SK_BY_TARGET, lwin.sort[0]);
+		assert_false(filter_is_empty(&lwin.local_filter.filter));
 
-	columns_free(lwin.columns);
-	lwin.columns = NULL_COLUMNS;
+		cdt.line_hi_group = 1;
+		columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
+
+		assert_success(exec_commands("setl sort=-type", &lwin, CIT_COMMAND));
+		assert_int_equal(-SK_BY_TYPE, lwin.sort[0]);
+
+		curr_stats.load_stage = 1;
+		assert_success(change_directory(&lwin, lwin.custom.orig_dir));
+		curr_stats.load_stage = 0;
+
+		/* Nor on leaving it. */
+		assert_int_equal(very ? -SK_BY_TARGET : -SK_BY_TYPE, lwin.sort[0]);
+		assert_false(filter_is_empty(&lwin.local_filter.filter));
+
+		cdt.line_hi_group = 2;
+		columns_format_line(lwin.columns, &cdt, MAX_WIDTH);
+		if(very)
+		{
+			/* Need to check that we restored original sorting after very custom
+			 * view.  The one set in regular custom view is left untouched. */
+			assert_string_equal(buf1, buf2);
+		}
+		else
+		{
+			assert_true(strcmp(buf1, buf2) != 0);
+		}
+
+		columns_free(lwin.columns);
+		lwin.columns = NULL_COLUMNS;
+	}
+
 	opt_handlers_teardown();
 	columns_clear_column_descs();
 }
 
 static void
-setup_custom_view(FileView *view)
+column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[])
+{
+	const column_data_t *const cdt = data;
+	strncpy((cdt->line_hi_group == 1 ? buf1 : buf2) + offset, buf, strlen(buf));
+}
+
+static void
+setup_custom_view(FileView *view, int very)
 {
 	assert_false(flist_custom_active(view));
 	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s/existing-files",
 			test_data);
 	flist_custom_start(view, "test");
 	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(view, 0) == 0);
+	assert_true(flist_custom_finish(view, very) == 0);
 }
 
 static int
