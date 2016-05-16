@@ -134,6 +134,9 @@
 	Fixed unconditional resetting of executable permission when using cp
 	dialog.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
 
+	Fixed updating view columns on leaving very custom view (%U) which set
+	sort option.  Thanks to filterfalse.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.

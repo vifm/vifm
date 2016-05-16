@@ -152,6 +152,23 @@ void fview_position_updated(FileView *view);
  * sorting changed. */
 void fview_sorting_updated(FileView *view);
 
+#ifdef TEST
+
+/* Packet set of parameters to pass as user data for processing columns. */
+typedef struct
+{
+	FileView *view;    /* View on which cell is being drawn. */
+	size_t line_pos;   /* File position in the file list (the view). */
+	int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
+	int is_current;    /* Whether this file is selected with the cursor. */
+
+	size_t current_line;  /* Line of the cell. */
+	size_t column_offset; /* Offset in characters of the column. */
+}
+column_data_t;
+
+#endif
+
 #endif /* VIFM__UI__FILEVIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

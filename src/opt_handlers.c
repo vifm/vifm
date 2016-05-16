@@ -1129,6 +1129,12 @@ load_sort_option(FileView *view)
 {
 	load_sort_option_inner(view, view->sort);
 	load_sort_option_inner(view, view->sort_g);
+
+	/* The check is to skip this in tests which don't need columns. */
+	if(view->columns != NULL_COLUMNS)
+	{
+		set_viewcolumns(view, view->view_columns);
+	}
 }
 
 /* Loads sorting related options ("sort" and "sortorder"). */
