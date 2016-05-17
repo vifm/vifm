@@ -378,6 +378,7 @@ TEST(wincmd_can_switch_views)
 {
 	init_modes();
 	opt_handlers_setup();
+	assert_success(init_status(&cfg));
 
 	curr_view = &rwin;
 	other_view = &lwin;
@@ -413,6 +414,7 @@ TEST(wincmd_can_switch_views)
 	function_reset_all();
 
 	opt_handlers_teardown();
+	assert_success(reset_status(&cfg));
 }
 
 TEST(yank_works_with_ranges)
