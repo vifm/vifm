@@ -371,7 +371,7 @@ TEST(put_bg_cmd_is_parsed_correctly)
 	/* Simulate custom view to force failure of the command. */
 	lwin.curr_dir[0] = '\0';
 
-	assert_int_equal(0, exec_commands("put \" &", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("put \" &", &lwin, CIT_COMMAND));
 }
 
 TEST(wincmd_can_switch_views)
@@ -382,27 +382,26 @@ TEST(wincmd_can_switch_views)
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0, exec_commands("wincmd h", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("wincmd h", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0, exec_commands("execute 'wincmd h'", curr_view,
-				CIT_COMMAND));
+	assert_success(exec_commands("execute 'wincmd h'", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	init_builtin_functions();
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0,
+	assert_success(
 			exec_commands("if paneisat('left') == 0 | execute 'wincmd h' | endif",
 				curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0,
+	assert_success(
 			exec_commands("if paneisat('left') == 0 "
 			             "|    execute 'wincmd h' "
 			             "|    let $a = paneisat('left') "
