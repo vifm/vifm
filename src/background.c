@@ -451,7 +451,7 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 			 * compilation errors in case __USE_BSD is defined.  Anonymous type with
 			 * "const int" is composed via compound literal expression. */
 			int status = get_proc_exit_status(pid);
-			result = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+			result = (status != -1 && WIFEXITED(status)) ? WEXITSTATUS(status) : -1;
 		}
 	}
 

@@ -91,6 +91,12 @@ SETUP()
 	cfg.slow_fs_list = strdup("");
 	cfg.use_system_calls = 1;
 
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+#else
+	replace_string(&cfg.shell, "cmd");
+#endif
+
 	init_commands();
 
 	add_builtin_commands(commands, ARRAY_LEN(commands));
@@ -105,6 +111,9 @@ TEARDOWN()
 	update_string(&cfg.cd_path, NULL);
 	update_string(&cfg.fuse_home, NULL);
 	update_string(&cfg.slow_fs_list, NULL);
+
+	stats_update_shell_type("/bin/sh");
+	update_string(&cfg.shell, NULL);
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
@@ -221,13 +230,7 @@ TEST(bg_mark_without_space_in_udf)
 
 TEST(shell_invocation_works_in_udf)
 {
-#ifndef _WIN32
 	const char *const cmd = "command! udf echo a > out";
-	replace_string(&cfg.shell, "/bin/sh");
-#else
-	const char *const cmd = "command! udf echo a > out";
-	replace_string(&cfg.shell, "cmd");
-#endif
 
 	assert_success(chdir(SANDBOX_PATH));
 
@@ -241,11 +244,6 @@ TEST(shell_invocation_works_in_udf)
 	assert_success(exec_commands("udf", &lwin, CIT_COMMAND));
 	assert_success(access("out", F_OK));
 	assert_success(unlink("out"));
-
-	stats_update_shell_type("/bin/sh");
-
-	free(cfg.shell);
-	cfg.shell = NULL;
 }
 
 TEST(double_cd_uses_same_base_for_rel_paths)
@@ -371,37 +369,37 @@ TEST(put_bg_cmd_is_parsed_correctly)
 	/* Simulate custom view to force failure of the command. */
 	lwin.curr_dir[0] = '\0';
 
-	assert_int_equal(0, exec_commands("put \" &", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("put \" &", &lwin, CIT_COMMAND));
 }
 
 TEST(wincmd_can_switch_views)
 {
 	init_modes();
 	opt_handlers_setup();
+	assert_success(init_status(&cfg));
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0, exec_commands("wincmd h", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("wincmd h", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0, exec_commands("execute 'wincmd h'", curr_view,
-				CIT_COMMAND));
+	assert_success(exec_commands("execute 'wincmd h'", curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	init_builtin_functions();
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0,
+	assert_success(
 			exec_commands("if paneisat('left') == 0 | execute 'wincmd h' | endif",
 				curr_view, CIT_COMMAND));
 	assert_true(curr_view == &lwin);
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	assert_int_equal(0,
+	assert_success(
 			exec_commands("if paneisat('left') == 0 "
 			             "|    execute 'wincmd h' "
 			             "|    let $a = paneisat('left') "
@@ -413,6 +411,7 @@ TEST(wincmd_can_switch_views)
 	function_reset_all();
 
 	opt_handlers_teardown();
+	assert_success(reset_status(&cfg));
 }
 
 TEST(yank_works_with_ranges)

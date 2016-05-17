@@ -22,6 +22,15 @@
 #include <stddef.h> /* size_t wchar_t */
 #include <stdio.h> /* FILE */
 
+/* Convenience structure (not used here directly, but is related
+ * functionally). */
+typedef struct
+{
+	int nitems;   /* Number of items in the list. */
+	char **items; /* The list itself. */
+}
+strlist_t;
+
 /* Input pointers can be NULL.  Returns new length of the array. */
 int add_to_string_array(char ***array, int len, int count, ...);
 
