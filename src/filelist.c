@@ -79,14 +79,6 @@
 #include "status.h"
 #include "types.h"
 
-/* Custom argument for is_in_list() function. */
-typedef struct
-{
-	int nitems;   /* Number of items in the list. */
-	char **items; /* The list itself. */
-}
-list_t;
-
 /* Type of predicate functions to reason about entries.  Should return non-zero
  * if particular property holds and zero otherwise. */
 typedef int (*predicate_func)(const dir_entry_t *entry);
@@ -1770,7 +1762,7 @@ flist_custom_exclude(FileView *view)
 	dir_entry_t *entry;
 	int nfiles = 0;
 	char **files = NULL;
-	list_t list;
+	strlist_t list;
 
 	if(!flist_custom_active(view))
 	{
@@ -1805,7 +1797,7 @@ flist_custom_exclude(FileView *view)
 static int
 is_in_list(FileView *view, const dir_entry_t *entry, void *arg)
 {
-	const list_t *list = arg;
+	const strlist_t *list = arg;
 	char full_path[PATH_MAX];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 	return !is_in_string_array(list->items, list->nitems, full_path);
