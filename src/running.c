@@ -58,6 +58,7 @@
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "utils/utf8.h"
@@ -118,6 +119,7 @@ static void output_to_statusbar(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
 static void run_in_split(const FileView *view, const char cmd[]);
 static void path_handler(const char line[], void *arg);
+static void line_handler(const char line[], void *arg);
 
 /* Name of environment variable used to communicate path to file used to
  * initiate FUSE mounting of directory we're in. */
@@ -1349,6 +1351,36 @@ path_handler(const char line[], void *arg)
 {
 	FileView *view = arg;
 	flist_add_custom_line(view, line);
+}
+
+int
+run_cmd_for_output(const char cmd[], char ***files, int *nfiles)
+{
+	int error;
+	strlist_t list = {};
+
+	setup_shellout_env();
+	error = (process_cmd_output("Loading list", cmd, 1, &line_handler,
+				&list) != 0);
+	cleanup_shellout_env();
+
+	if(error)
+	{
+		free_string_array(list.items, list.nitems);
+		return 1;
+	}
+
+	*files = list.items;
+	*nfiles = list.nitems;
+	return 0;
+}
+
+/* Implements process_cmd_output() callback that collects lines into a list. */
+static void
+line_handler(const char line[], void *arg)
+{
+	strlist_t *const list = arg;
+	list->nitems = add_to_string_array(&list->items, list->nitems, 1, line);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -252,7 +252,6 @@ static int unmap_cmd(const cmd_info_t *cmd_info);
 static int unselect_cmd(const cmd_info_t *cmd_info);
 static void select_unselect_by_range(const cmd_info_t *cmd_info, int select);
 static int select_unselect_by_filter(const cmd_info_t *cmd_info, int select);
-static int read_list_in(const char cmd[], char ***files, int *nfiles);
 static int select_unselect_by_pattern(const cmd_info_t *cmd_info, int select);
 static int view_cmd(const cmd_info_t *cmd_info);
 static int vifm_cmd(const cmd_info_t *cmd_info);
@@ -3888,10 +3887,10 @@ select_unselect_by_filter(const cmd_info_t *cmd_info, int select)
 	int nfiles;
 	int i;
 
-	int err = read_list_in(cmd_info->args + 1, &files, &nfiles);
-	if(err != 0)
+	if(run_cmd_for_output(cmd_info->args + 1, &files, &nfiles) != 0)
 	{
-		return err;
+		status_bar_error("Failed to start/read output of external command");
+		return CMDS_ERR_CUSTOM;
 	}
 
 	/* Append to previous selection unless ! is specified. */
@@ -3941,45 +3940,6 @@ select_unselect_by_filter(const cmd_info_t *cmd_info, int select)
 	trie_free(selection_trie);
 
 	ui_view_schedule_redraw(curr_view);
-	return 0;
-}
-
-/* Executes external command capturing its output as list of lines.  Sets *files
- * and *nfiles.  Returns zero on success, otherwise engine/cmds error code is
- * returned. */
-static int
-read_list_in(const char cmd[], char ***files, int *nfiles)
-{
-	char *shell_cmd;
-	FILE *cmd_stdout;
-	int ec;
-
-	(void)set_sigchld(1);
-
-	shell_cmd = format_str("%s 2>&1", cmd);
-	cmd_stdout = popen(shell_cmd, "r");
-	free(shell_cmd);
-
-	if(cmd_stdout == NULL)
-	{
-		(void)set_sigchld(0);
-		status_bar_error("Failed to start external command");
-		return CMDS_ERR_CUSTOM;
-	}
-
-	*nfiles = 0;
-	*files = read_stream_lines(cmd_stdout, nfiles);
-
-	ec = pclose(cmd_stdout);
-	(void)set_sigchld(0);
-
-	if(WEXITSTATUS(ec) != 0)
-	{
-		free_string_array(*files, *nfiles);
-		status_bar_error("External command failed");
-		return CMDS_ERR_CUSTOM;
-	}
-
 	return 0;
 }
 
