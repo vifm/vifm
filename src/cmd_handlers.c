@@ -3977,7 +3977,11 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 			continue;
 		}
 
-		get_full_path_of(entry, sizeof(file_path), file_path);
+		get_full_path_of(entry, sizeof(file_path) - 1U, file_path);
+		if(is_directory_entry(entry))
+		{
+			strcat(file_path, "/");
+		}
 
 		if(matcher_matches(m, file_path))
 		{

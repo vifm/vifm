@@ -706,6 +706,37 @@ TEST(select_and_unselect_accept_external_command)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(select_and_unselect_consider_trailing_slash)
+{
+	strcpy(lwin.curr_dir, cwd);
+	assert_success(chdir(cwd));
+
+	lwin.list_rows = 4;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].type = FT_REG;
+	lwin.dir_entry[1].name = strdup("a");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].type = FT_DIR;
+	lwin.dir_entry[2].name = strdup("b");
+	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[2].type = FT_REG;
+	lwin.dir_entry[3].name = strdup("b");
+	lwin.dir_entry[3].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[3].type = FT_DIR;
+	lwin.selected_files = 0;
+
+	assert_success(exec_commands("select */", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+	assert_true(lwin.dir_entry[3].selected);
+}
+
 static void
 check_filetype(void)
 {
