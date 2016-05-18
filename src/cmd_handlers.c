@@ -3923,16 +3923,17 @@ select_unselect_by_filter(const cmd_info_t *cmd_info, int select)
 	{
 		char full_path[PATH_MAX];
 		void *ignored_data;
+		dir_entry_t *const entry = &curr_view->dir_entry[i];
 
-		if((curr_view->dir_entry[i].selected != 0) == select)
+		if((entry->selected != 0) == select)
 		{
 			continue;
 		}
 
-		get_full_path_at(curr_view, i, sizeof(full_path), full_path);
+		get_full_path_of(entry, sizeof(full_path), full_path);
 		if(trie_get(selection_trie, full_path, &ignored_data) == 0)
 		{
-			curr_view->dir_entry[i].selected = select;
+			entry->selected = select;
 			curr_view->selected_files += (select ? 1 : -1);
 		}
 	}
@@ -3969,17 +3970,22 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 	for(i = 0; i < curr_view->list_rows; ++i)
 	{
 		char file_path[PATH_MAX];
+		dir_entry_t *const entry = &curr_view->dir_entry[i];
 
-		if((curr_view->dir_entry[i].selected != 0) == select)
+		if((entry->selected != 0) == select)
 		{
 			continue;
 		}
 
-		get_full_path_at(curr_view, i, sizeof(file_path), file_path);
+		get_full_path_of(entry, sizeof(file_path) - 1U, file_path);
+		if(is_directory_entry(entry))
+		{
+			strcat(file_path, "/");
+		}
 
 		if(matcher_matches(m, file_path))
 		{
-			curr_view->dir_entry[i].selected = select;
+			entry->selected = select;
 			curr_view->selected_files += (select ? 1 : -1);
 		}
 	}
