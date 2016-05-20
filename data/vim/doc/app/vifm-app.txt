@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 18
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1975,7 +1975,7 @@ yet supported) and might be changed in future releases, or get an alias.
 :select {pattern}
     select files that match specified pattern.  Possible {pattern} forms are
     described in |vifm-patterns|.  Trailing slash for directories is taken
-    into account, so `:select *[^/]` selects only files.
+    into account, so `:select! */ | invert s` selects only files.
 :select //[iI]
     same as item above, but reuses last search pattern.
 :select !{external command}

@@ -392,5 +392,11 @@ is_mime_expr(const char expr[])
 	return surrounded_with(expr, '<', '>') && expr[2] != '\0';
 }
 
+int
+matcher_is_full_path(const matcher_t *matcher)
+{
+	return matcher->full_path;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

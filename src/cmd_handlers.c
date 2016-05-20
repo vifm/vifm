@@ -3978,15 +3978,22 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 		}
 
 		get_full_path_of(entry, sizeof(file_path) - 1U, file_path);
-		if(is_directory_entry(entry))
-		{
-			strcat(file_path, "/");
-		}
 
 		if(matcher_matches(m, file_path))
 		{
 			entry->selected = select;
 			curr_view->selected_files += (select ? 1 : -1);
+			continue;
+		}
+
+		if(!matcher_is_full_path(m) && is_directory_entry(entry))
+		{
+			strcat(file_path, "/");
+			if(matcher_matches(m, file_path))
+			{
+				entry->selected = select;
+				curr_view->selected_files += (select ? 1 : -1);
+			}
 		}
 	}
 
