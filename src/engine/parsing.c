@@ -86,7 +86,7 @@ typedef enum
 	PLUS,       /* Plus sign (+). */
 	MINUS,      /* Minus sign (-). */
 	DIGIT,      /* Digit ([0-9]). */
-	SYM,        /* Any other symbol that don't have meaning in current context. */
+	SYM,        /* Any other symbol with no spec. meaning in current context. */
 	END         /* End of a string, after everything is parsed. */
 }
 TOKENS_TYPE;
@@ -1220,7 +1220,7 @@ skip_whitespace_tokens(const char **in)
 	}
 }
 
-/* Gets next token from input. Configures last_token global variable. */
+/* Gets next token from input.  Configures last_token global variable. */
 static void
 get_next(const char **in)
 {
