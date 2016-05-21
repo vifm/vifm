@@ -20,6 +20,8 @@
 #ifndef VIFM__FILETYPE_H__
 #define VIFM__FILETYPE_H__
 
+#include "utils/test_helpers.h"
+
 #define VIFM_PSEUDO_CMD "vifm"
 
 struct matcher_t;
@@ -127,6 +129,10 @@ void ft_assoc_record_add_all(assoc_records_t *assocs,
 
 /* After this call the structure contains NULL values. */
 void ft_assoc_records_free(assoc_records_t *records);
+
+TSTATIC_DEFS(
+	char ** break_into_matchers(const char concat[], int *count);
+)
 
 #endif /* VIFM__FILETYPE_H__ */
 

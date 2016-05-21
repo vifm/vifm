@@ -30,7 +30,28 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "utils/matcher.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
+
+/* Supported types of tokens. */
+typedef enum
+{
+	BEGIN,  /* Beginning of a string, before anything is parsed. */
+	EMARK,  /* Exclamation mark (!). */
+	LT,     /* Less than operator (<). */
+	GT,     /* Greater than operator (>). */
+	LCB,    /* Left curly brace ({). */
+	RCB,    /* Right curly brace (}). */
+	DLCB,   /* Double left curly brace ({{). */
+	DRCB,   /* Double right curly brace (}}). */
+	SLASH,  /* Slash (/). */
+	DSLASH, /* Double slash (//). */
+	BSLASH, /* Backslash (\). */
+	SYM,    /* Any other symbol that doesn't have meaning in current context. */
+	END     /* End of a string, after everything is parsed. */
+}
+TokensType;
 
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
@@ -54,6 +75,16 @@ static void undouble_commas(char s[]);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
+TSTATIC char ** break_into_matchers(const char concat[], int *count);
+static int find_pattern(const char **in);
+static int find_name_glob(const char **in);
+static int find_path_glob(const char **in);
+static int find_name_regex(const char **in);
+static int find_path_regex(const char **in);
+static int find_mime(const char **in);
+static int is_at_bound(TokensType tok);
+static void load_token(const char **in, int single_char);
+static int get_token_width(TokensType tok);
 
 /* Predefined builtin command. */
 const assoc_record_t NONE_PSEUDO_PROG = {
@@ -71,6 +102,9 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
+
+/* Current token during parsing of patterns. */
+static TokensType curr_token;
 
 void
 ft_init(external_command_exists_t ece_func)
@@ -510,6 +544,353 @@ static int
 is_assoc_record_empty(const assoc_record_t *record)
 {
 	return record->command == NULL && record->description == NULL;
+}
+
+/* Below is a parser that accepts list of patterns:
+ *
+ *   pattern1pattern2...patternN
+ *
+ * where each pattern can be one of following:
+ *
+ *   1. [!]{comma-separated-name-globs}
+ *   2. [!]{{comma-separated-path-globs}}
+ *   3. [!]/name-regular-expression/[iI]
+ *   4. [!]//path-regular-expression//[iI]
+ *   5. [!]<comma-separated-mime-type-globs>
+ *   6. undecorated-pattern
+ *
+ * If something goes wrong during the parsing, whole-line sixth pattern type is
+ * assumed (empty input falls into this category automatically).
+ *
+ * Formal grammar is below, implementation doesn't follow it in all aspects, but
+ * general structure is similar.
+ *
+ * PATTERNS     ::= PATTERN+ | UNDECORATED
+ * PATTERN      ::= NAME_GLOB | PATH_GLOB | NAME_REGEX | PATH_REGEX | MIME
+ *
+ * NAME_GLOB    ::= "!"? "{"        CHAR+  "}"             BORDER_TOKEN
+ * PATH_GLOB    ::= "!"? "{{"       CHAR+ "}}"             BORDER_TOKEN
+ * NAME_REGEX   ::= "!"? "/"  REGEX_CHAR+  "/" REGEX_FLAGS BORDER_TOKEN
+ * PATH_REGEX   ::= "!"? "//" REGEX_CHAR+ "//" REGEX_FLAGS BORDER_TOKEN
+ * MIME         ::= "!"? "<"        CHAR+  ">"
+ * UNDECORATED  ::= CHAR+
+ *
+ * REGEX_FLAGS  ::= REGEX_FLAG*
+ * REGEX_FLAG   ::= "i" | "I"
+ * REGEX_CHAR   ::= "\"? CHAR
+ *
+ * BORDER_TOKEN ::= EOL | "!" | "{" | "{{" | "/" | "//" | "<"
+ * CHAR         ::= <any character> */
+
+/* Breaks concatenated patterns into separate lines.  Returns the list of length
+ * *count. */
+TSTATIC char **
+break_into_matchers(const char concat[], int *count)
+{
+	char **list = NULL;
+	int len = 0;
+
+	const char *start = concat, *end = start;
+	curr_token = BEGIN;
+	load_token(&end, 0);
+	do
+	{
+		size_t width;
+		char *piece;
+
+		if(!find_pattern(&end))
+		{
+			free_string_array(list, len);
+			list = NULL;
+			*count = add_to_string_array(&list, 0, 1, concat);
+			return list;
+		}
+
+		width = end - start + 1U - get_token_width(curr_token);
+		piece = malloc(width);
+		copy_str(piece, width, start);
+		len = put_into_string_array(&list, len, piece);
+
+		start = end - get_token_width(curr_token);
+	}
+	while(curr_token != END);
+
+	*count = len;
+	return list;
+}
+
+/* PATTERN ::= NAME_GLOB | PATH_GLOB | NAME_REGEX | PATH_REGEX | MIME
+ * Returns non-zero on success, otherwise zero is returned. */
+static int
+find_pattern(const char **in)
+{
+	return find_name_glob(in)
+	    || find_path_glob(in)
+	    || find_name_regex(in)
+	    || find_path_regex(in)
+	    || find_mime(in);
+}
+
+/* NAME_GLOB ::= "!"? "{" CHAR+ "}" BORDER_TOKEN
+ * Returns non-zero on success, otherwise zero is returned. */
+static int
+find_name_glob(const char **in)
+{
+	const TokensType tok = curr_token;
+	const char *const pos = *in;
+	if(curr_token == EMARK)
+	{
+		load_token(in, 0);
+	}
+	if(curr_token != LCB)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	do
+	{
+		load_token(in, 1);
+	}
+	while(curr_token != RCB && curr_token != END);
+	if(curr_token != RCB)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	load_token(in, 0);
+	if(!is_at_bound(curr_token))
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	return 1;
+}
+
+/* PATH_GLOB ::= "!"? "{{" CHAR+ "}}" BORDER_TOKEN
+ * Returns non-zero on success, otherwise zero is returned. */
+static int
+find_path_glob(const char **in)
+{
+	const TokensType tok = curr_token;
+	const char *const pos = *in;
+	if(curr_token == EMARK)
+	{
+		load_token(in, 0);
+	}
+	if(curr_token != DLCB)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	do
+	{
+		load_token(in, 0);
+	}
+	while(curr_token != DRCB && curr_token != END);
+	if(curr_token != DRCB)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	load_token(in, 0);
+	if(!is_at_bound(curr_token))
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	return 1;
+}
+
+/* NAME_REGEX ::= "!"? "/" REGEX_CHAR+ "/" REGEX_FLAGS BORDER_TOKEN
+ * Returns non-zero on success, otherwise zero is returned. */
+static int
+find_name_regex(const char **in)
+{
+	const TokensType tok = curr_token;
+	const char *const pos = *in;
+	if(curr_token == EMARK)
+	{
+		load_token(in, 0);
+	}
+	if(curr_token != SLASH)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	do
+	{
+		load_token(in, 1);
+		if(curr_token == BSLASH)
+		{
+			load_token(in, 1);
+			load_token(in, 1);
+		}
+	}
+	while(curr_token != SLASH && curr_token != END);
+	if(curr_token != SLASH)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	do
+	{
+		load_token(in, 0);
+	}
+	while(curr_token == SYM && ((*in)[-1] == 'i' || (*in)[-1] == 'I'));
+	if(!is_at_bound(curr_token))
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	return 1;
+}
+
+/* PATH_REGEX ::= "!"? "//" REGEX_CHAR+ "//" REGEX_FLAGS BORDER_TOKEN
+ * Returns non-zero on success, otherwise zero is returned. */
+static int
+find_path_regex(const char **in)
+{
+	const TokensType tok = curr_token;
+	const char *const pos = *in;
+	if(curr_token == EMARK)
+	{
+		load_token(in, 0);
+	}
+	if(curr_token != DSLASH)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	do
+	{
+		load_token(in, 0);
+		if(curr_token == BSLASH)
+		{
+			load_token(in, 0);
+			load_token(in, 0);
+		}
+	}
+	while(curr_token != DSLASH && curr_token != END);
+	if(curr_token != DSLASH)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	do
+	{
+		load_token(in, 0);
+	}
+	while(curr_token == SYM && ((*in)[-1] == 'i' || (*in)[-1] == 'I'));
+	if(!is_at_bound(curr_token))
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	return 1;
+}
+
+/* MIME ::= "!"? "<" CHAR+ ">"
+ * Returns non-zero on success, otherwise zero is returned. */
+static int
+find_mime(const char **in)
+{
+	const TokensType tok = curr_token;
+	const char *const pos = *in;
+	if(curr_token == EMARK)
+	{
+		load_token(in, 0);
+	}
+	if(curr_token != LT)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	do
+	{
+		load_token(in, 1);
+	}
+	while(curr_token != GT && curr_token != END);
+	if(curr_token != GT)
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	load_token(in, 0);
+	if(!is_at_bound(curr_token))
+	{
+		curr_token = tok;
+		*in = pos;
+		return 0;
+	}
+	return 1;
+}
+
+/* Checks whether token is a valid ending of second level nonterminals.  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+is_at_bound(TokensType tok)
+{
+	return tok == EMARK
+	    || tok == LT
+	    || tok == LCB
+	    || tok == DLCB
+	    || tok == SLASH
+	    || tok == DSLASH
+	    || tok == END;
+}
+
+/* Loads next token from input.  Optionally tokens longer than single character
+ * are ignored.  Sets curr_token global variable. */
+static void
+load_token(const char **in, int single_char)
+{
+	const int sc = single_char;
+
+	if(curr_token == END)
+	{
+		return;
+	}
+
+	switch((*in)[0])
+	{
+		case '\0': curr_token = END;    break;
+		case '\\': curr_token = BSLASH; break;
+
+		case '<': curr_token = LT;    break;
+		case '>': curr_token = GT;    break;
+		case '!': curr_token = EMARK; break;
+
+		case '{': curr_token = (!sc && (*in)[1] == '{') ? DLCB : LCB;     break;
+		case '}': curr_token = (!sc && (*in)[1] == '}') ? DRCB : RCB;     break;
+		case '/': curr_token = (!sc && (*in)[1] == '/') ? DSLASH : SLASH; break;
+
+		default:
+			curr_token = SYM;
+			break;
+	}
+
+	*in += get_token_width(curr_token);
+}
+
+/* Obtains token width in characters.  Returns the width. */
+static int
+get_token_width(TokensType tok)
+{
+	return (tok == DLCB || tok == DRCB || tok == DSLASH) ? 2 : 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
