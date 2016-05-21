@@ -55,6 +55,10 @@ int matcher_includes(const matcher_t *matcher, const matcher_t *like);
  * otherwise zero is returned. */
 int matcher_is_expr(const char str[]);
 
+/* Checks whether given matcher is a full path matcher.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int matcher_is_full_path(const matcher_t *matcher);
+
 #endif /* VIFM__UTILS__MATCHER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,4 +1,4 @@
-.TH VIFM 1 "May 18, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "May 20, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2334,7 +2334,7 @@ select files in the given range (current file if no range is given).
 .BI ":select {pattern}"
 select files that match specified pattern.  Possible {pattern} forms are
 described in "Patterns" section below.  Trailing slash for directories is taken
-into account, so `:select *[^/]` selects only files.
+into account, so `:select! */ | invert s` selects only files.
 .TP
 .BI ":select //[iI]"
 same as item above, but reuses last search pattern.

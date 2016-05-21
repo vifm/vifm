@@ -729,12 +729,29 @@ TEST(select_and_unselect_consider_trailing_slash)
 	lwin.dir_entry[3].type = FT_DIR;
 	lwin.selected_files = 0;
 
+	/* Select only directories. */
 	assert_success(exec_commands("select */", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.selected_files);
 	assert_false(lwin.dir_entry[0].selected);
 	assert_true(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 	assert_true(lwin.dir_entry[3].selected);
+
+	/* Select both file and directory. */
+	assert_success(exec_commands("select! a", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+	assert_false(lwin.dir_entry[3].selected);
+
+	/* Select only files inside given directory. */
+	assert_success(exec_commands("select! {{*/a/**}}", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+	assert_false(lwin.dir_entry[3].selected);
 }
 
 static void
