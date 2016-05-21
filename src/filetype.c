@@ -32,23 +32,6 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 
-/* Predefined builtin command. */
-const assoc_record_t NONE_PSEUDO_PROG = {
-	.command = "",
-	.description = "",
-};
-
-/* Internal list that stores only currently active associations.
- * Since it holds only copies of structures from filetype and filextype lists,
- * it doesn't consume much memory, and its items shouldn't be freed */
-static assoc_list_t active_filetypes;
-
-/* Used to set type of new association records */
-static assoc_record_type_t new_records_type = ART_CUSTOM;
-
-/* Pointer to external command existence check function. */
-static external_command_exists_t external_command_exists_func;
-
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
@@ -71,6 +54,23 @@ static void undouble_commas(char s[]);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
+
+/* Predefined builtin command. */
+const assoc_record_t NONE_PSEUDO_PROG = {
+	.command = "",
+	.description = "",
+};
+
+/* Internal list that stores only currently active associations.
+ * Since it holds only copies of structures from filetype and filextype lists,
+ * it doesn't consume much memory, and its items shouldn't be freed */
+static assoc_list_t active_filetypes;
+
+/* Used to set type of new association records */
+static assoc_record_type_t new_records_type = ART_CUSTOM;
+
+/* Pointer to external command existence check function. */
+static external_command_exists_t external_command_exists_func;
 
 void
 ft_init(external_command_exists_t ece_func)
