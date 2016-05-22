@@ -53,6 +53,14 @@ typedef enum
 }
 TokensType;
 
+/* Parser state. */
+typedef struct
+{
+	const char *input; /* Current input position. */
+	TokensType tok;    /* Current token during parsing of patterns. */
+}
+parsing_state_t;
+
 static const char * find_existing_cmd(const assoc_list_t *record_list,
 		const char file[]);
 static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
@@ -76,14 +84,14 @@ static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
 TSTATIC char ** break_into_matchers(const char concat[], int *count);
-static int find_pattern(const char **in);
-static int find_name_glob(const char **in);
-static int find_path_glob(const char **in);
-static int find_name_regex(const char **in);
-static int find_path_regex(const char **in);
-static int find_mime(const char **in);
+static int find_pattern(parsing_state_t *state);
+static int find_name_glob(parsing_state_t *state);
+static int find_path_glob(parsing_state_t *state);
+static int find_name_regex(parsing_state_t *state);
+static int find_path_regex(parsing_state_t *state);
+static int find_mime(parsing_state_t *state);
 static int is_at_bound(TokensType tok);
-static void load_token(const char **in, int single_char);
+static void load_token(parsing_state_t *state, int single_char);
 static int get_token_width(TokensType tok);
 
 /* Predefined builtin command. */
@@ -102,9 +110,6 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
-
-/* Current token during parsing of patterns. */
-static TokensType curr_token;
 
 void
 ft_init(external_command_exists_t ece_func)
@@ -590,15 +595,15 @@ break_into_matchers(const char concat[], int *count)
 	char **list = NULL;
 	int len = 0;
 
-	const char *start = concat, *end = start;
-	curr_token = BEGIN;
-	load_token(&end, 0);
+	const char *start = concat;
+	parsing_state_t state = { .input = start, .tok = BEGIN };
+	load_token(&state, 0);
 	do
 	{
 		size_t width;
 		char *piece;
 
-		if(!find_pattern(&end))
+		if(!find_pattern(&state))
 		{
 			free_string_array(list, len);
 			list = NULL;
@@ -606,14 +611,14 @@ break_into_matchers(const char concat[], int *count)
 			return list;
 		}
 
-		width = end - start + 1U - get_token_width(curr_token);
+		width = state.input - start + 1U - get_token_width(state.tok);
 		piece = malloc(width);
 		copy_str(piece, width, start);
 		len = put_into_string_array(&list, len, piece);
 
-		start = end - get_token_width(curr_token);
+		start = state.input - get_token_width(state.tok);
 	}
-	while(curr_token != END);
+	while(state.tok != END);
 
 	*count = len;
 	return list;
@@ -622,48 +627,44 @@ break_into_matchers(const char concat[], int *count)
 /* PATTERN ::= NAME_GLOB | PATH_GLOB | NAME_REGEX | PATH_REGEX | MIME
  * Returns non-zero on success, otherwise zero is returned. */
 static int
-find_pattern(const char **in)
+find_pattern(parsing_state_t *state)
 {
-	return find_name_glob(in)
-	    || find_path_glob(in)
-	    || find_name_regex(in)
-	    || find_path_regex(in)
-	    || find_mime(in);
+	return find_name_glob(state)
+	    || find_path_glob(state)
+	    || find_name_regex(state)
+	    || find_path_regex(state)
+	    || find_mime(state);
 }
 
 /* NAME_GLOB ::= "!"? "{" CHAR+ "}" BORDER_TOKEN
  * Returns non-zero on success, otherwise zero is returned. */
 static int
-find_name_glob(const char **in)
+find_name_glob(parsing_state_t *state)
 {
-	const TokensType tok = curr_token;
-	const char *const pos = *in;
-	if(curr_token == EMARK)
+	const parsing_state_t prev_state = *state;
+	if(state->tok == EMARK)
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	if(curr_token != LCB)
+	if(state->tok != LCB)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(in, 1);
+		load_token(state, 1);
 	}
-	while(curr_token != RCB && curr_token != END);
-	if(curr_token != RCB)
+	while(state->tok != RCB && state->tok != END);
+	if(state->tok != RCB)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
-	load_token(in, 0);
-	if(!is_at_bound(curr_token))
+	load_token(state, 0);
+	if(!is_at_bound(state->tok))
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	return 1;
@@ -672,36 +673,32 @@ find_name_glob(const char **in)
 /* PATH_GLOB ::= "!"? "{{" CHAR+ "}}" BORDER_TOKEN
  * Returns non-zero on success, otherwise zero is returned. */
 static int
-find_path_glob(const char **in)
+find_path_glob(parsing_state_t *state)
 {
-	const TokensType tok = curr_token;
-	const char *const pos = *in;
-	if(curr_token == EMARK)
+	const parsing_state_t prev_state = *state;
+	if(state->tok == EMARK)
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	if(curr_token != DLCB)
+	if(state->tok != DLCB)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	while(curr_token != DRCB && curr_token != END);
-	if(curr_token != DRCB)
+	while(state->tok != DRCB && state->tok != END);
+	if(state->tok != DRCB)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
-	load_token(in, 0);
-	if(!is_at_bound(curr_token))
+	load_token(state, 0);
+	if(!is_at_bound(state->tok))
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	return 1;
@@ -710,45 +707,41 @@ find_path_glob(const char **in)
 /* NAME_REGEX ::= "!"? "/" REGEX_CHAR+ "/" REGEX_FLAGS BORDER_TOKEN
  * Returns non-zero on success, otherwise zero is returned. */
 static int
-find_name_regex(const char **in)
+find_name_regex(parsing_state_t *state)
 {
-	const TokensType tok = curr_token;
-	const char *const pos = *in;
-	if(curr_token == EMARK)
+	const parsing_state_t prev_state = *state;
+	if(state->tok == EMARK)
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	if(curr_token != SLASH)
+	if(state->tok != SLASH)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(in, 1);
-		if(curr_token == BSLASH)
+		load_token(state, 1);
+		if(state->tok == BSLASH)
 		{
-			load_token(in, 1);
-			load_token(in, 1);
+			load_token(state, 1);
+			load_token(state, 1);
 		}
 	}
-	while(curr_token != SLASH && curr_token != END);
-	if(curr_token != SLASH)
+	while(state->tok != SLASH && state->tok != END);
+	if(state->tok != SLASH)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	while(curr_token == SYM && ((*in)[-1] == 'i' || (*in)[-1] == 'I'));
-	if(!is_at_bound(curr_token))
+	while(state->tok == SYM && char_is_one_of("iI", state->input[-1]));
+	if(!is_at_bound(state->tok))
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	return 1;
@@ -757,45 +750,41 @@ find_name_regex(const char **in)
 /* PATH_REGEX ::= "!"? "//" REGEX_CHAR+ "//" REGEX_FLAGS BORDER_TOKEN
  * Returns non-zero on success, otherwise zero is returned. */
 static int
-find_path_regex(const char **in)
+find_path_regex(parsing_state_t *state)
 {
-	const TokensType tok = curr_token;
-	const char *const pos = *in;
-	if(curr_token == EMARK)
+	const parsing_state_t prev_state = *state;
+	if(state->tok == EMARK)
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	if(curr_token != DSLASH)
+	if(state->tok != DSLASH)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(in, 0);
-		if(curr_token == BSLASH)
+		load_token(state, 0);
+		if(state->tok == BSLASH)
 		{
-			load_token(in, 0);
-			load_token(in, 0);
+			load_token(state, 0);
+			load_token(state, 0);
 		}
 	}
-	while(curr_token != DSLASH && curr_token != END);
-	if(curr_token != DSLASH)
+	while(state->tok != DSLASH && state->tok != END);
+	if(state->tok != DSLASH)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	while(curr_token == SYM && ((*in)[-1] == 'i' || (*in)[-1] == 'I'));
-	if(!is_at_bound(curr_token))
+	while(state->tok == SYM && char_is_one_of("iI", state->input[-1]));
+	if(!is_at_bound(state->tok))
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	return 1;
@@ -804,36 +793,32 @@ find_path_regex(const char **in)
 /* MIME ::= "!"? "<" CHAR+ ">"
  * Returns non-zero on success, otherwise zero is returned. */
 static int
-find_mime(const char **in)
+find_mime(parsing_state_t *state)
 {
-	const TokensType tok = curr_token;
-	const char *const pos = *in;
-	if(curr_token == EMARK)
+	const parsing_state_t prev_state = *state;
+	if(state->tok == EMARK)
 	{
-		load_token(in, 0);
+		load_token(state, 0);
 	}
-	if(curr_token != LT)
+	if(state->tok != LT)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(in, 1);
+		load_token(state, 1);
 	}
-	while(curr_token != GT && curr_token != END);
-	if(curr_token != GT)
+	while(state->tok != GT && state->tok != END);
+	if(state->tok != GT)
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
-	load_token(in, 0);
-	if(!is_at_bound(curr_token))
+	load_token(state, 0);
+	if(!is_at_bound(state->tok))
 	{
-		curr_token = tok;
-		*in = pos;
+		*state = prev_state;
 		return 0;
 	}
 	return 1;
@@ -854,36 +839,37 @@ is_at_bound(TokensType tok)
 }
 
 /* Loads next token from input.  Optionally tokens longer than single character
- * are ignored.  Sets curr_token global variable. */
+ * are ignored.  Modifies the *state. */
 static void
-load_token(const char **in, int single_char)
+load_token(parsing_state_t *state, int single_char)
 {
 	const int sc = single_char;
+	const char *const in = state->input;
 
-	if(curr_token == END)
+	if(state->tok == END)
 	{
 		return;
 	}
 
-	switch((*in)[0])
+	switch(in[0])
 	{
-		case '\0': curr_token = END;    break;
-		case '\\': curr_token = BSLASH; break;
+		case '\0': state->tok = END;    break;
+		case '\\': state->tok = BSLASH; break;
 
-		case '<': curr_token = LT;    break;
-		case '>': curr_token = GT;    break;
-		case '!': curr_token = EMARK; break;
+		case '<': state->tok = LT;    break;
+		case '>': state->tok = GT;    break;
+		case '!': state->tok = EMARK; break;
 
-		case '{': curr_token = (!sc && (*in)[1] == '{') ? DLCB : LCB;     break;
-		case '}': curr_token = (!sc && (*in)[1] == '}') ? DRCB : RCB;     break;
-		case '/': curr_token = (!sc && (*in)[1] == '/') ? DSLASH : SLASH; break;
+		case '{': state->tok = (!sc && in[1] == '{') ? DLCB : LCB;     break;
+		case '}': state->tok = (!sc && in[1] == '}') ? DRCB : RCB;     break;
+		case '/': state->tok = (!sc && in[1] == '/') ? DSLASH : SLASH; break;
 
 		default:
-			curr_token = SYM;
+			state->tok = SYM;
 			break;
 	}
 
-	*in += get_token_width(curr_token);
+	state->input += get_token_width(state->tok);
 }
 
 /* Obtains token width in characters.  Returns the width. */
