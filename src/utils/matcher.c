@@ -44,7 +44,8 @@ struct matcher_t
 {
 	MType type;    /* Type of the matcher's pattern. */
 	char *expr;    /* User-entered pattern. */
-	char *raw;     /* Raw stripped value (regular expression or mime types). */
+	char *undec;   /* User-entered pattern undecorated pattern. */
+	char *raw;     /* Raw stripped value (regular expression). */
 	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */
 	int negated;   /* Whether match is inverted. */
@@ -93,6 +94,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 	if(compile_expr(&m, strip, cs_by_def, on_empty_re, error) != 0)
 	{
 		free(m.raw);
+		free(m.undec);
 		return NULL;
 	}
 
@@ -213,6 +215,13 @@ parse_glob(matcher_t *m, int strip, char **error)
 		m->raw[strlen(m->raw) - strip] = '\0';
 	}
 
+	m->undec = strdup(m->raw);
+	if(m->undec == NULL)
+	{
+		replace_string(error, "Failed to allocate memory.");
+		return 1;
+	}
+
 	re = globs_to_regex(m->raw);
 	if(re == NULL)
 	{
@@ -253,6 +262,13 @@ parse_re(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 		replace_string(&m->raw, on_empty_re);
 	}
 
+	m->undec = strdup(m->raw);
+	if(m->undec == NULL)
+	{
+		replace_string(error, "Failed to allocate memory.");
+		return 1;
+	}
+
 	m->cflags = REG_EXTENDED | (cs_by_def ? 0 : REG_ICASE);
 	return 0;
 }
@@ -271,10 +287,12 @@ matcher_clone(const matcher_t *matcher)
 	*clone = *matcher;
 	clone->expr = strdup(matcher->expr);
 	clone->raw = strdup(matcher->raw);
+	clone->undec = strdup(matcher->undec);
 
 	err = regcomp(&clone->regex, matcher->raw, matcher->cflags);
 
-	if(err != 0 || clone->expr == NULL || clone->raw == NULL)
+	if(err != 0 || clone->expr == NULL || clone->raw == NULL ||
+			clone->undec == NULL)
 	{
 		matcher_free(clone);
 		return NULL;
@@ -300,6 +318,7 @@ free_matcher_items(matcher_t *matcher)
 {
 	free(matcher->expr);
 	free(matcher->raw);
+	free(matcher->undec);
 	regfree(&matcher->regex);
 }
 
@@ -326,6 +345,12 @@ const char *
 matcher_get_expr(const matcher_t *matcher)
 {
 	return matcher->expr;
+}
+
+const char *
+matcher_get_undec(const matcher_t *matcher)
+{
+	return matcher->undec;
 }
 
 int

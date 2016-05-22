@@ -3986,7 +3986,8 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 			continue;
 		}
 
-		if(!matcher_is_full_path(m) && is_directory_entry(entry))
+		if((!matcher_is_full_path(m) || ends_with(matcher_get_undec(m), "/")) &&
+				is_directory_entry(entry))
 		{
 			strcat(file_path, "/");
 			if(matcher_matches(m, file_path))

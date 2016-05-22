@@ -752,6 +752,22 @@ TEST(select_and_unselect_consider_trailing_slash)
 	assert_false(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 	assert_false(lwin.dir_entry[3].selected);
+
+	/* Select directories and files. */
+	assert_success(exec_commands("select! {{*/a}}", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+	assert_false(lwin.dir_entry[3].selected);
+
+	/* Select only directories. */
+	assert_success(exec_commands("select! {{*/a/}}", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+	assert_false(lwin.dir_entry[3].selected);
 }
 
 static void

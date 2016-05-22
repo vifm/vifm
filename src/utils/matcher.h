@@ -44,8 +44,12 @@ void matcher_free(matcher_t *matcher);
  * zero is returned. */
 int matcher_matches(matcher_t *matcher, const char path[]);
 
-/* Gets original matcher expression.  Returns the expression. */
+/* Retrieves original matcher expression.  Returns the expression. */
 const char * matcher_get_expr(const matcher_t *matcher);
+
+/* Retrieves undecorated original matcher expression.  Returns the
+ * expression. */
+const char * matcher_get_undec(const matcher_t *matcher);
 
 /* Checks whether everything matched by the matcher is also matched by the like.
  * Returns non-zero if so, otherwise zero is returned. */
