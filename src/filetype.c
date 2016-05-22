@@ -89,7 +89,9 @@ static int find_name_glob(parsing_state_t *state);
 static int find_path_glob(parsing_state_t *state);
 static int find_name_regex(parsing_state_t *state);
 static int find_path_regex(parsing_state_t *state);
+static int find_regex(parsing_state_t *state, TokensType decor);
 static int find_mime(parsing_state_t *state);
+static int find_pat(parsing_state_t *state, TokensType left, TokensType right);
 static int is_at_bound(TokensType tok);
 static void load_token(parsing_state_t *state, int single_char);
 static int get_token_width(TokensType tok);
@@ -641,33 +643,7 @@ find_pattern(parsing_state_t *state)
 static int
 find_name_glob(parsing_state_t *state)
 {
-	const parsing_state_t prev_state = *state;
-	if(state->tok == EMARK)
-	{
-		load_token(state, 0);
-	}
-	if(state->tok != LCB)
-	{
-		*state = prev_state;
-		return 0;
-	}
-	do
-	{
-		load_token(state, 1);
-	}
-	while(state->tok != RCB && state->tok != END);
-	if(state->tok != RCB)
-	{
-		*state = prev_state;
-		return 0;
-	}
-	load_token(state, 0);
-	if(!is_at_bound(state->tok))
-	{
-		*state = prev_state;
-		return 0;
-	}
-	return 1;
+	return find_pat(state, LCB, RCB);
 }
 
 /* PATH_GLOB ::= "!"? "{{" CHAR+ "}}" BORDER_TOKEN
@@ -675,33 +651,7 @@ find_name_glob(parsing_state_t *state)
 static int
 find_path_glob(parsing_state_t *state)
 {
-	const parsing_state_t prev_state = *state;
-	if(state->tok == EMARK)
-	{
-		load_token(state, 0);
-	}
-	if(state->tok != DLCB)
-	{
-		*state = prev_state;
-		return 0;
-	}
-	do
-	{
-		load_token(state, 0);
-	}
-	while(state->tok != DRCB && state->tok != END);
-	if(state->tok != DRCB)
-	{
-		*state = prev_state;
-		return 0;
-	}
-	load_token(state, 0);
-	if(!is_at_bound(state->tok))
-	{
-		*state = prev_state;
-		return 0;
-	}
-	return 1;
+	return find_pat(state, DLCB, DRCB);
 }
 
 /* NAME_REGEX ::= "!"? "/" REGEX_CHAR+ "/" REGEX_FLAGS BORDER_TOKEN
@@ -709,42 +659,7 @@ find_path_glob(parsing_state_t *state)
 static int
 find_name_regex(parsing_state_t *state)
 {
-	const parsing_state_t prev_state = *state;
-	if(state->tok == EMARK)
-	{
-		load_token(state, 0);
-	}
-	if(state->tok != SLASH)
-	{
-		*state = prev_state;
-		return 0;
-	}
-	do
-	{
-		load_token(state, 1);
-		if(state->tok == BSLASH)
-		{
-			load_token(state, 1);
-			load_token(state, 1);
-		}
-	}
-	while(state->tok != SLASH && state->tok != END);
-	if(state->tok != SLASH)
-	{
-		*state = prev_state;
-		return 0;
-	}
-	do
-	{
-		load_token(state, 0);
-	}
-	while(state->tok == SYM && char_is_one_of("iI", state->input[0]));
-	if(!is_at_bound(state->tok))
-	{
-		*state = prev_state;
-		return 0;
-	}
-	return 1;
+	return find_regex(state, SLASH);
 }
 
 /* PATH_REGEX ::= "!"? "//" REGEX_CHAR+ "//" REGEX_FLAGS BORDER_TOKEN
@@ -752,27 +667,36 @@ find_name_regex(parsing_state_t *state)
 static int
 find_path_regex(parsing_state_t *state)
 {
+	return find_regex(state, DSLASH);
+}
+
+/* Finds name or path regex.  Returns non-zero on success, otherwise zero is
+ * returned. */
+static int
+find_regex(parsing_state_t *state, TokensType decor)
+{
 	const parsing_state_t prev_state = *state;
+	const int single_char = (get_token_width(decor) == 1);
 	if(state->tok == EMARK)
 	{
 		load_token(state, 0);
 	}
-	if(state->tok != DSLASH)
+	if(state->tok != decor)
 	{
 		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(state, 0);
+		load_token(state, single_char);
 		if(state->tok == BSLASH)
 		{
-			load_token(state, 0);
-			load_token(state, 0);
+			load_token(state, single_char);
+			load_token(state, single_char);
 		}
 	}
-	while(state->tok != DSLASH && state->tok != END);
-	if(state->tok != DSLASH)
+	while(state->tok != decor && state->tok != END);
+	if(state->tok != decor)
 	{
 		*state = prev_state;
 		return 0;
@@ -795,22 +719,31 @@ find_path_regex(parsing_state_t *state)
 static int
 find_mime(parsing_state_t *state)
 {
+	return find_pat(state, LT, GT);
+}
+
+/* Finds name, path glob or mime-type pattern.  Returns non-zero on success,
+ * otherwise zero is returned. */
+static int
+find_pat(parsing_state_t *state, TokensType left, TokensType right)
+{
 	const parsing_state_t prev_state = *state;
+	const int single_char = (get_token_width(left) == 1);
 	if(state->tok == EMARK)
 	{
 		load_token(state, 0);
 	}
-	if(state->tok != LT)
+	if(state->tok != left)
 	{
 		*state = prev_state;
 		return 0;
 	}
 	do
 	{
-		load_token(state, 1);
+		load_token(state, single_char);
 	}
-	while(state->tok != GT && state->tok != END);
-	if(state->tok != GT)
+	while(state->tok != right && state->tok != END);
+	if(state->tok != right)
 	{
 		*state = prev_state;
 		return 0;
