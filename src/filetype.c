@@ -611,12 +611,12 @@ break_into_matchers(const char concat[], int *count)
 			return list;
 		}
 
-		width = state.input - start + 1U - get_token_width(state.tok);
+		width = state.input - start + 1U;
 		piece = malloc(width);
 		copy_str(piece, width, start);
 		len = put_into_string_array(&list, len, piece);
 
-		start = state.input - get_token_width(state.tok);
+		start = state.input;
 	}
 	while(state.tok != END);
 
@@ -738,7 +738,7 @@ find_name_regex(parsing_state_t *state)
 	{
 		load_token(state, 0);
 	}
-	while(state->tok == SYM && char_is_one_of("iI", state->input[-1]));
+	while(state->tok == SYM && char_is_one_of("iI", state->input[0]));
 	if(!is_at_bound(state->tok))
 	{
 		*state = prev_state;
@@ -781,7 +781,7 @@ find_path_regex(parsing_state_t *state)
 	{
 		load_token(state, 0);
 	}
-	while(state->tok == SYM && char_is_one_of("iI", state->input[-1]));
+	while(state->tok == SYM && char_is_one_of("iI", state->input[0]));
 	if(!is_at_bound(state->tok))
 	{
 		*state = prev_state;
@@ -844,12 +844,10 @@ static void
 load_token(parsing_state_t *state, int single_char)
 {
 	const int sc = single_char;
-	const char *const in = state->input;
+	const char *in;
 
-	if(state->tok == END)
-	{
-		return;
-	}
+	state->input += get_token_width(state->tok);
+	in = state->input;
 
 	switch(in[0])
 	{
@@ -868,15 +866,25 @@ load_token(parsing_state_t *state, int single_char)
 			state->tok = SYM;
 			break;
 	}
-
-	state->input += get_token_width(state->tok);
 }
 
 /* Obtains token width in characters.  Returns the width. */
 static int
 get_token_width(TokensType tok)
 {
-	return (tok == DLCB || tok == DRCB || tok == DSLASH) ? 2 : 1;
+	switch(tok)
+	{
+		case DLCB:
+		case DRCB:
+		case DSLASH:
+			return 2;
+		case BEGIN:
+		case END:
+			return 0;
+
+		default:
+			return 1;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
