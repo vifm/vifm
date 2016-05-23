@@ -97,9 +97,9 @@ enum
 /* File decoration description. */
 typedef struct
 {
-	struct matcher_t *matcher; /* Name matcher object. */
-	char prefix[9];            /* File name prefix. */
-	char suffix[9];            /* File name suffix. */
+	struct matchers_t *matchers; /* Name matcher object. */
+	char prefix[9];              /* File name prefix. */
+	char suffix[9];              /* File name suffix. */
 }
 file_dec_t;
 

@@ -53,7 +53,7 @@
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
-#include "../utils/matcher.h"
+#include "../utils/matchers.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
@@ -1369,9 +1369,9 @@ ui_get_decors(const dir_entry_t *entry, const char **prefix,
 			for(i = 0; i < cfg.name_dec_count; ++i)
 			{
 				const file_dec_t *const file_dec = &cfg.name_decs[i];
-				if(matcher_matches(file_dec->matcher, full_path))
+				if(matchers_match(file_dec->matchers, full_path))
 				{
-					if(matcher_matches(file_dec->matcher, full_path))
+					if(matchers_match(file_dec->matchers, full_path))
 					{
 						((dir_entry_t *)entry)->name_dec_num = i + 1;
 						break;
