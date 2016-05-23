@@ -45,7 +45,7 @@ typedef enum
 	SYM,    /* Any other symbol that doesn't have meaning in current context. */
 	END     /* End of a string, after everything is parsed. */
 }
-TokensType;
+TokenType;
 
 /* List of matchers. */
 struct matchers_t
@@ -59,7 +59,7 @@ struct matchers_t
 typedef struct
 {
 	const char *input; /* Current input position. */
-	TokensType tok;    /* Current token during parsing of patterns. */
+	TokenType tok;     /* Current token during parsing of patterns. */
 }
 parsing_state_t;
 
@@ -69,12 +69,12 @@ static int find_name_glob(parsing_state_t *state);
 static int find_path_glob(parsing_state_t *state);
 static int find_name_regex(parsing_state_t *state);
 static int find_path_regex(parsing_state_t *state);
-static int find_regex(parsing_state_t *state, TokensType decor);
+static int find_regex(parsing_state_t *state, TokenType decor);
 static int find_mime(parsing_state_t *state);
-static int find_pat(parsing_state_t *state, TokensType left, TokensType right);
-static int is_at_bound(TokensType tok);
+static int find_pat(parsing_state_t *state, TokenType left, TokenType right);
+static int is_at_bound(TokenType tok);
 static void load_token(parsing_state_t *state, int single_char);
-static int get_token_width(TokensType tok);
+static int get_token_width(TokenType tok);
 
 matchers_t *
 matchers_alloc(const char list[], int cs_by_def, int glob_by_def,
@@ -280,7 +280,7 @@ find_path_regex(parsing_state_t *state)
 /* Finds name or path regex.  Returns non-zero on success, otherwise zero is
  * returned. */
 static int
-find_regex(parsing_state_t *state, TokensType decor)
+find_regex(parsing_state_t *state, TokenType decor)
 {
 	const parsing_state_t prev_state = *state;
 	const int single_char = (get_token_width(decor) == 1);
@@ -332,7 +332,7 @@ find_mime(parsing_state_t *state)
 /* Finds name, path glob or mime-type pattern.  Returns non-zero on success,
  * otherwise zero is returned. */
 static int
-find_pat(parsing_state_t *state, TokensType left, TokensType right)
+find_pat(parsing_state_t *state, TokenType left, TokenType right)
 {
 	const parsing_state_t prev_state = *state;
 	const int single_char = (get_token_width(left) == 1);
@@ -367,7 +367,7 @@ find_pat(parsing_state_t *state, TokensType left, TokensType right)
 /* Checks whether token is a valid ending of second level nonterminals.  Returns
  * non-zero if so, otherwise zero is returned. */
 static int
-is_at_bound(TokensType tok)
+is_at_bound(TokenType tok)
 {
 	return tok == EMARK
 	    || tok == LT
@@ -410,7 +410,7 @@ load_token(parsing_state_t *state, int single_char)
 
 /* Obtains token width in characters.  Returns the width. */
 static int
-get_token_width(TokensType tok)
+get_token_width(TokenType tok)
 {
 	switch(tok)
 	{
