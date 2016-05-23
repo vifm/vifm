@@ -10,7 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/matcher.h"
+#include "../../src/utils/matchers.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
@@ -81,7 +81,7 @@ TEARDOWN()
 
 TEST(full_path_regexps_are_handled_for_selection)
 {
-	matcher_t *m;
+	matchers_t *ms;
 	char pattern[PATH_MAX];
 	char *error;
 
@@ -89,9 +89,9 @@ TEST(full_path_regexps_are_handled_for_selection)
 	 * being used by the code. */
 
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
-	m = matcher_alloc(pattern, 0, 1, "", &error);
-	assert_non_null(m);
-	ft_set_programs(m, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
+	ms = matchers_alloc(pattern, 0, 1, "", &error);
+	assert_non_null(ms);
+	ft_set_programs(ms, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
 
 	open_file(&lwin, FHE_NO_RUN);
 
@@ -101,7 +101,7 @@ TEST(full_path_regexps_are_handled_for_selection)
 
 TEST(full_path_regexps_are_handled_for_selection2)
 {
-	matcher_t *m;
+	matchers_t *ms;
 	char pattern[PATH_MAX];
 	char *error;
 
@@ -109,9 +109,9 @@ TEST(full_path_regexps_are_handled_for_selection2)
 	 * being used by the code. */
 
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
-	m = matcher_alloc(pattern, 0, 1, "", &error);
-	assert_non_null(m);
-	ft_set_programs(m, "echo %c &", 0, 1);
+	ms = matchers_alloc(pattern, 0, 1, "", &error);
+	assert_non_null(ms);
+	ft_set_programs(ms, "echo %c &", 0, 1);
 
 	open_file(&lwin, FHE_NO_RUN);
 

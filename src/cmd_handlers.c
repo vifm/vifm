@@ -74,6 +74,7 @@
 #include "utils/int_stack.h"
 #include "utils/log.h"
 #include "utils/matcher.h"
+#include "utils/matchers.h"
 #include "utils/path.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
@@ -1933,15 +1934,15 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 	const char *records;
 	int in_x;
 	char *error;
-	matcher_t *m;
+	matchers_t *ms;
 
 	if(cmd_info->argc == 1)
 	{
 		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	m = matcher_alloc(cmd_info->argv[0], 0, 1, "", &error);
-	if(m == NULL)
+	ms = matchers_alloc(cmd_info->argv[0], 0, 1, "", &error);
+	if(ms == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
 		free(error);
@@ -1950,7 +1951,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 
 	records = vle_cmds_next_arg(cmd_info->args);
 	in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
-	ft_set_programs(m, records, for_x, in_x);
+	ft_set_programs(ms, records, for_x, in_x);
 	return 0;
 }
 
@@ -1962,15 +1963,15 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 {
 	const char *records;
 	char *error;
-	matcher_t *m;
+	matchers_t *ms;
 
 	if(cmd_info->argc == 1)
 	{
 		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	m = matcher_alloc(cmd_info->argv[0], 0, 1, "", &error);
-	if(m == NULL)
+	ms = matchers_alloc(cmd_info->argv[0], 0, 1, "", &error);
+	if(ms == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
 		free(error);
@@ -1978,7 +1979,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 	}
 
 	records = vle_cmds_next_arg(cmd_info->args);
-	ft_set_viewers(m, records);
+	ft_set_viewers(ms, records);
 	return 0;
 }
 

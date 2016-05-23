@@ -92,5 +92,15 @@ TEST(several_patterns)
 	assert_true(ft_get_viewer("file.version.tar.bz2") != NULL);
 }
 
+TEST(pattern_list)
+{
+	set_viewers("<application/octet-stream>{binary-data}", "prog1");
+
+	ft_init(&prog1_available);
+
+	assert_string_equal("prog1",
+			ft_get_viewer(TEST_DATA_PATH "/read/binary-data"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

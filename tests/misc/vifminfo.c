@@ -9,7 +9,7 @@
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/matcher.h"
+#include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filetype.h"
@@ -45,16 +45,16 @@ TEST(filetypes_are_deduplicated)
 {
 	struct stat first, second;
 	char *error;
-	matcher_t *m;
+	matchers_t *ms;
 
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	cfg.vifm_info = VIFMINFO_FILETYPES;
 	init_commands();
 
 	/* Add a filetype. */
-	m = matcher_alloc("*.c", 0, 1, "", &error);
-	assert_non_null(m);
-	ft_set_programs(m, "{Description}com,,mand,{descr2}cmd", 0, 1);
+	ms = matchers_alloc("*.c", 0, 1, "", &error);
+	assert_non_null(ms);
+	ft_set_programs(ms, "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Write it first time. */
 	write_info_file();
@@ -62,9 +62,9 @@ TEST(filetypes_are_deduplicated)
 	assert_success(stat(SANDBOX_PATH "/vifminfo", &first));
 
 	/* Add filetype again (as if it was read from vifmrc). */
-	m = matcher_alloc("*.c", 0, 1, "", &error);
-	assert_non_null(m);
-	ft_set_programs(m, "{Description}com,,mand,{descr2}cmd", 0, 1);
+	ms = matchers_alloc("*.c", 0, 1, "", &error);
+	assert_non_null(ms);
+	ft_set_programs(ms, "{Description}com,,mand,{descr2}cmd", 0, 1);
 
 	/* Update vifminfo second time. */
 	write_info_file();
