@@ -1,7 +1,68 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL */
+#include <stdlib.h> /* free() */
+
+#include "../../src/utils/matchers.h"
 #include "../../src/utils/string_array.h"
-#include "../../src/filetype.h"
+
+TEST(freeing_null_matchers_does_nothing)
+{
+	matchers_free(NULL);
+}
+
+TEST(wrong_expr_produces_error)
+{
+	char *error = NULL;
+	assert_null(matchers_alloc("/*/{?}", 0, 1, "", &error));
+	assert_non_null(error);
+	free(error);
+}
+
+TEST(none_matchers_match)
+{
+	char *error = NULL;
+	matchers_t *const ms = matchers_alloc("{[a]}{?}", 0, 1, "", &error);
+	assert_string_equal(NULL, error);
+	assert_false(matchers_match(ms, "xx"));
+	matchers_free(ms);
+}
+
+TEST(only_first_matches)
+{
+	char *error = NULL;
+	matchers_t *const ms = matchers_alloc("{ab}{?}", 0, 1, "", &error);
+	assert_string_equal(NULL, error);
+	assert_false(matchers_match(ms, "ab"));
+	matchers_free(ms);
+}
+
+TEST(only_second_matches)
+{
+	char *error = NULL;
+	matchers_t *const ms = matchers_alloc("{ab}{?}", 0, 1, "", &error);
+	assert_string_equal(NULL, error);
+	assert_false(matchers_match(ms, "a"));
+	matchers_free(ms);
+}
+
+TEST(both_matchers_match)
+{
+	char *error = NULL;
+	matchers_t *const ms = matchers_alloc("{[a]}{?}", 0, 1, "", &error);
+	assert_string_equal(NULL, error);
+	assert_true(matchers_match(ms, "a"));
+	matchers_free(ms);
+}
+
+TEST(get_expr_returns_original_expr)
+{
+	char *error = NULL;
+	matchers_t *const ms = matchers_alloc("{[a]}{?}", 0, 1, "", &error);
+	assert_string_equal(NULL, error);
+	assert_string_equal("{[a]}{?}", matchers_get_expr(ms));
+	matchers_free(ms);
+}
 
 TEST(empty_input)
 {

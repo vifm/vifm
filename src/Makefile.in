@@ -166,15 +166,16 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/fsdata.$(OBJEXT) utils/fsddata.$(OBJEXT) \
 	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
 	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/matcher.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/regexp.$(OBJEXT) utils/str.$(OBJEXT) \
-	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
-	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
-	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
-	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) cmd_handlers.$(OBJEXT) \
-	cmd_core.$(OBJEXT) cmd_completion.$(OBJEXT) \
-	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	utils/matcher.$(OBJEXT) utils/matchers.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/regexp.$(OBJEXT) \
+	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
+	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	cmd_handlers.$(OBJEXT) cmd_core.$(OBJEXT) \
+	cmd_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
+	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) filtering.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
@@ -742,6 +743,7 @@ vifm_SOURCES = \
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
+	utils/matchers.c utils/matchers.h \
 	utils/path.c utils/path.h \
 	utils/regexp.c utils/regexp.h \
 	utils/str.c utils/str.h \
@@ -1138,6 +1140,8 @@ utils/log.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/matcher.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/matchers.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/regexp.$(OBJEXT): utils/$(am__dirstamp) \
@@ -1337,6 +1341,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matcher.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matchers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/regexp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
