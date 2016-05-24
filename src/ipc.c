@@ -106,11 +106,11 @@ static void handle_pkg(const char pkg[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(void);
 static int add_to_list(const char name[], const void *data, void *param);
+static const char * get_ipc_dir(void);
+static int sorter(const void *first, const void *second);
 #ifndef _WIN32
 static int pipe_is_in_use(const char path[]);
 #endif
-static const char * get_ipc_dir(void);
-static int sorter(const void *first, const void *second);
 
 /* Stores callback to report received messages. */
 static ipc_callback callback;
@@ -186,15 +186,14 @@ ipc_check(void)
 static char *
 receive_pkg(void)
 {
+#ifndef _WIN32
 	uint32_t size;
 	char *pkg;
 	char *p;
 
-#ifndef _WIN32
 	fd_set ready;
 	int max_fd;
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 10000 };
-#endif
 
 	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U || size >= 4294967294U)
 	{
@@ -207,51 +206,25 @@ receive_pkg(void)
 		return NULL;
 	}
 
-#ifndef _WIN32
 	max_fd = fileno(pipe_file);
 	FD_ZERO(&ready);
 	FD_SET(max_fd, &ready);
-#endif
 
 	p = pkg;
-	while(size != 0U
-#ifndef _WIN32
-			&& select(max_fd + 1, &ready, NULL, NULL, &ts) > 0
-#endif
-			)
+	while(size != 0U && select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
 	{
-		size_t read;
+		const size_t nread = fread(p, 1U, size, pipe_file);
+		size -= nread;
+		p += nread;
 
-#ifdef _WIN32
-		/* TODO: maybe use OVERLAPPED I/O on Windows instead, it's just so
-		 *       inconvenient... */
-		usleep(10000);
-#endif
-
-		read = fread(p, 1U, size, pipe_file);
-		size -= read;
-		p += read;
-
-		if(read == 0U)
+		if(nread == 0U)
 		{
 			break;
 		}
 
-#ifndef _WIN32
 		ts.tv_sec = 0;
 		ts.tv_usec = 10000;
-#endif
 	}
-
-#ifdef _WIN32
-	{
-		/* Weird requirement for named pipes, need to break and set connection every
-		 * time. */
-		const HANDLE pipe_handle = (HANDLE)_get_osfhandle(fileno(pipe_file));
-		DisconnectNamedPipe(pipe_handle);
-		ConnectNamedPipe(pipe_handle, NULL);
-	}
-#endif
 
 	if(size != 0U)
 	{
@@ -264,6 +237,61 @@ receive_pkg(void)
 	*p = '\0';
 
 	return pkg;
+#else
+	uint32_t size;
+	char *pkg;
+	char *p;
+
+	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U || size >= 4294967294U)
+	{
+		return NULL;
+	}
+
+	pkg = malloc(size + 2U);
+	if(pkg == NULL)
+	{
+		return NULL;
+	}
+
+	p = pkg;
+	while(size != 0U)
+	{
+		size_t nread;
+
+		/* TODO: maybe use OVERLAPPED I/O on Windows instead, it's just so
+		 *       inconvenient... */
+		usleep(10000);
+
+		nread = fread(p, 1U, size, pipe_file);
+		size -= nread;
+		p += nread;
+
+		if(nread == 0U)
+		{
+			break;
+		}
+	}
+
+	{
+		/* Weird requirement for named pipes, need to break and set connection every
+		 * time. */
+		const HANDLE pipe_handle = (HANDLE)_get_osfhandle(fileno(pipe_file));
+		DisconnectNamedPipe(pipe_handle);
+		ConnectNamedPipe(pipe_handle, NULL);
+	}
+
+	if(size != 0U)
+	{
+		free(pkg);
+		return NULL;
+	}
+
+	/* Make sure we have two trailing zeroes. */
+	*p++ = '\0';
+	*p = '\0';
+
+	return pkg;
+#endif
 }
 
 /* Tries to open a pipe for communication.  Returns NULL on error or opened file
@@ -537,6 +565,26 @@ add_to_list(const char name[], const void *data, void *param)
 	return 0;
 }
 
+/* Retrieves directory where FIFO objects are created.  Returns the path. */
+static const char *
+get_ipc_dir(void)
+{
+#ifndef _WIN32
+	return get_tmpdir();
+#else
+	return "//./pipe";
+#endif
+}
+
+/* Wraps strcmp() for use with qsort(). */
+static int
+sorter(const void *first, const void *second)
+{
+	const char *const *const a = first;
+	const char *const *const b = second;
+	return strcmp(*a, *b);
+}
+
 #ifndef _WIN32
 
 /* Tries to open a pipe to check whether it has any readers or it's
@@ -558,26 +606,6 @@ pipe_is_in_use(const char path[])
 }
 
 #endif
-
-/* Retrieves directory where FIFO objects are created.  Returns the path. */
-static const char *
-get_ipc_dir(void)
-{
-#ifndef _WIN32
-	return get_tmpdir();
-#else
-	return "//./pipe";
-#endif
-}
-
-/* Wraps strcmp() for use with qsort(). */
-static int
-sorter(const void *first, const void *second)
-{
-	const char *const *const a = first;
-	const char *const *const b = second;
-	return strcmp(*a, *b);
-}
 
 #endif
 
