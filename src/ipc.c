@@ -89,6 +89,14 @@ ipc_send(const char whom[], char *data[])
 /* Prefix for names of all pipes to distinguish them from other pipes. */
 #define PREFIX "vifm-ipc-"
 
+#ifndef _WIN32
+typedef FILE *read_pipe_t;
+#define NULL_READ_PIPE NULL
+#else
+typedef HANDLE read_pipe_t;
+#define NULL_READ_PIPE INVALID_HANDLE_VALUE
+#endif
+
 /* Holds list information for add_to_list(). */
 typedef struct
 {
@@ -99,9 +107,9 @@ typedef struct
 list_data_t;
 
 static void clean_at_exit(void);
-static FILE * create_pipe(const char name[], char path_buf[], size_t len);
+static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
 static char * receive_pkg(void);
-static FILE * try_use_pipe(const char path[]);
+static read_pipe_t try_use_pipe(const char path[]);
 static void handle_pkg(const char pkg[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(void);
@@ -120,7 +128,7 @@ static int initialized;
 /* Path to the pipe used by this instance. */
 static char pipe_path[PATH_MAX];
 /* Opened file of the pipe. */
-static FILE *pipe_file;
+static read_pipe_t pipe_file;
 
 int
 ipc_enabled(void)
@@ -141,7 +149,7 @@ ipc_init(const char name[], ipc_callback callback_func)
 	}
 
 	pipe_file = create_pipe(name, pipe_path, sizeof(pipe_path));
-	if(pipe_file == NULL)
+	if(pipe_file == NULL_READ_PIPE)
 	{
 		initialized = -1;
 		return;
@@ -155,8 +163,12 @@ ipc_init(const char name[], ipc_callback callback_func)
 static void
 clean_at_exit(void)
 {
+#ifndef WIN32_PIPE_READ
 	fclose(pipe_file);
 	unlink(pipe_path);
+#else
+	CloseHandle(pipe_file);
+#endif
 }
 
 void
@@ -241,8 +253,10 @@ receive_pkg(void)
 	uint32_t size;
 	char *pkg;
 	char *p;
+	DWORD nread;
 
-	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U || size >= 4294967294U)
+	if(ReadFile(pipe_file, &size, sizeof(size), &nread, NULL) == FALSE ||
+			size >= 4294967294U)
 	{
 		return NULL;
 	}
@@ -256,29 +270,23 @@ receive_pkg(void)
 	p = pkg;
 	while(size != 0U)
 	{
-		size_t nread;
-
 		/* TODO: maybe use OVERLAPPED I/O on Windows instead, it's just so
 		 *       inconvenient... */
 		usleep(10000);
 
-		nread = fread(p, 1U, size, pipe_file);
-		size -= nread;
-		p += nread;
-
-		if(nread == 0U)
+		if(ReadFile(pipe_file, p, size, &nread, NULL) == FALSE || nread == 0U)
 		{
 			break;
 		}
+
+		size -= nread;
+		p += nread;
 	}
 
-	{
-		/* Weird requirement for named pipes, need to break and set connection every
-		 * time. */
-		const HANDLE pipe_handle = (HANDLE)_get_osfhandle(fileno(pipe_file));
-		DisconnectNamedPipe(pipe_handle);
-		ConnectNamedPipe(pipe_handle, NULL);
-	}
+	/* Weird requirement for named pipes, need to break and set connection every
+	 * time. */
+	DisconnectNamedPipe(pipe_file);
+	ConnectNamedPipe(pipe_file, NULL);
 
 	if(size != 0U)
 	{
@@ -294,40 +302,39 @@ receive_pkg(void)
 #endif
 }
 
-/* Tries to open a pipe for communication.  Returns NULL on error or opened file
- * descriptor otherwise. */
-static FILE *
+/* Tries to open a pipe for communication.  Returns NULL_READ_PIPE on error or
+ * opened file descriptor otherwise. */
+static read_pipe_t
 create_pipe(const char name[], char path_buf[], size_t len)
 {
 	int id = 0;
-	FILE *f;
+	read_pipe_t rp;
 
 	/* Try to use name as is at first. */
 	snprintf(path_buf, len, "%s/" PREFIX "%s", get_ipc_dir(), name);
-	f = try_use_pipe(path_buf);
-	while(f == NULL)
+	rp = try_use_pipe(path_buf);
+	while(rp == NULL_READ_PIPE)
 	{
 		snprintf(path_buf, len, "%s/" PREFIX "%s%d", get_ipc_dir(), name, ++id);
 
 		if(id == 0)
 		{
-			return NULL;
+			return NULL_READ_PIPE;
 		}
 
-		f = try_use_pipe(path_buf);
+		rp = try_use_pipe(path_buf);
 	}
 
-	return f;
+	return rp;
 }
 
-/* Either creates a pipe or reused previously abandoned one.  Returns NULL on
- * failure or valid file descriptor otherwise. */
-static FILE *
+/* Either creates a pipe or reused previously abandoned one.  Returns
+ * NULL_READ_PIPE on failure or valid file descriptor otherwise. */
+static read_pipe_t
 try_use_pipe(const char path[])
 {
-	FILE *f;
-
 #ifndef _WIN32
+	FILE *f;
 	int fd;
 
 	/* Try to create a pipe. */
@@ -337,7 +344,7 @@ try_use_pipe(const char path[])
 		int fd = open(path, O_RDONLY | O_NONBLOCK);
 		if(fd == -1)
 		{
-			return NULL;
+			return NULL_READ_PIPE;
 		}
 		return fdopen(fd, "r");
 	}
@@ -346,42 +353,29 @@ try_use_pipe(const char path[])
 	 * exists and is in use. */
 	if(errno != EEXIST || pipe_is_in_use(path))
 	{
-		return NULL;
+		return NULL_READ_PIPE;
 	}
 
 	/* Use this file if we're the only one willing to read from it. */
 	fd = open(path, O_RDONLY | O_NONBLOCK);
-#else
-	HANDLE h;
-	int fd;
-
-	h = CreateNamedPipeA(path,
-			PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE,
-			PIPE_TYPE_BYTE | PIPE_NOWAIT | PIPE_REJECT_REMOTE_CLIENTS,
-			PIPE_UNLIMITED_INSTANCES, 4096, 4096, 10, NULL);
-	if(h == INVALID_HANDLE_VALUE)
-	{
-		return NULL;
-	}
-
-	fd = _open_osfhandle((intptr_t)h, _O_APPEND | _O_RDONLY);
-	if(fd == -1)
-	{
-		CloseHandle(h);
-	}
-#endif
 
 	if(fd == -1)
 	{
-		return NULL;
+		return NULL_READ_PIPE;
 	}
 
 	f = fdopen(fd, "r");
-	if(f == NULL)
+	if(f == NULL_READ_PIPE)
 	{
 		close(fd);
 	}
 	return f;
+#else
+	return CreateNamedPipeA(path,
+			PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE,
+			PIPE_TYPE_BYTE | PIPE_NOWAIT | PIPE_REJECT_REMOTE_CLIENTS,
+			PIPE_UNLIMITED_INSTANCES, 4096, 4096, 10, NULL);
+#endif
 }
 
 /* Parses pkg into array of strings and invokes callback. */
