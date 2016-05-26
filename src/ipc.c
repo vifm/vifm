@@ -53,18 +53,28 @@ ipc_send(const char whom[], char *data[])
 
 #else
 
-#ifndef _WIN32
-#include <sys/types.h>
-#include <sys/select.h> /* FD_* select() */
+#if defined(_WIN32) || defined(__CYGWIN__)
+/* Named pipes don't work very well on Cygwin neither directly nor indirectly
+ * (using //./pipe/ paths with POSIX API), so use Win32 API on Cygwin. */
+# define WIN32_PIPE_READ
+#endif
+
+#ifndef WIN32_PIPE_READ
+# include <sys/types.h>
+# include <sys/select.h> /* FD_* select() */
 #else
-#define O_NONBLOCK 0
-#define REQUIRED_WINVER 0x0600 /* To get PIPE_REJECT_REMOTE_CLIENTS. */
-#include "utils/windefs.h"
-#ifndef PIPE_REJECT_REMOTE_CLIENTS
-#define PIPE_REJECT_REMOTE_CLIENTS 1
+# define O_NONBLOCK 0
+# define REQUIRED_WINVER 0x0600 /* To get PIPE_REJECT_REMOTE_CLIENTS. */
+# include "utils/windefs.h"
+# include <windows.h>
+# ifndef PIPE_REJECT_REMOTE_CLIENTS
+#  define PIPE_REJECT_REMOTE_CLIENTS 1
+# endif
+# ifdef KEY_EVENT
+#  undef KEY_EVENT /* curses also defines a macro with such name. */
+# endif
 #endif
-#include <windows.h>
-#endif
+
 #include <sys/stat.h> /* mkfifo() stat() */
 #include <dirent.h> /* DIR closedir() opendir() readdir() */
 #include <fcntl.h>
@@ -89,6 +99,14 @@ ipc_send(const char whom[], char *data[])
 /* Prefix for names of all pipes to distinguish them from other pipes. */
 #define PREFIX "vifm-ipc-"
 
+#ifndef WIN32_PIPE_READ
+typedef FILE *read_pipe_t;
+#define NULL_READ_PIPE NULL
+#else
+typedef HANDLE read_pipe_t;
+#define NULL_READ_PIPE INVALID_HANDLE_VALUE
+#endif
+
 /* Holds list information for add_to_list(). */
 typedef struct
 {
@@ -99,18 +117,18 @@ typedef struct
 list_data_t;
 
 static void clean_at_exit(void);
-static FILE * create_pipe(const char name[], char path_buf[], size_t len);
+static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
 static char * receive_pkg(void);
-static FILE * try_use_pipe(const char path[]);
+static read_pipe_t try_use_pipe(const char path[]);
 static void handle_pkg(const char pkg[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(void);
 static int add_to_list(const char name[], const void *data, void *param);
-#ifndef _WIN32
-static int pipe_is_in_use(const char path[]);
-#endif
 static const char * get_ipc_dir(void);
 static int sorter(const void *first, const void *second);
+#ifndef WIN32_PIPE_READ
+static int pipe_is_in_use(const char path[]);
+#endif
 
 /* Stores callback to report received messages. */
 static ipc_callback callback;
@@ -120,7 +138,7 @@ static int initialized;
 /* Path to the pipe used by this instance. */
 static char pipe_path[PATH_MAX];
 /* Opened file of the pipe. */
-static FILE *pipe_file;
+static read_pipe_t pipe_file;
 
 int
 ipc_enabled(void)
@@ -141,7 +159,7 @@ ipc_init(const char name[], ipc_callback callback_func)
 	}
 
 	pipe_file = create_pipe(name, pipe_path, sizeof(pipe_path));
-	if(pipe_file == NULL)
+	if(pipe_file == NULL_READ_PIPE)
 	{
 		initialized = -1;
 		return;
@@ -155,8 +173,12 @@ ipc_init(const char name[], ipc_callback callback_func)
 static void
 clean_at_exit(void)
 {
+#ifndef WIN32_PIPE_READ
 	fclose(pipe_file);
 	unlink(pipe_path);
+#else
+	CloseHandle(pipe_file);
+#endif
 }
 
 void
@@ -186,15 +208,14 @@ ipc_check(void)
 static char *
 receive_pkg(void)
 {
+#ifndef WIN32_PIPE_READ
 	uint32_t size;
 	char *pkg;
 	char *p;
 
-#ifndef _WIN32
 	fd_set ready;
 	int max_fd;
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 10000 };
-#endif
 
 	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U || size >= 4294967294U)
 	{
@@ -207,51 +228,25 @@ receive_pkg(void)
 		return NULL;
 	}
 
-#ifndef _WIN32
 	max_fd = fileno(pipe_file);
 	FD_ZERO(&ready);
 	FD_SET(max_fd, &ready);
-#endif
 
 	p = pkg;
-	while(size != 0U
-#ifndef _WIN32
-			&& select(max_fd + 1, &ready, NULL, NULL, &ts) > 0
-#endif
-			)
+	while(size != 0U && select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
 	{
-		size_t read;
+		const size_t nread = fread(p, 1U, size, pipe_file);
+		size -= nread;
+		p += nread;
 
-#ifdef _WIN32
-		/* TODO: maybe use OVERLAPPED I/O on Windows instead, it's just so
-		 *       inconvenient... */
-		usleep(10000);
-#endif
-
-		read = fread(p, 1U, size, pipe_file);
-		size -= read;
-		p += read;
-
-		if(read == 0U)
+		if(nread == 0U)
 		{
 			break;
 		}
 
-#ifndef _WIN32
 		ts.tv_sec = 0;
 		ts.tv_usec = 10000;
-#endif
 	}
-
-#ifdef _WIN32
-	{
-		/* Weird requirement for named pipes, need to break and set connection every
-		 * time. */
-		const HANDLE pipe_handle = (HANDLE)_get_osfhandle(fileno(pipe_file));
-		DisconnectNamedPipe(pipe_handle);
-		ConnectNamedPipe(pipe_handle, NULL);
-	}
-#endif
 
 	if(size != 0U)
 	{
@@ -264,42 +259,92 @@ receive_pkg(void)
 	*p = '\0';
 
 	return pkg;
+#else
+	uint32_t size;
+	char *pkg;
+	char *p;
+	DWORD nread;
+
+	if(ReadFile(pipe_file, &size, sizeof(size), &nread, NULL) == FALSE ||
+			size >= 4294967294U)
+	{
+		return NULL;
+	}
+
+	pkg = malloc(size + 2U);
+	if(pkg == NULL)
+	{
+		return NULL;
+	}
+
+	p = pkg;
+	while(size != 0U)
+	{
+		/* TODO: maybe use OVERLAPPED I/O on Windows instead, it's just so
+		 *       inconvenient... */
+		usleep(10000);
+
+		if(ReadFile(pipe_file, p, size, &nread, NULL) == FALSE || nread == 0U)
+		{
+			break;
+		}
+
+		size -= nread;
+		p += nread;
+	}
+
+	/* Weird requirement for named pipes, need to break and set connection every
+	 * time. */
+	DisconnectNamedPipe(pipe_file);
+	ConnectNamedPipe(pipe_file, NULL);
+
+	if(size != 0U)
+	{
+		free(pkg);
+		return NULL;
+	}
+
+	/* Make sure we have two trailing zeroes. */
+	*p++ = '\0';
+	*p = '\0';
+
+	return pkg;
+#endif
 }
 
-/* Tries to open a pipe for communication.  Returns NULL on error or opened file
- * descriptor otherwise. */
-static FILE *
+/* Tries to open a pipe for communication.  Returns NULL_READ_PIPE on error or
+ * opened file descriptor otherwise. */
+static read_pipe_t
 create_pipe(const char name[], char path_buf[], size_t len)
 {
 	int id = 0;
-	FILE *f;
+	read_pipe_t rp;
 
 	/* Try to use name as is at first. */
 	snprintf(path_buf, len, "%s/" PREFIX "%s", get_ipc_dir(), name);
-	f = try_use_pipe(path_buf);
-	while(f == NULL)
+	rp = try_use_pipe(path_buf);
+	while(rp == NULL_READ_PIPE)
 	{
 		snprintf(path_buf, len, "%s/" PREFIX "%s%d", get_ipc_dir(), name, ++id);
 
 		if(id == 0)
 		{
-			return NULL;
+			return NULL_READ_PIPE;
 		}
 
-		f = try_use_pipe(path_buf);
+		rp = try_use_pipe(path_buf);
 	}
 
-	return f;
+	return rp;
 }
 
-/* Either creates a pipe or reused previously abandoned one.  Returns NULL on
- * failure or valid file descriptor otherwise. */
-static FILE *
+/* Either creates a pipe or reused previously abandoned one.  Returns
+ * NULL_READ_PIPE on failure or valid file descriptor otherwise. */
+static read_pipe_t
 try_use_pipe(const char path[])
 {
+#ifndef WIN32_PIPE_READ
 	FILE *f;
-
-#ifndef _WIN32
 	int fd;
 
 	/* Try to create a pipe. */
@@ -309,7 +354,7 @@ try_use_pipe(const char path[])
 		int fd = open(path, O_RDONLY | O_NONBLOCK);
 		if(fd == -1)
 		{
-			return NULL;
+			return NULL_READ_PIPE;
 		}
 		return fdopen(fd, "r");
 	}
@@ -318,42 +363,29 @@ try_use_pipe(const char path[])
 	 * exists and is in use. */
 	if(errno != EEXIST || pipe_is_in_use(path))
 	{
-		return NULL;
+		return NULL_READ_PIPE;
 	}
 
 	/* Use this file if we're the only one willing to read from it. */
 	fd = open(path, O_RDONLY | O_NONBLOCK);
-#else
-	HANDLE h;
-	int fd;
-
-	h = CreateNamedPipeA(path,
-			PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE,
-			PIPE_TYPE_BYTE | PIPE_NOWAIT | PIPE_REJECT_REMOTE_CLIENTS,
-			PIPE_UNLIMITED_INSTANCES, 4096, 4096, 10, NULL);
-	if(h == INVALID_HANDLE_VALUE)
-	{
-		return NULL;
-	}
-
-	fd = _open_osfhandle((intptr_t)h, _O_APPEND | _O_RDONLY);
-	if(fd == -1)
-	{
-		CloseHandle(h);
-	}
-#endif
 
 	if(fd == -1)
 	{
-		return NULL;
+		return NULL_READ_PIPE;
 	}
 
 	f = fdopen(fd, "r");
-	if(f == NULL)
+	if(f == NULL_READ_PIPE)
 	{
 		close(fd);
 	}
 	return f;
+#else
+	return CreateNamedPipeA(path,
+			PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE,
+			PIPE_TYPE_BYTE | PIPE_NOWAIT | PIPE_REJECT_REMOTE_CLIENTS,
+			PIPE_UNLIMITED_INSTANCES, 4096, 4096, 10, NULL);
+#endif
 }
 
 /* Parses pkg into array of strings and invokes callback. */
@@ -430,6 +462,7 @@ ipc_send(const char whom[], char *data[])
 static int
 send_pkg(const char whom[], const char what[], size_t len)
 {
+#ifndef WIN32_PIPE_READ
 	char path[PATH_MAX];
 	int fd;
 	FILE *dst;
@@ -460,6 +493,33 @@ send_pkg(const char whom[], const char what[], size_t len)
 
 	fclose(dst);
 	return 0;
+#else
+	char path[PATH_MAX];
+	HANDLE h;
+	uint32_t size;
+	DWORD nwritten;
+
+	snprintf(path, sizeof(path), "%s/" PREFIX "%s", get_ipc_dir(), whom);
+
+	h = CreateFileA(path, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+			0, NULL);
+	if(h == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	size = len;
+	if(WriteFile(h, &size, sizeof(size), &nwritten, NULL) == FALSE ||
+			nwritten != sizeof(size) ||
+			WriteFile(h, what, len, &nwritten, NULL) == FALSE || nwritten != len)
+	{
+		CloseHandle(h);
+		return 1;
+	}
+
+	CloseHandle(h);
+	return 0;
+#endif
 }
 
 /* Automatically picks target instance to send data to.  Returns newly allocated
@@ -488,11 +548,38 @@ ipc_list(int *len)
 {
 	list_data_t data = { .ipc_dir = get_ipc_dir() };
 
+#ifndef WIN32_PIPE_READ
 	if(enum_dir_content(data.ipc_dir, &add_to_list, &data) != 0)
 	{
 		*len = 0;
 		return NULL;
 	}
+#else
+	{
+		char find_pat[PATH_MAX];
+		HANDLE hfind;
+		WIN32_FIND_DATAA ffd;
+
+		snprintf(find_pat, sizeof(find_pat), "%s/*", data.ipc_dir);
+		hfind = FindFirstFileA(find_pat, &ffd);
+
+		if(hfind == INVALID_HANDLE_VALUE)
+		{
+			*len = 0;
+			return NULL;
+		}
+
+		do
+		{
+			if(add_to_list(ffd.cFileName, &ffd, &data) != 0)
+			{
+				break;
+			}
+		}
+		while(FindNextFileA(hfind, &ffd));
+		FindClose(hfind);
+	}
+#endif
 
 	qsort(data.lst, data.len, sizeof(*data.lst), &sorter);
 
@@ -519,7 +606,7 @@ add_to_list(const char name[], const void *data, void *param)
 	}
 
 	/* On Windows it's guaranteed to be a valid pipe. */
-#ifndef _WIN32
+#ifndef WIN32_PIPE_READ
 	{
 		char path[PATH_MAX];
 		struct stat statbuf;
@@ -537,7 +624,27 @@ add_to_list(const char name[], const void *data, void *param)
 	return 0;
 }
 
-#ifndef _WIN32
+/* Retrieves directory where FIFO objects are created.  Returns the path. */
+static const char *
+get_ipc_dir(void)
+{
+#ifndef WIN32_PIPE_READ
+	return get_tmpdir();
+#else
+	return "//./pipe";
+#endif
+}
+
+/* Wraps strcmp() for use with qsort(). */
+static int
+sorter(const void *first, const void *second)
+{
+	const char *const *const a = first;
+	const char *const *const b = second;
+	return strcmp(*a, *b);
+}
+
+#ifndef WIN32_PIPE_READ
 
 /* Tries to open a pipe to check whether it has any readers or it's
  * abandoned.  Returns non-zero if somebody is reading from the pipe and zero
@@ -558,26 +665,6 @@ pipe_is_in_use(const char path[])
 }
 
 #endif
-
-/* Retrieves directory where FIFO objects are created.  Returns the path. */
-static const char *
-get_ipc_dir(void)
-{
-#ifndef _WIN32
-	return get_tmpdir();
-#else
-	return "//./pipe";
-#endif
-}
-
-/* Wraps strcmp() for use with qsort(). */
-static int
-sorter(const void *first, const void *second)
-{
-	const char *const *const a = first;
-	const char *const *const b = second;
-	return strcmp(*a, *b);
-}
 
 #endif
 

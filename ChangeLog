@@ -137,6 +137,9 @@
 	Fixed updating view columns on leaving very custom view (%U) which set
 	sort option.  Thanks to filterfalse.
 
+	Fixed remote feature on cygwin.  Thanks to Cosmin Popescu (a.k.a.
+	cosminadrianpopescu).
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
