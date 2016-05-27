@@ -22,7 +22,7 @@
 #ifndef VIFM__UTILS__MATCHER_H__
 #define VIFM__UTILS__MATCHER_H__
 
-/* File path/name matcher (glob/regexp). */
+/* File path/name matcher (glob/regexp/mime-type). */
 
 /* Opaque matcher type. */
 typedef struct matcher_t matcher_t;
@@ -34,7 +34,7 @@ typedef struct matcher_t matcher_t;
 matcher_t * matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		const char on_empty_re[], char **error);
 
-/* Makes a copy of existing matcher.  Returns the clone, or NULL on error.  */
+/* Makes a copy of existing matcher.  Returns the clone, or NULL on error. */
 matcher_t * matcher_clone(const matcher_t *matcher);
 
 /* Frees all resources allocated by the matcher.  matcher can be NULL. */
@@ -42,7 +42,7 @@ void matcher_free(matcher_t *matcher);
 
 /* Checks whether given path/name matches.  Returns non-zero if so, otherwise
  * zero is returned. */
-int matcher_matches(matcher_t *matcher, const char path[]);
+int matcher_matches(const matcher_t *matcher, const char path[]);
 
 /* Retrieves original matcher expression.  Returns the expression. */
 const char * matcher_get_expr(const matcher_t *matcher);
@@ -55,8 +55,8 @@ const char * matcher_get_undec(const matcher_t *matcher);
  * Returns non-zero if so, otherwise zero is returned. */
 int matcher_includes(const matcher_t *matcher, const matcher_t *like);
 
-/* Checks whether given string is a match expression.  Returns non-zero if so,
- * otherwise zero is returned. */
+/* Checks whether given string is a decorated match expression.  Returns
+ * non-zero if so, otherwise zero is returned. */
 int matcher_is_expr(const char str[]);
 
 /* Checks whether given matcher is a full path matcher.  Returns non-zero if so,

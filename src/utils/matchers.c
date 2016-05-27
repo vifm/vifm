@@ -122,6 +122,37 @@ matchers_alloc(const char list[], int cs_by_def, int glob_by_def,
 	return matchers;
 }
 
+matchers_t *
+matchers_clone(const matchers_t *matchers)
+{
+	int i;
+	matchers_t *const clone = malloc(sizeof(*matchers));
+
+	clone->count = matchers->count;
+	clone->list = reallocarray(NULL, matchers->count, sizeof(matcher_t *));
+	clone->expr = strdup(matchers->expr);
+
+	if(clone->list == NULL || clone->expr == NULL)
+	{
+		free(clone->list);
+		free(clone->expr);
+		return NULL;
+	}
+
+	for(i = 0; i < matchers->count; ++i)
+	{
+		clone->list[i] = matcher_clone(matchers->list[i]);
+		if(clone->list[i] == NULL)
+		{
+			clone->count = i;
+			matchers_free(clone);
+			return NULL;
+		}
+	}
+
+	return clone;
+}
+
 void
 matchers_free(matchers_t *matchers)
 {
@@ -154,10 +185,70 @@ matchers_match(const matchers_t *matchers, const char path[])
 	return 1;
 }
 
+int
+matchers_match_dir(const matchers_t *matchers, const char path[])
+{
+	int i;
+	char *const dir_path = format_str("%s/", path);
+	for(i = 0; i < matchers->count; ++i)
+	{
+		const matcher_t *const m = matchers->list[i];
+		if(matcher_is_full_path(m) && !ends_with(matcher_get_undec(m), "/"))
+		{
+			break;
+		}
+		if(!matcher_matches(m, dir_path))
+		{
+			break;
+		}
+	}
+	free(dir_path);
+	return (i >= matchers->count);
+}
+
 const char *
 matchers_get_expr(const matchers_t *matchers)
 {
 	return matchers->expr;
+}
+
+int
+matchers_includes(const matchers_t *matchers, const matchers_t *like)
+{
+	int i;
+	for(i = 0; i < like->count; ++i)
+	{
+		int j;
+		for(j = 0; j < matchers->count; ++j)
+		{
+			if(matcher_includes(matchers->list[j], like->list[i]))
+			{
+				break;
+			}
+		}
+		if(j >= matchers->count)
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int
+matchers_is_expr(const char str[])
+{
+	parsing_state_t state = { .input = str, .tok = BEGIN };
+	load_token(&state, 0);
+	do
+	{
+		if(!find_pattern(&state))
+		{
+			return 0;
+		}
+	}
+	while(state.tok != END);
+
+	return 1;
 }
 
 /* Below is a parser that accepts list of patterns:
@@ -282,6 +373,7 @@ find_path_regex(parsing_state_t *state)
 static int
 find_regex(parsing_state_t *state, TokenType decor)
 {
+	size_t length = 0U;
 	const parsing_state_t prev_state = *state;
 	const int single_char = (get_token_width(decor) == 1);
 	if(state->tok == EMARK)
@@ -301,9 +393,10 @@ find_regex(parsing_state_t *state, TokenType decor)
 			load_token(state, single_char);
 			load_token(state, single_char);
 		}
+		length += (state->tok != decor && state->tok != END);
 	}
 	while(state->tok != decor && state->tok != END);
-	if(state->tok != decor)
+	if(state->tok != decor || length == 0U)
 	{
 		*state = prev_state;
 		return 0;
@@ -334,6 +427,7 @@ find_mime(parsing_state_t *state)
 static int
 find_pat(parsing_state_t *state, TokenType left, TokenType right)
 {
+	size_t length = 0U;
 	const parsing_state_t prev_state = *state;
 	const int single_char = (get_token_width(left) == 1);
 	if(state->tok == EMARK)
@@ -348,9 +442,10 @@ find_pat(parsing_state_t *state, TokenType left, TokenType right)
 	do
 	{
 		load_token(state, single_char);
+		length += (state->tok != right && state->tok != END);
 	}
 	while(state->tok != right && state->tok != END);
-	if(state->tok != right)
+	if(state->tok != right || length == 0U)
 	{
 		*state = prev_state;
 		return 0;

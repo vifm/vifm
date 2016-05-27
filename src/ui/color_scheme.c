@@ -37,7 +37,7 @@
 #include "../utils/fs.h"
 #include "../utils/fsddata.h"
 #include "../utils/macros.h"
-#include "../utils/matcher.h"
+#include "../utils/matchers.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
@@ -751,8 +751,7 @@ free_cs_highlights(col_scheme_t *cs)
 
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
-		file_hi_t *const hi = &cs->file_hi[i];
-		matcher_free(hi->matcher);
+		matchers_free(cs->file_hi[i].matchers);
 	}
 
 	free(cs->file_hi);
@@ -773,7 +772,7 @@ clone_cs_highlights(const col_scheme_t *from)
 	for(i = 0; i < from->file_hi_count; ++i)
 	{
 		const file_hi_t *const hi = &from->file_hi[i];
-		file_hi[i].matcher = matcher_clone(hi->matcher);
+		file_hi[i].matchers = matchers_clone(hi->matchers);
 		file_hi[i].hi = hi->hi;
 	}
 
@@ -979,7 +978,7 @@ cs_mix_colors(col_attr_t *base, const col_attr_t *mixup)
 }
 
 int
-cs_add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
+cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi)
 {
 	void *p;
 	file_hi_t *file_hi;
@@ -995,7 +994,7 @@ cs_add_file_hi(struct matcher_t *matcher, const col_attr_t *hi)
 
 	file_hi = &cs->file_hi[cs->file_hi_count];
 
-	file_hi->matcher = matcher;
+	file_hi->matchers = matchers;
 	file_hi->hi = *hi;
 
 	++cs->file_hi_count;
@@ -1018,7 +1017,7 @@ cs_get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
-		if(matcher_matches(file_hi->matcher, fname))
+		if(matchers_match(file_hi->matchers, fname))
 		{
 			*hi_hint = i;
 			return &file_hi->hi;

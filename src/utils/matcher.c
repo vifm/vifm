@@ -323,7 +323,7 @@ free_matcher_items(matcher_t *matcher)
 }
 
 int
-matcher_matches(matcher_t *matcher, const char path[])
+matcher_matches(const matcher_t *matcher, const char path[])
 {
 	if(matcher->type == MT_MIME)
 	{

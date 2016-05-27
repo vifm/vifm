@@ -29,6 +29,9 @@ typedef struct matchers_t matchers_t;
 matchers_t * matchers_alloc(const char list[], int cs_by_def, int glob_by_def,
 		const char on_empty_re[], char **error);
 
+/* Makes a copy of existing matchers.  Returns the clone, or NULL on error. */
+matchers_t * matchers_clone(const matchers_t *matchers);
+
 /* Frees all resources allocated by the matchers.  matchers can be NULL. */
 void matchers_free(matchers_t *matchers);
 
@@ -36,8 +39,20 @@ void matchers_free(matchers_t *matchers);
  * zero is returned. */
 int matchers_match(const matchers_t *matchers, const char path[]);
 
+/* Checks whether given path/name matches.  Applies some heuristics for matching
+ * directories.  Returns non-zero if so, otherwise zero is returned. */
+int matchers_match_dir(const matchers_t *matchers, const char path[]);
+
 /* Retrieves original matcher expression.  Returns the expression. */
 const char * matchers_get_expr(const matchers_t *matchers);
+
+/* Checks whether everything matched by the matcher is also matched by the like.
+ * Returns non-zero if so, otherwise zero is returned. */
+int matchers_includes(const matchers_t *matchers, const matchers_t *like);
+
+/* Checks whether given string is a list of match expressions.  Returns non-zero
+ * if so, otherwise zero is returned. */
+int matchers_is_expr(const char str[]);
 
 TSTATIC_DEFS(
 	char ** break_into_matchers(const char concat[], int *count);

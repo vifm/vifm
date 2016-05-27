@@ -11,6 +11,15 @@ TEST(freeing_null_matchers_does_nothing)
 	matchers_free(NULL);
 }
 
+TEST(empty_patterns_are_disallowed)
+{
+	assert_false(matchers_is_expr("//"));
+	assert_false(matchers_is_expr("////iI"));
+	assert_false(matchers_is_expr("{}"));
+	assert_false(matchers_is_expr("{{}}"));
+	assert_false(matchers_is_expr("<>"));
+}
+
 TEST(wrong_expr_produces_error)
 {
 	char *error = NULL;

@@ -40,13 +40,13 @@ typedef enum
 }
 ColorSchemeState;
 
-struct matcher_t;
+struct matchers_t;
 
 /* Single file highlight description. */
 typedef struct
 {
-	struct matcher_t *matcher; /* Name matcher object. */
-	col_attr_t hi;             /* File appearance parameters. */
+	struct matchers_t *matchers; /* Name matcher object. */
+	col_attr_t hi;               /* File appearance parameters. */
 }
 file_hi_t;
 
@@ -137,7 +137,7 @@ void cs_mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
 /* Registers pattern-highlight pair for active color scheme.  Returns new value
  * for curr_stats.save_msg. */
-int cs_add_file_hi(struct matcher_t *matcher, const col_attr_t *hi);
+int cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi);
 
 /* Gets filename-specific highlight.  hi_hint can't be NULL and should be equal
  * to -1 initially.  Returns NULL if nothing is found, otherwise returns pointer
