@@ -382,8 +382,7 @@ find_regex(parsing_state_t *state, TokenType decor)
 	}
 	if(state->tok != decor)
 	{
-		*state = prev_state;
-		return 0;
+		goto mismatch;
 	}
 	do
 	{
@@ -398,8 +397,7 @@ find_regex(parsing_state_t *state, TokenType decor)
 	while(state->tok != decor && state->tok != END);
 	if(state->tok != decor || length == 0U)
 	{
-		*state = prev_state;
-		return 0;
+		goto mismatch;
 	}
 	do
 	{
@@ -408,10 +406,13 @@ find_regex(parsing_state_t *state, TokenType decor)
 	while(state->tok == SYM && char_is_one_of("iI", state->input[0]));
 	if(!is_at_bound(state->tok))
 	{
-		*state = prev_state;
-		return 0;
+		goto mismatch;
 	}
 	return 1;
+
+mismatch:
+	*state = prev_state;
+	return 0;
 }
 
 /* MIME ::= "!"? "<" CHAR+ ">"
@@ -436,8 +437,7 @@ find_pat(parsing_state_t *state, TokenType left, TokenType right)
 	}
 	if(state->tok != left)
 	{
-		*state = prev_state;
-		return 0;
+		goto mismatch;
 	}
 	do
 	{
@@ -447,16 +447,18 @@ find_pat(parsing_state_t *state, TokenType left, TokenType right)
 	while(state->tok != right && state->tok != END);
 	if(state->tok != right || length == 0U)
 	{
-		*state = prev_state;
-		return 0;
+		goto mismatch;
 	}
 	load_token(state, 0);
 	if(!is_at_bound(state->tok))
 	{
-		*state = prev_state;
-		return 0;
+		goto mismatch;
 	}
 	return 1;
+
+mismatch:
+	*state = prev_state;
+	return 0;
 }
 
 /* Checks whether token is a valid ending of second level nonterminals.  Returns
