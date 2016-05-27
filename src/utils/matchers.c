@@ -65,12 +65,7 @@ parsing_state_t;
 
 TSTATIC char ** break_into_matchers(const char concat[], int *count);
 static int find_pattern(parsing_state_t *state);
-static int find_name_glob(parsing_state_t *state);
-static int find_path_glob(parsing_state_t *state);
-static int find_name_regex(parsing_state_t *state);
-static int find_path_regex(parsing_state_t *state);
 static int find_regex(parsing_state_t *state, TokenType decor);
-static int find_mime(parsing_state_t *state);
 static int find_pat(parsing_state_t *state, TokenType left, TokenType right);
 static int is_at_bound(TokenType tok);
 static void load_token(parsing_state_t *state, int single_char);
@@ -324,48 +319,21 @@ break_into_matchers(const char concat[], int *count)
 	return list;
 }
 
-/* PATTERN ::= NAME_GLOB | PATH_GLOB | NAME_REGEX | PATH_REGEX | MIME
+/* PATTERN    ::= NAME_GLOB | PATH_GLOB | NAME_REGEX | PATH_REGEX | MIME
+ * NAME_GLOB  ::= "!"? "{" CHAR+ "}" BORDER_TOKEN
+ * PATH_GLOB  ::= "!"? "{{" CHAR+ "}}" BORDER_TOKEN
+ * NAME_REGEX ::= "!"? "/" REGEX_CHAR+ "/" REGEX_FLAGS BORDER_TOKEN
+ * PATH_REGEX ::= "!"? "//" REGEX_CHAR+ "//" REGEX_FLAGS BORDER_TOKEN
+ * MIME       ::= "!"? "<" CHAR+ ">"
  * Returns non-zero on success, otherwise zero is returned. */
 static int
 find_pattern(parsing_state_t *state)
 {
-	return find_name_glob(state)
-	    || find_path_glob(state)
-	    || find_name_regex(state)
-	    || find_path_regex(state)
-	    || find_mime(state);
-}
-
-/* NAME_GLOB ::= "!"? "{" CHAR+ "}" BORDER_TOKEN
- * Returns non-zero on success, otherwise zero is returned. */
-static int
-find_name_glob(parsing_state_t *state)
-{
-	return find_pat(state, LCB, RCB);
-}
-
-/* PATH_GLOB ::= "!"? "{{" CHAR+ "}}" BORDER_TOKEN
- * Returns non-zero on success, otherwise zero is returned. */
-static int
-find_path_glob(parsing_state_t *state)
-{
-	return find_pat(state, DLCB, DRCB);
-}
-
-/* NAME_REGEX ::= "!"? "/" REGEX_CHAR+ "/" REGEX_FLAGS BORDER_TOKEN
- * Returns non-zero on success, otherwise zero is returned. */
-static int
-find_name_regex(parsing_state_t *state)
-{
-	return find_regex(state, SLASH);
-}
-
-/* PATH_REGEX ::= "!"? "//" REGEX_CHAR+ "//" REGEX_FLAGS BORDER_TOKEN
- * Returns non-zero on success, otherwise zero is returned. */
-static int
-find_path_regex(parsing_state_t *state)
-{
-	return find_regex(state, DSLASH);
+	return find_pat(state, LCB, RCB)
+	    || find_pat(state, DLCB, DRCB)
+	    || find_regex(state, SLASH)
+	    || find_regex(state, DSLASH)
+	    || find_pat(state, LT, GT);
 }
 
 /* Finds name or path regex.  Returns non-zero on success, otherwise zero is
@@ -413,14 +381,6 @@ find_regex(parsing_state_t *state, TokenType decor)
 mismatch:
 	*state = prev_state;
 	return 0;
-}
-
-/* MIME ::= "!"? "<" CHAR+ ">"
- * Returns non-zero on success, otherwise zero is returned. */
-static int
-find_mime(parsing_state_t *state)
-{
-	return find_pat(state, LT, GT);
 }
 
 /* Finds name, path glob or mime-type pattern.  Returns non-zero on success,
