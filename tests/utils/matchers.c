@@ -205,5 +205,43 @@ TEST(mime_patterns)
 	free_string_array(list, count);
 }
 
+TEST(matchers_are_cloned)
+{
+	char *error = NULL;
+	matchers_t *ms, *clone;
+
+	assert_non_null(ms = matchers_alloc("{*.ext}/.*/", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_non_null(clone = matchers_clone(ms));
+
+	assert_true(matchers_match(ms, "a.ext"));
+	assert_false(matchers_match(ms, "a.so"));
+	matchers_free(ms);
+
+	assert_true(matchers_match(clone, "a.ext"));
+	assert_false(matchers_match(clone, "a.so"));
+	matchers_free(clone);
+}
+
+TEST(inclusion_check_works)
+{
+	char *error = NULL;
+	matchers_t *ms1, *ms2;
+
+	assert_non_null(
+			ms1 = matchers_alloc("<*.cpp,*.c><*.cpp,*.d>", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(ms2 = matchers_alloc("<*.c><*.cpp>", 0, 1, "", &error));
+	assert_null(error);
+
+	assert_true(matchers_includes(ms1, ms1));
+	assert_true(matchers_includes(ms1, ms2));
+	assert_false(matchers_includes(ms2, ms1));
+
+	matchers_free(ms1);
+	matchers_free(ms2);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
