@@ -48,6 +48,10 @@
 	Added %z 'statusline' macro that inserts text of a short tip picked at
 	random.  Thanks to qinghao (a.k.a. haobug).
 
+	Added pattern ANDing.  Just list decorated patterns one after another and
+	such composite pattern will much when each of them matches.  Thanks to
+	filterfalse.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

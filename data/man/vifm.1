@@ -1,4 +1,4 @@
-.TH VIFM 1 "May 20, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "May 27, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3005,7 +3005,7 @@ Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
 support both globs and regular expressions as patterns to match file names or
 full paths.
 
-There are five possible ways to write them:
+There are six possible ways to write a single pattern:
 .RS 2
 .IP 1. 3
 [!]{comma-separated-name-globs}
@@ -3021,7 +3021,15 @@ There are five possible ways to write them:
 undecorated-pattern
 .RE
 
-Four first forms can include leading exclamation mark that negates pattern
+To combine several patterns (AND them), make sure you're using of the first
+five forms and write patterns one after another, like this:
+.EX
+  <text/plain>{*.vifm}
+.EE
+Mind that if you make a mistake the whole string will be treated as the sixth
+form.
+
+Five first forms can include leading exclamation mark that negates pattern
 matching.
 
 The last form is implicitly refers to one of others.  :highlight does not accept
