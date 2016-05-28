@@ -150,7 +150,7 @@ TEST(zero_length_match)
 	assert_null(prog_cmd = ft_get_program("git"));
 }
 
-TEST(pattern_list)
+TEST(pattern_list, IF(has_mime_type_detection))
 {
 	set_programs("<application/octet-stream>{binary-data}", "prog", 0, 0);
 

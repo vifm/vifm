@@ -92,7 +92,7 @@ TEST(several_patterns)
 	assert_true(ft_get_viewer("file.version.tar.bz2") != NULL);
 }
 
-TEST(pattern_list)
+TEST(pattern_list, IF(has_mime_type_detection))
 {
 	set_viewers("<application/octet-stream>{binary-data}", "prog1");
 
