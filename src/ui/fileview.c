@@ -953,18 +953,14 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 		size_t match_start;
 		char c;
 
-		if(align == AT_RIGHT)
+		/* Match offsets require correction if left hand side of file name is
+		 * trimmed. */
+		if(align == AT_RIGHT && utf8_strsw(full_column) > width)
 		{
-			/* Match offsets require correction if left hand side of the file is
-			 * trimmed. */
-
-			const size_t orig_width = utf8_strsw(full_column);
-			if(orig_width > width)
-			{
-				const int offset = orig_width - width;
-				lo -= offset;
-				ro -= offset;
-			}
+			/* As left side is trimmed and might contain ellipsis calculate offsets
+			 * according to the right side. */
+			lo = utf8_strsnlen(buf, width - utf8_strsw(full_column + lo));
+			ro = utf8_strsnlen(buf, width - utf8_strsw(full_column + ro));
 		}
 
 		/* Calculate number of screen characters before the match. */

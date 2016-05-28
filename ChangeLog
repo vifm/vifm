@@ -144,6 +144,9 @@
 	Fixed remote feature on cygwin.  Thanks to Cosmin Popescu (a.k.a.
 	cosminadrianpopescu).
 
+	Fixed search match highlighting of non-ascii characters in right aligned
+	file names.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.

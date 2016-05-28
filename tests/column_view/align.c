@@ -8,13 +8,14 @@
 #include "test.h"
 
 static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset);
+		size_t offset, AlignType align);
 static void column1_func(int id, const void *data, size_t buf_len, char *buf);
 
 static const size_t MAX_WIDTH = 80;
 
 static size_t print_offset;
 static char print_buffer[800 + 1];
+static AlignType last_align;
 
 SETUP()
 {
@@ -30,8 +31,12 @@ TEARDOWN()
 
 static void
 column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset)
+		size_t offset, AlignType align)
 {
+	if(column_id == COL1_ID)
+	{
+		last_align = align;
+	}
 	print_offset = offset;
 	strncpy(print_buffer + offset, buf, strlen(buf));
 }
@@ -134,26 +139,32 @@ TEST(dyn_align)
 	memset(print_buffer, '\0', MAX_WIDTH);
 	columns_format_line(cols, NULL, 8);
 	assert_string_equal("abcdefg ", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
 
 	memset(print_buffer, '\0', MAX_WIDTH);
 	columns_format_line(cols, NULL, 7);
 	assert_string_equal("abcdefg", print_buffer);
+	assert_int_equal(AT_LEFT, last_align);
 
 	memset(print_buffer, '\0', MAX_WIDTH);
 	columns_format_line(cols, NULL, 6);
 	assert_string_equal("bcdefg", print_buffer);
+	assert_int_equal(AT_RIGHT, last_align);
 
 	memset(print_buffer, '\0', MAX_WIDTH);
 	columns_format_line(cols, NULL, 4);
 	assert_string_equal("defg", print_buffer);
+	assert_int_equal(AT_RIGHT, last_align);
 
 	memset(print_buffer, '\0', MAX_WIDTH);
 	columns_format_line(cols, NULL, 2);
 	assert_string_equal("fg", print_buffer);
+	assert_int_equal(AT_RIGHT, last_align);
 
 	memset(print_buffer, '\0', MAX_WIDTH);
 	columns_format_line(cols, NULL, 1);
 	assert_string_equal("g", print_buffer);
+	assert_int_equal(AT_RIGHT, last_align);
 
 	columns_free(cols);
 }
