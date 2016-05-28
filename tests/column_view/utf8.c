@@ -11,7 +11,7 @@
 #include "test.h"
 
 static void column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset);
+		size_t offset, AlignType align);
 static void column1_func(int id, const void *data, size_t buf_len, char buf[]);
 static void column2_func(int id, const void *data, size_t buf_len, char buf[]);
 static int locale_works(void);
@@ -48,7 +48,7 @@ TEARDOWN()
 
 static void
 column_line_print(const void *data, int column_id, const char buf[],
-		size_t offset)
+		size_t offset, AlignType align)
 {
 	strncpy(print_buffer +
 			utf8_nstrsnlen(print_buffer, offset), buf, strlen(buf));

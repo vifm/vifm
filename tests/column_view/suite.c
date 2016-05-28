@@ -30,7 +30,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
 {
 	assert_non_null(print_next);
-	print_next(data, column_id, buf, offset);
+	print_next(data, column_id, buf, offset, align);
 }
 
 static void
