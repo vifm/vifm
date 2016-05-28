@@ -1,5 +1,6 @@
 #include "test.h"
 
+#include "../../src/int/file_magic.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/filetype.h"
 
@@ -25,6 +26,12 @@ set_viewers(const char pattern[], const char viewers[])
 	assert_null(error);
 
 	ft_set_viewers(ms, viewers);
+}
+
+int
+has_mime_type_detection(void)
+{
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

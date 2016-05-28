@@ -97,6 +97,8 @@ SETUP()
 	replace_string(&cfg.shell, "cmd");
 #endif
 
+	stats_update_shell_type(cfg.shell);
+
 	init_commands();
 
 	add_builtin_commands(commands, ARRAY_LEN(commands));
@@ -233,8 +235,6 @@ TEST(shell_invocation_works_in_udf)
 	const char *const cmd = "command! udf echo a > out";
 
 	assert_success(chdir(SANDBOX_PATH));
-
-	stats_update_shell_type(cfg.shell);
 
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
@@ -679,13 +679,6 @@ TEST(select_and_unselect_accept_external_command)
 	assert_success(chdir(cwd));
 
 	add_some_files_to_view(&lwin);
-
-#ifdef _WIN32
-	/* Work around `echo` in cmd.exe, which outputs trailing spaces... */
-	replace_string(&lwin.dir_entry[0].name, "a.c ");
-	replace_string(&lwin.dir_entry[1].name, "b.cc ");
-	replace_string(&lwin.dir_entry[2].name, "c.c ");
-#endif
 
 	assert_success(exec_commands("select !echo a.c", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.selected_files);

@@ -528,7 +528,7 @@ static pid_t
 background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
-	wchar_t *args[5];
+	wchar_t *args[4];
 	char cwd[PATH_MAX];
 	int code;
 	wchar_t *final_wide_cmd;
@@ -554,10 +554,9 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	if(!user_sh || curr_stats.shell_type == ST_CMD)
 	{
 		args[0] = wide_sh;
-		args[1] = L"/U";
-		args[2] = L"/C";
-		args[3] = final_wide_cmd;
-		args[4] = NULL;
+		args[1] = L"/C";
+		args[2] = final_wide_cmd;
+		args[3] = NULL;
 	}
 	else
 	{

@@ -9,6 +9,7 @@
 #include <wchar.h> /* wcsdup() */
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/abbrevs.h"
 #include "../../src/engine/cmds.h"
@@ -34,6 +35,7 @@
 
 static void dummy_handler(OPT_OP op, optval_t val);
 static void create_executable(const char file[]);
+static void create_file(const char file[]);
 static int dquotes_allowed_in_paths(void);
 
 static line_stats_t stats;
@@ -266,11 +268,19 @@ TEST(dquoted_completion)
 
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 {
-	assert_success(chdir("../quotes-in-names"));
+	assert_success(chdir(SANDBOX_PATH));
+
+	create_file("d-quote-\"-in-name");
+	create_file("d-quote-\"-in-name-2");
+	create_file("d-quote-\"-in-name-3");
 
 	prepare_for_line_completion(L"touch \"d-quote");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"touch \"d-quote-\\\"-in-name", stats.line);
+
+	assert_success(unlink("d-quote-\"-in-name"));
+	assert_success(unlink("d-quote-\"-in-name-2"));
+	assert_success(unlink("d-quote-\"-in-name-3"));
 }
 
 TEST(last_match_is_properly_escaped)
@@ -606,24 +616,32 @@ TEST(select_is_completed)
 static void
 create_executable(const char file[])
 {
-	FILE *const f = fopen(file, "w");
-	if(f != NULL)
-	{
-		fclose(f);
-	}
+	create_file(file);
 	assert_success(access(file, F_OK));
 	chmod(file, 0755);
 	assert_success(access(file, X_OK));
 }
 
+static void
+create_file(const char file[])
+{
+	FILE *const f = fopen(file, "w");
+	assert_non_null(f);
+	if(f != NULL)
+	{
+		fclose(f);
+	}
+}
+
 static int
 dquotes_allowed_in_paths(void)
 {
-#if defined(__CYGWIN__) || defined(_WIN32)
+	if(os_mkdir(SANDBOX_PATH "/a\"b", 0700) == 0)
+	{
+		assert_success(rmdir(SANDBOX_PATH "/a\"b"));
+		return 1;
+	}
 	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
