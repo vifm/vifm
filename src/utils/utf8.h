@@ -39,7 +39,7 @@ size_t utf8_chrw(const char str[]);
 size_t utf8_nstrlen(const char str[]);
 
 /* Calculates count of bytes of whole str or of the first max_screen_width utf-8
- * characters (so one character which take several positions on the screen are
+ * characters (so one character which takes several positions on the screen is
  * counted as several positions).  Returns the count. */
 size_t utf8_strsnlen(const char str[], size_t max_screen_width);
 
