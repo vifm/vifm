@@ -335,7 +335,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
 			{
-				if(*arg == '.' || is_path_absolute(arg))
+				if(*arg == '.' || *arg == '~' || is_path_absolute(arg))
 					filename_completion(arg, CT_DIREXEC);
 				else
 					complete_command_name(arg);

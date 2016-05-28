@@ -493,6 +493,15 @@ TEST(bang_abs_path_completion)
 #undef WPRINTF_MBSTR
 }
 
+TEST(tilde_is_completed_after_emark)
+{
+	strcpy(cfg.home_dir, TEST_DATA_PATH "/");
+
+	prepare_for_line_completion(L"!~/");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"!~/existing-files/", stats.line);
+}
+
 TEST(bmark_tags_are_completed)
 {
 	bmarks_clear();
