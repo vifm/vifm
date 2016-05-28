@@ -183,6 +183,9 @@ clean:
 	$(RM) -r $(B)bin/ $(B)sandbox/
 	$(RM) $(B)stic/stic.h.d $(B)stic/stic.h.gch
 
+# disable implicit rules to prevent compiling main sources here
+.SUFFIXES:
+
 $(vifm_obj) ../src/./tags.c: | $(vifm_bin)
 
 $(vifm_bin): $(vifm_src)
