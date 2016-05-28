@@ -150,5 +150,13 @@ TEST(zero_length_match)
 	assert_null(prog_cmd = ft_get_program("git"));
 }
 
+TEST(pattern_list)
+{
+	set_programs("<application/octet-stream>{binary-data}", "prog", 0, 0);
+
+	assert_string_equal("prog",
+			ft_get_program(TEST_DATA_PATH "/read/binary-data"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

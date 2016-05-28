@@ -22,7 +22,7 @@
 
 #define VIFM_PSEUDO_CMD "vifm"
 
-struct matcher_t;
+struct matchers_t;
 
 /* Type of file association by it's source. */
 typedef enum
@@ -49,10 +49,11 @@ typedef struct
 }
 assoc_records_t;
 
+/* Single file association entry. */
 typedef struct
 {
-	struct matcher_t *matcher;
-	assoc_records_t records;
+	struct matchers_t *matchers; /* Matching mechanism. */
+	assoc_records_t records;     /* Associated programs. */
 }
 assoc_t;
 
@@ -94,8 +95,8 @@ assoc_records_t ft_get_all_programs(const char file[]);
 
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated programs either for X or non-X associations and depending on
- * current execution environment.  Takes over ownership of the matcher. */
-void ft_set_programs(struct matcher_t *matcher, const char programs[],
+ * current execution environment.  Takes over ownership of the matchers. */
+void ft_set_programs(struct matchers_t *matchers, const char programs[],
 		int for_x, int in_x);
 
 /* Viewers. */
@@ -110,7 +111,7 @@ assoc_records_t ft_get_all_viewers(const char file[]);
 
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated viewers. */
-void ft_set_viewers(struct matcher_t *matcher, const char viewers[]);
+void ft_set_viewers(struct matchers_t *matchers, const char viewers[]);
 
 /* Records managing. */
 

@@ -38,7 +38,7 @@
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
-#include "../utils/matcher.h"
+#include "../utils/matchers.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -140,7 +140,7 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *error;
-				matcher_t *m;
+				matchers_t *ms;
 				const int x = (type == LINE_TYPE_XFILETYPE);
 
 				/* Prevent loading of old builtin fake associations. */
@@ -149,15 +149,15 @@ read_info_file(int reread)
 					continue;
 				}
 
-				m = matcher_alloc(line_val, 0, 1, "", &error);
-				if(m == NULL)
+				ms = matchers_alloc(line_val, 0, 1, "", &error);
+				if(ms == NULL)
 				{
 					/* Ignore error description. */
 					free(error);
 				}
 				else
 				{
-					ft_set_programs(m, line2, x,
+					ft_set_programs(ms, line2, x,
 							curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 				}
 			}
@@ -167,15 +167,15 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *error;
-				matcher_t *const m = matcher_alloc(line_val, 0, 1, "", &error);
-				if(m == NULL)
+				matchers_t *const ms = matchers_alloc(line_val, 0, 1, "", &error);
+				if(ms == NULL)
 				{
 					/* Ignore error description. */
 					free(error);
 				}
 				else
 				{
-					ft_set_viewers(m, line2);
+					ft_set_viewers(ms, line2);
 				}
 			}
 		}
@@ -1126,11 +1126,11 @@ write_assocs(FILE *fp, const char str[], char mark, assoc_list_t *assocs,
 
 			if(ft_record.description[0] == '\0')
 			{
-				fprintf(fp, "%c%s\n\t", mark, matcher_get_expr(assoc.matcher));
+				fprintf(fp, "%c%s\n\t", mark, matchers_get_expr(assoc.matchers));
 			}
 			else
 			{
-				fprintf(fp, "%c%s\n\t{%s}", mark, matcher_get_expr(assoc.matcher),
+				fprintf(fp, "%c%s\n\t{%s}", mark, matchers_get_expr(assoc.matchers),
 						ft_record.description);
 			}
 			write_doubling_commas(fp, ft_record.command);

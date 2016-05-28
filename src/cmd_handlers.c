@@ -73,7 +73,7 @@
 #include "utils/fs.h"
 #include "utils/int_stack.h"
 #include "utils/log.h"
-#include "utils/matcher.h"
+#include "utils/matchers.h"
 #include "utils/path.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
@@ -169,11 +169,11 @@ static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
 static int highlight_file(const cmd_info_t *cmd_info);
-static void display_file_highlights(const matcher_t *matcher);
+static void display_file_highlights(const matchers_t *matchers);
 static int highlight_group(const cmd_info_t *cmd_info);
 static const char * get_all_highlights(void);
 static const char * get_group_str(int group, const col_attr_t *col);
-static const char * get_file_hi_str(const matcher_t *matcher,
+static const char * get_file_hi_str(const matchers_t *matchers,
 		const col_attr_t *col);
 static const char * get_hi_str(const char title[], const col_attr_t *col);
 static int parse_and_apply_highlight(const cmd_info_t *cmd_info,
@@ -1933,15 +1933,15 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 	const char *records;
 	int in_x;
 	char *error;
-	matcher_t *m;
+	matchers_t *ms;
 
 	if(cmd_info->argc == 1)
 	{
 		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	m = matcher_alloc(cmd_info->argv[0], 0, 1, "", &error);
-	if(m == NULL)
+	ms = matchers_alloc(cmd_info->argv[0], 0, 1, "", &error);
+	if(ms == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
 		free(error);
@@ -1950,7 +1950,7 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 
 	records = vle_cmds_next_arg(cmd_info->args);
 	in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
-	ft_set_programs(m, records, for_x, in_x);
+	ft_set_programs(ms, records, for_x, in_x);
 	return 0;
 }
 
@@ -1962,15 +1962,15 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 {
 	const char *records;
 	char *error;
-	matcher_t *m;
+	matchers_t *ms;
 
 	if(cmd_info->argc == 1)
 	{
 		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
 	}
 
-	m = matcher_alloc(cmd_info->argv[0], 0, 1, "", &error);
-	if(m == NULL)
+	ms = matchers_alloc(cmd_info->argv[0], 0, 1, "", &error);
+	if(ms == NULL)
 	{
 		status_bar_errorf("Wrong pattern: %s", error);
 		free(error);
@@ -1978,7 +1978,7 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 	}
 
 	records = vle_cmds_next_arg(cmd_info->args);
-	ft_set_viewers(m, records);
+	ft_set_viewers(ms, records);
 	return 0;
 }
 
@@ -2287,7 +2287,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	if(matcher_is_expr(cmd_info->argv[0]))
+	if(matchers_is_expr(cmd_info->argv[0]))
 	{
 		return highlight_file(cmd_info);
 	}
@@ -2303,13 +2303,13 @@ highlight_file(const cmd_info_t *cmd_info)
 	char pattern[strlen(cmd_info->args) + 1];
 	col_attr_t color = { .fg = -1, .bg = -1, .attr = 0, };
 	int result;
-	matcher_t *matcher;
+	matchers_t *matchers;
 	char *error;
 
 	(void)extract_part(cmd_info->args, ' ', pattern);
 
-	matcher = matcher_alloc(pattern, 0, 1, "", &error);
-	if(matcher == NULL)
+	matchers = matchers_alloc(pattern, 0, 1, "", &error);
+	if(matchers == NULL)
 	{
 		status_bar_errorf("Pattern error: %s", error);
 		free(error);
@@ -2318,13 +2318,13 @@ highlight_file(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1)
 	{
-		display_file_highlights(matcher);
-		matcher_free(matcher);
+		display_file_highlights(matchers);
+		matchers_free(matchers);
 		return 1;
 	}
 
 	result = parse_and_apply_highlight(cmd_info, &color);
-	result += cs_add_file_hi(matcher, &color);
+	result += cs_add_file_hi(matchers, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
 	curr_stats.need_update = UT_REDRAW;
@@ -2334,7 +2334,7 @@ highlight_file(const cmd_info_t *cmd_info)
 
 /* Displays information about filename specific highlight on the status bar. */
 static void
-display_file_highlights(const matcher_t *matcher)
+display_file_highlights(const matchers_t *matchers)
 {
 	int i;
 
@@ -2343,7 +2343,7 @@ display_file_highlights(const matcher_t *matcher)
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
-		if(matcher_includes(file_hi->matcher, matcher))
+		if(matchers_includes(file_hi->matchers, matchers))
 		{
 			break;
 		}
@@ -2352,11 +2352,11 @@ display_file_highlights(const matcher_t *matcher)
 	if(i >= cs->file_hi_count)
 	{
 		status_bar_errorf("Highlight group not found: %s",
-				matcher_get_expr(matcher));
+				matchers_get_expr(matchers));
 		return;
 	}
 
-	status_bar_message(get_file_hi_str(cs->file_hi[i].matcher,
+	status_bar_message(get_file_hi_str(cs->file_hi[i].matchers,
 				&cs->file_hi[i].hi));
 }
 
@@ -2425,7 +2425,7 @@ get_all_highlights(void)
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
-		const char *const line = get_file_hi_str(file_hi->matcher, &file_hi->hi);
+		const char *const line = get_file_hi_str(file_hi->matchers, &file_hi->hi);
 		msg_len += snprintf(msg + msg_len, sizeof(msg) - msg_len, "%s%s", line,
 				(i < cs->file_hi_count - 1) ? "\n" : "");
 	}
@@ -2444,9 +2444,9 @@ get_group_str(int group, const col_attr_t *col)
 /* Composes string representation of filename specific highlight definition.
  * Returns pointer to a statically allocated buffer. */
 static const char *
-get_file_hi_str(const matcher_t *matcher, const col_attr_t *col)
+get_file_hi_str(const matchers_t *matchers, const col_attr_t *col)
 {
-	return get_hi_str(matcher_get_expr(matcher), col);
+	return get_hi_str(matchers_get_expr(matchers), col);
 }
 
 /* Composes string representation of highlight definition.  Returns pointer to a
@@ -3950,9 +3950,9 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 {
 	int i;
 	char *error;
-	matcher_t *const m = matcher_alloc(cmd_info->args, 0, 1,
+	matchers_t *const ms = matchers_alloc(cmd_info->args, 0, 1,
 			cfg_get_last_search_pattern(), &error);
-	if(m == NULL)
+	if(ms == NULL)
 	{
 		status_bar_errorf("Pattern error: %s", error);
 		free(error);
@@ -3979,26 +3979,15 @@ select_unselect_by_pattern(const cmd_info_t *cmd_info, int select)
 
 		get_full_path_of(entry, sizeof(file_path) - 1U, file_path);
 
-		if(matcher_matches(m, file_path))
+		if(matchers_match(ms, file_path) ||
+				(is_directory_entry(entry) && matchers_match_dir(ms, file_path)))
 		{
 			entry->selected = select;
 			curr_view->selected_files += (select ? 1 : -1);
-			continue;
-		}
-
-		if((!matcher_is_full_path(m) || ends_with(matcher_get_undec(m), "/")) &&
-				is_directory_entry(entry))
-		{
-			strcat(file_path, "/");
-			if(matcher_matches(m, file_path))
-			{
-				entry->selected = select;
-				curr_view->selected_files += (select ? 1 : -1);
-			}
 		}
 	}
 
-	matcher_free(m);
+	matchers_free(ms);
 
 	ui_view_schedule_redraw(curr_view);
 	return 0;

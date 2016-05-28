@@ -323,7 +323,7 @@ free_matcher_items(matcher_t *matcher)
 }
 
 int
-matcher_matches(matcher_t *matcher, const char path[])
+matcher_matches(const matcher_t *matcher, const char path[])
 {
 	if(matcher->type == MT_MIME)
 	{
@@ -339,12 +339,6 @@ matcher_matches(matcher_t *matcher, const char path[])
 	}
 
 	return (regexec(&matcher->regex, path, 0, NULL, 0) == 0)^matcher->negated;
-}
-
-const char *
-matcher_get_expr(const matcher_t *matcher)
-{
-	return matcher->expr;
 }
 
 const char *
@@ -365,13 +359,6 @@ matcher_includes(const matcher_t *matcher, const matcher_t *like)
 	return (matcher->cflags & REG_ICASE)
 	     ? (strcasestr(matcher->raw, like->raw) != NULL)
 	     : (strstr(matcher->raw, like->raw) != NULL);
-}
-
-int
-matcher_is_expr(const char str[])
-{
-	(void)is_negated(&str, 0);
-	return is_re_expr(str, 0) || is_globs_expr(str) || is_mime_expr(str);
 }
 
 /* Checks whether *expr specifies negated pattern.  Adjusts pointer if so.

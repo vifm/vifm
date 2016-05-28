@@ -43,7 +43,7 @@
 #include "utils/darray.h"
 #include "utils/log.h"
 #include "utils/macros.h"
-#include "utils/matcher.h"
+#include "utils/matchers.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -766,7 +766,7 @@ classify_to_str(void)
 	for(i = 0; i < cfg.name_dec_count && !memerr; ++i)
 	{
 		const file_dec_t *const name_dec = &cfg.name_decs[i];
-		char *const doubled = double_commas(matcher_get_expr(name_dec->matcher));
+		char *const doubled = double_commas(matchers_get_expr(name_dec->matchers));
 		char *const addition = format_str("%s%s::%s::%s",
 				classify[0] != '\0' ? "," : "", name_dec->prefix, doubled,
 				name_dec->suffix);
@@ -1324,11 +1324,9 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 		}
 		else if(expr != NULL)
 		{
-			file_dec_t *name_dec;
-
 			char *error;
-			matcher_t *const m = matcher_alloc(expr, 0, 1, "", &error);
-			if(m == NULL)
+			matchers_t *const ms = matchers_alloc(expr, 0, 1, "", &error);
+			if(ms == NULL)
 			{
 				vle_tb_append_linef(vle_err, "Wrong pattern (%s): %s", expr, error);
 				free(error);
@@ -1336,7 +1334,7 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 			}
 			else
 			{
-				name_dec = DA_EXTEND(name_decs);
+				file_dec_t *const name_dec = DA_EXTEND(name_decs);
 				if(name_dec == NULL)
 				{
 					vle_tb_append_line(vle_err, "Not enough memory");
@@ -1344,7 +1342,7 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 				}
 				else
 				{
-					name_dec->matcher = m;
+					name_dec->matchers = ms;
 				}
 
 				error_encountered |= validate_decorations(token, suffix);
@@ -1357,7 +1355,7 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 				}
 				else
 				{
-					matcher_free(m);
+					matchers_free(ms);
 				}
 			}
 		}
@@ -1376,7 +1374,7 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 
 	for(i = 0; i < cfg.name_dec_count; ++i)
 	{
-		matcher_free(cfg.name_decs[i].matcher);
+		matchers_free(cfg.name_decs[i].matchers);
 	}
 	free(cfg.name_decs);
 

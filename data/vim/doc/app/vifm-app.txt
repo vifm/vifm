@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 20
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2484,13 +2484,19 @@ Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
 commands and |vifm-'classify'| option support both globs and regular expressions
 as patterns to match file names or full paths.
 
-There are five possible ways to write them:
+There are six possible ways to write a single pattern:
  1. [!]{comma-separated-name-globs}
  2. [!]{{comma-separated-path-globs}}
  3. [!]/name-regular-expression/[iI]
  4. [!]//path-regular-expression//[iI]
  5. [!]<comma-separated-mime-type-globs>
  6. undecorated-pattern
+
+To combine several patterns (AND them), make sure you're using of the first
+five forms and write patterns one after another, like this: >
+ <text/plain>{*.vifm}
+Mind that if you make a mistake the whole string will be treated as the sixth
+form.
 
 Five first forms can include leading exclamation mark that negates pattern
 matching.

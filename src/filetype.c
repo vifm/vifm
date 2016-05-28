@@ -28,9 +28,33 @@
 #include "compat/fs_limits.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "utils/matcher.h"
+#include "utils/matchers.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/utils.h"
+
+static const char * find_existing_cmd(const assoc_list_t *record_list,
+		const char file[]);
+static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
+static void assoc_programs(matchers_t *matchers,
+		const assoc_records_t *programs, int for_x, int in_x);
+static assoc_records_t parse_command_list(const char cmds[], int with_descr);
+static void register_assoc(assoc_t assoc, int for_x, int in_x);
+static assoc_records_t clone_all_matching_records(const char file[],
+		const assoc_list_t *record_list);
+static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
+static void assoc_viewers(matchers_t *matchers, const assoc_records_t *viewers);
+static assoc_records_t clone_assoc_records(const assoc_records_t *records,
+		const char pattern[], const assoc_list_t *dst);
+static void reset_all_lists(void);
+static void add_defaults(int in_x);
+static void reset_list(assoc_list_t *assoc_list);
+static void reset_list_head(assoc_list_t *assoc_list);
+static void free_assoc_record(assoc_record_t *record);
+static void undouble_commas(char s[]);
+static void free_assoc(assoc_t *assoc);
+static void safe_free(char **adr);
+static int is_assoc_record_empty(const assoc_record_t *record);
 
 /* Predefined builtin command. */
 const assoc_record_t NONE_PSEUDO_PROG = {
@@ -48,29 +72,6 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
-
-static const char * find_existing_cmd(const assoc_list_t *record_list,
-		const char file[]);
-static assoc_record_t find_existing_cmd_record(const assoc_records_t *records);
-static void assoc_programs(matcher_t *matcher, const assoc_records_t *programs,
-		int for_x, int in_x);
-static assoc_records_t parse_command_list(const char cmds[], int with_descr);
-static void register_assoc(assoc_t assoc, int for_x, int in_x);
-static assoc_records_t clone_all_matching_records(const char file[],
-		const assoc_list_t *record_list);
-static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
-static void assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers);
-static assoc_records_t clone_assoc_records(const assoc_records_t *records,
-		const char pattern[], const assoc_list_t *dst);
-static void reset_all_lists(void);
-static void add_defaults(int in_x);
-static void reset_list(assoc_list_t *assoc_list);
-static void reset_list_head(assoc_list_t *assoc_list);
-static void free_assoc_record(assoc_record_t *record);
-static void undouble_commas(char s[]);
-static void free_assoc(assoc_t *assoc);
-static void safe_free(char **adr);
-static int is_assoc_record_empty(const assoc_record_t *record);
 
 void
 ft_init(external_command_exists_t ece_func)
@@ -102,7 +103,7 @@ find_existing_cmd(const assoc_list_t *record_list, const char file[])
 		assoc_record_t prog;
 		assoc_t *const assoc = &record_list->list[i];
 
-		if(!matcher_matches(assoc->matcher, file))
+		if(!matchers_match(assoc->matchers, file))
 		{
 			continue;
 		}
@@ -148,22 +149,23 @@ ft_get_all_programs(const char file[])
 }
 
 void
-ft_set_programs(matcher_t *matcher, const char programs[], int for_x, int in_x)
+ft_set_programs(matchers_t *matchers, const char programs[], int for_x,
+		int in_x)
 {
 	assoc_records_t prog_records = parse_command_list(programs, 1);
-	assoc_programs(matcher, &prog_records, for_x, in_x);
+	assoc_programs(matchers, &prog_records, for_x, in_x);
 	ft_assoc_records_free(&prog_records);
 }
 
 /* Associates pattern with the list of programs either for X or non-X
  * associations and depending on current execution environment. */
 static void
-assoc_programs(matcher_t *matcher, const assoc_records_t *programs, int for_x,
+assoc_programs(matchers_t *matchers, const assoc_records_t *programs, int for_x,
 		int in_x)
 {
 	const assoc_t assoc = {
-		.matcher = matcher,
-		.records = clone_assoc_records(programs, matcher_get_expr(matcher),
+		.matchers = matchers,
+		.records = clone_assoc_records(programs, matchers_get_expr(matchers),
 				for_x ? &xfiletypes : &filetypes),
 	};
 
@@ -236,7 +238,7 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 	for(i = 0; i < record_list->count; ++i)
 	{
 		assoc_t *const assoc = &record_list->list[i];
-		if(matcher_matches(assoc->matcher, file))
+		if(matchers_match(assoc->matchers, file))
 		{
 			ft_assoc_record_add_all(&result, &assoc->records);
 		}
@@ -246,20 +248,20 @@ clone_all_matching_records(const char file[], const assoc_list_t *record_list)
 }
 
 void
-ft_set_viewers(matcher_t *matcher, const char viewers[])
+ft_set_viewers(matchers_t *matchers, const char viewers[])
 {
 	assoc_records_t view_records = parse_command_list(viewers, 0);
-	assoc_viewers(matcher, &view_records);
+	assoc_viewers(matchers, &view_records);
 	ft_assoc_records_free(&view_records);
 }
 
 /* Associates pattern with the list of viewers. */
 static void
-assoc_viewers(matcher_t *matcher, const assoc_records_t *viewers)
+assoc_viewers(matchers_t *matchers, const assoc_records_t *viewers)
 {
 	const assoc_t assoc = {
-		.matcher = matcher,
-		.records = clone_assoc_records(viewers, matcher_get_expr(matcher),
+		.matchers = matchers,
+		.records = clone_assoc_records(viewers, matchers_get_expr(matchers),
 				&fileviewers),
 	};
 
@@ -324,7 +326,7 @@ static void
 add_defaults(int in_x)
 {
 	char *error;
-	matcher_t *const m = matcher_alloc("{*/}", 0, 1, "", &error);
+	matchers_t *const m = matchers_alloc("{*/}", 0, 1, "", &error);
 	assert(m != NULL && "Failed to allocate builtin matcher!");
 
 	new_records_type = ART_BUILTIN;
@@ -354,7 +356,7 @@ reset_list_head(assoc_list_t *assoc_list)
 static void
 free_assoc(assoc_t *assoc)
 {
-	matcher_free(assoc->matcher);
+	matchers_free(assoc->matchers);
 	ft_assoc_records_free(&assoc->records);
 }
 
@@ -404,7 +406,7 @@ ft_assoc_exists(const assoc_list_t *assocs, const char pattern[],
 		int j;
 
 		const assoc_t assoc = assocs->list[i];
-		if(strcmp(matcher_get_expr(assoc.matcher), pattern) != 0)
+		if(strcmp(matchers_get_expr(assoc.matchers), pattern) != 0)
 		{
 			continue;
 		}

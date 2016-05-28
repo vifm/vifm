@@ -208,6 +208,24 @@ TEST(classify_suffix_prefix_lengths)
 				CIT_COMMAND));
 }
 
+TEST(classify_pattern_list)
+{
+	dir_entry_t entry = {
+		.name = "binary-data",
+		.origin = TEST_DATA_PATH "/test-data/read",
+		.name_dec_num = -1,
+	};
+
+	const char *prefix, *suffix;
+
+	assert_success(exec_commands("set classify=<::{*-data}{*-data}::>", &lwin,
+				CIT_COMMAND));
+
+	ui_get_decors(&entry, &prefix, &suffix);
+	assert_string_equal("<", prefix);
+	assert_string_equal(">", suffix);
+}
+
 TEST(suggestoptions_all_values)
 {
 	cfg.sug.flags = 0;

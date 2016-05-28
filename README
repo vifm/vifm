@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 10 February, 2016
+Updated: 23 May, 2016
 Version: 0.8.1a
 
 Brief Description
@@ -184,7 +184,8 @@ Package content
     |  |  |-- globs.c - provides support of glob patterns
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
-    |  |  |-- matcher.c - file path/name matcher (glob/regexp)
+    |  |  |-- matcher.c - file path/name matcher (glob/regexp/mime-type)
+    |  |  |-- matchers.c - list of matchers (which are ANDed together)
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- regexp.c - regexp related
     |  |  |-- str.c - various string functions
