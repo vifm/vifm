@@ -147,6 +147,10 @@
 	Fixed search match highlighting of non-ascii characters in right aligned
 	file names.
 
+	Fixed capturing output of external applications on Windows when 'shell' is
+	"cmd".  Was broken since v0.8 in attempt to make cmd work better with
+	Unicode (but its /U flag affects only input and output streams).
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
