@@ -97,6 +97,8 @@ SETUP()
 	replace_string(&cfg.shell, "cmd");
 #endif
 
+	stats_update_shell_type(cfg.shell);
+
 	init_commands();
 
 	add_builtin_commands(commands, ARRAY_LEN(commands));
@@ -233,8 +235,6 @@ TEST(shell_invocation_works_in_udf)
 	const char *const cmd = "command! udf echo a > out";
 
 	assert_success(chdir(SANDBOX_PATH));
-
-	stats_update_shell_type(cfg.shell);
 
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
