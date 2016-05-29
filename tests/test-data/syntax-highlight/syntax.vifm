@@ -1,0 +1,398 @@
+" "s" should NOT be highlighted
+nnoremap ,E :%nextract . %c<cr>:cd %c:r:s/\.tar$//<cr>
+
+" "<cr>" in the last line should be highlighted as angle bracket notation
+nnoremap az : if expand('%c') == expand('%f')
+          \ |    execute '!pack %c.zip %c'
+          \ | else
+          \ |    execute '!pack %d:t.zip %f'
+          \ | endif
+          \ | normal j<cr>
+
+" both occurrences of "<cr>" should be highlighted as angle bracket notation
+nnoremap bb :marks<cr><cr>
+
+" non of arguments should be highlighted
+touch copy-init.cp
+m e20-en.avi
+co e20-en.avi
+mkdir mkdir
+
+" "<cr>" should be highlighted as angle bracket notation
+nnoremap o :!<cr>
+" this should be highlighted as a comment
+
+" "<cr>" should be highlighted as angle bracket notation
+nnoremap ,b :set viewcolumns=-{name}..,6{}.<cr>
+nnoremap ,b :set viewcolumns='-{name}..,6{}.'<cr>
+nnoremap ,b :set viewcolumns="-{name}..,6{}."<cr>
+
+" the second and third lines should be highlighted as comments
+" "trash" in the line after comments should NOT be highlighted
+set slowfs=fuse.sshfs
+"set slowfs=fuse.sshfs,curlftpfs
+"set slowfs=fuse.sshfs,curlftpfs
+\trash
+\ trash
+\  trash
+\   trash
+\    trash
+
+" "set" should NOT be highlighted as :command
+" "not comment should NOT be highlighted as a comment
+" "'vim -p'" should be highlighted as 'string'
+" ""vim -p"" should be highlighted as "string"
+" "vicmd" and "trashdir" should be highlighted as 'option' name
+" 1st, 2nd, last occurrences of "trash" should be highlighted as 'option' name
+" nothing else should be highlighted (watch "trash")
+set trashdir= trash
+  \ trashdir=  trash "not comment
+  \ trashdir=\ trash
+  \ vicmd='vim -p' vicmd="vim -p" trash
+
+" "set" should NOT be highlighted as :command
+" "trashdir" should be highlighted as 'option' name
+" "trash" on right-hand side should NOT be highlighted at all
+set trashdir=%r/.vifm-Trash,$HOME/.vifm/trash
+
+" highlight of "trash" and "trashdir" should be of 'option' name group on both
+" lines
+set trash trashdir=$HOME/.vifm/trash
+set trashdir=$HOME/.vifm/trash trash
+
+" "comment should be highlighted as comment
+set vifminfo=dhistory,save,dirstack,registers,bookmarks "comment
+
+" "$VIFM" should be highlighted as environment variable name
+source $VIFM/vifmrc_local
+unlet $VIFM
+
+" не подсвечены строки
+cd "строка не подсвечена"
+nnoremap foo :cd "строка не подсвечена"
+so "/tmp/%a.vifm"
+command! eso :exe ':!vim "/tmp/%a.vifm"' | so "/tmp/%a.vifm"
+
+let $FOO="foo"
+" комментарий подсвечен как строка
+
+let $FOO="foo"
+" комментарий не подсвечен
+
+invert f
+invert s
+invert o
+
+invert? f
+invert? s
+invert? o
+
+" "not comment should NOT be highlighted as comment
+nnoremap ga "not a comment
+    \ : if filetype('.') == 'dir'
+    \ |     execute 'строка подсвечивается только до | а после подсвечивается не как строка'
+    \ | endif<cR><CR><Cr><cr>
+" еще не подсвечен endif<cr> и этот комментарий
+
+
+" "not comment should NOT be highlighted as comment
+nnoremap ,sn
+    \ <c-w><c-v> "not a comment
+     \<c-w>L<c-w>|2<c-w><
+     \:fileviewer *,*/ seq 2 999 || echo "echo не подсвечено как ключевое слово и эта строка не подсвечена как строка"<cr>
+     \:view!<cr>
+     \<c-w>l
+
+" "ts" should be highlighted as 'option' name only in the first line
+:set ts
+:let ts
+:hi ts
+
+command foo
+    \ bar "this should NOT be highlighted as comment
+    " this should be highlighted as comment
+    " this should be highlighted as comment too
+    \ biz
+
+map foo bar
+    " this should be highlighted as comment, "cd" below as a :command and
+    " "<cr>" as angle bracket notation
+    \ :cd<cr>
+    " this should be highlighted as comment
+    " this should be highlighted as comment too
+    \ biz
+
+command foo bar
+" this should be highlighted as comment
+" this should be highlighted as comment too
+
+map foo
+    \ bar
+" this should be highlighted as comment
+" this should be highlighted as comment too
+
+command foo :bar<cr>
+" this should be highlighted as comment, but "<cr>" above should NOT be
+" highlighted at all
+
+map foo :bar
+" this should be highlighted as comment
+" this should be highlighted as comment too
+
+
+" "$HOME" should be highlighted as environment variable
+" "<cr>" should be highlighted as bracket notation
+nnoremap gh :cd $HOME<cr>
+" "<home>" as bracket notation
+cnoremap <c-b> <home>
+
+" "windo" and "normal" should be highlighted as :command
+" "<cr>" should NOT be highlighted as bracket notation
+windo normal zo<cr>
+
+" "$HOME" should be highlighted as environment variable
+" "<cr>" should NOT be highlighted as bracket notation
+windo normal :cd $HOME<cr>
+windo normal :execute 'a'<cr>
+
+" fileviewer и view не подсвечены как ключевые слова, но случай вроде особый
+nnoremap ,sn
+    \ <c-w><c-v>
+     \<c-w>L<c-w>|2<c-w><
+     \:fileviewer *,*/ seq 2 999 || echo "false"<cr>
+     \:view!<cr>
+     \<c-w>l
+
+command! foo :echo 'не подсвечено из-за !'
+
+" echo and string on the second line should NOT be highlighted, while <cr>
+" should
+nnoremap aw :!%S echo %c:p >> ~/.config/watch-queue
+            \ && echo 'Stored to watch queue.'<cr>
+
+" "100" should be highlighted as a number
+if &columns < 100
+    only
+else
+    vsplit
+endif
+
+" all single quoted strings should be highlighted
+command cx :cd ~/projects/experiments/ | mkdir '%a' | cd '%a' | touch '%%d:t.c'
+
+" highlight operators
+if &columns == != > >= < <= . - + 100
+    only
+else
+    vsplit
+endif
+
+" "d" between vertical bars should NOT be highlighted in either of lines
+windo filter! /^.*\.(o|d|class|pyc)$|^\$RECYCLE\.BIN\/$/
+windo filter /^.*\.(o|d|class|pyc)$|^\$RECYCLE\.BIN\/$/
+
+" ":cd" should be highlighted as a :command in both lines below
+nnoremap ,e :!%nextract ~/tmp %c<cr><space>:cd ~/tmp/%C:t:r:s/\.tar$//<cr>
+nnoremap ,E :!%nextract . %c<cr>:cd %c:r:s/\.tar$//<cr>
+
+" "highlight" should be highlighted as a :command in both lines below
+" "clear" should be highlighted as a :command in both lines below
+" "clear2" should NOT be highlighted
+highlight clear
+highlight clear2
+
+" "nnoremap" should be highlighted as a :command
+" "<f7>" should be highlighted as angle bracket notation
+" "mkdir" should be highlighted as a :command
+" "<space>" should be highlighted as angle bracket notation
+nnoremap <f7> :mkdir<space>
+
+" "{*.h,*.c}" and "!{*.h,*.c}" should be highlighted as a 'string'
+highlight {*.h,*.c}  cterm=bold ctermfg=yellow
+highlight !{*.h,*.c}  cterm=bold ctermfg=yellow
+" "{}" and "!{}" should NOT be highlighted
+highlight {} cterm=bold ctermfg=yellow
+highlight !{} cterm=bold ctermfg=yellow
+" "<text/*>" and "!<binary/octet-stream>" should be highlighted as a 'string'
+highlight <text/*> cterm=bold ctermfg=yellow
+highlight !<binary/octet-stream> cterm=bold ctermfg=yellow
+" "<>" and "!<>" should NOT be highlighted
+highlight <> cterm=bold ctermfg=yellow
+highlight !<> cterm=bold ctermfg=yellow
+" "/\.(7z|Z|a|ace|alz|apkg)$/[iI]" and "!/\.(7z|Z|a|ace|alz|apkg)$/[iI]" should
+" be highlighted as a 'string'
+highlight /\.(7z|Z|a|ace|alz|apkg)$/ ctermfg=red
+highlight /\.(7z|Z|a|ace|alz|apkg)$/i ctermfg=red
+highlight /\.(7z|Z|a|ace|alz|apkg)$/I ctermfg=red
+highlight !/\.(7z|Z|a|ace|alz|apkg)$/iI ctermfg=red
+highlight /\.(7z|Z|a|ace|alz|apkg)$/Ii ctermfg=red
+highlight /\.(7z|Z|a|ace|alz|apkg)$/IiI ctermfg=red
+" leading "!" should NOT be highlighted as a 'string'
+highlight !!/\.(7z|Z|a|ace|alz|apkg)$/iI ctermfg=red
+" "/\.(7z|Z|a|ace|alz|apkg)$/" (but not "g") should be highlighted as a 'string'
+highlight /\.(7z|Z|a|ace|alz|apkg)$/g ctermfg=red
+" "//" should NOT be highlighted
+highlight // ctermfg=red
+" comments and patterns should be highlighted properly (as stated above)
+highlight /.*\.djvu$|
+          \.*\.tex$|
+          " \.*\.txt$|
+          \.*\.xhtml$|
+          \.*\.xml$/iI cterm=underline ctermfg=188 ctermbg=default
+highlight //.*\.djvu$|
+          \.*\.tex$|
+          " \.*\.txt$|
+          \.*\.xhtml$|
+          \.*\.xml$//iI cterm=underline ctermfg=188 ctermbg=default
+highlight {*.djvu,
+          \*.tex,
+          " *.txt,
+          \*.xhtml,
+          \*.xml} cterm=underline ctermfg=188 ctermbg=default
+highlight {{*.djvu,
+          \*.tex,
+          " *.txt,
+          \*.xhtml,
+          \*.xml}} cterm=underline ctermfg=188 ctermbg=default
+" "not comment should NOT be highlighted as comment
+" " \*.xhtml, should be highlighted as comment
+highlight {*.djvu, "not comment
+          " \*.xhtml,
+          \*.xml} cterm=underline ctermfg=188 ctermbg=default
+
+" patterns here should NOT be highlighted
+highlight // cterm=bold ctermfg=yellow
+highlight //// cterm=bold ctermfg=yellow
+highlight {} cterm=bold ctermfg=yellow
+highlight {{}} cterm=bold ctermfg=yellow
+highlight <> cterm=bold ctermfg=yellow
+" patterns here should be highlighted
+highlight /a/ cterm=bold ctermfg=yellow
+highlight //full/path/to\/file// cterm=bold ctermfg=yellow
+highlight //fullpath// cterm=bold ctermfg=yellow
+highlight <text/*>//a//{things}{{}} cterm=bold ctermfg=yellow
+highlight {{?}} cterm=bold ctermfg=yellow
+filetype *.vifm {Open in Vim} vim
+filextype {{*.vifm}} {Open in Vim} vim
+filextype <text/plain>{*.vifm},/regex/<application/pdf>{*.pdf}
+       \ {Open in Vim} vim
+filetype <text/plain>{*.vifm},<application/pdf>{{*.pdf}}
+       \ {Open in Vim} vim
+fileviewer <text/plain>{*.vifm},//some/regex\/here//,<application/pdf>{*.pdf}
+       \ cat
+
+" "cabbrev", "cnoreabbrev" and "cunabbrev" should be highlighted as :commands
+" "<space>" and "<left>" should be highlighted as angle bracket notation
+cabbrev utf2cp <bar>iconv<space>-f<space>utf-8<space>-t<space>cp1251
+cabbrev fi filter!
+cabbrev pathtosomething C:/path/to/something
+cnoreabbrev ddd e
+cunabbrev bbb c
+cabbrev pyp python<space>-c<space>'print<space>'<left>
+
+" "command" and ":normal" should be highlighted as :commands
+" "something should be highlighted as comment
+command! myredraw :normal!  "something
+
+" "autocmd" and ":setlocal" should be highlighted as :commands
+" "DirEnter" should be highlighted as autocommand event name
+" 'sort' should be highlighted as option
+" "comment should be highlighted as comment
+autocmd DirEnter ~/downloads,~/downloads/torrents setlocal sort=-mtime,dir "comment
+
+" "fileviewer" should be highlighted as :commands
+" "not comment should NOT be highlighted
+fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm   "not comment
+         \ imgt %px %py %pw %ph %c  "not comment
+
+if $sort_type == 'size'
+    set sort=+mtime
+    let $sort_type = 'mtime'
+    echo 'Sorted by modification date'
+elseif $sort_type == 'name'
+    set sort=-size
+    let $sort_type = 'size'
+    echo 'Sorted by size'
+else
+    set sort=+name
+    let $sort_type = 'name'
+    echo 'Sorted by name'
+endif
+
+" commands should be highlighted, patterns too
+select   /*/
+unselect !{pat}
+" only commands should be highlighted
+unselect ! cmd
+unselect pat
+
+" "echo" should be highlighted as :command
+" "chooseopt" should be highlighted as builtin function
+" "'file'" should be highlighted as a string
+echo chooseopt('file')
+
+" TODO
+
+" ":echo" should be highlighted as :commands
+" should any of these (&something) be highlighted specially?
+echo &sort
+echo &l:sort
+echo &g:sort
+
+" ":nnoremap" and ":let" should be highlighted as :commands
+" "$a" as environment variable
+" "'a'" as a string
+" "<cr>" should be highlighted as angle bracket notation
+nnoremap s :let $a = 'a'<cr>
+
+" :set highlight spreads across too many lines!
+nnoremap s :if $size_sort != ''
+         \ |  set sort=+name
+         \ |  let $size_sort = ''
+         \ |else
+         \ |  set sort=-size
+         \ |  let $size_sort = 'yes'
+         \ |endif<cr>
+command! togglesort
+         \ :if $sort_type == 'size'
+         \ |    set sort=+mtime
+         \ |    let $sort_type = 'mtime'
+         \ |    echo 'Sorted by modification date'
+         \ |else
+         \ |    if $sort_type == 'name'
+         \ |        set sort=-size
+         \ |        let $sort_type = 'size'
+         \ |        echo 'Sorted by size'
+         \ |    else
+         \ |        set sort=+name
+         \ |        let $sort_type = 'name'
+         \ |        echo 'Sorted by name'
+         \ |    endif
+         \ |endif
+
+" "s" should NOT be highlighed
+" "mkdir" on the third line should be highlighted
+command! mkartistdir %C:t:s/ *-.*//
+command! :mkartistdir %C:t:s/ *-.*//
+command! mkartistdir :mkdir %C:t:s/ *-.*//
+command! mkartistdir :mkd %C:t:s/ *-.*//
+
+" "<" and ">" should NOT be highlighted as operators
+" "<cr>" should be highlighted as angle bracket notation
+windo normal :execute 'a'<cr>
+
+" "marks" should be highlighted as :command
+nnoremap bb :
+          \ marks<cr>
+
+" "restart" should be highlighted as :command
+" "<cr>" should be highlighted as angle bracket notation
+command! reload :write | restart<cr>
+
+" "set" should be highlighted as :command
+" "vifminfo" should be highlighted as 'option' name
+" "not comment should NOT be highlighted as comment
+" "comment should be highlighted as comment
+" "registers" should NOT be highlighted in the command below
+set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory "not a comment
+           \,dirstack,registers,bookmarks "comment

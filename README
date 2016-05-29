@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 23 May, 2016
+Updated: 29 May, 2016
 Version: 0.8.1a
 
 Brief Description
@@ -49,6 +49,8 @@ Package content
     |-- patches/ - patches for software vifm depends on
     |
     |-- pkgs/ - package build-scripts
+    |
+    |-- scripts/ - utility scripts for development
     |
     |-- src/ - the source code of vifm
     |  |

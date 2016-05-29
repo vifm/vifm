@@ -52,6 +52,9 @@
 	such composite pattern will much when each of them matches.  Thanks to
 	filterfalse.
 
+	Added pattern ORing for :file[x]type and :fileviewer commands implemented
+	as a comma-separated list.  Thanks to filterfalse.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
@@ -92,6 +95,8 @@
 
 	A bit better delete confirmation messages with number of files to be
 	deleted.
+
+	Improved syntax highlighting of patterns.
 
 	Fixed kind of a duplicate of first history element on =.
 

@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: May 01, 2016
+" Last Change: May 29, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -199,10 +199,10 @@ syntax region vifmCdCommandStN start='\(\s\|:\)*cd\>' end='$\||' keepend oneline
 		\ contains=vifmCdCommand,vifmEnvVar,vifmNotation,vifmStringInExpr
 syntax region vifmFtCommandSt start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
-		\ contains=vifmFtCommand,vifmComment
+		\ contains=vifmFtCommand,vifmComment,vifmFtBeginning
 syntax region vifmFtCommandStN start='\(\s\|:\)*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$\|\(<[cC][rR]>\)' keepend
-		\ contains=vifmFtCommand,vifmComment,vifmNotation
+		\ contains=vifmComment,vifmNotation,vifmFtBeginning
 syntax region vifmMapSt start='^\(\s\|:\)*\(map\|mm\%[ap]\|mn\%[oremap]\|mu\%[nmap]\|nm\%[ap]\|nn\%[oremap]\|no\%[remap]\|nun\%[map]\|qm\%[ap]\|qn\%[oremap]\|qun\%[map]\|unm\%[ap]\|vm\%[ap]\|vn\%[oremap]\|vu\%[nmap]\)'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmMap
@@ -258,21 +258,40 @@ syntax region vifmSubcommandN start='\s*\(\s*\n\s*\\\)\?:\?\s*\S\+'
 		\ contains=vifmStatementCN
 " Non-empty pattern or form [!][{]{*.ext,*.e}[}], [!][/]/regex/[/][iI] or
 " <mime-type-globs>, possibly multi-line.
+" [!]/regexp/[iI]+
 syntax region vifmPattern contained
-		\ start='\(\s\|\w\)\zs!\?/[^/]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
-		\ end='/[iI]*\ze\s\|/\ze\S\+\s'
-		\ contains=vifmComment,vifmInlineComment,vifmNotComment
+		\ start='!\?/\ze\(\n\s*\\\|\n\s*".*$\|[^/]\|\\/\)\+/'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='/[iI]*\ze\s\|/\ze\S\+\s' keepend
+		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
+" [!]//regexp//[iI]+
 syntax region vifmPattern contained
-		\ start='!\?{[^}]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='}\ze\s\|}\ze\S\+\s'
-		\ contains=vifmComment,vifmInlineComment,vifmNotComment
+		\ start='!\?//\ze\(/[^/]\|\n\s*\\\|\n\s*".*$\|[^/]\|\\/\)\+//'
+		\ skip='/[^/]\|\(\n\s*\\\)\|\(\n\s*".*$\)' end='//[iI]*' keepend
+		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
+" [!]{regexp}
 syntax region vifmPattern contained
-		\ start='!\?<[^>]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='>\ze\s\|>\ze\S\+\s'
-		\ contains=vifmComment,vifmInlineComment,vifmNotComment
+		\ start='!\?{[^}]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='}' keepend
+		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
+" [!]{{regexp}}
+syntax region vifmPattern contained
+		\ start='!\?{{\ze.\{-}}}' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='}}' keepend
+		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
+" [!]<regexp>
+syntax region vifmPattern contained
+		\ start='!\?<[^>]' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='>' keepend
+		\ contains=vifmComment,vifmInlineComment,vifmNotComment,vifmNotPattern
+syntax match vifmNotPattern contained '!\?\({{}}\|\<//\>\|////\)'
 syntax region vifmHi
 		\ start='^\(\s\|:\)*\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmHiCommand,vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors
-		\,vifmNumber,vifmComment,vifmInlineComment,vifmNotComment,vifmHiClear,vifmPattern
+		\,vifmNumber,vifmComment,vifmInlineComment,vifmNotComment,vifmHiClear
+		\,vifmPattern
+syntax region vifmFtBeginning contained
+		\ start='\<\(filet\%[ype]\|filext\%[ype]\|filev\%[iewer]\)\>\s\+\S'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ end='\s' keepend
+		\ contains=vifmFtCommand,vifmPattern
 
 " common highlight for :command arguments
 syntax region vifmArgs start='!\?\zs\(\s*\S\+\|[^a-zA-Z]\)'

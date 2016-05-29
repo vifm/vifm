@@ -9,6 +9,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"
+#include "../../src/int/file_magic.h"
 #include "../../src/modes/modes.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
@@ -30,6 +31,7 @@ static int op_avail(OPS op);
 static void check_filetype(void);
 static int prog_exists(const char name[]);
 static void add_some_files_to_view(FileView *view);
+static int has_mime_type_detection(void);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -460,14 +462,55 @@ TEST(filextype_accepts_negated_patterns)
 
 TEST(fileviewer_accepts_negated_patterns)
 {
-	const char *viewer;
-
 	ft_init(&prog_exists);
 
 	assert_success(exec_commands("fileviewer !{*.tar} view", &lwin, CIT_COMMAND));
+	assert_string_equal("view", ft_get_viewer("file.version.tar.bz2"));
 
-	viewer = ft_get_viewer("file.version.tar.bz2");
-	assert_string_equal("view", viewer);
+	ft_reset(0);
+}
+
+TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
+{
+	assoc_records_t ft;
+
+	ft_init(&prog_exists);
+
+	assert_failure(exec_commands("filetype /*/,"
+				"<application/octet-stream>{binary-data} app", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("fileviewer /*/,"
+				"<application/octet-stream>{binary-data} viewer", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("filetype {two-lines}<text/plain>,"
+				"<application/octet-stream>{binary-data} app", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("fileviewer {two-lines}<text/plain>,"
+				"<application/octet-stream>{binary-data} viewer", &lwin, CIT_COMMAND));
+
+	ft = ft_get_all_programs(TEST_DATA_PATH "/read/two-lines");
+	assert_int_equal(1, ft.count);
+	if(ft.count == 1)
+	{
+		assert_string_equal("app", ft.list[0].command);
+	}
+	ft_assoc_records_free(&ft);
+
+	ft = ft_get_all_programs(TEST_DATA_PATH "/read/binary-data");
+	assert_int_equal(1, ft.count);
+	if(ft.count == 1)
+	{
+		assert_string_equal("app", ft.list[0].command);
+	}
+	ft_assoc_records_free(&ft);
+
+	ft = ft_get_all_programs(TEST_DATA_PATH "/read/utf8-bom");
+	assert_int_equal(0, ft.count);
+	ft_assoc_records_free(&ft);
+
+	assert_string_equal("viewer",
+			ft_get_viewer(TEST_DATA_PATH "/read/two-lines"));
+	assert_string_equal("viewer",
+			ft_get_viewer(TEST_DATA_PATH "/read/binary-data"));
+	assert_string_equal(NULL, ft_get_viewer(TEST_DATA_PATH "/read/utf8-bom"));
 
 	ft_reset(0);
 }
@@ -798,6 +841,12 @@ add_some_files_to_view(FileView *view)
 	view->dir_entry[2].name = strdup("c.c");
 	view->dir_entry[2].origin = &view->curr_dir[0];
 	view->selected_files = 0;
+}
+
+static int
+has_mime_type_detection(void)
+{
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

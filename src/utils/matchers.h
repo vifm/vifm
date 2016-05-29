@@ -54,8 +54,12 @@ int matchers_includes(const matchers_t *matchers, const matchers_t *like);
  * if so, otherwise zero is returned. */
 int matchers_is_expr(const char str[]);
 
+/* Breaks concatenated pattern lists into separate lines.  Returns the list of
+ * length *count. */
+char ** matchers_list(const char concat[], int *count);
+
 TSTATIC_DEFS(
-	char ** break_into_matchers(const char concat[], int *count);
+	char ** break_into_matchers(const char concat[], int *count, int is_list);
 )
 
 #endif /* VIFM__UTILS__MATCHERS_H__ */

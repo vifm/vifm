@@ -399,7 +399,7 @@ get_tip(void)
 	  "Enable 'runexec' option to run executable files via l/Enter",
 	  "Various FUSE file-systems can be used to extend functionality",
 	  "Trailing slash in :file[x]type, :filter and = matches directories only",
-	  ":edit forwards argument to editor, e.g.: :edit +set\\ filetype=sh script",
+	  ":edit forwards arguments to editor, e.g.: :edit +set\\ filetype=sh script",
 	  "Use :nmap/:vmap/etc. for short information on available mappings",
 	};
 
