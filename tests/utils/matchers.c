@@ -78,7 +78,7 @@ TEST(empty_input)
 	char **list;
 	int count;
 
-	list = break_into_matchers("", &count);
+	list = break_into_matchers("", &count, 0);
 	assert_int_equal(1, count);
 	if(count == 1)
 	{
@@ -93,7 +93,7 @@ TEST(extra_emark_breaks_everything)
 	char **list;
 	int count;
 
-	list = break_into_matchers("{ng1,ng2}!!{ng3}{{pg1,pg2}}", &count);
+	list = break_into_matchers("{ng1,ng2}!!{ng3}{{pg1,pg2}}", &count, 0);
 	assert_int_equal(1, count);
 	if(count == 1)
 	{
@@ -108,7 +108,7 @@ TEST(globs_are_parsed_well)
 	char **list;
 	int count;
 
-	list = break_into_matchers("{ng1,{ng2}!{ng3}{{pg1,pg2}}!{{pg3}}", &count);
+	list = break_into_matchers("{ng1,{ng2}!{ng3}{{pg1,pg2}}!{{pg3}}", &count, 0);
 	assert_int_equal(4, count);
 	if(count == 4)
 	{
@@ -126,7 +126,7 @@ TEST(regexps_are_parsed_well)
 	char **list;
 	int count;
 
-	list = break_into_matchers("!/nr1//nr2///pr1////pr2//", &count);
+	list = break_into_matchers("!/nr1//nr2///pr1////pr2//", &count, 0);
 	assert_int_equal(4, count);
 	if(count == 4)
 	{
@@ -144,7 +144,8 @@ TEST(regexps_escaping_works)
 	char **list;
 	int count;
 
-	list = break_into_matchers("!/n\\/r1//nr2///p\\/\\/r1////pr/\\//2//", &count);
+	list = break_into_matchers("!/n\\/r1//nr2///p\\/\\/r1////pr/\\//2//", &count,
+			0);
 	assert_int_equal(4, count);
 	if(count == 4)
 	{
@@ -162,7 +163,7 @@ TEST(regexs_with_correct_flags)
 	char **list;
 	int count;
 
-	list = break_into_matchers("!/nr1/iIiiiII//asdf//iI", &count);
+	list = break_into_matchers("!/nr1/iIiiiII//asdf//iI", &count, 0);
 	assert_int_equal(2, count);
 	if(count == 2)
 	{
@@ -178,7 +179,7 @@ TEST(regexs_with_incorrect_flags)
 	char **list;
 	int count;
 
-	list = break_into_matchers("//a//!/nr1/a", &count);
+	list = break_into_matchers("//a//!/nr1/a", &count, 0);
 	assert_int_equal(1, count);
 	if(count == 1)
 	{
@@ -193,7 +194,7 @@ TEST(mime_patterns)
 	char **list;
 	int count;
 
-	list = break_into_matchers("<a><<<<>!<b>", &count);
+	list = break_into_matchers("<a><<<<>!<b>", &count, 0);
 	assert_int_equal(3, count);
 	if(count == 3)
 	{
@@ -241,6 +242,18 @@ TEST(inclusion_check_works)
 
 	matchers_free(ms1);
 	matchers_free(ms2);
+}
+
+TEST(breaking_list_of_lists)
+{
+	int nmatchers;
+	char **const matchers = matchers_list("<mime>{*.,ext},/re,gex/", &nmatchers);
+	if(nmatchers == 2)
+	{
+		assert_string_equal("<mime>{*.,ext}", matchers[0]);
+		assert_string_equal("/re,gex/", matchers[1]);
+	}
+	free_string_array(matchers, nmatchers);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

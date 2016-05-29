@@ -60,14 +60,17 @@ typedef struct
 {
 	const char *input; /* Current input position. */
 	TokenType tok;     /* Current token during parsing of patterns. */
+	int is_list;       /* Whether it's comma-separated list of pattern lists. */
 }
 parsing_state_t;
 
-TSTATIC char ** break_into_matchers(const char concat[], int *count);
+TSTATIC char ** break_into_matchers(const char concat[], int *count,
+		int is_list);
+static int find_patterns(parsing_state_t *state);
 static int find_pattern(parsing_state_t *state);
 static int find_regex(parsing_state_t *state, TokenType decor);
 static int find_pat(parsing_state_t *state, TokenType left, TokenType right);
-static int is_at_bound(TokenType tok);
+static int is_at_bound(const parsing_state_t *state);
 static void load_token(parsing_state_t *state, int single_char);
 static int get_token_width(TokenType tok);
 
@@ -83,7 +86,7 @@ matchers_alloc(const char list[], int cs_by_def, int glob_by_def,
 
 	*error = NULL;
 
-	exprs = break_into_matchers(list, &nexprs);
+	exprs = break_into_matchers(list, &nexprs, 0);
 	matchers->count = nexprs;
 	matchers->list = reallocarray(NULL, nexprs, sizeof(matcher_t *));
 	matchers->expr = strdup(list);
@@ -246,6 +249,12 @@ matchers_is_expr(const char str[])
 	return 1;
 }
 
+char **
+matchers_list(const char concat[], int *count)
+{
+	return break_into_matchers(concat, count, 1);
+}
+
 /* Below is a parser that accepts list of patterns:
  *
  *   pattern1pattern2...patternN
@@ -265,6 +274,7 @@ matchers_is_expr(const char str[])
  * Formal grammar is below, implementation doesn't follow it in all aspects, but
  * general structure is similar.
  *
+ * PATTERN_LIST ::= PATTERNS ( ',' PATTERNS )*
  * PATTERNS     ::= PATTERN+ | UNDECORATED
  * PATTERN      ::= NAME_GLOB | PATH_GLOB | NAME_REGEX | PATH_REGEX | MIME
  *
@@ -282,23 +292,23 @@ matchers_is_expr(const char str[])
  * BORDER_TOKEN ::= EOL | "!" | "{" | "{{" | "/" | "//" | "<"
  * CHAR         ::= <any character> */
 
-/* Breaks concatenated patterns into separate lines.  Returns the list of length
- * *count. */
+/* Breaks concatenated patterns or lists of patterns into separate lines.
+ * Returns the list of length *count. */
 TSTATIC char **
-break_into_matchers(const char concat[], int *count)
+break_into_matchers(const char concat[], int *count, int is_list)
 {
 	char **list = NULL;
 	int len = 0;
 
 	const char *start = concat;
-	parsing_state_t state = { .input = start, .tok = BEGIN };
+	parsing_state_t state = { .input = start, .tok = BEGIN, .is_list = is_list };
 	load_token(&state, 0);
 	do
 	{
 		size_t width;
 		char *piece;
 
-		if(!find_pattern(&state))
+		if(is_list ? !find_patterns(&state) : !find_pattern(&state))
 		{
 			free_string_array(list, len);
 			list = NULL;
@@ -311,12 +321,31 @@ break_into_matchers(const char concat[], int *count)
 		copy_str(piece, width, start);
 		len = put_into_string_array(&list, len, piece);
 
+		/* Skip contiguous separators. */
+		while(is_list && state.tok == SYM && *state.input == ',')
+		{
+			load_token(&state, 0);
+		}
+
 		start = state.input;
 	}
 	while(state.tok != END);
 
 	*count = len;
 	return list;
+}
+
+/* Reads PATTERNS of PATTERN_LIST.  Returns non-zero on success, otherwise zero
+ * is returned. */
+static int
+find_patterns(parsing_state_t *state)
+{
+	while(find_pattern(state))
+	{
+		// Just advance here.
+	}
+
+	return (state->tok == SYM && *state->input == ',') || state->tok == END;
 }
 
 /* PATTERN    ::= NAME_GLOB | PATH_GLOB | NAME_REGEX | PATH_REGEX | MIME
@@ -372,7 +401,7 @@ find_regex(parsing_state_t *state, TokenType decor)
 		load_token(state, 0);
 	}
 	while(state->tok == SYM && char_is_one_of("iI", state->input[0]));
-	if(!is_at_bound(state->tok))
+	if(!is_at_bound(state))
 	{
 		goto mismatch;
 	}
@@ -410,7 +439,7 @@ find_pat(parsing_state_t *state, TokenType left, TokenType right)
 		goto mismatch;
 	}
 	load_token(state, 0);
-	if(!is_at_bound(state->tok))
+	if(!is_at_bound(state))
 	{
 		goto mismatch;
 	}
@@ -421,18 +450,19 @@ mismatch:
 	return 0;
 }
 
-/* Checks whether token is a valid ending of second level nonterminals.  Returns
- * non-zero if so, otherwise zero is returned. */
+/* Checks whether current token is a valid ending of second level nonterminals.
+ * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_at_bound(TokenType tok)
+is_at_bound(const parsing_state_t *state)
 {
-	return tok == EMARK
-	    || tok == LT
-	    || tok == LCB
-	    || tok == DLCB
-	    || tok == SLASH
-	    || tok == DSLASH
-	    || tok == END;
+	return state->tok == EMARK
+	    || state->tok == LT
+	    || state->tok == LCB
+	    || state->tok == DLCB
+	    || state->tok == SLASH
+	    || state->tok == DSLASH
+	    || state->tok == END
+	    || (state->is_list && state->tok == SYM && *state->input == ',');
 }
 
 /* Loads next token from input.  Optionally tokens longer than single character
