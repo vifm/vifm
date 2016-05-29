@@ -96,6 +96,8 @@
 	A bit better delete confirmation messages with number of files to be
 	deleted.
 
+	Improved syntax highlighting of patterns.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views
