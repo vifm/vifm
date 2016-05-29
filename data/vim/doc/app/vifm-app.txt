@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 27
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 29
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1401,7 +1401,7 @@ The builtin commands are:
     forces running associated program in background.
 
                                                *vifm-:filetype* *vifm-:filet*
-:filet[ype] pat1,pat2,... [{ descr }]def_program[ &],[{ descr }]prog2[ &],...
+:filet[ype] pattern-list [{ descr }]def_program[ &],[{ descr }]prog2[ &],...
     associate given program list to each of the patterns.  Associated
     program (command) is used by handlers of l and Enter keys (and also in
     the :file menu).  If you need to insert comma into command just double
@@ -1429,7 +1429,7 @@ The builtin commands are:
     file name.  Same as ":filextype filename".
 
                                                *vifm-:filextype* *vifm-:filex*
-:filex[type] pat1,pat2,... [{ description }] def_program,program2,...
+:filex[type] pattern-list [{ description }] def_program,program2,...
     same as :filetype, but this command is ignored if not running in X.  In
     X :filextype is equal to :filetype.  See |vifm-globs| for pattern
     definition.  See also |vifm-fuse|.
@@ -1480,7 +1480,7 @@ The builtin commands are:
     file name.  Same as ":filetype filename".
 
                                                *vifm-:fileviewer* *vifm-:filev*
-:filev[iewer] pat1,pat2,... command1,command2,...
+:filev[iewer] pattern-list command1,command2,...
     register specified list of commands as viewers for each of the patterns.
     Viewer is a command which output is captured and displayed in the second
     pane of vifm after running |vifm-:view| command.  When the command doesn't
@@ -2481,8 +2481,8 @@ Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
 *vifm-patterns*
 
 |vifm-:highlight|, |vifm-:filetype|, |vifm-:filextype|, |vifm-:fileviewer|
-commands and |vifm-'classify'| option support both globs and regular expressions
-as patterns to match file names or full paths.
+commands and |vifm-'classify'| option support globs, regular expressions and
+mime types to match file names or their paths.
 
 There are six possible ways to write a single pattern:
  1. [!]{comma-separated-name-globs}
@@ -2497,6 +2497,11 @@ five forms and write patterns one after another, like this: >
  <text/plain>{*.vifm}
 Mind that if you make a mistake the whole string will be treated as the sixth
 form.
+
+|vifm-:filetype|, |vifm-:filextype| and |vifm-:fileviewer| commands accept
+comma-separated list of patterns instead of a single pattern, thus effectively
+handling OR operation on them: >
+ <text/plain>{*.vifm},<application/pdf>{*.pdf}
 
 Five first forms can include leading exclamation mark that negates pattern
 matching.

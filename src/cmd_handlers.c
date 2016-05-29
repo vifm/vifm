@@ -152,8 +152,8 @@ static char * try_eval_arglist(const cmd_info_t *cmd_info);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
-static int add_filetype(const cmd_info_t *cmd_info, int for_x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
+static int add_assoc(const cmd_info_t *cmd_info, int viewer, int for_x);
 static int filter_cmd(const cmd_info_t *cmd_info);
 static int update_filter(FileView *view, const cmd_info_t *cmd_info);
 static void display_filters_info(const FileView *view);
@@ -1914,44 +1914,14 @@ file_cmd(const cmd_info_t *cmd_info)
 static int
 filetype_cmd(const cmd_info_t *cmd_info)
 {
-	return add_filetype(cmd_info, 0);
+	return add_assoc(cmd_info, 0, 0);
 }
 
 /* Registers x file association handler. */
 static int
 filextype_cmd(const cmd_info_t *cmd_info)
 {
-	return add_filetype(cmd_info, 1);
-}
-
-/* Registers x/non-x file association handler.  Single argument form lists
- * currently registered patterns that match specified file name in menu mode.
- * Returns regular *_cmd handler value. */
-static int
-add_filetype(const cmd_info_t *cmd_info, int for_x)
-{
-	const char *records;
-	int in_x;
-	char *error;
-	matchers_t *ms;
-
-	if(cmd_info->argc == 1)
-	{
-		return show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0;
-	}
-
-	ms = matchers_alloc(cmd_info->argv[0], 0, 1, "", &error);
-	if(ms == NULL)
-	{
-		status_bar_errorf("Wrong pattern: %s", error);
-		free(error);
-		return 1;
-	}
-
-	records = vle_cmds_next_arg(cmd_info->args);
-	in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
-	ft_set_programs(ms, records, for_x, in_x);
-	return 0;
+	return add_assoc(cmd_info, 0, 1);
 }
 
 /* Registers external applications as file viewer scripts for files that match
@@ -1960,25 +1930,58 @@ add_filetype(const cmd_info_t *cmd_info, int for_x)
 static int
 fileviewer_cmd(const cmd_info_t *cmd_info)
 {
-	const char *records;
-	char *error;
-	matchers_t *ms;
+	return add_assoc(cmd_info, 1, 0);
+}
+
+/* Registers x/non-x or viewer file association handler.  Single argument form
+ * lists currently registered patterns that match specified file name in menu
+ * mode.  Returns regular *_cmd handler value. */
+static int
+add_assoc(const cmd_info_t *cmd_info, int viewer, int for_x)
+{
+	char **matchers;
+	int nmatchers;
+	int i;
+	const int in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
+	const char *const records = vle_cmds_next_arg(cmd_info->args);
 
 	if(cmd_info->argc == 1)
 	{
-		return show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0;
+		return viewer
+		     ? (show_fileviewers_menu(curr_view, cmd_info->argv[0]) != 0)
+		     : (show_fileprograms_menu(curr_view, cmd_info->argv[0]) != 0);
 	}
 
-	ms = matchers_alloc(cmd_info->argv[0], 0, 1, "", &error);
-	if(ms == NULL)
+	matchers = matchers_list(cmd_info->argv[0], &nmatchers);
+	if(matchers == NULL)
 	{
-		status_bar_errorf("Wrong pattern: %s", error);
-		free(error);
+		status_bar_error("Not enough memory.");
 		return 1;
 	}
 
-	records = vle_cmds_next_arg(cmd_info->args);
-	ft_set_viewers(ms, records);
+	for(i = 0; i < nmatchers; ++i)
+	{
+		char *error;
+		matchers_t *const ms = matchers_alloc(matchers[i], 0, 1, "", &error);
+		if(ms == NULL)
+		{
+			status_bar_errorf("Wrong pattern (%s): %s", matchers[i], error);
+			free(error);
+			free_string_array(matchers, nmatchers);
+			return 1;
+		}
+
+		if(viewer)
+		{
+			ft_set_viewers(ms, records);
+		}
+		else
+		{
+			ft_set_programs(ms, records, for_x, in_x);
+		}
+	}
+
+	free_string_array(matchers, nmatchers);
 	return 0;
 }
 

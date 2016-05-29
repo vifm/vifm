@@ -1,4 +1,4 @@
-.TH VIFM 1 "May 27, 2016" "vifm 0.8.1a"
+.TH VIFM 1 "May 29, 2016" "vifm 0.8.1a"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1649,7 +1649,7 @@ forces running associated program in background.
 .TP
 .BI "                                         :filetype"
 .TP
-.BI ":filet[ype] pat1,pat2,... [{descr}]def_prog[ &],[{descr}]prog2[ &],..."
+.BI ":filet[ype] pattern-list [{descr}]def_prog[ &],[{descr}]prog2[ &],..."
 associate given program list to each of the patterns.  Associated
 program (command) is used by handlers of l and Enter keys (and also in
 the :file menu).  If you need to insert comma into command just double it
@@ -1681,7 +1681,7 @@ name.  Same as ":filextype filename".
 .TP
 .BI "                                         :filextype"
 .TP
-.BI ":filex[type] pat1,pat2,... [{ description }] def_program,program2,..."
+.BI ":filex[type] pattern-list [{ description }] def_program,program2,..."
 same as :filetype, but this command is ignored if not running in X.
 In X :filextype is equal to :filetype.  See "Patterns" section below for pattern
 definition.  See also "Automatic FUSE mounts" section below.
@@ -1740,7 +1740,7 @@ name.  Same as ":filetype filename".
 .TP
 .BI "                                         :fileviewer"
 .TP
-.BI ":filev[iewer] pat1,pat2,... command1,command2,..."
+.BI ":filev[iewer] pattern-list command1,command2,..."
 register specified list of commands as viewers for each of the patterns.  Viewer
 is a command which output is captured and displayed in the second pane of vifm
 after running :view command.  When the command doesn't contain any of vifm
@@ -3002,8 +3002,8 @@ Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
 .SH Patterns
 .\" ---------------------------------------------------------------------------
 :highlight, :filetype, :filextype, :fileviewer commands and 'classify' option
-support both globs and regular expressions as patterns to match file names or
-full paths.
+support globs, regular expressions and mime types to match file names or their
+paths.
 
 There are six possible ways to write a single pattern:
 .RS 2
@@ -3028,6 +3028,13 @@ five forms and write patterns one after another, like this:
 .EE
 Mind that if you make a mistake the whole string will be treated as the sixth
 form.
+
+:filetype, :filextype and :fileviewer commands accept comma-separated list of
+patterns instead of a single pattern, thus effectively handling OR operation on
+them:
+.EX
+  <text/plain>{*.vifm},<application/pdf>{*.pdf}
+.EE
 
 Five first forms can include leading exclamation mark that negates pattern
 matching.

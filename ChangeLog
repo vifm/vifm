@@ -52,6 +52,9 @@
 	such composite pattern will much when each of them matches.  Thanks to
 	filterfalse.
 
+	Added pattern ORing for :file[x]type and :fileviewer commands implemented
+	as a comma-separated list.  Thanks to filterfalse.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
