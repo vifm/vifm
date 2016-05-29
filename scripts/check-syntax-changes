@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# This script performs comparison of Vim syntax highlighting with and without
+# uncommited changes.  It's done by generating HTML files which are then
+# compared via `git diff` in word diff mode.  Output isn't the easiest one to
+# understand, but enough to show unexpected changes and expected effects (line
+# numbers are at the left).
+#
+# Invocation:
+#  * without arguments to check provided test file;
+#  * with file name to check changes on specified file.
+
+set -e
+
+dir="$(readlink -f "$(dirname "$0")")"
+syntax_regression_file="$dir/../tests/test-data/syntax-highlight/syntax.vifm"
+
+if [ $# -eq 1 ]; then
+    syntax_regression_file="$1"
+elif [ $# -ne 0 ]; then
+    echo "Usage: $(basename "$0") [test file that uses vifm syntax]"
+    exit 1
+fi
+
+if [ ! -r "$syntax_regression_file" ]; then
+    echo "$(basename "$0"): '$syntax_regression_file' file doesn't exist"
+    exit 2
+fi
+
+# three arguments:
+#  1) path to syntax script;
+#  2) path to source file;
+#  3) path to destination file.
+function to_html
+{
+    local syntax_script="$1"
+    local src="$2"
+    local out="$src.html"
+    local dst="$3"
+
+    vim -E -s \
+        +'let g:html_no_progress = 1' \
+        +'let g:html_line_ids=1' \
+        +'syntax on' \
+        +"source $syntax_script" \
+        +'runtime syntax/2html.vim' \
+        +'wqa' \
+        "$src" 2> /dev/null || true
+    mv "$out" "$dst"
+}
+
+# makes sure temporary files are deleted on normal or error exit
+function remove_tmp_files()
+{
+    rm -f "$dir/before.vim" "$dir/after.vifm.html" "$dir/before.vifm.html"
+}
+trap remove_tmp_files EXIT
+
+git show HEAD:data/vim/syntax/vifm.vim > "$dir/before.vim"
+
+to_html "$dir/before.vim" "$syntax_regression_file" "$dir/before.vifm.html"
+
+to_html "$dir/../data/vim/syntax/vifm.vim" "$syntax_regression_file" \
+        "$dir/after.vifm.html"
+
+if ! git diff --quiet --no-index "$dir/before.vifm.html" "$dir/after.vifm.html"
+then
+    git diff --no-index --word-diff "$dir/before.vifm.html" \
+                                    "$dir/after.vifm.html" || true
+fi
