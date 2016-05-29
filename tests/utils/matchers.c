@@ -144,7 +144,7 @@ TEST(regexps_escaping_works)
 	char **list;
 	int count;
 
-	list = break_into_matchers("!/n\\/r1//nr2///p\\/\\/r1////pr/\\//2//", &count,
+	list = break_into_matchers("!/n\\/r1//nr2///p\\/\\/r1////p/r/\\//2//", &count,
 			0);
 	assert_int_equal(4, count);
 	if(count == 4)
@@ -152,7 +152,7 @@ TEST(regexps_escaping_works)
 		assert_string_equal("!/n\\/r1/", list[0]);
 		assert_string_equal("/nr2/", list[1]);
 		assert_string_equal("//p\\/\\/r1//", list[2]);
-		assert_string_equal("//pr/\\//2//", list[3]);
+		assert_string_equal("//p/r/\\//2//", list[3]);
 	}
 
 	free_string_array(list, count);
