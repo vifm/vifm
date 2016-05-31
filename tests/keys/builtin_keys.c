@@ -16,7 +16,8 @@
 #endif
 
 int last; /* 1 = k, 2 = j, 3 = yank, 4 = delete */
-int last_command_count; /* for ctrl+w <, dd and d + selector*/
+int last_command_count; /* for ctrl+w <, dd and d + selector */
+int last_command_register; /* for dd */
 int last_selector_count; /* for k */
 int key_is_mapped; /* for : and m */
 int is_in_maping_state; /* for : and m */
@@ -206,6 +207,7 @@ keys_delete(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 4;
 	last_command_count = key_info.count;
+	last_command_register = key_info.reg;
 }
 
 static void
