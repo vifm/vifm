@@ -55,6 +55,7 @@ typedef enum
 }
 FollowedBy;
 
+/* Describes single key (command or selector) on its own. */
 typedef struct
 {
 	int count; /* Repeat count, may be equal NO_COUNT_GIVEN. */
@@ -63,6 +64,8 @@ typedef struct
 }
 key_info_t;
 
+/* Describes sequence of keys (it can consist of a single key).  This structure
+ * is shared among elements composite constructs like command+selector. */
 typedef struct
 {
 	int selector;   /* Selector passed. */

@@ -342,7 +342,7 @@ find_patterns(parsing_state_t *state)
 {
 	while(find_pattern(state))
 	{
-		// Just advance here.
+		/* Just advance here. */
 	}
 
 	return (state->tok == SYM && *state->input == ',') || state->tok == END;
