@@ -28,6 +28,7 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
+#include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
 #include <time.h> /* tm localtime() strftime() */
 
@@ -42,6 +43,7 @@
 #include "../utils/fs.h"
 #include "../utils/fsdata.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
@@ -272,11 +274,14 @@ show_file_type(FileView *view, int curr_y)
 		FILE *pipe;
 		char command[1024];
 		char buf[NAME_MAX];
+		char *escaped_full_path;
 
 		get_current_full_path(view, sizeof(full_path), full_path);
 
 		/* Use the file command to get file information. */
-		snprintf(command, sizeof(command), "file \"%s\" -b", full_path);
+		escaped_full_path = shell_like_escape(full_path, 0);
+		snprintf(command, sizeof(command), "file %s -b", escaped_full_path);
+		free(escaped_full_path);
 
 		if((pipe = popen(command, "r")) == NULL)
 		{
