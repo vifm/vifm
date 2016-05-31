@@ -16,6 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+/* WARNING: code implementing execution of keys deserves a prize in nomination
+ *          "insanely perplexed control flow".  You have been warned.
+ * TODO: seriously, indirect recursion and jumps between routines is a horrible
+ *       mess, even not touching tree representation this should be possible to
+ *       rewrite with master loop that simply goes through the string in
+ *       left-to-right order. */
+
 #include "keys.h"
 
 #include <assert.h> /* assert() */
@@ -85,6 +92,10 @@ static int dispatch_keys(const wchar_t keys[], keys_info_t *keys_info,
 		int no_remap, int prev_count);
 static int dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap);
+static int dispatch_selector(const wchar_t keys[], keys_info_t *keys_info,
+		key_info_t master_key_info, key_chunk_t *master_curr, int no_remap);
+static int fill_key_info(const wchar_t **keys, key_info_t *key_info,
+		int prev_count, int *result);
 static int contains_chain(key_chunk_t *root, const wchar_t *begin,
 		const wchar_t *end);
 static int execute_next_keys(key_chunk_t *curr, const wchar_t keys[],
@@ -300,33 +311,19 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 	key_info_t key_info;
 	int result;
 
-	keys = get_reg(keys, &key_info.reg);
-	if(keys == NULL)
+	if(fill_key_info(&keys, &key_info, prev_count, &result) != 0)
 	{
-		return KEYS_WAIT;
-	}
-	if(key_info.reg == L'\x1b' || key_info.reg == L'\x03')
-	{
-		return 0;
+		return result;
 	}
 
-	keys = get_count(keys, &key_info.count);
-	key_info.count = combine_counts(key_info.count, prev_count);
-	key_info.multi = L'\0';
-
-	if(!no_remap || keys_info->selector)
+	result = KEYS_UNKNOWN;
+	if(!no_remap)
 	{
-		key_chunk_t *const root = keys_info->selector
-		                        ? &selectors_root[vle_mode_get()]
-		                        : &user_cmds_root[vle_mode_get()];
-		result = dispatch_keys_at_root(keys, keys_info, root, key_info, no_remap);
-	}
-	else
-	{
-		result = KEYS_UNKNOWN;
+		result = dispatch_keys_at_root(keys, keys_info,
+				&user_cmds_root[vle_mode_get()], key_info, no_remap);
 	}
 
-	if(result == KEYS_UNKNOWN && !keys_info->selector)
+	if(result == KEYS_UNKNOWN)
 	{
 		result = dispatch_keys_at_root(keys, keys_info,
 				&builtin_cmds_root[vle_mode_get()], key_info, no_remap);
@@ -437,6 +434,112 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 	return result;
 }
 
+/* Dispatches keys passed in as a selector followed by arbitrary other keys.
+ * Returns error code. */
+static int
+dispatch_selector(const wchar_t keys[], keys_info_t *keys_info,
+		key_info_t master_key_info, key_chunk_t *master_curr, int no_remap)
+{
+	const wchar_t *keys_start = keys;
+	key_chunk_t *curr = &selectors_root[vle_mode_get()];
+	key_info_t key_info;
+	int result;
+
+	if(fill_key_info(&keys, &key_info, master_key_info.count, &result) != 0)
+	{
+		return result;
+	}
+
+	/* The loop finds longest match of the input (keys) among registered
+	 * shortcuts. */
+	while(*keys != L'\0')
+	{
+		key_chunk_t *p;
+
+		for(p = curr->child; p != NULL && p->key < *keys; p = p->next)
+		{
+			/* Advance. */
+		}
+		if(p == NULL || p->key != *keys)
+		{
+			break;
+		}
+		++keys;
+		curr = p;
+	}
+
+	/* Handle ambiguous selector. */
+	if(*keys == '\0' && curr->type != BUILTIN_WAIT_POINT &&
+			curr->children_count > 0 && curr->conf.data.handler != NULL &&
+			!keys_info->after_wait)
+	{
+		return KEYS_WAIT_SHORT;
+	}
+
+	/* Execute the selector. */
+	if(curr->conf.followed == FOLLOWED_BY_MULTIKEY && keys[0] != L'\0')
+	{
+		const wchar_t mk[] = { keys[0], L'\0' };
+		result = execute_next_keys(curr, mk, &key_info, keys_info, 0, no_remap);
+		++keys;
+	}
+	else
+	{
+		result = keys[0] == L'\0'
+		       ? execute_next_keys(curr, L"", &key_info, keys_info, 0, no_remap)
+		       : dispatch_key(key_info, keys_info, curr, L"");
+	}
+	if(IS_KEYS_RET_CODE(result))
+	{
+		return result;
+	}
+
+	/* We used this count in selector, so don't pass it to command. */
+	master_key_info.count = NO_COUNT_GIVEN;
+
+	/* Execute command that requested the selector. */
+	result = execute_mapping_handler(&master_curr->conf, master_key_info,
+			keys_info);
+	if(IS_KEYS_RET_CODE(result))
+	{
+		return result;
+	}
+
+	inc_counter(keys_info, keys - keys_start);
+
+	/* execute_keys_general_wrapper() treats empty input as an error. */
+	if(keys[0] == L'\0')
+	{
+		return 0;
+	}
+	/* Process the rest of the line. */
+	return execute_keys_general(keys, keys_info->after_wait, 0, no_remap);
+}
+
+/* Fills *key_info advancing input if necessary.  Returns zero on success,
+ * otherwise non-zero is returned and *result is set. */
+static int
+fill_key_info(const wchar_t **keys, key_info_t *key_info, int prev_count,
+		int *result)
+{
+	*keys = get_reg(*keys, &key_info->reg);
+	if(*keys == NULL)
+	{
+		*result = KEYS_WAIT;
+		return 1;
+	}
+	if(key_info->reg == L'\x1b' || key_info->reg == L'\x03')
+	{
+		*result = 0;
+		return 1;
+	}
+
+	*keys = get_count(*keys, &key_info->count);
+	key_info->count = combine_counts(key_info->count, prev_count);
+	key_info->multi = L'\0';
+	return 0;
+}
+
 static int
 contains_chain(key_chunk_t *root, const wchar_t *begin, const wchar_t *end)
 {
@@ -494,8 +597,6 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 	}
 	else if(curr->type != USER_CMD)
 	{
-		int result;
-
 		if(conf->followed == FOLLOWED_BY_MULTIKEY)
 		{
 			key_info->multi = keys[0];
@@ -503,16 +604,7 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 		}
 
 		keys_info->selector = 1;
-		result = dispatch_keys(keys, keys_info, no_remap, key_info->count);
-		keys_info->selector = 0;
-
-		if(IS_KEYS_RET_CODE(result))
-		{
-			return result;
-		}
-
-		/* We used this count in selector, so don't pass it to command. */
-		key_info->count = NO_COUNT_GIVEN;
+		return dispatch_selector(keys, keys_info, *key_info, curr, no_remap);
 	}
 
 	return dispatch_key(*key_info, keys_info, curr, keys);
