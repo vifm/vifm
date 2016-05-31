@@ -29,9 +29,11 @@
 #endif
 
 #include <stddef.h> /* size_t */
+#include <stdlib.h> /* free() */
 #include <stdio.h> /* popen() */
 #include <string.h> /* strcpy() */
 
+#include "../utils/path.h"
 #include "../utils/str.h"
 #include "../filetype.h"
 #include "../status.h"
@@ -146,9 +148,12 @@ get_file_mimetype(const char filename[], char buf[], size_t buf_sz)
 #ifdef HAVE_FILE_PROG
 	FILE *pipe;
 	char command[1024];
+	char *const escaped_filename = shell_like_escape(filename, 0);
 
 	/* Use the file command to get mimetype */
-	snprintf(command, sizeof(command), "file \"%s\" -b --mime-type", filename);
+	snprintf(command, sizeof(command), "file %s -b --mime-type",
+			escaped_filename);
+	free(escaped_filename);
 
 	if((pipe = popen(command, "r")) == NULL)
 	{
