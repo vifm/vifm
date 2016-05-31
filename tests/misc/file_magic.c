@@ -25,7 +25,7 @@ check_empty_file(const char fname[])
 	if(f != NULL)
 	{
 		fclose(f);
-		assert_string_equal("inode/x-empty", get_mimetype(fname));
+		assert_non_null(get_mimetype(fname));
 		assert_success(unlink(fname));
 	}
 }
