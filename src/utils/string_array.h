@@ -83,8 +83,10 @@ char ** read_file_of_lines(const char filepath[], int *nlines);
 char ** read_file_lines(FILE *f, int *nlines);
 
 /* Reads content of the stream (not required to be seekable) f into array of
- * strings.  Returns NULL for an empty file stream. */
-char ** read_stream_lines(FILE *f, int *nlines);
+ * strings.  The flag enables heuristic according to which if stream contents
+ * includes null character, it's taken as a separator instead of regular newline
+ * characters.  Returns NULL for an empty file stream. */
+char ** read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic);
 
 /* Reads content of the fp stream that doesn't support seek operation (e.g. it
  * points to a pipe) until end-of-file into null terminated string.  Returns

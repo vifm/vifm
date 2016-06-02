@@ -55,6 +55,11 @@
 	Added pattern ORing for :file[x]type and :fileviewer commands implemented
 	as a comma-separated list.  Thanks to filterfalse.
 
+	Added heuristic that uses null byte as separator for file lists if there
+	is at least one such byte, otherwise normal line separators are used.
+	This affects :[un]select, `vifm -`, %u, %U, %m and %M.  Thanks to
+	filterfalse.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 

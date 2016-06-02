@@ -54,8 +54,10 @@ void pause_shell(void);
 void recover_after_shellout(void);
 
 /* Invokes handler for each line read from stdout of the command specified via
- * cmd.  Error stream is displayed separately.  Supports cancellation.  Returns
- * zero on success, otherwise non-zero is returned. */
+ * cmd.  Error stream is displayed separately.  Implements heuristic according
+ * to which if command output includes null character, it's taken as a separator
+ * instead of regular newline characters.  Supports cancellation.  Returns zero
+ * on success, otherwise non-zero is returned. */
 int process_cmd_output(const char descr[], const char cmd[], int user_sh,
 		cmd_output_handler handler, void *arg);
 
