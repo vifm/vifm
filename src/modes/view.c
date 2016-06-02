@@ -1082,7 +1082,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			vi->graphics = 1;
 		}
 
-		vi->lines = read_stream_lines(fp, &vi->nlines);
+		vi->lines = read_stream_lines(fp, &vi->nlines, 0);
 	}
 
 	fclose(fp);

@@ -34,8 +34,10 @@
 static char * read_whole_file(const char filepath[], size_t *read);
 static char * read_seekable_stream(FILE *const fp, size_t *read);
 static size_t get_remaining_stream_size(FILE *const fp);
-static char ** text_to_lines(char text[], size_t text_len, int *nlines);
-static char ** break_into_lines(char text[], size_t text_len, int *nlines);
+static char ** text_to_lines(char text[], size_t text_len, int *nlines,
+		int null_sep);
+static char ** break_into_lines(char text[], size_t text_len, int *nlines,
+		int null_sep);
 
 int
 add_to_string_array(char ***array, int len, int count, ...)
@@ -183,7 +185,9 @@ read_file_of_lines(const char filepath[], int *nlines)
 {
 	size_t text_len;
 	char *const text = read_whole_file(filepath, &text_len);
-	char **list = (text == NULL) ? NULL : text_to_lines(text, text_len, nlines);
+	char **list = (text == NULL)
+	            ? NULL
+	            : text_to_lines(text, text_len, nlines, 0);
 	if(list == NULL)
 	{
 		list = malloc(sizeof(*list));
@@ -217,15 +221,16 @@ read_file_lines(FILE *f, int *nlines)
 {
 	size_t text_len;
 	char *const text = read_seekable_stream(f, &text_len);
-	return text_to_lines(text, text_len, nlines);
+	return text_to_lines(text, text_len, nlines, 0);
 }
 
 char **
-read_stream_lines(FILE *f, int *nlines)
+read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic)
 {
 	size_t text_len;
 	char *const text = read_nonseekable_stream(f, &text_len);
-	return (text == NULL) ? NULL : text_to_lines(text, text_len, nlines);
+	const int null = (null_sep_heuristic && strlen(text) != text_len);
+	return (text == NULL) ? NULL : text_to_lines(text, text_len, nlines, null);
 }
 
 char *
@@ -327,13 +332,13 @@ get_remaining_stream_size(FILE *const fp)
  * otherwise NULL is returned, *nlines is untouched.  For empty file non-NULL
  * will be returned, but *nlines will be zero. */
 static char **
-text_to_lines(char text[], size_t text_len, int *nlines)
+text_to_lines(char text[], size_t text_len, int *nlines, int null_sep)
 {
 	char **list = NULL;
 
 	if(text != NULL)
 	{
-		list = break_into_lines(text, text_len, nlines);
+		list = break_into_lines(text, text_len, nlines, null_sep);
 		free(text);
 	}
 	return list;
@@ -343,15 +348,16 @@ text_to_lines(char text[], size_t text_len, int *nlines)
  * on success, otherwise NULL is returned, *nlines is untouched.  For empty file
  * non-NULL will be returned, but *nlines will be zero. */
 static char **
-break_into_lines(char text[], size_t text_len, int *nlines)
+break_into_lines(char text[], size_t text_len, int *nlines, int null_sep)
 {
+	const char *const seps = null_sep ? "" : "\n\r";
 	const char *const end = text + text_len;
 	char **list = NULL;
 
 	*nlines = 0;
 	while(text < end)
 	{
-		const size_t line_len = strcspn(text, "\n\r");
+		const size_t line_len = strcspn(text, seps);
 
 		char *after_line = text + line_len;
 		if(after_line[0] == '\n')
