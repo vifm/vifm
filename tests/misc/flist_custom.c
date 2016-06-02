@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() rmdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() symlink() unlink() */
 
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
 #include <stdlib.h> /* free() */
@@ -31,6 +31,7 @@
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static void setup_custom_view(FileView *view, int very);
+static int filenames_can_include_newline(void);
 static int not_windows(void);
 
 static char test_data[PATH_MAX];
@@ -474,6 +475,32 @@ TEST(custom_view_does_not_reset_local_state)
 	columns_clear_column_descs();
 }
 
+TEST(files_with, IF(filenames_can_include_newline))
+{
+	FILE *const f = fopen(SANDBOX_PATH "/list", "w");
+	fprintf(f, "%s%c", SANDBOX_PATH "/a\nb", '\0');
+	fclose(f);
+
+	assert_success(chdir(SANDBOX_PATH));
+
+	replace_string(&cfg.shell, "/bin/sh");
+	stats_update_shell_type(cfg.shell);
+
+	create_file("a\nb");
+	output_to_custom_flist(&lwin, "cat list", 0);
+	assert_success(unlink("a\nb"));
+	assert_success(unlink("list"));
+
+	stats_update_shell_type("/bin/sh");
+	update_string(&cfg.shell, NULL);
+
+	assert_int_equal(1, lwin.list_rows);
+	if(lwin.list_rows == 1)
+	{
+		assert_string_equal("a\nb", lwin.dir_entry[0].name);
+	}
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
@@ -491,6 +518,19 @@ setup_custom_view(FileView *view, int very)
 	flist_custom_start(view, "test");
 	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(view, very) == 0);
+}
+
+static int
+filenames_can_include_newline(void)
+{
+	FILE *const f = fopen(SANDBOX_PATH "/a\nb", "w");
+	if(f != NULL)
+	{
+		fclose(f);
+		assert_success(unlink(SANDBOX_PATH "/a\nb"));
+		return not_windows();
+	}
+	return 0;
 }
 
 static int

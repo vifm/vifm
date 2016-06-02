@@ -55,6 +55,7 @@
 #include "macros.h"
 #include "path.h"
 #include "str.h"
+#include "string_array.h"
 
 #ifdef _WIN32
 static void unquote(char quoted[]);
@@ -80,8 +81,10 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 		cmd_output_handler handler, void *arg)
 {
 	FILE *file, *err;
-	char *line;
 	pid_t pid;
+	int nlines;
+	char **lines;
+	int i;
 
 	LOG_INFO_MSG("Capturing output of the command: %s", cmd);
 
@@ -91,26 +94,22 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 		return 1;
 	}
 
-	show_progress("", 0);
-
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
 	wait_for_data_from(pid, file, 0);
-
-	line = NULL;
-	while((line = read_line(file, line)) != NULL)
-	{
-		show_progress(descr, 1000);
-		handler(line, arg);
-		wait_for_data_from(pid, file, 0);
-	}
+	lines = read_stream_lines(file, &nlines, 1);
 
 	ui_cancellation_disable();
-
 	fclose(file);
-	show_errors_from_file(err, descr);
 
+	for(i = 0; i < nlines; ++i)
+	{
+		handler(lines[i], arg);
+	}
+	free_string_array(lines, nlines);
+
+	show_errors_from_file(err, descr);
 	return 0;
 }
 
