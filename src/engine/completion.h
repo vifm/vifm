@@ -61,7 +61,7 @@ int vle_compl_add_last_path_match(const char origin[]);
 void vle_compl_finish_group(void);
 
 /* Squashes all existing completion groups into one.  Performs resorting and
- * de-duplication of resulting single group. */
+ * deduplication of resulting single group. */
 void vle_compl_unite_groups(void);
 
 void vle_compl_reset(void);

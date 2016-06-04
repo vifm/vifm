@@ -1419,7 +1419,7 @@ pick_out_decoration(char classify_item[], FileType *type, const char **expr)
 	return NULL;
 }
 
-/* Checks whether decorations are well-formated and prints errors if they
+/* Checks whether decorations are well-formatted and prints errors if they
  * aren't.  Returns zero if everything is OK, otherwise non-zero is returned. */
 static int
 validate_decorations(const char prefix[], const char suffix[])

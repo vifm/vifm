@@ -33,7 +33,7 @@ extern const char ENV_VAR_NAME_CHARS[];
  */
 void init_variables(void);
 
-/* Gets cached value of environment variable envname. Returns empty string if
+/* Gets cached value of environment variable envname.  Returns empty string if
  * requested variable doesn't exist. */
 const char * local_getenv(const char *envname);
 

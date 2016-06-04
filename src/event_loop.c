@@ -118,7 +118,7 @@ event_loop(const int *quit)
 
 		modes_pre();
 
-		/* Waits for timeout then skips if no keypress.  Short-circuit if we're not
+		/* Waits for timeout then skips if no key press.  Short-circuit if we're not
 		 * waiting for the next key after timeout. */
 		do
 		{

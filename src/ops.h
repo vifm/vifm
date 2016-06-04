@@ -68,7 +68,7 @@ ConflictResolutionPolicy;
 /* Policy on treating errors during operation processing. */
 typedef enum
 {
-	ERP_ASK,        /* Prompt user for the decition. */
+	ERP_ASK,        /* Prompt user for the decision. */
 	ERP_IGNORE_ALL, /* Automatically ignore all future errors. */
 }
 ErrorResolutionPolicy;

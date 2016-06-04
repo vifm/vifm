@@ -43,7 +43,7 @@ typedef enum
 	OP_OFF,      /* Boolean value was turned off. */
 	OP_SET,      /* Value set. */
 	OP_MODIFIED, /* Value added/removed (for OPT_INT, OPT_SET and OPT_STR). */
-	OP_RESET,    /* Value reseted to default. */
+	OP_RESET,    /* Value is reset to default. */
 }
 OPT_OP;
 

@@ -810,7 +810,8 @@ select_count(const cmd_info_t *cmd_info, int count)
  *  - <0 -- one of CMDS_* errors from cmds.h;
  *  - =0 -- nothing was outputted to the status bar, don't need to save its
  *          state;
- *  - <0 -- someting was outputted to the status bar, need to save its state. */
+ *  - <0 -- something was outputted to the status bar, need to save its
+ *          state. */
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
@@ -1226,7 +1227,7 @@ add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
 	return result;
 }
 
-/* Changes location of a view or both views.  Handlee multiple configurations of
+/* Changes location of a view or both views.  Handle multiple configurations of
  * the command (with/without !, none/one/two arguments). */
 static int
 cd_cmd(const cmd_info_t *cmd_info)
@@ -2992,7 +2993,7 @@ messages_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
-/* :mkdir ceates sub-directory.  :mkdir! creates chain of directories.  In
+/* :mkdir creates sub-directory.  :mkdir! creates chain of directories.  In
  * second case both relative and absolute paths are allowed. */
 static int
 mkdir_cmd(const cmd_info_t *cmd_info)

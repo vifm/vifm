@@ -1793,7 +1793,7 @@ flist_custom_exclude(FileView *view)
 }
 
 /* zap_entries() filter to filter-out files from array of strings.  Returns
- * non-zero if entry is to be keeped and zero otherwise.*/
+ * non-zero if entry is to be kept and zero otherwise.*/
 static int
 is_in_list(FileView *view, const dir_entry_t *entry, void *arg)
 {

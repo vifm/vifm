@@ -21,7 +21,7 @@
 
 #include <stddef.h> /* size_t */
 
-/* Almost the same as realloc(), but with a dififerent way of specifying size
+/* Almost the same as realloc(), but with a different way of specifying size
  * and checks for integer overflow in the calculation of nmemb * size. */
 void * reallocarray(void *optr, size_t nmemb, size_t size);
 

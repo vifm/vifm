@@ -142,7 +142,7 @@ void bg_op_unlock(bg_op_t *bg_op);
  * changed. */
 void bg_op_changed(bg_op_t *bg_op);
 
-/* Conveniece method to update description of background job, use
+/* Convenience method to update description of background job, use
  * lock -> <change> -> unlock -> changed sequence for more generic cases.  Fires
  * operation change. */
 void bg_op_set_descr(bg_op_t *bg_op, const char descr[]);

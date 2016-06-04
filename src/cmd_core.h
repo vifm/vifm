@@ -128,7 +128,7 @@ void cmds_preserve_selection(void);
 /* Enters if branch of if-else-endif statement. */
 void cmds_scoped_if(int cond);
 
-/* Enters elseif branch of if-else-endif statement.  Returns non-zero if ifelse
+/* Enters elseif branch of if-else-endif statement.  Returns non-zero if elseif
  * branch wasn't expected at this point, otherwise zero is returned. */
 int cmds_scoped_elseif(int cond);
 

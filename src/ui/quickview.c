@@ -59,7 +59,7 @@
 /* Size of buffer holding preview line (in characters). */
 #define PREVIEW_LINE_BUF_LEN 4096
 
-/* State fo directory tree print functions. */
+/* State of directory tree print functions. */
 typedef struct
 {
 	FILE *fp;          /* Output preview stream. */
@@ -530,7 +530,7 @@ view_stream(FILE *fp, int wrapped)
 
 /* Shifts characters in the line of length len, so that characters at the offset
  * position are moved to the beginning of the line.  Returns non-zero if new
- * buffer should be threated as empty. */
+ * buffer should be treated as empty. */
 static int
 shift_line(char line[], size_t len, size_t offset)
 {

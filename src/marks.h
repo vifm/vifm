@@ -94,7 +94,7 @@ int check_mark_directory(FileView *view, char m);
 
 /* Fills array of booleans (active_marks) each of which shows whether specified
  * mark index is active.  active_marks should be an array of at least NUM_MARKS
- * items.  Returns number of active makrs. */
+ * items.  Returns number of active marks. */
 int init_active_marks(const char marks[], int active_marks[]);
 
 /* Lists active marks.  Local marks are those that point into current view. */

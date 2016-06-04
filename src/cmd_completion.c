@@ -518,7 +518,7 @@ complete_progs(const char *str, assoc_records_t records)
 	}
 }
 
-/* Completes highlight groups and subcomand "clear" for :highlight command. */
+/* Completes highlight groups and subcommand "clear" for :highlight command. */
 static void
 complete_highlight_groups(const char *str)
 {
@@ -747,7 +747,7 @@ fast_run_complete(const char cmd[])
 	return result;
 }
 
-/* Fills list of complitions with executables in $PATH. */
+/* Fills list of completions with executables in $PATH. */
 static void
 complete_command_name(const char beginning[])
 {

@@ -1139,7 +1139,7 @@ refresh_view_win(FileView *view)
 
 	wrefresh(view->win);
 	/* Use getmaxy(...) instead of multiline_status_bar to handle command line
-	 * mode, which doesn't use this module to show multilined messages. */
+	 * mode, which doesn't use this module to show multiline messages. */
 	if(cfg.display_statusline && getmaxy(status_bar) > 1)
 	{
 		touchwin(stat_win);

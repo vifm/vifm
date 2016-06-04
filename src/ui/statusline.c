@@ -56,7 +56,7 @@ static void update_job_bar(void);
 static const char * format_job_bar(void);
 static char ** take_job_descr_snapshot(void);
 
-/* Number of backround jobs. */
+/* Number of background jobs. */
 static size_t nbar_jobs;
 /* Array of jobs. */
 static bg_op_t **bar_jobs;

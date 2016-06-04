@@ -80,8 +80,8 @@ is_dir(const char path[])
 
 /* Checks if path is an existing directory faster than is_dir() does this at the
  * cost of less accurate results (fails on non-sufficient rights).
- * Automatically deferences symbolic links.  Returns non-zero if path points to
- * a directory, otherwise zero is returned. */
+ * Automatically dereferences symbolic links.  Returns non-zero if path points
+ * to a directory, otherwise zero is returned. */
 static int
 is_dir_fast(const char path[])
 {
@@ -810,8 +810,8 @@ restore_cwd(char saved_cwd[])
 
 #ifndef _WIN32
 
-/* Checks if path (dereferencer or not symbolic link) is an existing directory.
- * Automatically deferences symbolic links. */
+/* Checks if path (dereferenced for a symbolic link) is an existing directory.
+ * Automatically dereferences symbolic links. */
 static int
 is_directory(const char path[], int dereference_links)
 {

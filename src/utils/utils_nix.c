@@ -617,8 +617,8 @@ starts_with_list_item(const char str[], const char list[])
 	return prefix != NULL;
 }
 
-/* Finds such elemenent of comma separated list of paths (the list) that the
- * path is prefixed with it.  Returns the index or -1 on failure. */
+/* Finds such element of comma separated list of paths (the list) that the path
+ * is prefixed with it.  Returns the index or -1 on failure. */
 static int
 find_path_prefix_index(const char path[], const char list[])
 {

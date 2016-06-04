@@ -93,7 +93,7 @@ void columns_clear_column_descs(void);
 /* Creates column view. Returns NULL_COLUMNS on error. */
 columns_t columns_create(void);
 
-/* Frees previously allocated columns.  Passing NULL_COLUMNS is ok. */
+/* Frees previously allocated columns.  Passing NULL_COLUMNS is OK. */
 void columns_free(columns_t cols);
 
 /* Adds one column to the cols as the most right one. Duplicates are
