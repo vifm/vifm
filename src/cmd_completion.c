@@ -704,7 +704,7 @@ fast_run_complete(const char cmd[])
 
 	args = extract_cmd_name(cmd, 0, sizeof(command), command);
 
-	if(is_path_absolute(command))
+	if(is_path_absolute(command) || command[0] == '~')
 	{
 		return strdup(cmd);
 	}

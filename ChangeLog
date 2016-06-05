@@ -170,6 +170,8 @@
 	Fixed possible issues with escaping on retrieving file type/mime-type
 	using `file` utility.  Thanks to filterfalse.
 
+	Fixed cutting off path prefix from :!~/path/exec when 'fastrun' is on.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
