@@ -501,6 +501,28 @@ TEST(files_with, IF(filenames_can_include_newline))
 	}
 }
 
+TEST(can_set_very_cv_twice_in_a_row)
+{
+	fview_init();
+	opt_handlers_setup();
+
+	lwin.columns = columns_create();
+
+	lwin.sort[0] = SK_BY_NAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	setup_custom_view(&lwin, 1);
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 1) == 0);
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
+
+	opt_handlers_teardown();
+	columns_clear_column_descs();
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])

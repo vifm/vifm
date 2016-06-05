@@ -1703,7 +1703,11 @@ flist_custom_finish(FileView *view, int very)
 	view->custom.unsorted = very;
 	if(very)
 	{
-		apply_very_custom(view);
+		/* Applying very custom twice erases sorting completely. */
+		if(previous != CUSTOM_VERY)
+		{
+			apply_very_custom(view);
+		}
 	}
 	else if(previous == CUSTOM_VERY)
 	{
