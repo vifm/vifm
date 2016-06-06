@@ -434,7 +434,7 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 }
 
 /* Expands content of a register specified by the key argument considering
- * filename-modifiers.  If key is unknown, fallbacks to the default register.
+ * filename-modifiers.  If key is unknown, falls back to the default register.
  * Sets *well_formed to non-zero for valid value of the key.  Reallocates the
  * expanded string and returns result (possibly NULL). */
 static char *

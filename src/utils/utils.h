@@ -73,7 +73,7 @@ typedef int (*mptraverser)(struct mntent *entry, void *arg);
  * Returns non-zero if so, otherwise zero is returned. */
 int is_on_slow_fs(const char full_path[]);
 
-/* Checks whether accessing the to loation from the from location might cause
+/* Checks whether accessing the to location from the from location might cause
  * slowdown.  Returns non-zero if so, otherwise zero is returned. */
 int refers_to_slower_fs(const char from[], const char to[]);
 

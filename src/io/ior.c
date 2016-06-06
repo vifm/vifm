@@ -23,7 +23,7 @@
 
 #include <errno.h> /* EEXIST EISDIR ENOTEMPTY EXDEV errno */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* removee() snprintf() */
+#include <stdio.h> /* remove() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strerror() strlen() */
 

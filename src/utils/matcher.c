@@ -253,7 +253,7 @@ parse_re(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 			return 1;
 		}
 
-		/* Cut the flags off by replacing traling slash(es) with null character. */
+		/* Cut the flags off by replacing trailing slash(es) with null character. */
 		flags[-strip] = '\0';
 	}
 

@@ -51,7 +51,7 @@ utf8_chrw(const char str[])
 	return 1;
 }
 
-/* Determines width of a utf-8 characted by its first byte. */
+/* Determines width of a utf-8 character by its first byte. */
 static size_t
 guess_char_width(char c)
 {

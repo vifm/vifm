@@ -75,7 +75,7 @@ int all_files_visible(const FileView *view);
 
 /* Gets file position of last visible cell in the view.  Value returned may be
  * greater than or equal to the number of files in the view and thus should be
- * threated correctly.  Returns the index. */
+ * treated correctly.  Returns the index. */
 size_t get_last_visible_cell(const FileView *view);
 
 /* Calculates position in list of files that corresponds to window top, which is

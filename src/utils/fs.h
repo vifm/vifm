@@ -49,7 +49,7 @@ SymLinkType;
 typedef int (*dir_content_client_func)(const char name[], const void *data,
 		void *param);
 
-/* Checks if path is an existing directory.  Automatically deferences symbolic
+/* Checks if path is an existing directory.  Automatically dereferences symbolic
  * links. */
 int is_dir(const char path[]);
 

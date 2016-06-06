@@ -629,7 +629,7 @@ cmd_b(key_info_t key_info, keys_info_t *keys_info)
 	dump_into_custom_view(0);
 }
 
-/* Makees custom view of specified type out of menu items. */
+/* Makes custom view of specified type out of menu items. */
 static void
 dump_into_custom_view(int very)
 {

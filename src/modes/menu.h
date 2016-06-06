@@ -24,7 +24,7 @@
 #include "../menus/menus.h"
 #include "cmdline.h"
 
-/* Initiailizes menu mode. */
+/* Initializes menu mode. */
 void init_menu_mode(void);
 
 void enter_menu_mode(menu_info *m, FileView *active_view);
@@ -55,7 +55,7 @@ void execute_cmdline_command(const char cmd[]);
 
 /* Returns index of last visible line in the menu.  Value returned may be
  * greater than or equal to number of lines in the menu, which should be
- * threated correctly. */
+ * treated correctly. */
 int get_last_visible_line(const menu_info *m);
 
 #endif /* VIFM__MODES__MENU_H__ */

@@ -706,7 +706,7 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 	int result;
 	if(rhs[0] == L'\0' && left_keys[0] == L'\0')
 	{
-		/* Nop command "executed" correctly. */
+		/* No-operation command "executed" correctly. */
 		result = 0;
 	}
 	else if(rhs[0] == L'\0')

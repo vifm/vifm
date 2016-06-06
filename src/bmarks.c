@@ -31,7 +31,7 @@
 typedef struct
 {
 	char *path;       /* Path to the directory. */
-	char *tags;       /* Comma-seperated list of tags. */
+	char *tags;       /* Comma-separated list of tags. */
 	time_t timestamp; /* Last bookmark update time (-1 means "never"). */
 }
 bmark_t;

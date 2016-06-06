@@ -108,7 +108,7 @@ chooseopt_builtin(const call_info_t *call_info)
 	return var_new(VTYPE_STRING, var_val);
 }
 
-/* Checks whether executable exists at absolute path orin directories listed in
+/* Checks whether executable exists at absolute path or in directories listed in
  * $PATH when path isn't absolute.  Checks for various executable extensions on
  * Windows.  Returns boolean value describing result of the check. */
 static var_t

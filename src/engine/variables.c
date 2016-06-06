@@ -54,7 +54,7 @@ typedef enum
 	VO_ASSIGN, /* Assigning a variable (=). */
 	VO_APPEND, /* Appending to a string (.=). */
 	VO_ADD,    /* Adding to numbers or composite values (+=). */
-	VO_SUB,    /* Substructing from numbers or removing from composites (-=). */
+	VO_SUB,    /* Subtracting from numbers or removing from composites (-=). */
 }
 VariableOperation;
 

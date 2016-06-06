@@ -164,7 +164,7 @@ vle_compl_unite_groups(void)
 }
 
 /* Sorts items of the list in range [start_index, start_index + len) with
- * de-duplication.  Updates number of list elements and next group beginning. */
+ * deduplication.  Updates number of list elements and next group beginning. */
 static void
 group_unique_sort(size_t start_index, size_t len)
 {

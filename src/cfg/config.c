@@ -195,7 +195,7 @@ cfg_init(void)
 	cfg.timeout_len = 1000;
 	cfg.min_timeout_len = 150;
 
-	/* Fill cfg.word_chars as if it was initialized from isspace() fuction. */
+	/* Fill cfg.word_chars as if it was initialized from isspace() function. */
 	memset(&cfg.word_chars, 1, sizeof(cfg.word_chars));
 	cfg.word_chars['\x00'] = 0; cfg.word_chars['\x09'] = 0;
 	cfg.word_chars['\x0a'] = 0; cfg.word_chars['\x0b'] = 0;

@@ -22,7 +22,7 @@
 
 #include "../ui/ui.h"
 
-/* Displays bookmaarks.  Returns non-zero if status bar message should be
+/* Displays bookmarks.  Returns non-zero if status bar message should be
  * saved. */
 int show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match);
 

@@ -816,7 +816,7 @@ exec_commands(const char cmdline[], FileView *view, CmdInputType type)
 }
 
 /* Breaks command-line into sub-commands.  Returns NULL-terminated list of
- * sub-sommands. */
+ * sub-commands. */
 TSTATIC char **
 break_cmdline(const char cmdline[], int for_menu)
 {
