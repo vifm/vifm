@@ -159,20 +159,20 @@ typedef struct dir_entry_t
 	FileType type;
 	int nlinks;       /* Number of hard links to the entry. */
 
-	int selected;
-	int was_selected; /* Stores previous selection state in Visual mode. */
-
-	int search_match;      /* Whether the item matches last search. */
-	short int match_left;  /* Starting position of the match. */
-	short int match_right; /* Ending position of the match. */
-
 	int list_num;     /* Used by sorting comparer to perform stable sort. */
-
-	int marked;       /* Whether file should be processed. */
 
 	int hi_num;       /* File highlighting parameters cache (initially -1). */
 	int name_dec_num; /* File decoration parameters cache (initially -1).  The
 	                     value is shifted by one, 0 means type decoration. */
+
+	int search_match;      /* Non-zero if the item matches last search.  Equals to
+	                          search match number (top to bottom order). */
+	short int match_left;  /* Starting position of search match. */
+	short int match_right; /* Ending position of search match. */
+
+	unsigned int selected : 1;
+	unsigned int was_selected : 1; /* Previous selection state for Visual mode. */
+	unsigned int marked : 1;       /* Whether file should be processed. */
 }
 dir_entry_t;
 
