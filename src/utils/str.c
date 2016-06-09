@@ -434,8 +434,15 @@ strprepend(char **str, size_t *len, const char prefix[])
 		return 1;
 	}
 
-	memmove(new + prefix_len, new, *len + 1);
-	strncpy(new + *len, prefix, prefix_len);
+	if(*len == 0)
+	{
+		new[prefix_len] = '\0';
+	}
+	else
+	{
+		memmove(new + prefix_len, new, *len + 1);
+	}
+	strncpy(new, prefix, prefix_len);
 	*str = new;
 	*len += prefix_len;
 

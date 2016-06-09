@@ -172,6 +172,8 @@
 
 	Fixed cutting off path prefix from :!~/path/exec when 'fastrun' is on.
 
+	Fixed putting unmatched %[ into status line at wrong position.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
