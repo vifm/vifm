@@ -923,7 +923,7 @@ rename_file_cb(const char new_name[])
 
 	/* Rename file in internal structures for correct positioning of cursor after
 	 * reloading, as cursor will be positioned on the file with the same name. */
-	fentry_rename(entry, new);
+	fentry_rename(curr_view, entry, new);
 
 	ui_view_schedule_reload(curr_view);
 }
@@ -1106,7 +1106,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 				/* For regular views rename file in internal structures for correct
 				 * positioning of cursor after reloading. For custom views rename to
 				 * prevent files from disappearing. */
-				fentry_rename(entry, new_name);
+				fentry_rename(view, entry, new_name);
 
 				if(flist_custom_active(view))
 				{
@@ -1114,7 +1114,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 							view->custom.entry_count, path);
 					if(entry != NULL)
 					{
-						fentry_rename(entry, new_name);
+						fentry_rename(view, entry, new_name);
 					}
 				}
 			}
@@ -3174,7 +3174,7 @@ fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 {
 	if(entry_to_pos(view, entry) == view->list_pos || flist_custom_active(view))
 	{
-		fentry_rename(entry, new_fname);
+		fentry_rename(view, entry, new_fname);
 	}
 }
 

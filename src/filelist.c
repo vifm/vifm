@@ -3339,17 +3339,51 @@ flist_end_custom(FileView *view, int very)
 }
 
 void
-fentry_rename(dir_entry_t *entry, const char to[])
+fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 {
+	char *const old_name = entry->name;
+
 	/* Rename file in internal structures for correct positioning of cursor
 	 * after reloading, as cursor will be positioned on the file with the same
 	 * name. */
-	(void)replace_string(&entry->name, to);
+	entry->name = strdup(to);
+	if(entry->name == NULL)
+	{
+		entry->name = old_name;
+		return;
+	}
 
 	/* Name change can affect name specific highlight and decorations, so reset
 	 * the caches. */
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
+
+	if(flist_custom_active(view) && is_directory_entry(entry))
+	{
+		int i;
+		char *const root = format_str("%s/%s", entry->origin, old_name);
+		const size_t root_len = strlen(root);
+
+		for(i = 0; i < view->list_rows; ++i)
+		{
+			dir_entry_t *const e = &view->dir_entry[i];
+			if(path_starts_with(e->origin, root))
+			{
+				char *const new_origin = format_str("%s/%s%s", entry->origin, to,
+						e->origin + root_len);
+				chosp(new_origin);
+				if(e->origin != view->curr_dir)
+				{
+					free(e->origin);
+				}
+				e->origin = new_origin;
+			}
+		}
+
+		free(root);
+	}
+
+	free(old_name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
