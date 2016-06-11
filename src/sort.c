@@ -233,20 +233,18 @@ sort_dir_list(const void *one, const void *two)
 	char *pfirst, *psecond;
 	const dir_entry_t *const first = (dir_entry_t *)one;
 	const dir_entry_t *const second = (dir_entry_t *)two;
-	int first_is_dir;
-	int second_is_dir;
 
-	if(is_parent_dir(first->name))
+	const int first_is_dir = is_directory_entry(first);
+	const int second_is_dir = is_directory_entry(second);
+
+	if(first_is_dir && is_parent_dir(first->name))
 	{
 		return -1;
 	}
-	else if(is_parent_dir(second->name))
+	if(second_is_dir && is_parent_dir(second->name))
 	{
 		return 1;
 	}
-
-	first_is_dir = is_directory_entry(first);
-	second_is_dir = is_directory_entry(second);
 
 	retval = 0;
 	switch(sort_type)
