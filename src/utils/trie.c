@@ -132,28 +132,33 @@ get_or_create(trie_t trie, const char str[], void *data, int *result)
 int
 trie_get(trie_t trie, const char str[], void **data)
 {
-	if(trie == NULL_TRIE)
+	while(1)
 	{
-		return 1;
-	}
-
-	if(trie->value != *str)
-	{
-		return trie_get((*str < trie->value) ? trie->left : trie->right, str, data);
-	}
-
-	if(*str == '\0')
-	{
-		/* Found full match. */
-		if(!trie->exists)
+		if(trie == NULL_TRIE)
 		{
 			return 1;
 		}
-		*data = trie->data;
-		return 0;
-	}
 
-	return trie_get(trie->children, str + 1, data);
+		if(trie->value == *str)
+		{
+			if(*str == '\0')
+			{
+				/* Found full match. */
+				if(!trie->exists)
+				{
+					return 1;
+				}
+				*data = trie->data;
+				return 0;
+			}
+
+			trie = trie->children;
+			++str;
+			continue;
+		}
+
+		trie = (*str < trie->value) ? trie->left : trie->right;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
