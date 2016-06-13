@@ -3914,10 +3914,9 @@ select_unselect_by_filter(const cmd_info_t *cmd_info, int select)
 	for(i = 0; i < nfiles; ++i)
 	{
 		char canonic_path[PATH_MAX];
-		if(to_canonic_path(files[i], canonic_path, sizeof(canonic_path)) == 0)
-		{
-			(void)trie_put(selection_trie, canonic_path);
-		}
+		to_canonic_path(files[i], flist_get_dir(curr_view), canonic_path,
+				sizeof(canonic_path));
+		(void)trie_put(selection_trie, canonic_path);
 	}
 	free_string_array(files, nfiles);
 

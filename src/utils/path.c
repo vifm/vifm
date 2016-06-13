@@ -24,6 +24,7 @@
 #endif
 #include <unistd.h>
 
+#include <assert.h> /* assert() */
 #ifdef _WIN32
 #include <ctype.h>
 #endif
@@ -40,7 +41,6 @@
 #include "../int/path_env.h"
 #include "env.h"
 #include "fs.h"
-#include "log.h"
 #include "str.h"
 #include "utils.h"
 
@@ -560,26 +560,17 @@ ensure_path_well_formed(char *path)
 #endif
 }
 
-int
-to_canonic_path(const char path[], char buf[], size_t buf_len)
+void
+to_canonic_path(const char path[], const char base[], char buf[],
+		size_t buf_len)
 {
 	if(!is_path_absolute(path))
 	{
-		char cwd[PATH_MAX];
 		char full_path[PATH_MAX];
-
-		if(get_cwd(cwd, sizeof(cwd)) == NULL)
-		{
-			/* getcwd() failed, we can't use relative path, so fail. */
-			LOG_SERROR_MSG(errno, "Can't get CWD");
-			return 1;
-		}
-
-#ifdef _WIN32
-		to_forward_slash(cwd);
-#endif
-
-		snprintf(full_path, sizeof(full_path), "%s/%s", cwd, path);
+		/* Assert is not level above to keep "." in curr_dir in tests, but this
+		 * should be possible to change. */
+		assert(is_path_absolute(base) && "Base path has to be absolute.");
+		snprintf(full_path, sizeof(full_path), "%s/%s", base, path);
 		canonicalize_path(full_path, buf, buf_len);
 	}
 	else
@@ -588,7 +579,6 @@ to_canonic_path(const char path[], char buf[], size_t buf_len)
 	}
 
 	chosp(buf);
-	return 0;
 }
 
 int

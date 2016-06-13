@@ -1466,20 +1466,11 @@ flist_custom_start(FileView *view, const char title[])
 void
 flist_custom_add(FileView *view, const char path[])
 {
-	char path_buf[PATH_MAX];
 	char canonic_path[PATH_MAX];
 	dir_entry_t *dir_entry;
 
-	if(!is_path_absolute(path))
-	{
-		snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(view), path);
-		path = path_buf;
-	}
-
-	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
-	{
-		return;
-	}
+	to_canonic_path(path, flist_get_dir(view), canonic_path,
+			sizeof(canonic_path));
 
 	/* Don't add duplicates. */
 	if(trie_put(view->custom.paths_cache, canonic_path) != 0)
@@ -1909,10 +1900,8 @@ entry_from_path(dir_entry_t *entries, int count, const char path[])
 	const char *fname;
 	int i;
 
-	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
-	{
-		return NULL;
-	}
+	to_canonic_path(path, flist_get_dir(curr_view), canonic_path,
+			sizeof(canonic_path));
 
 	fname = get_last_path_component(canonic_path);
 	for(i = 0; i < count; ++i)
