@@ -1466,8 +1466,15 @@ flist_custom_start(FileView *view, const char title[])
 void
 flist_custom_add(FileView *view, const char path[])
 {
+	char path_buf[PATH_MAX];
 	char canonic_path[PATH_MAX];
 	dir_entry_t *dir_entry;
+
+	if(!is_path_absolute(path))
+	{
+		snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(view), path);
+		path = path_buf;
+	}
 
 	if(to_canonic_path(path, canonic_path, sizeof(canonic_path)) != 0)
 	{
