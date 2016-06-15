@@ -60,6 +60,9 @@
 	This affects :[un]select, `vifm -`, %u, %U, %m and %M.  Thanks to
 	filterfalse.
 
+	Added cancellation (handling of Ctrl-C) for quick view and view mode
+	loading.  Thanks to kalterfive.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
