@@ -95,6 +95,8 @@ int rename_files(FileView *view, char **list, int nlines, int recursive);
 int incdec_names(FileView *view, int k);
 
 #ifndef _WIN32
+/* Sets uid and or gid for marked files.  Non-zero u enables setting of uid,
+ * non-zero g of gid. */
 void chown_files(int u, int g, uid_t uid, gid_t gid);
 #endif
 
