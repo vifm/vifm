@@ -1677,6 +1677,7 @@ change_link_cb(const char new_target[])
 	char linkto[PATH_MAX];
 	const char *fname;
 	ops_t *ops;
+	const char *const curr_dir = flist_get_dir(curr_view);
 
 	if(is_null_or_empty(new_target))
 	{
@@ -1692,8 +1693,7 @@ change_link_cb(const char new_target[])
 		return;
 	}
 
-	ops = get_ops(OP_SYMLINK2, "re-owning", curr_view->curr_dir,
-			curr_view->curr_dir);
+	ops = get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);
 
 	fname = get_last_path_component(full_path);
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
