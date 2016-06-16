@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* F_OK access() chdir() */
+#include <unistd.h> /* F_OK access() chdir() symlink() */
 
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
@@ -31,6 +31,7 @@ static int op_avail(OPS op);
 static void check_filetype(void);
 static int prog_exists(const char name[]);
 static int has_mime_type_detection(void);
+static int not_windows(void);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -514,6 +515,28 @@ TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
 	ft_reset(0);
 }
 
+TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
+{
+	char canonic_path[PATH_MAX];
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(TEST_DATA_PATH "/existing-files",
+				SANDBOX_PATH "/dir-link"));
+#endif
+
+	assert_success(chdir(SANDBOX_PATH "/dir-link"));
+	to_canonic_path(SANDBOX_PATH "/dir-link", "/fake-root", lwin.curr_dir,
+			sizeof(lwin.curr_dir));
+
+	assert_success(exec_commands("cd ../dir-link/..", &lwin, CIT_COMMAND));
+
+	to_canonic_path(SANDBOX_PATH, "/fake-root", canonic_path,
+			sizeof(canonic_path));
+	assert_string_equal(canonic_path, lwin.curr_dir);
+	assert_success(remove(SANDBOX_PATH "/dir-link"));
+}
+
 static void
 check_filetype(void)
 {
@@ -539,6 +562,16 @@ static int
 has_mime_type_detection(void)
 {
 	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
