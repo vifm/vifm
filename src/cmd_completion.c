@@ -797,6 +797,7 @@ filename_completion(const char *str, CompletionType type)
 	char *filename;
 	char *temp;
 	char *cwd;
+	char canonic_path[PATH_MAX];
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
@@ -818,6 +819,15 @@ filename_completion(const char *str, CompletionType type)
 		*temp = '\0';
 	}
 	else if(replace_string(&dirname, ".") != 0)
+	{
+		free(filename);
+		free(dirname);
+		return;
+	}
+
+	to_canonic_path(dirname, flist_get_dir(curr_view), canonic_path,
+			sizeof(canonic_path));
+	if(replace_string(&dirname, canonic_path) != 0)
 	{
 		free(filename);
 		free(dirname);

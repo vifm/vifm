@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() */
+#include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* fclose() fopen() free() */
@@ -37,6 +37,7 @@ static void dummy_handler(OPT_OP op, optval_t val);
 static void create_executable(const char file[]);
 static void create_file(const char file[]);
 static int dquotes_allowed_in_paths(void);
+static int not_windows(void);
 
 static line_stats_t stats;
 static char *saved_cwd;
@@ -73,11 +74,12 @@ SETUP()
 			&dummy_handler, def);
 	add_option("path", "pt", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			&dummy_handler, def);
-	add_option("path", "pt", "descr", OPT_STR, OPT_LOCAL, 0, NULL,
-			&dummy_handler, def);
+	add_option("path", "pt", "descr", OPT_STR, OPT_LOCAL, 0, NULL, &dummy_handler,
+			def);
 
 	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/existing-files");
 }
 
 TEARDOWN()
@@ -171,7 +173,8 @@ TEST(spaces_escaping_leading)
 {
 	char *mb;
 
-	assert_success(chdir("../spaces-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
 
 	prepare_for_line_completion(L"touch \\ ");
 	assert_success(line_completion(&stats));
@@ -233,7 +236,8 @@ TEST(spaces_escaping_middle)
 {
 	char *mb;
 
-	assert_success(chdir("../spaces-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
 
 	prepare_for_line_completion(L"touch s");
 	assert_success(line_completion(&stats));
@@ -252,7 +256,8 @@ TEST(squoted_completion)
 
 TEST(squoted_completion_escaping)
 {
-	assert_success(chdir("../quotes-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/quotes-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/quotes-in-names");
 
 	prepare_for_line_completion(L"touch 's-quote");
 	assert_success(line_completion(&stats));
@@ -269,6 +274,7 @@ TEST(dquoted_completion)
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 {
 	assert_success(chdir(SANDBOX_PATH));
+	strcpy(curr_view->curr_dir, SANDBOX_PATH);
 
 	create_file("d-quote-\"-in-name");
 	create_file("d-quote-\"-in-name-2");
@@ -287,7 +293,8 @@ TEST(last_match_is_properly_escaped)
 {
 	char *match;
 
-	assert_success(chdir("../quotes-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/quotes-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/quotes-in-names");
 
 	prepare_for_line_completion(L"touch 's-quote-''-in");
 	assert_success(line_completion(&stats));
@@ -353,7 +360,8 @@ TEST(dirs_are_completed_with_trailing_slash)
 {
 	char *match;
 
-	assert_success(chdir("../"));
+	assert_success(chdir(TEST_DATA_PATH));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
 
 	prepare_for_line_completion(L"cd r");
 	assert_success(line_completion(&stats));
@@ -524,6 +532,7 @@ TEST(bmark_path_is_completed)
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
+	strcpy(curr_view->curr_dir, SANDBOX_PATH);
 	create_executable("exec-for-completion" SUFFIX);
 
 	prepare_for_line_completion(L"bmark! exec");
@@ -622,6 +631,24 @@ TEST(select_is_completed)
 	assert_wstring_equal(L"unselect !cat $RRRRRARE_VARIABLE1", stats.line);
 }
 
+TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(TEST_DATA_PATH "/existing-files",
+				SANDBOX_PATH "/dir-link"));
+#endif
+
+	assert_success(chdir(SANDBOX_PATH "/dir-link"));
+	strcpy(curr_view->curr_dir, SANDBOX_PATH "/dir-link");
+
+	prepare_for_line_completion(L"cd ../d");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cd ../dir-link/", stats.line);
+
+	assert_success(remove(SANDBOX_PATH "/dir-link"));
+}
+
 static void
 create_executable(const char file[])
 {
@@ -651,6 +678,16 @@ dquotes_allowed_in_paths(void)
 		return 1;
 	}
 	return 0;
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
