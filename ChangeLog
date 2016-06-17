@@ -182,8 +182,8 @@
 
 	Fixed unwanted expansion of symbolic links (unwanted because view
 	directory isn't expanded, which results in broken path shortening) in
-	paths to custom view entries, on completion of paths and changing
-	directory via :cd.
+	paths to custom view entries, on completion of paths, changing directory
+	via :cd or :sync.
 
 	Fixed changing owner/group in custom views.
 

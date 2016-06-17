@@ -3545,8 +3545,8 @@ sync_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc > 0)
 	{
 		char dst_path[PATH_MAX];
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", flist_get_dir(curr_view),
-				cmd_info->argv[0]);
+		to_canonic_path(cmd_info->argv[0], flist_get_dir(curr_view), dst_path,
+				sizeof(dst_path));
 		sync_location(dst_path, 0, cmd_info->emark, 0);
 	}
 	else

@@ -1,5 +1,8 @@
 #include <stic.h>
 
+#include <unistd.h> /* chdir() symlink() */
+
+#include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
@@ -12,6 +15,8 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "utils.h"
+
+static int not_windows(void);
 
 SETUP()
 {
@@ -87,6 +92,38 @@ TEST(sync_syncs_filelist)
 	assert_int_equal(curr_view->list_pos, other_view->list_pos);
 
 	opt_handlers_teardown();
+}
+
+TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
+{
+	char canonic_path[PATH_MAX];
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(TEST_DATA_PATH "/existing-files",
+				SANDBOX_PATH "/dir-link"));
+#endif
+
+	assert_success(chdir(SANDBOX_PATH "/dir-link"));
+	to_canonic_path(SANDBOX_PATH "/dir-link", "/fake-root", curr_view->curr_dir,
+			sizeof(curr_view->curr_dir));
+
+	assert_success(exec_commands("sync ../dir-link/..", curr_view, CIT_COMMAND));
+
+	to_canonic_path(SANDBOX_PATH, "/fake-root", canonic_path,
+			sizeof(canonic_path));
+	assert_string_equal(canonic_path, other_view->curr_dir);
+	assert_success(remove(SANDBOX_PATH "/dir-link"));
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
