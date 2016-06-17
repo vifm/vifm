@@ -31,7 +31,7 @@ struct trie_t
 	char exists;     /* Whether this node exists or it's an intermediate node. */
 };
 
-static trie_t get_or_create(trie_t trie, const char str[], void *data,
+static void get_or_create(trie_t trie, const char str[], void *data,
 		int *result);
 
 trie_t
@@ -81,79 +81,84 @@ trie_set(trie_t trie, const char str[], const void *data)
 		return -1;
 	}
 
-	(void)get_or_create(trie, str, (void *)data, &result);
+	get_or_create(trie, str, (void *)data, &result);
 	return result;
 }
 
 /* Gets node which might involve its creation.  Sets *return to negative value
  * on error, to zero on successful insertion and to positive number if element
  * was already in the trie. */
-static trie_t
+static void
 get_or_create(trie_t trie, const char str[], void *data, int *result)
 {
-	/* Create inexistent node. */
-	if(trie == NULL_TRIE)
+	trie_t *link = &trie;
+	while(1)
 	{
-		trie = trie_create();
+		/* Create inexistent node. */
 		if(trie == NULL_TRIE)
 		{
-			*result = -1;
-			return trie;
+			trie = trie_create();
+			if(trie == NULL_TRIE)
+			{
+				*result = -1;
+				break;
+			}
+			trie->value = *str;
+			*link = trie;
 		}
-		trie->value = *str;
-	}
 
-	if(trie->value == *str)
-	{
-		if(*str == '\0')
+		if(trie->value == *str)
 		{
-			/* Found full match. */
-			*result = (trie->exists != 0);
-			trie->exists = 1;
-			trie->data = data;
+			if(*str == '\0')
+			{
+				/* Found full match. */
+				*result = (trie->exists != 0);
+				trie->exists = 1;
+				trie->data = data;
+				break;
+			}
+
+			link = &trie->children;
+			++str;
 		}
 		else
 		{
-			trie->children = get_or_create(trie->children, str + 1, data, result);
+			link = (*str < trie->value) ? &trie->left : &trie->right;
 		}
+		trie = *link;
 	}
-	else if(*str < trie->value)
-	{
-		trie->left = get_or_create(trie->left, str, data, result);
-	}
-	else
-	{
-		trie->right = get_or_create(trie->right, str, data, result);
-	}
-
-	return trie;
 }
 
 int
 trie_get(trie_t trie, const char str[], void **data)
 {
-	if(trie == NULL_TRIE)
+	while(1)
 	{
-		return 1;
-	}
-
-	if(trie->value != *str)
-	{
-		return trie_get((*str < trie->value) ? trie->left : trie->right, str, data);
-	}
-
-	if(*str == '\0')
-	{
-		/* Found full match. */
-		if(!trie->exists)
+		if(trie == NULL_TRIE)
 		{
 			return 1;
 		}
-		*data = trie->data;
-		return 0;
-	}
 
-	return trie_get(trie->children, str + 1, data);
+		if(trie->value == *str)
+		{
+			if(*str == '\0')
+			{
+				/* Found full match. */
+				if(!trie->exists)
+				{
+					return 1;
+				}
+				*data = trie->data;
+				return 0;
+			}
+
+			trie = trie->children;
+			++str;
+			continue;
+		}
+
+		trie = (*str < trie->value) ? trie->left : trie->right;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

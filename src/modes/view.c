@@ -37,6 +37,7 @@
 #include "../engine/mode.h"
 #include "../int/vim.h"
 #include "../modes/dialogs/msg_dialog.h"
+#include "../ui/cancellation.h"
 #include "../ui/color_manager.h"
 #include "../ui/colors.h"
 #include "../ui/escape.h"
@@ -1082,7 +1083,10 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			vi->graphics = 1;
 		}
 
+		ui_cancellation_reset();
+		ui_cancellation_enable();
 		vi->lines = read_stream_lines(fp, &vi->nlines, 0);
+		ui_cancellation_disable();
 	}
 
 	fclose(fp);

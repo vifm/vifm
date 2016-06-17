@@ -49,6 +49,7 @@
 #include "../macros.h"
 #include "../status.h"
 #include "../types.h"
+#include "cancellation.h"
 #include "color_manager.h"
 #include "color_scheme.h"
 #include "colors.h"
@@ -225,6 +226,9 @@ view_file(const char path[])
 		}
 	}
 
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
 	/* We want to wipe the view if it was displaying graphics, but won't anymore.
 	 * Do this only if we didn't already cleared the window. */
 	if(!graphics)
@@ -239,6 +243,8 @@ view_file(const char path[])
 	wattrset(other_view->win, 0);
 	view_stream(fp, cfg.wrap_quick_view);
 	fclose(fp);
+
+	ui_cancellation_disable();
 }
 
 FILE *

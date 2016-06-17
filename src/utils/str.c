@@ -434,8 +434,15 @@ strprepend(char **str, size_t *len, const char prefix[])
 		return 1;
 	}
 
-	memmove(new + prefix_len, new, *len + 1);
-	strncpy(new + *len, prefix, prefix_len);
+	if(*len == 0)
+	{
+		new[prefix_len] = '\0';
+	}
+	else
+	{
+		memmove(new + prefix_len, new, *len + 1);
+	}
+	strncpy(new, prefix, prefix_len);
 	*str = new;
 	*len += prefix_len;
 
@@ -904,6 +911,11 @@ split_and_get(char str[], char sep, char **state)
 char *
 split_and_get_dc(char str[], char **state)
 {
+	if(str[0] == '\0')
+	{
+		return NULL;
+	}
+
 	if(*state != NULL)
 	{
 		if(**state == '\0')
@@ -916,9 +928,9 @@ split_and_get_dc(char str[], char **state)
 
 	while(str != NULL)
 	{
-		char *ptr;
+		char *ptr = strchr(str, ',');
 
-		if((ptr = strchr(str, ',')) != NULL)
+		if(ptr != NULL)
 		{
 			while(ptr != NULL && ptr[1] == ',')
 			{

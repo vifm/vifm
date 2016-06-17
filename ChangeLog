@@ -60,6 +60,9 @@
 	This affects :[un]select, `vifm -`, %u, %U, %m and %M.  Thanks to
 	filterfalse.
 
+	Added cancellation (handling of Ctrl-C) for quick view and view mode
+	loading.  Thanks to kalterfive.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
@@ -102,6 +105,9 @@
 	deleted.
 
 	Improved syntax highlighting of patterns.
+
+	Automatically update custom view entries on rename of their parent
+	directory in the save custom view.
 
 	Fixed kind of a duplicate of first history element on =.
 
@@ -171,6 +177,14 @@
 	using `file` utility.  Thanks to filterfalse.
 
 	Fixed cutting off path prefix from :!~/path/exec when 'fastrun' is on.
+
+	Fixed putting unmatched %[ into status line at wrong position.
+
+	Fixed unwanted expansion of symbolic links (unwanted because view
+	directory isn't expanded, which results in broken path shortening) in
+	paths to custom view entries.
+
+	Fixed changing owner/group in custom views.
 
 0.8.1 to 0.8.1a
 

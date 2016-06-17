@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* chdir() rmdir() symlink() unlink() */
 
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() */
@@ -161,6 +162,7 @@ TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 
 	assert_false(flist_custom_active(&lwin));
 
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH);
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, test_file);
 	flist_custom_add(&lwin, "./broken-link");
@@ -189,6 +191,7 @@ TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 
 	assert_false(flist_custom_active(&lwin));
 
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH);
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "./dir-link");
 	assert_true(flist_custom_finish(&lwin, 0) == 0);
@@ -270,6 +273,7 @@ TEST(files_are_sorted_undecorated)
 	assert_success(os_mkdir("foo-", 0700));
 	assert_success(os_mkdir("foo0", 0700));
 
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH);
 	assert_false(flist_custom_active(&lwin));
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "foo");
@@ -521,6 +525,40 @@ TEST(can_set_very_cv_twice_in_a_row)
 
 	opt_handlers_teardown();
 	columns_clear_column_descs();
+}
+
+TEST(renaming_dir_in_cv_adjust_its_children_entries)
+{
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), test_data);
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
+	assert_int_equal(2, lwin.list_rows);
+
+	fentry_rename(&lwin, &lwin.dir_entry[0], "existing_files");
+	assert_string_equal(TEST_DATA_PATH "/existing_files",
+			lwin.dir_entry[1].origin);
+}
+
+TEST(symlinks_are_not_resolved_in_origins, IF(not_windows))
+{
+#ifndef _WIN32
+	assert_success(symlink(TEST_DATA_PATH "/existing-files",
+				SANDBOX_PATH "/link"));
+#endif
+
+	assert_success(chdir(SANDBOX_PATH "/link"));
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH "/link");
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, SANDBOX_PATH "/link"); /* Absolute path. */
+	flist_custom_add(&lwin, "a");                  /* Relative path. */
+	assert_true(flist_custom_finish(&lwin, 0) == 0);
+
+	assert_true(paths_are_equal(SANDBOX_PATH, lwin.dir_entry[0].origin));
+	assert_true(paths_are_equal(SANDBOX_PATH "/link", lwin.dir_entry[1].origin));
+
+	assert_success(remove(SANDBOX_PATH "/link"));
 }
 
 static void

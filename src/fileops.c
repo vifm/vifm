@@ -923,7 +923,7 @@ rename_file_cb(const char new_name[])
 
 	/* Rename file in internal structures for correct positioning of cursor after
 	 * reloading, as cursor will be positioned on the file with the same name. */
-	fentry_rename(entry, new);
+	fentry_rename(curr_view, entry, new);
 
 	ui_view_schedule_reload(curr_view);
 }
@@ -1106,7 +1106,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 				/* For regular views rename file in internal structures for correct
 				 * positioning of cursor after reloading. For custom views rename to
 				 * prevent files from disappearing. */
-				fentry_rename(entry, new_name);
+				fentry_rename(view, entry, new_name);
 
 				if(flist_custom_active(view))
 				{
@@ -1114,7 +1114,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 							view->custom.entry_count, path);
 					if(entry != NULL)
 					{
-						fentry_rename(entry, new_name);
+						fentry_rename(view, entry, new_name);
 					}
 				}
 			}
@@ -1543,13 +1543,14 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
 	dir_entry_t *entry;
+	const char *const curr_dir = flist_get_dir(view);
 
 	ui_cancellation_reset();
 
 	snprintf(undo_msg, sizeof(undo_msg), "ch%s in %s: ",
-			((u && g) || u) ? "own" : "grp", replace_home_part(view->curr_dir));
+			((u && g) || u) ? "own" : "grp", replace_home_part(curr_dir));
 
-	ops = get_ops(OP_CHOWN, "re-owning", view->curr_dir, view->curr_dir);
+	ops = get_ops(OP_CHOWN, "re-owning", curr_dir, curr_dir);
 
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
@@ -1557,13 +1558,16 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		if(u && perform_operation(OP_CHOWN, ops, V(uid), entry->name, NULL) == 0)
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+
+		if(u && perform_operation(OP_CHOWN, ops, V(uid), full_path, NULL) == 0)
 		{
-			add_operation(OP_CHOWN, V(uid), V(entry->uid), entry->name, "");
+			add_operation(OP_CHOWN, V(uid), V(entry->uid), full_path, "");
 		}
-		if(g && perform_operation(OP_CHGRP, ops, V(gid), entry->name, NULL) == 0)
+		if(g && perform_operation(OP_CHGRP, ops, V(gid), full_path, NULL) == 0)
 		{
-			add_operation(OP_CHGRP, V(gid), V(entry->gid), entry->name, "");
+			add_operation(OP_CHGRP, V(gid), V(entry->gid), full_path, "");
 		}
 	}
 	cmd_group_end();
@@ -1673,6 +1677,7 @@ change_link_cb(const char new_target[])
 	char linkto[PATH_MAX];
 	const char *fname;
 	ops_t *ops;
+	const char *const curr_dir = flist_get_dir(curr_view);
 
 	if(is_null_or_empty(new_target))
 	{
@@ -1688,8 +1693,7 @@ change_link_cb(const char new_target[])
 		return;
 	}
 
-	ops = get_ops(OP_SYMLINK2, "re-owning", curr_view->curr_dir,
-			curr_view->curr_dir);
+	ops = get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);
 
 	fname = get_last_path_component(full_path);
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
@@ -3174,7 +3178,7 @@ fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 {
 	if(entry_to_pos(view, entry) == view->list_pos || flist_custom_active(view))
 	{
-		fentry_rename(entry, new_fname);
+		fentry_rename(view, entry, new_fname);
 	}
 }
 

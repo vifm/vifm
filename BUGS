@@ -1,7 +1,8 @@
-* Better to check for existance of $HOME.
+* Better to check for existence of $HOME.
 * On OpenBSD there might be issues with non-ascii characters.
 * Duplicate detection lags in custom views on :substitute.
 * :clone! is useless.
+* Hard copies of files are counted multiple times for ga/gA.
 * :change->Name renames only one file even when several are selected.
 * There is no sshfs like FUSE for servers that provide only scp.
 * "*" at the beginning of a glob doesn't match empty string.

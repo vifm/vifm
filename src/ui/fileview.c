@@ -82,6 +82,7 @@ static int clear_current_line_bar(FileView *view, int is_current);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset, AlignType align, const char full_column[]);
+static void draw_line_number(const column_data_t *cdt, int column);
 static void highlight_search(FileView *view, dir_entry_t *entry,
 		const char full_column[], char buf[], size_t buf_len, AlignType align,
 		int line, int col, int line_attrs);
@@ -848,7 +849,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[i];
 
-	const int displays_numbers = (offset == 0 && ui_view_displays_numbers(view));
+	const int numbers_visible = (offset == 0 && ui_view_displays_numbers(view));
 
 	const size_t prefix_len = padding + view->real_num_width;
 	const size_t final_offset = prefix_len + cdt->column_offset + offset;
@@ -857,28 +858,10 @@ column_line_print(const void *data, int column_id, const char *buf,
 	line_attrs = prepare_col_color(view, entry, primary, cdt->line_hi_group,
 			cdt->is_current);
 
-	if(displays_numbers)
+	if(numbers_visible)
 	{
-		char number[view->real_num_width + 1];
-		int mixed;
-		const char *format;
-		int line_number;
-
-		const int line_attrs = prepare_col_color(view, entry, 0, cdt->line_hi_group,
-				cdt->is_current);
-
-		mixed = cdt->is_current && view->num_type == NT_MIX;
-		format = mixed ? "%-*d " : "%*d ";
-		line_number = ((view->num_type & NT_REL) && !mixed)
-		            ? abs((int)i - view->list_pos)
-		            : ((int)i + 1);
-
-		snprintf(number, sizeof(number), format, view->real_num_width - 1,
-				line_number);
-
-		checked_wmove(view->win, cdt->current_line,
-				final_offset - view->real_num_width);
-		wprinta(view->win, number, line_attrs);
+		const int column = final_offset - view->real_num_width;
+		draw_line_number(cdt, column);
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
@@ -899,6 +882,28 @@ column_line_print(const void *data, int column_id, const char *buf,
 		highlight_search(view, entry, full_column, print_buf, trim_pos, align,
 				cdt->current_line, final_offset, line_attrs);
 	}
+}
+
+/* Draws current line number at specified column. */
+static void
+draw_line_number(const column_data_t *cdt, int column)
+{
+	FileView *const view = cdt->view;
+	const size_t i = cdt->line_pos;
+	dir_entry_t *const entry = &view->dir_entry[i];
+
+	const int mixed = (cdt->is_current && view->num_type == NT_MIX);
+	const char *const format = mixed ? "%-*d " : "%*d ";
+	const int num = (view->num_type & NT_REL) && !mixed
+	              ? abs((int)i - view->list_pos)
+	              : (int)i + 1;
+
+	char num_str[view->real_num_width + 1];
+	snprintf(num_str, sizeof(num_str), format, view->real_num_width - 1, num);
+
+	checked_wmove(view->win, cdt->current_line, column);
+	wprinta(view->win, num_str,
+			prepare_col_color(view, entry, 0, cdt->line_hi_group, cdt->is_current));
 }
 
 /* Highlights search match for the entry (assumed to be a search hit).  Modifies

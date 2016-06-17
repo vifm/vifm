@@ -226,6 +226,23 @@ TEST(classify_pattern_list)
 	assert_string_equal(">", suffix);
 }
 
+TEST(classify_can_be_set_to_empty_value)
+{
+	dir_entry_t entry = {
+		.name = "binary-data",
+		.origin = TEST_DATA_PATH "/test-data/read",
+		.name_dec_num = -1,
+	};
+
+	const char *prefix, *suffix;
+
+	assert_success(exec_commands("set classify=", &lwin, CIT_COMMAND));
+
+	ui_get_decors(&entry, &prefix, &suffix);
+	assert_string_equal("", prefix);
+	assert_string_equal("", suffix);
+}
+
 TEST(suggestoptions_all_values)
 {
 	cfg.sug.flags = 0;

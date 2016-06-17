@@ -88,7 +88,6 @@ Possible things to add:
   * Multiselect for items (menu and/or file list).
   * inotify support on Linux. (partially done)
   * :filter !filter-tool
-  * Add short description to key menu.
   * Use system wide mimetypes file. /etc/mailcap?
   * Add "|" command to menu to process list with external tool.
   * "Blow directory" command to replace directory with its content.
@@ -97,7 +96,7 @@ Possible things to add:
   * Templates for :touch.
   * Reverse searching
   * Add g/ and g? commands (search, but don't select files).
-  * Support 256-colors for colorschemes.
+  * Support true-colors for colorschemes.
   * IPC among all running vifm instances (share settings among instances).
   * More flexible control over displaying file size.
   * Parse escape sequences in menus as in preview.
@@ -108,9 +107,7 @@ Possible things to add:
   * Something to control behaviour of menu picks.
   * Like gv but to select just pasted files (gp?).
   * Compare content of panes like C-x d in Midnight Commander.
-  * Option suggestions.
   * g~<selector> and g?.
-  * Command autocompletion.
   * Add trashes bang to list empty trashes or all of them.
   * 'wildmode' option.
   * Try to make it work in monochrome terminal.
@@ -188,7 +185,7 @@ Code improvements:
     Debian-based systems.
   * Extract history related code out of filelist.c to separate file.
   * Reduce number of magic numbers. (partially done)
-  * Add function to count suze of NULL-terminated array.
+  * Add function to count size of NULL-terminated array.
   * Think about window_rows and window_width members of FileView.
   * Intermediate language for scripting. (partially done)
   * Create separate utilities for engine/ part to make them self-contained.

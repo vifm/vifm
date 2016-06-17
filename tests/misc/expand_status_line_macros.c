@@ -204,6 +204,7 @@ TEST(nested_optional_non_empty)
 TEST(ignore_mismatched_opening_bracket)
 {
 	ASSERT_EXPANDED_TO("%[", "%[");
+	ASSERT_EXPANDED_TO("%[abcdef", "%[abcdef");
 }
 
 TEST(ignore_mismatched_closing_bracket)

@@ -574,7 +574,7 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &runexec_handler, NULL,
 	  { .ref.bool_val = &cfg.auto_execute },
 	},
-	{ "scrollbind", "scb", "synchronize cursor in two panes",
+	{ "scrollbind", "scb", "synchronize scroll position in two panes",
 	  OPT_BOOL, 0, NULL, &scrollbind_handler, NULL,
 	  { .ref.bool_val = &cfg.scroll_bind },
 	},
