@@ -221,8 +221,6 @@ static int mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		int cancellable, ops_t *ops);
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops);
-static void make_full_path(const char dir[], const char file[], char buf[],
-		size_t buf_len);
 static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 		int bg, int cancellable, ops_t *ops);
 static void free_bg_args(bg_args_t *args);
@@ -1091,7 +1089,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 
 			++renamed;
 
-			make_full_path(curr_dir, files[i], path, sizeof(path));
+			to_canonic_path(files[i], curr_dir, path, sizeof(path));
 			entry = entry_from_path(view->dir_entry, view->list_rows, path);
 			if(entry == NULL)
 			{
@@ -3827,8 +3825,8 @@ mv_file(const char src[], const char src_dir[], const char dst[],
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 
-	make_full_path(src_dir, src, full_src, sizeof(full_src));
-	make_full_path(dst_dir, dst, full_dst, sizeof(full_dst));
+	to_canonic_path(src, src_dir, full_src, sizeof(full_src));
+	to_canonic_path(dst, dst_dir, full_dst, sizeof(full_dst));
 
 	return mv_file_f(full_src, full_dst, op, 0, cancellable, ops);
 }
@@ -3864,26 +3862,10 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 
-	make_full_path(src_dir, src, full_src, sizeof(full_src));
-	make_full_path(dst_dir, dst, full_dst, sizeof(full_dst));
+	to_canonic_path(src, src_dir, full_src, sizeof(full_src));
+	to_canonic_path(dst, dst_dir, full_dst, sizeof(full_dst));
 
 	return cp_file_f(full_src, full_dst, op, 0, cancellable, ops);
-}
-
-/* Makes full path from base directory and path.  Drops base directory if path
- * is absolute. */
-static void
-make_full_path(const char dir[], const char file[], char buf[], size_t buf_len)
-{
-	if(is_path_absolute(file))
-	{
-		copy_str(buf, buf_len, file);
-	}
-	else
-	{
-		snprintf(buf, buf_len, "%s/%s", dir, file);
-	}
-	chosp(buf);
 }
 
 /* Copies file from one location to another.  Returns zero on success, otherwise
