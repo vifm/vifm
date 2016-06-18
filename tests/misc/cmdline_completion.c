@@ -561,6 +561,17 @@ TEST(delbmark_tags_are_completed)
 	assert_wstring_equal(L"delbmark ../", stats.line);
 }
 
+TEST(selective_sync_completion)
+{
+	prepare_for_line_completion(L"sync! a");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"sync! all", stats.line);
+
+	prepare_for_line_completion(L"sync! ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"sync! ../", stats.line);
+}
+
 TEST(aucmd_events_are_completed)
 {
 	prepare_for_line_completion(L"autocmd ");

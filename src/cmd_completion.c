@@ -240,6 +240,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		bmarks_complete(argc, argv, arg);
 	}
+	else if(id == COM_SYNC && cmd_info->emark)
+	{
+		complete_selective_sync(arg);
+	}
 	else
 	{
 		char *free_me = NULL;
@@ -288,22 +292,12 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			complete_colorscheme(arg, arg_num);
 		}
-		else if(id == COM_SYNC)
-		{
-			if(cmd_info->emark)
-			{
-				complete_selective_sync(arg);
-			}
-			else
-			{
-				filename_completion(arg, CT_DIRONLY);
-			}
-		}
 		else if(id == COM_BMARKS || id == COM_DELBMARKS)
 		{
 			filename_completion(arg, CT_ALL);
 		}
-		else if(id == COM_CD || id == COM_PUSHD || id == COM_MKDIR)
+		else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
+				id == COM_MKDIR)
 		{
 			filename_completion(arg, CT_DIRONLY);
 		}
