@@ -228,7 +228,8 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
 	}
-	else if(id == COM_BMARKS && (!cmd_info->emark || argc > 1))
+	else if(id == COM_BMARKS && (!cmd_info->emark || argc > 1 ||
+				(argc == 1 && cmd_ends_with_space(args))))
 	{
 		bmarks_complete(argc, argv, arg);
 	}
