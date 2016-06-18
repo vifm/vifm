@@ -2998,8 +2998,8 @@ messages_cmd(const cmd_info_t *cmd_info)
 static int
 mkdir_cmd(const cmd_info_t *cmd_info)
 {
-	make_dirs(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark);
-	return 1;
+	return make_dirs(curr_view, cmd_info->argv, cmd_info->argc,
+			cmd_info->emark) != 0;
 }
 
 static int

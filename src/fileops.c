@@ -3959,7 +3959,7 @@ go_to_first_file(FileView *view, char **names, int count)
 	redraw_view(view);
 }
 
-void
+int
 make_dirs(FileView *view, char **names, int count, int create_parent)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
@@ -3969,27 +3969,27 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 
 	if(!can_add_files_to_view(view))
 	{
-		return;
+		return 1;
 	}
 
 	cp = (void *)(size_t)create_parent;
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; ++i)
 	{
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
-			return;
+			return 1;
 		}
 		if(names[i][0] == '\0')
 		{
 			status_bar_errorf("Name #%d is empty", i + 1);
-			return;
+			return 1;
 		}
 		if(path_exists(names[i], NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
-			return;
+			return 1;
 		}
 	}
 
@@ -4001,7 +4001,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
 	n = 0;
-	for(i = 0; i < count && !ui_cancellation_requested(); i++)
+	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
 
@@ -4017,13 +4017,13 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 		if(perform_operation(OP_MKDIR, NULL, cp, full, NULL) == 0)
 		{
 			add_operation(OP_MKDIR, cp, NULL, full, "");
-			n++;
+			++n;
 		}
 		else if(i == 0)
 		{
-			i--;
-			names++;
-			count--;
+			--i;
+			++names;
+			--count;
 		}
 	}
 	cmd_group_end();
@@ -4032,7 +4032,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	{
 		if(create_parent)
 		{
-			for(i = 0; i < count; i++)
+			for(i = 0; i < count; ++i)
 			{
 				break_at(names[i], '/');
 			}
@@ -4042,6 +4042,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 
 	status_bar_messagef("%d director%s created%s", n, (n == 1) ? "y" : "ies",
 			get_cancellation_suffix());
+	return 1;
 }
 
 int
