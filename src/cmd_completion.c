@@ -233,6 +233,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		bmarks_complete(argc, argv, arg);
 	}
+	else if(id == COM_DELBMARKS && !cmd_info->emark)
+	{
+		bmarks_complete(argc, argv, arg);
+	}
 	else
 	{
 		char *free_me = NULL;
@@ -296,20 +300,9 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 				filename_completion(arg, CT_DIRONLY);
 			}
 		}
-		else if(id == COM_BMARKS)
+		else if(id == COM_BMARKS || id == COM_DELBMARKS)
 		{
 			filename_completion(arg, CT_ALL);
-		}
-		else if(id == COM_DELBMARKS)
-		{
-			if(cmd_info->emark)
-			{
-				filename_completion(arg, CT_ALL);
-			}
-			else
-			{
-				bmarks_complete(argc, argv, arg);
-			}
 		}
 		else if(id == COM_CD || id == COM_PUSHD || id == COM_MKDIR)
 		{

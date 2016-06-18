@@ -550,6 +550,17 @@ TEST(bmark_path_is_completed)
 	assert_success(unlink("exec-for-completion" SUFFIX));
 }
 
+TEST(delbmark_tags_are_completed)
+{
+	bmarks_clear();
+
+	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
+
+	prepare_for_line_completion(L"delbmark ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"delbmark ../", stats.line);
+}
+
 TEST(aucmd_events_are_completed)
 {
 	prepare_for_line_completion(L"autocmd ");
