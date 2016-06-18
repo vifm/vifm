@@ -523,6 +523,10 @@ TEST(bmark_tags_are_completed)
 	prepare_for_line_completion(L"bmark! fake/path2 tag");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"bmark! fake/path2 tag1", stats.line);
+
+	prepare_for_line_completion(L"bmark! fake/path2 ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"bmark! fake/path2 ../", stats.line);
 }
 
 TEST(bmark_path_is_completed)

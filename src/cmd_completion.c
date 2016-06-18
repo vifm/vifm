@@ -228,6 +228,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
 	}
+	else if(id == COM_BMARKS && (!cmd_info->emark || argc > 1))
+	{
+		bmarks_complete(argc, argv, arg);
+	}
 	else
 	{
 		char *free_me = NULL;
@@ -293,14 +297,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		}
 		else if(id == COM_BMARKS)
 		{
-			if(cmd_info->emark && argc == 1)
-			{
-				filename_completion(arg, CT_ALL);
-			}
-			else
-			{
-				bmarks_complete(argc, argv, arg);
-			}
+			filename_completion(arg, CT_ALL);
 		}
 		else if(id == COM_DELBMARKS)
 		{
