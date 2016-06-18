@@ -572,6 +572,28 @@ TEST(selective_sync_completion)
 	assert_wstring_equal(L"sync! ../", stats.line);
 }
 
+TEST(colorscheme_completion)
+{
+	strcpy(cfg.colors_dir, TEST_DATA_PATH "/scripts/");
+
+	prepare_for_line_completion(L"colorscheme set-");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme set-env", stats.line);
+
+	prepare_for_line_completion(L"colorscheme set-env ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme set-env ../existing-files/", stats.line);
+
+	prepare_for_line_completion(L"colorscheme ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme ../", stats.line);
+
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	prepare_for_line_completion(L"colorscheme set-env ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme set-env existing-files/", stats.line);
+}
+
 TEST(aucmd_events_are_completed)
 {
 	prepare_for_line_completion(L"autocmd ");

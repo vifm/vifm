@@ -71,7 +71,6 @@
 #include "tags.h"
 
 static int cmd_ends_with_space(const char *cmd);
-static void complete_colorscheme(const char *str, size_t arg_num);
 static void complete_selective_sync(const char str[]);
 static void complete_help(const char *str);
 static void complete_history(const char str[]);
@@ -244,6 +243,11 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		complete_selective_sync(arg);
 	}
+	else if(id == COM_COLORSCHEME &&
+			(argc == 0 || (argc == 1 && !cmd_ends_with_space(args))))
+	{
+		cs_complete(arg);
+	}
 	else
 	{
 		char *free_me = NULL;
@@ -290,7 +294,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 
 		if(id == COM_COLORSCHEME)
 		{
-			complete_colorscheme(arg, arg_num);
+			if(arg_num == 1)
+			{
+				filename_completion(arg, CT_DIRONLY);
+			}
 		}
 		else if(id == COM_BMARKS || id == COM_DELBMARKS)
 		{
@@ -352,19 +359,6 @@ cmd_ends_with_space(const char *cmd)
 		cmd++;
 	}
 	return cmd[0] == ' ';
-}
-
-static void
-complete_colorscheme(const char *str, size_t arg_num)
-{
-	if(arg_num == 0)
-	{
-		cs_complete(str);
-	}
-	else if(arg_num == 1)
-	{
-		filename_completion(str, CT_DIRONLY);
-	}
 }
 
 /* Completes properties for selective synchronization. */

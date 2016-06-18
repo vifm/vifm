@@ -184,6 +184,9 @@
 	on completion of paths, changing directory via :cd or :sync, processing
 	arguments of :mkdir, :bmarks, :delbmarks.
 
+	Fixed weird completion effects for :colorscheme, :sync!, :delbmark,
+	:bmark!.
+
 	Fixed changing owner/group in custom views.
 
 0.8.1 to 0.8.1a
