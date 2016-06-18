@@ -539,6 +539,13 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	assert_true(is_dir(SANDBOX_PATH "/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 
+	/* :colorscheme */
+	strcpy(cfg.colors_dir, TEST_DATA_PATH "/scripts/");
+	assert_success(
+			exec_commands("colorscheme set-env " SANDBOX_PATH "/../dir-link/..",
+				&lwin, CIT_COMMAND));
+	cs_load_defaults();
+
 	/* :cd */
 	assert_success(exec_commands("cd ../dir-link/..", &lwin, CIT_COMMAND));
 	assert_string_equal(canonic_path, lwin.curr_dir);

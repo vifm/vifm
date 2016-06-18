@@ -1455,6 +1455,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 2)
 	{
+		char path_buf[PATH_MAX];
 		char *directory = expand_tilde(cmd_info->argv[1]);
 		if(!is_path_absolute(directory))
 		{
@@ -1467,11 +1468,14 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 			}
 			else
 			{
-				char path[PATH_MAX];
-				snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
-				(void)replace_string(&directory, path);
+				snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir,
+						directory);
+				(void)replace_string(&directory, path_buf);
 			}
 		}
+		canonicalize_path(directory, path_buf, sizeof(path_buf));
+		(void)replace_string(&directory, path_buf);
+
 		if(!is_dir(directory))
 		{
 			status_bar_errorf("%s isn't a directory", directory);
