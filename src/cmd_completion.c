@@ -98,7 +98,10 @@ static void complete_with_shared(const char *server, const char *file);
 int
 complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
-	/* TODO: Refactor this function complete_args() */
+	/* TODO: Refactor this function complete_args().  Might be worth defining a
+	 *       structure for all these variables and creating two functions: one for
+	 *       non-path completion and the other one for path completion (else
+	 *       branch). */
 
 	const CompletionPreProcessing cpp = (CompletionPreProcessing)extra_arg;
 
@@ -241,11 +244,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		char *free_me = NULL;
 		size_t arg_num = argc;
-		start = slash;
-		if(start == NULL)
-			start = args + arg_pos;
-		else
-			start++;
+		start = (slash == NULL) ? (args + arg_pos) : (slash + 1U);
 
 		if(argc > 0 && !cmd_ends_with_space(args))
 		{
