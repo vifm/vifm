@@ -33,5 +33,12 @@ TEST(bookmark_can_be_recreated)
 	assert_string_equal("tag", get_tags("bookmark"));
 }
 
+TEST(path_is_canonicalized)
+{
+	assert_success(bmarks_set("parent/../dir", "tag"));
+	bmarks_remove("dir");
+	assert_string_equal(NULL, get_tags("dir"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
