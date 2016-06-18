@@ -33,8 +33,20 @@ TEST(not_root_updir)
 	canonicalize_path("../", buf, sizeof(buf));
 	assert_string_equal("../", buf);
 
+	canonicalize_path("a/../b", buf, sizeof(buf));
+	assert_string_equal("b/", buf);
+
+	canonicalize_path("../b", buf, sizeof(buf));
+	assert_string_equal("../b/", buf);
+
 	canonicalize_path("../../", buf, sizeof(buf));
 	assert_string_equal("../../", buf);
+
+	canonicalize_path("../../../", buf, sizeof(buf));
+	assert_string_equal("../../../", buf);
+
+	canonicalize_path("b/..", buf, sizeof(buf));
+	assert_string_equal("./", buf);
 }
 
 TEST(remove_dots)

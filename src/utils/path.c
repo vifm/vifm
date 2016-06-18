@@ -32,9 +32,9 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
-#include <string.h> /* strcat() strcmp() strcasecmp() strdup() strncmp()
-                       strncasecmp() strncat() strchr() strcpy() strlen()
-                       strrchr() */
+#include <string.h> /* memset() strcat() strcmp() strcasecmp() strdup()
+                       strncmp() strncasecmp() strncat() strchr() strcpy()
+                       strlen() strrchr() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -102,7 +102,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 	/* Destination string pointer. */
 	char *q = buf - 1;
 
-	buf[0] = '\0';
+	memset(buf, '\0', buf_size);
 
 #ifdef _WIN32
 	/* Handle first component of a UNC path. */
@@ -119,7 +119,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 	}
 #endif
 
-	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1)
+	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1U)
 	{
 		const int prev_dir_present = (q != buf - 1 && *q == '/');
 		if(skip_dotdir_if_any(&p, prev_dir_present))
@@ -128,7 +128,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 		}
 		else if(prev_dir_present &&
 				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
-				strcmp(buf, "../") != 0)
+				!ends_with(buf, "../") != 0)
 		{
 			/* Remove the last path component added. */
 #ifdef _WIN32
@@ -136,34 +136,43 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 			if(*(q - 1) != ':')
 #endif
 			{
-				p++;
-				q--;
+				++p;
+				--q;
 				while(q >= buf && *q != '/')
 				{
-					q--;
+					--q;
 				}
 			}
 		}
 		else if(*p == '/')
 		{
-			/* Don't add more than one slash between path components. */
-			if(!prev_dir_present)
+			/* Don't add more than one slash between path components.  And don't add
+			 * leading slash if initial path is relative. */
+			if(!prev_dir_present && !(q == buf - 1 && *directory != '/'))
 			{
 				*++q = '/';
 			}
 		}
 		else
 		{
-			/* Copy current path component till the end. */
+			/* Copy current path component till the end (slash or end of
+			 * line/buffer). */
 			*++q = *p;
 			while(p[1] != '\0' && p[1] != '/' &&
-					(size_t)((q + 1) - buf) < buf_size - 1)
+					(size_t)((q + 1) - buf) < buf_size - 1U)
 			{
 				*++q = *++p;
 			}
 		}
 
-		p++;
+		++p;
+	}
+
+	/* If initial path is relative and we ended up with an empty path, produce
+	 * "./". */
+	if(*directory != '/' && q < buf && (size_t)((q + 1) - buf) < buf_size - 2U)
+	{
+		*++q = '.';
 	}
 
 	if((*directory != '\0' && q < buf) || (q >= buf && *q != '/'))
@@ -256,7 +265,10 @@ make_rel_path(const char path[], const char base[])
 		strcat(buf, "../");
 	if(*p == '/')
 		p++;
-	canonicalize_path(p, buf + strlen(buf), sizeof(buf) - strlen(buf));
+	if(*p != '\0')
+	{
+		canonicalize_path(p, buf + strlen(buf), sizeof(buf) - strlen(buf));
+	}
 	chosp(buf);
 
 	if(buf[0] == '\0')
