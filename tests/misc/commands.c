@@ -1,11 +1,12 @@
 #include <stic.h>
 
-#include <unistd.h> /* F_OK access() chdir() symlink() */
+#include <unistd.h> /* F_OK access() chdir() rmdir() symlink() */
 
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"
@@ -519,22 +520,32 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 {
 	char canonic_path[PATH_MAX];
 
+	assert_success(os_mkdir(SANDBOX_PATH "/dir1", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir1/dir2", 0700));
+
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH "/existing-files",
-				SANDBOX_PATH "/dir-link"));
+	assert_success(symlink(SANDBOX_PATH "/dir1/dir2", SANDBOX_PATH "/dir-link"));
 #endif
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));
 	to_canonic_path(SANDBOX_PATH "/dir-link", "/fake-root", lwin.curr_dir,
 			sizeof(lwin.curr_dir));
-
-	assert_success(exec_commands("cd ../dir-link/..", &lwin, CIT_COMMAND));
-
 	to_canonic_path(SANDBOX_PATH, "/fake-root", canonic_path,
 			sizeof(canonic_path));
+
+	/* :mkdir */
+	(void)exec_commands("mkdir ../dir", &lwin, CIT_COMMAND);
+	assert_true(is_dir(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+	/* :cd */
+	assert_success(exec_commands("cd ../dir-link/..", &lwin, CIT_COMMAND));
 	assert_string_equal(canonic_path, lwin.curr_dir);
+
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
+	assert_success(rmdir(SANDBOX_PATH "/dir1/dir2"));
+	assert_success(rmdir(SANDBOX_PATH "/dir1"));
 }
 
 static void

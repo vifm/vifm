@@ -180,10 +180,9 @@
 
 	Fixed putting unmatched %[ into status line at wrong position.
 
-	Fixed unwanted expansion of symbolic links (unwanted because view
-	directory isn't expanded, which results in broken path shortening) in
-	paths to custom view entries, on completion of paths, changing directory
-	via :cd or :sync.
+	Fixed incorrect work with symbolic links in paths to custom view entries,
+	on completion of paths, changing directory via :cd or :sync, processing
+	arguments of :mkdir.
 
 	Fixed changing owner/group in custom views.
 
