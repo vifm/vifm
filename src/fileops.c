@@ -2355,8 +2355,7 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 	char full_path[PATH_MAX];
 	char clone_name[PATH_MAX];
 
-	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
-	chosp(clone_name);
+	to_canonic_path(clone, path, clone_name, sizeof(clone_name));
 	if(path_exists(clone_name, DEREF))
 	{
 		if(perform_operation(OP_REMOVESL, NULL, NULL, clone_name, NULL) != 0)

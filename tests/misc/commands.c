@@ -539,6 +539,13 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	assert_true(is_dir(SANDBOX_PATH "/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 
+	/* :clone file name. */
+	create_file(SANDBOX_PATH "/dir-link/file");
+	populate_dir_list(&lwin, 1);
+	(void)exec_commands("clone ../file-clone", &lwin, CIT_COMMAND);
+	assert_success(remove(SANDBOX_PATH "/file-clone"));
+	assert_success(remove(SANDBOX_PATH "/dir-link/file"));
+
 	/* :colorscheme */
 	strcpy(cfg.colors_dir, TEST_DATA_PATH "/scripts/");
 	assert_success(
