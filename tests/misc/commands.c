@@ -562,6 +562,66 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	assert_success(rmdir(SANDBOX_PATH "/dir1"));
 }
 
+TEST(find_command, IF(not_windows))
+{
+	opt_handlers_setup();
+
+	replace_string(&cfg.shell, "/bin/sh");
+
+	assert_success(chdir(TEST_DATA_PATH));
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+
+	assert_success(exec_commands("set findprg='find %s %a %u'", &lwin,
+				CIT_COMMAND));
+
+	/* Nothing to repeat. */
+	assert_failure(exec_commands("find", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("find a", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_success(exec_commands("find . -name aaa", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.list_rows);
+
+	assert_success(exec_commands("find -name '*.vifm'", &lwin, CIT_COMMAND));
+	assert_int_equal(4, lwin.list_rows);
+
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	/* Repeat last search. */
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	assert_success(exec_commands("find", &lwin, CIT_COMMAND));
+	assert_int_equal(4, lwin.list_rows);
+
+	opt_handlers_teardown();
+}
+
+TEST(grep_command, IF(not_windows))
+{
+	opt_handlers_setup();
+
+	replace_string(&cfg.shell, "/bin/sh");
+
+	assert_success(chdir(TEST_DATA_PATH "/scripts"));
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/scripts");
+
+	assert_success(exec_commands("set grepprg='grep -n -H -r %i %a %s %u'", &lwin,
+				CIT_COMMAND));
+
+	/* Nothing to repeat. */
+	assert_failure(exec_commands("grep", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("grep command", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.list_rows);
+
+	/* Repeat last grep. */
+	assert_success(exec_commands("grep!", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.list_rows);
+
+	opt_handlers_teardown();
+}
+
 static void
 check_filetype(void)
 {

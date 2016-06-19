@@ -193,6 +193,8 @@
 
 	Fixed changing owner/group in custom views.
 
+	Fixed small memory leak on using %u/%U with :grep, :find or :locate.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
