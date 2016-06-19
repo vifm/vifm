@@ -70,7 +70,8 @@
 #include "filetype.h"
 #include "tags.h"
 
-static int cmd_ends_with_space(const char *cmd);
+static int earg_num(int argc, const char cmdline[]);
+static int cmd_ends_with_space(const char cmdline[]);
 static void complete_selective_sync(const char str[]);
 static void complete_wincmd(const char str[]);
 static void complete_help(const char *str);
@@ -172,7 +173,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		complete_filetype(args);
 	else if(id == COM_HIGHLIGHT)
 	{
-		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+		if(earg_num(argc, args) <= 1)
 			complete_highlight_groups(args);
 		else
 			start += complete_highlight_arg(arg);
@@ -223,7 +224,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	else if(id == COM_AUTOCMD)
 	{
 		/* Complete only first argument. */
-		if(argc <= 1 && !cmd_ends_with_space(args))
+		if(earg_num(argc, args) <= 1)
 		{
 			static const char *events[][2] = {
 				{ "DirEnter", "occurs on directory change" },
@@ -231,8 +232,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
 	}
-	else if(id == COM_BMARKS && (!cmd_info->emark || argc > 1 ||
-				(argc == 1 && cmd_ends_with_space(args))))
+	else if(id == COM_BMARKS && (!cmd_info->emark || earg_num(argc, args) >= 2))
 	{
 		bmarks_complete(argc, argv, arg);
 	}
@@ -244,14 +244,13 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		complete_selective_sync(arg);
 	}
-	else if(id == COM_COLORSCHEME &&
-			(argc == 0 || (argc == 1 && !cmd_ends_with_space(args))))
+	else if(id == COM_COLORSCHEME && earg_num(argc, args) <= 1)
 	{
 		cs_complete(arg);
 	}
 	else if(id == COM_WINCMD)
 	{
-		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+		if(earg_num(argc, args) <= 1)
 		{
 			complete_wincmd(arg);
 		}
@@ -327,22 +326,21 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		}
 		else if(id == COM_GREP)
 		{
-			if((argc > 1 || (argc == 1 && cmd_ends_with_space(args))) &&
-					args[0] == '-')
+			if(earg_num(argc, args) >= 1 && args[0] == '-')
 			{
 				filename_completion(arg, CT_DIRONLY);
 			}
 		}
 		else if(id == COM_FIND)
 		{
-			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+			if(earg_num(argc, args) <= 1)
 			{
 				filename_completion(arg, CT_DIRONLY);
 			}
 		}
 		else if(id == COM_EXECUTE)
 		{
-			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+			if(earg_num(argc, args) <= 1)
 			{
 				if(*arg == '.' || *arg == '~' || is_path_absolute(arg))
 					filename_completion(arg, CT_DIREXEC);
@@ -367,16 +365,28 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	return start - args;
 }
 
+/* Calculates effective number of argument being completed.  Returns the
+ * number. */
 static int
-cmd_ends_with_space(const char *cmd)
+earg_num(int argc, const char cmdline[])
 {
-	while(cmd[0] != '\0' && cmd[1] != '\0')
+	return cmd_ends_with_space(cmdline) ? (argc + 1) : argc;
+}
+
+/* Checks whether given command-line ends with a spaces considering \-escaping.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+cmd_ends_with_space(const char cmdline[])
+{
+	while(cmdline[0] != '\0' && cmdline[1] != '\0')
 	{
-		if(cmd[0] == '\\')
-			cmd++;
-		cmd++;
+		if(cmdline[0] == '\\')
+		{
+			++cmdline;
+		}
+		++cmdline;
 	}
-	return cmd[0] == ' ';
+	return (cmdline[0] == ' ');
 }
 
 /* Completes properties for selective synchronization. */

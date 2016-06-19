@@ -686,6 +686,21 @@ TEST(autocmd_name_completion_is_case_insensitive)
 	assert_wstring_equal(L"autocmd DirEnter", stats.line);
 }
 
+TEST(highlight_is_completed)
+{
+	prepare_for_line_completion(L"hi ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"hi Border", stats.line);
+
+	prepare_for_line_completion(L"hi wi");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"hi WildMenu", stats.line);
+
+	prepare_for_line_completion(L"hi WildMenu cter");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"hi WildMenu cterm", stats.line);
+}
+
 TEST(envvars_are_completed_for_edit)
 {
 	env_set("RRRRRARE_VARIABLE1", "1");
