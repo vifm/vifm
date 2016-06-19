@@ -605,6 +605,22 @@ TEST(wincmd_completion)
 	assert_wstring_equal(L"wincmd + ", stats.line);
 }
 
+TEST(grep_completion)
+{
+	prepare_for_line_completion(L"grep .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"grep .", stats.line);
+
+	prepare_for_line_completion(L"grep -o .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"grep -o ./", stats.line);
+
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	prepare_for_line_completion(L"grep -o ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"grep -o existing-files/", stats.line);
+}
+
 TEST(find_completion)
 {
 	prepare_for_line_completion(L"find .");

@@ -325,6 +325,14 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			filename_completion_in_dir(flist_get_dir(curr_view), arg, CT_DIRONLY);
 		}
+		else if(id == COM_GREP)
+		{
+			if((argc > 1 || (argc == 1 && cmd_ends_with_space(args))) &&
+					args[0] == '-')
+			{
+				filename_completion(arg, CT_DIRONLY);
+			}
+		}
 		else if(id == COM_FIND)
 		{
 			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
