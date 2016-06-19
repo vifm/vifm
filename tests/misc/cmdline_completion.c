@@ -605,6 +605,22 @@ TEST(wincmd_completion)
 	assert_wstring_equal(L"wincmd + ", stats.line);
 }
 
+TEST(find_completion)
+{
+	prepare_for_line_completion(L"find .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"find ./", stats.line);
+
+	prepare_for_line_completion(L"find . .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"find . .", stats.line);
+
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	prepare_for_line_completion(L"find ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"find existing-files/", stats.line);
+}
+
 TEST(aucmd_events_are_completed)
 {
 	prepare_for_line_completion(L"autocmd ");

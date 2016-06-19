@@ -111,6 +111,8 @@
 	Automatically update custom view entries on rename of their parent
 	directory in the save custom view.
 
+	Some corrections of when completion happens for :find.
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

@@ -327,8 +327,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		}
 		else if(id == COM_FIND)
 		{
-			if(argc == 1 && !cmd_ends_with_space(args))
+			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+			{
 				filename_completion(arg, CT_DIRONLY);
+			}
 		}
 		else if(id == COM_EXECUTE)
 		{
