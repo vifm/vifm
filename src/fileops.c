@@ -201,9 +201,10 @@ static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
-		char *path, int *from_file, int *from_trash);
+		char path[], size_t path_len, int *from_file, int *from_trash);
 static int can_read_selected_files(FileView *view);
-static int check_dir_path(const FileView *view, const char path[], char buf[]);
+static int check_dir_path(const FileView *view, const char path[], char buf[],
+		size_t buf_len);
 static char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
@@ -2188,7 +2189,7 @@ is_clone_list_ok(int count, char **list)
 }
 
 int
-clone_files(FileView *view, char **list, int nlines, int force, int copies)
+clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 {
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
@@ -2209,7 +2210,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 	if(nlines == 1)
 	{
-		with_dir = check_dir_path(view, list[0], path);
+		with_dir = check_dir_path(view, list[0], path, sizeof(path));
 		if(with_dir)
 		{
 			nlines = 0;
@@ -3217,7 +3218,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	}
 
 	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
-			sizeof(undo_msg), path, &from_file, &from_trash);
+			sizeof(undo_msg), path, sizeof(path), &from_file, &from_trash);
 	if(err != 0)
 	{
 		return err > 0;
@@ -3397,8 +3398,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->force = force;
 
 	err = cpmv_prepare(view, &list, &args->nlines, move ? CMLO_MOVE : CMLO_COPY,
-			force, task_desc, sizeof(task_desc), args->path, &args->from_file,
-			&args->use_trash);
+			force, task_desc, sizeof(task_desc), args->path, sizeof(args->path),
+			&args->from_file, &args->use_trash);
 	if(err != 0)
 	{
 		free_bg_args(args);
@@ -3427,8 +3428,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
  * message and negative number for other errors. */
 static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
-		int force, char undo_msg[], size_t undo_msg_len, char *path, int *from_file,
-		int *from_trash)
+		int force, char undo_msg[], size_t undo_msg_len, char path[],
+		size_t path_len, int *from_file, int *from_trash)
 {
 	char **marked;
 	size_t nmarked;
@@ -3448,7 +3449,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines == 1)
 	{
-		if(check_dir_path(other_view, (*list)[0], path))
+		if(check_dir_path(other_view, (*list)[0], path, path_len))
 		{
 			*nlines = 0;
 		}
@@ -3565,19 +3566,18 @@ can_read_selected_files(FileView *view)
  * current directory of the view.  Returns non-zero if value of the path was
  * used, otherwise zero is returned. */
 static int
-check_dir_path(const FileView *view, const char path[], char buf[])
+check_dir_path(const FileView *view, const char path[], char buf[],
+		size_t buf_len)
 {
 	if(path[0] == '/' || path[0] == '~')
 	{
 		char *const expanded_path = expand_tilde(path);
-		strcpy(buf, expanded_path);
+		copy_str(buf, buf_len, expanded_path);
 		free(expanded_path);
 	}
 	else
 	{
-		strcpy(buf, view->curr_dir);
-		strcat(buf, "/");
-		strcat(buf, path);
+		snprintf(buf, buf_len, "%s/%s", view->curr_dir, path);
 	}
 
 	if(is_dir(buf))
