@@ -72,6 +72,7 @@
 
 static int cmd_ends_with_space(const char *cmd);
 static void complete_selective_sync(const char str[]);
+static void complete_wincmd(const char str[]);
 static void complete_help(const char *str);
 static void complete_history(const char str[]);
 static void complete_invert(const char str[]);
@@ -248,6 +249,13 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		cs_complete(arg);
 	}
+	else if(id == COM_WINCMD)
+	{
+		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+		{
+			complete_wincmd(arg);
+		}
+	}
 	else
 	{
 		char *free_me = NULL;
@@ -372,6 +380,47 @@ complete_selective_sync(const char str[])
 		{ "filters",   "all filters" },
 		{ "filelist",  "list of files for custom views" },
 		{ "all",       "as much as possible" },
+	};
+
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
+}
+
+/* Completes argument of :wincmd. */
+static void
+complete_wincmd(const char str[])
+{
+	static const char *lines[][2] = {
+		{ "H", "move the pane to the far left" },
+		{ "J", "move the pane to the very bottom" },
+		{ "K", "move the pane to the very top" },
+		{ "L", "move the pane to the far right" },
+
+		{ "h", "switch to left pane" },
+		{ "j", "switch to pane below" },
+		{ "k", "switch to pane above" },
+		{ "l", "switch to right pane" },
+
+		{ "b", "switch to bottom-right window" },
+		{ "t", "switch to top-left window" },
+
+		{ "p", "switch to previous window" },
+		{ "w", "switch to other pane" },
+
+		{ "o", "leave only one pane" },
+		{ "s", "split window horizontally" },
+		{ "v", "split window vertically" },
+
+		{ "x", "exchange panes" },
+		{ "z", "quit preview pane or view modes" },
+
+		{ "-", "decrease size of the view by count" },
+		{ "+", "increase size of the view by count" },
+		{ "<", "decrease size of the view by count" },
+		{ ">", "increase size of the view by count" },
+
+		{ "|", "set current view size to count" },
+		{ "_", "set current view size to count" },
+		{ "=", "make size of two views equal" },
 	};
 
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);

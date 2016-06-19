@@ -63,6 +63,8 @@
 	Added cancellation (handling of Ctrl-C) for quick view and view mode
 	loading.  Thanks to kalterfive.
 
+	Added completion of :wincmd argument.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
