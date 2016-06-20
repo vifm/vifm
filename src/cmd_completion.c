@@ -303,17 +303,17 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			if(arg_num == 1)
 			{
-				filename_completion(arg, CT_DIRONLY);
+				filename_completion(arg, CT_DIRONLY, 0);
 			}
 		}
 		else if(id == COM_BMARKS || id == COM_DELBMARKS)
 		{
-			filename_completion(arg, CT_ALL);
+			filename_completion(arg, CT_ALL, 0);
 		}
 		else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
 				id == COM_MKDIR)
 		{
-			filename_completion(arg, CT_DIRONLY);
+			filename_completion(arg, CT_DIRONLY, 0);
 		}
 		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
 				id == COM_RLINK)
@@ -328,14 +328,14 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			if(earg_num(argc, args) >= 1 && args[0] == '-')
 			{
-				filename_completion(arg, CT_DIRONLY);
+				filename_completion(arg, CT_DIRONLY, 1);
 			}
 		}
 		else if(id == COM_FIND)
 		{
 			if(earg_num(argc, args) <= 1)
 			{
-				filename_completion(arg, CT_DIRONLY);
+				filename_completion(arg, CT_DIRONLY, 1);
 			}
 		}
 		else if(id == COM_EXECUTE)
@@ -343,20 +343,20 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			if(earg_num(argc, args) <= 1)
 			{
 				if(*arg == '.' || *arg == '~' || is_path_absolute(arg))
-					filename_completion(arg, CT_DIREXEC);
+					filename_completion(arg, CT_DIREXEC, 0);
 				else
 					complete_command_name(arg);
 			}
 			else
-				filename_completion(arg, CT_ALL);
+				filename_completion(arg, CT_ALL, 0);
 		}
 		else if(id == COM_TOUCH || id == COM_RENAME)
 		{
-			filename_completion(arg, CT_ALL_WOS);
+			filename_completion(arg, CT_ALL_WOS, 0);
 		}
 		else
 		{
-			filename_completion(arg, CT_ALL);
+			filename_completion(arg, CT_ALL, 0);
 		}
 
 		free(free_me);
@@ -808,7 +808,7 @@ complete_command_name(const char beginning[])
 	{
 		if(vifm_chdir(paths[i]) == 0)
 		{
-			filename_completion(beginning, CT_EXECONLY);
+			filename_completion(beginning, CT_EXECONLY, 0);
 		}
 	}
 	vle_compl_add_last_path_match(beginning);
@@ -829,14 +829,15 @@ filename_completion_in_dir(const char *path, const char *str,
 	{
 		snprintf(buf, sizeof(buf), "%s/%s", path, str);
 	}
-	filename_completion(buf, type);
+	filename_completion(buf, type, 0);
 }
 
 /*
  * type: CT_*
  */
 void
-filename_completion(const char *str, CompletionType type)
+filename_completion(const char str[], CompletionType type,
+		int skip_canonicalization)
 {
 	/* TODO refactor filename_completion(...) function */
 	DIR *dir;
@@ -844,7 +845,6 @@ filename_completion(const char *str, CompletionType type)
 	char *filename;
 	char *temp;
 	char *cwd;
-	char canonic_path[PATH_MAX];
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
@@ -865,20 +865,24 @@ filename_completion(const char *str, CompletionType type)
 		strcpy(filename, ++temp);
 		*temp = '\0';
 	}
-	else if(replace_string(&dirname, ".") != 0)
+	else if(replace_string(&dirname, flist_get_dir(curr_view)) != 0)
 	{
 		free(filename);
 		free(dirname);
 		return;
 	}
 
-	to_canonic_path(dirname, flist_get_dir(curr_view), canonic_path,
-			sizeof(canonic_path));
-	if(replace_string(&dirname, canonic_path) != 0)
+	if(!skip_canonicalization)
 	{
-		free(filename);
-		free(dirname);
-		return;
+		char canonic_path[PATH_MAX];
+		to_canonic_path(dirname, flist_get_dir(curr_view), canonic_path,
+				sizeof(canonic_path));
+		if(replace_string(&dirname, canonic_path) != 0)
+		{
+			free(filename);
+			free(dirname);
+			return;
+		}
 	}
 
 #ifdef _WIN32

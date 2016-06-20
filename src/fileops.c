@@ -930,7 +930,7 @@ rename_file_cb(const char new_name[])
 static int
 complete_filename_only(const char str[], void *arg)
 {
-	filename_completion(str, CT_FILE_WOE);
+	filename_completion(str, CT_FILE_WOE, 0);
 	return 0;
 }
 
@@ -1752,7 +1752,7 @@ static int
 complete_filename(const char str[], void *arg)
 {
 	const char *name_begin = after_last(str, '/');
-	filename_completion(str, CT_ALL_WOE);
+	filename_completion(str, CT_ALL_WOE, 0);
 	return name_begin - str;
 }
 
