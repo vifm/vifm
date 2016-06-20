@@ -611,9 +611,9 @@ TEST(grep_completion)
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"grep .", stats.line);
 
-	prepare_for_line_completion(L"grep -o .");
+	prepare_for_line_completion(L"grep -o ..");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"grep -o ./", stats.line);
+	assert_wstring_equal(L"grep -o ../", stats.line);
 
 	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
 	prepare_for_line_completion(L"grep -o ");
@@ -623,9 +623,9 @@ TEST(grep_completion)
 
 TEST(find_completion)
 {
-	prepare_for_line_completion(L"find .");
+	prepare_for_line_completion(L"find ..");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"find ./", stats.line);
+	assert_wstring_equal(L"find ../", stats.line);
 
 	prepare_for_line_completion(L"find . .");
 	assert_success(line_completion(&stats));
