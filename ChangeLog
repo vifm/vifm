@@ -63,6 +63,8 @@
 	Added cancellation (handling of Ctrl-C) for quick view and view mode
 	loading.  Thanks to kalterfive.
 
+	Added completion of :wincmd argument.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
@@ -108,6 +110,8 @@
 
 	Automatically update custom view entries on rename of their parent
 	directory in the save custom view.
+
+	Some corrections of when completion happens for :find and :grep.
 
 	Fixed kind of a duplicate of first history element on =.
 
@@ -180,11 +184,16 @@
 
 	Fixed putting unmatched %[ into status line at wrong position.
 
-	Fixed unwanted expansion of symbolic links (unwanted because view
-	directory isn't expanded, which results in broken path shortening) in
-	paths to custom view entries.
+	Fixed incorrect work with symbolic links in paths to custom view entries,
+	on completion of paths, changing directory via :cd or :sync, processing
+	arguments of :mkdir, :bmarks, :delbmarks, :colorscheme, :clone.
+
+	Fixed weird completion effects for :colorscheme, :sync!, :delbmark,
+	:bmark!.
 
 	Fixed changing owner/group in custom views.
+
+	Fixed small memory leak on using %u/%U with :grep, :find or :locate.
 
 0.8.1 to 0.8.1a
 

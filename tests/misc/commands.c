@@ -1,11 +1,12 @@
 #include <stic.h>
 
-#include <unistd.h> /* F_OK access() chdir() */
+#include <unistd.h> /* F_OK access() chdir() rmdir() symlink() */
 
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"
@@ -31,6 +32,7 @@ static int op_avail(OPS op);
 static void check_filetype(void);
 static int prog_exists(const char name[]);
 static int has_mime_type_detection(void);
+static int not_windows(void);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -514,6 +516,112 @@ TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
 	ft_reset(0);
 }
 
+TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
+{
+	char canonic_path[PATH_MAX];
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir1", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir1/dir2", 0700));
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(SANDBOX_PATH "/dir1/dir2", SANDBOX_PATH "/dir-link"));
+#endif
+
+	assert_success(chdir(SANDBOX_PATH "/dir-link"));
+	to_canonic_path(SANDBOX_PATH "/dir-link", "/fake-root", lwin.curr_dir,
+			sizeof(lwin.curr_dir));
+	to_canonic_path(SANDBOX_PATH, "/fake-root", canonic_path,
+			sizeof(canonic_path));
+
+	/* :mkdir */
+	(void)exec_commands("mkdir ../dir", &lwin, CIT_COMMAND);
+	assert_true(is_dir(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+	/* :clone file name. */
+	create_file(SANDBOX_PATH "/dir-link/file");
+	populate_dir_list(&lwin, 1);
+	(void)exec_commands("clone ../file-clone", &lwin, CIT_COMMAND);
+	assert_success(remove(SANDBOX_PATH "/file-clone"));
+	assert_success(remove(SANDBOX_PATH "/dir-link/file"));
+
+	/* :colorscheme */
+	strcpy(cfg.colors_dir, TEST_DATA_PATH "/scripts/");
+	assert_success(
+			exec_commands("colorscheme set-env " SANDBOX_PATH "/../dir-link/..",
+				&lwin, CIT_COMMAND));
+	cs_load_defaults();
+
+	/* :cd */
+	assert_success(exec_commands("cd ../dir-link/..", &lwin, CIT_COMMAND));
+	assert_string_equal(canonic_path, lwin.curr_dir);
+
+	assert_success(remove(SANDBOX_PATH "/dir-link"));
+	assert_success(rmdir(SANDBOX_PATH "/dir1/dir2"));
+	assert_success(rmdir(SANDBOX_PATH "/dir1"));
+}
+
+TEST(find_command, IF(not_windows))
+{
+	opt_handlers_setup();
+
+	replace_string(&cfg.shell, "/bin/sh");
+
+	assert_success(chdir(TEST_DATA_PATH));
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+
+	assert_success(exec_commands("set findprg='find %s %a %u'", &lwin,
+				CIT_COMMAND));
+
+	/* Nothing to repeat. */
+	assert_failure(exec_commands("find", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("find a", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_success(exec_commands("find . -name aaa", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.list_rows);
+
+	assert_success(exec_commands("find -name '*.vifm'", &lwin, CIT_COMMAND));
+	assert_int_equal(4, lwin.list_rows);
+
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	/* Repeat last search. */
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	assert_success(exec_commands("find", &lwin, CIT_COMMAND));
+	assert_int_equal(4, lwin.list_rows);
+
+	opt_handlers_teardown();
+}
+
+TEST(grep_command, IF(not_windows))
+{
+	opt_handlers_setup();
+
+	replace_string(&cfg.shell, "/bin/sh");
+
+	assert_success(chdir(TEST_DATA_PATH "/scripts"));
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/scripts");
+
+	assert_success(exec_commands("set grepprg='grep -n -H -r %i %a %s %u'", &lwin,
+				CIT_COMMAND));
+
+	/* Nothing to repeat. */
+	assert_failure(exec_commands("grep", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("grep command", &lwin, CIT_COMMAND));
+	assert_int_equal(2, lwin.list_rows);
+
+	/* Repeat last grep. */
+	assert_success(exec_commands("grep!", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.list_rows);
+
+	opt_handlers_teardown();
+}
+
 static void
 check_filetype(void)
 {
@@ -539,6 +647,16 @@ static int
 has_mime_type_detection(void)
 {
 	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

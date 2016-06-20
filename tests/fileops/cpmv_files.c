@@ -25,7 +25,7 @@ SETUP()
 	assert_success(chdir(SANDBOX_PATH));
 
 	/* lwin */
-	strcpy(lwin.curr_dir, ".");
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
@@ -35,7 +35,7 @@ SETUP()
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
 	/* rwin */
-	strcpy(rwin.curr_dir, ".");
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
 
 	rwin.list_rows = 0;
 	rwin.filtered = 0;

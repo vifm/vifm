@@ -17,5 +17,11 @@ TEST(check_for_older)
 	assert_false(bmark_is_older("newer", 0));
 }
 
+TEST(path_is_canonicalized)
+{
+	assert_success(bmarks_set("newer/.", "tag"));
+	assert_false(bmark_is_older("newer", 0));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

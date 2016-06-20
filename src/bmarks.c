@@ -24,6 +24,7 @@
 #include <time.h> /* time_t time() */
 
 #include "engine/completion.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 
@@ -40,6 +41,7 @@ static int validate_tags(const char tags[]);
 static int change_bmark(const char path[], const char tags[], time_t timestamp,
 		int *ret);
 static int add_bmark(const char path[], const char tags[], time_t timestamp);
+static void make_canonic(const char path[], char buf[], size_t buf_size);
 
 /* Array of the bookmarks. */
 static bmark_t *bmarks;
@@ -93,11 +95,13 @@ static int
 change_bmark(const char path[], const char tags[], time_t timestamp, int *ret)
 {
 	size_t i;
+	char canonic_path[strlen(path) + 16U];
+	make_canonic(path, canonic_path, sizeof(canonic_path));
 
 	/* Try to update tags of an existing bookmark. */
 	for(i = 0U; i < bmark_count; ++i)
 	{
-		if(stroscmp(path, bmarks[i].path) == 0)
+		if(stroscmp(canonic_path, bmarks[i].path) == 0)
 		{
 			*ret = replace_string(&bmarks[i].tags, tags);
 			if(*ret == 0)
@@ -115,9 +119,12 @@ change_bmark(const char path[], const char tags[], time_t timestamp, int *ret)
 static int
 add_bmark(const char path[], const char tags[], time_t timestamp)
 {
+	void *p;
 	bmark_t *bm;
+	char canonic_path[strlen(path) + 16U];
+	make_canonic(path, canonic_path, sizeof(canonic_path));
 
-	void *p = realloc(bmarks, sizeof(*bmarks)*(bmark_count + 1));
+	p = realloc(bmarks, sizeof(*bmarks)*(bmark_count + 1));
 	if(p == NULL)
 	{
 		return 1;
@@ -125,7 +132,7 @@ add_bmark(const char path[], const char tags[], time_t timestamp)
 	bmarks = p;
 
 	bm = &bmarks[bmark_count];
-	bm->path = strdup(path);
+	bm->path = strdup(canonic_path);
 	bm->tags = strdup(tags);
 	bm->timestamp = timestamp;
 	if(bm->path == NULL || bm->tags == NULL)
@@ -207,10 +214,12 @@ int
 bmark_is_older(const char path[], time_t than)
 {
 	size_t i;
+	char canonic_path[strlen(path) + 16U];
+	make_canonic(path, canonic_path, sizeof(canonic_path));
 
 	for(i = 0U; i < bmark_count; ++i)
 	{
-		if(stroscmp(path, bmarks[i].path) == 0)
+		if(stroscmp(canonic_path, bmarks[i].path) == 0)
 		{
 			return bmarks[i].timestamp < than;
 		}
@@ -244,15 +253,31 @@ void
 bmarks_file_moved(const char src[], const char dst[])
 {
 	size_t i;
+	char canonic_src[strlen(src) + 16U], canonic_dst[strlen(dst) + 16U];
+	make_canonic(src, canonic_src, sizeof(canonic_src));
+	make_canonic(dst, canonic_dst, sizeof(canonic_dst));
 
 	/* Renames bookmark. */
 	for(i = 0U; i < bmark_count; ++i)
 	{
-		if(stroscmp(src, bmarks[i].path) == 0)
+		if(stroscmp(canonic_src, bmarks[i].path) == 0)
 		{
-			(void)replace_string(&bmarks[i].path, dst);
+			(void)replace_string(&bmarks[i].path, canonic_dst);
 			break;
 		}
+	}
+}
+
+/* Converts a path into canonic form.  Mind that canonic paths are usually not
+ * longer than the original one, but can be extended in corner cases so several
+ * extra bytes (e.g. 16) in the buffer are needed. */
+static void
+make_canonic(const char path[], char buf[], size_t buf_size)
+{
+	canonicalize_path(path, buf, buf_size);
+	if(!is_root_dir(buf) && !ends_with_slash(path))
+	{
+		chosp(buf);
 	}
 }
 

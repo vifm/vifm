@@ -41,5 +41,17 @@ TEST(tag_is_overwritten)
 	assert_string_equal("new-tag", get_tags("tag/is/overwritten"));
 }
 
+TEST(path_is_canonicalized)
+{
+	assert_success(bmarks_set("parent/../dir", "tag"));
+	assert_string_equal("tag", get_tags("dir"));
+}
+
+TEST(canonicalization_preserves_trailing_slash)
+{
+	assert_success(bmarks_set("parent/../dir/", "tag"));
+	assert_string_equal("tag", get_tags("dir/"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

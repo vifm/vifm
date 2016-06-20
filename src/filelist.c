@@ -2902,18 +2902,21 @@ file_can_be_displayed(const char directory[], const char filename[])
 }
 
 int
-cd(FileView *view, const char *base_dir, const char *path)
+cd(FileView *view, const char base_dir[], const char path[])
 {
 	char dir[PATH_MAX];
+	char canonic_dir[PATH_MAX];
 	int updir;
 
 	pick_cd_path(view, base_dir, path, &updir, dir, sizeof(dir));
+	to_canonic_path(dir, base_dir, canonic_dir, sizeof(canonic_dir));
 
 	if(updir)
 	{
 		cd_updir(view, 1);
 	}
-	else if(!cd_is_possible(dir) || change_directory(view, dir) < 0)
+	else if(!cd_is_possible(canonic_dir) ||
+			change_directory(view, canonic_dir) < 0)
 	{
 		return 0;
 	}

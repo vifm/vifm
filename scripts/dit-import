@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# This script updates reduced in-tree dumps of TODO and BUGS files by importing
+# their contents from dit and applying necessary formatting.
+#
+# Invocation:
+#  * without arguments updates both files;
+#  * with "bugs", "todo" or "all" argument updates one or both files.
+
+function print_wrapped()
+{
+    local OLDIFS="$IFS"
+    IFS=$'\n'
+    local lines=( $(echo "$@" | par -w78 -p2) )
+    IFS="$OLDIFS"
+
+    local first=1
+    for line in "${lines[@]}"; do
+        if [ "$line" = sep ]; then
+            first=1
+            continue
+        fi
+        if [ $first = 0 ]; then
+            echo -n '  '
+        fi
+        echo "$line"
+        first=0
+    done
+}
+
+function process_item()
+{
+    prefix="$1"
+
+    if [ "${data[status]}" = partial ]; then
+        local mark=" (partially done)"
+    fi
+
+    lines="$lines$prefix${data[title]}$mark"$'\n\nsep\n\n'
+}
+
+function process_items()
+{
+    prefix="$1"
+
+    lines=""
+    declare -A data
+    while read -rd $'\0' line; do
+        if [ -z "$line" ]; then
+            process_item "$prefix"
+            unset data
+            declare -A data
+            continue
+        fi
+
+        key="${line%%=*}"
+        value="${line#*=}"
+
+        data[$key]="$value"
+    done
+    print_wrapped "$lines"
+}
+
+function list_realm()
+{
+    local title="$1"
+    shift
+
+    local out="$(dit .vifm export - status!=done status!=dismissed "$@" |
+                 process_items '  * ')"
+    if [ -n "$out" ]; then
+        echo
+        echo "$title:"
+        echo "$out"
+    fi
+}
+
+function make_bugs()
+{
+    for type in bug issue glitch regression fix; do
+        dit .vifm export - 'status!=done' 'status!=dismissed' "type==$type" |
+        process_items '* '
+    done
+}
+
+function make_todo()
+{
+    list_realm 'Basic things' realm==basic
+    list_realm 'Documentation' realm==docs
+    list_realm 'Vi(m) specific features' realm==vimlike
+    list_realm 'Windows' realm==win
+    list_realm 'Possible things to add' realm==possible
+    list_realm 'Questionable things' realm==questionable
+    list_realm 'Code improvements' realm==code
+    list_realm 'Other' realm!=basic realm!=docs realm!=win realm!=vimlike \
+                       realm!=possible realm!=questionable realm!=code \
+                       type!=bug type!=issue type!=glitch type!=regression \
+                       type!=fix
+}
+
+function usage()
+{
+    echo "Usage: $(basename $0) [bugs|todo|all]"
+    exit 1
+}
+
+if [ $# -gt 1 ]; then
+    usage
+fi
+
+dir="$(readlink -f "$(dirname "$0")")"
+
+case "$1" in
+    bugs)   make_bugs > "$dir/../BUGS" ;;
+    todo)   make_todo | tail +2 > "$dir/../TODO" ;;
+    all|"") make_bugs > "$dir/../BUGS"
+            make_todo | tail +2 > "$dir/../TODO" ;;
+    *)      usage ;;
+esac

@@ -742,6 +742,7 @@ capture_output(FileView *view, const char cmd[], int user_sh, menu_info *m,
 {
 	if(custom_view || very_custom_view)
 	{
+		reset_popup_menu(m);
 		output_to_custom_flist(view, cmd, very_custom_view);
 		return 0;
 	}

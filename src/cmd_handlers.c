@@ -1455,6 +1455,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 2)
 	{
+		char path_buf[PATH_MAX];
 		char *directory = expand_tilde(cmd_info->argv[1]);
 		if(!is_path_absolute(directory))
 		{
@@ -1467,11 +1468,14 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 			}
 			else
 			{
-				char path[PATH_MAX];
-				snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
-				(void)replace_string(&directory, path);
+				snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir,
+						directory);
+				(void)replace_string(&directory, path_buf);
 			}
 		}
+		canonicalize_path(directory, path_buf, sizeof(path_buf));
+		(void)replace_string(&directory, path_buf);
+
 		if(!is_dir(directory))
 		{
 			status_bar_errorf("%s isn't a directory", directory);
@@ -2998,8 +3002,8 @@ messages_cmd(const cmd_info_t *cmd_info)
 static int
 mkdir_cmd(const cmd_info_t *cmd_info)
 {
-	make_dirs(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark);
-	return 1;
+	return make_dirs(curr_view, cmd_info->argv, cmd_info->argc,
+			cmd_info->emark) != 0;
 }
 
 static int
@@ -3545,8 +3549,8 @@ sync_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc > 0)
 	{
 		char dst_path[PATH_MAX];
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", flist_get_dir(curr_view),
-				cmd_info->argv[0]);
+		to_canonic_path(cmd_info->argv[0], flist_get_dir(curr_view), dst_path,
+				sizeof(dst_path));
 		sync_location(dst_path, 0, cmd_info->emark, 0);
 	}
 	else

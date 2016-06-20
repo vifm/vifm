@@ -70,9 +70,10 @@
 #include "filetype.h"
 #include "tags.h"
 
-static int cmd_ends_with_space(const char *cmd);
-static void complete_colorscheme(const char *str, size_t arg_num);
+static int earg_num(int argc, const char cmdline[]);
+static int cmd_ends_with_space(const char cmdline[]);
 static void complete_selective_sync(const char str[]);
+static void complete_wincmd(const char str[]);
 static void complete_help(const char *str);
 static void complete_history(const char str[]);
 static void complete_invert(const char str[]);
@@ -98,7 +99,10 @@ static void complete_with_shared(const char *server, const char *file);
 int
 complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 {
-	/* TODO: Refactor this function complete_args() */
+	/* TODO: Refactor this function complete_args().  Might be worth defining a
+	 *       structure for all these variables and creating two functions: one for
+	 *       non-path completion and the other one for path completion (else
+	 *       branch). */
 
 	const CompletionPreProcessing cpp = (CompletionPreProcessing)extra_arg;
 
@@ -169,7 +173,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		complete_filetype(args);
 	else if(id == COM_HIGHLIGHT)
 	{
-		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+		if(earg_num(argc, args) <= 1)
 			complete_highlight_groups(args);
 		else
 			start += complete_highlight_arg(arg);
@@ -220,7 +224,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	else if(id == COM_AUTOCMD)
 	{
 		/* Complete only first argument. */
-		if(argc <= 1 && !cmd_ends_with_space(args))
+		if(earg_num(argc, args) <= 1)
 		{
 			static const char *events[][2] = {
 				{ "DirEnter", "occurs on directory change" },
@@ -228,15 +232,34 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
 	}
+	else if(id == COM_BMARKS && (!cmd_info->emark || earg_num(argc, args) >= 2))
+	{
+		bmarks_complete(argc, argv, arg);
+	}
+	else if(id == COM_DELBMARKS && !cmd_info->emark)
+	{
+		bmarks_complete(argc, argv, arg);
+	}
+	else if(id == COM_SYNC && cmd_info->emark)
+	{
+		complete_selective_sync(arg);
+	}
+	else if(id == COM_COLORSCHEME && earg_num(argc, args) <= 1)
+	{
+		cs_complete(arg);
+	}
+	else if(id == COM_WINCMD)
+	{
+		if(earg_num(argc, args) <= 1)
+		{
+			complete_wincmd(arg);
+		}
+	}
 	else
 	{
 		char *free_me = NULL;
 		size_t arg_num = argc;
-		start = slash;
-		if(start == NULL)
-			start = args + arg_pos;
-		else
-			start++;
+		start = (slash == NULL) ? (args + arg_pos) : (slash + 1U);
 
 		if(argc > 0 && !cmd_ends_with_space(args))
 		{
@@ -278,44 +301,19 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 
 		if(id == COM_COLORSCHEME)
 		{
-			complete_colorscheme(arg, arg_num);
-		}
-		else if(id == COM_SYNC)
-		{
-			if(cmd_info->emark)
+			if(arg_num == 1)
 			{
-				complete_selective_sync(arg);
-			}
-			else
-			{
-				filename_completion(arg, CT_DIRONLY);
+				filename_completion(arg, CT_DIRONLY, 0);
 			}
 		}
-		else if(id == COM_BMARKS)
+		else if(id == COM_BMARKS || id == COM_DELBMARKS)
 		{
-			if(cmd_info->emark && argc == 1)
-			{
-				filename_completion(arg, CT_ALL);
-			}
-			else
-			{
-				bmarks_complete(argc, argv, arg);
-			}
+			filename_completion(arg, CT_ALL, 0);
 		}
-		else if(id == COM_DELBMARKS)
+		else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
+				id == COM_MKDIR)
 		{
-			if(cmd_info->emark)
-			{
-				filename_completion(arg, CT_ALL);
-			}
-			else
-			{
-				bmarks_complete(argc, argv, arg);
-			}
-		}
-		else if(id == COM_CD || id == COM_PUSHD || id == COM_MKDIR)
-		{
-			filename_completion(arg, CT_DIRONLY);
+			filename_completion(arg, CT_DIRONLY, 0);
 		}
 		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
 				id == COM_RLINK)
@@ -326,30 +324,39 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			filename_completion_in_dir(flist_get_dir(curr_view), arg, CT_DIRONLY);
 		}
+		else if(id == COM_GREP)
+		{
+			if(earg_num(argc, args) >= 1 && args[0] == '-')
+			{
+				filename_completion(arg, CT_DIRONLY, 1);
+			}
+		}
 		else if(id == COM_FIND)
 		{
-			if(argc == 1 && !cmd_ends_with_space(args))
-				filename_completion(arg, CT_DIRONLY);
+			if(earg_num(argc, args) <= 1)
+			{
+				filename_completion(arg, CT_DIRONLY, 1);
+			}
 		}
 		else if(id == COM_EXECUTE)
 		{
-			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
+			if(earg_num(argc, args) <= 1)
 			{
 				if(*arg == '.' || *arg == '~' || is_path_absolute(arg))
-					filename_completion(arg, CT_DIREXEC);
+					filename_completion(arg, CT_DIREXEC, 0);
 				else
 					complete_command_name(arg);
 			}
 			else
-				filename_completion(arg, CT_ALL);
+				filename_completion(arg, CT_ALL, 0);
 		}
 		else if(id == COM_TOUCH || id == COM_RENAME)
 		{
-			filename_completion(arg, CT_ALL_WOS);
+			filename_completion(arg, CT_ALL_WOS, 0);
 		}
 		else
 		{
-			filename_completion(arg, CT_ALL);
+			filename_completion(arg, CT_ALL, 0);
 		}
 
 		free(free_me);
@@ -358,29 +365,28 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	return start - args;
 }
 
+/* Calculates effective number of argument being completed.  Returns the
+ * number. */
 static int
-cmd_ends_with_space(const char *cmd)
+earg_num(int argc, const char cmdline[])
 {
-	while(cmd[0] != '\0' && cmd[1] != '\0')
-	{
-		if(cmd[0] == '\\')
-			cmd++;
-		cmd++;
-	}
-	return cmd[0] == ' ';
+	return cmd_ends_with_space(cmdline) ? (argc + 1) : argc;
 }
 
-static void
-complete_colorscheme(const char *str, size_t arg_num)
+/* Checks whether given command-line ends with a spaces considering \-escaping.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+cmd_ends_with_space(const char cmdline[])
 {
-	if(arg_num == 0)
+	while(cmdline[0] != '\0' && cmdline[1] != '\0')
 	{
-		cs_complete(str);
+		if(cmdline[0] == '\\')
+		{
+			++cmdline;
+		}
+		++cmdline;
 	}
-	else if(arg_num == 1)
-	{
-		filename_completion(str, CT_DIRONLY);
-	}
+	return (cmdline[0] == ' ');
 }
 
 /* Completes properties for selective synchronization. */
@@ -394,6 +400,47 @@ complete_selective_sync(const char str[])
 		{ "filters",   "all filters" },
 		{ "filelist",  "list of files for custom views" },
 		{ "all",       "as much as possible" },
+	};
+
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
+}
+
+/* Completes argument of :wincmd. */
+static void
+complete_wincmd(const char str[])
+{
+	static const char *lines[][2] = {
+		{ "H", "move the pane to the far left" },
+		{ "J", "move the pane to the very bottom" },
+		{ "K", "move the pane to the very top" },
+		{ "L", "move the pane to the far right" },
+
+		{ "h", "switch to left pane" },
+		{ "j", "switch to pane below" },
+		{ "k", "switch to pane above" },
+		{ "l", "switch to right pane" },
+
+		{ "b", "switch to bottom-right window" },
+		{ "t", "switch to top-left window" },
+
+		{ "p", "switch to previous window" },
+		{ "w", "switch to other pane" },
+
+		{ "o", "leave only one pane" },
+		{ "s", "split window horizontally" },
+		{ "v", "split window vertically" },
+
+		{ "x", "exchange panes" },
+		{ "z", "quit preview pane or view modes" },
+
+		{ "-", "decrease size of the view by count" },
+		{ "+", "increase size of the view by count" },
+		{ "<", "decrease size of the view by count" },
+		{ ">", "increase size of the view by count" },
+
+		{ "|", "set current view size to count" },
+		{ "_", "set current view size to count" },
+		{ "=", "make size of two views equal" },
 	};
 
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
@@ -761,7 +808,7 @@ complete_command_name(const char beginning[])
 	{
 		if(vifm_chdir(paths[i]) == 0)
 		{
-			filename_completion(beginning, CT_EXECONLY);
+			filename_completion(beginning, CT_EXECONLY, 0);
 		}
 	}
 	vle_compl_add_last_path_match(beginning);
@@ -782,14 +829,15 @@ filename_completion_in_dir(const char *path, const char *str,
 	{
 		snprintf(buf, sizeof(buf), "%s/%s", path, str);
 	}
-	filename_completion(buf, type);
+	filename_completion(buf, type, 0);
 }
 
 /*
  * type: CT_*
  */
 void
-filename_completion(const char *str, CompletionType type)
+filename_completion(const char str[], CompletionType type,
+		int skip_canonicalization)
 {
 	/* TODO refactor filename_completion(...) function */
 	DIR *dir;
@@ -817,11 +865,24 @@ filename_completion(const char *str, CompletionType type)
 		strcpy(filename, ++temp);
 		*temp = '\0';
 	}
-	else if(replace_string(&dirname, ".") != 0)
+	else if(replace_string(&dirname, flist_get_dir(curr_view)) != 0)
 	{
 		free(filename);
 		free(dirname);
 		return;
+	}
+
+	if(!skip_canonicalization)
+	{
+		char canonic_path[PATH_MAX];
+		to_canonic_path(dirname, flist_get_dir(curr_view), canonic_path,
+				sizeof(canonic_path));
+		if(replace_string(&dirname, canonic_path) != 0)
+		{
+			free(filename);
+			free(dirname);
+			return;
+		}
 	}
 
 #ifdef _WIN32

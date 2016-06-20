@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* chdir() */
+#include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* fclose() fopen() free() */
@@ -37,6 +37,7 @@ static void dummy_handler(OPT_OP op, optval_t val);
 static void create_executable(const char file[]);
 static void create_file(const char file[]);
 static int dquotes_allowed_in_paths(void);
+static int not_windows(void);
 
 static line_stats_t stats;
 static char *saved_cwd;
@@ -73,11 +74,12 @@ SETUP()
 			&dummy_handler, def);
 	add_option("path", "pt", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			&dummy_handler, def);
-	add_option("path", "pt", "descr", OPT_STR, OPT_LOCAL, 0, NULL,
-			&dummy_handler, def);
+	add_option("path", "pt", "descr", OPT_STR, OPT_LOCAL, 0, NULL, &dummy_handler,
+			def);
 
 	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/existing-files");
 }
 
 TEARDOWN()
@@ -171,7 +173,8 @@ TEST(spaces_escaping_leading)
 {
 	char *mb;
 
-	assert_success(chdir("../spaces-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
 
 	prepare_for_line_completion(L"touch \\ ");
 	assert_success(line_completion(&stats));
@@ -233,7 +236,8 @@ TEST(spaces_escaping_middle)
 {
 	char *mb;
 
-	assert_success(chdir("../spaces-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
 
 	prepare_for_line_completion(L"touch s");
 	assert_success(line_completion(&stats));
@@ -252,7 +256,8 @@ TEST(squoted_completion)
 
 TEST(squoted_completion_escaping)
 {
-	assert_success(chdir("../quotes-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/quotes-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/quotes-in-names");
 
 	prepare_for_line_completion(L"touch 's-quote");
 	assert_success(line_completion(&stats));
@@ -269,6 +274,7 @@ TEST(dquoted_completion)
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 {
 	assert_success(chdir(SANDBOX_PATH));
+	strcpy(curr_view->curr_dir, SANDBOX_PATH);
 
 	create_file("d-quote-\"-in-name");
 	create_file("d-quote-\"-in-name-2");
@@ -287,7 +293,8 @@ TEST(last_match_is_properly_escaped)
 {
 	char *match;
 
-	assert_success(chdir("../quotes-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/quotes-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/quotes-in-names");
 
 	prepare_for_line_completion(L"touch 's-quote-''-in");
 	assert_success(line_completion(&stats));
@@ -353,7 +360,8 @@ TEST(dirs_are_completed_with_trailing_slash)
 {
 	char *match;
 
-	assert_success(chdir("../"));
+	assert_success(chdir(TEST_DATA_PATH));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
 
 	prepare_for_line_completion(L"cd r");
 	assert_success(line_completion(&stats));
@@ -515,6 +523,14 @@ TEST(bmark_tags_are_completed)
 	prepare_for_line_completion(L"bmark! fake/path2 tag");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"bmark! fake/path2 tag1", stats.line);
+
+	prepare_for_line_completion(L"bmark! fake/path2 ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"bmark! fake/path2 ../", stats.line);
+
+	prepare_for_line_completion(L"bmark! fake/path2 ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"bmark! fake/path2 tag1", stats.line);
 }
 
 TEST(bmark_path_is_completed)
@@ -524,6 +540,7 @@ TEST(bmark_path_is_completed)
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
+	strcpy(curr_view->curr_dir, SANDBOX_PATH);
 	create_executable("exec-for-completion" SUFFIX);
 
 	prepare_for_line_completion(L"bmark! exec");
@@ -531,6 +548,93 @@ TEST(bmark_path_is_completed)
 	assert_wstring_equal(L"bmark! exec-for-completion" SUFFIX, stats.line);
 
 	assert_success(unlink("exec-for-completion" SUFFIX));
+}
+
+TEST(delbmark_tags_are_completed)
+{
+	bmarks_clear();
+
+	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
+
+	prepare_for_line_completion(L"delbmark ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"delbmark ../", stats.line);
+}
+
+TEST(selective_sync_completion)
+{
+	prepare_for_line_completion(L"sync! a");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"sync! all", stats.line);
+
+	prepare_for_line_completion(L"sync! ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"sync! ../", stats.line);
+}
+
+TEST(colorscheme_completion)
+{
+	strcpy(cfg.colors_dir, TEST_DATA_PATH "/scripts/");
+
+	prepare_for_line_completion(L"colorscheme set-");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme set-env", stats.line);
+
+	prepare_for_line_completion(L"colorscheme set-env ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme set-env ../existing-files/", stats.line);
+
+	prepare_for_line_completion(L"colorscheme ../");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme ../", stats.line);
+
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	prepare_for_line_completion(L"colorscheme set-env ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"colorscheme set-env existing-files/", stats.line);
+}
+
+TEST(wincmd_completion)
+{
+	prepare_for_line_completion(L"wincmd ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"wincmd +", stats.line);
+
+	prepare_for_line_completion(L"wincmd + ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"wincmd + ", stats.line);
+}
+
+TEST(grep_completion)
+{
+	prepare_for_line_completion(L"grep .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"grep .", stats.line);
+
+	prepare_for_line_completion(L"grep -o .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"grep -o ./", stats.line);
+
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	prepare_for_line_completion(L"grep -o ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"grep -o existing-files/", stats.line);
+}
+
+TEST(find_completion)
+{
+	prepare_for_line_completion(L"find .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"find ./", stats.line);
+
+	prepare_for_line_completion(L"find . .");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"find . .", stats.line);
+
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	prepare_for_line_completion(L"find ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"find existing-files/", stats.line);
 }
 
 TEST(aucmd_events_are_completed)
@@ -582,6 +686,21 @@ TEST(autocmd_name_completion_is_case_insensitive)
 	assert_wstring_equal(L"autocmd DirEnter", stats.line);
 }
 
+TEST(highlight_is_completed)
+{
+	prepare_for_line_completion(L"hi ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"hi Border", stats.line);
+
+	prepare_for_line_completion(L"hi wi");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"hi WildMenu", stats.line);
+
+	prepare_for_line_completion(L"hi WildMenu cter");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"hi WildMenu cterm", stats.line);
+}
+
 TEST(envvars_are_completed_for_edit)
 {
 	env_set("RRRRRARE_VARIABLE1", "1");
@@ -622,6 +741,24 @@ TEST(select_is_completed)
 	assert_wstring_equal(L"unselect !cat $RRRRRARE_VARIABLE1", stats.line);
 }
 
+TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(TEST_DATA_PATH "/existing-files",
+				SANDBOX_PATH "/dir-link"));
+#endif
+
+	assert_success(chdir(SANDBOX_PATH "/dir-link"));
+	strcpy(curr_view->curr_dir, SANDBOX_PATH "/dir-link");
+
+	prepare_for_line_completion(L"cd ../d");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"cd ../dir-link/", stats.line);
+
+	assert_success(remove(SANDBOX_PATH "/dir-link"));
+}
+
 static void
 create_executable(const char file[])
 {
@@ -651,6 +788,16 @@ dquotes_allowed_in_paths(void)
 		return 1;
 	}
 	return 0;
+}
+
+static int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

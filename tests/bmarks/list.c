@@ -36,6 +36,16 @@ TEST(two_calls_for_two_items)
 	assert_int_equal(2, cb_called);
 }
 
+TEST(path_is_canonicalized)
+{
+	assert_success(bmarks_set("parent/../dir//another-dir", "tag1"));
+	assert_success(bmarks_set("dir/another-dir", "tag2"));
+
+	cb_called = 0;
+	bmarks_list(&bmarks_cb, NULL);
+	assert_int_equal(1, cb_called);
+}
+
 static void
 bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {

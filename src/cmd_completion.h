@@ -107,7 +107,10 @@ int complete_args(int id, const struct cmd_info_t *cmd_info, int arg_pos,
  * newly allocated string, which should be returned by caller, is returned. */
 char * fast_run_complete(const char cmd[]);
 
-void filename_completion(const char *str, CompletionType type);
+/* Completes file names in a requested manner.  If skip_canonicalization is set,
+ * "../" will be resolved to actual parent directories of target files. */
+void filename_completion(const char str[], CompletionType type,
+		int skip_canonicalization);
 
 void complete_user_name(const char *str);
 
