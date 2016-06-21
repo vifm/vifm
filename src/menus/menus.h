@@ -138,7 +138,7 @@ void menus_search(menu_info *m, int backward);
 
 /* Performs search of pattern among menu items.  NULL pattern requests use of
  * the last used pattern.  Returns new value for save_msg flag. */
-int search_menu_list(const char pattern[], menu_info *m);
+int search_menu_list(const char pattern[], menu_info *m, int print_errors);
 
 /* Prints results or error message about search operation to the user. */
 void menu_print_search_msg(const menu_info *m);

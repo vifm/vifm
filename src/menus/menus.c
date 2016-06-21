@@ -73,7 +73,7 @@ static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
-static int search_menu(menu_info *m, int start_pos);
+static int search_menu(menu_info *m, int start_pos, int print_errors);
 static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
 static int navigate_to_match(menu_info *m, int pos);
@@ -761,7 +761,7 @@ menus_search(menu_info *m, int backward)
 	}
 
 	m->backward_search = backward;
-	(void)search_menu_list(NULL, m);
+	(void)search_menu_list(NULL, m, 1);
 	wrefresh(menu_win);
 
 	if(m->matching_entries > 0)
@@ -774,7 +774,7 @@ menus_search(menu_info *m, int backward)
 }
 
 int
-search_menu_list(const char pattern[], menu_info *m)
+search_menu_list(const char pattern[], menu_info *m, int print_errors)
 {
 	int save = 0;
 	int i;
@@ -784,7 +784,7 @@ search_menu_list(const char pattern[], menu_info *m)
 		/* Reactivate match highlighting on search. */
 		m->search_highlight = 1;
 		replace_string(&m->regexp, pattern);
-		if(search_menu(m, m->pos) != 0)
+		if(search_menu(m, m->pos, print_errors) != 0)
 		{
 			draw_menu(m);
 			move_to_menu_pos(m->pos, m);
@@ -810,7 +810,7 @@ search_menu_list(const char pattern[], menu_info *m)
 /* Goes through all menu items and marks those that match search pattern.
  * Returns non-zero on error. */
 static int
-search_menu(menu_info *m, int start_pos)
+search_menu(menu_info *m, int start_pos, int print_errors)
 {
 	int cflags;
 	regex_t re;
@@ -834,7 +834,10 @@ search_menu(menu_info *m, int start_pos)
 	err = regcomp(&re, m->regexp, cflags);
 	if(err != 0)
 	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		if(print_errors)
+		{
+			status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		}
 		regfree(&re);
 		return -1;
 	}

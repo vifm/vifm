@@ -113,6 +113,10 @@
 
 	Some corrections of when completion happens for :find and :grep.
 
+	Avoid displaying useless search messages about incorrect pattern during
+	interactive search in menus (those that user can't see, but that are shown
+	in :messages).
+
 	Fixed kind of a duplicate of first history element on =.
 
 	Fixed displaying size for symbolic links to directories on changing views

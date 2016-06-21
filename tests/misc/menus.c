@@ -59,13 +59,13 @@ TEST(nothing_is_searched_if_no_pattern)
 
 TEST(nothing_is_searched_for_wrong_pattern)
 {
-	assert_true(search_menu_list("*a", &m));
+	assert_true(search_menu_list("*a", &m, 1));
 	assert_int_equal(0, m.matching_entries);
 }
 
 TEST(search_via_menu_search)
 {
-	assert_true(search_menu_list("[abc]", &m));
+	assert_true(search_menu_list("[abc]", &m, 1));
 	assert_int_equal(1, m.pos);
 	menus_search(&m, 0);
 	assert_int_equal(2, m.pos);
@@ -78,14 +78,14 @@ TEST(ok_to_print_message_if_there_is_no_pattern)
 
 TEST(ok_to_print_message_for_wrong_pattern)
 {
-	assert_true(search_menu_list("*", &m));
+	assert_true(search_menu_list("*", &m, 1));
 	menu_print_search_msg(&m);
 }
 
 TEST(forward_found_no_wrap)
 {
 	cfg.wrap_scan = 0;
-	assert_true(search_menu_list("c", &m));
+	assert_true(search_menu_list("c", &m, 1));
 	assert_int_equal(2, m.pos);
 }
 
@@ -93,43 +93,43 @@ TEST(forward_found_wrap)
 {
 	m.pos = 1;
 	cfg.wrap_scan = 1;
-	assert_true(search_menu_list("a", &m));
+	assert_true(search_menu_list("a", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
 TEST(forward_not_found_no_wrap)
 {
 	cfg.wrap_scan = 0;
-	assert_true(search_menu_list("d", &m));
+	assert_true(search_menu_list("d", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
 TEST(forward_not_found_wrap)
 {
 	cfg.wrap_scan = 1;
-	assert_true(search_menu_list("d", &m));
+	assert_true(search_menu_list("d", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
 TEST(forward_find_next_no_wrap)
 {
 	cfg.wrap_scan = 0;
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(2, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(2, m.pos);
 }
 
 TEST(forward_find_next_wrap)
 {
 	cfg.wrap_scan = 1;
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(2, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
@@ -138,7 +138,7 @@ TEST(backward_found_no_wrap)
 	m.pos = 2;
 	m.backward_search = 1;
 	cfg.wrap_scan = 0;
-	assert_true(search_menu_list("a", &m));
+	assert_true(search_menu_list("a", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
@@ -146,7 +146,7 @@ TEST(backward_found_wrap)
 {
 	m.backward_search = 1;
 	cfg.wrap_scan = 1;
-	assert_true(search_menu_list("c", &m));
+	assert_true(search_menu_list("c", &m, 1));
 	assert_int_equal(2, m.pos);
 }
 
@@ -154,7 +154,7 @@ TEST(backward_not_found_no_wrap)
 {
 	m.backward_search = 1;
 	cfg.wrap_scan = 0;
-	assert_true(search_menu_list("d", &m));
+	assert_true(search_menu_list("d", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
@@ -162,7 +162,7 @@ TEST(backward_not_found_wrap)
 {
 	m.backward_search = 1;
 	cfg.wrap_scan = 1;
-	assert_true(search_menu_list("d", &m));
+	assert_true(search_menu_list("d", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
@@ -171,11 +171,11 @@ TEST(backward_find_next_no_wrap)
 	m.pos = 2;
 	m.backward_search = 1;
 	cfg.wrap_scan = 0;
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(0, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
@@ -184,19 +184,19 @@ TEST(backward_find_next_wrap)
 	m.pos = 2;
 	m.backward_search = 1;
 	cfg.wrap_scan = 1;
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(0, m.pos);
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(2, m.pos);
 }
 
 TEST(null_pattern_causes_pattern_reuse)
 {
-	assert_true(search_menu_list(".", &m));
+	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
-	assert_true(search_menu_list(NULL, &m));
+	assert_true(search_menu_list(NULL, &m, 1));
 	assert_int_equal(2, m.pos);
 }
 
