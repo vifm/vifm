@@ -69,8 +69,10 @@ void filters_dir_updated(FileView *view);
 
 /* Sets regular expression of the local filter for the view.  First call of this
  * function initiates filter set process, which should be ended by call to
- * local_filter_accept() or local_filter_cancel(). */
-void local_filter_set(FileView *view, const char filter[]);
+ * local_filter_accept() or local_filter_cancel().  Returns zero if not all
+ * files are filtered out, -1 if filter expression is incorrect and 1 if all
+ * files were filtered. */
+int local_filter_set(FileView *view, const char filter[]);
 
 /* Updates cursor position and top line of the view according to interactive
  * local filter in progress. */
