@@ -79,6 +79,14 @@ typedef enum
 }
 HIST;
 
+typedef enum
+{
+	PS_NORMAL,
+	PS_WRONG_PATTERN,
+	PS_NO_MATCH,
+}
+PromptState;
+
 /* Holds state of the command-line editing mode. */
 typedef struct
 {
@@ -105,6 +113,7 @@ typedef struct
 	int line_edited;          /* Cache for whether input line changed flag. */
 	int entered_by_mapping;   /* The mode was entered by a mapping. */
 	int expanding_abbrev;     /* Abbreviation expansion is in progress. */
+	PromptState state;        /* Prompt state with regard to current input. */
 }
 line_stats_t;
 #endif

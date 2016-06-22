@@ -65,6 +65,9 @@
 
 	Added completion of :wincmd argument.
 
+	Added indication of wrong pattern and absence of matches to command-prompt
+	for interactive search/filtering.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
