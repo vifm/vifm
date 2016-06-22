@@ -788,7 +788,7 @@ search_menu_list(const char pattern[], menu_info *m, int print_errors)
 		{
 			draw_menu(m);
 			move_to_menu_pos(m->pos, m);
-			return 1;
+			return -1;
 		}
 		draw_menu(m);
 	}
