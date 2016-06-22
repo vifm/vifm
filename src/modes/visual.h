@@ -43,8 +43,12 @@ void leave_visual_mode(int save_msg, int goto_top, int clean_selection);
  * Intended to be used after setting list position from side. */
 void update_visual_mode(void);
 
-int find_vpattern(FileView *view, const char *pattern, int backward,
-		int interactive);
+/* Kind of callback to allow starting searches from the module and rely on other
+ * modules.  Returns new value for status bar message flag, but when
+ * print_errors isn't requested can return -1 to indicate issues with the
+ * pattern. */
+int find_vpattern(FileView *view, const char pattern[], int backward,
+		int print_errors);
 
 /* Formats concise description of current visual mode state.  Returns pointer
  * to a statically allocated buffer. */

@@ -1359,19 +1359,28 @@ update_visual_mode(void)
 }
 
 int
-find_vpattern(FileView *view, const char *pattern, int backward,
-		int interactive)
+find_vpattern(FileView *view, const char pattern[], int backward,
+		int print_errors)
 {
 	int i;
 	int result;
-	int hls = cfg.hl_search;
+	const int hls = cfg.hl_search;
 	int found;
 
 	cfg.hl_search = 0;
-	result = (find_pattern(view, pattern, backward, 0, &found, interactive) != 0);
+	result = find_pattern(view, pattern, backward, 0, &found, print_errors);
+	if(!print_errors && result < 0)
+	{
+		/* If we're not printing messages, we might be interested in broken
+		 * pattern. */
+		return -1;
+	}
+
 	cfg.hl_search = hls;
-	for(i = 0; i < search_repeat; i++)
+	for(i = 0; i < search_repeat; ++i)
+	{
 		find_update(view, backward);
+	}
 	return result;
 }
 
