@@ -127,11 +127,14 @@ static line_stats_t input_stat;
 /* Width of the status bar. */
 static int line_width = 1;
 static void *sub_mode_ptr;
+/* Whether current submode allows external editing. */
 static int sub_mode_allows_ee;
 
 static int def_handler(wchar_t key);
 static void update_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
+static void handle_empty_input(void);
+static void handle_nonempty_input(void);
 static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
@@ -405,7 +408,6 @@ static void
 input_line_changed(void)
 {
 	static wchar_t *previous;
-	FileView *const view = curr_view;
 
 	if(!cfg.inc_search || (!input_stat.search_mode && sub_mode != CLS_FILTER))
 	{
@@ -421,82 +423,94 @@ input_line_changed(void)
 	input_stat.state = PS_NORMAL;
 	if(is_input_line_empty())
 	{
-		if(cfg.hl_search)
-		{
-			/* Clear selection. */
-			if(prev_mode != MENU_MODE)
-			{
-				clean_selected_files(view);
-			}
-			else
-			{
-				(void)search_menu_list("", sub_mode_ptr, 0);
-			}
-		}
 		free(previous);
 		previous = NULL;
 
-		if(prev_mode != MENU_MODE)
-		{
-			ui_view_reset_search_highlight(view);
-		}
-
-		if(sub_mode == CLS_FILTER)
-		{
-			set_local_filter("");
-		}
+		handle_empty_input();
 	}
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
-		char *mbinput;
-		int backward;
-
 		(void)replace_wstring(&previous, input_stat.line);
 
-		mbinput = to_multibyte(input_stat.line);
-
-		backward = 0;
-		switch(sub_mode)
-		{
-			int result;
-
-			case CLS_BSEARCH: backward = 1; /* Fall through. */
-			case CLS_FSEARCH:
-				result = find_npattern(view, mbinput, backward, 0);
-				update_state(result, view->matches);
-				break;
-			case CLS_VBSEARCH: backward = 1; /* Fall through. */
-			case CLS_VFSEARCH:
-				result = find_vpattern(view, mbinput, backward, 0);
-				update_state(result, view->matches);
-				break;
-			case CLS_MENU_FSEARCH:
-			case CLS_MENU_BSEARCH:
-				result = search_menu_list(mbinput, sub_mode_ptr, 0);
-				update_state(result, ((menu_info *)sub_mode_ptr)->matching_entries);
-				break;
-			case CLS_FILTER:
-				set_local_filter(mbinput);
-				break;
-
-			default:
-				assert("Unexpected filter type.");
-				break;
-		}
-
-		free(mbinput);
+		handle_nonempty_input();
 	}
 
 	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
 	{
 		redraw_current_view();
 	}
-	else if(prev_mode != VISUAL_MODE)
+	else if(prev_mode == MENU_MODE)
 	{
 		menu_redraw();
 	}
 
 	curs_set(1);
+}
+
+/* Provides reaction for empty input during interactive search/filtering. */
+static void
+handle_empty_input(void)
+{
+	if(cfg.hl_search)
+	{
+		/* Clear selection. */
+		if(prev_mode != MENU_MODE)
+		{
+			clean_selected_files(curr_view);
+		}
+		else
+		{
+			(void)search_menu_list("", sub_mode_ptr, 0);
+		}
+	}
+
+	if(prev_mode != MENU_MODE)
+	{
+		ui_view_reset_search_highlight(curr_view);
+	}
+
+	if(sub_mode == CLS_FILTER)
+	{
+		set_local_filter("");
+	}
+}
+
+/* Provides reaction for non-empty input during interactive search/filtering. */
+static void
+handle_nonempty_input(void)
+{
+	char *const mbinput = to_multibyte(input_stat.line);
+	int backward = 0;
+
+	switch(sub_mode)
+	{
+		int result;
+
+		case CLS_BSEARCH: backward = 1; /* Fall through. */
+		case CLS_FSEARCH:
+			result = find_npattern(curr_view, mbinput, backward, 0);
+			update_state(result, curr_view->matches);
+			break;
+		case CLS_VBSEARCH: backward = 1; /* Fall through. */
+		case CLS_VFSEARCH:
+			result = find_vpattern(curr_view, mbinput, backward, 0);
+			update_state(result, curr_view->matches);
+			break;
+		case CLS_MENU_FSEARCH:
+		case CLS_MENU_BSEARCH:
+			result = search_menu_list(mbinput, sub_mode_ptr, 0);
+			update_state(result, ((menu_info *)sub_mode_ptr)->matching_entries);
+			break;
+		case CLS_FILTER:
+			set_local_filter(mbinput);
+			break;
+
+		default:
+			assert("Unexpected command-line submode.");
+			break;
+	}
+
+	free(mbinput);
 }
 
 /* Computes and sets new prompt state from result of a search and number of
