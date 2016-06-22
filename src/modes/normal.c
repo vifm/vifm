@@ -2136,27 +2136,34 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 
 int
 find_npattern(FileView *view, const char pattern[], int backward,
-		int interactive)
+		int print_errors)
 {
+	const int nrepeats = search_repeat - 1;
 	int i;
-	int found;
+	int save_msg;
 	int msg;
-
-	msg = (find_pattern(view, pattern, backward, 1, &found, interactive) != 0);
-	/* Take wrong regular expression message into account, otherwise we can't
-	 * distinguish "no files matched" situation from "wrong regexp". */
-	found += msg;
-
-	for(i = 0; i < search_repeat - 1; i++)
-	{
-		found += goto_search_match(view, backward) != 0;
-	}
 
 	/* Reset number of repeats so that future calls are not affected by the
 	 * previous ones. */
 	search_repeat = 1;
 
-	return found;
+	msg = find_pattern(view, pattern, backward, 1, &save_msg, print_errors);
+	if(!print_errors && msg < 0)
+	{
+		/* If we're not printing messages, we might be interested in broken
+		 * pattern. */
+		return -1;
+	}
+
+	/* Take wrong regular expression message into account, otherwise we can't
+	 * distinguish "no files matched" situation from "wrong regexp". */
+	save_msg += msg;
+
+	for(i = 0; i < nrepeats; ++i)
+	{
+		save_msg += (goto_search_match(view, backward) != 0);
+	}
+	return save_msg;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
