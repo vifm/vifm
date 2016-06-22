@@ -1368,7 +1368,7 @@ find_vpattern(FileView *view, const char *pattern, int backward,
 	int found;
 
 	cfg.hl_search = 0;
-	result = find_pattern(view, pattern, backward, 0, &found, interactive);
+	result = (find_pattern(view, pattern, backward, 0, &found, interactive) != 0);
 	cfg.hl_search = hls;
 	for(i = 0; i < search_repeat; i++)
 		find_update(view, backward);

@@ -1644,8 +1644,8 @@ search(key_info_t key_info, int backward)
 	if(curr_view->matches == 0)
 	{
 		const char *const pattern = cfg_get_last_search_pattern();
-		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1, &found,
-				0);
+		curr_stats.save_msg = (find_pattern(curr_view, pattern, backward, 1, &found,
+				0) != 0);
 		key_info.count--;
 	}
 
@@ -2142,7 +2142,7 @@ find_npattern(FileView *view, const char pattern[], int backward,
 	int found;
 	int msg;
 
-	msg = find_pattern(view, pattern, backward, 1, &found, interactive);
+	msg = (find_pattern(view, pattern, backward, 1, &found, interactive) != 0);
 	/* Take wrong regular expression message into account, otherwise we can't
 	 * distinguish "no files matched" situation from "wrong regexp". */
 	found += msg;
