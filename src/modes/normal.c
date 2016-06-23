@@ -376,7 +376,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_c WK_g,        {{&cmd_cg}, .descr = "change group"}},
 	{WK_c WK_o,        {{&cmd_co}, .descr = "change owner"}},
 #else
-	{WK_g WK_r,        {{&cmd_gr}, .descr = "open file with rights evaluation"}},
+	{WK_g WK_r,        {{&cmd_gr}, .descr = "open file with rights elevation"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
 	{{WC_C_w, KEY_BACKSPACE}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},
@@ -388,9 +388,9 @@ static keys_add_info_t builtin_cmds[] = {
 	{{KEY_RIGHT},             {{&cmd_l},       .descr = "open file/go to item to the right"}},
 	{{KEY_HOME},              {{&cmd_gg},      .descr = "go to the first item"}},
 	{{KEY_END},               {{&cmd_G},       .descr = "go to the last item"}},
-	{{KEY_BTAB},              {{&cmd_shift_tab}, .descr = "previous completion item"}},
+	{{KEY_BTAB},              {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #else
-	{WK_ESC L"[Z",            {{&cmd_shift_tab}, .descr = "previous completion item"}},
+	{WK_ESC L"[Z",            {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
