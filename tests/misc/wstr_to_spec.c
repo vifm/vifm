@@ -1,10 +1,14 @@
 #include <stic.h>
 
+#include <curses.h> /* KEY_BACKSPACE */
+
 #include <locale.h> /* setlocale() */
+#include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* free() */
 
-#include "../../src/bracket_notation.h"
+#include "../../src/modes/wk.h"
 #include "../../src/utils/utils.h"
+#include "../../src/bracket_notation.h"
 
 static int locale_works(void);
 
@@ -14,6 +18,36 @@ SETUP_ONCE()
 	if(!locale_works())
 	{
 		(void)setlocale(LC_ALL, "en_US.utf8");
+	}
+}
+
+TEST(c_h_is_bs_at_start_only, IF(locale_works))
+{
+	char *spec;
+
+	spec = wstr_to_spec(WK_C_h);
+	assert_string_equal("<bs>", spec);
+	free(spec);
+
+	spec = wstr_to_spec(WK_C_w WK_C_h);
+	assert_string_equal("<c-w><c-h>", spec);
+	free(spec);
+}
+
+TEST(backspace_is_bs_always, IF(locale_works))
+{
+	{
+		const wchar_t key_seq[] = { KEY_BACKSPACE, L'\0' };
+		char *const spec = wstr_to_spec(key_seq);
+		assert_string_equal("<bs>", spec);
+		free(spec);
+	}
+
+	{
+		const wchar_t key_seq[] = { WC_C_w, KEY_BACKSPACE, L'\0' };
+		char *const spec = wstr_to_spec(key_seq);
+		assert_string_equal("<c-w><bs>", spec);
+		free(spec);
 	}
 }
 

@@ -650,12 +650,12 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 		case KEY_PPAGE:     strcpy(buf, "<pageup>");   break;
 		case KEY_NPAGE:     strcpy(buf, "<pagedown>"); break;
 
-		case KEY_BACKSPACE:
 		case L'\b':
 			if(!bs)
 			{
 				goto def;
 			}
+		case KEY_BACKSPACE:
 			strcpy(buf, "<bs>");
 			break;
 
