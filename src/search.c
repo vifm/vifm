@@ -105,7 +105,7 @@ find_and_goto_match(FileView *view, int start, int backward)
 
 int
 find_pattern(FileView *view, const char pattern[], int backward, int move,
-		int *const found, int interactive)
+		int *const found, int print_errors)
 {
 	int cflags;
 	int nmatches = 0;
@@ -161,12 +161,12 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	}
 	else
 	{
-		if(interactive)
+		if(print_errors)
 		{
 			status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
 		}
 		regfree(&re);
-		return 1;
+		return -1;
 	}
 
 	other = (view == &lwin) ? &rwin : &lwin;
@@ -195,7 +195,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 
 		if(!cfg.hl_search)
 		{
-			if(interactive)
+			if(print_errors)
 			{
 				print_result(view, was_found, backward);
 			}
@@ -206,7 +206,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	else
 	{
 		fview_cursor_redraw(view);
-		if(interactive)
+		if(print_errors)
 		{
 			print_search_fail_msg(view, backward);
 		}

@@ -80,6 +80,15 @@ typedef enum
 }
 HIST;
 
+/* Describes possible states of a prompt used for interactive search. */
+typedef enum
+{
+	PS_NORMAL,        /* Normal state (empty input or input is OK). */
+	PS_WRONG_PATTERN, /* Pattern contains a mistake. */
+	PS_NO_MATCH,      /* Pattern is OK, but no matches found. */
+}
+PromptState;
+
 /* Holds state of the command-line editing mode. */
 typedef struct
 {
@@ -106,6 +115,7 @@ typedef struct
 	int line_edited;          /* Cache for whether input line changed flag. */
 	int entered_by_mapping;   /* The mode was entered by a mapping. */
 	int expanding_abbrev;     /* Abbreviation expansion is in progress. */
+	PromptState state;        /* Prompt state with regard to current input. */
 }
 line_stats_t;
 
@@ -117,11 +127,15 @@ static line_stats_t input_stat;
 /* Width of the status bar. */
 static int line_width = 1;
 static void *sub_mode_ptr;
+/* Whether current submode allows external editing. */
 static int sub_mode_allows_ee;
 
 static int def_handler(wchar_t key);
 static void update_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
+static void handle_empty_input(void);
+static void handle_nonempty_input(void);
+static void update_state(int result, int nmatches);
 static void set_local_filter(const char value[]);
 static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
@@ -357,18 +371,34 @@ def_handler(wchar_t key)
 static void
 update_cmdline_text(line_stats_t *stat)
 {
-	int attr;
+	int pair = -1;
+	int attr = 0;
 
 	input_line_changed();
 
 	werase(status_bar);
 
-	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
+	switch(input_stat.state)
+	{
+		case PS_NORMAL:        pair = CMD_LINE_COLOR; break;
+		case PS_WRONG_PATTERN: pair = ERROR_MSG_COLOR; break;
+		case PS_NO_MATCH:      pair = CMD_LINE_COLOR;
+		                       attr = A_REVERSE;
+		                       break;
+	}
+	attr ^= cfg.cs.color[pair].attr;
 
+	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[pair]) | attr);
 	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
+	wattroff(status_bar, COLOR_PAIR(cfg.cs.pair[pair]) | attr);
+
+	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
+
+	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 	compat_mvwaddwstr(status_bar, stat->prompt_wid/line_width,
 			stat->prompt_wid%line_width, stat->line);
+	wattroff(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
+
 	update_cursor();
 	wrefresh(status_bar);
 }
@@ -390,77 +420,26 @@ input_line_changed(void)
 
 	set_view_port();
 
+	input_stat.state = PS_NORMAL;
 	if(is_input_line_empty())
 	{
-		if(cfg.hl_search)
-		{
-			/* clear selection */
-			if(prev_mode != MENU_MODE)
-			{
-				clean_selected_files(curr_view);
-			}
-			else
-			{
-				(void)search_menu_list("", sub_mode_ptr);
-			}
-		}
 		free(previous);
 		previous = NULL;
 
-		if(prev_mode != MENU_MODE)
-		{
-			ui_view_reset_search_highlight(curr_view);
-		}
-
-		if(sub_mode == CLS_FILTER)
-		{
-			set_local_filter("");
-		}
+		handle_empty_input();
 	}
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
-		char *mbinput;
-		int backward;
-
 		(void)replace_wstring(&previous, input_stat.line);
 
-		mbinput = to_multibyte(input_stat.line);
-
-		backward = 0;
-		switch(sub_mode)
-		{
-			case CLS_BSEARCH: backward = 1; /* Fall through. */
-			case CLS_FSEARCH:
-				(void)find_npattern(curr_view, mbinput, backward, 0);
-				break;
-			case CLS_VFSEARCH:
-			case CLS_VBSEARCH:
-				{
-					const CmdInputType cit = search_cls_to_cit(sub_mode);
-					(void)exec_command(mbinput, curr_view, cit);
-					break;
-				}
-			case CLS_MENU_FSEARCH:
-			case CLS_MENU_BSEARCH:
-				(void)search_menu_list(mbinput, sub_mode_ptr);
-				break;
-			case CLS_FILTER:
-				set_local_filter(mbinput);
-				break;
-
-			default:
-				assert("Unexpected filter type.");
-				break;
-		}
-
-		free(mbinput);
+		handle_nonempty_input();
 	}
 
 	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
 	{
 		redraw_current_view();
 	}
-	else if(prev_mode != VISUAL_MODE)
+	else if(prev_mode == MENU_MODE)
 	{
 		menu_redraw();
 	}
@@ -468,12 +447,97 @@ input_line_changed(void)
 	curs_set(1);
 }
 
+/* Provides reaction for empty input during interactive search/filtering. */
+static void
+handle_empty_input(void)
+{
+	if(cfg.hl_search)
+	{
+		/* Clear selection. */
+		if(prev_mode != MENU_MODE)
+		{
+			clean_selected_files(curr_view);
+		}
+		else
+		{
+			(void)search_menu_list("", sub_mode_ptr, 0);
+		}
+	}
+
+	if(prev_mode != MENU_MODE)
+	{
+		ui_view_reset_search_highlight(curr_view);
+	}
+
+	if(sub_mode == CLS_FILTER)
+	{
+		set_local_filter("");
+	}
+}
+
+/* Provides reaction for non-empty input during interactive search/filtering. */
+static void
+handle_nonempty_input(void)
+{
+	char *const mbinput = to_multibyte(input_stat.line);
+	int backward = 0;
+
+	switch(sub_mode)
+	{
+		int result;
+
+		case CLS_BSEARCH: backward = 1; /* Fall through. */
+		case CLS_FSEARCH:
+			result = find_npattern(curr_view, mbinput, backward, 0);
+			update_state(result, curr_view->matches);
+			break;
+		case CLS_VBSEARCH: backward = 1; /* Fall through. */
+		case CLS_VFSEARCH:
+			result = find_vpattern(curr_view, mbinput, backward, 0);
+			update_state(result, curr_view->matches);
+			break;
+		case CLS_MENU_FSEARCH:
+		case CLS_MENU_BSEARCH:
+			result = search_menu_list(mbinput, sub_mode_ptr, 0);
+			update_state(result, ((menu_info *)sub_mode_ptr)->matching_entries);
+			break;
+		case CLS_FILTER:
+			set_local_filter(mbinput);
+			break;
+
+		default:
+			assert("Unexpected command-line submode.");
+			break;
+	}
+
+	free(mbinput);
+}
+
+/* Computes and sets new prompt state from result of a search and number of
+ * matched items.  It is assumed that current state is PS_NORMAL. */
+static void
+update_state(int result, int nmatches)
+{
+	if(result < 0)
+	{
+		input_stat.state = PS_WRONG_PATTERN;
+	}
+	else if(nmatches == 0)
+	{
+		input_stat.state = PS_NO_MATCH;
+	}
+}
+
 /* Updates value of the local filter of the current view. */
 static void
 set_local_filter(const char value[])
 {
 	const int rel_pos = input_stat.old_pos - input_stat.old_top;
-	local_filter_set(curr_view, value);
+	const int result = local_filter_set(curr_view, value);
+	if(result != 0)
+	{
+		input_stat.state = (result < 0) ? PS_WRONG_PATTERN : PS_NO_MATCH;
+	}
 	local_filter_update_view(curr_view, rel_pos);
 }
 
@@ -632,6 +696,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.dot_pos = -1;
 	input_stat.line_edited = 0;
 	input_stat.entered_by_mapping = vle_keys_inside_mapping();
+	input_stat.state = PS_NORMAL;
 
 	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&
 			sub_mode != CLS_VWFSEARCH && sub_mode != CLS_VWBSEARCH)
@@ -1247,7 +1312,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
 				curr_stats.need_update = UT_FULL;
-				curr_stats.save_msg = search_menu_list(pattern, sub_mode_ptr);
+				curr_stats.save_msg = search_menu_list(pattern, sub_mode_ptr, 1);
 				break;
 
 			default:

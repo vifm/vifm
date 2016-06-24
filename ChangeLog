@@ -65,6 +65,9 @@
 
 	Added completion of :wincmd argument.
 
+	Added indication of wrong pattern and absence of matches to command-prompt
+	for interactive search/filtering.
+
 	Changed order of initialization to perform autocommands before startup
 	commands on launch.
 
@@ -112,6 +115,10 @@
 	directory in the save custom view.
 
 	Some corrections of when completion happens for :find and :grep.
+
+	Avoid displaying useless search messages about incorrect pattern during
+	interactive search in menus (those that user can't see, but that are shown
+	in :messages).
 
 	Fixed kind of a duplicate of first history element on =.
 

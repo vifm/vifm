@@ -26,13 +26,13 @@
 
 /* The move argument specifies whether cursor in the view should be adjusted to
  * point to just found file in case of successful search.  Sets *found to
- * non-zero if pattern was found, otherwise it's assigned zero.  interactive
+ * non-zero if pattern was found, otherwise it's assigned zero.  print_errors
  * means user needs feedback, otherwise it can be provided later using one of
  * print_*_msg() functions.  Returns non-zero when a message was printed (or
- * would have been printed in interactive mode) to a user, otherwise zero is
- * returned. */
+ * would have been printed with print_errors set) to a user, otherwise zero is
+ * returned.  Returned value is negative for incorrect pattern. */
 int find_pattern(FileView *view, const char pattern[], int backward, int move,
-		int *const found, int interactive);
+		int *const found, int print_errors);
 
 /* Looks for a search match in specified direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was

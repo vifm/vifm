@@ -376,7 +376,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_c WK_g,        {{&cmd_cg}, .descr = "change group"}},
 	{WK_c WK_o,        {{&cmd_co}, .descr = "change owner"}},
 #else
-	{WK_g WK_r,        {{&cmd_gr}, .descr = "open file with rights evaluation"}},
+	{WK_g WK_r,        {{&cmd_gr}, .descr = "open file with rights elevation"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
 	{{WC_C_w, KEY_BACKSPACE}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},
@@ -388,9 +388,9 @@ static keys_add_info_t builtin_cmds[] = {
 	{{KEY_RIGHT},             {{&cmd_l},       .descr = "open file/go to item to the right"}},
 	{{KEY_HOME},              {{&cmd_gg},      .descr = "go to the first item"}},
 	{{KEY_END},               {{&cmd_G},       .descr = "go to the last item"}},
-	{{KEY_BTAB},              {{&cmd_shift_tab}, .descr = "previous completion item"}},
+	{{KEY_BTAB},              {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #else
-	{WK_ESC L"[Z",            {{&cmd_shift_tab}, .descr = "previous completion item"}},
+	{WK_ESC L"[Z",            {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -1644,8 +1644,8 @@ search(key_info_t key_info, int backward)
 	if(curr_view->matches == 0)
 	{
 		const char *const pattern = cfg_get_last_search_pattern();
-		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1, &found,
-				0);
+		curr_stats.save_msg = (find_pattern(curr_view, pattern, backward, 1, &found,
+				0) != 0);
 		key_info.count--;
 	}
 
@@ -2136,27 +2136,34 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 
 int
 find_npattern(FileView *view, const char pattern[], int backward,
-		int interactive)
+		int print_errors)
 {
+	const int nrepeats = search_repeat - 1;
 	int i;
-	int found;
+	int save_msg;
 	int msg;
-
-	msg = find_pattern(view, pattern, backward, 1, &found, interactive);
-	/* Take wrong regular expression message into account, otherwise we can't
-	 * distinguish "no files matched" situation from "wrong regexp". */
-	found += msg;
-
-	for(i = 0; i < search_repeat - 1; i++)
-	{
-		found += goto_search_match(view, backward) != 0;
-	}
 
 	/* Reset number of repeats so that future calls are not affected by the
 	 * previous ones. */
 	search_repeat = 1;
 
-	return found;
+	msg = find_pattern(view, pattern, backward, 1, &save_msg, print_errors);
+	if(!print_errors && msg < 0)
+	{
+		/* If we're not printing messages, we might be interested in broken
+		 * pattern. */
+		return -1;
+	}
+
+	/* Take wrong regular expression message into account, otherwise we can't
+	 * distinguish "no files matched" situation from "wrong regexp". */
+	save_msg += msg;
+
+	for(i = 0; i < nrepeats; ++i)
+	{
+		save_msg += (goto_search_match(view, backward) != 0);
+	}
+	return save_msg;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

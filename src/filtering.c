@@ -38,7 +38,7 @@ static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static int load_unfiltered_list(FileView *const view);
 static void store_local_filter_position(FileView *const view, int pos);
-static void update_filtering_lists(FileView *view, int add, int clear);
+static int update_filtering_lists(FileView *view, int add, int clear);
 static void ensure_filtered_list_not_empty(FileView *view,
 		dir_entry_t *parent_entry);
 static int extract_previously_selected_pos(FileView *const view);
@@ -265,22 +265,27 @@ filters_dir_updated(FileView *view)
 	filter_clear(&view->local_filter.filter);
 }
 
-void
+int
 local_filter_set(FileView *view, const char filter[])
 {
+	int result;
 	const int current_file_pos = view->local_filter.in_progress
-		? get_unfiltered_pos(view, view->list_pos)
-		: load_unfiltered_list(view);
+	                           ? get_unfiltered_pos(view, view->list_pos)
+	                           : load_unfiltered_list(view);
 
 	if(current_file_pos >= 0)
 	{
 		store_local_filter_position(view, current_file_pos);
 	}
 
-	(void)filter_change(&view->local_filter.filter, filter,
-			!regexp_should_ignore_case(filter));
+	result = (filter_change(&view->local_filter.filter, filter,
+			!regexp_should_ignore_case(filter)) ? -1 : 0);
 
-	update_filtering_lists(view, 1, 0);
+	if(update_filtering_lists(view, 1, 0) != 0 && result == 0)
+	{
+		result = 1;
+	}
+	return result;
 }
 
 /* Gets position of an item in dir_entry list at position pos in the unfiltered
@@ -367,15 +372,17 @@ store_local_filter_position(FileView *const view, int pos)
 /* Copies/moves elements of the unfiltered list into dir_entry list.  add
  * parameter controls whether entries matching filter are copied into dir_entry
  * list.  clear parameter controls whether entries not matching filter are
- * cleared in unfiltered list. */
-static void
+ * cleared in unfiltered list.  Returns zero unless addition is performed in
+ * which case can return non-zero when all files got filtered out. */
+static int
 update_filtering_lists(FileView *view, int add, int clear)
 {
 	size_t i;
 	size_t list_size = 0U;
 	dir_entry_t *parent_entry = NULL;
+	int parent_added = 0;
 
-	for(i = 0; i < view->local_filter.unfiltered_count; i++)
+	for(i = 0; i < view->local_filter.unfiltered_count; ++i)
 	{
 		/* FIXME: some very long file names won't be matched against some
 		 * regexps. */
@@ -390,6 +397,8 @@ update_filtering_lists(FileView *view, int add, int clear)
 			if(add && cfg_parent_dir_is_visible(is_root_dir(view->curr_dir)))
 			{
 				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
+
+				parent_added = 1;
 			}
 			continue;
 		}
@@ -422,7 +431,11 @@ update_filtering_lists(FileView *view, int add, int clear)
 		view->filtered = view->local_filter.prefiltered_count
 		               + view->local_filter.unfiltered_count - list_size;
 		ensure_filtered_list_not_empty(view, parent_entry);
+		return list_size == 0U
+		    || (list_size == 1U && parent_added &&
+						(filter_matches(&view->local_filter.filter, "../") == 0));
 	}
+	return 0;
 }
 
 /* Use parent_entry to make filtered list not empty, or create such entry (if
