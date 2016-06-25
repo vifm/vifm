@@ -1048,7 +1048,7 @@ update_term_size(void)
 	}
 	/* Allow 0 as GNU Hurd returns this, is_term_resized() returns false then, but
 	 * everything works. */
-	if(ws.ws_row < 0 || ws.ws_col < 0)
+	if(ws.ws_row == (typeof(ws.ws_row))-1 || ws.ws_col == (typeof(ws.ws_col))-1)
 	{
 		LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
 		vifm_finish("Terminal is unable to run vifm.");
