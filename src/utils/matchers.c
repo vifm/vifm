@@ -132,8 +132,8 @@ matchers_clone(const matchers_t *matchers)
 
 	if(clone->list == NULL || clone->expr == NULL)
 	{
-		free(clone->list);
-		free(clone->expr);
+		clone->count = 0;
+		matchers_free(clone);
 		return NULL;
 	}
 
