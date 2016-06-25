@@ -92,8 +92,8 @@ matchers_alloc(const char list[], int cs_by_def, int glob_by_def,
 	matchers->expr = strdup(list);
 	if(matchers->list == NULL || matchers->expr == NULL)
 	{
-		free(matchers->list);
-		free(matchers->expr);
+		matchers->count = 0;
+		matchers_free(matchers);
 		free_string_array(exprs, nexprs);
 		return NULL;
 	}
@@ -132,8 +132,8 @@ matchers_clone(const matchers_t *matchers)
 
 	if(clone->list == NULL || clone->expr == NULL)
 	{
-		free(clone->list);
-		free(clone->expr);
+		clone->count = 0;
+		matchers_free(clone);
 		return NULL;
 	}
 
