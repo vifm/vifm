@@ -194,8 +194,10 @@ fview_view_reset(FileView *view)
 	view->num_width_g = view->num_width = 4;
 	view->real_num_width = 0;
 
+	pthread_mutex_lock(view->timestamps_mutex);
 	view->postponed_redraw = 0;
 	view->postponed_reload = 0;
+	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
 void
