@@ -655,6 +655,7 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 			{
 				goto def;
 			}
+			/* Fall through. */
 		case KEY_BACKSPACE:
 			strcpy(buf, "<bs>");
 			break;
