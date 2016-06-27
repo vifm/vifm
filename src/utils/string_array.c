@@ -227,10 +227,15 @@ read_file_lines(FILE *f, int *nlines)
 char **
 read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic)
 {
+	int null;
 	size_t text_len;
 	char *const text = read_nonseekable_stream(f, &text_len);
-	const int null = (null_sep_heuristic && strlen(text) != text_len);
-	return (text == NULL) ? NULL : text_to_lines(text, text_len, nlines, null);
+	if(text == NULL)
+	{
+		return NULL;
+	}
+	null = (null_sep_heuristic && strlen(text) != text_len);
+	return text_to_lines(text, text_len, nlines, null);
 }
 
 char *
