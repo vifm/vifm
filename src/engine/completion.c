@@ -73,7 +73,13 @@ vle_compl_reset(void)
 int
 vle_compl_add_match(const char match[], const char descr[])
 {
-	return vle_compl_put_match(strdup(match), descr);
+	char *const match_dup = strdup(match);
+	const int result = vle_compl_put_match(match_dup, descr);
+	if(result != 0)
+	{
+		free(match_dup);
+	}
+	return result;
 }
 
 int
