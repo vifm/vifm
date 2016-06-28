@@ -200,7 +200,7 @@ TEST(spaces_escaping_everywhere)
 		assert_string_equal("touch \\ spaces\\ everywhere\\ ", mb);
 	}
 	/* Only one condition is true, but don't use else to make one of asserts fail
-	 * if there are too files somehow. */
+	 * if there are two files somehow. */
 	if(access("\\ spaces\\ everywhere", F_OK) == 0)
 	{
 		assert_string_equal("touch \\ spaces\\ everywhere", mb);
@@ -212,7 +212,8 @@ TEST(spaces_escaping_trailing)
 {
 	char *mb;
 
-	assert_success(chdir("../spaces-in-names"));
+	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
+	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
 
 	prepare_for_line_completion(L"touch e");
 	assert_success(line_completion(&stats));
