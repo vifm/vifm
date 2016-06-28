@@ -112,7 +112,7 @@
 	Improved syntax highlighting of patterns.
 
 	Automatically update custom view entries on rename of their parent
-	directory in the save custom view.
+	directory in the same custom view.
 
 	Some corrections of when completion happens for :find and :grep.
 
@@ -156,11 +156,11 @@
 	Fixed possible unexpectedly long timeouts when waiting for a key on
 	Windows (due to limitation of pdcurses).
 
-	Fixed displaying of wide (CJK) in pdcurses on Windows.  Thanks to Reva
-	Revadigar.
+	Fixed displaying of wide (CJK) characters in pdcurses on Windows.  Thanks
+	to Reva Revadigar.
 
-	Fixed for architectures on which `char` is unsigned by default.  Thanks to
-	Ondrej Novy (a.k.a. onovy).
+	Fixed functioning on architectures on which `char` is unsigned by default.
+	Thanks to Ondrej Novy (a.k.a. onovy).
 
 	Fixed unconditional resetting of executable permission when using cp
 	dialog.  Thanks to Svyatoslav Mishyn (a.k.a. juef).
@@ -175,7 +175,7 @@
 	file names.
 
 	Fixed capturing output of external applications on Windows when 'shell' is
-	"cmd".  Was broken since v0.8 in attempt to make cmd work better with
+	"cmd".  Was broken since v0.8 in an attempt to make cmd work better with
 	Unicode (but its /U flag affects only input and output streams).
 
 	Fixed completion of command-line of this format: `:!~/...`.
