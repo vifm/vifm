@@ -479,7 +479,7 @@ options[] = {
 		NULL,
 	  { .init = &init_cpoptions },
 	},
-	{ "cvoptions", "", "",
+	{ "cvoptions", "", "configures affects cv enter/leave",
 	  OPT_SET, ARRAY_LEN(cvoptions_vals), cvoptions_vals, &cvoptions_handler,
 		NULL,
 	  { .ref.int_val = &cfg.cvoptions },
