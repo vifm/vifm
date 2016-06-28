@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 May 29
+*vifm-app.txt*    For Vifm version 0.8.1a  Last change: 2016 Jun 28
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4571,8 +4571,8 @@ work this way on its own).
 
 Vim plugin documentation: |vifm-plugin.txt|
 
-Website: http://vifm.info/
-Wiki: http://wiki.vifm.info/
+Website: https://vifm.info/
+Wiki: https://wiki.vifm.info/
 
 Esperanto translation of the documentation by Sebastian Cyprych:
 http://cyprych.neostrada.pl/tekstoj/komputiloj/vifm-help.eo.html
