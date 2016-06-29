@@ -66,7 +66,7 @@ static void display_suggestion_box(const wchar_t input[]);
 static void process_suggestion(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 static void draw_suggestion_box(void);
-static WINDOW * prepare_suggestion_box(int height);
+static WINDOW * prepare_suggestion_box(int *height);
 static void hide_suggestion_box(void);
 static int should_display_suggestion_box(void);
 
@@ -547,11 +547,8 @@ draw_suggestion_box(void)
 	/* TODO: consider possibility of multicolumn display. */
 
 	const vle_compl_t *const items = vle_compl_get_items();
-	const int count = vle_compl_get_count();
-	const int max_height = getmaxy(stdscr) - getmaxy(status_bar) -
-		ui_stat_job_bar_height() - 2;
-	const int height = MIN(count, max_height);
-	WINDOW *const win = prepare_suggestion_box(height);
+	int height;
+	WINDOW *const win = prepare_suggestion_box(&height);
 	size_t max_title_width;
 	int i;
 
@@ -576,23 +573,29 @@ draw_suggestion_box(void)
 }
 
 /* Picks window to use for suggestion box and prepares it for displaying data.
- * Returns picked window. */
+ * Sets *height to number of suggestions to display.  Returns picked window. */
 static WINDOW *
-prepare_suggestion_box(int height)
+prepare_suggestion_box(int *height)
 {
 	WINDOW *win;
 	const col_attr_t col = cfg.cs.color[SUGGEST_BOX_COLOR];
+	const int count = vle_compl_get_count();
 
 	if((cfg.sug.flags & SF_OTHERPANE) && curr_stats.number_of_windows == 2)
 	{
 		win = other_view->win;
+		*height = MIN(count, getmaxy(win));
 	}
 	else
 	{
-		wresize(stat_win, height, getmaxx(stdscr));
+		const int max_height = getmaxy(stdscr) - getmaxy(status_bar) -
+			ui_stat_job_bar_height() - 2;
+		*height = MIN(count, max_height);
+		wresize(stat_win, *height, getmaxx(stdscr));
 		ui_stat_reposition(getmaxy(status_bar), 1);
 		win = stat_win;
 	}
+
 
 	wbkgdset(win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 	werase(win);
