@@ -2091,7 +2091,7 @@ insert_str(const wchar_t str[])
 	wcsins(input_stat.line, str, input_stat.index + 1);
 
 	input_stat.index += len;
-	input_stat.curs_pos += len;
+	input_stat.curs_pos += vifm_wcswidth(str, (size_t)-1);
 	input_stat.len += len;
 
 	return 0;

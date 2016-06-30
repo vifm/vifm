@@ -202,6 +202,9 @@
 
 	Fixed small memory leak on using %u/%U with :grep, :find or :locate.
 
+	Fixed possible off cursor after cmdline insertions of text with wide
+	characters via Ctrl-X combinations or dot completion.
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.
