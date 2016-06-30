@@ -205,6 +205,9 @@
 	Fixed possible off cursor after cmdline insertions of text with wide
 	characters via Ctrl-X combinations or dot completion.
 
+	Fixed quite strange behaviour if command-line is too fill the whole
+	screen (it's less strange now, resized to maximum).
+
 0.8.1 to 0.8.1a
 
 	Added c key to menus that inserts parts of menu line into command-line.

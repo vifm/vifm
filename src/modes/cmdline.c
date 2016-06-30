@@ -2423,7 +2423,7 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 static void
 update_cmdline_size(void)
 {
-	const int required_height = get_required_height();
+	const int required_height = MIN(getmaxy(stdscr), get_required_height());
 	if(required_height < getmaxy(status_bar))
 	{
 		/* Do not shrink status bar. */
