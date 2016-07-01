@@ -42,8 +42,8 @@
 	Added chooseopt() builtin function that retrieves various parameters of
 	file choosing.  Thanks to Von Welch.
 
-	Added mime type patterns (!<list-of-globs>).  Thanks to Ross Hadden (a.k.a.
-	rosshadden).
+	Added mime type patterns ([!]<list-of-globs>).  Thanks to Ross
+	Hadden (a.k.a.  rosshadden).
 
 	Added %z 'statusline' macro that inserts text of a short tip picked at
 	random.  Thanks to qinghao (a.k.a. haobug).
