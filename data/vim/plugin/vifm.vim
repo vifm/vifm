@@ -4,9 +4,9 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2016 March 18
+" Last Change: 2016 June 28
 
-" vifm and vifm.vim can be found at http://vifm.info/
+" vifm and vifm.vim can be found at https://vifm.info/
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 

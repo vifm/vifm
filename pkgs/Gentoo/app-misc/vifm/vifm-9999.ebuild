@@ -18,7 +18,7 @@ inherit 'base' 'vim-doc' ${GIT_ECLASS}
 
 
 DESCRIPTION="Console file manager with vi(m)-like keybindings"
-HOMEPAGE="http://vifm.info/"
+HOMEPAGE="https://vifm.info/"
 
 LICENSE="GPL-2"
 SLOT="0"

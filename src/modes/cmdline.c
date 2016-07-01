@@ -2091,7 +2091,7 @@ insert_str(const wchar_t str[])
 	wcsins(input_stat.line, str, input_stat.index + 1);
 
 	input_stat.index += len;
-	input_stat.curs_pos += len;
+	input_stat.curs_pos += vifm_wcswidth(str, (size_t)-1);
 	input_stat.len += len;
 
 	return 0;
@@ -2423,7 +2423,7 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 static void
 update_cmdline_size(void)
 {
-	const int required_height = get_required_height();
+	const int required_height = MIN(getmaxy(stdscr), get_required_height());
 	if(required_height < getmaxy(status_bar))
 	{
 		/* Do not shrink status bar. */

@@ -583,7 +583,7 @@ PACKAGE_TARNAME='vifm'
 PACKAGE_VERSION='0.8.1a'
 PACKAGE_STRING='vifm 0.8.1a'
 PACKAGE_BUGREPORT='xaizek@openmailbox.org'
-PACKAGE_URL='http://vifm.info'
+PACKAGE_URL='https://vifm.info'
 
 ac_unique_file="configure.ac"
 # Factoring default headers for most tests.
@@ -1429,7 +1429,7 @@ Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
 
 Report bugs to <xaizek@openmailbox.org>.
-vifm home page: <http://vifm.info>.
+vifm home page: <https://vifm.info>.
 _ACEOF
 ac_status=$?
 fi
@@ -10155,7 +10155,7 @@ Configuration commands:
 $config_commands
 
 Report bugs to <xaizek@openmailbox.org>.
-vifm home page: <http://vifm.info>."
+vifm home page: <https://vifm.info>."
 
 _ACEOF
 cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
