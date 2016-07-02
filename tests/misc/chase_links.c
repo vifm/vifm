@@ -87,7 +87,7 @@ TEST(link_is_not_resolved_by_default, IF(not_windows))
 
 	cfg.chase_links = 0;
 
-	/* symlink() is not available on Windows, but other code is fine. */
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
 	assert_success(symlink("dir", "dir-link"));
 #endif
@@ -107,7 +107,7 @@ TEST(chase_links_causes_link_to_be_resolved, IF(not_windows))
 {
 	assert_success(os_mkdir("dir", 0700));
 
-	/* symlink() is not available on Windows, but other code is fine. */
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
 	assert_success(symlink("dir", "dir-link"));
 #endif
@@ -129,7 +129,7 @@ TEST(chase_links_is_not_affected_by_chdir, IF(not_windows))
 
 	assert_success(os_mkdir("dir", 0700));
 
-	/* symlink() is not available on Windows, but other code is fine. */
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
 	assert_success(symlink("dir", "dir-link"));
 #endif
