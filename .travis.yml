@@ -37,6 +37,7 @@ notifications:
   email:
     recipients:
       - xaizek@openmailbox.org
+  irc: "chat.freenode.net#vifm"
 
 addons:
   apt:
