@@ -8,6 +8,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/utils/env.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/args.h"
 #include "../../src/builtin_functions.h"
@@ -25,6 +26,8 @@ SETUP()
 	init_parser(NULL);
 
 	view_setup(&lwin);
+
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 }
 
 TEARDOWN()

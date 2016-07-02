@@ -67,6 +67,8 @@ SETUP()
 
 	curr_view = &lwin;
 	other_view = &lwin;
+
+	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/..", test_data);
 }
 
 TEARDOWN()
@@ -273,7 +275,7 @@ TEST(files_are_sorted_undecorated)
 	assert_success(os_mkdir("foo-", 0700));
 	assert_success(os_mkdir("foo0", 0700));
 
-	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH);
+	assert_true(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)) == lwin.curr_dir);
 	assert_false(flist_custom_active(&lwin));
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "foo");
@@ -517,7 +519,7 @@ TEST(can_set_very_cv_twice_in_a_row)
 
 	setup_custom_view(&lwin, 1);
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, "a");
 	assert_true(flist_custom_finish(&lwin, 1) == 0);
 
 	columns_free(lwin.columns);
@@ -529,16 +531,19 @@ TEST(can_set_very_cv_twice_in_a_row)
 
 TEST(renaming_dir_in_cv_adjust_its_children_entries)
 {
-	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), test_data);
+	char path[PATH_MAX];
+
+	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/..", test_data);
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), test_data);
 	assert_true(flist_custom_finish(&lwin, 0) == 0);
 	assert_int_equal(2, lwin.list_rows);
 
 	fentry_rename(&lwin, &lwin.dir_entry[0], "existing_files");
-	assert_string_equal(TEST_DATA_PATH "/existing_files",
-			lwin.dir_entry[1].origin);
+	snprintf(path, sizeof(path), "%s/existing_files", test_data);
+	assert_string_equal(path, lwin.dir_entry[1].origin);
 }
 
 TEST(symlinks_are_not_resolved_in_origins, IF(not_windows))
@@ -573,10 +578,11 @@ static void
 setup_custom_view(FileView *view, int very)
 {
 	assert_false(flist_custom_active(view));
-	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s/existing-files",
-			test_data);
+	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s/..", test_data);
 	flist_custom_start(view, "test");
 	flist_custom_add(view, TEST_DATA_PATH "/existing-files/a");
+	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s/existing-files",
+			test_data);
 	assert_true(flist_custom_finish(view, very) == 0);
 }
 

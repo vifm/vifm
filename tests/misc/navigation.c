@@ -5,17 +5,22 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/marks.h"
 #include "../../src/running.h"
 
+#include "utils.h"
+
 static void init_view(FileView *view);
 static void free_view(FileView *view);
 
 SETUP()
 {
+	char cwd[PATH_MAX];
+
 	curr_view = &lwin;
 	other_view = &rwin;
 
@@ -25,6 +30,10 @@ SETUP()
 
 	init_view(&lwin);
 	init_view(&rwin);
+
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "..",
+			cwd);
 }
 
 TEARDOWN()

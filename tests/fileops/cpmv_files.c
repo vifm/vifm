@@ -24,9 +24,20 @@ SETUP()
 	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
-	/* lwin */
-	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	if(is_path_absolute(SANDBOX_PATH))
+	{
+		strcpy(lwin.curr_dir, SANDBOX_PATH);
+		strcpy(rwin.curr_dir, SANDBOX_PATH);
+	}
+	else
+	{
+		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", saved_cwd,
+				SANDBOX_PATH);
+		snprintf(rwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", saved_cwd,
+				SANDBOX_PATH);
+	}
 
+	/* lwin */
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -35,8 +46,6 @@ SETUP()
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
 	/* rwin */
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
-
 	rwin.list_rows = 0;
 	rwin.filtered = 0;
 	rwin.list_pos = 0;
@@ -133,10 +142,12 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 
+	strcpy(rwin.curr_dir, saved_cwd);
 	flist_custom_start(&rwin, "test");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/rename/a");
 	assert_true(flist_custom_finish(&rwin, 0) == 0);
+	assert_int_equal(2, rwin.list_rows);
 
 	assert_success(chdir(SANDBOX_PATH));
 
@@ -166,8 +177,16 @@ TEST(cpmv_crash_on_wrong_list_access)
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
+	if(is_path_absolute(TEST_DATA_PATH))
+	{
+		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/existing-files",
+				TEST_DATA_PATH);
+	}
+	else
+	{
+		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s/existing-files",
+				saved_cwd, TEST_DATA_PATH);
+	}
 
 	lwin.list_rows = 3;
 	lwin.list_pos = 0;

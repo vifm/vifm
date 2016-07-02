@@ -419,12 +419,14 @@ TEST(wincmd_can_switch_views)
 
 TEST(yank_works_with_ranges)
 {
+	char path[PATH_MAX];
 	reg_t *reg;
 
 	regs_init();
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, 0) == 0);
 
 	reg = regs_find(DEFAULT_REG_NAME);

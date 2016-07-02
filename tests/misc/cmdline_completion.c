@@ -25,6 +25,8 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 
+#include "utils.h"
+
 #if defined(__CYGWIN__) || defined(_WIN32)
 #define SUFFIX ".exe"
 #define SUFFIXW L".exe"
@@ -35,7 +37,6 @@
 
 static void dummy_handler(OPT_OP op, optval_t val);
 static void create_executable(const char file[]);
-static void create_file(const char file[]);
 static int dquotes_allowed_in_paths(void);
 static int not_windows(void);
 
@@ -79,7 +80,8 @@ SETUP()
 
 	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/existing-files");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "existing-files", saved_cwd);
 }
 
 TEARDOWN()
@@ -173,8 +175,9 @@ TEST(spaces_escaping_leading)
 {
 	char *mb;
 
-	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
 
 	prepare_for_line_completion(L"touch \\ ");
 	assert_success(line_completion(&stats));
@@ -212,8 +215,9 @@ TEST(spaces_escaping_trailing)
 {
 	char *mb;
 
-	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
 
 	prepare_for_line_completion(L"touch e");
 	assert_success(line_completion(&stats));
@@ -237,8 +241,9 @@ TEST(spaces_escaping_middle)
 {
 	char *mb;
 
-	assert_success(chdir(TEST_DATA_PATH "/spaces-in-names"));
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/spaces-in-names");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
 
 	prepare_for_line_completion(L"touch s");
 	assert_success(line_completion(&stats));
@@ -257,8 +262,9 @@ TEST(squoted_completion)
 
 TEST(squoted_completion_escaping)
 {
-	assert_success(chdir(TEST_DATA_PATH "/quotes-in-names"));
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/quotes-in-names");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "quotes-in-names", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
 
 	prepare_for_line_completion(L"touch 's-quote");
 	assert_success(line_completion(&stats));
@@ -294,8 +300,9 @@ TEST(last_match_is_properly_escaped)
 {
 	char *match;
 
-	assert_success(chdir(TEST_DATA_PATH "/quotes-in-names"));
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH "/quotes-in-names");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "quotes-in-names", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
 
 	prepare_for_line_completion(L"touch 's-quote-''-in");
 	assert_success(line_completion(&stats));
@@ -361,8 +368,9 @@ TEST(dirs_are_completed_with_trailing_slash)
 {
 	char *match;
 
-	assert_success(chdir(TEST_DATA_PATH));
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
 
 	prepare_for_line_completion(L"cd r");
 	assert_success(line_completion(&stats));
@@ -504,7 +512,8 @@ TEST(bang_abs_path_completion)
 
 TEST(tilde_is_completed_after_emark)
 {
-	strcpy(cfg.home_dir, TEST_DATA_PATH "/");
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "",
+			saved_cwd);
 
 	prepare_for_line_completion(L"!~/");
 	assert_success(line_completion(&stats));
@@ -538,10 +547,9 @@ TEST(bmark_path_is_completed)
 {
 	bmarks_clear();
 
-	restore_cwd(saved_cwd);
-	saved_cwd = save_cwd();
-	assert_success(chdir(SANDBOX_PATH));
-	strcpy(curr_view->curr_dir, SANDBOX_PATH);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
 	create_executable("exec-for-completion" SUFFIX);
 
 	prepare_for_line_completion(L"bmark! exec");
@@ -575,7 +583,8 @@ TEST(selective_sync_completion)
 
 TEST(colorscheme_completion)
 {
-	strcpy(cfg.colors_dir, TEST_DATA_PATH "/scripts/");
+	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
+			"scripts", saved_cwd);
 
 	prepare_for_line_completion(L"colorscheme set-");
 	assert_success(line_completion(&stats));
@@ -589,7 +598,8 @@ TEST(colorscheme_completion)
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"colorscheme ../", stats.line);
 
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "", saved_cwd);
 	prepare_for_line_completion(L"colorscheme set-env ");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"colorscheme set-env existing-files/", stats.line);
@@ -616,7 +626,8 @@ TEST(grep_completion)
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"grep -o ../", stats.line);
 
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "", saved_cwd);
 	prepare_for_line_completion(L"grep -o ");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"grep -o existing-files/", stats.line);
@@ -632,7 +643,8 @@ TEST(find_completion)
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"find . .", stats.line);
 
-	strcpy(curr_view->curr_dir, TEST_DATA_PATH);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "", saved_cwd);
 	prepare_for_line_completion(L"find ");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"find existing-files/", stats.line);
@@ -767,17 +779,6 @@ create_executable(const char file[])
 	assert_success(access(file, F_OK));
 	chmod(file, 0755);
 	assert_success(access(file, X_OK));
-}
-
-static void
-create_file(const char file[])
-{
-	FILE *const f = fopen(file, "w");
-	assert_non_null(f);
-	if(f != NULL)
-	{
-		fclose(f);
-	}
 }
 
 static int

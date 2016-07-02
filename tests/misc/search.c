@@ -5,6 +5,7 @@
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/search.h"
 #include "utils.h"
@@ -14,7 +15,7 @@ SETUP()
 	view_setup(&lwin);
 
 	assert_success(chdir(TEST_DATA_PATH "/read"));
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/read");
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 
 	lwin.sort[0] = SK_BY_NAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
@@ -169,7 +170,7 @@ TEST(view_patterns_are_synchronized)
 	int found;
 
 	view_setup(&rwin);
-	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
+	strcpy(rwin.curr_dir, lwin.curr_dir);
 	populate_dir_list(&rwin, 0);
 
 	find_pattern(&rwin, "do", 0, 0, &found, 0);
