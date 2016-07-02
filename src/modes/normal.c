@@ -1744,23 +1744,26 @@ cmd_q_equals(key_info_t key_info, keys_info_t *keys_info)
 	get_and_execute_command("", 0U, CIT_FILTER_PATTERN);
 }
 
-/* Tag file. */
+/* Toggles selection of the current file. */
 static void
 cmd_t(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->dir_entry[curr_view->list_pos].selected == 0)
+	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
+	if(entry->selected == 0)
 	{
-		/* The ../ dir cannot be selected */
-		if(is_parent_dir(curr_view->dir_entry[curr_view->list_pos].name))
+		/* The ../ dir cannot be selected. */
+		if(is_parent_dir(entry->name))
+		{
 			return;
+		}
 
-		curr_view->dir_entry[curr_view->list_pos].selected = 1;
-		curr_view->selected_files++;
+		entry->selected = 1;
+		++curr_view->selected_files;
 	}
 	else
 	{
-		curr_view->dir_entry[curr_view->list_pos].selected = 0;
-		curr_view->selected_files--;
+		entry->selected = 0;
+		--curr_view->selected_files;
 	}
 
 	fview_cursor_redraw(curr_view);
