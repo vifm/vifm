@@ -144,6 +144,8 @@ static int iter_entries(FileView *view, dir_entry_t **entry,
 static int is_entry_selected(const dir_entry_t *entry);
 static int is_entry_marked(const dir_entry_t *entry);
 static void clear_marking(FileView *view);
+static int init_parent_entry(FileView *view, dir_entry_t *entry,
+		const char path[]);
 
 void
 init_filelists(void)
@@ -2528,44 +2530,18 @@ rescue_from_empty_filelist(FileView *view)
 void
 add_parent_dir(FileView *view)
 {
-	dir_entry_t *dir_entry;
-	struct stat s;
-
-	dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	dir_entry_t *const dir_entry = alloc_dir_entry(&view->dir_entry,
+			view->list_rows);
 	if(dir_entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
-	init_dir_entry(view, dir_entry, "..");
-	dir_entry->type = FT_DIR;
-
-	/* Load the inode info or leave blank values in dir_entry. */
-	if(os_lstat(dir_entry->name, &s) != 0)
+	if(init_parent_entry(view, dir_entry, "..") == 0)
 	{
-		free_dir_entry(view, dir_entry);
-		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-				dir_entry->name);
-		log_cwd();
-		return;
+		++view->list_rows;
 	}
-
-#ifndef _WIN32
-	dir_entry->size = (uintmax_t)s.st_size;
-	dir_entry->mode = s.st_mode;
-	dir_entry->uid = s.st_uid;
-	dir_entry->gid = s.st_gid;
-#else
-	/* Windows doesn't like returning size of directories even if it can. */
-	dir_entry->size = get_file_size(dir_entry->name);
-#endif
-	dir_entry->mtime = s.st_mtime;
-	dir_entry->atime = s.st_atime;
-	dir_entry->ctime = s.st_ctime;
-	dir_entry->nlinks = s.st_nlink;
-
-	++view->list_rows;
 }
 
 /* Initializes dir_entry_t with name and all other fields with default
@@ -3383,6 +3359,42 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 	}
 
 	free(old_name);
+}
+
+/* Fills given entry of the view at specified path (can be relative, i.e. "..").
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+init_parent_entry(FileView *view, dir_entry_t *entry, const char path[])
+{
+	struct stat s;
+
+	init_dir_entry(view, entry, get_last_path_component(path));
+	entry->type = FT_DIR;
+
+	/* Load the inode info or leave blank values in entry. */
+	if(os_lstat(path, &s) != 0)
+	{
+		free_dir_entry(view, entry);
+		LOG_SERROR_MSG(errno, "Can't lstat() \"%s\"", path);
+		log_cwd();
+		return 1;
+	}
+
+#ifndef _WIN32
+	entry->size = (uintmax_t)s.st_size;
+	entry->mode = s.st_mode;
+	entry->uid = s.st_uid;
+	entry->gid = s.st_gid;
+#else
+	/* Windows doesn't like returning size of directories even if it can. */
+	entry->size = get_file_size(entry->name);
+#endif
+	entry->mtime = s.st_mtime;
+	entry->atime = s.st_atime;
+	entry->ctime = s.st_ctime;
+	entry->nlinks = s.st_nlink;
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
