@@ -75,12 +75,14 @@ TEST(sync_syncs_filelist)
 	}
 
 	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			"%s/existing-files", test_data);
+			"%s/..", test_data);
 	flist_custom_start(curr_view, "test");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/b");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/c");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/rename/a");
+	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			"%s/existing-files", test_data);
 	assert_true(flist_custom_finish(curr_view, 1) == 0);
 	curr_view->list_pos = 3;
 

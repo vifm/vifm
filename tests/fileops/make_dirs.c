@@ -16,7 +16,16 @@
 
 SETUP()
 {
-	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	if(is_path_absolute(SANDBOX_PATH))
+	{
+		strcpy(lwin.curr_dir, SANDBOX_PATH);
+	}
+	else
+	{
+		char cwd[PATH_MAX];
+		assert_non_null(get_cwd(cwd, sizeof(cwd)));
+		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", cwd, SANDBOX_PATH);
+	}
 }
 
 TEST(make_dirs_does_nothing_for_custom_view)
@@ -25,10 +34,22 @@ TEST(make_dirs_does_nothing_for_custom_view)
 	char path[] = "dir";
 	char *paths[] = {path};
 
+	if(is_path_absolute(TEST_DATA_PATH))
+	{
+		strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	}
+	else
+	{
+		char cwd[PATH_MAX];
+		assert_non_null(get_cwd(cwd, sizeof(cwd)));
+		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", cwd,
+				TEST_DATA_PATH);
+	}
+
 	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, "existing-files/a");
 	assert_true(flist_custom_finish(&lwin, 0) == 0);
 
 	make_dirs(&lwin, paths, 1, 0);

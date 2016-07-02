@@ -1,3 +1,180 @@
+July 02, 2016
+=============
+
+vifm v0.8.2 beta testing has started
+------------------------------------
+
+This release brings a bit of user-friendliness in form of key suggestions and
+various descriptions provided in the interface.  Matching of files has been
+extended in many ways and become significantly more powerful than before.
+Menu mode also got several enhancements.
+
+Main changes:
+ - key suggestions in the interface on ambiguous input (e.g. "g");
+ - helpful shortcuts for dialogs (for sort dialog in particular);
+ - key descriptions in :map menus and %z macro for 'statusline' to display some
+   tips;
+ - description of all :commands, 'options' and their values for new multiline
+   version of wildmenu;
+ - ANDing, ORing and negating patterns for matching files and new mime-type
+   matcher;
+ - file prefixes and suffixes can now be multi-byte, which with extended
+   'classify' option allows specifying "icons" via custom fonts;
+ - search result highlighting, enabled completion and a way to export the list
+   for menus;
+ - an indication of pattern correctness and match state for interactive prompts.
+ - :select and :unselect commands to perform automatic file selection (possibly
+   by using output of external application);
+ - cancellation (handling of Ctrl-C) for quick view and view mode loading.
+
+Not sure if it was noticed, but HTTPS protocol is up for related sites since
+Let's Encrypt started their beta.  Everything works fine, so all the links were
+updated to https protocol.
+
+If you ever wondered which keys are builtin for the command (normal) mode of
+Vifm, this cheatsheet will show you: https://next.vifm.info/cheatsheets.shtml
+
+In case you're into using neovim, you might be interesting into checking out
+alternative Vifm plugin for it: https://github.com/vifm/neovim-vifm
+
+More detailed list of changes.
+
+Core:
+ - added heuristic that uses null byte as separator for file lists if there is
+   at least one such byte, otherwise normal line separators are used.  This
+   affects :[un]select, `vifm -`, %u, %U, %m and %M (thanks to filterfalse);
+ - changed order of initialization to perform autocommands before startup
+   commands on launch.
+
+Normal and visual modes:
+ - changed ga/gA effect on parent entry (..) to calculate size of current
+   directory (thanks to aleksejrs).
+
+:set command and options:
+ - added 'wildstyle' option to control the way wild menu is displayed.  Enables
+   displaying it as a menu with one item per line (thanks to santhoshr and
+   octos);
+ - added 'suggestoptions' option to control displaying of suggestions;
+ - added support of patterns to 'classify' option, so that files can now be
+   decorated based on their names (thanks to elricbk);
+ - added 'cvoptions' option to control when entering/leaving custom views is
+   considered to be equal to entering/leaving directories (thanks to
+   filterfalse);
+ - added "target" sorting key, which sorts files by symbolic link targets
+   (thanks to Marcos Cruz);
+ - added %z 'statusline' macro that inserts text of a short tip picked at random
+   (thanks to qinghao, a.k.a. haobug);
+ - changed type of 'confirm' option.  Now it's a set that picks which operations
+   should be confirmed (thanks to Losiara and mvucBmM0);
+ - allow suffixes and prefixes in 'classify' to be of up to eight characters in
+   length (thanks to elricbk).
+
+Command-line mode:
+ - added "filelist" parameter to :sync! that enables synchronization of custom
+   view (thanks to filterfalse);
+ - added :select and :unselect commands (thanks to filterfalse, Russell Urquhart
+   and Marcos Cruz);
+ - added negation to patterns with explicitly specified type (surrounded by {}
+   or //).  Put exclamation mark to invert pattern match (thanks to Marcos
+   Cruz);
+ - added mime type patterns ([!]<list-of-globs>) (thanks to Ross Hadden, a.k.a.
+   rosshadden);
+ - added pattern ANDing.  Just list decorated patterns one after another and
+   such composite pattern will much when each of them matches (thanks to
+   filterfalse);
+ - added pattern ORing for :file[x]type and :fileviewer commands implemented as
+   a comma-separated list (thanks to filterfalse);
+ - expand environment variables for :edit (thanks to filterfalse);
+ - don't print just table header on `:cabbr something`, print message that no
+   matches found instead;
+ - use original (before custom view) cursor position on :sync! in custom views
+   (thanks to filterfalse).
+
+File preview:
+ - added cancellation (handling of Ctrl-C) for quick view and view mode loading
+   (thanks to kalterfive);
+ - skip UTF-8 BOM for file preview.
+
+File list:
+ - never add parent entry (..) to very custom view (%U) (thanks to filterfalse);
+ - silently ignore tries to remove parent entry (..) (thanks to aleksejrs);
+ - automatically update custom view entries on rename of their parent directory
+   in the same custom view.
+
+Completion:
+ - added completion of :wincmd argument;
+ - do not reset completion on terminal resize;
+ - some corrections of when completion happens for :find and :grep.
+
+Scripting:
+ - added chooseopt() builtin function that retrieves various parameters of file
+   choosing (thanks to Von Welch).
+
+Menus and dialogs:
+ - added highlighting of search matches in menus;
+ - added :noh[lsearch] command to menu mode;
+ - added quick shortcuts to dialogs (patch by oo-);
+ - added description of builtin keys to :map menus;
+ - added :write command to menus, that writes all menu lines into specified file
+   (thanks to gtors);
+ - a bit better delete confirmation messages with number of files to be deleted;
+ - avoid displaying useless search messages about incorrect pattern during
+   interactive search in menus (those that user can't see, but that are shown in
+   :messages);
+ - enabled wildmenu for menus.
+
+TUI (Text User Interface):
+ - added indication of wrong pattern and absence of matches to command-prompt
+   for interactive search/filtering.
+
+Angle bracket notation:
+ - display <c-h> as <bs> only at the beginning of key sequence.
+
+Color schemes:
+ - added SuggestBox highlight group for key suggestion box.
+
+Vim-plugin:
+ - better terminal buffer title for plugin in neovim (thanks to
+   randomizedthinking);
+ - improved syntax highlighting of patterns.
+
+Only on Windows:
+ - fixed escaping for cmd.exe again, for :edit and external command invocations
+   (thanks to Reva Revadigar);
+ - fixed querying file information on 64-bit Windows (thanks to santhoshr);
+ - fixed possible crash on displaying job bar (e.g. after :empty) (thanks to
+   Reva Revadigar);
+ - fixed UTF8 <-> UTF16 conversion, which didn't always work (on surrogate
+   characters it seems) (thanks to Reva Revadigar);
+ - fixed possible unexpectedly long timeouts when waiting for a key (due to
+   limitation of pdcurses);
+ - fixed displaying of wide (CJK) characters in pdcurses (thanks to Reva
+   Revadigar);
+ - fixed capturing output of external applications when 'shell' is "cmd".  Was
+   broken since v0.8 in an attempt to make cmd work better with Unicode (but its
+   /U flag affects only input and output streams).
+
+Packaging:
+ - fixed functioning on architectures on which `char` is unsigned by default
+   (thanks to Ondrej Novy, a.k.a. onovy).
+
+Important fixes:
+ - fixed hanging on sudden terminal loss (regression) (thanks to aleksejrs);
+ - fixed using original file names after a prompt for new destination name
+   (thanks to rbong);
+ - fixed unconditional resetting of executable permission when using cp dialog
+   (thanks to Svyatoslav Mishyn, a.k.a. juef);
+ - fixed remote feature on cygwin (thanks to Cosmin Popescu, a.k.a.
+   cosminadrianpopescu);
+ - fixed epic bug in processing selectors followed by other commands in a
+   mapping.  Command which accepted selector was called after tail of sequence
+   is processed.  Such case isn't very likely, so it probably didn't affect
+   anyone.
+
+See change log for the full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 February 10, 2016
 =================
 

@@ -74,7 +74,7 @@ wait_for_size(const char path[])
 	counter = 0;
 	while(size == DCACHE_UNKNOWN)
 	{
-		usleep(200);
+		usleep(2000);
 		dcache_get_at(path, &size, &nitems);
 		if(++counter > 100)
 		{

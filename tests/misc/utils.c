@@ -8,6 +8,7 @@
 #include "../../src/engine/options.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
@@ -122,6 +123,20 @@ create_file(const char path[])
 	if(f != NULL)
 	{
 		fclose(f);
+	}
+}
+
+void
+make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
+		const char cwd[])
+{
+	if(is_path_absolute(base))
+	{
+		snprintf(buf, buf_len, "%s/%s", base, sub);
+	}
+	else
+	{
+		snprintf(buf, buf_len, "%s/%s/%s", cwd, base, sub);
 	}
 }
 
