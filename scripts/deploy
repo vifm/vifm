@@ -75,21 +75,13 @@ fi
 if [ "$target" = all -o "$target" = commit ]; then
     echo "Making version commit..."
 
-    # try to mark commit with tag to figure out what to do:
-    # commit or ammend changes
-    git tag "v$ver"
-    if [ "$?" != "0" ]; then
-        amendflag=--amend
-    else
-        amendflag=
-    fi
-    git commit -av $amendflag -m "Version v$ver"
+    git commit -av -m "Version v$ver"
     if [ "$?" != "0" ]; then
         echo 'Committing error.'
         exit 1
     fi
     # force mark commit with tag
-    git tag --force "v$ver"
+    git tag --force --sign "v$ver"
 fi
 
 if [ "$target" = all -o "$target" = archive ]; then
