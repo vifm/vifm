@@ -24,6 +24,9 @@
 #include <ntdef.h>
 #include <winioctl.h>
 
+#include <sys/stat.h> /* stat */
+#include <sys/types.h> /* stat */
+
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* free() malloc() */
