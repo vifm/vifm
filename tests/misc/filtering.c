@@ -9,10 +9,10 @@
 #include "../../src/filtering.h"
 
 #define assert_hidden(view, name, dir) \
-	assert_false(file_is_visible(&view, name, dir))
+	assert_false(filters_file_is_visible(&view, name, dir))
 
 #define assert_visible(view, name, dir) \
-	assert_true(file_is_visible(&view, name, dir))
+	assert_true(filters_file_is_visible(&view, name, dir))
 
 SETUP()
 {

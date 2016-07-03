@@ -2313,7 +2313,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		return 0;
 	}
 
-	if(!file_is_visible(view, name, data_is_dir_entry(data)))
+	if(!filters_file_is_visible(view, name, data_is_dir_entry(data)))
 	{
 		++view->filtered;
 		return 0;
