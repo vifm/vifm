@@ -123,6 +123,10 @@ uint64_t get_file_size(const char path[]);
  * array or source list (on error). */
 char ** list_regular_files(const char path[], char *list[], int *len);
 
+/* Enumerates content of the path.  Returns list of names of lengths *len, which
+ * can be NULL on empty list, error is indicated by negative *len. */
+char ** list_all_files(const char path[], int *len);
+
 /* Returns non-zero if file (or symbolic link target) path points to is a
  * regular file. */
 int is_regular_file(const char path[]);

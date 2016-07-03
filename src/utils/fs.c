@@ -533,6 +533,33 @@ list_regular_files(const char path[], char *list[], int *len)
 	return list;
 }
 
+char **
+list_all_files(const char path[], int *len)
+{
+	DIR *dir;
+	struct dirent *d;
+	char **list = NULL;
+
+	dir = os_opendir(path);
+	if(dir == NULL)
+	{
+		*len = -1;
+		return NULL;
+	}
+
+	*len = 0;
+	while((d = os_readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
+		{
+			*len = add_to_string_array(&list, *len, 1, d->d_name);
+		}
+	}
+	os_closedir(dir);
+
+	return list;
+}
+
 int
 is_regular_file(const char path[])
 {
