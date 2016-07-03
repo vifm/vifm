@@ -1,7 +1,8 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() */
+#include <unistd.h> /* chdir() symlink() */
 
+#include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
@@ -339,6 +340,30 @@ TEST(select_and_unselect_consider_trailing_slash)
 	assert_true(lwin.dir_entry[1].selected);
 	assert_false(lwin.dir_entry[2].selected);
 	assert_false(lwin.dir_entry[3].selected);
+}
+
+TEST(symlinks_are_not_resolved_in_cwd, IF(not_windows))
+{
+#ifndef _WIN32
+	assert_success(symlink(TEST_DATA_PATH "/existing-files",
+				SANDBOX_PATH "/link"));
+#endif
+
+	lwin.list_rows = 1;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].type = FT_REG;
+	lwin.selected_files = 0;
+
+	/* Select only directories. */
+	assert_success(exec_commands("select !echo a", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+
+	assert_success(remove(SANDBOX_PATH "/link"));
 }
 
 static void
