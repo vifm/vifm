@@ -230,9 +230,8 @@ sort_dir_list(const void *one, const void *two)
 	/* TODO: refactor this function sort_dir_list(). */
 
 	int retval;
-	char *pfirst, *psecond;
-	const dir_entry_t *const first = (dir_entry_t *)one;
-	const dir_entry_t *const second = (dir_entry_t *)two;
+	const dir_entry_t *const first = one;
+	const dir_entry_t *const second = two;
 
 	const int first_is_dir = is_directory_entry(first);
 	const int second_is_dir = is_directory_entry(second);
@@ -249,6 +248,8 @@ sort_dir_list(const void *one, const void *two)
 	retval = 0;
 	switch(sort_type)
 	{
+		char *pfirst, *psecond;
+
 		case SK_BY_NAME:
 		case SK_BY_INAME:
 			if(custom_view)
