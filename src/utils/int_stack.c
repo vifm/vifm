@@ -22,16 +22,16 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* realloc() */
 
-static int ensure_available(int_stack_t *const stack);
+static int ensure_available(int_stack_t *stack);
 
 int
-int_stack_is_empty(const int_stack_t *const stack)
+int_stack_is_empty(const int_stack_t *stack)
 {
 	return stack->top == 0;
 }
 
 int
-int_stack_get_top(const int_stack_t *const stack)
+int_stack_get_top(const int_stack_t *stack)
 {
 	assert(!int_stack_is_empty(stack));
 
@@ -39,13 +39,13 @@ int_stack_get_top(const int_stack_t *const stack)
 }
 
 int
-int_stack_top_is(const int_stack_t *const stack, const int val)
+int_stack_top_is(const int_stack_t *stack, int val)
 {
 	return !int_stack_is_empty(stack) && int_stack_get_top(stack) == val;
 }
 
 void
-int_stack_set_top(const int_stack_t *const stack, const int val)
+int_stack_set_top(const int_stack_t *stack, int val)
 {
 	assert(!int_stack_is_empty(stack));
 
@@ -53,7 +53,7 @@ int_stack_set_top(const int_stack_t *const stack, const int val)
 }
 
 int
-int_stack_push(int_stack_t *const stack, const int val)
+int_stack_push(int_stack_t *stack, int val)
 {
 	if(ensure_available(stack) == 0)
 	{
@@ -66,7 +66,7 @@ int_stack_push(int_stack_t *const stack, const int val)
 /* Ensures that there is a place for one more element in the stack.  Returns
  * non-zero if not enough memory. */
 static int
-ensure_available(int_stack_t *const stack)
+ensure_available(int_stack_t *stack)
 {
 	if(stack->top == stack->len)
 	{
@@ -74,14 +74,14 @@ ensure_available(int_stack_t *const stack)
 		if(ptr != NULL)
 		{
 			stack->data = ptr;
-			stack->len++;
+			++stack->len;
 		}
 	}
 	return (stack->top < stack->len) ? 0 : 1;
 }
 
 void
-int_stack_pop(int_stack_t *const stack)
+int_stack_pop(int_stack_t *stack)
 {
 	assert(!int_stack_is_empty(stack));
 
@@ -89,7 +89,7 @@ int_stack_pop(int_stack_t *const stack)
 }
 
 void
-int_stack_pop_seq(int_stack_t *const stack, const int seq_guard)
+int_stack_pop_seq(int_stack_t *stack, int seq_guard)
 {
 	while(--stack->top > 0 && stack->data[stack->top] != seq_guard)
 	{
@@ -98,7 +98,7 @@ int_stack_pop_seq(int_stack_t *const stack, const int seq_guard)
 }
 
 void
-int_stack_clear(int_stack_t *const stack)
+int_stack_clear(int_stack_t *stack)
 {
 	stack->top = 0U;
 }

@@ -19,47 +19,48 @@
 #ifndef VIFM__UTILS__INT_STACK_H__
 #define VIFM__UTILS__INT_STACK_H__
 
-#include <stddef.h> /* NULL, size_t */
+#include <stddef.h> /* NULL size_t */
 
 /* Integer stack structure. */
-typedef struct {
-	int *data; /* Pointer to stack data. */
+typedef struct
+{
+	int *data;  /* Pointer to stack data. */
 	size_t len; /* Number of available elements. */
 	size_t top; /* Number of used elements. */
-} int_stack_t;
+}
+int_stack_t;
 
 #define INT_STACK_INITIALIZER { NULL, 0U, 0U };
 
-
 /* Checks whether stack is empty.  Returns non-zero if it is. */
-int int_stack_is_empty(const int_stack_t *const stack);
+int int_stack_is_empty(const int_stack_t *stack);
 
 /* Returns element at the top of the stack.  The stack must contain at least one
  * element. */
-int int_stack_get_top(const int_stack_t *const stack);
+int int_stack_get_top(const int_stack_t *stack);
 
 /* Checks element at the top of the stack.  The stack may be empty.  Returns
  * non-zero if top element is val, otherwise zero is returned.  Always returns
  * zero for empty stack. */
-int int_stack_top_is(const int_stack_t *const stack, const int val);
+int int_stack_top_is(const int_stack_t *stack, int val);
 
 /* Set element at the top of the stack.  The stack must contain at least one
  * element. */
-void int_stack_set_top(const int_stack_t *const stack, const int val);
+void int_stack_set_top(const int_stack_t *stack, int val);
 
 /* Puts the val at the top of the stack.  Returns non-zero in case of error. */
-int int_stack_push(int_stack_t *const stack, const int val);
+int int_stack_push(int_stack_t *stack, int val);
 
 /* Removes element from the top of the stack.  The stack must contain at least
  * one element */
-void int_stack_pop(int_stack_t *const stack);
+void int_stack_pop(int_stack_t *stack);
 
 /* Removes element from the top of the stack until first occurrence of the
  * seq_guard value and that occurrence.  The stack may be empty. */
-void int_stack_pop_seq(int_stack_t *const stack, const int seq_guard);
+void int_stack_pop_seq(int_stack_t *stack, int seq_guard);
 
-/* Removes all element from the stack. */
-void int_stack_clear(int_stack_t *const stack);
+/* Removes all elements from the stack. */
+void int_stack_clear(int_stack_t *stack);
 
 #endif /* VIFM__UTILS__INT_STACK_H__ */
 
