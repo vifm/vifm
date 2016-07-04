@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../src/int/file_magic.h"
 #include "../../src/filetype.h"
 #include "../../src/status.h"
 #include "../../src/utils/str.h"
@@ -94,7 +95,11 @@ TEST(several_patterns)
 
 TEST(pattern_list, IF(has_mime_type_detection))
 {
-	set_viewers("<application/octet-stream>{binary-data}", "prog1");
+	char cmd[1024];
+
+	snprintf(cmd, sizeof(cmd), "<%s>{binary-data}",
+			get_mimetype(TEST_DATA_PATH "/read/binary-data"));
+	set_viewers(cmd, "prog1");
 
 	ft_init(&prog1_available);
 

@@ -473,21 +473,30 @@ TEST(fileviewer_accepts_negated_patterns)
 	ft_reset(0);
 }
 
-TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
+TEST(pattern_anding_and_orring_failures)
 {
-	assoc_records_t ft;
-
-	ft_init(&prog_exists);
-
+	/* No matching is performed, so we can use application/octet-stream. */
 	assert_failure(exec_commands("filetype /*/,"
 				"<application/octet-stream>{binary-data} app", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("fileviewer /*/,"
 				"<application/octet-stream>{binary-data} viewer", &lwin, CIT_COMMAND));
+}
 
-	assert_success(exec_commands("filetype {two-lines}<text/plain>,"
-				"<application/octet-stream>{binary-data} app", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("fileviewer {two-lines}<text/plain>,"
-				"<application/octet-stream>{binary-data} viewer", &lwin, CIT_COMMAND));
+TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
+{
+	char cmd[1024];
+	assoc_records_t ft;
+
+	ft_init(&prog_exists);
+
+	snprintf(cmd, sizeof(cmd),
+			"filetype {two-lines}<text/plain>,<%s>{binary-data} app",
+			get_mimetype(TEST_DATA_PATH "/read/binary-data"));
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	snprintf(cmd, sizeof(cmd),
+			"fileviewer {two-lines}<text/plain>,<%s>{binary-data} viewer",
+			get_mimetype(TEST_DATA_PATH "/read/binary-data"));
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	ft = ft_get_all_programs(TEST_DATA_PATH "/read/two-lines");
 	assert_int_equal(1, ft.count);
