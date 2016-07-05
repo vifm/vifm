@@ -590,7 +590,10 @@ to_canonic_path(const char path[], const char base[], char buf[],
 		canonicalize_path(path, buf, buf_len);
 	}
 
-	chosp(buf);
+	if(!is_root_dir(buf))
+	{
+		chosp(buf);
+	}
 }
 
 int

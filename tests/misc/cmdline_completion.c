@@ -364,6 +364,17 @@ TEST(help_cmd_escaping)
 	assert_wstring_equal(L"help vifm-!!", stats.line);
 }
 
+TEST(root_is_completed)
+{
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
+
+	prepare_for_line_completion(L"cd /");
+	assert_success(line_completion(&stats));
+	assert_true(wcscmp(L"cd /", stats.line) != 0);
+}
+
 TEST(dirs_are_completed_with_trailing_slash)
 {
 	char *match;

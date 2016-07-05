@@ -249,6 +249,17 @@ TEST(shell_invocation_works_in_udf)
 	assert_success(unlink("out"));
 }
 
+TEST(cd_in_root_works)
+{
+	assert_success(chdir(test_data));
+
+	strcpy(lwin.curr_dir, test_data);
+
+	assert_false(is_root_dir(lwin.curr_dir));
+	assert_success(exec_commands("cd /", &lwin, CIT_COMMAND));
+	assert_true(is_root_dir(lwin.curr_dir));
+}
+
 TEST(double_cd_uses_same_base_for_rel_paths)
 {
 	char path[PATH_MAX];
