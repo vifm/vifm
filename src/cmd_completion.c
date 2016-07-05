@@ -865,7 +865,7 @@ filename_completion(const char str[], CompletionType type,
 		strcpy(filename, ++temp);
 		*temp = '\0';
 	}
-	else if(replace_string(&dirname, flist_get_dir(curr_view)) != 0)
+	else if(replace_string(&dirname, ".") != 0)
 	{
 		free(filename);
 		free(dirname);

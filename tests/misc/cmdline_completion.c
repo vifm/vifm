@@ -638,6 +638,8 @@ TEST(grep_completion)
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
+
 	prepare_for_line_completion(L"grep -o ");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"grep -o existing-files/", stats.line);
@@ -655,6 +657,8 @@ TEST(find_completion)
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
+
 	prepare_for_line_completion(L"find ");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"find existing-files/", stats.line);
