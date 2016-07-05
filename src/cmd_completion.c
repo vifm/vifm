@@ -89,8 +89,8 @@ static void complete_from_string_list(const char str[], const char *items[][2],
 static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
-static void filename_completion_internal(DIR *dir, const char dirname[],
-		const char filename[], CompletionType type);
+static void filename_completion_internal(DIR *dir, const char filename[],
+		CompletionType type);
 static int is_dirent_targets_exec(const struct dirent *d);
 #ifdef _WIN32
 static void complete_with_shared(const char *server, const char *file);
@@ -928,7 +928,7 @@ filename_completion(const char str[], CompletionType type,
 	}
 	else
 	{
-		filename_completion_internal(dir, dirname, filename, type);
+		filename_completion_internal(dir, filename, type);
 		(void)vifm_chdir(flist_get_dir(curr_view));
 	}
 
@@ -944,8 +944,8 @@ filename_completion(const char str[], CompletionType type,
 }
 
 static void
-filename_completion_internal(DIR *dir, const char dirname[],
-		const char filename[], CompletionType type)
+filename_completion_internal(DIR *dir, const char filename[],
+		CompletionType type)
 {
 	struct dirent *d;
 
