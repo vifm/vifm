@@ -495,6 +495,7 @@ TEST(bang_abs_path_completion)
 #define WPRINTF_MBSTR L"s"
 #endif
 
+	wchar_t input[PATH_MAX];
 	wchar_t cmd[PATH_MAX];
 	char cwd[PATH_MAX];
 
@@ -506,10 +507,12 @@ TEST(bang_abs_path_completion)
 
 	create_executable("exec-for-completion" SUFFIX);
 
+	vifm_swprintf(input, ARRAY_LEN(input),
+			L"!%" WPRINTF_MBSTR L"/exec-for-compl", cwd);
 	vifm_swprintf(cmd, ARRAY_LEN(cmd),
 			L"!%" WPRINTF_MBSTR L"/exec-for-completion" SUFFIXW, cwd);
 
-	prepare_for_line_completion(cmd);
+	prepare_for_line_completion(input);
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(cmd, stats.line);
 
