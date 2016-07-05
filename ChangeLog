@@ -3,6 +3,8 @@
 	Fixed processing of root directory (completion, :cd).  Thanks to
 	filterfalse.
 
+	Fixed completion of commands after :!.  Thanks to filterfalse.
+
 0.8.1a to 0.8.2-beta
 
 	Added highlighting of search matches in menus.

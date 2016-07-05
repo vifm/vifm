@@ -16,6 +16,7 @@
 #include "../../src/engine/completion.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
+#include "../../src/int/path_env.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
@@ -465,14 +466,38 @@ TEST(abbreviations)
 	vle_abbr_reset();
 }
 
-TEST(bang_abs_path_completion)
-{
 #if defined(_WIN32) && !defined(_WIN64)
 #define WPRINTF_MBSTR L"S"
 #else
 #define WPRINTF_MBSTR L"s"
 #endif
 
+TEST(bang_exec_completion)
+{
+	char *const original_path_env = strdup(env_get("PATH"));
+
+	restore_cwd(saved_cwd);
+	assert_success(chdir(SANDBOX_PATH));
+	saved_cwd = save_cwd();
+
+	env_set("PATH", saved_cwd);
+	update_path_env(1);
+
+	create_executable("exec-for-completion" SUFFIX);
+
+	prepare_for_line_completion(L"!exec-for-com" SUFFIXW);
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"!exec-for-completion" SUFFIXW, stats.line);
+
+	assert_success(unlink("exec-for-completion" SUFFIX));
+
+	env_set("PATH", original_path_env);
+	update_path_env(1);
+	free(original_path_env);
+}
+
+TEST(bang_abs_path_completion)
+{
 	wchar_t input[PATH_MAX];
 	wchar_t cmd[PATH_MAX];
 	char cwd[PATH_MAX];
@@ -497,9 +522,9 @@ TEST(bang_abs_path_completion)
 	assert_int_equal(2, vle_compl_get_count());
 
 	assert_success(unlink("exec-for-completion" SUFFIX));
+}
 
 #undef WPRINTF_MBSTR
-}
 
 TEST(tilde_is_completed_after_emark)
 {

@@ -808,7 +808,7 @@ complete_command_name(const char beginning[])
 	{
 		if(vifm_chdir(paths[i]) == 0)
 		{
-			filename_completion(beginning, CT_EXECONLY, 0);
+			filename_completion(beginning, CT_EXECONLY, 1);
 		}
 	}
 	vle_compl_add_last_path_match(beginning);
