@@ -10,7 +10,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
 
-static int not_windows(void);
+#include "utils.h"
 
 static menu_info m;
 
@@ -198,16 +198,6 @@ TEST(null_pattern_causes_pattern_reuse)
 	assert_int_equal(1, m.pos);
 	assert_true(search_menu_list(NULL, &m, 1));
 	assert_int_equal(2, m.pos);
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

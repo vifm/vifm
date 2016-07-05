@@ -17,9 +17,10 @@
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 
+#include "utils.h"
+
 static void init_view(FileView *view);
 static void free_view(FileView *view);
-static int not_windows(void);
 
 SETUP()
 {
@@ -143,16 +144,6 @@ TEST(chase_links_is_not_affected_by_chdir, IF(not_windows))
 
 	assert_success(rmdir("dir"));
 	assert_success(remove("dir-link"));
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

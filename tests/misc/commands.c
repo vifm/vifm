@@ -32,7 +32,6 @@ static int op_avail(OPS op);
 static void check_filetype(void);
 static int prog_exists(const char name[]);
 static int has_mime_type_detection(void);
-static int not_windows(void);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -669,16 +668,6 @@ static int
 has_mime_type_detection(void)
 {
 	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -38,7 +38,6 @@
 static void dummy_handler(OPT_OP op, optval_t val);
 static void create_executable(const char file[]);
 static int dquotes_allowed_in_paths(void);
-static int not_windows(void);
 
 static line_stats_t stats;
 static char *saved_cwd;
@@ -801,16 +800,6 @@ dquotes_allowed_in_paths(void)
 		return 1;
 	}
 	return 0;
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -140,5 +140,15 @@ make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
 	}
 }
 
+int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -22,6 +22,10 @@ void create_file(const char path[]);
 void make_abs_path(char buf[], size_t buf_len, const char base[],
 		const char sub[], const char cwd[]);
 
+/* Whether running on non-Windowsla.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int not_windows(void);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

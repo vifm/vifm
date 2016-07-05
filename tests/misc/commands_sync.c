@@ -14,9 +14,8 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
-#include "utils.h"
 
-static int not_windows(void);
+#include "utils.h"
 
 SETUP()
 {
@@ -116,16 +115,6 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 			sizeof(canonic_path));
 	assert_string_equal(canonic_path, other_view->curr_dir);
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
