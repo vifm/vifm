@@ -5,7 +5,7 @@
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* fclose() fopen() free() */
-#include <string.h>
+#include <string.h> /* strdup() */
 #include <wchar.h> /* wcsdup() */
 
 #include "../../src/compat/fs_limits.h"
@@ -87,8 +87,7 @@ TEARDOWN()
 {
 	restore_cwd(saved_cwd);
 
-	free(cfg.slow_fs_list);
-	cfg.slow_fs_list = NULL;
+	update_string(&cfg.slow_fs_list, NULL);
 
 	free(stats.line);
 	reset_cmds();
@@ -139,25 +138,6 @@ TEST(only_user)
 	free(buf);
 }
 
-TEST(test_set_completion)
-{
-	vle_compl_reset();
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"set all", stats.line);
-}
-
-TEST(no_sdquoted_completion_does_nothing)
-{
-	free(stats.line);
-	stats.line = wcsdup(L"command '");
-	stats.len = wcslen(stats.line);
-	stats.index = stats.len;
-
-	vle_compl_reset();
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"command '", stats.line);
-}
-
 static void
 prepare_for_line_completion(const wchar_t str[])
 {
@@ -170,10 +150,22 @@ prepare_for_line_completion(const wchar_t str[])
 	vle_compl_reset();
 }
 
+TEST(test_set_completion)
+{
+	prepare_for_line_completion(L"set ");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"set all", stats.line);
+}
+
+TEST(no_sdquoted_completion_does_nothing)
+{
+	prepare_for_line_completion(L"command '");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"command '", stats.line);
+}
+
 TEST(spaces_escaping_leading)
 {
-	char *mb;
-
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
@@ -181,39 +173,31 @@ TEST(spaces_escaping_leading)
 	prepare_for_line_completion(L"touch \\ ");
 	assert_success(line_completion(&stats));
 
-	mb = to_multibyte(stats.line);
-	assert_string_equal("touch \\ begins-with-space", mb);
-	free(mb);
+	assert_wstring_equal(L"touch \\ begins-with-space", stats.line);
 }
 
 TEST(spaces_escaping_everywhere)
 {
-	char *mb;
-
 	assert_success(chdir("../spaces-in-names"));
 
 	prepare_for_line_completion(L"touch \\ s");
 	assert_success(line_completion(&stats));
 
-	mb = to_multibyte(stats.line);
 	/* Whether trailing space is there depends on file system and OS. */
 	if(access("\\ spaces\\ everywhere\\ ", F_OK) == 0)
 	{
-		assert_string_equal("touch \\ spaces\\ everywhere\\ ", mb);
+		assert_wstring_equal(L"touch \\ spaces\\ everywhere\\ ", stats.line);
 	}
 	/* Only one condition is true, but don't use else to make one of asserts fail
 	 * if there are two files somehow. */
 	if(access("\\ spaces\\ everywhere", F_OK) == 0)
 	{
-		assert_string_equal("touch \\ spaces\\ everywhere", mb);
+		assert_wstring_equal(L"touch \\ spaces\\ everywhere", stats.line);
 	}
-	free(mb);
 }
 
 TEST(spaces_escaping_trailing)
 {
-	char *mb;
-
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
@@ -221,25 +205,21 @@ TEST(spaces_escaping_trailing)
 	prepare_for_line_completion(L"touch e");
 	assert_success(line_completion(&stats));
 
-	mb = to_multibyte(stats.line);
 	/* Whether trailing space is there depends on file system and OS. */
 	if(access("ends-with-space\\ ", F_OK) == 0)
 	{
-		assert_string_equal("touch ends-with-space\\ ", mb);
+		assert_wstring_equal(L"touch ends-with-space\\ ", stats.line);
 	}
 	/* Only one condition is true, but don't use else to make one of asserts fail
 	 * if there are too files somehow. */
 	if(access("ends-with-space", F_OK) == 0)
 	{
-		assert_string_equal("touch ends-with-space", mb);
+		assert_wstring_equal(L"touch ends-with-space", stats.line);
 	}
-	free(mb);
 }
 
 TEST(spaces_escaping_middle)
 {
-	char *mb;
-
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
@@ -247,9 +227,7 @@ TEST(spaces_escaping_middle)
 	prepare_for_line_completion(L"touch s");
 	assert_success(line_completion(&stats));
 
-	mb = to_multibyte(stats.line);
-	assert_string_equal("touch spaces\\ in\\ the\\ middle", mb);
-	free(mb);
+	assert_wstring_equal(L"touch spaces\\ in\\ the\\ middle", stats.line);
 }
 
 TEST(squoted_completion)
