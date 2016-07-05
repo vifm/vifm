@@ -16,8 +16,6 @@
 
 #include "utils.h"
 
-static int not_windows(void);
-
 static char sandbox[PATH_MAX];
 static char test_data[PATH_MAX];
 static char cmd[PATH_MAX];
@@ -330,16 +328,6 @@ TEST(tilde_is_expanded_after_negation, IF(not_windows))
 	assert_string_equal("1", env_get("a"));
 
 	assert_success(rmdir(path));
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

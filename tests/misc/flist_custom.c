@@ -33,7 +33,6 @@ static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static void setup_custom_view(FileView *view, int very);
 static int filenames_can_include_newline(void);
-static int not_windows(void);
 
 static char test_data[PATH_MAX];
 static const size_t MAX_WIDTH = 20;
@@ -597,16 +596,6 @@ filenames_can_include_newline(void)
 		return not_windows();
 	}
 	return 0;
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

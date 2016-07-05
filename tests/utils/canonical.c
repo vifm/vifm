@@ -9,6 +9,17 @@
 #define ABS_PREFIX "c:"
 #endif
 
+TEST(basic)
+{
+	char buf[PATH_MAX];
+
+	canonicalize_path(ABS_PREFIX "/", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
+
+	to_canonic_path(ABS_PREFIX "/", "fake-base", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
+}
+
 TEST(root_updir)
 {
 	char buf[PATH_MAX];
