@@ -326,7 +326,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		}
 		else if(id == COM_GREP)
 		{
-			if(earg_num(argc, args) >= 1 && args[0] == '-')
+			if(earg_num(argc, args) > 1 && args[0] == '-')
 			{
 				filename_completion(arg, CT_DIRONLY, 1);
 			}

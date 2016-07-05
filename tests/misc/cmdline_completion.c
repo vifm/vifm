@@ -634,6 +634,10 @@ TEST(wincmd_completion)
 
 TEST(grep_completion)
 {
+	prepare_for_line_completion(L"grep -");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"grep -", stats.line);
+
 	prepare_for_line_completion(L"grep .");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"grep .", stats.line);
@@ -653,6 +657,10 @@ TEST(grep_completion)
 
 TEST(find_completion)
 {
+	prepare_for_line_completion(L"find -");
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"find ./-", stats.line);
+
 	prepare_for_line_completion(L"find ..");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"find ../", stats.line);
