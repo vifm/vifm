@@ -261,7 +261,7 @@ draw_dir_list_only(FileView *view)
 	ui_view_erase(view);
 
 	cell = 0U;
-	coll_pad = (view->ls_view && cfg.extra_padding) ? 1 : 0;
+	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	for(x = top; x < view->list_rows; ++x)
 	{
 		const column_data_t cdt = {
@@ -301,15 +301,15 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 {
 	calculate_number_width(view);
 
-	if(view->ls_view)
-	{
-		*count = calculate_columns_count(view);
-		*width = calculate_column_width(view);
-	}
-	else
+	if(ui_view_displays_columns(view))
 	{
 		*count = 1;
 		*width = MAX(0, ui_view_available_width(view) - view->real_num_width);
+	}
+	else
+	{
+		*count = calculate_columns_count(view);
+		*width = calculate_column_width(view);
 	}
 
 	view->column_count = *count;
@@ -427,7 +427,7 @@ get_line_color(const FileView *view, int pos)
 static size_t
 calculate_print_width(const FileView *view, int i, size_t max_width)
 {
-	if(view->ls_view)
+	if(!ui_view_displays_columns(view))
 	{
 		const size_t raw_name_width = get_filename_width(view, i);
 		return MIN(max_width - 1, raw_name_width);
@@ -698,7 +698,7 @@ clear_current_line_bar(FileView *view, int is_current)
 		 * name width should be updated. */
 		col_width = print_width;
 	}
-	else if(view->ls_view && cfg.extra_padding)
+	else if(!ui_view_displays_columns(view) && cfg.extra_padding)
 	{
 		/* Padding in ls-like view adds additional empty single character between
 		 * columns, on which we shouldn't draw anything here. */
@@ -1315,7 +1315,11 @@ fview_set_lsview(FileView *view, int enabled)
 
 	view->ls_view = enabled;
 
-	if(view->ls_view)
+	if(ui_view_displays_columns(view))
+	{
+		load_view_columns_option(view, view->view_columns);
+	}
+	else
 	{
 		column_info_t column_info = {
 			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
@@ -1326,16 +1330,12 @@ fview_set_lsview(FileView *view, int enabled)
 		columns_add_column(view->columns, column_info);
 		ui_view_schedule_redraw(view);
 	}
-	else
-	{
-		load_view_columns_option(view, view->view_columns);
-	}
 }
 
 size_t
 calculate_columns_count(FileView *view)
 {
-	if(view->ls_view)
+	if(!ui_view_displays_columns(view))
 	{
 		const size_t column_width = calculate_column_width(view);
 		return ui_view_available_width(view)/column_width;
@@ -1532,7 +1532,7 @@ fview_sorting_updated(FileView *view)
 static void
 reset_view_columns(FileView *view)
 {
-	if(view->ls_view ||
+	if(!ui_view_displays_columns(view) ||
 			(curr_stats.restart_in_progress && flist_custom_active(view) &&
 			 view->custom.unsorted))
 	{

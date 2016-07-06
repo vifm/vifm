@@ -1640,7 +1640,7 @@ ui_view_sort_list_get(const FileView *view)
 int
 ui_view_displays_numbers(const FileView *const view)
 {
-	return view->num_type != NT_NONE && !view->ls_view;
+	return view->num_type != NT_NONE && ui_view_displays_columns(view);
 }
 
 int

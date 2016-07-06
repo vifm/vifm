@@ -864,7 +864,7 @@ select_first_one(void)
 static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(view->ls_view)
+	if(!ui_view_displays_columns(view))
 	{
 		go_to_prev(key_info, keys_info, 1, 1);
 	}
@@ -880,7 +880,7 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!view->ls_view || !at_last_line(view))
+	if(ui_view_displays_columns(view) || !at_last_line(view))
 	{
 		go_to_next(key_info, keys_info, 1, view->column_count);
 	}
@@ -889,7 +889,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!view->ls_view || !at_first_line(view))
+	if(ui_view_displays_columns(view) || !at_first_line(view))
 	{
 		go_to_prev(key_info, keys_info, 1, view->column_count);
 	}
@@ -908,13 +908,13 @@ go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(view->ls_view)
+	if(ui_view_displays_columns(view))
 	{
-		go_to_next(key_info, keys_info, 1, 1);
+		cmd_gl(key_info, keys_info);
 	}
 	else
 	{
-		cmd_gl(key_info, keys_info);
+		go_to_next(key_info, keys_info, 1, 1);
 	}
 }
 

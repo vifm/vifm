@@ -1543,13 +1543,13 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->ls_view)
+	if(ui_view_displays_columns(curr_view))
 	{
-		go_to_prev(key_info, keys_info, 1);
+		cmd_gh(key_info, keys_info);
 	}
 	else
 	{
-		cmd_gh(key_info, keys_info);
+		go_to_prev(key_info, keys_info, 1);
 	}
 }
 
@@ -1592,13 +1592,13 @@ go_to_prev(key_info_t key_info, keys_info_t *keys_info, int step)
 static void
 cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->ls_view)
+	if(ui_view_displays_columns(curr_view))
 	{
-		go_to_next(key_info, keys_info, 1);
+		cmd_return(key_info, keys_info);
 	}
 	else
 	{
-		cmd_return(key_info, keys_info);
+		go_to_next(key_info, keys_info, 1);
 	}
 }
 
