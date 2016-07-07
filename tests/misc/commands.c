@@ -437,7 +437,7 @@ TEST(yank_works_with_ranges)
 	flist_custom_start(&lwin, "test");
 	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
 	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, 0) == 0);
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
 
 	reg = regs_find(DEFAULT_REG_NAME);
 	assert_non_null(reg);

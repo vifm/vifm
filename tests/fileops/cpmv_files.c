@@ -146,7 +146,7 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	flist_custom_start(&rwin, "test");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/rename/a");
-	assert_true(flist_custom_finish(&rwin, 0) == 0);
+	assert_true(flist_custom_finish(&rwin, 0, 0) == 0);
 	assert_int_equal(2, rwin.list_rows);
 
 	assert_success(chdir(SANDBOX_PATH));

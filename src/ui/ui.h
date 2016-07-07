@@ -165,6 +165,10 @@ typedef struct dir_entry_t
 	int name_dec_num; /* File decoration parameters cache (initially -1).  The
 	                     value is shifted by one, 0 means type decoration. */
 
+	int child_count; /* Number of child entries (all, not just direct). */
+	int child_pos;   /* Position of this entry in among children of its parent.
+	                    Zero for top-level entries. */
+
 	int search_match;      /* Non-zero if the item matches last search.  Equals to
 	                          search match number (top to bottom order). */
 	short int match_left;  /* Starting position of search match. */
@@ -202,6 +206,9 @@ typedef struct
 		int unsorted;
 		/* Previous sorting value, before unsorted custom view was loaded. */
 		char sort[SK_COUNT];
+
+		/* Whether this custom view displays files in a file system sub-tree. */
+		int tree_view;
 
 		/* Names of files in custom view while it's being composed.  Used for
 		 * duplicate elimination during construction of custom list. */

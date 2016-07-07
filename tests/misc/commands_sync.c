@@ -82,7 +82,7 @@ TEST(sync_syncs_filelist)
 	flist_custom_add(curr_view, TEST_DATA_PATH "/rename/a");
 	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			"%s/existing-files", test_data);
-	assert_true(flist_custom_finish(curr_view, 1) == 0);
+	assert_true(flist_custom_finish(curr_view, 1, 0) == 0);
 	curr_view->list_pos = 3;
 
 	assert_success(exec_commands("sync! filelist cursorpos", curr_view,

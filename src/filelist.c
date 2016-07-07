@@ -1643,7 +1643,7 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 #endif
 
 int
-flist_custom_finish(FileView *view, int very)
+flist_custom_finish(FileView *view, int very, int tree_view)
 {
 	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
 
@@ -1697,6 +1697,10 @@ flist_custom_finish(FileView *view, int very)
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
 	view->dir_entry = dynarray_shrink(view->dir_entry);
+	view->filtered = 0;
+
+	/* Tree view mode must be set to correct value before sorting takes place. */
+	view->custom.tree_view = tree_view;
 
 	/* view->custom.unsorted must be set before load_sort_option() so that it
 	 * skips sort array normalization. */
@@ -2569,6 +2573,9 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
 
+	entry->child_count = 0;
+	entry->child_pos = 0;
+
 	/* All files start as unselected, unmatched and unmarked. */
 	entry->selected = 0;
 	entry->was_selected = 0;
@@ -3304,7 +3311,7 @@ flist_add_custom_line(FileView *view, const char line[])
 void
 flist_end_custom(FileView *view, int very)
 {
-	if(flist_custom_finish(view, very) != 0)
+	if(flist_custom_finish(view, very, 0) != 0)
 	{
 		show_error_msg("Custom view", "Ignoring empty list of files");
 		return;

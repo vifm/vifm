@@ -50,7 +50,7 @@ TEST(make_dirs_does_nothing_for_custom_view)
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "existing-files/a");
-	assert_true(flist_custom_finish(&lwin, 0) == 0);
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
 
 	make_dirs(&lwin, paths, 1, 0);
 	assert_false(path_exists("dir", NODEREF));
