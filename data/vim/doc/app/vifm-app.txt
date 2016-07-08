@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2-beta  Last change: 2016 Jul 02
+*vifm-app.txt*    For Vifm version 0.8.2-beta  Last change: 2016 Jul 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3348,7 +3348,7 @@ Format string containing list of columns in the view. When this option is
 empty view columns to show are chosen automatically using sorting keys
 (see |vifm-'sort'|) as a base.  Value of this option is ignored if
 |vifm-'lsview'| is set.  See |vifm-column-view| for format description.
-An example of setting the options for both panes (note |vifm-windo|
+An example of setting the options for both panes (note |vifm-:windo|
 command): >
     windo set viewcolumns=-{name}..,6{size},11{perms}
 <
