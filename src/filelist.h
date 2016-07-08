@@ -323,6 +323,9 @@ void flist_add_custom_line(FileView *view, const char line[]);
 void flist_end_custom(FileView *view, int very);
 /* Changes name of a file entry, performing additional required updates. */
 void fentry_rename(FileView *view, dir_entry_t *entry, const char to[]);
+/* Loads directory tree specified by its path into the view.  Considers various
+ * filters.  Returns zero on success, otherwise non-zero is returned. */
+int flist_load_tree(FileView *view, const char path[]);
 
 TSTATIC_DEFS(
 	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],

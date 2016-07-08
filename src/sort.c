@@ -86,6 +86,12 @@ sort_view(FileView *v)
 	view = v;
 	custom_view = flist_custom_active(v);
 
+	if(custom_view && v->custom.tree_view)
+	{
+		/* Skip sequential sorting, need tree sorting implementation. */
+		return;
+	}
+
 	i = SK_COUNT;
 	while(--i >= 0)
 	{

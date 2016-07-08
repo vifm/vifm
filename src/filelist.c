@@ -144,8 +144,12 @@ static int iter_entries(FileView *view, dir_entry_t **entry,
 static int is_entry_selected(const dir_entry_t *entry);
 static int is_entry_marked(const dir_entry_t *entry);
 static void clear_marking(FileView *view);
+static int add_files_recursively(FileView *view, const char path[],
+		int parent_pos);
 static int file_is_visible(FileView *view, const char filename[], int is_dir,
 		const void *data);
+static int add_directory_leaf(FileView *view, const char path[],
+		int parent_pos);
 static int init_parent_entry(FileView *view, dir_entry_t *entry,
 		const char path[]);
 
@@ -3365,7 +3369,105 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 	free(old_name);
 }
 
-/* Checks whether file is visible according to dot and filename filters.
+int
+flist_load_tree(FileView *view, const char path[])
+{
+	int nfiltered;
+
+	flist_custom_start(view, "tree");
+
+	nfiltered = add_files_recursively(view, path, -1);
+	if(nfiltered < 0)
+	{
+		show_error_msg("Tree View", "Failed to list directory");
+		return 1;
+	}
+	if(flist_custom_finish(view, 0, 1) != 0)
+	{
+		return 1;
+	}
+	view->filtered = nfiltered;
+	return 0;
+}
+
+/* Adds custom view entries corresponding to file system tree.  parent_pos is
+ * expected to be negative for the outermost invocation.  Returns number of
+ * filtered out files on success or partial success and negative value on
+ * serious error. */
+static int
+add_files_recursively(FileView *view, const char path[], int parent_pos)
+{
+	int i;
+	int npassed = 0, nfiltered = 0;
+
+	int len;
+	char **lst = list_all_files(path, &len);
+	if(len < 0)
+	{
+		return -1;
+	}
+
+	for(i = 0; i < len; ++i)
+	{
+		char *const full_path = format_str("%s/%s", path, lst[i]);
+		dir_entry_t *entry;
+
+		const int dir = is_dir(full_path);
+		if(!file_is_visible(view, lst[i], dir, NULL))
+		{
+			free(full_path);
+			++nfiltered;
+			continue;
+		}
+
+		entry = flist_custom_add(view, full_path);
+		if(entry == NULL)
+		{
+			free(full_path);
+			free_string_array(lst, len);
+			return -1;
+		}
+
+		if(parent_pos >= 0)
+		{
+			entry->child_pos = (view->custom.entry_count - 1) - parent_pos;
+		}
+
+		if(dir)
+		{
+			const int idx = view->custom.entry_count - 1;
+			const int filtered = add_files_recursively(view, full_path, idx);
+			/* Keep going in case of error and load partial list. */
+			if(filtered >= 0)
+			{
+				/* If one of recursive calls returned error, keep going and build
+				 * partial tree. */
+				view->custom.entries[idx].child_count = (view->custom.entry_count - 1)
+				                                      - idx;
+				nfiltered += filtered;
+			}
+		}
+
+		++npassed;
+		free(full_path);
+	}
+
+	free_string_array(lst, len);
+
+	if(npassed == 0)
+	{
+		/* To be able to perform operations inside directory (e.g., create files),
+		 * we need at least one element there. */
+		if(add_directory_leaf(view, path, parent_pos) != 0)
+		{
+			return -1;
+		}
+	}
+
+	return nfiltered;
+}
+
+/* Checks whether file is visible according to dot and filename filters.  is_dir
  * is used when data is NULL, otherwise data_is_dir_entry() called (this is an
  * optimization).  Returns non-zero if so, otherwise zero is returned. */
 static int
@@ -3379,6 +3481,41 @@ file_is_visible(FileView *view, const char filename[], int is_dir,
 
 	return filters_file_is_visible(view, filename,
 			(data == NULL) ? is_dir : data_is_dir_entry(data));
+}
+
+/* Adds ".." directory leaf of an empty directory to the tree which is being
+ * built.  Returns non-zero on error, otherwise zero is returned. */
+static int
+add_directory_leaf(FileView *view, const char path[], int parent_pos)
+{
+	char *full_path;
+
+	dir_entry_t *const entry = alloc_dir_entry(&view->custom.entries,
+			view->custom.entry_count);
+	if(entry == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 1;
+	}
+
+	full_path = format_str("%s/..", path);
+	if(init_parent_entry(view, entry, full_path) != 0)
+	{
+		free(full_path);
+		/* Keep going in case of error and load partial list. */
+		return 0;
+	}
+
+	remove_last_path_component(full_path);
+	entry->origin = full_path;
+
+	if(parent_pos >= 0)
+	{
+		entry->child_pos = (view->custom.entry_count - 1) - parent_pos;
+	}
+
+	++view->custom.entry_count;
+	return 0;
 }
 
 /* Fills given entry of the view at specified path (can be relative, i.e. "..").

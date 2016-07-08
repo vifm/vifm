@@ -84,6 +84,9 @@ view_setup(FileView *view)
 	view->filtered = 0;
 	view->list_pos = 0;
 	view->dir_entry = NULL;
+	view->hide_dot = 0;
+	view->invert = 1;
+	view->selected_files = 0;
 
 	assert_success(filter_init(&view->local_filter.filter, 1));
 	assert_success(filter_init(&view->manual_filter, 1));
