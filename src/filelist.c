@@ -144,6 +144,8 @@ static int iter_entries(FileView *view, dir_entry_t **entry,
 static int is_entry_selected(const dir_entry_t *entry);
 static int is_entry_marked(const dir_entry_t *entry);
 static void clear_marking(FileView *view);
+static int file_is_visible(FileView *view, const char filename[], int is_dir,
+		const void *data);
 static int init_parent_entry(FileView *view, dir_entry_t *entry,
 		const char path[]);
 
@@ -2311,13 +2313,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		return 0;
 	}
 
-	if(view->hide_dot && name[0] == '.')
-	{
-		++view->filtered;
-		return 0;
-	}
-
-	if(!filters_file_is_visible(view, name, data_is_dir_entry(data)))
+	if(!file_is_visible(view, name, 0, data))
 	{
 		++view->filtered;
 		return 0;
@@ -3366,6 +3362,22 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 	}
 
 	free(old_name);
+}
+
+/* Checks whether file is visible according to dot and filename filters.
+ * is used when data is NULL, otherwise data_is_dir_entry() called (this is an
+ * optimization).  Returns non-zero if so, otherwise zero is returned. */
+static int
+file_is_visible(FileView *view, const char filename[], int is_dir,
+		const void *data)
+{
+	if(view->hide_dot && filename[0] == '.')
+	{
+		return 0;
+	}
+
+	return filters_file_is_visible(view, filename,
+			(data == NULL) ? is_dir : data_is_dir_entry(data));
 }
 
 /* Fills given entry of the view at specified path (can be relative, i.e. "..").
