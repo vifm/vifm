@@ -7,6 +7,9 @@
 
 	Fixed completion of commands after :!.  Thanks to filterfalse.
 
+	Fixed formatting/wording/outdated notes in documentation.  Patches by
+	filterfalse.
+
 0.8.1a to 0.8.2-beta
 
 	Added highlighting of search matches in menus.
