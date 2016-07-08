@@ -193,8 +193,9 @@ char * get_typed_entry_fpath(const dir_entry_t *entry);
 int flist_custom_active(const FileView *view);
 /* Prepares list of files for it to be filled with entries. */
 void flist_custom_start(FileView *view, const char title[]);
-/* Adds an entry to list of files. */
-void flist_custom_add(FileView *view, const char path[]);
+/* Adds an entry to list of files.  Returns pointer to just added entry or NULL
+ * on error. */
+dir_entry_t * flist_custom_add(FileView *view, const char path[]);
 /* Finishes file list population, handles empty resulting list corner case.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
 int flist_custom_finish(FileView *view, int very, int tree_view);
