@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() remove() */
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
@@ -40,7 +40,14 @@ TEARDOWN()
 
 TEST(executable_true_for_executable)
 {
-	ASSERT_INT_OK("executable('" SANDBOX_PATH "/../../../src/vifm')", 1);
+	const char *const exec_file = SANDBOX_PATH "/exec-for-completion" EXE_SUFFIX;
+
+	create_executable(exec_file);
+
+	ASSERT_INT_OK(
+			"executable('" SANDBOX_PATH "/exec-for-completion" EXE_SUFFIX "')", 1);
+
+	assert_success(remove(exec_file));
 }
 
 TEST(executable_false_for_regular_file)
