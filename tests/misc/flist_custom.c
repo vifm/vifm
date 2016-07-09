@@ -480,7 +480,7 @@ TEST(custom_view_does_not_reset_local_state)
 	columns_clear_column_descs();
 }
 
-TEST(files_with, IF(filenames_can_include_newline))
+TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 {
 	FILE *const f = fopen(SANDBOX_PATH "/list", "w");
 	fprintf(f, "%s%c", SANDBOX_PATH "/a\nb", '\0');
@@ -492,7 +492,8 @@ TEST(files_with, IF(filenames_can_include_newline))
 	stats_update_shell_type(cfg.shell);
 
 	create_file("a\nb");
-	output_to_custom_flist(&lwin, "cat list", 0);
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
+	assert_success(output_to_custom_flist(&lwin, "cat list", 0));
 	assert_success(unlink("a\nb"));
 	assert_success(unlink("list"));
 
