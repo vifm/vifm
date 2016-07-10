@@ -28,16 +28,7 @@
 
 #include "utils.h"
 
-#if defined(__CYGWIN__) || defined(_WIN32)
-#define SUFFIX ".exe"
-#define SUFFIXW L".exe"
-#else
-#define SUFFIX ""
-#define SUFFIXW L""
-#endif
-
 static void dummy_handler(OPT_OP op, optval_t val);
-static void create_executable(const char file[]);
 static int dquotes_allowed_in_paths(void);
 
 static line_stats_t stats;
@@ -483,13 +474,13 @@ TEST(bang_exec_completion)
 	env_set("PATH", saved_cwd);
 	update_path_env(1);
 
-	create_executable("exec-for-completion" SUFFIX);
+	create_executable("exec-for-completion" EXE_SUFFIX);
 
-	prepare_for_line_completion(L"!exec-for-com" SUFFIXW);
+	prepare_for_line_completion(L"!exec-for-com" EXE_SUFFIXW);
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!exec-for-completion" SUFFIXW, stats.line);
+	assert_wstring_equal(L"!exec-for-completion" EXE_SUFFIXW, stats.line);
 
-	assert_success(unlink("exec-for-completion" SUFFIX));
+	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
 
 	env_set("PATH", original_path_env);
 	update_path_env(1);
@@ -508,12 +499,12 @@ TEST(bang_abs_path_completion)
 
 	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
 
-	create_executable("exec-for-completion" SUFFIX);
+	create_executable("exec-for-completion" EXE_SUFFIX);
 
 	vifm_swprintf(input, ARRAY_LEN(input),
 			L"!%" WPRINTF_MBSTR L"/exec-for-compl", cwd);
 	vifm_swprintf(cmd, ARRAY_LEN(cmd),
-			L"!%" WPRINTF_MBSTR L"/exec-for-completion" SUFFIXW, cwd);
+			L"!%" WPRINTF_MBSTR L"/exec-for-completion" EXE_SUFFIXW, cwd);
 
 	prepare_for_line_completion(input);
 	assert_success(line_completion(&stats));
@@ -521,7 +512,7 @@ TEST(bang_abs_path_completion)
 
 	assert_int_equal(2, vle_compl_get_count());
 
-	assert_success(unlink("exec-for-completion" SUFFIX));
+	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
 }
 
 #undef WPRINTF_MBSTR
@@ -566,13 +557,13 @@ TEST(bmark_path_is_completed)
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
 			"", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
-	create_executable("exec-for-completion" SUFFIX);
+	create_executable("exec-for-completion" EXE_SUFFIX);
 
 	prepare_for_line_completion(L"bmark! exec");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"bmark! exec-for-completion" SUFFIX, stats.line);
+	assert_wstring_equal(L"bmark! exec-for-completion" EXE_SUFFIX, stats.line);
 
-	assert_success(unlink("exec-for-completion" SUFFIX));
+	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
 }
 
 TEST(delbmark_tags_are_completed)
@@ -798,15 +789,6 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	assert_wstring_equal(L"cd ../dir-link/", stats.line);
 
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
-}
-
-static void
-create_executable(const char file[])
-{
-	create_file(file);
-	assert_success(access(file, F_OK));
-	chmod(file, 0755);
-	assert_success(access(file, X_OK));
 }
 
 static int
