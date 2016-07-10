@@ -1,6 +1,8 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() */
+#include <unistd.h> /* rmdir() symlink() */
+
+#include <stdlib.h> /* remove() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
@@ -49,6 +51,20 @@ TEST(complex_tree_is_built_correctly)
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	validate_tree(&lwin);
+}
+
+TEST(symlinks_are_loaded_as_files, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but other code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(SANDBOX_PATH, SANDBOX_PATH "/link"));
+#endif
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(remove(SANDBOX_PATH "/link"));
 }
 
 TEST(tree_accounts_for_dot_filter)

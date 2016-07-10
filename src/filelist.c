@@ -3433,7 +3433,9 @@ add_files_recursively(FileView *view, const char path[], int parent_pos)
 			entry->child_pos = (view->custom.entry_count - 1) - parent_pos;
 		}
 
-		if(dir)
+		/* Not using dir variable here, because it is set for symlinks to
+		 * directories as well. */
+		if(entry->type == FT_DIR)
 		{
 			const int idx = view->custom.entry_count - 1;
 			const int filtered = add_files_recursively(view, full_path, idx);
