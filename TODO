@@ -120,6 +120,7 @@ Possible things to add:
   * Update visible symlinks in the other pane on updating current pane.
   * Try drawing progress bar in progress dialog.
   * Mouse support. (partially done)
+  * Asynchronous quick preview?
   * Possibility to make colorful background per column.
   * Add a key to menu mode to repeat command and update menu.
   * Extract vim plugin part of install to vifm.vim README.
@@ -161,6 +162,7 @@ Questionable things:
   * Add :keepsel prefix.
   * Consider asking more often before performing file operations.
   * Termcap or terminfo support for keybindings
+  * Shorten home path to ~ in item origins?
   * Add :increment and :decrement commands.
   * Consider changing "dd" to "d" in menus.
   * Consider caching directory sizes in vifminfo.
@@ -202,6 +204,7 @@ Code improvements:
   * Consider using curses panes, not just windows.
   * Show "An error occurred" message on fail to build menus.
   * Consider not using {} initializer.
+  * Use timeout command to set time limit for tests on CI.
   * Note skipped tests in the tests output.
   * Pass var by pointer to var_free and cleanup the structure.
   * Logging levels.
