@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 02, 2016" "vifm 0.8.2-beta"
+.TH VIFM 1 "July 08, 2016" "vifm 0.8.2-beta"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1741,12 +1741,13 @@ name.  Same as ":filetype filename".
 .BI "                                         :fileviewer"
 .TP
 .BI ":filev[iewer] pattern-list command1,command2,..."
-register specified list of commands as viewers for each of the patterns.  Viewer
-is a command which output is captured and displayed in the second pane of vifm
-after running :view command.  When the command doesn't contain any of vifm
-macros, name of current file is appended as if command ended with %c macro.
-Comma escaping and missing commands processing rules as for :filetype apply to
-this command.  See "Patterns" section below for pattern definition.
+register specified list of commands as viewers for each of the patterns.
+Viewer is a command which output is captured and displayed in one of the panes
+of vifm after pressing e or running :view command.  When the command doesn't
+contain any of vifm macros, name of current file is appended as if command
+ended with %c macro.  Comma escaping and missing commands processing rules as
+for :filetype apply to this command.  See "Patterns" section below for pattern
+definition.
 
 Example for zip archives:
 .EX
@@ -4011,7 +4012,7 @@ view columns to show are chosen automatically using sorting keys (see 'sort') as
 a base.  Value of this option is ignored if 'lsview' is set.  See "Column view"
 section below for format description.
 
-An example of setting the options for both panes (note vifm-windo command):
+An example of setting the options for both panes (note :windo command):
 .EX
 
   windo set viewcolumns=-{name}..,6{size},11{perms}
@@ -5378,10 +5379,6 @@ right after \-\-remote argument, like this:
   vifm \-\-remote ~
   vifm \-\-remote /usr/bin /tmp
 .EE
-
-At the moment there is no way of specifying, which instance of vifm should
-arguments be sent.  The main purpose of \-\-remote argument is to provide
-support of using vifm as a single-instance application.
 .\" ---------------------------------------------------------------------------
 .SH Plugin
 .\" ---------------------------------------------------------------------------

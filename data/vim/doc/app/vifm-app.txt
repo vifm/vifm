@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2-beta  Last change: 2016 Jul 02
+*vifm-app.txt*    For Vifm version 0.8.2-beta  Last change: 2016 Jul 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1483,11 +1483,11 @@ The builtin commands are:
 :filev[iewer] pattern-list command1,command2,...
     register specified list of commands as viewers for each of the patterns.
     Viewer is a command which output is captured and displayed in the second
-    pane of vifm after running |vifm-:view| command.  When the command doesn't
-    contain any of vifm macros, name of current file is appended as if command
-    ended with |vifm-%c| macro.  Comma escaping and missing commands processing
-    rules as for |vifm-:filetype| apply to this command.  See |vifm-globs| for
-    pattern definition.
+    panes of vifm after pressing |vifm-e| or running |vifm-:view| command.  When
+    the command doesn't contain any of vifm macros, name of current file is
+    appended as if command ended with |vifm-%c| macro.  Comma escaping and
+    missing commands processing rules as for |vifm-:filetype| apply to this
+    command.  See |vifm-globs| for pattern definition.
 
     Example for zip archives: >
 
@@ -3348,7 +3348,7 @@ Format string containing list of columns in the view. When this option is
 empty view columns to show are chosen automatically using sorting keys
 (see |vifm-'sort'|) as a base.  Value of this option is ignored if
 |vifm-'lsview'| is set.  See |vifm-column-view| for format description.
-An example of setting the options for both panes (note |vifm-windo|
+An example of setting the options for both panes (note |vifm-:windo|
 command): >
     windo set viewcolumns=-{name}..,6{size},11{perms}
 <
@@ -4522,10 +4522,6 @@ right after --remote argument, like this: >
     vifm --remote /
     vifm --remote ~
     vifm --remote /usr/bin /tmp
-<
-At the moment there is no way of specifying, which instance of vifm should
-arguments be sent.  The main purpose of --remote argument is to provide
-support of using vifm as a single-instance application.
 
 --------------------------------------------------------------------------------
 *vifm-plugin*

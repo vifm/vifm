@@ -1320,7 +1320,7 @@ run_in_split(const FileView *view, const char cmd[])
 	free(escaped_cmd);
 }
 
-void
+int
 output_to_custom_flist(FileView *view, const char cmd[], int very)
 {
 	char *title;
@@ -1338,10 +1338,11 @@ output_to_custom_flist(FileView *view, const char cmd[], int very)
 	if(error)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return;
+		return 1;
 	}
 
 	flist_end_custom(view, very);
+	return 0;
 }
 
 /* Implements process_cmd_output() callback that loads paths into custom

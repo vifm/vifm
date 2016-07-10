@@ -1,9 +1,14 @@
 0.8.2-beta to 0.8.2
 
+	Added support for matchit to filetype plugin.  Patch by filterfalse.
+
 	Fixed processing of root directory (completion, :cd).  Thanks to
 	filterfalse.
 
 	Fixed completion of commands after :!.  Thanks to filterfalse.
+
+	Fixed formatting/wording/outdated notes in documentation.  Patches by
+	filterfalse.
 
 0.8.1a to 0.8.2-beta
 

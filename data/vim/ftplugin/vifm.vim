@@ -1,6 +1,6 @@
 " vifmrc filetype plugin
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: August 18, 2011
+" Last Change: July 08, 2016
 " Based On:    Vim file type file by Bram Moolenaar
 
 if exists("b:did_ftplugin")
@@ -33,6 +33,12 @@ nnoremap <silent><buffer> ]" :call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
 vnoremap <silent><buffer> ]" :<C-U>exe "normal! gv"<Bar>call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
 nnoremap <silent><buffer> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
 vnoremap <silent><buffer> [" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
+
+" Let the matchit plugin know what items can be matched.
+if exists("loaded_matchit")
+	let b:match_ignorecase = 0
+	let b:match_words = '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>'
+endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

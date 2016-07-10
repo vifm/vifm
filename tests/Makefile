@@ -180,7 +180,7 @@ endif
 check: build
 
 clean:
-	$(RM) -r $(B)bin/ $(B)sandbox/
+	$(RM) -r $(B)bin/ $(SANDBOX_PATH)/
 	$(RM) $(B)stic/stic.h.d $(B)stic/stic.h.gch
 
 # disable implicit rules to prevent compiling main sources here
@@ -248,7 +248,7 @@ $$($1.bin): $$($1.obj) $(BUILD)stic.o $(vifm_obj) \
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
 $(BUILD)$1/%.o: $1/%.c $(B)stic/stic.h.gch $(BUILD)$1/filelist \
-              | $(BUILD)$1 $(B)sandbox/$1
+              | $(BUILD)$1 $(SANDBOX_PATH)/$1
 	$$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
 	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                 -DMAXTESTID=$$(words $$($1.obj)) $$< \
@@ -261,7 +261,7 @@ $(BUILD)$1/filelist: $1/. | $(BUILD)$1
 		echo -n '$$($1.src)' > $$@; \
 	fi
 
-$(BUILD)$1 $(B)sandbox/$1:
+$(BUILD)$1 $(SANDBOX_PATH)/$1:
 	$(AT)mkdir -p $$@
 
 $1: $$($1.bin)

@@ -1,5 +1,8 @@
 #include "utils.h"
 
+#include <sys/stat.h> /* chmod() */
+#include <unistd.h> /* access() */
+
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* fclose() fopen() */
 #include <string.h> /* memset() strcpy() */
@@ -124,6 +127,15 @@ create_file(const char path[])
 	{
 		fclose(f);
 	}
+}
+
+void
+create_executable(const char path[])
+{
+	create_file(path);
+	assert_success(access(path, F_OK));
+	chmod(path, 0755);
+	assert_success(access(path, X_OK));
 }
 
 void
