@@ -135,11 +135,11 @@ filter_selected_files(FileView *view)
 	/* Update entry lists to remove entries that must be filtered out now.  No
 	 * view reload is needed. */
 	filtered = zap_entries(view, view->dir_entry, &view->list_rows,
-			&is_newly_filtered, &filter, 0);
+			&is_newly_filtered, &filter, 0, 1);
 	if(flist_custom_active(view))
 	{
 		(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-				&is_newly_filtered, &filter, 1);
+				&is_newly_filtered, &filter, 1, 1);
 	}
 	else
 	{

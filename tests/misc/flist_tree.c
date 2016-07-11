@@ -209,6 +209,46 @@ TEST(nested_directory_change_detection)
 	update_string(&cfg.ruler_format, NULL);
 }
 
+TEST(excluding_dir_in_tree_excludes_its_children)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
+	create_file(SANDBOX_PATH "/nested-dir/a");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(2, lwin.list_rows);
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+	flist_custom_exclude(&lwin);
+
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+
+	assert_success(remove(SANDBOX_PATH "/nested-dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
+}
+
+TEST(excluding_nested_dir_in_tree_adds_dummy)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir/nested-dir2", 0700));
+	create_file(SANDBOX_PATH "/nested-dir/nested-dir2/a");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(3, lwin.list_rows);
+
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 1;
+	flist_custom_exclude(&lwin);
+
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[1].name);
+
+	assert_success(remove(SANDBOX_PATH "/nested-dir/nested-dir2/a"));
+	assert_success(rmdir(SANDBOX_PATH "/nested-dir/nested-dir2"));
+	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
+}
+
 static void
 validate_tree(const FileView *view)
 {

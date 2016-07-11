@@ -1798,9 +1798,9 @@ flist_custom_exclude(FileView *view)
 	list.items = files;
 
 	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_in_list, &list,
-			0);
+			0, 1);
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-			&is_in_list, &list, 1);
+			&is_in_list, &list, 1, 1);
 
 	free_string_array(files, nfiles);
 
@@ -2030,7 +2030,7 @@ populate_dir_list_internal(FileView *view, int reload)
 		}
 
 		(void)zap_entries(view, view->dir_entry, &view->list_rows,
-				&is_dead_or_filtered, NULL, 0);
+				&is_dead_or_filtered, NULL, 0, 0);
 		update_entries_data(view);
 		sort_dir_list(!reload, view);
 		fview_list_updated(view);
@@ -2189,26 +2189,73 @@ update_entries_data(FileView *view)
 
 int
 zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
-		void *arg, int allow_empty_list)
+		void *arg, int allow_empty_list, int remove_subtrees)
 {
 	int i, j;
 
 	j = 0;
 	for(i = 0; i < *count; ++i)
 	{
+		int k;
 		dir_entry_t *const entry = &entries[i];
-		if(!filter(view, entry, arg))
+		const int nremoved = remove_subtrees ? (entry->child_count + 1) : 1;
+
+		if(filter(view, entry, arg))
 		{
-			free_dir_entry(view, entry);
+			if(i != j)
+			{
+				entries[j] = entries[i];
+			}
+
+			++j;
 			continue;
 		}
 
-		if(i != j)
+		if(entry->child_pos != 0)
 		{
-			entries[j] = entries[i];
+			/* Visit all parent nodes to update number of their children and also
+			 * all sibling nodes which require their parent links updated. */
+			int pos = i + (entry->child_count + 1);
+			int parent = j - entry->child_pos;
+			while(1)
+			{
+				while(pos <= parent + (i - j) + entries[parent].child_count)
+				{
+					entries[pos].child_pos -= nremoved;
+					pos += entries[pos].child_count + 1;
+				}
+				entries[parent].child_count -= nremoved;
+				if(entries[parent].child_pos == 0)
+				{
+					break;
+				}
+				parent -= entries[parent].child_pos;
+			}
 		}
 
-		++j;
+		for(k = 0; k < nremoved; ++k)
+		{
+			free_dir_entry(view, &entry[k]);
+		}
+
+		/* Add directory leaf if we just removed last child of the last of nodes
+		 * that wasn't filtered.  We can use one entry because if something was
+		 * filtered out, there is at least one extra entry. */
+		if(remove_subtrees && j != 0 && entries[j - 1].child_count == 0 &&
+				entries[j - 1].type == FT_DIR && !is_parent_dir(entries[j - 1].name))
+		{
+			char full_path[PATH_MAX];
+			char *path;
+
+			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
+			path = format_str("%s/..", full_path);
+			init_parent_entry(view, &entries[j], path);
+			remove_last_path_component(path);
+			entries[j].origin = path;
+			++j;
+		}
+
+		i += nremoved - 1;
 	}
 
 	*count = j;

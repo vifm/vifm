@@ -287,10 +287,11 @@ void mark_selection_or_current(FileView *view);
  * directory, which is "..").  Returns the count. */
 int flist_count_marked(FileView *const view);
 /* Removes dead entries (those that refer to non-existing files) or those that
- * do not match local filter from the view.  Returns number of erased
+ * do not match local filter from the view.  remove_subtrees flag controls
+ * whether child nodes should be removed as well.  Returns number of erased
  * entries. */
 int zap_entries(FileView *view, dir_entry_t *entries, int *count,
-		zap_filter filter, void *arg, int allow_empty_list);
+		zap_filter filter, void *arg, int allow_empty_list, int remove_subtrees);
 /* Finds directory entry in the list of entries by the path.  Returns pointer to
  * the found entry or NULL. */
 dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
