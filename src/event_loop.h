@@ -20,6 +20,8 @@
 #ifndef VIFM__EVENT_LOOP_H__
 #define VIFM__EVENT_LOOP_H__
 
+#include "utils/test_helpers.h"
+
 /* Everything is driven from this function with the exception of signals which
  * are handled in signals.c.  It is reentrant so remote pieces of code can run
  * nested event loops. */
@@ -28,6 +30,13 @@ void event_loop(const int *quit);
 void update_input_buf(void);
 
 int is_input_buf_empty(void);
+
+#ifdef TEST
+#include "ui/ui.h"
+#endif
+TSTATIC_DEFS(
+	int process_scheduled_updates_of_view(FileView *view);
+)
 
 #endif /* VIFM__EVENT_LOOP_H__ */
 

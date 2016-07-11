@@ -134,6 +134,7 @@ static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
 static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
+static int tree_has_changed(const dir_entry_t *entries, size_t nchildren);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
 		const char path[], int *updir, char buf[], size_t buf_size);
@@ -2691,7 +2692,8 @@ check_if_filelist_have_changed(FileView *view)
 	int failed, changed;
 	const char *const curr_dir = flist_get_dir(view);
 
-	if(view->on_slow_fs || flist_custom_active(view) ||
+	if(view->on_slow_fs ||
+			(flist_custom_active(view) && !view->custom.tree_view) ||
 			is_unc_root(curr_dir))
 	{
 		return;
@@ -2731,6 +2733,44 @@ check_if_filelist_have_changed(FileView *view)
 	{
 		ui_view_schedule_reload(view);
 	}
+	else if(flist_custom_active(view) && view->custom.tree_view)
+	{
+		if(tree_has_changed(view->dir_entry, view->list_rows))
+		{
+			ui_view_schedule_reload(view);
+		}
+	}
+}
+
+/* Checks whether tree-view needs a reload (any of subdirectories were changed).
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+tree_has_changed(const dir_entry_t *entries, size_t nchildren)
+{
+	size_t pos = 0U;
+	while(pos < nchildren)
+	{
+		const dir_entry_t *const entry = &entries[pos];
+		if(entry->type == FT_DIR)
+		{
+			char full_path[PATH_MAX];
+			struct stat s;
+
+			get_full_path_of(entry, sizeof(full_path), full_path);
+			if(os_stat(full_path, &s) != 0 || entry->mtime != s.st_mtime)
+			{
+				return 1;
+			}
+
+			if(tree_has_changed(entry + 1, entry->child_count))
+			{
+				return 1;
+			}
+		}
+
+		pos += entry->child_count + 1;
+	}
+	return 0;
 }
 
 int

@@ -8,8 +8,11 @@
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/utils.h"
+#include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -128,6 +131,82 @@ TEST(tree_is_reloaded_manually_with_file_updates)
 	validate_tree(&lwin);
 
 	assert_success(remove(SANDBOX_PATH "/a"));
+}
+
+TEST(tree_is_reloaded_automatically_with_file_updates)
+{
+	struct stat st;
+
+	update_string(&cfg.ruler_format, "");
+	lwin.columns = columns_create();
+
+	create_file(SANDBOX_PATH "/a");
+	create_file(SANDBOX_PATH "/b");
+
+	/* Use presumably older timestamp for directory to be changed (we need one
+	 * second difference). */
+	assert_success(os_lstat(TEST_DATA_PATH, &st));
+	clone_timestamps(SANDBOX_PATH, TEST_DATA_PATH, &st);
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(2, lwin.list_rows);
+
+	check_if_filelist_have_changed(&lwin);
+	ui_view_query_scheduled_event(&lwin);
+	assert_success(remove(SANDBOX_PATH "/b"));
+	check_if_filelist_have_changed(&lwin);
+
+	curr_stats.load_stage = 2;
+	assert_true(process_scheduled_updates_of_view(&lwin));
+	curr_stats.load_stage = 0;
+
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(remove(SANDBOX_PATH "/a"));
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
+	update_string(&cfg.ruler_format, NULL);
+}
+
+TEST(nested_directory_change_detection)
+{
+	struct stat st;
+
+	update_string(&cfg.ruler_format, "");
+	lwin.columns = columns_create();
+
+	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
+	create_file(SANDBOX_PATH "/nested-dir/a");
+	create_file(SANDBOX_PATH "/nested-dir/b");
+
+	/* Use presumably older timestamp for directory to be changed (we need one
+	 * second difference). */
+	assert_success(os_lstat(TEST_DATA_PATH, &st));
+	clone_timestamps(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st);
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(3, lwin.list_rows);
+
+	check_if_filelist_have_changed(&lwin);
+	ui_view_query_scheduled_event(&lwin);
+	assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
+	check_if_filelist_have_changed(&lwin);
+
+	curr_stats.load_stage = 2;
+	assert_true(process_scheduled_updates_of_view(&lwin));
+	curr_stats.load_stage = 0;
+
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(remove(SANDBOX_PATH "/nested-dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
+	update_string(&cfg.ruler_format, NULL);
 }
 
 static void
