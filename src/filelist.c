@@ -3372,6 +3372,7 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 int
 flist_load_tree(FileView *view, const char path[])
 {
+	char canonic_path[PATH_MAX];
 	int nfiltered;
 
 	flist_custom_start(view, "tree");
@@ -3387,6 +3388,11 @@ flist_load_tree(FileView *view, const char path[])
 		return 1;
 	}
 	view->filtered = nfiltered;
+
+	to_canonic_path(path, flist_get_dir(view), canonic_path,
+			sizeof(canonic_path));
+	replace_string(&view->custom.orig_dir, canonic_path);
+
 	return 0;
 }
 
