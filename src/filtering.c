@@ -35,6 +35,8 @@
 static void reset_filter(filter_t *filter);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
+static int file_is_filtered(FileView *view, const char filename[], int is_dir,
+		int apply_local_filter);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static int load_unfiltered_list(FileView *const view);
 static void store_local_filter_position(FileView *const view, int pos);
@@ -226,6 +228,22 @@ toggle_filter_inversion(FileView *view)
 int
 filters_file_is_visible(FileView *view, const char filename[], int is_dir)
 {
+	return file_is_filtered(view, filename, is_dir, 1);
+}
+
+int
+filters_file_is_filtered(FileView *view, const char filename[], int is_dir)
+{
+	return file_is_filtered(view, filename, is_dir, 0);
+}
+
+/* Checks whether file/directory passes filename filters of the view.  Returns
+ * non-zero if given filename passes filter and should be visible, otherwise
+ * zero is returned, in which case the file should be hidden. */
+static int
+file_is_filtered(FileView *view, const char filename[], int is_dir,
+		int apply_local_filter)
+{
 	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
 	if(is_dir)
@@ -239,7 +257,8 @@ filters_file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 0;
 	}
 
-	if(filter_matches(&view->local_filter.filter, filename) == 0)
+	if(apply_local_filter &&
+			filter_matches(&view->local_filter.filter, filename) == 0)
 	{
 		return 0;
 	}

@@ -146,9 +146,9 @@ static int is_entry_selected(const dir_entry_t *entry);
 static int is_entry_marked(const dir_entry_t *entry);
 static void clear_marking(FileView *view);
 static int add_files_recursively(FileView *view, const char path[],
-		int parent_pos);
+		int parent_pos, int no_direct_parent);
 static int file_is_visible(FileView *view, const char filename[], int is_dir,
-		const void *data);
+		const void *data, int apply_local_filter);
 static int add_directory_leaf(FileView *view, const char path[],
 		int parent_pos);
 static int init_parent_entry(FileView *view, dir_entry_t *entry,
@@ -2368,7 +2368,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		return 0;
 	}
 
-	if(!file_is_visible(view, name, 0, data))
+	if(!file_is_visible(view, name, 0, data, 1))
 	{
 		++view->filtered;
 		return 0;
@@ -3467,7 +3467,7 @@ flist_load_tree(FileView *view, const char path[])
 
 	flist_custom_start(view, "tree");
 
-	nfiltered = add_files_recursively(view, path, -1);
+	nfiltered = add_files_recursively(view, path, -1, 0);
 	if(nfiltered < 0)
 	{
 		show_error_msg("Tree View", "Failed to list directory");
@@ -3491,10 +3491,12 @@ flist_load_tree(FileView *view, const char path[])
  * filtered out files on success or partial success and negative value on
  * serious error. */
 static int
-add_files_recursively(FileView *view, const char path[], int parent_pos)
+add_files_recursively(FileView *view, const char path[], int parent_pos,
+		int no_direct_parent)
 {
 	int i;
-	int npassed = 0, nfiltered = 0;
+	const int prev_count = view->custom.entry_count;
+	int nfiltered = 0;
 
 	int len;
 	char **lst = list_all_files(path, &len);
@@ -3509,8 +3511,15 @@ add_files_recursively(FileView *view, const char path[], int parent_pos)
 		dir_entry_t *entry;
 
 		const int dir = is_dir(full_path);
-		if(!file_is_visible(view, lst[i], dir, NULL))
+		if(!file_is_visible(view, lst[i], dir, NULL, 1))
 		{
+			/* Traverse directory even if we're skipping it, because we might need
+			 * files that are inside of it. */
+			if(dir && file_is_visible(view, lst[i], dir, NULL, 0))
+			{
+				nfiltered += add_files_recursively(view, full_path, parent_pos, 1);
+			}
+
 			free(full_path);
 			++nfiltered;
 			continue;
@@ -3534,7 +3543,7 @@ add_files_recursively(FileView *view, const char path[], int parent_pos)
 		if(entry->type == FT_DIR)
 		{
 			const int idx = view->custom.entry_count - 1;
-			const int filtered = add_files_recursively(view, full_path, idx);
+			const int filtered = add_files_recursively(view, full_path, idx, 0);
 			/* Keep going in case of error and load partial list. */
 			if(filtered >= 0)
 			{
@@ -3546,13 +3555,12 @@ add_files_recursively(FileView *view, const char path[], int parent_pos)
 			}
 		}
 
-		++npassed;
 		free(full_path);
 	}
 
 	free_string_array(lst, len);
 
-	if(npassed == 0)
+	if(!no_direct_parent && view->custom.entry_count == prev_count)
 	{
 		/* To be able to perform operations inside directory (e.g., create files),
 		 * we need at least one element there. */
@@ -3570,15 +3578,21 @@ add_files_recursively(FileView *view, const char path[], int parent_pos)
  * optimization).  Returns non-zero if so, otherwise zero is returned. */
 static int
 file_is_visible(FileView *view, const char filename[], int is_dir,
-		const void *data)
+		const void *data, int apply_local_filter)
 {
 	if(view->hide_dot && filename[0] == '.')
 	{
 		return 0;
 	}
 
-	return filters_file_is_visible(view, filename,
-			(data == NULL) ? is_dir : data_is_dir_entry(data));
+	if(data != NULL)
+	{
+		is_dir = data_is_dir_entry(data);
+	}
+
+	return apply_local_filter
+	     ? filters_file_is_visible(view, filename, is_dir)
+	     : filters_file_is_filtered(view, filename, is_dir);
 }
 
 /* Adds ".." directory leaf of an empty directory to the tree which is being

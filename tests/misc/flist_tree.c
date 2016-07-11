@@ -249,6 +249,53 @@ TEST(excluding_nested_dir_in_tree_adds_dummy)
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
 }
 
+TEST(local_filter_does_not_block_visiting_directories)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+	validate_tree(&lwin);
+
+	/* Set manual filter to make sure that local filter doesn't dominate it. */
+	(void)filter_set(&lwin.manual_filter, "2");
+
+	(void)filter_set(&lwin.local_filter.filter, "file");
+	load_dir_list(&lwin, 1);
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
+TEST(dot_filter_dominates_local_filter_in_tree)
+{
+	/* Set filter to make sure that local filter doesn't dominate them. */
+	lwin.hide_dot = 1;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/.nested-dir", 0700));
+	create_file(SANDBOX_PATH "/.nested-dir/a");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+	validate_tree(&lwin);
+
+	(void)filter_set(&lwin.local_filter.filter, "a");
+	load_dir_list(&lwin, 1);
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+	validate_tree(&lwin);
+
+	assert_success(remove(SANDBOX_PATH "/.nested-dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/.nested-dir"));
+}
+
+TEST(non_matching_local_filter_results_in_single_dummy)
+{
+	(void)filter_set(&lwin.local_filter.filter, "no matches");
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+	validate_tree(&lwin);
+}
+
 static void
 validate_tree(const FileView *view)
 {
