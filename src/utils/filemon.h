@@ -33,6 +33,9 @@ typedef struct
 #else
 	time_t ts;
 #endif
+
+	/* The following members are to react on file system change, during which
+	 * timestamp can remain the same. */
 	dev_t dev;
 	ino_t inode;
 }
