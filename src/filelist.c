@@ -2689,9 +2689,10 @@ void
 check_if_filelist_have_changed(FileView *view)
 {
 	int failed, changed;
+	const char *const curr_dir = flist_get_dir(view);
 
 	if(view->on_slow_fs || flist_custom_active(view) ||
-			is_unc_root(view->curr_dir))
+			is_unc_root(curr_dir))
 	{
 		return;
 	}
@@ -2710,17 +2711,17 @@ check_if_filelist_have_changed(FileView *view)
 	}
 
 	/* Check if we still have permission to visit this directory. */
-	failed |= (os_access(view->curr_dir, X_OK) != 0);
+	failed |= (os_access(curr_dir, X_OK) != 0);
 
 	if(failed)
 	{
-		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
+		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", curr_dir);
 		log_cwd();
 
-		show_error_msgf("Directory Change Check", "Cannot open %s", view->curr_dir);
+		show_error_msgf("Directory Change Check", "Cannot open %s", curr_dir);
 
 		leave_invalid_dir(view);
-		(void)change_directory(view, view->curr_dir);
+		(void)change_directory(view, curr_dir);
 		clean_selected_files(view);
 		ui_view_schedule_reload(view);
 		return;
