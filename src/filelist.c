@@ -2111,10 +2111,7 @@ update_dir_watcher(FileView *view)
 
 	if(view->watch == NULL || stroscmp(view->watched_dir, curr_dir) != 0)
 	{
-		if(view->watch != NULL)
-		{
-			fswatch_free(view->watch);
-		}
+		fswatch_free(view->watch);
 
 		view->watch = fswatch_create(curr_dir);
 		if(view->watch == NULL)
