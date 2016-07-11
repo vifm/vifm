@@ -105,6 +105,31 @@ TEST(tree_accounts_for_local_filter)
 	validate_tree(&lwin);
 }
 
+TEST(tree_is_reloaded_manually_with_file_updates)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
+	create_file(SANDBOX_PATH "/a");
+	create_file(SANDBOX_PATH "/nested-dir/b");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(3, lwin.list_rows);
+
+	/* On removal of single file in directory, it's replaced with ".." entry. */
+	assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
+
+	load_dir_list(&lwin, 1);
+	assert_int_equal(3, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
+
+	load_dir_list(&lwin, 1);
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(remove(SANDBOX_PATH "/a"));
+}
+
 static void
 validate_tree(const FileView *view)
 {

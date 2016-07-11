@@ -2016,6 +2016,11 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(flist_custom_active(view))
 	{
+		if(view->custom.tree_view)
+		{
+			return flist_load_tree(view, flist_get_dir(view));
+		}
+
 		if(custom_list_is_incomplete(view))
 		{
 			/* Load initial list of custom entries if it's available. */
