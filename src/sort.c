@@ -51,8 +51,9 @@ static SortingKey sort_type;
 /* Sorting key specific data. */
 static void *sort_data;
 
-static void sort_by_groups(void);
-static void sort_by_key(char key, void *data);
+static void sort_by_groups(dir_entry_t *entries, size_t nentries);
+static void sort_by_key(dir_entry_t *entries, size_t nentries, char key,
+		void *data);
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
@@ -104,22 +105,22 @@ sort_view(FileView *v)
 
 		if(sorting_key == SK_BY_GROUPS)
 		{
-			sort_by_groups();
+			sort_by_groups(&view->dir_entry[0], view->list_rows);
 			continue;
 		}
 
-		sort_by_key(sorting_key, NULL);
+		sort_by_key(&view->dir_entry[0], view->list_rows, sorting_key, NULL);
 	}
 
 	if(!ui_view_sort_list_contains(v->sort, SK_BY_DIR))
 	{
-		sort_by_key(SK_BY_DIR, NULL);
+		sort_by_key(&view->dir_entry[0], view->list_rows, SK_BY_DIR, NULL);
 	}
 }
 
-/* Sorts view according to sorting groups option. */
+/* Sorts specified range of entries according to sorting groups option. */
 static void
-sort_by_groups(void)
+sort_by_groups(dir_entry_t *entries, size_t nentries)
 {
 	char **groups = NULL;
 	int ngroups = 0;
@@ -137,36 +138,38 @@ sort_by_groups(void)
 	{
 		regex_t regex;
 		(void)regcomp(&regex, groups[i], REG_EXTENDED | REG_ICASE);
-		sort_by_key(SK_BY_GROUPS, &regex);
+		sort_by_key(entries, nentries, SK_BY_GROUPS, &regex);
 		regfree(&regex);
 	}
 	if(ngroups != 0)
 	{
-		sort_by_key(SK_BY_GROUPS, &view->primary_group);
+		sort_by_key(entries, nentries, SK_BY_GROUPS, &view->primary_group);
 	}
 
 	free_string_array(groups, ngroups);
 }
 
-/* Sorts view by the key in a stable way. */
+/* Sorts specified range of entries by the key in a stable way. */
 static void
-sort_by_key(char key, void *data)
+sort_by_key(dir_entry_t *entries, size_t nentries, char key, void *data)
 {
-	int j;
+	unsigned int i;
+
+	if(nentries == 0U)
+	{
+		return;
+	}
 
 	sort_descending = (key < 0);
 	sort_type = (SortingKey)abs(key);
 	sort_data = data;
 
-	for(j = 0; j < view->list_rows; ++j)
+	for(i = 0U; i < nentries; ++i)
 	{
-		view->dir_entry[j].list_num = j;
+		entries[i].list_num = i;
 	}
 
-	if(view->list_rows != 0)
-	{
-		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
-	}
+	qsort(entries, nentries, sizeof(*entries), &sort_dir_list);
 }
 
 /* Compares file names containing numbers correctly. */
