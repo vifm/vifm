@@ -201,7 +201,7 @@ static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
-		char path[], size_t path_len, int *from_file, int *from_trash);
+		char dst_path[], size_t dst_path_len, int *from_file, int *from_trash);
 static int can_read_selected_files(FileView *view);
 static int check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len);
@@ -3428,8 +3428,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
  * message and negative number for other errors. */
 static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
-		int force, char undo_msg[], size_t undo_msg_len, char path[],
-		size_t path_len, int *from_file, int *from_trash)
+		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
+		size_t dst_path_len, int *from_file, int *from_trash)
 {
 	char **marked;
 	size_t nmarked;
@@ -3449,17 +3449,17 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines == 1)
 	{
-		if(check_dir_path(other_view, (*list)[0], path, path_len))
+		if(check_dir_path(other_view, (*list)[0], dst_path, dst_path_len))
 		{
 			*nlines = 0;
 		}
 	}
 	else
 	{
-		strcpy(path, other_view->curr_dir);
+		copy_str(dst_path, dst_path_len, other_view->curr_dir);
 	}
 
-	if(!check_if_dir_writable(DR_DESTINATION, path))
+	if(!check_if_dir_writable(DR_DESTINATION, dst_path))
 	{
 		return -1;
 	}
@@ -3479,11 +3479,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines > 0 &&
 			(!is_name_list_ok(nmarked, *nlines, *list, NULL) ||
-			(!is_copy_list_ok(path, *nlines, *list) && !force)))
+			(!is_copy_list_ok(dst_path, *nlines, *list) && !force)))
 	{
 		error = 1;
 	}
-	if(*nlines == 0 && !force && !is_copy_list_ok(path, nmarked, marked))
+	if(*nlines == 0 && !force && !is_copy_list_ok(dst_path, nmarked, marked))
 	{
 		error = 1;
 	}
@@ -3518,7 +3518,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	snprintf(undo_msg, undo_msg_len, "%s from %s to ", cmlo_to_str(op),
 			replace_home_part(flist_get_dir(view)));
 	snprintf(undo_msg + strlen(undo_msg), undo_msg_len - strlen(undo_msg),
-			"%s: ", replace_home_part(path));
+			"%s: ", replace_home_part(dst_path));
 	append_marked_files(view, undo_msg, (*nlines > 0) ? *list : NULL);
 
 	if(op == CMLO_MOVE)
