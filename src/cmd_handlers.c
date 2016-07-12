@@ -71,7 +71,6 @@
 #include "utils/env.h"
 #include "utils/filter.h"
 #include "utils/fs.h"
-#include "utils/int_stack.h"
 #include "utils/log.h"
 #include "utils/matchers.h"
 #include "utils/path.h"
