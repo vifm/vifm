@@ -16,6 +16,7 @@
 
 #include "utils.h"
 
+static int remove_selected(FileView *view, const dir_entry_t *entry, void *arg);
 static void validate_tree(const FileView *view);
 static void validate_parents(const dir_entry_t *entries, int nchildren);
 
@@ -294,6 +295,26 @@ TEST(non_matching_local_filter_results_in_single_dummy)
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
 	validate_tree(&lwin);
+}
+
+TEST(zapping_a_tree_reassigns_children)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+	validate_tree(&lwin);
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+	assert_int_equal(1, zap_entries(&lwin, lwin.dir_entry, &lwin.list_rows,
+				&remove_selected, NULL, 0, 0));
+	assert_int_equal(11, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
+static int
+remove_selected(FileView *view, const dir_entry_t *entry, void *arg)
+{
+	return !entry->selected;
 }
 
 static void

@@ -2196,7 +2196,7 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 	j = 0;
 	for(i = 0; i < *count; ++i)
 	{
-		int k;
+		int k, pos;
 		dir_entry_t *const entry = &entries[i];
 		const int nremoved = remove_subtrees ? (entry->child_count + 1) : 1;
 
@@ -2209,6 +2209,22 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 			++j;
 			continue;
+		}
+
+		/* Reassign children of node about to be deleted to its parent.  Child count
+		 * don't need an update here because these nodes are already counted. */
+		pos = i + 1;
+		while(pos < i + 1 + entry->child_count)
+		{
+			if(entry->child_pos == 0)
+			{
+				entries[pos].child_pos = 0;
+			}
+			else
+			{
+				entries[pos].child_pos += entry->child_pos - 1;
+			}
+			pos += entries[pos].child_count + 1;
 		}
 
 		if(entry->child_pos != 0)
