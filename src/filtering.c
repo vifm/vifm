@@ -41,6 +41,7 @@ static int get_unfiltered_pos(const FileView *const view, int pos);
 static int load_unfiltered_list(FileView *const view);
 static void store_local_filter_position(FileView *const view, int pos);
 static int update_filtering_lists(FileView *view, int add, int clear);
+static void reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered);
 static void ensure_filtered_list_not_empty(FileView *view,
 		dir_entry_t *parent_entry);
 static int extract_previously_selected_pos(FileView *const view);
@@ -428,11 +429,21 @@ update_filtering_lists(FileView *view, int add, int clear)
 			name = name_with_slash;
 		}
 
+		/* list_num links to position of nodes passed through filter in list of
+		 * visible files.  Nodes that didn't pass have -1. */
+		entry->list_num = -1;
 		if(filter_matches(&view->local_filter.filter, name) != 0)
 		{
 			if(add)
 			{
-				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
+				dir_entry_t *e = add_dir_entry(&view->dir_entry, &list_size, entry);
+				if(e != NULL)
+				{
+					entry->list_num = list_size - 1U;
+					/* We basically grow the tree node by node while performing
+					 * reparenting. */
+					reparent_tree_node(entry, e);
+				}
 			}
 		}
 		else
@@ -455,6 +466,42 @@ update_filtering_lists(FileView *view, int add, int clear)
 						(filter_matches(&view->local_filter.filter, "../") == 0));
 	}
 	return 0;
+}
+
+/* Reparents *filtered node by attaching it to the closes ancestor of *original
+ * mapped onto the list of filtered nodes.  list_num field is used to perform
+ * the mapping. */
+static void
+reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered)
+{
+	dir_entry_t *parent, *child;
+
+	filtered->child_pos = 0;
+	filtered->child_count = 0;
+
+	/* Go through items in unfiltered list looking for the closest ancestor, which
+	 * wasn't filtered out and make it the parent. */
+	child = original;
+	parent = child - child->child_pos;
+	while(parent != child)
+	{
+		if(parent->list_num >= 0)
+		{
+			filtered->child_pos = original->list_num - parent->list_num;
+			parent = filtered - filtered->child_pos;
+			while(parent != child)
+			{
+				++parent->child_count;
+
+				child = parent;
+				parent -= parent->child_pos;
+			}
+			break;
+		}
+
+		child = parent;
+		parent -= parent->child_pos;
+	}
 }
 
 /* Use parent_entry to make filtered list not empty, or create such entry (if

@@ -351,6 +351,18 @@ TEST(tree_sorting_considers_structure)
 	assert_string_equal("file5", lwin.dir_entry[9].name);
 }
 
+TEST(nodes_are_reparented_on_filtering)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, local_filter_set(&lwin, "2"));
+	local_filter_accept(&lwin);
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
 static int
 remove_selected(FileView *view, const dir_entry_t *entry, void *arg)
 {
