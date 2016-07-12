@@ -3,6 +3,7 @@
 #include <unistd.h> /* rmdir() symlink() */
 
 #include <stdlib.h> /* remove() */
+#include <string.h> /* memset() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
@@ -12,6 +13,7 @@
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/sort.h"
 #include "../../src/status.h"
 
 #include "utils.h"
@@ -309,6 +311,44 @@ TEST(zapping_a_tree_reassigns_children)
 				&remove_selected, NULL, 0, 0));
 	assert_int_equal(11, lwin.list_rows);
 	validate_tree(&lwin);
+}
+
+TEST(tree_sorting_considers_structure)
+{
+	lwin.hide_dot = 1;
+
+	lwin.sort[0] = SK_BY_NAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(10, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_string_equal("dir1", lwin.dir_entry[0].name);
+	assert_string_equal("dir2", lwin.dir_entry[1].name);
+	assert_string_equal("dir3", lwin.dir_entry[2].name);
+	assert_string_equal("file1", lwin.dir_entry[3].name);
+	assert_string_equal("file2", lwin.dir_entry[4].name);
+	assert_string_equal("dir4", lwin.dir_entry[5].name);
+	assert_string_equal("file3", lwin.dir_entry[6].name);
+	assert_string_equal("file4", lwin.dir_entry[7].name);
+	assert_string_equal("dir5", lwin.dir_entry[8].name);
+	assert_string_equal("file5", lwin.dir_entry[9].name);
+
+	lwin.sort[0] = SK_BY_NAME;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+	sort_view(&lwin);
+
+	assert_string_equal("dir1", lwin.dir_entry[0].name);
+	assert_string_equal("dir2", lwin.dir_entry[1].name);
+	assert_string_equal("dir4", lwin.dir_entry[5].name);
+	assert_string_equal("file3", lwin.dir_entry[6].name);
+	assert_string_equal("dir3", lwin.dir_entry[2].name);
+	assert_string_equal("file1", lwin.dir_entry[3].name);
+	assert_string_equal("file2", lwin.dir_entry[4].name);
+	assert_string_equal("file4", lwin.dir_entry[7].name);
+	assert_string_equal("dir5", lwin.dir_entry[8].name);
+	assert_string_equal("file5", lwin.dir_entry[9].name);
 }
 
 static int
