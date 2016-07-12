@@ -2716,18 +2716,18 @@ free_dir_entry(const FileView *view, dir_entry_t *entry)
 	}
 }
 
-int
+dir_entry_t *
 add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 {
 	dir_entry_t *const new_entry = alloc_dir_entry(list, *list_size);
 	if(new_entry == NULL)
 	{
-		return 1;
+		return NULL;
 	}
 
 	*new_entry = *entry;
 	++*list_size;
-	return 0;
+	return new_entry;
 }
 
 /* Allocates one more directory entry for the *list of size list_size by

@@ -306,8 +306,9 @@ uint64_t entry_calc_nitems(const dir_entry_t *entry);
 void replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 		const dir_entry_t *with_entries, int with_count);
 /* Adds new entry to the *list of length *list_size and updates them
- * appropriately.  Returns zero on success, otherwise non-zero is returned. */
-int add_dir_entry(dir_entry_t **list, size_t *list_size,
+ * appropriately.  Returns NULL on error, otherwise pointer to the entry is
+ * returned. */
+dir_entry_t * add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
 /* Frees single directory entry. */
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
