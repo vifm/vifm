@@ -3265,6 +3265,16 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 	char name[NAME_MAX];
 	const char *path = entry->origin;
 
+	char *free_this = NULL;
+	const char *root_path = flist_get_dir(view);
+	if(format && view->custom.tree_view && ui_view_displays_columns(view) &&
+			entry->child_pos != 0)
+	{
+		const dir_entry_t *const parent = entry - entry->child_pos;
+		free_this = format_str("%s/%s", parent->origin, parent->name);
+		root_path = free_this;
+	}
+
 	if(format)
 	{
 		/* XXX: decorations should apply to whole shortened paths? */
@@ -3281,17 +3291,18 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 		return;
 	}
 
-	if(!path_starts_with(path, flist_get_dir(view)))
+	if(!path_starts_with(path, root_path))
 	{
 		char full_path[PATH_MAX];
 		snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
 		copy_str(buf, buf_len, full_path);
+		free(free_this);
 		return;
 	}
 
-	assert(strlen(path) >= strlen(flist_get_dir(view)) && "Path is too short.");
+	assert(strlen(path) >= strlen(root_path) && "Path is too short.");
 
-	path += strlen(flist_get_dir(view));
+	path += strlen(root_path);
 	path = skip_char(path, '/');
 	if(path[0] == '\0')
 	{
@@ -3301,6 +3312,8 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 	{
 		snprintf(buf, buf_len, "%s/%s", path, name);
 	}
+
+	free(free_this);
 }
 
 void

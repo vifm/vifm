@@ -371,6 +371,23 @@ TEST(nodes_are_reparented_on_filtering)
 	validate_tree(&lwin);
 }
 
+TEST(short_paths_consider_tree_structure)
+{
+	char name[NAME_MAX];
+
+	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
+
+	(void)filter_set(&lwin.local_filter.filter, "2");
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+
+	get_short_path_of(&lwin, &lwin.dir_entry[0], 1, sizeof(name), name);
+	assert_string_equal("dir1/dir2", name);
+	get_short_path_of(&lwin, &lwin.dir_entry[1], 1, sizeof(name), name);
+	assert_string_equal("dir3/file2", name);
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
