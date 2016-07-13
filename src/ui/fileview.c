@@ -63,6 +63,10 @@ typedef struct
 
 	size_t current_line;  /* Line of the cell. */
 	size_t column_offset; /* Offset in characters of the column. */
+
+	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
+	                     * A pointer to allow changing value in const struct.
+	                     * Should be zero first time, then auto reset. */
 }
 column_data_t;
 
@@ -264,6 +268,7 @@ draw_dir_list_only(FileView *view)
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	for(x = top; x < view->list_rows; ++x)
 	{
+		size_t prefix_len = 0U;
 		const column_data_t cdt = {
 			.view = view,
 			.line_pos = x,
@@ -271,6 +276,7 @@ draw_dir_list_only(FileView *view)
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
+			.prefix_len = &prefix_len,
 		};
 
 		const size_t print_width = calculate_print_width(view, x, col_width);
@@ -661,10 +667,12 @@ clear_current_line_bar(FileView *view, int is_current)
 	size_t col_count;
 	size_t print_width;
 
+	size_t prefix_len = 0U;
 	column_data_t cdt = {
 		.view = view,
 		.line_pos = old_pos,
 		.is_current = is_current,
+		.prefix_len = &prefix_len,
 	};
 
 	if(curr_stats.load_stage < 2)
@@ -1424,9 +1432,11 @@ fview_position_updated(FileView *view)
 	size_t col_width;
 	size_t col_count;
 	size_t print_width;
+	size_t prefix_len = 0U;
 	column_data_t cdt = {
 		.view = view,
 		.is_current = 1,
+		.prefix_len = &prefix_len,
 	};
 
 	if(view->curr_line > view->list_rows - 1)

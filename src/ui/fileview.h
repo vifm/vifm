@@ -164,6 +164,10 @@ typedef struct
 
 	size_t current_line;  /* Line of the cell. */
 	size_t column_offset; /* Offset in characters of the column. */
+
+	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
+	                     * A pointer to allow changing value in const struct.
+	                     * Should be zero first time, then auto reset. */
 }
 column_data_t;
 

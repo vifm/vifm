@@ -429,7 +429,8 @@ TEST(custom_view_does_not_reset_local_state)
 
 	for(very = 0; very < 2; ++very)
 	{
-		column_data_t cdt = { .view = &lwin };
+		size_t prefix_len = 0U;
+		column_data_t cdt = { .view = &lwin, .prefix_len = &prefix_len };
 
 		lwin.columns = columns_create();
 
