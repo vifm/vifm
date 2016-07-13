@@ -85,7 +85,7 @@ static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
 static int clear_current_line_bar(FileView *view, int is_current);
 static size_t get_effective_scroll_offset(const FileView *view);
-static void column_line_print(const void *data, int column_id, const char *buf,
+static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static void draw_line_number(const column_data_t *cdt, int column);
 static void highlight_search(FileView *view, dir_entry_t *entry,
@@ -843,36 +843,61 @@ update_scroll_bind_offset(void)
 
 /* Print callback for column_view unit. */
 static void
-column_line_print(const void *data, int column_id, const char *buf,
+column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
 {
-	const int padding = (cfg.extra_padding != 0);
-
-	int primary;
-	int line_attrs;
 	char print_buf[strlen(buf) + 1];
-	size_t width_left;
-	size_t trim_pos;
+	size_t prefix_len, final_offset;
+	size_t width_left, trim_pos;
 	int reserved_width;
 
 	const column_data_t *const cdt = data;
-	const size_t i = cdt->line_pos;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[i];
+	dir_entry_t *entry = &view->dir_entry[cdt->line_pos];
 
 	const int numbers_visible = (offset == 0 && ui_view_displays_numbers(view));
+	const int padding = (cfg.extra_padding != 0);
 
-	const size_t prefix_len = padding + view->real_num_width;
-	const size_t final_offset = prefix_len + cdt->column_offset + offset;
+	const int primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
+	const int line_attrs = prepare_col_color(view, entry, primary,
+			cdt->line_hi_group, cdt->is_current);
 
-	primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
-	line_attrs = prepare_col_color(view, entry, primary, cdt->line_hi_group,
-			cdt->is_current);
+	if(*cdt->prefix_len != 0U && align == AT_RIGHT)
+	{
+		/* Prefix length requires correction if left hand side of file name is
+		 * trimmed. */
+		size_t width = utf8_strsw(buf);
+		if(utf8_strsw(full_column) > width)
+		{
+			/* As left side is trimmed and might contain ellipsis calculate offsets
+			 * according to the right side. */
+			width -= utf8_strsw(full_column + *cdt->prefix_len);
+			*cdt->prefix_len = utf8_strsnlen(buf, width);
+		}
+	}
+
+	prefix_len = padding + view->real_num_width + *cdt->prefix_len;
+	final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(numbers_visible)
 	{
-		const int column = final_offset - view->real_num_width;
+		const int column = final_offset - *cdt->prefix_len - view->real_num_width;
 		draw_line_number(cdt, column);
+	}
+
+	if(*cdt->prefix_len != 0U)
+	{
+		/* Copy prefix part into working buffer. */
+		strncpy(print_buf, buf, *cdt->prefix_len);
+		print_buf[*cdt->prefix_len] = '\0';
+		buf += *cdt->prefix_len;
+		full_column += *cdt->prefix_len;
+
+		checked_wmove(view->win, cdt->current_line,
+				final_offset - *cdt->prefix_len);
+		wprinta(view->win, print_buf,
+				prepare_col_color(view, entry, 0, cdt->line_hi_group, cdt->is_current));
+		*cdt->prefix_len = 0U;
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
