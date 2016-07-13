@@ -2,11 +2,13 @@
 
 #include <unistd.h> /* rmdir() symlink() */
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* remove() */
 #include <string.h> /* memset() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
@@ -18,6 +20,8 @@
 
 #include "utils.h"
 
+static void column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[]);
 static int remove_selected(FileView *view, const dir_entry_t *entry, void *arg);
 static void validate_tree(const FileView *view);
 static void validate_parents(const dir_entry_t *entries, int nchildren);
@@ -31,6 +35,8 @@ SETUP()
 
 	curr_view = &lwin;
 	other_view = &lwin;
+
+	columns_set_line_print_func(&column_line_print);
 }
 
 TEARDOWN()
@@ -39,6 +45,8 @@ TEARDOWN()
 	update_string(&cfg.fuse_home, NULL);
 
 	view_teardown(&lwin);
+
+	columns_set_line_print_func(NULL);
 }
 
 TEST(empty_directory_tree_is_created)
@@ -361,6 +369,13 @@ TEST(nodes_are_reparented_on_filtering)
 	local_filter_accept(&lwin);
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
+}
+
+static void
+column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[])
+{
+	/* Do nothing. */
 }
 
 static int

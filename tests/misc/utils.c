@@ -97,6 +97,9 @@ view_setup(FileView *view)
 
 	view->sort[0] = SK_BY_NAME;
 	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
+
+	view->custom.entry_count = 0;
+	view->custom.entries = NULL;
 }
 
 void
