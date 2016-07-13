@@ -9,6 +9,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/column_view.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
@@ -20,6 +21,8 @@
 
 #include "utils.h"
 
+static void verify_tree_node(column_data_t *cdt, int idx, const char
+		expected[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static int remove_selected(FileView *view, const dir_entry_t *entry, void *arg);
@@ -386,6 +389,39 @@ TEST(short_paths_consider_tree_structure)
 	assert_string_equal("dir1/dir2", name);
 	get_short_path_of(&lwin, &lwin.dir_entry[1], 1, sizeof(name), name);
 	assert_string_equal("dir3/file2", name);
+}
+
+TEST(tree_prefixes_are_correct)
+{
+	size_t prefix_len = 0U;
+	column_data_t cdt = { .view = &lwin, .prefix_len = &prefix_len };
+
+	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
+	lwin.hide_dot = 1;
+
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(10, lwin.list_rows);
+	validate_tree(&lwin);
+
+	verify_tree_node(&cdt, 0, "dir1");
+	verify_tree_node(&cdt, 1, "|-- dir2");
+	verify_tree_node(&cdt, 2, "|   |-- dir3");
+	verify_tree_node(&cdt, 3, "|   |   |-- file1");
+	verify_tree_node(&cdt, 4, "|   |   `-- file2");
+	verify_tree_node(&cdt, 5, "|   `-- dir4");
+	verify_tree_node(&cdt, 6, "|       `-- file3");
+	verify_tree_node(&cdt, 7, "`-- file4");
+	verify_tree_node(&cdt, 8, "dir5");
+	verify_tree_node(&cdt, 9, "`-- file5");
+}
+
+static void
+verify_tree_node(column_data_t *cdt, int idx, const char expected[])
+{
+	char name[NAME_MAX];
+	cdt->line_pos = idx;
+	format_name(-1, cdt, sizeof(name), name);
+	assert_string_equal(expected, name);
 }
 
 static void

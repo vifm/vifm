@@ -39,6 +39,7 @@
 #include "../utils/path.h"
 #include "../utils/regexp.h"
 #include "../utils/str.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -96,7 +97,7 @@ static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
 		int type_hi, col_attr_t *col);
 static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
 		col_attr_t *col);
-static void format_name(int id, const void *data, size_t buf_len, char buf[]);
+TSTATIC void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
 static void format_nitems(int id, const void *data, size_t buf_len, char buf[]);
 static void format_primary_group(int id, const void *data, size_t buf_len,
@@ -1056,20 +1057,62 @@ mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 }
 
 /* File name format callback for column_view unit. */
-static void
+TSTATIC void
 format_name(int id, const void *data, size_t buf_len, char buf[])
 {
+	size_t len, i;
+	dir_entry_t *child, *parent;
+
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
 	dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
-	if(flist_custom_active(view))
+
+	if(!flist_custom_active(view))
 	{
-		get_short_path_of(view, entry, 1, buf_len + 1, buf);
-	}
-	else
-	{
+		/* Just file name. */
 		format_entry_name(entry, buf_len + 1, buf);
+		return;
 	}
+
+	if(!ui_view_displays_columns(view) || !view->custom.tree_view)
+	{
+		/* File name possibly with path prefix. */
+		get_short_path_of(view, entry, 1, buf_len + 1U, buf);
+		return;
+	}
+
+	/* File name possibly with path and tree prefixes. */
+	len = 0U;
+	child = entry;
+	parent = child - child->child_pos;
+	while(parent != child)
+	{
+		const char *prefix;
+		/* To avoid prepending, strings are reversed here and whole tree prefix is
+		 * reversed below to compensate for it. */
+		if(parent->child_count == child->child_pos + child->child_count)
+		{
+			prefix = (child == entry ? " --`" : "    ");
+		}
+		else
+		{
+			prefix = (child == entry ? " --|" : "   |");
+		}
+		(void)sstrappend(buf, &len, buf_len + 1U, prefix);
+
+		child = parent;
+		parent -= parent->child_pos;
+	}
+
+	for(i = 0U; i < len/2U; ++i)
+	{
+		const char t = buf[i];
+		buf[i] = buf[len - 1U - i];
+		buf[len - 1U - i] = t;
+	}
+
+	get_short_path_of(view, entry, 1, buf_len + 1U - len, buf + len);
+	*cdt->prefix_len = len;
 }
 
 /* Primary name group format (first value of 'sortgroups' option) callback for

@@ -22,6 +22,7 @@
 
 #include <stddef.h> /* size_t */
 
+#include "../utils/test_helpers.h"
 #include "ui.h"
 
 /* Initialization/termination functions. */
@@ -172,6 +173,10 @@ typedef struct
 column_data_t;
 
 #endif
+
+TSTATIC_DEFS(
+	void format_name(int id, const void *data, size_t buf_len, char buf[]);
+)
 
 #endif /* VIFM__UI__FILEVIEW_H__ */
 
