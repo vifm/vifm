@@ -868,6 +868,18 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 	{
 		go_to_prev(key_info, keys_info, 1, 1);
 	}
+	else if(view->dir_entry[view->list_pos].child_pos != 0)
+	{
+		const dir_entry_t *entry = &curr_view->dir_entry[curr_view->list_pos];
+		key_info.count = def_count(key_info.count);
+		while (key_info.count-- > 0)
+		{
+			entry -= entry->child_pos;
+		}
+		key_info.count = 1;
+		go_to_prev(key_info, keys_info, 1,
+				view->list_pos - entry_to_pos(curr_view, entry));
+	}
 }
 
 static void

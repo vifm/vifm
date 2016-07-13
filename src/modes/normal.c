@@ -1545,7 +1545,20 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(ui_view_displays_columns(curr_view))
 	{
-		cmd_gh(key_info, keys_info);
+		if(curr_view->dir_entry[curr_view->list_pos].child_pos != 0)
+		{
+			const dir_entry_t *entry = &curr_view->dir_entry[curr_view->list_pos];
+			key_info.count = def_count(key_info.count);
+			while (key_info.count-- > 0)
+			{
+				entry -= entry->child_pos;
+			}
+			pick_or_move(keys_info, entry_to_pos(curr_view, entry));
+		}
+		else
+		{
+			cmd_gh(key_info, keys_info);
+		}
 	}
 	else
 	{
