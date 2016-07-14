@@ -16,9 +16,10 @@
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
+#include "utils.h"
+
 static void perform_merge(int op);
 static void create_empty_dir(const char dir[]);
-static void create_empty_file(const char file[]);
 static int file_exists(const char file[]);
 
 static char *saved_cwd;
@@ -53,13 +54,7 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		free(lwin.dir_entry[i].name);
-	}
-	dynarray_free(lwin.dir_entry);
+	view_teardown(&lwin);
 
 	filter_dispose(&rwin.local_filter.filter);
 
@@ -253,14 +248,6 @@ create_empty_dir(const char dir[])
 {
 	os_mkdir(dir, 0700);
 	assert_true(is_dir(dir));
-}
-
-static void
-create_empty_file(const char file[])
-{
-	FILE *const f = fopen(file, "w");
-	fclose(f);
-	assert_success(access(file, F_OK));
 }
 
 static int
