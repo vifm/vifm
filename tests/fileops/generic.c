@@ -19,7 +19,6 @@
 #include "utils.h"
 
 static void perform_merge(int op);
-static void create_empty_dir(const char dir[]);
 static int file_exists(const char file[]);
 
 static char *saved_cwd;
@@ -241,13 +240,6 @@ perform_merge(int op)
 	assert_success(rmdir("second/nested1/nested2"));
 	assert_success(rmdir("second/nested1"));
 	assert_success(rmdir("second"));
-}
-
-static void
-create_empty_dir(const char dir[])
-{
-	os_mkdir(dir, 0700);
-	assert_true(is_dir(dir));
 }
 
 static int

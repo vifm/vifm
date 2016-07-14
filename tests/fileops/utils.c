@@ -6,8 +6,10 @@
 
 #include <stdio.h> /* FILE fclose() fopen() */
 
+#include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 
 void
@@ -39,6 +41,13 @@ create_empty_file(const char path[])
 	FILE *const f = fopen(path, "w");
 	fclose(f);
 	assert_success(access(path, F_OK));
+}
+
+void
+create_empty_dir(const char path[])
+{
+	os_mkdir(path, 0700);
+	assert_true(is_dir(path));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

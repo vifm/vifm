@@ -612,7 +612,8 @@ format_job_bar(void)
 	bar_text[0] = '\0';
 	text_width = 0U;
 
-	max_width = getmaxx(job_bar);
+	/* The check of stage is for tests. */
+	max_width = (curr_stats.load_stage < 2) ? 80 : getmaxx(job_bar);
 	width_used = 0U;
 	for(i = 0U; i < nbar_jobs; ++i)
 	{
