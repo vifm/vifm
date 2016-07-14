@@ -2193,7 +2193,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 {
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
-	char path[PATH_MAX];
+	char dst_path[PATH_MAX];
 	char **marked;
 	size_t nmarked;
 	int custom_fnames;
@@ -2210,7 +2210,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 
 	if(nlines == 1)
 	{
-		with_dir = check_dir_path(view, list[0], path, sizeof(path));
+		with_dir = check_dir_path(view, list[0], dst_path, sizeof(dst_path));
 		if(with_dir)
 		{
 			nlines = 0;
@@ -2223,9 +2223,9 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 			return 0;
 		}
 
-		strcpy(path, view->curr_dir);
+		copy_str(dst_path, sizeof(dst_path), view->curr_dir);
 	}
-	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
+	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, dst_path))
 	{
 		return 0;
 	}
@@ -2275,7 +2275,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 
 	ui_cancellation_reset();
 
-	nmarked_files = enqueue_marked_files(ops, view, path, 0);
+	nmarked_files = enqueue_marked_files(ops, view, dst_path, 0);
 
 	custom_fnames = (nlines > 0);
 
@@ -2294,7 +2294,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		}
 		else
 		{
-			clone_name = path_exists_at(path, name, DEREF)
+			clone_name = path_exists_at(dst_path, name, DEREF)
 			           ? gen_clone_name(name)
 			           : name;
 		}
@@ -2304,11 +2304,11 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		err = 0;
 		for(j = 0; j < copies; ++j)
 		{
-			if(path_exists_at(path, clone_name, DEREF))
+			if(path_exists_at(dst_path, clone_name, DEREF))
 			{
 				clone_name = gen_clone_name(custom_fnames ? list[i] : name);
 			}
-			err += clone_file(entry, path, clone_name, ops);
+			err += clone_file(entry, dst_path, clone_name, ops);
 		}
 
 		fixup_entry_after_rename(view, entry, clone_name);
