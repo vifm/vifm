@@ -127,7 +127,8 @@ move cursor up one line.
 move cursor down one line.
 .TP
 .BI h
-when 'lsview' is off move up one directory, otherwise move left one file.
+when 'lsview' is off move up one directory (moves to parent directory node in
+tree view), otherwise move left one file.
 .TP
 .BI l
 when 'lsview' is off move into a directory or launches a file, otherwise move
@@ -2522,6 +2523,14 @@ when :empty command is executed.
 .BI :trashes?
 same as :trashes, but also displays size of each trash directory.
 .TP
+.BI "                                         :tree"
+.TP
+.BI :tree
+turn pane into tree view with current directory as a root.  The tree view is
+implemented on top of a custom view, but is automatically kept in sync with
+file system state and considers all the filters.  Thus the structure corresponds
+to what one would see on visiting the directories manually.
+.TP
 .BI "                                         :undolist"
 .TP
 .BI :undol[ist]
@@ -4865,7 +4874,10 @@ Custom views have some differences related to navigation in regular views.
 gf - acts similar to gf on symbolic links and navigates to the file at its real
      location.
 
-h, gh - return to the original directory.
+h - go to closes parent node in tree view, otherwise return to the original
+directory.
+
+gh - return to the original directory.
 
 Opening ".." entry also causes return to the original directory.
 

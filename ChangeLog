@@ -1,5 +1,9 @@
 0.8.2 to current
 
+	Added tree view.  Thanks to filterfalse and Kornel.
+
+	Added :tree command that converts current view into a tree.
+
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 
