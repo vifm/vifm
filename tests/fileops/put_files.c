@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* stat */
-#include <unistd.h> /* stat() */
+#include <unistd.h> /* stat() rmdir() unlink() */
 
 #include <string.h> /* strcpy() */
 
@@ -9,6 +9,9 @@
 #include "../../src/utils/path.h"
 #include "../../src/fileops.h"
 #include "../../src/registers.h"
+#include "../../src/trash.h"
+
+#include "utils.h"
 
 static void line_prompt(const char prompt[], const char filename[],
 		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
@@ -76,6 +79,60 @@ TEST(put_files_bg_fails_on_identical_names_in_a_register)
 	assert_success(regs_append('a', TEST_DATA_PATH "/rename/a"));
 
 	assert_true(put_files_bg(&lwin, 'a', 0));
+}
+
+TEST(put_files_bg_fails_on_file_name_conflict)
+{
+	create_empty_file(SANDBOX_PATH "/a");
+
+	assert_success(regs_append('a', TEST_DATA_PATH "/rename/a"));
+
+	assert_true(put_files_bg(&lwin, 'a', 0));
+	wait_for_bg();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+}
+
+TEST(put_files_bg_copies_files)
+{
+	assert_success(regs_append('a', TEST_DATA_PATH "/existing-files/a"));
+
+	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	wait_for_bg();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+}
+
+TEST(put_files_bg_skips_nonexistent_source_files)
+{
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_file(SANDBOX_PATH "/dir/b");
+
+	assert_success(regs_append('a', TEST_DATA_PATH "/existing-files/a"));
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/b"));
+	assert_success(unlink(SANDBOX_PATH "/dir/b"));
+
+	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	wait_for_bg();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(put_files_bg_demangles_names_of_trashed_files)
+{
+	set_trash_dir(SANDBOX_PATH "/trash");
+
+	create_empty_dir(SANDBOX_PATH "/trash");
+	create_empty_file(SANDBOX_PATH "/trash/000_b");
+
+	assert_success(regs_append('a', SANDBOX_PATH "/trash/000_b"));
+
+	assert_int_equal(0, put_files_bg(&lwin, 'a', 1));
+	wait_for_bg();
+
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(rmdir(SANDBOX_PATH "/trash"));
 }
 
 TEST(overwrite_request_accounts_for_target_file_rename)

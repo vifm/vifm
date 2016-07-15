@@ -9,14 +9,11 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
-#include "../../src/background.h"
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
 #include "../../src/trash.h"
 
 #include "utils.h"
-
-static void wait_for_bg(void);
 
 static char *saved_cwd;
 
@@ -233,21 +230,6 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
-}
-
-static void
-wait_for_bg(void)
-{
-	int counter = 0;
-	while(bg_has_active_jobs())
-	{
-		usleep(2000);
-		if(++counter > 100)
-		{
-			assert_fail("Waiting for too long.");
-			break;
-		}
-	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

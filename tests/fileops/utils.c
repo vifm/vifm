@@ -10,6 +10,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/background.h"
 #include "../../src/filelist.h"
 
 void
@@ -48,6 +49,21 @@ create_empty_dir(const char path[])
 {
 	os_mkdir(path, 0700);
 	assert_true(is_dir(path));
+}
+
+void
+wait_for_bg(void)
+{
+	int counter = 0;
+	while(bg_has_active_jobs())
+	{
+		usleep(2000);
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			break;
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

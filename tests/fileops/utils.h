@@ -15,6 +15,9 @@ void create_empty_file(const char path[]);
 /* Creates empty directory at specified path. */
 void create_empty_dir(const char path[]);
 
+/* Waits termination of all background tasks. */
+void wait_for_bg(void);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
