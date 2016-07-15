@@ -825,7 +825,7 @@ has_uppercase_letters(const char str[])
 size_t
 copy_str(char dst[], size_t dst_len, const char src[])
 {
-	/* XXX: shouldn't we return "strlen(src)" instead "0U"? */
+	/* XXX: shouldn't we return "strlen(src)" instead of "0U"? */
 	return (dst == src) ? 0U : copy_substr(dst, dst_len, src, '\0');
 }
 

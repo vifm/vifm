@@ -435,9 +435,8 @@ ipc_send(const char whom[], char *data[])
 
 	while(*data != NULL)
 	{
-		strcpy(pkg + len, *data);
-		len += strlen(*data) + 1;
-		data++;
+		len += copy_str(pkg + len, sizeof(pkg) - len, *data);
+		++data;
 	}
 	pkg[len++] = '\0';
 
