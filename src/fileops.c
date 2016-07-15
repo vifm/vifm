@@ -231,6 +231,7 @@ static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
 static int can_add_files_to_view(const FileView *view);
 static const char * get_top_dir(const FileView *view);
+static const char * get_dst_dir(const FileView *view);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -2021,6 +2022,7 @@ put_files_bg(FileView *view, int reg_name, int move)
 	int i;
 	bg_args_t *args;
 	reg_t *reg;
+	const char *const dst_dir = get_dst_dir(view);
 
 	/* Check that operation generally makes sense given our input. */
 
@@ -2041,10 +2043,10 @@ put_files_bg(FileView *view, int reg_name, int move)
 
 	args = calloc(1, sizeof(*args));
 	args->move = move;
-	copy_str(args->path, sizeof(args->path), flist_get_dir(view));
+	copy_str(args->path, sizeof(args->path), dst_dir);
 
 	task_desc_len = snprintf(task_desc, sizeof(task_desc), "%cut in %s: ",
-			move ? 'P' : 'p', replace_home_part(flist_get_dir(view)));
+			move ? 'P' : 'p', replace_home_part(dst_dir));
 	for(i = 0; i < reg->nfiles; ++i)
 	{
 		char *const src = reg->files[i];
@@ -2445,6 +2447,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 {
 	reg_t *reg;
 	int i;
+	const char *const dst_dir = get_dst_dir(view);
 
 	if(!can_add_files_to_view(view))
 	{
@@ -2458,7 +2461,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(cmlo_to_op(op), descr, view->curr_dir, view->curr_dir);
+	reset_put_confirm(cmlo_to_op(op), descr, dst_dir, dst_dir);
 
 	put_confirm.op = op;
 	put_confirm.reg = reg;
@@ -2469,7 +2472,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 
 	for(i = 0; i < reg->nfiles && !ui_cancellation_requested(); ++i)
 	{
-		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
+		ops_enqueue(put_confirm.ops, reg->files[i], dst_dir);
 	}
 
 	ui_cancellation_disable();
@@ -2538,7 +2541,7 @@ put_files_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(vifm_chdir(view->curr_dir) != 0)
+	if(vifm_chdir(get_dst_dir(view)) != 0)
 	{
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
@@ -2585,6 +2588,7 @@ put_next(int force)
 {
 	char *filename;
 	const char *dest_name;
+	const char *dst_dir = get_dst_dir(put_confirm.view);
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
@@ -2629,8 +2633,7 @@ put_next(int force)
 		}
 	}
 
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
-			dest_name);
+	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dest_name);
 	chosp(dst_buf);
 
 	if(!put_confirm.append && path_exists(dst_buf, DEREF))
@@ -2681,8 +2684,7 @@ put_next(int force)
 		op = OP_SYMLINK;
 		if(put_confirm.op == CMLO_LINK_REL)
 		{
-			copy_str(src_buf, sizeof(src_buf),
-					make_rel_path(filename, put_confirm.view->curr_dir));
+			copy_str(src_buf, sizeof(src_buf), make_rel_path(filename, dst_dir));
 		}
 	}
 	else if(put_confirm.append)
@@ -2711,8 +2713,7 @@ put_next(int force)
 
 		cmd_group_continue();
 
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.view->curr_dir,
-				dest_name);
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dest_name);
 
 		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
 		{
@@ -4240,24 +4241,37 @@ can_change_view_files(const FileView *view)
 static int
 can_add_files_to_view(const FileView *view)
 {
-	if(flist_custom_active(view))
+	if(flist_custom_active(view) && !view->custom.tree_view)
 	{
 		show_error_msg("Operation error",
 				"Custom view can't handle this operation.");
 		return 0;
 	}
 
-	return check_if_dir_writable(DR_DESTINATION, view->curr_dir);
+	return check_if_dir_writable(DR_DESTINATION, get_dst_dir(view));
 }
 
-/* Retrieves root directory of tree (for regular or tree views).  Returns the
- * path or NULL (for custom views). */
+/* Retrieves root directory of file system sub-tree (for regular or tree views).
+ * Returns the path or NULL (for custom views). */
 static const char *
 get_top_dir(const FileView *view)
 {
 	if(flist_custom_active(view) && !view->custom.tree_view)
 	{
 		return NULL;
+	}
+	return flist_get_dir(view);
+}
+
+/* Retrieves current target directory of file system sub-tree.  Root for regular
+ * and regular custom views and origin of active entry for tree views.  Returns
+ * the path. */
+static const char *
+get_dst_dir(const FileView *view)
+{
+	if(flist_custom_active(view) && view->custom.tree_view)
+	{
+		return view->dir_entry[view->list_pos].origin;
 	}
 	return flist_get_dir(view);
 }

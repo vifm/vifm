@@ -7,6 +7,7 @@
 
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
+#include "../../src/filelist.h"
 #include "../../src/fileops.h"
 #include "../../src/registers.h"
 #include "../../src/trash.h"
@@ -133,6 +134,39 @@ TEST(put_files_bg_demangles_names_of_trashed_files)
 
 	assert_success(unlink(SANDBOX_PATH "/b"));
 	assert_success(rmdir(SANDBOX_PATH "/trash"));
+}
+
+TEST(put_files_copies_files_according_to_tree_structure)
+{
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	flist_load_tree(&lwin, SANDBOX_PATH);
+
+	assert_success(regs_append('a', TEST_DATA_PATH "/existing-files/a"));
+
+	/* Copy at the top level. */
+
+	lwin.list_pos = 0;
+	(void)put_files(&lwin, 'a', 0);
+	assert_success(unlink(SANDBOX_PATH "/a"));
+
+	lwin.list_pos = 0;
+	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	wait_for_bg();
+	assert_success(unlink(SANDBOX_PATH "/a"));
+
+	/* Copy at nested level. */
+
+	lwin.list_pos = 1;
+	(void)put_files(&lwin, 'a', 0);
+	assert_success(unlink(SANDBOX_PATH "/dir/a"));
+
+	lwin.list_pos = 1;
+	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	wait_for_bg();
+	assert_success(unlink(SANDBOX_PATH "/dir/a"));
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 TEST(overwrite_request_accounts_for_target_file_rename)
