@@ -196,7 +196,7 @@ split_path_list(void)
 			q = p + strlen(p);
 		}
 
-		s = malloc(q - p + 1);
+		s = malloc(q - p + 1U);
 		if(s == NULL)
 		{
 			free_string_array(paths, i - 1);
@@ -204,7 +204,7 @@ split_path_list(void)
 			paths_count = 0;
 			return;
 		}
-		snprintf(s, q - p + 1, "%s", p);
+		copy_str(s, q - p + 1U, p);
 
 		p = q;
 
