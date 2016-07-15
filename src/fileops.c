@@ -2237,6 +2237,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 	int from_file;
 	dir_entry_t *entry;
 	ops_t *ops;
+	const char *const curr_dir = flist_get_dir(view);
 
 	if(!can_read_selected_files(view))
 	{
@@ -2258,7 +2259,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 			return 0;
 		}
 
-		copy_str(dst_path, sizeof(dst_path), view->curr_dir);
+		copy_str(dst_path, sizeof(dst_path), get_dst_dir(view));
 	}
 	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, dst_path))
 	{
@@ -2296,17 +2297,16 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 
 	if(with_dir)
 	{
-		snprintf(undo_msg, sizeof(undo_msg), "clone in %s to %s: ", view->curr_dir,
+		snprintf(undo_msg, sizeof(undo_msg), "clone in %s to %s: ", curr_dir,
 				list[0]);
 	}
 	else
 	{
-		snprintf(undo_msg, sizeof(undo_msg), "clone in %s: ", view->curr_dir);
+		snprintf(undo_msg, sizeof(undo_msg), "clone in %s: ", curr_dir);
 	}
 	append_marked_files(view, undo_msg, list);
 
-	ops = get_ops(OP_COPY, "Cloning", view->curr_dir,
-			with_dir ? list[0] : view->curr_dir);
+	ops = get_ops(OP_COPY, "Cloning", curr_dir, with_dir ? list[0] : curr_dir);
 
 	ui_cancellation_reset();
 
@@ -2322,6 +2322,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		int err;
 		int j;
 		const char *const name = entry->name;
+		const char *const clone_dst = with_dir ? dst_path : entry->origin;
 		const char *clone_name;
 		if(custom_fnames)
 		{
@@ -2329,7 +2330,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		}
 		else
 		{
-			clone_name = path_exists_at(dst_path, name, DEREF)
+			clone_name = path_exists_at(clone_dst, name, DEREF)
 			           ? gen_clone_name(name)
 			           : name;
 		}
@@ -2339,14 +2340,18 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		err = 0;
 		for(j = 0; j < copies; ++j)
 		{
-			if(path_exists_at(dst_path, clone_name, DEREF))
+			if(path_exists_at(clone_dst, clone_name, DEREF))
 			{
 				clone_name = gen_clone_name(custom_fnames ? list[i] : name);
 			}
-			err += clone_file(entry, dst_path, clone_name, ops);
+			err += clone_file(entry, clone_dst, clone_name, ops);
 		}
 
-		fixup_entry_after_rename(view, entry, clone_name);
+		/* Don't update cursor position if more than one file is cloned. */
+		if(nmarked == 1U)
+		{
+			fixup_entry_after_rename(view, entry, clone_name);
+		}
 		ops_advance(ops, err == 0);
 
 		++i;
