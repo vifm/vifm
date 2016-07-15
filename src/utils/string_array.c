@@ -174,12 +174,6 @@ free_strings(char *array[], size_t len)
 	}
 }
 
-void
-free_wstring_array(wchar_t **array, size_t len)
-{
-	free_string_array((char **)array, len);
-}
-
 char **
 read_file_of_lines(const char filepath[], int *nlines)
 {
