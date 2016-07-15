@@ -230,6 +230,7 @@ static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
 static int can_add_files_to_view(const FileView *view);
+static const char * get_top_dir(const FileView *view);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -627,6 +628,8 @@ delete_files(FileView *view, int reg, int use_trash)
 	dir_entry_t *entry;
 	int nmarked_files;
 	ops_t *ops;
+	const char *const top_dir = get_top_dir(view);
+	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
 	if(!can_change_view_files(view))
 	{
@@ -635,10 +638,11 @@ delete_files(FileView *view, int reg, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
-	if(use_trash && is_under_trash(view->curr_dir))
+	/* This check for the case when we are for sure in the trash. */
+	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
-				"Current directory is under Trash directory");
+				"Current directory is under trash directory");
 		return 0;
 	}
 
@@ -648,12 +652,12 @@ delete_files(FileView *view, int reg, int use_trash)
 	}
 
 	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
-			replace_home_part(flist_get_dir(view)));
+			replace_home_part(curr_dir));
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
-	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir,
-			view->curr_dir);
+	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
+			curr_dir);
 
 	ui_cancellation_reset();
 
@@ -672,7 +676,19 @@ delete_files(FileView *view, int reg, int use_trash)
 
 		if(use_trash)
 		{
-			if(!is_trash_directory(full_path))
+			if(is_trash_directory(full_path))
+			{
+				show_error_msg("Can't perform deletion",
+						"You cannot delete trash directory to trash");
+				result = -1;
+			}
+			else if(is_under_trash(full_path))
+			{
+				show_error_msgf("Skipping file deletion",
+						"File is already in trash: %s", full_path);
+				result = -1;
+			}
+			else
 			{
 				char *const dest = gen_trash_name(entry->origin, entry->name);
 				if(dest != NULL)
@@ -697,12 +713,6 @@ delete_files(FileView *view, int reg, int use_trash)
 							"Deletion failed on: %s", entry->name);
 					result = -1;
 				}
-			}
-			else
-			{
-				show_error_msg("Can't perform deletion",
-						"You cannot delete trash directory to trash");
-				result = -1;
 			}
 		}
 		else
@@ -767,6 +777,9 @@ delete_files_bg(FileView *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
+	unsigned int i;
+	const char *const top_dir = get_top_dir(view);
+	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
 	if(!can_change_view_files(view))
 	{
@@ -775,10 +788,10 @@ delete_files_bg(FileView *view, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
-	if(use_trash && is_under_trash(view->curr_dir))
+	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
-				"Current directory is under Trash directory");
+				"Current directory is under trash directory");
 		return 0;
 	}
 
@@ -786,6 +799,26 @@ delete_files_bg(FileView *view, int use_trash)
 	args->use_trash = use_trash;
 
 	general_prepare_for_bg_task(view, args);
+
+	for(i = 0U; i < args->sel_list_len; ++i)
+	{
+		const char *const full_file_path = args->sel_list[i];
+		if(is_trash_directory(full_file_path))
+		{
+			show_error_msg("Can't perform deletion",
+					"You cannot delete trash directory to trash");
+			free_bg_args(args);
+			return 0;
+		}
+		else if(is_under_trash(full_file_path))
+		{
+			show_error_msgf("Skipping file deletion", "File is already in trash: %s",
+					full_file_path);
+			free_bg_args(args);
+			return 0;
+		}
+	}
+
 	if(cfg_confirm_delete(use_trash))
 	{
 		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
@@ -805,7 +838,7 @@ delete_files_bg(FileView *view, int use_trash)
 	move_cursor_out_of(view, FLS_MARKING);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
-			use_trash ? 'd' : 'D', replace_home_part(flist_get_dir(view)));
+			use_trash ? 'd' : 'D', replace_home_part(curr_dir));
 
 	append_marked_files(view, task_desc, NULL);
 
@@ -4215,6 +4248,18 @@ can_add_files_to_view(const FileView *view)
 	}
 
 	return check_if_dir_writable(DR_DESTINATION, view->curr_dir);
+}
+
+/* Retrieves root directory of tree (for regular or tree views).  Returns the
+ * path or NULL (for custom views). */
+static const char *
+get_top_dir(const FileView *view)
+{
+	if(flist_custom_active(view) && !view->custom.tree_view)
+	{
+		return NULL;
+	}
+	return flist_get_dir(view);
 }
 
 /* This is a wrapper for is_dir_writable() function, which adds message

@@ -2,10 +2,13 @@
 
 #include <unistd.h> /* rmdir() unlink() */
 
+#include <string.h> /* strcat() */
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/background.h"
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
@@ -134,6 +137,102 @@ TEST(marked_files_are_removed_to_trash)
 			assert_success(rmdir(SANDBOX_PATH "/trash"));
 		}
 	}
+}
+
+TEST(nested_file_is_removed)
+{
+	cfg.use_trash = 1;
+	set_trash_dir(SANDBOX_PATH "/trash");
+
+	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
+			++cfg.use_system_calls)
+	{
+		int bg;
+		for(bg = 0; bg < 2; ++bg)
+		{
+			int to_trash;
+			for(to_trash = 0; to_trash < 2; ++to_trash)
+			{
+				if(to_trash)
+				{
+					create_empty_dir(SANDBOX_PATH "/trash");
+				}
+				create_empty_dir(SANDBOX_PATH "/dir");
+
+				create_empty_file(SANDBOX_PATH "/dir/a");
+				create_empty_file(SANDBOX_PATH "/dir/b");
+
+				flist_load_tree(&lwin, SANDBOX_PATH);
+				lwin.dir_entry[2].marked = 1;
+
+				if(!bg)
+				{
+					(void)delete_files(&lwin, 'x', to_trash);
+				}
+				else
+				{
+					(void)delete_files_bg(&lwin, to_trash);
+					wait_for_bg();
+				}
+
+				assert_success(unlink(SANDBOX_PATH "/dir/a"));
+				assert_failure(unlink(SANDBOX_PATH "/dir/b"));
+				assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+				if(to_trash)
+				{
+					assert_success(unlink(SANDBOX_PATH "/trash/000_b"));
+					assert_success(rmdir(SANDBOX_PATH "/trash"));
+				}
+			}
+		}
+	}
+}
+
+TEST(files_in_trash_are_not_removed_to_trash_in_cv)
+{
+	cfg.use_trash = 1;
+	strcat(lwin.curr_dir, "/dir");
+	set_trash_dir(lwin.curr_dir);
+	remove_last_path_component(lwin.curr_dir);
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_file(SANDBOX_PATH "/dir/a");
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, SANDBOX_PATH "/dir");
+	flist_custom_add(&lwin, SANDBOX_PATH "/dir/a");
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
+
+	lwin.dir_entry[1].marked = 1;
+	lwin.list_pos = 1;
+
+	(void)delete_files(&lwin, '\0', 1);
+	(void)delete_files_bg(&lwin, 1);
+	wait_for_bg();
+
+	assert_success(unlink(SANDBOX_PATH "/dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(files_in_trash_are_not_removed_to_trash_in_tree)
+{
+	cfg.use_trash = 1;
+	strcat(lwin.curr_dir, "/dir");
+	set_trash_dir(lwin.curr_dir);
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_file(SANDBOX_PATH "/dir/a");
+
+	flist_load_tree(&lwin, SANDBOX_PATH);
+	lwin.dir_entry[1].marked = 1;
+	lwin.list_pos = 1;
+
+	(void)delete_files(&lwin, '\0', 1);
+	(void)delete_files_bg(&lwin, 1);
+
+	assert_success(unlink(SANDBOX_PATH "/dir/a"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 static void
