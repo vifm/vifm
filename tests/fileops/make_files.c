@@ -1,9 +1,10 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() */
+#include <unistd.h> /* chdir() rmdir() unlink() */
 
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/filelist.h"
 #include "../../src/fileops.h"
 
 #include "utils.h"
@@ -67,10 +68,32 @@ TEST(make_files_creates_files)
 	char name_b[] = "b";
 	char *names[] = { name_a, name_b };
 
-	assert_true(make_files(&lwin, names, 2));
+	(void)make_files(&lwin, names, 2);
 
 	assert_success(unlink("a"));
 	assert_success(unlink("b"));
+}
+
+TEST(make_files_considers_tree_structure)
+{
+	char name[] = "new-file";
+	char *names[] = { name };
+
+	create_empty_dir("dir");
+
+	flist_load_tree(&lwin, ".");
+
+	lwin.list_pos = 0;
+	(void)make_files(&lwin, names, 1);
+	assert_success(unlink("new-file"));
+
+	lwin.list_pos = 1;
+	(void)make_files(&lwin, names, 1);
+	assert_success(unlink("dir/new-file"));
+
+	assert_success(rmdir("dir"));
+
+	view_teardown(&lwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -4082,6 +4082,7 @@ make_files(FileView *view, char **names, int count)
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
+	const char *const dst_dir = get_dst_dir(view);
 
 	if(!can_add_files_to_view(view))
 	{
@@ -4114,10 +4115,9 @@ make_files(FileView *view, char **names, int count)
 
 	ui_cancellation_reset();
 
-	ops = get_ops(OP_MKFILE, "touching", view->curr_dir, view->curr_dir);
+	ops = get_ops(OP_MKFILE, "touching", dst_dir, dst_dir);
 
-	snprintf(buf, sizeof(buf), "touch in %s: ",
-			replace_home_part(view->curr_dir));
+	snprintf(buf, sizeof(buf), "touch in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
@@ -4125,7 +4125,7 @@ make_files(FileView *view, char **names, int count)
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
-		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
+		snprintf(full, sizeof(full), "%s/%s", dst_dir, names[i]);
 		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
 		{
 			add_operation(OP_MKFILE, NULL, NULL, full, "");
@@ -4135,7 +4135,9 @@ make_files(FileView *view, char **names, int count)
 	cmd_group_end();
 
 	if(n > 0)
+	{
 		go_to_first_file(view, names, count);
+	}
 
 	status_bar_messagef("%d file%s created%s", n, (n == 1) ? "" : "s",
 			get_cancellation_suffix());
