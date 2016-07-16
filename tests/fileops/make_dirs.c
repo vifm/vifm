@@ -14,6 +14,8 @@
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
 
+#include "utils.h"
+
 SETUP()
 {
 	if(is_path_absolute(SANDBOX_PATH))
@@ -150,6 +152,28 @@ TEST(make_dirs_creates_sub_dirs_by_abs_path)
 		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
 		assert_success(rmdir(SANDBOX_PATH "/parent"));
 	}
+}
+
+TEST(make_dirs_considers_tree_structure)
+{
+	char path[] = "new-dir";
+	char *paths[] = { path };
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	flist_load_tree(&lwin, SANDBOX_PATH);
+
+	lwin.list_pos = 0;
+	(void)make_dirs(&lwin, paths, 1, 0);
+	assert_success(rmdir(SANDBOX_PATH "/new-dir"));
+
+	lwin.list_pos = 1;
+	(void)make_dirs(&lwin, paths, 1, 0);
+	assert_success(rmdir(SANDBOX_PATH "/dir/new-dir"));
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+	view_teardown(&lwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

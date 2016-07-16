@@ -4004,6 +4004,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	int i;
 	int n;
 	void *cp;
+	const char *const dst_dir = get_dst_dir(view);
 
 	if(!can_add_files_to_view(view))
 	{
@@ -4033,8 +4034,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 
 	ui_cancellation_reset();
 
-	snprintf(buf, sizeof(buf), "mkdir in %s: ",
-			replace_home_part(view->curr_dir));
+	snprintf(buf, sizeof(buf), "mkdir in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
@@ -4042,7 +4042,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
-		to_canonic_path(names[i], view->curr_dir, full, sizeof(full));
+		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 
 		if(perform_operation(OP_MKDIR, NULL, cp, full, NULL) == 0)
 		{
