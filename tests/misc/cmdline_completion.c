@@ -457,12 +457,6 @@ TEST(abbreviations)
 	vle_abbr_reset();
 }
 
-#if defined(_WIN32) && !defined(_WIN64)
-#define WPRINTF_MBSTR L"S"
-#else
-#define WPRINTF_MBSTR L"s"
-#endif
-
 TEST(bang_exec_completion)
 {
 	char *const original_path_env = strdup(env_get("PATH"));
@@ -476,7 +470,7 @@ TEST(bang_exec_completion)
 
 	create_executable("exec-for-completion" EXE_SUFFIX);
 
-	prepare_for_line_completion(L"!exec-for-com" EXE_SUFFIXW);
+	prepare_for_line_completion(L"!exec-for-com");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"!exec-for-completion" EXE_SUFFIXW, stats.line);
 
@@ -492,19 +486,21 @@ TEST(bang_abs_path_completion)
 	wchar_t input[PATH_MAX];
 	wchar_t cmd[PATH_MAX];
 	char cwd[PATH_MAX];
+	wchar_t *wcwd;
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
 	assert_true(get_cwd(cwd, sizeof(cwd)) == cwd);
+	wcwd = to_wide(cwd);
 
 	create_executable("exec-for-completion" EXE_SUFFIX);
 
 	vifm_swprintf(input, ARRAY_LEN(input),
-			L"!%" WPRINTF_MBSTR L"/exec-for-compl", cwd);
+			L"!%" WPRINTF_WSTR L"/exec-for-compl", wcwd);
 	vifm_swprintf(cmd, ARRAY_LEN(cmd),
-			L"!%" WPRINTF_MBSTR L"/exec-for-completion" EXE_SUFFIXW, cwd);
+			L"!%" WPRINTF_WSTR L"/exec-for-completion" EXE_SUFFIXW, wcwd);
 
 	prepare_for_line_completion(input);
 	assert_success(line_completion(&stats));
@@ -513,9 +509,9 @@ TEST(bang_abs_path_completion)
 	assert_int_equal(2, vle_compl_get_count());
 
 	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
-}
 
-#undef WPRINTF_MBSTR
+	free(wcwd);
+}
 
 TEST(tilde_is_completed_after_emark)
 {
@@ -650,7 +646,12 @@ TEST(find_completion)
 {
 	prepare_for_line_completion(L"find -");
 	assert_success(line_completion(&stats));
+#ifdef _WIN32
+	/* Windows escaping code doesn't prepend "./". */
+	assert_wstring_equal(L"find -", stats.line);
+#else
 	assert_wstring_equal(L"find ./-", stats.line);
+#endif
 
 	prepare_for_line_completion(L"find ..");
 	assert_success(line_completion(&stats));

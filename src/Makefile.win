@@ -121,7 +121,7 @@ vifmres.o: vifm.res
 
 ../config.h:
 	@echo Creating sample ../config.h
-	echo '#define VERSION "0.8.2-beta"' > ../config.h; \
+	echo '#define VERSION "0.8.2"' > ../config.h; \
 	echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h; \
 	echo '#define _GNU_SOURCE 1' >> ../config.h; \
 	echo '#define PACKAGE_SYSCONF_DIR ""' >> ../config.h; \

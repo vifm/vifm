@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2-beta  Last change: 2016 Jul 08
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Jul 16
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1482,10 +1482,10 @@ The builtin commands are:
                                                *vifm-:fileviewer* *vifm-:filev*
 :filev[iewer] pattern-list command1,command2,...
     register specified list of commands as viewers for each of the patterns.
-    Viewer is a command which output is captured and displayed in the second
-    panes of vifm after pressing |vifm-e| or running |vifm-:view| command.  When
-    the command doesn't contain any of vifm macros, name of current file is
-    appended as if command ended with |vifm-%c| macro.  Comma escaping and
+    Viewer is a command which output is captured and displayed in one of the
+    panes of vifm after pressing |vifm-e| or running |vifm-:view| command.
+    When the command doesn't contain any of vifm macros, name of current file
+    is appended as if command ended with |vifm-%c| macro.  Comma escaping and
     missing commands processing rules as for |vifm-:filetype| apply to this
     command.  See |vifm-globs| for pattern definition.
 

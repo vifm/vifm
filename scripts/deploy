@@ -97,6 +97,7 @@ if [ "$target" = all -o "$target" = archive ]; then
 
         # build vifm
         make -C src/ -f Makefile.win clean
+        git checkout src/tags.c
         if ! RELEASE=1 make -C src/ -f Makefile.win; then
             echo "ERROR: Building project failed."
             exit 3
