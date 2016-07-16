@@ -5,11 +5,13 @@
 #include <unistd.h> /* access() */
 
 #include <stdio.h> /* FILE fclose() fopen() */
+#include <string.h> /* snprintf() strcpy() */
 
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/background.h"
 #include "../../src/filelist.h"
 
@@ -63,6 +65,21 @@ wait_for_bg(void)
 			assert_fail("Waiting for too long.");
 			break;
 		}
+	}
+}
+
+void
+set_to_sandbox_path(char buf[], size_t buf_len)
+{
+	if(is_path_absolute(SANDBOX_PATH))
+	{
+		strcpy(buf, SANDBOX_PATH);
+	}
+	else
+	{
+		char cwd[PATH_MAX];
+		assert_non_null(get_cwd(cwd, sizeof(cwd)));
+		snprintf(buf, buf_len, "%s/%s", cwd, SANDBOX_PATH);
 	}
 }
 

@@ -1,6 +1,8 @@
 #ifndef VIFM_TESTS__UTILS_H__
 #define VIFM_TESTS__UTILS_H__
 
+#include <stddef.h> /* size_t */
+
 #include "../../src/ui/ui.h"
 
 /* Initializes view with safe defaults. */
@@ -17,6 +19,9 @@ void create_empty_dir(const char path[]);
 
 /* Waits termination of all background tasks. */
 void wait_for_bg(void);
+
+/* Writes absolute path to the sandbox into the buffer. */
+void set_to_sandbox_path(char buf[], size_t buf_len);
 
 #endif /* VIFM_TESTS__UTILS_H__ */
 

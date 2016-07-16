@@ -18,16 +18,7 @@
 
 SETUP()
 {
-	if(is_path_absolute(SANDBOX_PATH))
-	{
-		strcpy(lwin.curr_dir, SANDBOX_PATH);
-	}
-	else
-	{
-		char cwd[PATH_MAX];
-		assert_non_null(get_cwd(cwd, sizeof(cwd)));
-		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", cwd, SANDBOX_PATH);
-	}
+	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
 }
 
 TEST(make_dirs_does_nothing_for_custom_view)
