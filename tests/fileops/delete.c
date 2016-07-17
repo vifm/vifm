@@ -227,6 +227,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 
 	(void)delete_files(&lwin, '\0', 1);
 	(void)delete_files_bg(&lwin, 1);
+	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));

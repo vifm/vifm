@@ -121,17 +121,22 @@ typedef struct
 }
 progress_data_t;
 
+/* Pack of arguments supplied to procedures implementing file operations in
+ * background. */
 typedef struct
 {
-	char **list;
-	int nlines;
-	int move;
-	int force;
-	char **sel_list;
-	size_t sel_list_len;
-	char path[PATH_MAX];
-	int from_file;
-	int use_trash; /* Whether either source or destination is trash directory. */
+	char **list;         /* User supplied list of new file names. */
+	int nlines;          /* Number of user supplied file names (list size). */
+	int move;            /* Whether this is a move operation. */
+	int force;           /* Whether destination files should be removed. */
+	char **sel_list;     /* Full paths of files to be processed. */
+	size_t sel_list_len; /* Number of files to process (sel_list size). */
+	char path[PATH_MAX]; /* Path at which processing should take place. */
+	int from_file;       /* Whether list was read from a file. */
+	int use_trash;       /* Whether either source or destination is trash
+	                        directory. */
+	char *is_in_trash;   /* Flags indicating whether i-th file is in trash.  Can
+	                        be NULL when unused. */
 }
 bg_args_t;
 
@@ -201,7 +206,7 @@ static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
-		char dst_path[], size_t dst_path_len, int *from_file, int *from_trash);
+		char dst_path[], size_t dst_path_len, int *from_file);
 static int can_read_selected_files(FileView *view);
 static int check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len);
@@ -3246,7 +3251,6 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	dir_entry_t *entry;
 	char path[PATH_MAX];
 	int from_file;
-	int from_trash;
 	ops_t *ops;
 
 	if((op == CMLO_LINK_REL || op == CMLO_LINK_ABS) && !symlinks_available())
@@ -3257,7 +3261,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	}
 
 	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
-			sizeof(undo_msg), path, sizeof(path), &from_file, &from_trash);
+			sizeof(undo_msg), path, sizeof(path), &from_file);
 	if(err != 0)
 	{
 		return err > 0;
@@ -3304,7 +3308,10 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 
 		char dst_full[PATH_MAX];
 		const char *dst = custom_fnames ? list[i] : entry->name;
-		int err;
+		int err, from_trash;
+
+		get_full_path_of(entry, sizeof(src_full), src_full);
+		from_trash = is_under_trash(src_full);
 
 		if(from_trash && !custom_fnames)
 		{
@@ -3429,6 +3436,7 @@ int
 cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 {
 	int err;
+	size_t i;
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args = calloc(1, sizeof(*args));
 
@@ -3438,7 +3446,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	err = cpmv_prepare(view, &list, &args->nlines, move ? CMLO_MOVE : CMLO_COPY,
 			force, task_desc, sizeof(task_desc), args->path, sizeof(args->path),
-			&args->from_file, &args->use_trash);
+			&args->from_file);
 	if(err != 0)
 	{
 		free_bg_args(args);
@@ -3448,6 +3456,12 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->list = args->from_file ? list : copy_string_array(list, nlines);
 
 	general_prepare_for_bg_task(view, args);
+
+	args->is_in_trash = malloc(args->sel_list_len);
+	for(i = 0U; i < args->sel_list_len; ++i)
+	{
+		args->is_in_trash[i] = is_under_trash(args->sel_list[i]);
+	}
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
 				args) != 0)
@@ -3468,7 +3482,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
-		size_t dst_path_len, int *from_file, int *from_trash)
+		size_t dst_path_len, int *from_file)
 {
 	char **marked;
 	size_t nmarked;
@@ -3565,7 +3579,6 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		move_cursor_out_of(view, FLS_SELECTION);
 	}
 
-	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
 }
 
@@ -3745,8 +3758,8 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 		const char *const src = args->sel_list[i];
 		const char *const dst = custom_fnames ? args->list[i] : NULL;
 		bg_op_set_descr(bg_op, src);
-		cpmv_file_in_bg(ops, src, dst, args->move, args->force, args->use_trash,
-				args->path);
+		cpmv_file_in_bg(ops, src, dst, args->move, args->force,
+				args->is_in_trash[i], args->path);
 		++bg_op->done;
 	}
 
@@ -3957,6 +3970,7 @@ free_bg_args(bg_args_t *args)
 {
 	free_string_array(args->list, args->nlines);
 	free_string_array(args->sel_list, args->sel_list_len);
+	free(args->is_in_trash);
 	free(args);
 }
 

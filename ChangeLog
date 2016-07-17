@@ -10,6 +10,9 @@
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
+	Fixed inconsistent file name demangling on moving files from trash in
+	custom view.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

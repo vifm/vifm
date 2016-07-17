@@ -6,6 +6,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -13,6 +14,7 @@
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
+#include "../../src/trash.h"
 
 #include "utils.h"
 
@@ -69,7 +71,13 @@ TEARDOWN()
 
 	restore_cwd(saved_cwd);
 
+	filter_dispose(&lwin.local_filter.filter);
+	filter_dispose(&lwin.manual_filter);
+	filter_dispose(&lwin.auto_filter);
+
 	filter_dispose(&rwin.local_filter.filter);
+	filter_dispose(&rwin.manual_filter);
+	filter_dispose(&rwin.auto_filter);
 }
 
 TEST(move_file)
@@ -236,6 +244,58 @@ TEST(cpmv_considers_tree_structure)
 	assert_success(unlink("file"));
 
 	assert_success(rmdir("dir"));
+}
+
+TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
+{
+	int bg;
+
+	strcat(lwin.curr_dir, "/trash");
+	set_trash_dir(lwin.curr_dir);
+	remove_last_path_component(lwin.curr_dir);
+
+	strcat(lwin.curr_dir, "/dir");
+
+	curr_view = &rwin;
+	other_view = &lwin;
+
+	for(bg = 0; bg < 2; ++bg)
+	{
+		create_empty_dir("trash");
+		create_empty_file("trash/000_a");
+		create_empty_dir("trash/nested");
+		create_empty_file("trash/nested/000_file");
+		create_empty_dir("dir");
+		create_empty_file("000_b");
+
+		flist_custom_start(&rwin, "test");
+		flist_custom_add(&rwin, "trash/000_a");
+		flist_custom_add(&rwin, "000_b");
+		flist_custom_add(&rwin, "trash/nested/000_file");
+		assert_true(flist_custom_finish(&rwin, 0, 0) == 0);
+		assert_int_equal(3, rwin.list_rows);
+
+		rwin.dir_entry[0].marked = 1;
+		rwin.dir_entry[1].marked = 1;
+		rwin.dir_entry[2].marked = 1;
+
+		if(!bg)
+		{
+			(void)cpmv_files(&rwin, NULL, 0, CMLO_MOVE, 0);
+		}
+		else
+		{
+			(void)cpmv_files_bg(&rwin, NULL, 0, CMLO_MOVE, 0);
+			wait_for_bg();
+		}
+
+		assert_success(unlink("dir/a"));
+		assert_success(unlink("dir/000_b"));
+		assert_success(unlink("dir/000_file"));
+		assert_success(rmdir("dir"));
+		assert_success(rmdir("trash/nested"));
+		assert_success(rmdir("trash"));
+	}
 }
 
 static int

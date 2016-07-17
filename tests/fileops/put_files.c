@@ -67,11 +67,13 @@ options_prompt_overwrite(const char title[], const char message[],
 TEST(put_files_bg_fails_on_wrong_register)
 {
 	assert_true(put_files_bg(&lwin, -1, 0));
+	wait_for_bg();
 }
 
 TEST(put_files_bg_fails_on_empty_register)
 {
 	assert_true(put_files_bg(&lwin, 'a', 0));
+	wait_for_bg();
 }
 
 TEST(put_files_bg_fails_on_identical_names_in_a_register)
@@ -80,6 +82,7 @@ TEST(put_files_bg_fails_on_identical_names_in_a_register)
 	assert_success(regs_append('a', TEST_DATA_PATH "/rename/a"));
 
 	assert_true(put_files_bg(&lwin, 'a', 0));
+	wait_for_bg();
 }
 
 TEST(put_files_bg_fails_on_file_name_conflict)
