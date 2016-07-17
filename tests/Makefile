@@ -161,7 +161,7 @@ ifdef DEBUG
     endif
 
     ifeq ($(DEBUG),gdb)
-        TEST_RUN_PREFIX := gdb --args
+        TEST_RUN_PREFIX := gdb -q --args
     endif
     ifeq ($(DEBUG),valgrind)
         TEST_RUN_PREFIX := valgrind --track-origins=yes --leak-check=full \
