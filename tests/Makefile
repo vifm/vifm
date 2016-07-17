@@ -154,7 +154,7 @@ ifdef win_env
 endif
 
 ifdef DEBUG
-    CFLAGS += -g
+    CFLAGS += -g -Og
     LDFLAGS += -g
     ifdef unix_env
         LDFLAGS += -rdynamic
