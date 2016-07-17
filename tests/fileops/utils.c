@@ -31,11 +31,11 @@ view_teardown(FileView *view)
 {
 	int i;
 
-	for(i = 0; i < lwin.list_rows; ++i)
+	for(i = 0; i < view->list_rows; ++i)
 	{
-		free_dir_entry(&lwin, &lwin.dir_entry[i]);
+		free_dir_entry(view, &view->dir_entry[i]);
 	}
-	dynarray_free(lwin.dir_entry);
+	dynarray_free(view->dir_entry);
 }
 
 void

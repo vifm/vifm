@@ -14,7 +14,8 @@
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
 
-static void free_view(FileView *view);
+#include "utils.h"
+
 static int not_windows(void);
 
 static char *saved_cwd;
@@ -44,13 +45,18 @@ SETUP()
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("file");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	assert_success(filter_init(&lwin.local_filter.filter, 0));
+	assert_success(filter_init(&lwin.manual_filter, 1));
+	assert_success(filter_init(&lwin.auto_filter, 1));
 
 	/* rwin */
 	rwin.list_rows = 0;
 	rwin.filtered = 0;
 	rwin.list_pos = 0;
 	rwin.dir_entry = NULL;
-	assert_int_equal(0, filter_init(&rwin.local_filter.filter, 0));
+	assert_success(filter_init(&rwin.local_filter.filter, 0));
+	assert_success(filter_init(&rwin.manual_filter, 1));
+	assert_success(filter_init(&rwin.auto_filter, 1));
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -58,24 +64,12 @@ SETUP()
 
 TEARDOWN()
 {
-	free_view(&lwin);
-	free_view(&rwin);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	restore_cwd(saved_cwd);
 
 	filter_dispose(&rwin.local_filter.filter);
-}
-
-static void
-free_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free_dir_entry(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
 }
 
 TEST(move_file)
@@ -172,7 +166,7 @@ TEST(cpmv_crash_on_wrong_list_access)
 {
 	char *list[] = { "." };
 
-	free_view(&lwin);
+	view_teardown(&lwin);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -213,6 +207,35 @@ TEST(cpmv_crash_on_wrong_list_access)
 	assert_success(remove(SANDBOX_PATH "/a"));
 	assert_success(remove(SANDBOX_PATH "/b"));
 	assert_success(remove(SANDBOX_PATH "/c"));
+}
+
+TEST(cpmv_considers_tree_structure)
+{
+	char new_fname[] = "new_name";
+	char *list[] = { &new_fname[0] };
+
+	create_empty_dir("dir");
+
+	/* Move from tree root to nested dir. */
+	create_empty_file("file");
+	flist_load_tree(&rwin, rwin.curr_dir);
+	rwin.list_pos = 1;
+	lwin.dir_entry[0].marked = 1;
+	(void)cpmv_files(&lwin, list, 1, CMLO_MOVE, 0);
+	assert_success(unlink("dir/new_name"));
+
+	/* Move back. */
+	curr_view = &rwin;
+	other_view = &lwin;
+	create_empty_file("dir/file");
+	flist_load_tree(&lwin, flist_get_dir(&lwin));
+	flist_load_tree(&rwin, flist_get_dir(&rwin));
+	lwin.list_pos = 0;
+	rwin.dir_entry[1].marked = 1;
+	(void)cpmv_files(&rwin, NULL, 0, CMLO_MOVE, 0);
+	assert_success(unlink("file"));
+
+	assert_success(rmdir("dir"));
 }
 
 static int

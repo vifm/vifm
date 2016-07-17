@@ -3274,14 +3274,14 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	switch(op)
 	{
 		case CMLO_COPY:
-			ops = get_ops(OP_COPY, "Copying", view->curr_dir, path);
+			ops = get_ops(OP_COPY, "Copying", flist_get_dir(view), path);
 			break;
 		case CMLO_MOVE:
-			ops = get_ops(OP_MOVE, "Moving", view->curr_dir, path);
+			ops = get_ops(OP_MOVE, "Moving", flist_get_dir(view), path);
 			break;
 		case CMLO_LINK_REL:
 		case CMLO_LINK_ABS:
-			ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir, path);
+			ops = get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path);
 			break;
 
 		default:
@@ -3495,7 +3495,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	}
 	else
 	{
-		copy_str(dst_path, dst_path_len, other_view->curr_dir);
+		copy_str(dst_path, dst_path_len, get_dst_dir(other_view));
 	}
 
 	if(!check_if_dir_writable(DR_DESTINATION, dst_path))
@@ -3616,7 +3616,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s/%s", view->curr_dir, path);
+		snprintf(buf, buf_len, "%s/%s", get_dst_dir(view), path);
 	}
 
 	if(is_dir(buf))
@@ -3624,7 +3624,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 		return 1;
 	}
 
-	strcpy(buf, view->curr_dir);
+	strcpy(buf, get_dst_dir(view));
 	return 0;
 }
 
