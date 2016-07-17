@@ -31,6 +31,7 @@ SETUP()
 	/* lwin */
 	strcpy(lwin.curr_dir, ".");
 
+	view_setup(&lwin);
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -41,11 +42,9 @@ SETUP()
 	/* rwin */
 	strcpy(rwin.curr_dir, ".");
 
-	rwin.list_rows = 0;
+	view_setup(&rwin);
 	rwin.filtered = 0;
 	rwin.list_pos = 0;
-	rwin.dir_entry = NULL;
-	assert_int_equal(0, filter_init(&rwin.local_filter.filter, 0));
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -54,8 +53,7 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
-
-	filter_dispose(&rwin.local_filter.filter);
+	view_teardown(&rwin);
 
 	restore_cwd(saved_cwd);
 }

@@ -24,9 +24,6 @@ SETUP()
 
 TEARDOWN()
 {
-	filter_dispose(&lwin.local_filter.filter);
-	filter_dispose(&lwin.manual_filter);
-	filter_dispose(&lwin.auto_filter);
 	view_teardown(&lwin);
 	restore_cwd(saved_cwd);
 }

@@ -141,6 +141,8 @@ TEST(put_files_bg_demangles_names_of_trashed_files)
 
 TEST(put_files_copies_files_according_to_tree_structure)
 {
+	view_setup(&lwin);
+
 	create_empty_dir(SANDBOX_PATH "/dir");
 
 	flist_load_tree(&lwin, SANDBOX_PATH);
@@ -170,6 +172,8 @@ TEST(put_files_copies_files_according_to_tree_structure)
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+	view_teardown(&lwin);
 }
 
 TEST(overwrite_request_accounts_for_target_file_rename)

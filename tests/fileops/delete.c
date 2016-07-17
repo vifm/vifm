@@ -11,6 +11,7 @@
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
+#include "../../src/registers.h"
 #include "../../src/trash.h"
 
 #include "utils.h"

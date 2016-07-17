@@ -24,6 +24,9 @@ view_setup(FileView *view)
 	assert_success(filter_init(&view->local_filter.filter, 1));
 	assert_success(filter_init(&view->manual_filter, 1));
 	assert_success(filter_init(&view->auto_filter, 1));
+
+	view->sort[0] = SK_NONE;
+	ui_view_sort_list_ensure_well_formed(view, view->sort);
 }
 
 void
@@ -36,6 +39,10 @@ view_teardown(FileView *view)
 		free_dir_entry(view, &view->dir_entry[i]);
 	}
 	dynarray_free(view->dir_entry);
+
+	filter_dispose(&view->local_filter.filter);
+	filter_dispose(&view->manual_filter);
+	filter_dispose(&view->auto_filter);
 }
 
 void

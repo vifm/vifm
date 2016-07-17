@@ -79,6 +79,8 @@ TEST(make_files_considers_tree_structure)
 	char name[] = "new-file";
 	char *names[] = { name };
 
+	view_setup(&lwin);
+
 	create_empty_dir("dir");
 
 	flist_load_tree(&lwin, ".");

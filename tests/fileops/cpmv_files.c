@@ -41,24 +41,18 @@ SETUP()
 	}
 
 	/* lwin */
+	view_setup(&lwin);
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("file");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	assert_success(filter_init(&lwin.local_filter.filter, 0));
-	assert_success(filter_init(&lwin.manual_filter, 1));
-	assert_success(filter_init(&lwin.auto_filter, 1));
 
 	/* rwin */
-	rwin.list_rows = 0;
+	view_setup(&rwin);
 	rwin.filtered = 0;
 	rwin.list_pos = 0;
-	rwin.dir_entry = NULL;
-	assert_success(filter_init(&rwin.local_filter.filter, 0));
-	assert_success(filter_init(&rwin.manual_filter, 1));
-	assert_success(filter_init(&rwin.auto_filter, 1));
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -70,14 +64,6 @@ TEARDOWN()
 	view_teardown(&rwin);
 
 	restore_cwd(saved_cwd);
-
-	filter_dispose(&lwin.local_filter.filter);
-	filter_dispose(&lwin.manual_filter);
-	filter_dispose(&lwin.auto_filter);
-
-	filter_dispose(&rwin.local_filter.filter);
-	filter_dispose(&rwin.manual_filter);
-	filter_dispose(&rwin.auto_filter);
 }
 
 TEST(move_file)

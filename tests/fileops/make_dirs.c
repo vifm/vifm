@@ -150,6 +150,8 @@ TEST(make_dirs_considers_tree_structure)
 	char path[] = "new-dir";
 	char *paths[] = { path };
 
+	view_setup(&lwin);
+
 	create_empty_dir(SANDBOX_PATH "/dir");
 
 	flist_load_tree(&lwin, SANDBOX_PATH);
