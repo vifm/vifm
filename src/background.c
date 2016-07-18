@@ -268,7 +268,7 @@ job_free(job_t *const job)
 
 	if(job->type != BJT_COMMAND)
 	{
-		pthread_mutex_destroy(&job->bg_op_guard);
+		pthread_spin_destroy(&job->bg_op_lock);
 	}
 
 #ifndef _WIN32
@@ -852,7 +852,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 
 	if(type != BJT_COMMAND)
 	{
-		pthread_mutex_init(&new->bg_op_guard, NULL);
+		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
 	}
 	new->bg_op.total = 0;
 	new->bg_op.done = 0;
@@ -949,14 +949,14 @@ void
 bg_op_lock(bg_op_t *bg_op)
 {
 	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
-	pthread_mutex_lock(&job->bg_op_guard);
+	pthread_spin_lock(&job->bg_op_lock);
 }
 
 void
 bg_op_unlock(bg_op_t *bg_op)
 {
 	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
-	pthread_mutex_unlock(&job->bg_op_guard);
+	pthread_spin_unlock(&job->bg_op_lock);
 }
 
 void
