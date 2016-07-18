@@ -167,10 +167,22 @@ check_background_jobs(void)
 	prev = NULL;
 	while(p != NULL)
 	{
+		int running;
+
 		job_check(p);
 
+		if(p->type != BJT_COMMAND)
+		{
+			pthread_spin_lock(&p->status_lock_for_bg);
+		}
+		running = p->running;
+		if(p->type != BJT_COMMAND)
+		{
+			pthread_spin_unlock(&p->status_lock_for_bg);
+		}
+
 		/* Remove job if it is finished now. */
-		if(!p->running)
+		if(!running)
 		{
 			job_t *j = p;
 			if(prev != NULL)
@@ -209,6 +221,8 @@ job_check(job_t *const job)
 	fd_set ready;
 	int max_fd = 0;
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 1000 };
+
+	/* XXX: aren't we doing extra/unneeded work for background threads here? */
 
 	/* Setup pipe for reading */
 	FD_ZERO(&ready);
@@ -268,6 +282,7 @@ job_free(job_t *const job)
 
 	if(job->type != BJT_COMMAND)
 	{
+		pthread_spin_destroy(&job->status_lock_for_bg);
 		pthread_spin_destroy(&job->bg_op_lock);
 	}
 
@@ -810,8 +825,10 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	if(pthread_create(&id, &attr, &background_task_bootstrap, task_args) != 0)
 	{
 		/* Mark job as finished with error. */
+		pthread_spin_lock(&task_args->job->status_lock_for_bg);
 		task_args->job->running = 0;
 		task_args->job->exit_code = 1;
+		pthread_spin_unlock(&task_args->job->status_lock_for_bg);
 
 		free(task_args);
 		ret = 1;
@@ -852,6 +869,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 
 	if(type != BJT_COMMAND)
 	{
+		pthread_spin_init(&new->status_lock_for_bg, PTHREAD_PROCESS_PRIVATE);
 		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
 	}
 	new->bg_op.total = 0;
@@ -876,8 +894,10 @@ background_task_bootstrap(void *arg)
 	task_args->func(&task_args->job->bg_op, task_args->args);
 
 	/* Mark task as finished normally. */
+	pthread_spin_lock(&task_args->job->status_lock_for_bg);
 	task_args->job->running = 0;
 	task_args->job->exit_code = 0;
+	pthread_spin_unlock(&task_args->job->status_lock_for_bg);
 
 	free(task_args);
 
@@ -904,7 +924,7 @@ make_current_job_key(void)
 int
 bg_has_active_jobs(void)
 {
-	const job_t *job;
+	job_t *job;
 	int running;
 
 	if(bg_jobs_freeze() != 0)
@@ -919,7 +939,9 @@ bg_has_active_jobs(void)
 	{
 		if(job->type == BJT_OPERATION)
 		{
+			pthread_spin_lock(&job->status_lock_for_bg);
 			running |= job->running;
+			pthread_spin_unlock(&job->status_lock_for_bg);
 		}
 	}
 
