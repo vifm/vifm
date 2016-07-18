@@ -115,6 +115,7 @@ static int op_symlink(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
+static int ops_uses_syscalls(const ops_t *ops);
 static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
 		io_args_t *const args);
 static int confirm_overwrite(io_args_t *args, const char src[],
@@ -167,6 +168,10 @@ ops_alloc(OPS main_op, int bg, const char descr[], const char base_dir[],
 	ops_t *const ops = calloc(1, sizeof(*ops));
 	ops->main_op = main_op;
 	ops->descr = descr;
+	update_string(&ops->slow_fs_list, cfg.slow_fs_list);
+	update_string(&ops->delete_prg, cfg.delete_prg);
+	ops->use_system_calls = cfg.use_system_calls;
+	ops->fast_file_cloning = cfg.fast_file_cloning;
 	ops->base_dir = strdup(base_dir);
 	ops->target_dir = strdup(target_dir);
 	ops->bg = bg;
@@ -220,7 +225,7 @@ ops_enqueue(ops_t *ops, const char src[], const char dst[])
 				break;
 		}
 
-		if(is_on_slow_fs(src, cfg.slow_fs_list))
+		if(is_on_slow_fs(src, ops->slow_fs_list))
 		{
 			ops->shallow_eta = 1;
 		}
@@ -251,6 +256,8 @@ ops_free(ops_t *ops)
 
 	ioeta_free(ops->estim);
 	free(ops->errors);
+	free(ops->slow_fs_list);
+	free(ops->delete_prg);
 	free(ops->base_dir);
 	free(ops->target_dir);
 	free(ops);
@@ -288,7 +295,10 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(cfg.delete_prg[0] != '\0')
+	const char *const delete_prg = (ops == NULL)
+	                             ? cfg.delete_prg
+	                             : ops->delete_prg;
+	if(delete_prg[0] != '\0')
 	{
 #ifndef _WIN32
 		char *escaped;
@@ -301,21 +311,21 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 			return -1;
 		}
 
-		snprintf(cmd, sizeof(cmd), "%s %s", cfg.delete_prg, escaped);
+		snprintf(cmd, sizeof(cmd), "%s %s", delete_prg, escaped);
 		free(escaped);
 
 		LOG_INFO_MSG("Running trash command: \"%s\"", cmd);
 		return background_and_wait_for_errors(cmd, cancellable);
 #else
 		char cmd[PATH_MAX*2 + 1];
-		snprintf(cmd, sizeof(cmd), "%s \"%s\"", cfg.delete_prg, src);
+		snprintf(cmd, sizeof(cmd), "%s \"%s\"", delete_prg, src);
 		to_back_slash(cmd);
 
 		return os_system(cmd);
 #endif
 	}
 
-	if(!cfg.use_system_calls)
+	if(!ops_uses_syscalls(ops))
 	{
 #ifndef _WIN32
 		char *escaped;
@@ -419,7 +429,11 @@ static int
 op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		ConflictAction conflict_action)
 {
-	if(!cfg.use_system_calls)
+	const int fast_file_cloning = (ops == NULL)
+	                             ? cfg.fast_file_cloning
+	                             : ops->fast_file_cloning;
+
+	if(!ops_uses_syscalls(ops))
 	{
 #ifndef _WIN32
 		char *escaped_src, *escaped_dst;
@@ -439,7 +453,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		snprintf(cmd, sizeof(cmd),
 				"cp %s %s -R " PRESERVE_FLAGS " %s %s",
 				(conflict_action == CA_FAIL) ? NO_CLOBBER : "",
-				cfg.fast_file_cloning ? REFLINK_AUTO : "",
+				fast_file_cloning ? REFLINK_AUTO : "",
 				escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
 		result = background_and_wait_for_errors(cmd, cancellable);
@@ -482,7 +496,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		.arg1.src = src,
 		.arg2.dst = dst,
 		.arg3.crs = ca_to_crs(conflict_action),
-		.arg4.fast_file_cloning = cfg.fast_file_cloning,
+		.arg4.fast_file_cloning = fast_file_cloning,
 
 		.cancellable = data == NULL,
 	};
@@ -522,7 +536,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 {
 	int result;
 
-	if(!cfg.use_system_calls)
+	if(!ops_uses_syscalls(ops))
 	{
 #ifndef _WIN32
 		struct stat st;
@@ -731,7 +745,7 @@ op_subattr(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(!cfg.use_system_calls)
+	if(!ops_uses_syscalls(ops))
 	{
 		char *escaped_src, *escaped_dst;
 		char cmd[6 + PATH_MAX*2 + 1];
@@ -782,7 +796,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(!cfg.use_system_calls)
+	if(!ops_uses_syscalls(ops))
 	{
 #ifndef _WIN32
 		char cmd[128 + PATH_MAX];
@@ -839,7 +853,7 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(!cfg.use_system_calls)
+	if(!ops_uses_syscalls(ops))
 	{
 #ifndef _WIN32
 		char cmd[128 + PATH_MAX];
@@ -867,7 +881,7 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(!cfg.use_system_calls)
+	if(!ops_uses_syscalls(ops))
 	{
 #ifndef _WIN32
 		char cmd[128 + PATH_MAX];
@@ -899,6 +913,14 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 		.arg1.path = src,
 	};
 	return exec_io_op(ops, &iop_mkfile, &args);
+}
+
+/* Checks whether specific operation should use system calls.  Returns non-zero
+ * if so, otherwise zero is returned. */
+static int
+ops_uses_syscalls(const ops_t *ops)
+{
+	return ops == NULL ? cfg.use_system_calls : ops->use_system_calls;
 }
 
 /* Executes i/o operation with some predefined pre/post actions.  Returns exit
