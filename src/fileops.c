@@ -138,6 +138,7 @@ typedef struct
 	                        directory. */
 	char *is_in_trash;   /* Flags indicating whether i-th file is in trash.  Can
 	                        be NULL when unused. */
+	ops_t *ops;          /* Pointer to pre-allocated operation description. */
 }
 bg_args_t;
 
@@ -216,8 +217,8 @@ static char ** edit_list(size_t count, char **orig, int *nlines,
 static int edit_file(const char filepath[], int force_changed);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
-static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
-		bg_op_t *bg_op);
+static void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
+static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static void free_ops(ops_t *ops);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
@@ -849,6 +850,9 @@ delete_files_bg(FileView *view, int use_trash)
 
 	append_marked_files(view, task_desc, NULL);
 
+	args->ops = get_bg_ops(use_trash ? OP_REMOVE : OP_REMOVESL,
+			use_trash ? "deleting" : "Deleting", args->path);
+
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &delete_files_in_bg,
 				args) != 0)
 	{
@@ -866,12 +870,10 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
-	ops_t *ops;
+	ops_t *ops = args->ops;
+	bg_ops_init(ops, bg_op);
 
-	ops = get_bg_ops(args->use_trash ? OP_REMOVE : OP_REMOVESL,
-			args->use_trash ? "deleting" : "Deleting", args->path, bg_op);
-
-	if(ops != NULL)
+	if(ops->use_system_calls)
 	{
 		size_t i;
 		bg_op_set_descr(bg_op, "estimating...");
@@ -895,7 +897,6 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 		++bg_op->done;
 	}
 
-	free_ops(ops);
 	free_bg_args(args);
 }
 
@@ -2107,6 +2108,9 @@ put_files_bg(FileView *view, int reg_name, int move)
 
 	/* Initiate the operation. */
 
+	args->ops = get_bg_ops((args->move ? OP_MOVE : OP_COPY),
+			move ? "Putting" : "putting", args->path);
+
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg,
 				args) != 0)
 	{
@@ -2125,12 +2129,10 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
-	const OPS op = (args->move ? OP_MOVE : OP_COPY);
+	ops_t *ops = args->ops;
+	bg_ops_init(ops, bg_op);
 
-	ops_t *ops = get_bg_ops(op, args->move ? "Putting" : "putting", args->path,
-			bg_op);
-
-	if(ops != NULL)
+	if(ops->use_system_calls)
 	{
 		size_t i;
 		bg_op_set_descr(bg_op, "estimating...");
@@ -2169,10 +2171,9 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 		}
 
 		bg_op_set_descr(bg_op, src);
-		(void)perform_operation(op, ops, (void *)1, src, dst);
+		(void)perform_operation(ops->main_op, ops, (void *)1, src, dst);
 	}
 
-	free_ops(ops);
 	free_bg_args(args);
 }
 
@@ -3412,7 +3413,7 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
 	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
-	if(cfg.use_system_calls)
+	if(ops->use_system_calls)
 	{
 		ops->estim = ioeta_alloc(alloc_progress_data(0, ops));
 	}
@@ -3476,6 +3477,9 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 			              : strdup(get_last_path_component(args->sel_list[i]));
 		}
 	}
+
+	args->ops = get_bg_ops(move ? OP_MOVE : OP_COPY, move ? "moving" : "copying",
+			args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
 				args) != 0)
@@ -3749,12 +3753,10 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
-	ops_t *ops;
+	ops_t *ops = args->ops;
+	bg_ops_init(ops, bg_op);
 
-	ops = get_bg_ops(args->move ? OP_MOVE : OP_COPY,
-			args->move ? "moving" : "copying", args->path, bg_op);
-
-	if(ops != NULL)
+	if(ops->use_system_calls)
 	{
 		size_t i;
 		bg_op_set_descr(bg_op, "estimating...");
@@ -3776,28 +3778,31 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 		++bg_op->done;
 	}
 
-	free_ops(ops);
 	free_bg_args(args);
 }
 
-/* Allocates opt_t structure and configures it as needed.  Returns pointer to
- * newly allocated structure or NULL if ops are not needed, which should be
- * freed by free_ops(). */
-static ops_t *
-get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
+/* Finishes initialization of ops for background processes. */
+static void
+bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 {
-	ops_t *ops;
-	progress_data_t *pdata;
-
-	if(!cfg.use_system_calls)
+	if(ops->estim != NULL)
 	{
-		return NULL;
+		progress_data_t *const pdata = ops->estim->param;
+		pdata->bg_op = bg_op;
 	}
+}
 
-	ops = ops_alloc(main_op, 1, descr, dir, dir);
-	pdata = alloc_progress_data(1, bg_op);
-	ops->estim = ioeta_alloc(pdata);
-
+/* Allocates opt_t structure and configures it as needed.  Returns pointer to
+ * newly allocated structure, which should be freed by free_ops(). */
+static ops_t *
+get_bg_ops(OPS main_op, const char descr[], const char dir[])
+{
+	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir);
+	if(ops->use_system_calls)
+	{
+		progress_data_t *const pdata = alloc_progress_data(1, NULL);
+		ops->estim = ioeta_alloc(pdata);
+	}
 	return ops;
 }
 
@@ -3829,7 +3834,7 @@ free_ops(ops_t *ops)
 		return;
 	}
 
-	if(cfg.use_system_calls)
+	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = ops->estim->param;
 
@@ -3971,6 +3976,7 @@ free_bg_args(bg_args_t *args)
 	free_string_array(args->list, args->nlines);
 	free_string_array(args->sel_list, args->sel_list_len);
 	free(args->is_in_trash);
+	free_ops(args->ops);
 	free(args);
 }
 
