@@ -905,7 +905,7 @@ int
 bg_has_active_jobs(void)
 {
 	const job_t *job;
-	int bg_op_count;
+	int running;
 
 	if(bg_jobs_freeze() != 0)
 	{
@@ -914,18 +914,18 @@ bg_has_active_jobs(void)
 		return 1;
 	}
 
-	bg_op_count = 0;
-	for(job = jobs; job != NULL; job = job->next)
+	running = 0;
+	for(job = jobs; job != NULL && !running; job = job->next)
 	{
-		if(job->running && job->type == BJT_OPERATION)
+		if(job->type == BJT_OPERATION)
 		{
-			++bg_op_count;
+			running |= job->running;
 		}
 	}
 
 	bg_jobs_unfreeze();
 
-	return bg_op_count > 0;
+	return running;
 }
 
 int
