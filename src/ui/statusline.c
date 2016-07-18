@@ -21,7 +21,9 @@
 
 #include <curses.h> /* mvwin() wbkgdset() werase() */
 
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
+#include <pthread.h> /* PTHREAD_* pthread_* */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* RAND_MAX rand() */
 #include <string.h> /* strcat() strdup() strlen() */
@@ -51,6 +53,8 @@ static char * parse_view_macros(FileView *view, const char **format,
 static int expand_num(char buf[], size_t buf_len, int val);
 static const char * get_tip(void);
 static void check_expanded_str(const char buf[], int skip, int *nexpansions);
+static pthread_spinlock_t * get_job_bar_changed_lock(void);
+static void init_job_bar_changed_lock(void);
 static int is_job_bar_visible(void);
 static void update_job_bar(void);
 static const char * format_job_bar(void);
@@ -62,6 +66,8 @@ static size_t nbar_jobs;
 static bg_op_t **bar_jobs;
 /* Whether list of jobs needs to be redrawn. */
 static int job_bar_changed;
+/* Protects accesses to job_bar_changed variable. */
+static pthread_spinlock_t job_bar_changed_lock;
 
 void
 update_stat_window(FileView *view, int lazy_redraw)
@@ -541,7 +547,11 @@ ui_stat_job_bar_remove(bg_op_t *bg_op)
 void
 ui_stat_job_bar_changed(bg_op_t *bg_op)
 {
+	pthread_spinlock_t *const lock = get_job_bar_changed_lock();
+
+	pthread_spin_lock(lock);
 	job_bar_changed = 1;
+	pthread_spin_unlock(lock);
 }
 
 void
@@ -555,13 +565,39 @@ ui_stat_job_bar_check_for_updates(void)
 {
 	static int prev_width;
 
-	if(job_bar_changed || getmaxx(job_bar) != prev_width)
+	pthread_spinlock_t *const lock = get_job_bar_changed_lock();
+	int job_bar_changed_value;
+
+	pthread_spin_lock(lock);
+	job_bar_changed_value = job_bar_changed;
+	job_bar_changed = 0;
+	pthread_spin_unlock(lock);
+
+	if(job_bar_changed_value || getmaxx(job_bar) != prev_width)
 	{
-		job_bar_changed = 0;
 		update_job_bar();
 	}
 
 	prev_width = getmaxx(job_bar);
+}
+
+/* Gets spinlock for the job_bar_changed variable in thread-safe way.  Returns
+ * the lock. */
+static pthread_spinlock_t *
+get_job_bar_changed_lock(void)
+{
+	static pthread_once_t once = PTHREAD_ONCE_INIT;
+	pthread_once(&once, &init_job_bar_changed_lock);
+	return &job_bar_changed_lock;
+}
+
+/* Performs spinlock initialization at most once. */
+static void
+init_job_bar_changed_lock(void)
+{
+	int ret = pthread_spin_init(&job_bar_changed_lock, PTHREAD_PROCESS_PRIVATE);
+	assert(ret == 0 && "Failed to initialize spinlock!");
+	(void)ret;
 }
 
 /* Checks whether job bar is visible.  Returns non-zero if so, and zero
