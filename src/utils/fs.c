@@ -187,13 +187,9 @@ paths_are_same(const char s[], const char t[])
 	char s_real[PATH_MAX];
 	char t_real[PATH_MAX];
 
-	if(os_realpath(s, s_real) != s_real)
+	if(os_realpath(s, s_real) != s_real || os_realpath(t, t_real) != t_real)
 	{
-		return 0;
-	}
-	if(os_realpath(t, t_real) != t_real)
-	{
-		return 0;
+		return (stroscmp(s, t) == 0);
 	}
 	return (stroscmp(s_real, t_real) == 0);
 }
