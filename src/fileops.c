@@ -43,6 +43,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
@@ -3463,6 +3464,19 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 		args->is_in_trash[i] = is_under_trash(args->sel_list[i]);
 	}
 
+	if(args->list == NULL)
+	{
+		int i;
+		args->nlines = args->sel_list_len;
+		args->list = reallocarray(NULL, args->nlines, sizeof(*args->list));
+		for(i = 0; i < args->nlines; ++i)
+		{
+			args->list[i] = args->is_in_trash[i]
+			              ? strdup(get_real_name_from_trash_name(args->sel_list[i]))
+			              : strdup(get_last_path_component(args->sel_list[i]));
+		}
+	}
+
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
 				args) != 0)
 	{
@@ -3735,7 +3749,6 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
-	const int custom_fnames = (args->nlines > 0);
 	ops_t *ops;
 
 	ops = get_bg_ops(args->move ? OP_MOVE : OP_COPY,
@@ -3748,7 +3761,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const src = args->sel_list[i];
-			const char *const dst = custom_fnames ? args->list[i] : NULL;
+			const char *const dst = args->list[i];
 			ops_enqueue(ops, src, dst);
 		}
 	}
@@ -3756,7 +3769,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		const char *const src = args->sel_list[i];
-		const char *const dst = custom_fnames ? args->list[i] : NULL;
+		const char *const dst = args->list[i];
 		bg_op_set_descr(bg_op, src);
 		cpmv_file_in_bg(ops, src, dst, args->move, args->force,
 				args->is_in_trash[i], args->path);
@@ -3839,19 +3852,6 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[])
 {
 	char dst_full[PATH_MAX];
-
-	if(dst == NULL)
-	{
-		if(from_trash)
-		{
-			dst = get_real_name_from_trash_name(src);
-		}
-		else
-		{
-			dst = get_last_path_component(src);
-		}
-	}
-
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
 	if(path_exists(dst_full, DEREF) && !from_trash)
 	{
