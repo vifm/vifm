@@ -3297,6 +3297,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 static int
 restore_cmd(const cmd_info_t *cmd_info)
 {
+	check_marking(curr_view, 0, NULL);
 	return restore_files(curr_view) != 0;
 }
 

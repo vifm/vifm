@@ -4228,7 +4228,7 @@ restore_files(FileView *view)
 	m = 0;
 	n = 0;
 	entry = NULL;
-	while(iter_selected_entries(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
