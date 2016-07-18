@@ -114,7 +114,6 @@ static void make_current_job_key(void);
 job_t *jobs;
 
 static pthread_key_t current_job;
-static pthread_once_t current_job_once = PTHREAD_ONCE_INIT;
 
 void
 init_background(void)
@@ -889,7 +888,9 @@ background_task_bootstrap(void *arg)
 static void
 set_current_job(job_t *job)
 {
-	pthread_once(&current_job_once, &make_current_job_key);
+	static pthread_once_t once = PTHREAD_ONCE_INIT;
+	pthread_once(&once, &make_current_job_key);
+
 	(void)pthread_setspecific(current_job, job);
 }
 
