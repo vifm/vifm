@@ -1243,7 +1243,7 @@ change_directory(FileView *view, const char directory[])
 	if(location_changed)
 	{
 		copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
-		view->on_slow_fs = is_on_slow_fs(view->curr_dir);
+		view->on_slow_fs = is_on_slow_fs(view->curr_dir, cfg.slow_fs_list);
 	}
 
 	/* Check if we're exiting from a FUSE mounted top level directory and the

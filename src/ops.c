@@ -220,7 +220,7 @@ ops_enqueue(ops_t *ops, const char src[], const char dst[])
 				break;
 		}
 
-		if(is_on_slow_fs(src))
+		if(is_on_slow_fs(src, cfg.slow_fs_list))
 		{
 			ops->shallow_eta = 1;
 		}

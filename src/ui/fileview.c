@@ -408,7 +408,7 @@ get_line_color(const FileView *view, int pos)
 
 				/* Assume that targets on slow file system are not broken as actual
 				 * check might take long time. */
-				if(is_on_slow_fs(full))
+				if(is_on_slow_fs(full, cfg.slow_fs_list))
 				{
 					return LINK_COLOR;
 				}
