@@ -1236,7 +1236,8 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	dir_entry_t *entry;
 	int *is_dup;
 
-	if(recursive && nlines != 0)
+	/* Allow list of names in tests. */
+	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
 	{
 		status_bar_error("Recursive rename doesn't accept list of new names");
 		return 1;
