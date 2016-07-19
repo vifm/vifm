@@ -58,5 +58,27 @@ TEST(generally_restores_files)
 	assert_success(unlink(SANDBOX_PATH "/file"));
 }
 
+TEST(works_with_custom_view)
+{
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, SANDBOX_PATH "/trash/000_file");
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
+
+	lwin.dir_entry[0].marked = 1;
+	(void)restore_files(&lwin);
+
+	assert_success(unlink(SANDBOX_PATH "/file"));
+}
+
+TEST(works_with_tree_view)
+{
+	flist_load_tree(&lwin, SANDBOX_PATH);
+
+	lwin.dir_entry[1].marked = 1;
+	(void)restore_files(&lwin);
+
+	assert_success(unlink(SANDBOX_PATH "/file"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

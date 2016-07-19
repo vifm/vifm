@@ -4208,11 +4208,11 @@ append_fname(char buf[], size_t len, const char fname[])
 int
 restore_files(FileView *view)
 {
-	int m;
-	int n;
+	int m, n;
 	dir_entry_t *entry;
 
-	if(!is_trash_directory(view->curr_dir))
+	/* This is general check for regular views only. */
+	if(!flist_custom_active(view) && !is_trash_directory(view->curr_dir))
 	{
 		show_error_msg("Restore error", "Not a top-level trash directory.");
 		return 0;
@@ -4233,7 +4233,7 @@ restore_files(FileView *view)
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(restore_from_trash(full_path) == 0)
+		if(is_trash_directory(entry->origin) && restore_from_trash(full_path) == 0)
 		{
 			++m;
 		}

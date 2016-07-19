@@ -7,6 +7,8 @@
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 
+	Enable restoring files from trash from custom views.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
