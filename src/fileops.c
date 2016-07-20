@@ -1309,18 +1309,19 @@ TSTATIC int
 is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 {
 	int i;
-	for(i = 0; i < len; i++)
+	const char *const work_dir = curr_view->curr_dir;
+	for(i = 0; i < len; ++i)
 	{
 		int j;
 
 		const int check_result =
-			check_file_rename(curr_view->curr_dir, files[i], list[i], ST_NONE);
+			check_file_rename(work_dir, files[i], list[i], ST_NONE);
 		if(check_result < 0)
 		{
 			continue;
 		}
 
-		for(j = 0; j < len; j++)
+		for(j = 0; j < len; ++j)
 		{
 			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
 			{
@@ -1330,6 +1331,9 @@ is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 		}
 		if(j >= len && check_result == 0)
 		{
+			/* Invoke check_file_rename() again, but this time to produce error
+			 * message. */
+			(void)check_file_rename(work_dir, files[i], list[i], ST_STATUS_BAR);
 			break;
 		}
 	}
@@ -1525,7 +1529,7 @@ count_digits(int number)
 }
 
 /* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
- * when rename operation should be aborted. silent parameter controls whether
+ * when rename operation should be aborted.  silent parameter controls whether
  * error dialog or status bar message should be shown, 0 means dialog. */
 TSTATIC int
 check_file_rename(const char dir[], const char old[], const char new[],
