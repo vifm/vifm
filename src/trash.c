@@ -477,7 +477,7 @@ restore_from_trash(const char trash_name[])
 {
 	int i;
 	char full[PATH_MAX];
-	char buf[PATH_MAX];
+	char path[PATH_MAX];
 
 	for(i = 0; i < nentries; ++i)
 	{
@@ -487,11 +487,13 @@ restore_from_trash(const char trash_name[])
 		}
 	}
 	if(i >= nentries)
+	{
 		return -1;
+	}
 
-	copy_str(buf, sizeof(buf), trash_list[i].path);
+	copy_str(path, sizeof(path), trash_list[i].path);
 	copy_str(full, sizeof(full), trash_list[i].trash_name);
-	if(perform_operation(OP_MOVE, NULL, NULL, full, trash_list[i].path) == 0)
+	if(perform_operation(OP_MOVE, NULL, NULL, full, path) == 0)
 	{
 		char *msg, *p;
 		size_t len;
@@ -511,7 +513,7 @@ restore_from_trash(const char trash_name[])
 		replace_group_msg(msg);
 		free(msg);
 
-		add_operation(OP_MOVE, NULL, NULL, full, buf);
+		add_operation(OP_MOVE, NULL, NULL, full, path);
 		cmd_group_end();
 		remove_from_trash(trash_name);
 		return 0;
