@@ -63,5 +63,8 @@ TEST(renames_files_recursively)
 	assert_success(rmdir(SANDBOX_PATH "/dir2"));
 }
 
+/* No tests for custom/tree view, because control doesn't reach necessary checks
+ * when new filenames are provided beforehand (only when user edits them). */
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -1309,7 +1309,7 @@ TSTATIC int
 is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 {
 	int i;
-	const char *const work_dir = curr_view->curr_dir;
+	const char *const work_dir = flist_get_dir(curr_view);
 	for(i = 0; i < len; ++i)
 	{
 		int j;
