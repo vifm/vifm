@@ -6,13 +6,16 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/str.h"
 #include "../../src/filtering.h"
 
+#include "utils.h"
+
 #define assert_hidden(view, name, dir) \
-	assert_false(file_is_visible(&view, name, dir))
+	assert_false(filters_file_is_visible(&view, name, dir))
 
 #define assert_visible(view, name, dir) \
-	assert_true(file_is_visible(&view, name, dir))
+	assert_true(filters_file_is_visible(&view, name, dir))
 
 SETUP()
 {
@@ -92,25 +95,12 @@ SETUP()
 	rwin.column_count = 1;
 }
 
-static void
-cleanup_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; i++)
-		free(view->dir_entry[i].name);
-	dynarray_free(view->dir_entry);
-	filter_dispose(&view->manual_filter);
-	filter_dispose(&view->auto_filter);
-}
-
 TEARDOWN()
 {
-	free(cfg.slow_fs_list);
-	cfg.slow_fs_list = NULL;
+	update_string(&cfg.slow_fs_list, NULL);
 
-	cleanup_view(&lwin);
-	cleanup_view(&rwin);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(filtering)

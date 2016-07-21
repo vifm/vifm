@@ -128,7 +128,7 @@ refers_to_slower_fs(const char from[], const char to[])
 }
 
 int
-is_on_slow_fs(const char full_path[])
+is_on_slow_fs(const char full_path[], const char slowfs_specs[])
 {
 	return 0;
 }

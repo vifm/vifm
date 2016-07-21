@@ -128,7 +128,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 		}
 		else if(prev_dir_present &&
 				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
-				!ends_with(buf, "../") != 0)
+				!ends_with(buf, "../"))
 		{
 			/* Remove the last path component added. */
 #ifdef _WIN32

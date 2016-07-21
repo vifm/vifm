@@ -35,10 +35,13 @@
 static void reset_filter(filter_t *filter);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
+static int file_is_filtered(FileView *view, const char filename[], int is_dir,
+		int apply_local_filter);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static int load_unfiltered_list(FileView *const view);
 static void store_local_filter_position(FileView *const view, int pos);
 static int update_filtering_lists(FileView *view, int add, int clear);
+static void reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered);
 static void ensure_filtered_list_not_empty(FileView *view,
 		dir_entry_t *parent_entry);
 static int extract_previously_selected_pos(FileView *const view);
@@ -135,11 +138,11 @@ filter_selected_files(FileView *view)
 	/* Update entry lists to remove entries that must be filtered out now.  No
 	 * view reload is needed. */
 	filtered = zap_entries(view, view->dir_entry, &view->list_rows,
-			&is_newly_filtered, &filter, 0);
+			&is_newly_filtered, &filter, 0, 1);
 	if(flist_custom_active(view))
 	{
 		(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-				&is_newly_filtered, &filter, 1);
+				&is_newly_filtered, &filter, 1, 1);
 	}
 	else
 	{
@@ -224,7 +227,23 @@ toggle_filter_inversion(FileView *view)
 }
 
 int
-file_is_visible(FileView *view, const char filename[], int is_dir)
+filters_file_is_visible(FileView *view, const char filename[], int is_dir)
+{
+	return file_is_filtered(view, filename, is_dir, 1);
+}
+
+int
+filters_file_is_filtered(FileView *view, const char filename[], int is_dir)
+{
+	return file_is_filtered(view, filename, is_dir, 0);
+}
+
+/* Checks whether file/directory passes filename filters of the view.  Returns
+ * non-zero if given filename passes filter and should be visible, otherwise
+ * zero is returned, in which case the file should be hidden. */
+static int
+file_is_filtered(FileView *view, const char filename[], int is_dir,
+		int apply_local_filter)
 {
 	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
@@ -239,7 +258,8 @@ file_is_visible(FileView *view, const char filename[], int is_dir)
 		return 0;
 	}
 
-	if(filter_matches(&view->local_filter.filter, filename) == 0)
+	if(apply_local_filter &&
+			filter_matches(&view->local_filter.filter, filename) == 0)
 	{
 		return 0;
 	}
@@ -409,11 +429,21 @@ update_filtering_lists(FileView *view, int add, int clear)
 			name = name_with_slash;
 		}
 
+		/* list_num links to position of nodes passed through filter in list of
+		 * visible files.  Nodes that didn't pass have -1. */
+		entry->list_num = -1;
 		if(filter_matches(&view->local_filter.filter, name) != 0)
 		{
 			if(add)
 			{
-				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
+				dir_entry_t *e = add_dir_entry(&view->dir_entry, &list_size, entry);
+				if(e != NULL)
+				{
+					entry->list_num = list_size - 1U;
+					/* We basically grow the tree node by node while performing
+					 * reparenting. */
+					reparent_tree_node(entry, e);
+				}
 			}
 		}
 		else
@@ -436,6 +466,42 @@ update_filtering_lists(FileView *view, int add, int clear)
 						(filter_matches(&view->local_filter.filter, "../") == 0));
 	}
 	return 0;
+}
+
+/* Reparents *filtered node by attaching it to the closes ancestor of *original
+ * mapped onto the list of filtered nodes.  list_num field is used to perform
+ * the mapping. */
+static void
+reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered)
+{
+	dir_entry_t *parent, *child;
+
+	filtered->child_pos = 0;
+	filtered->child_count = 0;
+
+	/* Go through items in unfiltered list looking for the closest ancestor, which
+	 * wasn't filtered out and make it the parent. */
+	child = original;
+	parent = child - child->child_pos;
+	while(parent != child)
+	{
+		if(parent->list_num >= 0)
+		{
+			filtered->child_pos = original->list_num - parent->list_num;
+			parent = filtered - filtered->child_pos;
+			while(parent != child)
+			{
+				++parent->child_count;
+
+				child = parent;
+				parent -= parent->child_pos;
+			}
+			break;
+		}
+
+		child = parent;
+		parent -= parent->child_pos;
+	}
 }
 
 /* Use parent_entry to make filtered list not empty, or create such entry (if

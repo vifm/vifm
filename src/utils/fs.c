@@ -187,13 +187,9 @@ paths_are_same(const char s[], const char t[])
 	char s_real[PATH_MAX];
 	char t_real[PATH_MAX];
 
-	if(os_realpath(s, s_real) != s_real)
+	if(os_realpath(s, s_real) != s_real || os_realpath(t, t_real) != t_real)
 	{
-		return 0;
-	}
-	if(os_realpath(t, t_real) != t_real)
-	{
-		return 0;
+		return (stroscmp(s, t) == 0);
 	}
 	return (stroscmp(s_real, t_real) == 0);
 }
@@ -524,6 +520,33 @@ list_regular_files(const char path[], char *list[], int *len)
 		snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
 
 		if(is_regular_file(full_path))
+		{
+			*len = add_to_string_array(&list, *len, 1, d->d_name);
+		}
+	}
+	os_closedir(dir);
+
+	return list;
+}
+
+char **
+list_all_files(const char path[], int *len)
+{
+	DIR *dir;
+	struct dirent *d;
+	char **list = NULL;
+
+	dir = os_opendir(path);
+	if(dir == NULL)
+	{
+		*len = -1;
+		return NULL;
+	}
+
+	*len = 0;
+	while((d = os_readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(d->d_name))
 		{
 			*len = add_to_string_array(&list, *len, 1, d->d_name);
 		}

@@ -193,11 +193,12 @@ char * get_typed_entry_fpath(const dir_entry_t *entry);
 int flist_custom_active(const FileView *view);
 /* Prepares list of files for it to be filled with entries. */
 void flist_custom_start(FileView *view, const char title[]);
-/* Adds an entry to list of files. */
-void flist_custom_add(FileView *view, const char path[]);
+/* Adds an entry to list of files.  Returns pointer to just added entry or NULL
+ * on error. */
+dir_entry_t * flist_custom_add(FileView *view, const char path[]);
 /* Finishes file list population, handles empty resulting list corner case.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
-int flist_custom_finish(FileView *view, int very);
+int flist_custom_finish(FileView *view, int very, int tree_view);
 /* Removes selected files from custom view. */
 void flist_custom_exclude(FileView *view);
 /* Clones list of files from from view to to view. */
@@ -286,10 +287,11 @@ void mark_selection_or_current(FileView *view);
  * directory, which is "..").  Returns the count. */
 int flist_count_marked(FileView *const view);
 /* Removes dead entries (those that refer to non-existing files) or those that
- * do not match local filter from the view.  Returns number of erased
+ * do not match local filter from the view.  remove_subtrees flag controls
+ * whether child nodes should be removed as well.  Returns number of erased
  * entries. */
 int zap_entries(FileView *view, dir_entry_t *entries, int *count,
-		zap_filter filter, void *arg, int allow_empty_list);
+		zap_filter filter, void *arg, int allow_empty_list, int remove_subtrees);
 /* Finds directory entry in the list of entries by the path.  Returns pointer to
  * the found entry or NULL. */
 dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
@@ -304,8 +306,9 @@ uint64_t entry_calc_nitems(const dir_entry_t *entry);
 void replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 		const dir_entry_t *with_entries, int with_count);
 /* Adds new entry to the *list of length *list_size and updates them
- * appropriately.  Returns zero on success, otherwise non-zero is returned. */
-int add_dir_entry(dir_entry_t **list, size_t *list_size,
+ * appropriately.  Returns NULL on error, otherwise pointer to the entry is
+ * returned. */
+dir_entry_t * add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
 /* Frees single directory entry. */
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
@@ -322,6 +325,9 @@ void flist_add_custom_line(FileView *view, const char line[]);
 void flist_end_custom(FileView *view, int very);
 /* Changes name of a file entry, performing additional required updates. */
 void fentry_rename(FileView *view, dir_entry_t *entry, const char to[]);
+/* Loads directory tree specified by its path into the view.  Considers various
+ * filters.  Returns zero on success, otherwise non-zero is returned. */
+int flist_load_tree(FileView *view, const char path[]);
 
 TSTATIC_DEFS(
 	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],

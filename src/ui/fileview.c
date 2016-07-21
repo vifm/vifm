@@ -39,6 +39,7 @@
 #include "../utils/path.h"
 #include "../utils/regexp.h"
 #include "../utils/str.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
@@ -63,6 +64,10 @@ typedef struct
 
 	size_t current_line;  /* Line of the cell. */
 	size_t column_offset; /* Offset in characters of the column. */
+
+	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
+	                     * A pointer to allow changing value in const struct.
+	                     * Should be zero first time, then auto reset. */
 }
 column_data_t;
 
@@ -80,7 +85,7 @@ static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
 static int clear_current_line_bar(FileView *view, int is_current);
 static size_t get_effective_scroll_offset(const FileView *view);
-static void column_line_print(const void *data, int column_id, const char *buf,
+static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static void draw_line_number(const column_data_t *cdt, int column);
 static void highlight_search(FileView *view, dir_entry_t *entry,
@@ -92,7 +97,7 @@ static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
 		int type_hi, col_attr_t *col);
 static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
 		col_attr_t *col);
-static void format_name(int id, const void *data, size_t buf_len, char buf[]);
+TSTATIC void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
 static void format_nitems(int id, const void *data, size_t buf_len, char buf[]);
 static void format_primary_group(int id, const void *data, size_t buf_len,
@@ -261,9 +266,10 @@ draw_dir_list_only(FileView *view)
 	ui_view_erase(view);
 
 	cell = 0U;
-	coll_pad = (view->ls_view && cfg.extra_padding) ? 1 : 0;
+	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	for(x = top; x < view->list_rows; ++x)
 	{
+		size_t prefix_len = 0U;
 		const column_data_t cdt = {
 			.view = view,
 			.line_pos = x,
@@ -271,6 +277,7 @@ draw_dir_list_only(FileView *view)
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
+			.prefix_len = &prefix_len,
 		};
 
 		const size_t print_width = calculate_print_width(view, x, col_width);
@@ -301,15 +308,15 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 {
 	calculate_number_width(view);
 
-	if(view->ls_view)
-	{
-		*count = calculate_columns_count(view);
-		*width = calculate_column_width(view);
-	}
-	else
+	if(ui_view_displays_columns(view))
 	{
 		*count = 1;
 		*width = MAX(0, ui_view_available_width(view) - view->real_num_width);
+	}
+	else
+	{
+		*count = calculate_columns_count(view);
+		*width = calculate_column_width(view);
 	}
 
 	view->column_count = *count;
@@ -401,7 +408,7 @@ get_line_color(const FileView *view, int pos)
 
 				/* Assume that targets on slow file system are not broken as actual
 				 * check might take long time. */
-				if(is_on_slow_fs(full))
+				if(is_on_slow_fs(full, cfg.slow_fs_list))
 				{
 					return LINK_COLOR;
 				}
@@ -427,7 +434,7 @@ get_line_color(const FileView *view, int pos)
 static size_t
 calculate_print_width(const FileView *view, int i, size_t max_width)
 {
-	if(view->ls_view)
+	if(!ui_view_displays_columns(view))
 	{
 		const size_t raw_name_width = get_filename_width(view, i);
 		return MIN(max_width - 1, raw_name_width);
@@ -661,10 +668,12 @@ clear_current_line_bar(FileView *view, int is_current)
 	size_t col_count;
 	size_t print_width;
 
+	size_t prefix_len = 0U;
 	column_data_t cdt = {
 		.view = view,
 		.line_pos = old_pos,
 		.is_current = is_current,
+		.prefix_len = &prefix_len,
 	};
 
 	if(curr_stats.load_stage < 2)
@@ -698,7 +707,7 @@ clear_current_line_bar(FileView *view, int is_current)
 		 * name width should be updated. */
 		col_width = print_width;
 	}
-	else if(view->ls_view && cfg.extra_padding)
+	else if(!ui_view_displays_columns(view) && cfg.extra_padding)
 	{
 		/* Padding in ls-like view adds additional empty single character between
 		 * columns, on which we shouldn't draw anything here. */
@@ -834,36 +843,61 @@ update_scroll_bind_offset(void)
 
 /* Print callback for column_view unit. */
 static void
-column_line_print(const void *data, int column_id, const char *buf,
+column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
 {
-	const int padding = (cfg.extra_padding != 0);
-
-	int primary;
-	int line_attrs;
 	char print_buf[strlen(buf) + 1];
-	size_t width_left;
-	size_t trim_pos;
+	size_t prefix_len, final_offset;
+	size_t width_left, trim_pos;
 	int reserved_width;
 
 	const column_data_t *const cdt = data;
-	const size_t i = cdt->line_pos;
 	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[i];
+	dir_entry_t *entry = &view->dir_entry[cdt->line_pos];
 
 	const int numbers_visible = (offset == 0 && ui_view_displays_numbers(view));
+	const int padding = (cfg.extra_padding != 0);
 
-	const size_t prefix_len = padding + view->real_num_width;
-	const size_t final_offset = prefix_len + cdt->column_offset + offset;
+	const int primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
+	const int line_attrs = prepare_col_color(view, entry, primary,
+			cdt->line_hi_group, cdt->is_current);
 
-	primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
-	line_attrs = prepare_col_color(view, entry, primary, cdt->line_hi_group,
-			cdt->is_current);
+	if(*cdt->prefix_len != 0U && align == AT_RIGHT)
+	{
+		/* Prefix length requires correction if left hand side of file name is
+		 * trimmed. */
+		size_t width = utf8_strsw(buf);
+		if(utf8_strsw(full_column) > width)
+		{
+			/* As left side is trimmed and might contain ellipsis calculate offsets
+			 * according to the right side. */
+			width -= utf8_strsw(full_column + *cdt->prefix_len);
+			*cdt->prefix_len = utf8_strsnlen(buf, width);
+		}
+	}
+
+	prefix_len = padding + view->real_num_width + *cdt->prefix_len;
+	final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(numbers_visible)
 	{
-		const int column = final_offset - view->real_num_width;
+		const int column = final_offset - *cdt->prefix_len - view->real_num_width;
 		draw_line_number(cdt, column);
+	}
+
+	if(*cdt->prefix_len != 0U)
+	{
+		/* Copy prefix part into working buffer. */
+		strncpy(print_buf, buf, *cdt->prefix_len);
+		print_buf[*cdt->prefix_len] = '\0';
+		buf += *cdt->prefix_len;
+		full_column += *cdt->prefix_len;
+
+		checked_wmove(view->win, cdt->current_line,
+				final_offset - *cdt->prefix_len);
+		wprinta(view->win, print_buf,
+				prepare_col_color(view, entry, 0, cdt->line_hi_group, cdt->is_current));
+		*cdt->prefix_len = 0U;
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
@@ -1048,20 +1082,62 @@ mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 }
 
 /* File name format callback for column_view unit. */
-static void
+TSTATIC void
 format_name(int id, const void *data, size_t buf_len, char buf[])
 {
+	size_t len, i;
+	dir_entry_t *child, *parent;
+
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
 	dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
-	if(flist_custom_active(view))
+
+	if(!flist_custom_active(view))
 	{
-		get_short_path_of(view, entry, 1, buf_len + 1, buf);
-	}
-	else
-	{
+		/* Just file name. */
 		format_entry_name(entry, buf_len + 1, buf);
+		return;
 	}
+
+	if(!ui_view_displays_columns(view) || !view->custom.tree_view)
+	{
+		/* File name possibly with path prefix. */
+		get_short_path_of(view, entry, 1, buf_len + 1U, buf);
+		return;
+	}
+
+	/* File name possibly with path and tree prefixes. */
+	len = 0U;
+	child = entry;
+	parent = child - child->child_pos;
+	while(parent != child)
+	{
+		const char *prefix;
+		/* To avoid prepending, strings are reversed here and whole tree prefix is
+		 * reversed below to compensate for it. */
+		if(parent->child_count == child->child_pos + child->child_count)
+		{
+			prefix = (child == entry ? " --`" : "    ");
+		}
+		else
+		{
+			prefix = (child == entry ? " --|" : "   |");
+		}
+		(void)sstrappend(buf, &len, buf_len + 1U, prefix);
+
+		child = parent;
+		parent -= parent->child_pos;
+	}
+
+	for(i = 0U; i < len/2U; ++i)
+	{
+		const char t = buf[i];
+		buf[i] = buf[len - 1U - i];
+		buf[len - 1U - i] = t;
+	}
+
+	get_short_path_of(view, entry, 1, buf_len + 1U - len, buf + len);
+	*cdt->prefix_len = len;
 }
 
 /* Primary name group format (first value of 'sortgroups' option) callback for
@@ -1315,7 +1391,11 @@ fview_set_lsview(FileView *view, int enabled)
 
 	view->ls_view = enabled;
 
-	if(view->ls_view)
+	if(ui_view_displays_columns(view))
+	{
+		load_view_columns_option(view, view->view_columns);
+	}
+	else
 	{
 		column_info_t column_info = {
 			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
@@ -1326,16 +1406,12 @@ fview_set_lsview(FileView *view, int enabled)
 		columns_add_column(view->columns, column_info);
 		ui_view_schedule_redraw(view);
 	}
-	else
-	{
-		load_view_columns_option(view, view->view_columns);
-	}
 }
 
 size_t
 calculate_columns_count(FileView *view)
 {
-	if(view->ls_view)
+	if(!ui_view_displays_columns(view))
 	{
 		const size_t column_width = calculate_column_width(view);
 		return ui_view_available_width(view)/column_width;
@@ -1424,9 +1500,11 @@ fview_position_updated(FileView *view)
 	size_t col_width;
 	size_t col_count;
 	size_t print_width;
+	size_t prefix_len = 0U;
 	column_data_t cdt = {
 		.view = view,
 		.is_current = 1,
+		.prefix_len = &prefix_len,
 	};
 
 	if(view->curr_line > view->list_rows - 1)
@@ -1532,7 +1610,7 @@ fview_sorting_updated(FileView *view)
 static void
 reset_view_columns(FileView *view)
 {
-	if(view->ls_view ||
+	if(!ui_view_displays_columns(view) ||
 			(curr_stats.restart_in_progress && flist_custom_active(view) &&
 			 view->custom.unsorted))
 	{

@@ -114,7 +114,6 @@ static void make_current_job_key(void);
 job_t *jobs;
 
 static pthread_key_t current_job;
-static pthread_once_t current_job_once = PTHREAD_ONCE_INIT;
 
 void
 init_background(void)
@@ -168,10 +167,22 @@ check_background_jobs(void)
 	prev = NULL;
 	while(p != NULL)
 	{
+		int running;
+
 		job_check(p);
 
+		if(p->type != BJT_COMMAND)
+		{
+			pthread_spin_lock(&p->status_lock_for_bg);
+		}
+		running = p->running;
+		if(p->type != BJT_COMMAND)
+		{
+			pthread_spin_unlock(&p->status_lock_for_bg);
+		}
+
 		/* Remove job if it is finished now. */
-		if(!p->running)
+		if(!running)
 		{
 			job_t *j = p;
 			if(prev != NULL)
@@ -210,6 +221,8 @@ job_check(job_t *const job)
 	fd_set ready;
 	int max_fd = 0;
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 1000 };
+
+	/* XXX: aren't we doing extra/unneeded work for background threads here? */
 
 	/* Setup pipe for reading */
 	FD_ZERO(&ready);
@@ -269,7 +282,8 @@ job_free(job_t *const job)
 
 	if(job->type != BJT_COMMAND)
 	{
-		pthread_mutex_destroy(&job->bg_op_guard);
+		pthread_spin_destroy(&job->status_lock_for_bg);
+		pthread_spin_destroy(&job->bg_op_lock);
 	}
 
 #ifndef _WIN32
@@ -811,8 +825,10 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	if(pthread_create(&id, &attr, &background_task_bootstrap, task_args) != 0)
 	{
 		/* Mark job as finished with error. */
+		pthread_spin_lock(&task_args->job->status_lock_for_bg);
 		task_args->job->running = 0;
 		task_args->job->exit_code = 1;
+		pthread_spin_unlock(&task_args->job->status_lock_for_bg);
 
 		free(task_args);
 		ret = 1;
@@ -853,7 +869,8 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 
 	if(type != BJT_COMMAND)
 	{
-		pthread_mutex_init(&new->bg_op_guard, NULL);
+		pthread_spin_init(&new->status_lock_for_bg, PTHREAD_PROCESS_PRIVATE);
+		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
 	}
 	new->bg_op.total = 0;
 	new->bg_op.done = 0;
@@ -877,8 +894,10 @@ background_task_bootstrap(void *arg)
 	task_args->func(&task_args->job->bg_op, task_args->args);
 
 	/* Mark task as finished normally. */
+	pthread_spin_lock(&task_args->job->status_lock_for_bg);
 	task_args->job->running = 0;
 	task_args->job->exit_code = 0;
+	pthread_spin_unlock(&task_args->job->status_lock_for_bg);
 
 	free(task_args);
 
@@ -889,7 +908,9 @@ background_task_bootstrap(void *arg)
 static void
 set_current_job(job_t *job)
 {
-	pthread_once(&current_job_once, &make_current_job_key);
+	static pthread_once_t once = PTHREAD_ONCE_INIT;
+	pthread_once(&once, &make_current_job_key);
+
 	(void)pthread_setspecific(current_job, job);
 }
 
@@ -903,8 +924,8 @@ make_current_job_key(void)
 int
 bg_has_active_jobs(void)
 {
-	const job_t *job;
-	int bg_op_count;
+	job_t *job;
+	int running;
 
 	if(bg_jobs_freeze() != 0)
 	{
@@ -913,18 +934,20 @@ bg_has_active_jobs(void)
 		return 1;
 	}
 
-	bg_op_count = 0;
-	for(job = jobs; job != NULL; job = job->next)
+	running = 0;
+	for(job = jobs; job != NULL && !running; job = job->next)
 	{
-		if(job->running && job->type == BJT_OPERATION)
+		if(job->type == BJT_OPERATION)
 		{
-			++bg_op_count;
+			pthread_spin_lock(&job->status_lock_for_bg);
+			running |= job->running;
+			pthread_spin_unlock(&job->status_lock_for_bg);
 		}
 	}
 
 	bg_jobs_unfreeze();
 
-	return bg_op_count > 0;
+	return running;
 }
 
 int
@@ -948,14 +971,14 @@ void
 bg_op_lock(bg_op_t *bg_op)
 {
 	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
-	pthread_mutex_lock(&job->bg_op_guard);
+	pthread_spin_lock(&job->bg_op_lock);
 }
 
 void
 bg_op_unlock(bg_op_t *bg_op)
 {
 	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
-	pthread_mutex_unlock(&job->bg_op_guard);
+	pthread_spin_unlock(&job->bg_op_lock);
 }
 
 void

@@ -721,7 +721,7 @@ menu_to_custom_view(menu_info *m, FileView *view, int very)
 		current = strdup(full_path);
 	}
 
-	if(flist_custom_finish(view, very) != 0)
+	if(flist_custom_finish(view, very, 0) != 0)
 	{
 		free(current);
 		return 1;

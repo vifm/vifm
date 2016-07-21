@@ -864,9 +864,21 @@ select_first_one(void)
 static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(view->ls_view)
+	if(!ui_view_displays_columns(view))
 	{
 		go_to_prev(key_info, keys_info, 1, 1);
+	}
+	else if(view->dir_entry[view->list_pos].child_pos != 0)
+	{
+		const dir_entry_t *entry = &curr_view->dir_entry[curr_view->list_pos];
+		key_info.count = def_count(key_info.count);
+		while (key_info.count-- > 0)
+		{
+			entry -= entry->child_pos;
+		}
+		key_info.count = 1;
+		go_to_prev(key_info, keys_info, 1,
+				view->list_pos - entry_to_pos(curr_view, entry));
 	}
 }
 
@@ -880,7 +892,7 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!view->ls_view || !at_last_line(view))
+	if(ui_view_displays_columns(view) || !at_last_line(view))
 	{
 		go_to_next(key_info, keys_info, 1, view->column_count);
 	}
@@ -889,7 +901,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!view->ls_view || !at_first_line(view))
+	if(ui_view_displays_columns(view) || !at_first_line(view))
 	{
 		go_to_prev(key_info, keys_info, 1, view->column_count);
 	}
@@ -908,13 +920,13 @@ go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(view->ls_view)
+	if(ui_view_displays_columns(view))
 	{
-		go_to_next(key_info, keys_info, 1, 1);
+		cmd_gl(key_info, keys_info);
 	}
 	else
 	{
-		cmd_gl(key_info, keys_info);
+		go_to_next(key_info, keys_info, 1, 1);
 	}
 }
 

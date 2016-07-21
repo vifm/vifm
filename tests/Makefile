@@ -154,14 +154,14 @@ ifdef win_env
 endif
 
 ifdef DEBUG
-    CFLAGS += -g
+    CFLAGS += -g -Og
     LDFLAGS += -g
     ifdef unix_env
         LDFLAGS += -rdynamic
     endif
 
     ifeq ($(DEBUG),gdb)
-        TEST_RUN_PREFIX := gdb --args
+        TEST_RUN_PREFIX := gdb -q --args
     endif
     ifeq ($(DEBUG),valgrind)
         TEST_RUN_PREFIX := valgrind --track-origins=yes --leak-check=full \

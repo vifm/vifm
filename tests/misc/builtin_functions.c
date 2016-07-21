@@ -181,7 +181,7 @@ TEST(getpanetype_for_custom_view)
 {
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(&lwin, 0) == 0);
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
 
 	curr_view = &lwin;
 	ASSERT_OK("getpanetype()", "custom");
@@ -193,7 +193,7 @@ TEST(getpanetype_for_very_custom_view)
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(&lwin, 1) == 0);
+	assert_true(flist_custom_finish(&lwin, 1, 0) == 0);
 
 	curr_view = &lwin;
 	ASSERT_OK("getpanetype()", "very-custom");

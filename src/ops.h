@@ -88,6 +88,13 @@ typedef struct
 	int bg;               /* Executed in background (no user interaction). */
 	char *errors;         /* Multi-line string of errors. */
 
+	/* It's unsafe to access global cfg object from threads performing background
+	 * operations, so copy them and use the copies. */
+	char *slow_fs_list;    /* Copy of 'slowfs' option value. */
+	char *delete_prg;      /* Copy of 'deleteprg' option value. */
+	int use_system_calls;  /* Copy of 'syscalls' option value. */
+	int fast_file_cloning; /* Copy of part of 'iooptions' option value. */
+
 	char *base_dir;   /* Base directory in which operation is taking place. */
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */

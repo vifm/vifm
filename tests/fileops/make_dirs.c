@@ -14,18 +14,11 @@
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
 
+#include "utils.h"
+
 SETUP()
 {
-	if(is_path_absolute(SANDBOX_PATH))
-	{
-		strcpy(lwin.curr_dir, SANDBOX_PATH);
-	}
-	else
-	{
-		char cwd[PATH_MAX];
-		assert_non_null(get_cwd(cwd, sizeof(cwd)));
-		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", cwd, SANDBOX_PATH);
-	}
+	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
 }
 
 TEST(make_dirs_does_nothing_for_custom_view)
@@ -50,7 +43,7 @@ TEST(make_dirs_does_nothing_for_custom_view)
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "existing-files/a");
-	assert_true(flist_custom_finish(&lwin, 0) == 0);
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
 
 	make_dirs(&lwin, paths, 1, 0);
 	assert_false(path_exists("dir", NODEREF));
@@ -150,6 +143,30 @@ TEST(make_dirs_creates_sub_dirs_by_abs_path)
 		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
 		assert_success(rmdir(SANDBOX_PATH "/parent"));
 	}
+}
+
+TEST(make_dirs_considers_tree_structure)
+{
+	char path[] = "new-dir";
+	char *paths[] = { path };
+
+	view_setup(&lwin);
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	flist_load_tree(&lwin, SANDBOX_PATH);
+
+	lwin.list_pos = 0;
+	(void)make_dirs(&lwin, paths, 1, 0);
+	assert_success(rmdir(SANDBOX_PATH "/new-dir"));
+
+	lwin.list_pos = 1;
+	(void)make_dirs(&lwin, paths, 1, 0);
+	assert_success(rmdir(SANDBOX_PATH "/dir/new-dir"));
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+	view_teardown(&lwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

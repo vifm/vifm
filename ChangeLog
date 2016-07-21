@@ -1,10 +1,19 @@
 0.8.2 to current
 
+	Added tree view.  Thanks to filterfalse and Kornel.
+
+	Added :tree command that converts current view into a tree.
+
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 
+	Enable restoring files from trash from custom views.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
+
+	Fixed inconsistent file name demangling on moving files from trash in
+	custom view.
 
 0.8.2-beta to 0.8.2
 

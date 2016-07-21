@@ -451,32 +451,11 @@ print_entry_prefix(tree_print_state_t *s)
 static char **
 list_sorted_files(const char path[], int *len)
 {
-	DIR *dir;
-	struct dirent *d;
-	char **list = NULL;
-
-	dir = os_opendir(path);
-	if(dir == NULL)
-	{
-		*len = -1;
-		return NULL;
-	}
-
-	*len = 0;
-	while((d = os_readdir(dir)) != NULL)
-	{
-		if(!is_builtin_dir(d->d_name))
-		{
-			*len = add_to_string_array(&list, *len, 1, d->d_name);
-		}
-	}
-	os_closedir(dir);
-
-	if(*len != 0)
+	char **const list = list_all_files(path, len);
+	if(*len > 0)
 	{
 		qsort(list, *len, sizeof(*list), &path_sorter);
 	}
-
 	return list;
 }
 

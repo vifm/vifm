@@ -71,7 +71,6 @@
 #include "utils/env.h"
 #include "utils/filter.h"
 #include "utils/fs.h"
-#include "utils/int_stack.h"
 #include "utils/log.h"
 #include "utils/matchers.h"
 #include "utils/path.h"
@@ -246,6 +245,7 @@ static void sync_filters(void);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int trashes_cmd(const cmd_info_t *cmd_info);
+static int tree_cmd(const cmd_info_t *cmd_info);
 static int undolist_cmd(const cmd_info_t *cmd_info);
 static int unlet_cmd(const cmd_info_t *cmd_info);
 static int unmap_cmd(const cmd_info_t *cmd_info);
@@ -696,6 +696,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display trash directories",
 	  .flags = HAS_COMMENT | HAS_QMARK_NO_ARGS,
 	  .handler = &trashes_cmd,     .min_args = 0,   .max_args = 0, },
+	{ .name = "tree",              .abbr = NULL,    .id = -1,
+	  .descr = "display filesystem as a tree",
+	  .flags = HAS_COMMENT,
+	  .handler = &tree_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "undolist",          .abbr = "undol", .id = -1,
 	  .descr = "display list of operations",
 	  .flags = HAS_EMARK | HAS_COMMENT,
@@ -3293,6 +3297,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 static int
 restore_cmd(const cmd_info_t *cmd_info)
 {
+	check_marking(curr_view, 0, NULL);
 	return restore_files(curr_view) != 0;
 }
 
@@ -3773,6 +3778,14 @@ static int
 trashes_cmd(const cmd_info_t *cmd_info)
 {
 	return show_trashes_menu(curr_view, cmd_info->qmark) != 0;
+}
+
+/* Convert view into a tree with root at current location. */
+static int
+tree_cmd(const cmd_info_t *cmd_info)
+{
+	(void)flist_load_tree(curr_view, flist_get_dir(curr_view));
+	return 0;
 }
 
 static int

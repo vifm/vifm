@@ -1543,13 +1543,26 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->ls_view)
+	if(ui_view_displays_columns(curr_view))
 	{
-		go_to_prev(key_info, keys_info, 1);
+		if(curr_view->dir_entry[curr_view->list_pos].child_pos != 0)
+		{
+			const dir_entry_t *entry = &curr_view->dir_entry[curr_view->list_pos];
+			key_info.count = def_count(key_info.count);
+			while (key_info.count-- > 0)
+			{
+				entry -= entry->child_pos;
+			}
+			pick_or_move(keys_info, entry_to_pos(curr_view, entry));
+		}
+		else
+		{
+			cmd_gh(key_info, keys_info);
+		}
 	}
 	else
 	{
-		cmd_gh(key_info, keys_info);
+		go_to_prev(key_info, keys_info, 1);
 	}
 }
 
@@ -1592,13 +1605,13 @@ go_to_prev(key_info_t key_info, keys_info_t *keys_info, int step)
 static void
 cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->ls_view)
+	if(ui_view_displays_columns(curr_view))
 	{
-		go_to_next(key_info, keys_info, 1);
+		cmd_return(key_info, keys_info);
 	}
 	else
 	{
-		cmd_return(key_info, keys_info);
+		go_to_next(key_info, keys_info, 1);
 	}
 }
 
@@ -1744,23 +1757,26 @@ cmd_q_equals(key_info_t key_info, keys_info_t *keys_info)
 	get_and_execute_command("", 0U, CIT_FILTER_PATTERN);
 }
 
-/* Tag file. */
+/* Toggles selection of the current file. */
 static void
 cmd_t(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->dir_entry[curr_view->list_pos].selected == 0)
+	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
+	if(entry->selected == 0)
 	{
-		/* The ../ dir cannot be selected */
-		if(is_parent_dir(curr_view->dir_entry[curr_view->list_pos].name))
+		/* The ../ dir cannot be selected. */
+		if(is_parent_dir(entry->name))
+		{
 			return;
+		}
 
-		curr_view->dir_entry[curr_view->list_pos].selected = 1;
-		curr_view->selected_files++;
+		entry->selected = 1;
+		++curr_view->selected_files;
 	}
 	else
 	{
-		curr_view->dir_entry[curr_view->list_pos].selected = 0;
-		curr_view->selected_files--;
+		entry->selected = 0;
+		--curr_view->selected_files;
 	}
 
 	fview_cursor_redraw(curr_view);

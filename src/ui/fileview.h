@@ -22,6 +22,7 @@
 
 #include <stddef.h> /* size_t */
 
+#include "../utils/test_helpers.h"
 #include "ui.h"
 
 /* Initialization/termination functions. */
@@ -164,10 +165,18 @@ typedef struct
 
 	size_t current_line;  /* Line of the cell. */
 	size_t column_offset; /* Offset in characters of the column. */
+
+	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
+	                     * A pointer to allow changing value in const struct.
+	                     * Should be zero first time, then auto reset. */
 }
 column_data_t;
 
 #endif
+
+TSTATIC_DEFS(
+	void format_name(int id, const void *data, size_t buf_len, char buf[]);
+)
 
 #endif /* VIFM__UI__FILEVIEW_H__ */
 

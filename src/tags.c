@@ -311,6 +311,7 @@ const char *tags[] = {
 	"vifm-:touch",
 	"vifm-:tr",
 	"vifm-:trashes",
+	"vifm-:tree",
 	"vifm-:undol",
 	"vifm-:undolist",
 	"vifm-:unl",

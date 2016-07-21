@@ -44,6 +44,7 @@
 #include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/test_helpers.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -57,7 +58,7 @@
 static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
-static int process_scheduled_updates_of_view(FileView *view);
+TSTATIC int process_scheduled_updates_of_view(FileView *view);
 static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 static void reset_input_buf(wchar_t curr_input_buf[],
@@ -409,7 +410,7 @@ process_scheduled_updates(void)
 
 /* Performs postponed updates for the view, if any.  Returns non-zero if
  * something was indeed updated, and zero otherwise. */
-static int
+TSTATIC int
 process_scheduled_updates_of_view(FileView *view)
 {
 	if(!window_shows_dirlist(view))

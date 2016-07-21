@@ -43,6 +43,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
@@ -121,17 +122,23 @@ typedef struct
 }
 progress_data_t;
 
+/* Pack of arguments supplied to procedures implementing file operations in
+ * background. */
 typedef struct
 {
-	char **list;
-	int nlines;
-	int move;
-	int force;
-	char **sel_list;
-	size_t sel_list_len;
-	char path[PATH_MAX];
-	int from_file;
-	int use_trash; /* Whether either source or destination is trash directory. */
+	char **list;         /* User supplied list of new file names. */
+	int nlines;          /* Number of user supplied file names (list size). */
+	int move;            /* Whether this is a move operation. */
+	int force;           /* Whether destination files should be removed. */
+	char **sel_list;     /* Full paths of files to be processed. */
+	size_t sel_list_len; /* Number of files to process (sel_list size). */
+	char path[PATH_MAX]; /* Path at which processing should take place. */
+	int from_file;       /* Whether list was read from a file. */
+	int use_trash;       /* Whether either source or destination is trash
+	                        directory. */
+	char *is_in_trash;   /* Flags indicating whether i-th file is in trash.  Can
+	                        be NULL when unused. */
+	ops_t *ops;          /* Pointer to pre-allocated operation description. */
 }
 bg_args_t;
 
@@ -201,7 +208,7 @@ static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 static void progress_msg(const char text[], int ready, int total);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
-		char path[], size_t path_len, int *from_file, int *from_trash);
+		char dst_path[], size_t dst_path_len, int *from_file);
 static int can_read_selected_files(FileView *view);
 static int check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len);
@@ -210,8 +217,8 @@ static char ** edit_list(size_t count, char **orig, int *nlines,
 static int edit_file(const char filepath[], int force_changed);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
-static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[],
-		bg_op_t *bg_op);
+static void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
+static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 static void free_ops(ops_t *ops);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
@@ -230,6 +237,8 @@ static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
 static int can_add_files_to_view(const FileView *view);
+static const char * get_top_dir(const FileView *view);
+static const char * get_dst_dir(const FileView *view);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -627,6 +636,8 @@ delete_files(FileView *view, int reg, int use_trash)
 	dir_entry_t *entry;
 	int nmarked_files;
 	ops_t *ops;
+	const char *const top_dir = get_top_dir(view);
+	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
 	if(!can_change_view_files(view))
 	{
@@ -635,10 +646,11 @@ delete_files(FileView *view, int reg, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
-	if(use_trash && is_under_trash(view->curr_dir))
+	/* This check for the case when we are for sure in the trash. */
+	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
-				"Current directory is under Trash directory");
+				"Current directory is under trash directory");
 		return 0;
 	}
 
@@ -648,12 +660,12 @@ delete_files(FileView *view, int reg, int use_trash)
 	}
 
 	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
-			replace_home_part(flist_get_dir(view)));
+			replace_home_part(curr_dir));
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
-	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", view->curr_dir,
-			view->curr_dir);
+	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
+			curr_dir);
 
 	ui_cancellation_reset();
 
@@ -672,7 +684,19 @@ delete_files(FileView *view, int reg, int use_trash)
 
 		if(use_trash)
 		{
-			if(!is_trash_directory(full_path))
+			if(is_trash_directory(full_path))
+			{
+				show_error_msg("Can't perform deletion",
+						"You cannot delete trash directory to trash");
+				result = -1;
+			}
+			else if(is_under_trash(full_path))
+			{
+				show_error_msgf("Skipping file deletion",
+						"File is already in trash: %s", full_path);
+				result = -1;
+			}
+			else
 			{
 				char *const dest = gen_trash_name(entry->origin, entry->name);
 				if(dest != NULL)
@@ -697,12 +721,6 @@ delete_files(FileView *view, int reg, int use_trash)
 							"Deletion failed on: %s", entry->name);
 					result = -1;
 				}
-			}
-			else
-			{
-				show_error_msg("Can't perform deletion",
-						"You cannot delete trash directory to trash");
-				result = -1;
 			}
 		}
 		else
@@ -767,6 +785,9 @@ delete_files_bg(FileView *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
+	unsigned int i;
+	const char *const top_dir = get_top_dir(view);
+	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
 	if(!can_change_view_files(view))
 	{
@@ -775,10 +796,10 @@ delete_files_bg(FileView *view, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
-	if(use_trash && is_under_trash(view->curr_dir))
+	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
-				"Current directory is under Trash directory");
+				"Current directory is under trash directory");
 		return 0;
 	}
 
@@ -786,6 +807,26 @@ delete_files_bg(FileView *view, int use_trash)
 	args->use_trash = use_trash;
 
 	general_prepare_for_bg_task(view, args);
+
+	for(i = 0U; i < args->sel_list_len; ++i)
+	{
+		const char *const full_file_path = args->sel_list[i];
+		if(is_trash_directory(full_file_path))
+		{
+			show_error_msg("Can't perform deletion",
+					"You cannot delete trash directory to trash");
+			free_bg_args(args);
+			return 0;
+		}
+		else if(is_under_trash(full_file_path))
+		{
+			show_error_msgf("Skipping file deletion", "File is already in trash: %s",
+					full_file_path);
+			free_bg_args(args);
+			return 0;
+		}
+	}
+
 	if(cfg_confirm_delete(use_trash))
 	{
 		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
@@ -805,9 +846,12 @@ delete_files_bg(FileView *view, int use_trash)
 	move_cursor_out_of(view, FLS_MARKING);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
-			use_trash ? 'd' : 'D', replace_home_part(flist_get_dir(view)));
+			use_trash ? 'd' : 'D', replace_home_part(curr_dir));
 
 	append_marked_files(view, task_desc, NULL);
+
+	args->ops = get_bg_ops(use_trash ? OP_REMOVE : OP_REMOVESL,
+			use_trash ? "deleting" : "Deleting", args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &delete_files_in_bg,
 				args) != 0)
@@ -826,12 +870,10 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
-	ops_t *ops;
+	ops_t *ops = args->ops;
+	bg_ops_init(ops, bg_op);
 
-	ops = get_bg_ops(args->use_trash ? OP_REMOVE : OP_REMOVESL,
-			args->use_trash ? "deleting" : "Deleting", args->path, bg_op);
-
-	if(ops != NULL)
+	if(ops->use_system_calls)
 	{
 		size_t i;
 		bg_op_set_descr(bg_op, "estimating...");
@@ -855,7 +897,6 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 		++bg_op->done;
 	}
 
-	free_ops(ops);
 	free_bg_args(args);
 }
 
@@ -1195,7 +1236,8 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	dir_entry_t *entry;
 	int *is_dup;
 
-	if(recursive && nlines != 0)
+	/* Allow list of names in tests. */
+	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
 	{
 		status_bar_error("Recursive rename doesn't accept list of new names");
 		return 1;
@@ -1267,18 +1309,19 @@ TSTATIC int
 is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 {
 	int i;
-	for(i = 0; i < len; i++)
+	const char *const work_dir = flist_get_dir(curr_view);
+	for(i = 0; i < len; ++i)
 	{
 		int j;
 
 		const int check_result =
-			check_file_rename(curr_view->curr_dir, files[i], list[i], ST_NONE);
+			check_file_rename(work_dir, files[i], list[i], ST_NONE);
 		if(check_result < 0)
 		{
 			continue;
 		}
 
-		for(j = 0; j < len; j++)
+		for(j = 0; j < len; ++j)
 		{
 			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
 			{
@@ -1288,6 +1331,9 @@ is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 		}
 		if(j >= len && check_result == 0)
 		{
+			/* Invoke check_file_rename() again, but this time to produce error
+			 * message. */
+			(void)check_file_rename(work_dir, files[i], list[i], ST_STATUS_BAR);
 			break;
 		}
 	}
@@ -1483,7 +1529,7 @@ count_digits(int number)
 }
 
 /* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
- * when rename operation should be aborted. silent parameter controls whether
+ * when rename operation should be aborted.  silent parameter controls whether
  * error dialog or status bar message should be shown, 0 means dialog. */
 TSTATIC int
 check_file_rename(const char dir[], const char old[], const char new[],
@@ -1988,6 +2034,7 @@ put_files_bg(FileView *view, int reg_name, int move)
 	int i;
 	bg_args_t *args;
 	reg_t *reg;
+	const char *const dst_dir = get_dst_dir(view);
 
 	/* Check that operation generally makes sense given our input. */
 
@@ -2008,10 +2055,10 @@ put_files_bg(FileView *view, int reg_name, int move)
 
 	args = calloc(1, sizeof(*args));
 	args->move = move;
-	copy_str(args->path, sizeof(args->path), flist_get_dir(view));
+	copy_str(args->path, sizeof(args->path), dst_dir);
 
 	task_desc_len = snprintf(task_desc, sizeof(task_desc), "%cut in %s: ",
-			move ? 'P' : 'p', replace_home_part(flist_get_dir(view)));
+			move ? 'P' : 'p', replace_home_part(dst_dir));
 	for(i = 0; i < reg->nfiles; ++i)
 	{
 		char *const src = reg->files[i];
@@ -2066,6 +2113,9 @@ put_files_bg(FileView *view, int reg_name, int move)
 
 	/* Initiate the operation. */
 
+	args->ops = get_bg_ops((args->move ? OP_MOVE : OP_COPY),
+			move ? "Putting" : "putting", args->path);
+
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg,
 				args) != 0)
 	{
@@ -2084,12 +2134,10 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
-	const OPS op = (args->move ? OP_MOVE : OP_COPY);
+	ops_t *ops = args->ops;
+	bg_ops_init(ops, bg_op);
 
-	ops_t *ops = get_bg_ops(op, args->move ? "Putting" : "putting", args->path,
-			bg_op);
-
-	if(ops != NULL)
+	if(ops->use_system_calls)
 	{
 		size_t i;
 		bg_op_set_descr(bg_op, "estimating...");
@@ -2128,10 +2176,9 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 		}
 
 		bg_op_set_descr(bg_op, src);
-		(void)perform_operation(op, ops, (void *)1, src, dst);
+		(void)perform_operation(ops->main_op, ops, (void *)1, src, dst);
 	}
 
-	free_ops(ops);
 	free_bg_args(args);
 }
 
@@ -2193,7 +2240,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 {
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
-	char path[PATH_MAX];
+	char dst_path[PATH_MAX];
 	char **marked;
 	size_t nmarked;
 	int custom_fnames;
@@ -2202,6 +2249,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 	int from_file;
 	dir_entry_t *entry;
 	ops_t *ops;
+	const char *const curr_dir = flist_get_dir(view);
 
 	if(!can_read_selected_files(view))
 	{
@@ -2210,7 +2258,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 
 	if(nlines == 1)
 	{
-		with_dir = check_dir_path(view, list[0], path, sizeof(path));
+		with_dir = check_dir_path(view, list[0], dst_path, sizeof(dst_path));
 		if(with_dir)
 		{
 			nlines = 0;
@@ -2223,9 +2271,9 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 			return 0;
 		}
 
-		strcpy(path, view->curr_dir);
+		copy_str(dst_path, sizeof(dst_path), get_dst_dir(view));
 	}
-	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
+	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, dst_path))
 	{
 		return 0;
 	}
@@ -2261,21 +2309,20 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 
 	if(with_dir)
 	{
-		snprintf(undo_msg, sizeof(undo_msg), "clone in %s to %s: ", view->curr_dir,
+		snprintf(undo_msg, sizeof(undo_msg), "clone in %s to %s: ", curr_dir,
 				list[0]);
 	}
 	else
 	{
-		snprintf(undo_msg, sizeof(undo_msg), "clone in %s: ", view->curr_dir);
+		snprintf(undo_msg, sizeof(undo_msg), "clone in %s: ", curr_dir);
 	}
 	append_marked_files(view, undo_msg, list);
 
-	ops = get_ops(OP_COPY, "Cloning", view->curr_dir,
-			with_dir ? list[0] : view->curr_dir);
+	ops = get_ops(OP_COPY, "Cloning", curr_dir, with_dir ? list[0] : curr_dir);
 
 	ui_cancellation_reset();
 
-	nmarked_files = enqueue_marked_files(ops, view, path, 0);
+	nmarked_files = enqueue_marked_files(ops, view, dst_path, 0);
 
 	custom_fnames = (nlines > 0);
 
@@ -2287,6 +2334,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		int err;
 		int j;
 		const char *const name = entry->name;
+		const char *const clone_dst = with_dir ? dst_path : entry->origin;
 		const char *clone_name;
 		if(custom_fnames)
 		{
@@ -2294,7 +2342,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		}
 		else
 		{
-			clone_name = path_exists_at(path, name, DEREF)
+			clone_name = path_exists_at(clone_dst, name, DEREF)
 			           ? gen_clone_name(name)
 			           : name;
 		}
@@ -2304,14 +2352,18 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		err = 0;
 		for(j = 0; j < copies; ++j)
 		{
-			if(path_exists_at(path, clone_name, DEREF))
+			if(path_exists_at(clone_dst, clone_name, DEREF))
 			{
 				clone_name = gen_clone_name(custom_fnames ? list[i] : name);
 			}
-			err += clone_file(entry, path, clone_name, ops);
+			err += clone_file(entry, clone_dst, clone_name, ops);
 		}
 
-		fixup_entry_after_rename(view, entry, clone_name);
+		/* Don't update cursor position if more than one file is cloned. */
+		if(nmarked == 1U)
+		{
+			fixup_entry_after_rename(view, entry, clone_name);
+		}
 		ops_advance(ops, err == 0);
 
 		++i;
@@ -2412,6 +2464,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 {
 	reg_t *reg;
 	int i;
+	const char *const dst_dir = get_dst_dir(view);
 
 	if(!can_add_files_to_view(view))
 	{
@@ -2425,7 +2478,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(cmlo_to_op(op), descr, view->curr_dir, view->curr_dir);
+	reset_put_confirm(cmlo_to_op(op), descr, dst_dir, dst_dir);
 
 	put_confirm.op = op;
 	put_confirm.reg = reg;
@@ -2436,7 +2489,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 
 	for(i = 0; i < reg->nfiles && !ui_cancellation_requested(); ++i)
 	{
-		ops_enqueue(put_confirm.ops, reg->files[i], view->curr_dir);
+		ops_enqueue(put_confirm.ops, reg->files[i], dst_dir);
 	}
 
 	ui_cancellation_disable();
@@ -2505,7 +2558,7 @@ put_files_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(vifm_chdir(view->curr_dir) != 0)
+	if(vifm_chdir(get_dst_dir(view)) != 0)
 	{
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
@@ -2552,6 +2605,7 @@ put_next(int force)
 {
 	char *filename;
 	const char *dest_name;
+	const char *dst_dir = get_dst_dir(put_confirm.view);
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
@@ -2596,8 +2650,7 @@ put_next(int force)
 		}
 	}
 
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
-			dest_name);
+	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dest_name);
 	chosp(dst_buf);
 
 	if(!put_confirm.append && path_exists(dst_buf, DEREF))
@@ -2648,8 +2701,7 @@ put_next(int force)
 		op = OP_SYMLINK;
 		if(put_confirm.op == CMLO_LINK_REL)
 		{
-			copy_str(src_buf, sizeof(src_buf),
-					make_rel_path(filename, put_confirm.view->curr_dir));
+			copy_str(src_buf, sizeof(src_buf), make_rel_path(filename, dst_dir));
 		}
 	}
 	else if(put_confirm.append)
@@ -2678,8 +2730,7 @@ put_next(int force)
 
 		cmd_group_continue();
 
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.view->curr_dir,
-				dest_name);
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dest_name);
 
 		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
 		{
@@ -3207,7 +3258,6 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	dir_entry_t *entry;
 	char path[PATH_MAX];
 	int from_file;
-	int from_trash;
 	ops_t *ops;
 
 	if((op == CMLO_LINK_REL || op == CMLO_LINK_ABS) && !symlinks_available())
@@ -3218,7 +3268,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	}
 
 	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
-			sizeof(undo_msg), path, sizeof(path), &from_file, &from_trash);
+			sizeof(undo_msg), path, sizeof(path), &from_file);
 	if(err != 0)
 	{
 		return err > 0;
@@ -3235,14 +3285,14 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	switch(op)
 	{
 		case CMLO_COPY:
-			ops = get_ops(OP_COPY, "Copying", view->curr_dir, path);
+			ops = get_ops(OP_COPY, "Copying", flist_get_dir(view), path);
 			break;
 		case CMLO_MOVE:
-			ops = get_ops(OP_MOVE, "Moving", view->curr_dir, path);
+			ops = get_ops(OP_MOVE, "Moving", flist_get_dir(view), path);
 			break;
 		case CMLO_LINK_REL:
 		case CMLO_LINK_ABS:
-			ops = get_ops(OP_SYMLINK, "Linking", view->curr_dir, path);
+			ops = get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path);
 			break;
 
 		default:
@@ -3265,7 +3315,10 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 
 		char dst_full[PATH_MAX];
 		const char *dst = custom_fnames ? list[i] : entry->name;
-		int err;
+		int err, from_trash;
+
+		get_full_path_of(entry, sizeof(src_full), src_full);
+		from_trash = is_under_trash(src_full);
 
 		if(from_trash && !custom_fnames)
 		{
@@ -3365,7 +3418,7 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
 	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
-	if(cfg.use_system_calls)
+	if(ops->use_system_calls)
 	{
 		ops->estim = ioeta_alloc(alloc_progress_data(0, ops));
 	}
@@ -3390,6 +3443,7 @@ int
 cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 {
 	int err;
+	size_t i;
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args = calloc(1, sizeof(*args));
 
@@ -3399,7 +3453,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	err = cpmv_prepare(view, &list, &args->nlines, move ? CMLO_MOVE : CMLO_COPY,
 			force, task_desc, sizeof(task_desc), args->path, sizeof(args->path),
-			&args->from_file, &args->use_trash);
+			&args->from_file);
 	if(err != 0)
 	{
 		free_bg_args(args);
@@ -3409,6 +3463,28 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->list = args->from_file ? list : copy_string_array(list, nlines);
 
 	general_prepare_for_bg_task(view, args);
+
+	args->is_in_trash = malloc(args->sel_list_len);
+	for(i = 0U; i < args->sel_list_len; ++i)
+	{
+		args->is_in_trash[i] = is_under_trash(args->sel_list[i]);
+	}
+
+	if(args->list == NULL)
+	{
+		int i;
+		args->nlines = args->sel_list_len;
+		args->list = reallocarray(NULL, args->nlines, sizeof(*args->list));
+		for(i = 0; i < args->nlines; ++i)
+		{
+			args->list[i] = args->is_in_trash[i]
+			              ? strdup(get_real_name_from_trash_name(args->sel_list[i]))
+			              : strdup(get_last_path_component(args->sel_list[i]));
+		}
+	}
+
+	args->ops = get_bg_ops(move ? OP_MOVE : OP_COPY, move ? "moving" : "copying",
+			args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
 				args) != 0)
@@ -3428,8 +3504,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
  * message and negative number for other errors. */
 static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
-		int force, char undo_msg[], size_t undo_msg_len, char path[],
-		size_t path_len, int *from_file, int *from_trash)
+		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
+		size_t dst_path_len, int *from_file)
 {
 	char **marked;
 	size_t nmarked;
@@ -3449,17 +3525,17 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines == 1)
 	{
-		if(check_dir_path(other_view, (*list)[0], path, path_len))
+		if(check_dir_path(other_view, (*list)[0], dst_path, dst_path_len))
 		{
 			*nlines = 0;
 		}
 	}
 	else
 	{
-		strcpy(path, other_view->curr_dir);
+		copy_str(dst_path, dst_path_len, get_dst_dir(other_view));
 	}
 
-	if(!check_if_dir_writable(DR_DESTINATION, path))
+	if(!check_if_dir_writable(DR_DESTINATION, dst_path))
 	{
 		return -1;
 	}
@@ -3479,11 +3555,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines > 0 &&
 			(!is_name_list_ok(nmarked, *nlines, *list, NULL) ||
-			(!is_copy_list_ok(path, *nlines, *list) && !force)))
+			(!is_copy_list_ok(dst_path, *nlines, *list) && !force)))
 	{
 		error = 1;
 	}
-	if(*nlines == 0 && !force && !is_copy_list_ok(path, nmarked, marked))
+	if(*nlines == 0 && !force && !is_copy_list_ok(dst_path, nmarked, marked))
 	{
 		error = 1;
 	}
@@ -3518,7 +3594,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	snprintf(undo_msg, undo_msg_len, "%s from %s to ", cmlo_to_str(op),
 			replace_home_part(flist_get_dir(view)));
 	snprintf(undo_msg + strlen(undo_msg), undo_msg_len - strlen(undo_msg),
-			"%s: ", replace_home_part(path));
+			"%s: ", replace_home_part(dst_path));
 	append_marked_files(view, undo_msg, (*nlines > 0) ? *list : NULL);
 
 	if(op == CMLO_MOVE)
@@ -3526,7 +3602,6 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		move_cursor_out_of(view, FLS_SELECTION);
 	}
 
-	*from_trash = is_under_trash(view->curr_dir);
 	return 0;
 }
 
@@ -3577,7 +3652,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s/%s", view->curr_dir, path);
+		snprintf(buf, buf_len, "%s/%s", get_dst_dir(view), path);
 	}
 
 	if(is_dir(buf))
@@ -3585,7 +3660,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 		return 1;
 	}
 
-	strcpy(buf, view->curr_dir);
+	strcpy(buf, get_dst_dir(view));
 	return 0;
 }
 
@@ -3683,20 +3758,17 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 {
 	size_t i;
 	bg_args_t *const args = arg;
-	const int custom_fnames = (args->nlines > 0);
-	ops_t *ops;
+	ops_t *ops = args->ops;
+	bg_ops_init(ops, bg_op);
 
-	ops = get_bg_ops(args->move ? OP_MOVE : OP_COPY,
-			args->move ? "moving" : "copying", args->path, bg_op);
-
-	if(ops != NULL)
+	if(ops->use_system_calls)
 	{
 		size_t i;
 		bg_op_set_descr(bg_op, "estimating...");
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const src = args->sel_list[i];
-			const char *const dst = custom_fnames ? args->list[i] : NULL;
+			const char *const dst = args->list[i];
 			ops_enqueue(ops, src, dst);
 		}
 	}
@@ -3704,35 +3776,38 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
 		const char *const src = args->sel_list[i];
-		const char *const dst = custom_fnames ? args->list[i] : NULL;
+		const char *const dst = args->list[i];
 		bg_op_set_descr(bg_op, src);
-		cpmv_file_in_bg(ops, src, dst, args->move, args->force, args->use_trash,
-				args->path);
+		cpmv_file_in_bg(ops, src, dst, args->move, args->force,
+				args->is_in_trash[i], args->path);
 		++bg_op->done;
 	}
 
-	free_ops(ops);
 	free_bg_args(args);
 }
 
-/* Allocates opt_t structure and configures it as needed.  Returns pointer to
- * newly allocated structure or NULL if ops are not needed, which should be
- * freed by free_ops(). */
-static ops_t *
-get_bg_ops(OPS main_op, const char descr[], const char dir[], bg_op_t *bg_op)
+/* Finishes initialization of ops for background processes. */
+static void
+bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 {
-	ops_t *ops;
-	progress_data_t *pdata;
-
-	if(!cfg.use_system_calls)
+	if(ops->estim != NULL)
 	{
-		return NULL;
+		progress_data_t *const pdata = ops->estim->param;
+		pdata->bg_op = bg_op;
 	}
+}
 
-	ops = ops_alloc(main_op, 1, descr, dir, dir);
-	pdata = alloc_progress_data(1, bg_op);
-	ops->estim = ioeta_alloc(pdata);
-
+/* Allocates opt_t structure and configures it as needed.  Returns pointer to
+ * newly allocated structure, which should be freed by free_ops(). */
+static ops_t *
+get_bg_ops(OPS main_op, const char descr[], const char dir[])
+{
+	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir);
+	if(ops->use_system_calls)
+	{
+		progress_data_t *const pdata = alloc_progress_data(1, NULL);
+		ops->estim = ioeta_alloc(pdata);
+	}
 	return ops;
 }
 
@@ -3764,7 +3839,7 @@ free_ops(ops_t *ops)
 		return;
 	}
 
-	if(cfg.use_system_calls)
+	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = ops->estim->param;
 
@@ -3787,19 +3862,6 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[])
 {
 	char dst_full[PATH_MAX];
-
-	if(dst == NULL)
-	{
-		if(from_trash)
-		{
-			dst = get_real_name_from_trash_name(src);
-		}
-		else
-		{
-			dst = get_last_path_component(src);
-		}
-	}
-
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
 	if(path_exists(dst_full, DEREF) && !from_trash)
 	{
@@ -3918,6 +3980,8 @@ free_bg_args(bg_args_t *args)
 {
 	free_string_array(args->list, args->nlines);
 	free_string_array(args->sel_list, args->sel_list_len);
+	free(args->is_in_trash);
+	free_ops(args->ops);
 	free(args);
 }
 
@@ -3965,6 +4029,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	int i;
 	int n;
 	void *cp;
+	const char *const dst_dir = get_dst_dir(view);
 
 	if(!can_add_files_to_view(view))
 	{
@@ -3994,8 +4059,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 
 	ui_cancellation_reset();
 
-	snprintf(buf, sizeof(buf), "mkdir in %s: ",
-			replace_home_part(view->curr_dir));
+	snprintf(buf, sizeof(buf), "mkdir in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
@@ -4003,7 +4067,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
-		to_canonic_path(names[i], view->curr_dir, full, sizeof(full));
+		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 
 		if(perform_operation(OP_MKDIR, NULL, cp, full, NULL) == 0)
 		{
@@ -4043,6 +4107,7 @@ make_files(FileView *view, char **names, int count)
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
+	const char *const dst_dir = get_dst_dir(view);
 
 	if(!can_add_files_to_view(view))
 	{
@@ -4075,10 +4140,9 @@ make_files(FileView *view, char **names, int count)
 
 	ui_cancellation_reset();
 
-	ops = get_ops(OP_MKFILE, "touching", view->curr_dir, view->curr_dir);
+	ops = get_ops(OP_MKFILE, "touching", dst_dir, dst_dir);
 
-	snprintf(buf, sizeof(buf), "touch in %s: ",
-			replace_home_part(view->curr_dir));
+	snprintf(buf, sizeof(buf), "touch in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
@@ -4086,7 +4150,7 @@ make_files(FileView *view, char **names, int count)
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
-		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
+		snprintf(full, sizeof(full), "%s/%s", dst_dir, names[i]);
 		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
 		{
 			add_operation(OP_MKFILE, NULL, NULL, full, "");
@@ -4096,7 +4160,9 @@ make_files(FileView *view, char **names, int count)
 	cmd_group_end();
 
 	if(n > 0)
+	{
 		go_to_first_file(view, names, count);
+	}
 
 	status_bar_messagef("%d file%s created%s", n, (n == 1) ? "" : "s",
 			get_cancellation_suffix());
@@ -4147,11 +4213,11 @@ append_fname(char buf[], size_t len, const char fname[])
 int
 restore_files(FileView *view)
 {
-	int m;
-	int n;
+	int m, n;
 	dir_entry_t *entry;
 
-	if(!is_trash_directory(view->curr_dir))
+	/* This is general check for regular views only. */
+	if(!flist_custom_active(view) && !is_trash_directory(view->curr_dir))
 	{
 		show_error_msg("Restore error", "Not a top-level trash directory.");
 		return 0;
@@ -4167,12 +4233,12 @@ restore_files(FileView *view)
 	m = 0;
 	n = 0;
 	entry = NULL;
-	while(iter_selected_entries(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(restore_from_trash(full_path) == 0)
+		if(is_trash_directory(entry->origin) && restore_from_trash(full_path) == 0)
 		{
 			++m;
 		}
@@ -4207,14 +4273,39 @@ can_change_view_files(const FileView *view)
 static int
 can_add_files_to_view(const FileView *view)
 {
-	if(flist_custom_active(view))
+	if(flist_custom_active(view) && !view->custom.tree_view)
 	{
 		show_error_msg("Operation error",
 				"Custom view can't handle this operation.");
 		return 0;
 	}
 
-	return check_if_dir_writable(DR_DESTINATION, view->curr_dir);
+	return check_if_dir_writable(DR_DESTINATION, get_dst_dir(view));
+}
+
+/* Retrieves root directory of file system sub-tree (for regular or tree views).
+ * Returns the path or NULL (for custom views). */
+static const char *
+get_top_dir(const FileView *view)
+{
+	if(flist_custom_active(view) && !view->custom.tree_view)
+	{
+		return NULL;
+	}
+	return flist_get_dir(view);
+}
+
+/* Retrieves current target directory of file system sub-tree.  Root for regular
+ * and regular custom views and origin of active entry for tree views.  Returns
+ * the path. */
+static const char *
+get_dst_dir(const FileView *view)
+{
+	if(flist_custom_active(view) && view->custom.tree_view)
+	{
+		return view->dir_entry[view->list_pos].origin;
+	}
+	return flist_get_dir(view);
 }
 
 /* This is a wrapper for is_dir_writable() function, which adds message

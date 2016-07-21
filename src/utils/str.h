@@ -248,7 +248,7 @@ size_t copy_str(char dst[], size_t dst_len, const char src[]);
 /* Copies characters from the string pointed to by src and terminated by the
  * terminator to piece of memory of size dst_len pointed to by dst.  Ensures
  * that copied string ends with null character.  Does nothing for zero
- * dst_len. Returns number of characters written, including terminating null
+ * dst_len.  Returns number of characters written, including terminating null
  * character. */
 size_t copy_substr(char dst[], size_t dst_len, const char src[],
 		char terminator);

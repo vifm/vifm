@@ -52,7 +52,7 @@ TEST(file_group_is_changed, IF(has_more_than_one_group))
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, SANDBOX_PATH "/dir/chown-me");
-	assert_true(flist_custom_finish(&lwin, 0) == 0);
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
 
 	mark_selection_or_current(curr_view);
 	chown_files(0, 1, 0, gid1);

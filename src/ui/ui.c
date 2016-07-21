@@ -1640,7 +1640,7 @@ ui_view_sort_list_get(const FileView *view)
 int
 ui_view_displays_numbers(const FileView *const view)
 {
-	return view->num_type != NT_NONE && !view->ls_view;
+	return view->num_type != NT_NONE && ui_view_displays_columns(view);
 }
 
 int
@@ -1660,7 +1660,8 @@ ui_view_clear_history(FileView *const view)
 int
 ui_view_displays_columns(const FileView *const view)
 {
-	return !view->ls_view;
+	return !view->ls_view
+	    || (flist_custom_active(view) && view->custom.tree_view);
 }
 
 FileType

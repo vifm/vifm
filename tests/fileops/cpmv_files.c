@@ -6,6 +6,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -13,8 +14,10 @@
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
+#include "../../src/trash.h"
 
-static void free_view(FileView *view);
+#include "utils.h"
+
 static int not_windows(void);
 
 static char *saved_cwd;
@@ -38,6 +41,7 @@ SETUP()
 	}
 
 	/* lwin */
+	view_setup(&lwin);
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -46,11 +50,9 @@ SETUP()
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
 
 	/* rwin */
-	rwin.list_rows = 0;
+	view_setup(&rwin);
 	rwin.filtered = 0;
 	rwin.list_pos = 0;
-	rwin.dir_entry = NULL;
-	assert_int_equal(0, filter_init(&rwin.local_filter.filter, 0));
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -58,24 +60,10 @@ SETUP()
 
 TEARDOWN()
 {
-	free_view(&lwin);
-	free_view(&rwin);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	restore_cwd(saved_cwd);
-
-	filter_dispose(&rwin.local_filter.filter);
-}
-
-static void
-free_view(FileView *view)
-{
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		free_dir_entry(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
 }
 
 TEST(move_file)
@@ -146,7 +134,7 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	flist_custom_start(&rwin, "test");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/rename/a");
-	assert_true(flist_custom_finish(&rwin, 0) == 0);
+	assert_true(flist_custom_finish(&rwin, 0, 0) == 0);
 	assert_int_equal(2, rwin.list_rows);
 
 	assert_success(chdir(SANDBOX_PATH));
@@ -172,7 +160,7 @@ TEST(cpmv_crash_on_wrong_list_access)
 {
 	char *list[] = { "." };
 
-	free_view(&lwin);
+	view_teardown(&lwin);
 
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
@@ -213,6 +201,87 @@ TEST(cpmv_crash_on_wrong_list_access)
 	assert_success(remove(SANDBOX_PATH "/a"));
 	assert_success(remove(SANDBOX_PATH "/b"));
 	assert_success(remove(SANDBOX_PATH "/c"));
+}
+
+TEST(cpmv_considers_tree_structure)
+{
+	char new_fname[] = "new_name";
+	char *list[] = { &new_fname[0] };
+
+	create_empty_dir("dir");
+
+	/* Move from tree root to nested dir. */
+	create_empty_file("file");
+	flist_load_tree(&rwin, rwin.curr_dir);
+	rwin.list_pos = 1;
+	lwin.dir_entry[0].marked = 1;
+	(void)cpmv_files(&lwin, list, 1, CMLO_MOVE, 0);
+	assert_success(unlink("dir/new_name"));
+
+	/* Move back. */
+	curr_view = &rwin;
+	other_view = &lwin;
+	create_empty_file("dir/file");
+	flist_load_tree(&lwin, flist_get_dir(&lwin));
+	flist_load_tree(&rwin, flist_get_dir(&rwin));
+	lwin.list_pos = 0;
+	rwin.dir_entry[1].marked = 1;
+	(void)cpmv_files(&rwin, NULL, 0, CMLO_MOVE, 0);
+	assert_success(unlink("file"));
+
+	assert_success(rmdir("dir"));
+}
+
+TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
+{
+	int bg;
+
+	strcat(lwin.curr_dir, "/trash");
+	set_trash_dir(lwin.curr_dir);
+	remove_last_path_component(lwin.curr_dir);
+
+	strcat(lwin.curr_dir, "/dir");
+
+	curr_view = &rwin;
+	other_view = &lwin;
+
+	for(bg = 0; bg < 2; ++bg)
+	{
+		create_empty_dir("trash");
+		create_empty_file("trash/000_a");
+		create_empty_dir("trash/nested");
+		create_empty_file("trash/nested/000_file");
+		create_empty_dir("dir");
+		create_empty_file("000_b");
+
+		flist_custom_start(&rwin, "test");
+		flist_custom_add(&rwin, "trash/000_a");
+		flist_custom_add(&rwin, "000_b");
+		flist_custom_add(&rwin, "trash/nested/000_file");
+		assert_true(flist_custom_finish(&rwin, 0, 0) == 0);
+		assert_int_equal(3, rwin.list_rows);
+
+		rwin.dir_entry[0].marked = 1;
+		rwin.dir_entry[1].marked = 1;
+		rwin.dir_entry[2].marked = 1;
+
+		if(!bg)
+		{
+			(void)cpmv_files(&rwin, NULL, 0, CMLO_MOVE, 0);
+		}
+		else
+		{
+			(void)cpmv_files_bg(&rwin, NULL, 0, CMLO_MOVE, 0);
+			wait_for_bg();
+		}
+
+		assert_success(unlink("dir/a"));
+		assert_success(unlink("dir/000_b"));
+		assert_success(unlink("dir/000_file"));
+		assert_success(rmdir("dir"));
+		assert_success(rmdir("trash/nested"));
+		assert_success(rmdir("trash"));
+	}
 }
 
 static int

@@ -16,9 +16,9 @@
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
+#include "utils.h"
+
 static void perform_merge(int op);
-static void create_empty_dir(const char dir[]);
-static void create_empty_file(const char file[]);
 static int file_exists(const char file[]);
 
 static char *saved_cwd;
@@ -31,6 +31,7 @@ SETUP()
 	/* lwin */
 	strcpy(lwin.curr_dir, ".");
 
+	view_setup(&lwin);
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -41,11 +42,9 @@ SETUP()
 	/* rwin */
 	strcpy(rwin.curr_dir, ".");
 
-	rwin.list_rows = 0;
+	view_setup(&rwin);
 	rwin.filtered = 0;
 	rwin.list_pos = 0;
-	rwin.dir_entry = NULL;
-	assert_int_equal(0, filter_init(&rwin.local_filter.filter, 0));
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -53,15 +52,8 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		free(lwin.dir_entry[i].name);
-	}
-	dynarray_free(lwin.dir_entry);
-
-	filter_dispose(&rwin.local_filter.filter);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 
 	restore_cwd(saved_cwd);
 }
@@ -246,21 +238,6 @@ perform_merge(int op)
 	assert_success(rmdir("second/nested1/nested2"));
 	assert_success(rmdir("second/nested1"));
 	assert_success(rmdir("second"));
-}
-
-static void
-create_empty_dir(const char dir[])
-{
-	os_mkdir(dir, 0700);
-	assert_true(is_dir(dir));
-}
-
-static void
-create_empty_file(const char file[])
-{
-	FILE *const f = fopen(file, "w");
-	fclose(f);
-	assert_success(access(file, F_OK));
 }
 
 static int

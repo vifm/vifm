@@ -58,6 +58,14 @@ typedef enum
 }
 TrashResidentType;
 
+/* Type of path check. */
+typedef enum
+{
+	PREFIXED_WITH, /* Checks that path starts with a prefix. */
+	SAME_AS,       /* Checks that path is equal to the other one. */
+}
+PathCheckType;
+
 /* Client of the traverse_specs() function.  Should return non-zero to stop
  * traversal. */
 typedef int (*traverser)(const char base_path[], const char trash_dir[],
@@ -98,6 +106,7 @@ static int get_resident_type_traverser(const char path[],
 		const char trash_dir[], int user_specific, void *arg);
 static int is_trash_directory_traverser(const char path[],
 		const char trash_dir[], int user_specific, void *arg);
+static int path_is(PathCheckType check, const char path[], const char other[]);
 static void traverse_specs(const char base_path[], traverser client, void *arg);
 static char * expand_uid(const char spec[], int *expanded);
 static char * get_rooted_trash_dir(const char base_path[], const char spec[]);
@@ -306,7 +315,7 @@ remove_trash_entries(const char trash_dir[])
 	for(i = 0; i < nentries; ++i)
 	{
 		if(trash_dir == NULL ||
-				path_starts_with(trash_list[i].trash_name, trash_dir))
+				path_is(PREFIXED_WITH, trash_list[i].trash_name, trash_dir))
 		{
 			free(trash_list[i].path);
 			free(trash_list[i].trash_name);
@@ -377,10 +386,12 @@ int
 is_in_trash(const char trash_name[])
 {
 	int i;
-	for(i = 0; i < nentries; i++)
+	for(i = 0; i < nentries; ++i)
 	{
-		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
+		if(path_is(SAME_AS, trash_list[i].trash_name, trash_name))
+		{
 			return 1;
+		}
 	}
 	return 0;
 }
@@ -466,19 +477,23 @@ restore_from_trash(const char trash_name[])
 {
 	int i;
 	char full[PATH_MAX];
-	char buf[PATH_MAX];
+	char path[PATH_MAX];
 
-	for(i = 0; i < nentries; i++)
+	for(i = 0; i < nentries; ++i)
 	{
-		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
+		if(path_is(SAME_AS, trash_list[i].trash_name, trash_name))
+		{
 			break;
+		}
 	}
 	if(i >= nentries)
+	{
 		return -1;
+	}
 
-	copy_str(buf, sizeof(buf), trash_list[i].path);
+	copy_str(path, sizeof(path), trash_list[i].path);
 	copy_str(full, sizeof(full), trash_list[i].trash_name);
-	if(perform_operation(OP_MOVE, NULL, NULL, full, trash_list[i].path) == 0)
+	if(perform_operation(OP_MOVE, NULL, NULL, full, path) == 0)
 	{
 		char *msg, *p;
 		size_t len;
@@ -498,7 +513,7 @@ restore_from_trash(const char trash_name[])
 		replace_group_msg(msg);
 		free(msg);
 
-		add_operation(OP_MOVE, NULL, NULL, full, buf);
+		add_operation(OP_MOVE, NULL, NULL, full, path);
 		cmd_group_end();
 		remove_from_trash(trash_name);
 		return 0;
@@ -512,10 +527,12 @@ static void
 remove_from_trash(const char trash_name[])
 {
 	int i;
-	for(i = 0; i < nentries; i++)
+	for(i = 0; i < nentries; ++i)
 	{
-		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
+		if(path_is(SAME_AS, trash_list[i].trash_name, trash_name))
+		{
 			break;
+		}
 	}
 	if(i >= nentries)
 	{
@@ -615,7 +632,7 @@ trash_contains(const char trash_dir[], const char path[])
 		return is_under_trash(path);
 	}
 
-	return path_starts_with(path, trash_dir);
+	return path_is(PREFIXED_WITH, path, trash_dir);
 }
 
 /* Gets status of file relative to trash directories.  Returns the status. */
@@ -633,13 +650,13 @@ static int
 get_resident_type_traverser(const char path[], const char trash_dir[],
 		int user_specific, void *arg)
 {
-	if(path_starts_with(path, trash_dir))
+	if(path_is(PREFIXED_WITH, path, trash_dir))
 	{
 		TrashResidentType *const result = arg;
 		char *const parent_dir = strdup(path);
 
 		remove_last_path_component(parent_dir);
-		*result = paths_are_equal(parent_dir, trash_dir)
+		*result = path_is(SAME_AS, parent_dir, trash_dir)
 		        ? TRT_IN_TRASH
 		        : TRT_IN_REMOVED_DIRECTORY;
 
@@ -664,13 +681,47 @@ static int
 is_trash_directory_traverser(const char path[], const char trash_dir[],
 		int user_specific, void *arg)
 {
-	if(stroscmp(path, trash_dir) == 0)
+	if(path_is(SAME_AS, path, trash_dir))
 	{
 		int *const result = arg;
 		*result = 1;
 		return 1;
 	}
 	return 0;
+}
+
+/* Performs specified check on a path.  The check is constructed in such a way
+ * that all path components except for the last one are expanded.  Returns
+ * non-zero if path passes the check, otherwise zero is returned. */
+static int
+path_is(PathCheckType check, const char path[], const char other[])
+{
+	char path_copy[PATH_MAX*2], other_copy[PATH_MAX*2];
+	char path_real_dir[PATH_MAX*2], other_real_dir[PATH_MAX*2];
+
+	copy_str(path_copy, sizeof(path_copy), path);
+	copy_str(other_copy, sizeof(other_copy), other);
+
+	remove_last_path_component(path_copy);
+	remove_last_path_component(other_copy);
+
+	if(os_realpath(path_copy, path_real_dir) != path_real_dir ||
+			os_realpath(other_copy, other_real_dir) != other_real_dir)
+	{
+		return (check == PREFIXED_WITH)
+		     ? path_starts_with(path, other)
+		     : paths_are_same(path, other);
+	}
+
+	snprintf(path_copy, sizeof(path_copy), "%s%s%s", path_real_dir,
+			ends_with_slash(path_real_dir) ? "" : "/", get_last_path_component(path));
+	snprintf(other_copy, sizeof(other_copy), "%s%s%s", other_real_dir,
+			ends_with_slash(other_real_dir) ? "" : "/",
+			get_last_path_component(other));
+
+	return (check == PREFIXED_WITH)
+	     ? path_starts_with(path_copy, other_copy)
+	     : paths_are_same(path_copy, other_copy);
 }
 
 /* Calls client traverser for each trash directory specification defined by

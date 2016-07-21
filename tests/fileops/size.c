@@ -10,6 +10,8 @@
 #include "../../src/fileops.h"
 #include "../../src/status.h"
 
+#include "utils.h"
+
 static void setup_single_entry(FileView *view, const char name[]);
 static uint64_t wait_for_size(const char path[]);
 
@@ -20,15 +22,9 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
+	view_teardown(&lwin);
 
 	reset_status(&cfg);
-
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		free_dir_entry(&lwin, &lwin.dir_entry[i]);
-	}
-	dynarray_free(lwin.dir_entry);
 }
 
 TEST(directory_size_is_calculated_in_bg)

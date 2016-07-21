@@ -134,6 +134,7 @@ static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
 static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
+static int tree_has_changed(const dir_entry_t *entries, size_t nchildren);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
 		const char path[], int *updir, char buf[], size_t buf_size);
@@ -144,6 +145,14 @@ static int iter_entries(FileView *view, dir_entry_t **entry,
 static int is_entry_selected(const dir_entry_t *entry);
 static int is_entry_marked(const dir_entry_t *entry);
 static void clear_marking(FileView *view);
+static int add_files_recursively(FileView *view, const char path[],
+		int parent_pos, int no_direct_parent);
+static int file_is_visible(FileView *view, const char filename[], int is_dir,
+		const void *data, int apply_local_filter);
+static int add_directory_leaf(FileView *view, const char path[],
+		int parent_pos);
+static int init_parent_entry(FileView *view, dir_entry_t *entry,
+		const char path[]);
 
 void
 init_filelists(void)
@@ -1234,7 +1243,7 @@ change_directory(FileView *view, const char directory[])
 	if(location_changed)
 	{
 		copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
-		view->on_slow_fs = is_on_slow_fs(view->curr_dir);
+		view->on_slow_fs = is_on_slow_fs(view->curr_dir, cfg.slow_fs_list);
 	}
 
 	/* Check if we're exiting from a FUSE mounted top level directory and the
@@ -1463,7 +1472,7 @@ flist_custom_start(FileView *view, const char title[])
 	view->custom.paths_cache = trie_create();
 }
 
-void
+dir_entry_t *
 flist_custom_add(FileView *view, const char path[])
 {
 	char canonic_path[PATH_MAX];
@@ -1475,13 +1484,13 @@ flist_custom_add(FileView *view, const char path[])
 	/* Don't add duplicates. */
 	if(trie_put(view->custom.paths_cache, canonic_path) != 0)
 	{
-		return;
+		return NULL;
 	}
 
 	dir_entry = alloc_dir_entry(&view->custom.entries, view->custom.entry_count);
 	if(dir_entry == NULL)
 	{
-		return;
+		return NULL;
 	}
 
 	init_dir_entry(view, dir_entry, get_last_path_component(canonic_path));
@@ -1492,10 +1501,11 @@ flist_custom_add(FileView *view, const char path[])
 	if(fill_dir_entry_by_path(dir_entry, canonic_path) != 0)
 	{
 		free_dir_entry(view, dir_entry);
-		return;
+		return NULL;
 	}
 
 	++view->custom.entry_count;
+	return dir_entry;
 }
 
 #ifndef _WIN32
@@ -1641,7 +1651,7 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 #endif
 
 int
-flist_custom_finish(FileView *view, int very)
+flist_custom_finish(FileView *view, int very, int tree_view)
 {
 	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
 
@@ -1695,6 +1705,10 @@ flist_custom_finish(FileView *view, int very)
 	view->custom.entries = NULL;
 	view->custom.entry_count = 0;
 	view->dir_entry = dynarray_shrink(view->dir_entry);
+	view->filtered = 0;
+
+	/* Tree view mode must be set to correct value before sorting takes place. */
+	view->custom.tree_view = tree_view;
 
 	/* view->custom.unsorted must be set before load_sort_option() so that it
 	 * skips sort array normalization. */
@@ -1784,9 +1798,9 @@ flist_custom_exclude(FileView *view)
 	list.items = files;
 
 	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_in_list, &list,
-			0);
+			0, 1);
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-			&is_in_list, &list, 1);
+			&is_in_list, &list, 1, 1);
 
 	free_string_array(files, nfiles);
 
@@ -2003,6 +2017,11 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(flist_custom_active(view))
 	{
+		if(view->custom.tree_view)
+		{
+			return flist_load_tree(view, flist_get_dir(view));
+		}
+
 		if(custom_list_is_incomplete(view))
 		{
 			/* Load initial list of custom entries if it's available. */
@@ -2011,7 +2030,7 @@ populate_dir_list_internal(FileView *view, int reload)
 		}
 
 		(void)zap_entries(view, view->dir_entry, &view->list_rows,
-				&is_dead_or_filtered, NULL, 0);
+				&is_dead_or_filtered, NULL, 0, 0);
 		update_entries_data(view);
 		sort_dir_list(!reload, view);
 		fview_list_updated(view);
@@ -2092,10 +2111,7 @@ update_dir_watcher(FileView *view)
 
 	if(view->watch == NULL || stroscmp(view->watched_dir, curr_dir) != 0)
 	{
-		if(view->watch != NULL)
-		{
-			fswatch_free(view->watch);
-		}
+		fswatch_free(view->watch);
 
 		view->watch = fswatch_create(curr_dir);
 		if(view->watch == NULL)
@@ -2173,26 +2189,89 @@ update_entries_data(FileView *view)
 
 int
 zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
-		void *arg, int allow_empty_list)
+		void *arg, int allow_empty_list, int remove_subtrees)
 {
 	int i, j;
 
 	j = 0;
 	for(i = 0; i < *count; ++i)
 	{
+		int k, pos;
 		dir_entry_t *const entry = &entries[i];
-		if(!filter(view, entry, arg))
+		const int nremoved = remove_subtrees ? (entry->child_count + 1) : 1;
+
+		if(filter(view, entry, arg))
 		{
-			free_dir_entry(view, entry);
+			if(i != j)
+			{
+				entries[j] = entries[i];
+			}
+
+			++j;
 			continue;
 		}
 
-		if(i != j)
+		/* Reassign children of node about to be deleted to its parent.  Child count
+		 * don't need an update here because these nodes are already counted. */
+		pos = i + 1;
+		while(pos < i + 1 + entry->child_count)
 		{
-			entries[j] = entries[i];
+			if(entry->child_pos == 0)
+			{
+				entries[pos].child_pos = 0;
+			}
+			else
+			{
+				entries[pos].child_pos += entry->child_pos - 1;
+			}
+			pos += entries[pos].child_count + 1;
 		}
 
-		++j;
+		if(entry->child_pos != 0)
+		{
+			/* Visit all parent nodes to update number of their children and also
+			 * all sibling nodes which require their parent links updated. */
+			int pos = i + (entry->child_count + 1);
+			int parent = j - entry->child_pos;
+			while(1)
+			{
+				while(pos <= parent + (i - j) + entries[parent].child_count)
+				{
+					entries[pos].child_pos -= nremoved;
+					pos += entries[pos].child_count + 1;
+				}
+				entries[parent].child_count -= nremoved;
+				if(entries[parent].child_pos == 0)
+				{
+					break;
+				}
+				parent -= entries[parent].child_pos;
+			}
+		}
+
+		for(k = 0; k < nremoved; ++k)
+		{
+			free_dir_entry(view, &entry[k]);
+		}
+
+		/* Add directory leaf if we just removed last child of the last of nodes
+		 * that wasn't filtered.  We can use one entry because if something was
+		 * filtered out, there is at least one extra entry. */
+		if(remove_subtrees && j != 0 && entries[j - 1].child_count == 0 &&
+				entries[j - 1].type == FT_DIR && !is_parent_dir(entries[j - 1].name))
+		{
+			char full_path[PATH_MAX];
+			char *path;
+
+			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
+			path = format_str("%s/..", full_path);
+			init_parent_entry(view, &entries[j], path);
+			remove_last_path_component(path);
+			entries[j].origin = path;
+			++j;
+		}
+
+		i += nremoved - 1;
 	}
 
 	*count = j;
@@ -2305,13 +2384,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 		return 0;
 	}
 
-	if(view->hide_dot && name[0] == '.')
-	{
-		++view->filtered;
-		return 0;
-	}
-
-	if(!file_is_visible(view, name, data_is_dir_entry(data)))
+	if(!file_is_visible(view, name, 0, data, 1))
 	{
 		++view->filtered;
 		return 0;
@@ -2528,44 +2601,18 @@ rescue_from_empty_filelist(FileView *view)
 void
 add_parent_dir(FileView *view)
 {
-	dir_entry_t *dir_entry;
-	struct stat s;
-
-	dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	dir_entry_t *const dir_entry = alloc_dir_entry(&view->dir_entry,
+			view->list_rows);
 	if(dir_entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
-	init_dir_entry(view, dir_entry, "..");
-	dir_entry->type = FT_DIR;
-
-	/* Load the inode info or leave blank values in dir_entry. */
-	if(os_lstat(dir_entry->name, &s) != 0)
+	if(init_parent_entry(view, dir_entry, "..") == 0)
 	{
-		free_dir_entry(view, dir_entry);
-		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-				dir_entry->name);
-		log_cwd();
-		return;
+		++view->list_rows;
 	}
-
-#ifndef _WIN32
-	dir_entry->size = (uintmax_t)s.st_size;
-	dir_entry->mode = s.st_mode;
-	dir_entry->uid = s.st_uid;
-	dir_entry->gid = s.st_gid;
-#else
-	/* Windows doesn't like returning size of directories even if it can. */
-	dir_entry->size = get_file_size(dir_entry->name);
-#endif
-	dir_entry->mtime = s.st_mtime;
-	dir_entry->atime = s.st_atime;
-	dir_entry->ctime = s.st_ctime;
-	dir_entry->nlinks = s.st_nlink;
-
-	++view->list_rows;
 }
 
 /* Initializes dir_entry_t with name and all other fields with default
@@ -2592,6 +2639,9 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->type = FT_UNK;
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
+
+	entry->child_count = 0;
+	entry->child_pos = 0;
 
 	/* All files start as unselected, unmatched and unmarked. */
 	entry->selected = 0;
@@ -2666,18 +2716,18 @@ free_dir_entry(const FileView *view, dir_entry_t *entry)
 	}
 }
 
-int
+dir_entry_t *
 add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 {
 	dir_entry_t *const new_entry = alloc_dir_entry(list, *list_size);
 	if(new_entry == NULL)
 	{
-		return 1;
+		return NULL;
 	}
 
 	*new_entry = *entry;
 	++*list_size;
-	return 0;
+	return new_entry;
 }
 
 /* Allocates one more directory entry for the *list of size list_size by
@@ -2700,9 +2750,11 @@ void
 check_if_filelist_have_changed(FileView *view)
 {
 	int failed, changed;
+	const char *const curr_dir = flist_get_dir(view);
 
-	if(view->on_slow_fs || flist_custom_active(view) ||
-			is_unc_root(view->curr_dir))
+	if(view->on_slow_fs ||
+			(flist_custom_active(view) && !view->custom.tree_view) ||
+			is_unc_root(curr_dir))
 	{
 		return;
 	}
@@ -2721,17 +2773,17 @@ check_if_filelist_have_changed(FileView *view)
 	}
 
 	/* Check if we still have permission to visit this directory. */
-	failed |= (os_access(view->curr_dir, X_OK) != 0);
+	failed |= (os_access(curr_dir, X_OK) != 0);
 
 	if(failed)
 	{
-		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
+		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", curr_dir);
 		log_cwd();
 
-		show_error_msgf("Directory Change Check", "Cannot open %s", view->curr_dir);
+		show_error_msgf("Directory Change Check", "Cannot open %s", curr_dir);
 
 		leave_invalid_dir(view);
-		(void)change_directory(view, view->curr_dir);
+		(void)change_directory(view, curr_dir);
 		clean_selected_files(view);
 		ui_view_schedule_reload(view);
 		return;
@@ -2741,6 +2793,44 @@ check_if_filelist_have_changed(FileView *view)
 	{
 		ui_view_schedule_reload(view);
 	}
+	else if(flist_custom_active(view) && view->custom.tree_view)
+	{
+		if(tree_has_changed(view->dir_entry, view->list_rows))
+		{
+			ui_view_schedule_reload(view);
+		}
+	}
+}
+
+/* Checks whether tree-view needs a reload (any of subdirectories were changed).
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+tree_has_changed(const dir_entry_t *entries, size_t nchildren)
+{
+	size_t pos = 0U;
+	while(pos < nchildren)
+	{
+		const dir_entry_t *const entry = &entries[pos];
+		if(entry->type == FT_DIR)
+		{
+			char full_path[PATH_MAX];
+			struct stat s;
+
+			get_full_path_of(entry, sizeof(full_path), full_path);
+			if(os_stat(full_path, &s) != 0 || entry->mtime != s.st_mtime)
+			{
+				return 1;
+			}
+
+			if(tree_has_changed(entry + 1, entry->child_count))
+			{
+				return 1;
+			}
+		}
+
+		pos += entry->child_count + 1;
+	}
+	return 0;
 }
 
 int
@@ -3175,6 +3265,16 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 	char name[NAME_MAX];
 	const char *path = entry->origin;
 
+	char *free_this = NULL;
+	const char *root_path = flist_get_dir(view);
+	if(format && view->custom.tree_view && ui_view_displays_columns(view) &&
+			entry->child_pos != 0)
+	{
+		const dir_entry_t *const parent = entry - entry->child_pos;
+		free_this = format_str("%s/%s", parent->origin, parent->name);
+		root_path = free_this;
+	}
+
 	if(format)
 	{
 		/* XXX: decorations should apply to whole shortened paths? */
@@ -3191,17 +3291,18 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 		return;
 	}
 
-	if(!path_starts_with(path, flist_get_dir(view)))
+	if(!path_starts_with(path, root_path))
 	{
 		char full_path[PATH_MAX];
 		snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
 		copy_str(buf, buf_len, full_path);
+		free(free_this);
 		return;
 	}
 
-	assert(strlen(path) >= strlen(flist_get_dir(view)) && "Path is too short.");
+	assert(strlen(path) >= strlen(root_path) && "Path is too short.");
 
-	path += strlen(flist_get_dir(view));
+	path += strlen(root_path);
 	path = skip_char(path, '/');
 	if(path[0] == '\0')
 	{
@@ -3211,6 +3312,8 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 	{
 		snprintf(buf, buf_len, "%s/%s", path, name);
 	}
+
+	free(free_this);
 }
 
 void
@@ -3328,7 +3431,7 @@ flist_add_custom_line(FileView *view, const char line[])
 void
 flist_end_custom(FileView *view, int very)
 {
-	if(flist_custom_finish(view, very) != 0)
+	if(flist_custom_finish(view, very, 0) != 0)
 	{
 		show_error_msg("Custom view", "Ignoring empty list of files");
 		return;
@@ -3383,6 +3486,213 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 	}
 
 	free(old_name);
+}
+
+int
+flist_load_tree(FileView *view, const char path[])
+{
+	char canonic_path[PATH_MAX];
+	int nfiltered;
+
+	flist_custom_start(view, "tree");
+
+	nfiltered = add_files_recursively(view, path, -1, 0);
+	if(nfiltered < 0)
+	{
+		show_error_msg("Tree View", "Failed to list directory");
+		return 1;
+	}
+	if(flist_custom_finish(view, 0, 1) != 0)
+	{
+		return 1;
+	}
+	view->filtered = nfiltered;
+
+	to_canonic_path(path, flist_get_dir(view), canonic_path,
+			sizeof(canonic_path));
+	replace_string(&view->custom.orig_dir, canonic_path);
+
+	return 0;
+}
+
+/* Adds custom view entries corresponding to file system tree.  parent_pos is
+ * expected to be negative for the outermost invocation.  Returns number of
+ * filtered out files on success or partial success and negative value on
+ * serious error. */
+static int
+add_files_recursively(FileView *view, const char path[], int parent_pos,
+		int no_direct_parent)
+{
+	int i;
+	const int prev_count = view->custom.entry_count;
+	int nfiltered = 0;
+
+	int len;
+	char **lst = list_all_files(path, &len);
+	if(len < 0)
+	{
+		return -1;
+	}
+
+	for(i = 0; i < len; ++i)
+	{
+		char *const full_path = format_str("%s/%s", path, lst[i]);
+		dir_entry_t *entry;
+
+		const int dir = is_dir(full_path);
+		if(!file_is_visible(view, lst[i], dir, NULL, 1))
+		{
+			/* Traverse directory even if we're skipping it, because we might need
+			 * files that are inside of it. */
+			if(dir && file_is_visible(view, lst[i], dir, NULL, 0))
+			{
+				nfiltered += add_files_recursively(view, full_path, parent_pos, 1);
+			}
+
+			free(full_path);
+			++nfiltered;
+			continue;
+		}
+
+		entry = flist_custom_add(view, full_path);
+		if(entry == NULL)
+		{
+			free(full_path);
+			free_string_array(lst, len);
+			return -1;
+		}
+
+		if(parent_pos >= 0)
+		{
+			entry->child_pos = (view->custom.entry_count - 1) - parent_pos;
+		}
+
+		/* Not using dir variable here, because it is set for symlinks to
+		 * directories as well. */
+		if(entry->type == FT_DIR)
+		{
+			const int idx = view->custom.entry_count - 1;
+			const int filtered = add_files_recursively(view, full_path, idx, 0);
+			/* Keep going in case of error and load partial list. */
+			if(filtered >= 0)
+			{
+				/* If one of recursive calls returned error, keep going and build
+				 * partial tree. */
+				view->custom.entries[idx].child_count = (view->custom.entry_count - 1)
+				                                      - idx;
+				nfiltered += filtered;
+			}
+		}
+
+		free(full_path);
+	}
+
+	free_string_array(lst, len);
+
+	if(!no_direct_parent && view->custom.entry_count == prev_count)
+	{
+		/* To be able to perform operations inside directory (e.g., create files),
+		 * we need at least one element there. */
+		if(add_directory_leaf(view, path, parent_pos) != 0)
+		{
+			return -1;
+		}
+	}
+
+	return nfiltered;
+}
+
+/* Checks whether file is visible according to dot and filename filters.  is_dir
+ * is used when data is NULL, otherwise data_is_dir_entry() called (this is an
+ * optimization).  Returns non-zero if so, otherwise zero is returned. */
+static int
+file_is_visible(FileView *view, const char filename[], int is_dir,
+		const void *data, int apply_local_filter)
+{
+	if(view->hide_dot && filename[0] == '.')
+	{
+		return 0;
+	}
+
+	if(data != NULL)
+	{
+		is_dir = data_is_dir_entry(data);
+	}
+
+	return apply_local_filter
+	     ? filters_file_is_visible(view, filename, is_dir)
+	     : filters_file_is_filtered(view, filename, is_dir);
+}
+
+/* Adds ".." directory leaf of an empty directory to the tree which is being
+ * built.  Returns non-zero on error, otherwise zero is returned. */
+static int
+add_directory_leaf(FileView *view, const char path[], int parent_pos)
+{
+	char *full_path;
+
+	dir_entry_t *const entry = alloc_dir_entry(&view->custom.entries,
+			view->custom.entry_count);
+	if(entry == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 1;
+	}
+
+	full_path = format_str("%s/..", path);
+	if(init_parent_entry(view, entry, full_path) != 0)
+	{
+		free(full_path);
+		/* Keep going in case of error and load partial list. */
+		return 0;
+	}
+
+	remove_last_path_component(full_path);
+	entry->origin = full_path;
+
+	if(parent_pos >= 0)
+	{
+		entry->child_pos = (view->custom.entry_count - 1) - parent_pos;
+	}
+
+	++view->custom.entry_count;
+	return 0;
+}
+
+/* Fills given entry of the view at specified path (can be relative, i.e. "..").
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+init_parent_entry(FileView *view, dir_entry_t *entry, const char path[])
+{
+	struct stat s;
+
+	init_dir_entry(view, entry, get_last_path_component(path));
+	entry->type = FT_DIR;
+
+	/* Load the inode info or leave blank values in entry. */
+	if(os_lstat(path, &s) != 0)
+	{
+		free_dir_entry(view, entry);
+		LOG_SERROR_MSG(errno, "Can't lstat() \"%s\"", path);
+		log_cwd();
+		return 1;
+	}
+
+#ifndef _WIN32
+	entry->size = (uintmax_t)s.st_size;
+	entry->mode = s.st_mode;
+	entry->uid = s.st_uid;
+	entry->gid = s.st_gid;
+#else
+	/* Windows doesn't like returning size of directories even if it can. */
+	entry->size = get_file_size(entry->name);
+#endif
+	entry->mtime = s.st_mtime;
+	entry->atime = s.st_atime;
+	entry->ctime = s.st_ctime;
+	entry->nlinks = s.st_nlink;
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

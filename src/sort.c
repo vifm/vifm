@@ -29,6 +29,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "ui/ui.h"
+#include "utils/dynarray.h"
 #include "utils/fs.h"
 #include "utils/fsdata.h"
 #include "utils/path.h"
@@ -51,8 +52,12 @@ static SortingKey sort_type;
 /* Sorting key specific data. */
 static void *sort_data;
 
-static void sort_by_groups(void);
-static void sort_by_key(char key, void *data);
+static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
+		size_t nchildren, int root);
+static void sort_sequence(dir_entry_t *entries, size_t nentries);
+static void sort_by_groups(dir_entry_t *entries, size_t nentries);
+static void sort_by_key(dir_entry_t *entries, size_t nentries, char key,
+		void *data);
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
@@ -75,7 +80,7 @@ static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
 void
 sort_view(FileView *v)
 {
-	int i;
+	dir_entry_t *unsorted_list;
 
 	if(v->sort[0] > SK_LAST)
 	{
@@ -86,7 +91,64 @@ sort_view(FileView *v)
 	view = v;
 	custom_view = flist_custom_active(v);
 
-	i = SK_COUNT;
+	if(!custom_view || !v->custom.tree_view)
+	{
+		/* Tree sorting works fine for flat list, but requires a bit more
+		 * resources, so skip it. */
+		sort_sequence(&v->dir_entry[0], v->list_rows);
+		return;
+	}
+
+	unsorted_list = v->dir_entry;
+	v->dir_entry = dynarray_extend(NULL, v->list_rows*sizeof(*v->dir_entry));
+
+	sort_tree_slice(&v->dir_entry[0], unsorted_list, v->list_rows, 1);
+
+	dynarray_free(unsorted_list);
+}
+
+/* Sorts one level of a tree per invocation recursing to sort all nested
+ * trees. */
+static void
+sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
+		size_t nchildren, int root)
+{
+	int i = 0;
+	size_t pos = 0U;
+	/* Copy all first-level nodes of the current tree forming a sequence for
+	 * sorting. */
+	while(pos < nchildren)
+	{
+		entries[i] = children[pos];
+		entries[i].child_pos = pos;
+		pos += children[pos].child_count + 1;
+		++i;
+	}
+
+	sort_sequence(entries, i);
+
+	/* Finish sorting of this level by placing nodes at their corresponding
+	 * position starting with the last one.  Each subtree is then sorted
+	 * recursively. */
+	pos = nchildren;
+	while(--i >= 0)
+	{
+		pos -= entries[i].child_count + 1;
+		entries[pos] = entries[i];
+		if(entries[pos].child_count != 0)
+		{
+			sort_tree_slice(&entries[pos + 1U], &children[entries[pos].child_pos + 1],
+					entries[pos].child_count, 0);
+		}
+		entries[pos].child_pos = root ? 0 : pos + 1;
+	}
+}
+
+/* Sorts sequence of file entries (plain list, not tree). */
+static void
+sort_sequence(dir_entry_t *entries, size_t nentries)
+{
+	int i = SK_COUNT;
 	while(--i >= 0)
 	{
 		const char sorting_key = view->sort[i];
@@ -98,22 +160,22 @@ sort_view(FileView *v)
 
 		if(sorting_key == SK_BY_GROUPS)
 		{
-			sort_by_groups();
+			sort_by_groups(entries, nentries);
 			continue;
 		}
 
-		sort_by_key(sorting_key, NULL);
+		sort_by_key(entries, nentries, sorting_key, NULL);
 	}
 
-	if(!ui_view_sort_list_contains(v->sort, SK_BY_DIR))
+	if(!ui_view_sort_list_contains(view->sort, SK_BY_DIR))
 	{
-		sort_by_key(SK_BY_DIR, NULL);
+		sort_by_key(entries, nentries, SK_BY_DIR, NULL);
 	}
 }
 
-/* Sorts view according to sorting groups option. */
+/* Sorts specified range of entries according to sorting groups option. */
 static void
-sort_by_groups(void)
+sort_by_groups(dir_entry_t *entries, size_t nentries)
 {
 	char **groups = NULL;
 	int ngroups = 0;
@@ -131,36 +193,38 @@ sort_by_groups(void)
 	{
 		regex_t regex;
 		(void)regcomp(&regex, groups[i], REG_EXTENDED | REG_ICASE);
-		sort_by_key(SK_BY_GROUPS, &regex);
+		sort_by_key(entries, nentries, SK_BY_GROUPS, &regex);
 		regfree(&regex);
 	}
 	if(ngroups != 0)
 	{
-		sort_by_key(SK_BY_GROUPS, &view->primary_group);
+		sort_by_key(entries, nentries, SK_BY_GROUPS, &view->primary_group);
 	}
 
 	free_string_array(groups, ngroups);
 }
 
-/* Sorts view by the key in a stable way. */
+/* Sorts specified range of entries by the key in a stable way. */
 static void
-sort_by_key(char key, void *data)
+sort_by_key(dir_entry_t *entries, size_t nentries, char key, void *data)
 {
-	int j;
+	unsigned int i;
+
+	if(nentries == 0U)
+	{
+		return;
+	}
 
 	sort_descending = (key < 0);
 	sort_type = (SortingKey)abs(key);
 	sort_data = data;
 
-	for(j = 0; j < view->list_rows; ++j)
+	for(i = 0U; i < nentries; ++i)
 	{
-		view->dir_entry[j].list_num = j;
+		entries[i].list_num = i;
 	}
 
-	if(view->list_rows != 0)
-	{
-		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
-	}
+	qsort(entries, nentries, sizeof(*entries), &sort_dir_list);
 }
 
 /* Compares file names containing numbers correctly. */
@@ -230,9 +294,8 @@ sort_dir_list(const void *one, const void *two)
 	/* TODO: refactor this function sort_dir_list(). */
 
 	int retval;
-	char *pfirst, *psecond;
-	const dir_entry_t *const first = (dir_entry_t *)one;
-	const dir_entry_t *const second = (dir_entry_t *)two;
+	const dir_entry_t *const first = one;
+	const dir_entry_t *const second = two;
 
 	const int first_is_dir = is_directory_entry(first);
 	const int second_is_dir = is_directory_entry(second);
@@ -249,6 +312,8 @@ sort_dir_list(const void *one, const void *two)
 	retval = 0;
 	switch(sort_type)
 	{
+		char *pfirst, *psecond;
+
 		case SK_BY_NAME:
 		case SK_BY_INAME:
 			if(custom_view)
