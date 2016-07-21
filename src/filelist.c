@@ -2847,7 +2847,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->marked = 0;
 	entry->temporary = 0;
 
-	entry->list_num = -1;
+	entry->tag = -1;
 }
 
 void

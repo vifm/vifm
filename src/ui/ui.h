@@ -159,7 +159,9 @@ typedef struct dir_entry_t
 	FileType type;
 	int nlinks;       /* Number of hard links to the entry. */
 
-	int list_num;     /* Used by sorting comparer to perform stable sort. */
+	int tag;          /* Used to hold temporary data associated with the item,
+	                     e.g. by sorting comparer to perform stable sort or item
+	                     mapping during tree filtering. */
 
 	int hi_num;       /* File highlighting parameters cache (initially -1). */
 	int name_dec_num; /* File decoration parameters cache (initially -1).  The
