@@ -1,3 +1,8 @@
+0.8.2 to current
+
+	Try to save and restore terminal state while running external
+	applications.  Thanks to Losiara.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
