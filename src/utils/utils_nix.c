@@ -226,39 +226,36 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 {
 	int nullfd;
 
+	/* Close read end of the pipe. */
+	(void)close(pipe[0]);
+
 	/* Redirect stderr and maybe stdout to write end of the pipe. */
 	if(dup2(pipe[1], STDERR_FILENO) == -1)
 	{
 		_Exit(EXIT_FAILURE);
 	}
-	if(err_only)
+	if(!err_only && dup2(pipe[1], STDOUT_FILENO) == -1)
 	{
-		close(STDOUT_FILENO);
-	}
-	else
-	{
-		if(dup2(pipe[1], STDOUT_FILENO) == -1)
-		{
-			_Exit(EXIT_FAILURE);
-		}
+		_Exit(EXIT_FAILURE);
 	}
 
-	/* Close read end of pipe. */
-	close(pipe[0]);
+	/* Close write end of the pipe (already duplicated it). */
+	(void)close(pipe[1]);
 
-	close(STDIN_FILENO);
-
-	/* Send stdout, stdin to /dev/null */
-	if((nullfd = open("/dev/null", O_RDONLY)) != -1)
+	/* Send stdin and maybe stdout to /dev/null */
+	nullfd = open("/dev/null", O_RDWR);
+	if(nullfd == -1)
 	{
-		if(dup2(nullfd, STDIN_FILENO) == -1)
-		{
-			_Exit(EXIT_FAILURE);
-		}
-		if(err_only && dup2(nullfd, STDOUT_FILENO) == -1)
-		{
-			_Exit(EXIT_FAILURE);
-		}
+		_Exit(EXIT_FAILURE);
+	}
+
+	if(dup2(nullfd, STDIN_FILENO) == -1)
+	{
+		_Exit(EXIT_FAILURE);
+	}
+	if(err_only && dup2(nullfd, STDOUT_FILENO) == -1)
+	{
+		_Exit(EXIT_FAILURE);
 	}
 
 	execvp(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd));
