@@ -26,8 +26,6 @@
 #undef MIN
 #endif
 
-#include <pthread.h> /* PTHREAD_* pthread_* */
-
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL */
@@ -36,6 +34,7 @@
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
+#include "compat/pthread.h"
 #include "ui/colors.h"
 #include "ui/ui.h"
 #include "utils/env.h"

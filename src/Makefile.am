@@ -87,6 +87,7 @@ vifm_SOURCES = \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
 	compat/mntent.c compat/mntent.h \
 	compat/os.c compat/os.h \
+	compat/pthread.c compat/pthread.h \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
 	engine/abbrevs.c engine/abbrevs.h \

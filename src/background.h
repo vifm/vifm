@@ -24,11 +24,11 @@
 #include <windef.h>
 #endif
 
-#include <pthread.h> /* pthread_spinlock_t */
-
 #include <sys/types.h> /* pid_t */
 
 #include <stdio.h>
+
+#include "compat/pthread.h"
 
 /* Special value of total amount of work in job_t structure to indicate
  * undefined total number of countable operations. */

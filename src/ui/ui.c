@@ -26,7 +26,6 @@
 #include <termios.h> /* struct winsize */
 #endif
 #include <sys/time.h> /* gettimeofday() */
-#include <pthread.h> /* PTHREAD_* pthread_* */
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
@@ -44,6 +43,7 @@
 #include "../cfg/info.h"
 #include "../compat/curses.h"
 #include "../compat/fs_limits.h"
+#include "../compat/pthread.h"
 #include "../engine/mode.h"
 #include "../int/term_title.h"
 #include "../modes/dialogs/msg_dialog.h"
