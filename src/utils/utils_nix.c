@@ -249,7 +249,7 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 	close(STDIN_FILENO);
 
 	/* Send stdout, stdin to /dev/null */
-	if((nullfd = open("/dev/null", O_RDONLY)) != -1)
+	if((nullfd = open("/dev/null", O_RDWR)) != -1)
 	{
 		if(dup2(nullfd, STDIN_FILENO) == -1)
 		{
