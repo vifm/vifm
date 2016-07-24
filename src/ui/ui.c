@@ -1537,6 +1537,10 @@ static void
 print_view_title(const FileView *view, int active_view, char title[])
 {
 	const size_t title_width = getmaxx(view->title);
+	if(title_width == (size_t)-1)
+	{
+		return;
+	}
 
 	fixup_titles_attributes(view, active_view);
 	werase(view->title);
