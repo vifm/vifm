@@ -23,7 +23,6 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
-#include <pthread.h> /* PTHREAD_* pthread_* */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* RAND_MAX rand() */
 #include <string.h> /* strcat() strdup() strlen() */
@@ -31,6 +30,7 @@
 #include <unistd.h>
 
 #include "../cfg/config.h"
+#include "../compat/pthread.h"
 #include "../compat/reallocarray.h"
 #include "../engine/mode.h"
 #include "../modes/modes.h"

@@ -37,7 +37,7 @@ DIRS += modes/dialogs/ ui/ utils/
 cfg := config.c hist.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
-compat := curses.c getopt.c getopt1.c os.c reallocarray.c wcwidth.c
+compat := curses.c getopt.c getopt1.c os.c pthread.c reallocarray.c wcwidth.c
 compat := $(addprefix compat/, $(compat))
 
 engine := abbrevs.c autocmds.c cmds.c functions.c completion.c keys.c mode.c \

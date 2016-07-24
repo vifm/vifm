@@ -124,30 +124,30 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	cfg/info.$(OBJEXT) compat/curses.$(OBJEXT) \
 	compat/getopt.$(OBJEXT) compat/getopt1.$(OBJEXT) \
 	compat/mntent.$(OBJEXT) compat/os.$(OBJEXT) \
-	compat/reallocarray.$(OBJEXT) engine/abbrevs.$(OBJEXT) \
-	engine/autocmds.$(OBJEXT) engine/cmds.$(OBJEXT) \
-	engine/completion.$(OBJEXT) engine/functions.$(OBJEXT) \
-	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
-	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
-	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
-	engine/variables.$(OBJEXT) int/desktop.$(OBJEXT) \
-	int/file_magic.$(OBJEXT) int/fuse.$(OBJEXT) \
-	int/path_env.$(OBJEXT) int/term_title.$(OBJEXT) \
-	int/vim.$(OBJEXT) io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) \
-	io/iop.$(OBJEXT) io/ior.$(OBJEXT) io/private/ioe.$(OBJEXT) \
-	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
-	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
-	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
-	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
-	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
-	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
-	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
-	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
-	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
-	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
-	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
-	menus/vifm_menu.$(OBJEXT) \
+	compat/pthread.$(OBJEXT) compat/reallocarray.$(OBJEXT) \
+	engine/abbrevs.$(OBJEXT) engine/autocmds.$(OBJEXT) \
+	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
+	engine/functions.$(OBJEXT) engine/keys.$(OBJEXT) \
+	engine/mode.$(OBJEXT) engine/options.$(OBJEXT) \
+	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
+	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
+	int/desktop.$(OBJEXT) int/file_magic.$(OBJEXT) \
+	int/fuse.$(OBJEXT) int/path_env.$(OBJEXT) \
+	int/term_title.$(OBJEXT) int/vim.$(OBJEXT) io/ioe.$(OBJEXT) \
+	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
+	io/private/ioe.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
+	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
+	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
+	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
+	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
+	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
+	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
+	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
+	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
+	menus/marks_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
+	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
+	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -640,6 +640,7 @@ vifm_SOURCES = \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
 	compat/mntent.c compat/mntent.h \
 	compat/os.c compat/os.h \
+	compat/pthread.c compat/pthread.h \
 	compat/reallocarray.c compat/reallocarray.h \
 	\
 	engine/abbrevs.c engine/abbrevs.h \
@@ -925,6 +926,8 @@ compat/getopt1.$(OBJEXT): compat/$(am__dirstamp) \
 compat/mntent.$(OBJEXT): compat/$(am__dirstamp) \
 	compat/$(DEPDIR)/$(am__dirstamp)
 compat/os.$(OBJEXT): compat/$(am__dirstamp) \
+	compat/$(DEPDIR)/$(am__dirstamp)
+compat/pthread.$(OBJEXT): compat/$(am__dirstamp) \
 	compat/$(DEPDIR)/$(am__dirstamp)
 compat/reallocarray.$(OBJEXT): compat/$(am__dirstamp) \
 	compat/$(DEPDIR)/$(am__dirstamp)
@@ -1257,6 +1260,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/getopt1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/mntent.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/os.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/pthread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/reallocarray.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/abbrevs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/autocmds.Po@am__quote@

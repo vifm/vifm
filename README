@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 16 July, 2016
+Updated: 23 July, 2016
 Version: 0.8.2
 
 Brief Description
@@ -67,6 +67,7 @@ Package content
     |  |  |-- getopt1.c - getopt.c public interface implementation
     |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- os.c - very thin abstraction layer over basic OS facilities
+    |  |  |-- pthread.c - spinlock shim for OS X
     |  |  |-- reallocarray.c - more convenient and safe realloc() for arrays
     |  |  `-- wcwidth.c - wcwidth() implementation for Windows
     |  |

@@ -23,8 +23,6 @@
 #include <windows.h>
 #endif
 
-#include <pthread.h> /* PTHREAD_* pthread_*() */
-
 #include <fcntl.h> /* open() */
 #include <unistd.h> /* select() */
 
@@ -42,6 +40,7 @@
 #endif
 
 #include "cfg/config.h"
+#include "compat/pthread.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "ui/statusline.h"

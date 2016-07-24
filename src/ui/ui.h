@@ -24,7 +24,6 @@
 
 #include <curses.h>
 #include <regex.h> /* regex_t */
-#include <pthread.h> /* pthread_mutex_t */
 
 #include <stddef.h> /* size_t wchar_t */
 #include <stdint.h> /* uint64_t uint32_t */
@@ -33,6 +32,7 @@
 #include <wchar.h> /* wint_t */
 
 #include "../compat/fs_limits.h"
+#include "../compat/pthread.h"
 #include "../utils/filter.h"
 #include "../utils/fswatch.h"
 #include "../utils/trie.h"
