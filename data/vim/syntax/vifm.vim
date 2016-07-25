@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: July 14, 2016
+" Last Change: July 25, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -26,9 +26,10 @@ syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
 syntax keyword vifmPrefixCommands contained windo winrun
 
 " Map commands
-syntax keyword vifmMap contained map mm[ap] mn[oremap] mu[nmap] nm[ap]
-		\ nn[oremap] no[remap] nun[map] qm[ap] qn[oremap] qun[map] unm[ap] vm[ap]
-		\ vn[oremap] vu[nmap] skipwhite nextgroup=vifmMapArgs
+syntax keyword vifmMap contained dm[ap] dn[oremap] du[nmap] map mm[ap]
+		\ mn[oremap] mu[nmap] nm[ap] nn[oremap] no[remap] nun[map] qm[ap] qn[oremap]
+		\ qun[map] unm[ap] vm[ap] vn[oremap] vu[nmap]
+		\ skipwhite nextgroup=vifmMapArgs
 syntax keyword vifmCMapAbbr contained ca[bbrev] cm[ap] cnorea[bbrev] cno[remap]
 		\ cuna[bbrev] cu[nmap]
 		\ skipwhite nextgroup=vifmCMapArgs
