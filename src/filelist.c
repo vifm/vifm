@@ -2023,7 +2023,14 @@ populate_dir_list_internal(FileView *view, int reload)
 	{
 		if(view->custom.tree_view)
 		{
-			return flist_load_tree(view, flist_get_dir(view));
+			dir_entry_t *prev_dir_entries;
+			int prev_list_rows, result;
+
+			start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
+			result = flist_load_tree(view, flist_get_dir(view));
+			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
+
+			return result;
 		}
 
 		if(custom_list_is_incomplete(view))

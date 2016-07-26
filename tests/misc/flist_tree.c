@@ -435,6 +435,24 @@ TEST(dotdirs_do_not_mess_up_change_detection)
 	cfg.dot_dirs = 0;
 }
 
+TEST(tree_reload_preserves_selection)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+
+	lwin.selected_files = 3;
+
+	load_dir_list(&lwin, 1);
+
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+	assert_int_equal(3, lwin.selected_files);
+}
+
 static void
 verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 {
