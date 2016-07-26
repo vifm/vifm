@@ -415,6 +415,26 @@ TEST(tree_prefixes_are_correct)
 	verify_tree_node(&cdt, 9, "`-- file5");
 }
 
+TEST(dotdirs_do_not_mess_up_change_detection)
+{
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+
+	/* Discard results of the first check. */
+	check_if_filelist_have_changed(&lwin);
+	(void)ui_view_query_scheduled_event(&lwin);
+
+	check_if_filelist_have_changed(&lwin);
+	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
+	check_if_filelist_have_changed(&lwin);
+	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
+	check_if_filelist_have_changed(&lwin);
+	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
+
+	cfg.dot_dirs = 0;
+}
+
 static void
 verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 {

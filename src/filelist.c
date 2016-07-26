@@ -2811,7 +2811,7 @@ tree_has_changed(const dir_entry_t *entries, size_t nchildren)
 	while(pos < nchildren)
 	{
 		const dir_entry_t *const entry = &entries[pos];
-		if(entry->type == FT_DIR)
+		if(entry->type == FT_DIR && !is_parent_dir(entry->name))
 		{
 			char full_path[PATH_MAX];
 			struct stat s;
