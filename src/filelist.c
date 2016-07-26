@@ -1810,6 +1810,8 @@ flist_custom_exclude(FileView *view)
 
 	flist_ensure_pos_is_valid(view);
 	ui_view_schedule_redraw(view);
+
+	recount_selected_files(view);
 }
 
 /* zap_entries() filter to filter-out files from array of strings.  Returns

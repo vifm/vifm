@@ -567,6 +567,17 @@ TEST(symlinks_are_not_resolved_in_origins, IF(not_windows))
 	assert_success(remove(SANDBOX_PATH "/link"));
 }
 
+TEST(files_are_excluded_from_custom_view)
+{
+	setup_custom_view(&lwin, 0);
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+	flist_custom_exclude(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])

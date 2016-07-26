@@ -234,7 +234,9 @@ TEST(excluding_dir_in_tree_excludes_its_children)
 	lwin.dir_entry[0].selected = 1;
 	lwin.selected_files = 1;
 	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
 
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
 
@@ -254,7 +256,9 @@ TEST(excluding_nested_dir_in_tree_adds_dummy)
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 1;
 	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
 
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(2, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[1].name);
 
