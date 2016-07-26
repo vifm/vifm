@@ -2269,18 +2269,40 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
-		 * filtered out, there is at least one extra entry. */
+		 * filtered out, there is space for at least one extra entry. */
 		if(remove_subtrees && j != 0 && entries[j - 1].child_count == 0 &&
 				entries[j - 1].type == FT_DIR && !is_parent_dir(entries[j - 1].name))
 		{
 			char full_path[PATH_MAX];
 			char *path;
 
+			int pos = i + (entry->child_count + 1);
+			int parent = j - entry->child_pos;
+
 			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
 			path = format_str("%s/..", full_path);
 			init_parent_entry(view, &entries[j], path);
 			remove_last_path_component(path);
 			entries[j].origin = path;
+			entries[j].child_pos = 1;
+
+			/* Since we now adding back one entry, correct increase parent counts and
+			 * child positions back by one. */
+			while(1)
+			{
+				while(pos <= parent + (i - j + nremoved) + entries[parent].child_count)
+				{
+					++entries[pos].child_pos;
+					pos += entries[pos].child_count + 1;
+				}
+				++entries[parent].child_count;
+				if(entries[parent].child_pos == 0)
+				{
+					break;
+				}
+				parent -= entries[parent].child_pos;
+			}
+
 			++j;
 		}
 

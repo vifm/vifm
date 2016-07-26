@@ -261,10 +261,54 @@ TEST(excluding_nested_dir_in_tree_adds_dummy)
 	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(2, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[1].name);
+	assert_true(lwin.dir_entry[1].child_pos != 0);
 
 	assert_success(remove(SANDBOX_PATH "/nested-dir/nested-dir2/a"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir/nested-dir2"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
+}
+
+TEST(excluding_single_leaf_file_adds_dummy_correctly)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+
+	lwin.dir_entry[6].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(12, lwin.list_rows);
+}
+
+TEST(excluding_middle_directory_from_chain_adds_dummy_correctly)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+
+	/* First, hide one of directories to get dir1 -> dir2 -> dir4 -> file3. */
+
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(9, lwin.list_rows);
+
+	/* Then exclude dir4. */
+
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(8, lwin.list_rows);
 }
 
 TEST(local_filter_does_not_block_visiting_directories)
