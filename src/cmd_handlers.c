@@ -411,11 +411,11 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "dmap",              .abbr = NULL,    .id = COM_DMAP,
 	  .descr = "map keys in dialog modes",
 	  .flags = 0,
-	  .handler = &dmap_cmd,        .min_args = 2,   .max_args = NOT_DEF, },
+	  .handler = &dmap_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "dnoremap",          .abbr = NULL,    .id = COM_DNOREMAP,
 	  .descr = "noremap keys in dialog modes",
 	  .flags = 0,
-	  .handler = &dnoremap_cmd,    .min_args = 2,   .max_args = NOT_DEF, },
+	  .handler = &dnoremap_cmd,    .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "dunmap",            .abbr = NULL,    .id = -1,
 	  .descr = "unmap keys in dialog modes",
 	  .flags = 0,
@@ -1767,12 +1767,20 @@ dnoremap_cmd(const cmd_info_t *cmd_info)
 static int
 dialog_map(const cmd_info_t *cmd_info, int no_remap)
 {
-	int result = do_map(cmd_info, "", SORT_MODE, no_remap);
-	result = result == 0 ? do_map(cmd_info, "", ATTR_MODE, no_remap) : result;
-	result = result == 0 ? do_map(cmd_info, "", CHANGE_MODE, no_remap) : result;
-	result = result == 0
-	       ? do_map(cmd_info, "", FILE_INFO_MODE, no_remap)
-	       : result;
+	int result;
+	if(cmd_info->argc <= 1)
+	{
+		result = do_map(cmd_info, "Dialog", SORT_MODE, no_remap);
+	}
+	else
+	{
+		result = do_map(cmd_info, "", SORT_MODE, no_remap);
+		result = result == 0 ? do_map(cmd_info, "", ATTR_MODE, no_remap) : result;
+		result = result == 0 ? do_map(cmd_info, "", CHANGE_MODE, no_remap) : result;
+		result = result == 0
+		       ? do_map(cmd_info, "", FILE_INFO_MODE, no_remap)
+		       : result;
+	}
 	return result != 0;
 }
 
