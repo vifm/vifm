@@ -80,6 +80,7 @@ static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
+static columns_t get_view_columns(const FileView *view);
 static void consider_scroll_bind(FileView *view);
 static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
@@ -453,12 +454,38 @@ draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
 		column_line_print(cdt, FILL_COLUMN_ID, " ", -1, AT_LEFT, " ");
 	}
 
-	columns_format_line(view->columns, cdt, col_width);
+	columns_format_line(get_view_columns(view), cdt, col_width);
 
 	if(cfg.extra_padding)
 	{
 		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width, AT_LEFT, " ");
 	}
+}
+
+/* Retrieves active view columns handle of the view considering 'lsview' option
+ * status.  Returns the handle. */
+static columns_t
+get_view_columns(const FileView *view)
+{
+	static columns_t ls_columns = NULL_COLUMNS;
+
+	if(ui_view_displays_columns(view))
+	{
+		return view->columns;
+	}
+
+	if(ls_columns == NULL_COLUMNS)
+	{
+		column_info_t column_info = {
+			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+		};
+
+		ls_columns = columns_create();
+		columns_add_column(ls_columns, column_info);
+	}
+
+	return ls_columns;
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
@@ -1384,26 +1411,9 @@ format_nlinks(int id, const void *data, size_t buf_len, char buf[])
 void
 fview_set_lsview(FileView *view, int enabled)
 {
-	if(view->ls_view == enabled)
+	if(view->ls_view != enabled)
 	{
-		return;
-	}
-
-	view->ls_view = enabled;
-
-	if(ui_view_displays_columns(view))
-	{
-		load_view_columns_option(view, view->view_columns);
-	}
-	else
-	{
-		column_info_t column_info = {
-			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
-			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
-		};
-
-		columns_clear(view->columns);
-		columns_add_column(view->columns, column_info);
+		view->ls_view = enabled;
 		ui_view_schedule_redraw(view);
 	}
 }
