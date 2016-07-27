@@ -302,8 +302,11 @@ typedef struct
 
 	col_scheme_t cs;
 
-	columns_t columns; /* handle for column_view unit */
-	char *view_columns, *view_columns_g; /* Format string of columns. */
+	/* Handle for column_view unit.  Contains view columns configuration even when
+	 * 'lsview' is on. */
+	columns_t columns;
+	/* Format string that specifies view columns. */
+	char *view_columns, *view_columns_g;
 
 	/* ls-like view related fields */
 	int ls_view, ls_view_g; /* Non-zero if ls-like view is enabled. */
