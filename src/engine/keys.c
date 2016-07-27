@@ -1049,7 +1049,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 }
 
 void
-vle_keys_list(int mode, vle_keys_list_cb cb)
+vle_keys_list(int mode, vle_keys_list_cb cb, int user_only)
 {
 	const key_chunk_t *user = &user_cmds_root[mode];
 	const key_chunk_t *builtin = &builtin_cmds_root[mode];
@@ -1060,13 +1060,13 @@ vle_keys_list(int mode, vle_keys_list_cb cb)
 		traverse_children(user, L"", &list_chunk, cb);
 
 		/* Put separator only when it's needed. */
-		if(builtin->children_count != 0U)
+		if(!user_only && builtin->children_count != 0U)
 		{
 			cb(L"", L"", "");
 		}
 	}
 
-	if(builtin->children_count != 0U)
+	if(!user_only && builtin->children_count != 0U)
 	{
 		traverse_children(builtin, L"", &list_chunk, cb);
 	}
