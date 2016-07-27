@@ -355,6 +355,22 @@ TEST(after_fake_equal_sign_completion_fail)
 	free(completed);
 }
 
+TEST(after_equal_sign_and_comma_completion_fail)
+{
+	const char *start;
+	char *completed;
+
+	optval_t val = { .str_val = "/home/tmp" };
+	set_option("cdpath", val, OPT_GLOBAL);
+
+	vle_compl_reset();
+	complete_options("cdpath=a,", &start, OPT_GLOBAL);
+
+	completed = vle_compl_next();
+	assert_string_equal("a,", completed);
+	free(completed);
+}
+
 TEST(all_completion_ok)
 {
 	const char *start;

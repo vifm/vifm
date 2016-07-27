@@ -17,6 +17,9 @@
 
 	Fixed decreasing number of selected files after zd operation.
 
+	Fixed wrong whole value completion of string list options if entered value
+	contains a comma (,).
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
