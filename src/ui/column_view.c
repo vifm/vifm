@@ -38,7 +38,7 @@
 /* Holds general column information. */
 typedef struct
 {
-	int column_id; /* Unique column id. */
+	int column_id;    /* Unique column id. */
 	column_func func; /* Function, which prints column value. */
 }
 column_desc_t;
@@ -47,10 +47,10 @@ column_desc_t;
 typedef struct
 {
 	column_info_t info; /* Column properties specified by the client. */
-	size_t start; /* Start position of the column. */
-	size_t width; /* Calculated width of the column. */
+	size_t start;       /* Start position of the column. */
+	size_t width;       /* Calculated width of the column. */
 	size_t print_width; /* Print width (less or equal to the width field). */
-	column_func func; /* Cached column print function of column_desc_t. */
+	column_func func;   /* Cached column print function of column_desc_t. */
 }
 column_t;
 
@@ -58,8 +58,8 @@ column_t;
 struct columns_list_t
 {
 	size_t max_width; /* Maximum width of one line of the view. */
-	size_t count; /* Number of columns in the list. */
-	column_t *list; /* Array of columns of count length. */
+	size_t count;     /* Number of columns in the list. */
+	column_t *list;   /* Array of columns of count length. */
 };
 
 static int extend_column_desc_list(void);

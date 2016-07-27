@@ -2336,7 +2336,7 @@ static void
 set_view_columns_option(FileView *view, const char value[], int update_ui)
 {
 	const char *new_value = (value[0] == '\0') ? DEFAULT_VIEW_COLUMNS : value;
-	const columns_t columns = update_ui ? view->columns : NULL;
+	const columns_t columns = update_ui ? view->columns : NULL_COLUMNS;
 
 	if(update_ui)
 	{

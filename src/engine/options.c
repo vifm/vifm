@@ -1314,7 +1314,8 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 		*p++ = t;
 		if(t != '=' && t != ':')
 			p++;
-		if(opt != NULL && (opt->type == OPT_SET || opt->type == OPT_STRLIST))
+		if(opt != NULL && (opt->type == OPT_SET ||
+					(opt->type == OPT_STRLIST && opt->val_count > 0)))
 		{
 			char *t = strrchr(last_opt, ',');
 			if(t != NULL)

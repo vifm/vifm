@@ -234,7 +234,9 @@ TEST(excluding_dir_in_tree_excludes_its_children)
 	lwin.dir_entry[0].selected = 1;
 	lwin.selected_files = 1;
 	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
 
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
 
@@ -254,13 +256,59 @@ TEST(excluding_nested_dir_in_tree_adds_dummy)
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 1;
 	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
 
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(2, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[1].name);
+	assert_true(lwin.dir_entry[1].child_pos != 0);
 
 	assert_success(remove(SANDBOX_PATH "/nested-dir/nested-dir2/a"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir/nested-dir2"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
+}
+
+TEST(excluding_single_leaf_file_adds_dummy_correctly)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+
+	lwin.dir_entry[6].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(12, lwin.list_rows);
+}
+
+TEST(excluding_middle_directory_from_chain_adds_dummy_correctly)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+
+	/* First, hide one of directories to get dir1 -> dir2 -> dir4 -> file3. */
+
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(9, lwin.list_rows);
+
+	/* Then exclude dir4. */
+
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(8, lwin.list_rows);
 }
 
 TEST(local_filter_does_not_block_visiting_directories)
@@ -413,6 +461,44 @@ TEST(tree_prefixes_are_correct)
 	verify_tree_node(&cdt, 7, "`-- file4");
 	verify_tree_node(&cdt, 8, "dir5");
 	verify_tree_node(&cdt, 9, "`-- file5");
+}
+
+TEST(dotdirs_do_not_mess_up_change_detection)
+{
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+
+	/* Discard results of the first check. */
+	check_if_filelist_have_changed(&lwin);
+	(void)ui_view_query_scheduled_event(&lwin);
+
+	check_if_filelist_have_changed(&lwin);
+	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
+	check_if_filelist_have_changed(&lwin);
+	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
+	check_if_filelist_have_changed(&lwin);
+	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
+
+	cfg.dot_dirs = 0;
+}
+
+TEST(tree_reload_preserves_selection)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+
+	lwin.selected_files = 3;
+
+	load_dir_list(&lwin, 1);
+
+	assert_true(lwin.dir_entry[0].selected);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[2].selected);
+	assert_int_equal(3, lwin.selected_files);
 }
 
 static void

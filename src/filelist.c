@@ -120,6 +120,10 @@ static void update_entries_data(FileView *view);
 static int is_dir_big(const char path[]);
 static void free_view_entries(FileView *view);
 static int update_dir_list(FileView *view, int reload);
+static void start_dir_list_change(FileView *view, dir_entry_t **entries,
+		int *len, int reload);
+static void finish_dir_list_change(FileView *view, dir_entry_t *entries,
+		int len);
 static int add_file_entry_to_view(const char name[], const void *data,
 		void *param);
 static void sort_dir_list(int msg, FileView *view);
@@ -1806,6 +1810,8 @@ flist_custom_exclude(FileView *view)
 
 	flist_ensure_pos_is_valid(view);
 	ui_view_schedule_redraw(view);
+
+	recount_selected_files(view);
 }
 
 /* zap_entries() filter to filter-out files from array of strings.  Returns
@@ -2019,7 +2025,14 @@ populate_dir_list_internal(FileView *view, int reload)
 	{
 		if(view->custom.tree_view)
 		{
-			return flist_load_tree(view, flist_get_dir(view));
+			dir_entry_t *prev_dir_entries;
+			int prev_list_rows, result;
+
+			start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
+			result = flist_load_tree(view, flist_get_dir(view));
+			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
+
+			return result;
 		}
 
 		if(custom_list_is_incomplete(view))
@@ -2256,18 +2269,40 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
-		 * filtered out, there is at least one extra entry. */
+		 * filtered out, there is space for at least one extra entry. */
 		if(remove_subtrees && j != 0 && entries[j - 1].child_count == 0 &&
 				entries[j - 1].type == FT_DIR && !is_parent_dir(entries[j - 1].name))
 		{
 			char full_path[PATH_MAX];
 			char *path;
 
+			int pos = i + (entry->child_count + 1);
+			int parent = j - entry->child_pos;
+
 			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
 			path = format_str("%s/..", full_path);
 			init_parent_entry(view, &entries[j], path);
 			remove_last_path_component(path);
 			entries[j].origin = path;
+			entries[j].child_pos = 1;
+
+			/* Since we now adding back one entry, correct increase parent counts and
+			 * child positions back by one. */
+			while(1)
+			{
+				while(pos <= parent + (i - j + nremoved) + entries[parent].child_count)
+				{
+					++entries[pos].child_pos;
+					pos += entries[pos].child_count + 1;
+				}
+				++entries[parent].child_count;
+				if(entries[parent].child_pos == 0)
+				{
+					break;
+				}
+				parent -= entries[parent].child_pos;
+			}
+
 			++j;
 		}
 
@@ -2315,23 +2350,10 @@ free_view_entries(FileView *view)
 static int
 update_dir_list(FileView *view, int reload)
 {
-	dir_entry_t *prev_dir_entries = NULL;
-	int prev_list_rows = 0;
+	dir_entry_t *prev_dir_entries;
+	int prev_list_rows;
 
-	if(reload)
-	{
-		prev_dir_entries = view->dir_entry;
-		prev_list_rows = view->list_rows;
-		view->dir_entry = NULL;
-		view->list_rows = 0;
-	}
-	else
-	{
-		free_view_entries(view);
-	}
-
-	view->matches = 0;
-	view->selected_files = 0;
+	start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
 
 #ifdef _WIN32
 	if(is_unc_root(view->curr_dir))
@@ -2357,17 +2379,49 @@ update_dir_list(FileView *view, int reload)
 
 	sort_dir_list(!reload, view);
 
+	/* Merging must be performed after sorting so that list position remains fixed
+	 * (sorting doesn't preserve it). */
+	finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
+
+	return 0;
+}
+
+/* Starts file list update, saving previous list for future reference if
+ * necessary. */
+static void
+start_dir_list_change(FileView *view, dir_entry_t **entries, int *len,
+		int reload)
+{
 	if(reload)
 	{
-		/* Merging must be performed after sorting so that list position remains
-		 * fixed (sorting doesn't preserve it). */
-		merge_lists(view, prev_dir_entries, prev_list_rows);
-		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
+		*entries = view->dir_entry;
+		*len = view->list_rows;
+		view->dir_entry = NULL;
+		view->list_rows = 0;
+	}
+	else
+	{
+		*entries = NULL;
+		*len = 0;
+		free_view_entries(view);
+	}
+
+	view->matches = 0;
+	view->selected_files = 0;
+}
+
+/* Finishes file list update, possibly merging information from old entries into
+ * new ones. */
+static void
+finish_dir_list_change(FileView *view, dir_entry_t *entries, int len)
+{
+	if(entries != NULL)
+	{
+		merge_lists(view, entries, len);
+		free_dir_entries(view, &entries, &len);
 	}
 
 	view->dir_entry = dynarray_shrink(view->dir_entry);
-
-	return 0;
 }
 
 /* enum_dir_content() callback that appends files to file list.  Returns zero on
@@ -2811,7 +2865,7 @@ tree_has_changed(const dir_entry_t *entries, size_t nchildren)
 	while(pos < nchildren)
 	{
 		const dir_entry_t *const entry = &entries[pos];
-		if(entry->type == FT_DIR)
+		if(entry->type == FT_DIR && !is_parent_dir(entry->name))
 		{
 			char full_path[PATH_MAX];
 			struct stat s;
