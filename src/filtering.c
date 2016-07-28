@@ -455,6 +455,16 @@ update_filtering_lists(FileView *view, int add, int clear)
 		}
 	}
 
+	if(clear)
+	{
+		/* XXX: the check of name pointer is horrible, but is needed to prevent
+		 *      freeing of entry in use. */
+		if(!parent_added && parent_entry != NULL && list_size != 0U &&
+				view->dir_entry[0].name != parent_entry->name)
+		{
+			free_dir_entry(view, parent_entry);
+		}
+	}
 	if(add)
 	{
 		view->list_rows = list_size;
