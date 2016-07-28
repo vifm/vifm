@@ -4,6 +4,9 @@
 
 	Added :tree command that converts current view into a tree.
 
+	Added :dmap, :dnoremap and :dunmap commands to configure mappings in
+	dialogs.  Thanks to Sassan Haradji (a.k.a. sassanh).
+
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 

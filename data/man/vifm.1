@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 16, 2016" "vifm 0.8.2"
+.TH VIFM 1 "July 28, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1181,6 +1181,8 @@ These commands see '|' as part of their arguments even when it's escaped:
     :cmap
     :cnoremap
     :command
+    :dmap
+    :dnoremap
     :filetype
     :fileviewer
     :filextype
@@ -2649,6 +2651,9 @@ map lhs key sequence to rhs in command line mode.
 .BI ":cm[ap] lhs rhs"
 map lhs to rhs in command line mode.
 .TP
+.BI ":dm[ap] lhs rhs"
+map lhs to rhs in dialog modes.
+.TP
 .BI ":mm[ap] lhs rhs"
 map lhs to rhs in menu mode.
 .TP
@@ -2665,6 +2670,9 @@ map lhs to rhs in visual mode.
 .TP
 .BI :cm[ap]
 list all maps in command line mode.
+.TP
+.BI :dm[ap]
+list all maps in dialog modes.
 .TP
 .BI :mm[ap]
 list all maps in menu mode.
@@ -2683,6 +2691,9 @@ list all maps in visual mode.
 .BI ":cm[ap] beginning"
 list all maps in command line mode that start with the beginning.
 .TP
+.BI ":dm[ap] beginning"
+list all maps in dialog modes that start with the beginning.
+.TP
 .BI ":mm[ap] beginning"
 list all maps in menu mode that start with the beginning.
 .TP
@@ -2698,28 +2709,31 @@ list all maps in visual mode that start with the beginning.
 .BI "                                         :noremap"
 .TP
 .BI ":no[remap] lhs rhs"
-map the key sequence lhs to {rhs} for normal and visual modes, but disallow
+map the key sequence lhs to rhs for normal and visual modes, but disallow
 mapping of rhs.
 .TP
 .BI ":no[remap]! lhs rhs"
-map the key sequence lhs to {rhs} for command line mode, but disallow mapping of
+map the key sequence lhs to rhs for command line mode, but disallow mapping of
 rhs.
 .TP
 .BI ":cno[remap] lhs rhs"
-map the key sequence lhs to {rhs} for command line mode, but disallow mapping of
+map the key sequence lhs to rhs for command line mode, but disallow mapping of
 rhs.
 .TP
+.BI ":dn[oremap] lhs rhs"
+map the key sequence lhs to rhs for dialog modes, but disallow mapping of rhs.
+.TP
 .BI ":mn[oremap] lhs rhs"
-map the key sequence lhs to {rhs} for menu mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for menu mode, but disallow mapping of rhs.
 .TP
 .BI ":nn[oremap] lhs rhs"
-map the key sequence lhs to {rhs} for normal mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for normal mode, but disallow mapping of rhs.
 .TP
 .BI ":qn[oremap] lhs rhs"
-map the key sequence lhs to {rhs} for view mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for view mode, but disallow mapping of rhs.
 .TP
 .BI ":vn[oremap] lhs rhs"
-map the key sequence lhs to {rhs} for visual mode, but disallow mapping of rhs.
+map the key sequence lhs to rhs for visual mode, but disallow mapping of rhs.
 .TP
 .BI "                                         :unmap"
 .TP
@@ -2731,6 +2745,9 @@ remove the mapping of lhs from command line mode.
 .TP
 .BI ":cu[nmap] lhs"
 remove the mapping of lhs from command line mode.
+.TP
+.BI ":du[nmap] lhs"
+remove the mapping of lhs from dialog modes.
 .TP
 .BI ":mu[nmap] lhs"
 remove the mapping of lhs from menu mode.
