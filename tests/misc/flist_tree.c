@@ -451,6 +451,38 @@ TEST(filtering_does_not_break_the_tree_with_empty_dir)
 	cfg.dot_dirs = 0;
 }
 
+TEST(filtering_does_not_confuse_leafs_with_parent_ref)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(1, local_filter_set(&lwin, "g"));
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+	local_filter_cancel(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+}
+
+TEST(filtering_does_not_hide_parent_refs)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, local_filter_set(&lwin, ""));
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+	local_filter_cancel(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+}
+
 TEST(short_paths_consider_tree_structure)
 {
 	char name[NAME_MAX];
