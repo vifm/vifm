@@ -2272,8 +2272,8 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
 		 * filtered out, there is space for at least one extra entry. */
-		if(remove_subtrees && j != 0 && entries[j - 1].child_count == 0 &&
-				entries[j - 1].type == FT_DIR && !is_parent_dir(entries[j - 1].name))
+		if(remove_subtrees && i - entry->child_pos == j - 1 &&
+				entries[i - entry->child_pos].child_count == 0)
 		{
 			char full_path[PATH_MAX];
 			char *path;
