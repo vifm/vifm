@@ -2648,6 +2648,8 @@ map lhs key sequence to rhs in normal and visual modes.
 map lhs key sequence to rhs in command line mode.
 
 .TP
+.BI "                                       :cmap :dmap :mmap :nmap :qmap :vmap"
+.TP
 .BI ":cm[ap] lhs rhs"
 map lhs to rhs in command line mode.
 .TP
@@ -2665,8 +2667,9 @@ map lhs to rhs in view mode.
 .TP
 .BI ":vm[ap] lhs rhs"
 map lhs to rhs in visual mode.
+
 .TP
-.BI "                                         :map"
+.BI "                                         :*map"
 .TP
 .BI :cm[ap]
 list all maps in command line mode.
@@ -2686,7 +2689,7 @@ list all maps in view mode.
 .BI :vm[ap]
 list all maps in visual mode.
 .TP
-.BI "                                         :map beginning"
+.BI "                                         :*map beginning"
 .TP
 .BI ":cm[ap] beginning"
 list all maps in command line mode that start with the beginning.
@@ -2716,6 +2719,8 @@ mapping of rhs.
 map the key sequence lhs to rhs for command line mode, but disallow mapping of
 rhs.
 .TP
+.BI "               :cnoremap :dnoremap :mnoremap :nnoremap :qnoremap :vnoremap"
+.TP
 .BI ":cno[remap] lhs rhs"
 map the key sequence lhs to rhs for command line mode, but disallow mapping of
 rhs.
@@ -2742,6 +2747,8 @@ remove the mapping of lhs from normal and visual modes.
 .TP
 .BI ":unm[ap]! lhs"
 remove the mapping of lhs from command line mode.
+.TP
+.BI "                           :cunmap :dunmap :munmap :nunmap :qunmap :vunmap"
 .TP
 .BI ":cu[nmap] lhs"
 remove the mapping of lhs from command line mode.
