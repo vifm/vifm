@@ -998,6 +998,8 @@ get_cmd_args_type(const char cmd[])
 		case COM_CMAP:
 		case COM_CNOREMAP:
 		case COM_COMMAND:
+		case COM_DMAP:
+		case COM_DNOREMAP:
 		case COM_FILETYPE:
 		case COM_FILEVIEWER:
 		case COM_FILEXTYPE:

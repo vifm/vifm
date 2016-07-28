@@ -28,6 +28,7 @@
 
 #include "../compat/reallocarray.h"
 #include "../engine/keys.h"
+#include "../modes/modes.h"
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -49,13 +50,17 @@ int
 show_map_menu(FileView *view, const char mode_str[], int mode,
 		const wchar_t start[])
 {
-	init_menu_info(&m, format_str("Mappings for %s mode", mode_str),
+	const int dialogs = mode == SORT_MODE || mode == ATTR_MODE
+	                 || mode == CHANGE_MODE || mode == FILE_INFO_MODE;
+
+	init_menu_info(&m,
+			format_str("Mappings for %s mode%s", mode_str, dialogs ? "s" : ""),
 			strdup("No mappings found"));
 
 	prefix = start;
 	prefix_len = wcslen(prefix);
 
-	vle_keys_list(mode, &add_mapping_item);
+	vle_keys_list(mode, &add_mapping_item, dialogs);
 
 	return display_menu(&m, view);
 }

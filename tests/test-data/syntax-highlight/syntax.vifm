@@ -331,6 +331,23 @@ unselect pat
 " "'file'" should be highlighted as a string
 echo chooseopt('file')
 
+" the following should be highlighted as :commands
+dm
+dma
+dmap
+dn
+dno
+dnor
+dnore
+dnorem
+dnorema
+dnoremap
+du
+dun
+dunm
+dunma
+dunmap
+
 " TODO
 
 " ":echo" should be highlighted as :commands

@@ -166,8 +166,8 @@ int vle_keys_user_exists(const wchar_t keys[], int mode);
  * wasn't found. */
 int vle_keys_user_remove(const wchar_t keys[], int mode);
 
-/* Lists all keys of the given mode with description. */
-void vle_keys_list(int mode, vle_keys_list_cb cb);
+/* Lists all or just user keys of the given mode with description. */
+void vle_keys_list(int mode, vle_keys_list_cb cb, int user_only);
 
 /* Retrieves number of keys processed so far.  Clients are expected to use
  * difference of returned values.  Returns the number. */

@@ -140,6 +140,10 @@ static void remove_bmark(const char path[], const char tags[], time_t timestamp,
 static char * get_bmark_dir(const cmd_info_t *cmd_info);
 static char * make_bmark_path(const char path[]);
 static int dirs_cmd(const cmd_info_t *cmd_info);
+static int dmap_cmd(const cmd_info_t *cmd_info);
+static int dnoremap_cmd(const cmd_info_t *cmd_info);
+static int dialog_map(const cmd_info_t *cmd_info, int no_remap);
+static int dunmap_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
@@ -404,6 +408,18 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display directory stack",
 	  .flags = HAS_COMMENT,
 	  .handler = &dirs_cmd,        .min_args = 0,   .max_args = 0, },
+	{ .name = "dmap",              .abbr = NULL,    .id = COM_DMAP,
+	  .descr = "map keys in dialog modes",
+	  .flags = 0,
+	  .handler = &dmap_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "dnoremap",          .abbr = NULL,    .id = COM_DNOREMAP,
+	  .descr = "noremap keys in dialog modes",
+	  .flags = 0,
+	  .handler = &dnoremap_cmd,    .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "dunmap",            .abbr = NULL,    .id = -1,
+	  .descr = "unmap keys in dialog modes",
+	  .flags = 0,
+	  .handler = &dunmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "echo",             .abbr = "ec",     .id = COM_ECHO,
 	  .descr = "eval and print expressions",
 	  .flags = 0,
@@ -1731,6 +1747,53 @@ static int
 dirs_cmd(const cmd_info_t *cmd_info)
 {
 	return show_dirstack_menu(curr_view) != 0;
+}
+
+/* Maps key sequence in dialogs expanding mappings in RHS. */
+static int
+dmap_cmd(const cmd_info_t *cmd_info)
+{
+	return dialog_map(cmd_info, 0);
+}
+
+/* Maps key sequence in dialogs not expanding mappings in RHS. */
+static int
+dnoremap_cmd(const cmd_info_t *cmd_info)
+{
+	return dialog_map(cmd_info, 1);
+}
+
+/* Implementation of :dmap and :dnoremap.  Returns cmds unit friendly code. */
+static int
+dialog_map(const cmd_info_t *cmd_info, int no_remap)
+{
+	int result;
+	if(cmd_info->argc <= 1)
+	{
+		result = do_map(cmd_info, "Dialog", SORT_MODE, no_remap);
+	}
+	else
+	{
+		result = do_map(cmd_info, "", SORT_MODE, no_remap);
+		result = result == 0 ? do_map(cmd_info, "", ATTR_MODE, no_remap) : result;
+		result = result == 0 ? do_map(cmd_info, "", CHANGE_MODE, no_remap) : result;
+		result = result == 0
+		       ? do_map(cmd_info, "", FILE_INFO_MODE, no_remap)
+		       : result;
+	}
+	return result != 0;
+}
+
+/* Unmaps key sequence in dialogs. */
+static int
+dunmap_cmd(const cmd_info_t *cmd_info)
+{
+	const char *lhs = cmd_info->argv[0];
+	int result = do_unmap(lhs, SORT_MODE);
+	result = result == 0 ? do_unmap(lhs, ATTR_MODE) : result;
+	result = result == 0 ? do_unmap(lhs, CHANGE_MODE) : result;
+	result = result == 0 ? do_unmap(lhs, FILE_INFO_MODE) : result;
+	return result != 0;
 }
 
 /* Evaluates arguments as expression and outputs result to statusbar. */

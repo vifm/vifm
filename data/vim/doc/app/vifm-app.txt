@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Jul 16
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Jul 28
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1043,6 +1043,8 @@ These commands see '|' as part of their arguments even when it's escaped:
     :cmap
     :cnoremap
     :command
+    :dmap
+    :dnoremap
     :filetype
     :fileviewer
     :filextype
@@ -2203,17 +2205,20 @@ yet supported) and might be changed in future releases, or get an alias.
     map lhs key sequence to rhs in command line mode.
 
                                                *vifm-:cmap* *vifm-:cm*
+                                               *vifm-:dmap* *vifm-:dm*
                                                *vifm-:mmap* *vifm-:mm*
                                                *vifm-:nmap* *vifm-:nm*
                                                *vifm-:qmap* *vifm-:qm*
                                                *vifm-:vmap* *vifm-:vm*
 :cm[ap] lhs rhs - map lhs to rhs in command line mode.
+:dm[ap] lhs rhs - map lhs to rhs in dialog modes.
 :mm[ap] lhs rhs - map lhs to rhs in menu mode.
 :nm[ap] lhs rhs - map lhs to rhs in normal mode.
 :qm[ap] lhs rhs - map lhs to rhs in view mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
 :cm[ap] - list all maps of command line mode.
+:dm[ap] - list all maps of dialog modes.
 :mm[ap] - list all maps of menu mode.
 :nm[ap] - list all maps of normal mode.
 :qm[ap] - list all maps of view mode.
@@ -2221,6 +2226,8 @@ yet supported) and might be changed in future releases, or get an alias.
 
 :cm[ap] beginning
     list all maps of command line mode that start with the beginning.
+:dm[ap] beginning
+    list all maps of dialog modes that start with the beginning.
 :mm[ap] beginning
     list all maps of menu mode that start with the beginning.
 :nm[ap] beginning
@@ -2239,12 +2246,16 @@ yet supported) and might be changed in future releases, or get an alias.
     mapping of rhs.
 
                                                *vifm-:cnoremap* *vifm-:cno*
+                                               *vifm-:dnoremap* *vifm-:dn*
                                                *vifm-:mnoremap* *vifm-:mn*
                                                *vifm-:nnoremap* *vifm-:nn*
                                                *vifm-:qnoremap* *vifm-:qn*
                                                *vifm-:vnoremap* *vifm-:vn*
 :cno[remap] lhs rhs
     map the key sequence lhs to rhs for command line mode, but disallow
+    mapping of rhs.
+:dn[oremap] lhs rhs
+    map the key sequence lhs to rhs for dialog modes, but disallow
     mapping of rhs.
 :mn[oremap] lhs rhs
     map the key sequence lhs to rhs for menu mode, but disallow mapping
@@ -2266,11 +2277,13 @@ yet supported) and might be changed in future releases, or get an alias.
     remove the mapping of lhs from command line mode.
 
                                                *vifm-:cunmap* *vifm-:cu*
+                                               *vifm-:dunmap* *vifm-:du*
                                                *vifm-:munmap* *vifm-:mu*
                                                *vifm-:nunmap* *vifm-:nun*
                                                *vifm-:qunmap* *vifm-:qun*
                                                *vifm-:vunmap* *vifm-:vu*
 :cu[nmap] lhs - remove the mapping of lhs from command line mode.
+:du[nmap] lhs - remove the mapping of lhs from dialog modes.
 :mu[nmap] lhs - remove the mapping of lhs from menu mode.
 :nun[map] lhs - remove the mapping of lhs from normal mode.
 :qun[map] lhs - remove the mapping of lhs from view mode.
