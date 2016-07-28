@@ -433,6 +433,24 @@ TEST(nodes_are_reparented_on_filtering)
 	validate_tree(&lwin);
 }
 
+TEST(filtering_does_not_break_the_tree_with_empty_dir)
+{
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(3, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, local_filter_set(&lwin, ""));
+	assert_int_equal(3, lwin.list_rows);
+	validate_tree(&lwin);
+	local_filter_cancel(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+	cfg.dot_dirs = 0;
+}
+
 TEST(short_paths_consider_tree_structure)
 {
 	char name[NAME_MAX];

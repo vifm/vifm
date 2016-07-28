@@ -411,7 +411,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 		dir_entry_t *const entry = &view->local_filter.unfiltered[i];
 		const char *name = entry->name;
 
-		if(is_parent_dir(name))
+		if(parent_entry == NULL && is_parent_dir(name))
 		{
 			parent_entry = entry;
 			if(add && cfg_parent_dir_is_visible(is_root_dir(view->curr_dir)))
