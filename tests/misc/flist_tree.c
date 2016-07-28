@@ -63,6 +63,17 @@ TEST(empty_directory_tree_is_created)
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 }
 
+TEST(empty_directory_tree_is_created_dotdirs_option)
+{
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	cfg.dot_dirs = 0;
+}
+
 TEST(complex_tree_is_built_correctly)
 {
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));

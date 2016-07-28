@@ -1658,11 +1658,13 @@ int
 flist_custom_finish(FileView *view, int very, int tree_view)
 {
 	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
+	const int might_add_parent_ref = (tree_view != 0);
+	const int no_parent_ref = (view->custom.entry_count == 0);
 
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = NULL_TRIE;
 
-	if(view->custom.entry_count == 0)
+	if(no_parent_ref && !might_add_parent_ref)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 		free(view->custom.title);
@@ -1670,7 +1672,7 @@ flist_custom_finish(FileView *view, int very, int tree_view)
 		return 1;
 	}
 
-	if(!very && cfg_parent_dir_is_visible(0))
+	if(no_parent_ref || (!very && cfg_parent_dir_is_visible(0)))
 	{
 		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
 				view->custom.entry_count);
@@ -3643,7 +3645,10 @@ add_files_recursively(FileView *view, const char path[], int parent_pos,
 
 	free_string_array(lst, len);
 
-	if(!no_direct_parent && view->custom.entry_count == prev_count)
+	/* The prev_count != 0 check is to make sure that we won't create leaf instead
+	 * of the whole tree (this is handled in flist_custom_finish()). */
+	if(!no_direct_parent && prev_count != 0 &&
+			view->custom.entry_count == prev_count)
 	{
 		/* To be able to perform operations inside directory (e.g., create files),
 		 * we need at least one element there. */
