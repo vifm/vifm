@@ -112,6 +112,7 @@ static void revert_very_custom(FileView *view);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static int populate_custom_view(FileView *view, int reload);
 static int update_dir_watcher(FileView *view);
 static int custom_list_is_incomplete(const FileView *view);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
@@ -2031,31 +2032,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(flist_custom_active(view))
 	{
-		if(view->custom.tree_view)
-		{
-			dir_entry_t *prev_dir_entries;
-			int prev_list_rows, result;
-
-			start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
-			result = flist_load_tree_internal(view, flist_get_dir(view), 1);
-			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
-
-			return result;
-		}
-
-		if(custom_list_is_incomplete(view))
-		{
-			/* Load initial list of custom entries if it's available. */
-			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
-					view->custom.entries, view->custom.entry_count);
-		}
-
-		(void)zap_entries(view, view->dir_entry, &view->list_rows,
-				&is_dead_or_filtered, NULL, 0, 0);
-		update_entries_data(view);
-		sort_dir_list(!reload, view);
-		fview_list_updated(view);
-		return 0;
+		return populate_custom_view(view, reload);
 	}
 
 	if(!reload && is_dir_big(view->curr_dir))
@@ -2119,6 +2096,37 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 1;
 	}
 
+	return 0;
+}
+
+/* (Re)loads custom view file list.  Returns non-zero on error. */
+static int
+populate_custom_view(FileView *view, int reload)
+{
+	if(view->custom.tree_view)
+	{
+		dir_entry_t *prev_dir_entries;
+		int prev_list_rows, result;
+
+		start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
+		result = flist_load_tree_internal(view, flist_get_dir(view), 1);
+		finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
+
+		return result;
+	}
+
+	if(custom_list_is_incomplete(view))
+	{
+		/* Load initial list of custom entries if it's available. */
+		replace_dir_entries(view, &view->dir_entry, &view->list_rows,
+				view->custom.entries, view->custom.entry_count);
+	}
+
+	(void)zap_entries(view, view->dir_entry, &view->list_rows,
+			&is_dead_or_filtered, NULL, 0, 0);
+	update_entries_data(view);
+	sort_dir_list(!reload, view);
+	fview_list_updated(view);
 	return 0;
 }
 
