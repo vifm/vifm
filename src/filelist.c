@@ -1705,8 +1705,6 @@ flist_custom_finish(FileView *view, int very, int tree_view)
 		view->curr_dir[0] = '\0';
 	}
 
-	ui_view_schedule_redraw(view);
-
 	/* Replace view file list with custom list. */
 	free_dir_entries(view, &view->dir_entry, &view->list_rows);
 	view->dir_entry = view->custom.entries;
