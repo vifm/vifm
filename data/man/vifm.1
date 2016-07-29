@@ -2533,7 +2533,8 @@ same as :trashes, but also displays size of each trash directory.
 turn pane into tree view with current directory as a root.  The tree view is
 implemented on top of a custom view, but is automatically kept in sync with
 file system state and considers all the filters.  Thus the structure corresponds
-to what one would see on visiting the directories manually.
+to what one would see on visiting the directories manually.  Tree structure is
+incompatible with ls-like view, so value 'lsview' option is ignored.
 .TP
 .BI "                                         :undolist"
 .TP
@@ -5149,6 +5150,8 @@ right in rows.
 In this mode file manipulation commands (e.g. d) don't work line-wise like they
 do in Vim, since such operations would be uncommon for file manipulating
 tasks.  Thus, for example, dd will remove only current file.
+
+Note that tree-view inhibits ls-like view.
 .\" ---------------------------------------------------------------------------
 .SH Column view
 .\" ---------------------------------------------------------------------------
