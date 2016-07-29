@@ -2157,23 +2157,19 @@ find_npattern(FileView *view, const char pattern[], int backward,
 	const int nrepeats = search_repeat - 1;
 	int i;
 	int save_msg;
-	int msg;
+	int found;
 
 	/* Reset number of repeats so that future calls are not affected by the
 	 * previous ones. */
 	search_repeat = 1;
 
-	msg = find_pattern(view, pattern, backward, 1, &save_msg, print_errors);
-	if(!print_errors && msg < 0)
+	save_msg = find_pattern(view, pattern, backward, 1, &found, print_errors);
+	if(!print_errors && save_msg < 0)
 	{
 		/* If we're not printing messages, we might be interested in broken
 		 * pattern. */
 		return -1;
 	}
-
-	/* Take wrong regular expression message into account, otherwise we can't
-	 * distinguish "no files matched" situation from "wrong regexp". */
-	save_msg += msg;
 
 	for(i = 0; i < nrepeats; ++i)
 	{

@@ -189,7 +189,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 
 		if(cfg.hl_search && !was_found)
 		{
-			/* Update the view.  It look might have changed, because of selection. */
+			/* Update the view.  Its look might have changed, because of selection. */
 			fview_cursor_redraw(view);
 		}
 
@@ -248,8 +248,10 @@ print_search_msg(const FileView *view, int backward)
 void
 print_search_next_msg(const FileView *view, int backward)
 {
-	status_bar_messagef("(%d of %d) %c%s", view->dir_entry[view->list_pos].search_match,
-			view->matches, backward ? '?' : '/', cfg_get_last_search_pattern());
+	const int match_number = view->dir_entry[view->list_pos].search_match;
+	const char search_type = backward ? '?' : '/';
+	status_bar_messagef("(%d of %d) %c%s", match_number, view->matches,
+			search_type, cfg_get_last_search_pattern());
 }
 
 void

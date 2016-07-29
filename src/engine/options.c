@@ -1276,6 +1276,8 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 	*start = args;
 	while(*args != '\0')
 	{
+		*start = args;
+
 		free(last_opt);
 		last_opt = extract_option(&args, 0);
 
@@ -1293,6 +1295,8 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 			return;
 		}
 	}
+	/* If last option doesn't span to the end of the string, then we should
+	 * complete new option at the end of the line. */
 	if(strlen(last_opt) != (size_t)(args - *start))
 	{
 		*start = args;

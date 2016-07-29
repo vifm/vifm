@@ -5,6 +5,7 @@
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/modes/normal.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/search.h"
@@ -187,6 +188,16 @@ TEST(view_patterns_are_synchronized)
 	assert_int_equal(2, lwin.matches);
 
 	view_teardown(&rwin);
+}
+
+TEST(find_npattern_returns_zero_if_msg_is_not_printed)
+{
+	cfg.hl_search = 1;
+	cfg.inc_search = 0;
+
+	assert_int_equal(0, find_npattern(&lwin, "dos", 0, 1));
+
+	cfg.hl_search = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -23,6 +23,11 @@
 	Fixed wrong whole value completion of string list options if entered value
 	contains a comma (,).
 
+	Fixed displaying of previous status bar message on 'hlsearch' 'noincsearch'
+	when match occurs.  Thanks to filterfalse.
+
+	Fixed incorrect completion of non-first option name of the :set command.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

@@ -384,6 +384,25 @@ TEST(all_completion_ok)
 	free(completed);
 }
 
+TEST(completion_of_second_option)
+{
+	const char *str = "all no";
+	const char *start;
+	char *completed;
+
+	vle_compl_reset();
+	complete_options(str, &start, OPT_GLOBAL);
+	assert_string_equal(str + 6, start);
+
+	completed = vle_compl_next();
+	assert_string_equal("fastrun", completed);
+	free(completed);
+
+	completed = vle_compl_next();
+	assert_string_equal("sortorder", completed);
+	free(completed);
+}
+
 TEST(charset_completion_skips_entered_elements)
 {
 	const char *start;
