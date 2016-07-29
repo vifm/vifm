@@ -649,7 +649,7 @@ redraw_cmdline(void)
 	}
 	else
 	{
-		update_screen(UT_FULL);
+		update_screen(UT_REDRAW);
 		if(prev_mode == SORT_MODE)
 		{
 			redraw_sort_dialog();
