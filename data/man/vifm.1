@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 28, 2016" "vifm 0.8.2"
+.TH VIFM 1 "July 29, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -452,8 +452,10 @@ remove all filters.
 remove local filter.
 .TP
 .BI zd
-exclude selection or current file from custom view.  Does nothing for regular
-view.
+exclude selection or current file from a custom view.  Does nothing for regular
+view.  For tree view excluding directory excludes that sub-tree.  Files excluded
+this way are not counted as filtered out and can't be returned unless view is
+reloaded.
 .TP
 .BI "=regular expression pattern"
 filter out files that don't match regular expression.  Whether view is updated
@@ -2531,7 +2533,8 @@ same as :trashes, but also displays size of each trash directory.
 turn pane into tree view with current directory as a root.  The tree view is
 implemented on top of a custom view, but is automatically kept in sync with
 file system state and considers all the filters.  Thus the structure corresponds
-to what one would see on visiting the directories manually.
+to what one would see on visiting the directories manually.  Tree structure is
+incompatible with ls-like view, so value 'lsview' option is ignored.
 .TP
 .BI "                                         :undolist"
 .TP
@@ -5147,6 +5150,8 @@ right in rows.
 In this mode file manipulation commands (e.g. d) don't work line-wise like they
 do in Vim, since such operations would be uncommon for file manipulating
 tasks.  Thus, for example, dd will remove only current file.
+
+Note that tree-view inhibits ls-like view.
 .\" ---------------------------------------------------------------------------
 .SH Column view
 .\" ---------------------------------------------------------------------------

@@ -209,6 +209,8 @@ typedef struct
 
 		/* Whether this custom view displays files in a file system sub-tree. */
 		int tree_view;
+		/* List of paths that should be ignored (including all nested paths). */
+		trie_t excluded_paths;
 
 		/* Names of files in custom view while it's being composed.  Used for
 		 * duplicate elimination during construction of custom list. */

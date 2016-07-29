@@ -63,6 +63,17 @@ TEST(empty_directory_tree_is_created)
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 }
 
+TEST(empty_directory_tree_is_created_dotdirs_option)
+{
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	cfg.dot_dirs = 0;
+}
+
 TEST(complex_tree_is_built_correctly)
 {
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
@@ -311,6 +322,32 @@ TEST(excluding_middle_directory_from_chain_adds_dummy_correctly)
 	assert_int_equal(8, lwin.list_rows);
 }
 
+TEST(excluded_paths_do_not_appear_after_view_reload)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(9, lwin.list_rows);
+
+	load_dir_list(&lwin, 1);
+	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(9, lwin.list_rows);
+	validate_tree(&lwin);
+
+	load_dir_list(&lwin, 1);
+	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(9, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
 TEST(local_filter_does_not_block_visiting_directories)
 {
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
@@ -420,6 +457,56 @@ TEST(nodes_are_reparented_on_filtering)
 	local_filter_accept(&lwin);
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
+}
+
+TEST(filtering_does_not_break_the_tree_with_empty_dir)
+{
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(3, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, local_filter_set(&lwin, ""));
+	assert_int_equal(3, lwin.list_rows);
+	validate_tree(&lwin);
+	local_filter_cancel(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+	cfg.dot_dirs = 0;
+}
+
+TEST(filtering_does_not_confuse_leafs_with_parent_ref)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(1, local_filter_set(&lwin, "g"));
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+	local_filter_cancel(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+}
+
+TEST(filtering_does_not_hide_parent_refs)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, local_filter_set(&lwin, ""));
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+	local_filter_cancel(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 }
 
 TEST(short_paths_consider_tree_structure)

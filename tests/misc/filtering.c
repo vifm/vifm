@@ -7,6 +7,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/filelist.h"
 #include "../../src/filtering.h"
 
 #include "utils.h"
@@ -22,6 +23,8 @@ SETUP()
 	cfg.slow_fs_list = strdup("");
 
 	cfg.filter_inverted_by_default = 1;
+
+	view_setup(&lwin);
 
 	lwin.list_rows = 7;
 	lwin.list_pos = 2;
@@ -51,11 +54,11 @@ SETUP()
 	lwin.dir_entry[6].selected = 0;
 	lwin.selected_files = 6;
 
-	filter_init(&lwin.manual_filter, FILTER_DEF_CASE_SENSITIVITY);
-	filter_init(&lwin.auto_filter, FILTER_DEF_CASE_SENSITIVITY);
 	lwin.invert = cfg.filter_inverted_by_default;
 
 	lwin.column_count = 1;
+
+	view_setup(&rwin);
 
 	rwin.list_rows = 8;
 	rwin.list_pos = 2;
@@ -88,8 +91,6 @@ SETUP()
 	rwin.dir_entry[7].selected = 0;
 	rwin.selected_files = 0;
 
-	filter_init(&rwin.manual_filter, FILTER_DEF_CASE_SENSITIVITY);
-	filter_init(&rwin.auto_filter, FILTER_DEF_CASE_SENSITIVITY);
 	rwin.invert = cfg.filter_inverted_by_default;
 
 	rwin.column_count = 1;
@@ -191,6 +192,23 @@ TEST(filtering_files_and_dirs)
 	assert_visible(rwin, rwin.dir_entry[6].name, 0);
 	assert_visible(rwin, rwin.dir_entry[7].name, 1);
 	assert_int_equal(8, rwin.list_rows);
+}
+
+TEST(file_after_directory_is_hidden)
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/read");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/read/very-long-line");
+	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
+
+	lwin.dir_entry[1].selected = 1;
+	lwin.selected_files = 1;
+	filter_selected_files(&lwin);
+
+	assert_int_equal(1, lwin.list_rows);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

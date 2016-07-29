@@ -112,6 +112,7 @@ static void revert_very_custom(FileView *view);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
+static int populate_custom_view(FileView *view, int reload);
 static int update_dir_watcher(FileView *view);
 static int custom_list_is_incomplete(const FileView *view);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
@@ -149,8 +150,10 @@ static int iter_entries(FileView *view, dir_entry_t **entry,
 static int is_entry_selected(const dir_entry_t *entry);
 static int is_entry_marked(const dir_entry_t *entry);
 static void clear_marking(FileView *view);
+static int flist_load_tree_internal(FileView *view, const char path[],
+		int reload);
 static int add_files_recursively(FileView *view, const char path[],
-		int parent_pos, int no_direct_parent);
+		trie_t excluded_paths, int parent_pos, int no_direct_parent);
 static int file_is_visible(FileView *view, const char filename[], int is_dir,
 		const void *data, int apply_local_filter);
 static int add_directory_leaf(FileView *view, const char path[],
@@ -1658,11 +1661,13 @@ int
 flist_custom_finish(FileView *view, int very, int tree_view)
 {
 	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
+	const int might_add_parent_ref = (tree_view != 0);
+	const int no_parent_ref = (view->custom.entry_count == 0);
 
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = NULL_TRIE;
 
-	if(view->custom.entry_count == 0)
+	if(no_parent_ref && !might_add_parent_ref)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 		free(view->custom.title);
@@ -1670,7 +1675,7 @@ flist_custom_finish(FileView *view, int very, int tree_view)
 		return 1;
 	}
 
-	if(!very && cfg_parent_dir_is_visible(0))
+	if(no_parent_ref || (!very && cfg_parent_dir_is_visible(0)))
 	{
 		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
 				view->custom.entry_count);
@@ -1796,6 +1801,10 @@ flist_custom_exclude(FileView *view)
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
 		nfiles = add_to_string_array(&files, nfiles, 1, full_path);
+		if(view->custom.tree_view)
+		{
+			(void)trie_put(view->custom.excluded_paths, full_path);
+		}
 	}
 
 	list.nitems = nfiles;
@@ -2023,31 +2032,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(flist_custom_active(view))
 	{
-		if(view->custom.tree_view)
-		{
-			dir_entry_t *prev_dir_entries;
-			int prev_list_rows, result;
-
-			start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
-			result = flist_load_tree(view, flist_get_dir(view));
-			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
-
-			return result;
-		}
-
-		if(custom_list_is_incomplete(view))
-		{
-			/* Load initial list of custom entries if it's available. */
-			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
-					view->custom.entries, view->custom.entry_count);
-		}
-
-		(void)zap_entries(view, view->dir_entry, &view->list_rows,
-				&is_dead_or_filtered, NULL, 0, 0);
-		update_entries_data(view);
-		sort_dir_list(!reload, view);
-		fview_list_updated(view);
-		return 0;
+		return populate_custom_view(view, reload);
 	}
 
 	if(!reload && is_dir_big(view->curr_dir))
@@ -2111,6 +2096,37 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 1;
 	}
 
+	return 0;
+}
+
+/* (Re)loads custom view file list.  Returns non-zero on error. */
+static int
+populate_custom_view(FileView *view, int reload)
+{
+	if(view->custom.tree_view)
+	{
+		dir_entry_t *prev_dir_entries;
+		int prev_list_rows, result;
+
+		start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
+		result = flist_load_tree_internal(view, flist_get_dir(view), 1);
+		finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
+
+		return result;
+	}
+
+	if(custom_list_is_incomplete(view))
+	{
+		/* Load initial list of custom entries if it's available. */
+		replace_dir_entries(view, &view->dir_entry, &view->list_rows,
+				view->custom.entries, view->custom.entry_count);
+	}
+
+	(void)zap_entries(view, view->dir_entry, &view->list_rows,
+			&is_dead_or_filtered, NULL, 0, 0);
+	update_entries_data(view);
+	sort_dir_list(!reload, view);
+	fview_list_updated(view);
 	return 0;
 }
 
@@ -2270,8 +2286,8 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
 		 * filtered out, there is space for at least one extra entry. */
-		if(remove_subtrees && j != 0 && entries[j - 1].child_count == 0 &&
-				entries[j - 1].type == FT_DIR && !is_parent_dir(entries[j - 1].name))
+		if(remove_subtrees && i - entry->child_pos == j - 1 &&
+				entries[i - entry->child_pos].child_count == 0)
 		{
 			char full_path[PATH_MAX];
 			char *path;
@@ -3545,12 +3561,21 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 int
 flist_load_tree(FileView *view, const char path[])
 {
+	return flist_load_tree_internal(view, path, 0);
+}
+
+/* Implements tree view (re)loading.  Returns zero on success, otherwise
+ * non-zero is returned. */
+static int
+flist_load_tree_internal(FileView *view, const char path[], int reload)
+{
 	char canonic_path[PATH_MAX];
 	int nfiltered;
+	trie_t excluded_paths = reload ? view->custom.excluded_paths : NULL_TRIE;
 
 	flist_custom_start(view, "tree");
 
-	nfiltered = add_files_recursively(view, path, -1, 0);
+	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
 	if(nfiltered < 0)
 	{
 		show_error_msg("Tree View", "Failed to list directory");
@@ -3566,6 +3591,12 @@ flist_load_tree(FileView *view, const char path[])
 			sizeof(canonic_path));
 	replace_string(&view->custom.orig_dir, canonic_path);
 
+	if(!reload)
+	{
+		trie_free(view->custom.excluded_paths);
+		view->custom.excluded_paths = trie_create();
+	}
+
 	return 0;
 }
 
@@ -3574,8 +3605,8 @@ flist_load_tree(FileView *view, const char path[])
  * filtered out files on success or partial success and negative value on
  * serious error. */
 static int
-add_files_recursively(FileView *view, const char path[], int parent_pos,
-		int no_direct_parent)
+add_files_recursively(FileView *view, const char path[], trie_t excluded_paths,
+		int parent_pos, int no_direct_parent)
 {
 	int i;
 	const int prev_count = view->custom.entry_count;
@@ -3590,17 +3621,26 @@ add_files_recursively(FileView *view, const char path[], int parent_pos,
 
 	for(i = 0; i < len; ++i)
 	{
-		char *const full_path = format_str("%s/%s", path, lst[i]);
+		int dir;
+		void *dummy;
 		dir_entry_t *entry;
+		char *const full_path = format_str("%s/%s", path, lst[i]);
 
-		const int dir = is_dir(full_path);
+		if(trie_get(excluded_paths, full_path, &dummy) == 0)
+		{
+			free(full_path);
+			continue;
+		}
+
+		dir = is_dir(full_path);
 		if(!file_is_visible(view, lst[i], dir, NULL, 1))
 		{
 			/* Traverse directory even if we're skipping it, because we might need
 			 * files that are inside of it. */
 			if(dir && file_is_visible(view, lst[i], dir, NULL, 0))
 			{
-				nfiltered += add_files_recursively(view, full_path, parent_pos, 1);
+				nfiltered += add_files_recursively(view, full_path, excluded_paths,
+						parent_pos, 1);
 			}
 
 			free(full_path);
@@ -3626,7 +3666,8 @@ add_files_recursively(FileView *view, const char path[], int parent_pos,
 		if(entry->type == FT_DIR)
 		{
 			const int idx = view->custom.entry_count - 1;
-			const int filtered = add_files_recursively(view, full_path, idx, 0);
+			const int filtered = add_files_recursively(view, full_path,
+					excluded_paths, idx, 0);
 			/* Keep going in case of error and load partial list. */
 			if(filtered >= 0)
 			{
@@ -3643,7 +3684,10 @@ add_files_recursively(FileView *view, const char path[], int parent_pos,
 
 	free_string_array(lst, len);
 
-	if(!no_direct_parent && view->custom.entry_count == prev_count)
+	/* The prev_count != 0 check is to make sure that we won't create leaf instead
+	 * of the whole tree (this is handled in flist_custom_finish()). */
+	if(!no_direct_parent && prev_count != 0 &&
+			view->custom.entry_count == prev_count)
 	{
 		/* To be able to perform operations inside directory (e.g., create files),
 		 * we need at least one element there. */

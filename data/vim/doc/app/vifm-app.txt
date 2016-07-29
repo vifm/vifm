@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Jul 28
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Jul 29
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -346,8 +346,10 @@ zR - remove all filters.                       *vifm-zR*
 zr - remove local filter.                      *vifm-zr*
 
 zd                                             *vifm-zd*
-    exclude selection or current file from custom view.  Does nothing for
-    regular view.
+    exclude selection or current file from a custom view.  Does nothing for
+    regular view.  For tree view excluding directory excludes that sub-tree.
+    Files excluded this way are not counted as filtered out and can't be
+    returned unless view is reloaded.
 
 =regular expression                            *vifm-=*
     filter out files that don't match regular expression.  Whether view is
@@ -2121,7 +2123,8 @@ yet supported) and might be changed in future releases, or get an alias.
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
     structure corresponds to what one would see on visiting the directories
-    manually.
+    manually.  Tree structure is incompatible with ls-like view, so value
+    |vifm-'lsview'| option is ignored.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.
@@ -4350,6 +4353,8 @@ right in rows.
 In this mode file manipulation commands (e.g. |vifm-d|) don't work line-wise like
 they do in Vim, since such operations would be uncommon for file manipulating
 tasks.  Thus, for example, |vifm-dd| will remove only current file.
+
+Note that tree-view inhibits ls-like view.
 
 --------------------------------------------------------------------------------
 *vifm-column-view*
