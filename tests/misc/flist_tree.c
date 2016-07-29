@@ -322,6 +322,32 @@ TEST(excluding_middle_directory_from_chain_adds_dummy_correctly)
 	assert_int_equal(8, lwin.list_rows);
 }
 
+TEST(excluded_paths_do_not_appear_after_view_reload)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 1;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(9, lwin.list_rows);
+
+	load_dir_list(&lwin, 1);
+	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(9, lwin.list_rows);
+	validate_tree(&lwin);
+
+	load_dir_list(&lwin, 1);
+	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(9, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
 TEST(local_filter_does_not_block_visiting_directories)
 {
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
