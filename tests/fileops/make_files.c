@@ -87,10 +87,13 @@ TEST(make_files_considers_tree_structure)
 
 	lwin.list_pos = 0;
 	(void)make_files(&lwin, names, 1);
-	assert_success(unlink("new-file"));
 
 	lwin.list_pos = 1;
 	(void)make_files(&lwin, names, 1);
+
+	/* Remove both files afterward to make sure they can both be created at the
+	 * same time. */
+	assert_success(unlink("new-file"));
 	assert_success(unlink("dir/new-file"));
 
 	assert_success(rmdir("dir"));

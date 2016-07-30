@@ -4131,7 +4131,7 @@ make_files(FileView *view, char **names, int count)
 			status_bar_errorf("Name \"%s\" contains slash", names[i]);
 			return 1;
 		}
-		if(path_exists(names[i], NODEREF))
+		if(path_exists_at(dst_dir, names[i], NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
 			return 1;
