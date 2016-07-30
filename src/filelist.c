@@ -2223,7 +2223,7 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 	j = 0;
 	for(i = 0; i < *count; ++i)
 	{
-		int k, pos;
+		int k, pos, parent;
 		dir_entry_t *const entry = &entries[i];
 		const int nremoved = remove_subtrees ? (entry->child_count + 1) : 1;
 
@@ -2284,14 +2284,13 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
 		 * filtered out, there is space for at least one extra entry. */
-		if(remove_subtrees && i - entry->child_pos == j - 1 &&
-				entries[i - entry->child_pos].child_count == 0)
+		parent = i - entry->child_pos - (i - j);
+		if(remove_subtrees && parent == j - 1 && entries[parent].child_count == 0)
 		{
 			char full_path[PATH_MAX];
 			char *path;
 
 			int pos = i + (entry->child_count + 1);
-			int parent = j - entry->child_pos;
 
 			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
 			path = format_str("%s/..", full_path);
