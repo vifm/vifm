@@ -3559,7 +3559,12 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 int
 flist_load_tree(FileView *view, const char path[])
 {
-	return flist_load_tree_internal(view, path, 0);
+	if(flist_load_tree_internal(view, path, 0) == 0)
+	{
+		ui_view_schedule_redraw(view);
+		return 0;
+	}
+	return 1;
 }
 
 /* Implements tree view (re)loading.  Returns zero on success, otherwise
