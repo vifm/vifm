@@ -20,6 +20,7 @@
 #ifndef VIFM__UI__QUICKVIEW_H__
 #define VIFM__UI__QUICKVIEW_H__
 
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE */
 
 #include "../utils/test_helpers.h"
@@ -45,6 +46,11 @@ const char * qv_get_viewer(const char path[]);
 /* Previews directory, actual preview is to be read from returned stream.
  * Returns the stream or NULL on error. */
 FILE * qv_view_dir(const char path[]);
+
+/* Decides on path that should be explored when cursor points to the given
+ * entry. */
+void qv_get_path_to_explore(const dir_entry_t *entry, char buf[],
+		size_t buf_len);
 
 TSTATIC_DEFS(
 	void view_stream(FILE *fp, int wrapped);

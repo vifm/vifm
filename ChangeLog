@@ -12,6 +12,9 @@
 
 	Enable restoring files from trash from custom views.
 
+	View current directory on ".." for quickview/view mode.  Thanks to
+	filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

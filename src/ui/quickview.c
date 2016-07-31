@@ -139,7 +139,7 @@ quick_view_file(FileView *view)
 	ui_view_erase(other_view);
 
 	entry = &view->dir_entry[view->list_pos];
-	get_full_path_of(entry, sizeof(path), path);
+	qv_get_path_to_explore(entry, path, sizeof(path));
 
 	switch(entry->type)
 	{
@@ -667,6 +667,19 @@ get_typed_fname(const char path[])
 {
 	const char *const last_part = get_last_path_component(path);
 	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
+}
+
+void
+qv_get_path_to_explore(const dir_entry_t *entry, char buf[], size_t buf_len)
+{
+	if(entry->type == FT_DIR && is_parent_dir(entry->name))
+	{
+		copy_str(buf, buf_len, entry->origin);
+	}
+	else
+	{
+		get_full_path_of(entry, buf_len, buf);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
