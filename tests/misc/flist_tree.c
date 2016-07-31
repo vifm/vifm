@@ -16,6 +16,7 @@
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/marks.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
 
@@ -605,6 +606,18 @@ TEST(tree_reload_preserves_selection)
 	assert_true(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 	assert_int_equal(3, lwin.selected_files);
+}
+
+TEST(marks_unit_is_able_to_find_leafs)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+
+	set_spec_mark('<', lwin.dir_entry[1].origin, lwin.dir_entry[1].name);
+	assert_int_equal(1, check_mark_directory(&lwin, '<'));
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 }
 
 static void

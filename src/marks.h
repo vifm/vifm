@@ -90,6 +90,8 @@ void clear_mark(const int m);
 /* Clears all marks. */
 void clear_all_marks(void);
 
+/* Looks up file specified by the mark m in the view.  Returns the position if
+ * found, otherwise -1 is returned. */
 int check_mark_directory(FileView *view, char m);
 
 /* Fills array of booleans (active_marks) each of which shows whether specified
