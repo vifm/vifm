@@ -424,19 +424,18 @@ flist_ensure_pos_is_valid(FileView *view)
 void
 move_cursor_out_of(FileView *view, FileListScope scope)
 {
+	/* XXX: this functionality might be unnecessary now that we have directory
+	 *      merging. */
 	switch(scope)
 	{
 		case FLS_SELECTION:
 			move_cursor_out_of_scope(view, &is_entry_selected);
-			break;
+			return;
 		case FLS_MARKING:
 			move_cursor_out_of_scope(view, &is_entry_marked);
-			break;
-
-		default:
-			assert(0 && "Unhandled file list scope type");
-			break;
+			return;
 	}
+	assert(0 && "Unhandled file list scope type");
 }
 
 /* Ensures that cursor is moved outside of entries that satisfy the predicate if
