@@ -356,12 +356,14 @@ TEST(excluding_all_children_places_a_dummy)
 	lwin.dir_entry[3].selected = 1;
 	lwin.dir_entry[4].selected = 1;
 	lwin.selected_files = 2;
+	lwin.list_pos = 4;
 
 	flist_custom_exclude(&lwin);
 	validate_tree(&lwin);
 
 	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(3, lwin.list_pos);
 	assert_int_equal(11, lwin.list_rows);
 }
 

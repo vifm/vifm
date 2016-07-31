@@ -2281,6 +2281,11 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 			free_dir_entry(view, &entry[k]);
 		}
 
+		if(view->list_pos >= i && view->list_pos < i + nremoved)
+		{
+			view->list_pos = j;
+		}
+
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
 		 * filtered out, there is space for at least one extra entry. */
