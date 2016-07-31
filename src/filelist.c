@@ -133,7 +133,7 @@ static void add_to_trie(trie_t trie, FileView *view, dir_entry_t *entry);
 static int is_in_trie(trie_t trie, FileView *view, dir_entry_t *entry,
 		void **data);
 static void merge_entries(dir_entry_t *new, const dir_entry_t *prev);
-static int correct_pos(FileView *view, int pos, int dist, int closes);
+static int correct_pos(FileView *view, int pos, int dist, int closest);
 static int rescue_from_empty_filelist(FileView *view);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
@@ -424,19 +424,18 @@ flist_ensure_pos_is_valid(FileView *view)
 void
 move_cursor_out_of(FileView *view, FileListScope scope)
 {
+	/* XXX: this functionality might be unnecessary now that we have directory
+	 *      merging. */
 	switch(scope)
 	{
 		case FLS_SELECTION:
 			move_cursor_out_of_scope(view, &is_entry_selected);
-			break;
+			return;
 		case FLS_MARKING:
 			move_cursor_out_of_scope(view, &is_entry_marked);
-			break;
-
-		default:
-			assert(0 && "Unhandled file list scope type");
-			break;
+			return;
 	}
+	assert(0 && "Unhandled file list scope type");
 }
 
 /* Ensures that cursor is moved outside of entries that satisfy the predicate if
@@ -1906,10 +1905,26 @@ flist_goto_by_path(FileView *view, const char path[])
 {
 	char full_path[PATH_MAX];
 	dir_entry_t *entry;
+	const char *const name = get_last_path_component(path);
 
 	get_current_full_path(view, sizeof(full_path), full_path);
 	if(stroscmp(full_path, path) == 0)
 	{
+		return;
+	}
+
+	if(flist_custom_active(view) && view->custom.tree_view &&
+			strcmp(name, "..") == 0)
+	{
+		int pos;
+		char dir_only[PATH_MAX];
+
+		snprintf(dir_only, sizeof(dir_only), "%.*s", (int)(name - path), path);
+		pos = flist_find_entry(view, name, dir_only);
+		if(pos != -1)
+		{
+			view->list_pos = pos;
+		}
 		return;
 	}
 
@@ -2223,7 +2238,7 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 	j = 0;
 	for(i = 0; i < *count; ++i)
 	{
-		int k, pos;
+		int k, pos, parent;
 		dir_entry_t *const entry = &entries[i];
 		const int nremoved = remove_subtrees ? (entry->child_count + 1) : 1;
 
@@ -2281,17 +2296,21 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 			free_dir_entry(view, &entry[k]);
 		}
 
+		if(view->list_pos >= i && view->list_pos < i + nremoved)
+		{
+			view->list_pos = j;
+		}
+
 		/* Add directory leaf if we just removed last child of the last of nodes
 		 * that wasn't filtered.  We can use one entry because if something was
 		 * filtered out, there is space for at least one extra entry. */
-		if(remove_subtrees && i - entry->child_pos == j - 1 &&
-				entries[i - entry->child_pos].child_count == 0)
+		parent = i - entry->child_pos - (i - j);
+		if(remove_subtrees && parent == j - 1 && entries[parent].child_count == 0)
 		{
 			char full_path[PATH_MAX];
 			char *path;
 
 			int pos = i + (entry->child_count + 1);
-			int parent = j - entry->child_pos;
 
 			get_full_path_of(&entries[j - 1], sizeof(full_path), full_path);
 			path = format_str("%s/..", full_path);
@@ -2521,7 +2540,7 @@ static void
 merge_lists(FileView *view, dir_entry_t *entries, int len)
 {
 	int i;
-	int closes_dist;
+	int closest_dist;
 	const int prev_pos = view->list_pos;
 	trie_t prev_names = trie_create();
 
@@ -2533,7 +2552,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 		update_string(&entries[i].name, NULL);
 	}
 
-	closes_dist = INT_MIN;
+	closest_dist = INT_MIN;
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		int dist;
@@ -2552,7 +2571,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 
 		/* Update cursor position in a smart way. */
 		dist = (dir_entry_t*)data - entries - prev_pos;
-		closes_dist = correct_pos(view, i, dist, closes_dist);
+		closest_dist = correct_pos(view, i, dist, closest_dist);
 	}
 
 	trie_free(prev_names);
@@ -2619,21 +2638,21 @@ merge_entries(dir_entry_t *new, const dir_entry_t *prev)
 }
 
 /* Corrects selected item position in the list.  Returns updated value of the
- * closes variable, which initially should be INT_MIN. */
+ * closest variable, which initially should be INT_MIN. */
 static int
-correct_pos(FileView *view, int pos, int dist, int closes)
+correct_pos(FileView *view, int pos, int dist, int closest)
 {
 	if(dist == 0)
 	{
-		closes = 0;
+		closest = 0;
 		view->list_pos = pos;
 	}
-	else if((closes < 0 && dist > closes) || (closes > 0 && dist < closes))
+	else if((closest < 0 && dist > closest) || (closest > 0 && dist < closest))
 	{
-		closes = dist;
+		closest = dist;
 		view->list_pos = pos;
 	}
-	return closes;
+	return closest;
 }
 
 /* Performs actions needed to rescue from abnormal situation with empty
@@ -3559,7 +3578,12 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 int
 flist_load_tree(FileView *view, const char path[])
 {
-	return flist_load_tree_internal(view, path, 0);
+	if(flist_load_tree_internal(view, path, 0) == 0)
+	{
+		ui_view_schedule_redraw(view);
+		return 0;
+	}
+	return 1;
 }
 
 /* Implements tree view (re)loading.  Returns zero on success, otherwise

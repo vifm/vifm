@@ -16,6 +16,7 @@
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/marks.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
 
@@ -348,6 +349,25 @@ TEST(excluded_paths_do_not_appear_after_view_reload)
 	validate_tree(&lwin);
 }
 
+TEST(excluding_all_children_places_a_dummy)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+
+	lwin.dir_entry[3].selected = 1;
+	lwin.dir_entry[4].selected = 1;
+	lwin.selected_files = 2;
+	lwin.list_pos = 4;
+
+	flist_custom_exclude(&lwin);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, lwin.filtered);
+	assert_int_equal(3, lwin.list_pos);
+	assert_int_equal(11, lwin.list_rows);
+}
+
 TEST(local_filter_does_not_block_visiting_directories)
 {
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
@@ -586,6 +606,46 @@ TEST(tree_reload_preserves_selection)
 	assert_true(lwin.dir_entry[1].selected);
 	assert_true(lwin.dir_entry[2].selected);
 	assert_int_equal(3, lwin.selected_files);
+}
+
+TEST(marks_unit_is_able_to_find_leafs)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+
+	set_spec_mark('<', lwin.dir_entry[1].origin, lwin.dir_entry[1].name);
+	assert_int_equal(1, check_mark_directory(&lwin, '<'));
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+}
+
+TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
+{
+	lwin.columns = columns_create();
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir/subsubdir", 0700));
+	create_file(SANDBOX_PATH "/dir/file");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+
+	lwin.list_pos = 3;
+	create_file(SANDBOX_PATH "/dir/subdir/subsubdir/file");
+	curr_stats.load_stage = 2;
+	load_saving_pos(&lwin, 1);
+	curr_stats.load_stage = 0;
+	assert_int_equal(4, lwin.list_pos);
+
+	assert_success(remove(SANDBOX_PATH "/dir/file"));
+	assert_success(remove(SANDBOX_PATH "/dir/subdir/subsubdir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/subdir/subsubdir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/subdir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
 }
 
 static void

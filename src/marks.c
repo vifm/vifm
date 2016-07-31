@@ -256,6 +256,7 @@ is_mark_points_to(const mark_t *mark, const char directory[], const char file[])
 int
 check_mark_directory(FileView *view, char m)
 {
+	int custom;
 	const mark_t *const mark = get_mark_by_name(m);
 
 	if(is_empty(mark))
@@ -263,7 +264,14 @@ check_mark_directory(FileView *view, char m)
 		return -1;
 	}
 
-	if(flist_custom_active(view))
+	custom = flist_custom_active(view);
+
+	if(custom && view->custom.tree_view && strcmp(mark->file, "..") == 0)
+	{
+		return flist_find_entry(view, mark->file, mark->directory);
+	}
+
+	if(custom)
 	{
 		dir_entry_t *entry;
 		char path[PATH_MAX];
