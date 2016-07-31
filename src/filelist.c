@@ -133,7 +133,7 @@ static void add_to_trie(trie_t trie, FileView *view, dir_entry_t *entry);
 static int is_in_trie(trie_t trie, FileView *view, dir_entry_t *entry,
 		void **data);
 static void merge_entries(dir_entry_t *new, const dir_entry_t *prev);
-static int correct_pos(FileView *view, int pos, int dist, int closes);
+static int correct_pos(FileView *view, int pos, int dist, int closest);
 static int rescue_from_empty_filelist(FileView *view);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
@@ -2520,7 +2520,7 @@ static void
 merge_lists(FileView *view, dir_entry_t *entries, int len)
 {
 	int i;
-	int closes_dist;
+	int closest_dist;
 	const int prev_pos = view->list_pos;
 	trie_t prev_names = trie_create();
 
@@ -2532,7 +2532,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 		update_string(&entries[i].name, NULL);
 	}
 
-	closes_dist = INT_MIN;
+	closest_dist = INT_MIN;
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		int dist;
@@ -2551,7 +2551,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 
 		/* Update cursor position in a smart way. */
 		dist = (dir_entry_t*)data - entries - prev_pos;
-		closes_dist = correct_pos(view, i, dist, closes_dist);
+		closest_dist = correct_pos(view, i, dist, closest_dist);
 	}
 
 	trie_free(prev_names);
@@ -2618,21 +2618,21 @@ merge_entries(dir_entry_t *new, const dir_entry_t *prev)
 }
 
 /* Corrects selected item position in the list.  Returns updated value of the
- * closes variable, which initially should be INT_MIN. */
+ * closest variable, which initially should be INT_MIN. */
 static int
-correct_pos(FileView *view, int pos, int dist, int closes)
+correct_pos(FileView *view, int pos, int dist, int closest)
 {
 	if(dist == 0)
 	{
-		closes = 0;
+		closest = 0;
 		view->list_pos = pos;
 	}
-	else if((closes < 0 && dist > closes) || (closes > 0 && dist < closes))
+	else if((closest < 0 && dist > closest) || (closest > 0 && dist < closest))
 	{
-		closes = dist;
+		closest = dist;
 		view->list_pos = pos;
 	}
-	return closes;
+	return closest;
 }
 
 /* Performs actions needed to rescue from abnormal situation with empty
