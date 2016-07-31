@@ -620,6 +620,34 @@ TEST(marks_unit_is_able_to_find_leafs)
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 }
 
+TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
+{
+	lwin.columns = columns_create();
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir/subsubdir", 0700));
+	create_file(SANDBOX_PATH "/dir/file");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+
+	lwin.list_pos = 3;
+	create_file(SANDBOX_PATH "/dir/subdir/subsubdir/file");
+	curr_stats.load_stage = 2;
+	load_saving_pos(&lwin, 1);
+	curr_stats.load_stage = 0;
+	assert_int_equal(4, lwin.list_pos);
+
+	assert_success(remove(SANDBOX_PATH "/dir/file"));
+	assert_success(remove(SANDBOX_PATH "/dir/subdir/subsubdir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/subdir/subsubdir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/subdir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
+}
+
 static void
 verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 {

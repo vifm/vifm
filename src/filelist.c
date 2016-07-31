@@ -1905,10 +1905,26 @@ flist_goto_by_path(FileView *view, const char path[])
 {
 	char full_path[PATH_MAX];
 	dir_entry_t *entry;
+	const char *const name = get_last_path_component(path);
 
 	get_current_full_path(view, sizeof(full_path), full_path);
 	if(stroscmp(full_path, path) == 0)
 	{
+		return;
+	}
+
+	if(flist_custom_active(view) && view->custom.tree_view &&
+			strcmp(name, "..") == 0)
+	{
+		int pos;
+		char dir_only[PATH_MAX];
+
+		snprintf(dir_only, sizeof(dir_only), "%.*s", (int)(name - path), path);
+		pos = flist_find_entry(view, name, dir_only);
+		if(pos != -1)
+		{
+			view->list_pos = pos;
+		}
 		return;
 	}
 
