@@ -33,7 +33,7 @@ cache:
 script:
  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then
      pip install --user cpp-coveralls &&
-     autoreconf && (
+     ./fix-timestamps fast && (
        if [ "$CC" = gcc ]; then
          ./configure --enable-coverage;
        else
