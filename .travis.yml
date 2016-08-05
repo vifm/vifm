@@ -1,19 +1,39 @@
+language: c
+sudo: false
+
 os:
   - linux
   - osx
 
-language: c
-
-sudo: false
+compiler:
+ - gcc
+ - clang
 
 env:
   global:
     - secure: "Ejc9hqPE/TQ1HiSao3FHZ8piTmpCVuQthPYUuFv8Yz7GDbia7yx85b9IHd17wVmg1rGHaFed9hvSesbfFu82h86NYLmnQJGvA4XAptpBw8Z3621U0ar2QXHuaY7uAaKdeAC5NwIS6/DiufEqGtQJrNNs+5pLEATGOuoO+QugdTI="
 
+addons:
+  apt:
+    packages:
+      - python-pip
+  coverity_scan:
+    project:
+      name: vifm/vifm
+      version: 0.8.2+
+      description: "TUI file manager with vi like key bindings."
+    notification_email: xaizek@openmailbox.org
+    build_command_prepend: ./fix-timestamps fast && ./configure
+    build_command: make -j 3
+    branch_pattern: coverity-scan
+
+cache:
+  - pip
+
 script:
  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then
      pip install --user cpp-coveralls &&
-     autoreconf && (
+     ./fix-timestamps fast && (
        if [ "$CC" = gcc ]; then
          ./configure --enable-coverage;
        else
@@ -24,34 +44,12 @@ script:
      make check;
    fi
 
-compiler:
- - gcc
- - clang
-
 after_success:
  - if [ "$COVERITY_SCAN_BRANCH" != 1 -a "$CC" = gcc ]; then
-     coveralls --encoding iso-8859-1 --build-root src/ --gcov-options '\-p';
+     coveralls --encoding iso-8859-1 --build-root src/ --exclude tests --gcov-options '\-p';
    fi
 
 notifications:
   email:
     recipients:
       - xaizek@openmailbox.org
-
-addons:
-  apt:
-    packages:
-      - python-pip
-  coverity_scan:
-    project:
-      name: vifm/vifm
-      version: 0.8.1a
-      description: "TUI file manager with vi like key bindings."
-    notification_email: xaizek@openmailbox.org
-    build_command_prepend: ./fix-timestamps fast && ./configure
-    build_command: make -j 3
-    branch_pattern: coverity-scan
-
-cache:
-  directories:
-    - $HOME/.cache/pip
