@@ -53,5 +53,4 @@ addons:
     branch_pattern: coverity-scan
 
 cache:
-  directories:
-    - $HOME/.cache/pip
+  - pip
