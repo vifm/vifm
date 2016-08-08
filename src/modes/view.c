@@ -1040,7 +1040,10 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	{
 		if(is_dir(file_to_view))
 		{
+			ui_cancellation_reset();
+			ui_cancellation_enable();
 			fp = qv_view_dir(file_to_view);
+			ui_cancellation_disable();
 		}
 		else
 		{

@@ -192,7 +192,11 @@ view_file(const char path[])
 
 	if(viewer == NULL && is_dir(path))
 	{
+		ui_cancellation_reset();
+		ui_cancellation_enable();
 		fp = view_dir(path, ui_qv_height(other_view));
+		ui_cancellation_disable();
+
 		if(fp == NULL)
 		{
 			write_message("Failed to view directory");
@@ -270,9 +274,14 @@ view_dir(const char path[], int max_lines)
 		if(print_dir_tree(&s, path, 0) == 0 && s.n != 0)
 		{
 			/* Print summary only if we visited the whole subtree. */
-			fprintf(fp, "\n%d director%s, %d file%s",
+			fprintf(fp, "%s\n%d director%s, %d file%s",
+					ui_cancellation_requested() ? "(cancelled)\n" : "",
 					s.ndirs, (s.ndirs == 1) ? "y" : "ies",
 					s.nfiles, (s.nfiles == 1) ? "" : "s");
+		}
+		else if(ui_cancellation_requested())
+		{
+			fputs("(cancelled)", fp);
 		}
 
 		if(s.n == 0)
@@ -312,7 +321,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 	}
 
 	reached_limit = 0;
-	for(i = 0; i < len && !reached_limit; ++i)
+	for(i = 0; i < len && !reached_limit && !ui_cancellation_requested(); ++i)
 	{
 		const int last_entry = (i == len - 1);
 		char *const full_path = format_str("%s/%s", path, lst[i]);
