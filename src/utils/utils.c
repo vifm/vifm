@@ -98,7 +98,7 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 	ui_cancellation_enable();
 
 	wait_for_data_from(pid, file, 0);
-	lines = read_stream_lines(file, &nlines, 1);
+	lines = read_stream_lines(file, &nlines, 1, NULL, NULL);
 
 	ui_cancellation_disable();
 	fclose(file);

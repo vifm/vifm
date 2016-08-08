@@ -219,11 +219,12 @@ read_file_lines(FILE *f, int *nlines)
 }
 
 char **
-read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic)
+read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic, progress_cb cb,
+		const void *arg)
 {
 	int null;
 	size_t text_len;
-	char *const text = read_nonseekable_stream(f, &text_len);
+	char *const text = read_nonseekable_stream(f, &text_len, cb, arg);
 	if(text == NULL)
 	{
 		return NULL;
@@ -233,7 +234,7 @@ read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic)
 }
 
 char *
-read_nonseekable_stream(FILE *fp, size_t *read)
+read_nonseekable_stream(FILE *fp, size_t *read, progress_cb cb, const void *arg)
 {
 	enum { PIECE_LEN = 4096 };
 	char *content = malloc(PIECE_LEN + 1);
@@ -254,6 +255,11 @@ read_nonseekable_stream(FILE *fp, size_t *read)
 
 			content = last_allocated_block;
 			len += piece_len;
+
+			if(cb != NULL)
+			{
+				cb(arg);
+			}
 		}
 		content[len] = '\0';
 

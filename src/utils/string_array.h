@@ -31,6 +31,10 @@ typedef struct
 }
 strlist_t;
 
+/* Type of callback function to get notification on reading another portion of
+ * data. */
+typedef void (*progress_cb)(const void *arg);
+
 /* Input pointers can be NULL.  Returns new length of the array. */
 int add_to_string_array(char ***array, int len, int count, ...);
 
@@ -84,13 +88,15 @@ char ** read_file_lines(FILE *f, int *nlines);
  * strings.  The flag enables heuristic according to which if stream contents
  * includes null character, it's taken as a separator instead of regular newline
  * characters.  Returns NULL for an empty file stream. */
-char ** read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic);
+char ** read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic,
+		progress_cb cb, const void *arg);
 
 /* Reads content of the fp stream that doesn't support seek operation (e.g. it
  * points to a pipe) until end-of-file into null terminated string.  Returns
  * string of length *read to be freed by caller on success, otherwise NULL is
  * returned. */
-char * read_nonseekable_stream(FILE *fp, size_t *read);
+char * read_nonseekable_stream(FILE *fp, size_t *read, progress_cb cb,
+		const void *arg);
 
 /* Overwrites file specified by filepath with lines.  Returns zero on success,
  * otherwise non-zero is returned and errno contains error code. */

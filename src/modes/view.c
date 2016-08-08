@@ -1088,7 +1088,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 
 		ui_cancellation_reset();
 		ui_cancellation_enable();
-		vi->lines = read_stream_lines(fp, &vi->nlines, 0);
+		vi->lines = read_stream_lines(fp, &vi->nlines, 0, NULL, NULL);
 		ui_cancellation_disable();
 	}
 
