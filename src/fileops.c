@@ -188,8 +188,8 @@ static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
-static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
-				const char descr[], int reg_name);
+static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
+		const char descr[], int reg_name);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char dst_dir[]);
@@ -2020,26 +2020,26 @@ handle_prompt_response(const char fname[], char response)
 }
 
 int
-put_files(FileView *view, int reg_name, int move)
+put_files(FileView *view, int at, int reg_name, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 	const char *const descr = move ? "Putting" : "putting";
-	return initiate_put_files(view, op, descr, reg_name);
+	return initiate_put_files(view, at, op, descr, reg_name);
 }
 
 int
-put_files_bg(FileView *view, int reg_name, int move)
+put_files_bg(FileView *view, int at, int reg_name, int move)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	size_t task_desc_len;
 	int i;
 	bg_args_t *args;
 	reg_t *reg;
-	const char *const dst_dir = get_dst_dir(view, -1);
+	const char *const dst_dir = get_dst_dir(view, at);
 
 	/* Check that operation generally makes sense given our input. */
 
-	if(!can_add_files_to_view(view, -1))
+	if(!can_add_files_to_view(view, at))
 	{
 		return 0;
 	}
@@ -2454,18 +2454,18 @@ int
 put_links(FileView *view, int reg_name, int relative)
 {
 	const CopyMoveLikeOp op = relative ? CMLO_LINK_REL : CMLO_LINK_ABS;
-	return initiate_put_files(view, op, "Symlinking", reg_name);
+	return initiate_put_files(view, -1, op, "Symlinking", reg_name);
 }
 
 /* Performs preparations necessary for putting files/links.  Returns new value
  * for save_msg flag. */
 static int
-initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
-		int reg_name)
+initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
+		const char descr[], int reg_name)
 {
 	reg_t *reg;
 	int i;
-	const char *const dst_dir = get_dst_dir(view, -1);
+	const char *const dst_dir = get_dst_dir(view, at);
 
 	if(!can_add_files_to_view(view, -1))
 	{

@@ -66,13 +66,13 @@ options_prompt_overwrite(const char title[], const char message[],
 
 TEST(put_files_bg_fails_on_wrong_register)
 {
-	assert_true(put_files_bg(&lwin, -1, 0));
+	assert_true(put_files_bg(&lwin, -1, -1, 0));
 	wait_for_bg();
 }
 
 TEST(put_files_bg_fails_on_empty_register)
 {
-	assert_true(put_files_bg(&lwin, 'a', 0));
+	assert_true(put_files_bg(&lwin, -1, 'a', 0));
 	wait_for_bg();
 }
 
@@ -81,7 +81,7 @@ TEST(put_files_bg_fails_on_identical_names_in_a_register)
 	assert_success(regs_append('a', TEST_DATA_PATH "/existing-files/a"));
 	assert_success(regs_append('a', TEST_DATA_PATH "/rename/a"));
 
-	assert_true(put_files_bg(&lwin, 'a', 0));
+	assert_true(put_files_bg(&lwin, -1, 'a', 0));
 	wait_for_bg();
 }
 
@@ -91,7 +91,7 @@ TEST(put_files_bg_fails_on_file_name_conflict)
 
 	assert_success(regs_append('a', TEST_DATA_PATH "/rename/a"));
 
-	assert_true(put_files_bg(&lwin, 'a', 0));
+	assert_true(put_files_bg(&lwin, -1, 'a', 0));
 	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/a"));
@@ -101,7 +101,7 @@ TEST(put_files_bg_copies_files)
 {
 	assert_success(regs_append('a', TEST_DATA_PATH "/existing-files/a"));
 
-	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	assert_int_equal(0, put_files_bg(&lwin, -1, 'a', 0));
 	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/a"));
@@ -116,7 +116,7 @@ TEST(put_files_bg_skips_nonexistent_source_files)
 	assert_success(regs_append('a', SANDBOX_PATH "/dir/b"));
 	assert_success(unlink(SANDBOX_PATH "/dir/b"));
 
-	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	assert_int_equal(0, put_files_bg(&lwin, -1, 'a', 0));
 	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/a"));
@@ -132,7 +132,7 @@ TEST(put_files_bg_demangles_names_of_trashed_files)
 
 	assert_success(regs_append('a', SANDBOX_PATH "/trash/000_b"));
 
-	assert_int_equal(0, put_files_bg(&lwin, 'a', 1));
+	assert_int_equal(0, put_files_bg(&lwin, -1, 'a', 1));
 	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/b"));
@@ -149,25 +149,24 @@ TEST(put_files_copies_files_according_to_tree_structure)
 
 	assert_success(regs_append('a', TEST_DATA_PATH "/existing-files/a"));
 
-	/* Copy at the top level. */
+	/* Copy at the top level.  Set at to -1. */
 
 	lwin.list_pos = 0;
-	(void)put_files(&lwin, 'a', 0);
+	(void)put_files(&lwin, -1, 'a', 0);
 	assert_success(unlink(SANDBOX_PATH "/a"));
 
 	lwin.list_pos = 0;
-	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	assert_int_equal(0, put_files_bg(&lwin, -1, 'a', 0));
 	wait_for_bg();
 	assert_success(unlink(SANDBOX_PATH "/a"));
 
-	/* Copy at nested level. */
+	/* Copy at nested level.  Set at to desired position. */
 
-	lwin.list_pos = 1;
-	(void)put_files(&lwin, 'a', 0);
+	(void)put_files(&lwin, 1, 'a', 0);
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 
-	lwin.list_pos = 1;
-	assert_int_equal(0, put_files_bg(&lwin, 'a', 0));
+	/* Here target position in 100, which should become 1 automatically. */
+	assert_int_equal(0, put_files_bg(&lwin, 100, 'a', 0));
 	wait_for_bg();
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 
@@ -206,7 +205,7 @@ TEST(overwrite_request_accounts_for_target_file_rename)
 	init_fileops(&line_prompt, &options_prompt_rename);
 
 	saved_cwd = save_cwd();
-	(void)put_files(&lwin, 'a', 0);
+	(void)put_files(&lwin, -1, 'a', 0);
 	restore_cwd(saved_cwd);
 
 	assert_success(stat(SANDBOX_PATH "/binary-data", &st));

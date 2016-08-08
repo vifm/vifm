@@ -3269,10 +3269,10 @@ put_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->bg)
 	{
-		return put_files_bg(curr_view, reg, cmd_info->emark) != 0;
+		return put_files_bg(curr_view, -1, reg, cmd_info->emark) != 0;
 	}
 
-	return put_files(curr_view, reg, cmd_info->emark) != 0;
+	return put_files(curr_view, -1, reg, cmd_info->emark) != 0;
 }
 
 static int
