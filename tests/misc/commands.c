@@ -22,6 +22,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/ops.h"
+#include "../../src/registers.h"
 #include "../../src/undo.h"
 
 #include "utils.h"
@@ -375,6 +376,24 @@ TEST(tr_extends_second_field)
 
 	snprintf(path, sizeof(path), "%s/a_b", sandbox);
 	assert_success(remove(path));
+}
+
+TEST(putting_files_works)
+{
+	regs_init();
+
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+
+	regs_append(DEFAULT_REG_NAME, TEST_DATA_PATH "/read/binary-data");
+	lwin.list_pos = 1;
+
+	assert_true(exec_commands("put", &lwin, CIT_COMMAND) != 0);
+
+	assert_success(unlink(SANDBOX_PATH "/empty-dir/binary-data"));
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+
+	regs_reset();
 }
 
 TEST(put_bg_cmd_is_parsed_correctly)

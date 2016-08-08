@@ -605,7 +605,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &pushd_cmd,       .min_args = 0,   .max_args = 2, },
 	{ .name = "put",               .abbr = "pu",    .id = -1,
 	  .descr = "paste files from a register",
-	  .flags = HAS_EMARK | HAS_BG_FLAG,
+	  .flags = HAS_EMARK | HAS_RANGE | HAS_BG_FLAG,
 	  .handler = &put_cmd,         .min_args = 0,   .max_args = 1, },
 	{ .name = "pwd",               .abbr = "pw",    .id = -1,
 	  .descr = "display current location",
@@ -3257,6 +3257,9 @@ static int
 put_cmd(const cmd_info_t *cmd_info)
 {
 	int reg = DEFAULT_REG_NAME;
+	const int at = (cmd_info->end == NOT_DEF)
+	             ? curr_view->list_pos
+	             : cmd_info->end;
 
 	if(cmd_info->argc == 1)
 	{
@@ -3269,10 +3272,10 @@ put_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->bg)
 	{
-		return put_files_bg(curr_view, -1, reg, cmd_info->emark) != 0;
+		return put_files_bg(curr_view, at, reg, cmd_info->emark) != 0;
 	}
 
-	return put_files(curr_view, -1, reg, cmd_info->emark) != 0;
+	return put_files(curr_view, at, reg, cmd_info->emark) != 0;
 }
 
 static int
