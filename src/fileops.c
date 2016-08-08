@@ -4025,15 +4025,15 @@ go_to_first_file(FileView *view, char **names, int count)
 }
 
 int
-make_dirs(FileView *view, char **names, int count, int create_parent)
+make_dirs(FileView *view, int at, char **names, int count, int create_parent)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
 	int n;
 	void *cp;
-	const char *const dst_dir = get_dst_dir(view, -1);
+	const char *const dst_dir = get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view, -1))
+	if(!can_add_files_to_view(view, at))
 	{
 		return 1;
 	}

@@ -155,8 +155,10 @@ int cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 
 /* Creates directories, possibly including intermediate ones.  Can modify
- * strings in the names array.  Returns new value for save_msg flag. */
-int make_dirs(FileView *view, char *names[], int count, int create_parent);
+ * strings in the names array.  at specifies index of entry to be used to obtain
+ * destination path.  Returns new value for save_msg flag. */
+int make_dirs(FileView *view, int at, char *names[], int count,
+		int create_parent);
 
 int make_files(FileView *view, char **names, int count);
 
