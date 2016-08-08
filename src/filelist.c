@@ -3605,7 +3605,9 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 
 	flist_custom_start(view, "tree");
 
+	show_progress("Building tree...", 0);
 	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
+	clean_status_bar();
 
 	if(ui_cancellation_requested())
 	{
@@ -3716,6 +3718,8 @@ add_files_recursively(FileView *view, const char path[], trie_t excluded_paths,
 		}
 
 		free(full_path);
+
+		show_progress("Building tree...", 10000);
 	}
 
 	free_string_array(lst, len);
