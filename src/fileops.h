@@ -107,13 +107,13 @@ void change_group(void);
 int change_link(FileView *view);
 
 /* Puts files from specified register into current directory.  at specifies
- * index of entry to be used to obtain destination path.  Returns new value
- * for save_msg flag. */
+ * index of entry to be used to obtain destination path, -1 means current
+ * position.  Returns new value for save_msg flag. */
 int put_files(FileView *view, int at, int reg_name, int move);
 
 /* Starts background task that puts files from specified register into current
  * directory.  at specifies index of entry to be used to obtain destination
- * path.  Returns new value for save_msg flag. */
+ * path, -1 means current position.  Returns new value for save_msg flag. */
 int put_files_bg(FileView *view, int at, int reg_name, int move);
 
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
@@ -156,11 +156,14 @@ int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 
 /* Creates directories, possibly including intermediate ones.  Can modify
  * strings in the names array.  at specifies index of entry to be used to obtain
- * destination path.  Returns new value for save_msg flag. */
+ * destination path, -1 means current position.  Returns new value for save_msg
+ * flag. */
 int make_dirs(FileView *view, int at, char *names[], int count,
 		int create_parent);
 
-int make_files(FileView *view, char **names, int count);
+/* Creates files.  at specifies index of entry to be used to obtain destination
+ * path, -1 means current position.  Returns new value for save_msg flag. */
+int make_files(FileView *view, int at, char *names[], int count);
 
 /* Returns new value for save_msg flag. */
 int restore_files(FileView *view);

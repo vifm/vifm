@@ -29,7 +29,7 @@ TEST(make_files_fails_on_empty_file_name)
 	char name[] = "";
 	char *names[] = { name };
 
-	assert_true(make_files(&lwin, names, 1));
+	assert_true(make_files(&lwin, -1, names, 1));
 }
 
 TEST(make_files_fails_on_name_with_slash)
@@ -37,7 +37,7 @@ TEST(make_files_fails_on_name_with_slash)
 	char name[] = "a/";
 	char *names[] = { name };
 
-	assert_true(make_files(&lwin, names, 1));
+	assert_true(make_files(&lwin, -1, names, 1));
 	assert_failure(unlink("a"));
 }
 
@@ -46,7 +46,7 @@ TEST(make_files_fails_on_file_name_dups)
 	char name[] = "name";
 	char *names[] = { name, name };
 
-	assert_true(make_files(&lwin, names, 2));
+	assert_true(make_files(&lwin, -1, names, 2));
 	assert_failure(unlink(name));
 }
 
@@ -57,7 +57,7 @@ TEST(make_files_fails_if_file_exists)
 
 	create_empty_file("a");
 
-	assert_true(make_files(&lwin, names, 1));
+	assert_true(make_files(&lwin, -1, names, 1));
 
 	assert_success(unlink("a"));
 }
@@ -68,7 +68,7 @@ TEST(make_files_creates_files)
 	char name_b[] = "b";
 	char *names[] = { name_a, name_b };
 
-	(void)make_files(&lwin, names, 2);
+	(void)make_files(&lwin, -1, names, 2);
 
 	assert_success(unlink("a"));
 	assert_success(unlink("b"));
@@ -85,11 +85,12 @@ TEST(make_files_considers_tree_structure)
 
 	flist_load_tree(&lwin, ".");
 
+	/* Set at to -1. */
 	lwin.list_pos = 0;
-	(void)make_files(&lwin, names, 1);
+	(void)make_files(&lwin, -1, names, 1);
 
-	lwin.list_pos = 1;
-	(void)make_files(&lwin, names, 1);
+	/* Set at to desired position. */
+	(void)make_files(&lwin, 1, names, 1);
 
 	/* Remove both files afterward to make sure they can both be created at the
 	 * same time. */

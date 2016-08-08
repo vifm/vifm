@@ -703,7 +703,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &sync_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "touch",             .abbr = NULL,    .id = COM_TOUCH,
 	  .descr = "create files",
-	  .flags = HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
+	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
 	  .handler = &touch_cmd,       .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "tr",                .abbr = NULL,    .id = COM_TR,
 	  .descr = "replace characters in file names",
@@ -3798,10 +3798,12 @@ sync_filters(void)
 	ui_view_schedule_reload(other_view);
 }
 
+/* Creates files. */
 static int
 touch_cmd(const cmd_info_t *cmd_info)
 {
-	return make_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
+	const int at = get_at(curr_view, cmd_info);
+	return make_files(curr_view, at, cmd_info->argv, cmd_info->argc) != 0;
 }
 
 /* Gets destination position based range.  Returns the position. */

@@ -662,6 +662,14 @@ TEST(grep_command, IF(not_windows))
 	opt_handlers_teardown();
 }
 
+TEST(touch)
+{
+	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
+	(void)exec_commands("touch file", &lwin, CIT_COMMAND);
+
+	assert_success(remove(SANDBOX_PATH "/file"));
+}
+
 static void
 check_filetype(void)
 {

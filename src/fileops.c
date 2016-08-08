@@ -4103,15 +4103,15 @@ make_dirs(FileView *view, int at, char **names, int count, int create_parent)
 }
 
 int
-make_files(FileView *view, char **names, int count)
+make_files(FileView *view, int at, char *names[], int count)
 {
 	int i;
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
-	const char *const dst_dir = get_dst_dir(view, -1);
+	const char *const dst_dir = get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view, -1))
+	if(!can_add_files_to_view(view, at))
 	{
 		return 0;
 	}
