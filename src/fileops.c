@@ -266,6 +266,7 @@ static struct
 	int merge_all;     /* Merge all conflicting directories. */
 	ops_t *ops;        /* Currently running operation. */
 	char *dest_name;   /* Name of destination file. */
+	char *dest_dir;    /* Destination path. */
 }
 put_confirm;
 
@@ -2523,7 +2524,9 @@ static void
 reset_put_confirm(OPS main_op, const char descr[], const char dst_dir[])
 {
 	free(put_confirm.dest_name);
+	free(put_confirm.dest_dir);
 	memset(&put_confirm, 0, sizeof(put_confirm));
+	put_confirm.dest_dir = strdup(dst_dir);
 
 	put_confirm.ops = get_ops(main_op, descr, dst_dir, dst_dir);
 }
@@ -2557,7 +2560,7 @@ put_files_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(vifm_chdir(get_dst_dir(view)) != 0)
+	if(vifm_chdir(put_confirm.dest_dir) != 0)
 	{
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
@@ -2604,7 +2607,7 @@ put_next(int force)
 {
 	char *filename;
 	const char *dest_name;
-	const char *dst_dir = get_dst_dir(put_confirm.view);
+	const char *dst_dir = put_confirm.dest_dir;
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
