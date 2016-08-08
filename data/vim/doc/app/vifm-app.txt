@@ -1869,8 +1869,9 @@ order using the '.' operator.  Any whitespace is ignored.
 :mes[sages]                                    *vifm-:messages* *vifm-:mes*
     display previously given status bar messages (up to 50).
 
-:mkdir[!] dir...                               *vifm-:mkdir*
-    creates directories with given names.  "!" means make parent directories
+:[line]mkdir[!] dir...                         *vifm-:mkdir*
+    creates directories with given names.  The [line] can be used to pick
+    node in a tree-view.  "!" means make parent directories
     as needed.  Macros are expanded.
 
                                                *vifm-:move* *vifm-:m*

@@ -15,8 +15,8 @@
 	View current directory on ".." for quickview/view mode.  Thanks to
 	filterfalse.
 
-	Make :put accept [line] range, which can be used to specify target position
-	in tree-view.  Thanks to filterfalse.
+	Make :put and :mkdir accept [line] range, which can be used to specify
+	target position in tree-view.  Thanks to filterfalse.
 
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
