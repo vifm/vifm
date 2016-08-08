@@ -192,7 +192,7 @@ static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
 				const char descr[], int reg_name);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
-		const char base_dir[], const char target_dir[]);
+		const char dst_dir[]);
 static int put_files_i(FileView *view, int start);
 static int put_next(int force);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
@@ -2478,7 +2478,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(cmlo_to_op(op), descr, dst_dir, dst_dir);
+	reset_put_confirm(cmlo_to_op(op), descr, dst_dir);
 
 	put_confirm.op = op;
 	put_confirm.reg = reg;
@@ -2520,13 +2520,12 @@ cmlo_to_op(CopyMoveLikeOp op)
 
 /* Resets state of global put_confirm variable in this module. */
 static void
-reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
-		const char target_dir[])
+reset_put_confirm(OPS main_op, const char descr[], const char dst_dir[])
 {
 	free(put_confirm.dest_name);
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
-	put_confirm.ops = get_ops(main_op, descr, base_dir, target_dir);
+	put_confirm.ops = get_ops(main_op, descr, dst_dir, dst_dir);
 }
 
 /* Returns new value for save_msg flag. */
