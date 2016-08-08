@@ -23,6 +23,8 @@
 	Partially return progress report for menus.  Was disabled by introduction
 	of null byte heuristic.
 
+	Accept paths in :touch, not just file names.  Thanks to filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

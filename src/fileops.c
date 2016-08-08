@@ -4116,7 +4116,7 @@ make_files(FileView *view, int at, char *names[], int count)
 		return 0;
 	}
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; ++i)
 	{
 		if(is_in_string_array(names, i, names[i]))
 		{
@@ -4126,11 +4126,6 @@ make_files(FileView *view, int at, char *names[], int count)
 		if(names[i][0] == '\0')
 		{
 			status_bar_errorf("Name #%d is empty", i + 1);
-			return 1;
-		}
-		if(contains_slash(names[i]))
-		{
-			status_bar_errorf("Name \"%s\" contains slash", names[i]);
 			return 1;
 		}
 		if(path_exists_at(dst_dir, names[i], NODEREF))
@@ -4152,7 +4147,8 @@ make_files(FileView *view, int at, char *names[], int count)
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
-		snprintf(full, sizeof(full), "%s/%s", dst_dir, names[i]);
+		to_canonic_path(names[i], dst_dir, full, sizeof(full));
+
 		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
 		{
 			add_operation(OP_MKFILE, NULL, NULL, full, "");

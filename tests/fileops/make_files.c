@@ -32,15 +32,6 @@ TEST(make_files_fails_on_empty_file_name)
 	assert_true(make_files(&lwin, -1, names, 1));
 }
 
-TEST(make_files_fails_on_name_with_slash)
-{
-	char name[] = "a/";
-	char *names[] = { name };
-
-	assert_true(make_files(&lwin, -1, names, 1));
-	assert_failure(unlink("a"));
-}
-
 TEST(make_files_fails_on_file_name_dups)
 {
 	char name[] = "name";
@@ -74,6 +65,16 @@ TEST(make_files_creates_files)
 	assert_success(unlink("b"));
 }
 
+TEST(make_files_creates_files_by_paths)
+{
+	char name_a[] = SANDBOX_PATH "/a";
+	char *names[] = { name_a };
+
+	(void)make_files(&lwin, -1, names, 1);
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+}
+
 TEST(make_files_considers_tree_structure)
 {
 	char name[] = "new-file";
@@ -83,7 +84,7 @@ TEST(make_files_considers_tree_structure)
 
 	create_empty_dir("dir");
 
-	flist_load_tree(&lwin, ".");
+	flist_load_tree(&lwin, lwin.curr_dir);
 
 	/* Set at to -1. */
 	lwin.list_pos = 0;
