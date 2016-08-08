@@ -846,7 +846,7 @@ clear_num_window(void)
 void
 show_progress(const char msg[], int period)
 {
-	static char marks[] = {'|', '/', '-', '\\'};
+	static char marks[] = { '|', '/', '-', '\\' };
 	static int mark = 0;
 	static int count = 1;
 	static int total = 0;
@@ -870,15 +870,15 @@ show_progress(const char msg[], int period)
 	++total;
 
 	/* Skip intermediate updates to do not hammer UI with refreshes. */
-	if(period != 1 && count%period != 1)
+	if(period != 1 && count%abs(period) != 1)
 	{
 		return;
 	}
 	count = 1;
 
-	/* Assume that period equal to one means that message already contains counter
-	 * (maybe along with total number). */
-	if(period == 1)
+	/* Assume that period equal to or less than one means that message already
+	 * contains counter (maybe along with total number) or doesn't need one. */
+	if(period <= 1)
 	{
 		ui_sb_quick_msgf("%s %c", msg, marks[mark]);
 	}
