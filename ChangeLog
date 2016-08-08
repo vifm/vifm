@@ -20,6 +20,9 @@
 
 	Enable cancellation of tree preview construction.  Thanks to filterfalse.
 
+	Partially return progress report for menus.  Was disabled by introduction
+	of null byte heuristic.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
