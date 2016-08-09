@@ -408,7 +408,8 @@ void clear_num_window(void);
 
 /* Displays progress on the status bar, not updating it frequently.  msg can't
  * be NULL.  period - how often status bar should be updated.  If period equals
- * 0 inner counter is reset, do this on start of operation. */
+ * 0 inner counter is reset, do this on start of operation.  For period <= 1,
+ * it's absolute value is used and count is not printed. */
 void show_progress(const char msg[], int period);
 
 void redraw_lists(void);

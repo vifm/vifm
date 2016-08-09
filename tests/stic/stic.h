@@ -146,7 +146,7 @@ struct stic_test_data
 {
     const char *const n;
     const char *const f;
-    void (*const t)(void);
+    stic_void_void t;
     int (*const p)(void);
 };
 
@@ -283,7 +283,8 @@ static void (*stic_teardown_once_func)(void);
 
 static void stic_fixture(void)
 {
-    extern const char *stic_current_test;
+    extern const char *stic_current_test_name;
+    extern stic_void_void stic_current_test;
 
     const char *fixture_name = NULL;
     size_t i;
@@ -311,7 +312,8 @@ static void stic_fixture(void)
 
     if(stic_setup_once_func != NULL)
     {
-        stic_current_test = "<setup once>";
+        stic_current_test_name = "<setup once>";
+        stic_current_test = stic_setup_once_func;
         stic_setup_once_func();
     }
 
@@ -322,7 +324,8 @@ static void stic_fixture(void)
         if(td->p != NULL && !td->p()) continue;
         if(!stic_should_run(fixture_name, td->n)) continue;
 
-        stic_current_test = td->n;
+        stic_current_test_name = td->n;
+        stic_current_test = td->t;
         stic_suite_setup();
         stic_setup();
         td->t();
@@ -333,7 +336,8 @@ static void stic_fixture(void)
 
     if(stic_teardown_once_func != NULL)
     {
-        stic_current_test = "<teardown once>";
+        stic_current_test_name = "<teardown once>";
+        stic_current_test = stic_teardown_once_func;
         stic_teardown_once_func();
     }
     test_fixture_end();

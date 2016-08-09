@@ -1040,7 +1040,10 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	{
 		if(is_dir(file_to_view))
 		{
+			ui_cancellation_reset();
+			ui_cancellation_enable();
 			fp = qv_view_dir(file_to_view);
+			ui_cancellation_disable();
 		}
 		else
 		{
@@ -1085,7 +1088,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 
 		ui_cancellation_reset();
 		ui_cancellation_enable();
-		vi->lines = read_stream_lines(fp, &vi->nlines, 0);
+		vi->lines = read_stream_lines(fp, &vi->nlines, 0, NULL, NULL);
 		ui_cancellation_disable();
 	}
 
@@ -1506,8 +1509,7 @@ static int
 get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-
-	get_full_path_of(entry, buf_len, buf);
+	qv_get_path_to_explore(entry, buf, buf_len);
 
 	switch(entry->type)
 	{

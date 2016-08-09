@@ -317,7 +317,8 @@ system_builtin(const call_info_t *call_info)
 	free(cmd);
 
 	ui_cancellation_enable();
-	var_val.string = read_nonseekable_stream(cmd_stream, &cmd_out_len);
+	var_val.string = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL,
+			NULL);
 	ui_cancellation_disable();
 	fclose(cmd_stream);
 

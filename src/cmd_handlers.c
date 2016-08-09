@@ -247,6 +247,7 @@ static void sync_location(const char path[], int cv, int sync_cursor_pos,
 static void sync_local_opts(int defer_slow);
 static void sync_filters(void);
 static int touch_cmd(const cmd_info_t *cmd_info);
+static int get_at(const FileView *view, const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int trashes_cmd(const cmd_info_t *cmd_info);
 static int tree_cmd(const cmd_info_t *cmd_info);
@@ -548,7 +549,8 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &messages_cmd,    .min_args = 0,   .max_args = 0, },
 	{ .name = "mkdir",             .abbr = NULL,    .id = COM_MKDIR,
 	  .descr = "create directories",
-	  .flags = HAS_EMARK | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
+	  .flags = HAS_EMARK | HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT
+	         | HAS_MACROS_FOR_CMD,
 	  .handler = &mkdir_cmd,       .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "mmap",              .abbr = "mm",    .id = COM_MMAP,
 	  .descr = "map keys in menu mode",
@@ -605,7 +607,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &pushd_cmd,       .min_args = 0,   .max_args = 2, },
 	{ .name = "put",               .abbr = "pu",    .id = -1,
 	  .descr = "paste files from a register",
-	  .flags = HAS_EMARK | HAS_BG_FLAG,
+	  .flags = HAS_EMARK | HAS_RANGE | HAS_BG_FLAG,
 	  .handler = &put_cmd,         .min_args = 0,   .max_args = 1, },
 	{ .name = "pwd",               .abbr = "pw",    .id = -1,
 	  .descr = "display current location",
@@ -701,7 +703,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &sync_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "touch",             .abbr = NULL,    .id = COM_TOUCH,
 	  .descr = "create files",
-	  .flags = HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
+	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
 	  .handler = &touch_cmd,       .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "tr",                .abbr = NULL,    .id = COM_TR,
 	  .descr = "replace characters in file names",
@@ -3069,7 +3071,8 @@ messages_cmd(const cmd_info_t *cmd_info)
 static int
 mkdir_cmd(const cmd_info_t *cmd_info)
 {
-	return make_dirs(curr_view, cmd_info->argv, cmd_info->argc,
+	const int at = get_at(curr_view, cmd_info);
+	return make_dirs(curr_view, at, cmd_info->argv, cmd_info->argc,
 			cmd_info->emark) != 0;
 }
 
@@ -3257,6 +3260,7 @@ static int
 put_cmd(const cmd_info_t *cmd_info)
 {
 	int reg = DEFAULT_REG_NAME;
+	const int at = get_at(curr_view, cmd_info);
 
 	if(cmd_info->argc == 1)
 	{
@@ -3269,10 +3273,10 @@ put_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->bg)
 	{
-		return put_files_bg(curr_view, reg, cmd_info->emark) != 0;
+		return put_files_bg(curr_view, at, reg, cmd_info->emark) != 0;
 	}
 
-	return put_files(curr_view, reg, cmd_info->emark) != 0;
+	return put_files(curr_view, at, reg, cmd_info->emark) != 0;
 }
 
 static int
@@ -3794,10 +3798,19 @@ sync_filters(void)
 	ui_view_schedule_reload(other_view);
 }
 
+/* Creates files. */
 static int
 touch_cmd(const cmd_info_t *cmd_info)
 {
-	return make_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
+	const int at = get_at(curr_view, cmd_info);
+	return make_files(curr_view, at, cmd_info->argv, cmd_info->argc) != 0;
+}
+
+/* Gets destination position based range.  Returns the position. */
+static int
+get_at(const FileView *view, const cmd_info_t *cmd_info)
+{
+	return (cmd_info->end == NOT_DEF) ? view->list_pos : cmd_info->end;
 }
 
 /* Replaces letters in names of files according to character mapping. */

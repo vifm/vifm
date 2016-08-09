@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Jul 29
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1869,8 +1869,9 @@ order using the '.' operator.  Any whitespace is ignored.
 :mes[sages]                                    *vifm-:messages* *vifm-:mes*
     display previously given status bar messages (up to 50).
 
-:mkdir[!] dir...                               *vifm-:mkdir*
-    creates directories with given names.  "!" means make parent directories
+:[line]mkdir[!] dir...                         *vifm-:mkdir*
+    create directories at specified paths.  The [line] can be used to pick
+    node in a tree-view.  "!" means make parent directories
     as needed.  Macros are expanded.
 
                                                *vifm-:move* *vifm-:m*
@@ -1905,11 +1906,12 @@ order using the '.' operator.  Any whitespace is ignored.
 :pushd
     exchange top two items of the directory stack.
 
-:pu[t][!] [reg] [ &]                           *vifm-:put* *vifm-:pu*
+:[line]pu[t][!] [reg] [ &]                           *vifm-:put* *vifm-:pu*
     puts files from specified register (" by default) into current directory.
-    "!" moves files from their original location instead of copying them.
-    During this operation no confirmation dialogs will be shown, all checks
-    are performed beforehand.
+    The [line] can be used to pick node in a tree-view.  "!" moves files
+    from their original location instead of copying them.  During this
+    operation no confirmation dialogs will be shown, all checks are performed
+    beforehand.
 
 :pw[d]                                         *vifm-:pwd* *vifm-:pw*
     display the present working directory.
@@ -2101,9 +2103,10 @@ yet supported) and might be changed in future releases, or get an alias.
      - filelist - list of files for custom view implies "location");
      - all - all of the above.
 
-:touch file...                                 *vifm-:touch*
-    create file(s).  Aborts on errors.  Doesn't update time of existing
-    files.  Macros are expanded.
+:[line]touch file...                           *vifm-:touch*
+    create files at specified paths.  Aborts on errors.  Doesn't update time
+    of existing files.  The [line] can be used to pick node in a tree-view.
+    Macros are expanded.
 
 :[range]tr/pattern/string/                     *vifm-:tr*
     for each file in range transliterate the characters which appear in

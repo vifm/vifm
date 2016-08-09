@@ -81,7 +81,7 @@ TEST(bom_is_skipped_for_stream)
 {
 	FILE *fp = fopen(TEST_DATA_PATH "/read/utf8-bom", "rb");
 	int nlines;
-	char **lines = read_stream_lines(fp, &nlines, 0);
+	char **lines = read_stream_lines(fp, &nlines, 0, NULL, NULL);
 
 	assert_true(lines != NULL);
 	assert_int_equal(2, nlines);

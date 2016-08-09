@@ -51,6 +51,7 @@
 #include "int/fuse.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
+#include "ui/cancellation.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
@@ -2122,6 +2123,7 @@ populate_custom_view(FileView *view, int reload)
 		int prev_list_rows, result;
 
 		start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
+		ui_cancellation_reset();
 		result = flist_load_tree_internal(view, flist_get_dir(view), 1);
 		finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
 
@@ -3578,12 +3580,18 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 int
 flist_load_tree(FileView *view, const char path[])
 {
-	if(flist_load_tree_internal(view, path, 0) == 0)
+	int error;
+
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+	error = flist_load_tree_internal(view, path, 0);
+	ui_cancellation_disable();
+
+	if(!error)
 	{
 		ui_view_schedule_redraw(view);
-		return 0;
 	}
-	return 1;
+	return error;
 }
 
 /* Implements tree view (re)loading.  Returns zero on success, otherwise
@@ -3597,7 +3605,15 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 
 	flist_custom_start(view, "tree");
 
+	show_progress("Building tree...", 0);
 	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
+	clean_status_bar();
+
+	if(ui_cancellation_requested())
+	{
+		return 1;
+	}
+
 	if(nfiltered < 0)
 	{
 		show_error_msg("Tree View", "Failed to list directory");
@@ -3641,7 +3657,7 @@ add_files_recursively(FileView *view, const char path[], trie_t excluded_paths,
 		return -1;
 	}
 
-	for(i = 0; i < len; ++i)
+	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
 		int dir;
 		void *dummy;
@@ -3702,6 +3718,8 @@ add_files_recursively(FileView *view, const char path[], trie_t excluded_paths,
 		}
 
 		free(full_path);
+
+		show_progress("Building tree...", 10000);
 	}
 
 	free_string_array(lst, len);

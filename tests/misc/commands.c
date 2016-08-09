@@ -22,6 +22,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/ops.h"
+#include "../../src/registers.h"
 #include "../../src/undo.h"
 
 #include "utils.h"
@@ -377,6 +378,24 @@ TEST(tr_extends_second_field)
 	assert_success(remove(path));
 }
 
+TEST(putting_files_works)
+{
+	regs_init();
+
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+
+	regs_append(DEFAULT_REG_NAME, TEST_DATA_PATH "/read/binary-data");
+	lwin.list_pos = 1;
+
+	assert_true(exec_commands("put", &lwin, CIT_COMMAND) != 0);
+
+	assert_success(unlink(SANDBOX_PATH "/empty-dir/binary-data"));
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
+
+	regs_reset();
+}
+
 TEST(put_bg_cmd_is_parsed_correctly)
 {
 	/* Simulate custom view to force failure of the command. */
@@ -641,6 +660,14 @@ TEST(grep_command, IF(not_windows))
 	assert_int_equal(1, lwin.list_rows);
 
 	opt_handlers_teardown();
+}
+
+TEST(touch)
+{
+	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
+	(void)exec_commands("touch file", &lwin, CIT_COMMAND);
+
+	assert_success(remove(SANDBOX_PATH "/file"));
 }
 
 static void

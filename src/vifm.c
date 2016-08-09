@@ -129,7 +129,7 @@ main(int argc, char *argv[])
 	if(strcmp(vifm_args.lwin_path, "-") == 0 ||
 			strcmp(vifm_args.rwin_path, "-") == 0)
 	{
-		files = read_stream_lines(stdin, &nfiles, 1);
+		files = read_stream_lines(stdin, &nfiles, 1, NULL, NULL);
 		if(reopen_term_stdin() != 0)
 		{
 			return EXIT_FAILURE;

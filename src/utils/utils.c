@@ -57,6 +57,7 @@
 #include "str.h"
 #include "string_array.h"
 
+static void show_progress_cb(const void *descr);
 #ifdef _WIN32
 static void unquote(char quoted[]);
 #endif
@@ -97,8 +98,9 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
+	show_progress("", 0);
 	wait_for_data_from(pid, file, 0);
-	lines = read_stream_lines(file, &nlines, 1);
+	lines = read_stream_lines(file, &nlines, 1, &show_progress_cb, descr);
 
 	ui_cancellation_disable();
 	fclose(file);
@@ -111,6 +113,13 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 
 	show_errors_from_file(err, descr);
 	return 0;
+}
+
+/* Callback implementation for read_stream_lines(). */
+static void
+show_progress_cb(const void *descr)
+{
+	show_progress(descr, -250);
 }
 
 int

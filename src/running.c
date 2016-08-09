@@ -870,8 +870,6 @@ setup_shellout_env(void)
 	char *escaped_path;
 	char *cmd;
 
-	def_prog_mode();
-
 	/* Need to use internal value instead of getcwd() for a symlink directory. */
 	env_set("PWD", curr_view->curr_dir);
 
@@ -907,8 +905,6 @@ cleanup_shellout_env(void)
 {
 	const char *term_multiplexer_fmt;
 	char *cmd;
-
-	reset_prog_mode();
 
 	switch(curr_stats.term_multiplexer)
 	{
@@ -1334,10 +1330,17 @@ output_to_custom_flist(FileView *view, const char cmd[], int very)
 	flist_custom_start(view, title);
 	free(title);
 
+	/* Use this to save more state, which otherwise could be changed by the
+	 * command, this breaks some programs in setup_shellout_env(), so just for
+	 * making custom view. */
+	def_prog_mode();
+
 	setup_shellout_env();
 	error = (process_cmd_output("Loading custom view", cmd, 1, &path_handler,
 				view) != 0);
 	cleanup_shellout_env();
+
+	reset_prog_mode();
 
 	if(error)
 	{

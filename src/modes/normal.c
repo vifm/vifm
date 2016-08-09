@@ -1690,7 +1690,7 @@ cmd_p(key_info_t key_info, keys_info_t *keys_info)
 static void
 call_put_files(key_info_t key_info, int move)
 {
-	curr_stats.save_msg = put_files(curr_view, def_reg(key_info.reg), move);
+	curr_stats.save_msg = put_files(curr_view, -1, def_reg(key_info.reg), move);
 	ui_views_reload_filelists();
 }
 

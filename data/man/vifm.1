@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 29, 2016" "vifm 0.8.2"
+.TH VIFM 1 "August 08, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2192,9 +2192,9 @@ shows previously given messages (up to 50).
 .TP
 .BI "                                         :mkdir"
 .TP
-.BI ":mkdir[!] dir ..."
-creates directories with given names.  "!" means make parent directories as
-needed.  Macros are expanded.
+.BI ":[line]mkdir[!] dir ..."
+create directories at specified paths.  The [line] can be used to pick node in
+a tree-view.  "!" means make parent directories as needed.  Macros are expanded.
 .TP
 .BI "                                         :move"
 .TP
@@ -2243,8 +2243,9 @@ exchange the top two items of the directory stack.
 .TP
 .BI "                                         :put"
 .TP
-.BI ":pu[t][!] [reg] [ &]"
+.BI ":[line]pu[t][!] [reg] [ &]"
 puts files from specified register (" by default) into current directory.
+The [line] can be used to pick node in a tree-view.  "!" moves files
 "!" moves files from their original location instead of copying them.
 During this operation no confirmation dialogs will be shown, all checks
 are performed beforehand.
@@ -2506,9 +2507,10 @@ all \- all of the above.
 .TP
 .BI "                                         :touch"
 .TP
-.BI ":touch file..."
-create file(s).  Aborts on errors.  Doesn't update time of existing
-files.  Macros are expanded.
+.BI ":[line]touch file..."
+create files at specified paths.  Aborts on errors.  Doesn't update time of existing
+files.  The [line] can be used to pick node in a tree-view.  Macros are
+expanded.
 .TP
 .BI "                                         :tr"
 .TP

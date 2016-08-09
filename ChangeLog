@@ -12,6 +12,19 @@
 
 	Enable restoring files from trash from custom views.
 
+	View current directory on ".." for quickview/view mode.  Thanks to
+	filterfalse.
+
+	Make :put, :touch and :mkdir accept [line] range, which can be used to
+	specify target position in tree-view.  Thanks to filterfalse.
+
+	Enable cancellation of tree preview construction.  Thanks to filterfalse.
+
+	Partially return progress report for menus.  Was disabled by introduction
+	of null byte heuristic.
+
+	Accept paths in :touch, not just file names.  Thanks to filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

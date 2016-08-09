@@ -188,11 +188,11 @@ static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
-static int initiate_put_files(FileView *view, CopyMoveLikeOp op,
-				const char descr[], int reg_name);
+static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
+		const char descr[], int reg_name);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
-		const char base_dir[], const char target_dir[]);
+		const char dst_dir[]);
 static int put_files_i(FileView *view, int start);
 static int put_next(int force);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
@@ -236,9 +236,9 @@ static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
 static const char * get_cancellation_suffix(void);
-static int can_add_files_to_view(const FileView *view);
+static int can_add_files_to_view(const FileView *view, int at);
 static const char * get_top_dir(const FileView *view);
-static const char * get_dst_dir(const FileView *view);
+static const char * get_dst_dir(const FileView *view, int at);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -266,6 +266,7 @@ static struct
 	int merge_all;     /* Merge all conflicting directories. */
 	ops_t *ops;        /* Currently running operation. */
 	char *dest_name;   /* Name of destination file. */
+	char *dest_dir;    /* Destination path. */
 }
 put_confirm;
 
@@ -2019,26 +2020,26 @@ handle_prompt_response(const char fname[], char response)
 }
 
 int
-put_files(FileView *view, int reg_name, int move)
+put_files(FileView *view, int at, int reg_name, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 	const char *const descr = move ? "Putting" : "putting";
-	return initiate_put_files(view, op, descr, reg_name);
+	return initiate_put_files(view, at, op, descr, reg_name);
 }
 
 int
-put_files_bg(FileView *view, int reg_name, int move)
+put_files_bg(FileView *view, int at, int reg_name, int move)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	size_t task_desc_len;
 	int i;
 	bg_args_t *args;
 	reg_t *reg;
-	const char *const dst_dir = get_dst_dir(view);
+	const char *const dst_dir = get_dst_dir(view, at);
 
 	/* Check that operation generally makes sense given our input. */
 
-	if(!can_add_files_to_view(view))
+	if(!can_add_files_to_view(view, at))
 	{
 		return 0;
 	}
@@ -2266,12 +2267,12 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 	}
 	else
 	{
-		if(!can_add_files_to_view(view))
+		if(!can_add_files_to_view(view, -1))
 		{
 			return 0;
 		}
 
-		copy_str(dst_path, sizeof(dst_path), get_dst_dir(view));
+		copy_str(dst_path, sizeof(dst_path), get_dst_dir(view, -1));
 	}
 	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, dst_path))
 	{
@@ -2453,20 +2454,20 @@ int
 put_links(FileView *view, int reg_name, int relative)
 {
 	const CopyMoveLikeOp op = relative ? CMLO_LINK_REL : CMLO_LINK_ABS;
-	return initiate_put_files(view, op, "Symlinking", reg_name);
+	return initiate_put_files(view, -1, op, "Symlinking", reg_name);
 }
 
 /* Performs preparations necessary for putting files/links.  Returns new value
  * for save_msg flag. */
 static int
-initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
-		int reg_name)
+initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
+		const char descr[], int reg_name)
 {
 	reg_t *reg;
 	int i;
-	const char *const dst_dir = get_dst_dir(view);
+	const char *const dst_dir = get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view))
+	if(!can_add_files_to_view(view, -1))
 	{
 		return 0;
 	}
@@ -2478,7 +2479,7 @@ initiate_put_files(FileView *view, CopyMoveLikeOp op, const char descr[],
 		return 1;
 	}
 
-	reset_put_confirm(cmlo_to_op(op), descr, dst_dir, dst_dir);
+	reset_put_confirm(cmlo_to_op(op), descr, dst_dir);
 
 	put_confirm.op = op;
 	put_confirm.reg = reg;
@@ -2520,13 +2521,14 @@ cmlo_to_op(CopyMoveLikeOp op)
 
 /* Resets state of global put_confirm variable in this module. */
 static void
-reset_put_confirm(OPS main_op, const char descr[], const char base_dir[],
-		const char target_dir[])
+reset_put_confirm(OPS main_op, const char descr[], const char dst_dir[])
 {
 	free(put_confirm.dest_name);
+	free(put_confirm.dest_dir);
 	memset(&put_confirm, 0, sizeof(put_confirm));
+	put_confirm.dest_dir = strdup(dst_dir);
 
-	put_confirm.ops = get_ops(main_op, descr, base_dir, target_dir);
+	put_confirm.ops = get_ops(main_op, descr, dst_dir, dst_dir);
 }
 
 /* Returns new value for save_msg flag. */
@@ -2558,7 +2560,7 @@ put_files_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(vifm_chdir(get_dst_dir(view)) != 0)
+	if(vifm_chdir(put_confirm.dest_dir) != 0)
 	{
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
@@ -2605,7 +2607,7 @@ put_next(int force)
 {
 	char *filename;
 	const char *dest_name;
-	const char *dst_dir = get_dst_dir(put_confirm.view);
+	const char *dst_dir = put_confirm.dest_dir;
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
@@ -3532,7 +3534,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	}
 	else
 	{
-		copy_str(dst_path, dst_path_len, get_dst_dir(other_view));
+		copy_str(dst_path, dst_path_len, get_dst_dir(other_view, -1));
 	}
 
 	if(!check_if_dir_writable(DR_DESTINATION, dst_path))
@@ -3652,7 +3654,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s/%s", get_dst_dir(view), path);
+		snprintf(buf, buf_len, "%s/%s", get_dst_dir(view, -1), path);
 	}
 
 	if(is_dir(buf))
@@ -3660,7 +3662,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 		return 1;
 	}
 
-	strcpy(buf, get_dst_dir(view));
+	copy_str(buf, buf_len, get_dst_dir(view, -1));
 	return 0;
 }
 
@@ -4023,15 +4025,15 @@ go_to_first_file(FileView *view, char **names, int count)
 }
 
 int
-make_dirs(FileView *view, char **names, int count, int create_parent)
+make_dirs(FileView *view, int at, char **names, int count, int create_parent)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
 	int n;
 	void *cp;
-	const char *const dst_dir = get_dst_dir(view);
+	const char *const dst_dir = get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view))
+	if(!can_add_files_to_view(view, at))
 	{
 		return 1;
 	}
@@ -4040,6 +4042,8 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 
 	for(i = 0; i < count; ++i)
 	{
+		char full[PATH_MAX];
+
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
@@ -4050,7 +4054,9 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 			status_bar_errorf("Name #%d is empty", i + 1);
 			return 1;
 		}
-		if(path_exists(names[i], NODEREF))
+
+		to_canonic_path(names[i], dst_dir, full, sizeof(full));
+		if(path_exists(full, NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
 			return 1;
@@ -4101,21 +4107,23 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 }
 
 int
-make_files(FileView *view, char **names, int count)
+make_files(FileView *view, int at, char *names[], int count)
 {
 	int i;
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
-	const char *const dst_dir = get_dst_dir(view);
+	const char *const dst_dir = get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view))
+	if(!can_add_files_to_view(view, at))
 	{
 		return 0;
 	}
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; ++i)
 	{
+		char full[PATH_MAX];
+
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
@@ -4126,12 +4134,9 @@ make_files(FileView *view, char **names, int count)
 			status_bar_errorf("Name #%d is empty", i + 1);
 			return 1;
 		}
-		if(contains_slash(names[i]))
-		{
-			status_bar_errorf("Name \"%s\" contains slash", names[i]);
-			return 1;
-		}
-		if(path_exists_at(dst_dir, names[i], NODEREF))
+
+		to_canonic_path(names[i], dst_dir, full, sizeof(full));
+		if(path_exists(full, NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
 			return 1;
@@ -4150,7 +4155,8 @@ make_files(FileView *view, char **names, int count)
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
 		char full[PATH_MAX];
-		snprintf(full, sizeof(full), "%s/%s", dst_dir, names[i]);
+		to_canonic_path(names[i], dst_dir, full, sizeof(full));
+
 		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
 		{
 			add_operation(OP_MKFILE, NULL, NULL, full, "");
@@ -4268,10 +4274,11 @@ can_change_view_files(const FileView *view)
 	    || check_if_dir_writable(DR_CURRENT, view->curr_dir);
 }
 
-/* Whether set of view files can be extended via addition of new elements.
- * Returns non-zero if so, otherwise zero is returned. */
+/* Whether set of view files can be extended via addition of new elements.  at
+ * parameter is the same as for get_dst_dir().  Returns non-zero if so,
+ * otherwise zero is returned. */
 static int
-can_add_files_to_view(const FileView *view)
+can_add_files_to_view(const FileView *view, int at)
 {
 	if(flist_custom_active(view) && !view->custom.tree_view)
 	{
@@ -4280,7 +4287,7 @@ can_add_files_to_view(const FileView *view)
 		return 0;
 	}
 
-	return check_if_dir_writable(DR_DESTINATION, get_dst_dir(view));
+	return check_if_dir_writable(DR_DESTINATION, get_dst_dir(view, at));
 }
 
 /* Retrieves root directory of file system sub-tree (for regular or tree views).
@@ -4296,14 +4303,22 @@ get_top_dir(const FileView *view)
 }
 
 /* Retrieves current target directory of file system sub-tree.  Root for regular
- * and regular custom views and origin of active entry for tree views.  Returns
- * the path. */
+ * and regular custom views and origin of either active (when at < 0) or
+ * specified by its index entry for tree views.  Returns the path. */
 static const char *
-get_dst_dir(const FileView *view)
+get_dst_dir(const FileView *view, int at)
 {
 	if(flist_custom_active(view) && view->custom.tree_view)
 	{
-		return view->dir_entry[view->list_pos].origin;
+		if(at < 0)
+		{
+			at = view->list_pos;
+		}
+		else if(at >= view->list_rows)
+		{
+			at = view->list_rows - 1;
+		}
+		return view->dir_entry[at].origin;
 	}
 	return flist_get_dir(view);
 }
