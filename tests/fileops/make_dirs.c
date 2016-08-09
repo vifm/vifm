@@ -159,10 +159,13 @@ TEST(make_dirs_considers_tree_structure)
 	/* Set at to -1. */
 	lwin.list_pos = 0;
 	(void)make_dirs(&lwin, -1, paths, 1, 0);
-	assert_success(rmdir(SANDBOX_PATH "/new-dir"));
 
 	/* Set at to desired position. */
 	(void)make_dirs(&lwin, 1, paths, 1, 0);
+
+	/* Remove both files afterward to make sure they can both be created at the
+	 * same time. */
+	assert_success(rmdir(SANDBOX_PATH "/new-dir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir/new-dir"));
 
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
