@@ -86,7 +86,7 @@ static stic_void_void stic_suite_teardown_func = 0;
 static stic_void_void stic_fixture_setup = 0;
 static stic_void_void stic_fixture_teardown = 0;
 
-const char *stic_current_test;
+const char *stic_current_test_name;
 const char *stic_suite_name;
 
 void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line) = stic_simple_test_result_log;
@@ -143,12 +143,12 @@ void stic_suite_teardown( void )
 
 void fixture_setup(void (*setup)( void ))
 {
-	stic_current_test = "<setup>";
+	stic_current_test_name = "<setup>";
 	stic_fixture_setup = setup;
 }
 void fixture_teardown(void (*teardown)( void ))
 {
-	stic_current_test = "<teardown>";
+	stic_current_test_name = "<teardown>";
 	stic_fixture_teardown = teardown;
 }
 
@@ -185,9 +185,9 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 {
 	static const char *last_test;
 
-	const char *test_name = (stic_current_test == last_test) ? "" : stic_current_test;
+	const char *test_name = (stic_current_test_name == last_test) ? "" : stic_current_test_name;
 
-	if (stic_current_test != NULL && strcmp(function, stic_current_test) == 0)
+	if (stic_current_test_name != NULL && strcmp(function, stic_current_test_name) == 0)
 	{
 		function = "test body";
 	}
@@ -206,11 +206,11 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 	{
 		if(stic_machine_readable)
 		{
-			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line, reason);
+			printf("%s%s,%s,%u,%s\n", stic_magic_marker, stic_current_fixture_path, stic_current_test_name, line, reason);
 		}
 		else
 		{
-			if(stic_current_test != last_test)
+			if(stic_current_test_name != last_test)
 			{
 				printf("\n%s:\n", test_name);
 			}
@@ -218,7 +218,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			       file, line, function, reason );
 		}
 		sea_tests_failed++;
-		last_test = stic_current_test;
+		last_test = stic_current_test_name;
 	}
 	else
 	{
@@ -226,17 +226,17 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 		{
 			if(stic_machine_readable)
 			{
-				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, stic_current_test, line);
+				printf("%s%s,%s,%u,Passed\n", stic_magic_marker, stic_current_fixture_path, stic_current_test_name, line);
 			}
 			else
 			{
-				if(stic_current_test != last_test)
+				if(stic_current_test_name != last_test)
 				{
 					printf("\n%s\n", test_name);
 				}
 				printf("   (+) %s:%u\n       in %s\n", file, line, function);
 			}
-			last_test = stic_current_test;
+			last_test = stic_current_test_name;
 		}
 		sea_tests_passed++;
 	}
