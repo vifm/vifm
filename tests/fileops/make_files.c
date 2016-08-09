@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* chdir() rmdir() unlink() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
@@ -101,6 +102,21 @@ TEST(make_files_considers_tree_structure)
 	assert_success(rmdir("dir"));
 
 	view_teardown(&lwin);
+}
+
+TEST(check_by_absolute_path_is_performed_beforehand)
+{
+	char name_a[] = "a";
+	char name_b[PATH_MAX];
+	char *names[] = { name_a, name_b };
+
+	snprintf(name_b, sizeof(name_b), "%s/b", lwin.curr_dir);
+	create_empty_file(name_b);
+
+	(void)make_files(&lwin, -1, names, 2);
+
+	assert_failure(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink(SANDBOX_PATH "/b"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

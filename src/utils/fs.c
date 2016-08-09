@@ -153,6 +153,11 @@ path_exists(const char path[], int deref)
 int
 path_exists_at(const char path[], const char filename[], int deref)
 {
+	if(is_path_absolute(filename))
+	{
+		LOG_ERROR_MSG("Passed absolute path where relative one is expected: %s",
+				filename);
+	}
 	return path_exists_internal(path, filename, deref);
 }
 

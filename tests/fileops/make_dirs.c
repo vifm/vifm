@@ -173,5 +173,20 @@ TEST(make_dirs_considers_tree_structure)
 	view_teardown(&lwin);
 }
 
+TEST(check_by_absolute_path_is_performed_beforehand)
+{
+	char name_a[] = "a";
+	char name_b[PATH_MAX];
+	char *names[] = { name_a, name_b };
+
+	snprintf(name_b, sizeof(name_b), "%s/b", lwin.curr_dir);
+	create_empty_dir(name_b);
+
+	(void)make_dirs(&lwin, -1, names, 2, 0);
+
+	assert_failure(rmdir(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/b"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

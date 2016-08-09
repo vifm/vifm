@@ -4122,6 +4122,8 @@ make_files(FileView *view, int at, char *names[], int count)
 
 	for(i = 0; i < count; ++i)
 	{
+		char full[PATH_MAX];
+
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
@@ -4132,7 +4134,9 @@ make_files(FileView *view, int at, char *names[], int count)
 			status_bar_errorf("Name #%d is empty", i + 1);
 			return 1;
 		}
-		if(path_exists_at(dst_dir, names[i], NODEREF))
+
+		to_canonic_path(names[i], dst_dir, full, sizeof(full));
+		if(path_exists(full, NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
 			return 1;
