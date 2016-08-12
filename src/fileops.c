@@ -1073,7 +1073,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 	size_t buf_len;
 	int i;
 	int renamed = 0;
-	char **const orig_names = copy_string_array(files, len);
+	char **const orig_names = calloc(len, sizeof(*orig_names));
 	const char *const curr_dir = flist_get_dir(view);
 
 	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
@@ -1119,7 +1119,8 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 			free_string_array(orig_names, len);
 			return 0;
 		}
-		(void)replace_string(&files[i], unique_name);
+		orig_names[i] = files[i];
+		files[i] = strdup(unique_name);
 	}
 
 	/* Stage 2: rename all files (including those renamed at Stage 1) to their
@@ -1136,11 +1137,12 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 		{
 			char path[PATH_MAX];
 			dir_entry_t *entry;
+			const char *const old_name = is_dup[i] ? orig_names[i] : files[i];
 			const char *new_name;
 
 			++renamed;
 
-			to_canonic_path(orig_names[i], curr_dir, path, sizeof(path));
+			to_canonic_path(old_name, curr_dir, path, sizeof(path));
 			entry = entry_from_path(view->dir_entry, view->list_rows, path);
 			if(entry == NULL)
 			{
