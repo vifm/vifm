@@ -182,7 +182,7 @@ void calculate_size_bg(const FileView *view, int force);
 #endif
 
 TSTATIC_DEFS(
-	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);
+	int is_rename_list_ok(char *files[], char is_dup[], int len, char *list[]);
 	int check_file_rename(const char dir[], const char old[], const char new[],
 		SignalType signal_type);
 	int merge_dirs(const char src[], const char dst[], ops_t *ops);

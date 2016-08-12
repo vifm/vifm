@@ -162,7 +162,7 @@ static int prepare_register(int reg);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
-TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
+TSTATIC int is_rename_list_ok(char *files[], char is_dup[], int len,
 		char *list[]);
 TSTATIC const char * incdec_name(const char fname[], int k);
 static int count_digits(int number);
@@ -1064,7 +1064,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 
 /* Returns number of renamed files. */
 static int
-perform_renaming(FileView *view, char **files, int *is_dup, int len,
+perform_renaming(FileView *view, char **files, char *is_dup, int len,
 		char **list)
 {
 	char buf[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
@@ -1171,7 +1171,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 }
 
 static void
-rename_files_ind(FileView *view, char **files, int *is_dup, int len)
+rename_files_ind(FileView *view, char **files, char is_dup[], int len)
 {
 	char **list;
 	int nlines;
@@ -1238,7 +1238,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	char **files;
 	int nfiles;
 	dir_entry_t *entry;
-	int *is_dup;
+	char *is_dup;
 
 	/* Allow list of names in tests. */
 	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
@@ -1269,7 +1269,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		}
 	}
 
-	is_dup = calloc(nfiles, sizeof(*is_dup));
+	is_dup = calloc(nfiles, 1);
 	if(is_dup == NULL)
 	{
 		free_string_array(files, nfiles);
@@ -1310,7 +1310,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 /* Checks rename correctness and forms an array of duplication marks.
  * Directory names in files array should be without trailing slash. */
 TSTATIC int
-is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
+is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 {
 	int i;
 	const char *const work_dir = flist_get_dir(curr_view);

@@ -80,7 +80,7 @@ TEST(rename_list_checks)
 	char *list[] = { "a", "aa", "aaa" };
 	char *files[] = { "", "aa", "bbb" };
 	ARRAY_GUARD(files, ARRAY_LEN(list));
-	int dup[ARRAY_LEN(files)] = {};
+	char dup[ARRAY_LEN(files)] = {};
 
 	assert_true(is_rename_list_ok(files, dup, ARRAY_LEN(list), list));
 	for(i = 0; i < ARRAY_LEN(list); i++)
