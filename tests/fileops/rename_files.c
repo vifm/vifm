@@ -63,6 +63,28 @@ TEST(renames_files_recursively)
 	assert_success(rmdir(SANDBOX_PATH "/dir2"));
 }
 
+TEST(interdependent_rename)
+{
+	char file2[] = "file2";
+	char file3[] = "file3";
+	char *names[] = { file2, file3 };
+
+	create_empty_file(SANDBOX_PATH "/file1");
+	create_empty_file(SANDBOX_PATH "/file2");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	(void)rename_files(&lwin, names, 2, 1);
+
+	/* Make sure reloading doesn't fail with an assert of duplicated file name. */
+	populate_dir_list(&lwin, 1);
+
+	assert_success(unlink(SANDBOX_PATH "/file2"));
+	assert_success(unlink(SANDBOX_PATH "/file3"));
+}
+
 /* No tests for custom/tree view, because control doesn't reach necessary checks
  * when new filenames are provided beforehand (only when user edits them). */
 

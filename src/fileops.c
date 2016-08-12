@@ -162,7 +162,9 @@ static int prepare_register(int reg);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
-TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
+static int perform_renaming(FileView *view, char *files[], char is_dup[],
+		int len, char *dst[]);
+TSTATIC int is_rename_list_ok(char *files[], char is_dup[], int len,
 		char *list[]);
 TSTATIC const char * incdec_name(const char fname[], int k);
 static int count_digits(int number);
@@ -1062,139 +1064,6 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 	return 1;
 }
 
-/* Returns number of renamed files. */
-static int
-perform_renaming(FileView *view, char **files, int *is_dup, int len,
-		char **list)
-{
-	char buf[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
-	size_t buf_len;
-	int i;
-	int renamed = 0;
-	const char *const curr_dir = flist_get_dir(view);
-
-	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
-			replace_home_part(curr_dir));
-
-	for(i = 0; i < len && buf_len < COMMAND_GROUP_INFO_LEN; i++)
-	{
-		if(buf[buf_len - 2] != ':')
-		{
-			strncat(buf, ", ", sizeof(buf) - buf_len - 1);
-			buf_len = strlen(buf);
-		}
-		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s to %s",
-				files[i], list[i]);
-	}
-
-	cmd_group_begin(buf);
-
-	for(i = 0; i < len; i++)
-	{
-		const char *unique_name;
-
-		if(list[i][0] == '\0')
-			continue;
-		if(strcmp(list[i], files[i]) == 0)
-			continue;
-		if(!is_dup[i])
-			continue;
-
-		unique_name = make_name_unique(files[i]);
-		if(mv_file(files[i], curr_dir, unique_name, curr_dir, OP_MOVETMP2, 1,
-					NULL) != 0)
-		{
-			cmd_group_end();
-			if(!last_cmd_group_empty())
-			{
-				undo_group();
-			}
-			show_error_msg("Rename", "Failed to perform temporary rename");
-			curr_stats.save_msg = 1;
-			return 0;
-		}
-		(void)replace_string(&files[i], unique_name);
-	}
-
-	for(i = 0; i < len; i++)
-	{
-		if(list[i][0] == '\0')
-			continue;
-		if(strcmp(list[i], files[i]) == 0)
-			continue;
-
-		if(mv_file(files[i], curr_dir, list[i], curr_dir,
-				is_dup[i] ? OP_MOVETMP1 : OP_MOVE, 1, NULL) == 0)
-		{
-			char path[PATH_MAX];
-			dir_entry_t *entry;
-			int pos;
-
-			++renamed;
-
-			to_canonic_path(files[i], curr_dir, path, sizeof(path));
-			entry = entry_from_path(view->dir_entry, view->list_rows, path);
-			if(entry == NULL)
-			{
-				continue;
-			}
-
-			pos = entry_to_pos(view, entry);
-			if(pos == view->list_pos || flist_custom_active(view))
-			{
-				const char *const new_name = get_last_path_component(list[i]);
-
-				/* For regular views rename file in internal structures for correct
-				 * positioning of cursor after reloading. For custom views rename to
-				 * prevent files from disappearing. */
-				fentry_rename(view, entry, new_name);
-
-				if(flist_custom_active(view))
-				{
-					entry = entry_from_path(view->custom.entries,
-							view->custom.entry_count, path);
-					if(entry != NULL)
-					{
-						fentry_rename(view, entry, new_name);
-					}
-				}
-			}
-		}
-	}
-
-	cmd_group_end();
-
-	return renamed;
-}
-
-static void
-rename_files_ind(FileView *view, char **files, int *is_dup, int len)
-{
-	char **list;
-	int nlines;
-
-	if(len == 0 || (list = edit_list(len, files, &nlines, 0)) == NULL)
-	{
-		status_bar_message("0 files renamed");
-		curr_stats.save_msg = 1;
-		return;
-	}
-
-	if(is_name_list_ok(len, nlines, list, files) &&
-			is_rename_list_ok(files, is_dup, len, list))
-	{
-		const int renamed = perform_renaming(view, files, is_dup, len, list);
-		if(renamed >= 0)
-		{
-			status_bar_messagef("%d file%s renamed", renamed,
-					(renamed == 1) ? "" : "s");
-			curr_stats.save_msg = 1;
-		}
-	}
-
-	free_string_array(list, nlines);
-}
-
 static char **
 add_files_to_list(const char *path, char **files, int *len)
 {
@@ -1235,7 +1104,8 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	char **files;
 	int nfiles;
 	dir_entry_t *entry;
-	int *is_dup;
+	char *is_dup;
+	int free_list = 0;
 
 	/* Allow list of names in tests. */
 	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
@@ -1266,7 +1136,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		}
 	}
 
-	is_dup = calloc(nfiles, sizeof(*is_dup));
+	is_dup = calloc(nfiles, 1);
 	if(is_dup == NULL)
 	{
 		free_string_array(files, nfiles);
@@ -1274,20 +1144,24 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		return 0;
 	}
 
+	/* If we weren't given list of new file names, obtain it from the user. */
 	if(nlines == 0)
 	{
-		rename_files_ind(view, files, is_dup, nfiles);
-	}
-	else
-	{
-		int renamed = -1;
-
-		if(is_name_list_ok(nfiles, nlines, list, files) &&
-				is_rename_list_ok(files, is_dup, nfiles, list))
+		if(nfiles == 0 || (list = edit_list(nfiles, files, &nlines, 0)) == NULL)
 		{
-			renamed = perform_renaming(view, files, is_dup, nfiles, list);
+			status_bar_message("0 files renamed");
 		}
+		else
+		{
+			free_list = 1;
+		}
+	}
 
+	/* If nlines is 0 here, do nothing. */
+	if(nlines != 0 && is_name_list_ok(nfiles, nlines, list, files) &&
+			is_rename_list_ok(files, is_dup, nfiles, list))
+	{
+		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 		if(renamed >= 0)
 		{
 			status_bar_messagef("%d file%s renamed", renamed,
@@ -1295,6 +1169,10 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		}
 	}
 
+	if(free_list)
+	{
+		free_string_array(list, nlines);
+	}
 	free_string_array(files, nfiles);
 	free(is_dup);
 
@@ -1304,10 +1182,122 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	return 1;
 }
 
+/* Renames files named files in current directory of the view to dst.  is_dup
+ * marks elements that are in both lists.  Lengths of all lists must be equal to
+ * len.  Returns number of renamed files. */
+static int
+perform_renaming(FileView *view, char *files[], char is_dup[], int len,
+		char *dst[])
+{
+	char buf[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
+	size_t buf_len;
+	int i;
+	int renamed = 0;
+	char **const orig_names = calloc(len, sizeof(*orig_names));
+	const char *const curr_dir = flist_get_dir(view);
+
+	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
+			replace_home_part(curr_dir));
+
+	for(i = 0; i < len && buf_len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(buf[buf_len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf) - buf_len - 1);
+			buf_len = strlen(buf);
+		}
+		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s to %s",
+				files[i], dst[i]);
+	}
+
+	cmd_group_begin(buf);
+
+	/* Stage 1: give files that are in both source and destination lists temporary
+	 *          names. */
+	for(i = 0; i < len; ++i)
+	{
+		const char *unique_name;
+
+		if(dst[i][0] == '\0')
+			continue;
+		if(strcmp(dst[i], files[i]) == 0)
+			continue;
+		if(!is_dup[i])
+			continue;
+
+		unique_name = make_name_unique(files[i]);
+		if(mv_file(files[i], curr_dir, unique_name, curr_dir, OP_MOVETMP2, 1,
+					NULL) != 0)
+		{
+			cmd_group_end();
+			if(!last_cmd_group_empty())
+			{
+				undo_group();
+			}
+			show_error_msg("Rename", "Failed to perform temporary rename");
+			curr_stats.save_msg = 1;
+			free_string_array(orig_names, len);
+			return 0;
+		}
+		orig_names[i] = files[i];
+		files[i] = strdup(unique_name);
+	}
+
+	/* Stage 2: rename all files (including those renamed at Stage 1) to their
+	 *          final names. */
+	for(i = 0; i < len; ++i)
+	{
+		if(dst[i][0] == '\0')
+			continue;
+		if(strcmp(dst[i], files[i]) == 0)
+			continue;
+
+		if(mv_file(files[i], curr_dir, dst[i], curr_dir,
+				is_dup[i] ? OP_MOVETMP1 : OP_MOVE, 1, NULL) == 0)
+		{
+			char path[PATH_MAX];
+			dir_entry_t *entry;
+			const char *const old_name = is_dup[i] ? orig_names[i] : files[i];
+			const char *new_name;
+
+			++renamed;
+
+			to_canonic_path(old_name, curr_dir, path, sizeof(path));
+			entry = entry_from_path(view->dir_entry, view->list_rows, path);
+			if(entry == NULL)
+			{
+				continue;
+			}
+
+			new_name = get_last_path_component(dst[i]);
+
+			/* For regular views rename file in internal structures for correct
+				* positioning of cursor after reloading.  For custom views rename to
+				* prevent files from disappearing. */
+			fentry_rename(view, entry, new_name);
+
+			if(flist_custom_active(view))
+			{
+				entry = entry_from_path(view->custom.entries,
+						view->custom.entry_count, path);
+				if(entry != NULL)
+				{
+					fentry_rename(view, entry, new_name);
+				}
+			}
+		}
+	}
+
+	cmd_group_end();
+
+	free_string_array(orig_names, len);
+	return renamed;
+}
+
 /* Checks rename correctness and forms an array of duplication marks.
  * Directory names in files array should be without trailing slash. */
 TSTATIC int
-is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
+is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 {
 	int i;
 	const char *const work_dir = flist_get_dir(curr_view);
