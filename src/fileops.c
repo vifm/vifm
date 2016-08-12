@@ -1071,6 +1071,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 	size_t buf_len;
 	int i;
 	int renamed = 0;
+	char **const orig_names = copy_string_array(files, len);
 	const char *const curr_dir = flist_get_dir(view);
 
 	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
@@ -1111,6 +1112,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			}
 			show_error_msg("Rename", "Failed to perform temporary rename");
 			curr_stats.save_msg = 1;
+			free_string_array(orig_names, len);
 			return 0;
 		}
 		(void)replace_string(&files[i], unique_name);
@@ -1132,7 +1134,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 
 			++renamed;
 
-			to_canonic_path(files[i], curr_dir, path, sizeof(path));
+			to_canonic_path(orig_names[i], curr_dir, path, sizeof(path));
 			entry = entry_from_path(view->dir_entry, view->list_rows, path);
 			if(entry == NULL)
 			{
@@ -1164,6 +1166,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 
 	cmd_group_end();
 
+	free_string_array(orig_names, len);
 	return renamed;
 }
 
