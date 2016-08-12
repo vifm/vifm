@@ -162,6 +162,10 @@ static int prepare_register(int reg);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
+static void rename_files_ind(FileView *view, char *files[], char is_dup[],
+		int len);
+static int perform_renaming(FileView *view, char *files[], char is_dup[],
+		int len, char *dst[]);
 TSTATIC int is_rename_list_ok(char *files[], char is_dup[], int len,
 		char *list[]);
 TSTATIC const char * incdec_name(const char fname[], int k);
@@ -1062,6 +1066,143 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 	return 1;
 }
 
+static char **
+add_files_to_list(const char *path, char **files, int *len)
+{
+	DIR* dir;
+	struct dirent* dentry;
+	const char* slash = "";
+
+	if(!is_dir(path))
+	{
+		*len = add_to_string_array(&files, *len, 1, path);
+		return files;
+	}
+
+	dir = os_opendir(path);
+	if(dir == NULL)
+		return files;
+
+	if(path[strlen(path) - 1] != '/')
+		slash = "/";
+
+	while((dentry = os_readdir(dir)) != NULL)
+	{
+		if(!is_builtin_dir(dentry->d_name))
+		{
+			char buf[PATH_MAX];
+			snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+			files = add_files_to_list(buf, files, len);
+		}
+	}
+
+	os_closedir(dir);
+	return files;
+}
+
+int
+rename_files(FileView *view, char **list, int nlines, int recursive)
+{
+	char **files;
+	int nfiles;
+	dir_entry_t *entry;
+	char *is_dup;
+
+	/* Allow list of names in tests. */
+	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
+	{
+		status_bar_error("Recursive rename doesn't accept list of new names");
+		return 1;
+	}
+	if(!can_change_view_files(view))
+	{
+		return 0;
+	}
+
+	nfiles = 0;
+	files = NULL;
+	entry = NULL;
+	while(iter_marked_entries(view, &entry))
+	{
+		char path[PATH_MAX];
+		get_short_path_of(view, entry, 0, sizeof(path), path);
+
+		if(recursive)
+		{
+			files = add_files_to_list(path, files, &nfiles);
+		}
+		else
+		{
+			nfiles = add_to_string_array(&files, nfiles, 1, path);
+		}
+	}
+
+	is_dup = calloc(nfiles, 1);
+	if(is_dup == NULL)
+	{
+		free_string_array(files, nfiles);
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 0;
+	}
+
+	if(nlines == 0)
+	{
+		rename_files_ind(view, files, is_dup, nfiles);
+	}
+	else
+	{
+		int renamed = -1;
+
+		if(is_name_list_ok(nfiles, nlines, list, files) &&
+				is_rename_list_ok(files, is_dup, nfiles, list))
+		{
+			renamed = perform_renaming(view, files, is_dup, nfiles, list);
+		}
+
+		if(renamed >= 0)
+		{
+			status_bar_messagef("%d file%s renamed", renamed,
+					(renamed == 1) ? "" : "s");
+		}
+	}
+
+	free_string_array(files, nfiles);
+	free(is_dup);
+
+	clean_selected_files(view);
+	redraw_view(view);
+	curr_stats.save_msg = 1;
+	return 1;
+}
+
+static void
+rename_files_ind(FileView *view, char *files[], char is_dup[], int len)
+{
+	char **list;
+	int nlines;
+
+	if(len == 0 || (list = edit_list(len, files, &nlines, 0)) == NULL)
+	{
+		status_bar_message("0 files renamed");
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	if(is_name_list_ok(len, nlines, list, files) &&
+			is_rename_list_ok(files, is_dup, len, list))
+	{
+		const int renamed = perform_renaming(view, files, is_dup, len, list);
+		if(renamed >= 0)
+		{
+			status_bar_messagef("%d file%s renamed", renamed,
+					(renamed == 1) ? "" : "s");
+			curr_stats.save_msg = 1;
+		}
+	}
+
+	free_string_array(list, nlines);
+}
+
 /* Renames files named files in current directory of the view to dst.  is_dup
  * marks elements that are in both lists.  Lengths of all lists must be equal to
  * len.  Returns number of renamed files. */
@@ -1172,143 +1313,6 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 
 	free_string_array(orig_names, len);
 	return renamed;
-}
-
-static void
-rename_files_ind(FileView *view, char **files, char is_dup[], int len)
-{
-	char **list;
-	int nlines;
-
-	if(len == 0 || (list = edit_list(len, files, &nlines, 0)) == NULL)
-	{
-		status_bar_message("0 files renamed");
-		curr_stats.save_msg = 1;
-		return;
-	}
-
-	if(is_name_list_ok(len, nlines, list, files) &&
-			is_rename_list_ok(files, is_dup, len, list))
-	{
-		const int renamed = perform_renaming(view, files, is_dup, len, list);
-		if(renamed >= 0)
-		{
-			status_bar_messagef("%d file%s renamed", renamed,
-					(renamed == 1) ? "" : "s");
-			curr_stats.save_msg = 1;
-		}
-	}
-
-	free_string_array(list, nlines);
-}
-
-static char **
-add_files_to_list(const char *path, char **files, int *len)
-{
-	DIR* dir;
-	struct dirent* dentry;
-	const char* slash = "";
-
-	if(!is_dir(path))
-	{
-		*len = add_to_string_array(&files, *len, 1, path);
-		return files;
-	}
-
-	dir = os_opendir(path);
-	if(dir == NULL)
-		return files;
-
-	if(path[strlen(path) - 1] != '/')
-		slash = "/";
-
-	while((dentry = os_readdir(dir)) != NULL)
-	{
-		if(!is_builtin_dir(dentry->d_name))
-		{
-			char buf[PATH_MAX];
-			snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-			files = add_files_to_list(buf, files, len);
-		}
-	}
-
-	os_closedir(dir);
-	return files;
-}
-
-int
-rename_files(FileView *view, char **list, int nlines, int recursive)
-{
-	char **files;
-	int nfiles;
-	dir_entry_t *entry;
-	char *is_dup;
-
-	/* Allow list of names in tests. */
-	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
-	{
-		status_bar_error("Recursive rename doesn't accept list of new names");
-		return 1;
-	}
-	if(!can_change_view_files(view))
-	{
-		return 0;
-	}
-
-	nfiles = 0;
-	files = NULL;
-	entry = NULL;
-	while(iter_marked_entries(view, &entry))
-	{
-		char path[PATH_MAX];
-		get_short_path_of(view, entry, 0, sizeof(path), path);
-
-		if(recursive)
-		{
-			files = add_files_to_list(path, files, &nfiles);
-		}
-		else
-		{
-			nfiles = add_to_string_array(&files, nfiles, 1, path);
-		}
-	}
-
-	is_dup = calloc(nfiles, 1);
-	if(is_dup == NULL)
-	{
-		free_string_array(files, nfiles);
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return 0;
-	}
-
-	if(nlines == 0)
-	{
-		rename_files_ind(view, files, is_dup, nfiles);
-	}
-	else
-	{
-		int renamed = -1;
-
-		if(is_name_list_ok(nfiles, nlines, list, files) &&
-				is_rename_list_ok(files, is_dup, nfiles, list))
-		{
-			renamed = perform_renaming(view, files, is_dup, nfiles, list);
-		}
-
-		if(renamed >= 0)
-		{
-			status_bar_messagef("%d file%s renamed", renamed,
-					(renamed == 1) ? "" : "s");
-		}
-	}
-
-	free_string_array(files, nfiles);
-	free(is_dup);
-
-	clean_selected_files(view);
-	redraw_view(view);
-	curr_stats.save_msg = 1;
-	return 1;
 }
 
 /* Checks rename correctness and forms an array of duplication marks.
