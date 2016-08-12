@@ -1066,8 +1066,8 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
  * marks elements that are in both lists.  Lengths of all lists must be equal to
  * len.  Returns number of renamed files. */
 static int
-perform_renaming(FileView *view, char **files, char *is_dup, int len,
-		char **list)
+perform_renaming(FileView *view, char *files[], char is_dup[], int len,
+		char *dst[])
 {
 	char buf[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
 	size_t buf_len;
@@ -1087,20 +1087,20 @@ perform_renaming(FileView *view, char **files, char *is_dup, int len,
 			buf_len = strlen(buf);
 		}
 		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s to %s",
-				files[i], list[i]);
+				files[i], dst[i]);
 	}
 
 	cmd_group_begin(buf);
 
 	/* Stage 1: give files that are in both source and destination lists temporary
 	 *          names. */
-	for(i = 0; i < len; i++)
+	for(i = 0; i < len; ++i)
 	{
 		const char *unique_name;
 
-		if(list[i][0] == '\0')
+		if(dst[i][0] == '\0')
 			continue;
-		if(strcmp(list[i], files[i]) == 0)
+		if(strcmp(dst[i], files[i]) == 0)
 			continue;
 		if(!is_dup[i])
 			continue;
@@ -1124,14 +1124,14 @@ perform_renaming(FileView *view, char **files, char *is_dup, int len,
 
 	/* Stage 2: rename all files (including those renamed at Stage 1) to their
 	 *          final names. */
-	for(i = 0; i < len; i++)
+	for(i = 0; i < len; ++i)
 	{
-		if(list[i][0] == '\0')
+		if(dst[i][0] == '\0')
 			continue;
-		if(strcmp(list[i], files[i]) == 0)
+		if(strcmp(dst[i], files[i]) == 0)
 			continue;
 
-		if(mv_file(files[i], curr_dir, list[i], curr_dir,
+		if(mv_file(files[i], curr_dir, dst[i], curr_dir,
 				is_dup[i] ? OP_MOVETMP1 : OP_MOVE, 1, NULL) == 0)
 		{
 			char path[PATH_MAX];
@@ -1150,7 +1150,7 @@ perform_renaming(FileView *view, char **files, char *is_dup, int len,
 			pos = entry_to_pos(view, entry);
 			if(pos == view->list_pos || flist_custom_active(view))
 			{
-				const char *const new_name = get_last_path_component(list[i]);
+				const char *const new_name = get_last_path_component(dst[i]);
 
 				/* For regular views rename file in internal structures for correct
 				 * positioning of cursor after reloading.  For custom views rename to
