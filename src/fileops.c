@@ -1062,7 +1062,9 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 	return 1;
 }
 
-/* Returns number of renamed files. */
+/* Renames files named files in current directory of the view to dst.  is_dup
+ * marks elements that are in both lists.  Lengths of all lists must be equal to
+ * len.  Returns number of renamed files. */
 static int
 perform_renaming(FileView *view, char **files, char *is_dup, int len,
 		char **list)
@@ -1090,6 +1092,8 @@ perform_renaming(FileView *view, char **files, char *is_dup, int len,
 
 	cmd_group_begin(buf);
 
+	/* Stage 1: give files that are in both source and destination lists temporary
+	 *          names. */
 	for(i = 0; i < len; i++)
 	{
 		const char *unique_name;
@@ -1118,6 +1122,8 @@ perform_renaming(FileView *view, char **files, char *is_dup, int len,
 		(void)replace_string(&files[i], unique_name);
 	}
 
+	/* Stage 2: rename all files (including those renamed at Stage 1) to their
+	 *          final names. */
 	for(i = 0; i < len; i++)
 	{
 		if(list[i][0] == '\0')
@@ -1147,7 +1153,7 @@ perform_renaming(FileView *view, char **files, char *is_dup, int len,
 				const char *const new_name = get_last_path_component(list[i]);
 
 				/* For regular views rename file in internal structures for correct
-				 * positioning of cursor after reloading. For custom views rename to
+				 * positioning of cursor after reloading.  For custom views rename to
 				 * prevent files from disappearing. */
 				fentry_rename(view, entry, new_name);
 
