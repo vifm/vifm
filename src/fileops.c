@@ -1136,7 +1136,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 		{
 			char path[PATH_MAX];
 			dir_entry_t *entry;
-			int pos;
+			const char *new_name;
 
 			++renamed;
 
@@ -1147,24 +1147,20 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 				continue;
 			}
 
-			pos = entry_to_pos(view, entry);
-			if(pos == view->list_pos || flist_custom_active(view))
+			new_name = get_last_path_component(dst[i]);
+
+			/* For regular views rename file in internal structures for correct
+				* positioning of cursor after reloading.  For custom views rename to
+				* prevent files from disappearing. */
+			fentry_rename(view, entry, new_name);
+
+			if(flist_custom_active(view))
 			{
-				const char *const new_name = get_last_path_component(dst[i]);
-
-				/* For regular views rename file in internal structures for correct
-				 * positioning of cursor after reloading.  For custom views rename to
-				 * prevent files from disappearing. */
-				fentry_rename(view, entry, new_name);
-
-				if(flist_custom_active(view))
+				entry = entry_from_path(view->custom.entries,
+						view->custom.entry_count, path);
+				if(entry != NULL)
 				{
-					entry = entry_from_path(view->custom.entries,
-							view->custom.entry_count, path);
-					if(entry != NULL)
-					{
-						fentry_rename(view, entry, new_name);
-					}
+					fentry_rename(view, entry, new_name);
 				}
 			}
 		}
