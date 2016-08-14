@@ -25,6 +25,9 @@
 
 	Accept paths in :touch, not just file names.  Thanks to filterfalse.
 
+	Consider trailing slash for directories or symbolic links that point to
+	directories for patterns in 'classify'.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
