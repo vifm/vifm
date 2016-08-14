@@ -1371,11 +1371,8 @@ ui_get_decors(const dir_entry_t *entry, const char **prefix,
 				const file_dec_t *const file_dec = &cfg.name_decs[i];
 				if(matchers_match(file_dec->matchers, full_path))
 				{
-					if(matchers_match(file_dec->matchers, full_path))
-					{
-						((dir_entry_t *)entry)->name_dec_num = i + 1;
-						break;
-					}
+					((dir_entry_t *)entry)->name_dec_num = i + 1;
+					break;
 				}
 			}
 		}
