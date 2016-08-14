@@ -243,6 +243,25 @@ TEST(classify_can_be_set_to_empty_value)
 	assert_string_equal("", suffix);
 }
 
+TEST(classify_account_assumes_trailing_slashes_for_dirs)
+{
+	dir_entry_t entry = {
+		.name = "read",
+		.type = FT_DIR,
+		.origin = TEST_DATA_PATH,
+		.name_dec_num = -1,
+	};
+
+	const char *prefix, *suffix;
+
+	assert_success(exec_commands("set classify=[:dir:],*::*ad::@", &lwin,
+				CIT_COMMAND));
+
+	ui_get_decors(&entry, &prefix, &suffix);
+	assert_string_equal("[", prefix);
+	assert_string_equal("]", suffix);
+}
+
 TEST(suggestoptions_all_values)
 {
 	cfg.sug.flags = 0;
