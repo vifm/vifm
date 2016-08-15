@@ -142,6 +142,19 @@ TEST(tree_accounts_for_local_filter)
 	validate_tree(&lwin);
 }
 
+TEST(dot_dirs_are_suppressed_by_local_filtering)
+{
+	(void)filter_set(&lwin.local_filter.filter, "dir");
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(5, lwin.list_rows);
+	validate_tree(&lwin);
+
+	/* ".." shouldn't appear after reload. */
+	load_saving_pos(&lwin, 1);
+	assert_int_equal(5, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
 TEST(tree_is_reloaded_manually_with_file_updates)
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));

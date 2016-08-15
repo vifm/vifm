@@ -3776,9 +3776,16 @@ static int
 add_directory_leaf(FileView *view, const char path[], int parent_pos)
 {
 	char *full_path;
+	dir_entry_t *entry;
 
-	dir_entry_t *const entry = alloc_dir_entry(&view->custom.entries,
-			view->custom.entry_count);
+	/* If local filter isn't empty, assume that user is looking for something and
+	 * leafs will get in his way. */
+	if(!filter_is_empty(&view->local_filter.filter))
+	{
+		return 0;
+	}
+
+	entry = alloc_dir_entry(&view->custom.entries, view->custom.entry_count);
 	if(entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
