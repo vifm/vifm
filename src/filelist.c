@@ -107,6 +107,8 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
+static int flist_custom_finish_internal(FileView *view, int very, int tree_view,
+		int reload);
 static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
@@ -1660,6 +1662,16 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 int
 flist_custom_finish(FileView *view, int very, int tree_view)
 {
+	return flist_custom_finish_internal(view, very, tree_view, 0);
+}
+
+/* Finishes file list population, handles empty resulting list corner case.
+ * reload flag suppresses actions taken on location change.  Returns zero on
+ * success, otherwise (on empty list) non-zero is returned. */
+static int
+flist_custom_finish_internal(FileView *view, int very, int tree_view,
+		int reload)
+{
 	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
 	const int might_add_parent_ref = (tree_view != 0);
 	const int no_parent_ref = (view->custom.entry_count == 0);
@@ -1733,7 +1745,10 @@ flist_custom_finish(FileView *view, int very, int tree_view)
 		revert_very_custom(view);
 	}
 
-	on_location_change(view, 0);
+	if(!reload)
+	{
+		on_location_change(view, 0);
+	}
 
 	sort_dir_list(0, view);
 
@@ -3626,7 +3641,7 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 		show_error_msg("Tree View", "Failed to list directory");
 		return 1;
 	}
-	if(flist_custom_finish(view, 0, 1) != 0)
+	if(flist_custom_finish_internal(view, 0, 1, reload) != 0)
 	{
 		return 1;
 	}

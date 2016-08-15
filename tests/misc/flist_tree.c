@@ -155,6 +155,31 @@ TEST(dot_dirs_are_suppressed_by_local_filtering)
 	validate_tree(&lwin);
 }
 
+TEST(reloading_does_not_count_as_location_change)
+{
+	lwin.columns = columns_create();
+
+	cfg.cvoptions = CVO_LOCALFILTER;
+
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+	validate_tree(&lwin);
+
+	(void)filter_set(&lwin.local_filter.filter, "dir");
+	curr_stats.load_stage = 2;
+	load_saving_pos(&lwin, 1);
+	curr_stats.load_stage = 0;
+	assert_int_equal(5, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_false(filter_is_empty(&lwin.local_filter.filter));
+
+	cfg.cvoptions = 0;
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
+}
+
 TEST(tree_is_reloaded_manually_with_file_updates)
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
