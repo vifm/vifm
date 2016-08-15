@@ -3607,7 +3607,14 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 
 	show_progress("Building tree...", 0);
 	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
-	clean_status_bar();
+	if(curr_stats.save_msg || is_status_bar_multiline())
+	{
+		status_bar_message(NULL);
+	}
+	else
+	{
+		ui_sb_quick_msgf("%s", "");
+	}
 
 	if(ui_cancellation_requested())
 	{
