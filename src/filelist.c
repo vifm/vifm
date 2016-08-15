@@ -3673,9 +3673,10 @@ add_files_recursively(FileView *view, const char path[], trie_t excluded_paths,
 		dir = is_dir(full_path);
 		if(!file_is_visible(view, lst[i], dir, NULL, 1))
 		{
-			/* Traverse directory even if we're skipping it, because we might need
-			 * files that are inside of it. */
-			if(dir && file_is_visible(view, lst[i], dir, NULL, 0))
+			/* Traverse directory (but not symlink to it) even if we're skipping it,
+			 * because we might need files that are inside of it. */
+			if(dir && !is_symlink(full_path) &&
+					file_is_visible(view, lst[i], dir, NULL, 0))
 			{
 				nfiltered += add_files_recursively(view, full_path, excluded_paths,
 						parent_pos, 1);

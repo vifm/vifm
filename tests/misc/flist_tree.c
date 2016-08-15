@@ -86,11 +86,19 @@ TEST(symlinks_are_loaded_as_files, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but other code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(SANDBOX_PATH, SANDBOX_PATH "/link"));
+	assert_success(symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
 #endif
 
 	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(0, lwin.filtered);
+	validate_tree(&lwin);
+
+	(void)filter_set(&lwin.local_filter.filter, "a");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(1, lwin.filtered);
 	validate_tree(&lwin);
 
 	assert_success(remove(SANDBOX_PATH "/link"));
