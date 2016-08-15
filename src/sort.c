@@ -42,16 +42,6 @@
 #include "status.h"
 #include "types.h"
 
-/* View which is being sorted. */
-static FileView* view;
-/* Whether the view displays custom file list. */
-static int custom_view;
-static int sort_descending;
-/* Key used to sort entries in current sorting round. */
-static SortingKey sort_type;
-/* Sorting key specific data. */
-static void *sort_data;
-
 static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 		size_t nchildren, int root);
 static void sort_sequence(dir_entry_t *entries, size_t nentries);
@@ -76,6 +66,17 @@ static int compare_item_count(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
 static int compare_group(const char f[], const char s[], regex_t *regex);
 static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
+
+/* View which is being sorted. */
+static FileView* view;
+/* Whether the view displays custom file list. */
+static int custom_view;
+/* Whether it's descending sort. */
+static int sort_descending;
+/* Key used to sort entries in current sorting round. */
+static SortingKey sort_type;
+/* Sorting key specific data. */
+static void *sort_data;
 
 void
 sort_view(FileView *v)
