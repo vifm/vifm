@@ -108,7 +108,7 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
 static int flist_custom_finish_internal(FileView *view, int very, int tree_view,
-		int reload);
+		int reload, const char dir[]);
 static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
@@ -1662,15 +1662,17 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 int
 flist_custom_finish(FileView *view, int very, int tree_view)
 {
-	return flist_custom_finish_internal(view, very, tree_view, 0);
+	return flist_custom_finish_internal(view, very, tree_view, 0,
+			flist_get_dir(view));
 }
 
 /* Finishes file list population, handles empty resulting list corner case.
- * reload flag suppresses actions taken on location change.  Returns zero on
- * success, otherwise (on empty list) non-zero is returned. */
+ * reload flag suppresses actions taken on location change.  dir is current
+ * directory of the view.  Returns zero on success, otherwise (on empty list)
+ * non-zero is returned. */
 static int
 flist_custom_finish_internal(FileView *view, int very, int tree_view,
-		int reload)
+		int reload, const char dir[])
 {
 	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
 	const int might_add_parent_ref = (tree_view != 0);
@@ -1695,7 +1697,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 		{
 			init_dir_entry(view, dir_entry, "..");
 			dir_entry->type = FT_DIR;
-			dir_entry->origin = strdup(flist_get_dir(view));
+			dir_entry->origin = strdup(dir);
 			++view->custom.entry_count;
 		}
 	}
@@ -1713,7 +1715,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 			save_view_history(view, NULL, NULL, -1);
 		}
 
-		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
+		(void)replace_string(&view->custom.orig_dir, dir);
 		view->curr_dir[0] = '\0';
 	}
 
@@ -3641,14 +3643,16 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 		show_error_msg("Tree View", "Failed to list directory");
 		return 1;
 	}
-	if(flist_custom_finish_internal(view, 0, 1, reload) != 0)
+
+	to_canonic_path(path, flist_get_dir(view), canonic_path,
+			sizeof(canonic_path));
+
+	if(flist_custom_finish_internal(view, 0, 1, reload, canonic_path) != 0)
 	{
 		return 1;
 	}
 	view->filtered = nfiltered;
 
-	to_canonic_path(path, flist_get_dir(view), canonic_path,
-			sizeof(canonic_path));
 	replace_string(&view->custom.orig_dir, canonic_path);
 
 	if(!reload)
