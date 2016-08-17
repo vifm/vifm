@@ -65,6 +65,8 @@ static int invalidate_path(node_t *root, const char path[],
 		fsd_cleanup_func cleanup);
 static int resolve_path(const fsdata_t *fsd, const char path[],
 		char real_path[]);
+static void traverse_node(node_t *node, const node_t *parent,
+		fsdata_traverser_func traverser, void *arg);
 
 fsdata_t *
 fsdata_create(int prefix, int resolve_paths)
@@ -369,6 +371,36 @@ invalidate:
 	}
 	root->valid = 0;
 	return 0;
+}
+
+void
+fsdata_traverse(fsdata_t *fsd, fsdata_traverser_func traverser, void *arg)
+{
+	node_t *node;
+
+	if(fsd->root == NULL)
+	{
+		return;
+	}
+
+	for(node = fsd->root->child; node != NULL; node = node->next)
+	{
+		traverse_node(node, NULL, traverser, arg);
+	}
+}
+
+/* fsdata_traverse() helper which works with node_t type. */
+static void
+traverse_node(node_t *node, const node_t *parent,
+		fsdata_traverser_func traverser, void *arg)
+{
+	const void *const parent_data = (parent == NULL ? NULL : &parent->data);
+	traverser(node->name, node->valid, parent_data, &node->data, arg);
+
+	for(parent = node, node = node->child; node != NULL; node = node->next)
+	{
+		traverse_node(node, parent, traverser, arg);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

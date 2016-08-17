@@ -13,6 +13,11 @@
 #define ROOT "C:/"
 #endif
 
+static void traverser(const char name[], int valid, const void *parent_data,
+		void *data, void *arg);
+
+static int nnodes;
+
 TEST(freeing_null_fsdata_is_ok)
 {
 	fsdata_free(NULL);
@@ -202,6 +207,37 @@ TEST(data_size_can_change)
 	assert_success(fsdata_invalidate(fsd, ROOT));
 
 	fsdata_free(fsd);
+}
+
+TEST(empty_tree_is_not_traversed)
+{
+	fsdata_t *const fsd = fsdata_create(0, 0);
+
+	nnodes = 0;
+	fsdata_traverse(fsd, &traverser, NULL);
+	assert_int_equal(0, nnodes);
+
+	fsdata_free(fsd);
+}
+
+TEST(tree_can_be_traversed)
+{
+	int data = 0;
+	fsdata_t *const fsd = fsdata_create(0, 0);
+	assert_success(fsdata_set(fsd, "no/such/path", &data, sizeof(data)));
+
+	nnodes = 0;
+	fsdata_traverse(fsd, &traverser, NULL);
+	assert_int_equal(3, nnodes);
+
+	fsdata_free(fsd);
+}
+
+static void
+traverser(const char name[], int valid, const void *parent_data, void *data,
+		void *arg)
+{
+	++nnodes;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
