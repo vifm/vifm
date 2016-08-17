@@ -214,10 +214,10 @@ static int
 reset_dircache(void)
 {
 	fsdata_free(dcache_size);
-	dcache_size = fsdata_create(0);
+	dcache_size = fsdata_create(0, 1);
 
 	fsdata_free(dcache_nitems);
-	dcache_nitems = fsdata_create(0);
+	dcache_nitems = fsdata_create(0, 1);
 
 	return (dcache_size == NULL || dcache_nitems == NULL);
 }

@@ -29,8 +29,9 @@
 typedef struct fsdata_t fsdata_t;
 
 /* prefix mode causes queries to return nearest match when exact match is not
- * available.  Returns NULL on error. */
-fsdata_t * fsdata_create(int prefix);
+ * available.  Non-zero resolve_paths enables path resolution, which also
+ * forbids use of nonexistent files.  Returns NULL on error. */
+fsdata_t * fsdata_create(int prefix, int resolve_paths);
 
 /* Frees memory from the structure.  Freeing of NULL fsd is OK. */
 void fsdata_free(fsdata_t *fsd);
