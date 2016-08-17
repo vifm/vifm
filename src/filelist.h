@@ -203,6 +203,9 @@ int flist_custom_finish(FileView *view, int very, int tree_view);
 void flist_custom_exclude(FileView *view);
 /* Clones list of files from from view to to view. */
 void flist_custom_clone(FileView *to, const FileView *from);
+/* Adds missing parent directories to the tree.  Such entries are marked as
+ * "temporary", which can be used to remove them later. */
+void flist_custom_uncompress_tree(FileView *view);
 
 /* Other functions. */
 

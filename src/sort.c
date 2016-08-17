@@ -39,6 +39,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "filtering.h"
 #include "status.h"
 #include "types.h"
 
@@ -100,15 +101,30 @@ sort_view(FileView *v)
 		return;
 	}
 
+	/* When local filter isn't empty, parent directories disappear and sorting
+	 * stops being aware of tree structure to some degree.  Perform one more round
+	 * of stable sorting of origins to group child nodes. */
+	if(!filter_is_empty(&v->local_filter.filter))
+	{
+		flist_custom_uncompress_tree(v);
+	}
+
 	unsorted_list = v->dir_entry;
 	v->dir_entry = dynarray_extend(NULL, v->list_rows*sizeof(*v->dir_entry));
 
 	sort_tree_slice(&v->dir_entry[0], unsorted_list, v->list_rows, 1);
 
-	dynarray_free(unsorted_list);
+	if(filter_is_empty(&v->local_filter.filter))
+	{
+		dynarray_free(unsorted_list);
+	}
+	else
+	{
+		filter_temporary_nodes(v, unsorted_list);
+	}
 }
 
-/* Sorts one level of a tree per invocation recursing to sort all nested
+/* Sorts one level of a tree per invocation, recurring to sort all nested
  * trees. */
 static void
 sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,

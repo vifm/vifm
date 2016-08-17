@@ -34,7 +34,7 @@
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdint.h> /* uint64_t */
+#include <stdint.h> /* intptr_t uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* abs() calloc() free() */
 #include <string.h> /* memcmp() memcpy() memset() strcat() strcmp() strcpy()
@@ -113,6 +113,8 @@ static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
+static void uncompress_traverser(const char name[], int valid,
+		const void *parent_data, void *data, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int populate_custom_view(FileView *view, int reload);
@@ -1906,6 +1908,95 @@ flist_custom_clone(FileView *to, const FileView *from)
 	}
 }
 
+void
+flist_custom_uncompress_tree(FileView *view)
+{
+	unsigned int i;
+
+	assert(view->custom.tree_view && "This function is for tree-view only!");
+
+	dir_entry_t *entries = view->dir_entry;
+	size_t nentries = view->list_rows;
+
+	const size_t path_prefix_len = strlen(flist_get_dir(view));
+	fsdata_t *const tree = fsdata_create(0, 0);
+
+	view->dir_entry = NULL;
+	view->list_rows = 0;
+
+	for(i = 0U; i < nentries; ++i)
+	{
+		char full_path[PATH_MAX];
+		void *data = &entries[i];
+		get_full_path_of(&entries[i], sizeof(full_path), full_path);
+		fsdata_set(tree, full_path + path_prefix_len, &data, sizeof(&entries[i]));
+	}
+
+	fsdata_traverse(tree, &uncompress_traverser, view);
+
+	fsdata_free(tree);
+	dynarray_free(entries);
+}
+
+/* fsdata_traverse() callback that builds flattens the tree into array of
+ * entries. */
+static void
+uncompress_traverser(const char name[], int valid, const void *parent_data,
+		void *data, void *arg)
+{
+	/* Initially data associated with existing entries point to original entries.
+	 * Once that entry is copied, the data is replaced with its index in the new
+	 * list. */
+
+	FileView *view = arg;
+
+	dir_entry_t *dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	++view->list_rows;
+
+	if(valid)
+	{
+		*dir_entry = **(dir_entry_t **)data;
+		dir_entry->child_count = 0;
+	}
+	else
+	{
+		char full_path[PATH_MAX];
+
+		init_dir_entry(view, dir_entry, name);
+		if(parent_data == NULL)
+		{
+			dir_entry->origin = strdup(flist_get_dir(view));
+		}
+		else
+		{
+			char parent_path[PATH_MAX];
+			const intptr_t *parent_idx = parent_data;
+			get_full_path_at(view, *parent_idx, sizeof(parent_path), parent_path);
+			dir_entry->origin = strdup(parent_path);
+		}
+
+		get_full_path_of(dir_entry, sizeof(full_path), full_path);
+		fill_dir_entry_by_path(dir_entry, full_path);
+
+		dir_entry->temporary = 1;
+	}
+
+	*(intptr_t *)data = dir_entry - view->dir_entry;
+
+	if(parent_data != NULL)
+	{
+		const intptr_t *const parent_idx = parent_data;
+		dir_entry->child_pos = (dir_entry - view->dir_entry) - *parent_idx;
+
+		do
+		{
+			dir_entry -= dir_entry->child_pos;
+			++dir_entry->child_count;
+		}
+		while(dir_entry->child_pos != 0);
+	}
+}
+
 const char *
 flist_get_dir(const FileView *view)
 {
@@ -2754,6 +2845,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->was_selected = 0;
 	entry->search_match = 0;
 	entry->marked = 0;
+	entry->temporary = 0;
 
 	entry->list_num = -1;
 }

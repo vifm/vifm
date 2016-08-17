@@ -525,6 +525,27 @@ TEST(nodes_are_reparented_on_filtering)
 	validate_tree(&lwin);
 }
 
+TEST(sorting_of_filtered_list_accounts_for_tree)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, local_filter_set(&lwin, "file|dir4"));
+	local_filter_accept(&lwin);
+	assert_int_equal(6, lwin.list_rows);
+	validate_tree(&lwin);
+
+	sort_view(&lwin);
+
+	assert_string_equal("file1", lwin.dir_entry[0].name);
+	assert_string_equal("file2", lwin.dir_entry[1].name);
+	assert_string_equal("dir4", lwin.dir_entry[2].name);
+	assert_string_equal("file3", lwin.dir_entry[3].name);
+	assert_string_equal("file4", lwin.dir_entry[4].name);
+	assert_string_equal("file5", lwin.dir_entry[5].name);
+}
+
 TEST(filtering_does_not_break_the_tree_with_empty_dir)
 {
 	cfg.dot_dirs = DD_NONROOT_PARENT;
