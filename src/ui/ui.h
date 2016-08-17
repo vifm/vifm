@@ -174,9 +174,10 @@ typedef struct dir_entry_t
 	short int match_left;  /* Starting position of search match. */
 	short int match_right; /* Ending position of search match. */
 
-	unsigned int selected : 1;
+	unsigned int selected : 1;     /* Whether file is selected. */
 	unsigned int was_selected : 1; /* Previous selection state for Visual mode. */
 	unsigned int marked : 1;       /* Whether file should be processed. */
+	unsigned int temporary : 1;    /* Whether this is temporary node. */
 }
 dir_entry_t;
 

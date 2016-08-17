@@ -34,7 +34,7 @@
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdint.h> /* uint64_t */
+#include <stdint.h> /* intptr_t uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* abs() calloc() free() */
 #include <string.h> /* memcmp() memcpy() memset() strcat() strcmp() strcpy()
@@ -107,10 +107,14 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
+static int flist_custom_finish_internal(FileView *view, int very, int tree_view,
+		int reload, const char dir[]);
 static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
 static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
+static void uncompress_traverser(const char name[], int valid,
+		const void *parent_data, void *data, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int populate_custom_view(FileView *view, int reload);
@@ -1660,6 +1664,18 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 int
 flist_custom_finish(FileView *view, int very, int tree_view)
 {
+	return flist_custom_finish_internal(view, very, tree_view, 0,
+			flist_get_dir(view));
+}
+
+/* Finishes file list population, handles empty resulting list corner case.
+ * reload flag suppresses actions taken on location change.  dir is current
+ * directory of the view.  Returns zero on success, otherwise (on empty list)
+ * non-zero is returned. */
+static int
+flist_custom_finish_internal(FileView *view, int very, int tree_view,
+		int reload, const char dir[])
+{
 	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
 	const int might_add_parent_ref = (tree_view != 0);
 	const int no_parent_ref = (view->custom.entry_count == 0);
@@ -1683,7 +1699,7 @@ flist_custom_finish(FileView *view, int very, int tree_view)
 		{
 			init_dir_entry(view, dir_entry, "..");
 			dir_entry->type = FT_DIR;
-			dir_entry->origin = strdup(flist_get_dir(view));
+			dir_entry->origin = strdup(dir);
 			++view->custom.entry_count;
 		}
 	}
@@ -1701,7 +1717,7 @@ flist_custom_finish(FileView *view, int very, int tree_view)
 			save_view_history(view, NULL, NULL, -1);
 		}
 
-		(void)replace_string(&view->custom.orig_dir, view->curr_dir);
+		(void)replace_string(&view->custom.orig_dir, dir);
 		view->curr_dir[0] = '\0';
 	}
 
@@ -1733,7 +1749,10 @@ flist_custom_finish(FileView *view, int very, int tree_view)
 		revert_very_custom(view);
 	}
 
-	on_location_change(view, 0);
+	if(!reload)
+	{
+		on_location_change(view, 0);
+	}
 
 	sort_dir_list(0, view);
 
@@ -1886,6 +1905,95 @@ flist_custom_clone(FileView *to, const FileView *from)
 	if(to->custom.unsorted)
 	{
 		apply_very_custom(to);
+	}
+}
+
+void
+flist_custom_uncompress_tree(FileView *view)
+{
+	unsigned int i;
+
+	assert(view->custom.tree_view && "This function is for tree-view only!");
+
+	dir_entry_t *entries = view->dir_entry;
+	size_t nentries = view->list_rows;
+
+	const size_t path_prefix_len = strlen(flist_get_dir(view));
+	fsdata_t *const tree = fsdata_create(0, 0);
+
+	view->dir_entry = NULL;
+	view->list_rows = 0;
+
+	for(i = 0U; i < nentries; ++i)
+	{
+		char full_path[PATH_MAX];
+		void *data = &entries[i];
+		get_full_path_of(&entries[i], sizeof(full_path), full_path);
+		fsdata_set(tree, full_path + path_prefix_len, &data, sizeof(&entries[i]));
+	}
+
+	fsdata_traverse(tree, &uncompress_traverser, view);
+
+	fsdata_free(tree);
+	dynarray_free(entries);
+}
+
+/* fsdata_traverse() callback that builds flattens the tree into array of
+ * entries. */
+static void
+uncompress_traverser(const char name[], int valid, const void *parent_data,
+		void *data, void *arg)
+{
+	/* Initially data associated with existing entries point to original entries.
+	 * Once that entry is copied, the data is replaced with its index in the new
+	 * list. */
+
+	FileView *view = arg;
+
+	dir_entry_t *dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
+	++view->list_rows;
+
+	if(valid)
+	{
+		*dir_entry = **(dir_entry_t **)data;
+		dir_entry->child_count = 0;
+	}
+	else
+	{
+		char full_path[PATH_MAX];
+
+		init_dir_entry(view, dir_entry, name);
+		if(parent_data == NULL)
+		{
+			dir_entry->origin = strdup(flist_get_dir(view));
+		}
+		else
+		{
+			char parent_path[PATH_MAX];
+			const intptr_t *parent_idx = parent_data;
+			get_full_path_at(view, *parent_idx, sizeof(parent_path), parent_path);
+			dir_entry->origin = strdup(parent_path);
+		}
+
+		get_full_path_of(dir_entry, sizeof(full_path), full_path);
+		fill_dir_entry_by_path(dir_entry, full_path);
+
+		dir_entry->temporary = 1;
+	}
+
+	*(intptr_t *)data = dir_entry - view->dir_entry;
+
+	if(parent_data != NULL)
+	{
+		const intptr_t *const parent_idx = parent_data;
+		dir_entry->child_pos = (dir_entry - view->dir_entry) - *parent_idx;
+
+		do
+		{
+			dir_entry -= dir_entry->child_pos;
+			++dir_entry->child_count;
+		}
+		while(dir_entry->child_pos != 0);
 	}
 }
 
@@ -2737,6 +2845,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->was_selected = 0;
 	entry->search_match = 0;
 	entry->marked = 0;
+	entry->temporary = 0;
 
 	entry->list_num = -1;
 }
@@ -3607,7 +3716,14 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 
 	show_progress("Building tree...", 0);
 	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
-	clean_status_bar();
+	if(curr_stats.save_msg || is_status_bar_multiline())
+	{
+		status_bar_message(NULL);
+	}
+	else
+	{
+		ui_sb_quick_msgf("%s", "");
+	}
 
 	if(ui_cancellation_requested())
 	{
@@ -3619,14 +3735,16 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 		show_error_msg("Tree View", "Failed to list directory");
 		return 1;
 	}
-	if(flist_custom_finish(view, 0, 1) != 0)
+
+	to_canonic_path(path, flist_get_dir(view), canonic_path,
+			sizeof(canonic_path));
+
+	if(flist_custom_finish_internal(view, 0, 1, reload, canonic_path) != 0)
 	{
 		return 1;
 	}
 	view->filtered = nfiltered;
 
-	to_canonic_path(path, flist_get_dir(view), canonic_path,
-			sizeof(canonic_path));
 	replace_string(&view->custom.orig_dir, canonic_path);
 
 	if(!reload)
@@ -3673,9 +3791,10 @@ add_files_recursively(FileView *view, const char path[], trie_t excluded_paths,
 		dir = is_dir(full_path);
 		if(!file_is_visible(view, lst[i], dir, NULL, 1))
 		{
-			/* Traverse directory even if we're skipping it, because we might need
-			 * files that are inside of it. */
-			if(dir && file_is_visible(view, lst[i], dir, NULL, 0))
+			/* Traverse directory (but not symlink to it) even if we're skipping it,
+			 * because we might need files that are inside of it. */
+			if(dir && !is_symlink(full_path) &&
+					file_is_visible(view, lst[i], dir, NULL, 0))
 			{
 				nfiltered += add_files_recursively(view, full_path, excluded_paths,
 						parent_pos, 1);
@@ -3768,9 +3887,16 @@ static int
 add_directory_leaf(FileView *view, const char path[], int parent_pos)
 {
 	char *full_path;
+	dir_entry_t *entry;
 
-	dir_entry_t *const entry = alloc_dir_entry(&view->custom.entries,
-			view->custom.entry_count);
+	/* If local filter isn't empty, assume that user is looking for something and
+	 * leafs will get in his way. */
+	if(!filter_is_empty(&view->local_filter.filter))
+	{
+		return 0;
+	}
+
+	entry = alloc_dir_entry(&view->custom.entries, view->custom.entry_count);
 	if(entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");

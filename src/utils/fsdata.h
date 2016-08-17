@@ -28,9 +28,15 @@
 /* Declaration of opaque fsdata type. */
 typedef struct fsdata_t fsdata_t;
 
+/* Type of callback for fsdata_traverse().  Intermediate nodes created
+ * indirectly are reported as invalid.  parent_data is NULL for root nodes. */
+typedef void (*fsdata_traverser_func)(const char name[], int valid,
+		const void *parent_data, void *data, void *arg);
+
 /* prefix mode causes queries to return nearest match when exact match is not
- * available.  Returns NULL on error. */
-fsdata_t * fsdata_create(int prefix);
+ * available.  Non-zero resolve_paths enables path resolution, which also
+ * forbids use of nonexistent files.  Returns NULL on error. */
+fsdata_t * fsdata_create(int prefix, int resolve_paths);
 
 /* Frees memory from the structure.  Freeing of NULL fsd is OK. */
 void fsdata_free(fsdata_t *fsd);
@@ -47,6 +53,9 @@ int fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len);
 /* Invalidates all nodes from the root to the specified node if it exists.
  * Returns zero on success or non-zero if path wasn't found. */
 int fsdata_invalidate(fsdata_t *fsd, const char path[]);
+
+/* Calls the callback for each node. */
+void fsdata_traverse(fsdata_t *fsd, fsdata_traverser_func traverser, void *arg);
 
 #endif /* VIFM__UTILS__FSDATA_H__ */
 

@@ -29,7 +29,7 @@ static void cleanup(void *data);
 fsddata_t *
 fsddata_create(int longest)
 {
-	fsdata_t *const fsd = fsdata_create(longest);
+	fsdata_t *const fsd = fsdata_create(longest, 1);
 	if(fsd != NULL)
 	{
 		fsdata_set_cleanup(fsd, &cleanup);

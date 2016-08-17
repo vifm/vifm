@@ -86,11 +86,19 @@ TEST(symlinks_are_loaded_as_files, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but other code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(SANDBOX_PATH, SANDBOX_PATH "/link"));
+	assert_success(symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
 #endif
 
 	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(0, lwin.filtered);
+	validate_tree(&lwin);
+
+	(void)filter_set(&lwin.local_filter.filter, "a");
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(1, lwin.filtered);
 	validate_tree(&lwin);
 
 	assert_success(remove(SANDBOX_PATH "/link"));
@@ -132,6 +140,44 @@ TEST(tree_accounts_for_local_filter)
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(10, lwin.list_rows);
 	validate_tree(&lwin);
+}
+
+TEST(dot_dirs_are_suppressed_by_local_filtering)
+{
+	(void)filter_set(&lwin.local_filter.filter, "dir");
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(5, lwin.list_rows);
+	validate_tree(&lwin);
+
+	/* ".." shouldn't appear after reload. */
+	load_saving_pos(&lwin, 1);
+	assert_int_equal(5, lwin.list_rows);
+	validate_tree(&lwin);
+}
+
+TEST(reloading_does_not_count_as_location_change)
+{
+	lwin.columns = columns_create();
+
+	cfg.cvoptions = CVO_LOCALFILTER;
+
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+	validate_tree(&lwin);
+
+	(void)filter_set(&lwin.local_filter.filter, "dir");
+	curr_stats.load_stage = 2;
+	load_saving_pos(&lwin, 1);
+	curr_stats.load_stage = 0;
+	assert_int_equal(5, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_false(filter_is_empty(&lwin.local_filter.filter));
+
+	cfg.cvoptions = 0;
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
 }
 
 TEST(tree_is_reloaded_manually_with_file_updates)
@@ -477,6 +523,27 @@ TEST(nodes_are_reparented_on_filtering)
 	local_filter_accept(&lwin);
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
+}
+
+TEST(sorting_of_filtered_list_accounts_for_tree)
+{
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(12, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_int_equal(0, local_filter_set(&lwin, "file|dir4"));
+	local_filter_accept(&lwin);
+	assert_int_equal(6, lwin.list_rows);
+	validate_tree(&lwin);
+
+	sort_view(&lwin);
+
+	assert_string_equal("file1", lwin.dir_entry[0].name);
+	assert_string_equal("file2", lwin.dir_entry[1].name);
+	assert_string_equal("dir4", lwin.dir_entry[2].name);
+	assert_string_equal("file3", lwin.dir_entry[3].name);
+	assert_string_equal("file4", lwin.dir_entry[4].name);
+	assert_string_equal("file5", lwin.dir_entry[5].name);
 }
 
 TEST(filtering_does_not_break_the_tree_with_empty_dir)

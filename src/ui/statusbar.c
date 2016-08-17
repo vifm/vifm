@@ -77,7 +77,7 @@ ui_sb_quick_msgf(const char format[], ...)
 {
 	va_list ap;
 
-	if(curr_stats.load_stage < 2)
+	if(curr_stats.load_stage < 2 || status_bar == NULL)
 	{
 		return;
 	}

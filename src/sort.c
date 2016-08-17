@@ -39,18 +39,9 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "filtering.h"
 #include "status.h"
 #include "types.h"
-
-/* View which is being sorted. */
-static FileView* view;
-/* Whether the view displays custom file list. */
-static int custom_view;
-static int sort_descending;
-/* Key used to sort entries in current sorting round. */
-static SortingKey sort_type;
-/* Sorting key specific data. */
-static void *sort_data;
 
 static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 		size_t nchildren, int root);
@@ -77,6 +68,17 @@ static int compare_item_count(const dir_entry_t *f, int fdir,
 static int compare_group(const char f[], const char s[], regex_t *regex);
 static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
 
+/* View which is being sorted. */
+static FileView* view;
+/* Whether the view displays custom file list. */
+static int custom_view;
+/* Whether it's descending sort. */
+static int sort_descending;
+/* Key used to sort entries in current sorting round. */
+static SortingKey sort_type;
+/* Sorting key specific data. */
+static void *sort_data;
+
 void
 sort_view(FileView *v)
 {
@@ -99,15 +101,30 @@ sort_view(FileView *v)
 		return;
 	}
 
+	/* When local filter isn't empty, parent directories disappear and sorting
+	 * stops being aware of tree structure to some degree.  Perform one more round
+	 * of stable sorting of origins to group child nodes. */
+	if(!filter_is_empty(&v->local_filter.filter))
+	{
+		flist_custom_uncompress_tree(v);
+	}
+
 	unsorted_list = v->dir_entry;
 	v->dir_entry = dynarray_extend(NULL, v->list_rows*sizeof(*v->dir_entry));
 
 	sort_tree_slice(&v->dir_entry[0], unsorted_list, v->list_rows, 1);
 
-	dynarray_free(unsorted_list);
+	if(filter_is_empty(&v->local_filter.filter))
+	{
+		dynarray_free(unsorted_list);
+	}
+	else
+	{
+		filter_temporary_nodes(v, unsorted_list);
+	}
 }
 
-/* Sorts one level of a tree per invocation recursing to sort all nested
+/* Sorts one level of a tree per invocation, recurring to sort all nested
  * trees. */
 static void
 sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,

@@ -285,6 +285,45 @@ filters_dir_updated(FileView *view)
 	filter_clear(&view->local_filter.filter);
 }
 
+void
+filter_temporary_nodes(FileView *view, dir_entry_t *list)
+{
+	/* This is basically a simplified version of update_filtering_lists().  Not
+	 * sure if it's worth merging them. */
+
+	int i;
+	size_t list_size = 0U;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *new_entry;
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		/* list_num links to position of nodes passed through filter in list of
+		 * visible files.  Removed nodes have -1. */
+		entry->list_num = -1;
+
+		if(entry->temporary)
+		{
+			free_dir_entry(view, entry);
+			continue;
+		}
+
+		new_entry = add_dir_entry(&list, &list_size, entry);
+		if(new_entry != NULL)
+		{
+			entry->list_num = list_size - 1U;
+			/* We basically grow the tree node by node while performing
+			 * reparenting. */
+			reparent_tree_node(entry, new_entry);
+		}
+	}
+
+	dynarray_free(view->dir_entry);
+	view->dir_entry = list;
+	view->list_rows = list_size;
+}
+
 int
 local_filter_set(FileView *view, const char filter[])
 {
@@ -397,6 +436,8 @@ store_local_filter_position(FileView *const view, int pos)
 static int
 update_filtering_lists(FileView *view, int add, int clear)
 {
+	/* filter_temporary_nodes() is similar function. */
+
 	size_t i;
 	size_t list_size = 0U;
 	dir_entry_t *parent_entry = NULL;

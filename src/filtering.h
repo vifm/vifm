@@ -68,6 +68,10 @@ int filters_file_is_filtered(FileView *view, const char filename[], int is_dir);
  * directory of the view changes. */
 void filters_dir_updated(FileView *view);
 
+/* Filters out nodes that bear "temporary" mark.  The list can be NULL,
+ * otherwise it's a memory to be used for new list. */
+void filter_temporary_nodes(FileView *view, dir_entry_t *list);
+
 /* Local filter related functions. */
 
 /* Sets regular expression of the local filter for the view.  First call of this

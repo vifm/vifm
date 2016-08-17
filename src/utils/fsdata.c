@@ -47,11 +47,12 @@ typedef struct node_t
 }
 node_t;
 
-/* A node subtype that holds additional data. */
+/* Tree head that holds its settings. */
 struct fsdata_t
 {
 	node_t *root;             /* Root node data. */
 	int prefix;               /* Whether we use last seen value on searches. */
+	int resolve_paths;        /* Whether input paths should be resolved. */
 	fsd_cleanup_func cleanup; /* Node data cleanup function. */
 };
 
@@ -62,9 +63,13 @@ static node_t * get_or_create_node(node_t *root, const char path[],
 static node_t * make_node(const char name[], size_t name_len, size_t data_size);
 static int invalidate_path(node_t *root, const char path[],
 		fsd_cleanup_func cleanup);
+static int resolve_path(const fsdata_t *fsd, const char path[],
+		char real_path[]);
+static void traverse_node(node_t *node, const node_t *parent,
+		fsdata_traverser_func traverser, void *arg);
 
 fsdata_t *
-fsdata_create(int prefix)
+fsdata_create(int prefix, int resolve_paths)
 {
 	fsdata_t *const fsd = malloc(sizeof(*fsd));
 	if(fsd == NULL)
@@ -74,6 +79,7 @@ fsdata_create(int prefix)
 
 	fsd->root = NULL;
 	fsd->prefix = prefix;
+	fsd->resolve_paths = resolve_paths;
 	fsd->cleanup = &do_nothing;
 	return fsd;
 }
@@ -128,7 +134,7 @@ fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len)
 	node_t *node;
 	char real_path[PATH_MAX];
 
-	if(os_realpath(path, real_path) != real_path)
+	if(resolve_path(fsd, path, real_path) != 0)
 	{
 		return -1;
 	}
@@ -172,7 +178,7 @@ fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len)
 		return -1;
 	}
 
-	if(os_realpath(path, real_path) != real_path)
+	if(resolve_path(fsd, path, real_path) != 0)
 	{
 		return -1;
 	}
@@ -298,13 +304,26 @@ int
 fsdata_invalidate(fsdata_t *fsd, const char path[])
 {
 	char real_path[PATH_MAX];
-
-	if(os_realpath(path, real_path) != real_path)
+	if(resolve_path(fsd, path, real_path) != 0)
 	{
 		return 1;
 	}
 
 	return invalidate_path(fsd->root, real_path, fsd->cleanup);
+}
+
+/* Performs optional path resolution (configured at tree creation).  real_path
+ * should be at least PATH_MAX chars in length.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+resolve_path(const fsdata_t *fsd, const char path[], char real_path[])
+{
+	if(fsd->resolve_paths)
+	{
+		return (os_realpath(path, real_path) != real_path);
+	}
+	copy_str(real_path, PATH_MAX, path);
+	return 0;
 }
 
 /* Invalidates nodes on the path if end item is found.  Returns zero on
@@ -352,6 +371,36 @@ invalidate:
 	}
 	root->valid = 0;
 	return 0;
+}
+
+void
+fsdata_traverse(fsdata_t *fsd, fsdata_traverser_func traverser, void *arg)
+{
+	node_t *node;
+
+	if(fsd->root == NULL)
+	{
+		return;
+	}
+
+	for(node = fsd->root->child; node != NULL; node = node->next)
+	{
+		traverse_node(node, NULL, traverser, arg);
+	}
+}
+
+/* fsdata_traverse() helper which works with node_t type. */
+static void
+traverse_node(node_t *node, const node_t *parent,
+		fsdata_traverser_func traverser, void *arg)
+{
+	const void *const parent_data = (parent == NULL ? NULL : &parent->data);
+	traverser(node->name, node->valid, parent_data, &node->data, arg);
+
+	for(parent = node, node = node->child; node != NULL; node = node->next)
+	{
+		traverse_node(node, parent, traverser, arg);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

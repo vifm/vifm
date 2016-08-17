@@ -23,6 +23,7 @@
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
 
+/* Sorts entries of the view according to its sorting configuration. */
 void sort_view(FileView *view);
 
 /* Maps primary sort key to second column type.  Returns secondary key that
