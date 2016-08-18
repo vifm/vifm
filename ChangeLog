@@ -47,6 +47,9 @@
 	Fixed assertion failure on file rename of specific pattern (renaming files
 	1, 2 via `:rename 2 3` is the shortest example).  Thanks to aleksejrs.
 
+	Fixed rejecting to clone files in custom view, when name is specified
+	explicitly (form without arguments was properly disabled before).
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

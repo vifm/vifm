@@ -2254,6 +2254,10 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		{
 			nlines = 0;
 		}
+		else if(!can_add_files_to_view(view, -1))
+		{
+			return 0;
+		}
 	}
 	else
 	{
