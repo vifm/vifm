@@ -45,7 +45,6 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
-#include "compat/reallocarray.h"
 #include "engine/autocmds.h"
 #include "engine/mode.h"
 #include "int/fuse.h"
@@ -112,7 +111,7 @@ static int flist_custom_finish_internal(FileView *view, int very, int tree_view,
 static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
-static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
+static int is_temporary(FileView *view, const dir_entry_t *entry, void *arg);
 static void uncompress_traverser(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
@@ -1802,9 +1801,6 @@ void
 flist_custom_exclude(FileView *view)
 {
 	dir_entry_t *entry;
-	int nfiles = 0;
-	char **files = NULL;
-	strlist_t list;
 
 	if(!flist_custom_active(view))
 	{
@@ -1814,25 +1810,20 @@ flist_custom_exclude(FileView *view)
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry))
 	{
-		char full_path[PATH_MAX];
-		get_full_path_of(entry, sizeof(full_path), full_path);
+		entry->temporary = 1;
 
-		nfiles = add_to_string_array(&files, nfiles, 1, full_path);
 		if(view->custom.tree_view)
 		{
+			char full_path[PATH_MAX];
+			get_full_path_of(entry, sizeof(full_path), full_path);
 			(void)trie_put(view->custom.excluded_paths, full_path);
 		}
 	}
 
-	list.nitems = nfiles;
-	list.items = files;
-
-	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_in_list, &list,
-			0, 1);
+	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_temporary,
+			NULL, 0, 1);
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-			&is_in_list, &list, 1, 1);
-
-	free_string_array(files, nfiles);
+			&is_temporary, NULL, 1, 1);
 
 	flist_ensure_pos_is_valid(view);
 	ui_view_schedule_redraw(view);
@@ -1840,15 +1831,12 @@ flist_custom_exclude(FileView *view)
 	recount_selected_files(view);
 }
 
-/* zap_entries() filter to filter-out files from array of strings.  Returns
- * non-zero if entry is to be kept and zero otherwise.*/
+/* zap_entries() filter to filter-out files, which were marked for removal.
+ * Returns non-zero if entry is to be kept and zero otherwise.*/
 static int
-is_in_list(FileView *view, const dir_entry_t *entry, void *arg)
+is_temporary(FileView *view, const dir_entry_t *entry, void *arg)
 {
-	const strlist_t *list = arg;
-	char full_path[PATH_MAX];
-	get_full_path_of(entry, sizeof(full_path), full_path);
-	return !is_in_string_array(list->items, list->nitems, full_path);
+	return !entry->temporary;
 }
 
 void
