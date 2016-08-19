@@ -452,16 +452,27 @@ update_filtering_lists(FileView *view, int add, int clear)
 		dir_entry_t *const entry = &view->local_filter.unfiltered[i];
 		const char *name = entry->name;
 
-		if(entry->child_pos == 0 && is_parent_dir(name))
+		if(is_parent_dir(name))
 		{
-			parent_entry = entry;
-			if(add && cfg_parent_dir_is_visible(is_root_dir(view->curr_dir)))
+			if(entry->child_pos == 0)
 			{
-				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
+				parent_entry = entry;
+				if(add && cfg_parent_dir_is_visible(is_root_dir(view->curr_dir)))
+				{
+					(void)add_dir_entry(&view->dir_entry, &list_size, entry);
 
-				parent_added = 1;
+					parent_added = 1;
+				}
+				continue;
 			}
-			continue;
+			else if(!filter_is_empty(&view->local_filter.filter))
+			{
+				if(clear)
+				{
+					free_dir_entry(view, entry);
+				}
+				continue;
+			}
 		}
 
 		if(is_directory_entry(entry))

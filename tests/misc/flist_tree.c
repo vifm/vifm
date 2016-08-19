@@ -155,6 +155,29 @@ TEST(dot_dirs_are_suppressed_by_local_filtering)
 	validate_tree(&lwin);
 }
 
+TEST(dot_dirs_are_not_matched_by_local_filtering)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-1", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-2", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(4, lwin.list_rows);
+
+	assert_int_equal(1, local_filter_set(&lwin, "\\."));
+	local_filter_accept(&lwin);
+
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	/* ".." shouldn't appear after reload. */
+	load_saving_pos(&lwin, 1);
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir-2"));
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir-1"));
+}
+
 TEST(reloading_does_not_count_as_location_change)
 {
 	lwin.columns = columns_create();
