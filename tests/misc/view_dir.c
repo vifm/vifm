@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() */
+#include <unistd.h> /* rmdir() symlink() */
 
 #include <stdio.h> /* remove() */
 
@@ -180,6 +180,35 @@ TEST(multiple_non_empty_dirs_have_correct_prefixes_plus_sorting)
 	assert_success(rmdir("dir/sub1"));
 	assert_success(rmdir("dir/sub2"));
 	assert_success(rmdir("dir"));
+}
+
+TEST(symlinks_are_not_resolved_in_tree_preview, IF(not_windows))
+{
+	int nlines;
+	FILE *fp;
+	char **lines;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0777));
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(".", SANDBOX_PATH "/dir/link"));
+#endif
+
+	fp = qv_view_dir(SANDBOX_PATH "/dir");
+	lines = read_file_lines(fp, &nlines);
+
+	assert_int_equal(4, nlines);
+	assert_string_equal("dir/", lines[0]);
+	assert_string_equal("`-- link/ -> .", lines[1]);
+	assert_string_equal("", lines[2]);
+	assert_string_equal("1 directory, 0 files", lines[3]);
+
+	free_string_array(lines, nlines);
+	fclose(fp);
+
+	assert_success(unlink(SANDBOX_PATH "/dir/link"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
