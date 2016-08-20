@@ -93,7 +93,7 @@ sort_view(FileView *v)
 	view = v;
 	custom_view = flist_custom_active(v);
 
-	if(!custom_view || !v->custom.tree_view)
+	if(!custom_view || v->custom.type != CV_TREE)
 	{
 		/* Tree sorting works fine for flat list, but requires a bit more
 		 * resources, so skip it. */

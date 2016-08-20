@@ -1356,7 +1356,7 @@ change_directory(FileView *view, const char directory[])
 	}
 
 	/* Perform additional actions on leaving custom view. */
-	if(was_in_custom_view && view->custom.unsorted)
+	if(was_in_custom_view && view->custom.type == CV_UNSORTED)
 	{
 		revert_very_custom(view);
 	}
@@ -1705,7 +1705,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 
 	previous = (view->curr_dir[0] != '\0')
 	         ? NORMAL
-	         : (view->custom.unsorted ? CUSTOM_VERY : CUSTOM);
+	         : (view->custom.type == CV_UNSORTED ? CUSTOM_VERY : CUSTOM);
 
 	if(previous == NORMAL)
 	{
@@ -1729,12 +1729,11 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 	view->dir_entry = dynarray_shrink(view->dir_entry);
 	view->filtered = 0;
 
-	/* Tree view mode must be set to correct value before sorting takes place. */
-	view->custom.tree_view = tree_view;
+	/* Kind of custom view must be set to correct value before option loading and
+	 * sorting. */
+	view->custom.type = tree_view ? CV_TREE
+	                  : very ? CV_UNSORTED : CV_REGULAR;
 
-	/* view->custom.unsorted must be set before load_sort_option() so that it
-	 * skips sort array normalization. */
-	view->custom.unsorted = very;
 	if(very)
 	{
 		/* Applying very custom twice erases sorting completely. */
@@ -1812,7 +1811,7 @@ flist_custom_exclude(FileView *view)
 	{
 		entry->temporary = 1;
 
-		if(view->custom.tree_view)
+		if(view->custom.type == CV_TREE)
 		{
 			char full_path[PATH_MAX];
 			get_full_path_of(entry, sizeof(full_path), full_path);
@@ -1851,7 +1850,9 @@ flist_custom_clone(FileView *to, const FileView *from)
 
 	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
 	replace_string(&to->custom.title, from->custom.title);
-	to->custom.unsorted = from->custom.unsorted;
+	to->custom.type = (from->custom.type == CV_UNSORTED)
+	                ? CV_UNSORTED
+	                : CV_REGULAR;
 	to->curr_dir[0] = '\0';
 
 	if(custom_list_is_incomplete(from))
@@ -1888,7 +1889,7 @@ flist_custom_clone(FileView *to, const FileView *from)
 
 	to->filtered = 0;
 
-	if(to->custom.unsorted)
+	if(to->custom.type == CV_UNSORTED)
 	{
 		apply_very_custom(to);
 	}
@@ -1899,7 +1900,8 @@ flist_custom_uncompress_tree(FileView *view)
 {
 	unsigned int i;
 
-	assert(view->custom.tree_view && "This function is for tree-view only!");
+	assert(view->custom.type == CV_TREE &&
+			"This function is for tree-view only!");
 
 	dir_entry_t *entries = view->dir_entry;
 	size_t nentries = view->list_rows;
@@ -2008,7 +2010,7 @@ flist_goto_by_path(FileView *view, const char path[])
 		return;
 	}
 
-	if(flist_custom_active(view) && view->custom.tree_view &&
+	if(flist_custom_active(view) && view->custom.type == CV_TREE &&
 			strcmp(name, "..") == 0)
 	{
 		int pos;
@@ -2211,7 +2213,7 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 populate_custom_view(FileView *view, int reload)
 {
-	if(view->custom.tree_view)
+	if(view->custom.type == CV_TREE)
 	{
 		dir_entry_t *prev_dir_entries;
 		int prev_list_rows, result;
@@ -2937,7 +2939,7 @@ check_if_filelist_have_changed(FileView *view)
 	const char *const curr_dir = flist_get_dir(view);
 
 	if(view->on_slow_fs ||
-			(flist_custom_active(view) && !view->custom.tree_view) ||
+			(flist_custom_active(view) && view->custom.type != CV_TREE) ||
 			is_unc_root(curr_dir))
 	{
 		return;
@@ -2977,7 +2979,7 @@ check_if_filelist_have_changed(FileView *view)
 	{
 		ui_view_schedule_reload(view);
 	}
-	else if(flist_custom_active(view) && view->custom.tree_view)
+	else if(flist_custom_active(view) && view->custom.type == CV_TREE)
 	{
 		if(tree_has_changed(view->dir_entry, view->list_rows))
 		{
@@ -3451,7 +3453,7 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 
 	char *free_this = NULL;
 	const char *root_path = flist_get_dir(view);
-	if(format && view->custom.tree_view && ui_view_displays_columns(view) &&
+	if(format && view->custom.type == CV_TREE && ui_view_displays_columns(view) &&
 			entry->child_pos != 0)
 	{
 		const dir_entry_t *const parent = entry - entry->child_pos;

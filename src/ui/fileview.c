@@ -1126,7 +1126,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 		return;
 	}
 
-	if(!ui_view_displays_columns(view) || !view->custom.tree_view)
+	if(!ui_view_displays_columns(view) || view->custom.type != CV_TREE)
 	{
 		/* File name possibly with path prefix. */
 		get_short_path_of(view, entry, 1, buf_len + 1U, buf);
@@ -1622,7 +1622,7 @@ reset_view_columns(FileView *view)
 {
 	if(!ui_view_displays_columns(view) ||
 			(curr_stats.restart_in_progress && flist_custom_active(view) &&
-			 view->custom.unsorted))
+			 view->custom.type == CV_UNSORTED))
 	{
 		return;
 	}

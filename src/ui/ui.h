@@ -194,6 +194,15 @@ typedef struct
 	/* Parameters related to custom filling. */
 	struct
 	{
+		/* Type of the custom view. */
+		enum
+		{
+			CV_REGULAR,  /* Sorted list of files. */
+			CV_UNSORTED, /* No initial sorting of file list is enforced. */
+			CV_TREE,     /* Files of a file system sub-tree. */
+		}
+		type;
+
 		/* This is temporary storage for custom list entries used during its
 		 * construction as well as storage for unfiltered custom list if local
 		 * filter is not empty. */
@@ -205,14 +214,11 @@ typedef struct
 		/* Title for the custom view. */
 		char *title;
 
-		/* Whether list is unsorted. */
-		int unsorted;
 		/* Previous sorting value, before unsorted custom view was loaded. */
 		char sort[SK_COUNT];
 
-		/* Whether this custom view displays files in a file system sub-tree. */
-		int tree_view;
-		/* List of paths that should be ignored (including all nested paths). */
+		/* List of paths that should be ignored (including all nested paths).  Used
+		 * by tree-view. */
 		trie_t excluded_paths;
 
 		/* Names of files in custom view while it's being composed.  Used for
