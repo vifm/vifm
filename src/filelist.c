@@ -1839,7 +1839,7 @@ is_temporary(FileView *view, const dir_entry_t *entry, void *arg)
 }
 
 void
-flist_custom_clone(FileView *to, const FileView *from)
+flist_custom_clone(FileView *to, const FileView *from, int tree)
 {
 	dir_entry_t *dst, *src;
 	int nentries;
@@ -1849,12 +1849,24 @@ flist_custom_clone(FileView *to, const FileView *from)
 			"Wrong state of destination view.");
 
 	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
-	replace_string(&to->custom.title,
-			from->custom.type == CV_TREE ? "from tree" : from->custom.title);
-	to->custom.type = (from->custom.type == CV_UNSORTED)
-	                ? CV_UNSORTED
-	                : CV_REGULAR;
 	to->curr_dir[0] = '\0';
+
+	if(tree && from->custom.type == CV_TREE)
+	{
+		replace_string(&to->custom.title, "tree");
+		to->custom.type = CV_TREE;
+
+		trie_free(to->custom.excluded_paths);
+		to->custom.excluded_paths = trie_clone(from->custom.excluded_paths);
+	}
+	else
+	{
+		replace_string(&to->custom.title,
+				from->custom.type == CV_TREE ? "from tree" : from->custom.title);
+		to->custom.type = (from->custom.type == CV_UNSORTED)
+		                ? CV_UNSORTED
+		                : CV_REGULAR;
+	}
 
 	if(custom_list_is_incomplete(from))
 	{

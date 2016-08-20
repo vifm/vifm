@@ -7,6 +7,9 @@
 	Added :dmap, :dnoremap and :dunmap commands to configure mappings in
 	dialogs.  Thanks to Sassan Haradji (a.k.a. sassanh).
 
+	Added "tree" parameter to :sync! that enables synchronization of tree
+	view.  Thanks to filterfalse.
+
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 

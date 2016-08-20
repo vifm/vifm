@@ -399,6 +399,7 @@ complete_selective_sync(const char str[])
 		{ "localopts", "values of view-specific options" },
 		{ "filters",   "all filters" },
 		{ "filelist",  "list of files for custom views" },
+		{ "tree",      "tree structure for tree views" },
 		{ "all",       "as much as possible" },
 	};
 
