@@ -141,5 +141,27 @@ TEST(free_with_data_removes_data)
 	trie_free_with_data(trie);
 }
 
+TEST(cloning_null_trie_is_ok)
+{
+	assert_true(trie_clone(NULL_TRIE) == NULL_TRIE);
+}
+
+TEST(trie_cloning_works)
+{
+	const trie_t trie = trie_create();
+	trie_t clone;
+
+	assert_int_equal(0, trie_put(trie, "str"));
+
+	clone = trie_clone(trie);
+	assert_true(trie_put(clone, "str") > 0);
+
+	assert_int_equal(0, trie_put(clone, "string"));
+	assert_int_equal(0, trie_put(trie, "string"));
+
+	trie_free(clone);
+	trie_free(trie);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

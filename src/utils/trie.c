@@ -31,6 +31,7 @@ struct trie_t
 	char exists;     /* Whether this node exists or it's an intermediate node. */
 };
 
+static trie_t clone_nodes(trie_t trie, int *error);
 static void get_or_create(trie_t trie, const char str[], void *data,
 		int *result);
 
@@ -38,6 +39,48 @@ trie_t
 trie_create(void)
 {
 	return calloc(1U, sizeof(struct trie_t));
+}
+
+trie_t
+trie_clone(trie_t trie)
+{
+	int error = 0;
+
+	trie = clone_nodes(trie, &error);
+	if(error)
+	{
+		trie_free(trie);
+		return NULL_TRIE;
+	}
+
+	return trie;
+}
+
+/* Clones node and all its relatives.  Sets *error to non-zero on error.
+ * Returns new node. */
+static trie_t
+clone_nodes(trie_t trie, int *error)
+{
+	trie_t new_trie;
+
+	if(trie == NULL_TRIE)
+	{
+		return NULL_TRIE;
+	}
+
+	new_trie = malloc(sizeof(*new_trie));
+	if(new_trie == NULL)
+	{
+		*error = 1;
+		return NULL_TRIE;
+	}
+
+	*new_trie = *trie;
+	new_trie->left = clone_nodes(trie->left, error);
+	new_trie->right = clone_nodes(trie->right, error);
+	new_trie->children = clone_nodes(trie->children, error);
+
+	return new_trie;
 }
 
 void

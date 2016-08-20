@@ -30,6 +30,10 @@ typedef struct trie_t *trie_t;
 /* Creates new empty trie.  Returns NULL_TRIE on error. */
 trie_t trie_create(void);
 
+/* Clones a trie.  Associated data pointers are copied as is.  Returns NULL_TRIE
+ * on error. */
+trie_t trie_clone(trie_t trie);
+
 /* Frees memory allocated for the trie.  Freeing of NULL_TRIE trie is OK. */
 void trie_free(trie_t trie);
 
