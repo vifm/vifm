@@ -1852,8 +1852,6 @@ flist_custom_clone(FileView *to, const FileView *from)
 	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
 	replace_string(&to->custom.title, from->custom.title);
 	to->custom.unsorted = from->custom.unsorted;
-	memcpy(&to->custom.unsorted, &from->custom.unsorted,
-			sizeof(to->custom.unsorted));
 	to->curr_dir[0] = '\0';
 
 	if(custom_list_is_incomplete(from))
