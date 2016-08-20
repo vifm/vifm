@@ -1888,6 +1888,14 @@ flist_custom_clone(FileView *to, const FileView *from)
 			dst[j].origin = strdup(dst[j].origin);
 		}
 
+		/* If destination pane won't be a tree, erase tree-specific data, because
+		 * some tree-specific code is driven directly by these fields. */
+		if(to->custom.type != CV_TREE)
+		{
+			dst[j].child_count = 0;
+			dst[j].child_pos = 0;
+		}
+
 		++j;
 	}
 

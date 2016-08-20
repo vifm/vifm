@@ -96,7 +96,7 @@ TEST(sync_syncs_filelist)
 	opt_handlers_teardown();
 }
 
-TEST(sync_removes_leafs_on_converting_tree_to_cv)
+TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 {
 	lwin.window_rows = 1;
 	rwin.window_rows = 1;
@@ -110,6 +110,8 @@ TEST(sync_removes_leafs_on_converting_tree_to_cv)
 
 	assert_true(flist_custom_active(other_view));
 	assert_int_equal(1, other_view->list_rows);
+	assert_int_equal(0, other_view->dir_entry[0].child_count);
+	assert_int_equal(0, other_view->dir_entry[0].child_pos);
 
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
