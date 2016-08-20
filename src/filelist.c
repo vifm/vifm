@@ -1843,7 +1843,7 @@ flist_custom_clone(FileView *to, const FileView *from)
 {
 	dir_entry_t *dst, *src;
 	int nentries;
-	int i;
+	int i, j;
 
 	assert(flist_custom_active(from) && to->custom.paths_cache == NULL_TRIE &&
 			"Wrong state of destination view.");
@@ -1868,24 +1868,33 @@ flist_custom_clone(FileView *to, const FileView *from)
 
 	dst = dynarray_extend(NULL, nentries*sizeof(*dst));
 
+	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		dst[i] = src[i];
-		dst[i].name = strdup(dst[i].name);
-		if(dst[i].origin == from->curr_dir)
+		if(to->custom.type != CV_TREE && src[i].child_pos != 0 &&
+				is_parent_dir(src[i].name))
 		{
-			dst[i].origin = to->curr_dir;
+			continue;
+		}
+
+		dst[j] = src[i];
+		dst[j].name = strdup(dst[j].name);
+		if(dst[j].origin == from->curr_dir)
+		{
+			dst[j].origin = to->curr_dir;
 		}
 		else
 		{
-			dst[i].origin = strdup(dst[i].origin);
+			dst[j].origin = strdup(dst[j].origin);
 		}
+
+		++j;
 	}
 
 	free_dir_entries(to, &to->custom.entries, &to->custom.entry_count);
 	free_dir_entries(to, &to->dir_entry, &to->list_rows);
 	to->dir_entry = dst;
-	to->list_rows = nentries;
+	to->list_rows = j;
 
 	to->filtered = 0;
 

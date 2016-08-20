@@ -1,12 +1,13 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -93,6 +94,24 @@ TEST(sync_syncs_filelist)
 	assert_int_equal(curr_view->list_pos, other_view->list_pos);
 
 	opt_handlers_teardown();
+}
+
+TEST(sync_removes_leafs_on_converting_tree_to_cv)
+{
+	lwin.window_rows = 1;
+	rwin.window_rows = 1;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+
+	flist_load_tree(curr_view, SANDBOX_PATH);
+	assert_int_equal(2, curr_view->list_rows);
+
+	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+
+	assert_true(flist_custom_active(other_view));
+	assert_int_equal(1, other_view->list_rows);
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
