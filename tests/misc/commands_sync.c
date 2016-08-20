@@ -1,12 +1,13 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() symlink() */
+#include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -16,6 +17,9 @@
 #include "../../src/filtering.h"
 
 #include "utils.h"
+
+static void column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[]);
 
 SETUP()
 {
@@ -56,7 +60,6 @@ TEST(sync_syncs_local_filter)
 TEST(sync_syncs_filelist)
 {
 	char cwd[PATH_MAX];
-	char test_data[PATH_MAX];
 
 	lwin.window_rows = 1;
 	rwin.window_rows = 1;
@@ -64,24 +67,17 @@ TEST(sync_syncs_filelist)
 	opt_handlers_setup();
 
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-	if(is_path_absolute(TEST_DATA_PATH))
-	{
-		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
-	}
-	else
-	{
-		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
-	}
 
-	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			"%s/..", test_data);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "..", cwd);
+
 	flist_custom_start(curr_view, "test");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/b");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/c");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/rename/a");
-	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			"%s/existing-files", test_data);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "existing-files", cwd);
 	assert_true(flist_custom_finish(curr_view, 1, 0) == 0);
 	curr_view->list_pos = 3;
 
@@ -93,6 +89,64 @@ TEST(sync_syncs_filelist)
 	assert_int_equal(curr_view->list_pos, other_view->list_pos);
 
 	opt_handlers_teardown();
+}
+
+TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
+{
+	lwin.window_rows = 1;
+	rwin.window_rows = 1;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+
+	flist_load_tree(curr_view, SANDBOX_PATH);
+	assert_int_equal(2, curr_view->list_rows);
+
+	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+
+	assert_true(flist_custom_active(other_view));
+	assert_int_equal(1, other_view->list_rows);
+	assert_int_equal(0, other_view->dir_entry[0].child_count);
+	assert_int_equal(0, other_view->dir_entry[0].child_pos);
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(sync_syncs_trees)
+{
+	char cwd[PATH_MAX];
+
+	columns_set_line_print_func(&column_line_print);
+	other_view->columns = columns_create();
+
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "..", cwd);
+
+	flist_load_tree(curr_view, TEST_DATA_PATH "/tree");
+
+	curr_view->dir_entry[0].selected = 1;
+	curr_view->selected_files = 1;
+	flist_custom_exclude(curr_view);
+
+	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
+	assert_true(flist_custom_active(other_view));
+	curr_stats.load_stage = 2;
+	load_saving_pos(other_view, 1);
+	curr_stats.load_stage = 0;
+
+	assert_int_equal(curr_view->list_rows, other_view->list_rows);
+
+	columns_free(other_view->columns);
+	other_view->columns = NULL_COLUMNS;
+	columns_set_line_print_func(NULL);
+}
+
+static void
+column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[])
+{
+	/* Do nothing. */
 }
 
 TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))

@@ -41,6 +41,8 @@ SETUP()
 	other_view = &lwin;
 
 	columns_set_line_print_func(&column_line_print);
+
+	lwin.columns = columns_create();
 }
 
 TEARDOWN()
@@ -51,6 +53,9 @@ TEARDOWN()
 	view_teardown(&lwin);
 
 	columns_set_line_print_func(NULL);
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL_COLUMNS;
 }
 
 TEST(empty_directory_tree_is_created)
@@ -150,15 +155,40 @@ TEST(dot_dirs_are_suppressed_by_local_filtering)
 	validate_tree(&lwin);
 
 	/* ".." shouldn't appear after reload. */
+	curr_stats.load_stage = 2;
 	load_saving_pos(&lwin, 1);
+	curr_stats.load_stage = 0;
 	assert_int_equal(5, lwin.list_rows);
 	validate_tree(&lwin);
 }
 
+TEST(dot_dirs_are_not_matched_by_local_filtering)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-1", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-2", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(4, lwin.list_rows);
+
+	assert_int_equal(1, local_filter_set(&lwin, "\\."));
+	local_filter_accept(&lwin);
+
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	/* ".." shouldn't appear after reload. */
+	curr_stats.load_stage = 2;
+	load_saving_pos(&lwin, 1);
+	curr_stats.load_stage = 0;
+	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir-2"));
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir-1"));
+}
+
 TEST(reloading_does_not_count_as_location_change)
 {
-	lwin.columns = columns_create();
-
 	cfg.cvoptions = CVO_LOCALFILTER;
 
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
@@ -175,9 +205,6 @@ TEST(reloading_does_not_count_as_location_change)
 	assert_false(filter_is_empty(&lwin.local_filter.filter));
 
 	cfg.cvoptions = 0;
-
-	columns_free(lwin.columns);
-	lwin.columns = NULL_COLUMNS;
 }
 
 TEST(tree_is_reloaded_manually_with_file_updates)
@@ -210,7 +237,6 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 	struct stat st;
 
 	update_string(&cfg.ruler_format, "");
-	lwin.columns = columns_create();
 
 	create_file(SANDBOX_PATH "/a");
 	create_file(SANDBOX_PATH "/b");
@@ -237,8 +263,6 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 
 	assert_success(remove(SANDBOX_PATH "/a"));
 
-	columns_free(lwin.columns);
-	lwin.columns = NULL_COLUMNS;
 	update_string(&cfg.ruler_format, NULL);
 }
 
@@ -247,7 +271,6 @@ TEST(nested_directory_change_detection)
 	struct stat st;
 
 	update_string(&cfg.ruler_format, "");
-	lwin.columns = columns_create();
 
 	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
 	create_file(SANDBOX_PATH "/nested-dir/a");
@@ -276,8 +299,6 @@ TEST(nested_directory_change_detection)
 	assert_success(remove(SANDBOX_PATH "/nested-dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
 
-	columns_free(lwin.columns);
-	lwin.columns = NULL_COLUMNS;
 	update_string(&cfg.ruler_format, NULL);
 }
 
@@ -689,8 +710,6 @@ TEST(marks_unit_is_able_to_find_leafs)
 
 TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 {
-	lwin.columns = columns_create();
-
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir/subsubdir", 0700));
@@ -710,9 +729,6 @@ TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 	assert_success(rmdir(SANDBOX_PATH "/dir/subdir/subsubdir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir/subdir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
-
-	columns_free(lwin.columns);
-	lwin.columns = NULL_COLUMNS;
 }
 
 static void

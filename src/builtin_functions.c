@@ -187,11 +187,16 @@ static var_t
 getpanetype_builtin(const call_info_t *call_info)
 {
 	FileView *const view = curr_view;
-	var_val_t var_val;
+	var_val_t var_val = { .string = "UNKNOWN" };
 
 	if(flist_custom_active(view))
 	{
-		var_val.string = (view->custom.unsorted ? "very-custom" : "custom");
+		switch(view->custom.type)
+		{
+			case CV_REGULAR:  var_val.string = "custom";      break;
+			case CV_UNSORTED: var_val.string = "very-custom"; break;
+			case CV_TREE:     var_val.string = "tree";        break;
+		}
 	}
 	else
 	{

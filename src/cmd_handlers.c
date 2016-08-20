@@ -241,9 +241,10 @@ static int substitute_cmd(const cmd_info_t *cmd_info);
 static int sync_cmd(const cmd_info_t *cmd_info);
 static int sync_selectively(const cmd_info_t *cmd_info);
 static int parse_sync_properties(const cmd_info_t *cmd_info, int *location,
-		int *cursor_pos, int *local_options, int *filters, int *filelist);
+		int *cursor_pos, int *local_options, int *filters, int *filelist,
+		int *tree);
 static void sync_location(const char path[], int cv, int sync_cursor_pos,
-		int sync_filters);
+		int sync_filters, int tree);
 static void sync_local_opts(int defer_slow);
 static void sync_filters(void);
 static int touch_cmd(const cmd_info_t *cmd_info);
@@ -3623,11 +3624,11 @@ sync_cmd(const cmd_info_t *cmd_info)
 		char dst_path[PATH_MAX];
 		to_canonic_path(cmd_info->argv[0], flist_get_dir(curr_view), dst_path,
 				sizeof(dst_path));
-		sync_location(dst_path, 0, cmd_info->emark, 0);
+		sync_location(dst_path, 0, cmd_info->emark, 0, 0);
 	}
 	else
 	{
-		sync_location(flist_get_dir(curr_view), 0, cmd_info->emark, 0);
+		sync_location(flist_get_dir(curr_view), 0, cmd_info->emark, 0, 0);
 	}
 
 	return 0;
@@ -3639,9 +3640,9 @@ static int
 sync_selectively(const cmd_info_t *cmd_info)
 {
 	int location = 0, cursor_pos = 0, local_options = 0, filters = 0,
-			filelist = 0;
+			filelist = 0, tree = 0;
 	if(parse_sync_properties(cmd_info, &location, &cursor_pos, &local_options,
-				&filters, &filelist) != 0)
+				&filters, &filelist, &tree) != 0)
 	{
 		return 1;
 	}
@@ -3657,7 +3658,8 @@ sync_selectively(const cmd_info_t *cmd_info)
 	if(location)
 	{
 		filelist = filelist && flist_custom_active(curr_view);
-		sync_location(flist_get_dir(curr_view), filelist, cursor_pos, filters);
+		sync_location(flist_get_dir(curr_view), filelist, cursor_pos, filters,
+				tree);
 	}
 
 	return 0;
@@ -3668,7 +3670,7 @@ sync_selectively(const cmd_info_t *cmd_info)
  * non-zero is returned and error message is displayed on the status bar. */
 static int
 parse_sync_properties(const cmd_info_t *cmd_info, int *location,
-		int *cursor_pos, int *local_options, int *filters, int *filelist)
+		int *cursor_pos, int *local_options, int *filters, int *filelist, int *tree)
 {
 	int i;
 	for(i = 0; i < cmd_info->argc; ++i)
@@ -3695,6 +3697,12 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 			*location = 1;
 			*filelist = 1;
 		}
+		else if(strcmp(property, "tree") == 0)
+		{
+			*location = 1;
+			*filelist = 1;
+			*tree = 1;
+		}
 		else if(strcmp(property, "all") == 0)
 		{
 			*location = 1;
@@ -3702,6 +3710,7 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 			*local_options = 1;
 			*filters = 1;
 			*filelist = 1;
+			*tree = 1;
 		}
 		else
 		{
@@ -3716,7 +3725,8 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 /* Mirrors location (directory and maybe cursor position plus local filter) of
  * the current view to the other one. */
 static void
-sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
+sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
+		int tree)
 {
 	if(!cd_is_possible(path) || change_directory(other_view, path) < 0)
 	{
@@ -3725,7 +3735,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters)
 
 	if(cv)
 	{
-		flist_custom_clone(other_view, curr_view);
+		flist_custom_clone(other_view, curr_view, tree);
 		if(sync_filters)
 		{
 			local_filter_apply(other_view, curr_view->local_filter.filter.raw);

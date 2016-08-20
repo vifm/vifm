@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 08
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2093,14 +2093,15 @@ yet supported) and might be changed in future releases, or get an alias.
     change the other pane to the current pane directory and synchronize
     cursor position.  If current pane displays custom list of files, position
     before entering it is used (current one might not make any sense).
-:sync! [location | cursorpos | localopts | filters | filelist | all]...
+:sync! [location | cursorpos | localopts | filters | filelist | tree | all]...
     change enumerated properties of the other pane to match corresponding
     properties of the current pane.  Arguments have the following meanings:
      - location - current directory of the pane;
      - cursorpos - cursor position (doesn't make sense without "location");
      - localopts - all local options;
      - filters - all filters;
-     - filelist - list of files for custom view implies "location");
+     - filelist - list of files for custom view (implies "location");
+     - tree - tree structure for tree view (implies "filelist");
      - all - all of the above.
 
 :[line]touch file...                           *vifm-:touch*
@@ -3821,6 +3822,7 @@ Retrieves string describing type of current pane.  Possible return values:
     regular      regular file listing of some directory
     custom       custom file list (%u)
     very-custom  very custom file list (%U)
+    tree         tree view
 
 
 has({property})                                *vifm-has()*

@@ -2254,6 +2254,10 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		{
 			nlines = 0;
 		}
+		else if(!can_add_files_to_view(view, -1))
+		{
+			return 0;
+		}
 	}
 	else
 	{
@@ -4270,7 +4274,7 @@ can_change_view_files(const FileView *view)
 static int
 can_add_files_to_view(const FileView *view, int at)
 {
-	if(flist_custom_active(view) && !view->custom.tree_view)
+	if(flist_custom_active(view) && view->custom.type != CV_TREE)
 	{
 		show_error_msg("Operation error",
 				"Custom view can't handle this operation.");
@@ -4285,7 +4289,7 @@ can_add_files_to_view(const FileView *view, int at)
 static const char *
 get_top_dir(const FileView *view)
 {
-	if(flist_custom_active(view) && !view->custom.tree_view)
+	if(flist_custom_active(view) && view->custom.type != CV_TREE)
 	{
 		return NULL;
 	}
@@ -4298,7 +4302,7 @@ get_top_dir(const FileView *view)
 static const char *
 get_dst_dir(const FileView *view, int at)
 {
-	if(flist_custom_active(view) && view->custom.tree_view)
+	if(flist_custom_active(view) && view->custom.type == CV_TREE)
 	{
 		if(at < 0)
 		{

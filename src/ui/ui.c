@@ -1628,7 +1628,7 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 
 	if(!found_name_key && i < SK_COUNT &&
 			(!flist_custom_active(view) ||
-			 (sort_keys == view->sort && !view->custom.unsorted)))
+			 (sort_keys == view->sort && view->custom.type != CV_UNSORTED)))
 	{
 		sort_keys[i++] = SK_DEFAULT;
 	}
@@ -1642,7 +1642,7 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 char *
 ui_view_sort_list_get(const FileView *view)
 {
-	return (flist_custom_active(view) && view->custom.unsorted)
+	return (flist_custom_active(view) && view->custom.type == CV_UNSORTED)
 	     ? (char *)view->custom.sort
 	     : (char *)view->sort_g;
 }
@@ -1671,7 +1671,7 @@ int
 ui_view_displays_columns(const FileView *const view)
 {
 	return !view->ls_view
-	    || (flist_custom_active(view) && view->custom.tree_view);
+	    || (flist_custom_active(view) && view->custom.type == CV_TREE);
 }
 
 FileType

@@ -299,9 +299,9 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 		dir_entry_t *new_entry;
 		dir_entry_t *const entry = &view->dir_entry[i];
 
-		/* list_num links to position of nodes passed through filter in list of
+		/* tag links to position of nodes passed through filter in list of
 		 * visible files.  Removed nodes have -1. */
-		entry->list_num = -1;
+		entry->tag = -1;
 
 		if(entry->temporary)
 		{
@@ -312,7 +312,7 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 		new_entry = add_dir_entry(&list, &list_size, entry);
 		if(new_entry != NULL)
 		{
-			entry->list_num = list_size - 1U;
+			entry->tag = list_size - 1U;
 			/* We basically grow the tree node by node while performing
 			 * reparenting. */
 			reparent_tree_node(entry, new_entry);
@@ -452,16 +452,27 @@ update_filtering_lists(FileView *view, int add, int clear)
 		dir_entry_t *const entry = &view->local_filter.unfiltered[i];
 		const char *name = entry->name;
 
-		if(entry->child_pos == 0 && is_parent_dir(name))
+		if(is_parent_dir(name))
 		{
-			parent_entry = entry;
-			if(add && cfg_parent_dir_is_visible(is_root_dir(view->curr_dir)))
+			if(entry->child_pos == 0)
 			{
-				(void)add_dir_entry(&view->dir_entry, &list_size, entry);
+				parent_entry = entry;
+				if(add && cfg_parent_dir_is_visible(is_root_dir(view->curr_dir)))
+				{
+					(void)add_dir_entry(&view->dir_entry, &list_size, entry);
 
-				parent_added = 1;
+					parent_added = 1;
+				}
+				continue;
 			}
-			continue;
+			else if(!filter_is_empty(&view->local_filter.filter))
+			{
+				if(clear)
+				{
+					free_dir_entry(view, entry);
+				}
+				continue;
+			}
 		}
 
 		if(is_directory_entry(entry))
@@ -470,9 +481,9 @@ update_filtering_lists(FileView *view, int add, int clear)
 			name = name_with_slash;
 		}
 
-		/* list_num links to position of nodes passed through filter in list of
-		 * visible files.  Nodes that didn't pass have -1. */
-		entry->list_num = -1;
+		/* tag links to position of nodes passed through filter in list of visible
+		 * files.  Nodes that didn't pass have -1. */
+		entry->tag = -1;
 		if(filter_matches(&view->local_filter.filter, name) != 0)
 		{
 			if(add)
@@ -480,7 +491,7 @@ update_filtering_lists(FileView *view, int add, int clear)
 				dir_entry_t *e = add_dir_entry(&view->dir_entry, &list_size, entry);
 				if(e != NULL)
 				{
-					entry->list_num = list_size - 1U;
+					entry->tag = list_size - 1U;
 					/* We basically grow the tree node by node while performing
 					 * reparenting. */
 					reparent_tree_node(entry, e);
@@ -520,8 +531,8 @@ update_filtering_lists(FileView *view, int add, int clear)
 }
 
 /* Reparents *filtered node by attaching it to the closes ancestor of *original
- * mapped onto the list of filtered nodes.  list_num field is used to perform
- * the mapping. */
+ * mapped onto the list of filtered nodes.  tag field of entries is used to
+ * perform the mapping. */
 static void
 reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered)
 {
@@ -536,9 +547,9 @@ reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered)
 	parent = child - child->child_pos;
 	while(parent != child)
 	{
-		if(parent->list_num >= 0)
+		if(parent->tag >= 0)
 		{
-			filtered->child_pos = original->list_num - parent->list_num;
+			filtered->child_pos = original->tag - parent->tag;
 			parent = filtered - filtered->child_pos;
 			while(parent != child)
 			{

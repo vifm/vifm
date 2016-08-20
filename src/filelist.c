@@ -45,7 +45,6 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
-#include "compat/reallocarray.h"
 #include "engine/autocmds.h"
 #include "engine/mode.h"
 #include "int/fuse.h"
@@ -112,7 +111,7 @@ static int flist_custom_finish_internal(FileView *view, int very, int tree_view,
 static void on_location_change(FileView *view, int force);
 static void apply_very_custom(FileView *view);
 static void revert_very_custom(FileView *view);
-static int is_in_list(FileView *view, const dir_entry_t *entry, void *arg);
+static int is_temporary(FileView *view, const dir_entry_t *entry, void *arg);
 static void uncompress_traverser(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
@@ -1357,7 +1356,7 @@ change_directory(FileView *view, const char directory[])
 	}
 
 	/* Perform additional actions on leaving custom view. */
-	if(was_in_custom_view && view->custom.unsorted)
+	if(was_in_custom_view && view->custom.type == CV_UNSORTED)
 	{
 		revert_very_custom(view);
 	}
@@ -1706,7 +1705,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 
 	previous = (view->curr_dir[0] != '\0')
 	         ? NORMAL
-	         : (view->custom.unsorted ? CUSTOM_VERY : CUSTOM);
+	         : (view->custom.type == CV_UNSORTED ? CUSTOM_VERY : CUSTOM);
 
 	if(previous == NORMAL)
 	{
@@ -1730,12 +1729,11 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 	view->dir_entry = dynarray_shrink(view->dir_entry);
 	view->filtered = 0;
 
-	/* Tree view mode must be set to correct value before sorting takes place. */
-	view->custom.tree_view = tree_view;
+	/* Kind of custom view must be set to correct value before option loading and
+	 * sorting. */
+	view->custom.type = tree_view ? CV_TREE
+	                  : very ? CV_UNSORTED : CV_REGULAR;
 
-	/* view->custom.unsorted must be set before load_sort_option() so that it
-	 * skips sort array normalization. */
-	view->custom.unsorted = very;
 	if(very)
 	{
 		/* Applying very custom twice erases sorting completely. */
@@ -1802,9 +1800,6 @@ void
 flist_custom_exclude(FileView *view)
 {
 	dir_entry_t *entry;
-	int nfiles = 0;
-	char **files = NULL;
-	strlist_t list;
 
 	if(!flist_custom_active(view))
 	{
@@ -1814,25 +1809,20 @@ flist_custom_exclude(FileView *view)
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry))
 	{
-		char full_path[PATH_MAX];
-		get_full_path_of(entry, sizeof(full_path), full_path);
+		entry->temporary = 1;
 
-		nfiles = add_to_string_array(&files, nfiles, 1, full_path);
-		if(view->custom.tree_view)
+		if(view->custom.type == CV_TREE)
 		{
+			char full_path[PATH_MAX];
+			get_full_path_of(entry, sizeof(full_path), full_path);
 			(void)trie_put(view->custom.excluded_paths, full_path);
 		}
 	}
 
-	list.nitems = nfiles;
-	list.items = files;
-
-	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_in_list, &list,
-			0, 1);
+	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_temporary,
+			NULL, 0, 1);
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-			&is_in_list, &list, 1, 1);
-
-	free_string_array(files, nfiles);
+			&is_temporary, NULL, 1, 1);
 
 	flist_ensure_pos_is_valid(view);
 	ui_view_schedule_redraw(view);
@@ -1840,33 +1830,43 @@ flist_custom_exclude(FileView *view)
 	recount_selected_files(view);
 }
 
-/* zap_entries() filter to filter-out files from array of strings.  Returns
- * non-zero if entry is to be kept and zero otherwise.*/
+/* zap_entries() filter to filter-out files, which were marked for removal.
+ * Returns non-zero if entry is to be kept and zero otherwise.*/
 static int
-is_in_list(FileView *view, const dir_entry_t *entry, void *arg)
+is_temporary(FileView *view, const dir_entry_t *entry, void *arg)
 {
-	const strlist_t *list = arg;
-	char full_path[PATH_MAX];
-	get_full_path_of(entry, sizeof(full_path), full_path);
-	return !is_in_string_array(list->items, list->nitems, full_path);
+	return !entry->temporary;
 }
 
 void
-flist_custom_clone(FileView *to, const FileView *from)
+flist_custom_clone(FileView *to, const FileView *from, int tree)
 {
 	dir_entry_t *dst, *src;
 	int nentries;
-	int i;
+	int i, j;
 
 	assert(flist_custom_active(from) && to->custom.paths_cache == NULL_TRIE &&
 			"Wrong state of destination view.");
 
 	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
-	replace_string(&to->custom.title, from->custom.title);
-	to->custom.unsorted = from->custom.unsorted;
-	memcpy(&to->custom.unsorted, &from->custom.unsorted,
-			sizeof(to->custom.unsorted));
 	to->curr_dir[0] = '\0';
+
+	if(tree && from->custom.type == CV_TREE)
+	{
+		replace_string(&to->custom.title, "tree");
+		to->custom.type = CV_TREE;
+
+		trie_free(to->custom.excluded_paths);
+		to->custom.excluded_paths = trie_clone(from->custom.excluded_paths);
+	}
+	else
+	{
+		replace_string(&to->custom.title,
+				from->custom.type == CV_TREE ? "from tree" : from->custom.title);
+		to->custom.type = (from->custom.type == CV_UNSORTED)
+		                ? CV_UNSORTED
+		                : CV_REGULAR;
+	}
 
 	if(custom_list_is_incomplete(from))
 	{
@@ -1881,28 +1881,45 @@ flist_custom_clone(FileView *to, const FileView *from)
 
 	dst = dynarray_extend(NULL, nentries*sizeof(*dst));
 
+	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		dst[i] = src[i];
-		dst[i].name = strdup(dst[i].name);
-		if(dst[i].origin == from->curr_dir)
+		if(to->custom.type != CV_TREE && src[i].child_pos != 0 &&
+				is_parent_dir(src[i].name))
 		{
-			dst[i].origin = to->curr_dir;
+			continue;
+		}
+
+		dst[j] = src[i];
+		dst[j].name = strdup(dst[j].name);
+		if(dst[j].origin == from->curr_dir)
+		{
+			dst[j].origin = to->curr_dir;
 		}
 		else
 		{
-			dst[i].origin = strdup(dst[i].origin);
+			dst[j].origin = strdup(dst[j].origin);
 		}
+
+		/* If destination pane won't be a tree, erase tree-specific data, because
+		 * some tree-specific code is driven directly by these fields. */
+		if(to->custom.type != CV_TREE)
+		{
+			dst[j].child_count = 0;
+			dst[j].child_pos = 0;
+		}
+
+		++j;
 	}
 
 	free_dir_entries(to, &to->custom.entries, &to->custom.entry_count);
 	free_dir_entries(to, &to->dir_entry, &to->list_rows);
 	to->dir_entry = dst;
-	to->list_rows = nentries;
+	to->list_rows = j;
 
 	to->filtered = 0;
 
-	if(to->custom.unsorted)
+	if(to->custom.type == CV_UNSORTED)
 	{
 		apply_very_custom(to);
 	}
@@ -1913,7 +1930,8 @@ flist_custom_uncompress_tree(FileView *view)
 {
 	unsigned int i;
 
-	assert(view->custom.tree_view && "This function is for tree-view only!");
+	assert(view->custom.type == CV_TREE &&
+			"This function is for tree-view only!");
 
 	dir_entry_t *entries = view->dir_entry;
 	size_t nentries = view->list_rows;
@@ -2022,7 +2040,7 @@ flist_goto_by_path(FileView *view, const char path[])
 		return;
 	}
 
-	if(flist_custom_active(view) && view->custom.tree_view &&
+	if(flist_custom_active(view) && view->custom.type == CV_TREE &&
 			strcmp(name, "..") == 0)
 	{
 		int pos;
@@ -2225,7 +2243,7 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 populate_custom_view(FileView *view, int reload)
 {
-	if(view->custom.tree_view)
+	if(view->custom.type == CV_TREE)
 	{
 		dir_entry_t *prev_dir_entries;
 		int prev_list_rows, result;
@@ -2847,7 +2865,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->marked = 0;
 	entry->temporary = 0;
 
-	entry->list_num = -1;
+	entry->tag = -1;
 }
 
 void
@@ -2951,7 +2969,7 @@ check_if_filelist_have_changed(FileView *view)
 	const char *const curr_dir = flist_get_dir(view);
 
 	if(view->on_slow_fs ||
-			(flist_custom_active(view) && !view->custom.tree_view) ||
+			(flist_custom_active(view) && view->custom.type != CV_TREE) ||
 			is_unc_root(curr_dir))
 	{
 		return;
@@ -2991,7 +3009,7 @@ check_if_filelist_have_changed(FileView *view)
 	{
 		ui_view_schedule_reload(view);
 	}
-	else if(flist_custom_active(view) && view->custom.tree_view)
+	else if(flist_custom_active(view) && view->custom.type == CV_TREE)
 	{
 		if(tree_has_changed(view->dir_entry, view->list_rows))
 		{
@@ -3465,7 +3483,7 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 
 	char *free_this = NULL;
 	const char *root_path = flist_get_dir(view);
-	if(format && view->custom.tree_view && ui_view_displays_columns(view) &&
+	if(format && view->custom.type == CV_TREE && ui_view_displays_columns(view) &&
 			entry->child_pos != 0)
 	{
 		const dir_entry_t *const parent = entry - entry->child_pos;

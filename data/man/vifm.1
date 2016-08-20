@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 08, 2016" "vifm 0.8.2"
+.TH VIFM 1 "August 20, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2485,7 +2485,7 @@ position.  If current pane displays custom list of files, position before
 entering it is used (current one might not make any sense).
 
 .TP
-.BI ":sync! [location | cursorpos | localopts | filters | filelist | all]..."
+.BI ":sync! [location | cursorpos | localopts | filters | filelist | tree | all]..."
 change enumerated properties of the other pane to match corresponding properties
 of the current pane.  Arguments have the following meanings:
 .RS
@@ -2500,6 +2500,8 @@ localopts \- all local options;
 filters \- all filters;
 .IP \- 2
 filelist \- list of files for custom view (implies "location");
+.IP \- 2
+tree \- tree structure for tree view (implies "filelist");
 .IP \- 2
 all \- all of the above.
 .RE
@@ -4605,6 +4607,7 @@ Retrieves string describing type of current pane.  Possible return values:
     regular      regular file listing of some directory
     custom       custom file list (%u)
     very-custom  very custom file list (%U)
+    tree         tree view
 
 .BI has({property})
 

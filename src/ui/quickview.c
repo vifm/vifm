@@ -77,11 +77,14 @@ static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static int enter_dir(tree_print_state_t *s, const char path[], int last);
 static int visit_file(tree_print_state_t *s, const char path[], int last);
+static int visit_link(tree_print_state_t *s, const char path[], int last,
+		const char target[]);
 static void leave_dir(tree_print_state_t *s);
 static void indent_prefix(tree_print_state_t *s);
 static void unindent_prefix(tree_print_state_t *s);
 static void set_prefix_char(tree_print_state_t *s, char c);
-static void print_tree_entry(tree_print_state_t *s, const char path[]);
+static void print_tree_entry(tree_print_state_t *s, const char path[],
+		int end_line);
 static void print_entry_prefix(tree_print_state_t *s);
 static char ** list_sorted_files(const char path[], int *len);
 static int path_sorter(const void *first, const void *second);
@@ -323,6 +326,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 	reached_limit = 0;
 	for(i = 0; i < len && !reached_limit && !ui_cancellation_requested(); ++i)
 	{
+		char link_target[PATH_MAX];
 		const int last_entry = (i == len - 1);
 		char *const full_path = format_str("%s/%s", path, lst[i]);
 
@@ -335,9 +339,16 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 			++s->nfiles;
 		}
 
+		if(get_link_target(full_path, link_target, sizeof(link_target)) == 0)
+		{
+			if(visit_link(s, full_path, last_entry, link_target) != 0)
+			{
+				reached_limit = 1;
+			}
+		}
 		/* If is_dir_empty() returns non-zero than we know that it's directory and
 		 * no additional checks are needed. */
-		if(!is_dir_empty(full_path))
+		else if(!is_dir_empty(full_path))
 		{
 			if(last_entry)
 			{
@@ -367,7 +378,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 static int
 enter_dir(tree_print_state_t *s, const char path[], int last)
 {
-	print_tree_entry(s, path);
+	print_tree_entry(s, path, 1);
 
 	if(last)
 	{
@@ -386,7 +397,22 @@ static int
 visit_file(tree_print_state_t *s, const char path[], int last)
 {
 	set_prefix_char(s, last ? '`' : '|');
-	print_tree_entry(s, path);
+	print_tree_entry(s, path, 1);
+
+	return ++s->n >= s->max;
+}
+
+/* Handles visiting symbolic link on directory tree traversal.  Returns non-zero
+ * to request stopping of the traversal, otherwise zero is returned. */
+static int
+visit_link(tree_print_state_t *s, const char path[], int last,
+		const char target[])
+{
+	set_prefix_char(s, last ? '`' : '|');
+	print_tree_entry(s, path, 0);
+	fputs(" -> ", s->fp);
+	fputs(target, s->fp);
+	fputc('\n', s->fp);
 
 	return ++s->n >= s->max;
 }
@@ -428,7 +454,7 @@ set_prefix_char(tree_print_state_t *s, char c)
 
 /* Prints single entry of directory tree. */
 static void
-print_tree_entry(tree_print_state_t *s, const char path[])
+print_tree_entry(tree_print_state_t *s, const char path[], int end_line)
 {
 	print_entry_prefix(s);
 	fputs(get_last_path_component(path), s->fp);
@@ -436,7 +462,10 @@ print_tree_entry(tree_print_state_t *s, const char path[])
 	{
 		fputc('/', s->fp);
 	}
-	fputc('\n', s->fp);
+	if(end_line)
+	{
+		fputc('\n', s->fp);
+	}
 }
 
 /* Prints part of the string to the left of entry name. */

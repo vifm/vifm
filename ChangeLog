@@ -7,6 +7,9 @@
 	Added :dmap, :dnoremap and :dunmap commands to configure mappings in
 	dialogs.  Thanks to Sassan Haradji (a.k.a. sassanh).
 
+	Added "tree" parameter to :sync! that enables synchronization of tree
+	view.  Thanks to filterfalse.
+
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 
@@ -28,6 +31,12 @@
 	Consider trailing slash for directories or symbolic links that point to
 	directories for patterns in 'classify'.
 
+	Do not resolve symbolic links in directory preview.  Thanks to
+	filterfalse.
+
+	getpanetype() got new value ("tree") to indicate tree-view.  Thanks to
+	filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -46,6 +55,9 @@
 
 	Fixed assertion failure on file rename of specific pattern (renaming files
 	1, 2 via `:rename 2 3` is the shortest example).  Thanks to aleksejrs.
+
+	Fixed rejecting to clone files in custom view, when name is specified
+	explicitly (form without arguments was properly disabled before).
 
 0.8.2-beta to 0.8.2
 

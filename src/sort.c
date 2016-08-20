@@ -93,7 +93,7 @@ sort_view(FileView *v)
 	view = v;
 	custom_view = flist_custom_active(v);
 
-	if(!custom_view || !v->custom.tree_view)
+	if(!custom_view || v->custom.type != CV_TREE)
 	{
 		/* Tree sorting works fine for flat list, but requires a bit more
 		 * resources, so skip it. */
@@ -238,7 +238,7 @@ sort_by_key(dir_entry_t *entries, size_t nentries, char key, void *data)
 
 	for(i = 0U; i < nentries; ++i)
 	{
-		entries[i].list_num = i;
+		entries[i].tag = i;
 	}
 
 	qsort(entries, nentries, sizeof(*entries), &sort_dir_list);
@@ -449,7 +449,7 @@ sort_dir_list(const void *one, const void *two)
 
 	if(retval == 0)
 	{
-		retval = first->list_num - second->list_num;
+		retval = first->tag - second->tag;
 	}
 	else if(sort_descending)
 	{

@@ -345,7 +345,7 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread_on_restart)
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(&lwin, 1, 0) == 0);
-	assert_true(lwin.custom.unsorted);
+	assert_true(lwin.custom.type == CV_UNSORTED);
 	assert_int_equal(SK_NONE, lwin.sort[0]);
 
 	/* ls-like view blocks view column updates. */
@@ -354,7 +354,7 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread_on_restart)
 	read_info_file(1);
 	curr_stats.restart_in_progress = 0;
 
-	assert_true(lwin.custom.unsorted);
+	assert_true(lwin.custom.type == CV_UNSORTED);
 	assert_int_equal(SK_NONE, lwin.sort[0]);
 
 	opt_handlers_teardown();
