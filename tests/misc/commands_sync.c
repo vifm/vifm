@@ -57,7 +57,6 @@ TEST(sync_syncs_local_filter)
 TEST(sync_syncs_filelist)
 {
 	char cwd[PATH_MAX];
-	char test_data[PATH_MAX];
 
 	lwin.window_rows = 1;
 	rwin.window_rows = 1;
@@ -65,24 +64,17 @@ TEST(sync_syncs_filelist)
 	opt_handlers_setup();
 
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-	if(is_path_absolute(TEST_DATA_PATH))
-	{
-		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
-	}
-	else
-	{
-		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
-	}
 
-	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			"%s/..", test_data);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "..", cwd);
+
 	flist_custom_start(curr_view, "test");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/b");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/existing-files/c");
 	flist_custom_add(curr_view, TEST_DATA_PATH "/rename/a");
-	snprintf(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			"%s/existing-files", test_data);
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "existing-files", cwd);
 	assert_true(flist_custom_finish(curr_view, 1, 0) == 0);
 	curr_view->list_pos = 3;
 
