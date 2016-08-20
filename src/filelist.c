@@ -1849,7 +1849,8 @@ flist_custom_clone(FileView *to, const FileView *from)
 			"Wrong state of destination view.");
 
 	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
-	replace_string(&to->custom.title, from->custom.title);
+	replace_string(&to->custom.title,
+			from->custom.type == CV_TREE ? "from tree" : from->custom.title);
 	to->custom.type = (from->custom.type == CV_UNSORTED)
 	                ? CV_UNSORTED
 	                : CV_REGULAR;
