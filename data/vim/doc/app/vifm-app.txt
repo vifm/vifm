@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 08
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3821,6 +3821,7 @@ Retrieves string describing type of current pane.  Possible return values:
     regular      regular file listing of some directory
     custom       custom file list (%u)
     very-custom  very custom file list (%U)
+    tree         tree view
 
 
 has({property})                                *vifm-has()*

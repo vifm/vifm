@@ -201,6 +201,14 @@ TEST(getpanetype_for_very_custom_view)
 	opt_handlers_teardown();
 }
 
+TEST(getpanetype_for_tree_view)
+{
+	flist_load_tree(&lwin, TEST_DATA_PATH);
+
+	curr_view = &lwin;
+	ASSERT_OK("getpanetype()", "tree");
+}
+
 TEST(chooseopt_options_are_not_set)
 {
 	args_t args = { };

@@ -31,6 +31,9 @@
 	Do not resolve symbolic links in directory preview.  Thanks to
 	filterfalse.
 
+	getpanetype() got new value ("tree") to indicate tree-view.  Thanks to
+	filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

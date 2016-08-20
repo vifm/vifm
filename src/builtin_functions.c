@@ -191,7 +191,8 @@ getpanetype_builtin(const call_info_t *call_info)
 
 	if(flist_custom_active(view))
 	{
-		var_val.string = (view->custom.unsorted ? "very-custom" : "custom");
+		var_val.string = view->custom.tree_view ? "tree"
+		               : view->custom.unsorted ? "very-custom" : "custom";
 	}
 	else
 	{
