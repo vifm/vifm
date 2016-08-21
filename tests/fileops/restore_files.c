@@ -6,11 +6,14 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/fileops.h"
 #include "../../src/trash.h"
 
 #include "utils.h"
+
+static char *saved_cwd;
 
 SETUP()
 {
@@ -18,7 +21,9 @@ SETUP()
 	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
 
 	create_empty_file(SANDBOX_PATH "/file");
+	saved_cwd = save_cwd();
 	populate_dir_list(&lwin, 0);
+	restore_cwd(saved_cwd);
 
 	cfg.use_trash = 1;
 	set_trash_dir(SANDBOX_PATH "/trash");
@@ -37,7 +42,9 @@ TEST(files_not_directly_in_trash_are_not_restored)
 	set_trash_dir(SANDBOX_PATH);
 
 	strcat(lwin.curr_dir, "/trash");
+	saved_cwd = save_cwd();
 	populate_dir_list(&lwin, 0);
+	restore_cwd(saved_cwd);
 
 	lwin.dir_entry[0].marked = 1;
 	(void)restore_files(&lwin);
@@ -50,7 +57,9 @@ TEST(generally_restores_files)
 	set_trash_dir(SANDBOX_PATH "/trash");
 
 	strcat(lwin.curr_dir, "/trash");
+	saved_cwd = save_cwd();
 	populate_dir_list(&lwin, 0);
+	restore_cwd(saved_cwd);
 
 	lwin.dir_entry[0].marked = 1;
 	(void)restore_files(&lwin);
