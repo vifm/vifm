@@ -12,12 +12,12 @@ src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
 # lookup for out-of-tree builds
 VPATH := $(src_dir)
 
-CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
-CFLAGS += -include ../config.h -D_FILE_OFFSET_BITS=64 -pipe
+override CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
+override CFLAGS += -include ../config.h -D_FILE_OFFSET_BITS=64 -pipe
 ifeq ($(RELEASE),1)
-    CFLAGS += -O2
+    override CFLAGS += -O2
 else
-    CFLAGS += -g -O0
+    override CFLAGS += -g -O0
 endif
 
 MANGEN := groff
