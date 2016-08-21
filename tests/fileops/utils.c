@@ -11,6 +11,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/fswatch.h"
 #include "../../src/utils/path.h"
 #include "../../src/background.h"
 #include "../../src/filelist.h"
@@ -43,6 +44,9 @@ view_teardown(FileView *view)
 	filter_dispose(&view->local_filter.filter);
 	filter_dispose(&view->manual_filter);
 	filter_dispose(&view->auto_filter);
+
+	fswatch_free(view->watch);
+	view->watch = NULL;
 }
 
 void

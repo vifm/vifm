@@ -8,8 +8,8 @@
 #
 # Each test-suite (directory) is run in a separate sandbox directory.  During
 # compilation two defines are available:
-#  - TEST_DATA_PATH -- absolute path to test-data/ directory (might be RO)
-#  - SANDBOX_PATH   -- absolute path to sandbox for the suite (always RW)
+#  - TEST_DATA_PATH -- path to test-data/ directory (might be RO)
+#  - SANDBOX_PATH   -- path to sandbox for the suite (always RW)
 #
 # Test suites can be run concurrently.
 #
@@ -121,43 +121,46 @@ override LD = $(LD_$(V))
 AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
-CFLAGS := -MMD -pipe -Wall -Werror -Istic/ -DTEST -include $(B)../config.h
-CFLAGS += -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED -Wno-char-subscripts
-CFLAGS += -D_FILE_OFFSET_BITS=64 -fsigned-char
-LDFLAGS := -lpthread
+override CFLAGS := $(CFLAGS) -MMD -pipe -Wall -Werror -Wno-char-subscripts \
+                   -Istic/ -include $(B)../config.h -fsigned-char -DTEST \
+                   -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
+                   -D_FILE_OFFSET_BITS=64
+override LDFLAGS := $(LDFLAGS) -lpthread
 ifeq (,$(findstring clang,$(CC)))
     # clang is inconvenient with regard to this flag, don't do coverage with it
-    LDFLAGS += --coverage
+    override LDFLAGS += --coverage
 endif
 ifdef unix_env
     MF := $(B)../src/Makefile
     ifneq ($(wildcard $(MF)),)
-        LDFLAGS += $(shell grep -m1    'LIBS =' $(MF) | sed 's/^[^=]*=//')
-        LDFLAGS += $(shell grep -m1 'LDFLAGS =' $(MF) | sed 's/^[^=]*=//')
+        override LDFLAGS += \
+            $(shell grep -m1    'LIBS =' $(MF) | sed 's/^[^=]*=//') \
+            $(shell grep -m1 'LDFLAGS =' $(MF) | sed 's/^[^=]*=//')
 
-        CFLAGS  += $(shell grep -m1          'CPPFLAGS =' $(MF) | sed 's/^[^=]*=//')
-        CFLAGS  += $(shell grep -m1      'TESTS_CFLAGS =' $(MF) | sed 's/^[^=]*=//')
-        CFLAGS  += $(shell grep -m1 'SANITIZERS_CFLAGS =' $(MF) | sed 's/^[^=]*=//')
+        override CFLAGS  += \
+            $(shell grep -m1          'CPPFLAGS =' $(MF) | sed 's/^[^=]*=//') \
+            $(shell grep -m1      'TESTS_CFLAGS =' $(MF) | sed 's/^[^=]*=//') \
+            $(shell grep -m1 'SANITIZERS_CFLAGS =' $(MF) | sed 's/^[^=]*=//')
     endif
 
-    CFLAGS += -I/usr/include/ncursesw
+    override CFLAGS += -I/usr/include/ncursesw
     export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env
-    LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
+    override LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
     # this part is in conditional
     ifeq ($(OS),Windows_NT)
-        LDFLAGS += -lpdcurses
+        override LDFLAGS += -lpdcurses
     else
-        LDFLAGS += -lcurses
+        override LDFLAGS += -lcurses
     endif
 endif
 
 ifdef DEBUG
-    CFLAGS += -g -Og
-    LDFLAGS += -g
+    override CFLAGS += -g -Og
+    override LDFLAGS += -g
     ifdef unix_env
-        LDFLAGS += -rdynamic
+        override LDFLAGS += -rdynamic
     endif
 
     ifeq ($(DEBUG),gdb)

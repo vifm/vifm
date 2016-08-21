@@ -380,6 +380,8 @@ TEST(tr_extends_second_field)
 
 TEST(putting_files_works)
 {
+	char *saved_cwd;
+
 	regs_init();
 
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
@@ -388,7 +390,9 @@ TEST(putting_files_works)
 	regs_append(DEFAULT_REG_NAME, TEST_DATA_PATH "/read/binary-data");
 	lwin.list_pos = 1;
 
+	saved_cwd = save_cwd();
 	assert_true(exec_commands("put", &lwin, CIT_COMMAND) != 0);
+	restore_cwd(saved_cwd);
 
 	assert_success(unlink(SANDBOX_PATH "/empty-dir/binary-data"));
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));

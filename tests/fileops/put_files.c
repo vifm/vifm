@@ -141,6 +141,8 @@ TEST(put_files_bg_demangles_names_of_trashed_files)
 
 TEST(put_files_copies_files_according_to_tree_structure)
 {
+	char *const saved_cwd = save_cwd();
+
 	view_setup(&lwin);
 
 	create_empty_dir(SANDBOX_PATH "/dir");
@@ -170,6 +172,7 @@ TEST(put_files_copies_files_according_to_tree_structure)
 	wait_for_bg();
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 
+	restore_cwd(saved_cwd);
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 
 	view_teardown(&lwin);

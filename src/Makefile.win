@@ -12,12 +12,12 @@ src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
 # lookup for out-of-tree builds
 VPATH := $(src_dir)
 
-CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
-CFLAGS += -include ../config.h -D_FILE_OFFSET_BITS=64 -pipe
+override CFLAGS := -c -Wall -Werror -MMD -DPDC_WIDE -D_XOPEN_SOURCE $(CFLAGS)
+override CFLAGS += -include ../config.h -D_FILE_OFFSET_BITS=64 -pipe
 ifeq ($(RELEASE),1)
-    CFLAGS += -O2
+    override CFLAGS += -O2
 else
-    CFLAGS += -g -O0
+    override CFLAGS += -g -O0
 endif
 
 MANGEN := groff
@@ -129,7 +129,9 @@ vifmres.o: vifm.res
 	echo '#define WITH_BUILD_TIMESTAMP 1' >> ../config.h; \
 #	echo '#define HAVE_FILE_PROG' >> ../config.h;
 ifeq ($(OS),Windows_NT) # this is for MinGW (probably fixed in MinGW-w64)
+ifneq ($(APPVEYOR),1) # don't need this for MSYS2
 	@echo '#define BROKEN_SWPRINTF' >> ../config.h
+endif
 else
 	@echo '#define __USE_MINGW_ANSI_STDIO 1' >> ../config.h
 endif

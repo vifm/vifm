@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# copy regex library dll where tests binaries lie
+mkdir -p tests/bin
+cp src/mingw-libgnurx-2.5.1/*.dll tests/bin
+
+# build tests in parallel
+make -C tests/ -j3 build \
+     'CFLAGS=-I ../src/PDCurses-3.4/ -I ../src/mingw-libgnurx-2.5.1' \
+     'LDFLAGS=-L ../src/PDCurses-3.4/win32 -L ../src/mingw-libgnurx-2.5.1'
+
+# but run sequentially for serial output
+make -C tests/ \
+     'CFLAGS=-I ../src/PDCurses-3.4/ -I ../src/mingw-libgnurx-2.5.1' \
+     'LDFLAGS=-L ../src/PDCurses-3.4/win32 -L ../src/mingw-libgnurx-2.5.1'

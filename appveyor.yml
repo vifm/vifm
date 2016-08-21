@@ -1,0 +1,27 @@
+version: "{build}"
+clone_depth: 1
+
+environment:
+    APPVEYOR: 1
+    matrix:
+        - PATH: c:/msys64/mingw32/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 1
+        - PATH: c:/msys64/mingw64/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 1
+        - PATH: c:/msys64/mingw32/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 0
+        - PATH: c:/msys64/mingw64/bin;c:/msys64/usr/local/bin;c:/msys64/usr/bin;%PATH%
+          RELEASE: 0
+
+cache:
+    - src/mingw-libgnurx-2.5.1/
+    - src/PDCurses-3.4/
+
+before_build:
+    - bash scripts/appveyor/build-deps
+
+build_script:
+    - bash scripts/appveyor/build
+
+test_script:
+    - bash scripts/appveyor/test
