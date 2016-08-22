@@ -392,8 +392,6 @@ int ui_char_pressed(wint_t c);
 
 int setup_ncurses_interface(void);
 
-float get_splitter_pos(int max);
-
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
 void update_screen(UpdateType update_kind);
