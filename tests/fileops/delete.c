@@ -200,7 +200,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_cv)
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, SANDBOX_PATH "/dir");
 	flist_custom_add(&lwin, SANDBOX_PATH "/dir/a");
-	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR) == 0);
 
 	lwin.dir_entry[1].marked = 1;
 	lwin.list_pos = 1;

@@ -106,8 +106,8 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
-static int flist_custom_finish_internal(FileView *view, int very, int tree_view,
-		int reload, const char dir[]);
+static int flist_custom_finish_internal(FileView *view, CVType type, int reload,
+		const char dir[]);
 static void on_location_change(FileView *view, int force);
 static void disable_view_sorting(FileView *view);
 static void enable_view_sorting(FileView *view);
@@ -1661,10 +1661,9 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 #endif
 
 int
-flist_custom_finish(FileView *view, int very, int tree_view)
+flist_custom_finish(FileView *view, CVType type)
 {
-	return flist_custom_finish_internal(view, very, tree_view, 0,
-			flist_get_dir(view));
+	return flist_custom_finish_internal(view, type, 0, flist_get_dir(view));
 }
 
 /* Finishes file list population, handles empty resulting list corner case.
@@ -1672,12 +1671,11 @@ flist_custom_finish(FileView *view, int very, int tree_view)
  * directory of the view.  Returns zero on success, otherwise (on empty list)
  * non-zero is returned. */
 static int
-flist_custom_finish_internal(FileView *view, int very, int tree_view,
-		int reload, const char dir[])
+flist_custom_finish_internal(FileView *view, CVType type, int reload,
+		const char dir[])
 {
 	enum { NORMAL, CUSTOM, UNSORTED } previous;
-	const CVType type = tree_view ? CV_TREE : very ? CV_VERY : CV_REGULAR;
-	const int might_add_parent_ref = (tree_view != 0);
+	const int might_add_parent_ref = (type == CV_TREE);
 	const int no_parent_ref = (view->custom.entry_count == 0);
 
 	trie_free(view->custom.paths_cache);
@@ -3645,7 +3643,7 @@ flist_add_custom_line(FileView *view, const char line[])
 void
 flist_end_custom(FileView *view, int very)
 {
-	if(flist_custom_finish(view, very, 0) != 0)
+	if(flist_custom_finish(view, very ? CV_VERY : CV_REGULAR) != 0)
 	{
 		show_error_msg("Custom view", "Ignoring empty list of files");
 		return;
@@ -3755,7 +3753,7 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 	to_canonic_path(path, flist_get_dir(view), canonic_path,
 			sizeof(canonic_path));
 
-	if(flist_custom_finish_internal(view, 0, 1, reload, canonic_path) != 0)
+	if(flist_custom_finish_internal(view, CV_TREE, reload, canonic_path) != 0)
 	{
 		return 1;
 	}

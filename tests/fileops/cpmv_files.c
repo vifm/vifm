@@ -134,7 +134,7 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	flist_custom_start(&rwin, "test");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/existing-files/a");
 	flist_custom_add(&rwin, TEST_DATA_PATH "/rename/a");
-	assert_true(flist_custom_finish(&rwin, 0, 0) == 0);
+	assert_true(flist_custom_finish(&rwin, CV_REGULAR) == 0);
 	assert_int_equal(2, rwin.list_rows);
 
 	assert_success(chdir(SANDBOX_PATH));
@@ -258,7 +258,7 @@ TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
 		flist_custom_add(&rwin, "trash/000_a");
 		flist_custom_add(&rwin, "000_b");
 		flist_custom_add(&rwin, "trash/nested/000_file");
-		assert_true(flist_custom_finish(&rwin, 0, 0) == 0);
+		assert_true(flist_custom_finish(&rwin, CV_REGULAR) == 0);
 		assert_int_equal(3, rwin.list_rows);
 
 		rwin.dir_entry[0].marked = 1;

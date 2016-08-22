@@ -107,7 +107,7 @@ TEST(cloning_does_not_work_in_custom_view)
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, SANDBOX_PATH "/do-not-clone-me");
-	assert_true(flist_custom_finish(&lwin, 0, 0) == 0);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR) == 0);
 
 	/* Without specifying new name. */
 	lwin.dir_entry[0].marked = 1;
