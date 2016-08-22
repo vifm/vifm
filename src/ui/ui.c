@@ -521,6 +521,12 @@ update_geometry(void)
 	load_geometry();
 }
 
+int
+cv_unsorted(CVType type)
+{
+	return type == CV_VERY;
+}
+
 void
 update_screen(UpdateType update_kind)
 {
@@ -1628,7 +1634,7 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 
 	if(!found_name_key && i < SK_COUNT &&
 			(!flist_custom_active(view) ||
-			 (sort_keys == view->sort && view->custom.type != CV_VERY)))
+			 (sort_keys == view->sort && !ui_view_unsorted(view))))
 	{
 		sort_keys[i++] = SK_DEFAULT;
 	}
@@ -1642,7 +1648,7 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 char *
 ui_view_sort_list_get(const FileView *view)
 {
-	return (flist_custom_active(view) && view->custom.type == CV_VERY)
+	return (flist_custom_active(view) && ui_view_unsorted(view))
 	     ? (char *)view->custom.sort
 	     : (char *)view->sort_g;
 }
@@ -1759,6 +1765,12 @@ ui_view_wipe(FileView *view)
 	}
 	redrawwin(view->win);
 	wrefresh(view->win);
+}
+
+int
+ui_view_unsorted(const FileView *view)
+{
+	return cv_unsorted(view->custom.type);
 }
 
 void

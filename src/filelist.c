@@ -109,8 +109,8 @@ static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 static int flist_custom_finish_internal(FileView *view, int very, int tree_view,
 		int reload, const char dir[]);
 static void on_location_change(FileView *view, int force);
-static void apply_very_custom(FileView *view);
-static void revert_very_custom(FileView *view);
+static void disable_view_sorting(FileView *view);
+static void enable_view_sorting(FileView *view);
 static int is_temporary(FileView *view, const dir_entry_t *entry, void *arg);
 static void uncompress_traverser(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
@@ -1356,9 +1356,9 @@ change_directory(FileView *view, const char directory[])
 	}
 
 	/* Perform additional actions on leaving custom view. */
-	if(was_in_custom_view && view->custom.type == CV_VERY)
+	if(was_in_custom_view && ui_view_unsorted(view))
 	{
-		revert_very_custom(view);
+		enable_view_sorting(view);
 	}
 
 	if(location_changed || was_in_custom_view)
@@ -1675,7 +1675,8 @@ static int
 flist_custom_finish_internal(FileView *view, int very, int tree_view,
 		int reload, const char dir[])
 {
-	enum { NORMAL, CUSTOM, CUSTOM_VERY } previous;
+	enum { NORMAL, CUSTOM, UNSORTED } previous;
+	const CVType type = tree_view ? CV_TREE : very ? CV_VERY : CV_REGULAR;
 	const int might_add_parent_ref = (tree_view != 0);
 	const int no_parent_ref = (view->custom.entry_count == 0);
 
@@ -1690,7 +1691,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 		return 1;
 	}
 
-	if(no_parent_ref || (!very && cfg_parent_dir_is_visible(0)))
+	if(no_parent_ref || (!cv_unsorted(type) && cfg_parent_dir_is_visible(0)))
 	{
 		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
 				view->custom.entry_count);
@@ -1705,7 +1706,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 
 	previous = (view->curr_dir[0] != '\0')
 	         ? NORMAL
-	         : (view->custom.type == CV_VERY ? CUSTOM_VERY : CUSTOM);
+	         : (ui_view_unsorted(view) ? UNSORTED : CUSTOM);
 
 	if(previous == NORMAL)
 	{
@@ -1731,19 +1732,19 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 
 	/* Kind of custom view must be set to correct value before option loading and
 	 * sorting. */
-	view->custom.type = tree_view ? CV_TREE : very ? CV_VERY : CV_REGULAR;
+	view->custom.type = type;
 
-	if(very)
+	if(cv_unsorted(type))
 	{
-		/* Applying very custom twice erases sorting completely. */
-		if(previous != CUSTOM_VERY)
+		/* Disabling sorting twice in a row erases sorting completely. */
+		if(previous != UNSORTED)
 		{
-			apply_very_custom(view);
+			disable_view_sorting(view);
 		}
 	}
-	else if(previous == CUSTOM_VERY)
+	else if(previous == UNSORTED)
 	{
-		revert_very_custom(view);
+		enable_view_sorting(view);
 	}
 
 	if(!reload)
@@ -1778,18 +1779,18 @@ on_location_change(FileView *view, int force)
 	}
 }
 
-/* Applies very custom view specific changes to the view. */
+/* Disables view sorting saving its state for the future. */
 static void
-apply_very_custom(FileView *view)
+disable_view_sorting(FileView *view)
 {
 	memcpy(&view->custom.sort[0], &view->sort[0], sizeof(view->custom.sort));
 	memset(&view->sort[0], SK_NONE, sizeof(view->sort));
 	load_sort_option(view);
 }
 
-/* Undoes was was done by apply_very_custom(). */
+/* Undoes was was done by disable_view_sorting(). */
 static void
-revert_very_custom(FileView *view)
+enable_view_sorting(FileView *view)
 {
 	memcpy(&view->sort[0], &view->custom.sort[0], sizeof(view->sort));
 	load_sort_option(view);
@@ -1862,7 +1863,7 @@ flist_custom_clone(FileView *to, const FileView *from, int tree)
 	{
 		replace_string(&to->custom.title,
 				from->custom.type == CV_TREE ? "from tree" : from->custom.title);
-		to->custom.type = (from->custom.type == CV_VERY) ? CV_VERY : CV_REGULAR;
+		to->custom.type = (ui_view_unsorted(from) ? CV_VERY : CV_REGULAR);
 	}
 
 	if(custom_list_is_incomplete(from))
@@ -1916,9 +1917,9 @@ flist_custom_clone(FileView *to, const FileView *from, int tree)
 
 	to->filtered = 0;
 
-	if(to->custom.type == CV_VERY)
+	if(ui_view_unsorted(to))
 	{
-		apply_very_custom(to);
+		disable_view_sorting(to);
 	}
 }
 
