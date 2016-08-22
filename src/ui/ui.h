@@ -197,9 +197,9 @@ typedef struct
 		/* Type of the custom view. */
 		enum
 		{
-			CV_REGULAR,  /* Sorted list of files. */
-			CV_UNSORTED, /* No initial sorting of file list is enforced. */
-			CV_TREE,     /* Files of a file system sub-tree. */
+			CV_REGULAR, /* Sorted list of files. */
+			CV_VERY,    /* No initial sorting of file list is enforced. */
+			CV_TREE,    /* Files of a file system sub-tree. */
 		}
 		type;
 

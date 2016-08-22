@@ -1356,7 +1356,7 @@ change_directory(FileView *view, const char directory[])
 	}
 
 	/* Perform additional actions on leaving custom view. */
-	if(was_in_custom_view && view->custom.type == CV_UNSORTED)
+	if(was_in_custom_view && view->custom.type == CV_VERY)
 	{
 		revert_very_custom(view);
 	}
@@ -1705,7 +1705,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 
 	previous = (view->curr_dir[0] != '\0')
 	         ? NORMAL
-	         : (view->custom.type == CV_UNSORTED ? CUSTOM_VERY : CUSTOM);
+	         : (view->custom.type == CV_VERY ? CUSTOM_VERY : CUSTOM);
 
 	if(previous == NORMAL)
 	{
@@ -1731,8 +1731,7 @@ flist_custom_finish_internal(FileView *view, int very, int tree_view,
 
 	/* Kind of custom view must be set to correct value before option loading and
 	 * sorting. */
-	view->custom.type = tree_view ? CV_TREE
-	                  : very ? CV_UNSORTED : CV_REGULAR;
+	view->custom.type = tree_view ? CV_TREE : very ? CV_VERY : CV_REGULAR;
 
 	if(very)
 	{
@@ -1863,9 +1862,7 @@ flist_custom_clone(FileView *to, const FileView *from, int tree)
 	{
 		replace_string(&to->custom.title,
 				from->custom.type == CV_TREE ? "from tree" : from->custom.title);
-		to->custom.type = (from->custom.type == CV_UNSORTED)
-		                ? CV_UNSORTED
-		                : CV_REGULAR;
+		to->custom.type = (from->custom.type == CV_VERY) ? CV_VERY : CV_REGULAR;
 	}
 
 	if(custom_list_is_incomplete(from))
@@ -1919,7 +1916,7 @@ flist_custom_clone(FileView *to, const FileView *from, int tree)
 
 	to->filtered = 0;
 
-	if(to->custom.type == CV_UNSORTED)
+	if(to->custom.type == CV_VERY)
 	{
 		apply_very_custom(to);
 	}

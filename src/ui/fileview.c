@@ -1622,7 +1622,7 @@ reset_view_columns(FileView *view)
 {
 	if(!ui_view_displays_columns(view) ||
 			(curr_stats.restart_in_progress && flist_custom_active(view) &&
-			 view->custom.type == CV_UNSORTED))
+			 view->custom.type == CV_VERY))
 	{
 		return;
 	}
