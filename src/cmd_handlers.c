@@ -88,6 +88,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "filtering.h"
+#include "flist_pos.h"
 #include "macros.h"
 #include "marks.h"
 #include "ops.h"

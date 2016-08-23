@@ -41,6 +41,7 @@
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../filtering.h"
+#include "../flist_pos.h"
 #include "../marks.h"
 #include "../registers.h"
 #include "../running.h"

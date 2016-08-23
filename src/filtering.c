@@ -31,6 +31,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "flist_pos.h"
 
 static void reset_filter(filter_t *filter);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,

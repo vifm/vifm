@@ -34,6 +34,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
+#include "flist_pos.h"
 
 static int is_valid_index(const int index);
 static void clear_marks(mark_t marks[], int count);

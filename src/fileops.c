@@ -69,6 +69,7 @@
 #include "background.h"
 #include "cmd_completion.h"
 #include "filelist.h"
+#include "flist_pos.h"
 #include "ops.h"
 #include "registers.h"
 #include "running.h"

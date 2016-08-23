@@ -43,6 +43,7 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
+#include "../flist_pos.h"
 #include "../opt_handlers.h"
 #include "../sort.h"
 #include "color_manager.h"

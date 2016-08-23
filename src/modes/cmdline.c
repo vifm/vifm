@@ -58,6 +58,7 @@
 #include "../cmd_core.h"
 #include "../filelist.h"
 #include "../filtering.h"
+#include "../flist_pos.h"
 #include "../marks.h"
 #include "../search.h"
 #include "../status.h"

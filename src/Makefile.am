@@ -218,6 +218,7 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	filtering.c filtering.h \
+	flist_pos.c flist_pos.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
 	marks.c marks.h \
