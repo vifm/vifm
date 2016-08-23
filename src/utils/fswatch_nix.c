@@ -39,8 +39,10 @@
 /* Watcher data. */
 struct fswatch_t
 {
-	int fd;       /* File descriptor for inotify. */
-	trie_t stats; /* Tree to keep track of per file frequency of notifications. */
+	/* File descriptor for inotify. */
+	int fd;
+	/* Trie to keep track of per file frequency of notifications. */
+	trie_t *stats;
 };
 
 /* Per file statistics information. */
@@ -70,7 +72,7 @@ fswatch_create(const char path[])
 
 	/* Create tree to collect update frequency statistics. */
 	w->stats = trie_create();
-	if(w->stats == NULL_TRIE)
+	if(w->stats == NULL)
 	{
 		trie_free_with_data(w->stats);
 		free(w);

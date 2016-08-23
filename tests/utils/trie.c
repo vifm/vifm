@@ -7,19 +7,19 @@
 
 TEST(freeing_new_trie_is_ok)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 	assert_non_null(trie);
 	trie_free(trie);
 }
 
 TEST(freeing_null_trie_is_ok)
 {
-	trie_free(NULL_TRIE);
+	trie_free(NULL);
 }
 
 TEST(put_returns_zero_for_new_string)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 
 	assert_int_equal(0, trie_put(trie, "str"));
 
@@ -28,7 +28,7 @@ TEST(put_returns_zero_for_new_string)
 
 TEST(put_returns_positive_number_for_existing_string)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 
 	assert_int_equal(0, trie_put(trie, "str"));
 	assert_true(trie_put(trie, "str") > 0);
@@ -38,7 +38,7 @@ TEST(put_returns_positive_number_for_existing_string)
 
 TEST(multiple_puts)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 
 	assert_int_equal(0, trie_put(trie, "str"));
 	assert_int_equal(0, trie_put(trie, "astr"));
@@ -72,7 +72,7 @@ TEST(multiple_puts)
 
 TEST(empty_string_does_not_exists_after_trie_creation)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 
 	assert_int_equal(0, trie_put(trie, ""));
 
@@ -81,7 +81,7 @@ TEST(empty_string_does_not_exists_after_trie_creation)
 
 TEST(utf8)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 
 	assert_int_equal(0, trie_put(trie, "строка"));
 	assert_int_equal(0, trie_put(trie, "string"));
@@ -93,7 +93,7 @@ TEST(utf8)
 
 TEST(put_sets_data_to_null)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 	void *data = trie;
 
 	assert_int_equal(0, trie_put(trie, "str"));
@@ -105,7 +105,7 @@ TEST(put_sets_data_to_null)
 
 TEST(get_returns_previously_set_data)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 	void *data;
 
 	assert_int_equal(0, trie_set(trie, "str", trie));
@@ -117,7 +117,7 @@ TEST(get_returns_previously_set_data)
 
 TEST(set_overwrites_previous_data)
 {
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 	void *data = NULL;
 
 	assert_int_equal(0, trie_set(trie, "str", trie));
@@ -133,7 +133,7 @@ TEST(free_with_data_removes_data)
 	/* The check is implicit, external tool should check that no memory leak is
 	 * created. */
 
-	const trie_t trie = trie_create();
+	trie_t *const trie = trie_create();
 
 	assert_true(trie_set(trie, "str", strdup("str")) == 0);
 	assert_true(trie_set(trie, "something", strdup("something")) == 0);
@@ -143,13 +143,13 @@ TEST(free_with_data_removes_data)
 
 TEST(cloning_null_trie_is_ok)
 {
-	assert_true(trie_clone(NULL_TRIE) == NULL_TRIE);
+	assert_true(trie_clone(NULL) == NULL);
 }
 
 TEST(trie_cloning_works)
 {
-	const trie_t trie = trie_create();
-	trie_t clone;
+	trie_t *const trie = trie_create();
+	trie_t *clone;
 
 	assert_int_equal(0, trie_put(trie, "str"));
 

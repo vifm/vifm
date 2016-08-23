@@ -77,6 +77,7 @@
 #include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/trie.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bmarks.h"
@@ -3990,7 +3991,7 @@ select_unselect_by_range(const cmd_info_t *cmd_info, int select)
 static int
 select_unselect_by_filter(const cmd_info_t *cmd_info, int select)
 {
-	trie_t selection_trie;
+	trie_t *selection_trie;
 	char **files;
 	int nfiles;
 	int i;

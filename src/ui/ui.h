@@ -35,7 +35,6 @@
 #include "../compat/pthread.h"
 #include "../utils/filter.h"
 #include "../utils/fswatch.h"
-#include "../utils/trie.h"
 #include "../status.h"
 #include "../types.h"
 #include "color_scheme.h"
@@ -222,11 +221,11 @@ typedef struct
 
 		/* List of paths that should be ignored (including all nested paths).  Used
 		 * by tree-view. */
-		trie_t excluded_paths;
+		struct trie_t *excluded_paths;
 
 		/* Names of files in custom view while it's being composed.  Used for
 		 * duplicate elimination during construction of custom list. */
-		trie_t paths_cache;
+		struct trie_t *paths_cache;
 	}
 	custom;
 

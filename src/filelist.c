@@ -123,8 +123,8 @@ static int add_file_entry_to_view(const char name[], const void *data,
 		void *param);
 static void sort_dir_list(int msg, FileView *view);
 static void merge_lists(FileView *view, dir_entry_t *entries, int len);
-static void add_to_trie(trie_t trie, FileView *view, dir_entry_t *entry);
-static int is_in_trie(trie_t trie, FileView *view, dir_entry_t *entry,
+static void add_to_trie(trie_t *trie, FileView *view, dir_entry_t *entry);
+static int is_in_trie(trie_t *trie, FileView *view, dir_entry_t *entry,
 		void **data);
 static void merge_entries(dir_entry_t *new, const dir_entry_t *prev);
 static int correct_pos(FileView *view, int pos, int dist, int closest);
@@ -145,7 +145,7 @@ static void clear_marking(FileView *view);
 static int flist_load_tree_internal(FileView *view, const char path[],
 		int reload);
 static int add_files_recursively(FileView *view, const char path[],
-		trie_t excluded_paths, int parent_pos, int no_direct_parent);
+		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
 static int file_is_visible(FileView *view, const char filename[], int is_dir,
 		const void *data, int apply_local_filter);
 static int add_directory_leaf(FileView *view, const char path[],
@@ -626,7 +626,7 @@ void
 flist_sel_restore(FileView *view, reg_t *reg)
 {
 	int i;
-	trie_t selection_trie = trie_create();
+	trie_t *const selection_trie = trie_create();
 
 	erase_selection(view);
 
@@ -1283,7 +1283,7 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 	const int no_parent_ref = (view->custom.entry_count == 0);
 
 	trie_free(view->custom.paths_cache);
-	view->custom.paths_cache = NULL_TRIE;
+	view->custom.paths_cache = NULL;
 
 	if(no_parent_ref && !might_add_parent_ref)
 	{
@@ -1447,7 +1447,7 @@ flist_custom_clone(FileView *to, const FileView *from, int tree)
 	int nentries;
 	int i, j;
 
-	assert(flist_custom_active(from) && to->custom.paths_cache == NULL_TRIE &&
+	assert(flist_custom_active(from) && to->custom.paths_cache == NULL &&
 			"Wrong state of destination view.");
 
 	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
@@ -2270,7 +2270,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 	int i;
 	int closest_dist;
 	const int prev_pos = view->list_pos;
-	trie_t prev_names = trie_create();
+	trie_t *prev_names = trie_create();
 
 	for(i = 0; i < len; ++i)
 	{
@@ -2307,7 +2307,7 @@ merge_lists(FileView *view, dir_entry_t *entries, int len)
 
 /* Adds view entry into the trie mapping its name to entry structure. */
 static void
-add_to_trie(trie_t trie, FileView *view, dir_entry_t *entry)
+add_to_trie(trie_t *trie, FileView *view, dir_entry_t *entry)
 {
 	int error;
 
@@ -2330,7 +2330,7 @@ add_to_trie(trie_t trie, FileView *view, dir_entry_t *entry)
  * add_to_trie() into *data (unchanged on lookup failure).  Returns non-zero if
  * item was successfully retrieved and zero otherwise. */
 static int
-is_in_trie(trie_t trie, FileView *view, dir_entry_t *entry, void **data)
+is_in_trie(trie_t *trie, FileView *view, dir_entry_t *entry, void **data)
 {
 	int error;
 
@@ -3328,7 +3328,7 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 {
 	char canonic_path[PATH_MAX];
 	int nfiltered;
-	trie_t excluded_paths = reload ? view->custom.excluded_paths : NULL_TRIE;
+	trie_t *excluded_paths = reload ? view->custom.excluded_paths : NULL;
 
 	flist_custom_start(view, "tree");
 
@@ -3379,7 +3379,7 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
  * filtered out files on success or partial success and negative value on
  * serious error. */
 static int
-add_files_recursively(FileView *view, const char path[], trie_t excluded_paths,
+add_files_recursively(FileView *view, const char path[], trie_t *excluded_paths,
 		int parent_pos, int no_direct_parent)
 {
 	int i;
