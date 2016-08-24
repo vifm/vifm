@@ -3702,7 +3702,6 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 		else if(strcmp(property, "tree") == 0)
 		{
 			*location = 1;
-			*filelist = 1;
 			*tree = 1;
 		}
 		else if(strcmp(property, "all") == 0)
@@ -3730,14 +3729,26 @@ static void
 sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 		int tree)
 {
-	if(!cd_is_possible(path) || change_directory(other_view, path) < 0)
+	if(!cd_is_possible(path) || (!tree && change_directory(other_view, path) < 0))
 	{
 		return;
 	}
 
-	if(cv)
+	if(tree)
 	{
-		flist_custom_clone(other_view, curr_view, tree);
+		/* Normally changing location resets local filter.  Prevent this by
+		 * synchronizing it here (after directory changing, but before loading list
+		 * of files, hence no extra work). */
+		if(sync_filters)
+		{
+			local_filter_apply(other_view, curr_view->local_filter.filter.raw);
+		}
+
+		(void)flist_clone_tree(other_view, curr_view);
+	}
+	else if(cv)
+	{
+		flist_custom_clone(other_view, curr_view);
 		if(sync_filters)
 		{
 			local_filter_apply(other_view, curr_view->local_filter.filter.raw);

@@ -46,8 +46,9 @@ int trie_put(trie_t *trie, const char str[]);
 /* Same as trie_put(), but also sets data. */
 int trie_set(trie_t *trie, const char str[], const void *data);
 
-/* Looks up data for the str in the trie.  Returns zero when found and sets
- * *data, otherwise returns non-zero. */
+/* Looks up data for the str in the trie.  trie can be NULL, which is treated as
+ * an empty trie.  Returns zero when found and sets *data, otherwise returns
+ * non-zero. */
 int trie_get(trie_t *trie, const char str[], void **data);
 
 #endif /* VIFM__UTILS__TRIE_H__ */

@@ -151,9 +151,8 @@ dir_entry_t * flist_custom_add(FileView *view, const char path[]);
 int flist_custom_finish(FileView *view, CVType type);
 /* Removes selected files from custom view. */
 void flist_custom_exclude(FileView *view);
-/* Clones list of files from from view to to view.  Non-zero tree parameter
- * enables cloning of tree as a tree rather than just a list of files. */
-void flist_custom_clone(FileView *to, const FileView *from, int tree);
+/* Clones list of files from from view to to view. */
+void flist_custom_clone(FileView *to, const FileView *from);
 /* Adds missing parent directories to the tree.  Such entries are marked as
  * "temporary", which can be used to remove them later. */
 void flist_custom_uncompress_tree(FileView *view);
@@ -288,6 +287,9 @@ void fentry_rename(FileView *view, dir_entry_t *entry, const char to[]);
 /* Loads directory tree specified by its path into the view.  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */
 int flist_load_tree(FileView *view, const char path[]);
+/* Makes to contain tree with the same root as from including copying list of
+ * excluded files.  Returns zero on success, otherwise non-zero is returned. */
+int flist_clone_tree(FileView *to, const FileView *from);
 
 TSTATIC_DEFS(
 	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],

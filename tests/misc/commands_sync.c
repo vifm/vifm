@@ -145,6 +145,42 @@ TEST(sync_syncs_trees)
 	columns_set_line_print_func(NULL);
 }
 
+TEST(tree_syncing_applies_properties_of_destination_view)
+{
+	char cwd[PATH_MAX];
+
+	columns_set_line_print_func(&column_line_print);
+	other_view->columns = columns_create();
+
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "..", cwd);
+
+	flist_load_tree(curr_view, TEST_DATA_PATH "/tree");
+
+	curr_view->dir_entry[0].selected = 1;
+	curr_view->selected_files = 1;
+	flist_custom_exclude(curr_view);
+
+	local_filter_apply(other_view, "d");
+	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
+	assert_int_equal(3, other_view->list_rows);
+	assert_string_equal("d", other_view->local_filter.filter.raw);
+
+	assert_true(flist_custom_active(other_view));
+	curr_stats.load_stage = 2;
+	load_saving_pos(other_view, 1);
+	curr_stats.load_stage = 0;
+
+	assert_int_equal(3, other_view->list_rows);
+	assert_string_equal("d", other_view->local_filter.filter.raw);
+
+	columns_free(other_view->columns);
+	other_view->columns = NULL_COLUMNS;
+	columns_set_line_print_func(NULL);
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])

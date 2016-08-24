@@ -144,6 +144,8 @@ static int iter_entries(FileView *view, dir_entry_t **entry,
 static void clear_marking(FileView *view);
 static int flist_load_tree_internal(FileView *view, const char path[],
 		int reload);
+static int make_tree(FileView *view, const char path[], int reload,
+		trie_t *excluded_paths);
 static int add_files_recursively(FileView *view, const char path[],
 		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
 static int file_is_visible(FileView *view, const char filename[], int is_dir,
@@ -1441,11 +1443,12 @@ is_temporary(FileView *view, const dir_entry_t *entry, void *arg)
 }
 
 void
-flist_custom_clone(FileView *to, const FileView *from, int tree)
+flist_custom_clone(FileView *to, const FileView *from)
 {
 	dir_entry_t *dst, *src;
 	int nentries;
 	int i, j;
+	const int from_tree = (from->custom.type == CV_TREE);
 
 	assert(flist_custom_active(from) && to->custom.paths_cache == NULL &&
 			"Wrong state of destination view.");
@@ -1453,23 +1456,11 @@ flist_custom_clone(FileView *to, const FileView *from, int tree)
 	replace_string(&to->custom.orig_dir, from->custom.orig_dir);
 	to->curr_dir[0] = '\0';
 
-	if(tree && from->custom.type == CV_TREE)
-	{
-		replace_string(&to->custom.title, "tree");
-		to->custom.type = CV_TREE;
-
-		trie_free(to->custom.excluded_paths);
-		to->custom.excluded_paths = trie_clone(from->custom.excluded_paths);
-	}
-	else
-	{
-		const int from_tree = (from->custom.type == CV_TREE);
-		replace_string(&to->custom.title,
-				from_tree ? "from tree" : from->custom.title);
-		to->custom.type = (ui_view_unsorted(from) || from_tree)
-		                ? CV_VERY
-		                : CV_REGULAR;
-	}
+	replace_string(&to->custom.title,
+			from_tree ? "from tree" : from->custom.title);
+	to->custom.type = (ui_view_unsorted(from) || from_tree)
+	                ? CV_VERY
+	                : CV_REGULAR;
 
 	if(custom_list_is_incomplete(from))
 	{
@@ -3324,14 +3315,52 @@ flist_load_tree(FileView *view, const char path[])
 	return error;
 }
 
+int
+flist_clone_tree(FileView *to, const FileView *from)
+{
+	int error;
+
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+	error = make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths);
+	ui_cancellation_disable();
+
+	if(!error)
+	{
+		trie_free(to->custom.excluded_paths);
+		to->custom.excluded_paths = trie_clone(from->custom.excluded_paths);
+	}
+
+	return error;
+}
+
 /* Implements tree view (re)loading.  Returns zero on success, otherwise
  * non-zero is returned. */
 static int
 flist_load_tree_internal(FileView *view, const char path[], int reload)
 {
+	trie_t *excluded_paths = reload ? view->custom.excluded_paths : NULL;
+
+	if(make_tree(view, path, reload, excluded_paths) != 0)
+	{
+		return 1;
+	}
+
+	if(!reload)
+	{
+		trie_free(view->custom.excluded_paths);
+		view->custom.excluded_paths = trie_create();
+	}
+	return 0;
+}
+
+/* (Re)loads tree at path into the view using specified list of excluded files.
+ * Returns zero on success, otherwise non-zero is returned. */
+static int
+make_tree(FileView *view, const char path[], int reload, trie_t *excluded_paths)
+{
 	char canonic_path[PATH_MAX];
 	int nfiltered;
-	trie_t *excluded_paths = reload ? view->custom.excluded_paths : NULL;
 
 	flist_custom_start(view, "tree");
 
@@ -3367,12 +3396,6 @@ flist_load_tree_internal(FileView *view, const char path[], int reload)
 	view->filtered = nfiltered;
 
 	replace_string(&view->custom.orig_dir, canonic_path);
-
-	if(!reload)
-	{
-		trie_free(view->custom.excluded_paths);
-		view->custom.excluded_paths = trie_create();
-	}
 
 	return 0;
 }
