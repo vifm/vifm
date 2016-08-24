@@ -96,6 +96,7 @@ TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 	lwin.window_rows = 1;
 	rwin.window_rows = 1;
 
+	opt_handlers_setup();
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 
 	flist_load_tree(curr_view, SANDBOX_PATH);
@@ -107,8 +108,10 @@ TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 	assert_int_equal(1, other_view->list_rows);
 	assert_int_equal(0, other_view->dir_entry[0].child_count);
 	assert_int_equal(0, other_view->dir_entry[0].child_pos);
+	assert_int_equal(CV_VERY, other_view->custom.type);
 
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	opt_handlers_teardown();
 }
 
 TEST(sync_syncs_trees)

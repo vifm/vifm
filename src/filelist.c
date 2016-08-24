@@ -1463,9 +1463,12 @@ flist_custom_clone(FileView *to, const FileView *from, int tree)
 	}
 	else
 	{
+		const int from_tree = (from->custom.type == CV_TREE);
 		replace_string(&to->custom.title,
-				from->custom.type == CV_TREE ? "from tree" : from->custom.title);
-		to->custom.type = (ui_view_unsorted(from) ? CV_VERY : CV_REGULAR);
+				from_tree ? "from tree" : from->custom.title);
+		to->custom.type = (ui_view_unsorted(from) || from_tree)
+		                ? CV_VERY
+		                : CV_REGULAR;
 	}
 
 	if(custom_list_is_incomplete(from))
