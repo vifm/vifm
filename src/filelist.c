@@ -1843,9 +1843,23 @@ populate_custom_view(FileView *view, int reload)
 		int prev_list_rows, result;
 
 		start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
-		ui_cancellation_reset();
 		result = flist_load_tree_internal(view, flist_get_dir(view), 1);
-		finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
+
+		if(view->dir_entry == NULL)
+		{
+			/* Restore original list in case of failure. */
+			view->dir_entry = prev_dir_entries;
+			view->list_rows = result;
+		}
+		else
+		{
+			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
+		}
+
+		if(result != 0)
+		{
+			show_error_msg("Tree View", "Reload failed");
+		}
 
 		return result;
 	}
@@ -3301,37 +3315,26 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 int
 flist_load_tree(FileView *view, const char path[])
 {
-	int error;
-
-	ui_cancellation_reset();
-	ui_cancellation_enable();
-	error = flist_load_tree_internal(view, path, 0);
-	ui_cancellation_disable();
-
-	if(!error)
+	if(flist_load_tree_internal(view, path, 0) != 0)
 	{
-		ui_view_schedule_redraw(view);
+		return 1;
 	}
-	return error;
+
+	ui_view_schedule_redraw(view);
+	return 0;
 }
 
 int
 flist_clone_tree(FileView *to, const FileView *from)
 {
-	int error;
-
-	ui_cancellation_reset();
-	ui_cancellation_enable();
-	error = make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths);
-	ui_cancellation_disable();
-
-	if(!error)
+	if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths) != 0)
 	{
-		trie_free(to->custom.excluded_paths);
-		to->custom.excluded_paths = trie_clone(from->custom.excluded_paths);
+		return 1;
 	}
 
-	return error;
+	trie_free(to->custom.excluded_paths);
+	to->custom.excluded_paths = trie_clone(from->custom.excluded_paths);
+	return 0;
 }
 
 /* Implements tree view (re)loading.  Returns zero on success, otherwise
@@ -3365,7 +3368,12 @@ make_tree(FileView *view, const char path[], int reload, trie_t *excluded_paths)
 	flist_custom_start(view, "tree");
 
 	show_progress("Building tree...", 0);
+
+	ui_cancellation_reset();
+	ui_cancellation_enable();
 	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
+	ui_cancellation_disable();
+
 	if(curr_stats.save_msg || is_status_bar_multiline())
 	{
 		status_bar_message(NULL);
