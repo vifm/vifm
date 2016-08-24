@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 23 July, 2016
+Updated: 23 August, 2016
 Version: 0.8.2
 
 Brief Description
@@ -213,6 +213,7 @@ Package content
     |  |-- fileops.c - delete/copy/put selected file(s)
     |  |-- filetype.c - stores filetype information from vifmrc
     |  |-- filtering.c - managing file filters
+    |  |-- flist_pos.c - most of file list scrolling/cursor positioning code
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- marks.c - stores information about marked directories

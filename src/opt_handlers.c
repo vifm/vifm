@@ -1113,7 +1113,7 @@ clone_local_options(const FileView *from, FileView *to, int defer_slow)
 	replace_string(&to->sort_groups, from->sort_groups);
 	replace_string(&to->sort_groups_g, from->sort_groups_g);
 
-	sort = (flist_custom_active(from) && from->custom.type == CV_UNSORTED)
+	sort = (flist_custom_active(from) && ui_view_unsorted(from))
 	     ? (char *)from->custom.sort
 	     : (char *)from->sort;
 	memcpy(to->sort, sort, sizeof(to->sort));
@@ -2404,7 +2404,7 @@ map_name(const char name[], void *arg)
 		}
 		else
 		{
-			sort = (flist_custom_active(view) && view->custom.type == CV_UNSORTED)
+			sort = (flist_custom_active(view) && ui_view_unsorted(view))
 			      ? (char *)view->custom.sort
 			      : (char *)view->sort;
 		}

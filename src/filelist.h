@@ -29,17 +29,13 @@
 #include "utils/test_helpers.h"
 #include "registers.h"
 
-/* Type of contiguous area of file list. */
-typedef enum
-{
-	FLS_SELECTION, /* Of selected entries. */
-	FLS_MARKING,   /* Of marked entries. */
-}
-FileListScope;
-
 /* Type of filter function for zapping list of entries.  Should return non-zero
  * if entry is to be kept and zero otherwise. */
 typedef int (*zap_filter)(FileView *view, const dir_entry_t *entry, void *arg);
+
+/* Type of predicate functions to reason about entries.  Should return non-zero
+ * if particular property holds and zero otherwise. */
+typedef int (*entry_predicate)(const dir_entry_t *entry);
 
 /* Initialization/termination functions. */
 
@@ -49,52 +45,6 @@ void init_filelists(void);
 void reset_views(void);
 /* Loads view file list for the first time. */
 void load_initial_directory(FileView *view, const char dir[]);
-
-/* Position related functions. */
-
-/* Find index of the file within list of currently visible files of the view.
- * Returns file entry index or -1, if file wasn't found. */
-int find_file_pos_in_list(const FileView *const view, const char file[]);
-/* Find index of the file within list of currently visible files of the view.
- * Always matches file name and can optionally match directory if dir is not
- * NULL.  Returns file entry index or -1, if file wasn't found. */
-int flist_find_entry(const FileView *view, const char file[], const char dir[]);
-/* Tries to move cursor by pos_delta positions.  A wrapper for
- * correct_list_pos_on_scroll_up() and correct_list_pos_on_scroll_down()
- * functions. */
-void correct_list_pos(FileView *view, ssize_t pos_delta);
-/* Returns non-zero if doing something makes sense. */
-int correct_list_pos_on_scroll_down(FileView *view, size_t lines_count);
-/* Returns non-zero if doing something makes sense. */
-int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
-/* Moves cursor to specified position. */
-void flist_set_pos(FileView *view, int pos);
-/* Ensures that position in the list doesn't exceed its bounds. */
-void flist_ensure_pos_is_valid(FileView *view);
-/* Ensures that cursor is moved outside of entries of certain type. */
-void move_cursor_out_of(FileView *view, FileListScope scope);
-/* Returns non-zero if cursor is on the first line. */
-int at_first_line(const FileView *view);
-/* Returns non-zero if cursor is on the last line. */
-int at_last_line(const FileView *view);
-/* Returns non-zero if cursor is on the first column. */
-int at_first_column(const FileView *view);
-/* Returns non-zero if cursor is on the last column. */
-int at_last_column(const FileView *view);
-/* Moves cursor to the first file in a row. */
-void go_to_start_of_line(FileView *view);
-/* Returns position of the first file in current line. */
-int get_start_of_line(const FileView *view);
-/* Returns position of the last file in current line. */
-int get_end_of_line(const FileView *view);
-/* Finds position of the next/previous group defined by primary sorting key.
- * Returns determined position (might point to the last/first entry in corner
- * cases). */
-int flist_find_group(FileView *view, int next);
-/* Finds position of the next/previous group defined by entries being files or
- * directories.  Returns determined position (might point to the last/first
- * entry in corner cases). */
-int flist_find_dir_group(FileView *view, int next);
 
 /* Appearance related functions. */
 
@@ -198,12 +148,11 @@ void flist_custom_start(FileView *view, const char title[]);
 dir_entry_t * flist_custom_add(FileView *view, const char path[]);
 /* Finishes file list population, handles empty resulting list corner case.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
-int flist_custom_finish(FileView *view, int very, int tree_view);
+int flist_custom_finish(FileView *view, CVType type);
 /* Removes selected files from custom view. */
 void flist_custom_exclude(FileView *view);
-/* Clones list of files from from view to to view.  Non-zero tree parameter
- * enables cloning of tree as a tree rather than just a list of files. */
-void flist_custom_clone(FileView *to, const FileView *from, int tree);
+/* Clones list of files from from view to to view. */
+void flist_custom_clone(FileView *to, const FileView *from);
 /* Adds missing parent directories to the tree.  Such entries are marked as
  * "temporary", which can be used to remove them later. */
 void flist_custom_uncompress_tree(FileView *view);
@@ -302,10 +251,16 @@ dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
 		const char path[]);
 /* Retrieves number of items in a directory specified by the entry.  Returns the
  * number, which is zero for files. */
-uint64_t entry_get_nitems(FileView *view, const dir_entry_t *entry);
+uint64_t entry_get_nitems(const FileView *view, const dir_entry_t *entry);
 /* Calculates number of items at path specified by the entry.  No check for file
  * type is performed.  Returns the number, which is zero for files. */
 uint64_t entry_calc_nitems(const dir_entry_t *entry);
+/* Checks whether entry is selected.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int is_entry_selected(const dir_entry_t *entry);
+/* Checks whether entry is marked.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int is_entry_marked(const dir_entry_t *entry);
 /* Replaces all entries of the *entries with copy of with_entries elements. */
 void replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 		const dir_entry_t *with_entries, int with_count);
@@ -332,6 +287,9 @@ void fentry_rename(FileView *view, dir_entry_t *entry, const char to[]);
 /* Loads directory tree specified by its path into the view.  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */
 int flist_load_tree(FileView *view, const char path[]);
+/* Makes to contain tree with the same root as from including copying list of
+ * excluded files.  Returns zero on success, otherwise non-zero is returned. */
+int flist_clone_tree(FileView *to, const FileView *from);
 
 TSTATIC_DEFS(
 	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],

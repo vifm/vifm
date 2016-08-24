@@ -81,9 +81,9 @@ vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
                 bracket_notation.c builtin_functions.c cmd_handlers.c \
                 cmd_completion.c cmd_core.c compile_info.c dir_stack.c \
                 event_loop.c filelist.c filename_modifiers.c fileops.c \
-                filetype.c filtering.c ipc.c macros.c marks.c ops.c \
-                opt_handlers.c registers.c running.c search.c signals.c sort.c \
-                status.c tags.c trash.c types.c undo.c version.c \
+                filetype.c filtering.c flist_pos.c ipc.c macros.c marks.c \
+                ops.c opt_handlers.c registers.c running.c search.c signals.c \
+                sort.c status.c tags.c trash.c types.c undo.c version.c \
                 viewcolumns_parser.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)

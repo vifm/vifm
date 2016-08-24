@@ -64,6 +64,7 @@
 #include "utils/utf8.h"
 #include "background.h"
 #include "filelist.h"
+#include "flist_pos.h"
 #include "filetype.h"
 #include "macros.h"
 #include "opt_handlers.h"

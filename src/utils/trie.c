@@ -23,26 +23,26 @@
 /* Trie node. */
 struct trie_t
 {
-	trie_t left;     /* Nodes with values less than value. */
-	trie_t right;    /* Nodes with values greater than value. */
-	trie_t children; /* Child nodes. */
-	void *data;      /* Data associated with the key. */
-	char value;      /* Value of the node. */
-	char exists;     /* Whether this node exists or it's an intermediate node. */
+	trie_t *left;     /* Nodes with values less than value. */
+	trie_t *right;    /* Nodes with values greater than value. */
+	trie_t *children; /* Child nodes. */
+	void *data;       /* Data associated with the key. */
+	char value;       /* Value of the node. */
+	char exists;      /* Whether this node exists or it's an intermediate node. */
 };
 
-static trie_t clone_nodes(trie_t trie, int *error);
-static void get_or_create(trie_t trie, const char str[], void *data,
+static trie_t *clone_nodes(trie_t *trie, int *error);
+static void get_or_create(trie_t *trie, const char str[], void *data,
 		int *result);
 
-trie_t
+trie_t *
 trie_create(void)
 {
 	return calloc(1U, sizeof(struct trie_t));
 }
 
-trie_t
-trie_clone(trie_t trie)
+trie_t *
+trie_clone(trie_t *trie)
 {
 	int error = 0;
 
@@ -50,7 +50,7 @@ trie_clone(trie_t trie)
 	if(error)
 	{
 		trie_free(trie);
-		return NULL_TRIE;
+		return NULL;
 	}
 
 	return trie;
@@ -58,21 +58,21 @@ trie_clone(trie_t trie)
 
 /* Clones node and all its relatives.  Sets *error to non-zero on error.
  * Returns new node. */
-static trie_t
-clone_nodes(trie_t trie, int *error)
+static trie_t *
+clone_nodes(trie_t *trie, int *error)
 {
-	trie_t new_trie;
+	trie_t *new_trie;
 
-	if(trie == NULL_TRIE)
+	if(trie == NULL)
 	{
-		return NULL_TRIE;
+		return NULL;
 	}
 
 	new_trie = malloc(sizeof(*new_trie));
 	if(new_trie == NULL)
 	{
 		*error = 1;
-		return NULL_TRIE;
+		return NULL;
 	}
 
 	*new_trie = *trie;
@@ -84,9 +84,9 @@ clone_nodes(trie_t trie, int *error)
 }
 
 void
-trie_free(trie_t trie)
+trie_free(trie_t *trie)
 {
-	if(trie != NULL_TRIE)
+	if(trie != NULL)
 	{
 		trie_free(trie->left);
 		trie_free(trie->right);
@@ -96,9 +96,9 @@ trie_free(trie_t trie)
 }
 
 void
-trie_free_with_data(trie_t trie)
+trie_free_with_data(trie_t *trie)
 {
-	if(trie != NULL_TRIE)
+	if(trie != NULL)
 	{
 		trie_free_with_data(trie->left);
 		trie_free_with_data(trie->right);
@@ -109,17 +109,17 @@ trie_free_with_data(trie_t trie)
 }
 
 int
-trie_put(trie_t trie, const char str[])
+trie_put(trie_t *trie, const char str[])
 {
 	return trie_set(trie, str, NULL);
 }
 
 int
-trie_set(trie_t trie, const char str[], const void *data)
+trie_set(trie_t *trie, const char str[], const void *data)
 {
 	int result;
 
-	if(trie == NULL_TRIE)
+	if(trie == NULL)
 	{
 		return -1;
 	}
@@ -132,16 +132,16 @@ trie_set(trie_t trie, const char str[], const void *data)
  * on error, to zero on successful insertion and to positive number if element
  * was already in the trie. */
 static void
-get_or_create(trie_t trie, const char str[], void *data, int *result)
+get_or_create(trie_t *trie, const char str[], void *data, int *result)
 {
-	trie_t *link = &trie;
+	trie_t **link = &trie;
 	while(1)
 	{
 		/* Create inexistent node. */
-		if(trie == NULL_TRIE)
+		if(trie == NULL)
 		{
 			trie = trie_create();
-			if(trie == NULL_TRIE)
+			if(trie == NULL)
 			{
 				*result = -1;
 				break;
@@ -173,11 +173,11 @@ get_or_create(trie_t trie, const char str[], void *data, int *result)
 }
 
 int
-trie_get(trie_t trie, const char str[], void **data)
+trie_get(trie_t *trie, const char str[], void **data)
 {
 	while(1)
 	{
-		if(trie == NULL_TRIE)
+		if(trie == NULL)
 		{
 			return 1;
 		}

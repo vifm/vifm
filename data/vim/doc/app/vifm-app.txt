@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 20
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 24
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2101,7 +2101,7 @@ yet supported) and might be changed in future releases, or get an alias.
      - localopts - all local options;
      - filters - all filters;
      - filelist - list of files for custom view (implies "location");
-     - tree - tree structure for tree view (implies "filelist");
+     - tree - tree structure for tree view (implies "location");
      - all - all of the above.
 
 :[line]touch file...                           *vifm-:touch*

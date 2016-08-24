@@ -35,7 +35,6 @@
 #include "../compat/pthread.h"
 #include "../utils/filter.h"
 #include "../utils/fswatch.h"
-#include "../utils/trie.h"
 #include "../status.h"
 #include "../types.h"
 #include "color_scheme.h"
@@ -123,6 +122,15 @@ typedef enum
 }
 NumberingType;
 
+/* Variants of custom view. */
+typedef enum
+{
+	CV_REGULAR, /* Sorted list of files. */
+	CV_VERY,    /* No initial sorting of file list is enforced. */
+	CV_TREE,    /* Files of a file system sub-tree. */
+}
+CVType;
+
 /* Type of scheduled view update event. */
 typedef enum
 {
@@ -195,13 +203,7 @@ typedef struct
 	struct
 	{
 		/* Type of the custom view. */
-		enum
-		{
-			CV_REGULAR,  /* Sorted list of files. */
-			CV_UNSORTED, /* No initial sorting of file list is enforced. */
-			CV_TREE,     /* Files of a file system sub-tree. */
-		}
-		type;
+		CVType type;
 
 		/* This is temporary storage for custom list entries used during its
 		 * construction as well as storage for unfiltered custom list if local
@@ -219,11 +221,11 @@ typedef struct
 
 		/* List of paths that should be ignored (including all nested paths).  Used
 		 * by tree-view. */
-		trie_t excluded_paths;
+		struct trie_t *excluded_paths;
 
 		/* Names of files in custom view while it's being composed.  Used for
 		 * duplicate elimination during construction of custom list. */
-		trie_t paths_cache;
+		struct trie_t *paths_cache;
 	}
 	custom;
 
@@ -392,7 +394,9 @@ int ui_char_pressed(wint_t c);
 
 int setup_ncurses_interface(void);
 
-float get_splitter_pos(int max);
+/* Checks whether custom view of specified type is unsorted.  Returns non-zero
+ * if so, otherwise zero is returned. */
+int cv_unsorted(CVType type);
 
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
@@ -567,6 +571,11 @@ void ui_view_erase(FileView *view);
 /* Same as erase, but ensures that view is updated in all its size on the
  * screen (e.g. to clear anything put there by other programs as well). */
 void ui_view_wipe(FileView *view);
+
+/* Checks whether custom view type of specified view is unsorted.  It doesn't
+ * need the view to be custom, checks just the type.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int ui_view_unsorted(const FileView *view);
 
 /* View update scheduling. */
 

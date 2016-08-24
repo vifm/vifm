@@ -43,6 +43,7 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
+#include "../flist_pos.h"
 #include "../opt_handlers.h"
 #include "../sort.h"
 #include "color_manager.h"
@@ -1622,7 +1623,7 @@ reset_view_columns(FileView *view)
 {
 	if(!ui_view_displays_columns(view) ||
 			(curr_stats.restart_in_progress && flist_custom_active(view) &&
-			 view->custom.type == CV_UNSORTED))
+			 view->custom.type == CV_VERY))
 	{
 		return;
 	}

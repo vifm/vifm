@@ -31,6 +31,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "flist_pos.h"
 
 static void reset_filter(filter_t *filter);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
@@ -39,6 +40,7 @@ static int file_is_filtered(FileView *view, const char filename[], int is_dir,
 		int apply_local_filter);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static int load_unfiltered_list(FileView *const view);
+static int list_is_incomplete(FileView *const view);
 static void store_local_filter_position(FileView *const view, int pos);
 static int update_filtering_lists(FileView *view, int add, int clear);
 static void reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered);
@@ -377,7 +379,7 @@ load_unfiltered_list(FileView *const view)
 
 	view->local_filter.saved = strdup(view->local_filter.filter.raw);
 
-	if(view->filtered > 0)
+	if(list_is_incomplete(view))
 	{
 		char full_path[PATH_MAX];
 		dir_entry_t *entry;
@@ -412,6 +414,39 @@ load_unfiltered_list(FileView *const view)
 	view->dir_entry = NULL;
 
 	return current_file_pos;
+}
+
+/* Checks whether list of files is incomplete.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+list_is_incomplete(FileView *const view)
+{
+	int i;
+
+	if(view->filtered > 0)
+	{
+		return 1;
+	}
+
+	if(flist_custom_active(view) && view->custom.type != CV_TREE)
+	{
+		return 0;
+	}
+
+	/* Check if there is any directories without leaf nodes.  They aren't counted
+	 * as filtered out, so need to check separately (or start counting them in
+	 * some way). */
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		if(entry->type == FT_DIR && entry->child_count == 0 &&
+				!is_parent_dir(entry->name))
+		{
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 /* Adds local filter position (in unfiltered list) to position history. */

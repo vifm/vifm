@@ -21,37 +21,35 @@
 
 #include <stddef.h> /* NULL */
 
-/* NULL equivalent for variables of type trie_t. */
-#define NULL_TRIE NULL
-
 /* Declaration of opaque trie type. */
-typedef struct trie_t *trie_t;
+typedef struct trie_t trie_t;
 
-/* Creates new empty trie.  Returns NULL_TRIE on error. */
-trie_t trie_create(void);
+/* Creates new empty trie.  Returns NULL on error. */
+trie_t * trie_create(void);
 
-/* Clones a trie.  Associated data pointers are copied as is.  Returns NULL_TRIE
- * on error. */
-trie_t trie_clone(trie_t trie);
+/* Clones a trie.  Associated data pointers are copied as is.  Returns NULL on
+ * error. */
+trie_t * trie_clone(trie_t *trie);
 
-/* Frees memory allocated for the trie.  Freeing of NULL_TRIE trie is OK. */
-void trie_free(trie_t trie);
+/* Frees memory allocated for the trie.  Freeing of NULL trie is OK. */
+void trie_free(trie_t *trie);
 
-/* Frees memory allocated for the trie.  Freeing of NULL_TRIE trie is OK.  All
- * data associated with trie entries is freed by calling free() on it. */
-void trie_free_with_data(trie_t trie);
+/* Frees memory allocated for the trie.  Freeing of NULL trie is OK.  All data
+ * associated with trie entries is freed by calling free() on it. */
+void trie_free_with_data(trie_t *trie);
 
 /* Inserts string to the trie if it's not already there.  Returns negative value
  * on error, zero on successful insertion and positive number if element was
  * already in the trie. */
-int trie_put(trie_t trie, const char str[]);
+int trie_put(trie_t *trie, const char str[]);
 
 /* Same as trie_put(), but also sets data. */
-int trie_set(trie_t trie, const char str[], const void *data);
+int trie_set(trie_t *trie, const char str[], const void *data);
 
-/* Looks up data for the str in the trie.  Returns zero when found and sets
- * *data, otherwise returns non-zero. */
-int trie_get(trie_t trie, const char str[], void **data);
+/* Looks up data for the str in the trie.  trie can be NULL, which is treated as
+ * an empty trie.  Returns zero when found and sets *data, otherwise returns
+ * non-zero. */
+int trie_get(trie_t *trie, const char str[], void **data);
 
 #endif /* VIFM__UTILS__TRIE_H__ */
 

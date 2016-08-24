@@ -147,7 +147,7 @@ TEST(tree_accounts_for_local_filter)
 	validate_tree(&lwin);
 }
 
-TEST(dot_dirs_are_suppressed_by_local_filtering)
+TEST(leafs_are_suppressed_by_local_filtering)
 {
 	(void)filter_set(&lwin.local_filter.filter, "dir");
 	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
@@ -162,7 +162,7 @@ TEST(dot_dirs_are_suppressed_by_local_filtering)
 	validate_tree(&lwin);
 }
 
-TEST(dot_dirs_are_not_matched_by_local_filtering)
+TEST(leafs_are_not_matched_by_local_filtering)
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-1", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-2", 0700));
@@ -181,6 +181,35 @@ TEST(dot_dirs_are_not_matched_by_local_filtering)
 	load_saving_pos(&lwin, 1);
 	curr_stats.load_stage = 0;
 	assert_int_equal(1, lwin.list_rows);
+	validate_tree(&lwin);
+
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir-2"));
+	assert_success(rmdir(SANDBOX_PATH "/empty-dir-1"));
+}
+
+TEST(leafs_are_returned_if_local_filter_is_emptied)
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-1", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-2", 0700));
+
+	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(0, local_filter_set(&lwin, "."));
+	local_filter_accept(&lwin);
+
+	assert_int_equal(2, lwin.list_rows);
+	validate_tree(&lwin);
+
+	/* Reload file list to make sure that its state is "clear" (leafs aren't
+	 * loaded in this case). */
+	curr_stats.load_stage = 2;
+	load_saving_pos(&lwin, 1);
+	curr_stats.load_stage = 0;
+
+	/* ".." should appear after filter is emptied. */
+	assert_int_equal(0, local_filter_set(&lwin, ""));
+	local_filter_accept(&lwin);
+	assert_int_equal(4, lwin.list_rows);
 	validate_tree(&lwin);
 
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir-2"));

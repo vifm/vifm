@@ -46,6 +46,7 @@
 #include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
+#include "../flist_pos.h"
 #include "../status.h"
 
 /* Description of existing FUSE mounts. */

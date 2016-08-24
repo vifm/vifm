@@ -147,7 +147,8 @@ ifdef unix_env
     export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env
-    override LDFLAGS += $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
+    override LDFLAGS += \
+        $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
     # this part is in conditional
     ifeq ($(OS),Windows_NT)
         override LDFLAGS += -lpdcurses
