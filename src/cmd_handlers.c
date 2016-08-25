@@ -3729,7 +3729,7 @@ static void
 sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 		int tree)
 {
-	if(!cd_is_possible(path) || (!tree && change_directory(other_view, path) < 0))
+	if(!cd_is_possible(path) || change_directory(other_view, path) < 0)
 	{
 		return;
 	}
