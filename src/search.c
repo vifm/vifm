@@ -178,9 +178,6 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	view->matches = nmatches;
 	copy_str(view->last_search, sizeof(view->last_search), pattern);
 
-	/* Need to redraw the list so that the matching files are highlighted */
-	draw_dir_list(view);
-
 	view->matches = nmatches;
 	if(nmatches > 0)
 	{
