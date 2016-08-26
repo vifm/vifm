@@ -36,7 +36,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
 #include "../compat/fs_limits.h"
@@ -52,6 +52,7 @@ static int is_dir_fast(const char path[]);
 static int path_exists_internal(const char path[], const char filename[],
 		int deref);
 static int case_sensitive_paths(const char at[]);
+static int path_sorter(const void *first, const void *second);
 
 #ifndef _WIN32
 static int is_directory(const char path[], int dereference_links);
@@ -559,6 +560,26 @@ list_all_files(const char path[], int *len)
 	os_closedir(dir);
 
 	return list;
+}
+
+char **
+list_sorted_files(const char path[], int *len)
+{
+	char **const list = list_all_files(path, len);
+	if(*len > 0)
+	{
+		qsort(list, *len, sizeof(*list), &path_sorter);
+	}
+	return list;
+}
+
+/* Wraps stroscmp() for use with qsort(). */
+static int
+path_sorter(const void *first, const void *second)
+{
+	const char *const *const a = first;
+	const char *const *const b = second;
+	return stroscmp(*a, *b);
 }
 
 int

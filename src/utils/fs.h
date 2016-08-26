@@ -127,6 +127,11 @@ char ** list_regular_files(const char path[], char *list[], int *len);
  * can be NULL on empty list, error is indicated by negative *len. */
 char ** list_all_files(const char path[], int *len);
 
+/* Enumerates content of the path in sorted order.  Returns list of names of
+ * length *len, which can be NULL on empty list, error is indicated by negative
+ * *len. */
+char ** list_sorted_files(const char path[], int *len);
+
 /* Returns non-zero if file (or symbolic link target) path points to is a
  * regular file. */
 int is_regular_file(const char path[]);
