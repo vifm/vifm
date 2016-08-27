@@ -34,7 +34,6 @@
 #include "../../compat/fs_limits.h"
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
-#include "../../modes/dialogs/msg_dialog.h"
 #include "../../ui/cancellation.h"
 #include "../../ui/fileview.h"
 #include "../../ui/ui.h"
@@ -48,6 +47,7 @@
 #include "../../undo.h"
 #include "../modes.h"
 #include "../wk.h"
+#include "msg_dialog.h"
 
 static const char * get_title(void);
 static int is_one_file_selected(int first_file_index);
@@ -122,10 +122,11 @@ init_attr_dialog_mode(void)
 void
 enter_attr_mode(FileView *active_view)
 {
-	int i;
 	mode_t fmode;
 	mode_t diff;
 	uid_t uid = geteuid();
+	dir_entry_t *entry;
+	int first;
 
 	if(curr_stats.load_stage < 2)
 		return;
@@ -133,42 +134,31 @@ enter_attr_mode(FileView *active_view)
 	view = active_view;
 	memset(perms, 0, sizeof(perms));
 
-	diff = 0;
-	i = 0;
-	while(i < view->list_rows && !view->dir_entry[i].selected)
-		i++;
+	first = 1;
 	file_is_dir = 0;
-	if(i == view->list_rows)
+	diff = 0;
+	entry = NULL;
+	while(iter_selection_or_current(view, &entry))
 	{
-		i = view->list_pos;
-		file_is_dir = is_dir(view->dir_entry[i].name);
-	}
-	fmode = view->dir_entry[i].mode;
-	if(uid != 0 && view->dir_entry[i].uid != uid)
-	{
-		show_error_msgf("Access error", "You are not owner of %s",
-				view->dir_entry[i].name);
-		clean_selected_files(view);
-		load_dir_list(view, 1);
-		fview_cursor_redraw(view);
-		return;
-	}
-	while(i < view->list_rows)
-	{
-		if(view->dir_entry[i].selected)
+		if(first)
 		{
-			diff |= (view->dir_entry[i].mode ^ fmode);
-			file_is_dir = file_is_dir || is_dir(view->dir_entry[i].name);
-
-			if(uid != 0 && view->dir_entry[i].uid != uid)
-			{
-				show_error_msgf("Access error", "You are not owner of %s",
-						view->dir_entry[i].name);
-				return;
-			}
+			fmode = entry->mode;
+			first = 0;
 		}
 
-		i++;
+		diff |= (entry->mode ^ fmode);
+		file_is_dir |= is_directory_entry(entry);
+
+		if(uid != 0 && entry->uid != uid)
+		{
+			show_error_msgf("Access error", "You are not owner of %s", entry->name);
+			return;
+		}
+	}
+	if(first)
+	{
+		show_error_msg("Permissions", "No files to process");
+		return;
 	}
 
 	vle_mode_set(ATTR_MODE, VMT_SECONDARY);
@@ -385,10 +375,7 @@ leave_attr_mode(void)
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(view);
-	load_dir_list(view, 1);
-	fview_cursor_redraw(view);
-
-	update_all_windows();
+	ui_view_schedule_reload(view);
 }
 
 static void

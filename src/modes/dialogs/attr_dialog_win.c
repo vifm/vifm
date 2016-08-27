@@ -39,8 +39,9 @@
 #include "../../undo.h"
 #include "../modes.h"
 #include "../wk.h"
+#include "msg_dialog.h"
 
-/* enumeration of properties */
+/* Enumeration of properties. */
 enum
 {
 	ATTR_ARCHIVE,
@@ -184,38 +185,38 @@ init(void)
 static void
 get_attrs(void)
 {
-	DWORD attributes;
-	DWORD diff;
 	int i;
+	DWORD attributes;
+	DWORD diff = 0;
+	dir_entry_t *entry = NULL;
+	int first = 1;
 
-	memset(attrs, 0, sizeof(attrs));
-
-	diff = 0;
-	i = 0;
-	while(i < view->list_rows && !view->dir_entry[i].selected)
-		i++;
 	file_is_dir = 0;
-	if(i == view->list_rows)
+	while(iter_selection_or_current(view, &entry))
 	{
-		i = view->list_pos;
-		file_is_dir = is_dir(view->dir_entry[i].name);
-	}
-	attributes = GetFileAttributes(view->dir_entry[i].name);
-	while(i < view->list_rows)
-	{
-		if(view->dir_entry[i].selected)
+		if(first)
 		{
-			diff |= (GetFileAttributes(view->dir_entry[i].name) ^ attributes);
-			file_is_dir = file_is_dir || is_dir(view->dir_entry[i].name);
+			attributes = entry->attrs;
+			first = 0;
 		}
 
-		i++;
+		diff |= (entry->attrs ^ attributes);
+		file_is_dir |= is_directory_entry(entry);
 	}
-	/* TODO: set attributes recursively */
+	if(first)
+	{
+		show_error_msg("Attributes", "No files to process");
+		return;
+	}
+
+	/* FIXME: allow setting attributes recursively. */
 	file_is_dir = 0;
 
-	for(i = 0; i < ATTR_COUNT; i++)
+	memset(attrs, 0, sizeof(attrs));
+	for(i = 0; i < ATTR_COUNT; ++i)
+	{
 		attrs[i] = !(diff & attr_list[i]) ? (int)(attributes & attr_list[i]) : -1;
+	}
 	memcpy(origin_attrs, attrs, sizeof(attrs));
 }
 
@@ -352,10 +353,7 @@ leave_attr_mode(void)
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(view);
-	load_dir_list(view, 1);
-	fview_cursor_redraw(view);
-
-	update_all_windows();
+	ui_view_schedule_reload(view);
 }
 
 /* leaves properties change dialog */

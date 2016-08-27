@@ -59,6 +59,8 @@
 	Fixed rejecting to clone files in custom view, when name is specified
 	explicitly (form without arguments was properly disabled before).
 
+	Fixed changing attributes of files in custom views on Windows.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
