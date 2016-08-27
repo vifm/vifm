@@ -51,7 +51,6 @@
 static int is_dir_fast(const char path[]);
 static int path_exists_internal(const char path[], const char filename[],
 		int deref);
-static int case_sensitive_paths(const char at[]);
 static int path_sorter(const void *first, const void *second);
 
 #ifndef _WIN32
@@ -729,9 +728,7 @@ is_case_change(const char src[], const char dst[])
 	return strcasecmp(src, dst) == 0 && strcmp(src, dst) != 0;
 }
 
-/* Whether paths are case sensitive at specified location.  Returns non-zero if
- * so, otherwise zero is returned. */
-static int
+int
 case_sensitive_paths(const char at[])
 {
 #if HAVE_DECL__PC_CASE_SENSITIVE

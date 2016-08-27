@@ -173,6 +173,10 @@ int are_on_the_same_fs(const char s[], const char t[]);
  * non-zero if so, otherwise zero is returned. */
 int is_case_change(const char src[], const char dst[]);
 
+/* Checks whether paths are case sensitive at specified location.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int case_sensitive_paths(const char at[]);
+
 /* Calls the client callback for each entry of the directory.  Returns zero on
  * success, otherwise non-zero is returned. */
 int enum_dir_content(const char path[], dir_content_client_func client,
