@@ -811,6 +811,12 @@ delete_files_bg(FileView *view, int use_trash)
 	args->use_trash = use_trash;
 
 	general_prepare_for_bg_task(view, args);
+	if(args->sel_list_len == 0)
+	{
+		free_bg_args(args);
+		status_bar_message("Nothing to delete");
+		return 1;
+	}
 
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
