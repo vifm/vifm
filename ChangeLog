@@ -37,6 +37,11 @@
 	getpanetype() got new value ("tree") to indicate tree-view.  Thanks to
 	filterfalse.
 
+	Disallow applying :chmod on ".." entry.
+
+	Disallow moving/copying/linking files into custom view (put is forbidden,
+	so makes sense to forbid these too).
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -58,6 +63,8 @@
 
 	Fixed rejecting to clone files in custom view, when name is specified
 	explicitly (form without arguments was properly disabled before).
+
+	Fixed changing attributes of files in custom views on Windows.
 
 0.8.2-beta to 0.8.2
 

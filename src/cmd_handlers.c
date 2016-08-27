@@ -1419,9 +1419,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 	}
 
 	mark_selection_or_current(curr_view);
-	chown_files(u, g, uid, gid);
-
-	return 0;
+	return chown_files(u, g, uid, gid) != 0;
 }
 #endif
 
@@ -3729,7 +3727,7 @@ static void
 sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 		int tree)
 {
-	if(!cd_is_possible(path) || (!tree && change_directory(other_view, path) < 0))
+	if(!cd_is_possible(path) || change_directory(other_view, path) < 0)
 	{
 		return;
 	}

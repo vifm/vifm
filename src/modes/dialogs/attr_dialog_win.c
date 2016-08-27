@@ -39,8 +39,9 @@
 #include "../../undo.h"
 #include "../modes.h"
 #include "../wk.h"
+#include "msg_dialog.h"
 
-/* enumeration of properties */
+/* Enumeration of properties. */
 enum
 {
 	ATTR_ARCHIVE,
@@ -184,38 +185,38 @@ init(void)
 static void
 get_attrs(void)
 {
-	DWORD attributes;
-	DWORD diff;
 	int i;
+	DWORD attributes;
+	DWORD diff = 0;
+	dir_entry_t *entry = NULL;
+	int first = 1;
 
-	memset(attrs, 0, sizeof(attrs));
-
-	diff = 0;
-	i = 0;
-	while(i < view->list_rows && !view->dir_entry[i].selected)
-		i++;
 	file_is_dir = 0;
-	if(i == view->list_rows)
+	while(iter_selection_or_current(view, &entry))
 	{
-		i = view->list_pos;
-		file_is_dir = is_dir(view->dir_entry[i].name);
-	}
-	attributes = GetFileAttributes(view->dir_entry[i].name);
-	while(i < view->list_rows)
-	{
-		if(view->dir_entry[i].selected)
+		if(first)
 		{
-			diff |= (GetFileAttributes(view->dir_entry[i].name) ^ attributes);
-			file_is_dir = file_is_dir || is_dir(view->dir_entry[i].name);
+			attributes = entry->attrs;
+			first = 0;
 		}
 
-		i++;
+		diff |= (entry->attrs ^ attributes);
+		file_is_dir |= is_directory_entry(entry);
 	}
-	/* TODO: set attributes recursively */
+	if(first)
+	{
+		show_error_msg("Attributes", "No files to process");
+		return;
+	}
+
+	/* FIXME: allow setting attributes recursively. */
 	file_is_dir = 0;
 
-	for(i = 0; i < ATTR_COUNT; i++)
+	memset(attrs, 0, sizeof(attrs));
+	for(i = 0; i < ATTR_COUNT; ++i)
+	{
 		attrs[i] = !(diff & attr_list[i]) ? (int)(attributes & attr_list[i]) : -1;
+	}
 	memcpy(origin_attrs, attrs, sizeof(attrs));
 }
 
@@ -352,10 +353,7 @@ leave_attr_mode(void)
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(view);
-	load_dir_list(view, 1);
-	fview_cursor_redraw(view);
-
-	update_all_windows();
+	ui_view_schedule_reload(view);
 }
 
 /* leaves properties change dialog */
@@ -402,64 +400,43 @@ set_attrs(FileView *view, const int *attrs, const int *origin_attrs)
 	files_attrib(view, add_mask, sub_mask, attrs[PSEUDO_ATTR_RECURSIVE]);
 }
 
-/* changes attributes of files in the view */
+/* Changes attributes of files in the view. */
 static void
 files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 {
-	int i;
+	char undo_msg[COMMAND_GROUP_INFO_LEN];
+	dir_entry_t *entry;
 
 	ui_cancellation_reset();
 
-	i = 0;
-	while(i < view->list_rows && !view->dir_entry[i].selected)
-		i++;
-
-	if(i == view->list_rows)
+	entry = NULL;
+	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
 	{
-		char buf[COMMAND_GROUP_INFO_LEN];
-		snprintf(buf, sizeof(buf), "chmod in %s: %s",
-				replace_home_part(flist_get_dir(view)),
-				view->dir_entry[view->list_pos].name);
-		cmd_group_begin(buf);
-		attrib_file_in_list(view, view->list_pos, add, sub, recurse_dirs);
-	}
-	else
-	{
-		char buf[COMMAND_GROUP_INFO_LEN];
-		size_t len;
-		int j = i;
-		len = snprintf(buf, sizeof(buf), "chmod in %s: ",
+		size_t len = snprintf(undo_msg, sizeof(undo_msg), "chmod in %s: ",
 				replace_home_part(flist_get_dir(view)));
 
-		while(i < view->list_rows && len < sizeof(buf))
+		if(len >= 2 && undo_msg[len - 2] != ':')
 		{
-			if(view->dir_entry[i].selected)
-			{
-				if(len >= 2 && buf[len - 2] != ':')
-				{
-					strncat(buf + len, ", ", sizeof(buf) - len - 1);
-					len += strlen(buf + len);
-				}
-				strncat(buf + len, view->dir_entry[i].name, sizeof(buf) - len - 1);
-				len += strlen(buf + len);
-			}
-			i++;
+			strncat(undo_msg + len, ", ", sizeof(undo_msg) - len - 1);
+			len += strlen(undo_msg + len);
 		}
-
-		cmd_group_begin(buf);
-		while(j < view->list_rows && !ui_cancellation_requested())
-		{
-			if(view->dir_entry[j].selected)
-			{
-				attrib_file_in_list(view, j, add, sub, recurse_dirs);
-			}
-			j++;
-		}
+		strncat(undo_msg + len, entry->name, sizeof(undo_msg) - len - 1);
+		len += strlen(undo_msg + len);
 	}
+
+	cmd_group_begin(undo_msg);
+
+	entry = NULL;
+	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	{
+		attrib_file_in_list(view, entry_to_pos(view, entry), add, sub,
+				recurse_dirs);
+	}
+
 	cmd_group_end();
 }
 
-/* changes properties of single file */
+/* Changes properties of a single file. */
 static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
 		int recurse_dirs)
 {
@@ -473,7 +450,8 @@ static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
 static void
 file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 {
-	/* TODO: set attributes recursively. */
+	/* FIXME: set attributes recursively. */
+
 	DWORD attrs = GetFileAttributes(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{

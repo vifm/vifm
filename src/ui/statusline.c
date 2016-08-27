@@ -47,6 +47,7 @@
 #include "../utils/str.h"
 
 static void update_stat_window_old(FileView *view, int lazy_redraw);
+static void refresh_window(WINDOW *win, int lazily);
 TSTATIC char * expand_status_line_macros(FileView *view, const char format[]);
 static char * parse_view_macros(FileView *view, const char **format,
 		const char macros[], int opt);
@@ -105,17 +106,9 @@ update_stat_window(FileView *view, int lazy_redraw)
 	werase(stat_win);
 	checked_wmove(stat_win, 0, 0);
 	wprint(stat_win, buf);
-
-	if(lazy_redraw)
-	{
-		wnoutrefresh(stat_win);
-	}
-	else
-	{
-		wrefresh(stat_win);
-	}
-
 	free(buf);
+
+	refresh_window(stat_win, lazy_redraw);
 }
 
 /* Formats status line in the "old way" (before introduction of 'statusline'
@@ -177,7 +170,14 @@ update_stat_window_old(FileView *view, int lazy_redraw)
 		id_buf[0] = '\0';
 	mvwaddstr(stat_win, 0, cur_x, id_buf);
 
-	if(lazy_redraw)
+	refresh_window(stat_win, lazy_redraw);
+}
+
+/* Refreshes given window, possibly lazily. */
+static void
+refresh_window(WINDOW *win, int lazily)
+{
+	if(lazily)
 	{
 		wnoutrefresh(stat_win);
 	}

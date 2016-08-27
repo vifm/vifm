@@ -127,6 +127,11 @@ char ** list_regular_files(const char path[], char *list[], int *len);
  * can be NULL on empty list, error is indicated by negative *len. */
 char ** list_all_files(const char path[], int *len);
 
+/* Enumerates content of the path in sorted order.  Returns list of names of
+ * length *len, which can be NULL on empty list, error is indicated by negative
+ * *len. */
+char ** list_sorted_files(const char path[], int *len);
+
 /* Returns non-zero if file (or symbolic link target) path points to is a
  * regular file. */
 int is_regular_file(const char path[]);
@@ -167,6 +172,10 @@ int are_on_the_same_fs(const char s[], const char t[]);
  * just changes case of file name on case insensitive file system.  Returns
  * non-zero if so, otherwise zero is returned. */
 int is_case_change(const char src[], const char dst[]);
+
+/* Checks whether paths are case sensitive at specified location.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int case_sensitive_paths(const char at[]);
 
 /* Calls the client callback for each entry of the directory.  Returns zero on
  * success, otherwise non-zero is returned. */
