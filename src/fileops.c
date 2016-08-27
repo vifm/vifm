@@ -3547,7 +3547,8 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		copy_str(dst_path, dst_path_len, get_dst_dir(other_view, -1));
 	}
 
-	if(!check_if_dir_writable(DR_DESTINATION, dst_path))
+	if(!can_add_files_to_view(other_view, -1) ||
+			!check_if_dir_writable(DR_DESTINATION, dst_path))
 	{
 		return -1;
 	}

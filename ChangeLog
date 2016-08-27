@@ -39,6 +39,9 @@
 
 	Disallow applying :chmod on ".." entry.
 
+	Disallow moving/copying/linking files into custom view (put is forbidden,
+	so makes sense to forbid these too).
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
