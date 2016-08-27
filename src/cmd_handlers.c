@@ -1419,9 +1419,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 	}
 
 	mark_selection_or_current(curr_view);
-	chown_files(u, g, uid, gid);
-
-	return 0;
+	return chown_files(u, g, uid, gid) != 0;
 }
 #endif
 

@@ -1570,7 +1570,7 @@ is_file_name_changed(const char old[], const char new[])
 
 #ifndef _WIN32
 
-void
+int
 chown_files(int u, int g, uid_t uid, gid_t gid)
 {
 /* Integer to pointer conversion. */
@@ -1588,6 +1588,7 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 			((u && g) || u) ? "own" : "grp", replace_home_part(curr_dir));
 
 	ops = get_ops(OP_CHOWN, "re-owning", curr_dir, curr_dir);
+	(void)enqueue_marked_files(ops, view, NULL, 0);
 
 	append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
@@ -1595,6 +1596,7 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
+		int full_success = (u != 0) + (g != 0);
 		char full_path[PATH_MAX];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
@@ -1602,17 +1604,30 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 		{
 			add_operation(OP_CHOWN, V(uid), V(entry->uid), full_path, "");
 		}
+		else
+		{
+			full_success -= (u != 0);
+		}
+
 		if(g && perform_operation(OP_CHGRP, ops, V(gid), full_path, NULL) == 0)
 		{
 			add_operation(OP_CHGRP, V(gid), V(entry->gid), full_path, "");
 		}
+		else
+		{
+			full_success -= (g != 0);
+		}
+
+		ops_advance(ops, full_success == (u != 0) + (g != 0));
 	}
 	cmd_group_end();
 
+	status_bar_messagef("%d file%s fully processed%s", ops->succeeded,
+			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
 	free_ops(ops);
 
 	ui_view_reset_selection_and_reload(view);
-
+	return 1;
 #undef V
 }
 
@@ -1658,7 +1673,7 @@ change_owner_cb(const char new_owner[])
 		return;
 	}
 
-	chown_files(1, 0, uid, 0);
+	curr_stats.save_msg = chown_files(1, 0, uid, 0);
 #endif
 }
 
@@ -1680,7 +1695,7 @@ change_group_cb(const char new_group[])
 		return;
 	}
 
-	chown_files(0, 1, 0, gid);
+	curr_stats.save_msg = chown_files(0, 1, 0, gid);
 #endif
 }
 
@@ -3372,8 +3387,8 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	return 1;
 }
 
-/* Adds marked files to the ops.  Considers UI cancellation.  Returns number of
- * files enqueued. */
+/* Adds marked files to the ops.  Considers UI cancellation.  dst_hint can be
+ * NULL.  Returns number of files enqueued. */
 static int
 enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 		int to_trash)
