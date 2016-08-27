@@ -400,64 +400,43 @@ set_attrs(FileView *view, const int *attrs, const int *origin_attrs)
 	files_attrib(view, add_mask, sub_mask, attrs[PSEUDO_ATTR_RECURSIVE]);
 }
 
-/* changes attributes of files in the view */
+/* Changes attributes of files in the view. */
 static void
 files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 {
-	int i;
+	char undo_msg[COMMAND_GROUP_INFO_LEN];
+	dir_entry_t *entry;
 
 	ui_cancellation_reset();
 
-	i = 0;
-	while(i < view->list_rows && !view->dir_entry[i].selected)
-		i++;
-
-	if(i == view->list_rows)
+	entry = NULL;
+	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
 	{
-		char buf[COMMAND_GROUP_INFO_LEN];
-		snprintf(buf, sizeof(buf), "chmod in %s: %s",
-				replace_home_part(flist_get_dir(view)),
-				view->dir_entry[view->list_pos].name);
-		cmd_group_begin(buf);
-		attrib_file_in_list(view, view->list_pos, add, sub, recurse_dirs);
-	}
-	else
-	{
-		char buf[COMMAND_GROUP_INFO_LEN];
-		size_t len;
-		int j = i;
-		len = snprintf(buf, sizeof(buf), "chmod in %s: ",
+		size_t len = snprintf(undo_msg, sizeof(undo_msg), "chmod in %s: ",
 				replace_home_part(flist_get_dir(view)));
 
-		while(i < view->list_rows && len < sizeof(buf))
+		if(len >= 2 && undo_msg[len - 2] != ':')
 		{
-			if(view->dir_entry[i].selected)
-			{
-				if(len >= 2 && buf[len - 2] != ':')
-				{
-					strncat(buf + len, ", ", sizeof(buf) - len - 1);
-					len += strlen(buf + len);
-				}
-				strncat(buf + len, view->dir_entry[i].name, sizeof(buf) - len - 1);
-				len += strlen(buf + len);
-			}
-			i++;
+			strncat(undo_msg + len, ", ", sizeof(undo_msg) - len - 1);
+			len += strlen(undo_msg + len);
 		}
-
-		cmd_group_begin(buf);
-		while(j < view->list_rows && !ui_cancellation_requested())
-		{
-			if(view->dir_entry[j].selected)
-			{
-				attrib_file_in_list(view, j, add, sub, recurse_dirs);
-			}
-			j++;
-		}
+		strncat(undo_msg + len, entry->name, sizeof(undo_msg) - len - 1);
+		len += strlen(undo_msg + len);
 	}
+
+	cmd_group_begin(undo_msg);
+
+	entry = NULL;
+	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	{
+		attrib_file_in_list(view, entry_to_pos(view, entry), add, sub,
+				recurse_dirs);
+	}
+
 	cmd_group_end();
 }
 
-/* changes properties of single file */
+/* Changes properties of a single file. */
 static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
 		int recurse_dirs)
 {
@@ -471,7 +450,8 @@ static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
 static void
 file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 {
-	/* TODO: set attributes recursively. */
+	/* FIXME: set attributes recursively. */
+
 	DWORD attrs = GetFileAttributes(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
 	{

@@ -37,6 +37,8 @@
 	getpanetype() got new value ("tree") to indicate tree-view.  Thanks to
 	filterfalse.
 
+	Disallow applying :chmod on ".." entry.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
