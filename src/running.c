@@ -94,7 +94,6 @@ static int run_win_executable_as_evaluated(const char full_path[]);
 static int selection_is_consistent(FileView *view);
 static void execute_file(const char full_path[], int elevate);
 static void run_selection(FileView *view, int dont_execute);
-static void run_file(FileView *view, int dont_execute);
 static void run_with_defaults(FileView *view);
 static void run_selection_separately(FileView *view, int dont_execute);
 static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
@@ -384,21 +383,7 @@ execute_file(const char full_path[], int elevate)
 static void
 run_selection(FileView *view, int dont_execute)
 {
-	if(selection_is_consistent(view))
-	{
-		run_file(view, dont_execute);
-	}
-	else
-	{
-		show_error_msg("Selection error",
-				"Selection cannot contain files and directories at the same time");
-	}
-}
-
-static void
-run_file(FileView *view, int dont_execute)
-{
-	/* TODO: refactor this function run_file() */
+	/* TODO: refactor this function run_selection() */
 
 	char *typed_fname;
 	const char *multi_prog_cmd;
@@ -406,6 +391,13 @@ run_file(FileView *view, int dont_execute)
 	int same;
 	dir_entry_t *entry;
 	int no_multi_run;
+
+	if(!selection_is_consistent(view))
+	{
+		show_error_msg("Selection error",
+				"Selection cannot contain files and directories at the same time");
+		return;
+	}
 
 	if(!view->dir_entry[view->list_pos].selected)
 	{
