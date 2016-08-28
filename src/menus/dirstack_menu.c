@@ -60,7 +60,7 @@ execute_dirstack_cb(FileView *view, menu_info *m)
 				pos++;
 			}
 		}
-		rotate_stack(pos);
+		dir_stack_rotate(pos);
 	}
 	return 0;
 }

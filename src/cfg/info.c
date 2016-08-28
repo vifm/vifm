@@ -88,7 +88,8 @@ static void write_view_history(FILE *fp, FileView *view, const char str[],
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
 static void write_registers(FILE *const fp, char *regs[], int nregs);
-static void write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack);
+static void write_dir_stack(FILE *const fp, char *old_dir_stack[],
+		int nold_dir_stack);
 static void write_trash(FILE *const fp, char *trash[], int ntrash);
 static void write_general_state(FILE *const fp);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
@@ -295,7 +296,7 @@ read_info_file(int reread)
 				{
 					if((line4 = read_vifminfo_line(fp, line4)) != NULL)
 					{
-						push_to_dirstack(line_val, line2, line3 + 1, line4);
+						dir_stack_push(line_val, line2, line3 + 1, line4);
 					}
 				}
 			}
@@ -1325,28 +1326,29 @@ write_registers(FILE *const fp, char *regs[], int nregs)
 	}
 }
 
-/* Writes directory stack to vifminfo file.  dir_stack is a list of length
- * ndir_stack entries (4 lines per entry) read from vifminfo. */
+/* Writes directory stack to vifminfo file.  old_dir_stack is a list of length
+ * nold_dir_stack entries (4 lines per entry) read from vifminfo. */
 static void
-write_dir_stack(FILE *const fp, char *dir_stack[], int ndir_stack)
+write_dir_stack(FILE *const fp, char *old_dir_stack[], int nold_dir_stack)
 {
 	fputs("\n# Directory stack (oldest to newest):\n", fp);
 	if(dir_stack_changed())
 	{
 		unsigned int i;
-		for(i = 0U; i < stack_top; ++i)
+		for(i = 0U; i < dir_stack_top; ++i)
 		{
-			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
-			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);
+			dir_stack_entry_t *const entry = &dir_stack[i];
+			fprintf(fp, "S%s\n\t%s\n", entry->lpane_dir, entry->lpane_file);
+			fprintf(fp, "S%s\n\t%s\n", entry->rpane_dir, entry->rpane_file);
 		}
 	}
 	else
 	{
 		int i;
-		for(i = 0; i < ndir_stack; i += 4)
+		for(i = 0; i < nold_dir_stack; i += 4)
 		{
-			fprintf(fp, "S%s\n\t%s\n", dir_stack[i], dir_stack[i + 1]);
-			fprintf(fp, "S%s\n\t%s\n", dir_stack[i + 2], dir_stack[i + 3]);
+			fprintf(fp, "S%s\n\t%s\n", old_dir_stack[i], old_dir_stack[i + 1]);
+			fprintf(fp, "S%s\n\t%s\n", old_dir_stack[i + 2], old_dir_stack[i + 3]);
 		}
 	}
 }

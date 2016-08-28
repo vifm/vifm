@@ -27,35 +27,35 @@ typedef struct
 	char *rpane_dir;  /* Path of the right pane. */
 	char *rpane_file; /* File under cursor in the right pane. */
 }
-stack_entry_t;
+dir_stack_entry_t;
 
 /* The stack itself.  NULL, when empty. */
-extern stack_entry_t *stack;
+extern dir_stack_entry_t *dir_stack;
 /* Current size of the stack. */
-extern unsigned int stack_top;
+extern unsigned int dir_stack_top;
 
 /* Pushes current locations of views onto the stack.  Returns 0 on success and
  * -1 when not enough memory. */
-int pushd(void);
+int dir_stack_push_current(void);
 
 /* Pushes specified locations onto the stack.  Returns 0 on success and -1 when
  * not enough memory. */
-int push_to_dirstack(const char *ld, const char *lf, const char *rd,
-		const char *rf);
+int dir_stack_push(const char ld[], const char lf[], const char rd[],
+		const char rf[]);
 
 /* Pops top of the stack and navigates views to those locations.  Returns 0 on
  * success and -1 on underflow. */
-int popd(void);
+int dir_stack_pop(void);
 
 /* Swaps current locations with those at the top of the stack.  Returns 0 on
  * success and -1 on error. */
-int swap_dirs(void);
+int dir_stack_swap(void);
 
 /* Rotates stack entries by n items.  Returns 0 on success and -1 on error. */
-int rotate_stack(int n);
+int dir_stack_rotate(int n);
 
 /* Empties the stack.  Always successful. */
-void clean_stack(void);
+void dir_stack_clear(void);
 
 /* Lists contents of the stack as lines of text.  Last element of list returned
  * is NULL.  Returns NULL on error, otherwise caller should free the memory. */

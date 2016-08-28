@@ -3227,7 +3227,7 @@ only_cmd(const cmd_info_t *cmd_info)
 static int
 popd_cmd(const cmd_info_t *cmd_info)
 {
-	if(popd() != 0)
+	if(dir_stack_pop() != 0)
 	{
 		status_bar_message("Directory stack empty");
 		return 1;
@@ -3240,14 +3240,14 @@ pushd_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
-		if(swap_dirs() != 0)
+		if(dir_stack_swap() != 0)
 		{
 			status_bar_error("No other directories");
 			return 1;
 		}
 		return 0;
 	}
-	if(pushd() != 0)
+	if(dir_stack_push_current() != 0)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
