@@ -70,6 +70,8 @@
 
 	Fixed counting selected files after `:invert s` if there is ".." entry.
 
+	Fixed :pushd and :dirs in custom views.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

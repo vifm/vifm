@@ -39,8 +39,8 @@ static void free_entry(const stack_entry_t *entry);
 int
 pushd(void)
 {
-	return push_to_dirstack(lwin.curr_dir, get_current_file_name(&lwin),
-			rwin.curr_dir, get_current_file_name(&rwin));
+	return push_to_dirstack(flist_get_dir(&lwin), get_current_file_name(&lwin),
+			flist_get_dir(&rwin), get_current_file_name(&rwin));
 }
 
 int
@@ -193,9 +193,9 @@ dir_stack_list(void)
 		return NULL;
 
 	p = list;
-	if((*p++ = strdup(lwin.curr_dir)) == NULL)
+	if((*p++ = strdup(flist_get_dir(&lwin))) == NULL)
 		return list;
-	if((*p++ = strdup(rwin.curr_dir)) == NULL)
+	if((*p++ = strdup(flist_get_dir(&rwin))) == NULL)
 		return list;
 	if(stack_top != 0)
 	{
