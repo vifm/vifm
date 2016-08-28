@@ -137,14 +137,17 @@ follow_file(FileView *view)
 {
 	if(flist_custom_active(view))
 	{
-		/* Entry might be freed on navigation, so make sure name and origin will
-		 * remain available for the call. */
 		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-		char *const name = strdup(entry->name);
-		char *const origin = strdup(entry->origin);
-		navigate_to_file(view, origin, name, 0);
-		free(origin);
-		free(name);
+		if(!fentry_is_fake(entry))
+		{
+			/* Entry might be freed on navigation, so make sure name and origin will
+			 * remain available for the call. */
+			char *const name = strdup(entry->name);
+			char *const origin = strdup(entry->origin);
+			navigate_to_file(view, origin, name, 0);
+			free(origin);
+			free(name);
+		}
 		return;
 	}
 
@@ -158,6 +161,11 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	int executable;
 	int runnable;
 	const dir_entry_t *const curr = &view->dir_entry[view->list_pos];
+
+	if(fentry_is_fake(curr))
+	{
+		return;
+	}
 
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
@@ -1117,9 +1125,18 @@ set_pwd_in_screen(const char path[])
 int
 run_with_filetype(FileView *view, const char beginning[], int background)
 {
-	char *const typed_fname = get_typed_entry_fpath(get_current_entry(view));
-	assoc_records_t ft = ft_get_all_programs(typed_fname);
-	assoc_records_t magic = get_magic_handlers(typed_fname);
+	dir_entry_t *const curr = get_current_entry(view);
+	assoc_records_t ft, magic;
+	char *typed_fname;
+
+	if(fentry_is_fake(curr))
+	{
+		return 1;
+	}
+
+	typed_fname = get_typed_entry_fpath(curr);
+	ft = ft_get_all_programs(typed_fname);
+	magic = get_magic_handlers(typed_fname);
 	free(typed_fname);
 
 	if(try_run_with_filetype(view, ft, beginning, background))

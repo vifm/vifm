@@ -50,6 +50,7 @@
 #include "../filelist.h"
 #include "../status.h"
 #include "../types.h"
+#include "dialogs/msg_dialog.h"
 #include "modes.h"
 #include "wk.h"
 
@@ -89,6 +90,12 @@ init_file_info_mode(void)
 void
 enter_file_info_mode(FileView *v)
 {
+	if(fentry_is_fake(&v->dir_entry[v->list_pos]))
+	{
+		show_error_msg("File info", "Entry doesn't correspond to a file.");
+		return;
+	}
+
 	vle_mode_set(FILE_INFO_MODE, VMT_PRIMARY);
 	view = v;
 	setup_menu();

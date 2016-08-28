@@ -1509,6 +1509,11 @@ static int
 get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	if(fentry_is_fake(entry))
+	{
+		return 1;
+	}
+
 	qv_get_path_to_explore(entry, buf, buf_len);
 
 	switch(entry->type)

@@ -532,8 +532,17 @@ complete_chown(const char *str)
 static void
 complete_filetype(const char *str)
 {
-	char *const typed_fname = get_typed_entry_fpath(get_current_entry(curr_view));
-	assoc_records_t ft = ft_get_all_programs(typed_fname);
+	dir_entry_t *const curr = get_current_entry(curr_view);
+	char *typed_fname;
+	assoc_records_t ft;
+
+	if(fentry_is_fake(curr))
+	{
+		return;
+	}
+
+	typed_fname = get_typed_entry_fpath(curr);
+	ft = ft_get_all_programs(typed_fname);
 
 	complete_progs(str, ft);
 	ft_assoc_records_free(&ft);

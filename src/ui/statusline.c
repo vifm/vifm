@@ -126,6 +126,13 @@ update_stat_window_old(FileView *view, int lazy_redraw)
 	size_t print_width;
 	char *filename;
 
+	if(fentry_is_fake(entry))
+	{
+		werase(stat_win);
+		refresh_window(stat_win, lazy_redraw);
+		return;
+	}
+
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
 	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
@@ -344,6 +351,11 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
 				ok = 0;
 				break;
+		}
+
+		if(char_is_one_of("tAugsEd", c) && fentry_is_fake(entry))
+		{
+			buf[0] = '\0';
 		}
 
 		if(!ok)

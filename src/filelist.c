@@ -616,7 +616,7 @@ invert_selection(FileView *view)
 	for(i = 0; i < view->list_rows; i++)
 	{
 		dir_entry_t *const e = &view->dir_entry[i];
-		if(!is_parent_dir(e->name))
+		if(fentry_is_valid(e))
 		{
 			e->selected = !e->selected;
 		}
@@ -1955,9 +1955,15 @@ update_entries_data(FileView *view)
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
 	{
+		char full_path[PATH_MAX];
 		dir_entry_t *const entry = &view->dir_entry[i];
 
-		char full_path[PATH_MAX];
+		/* Fake entries do not map onto files in file system. */
+		if(fentry_is_fake(entry))
+		{
+			continue;
+		}
+
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
 		/* Do not care about possible failure, just use previous meta-data. */
@@ -2990,15 +2996,12 @@ int
 iter_active_area(FileView *view, dir_entry_t **entry)
 {
 	dir_entry_t *const current = &view->dir_entry[view->list_pos];
-	if(current->selected)
+	if(!current->selected)
 	{
-		return iter_selected_entries(view, entry);
-	}
-	else
-	{
-		*entry = (*entry == NULL) ? current : NULL;
+		*entry = (*entry == NULL && fentry_is_valid(current)) ? current : NULL;
 		return *entry != NULL;
 	}
+	return iter_selected_entries(view, entry);
 }
 
 int
@@ -3015,7 +3018,7 @@ iter_entries(FileView *view, dir_entry_t **entry, entry_predicate pred)
 	while(next < view->list_rows)
 	{
 		dir_entry_t *const e = &view->dir_entry[next];
-		if(pred(e) && !is_parent_dir(e->name))
+		if(pred(e) && fentry_is_valid(e))
 		{
 			*entry = e;
 			return 1;
@@ -3047,13 +3050,10 @@ iter_selection_or_current(FileView *view, dir_entry_t **entry)
 	if(view->selected_files == 0)
 	{
 		dir_entry_t *const current = &view->dir_entry[view->list_pos];
-		*entry = (*entry == NULL) ? current : NULL;
+		*entry = (*entry == NULL && fentry_is_valid(current)) ? current : NULL;
 		return *entry != NULL;
 	}
-	else
-	{
-		return iter_selected_entries(view, entry);
-	}
+	return iter_selected_entries(view, entry);
 }
 
 int
@@ -3091,6 +3091,13 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 
 	char *free_this = NULL;
 	const char *root_path = flist_get_dir(view);
+
+	if(fentry_is_fake(entry))
+	{
+		copy_str(buf, buf_len, "");
+		return;
+	}
+
 	if(format && view->custom.type == CV_TREE && ui_view_displays_columns(view) &&
 			entry->child_pos != 0)
 	{
@@ -3194,9 +3201,10 @@ mark_selected(FileView *view)
 void
 mark_selection_or_current(FileView *view)
 {
-	if(view->selected_files == 0)
+	dir_entry_t *const current = &view->dir_entry[view->list_pos];
+	if(view->selected_files == 0 && fentry_is_valid(current))
 	{
-		view->dir_entry[view->list_pos].selected = 1;
+		current->selected = 1;
 		view->selected_files = 1;
 	}
 	mark_selected(view);
@@ -3210,7 +3218,7 @@ flist_count_marked(FileView *const view)
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		const dir_entry_t *const entry = &view->dir_entry[i];
-		count += (entry->marked && !is_parent_dir(entry->name));
+		count += (entry->marked && fentry_is_valid(entry));
 	}
 	return count;
 }
@@ -3310,6 +3318,18 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 	}
 
 	free(old_name);
+}
+
+int
+fentry_is_fake(const dir_entry_t *entry)
+{
+	return entry->name[0] == '\0';
+}
+
+int
+fentry_is_valid(const dir_entry_t *entry)
+{
+	return !fentry_is_fake(entry) && !is_parent_dir(entry->name);
 }
 
 int

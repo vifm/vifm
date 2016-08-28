@@ -369,8 +369,12 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 	}
 	else
 	{
-		expanded = append_entry(view, expanded, type, get_current_entry(view),
-				quotes, mod, for_shell);
+		dir_entry_t *const curr = get_current_entry(view);
+		if(!fentry_is_fake(curr))
+		{
+			expanded = append_entry(view, expanded, type, curr, quotes, mod,
+					for_shell);
+		}
 	}
 
 #ifdef _WIN32

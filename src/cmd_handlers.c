@@ -259,6 +259,8 @@ static int unlet_cmd(const cmd_info_t *cmd_info);
 static int unmap_cmd(const cmd_info_t *cmd_info);
 static int unselect_cmd(const cmd_info_t *cmd_info);
 static void select_unselect_by_range(const cmd_info_t *cmd_info, int select);
+static void select_unselect_entry(FileView *view, dir_entry_t *entry,
+		int select);
 static int select_unselect_by_filter(const cmd_info_t *cmd_info, int select);
 static int select_unselect_by_pattern(const cmd_info_t *cmd_info, int select);
 static int view_cmd(const cmd_info_t *cmd_info);
@@ -3973,26 +3975,30 @@ select_unselect_by_range(const cmd_info_t *cmd_info, int select)
 
 	if(cmd_info->begin == NOT_DEF)
 	{
-		if((curr_view->dir_entry[curr_view->list_pos].selected != 0) != select)
-		{
-			curr_view->dir_entry[curr_view->list_pos].selected = select;
-			curr_view->selected_files += (select ? 1 : -1);
-		}
+		select_unselect_entry(curr_view, &curr_view->dir_entry[curr_view->list_pos],
+				select);
 	}
 	else
 	{
 		int i;
 		for(i = cmd_info->begin; i <= cmd_info->end; ++i)
 		{
-			if((curr_view->dir_entry[i].selected != 0) != select)
-			{
-				curr_view->dir_entry[i].selected = select;
-				curr_view->selected_files += (select ? 1 : -1);
-			}
+			select_unselect_entry(curr_view, &curr_view->dir_entry[i], select);
 		}
 	}
 
 	ui_view_schedule_redraw(curr_view);
+}
+
+/* Selects or unselects the entry. */
+static void
+select_unselect_entry(FileView *view, dir_entry_t *entry, int select)
+{
+	if(fentry_is_valid(entry) && (entry->selected != 0) != select)
+	{
+		entry->selected = select;
+		view->selected_files += (select ? 1 : -1);
+	}
 }
 
 /* Selects or unselects entries that match list of files supplied by external

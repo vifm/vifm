@@ -1629,8 +1629,11 @@ static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	const dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
-	curr_stats.save_msg = set_user_mark(key_info.multi, entry->origin,
-			entry->name);
+	if(!fentry_is_fake(entry))
+	{
+		curr_stats.save_msg = set_user_mark(key_info.multi, entry->origin,
+				entry->name);
+	}
 }
 
 static void
@@ -1765,8 +1768,8 @@ cmd_t(key_info_t key_info, keys_info_t *keys_info)
 	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
 	if(entry->selected == 0)
 	{
-		/* The ../ dir cannot be selected. */
-		if(is_parent_dir(entry->name))
+		/* Special purpose kind of entries can't be selected. */
+		if(!fentry_is_valid(entry))
 		{
 			return;
 		}

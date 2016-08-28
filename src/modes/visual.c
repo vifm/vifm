@@ -150,7 +150,6 @@ static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
 static void apply_selection(int pos);
 static void revert_selection(int pos);
-static int is_parent_dir_at(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
 static void goto_pos_force_update(int pos);
@@ -855,10 +854,7 @@ restore_previous_selection(void)
 static void
 select_first_one(void)
 {
-	if(!is_parent_dir_at(view->list_pos))
-	{
-		apply_selection(view->list_pos);
-	}
+	apply_selection(view->list_pos);
 }
 
 /* Go backwards [count] (one by default) files in ls-like sub-mode. */
@@ -945,7 +941,10 @@ static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	set_user_mark(key_info.multi, entry->origin, entry->name);
+	if(!fentry_is_fake(entry))
+	{
+		set_user_mark(key_info.multi, entry->origin, entry->name);
+	}
 }
 
 static void
@@ -1117,6 +1116,7 @@ update_marks(FileView *view)
 {
 	char start_mark, end_mark;
 	const dir_entry_t *start_entry, *end_entry;
+	int delta;
 
 	if(start_pos >= view->list_rows)
 	{
@@ -1124,12 +1124,22 @@ update_marks(FileView *view)
 	}
 
 	upwards_range = view->list_pos < start_pos;
+	delta = upwards_range ? +1 : -1;
 
 	start_mark = upwards_range ? '<' : '>';
 	end_mark = upwards_range ? '>' : '<';
 
 	start_entry = &view->dir_entry[view->list_pos];
 	end_entry = &view->dir_entry[start_pos];
+	/* Fake entries can't be marked, so skip them on both ends. */
+	while(start_entry != end_entry && fentry_is_fake(start_entry))
+	{
+		start_entry += delta;
+	}
+	while(start_entry != end_entry && fentry_is_fake(end_entry))
+	{
+		end_entry -= delta;
+	}
 
 	set_spec_mark(start_mark, start_entry->origin, start_entry->name);
 	set_spec_mark(end_mark, end_entry->origin, end_entry->name);
@@ -1203,18 +1213,7 @@ select_up_one(FileView *view, int start_pos)
 	view->list_pos--;
 	if(view->list_pos < 0)
 	{
-		if(is_parent_dir_at(start_pos))
-		{
-			--view->selected_files;
-		}
 		view->list_pos = 0;
-	}
-	else if(view->list_pos == 0 && is_parent_dir_at(0))
-	{
-		if(start_pos == 0)
-		{
-			revert_selection(1);
-		}
 	}
 	else if(view->list_pos < start_pos)
 	{
@@ -1235,15 +1234,11 @@ select_up_one(FileView *view, int start_pos)
 static void
 select_down_one(FileView *view, int start_pos)
 {
-	view->list_pos++;
+	++view->list_pos;
 
 	if(view->list_pos >= view->list_rows)
 	{
 		view->list_pos = view->list_rows - 1;
-	}
-	else if(view->list_pos == 1 && start_pos != 0 && is_parent_dir_at(0))
-	{
-		/* do nothing */
 	}
 	else if(view->list_pos > start_pos)
 	{
@@ -1265,6 +1260,11 @@ static void
 apply_selection(int pos)
 {
 	dir_entry_t *const entry = &view->dir_entry[pos];
+	if(!fentry_is_valid(entry))
+	{
+		return;
+	}
+
 	switch(amend_type)
 	{
 		case AT_NONE:
@@ -1338,15 +1338,6 @@ revert_selection(int pos)
 			assert(0 && "Unexpected amending type.");
 			break;
 	}
-}
-
-/* Checks whether file at specified position in file list refers to parent
- * directory. */
-static int
-is_parent_dir_at(int pos)
-{
-	/* Don't allow the ../ dir to be selected. */
-	return is_parent_dir(view->dir_entry[pos].name);
 }
 
 static void

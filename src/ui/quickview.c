@@ -72,6 +72,7 @@ typedef struct
 }
 tree_print_state_t;
 
+static void view_entry(const dir_entry_t *entry);
 static void view_file(const char path[]);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
@@ -128,8 +129,7 @@ toggle_quick_view(void)
 void
 quick_view_file(FileView *view)
 {
-	char path[PATH_MAX];
-	const dir_entry_t *entry;
+	const dir_entry_t *curr;
 
 	if(curr_stats.load_stage < 2 || curr_stats.number_of_windows == 1 ||
 	   vle_mode_is(VIEW_MODE) || draw_abandoned_view_mode())
@@ -139,7 +139,21 @@ quick_view_file(FileView *view)
 
 	ui_view_erase(other_view);
 
-	entry = &view->dir_entry[view->list_pos];
+	curr = &view->dir_entry[view->list_pos];
+	if(!fentry_is_fake(curr))
+	{
+		view_entry(curr);
+	}
+
+	refresh_view_win(other_view);
+	ui_view_title_update(other_view);
+}
+
+/* Draws preview of the entry in the other view. */
+static void
+view_entry(const dir_entry_t *entry)
+{
+	char path[PATH_MAX];
 	qv_get_path_to_explore(entry, path, sizeof(path));
 
 	switch(entry->type)
@@ -174,9 +188,6 @@ quick_view_file(FileView *view)
 			view_file(path);
 			break;
 	}
-	refresh_view_win(other_view);
-
-	ui_view_title_update(other_view);
 }
 
 /* Displays contents of file or output of its viewer in the other pane

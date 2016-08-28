@@ -930,7 +930,15 @@ column_line_print(const void *data, int column_id, const char buf[],
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
 
-	strcpy(print_buf, buf);
+	if(fentry_is_fake(entry))
+	{
+		memset(print_buf, '.', sizeof(print_buf) - 1U);
+		print_buf[sizeof(print_buf) - 1U] = '\0';
+	}
+	else
+	{
+		strcpy(print_buf, buf);
+	}
 	reserved_width = cfg.extra_padding ? (column_id != FILL_COLUMN_ID) : 0;
 	width_left = padding + ui_view_available_width(view)
 	           - reserved_width - offset;
@@ -1085,6 +1093,11 @@ static void
 mix_in_file_hi(const FileView *view, dir_entry_t *entry, int type_hi,
 		col_attr_t *col)
 {
+	if(fentry_is_fake(entry))
+	{
+		return;
+	}
+
 	/* Apply file name specific highlights. */
 	mix_in_file_name_hi(view, entry, col);
 
@@ -1523,8 +1536,7 @@ fview_position_updated(FileView *view)
 		view->curr_line = view->list_rows - 1;
 	}
 
-	if(curr_stats.load_stage < 1 ||
-			(!curr_stats.view && !window_shows_dirlist(view)))
+	if(curr_stats.load_stage < 1 || !window_shows_dirlist(view))
 	{
 		return;
 	}
@@ -1557,7 +1569,7 @@ fview_position_updated(FileView *view)
 	refresh_view_win(view);
 	update_stat_window(view, 0);
 
-	if(curr_stats.view)
+	if(view == curr_view && curr_stats.view)
 	{
 		quick_view_file(view);
 	}

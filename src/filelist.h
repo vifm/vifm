@@ -284,6 +284,13 @@ void flist_add_custom_line(FileView *view, const char line[]);
 void flist_end_custom(FileView *view, int very);
 /* Changes name of a file entry, performing additional required updates. */
 void fentry_rename(FileView *view, dir_entry_t *entry, const char to[]);
+/* Checks whether this is fake entry for internal purposes, which should not be
+ * processed as a file. */
+int fentry_is_fake(const dir_entry_t *entry);
+/* Checks whether this is valid entry, which can be selected and processed by
+ * file operations or even just selected.  Currently this checks for entry not
+ * being ".." nor fake. */
+int fentry_is_valid(const dir_entry_t *entry);
 /* Loads directory tree specified by its path into the view.  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */
 int flist_load_tree(FileView *view, const char path[]);
