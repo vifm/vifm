@@ -58,7 +58,7 @@ dir_stack_push(const char ld[], const char lf[], const char rd[],
 		}
 
 		dir_stack = s;
-		stack_size++;
+		++stack_size;
 	}
 
 	dir_stack[dir_stack_top].lpane_dir = strdup(ld);
@@ -123,7 +123,7 @@ dir_stack_swap(void)
 
 	if(dir_stack_push_current() != 0)
 	{
-		free_entry(&item);
+		dir_stack[dir_stack_top--] = item;
 		return -1;
 	}
 
@@ -230,16 +230,14 @@ dir_stack_list(void)
 	{
 		return list;
 	}
-	if(dir_stack_top != 0)
+
+	for(i = 0U; i < dir_stack_top; ++i)
 	{
 		if((*p++ = strdup("-----")) == NULL)
 		{
 			return list;
 		}
-	}
 
-	for(i = 0U; i < dir_stack_top; ++i)
-	{
 		if((*p++ = strdup(dir_stack[dir_stack_top - 1 - i].lpane_dir)) == NULL)
 		{
 			return list;
@@ -253,11 +251,6 @@ dir_stack_list(void)
 		if(i == dir_stack_top - 1)
 		{
 			continue;
-		}
-
-		if((*p++ = strdup("-----")) == NULL)
-		{
-			return list;
 		}
 	}
 	*p = NULL;
