@@ -59,7 +59,7 @@ ui_cancellation_enable(void)
 
 	/* The check is here for tests, which are running with uninitialized
 	 * curses. */
-	if(curr_stats.load_stage > 0)
+	if(curr_stats.load_stage > 2)
 	{
 		/* Temporary disable raw mode of terminal so that Ctrl-C is handled as
 			* SIGINT signal rather than as regular input character. */
@@ -90,7 +90,7 @@ ui_cancellation_disable(void)
 
 	/* The check is here for tests, which are running with uninitialized
 	 * curses. */
-	if(curr_stats.load_stage > 0)
+	if(curr_stats.load_stage > 2)
 	{
 		/* Restore raw mode of terminal so that Ctrl-C is be handled as regular
 		 * input character rather than as SIGINT signal. */
@@ -112,7 +112,7 @@ ui_cancellation_pause(void)
 
 	/* The check is here for tests, which are running with uninitialized
 	 * curses. */
-	if(curr_stats.load_stage > 0)
+	if(curr_stats.load_stage > 2)
 	{
 		raw();
 	}
@@ -127,7 +127,7 @@ ui_cancellation_resume(int state)
 		assert(ui_cancellation_enabled() && "Invalid cancellation resume");
 		/* The check is here for tests, which are running with uninitialized
 		 * curses. */
-		if(curr_stats.load_stage > 0)
+		if(curr_stats.load_stage > 2)
 		{
 			noraw();
 		}
