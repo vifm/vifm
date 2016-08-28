@@ -613,6 +613,7 @@ void
 invert_selection(FileView *view)
 {
 	int i;
+	view->selected_files = 0;
 	for(i = 0; i < view->list_rows; i++)
 	{
 		dir_entry_t *const e = &view->dir_entry[i];
@@ -620,8 +621,8 @@ invert_selection(FileView *view)
 		{
 			e->selected = !e->selected;
 		}
+		view->selected_files += (e->selected != 0);
 	}
-	view->selected_files = view->list_rows - view->selected_files;
 }
 
 void
