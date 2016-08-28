@@ -38,7 +38,6 @@
 #include "../status.h"
 #include "../types.h"
 #include "color_scheme.h"
-#include "column_view.h"
 
 #define SORT_WIN_WIDTH 32
 
@@ -317,7 +316,7 @@ typedef struct
 
 	/* Handle for column_view unit.  Contains view columns configuration even when
 	 * 'lsview' is on. */
-	columns_t columns;
+	struct columns_t *columns;
 	/* Format string that specifies view columns. */
 	char *view_columns, *view_columns_g;
 

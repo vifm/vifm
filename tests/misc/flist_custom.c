@@ -12,6 +12,7 @@
 #include "../../src/cfg/info_chars.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -474,7 +475,7 @@ TEST(custom_view_does_not_reset_local_state)
 		}
 
 		columns_free(lwin.columns);
-		lwin.columns = NULL_COLUMNS;
+		lwin.columns = NULL;
 	}
 
 	opt_handlers_teardown();
@@ -524,7 +525,7 @@ TEST(can_set_very_cv_twice_in_a_row)
 	assert_true(flist_custom_finish(&lwin, CV_VERY) == 0);
 
 	columns_free(lwin.columns);
-	lwin.columns = NULL_COLUMNS;
+	lwin.columns = NULL;
 
 	opt_handlers_teardown();
 	columns_clear_column_descs();

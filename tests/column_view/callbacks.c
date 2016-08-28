@@ -12,7 +12,7 @@ static void columns_func(int id, const void *data, size_t buf_len, char *buf);
 
 static const size_t MAX_WIDTH = 80;
 
-static columns_t columns;
+static columns_t *columns;
 
 static int print_counter;
 static int column1_counter;
@@ -72,7 +72,7 @@ columns_func(int id, const void *data, size_t buf_len, char buf[])
 
 TEST(no_columns_one_print_callback_after_creation)
 {
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 
 	columns_format_line(cols, NULL, MAX_WIDTH);
 

@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/options.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"

@@ -12,7 +12,7 @@ column_info_t info;
 DEFINE_SUITE();
 
 static void
-add_column(columns_t columns, column_info_t column_info)
+add_column(columns_t *columns, column_info_t column_info)
 {
 	info = column_info;
 }
@@ -27,7 +27,7 @@ map_name(const char name[], void *arg)
 int
 do_parse(const char *str)
 {
-	return parse_columns(NULL_COLUMNS, add_column, map_name, str, NULL);
+	return parse_columns(NULL, add_column, map_name, str, NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

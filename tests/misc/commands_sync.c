@@ -9,6 +9,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
@@ -141,7 +142,7 @@ TEST(sync_syncs_trees)
 	assert_int_equal(curr_view->list_rows, other_view->list_rows);
 
 	columns_free(other_view->columns);
-	other_view->columns = NULL_COLUMNS;
+	other_view->columns = NULL;
 	columns_set_line_print_func(NULL);
 }
 
@@ -177,7 +178,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 	assert_string_equal("", other_view->local_filter.filter.raw);
 
 	columns_free(other_view->columns);
-	other_view->columns = NULL_COLUMNS;
+	other_view->columns = NULL;
 	columns_set_line_print_func(NULL);
 }
 

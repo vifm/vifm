@@ -25,7 +25,6 @@
 #include <string.h> /* strchr() strdup() strtok_r() */
 
 #include "compat/reallocarray.h"
-#include "ui/column_view.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 
@@ -40,11 +39,11 @@ static const char * parse_name(map_name_cb cn, const char str[],
 		column_info_t *info, void *arg);
 static const char * parse_cropping(const char str[], column_info_t *info);
 static int extend_column_list(column_info_t **list, size_t *len);
-static void add_all(columns_t columns, add_column_cb ac,
+static void add_all(columns_t *columns, add_column_cb ac,
 		const column_info_t *list, size_t len);
 
 int
-parse_columns(columns_t columns, add_column_cb ac, map_name_cb cn,
+parse_columns(columns_t *columns, add_column_cb ac, map_name_cb cn,
 		const char str[], void *arg)
 {
 	column_info_t *list;
@@ -258,17 +257,17 @@ extend_column_list(column_info_t **list, size_t *len)
 		return 1;
 	}
 	*list = mem_ptr;
-	(*len)++;
+	++*len;
 	return 0;
 }
 
 /* Adds all columns by calling ac callback for each column. */
 static void
-add_all(columns_t columns, add_column_cb ac, const column_info_t *list,
+add_all(columns_t *columns, add_column_cb ac, const column_info_t *list,
 		size_t len)
 {
 	size_t i;
-	for(i = 0; i < len; i++)
+	for(i = 0U; i < len; ++i)
 	{
 		ac(columns, list[i]);
 	}

@@ -81,7 +81,7 @@ static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void draw_cell(const FileView *view, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
-static columns_t get_view_columns(const FileView *view);
+static columns_t * get_view_columns(const FileView *view);
 static void consider_scroll_bind(FileView *view);
 static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
@@ -465,17 +465,20 @@ draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
 
 /* Retrieves active view columns handle of the view considering 'lsview' option
  * status.  Returns the handle. */
-static columns_t
+static columns_t *
 get_view_columns(const FileView *view)
 {
-	static columns_t ls_columns = NULL_COLUMNS;
+	/* Note that columns_t performs some caching, so we might want to keep one
+	 * handle per view rather than sharing one. */
+
+	static columns_t *ls_columns;
 
 	if(ui_view_displays_columns(view))
 	{
 		return view->columns;
 	}
 
-	if(ls_columns == NULL_COLUMNS)
+	if(ls_columns == NULL)
 	{
 		column_info_t column_info = {
 			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
