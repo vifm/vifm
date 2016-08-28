@@ -1827,8 +1827,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	if(!curr_view->selected_files ||
-			!curr_view->dir_entry[curr_view->list_pos].selected)
+	if(!curr_view->selected_files || !get_current_entry(curr_view)->selected)
 	{
 		char file_to_view[PATH_MAX];
 
@@ -3975,8 +3974,7 @@ select_unselect_by_range(const cmd_info_t *cmd_info, int select)
 
 	if(cmd_info->begin == NOT_DEF)
 	{
-		select_unselect_entry(curr_view, &curr_view->dir_entry[curr_view->list_pos],
-				select);
+		select_unselect_entry(curr_view, get_current_entry(curr_view), select);
 	}
 	else
 	{

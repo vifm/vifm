@@ -1508,15 +1508,15 @@ is_trying_the_same_file(void)
 static int
 get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 {
-	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	if(fentry_is_fake(entry))
+	const dir_entry_t *const curr = get_current_entry(view);
+	if(fentry_is_fake(curr))
 	{
 		return 1;
 	}
 
-	qv_get_path_to_explore(entry, buf, buf_len);
+	qv_get_path_to_explore(curr, buf, buf_len);
 
-	switch(entry->type)
+	switch(curr->type)
 	{
 		case FT_CHAR_DEV:
 		case FT_BLOCK_DEV:
@@ -1526,7 +1526,7 @@ get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 #endif
 			return 1;
 		case FT_LINK:
-			if(get_link_target_abs(buf, entry->origin, buf, buf_len) != 0)
+			if(get_link_target_abs(buf, curr->origin, buf, buf_len) != 0)
 			{
 				return 1;
 			}

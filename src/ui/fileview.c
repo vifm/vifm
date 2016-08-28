@@ -602,7 +602,7 @@ put_inactive_mark(FileView *view)
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	line_attrs = prepare_inactive_color(view, &view->dir_entry[view->list_pos],
+	line_attrs = prepare_inactive_color(view, get_current_entry(view),
 			get_line_color(view, view->list_pos));
 
 	line = view->curr_line/col_count;

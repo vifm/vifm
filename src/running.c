@@ -136,13 +136,13 @@ follow_file(FileView *view)
 {
 	if(flist_custom_active(view))
 	{
-		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-		if(!fentry_is_fake(entry))
+		const dir_entry_t *const curr = get_current_entry(view);
+		if(!fentry_is_fake(curr))
 		{
 			/* Entry might be freed on navigation, so make sure name and origin will
 			 * remain available for the call. */
-			char *const name = strdup(entry->name);
-			char *const origin = strdup(entry->origin);
+			char *const name = strdup(curr->name);
+			char *const origin = strdup(curr->origin);
 			navigate_to_file(view, origin, name, 0);
 			free(origin);
 			free(name);
@@ -159,7 +159,7 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	char full_path[PATH_MAX];
 	int executable;
 	int runnable;
-	const dir_entry_t *const curr = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(view);
 
 	if(fentry_is_fake(curr))
 	{
@@ -399,7 +399,7 @@ run_selection(FileView *view, int dont_execute)
 		return;
 	}
 
-	if(!view->dir_entry[view->list_pos].selected)
+	if(!get_current_entry(view)->selected)
 	{
 		clean_selected_files(view);
 	}
@@ -479,7 +479,7 @@ run_selection(FileView *view, int dont_execute)
 static void
 run_with_defaults(FileView *view)
 {
-	if(view->dir_entry[view->list_pos].type == FT_DIR)
+	if(get_current_entry(view)->type == FT_DIR)
 	{
 		open_dir(view);
 	}
@@ -544,10 +544,10 @@ void
 run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 		int force_bg)
 {
-	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(view);
 	const int pause = skip_prefix(&prog_spec, "!!");
 
-	if(!path_exists_at(entry->origin, entry->name, DEREF))
+	if(!path_exists_at(curr->origin, curr->name, DEREF))
 	{
 		show_error_msg("Access Error", "File doesn't exist.");
 		return;
@@ -669,11 +669,11 @@ follow_link(FileView *view, int follow_dirs)
 	char *dir, *file;
 	char full_path[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
-	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(curr_view);
 
-	get_full_path_of(entry, sizeof(full_path), full_path);
+	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	if(get_link_target_abs(full_path, entry->origin, linkto, sizeof(linkto)) != 0)
+	if(get_link_target_abs(full_path, curr->origin, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link.");
 		return;
@@ -690,7 +690,7 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(is_dir(linkto) && !follow_dirs)
 	{
-		dir = strdup(entry->name);
+		dir = strdup(curr->name);
 		file = NULL;
 	}
 	else

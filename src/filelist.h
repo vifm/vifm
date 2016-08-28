@@ -177,7 +177,7 @@ void load_saving_pos(FileView *view, int reload);
 char * get_current_file_name(FileView *view);
 /* Gets current entry of the view.  Returns the entry or NULL if view doesn't
  * contain any. */
-dir_entry_t * get_current_entry(FileView *view);
+dir_entry_t * get_current_entry(const FileView *view);
 /* Checks whether content in the current directory of the view changed and
  * reloads the view if so. */
 void check_if_filelist_have_changed(FileView *view);

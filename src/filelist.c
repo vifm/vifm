@@ -269,9 +269,9 @@ load_initial_directory(FileView *view, const char dir[])
 }
 
 dir_entry_t *
-get_current_entry(FileView *view)
+get_current_entry(const FileView *view)
 {
-	if(view->list_pos < 0 || view->list_pos > view->list_rows)
+	if(view->list_pos < 0 || view->list_pos >= view->list_rows)
 	{
 		return NULL;
 	}
@@ -287,7 +287,7 @@ get_current_file_name(FileView *view)
 		static char empty_string[1];
 		return empty_string;
 	}
-	return view->dir_entry[view->list_pos].name;
+	return get_current_entry(view)->name;
 }
 
 void
@@ -406,7 +406,7 @@ save_view_history(FileView *view, const char path[], const char file[], int pos)
 	if(path == NULL)
 		path = view->curr_dir;
 	if(file == NULL)
-		file = view->dir_entry[view->list_pos].name;
+		file = get_current_entry(view)->name;
 	if(pos < 0)
 		pos = view->list_pos;
 
@@ -2996,10 +2996,10 @@ iter_selected_entries(FileView *view, dir_entry_t **entry)
 int
 iter_active_area(FileView *view, dir_entry_t **entry)
 {
-	dir_entry_t *const current = &view->dir_entry[view->list_pos];
-	if(!current->selected)
+	dir_entry_t *const curr = get_current_entry(view);
+	if(!curr->selected)
 	{
-		*entry = (*entry == NULL && fentry_is_valid(current)) ? current : NULL;
+		*entry = (*entry == NULL && fentry_is_valid(curr)) ? curr : NULL;
 		return *entry != NULL;
 	}
 	return iter_selected_entries(view, entry);
@@ -3050,8 +3050,8 @@ iter_selection_or_current(FileView *view, dir_entry_t **entry)
 {
 	if(view->selected_files == 0)
 	{
-		dir_entry_t *const current = &view->dir_entry[view->list_pos];
-		*entry = (*entry == NULL && fentry_is_valid(current)) ? current : NULL;
+		dir_entry_t *const curr = get_current_entry(view);
+		*entry = (*entry == NULL && fentry_is_valid(curr)) ? curr : NULL;
 		return *entry != NULL;
 	}
 	return iter_selected_entries(view, entry);
@@ -3162,7 +3162,7 @@ check_marking(FileView *view, int count, const int indexes[])
 	else
 	{
 		clear_marking(view);
-		view->dir_entry[view->list_pos].marked = 1;
+		get_current_entry(view)->marked = 1;
 	}
 }
 
@@ -3202,10 +3202,10 @@ mark_selected(FileView *view)
 void
 mark_selection_or_current(FileView *view)
 {
-	dir_entry_t *const current = &view->dir_entry[view->list_pos];
-	if(view->selected_files == 0 && fentry_is_valid(current))
+	dir_entry_t *const curr = get_current_entry(view);
+	if(view->selected_files == 0 && fentry_is_valid(curr))
 	{
-		current->selected = 1;
+		curr->selected = 1;
 		view->selected_files = 1;
 	}
 	mark_selected(view);

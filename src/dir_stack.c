@@ -39,8 +39,8 @@ static void free_entry(const stack_entry_t *entry);
 int
 pushd(void)
 {
-	return push_to_dirstack(lwin.curr_dir, lwin.dir_entry[lwin.list_pos].name,
-			rwin.curr_dir, rwin.dir_entry[rwin.list_pos].name);
+	return push_to_dirstack(lwin.curr_dir, get_current_file_name(&lwin),
+			rwin.curr_dir, get_current_file_name(&rwin));
 }
 
 int

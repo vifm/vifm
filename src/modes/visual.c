@@ -865,11 +865,11 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 	{
 		go_to_prev(key_info, keys_info, 1, 1);
 	}
-	else if(view->dir_entry[view->list_pos].child_pos != 0)
+	else if(get_current_entry(view)->child_pos != 0)
 	{
-		const dir_entry_t *entry = &curr_view->dir_entry[curr_view->list_pos];
+		const dir_entry_t *entry = get_current_entry(view);
 		key_info.count = def_count(key_info.count);
-		while (key_info.count-- > 0)
+		while(key_info.count-- > 0)
 		{
 			entry -= entry->child_pos;
 		}
@@ -940,10 +940,10 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	if(!fentry_is_fake(entry))
+	const dir_entry_t *const curr = get_current_entry(view);
+	if(!fentry_is_fake(curr))
 	{
-		set_user_mark(key_info.multi, entry->origin, entry->name);
+		set_user_mark(key_info.multi, curr->origin, curr->name);
 	}
 }
 
