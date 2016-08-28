@@ -19,38 +19,46 @@
 #ifndef VIFM__DIR_STACK_H__
 #define VIFM__DIR_STACK_H__
 
+/* Single entry of the stack. */
 typedef struct
 {
-	char *lpane_dir;
-	char *lpane_file;
-	char *rpane_dir;
-	char *rpane_file;
+	char *lpane_dir;  /* Path of the left pane. */
+	char *lpane_file; /* File under cursor in the left pane. */
+	char *rpane_dir;  /* Path of the right pane. */
+	char *rpane_file; /* File under cursor in the right pane. */
 }
 stack_entry_t;
 
-extern stack_entry_t * stack;
+/* The stack itself.  NULL, when empty. */
+extern stack_entry_t *stack;
+/* Current size of the stack. */
 extern unsigned int stack_top;
 
-/* Returns 0 on success and -1 when not enough memory. */
+/* Pushes current locations of views onto the stack.  Returns 0 on success and
+ * -1 when not enough memory. */
 int pushd(void);
 
-/* Returns 0 on success and -1 when not enough memory. */
+/* Pushes specified locations onto the stack.  Returns 0 on success and -1 when
+ * not enough memory. */
 int push_to_dirstack(const char *ld, const char *lf, const char *rd,
 		const char *rf);
 
-/* Returns 0 on success and -1 on underflow. */
+/* Pops top of the stack and navigates views to those locations.  Returns 0 on
+ * success and -1 on underflow. */
 int popd(void);
 
-/* Returns 0 on success and -1 on error. */
+/* Swaps current locations with those at the top of the stack.  Returns 0 on
+ * success and -1 on error. */
 int swap_dirs(void);
 
-/* Returns 0 on success and -1 on error. */
+/* Rotates stack entries by n items.  Returns 0 on success and -1 on error. */
 int rotate_stack(int n);
 
-/* Always successful. */
+/* Empties the stack.  Always successful. */
 void clean_stack(void);
 
-/* Last element of list returned is NULL.  Returns NULL on error. */
+/* Lists contents of the stack as lines of text.  Last element of list returned
+ * is NULL.  Returns NULL on error, otherwise caller should free the memory. */
 char ** dir_stack_list(void);
 
 /* Freezes change in the directory stack.  In combination with

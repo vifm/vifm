@@ -27,14 +27,16 @@
 #include "ui/ui.h"
 #include "filelist.h"
 
-stack_entry_t *stack;
-unsigned int stack_top;
+static void free_entry(const stack_entry_t *entry);
+
+/* Actual size of the stack (allocated, but some entries might be unused). */
 static unsigned int stack_size;
 
 /* Whether directory stack was changed since its creation or last freezing. */
 static int changed;
 
-static void free_entry(const stack_entry_t *entry);
+stack_entry_t *stack;
+unsigned int stack_top;
 
 int
 pushd(void)
@@ -163,6 +165,7 @@ clean_stack(void)
 	}
 }
 
+/* Frees memory allocated for the specified stack entry. */
 static void
 free_entry(const stack_entry_t *entry)
 {
