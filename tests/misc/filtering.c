@@ -202,7 +202,7 @@ TEST(file_after_directory_is_hidden)
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/read");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/read/very-long-line");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR) == 0);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 1;

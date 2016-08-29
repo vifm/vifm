@@ -147,8 +147,9 @@ void flist_custom_start(FileView *view, const char title[]);
  * on error. */
 dir_entry_t * flist_custom_add(FileView *view, const char path[]);
 /* Finishes file list population, handles empty resulting list corner case.
+ * Non-zero allow_empty makes a single-entry (..) view instead of aborting.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
-int flist_custom_finish(FileView *view, CVType type);
+int flist_custom_finish(FileView *view, CVType type, int allow_empty);
 /* Removes selected files from custom view. */
 void flist_custom_exclude(FileView *view);
 /* Clones list of files from from view to to view. */

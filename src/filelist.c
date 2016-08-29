@@ -97,7 +97,7 @@ static int fill_dir_entry(dir_entry_t *entry, const char path[],
 static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
 #endif
 static int flist_custom_finish_internal(FileView *view, CVType type, int reload,
-		const char dir[]);
+		const char dir[], int allow_empty);
 static void on_location_change(FileView *view, int force);
 static void disable_view_sorting(FileView *view);
 static void enable_view_sorting(FileView *view);
@@ -1268,9 +1268,10 @@ data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
 #endif
 
 int
-flist_custom_finish(FileView *view, CVType type)
+flist_custom_finish(FileView *view, CVType type, int allow_empty)
 {
-	return flist_custom_finish_internal(view, type, 0, flist_get_dir(view));
+	return flist_custom_finish_internal(view, type, 0, flist_get_dir(view),
+			allow_empty);
 }
 
 /* Finishes file list population, handles empty resulting list corner case.
@@ -1279,16 +1280,15 @@ flist_custom_finish(FileView *view, CVType type)
  * non-zero is returned. */
 static int
 flist_custom_finish_internal(FileView *view, CVType type, int reload,
-		const char dir[])
+		const char dir[], int allow_empty)
 {
 	enum { NORMAL, CUSTOM, UNSORTED } previous;
-	const int might_add_parent_ref = (type == CV_TREE);
 	const int no_parent_ref = (view->custom.entry_count == 0);
 
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = NULL;
 
-	if(no_parent_ref && !might_add_parent_ref)
+	if(no_parent_ref && !allow_empty)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 		free(view->custom.title);
@@ -3264,7 +3264,7 @@ flist_add_custom_line(FileView *view, const char line[])
 void
 flist_end_custom(FileView *view, int very)
 {
-	if(flist_custom_finish(view, very ? CV_VERY : CV_REGULAR) != 0)
+	if(flist_custom_finish(view, very ? CV_VERY : CV_REGULAR, 0) != 0)
 	{
 		show_error_msg("Custom view", "Ignoring empty list of files");
 		return;
@@ -3418,7 +3418,7 @@ make_tree(FileView *view, const char path[], int reload, trie_t *excluded_paths)
 	to_canonic_path(path, flist_get_dir(view), canonic_path,
 			sizeof(canonic_path));
 
-	if(flist_custom_finish_internal(view, CV_TREE, reload, canonic_path) != 0)
+	if(flist_custom_finish_internal(view, CV_TREE, reload, canonic_path, 1) != 0)
 	{
 		return 1;
 	}
