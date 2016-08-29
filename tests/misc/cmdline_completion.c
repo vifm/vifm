@@ -1,6 +1,5 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
@@ -70,9 +69,9 @@ SETUP()
 			def);
 
 	saved_cwd = save_cwd();
-	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	assert_success(chdir(TEST_DATA_PATH "/compare"));
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "existing-files", saved_cwd);
+			TEST_DATA_PATH, "compare", saved_cwd);
 }
 
 TEARDOWN()
@@ -520,7 +519,7 @@ TEST(tilde_is_completed_after_emark)
 
 	prepare_for_line_completion(L"!~/");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!~/existing-files/", stats.line);
+	assert_wstring_equal(L"!~/compare/", stats.line);
 }
 
 TEST(bmark_tags_are_completed)
@@ -595,7 +594,7 @@ TEST(colorscheme_completion)
 
 	prepare_for_line_completion(L"colorscheme set-env ../");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"colorscheme set-env ../existing-files/", stats.line);
+	assert_wstring_equal(L"colorscheme set-env ../compare/", stats.line);
 
 	prepare_for_line_completion(L"colorscheme ../");
 	assert_success(line_completion(&stats));
@@ -605,7 +604,7 @@ TEST(colorscheme_completion)
 			TEST_DATA_PATH, "", saved_cwd);
 	prepare_for_line_completion(L"colorscheme set-env ");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"colorscheme set-env existing-files/", stats.line);
+	assert_wstring_equal(L"colorscheme set-env compare/", stats.line);
 }
 
 TEST(wincmd_completion)
@@ -639,7 +638,7 @@ TEST(grep_completion)
 
 	prepare_for_line_completion(L"grep -o ");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"grep -o existing-files/", stats.line);
+	assert_wstring_equal(L"grep -o compare/", stats.line);
 }
 
 TEST(find_completion)
@@ -667,7 +666,7 @@ TEST(find_completion)
 
 	prepare_for_line_completion(L"find ");
 	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"find existing-files/", stats.line);
+	assert_wstring_equal(L"find compare/", stats.line);
 }
 
 TEST(aucmd_events_are_completed)
@@ -778,8 +777,7 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH "/existing-files",
-				SANDBOX_PATH "/dir-link"));
+	assert_success(symlink(TEST_DATA_PATH "/compare", SANDBOX_PATH "/dir-link"));
 #endif
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));

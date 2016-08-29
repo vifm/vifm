@@ -622,7 +622,7 @@ TEST(find_command, IF(not_windows))
 	assert_failure(exec_commands("find", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("find a", &lwin, CIT_COMMAND));
-	assert_int_equal(2, lwin.list_rows);
+	assert_int_equal(3, lwin.list_rows);
 
 	assert_success(exec_commands("find . -name aaa", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.list_rows);

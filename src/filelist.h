@@ -143,9 +143,14 @@ char * get_typed_entry_fpath(const dir_entry_t *entry);
 int flist_custom_active(const FileView *view);
 /* Prepares list of files for it to be filled with entries. */
 void flist_custom_start(FileView *view, const char title[]);
-/* Adds an entry to list of files.  Returns pointer to just added entry or NULL
- * on error. */
+/* Adds an entry to custom list of files.  Returns pointer to just added entry
+ * or NULL on error. */
 dir_entry_t * flist_custom_add(FileView *view, const char path[]);
+/* Puts an entry to custom list of files, contents of the entry gets stolen.
+ * Returns pointer to just added entry or NULL on error. */
+dir_entry_t * flist_custom_put(FileView *view, dir_entry_t *entry);
+/* Appends entry separator to the list with specified id. */
+void flist_custom_add_separator(FileView *view, int id);
 /* Finishes file list population, handles empty resulting list corner case.
  * Non-zero allow_empty makes a single-entry (..) view instead of aborting.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
@@ -270,6 +275,10 @@ void replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
  * returned. */
 dir_entry_t * add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
+/* Adds new entry to the list and fills it with data.  Returns pointer to the
+ * entry or NULL on error. */
+dir_entry_t * entry_list_add(FileView *view, dir_entry_t **list, int *list_size,
+		const char path[]);
 /* Frees single directory entry. */
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */

@@ -12,6 +12,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/args.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
 #include "../parsing/asserts.h"
@@ -207,6 +208,18 @@ TEST(getpanetype_for_tree_view)
 
 	curr_view = &lwin;
 	ASSERT_OK("getpanetype()", "tree");
+}
+
+TEST(getpanetype_for_compare_view)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/rename");
+
+	opt_handlers_setup();
+	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS);
+	opt_handlers_teardown();
+
+	curr_view = &lwin;
+	ASSERT_OK("getpanetype()", "compare");
 }
 
 TEST(chooseopt_options_are_not_set)

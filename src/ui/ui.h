@@ -127,6 +127,7 @@ typedef enum
 	CV_REGULAR, /* Sorted list of files. */
 	CV_VERY,    /* No initial sorting of file list is enforced. */
 	CV_TREE,    /* Files of a file system sub-tree. */
+	CV_COMPARE, /* Directory comparison pane. */
 }
 CVType;
 
@@ -165,6 +166,8 @@ typedef struct dir_entry_t
 	time_t ctime;
 	FileType type;
 	int nlinks;       /* Number of hard links to the entry. */
+
+	int id;           /* File uniqueness identifier. */
 
 	int tag;          /* Used to hold temporary data associated with the item,
 	                     e.g. by sorting comparer to perform stable sort or item

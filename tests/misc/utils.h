@@ -34,6 +34,9 @@ void create_executable(const char path[]);
 void make_abs_path(char buf[], size_t buf_len, const char base[],
 		const char sub[], const char cwd[]);
 
+/* Copies file at src to dst. */
+void copy_file(const char src[], const char dst[]);
+
 /* Whether running on non-Windowsla.  Returns non-zero if so, otherwise zero is
  * returned. */
 int not_windows(void);

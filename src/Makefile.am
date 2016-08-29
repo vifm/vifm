@@ -202,15 +202,17 @@ vifm_SOURCES = \
 	utils/utils.c utils/utils.h \
 	utils/utils_int.h \
 	utils/utils_nix.c utils/utils_nix.h \
+	utils/xxhash.h \
 	\
 	args.c args.h \
 	background.c background.h \
 	bmarks.c bmarks.h \
 	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
-	cmd_handlers.c cmd_handlers.h \
-	cmd_core.c cmd_core.h \
 	cmd_completion.c cmd_completion.h \
+	cmd_core.c cmd_core.h \
+	cmd_handlers.c cmd_handlers.h \
+	compare.c compare.h \
 	dir_stack.c dir_stack.h \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \
@@ -253,6 +255,7 @@ EXTRA_DIST = \
 						 utils/utils_win.c \
 						 utils/utils_win.h \
 						 utils/windefs.h \
+						 utils/xxhash.c \
 						 modes/dialogs/attr_dialog_win.h \
 						 modes/dialogs/attr_dialog_win.c \
 						 compat/wcwidth.c \

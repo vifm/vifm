@@ -1086,6 +1086,7 @@ flist_custom_start(FileView *view, const char title[])
 	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 	(void)replace_string(&view->custom.title, title);
 
+	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = trie_create();
 }
 
@@ -1093,8 +1094,6 @@ dir_entry_t *
 flist_custom_add(FileView *view, const char path[])
 {
 	char canonic_path[PATH_MAX];
-	dir_entry_t *dir_entry;
-
 	to_canonic_path(path, flist_get_dir(view), canonic_path,
 			sizeof(canonic_path));
 
@@ -1104,25 +1103,42 @@ flist_custom_add(FileView *view, const char path[])
 		return NULL;
 	}
 
-	dir_entry = alloc_dir_entry(&view->custom.entries, view->custom.entry_count);
-	if(dir_entry == NULL)
+	return entry_list_add(view, &view->custom.entries, &view->custom.entry_count,
+			canonic_path);
+}
+
+dir_entry_t *
+flist_custom_put(FileView *view, dir_entry_t *entry)
+{
+	char full_path[PATH_MAX];
+	dir_entry_t *dir_entry;
+	size_t list_size = view->custom.entry_count;
+
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	/* Don't add duplicates. */
+	if(trie_put(view->custom.paths_cache, full_path) != 0)
 	{
 		return NULL;
 	}
 
-	init_dir_entry(view, dir_entry, get_last_path_component(canonic_path));
-
-	dir_entry->origin = strdup(canonic_path);
-	remove_last_path_component(dir_entry->origin);
-
-	if(fill_dir_entry_by_path(dir_entry, canonic_path) != 0)
-	{
-		free_dir_entry(view, dir_entry);
-		return NULL;
-	}
-
-	++view->custom.entry_count;
+	dir_entry = add_dir_entry(&view->custom.entries, &list_size, entry);
+	view->custom.entry_count = list_size;
 	return dir_entry;
+}
+
+void
+flist_custom_add_separator(FileView *view, int id)
+{
+	dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
+			view->custom.entry_count);
+	if(dir_entry != NULL)
+	{
+		init_dir_entry(view, dir_entry, "");
+		dir_entry->origin = strdup(flist_get_dir(view));
+		dir_entry->id = id;
+		++view->custom.entry_count;
+	}
 }
 
 #ifndef _WIN32
@@ -2368,6 +2384,8 @@ is_in_trie(trie_t *trie, FileView *view, dir_entry_t *entry, void **data)
 static void
 merge_entries(dir_entry_t *new, const dir_entry_t *prev)
 {
+	new->id = prev->id;
+
 	new->selected = prev->selected;
 	new->was_selected = prev->was_selected;
 
@@ -2481,6 +2499,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->temporary = 0;
 
 	entry->tag = -1;
+	entry->id = -1;
 }
 
 void
@@ -2561,13 +2580,37 @@ add_dir_entry(dir_entry_t **list, size_t *list_size, const dir_entry_t *entry)
 	return new_entry;
 }
 
+dir_entry_t *
+entry_list_add(FileView *view, dir_entry_t **list, int *list_size,
+		const char path[])
+{
+	dir_entry_t *const dir_entry = alloc_dir_entry(list, *list_size);
+	if(dir_entry == NULL)
+	{
+		return NULL;
+	}
+
+	init_dir_entry(view, dir_entry, get_last_path_component(path));
+
+	dir_entry->origin = strdup(path);
+	remove_last_path_component(dir_entry->origin);
+
+	if(fill_dir_entry_by_path(dir_entry, path) != 0)
+	{
+		free_dir_entry(view, dir_entry);
+		return NULL;
+	}
+
+	++*list_size;
+	return dir_entry;
+}
+
 /* Allocates one more directory entry for the *list of size list_size by
  * extending it.  Returns pointer to new entry or NULL on failure. */
 static dir_entry_t *
 alloc_dir_entry(dir_entry_t **list, int list_size)
 {
-	dir_entry_t *new_entry_list;
-	new_entry_list = dynarray_extend(*list, sizeof(dir_entry_t));
+	dir_entry_t *new_entry_list = dynarray_extend(*list, sizeof(dir_entry_t));
 	if(new_entry_list == NULL)
 	{
 		return NULL;

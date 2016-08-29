@@ -1,0 +1,380 @@
+#include <stic.h>
+
+#include <sys/stat.h> /* chmod() */
+#include <unistd.h> /* symlink() */
+
+#include <stdio.h> /* remove() */
+#include <string.h> /* strcpy() */
+
+#include "../../src/ui/ui.h"
+#include "../../src/compare.h"
+#include "../../src/filelist.h"
+
+#include "utils.h"
+
+static void basic_panes_check(int expected_len);
+
+SETUP()
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	view_setup(&lwin);
+	view_setup(&rwin);
+
+	opt_handlers_setup();
+}
+
+TEARDOWN()
+{
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+
+	opt_handlers_teardown();
+}
+
+TEST(files_are_compared_by_name)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	compare_one_pane(&lwin, CT_NAME, LT_ALL);
+
+	assert_int_equal(CV_COMPARE, lwin.custom.type);
+	assert_int_equal(3, lwin.list_rows);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+}
+
+TEST(files_are_compared_by_size)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	compare_one_pane(&lwin, CT_SIZE, LT_ALL);
+
+	assert_int_equal(CV_COMPARE, lwin.custom.type);
+	assert_int_equal(3, lwin.list_rows);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+}
+
+TEST(files_are_compared_by_contents)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+
+	assert_int_equal(CV_COMPARE, lwin.custom.type);
+	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+	assert_int_equal(2, lwin.dir_entry[2].id);
+	assert_int_equal(3, lwin.dir_entry[3].id);
+}
+
+TEST(two_panes_all_group_ids)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_NAME, LT_ALL, 0);
+
+	basic_panes_check(4);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+	assert_int_equal(4, lwin.dir_entry[3].id);
+
+	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
+	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
+	assert_string_equal("same-name-different-content", lwin.dir_entry[1].name);
+	assert_string_equal("same-name-different-content", rwin.dir_entry[1].name);
+	assert_string_equal("same-name-same-content", lwin.dir_entry[2].name);
+	assert_string_equal("same-name-same-content", rwin.dir_entry[2].name);
+	assert_string_equal("", lwin.dir_entry[3].name);
+	assert_string_equal("same-content-different-name-2", rwin.dir_entry[3].name);
+}
+
+TEST(two_panes_all_group_paths)
+{
+	curr_view = &rwin;
+	other_view = &lwin;
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_NAME, LT_ALL, 1);
+
+	basic_panes_check(4);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+	assert_int_equal(4, lwin.dir_entry[3].id);
+
+	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
+	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
+	assert_string_equal("", lwin.dir_entry[1].name);
+	assert_string_equal("same-content-different-name-2", rwin.dir_entry[1].name);
+	assert_string_equal("same-name-different-content", lwin.dir_entry[2].name);
+	assert_string_equal("same-name-different-content", rwin.dir_entry[2].name);
+	assert_string_equal("same-name-same-content", lwin.dir_entry[3].name);
+	assert_string_equal("same-name-same-content", rwin.dir_entry[3].name);
+}
+
+TEST(two_panes_dups_one_is_empty)
+{
+	curr_view = &rwin;
+	other_view = &lwin;
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+
+	basic_panes_check(4);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+	assert_int_equal(2, lwin.dir_entry[2].id);
+	assert_int_equal(3, lwin.dir_entry[3].id);
+
+	assert_string_equal("", lwin.dir_entry[0].name);
+	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
+	assert_string_equal("", lwin.dir_entry[1].name);
+	assert_string_equal("same-content-different-name-2", rwin.dir_entry[1].name);
+	assert_string_equal("", lwin.dir_entry[2].name);
+	assert_string_equal("same-name-different-content", rwin.dir_entry[2].name);
+	assert_string_equal("", lwin.dir_entry[3].name);
+	assert_string_equal("same-name-same-content", rwin.dir_entry[3].name);
+}
+
+TEST(two_panes_dups)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_CONTENTS, LT_DUPS, 1);
+
+	basic_panes_check(3);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+	assert_int_equal(2, lwin.dir_entry[2].id);
+
+	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
+	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
+	assert_string_equal("", lwin.dir_entry[1].name);
+	assert_string_equal("same-content-different-name-2", rwin.dir_entry[1].name);
+	assert_string_equal("same-name-same-content", lwin.dir_entry[2].name);
+	assert_string_equal("same-name-same-content", rwin.dir_entry[2].name);
+}
+
+TEST(two_panes_unique)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 1);
+
+	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(1, rwin.list_rows);
+
+	assert_string_equal("same-name-different-content", lwin.dir_entry[0].name);
+	assert_string_equal("same-name-different-content", rwin.dir_entry[0].name);
+}
+
+TEST(single_pane_all)
+{
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-1");
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-2");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-1");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+
+	assert_int_equal(CV_COMPARE, lwin.custom.type);
+	assert_int_equal(4, lwin.list_rows);
+	assert_string_equal("dos-eof-1", lwin.dir_entry[0].name);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+	assert_string_equal("utf8-bom-1", lwin.dir_entry[2].name);
+	assert_int_equal(2, lwin.dir_entry[2].id);
+	assert_int_equal(2, lwin.dir_entry[3].id);
+
+	assert_success(remove(SANDBOX_PATH "/dos-eof-1"));
+	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-1"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
+}
+
+TEST(single_pane_dups)
+{
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-1");
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-2");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS);
+
+	assert_int_equal(CV_COMPARE, lwin.custom.type);
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("dos-eof-1", lwin.dir_entry[0].name);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+
+	assert_success(remove(SANDBOX_PATH "/dos-eof-1"));
+	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom"));
+}
+
+TEST(single_pane_unique)
+{
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-1");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_UNIQUE);
+
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("dos-eof", lwin.dir_entry[0].name);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+
+	assert_success(remove(SANDBOX_PATH "/dos-eof"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-1"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
+}
+
+TEST(empty_root_directories_abort_single_comparison)
+{
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+
+	assert_false(flist_custom_active(&lwin));
+}
+
+TEST(empty_root_directories_abort_dual_comparison)
+{
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	assert_false(flist_custom_active(&lwin));
+}
+
+TEST(empty_unique_cv_are_created)
+{
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+
+	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 0);
+	assert_true(flist_custom_active(&lwin));
+	assert_true(flist_custom_active(&rwin));
+
+	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(1, rwin.list_rows);
+
+	assert_string_equal("..", lwin.dir_entry[0].name);
+	assert_string_equal("..", rwin.dir_entry[0].name);
+}
+
+TEST(listing_wrong_path_does_nothing)
+{
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/does-not-exist");
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+
+	assert_false(flist_custom_active(&lwin));
+}
+
+TEST(files_are_found_recursively)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+
+	assert_int_equal(7, lwin.list_rows);
+}
+
+TEST(compare_skips_dir_symlinks, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but other code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
+#endif
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	assert_false(flist_custom_active(&lwin));
+
+	assert_success(remove(SANDBOX_PATH "/link"));
+}
+
+TEST(not_available_files_are_ignored, IF(not_windows))
+{
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom");
+	assert_success(chmod(SANDBOX_PATH "/utf8-bom", 0000));
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	assert_false(flist_custom_active(&lwin));
+
+	assert_success(remove(SANDBOX_PATH "/utf8-bom"));
+}
+
+TEST(relatively_complex_match)
+{
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-1");
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-2");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-1");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+
+	basic_panes_check(8);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+	assert_int_equal(4, lwin.dir_entry[3].id);
+	assert_int_equal(2, lwin.dir_entry[4].id);
+	assert_int_equal(5, lwin.dir_entry[5].id);
+	assert_int_equal(6, lwin.dir_entry[6].id);
+	assert_int_equal(5, lwin.dir_entry[7].id);
+
+	assert_string_equal("", lwin.dir_entry[0].name);
+	assert_string_equal("binary-data", rwin.dir_entry[0].name);
+	assert_string_equal("dos-eof-1", lwin.dir_entry[1].name);
+	assert_string_equal("dos-eof", rwin.dir_entry[1].name);
+	assert_string_equal("", lwin.dir_entry[2].name);
+	assert_string_equal("dos-line-endings", rwin.dir_entry[2].name);
+	assert_string_equal("", lwin.dir_entry[3].name);
+	assert_string_equal("two-lines", rwin.dir_entry[3].name);
+	assert_string_equal("dos-eof-2", lwin.dir_entry[4].name);
+	assert_string_equal("", rwin.dir_entry[4].name);
+	assert_string_equal("utf8-bom-1", lwin.dir_entry[5].name);
+	assert_string_equal("utf8-bom", rwin.dir_entry[5].name);
+	assert_string_equal("", lwin.dir_entry[6].name);
+	assert_string_equal("very-long-line", rwin.dir_entry[6].name);
+	assert_string_equal("utf8-bom-2", lwin.dir_entry[7].name);
+	assert_string_equal("", rwin.dir_entry[7].name);
+
+	assert_success(remove(SANDBOX_PATH "/dos-eof-1"));
+	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-1"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
+}
+
+static void
+basic_panes_check(int expected_len)
+{
+	int i;
+
+	assert_int_equal(expected_len, lwin.list_rows);
+	assert_int_equal(expected_len, rwin.list_rows);
+
+	for(i = 0; i < expected_len; ++i)
+	{
+		assert_int_equal(lwin.dir_entry[i].id, rwin.dir_entry[i].id);
+	}
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */
