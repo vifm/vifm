@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 24
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -348,6 +348,8 @@ zr - remove local filter.                      *vifm-zr*
 zd                                             *vifm-zd*
     exclude selection or current file from a custom view.  Does nothing for
     regular view.  For tree view excluding directory excludes that sub-tree.
+    For compare views zd hides group of adjacent identical files, count can
+    be specified as 1 to exclude just single file or selected items instead.
     Files excluded this way are not counted as filtered out and can't be
     returned unless view is reloaded.
 

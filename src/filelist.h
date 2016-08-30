@@ -155,8 +155,9 @@ void flist_custom_add_separator(FileView *view, int id);
  * Non-zero allow_empty makes a single-entry (..) view instead of aborting.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
 int flist_custom_finish(FileView *view, CVType type, int allow_empty);
-/* Removes selected files from custom view. */
-void flist_custom_exclude(FileView *view);
+/* Removes selected files or current one from custom view.  Zero selection_only
+ * enables excluding files that share ids with selected items. */
+void flist_custom_exclude(FileView *view, int selection_only);
 /* Clones list of files from from view to to view. */
 void flist_custom_clone(FileView *to, const FileView *from);
 /* Adds missing parent directories to the tree.  Such entries are marked as

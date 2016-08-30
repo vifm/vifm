@@ -574,7 +574,7 @@ TEST(files_are_excluded_from_custom_view)
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.selected_files = 1;
-	flist_custom_exclude(&lwin);
+	flist_custom_exclude(&lwin, 1);
 
 	assert_int_equal(0, lwin.selected_files);
 }

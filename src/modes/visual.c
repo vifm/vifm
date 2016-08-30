@@ -1149,7 +1149,7 @@ update_marks(FileView *view)
 static void
 cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 {
-	flist_custom_exclude(curr_view);
+	flist_custom_exclude(curr_view, key_info.count == 1);
 	accept_and_leave(0);
 }
 

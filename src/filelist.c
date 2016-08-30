@@ -101,6 +101,9 @@ static int flist_custom_finish_internal(FileView *view, CVType type, int reload,
 static void on_location_change(FileView *view, int force);
 static void disable_view_sorting(FileView *view);
 static void enable_view_sorting(FileView *view);
+static void exclude_in_compare(FileView *view, int selection_only);
+static void mark_group(FileView *view, FileView *other, int idx);
+static int exclude_temporary_entries(FileView *view);
 static int is_temporary(FileView *view, const dir_entry_t *entry, void *arg);
 static void uncompress_traverser(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
@@ -1418,12 +1421,18 @@ enable_view_sorting(FileView *view)
 }
 
 void
-flist_custom_exclude(FileView *view)
+flist_custom_exclude(FileView *view, int selection_only)
 {
 	dir_entry_t *entry;
 
 	if(!flist_custom_active(view))
 	{
+		return;
+	}
+
+	if(view->custom.type == CV_COMPARE)
+	{
+		exclude_in_compare(view, selection_only);
 		return;
 	}
 
@@ -1440,7 +1449,80 @@ flist_custom_exclude(FileView *view)
 		}
 	}
 
-	(void)zap_entries(view, view->dir_entry, &view->list_rows, &is_temporary,
+	exclude_temporary_entries(view);
+}
+
+/* Removes selected files from compare view.  Zero selection_only enables
+ * excluding files that share ids with selected items. */
+static void
+exclude_in_compare(FileView *view, int selection_only)
+{
+	FileView *const other = (view == curr_view) ? other_view : curr_view;
+	const int double_compare = (other->custom.type == CV_COMPARE);
+	const int n = other->list_rows;
+	dir_entry_t *entry = NULL;
+	while(iter_selection_or_current(view, &entry))
+	{
+		if(selection_only)
+		{
+			entry->temporary = 1;
+			if(double_compare)
+			{
+				other->dir_entry[entry - view->dir_entry].temporary = 1;
+			}
+		}
+		else
+		{
+			mark_group(view, other, entry - view->dir_entry);
+		}
+	}
+
+	exclude_temporary_entries(view);
+	if(double_compare && exclude_temporary_entries(other) == n)
+	{
+		/* Leave compare mode if we excluded all files. */
+		cd_updir(view, 1);
+	}
+}
+
+/* Selects all neighbours of the idx-th element that share its id. */
+static void
+mark_group(FileView *view, FileView *other, int idx)
+{
+	int i;
+	int id;
+
+	if(view->dir_entry[idx].temporary)
+	{
+		return;
+	}
+
+	id = view->dir_entry[idx].id;
+
+	for(i = idx - 1; i >= 0 && view->dir_entry[i].id == id; --i)
+	{
+		view->dir_entry[i].temporary = 1;
+		if(other->custom.type == CV_COMPARE)
+		{
+			other->dir_entry[i].temporary = 1;
+		}
+	}
+	for(i = idx; i < view->list_rows && view->dir_entry[i].id == id; ++i)
+	{
+		view->dir_entry[i].temporary = 1;
+		if(other->custom.type == CV_COMPARE)
+		{
+			other->dir_entry[i].temporary = 1;
+		}
+	}
+}
+
+/* Excludes view entries that are marked as "temporary".  Returns number of
+ * items that were visible before. */
+static int
+exclude_temporary_entries(FileView *view)
+{
+	int n = zap_entries(view, view->dir_entry, &view->list_rows, &is_temporary,
 			NULL, 0, 1);
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
 			&is_temporary, NULL, 1, 1);
@@ -1449,6 +1531,8 @@ flist_custom_exclude(FileView *view)
 	ui_view_schedule_redraw(view);
 
 	recount_selected_files(view);
+
+	return n;
 }
 
 /* zap_entries() filter to filter-out files, which were marked for removal.

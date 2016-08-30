@@ -362,6 +362,46 @@ TEST(relatively_complex_match)
 	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
 }
 
+TEST(exclude_works_with_entries_or_their_groups)
+{
+	copy_file(TEST_DATA_PATH "/compare/a/same-content-different-name-1",
+			SANDBOX_PATH "/same-content-different-name-1");
+	copy_file(TEST_DATA_PATH "/compare/a/same-content-different-name-1",
+			SANDBOX_PATH "/same-content-different-name-2");
+	copy_file(TEST_DATA_PATH "/compare/a/same-name-same-content",
+			SANDBOX_PATH "/same-name-same-content");
+	copy_file(TEST_DATA_PATH "/compare/a/same-name-same-content",
+			SANDBOX_PATH "/same-name-same-content-2");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	basic_panes_check(5);
+
+	/* Does nothing on separator. */
+	lwin.selected_files = 1;
+	lwin.dir_entry[4].selected = 1;
+	flist_custom_exclude(&lwin, 1);
+	basic_panes_check(5);
+
+	/* Exclude single file from a group. */
+	lwin.selected_files = 1;
+	lwin.dir_entry[0].selected = 1;
+	flist_custom_exclude(&lwin, 1);
+	basic_panes_check(4);
+
+	/* Exclude the whole group. */
+	lwin.selected_files = 1;
+	lwin.dir_entry[2].selected = 1;
+	flist_custom_exclude(&lwin, 0);
+	basic_panes_check(2);
+
+	assert_success(remove(SANDBOX_PATH "/same-content-different-name-1"));
+	assert_success(remove(SANDBOX_PATH "/same-content-different-name-2"));
+	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
+	assert_success(remove(SANDBOX_PATH "/same-name-same-content-2"));
+}
+
 static void
 basic_panes_check(int expected_len)
 {
