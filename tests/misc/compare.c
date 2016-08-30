@@ -1,16 +1,18 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* symlink() */
+#include <unistd.h> /* rmdir() symlink() */
 
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() */
 
+#include "../../src/compat/os.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/filter.h"
+#include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
@@ -444,6 +446,69 @@ TEST(local_filter_is_not_set)
 
 	enter_cmdline_mode(CLS_FILTER, lwin.local_filter.filter.raw, NULL);
 	assert_true(vle_mode_is(NORMAL_MODE));
+}
+
+TEST(removed_files_disappear_in_both_views_on_reload)
+{
+	copy_file(TEST_DATA_PATH "/compare/a/same-content-different-name-1",
+			SANDBOX_PATH "/same-content-different-name-1");
+	copy_file(TEST_DATA_PATH "/compare/a/same-content-different-name-1",
+			SANDBOX_PATH "/same-content-different-name-2");
+	copy_file(TEST_DATA_PATH "/compare/a/same-name-same-content",
+			SANDBOX_PATH "/same-name-same-content");
+	copy_file(TEST_DATA_PATH "/compare/a/same-name-same-content",
+			SANDBOX_PATH "/same-name-same-content-2");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	basic_panes_check(5);
+
+	assert_success(remove(SANDBOX_PATH "/same-content-different-name-1"));
+	load_dir_list(&lwin, 1);
+	basic_panes_check(4);
+	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
+
+	assert_success(remove(SANDBOX_PATH "/same-content-different-name-2"));
+	load_dir_list(&lwin, 1);
+	basic_panes_check(4);
+	assert_string_equal("", lwin.dir_entry[0].name);
+
+	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
+	assert_success(remove(SANDBOX_PATH "/same-name-same-content-2"));
+}
+
+TEST(comparison_views_are_closed_when_no_files_are_left)
+{
+	char *const saved_cwd = save_cwd();
+
+	assert_success(os_mkdir(SANDBOX_PATH "/a", 0777));
+	assert_success(os_mkdir(SANDBOX_PATH "/b", 0777));
+
+	copy_file(TEST_DATA_PATH "/compare/a/same-content-different-name-1",
+			SANDBOX_PATH "/a/same-content-different-name-1");
+	copy_file(TEST_DATA_PATH "/compare/a/same-content-different-name-1",
+			SANDBOX_PATH "/b/same-content-different-name-1");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
+	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	basic_panes_check(1);
+
+	assert_success(remove(SANDBOX_PATH "/a/same-content-different-name-1"));
+	load_dir_list(&lwin, 1);
+	basic_panes_check(1);
+	assert_string_equal("", lwin.dir_entry[0].name);
+
+	assert_success(remove(SANDBOX_PATH "/b/same-content-different-name-1"));
+	load_dir_list(&lwin, 1);
+	assert_false(flist_custom_active(&lwin));
+	assert_false(flist_custom_active(&rwin));
+
+	restore_cwd(saved_cwd);
+
+	assert_success(rmdir(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/b"));
 }
 
 static void

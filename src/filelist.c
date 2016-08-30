@@ -110,6 +110,8 @@ static void uncompress_traverser(const char name[], int valid,
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int populate_custom_view(FileView *view, int reload);
+static void zap_compare_view(FileView *view, FileView *other);
+static int find_separator(FileView *view, int idx);
 static int update_dir_watcher(FileView *view);
 static int custom_list_is_incomplete(const FileView *view);
 static int is_dead_or_filtered(FileView *view, const dir_entry_t *entry,
@@ -1953,6 +1955,8 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 populate_custom_view(FileView *view, int reload)
 {
+	FileView *const other = (view == curr_view) ? other_view : curr_view;
+
 	if(view->custom.type == CV_TREE)
 	{
 		dir_entry_t *prev_dir_entries;
@@ -1980,19 +1984,107 @@ populate_custom_view(FileView *view, int reload)
 		return result;
 	}
 
-	if(custom_list_is_incomplete(view))
+	if(view->custom.type == CV_COMPARE && other->custom.type == CV_COMPARE)
 	{
-		/* Load initial list of custom entries if it's available. */
-		replace_dir_entries(view, &view->dir_entry, &view->list_rows,
-				view->custom.entries, view->custom.entry_count);
+		zap_compare_view(view, other);
+		if(view->list_rows == 0)
+		{
+			show_error_msg("Comparison", "No files left in the views, leaving them.");
+			cd_updir(view, 1);
+			return 0;
+		}
+
+		(void)zap_entries(other, other->dir_entry, &other->list_rows, &is_temporary,
+				NULL, 0, 1);
+		ui_view_schedule_redraw(other);
+		recount_selected_files(other);
+	}
+	else
+	{
+		if(custom_list_is_incomplete(view))
+		{
+			/* Load initial list of custom entries if it's available. */
+			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
+					view->custom.entries, view->custom.entry_count);
+		}
+
+		(void)zap_entries(view, view->dir_entry, &view->list_rows,
+				&is_dead_or_filtered, NULL, 0, 0);
 	}
 
-	(void)zap_entries(view, view->dir_entry, &view->list_rows,
-			&is_dead_or_filtered, NULL, 0, 0);
 	update_entries_data(view);
 	sort_dir_list(!reload, view);
 	fview_list_updated(view);
 	return 0;
+}
+
+/* Removes entries that refer to non-existing files from compare view marking
+ * corresponding entries of the other view as temporary.  This is a
+ * zap_entries() tailored for needs of compare, because that function is already
+ * too complex. */
+static void
+zap_compare_view(FileView *view, FileView *other)
+{
+	int i, j = 0;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+
+		if(!fentry_is_fake(entry) &&
+				!path_exists_at(entry->origin, entry->name, NODEREF))
+		{
+			const int separator = find_separator(other, i);
+			if(separator >= 0)
+			{
+				free_dir_entry(view, entry);
+				other->dir_entry[separator].temporary = 1;
+
+				if(view->list_pos == i)
+				{
+					view->list_pos = j;
+				}
+				continue;
+			}
+			replace_string(&entry->name, "");
+			entry->type = FT_UNK;
+			entry->id = other->dir_entry[i].id;
+		}
+
+		if(i != j)
+		{
+			view->dir_entry[j] = view->dir_entry[i];
+		}
+
+		++j;
+	}
+
+	view->list_rows = j;
+}
+
+/* Finds separator among the group of equivalent files of the view specified by
+ * its position.  Returns index of the separator or -1. */
+static int
+find_separator(FileView *view, int idx)
+{
+	int i;
+	const int id = view->dir_entry[idx].id;
+
+	for(i = idx; i >= 0 && view->dir_entry[i].id == id; --i)
+	{
+		if(fentry_is_fake(&view->dir_entry[i]))
+		{
+			return i;
+		}
+	}
+	for(i = idx + 1; i < view->list_rows && view->dir_entry[i].id == id; ++i)
+	{
+		if(fentry_is_fake(&view->dir_entry[i]))
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 
 /* Updates directory watcher of the view.  Returns zero on success, otherwise
