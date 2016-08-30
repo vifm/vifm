@@ -128,6 +128,7 @@ typedef enum
 	CV_VERY,    /* No initial sorting of file list is enforced. */
 	CV_TREE,    /* Files of a file system sub-tree. */
 	CV_COMPARE, /* Directory comparison pane. */
+	CV_DIFF,    /* One of two directory comparison panes. */
 }
 CVType;
 
@@ -399,6 +400,10 @@ int setup_ncurses_interface(void);
 /* Checks whether custom view of specified type is unsorted.  Returns non-zero
  * if so, otherwise zero is returned. */
 int cv_unsorted(CVType type);
+
+/* Checks whether custom view of specified type is a compare or diff view.
+ * Returns non-zero if so, otherwise zero is returned. */
+int cv_compare(CVType type);
 
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */

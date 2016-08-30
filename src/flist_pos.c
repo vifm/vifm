@@ -135,8 +135,7 @@ flist_set_pos(FileView *view, int pos)
 		fview_position_updated(view);
 
 		/* Synchronize cursor with the other pane. */
-		if(view->custom.type == CV_COMPARE && other->custom.type == CV_COMPARE &&
-				other->list_pos != pos)
+		if(view->custom.type == CV_DIFF && other->list_pos != pos)
 		{
 			flist_set_pos(other, pos);
 			redraw_view(other);

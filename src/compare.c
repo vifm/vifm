@@ -96,12 +96,12 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 
 	fill_side_by_side(curr, other, group_paths);
 
-	if(flist_custom_finish(curr_view, CV_COMPARE, 0) != 0)
+	if(flist_custom_finish(curr_view, CV_DIFF, 0) != 0)
 	{
 		show_error_msg("Comparison", "No results to display");
 		return;
 	}
-	if(flist_custom_finish(other_view, CV_COMPARE, 0) != 0)
+	if(flist_custom_finish(other_view, CV_DIFF, 0) != 0)
 	{
 		assert(0 && "The error shouldn't be happening here.");
 	}

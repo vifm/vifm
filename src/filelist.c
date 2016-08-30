@@ -976,7 +976,7 @@ change_directory(FileView *view, const char directory[])
 		{
 			enable_view_sorting(view);
 		}
-		if(view->custom.type == CV_COMPARE)
+		if(cv_compare(view->custom.type))
 		{
 			FileView *const other = (view == curr_view) ? other_view : curr_view;
 
@@ -984,7 +984,7 @@ change_directory(FileView *view, const char directory[])
 			view->custom.type = CV_REGULAR;
 
 			/* Leave compare mode in both views at the same time. */
-			if(other->custom.type == CV_COMPARE)
+			if(other->custom.type == CV_DIFF)
 			{
 				cd_updir(other, 1);
 			}
@@ -1450,7 +1450,7 @@ flist_custom_exclude(FileView *view, int selection_only)
 		return;
 	}
 
-	if(view->custom.type == CV_COMPARE)
+	if(cv_compare(view->custom.type))
 	{
 		exclude_in_compare(view, selection_only);
 		return;
@@ -1478,7 +1478,7 @@ static void
 exclude_in_compare(FileView *view, int selection_only)
 {
 	FileView *const other = (view == curr_view) ? other_view : curr_view;
-	const int double_compare = (other->custom.type == CV_COMPARE);
+	const int double_compare = (view->custom.type == CV_DIFF);
 	const int n = other->list_rows;
 	dir_entry_t *entry = NULL;
 	while(iter_selection_or_current(view, &entry))
@@ -1522,7 +1522,7 @@ mark_group(FileView *view, FileView *other, int idx)
 	for(i = idx - 1; i >= 0 && view->dir_entry[i].id == id; --i)
 	{
 		view->dir_entry[i].temporary = 1;
-		if(other->custom.type == CV_COMPARE)
+		if(view->custom.type == CV_DIFF)
 		{
 			other->dir_entry[i].temporary = 1;
 		}
@@ -1530,7 +1530,7 @@ mark_group(FileView *view, FileView *other, int idx)
 	for(i = idx; i < view->list_rows && view->dir_entry[i].id == id; ++i)
 	{
 		view->dir_entry[i].temporary = 1;
-		if(other->custom.type == CV_COMPARE)
+		if(view->custom.type == CV_DIFF)
 		{
 			other->dir_entry[i].temporary = 1;
 		}
@@ -1955,8 +1955,6 @@ populate_dir_list_internal(FileView *view, int reload)
 static int
 populate_custom_view(FileView *view, int reload)
 {
-	FileView *const other = (view == curr_view) ? other_view : curr_view;
-
 	if(view->custom.type == CV_TREE)
 	{
 		dir_entry_t *prev_dir_entries;
@@ -1984,8 +1982,10 @@ populate_custom_view(FileView *view, int reload)
 		return result;
 	}
 
-	if(view->custom.type == CV_COMPARE && other->custom.type == CV_COMPARE)
+	if(view->custom.type == CV_DIFF)
 	{
+		FileView *const other = (view == curr_view) ? other_view : curr_view;
+
 		zap_compare_view(view, other);
 		if(view->list_rows == 0)
 		{

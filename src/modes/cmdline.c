@@ -577,9 +577,9 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 	const wchar_t *wprompt;
 	complete_cmd_func complete_func;
 
-	if(cl_sub_mode == CLS_FILTER && curr_view->custom.type == CV_COMPARE)
+	if(cl_sub_mode == CLS_FILTER && curr_view->custom.type == CV_DIFF)
 	{
-		show_error_msg("Filtering", "No local filter for compare views");
+		show_error_msg("Filtering", "No local filter for diff views");
 		return;
 	}
 

@@ -1115,13 +1115,13 @@ exec_command(const char cmd[], FileView *view, CmdInputType type)
 			return execute_command(view, cmd, menu);
 
 		case CIT_FILTER_PATTERN:
-			if(view->custom.type != CV_COMPARE)
+			if(view->custom.type != CV_DIFF)
 			{
 				local_filter_apply(view, cmd);
 			}
 			else
 			{
-				show_error_msg("Filtering", "No local filter for compare views");
+				show_error_msg("Filtering", "No local filter for diff views");
 			}
 			return 0;
 

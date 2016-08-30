@@ -524,7 +524,13 @@ update_geometry(void)
 int
 cv_unsorted(CVType type)
 {
-	return type == CV_VERY || type == CV_COMPARE;
+	return type == CV_VERY || cv_compare(type);
+}
+
+int
+cv_compare(CVType type)
+{
+	return type == CV_COMPARE || type == CV_DIFF;
 }
 
 void
