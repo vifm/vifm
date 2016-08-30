@@ -1683,7 +1683,8 @@ int
 ui_view_displays_columns(const FileView *const view)
 {
 	return !view->ls_view
-	    || (flist_custom_active(view) && view->custom.type == CV_TREE);
+	    || (flist_custom_active(view) &&
+					(view->custom.type == CV_TREE || cv_compare(view->custom.type)));
 }
 
 FileType
