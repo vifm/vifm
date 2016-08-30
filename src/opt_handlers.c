@@ -1132,7 +1132,10 @@ load_sort_option(FileView *view)
 	/* The check is to skip this in tests which don't need columns. */
 	if(view->columns != NULL)
 	{
-		set_viewcolumns(view, view->view_columns);
+		if(!cv_compare(view->custom.type))
+		{
+			set_viewcolumns(view, view->view_columns);
+		}
 	}
 }
 
@@ -1150,6 +1153,13 @@ load_sort_option_inner(FileView *view, char sort_keys[])
 	char opt_val[MAX_SORT_KEY_LEN*SK_COUNT];
 	size_t opt_val_len = 0U;
 	OPT_SCOPE scope = (sort_keys == view->sort) ? OPT_LOCAL : OPT_GLOBAL;
+
+	if(sort_keys == view->custom.sort)
+	{
+		val.str_val = "";
+		set_option("sort", val, OPT_LOCAL);
+		return;
+	}
 
 	opt_val[0] = '\0';
 
@@ -2068,15 +2078,19 @@ sort_local(OPT_OP op, optval_t val)
 {
 	char *const value = strdup(val.str_val);
 
-	/* Make sure we don't sort unsorted custom view on :restart. */
-	char *const sort = curr_stats.restart_in_progress
+	/* Make sure we don't sort unsorted custom view on :restart or when it's a
+	 * compare view. */
+	char *const sort = (curr_stats.restart_in_progress ||
+	                    cv_compare(curr_view->custom.type))
 	                 ? ui_view_sort_list_get(curr_view)
 	                 : curr_view->sort;
 	set_sort(curr_view, sort, value);
 	if(curr_stats.global_local_settings)
 	{
-		/* Make sure we don't sort unsorted custom view on :restart. */
-		char *const sort = curr_stats.restart_in_progress
+		/* Make sure we don't sort unsorted custom view on :restart or when it's a
+		 * compare view. */
+		char *const sort = (curr_stats.restart_in_progress ||
+		                    cv_compare(other_view->custom.type))
 		                 ? ui_view_sort_list_get(other_view)
 		                 : other_view->sort;
 		set_sort(other_view, sort, value);

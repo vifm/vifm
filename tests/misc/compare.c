@@ -512,6 +512,20 @@ TEST(comparison_views_are_closed_when_no_files_are_left)
 	assert_success(rmdir(SANDBOX_PATH "/b"));
 }
 
+TEST(sorting_is_not_changed)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+
+	change_sort_type(&lwin, SK_BY_SIZE, 0);
+	assert_int_equal(SK_NONE, lwin.sort[0]);
+
+	init_commands();
+	assert_success(exec_commands("set sort=ext", &lwin, CIT_COMMAND));
+	assert_int_equal(SK_NONE, lwin.sort[0]);
+	reset_cmds();
+}
+
 TEST(cursor_moves_in_both_views_synchronously)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");

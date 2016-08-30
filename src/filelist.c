@@ -2986,6 +2986,11 @@ window_shows_dirlist(const FileView *const view)
 void
 change_sort_type(FileView *view, char type, char descending)
 {
+	if(cv_compare(view->custom.type))
+	{
+		return;
+	}
+
 	view->sort[0] = descending ? -type : type;
 	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
 	memcpy(&view->sort_g[0], &view->sort[0], sizeof(view->sort_g));

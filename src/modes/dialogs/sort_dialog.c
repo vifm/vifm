@@ -35,6 +35,7 @@
 #include "../../status.h"
 #include "../modes.h"
 #include "../wk.h"
+#include "msg_dialog.h"
 
 static FileView *view;
 static int top, bottom, curr, col;
@@ -183,7 +184,15 @@ void
 enter_sort_mode(FileView *active_view)
 {
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
+
+	if(cv_compare(active_view->custom.type))
+	{
+		show_error_msg("Sorting", "Sorting of comparison view can't be changed.");
+		return;
+	}
 
 	view = active_view;
 	descending = (view->sort[0] < 0);
