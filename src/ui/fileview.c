@@ -613,6 +613,7 @@ put_inactive_mark(FileView *view)
 	checked_wmove(view->win, line, column);
 
 	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
+	ui_view_win_changed(view);
 }
 
 int

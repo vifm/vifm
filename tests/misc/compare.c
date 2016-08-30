@@ -16,6 +16,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
+#include "../../src/flist_pos.h"
 #include "../../src/running.h"
 
 #include "utils.h"
@@ -509,6 +510,24 @@ TEST(comparison_views_are_closed_when_no_files_are_left)
 
 	assert_success(rmdir(SANDBOX_PATH "/a"));
 	assert_success(rmdir(SANDBOX_PATH "/b"));
+}
+
+TEST(cursor_moves_in_both_views_synchronously)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_NAME, LT_ALL, 0);
+
+	assert_int_equal(0, lwin.list_pos);
+	assert_int_equal(lwin.list_pos, rwin.list_pos);
+
+	flist_set_pos(&lwin, 2);
+	assert_int_equal(2, lwin.list_pos);
+	assert_int_equal(lwin.list_pos, rwin.list_pos);
+
+	flist_set_pos(&rwin, 3);
+	assert_int_equal(3, rwin.list_pos);
+	assert_int_equal(lwin.list_pos, rwin.list_pos);
 }
 
 static void
