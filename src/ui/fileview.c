@@ -493,21 +493,22 @@ get_view_columns(const FileView *view)
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
- * 'scrollbind' option is set. */
+ * 'scrollbind' option is set or view is in the compare mode. */
 static void
 consider_scroll_bind(FileView *view)
 {
-	if(cfg.scroll_bind)
+	if(cfg.scroll_bind || view->custom.type == CV_DIFF)
 	{
-		FileView *other = (view == &lwin) ? &rwin : &lwin;
+		FileView *const other = (view == &lwin) ? &rwin : &lwin;
+		const int bind_off = cfg.scroll_bind ? curr_stats.scroll_bind_off : 0;
 		other->top_line = view->top_line/view->column_count;
 		if(view == &lwin)
 		{
-			other->top_line += curr_stats.scroll_bind_off;
+			other->top_line += bind_off;
 		}
 		else
 		{
-			other->top_line -= curr_stats.scroll_bind_off;
+			other->top_line -= bind_off;
 		}
 		other->top_line *= other->column_count;
 		other->top_line = calculate_top_position(other, other->top_line);
