@@ -118,6 +118,7 @@ static void format_owner(int id, const void *data, size_t buf_len, char buf[]);
 static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
 static void format_nlinks(int id, const void *data, size_t buf_len, char buf[]);
 #endif
+static void format_id(int id, const void *data, size_t buf_len, char buf[]);
 static size_t calculate_column_width(FileView *view);
 static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
@@ -169,6 +170,7 @@ fview_init(void)
 	{
 		columns_add_column_desc(sort_to_func[i].key, sort_to_func[i].func);
 	}
+	columns_add_column_desc(SK_BY_ID, &format_id);
 }
 
 void
@@ -471,25 +473,40 @@ get_view_columns(const FileView *view)
 	/* Note that columns_t performs some caching, so we might want to keep one
 	 * handle per view rather than sharing one. */
 
+	static const column_info_t name_column = {
+		.column_id = SK_BY_NAME, .full_width = 0UL,    .text_width = 0UL,
+		.align = AT_LEFT,        .sizing = ST_AUTO,    .cropping = CT_ELLIPSIS,
+	};
+	static const column_info_t id_column = {
+		.column_id = SK_BY_ID,  .full_width = 7UL,     .text_width = 7UL,
+		.align = AT_LEFT,       .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS,
+	};
+
+	static columns_t *comparison_columns;
 	static columns_t *ls_columns;
 
-	if(ui_view_displays_columns(view))
+	if(!ui_view_displays_columns(view))
 	{
-		return view->columns;
+		if(ls_columns == NULL)
+		{
+			ls_columns = columns_create();
+			columns_add_column(ls_columns, name_column);
+		}
+		return ls_columns;
 	}
 
-	if(ls_columns == NULL)
+	if(cv_compare(view->custom.type))
 	{
-		column_info_t column_info = {
-			.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
-			.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
-		};
-
-		ls_columns = columns_create();
-		columns_add_column(ls_columns, column_info);
+		if(comparison_columns == NULL)
+		{
+			comparison_columns = columns_create();
+			columns_add_column(comparison_columns, name_column);
+			columns_add_column(comparison_columns, id_column);
+		}
+		return comparison_columns;
 	}
 
-	return ls_columns;
+	return view->columns;
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
@@ -1426,6 +1443,15 @@ format_nlinks(int id, const void *data, size_t buf_len, char buf[])
 }
 
 #endif
+
+/* File identifier on comparisons format callback for column_view unit. */
+static void
+format_id(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+	snprintf(buf, buf_len, "#%d", entry->id);
+}
 
 void
 fview_set_lsview(FileView *view, int enabled)

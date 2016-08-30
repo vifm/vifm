@@ -108,7 +108,10 @@ enum
 	SK_COUNT = SK_LAST,
 
 	/* Special value to use for unset options. */
-	SK_NONE = SK_LAST + 1
+	SK_NONE = SK_LAST + 1,
+
+	/* Id ordering.  Defined here to do not add it to sorting keys. */
+	SK_BY_ID = SK_NONE + 1
 };
 
 /* Type of file numbering. */
