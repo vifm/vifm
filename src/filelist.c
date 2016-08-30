@@ -799,6 +799,8 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 int
 change_directory(FileView *view, const char directory[])
 {
+	/* TODO: refactor this big function change_directory(). */
+
 	char dir_dup[PATH_MAX];
 	const int was_in_custom_view = flist_custom_active(view);
 	int location_changed;
@@ -1612,13 +1614,10 @@ flist_custom_clone(FileView *to, const FileView *from)
 			dst[j].origin = strdup(dst[j].origin);
 		}
 
-		/* If destination pane won't be a tree, erase tree-specific data, because
+		/* As destination pane won't be a tree, erase tree-specific data, because
 		 * some tree-specific code is driven directly by these fields. */
-		if(to->custom.type != CV_TREE)
-		{
-			dst[j].child_count = 0;
-			dst[j].child_pos = 0;
-		}
+		dst[j].child_count = 0;
+		dst[j].child_pos = 0;
 
 		++j;
 	}
