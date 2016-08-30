@@ -14,11 +14,11 @@ set cpo-=C
 
 " General commands
 syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
-		\ chmod chown clone co[py] d[elete] delbmarks delm[arks] di[splay] dirs
-		\ e[dit] el[se] empty en[dif] exi[t] file filter fin[d] fini[sh] gr[ep]
-		\ h[elp] his[tory] jobs locate ls lstrash marks mes[sages] mkdir m[ove]
-		\ noh[lsearch] on[ly] popd pushd pu[t] pw[d] q[uit] redr[aw] reg[isters]
-		\ rename restart restore rlink screen sh[ell] sor[t] sp[lit]
+		\ chmod chown clone compare co[py] cq[uit] d[elete] delbmarks delm[arks]
+		\ di[splay] dirs e[dit] el[se] empty en[dif] exi[t] file filter fin[d]
+		\ fini[sh] gr[ep] h[elp] his[tory] jobs locate ls lstrash marks mes[sages]
+		\ mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t] pw[d] q[uit] redr[aw]
+		\ reg[isters] rename restart restore rlink screen sh[ell] sor[t] sp[lit]
 		\ s[ubstitute] touch tr trashes tree sync undol[ist] ve[rsion] vie[w]
 		\ vifm vs[plit] winc[md] w[rite] wq x[it] y[ank] nextgroup=vifmArgs
 

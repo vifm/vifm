@@ -10,6 +10,9 @@
 	Added "tree" parameter to :sync! that enables synchronization of tree
 	view.  Thanks to filterfalse.
 
+	Added :compare command to perform comparison in one or two directory
+	trees.  Thanks to anonymous on SourceForge discussion forum and aleksejrs.
+
 	Added CmpMismatch highlight group for highlighting mismatched files on
 	side-by-side comparison.
 

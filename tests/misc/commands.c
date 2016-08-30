@@ -674,6 +674,23 @@ TEST(touch)
 	assert_success(remove(SANDBOX_PATH "/file"));
 }
 
+TEST(compare)
+{
+	opt_handlers_setup();
+
+	create_file(SANDBOX_PATH "/file");
+
+	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
+	(void)exec_commands("compare byname bysize bycontents listall listdups "
+			"listunique ofboth ofone groupids grouppaths", &lwin, CIT_COMMAND);
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+
+	assert_success(remove(SANDBOX_PATH "/file"));
+
+	opt_handlers_teardown();
+}
+
 static void
 check_filetype(void)
 {

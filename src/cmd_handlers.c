@@ -84,6 +84,7 @@
 #include "bracket_notation.h"
 #include "cmd_completion.h"
 #include "cmd_core.h"
+#include "compare.h"
 #include "dir_stack.h"
 #include "filelist.h"
 #include "fileops.h"
@@ -133,6 +134,9 @@ static int cquit_cmd(const cmd_info_t *cmd_info);
 static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
+static int compare_cmd(const cmd_info_t *cmd_info);
+static int parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
+		ListType *lt, int *single_pane, int *group_ids);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
@@ -377,6 +381,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display/define :commands",
 	  .flags = HAS_EMARK,
 	  .handler = &command_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "compare",           .abbr = NULL,    .id = COM_COMPARE,
+	  .descr = "compares directories in two panes",
+	  .flags = HAS_COMMENT,
+	  .handler = &compare_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "copy",              .abbr = "co",    .id = COM_COPY,
 	  .descr = "copy files",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_BG_FLAG | HAS_QUOTED_ARGS | HAS_COMMENT
@@ -1746,6 +1754,62 @@ make_bmark_path(const char path[])
 			is_root_dir(curr_view->curr_dir) ? "" : "/", expanded);
 	free(expanded);
 	return ret;
+}
+
+/* Compares files in one or two panes to produce their diff or lists of
+ * duplicates or unique files. */
+static int
+compare_cmd(const cmd_info_t *cmd_info)
+{
+	CompareType ct = CT_CONTENTS;
+	ListType lt = LT_ALL;
+	int single_pane = 0, group_ids = 0;
+	if(parse_compare_properties(cmd_info, &ct, &lt, &single_pane,
+				&group_ids) != 0)
+	{
+		return 1;
+	}
+
+	if(single_pane)
+	{
+		compare_one_pane(curr_view, ct, lt);
+	}
+	else
+	{
+		compare_two_panes(ct, lt, !group_ids);
+	}
+	return 0;
+}
+
+/* Parses comparison properties.  Default values for arguments should be set
+ * before the call.  Returns zero on success, otherwise non-zero is returned and
+ * error message is displayed on the status bar. */
+static int
+parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
+		ListType *lt, int *single_pane, int *group_ids)
+{
+	int i;
+	for(i = 0; i < cmd_info->argc; ++i)
+	{
+		const char *const property = cmd_info->argv[i];
+		if     (strcmp(property, "byname") == 0)     *ct = CT_NAME;
+		else if(strcmp(property, "bysize") == 0)     *ct = CT_SIZE;
+		else if(strcmp(property, "bycontents") == 0) *ct = CT_CONTENTS;
+		else if(strcmp(property, "listall") == 0)    *lt = LT_ALL;
+		else if(strcmp(property, "listunique") == 0) *lt = LT_UNIQUE;
+		else if(strcmp(property, "listdups") == 0)   *lt = LT_DUPS;
+		else if(strcmp(property, "ofboth") == 0)     *single_pane = 0;
+		else if(strcmp(property, "ofone") == 0)      *single_pane = 1;
+		else if(strcmp(property, "groupids") == 0)   *group_ids = 1;
+		else if(strcmp(property, "grouppaths") == 0) *group_ids = 0;
+		else
+		{
+			status_bar_errorf("Unknown comparison property: %s", property);
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 static int

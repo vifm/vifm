@@ -547,6 +547,12 @@ TEST(select_is_completed)
 			L"unselect !cat $RRRRRARE_VARIABLE1");
 }
 
+TEST(compare_is_completed)
+{
+	ASSERT_COMPLETION(L"compare by", L"compare bycontents");
+	ASSERT_COMPLETION(L"compare bysize list", L"compare bysize listall");
+}
+
 TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but the rest of the code is fine. */

@@ -72,6 +72,7 @@
 
 static int earg_num(int argc, const char cmdline[]);
 static int cmd_ends_with_space(const char cmdline[]);
+static void complete_compare(const char str[]);
 static void complete_selective_sync(const char str[]);
 static void complete_wincmd(const char str[]);
 static void complete_help(const char *str);
@@ -240,6 +241,10 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		bmarks_complete(argc, argv, arg);
 	}
+	else if(id == COM_COMPARE)
+	{
+		complete_compare(arg);
+	}
 	else if(id == COM_SYNC && cmd_info->emark)
 	{
 		complete_selective_sync(arg);
@@ -387,6 +392,29 @@ cmd_ends_with_space(const char cmdline[])
 		++cmdline;
 	}
 	return (cmdline[0] == ' ');
+}
+
+/* Completes properties for directory comparison. */
+static void
+complete_compare(const char str[])
+{
+	static const char *lines[][2] = {
+		{ "byname",     "compare by file name" },
+		{ "bysize",     "compare by file size" },
+		{ "bycontents", "compare by file size and hash" },
+
+		{ "ofboth",     "use files of two views" },
+		{ "ofone",      "use files of two current view only" },
+
+		{ "listall",    "list all files" },
+		{ "listunique", "list only unique files" },
+		{ "listdups",   "list only duplicated files" },
+
+		{ "groupids",   "group files in two panes by ids" },
+		{ "grouppaths", "group files in two panes by paths" },
+	};
+
+	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);
 }
 
 /* Completes properties for selective synchronization. */

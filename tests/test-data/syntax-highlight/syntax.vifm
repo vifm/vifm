@@ -347,6 +347,11 @@ dun
 dunm
 dunma
 dunmap
+cq
+cqu
+cqui
+cquit
+compare
 
 " "hi" should be highlighted as :command and CurrLine/CmpMismatch as highlight
 " groups
