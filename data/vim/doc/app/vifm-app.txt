@@ -1616,6 +1616,7 @@ Available group-name values:
  - Device - color of block and character devices
  - Executable - color of executable files
  - Fifo - color of fifo pipes
+ - CmpMismatch - color of mismatched files in side-by-side comparison by paths
 
 Available colors:
  - -1 or default or none - transparent

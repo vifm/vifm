@@ -10,6 +10,9 @@
 	Added "tree" parameter to :sync! that enables synchronization of tree
 	view.  Thanks to filterfalse.
 
+	Added CmpMismatch highlight group for highlighting mismatched files on
+	side-by-side comparison.
+
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 

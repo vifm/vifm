@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: July 25, 2016
+" Last Change: August 30, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -70,7 +70,7 @@ syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
 syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
-		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg
+		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg CmpMismatch
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
@@ -169,7 +169,7 @@ syntax region vifmStatementC start='\(\s\|:\)*'
 		\,vifmCdCommandSt,vifmSet,vifmArgument,vifmSoCommand,vifmSoCommandSt
 		\,vifmInvertCommand,vifmInvertCommandSt,vifmPrefixCommands
 		\,vifmAutocmdCommand,vifmAutoEvent,vifmSelectCommands
-syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]'
+syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]\>'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment,vifmInlineComment,vifmNotComment
 syntax region vifmCmdCommandName contained start='!\?\s\+[a-zA-Z]\+' end='\ze\s'

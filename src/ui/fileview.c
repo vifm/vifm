@@ -1080,6 +1080,7 @@ static int
 prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 		int line_color, int current)
 {
+	FileView *const other = (view == &lwin) ? &rwin : &lwin;
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
 
@@ -1088,6 +1089,14 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 	if(primary || current)
 	{
 		mix_in_file_hi(view, entry, line_color, &col);
+	}
+
+	/* If two files on the same line in side-by-side comparison have different
+	 * ids, that's a mismatch. */
+	if(view->custom.type == CV_DIFF &&
+			other->dir_entry[entry_to_pos(view, entry)].id != entry->id)
+	{
+		cs_mix_colors(&col, &cs->color[MISMATCH_COLOR]);
 	}
 
 	if(entry->selected)

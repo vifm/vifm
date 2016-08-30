@@ -348,6 +348,11 @@ dunm
 dunma
 dunmap
 
+" "hi" should be highlighted as :command and CurrLine/CmpMismatch as highlight
+" groups
+hi CurrLine
+hi CmpMismatch
+
 " TODO
 
 " ":echo" should be highlighted as :commands
