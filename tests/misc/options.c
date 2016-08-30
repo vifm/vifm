@@ -102,7 +102,8 @@ TEST(recovering_from_wrong_viewcolumns_value_works)
 {
 	/* Prepare state required for the test and ensure that it's correct (default
 	 * columns). */
-	assert_success(exec_commands("set viewcolumns={name}", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("set viewcolumns={name}", curr_view,
+				CIT_COMMAND));
 	assert_success(exec_commands("set viewcolumns=", curr_view, CIT_COMMAND));
 	ncols = 0;
 	columns_format_line(curr_view->columns, NULL, 100);
