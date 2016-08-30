@@ -6,7 +6,12 @@
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() */
 
+#include "../../src/engine/mode.h"
+#include "../../src/modes/cmdline.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/filter.h"
+#include "../../src/cmd_core.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/running.h"
@@ -426,6 +431,19 @@ TEST(exclude_works_with_entries_or_their_groups)
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-2"));
 	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
 	assert_success(remove(SANDBOX_PATH "/same-name-same-content-2"));
+}
+
+TEST(local_filter_is_not_set)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_NAME, LT_ALL, 0);
+
+	exec_command("f", &lwin, CIT_FILTER_PATTERN);
+	assert_true(filter_is_empty(&lwin.local_filter.filter));
+
+	enter_cmdline_mode(CLS_FILTER, lwin.local_filter.filter.raw, NULL);
+	assert_true(vle_mode_is(NORMAL_MODE));
 }
 
 static void
