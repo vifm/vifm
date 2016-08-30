@@ -966,9 +966,25 @@ change_directory(FileView *view, const char directory[])
 	}
 
 	/* Perform additional actions on leaving custom view. */
-	if(was_in_custom_view && ui_view_unsorted(view))
+	if(was_in_custom_view)
 	{
-		enable_view_sorting(view);
+		if(ui_view_unsorted(view))
+		{
+			enable_view_sorting(view);
+		}
+		if(view->custom.type == CV_COMPARE)
+		{
+			FileView *const other = (view == curr_view) ? other_view : curr_view;
+
+			/* Indicate that this is not a compare view anymore. */
+			view->custom.type = CV_REGULAR;
+
+			/* Leave compare mode in both views at the same time. */
+			if(other->custom.type == CV_COMPARE)
+			{
+				cd_updir(other, 1);
+			}
+		}
 	}
 
 	if(location_changed || was_in_custom_view)
@@ -1522,8 +1538,8 @@ mark_group(FileView *view, FileView *other, int idx)
 static int
 exclude_temporary_entries(FileView *view)
 {
-	int n = zap_entries(view, view->dir_entry, &view->list_rows, &is_temporary,
-			NULL, 0, 1);
+	const int n = zap_entries(view, view->dir_entry, &view->list_rows,
+			&is_temporary, NULL, 0, 1);
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
 			&is_temporary, NULL, 1, 1);
 

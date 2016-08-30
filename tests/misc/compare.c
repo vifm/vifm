@@ -9,6 +9,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
+#include "../../src/running.h"
 
 #include "utils.h"
 
@@ -362,6 +363,20 @@ TEST(relatively_complex_match)
 	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
 }
 
+TEST(two_panes_are_left_in_sync)
+{
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
+
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	assert_true(flist_custom_active(&lwin));
+	assert_true(flist_custom_active(&rwin));
+
+	cd_updir(&lwin, 1);
+	assert_false(flist_custom_active(&lwin));
+	assert_false(flist_custom_active(&rwin));
+}
+
 TEST(exclude_works_with_entries_or_their_groups)
 {
 	copy_file(TEST_DATA_PATH "/compare/a/same-content-different-name-1",
@@ -395,6 +410,17 @@ TEST(exclude_works_with_entries_or_their_groups)
 	lwin.dir_entry[2].selected = 1;
 	flist_custom_exclude(&lwin, 0);
 	basic_panes_check(2);
+
+	/* Exclusion of all files leaves the mode. */
+	lwin.selected_files = 1;
+	lwin.dir_entry[0].selected = 1;
+	flist_custom_exclude(&lwin, 0);
+	basic_panes_check(1);
+	rwin.selected_files = 1;
+	rwin.dir_entry[0].selected = 1;
+	flist_custom_exclude(&rwin, 0);
+	assert_false(flist_custom_active(&lwin));
+	assert_false(flist_custom_active(&rwin));
 
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-1"));
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-2"));
