@@ -122,7 +122,7 @@ init_attr_dialog_mode(void)
 void
 enter_attr_mode(FileView *active_view)
 {
-	mode_t fmode;
+	mode_t fmode = 0;
 	mode_t diff;
 	uid_t uid = geteuid();
 	dir_entry_t *entry;
