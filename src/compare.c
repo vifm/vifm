@@ -51,12 +51,12 @@ typedef struct
 }
 entries_t;
 
-static int id_sorter(const void *first, const void *second);
 static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(FileView *view, const dir_entry_t *entry,
 		void *arg);
 static void fill_side_by_side(entries_t curr, entries_t other, int group_paths);
+static int id_sorter(const void *first, const void *second);
 static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
 		CompareType ct, int dups_only);
@@ -134,16 +134,6 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 	ui_view_schedule_redraw(curr_view);
 	ui_view_schedule_redraw(other_view);
 	return 0;
-}
-
-/* qsort() comparer that stable sorts entries in ascending order.  Returns
- * standard -1, 0, 1 for comparisons. */
-static int
-id_sorter(const void *first, const void *second)
-{
-	const dir_entry_t *a = first;
-	const dir_entry_t *b = second;
-	return a->id == b->id ? a->tag - b->tag : a->id - b->id;
 }
 
 /* Composes two views containing only files that are unique to each of them.
@@ -354,6 +344,8 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 		return 1;
 	}
 
+	qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
+
 	flist_custom_start(view, title);
 
 	dup_id = -1;
@@ -401,6 +393,16 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 	view->list_pos = 0;
 	ui_view_schedule_redraw(view);
 	return 0;
+}
+
+/* qsort() comparer that stable sorts entries in ascending order.  Returns
+ * standard -1, 0, 1 for comparisons. */
+static int
+id_sorter(const void *first, const void *second)
+{
+	const dir_entry_t *a = first;
+	const dir_entry_t *b = second;
+	return a->id == b->id ? a->tag - b->tag : a->id - b->id;
 }
 
 /* Either puts the entry into the view or frees it (depends on the take
