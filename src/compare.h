@@ -40,11 +40,13 @@ typedef enum
 ListType;
 
 /* Composes two panes containing information about derived from two file system
- * trees.  If group_paths is zero, views are sorted by ids. */
-void compare_two_panes(CompareType ct, ListType lt, int group_paths);
+ * trees.  If group_paths is zero, views are sorted by ids.  Returns non-zero if
+ * status bar message should be preserved. */
+int compare_two_panes(CompareType ct, ListType lt, int group_paths);
 
-/* Replaces single pane with information derived from its files. */
-void compare_one_pane(FileView *view, CompareType ct, ListType lt);
+/* Replaces single pane with information derived from its files.  Returns
+ * non-zero if status bar message should be preserved. */
+int compare_one_pane(FileView *view, CompareType ct, ListType lt);
 
 #endif /* VIFM__DIFF_H__ */
 

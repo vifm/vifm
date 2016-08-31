@@ -27,6 +27,7 @@
 #include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "ui/cancellation.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
@@ -63,18 +64,32 @@ static void list_files_recursively(const char path[], strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
 
-void
+int
 compare_two_panes(CompareType ct, ListType lt, int group_paths)
 {
 	int next_id = 1;
+	entries_t curr, other;
+
 	trie_t *const trie = trie_create();
-	entries_t curr = make_diff_list(trie, curr_view, &next_id, ct, 0);
-	entries_t other = make_diff_list(trie, other_view, &next_id, ct,
-			lt == LT_DUPS);
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
+	curr = make_diff_list(trie, curr_view, &next_id, ct, 0);
+	other = make_diff_list(trie, other_view, &next_id, ct, lt == LT_DUPS);
+
+	ui_cancellation_disable();
 	trie_free(trie);
 
 	/* Clear progress message displayed by make_diff_list(). */
 	ui_sb_quick_msg_clear();
+
+	if(ui_cancellation_requested())
+	{
+		free_dir_entries(curr_view, &curr.entries, &curr.nentries);
+		free_dir_entries(other_view, &other.entries, &other.nentries);
+		status_bar_message("Comparison has been cancelled");
+		return 1;
+	}
 
 	if(!group_paths || lt != LT_ALL)
 	{
@@ -87,7 +102,7 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 	if(lt == LT_UNIQUE)
 	{
 		make_unique_lists(curr, other);
-		return;
+		return 0;
 	}
 
 	if(lt == LT_DUPS)
@@ -103,7 +118,7 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 	if(flist_custom_finish(curr_view, CV_DIFF, 0) != 0)
 	{
 		show_error_msg("Comparison", "No results to display");
-		return;
+		return 0;
 	}
 	if(flist_custom_finish(other_view, CV_DIFF, 0) != 0)
 	{
@@ -118,6 +133,7 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 
 	ui_view_schedule_redraw(curr_view);
 	ui_view_schedule_redraw(other_view);
+	return 0;
 }
 
 /* qsort() comparer that stable sorts entries in ascending order.  Returns
@@ -309,7 +325,7 @@ fill_side_by_side(entries_t curr, entries_t other, int group_paths)
 	dynarray_free(other.entries);
 }
 
-void
+int
 compare_one_pane(FileView *view, CompareType ct, ListType lt)
 {
 	int i, dup_id;
@@ -317,12 +333,26 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 	                        : (lt == LT_DUPS) ? "dups" : "nondups";
 
 	int next_id = 1;
+	entries_t curr;
+
 	trie_t *trie = trie_create();
-	entries_t curr = make_diff_list(trie, view, &next_id, ct, 0);
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
+	curr = make_diff_list(trie, view, &next_id, ct, 0);
+
+	ui_cancellation_disable();
 	trie_free(trie);
 
 	/* Clear progress message displayed by make_diff_list(). */
 	ui_sb_quick_msg_clear();
+
+	if(ui_cancellation_requested())
+	{
+		free_dir_entries(view, &curr.entries, &curr.nentries);
+		status_bar_message("Comparison has been cancelled");
+		return 1;
+	}
 
 	flist_custom_start(view, title);
 
@@ -366,11 +396,12 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 				0) != 0)
 	{
 		show_error_msg("Comparison", "No results to display");
-		return;
+		return 0;
 	}
 
 	view->list_pos = 0;
 	ui_view_schedule_redraw(view);
+	return 0;
 }
 
 /* Either puts the entry into the view or frees it (depends on the take
@@ -404,7 +435,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	list_files_recursively(flist_get_dir(view), &files);
 
 	show_progress("Querying...", 0);
-	for(i = 0; i < files.nitems; ++i)
+	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
 	{
 		char progress_msg[128];
 		int progress;
@@ -471,7 +502,7 @@ list_files_recursively(const char path[], strlist_t *list)
 	}
 
 	/* Visit all subdirectories ignoring symbolic links to directories. */
-	for(i = 0; i < len; ++i)
+	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
 		char *const full_path = format_str("%s/%s", path, lst[i]);
 		if(is_dir(full_path))

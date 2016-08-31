@@ -136,7 +136,6 @@ static int correct_pos(FileView *view, int pos, int dist, int closest);
 static int rescue_from_empty_filelist(FileView *view);
 static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
-static void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int tree_has_changed(const dir_entry_t *entries, size_t nchildren);
 static int file_can_be_displayed(const char directory[], const char filename[]);
@@ -2728,9 +2727,7 @@ replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
 	*count = with_count;
 }
 
-/* Frees list of directory entries related to the view.  Sets *entries and
- * *count to safe values. */
-static void
+void
 free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
 {
 	int i;

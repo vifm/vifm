@@ -1770,25 +1770,9 @@ compare_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	if(single_pane)
-	{
-		compare_one_pane(curr_view, ct, lt);
-	}
-	else
-	{
-		compare_two_panes(ct, lt, !group_ids);
-	}
-
-	if(curr_stats.save_msg || is_status_bar_multiline())
-	{
-		status_bar_message(NULL);
-	}
-	else
-	{
-		ui_sb_quick_msgf("%s", "");
-	}
-
-	return 0;
+	return single_pane
+	     ? (compare_one_pane(curr_view, ct, lt) != 0)
+	     : (compare_two_panes(ct, lt, !group_ids) != 0);
 }
 
 /* Parses comparison properties.  Default values for arguments should be set

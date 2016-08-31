@@ -280,6 +280,9 @@ dir_entry_t * add_dir_entry(dir_entry_t **list, size_t *list_size,
  * entry or NULL on error. */
 dir_entry_t * entry_list_add(FileView *view, dir_entry_t **list, int *list_size,
 		const char path[]);
+/* Frees list of directory entries related to the view.  Sets *entries and
+ * *count to safe values. */
+void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 /* Frees single directory entry. */
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
