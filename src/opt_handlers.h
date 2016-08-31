@@ -41,8 +41,6 @@ enum
 	VIFMINFO_FHISTORY  = 1 << 15,
 };
 
-const char * cursorline_enum[3];
-
 void init_option_handlers(void);
 
 /* Resets local options so that they use values of global options. */
