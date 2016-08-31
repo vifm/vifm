@@ -74,7 +74,7 @@ suites += bmarks env escape fileops filetype filter misc undo utils
 vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/
 vifm_src += modes/ ui/ utils/
 vifm_src := $(wildcard $(addprefix ../src/, $(addsuffix *.c, $(vifm_src))))
-vifm_src := $(filter-out %/tags.c, $(vifm_src))
+vifm_src := $(filter-out %/tags.c %/xxhash.c, $(vifm_src))
 
 # filter out generally non-testable or sources for another platform
 vifm_src := $(filter-out %/vifm.c %/win_helper.c, $(vifm_src))

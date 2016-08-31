@@ -505,7 +505,7 @@ vifm_restart(void)
 	reset_undo_list();
 
 	/* Directory stack. */
-	clean_stack();
+	dir_stack_clear();
 
 	/* Registers. */
 	regs_reset();

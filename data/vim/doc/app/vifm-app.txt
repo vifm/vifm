@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 24
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -23,6 +23,7 @@
 |vifm-configure|          Configuration of vifm.
 |vifm-menus-and-dialogs|  Keys and commands for menus and dialogs.
 |vifm-custom-views|       Differences between regular and custom views.
+|vifm-compare-views|      Kinds, properties and differences of compare views.
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            Some details about ls-like view.
 |vifm-column-view|        Column view configuration details.
@@ -348,6 +349,8 @@ zr - remove local filter.                      *vifm-zr*
 zd                                             *vifm-zd*
     exclude selection or current file from a custom view.  Does nothing for
     regular view.  For tree view excluding directory excludes that sub-tree.
+    For compare views zd hides group of adjacent identical files, count can
+    be specified as 1 to exclude just single file or selected items instead.
     Files excluded this way are not counted as filtered out and can't be
     returned unless view is reloaded.
 
@@ -1303,6 +1306,14 @@ The builtin commands are:
 <    equals >
       :%copy
 <
+                                               *vifm-:compare*
+:compare [byname | bysize | bycontents | listall | listunique | listdups |
+          ofboth | ofone | groupids | grouppaths]...
+    compare files in one or two views according the arguments.  The default
+    is "bycontents listall ofboth grouppaths".  See |vifm-compare-views| for
+    details.  Tree structure is incompatible with ls-like view, so value of
+    |vifm-'lsview'| option is ignored.
+
                                                *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &]
     copy files to directory of other view.  With "?" prompts for destination
@@ -1614,6 +1625,7 @@ Available group-name values:
  - Device - color of block and character devices
  - Executable - color of executable files
  - Fifo - color of fifo pipes
+ - CmpMismatch - color of mismatched files in side-by-side comparison by paths
 
 Available colors:
  - -1 or default or none - transparent
@@ -2127,7 +2139,7 @@ yet supported) and might be changed in future releases, or get an alias.
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
     structure corresponds to what one would see on visiting the directories
-    manually.  Tree structure is incompatible with ls-like view, so value
+    manually.  Tree structure is incompatible with ls-like view, so value of
     |vifm-'lsview'| option is ignored.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
@@ -4180,6 +4192,110 @@ On the other hand, operations that use files of a custom view as a source
 that modify names are all allowed.
 
 --------------------------------------------------------------------------------
+*vifm-compare-views*
+
+Kinds~
+
+|vifm-:compare| can produce four different results depending on arguments:
+ - single compare view (ofone and either listall or listdups);
+ - single custom view (ofone and listunique);
+ - two compare views (ofboth and either listall or listdups);
+ - two custom views (ofboth and listunique).
+
+The first two display files of one file system tree.  Here duplicates are
+files that have at least one copy in the same tree.  The other two kinds of
+operation compare two trees, in which duplicates are files that are found in
+both trees.
+
+Lists of unique files are presented in custom views because there is no file
+grouping to preserve as all file ids are guaranteed to be distinct.
+
+Creation~
+
+Arguments passed to |vifm-:compare| form four categories each with its own
+prefix and is responsible for particular property of operation.
+
+Which files to compare:
+ - ofboth - compares files of two panes against each other;
+ - ofone  - compares files of the same directory.
+
+How files are compared:
+ - byname     - by their name only;
+ - bysize     - only by their size;
+ - bycontents - by combination of size and hash of file contents.
+
+Which files to display:
+ - listall    - all files;
+ - listunique - unique files only;
+ - listdups   - only duplicated files.
+
+How results are grouped (has no effect if "ofone" specified):
+ - groupids   - files considered identical are always adjacent in output;
+ - grouppaths - file system ordering is preferred (this also enables
+                displaying identically named files as mismatches).
+
+Note that file contents is not compared directly for performance reasons and
+even though a fast hashing function is used (as opposed to cryptographically
+secure one) the probability of hashing two different files to the same value
+is extremely low.  This might change in the future.
+
+Each argument can appear multiple times, the rightmost one of the group is
+considered.  Arguments alter default behaviour instead of substituting it.
+
+Examples~
+
+The defaults corresponds to probably the most common use case of comparing
+files in two trees with grouping by paths, so the following are equivalent: >
+
+ :compare
+ :compare bycontents grouppaths
+ :compare bycontents listall ofboth grouppaths
+
+Another use case is to find duplicates in the current sub-tree: >
+
+ :compare listdups ofone
+
+The following command lists files that are unique to each pane: >
+
+ :compare listunique
+
+Look~
+
+The view can't switch to ls-like view as it's unable to display diff-like
+data.
+
+Comparison views have second column displaying id of the file, files with same
+id are considered to be equal.  The view columns configuration is predefined.
+
+Behaviour~
+
+When two views are being compared against each other the following changes to
+the regular behaviour apply:
+ - views are scrolled synchronously (as if |vifm-'scrollbind'| was set);
+ - views' cursors are synchronized;
+ - local filtering is disabled (its results wouldn't be meaningful);
+ - |vifm-zd| excludes groups of adjacent identical files, 1zd gives usual
+   behaviour;
+ - sorting is permanently disabled (ordering is fixed);
+ - removed files hide their counter pairs;
+ - exiting one of the views terminates the other immediately;
+ - renaming files isn't blocked, but isn't taken into account and might
+   require regeneration of comparison;
+ - entries which indicate absence of equivalent file have empty names and can
+   be matched as such;
+ - when unique files of both views are listed custom views can be empty, this
+   absence of unique files is stated clearly.
+
+One compare view has similar properties (those that are applicable for single
+pane).
+
+Files are gathered in this way:
+ - recursively starting at current location of the view;
+ - no files are excluded;
+ - directories are not taken into account;
+ - symbolic links to directories are ignored.
+
+--------------------------------------------------------------------------------
 *vifm-startup*
 
 On startup vifm determines several variables that are used during the session.
@@ -4359,7 +4475,7 @@ In this mode file manipulation commands (e.g. |vifm-d|) don't work line-wise lik
 they do in Vim, since such operations would be uncommon for file manipulating
 tasks.  Thus, for example, |vifm-dd| will remove only current file.
 
-Note that tree-view inhibits ls-like view.
+Note that tree-view and compare view inhibit ls-like view.
 
 --------------------------------------------------------------------------------
 *vifm-column-view*

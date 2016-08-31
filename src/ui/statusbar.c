@@ -94,6 +94,19 @@ ui_sb_quick_msgf(const char format[], ...)
 }
 
 void
+ui_sb_quick_msg_clear(void)
+{
+	if(curr_stats.save_msg || is_status_bar_multiline())
+	{
+		status_bar_message(NULL);
+	}
+	else
+	{
+		ui_sb_quick_msgf("%s", "");
+	}
+}
+
+void
 status_bar_message(const char message[])
 {
 	status_bar_message_i(message, 0);

@@ -524,7 +524,13 @@ update_geometry(void)
 int
 cv_unsorted(CVType type)
 {
-	return type == CV_VERY;
+	return type == CV_VERY || cv_compare(type);
+}
+
+int
+cv_compare(CVType type)
+{
+	return type == CV_COMPARE || type == CV_DIFF;
 }
 
 void
@@ -876,7 +882,7 @@ show_progress(const char msg[], int period)
 	++total;
 
 	/* Skip intermediate updates to do not hammer UI with refreshes. */
-	if(period != 1 && count%abs(period) != 1)
+	if(abs(period) != 1 && count%abs(period) != 1)
 	{
 		return;
 	}
@@ -1677,7 +1683,8 @@ int
 ui_view_displays_columns(const FileView *const view)
 {
 	return !view->ls_view
-	    || (flist_custom_active(view) && view->custom.type == CV_TREE);
+	    || (flist_custom_active(view) &&
+					(view->custom.type == CV_TREE || cv_compare(view->custom.type)));
 }
 
 FileType

@@ -351,7 +351,7 @@ vim_run_choose_cmd(const FileView *view)
 		return 0;
 	}
 
-	if(!view->dir_entry[view->list_pos].selected)
+	if(!get_current_entry(view)->selected)
 	{
 		erase_selection(curr_view);
 	}

@@ -1,0 +1,596 @@
+/* vifm
+ * Copyright (C) 2016 xaizek.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+#include "compare.h"
+
+#include <assert.h> /* assert() */
+#include <stddef.h> /* size_t */
+#include <stdint.h> /* INTPTR_MAX INT64_MAX */
+#include <stdio.h> /* FILE fclose() fopen() fread() */
+#include <stdlib.h> /* free() qsort() */
+
+#include "compat/os.h"
+#include "compat/reallocarray.h"
+#include "modes/dialogs/msg_dialog.h"
+#include "ui/cancellation.h"
+#include "ui/statusbar.h"
+#include "ui/ui.h"
+#include "utils/dynarray.h"
+#include "utils/fs.h"
+#include "utils/macros.h"
+#include "utils/path.h"
+#include "utils/str.h"
+#include "utils/string_array.h"
+#include "utils/trie.h"
+#include "filelist.h"
+
+/* This is the only unit that uses xxhash, so import it directly here. */
+#define XXH_PRIVATE_API
+#include "utils/xxhash.h"
+
+/* List of entries bundled with its size. */
+typedef struct
+{
+	dir_entry_t *entries; /* List of entries. */
+	int nentries;         /* Number entries in the list. */
+}
+entries_t;
+
+static int id_sorter(const void *first, const void *second);
+static void make_unique_lists(entries_t curr, entries_t other);
+static void leave_only_dups(entries_t *curr, entries_t *other);
+static int is_not_duplicate(FileView *view, const dir_entry_t *entry,
+		void *arg);
+static void fill_side_by_side(entries_t curr, entries_t other, int group_paths);
+static void put_or_free(FileView *view, dir_entry_t *entry, int take);
+static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
+		CompareType ct, int dups_only);
+static void list_files_recursively(const char path[], strlist_t *list);
+static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
+		CompareType ct);
+
+int
+compare_two_panes(CompareType ct, ListType lt, int group_paths)
+{
+	int next_id = 1;
+	entries_t curr, other;
+
+	trie_t *const trie = trie_create();
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
+	curr = make_diff_list(trie, curr_view, &next_id, ct, 0);
+	other = make_diff_list(trie, other_view, &next_id, ct, lt == LT_DUPS);
+
+	ui_cancellation_disable();
+	trie_free(trie);
+
+	/* Clear progress message displayed by make_diff_list(). */
+	ui_sb_quick_msg_clear();
+
+	if(ui_cancellation_requested())
+	{
+		free_dir_entries(curr_view, &curr.entries, &curr.nentries);
+		free_dir_entries(other_view, &other.entries, &other.nentries);
+		status_bar_message("Comparison has been cancelled");
+		return 1;
+	}
+
+	if(!group_paths || lt != LT_ALL)
+	{
+		/* Sort both lists according to unique file numbers to group identical files
+		 * (sorting is stable, tags are set in make_diff_list()). */
+		qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
+		qsort(other.entries, other.nentries, sizeof(*other.entries), &id_sorter);
+	}
+
+	if(lt == LT_UNIQUE)
+	{
+		make_unique_lists(curr, other);
+		return 0;
+	}
+
+	if(lt == LT_DUPS)
+	{
+		leave_only_dups(&curr, &other);
+	}
+
+	flist_custom_start(curr_view, lt == LT_ALL ? "diff" : "dups diff");
+	flist_custom_start(other_view, lt == LT_ALL ? "diff" : "dups diff");
+
+	fill_side_by_side(curr, other, group_paths);
+
+	if(flist_custom_finish(curr_view, CV_DIFF, 0) != 0)
+	{
+		show_error_msg("Comparison", "No results to display");
+		return 0;
+	}
+	if(flist_custom_finish(other_view, CV_DIFF, 0) != 0)
+	{
+		assert(0 && "The error shouldn't be happening here.");
+	}
+
+	curr_view->list_pos = 0;
+	other_view->list_pos = 0;
+
+	assert(curr_view->list_rows == other_view->list_rows &&
+			"Diff views must be in sync!");
+
+	ui_view_schedule_redraw(curr_view);
+	ui_view_schedule_redraw(other_view);
+	return 0;
+}
+
+/* qsort() comparer that stable sorts entries in ascending order.  Returns
+ * standard -1, 0, 1 for comparisons. */
+static int
+id_sorter(const void *first, const void *second)
+{
+	const dir_entry_t *a = first;
+	const dir_entry_t *b = second;
+	return a->id == b->id ? a->tag - b->tag : a->id - b->id;
+}
+
+/* Composes two views containing only files that are unique to each of them.
+ * Assumes that both lists are sorted by id. */
+static void
+make_unique_lists(entries_t curr, entries_t other)
+{
+	int i, j = 0;
+
+	flist_custom_start(curr_view, "unique");
+	flist_custom_start(other_view, "unique");
+
+	for(i = 0; i < other.nentries; ++i)
+	{
+		const int id = other.entries[i].id;
+
+		while(j < curr.nentries && curr.entries[j].id < id)
+		{
+			flist_custom_put(curr_view, &curr.entries[j]);
+			++j;
+		}
+
+		if(j >= curr.nentries || curr.entries[j].id != id)
+		{
+			flist_custom_put(other_view, &other.entries[i]);
+			continue;
+		}
+
+		while(j < curr.nentries && curr.entries[j].id == id)
+		{
+			free_dir_entry(curr_view, &curr.entries[j++]);
+		}
+		while(i < other.nentries && other.entries[i].id == id)
+		{
+			free_dir_entry(other_view, &other.entries[i++]);
+		}
+		--i;
+	}
+
+	/* Entries' data has been moved out of them or freed, so need to free only the
+	 * lists. */
+	dynarray_free(curr.entries);
+	dynarray_free(other.entries);
+
+	(void)flist_custom_finish(curr_view, CV_REGULAR, 1);
+	(void)flist_custom_finish(other_view, CV_REGULAR, 1);
+
+	curr_view->list_pos = 0;
+	other_view->list_pos = 0;
+
+	ui_view_schedule_redraw(curr_view);
+	ui_view_schedule_redraw(other_view);
+}
+
+/* Synchronizes two lists of entries so that they contain only items that
+ * present in both of the lists.  Assumes that both lists are sorted by id. */
+static void
+leave_only_dups(entries_t *curr, entries_t *other)
+{
+	int i, j = 0;
+
+	int new_id = 0;
+	for(i = 0; i < other->nentries; ++i)
+	{
+		const int id = other->entries[i].id;
+		if(id == -1)
+		{
+			continue;
+		}
+
+		while(j < curr->nentries && curr->entries[j].id < id)
+		{
+			curr->entries[j++].id = -1;
+		}
+
+		if(j < curr->nentries && curr->entries[j].id == id)
+		{
+			other->entries[i].id = ++new_id;
+		}
+		while(j < curr->nentries && curr->entries[j].id == id)
+		{
+			curr->entries[j].id = new_id;
+			++j;
+		}
+	}
+
+	(void)zap_entries(other_view, other->entries, &other->nentries,
+			&is_not_duplicate, NULL, 1, 0);
+	(void)zap_entries(curr_view, curr->entries, &curr->nentries,
+			&is_not_duplicate, NULL, 1, 0);
+}
+
+/* zap_entries() filter to filter-out files marked for removal.  Returns
+ * non-zero if entry is to be kept and zero otherwise. */
+static int
+is_not_duplicate(FileView *view, const dir_entry_t *entry, void *arg)
+{
+	return entry->id != -1;
+}
+
+/* Composes side-by-side comparison of files in two views. */
+static void
+fill_side_by_side(entries_t curr, entries_t other, int group_paths)
+{
+	enum { UP, LEFT, DIAG };
+
+	int i, j;
+	/* Describes results of solving sub-problems. */
+	int (*d)[other.nentries + 1] =
+		reallocarray(NULL, curr.nentries + 1, sizeof(*d));
+	/* Describes paths (backtracking handles ambiguity badly). */
+	char (*p)[other.nentries + 1] =
+		reallocarray(NULL, curr.nentries + 1, sizeof(*p));
+
+	for(i = 0; i <= curr.nentries; ++i)
+	{
+		for(j = 0; j <= other.nentries; ++j)
+		{
+			if(i == 0)
+			{
+				d[i][j] = j;
+				p[i][j] = LEFT;
+			}
+			else if(j == 0)
+			{
+				d[i][j] = i;
+				p[i][j] = UP;
+			}
+			else
+			{
+				const dir_entry_t *centry = &curr.entries[curr.nentries - i];
+				const dir_entry_t *oentry = &other.entries[other.nentries - j];
+
+				d[i][j] = MIN(d[i - 1][j] + 1, d[i][j - 1] + 1);
+				p[i][j] = d[i][j] == d[i - 1][j] + 1 ? UP : LEFT;
+
+				if((centry->id == oentry->id ||
+							(group_paths && stroscmp(centry->name, oentry->name) == 0)) &&
+						d[i - 1][j - 1] <= d[i][j])
+				{
+					d[i][j] = d[i - 1][j - 1];
+					p[i][j] = DIAG;
+				}
+			}
+		}
+	}
+
+	i = curr.nentries;
+	j = other.nentries;
+	while(i != 0 || j != 0)
+	{
+		switch(p[i][j])
+		{
+			dir_entry_t *e;
+
+			case UP:
+				e = &curr.entries[curr.nentries - 1 - --i];
+				flist_custom_put(curr_view, e);
+				flist_custom_add_separator(other_view, e->id);
+				break;
+			case LEFT:
+				e = &other.entries[other.nentries - 1 - --j];
+				flist_custom_put(other_view, e);
+				flist_custom_add_separator(curr_view, e->id);
+				break;
+			case DIAG:
+				flist_custom_put(curr_view, &curr.entries[curr.nentries - 1 - --i]);
+				flist_custom_put(other_view, &other.entries[other.nentries - 1 - --j]);
+				break;
+		}
+	}
+
+	free(d);
+	free(p);
+
+	/* Entries' data has been moved out of them, so need to free only the
+	 * lists. */
+	dynarray_free(curr.entries);
+	dynarray_free(other.entries);
+}
+
+int
+compare_one_pane(FileView *view, CompareType ct, ListType lt)
+{
+	int i, dup_id;
+	const char *const title = (lt == LT_ALL)  ? "compare"
+	                        : (lt == LT_DUPS) ? "dups" : "nondups";
+
+	int next_id = 1;
+	entries_t curr;
+
+	trie_t *trie = trie_create();
+	ui_cancellation_reset();
+	ui_cancellation_enable();
+
+	curr = make_diff_list(trie, view, &next_id, ct, 0);
+
+	ui_cancellation_disable();
+	trie_free(trie);
+
+	/* Clear progress message displayed by make_diff_list(). */
+	ui_sb_quick_msg_clear();
+
+	if(ui_cancellation_requested())
+	{
+		free_dir_entries(view, &curr.entries, &curr.nentries);
+		status_bar_message("Comparison has been cancelled");
+		return 1;
+	}
+
+	flist_custom_start(view, title);
+
+	dup_id = (curr.nentries > 1 && curr.entries[0].id == curr.entries[1].id)
+	       ? curr.entries[0].id
+	       : -1;
+	for(i = 0; i < curr.nentries; ++i)
+	{
+		dir_entry_t *entry = &curr.entries[i];
+
+		if(lt == LT_ALL)
+		{
+			flist_custom_put(view, entry);
+			continue;
+		}
+
+		if(entry->id == dup_id)
+		{
+			put_or_free(view, entry, lt == LT_DUPS);
+			continue;
+		}
+
+		dup_id = (i < curr.nentries - 1 && entry[0].id == entry[1].id)
+		       ? entry->id
+		       : -1;
+
+		if(entry->id == dup_id)
+		{
+			put_or_free(view, entry, lt == LT_DUPS);
+			continue;
+		}
+
+		put_or_free(view, entry, lt == LT_UNIQUE);
+	}
+
+	/* Entries' data has been moved out of them or freed, so need to free only the
+	 * list. */
+	dynarray_free(curr.entries);
+
+	if(flist_custom_finish(view, lt == LT_UNIQUE ? CV_REGULAR : CV_COMPARE,
+				0) != 0)
+	{
+		show_error_msg("Comparison", "No results to display");
+		return 0;
+	}
+
+	view->list_pos = 0;
+	ui_view_schedule_redraw(view);
+	return 0;
+}
+
+/* Either puts the entry into the view or frees it (depends on the take
+ * argument). */
+static void
+put_or_free(FileView *view, dir_entry_t *entry, int take)
+{
+	if(take)
+	{
+		flist_custom_put(view, entry);
+	}
+	else
+	{
+		free_dir_entry(view, entry);
+	}
+}
+
+/* Makes sorted by path list of entries that.  The trie is used to keep track of
+ * identical files.  With non-zero dups_only, new files aren't added to the
+ * trie. */
+static entries_t
+make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
+		int dups_only)
+{
+	int i;
+	strlist_t files = {};
+	entries_t r = {};
+	int last_progress = 0;
+
+	show_progress("Listing...", 0);
+	list_files_recursively(flist_get_dir(view), &files);
+
+	show_progress("Querying...", 0);
+	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
+	{
+		char progress_msg[128];
+		int progress;
+		void *data;
+		const char *const path = files.items[i];
+		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
+				path);
+		char *const fingerprint = get_file_fingerprint(path, entry, ct);
+
+		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
+		 * files isn't readable), ignore the file and keep going. */
+		if(is_null_or_empty(fingerprint))
+		{
+			free(fingerprint);
+			free_dir_entry(view, entry);
+			--r.nentries;
+			continue;
+		}
+
+		entry->tag = i;
+		if(trie_get(trie, fingerprint, &data) == 0)
+		{
+			entry->id = (int)(uintptr_t)data;
+		}
+		else if(dups_only)
+		{
+			entry->id = -1;
+		}
+		else
+		{
+			entry->id = *next_id;
+			++*next_id;
+			trie_set(trie, fingerprint, (void *)(uintptr_t)entry->id);
+		}
+
+		free(fingerprint);
+
+		progress = (i*100)/files.nitems;
+		if(progress != last_progress)
+		{
+			last_progress = progress;
+			snprintf(progress_msg, sizeof(progress_msg), "Querying... %d (% 2d%%)", i,
+					progress);
+			show_progress(progress_msg, -1);
+		}
+	}
+
+	free_string_array(files.items, files.nitems);
+	return r;
+}
+
+/* Collects files under specified file system tree. */
+static void
+list_files_recursively(const char path[], strlist_t *list)
+{
+	int i;
+
+	/* Obtain sorted list of files. */
+	int len;
+	char **lst = list_sorted_files(path, &len);
+	if(len < 0)
+	{
+		return;
+	}
+
+	/* Visit all subdirectories ignoring symbolic links to directories. */
+	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
+	{
+		char *const full_path = format_str("%s/%s", path, lst[i]);
+		if(is_dir(full_path))
+		{
+			if(!is_symlink(full_path))
+			{
+				list_files_recursively(full_path, list);
+			}
+			free(full_path);
+			update_string(&lst[i], NULL);
+		}
+		else
+		{
+			free(lst[i]);
+			lst[i] = full_path;
+		}
+
+		show_progress("Listing...", 1000);
+	}
+
+	/* Append files. */
+	for(i = 0; i < len; ++i)
+	{
+		if(lst[i] != NULL)
+		{
+			list->nitems = put_into_string_array(&list->items, list->nitems, lst[i]);
+		}
+	}
+
+	free(lst);
+}
+
+/* Computes fingerprint of the file specified by path and entry.  Type of the
+ * fingerprint is determined by ct parameter.  Returns newly allocated string
+ * with the fingerprint. */
+static char *
+get_file_fingerprint(const char path[], const dir_entry_t *entry,
+		CompareType ct)
+{
+#if INTPTR_MAX == INT64_MAX
+#define XX_BITS 64
+#else
+#define XX_BITS 32
+#endif
+#define XX__(name, bits) XXH ## bits ## _ ## name
+#define XX_(name, bits) XX__(name, bits)
+#define XX(name) XX_(name, XX_BITS)
+
+	switch(ct)
+	{
+		XX(state_t) st;
+		char block[32*1024];
+		size_t nread;
+		FILE *in;
+
+		case CT_NAME:
+			if(case_sensitive_paths(path))
+			{
+				return strdup(entry->name);
+			}
+			str_to_lower(entry->name, block, sizeof(block));
+			return strdup(block);
+		case CT_SIZE:
+			return format_str("%llu", (unsigned long long)entry->size);
+		case CT_CONTENTS:
+			in = os_fopen(path, "rb");
+			if(in == NULL)
+			{
+				return strdup("");
+			}
+
+			XX(reset)(&st, 0U);
+			while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
+			{
+				XX(update)(&st, block, nread);
+			}
+			fclose(in);
+			return format_str("%llu|%llu", (unsigned long long)entry->size,
+					(unsigned long long)XX(digest)(&st));
+	}
+	assert(0 && "Unexpected diffing type.");
+	return strdup("");
+
+#undef XX_BITS
+#undef XX__
+#undef XX_
+#undef XX
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

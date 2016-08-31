@@ -12,7 +12,7 @@ static void column12_func(int id, const void *data, size_t buf_len, char buf[]);
 
 static const size_t MAX_WIDTH = 80;
 
-static columns_t columns;
+static columns_t *columns;
 
 SETUP()
 {
@@ -67,13 +67,12 @@ TEST(not_out_of_max_width)
 
 TEST(free_null_columns_ok)
 {
-	columns_free(NULL_COLUMNS);
+	columns_free(NULL);
 }
 
 TEST(add_duplicate_columns_ok)
 {
-	static column_info_t column_info =
-	{
+	static column_info_t column_info = {
 		.column_id = COL1_ID, .full_width = 0,   .text_width = 0,
 		.align = AT_LEFT,     .sizing = ST_AUTO, .cropping = CT_NONE,
 	};

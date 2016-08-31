@@ -71,7 +71,7 @@ TEST(works_with_custom_view)
 {
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, SANDBOX_PATH "/trash/000_file");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR) == 0);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.dir_entry[0].marked = 1;
 	(void)restore_files(&lwin);

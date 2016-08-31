@@ -1544,26 +1544,26 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(ui_view_displays_columns(curr_view))
+	const dir_entry_t *entry = get_current_entry(curr_view);
+
+	if(!ui_view_displays_columns(curr_view))
 	{
-		if(curr_view->dir_entry[curr_view->list_pos].child_pos != 0)
+		go_to_prev(key_info, keys_info, 1);
+		return;
+	}
+
+	if(entry->child_pos != 0)
+	{
+		key_info.count = def_count(key_info.count);
+		while(key_info.count-- > 0)
 		{
-			const dir_entry_t *entry = &curr_view->dir_entry[curr_view->list_pos];
-			key_info.count = def_count(key_info.count);
-			while (key_info.count-- > 0)
-			{
-				entry -= entry->child_pos;
-			}
-			pick_or_move(keys_info, entry_to_pos(curr_view, entry));
+			entry -= entry->child_pos;
 		}
-		else
-		{
-			cmd_gh(key_info, keys_info);
-		}
+		pick_or_move(keys_info, entry_to_pos(curr_view, entry));
 	}
 	else
 	{
-		go_to_prev(key_info, keys_info, 1);
+		cmd_gh(key_info, keys_info);
 	}
 }
 
@@ -1628,9 +1628,12 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	const dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
-	curr_stats.save_msg = set_user_mark(key_info.multi, entry->origin,
-			entry->name);
+	const dir_entry_t *const curr = get_current_entry(curr_view);
+	if(!fentry_is_fake(curr))
+	{
+		curr_stats.save_msg = set_user_mark(key_info.multi, curr->origin,
+				curr->name);
+	}
 }
 
 static void
@@ -1762,21 +1765,21 @@ cmd_q_equals(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_t(key_info_t key_info, keys_info_t *keys_info)
 {
-	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
-	if(entry->selected == 0)
+	dir_entry_t *const curr = get_current_entry(curr_view);
+	/* Special purpose kind of entries can't be selected. */
+	if(!fentry_is_valid(curr))
 	{
-		/* The ../ dir cannot be selected. */
-		if(is_parent_dir(entry->name))
-		{
-			return;
-		}
+		return;
+	}
 
-		entry->selected = 1;
+	if(curr->selected == 0)
+	{
+		curr->selected = 1;
 		++curr_view->selected_files;
 	}
 	else
 	{
-		entry->selected = 0;
+		curr->selected = 0;
 		--curr_view->selected_files;
 	}
 
@@ -1941,7 +1944,7 @@ cmd_za(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 {
-	flist_custom_exclude(curr_view);
+	flist_custom_exclude(curr_view, key_info.count == 1);
 }
 
 /* Redraw with file in bottom of list. */

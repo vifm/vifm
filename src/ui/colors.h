@@ -53,6 +53,7 @@ enum
 	OTHER_LINE_COLOR,   /* Line under the cursor in the other pane. */
 	JOB_LINE_COLOR,     /* Line that displays status of background jobs. */
 	SUGGEST_BOX_COLOR,  /* Style of suggestion box. */
+	MISMATCH_COLOR,     /* File entries that don't match each other in diff. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 

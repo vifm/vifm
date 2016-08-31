@@ -38,7 +38,6 @@
 #include "../status.h"
 #include "../types.h"
 #include "color_scheme.h"
-#include "column_view.h"
 
 #define SORT_WIN_WIDTH 32
 
@@ -109,7 +108,10 @@ enum
 	SK_COUNT = SK_LAST,
 
 	/* Special value to use for unset options. */
-	SK_NONE = SK_LAST + 1
+	SK_NONE = SK_LAST + 1,
+
+	/* Id ordering.  Defined here to do not add it to sorting keys. */
+	SK_BY_ID = SK_NONE + 1
 };
 
 /* Type of file numbering. */
@@ -128,6 +130,8 @@ typedef enum
 	CV_REGULAR, /* Sorted list of files. */
 	CV_VERY,    /* No initial sorting of file list is enforced. */
 	CV_TREE,    /* Files of a file system sub-tree. */
+	CV_COMPARE, /* Directory comparison pane. */
+	CV_DIFF,    /* One of two directory comparison panes. */
 }
 CVType;
 
@@ -166,6 +170,8 @@ typedef struct dir_entry_t
 	time_t ctime;
 	FileType type;
 	int nlinks;       /* Number of hard links to the entry. */
+
+	int id;           /* File uniqueness identifier. */
 
 	int tag;          /* Used to hold temporary data associated with the item,
 	                     e.g. by sorting comparer to perform stable sort or item
@@ -317,7 +323,7 @@ typedef struct
 
 	/* Handle for column_view unit.  Contains view columns configuration even when
 	 * 'lsview' is on. */
-	columns_t columns;
+	struct columns_t *columns;
 	/* Format string that specifies view columns. */
 	char *view_columns, *view_columns_g;
 
@@ -397,6 +403,10 @@ int setup_ncurses_interface(void);
 /* Checks whether custom view of specified type is unsorted.  Returns non-zero
  * if so, otherwise zero is returned. */
 int cv_unsorted(CVType type);
+
+/* Checks whether custom view of specified type is a compare or diff view.
+ * Returns non-zero if so, otherwise zero is returned. */
+int cv_compare(CVType type);
 
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */

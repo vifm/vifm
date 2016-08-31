@@ -55,7 +55,7 @@ typedef struct
 column_t;
 
 /* Column view description structure.  Typedef is in the header file. */
-struct columns_list_t
+struct columns_t
 {
 	size_t max_width; /* Maximum width of one line of the view. */
 	size_t count;     /* Number of columns in the list. */
@@ -66,9 +66,9 @@ static int extend_column_desc_list(void);
 static void init_new_column_desc(column_desc_t *desc, int column_id,
 		column_func func);
 static int column_id_present(int column_id);
-static int extend_column_list(columns_t cols);
+static int extend_column_list(columns_t *cols);
 static void init_new_column(column_t *col, column_info_t info);
-static void mark_for_recalculation(columns_t cols);
+static void mark_for_recalculation(columns_t *cols);
 static column_func get_column_func(int column_id);
 static AlignType decorate_output(const column_t *col, char buf[],
 		size_t max_line_width);
@@ -78,14 +78,14 @@ static size_t calculate_max_width(const column_t *col, size_t len,
 static size_t calculate_start_pos(const column_t *col, const char buf[]);
 static void fill_gap_pos(const void *data, size_t from, size_t to);
 static size_t get_width_on_screen(const char str[]);
-static void recalculate_if_needed(columns_t cols, size_t max_width);
-static int recalculation_is_needed(columns_t cols, size_t max_width);
-static void recalculate(columns_t cols, size_t max_width);
-static void update_widths(columns_t cols, size_t max_width);
-static int update_abs_and_rel_widths(columns_t cols, size_t *max_width);
-static void update_auto_widths(columns_t cols, size_t auto_count,
+static void recalculate_if_needed(columns_t *cols, size_t max_width);
+static int recalculation_is_needed(const columns_t *cols, size_t max_width);
+static void recalculate(columns_t *cols, size_t max_width);
+static void update_widths(columns_t *cols, size_t max_width);
+static int update_abs_and_rel_widths(columns_t *cols, size_t *max_width);
+static void update_auto_widths(columns_t *cols, size_t auto_count,
 		size_t max_width);
-static void update_start_positions(columns_t cols);
+static void update_start_positions(columns_t *cols);
 
 /* Number of registered column descriptors. */
 static size_t col_desc_count;
@@ -135,13 +135,13 @@ init_new_column_desc(column_desc_t *desc, int column_id, column_func func)
 	desc->func = func;
 }
 
-columns_t
+columns_t *
 columns_create(void)
 {
-	struct columns_list_t *const result = malloc(sizeof(*result));
+	columns_t *const result = malloc(sizeof(*result));
 	if(result == NULL)
 	{
-		return NULL_COLUMNS;
+		return NULL;
 	}
 	result->count = 0;
 	result->list = NULL;
@@ -150,9 +150,9 @@ columns_create(void)
 }
 
 void
-columns_free(columns_t cols)
+columns_free(columns_t *cols)
 {
-	if(cols != NULL_COLUMNS)
+	if(cols != NULL)
 	{
 		columns_clear(cols);
 		free(cols);
@@ -160,7 +160,7 @@ columns_free(columns_t cols)
 }
 
 void
-columns_clear(columns_t cols)
+columns_clear(columns_t *cols)
 {
 	free(cols->list);
 	cols->list = NULL;
@@ -176,7 +176,7 @@ columns_clear_column_descs(void)
 }
 
 void
-columns_add_column(columns_t cols, column_info_t info)
+columns_add_column(columns_t *cols, column_info_t info)
 {
 	assert(info.text_width <= info.full_width &&
 			"Text width should be bigger than full width.");
@@ -208,7 +208,7 @@ column_id_present(int column_id)
 /* Extends columns list by one element, but doesn't initialize it at all.
  * Returns zero on success. */
 static int
-extend_column_list(columns_t cols)
+extend_column_list(columns_t *cols)
 {
 	column_t *mem_ptr;
 	mem_ptr = reallocarray(cols->list, cols->count + 1, sizeof(*mem_ptr));
@@ -223,7 +223,7 @@ extend_column_list(columns_t cols)
 
 /* Marks columns structure as one that need to be recalculated. */
 static void
-mark_for_recalculation(columns_t cols)
+mark_for_recalculation(columns_t *cols)
 {
 	cols->max_width = -1UL;
 }
@@ -258,8 +258,7 @@ get_column_func(int column_id)
 }
 
 void
-columns_format_line(const columns_t cols, const void *data,
-		size_t max_line_width)
+columns_format_line(columns_t *cols, const void *data, size_t max_line_width)
 {
 	char prev_col_buf[1024 + 1];
 	size_t prev_col_start = 0UL;
@@ -270,7 +269,7 @@ columns_format_line(const columns_t cols, const void *data,
 
 	recalculate_if_needed(cols, max_line_width);
 
-	for(i = 0; i < cols->count; i++)
+	for(i = 0U; i < cols->count; ++i)
 	{
 		/* Use big buffer to hold whole item so there will be no issues with right
 		 * aligned fields. */
@@ -468,7 +467,7 @@ get_width_on_screen(const char str[])
 
 /* Checks if recalculation is needed and runs it if yes. */
 static void
-recalculate_if_needed(columns_t cols, size_t max_width)
+recalculate_if_needed(columns_t *cols, size_t max_width)
 {
 	if(recalculation_is_needed(cols, max_width))
 	{
@@ -478,14 +477,14 @@ recalculate_if_needed(columns_t cols, size_t max_width)
 
 /* Checks if recalculation is needed, and returns non-zero if so. */
 static int
-recalculation_is_needed(columns_t cols, size_t max_width)
+recalculation_is_needed(const columns_t *cols, size_t max_width)
 {
 	return cols->max_width != max_width;
 }
 
 /* Recalculates column widths and start offsets. */
 static void
-recalculate(columns_t cols, size_t max_width)
+recalculate(columns_t *cols, size_t max_width)
 {
 	update_widths(cols, max_width);
 	update_start_positions(cols);
@@ -495,7 +494,7 @@ recalculate(columns_t cols, size_t max_width)
 
 /* Recalculates column widths. */
 static void
-update_widths(columns_t cols, size_t max_width)
+update_widths(columns_t *cols, size_t max_width)
 {
 	size_t width_left = max_width;
 	const size_t auto_count = update_abs_and_rel_widths(cols, &width_left);
@@ -505,7 +504,7 @@ update_widths(columns_t cols, size_t max_width)
 /* Recalculates widths of columns with absolute or percent widths.  Returns
  * number of columns with auto size type. */
 static int
-update_abs_and_rel_widths(columns_t cols, size_t *max_width)
+update_abs_and_rel_widths(columns_t *cols, size_t *max_width)
 {
 	size_t i;
 	size_t auto_count = 0;
@@ -566,7 +565,7 @@ update_abs_and_rel_widths(columns_t cols, size_t *max_width)
 
 /* Recalculates widths of columns with automatic widths. */
 static void
-update_auto_widths(columns_t cols, size_t auto_count, size_t max_width)
+update_auto_widths(columns_t *cols, size_t auto_count, size_t max_width)
 {
 	size_t i;
 	size_t auto_left = auto_count;
@@ -588,7 +587,7 @@ update_auto_widths(columns_t cols, size_t auto_count, size_t max_width)
 
 /* Should be used after updating column widths. */
 static void
-update_start_positions(columns_t cols)
+update_start_positions(columns_t *cols)
 {
 	size_t i;
 	for(i = 0; i < cols->count; i++)

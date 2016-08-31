@@ -236,8 +236,7 @@ print_search_msg(const FileView *view, int backward)
 	else
 	{
 		status_bar_messagef("%d of %d matching file%s for: %s",
-				view->dir_entry[view->list_pos].search_match,
-				view->matches,
+				get_current_entry(view)->search_match, view->matches,
 				(view->matches == 1) ? "" : "s", cfg_get_last_search_pattern());
 	}
 }
@@ -245,7 +244,7 @@ print_search_msg(const FileView *view, int backward)
 void
 print_search_next_msg(const FileView *view, int backward)
 {
-	const int match_number = view->dir_entry[view->list_pos].search_match;
+	const int match_number = get_current_entry(view)->search_match;
 	const char search_type = backward ? '?' : '/';
 	status_bar_messagef("(%d of %d) %c%s", match_number, view->matches,
 			search_type, cfg_get_last_search_pattern());

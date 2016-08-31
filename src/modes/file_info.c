@@ -50,6 +50,7 @@
 #include "../filelist.h"
 #include "../status.h"
 #include "../types.h"
+#include "dialogs/msg_dialog.h"
 #include "modes.h"
 #include "wk.h"
 
@@ -89,6 +90,12 @@ init_file_info_mode(void)
 void
 enter_file_info_mode(FileView *v)
 {
+	if(fentry_is_fake(get_current_entry(v)))
+	{
+		show_error_msg("File info", "Entry doesn't correspond to a file.");
+		return;
+	}
+
 	vle_mode_set(FILE_INFO_MODE, VMT_PRIMARY);
 	view = v;
 	setup_menu();
@@ -115,7 +122,7 @@ leave_file_info_mode(void)
 void
 redraw_file_info_dialog(void)
 {
-	const dir_entry_t *entry;
+	const dir_entry_t *curr;
 	char perm_buf[26];
 	char size_buf[56];
 	char buf[256];
@@ -135,25 +142,25 @@ redraw_file_info_dialog(void)
 
 	werase(menu_win);
 
-	entry = &view->dir_entry[view->list_pos];
+	curr = get_current_entry(view);
 
 	size = DCACHE_UNKNOWN;
-	if(entry->type == FT_DIR)
+	if(curr->type == FT_DIR)
 	{
-		dcache_get_of(entry, &size, NULL);
+		dcache_get_of(curr, &size, NULL);
 	}
 
 	if(size == DCACHE_UNKNOWN)
 	{
-		size = entry->size;
+		size = curr->size;
 	}
 
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 	curr_y = 2;
 
-	curr_y += print_item("Path: ", entry->origin, curr_y);
-	curr_y += print_item("Name: ", entry->name, curr_y);
+	curr_y += print_item("Path: ", curr->origin, curr_y);
+	curr_y += print_item("Name: ", curr->name, curr_y);
 
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
@@ -168,20 +175,20 @@ redraw_file_info_dialog(void)
 	curr_y += show_mime_type(view, curr_y);
 
 #ifndef _WIN32
-	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
+	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
 	curr_y += print_item("Permissions: ", perm_buf, curr_y);
 #else
-	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(entry->attrs));
+	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(curr->attrs));
 	curr_y += print_item("Attributes: ", perm_buf, curr_y);
 #endif
 
-	format_time(entry->mtime, buf, sizeof(buf));
+	format_time(curr->mtime, buf, sizeof(buf));
 	curr_y += print_item("Modified: ", buf, curr_y);
 
-	format_time(entry->atime, buf, sizeof(buf));
+	format_time(curr->atime, buf, sizeof(buf));
 	curr_y += print_item("Accessed: ", buf, curr_y);
 
-	format_time(entry->ctime, buf, sizeof(buf));
+	format_time(curr->ctime, buf, sizeof(buf));
 #ifndef _WIN32
 	curr_y += print_item("Changed: ", buf, curr_y);
 #else
@@ -189,10 +196,10 @@ redraw_file_info_dialog(void)
 #endif
 
 #ifndef _WIN32
-	get_uid_string(entry, 0, sizeof(id_buf), id_buf);
+	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	curr_y += print_item("Owner: ", id_buf, curr_y);
 
-	get_gid_string(entry, 0, sizeof(id_buf), id_buf);
+	get_gid_string(curr, 0, sizeof(id_buf), id_buf);
 	curr_y += print_item("Group: ", id_buf, curr_y);
 #endif
 
@@ -234,15 +241,15 @@ print_item(const char label[], const char path[], int curr_y)
 static int
 show_file_type(FileView *view, int curr_y)
 {
-	const dir_entry_t *entry;
+	const dir_entry_t *curr;
 	int x;
 	int old_curr_y = curr_y;
 	x = getmaxx(menu_win);
 
-	entry = &view->dir_entry[view->list_pos];
+	curr = get_current_entry(view);
 
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
-	if(entry->type == FT_LINK)
+	if(curr->type == FT_LINK)
 	{
 		char full_path[PATH_MAX];
 		char linkto[PATH_MAX + NAME_MAX];
@@ -267,7 +274,7 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
 		}
 	}
-	else if(entry->type == FT_EXEC || entry->type == FT_REG)
+	else if(curr->type == FT_EXEC || curr->type == FT_REG)
 	{
 #ifdef HAVE_FILE_PROG
 		char full_path[PATH_MAX];
@@ -300,20 +307,20 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
 		}
 #else /* #ifdef HAVE_FILE_PROG */
-		if(entry->type == FT_EXEC)
+		if(curr->type == FT_EXEC)
 			mvwaddstr(menu_win, curr_y, 8, "Executable");
 		else
 			mvwaddstr(menu_win, curr_y, 8, "Regular File");
 #endif /* #ifdef HAVE_FILE_PROG */
 	}
-	else if(entry->type == FT_DIR)
+	else if(curr->type == FT_DIR)
 	{
 		mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
 #ifndef _WIN32
-	else if(entry->type == FT_CHAR_DEV || entry->type == FT_BLOCK_DEV)
+	else if(curr->type == FT_CHAR_DEV || curr->type == FT_BLOCK_DEV)
 	{
-		const char *const type = (entry->type == FT_CHAR_DEV)
+		const char *const type = (curr->type == FT_CHAR_DEV)
 		                       ? "Character Device"
 		                       : "Block Device";
 		char full_path[PATH_MAX];
@@ -333,12 +340,12 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddstr(menu_win, curr_y, 2, info);
 		}
 	}
-	else if(entry->type == FT_SOCK)
+	else if(curr->type == FT_SOCK)
 	{
 		mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}
 #endif
-	else if(entry->type == FT_FIFO)
+	else if(curr->type == FT_FIFO)
 	{
 		mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}

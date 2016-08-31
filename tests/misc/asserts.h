@@ -1,13 +1,15 @@
 #ifndef VIFM_TESTS__MISC__ASSERTS_H__
 #define VIFM_TESTS__MISC__ASSERTS_H__
 
-/* This should be a macro to see what test has failed. */
+/* This should be a macro to see what test and where has failed. */
 #define ASSERT_NEXT_MATCH(str) \
+	do \
 	{ \
-		char *buf = vle_compl_next(); \
+		char *const buf = vle_compl_next(); \
 		assert_string_equal((str), buf); \
 		free(buf); \
-	}
+	} \
+	while (0)
 
 #endif /* VIFM_TESTS__MISC__ASSERTS_H__ */
 

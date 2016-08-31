@@ -94,7 +94,6 @@ static int run_win_executable_as_evaluated(const char full_path[]);
 static int selection_is_consistent(FileView *view);
 static void execute_file(const char full_path[], int elevate);
 static void run_selection(FileView *view, int dont_execute);
-static void run_file(FileView *view, int dont_execute);
 static void run_with_defaults(FileView *view);
 static void run_selection_separately(FileView *view, int dont_execute);
 static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
@@ -137,14 +136,17 @@ follow_file(FileView *view)
 {
 	if(flist_custom_active(view))
 	{
-		/* Entry might be freed on navigation, so make sure name and origin will
-		 * remain available for the call. */
-		const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-		char *const name = strdup(entry->name);
-		char *const origin = strdup(entry->origin);
-		navigate_to_file(view, origin, name, 0);
-		free(origin);
-		free(name);
+		const dir_entry_t *const curr = get_current_entry(view);
+		if(!fentry_is_fake(curr))
+		{
+			/* Entry might be freed on navigation, so make sure name and origin will
+			 * remain available for the call. */
+			char *const name = strdup(curr->name);
+			char *const origin = strdup(curr->origin);
+			navigate_to_file(view, origin, name, 0);
+			free(origin);
+			free(name);
+		}
 		return;
 	}
 
@@ -157,7 +159,12 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 	char full_path[PATH_MAX];
 	int executable;
 	int runnable;
-	const dir_entry_t *const curr = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(view);
+
+	if(fentry_is_fake(curr))
+	{
+		return;
+	}
 
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
@@ -376,21 +383,7 @@ execute_file(const char full_path[], int elevate)
 static void
 run_selection(FileView *view, int dont_execute)
 {
-	if(selection_is_consistent(view))
-	{
-		run_file(view, dont_execute);
-	}
-	else
-	{
-		show_error_msg("Selection error",
-				"Selection cannot contain files and directories at the same time");
-	}
-}
-
-static void
-run_file(FileView *view, int dont_execute)
-{
-	/* TODO: refactor this function run_file() */
+	/* TODO: refactor this function run_selection() */
 
 	char *typed_fname;
 	const char *multi_prog_cmd;
@@ -399,7 +392,14 @@ run_file(FileView *view, int dont_execute)
 	dir_entry_t *entry;
 	int no_multi_run;
 
-	if(!view->dir_entry[view->list_pos].selected)
+	if(!selection_is_consistent(view))
+	{
+		show_error_msg("Selection error",
+				"Selection cannot contain files and directories at the same time");
+		return;
+	}
+
+	if(!get_current_entry(view)->selected)
 	{
 		clean_selected_files(view);
 	}
@@ -479,7 +479,7 @@ run_file(FileView *view, int dont_execute)
 static void
 run_with_defaults(FileView *view)
 {
-	if(view->dir_entry[view->list_pos].type == FT_DIR)
+	if(get_current_entry(view)->type == FT_DIR)
 	{
 		open_dir(view);
 	}
@@ -544,10 +544,10 @@ void
 run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
 		int force_bg)
 {
-	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(view);
 	const int pause = skip_prefix(&prog_spec, "!!");
 
-	if(!path_exists_at(entry->origin, entry->name, DEREF))
+	if(!path_exists_at(curr->origin, curr->name, DEREF))
 	{
 		show_error_msg("Access Error", "File doesn't exist.");
 		return;
@@ -669,11 +669,11 @@ follow_link(FileView *view, int follow_dirs)
 	char *dir, *file;
 	char full_path[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
-	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(curr_view);
 
-	get_full_path_of(entry, sizeof(full_path), full_path);
+	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	if(get_link_target_abs(full_path, entry->origin, linkto, sizeof(linkto)) != 0)
+	if(get_link_target_abs(full_path, curr->origin, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link.");
 		return;
@@ -690,7 +690,7 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(is_dir(linkto) && !follow_dirs)
 	{
-		dir = strdup(entry->name);
+		dir = strdup(curr->name);
 		file = NULL;
 	}
 	else
@@ -1117,9 +1117,18 @@ set_pwd_in_screen(const char path[])
 int
 run_with_filetype(FileView *view, const char beginning[], int background)
 {
-	char *const typed_fname = get_typed_entry_fpath(get_current_entry(view));
-	assoc_records_t ft = ft_get_all_programs(typed_fname);
-	assoc_records_t magic = get_magic_handlers(typed_fname);
+	dir_entry_t *const curr = get_current_entry(view);
+	assoc_records_t ft, magic;
+	char *typed_fname;
+
+	if(fentry_is_fake(curr))
+	{
+		return 1;
+	}
+
+	typed_fname = get_typed_entry_fpath(curr);
+	ft = ft_get_all_programs(typed_fname);
+	magic = get_magic_handlers(typed_fname);
 	free(typed_fname);
 
 	if(try_run_with_filetype(view, ft, beginning, background))

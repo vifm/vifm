@@ -22,14 +22,14 @@
 #include "ui/column_view.h"
 
 /* Column add callback, the column argument is the same as in parse_columns. */
-typedef void (*add_column_cb)(columns_t columns, column_info_t column_info);
+typedef void (*add_column_cb)(columns_t *columns, column_info_t column_info);
 /* Column name to column id mapping callback. Should return column id (a
  * positive number or zero) or a negative number. */
 typedef int (*map_name_cb)(const char name[], void *arg);
 
 /* Parses str and calls cb function with columns as its parameter for each
  * column found. Returns non-zero when str is ill-formed. */
-int parse_columns(columns_t columns, add_column_cb ac, map_name_cb cn,
+int parse_columns(columns_t *columns, add_column_cb ac, map_name_cb cn,
 		const char str[], void *arg);
 
 #endif /* VIFM__UI__VIEWCOLUMNS_PARSER_H__ */

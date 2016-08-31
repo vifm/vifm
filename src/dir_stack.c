@@ -27,99 +27,115 @@
 #include "ui/ui.h"
 #include "filelist.h"
 
-stack_entry_t *stack;
-unsigned int stack_top;
+static void free_entry(const dir_stack_entry_t *entry);
+
+/* Actual size of the stack (allocated, but some entries might be unused). */
 static unsigned int stack_size;
 
 /* Whether directory stack was changed since its creation or last freezing. */
 static int changed;
 
-static void free_entry(const stack_entry_t *entry);
+dir_stack_entry_t *dir_stack;
+unsigned int dir_stack_top;
 
 int
-pushd(void)
+dir_stack_push_current(void)
 {
-	return push_to_dirstack(lwin.curr_dir, lwin.dir_entry[lwin.list_pos].name,
-			rwin.curr_dir, rwin.dir_entry[rwin.list_pos].name);
+	return dir_stack_push(flist_get_dir(&lwin), get_current_file_name(&lwin),
+			flist_get_dir(&rwin), get_current_file_name(&rwin));
 }
 
 int
-push_to_dirstack(const char *ld, const char *lf, const char *rd, const char *rf)
+dir_stack_push(const char ld[], const char lf[], const char rd[],
+		const char rf[])
 {
-	if(stack_top == stack_size)
+	if(dir_stack_top == stack_size)
 	{
-		stack_entry_t *s = reallocarray(stack, stack_size + 1, sizeof(*stack));
+		dir_stack_entry_t *s = reallocarray(dir_stack, stack_size + 1, sizeof(*s));
 		if(s == NULL)
 		{
 			return -1;
 		}
 
-		stack = s;
-		stack_size++;
+		dir_stack = s;
+		++stack_size;
 	}
 
-	stack[stack_top].lpane_dir = strdup(ld);
-	stack[stack_top].lpane_file = strdup(lf);
-	stack[stack_top].rpane_dir = strdup(rd);
-	stack[stack_top].rpane_file = strdup(rf);
+	dir_stack[dir_stack_top].lpane_dir = strdup(ld);
+	dir_stack[dir_stack_top].lpane_file = strdup(lf);
+	dir_stack[dir_stack_top].rpane_dir = strdup(rd);
+	dir_stack[dir_stack_top].rpane_file = strdup(rf);
 
-	if(stack[stack_top].lpane_dir == NULL ||
-			stack[stack_top].lpane_file == NULL ||
-			stack[stack_top].rpane_dir == NULL || stack[stack_top].rpane_file == NULL)
+	if(dir_stack[dir_stack_top].lpane_dir == NULL ||
+			dir_stack[dir_stack_top].lpane_file == NULL ||
+			dir_stack[dir_stack_top].rpane_dir == NULL ||
+			dir_stack[dir_stack_top].rpane_file == NULL)
 	{
-		free_entry(&stack[stack_top]);
+		free_entry(&dir_stack[dir_stack_top]);
 		return -1;
 	}
 
-	stack_top++;
+	++dir_stack_top;
 	changed = 1;
 
 	return 0;
 }
 
 int
-popd(void)
+dir_stack_pop(void)
 {
-	if(stack_top == 0)
+	if(dir_stack_top == 0)
+	{
 		return -1;
+	}
 
-	stack_top--;
+	--dir_stack_top;
 
-	if(change_directory(&lwin, stack[stack_top].lpane_dir) >= 0)
+	if(change_directory(&lwin, dir_stack[dir_stack_top].lpane_dir) >= 0)
+	{
 		load_dir_list(&lwin, 0);
+	}
 
-	if(change_directory(&rwin, stack[stack_top].rpane_dir) >= 0)
+	if(change_directory(&rwin, dir_stack[dir_stack_top].rpane_dir) >= 0)
+	{
 		load_dir_list(&rwin, 0);
+	}
 
 	fview_cursor_redraw(curr_view);
 	refresh_view_win(other_view);
 
-	free_entry(&stack[stack_top]);
+	free_entry(&dir_stack[dir_stack_top]);
 
 	return 0;
 }
 
 int
-swap_dirs(void)
+dir_stack_swap(void)
 {
-	stack_entry_t item;
+	dir_stack_entry_t item;
 
-	if(stack_top == 0)
-		return -1;
-
-	item = stack[--stack_top];
-
-	if(pushd() != 0)
+	if(dir_stack_top == 0)
 	{
-		free_entry(&item);
+		return -1;
+	}
+
+	item = dir_stack[--dir_stack_top];
+
+	if(dir_stack_push_current() != 0)
+	{
+		dir_stack[dir_stack_top--] = item;
 		return -1;
 	}
 
 	if(change_directory(&lwin, item.lpane_dir) >= 0)
+	{
 		load_dir_list(&lwin, 0);
+	}
 
 	if(change_directory(&rwin, item.rpane_dir) >= 0)
+	{
 		load_dir_list(&rwin, 0);
+	}
 
 	fview_cursor_redraw(curr_view);
 	refresh_view_win(other_view);
@@ -129,42 +145,49 @@ swap_dirs(void)
 }
 
 int
-rotate_stack(int n)
+dir_stack_rotate(int n)
 {
-	stack_entry_t *new_stack;
+	dir_stack_entry_t *new_stack;
 	size_t i;
 
 	if(n == 0)
-		return 0;
-
-	if(pushd() != 0)
-		return -1;
-
-	new_stack = reallocarray(NULL, stack_size, sizeof(*stack));
-	if(new_stack == NULL)
-		return -1;
-
-	for(i = 0U; i < stack_top; ++i)
 	{
-		new_stack[(i + n)%stack_top] = stack[i];
+		return 0;
 	}
 
-	free(stack);
-	stack = new_stack;
-	return popd();
+	if(dir_stack_push_current() != 0)
+	{
+		return -1;
+	}
+
+	new_stack = reallocarray(NULL, stack_size, sizeof(*dir_stack));
+	if(new_stack == NULL)
+	{
+		return -1;
+	}
+
+	for(i = 0U; i < dir_stack_top; ++i)
+	{
+		new_stack[(i + n)%dir_stack_top] = dir_stack[i];
+	}
+
+	free(dir_stack);
+	dir_stack = new_stack;
+	return dir_stack_pop();
 }
 
 void
-clean_stack(void)
+dir_stack_clear(void)
 {
-	while(stack_top > 0)
+	while(dir_stack_top > 0)
 	{
-		free_entry(&stack[--stack_top]);
+		free_entry(&dir_stack[--dir_stack_top]);
 	}
 }
 
+/* Frees memory allocated for the specified stack entry. */
 static void
-free_entry(const stack_entry_t *entry)
+free_entry(const dir_stack_entry_t *entry)
 {
 	free(entry->lpane_dir);
 	free(entry->lpane_file);
@@ -183,39 +206,52 @@ dir_stack_list(void)
 	int len;
 	char **list, **p;
 
-	if(stack_top == 0)
+	if(dir_stack_top == 0)
+	{
 		len = 2 + 1 + 1;
+	}
 	else
-		len = 2 + 1 + stack_top*2 + stack_top - 1 + 1;
-	list = reallocarray(NULL, len, sizeof(char *));
+	{
+		len = 2 + 1 + dir_stack_top*2 + dir_stack_top - 1 + 1;
+	}
+	list = reallocarray(NULL, len, sizeof(*list));
 
 	if(list == NULL)
-		return NULL;
-
-	p = list;
-	if((*p++ = strdup(lwin.curr_dir)) == NULL)
-		return list;
-	if((*p++ = strdup(rwin.curr_dir)) == NULL)
-		return list;
-	if(stack_top != 0)
 	{
-		if((*p++ = strdup("-----")) == NULL)
-			return list;
+		return NULL;
 	}
 
-	for(i = 0U; i < stack_top; ++i)
+	p = list;
+	if((*p++ = strdup(flist_get_dir(&lwin))) == NULL)
 	{
-		if((*p++ = strdup(stack[stack_top - 1 - i].lpane_dir)) == NULL)
-			return list;
+		return list;
+	}
+	if((*p++ = strdup(flist_get_dir(&rwin))) == NULL)
+	{
+		return list;
+	}
 
-		if((*p++ = strdup(stack[stack_top - 1 - i].rpane_dir)) == NULL)
-			return list;
-
-		if(i == stack_top - 1)
-			continue;
-
+	for(i = 0U; i < dir_stack_top; ++i)
+	{
 		if((*p++ = strdup("-----")) == NULL)
+		{
 			return list;
+		}
+
+		if((*p++ = strdup(dir_stack[dir_stack_top - 1 - i].lpane_dir)) == NULL)
+		{
+			return list;
+		}
+
+		if((*p++ = strdup(dir_stack[dir_stack_top - 1 - i].rpane_dir)) == NULL)
+		{
+			return list;
+		}
+
+		if(i == dir_stack_top - 1)
+		{
+			continue;
+		}
 	}
 	*p = NULL;
 

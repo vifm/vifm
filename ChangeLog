@@ -10,6 +10,12 @@
 	Added "tree" parameter to :sync! that enables synchronization of tree
 	view.  Thanks to filterfalse.
 
+	Added :compare command to perform comparison in one or two directory
+	trees.  Thanks to anonymous on SourceForge discussion forum and aleksejrs.
+
+	Added CmpMismatch highlight group for highlighting mismatched files on
+	side-by-side comparison.
+
 	Try to save and restore terminal state while running external
 	applications.  Thanks to Losiara.
 
@@ -42,6 +48,8 @@
 	Disallow moving/copying/linking files into custom view (put is forbidden,
 	so makes sense to forbid these too).
 
+	Disallow selecting ".." entry with :select command.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -65,6 +73,10 @@
 	explicitly (form without arguments was properly disabled before).
 
 	Fixed changing attributes of files in custom views on Windows.
+
+	Fixed counting selected files after `:invert s` if there is ".." entry.
+
+	Fixed :pushd and :dirs in custom views.
 
 0.8.2-beta to 0.8.2
 

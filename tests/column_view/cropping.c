@@ -62,7 +62,7 @@ static void
 perform_test(column_info_t column_infos[], int n)
 {
 	int i;
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 
 	for(i = 0; i < n; ++i)
 	{
@@ -207,7 +207,7 @@ TEST(ellipsis_less_space)
 	};
 	static const char expected[] = "..";
 
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	columns_add_column(cols, column_info);
 
 	memset(print_buffer, '\0', MAX_WIDTH);

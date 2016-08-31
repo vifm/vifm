@@ -150,7 +150,6 @@ static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
 static void apply_selection(int pos);
 static void revert_selection(int pos);
-static int is_parent_dir_at(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
 static void goto_pos_force_update(int pos);
@@ -855,10 +854,7 @@ restore_previous_selection(void)
 static void
 select_first_one(void)
 {
-	if(!is_parent_dir_at(view->list_pos))
-	{
-		apply_selection(view->list_pos);
-	}
+	apply_selection(view->list_pos);
 }
 
 /* Go backwards [count] (one by default) files in ls-like sub-mode. */
@@ -869,11 +865,11 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 	{
 		go_to_prev(key_info, keys_info, 1, 1);
 	}
-	else if(view->dir_entry[view->list_pos].child_pos != 0)
+	else if(get_current_entry(view)->child_pos != 0)
 	{
-		const dir_entry_t *entry = &curr_view->dir_entry[curr_view->list_pos];
+		const dir_entry_t *entry = get_current_entry(view);
 		key_info.count = def_count(key_info.count);
-		while (key_info.count-- > 0)
+		while(key_info.count-- > 0)
 		{
 			entry -= entry->child_pos;
 		}
@@ -944,8 +940,11 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 static void
 cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
-	set_user_mark(key_info.multi, entry->origin, entry->name);
+	const dir_entry_t *const curr = get_current_entry(view);
+	if(!fentry_is_fake(curr))
+	{
+		set_user_mark(key_info.multi, curr->origin, curr->name);
+	}
 }
 
 static void
@@ -1117,6 +1116,7 @@ update_marks(FileView *view)
 {
 	char start_mark, end_mark;
 	const dir_entry_t *start_entry, *end_entry;
+	int delta;
 
 	if(start_pos >= view->list_rows)
 	{
@@ -1124,12 +1124,22 @@ update_marks(FileView *view)
 	}
 
 	upwards_range = view->list_pos < start_pos;
+	delta = upwards_range ? +1 : -1;
 
 	start_mark = upwards_range ? '<' : '>';
 	end_mark = upwards_range ? '>' : '<';
 
 	start_entry = &view->dir_entry[view->list_pos];
 	end_entry = &view->dir_entry[start_pos];
+	/* Fake entries can't be marked, so skip them on both ends. */
+	while(start_entry != end_entry && fentry_is_fake(start_entry))
+	{
+		start_entry += delta;
+	}
+	while(start_entry != end_entry && fentry_is_fake(end_entry))
+	{
+		end_entry -= delta;
+	}
 
 	set_spec_mark(start_mark, start_entry->origin, start_entry->name);
 	set_spec_mark(end_mark, end_entry->origin, end_entry->name);
@@ -1139,7 +1149,7 @@ update_marks(FileView *view)
 static void
 cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 {
-	flist_custom_exclude(curr_view);
+	flist_custom_exclude(curr_view, key_info.count == 1);
 	accept_and_leave(0);
 }
 
@@ -1203,18 +1213,7 @@ select_up_one(FileView *view, int start_pos)
 	view->list_pos--;
 	if(view->list_pos < 0)
 	{
-		if(is_parent_dir_at(start_pos))
-		{
-			--view->selected_files;
-		}
 		view->list_pos = 0;
-	}
-	else if(view->list_pos == 0 && is_parent_dir_at(0))
-	{
-		if(start_pos == 0)
-		{
-			revert_selection(1);
-		}
 	}
 	else if(view->list_pos < start_pos)
 	{
@@ -1235,15 +1234,11 @@ select_up_one(FileView *view, int start_pos)
 static void
 select_down_one(FileView *view, int start_pos)
 {
-	view->list_pos++;
+	++view->list_pos;
 
 	if(view->list_pos >= view->list_rows)
 	{
 		view->list_pos = view->list_rows - 1;
-	}
-	else if(view->list_pos == 1 && start_pos != 0 && is_parent_dir_at(0))
-	{
-		/* do nothing */
 	}
 	else if(view->list_pos > start_pos)
 	{
@@ -1265,6 +1260,11 @@ static void
 apply_selection(int pos)
 {
 	dir_entry_t *const entry = &view->dir_entry[pos];
+	if(!fentry_is_valid(entry))
+	{
+		return;
+	}
+
 	switch(amend_type)
 	{
 		case AT_NONE:
@@ -1338,15 +1338,6 @@ revert_selection(int pos)
 			assert(0 && "Unexpected amending type.");
 			break;
 	}
-}
-
-/* Checks whether file at specified position in file list refers to parent
- * directory. */
-static int
-is_parent_dir_at(int pos)
-{
-	/* Don't allow the ../ dir to be selected. */
-	return is_parent_dir(view->dir_entry[pos].name);
 }
 
 static void

@@ -143,14 +143,21 @@ char * get_typed_entry_fpath(const dir_entry_t *entry);
 int flist_custom_active(const FileView *view);
 /* Prepares list of files for it to be filled with entries. */
 void flist_custom_start(FileView *view, const char title[]);
-/* Adds an entry to list of files.  Returns pointer to just added entry or NULL
- * on error. */
+/* Adds an entry to custom list of files.  Returns pointer to just added entry
+ * or NULL on error. */
 dir_entry_t * flist_custom_add(FileView *view, const char path[]);
+/* Puts an entry to custom list of files, contents of the entry gets stolen.
+ * Returns pointer to just added entry or NULL on error. */
+dir_entry_t * flist_custom_put(FileView *view, dir_entry_t *entry);
+/* Appends entry separator to the list with specified id. */
+void flist_custom_add_separator(FileView *view, int id);
 /* Finishes file list population, handles empty resulting list corner case.
+ * Non-zero allow_empty makes a single-entry (..) view instead of aborting.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
-int flist_custom_finish(FileView *view, CVType type);
-/* Removes selected files from custom view. */
-void flist_custom_exclude(FileView *view);
+int flist_custom_finish(FileView *view, CVType type, int allow_empty);
+/* Removes selected files or current one from custom view.  Zero selection_only
+ * enables excluding files that share ids with selected items. */
+void flist_custom_exclude(FileView *view, int selection_only);
 /* Clones list of files from from view to to view. */
 void flist_custom_clone(FileView *to, const FileView *from);
 /* Adds missing parent directories to the tree.  Such entries are marked as
@@ -177,7 +184,7 @@ void load_saving_pos(FileView *view, int reload);
 char * get_current_file_name(FileView *view);
 /* Gets current entry of the view.  Returns the entry or NULL if view doesn't
  * contain any. */
-dir_entry_t * get_current_entry(FileView *view);
+dir_entry_t * get_current_entry(const FileView *view);
 /* Checks whether content in the current directory of the view changed and
  * reloads the view if so. */
 void check_if_filelist_have_changed(FileView *view);
@@ -269,6 +276,13 @@ void replace_dir_entries(FileView *view, dir_entry_t **entries, int *count,
  * returned. */
 dir_entry_t * add_dir_entry(dir_entry_t **list, size_t *list_size,
 		const dir_entry_t *entry);
+/* Adds new entry to the list and fills it with data.  Returns pointer to the
+ * entry or NULL on error. */
+dir_entry_t * entry_list_add(FileView *view, dir_entry_t **list, int *list_size,
+		const char path[]);
+/* Frees list of directory entries related to the view.  Sets *entries and
+ * *count to safe values. */
+void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 /* Frees single directory entry. */
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
@@ -284,6 +298,13 @@ void flist_add_custom_line(FileView *view, const char line[]);
 void flist_end_custom(FileView *view, int very);
 /* Changes name of a file entry, performing additional required updates. */
 void fentry_rename(FileView *view, dir_entry_t *entry, const char to[]);
+/* Checks whether this is fake entry for internal purposes, which should not be
+ * processed as a file. */
+int fentry_is_fake(const dir_entry_t *entry);
+/* Checks whether this is valid entry, which can be selected and processed by
+ * file operations or even just selected.  Currently this checks for entry not
+ * being ".." nor fake. */
+int fentry_is_valid(const dir_entry_t *entry);
 /* Loads directory tree specified by its path into the view.  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */
 int flist_load_tree(FileView *view, const char path[]);

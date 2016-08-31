@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 23 August, 2016
+Updated: 29 August, 2016
 Version: 0.8.2
 
 Brief Description
@@ -197,7 +197,8 @@ Package content
     |  |  |-- utf8.c - functions to handle utf8 strings
     |  |  |-- utils.c - various utilities
     |  |  |-- utils_nix.c - various utilities for *nix systems
-    |  |  `-- utils_win.c - various utilities for MS Windows
+    |  |  |-- utils_win.c - various utilities for MS Windows
+    |  |  `-- xxhash.c - fast hashing algorithm
     |  |
     |  |-- args.c - command-line arguments parsing and processing
     |  |-- background.c - runs commands in background
@@ -206,8 +207,9 @@ Package content
     |  |-- cmd_completion.c - handles command line completion
     |  |-- cmd_core.c - command line parsing
     |  |-- cmd_handlers.c - handlers for command line commands
-    |  |-- event_loop.c - event dispatching loop
+    |  |-- compare.c - implementation of directory comparison
     |  |-- dir_stack.c - for :pushd and :popd commands
+    |  |-- event_loop.c - event dispatching loop
     |  |-- filelist.c - fill/update list of files
     |  |-- filename_modifiers.c - expands filename modifiers
     |  |-- fileops.c - delete/copy/put selected file(s)

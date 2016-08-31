@@ -1115,13 +1115,20 @@ exec_command(const char cmd[], FileView *view, CmdInputType type)
 			return execute_command(view, cmd, menu);
 
 		case CIT_FILTER_PATTERN:
-			local_filter_apply(view, cmd);
+			if(view->custom.type != CV_DIFF)
+			{
+				local_filter_apply(view, cmd);
+			}
+			else
+			{
+				show_error_msg("Filtering", "No local filter for diff views");
+			}
 			return 0;
 
 		default:
 			assert(0 && "Command execution request of unknown/unexpected type.");
 			return 0;
-	};
+	}
 }
 
 /* Repeats last command of the specified type.  Returns 0 on success if no

@@ -21,9 +21,6 @@
 
 #include <stddef.h> /* size_t */
 
-/* Null column_t value. */
-#define NULL_COLUMNS NULL
-
 /* Special reserved column id for gap filling request. */
 #define FILL_COLUMN_ID ~0
 
@@ -55,9 +52,8 @@ typedef enum
 }
 CropType;
 
-/* Type of columns handle. */
-struct columns_list_t;
-typedef struct columns_list_t *columns_t;
+/* Opaque columns handle. */
+typedef struct columns_t columns_t;
 
 /* A column callback function, which should fill the buf with column text. */
 typedef void (*column_func)(int id, const void *data, size_t buf_len,
@@ -90,21 +86,21 @@ int columns_add_column_desc(int column_id, column_func func);
 /* Unregisters all column functions. */
 void columns_clear_column_descs(void);
 
-/* Creates column view. Returns NULL_COLUMNS on error. */
-columns_t columns_create(void);
+/* Creates column view.  Returns NULL on error. */
+columns_t * columns_create(void);
 
-/* Frees previously allocated columns.  Passing NULL_COLUMNS is OK. */
-void columns_free(columns_t cols);
+/* Frees previously allocated columns.  Passing in NULL is OK. */
+void columns_free(columns_t *cols);
 
 /* Adds one column to the cols as the most right one. Duplicates are
  * allowed. */
-void columns_add_column(columns_t cols, column_info_t info);
+void columns_add_column(columns_t *cols, column_info_t info);
 
 /* Clears list of columns of the cols. */
-void columns_clear(columns_t cols);
+void columns_clear(columns_t *cols);
 
 /* Performs actual formatting of columns. */
-void columns_format_line(const columns_t cols, const void *data,
+void columns_format_line(columns_t *cols, const void *data,
 		size_t max_line_width);
 
 #endif /* VIFM__UI__COLUMN_VIEW_H__ */

@@ -84,6 +84,7 @@
 #include "bracket_notation.h"
 #include "cmd_completion.h"
 #include "cmd_core.h"
+#include "compare.h"
 #include "dir_stack.h"
 #include "filelist.h"
 #include "fileops.h"
@@ -133,6 +134,9 @@ static int cquit_cmd(const cmd_info_t *cmd_info);
 static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
+static int compare_cmd(const cmd_info_t *cmd_info);
+static int parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
+		ListType *lt, int *single_pane, int *group_ids);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
@@ -259,6 +263,8 @@ static int unlet_cmd(const cmd_info_t *cmd_info);
 static int unmap_cmd(const cmd_info_t *cmd_info);
 static int unselect_cmd(const cmd_info_t *cmd_info);
 static void select_unselect_by_range(const cmd_info_t *cmd_info, int select);
+static void select_unselect_entry(FileView *view, dir_entry_t *entry,
+		int select);
 static int select_unselect_by_filter(const cmd_info_t *cmd_info, int select);
 static int select_unselect_by_pattern(const cmd_info_t *cmd_info, int select);
 static int view_cmd(const cmd_info_t *cmd_info);
@@ -375,6 +381,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display/define :commands",
 	  .flags = HAS_EMARK,
 	  .handler = &command_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "compare",           .abbr = NULL,    .id = COM_COMPARE,
+	  .descr = "compares directories in two panes",
+	  .flags = HAS_COMMENT,
+	  .handler = &compare_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "copy",              .abbr = "co",    .id = COM_COPY,
 	  .descr = "copy files",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_BG_FLAG | HAS_QUOTED_ARGS | HAS_COMMENT
@@ -1746,6 +1756,56 @@ make_bmark_path(const char path[])
 	return ret;
 }
 
+/* Compares files in one or two panes to produce their diff or lists of
+ * duplicates or unique files. */
+static int
+compare_cmd(const cmd_info_t *cmd_info)
+{
+	CompareType ct = CT_CONTENTS;
+	ListType lt = LT_ALL;
+	int single_pane = 0, group_ids = 0;
+	if(parse_compare_properties(cmd_info, &ct, &lt, &single_pane,
+				&group_ids) != 0)
+	{
+		return 1;
+	}
+
+	return single_pane
+	     ? (compare_one_pane(curr_view, ct, lt) != 0)
+	     : (compare_two_panes(ct, lt, !group_ids) != 0);
+}
+
+/* Parses comparison properties.  Default values for arguments should be set
+ * before the call.  Returns zero on success, otherwise non-zero is returned and
+ * error message is displayed on the status bar. */
+static int
+parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
+		ListType *lt, int *single_pane, int *group_ids)
+{
+	int i;
+	for(i = 0; i < cmd_info->argc; ++i)
+	{
+		const char *const property = cmd_info->argv[i];
+		if     (strcmp(property, "byname") == 0)     *ct = CT_NAME;
+		else if(strcmp(property, "bysize") == 0)     *ct = CT_SIZE;
+		else if(strcmp(property, "bycontents") == 0) *ct = CT_CONTENTS;
+		else if(strcmp(property, "listall") == 0)    *lt = LT_ALL;
+		else if(strcmp(property, "listunique") == 0) *lt = LT_UNIQUE;
+		else if(strcmp(property, "listdups") == 0)   *lt = LT_DUPS;
+		else if(strcmp(property, "ofboth") == 0)     *single_pane = 0;
+		else if(strcmp(property, "ofone") == 0)      *single_pane = 1;
+		else if(strcmp(property, "groupids") == 0)   *group_ids = 1;
+		else if(strcmp(property, "grouppaths") == 0) *group_ids = 0;
+		else
+		{
+			status_bar_errorf("Unknown comparison property: %s", property);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 static int
 dirs_cmd(const cmd_info_t *cmd_info)
 {
@@ -1825,8 +1885,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	if(!curr_view->selected_files ||
-			!curr_view->dir_entry[curr_view->list_pos].selected)
+	if(!curr_view->selected_files || !get_current_entry(curr_view)->selected)
 	{
 		char file_to_view[PATH_MAX];
 
@@ -3226,7 +3285,7 @@ only_cmd(const cmd_info_t *cmd_info)
 static int
 popd_cmd(const cmd_info_t *cmd_info)
 {
-	if(popd() != 0)
+	if(dir_stack_pop() != 0)
 	{
 		status_bar_message("Directory stack empty");
 		return 1;
@@ -3239,14 +3298,14 @@ pushd_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
-		if(swap_dirs() != 0)
+		if(dir_stack_swap() != 0)
 		{
 			status_bar_error("No other directories");
 			return 1;
 		}
 		return 0;
 	}
-	if(pushd() != 0)
+	if(dir_stack_push_current() != 0)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
@@ -3973,26 +4032,29 @@ select_unselect_by_range(const cmd_info_t *cmd_info, int select)
 
 	if(cmd_info->begin == NOT_DEF)
 	{
-		if((curr_view->dir_entry[curr_view->list_pos].selected != 0) != select)
-		{
-			curr_view->dir_entry[curr_view->list_pos].selected = select;
-			curr_view->selected_files += (select ? 1 : -1);
-		}
+		select_unselect_entry(curr_view, get_current_entry(curr_view), select);
 	}
 	else
 	{
 		int i;
 		for(i = cmd_info->begin; i <= cmd_info->end; ++i)
 		{
-			if((curr_view->dir_entry[i].selected != 0) != select)
-			{
-				curr_view->dir_entry[i].selected = select;
-				curr_view->selected_files += (select ? 1 : -1);
-			}
+			select_unselect_entry(curr_view, &curr_view->dir_entry[i], select);
 		}
 	}
 
 	ui_view_schedule_redraw(curr_view);
+}
+
+/* Selects or unselects the entry. */
+static void
+select_unselect_entry(FileView *view, dir_entry_t *entry, int select)
+{
+	if(fentry_is_valid(entry) && (entry->selected != 0) != select)
+	{
+		entry->selected = select;
+		view->selected_files += (select ? 1 : -1);
+	}
 }
 
 /* Selects or unselects entries that match list of files supplied by external

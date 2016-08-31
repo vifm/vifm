@@ -51,7 +51,7 @@ column2_func(int id, const void *data, size_t buf_len, char buf[])
 static void
 perform_test(column_info_t column_infos[2])
 {
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	columns_add_column(cols, column_infos[0]);
 	columns_add_column(cols, column_infos[1]);
 
@@ -146,7 +146,7 @@ TEST(even_width)
 	};
 	static const char expected[] = "bbbbaaaaayyyyyzzzzz ";
 
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	columns_add_column(cols, column_infos[0]);
 	columns_add_column(cols, column_infos[1]);
 
@@ -166,7 +166,7 @@ TEST(filling)
 	};
 	static const char expected[] = "aaaaayyyyyzzzzz     ";
 
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	columns_add_column(cols, column_infos[0]);
 
 	memset(print_buffer, '\0', MAX_WIDTH);

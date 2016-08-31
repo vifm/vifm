@@ -58,7 +58,7 @@ column1_func2(int id, const void *data, size_t buf_len, char *buf)
 static void
 perform_test(column_info_t column_info)
 {
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	columns_add_column(cols, column_info);
 
 	columns_format_line(cols, NULL, MAX_WIDTH);
@@ -113,7 +113,7 @@ TEST(truncation_on_right_align)
 	};
 	static const char expected[] = "g";
 
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	col1_next = column1_func2;
 	columns_add_column(cols, column_info);
 
@@ -132,7 +132,7 @@ TEST(dyn_align)
 		.align = AT_DYN,      .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
 	};
 
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	col1_next = column1_func2;
 	columns_add_column(cols, column_info);
 

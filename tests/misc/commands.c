@@ -460,7 +460,7 @@ TEST(yank_works_with_ranges)
 	flist_custom_start(&lwin, "test");
 	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
 	flist_custom_add(&lwin, path);
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR) == 0);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	reg = regs_find(DEFAULT_REG_NAME);
 	assert_non_null(reg);
@@ -622,7 +622,7 @@ TEST(find_command, IF(not_windows))
 	assert_failure(exec_commands("find", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("find a", &lwin, CIT_COMMAND));
-	assert_int_equal(2, lwin.list_rows);
+	assert_int_equal(3, lwin.list_rows);
 
 	assert_success(exec_commands("find . -name aaa", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.list_rows);
@@ -672,6 +672,23 @@ TEST(touch)
 	(void)exec_commands("touch file", &lwin, CIT_COMMAND);
 
 	assert_success(remove(SANDBOX_PATH "/file"));
+}
+
+TEST(compare)
+{
+	opt_handlers_setup();
+
+	create_file(SANDBOX_PATH "/file");
+
+	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
+	(void)exec_commands("compare byname bysize bycontents listall listdups "
+			"listunique ofboth ofone groupids grouppaths", &lwin, CIT_COMMAND);
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(CV_REGULAR, lwin.custom.type);
+
+	assert_success(remove(SANDBOX_PATH "/file"));
+
+	opt_handlers_teardown();
 }
 
 static void

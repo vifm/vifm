@@ -9,6 +9,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
@@ -78,7 +79,7 @@ TEST(sync_syncs_filelist)
 	flist_custom_add(curr_view, TEST_DATA_PATH "/rename/a");
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "existing-files", cwd);
-	assert_true(flist_custom_finish(curr_view, CV_VERY) == 0);
+	assert_true(flist_custom_finish(curr_view, CV_VERY, 0) == 0);
 	curr_view->list_pos = 3;
 
 	assert_success(exec_commands("sync! filelist cursorpos", curr_view,
@@ -130,7 +131,7 @@ TEST(sync_syncs_trees)
 
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
-	flist_custom_exclude(curr_view);
+	flist_custom_exclude(curr_view, 1);
 
 	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
 	assert_true(flist_custom_active(other_view));
@@ -141,7 +142,7 @@ TEST(sync_syncs_trees)
 	assert_int_equal(curr_view->list_rows, other_view->list_rows);
 
 	columns_free(other_view->columns);
-	other_view->columns = NULL_COLUMNS;
+	other_view->columns = NULL;
 	columns_set_line_print_func(NULL);
 }
 
@@ -161,7 +162,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
-	flist_custom_exclude(curr_view);
+	flist_custom_exclude(curr_view, 1);
 
 	local_filter_apply(other_view, "d");
 	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
@@ -177,7 +178,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 	assert_string_equal("", other_view->local_filter.filter.raw);
 
 	columns_free(other_view->columns);
-	other_view->columns = NULL_COLUMNS;
+	other_view->columns = NULL;
 	columns_set_line_print_func(NULL);
 }
 

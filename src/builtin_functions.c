@@ -196,6 +196,8 @@ getpanetype_builtin(const call_info_t *call_info)
 			case CV_REGULAR: var_val.string = "custom";      break;
 			case CV_VERY:    var_val.string = "very-custom"; break;
 			case CV_TREE:    var_val.string = "tree";        break;
+			case CV_DIFF:
+			case CV_COMPARE: var_val.string = "compare";     break;
 		}
 	}
 	else

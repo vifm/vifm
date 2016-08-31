@@ -35,7 +35,6 @@
 #include "engine/text_buffer.h"
 #include "int/term_title.h"
 #include "modes/view.h"
-#include "ui/column_view.h"
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
@@ -174,7 +173,7 @@ static void viewcolumns_local(OPT_OP op, optval_t val);
 static void set_viewcolumns(FileView *view, const char view_columns[]);
 static void set_view_columns_option(FileView *view, const char value[],
 		int update_ui);
-static void add_column(columns_t columns, column_info_t column_info);
+static void add_column(columns_t *columns, column_info_t column_info);
 static int map_name(const char name[], void *arg);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
@@ -1131,9 +1130,12 @@ load_sort_option(FileView *view)
 	load_sort_option_inner(view, view->sort_g);
 
 	/* The check is to skip this in tests which don't need columns. */
-	if(view->columns != NULL_COLUMNS)
+	if(view->columns != NULL)
 	{
-		set_viewcolumns(view, view->view_columns);
+		if(!cv_compare(view->custom.type))
+		{
+			set_viewcolumns(view, view->view_columns);
+		}
 	}
 }
 
@@ -1151,6 +1153,13 @@ load_sort_option_inner(FileView *view, char sort_keys[])
 	char opt_val[MAX_SORT_KEY_LEN*SK_COUNT];
 	size_t opt_val_len = 0U;
 	OPT_SCOPE scope = (sort_keys == view->sort) ? OPT_LOCAL : OPT_GLOBAL;
+
+	if(sort_keys == view->custom.sort)
+	{
+		val.str_val = "";
+		set_option("sort", val, OPT_LOCAL);
+		return;
+	}
 
 	opt_val[0] = '\0';
 
@@ -2069,15 +2078,19 @@ sort_local(OPT_OP op, optval_t val)
 {
 	char *const value = strdup(val.str_val);
 
-	/* Make sure we don't sort unsorted custom view on :restart. */
-	char *const sort = curr_stats.restart_in_progress
+	/* Make sure we don't sort unsorted custom view on :restart or when it's a
+	 * compare view. */
+	char *const sort = (curr_stats.restart_in_progress ||
+	                    cv_compare(curr_view->custom.type))
 	                 ? ui_view_sort_list_get(curr_view)
 	                 : curr_view->sort;
 	set_sort(curr_view, sort, value);
 	if(curr_stats.global_local_settings)
 	{
-		/* Make sure we don't sort unsorted custom view on :restart. */
-		char *const sort = curr_stats.restart_in_progress
+		/* Make sure we don't sort unsorted custom view on :restart or when it's a
+		 * compare view. */
+		char *const sort = (curr_stats.restart_in_progress ||
+		                    cv_compare(other_view->custom.type))
 		                 ? ui_view_sort_list_get(other_view)
 		                 : other_view->sort;
 		set_sort(other_view, sort, value);
@@ -2336,7 +2349,7 @@ static void
 set_view_columns_option(FileView *view, const char value[], int update_ui)
 {
 	const char *new_value = (value[0] == '\0') ? DEFAULT_VIEW_COLUMNS : value;
-	const columns_t columns = update_ui ? view->columns : NULL_COLUMNS;
+	columns_t *columns = update_ui ? view->columns : NULL;
 
 	if(update_ui)
 	{
@@ -2376,7 +2389,7 @@ set_view_columns_option(FileView *view, const char value[], int update_ui)
 
 /* Adds new column to view columns. */
 static void
-add_column(columns_t columns, column_info_t column_info)
+add_column(columns_t *columns, column_info_t column_info)
 {
 	/* Handle dry run mode, when we don't actually update column view. */
 	if(columns != NULL)

@@ -71,8 +71,8 @@ perform_test(column_info_t column_infos[], size_t count, size_t max_width)
 {
 	size_t i;
 
-	columns_t cols = columns_create();
-	for(i = 0; i < count; ++i)
+	columns_t *const cols = columns_create();
+	for(i = 0U; i < count; ++i)
 	{
 		columns_add_column(cols, column_infos[i]);
 	}
@@ -162,7 +162,7 @@ TEST(filling, IF(locale_works))
 	};
 	static const char expected[] = "师从螺丝刀йклмнопрстуфхцчшщьыъэюя       ";
 
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	columns_add_column(cols, column_infos[0]);
 
 	memset(print_buffer, '\0', 80);
@@ -181,7 +181,7 @@ TEST(right_filling, IF(locale_works))
 	};
 	static const char expected[] = ".";
 
-	columns_t cols = columns_create();
+	columns_t *const cols = columns_create();
 	columns_add_column(cols, column_infos[0]);
 
 	memset(print_buffer, '\0', 80);

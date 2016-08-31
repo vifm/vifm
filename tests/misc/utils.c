@@ -4,10 +4,11 @@
 #include <unistd.h> /* access() */
 
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* fclose() fopen() */
+#include <stdio.h> /* FILE fclose() fopen() fread() */
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/options.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -160,6 +161,26 @@ make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
 	{
 		snprintf(buf, buf_len, "%s/%s/%s", cwd, base, sub);
 	}
+}
+
+void
+copy_file(const char src[], const char dst[])
+{
+	char buf[4*1024];
+	size_t nread;
+	FILE *const in = os_fopen(src, "rb");
+	FILE *const out = os_fopen(dst, "wb");
+
+	assert_non_null(in);
+	assert_non_null(out);
+
+	while((nread = fread(&buf, 1, sizeof(buf), in)) != 0U)
+	{
+		assert_int_equal(nread, fwrite(&buf, 1, nread, out));
+	}
+
+	fclose(out);
+	fclose(in);
 }
 
 int

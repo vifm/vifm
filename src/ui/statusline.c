@@ -116,7 +116,7 @@ update_stat_window(FileView *view, int lazy_redraw)
 static void
 update_stat_window_old(FileView *view, int lazy_redraw)
 {
-	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(view);
 	char name_buf[160*2 + 1];
 	char perm_buf[26];
 	char size_buf[56];
@@ -126,6 +126,13 @@ update_stat_window_old(FileView *view, int lazy_redraw)
 	size_t print_width;
 	char *filename;
 
+	if(fentry_is_fake(curr))
+	{
+		werase(stat_win);
+		refresh_window(stat_win, lazy_redraw);
+		return;
+	}
+
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
 	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
@@ -134,17 +141,17 @@ update_stat_window_old(FileView *view, int lazy_redraw)
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
-	friendly_size_notation(entry->size, sizeof(size_buf), size_buf);
+	friendly_size_notation(curr->size, sizeof(size_buf), size_buf);
 
-	get_uid_string(entry, 0, sizeof(id_buf), id_buf);
+	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
 		strcat(id_buf, ":");
-	get_gid_string(entry, 0, sizeof(id_buf) - strlen(id_buf),
+	get_gid_string(curr, 0, sizeof(id_buf) - strlen(id_buf),
 			id_buf + strlen(id_buf));
 #ifndef _WIN32
-	get_perm_string(perm_buf, sizeof(perm_buf), entry->mode);
+	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
 #else
-	snprintf(perm_buf, sizeof(perm_buf), "%s", attr_str_long(entry->attrs));
+	snprintf(perm_buf, sizeof(perm_buf), "%s", attr_str_long(curr->attrs));
 #endif
 
 	werase(stat_win);
@@ -212,7 +219,7 @@ static char *
 parse_view_macros(FileView *view, const char **format, const char macros[],
 		int opt)
 {
-	const dir_entry_t *const entry = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const curr = get_current_entry(view);
 	char *result = strdup("");
 	size_t len = 0;
 	char c;
@@ -252,23 +259,23 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 		switch(c)
 		{
 			case 't':
-				format_entry_name(entry, sizeof(buf), buf);
+				format_entry_name(curr, sizeof(buf), buf);
 				break;
 			case 'A':
 #ifndef _WIN32
-				get_perm_string(buf, sizeof(buf), entry->mode);
+				get_perm_string(buf, sizeof(buf), curr->mode);
 #else
-				copy_str(buf, sizeof(buf), attr_str_long(entry->attrs));
+				copy_str(buf, sizeof(buf), attr_str_long(curr->attrs));
 #endif
 				break;
 			case 'u':
-				get_uid_string(entry, 0, sizeof(buf), buf);
+				get_uid_string(curr, 0, sizeof(buf), buf);
 				break;
 			case 'g':
-				get_gid_string(entry, 0, sizeof(buf), buf);
+				get_gid_string(curr, 0, sizeof(buf), buf);
 				break;
 			case 's':
-				friendly_size_notation(entry->size, sizeof(buf), buf);
+				friendly_size_notation(curr->size, sizeof(buf), buf);
 				break;
 			case 'E':
 				{
@@ -295,7 +302,7 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				break;
 			case 'd':
 				{
-					struct tm *tm_ptr = localtime(&entry->mtime);
+					struct tm *tm_ptr = localtime(&curr->mtime);
 					strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
 				}
 				break;
@@ -344,6 +351,11 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				LOG_INFO_MSG("Unexpected %%-sequence: %%%c", c);
 				ok = 0;
 				break;
+		}
+
+		if(char_is_one_of("tAugsEd", c) && fentry_is_fake(curr))
+		{
+			buf[0] = '\0';
 		}
 
 		if(!ok)

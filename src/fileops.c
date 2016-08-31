@@ -936,9 +936,9 @@ rename_file_cb(const char new_name[])
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[strlen(new_name) + 1 + strlen(rename_file_ext) + 1 + 1];
 	int mv_res;
-	dir_entry_t *const entry = &curr_view->dir_entry[curr_view->list_pos];
-	const char *const fname = entry->name;
-	const char *const forigin = entry->origin;
+	dir_entry_t *const curr = get_current_entry(curr_view);
+	const char *const fname = curr->name;
+	const char *const forigin = curr->origin;
 
 	if(is_null_or_empty(new_name))
 	{
@@ -973,7 +973,7 @@ rename_file_cb(const char new_name[])
 
 	/* Rename file in internal structures for correct positioning of cursor after
 	 * reloading, as cursor will be positioned on the file with the same name. */
-	fentry_rename(curr_view, entry, new);
+	fentry_rename(curr_view, curr, new);
 
 	ui_view_schedule_reload(curr_view);
 }
@@ -988,22 +988,25 @@ complete_filename_only(const char str[], void *arg)
 void
 rename_current_file(FileView *view, int name_only)
 {
-	const char *const old = get_current_file_name(view);
-	char filename[strlen(old) + 1];
+	const dir_entry_t *const curr = get_current_entry(view);
+	char filename[strlen(curr->name) + 1];
 
 	if(!can_change_view_files(view))
 	{
 		return;
 	}
-
-	copy_str(filename, sizeof(filename), old);
-	if(is_parent_dir(filename))
+	if(fentry_is_fake(curr))
+	{
+		return;
+	}
+	if(is_parent_dir(curr->name))
 	{
 		show_error_msg("Rename error",
 				"You can't rename parent directory this way");
 		return;
 	}
 
+	copy_str(filename, sizeof(filename), curr->name);
 	if(name_only)
 	{
 		copy_str(rename_file_ext, sizeof(rename_file_ext), cut_extension(filename));
@@ -1790,6 +1793,11 @@ change_link(FileView *view)
 		return 0;
 	}
 
+	if(fentry_is_fake(entry))
+	{
+		status_bar_error("Entry doesn't correspond to a file");
+		return 1;
+	}
 	if(entry->type != FT_LINK)
 	{
 		status_bar_error("File is not a symbolic link");
@@ -4367,7 +4375,7 @@ calculate_size_bg(const FileView *view, int force)
 {
 	int i;
 
-	if(!view->dir_entry[view->list_pos].selected && view->user_selection)
+	if(!get_current_entry(view)->selected && view->user_selection)
 	{
 		update_dir_entry_size(view, view->list_pos, force);
 		return;
@@ -4390,6 +4398,11 @@ update_dir_entry_size(const FileView *view, int index, int force)
 {
 	char full_path[PATH_MAX];
 	const dir_entry_t *const entry = &view->dir_entry[index];
+
+	if(fentry_is_fake(entry))
+	{
+		return;
+	}
 
 	if(is_parent_dir(entry->name))
 	{

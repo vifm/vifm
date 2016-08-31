@@ -78,8 +78,8 @@ utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
                 $(ui) $(utilities) args.c background.c bmarks.c \
-                bracket_notation.c builtin_functions.c cmd_handlers.c \
-                cmd_completion.c cmd_core.c compile_info.c dir_stack.c \
+                bracket_notation.c builtin_functions.c cmd_completion.c \
+                cmd_core.c cmd_handlers.c compare.c compile_info.c dir_stack.c \
                 event_loop.c filelist.c filename_modifiers.c fileops.c \
                 filetype.c filtering.c flist_pos.c ipc.c macros.c marks.c \
                 ops.c opt_handlers.c registers.c running.c search.c signals.c \

@@ -12,6 +12,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/args.h"
 #include "../../src/builtin_functions.h"
+#include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
 #include "../parsing/asserts.h"
@@ -181,7 +182,7 @@ TEST(getpanetype_for_custom_view)
 {
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR) == 0);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	curr_view = &lwin;
 	ASSERT_OK("getpanetype()", "custom");
@@ -193,7 +194,7 @@ TEST(getpanetype_for_very_custom_view)
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	assert_true(flist_custom_finish(&lwin, CV_VERY) == 0);
+	assert_true(flist_custom_finish(&lwin, CV_VERY, 0) == 0);
 
 	curr_view = &lwin;
 	ASSERT_OK("getpanetype()", "very-custom");
@@ -207,6 +208,18 @@ TEST(getpanetype_for_tree_view)
 
 	curr_view = &lwin;
 	ASSERT_OK("getpanetype()", "tree");
+}
+
+TEST(getpanetype_for_compare_view)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/rename");
+
+	opt_handlers_setup();
+	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS);
+	opt_handlers_teardown();
+
+	curr_view = &lwin;
+	ASSERT_OK("getpanetype()", "compare");
 }
 
 TEST(chooseopt_options_are_not_set)

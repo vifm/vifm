@@ -19,38 +19,46 @@
 #ifndef VIFM__DIR_STACK_H__
 #define VIFM__DIR_STACK_H__
 
+/* Single entry of the stack. */
 typedef struct
 {
-	char *lpane_dir;
-	char *lpane_file;
-	char *rpane_dir;
-	char *rpane_file;
+	char *lpane_dir;  /* Path of the left pane. */
+	char *lpane_file; /* File under cursor in the left pane. */
+	char *rpane_dir;  /* Path of the right pane. */
+	char *rpane_file; /* File under cursor in the right pane. */
 }
-stack_entry_t;
+dir_stack_entry_t;
 
-extern stack_entry_t * stack;
-extern unsigned int stack_top;
+/* The stack itself.  NULL, when empty. */
+extern dir_stack_entry_t *dir_stack;
+/* Current size of the stack. */
+extern unsigned int dir_stack_top;
 
-/* Returns 0 on success and -1 when not enough memory. */
-int pushd(void);
+/* Pushes current locations of views onto the stack.  Returns 0 on success and
+ * -1 when not enough memory. */
+int dir_stack_push_current(void);
 
-/* Returns 0 on success and -1 when not enough memory. */
-int push_to_dirstack(const char *ld, const char *lf, const char *rd,
-		const char *rf);
+/* Pushes specified locations onto the stack.  Returns 0 on success and -1 when
+ * not enough memory. */
+int dir_stack_push(const char ld[], const char lf[], const char rd[],
+		const char rf[]);
 
-/* Returns 0 on success and -1 on underflow. */
-int popd(void);
+/* Pops top of the stack and navigates views to those locations.  Returns 0 on
+ * success and -1 on underflow. */
+int dir_stack_pop(void);
 
-/* Returns 0 on success and -1 on error. */
-int swap_dirs(void);
+/* Swaps current locations with those at the top of the stack.  Returns 0 on
+ * success and -1 on error. */
+int dir_stack_swap(void);
 
-/* Returns 0 on success and -1 on error. */
-int rotate_stack(int n);
+/* Rotates stack entries by n items.  Returns 0 on success and -1 on error. */
+int dir_stack_rotate(int n);
 
-/* Always successful. */
-void clean_stack(void);
+/* Empties the stack.  Always successful. */
+void dir_stack_clear(void);
 
-/* Last element of list returned is NULL.  Returns NULL on error. */
+/* Lists contents of the stack as lines of text.  Last element of list returned
+ * is NULL.  Returns NULL on error, otherwise caller should free the memory. */
 char ** dir_stack_list(void);
 
 /* Freezes change in the directory stack.  In combination with

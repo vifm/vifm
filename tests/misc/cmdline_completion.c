@@ -1,6 +1,5 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
@@ -26,7 +25,17 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 
+#include "asserts.h"
 #include "utils.h"
+
+#define ASSERT_COMPLETION(initial, expected) \
+	do \
+	{ \
+		prepare_for_line_completion(initial); \
+		assert_success(line_completion(&stats)); \
+		assert_wstring_equal(expected, stats.line); \
+	} \
+	while (0)
 
 static void dummy_handler(OPT_OP op, optval_t val);
 static int dquotes_allowed_in_paths(void);
@@ -70,9 +79,9 @@ SETUP()
 			def);
 
 	saved_cwd = save_cwd();
-	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
+	assert_success(chdir(TEST_DATA_PATH "/compare"));
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
-			TEST_DATA_PATH, "existing-files", saved_cwd);
+			TEST_DATA_PATH, "compare", saved_cwd);
 }
 
 TEARDOWN()
@@ -95,39 +104,25 @@ dummy_handler(OPT_OP op, optval_t val)
 
 TEST(leave_spaces_at_begin)
 {
-	char *buf;
-
 	vle_compl_reset();
 	assert_int_equal(1, complete_cmd(" qui", NULL));
-	buf = vle_compl_next();
-	assert_string_equal("quit", buf);
-	free(buf);
-	buf = vle_compl_next();
-	assert_string_equal("quit", buf);
-	free(buf);
+	ASSERT_NEXT_MATCH("quit");
+	ASSERT_NEXT_MATCH("quit");
 }
 
 TEST(only_user)
 {
-	char *buf;
-
 	vle_compl_reset();
 	assert_int_equal(8, complete_cmd("command ", NULL));
-	buf = vle_compl_next();
-	assert_string_equal("bar", buf);
-	free(buf);
+	ASSERT_NEXT_MATCH("bar");
 
 	vle_compl_reset();
 	assert_int_equal(9, complete_cmd(" command ", NULL));
-	buf = vle_compl_next();
-	assert_string_equal("bar", buf);
-	free(buf);
+	ASSERT_NEXT_MATCH("bar");
 
 	vle_compl_reset();
 	assert_int_equal(10, complete_cmd("  command ", NULL));
-	buf = vle_compl_next();
-	assert_string_equal("bar", buf);
-	free(buf);
+	ASSERT_NEXT_MATCH("bar");
 }
 
 static void
@@ -144,16 +139,12 @@ prepare_for_line_completion(const wchar_t str[])
 
 TEST(test_set_completion)
 {
-	prepare_for_line_completion(L"set ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"set all", stats.line);
+	ASSERT_COMPLETION(L"set ", L"set all");
 }
 
 TEST(no_sdquoted_completion_does_nothing)
 {
-	prepare_for_line_completion(L"command '");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"command '", stats.line);
+	ASSERT_COMPLETION(L"command '", L"command '");
 }
 
 TEST(spaces_escaping_leading)
@@ -162,29 +153,23 @@ TEST(spaces_escaping_leading)
 			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"touch \\ ");
-	assert_success(line_completion(&stats));
-
-	assert_wstring_equal(L"touch \\ begins-with-space", stats.line);
+	ASSERT_COMPLETION(L"touch \\ ", L"touch \\ begins-with-space");
 }
 
 TEST(spaces_escaping_everywhere)
 {
 	assert_success(chdir("../spaces-in-names"));
 
-	prepare_for_line_completion(L"touch \\ s");
-	assert_success(line_completion(&stats));
-
 	/* Whether trailing space is there depends on file system and OS. */
 	if(access("\\ spaces\\ everywhere\\ ", F_OK) == 0)
 	{
-		assert_wstring_equal(L"touch \\ spaces\\ everywhere\\ ", stats.line);
+		ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere\\ ");
 	}
 	/* Only one condition is true, but don't use else to make one of asserts fail
 	 * if there are two files somehow. */
 	if(access("\\ spaces\\ everywhere", F_OK) == 0)
 	{
-		assert_wstring_equal(L"touch \\ spaces\\ everywhere", stats.line);
+		ASSERT_COMPLETION(L"touch \\ s", L"touch \\ spaces\\ everywhere");
 	}
 }
 
@@ -194,19 +179,16 @@ TEST(spaces_escaping_trailing)
 			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"touch e");
-	assert_success(line_completion(&stats));
-
 	/* Whether trailing space is there depends on file system and OS. */
 	if(access("ends-with-space\\ ", F_OK) == 0)
 	{
-		assert_wstring_equal(L"touch ends-with-space\\ ", stats.line);
+		ASSERT_COMPLETION(L"touch e", L"touch ends-with-space\\ ");
 	}
 	/* Only one condition is true, but don't use else to make one of asserts fail
 	 * if there are too files somehow. */
 	if(access("ends-with-space", F_OK) == 0)
 	{
-		assert_wstring_equal(L"touch ends-with-space", stats.line);
+		ASSERT_COMPLETION(L"touch e", L"touch ends-with-space");
 	}
 }
 
@@ -216,17 +198,12 @@ TEST(spaces_escaping_middle)
 			TEST_DATA_PATH, "spaces-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"touch s");
-	assert_success(line_completion(&stats));
-
-	assert_wstring_equal(L"touch spaces\\ in\\ the\\ middle", stats.line);
+	ASSERT_COMPLETION(L"touch s", L"touch spaces\\ in\\ the\\ middle");
 }
 
 TEST(squoted_completion)
 {
-	prepare_for_line_completion(L"touch '");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"touch 'a", stats.line);
+	ASSERT_COMPLETION(L"touch '", L"touch 'a");
 }
 
 TEST(squoted_completion_escaping)
@@ -235,16 +212,12 @@ TEST(squoted_completion_escaping)
 			TEST_DATA_PATH, "quotes-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"touch 's-quote");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"touch 's-quote-''-in-name", stats.line);
+	ASSERT_COMPLETION(L"touch 's-quote", L"touch 's-quote-''-in-name");
 }
 
 TEST(dquoted_completion)
 {
-	prepare_for_line_completion(L"touch 'b");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"touch 'b", stats.line);
+	ASSERT_COMPLETION(L"touch 'b", L"touch 'b");
 }
 
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
@@ -256,9 +229,7 @@ TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 	create_file("d-quote-\"-in-name-2");
 	create_file("d-quote-\"-in-name-3");
 
-	prepare_for_line_completion(L"touch \"d-quote");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"touch \"d-quote-\\\"-in-name", stats.line);
+	ASSERT_COMPLETION(L"touch \"d-quote", L"touch \"d-quote-\\\"-in-name");
 
 	assert_success(unlink("d-quote-\"-in-name"));
 	assert_success(unlink("d-quote-\"-in-name-2"));
@@ -267,70 +238,34 @@ TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 
 TEST(last_match_is_properly_escaped)
 {
-	char *match;
-
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "quotes-in-names", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"touch 's-quote-''-in");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"touch 's-quote-''-in-name", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("s-quote-''-in-name-2", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("s-quote-''-in", match);
-	free(match);
+	ASSERT_COMPLETION(L"touch 's-quote-''-in", L"touch 's-quote-''-in-name");
+	ASSERT_NEXT_MATCH("s-quote-''-in-name-2");
+	ASSERT_NEXT_MATCH("s-quote-''-in");
 }
 
 TEST(emark_cmd_escaping)
 {
-	char *match;
-
-	prepare_for_line_completion(L"");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("alink", match);
-	free(match);
+	ASSERT_COMPLETION(L"", L"!");
+	ASSERT_NEXT_MATCH("alink");
 }
 
 TEST(winrun_cmd_escaping)
 {
-	char *match;
-
-	prepare_for_line_completion(L"winrun ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"winrun $", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("%", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal(",", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal(".", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("^", match);
-	free(match);
+	ASSERT_COMPLETION(L"winrun ", L"winrun $");
+	ASSERT_NEXT_MATCH("%");
+	ASSERT_NEXT_MATCH(",");
+	ASSERT_NEXT_MATCH(".");
+	ASSERT_NEXT_MATCH("^");
 }
 
 TEST(help_cmd_escaping)
 {
 	cfg.use_vim_help = 1;
-
-	prepare_for_line_completion(L"help vifm-");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"help vifm-!!", stats.line);
+	ASSERT_COMPLETION(L"help vifm-", L"help vifm-!!");
 }
 
 TEST(root_is_completed)
@@ -346,91 +281,42 @@ TEST(root_is_completed)
 
 TEST(dirs_are_completed_with_trailing_slash)
 {
-	char *match;
-
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"cd r");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cd read/", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("rename/", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("r", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("read/", match);
-	free(match);
+	ASSERT_COMPLETION(L"cd r", L"cd read/");
+	ASSERT_NEXT_MATCH("rename/");
+	ASSERT_NEXT_MATCH("r");
+	ASSERT_NEXT_MATCH("read/");
 }
 
 TEST(function_name_completion)
 {
-	char *match;
-
-	prepare_for_line_completion(L"echo e");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"echo executable(", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("expand(", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("e", match);
-	free(match);
+	ASSERT_COMPLETION(L"echo e", L"echo executable(");
+	ASSERT_NEXT_MATCH("expand(");
+	ASSERT_NEXT_MATCH("e");
 }
 
 TEST(percent_completion)
 {
-	char *match;
-
 	/* One percent symbol. */
 
-	prepare_for_line_completion(L"cd %");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cd %%", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("%%", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("%%", match);
-	free(match);
+	ASSERT_COMPLETION(L"cd %", L"cd %%");
+	ASSERT_NEXT_MATCH("%%");
+	ASSERT_NEXT_MATCH("%%");
 
 	/* Two percent symbols. */
 
-	prepare_for_line_completion(L"cd %%");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cd %%", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("%%", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("%%", match);
-	free(match);
+	ASSERT_COMPLETION(L"cd %%", L"cd %%");
+	ASSERT_NEXT_MATCH("%%");
+	ASSERT_NEXT_MATCH("%%");
 
 	/* Three percent symbols. */
 
-	prepare_for_line_completion(L"cd %%%");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cd %%%%", stats.line);
-
-	match = vle_compl_next();
-	assert_string_equal("%%%%", match);
-	free(match);
-
-	match = vle_compl_next();
-	assert_string_equal("%%%%", match);
-	free(match);
+	ASSERT_COMPLETION(L"cd %%%", L"cd %%%%");
+	ASSERT_NEXT_MATCH("%%%%");
+	ASSERT_NEXT_MATCH("%%%%");
 }
 
 TEST(abbreviations)
@@ -438,21 +324,10 @@ TEST(abbreviations)
 	vle_abbr_reset();
 	assert_success(vle_abbr_add(L"lhs", L"rhs"));
 
-	prepare_for_line_completion(L"cabbrev l");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cabbrev lhs", stats.line);
-
-	prepare_for_line_completion(L"cnoreabbrev l");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cnoreabbrev lhs", stats.line);
-
-	prepare_for_line_completion(L"cunabbrev l");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cunabbrev lhs", stats.line);
-
-	prepare_for_line_completion(L"cabbrev l l");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cabbrev l l", stats.line);
+	ASSERT_COMPLETION(L"cabbrev l", L"cabbrev lhs");
+	ASSERT_COMPLETION(L"cnoreabbrev l", L"cnoreabbrev lhs");
+	ASSERT_COMPLETION(L"cunabbrev l", L"cunabbrev lhs");
+	ASSERT_COMPLETION(L"cabbrev l l", L"cabbrev l l");
 
 	vle_abbr_reset();
 }
@@ -470,9 +345,7 @@ TEST(bang_exec_completion)
 
 	create_executable("exec-for-completion" EXE_SUFFIX);
 
-	prepare_for_line_completion(L"!exec-for-com");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!exec-for-completion" EXE_SUFFIXW, stats.line);
+	ASSERT_COMPLETION(L"!exec-for-com", L"!exec-for-completion" EXE_SUFFIXW);
 
 	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
 
@@ -502,9 +375,7 @@ TEST(bang_abs_path_completion)
 	vifm_swprintf(cmd, ARRAY_LEN(cmd),
 			L"!%" WPRINTF_WSTR L"/exec-for-completion" EXE_SUFFIXW, wcwd);
 
-	prepare_for_line_completion(input);
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(cmd, stats.line);
+	ASSERT_COMPLETION(input, cmd);
 
 	assert_int_equal(2, vle_compl_get_count());
 
@@ -517,10 +388,7 @@ TEST(tilde_is_completed_after_emark)
 {
 	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "",
 			saved_cwd);
-
-	prepare_for_line_completion(L"!~/");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"!~/existing-files/", stats.line);
+	ASSERT_COMPLETION(L"!~/", L"!~/compare/");
 }
 
 TEST(bmark_tags_are_completed)
@@ -529,21 +397,10 @@ TEST(bmark_tags_are_completed)
 
 	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
 
-	prepare_for_line_completion(L"bmark tag");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"bmark tag1", stats.line);
-
-	prepare_for_line_completion(L"bmark! fake/path2 tag");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"bmark! fake/path2 tag1", stats.line);
-
-	prepare_for_line_completion(L"bmark! fake/path2 ../");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"bmark! fake/path2 ../", stats.line);
-
-	prepare_for_line_completion(L"bmark! fake/path2 ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"bmark! fake/path2 tag1", stats.line);
+	ASSERT_COMPLETION(L"bmark tag", L"bmark tag1");
+	ASSERT_COMPLETION(L"bmark! fake/path2 tag", L"bmark! fake/path2 tag1");
+	ASSERT_COMPLETION(L"bmark! fake/path2 ../", L"bmark! fake/path2 ../");
+	ASSERT_COMPLETION(L"bmark! fake/path2 ", L"bmark! fake/path2 tag1");
 }
 
 TEST(bmark_path_is_completed)
@@ -555,9 +412,7 @@ TEST(bmark_path_is_completed)
 	assert_success(chdir(curr_view->curr_dir));
 	create_executable("exec-for-completion" EXE_SUFFIX);
 
-	prepare_for_line_completion(L"bmark! exec");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"bmark! exec-for-completion" EXE_SUFFIX, stats.line);
+	/* ASSERT_COMPLETION(L"bmark! exec", L"bmark! exec-for-completion" EXE_SUFFIX); */
 
 	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
 }
@@ -568,170 +423,102 @@ TEST(delbmark_tags_are_completed)
 
 	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
 
-	prepare_for_line_completion(L"delbmark ../");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"delbmark ../", stats.line);
+	ASSERT_COMPLETION(L"delbmark ../", L"delbmark ../");
 }
 
 TEST(selective_sync_completion)
 {
-	prepare_for_line_completion(L"sync! a");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"sync! all", stats.line);
-
-	prepare_for_line_completion(L"sync! ../");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"sync! ../", stats.line);
+	ASSERT_COMPLETION(L"sync! a", L"sync! all");
+	ASSERT_COMPLETION(L"sync! ../", L"sync! ../");
 }
 
 TEST(colorscheme_completion)
 {
 	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
 			"scripts", saved_cwd);
-
-	prepare_for_line_completion(L"colorscheme set-");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"colorscheme set-env", stats.line);
-
-	prepare_for_line_completion(L"colorscheme set-env ../");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"colorscheme set-env ../existing-files/", stats.line);
-
-	prepare_for_line_completion(L"colorscheme ../");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"colorscheme ../", stats.line);
+	ASSERT_COMPLETION(L"colorscheme set-", L"colorscheme set-env");
+	ASSERT_COMPLETION(L"colorscheme set-env ../",
+			L"colorscheme set-env ../compare/");
+	ASSERT_COMPLETION(L"colorscheme ../", L"colorscheme ../");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
-	prepare_for_line_completion(L"colorscheme set-env ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"colorscheme set-env existing-files/", stats.line);
+	ASSERT_COMPLETION(L"colorscheme set-env ", L"colorscheme set-env compare/");
 }
 
 TEST(wincmd_completion)
 {
-	prepare_for_line_completion(L"wincmd ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"wincmd +", stats.line);
-
-	prepare_for_line_completion(L"wincmd + ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"wincmd + ", stats.line);
+	ASSERT_COMPLETION(L"wincmd ", L"wincmd +");
+	ASSERT_COMPLETION(L"wincmd + ", L"wincmd + ");
 }
 
 TEST(grep_completion)
 {
-	prepare_for_line_completion(L"grep -");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"grep -", stats.line);
-
-	prepare_for_line_completion(L"grep .");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"grep .", stats.line);
-
-	prepare_for_line_completion(L"grep -o ..");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"grep -o ../", stats.line);
+	ASSERT_COMPLETION(L"grep -", L"grep -");
+	ASSERT_COMPLETION(L"grep .", L"grep .");
+	ASSERT_COMPLETION(L"grep -o ..", L"grep -o ../");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"grep -o ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"grep -o existing-files/", stats.line);
+	ASSERT_COMPLETION(L"grep -o ", L"grep -o compare/");
 }
 
 TEST(find_completion)
 {
-	prepare_for_line_completion(L"find -");
-	assert_success(line_completion(&stats));
 #ifdef _WIN32
 	/* Windows escaping code doesn't prepend "./". */
-	assert_wstring_equal(L"find -", stats.line);
+	ASSERT_COMPLETION(L"find -", L"find -");
 #else
-	assert_wstring_equal(L"find ./-", stats.line);
+	ASSERT_COMPLETION(L"find -", L"find ./-");
 #endif
 
-	prepare_for_line_completion(L"find ..");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"find ../", stats.line);
-
-	prepare_for_line_completion(L"find . .");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"find . .", stats.line);
+	ASSERT_COMPLETION(L"find ..", L"find ../");
+	ASSERT_COMPLETION(L"find . .", L"find . .");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	prepare_for_line_completion(L"find ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"find existing-files/", stats.line);
+	ASSERT_COMPLETION(L"find ", L"find compare/");
 }
 
 TEST(aucmd_events_are_completed)
 {
-	prepare_for_line_completion(L"autocmd ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd DirEnter", stats.line);
-
-	prepare_for_line_completion(L"autocmd Dir");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd DirEnter", stats.line);
-
-	prepare_for_line_completion(L"autocmd! Dir");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd! DirEnter", stats.line);
-
-	prepare_for_line_completion(L"autocmd DirEnter ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd DirEnter ", stats.line);
+	ASSERT_COMPLETION(L"autocmd ", L"autocmd DirEnter");
+	ASSERT_COMPLETION(L"autocmd Dir", L"autocmd DirEnter");
+	ASSERT_COMPLETION(L"autocmd! Dir", L"autocmd! DirEnter");
+	ASSERT_COMPLETION(L"autocmd DirEnter ", L"autocmd DirEnter ");
 }
 
 TEST(prefixless_option_name_is_completed)
 {
-	prepare_for_line_completion(L"echo &");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"echo &fusehome", stats.line);
+	ASSERT_COMPLETION(L"echo &", L"echo &fusehome");
 	assert_success(line_completion(&stats));
 	assert_wstring_equal(L"echo &path", stats.line);
 }
 
 TEST(prefixed_global_option_name_is_completed)
 {
-	prepare_for_line_completion(L"echo &g:f");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"echo &g:fusehome", stats.line);
+	ASSERT_COMPLETION(L"echo &g:f", L"echo &g:fusehome");
 }
 
 TEST(prefixed_local_option_name_is_completed)
 {
-	prepare_for_line_completion(L"echo &l:p");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"echo &l:path", stats.line);
+	ASSERT_COMPLETION(L"echo &l:p", L"echo &l:path");
 }
 
 TEST(autocmd_name_completion_is_case_insensitive)
 {
-	prepare_for_line_completion(L"autocmd dir");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"autocmd DirEnter", stats.line);
+	ASSERT_COMPLETION(L"autocmd dir", L"autocmd DirEnter");
 }
 
 TEST(highlight_is_completed)
 {
-	prepare_for_line_completion(L"hi ");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"hi Border", stats.line);
-
-	prepare_for_line_completion(L"hi wi");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"hi WildMenu", stats.line);
-
-	prepare_for_line_completion(L"hi WildMenu cter");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"hi WildMenu cterm", stats.line);
+	ASSERT_COMPLETION(L"hi ", L"hi Border");
+	ASSERT_COMPLETION(L"hi wi", L"hi WildMenu");
+	ASSERT_COMPLETION(L"hi WildMenu cter", L"hi WildMenu cterm");
 }
 
 TEST(envvars_are_completed_for_edit)
@@ -739,9 +526,7 @@ TEST(envvars_are_completed_for_edit)
 	env_set("RRRRRARE_VARIABLE1", "1");
 	env_set("RRRRRARE_VARIABLE2", "2");
 
-	prepare_for_line_completion(L"edit $RRRRRARE_VARIA");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"edit $RRRRRARE_VARIABLE1", stats.line);
+	ASSERT_COMPLETION(L"edit $RRRRRARE_VARIA", L"edit $RRRRRARE_VARIABLE1");
 }
 
 TEST(select_is_completed)
@@ -749,45 +534,36 @@ TEST(select_is_completed)
 	env_set("RRRRRARE_VARIABLE1", "1");
 	env_set("RRRRRARE_VARIABLE2", "2");
 
-	prepare_for_line_completion(L"select $RRRRRARE_VARIA");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"select $RRRRRARE_VARIA", stats.line);
-
-	prepare_for_line_completion(L"select !/$RRRRRARE_VARIA");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"select !/$RRRRRARE_VARIA", stats.line);
-
-	prepare_for_line_completion(L"select !cmd some-arg");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"select !cmd some-arg", stats.line);
+	ASSERT_COMPLETION(L"select $RRRRRARE_VARIA", L"select $RRRRRARE_VARIA");
+	ASSERT_COMPLETION(L"select !/$RRRRRARE_VARIA", L"select !/$RRRRRARE_VARIA");
+	ASSERT_COMPLETION(L"select !cmd some-arg", L"select !cmd some-arg");
 
 	/* Check that not memory violations occur here. */
 	prepare_for_line_completion(L"select !cmd ");
 	assert_success(line_completion(&stats));
 
-	prepare_for_line_completion(L"select!!$RRRRRARE_VARIA");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"select!!$RRRRRARE_VARIABLE1", stats.line);
+	ASSERT_COMPLETION(L"select!!$RRRRRARE_VARIA", L"select!!$RRRRRARE_VARIABLE1");
+	ASSERT_COMPLETION(L"unselect !cat $RRRRRARE_VARIA",
+			L"unselect !cat $RRRRRARE_VARIABLE1");
+}
 
-	prepare_for_line_completion(L"unselect !cat $RRRRRARE_VARIA");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"unselect !cat $RRRRRARE_VARIABLE1", stats.line);
+TEST(compare_is_completed)
+{
+	ASSERT_COMPLETION(L"compare by", L"compare bycontents");
+	ASSERT_COMPLETION(L"compare bysize list", L"compare bysize listall");
 }
 
 TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH "/existing-files",
-				SANDBOX_PATH "/dir-link"));
+	assert_success(symlink(TEST_DATA_PATH "/compare", SANDBOX_PATH "/dir-link"));
 #endif
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));
 	strcpy(curr_view->curr_dir, SANDBOX_PATH "/dir-link");
 
-	prepare_for_line_completion(L"cd ../d");
-	assert_success(line_completion(&stats));
-	assert_wstring_equal(L"cd ../dir-link/", stats.line);
+	ASSERT_COMPLETION(L"cd ../d", L"cd ../dir-link/");
 
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
 }
