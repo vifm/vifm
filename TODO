@@ -77,6 +77,7 @@ Possible things to add:
   * Improve sorting (iext; choosing multiple sorting keys in dialog).
     (partially done)
   * Consider escaping of tilde in paths.
+  * Might want to export server name via builtin function.
   * Wrapping of lines in the menus.
   * Something like :g/.../com and :v/.../com in Vim.
   * Don't reread config files on :restart for --no-configs session.
@@ -106,7 +107,6 @@ Possible things to add:
   * Add removable media managing.
   * Something to control behaviour of menu picks.
   * Like gv but to select just pasted files (gp?).
-  * Compare content of panes like C-x d in Midnight Commander.
   * g~<selector> and g?.
   * Add trashes bang to list empty trashes or all of them.
   * 'wildmode' option.
@@ -153,7 +153,8 @@ Questionable things:
   * Builtin function (or variable?) to get number of selected files.
   * Make directory stack menu interactive?
   * Key like ' but that executes bookmark?
-  * Tree-like view with support of foldings (for each directory).
+  * Tree-like view with support of foldings (for each directory). (partially
+    done)
   * Consider adding "da" to remove all elements in :bmarks menu.
   * Add a command to view screen.
   * Command like :run[ &].
