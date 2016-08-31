@@ -3634,14 +3634,7 @@ make_tree(FileView *view, const char path[], int reload, trie_t *excluded_paths)
 	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
 	ui_cancellation_disable();
 
-	if(curr_stats.save_msg || is_status_bar_multiline())
-	{
-		status_bar_message(NULL);
-	}
-	else
-	{
-		ui_sb_quick_msgf("%s", "");
-	}
+	ui_sb_quick_msg_clear();
 
 	if(ui_cancellation_requested())
 	{

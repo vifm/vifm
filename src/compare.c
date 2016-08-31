@@ -27,6 +27,7 @@
 #include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "ui/statusbar.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/fs.h"
@@ -71,6 +72,9 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 	entries_t other = make_diff_list(trie, other_view, &next_id, ct,
 			lt == LT_DUPS);
 	trie_free(trie);
+
+	/* Clear progress message displayed by make_diff_list(). */
+	ui_sb_quick_msg_clear();
 
 	if(!group_paths || lt != LT_ALL)
 	{
@@ -317,6 +321,9 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 	entries_t curr = make_diff_list(trie, view, &next_id, ct, 0);
 	trie_free(trie);
 
+	/* Clear progress message displayed by make_diff_list(). */
+	ui_sb_quick_msg_clear();
+
 	flist_custom_start(view, title);
 
 	dup_id = (curr.nentries > 1 && curr.entries[0].id == curr.entries[1].id)
@@ -391,11 +398,16 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	int i;
 	strlist_t files = {};
 	entries_t r = {};
+	int last_progress = 0;
 
+	show_progress("Listing...", 0);
 	list_files_recursively(flist_get_dir(view), &files);
 
+	show_progress("Querying...", 0);
 	for(i = 0; i < files.nitems; ++i)
 	{
+		char progress_msg[128];
+		int progress;
 		void *data;
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
@@ -429,6 +441,15 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		}
 
 		free(fingerprint);
+
+		progress = (i*100)/files.nitems;
+		if(progress != last_progress)
+		{
+			last_progress = progress;
+			snprintf(progress_msg, sizeof(progress_msg), "Querying... %d (% 2d%%)", i,
+					progress);
+			show_progress(progress_msg, -1);
+		}
 	}
 
 	free_string_array(files.items, files.nitems);
@@ -467,6 +488,8 @@ list_files_recursively(const char path[], strlist_t *list)
 			free(lst[i]);
 			lst[i] = full_path;
 		}
+
+		show_progress("Listing...", 1000);
 	}
 
 	/* Append files. */

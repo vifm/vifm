@@ -1778,6 +1778,16 @@ compare_cmd(const cmd_info_t *cmd_info)
 	{
 		compare_two_panes(ct, lt, !group_ids);
 	}
+
+	if(curr_stats.save_msg || is_status_bar_multiline())
+	{
+		status_bar_message(NULL);
+	}
+	else
+	{
+		ui_sb_quick_msgf("%s", "");
+	}
+
 	return 0;
 }
 

@@ -882,7 +882,7 @@ show_progress(const char msg[], int period)
 	++total;
 
 	/* Skip intermediate updates to do not hammer UI with refreshes. */
-	if(period != 1 && count%abs(period) != 1)
+	if(abs(period) != 1 && count%abs(period) != 1)
 	{
 		return;
 	}
