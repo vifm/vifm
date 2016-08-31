@@ -1321,12 +1321,12 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 		const char dir[], int allow_empty)
 {
 	enum { NORMAL, CUSTOM, UNSORTED } previous;
-	const int no_parent_ref = (view->custom.entry_count == 0);
+	const int empty_view = (view->custom.entry_count == 0);
 
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = NULL;
 
-	if(no_parent_ref && !allow_empty)
+	if(empty_view && !allow_empty)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
 		free(view->custom.title);
@@ -1334,7 +1334,8 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 		return 1;
 	}
 
-	if(no_parent_ref || (!cv_unsorted(type) && cfg_parent_dir_is_visible(0)))
+	/* If there are no files and we are allowed to add ".." directory, do it. */
+	if(empty_view || (!cv_unsorted(type) && cfg_parent_dir_is_visible(0)))
 	{
 		dir_entry_t *const dir_entry = alloc_dir_entry(&view->custom.entries,
 				view->custom.entry_count);
