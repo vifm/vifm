@@ -57,7 +57,7 @@ static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(FileView *view, const dir_entry_t *entry,
 		void *arg);
 static void fill_side_by_side(entries_t curr, entries_t other, int group_paths);
-static void put_or_free(FileView *view, dir_entry_t *entry, int take);
+static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
 		CompareType ct, int dups_only);
 static void list_files_recursively(const char path[], strlist_t *list);
@@ -356,9 +356,8 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 
 	flist_custom_start(view, title);
 
-	dup_id = (curr.nentries > 1 && curr.entries[0].id == curr.entries[1].id)
-	       ? curr.entries[0].id
-	       : -1;
+	dup_id = -1;
+	next_id = 0;
 	for(i = 0; i < curr.nentries; ++i)
 	{
 		dir_entry_t *entry = &curr.entries[i];
@@ -371,7 +370,7 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 
 		if(entry->id == dup_id)
 		{
-			put_or_free(view, entry, lt == LT_DUPS);
+			put_or_free(view, entry, next_id, lt == LT_DUPS);
 			continue;
 		}
 
@@ -381,11 +380,11 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 
 		if(entry->id == dup_id)
 		{
-			put_or_free(view, entry, lt == LT_DUPS);
+			put_or_free(view, entry, ++next_id, lt == LT_DUPS);
 			continue;
 		}
 
-		put_or_free(view, entry, lt == LT_UNIQUE);
+		put_or_free(view, entry, next_id, lt == LT_UNIQUE);
 	}
 
 	/* Entries' data has been moved out of them or freed, so need to free only the
@@ -407,10 +406,11 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 /* Either puts the entry into the view or frees it (depends on the take
  * argument). */
 static void
-put_or_free(FileView *view, dir_entry_t *entry, int take)
+put_or_free(FileView *view, dir_entry_t *entry, int id, int take)
 {
 	if(take)
 	{
+		entry->id = id;
 		flist_custom_put(view, entry);
 	}
 	else

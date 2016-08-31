@@ -242,7 +242,6 @@ TEST(single_pane_unique)
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("dos-eof", lwin.dir_entry[0].name);
-	assert_int_equal(1, lwin.dir_entry[0].id);
 
 	assert_success(remove(SANDBOX_PATH "/dos-eof"));
 	assert_success(remove(SANDBOX_PATH "/utf8-bom-1"));
