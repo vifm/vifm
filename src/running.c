@@ -1211,10 +1211,14 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 	{
 		run_in_split(curr_view, cmd);
 	}
-	else if(flags == MF_CUSTOMVIEW_OUTPUT || flags == MF_VERYCUSTOMVIEW_OUTPUT)
+	else if(ONE_OF(flags, MF_CUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_OUTPUT,
+				MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT))
 	{
-		const int very = flags == MF_VERYCUSTOMVIEW_OUTPUT;
-		output_to_custom_flist(curr_view, cmd, very, 0);
+		const int very =
+			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
+		const int interactive =
+			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
+		output_to_custom_flist(curr_view, cmd, very, interactive);
 	}
 	else
 	{

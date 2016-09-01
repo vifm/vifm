@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 30, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 01, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2872,6 +2872,12 @@ Process command output as list of paths and compose custom view out of it.
 .BI %U
 Same as %u, but implies less list updates inside vifm, which is absence of
 sorting at the moment.
+.TP
+.BI %Iu
+same as %u, but gives up terminal before running external command.
+.TP
+.BI %IU
+same as %U, but gives up terminal before running external command.
 .TP
 .BI %S
 Show command output in the status bar.

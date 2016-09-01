@@ -250,6 +250,19 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 			case 'i': /* Ignore output. */
 				set_flags(flags, MF_IGNORE);
 				break;
+			case 'I': /* Interactive custom views. */
+				switch(command[x + 1])
+				{
+					case 'u':
+						++x;
+						set_flags(flags, MF_CUSTOMVIEW_IOUTPUT);
+						break;
+					case 'U':
+						++x;
+						set_flags(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
+						break;
+				}
+				break;
 			case 'r': /* Registers' content. */
 				expanded = expand_register(flist_get_dir(curr_view), expanded, quotes,
 						command + x + 2, command[x + 1], &well_formed, for_shell);
@@ -694,6 +707,8 @@ macros_to_str(MacroFlags flags)
 		case MF_STATUSBAR_OUTPUT: return "%S";
 		case MF_CUSTOMVIEW_OUTPUT: return "%u";
 		case MF_VERYCUSTOMVIEW_OUTPUT: return "%U";
+		case MF_CUSTOMVIEW_IOUTPUT: return "%Iu";
+		case MF_VERYCUSTOMVIEW_IOUTPUT: return "%IU";
 
 		case MF_SPLIT: return "%s";
 		case MF_IGNORE: return "%i";

@@ -16,8 +16,8 @@
 	Added CmpMismatch highlight group for highlighting mismatched files on
 	side-by-side comparison.
 
-	Try to save and restore terminal state while running external
-	applications.  Thanks to Losiara.
+	Added %Iu and %IU macros, which are %u and %U equivalent, but work better
+	if external command is interactive and changes terminal state.
 
 	Enable restoring files from trash from custom views.
 
