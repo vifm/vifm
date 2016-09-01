@@ -524,7 +524,8 @@ int
 capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
 		menu_info *m)
 {
-	if(process_cmd_output("Loading menu", cmd, user_sh, &output_handler, m) != 0)
+	if(process_cmd_output("Loading menu", cmd, user_sh, 0, &output_handler,
+				m) != 0)
 	{
 		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return 0;
@@ -743,7 +744,7 @@ capture_output(FileView *view, const char cmd[], int user_sh, menu_info *m,
 	if(custom_view || very_custom_view)
 	{
 		reset_popup_menu(m);
-		output_to_custom_flist(view, cmd, very_custom_view);
+		output_to_custom_flist(view, cmd, very_custom_view, 0);
 		return 0;
 	}
 

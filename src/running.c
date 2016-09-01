@@ -1214,7 +1214,7 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 	else if(flags == MF_CUSTOMVIEW_OUTPUT || flags == MF_VERYCUSTOMVIEW_OUTPUT)
 	{
 		const int very = flags == MF_VERYCUSTOMVIEW_OUTPUT;
-		output_to_custom_flist(curr_view, cmd, very);
+		output_to_custom_flist(curr_view, cmd, very, 0);
 	}
 	else
 	{
@@ -1331,7 +1331,8 @@ run_in_split(const FileView *view, const char cmd[])
 }
 
 int
-output_to_custom_flist(FileView *view, const char cmd[], int very)
+output_to_custom_flist(FileView *view, const char cmd[], int very,
+		int interactive)
 {
 	char *title;
 	int error;
@@ -1340,17 +1341,15 @@ output_to_custom_flist(FileView *view, const char cmd[], int very)
 	flist_custom_start(view, title);
 	free(title);
 
-	/* Use this to save more state, which otherwise could be changed by the
-	 * command, this breaks some programs in setup_shellout_env(), so just for
-	 * making custom view. */
-	def_prog_mode();
+	if(interactive && curr_stats.load_stage != 0)
+	{
+		endwin();
+	}
 
 	setup_shellout_env();
-	error = (process_cmd_output("Loading custom view", cmd, 1, &path_handler,
-				view) != 0);
+	error = (process_cmd_output("Loading custom view", cmd, 1, interactive,
+				&path_handler, view) != 0);
 	cleanup_shellout_env();
-
-	reset_prog_mode();
 
 	if(error)
 	{
@@ -1378,7 +1377,7 @@ run_cmd_for_output(const char cmd[], char ***files, int *nfiles)
 	strlist_t list = {};
 
 	setup_shellout_env();
-	error = (process_cmd_output("Loading list", cmd, 1, &line_handler,
+	error = (process_cmd_output("Loading list", cmd, 1, 0, &line_handler,
 				&list) != 0);
 	cleanup_shellout_env();
 

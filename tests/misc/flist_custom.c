@@ -495,7 +495,7 @@ TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 
 	create_file("a\nb");
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
-	assert_success(output_to_custom_flist(&lwin, "cat list", 0));
+	assert_success(output_to_custom_flist(&lwin, "cat list", 0, 0));
 	assert_success(unlink("a\nb"));
 	assert_success(unlink("list"));
 

@@ -59,7 +59,7 @@ void recover_after_shellout(void);
  * instead of regular newline characters.  Supports cancellation.  Returns zero
  * on success, otherwise non-zero is returned. */
 int process_cmd_output(const char descr[], const char cmd[], int user_sh,
-		cmd_output_handler handler, void *arg);
+		int interactive, cmd_output_handler handler, void *arg);
 
 /* Other functions. */
 
