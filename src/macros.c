@@ -178,6 +178,9 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		switch(filter(&quotes, command[x],
 					command[x] == '\0' ? '\0' : command[x + 1]))
 		{
+			int well_formed;
+			char key;
+
 			case 'a': /* user arguments */
 				if(args != NULL)
 				{
@@ -247,33 +250,40 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 			case 'i': /* Ignore output. */
 				set_flags(flags, MF_IGNORE);
 				break;
-			case 'r': /* Registers' content. */
+			case 'I': /* Interactive custom views. */
+				switch(command[x + 1])
 				{
-					int well_formed;
-					expanded = expand_register(flist_get_dir(curr_view), expanded, quotes,
-							command + x + 2, command[x + 1], &well_formed, for_shell);
-					len = strlen(expanded);
-					if(well_formed)
-					{
-						x++;
-					}
+					case 'u':
+						++x;
+						set_flags(flags, MF_CUSTOMVIEW_IOUTPUT);
+						break;
+					case 'U':
+						++x;
+						set_flags(flags, MF_VERYCUSTOMVIEW_IOUTPUT);
+						break;
+				}
+				break;
+			case 'r': /* Registers' content. */
+				expanded = expand_register(flist_get_dir(curr_view), expanded, quotes,
+						command + x + 2, command[x + 1], &well_formed, for_shell);
+				len = strlen(expanded);
+				if(well_formed)
+				{
+					++x;
 				}
 				break;
 			case 'p': /* Preview pane properties. */
+				key = command[x + 1];
+				if(key == 'c')
 				{
-					int well_formed;
-					const char key = command[x + 1];
-					if(key == 'c')
-					{
-						return expanded;
-					}
+					return expanded;
+				}
 
-					expanded = expand_preview(expanded, key, &well_formed);
-					len = strlen(expanded);
-					if(well_formed)
-					{
-						++x;
-					}
+				expanded = expand_preview(expanded, key, &well_formed);
+				len = strlen(expanded);
+				if(well_formed)
+				{
+					++x;
 				}
 				break;
 			case '%':
@@ -697,6 +707,8 @@ macros_to_str(MacroFlags flags)
 		case MF_STATUSBAR_OUTPUT: return "%S";
 		case MF_CUSTOMVIEW_OUTPUT: return "%u";
 		case MF_VERYCUSTOMVIEW_OUTPUT: return "%U";
+		case MF_CUSTOMVIEW_IOUTPUT: return "%Iu";
+		case MF_VERYCUSTOMVIEW_IOUTPUT: return "%IU";
 
 		case MF_SPLIT: return "%s";
 		case MF_IGNORE: return "%i";

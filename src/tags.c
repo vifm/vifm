@@ -9,6 +9,8 @@ const char *tags[] = {
 	"vifm-%C",
 	"vifm-%D",
 	"vifm-%F",
+	"vifm-%IU",
+	"vifm-%Iu",
 	"vifm-%M",
 	"vifm-%S",
 	"vifm-%U",

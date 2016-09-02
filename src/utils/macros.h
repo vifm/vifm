@@ -124,6 +124,13 @@
 #define NONE_(f, n, ...) NONE__(f, n, __VA_ARGS__)
 #define NONE__(f, n, ...) comb##n((f), !, &&, __VA_ARGS__)
 
+/* Checks whether v equals to any of the rest of arguments.  Examples:
+ * ONE_OF(1, 1, 2) == 1
+ * ONE_OF(1, 0, 2) == 0 */
+#define ONE_OF(v, ...) ({ ONE_OF_(v, COUNT(__VA_ARGS__), __VA_ARGS__); })
+#define ONE_OF_(v, n, ...) ONE_OF__(v, n, __VA_ARGS__)
+#define ONE_OF__(v, n, ...) comb##n((v) == , , ||, __VA_ARGS__)
+
 /* Makes bit mask from a list of bits. */
 #define MASK(...) MASK_(COUNT(__VA_ARGS__), __VA_ARGS__)
 #define MASK_(n, ...) MASK__(n, __VA_ARGS__)

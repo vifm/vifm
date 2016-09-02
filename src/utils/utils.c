@@ -79,7 +79,7 @@ vifm_system(char command[])
 
 int
 process_cmd_output(const char descr[], const char cmd[], int user_sh,
-		cmd_output_handler handler, void *arg)
+		int interactive, cmd_output_handler handler, void *arg)
 {
 	FILE *file, *err;
 	pid_t pid;
@@ -98,9 +98,14 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
-	show_progress("", 0);
+	if(!interactive)
+	{
+		show_progress("", 0);
+	}
+
 	wait_for_data_from(pid, file, 0);
-	lines = read_stream_lines(file, &nlines, 1, &show_progress_cb, descr);
+	lines = read_stream_lines(file, &nlines, 1,
+			interactive ? NULL : &show_progress_cb, descr);
 
 	ui_cancellation_disable();
 	fclose(file);

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Aug 30
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 01
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2364,6 +2364,12 @@ The command macros may be used in user commands.
                                                                *vifm-%U*
   %U        same as %u, but implies less list updates inside vifm, which is
             absence of sorting at the moment.
+                                                               *vifm-%Iu*
+  %Iu       same as %u, but gives up terminal before running external
+            %command.
+                                                               *vifm-%IU*
+  %IU       same as %U, but gives up terminal before running external
+            %command.
                                                                *vifm-%S*
   %S        show command output in the status bar.
                                                                *vifm-%s*

@@ -35,7 +35,7 @@ TEST(check_null_separation, IF(cat_is_available))
 	stats_update_shell_type(cfg.shell);
 
 	nlines = 0;
-	assert_success(process_cmd_output("tests", "cat list", 1, &line_handler,
+	assert_success(process_cmd_output("tests", "cat list", 1, 0, &line_handler,
 				NULL));
 	assert_int_equal(1, nlines);
 
