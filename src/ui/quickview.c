@@ -197,7 +197,7 @@ view_file(const char path[])
 {
 	int graphics = 0;
 	const char *viewer;
-	const char *clean_cmd;
+	const char *clear_cmd;
 	FILE *fp;
 
 	viewer = qv_get_viewer(path);
@@ -253,8 +253,8 @@ view_file(const char path[])
 	}
 	curr_stats.graphics_preview = graphics;
 
-	clean_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
-	update_string(&curr_stats.preview_cleanup, clean_cmd);
+	clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
+	update_string(&curr_stats.preview_cleanup, clear_cmd);
 
 	wattrset(other_view->win, 0);
 	view_stream(fp, cfg.wrap_quick_view);

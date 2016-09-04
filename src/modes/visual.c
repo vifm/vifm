@@ -302,7 +302,7 @@ enter_visual_mode(VisualSubmodes sub_mode)
 }
 
 void
-leave_visual_mode(int save_msg, int goto_top, int clean_selection)
+leave_visual_mode(int save_msg, int goto_top, int clear_selection)
 {
 	if(goto_top)
 	{
@@ -311,7 +311,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 			view->list_pos = ub;
 	}
 
-	if(clean_selection)
+	if(clear_selection)
 	{
 		reset_search_results(view);
 		restore_selection_flags(view);

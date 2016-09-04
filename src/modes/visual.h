@@ -37,7 +37,8 @@ void init_visual_mode(void);
 /* Starts visual mode in a given submode. */
 void enter_visual_mode(VisualSubmodes sub_mode);
 
-void leave_visual_mode(int save_msg, int goto_top, int clean_selection);
+/* Leaves visual mode in various ways. */
+void leave_visual_mode(int save_msg, int goto_top, int clear_selection);
 
 /* Should be used to ask visual mode to redraw file list correctly.
  * Intended to be used after setting list position from side. */
