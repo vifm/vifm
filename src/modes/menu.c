@@ -992,7 +992,7 @@ leave_menu_mode(int reset_selection)
 
 	if(reset_selection)
 	{
-		clean_selected_files(view);
+		flist_sel_clear(view);
 		redraw_view(view);
 	}
 

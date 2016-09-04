@@ -401,7 +401,7 @@ run_selection(FileView *view, int dont_execute)
 
 	if(!get_current_entry(view)->selected)
 	{
-		clean_selected_files(view);
+		flist_sel_clear(view);
 	}
 
 	typed_fname = get_typed_entry_fpath(get_current_entry(view));

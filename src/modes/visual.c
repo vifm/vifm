@@ -281,13 +281,13 @@ enter_visual_mode(VisualSubmodes sub_mode)
 	{
 		case VS_NORMAL:
 			amend_type = AT_NONE;
-			clean_selected_files(view);
+			flist_sel_clear(view);
 			backup_selection_flags(view);
 			select_first_one();
 			break;
 		case VS_RESTORE:
 			amend_type = AT_NONE;
-			clean_selected_files(view);
+			flist_sel_clear(view);
 			backup_selection_flags(view);
 			restore_previous_selection();
 			break;
@@ -783,7 +783,7 @@ cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 	update_marks(view);
 	leave_visual_mode(curr_stats.save_msg, 1, 0);
 	open_file(view, FHE_RUN);
-	clean_selected_files(view);
+	flist_sel_clear(view);
 	redraw_view(view);
 }
 
@@ -1056,7 +1056,7 @@ change_amend_type(AmendType new_amend_type)
 
 	if(new_amend_type == AT_NONE)
 	{
-		clean_selected_files(view);
+		flist_sel_clear(view);
 	}
 	else
 	{
@@ -1352,7 +1352,7 @@ update_visual_mode(void)
 {
 	int pos = view->list_pos;
 
-	clean_selected_files(view);
+	flist_sel_clear(view);
 	view->dir_entry[start_pos].selected = 1;
 	view->selected_files = 1;
 

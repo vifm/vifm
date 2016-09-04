@@ -130,7 +130,7 @@ TEST(b_only_lwin_has_selection)
 {
 	char *expanded;
 
-	clean_selected_files(&lwin);
+	flist_sel_clear(&lwin);
 
 	expanded = expand_macros("/%b ", "", NULL, 1);
 	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
@@ -147,7 +147,7 @@ TEST(b_only_rwin_has_selection)
 {
 	char *expanded;
 
-	clean_selected_files(&rwin);
+	flist_sel_clear(&rwin);
 
 	expanded = expand_macros("/%b ", "", NULL, 1);
 	assert_string_equal("/lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile5 ",
@@ -163,8 +163,8 @@ TEST(b_noone_has_selection)
 {
 	char *expanded;
 
-	clean_selected_files(&lwin);
-	clean_selected_files(&rwin);
+	flist_sel_clear(&lwin);
+	flist_sel_clear(&rwin);
 
 	expanded = expand_macros("/%b ", "", NULL, 1);
 	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile5 ", expanded);
@@ -191,8 +191,8 @@ TEST(forward_slashes_on_win_for_non_shell)
 {
 	char *expanded;
 
-	clean_selected_files(&lwin);
-	clean_selected_files(&rwin);
+	flist_sel_clear(&lwin);
+	flist_sel_clear(&rwin);
 
 	expanded = expand_macros("/%b ", "", NULL, 0);
 	assert_string_equal("/lfile\\\"2 /rwin/rfile5 ", expanded);

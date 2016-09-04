@@ -115,7 +115,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 
 	if(move && cfg.hl_search)
 	{
-		clean_selected_files(view);
+		flist_sel_clear(view);
 	}
 
 	reset_search_results(view);

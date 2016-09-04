@@ -352,7 +352,7 @@ leave_attr_mode(void)
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	curr_stats.use_input_bar = 1;
 
-	clean_selected_files(view);
+	flist_sel_clear(view);
 	ui_view_schedule_reload(view);
 }
 

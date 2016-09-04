@@ -1016,7 +1016,7 @@ rename_current_file(FileView *view, int name_only)
 		rename_file_ext[0] = '\0';
 	}
 
-	clean_selected_files(view);
+	flist_sel_clear(view);
 	line_prompt("New name: ", filename, rename_file_cb, complete_filename_only,
 			1);
 }
@@ -1186,7 +1186,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	free_string_array(files, nfiles);
 	free(is_dup);
 
-	clean_selected_files(view);
+	flist_sel_clear(view);
 	redraw_view(view);
 	curr_stats.save_msg = 1;
 	return 1;
@@ -2330,7 +2330,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		return 1;
 	}
 
-	clean_selected_files(view);
+	flist_sel_clear(view);
 
 	if(with_dir)
 	{
@@ -3657,7 +3657,7 @@ can_read_selected_files(FileView *view)
 
 		show_error_msgf("Access denied",
 				"You don't have read permissions on \"%s\"", full_path);
-		clean_selected_files(view);
+		flist_sel_clear(view);
 		redraw_view(view);
 		return 0;
 	}

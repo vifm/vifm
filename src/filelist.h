@@ -94,8 +94,8 @@ int pane_in_dir(const FileView *view, const char path[]);
 
 /* Selection related functions. */
 
-/* Cleans selection possibly saving it for later use. */
-void clean_selected_files(FileView *view);
+/* Clears selection possibly saving it for later use. */
+void flist_sel_clear(FileView *view);
 /* Erases selection not saving anything. */
 void erase_selection(FileView *view);
 /* Inverts selection of files in the view. */

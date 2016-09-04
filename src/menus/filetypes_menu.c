@@ -160,7 +160,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 		}
 	}
 
-	clean_selected_files(view);
+	flist_sel_clear(view);
 	redraw_view(view);
 	return 0;
 }

@@ -828,7 +828,7 @@ select_count(const cmd_info_t *cmd_info, int count)
 	if(pos < 0)
 		pos = curr_view->list_pos;
 
-	clean_selected_files(curr_view);
+	flist_sel_clear(curr_view);
 
 	while(count-- > 0 && pos < curr_view->list_rows)
 	{
@@ -903,7 +903,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	{
 		const int use_term_mux = flags != MF_NO_TERM_MUX;
 
-		clean_selected_files(curr_view);
+		flist_sel_clear(curr_view);
 		if(cfg.fast_run)
 		{
 			char *const buf = fast_run_complete(com);
@@ -3215,7 +3215,7 @@ nohlsearch_cmd(const cmd_info_t *cmd_info)
 
 	if(curr_view->selected_files != 0)
 	{
-		clean_selected_files(curr_view);
+		flist_sel_clear(curr_view);
 		redraw_current_view();
 	}
 	return 0;
@@ -4554,7 +4554,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	bg = parse_bg_mark(expanded_com);
 
-	clean_selected_files(curr_view);
+	flist_sel_clear(curr_view);
 
 	handled = run_ext_command(expanded_com, flags, bg, &save_msg);
 	if(handled > 0)

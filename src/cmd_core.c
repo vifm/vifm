@@ -381,7 +381,7 @@ select_range(int id, const cmd_info_t *cmd_info)
 	/* Both a starting range and an ending range are given. */
 	if(cmd_info->begin > -1)
 	{
-		clean_selected_files(curr_view);
+		flist_sel_clear(curr_view);
 
 		for(x = cmd_info->begin; x <= cmd_info->end; x++)
 		{
@@ -397,7 +397,7 @@ select_range(int id, const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->end > -1)
 		{
-			clean_selected_files(curr_view);
+			flist_sel_clear(curr_view);
 
 			y = 0;
 			for(x = cmd_info->end; x < curr_view->list_rows; x++)
@@ -411,7 +411,7 @@ select_range(int id, const cmd_info_t *cmd_info)
 		}
 		else if(id != COM_FIND && id != COM_GREP)
 		{
-			clean_selected_files(curr_view);
+			flist_sel_clear(curr_view);
 
 			y = 0;
 			for(x = curr_view->list_pos; x < curr_view->list_rows; x++)
@@ -494,7 +494,7 @@ remove_selection(FileView *view)
 	if(view->selected_files == 0)
 		return;
 
-	clean_selected_files(view);
+	flist_sel_clear(view);
 	redraw_view(view);
 }
 

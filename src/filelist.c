@@ -546,7 +546,7 @@ flist_hist_lookup(FileView *view, const FileView *source)
 }
 
 void
-clean_selected_files(FileView *view)
+flist_sel_clear(FileView *view)
 {
 	save_selection(view);
 	erase_selection(view);
@@ -908,7 +908,7 @@ change_directory(FileView *view, const char directory[])
 
 		show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
 
-		clean_selected_files(view);
+		flist_sel_clear(view);
 		return -1;
 	}
 
@@ -920,7 +920,7 @@ change_directory(FileView *view, const char directory[])
 		show_error_msgf("Directory Access Error",
 				"You do not have execute access on %s", dir_dup);
 
-		clean_selected_files(view);
+		flist_sel_clear(view);
 		return -1;
 	}
 
@@ -2847,7 +2847,7 @@ check_if_filelist_have_changed(FileView *view)
 
 		leave_invalid_dir(view);
 		(void)change_directory(view, curr_dir);
-		clean_selected_files(view);
+		flist_sel_clear(view);
 		ui_view_schedule_reload(view);
 		return;
 	}
