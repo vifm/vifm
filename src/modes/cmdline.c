@@ -808,7 +808,7 @@ leave_cmdline_mode(void)
 
 	curs_set(0);
 	curr_stats.save_msg = 0;
-	clean_status_bar();
+	ui_sb_clear();
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{

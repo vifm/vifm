@@ -584,7 +584,7 @@ update_screen(UpdateType update_kind)
 		}
 		else
 		{
-			clean_status_bar();
+			ui_sb_clear();
 		}
 
 		if(vle_mode_is(VIEW_MODE))

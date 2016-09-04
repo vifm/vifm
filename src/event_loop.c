@@ -172,7 +172,7 @@ event_loop(const int *quit)
 			{
 				wait_for_enter = 0;
 				curr_stats.save_msg = 0;
-				clean_status_bar();
+				ui_sb_clear();
 				if(c == WC_CR)
 				{
 					continue;

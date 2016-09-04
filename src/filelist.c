@@ -1916,7 +1916,7 @@ populate_dir_list_internal(FileView *view, int reload)
 
 	if(!reload && !vle_mode_is(CMDLINE_MODE))
 	{
-		clean_status_bar();
+		ui_sb_clear();
 	}
 
 	view->column_count = calculate_columns_count(view);
@@ -2481,7 +2481,7 @@ sort_dir_list(int msg, FileView *view)
 
 	if(msg && !vle_mode_is(CMDLINE_MODE))
 	{
-		clean_status_bar();
+		ui_sb_clear();
 	}
 }
 

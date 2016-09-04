@@ -380,7 +380,7 @@ parse_received_arguments(char *argv[])
 		change_window();
 	}
 
-	clean_status_bar();
+	ui_sb_clear();
 	curr_stats.save_msg = 0;
 }
 

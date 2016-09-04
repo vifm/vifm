@@ -312,7 +312,7 @@ io_progress_changed(const io_progress_t *const state)
 			if(ui_char_pressed(IO_DETAILS_KEY))
 			{
 				pdata->dialog = 1;
-				clean_status_bar();
+				ui_sb_clear();
 			}
 		}
 	}
