@@ -253,7 +253,7 @@ view_file(const char path[])
 	}
 	curr_stats.graphics_preview = graphics;
 
-	clean_cmd = (viewer != NULL) ? ma_get_clean_cmd(viewer) : NULL;
+	clean_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview_cleanup, clean_cmd);
 
 	wattrset(other_view->win, 0);

@@ -602,7 +602,7 @@ append_to_expanded(char expanded[], const char str[])
 }
 
 const char *
-ma_get_clean_cmd(const char cmd[])
+ma_get_clear_cmd(const char cmd[])
 {
 	const char *clean_cmd;
 	const char *const break_point = strstr(cmd, "%pc");
