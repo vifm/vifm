@@ -244,7 +244,7 @@ trash_empty_all(void)
 {
 	regs_remove_trashed_files(NULL);
 	empty_trash_dirs();
-	clean_cmds_with_trash(NULL);
+	un_clear_cmds_with_trash(NULL);
 	remove_trash_entries(NULL);
 }
 
@@ -268,7 +268,7 @@ trash_empty(const char trash_dir[])
 {
 	regs_remove_trashed_files(trash_dir);
 	empty_trash_dir(trash_dir);
-	clean_cmds_with_trash(trash_dir);
+	un_clear_cmds_with_trash(trash_dir);
 	remove_trash_entries(trash_dir);
 }
 
