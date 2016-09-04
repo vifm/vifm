@@ -126,7 +126,8 @@ void navigate_forward_in_history(FileView *view);
 void save_view_history(FileView *view, const char path[], const char file[],
 		int pos);
 int is_in_view_history(FileView *view, const char *path);
-void clean_positions_in_history(FileView *view);
+/* Empties history of the view. */
+void flist_hist_clear(FileView *view);
 /* Looks up history in the source to update cursor position in the view. */
 void flist_hist_lookup(FileView *view, const FileView *source);
 

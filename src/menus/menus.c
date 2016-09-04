@@ -337,7 +337,7 @@ goto_selected_directory(FileView *view, const char path[])
 {
 	if(!cfg.auto_ch_pos)
 	{
-		clean_positions_in_history(view);
+		flist_hist_clear(view);
 		curr_stats.ch_pos = 0;
 	}
 	navigate_to(view, path);

@@ -1274,7 +1274,7 @@ cd_cmd(const cmd_info_t *cmd_info)
 
 	if(!cfg.auto_ch_pos)
 	{
-		clean_positions_in_history(curr_view);
+		flist_hist_clear(curr_view);
 		curr_stats.ch_pos = 0;
 	}
 

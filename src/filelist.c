@@ -383,7 +383,7 @@ navigate_to_history_pos(FileView *view, int pos)
 }
 
 void
-clean_positions_in_history(FileView *view)
+flist_hist_clear(FileView *view)
 {
 	int i;
 	for(i = 0; i <= view->history_pos && i < view->history_num; ++i)
