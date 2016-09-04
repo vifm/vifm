@@ -82,7 +82,7 @@ static int get_match_index(const menu_info *m);
 void
 remove_current_item(menu_info *m)
 {
-	clean_menu_position(m);
+	menu_current_line_erase(m);
 
 	remove_from_string_array(m->items, m->len, m->pos);
 
@@ -108,7 +108,7 @@ remove_current_item(menu_info *m)
 }
 
 void
-clean_menu_position(menu_info *m)
+menu_current_line_erase(menu_info *m)
 {
 	draw_menu_item(m, m->pos, m->current, 1);
 }
@@ -945,7 +945,7 @@ navigate_to_match(menu_info *m, int pos)
 		}
 		else
 		{
-			clean_menu_position(m);
+			menu_current_line_erase(m);
 			move_to_menu_pos(pos, m);
 		}
 		menu_print_search_msg(m);
