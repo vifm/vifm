@@ -375,7 +375,7 @@ leave_attr_mode(void)
 	curs_set(0);
 	curr_stats.use_input_bar = 1;
 
-	flist_sel_clear(view);
+	flist_sel_stash(view);
 	ui_view_schedule_reload(view);
 }
 

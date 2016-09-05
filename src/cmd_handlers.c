@@ -876,7 +876,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	{
 		const int use_term_mux = flags != MF_NO_TERM_MUX;
 
-		flist_sel_clear(curr_view);
+		flist_sel_stash(curr_view);
 		if(cfg.fast_run)
 		{
 			char *const buf = fast_run_complete(com);
@@ -3467,7 +3467,7 @@ select_cmd(const cmd_info_t *cmd_info)
 		/* Append to previous selection unless ! is specified. */
 		if(cmd_info->emark)
 		{
-			erase_selection(curr_view);
+			flist_sel_drop(curr_view);
 		}
 
 		select_unselect_by_range(curr_view, cmd_info->begin, cmd_info->end, 1);
@@ -4386,7 +4386,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	bg = parse_bg_mark(expanded_com);
 
-	flist_sel_clear(curr_view);
+	flist_sel_stash(curr_view);
 
 	handled = run_ext_command(expanded_com, flags, bg, &save_msg);
 	if(handled > 0)

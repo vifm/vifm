@@ -46,10 +46,21 @@ static void select_unselect_entry(FileView *view, dir_entry_t *entry,
 		int select);
 
 void
-flist_sel_clear(FileView *view)
+flist_sel_stash(FileView *view)
 {
 	save_selection(view);
-	erase_selection(view);
+	flist_sel_drop(view);
+}
+
+void
+flist_sel_drop(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].selected = 0;
+	}
+	view->selected_files = 0;
 }
 
 void
@@ -63,7 +74,7 @@ flist_sel_view_reloaded(FileView *view, int location_changed)
 	{
 		save_selection(view);
 	}
-	erase_selection(view);
+	flist_sel_drop(view);
 }
 
 /* Collects currently selected files in view->saved_selection array.  Use
@@ -126,17 +137,6 @@ free_saved_selection(FileView *view)
 }
 
 void
-erase_selection(FileView *view)
-{
-	int i;
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		view->dir_entry[i].selected = 0;
-	}
-	view->selected_files = 0;
-}
-
-void
 invert_selection(FileView *view)
 {
 	int i;
@@ -157,7 +157,7 @@ remove_selection(FileView *view)
 {
 	if(view->selected_files != 0)
 	{
-		flist_sel_clear(view);
+		flist_sel_stash(view);
 		ui_view_schedule_redraw(view);
 	}
 }
@@ -168,7 +168,7 @@ flist_sel_restore(FileView *view, reg_t *reg)
 	int i;
 	trie_t *const selection_trie = trie_create();
 
-	erase_selection(view);
+	flist_sel_drop(view);
 
 	if(reg == NULL)
 	{
@@ -328,7 +328,7 @@ select_unselect_by_filter(FileView *view, const char pattern[], int erase_old,
 	/* Append to previous selection unless ! is specified. */
 	if(select && erase_old)
 	{
-		erase_selection(view);
+		flist_sel_drop(view);
 	}
 
 	if(nfiles == 0)
@@ -395,7 +395,7 @@ select_unselect_by_pattern(FileView *view, const char pattern[], int erase_old,
 	/* Append to previous selection unless ! is specified. */
 	if(select && erase_old)
 	{
-		erase_selection(view);
+		flist_sel_drop(view);
 	}
 
 	for(i = 0; i < view->list_rows; ++i)
@@ -433,7 +433,7 @@ select_count(FileView *view, int at, int count)
 		at = view->list_pos;
 	}
 
-	flist_sel_clear(view);
+	flist_sel_stash(view);
 
 	while(count-- > 0 && at < view->list_rows)
 	{
@@ -457,7 +457,7 @@ select_range(FileView *view, int begin, int end, int select_current)
 	/* Both starting and ending range positions are given. */
 	if(begin > -1)
 	{
-		flist_sel_clear(view);
+		flist_sel_stash(view);
 
 		for(x = begin; x <= end; x++)
 		{
@@ -477,7 +477,7 @@ select_range(FileView *view, int begin, int end, int select_current)
 
 	if(end > -1)
 	{
-		flist_sel_clear(view);
+		flist_sel_stash(view);
 
 		y = 0;
 		for(x = end; x < view->list_rows; x++)
@@ -491,7 +491,7 @@ select_range(FileView *view, int begin, int end, int select_current)
 	}
 	else if(select_current)
 	{
-		flist_sel_clear(view);
+		flist_sel_stash(view);
 
 		y = 0;
 		for(x = view->list_pos; x < view->list_rows; x++)

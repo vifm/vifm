@@ -458,7 +458,7 @@ handle_empty_input(void)
 		/* Clear selection. */
 		if(prev_mode != MENU_MODE)
 		{
-			flist_sel_clear(curr_view);
+			flist_sel_stash(curr_view);
 		}
 		else
 		{

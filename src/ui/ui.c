@@ -1448,7 +1448,7 @@ ui_view_win_changed(FileView *view)
 void
 ui_view_reset_selection_and_reload(FileView *view)
 {
-	flist_sel_clear(view);
+	flist_sel_stash(view);
 	load_saving_pos(view, 1);
 }
 

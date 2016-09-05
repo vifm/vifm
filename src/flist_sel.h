@@ -25,15 +25,15 @@
 #include "ui/ui.h"
 #include "registers.h"
 
-/* Clears selection possibly saving it for later use. */
-void flist_sel_clear(FileView *view);
+/* Clears selection saving it for later use. */
+void flist_sel_stash(FileView *view);
+
+/* Clears selection forgetting not saving it or overwriting last stash. */
+void flist_sel_drop(FileView *view);
 
 /* Callback-like function which triggers some selection updates after view
  * reload. */
 void flist_sel_view_reloaded(FileView *view, int location_changed);
-
-/* Erases selection not saving anything. */
-void erase_selection(FileView *view);
 
 /* Inverts selection of files in the view. */
 void invert_selection(FileView *view);

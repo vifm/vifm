@@ -759,7 +759,7 @@ change_directory(FileView *view, const char directory[])
 
 		show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
 
-		flist_sel_clear(view);
+		flist_sel_stash(view);
 		return -1;
 	}
 
@@ -771,7 +771,7 @@ change_directory(FileView *view, const char directory[])
 		show_error_msgf("Directory Access Error",
 				"You do not have execute access on %s", dir_dup);
 
-		flist_sel_clear(view);
+		flist_sel_stash(view);
 		return -1;
 	}
 
@@ -2681,7 +2681,7 @@ check_if_filelist_have_changed(FileView *view)
 
 		leave_invalid_dir(view);
 		(void)change_directory(view, curr_dir);
-		flist_sel_clear(view);
+		flist_sel_stash(view);
 		ui_view_schedule_reload(view);
 		return;
 	}
