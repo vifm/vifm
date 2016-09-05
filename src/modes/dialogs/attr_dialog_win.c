@@ -35,6 +35,7 @@
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
 #include "../../filelist.h"
+#include "../../flist_sel.h"
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"

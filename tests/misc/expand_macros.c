@@ -10,6 +10,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
+#include "../../src/flist_sel.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
 

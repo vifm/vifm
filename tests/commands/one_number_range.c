@@ -96,14 +96,14 @@ TEST(one_number_range)
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(2, lwin.selected_files);
 
 	curr_view = &rwin;
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(3, rwin.selected_files);
 }
 
@@ -117,7 +117,7 @@ TEST(one_in_the_range)
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(1, lwin.selected_files);
 	assert_int_equal(1, lwin.dir_entry[0].selected);
 
@@ -125,7 +125,7 @@ TEST(one_in_the_range)
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(1, rwin.selected_files);
 	assert_int_equal(1, rwin.dir_entry[0].selected);
 }

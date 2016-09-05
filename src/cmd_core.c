@@ -69,6 +69,7 @@
 #include "cmd_handlers.h"
 #include "filelist.h"
 #include "filtering.h"
+#include "flist_sel.h"
 #include "macros.h"
 #include "marks.h"
 #include "opt_handlers.h"
@@ -108,7 +109,7 @@ static char * get_file_first_line(const char path[]);
 static void execute_extcmd(const char command[], CmdInputType type);
 static void save_extcmd(const char command[], CmdInputType type);
 static void post(int id);
-TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
+TSTATIC void cmds_select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char args[]);
 static char * pattern_expand_hook(const char pattern[]);
 static int cmd_should_be_processed(int cmd_id);
@@ -130,7 +131,7 @@ static cmds_conf_t cmds_conf = {
 	.expand_macros = &cmds_expand_macros,
 	.expand_envvars = &cmds_expand_envvars,
 	.post = &post,
-	.select_range = &select_range,
+	.select_range = &cmds_select_range,
 	.skip_at_beginning = &skip_at_beginning,
 };
 
@@ -371,67 +372,13 @@ post(int id)
 }
 
 TSTATIC void
-select_range(int id, const cmd_info_t *cmd_info)
+cmds_select_range(int id, const cmd_info_t *cmd_info)
 {
-	/* TODO: refactor this function select_range() */
-
-	int x;
-	int y = 0;
-
-	/* Both a starting range and an ending range are given. */
-	if(cmd_info->begin > -1)
+	if(select_range(curr_view, cmd_info->begin, cmd_info->end,
+				(id != COM_FIND && id != COM_GREP)))
 	{
-		flist_sel_clear(curr_view);
-
-		for(x = cmd_info->begin; x <= cmd_info->end; x++)
-		{
-			if(is_parent_dir(curr_view->dir_entry[x].name) &&
-					cmd_info->begin != cmd_info->end)
-				continue;
-			curr_view->dir_entry[x].selected = 1;
-			y++;
-		}
-		curr_view->selected_files = y;
-	}
-	else if(curr_view->selected_files == 0)
-	{
-		if(cmd_info->end > -1)
-		{
-			flist_sel_clear(curr_view);
-
-			y = 0;
-			for(x = cmd_info->end; x < curr_view->list_rows; x++)
-			{
-				if(y == 1)
-					break;
-				curr_view->dir_entry[x].selected = 1;
-				y++;
-			}
-			curr_view->selected_files = y;
-		}
-		else if(id != COM_FIND && id != COM_GREP)
-		{
-			flist_sel_clear(curr_view);
-
-			y = 0;
-			for(x = curr_view->list_pos; x < curr_view->list_rows; x++)
-			{
-				if(y == 1)
-					break;
-
-				curr_view->dir_entry[x].selected = 1;
-				y++;
-			}
-			curr_view->selected_files = y;
-		}
-	}
-	else
-	{
-		return;
-	}
-
-	if(curr_view->selected_files > 0)
 		curr_view->user_selection = 0;
+	}
 }
 
 /* Command prefix remover for command parsing unit.  Returns < 0 to do nothing
@@ -485,17 +432,6 @@ pattern_expand_hook(const char pattern[])
 	free(no_tilde);
 
 	return expanded_pattern;
-}
-
-static void
-remove_selection(FileView *view)
-{
-	/* TODO: maybe move this to filelist.c */
-	if(view->selected_files == 0)
-		return;
-
-	flist_sel_clear(view);
-	redraw_view(view);
 }
 
 /* Returns negative value in case of error */

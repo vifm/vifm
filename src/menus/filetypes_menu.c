@@ -35,6 +35,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../filelist.h"
+#include "../flist_sel.h"
 #include "../filetype.h"
 #include "../running.h"
 #include "../types.h"

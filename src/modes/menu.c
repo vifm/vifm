@@ -45,7 +45,7 @@
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../cmd_completion.h"
-#include "../filelist.h"
+#include "../flist_sel.h"
 #include "../status.h"
 #include "cmdline.h"
 #include "modes.h"

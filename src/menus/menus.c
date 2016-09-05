@@ -55,6 +55,7 @@
 #include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
+#include "../flist_sel.h"
 #include "../macros.h"
 #include "../marks.h"
 #include "../running.h"

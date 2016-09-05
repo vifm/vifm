@@ -59,6 +59,7 @@
 #include "../filelist.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
+#include "../flist_sel.h"
 #include "../marks.h"
 #include "../search.h"
 #include "../status.h"

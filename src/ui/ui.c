@@ -60,6 +60,7 @@
 #include "../utils/utils.h"
 #include "../event_loop.h"
 #include "../filelist.h"
+#include "../flist_sel.h"
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../vifm.h"

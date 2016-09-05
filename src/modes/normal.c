@@ -56,6 +56,7 @@
 #include "../fileops.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
+#include "../flist_sel.h"
 #include "../marks.h"
 #include "../registers.h"
 #include "../running.h"

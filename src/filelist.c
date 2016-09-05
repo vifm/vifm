@@ -69,6 +69,7 @@
 #include "utils/utils.h"
 #include "filtering.h"
 #include "flist_pos.h"
+#include "flist_sel.h"
 #include "macros.h"
 #include "opt_handlers.h"
 #include "registers.h"
@@ -82,10 +83,8 @@ static void init_flist(FileView *view);
 static void reset_view(FileView *view);
 static void init_view_history(FileView *view);
 static void navigate_to_history_pos(FileView *view, int pos);
-static void save_selection(FileView *view);
 static int navigate_to_file_in_custom_view(FileView *view, const char dir[],
 		const char file[]);
-static void free_saved_selection(FileView *view);
 static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
@@ -138,7 +137,6 @@ static void init_dir_entry(FileView *view, dir_entry_t *entry,
 		const char name[]);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int tree_has_changed(const dir_entry_t *entries, size_t nchildren);
-static int file_can_be_displayed(const char directory[], const char filename[]);
 TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
 		const char path[], int *updir, char buf[], size_t buf_size);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
@@ -292,18 +290,6 @@ get_current_file_name(FileView *view)
 		return empty_string;
 	}
 	return get_current_entry(view)->name;
-}
-
-void
-recount_selected_files(FileView *view)
-{
-	int i;
-
-	view->selected_files = 0;
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		view->selected_files += (view->dir_entry[i].selected != 0);
-	}
 }
 
 void
@@ -543,141 +529,6 @@ flist_hist_lookup(FileView *view, const FileView *source)
 		}
 	}
 	(void)consider_scroll_offset(view);
-}
-
-void
-flist_sel_clear(FileView *view)
-{
-	save_selection(view);
-	erase_selection(view);
-}
-
-/* Collects currently selected files in view->saved_selection array.  Use
- * free_saved_selection() to clean up memory allocated by this function. */
-static void
-save_selection(FileView *view)
-{
-	int i;
-	dir_entry_t *entry;
-
-	free_saved_selection(view);
-
-	recount_selected_files(view);
-
-	if(view->selected_files == 0)
-	{
-		return;
-	}
-
-	recount_selected_files(view);
-	view->saved_selection = calloc(view->selected_files, sizeof(char *));
-	if(view->saved_selection == NULL)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
-
-	i = 0;
-	entry = NULL;
-	while(iter_selected_entries(view, &entry))
-	{
-		char full_path[PATH_MAX];
-
-		if(is_parent_dir(entry->name))
-		{
-			entry->selected = 0;
-			continue;
-		}
-
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		view->saved_selection[i] = strdup(full_path);
-		if(view->saved_selection[i] == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			break;
-		}
-
-		++i;
-	}
-	view->nsaved_selection = i;
-}
-
-void
-erase_selection(FileView *view)
-{
-	int i;
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		view->dir_entry[i].selected = 0;
-	}
-	view->selected_files = 0;
-}
-
-void
-invert_selection(FileView *view)
-{
-	int i;
-	view->selected_files = 0;
-	for(i = 0; i < view->list_rows; i++)
-	{
-		dir_entry_t *const e = &view->dir_entry[i];
-		if(fentry_is_valid(e))
-		{
-			e->selected = !e->selected;
-		}
-		view->selected_files += (e->selected != 0);
-	}
-}
-
-void
-flist_sel_restore(FileView *view, reg_t *reg)
-{
-	int i;
-	trie_t *const selection_trie = trie_create();
-
-	erase_selection(view);
-
-	if(reg == NULL)
-	{
-		int i;
-		for(i = 0; i < view->nsaved_selection; ++i)
-		{
-			(void)trie_put(selection_trie, view->saved_selection[i]);
-		}
-	}
-	else
-	{
-		int i;
-		for(i = 0; i < reg->nfiles; ++i)
-		{
-			(void)trie_put(selection_trie, reg->files[i]);
-		}
-	}
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		char full_path[PATH_MAX];
-		void *ignored_data;
-		dir_entry_t *const entry = &view->dir_entry[i];
-
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		if(trie_get(selection_trie, full_path, &ignored_data) == 0)
-		{
-			entry->selected = 1;
-			++view->selected_files;
-
-			/* Assuming that selection is usually contiguous it makes sense to quit
-			 * when we found all elements to optimize this operation. */
-			if(view->selected_files == view->nsaved_selection)
-			{
-				break;
-			}
-		}
-	}
-
-	trie_free(selection_trie);
-
-	redraw_current_view();
 }
 
 void
@@ -948,15 +799,7 @@ change_directory(FileView *view, const char directory[])
 	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);
 
-	if(location_changed)
-	{
-		free_saved_selection(view);
-	}
-	else
-	{
-		save_selection(view);
-	}
-	erase_selection(view);
+	flist_sel_view_reloaded(view, location_changed);
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	env_set("PWD", dir_dup);
@@ -1002,15 +845,6 @@ is_dir_list_loaded(FileView *view)
 {
 	dir_entry_t *const entry = (view->list_rows < 1) ? NULL : &view->dir_entry[0];
 	return entry != NULL && entry->name[0] != '\0';
-}
-
-/* Frees list of previously selected files. */
-static void
-free_saved_selection(FileView *view)
-{
-	free_string_array(view->saved_selection, view->nsaved_selection);
-	view->nsaved_selection = 0;
-	view->saved_selection = NULL;
 }
 
 #ifdef _WIN32
@@ -3004,59 +2838,6 @@ int
 pane_in_dir(const FileView *view, const char path[])
 {
 	return paths_are_same(view->curr_dir, path);
-}
-
-int
-ensure_file_is_selected(FileView *view, const char name[])
-{
-	int file_pos;
-	char nm[NAME_MAX];
-
-	/* Don't reset filters to find "file with empty name". */
-	if(name[0] == '\0')
-	{
-		return 0;
-	}
-
-	/* This is for compatibility with paths loaded from vifminfo that have
-	 * trailing slash. */
-	copy_str(nm, sizeof(nm), name);
-	chosp(nm);
-
-	file_pos = find_file_pos_in_list(view, nm);
-	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, nm))
-	{
-		if(nm[0] == '.')
-		{
-			set_dot_files_visible(view, 1);
-			file_pos = find_file_pos_in_list(view, nm);
-		}
-
-		if(file_pos < 0)
-		{
-			remove_filename_filter(view);
-
-			/* remove_filename_filter() postpones list of files reloading. */
-			(void)populate_dir_list_internal(view, 1);
-
-			file_pos = find_file_pos_in_list(view, nm);
-		}
-	}
-
-	flist_set_pos(view, (file_pos < 0) ? 0 : file_pos);
-	return file_pos >= 0;
-}
-
-/* Checks if file specified can be displayed. Used to filter some files, that
- * are hidden intentionally.  Returns non-zero if file can be made visible. */
-static int
-file_can_be_displayed(const char directory[], const char filename[])
-{
-	if(is_parent_dir(filename))
-	{
-		return cfg_parent_dir_is_visible(is_root_dir(directory));
-	}
-	return path_exists_at(directory, filename, DEREF);
 }
 
 int
