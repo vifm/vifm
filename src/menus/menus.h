@@ -52,7 +52,6 @@ typedef struct menu_info
 	short int (*matches)[2];
 	char *regexp;
 	char *title;
-	char *args;
 	/* Contains titles of all menu items. */
 	char **items;
 	/* Contains additional data, associated with each of menu items, can be

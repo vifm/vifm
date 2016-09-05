@@ -128,7 +128,6 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->matches = NULL;
 	m->regexp = NULL;
 	m->title = title;
-	m->args = NULL;
 	m->items = NULL;
 	m->data = NULL;
 	m->key_handler = NULL;
@@ -141,7 +140,6 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 void
 reset_popup_menu(menu_info *m)
 {
-	free(m->args);
 	/* Menu elements don't always have data associated with them.  That's why we
 	 * need this check. */
 	if(m->data != NULL)
