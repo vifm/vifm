@@ -25,20 +25,24 @@
 #include <string.h> /* strcmp() */
 #include <wctype.h> /* towupper() */
 
+#include "cfg/config.h"
 #include "ui/fileview.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/regexp.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "filtering.h"
 #include "types.h"
 
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, entry_predicate pred);
 static const char * get_last_ext(const char name[]);
+static int file_can_be_displayed(const char directory[], const char filename[]);
 
 int
 find_file_pos_in_list(const FileView *const view, const char file[])
@@ -431,6 +435,59 @@ flist_find_dir_group(const FileView *view, int next)
 		}
 	}
 	return pos;
+}
+
+int
+ensure_file_is_selected(FileView *view, const char name[])
+{
+	int file_pos;
+	char nm[NAME_MAX];
+
+	/* Don't reset filters to find "file with empty name". */
+	if(name[0] == '\0')
+	{
+		return 0;
+	}
+
+	/* This is for compatibility with paths loaded from vifminfo that have
+	 * trailing slash. */
+	copy_str(nm, sizeof(nm), name);
+	chosp(nm);
+
+	file_pos = find_file_pos_in_list(view, nm);
+	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, nm))
+	{
+		if(nm[0] == '.')
+		{
+			set_dot_files_visible(view, 1);
+			file_pos = find_file_pos_in_list(view, nm);
+		}
+
+		if(file_pos < 0)
+		{
+			remove_filename_filter(view);
+
+			/* remove_filename_filter() postpones list of files reloading. */
+			populate_dir_list(view, 1);
+
+			file_pos = find_file_pos_in_list(view, nm);
+		}
+	}
+
+	flist_set_pos(view, (file_pos < 0) ? 0 : file_pos);
+	return file_pos >= 0;
+}
+
+/* Checks if file specified can be displayed. Used to filter some files, that
+ * are hidden intentionally.  Returns non-zero if file can be made visible. */
+static int
+file_can_be_displayed(const char directory[], const char filename[])
+{
+	if(is_parent_dir(filename))
+	{
+		return cfg_parent_dir_is_visible(is_root_dir(directory));
+	}
+	return path_exists_at(directory, filename, DEREF);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

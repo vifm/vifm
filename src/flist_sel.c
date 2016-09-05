@@ -35,13 +35,11 @@
 #include "utils/string_array.h"
 #include "utils/trie.h"
 #include "filelist.h"
-#include "filtering.h"
 #include "flist_pos.h"
 #include "running.h"
 
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
-static int file_can_be_displayed(const char directory[], const char filename[]);
 static void select_unselect_entry(FileView *view, dir_entry_t *entry,
 		int select);
 
@@ -87,14 +85,12 @@ save_selection(FileView *view)
 
 	free_saved_selection(view);
 
-	recount_selected_files(view);
-
+	flist_sel_recount(view);
 	if(view->selected_files == 0)
 	{
 		return;
 	}
 
-	recount_selected_files(view);
 	view->saved_selection = calloc(view->selected_files, sizeof(char *));
 	if(view->saved_selection == NULL)
 	{
@@ -137,11 +133,11 @@ free_saved_selection(FileView *view)
 }
 
 void
-invert_selection(FileView *view)
+flist_sel_invert(FileView *view)
 {
 	int i;
 	view->selected_files = 0;
-	for(i = 0; i < view->list_rows; i++)
+	for(i = 0; i < view->list_rows; ++i)
 	{
 		dir_entry_t *const e = &view->dir_entry[i];
 		if(fentry_is_valid(e))
@@ -153,7 +149,7 @@ invert_selection(FileView *view)
 }
 
 void
-remove_selection(FileView *view)
+flist_sel_stash_if_nonempty(FileView *view)
 {
 	if(view->selected_files != 0)
 	{
@@ -214,7 +210,7 @@ flist_sel_restore(FileView *view, reg_t *reg)
 }
 
 void
-recount_selected_files(FileView *view)
+flist_sel_recount(FileView *view)
 {
 	int i;
 
@@ -225,61 +221,8 @@ recount_selected_files(FileView *view)
 	}
 }
 
-int
-ensure_file_is_selected(FileView *view, const char name[])
-{
-	int file_pos;
-	char nm[NAME_MAX];
-
-	/* Don't reset filters to find "file with empty name". */
-	if(name[0] == '\0')
-	{
-		return 0;
-	}
-
-	/* This is for compatibility with paths loaded from vifminfo that have
-	 * trailing slash. */
-	copy_str(nm, sizeof(nm), name);
-	chosp(nm);
-
-	file_pos = find_file_pos_in_list(view, nm);
-	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, nm))
-	{
-		if(nm[0] == '.')
-		{
-			set_dot_files_visible(view, 1);
-			file_pos = find_file_pos_in_list(view, nm);
-		}
-
-		if(file_pos < 0)
-		{
-			remove_filename_filter(view);
-
-			/* remove_filename_filter() postpones list of files reloading. */
-			populate_dir_list(view, 1);
-
-			file_pos = find_file_pos_in_list(view, nm);
-		}
-	}
-
-	flist_set_pos(view, (file_pos < 0) ? 0 : file_pos);
-	return file_pos >= 0;
-}
-
-/* Checks if file specified can be displayed. Used to filter some files, that
- * are hidden intentionally.  Returns non-zero if file can be made visible. */
-static int
-file_can_be_displayed(const char directory[], const char filename[])
-{
-	if(is_parent_dir(filename))
-	{
-		return cfg_parent_dir_is_visible(is_root_dir(directory));
-	}
-	return path_exists_at(directory, filename, DEREF);
-}
-
 void
-select_unselect_by_range(FileView *view, int begin, int end, int select)
+flist_sel_by_range(FileView *view, int begin, int end, int select)
 {
 	select = (select != 0);
 
@@ -311,7 +254,7 @@ select_unselect_entry(FileView *view, dir_entry_t *entry, int select)
 }
 
 int
-select_unselect_by_filter(FileView *view, const char pattern[], int erase_old,
+flist_sel_by_filter(FileView *view, const char pattern[], int erase_old,
 		int select)
 {
 	trie_t *selection_trie;
@@ -376,7 +319,7 @@ select_unselect_by_filter(FileView *view, const char pattern[], int erase_old,
 }
 
 int
-select_unselect_by_pattern(FileView *view, const char pattern[], int erase_old,
+flist_sel_by_pattern(FileView *view, const char pattern[], int erase_old,
 		int select)
 {
 	int i;
@@ -425,7 +368,7 @@ select_unselect_by_pattern(FileView *view, const char pattern[], int erase_old,
 }
 
 void
-select_count(FileView *view, int at, int count)
+flist_sel_count(FileView *view, int at, int count)
 {
 	/* Use current position if none given. */
 	if(at < 0)
@@ -447,9 +390,9 @@ select_count(FileView *view, int at, int count)
 }
 
 int
-select_range(FileView *view, int begin, int end, int select_current)
+flist_sel_range(FileView *view, int begin, int end, int select_current)
 {
-	/* TODO: maybe refactor this function select_range() */
+	/* TODO: maybe refactor this function flist_sel_range() */
 
 	int x;
 	int y = 0;

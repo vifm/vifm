@@ -1384,7 +1384,7 @@ exclude_temporary_entries(FileView *view)
 	flist_ensure_pos_is_valid(view);
 	ui_view_schedule_redraw(view);
 
-	recount_selected_files(view);
+	flist_sel_recount(view);
 
 	return n;
 }
@@ -1831,7 +1831,7 @@ populate_custom_view(FileView *view, int reload)
 		(void)zap_entries(other, other->dir_entry, &other->list_rows, &is_temporary,
 				NULL, 0, 1);
 		ui_view_schedule_redraw(other);
-		recount_selected_files(other);
+		flist_sel_recount(other);
 	}
 	else
 	{

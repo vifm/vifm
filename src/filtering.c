@@ -723,7 +723,7 @@ local_filter_accept(FileView *view)
 
 	/* Some of previously selected files could be filtered out, update number of
 	 * selected files. */
-	recount_selected_files(view);
+	flist_sel_recount(view);
 }
 
 void

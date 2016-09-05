@@ -2866,7 +2866,7 @@ invert_state(char state_type)
 	}
 	else if(state_type == 's')
 	{
-		invert_selection(curr_view);
+		flist_sel_invert(curr_view);
 		redraw_view(curr_view);
 		cmds_preserve_selection();
 	}
@@ -3185,7 +3185,7 @@ static int
 nohlsearch_cmd(const cmd_info_t *cmd_info)
 {
 	ui_view_reset_search_highlight(curr_view);
-	remove_selection(curr_view);
+	flist_sel_stash_if_nonempty(curr_view);
 	return 0;
 }
 
@@ -3470,7 +3470,7 @@ select_cmd(const cmd_info_t *cmd_info)
 			flist_sel_drop(curr_view);
 		}
 
-		select_unselect_by_range(curr_view, cmd_info->begin, cmd_info->end, 1);
+		flist_sel_by_range(curr_view, cmd_info->begin, cmd_info->end, 1);
 		return 0;
 	}
 
@@ -3481,13 +3481,12 @@ select_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
 	{
-		error = select_unselect_by_filter(curr_view, cmd_info->args + 1,
-				cmd_info->emark, 1);
+		error = flist_sel_by_filter(curr_view, cmd_info->args + 1, cmd_info->emark,
+				1);
 	}
 	else
 	{
-		error = select_unselect_by_pattern(curr_view, cmd_info->args,
-				cmd_info->emark, 1);
+		error = flist_sel_by_pattern(curr_view, cmd_info->args, cmd_info->emark, 1);
 	}
 
 	return (error ? CMDS_ERR_CUSTOM : 0);
@@ -3981,7 +3980,7 @@ unselect_cmd(const cmd_info_t *cmd_info)
 	/* If no arguments are passed, unselect the range. */
 	if(cmd_info->argc == 0)
 	{
-		select_unselect_by_range(curr_view, cmd_info->begin, cmd_info->end, 0);
+		flist_sel_by_range(curr_view, cmd_info->begin, cmd_info->end, 0);
 		return 0;
 	}
 
@@ -3992,13 +3991,12 @@ unselect_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
 	{
-		error = select_unselect_by_filter(curr_view, cmd_info->args + 1,
-				cmd_info->emark, 0);
+		error = flist_sel_by_filter(curr_view, cmd_info->args + 1, cmd_info->emark,
+				0);
 	}
 	else
 	{
-		error = select_unselect_by_pattern(curr_view, cmd_info->args,
-				cmd_info->emark, 0);
+		error = flist_sel_by_pattern(curr_view, cmd_info->args, cmd_info->emark, 0);
 	}
 
 	return (error ? CMDS_ERR_CUSTOM : 0);
@@ -4312,7 +4310,7 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 		count = atoi(cmd_info->argv[1]);
 		if(count == 0)
 			return CMDS_ERR_ZERO_COUNT;
-		select_count(curr_view, cmd_info->end, count);
+		flist_sel_count(curr_view, cmd_info->end, count);
 	}
 	else if(cmd_info->argc == 1)
 	{
@@ -4321,7 +4319,7 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 			int count = atoi(cmd_info->argv[0]);
 			if(count == 0)
 				return CMDS_ERR_ZERO_COUNT;
-			select_count(curr_view, cmd_info->end, count);
+			flist_sel_count(curr_view, cmd_info->end, count);
 		}
 		else
 		{

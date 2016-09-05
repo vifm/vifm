@@ -36,11 +36,11 @@ void flist_sel_drop(FileView *view);
 void flist_sel_view_reloaded(FileView *view, int location_changed);
 
 /* Inverts selection of files in the view. */
-void invert_selection(FileView *view);
+void flist_sel_invert(FileView *view);
 
 /* Removes selection of a view saving current one, but does nothing if none
  * files are selected.  Handles view redrawing. */
-void remove_selection(FileView *view);
+void flist_sel_stash_if_nonempty(FileView *view);
 
 /* Reselects previously selected entries.  When reg is NULL, saved selection is
  * restored, otherwise list of files to restore is taken from the register. */
@@ -48,36 +48,32 @@ void flist_sel_restore(FileView *view, reg_t *reg);
 
 /* Counts number of selected files and writes saves the number in
  * view->selected_files. */
-void recount_selected_files(FileView *view);
-
-/* Remove dot and regexp filters if it's needed to make file visible.  Returns
- * non-zero if file was found. */
-int ensure_file_is_selected(FileView *view, const char name[]);
+void flist_sel_recount(FileView *view);
 
 /* Selects or unselects entries in the given range. */
-void select_unselect_by_range(FileView *view, int begin, int end, int select);
+void flist_sel_by_range(FileView *view, int begin, int end, int select);
 
 /* Selects or unselects entries that match list of files supplied by external
  * utility.  Returns zero on success, otherwise non-zero is returned and error
  * message is printed on statusbar. */
-int select_unselect_by_filter(FileView *view, const char pattern[],
-		int erase_old, int select);
+int flist_sel_by_filter(FileView *view, const char pattern[], int erase_old,
+		int select);
 
 /* Selects or unselects entries that match given pattern.  Returns zero on
  * success, otherwise non-zero is returned and error message is printed on
  * statusbar. */
-int select_unselect_by_pattern(FileView *view, const char pattern[],
-		int erase_old, int select);
+int flist_sel_by_pattern(FileView *view, const char pattern[], int erase_old,
+		int select);
 
 /* Selects up to count elements starting at position at (or current cursor
  * position, if at is negative). */
-void select_count(FileView *view, int at, int count);
+void flist_sel_count(FileView *view, int at, int count);
 
 /* Selects entries in the range [begin; end].  If begin isn't given (negative),
  * end is selected.  Otherwise, if end is negative and select_current is
  * non-zero, current item is selected.  Returns non-zero if something was
  * selected by this method, otherwise zero is returned. */
-int select_range(FileView *view, int begin, int end, int select_current);
+int flist_sel_range(FileView *view, int begin, int end, int select_current);
 
 #endif /* VIFM__FLIST_SELECT_H__ */
 

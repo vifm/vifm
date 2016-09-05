@@ -374,7 +374,7 @@ post(int id)
 TSTATIC void
 cmds_select_range(int id, const cmd_info_t *cmd_info)
 {
-	if(select_range(curr_view, cmd_info->begin, cmd_info->end,
+	if(flist_sel_range(curr_view, cmd_info->begin, cmd_info->end,
 				(id != COM_FIND && id != COM_GREP)))
 	{
 		curr_view->user_selection = 0;
@@ -443,7 +443,7 @@ execute_command(FileView *view, const char command[], int menu)
 
 	if(command == NULL)
 	{
-		remove_selection(view);
+		flist_sel_stash_if_nonempty(view);
 		return 0;
 	}
 
@@ -454,7 +454,7 @@ execute_command(FileView *view, const char command[], int menu)
 
 	if(command[0] == '\0' && !menu)
 	{
-		remove_selection(view);
+		flist_sel_stash_if_nonempty(view);
 		return 0;
 	}
 
@@ -550,7 +550,7 @@ execute_command(FileView *view, const char command[], int menu)
 
 	if(!menu && vle_mode_is(NORMAL_MODE))
 	{
-		remove_selection(view);
+		flist_sel_stash_if_nonempty(view);
 	}
 
 	return -1;

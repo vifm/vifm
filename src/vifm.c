@@ -78,7 +78,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "flist_sel.h"
+#include "flist_pos.h"
 #include "ipc.h"
 #include "marks.h"
 #include "ops.h"
