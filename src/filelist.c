@@ -3029,6 +3029,9 @@ iter_marked_entries(FileView *view, dir_entry_t **entry)
 	return iter_entries(view, entry, &is_entry_marked);
 }
 
+/* Implements iteration over the entries which match specific predicate.
+ * Returns non-zero if matching entry is found and is loaded to *entry,
+ * otherwise it's set to NULL and zero is returned. */
 static int
 iter_entries(FileView *view, dir_entry_t **entry, entry_predicate pred)
 {
@@ -3037,7 +3040,7 @@ iter_entries(FileView *view, dir_entry_t **entry, entry_predicate pred)
 	while(next < view->list_rows)
 	{
 		dir_entry_t *const e = &view->dir_entry[next];
-		if(pred(e) && fentry_is_valid(e))
+		if(fentry_is_valid(e) && pred(e))
 		{
 			*entry = e;
 			return 1;
