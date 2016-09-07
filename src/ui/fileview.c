@@ -582,9 +582,13 @@ redraw_current_view(void)
 void
 erase_current_line_bar(FileView *view)
 {
-	if(clear_current_line_bar(view, 0) && view == other_view)
+	if(view == other_view)
 	{
 		put_inactive_mark(view);
+	}
+	else
+	{
+		clear_current_line_bar(view, 0);
 	}
 }
 
