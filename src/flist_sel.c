@@ -374,7 +374,7 @@ flist_sel_count(FileView *view, int at, int count)
 
 	while(count-- > 0 && at < view->list_rows)
 	{
-		if(!is_parent_dir(view->dir_entry[at].name))
+		if(fentry_is_valid(&view->dir_entry[at]))
 		{
 			view->dir_entry[at].selected = 1;
 			++view->selected_files;
@@ -386,24 +386,24 @@ flist_sel_count(FileView *view, int at, int count)
 int
 flist_sel_range(FileView *view, int begin, int end, int select_current)
 {
-	/* TODO: maybe refactor this function flist_sel_range() */
-
-	int x;
-	int y = 0;
+	/* TODO: maybe refactor this function flist_sel_range().  Is it possible that
+	 *       begin <= -1 and end > -1? */
 
 	/* Both starting and ending range positions are given. */
 	if(begin > -1)
 	{
+		int i, j = 0;
 		flist_sel_stash(view);
 
-		for(x = begin; x <= end; x++)
+		for(i = begin; i <= end; ++i)
 		{
-			if(is_parent_dir(view->dir_entry[x].name))
-				continue;
-			view->dir_entry[x].selected = 1;
-			y++;
+			if(fentry_is_valid(&view->dir_entry[i]))
+			{
+				view->dir_entry[i].selected = 1;
+				++j;
+			}
 		}
-		view->selected_files = y;
+		view->selected_files = j;
 		return view->selected_files > 0;
 	}
 
@@ -414,32 +414,35 @@ flist_sel_range(FileView *view, int begin, int end, int select_current)
 
 	if(end > -1)
 	{
+		int i, j = 0;
 		flist_sel_stash(view);
 
-		y = 0;
-		for(x = end; x < view->list_rows; x++)
+		for(i = end; i < view->list_rows; ++i)
 		{
-			if(y == 1)
-				break;
-			view->dir_entry[x].selected = 1;
-			y++;
+			if(fentry_is_valid(&view->dir_entry[i]))
+			{
+				view->dir_entry[i].selected = 1;
+				++j;
+			}
+			break;
 		}
-		view->selected_files = y;
+		view->selected_files = j;
 	}
 	else if(select_current)
 	{
+		int i, j = 0;
 		flist_sel_stash(view);
 
-		y = 0;
-		for(x = view->list_pos; x < view->list_rows; x++)
+		for(i = view->list_pos; i < view->list_rows; ++i)
 		{
-			if(y == 1)
-				break;
-
-			view->dir_entry[x].selected = 1;
-			y++;
+			if(fentry_is_valid(&view->dir_entry[i]))
+			{
+				view->dir_entry[i].selected = 1;
+				++j;
+			}
+			break;
 		}
-		view->selected_files = y;
+		view->selected_files = j;
 	}
 
 	return view->selected_files > 0;
