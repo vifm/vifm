@@ -52,7 +52,6 @@ typedef struct menu_info
 	short int (*matches)[2];
 	char *regexp;
 	char *title;
-	char *args;
 	/* Contains titles of all menu items. */
 	char **items;
 	/* Contains additional data, associated with each of menu items, can be
@@ -86,7 +85,8 @@ void setup_menu(void);
 /* Removes current menu item and redraws the menu. */
 void remove_current_item(menu_info *m);
 
-void clean_menu_position(menu_info *m);
+/* Erases current menu item in menu window. */
+void menu_current_line_erase(menu_info *m);
 
 void move_to_menu_pos(int pos, menu_info *m);
 

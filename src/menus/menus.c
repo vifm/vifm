@@ -55,6 +55,7 @@
 #include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
+#include "../flist_pos.h"
 #include "../macros.h"
 #include "../marks.h"
 #include "../running.h"
@@ -82,7 +83,7 @@ static int get_match_index(const menu_info *m);
 void
 remove_current_item(menu_info *m)
 {
-	clean_menu_position(m);
+	menu_current_line_erase(m);
 
 	remove_from_string_array(m->items, m->len, m->pos);
 
@@ -108,7 +109,7 @@ remove_current_item(menu_info *m)
 }
 
 void
-clean_menu_position(menu_info *m)
+menu_current_line_erase(menu_info *m)
 {
 	draw_menu_item(m, m->pos, m->current, 1);
 }
@@ -128,7 +129,6 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->matches = NULL;
 	m->regexp = NULL;
 	m->title = title;
-	m->args = NULL;
 	m->items = NULL;
 	m->data = NULL;
 	m->key_handler = NULL;
@@ -141,7 +141,6 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 void
 reset_popup_menu(menu_info *m)
 {
-	free(m->args);
 	/* Menu elements don't always have data associated with them.  That's why we
 	 * need this check. */
 	if(m->data != NULL)
@@ -337,7 +336,7 @@ goto_selected_directory(FileView *view, const char path[])
 {
 	if(!cfg.auto_ch_pos)
 	{
-		clean_positions_in_history(view);
+		flist_hist_clear(view);
 		curr_stats.ch_pos = 0;
 	}
 	navigate_to(view, path);
@@ -945,7 +944,7 @@ navigate_to_match(menu_info *m, int pos)
 		}
 		else
 		{
-			clean_menu_position(m);
+			menu_current_line_erase(m);
 			move_to_menu_pos(pos, m);
 		}
 		menu_print_search_msg(m);

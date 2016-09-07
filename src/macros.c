@@ -602,17 +602,17 @@ append_to_expanded(char expanded[], const char str[])
 }
 
 const char *
-ma_get_clean_cmd(const char cmd[])
+ma_get_clear_cmd(const char cmd[])
 {
-	const char *clean_cmd;
+	const char *clear_cmd;
 	const char *const break_point = strstr(cmd, "%pc");
 	if(break_point == NULL)
 	{
 		return NULL;
 	}
 
-	clean_cmd = break_point + 3;
-	return is_null_or_empty(clean_cmd) ? NULL : clean_cmd;
+	clear_cmd = break_point + 3;
+	return is_null_or_empty(clear_cmd) ? NULL : clear_cmd;
 }
 
 char *

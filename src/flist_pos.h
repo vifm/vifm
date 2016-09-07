@@ -103,6 +103,10 @@ int flist_find_group(const FileView *view, int next);
  * entry in corner cases). */
 int flist_find_dir_group(const FileView *view, int next);
 
+/* Remove dot and regexp filters if it's needed to make file visible.  Returns
+ * non-zero if file was found. */
+int ensure_file_is_selected(FileView *view, const char name[]);
+
 #endif /* VIFM__FLIST_POS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

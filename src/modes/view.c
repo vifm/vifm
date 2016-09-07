@@ -593,7 +593,7 @@ draw(void)
 	if(vi->graphics)
 	{
 		const char *cmd = qv_get_viewer(vi->filename);
-		cmd = (cmd != NULL) ? ma_get_clean_cmd(cmd) : NULL;
+		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
 		qv_cleanup(vi->view, cmd);
 
 		free_string_array(vi->lines, vi->nlines);

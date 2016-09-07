@@ -96,38 +96,67 @@ TEST(one_number_range)
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(2, lwin.selected_files);
 
 	curr_view = &rwin;
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(3, rwin.selected_files);
 }
 
 TEST(one_in_the_range)
 {
 	cmd_info_t cmd_info = {
-		.begin = 0, .end = 0
+		.begin = 1, .end = 1
 	};
 
 	curr_view = &lwin;
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(1, lwin.selected_files);
-	assert_int_equal(1, lwin.dir_entry[0].selected);
+	assert_int_equal(1, lwin.dir_entry[1].selected);
 
 	curr_view = &rwin;
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
-	select_range(-1, &cmd_info);
+	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(1, rwin.selected_files);
-	assert_int_equal(1, rwin.dir_entry[0].selected);
+	assert_int_equal(1, rwin.dir_entry[1].selected);
+}
+
+TEST(parent_directory_is_not_selected)
+{
+	cmd_info_t cmd_info = {
+		.begin = 0, .end = 0
+	};
+
+	curr_view = &lwin;
+
+	cmds_conf.begin = 0;
+	cmds_conf.current = curr_view->list_pos;
+	cmds_conf.end = curr_view->list_rows - 1;
+
+	cmds_select_range(-1, &cmd_info);
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, lwin.dir_entry[0].selected);
+
+	cmd_info.begin = NOT_DEF;
+	cmds_select_range(-1, &cmd_info);
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, lwin.dir_entry[0].selected);
+
+	cmd_info.end = NOT_DEF;
+	cmds_conf.current = 0;
+	curr_view->list_pos = 0;
+	cmds_select_range(-1, &cmd_info);
+	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, lwin.dir_entry[0].selected);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

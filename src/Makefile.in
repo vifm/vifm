@@ -178,12 +178,12 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) filtering.$(OBJEXT) flist_pos.$(OBJEXT) \
-	ipc.$(OBJEXT) macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
-	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
-	types.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
-	viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
+	flist_sel.$(OBJEXT) ipc.$(OBJEXT) macros.$(OBJEXT) \
+	marks.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
+	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
+	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
+	tags.$(OBJEXT) trash.$(OBJEXT) types.$(OBJEXT) undo.$(OBJEXT) \
+	version.$(OBJEXT) viewcolumns_parser.$(OBJEXT) vifm.$(OBJEXT)
 nodist_vifm_OBJECTS = compile_info.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS) $(nodist_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
@@ -774,6 +774,7 @@ vifm_SOURCES = \
 	filetype.c filetype.h \
 	filtering.c filtering.h \
 	flist_pos.c flist_pos.h \
+	flist_sel.c flist_sel.h \
 	ipc.c ipc.h \
 	macros.c macros.h \
 	marks.c marks.h \
@@ -1240,6 +1241,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filtering.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flist_pos.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flist_sel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marks.Po@am__quote@

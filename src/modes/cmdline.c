@@ -59,6 +59,7 @@
 #include "../filelist.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
+#include "../flist_sel.h"
 #include "../marks.h"
 #include "../search.h"
 #include "../status.h"
@@ -457,7 +458,7 @@ handle_empty_input(void)
 		/* Clear selection. */
 		if(prev_mode != MENU_MODE)
 		{
-			clean_selected_files(curr_view);
+			flist_sel_stash(curr_view);
 		}
 		else
 		{
@@ -808,7 +809,7 @@ leave_cmdline_mode(void)
 
 	curs_set(0);
 	curr_stats.save_msg = 0;
-	clean_status_bar();
+	ui_sb_clear();
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{

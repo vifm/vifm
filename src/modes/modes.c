@@ -130,7 +130,7 @@ modes_pre(void)
 	}
 	else if(!curr_stats.save_msg)
 	{
-		clean_status_bar();
+		ui_sb_clear();
 		wrefresh(status_bar);
 	}
 }
@@ -201,7 +201,7 @@ modes_statusbar_update(void)
 	}
 	else
 	{
-		clean_status_bar();
+		ui_sb_clear();
 	}
 }
 

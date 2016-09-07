@@ -900,7 +900,7 @@ get_undolist_pos(int detail)
 }
 
 void
-clean_cmds_with_trash(const char trash_dir[])
+un_clear_cmds_with_trash(const char trash_dir[])
 {
 	cmd_t *cur = cmds.prev;
 

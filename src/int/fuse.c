@@ -228,7 +228,7 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
 	status = background_and_wait_for_status(buf, !foreground, &cancelled);
 
-	clean_status_bar();
+	ui_sb_clear();
 
 	/* Check child process exit status. */
 	if(!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS)
@@ -547,7 +547,7 @@ fuse_try_unmount(FileView *view)
 
 	status_bar_message("FUSE unmounting selected file, please stand by..");
 	status = background_and_wait_for_status(buf, 0, NULL);
-	clean_status_bar();
+	ui_sb_clear();
 	/* check child status */
 	if(!WIFEXITED(status) || WEXITSTATUS(status))
 	{

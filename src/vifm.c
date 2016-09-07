@@ -78,6 +78,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
+#include "flist_pos.h"
 #include "ipc.h"
 #include "marks.h"
 #include "ops.h"
@@ -380,7 +381,7 @@ parse_received_arguments(char *argv[])
 		change_window();
 	}
 
-	clean_status_bar();
+	ui_sb_clear();
 	curr_stats.save_msg = 0;
 }
 

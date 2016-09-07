@@ -64,8 +64,9 @@
 #include "utils/utf8.h"
 #include "background.h"
 #include "filelist.h"
-#include "flist_pos.h"
 #include "filetype.h"
+#include "flist_pos.h"
+#include "flist_sel.h"
 #include "macros.h"
 #include "opt_handlers.h"
 #include "status.h"
@@ -401,7 +402,7 @@ run_selection(FileView *view, int dont_execute)
 
 	if(!get_current_entry(view)->selected)
 	{
-		clean_selected_files(view);
+		flist_sel_stash(view);
 	}
 
 	typed_fname = get_typed_entry_fpath(get_current_entry(view));

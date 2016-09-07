@@ -146,7 +146,7 @@ int cmds_scoped_endif(void);
 TSTATIC_DEFS(
 	char ** break_cmdline(const char cmdline[], int for_menu);
 	int line_pos(const char begin[], const char end[], char sep, int regexp);
-	void select_range(int id, const cmd_info_t *cmd_info);
+	void cmds_select_range(int id, const cmd_info_t *cmd_info);
 )
 
 #endif /* VIFM__CMD_CORE_H__ */

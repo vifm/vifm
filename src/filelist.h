@@ -27,7 +27,6 @@
 
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
-#include "registers.h"
 
 /* Type of filter function for zapping list of entries.  Should return non-zero
  * if entry is to be kept and zero otherwise. */
@@ -92,24 +91,6 @@ void leave_invalid_dir(FileView *view);
  * if so, otherwise zero is returned. */
 int pane_in_dir(const FileView *view, const char path[]);
 
-/* Selection related functions. */
-
-/* Cleans selection possibly saving it for later use. */
-void clean_selected_files(FileView *view);
-/* Erases selection not saving anything. */
-void erase_selection(FileView *view);
-/* Inverts selection of files in the view. */
-void invert_selection(FileView *view);
-/* Reselects previously selected entries.  When reg is NULL, saved selection is
- * restored, otherwise list of files to restore is taken from the register. */
-void flist_sel_restore(FileView *view, reg_t *reg);
-/* Counts number of selected files and writes saves the number in
- * view->selected_files. */
-void recount_selected_files(FileView *view);
-/* Remove dot and regexp filters if it's needed to make file visible.  Returns
- * non-zero if file was found. */
-int ensure_file_is_selected(FileView *view, const char name[]);
-
 /* Directory history related functions. */
 
 /* Changes current directory of the view to next location backward in
@@ -126,7 +107,8 @@ void navigate_forward_in_history(FileView *view);
 void save_view_history(FileView *view, const char path[], const char file[],
 		int pos);
 int is_in_view_history(FileView *view, const char *path);
-void clean_positions_in_history(FileView *view);
+/* Empties history of the view. */
+void flist_hist_clear(FileView *view);
 /* Looks up history in the source to update cursor position in the view. */
 void flist_hist_lookup(FileView *view, const FileView *source);
 

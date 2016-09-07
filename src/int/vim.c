@@ -38,6 +38,7 @@
 #include "../utils/utils.h"
 #include "../background.h"
 #include "../filelist.h"
+#include "../flist_sel.h"
 #include "../macros.h"
 #include "../running.h"
 #include "../status.h"
@@ -353,7 +354,7 @@ vim_run_choose_cmd(const FileView *view)
 
 	if(!get_current_entry(view)->selected)
 	{
-		erase_selection(curr_view);
+		flist_sel_drop(curr_view);
 	}
 
 	expanded_cmd = expand_macros(curr_stats.on_choose, NULL, NULL, 1);

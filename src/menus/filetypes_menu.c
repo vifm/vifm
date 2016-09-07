@@ -35,6 +35,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../filelist.h"
+#include "../flist_sel.h"
 #include "../filetype.h"
 #include "../running.h"
 #include "../types.h"
@@ -160,7 +161,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 		}
 	}
 
-	clean_selected_files(view);
+	flist_sel_stash(view);
 	redraw_view(view);
 	return 0;
 }

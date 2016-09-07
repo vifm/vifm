@@ -23,7 +23,8 @@
 
 /* Managing status bar. */
 
-void clean_status_bar(void);
+/* Clears the status bar. */
+void ui_sb_clear(void);
 
 /* Immediately (UI is updated) displays message on the status bar without
  * storing it in message history. */

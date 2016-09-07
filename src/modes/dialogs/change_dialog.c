@@ -36,7 +36,7 @@
 #include "../wk.h"
 #include "attr_dialog.h"
 
-static void leave_change_mode(int clean_selection);
+static void leave_change_mode(int clear_selection);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
@@ -146,11 +146,11 @@ redraw_change_dialog(void)
 }
 
 static void
-leave_change_mode(int clean_selection)
+leave_change_mode(int clear_selection)
 {
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 
-	if(clean_selection)
+	if(clear_selection)
 	{
 		ui_view_reset_selection_and_reload(view);
 	}

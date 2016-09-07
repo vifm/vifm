@@ -108,7 +108,7 @@ int get_undolist_pos(int detail);
 
 /* Removes all commands which files are in specified trash directory.  The
  * special value NULL means "all trash directories". */
-void clean_cmds_with_trash(const char trash_dir[]);
+void un_clear_cmds_with_trash(const char trash_dir[]);
 
 #endif /* VIFM__UNDO_H__ */
 

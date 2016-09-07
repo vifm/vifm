@@ -32,6 +32,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "flist_pos.h"
+#include "flist_sel.h"
 
 static void reset_filter(filter_t *filter);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
@@ -722,7 +723,7 @@ local_filter_accept(FileView *view)
 
 	/* Some of previously selected files could be filtered out, update number of
 	 * selected files. */
-	recount_selected_files(view);
+	flist_sel_recount(view);
 }
 
 void

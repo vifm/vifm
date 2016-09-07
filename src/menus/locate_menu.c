@@ -52,7 +52,7 @@ show_locate_menu(FileView *view, const char args[])
 	static menu_info m;
 	margs = (args[0] == '-') ? strdup(args) : shell_like_escape(args, 0);
 	init_menu_info(&m, format_str("Locate %s", margs), strdup("No files found"));
-	m.args = margs;
+	free(margs);
 	m.execute_handler = &execute_locate_cb;
 	m.key_handler = &filelist_khandler;
 

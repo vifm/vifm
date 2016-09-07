@@ -56,6 +56,7 @@
 #include "../fileops.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
+#include "../flist_sel.h"
 #include "../marks.h"
 #include "../registers.h"
 #include "../running.h"
@@ -469,7 +470,7 @@ static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	ui_view_reset_search_highlight(curr_view);
-	clean_selected_files(curr_view);
+	flist_sel_stash(curr_view);
 	redraw_current_view();
 }
 
@@ -604,7 +605,7 @@ static void
 cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
 	open_file(curr_view, FHE_RUN);
-	clean_selected_files(curr_view);
+	flist_sel_stash(curr_view);
 	redraw_current_view();
 }
 
@@ -1053,7 +1054,7 @@ cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 {
-	clean_selected_files(curr_view);
+	flist_sel_stash(curr_view);
 	follow_file(curr_view);
 	redraw_current_view();
 }
@@ -1080,7 +1081,7 @@ static void
 cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 {
 	open_file(curr_view, FHE_ELEVATE_AND_RUN);
-	clean_selected_files(curr_view);
+	flist_sel_stash(curr_view);
 	redraw_current_view();
 }
 #endif
@@ -1571,7 +1572,7 @@ static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	open_file(curr_view, FHE_NO_RUN);
-	clean_selected_files(curr_view);
+	flist_sel_stash(curr_view);
 	redraw_current_view();
 }
 
@@ -1894,7 +1895,7 @@ yank(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.save_msg = yank_files(curr_view, def_reg(key_info.reg));
 	free_list_of_file_indexes(keys_info);
 
-	clean_selected_files(curr_view);
+	flist_sel_stash(curr_view);
 	ui_view_schedule_redraw(curr_view);
 }
 

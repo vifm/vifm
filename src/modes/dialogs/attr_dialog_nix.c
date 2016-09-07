@@ -42,6 +42,7 @@
 #include "../../utils/path.h"
 #include "../../utils/test_helpers.h"
 #include "../../filelist.h"
+#include "../../flist_sel.h"
 #include "../../ops.h"
 #include "../../status.h"
 #include "../../undo.h"
@@ -374,7 +375,7 @@ leave_attr_mode(void)
 	curs_set(0);
 	curr_stats.use_input_bar = 1;
 
-	clean_selected_files(view);
+	flist_sel_stash(view);
 	ui_view_schedule_reload(view);
 }
 

@@ -116,7 +116,7 @@ typedef struct
 }
 list_data_t;
 
-static void clean_at_exit(void);
+static void cleanup_at_exit(void);
 static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
 static char * receive_pkg(void);
 static read_pipe_t try_use_pipe(const char path[]);
@@ -165,13 +165,13 @@ ipc_init(const char name[], ipc_callback callback_func)
 		return;
 	}
 
-	atexit(&clean_at_exit);
+	atexit(&cleanup_at_exit);
 	initialized = 1;
 }
 
 /* Frees resources used by IPC. */
 static void
-clean_at_exit(void)
+cleanup_at_exit(void)
 {
 #ifndef WIN32_PIPE_READ
 	fclose(pipe_file);

@@ -69,9 +69,9 @@ char * expand_macros(const char command[], const char args[], MacroFlags *flags,
  * single string, so escaping is disabled. */
 char * ma_expand_single(const char command[]);
 
-/* Gets clean part of the viewer.  Returns NULL if there is none, otherwise
+/* Gets clear part of the viewer.  Returns NULL if there is none, otherwise
  * pointer inside the cmd string is returned. */
-const char * ma_get_clean_cmd(const char cmd[]);
+const char * ma_get_clear_cmd(const char cmd[]);
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
  * macros specification. */

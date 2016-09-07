@@ -45,7 +45,7 @@
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../cmd_completion.h"
-#include "../filelist.h"
+#include "../flist_sel.h"
 #include "../status.h"
 #include "cmdline.h"
 #include "modes.h"
@@ -359,7 +359,7 @@ static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int s = get_effective_menu_scroll_offset(menu);
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	menu->top += DIV_ROUND_UP(menu->win_rows - 3, 2);
 	menu->pos += DIV_ROUND_UP(menu->win_rows - 3, 2);
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
@@ -470,7 +470,7 @@ static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int s = get_effective_menu_scroll_offset(menu);
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 
 	if(cfg.scroll_off > 0 && menu->top + menu->win_rows - menu->pos < s)
 		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
@@ -547,7 +547,7 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = menu->len;
 
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	move_to_menu_pos(key_info.count - 1, menu);
 	wrefresh(menu_win);
 }
@@ -565,7 +565,7 @@ cmd_H(key_info_t key_info, keys_info_t *keys_info)
 	else
 		top = menu->top + off;
 
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	move_to_menu_pos(top, menu);
 	wrefresh(menu_win);
 }
@@ -592,7 +592,7 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 	else
 		top = menu->top + menu->win_rows;
 
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	move_to_menu_pos(top - 3, menu);
 	wrefresh(menu_win);
 }
@@ -607,7 +607,7 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 	else
 		new_pos = menu->top + DIV_ROUND_UP(menu->win_rows - 3, 2);
 
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	move_to_menu_pos(MAX(0, new_pos - 1), menu);
 	wrefresh(menu_win);
 }
@@ -700,7 +700,7 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	move_to_menu_pos(key_info.count - 1, menu);
 	wrefresh(menu_win);
 }
@@ -713,7 +713,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	menu->pos += key_info.count;
 	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
@@ -727,7 +727,7 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	menu->pos -= key_info.count;
 	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
@@ -903,7 +903,7 @@ goto_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->end == NOT_DEF)
 		return 0;
-	clean_menu_position(menu);
+	menu_current_line_erase(menu);
 	move_to_menu_pos(cmd_info->end, menu);
 	wrefresh(menu_win);
 	return 0;
@@ -992,7 +992,7 @@ leave_menu_mode(int reset_selection)
 
 	if(reset_selection)
 	{
-		clean_selected_files(view);
+		flist_sel_stash(view);
 		redraw_view(view);
 	}
 

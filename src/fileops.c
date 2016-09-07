@@ -70,6 +70,7 @@
 #include "cmd_completion.h"
 #include "filelist.h"
 #include "flist_pos.h"
+#include "flist_sel.h"
 #include "ops.h"
 #include "registers.h"
 #include "running.h"
@@ -312,7 +313,7 @@ io_progress_changed(const io_progress_t *const state)
 			if(ui_char_pressed(IO_DETAILS_KEY))
 			{
 				pdata->dialog = 1;
-				clean_status_bar();
+				ui_sb_clear();
 			}
 		}
 	}
@@ -1016,7 +1017,7 @@ rename_current_file(FileView *view, int name_only)
 		rename_file_ext[0] = '\0';
 	}
 
-	clean_selected_files(view);
+	flist_sel_stash(view);
 	line_prompt("New name: ", filename, rename_file_cb, complete_filename_only,
 			1);
 }
@@ -1186,7 +1187,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	free_string_array(files, nfiles);
 	free(is_dup);
 
-	clean_selected_files(view);
+	flist_sel_stash(view);
 	redraw_view(view);
 	curr_stats.save_msg = 1;
 	return 1;
@@ -2330,7 +2331,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		return 1;
 	}
 
-	clean_selected_files(view);
+	flist_sel_stash(view);
 
 	if(with_dir)
 	{
@@ -3657,7 +3658,7 @@ can_read_selected_files(FileView *view)
 
 		show_error_msgf("Access denied",
 				"You don't have read permissions on \"%s\"", full_path);
-		clean_selected_files(view);
+		flist_sel_stash(view);
 		redraw_view(view);
 		return 0;
 	}

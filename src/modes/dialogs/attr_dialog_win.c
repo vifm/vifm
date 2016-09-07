@@ -35,6 +35,7 @@
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
 #include "../../filelist.h"
+#include "../../flist_sel.h"
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"
@@ -352,7 +353,7 @@ leave_attr_mode(void)
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	curr_stats.use_input_bar = 1;
 
-	clean_selected_files(view);
+	flist_sel_stash(view);
 	ui_view_schedule_reload(view);
 }
 

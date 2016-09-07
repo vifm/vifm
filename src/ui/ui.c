@@ -60,6 +60,7 @@
 #include "../utils/utils.h"
 #include "../event_loop.h"
 #include "../filelist.h"
+#include "../flist_sel.h"
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../vifm.h"
@@ -584,7 +585,7 @@ update_screen(UpdateType update_kind)
 		}
 		else
 		{
-			clean_status_bar();
+			ui_sb_clear();
 		}
 
 		if(vle_mode_is(VIEW_MODE))
@@ -1447,7 +1448,7 @@ ui_view_win_changed(FileView *view)
 void
 ui_view_reset_selection_and_reload(FileView *view)
 {
-	clean_selected_files(view);
+	flist_sel_stash(view);
 	load_saving_pos(view, 1);
 }
 
