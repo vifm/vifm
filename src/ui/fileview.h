@@ -65,9 +65,6 @@ void erase_current_line_bar(FileView *view);
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(FileView *view);
 
-/* Adds inactive cursor mark to the view. */
-void put_inactive_mark(FileView *view);
-
 /* Viewport related functions. */
 
 /* Checks whether if all files are visible, so no scrolling is needed.  Returns
