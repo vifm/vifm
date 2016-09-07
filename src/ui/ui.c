@@ -694,13 +694,9 @@ change_window(void)
 
 	load_view_options(curr_view);
 
-	if(curr_stats.number_of_windows != 1)
+	if(window_shows_dirlist(other_view))
 	{
-		if(!other_view->explore_mode)
-		{
-			put_inactive_mark(other_view);
-			erase_current_line_bar(other_view);
-		}
+		erase_current_line_bar(other_view);
 	}
 
 	if(curr_stats.view && !is_dir_list_loaded(curr_view))
