@@ -76,7 +76,7 @@ update_stat_window(FileView *view, int lazy_redraw)
 	int x;
 	char *buf;
 
-	if(!cfg.display_statusline)
+	if(!cfg.display_statusline || view != curr_view)
 	{
 		return;
 	}
