@@ -1629,9 +1629,16 @@ fview_position_updated(FileView *view)
 	refresh_view_win(view);
 	update_stat_window(view, 0);
 
-	if(view == curr_view && curr_stats.view)
+	if(view == curr_view)
 	{
-		quick_view_file(view);
+		/* We're updating view non-lazily above, so doing the same with the
+		 * ruler. */
+		ui_ruler_update(view, 0);
+
+		if(curr_stats.view)
+		{
+			quick_view_file(view);
+		}
 	}
 }
 

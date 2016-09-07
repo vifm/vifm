@@ -818,7 +818,7 @@ leave_cmdline_mode(void)
 
 	if(!vle_mode_is(MENU_MODE))
 	{
-		ui_ruler_update(curr_view);
+		ui_ruler_update(curr_view, 1);
 	}
 
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;

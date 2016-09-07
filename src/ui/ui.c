@@ -114,7 +114,7 @@ static void fixup_titles_attributes(const FileView *view, int active_view);
 static uint64_t get_updated_time(uint64_t prev);
 
 void
-ui_ruler_update(FileView *view)
+ui_ruler_update(FileView *view, int lazy_redraw)
 {
 	char *expanded;
 
@@ -124,6 +124,10 @@ ui_ruler_update(FileView *view)
 	expanded = break_in_two(expanded, getmaxx(ruler_win));
 
 	ui_ruler_set(expanded);
+	if(!lazy_redraw)
+	{
+		wrefresh(ruler_win);
+	}
 
 	free(expanded);
 }
@@ -594,7 +598,7 @@ update_screen(UpdateType update_kind)
 		}
 		else
 		{
-			ui_ruler_update(curr_view);
+			ui_ruler_update(curr_view, 1);
 		}
 	}
 
