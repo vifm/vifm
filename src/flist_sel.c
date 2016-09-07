@@ -386,13 +386,10 @@ flist_sel_count(FileView *view, int at, int count)
 int
 flist_sel_range(FileView *view, int begin, int end, int select_current)
 {
-	/* TODO: maybe refactor this function flist_sel_range().  Is it possible that
-	 *       begin <= -1 and end > -1? */
-
 	/* Both starting and ending range positions are given. */
 	if(begin > -1)
 	{
-		int i, j = 0;
+		int i;
 		flist_sel_stash(view);
 
 		for(i = begin; i <= end; ++i)
@@ -400,10 +397,9 @@ flist_sel_range(FileView *view, int begin, int end, int select_current)
 			if(fentry_is_valid(&view->dir_entry[i]))
 			{
 				view->dir_entry[i].selected = 1;
-				++j;
+				++view->selected_files;
 			}
 		}
-		view->selected_files = j;
 		return view->selected_files > 0;
 	}
 
@@ -412,37 +408,28 @@ flist_sel_range(FileView *view, int begin, int end, int select_current)
 		return 0;
 	}
 
+	/* XXX: is it possible that begin <= -1 and end > -1? */
 	if(end > -1)
 	{
-		int i, j = 0;
 		flist_sel_stash(view);
 
-		for(i = end; i < view->list_rows; ++i)
+		if(fentry_is_valid(&view->dir_entry[end]))
 		{
-			if(fentry_is_valid(&view->dir_entry[i]))
-			{
-				view->dir_entry[i].selected = 1;
-				++j;
-			}
-			break;
+			view->dir_entry[end].selected = 1;
+			view->selected_files = 1;
 		}
-		view->selected_files = j;
 	}
 	else if(select_current)
 	{
-		int i, j = 0;
 		flist_sel_stash(view);
 
-		for(i = view->list_pos; i < view->list_rows; ++i)
+		/* The front check is for tests. */
+		if(view->list_pos < view->list_rows &&
+				fentry_is_valid(&view->dir_entry[view->list_pos]))
 		{
-			if(fentry_is_valid(&view->dir_entry[i]))
-			{
-				view->dir_entry[i].selected = 1;
-				++j;
-			}
-			break;
+			view->dir_entry[view->list_pos].selected = 1;
+			view->selected_files = 1;
 		}
-		view->selected_files = j;
 	}
 
 	return view->selected_files > 0;
