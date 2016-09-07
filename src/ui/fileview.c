@@ -86,7 +86,7 @@ static void consider_scroll_bind(FileView *view);
 static void put_inactive_mark(FileView *view);
 static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
-static int clear_current_line_bar(FileView *view, int is_current);
+static void clear_current_line_bar(FileView *view, int is_current);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
@@ -620,7 +620,7 @@ put_inactive_mark(FileView *view)
 	int line_attrs;
 	int line, column;
 
-	(void)clear_current_line_bar(view, 1);
+	clear_current_line_bar(view, 1);
 
 	if(!cfg.extra_padding)
 	{
@@ -713,9 +713,8 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 
 /* Redraws directory list without any extra actions that are performed in
  * erase_current_line_bar().  is_current defines whether element under the
- * cursor is being erased.  Returns non-zero if something was actually redrawn,
- * otherwise zero is returned. */
-static int
+ * cursor is being erased. */
+static void
 clear_current_line_bar(FileView *view, int is_current)
 {
 	const int old_cursor = view->curr_line;
@@ -734,18 +733,18 @@ clear_current_line_bar(FileView *view, int is_current)
 
 	if(curr_stats.load_stage < 2)
 	{
-		return 0;
+		return;
 	}
 
 	if(old_cursor < 0)
 	{
-		return 0;
+		return;
 	}
 
 	if(old_pos < 0 || old_pos >= view->list_rows)
 	{
 		/* The entire list is going to be redrawn so just return. */
-		return 0;
+		return;
 	}
 
 	cdt.line_hi_group = get_line_color(view, old_pos),
@@ -774,8 +773,6 @@ clear_current_line_bar(FileView *view, int is_current)
 	}
 
 	draw_cell(view, &cdt, col_width, print_width);
-
-	return 1;
 }
 
 int
