@@ -404,7 +404,7 @@ flist_sel_range(FileView *view, int begin, int end, int select_current)
 
 		for(x = begin; x <= end; x++)
 		{
-			if(is_parent_dir(view->dir_entry[x].name) && begin != end)
+			if(is_parent_dir(view->dir_entry[x].name))
 				continue;
 			view->dir_entry[x].selected = 1;
 			y++;
