@@ -757,17 +757,20 @@ clear_current_line_bar(FileView *view, int is_current)
 
 	print_width = calculate_print_width(view, old_pos, col_width);
 
-	if(is_current)
+	if(!ui_view_displays_columns(view))
 	{
-		/* When this function is used to draw cursor position in inactive view, only
-		 * name width should be updated. */
-		col_width = print_width;
-	}
-	else if(!ui_view_displays_columns(view) && cfg.extra_padding)
-	{
-		/* Padding in ls-like view adds additional empty single character between
-		 * columns, on which we shouldn't draw anything here. */
-		--col_width;
+		if(is_current)
+		{
+			/* When this function is used to draw cursor position in inactive ls-like
+			 * view, only name width should be updated. */
+			col_width = print_width;
+		}
+		else if(cfg.extra_padding)
+		{
+			/* Padding in ls-like view adds additional empty single character between
+			 * columns, on which we shouldn't draw anything here. */
+			--col_width;
+		}
 	}
 
 	draw_cell(view, &cdt, col_width, print_width);
