@@ -95,7 +95,7 @@ static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
-static void remote_cd(FileView *view, const char *path, int handle);
+static void remote_cd(FileView *view, const char path[], int handle);
 static void check_path_for_file(FileView *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
 		const char rwin_path[]);
@@ -386,7 +386,7 @@ parse_received_arguments(char *argv[])
 }
 
 static void
-remote_cd(FileView *view, const char *path, int handle)
+remote_cd(FileView *view, const char path[], int handle)
 {
 	char buf[PATH_MAX];
 
