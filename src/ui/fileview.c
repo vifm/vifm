@@ -1587,6 +1587,20 @@ fview_position_updated(FileView *view)
 		return;
 	}
 
+	if(view == other_view)
+	{
+		clear_current_line_bar(view, 0);
+		if(move_curr_line(view))
+		{
+			draw_dir_list(view);
+		}
+		else
+		{
+			put_inactive_mark(view);
+		}
+		return;
+	}
+
 	erase_current_line_bar(view);
 
 	redraw = move_curr_line(view);
