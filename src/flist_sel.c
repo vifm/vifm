@@ -104,12 +104,6 @@ save_selection(FileView *view)
 	{
 		char full_path[PATH_MAX];
 
-		if(is_parent_dir(entry->name))
-		{
-			entry->selected = 0;
-			continue;
-		}
-
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		view->saved_selection[i] = strdup(full_path);
 		if(view->saved_selection[i] == NULL)
