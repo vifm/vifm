@@ -16,6 +16,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
+#include "../../src/filtering.h"
 #include "../../src/flist_pos.h"
 #include "../../src/running.h"
 
@@ -570,6 +571,27 @@ TEST(diff_is_closed_by_single_compare)
 	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(CV_REGULAR, rwin.custom.type);
+}
+
+TEST(filtering_fake_entry_does_nothing)
+{
+	curr_view = &rwin;
+	other_view = &lwin;
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+
+	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(4, rwin.list_rows);
+	assert_string_equal("", lwin.dir_entry[0].name);
+
+	lwin.dir_entry[0].selected = 1;
+	lwin.selected_files = 1;
+	filter_selected_files(&lwin);
+
+	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(4, rwin.list_rows);
+	assert_string_equal("", lwin.dir_entry[0].name);
 }
 
 static void
