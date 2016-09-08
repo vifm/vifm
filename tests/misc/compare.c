@@ -558,6 +558,20 @@ TEST(two_independent_compare_views_are_not_bound)
 	assert_true(flist_custom_active(&rwin));
 }
 
+TEST(diff_is_closed_by_single_compare)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_NAME, LT_ALL, 0);
+
+	assert_int_equal(CV_DIFF, lwin.custom.type);
+	assert_int_equal(CV_DIFF, rwin.custom.type);
+
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	assert_int_equal(CV_COMPARE, lwin.custom.type);
+	assert_int_equal(CV_REGULAR, rwin.custom.type);
+}
+
 static void
 basic_panes_check(int expected_len)
 {
