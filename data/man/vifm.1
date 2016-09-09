@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 01, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 09, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5550,6 +5550,15 @@ right after \-\-remote argument, like this:
   vifm \-\-remote ~
   vifm \-\-remote /usr/bin /tmp
 .EE
+
+If there are several running instances, the target can be specified with
+\-\-server\-name option (otherwise, the first one lexicographically is used):
+
+.EX
+  vifm \-\-server-name work \-\-remote ~/work/project
+.EE
+
+List of names of running instances can be obtained via \-\-server\-list option.
 .\" ---------------------------------------------------------------------------
 .SH Plugin
 .\" ---------------------------------------------------------------------------

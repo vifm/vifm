@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 01
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4677,6 +4677,13 @@ right after --remote argument, like this: >
     vifm --remote /
     vifm --remote ~
     vifm --remote /usr/bin /tmp
+
+If there are several running instances, the target can be specified with
+|vifm---server-name| option (otherwise, the first one lexicographically is used): >
+    vifm --server-name work --remote ~/work/project
+
+List of names of running instances can be obtained via |vifm---server-list|
+option.
 
 --------------------------------------------------------------------------------
 *vifm-plugin*
