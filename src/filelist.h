@@ -234,6 +234,10 @@ int flist_count_marked(FileView *const view);
  * entries. */
 int zap_entries(FileView *view, dir_entry_t *entries, int *count,
 		zap_filter filter, void *arg, int allow_empty_list, int remove_subtrees);
+/* Leaves only those entries in compare view, for which filter returns non-zero.
+ * Properly updates the other pane.  Returns non-zero if views were left,
+ * because they became empty. */
+int filter_in_compare(FileView *view, void *arg, zap_filter filter);
 /* Finds directory entry in the list of entries by the path.  Returns pointer to
  * the found entry or NULL. */
 dir_entry_t * entry_from_path(dir_entry_t *entries, int count,

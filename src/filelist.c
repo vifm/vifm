@@ -109,7 +109,9 @@ static void uncompress_traverser(const char name[], int valid,
 static void load_dir_list_internal(FileView *view, int reload, int draw_only);
 static int populate_dir_list_internal(FileView *view, int reload);
 static int populate_custom_view(FileView *view, int reload);
-static void zap_compare_view(FileView *view, FileView *other);
+static int entry_exists(FileView *view, const dir_entry_t *entry, void *arg);
+static void zap_compare_view(FileView *view, FileView *other, zap_filter filter,
+		void *arg);
 static int find_separator(FileView *view, int idx);
 static int update_dir_watcher(FileView *view);
 static int custom_list_is_incomplete(const FileView *view);
@@ -1303,7 +1305,7 @@ flist_custom_exclude(FileView *view, int selection_only)
 		}
 	}
 
-	exclude_temporary_entries(view);
+	(void)exclude_temporary_entries(view);
 }
 
 /* Removes selected files from compare view.  Zero selection_only enables
@@ -1331,7 +1333,7 @@ exclude_in_compare(FileView *view, int selection_only)
 		}
 	}
 
-	exclude_temporary_entries(view);
+	(void)exclude_temporary_entries(view);
 	if(double_compare && exclude_temporary_entries(other) == n)
 	{
 		/* Leave compare mode if we excluded all files. */
@@ -1818,20 +1820,10 @@ populate_custom_view(FileView *view, int reload)
 
 	if(view->custom.type == CV_DIFF)
 	{
-		FileView *const other = (view == curr_view) ? other_view : curr_view;
-
-		zap_compare_view(view, other);
-		if(view->list_rows == 0)
+		if(filter_in_compare(view, NULL, &entry_exists))
 		{
-			show_error_msg("Comparison", "No files left in the views, leaving them.");
-			cd_updir(view, 1);
 			return 0;
 		}
-
-		(void)zap_entries(other, other->dir_entry, &other->list_rows, &is_temporary,
-				NULL, 0, 1);
-		ui_view_schedule_redraw(other);
-		flist_sel_recount(other);
 	}
 	else
 	{
@@ -1852,12 +1844,40 @@ populate_custom_view(FileView *view, int reload)
 	return 0;
 }
 
+int
+filter_in_compare(FileView *view, void *arg, zap_filter filter)
+{
+	FileView *const other = (view == curr_view) ? other_view : curr_view;
+
+	zap_compare_view(view, other, filter, arg);
+	if(view->list_rows == 0)
+	{
+		show_error_msg("Comparison", "No files left in the views, leaving them.");
+		cd_updir(view, 1);
+		return 1;
+	}
+
+	(void)zap_entries(other, other->dir_entry, &other->list_rows, &is_temporary,
+			NULL, 0, 1);
+	ui_view_schedule_redraw(other);
+	flist_sel_recount(other);
+	return 0;
+}
+
+/* Checks whether entry refers to non-existing file.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+entry_exists(FileView *view, const dir_entry_t *entry, void *arg)
+{
+	return path_exists_at(entry->origin, entry->name, NODEREF);
+}
+
 /* Removes entries that refer to non-existing files from compare view marking
  * corresponding entries of the other view as temporary.  This is a
  * zap_entries() tailored for needs of compare, because that function is already
  * too complex. */
 static void
-zap_compare_view(FileView *view, FileView *other)
+zap_compare_view(FileView *view, FileView *other, zap_filter filter, void *arg)
 {
 	int i, j = 0;
 
@@ -1865,8 +1885,7 @@ zap_compare_view(FileView *view, FileView *other)
 	{
 		dir_entry_t *const entry = &view->dir_entry[i];
 
-		if(!fentry_is_fake(entry) &&
-				!path_exists_at(entry->origin, entry->name, NODEREF))
+		if(!fentry_is_fake(entry) && !filter(view, entry, arg))
 		{
 			const int separator = find_separator(other, i);
 			if(separator >= 0)
