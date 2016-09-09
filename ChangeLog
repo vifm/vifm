@@ -78,6 +78,9 @@
 
 	Fixed :pushd and :dirs in custom views.
 
+	Fixed ruler update on `--remote --select`.  Thanks to Marcin
+	Kurczewski (a.k.a. rr-).
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
@@ -135,7 +138,7 @@
 	file choosing.  Thanks to Von Welch.
 
 	Added mime type patterns ([!]<list-of-globs>).  Thanks to Ross
-	Hadden (a.k.a.  rosshadden).
+	Hadden (a.k.a. rosshadden).
 
 	Added %z 'statusline' macro that inserts text of a short tip picked at
 	random.  Thanks to qinghao (a.k.a. haobug).

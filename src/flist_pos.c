@@ -142,7 +142,6 @@ flist_set_pos(FileView *view, int pos)
 		if(view->custom.type == CV_DIFF && other->list_pos != pos)
 		{
 			flist_set_pos(other, pos);
-			redraw_view(other);
 		}
 	}
 }

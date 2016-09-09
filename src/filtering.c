@@ -138,6 +138,22 @@ filter_selected_files(FileView *view)
 		(void)filter_append(&filter, name);
 	}
 
+	/* Even current file might be unavailable for filtering.  In this case, just
+	 * do nothing. */
+	if(filter_is_empty(&filter))
+	{
+		filter_dispose(&filter);
+		return;
+	}
+
+	if(view->custom.type == CV_DIFF)
+	{
+		(void)filter_in_compare(view, &filter, &is_newly_filtered);
+		ui_view_schedule_redraw(view);
+		filter_dispose(&filter);
+		return;
+	}
+
 	/* Update entry lists to remove entries that must be filtered out now.  No
 	 * view reload is needed. */
 	filtered = zap_entries(view, view->dir_entry, &view->list_rows,

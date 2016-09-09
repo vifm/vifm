@@ -125,6 +125,8 @@ view_teardown(FileView *view)
 	filter_dispose(&view->auto_filter);
 	filter_dispose(&view->manual_filter);
 
+	view->custom.type = CV_REGULAR;
+
 	fswatch_free(view->watch);
 	view->watch = NULL;
 }

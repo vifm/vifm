@@ -38,6 +38,7 @@
 #include "utils/string_array.h"
 #include "utils/trie.h"
 #include "filelist.h"
+#include "running.h"
 
 /* This is the only unit that uses xxhash, so import it directly here. */
 #define XXH_PRIVATE_API
@@ -319,6 +320,7 @@ int
 compare_one_pane(FileView *view, CompareType ct, ListType lt)
 {
 	int i, dup_id;
+	FileView *other = (view == curr_view) ? other_view : curr_view;
 	const char *const title = (lt == LT_ALL)  ? "compare"
 	                        : (lt == LT_DUPS) ? "dups" : "nondups";
 
@@ -388,6 +390,13 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 	{
 		show_error_msg("Comparison", "No results to display");
 		return 0;
+	}
+
+	/* Leave the other pane, if it's in the CV_DIFF mode, two panes are needed for
+	 * this. */
+	if(other->custom.type == CV_DIFF)
+	{
+		cd_updir(other, 1);
 	}
 
 	view->list_pos = 0;
