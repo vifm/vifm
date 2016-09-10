@@ -20,6 +20,7 @@ static char options_prompt_rename(const char title[], const char message[],
 		const struct response_variant *variants);
 static char options_prompt_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
+static void parent_overwrite_with_put(int move);
 
 SETUP()
 {
@@ -219,6 +220,32 @@ TEST(overwrite_request_accounts_for_target_file_rename)
 
 	(void)remove(SANDBOX_PATH "/binary-data");
 	(void)remove(SANDBOX_PATH "/b");
+}
+
+TEST(parent_overwrite_is_prevented_on_file_put_copy)
+{
+	parent_overwrite_with_put(0);
+}
+
+TEST(parent_overwrite_is_prevented_on_file_put_move)
+{
+	parent_overwrite_with_put(1);
+}
+
+static void
+parent_overwrite_with_put(int move)
+{
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir");
+	create_empty_file(SANDBOX_PATH "/dir/dir/file");
+
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir"));
+
+	init_fileops(&line_prompt, &options_prompt_overwrite);
+	(void)put_files(&lwin, -1, 'a', move);
+
+	assert_success(remove(SANDBOX_PATH "/dir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

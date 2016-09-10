@@ -2640,6 +2640,7 @@ put_next(int force)
 	int move;
 	int success;
 	int merge;
+	int safe_operation = 0;
 
 	/* TODO: refactor this function (put_next()) */
 
@@ -2695,12 +2696,16 @@ put_next(int force)
 			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
 					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
-				if(perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
+				if(S_ISDIR(dst_st.st_mode) && is_in_subtree(src_buf, dst_buf))
+				{
+					/* Don't delete /a/b when moving /a/b/c to /a/b. */
+					safe_operation = 1;
+				}
+				else if(perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
 							NULL) != 0)
 				{
 					return 0;
 				}
-
 				/* Schedule view update to reflect changes in UI. */
 				ui_view_schedule_reload(put_confirm.view);
 			}
@@ -2765,6 +2770,30 @@ put_next(int force)
 		}
 
 		cmd_group_end();
+	}
+	else if(safe_operation)
+	{
+		const char *const unique_dst = make_name_unique(dst_buf);
+
+		/* An optimization: if we're going to remove destination anyway, don't
+		 * bother copying it, just move. */
+		if(op == OP_COPY)
+		{
+			op = OP_MOVE;
+		}
+
+		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
+					unique_dst) == 0);
+		if(success)
+		{
+			success = (perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
+						NULL) == 0);
+		}
+		if(success)
+		{
+			success = (perform_operation(OP_MOVE, put_confirm.ops, NULL, unique_dst,
+						dst_buf) == 0);
+		}
 	}
 	else
 	{
