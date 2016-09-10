@@ -210,6 +210,7 @@ static int enqueue_marked_files(ops_t *ops, FileView *view,
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[]);
 static void progress_msg(const char text[], int ready, int total);
+static const char * get_dst_name(const char src_path[], int from_trash);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char dst_path[], size_t dst_path_len, int *from_file);
@@ -2102,14 +2103,7 @@ put_files_bg(FileView *view, int at, int reg_name, int move)
 		args->sel_list_len = add_to_string_array(&args->sel_list,
 				args->sel_list_len, 1, src);
 
-		if(is_under_trash(src))
-		{
-			dst_name = get_real_name_from_trash_name(src);
-		}
-		else
-		{
-			dst_name = get_last_path_component(src);
-		}
+		dst_name = get_dst_name(src, is_under_trash(src));
 
 		/* Check that no destination files have the same name. */
 		for(j = 0; j < args->nlines; ++j)
@@ -2632,7 +2626,7 @@ put_next(int force)
 {
 	char *filename;
 	const char *dest_name;
-	const char *dst_dir = put_confirm.dest_dir;
+	const char *const dst_dir = put_confirm.dest_dir;
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
@@ -2668,14 +2662,7 @@ put_next(int force)
 	dest_name = put_confirm.dest_name;
 	if(dest_name == NULL)
 	{
-		if(from_trash)
-		{
-			dest_name = get_real_name_from_trash_name(src_buf);
-		}
-		else
-		{
-			dest_name = find_slashr(src_buf) + 1;
-		}
+		dest_name = get_dst_name(src_buf, from_trash);
 	}
 
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dest_name);
@@ -3533,9 +3520,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 		args->list = reallocarray(NULL, args->nlines, sizeof(*args->list));
 		for(i = 0; i < args->nlines; ++i)
 		{
-			args->list[i] = args->is_in_trash[i]
-			              ? strdup(get_real_name_from_trash_name(args->sel_list[i]))
-			              : strdup(get_last_path_component(args->sel_list[i]));
+			args->list[i] =
+				strdup(get_dst_name(args->sel_list[i], args->is_in_trash[i]));
 		}
 	}
 
@@ -3552,6 +3538,18 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	}
 
 	return 0;
+}
+
+/* Makes name of destination file from name of the source file.  Returns the
+ * name. */
+static const char *
+get_dst_name(const char src_path[], int from_trash)
+{
+	if(from_trash)
+	{
+		return get_real_name_from_trash_name(src_path);
+	}
+	return get_last_path_component(src_path);
 }
 
 /* Performs general preparations for file copy/move-like operations: resolving
