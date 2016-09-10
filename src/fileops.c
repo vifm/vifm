@@ -194,6 +194,7 @@ static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name);
+static int path_depth_sort(const void *one, const void *two);
 static int is_subtree_clash(const char src_path[], const char dst_dir[]);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
@@ -2485,7 +2486,7 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name)
 {
 	reg_t *reg;
-	int i, j;
+	int i;
 	const char *const dst_dir = get_dst_dir(view, at);
 
 	if(!can_add_files_to_view(view, -1))
@@ -2502,34 +2503,78 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 
 	reset_put_confirm(cmlo_to_op(op), descr, dst_dir);
 
-	put_confirm.file_order = reallocarray(NULL, reg->nfiles,
-			sizeof(*put_confirm.file_order));
-
 	put_confirm.op = op;
 	put_confirm.reg = reg;
 	put_confirm.view = view;
 
+	/* Map each element onto itself initially. */
+	put_confirm.file_order = reallocarray(NULL, reg->nfiles,
+			sizeof(*put_confirm.file_order));
+	for(i = 0; i < reg->nfiles; ++i)
+	{
+		put_confirm.file_order[i] = i;
+	}
+
+	/* If slashes are harmful, order files by descending depth in the file system
+	 * and then move all that will clash to the tail of the array. */
+	if(op == CMLO_MOVE || op == CMLO_COPY)
+	{
+		int i, nclashes;
+
+		qsort(put_confirm.file_order, reg->nfiles,
+				sizeof(put_confirm.file_order[0]), &path_depth_sort);
+
+		/* We basically do stable partition by "clash" predicate moving all files
+		 * for which it's true to the tail. */
+		nclashes = 0;
+		for(i = 0; i < reg->nfiles - nclashes; ++i)
+		{
+			const int id = put_confirm.file_order[i];
+			if(is_subtree_clash(reg->files[id], dst_dir))
+			{
+				/* Rotate unvisited elements of the array in place. */
+				memmove(&put_confirm.file_order[i], &put_confirm.file_order[i + 1],
+						sizeof(id)*(reg->nfiles - nclashes - (i + 1)));
+				put_confirm.file_order[reg->nfiles - 1 - nclashes++] = id;
+				--i;
+			}
+		}
+	}
+
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
-	j = 0;
 	for(i = 0; i < reg->nfiles && !ui_cancellation_requested(); ++i)
 	{
-		if((op == CMLO_MOVE || op == CMLO_COPY) &&
-				is_subtree_clash(reg->files[i], dst_dir))
-		{
-			put_confirm.file_order[reg->nfiles - 1 - (i - j)] = i;
-		}
-		else
-		{
-			put_confirm.file_order[j++] = i;
-		}
 		ops_enqueue(put_confirm.ops, reg->files[i], dst_dir);
 	}
 
 	ui_cancellation_disable();
 
 	return put_files_i(view, 1);
+}
+
+/* Compares two entries by the depth of their real paths.  Returns positive
+ * value if one is greater than two, zero if they are equal, otherwise negative
+ * value is returned. */
+static int
+path_depth_sort(const void *one, const void *two)
+{
+	const char *s = put_confirm.reg->files[*(const int *)one];
+	const char *t = put_confirm.reg->files[*(const int *)two];
+
+	char s_real[PATH_MAX], t_real[PATH_MAX];
+
+	if(os_realpath(s, s_real) != s_real)
+	{
+		copy_str(s_real, sizeof(s_real), s);
+	}
+	if(os_realpath(t, t_real) != t_real)
+	{
+		copy_str(t_real, sizeof(t_real), t);
+	}
+
+	return chars_in_str(t_real, '/') - chars_in_str(s_real, '/');
 }
 
 /* Checks whether moving a file into specified directory might result in removal

@@ -239,15 +239,22 @@ parent_overwrite_with_put(int move)
 	create_empty_dir(SANDBOX_PATH "/dir/dir");
 	create_empty_dir(SANDBOX_PATH "/dir/dir1");
 	create_empty_file(SANDBOX_PATH "/dir/dir/file");
+	create_empty_file(SANDBOX_PATH "/dir/dir1/file2");
 
 	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir"));
 	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir1"));
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir1/file2"));
 
 	init_fileops(&line_prompt, &options_prompt_overwrite);
 	(void)put_files(&lwin, -1, 'a', move);
 
 	assert_success(remove(SANDBOX_PATH "/dir/file"));
+	assert_success(remove(SANDBOX_PATH "/file2"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	if(!move)
+	{
+		assert_success(remove(SANDBOX_PATH "/dir1/file2"));
+	}
 	assert_success(rmdir(SANDBOX_PATH "/dir1"));
 }
 
