@@ -237,15 +237,18 @@ parent_overwrite_with_put(int move)
 {
 	create_empty_dir(SANDBOX_PATH "/dir");
 	create_empty_dir(SANDBOX_PATH "/dir/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir1");
 	create_empty_file(SANDBOX_PATH "/dir/dir/file");
 
 	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir"));
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir1"));
 
 	init_fileops(&line_prompt, &options_prompt_overwrite);
 	(void)put_files(&lwin, -1, 'a', move);
 
 	assert_success(remove(SANDBOX_PATH "/dir/file"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir1"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

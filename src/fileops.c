@@ -194,6 +194,7 @@ static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name);
+static int is_subtree_clash(const char src_path[], const char dst_dir[]);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char dst_dir[]);
@@ -259,6 +260,7 @@ static char rename_file_ext[NAME_MAX];
 static struct
 {
 	reg_t *reg;        /* Register used for the operation. */
+	int *file_order;   /* Defines custom ordering of files in register. */
 	FileView *view;    /* View in which operation takes place. */
 	CopyMoveLikeOp op; /* Type of current operation. */
 	int index;         /* Index of the next file of the register to process. */
@@ -2483,7 +2485,7 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name)
 {
 	reg_t *reg;
-	int i;
+	int i, j;
 	const char *const dst_dir = get_dst_dir(view, at);
 
 	if(!can_add_files_to_view(view, -1))
@@ -2500,6 +2502,9 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 
 	reset_put_confirm(cmlo_to_op(op), descr, dst_dir);
 
+	put_confirm.file_order = reallocarray(NULL, reg->nfiles,
+			sizeof(*put_confirm.file_order));
+
 	put_confirm.op = op;
 	put_confirm.reg = reg;
 	put_confirm.view = view;
@@ -2507,14 +2512,39 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
+	j = 0;
 	for(i = 0; i < reg->nfiles && !ui_cancellation_requested(); ++i)
 	{
+		if((op == CMLO_MOVE || op == CMLO_COPY) &&
+				is_subtree_clash(reg->files[i], dst_dir))
+		{
+			put_confirm.file_order[reg->nfiles - 1 - (i - j)] = i;
+		}
+		else
+		{
+			put_confirm.file_order[j++] = i;
+		}
 		ops_enqueue(put_confirm.ops, reg->files[i], dst_dir);
 	}
 
 	ui_cancellation_disable();
 
 	return put_files_i(view, 1);
+}
+
+/* Checks whether moving a file into specified directory might result in removal
+ * of the file on overwrite (because it overwrites one of its parents).  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+is_subtree_clash(const char src_path[], const char dst_dir[])
+{
+	char dst_path[PATH_MAX];
+
+	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
+			get_dst_name(src_path, is_under_trash(src_path)));
+	chosp(dst_path);
+
+	return is_dir(dst_path) && is_in_subtree(src_path, dst_path);
 }
 
 /* Gets operation kind that corresponds to copy/move-like operation.  Returns
@@ -2544,9 +2574,11 @@ reset_put_confirm(OPS main_op, const char descr[], const char dst_dir[])
 {
 	free(put_confirm.dest_name);
 	free(put_confirm.dest_dir);
-	memset(&put_confirm, 0, sizeof(put_confirm));
-	put_confirm.dest_dir = strdup(dst_dir);
+	free(put_confirm.file_order);
 
+	memset(&put_confirm, 0, sizeof(put_confirm));
+
+	put_confirm.dest_dir = strdup(dst_dir);
 	put_confirm.ops = get_ops(main_op, descr, dst_dir, dst_dir);
 }
 
@@ -2558,7 +2590,8 @@ put_files_i(FileView *view, int start)
 	{
 		char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 		const char *descr;
-		const int from_trash = is_under_trash(put_confirm.reg->files[0]);
+		const int from_trash =
+			is_under_trash(put_confirm.reg->files[put_confirm.file_order[0]]);
 
 		if(put_confirm.op == CMLO_LINK_ABS)
 		{
@@ -2646,7 +2679,7 @@ put_next(int force)
 	force = force || put_confirm.overwrite_all || put_confirm.merge_all;
 	merge = put_confirm.merge || put_confirm.merge_all;
 
-	filename = put_confirm.reg->files[put_confirm.index];
+	filename = put_confirm.reg->files[put_confirm.file_order[put_confirm.index]];
 	chosp(filename);
 	if(os_lstat(filename, &src_st) != 0)
 	{
@@ -2825,7 +2858,9 @@ put_next(int force)
 		++put_confirm.processed;
 		if(move)
 		{
-			update_string(&put_confirm.reg->files[put_confirm.index], NULL);
+			update_string(
+					&put_confirm.reg->files[put_confirm.file_order[put_confirm.index]],
+					NULL);
 		}
 	}
 
