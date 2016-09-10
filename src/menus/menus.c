@@ -73,7 +73,6 @@ static void draw_menu_frame(const menu_info *m);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
-static size_t chars_in_str(const char s[], char c);
 static int search_menu(menu_info *m, int start_pos, int print_errors);
 static int search_menu_forwards(menu_info *m, int start_pos);
 static int search_menu_backwards(menu_info *m, int start_pos);
@@ -590,21 +589,6 @@ expand_tabulation_a(const char line[], size_t tab_stops)
 	}
 
 	return expanded_line;
-}
-
-/* Returns number of c char occurrences in the s string. */
-static size_t
-chars_in_str(const char s[], char c)
-{
-	size_t char_count = 0;
-	while(*s != '\0')
-	{
-		if(*s++ == c)
-		{
-			char_count++;
-		}
-	}
-	return char_count;
 }
 
 int

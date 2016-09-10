@@ -286,6 +286,9 @@ char * split_and_get_dc(char str[], char **state);
  * it's equal to INT_MAX. */
 int count_lines(const char text[], int max_width);
 
+/* Counts number of c char occurrences in the s string.  Returns the number. */
+size_t chars_in_str(const char s[], char c);
+
 #ifdef _WIN32
 
 /* Same as strstr(), but in case insensitive way. */
