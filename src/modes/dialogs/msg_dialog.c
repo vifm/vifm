@@ -526,7 +526,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			if(buf[0] == '\0')
 				continue;
 
-			h = cy + 4;
+			h = 1 + cy + 1 + ctrl_msg_n + 1;
 			wresize(error_win, h, w);
 			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
