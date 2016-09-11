@@ -2617,6 +2617,7 @@ cmlo_to_op(CopyMoveLikeOp op)
 static void
 reset_put_confirm(OPS main_op, const char descr[], const char dst_dir[])
 {
+	free_ops(put_confirm.ops);
 	free(put_confirm.dest_name);
 	free(put_confirm.dest_dir);
 	free(put_confirm.file_order);
@@ -2691,7 +2692,6 @@ put_files_i(FileView *view, int start)
 	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
 			(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
 
-	free_ops(put_confirm.ops);
 	ui_view_schedule_reload(put_confirm.view);
 
 	return 1;

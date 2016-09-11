@@ -16,11 +16,19 @@
 
 static void line_prompt(const char prompt[], const char filename[],
 		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
+static void line_prompt_rec(const char prompt[], const char filename[],
+		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
 static char options_prompt_rename(const char title[], const char message[],
+		const struct response_variant *variants);
+static char options_prompt_rename_rec(const char title[], const char message[],
 		const struct response_variant *variants);
 static char options_prompt_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
+static char options_prompt_abort(const char title[], const char message[],
+		const struct response_variant *variants);
 static void parent_overwrite_with_put(int move);
+
+static fo_prompt_cb rename_cb;
 
 SETUP()
 {
@@ -36,6 +44,8 @@ SETUP()
 		assert_non_null(get_cwd(cwd, sizeof(cwd)));
 		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", cwd, SANDBOX_PATH);
 	}
+
+	rename_cb = NULL;
 }
 
 TEARDOWN()
@@ -50,6 +60,13 @@ line_prompt(const char prompt[], const char filename[], fo_prompt_cb cb,
 	cb("b");
 }
 
+static void
+line_prompt_rec(const char prompt[], const char filename[], fo_prompt_cb cb,
+		fo_complete_cmd_func complete, int allow_ee)
+{
+	rename_cb = cb;
+}
+
 static char
 options_prompt_rename(const char title[], const char message[],
 		const struct response_variant *variants)
@@ -59,10 +76,25 @@ options_prompt_rename(const char title[], const char message[],
 }
 
 static char
+options_prompt_rename_rec(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	init_fileops(&line_prompt_rec, &options_prompt_overwrite);
+	return 'r';
+}
+
+static char
 options_prompt_overwrite(const char title[], const char message[],
 		const struct response_variant *variants)
 {
 	return 'o';
+}
+
+static char
+options_prompt_abort(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	return '\x03';
 }
 
 TEST(put_files_bg_fails_on_wrong_register)
@@ -222,6 +254,28 @@ TEST(overwrite_request_accounts_for_target_file_rename)
 	(void)remove(SANDBOX_PATH "/b");
 }
 
+TEST(abort_stops_operation)
+{
+	create_empty_file(SANDBOX_PATH "/a");
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir");
+	create_empty_file(SANDBOX_PATH "/dir/dir/a");
+	create_empty_file(SANDBOX_PATH "/dir/b");
+
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir/a"));
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/b"));
+
+	init_fileops(&line_prompt, &options_prompt_abort);
+	(void)put_files(&lwin, -1, 'a', 0);
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_failure(unlink(SANDBOX_PATH "/b"));
+	assert_success(unlink(SANDBOX_PATH "/dir/dir/a"));
+	assert_success(unlink(SANDBOX_PATH "/dir/b"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
 TEST(parent_overwrite_is_prevented_on_file_put_copy)
 {
 	parent_overwrite_with_put(0);
@@ -230,6 +284,21 @@ TEST(parent_overwrite_is_prevented_on_file_put_copy)
 TEST(parent_overwrite_is_prevented_on_file_put_move)
 {
 	parent_overwrite_with_put(1);
+}
+
+TEST(rename_on_put)
+{
+	create_empty_file(SANDBOX_PATH "/a");
+
+	assert_success(regs_append('a', SANDBOX_PATH "/a"));
+
+	init_fileops(&line_prompt_rec, &options_prompt_rename_rec);
+	(void)put_files(&lwin, -1, 'a', 0);
+	/* Continue the operation. */
+	rename_cb("b");
+
+	assert_success(remove(SANDBOX_PATH "/a"));
+	assert_success(remove(SANDBOX_PATH "/b"));
 }
 
 static void

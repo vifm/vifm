@@ -81,6 +81,8 @@
 	Fixed ruler update on `--remote --select`.  Thanks to Marcin
 	Kurczewski (a.k.a. rr-).
 
+	Fixed small leak after aborting on name conflict.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
