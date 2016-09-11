@@ -183,8 +183,9 @@ static int complete_group(const char str[], void *arg);
 static int complete_filename(const char str[], void *arg);
 TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static void put_confirm_cb(const char dest_name[]);
-static void prompt_what_to_do(const char src_name[]);
-static void handle_prompt_response(const char fname[], char response);
+static void prompt_what_to_do(const char fname[], const char caused_by[]);
+static void handle_prompt_response(const char fname[], const char caused_by[],
+		char response);
 static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
@@ -1948,7 +1949,7 @@ put_continue(int force)
 
 /* Prompt user for conflict resolution strategy about given filename. */
 static void
-prompt_what_to_do(const char fname[])
+prompt_what_to_do(const char fname[], const char caused_by[])
 {
 	/* Strange spacing is for left alignment.  Doesn't look nice here, but it is
 	 * problematic to get such alignment otherwise. */
@@ -1964,7 +1965,7 @@ prompt_what_to_do(const char fname[])
 		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
 		escape        = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
 
-	char msg[PATH_MAX];
+	char msg[PATH_MAX*3];
 	char response;
 	response_variant responses[11] = {};
 	size_t i = 0;
@@ -1991,14 +1992,17 @@ prompt_what_to_do(const char fname[])
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
-	snprintf(msg, sizeof(msg), "Name conflict for %s.  What to do?", fname);
+	snprintf(msg, sizeof(msg),
+			"Name conflict for %s.  Caused by:\n%s\nWhat to do?", fname,
+			replace_home_part(caused_by));
 	response = options_prompt("File Conflict", msg, responses);
-	handle_prompt_response(fname, response);
+	handle_prompt_response(fname, caused_by, response);
 }
 
 /* Handles response to the prompt asked by prompt_what_to_do(). */
 static void
-handle_prompt_response(const char fname[], char response)
+handle_prompt_response(const char fname[], const char caused_by[],
+		char response)
 {
 	if(response == '\r' || response == 'r')
 	{
@@ -2040,7 +2044,7 @@ handle_prompt_response(const char fname[], char response)
 	}
 	else if(response != NC_C_c)
 	{
-		prompt_what_to_do(fname);
+		prompt_what_to_do(fname, caused_by);
 	}
 }
 
@@ -2698,7 +2702,9 @@ put_files_i(FileView *view, int start)
 }
 
 /* The force argument enables overwriting/replacing/merging.  Returns 0 on
- * success, otherwise non-zero is returned. */
+ * success, otherwise non-zero is returned where value greater then zero means
+ * error already reported to the user, while negative one means unreported
+ * error. */
 static int
 put_next(int force)
 {
@@ -2788,7 +2794,7 @@ put_next(int force)
 			struct stat dst_st;
 			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
 					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
-			prompt_what_to_do(dest_name);
+			prompt_what_to_do(dest_name, src_buf);
 			return 1;
 		}
 	}
