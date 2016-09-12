@@ -26,7 +26,14 @@ static char options_prompt_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
 static char options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants);
+static char cm_overwrite(const char title[], const char message[],
+		const struct response_variant *variants);
+static char cm_no(const char title[], const char message[],
+		const struct response_variant *variants);
+static char cm_skip(const char title[], const char message[],
+		const struct response_variant *variants);
 static void parent_overwrite_with_put(int move);
+static void double_clash_with_put(int move);
 
 static fo_prompt_cb rename_cb;
 
@@ -95,6 +102,30 @@ options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants)
 {
 	return '\x03';
+}
+
+static char
+cm_overwrite(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	init_fileops(&line_prompt, &cm_no);
+	return 'o';
+}
+
+static char
+cm_no(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	init_fileops(&line_prompt, &cm_skip);
+	return 'n';
+}
+
+static char
+cm_skip(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	init_fileops(&line_prompt, &options_prompt_overwrite);
+	return 's';
 }
 
 TEST(put_files_bg_fails_on_wrong_register)
@@ -301,6 +332,44 @@ TEST(rename_on_put)
 	assert_success(remove(SANDBOX_PATH "/b"));
 }
 
+TEST(multiple_clashes_are_resolved_by_user_on_put_copy)
+{
+	double_clash_with_put(0);
+}
+
+TEST(multiple_clashes_are_resolved_by_user_on_put_move)
+{
+	double_clash_with_put(1);
+}
+
+TEST(change_mind)
+{
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir/dir");
+	create_empty_file(SANDBOX_PATH "/dir/dir/dir/file1");
+	create_empty_dir(SANDBOX_PATH "/dir2");
+	create_empty_dir(SANDBOX_PATH "/dir2/dir");
+	create_empty_dir(SANDBOX_PATH "/dir2/dir/dir");
+	create_empty_file(SANDBOX_PATH "/dir2/dir/dir/file2");
+
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir"));
+	assert_success(regs_append('a', SANDBOX_PATH "/dir2/dir"));
+
+	/* Overwrite #1 -> No -> Skip -> Overwrite #2. */
+
+	init_fileops(&line_prompt, &cm_overwrite);
+	(void)put_files(&lwin, -1, 'a', 0);
+
+	assert_success(remove(SANDBOX_PATH "/dir2/dir/dir/file2"));
+	assert_success(rmdir(SANDBOX_PATH "/dir2/dir/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir2/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir2"));
+	assert_success(remove(SANDBOX_PATH "/dir/dir/file1"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
 static void
 parent_overwrite_with_put(int move)
 {
@@ -325,6 +394,29 @@ parent_overwrite_with_put(int move)
 		assert_success(remove(SANDBOX_PATH "/dir1/file2"));
 	}
 	assert_success(rmdir(SANDBOX_PATH "/dir1"));
+}
+
+static void
+double_clash_with_put(int move)
+{
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir/dir");
+	create_empty_file(SANDBOX_PATH "/dir/dir/file1");
+	create_empty_file(SANDBOX_PATH "/dir/dir/dir/file2");
+
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir"));
+	assert_success(regs_append('a', SANDBOX_PATH "/dir/dir/dir"));
+
+	/* The larger sub-tree should be moved in this case. */
+
+	init_fileops(&line_prompt, &options_prompt_overwrite);
+	(void)put_files(&lwin, -1, 'a', move);
+
+	assert_success(remove(SANDBOX_PATH "/dir/dir/file2"));
+	assert_success(remove(SANDBOX_PATH "/dir/file1"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

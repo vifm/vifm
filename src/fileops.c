@@ -37,13 +37,14 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
-#include <string.h> /* memcmp() memset() strcat() strcmp() strcpy() strdup()
-                       strerror() */
+#include <string.h> /* memcmp() memmove() memset() strcat() strcmp() strcpy()
+                       strdup() strerror() */
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
+#include "engine/text_buffer.h"
 #include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
@@ -196,12 +197,13 @@ static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name);
 static int path_depth_sort(const void *one, const void *two);
-static int is_subtree_clash(const char src_path[], const char dst_dir[]);
+static int is_dir_clash(const char src_path[], const char dst_dir[]);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char dst_dir[]);
 static int put_files_i(FileView *view, int start);
 static int put_next(int force);
+static int handle_clashing(int move, const char src[], const char dst[]);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
 static int rename_marked(FileView *view, const char desc[], const char lhs[],
@@ -2528,13 +2530,15 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		qsort(put_confirm.file_order, reg->nfiles,
 				sizeof(put_confirm.file_order[0]), &path_depth_sort);
 
-		/* We basically do stable partition by "clash" predicate moving all files
-		 * for which it's true to the tail. */
+		/* We basically do partition by "clash" predicate moving all files for which
+		 * it's true to the tail.  Mind that moved files end up in reverse order,
+		 * which is beneficial for us as we can move larger sub-tree and discard
+		 * some of other files. */
 		nclashes = 0;
 		for(i = 0; i < reg->nfiles - nclashes; ++i)
 		{
 			const int id = put_confirm.file_order[i];
-			if(is_subtree_clash(reg->files[id], dst_dir))
+			if(is_dir_clash(reg->files[id], dst_dir))
 			{
 				/* Rotate unvisited elements of the array in place. */
 				memmove(&put_confirm.file_order[i], &put_confirm.file_order[i + 1],
@@ -2581,11 +2585,12 @@ path_depth_sort(const void *one, const void *two)
 	return chars_in_str(t_real, '/') - chars_in_str(s_real, '/');
 }
 
-/* Checks whether moving a file into specified directory might result in removal
- * of the file on overwrite (because it overwrites one of its parents).  Returns
- * non-zero if so, otherwise zero is returned. */
+/* Checks whether moving the file into specified directory might potentially
+ * result in loss of some other files scheduled for processing (because we
+ * overwrite one of its parents).  Returns non-zero if so, otherwise zero is
+ * returned. */
 static int
-is_subtree_clash(const char src_path[], const char dst_dir[])
+is_dir_clash(const char src_path[], const char dst_dir[])
 {
 	char dst_path[PATH_MAX];
 
@@ -2593,7 +2598,7 @@ is_subtree_clash(const char src_path[], const char dst_dir[])
 			get_dst_name(src_path, is_under_trash(src_path)));
 	chosp(dst_path);
 
-	return is_dir(dst_path) && is_in_subtree(src_path, dst_path);
+	return is_dir(dst_path);
 }
 
 /* Gets operation kind that corresponds to copy/move-like operation.  Returns
@@ -2731,6 +2736,12 @@ put_next(int force)
 	merge = put_confirm.merge || put_confirm.merge_all;
 
 	filename = put_confirm.reg->files[put_confirm.file_order[put_confirm.index]];
+	if(filename == NULL)
+	{
+		/* This file has been excluded from processing. */
+		return 0;
+	}
+
 	chosp(filename);
 	if(os_lstat(filename, &src_st) != 0)
 	{
@@ -2767,13 +2778,22 @@ put_next(int force)
 			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
 					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
-				if(S_ISDIR(dst_st.st_mode) && is_in_subtree(src_buf, dst_buf))
+				if(S_ISDIR(dst_st.st_mode))
 				{
-					/* Don't delete /a/b when moving /a/b/c to /a/b. */
-					safe_operation = 1;
+					if(handle_clashing(move, src_buf, dst_buf))
+					{
+						return 1;
+					}
+
+					if(is_in_subtree(src_buf, dst_buf))
+					{
+						/* Don't delete /a/b before moving /a/b/c to /a/b. */
+						safe_operation = 1;
+					}
 				}
-				else if(perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
-							NULL) != 0)
+
+				if(!safe_operation && perform_operation(OP_REMOVESL, put_confirm.ops,
+							NULL, dst_buf, NULL) != 0)
 				{
 					return 0;
 				}
@@ -2914,6 +2934,99 @@ put_next(int force)
 					NULL);
 		}
 	}
+
+	return 0;
+}
+
+/* Goes through the rest of files in the register to see whether they are inside
+ * path that we're going to overwrite or move and asks/warns the user if
+ * necessary.  Returns non-zero on abort, otherwise zero is returned. */
+static int
+handle_clashing(int move, const char src[], const char dst[])
+{
+	int i;
+	vle_textbuf *const lost = vle_tb_create();
+	vle_textbuf *const to_exclude = vle_tb_create();
+
+	for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
+	{
+		const char *const another_src =
+			put_confirm.reg->files[put_confirm.file_order[i]];
+		const int sub_path = is_in_subtree(another_src, src);
+		if(is_in_subtree(another_src, dst) && !sub_path)
+		{
+			vle_tb_append_line(lost, another_src);
+		}
+		if(sub_path)
+		{
+			vle_tb_append_line(to_exclude, another_src);
+		}
+	}
+
+	if(*vle_tb_get_data(lost) != '\0')
+	{
+		int i;
+		char msg[PATH_MAX];
+		response_variant responses[] = {
+			{ .key = 'y', .descr = "[y]es " },
+			{ .key = 'n', .descr = " [n]o\n" },
+			{ .key = NC_C_c, .descr = "\nEsc or Ctrl-C to abort" },
+			{}
+		};
+
+		/* Screen needs to be restored after displaying progress dialog. */
+		modes_update();
+
+		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
+				"in loss of the following files.  Are you sure?\n%s", dst,
+				src, vle_tb_get_data(lost));
+		switch(options_prompt("Possible data loss", msg, responses))
+		{
+			case 'y':
+				/* Do nothing. */
+				break;
+			case 'n':
+				prompt_what_to_do(get_last_path_component(dst), src);
+				/* Fall through. */
+			case NC_C_c:
+				vle_tb_free(to_exclude);
+				vle_tb_free(lost);
+				return 1;
+		}
+
+		for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
+		{
+			char **const another_src =
+				&put_confirm.reg->files[put_confirm.file_order[i]];
+			const int sub_path = is_in_subtree(*another_src, src);
+			if(is_in_subtree(*another_src, dst) && !sub_path)
+			{
+				update_string(another_src, NULL);
+			}
+		}
+	}
+
+	if(*vle_tb_get_data(to_exclude) != '\0')
+	{
+		int i;
+
+		show_error_msgf("Operation Warning",
+				"The following files got excluded from further processing:\n%s",
+				vle_tb_get_data(to_exclude));
+
+		for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
+		{
+			char **const another_src =
+				&put_confirm.reg->files[put_confirm.file_order[i]];
+			if(is_in_subtree(*another_src, src))
+			{
+				update_string(another_src, NULL);
+			}
+		}
+	}
+
+	vle_tb_free(to_exclude);
+	vle_tb_free(lost);
 
 	return 0;
 }
