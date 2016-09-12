@@ -3474,10 +3474,16 @@ fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 }
 
 static int
-is_copy_list_ok(const char *dst, int count, char **list)
+is_copy_list_ok(const char *dst, int count, char **list, int force)
 {
 	int i;
-	for(i = 0; i < count; i++)
+
+	if(force)
+	{
+		return 1;
+	}
+
+	for(i = 0; i < count; ++i)
 	{
 		if(path_exists_at(dst, list[i], DEREF))
 		{
@@ -3809,11 +3815,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines > 0 &&
 			(!is_name_list_ok(nmarked, *nlines, *list, NULL) ||
-			(!is_copy_list_ok(dst_path, *nlines, *list) && !force)))
+			!is_copy_list_ok(dst_path, *nlines, *list, force)))
 	{
 		error = 1;
 	}
-	if(*nlines == 0 && !force && !is_copy_list_ok(dst_path, nmarked, marked))
+	if(*nlines == 0 && !is_copy_list_ok(dst_path, nmarked, marked, force))
 	{
 		error = 1;
 	}
