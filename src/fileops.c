@@ -37,13 +37,14 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
-#include <string.h> /* memcmp() memset() strcat() strcmp() strcpy() strdup()
-                       strerror() */
+#include <string.h> /* memcmp() memmove() memset() strcat() strcmp() strcpy()
+                       strdup() strerror() */
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
+#include "engine/text_buffer.h"
 #include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
@@ -183,8 +184,9 @@ static int complete_group(const char str[], void *arg);
 static int complete_filename(const char str[], void *arg);
 TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static void put_confirm_cb(const char dest_name[]);
-static void prompt_what_to_do(const char src_name[]);
-static void handle_prompt_response(const char fname[], char response);
+static void prompt_what_to_do(const char fname[], const char caused_by[]);
+static void handle_prompt_response(const char fname[], const char caused_by[],
+		char response);
 static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
@@ -194,11 +196,14 @@ static void put_continue(int force);
 static int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name);
+static int path_depth_sort(const void *one, const void *two);
+static int is_dir_clash(const char src_path[], const char dst_dir[]);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static void reset_put_confirm(OPS main_op, const char descr[],
 		const char dst_dir[]);
 static int put_files_i(FileView *view, int start);
 static int put_next(int force);
+static int handle_clashing(int move, const char src[], const char dst[]);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
 static int rename_marked(FileView *view, const char desc[], const char lhs[],
@@ -210,9 +215,12 @@ static int enqueue_marked_files(ops_t *ops, FileView *view,
 static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[]);
 static void progress_msg(const char text[], int ready, int total);
+static const char * get_dst_name(const char src_path[], int from_trash);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char dst_path[], size_t dst_path_len, int *from_file);
+static int check_for_clashes(FileView *view, CopyMoveLikeOp op,
+		const char dst_path[], char *list[], char *marked[], int nlines);
 static int can_read_selected_files(FileView *view);
 static int check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len);
@@ -258,6 +266,7 @@ static char rename_file_ext[NAME_MAX];
 static struct
 {
 	reg_t *reg;        /* Register used for the operation. */
+	int *file_order;   /* Defines custom ordering of files in register. */
 	FileView *view;    /* View in which operation takes place. */
 	CopyMoveLikeOp op; /* Type of current operation. */
 	int index;         /* Index of the next file of the register to process. */
@@ -1944,7 +1953,7 @@ put_continue(int force)
 
 /* Prompt user for conflict resolution strategy about given filename. */
 static void
-prompt_what_to_do(const char fname[])
+prompt_what_to_do(const char fname[], const char caused_by[])
 {
 	/* Strange spacing is for left alignment.  Doesn't look nice here, but it is
 	 * problematic to get such alignment otherwise. */
@@ -1960,7 +1969,7 @@ prompt_what_to_do(const char fname[])
 		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
 		escape        = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
 
-	char msg[PATH_MAX];
+	char msg[PATH_MAX*3];
 	char response;
 	response_variant responses[11] = {};
 	size_t i = 0;
@@ -1987,14 +1996,17 @@ prompt_what_to_do(const char fname[])
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
-	snprintf(msg, sizeof(msg), "Name conflict for %s.  What to do?", fname);
+	snprintf(msg, sizeof(msg),
+			"Name conflict for %s.  Caused by:\n%s\nWhat to do?", fname,
+			replace_home_part(caused_by));
 	response = options_prompt("File Conflict", msg, responses);
-	handle_prompt_response(fname, response);
+	handle_prompt_response(fname, caused_by, response);
 }
 
 /* Handles response to the prompt asked by prompt_what_to_do(). */
 static void
-handle_prompt_response(const char fname[], char response)
+handle_prompt_response(const char fname[], const char caused_by[],
+		char response)
 {
 	if(response == '\r' || response == 'r')
 	{
@@ -2036,7 +2048,7 @@ handle_prompt_response(const char fname[], char response)
 	}
 	else if(response != NC_C_c)
 	{
-		prompt_what_to_do(fname);
+		prompt_what_to_do(fname, caused_by);
 	}
 }
 
@@ -2102,14 +2114,7 @@ put_files_bg(FileView *view, int at, int reg_name, int move)
 		args->sel_list_len = add_to_string_array(&args->sel_list,
 				args->sel_list_len, 1, src);
 
-		if(is_under_trash(src))
-		{
-			dst_name = get_real_name_from_trash_name(src);
-		}
-		else
-		{
-			dst_name = get_last_path_component(src);
-		}
+		dst_name = get_dst_name(src, is_under_trash(src));
 
 		/* Check that no destination files have the same name. */
 		for(j = 0; j < args->nlines; ++j)
@@ -2510,6 +2515,42 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 	put_confirm.reg = reg;
 	put_confirm.view = view;
 
+	/* Map each element onto itself initially. */
+	put_confirm.file_order = reallocarray(NULL, reg->nfiles,
+			sizeof(*put_confirm.file_order));
+	for(i = 0; i < reg->nfiles; ++i)
+	{
+		put_confirm.file_order[i] = i;
+	}
+
+	/* If slashes are harmful, order files by descending depth in the file system
+	 * and then move all that will clash to the tail of the array. */
+	if(op == CMLO_MOVE || op == CMLO_COPY)
+	{
+		int i, nclashes;
+
+		qsort(put_confirm.file_order, reg->nfiles,
+				sizeof(put_confirm.file_order[0]), &path_depth_sort);
+
+		/* We basically do partition by "clash" predicate moving all files for which
+		 * it's true to the tail.  Mind that moved files end up in reverse order,
+		 * which is beneficial for us as we can move larger sub-tree and discard
+		 * some of other files. */
+		nclashes = 0;
+		for(i = 0; i < reg->nfiles - nclashes; ++i)
+		{
+			const int id = put_confirm.file_order[i];
+			if(is_dir_clash(reg->files[id], dst_dir))
+			{
+				/* Rotate unvisited elements of the array in place. */
+				memmove(&put_confirm.file_order[i], &put_confirm.file_order[i + 1],
+						sizeof(id)*(reg->nfiles - nclashes - (i + 1)));
+				put_confirm.file_order[reg->nfiles - 1 - nclashes++] = id;
+				--i;
+			}
+		}
+	}
+
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
@@ -2521,6 +2562,45 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 	ui_cancellation_disable();
 
 	return put_files_i(view, 1);
+}
+
+/* Compares two entries by the depth of their real paths.  Returns positive
+ * value if one is greater than two, zero if they are equal, otherwise negative
+ * value is returned. */
+static int
+path_depth_sort(const void *one, const void *two)
+{
+	const char *s = put_confirm.reg->files[*(const int *)one];
+	const char *t = put_confirm.reg->files[*(const int *)two];
+
+	char s_real[PATH_MAX], t_real[PATH_MAX];
+
+	if(os_realpath(s, s_real) != s_real)
+	{
+		copy_str(s_real, sizeof(s_real), s);
+	}
+	if(os_realpath(t, t_real) != t_real)
+	{
+		copy_str(t_real, sizeof(t_real), t);
+	}
+
+	return chars_in_str(t_real, '/') - chars_in_str(s_real, '/');
+}
+
+/* Checks whether moving the file into specified directory might potentially
+ * result in loss of some other files scheduled for processing (because we
+ * overwrite one of its parents).  Returns non-zero if so, otherwise zero is
+ * returned. */
+static int
+is_dir_clash(const char src_path[], const char dst_dir[])
+{
+	char dst_path[PATH_MAX];
+
+	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
+			get_dst_name(src_path, is_under_trash(src_path)));
+	chosp(dst_path);
+
+	return is_dir(dst_path);
 }
 
 /* Gets operation kind that corresponds to copy/move-like operation.  Returns
@@ -2548,11 +2628,14 @@ cmlo_to_op(CopyMoveLikeOp op)
 static void
 reset_put_confirm(OPS main_op, const char descr[], const char dst_dir[])
 {
+	free_ops(put_confirm.ops);
 	free(put_confirm.dest_name);
 	free(put_confirm.dest_dir);
-	memset(&put_confirm, 0, sizeof(put_confirm));
-	put_confirm.dest_dir = strdup(dst_dir);
+	free(put_confirm.file_order);
 
+	memset(&put_confirm, 0, sizeof(put_confirm));
+
+	put_confirm.dest_dir = strdup(dst_dir);
 	put_confirm.ops = get_ops(main_op, descr, dst_dir, dst_dir);
 }
 
@@ -2564,7 +2647,8 @@ put_files_i(FileView *view, int start)
 	{
 		char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 		const char *descr;
-		const int from_trash = is_under_trash(put_confirm.reg->files[0]);
+		const int from_trash =
+			is_under_trash(put_confirm.reg->files[put_confirm.file_order[0]]);
 
 		if(put_confirm.op == CMLO_LINK_ABS)
 		{
@@ -2619,20 +2703,21 @@ put_files_i(FileView *view, int start)
 	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
 			(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
 
-	free_ops(put_confirm.ops);
 	ui_view_schedule_reload(put_confirm.view);
 
 	return 1;
 }
 
 /* The force argument enables overwriting/replacing/merging.  Returns 0 on
- * success, otherwise non-zero is returned. */
+ * success, otherwise non-zero is returned where value greater then zero means
+ * error already reported to the user, while negative one means unreported
+ * error. */
 static int
 put_next(int force)
 {
 	char *filename;
 	const char *dest_name;
-	const char *dst_dir = put_confirm.dest_dir;
+	const char *const dst_dir = put_confirm.dest_dir;
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
@@ -2640,6 +2725,7 @@ put_next(int force)
 	int move;
 	int success;
 	int merge;
+	int safe_operation = 0;
 
 	/* TODO: refactor this function (put_next()) */
 
@@ -2651,7 +2737,13 @@ put_next(int force)
 	force = force || put_confirm.overwrite_all || put_confirm.merge_all;
 	merge = put_confirm.merge || put_confirm.merge_all;
 
-	filename = put_confirm.reg->files[put_confirm.index];
+	filename = put_confirm.reg->files[put_confirm.file_order[put_confirm.index]];
+	if(filename == NULL)
+	{
+		/* This file has been excluded from processing. */
+		return 0;
+	}
+
 	chosp(filename);
 	if(os_lstat(filename, &src_st) != 0)
 	{
@@ -2667,14 +2759,7 @@ put_next(int force)
 	dest_name = put_confirm.dest_name;
 	if(dest_name == NULL)
 	{
-		if(from_trash)
-		{
-			dest_name = get_real_name_from_trash_name(src_buf);
-		}
-		else
-		{
-			dest_name = find_slashr(src_buf) + 1;
-		}
+		dest_name = get_dst_name(src_buf, from_trash);
 	}
 
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dest_name);
@@ -2695,12 +2780,25 @@ put_next(int force)
 			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
 					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
 			{
-				if(perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
-							NULL) != 0)
+				if(S_ISDIR(dst_st.st_mode))
+				{
+					if(handle_clashing(move, src_buf, dst_buf))
+					{
+						return 1;
+					}
+
+					if(is_in_subtree(src_buf, dst_buf))
+					{
+						/* Don't delete /a/b before moving /a/b/c to /a/b. */
+						safe_operation = 1;
+					}
+				}
+
+				if(!safe_operation && perform_operation(OP_REMOVESL, put_confirm.ops,
+							NULL, dst_buf, NULL) != 0)
 				{
 					return 0;
 				}
-
 				/* Schedule view update to reflect changes in UI. */
 				ui_view_schedule_reload(put_confirm.view);
 			}
@@ -2718,7 +2816,7 @@ put_next(int force)
 			struct stat dst_st;
 			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
 					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
-			prompt_what_to_do(dest_name);
+			prompt_what_to_do(dest_name, src_buf);
 			return 1;
 		}
 	}
@@ -2766,6 +2864,30 @@ put_next(int force)
 
 		cmd_group_end();
 	}
+	else if(safe_operation)
+	{
+		const char *const unique_dst = make_name_unique(dst_buf);
+
+		/* An optimization: if we're going to remove destination anyway, don't
+		 * bother copying it, just move. */
+		if(op == OP_COPY)
+		{
+			op = OP_MOVE;
+		}
+
+		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
+					unique_dst) == 0);
+		if(success)
+		{
+			success = (perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
+						NULL) == 0);
+		}
+		if(success)
+		{
+			success = (perform_operation(OP_MOVE, put_confirm.ops, NULL, unique_dst,
+						dst_buf) == 0);
+		}
+	}
 	else
 	{
 		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
@@ -2809,9 +2931,104 @@ put_next(int force)
 		++put_confirm.processed;
 		if(move)
 		{
-			update_string(&put_confirm.reg->files[put_confirm.index], NULL);
+			update_string(
+					&put_confirm.reg->files[put_confirm.file_order[put_confirm.index]],
+					NULL);
 		}
 	}
+
+	return 0;
+}
+
+/* Goes through the rest of files in the register to see whether they are inside
+ * path that we're going to overwrite or move and asks/warns the user if
+ * necessary.  Returns non-zero on abort, otherwise zero is returned. */
+static int
+handle_clashing(int move, const char src[], const char dst[])
+{
+	int i;
+	vle_textbuf *const lost = vle_tb_create();
+	vle_textbuf *const to_exclude = vle_tb_create();
+
+	for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
+	{
+		const char *const another_src =
+			put_confirm.reg->files[put_confirm.file_order[i]];
+		const int sub_path = is_in_subtree(another_src, src);
+		if(is_in_subtree(another_src, dst) && !sub_path)
+		{
+			vle_tb_append_line(lost, replace_home_part(another_src));
+		}
+		if(sub_path)
+		{
+			vle_tb_append_line(to_exclude, replace_home_part(another_src));
+		}
+	}
+
+	if(*vle_tb_get_data(lost) != '\0')
+	{
+		int i;
+		char msg[PATH_MAX];
+		response_variant responses[] = {
+			{ .key = 'y', .descr = "[y]es " },
+			{ .key = 'n', .descr = " [n]o\n" },
+			{ .key = NC_C_c, .descr = "\nEsc or Ctrl-C to abort" },
+			{}
+		};
+
+		/* Screen needs to be restored after displaying progress dialog. */
+		modes_update();
+
+		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
+				"in loss of the following files.  Are you sure?\n%s",
+				replace_home_part(dst), replace_home_part(src), vle_tb_get_data(lost));
+		switch(options_prompt("Possible data loss", msg, responses))
+		{
+			case 'y':
+				/* Do nothing. */
+				break;
+			case 'n':
+				prompt_what_to_do(get_last_path_component(dst), src);
+				/* Fall through. */
+			case NC_C_c:
+				vle_tb_free(to_exclude);
+				vle_tb_free(lost);
+				return 1;
+		}
+
+		for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
+		{
+			char **const another_src =
+				&put_confirm.reg->files[put_confirm.file_order[i]];
+			const int sub_path = is_in_subtree(*another_src, src);
+			if(is_in_subtree(*another_src, dst) && !sub_path)
+			{
+				update_string(another_src, NULL);
+			}
+		}
+	}
+
+	if(*vle_tb_get_data(to_exclude) != '\0')
+	{
+		int i;
+
+		show_error_msgf("Operation Warning",
+				"The following files got excluded from further processing:\n%s",
+				vle_tb_get_data(to_exclude));
+
+		for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
+		{
+			char **const another_src =
+				&put_confirm.reg->files[put_confirm.file_order[i]];
+			if(is_in_subtree(*another_src, src))
+			{
+				update_string(another_src, NULL);
+			}
+		}
+	}
+
+	vle_tb_free(to_exclude);
+	vle_tb_free(lost);
 
 	return 0;
 }
@@ -3259,10 +3476,16 @@ fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 }
 
 static int
-is_copy_list_ok(const char *dst, int count, char **list)
+is_copy_list_ok(const char *dst, int count, char **list, int force)
 {
 	int i;
-	for(i = 0; i < count; i++)
+
+	if(force)
+	{
+		return 1;
+	}
+
+	for(i = 0; i < count; ++i)
 	{
 		if(path_exists_at(dst, list[i], DEREF))
 		{
@@ -3504,9 +3727,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 		args->list = reallocarray(NULL, args->nlines, sizeof(*args->list));
 		for(i = 0; i < args->nlines; ++i)
 		{
-			args->list[i] = args->is_in_trash[i]
-			              ? strdup(get_real_name_from_trash_name(args->sel_list[i]))
-			              : strdup(get_last_path_component(args->sel_list[i]));
+			args->list[i] =
+				strdup(get_dst_name(args->sel_list[i], args->is_in_trash[i]));
 		}
 	}
 
@@ -3523,6 +3745,18 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	}
 
 	return 0;
+}
+
+/* Makes name of destination file from name of the source file.  Returns the
+ * name. */
+static const char *
+get_dst_name(const char src_path[], int from_trash)
+{
+	if(from_trash)
+	{
+		return get_real_name_from_trash_name(src_path);
+	}
+	return get_last_path_component(src_path);
 }
 
 /* Performs general preparations for file copy/move-like operations: resolving
@@ -3583,11 +3817,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines > 0 &&
 			(!is_name_list_ok(nmarked, *nlines, *list, NULL) ||
-			(!is_copy_list_ok(dst_path, *nlines, *list) && !force)))
+			!is_copy_list_ok(dst_path, *nlines, *list, force)))
 	{
 		error = 1;
 	}
-	if(*nlines == 0 && !force && !is_copy_list_ok(dst_path, nmarked, marked))
+	if(*nlines == 0 && !is_copy_list_ok(dst_path, nmarked, marked, force))
 	{
 		error = 1;
 	}
@@ -3605,6 +3839,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 				error = 1;
 			}
 		}
+	}
+
+	if(check_for_clashes(view, op, dst_path, *list, marked, *nlines) != 0)
+	{
+		error = 1;
 	}
 
 	free_string_array(marked, nmarked);
@@ -3630,6 +3869,45 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		move_cursor_out_of(view, FLS_SELECTION);
 	}
 
+	return 0;
+}
+
+/* Checks whether operation is OK from the point of view of losing files due to
+ * tree clashes (child move over parent or vice versa).  Returns zero if
+ * everything is fine, otherwise non-zero is returned. */
+static int
+check_for_clashes(FileView *view, CopyMoveLikeOp op, const char dst_path[],
+		char *list[], char *marked[], int nlines)
+{
+	dir_entry_t *entry = NULL;
+	int i = 0;
+	while(iter_marked_entries(view, &entry))
+	{
+		char src_full[PATH_MAX], dst_full[PATH_MAX];
+		const char *const dst_name = (nlines > 0) ? list[i] : marked[i];
+		++i;
+
+		get_full_path_of(entry, sizeof(src_full), src_full);
+
+		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_path, dst_name);
+		chosp(dst_full);
+
+		if(ONE_OF(op, CMLO_MOVE, CMLO_COPY) && is_in_subtree(dst_full, src_full))
+		{
+			status_bar_errorf("Can't move/copy parent inside itself: %s",
+					replace_home_part(src_full));
+			curr_stats.save_msg = 1;
+			return 1;
+		}
+
+		if(is_in_subtree(src_full, dst_full))
+		{
+			status_bar_errorf("Operation would result in loss contents of %s",
+					replace_home_part(src_full));
+			curr_stats.save_msg = 1;
+			return 1;
+		}
+	}
 	return 0;
 }
 

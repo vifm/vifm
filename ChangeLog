@@ -50,6 +50,8 @@
 
 	Disallow selecting ".." entry with :select command.
 
+	Display path to the conflicting file in conflict resolution dialog.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -80,6 +82,12 @@
 
 	Fixed ruler update on `--remote --select`.  Thanks to Marcin
 	Kurczewski (a.k.a. rr-).
+
+	Fixed small leak after aborting on name conflict.
+
+	Fixed possible data loss on moving/copying files over their own parent or
+	child directories via p, P, :move, :copy, :alink and :rlink.  Thanks to
+	Marius Schmidl.
 
 0.8.2-beta to 0.8.2
 

@@ -1035,6 +1035,20 @@ count_lines(const char text[], int max_width)
 	return nlines;
 }
 
+size_t
+chars_in_str(const char s[], char c)
+{
+	size_t char_count = 0;
+	while(*s != '\0')
+	{
+		if(*s++ == c)
+		{
+			++char_count;
+		}
+	}
+	return char_count;
+}
+
 #ifdef _WIN32
 
 char *

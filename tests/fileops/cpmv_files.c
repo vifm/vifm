@@ -18,6 +18,7 @@
 
 #include "utils.h"
 
+static void check_directory_clash(int parent_to_child, CopyMoveLikeOp op);
 static int not_windows(void);
 
 static char *saved_cwd;
@@ -282,6 +283,70 @@ TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
 		assert_success(rmdir("trash/nested"));
 		assert_success(rmdir("trash"));
 	}
+}
+
+TEST(child_overwrite_is_prevented_on_abs_link, IF(not_windows))
+{
+	check_directory_clash(1, CMLO_LINK_ABS);
+}
+
+TEST(parent_overwrite_is_prevented_on_abs_link, IF(not_windows))
+{
+	check_directory_clash(0, CMLO_LINK_ABS);
+}
+
+TEST(child_overwrite_is_prevented_on_rel_link, IF(not_windows))
+{
+	check_directory_clash(1, CMLO_LINK_REL);
+}
+
+TEST(parent_overwrite_is_prevented_on_rel_link, IF(not_windows))
+{
+	check_directory_clash(0, CMLO_LINK_REL);
+}
+
+TEST(child_overwrite_is_prevented_on_file_copy)
+{
+	check_directory_clash(1, CMLO_COPY);
+}
+
+TEST(parent_overwrite_is_prevented_on_file_copy)
+{
+	check_directory_clash(0, CMLO_COPY);
+}
+
+TEST(child_overwrite_is_prevented_on_file_move)
+{
+	check_directory_clash(1, CMLO_MOVE);
+}
+
+TEST(parent_overwrite_is_prevented_on_file_move)
+{
+	check_directory_clash(0, CMLO_MOVE);
+}
+
+static void
+check_directory_clash(int parent_to_child, CopyMoveLikeOp op)
+{
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_dir(SANDBOX_PATH "/dir/dir");
+	create_empty_file(SANDBOX_PATH "/dir/dir/file");
+
+	strcat(parent_to_child ? rwin.curr_dir : lwin.curr_dir, "/dir");
+
+	populate_dir_list(&lwin, 0);
+	populate_dir_list(&rwin, 0);
+
+	lwin.dir_entry[0].marked = 1;
+	assert_string_equal("dir", lwin.dir_entry[0].name);
+	(void)cpmv_files(&lwin, NULL, 0, CMLO_MOVE, 1);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(remove(SANDBOX_PATH "/dir/dir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 static int
