@@ -85,6 +85,10 @@
 
 	Fixed small leak after aborting on name conflict.
 
+	Fixed possible data loss on moving/copying files over their own parent or
+	child directories via p, P, :move, :copy, :alink and :rlink.  Thanks to
+	Marius Schmidl.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
