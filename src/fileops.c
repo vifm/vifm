@@ -2957,11 +2957,11 @@ handle_clashing(int move, const char src[], const char dst[])
 		const int sub_path = is_in_subtree(another_src, src);
 		if(is_in_subtree(another_src, dst) && !sub_path)
 		{
-			vle_tb_append_line(lost, another_src);
+			vle_tb_append_line(lost, replace_home_part(another_src));
 		}
 		if(sub_path)
 		{
-			vle_tb_append_line(to_exclude, another_src);
+			vle_tb_append_line(to_exclude, replace_home_part(another_src));
 		}
 	}
 
@@ -2980,8 +2980,8 @@ handle_clashing(int move, const char src[], const char dst[])
 		modes_update();
 
 		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
-				"in loss of the following files.  Are you sure?\n%s", dst,
-				src, vle_tb_get_data(lost));
+				"in loss of the following files.  Are you sure?\n%s",
+				replace_home_part(dst), replace_home_part(src), vle_tb_get_data(lost));
 		switch(options_prompt("Possible data loss", msg, responses))
 		{
 			case 'y':
@@ -3894,7 +3894,8 @@ check_for_clashes(FileView *view, CopyMoveLikeOp op, const char dst_path[],
 
 		if(ONE_OF(op, CMLO_MOVE, CMLO_COPY) && is_in_subtree(dst_full, src_full))
 		{
-			status_bar_errorf("Can't move/copy parent inside itself: %s", src_full);
+			status_bar_errorf("Can't move/copy parent inside itself: %s",
+					replace_home_part(src_full));
 			curr_stats.save_msg = 1;
 			return 1;
 		}
@@ -3902,7 +3903,7 @@ check_for_clashes(FileView *view, CopyMoveLikeOp op, const char dst_path[],
 		if(is_in_subtree(src_full, dst_full))
 		{
 			status_bar_errorf("Operation would result in loss contents of %s",
-					src_full);
+					replace_home_part(src_full));
 			curr_stats.save_msg = 1;
 			return 1;
 		}
