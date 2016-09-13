@@ -219,6 +219,8 @@ static const char * get_dst_name(const char src_path[], int from_trash);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char dst_path[], size_t dst_path_len, int *from_file);
+static int check_for_clashes(FileView *view, CopyMoveLikeOp op,
+		const char dst_path[], char *list[], char *marked[], int nlines);
 static int can_read_selected_files(FileView *view);
 static int check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len);
@@ -3839,6 +3841,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		}
 	}
 
+	if(check_for_clashes(view, op, dst_path, *list, marked, *nlines) != 0)
+	{
+		error = 1;
+	}
+
 	free_string_array(marked, nmarked);
 
 	if(error)
@@ -3862,6 +3869,44 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		move_cursor_out_of(view, FLS_SELECTION);
 	}
 
+	return 0;
+}
+
+/* Checks whether operation is OK from the point of view of losing files due to
+ * tree clashes (child move over parent or vice versa).  Returns zero if
+ * everything is fine, otherwise non-zero is returned. */
+static int
+check_for_clashes(FileView *view, CopyMoveLikeOp op, const char dst_path[],
+		char *list[], char *marked[], int nlines)
+{
+	dir_entry_t *entry = NULL;
+	int i = 0;
+	while(iter_marked_entries(view, &entry))
+	{
+		char src_full[PATH_MAX], dst_full[PATH_MAX];
+		const char *const dst_name = (nlines > 0) ? list[i] : marked[i];
+		++i;
+
+		get_full_path_of(entry, sizeof(src_full), src_full);
+
+		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_path, dst_name);
+		chosp(dst_full);
+
+		if(ONE_OF(op, CMLO_MOVE, CMLO_COPY) && is_in_subtree(dst_full, src_full))
+		{
+			status_bar_errorf("Can't move/copy parent inside itself: %s", src_full);
+			curr_stats.save_msg = 1;
+			return 1;
+		}
+
+		if(is_in_subtree(src_full, dst_full))
+		{
+			status_bar_errorf("Operation would result in loss contents of %s",
+					src_full);
+			curr_stats.save_msg = 1;
+			return 1;
+		}
+	}
 	return 0;
 }
 
