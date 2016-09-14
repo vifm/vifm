@@ -125,26 +125,6 @@ typedef struct
 }
 progress_data_t;
 
-/* Pack of arguments supplied to procedures implementing file operations in
- * background. */
-typedef struct
-{
-	char **list;         /* User supplied list of new file names. */
-	int nlines;          /* Number of user supplied file names (list size). */
-	int move;            /* Whether this is a move operation. */
-	int force;           /* Whether destination files should be removed. */
-	char **sel_list;     /* Full paths of files to be processed. */
-	size_t sel_list_len; /* Number of files to process (sel_list size). */
-	char path[PATH_MAX]; /* Path at which processing should take place. */
-	int from_file;       /* Whether list was read from a file. */
-	int use_trash;       /* Whether either source or destination is trash
-	                        directory. */
-	char *is_in_trash;   /* Flags indicating whether i-th file is in trash.  Can
-	                        be NULL when unused. */
-	ops_t *ops;          /* Pointer to pre-allocated operation description. */
-}
-bg_args_t;
-
 /* Arguments pack for dir_size_bg() background function. */
 typedef struct
 {
@@ -182,7 +162,6 @@ static void change_owner_cb(const char new_owner[]);
 static int complete_group(const char str[], void *arg);
 #endif
 static int complete_filename(const char str[], void *arg);
-static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
 static int clone_file(const dir_entry_t *entry, const char path[],
@@ -213,8 +192,8 @@ static char ** edit_list(size_t count, char **orig, int *nlines,
 static int edit_file(const char filepath[], int force_changed);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
-static void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
-static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
+PRIVATE void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
+PRIVATE ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 PRIVATE void free_ops(ops_t *ops);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
@@ -227,10 +206,10 @@ static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops);
 static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 		int bg, int cancellable, ops_t *ops);
-static void free_bg_args(bg_args_t *args);
+PRIVATE void free_bg_args(bg_args_t *args);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[], char **fnames);
-static void append_fname(char buf[], size_t len, const char fname[]);
+PRIVATE void append_fname(char buf[], size_t len, const char fname[]);
 PRIVATE const char * get_cancellation_suffix(void);
 PRIVATE int can_add_files_to_view(const FileView *view, int at);
 static const char * get_top_dir(const FileView *view);
@@ -1795,155 +1774,6 @@ complete_filename(const char str[], void *arg)
 	return name_begin - str;
 }
 
-int
-put_files_bg(FileView *view, int at, int reg_name, int move)
-{
-	char task_desc[COMMAND_GROUP_INFO_LEN];
-	size_t task_desc_len;
-	int i;
-	bg_args_t *args;
-	reg_t *reg;
-	const char *const dst_dir = get_dst_dir(view, at);
-
-	/* Check that operation generally makes sense given our input. */
-
-	if(!can_add_files_to_view(view, at))
-	{
-		return 0;
-	}
-
-	reg = regs_find(tolower(reg_name));
-	if(reg == NULL || reg->nfiles < 1)
-	{
-		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
-		return 1;
-	}
-
-	/* Prepare necessary data for background procedure and perform checks to
-	 * ensure there will be no conflicts. */
-
-	args = calloc(1, sizeof(*args));
-	args->move = move;
-	copy_str(args->path, sizeof(args->path), dst_dir);
-
-	task_desc_len = snprintf(task_desc, sizeof(task_desc), "%cut in %s: ",
-			move ? 'P' : 'p', replace_home_part(dst_dir));
-	for(i = 0; i < reg->nfiles; ++i)
-	{
-		char *const src = reg->files[i];
-		const char *dst_name;
-		char *dst;
-		int j;
-
-		chosp(src);
-
-		if(!path_exists(src, NODEREF))
-		{
-			/* Skip nonexistent files. */
-			continue;
-		}
-
-		append_fname(task_desc, task_desc_len, src);
-		task_desc_len = strlen(task_desc);
-
-		args->sel_list_len = add_to_string_array(&args->sel_list,
-				args->sel_list_len, 1, src);
-
-		dst_name = get_dst_name(src, is_under_trash(src));
-
-		/* Check that no destination files have the same name. */
-		for(j = 0; j < args->nlines; ++j)
-		{
-			if(stroscmp(get_last_path_component(args->list[j]), dst_name) == 0)
-			{
-				status_bar_errorf("Two destination files have name \"%s\"", dst_name);
-				free_bg_args(args);
-				return 1;
-			}
-		}
-
-		dst = format_str("%s/%s", args->path, dst_name);
-		args->nlines = put_into_string_array(&args->list, args->nlines, dst);
-
-		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
-		{
-			status_bar_errorf("File \"%s\" already exists", dst);
-			free_bg_args(args);
-			return 1;
-		}
-	}
-
-	/* Initiate the operation. */
-
-	args->ops = get_bg_ops((args->move ? OP_MOVE : OP_COPY),
-			move ? "Putting" : "putting", args->path);
-
-	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg,
-				args) != 0)
-	{
-		free_bg_args(args);
-
-		show_error_msg("Can't put files",
-				"Failed to initiate background operation");
-	}
-
-	return 0;
-}
-
-/* Entry point for background task that puts files. */
-static void
-put_files_in_bg(bg_op_t *bg_op, void *arg)
-{
-	size_t i;
-	bg_args_t *const args = arg;
-	ops_t *ops = args->ops;
-	bg_ops_init(ops, bg_op);
-
-	if(ops->use_system_calls)
-	{
-		size_t i;
-		bg_op_set_descr(bg_op, "estimating...");
-		for(i = 0U; i < args->sel_list_len; ++i)
-		{
-			const char *const src = args->sel_list[i];
-			const char *const dst = args->list[i];
-			ops_enqueue(ops, src, dst);
-		}
-	}
-
-	for(i = 0U; i < args->sel_list_len; ++i, ++bg_op->done)
-	{
-		struct stat src_st;
-		const char *const src = args->sel_list[i];
-		const char *const dst = args->list[i];
-
-		if(paths_are_equal(src, dst))
-		{
-			/* Just ignore this file. */
-			continue;
-		}
-
-		if(os_lstat(src, &src_st) != 0)
-		{
-			/* File isn't there, assume that it's fine and don't error in this
-			 * case. */
-			continue;
-		}
-
-		if(path_exists(dst, NODEREF))
-		{
-			/* This file wasn't here before (when checking in put_files_bg()), won't
-			 * overwrite. */
-			continue;
-		}
-
-		bg_op_set_descr(bg_op, src);
-		(void)perform_operation(ops->main_op, ops, (void *)1, src, dst);
-	}
-
-	free_bg_args(args);
-}
-
 TSTATIC const char *
 gen_clone_name(const char normal_name[])
 {
@@ -3275,7 +3105,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 }
 
 /* Finishes initialization of ops for background processes. */
-static void
+PRIVATE void
 bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 {
 	if(ops->estim != NULL)
@@ -3287,7 +3117,7 @@ bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
  * newly allocated structure, which should be freed by free_ops(). */
-static ops_t *
+PRIVATE ops_t *
 get_bg_ops(OPS main_op, const char descr[], const char dir[])
 {
 	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir);
@@ -3463,7 +3293,7 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 }
 
 /* Frees background arguments structure with all its data. */
-static void
+PRIVATE void
 free_bg_args(bg_args_t *args)
 {
 	free_string_array(args->list, args->nlines);
@@ -3691,7 +3521,7 @@ append_marked_files(FileView *view, char buf[], char **fnames)
 
 /* Appends file name to undo message buffer.  buf should be at least
  * COMMAND_GROUP_INFO_LEN characters length. */
-static void
+PRIVATE void
 append_fname(char buf[], size_t len, const char fname[])
 {
 	if(buf[len - 2] != ':')

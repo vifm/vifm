@@ -28,6 +28,11 @@
  * position.  Returns new value for save_msg flag. */
 int put_files(FileView *view, int at, int reg_name, int move);
 
+/* Starts background task that puts files from specified register into current
+ * directory.  at specifies index of entry to be used to obtain destination
+ * path, -1 means current position.  Returns new value for save_msg flag. */
+int put_files_bg(FileView *view, int at, int reg_name, int move);
+
 /* Like put_files(), but makes absolute or relative symbolic links to files.
  * Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);

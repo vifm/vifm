@@ -21,8 +21,29 @@
 #define VIFM__PRIVATE__FILEOPS_H__
 
 #include "../ui/ui.h"
+#include "../background.h"
 #include "../fileops.h"
 #include "../ops.h"
+
+/* Pack of arguments supplied to procedures implementing file operations in
+ * background. */
+typedef struct
+{
+	char **list;         /* User supplied list of new file names. */
+	int nlines;          /* Number of user supplied file names (list size). */
+	int move;            /* Whether this is a move operation. */
+	int force;           /* Whether destination files should be removed. */
+	char **sel_list;     /* Full paths of files to be processed. */
+	size_t sel_list_len; /* Number of files to process (sel_list size). */
+	char path[PATH_MAX]; /* Path at which processing should take place. */
+	int from_file;       /* Whether list was read from a file. */
+	int use_trash;       /* Whether either source or destination is trash
+	                        directory. */
+	char *is_in_trash;   /* Flags indicating whether i-th file is in trash.  Can
+	                        be NULL when unused. */
+	ops_t *ops;          /* Pointer to pre-allocated operation description. */
+}
+bg_args_t;
 
 struct dirent;
 
@@ -35,6 +56,10 @@ const char * get_dst_name(const char src_path[], int from_trash);
 const char * get_cancellation_suffix(void);
 void progress_msg(const char text[], int ready, int total);
 int is_dir_entry(const char full_path[], const struct dirent* dentry);
+void append_fname(char buf[], size_t len, const char fname[]);
+void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
+ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
+void free_bg_args(bg_args_t *args);
 
 extern line_prompt_func line_prompt;
 extern options_prompt_func options_prompt;

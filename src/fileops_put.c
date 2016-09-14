@@ -36,8 +36,10 @@
 #include "utils/fs.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
+#include "background.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "ops.h"
@@ -45,6 +47,7 @@
 #include "trash.h"
 #include "undo.h"
 
+static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name);
 static void reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
@@ -91,6 +94,155 @@ put_files(FileView *view, int at, int reg_name, int move)
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 	const char *const descr = move ? "Putting" : "putting";
 	return initiate_put_files(view, at, op, descr, reg_name);
+}
+
+int
+put_files_bg(FileView *view, int at, int reg_name, int move)
+{
+	char task_desc[COMMAND_GROUP_INFO_LEN];
+	size_t task_desc_len;
+	int i;
+	bg_args_t *args;
+	reg_t *reg;
+	const char *const dst_dir = get_dst_dir(view, at);
+
+	/* Check that operation generally makes sense given our input. */
+
+	if(!can_add_files_to_view(view, at))
+	{
+		return 0;
+	}
+
+	reg = regs_find(tolower(reg_name));
+	if(reg == NULL || reg->nfiles < 1)
+	{
+		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
+		return 1;
+	}
+
+	/* Prepare necessary data for background procedure and perform checks to
+	 * ensure there will be no conflicts. */
+
+	args = calloc(1, sizeof(*args));
+	args->move = move;
+	copy_str(args->path, sizeof(args->path), dst_dir);
+
+	task_desc_len = snprintf(task_desc, sizeof(task_desc), "%cut in %s: ",
+			move ? 'P' : 'p', replace_home_part(dst_dir));
+	for(i = 0; i < reg->nfiles; ++i)
+	{
+		char *const src = reg->files[i];
+		const char *dst_name;
+		char *dst;
+		int j;
+
+		chosp(src);
+
+		if(!path_exists(src, NODEREF))
+		{
+			/* Skip nonexistent files. */
+			continue;
+		}
+
+		append_fname(task_desc, task_desc_len, src);
+		task_desc_len = strlen(task_desc);
+
+		args->sel_list_len = add_to_string_array(&args->sel_list,
+				args->sel_list_len, 1, src);
+
+		dst_name = get_dst_name(src, is_under_trash(src));
+
+		/* Check that no destination files have the same name. */
+		for(j = 0; j < args->nlines; ++j)
+		{
+			if(stroscmp(get_last_path_component(args->list[j]), dst_name) == 0)
+			{
+				status_bar_errorf("Two destination files have name \"%s\"", dst_name);
+				free_bg_args(args);
+				return 1;
+			}
+		}
+
+		dst = format_str("%s/%s", args->path, dst_name);
+		args->nlines = put_into_string_array(&args->list, args->nlines, dst);
+
+		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
+		{
+			status_bar_errorf("File \"%s\" already exists", dst);
+			free_bg_args(args);
+			return 1;
+		}
+	}
+
+	/* Initiate the operation. */
+
+	args->ops = get_bg_ops((args->move ? OP_MOVE : OP_COPY),
+			move ? "Putting" : "putting", args->path);
+
+	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg,
+				args) != 0)
+	{
+		free_bg_args(args);
+
+		show_error_msg("Can't put files",
+				"Failed to initiate background operation");
+	}
+
+	return 0;
+}
+
+/* Entry point for background task that puts files. */
+static void
+put_files_in_bg(bg_op_t *bg_op, void *arg)
+{
+	size_t i;
+	bg_args_t *const args = arg;
+	ops_t *ops = args->ops;
+	bg_ops_init(ops, bg_op);
+
+	if(ops->use_system_calls)
+	{
+		size_t i;
+		bg_op_set_descr(bg_op, "estimating...");
+		for(i = 0U; i < args->sel_list_len; ++i)
+		{
+			const char *const src = args->sel_list[i];
+			const char *const dst = args->list[i];
+			ops_enqueue(ops, src, dst);
+		}
+	}
+
+	for(i = 0U; i < args->sel_list_len; ++i, ++bg_op->done)
+	{
+		struct stat src_st;
+		const char *const src = args->sel_list[i];
+		const char *const dst = args->list[i];
+
+		if(paths_are_equal(src, dst))
+		{
+			/* Just ignore this file. */
+			continue;
+		}
+
+		if(os_lstat(src, &src_st) != 0)
+		{
+			/* File isn't there, assume that it's fine and don't error in this
+			 * case. */
+			continue;
+		}
+
+		if(path_exists(dst, NODEREF))
+		{
+			/* This file wasn't here before (when checking in put_files_bg()), won't
+			 * overwrite. */
+			continue;
+		}
+
+		bg_op_set_descr(bg_op, src);
+		(void)perform_operation(ops->main_op, ops, (void *)1, src, dst);
+	}
+
+	free_bg_args(args);
 }
 
 int
