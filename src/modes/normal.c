@@ -54,6 +54,7 @@
 #include "../cmd_core.h"
 #include "../filelist.h"
 #include "../fileops.h"
+#include "../fileops_put.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
 #include "../flist_sel.h"

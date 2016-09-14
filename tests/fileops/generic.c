@@ -12,7 +12,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
-#include "../../src/fileops.h"
+#include "../../src/fileops_put.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 

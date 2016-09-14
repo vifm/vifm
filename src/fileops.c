@@ -18,6 +18,7 @@
  */
 
 #include "fileops.h"
+#include "private/fileops.h"
 
 #include <regex.h>
 
@@ -37,20 +38,17 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* calloc() free() malloc() realloc() strtol() */
-#include <string.h> /* memcmp() memmove() memset() strcat() strcmp() strcpy()
-                       strdup() strerror() */
+#include <string.h> /* memcmp() strcmp() strdup() */
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
-#include "engine/text_buffer.h"
 #include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
-#include "modes/wk.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
@@ -79,6 +77,8 @@
 #include "trash.h"
 #include "types.h"
 #include "undo.h"
+
+#define PRIVATE
 
 /* 10 to the power of number of digits after decimal point to take into account
  * on progress percentage counting. */
@@ -182,28 +182,12 @@ static void change_owner_cb(const char new_owner[]);
 static int complete_group(const char str[], void *arg);
 #endif
 static int complete_filename(const char str[], void *arg);
-TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
-static void put_confirm_cb(const char dest_name[]);
-static void prompt_what_to_do(const char fname[], const char caused_by[]);
-static void handle_prompt_response(const char fname[], const char caused_by[],
-		char response);
 static void put_files_in_bg(bg_op_t *bg_op, void *arg);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static char ** grab_marked_files(FileView *view, size_t *nmarked);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
-static void put_continue(int force);
-static int is_dir_entry(const char full_path[], const struct dirent* dentry);
-static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
-		const char descr[], int reg_name);
-static int path_depth_sort(const void *one, const void *two);
-static int is_dir_clash(const char src_path[], const char dst_dir[]);
-static OPS cmlo_to_op(CopyMoveLikeOp op);
-static void reset_put_confirm(OPS main_op, const char descr[],
-		const char dst_dir[]);
-static int put_files_i(FileView *view, int start);
-static int put_next(int force);
-static int handle_clashing(int move, const char src[], const char dst[]);
+PRIVATE int is_dir_entry(const char full_path[], const struct dirent* dentry);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
 static int rename_marked(FileView *view, const char desc[], const char lhs[],
@@ -212,10 +196,10 @@ static void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
 static int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[], int to_trash);
-static ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
+PRIVATE ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[]);
-static void progress_msg(const char text[], int ready, int total);
-static const char * get_dst_name(const char src_path[], int from_trash);
+PRIVATE void progress_msg(const char text[], int ready, int total);
+PRIVATE const char * get_dst_name(const char src_path[], int from_trash);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char dst_path[], size_t dst_path_len, int *from_file);
@@ -232,7 +216,7 @@ static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
 static void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
 static ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
 static progress_data_t * alloc_progress_data(int bg, void *info);
-static void free_ops(ops_t *ops);
+PRIVATE void free_ops(ops_t *ops);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
 		int move, int force, int from_trash, const char dst_dir[]);
 static int mv_file(const char src[], const char src_dir[], const char dst[],
@@ -247,10 +231,10 @@ static void free_bg_args(bg_args_t *args);
 static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
 static void append_marked_files(FileView *view, char buf[], char **fnames);
 static void append_fname(char buf[], size_t len, const char fname[]);
-static const char * get_cancellation_suffix(void);
-static int can_add_files_to_view(const FileView *view, int at);
+PRIVATE const char * get_cancellation_suffix(void);
+PRIVATE int can_add_files_to_view(const FileView *view, int at);
 static const char * get_top_dir(const FileView *view);
-static const char * get_dst_dir(const FileView *view, int at);
+PRIVATE const char * get_dst_dir(const FileView *view, int at);
 static int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
@@ -261,32 +245,10 @@ static void redraw_after_path_change(FileView *view, const char path[]);
 /* Temporary storage for extension of file being renamed in name-only mode. */
 static char rename_file_ext[NAME_MAX];
 
-/* Global state for file putting and name conflicts resolution that happen in
- * the process. */
-static struct
-{
-	reg_t *reg;        /* Register used for the operation. */
-	int *file_order;   /* Defines custom ordering of files in register. */
-	FileView *view;    /* View in which operation takes place. */
-	CopyMoveLikeOp op; /* Type of current operation. */
-	int index;         /* Index of the next file of the register to process. */
-	int processed;     /* Number of successfully processed files. */
-	int skip_all;      /* Skip all conflicting files/directories. */
-	int overwrite_all; /* Overwrite all future conflicting files/directories. */
-	int append;        /* Whether we're appending ending of a file or not. */
-	int allow_merge;   /* Allow merging of files in directories. */
-	int merge;         /* Merge conflicting directory once. */
-	int merge_all;     /* Merge all conflicting directories. */
-	ops_t *ops;        /* Currently running operation. */
-	char *dest_name;   /* Name of destination file. */
-	char *dest_dir;    /* Destination path. */
-}
-put_confirm;
-
 /* Filename editing function. */
-static line_prompt_func line_prompt;
+PRIVATE line_prompt_func line_prompt;
 /* Function to choose from one of options. */
-static options_prompt_func options_prompt;
+PRIVATE options_prompt_func options_prompt;
 
 void
 init_fileops(line_prompt_func line_func, options_prompt_func options_func)
@@ -1833,233 +1795,6 @@ complete_filename(const char str[], void *arg)
 	return name_begin - str;
 }
 
-static void
-prompt_dest_name(const char *src_name)
-{
-	char prompt[128 + PATH_MAX];
-
-	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
-	line_prompt(prompt, src_name, put_confirm_cb, NULL, 0);
-}
-
-/* Merges src into dst.  Returns zero on success, otherwise non-zero is
- * returned. */
-TSTATIC int
-merge_dirs(const char src[], const char dst[], ops_t *ops)
-{
-	struct stat st;
-	DIR *dir;
-	struct dirent *d;
-	int result;
-
-	if(os_stat(src, &st) != 0)
-	{
-		return -1;
-	}
-
-	dir = os_opendir(src);
-	if(dir == NULL)
-	{
-		return -1;
-	}
-
-	/* Make sure target directory exists.  Ignore error as we don't care whether
-	 * it existed before we try to create it and following operations will fail
-	 * if we can't create this directory for some reason. */
-	(void)perform_operation(OP_MKDIR, NULL, (void *)(size_t)1, dst, NULL);
-
-	while((d = os_readdir(dir)) != NULL)
-	{
-		char src_path[PATH_MAX];
-		char dst_path[PATH_MAX];
-
-		if(is_builtin_dir(d->d_name))
-		{
-			continue;
-		}
-
-		snprintf(src_path, sizeof(src_path), "%s/%s", src, d->d_name);
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst, d->d_name);
-
-		if(is_dir_entry(dst_path, d))
-		{
-			if(merge_dirs(src_path, dst_path, ops) != 0)
-			{
-				break;
-			}
-		}
-		else
-		{
-			if(perform_operation(OP_MOVEF, put_confirm.ops, NULL, src_path,
-						dst_path) != 0)
-			{
-				break;
-			}
-			add_operation(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
-		}
-	}
-	os_closedir(dir);
-
-	if(d != NULL)
-	{
-		return 1;
-	}
-
-	result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src, NULL);
-	if(result == 0)
-	{
-		add_operation(OP_RMDIR, NULL, NULL, src, "");
-	}
-
-	/* Clone file properties as the last step, because modifying directory affects
-	 * timestamps and permissions can affect operations. */
-	clone_timestamps(dst, src, &st);
-	(void)chmod(dst, st.st_mode);
-
-	return result;
-}
-
-static void
-put_confirm_cb(const char dest_name[])
-{
-	if(is_null_or_empty(dest_name))
-	{
-		return;
-	}
-
-	if(replace_string(&put_confirm.dest_name, dest_name) != 0)
-	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
-
-	if(put_next(0) == 0)
-	{
-		++put_confirm.index;
-		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
-	}
-}
-
-/* Continues putting files. */
-static void
-put_continue(int force)
-{
-	if(put_next(force) == 0)
-	{
-		++put_confirm.index;
-		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
-	}
-}
-
-/* Prompt user for conflict resolution strategy about given filename. */
-static void
-prompt_what_to_do(const char fname[], const char caused_by[])
-{
-	/* Strange spacing is for left alignment.  Doesn't look nice here, but it is
-	 * problematic to get such alignment otherwise. */
-	static const response_variant
-		rename        = { .key = 'r', .descr = "[r]ename (also Enter)        \n" },
-		enter         = { .key = '\r', .descr = "" },
-		skip          = { .key = 's', .descr = "[s]kip " },
-		skip_all      = { .key = 'S', .descr = " [S]kip all          \n" },
-		append        = { .key = 'a', .descr = "[a]ppend to the end          \n" },
-		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
-		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
-		merge         = { .key = 'm', .descr = "[m]erge " },
-		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
-		escape        = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
-
-	char msg[PATH_MAX*3];
-	char response;
-	response_variant responses[11] = {};
-	size_t i = 0;
-
-	responses[i++] = rename;
-	responses[i++] = enter;
-	responses[i++] = skip;
-	responses[i++] = skip_all;
-	if(cfg.use_system_calls && !is_dir(fname))
-	{
-		responses[i++] = append;
-	}
-	responses[i++] = overwrite;
-	responses[i++] = overwrite_all;
-	if(put_confirm.allow_merge)
-	{
-		responses[i++] = merge;
-		responses[i++] = merge_all;
-	}
-
-	responses[i++] = escape;
-	assert(i < ARRAY_LEN(responses) && "Array is too small.");
-
-	/* Screen needs to be restored after displaying progress dialog. */
-	modes_update();
-
-	snprintf(msg, sizeof(msg),
-			"Name conflict for %s.  Caused by:\n%s\nWhat to do?", fname,
-			replace_home_part(caused_by));
-	response = options_prompt("File Conflict", msg, responses);
-	handle_prompt_response(fname, caused_by, response);
-}
-
-/* Handles response to the prompt asked by prompt_what_to_do(). */
-static void
-handle_prompt_response(const char fname[], const char caused_by[],
-		char response)
-{
-	if(response == '\r' || response == 'r')
-	{
-		prompt_dest_name(fname);
-	}
-	else if(response == 's' || response == 'S')
-	{
-		if(response == 'S')
-		{
-			put_confirm.skip_all = 1;
-		}
-
-		++put_confirm.index;
-		curr_stats.save_msg = put_files_i(put_confirm.view, 0);
-	}
-	else if(response == 'o')
-	{
-		put_continue(1);
-	}
-	else if(response == 'a' && cfg.use_system_calls && !is_dir(fname))
-	{
-		put_confirm.append = 1;
-		put_continue(0);
-	}
-	else if(response == 'O')
-	{
-		put_confirm.overwrite_all = 1;
-		put_continue(1);
-	}
-	else if(put_confirm.allow_merge && response == 'm')
-	{
-		put_confirm.merge = 1;
-		put_continue(1);
-	}
-	else if(put_confirm.allow_merge && response == 'M')
-	{
-		put_confirm.merge_all = 1;
-		put_continue(1);
-	}
-	else if(response != NC_C_c)
-	{
-		prompt_what_to_do(fname, caused_by);
-	}
-}
-
-int
-put_files(FileView *view, int at, int reg_name, int move)
-{
-	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
-	const char *const descr = move ? "Putting" : "putting";
-	return initiate_put_files(view, at, op, descr, reg_name);
-}
-
 int
 put_files_bg(FileView *view, int at, int reg_name, int move)
 {
@@ -2461,7 +2196,7 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 
 /* Uses dentry to check file type and falls back to lstat() if dentry contains
  * unknown type. */
-static int
+PRIVATE int
 is_dir_entry(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
@@ -2478,559 +2213,6 @@ is_dir_entry(const char full_path[], const struct dirent* dentry)
 #else
 	return is_dir(full_path);
 #endif
-}
-
-int
-put_links(FileView *view, int reg_name, int relative)
-{
-	const CopyMoveLikeOp op = relative ? CMLO_LINK_REL : CMLO_LINK_ABS;
-	return initiate_put_files(view, -1, op, "Symlinking", reg_name);
-}
-
-/* Performs preparations necessary for putting files/links.  Returns new value
- * for save_msg flag. */
-static int
-initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
-		const char descr[], int reg_name)
-{
-	reg_t *reg;
-	int i;
-	const char *const dst_dir = get_dst_dir(view, at);
-
-	if(!can_add_files_to_view(view, -1))
-	{
-		return 0;
-	}
-
-	reg = regs_find(tolower(reg_name));
-	if(reg == NULL || reg->nfiles < 1)
-	{
-		status_bar_error("Register is empty");
-		return 1;
-	}
-
-	reset_put_confirm(cmlo_to_op(op), descr, dst_dir);
-
-	put_confirm.op = op;
-	put_confirm.reg = reg;
-	put_confirm.view = view;
-
-	/* Map each element onto itself initially. */
-	put_confirm.file_order = reallocarray(NULL, reg->nfiles,
-			sizeof(*put_confirm.file_order));
-	for(i = 0; i < reg->nfiles; ++i)
-	{
-		put_confirm.file_order[i] = i;
-	}
-
-	/* If slashes are harmful, order files by descending depth in the file system
-	 * and then move all that will clash to the tail of the array. */
-	if(op == CMLO_MOVE || op == CMLO_COPY)
-	{
-		int i, nclashes;
-
-		qsort(put_confirm.file_order, reg->nfiles,
-				sizeof(put_confirm.file_order[0]), &path_depth_sort);
-
-		/* We basically do partition by "clash" predicate moving all files for which
-		 * it's true to the tail.  Mind that moved files end up in reverse order,
-		 * which is beneficial for us as we can move larger sub-tree and discard
-		 * some of other files. */
-		nclashes = 0;
-		for(i = 0; i < reg->nfiles - nclashes; ++i)
-		{
-			const int id = put_confirm.file_order[i];
-			if(is_dir_clash(reg->files[id], dst_dir))
-			{
-				/* Rotate unvisited elements of the array in place. */
-				memmove(&put_confirm.file_order[i], &put_confirm.file_order[i + 1],
-						sizeof(id)*(reg->nfiles - nclashes - (i + 1)));
-				put_confirm.file_order[reg->nfiles - 1 - nclashes++] = id;
-				--i;
-			}
-		}
-	}
-
-	ui_cancellation_reset();
-	ui_cancellation_enable();
-
-	for(i = 0; i < reg->nfiles && !ui_cancellation_requested(); ++i)
-	{
-		ops_enqueue(put_confirm.ops, reg->files[i], dst_dir);
-	}
-
-	ui_cancellation_disable();
-
-	return put_files_i(view, 1);
-}
-
-/* Compares two entries by the depth of their real paths.  Returns positive
- * value if one is greater than two, zero if they are equal, otherwise negative
- * value is returned. */
-static int
-path_depth_sort(const void *one, const void *two)
-{
-	const char *s = put_confirm.reg->files[*(const int *)one];
-	const char *t = put_confirm.reg->files[*(const int *)two];
-
-	char s_real[PATH_MAX], t_real[PATH_MAX];
-
-	if(os_realpath(s, s_real) != s_real)
-	{
-		copy_str(s_real, sizeof(s_real), s);
-	}
-	if(os_realpath(t, t_real) != t_real)
-	{
-		copy_str(t_real, sizeof(t_real), t);
-	}
-
-	return chars_in_str(t_real, '/') - chars_in_str(s_real, '/');
-}
-
-/* Checks whether moving the file into specified directory might potentially
- * result in loss of some other files scheduled for processing (because we
- * overwrite one of its parents).  Returns non-zero if so, otherwise zero is
- * returned. */
-static int
-is_dir_clash(const char src_path[], const char dst_dir[])
-{
-	char dst_path[PATH_MAX];
-
-	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
-			get_dst_name(src_path, is_under_trash(src_path)));
-	chosp(dst_path);
-
-	return is_dir(dst_path);
-}
-
-/* Gets operation kind that corresponds to copy/move-like operation.  Returns
- * the kind. */
-static OPS
-cmlo_to_op(CopyMoveLikeOp op)
-{
-	switch(op)
-	{
-		case CMLO_COPY:
-			return OP_COPY;
-		case CMLO_MOVE:
-			return OP_MOVE;
-		case CMLO_LINK_REL:
-		case CMLO_LINK_ABS:
-			return OP_SYMLINK;
-
-		default:
-			assert(0 && "Unexpected operation type.");
-			return OP_COPY;
-	}
-}
-
-/* Resets state of global put_confirm variable in this module. */
-static void
-reset_put_confirm(OPS main_op, const char descr[], const char dst_dir[])
-{
-	free_ops(put_confirm.ops);
-	free(put_confirm.dest_name);
-	free(put_confirm.dest_dir);
-	free(put_confirm.file_order);
-
-	memset(&put_confirm, 0, sizeof(put_confirm));
-
-	put_confirm.dest_dir = strdup(dst_dir);
-	put_confirm.ops = get_ops(main_op, descr, dst_dir, dst_dir);
-}
-
-/* Returns new value for save_msg flag. */
-static int
-put_files_i(FileView *view, int start)
-{
-	if(start)
-	{
-		char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
-		const char *descr;
-		const int from_trash =
-			is_under_trash(put_confirm.reg->files[put_confirm.file_order[0]]);
-
-		if(put_confirm.op == CMLO_LINK_ABS)
-		{
-			descr = "put absolute links";
-		}
-		else if(put_confirm.op == CMLO_LINK_REL)
-		{
-			descr = "put relative links";
-		}
-		else
-		{
-			descr = (put_confirm.op == CMLO_MOVE || from_trash) ? "Put" : "put";
-		}
-
-		snprintf(undo_msg, sizeof(undo_msg), "%s in %s: ", descr,
-				replace_home_part(flist_get_dir(view)));
-		cmd_group_begin(undo_msg);
-		cmd_group_end();
-	}
-
-	if(vifm_chdir(put_confirm.dest_dir) != 0)
-	{
-		show_error_msg("Directory Return", "Can't chdir() to current directory");
-		return 1;
-	}
-
-	ui_cancellation_reset();
-
-	while(put_confirm.index < put_confirm.reg->nfiles)
-	{
-		int put_result;
-
-		update_string(&put_confirm.dest_name, NULL);
-
-		put_result = put_next(0);
-		if(put_result > 0)
-		{
-			/* In this case put_next() takes care of interacting with a user. */
-			return 0;
-		}
-		else if(put_result < 0)
-		{
-			status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
-					(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
-			return 1;
-		}
-		++put_confirm.index;
-	}
-
-	regs_pack(put_confirm.reg->name);
-
-	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
-			(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
-
-	ui_view_schedule_reload(put_confirm.view);
-
-	return 1;
-}
-
-/* The force argument enables overwriting/replacing/merging.  Returns 0 on
- * success, otherwise non-zero is returned where value greater then zero means
- * error already reported to the user, while negative one means unreported
- * error. */
-static int
-put_next(int force)
-{
-	char *filename;
-	const char *dest_name;
-	const char *const dst_dir = put_confirm.dest_dir;
-	struct stat src_st;
-	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
-	int from_trash;
-	int op;
-	int move;
-	int success;
-	int merge;
-	int safe_operation = 0;
-
-	/* TODO: refactor this function (put_next()) */
-
-	if(ui_cancellation_requested())
-	{
-		return -1;
-	}
-
-	force = force || put_confirm.overwrite_all || put_confirm.merge_all;
-	merge = put_confirm.merge || put_confirm.merge_all;
-
-	filename = put_confirm.reg->files[put_confirm.file_order[put_confirm.index]];
-	if(filename == NULL)
-	{
-		/* This file has been excluded from processing. */
-		return 0;
-	}
-
-	chosp(filename);
-	if(os_lstat(filename, &src_st) != 0)
-	{
-		/* File isn't there, assume that it's fine and don't error in this case. */
-		return 0;
-	}
-
-	from_trash = is_under_trash(filename);
-	move = from_trash || put_confirm.op == CMLO_MOVE;
-
-	copy_str(src_buf, sizeof(src_buf), filename);
-
-	dest_name = put_confirm.dest_name;
-	if(dest_name == NULL)
-	{
-		dest_name = get_dst_name(src_buf, from_trash);
-	}
-
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dest_name);
-	chosp(dst_buf);
-
-	if(!put_confirm.append && path_exists(dst_buf, DEREF))
-	{
-		if(force)
-		{
-			struct stat dst_st;
-
-			if(paths_are_equal(src_buf, dst_buf))
-			{
-				/* Skip if destination matches source. */
-				return 0;
-			}
-
-			if(os_lstat(dst_buf, &dst_st) == 0 && (!merge ||
-					S_ISDIR(dst_st.st_mode) != S_ISDIR(src_st.st_mode)))
-			{
-				if(S_ISDIR(dst_st.st_mode))
-				{
-					if(handle_clashing(move, src_buf, dst_buf))
-					{
-						return 1;
-					}
-
-					if(is_in_subtree(src_buf, dst_buf))
-					{
-						/* Don't delete /a/b before moving /a/b/c to /a/b. */
-						safe_operation = 1;
-					}
-				}
-
-				if(!safe_operation && perform_operation(OP_REMOVESL, put_confirm.ops,
-							NULL, dst_buf, NULL) != 0)
-				{
-					return 0;
-				}
-				/* Schedule view update to reflect changes in UI. */
-				ui_view_schedule_reload(put_confirm.view);
-			}
-			else if(!cfg.use_system_calls && get_env_type() == ET_UNIX)
-			{
-				remove_last_path_component(dst_buf);
-			}
-		}
-		else if(put_confirm.skip_all)
-		{
-			return 0;
-		}
-		else
-		{
-			struct stat dst_st;
-			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
-					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
-			prompt_what_to_do(dest_name, src_buf);
-			return 1;
-		}
-	}
-
-	if(put_confirm.op == CMLO_LINK_REL || put_confirm.op == CMLO_LINK_ABS)
-	{
-		op = OP_SYMLINK;
-		if(put_confirm.op == CMLO_LINK_REL)
-		{
-			copy_str(src_buf, sizeof(src_buf), make_rel_path(filename, dst_dir));
-		}
-	}
-	else if(put_confirm.append)
-	{
-		op = move ? OP_MOVEA : OP_COPYA;
-		put_confirm.append = 0;
-	}
-	else if(move)
-	{
-		op = merge ? OP_MOVEF : OP_MOVE;
-	}
-	else
-	{
-		op = merge ? OP_COPYF : OP_COPY;
-	}
-
-	progress_msg("Putting files", put_confirm.index, put_confirm.reg->nfiles);
-
-	/* Merging directory on move requires special handling as it can't be done by
-	 * move operation itself. */
-	if(move && merge)
-	{
-		char dst_path[PATH_MAX];
-
-		success = 1;
-
-		cmd_group_continue();
-
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dest_name);
-
-		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
-		{
-			success = 0;
-		}
-
-		cmd_group_end();
-	}
-	else if(safe_operation)
-	{
-		const char *const unique_dst = make_name_unique(dst_buf);
-
-		/* An optimization: if we're going to remove destination anyway, don't
-		 * bother copying it, just move. */
-		if(op == OP_COPY)
-		{
-			op = OP_MOVE;
-		}
-
-		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
-					unique_dst) == 0);
-		if(success)
-		{
-			success = (perform_operation(OP_REMOVESL, put_confirm.ops, NULL, dst_buf,
-						NULL) == 0);
-		}
-		if(success)
-		{
-			success = (perform_operation(OP_MOVE, put_confirm.ops, NULL, unique_dst,
-						dst_buf) == 0);
-		}
-	}
-	else
-	{
-		success = (perform_operation(op, put_confirm.ops, NULL, src_buf,
-					dst_buf) == 0);
-	}
-
-	ops_advance(put_confirm.ops, success);
-
-	if(success)
-	{
-		char *msg, *p;
-		size_t len;
-
-		/* For some reason "mv" sometimes returns 0 on cancellation. */
-		if(!path_exists(dst_buf, DEREF))
-		{
-			return -1;
-		}
-
-		cmd_group_continue();
-
-		msg = replace_group_msg(NULL);
-		len = strlen(msg);
-		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
-		if(p == NULL)
-			len = COMMAND_GROUP_INFO_LEN;
-		else
-			msg = p;
-
-		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
-				(msg[len - 2] != ':') ? ", " : "", dest_name);
-		replace_group_msg(msg);
-		free(msg);
-
-		if(!(move && merge))
-		{
-			add_operation(op, NULL, NULL, src_buf, dst_buf);
-		}
-
-		cmd_group_end();
-		++put_confirm.processed;
-		if(move)
-		{
-			update_string(
-					&put_confirm.reg->files[put_confirm.file_order[put_confirm.index]],
-					NULL);
-		}
-	}
-
-	return 0;
-}
-
-/* Goes through the rest of files in the register to see whether they are inside
- * path that we're going to overwrite or move and asks/warns the user if
- * necessary.  Returns non-zero on abort, otherwise zero is returned. */
-static int
-handle_clashing(int move, const char src[], const char dst[])
-{
-	int i;
-	vle_textbuf *const lost = vle_tb_create();
-	vle_textbuf *const to_exclude = vle_tb_create();
-
-	for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
-	{
-		const char *const another_src =
-			put_confirm.reg->files[put_confirm.file_order[i]];
-		const int sub_path = is_in_subtree(another_src, src);
-		if(is_in_subtree(another_src, dst) && !sub_path)
-		{
-			vle_tb_append_line(lost, replace_home_part(another_src));
-		}
-		if(sub_path)
-		{
-			vle_tb_append_line(to_exclude, replace_home_part(another_src));
-		}
-	}
-
-	if(*vle_tb_get_data(lost) != '\0')
-	{
-		int i;
-		char msg[PATH_MAX];
-		response_variant responses[] = {
-			{ .key = 'y', .descr = "[y]es " },
-			{ .key = 'n', .descr = " [n]o\n" },
-			{ .key = NC_C_c, .descr = "\nEsc or Ctrl-C to abort" },
-			{}
-		};
-
-		/* Screen needs to be restored after displaying progress dialog. */
-		modes_update();
-
-		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
-				"in loss of the following files.  Are you sure?\n%s",
-				replace_home_part(dst), replace_home_part(src), vle_tb_get_data(lost));
-		switch(options_prompt("Possible data loss", msg, responses))
-		{
-			case 'y':
-				/* Do nothing. */
-				break;
-			case 'n':
-				prompt_what_to_do(get_last_path_component(dst), src);
-				/* Fall through. */
-			case NC_C_c:
-				vle_tb_free(to_exclude);
-				vle_tb_free(lost);
-				return 1;
-		}
-
-		for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
-		{
-			char **const another_src =
-				&put_confirm.reg->files[put_confirm.file_order[i]];
-			const int sub_path = is_in_subtree(*another_src, src);
-			if(is_in_subtree(*another_src, dst) && !sub_path)
-			{
-				update_string(another_src, NULL);
-			}
-		}
-	}
-
-	if(*vle_tb_get_data(to_exclude) != '\0')
-	{
-		int i;
-
-		show_error_msgf("Operation Warning",
-				"The following files got excluded from further processing:\n%s",
-				vle_tb_get_data(to_exclude));
-
-		for(i = put_confirm.index + 1; i < put_confirm.reg->nfiles; ++i)
-		{
-			char **const another_src =
-				&put_confirm.reg->files[put_confirm.file_order[i]];
-			if(is_in_subtree(*another_src, src))
-			{
-				update_string(another_src, NULL);
-			}
-		}
-	}
-
-	vle_tb_free(to_exclude);
-	vle_tb_free(lost);
-
-	return 0;
 }
 
 /* off can be NULL */
@@ -3663,7 +2845,7 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
  * newly allocated structure, which should be freed by free_ops(). */
-static ops_t *
+PRIVATE ops_t *
 get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
@@ -3676,7 +2858,7 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 }
 
 /* Displays simple operation progress message.  The ready is zero based. */
-static void
+PRIVATE void
 progress_msg(const char text[], int ready, int total)
 {
 	if(!cfg.use_system_calls)
@@ -3749,7 +2931,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 /* Makes name of destination file from name of the source file.  Returns the
  * name. */
-static const char *
+PRIVATE const char *
 get_dst_name(const char src_path[], int from_trash)
 {
 	if(from_trash)
@@ -4137,7 +3319,7 @@ alloc_progress_data(int bg, void *info)
 
 /* Frees ops structure previously obtained by call to get_ops().  ops can be
  * NULL. */
-static void
+PRIVATE void
 free_ops(ops_t *ops)
 {
 	if(ops == NULL)
@@ -4563,7 +3745,7 @@ restore_files(FileView *view)
 
 /* Provides different suffixes depending on whether cancellation was requested
  * or not.  Returns pointer to a string literal. */
-static const char *
+PRIVATE const char *
 get_cancellation_suffix(void)
 {
 	return ui_cancellation_requested() ? " (cancelled)" : "";
@@ -4581,7 +3763,7 @@ can_change_view_files(const FileView *view)
 /* Whether set of view files can be extended via addition of new elements.  at
  * parameter is the same as for get_dst_dir().  Returns non-zero if so,
  * otherwise zero is returned. */
-static int
+PRIVATE int
 can_add_files_to_view(const FileView *view, int at)
 {
 	if(flist_custom_active(view) && view->custom.type != CV_TREE)
@@ -4609,7 +3791,7 @@ get_top_dir(const FileView *view)
 /* Retrieves current target directory of file system sub-tree.  Root for regular
  * and regular custom views and origin of either active (when at < 0) or
  * specified by its index entry for tree views.  Returns the path. */
-static const char *
+PRIVATE const char *
 get_dst_dir(const FileView *view, int at)
 {
 	if(flist_custom_active(view) && view->custom.type == CV_TREE)
