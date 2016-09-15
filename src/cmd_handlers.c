@@ -88,6 +88,7 @@
 #include "dir_stack.h"
 #include "filelist.h"
 #include "fileops.h"
+#include "fileops_cpmv.h"
 #include "fileops_put.h"
 #include "filetype.h"
 #include "filtering.h"

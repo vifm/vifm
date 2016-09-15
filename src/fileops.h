@@ -38,16 +38,6 @@ typedef enum
 }
 SignalType;
 
-/* Type of copy/move-like operation. */
-typedef enum
-{
-	CMLO_COPY,     /* Copy file. */
-	CMLO_MOVE,     /* Move file. */
-	CMLO_LINK_REL, /* Make relative symbolic link. */
-	CMLO_LINK_ABS, /* Make absolute symbolic link. */
-}
-CopyMoveLikeOp;
-
 struct response_variant;
 
 /* Callback for returning edited filename. */
@@ -132,15 +122,6 @@ const char * substitute_in_name(const char name[], const char pattern[],
  * new value for save_msg flag. */
 int change_case(FileView *view, int to_upper);
 
-/* Performs copy/moves-like operation on marked files.  Returns new value for
- * save_msg flag. */
-int cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
-		int force);
-
-/* Copies or moves marked files to the other view in background.  Returns new
- * value for save_msg flag. */
-int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
-
 /* Creates directories, possibly including intermediate ones.  Can modify
  * strings in the names array.  at specifies index of entry to be used to obtain
  * destination path, -1 means current position.  Returns new value for save_msg
@@ -173,7 +154,6 @@ TSTATIC_DEFS(
 	int check_file_rename(const char dir[], const char old[], const char new[],
 		SignalType signal_type);
 	const char * gen_clone_name(const char normal_name[]);
-	int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 	const char * incdec_name(const char fname[], int k);
 )
 

@@ -43,7 +43,6 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
-#include "compat/reallocarray.h"
 #include "int/vim.h"
 #include "io/ioeta.h"
 #include "io/ionotif.h"
@@ -96,14 +95,6 @@ typedef enum
 }
 RenameAction;
 
-/* Path roles for check_if_dir_writable() function. */
-typedef enum
-{
-	DR_CURRENT,     /* Current (source) path. */
-	DR_DESTINATION, /* Destination path. */
-}
-DirRole;
-
 /* Object for auxiliary information related to progress of operations in
  * io_progress_changed() handler. */
 typedef struct
@@ -144,7 +135,7 @@ static void format_pretty_path(const char base_dir[], const char path[],
 static int prepare_register(int reg);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
-TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
+PRIVATE int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 static int perform_renaming(FileView *view, char *files[], char is_dup[],
 		int len, char *dst[]);
 TSTATIC int is_rename_list_ok(char *files[], char is_dup[], int len,
@@ -163,7 +154,7 @@ static int complete_group(const char str[], void *arg);
 #endif
 static int complete_filename(const char str[], void *arg);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
-static char ** grab_marked_files(FileView *view, size_t *nmarked);
+PRIVATE char ** grab_marked_files(FileView *view, size_t *nmarked);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 PRIVATE int is_dir_entry(const char full_path[], const struct dirent* dentry);
@@ -173,48 +164,35 @@ static int rename_marked(FileView *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 static void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 		const char new_fname[]);
-static int enqueue_marked_files(ops_t *ops, FileView *view,
+PRIVATE int enqueue_marked_files(ops_t *ops, FileView *view,
 		const char dst_hint[], int to_trash);
 PRIVATE ops_t * get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[]);
 PRIVATE void progress_msg(const char text[], int ready, int total);
 PRIVATE const char * get_dst_name(const char src_path[], int from_trash);
-static int cpmv_prepare(FileView *view, char ***list, int *nlines,
-		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
-		char dst_path[], size_t dst_path_len, int *from_file);
-static int check_for_clashes(FileView *view, CopyMoveLikeOp op,
-		const char dst_path[], char *list[], char *marked[], int nlines);
-static int can_read_selected_files(FileView *view);
-static int check_dir_path(const FileView *view, const char path[], char buf[],
+PRIVATE int can_read_selected_files(FileView *view);
+PRIVATE int check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len);
-static char ** edit_list(size_t count, char **orig, int *nlines,
+PRIVATE char ** edit_list(size_t count, char **orig, int *nlines,
 		int ignore_change);
 static int edit_file(const char filepath[], int force_changed);
-static const char * cmlo_to_str(CopyMoveLikeOp op);
-static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
 PRIVATE void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
 PRIVATE ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 PRIVATE void free_ops(ops_t *ops);
-static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
-		int move, int force, int from_trash, const char dst_dir[]);
-static int mv_file(const char src[], const char src_dir[], const char dst[],
+PRIVATE int mv_file(const char src[], const char src_dir[], const char dst[],
 		const char dst_dir[], OPS op, int cancellable, ops_t *ops);
-static int mv_file_f(const char src[], const char dst[], OPS op, int bg,
+PRIVATE int mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		int cancellable, ops_t *ops);
-static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops);
-static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
-		int bg, int cancellable, ops_t *ops);
 PRIVATE void free_bg_args(bg_args_t *args);
-static void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
-static void append_marked_files(FileView *view, char buf[], char **fnames);
+PRIVATE void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
+PRIVATE void append_marked_files(FileView *view, char buf[], char **fnames);
 PRIVATE void append_fname(char buf[], size_t len, const char fname[]);
 PRIVATE const char * get_cancellation_suffix(void);
 PRIVATE int can_add_files_to_view(const FileView *view, int at);
 static const char * get_top_dir(const FileView *view);
 PRIVATE const char * get_dst_dir(const FileView *view, int at);
-static int check_if_dir_writable(DirRole dir_role, const char path[]);
+PRIVATE int check_if_dir_writable(DirRole dir_role, const char path[]);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(bg_op_t *bg_op, void *arg);
@@ -972,7 +950,7 @@ rename_current_file(FileView *view, int name_only)
 			1);
 }
 
-TSTATIC int
+PRIVATE int
 is_name_list_ok(int count, int nlines, char *list[], char *files[])
 {
 	int i;
@@ -1982,7 +1960,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 
 /* Makes list of marked filenames.  *nmarked is always set (0 for empty list).
  * Returns pointer to the list, NULL for empty list. */
-static char **
+PRIVATE char **
 grab_marked_files(FileView *view, size_t *nmarked)
 {
 	char **marked = NULL;
@@ -2487,159 +2465,9 @@ fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 	}
 }
 
-static int
-is_copy_list_ok(const char *dst, int count, char **list, int force)
-{
-	int i;
-
-	if(force)
-	{
-		return 1;
-	}
-
-	for(i = 0; i < count; ++i)
-	{
-		if(path_exists_at(dst, list[i], DEREF))
-		{
-			status_bar_errorf("File \"%s\" already exists", list[i]);
-			return 0;
-		}
-	}
-	return 1;
-}
-
-int
-cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
-		int force)
-{
-	int err;
-	int nmarked_files;
-	int custom_fnames;
-	int i;
-	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
-	dir_entry_t *entry;
-	char path[PATH_MAX];
-	int from_file;
-	ops_t *ops;
-
-	if((op == CMLO_LINK_REL || op == CMLO_LINK_ABS) && !symlinks_available())
-	{
-		show_error_msg("Symbolic Links Error",
-				"Your OS doesn't support symbolic links");
-		return 0;
-	}
-
-	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
-			sizeof(undo_msg), path, sizeof(path), &from_file);
-	if(err != 0)
-	{
-		return err > 0;
-	}
-
-	if(pane_in_dir(curr_view, path) && force)
-	{
-		show_error_msg("Operation Error",
-				"Forcing overwrite when destination and source is same directory will "
-				"lead to losing data");
-		return 0;
-	}
-
-	switch(op)
-	{
-		case CMLO_COPY:
-			ops = get_ops(OP_COPY, "Copying", flist_get_dir(view), path);
-			break;
-		case CMLO_MOVE:
-			ops = get_ops(OP_MOVE, "Moving", flist_get_dir(view), path);
-			break;
-		case CMLO_LINK_REL:
-		case CMLO_LINK_ABS:
-			ops = get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path);
-			break;
-
-		default:
-			assert(0 && "Unexpected operation type.");
-			return 0;
-	}
-
-	ui_cancellation_reset();
-
-	nmarked_files = enqueue_marked_files(ops, view, path, 0);
-
-	cmd_group_begin(undo_msg);
-	i = 0;
-	entry = NULL;
-	custom_fnames = (nlines > 0);
-	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
-	{
-		/* Must be at this level as dst might point into this buffer. */
-		char src_full[PATH_MAX];
-
-		char dst_full[PATH_MAX];
-		const char *dst = custom_fnames ? list[i] : entry->name;
-		int err, from_trash;
-
-		get_full_path_of(entry, sizeof(src_full), src_full);
-		from_trash = is_under_trash(src_full);
-
-		if(from_trash && !custom_fnames)
-		{
-			snprintf(src_full, sizeof(src_full), "%s/%s", entry->origin, dst);
-			chosp(src_full);
-			dst = get_real_name_from_trash_name(src_full);
-		}
-
-		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-		if(path_exists(dst_full, DEREF) && !from_trash)
-		{
-			(void)perform_operation(OP_REMOVESL, NULL, NULL, dst_full, NULL);
-		}
-
-		if(op == CMLO_COPY)
-		{
-			progress_msg("Copying files", i, nmarked_files);
-		}
-		else if(op == CMLO_MOVE)
-		{
-			progress_msg("Moving files", i, nmarked_files);
-		}
-
-		if(op == CMLO_MOVE)
-		{
-			err = mv_file(entry->name, entry->origin, dst, path, OP_MOVE, 1, ops);
-			if(err != 0)
-			{
-				view->list_pos = find_file_pos_in_list(view, entry->name);
-			}
-		}
-		else
-		{
-			err = cp_file(entry->origin, path, entry->name, dst, op, 1, ops);
-		}
-
-		ops_advance(ops, err == 0);
-
-		++i;
-	}
-	cmd_group_end();
-
-	ui_views_reload_filelists();
-	if(from_file)
-	{
-		free_string_array(list, nlines);
-	}
-
-	status_bar_messagef("%d file%s successfully processed%s", ops->succeeded,
-			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
-
-	free_ops(ops);
-
-	return 1;
-}
-
 /* Adds marked files to the ops.  Considers UI cancellation.  dst_hint can be
  * NULL.  Returns number of files enqueued. */
-static int
+PRIVATE int
 enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 		int to_trash)
 {
@@ -2701,64 +2529,6 @@ progress_msg(const char text[], int ready, int total)
 	}
 }
 
-int
-cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
-{
-	int err;
-	size_t i;
-	char task_desc[COMMAND_GROUP_INFO_LEN];
-	bg_args_t *args = calloc(1, sizeof(*args));
-
-	args->nlines = nlines;
-	args->move = move;
-	args->force = force;
-
-	err = cpmv_prepare(view, &list, &args->nlines, move ? CMLO_MOVE : CMLO_COPY,
-			force, task_desc, sizeof(task_desc), args->path, sizeof(args->path),
-			&args->from_file);
-	if(err != 0)
-	{
-		free_bg_args(args);
-		return err > 0;
-	}
-
-	args->list = args->from_file ? list : copy_string_array(list, nlines);
-
-	general_prepare_for_bg_task(view, args);
-
-	args->is_in_trash = malloc(args->sel_list_len);
-	for(i = 0U; i < args->sel_list_len; ++i)
-	{
-		args->is_in_trash[i] = is_under_trash(args->sel_list[i]);
-	}
-
-	if(args->list == NULL)
-	{
-		int i;
-		args->nlines = args->sel_list_len;
-		args->list = reallocarray(NULL, args->nlines, sizeof(*args->list));
-		for(i = 0; i < args->nlines; ++i)
-		{
-			args->list[i] =
-				strdup(get_dst_name(args->sel_list[i], args->is_in_trash[i]));
-		}
-	}
-
-	args->ops = get_bg_ops(move ? OP_MOVE : OP_COPY, move ? "moving" : "copying",
-			args->path);
-
-	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
-				args) != 0)
-	{
-		free_bg_args(args);
-
-		show_error_msg("Can't process files",
-				"Failed to initiate background operation");
-	}
-
-	return 0;
-}
-
 /* Makes name of destination file from name of the source file.  Returns the
  * name. */
 PRIVATE const char *
@@ -2771,161 +2541,9 @@ get_dst_name(const char src_path[], int from_trash)
 	return get_last_path_component(src_path);
 }
 
-/* Performs general preparations for file copy/move-like operations: resolving
- * destination path, validating names, checking for conflicts, formatting undo
- * message.  Returns zero on success, otherwise positive number for status bar
- * message and negative number for other errors. */
-static int
-cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
-		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
-		size_t dst_path_len, int *from_file)
-{
-	char **marked;
-	size_t nmarked;
-	int error = 0;
-
-	if(op == CMLO_MOVE)
-	{
-		if(!can_change_view_files(view))
-		{
-			return -1;
-		}
-	}
-	else if(op == CMLO_COPY && !can_read_selected_files(view))
-	{
-		return -1;
-	}
-
-	if(*nlines == 1)
-	{
-		if(check_dir_path(other_view, (*list)[0], dst_path, dst_path_len))
-		{
-			*nlines = 0;
-		}
-	}
-	else
-	{
-		copy_str(dst_path, dst_path_len, get_dst_dir(other_view, -1));
-	}
-
-	if(!can_add_files_to_view(other_view, -1) ||
-			!check_if_dir_writable(DR_DESTINATION, dst_path))
-	{
-		return -1;
-	}
-
-	marked = grab_marked_files(view, &nmarked);
-
-	*from_file = *nlines < 0;
-	if(*from_file)
-	{
-		*list = edit_list(nmarked, marked, nlines, 1);
-		if(*list == NULL)
-		{
-			free_string_array(marked, nmarked);
-			return -1;
-		}
-	}
-
-	if(*nlines > 0 &&
-			(!is_name_list_ok(nmarked, *nlines, *list, NULL) ||
-			!is_copy_list_ok(dst_path, *nlines, *list, force)))
-	{
-		error = 1;
-	}
-	if(*nlines == 0 && !is_copy_list_ok(dst_path, nmarked, marked, force))
-	{
-		error = 1;
-	}
-
-	/* Custom views can contain several files with the same name. */
-	if(flist_custom_active(view))
-	{
-		size_t i;
-		for(i = 0U; i < nmarked && !error; ++i)
-		{
-			if(is_in_string_array(marked, i, marked[i]))
-			{
-				status_bar_errorf("Source name \"%s\" duplicates", marked[i]);
-				curr_stats.save_msg = 1;
-				error = 1;
-			}
-		}
-	}
-
-	if(check_for_clashes(view, op, dst_path, *list, marked, *nlines) != 0)
-	{
-		error = 1;
-	}
-
-	free_string_array(marked, nmarked);
-
-	if(error)
-	{
-		redraw_view(view);
-		if(*from_file)
-		{
-			free_string_array(*list, *nlines);
-		}
-		return 1;
-	}
-
-	snprintf(undo_msg, undo_msg_len, "%s from %s to ", cmlo_to_str(op),
-			replace_home_part(flist_get_dir(view)));
-	snprintf(undo_msg + strlen(undo_msg), undo_msg_len - strlen(undo_msg),
-			"%s: ", replace_home_part(dst_path));
-	append_marked_files(view, undo_msg, (*nlines > 0) ? *list : NULL);
-
-	if(op == CMLO_MOVE)
-	{
-		move_cursor_out_of(view, FLS_SELECTION);
-	}
-
-	return 0;
-}
-
-/* Checks whether operation is OK from the point of view of losing files due to
- * tree clashes (child move over parent or vice versa).  Returns zero if
- * everything is fine, otherwise non-zero is returned. */
-static int
-check_for_clashes(FileView *view, CopyMoveLikeOp op, const char dst_path[],
-		char *list[], char *marked[], int nlines)
-{
-	dir_entry_t *entry = NULL;
-	int i = 0;
-	while(iter_marked_entries(view, &entry))
-	{
-		char src_full[PATH_MAX], dst_full[PATH_MAX];
-		const char *const dst_name = (nlines > 0) ? list[i] : marked[i];
-		++i;
-
-		get_full_path_of(entry, sizeof(src_full), src_full);
-
-		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_path, dst_name);
-		chosp(dst_full);
-
-		if(ONE_OF(op, CMLO_MOVE, CMLO_COPY) && is_in_subtree(dst_full, src_full))
-		{
-			status_bar_errorf("Can't move/copy parent inside itself: %s",
-					replace_home_part(src_full));
-			curr_stats.save_msg = 1;
-			return 1;
-		}
-
-		if(is_in_subtree(src_full, dst_full))
-		{
-			status_bar_errorf("Operation would result in loss contents of %s",
-					replace_home_part(src_full));
-			curr_stats.save_msg = 1;
-			return 1;
-		}
-	}
-	return 0;
-}
-
 /* Checks that all selected files can be read.  Returns non-zero if so,
  * otherwise zero is returned. */
-static int
+PRIVATE int
 can_read_selected_files(FileView *view)
 {
 	dir_entry_t *entry;
@@ -2958,7 +2576,7 @@ can_read_selected_files(FileView *view)
 /* Checks path argument and resolves target directory either to the argument or
  * current directory of the view.  Returns non-zero if value of the path was
  * used, otherwise zero is returned. */
-static int
+PRIVATE int
 check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len)
 {
@@ -2985,7 +2603,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 /* Prompts user with a file containing lines from orig array of length count and
  * returns modified list of strings of length *nlines or NULL on error.  The
  * ignore_change parameter makes function think that file is always changed. */
-static char **
+PRIVATE char **
 edit_list(size_t count, char **orig, int *nlines, int ignore_change)
 {
 	char rename_file[PATH_MAX];
@@ -3046,62 +2664,6 @@ edit_file(const char filepath[], int force_changed)
 
 	return force_changed || memcmp(&st_after.st_mtime, &st_before.st_mtime,
 			sizeof(st_after.st_mtime)) != 0;
-}
-
-/* Gets string representation of a copy/move-like operation.  Returns the
- * string. */
-static const char *
-cmlo_to_str(CopyMoveLikeOp op)
-{
-	switch(op)
-	{
-		case CMLO_COPY:
-			return "copy";
-		case CMLO_MOVE:
-			return "move";
-		case CMLO_LINK_REL:
-			return "rlink";
-		case CMLO_LINK_ABS:
-			return "alink";
-
-		default:
-			assert(0 && "Unexpected operation type.");
-			return "";
-	}
-}
-
-/* Entry point for a background task that copies/moves files. */
-static void
-cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
-{
-	size_t i;
-	bg_args_t *const args = arg;
-	ops_t *ops = args->ops;
-	bg_ops_init(ops, bg_op);
-
-	if(ops->use_system_calls)
-	{
-		size_t i;
-		bg_op_set_descr(bg_op, "estimating...");
-		for(i = 0U; i < args->sel_list_len; ++i)
-		{
-			const char *const src = args->sel_list[i];
-			const char *const dst = args->list[i];
-			ops_enqueue(ops, src, dst);
-		}
-	}
-
-	for(i = 0U; i < args->sel_list_len; ++i)
-	{
-		const char *const src = args->sel_list[i];
-		const char *const dst = args->list[i];
-		bg_op_set_descr(bg_op, src);
-		cpmv_file_in_bg(ops, src, dst, args->move, args->force,
-				args->is_in_trash[i], args->path);
-		++bg_op->done;
-	}
-
-	free_bg_args(args);
 }
 
 /* Finishes initialization of ops for background processes. */
@@ -3174,31 +2736,9 @@ free_ops(ops_t *ops)
 	ops_free(ops);
 }
 
-/* Actual implementation of background file copying/moving. */
-static void
-cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
-		int force, int from_trash, const char dst_dir[])
-{
-	char dst_full[PATH_MAX];
-	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
-	if(path_exists(dst_full, DEREF) && !from_trash)
-	{
-		(void)perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
-	}
-
-	if(move)
-	{
-		(void)mv_file_f(src, dst_full, OP_MOVE, 1, 0, ops);
-	}
-	else
-	{
-		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 0, ops);
-	}
-}
-
 /* Adapter for mv_file_f() that accepts paths broken into directory/file
  * parts. */
-static int
+PRIVATE int
 mv_file(const char src[], const char src_dir[], const char dst[],
 		const char dst_dir[], OPS op, int cancellable, ops_t *ops)
 {
@@ -3212,7 +2752,7 @@ mv_file(const char src[], const char src_dir[], const char dst[],
 
 /* Moves file from one location to another.  Returns zero on success, otherwise
  * non-zero is returned. */
-static int
+PRIVATE int
 mv_file_f(const char src[], const char dst[], OPS op, int bg, int cancellable,
 		ops_t *ops)
 {
@@ -3233,65 +2773,6 @@ mv_file_f(const char src[], const char dst[], OPS op, int bg, int cancellable,
 	return result;
 }
 
-/* Adapter for cp_file_f() that accepts paths broken into directory/file
- * parts. */
-static int
-cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops)
-{
-	char full_src[PATH_MAX], full_dst[PATH_MAX];
-
-	to_canonic_path(src, src_dir, full_src, sizeof(full_src));
-	to_canonic_path(dst, dst_dir, full_dst, sizeof(full_dst));
-
-	return cp_file_f(full_src, full_dst, op, 0, cancellable, ops);
-}
-
-/* Copies file from one location to another.  Returns zero on success, otherwise
- * non-zero is returned. */
-static int
-cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
-		int cancellable, ops_t *ops)
-{
-	char rel_path[PATH_MAX];
-
-	int file_op;
-	int result;
-
-	if(strcmp(src, dst) == 0)
-	{
-		return 0;
-	}
-
-	if(op == CMLO_COPY)
-	{
-		file_op = OP_COPY;
-	}
-	else
-	{
-		file_op = OP_SYMLINK;
-
-		if(op == CMLO_LINK_REL)
-		{
-			char dst_dir[PATH_MAX];
-
-			copy_str(dst_dir, sizeof(dst_dir), dst);
-			remove_last_path_component(dst_dir);
-
-			copy_str(rel_path, sizeof(rel_path), make_rel_path(src, dst_dir));
-			src = rel_path;
-		}
-	}
-
-	result = perform_operation(file_op, ops, cancellable ? NULL : (void *)1, src,
-			dst);
-	if(result == 0 && !bg)
-	{
-		add_operation(file_op, NULL, NULL, src, dst);
-	}
-	return result;
-}
-
 /* Frees background arguments structure with all its data. */
 PRIVATE void
 free_bg_args(bg_args_t *args)
@@ -3304,7 +2785,7 @@ free_bg_args(bg_args_t *args)
 }
 
 /* Fills basic fields of the args structure. */
-static void
+PRIVATE void
 general_prepare_for_bg_task(FileView *view, bg_args_t *args)
 {
 	dir_entry_t *entry;
@@ -3496,7 +2977,7 @@ make_files(FileView *view, int at, char *names[], int count)
 
 /* Fills undo message buffer with names of marked files.  buf should be at least
  * COMMAND_GROUP_INFO_LEN characters length.  fnames can be NULL. */
-static void
+PRIVATE void
 append_marked_files(FileView *view, char buf[], char **fnames)
 {
 	const int custom_fnames = (fnames != NULL);
@@ -3642,7 +3123,7 @@ get_dst_dir(const FileView *view, int at)
 /* This is a wrapper for is_dir_writable() function, which adds message
  * dialogs.  Returns non-zero if directory can be changed, otherwise zero is
  * returned. */
-static int
+PRIVATE int
 check_if_dir_writable(DirRole dir_role, const char path[])
 {
 	if(is_dir_writable(path))

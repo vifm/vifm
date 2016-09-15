@@ -25,6 +25,14 @@
 #include "../fileops.h"
 #include "../ops.h"
 
+/* Path roles for check_if_dir_writable() function. */
+typedef enum
+{
+	DR_CURRENT,     /* Current (source) path. */
+	DR_DESTINATION, /* Destination path. */
+}
+DirRole;
+
 /* Pack of arguments supplied to procedures implementing file operations in
  * background. */
 typedef struct
@@ -60,6 +68,21 @@ void append_fname(char buf[], size_t len, const char fname[]);
 void bg_ops_init(ops_t *ops, bg_op_t *bg_op);
 ops_t * get_bg_ops(OPS main_op, const char descr[], const char dir[]);
 void free_bg_args(bg_args_t *args);
+int enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
+		int to_trash);
+int mv_file(const char src[], const char src_dir[], const char dst[],
+		const char dst_dir[], OPS op, int cancellable, ops_t *ops);
+void general_prepare_for_bg_task(FileView *view, bg_args_t *args);
+int can_read_selected_files(FileView *view);
+int check_dir_path(const FileView *view, const char path[], char buf[],
+		size_t buf_len);
+int check_if_dir_writable(DirRole dir_role, const char path[]);
+char ** grab_marked_files(FileView *view, size_t *nmarked);
+char ** edit_list(size_t count, char **orig, int *nlines, int ignore_change);
+int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
+void append_marked_files(FileView *view, char buf[], char **fnames);
+int mv_file_f(const char src[], const char dst[], OPS op, int bg,
+		int cancellable, ops_t *ops);
 
 extern line_prompt_func line_prompt;
 extern options_prompt_func options_prompt;

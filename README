@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 14 September, 2016
+Updated: 15 September, 2016
 Version: 0.8.2
 
 Brief Description
@@ -215,6 +215,7 @@ Package content
     |  |-- filelist.c - fill/update list of files
     |  |-- filename_modifiers.c - expands filename modifiers
     |  |-- fileops.c - most of high-level operations on files
+    |  |-- fileops_cpmv.c - copying/moving/linking of files
     |  |-- fileops_put.c - putting of files
     |  |-- filetype.c - stores filetype information from vifmrc
     |  |-- filtering.c - managing file filters

@@ -220,6 +220,7 @@ vifm_SOURCES = \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
+	fileops_cpmv.c fileops_cpmv.h \
 	fileops_put.c fileops_put.h \
 	filetype.c filetype.h \
 	filtering.c filtering.h \

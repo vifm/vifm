@@ -18,7 +18,6 @@
  */
 
 #include "fileops_put.h"
-#include "private/fileops.h"
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* tolower() */
@@ -31,6 +30,7 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/wk.h"
+#include "private/fileops.h"
 #include "ui/cancellation.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
@@ -42,6 +42,7 @@
 #include "background.h"
 #include "filelist.h"
 #include "fileops.h"
+#include "fileops_cpmv.h"
 #include "ops.h"
 #include "registers.h"
 #include "trash.h"
