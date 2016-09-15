@@ -222,6 +222,7 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	fileops_cpmv.c fileops_cpmv.h \
 	fileops_put.c fileops_put.h \
+	fileops_rename.c fileops_rename.h \
 	filetype.c filetype.h \
 	filtering.c filtering.h \
 	flist_pos.c flist_pos.h \

@@ -217,6 +217,7 @@ Package content
     |  |-- fileops.c - most of high-level operations on files
     |  |-- fileops_cpmv.c - copying/moving/linking of files
     |  |-- fileops_put.c - putting of files
+    |  |-- fileops_rename.c - renaming files in various ways
     |  |-- filetype.c - stores filetype information from vifmrc
     |  |-- filtering.c - managing file filters
     |  |-- flist_pos.c - most of file list scrolling/cursor positioning code

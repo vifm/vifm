@@ -90,6 +90,7 @@
 #include "fileops.h"
 #include "fileops_cpmv.h"
 #include "fileops_put.h"
+#include "fileops_rename.h"
 #include "filetype.h"
 #include "filtering.h"
 #include "flist_pos.h"

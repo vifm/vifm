@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/fileops.h"
+#include "../../src/fileops_rename.h"
 
 TEST(substitute_segfault_bug)
 {

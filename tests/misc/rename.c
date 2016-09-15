@@ -5,7 +5,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
 #include "../../src/private/fileops.h"
-#include "../../src/fileops.h"
+#include "../../src/fileops_rename.h"
 
 TEST(names_less_than_files)
 {

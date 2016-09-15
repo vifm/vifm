@@ -83,6 +83,11 @@ int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 void append_marked_files(FileView *view, char buf[], char **fnames);
 int mv_file_f(const char src[], const char dst[], OPS op, int bg,
 		int cancellable, ops_t *ops);
+int check_file_rename(const char dir[], const char old[], const char new[],
+		SignalType signal_type);
+int is_rename_list_ok(char *files[], char is_dup[], int len, char *list[]);
+void fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
+		const char new_fname[]);
 
 extern line_prompt_func line_prompt;
 extern options_prompt_func options_prompt;
