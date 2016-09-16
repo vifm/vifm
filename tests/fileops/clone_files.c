@@ -95,6 +95,21 @@ TEST(files_are_cloned_according_to_tree_structure)
 	assert_success(rmdir(SANDBOX_PATH "/dir(1)"));
 	assert_success(unlink(SANDBOX_PATH "/dir/a(1)"));
 
+	/* Cloning same file twice. */
+
+	flist_load_tree(&lwin, SANDBOX_PATH);
+	lwin.list_pos = 0;
+	lwin.dir_entry[1].marked = 1;
+	assert_string_equal("a", lwin.dir_entry[1].name);
+	(void)clone_files(&lwin, NULL, 0, 0, 1);
+	populate_dir_list(&lwin, 1);
+	lwin.list_pos = 0;
+	lwin.dir_entry[1].marked = 1;
+	assert_string_equal("a", lwin.dir_entry[1].name);
+	(void)clone_files(&lwin, NULL, 0, 0, 1);
+	assert_success(unlink(SANDBOX_PATH "/dir/a(1)"));
+	assert_success(unlink(SANDBOX_PATH "/dir/a(2)"));
+
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }

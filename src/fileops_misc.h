@@ -77,7 +77,7 @@ void change_group(void);
 #endif
 
 TSTATIC_DEFS(
-	const char * gen_clone_name(const char normal_name[]);
+	const char * gen_clone_name(const char dir[], const char normal_name[]);
 )
 
 #endif /* VIFM__FILEOPS_MISC_H__ */

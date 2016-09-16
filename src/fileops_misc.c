@@ -60,7 +60,7 @@ static int prepare_register(int reg);
 static void change_link_cb(const char new_target[]);
 static int complete_filename(const char str[], void *arg);
 static int is_clone_list_ok(int count, char *list[]);
-TSTATIC const char * gen_clone_name(const char normal_name[]);
+TSTATIC const char * gen_clone_name(const char dir[], const char normal_name[]);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 static void get_group_file_list(char *list[], int count, char buf[]);
@@ -624,7 +624,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		else
 		{
 			clone_name = path_exists_at(clone_dst, name, DEREF)
-			           ? gen_clone_name(name)
+			           ? gen_clone_name(clone_dst, name)
 			           : name;
 		}
 
@@ -635,7 +635,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		{
 			if(path_exists_at(clone_dst, clone_name, DEREF))
 			{
-				clone_name = gen_clone_name(custom_fnames ? list[i] : name);
+				clone_name = gen_clone_name(clone_dst, custom_fnames ? list[i] : name);
 			}
 			err += clone_file(entry, clone_dst, clone_name, ops);
 		}
@@ -684,7 +684,7 @@ is_clone_list_ok(int count, char *list[])
 /* Generates name of clone for a file.  Returns pointer to statically allocated
  * buffer. */
 TSTATIC const char *
-gen_clone_name(const char normal_name[])
+gen_clone_name(const char dir[], const char normal_name[])
 {
 	static char result[NAME_MAX];
 
@@ -716,7 +716,7 @@ gen_clone_name(const char normal_name[])
 		snprintf(result + len, sizeof(result) - len, "(%d)%s%s", i++,
 				(extension[0] == '\0') ? "" : ".", extension);
 	}
-	while(path_exists(result, DEREF));
+	while(path_exists_at(dir, result, NODEREF));
 
 	return result;
 }
