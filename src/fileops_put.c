@@ -62,8 +62,8 @@ static int handle_clashing(int move, const char src[], const char dst[]);
 static void prompt_what_to_do(const char fname[], const char caused_by[]);
 static void handle_prompt_response(const char fname[], const char caused_by[],
 		char response);
-static void prompt_dest_name(const char src_name[]);
-static void prompt_dest_name_cb(const char dest_name[]);
+static void prompt_dst_name(const char src_name[]);
+static void prompt_dst_name_cb(const char dst_name[]);
 static void put_continue(int force);
 
 /* Global state for file putting and name conflicts resolution that happen in
@@ -83,8 +83,8 @@ static struct
 	int merge;         /* Merge conflicting directory once. */
 	int merge_all;     /* Merge all conflicting directories. */
 	ops_t *ops;        /* Currently running operation. */
-	char *dest_name;   /* Name of destination file. */
-	char *dest_dir;    /* Destination path. */
+	char *dst_name;    /* Name of destination file. */
+	char *dst_dir;     /* Destination path. */
 }
 put_confirm;
 
@@ -335,13 +335,13 @@ reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
 		const char dst_dir[])
 {
 	free_ops(put_confirm.ops);
-	free(put_confirm.dest_name);
-	free(put_confirm.dest_dir);
+	free(put_confirm.dst_name);
+	free(put_confirm.dst_dir);
 	free(put_confirm.file_order);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
-	put_confirm.dest_dir = strdup(dst_dir);
+	put_confirm.dst_dir = strdup(dst_dir);
 	put_confirm.ops = get_ops(cmlo_to_op(main_op), descr, dst_dir, dst_dir);
 }
 
@@ -435,7 +435,7 @@ put_files_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(vifm_chdir(put_confirm.dest_dir) != 0)
+	if(vifm_chdir(put_confirm.dst_dir) != 0)
 	{
 		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
@@ -447,7 +447,7 @@ put_files_i(FileView *view, int start)
 	{
 		int put_result;
 
-		update_string(&put_confirm.dest_name, NULL);
+		update_string(&put_confirm.dst_name, NULL);
 
 		put_result = put_next(0);
 		if(put_result > 0)
@@ -482,8 +482,8 @@ static int
 put_next(int force)
 {
 	char *filename;
-	const char *dest_name;
-	const char *const dst_dir = put_confirm.dest_dir;
+	const char *dst_name;
+	const char *const dst_dir = put_confirm.dst_dir;
 	struct stat src_st;
 	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
 	int from_trash;
@@ -522,13 +522,13 @@ put_next(int force)
 
 	copy_str(src_buf, sizeof(src_buf), filename);
 
-	dest_name = put_confirm.dest_name;
-	if(dest_name == NULL)
+	dst_name = put_confirm.dst_name;
+	if(dst_name == NULL)
 	{
-		dest_name = get_dst_name(src_buf, from_trash);
+		dst_name = get_dst_name(src_buf, from_trash);
 	}
 
-	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dest_name);
+	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dst_name);
 	chosp(dst_buf);
 
 	if(!put_confirm.append && path_exists(dst_buf, DEREF))
@@ -582,7 +582,7 @@ put_next(int force)
 			struct stat dst_st;
 			put_confirm.allow_merge = os_lstat(dst_buf, &dst_st) == 0 &&
 					S_ISDIR(dst_st.st_mode) && S_ISDIR(src_st.st_mode);
-			prompt_what_to_do(dest_name, src_buf);
+			prompt_what_to_do(dst_name, src_buf);
 			return 1;
 		}
 	}
@@ -621,7 +621,7 @@ put_next(int force)
 
 		cmd_group_continue();
 
-		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dest_name);
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dst_name);
 
 		if(merge_dirs(src_buf, dst_path, put_confirm.ops) != 0)
 		{
@@ -684,7 +684,7 @@ put_next(int force)
 			msg = p;
 
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
-				(msg[len - 2] != ':') ? ", " : "", dest_name);
+				(msg[len - 2] != ':') ? ", " : "", dst_name);
 		replace_group_msg(msg);
 		free(msg);
 
@@ -935,7 +935,7 @@ handle_prompt_response(const char fname[], const char caused_by[],
 {
 	if(response == '\r' || response == 'r')
 	{
-		prompt_dest_name(fname);
+		prompt_dst_name(fname);
 	}
 	else if(response == 's' || response == 'S')
 	{
@@ -979,24 +979,24 @@ handle_prompt_response(const char fname[], const char caused_by[],
 
 /* Prompts user for new name for the file being inserted.  Callback based. */
 static void
-prompt_dest_name(const char src_name[])
+prompt_dst_name(const char src_name[])
 {
 	char prompt[128 + PATH_MAX];
 
 	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
-	fops_line_prompt(prompt, src_name, &prompt_dest_name_cb, NULL, 0);
+	fops_line_prompt(prompt, src_name, &prompt_dst_name_cb, NULL, 0);
 }
 
 /* Callback for line prompt result. */
 static void
-prompt_dest_name_cb(const char dest_name[])
+prompt_dst_name_cb(const char dst_name[])
 {
-	if(is_null_or_empty(dest_name))
+	if(is_null_or_empty(dst_name))
 	{
 		return;
 	}
 
-	if(replace_string(&put_confirm.dest_name, dest_name) != 0)
+	if(replace_string(&put_confirm.dst_name, dst_name) != 0)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;

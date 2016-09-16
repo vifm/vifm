@@ -82,7 +82,7 @@ TEST(too_long_param)
 	assert_string_equal(expected, buf);
 }
 
-TEST(too_long_dest)
+TEST(too_long_destination)
 {
 	int foreground;
 	char buf[10];

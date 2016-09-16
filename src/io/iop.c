@@ -57,7 +57,7 @@
 /* Amount of data to transfer at once. */
 #define BLOCK_SIZE 32*1024
 
-static int clone_file(int dest_fd, int src_fd);
+static int clone_file(int dst_fd, int src_fd);
 #ifdef _WIN32
 static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		LARGE_INTEGER transferred, LARGE_INTEGER stream_size,
@@ -580,17 +580,17 @@ iop_cp(io_args_t *const args)
 /* Try to clone file fast on btrfs.  Returns 0 on success, otherwise non-zero is
  * returned. */
 static int
-clone_file(int dst, int src)
+clone_file(int dst_fd, int src_fd)
 {
 #ifdef __linux__
 #undef BTRFS_IOCTL_MAGIC
 #define BTRFS_IOCTL_MAGIC 0x94
 #undef BTRFS_IOC_CLONE
 #define BTRFS_IOC_CLONE _IOW(BTRFS_IOCTL_MAGIC, 9, int)
-	return ioctl(dst, BTRFS_IOC_CLONE, src);
+	return ioctl(dst_fd, BTRFS_IOC_CLONE, src_fd);
 #else
-	(void)dst;
-	(void)src;
+	(void)dst_fd;
+	(void)src_fd;
 	return -1;
 #endif
 }
