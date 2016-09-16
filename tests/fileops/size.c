@@ -7,7 +7,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fileops_misc.h"
 #include "../../src/status.h"
 
 #include "utils.h"

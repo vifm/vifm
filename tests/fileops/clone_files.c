@@ -5,7 +5,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fileops_misc.h"
 
 #include "utils.h"
 

@@ -30,7 +30,7 @@
 #include "../../ui/colors.h"
 #include "../../ui/ui.h"
 #include "../../utils/macros.h"
-#include "../../fileops.h"
+#include "../../fileops_misc.h"
 #include "../../fileops_rename.h"
 #include "../../status.h"
 #include "../modes.h"

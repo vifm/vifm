@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 15 September, 2016
+Updated: 16 September, 2016
 Version: 0.8.2
 
 Brief Description
@@ -156,8 +156,6 @@ Package content
     |  |  |-- view.c - view mode commands
     |  |  `-- visual.c - implementation of visual mode commands
     |  |
-    |  |-- private/ - private headers of modules in src/
-    |  |
     |  |-- ui/ - most of ui related code
     |  |  |
     |  |  |-- private/ - internal headers of ui
@@ -214,8 +212,9 @@ Package content
     |  |-- event_loop.c - event dispatching loop
     |  |-- filelist.c - fill/update list of files
     |  |-- filename_modifiers.c - expands filename modifiers
-    |  |-- fileops.c - most of high-level operations on files
+    |  |-- fileops_common.c - shared functionality of high-level file operations
     |  |-- fileops_cpmv.c - copying/moving/linking of files
+    |  |-- fileops_misc.c - most of high-level operations on files
     |  |-- fileops_put.c - putting of files
     |  |-- fileops_rename.c - renaming files in various ways
     |  |-- filetype.c - stores filetype information from vifmrc

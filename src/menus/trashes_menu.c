@@ -18,13 +18,14 @@
 
 #include "trashes_menu.h"
 
+#include <stdint.h> /* uint64_t */
 #include <string.h> /* strchr() strdup() */
 
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
-#include "../fileops.h"
+#include "../fileops_common.h"
 #include "../trash.h"
 #include "menus.h"
 

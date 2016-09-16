@@ -163,8 +163,6 @@ vifm_SOURCES = \
 	modes/visual.c modes/visual.h \
 	modes/wk.h \
 	\
-	private/fileops.h \
-	\
 	ui/cancellation.c ui/cancellation.h \
 	ui/color_manager.c ui/color_manager.h \
 	ui/color_scheme.c ui/color_scheme.h \
@@ -219,8 +217,9 @@ vifm_SOURCES = \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
-	fileops.c fileops.h \
+	fileops_common.c fileops_common.h \
 	fileops_cpmv.c fileops_cpmv.h \
+	fileops_misc.c fileops_misc.h \
 	fileops_put.c fileops_put.h \
 	fileops_rename.c fileops_rename.h \
 	filetype.c filetype.h \

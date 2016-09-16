@@ -24,7 +24,6 @@
 
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "private/fileops.h"
 #include "ui/cancellation.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
@@ -33,6 +32,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "filelist.h"
+#include "fileops_common.h"
 #include "flist_pos.h"
 #include "ops.h"
 #include "trash.h"

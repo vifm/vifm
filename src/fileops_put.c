@@ -30,7 +30,6 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/wk.h"
-#include "private/fileops.h"
 #include "ui/cancellation.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
@@ -41,7 +40,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
-#include "fileops.h"
+#include "fileops_common.h"
 #include "fileops_cpmv.h"
 #include "ops.h"
 #include "registers.h"
@@ -826,7 +825,7 @@ handle_clashing(int move, const char src[], const char dst[])
 		snprintf(msg, sizeof(msg), "Overwriting\n%s\nwith\n%s\nwill result "
 				"in loss of the following files.  Are you sure?\n%s",
 				replace_home_part(dst), replace_home_part(src), vle_tb_get_data(lost));
-		switch(options_prompt("Possible data loss", msg, responses))
+		switch(fops_options_prompt("Possible data loss", msg, responses))
 		{
 			case 'y':
 				/* Do nothing. */
@@ -925,7 +924,7 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	snprintf(msg, sizeof(msg),
 			"Name conflict for %s.  Caused by:\n%s\nWhat to do?", fname,
 			replace_home_part(caused_by));
-	response = options_prompt("File Conflict", msg, responses);
+	response = fops_options_prompt("File Conflict", msg, responses);
 	handle_prompt_response(fname, caused_by, response);
 }
 
@@ -985,7 +984,7 @@ prompt_dest_name(const char src_name[])
 	char prompt[128 + PATH_MAX];
 
 	snprintf(prompt, ARRAY_LEN(prompt), "New name for %s: ", src_name);
-	line_prompt(prompt, src_name, &prompt_dest_name_cb, NULL, 0);
+	fops_line_prompt(prompt, src_name, &prompt_dest_name_cb, NULL, 0);
 }
 
 /* Callback for line prompt result. */

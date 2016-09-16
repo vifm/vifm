@@ -76,7 +76,7 @@
 #include "dir_stack.h"
 #include "event_loop.h"
 #include "filelist.h"
-#include "fileops.h"
+#include "fileops_common.h"
 #include "filetype.h"
 #include "flist_pos.h"
 #include "ipc.h"

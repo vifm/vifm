@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include "../../src/fileops.h"
+#include "../../src/fileops_misc.h"
 
 TEST(slash_at_the_end)
 {

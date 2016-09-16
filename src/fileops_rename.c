@@ -25,7 +25,6 @@
 
 #include "compat/os.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "private/fileops.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "utils/fs.h"
@@ -36,6 +35,7 @@
 #include "utils/utils.h"
 #include "cmd_completion.h"
 #include "filelist.h"
+#include "fileops_common.h"
 #include "flist_sel.h"
 #include "undo.h"
 
@@ -101,8 +101,8 @@ rename_current_file(FileView *view, int name_only)
 	}
 
 	flist_sel_stash(view);
-	line_prompt("New name: ", filename, &rename_file_cb, &complete_filename_only,
-			1);
+	fops_line_prompt("New name: ", filename, &rename_file_cb,
+			&complete_filename_only, 1);
 }
 
 /* Callback for processing file rename query. */

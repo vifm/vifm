@@ -13,7 +13,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fileops_misc.h"
 
 static int get_gids(gid_t *gid1, gid_t *gid2);
 static int has_more_than_one_group(void);
