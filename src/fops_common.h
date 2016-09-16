@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__FILEOPS_COMMON_H__
-#define VIFM__FILEOPS_COMMON_H__
+#ifndef VIFM__FOPS_COMMON_H__
+#define VIFM__FOPS_COMMON_H__
 
 #include <stdint.h> /* uint64_t */
 
@@ -211,7 +211,7 @@ int check_if_dir_writable(DirRole dir_role, const char path[]);
  * of a directory or zero on error. */
 uint64_t calculate_dir_size(const char path[], int force);
 
-#endif /* VIFM__FILEOPS_COMMON_H__ */
+#endif /* VIFM__FOPS_COMMON_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

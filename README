@@ -212,15 +212,15 @@ Package content
     |  |-- event_loop.c - event dispatching loop
     |  |-- filelist.c - fill/update list of files
     |  |-- filename_modifiers.c - expands filename modifiers
-    |  |-- fileops_common.c - shared functionality of high-level file operations
-    |  |-- fileops_cpmv.c - copying/moving/linking of files
-    |  |-- fileops_misc.c - most of high-level operations on files
-    |  |-- fileops_put.c - putting of files
-    |  |-- fileops_rename.c - renaming files in various ways
     |  |-- filetype.c - stores filetype information from vifmrc
     |  |-- filtering.c - managing file filters
     |  |-- flist_pos.c - most of file list scrolling/cursor positioning code
     |  |-- flist_sel.c - most of file list selection handling code
+    |  |-- fops_common.c - shared functionality of high-level file operations
+    |  |-- fops_cpmv.c - copying/moving/linking of files
+    |  |-- fops_misc.c - most of high-level operations on files
+    |  |-- fops_put.c - putting of files
+    |  |-- fops_rename.c - renaming files in various ways
     |  |-- ipc.c - handles communication across instances of vifm
     |  |-- macros.c - code of macros expansion
     |  |-- marks.c - stores information about marked directories

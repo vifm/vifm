@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__FILEOPS_MISC_H__
-#define VIFM__FILEOPS_MISC_H__
+#ifndef VIFM__FOPS_MISC_H__
+#define VIFM__FOPS_MISC_H__
 
 #include <sys/types.h> /* gid_t uid_t */
 
@@ -80,7 +80,7 @@ TSTATIC_DEFS(
 	const char * gen_clone_name(const char dir[], const char normal_name[]);
 )
 
-#endif /* VIFM__FILEOPS_MISC_H__ */
+#endif /* VIFM__FOPS_MISC_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

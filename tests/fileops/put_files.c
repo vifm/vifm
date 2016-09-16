@@ -8,9 +8,9 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops_common.h"
-#include "../../src/fileops_misc.h"
-#include "../../src/fileops_put.h"
+#include "../../src/fops_common.h"
+#include "../../src/fops_misc.h"
+#include "../../src/fops_put.h"
 #include "../../src/registers.h"
 #include "../../src/trash.h"
 

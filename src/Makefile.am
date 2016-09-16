@@ -217,11 +217,11 @@ vifm_SOURCES = \
 	event_loop.c event_loop.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \
-	fileops_common.c fileops_common.h \
-	fileops_cpmv.c fileops_cpmv.h \
-	fileops_misc.c fileops_misc.h \
-	fileops_put.c fileops_put.h \
-	fileops_rename.c fileops_rename.h \
+	fops_common.c fops_common.h \
+	fops_cpmv.c fops_cpmv.h \
+	fops_misc.c fops_misc.h \
+	fops_put.c fops_put.h \
+	fops_rename.c fops_rename.h \
 	filetype.c filetype.h \
 	filtering.c filtering.h \
 	flist_pos.c flist_pos.h \

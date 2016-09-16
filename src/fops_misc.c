@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "fileops_misc.h"
+#include "fops_misc.h"
 
 #include <sys/types.h> /* gid_t uid_t */
 
@@ -38,9 +38,9 @@
 #include "utils/utils.h"
 #include "cmd_completion.h"
 #include "filelist.h"
-#include "fileops_common.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
+#include "fops_common.h"
 #include "registers.h"
 #include "trash.h"
 #include "undo.h"

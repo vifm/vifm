@@ -8,7 +8,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops_misc.h"
+#include "../../src/fops_misc.h"
 #include "../../src/trash.h"
 
 #include "utils.h"

@@ -31,7 +31,7 @@
 #include "ui/ui.h"
 #include "utils/path.h"
 #include "utils/str.h"
-#include "fileops_rename.h"
+#include "fops_rename.h"
 #include "status.h"
 
 static const char * apply_mod(const char *path, const char *parent,

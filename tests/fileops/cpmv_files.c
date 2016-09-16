@@ -13,7 +13,7 @@
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops_cpmv.h"
+#include "../../src/fops_cpmv.h"
 #include "../../src/trash.h"
 
 #include "utils.h"

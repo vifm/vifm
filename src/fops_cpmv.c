@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "fileops_cpmv.h"
+#include "fops_cpmv.h"
 
 #include <assert.h> /* assert() */
 #include <string.h> /* strcmp() strdup() */
@@ -32,8 +32,8 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "filelist.h"
-#include "fileops_common.h"
 #include "flist_pos.h"
+#include "fops_common.h"
 #include "ops.h"
 #include "trash.h"
 #include "undo.h"

@@ -4,8 +4,8 @@
 
 #include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
-#include "../../src/fileops_common.h"
-#include "../../src/fileops_rename.h"
+#include "../../src/fops_common.h"
+#include "../../src/fops_rename.h"
 
 TEST(names_less_than_files)
 {

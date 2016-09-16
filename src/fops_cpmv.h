@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__FILEOPS_CPMV_H__
-#define VIFM__FILEOPS_CPMV_H__
+#ifndef VIFM__FOPS_CPMV_H__
+#define VIFM__FOPS_CPMV_H__
 
 #include "ui/ui.h"
 
@@ -41,7 +41,7 @@ int cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
  * value for save_msg flag. */
 int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 
-#endif /* VIFM__FILEOPS_CPMV_H__ */
+#endif /* VIFM__FOPS_CPMV_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

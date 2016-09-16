@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__FILEOPS_RENAME_H__
-#define VIFM__FILEOPS_RENAME_H__
+#ifndef VIFM__FOPS_RENAME_H__
+#define VIFM__FOPS_RENAME_H__
 
 #include "ui/ui.h"
 #include "utils/test_helpers.h"
@@ -59,7 +59,7 @@ TSTATIC_DEFS(
 	const char * incdec_name(const char fname[], int k);
 )
 
-#endif /* VIFM__FILEOPS_RENAME_H__ */
+#endif /* VIFM__FOPS_RENAME_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

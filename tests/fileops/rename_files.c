@@ -4,7 +4,7 @@
 
 #include "../../src/ui/ui.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops_rename.h"
+#include "../../src/fops_rename.h"
 
 #include "utils.h"
 

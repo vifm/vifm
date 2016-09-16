@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "fileops_rename.h"
+#include "fops_rename.h"
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -35,8 +35,8 @@
 #include "utils/utils.h"
 #include "cmd_completion.h"
 #include "filelist.h"
-#include "fileops_common.h"
 #include "flist_sel.h"
+#include "fops_common.h"
 #include "undo.h"
 
 /* What to do with rename candidate name (old name and new name). */

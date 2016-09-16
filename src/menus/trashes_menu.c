@@ -25,7 +25,7 @@
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
-#include "../fileops_common.h"
+#include "../fops_common.h"
 #include "../trash.h"
 #include "menus.h"
 
