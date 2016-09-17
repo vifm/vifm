@@ -136,10 +136,10 @@ appendfv(vle_textbuf *tb, int line, const char format[], va_list ap)
 static void
 ensure_allocated(vle_textbuf *tb, size_t extra)
 {
-	size_t needed_size = tb->len + extra + 1;
+	const size_t needed_size = tb->len + extra + 1;
 	if(tb->capacity < needed_size)
 	{
-		char *ptr = realloc(tb->data, needed_size);
+		char *const ptr = realloc(tb->data, needed_size);
 		if(ptr != NULL)
 		{
 			tb->data = ptr;
