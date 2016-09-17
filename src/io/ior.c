@@ -25,7 +25,7 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* remove() snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strerror() strlen() */
+#include <string.h> /* strlen() */
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
@@ -172,7 +172,7 @@ ior_mv(io_args_t *const args)
 	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
 	{
 		(void)ioe_errlst_append(&args->result.errors, dst, EEXIST,
-				strerror(EEXIST));
+				"Destination path already exists");
 		return 1;
 	}
 
@@ -181,13 +181,13 @@ ior_mv(io_args_t *const args)
 		if(!is_file(src))
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, EISDIR,
-					strerror(EISDIR));
+					"Can't append when source is not a file");
 			return 1;
 		}
 		if(!is_file(dst))
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, EISDIR,
-					strerror(EISDIR));
+					"Can't append when destination is not a file");
 			return 1;
 		}
 	}
@@ -271,7 +271,7 @@ ior_mv(io_args_t *const args)
 				if(os_rename(src, dst) != 0)
 				{
 					(void)ioe_errlst_append(&args->result.errors, src, errno,
-							strerror(errno));
+							"Rename operation failed");
 					return 1;
 				}
 				return 0;
@@ -309,7 +309,7 @@ ior_mv(io_args_t *const args)
 
 		default:
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					strerror(errno));
+					"Rename operation failed");
 			return errno;
 	}
 }
@@ -419,14 +419,14 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					if(result == VR_ERROR)
 					{
 						(void)ioe_errlst_append(&cp_args->result.errors, dst_full_path,
-								errno, strerror(errno));
+								errno, "Failed to setup directory permissions");
 					}
 					clone_timestamps(dst_full_path, full_path, &st);
 				}
 				else
 				{
 					(void)ioe_errlst_append(&cp_args->result.errors, full_path, errno,
-							strerror(errno));
+							"Failed to stat() source directory");
 					result = VR_ERROR;
 				}
 				break;

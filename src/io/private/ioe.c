@@ -18,6 +18,7 @@
 
 #include "ioe.h"
 
+#include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
@@ -25,15 +26,17 @@
 #include "../../compat/reallocarray.h"
 #include "../ioe.h"
 
-/* TODO: think about the interface, whether we need to paths and what message
- *       is really is (currently it might be strerror(error_code), but it's a
- *       bit excessive as we don't need error_code then. */
+/* XXX: error_code can't be used on Windows, so the message should be in msg.
+ *      It might be better to have Windows GetLastError() result too. */
 int
 ioe_errlst_append(ioe_errlst_t *elist, const char path[], int error_code,
 		const char msg[])
 {
 	ioe_err_t err;
 	void *p;
+
+	assert((error_code != IO_ERR_UNKNOWN || msg[0] != '\n') &&
+			"Some error information has to be provided!");
 
 	if(!elist->active)
 	{
