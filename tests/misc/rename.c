@@ -4,31 +4,32 @@
 
 #include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
-#include "../../src/fileops.h"
+#include "../../src/fops_common.h"
+#include "../../src/fops_rename.h"
 
 TEST(names_less_than_files)
 {
 	char *src[] = { "a", "b" };
 	char *dst[] = { "a" };
-	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 }
 
 TEST(names_greater_that_files_fail)
 {
 	char *src[] = { "a" };
 	char *dst[] = { "a", "b" };
-	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 }
 
 TEST(move_fail)
 {
 	char *src[] = { "a", "b" };
 	char *dst[] = { "../a", "b" };
-	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 
 #ifdef _WIN32
 	dst[0] = "..\\a";
-	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_false(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 #endif
 }
 
@@ -36,12 +37,12 @@ TEST(rename_inside_subdir_ok)
 {
 	char *src[] = { "../a", "b" };
 	char *dst[] = { "../a_a", "b" };
-	assert_true(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 
 #ifdef _WIN32
 	src[0] = "..\\a";
 	dst[0] = "..\\a_a";
-	assert_true(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+	assert_true(fops_is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
 #endif
 }
 
@@ -65,12 +66,12 @@ TEST(incdec_leaves_zeros)
 TEST(single_file_rename)
 {
 	assert_success(chdir(TEST_DATA_PATH "/rename"));
-	assert_true(check_file_rename(".", "a", "a", ST_NONE) < 0);
-	assert_true(check_file_rename(".", "a", "", ST_NONE) < 0);
-	assert_true(check_file_rename(".", "a", "b", ST_NONE) > 0);
-	assert_true(check_file_rename(".", "a", "aa", ST_NONE) == 0);
+	assert_true(fops_check_file_rename(".", "a", "a", ST_NONE) < 0);
+	assert_true(fops_check_file_rename(".", "a", "", ST_NONE) < 0);
+	assert_true(fops_check_file_rename(".", "a", "b", ST_NONE) > 0);
+	assert_true(fops_check_file_rename(".", "a", "aa", ST_NONE) == 0);
 #ifdef _WIN32
-	assert_true(check_file_rename(".", "a", "A", ST_NONE) > 0);
+	assert_true(fops_check_file_rename(".", "a", "A", ST_NONE) > 0);
 #endif
 }
 
@@ -82,8 +83,8 @@ TEST(rename_list_checks)
 	ARRAY_GUARD(files, ARRAY_LEN(list));
 	char dup[ARRAY_LEN(files)] = {};
 
-	assert_true(is_rename_list_ok(files, dup, ARRAY_LEN(list), list));
-	for(i = 0; i < ARRAY_LEN(list); i++)
+	assert_true(fops_is_rename_list_ok(files, dup, ARRAY_LEN(list), list));
+	for(i = 0; i < ARRAY_LEN(list); ++i)
 	{
 		assert_false(dup[i]);
 	}

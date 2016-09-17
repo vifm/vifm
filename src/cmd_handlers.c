@@ -87,11 +87,14 @@
 #include "compare.h"
 #include "dir_stack.h"
 #include "filelist.h"
-#include "fileops.h"
 #include "filetype.h"
 #include "filtering.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
+#include "fops_cpmv.h"
+#include "fops_misc.h"
+#include "fops_put.h"
+#include "fops_rename.h"
 #include "macros.h"
 #include "marks.h"
 #include "ops.h"
@@ -1371,7 +1374,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
-		change_owner();
+		fops_chuser();
 		return 0;
 	}
 
@@ -1402,7 +1405,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 	}
 
 	mark_selection_or_current(curr_view);
-	return chown_files(u, g, uid, gid) != 0;
+	return fops_chown(u, g, uid, gid) != 0;
 }
 #endif
 
@@ -1419,10 +1422,10 @@ clone_cmd(const cmd_info_t *cmd_info)
 			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
-		return clone_files(curr_view, NULL, -1, 0, 1) != 0;
+		return fops_clone(curr_view, NULL, -1, 0, 1) != 0;
 	}
 
-	return clone_files(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark,
+	return fops_clone(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark,
 			1) != 0;
 }
 
@@ -1591,11 +1594,11 @@ delete_cmd(const cmd_info_t *cmd_info)
 	check_marking(curr_view, 0, NULL);
 	if(cmd_info->bg)
 	{
-		result = delete_files_bg(curr_view, !cmd_info->emark) != 0;
+		result = fops_delete_bg(curr_view, !cmd_info->emark) != 0;
 	}
 	else
 	{
-		result = delete_files(curr_view, reg, !cmd_info->emark) != 0;
+		result = fops_delete(curr_view, reg, !cmd_info->emark) != 0;
 	}
 
 	return result;
@@ -3105,7 +3108,7 @@ static int
 mkdir_cmd(const cmd_info_t *cmd_info)
 {
 	const int at = get_at(curr_view, cmd_info);
-	return make_dirs(curr_view, at, cmd_info->argv, cmd_info->argc,
+	return fops_mkdirs(curr_view, at, cmd_info->argv, cmd_info->argc,
 			cmd_info->emark) != 0;
 }
 
@@ -3146,19 +3149,19 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 
 		if(cmd_info->bg)
 		{
-			return cpmv_files_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
+			return fops_cpmv_bg(curr_view, NULL, -1, move, cmd_info->emark) != 0;
 		}
 
-		return cpmv_files(curr_view, NULL, -1, op, 0) != 0;
+		return fops_cpmv(curr_view, NULL, -1, op, 0) != 0;
 	}
 
 	if(cmd_info->bg)
 	{
-		return cpmv_files_bg(curr_view, cmd_info->argv, cmd_info->argc, move,
+		return fops_cpmv_bg(curr_view, cmd_info->argv, cmd_info->argc, move,
 				cmd_info->emark) != 0;
 	}
 
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, op,
+	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op,
 			cmd_info->emark) != 0;
 }
 
@@ -3301,10 +3304,10 @@ put_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->bg)
 	{
-		return put_files_bg(curr_view, at, reg, cmd_info->emark) != 0;
+		return fops_put_bg(curr_view, at, reg, cmd_info->emark) != 0;
 	}
 
-	return put_files(curr_view, at, reg, cmd_info->emark) != 0;
+	return fops_put(curr_view, at, reg, cmd_info->emark) != 0;
 }
 
 static int
@@ -3377,7 +3380,7 @@ static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
 	check_marking(curr_view, 0, NULL);
-	return rename_files(curr_view, cmd_info->argv, cmd_info->argc,
+	return fops_rename(curr_view, cmd_info->argv, cmd_info->argc,
 			cmd_info->emark) != 0;
 }
 
@@ -3393,7 +3396,7 @@ static int
 restore_cmd(const cmd_info_t *cmd_info)
 {
 	check_marking(curr_view, 0, NULL);
-	return restore_files(curr_view) != 0;
+	return fops_restore(curr_view) != 0;
 }
 
 /* Creates symbolic links with relative paths to files. */
@@ -3418,10 +3421,10 @@ link_cmd(const cmd_info_t *cmd_info, int absolute)
 			status_bar_error("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
-		return cpmv_files(curr_view, NULL, -1, op, 0) != 0;
+		return fops_cpmv(curr_view, NULL, -1, op, 0) != 0;
 	}
 
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, op,
+	return fops_cpmv(curr_view, cmd_info->argv, cmd_info->argc, op,
 			cmd_info->emark) != 0;
 }
 
@@ -3632,7 +3635,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 	}
 
 	mark_selected(curr_view);
-	return substitute_in_names(curr_view, last_pattern, last_sub, ic, glob) != 0;
+	return fops_subst(curr_view, last_pattern, last_sub, ic, glob) != 0;
 }
 
 /* Synchronizes path/cursor position of the other pane with corresponding
@@ -3856,7 +3859,7 @@ static int
 touch_cmd(const cmd_info_t *cmd_info)
 {
 	const int at = get_at(curr_view, cmd_info);
-	return make_files(curr_view, at, cmd_info->argv, cmd_info->argc) != 0;
+	return fops_mkfiles(curr_view, at, cmd_info->argv, cmd_info->argc) != 0;
 }
 
 /* Gets destination position based range.  Returns the position. */
@@ -3898,7 +3901,7 @@ tr_cmd(const cmd_info_t *cmd_info)
 	}
 
 	mark_selected(curr_view);
-	return tr_in_names(curr_view, cmd_info->argv[0], buf) != 0;
+	return fops_tr(curr_view, cmd_info->argv[0], buf) != 0;
 }
 
 /* Lists all valid non-empty trash directories in a menu with optional size of
@@ -4281,7 +4284,7 @@ yank_cmd(const cmd_info_t *cmd_info)
 	if(result == 0)
 	{
 		check_marking(curr_view, 0, NULL);
-		result = yank_files(curr_view, reg) != 0;
+		result = fops_yank(curr_view, reg) != 0;
 	}
 
 	return result;

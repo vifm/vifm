@@ -6,7 +6,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fops_misc.h"
 
 #include "utils.h"
 
@@ -30,7 +30,7 @@ TEST(make_files_fails_on_empty_file_name)
 	char name[] = "";
 	char *names[] = { name };
 
-	assert_true(make_files(&lwin, -1, names, 1));
+	assert_true(fops_mkfiles(&lwin, -1, names, 1));
 }
 
 TEST(make_files_fails_on_file_name_dups)
@@ -38,7 +38,7 @@ TEST(make_files_fails_on_file_name_dups)
 	char name[] = "name";
 	char *names[] = { name, name };
 
-	assert_true(make_files(&lwin, -1, names, 2));
+	assert_true(fops_mkfiles(&lwin, -1, names, 2));
 	assert_failure(unlink(name));
 }
 
@@ -49,7 +49,7 @@ TEST(make_files_fails_if_file_exists)
 
 	create_empty_file("a");
 
-	assert_true(make_files(&lwin, -1, names, 1));
+	assert_true(fops_mkfiles(&lwin, -1, names, 1));
 
 	assert_success(unlink("a"));
 }
@@ -60,7 +60,7 @@ TEST(make_files_creates_files)
 	char name_b[] = "b";
 	char *names[] = { name_a, name_b };
 
-	(void)make_files(&lwin, -1, names, 2);
+	(void)fops_mkfiles(&lwin, -1, names, 2);
 
 	assert_success(unlink("a"));
 	assert_success(unlink("b"));
@@ -71,7 +71,7 @@ TEST(make_files_creates_files_by_paths)
 	char name_a[] = SANDBOX_PATH "/a";
 	char *names[] = { name_a };
 
-	(void)make_files(&lwin, -1, names, 1);
+	(void)fops_mkfiles(&lwin, -1, names, 1);
 
 	assert_success(unlink(SANDBOX_PATH "/a"));
 }
@@ -89,10 +89,10 @@ TEST(make_files_considers_tree_structure)
 
 	/* Set at to -1. */
 	lwin.list_pos = 0;
-	(void)make_files(&lwin, -1, names, 1);
+	(void)fops_mkfiles(&lwin, -1, names, 1);
 
 	/* Set at to desired position. */
-	(void)make_files(&lwin, 1, names, 1);
+	(void)fops_mkfiles(&lwin, 1, names, 1);
 
 	/* Remove both files afterward to make sure they can both be created at the
 	 * same time. */
@@ -113,7 +113,7 @@ TEST(check_by_absolute_path_is_performed_beforehand)
 	snprintf(name_b, sizeof(name_b), "%s/b", lwin.curr_dir);
 	create_empty_file(name_b);
 
-	(void)make_files(&lwin, -1, names, 2);
+	(void)fops_mkfiles(&lwin, -1, names, 2);
 
 	assert_failure(unlink(SANDBOX_PATH "/a"));
 	assert_success(unlink(SANDBOX_PATH "/b"));

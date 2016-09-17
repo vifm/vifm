@@ -4,7 +4,7 @@
 
 #include "../../src/ui/ui.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fops_rename.h"
 
 #include "utils.h"
 
@@ -34,7 +34,7 @@ TEST(generally_renames_files)
 	lwin.dir_entry[0].marked = 1;
 	lwin.dir_entry[1].marked = 1;
 
-	(void)rename_files(&lwin, names, 2, 0);
+	(void)fops_rename(&lwin, names, 2, 0);
 
 	assert_success(rmdir(SANDBOX_PATH "/file"));
 	assert_success(unlink(SANDBOX_PATH "/dir"));
@@ -55,7 +55,7 @@ TEST(renames_files_recursively)
 	lwin.dir_entry[0].marked = 1;
 	lwin.dir_entry[1].marked = 1;
 
-	(void)rename_files(&lwin, names, 2, 1);
+	(void)fops_rename(&lwin, names, 2, 1);
 
 	assert_success(unlink(SANDBOX_PATH "/dir1/file2"));
 	assert_success(unlink(SANDBOX_PATH "/dir2/file1"));
@@ -76,7 +76,7 @@ TEST(interdependent_rename)
 	lwin.dir_entry[0].marked = 1;
 	lwin.dir_entry[1].marked = 1;
 
-	(void)rename_files(&lwin, names, 2, 1);
+	(void)fops_rename(&lwin, names, 2, 1);
 
 	/* Make sure reloading doesn't fail with an assert of duplicated file name. */
 	populate_dir_list(&lwin, 1);

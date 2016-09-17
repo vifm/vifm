@@ -18,13 +18,14 @@
 
 #include "trashes_menu.h"
 
+#include <stdint.h> /* uint64_t */
 #include <string.h> /* strchr() strdup() */
 
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
-#include "../fileops.h"
+#include "../fops_common.h"
 #include "../trash.h"
 #include "menus.h"
 
@@ -78,7 +79,7 @@ format_item(const char trash_dir[], int calc_size)
 	snprintf(msg, sizeof(msg), "Calculating size of %s...", trash_dir);
 	show_progress(msg, 1);
 
-	size = calculate_dir_size(trash_dir, 1);
+	size = fops_dir_size(trash_dir, 1);
 
 	size_str[0] = '\0';
 	friendly_size_notation(size, sizeof(size_str), size_str);

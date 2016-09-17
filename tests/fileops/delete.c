@@ -10,7 +10,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fops_misc.h"
 #include "../../src/registers.h"
 #include "../../src/trash.h"
 
@@ -51,11 +51,11 @@ TEST(marked_files_are_removed_permanently)
 
 			if(!bg)
 			{
-				(void)delete_files(&lwin, '\0', 0);
+				(void)fops_delete(&lwin, '\0', 0);
 			}
 			else
 			{
-				(void)delete_files_bg(&lwin, 0);
+				(void)fops_delete_bg(&lwin, 0);
 				wait_for_bg();
 			}
 
@@ -75,8 +75,8 @@ TEST(files_in_trash_are_not_removed_to_trash)
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
 
-	(void)delete_files(&lwin, '\0', 1);
-	(void)delete_files_bg(&lwin, 1);
+	(void)fops_delete(&lwin, '\0', 1);
+	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/a"));
@@ -92,8 +92,8 @@ TEST(trash_is_not_removed_to_trash)
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
 
-	(void)delete_files(&lwin, '\0', 1);
-	(void)delete_files_bg(&lwin, 1);
+	(void)fops_delete(&lwin, '\0', 1);
+	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
 	assert_success(rmdir(SANDBOX_PATH "/trash"));
@@ -120,11 +120,11 @@ TEST(marked_files_are_removed_to_trash)
 
 			if(!bg)
 			{
-				(void)delete_files(&lwin, 'x', 1);
+				(void)fops_delete(&lwin, 'x', 1);
 			}
 			else
 			{
-				(void)delete_files_bg(&lwin, 1);
+				(void)fops_delete_bg(&lwin, 1);
 				wait_for_bg();
 			}
 
@@ -165,11 +165,11 @@ TEST(nested_file_is_removed)
 
 				if(!bg)
 				{
-					(void)delete_files(&lwin, 'x', to_trash);
+					(void)fops_delete(&lwin, 'x', to_trash);
 				}
 				else
 				{
-					(void)delete_files_bg(&lwin, to_trash);
+					(void)fops_delete_bg(&lwin, to_trash);
 					wait_for_bg();
 				}
 
@@ -205,8 +205,8 @@ TEST(files_in_trash_are_not_removed_to_trash_in_cv)
 	lwin.dir_entry[1].marked = 1;
 	lwin.list_pos = 1;
 
-	(void)delete_files(&lwin, '\0', 1);
-	(void)delete_files_bg(&lwin, 1);
+	(void)fops_delete(&lwin, '\0', 1);
+	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
@@ -226,8 +226,8 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 	lwin.dir_entry[1].marked = 1;
 	lwin.list_pos = 1;
 
-	(void)delete_files(&lwin, '\0', 1);
-	(void)delete_files_bg(&lwin, 1);
+	(void)fops_delete(&lwin, '\0', 1);
+	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));

@@ -30,7 +30,8 @@
 #include "../../ui/colors.h"
 #include "../../ui/ui.h"
 #include "../../utils/macros.h"
-#include "../../fileops.h"
+#include "../../fops_misc.h"
+#include "../../fops_rename.h"
 #include "../../status.h"
 #include "../modes.h"
 #include "../wk.h"
@@ -170,12 +171,12 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	leave_change_mode(0);
 
 	if(curr == 2)
-		rename_current_file(view, 0);
+		fops_rename_current(view, 0);
 #ifndef _WIN32
 	else if(curr == 4)
-		change_owner();
+		fops_chuser();
 	else if(curr == 6)
-		change_group();
+		fops_chgroup();
 	else if(curr == 8)
 		enter_attr_mode(view);
 #else

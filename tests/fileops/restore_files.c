@@ -8,7 +8,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fops_misc.h"
 #include "../../src/trash.h"
 
 #include "utils.h"
@@ -28,7 +28,7 @@ SETUP()
 	cfg.use_trash = 1;
 	set_trash_dir(SANDBOX_PATH "/trash");
 	lwin.dir_entry[0].marked = 1;
-	(void)delete_files(&lwin, 'a', 1);
+	(void)fops_delete(&lwin, 'a', 1);
 }
 
 TEARDOWN()
@@ -47,7 +47,7 @@ TEST(files_not_directly_in_trash_are_not_restored)
 	restore_cwd(saved_cwd);
 
 	lwin.dir_entry[0].marked = 1;
-	(void)restore_files(&lwin);
+	(void)fops_restore(&lwin);
 
 	assert_success(unlink(SANDBOX_PATH "/trash/000_file"));
 }
@@ -62,7 +62,7 @@ TEST(generally_restores_files)
 	restore_cwd(saved_cwd);
 
 	lwin.dir_entry[0].marked = 1;
-	(void)restore_files(&lwin);
+	(void)fops_restore(&lwin);
 
 	assert_success(unlink(SANDBOX_PATH "/file"));
 }
@@ -74,7 +74,7 @@ TEST(works_with_custom_view)
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.dir_entry[0].marked = 1;
-	(void)restore_files(&lwin);
+	(void)fops_restore(&lwin);
 
 	assert_success(unlink(SANDBOX_PATH "/file"));
 }
@@ -84,7 +84,7 @@ TEST(works_with_tree_view)
 	flist_load_tree(&lwin, SANDBOX_PATH);
 
 	lwin.dir_entry[1].marked = 1;
-	(void)restore_files(&lwin);
+	(void)fops_restore(&lwin);
 
 	assert_success(unlink(SANDBOX_PATH "/file"));
 }

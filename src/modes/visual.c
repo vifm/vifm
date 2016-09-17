@@ -39,10 +39,11 @@
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
-#include "../fileops.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
 #include "../flist_sel.h"
+#include "../fops_misc.h"
+#include "../fops_rename.h"
 #include "../marks.h"
 #include "../registers.h"
 #include "../running.h"
@@ -490,7 +491,7 @@ call_incdec(int count)
 {
 	int save_msg;
 	check_marking(view, 0, NULL);
-	save_msg = incdec_names(view, count);
+	save_msg = fops_incdec(view, count);
 	accept_and_leave(save_msg);
 }
 
@@ -512,7 +513,7 @@ cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	check_marking(curr_view, 0, NULL);
-	save_msg = clone_files(view, NULL, 0, 0, def_count(key_info.count));
+	save_msg = fops_clone(view, NULL, 0, 0, def_count(key_info.count));
 	accept_and_leave(save_msg);
 }
 
@@ -712,7 +713,7 @@ delete(key_info_t key_info, int use_trash)
 
 	if(count != 0 && confirm_deletion(count, use_trash))
 	{
-		const int save_msg = delete_files(view, def_reg(key_info.reg), use_trash);
+		const int save_msg = fops_delete(view, def_reg(key_info.reg), use_trash);
 		accept_and_leave(save_msg);
 	}
 }
@@ -732,7 +733,7 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 {
-	calculate_size_bg(curr_view, 1);
+	fops_size_bg(curr_view, 1);
 	accept_and_leave(0);
 }
 
@@ -740,7 +741,7 @@ cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
-	calculate_size_bg(curr_view, 0);
+	fops_size_bg(curr_view, 0);
 	accept_and_leave(0);
 }
 
@@ -767,7 +768,7 @@ cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 	leave_visual_mode(0, 1, 0);
 
 	check_marking(view, 0, NULL);
-	(void)rename_files(view, NULL, 0, 0);
+	(void)fops_rename(view, NULL, 0, 0);
 }
 
 static void
@@ -809,7 +810,7 @@ do_gu(int upper)
 	int save_msg;
 
 	check_marking(view, 0, NULL);
-	save_msg = change_case(view, upper);
+	save_msg = fops_case(view, upper);
 	accept_and_leave(save_msg);
 }
 
@@ -1077,7 +1078,7 @@ cmd_y(key_info_t key_info, keys_info_t *keys_info)
 	int save_msg;
 
 	check_marking(view, 0, NULL);
-	save_msg = yank_files(view, def_reg(key_info.reg));
+	save_msg = fops_yank(view, def_reg(key_info.reg));
 
 	accept_and_leave(save_msg);
 }

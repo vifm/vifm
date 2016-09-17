@@ -31,7 +31,7 @@
 #include "ui/ui.h"
 #include "utils/path.h"
 #include "utils/str.h"
-#include "fileops.h"
+#include "fops_rename.h"
 #include "status.h"
 
 static const char * apply_mod(const char *path, const char *parent,
@@ -275,7 +275,7 @@ apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
 	snprintf(pattern, t - (mod + 3) + 1, "%s", mod + 3);
 	snprintf(sub, p - (t + 1) + 1, "%s", t + 1);
 	global = (mod[0] == 'g');
-	snprintf(buf, buf_len, "%s", substitute_in_name(path, pattern, sub, global));
+	snprintf(buf, buf_len, "%s", fops_name_subst(path, pattern, sub, global));
 	return (p + 1) - start - 2;
 }
 

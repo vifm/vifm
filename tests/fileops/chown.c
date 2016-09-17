@@ -13,7 +13,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fops_misc.h"
 
 static int get_gids(gid_t *gid1, gid_t *gid2);
 static int has_more_than_one_group(void);
@@ -55,12 +55,12 @@ TEST(file_group_is_changed, IF(has_more_than_one_group))
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	mark_selection_or_current(curr_view);
-	chown_files(0, 1, 0, gid1);
+	fops_chown(0, 1, 0, gid1);
 	assert_success(os_stat(SANDBOX_PATH "/dir/chown-me", &s));
 	assert_true(s.st_gid == gid1);
 
 	mark_selection_or_current(curr_view);
-	chown_files(0, 1, 0, gid2);
+	fops_chown(0, 1, 0, gid2);
 	assert_success(os_stat(SANDBOX_PATH "/dir/chown-me", &s));
 	assert_true(s.st_gid == gid2);
 

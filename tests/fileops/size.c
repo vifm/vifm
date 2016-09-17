@@ -7,7 +7,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/filelist.h"
-#include "../../src/fileops.h"
+#include "../../src/fops_misc.h"
 #include "../../src/status.h"
 
 #include "utils.h"
@@ -33,7 +33,7 @@ TEST(directory_size_is_calculated_in_bg)
 	setup_single_entry(&lwin, "various-sizes");
 	lwin.dir_entry[0].selected = 1;
 
-	calculate_size_bg(&lwin, 0);
+	fops_size_bg(&lwin, 0);
 	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
 }
 
@@ -43,7 +43,7 @@ TEST(parent_dir_entry_triggers_calculation_of_current_dir)
 	setup_single_entry(&lwin, "..");
 	lwin.user_selection = 1;
 
-	calculate_size_bg(&lwin, 0);
+	fops_size_bg(&lwin, 0);
 	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
 }
 
