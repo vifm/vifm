@@ -45,7 +45,7 @@ TEST(make_dirs_does_nothing_for_custom_view)
 	flist_custom_add(&lwin, "existing-files/a");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	make_dirs(&lwin, -1, paths, 1, 0);
+	fops_mkdirs(&lwin, -1, paths, 1, 0);
 	assert_false(path_exists("dir", NODEREF));
 
 	for(i = 0; i < lwin.list_rows; ++i)
@@ -62,7 +62,7 @@ TEST(make_dirs_does_nothing_for_duplicated_names)
 	char path[] = "dir";
 	char *paths[] = {path, path};
 
-	make_dirs(&lwin, -1, paths, 2, 0);
+	fops_mkdirs(&lwin, -1, paths, 2, 0);
 	assert_false(path_exists("dir", NODEREF));
 }
 
@@ -72,7 +72,7 @@ TEST(make_dirs_does_nothing_for_empty_names)
 	char empty[] = "";
 	char *paths[] = {path, empty};
 
-	make_dirs(&lwin, -1, paths, 2, 0);
+	fops_mkdirs(&lwin, -1, paths, 2, 0);
 	assert_false(path_exists("dir", NODEREF));
 }
 
@@ -82,7 +82,7 @@ TEST(make_dirs_does_nothing_for_existing_names)
 	char empty[] = ".";
 	char *paths[] = {path, empty};
 
-	make_dirs(&lwin, -1, paths, 2, 0);
+	fops_mkdirs(&lwin, -1, paths, 2, 0);
 	assert_false(path_exists("not-exist", NODEREF));
 }
 
@@ -94,7 +94,7 @@ TEST(make_dirs_creates_one_dir)
 		char path[] = "dir";
 		char *paths[] = {path};
 
-		make_dirs(&lwin, -1, paths, 1, 0);
+		fops_mkdirs(&lwin, -1, paths, 1, 0);
 		assert_true(is_dir(SANDBOX_PATH "/dir"));
 
 		assert_success(rmdir(SANDBOX_PATH "/dir"));
@@ -109,7 +109,7 @@ TEST(make_dirs_creates_sub_dirs_by_rel_path)
 		char path[] = "parent/child";
 		char *paths[] = {path};
 
-		make_dirs(&lwin, -1, paths, 1, 1);
+		fops_mkdirs(&lwin, -1, paths, 1, 1);
 		assert_true(is_dir(SANDBOX_PATH "/parent/child"));
 
 		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
@@ -137,7 +137,7 @@ TEST(make_dirs_creates_sub_dirs_by_abs_path)
 			snprintf(path, sizeof(path), "%s/%s/parent/child", cwd, SANDBOX_PATH);
 		}
 
-		make_dirs(&lwin, -1, paths, 1, 1);
+		fops_mkdirs(&lwin, -1, paths, 1, 1);
 		assert_true(is_dir(SANDBOX_PATH "/parent/child"));
 
 		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
@@ -158,10 +158,10 @@ TEST(make_dirs_considers_tree_structure)
 
 	/* Set at to -1. */
 	lwin.list_pos = 0;
-	(void)make_dirs(&lwin, -1, paths, 1, 0);
+	(void)fops_mkdirs(&lwin, -1, paths, 1, 0);
 
 	/* Set at to desired position. */
-	(void)make_dirs(&lwin, 1, paths, 1, 0);
+	(void)fops_mkdirs(&lwin, 1, paths, 1, 0);
 
 	/* Remove both files afterward to make sure they can both be created at the
 	 * same time. */
@@ -182,7 +182,7 @@ TEST(check_by_absolute_path_is_performed_beforehand)
 	snprintf(name_b, sizeof(name_b), "%s/b", lwin.curr_dir);
 	create_empty_dir(name_b);
 
-	(void)make_dirs(&lwin, -1, names, 2, 0);
+	(void)fops_mkdirs(&lwin, -1, names, 2, 0);
 
 	assert_failure(rmdir(SANDBOX_PATH "/a"));
 	assert_success(rmdir(SANDBOX_PATH "/b"));

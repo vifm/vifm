@@ -34,12 +34,12 @@ CopyMoveLikeOp;
 
 /* Performs copy/moves-like operation on marked files.  Returns new value for
  * save_msg flag. */
-int cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
+int fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 		int force);
 
 /* Copies or moves marked files to the other view in background.  Returns new
  * value for save_msg flag. */
-int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
+int fops_cpmv_bg(FileView *view, char *list[], int nlines, int move, int force);
 
 #endif /* VIFM__FOPS_CPMV_H__ */
 

@@ -78,7 +78,7 @@ static int complete_group(const char str[], void *arg);
 #endif
 
 int
-delete_files(FileView *view, int reg, int use_trash)
+fops_delete(FileView *view, int reg, int use_trash)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	int i;
@@ -88,7 +88,7 @@ delete_files(FileView *view, int reg, int use_trash)
 	const char *const top_dir = get_top_dir(view);
 	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
@@ -110,15 +110,15 @@ delete_files(FileView *view, int reg, int use_trash)
 
 	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
 			replace_home_part(curr_dir));
-	append_marked_files(view, undo_msg, NULL);
+	fops_append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
-	ops = get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
+	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
 			curr_dir);
 
 	ui_cancellation_reset();
 
-	nmarked_files = enqueue_marked_files(ops, view, NULL, use_trash);
+	nmarked_files = fops_enqueue_marked_files(ops, view, NULL, use_trash);
 
 	entry = NULL;
 	i = 0;
@@ -129,7 +129,7 @@ delete_files(FileView *view, int reg, int use_trash)
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		progress_msg("Deleting files", i++, nmarked_files);
+		fops_progress_msg("Deleting files", i++, nmarked_files);
 
 		if(use_trash)
 		{
@@ -205,15 +205,14 @@ delete_files(FileView *view, int reg, int use_trash)
 
 	status_bar_messagef("%d %s %celeted%s", ops->succeeded,
 			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
-			get_cancellation_suffix());
+			fops_get_cancellation_suffix());
 
-	free_ops(ops);
-
+	fops_free_ops(ops);
 	return 1;
 }
 
 int
-delete_files_bg(FileView *view, int use_trash)
+fops_delete_bg(FileView *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
@@ -221,7 +220,7 @@ delete_files_bg(FileView *view, int use_trash)
 	const char *const top_dir = get_top_dir(view);
 	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
@@ -238,10 +237,10 @@ delete_files_bg(FileView *view, int use_trash)
 	args = calloc(1, sizeof(*args));
 	args->use_trash = use_trash;
 
-	general_prepare_for_bg_task(view, args);
+	fops_prepare_for_bg_task(view, args);
 	if(args->sel_list_len == 0)
 	{
-		free_bg_args(args);
+		fops_free_bg_args(args);
 		status_bar_message("Nothing to delete");
 		return 1;
 	}
@@ -253,14 +252,14 @@ delete_files_bg(FileView *view, int use_trash)
 		{
 			show_error_msg("Can't perform deletion",
 					"You cannot delete trash directory to trash");
-			free_bg_args(args);
+			fops_free_bg_args(args);
 			return 0;
 		}
 		else if(is_under_trash(full_file_path))
 		{
 			show_error_msgf("Skipping file deletion", "File is already in trash: %s",
 					full_file_path);
-			free_bg_args(args);
+			fops_free_bg_args(args);
 			return 0;
 		}
 	}
@@ -276,7 +275,7 @@ delete_files_bg(FileView *view, int use_trash)
 
 		if(!prompt_msg(title, perm_del_msg))
 		{
-			free_bg_args(args);
+			fops_free_bg_args(args);
 			return 0;
 		}
 	}
@@ -286,15 +285,15 @@ delete_files_bg(FileView *view, int use_trash)
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
 			use_trash ? 'd' : 'D', replace_home_part(curr_dir));
 
-	append_marked_files(view, task_desc, NULL);
+	fops_append_marked_files(view, task_desc, NULL);
 
-	args->ops = get_bg_ops(use_trash ? OP_REMOVE : OP_REMOVESL,
+	args->ops = fops_get_bg_ops(use_trash ? OP_REMOVE : OP_REMOVESL,
 			use_trash ? "deleting" : "Deleting", args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &delete_files_in_bg,
 				args) != 0)
 	{
-		free_bg_args(args);
+		fops_free_bg_args(args);
 
 		show_error_msg("Can't perform deletion",
 				"Failed to initiate background operation");
@@ -321,7 +320,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 	size_t i;
 	bg_args_t *const args = arg;
 	ops_t *ops = args->ops;
-	bg_ops_init(ops, bg_op);
+	fops_bg_ops_init(ops, bg_op);
 
 	if(ops->use_system_calls)
 	{
@@ -347,7 +346,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 		++bg_op->done;
 	}
 
-	free_bg_args(args);
+	fops_free_bg_args(args);
 }
 
 /* Actual implementation of background file removal. */
@@ -371,7 +370,7 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 }
 
 int
-yank_files(FileView *view, int reg)
+fops_yank(FileView *view, int reg)
 {
 	int nyanked_files;
 	dir_entry_t *entry;
@@ -417,7 +416,7 @@ prepare_register(int reg)
 }
 
 int
-change_link(FileView *view)
+fops_retarget(FileView *view)
 {
 	char full_path[PATH_MAX];
 	char linkto[PATH_MAX];
@@ -429,7 +428,7 @@ change_link(FileView *view)
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
@@ -482,7 +481,7 @@ change_link_cb(const char new_target[])
 		return;
 	}
 
-	ops = get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);
+	ops = fops_get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);
 
 	fname = get_last_path_component(full_path);
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
@@ -500,7 +499,7 @@ change_link_cb(const char new_target[])
 
 	cmd_group_end();
 
-	free_ops(ops);
+	fops_free_ops(ops);
 }
 
 /* Command-line path completion callback.  Returns completion start offset. */
@@ -513,7 +512,7 @@ complete_filename(const char str[], void *arg)
 }
 
 int
-clone_files(FileView *view, char *list[], int nlines, int force, int copies)
+fops_clone(FileView *view, char *list[], int nlines, int force, int copies)
 {
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
@@ -528,43 +527,43 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 	ops_t *ops;
 	const char *const curr_dir = flist_get_dir(view);
 
-	if(!can_read_selected_files(view))
+	if(!fops_can_read_selected_files(view))
 	{
 		return 0;
 	}
 
 	if(nlines == 1)
 	{
-		with_dir = check_dir_path(view, list[0], dst_path, sizeof(dst_path));
+		with_dir = fops_check_dir_path(view, list[0], dst_path, sizeof(dst_path));
 		if(with_dir)
 		{
 			nlines = 0;
 		}
-		else if(!can_add_files_to_view(view, -1))
+		else if(!fops_view_can_be_extended(view, -1))
 		{
 			return 0;
 		}
 	}
 	else
 	{
-		if(!can_add_files_to_view(view, -1))
+		if(!fops_view_can_be_extended(view, -1))
 		{
 			return 0;
 		}
 
-		copy_str(dst_path, sizeof(dst_path), get_dst_dir(view, -1));
+		copy_str(dst_path, sizeof(dst_path), fops_get_dst_dir(view, -1));
 	}
-	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, dst_path))
+	if(!fops_is_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, dst_path))
 	{
 		return 0;
 	}
 
-	marked = grab_marked_files(view, &nmarked);
+	marked = fops_grab_marked_files(view, &nmarked);
 
 	from_file = nlines < 0;
 	if(from_file)
 	{
-		list = edit_list(nmarked, marked, &nlines, 0);
+		list = fops_edit_list(nmarked, marked, &nlines, 0);
 		if(list == NULL)
 		{
 			free_string_array(marked, nmarked);
@@ -575,7 +574,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 	free_string_array(marked, nmarked);
 
 	if(nlines > 0 &&
-			(!is_name_list_ok(nmarked, nlines, list, NULL) ||
+			(!fops_is_name_list_ok(nmarked, nlines, list, NULL) ||
 			(!force && !is_clone_list_ok(nlines, list))))
 	{
 		redraw_view(view);
@@ -597,13 +596,14 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 	{
 		snprintf(undo_msg, sizeof(undo_msg), "clone in %s: ", curr_dir);
 	}
-	append_marked_files(view, undo_msg, list);
+	fops_append_marked_files(view, undo_msg, list);
 
-	ops = get_ops(OP_COPY, "Cloning", curr_dir, with_dir ? list[0] : curr_dir);
+	ops = fops_get_ops(OP_COPY, "Cloning", curr_dir,
+			with_dir ? list[0] : curr_dir);
 
 	ui_cancellation_reset();
 
-	nmarked_files = enqueue_marked_files(ops, view, dst_path, 0);
+	nmarked_files = fops_enqueue_marked_files(ops, view, dst_path, 0);
 
 	custom_fnames = (nlines > 0);
 
@@ -628,7 +628,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 			           : name;
 		}
 
-		progress_msg("Cloning files", i, nmarked_files);
+		fops_progress_msg("Cloning files", i, nmarked_files);
 
 		err = 0;
 		for(j = 0; j < copies; ++j)
@@ -643,7 +643,7 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 		/* Don't update cursor position if more than one file is cloned. */
 		if(nmarked == 1U)
 		{
-			fixup_entry_after_rename(view, entry, clone_name);
+			fops_fixup_entry_after_rename(view, entry, clone_name);
 		}
 		ops_advance(ops, err == 0);
 
@@ -658,10 +658,9 @@ clone_files(FileView *view, char *list[], int nlines, int force, int copies)
 	}
 
 	status_bar_messagef("%d file%s cloned%s", ops->succeeded,
-			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
+			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
-	free_ops(ops);
-
+	fops_free_ops(ops);
 	return 1;
 }
 
@@ -751,15 +750,15 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 }
 
 int
-make_dirs(FileView *view, int at, char **names, int count, int create_parent)
+fops_mkdirs(FileView *view, int at, char **names, int count, int create_parent)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
 	int n;
 	void *cp;
-	const char *const dst_dir = get_dst_dir(view, at);
+	const char *const dst_dir = fops_get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view, at))
+	if(!fops_view_can_be_extended(view, at))
 	{
 		return 1;
 	}
@@ -828,20 +827,20 @@ make_dirs(FileView *view, int at, char **names, int count, int create_parent)
 	}
 
 	status_bar_messagef("%d director%s created%s", n, (n == 1) ? "y" : "ies",
-			get_cancellation_suffix());
+			fops_get_cancellation_suffix());
 	return 1;
 }
 
 int
-make_files(FileView *view, int at, char *names[], int count)
+fops_mkfiles(FileView *view, int at, char *names[], int count)
 {
 	int i;
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
-	const char *const dst_dir = get_dst_dir(view, at);
+	const char *const dst_dir = fops_get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view, at))
+	if(!fops_view_can_be_extended(view, at))
 	{
 		return 0;
 	}
@@ -871,7 +870,7 @@ make_files(FileView *view, int at, char *names[], int count)
 
 	ui_cancellation_reset();
 
-	ops = get_ops(OP_MKFILE, "touching", dst_dir, dst_dir);
+	ops = fops_get_ops(OP_MKFILE, "touching", dst_dir, dst_dir);
 
 	snprintf(buf, sizeof(buf), "touch in %s: ", replace_home_part(dst_dir));
 
@@ -897,10 +896,9 @@ make_files(FileView *view, int at, char *names[], int count)
 	}
 
 	status_bar_messagef("%d file%s created%s", n, (n == 1) ? "" : "s",
-			get_cancellation_suffix());
+			fops_get_cancellation_suffix());
 
-	free_ops(ops);
-
+	fops_free_ops(ops);
 	return 1;
 }
 
@@ -915,7 +913,7 @@ get_group_file_list(char *list[], int count, char buf[])
 	len = strlen(buf);
 	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; ++i)
 	{
-		append_fname(buf, len, list[i]);
+		fops_append_fname(buf, len, list[i]);
 		len = strlen(buf);
 	}
 }
@@ -941,7 +939,7 @@ go_to_first_file(FileView *view, char *names[], int count)
 }
 
 int
-restore_files(FileView *view)
+fops_restore(FileView *view)
 {
 	int m, n;
 	dir_entry_t *entry;
@@ -977,12 +975,13 @@ restore_files(FileView *view)
 
 	ui_view_schedule_reload(view);
 
-	status_bar_messagef("Restored %d of %d%s", m, n, get_cancellation_suffix());
+	status_bar_messagef("Restored %d of %d%s", m, n,
+			fops_get_cancellation_suffix());
 	return 1;
 }
 
 void
-calculate_size_bg(const FileView *view, int force)
+fops_size_bg(const FileView *view, int force)
 {
 	int i;
 
@@ -1067,7 +1066,7 @@ dir_size_bg(bg_op_t *bg_op, void *arg)
 static void
 dir_size(char path[], int force)
 {
-	(void)calculate_dir_size(path, force);
+	(void)fops_dir_size(path, force);
 
 	remove_last_path_component(path);
 
@@ -1089,7 +1088,7 @@ redraw_after_path_change(FileView *view, const char path[])
 #ifndef _WIN32
 
 int
-chown_files(int u, int g, uid_t uid, gid_t gid)
+fops_chown(int u, int g, uid_t uid, gid_t gid)
 {
 /* Integer to pointer conversion. */
 #define V(e) (void *)(long)(e)
@@ -1105,10 +1104,10 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 	snprintf(undo_msg, sizeof(undo_msg), "ch%s in %s: ",
 			((u && g) || u) ? "own" : "grp", replace_home_part(curr_dir));
 
-	ops = get_ops(OP_CHOWN, "re-owning", curr_dir, curr_dir);
-	(void)enqueue_marked_files(ops, view, NULL, 0);
+	ops = fops_get_ops(OP_CHOWN, "re-owning", curr_dir, curr_dir);
+	(void)fops_enqueue_marked_files(ops, view, NULL, 0);
 
-	append_marked_files(view, undo_msg, NULL);
+	fops_append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
 	entry = NULL;
@@ -1141,8 +1140,8 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 	cmd_group_end();
 
 	status_bar_messagef("%d file%s fully processed%s", ops->succeeded,
-			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
-	free_ops(ops);
+			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
+	fops_free_ops(ops);
 
 	ui_view_reset_selection_and_reload(view);
 	return 1;
@@ -1150,7 +1149,7 @@ chown_files(int u, int g, uid_t uid, gid_t gid)
 }
 
 void
-change_owner(void)
+fops_chuser(void)
 {
 	mark_selection_or_current(curr_view);
 	fops_line_prompt("New owner: ", "", &change_owner_cb, &complete_owner, 0);
@@ -1174,7 +1173,7 @@ change_owner_cb(const char new_owner[])
 		return;
 	}
 
-	curr_stats.save_msg = chown_files(1, 0, uid, 0);
+	curr_stats.save_msg = fops_chown(1, 0, uid, 0);
 }
 
 /* Command-line user name completion callback.  Returns completion start
@@ -1187,7 +1186,7 @@ complete_owner(const char str[], void *arg)
 }
 
 void
-change_group(void)
+fops_chgroup(void)
 {
 	mark_selection_or_current(curr_view);
 	fops_line_prompt("New group: ", "", &change_group_cb, &complete_group, 0);
@@ -1211,7 +1210,7 @@ change_group_cb(const char new_group[])
 		return;
 	}
 
-	curr_stats.save_msg = chown_files(0, 1, 0, gid);
+	curr_stats.save_msg = fops_chown(0, 1, 0, gid);
 }
 
 /* Command-line group name completion callback.  Returns completion start

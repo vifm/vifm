@@ -27,52 +27,51 @@
 
 /* Removes marked files (optionally into trash directory) of the view to
  * specified register.  Returns new value for save_msg flag. */
-int delete_files(FileView *view, int reg, int use_trash);
+int fops_delete(FileView *view, int reg, int use_trash);
 
 /* Removes marked files (optionally into trash directory) of the view to
  * specified register.  Returns new value for save_msg flag. */
-int delete_files_bg(FileView *view, int use_trash);
+int fops_delete_bg(FileView *view, int use_trash);
 
 /* Yanks marked files of the view into register specified by its name via reg
  * parameter.  Returns new value for save_msg. */
-int yank_files(FileView *view, int reg);
+int fops_yank(FileView *view, int reg);
 
 /* Changes link target interactively.  Returns new value for save_msg. */
-int change_link(FileView *view);
+int fops_retarget(FileView *view);
 
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
-int clone_files(FileView *view, char *list[], int nlines, int force,
-		int copies);
+int fops_clone(FileView *view, char *list[], int nlines, int force, int copies);
 
 /* Creates directories, possibly including intermediate ones.  Can modify
  * strings in the names array.  at specifies index of entry to be used to obtain
  * destination path, -1 means current position.  Returns new value for save_msg
  * flag. */
-int make_dirs(FileView *view, int at, char *names[], int count,
+int fops_mkdirs(FileView *view, int at, char *names[], int count,
 		int create_parent);
 
 /* Creates files.  at specifies index of entry to be used to obtain destination
  * path, -1 means current position.  Returns new value for save_msg flag. */
-int make_files(FileView *view, int at, char *names[], int count);
+int fops_mkfiles(FileView *view, int at, char *names[], int count);
 
 /* Returns new value for save_msg flag. */
-int restore_files(FileView *view);
+int fops_restore(FileView *view);
 
 /* Initiates background calculation of directory sizes.  Forcing disables using
  * previously cached values. */
-void calculate_size_bg(const FileView *view, int force);
+void fops_size_bg(const FileView *view, int force);
 
 #ifndef _WIN32
 
 /* Sets uid and or gid for marked files.  Non-zero u enables setting of uid,
  * non-zero g of gid.  Returns new value for save_msg flag. */
-int chown_files(int u, int g, uid_t uid, gid_t gid);
+int fops_chown(int u, int g, uid_t uid, gid_t gid);
 
 /* Changes owner of selected or current file interactively. */
-void change_owner(void);
+void fops_chuser(void);
 
 /* Changes group of selected or current file interactively. */
-void change_group(void);
+void fops_chgroup(void);
 
 #endif
 

@@ -114,7 +114,7 @@ line_prompt_func fops_line_prompt;
 options_prompt_func fops_options_prompt;
 
 void
-init_fileops(line_prompt_func line_func, options_prompt_func options_func)
+fops_init(line_prompt_func line_func, options_prompt_func options_func)
 {
 	fops_line_prompt = line_func;
 	fops_options_prompt = options_func;
@@ -423,7 +423,7 @@ format_pretty_path(const char base_dir[], const char path[], char pretty[],
 }
 
 int
-is_name_list_ok(int count, int nlines, char *list[], char *files[])
+fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 {
 	int i;
 
@@ -476,7 +476,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 }
 
 int
-is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
+fops_is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 {
 	int i;
 	const char *const work_dir = flist_get_dir(curr_view);
@@ -485,7 +485,7 @@ is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 		int j;
 
 		const int check_result =
-			check_file_rename(work_dir, files[i], list[i], ST_NONE);
+			fops_check_file_rename(work_dir, files[i], list[i], ST_NONE);
 		if(check_result < 0)
 		{
 			continue;
@@ -501,9 +501,9 @@ is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 		}
 		if(j >= len && check_result == 0)
 		{
-			/* Invoke check_file_rename() again, but this time to produce error
+			/* Invoke fops_check_file_rename() again, but this time to produce error
 			 * message. */
-			(void)check_file_rename(work_dir, files[i], list[i], ST_STATUS_BAR);
+			(void)fops_check_file_rename(work_dir, files[i], list[i], ST_STATUS_BAR);
 			break;
 		}
 	}
@@ -511,7 +511,7 @@ is_rename_list_ok(char *files[], char is_dup[], int len, char *list[])
 }
 
 int
-check_file_rename(const char dir[], const char old[], const char new[],
+fops_check_file_rename(const char dir[], const char old[], const char new[],
 		SignalType signal_type)
 {
 	if(!is_file_name_changed(old, new))
@@ -556,7 +556,7 @@ is_file_name_changed(const char old[], const char new[])
 }
 
 char **
-grab_marked_files(FileView *view, size_t *nmarked)
+fops_grab_marked_files(FileView *view, size_t *nmarked)
 {
 	char **marked = NULL;
 	dir_entry_t *entry = NULL;
@@ -569,7 +569,7 @@ grab_marked_files(FileView *view, size_t *nmarked)
 }
 
 int
-is_dir_entry(const char full_path[], const struct dirent* dentry)
+fops_is_dir_entry(const char full_path[], const struct dirent* dentry)
 {
 #ifndef _WIN32
 	struct stat s;
@@ -588,7 +588,7 @@ is_dir_entry(const char full_path[], const struct dirent* dentry)
 }
 
 void
-fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
+fops_fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 		const char new_fname[])
 {
 	if(entry_to_pos(view, entry) == view->list_pos || flist_custom_active(view))
@@ -598,7 +598,7 @@ fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 }
 
 int
-enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
+fops_enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 		int to_trash)
 {
 	int nmarked_files = 0;
@@ -632,7 +632,7 @@ enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
 }
 
 ops_t *
-get_ops(OPS main_op, const char descr[], const char base_dir[],
+fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
 	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
@@ -644,7 +644,7 @@ get_ops(OPS main_op, const char descr[], const char base_dir[],
 }
 
 void
-progress_msg(const char text[], int ready, int total)
+fops_progress_msg(const char text[], int ready, int total)
 {
 	if(!cfg.use_system_calls)
 	{
@@ -657,7 +657,7 @@ progress_msg(const char text[], int ready, int total)
 }
 
 const char *
-get_dst_name(const char src_path[], int from_trash)
+fops_get_dst_name(const char src_path[], int from_trash)
 {
 	if(from_trash)
 	{
@@ -667,7 +667,7 @@ get_dst_name(const char src_path[], int from_trash)
 }
 
 int
-can_read_selected_files(FileView *view)
+fops_can_read_selected_files(FileView *view)
 {
 	dir_entry_t *entry;
 
@@ -697,7 +697,7 @@ can_read_selected_files(FileView *view)
 }
 
 int
-check_dir_path(const FileView *view, const char path[], char buf[],
+fops_check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len)
 {
 	if(path[0] == '/' || path[0] == '~')
@@ -708,7 +708,7 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s/%s", get_dst_dir(view, -1), path);
+		snprintf(buf, buf_len, "%s/%s", fops_get_dst_dir(view, -1), path);
 	}
 
 	if(is_dir(buf))
@@ -716,12 +716,12 @@ check_dir_path(const FileView *view, const char path[], char buf[],
 		return 1;
 	}
 
-	copy_str(buf, buf_len, get_dst_dir(view, -1));
+	copy_str(buf, buf_len, fops_get_dst_dir(view, -1));
 	return 0;
 }
 
 char **
-edit_list(size_t count, char **orig, int *nlines, int ignore_change)
+fops_edit_list(size_t count, char **orig, int *nlines, int ignore_change)
 {
 	char rename_file[PATH_MAX];
 	char **list = NULL;
@@ -784,7 +784,7 @@ edit_file(const char filepath[], int force_changed)
 }
 
 void
-bg_ops_init(ops_t *ops, bg_op_t *bg_op)
+fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 {
 	if(ops->estim != NULL)
 	{
@@ -794,7 +794,7 @@ bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 }
 
 ops_t *
-get_bg_ops(OPS main_op, const char descr[], const char dir[])
+fops_get_bg_ops(OPS main_op, const char descr[], const char dir[])
 {
 	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir);
 	if(ops->use_system_calls)
@@ -824,7 +824,7 @@ alloc_progress_data(int bg, void *info)
 }
 
 void
-free_ops(ops_t *ops)
+fops_free_ops(ops_t *ops)
 {
 	if(ops == NULL)
 	{
@@ -849,7 +849,7 @@ free_ops(ops_t *ops)
 }
 
 int
-mv_file(const char src[], const char src_dir[], const char dst[],
+fops_mv_file(const char src[], const char src_dir[], const char dst[],
 		const char dst_dir[], OPS op, int cancellable, ops_t *ops)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
@@ -857,12 +857,12 @@ mv_file(const char src[], const char src_dir[], const char dst[],
 	to_canonic_path(src, src_dir, full_src, sizeof(full_src));
 	to_canonic_path(dst, dst_dir, full_dst, sizeof(full_dst));
 
-	return mv_file_f(full_src, full_dst, op, 0, cancellable, ops);
+	return fops_mv_file_f(full_src, full_dst, op, 0, cancellable, ops);
 }
 
 int
-mv_file_f(const char src[], const char dst[], OPS op, int bg, int cancellable,
-		ops_t *ops)
+fops_mv_file_f(const char src[], const char dst[], OPS op, int bg,
+		int cancellable, ops_t *ops)
 {
 	int result;
 
@@ -882,17 +882,17 @@ mv_file_f(const char src[], const char dst[], OPS op, int bg, int cancellable,
 }
 
 void
-free_bg_args(bg_args_t *args)
+fops_free_bg_args(bg_args_t *args)
 {
 	free_string_array(args->list, args->nlines);
 	free_string_array(args->sel_list, args->sel_list_len);
 	free(args->is_in_trash);
-	free_ops(args->ops);
+	fops_free_ops(args->ops);
 	free(args);
 }
 
 void
-general_prepare_for_bg_task(FileView *view, bg_args_t *args)
+fops_prepare_for_bg_task(FileView *view, bg_args_t *args)
 {
 	dir_entry_t *entry;
 
@@ -910,14 +910,14 @@ general_prepare_for_bg_task(FileView *view, bg_args_t *args)
 }
 
 void
-append_marked_files(FileView *view, char buf[], char **fnames)
+fops_append_marked_files(FileView *view, char buf[], char **fnames)
 {
 	const int custom_fnames = (fnames != NULL);
 	size_t len = strlen(buf);
 	dir_entry_t *entry = NULL;
 	while(iter_marked_entries(view, &entry) && len < COMMAND_GROUP_INFO_LEN)
 	{
-		append_fname(buf, len, entry->name);
+		fops_append_fname(buf, len, entry->name);
 		len = strlen(buf);
 
 		if(custom_fnames)
@@ -933,7 +933,7 @@ append_marked_files(FileView *view, char buf[], char **fnames)
 }
 
 void
-append_fname(char buf[], size_t len, const char fname[])
+fops_append_fname(char buf[], size_t len, const char fname[])
 {
 	if(buf[len - 2] != ':')
 	{
@@ -944,22 +944,22 @@ append_fname(char buf[], size_t len, const char fname[])
 }
 
 const char *
-get_cancellation_suffix(void)
+fops_get_cancellation_suffix(void)
 {
 	return ui_cancellation_requested() ? " (cancelled)" : "";
 }
 
 int
-can_change_view_files(const FileView *view)
+fops_view_can_be_changed(const FileView *view)
 {
 	/* TODO: maybe add check whether directory of specific entry is writable for
 	 *       custom views. */
 	return flist_custom_active(view)
-	    || check_if_dir_writable(DR_CURRENT, view->curr_dir);
+	    || fops_is_dir_writable(DR_CURRENT, view->curr_dir);
 }
 
 int
-can_add_files_to_view(const FileView *view, int at)
+fops_view_can_be_extended(const FileView *view, int at)
 {
 	if(flist_custom_active(view) && view->custom.type != CV_TREE)
 	{
@@ -968,11 +968,11 @@ can_add_files_to_view(const FileView *view, int at)
 		return 0;
 	}
 
-	return check_if_dir_writable(DR_DESTINATION, get_dst_dir(view, at));
+	return fops_is_dir_writable(DR_DESTINATION, fops_get_dst_dir(view, at));
 }
 
 const char *
-get_dst_dir(const FileView *view, int at)
+fops_get_dst_dir(const FileView *view, int at)
 {
 	if(flist_custom_active(view) && view->custom.type == CV_TREE)
 	{
@@ -990,7 +990,7 @@ get_dst_dir(const FileView *view, int at)
 }
 
 int
-check_if_dir_writable(DirRole dir_role, const char path[])
+fops_is_dir_writable(DirRole dir_role, const char path[])
 {
 	if(is_dir_writable(path))
 	{
@@ -1009,7 +1009,7 @@ check_if_dir_writable(DirRole dir_role, const char path[])
 }
 
 uint64_t
-calculate_dir_size(const char path[], int force_update)
+fops_dir_size(const char path[], int force_update)
 {
 	DIR* dir;
 	struct dirent* dentry;
@@ -1039,13 +1039,13 @@ calculate_dir_size(const char path[], int force_update)
 
 		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
 				dentry->d_name);
-		if(is_dir_entry(full_path, dentry))
+		if(fops_is_dir_entry(full_path, dentry))
 		{
 			uint64_t dir_size;
 			dcache_get_at(full_path, &dir_size, NULL);
 			if(dir_size == DCACHE_UNKNOWN || force_update)
 			{
-				dir_size = calculate_dir_size(full_path, force_update);
+				dir_size = fops_dir_size(full_path, force_update);
 			}
 			size += dir_size;
 		}

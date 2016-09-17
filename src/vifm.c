@@ -184,7 +184,7 @@ main(int argc, char *argv[])
 
 	init_background();
 
-	init_fileops(&enter_prompt_mode, &prompt_msg_custom);
+	fops_init(&enter_prompt_mode, &prompt_msg_custom);
 
 	set_view_path(&lwin, vifm_args.lwin_path);
 	set_view_path(&rwin, vifm_args.rwin_path);

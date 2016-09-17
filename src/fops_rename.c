@@ -70,12 +70,12 @@ static const char * substitute_regexp(const char src[], const char sub[],
 static char rename_file_ext[NAME_MAX];
 
 void
-rename_current_file(FileView *view, int name_only)
+fops_rename_current(FileView *view, int name_only)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
 	char filename[strlen(curr->name) + 1];
 
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return;
 	}
@@ -131,7 +131,7 @@ rename_file_cb(const char new_name[])
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext);
 
-	if(check_file_rename(forigin, fname, new, ST_DIALOG) <= 0)
+	if(fops_check_file_rename(forigin, fname, new, ST_DIALOG) <= 0)
 	{
 		return;
 	}
@@ -139,7 +139,7 @@ rename_file_cb(const char new_name[])
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(forigin), fname, new);
 	cmd_group_begin(buf);
-	mv_res = mv_file(fname, forigin, new, forigin, OP_MOVE, 1, NULL);
+	mv_res = fops_mv_file(fname, forigin, new, forigin, OP_MOVE, 1, NULL);
 	cmd_group_end();
 	if(mv_res != 0)
 	{
@@ -154,6 +154,8 @@ rename_file_cb(const char new_name[])
 	ui_view_schedule_reload(curr_view);
 }
 
+/* Command-line file name completion callback.  Returns completion start
+ * offset. */
 static int
 complete_filename_only(const char str[], void *arg)
 {
@@ -162,7 +164,7 @@ complete_filename_only(const char str[], void *arg)
 }
 
 int
-rename_files(FileView *view, char *list[], int nlines, int recursive)
+fops_rename(FileView *view, char *list[], int nlines, int recursive)
 {
 	char **files;
 	int nfiles;
@@ -176,7 +178,7 @@ rename_files(FileView *view, char *list[], int nlines, int recursive)
 		status_bar_error("Recursive rename doesn't accept list of new names");
 		return 1;
 	}
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
@@ -210,7 +212,8 @@ rename_files(FileView *view, char *list[], int nlines, int recursive)
 	/* If we weren't given list of new file names, obtain it from the user. */
 	if(nlines == 0)
 	{
-		if(nfiles == 0 || (list = edit_list(nfiles, files, &nlines, 0)) == NULL)
+		if(nfiles == 0 ||
+				(list = fops_edit_list(nfiles, files, &nlines, 0)) == NULL)
 		{
 			status_bar_message("0 files renamed");
 		}
@@ -221,8 +224,8 @@ rename_files(FileView *view, char *list[], int nlines, int recursive)
 	}
 
 	/* If nlines is 0 here, do nothing. */
-	if(nlines != 0 && is_name_list_ok(nfiles, nlines, list, files) &&
-			is_rename_list_ok(files, is_dup, nfiles, list))
+	if(nlines != 0 && fops_is_name_list_ok(nfiles, nlines, list, files) &&
+			fops_is_rename_list_ok(files, is_dup, nfiles, list))
 	{
 		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 		if(renamed >= 0)
@@ -325,7 +328,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 			continue;
 
 		unique_name = make_name_unique(files[i]);
-		if(mv_file(files[i], curr_dir, unique_name, curr_dir, OP_MOVETMP2, 1,
+		if(fops_mv_file(files[i], curr_dir, unique_name, curr_dir, OP_MOVETMP2, 1,
 					NULL) != 0)
 		{
 			cmd_group_end();
@@ -351,7 +354,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 		if(strcmp(dst[i], files[i]) == 0)
 			continue;
 
-		if(mv_file(files[i], curr_dir, dst[i], curr_dir,
+		if(fops_mv_file(files[i], curr_dir, dst[i], curr_dir,
 				is_dup[i] ? OP_MOVETMP1 : OP_MOVE, 1, NULL) == 0)
 		{
 			char path[PATH_MAX];
@@ -394,7 +397,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 }
 
 int
-incdec_names(FileView *view, int k)
+fops_incdec(FileView *view, int k)
 {
 	size_t names_len = 0;
 	char **names = NULL;
@@ -407,7 +410,7 @@ incdec_names(FileView *view, int k)
 
 	snprintf(undo_msg, sizeof(undo_msg), "<c-a> in %s: ",
 			replace_home_part(flist_get_dir(view)));
-	append_marked_files(view, undo_msg, NULL);
+	fops_append_marked_files(view, undo_msg, NULL);
 
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
@@ -437,14 +440,14 @@ incdec_names(FileView *view, int k)
 
 		snprintf(new_path, sizeof(new_path), "%s/%s", entry->origin, new_fname);
 
-		/* Skip check_file_rename() for final name that matches one of original
+		/* Skip fops_check_file_rename() for final name that matches one of original
 		 * names. */
 		if(is_in_string_array_os(names, names_len, new_path))
 		{
 			continue;
 		}
 
-		if(check_file_rename(entry->origin, entry->name, new_fname,
+		if(fops_check_file_rename(entry->origin, entry->name, new_fname,
 					ST_STATUS_BAR) != 0)
 		{
 			continue;
@@ -468,7 +471,7 @@ incdec_names(FileView *view, int k)
 	{
 		const char *const path = entry->origin;
 		/* Rename: <original name> -> <temporary name>. */
-		if(mv_file(entry->name, path, tmp_names[i++], path, OP_MOVETMP4, 1,
+		if(fops_mv_file(entry->name, path, tmp_names[i++], path, OP_MOVETMP4, 1,
 					NULL) != 0)
 		{
 			err = 1;
@@ -484,13 +487,13 @@ incdec_names(FileView *view, int k)
 		const char *const path = entry->origin;
 		const char *const new_fname = incdec_name(entry->name, k);
 		/* Rename: <temporary name> -> <final name>. */
-		if(mv_file(tmp_names[i++], path, new_fname, path, OP_MOVETMP3, 1,
+		if(fops_mv_file(tmp_names[i++], path, new_fname, path, OP_MOVETMP3, 1,
 					NULL) != 0)
 		{
 			err = 1;
 			break;
 		}
-		fixup_entry_after_rename(view, entry, new_fname);
+		fops_fixup_entry_after_rename(view, entry, new_fname);
 		++nrenames;
 		++nrenamed;
 	}
@@ -582,7 +585,7 @@ count_digits(int number)
 }
 
 int
-change_case(FileView *view, int to_upper)
+fops_case(FileView *view, int to_upper)
 {
 	char **dest;
 	int ndest;
@@ -590,7 +593,7 @@ change_case(FileView *view, int to_upper)
 	int save_msg;
 	int err;
 
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
@@ -652,8 +655,8 @@ change_case(FileView *view, int to_upper)
 }
 
 int
-substitute_in_names(FileView *view, const char pattern[], const char sub[],
-		int ic, int glob)
+fops_subst(FileView *view, const char pattern[], const char sub[], int ic,
+		int glob)
 {
 	regex_t re;
 	char **dest;
@@ -662,7 +665,7 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 	dir_entry_t *entry;
 	int err, save_msg;
 
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
@@ -748,7 +751,7 @@ substitute_in_names(FileView *view, const char pattern[], const char sub[],
 }
 
 int
-tr_in_names(FileView *view, const char from[], const char to[])
+fops_tr(FileView *view, const char from[], const char to[])
 {
 	char **dest;
 	int ndest;
@@ -757,7 +760,7 @@ tr_in_names(FileView *view, const char from[], const char to[])
 
 	assert(strlen(from) == strlen(to) && "Lengths don't match.");
 
-	if(!can_change_view_files(view))
+	if(!fops_view_can_be_changed(view))
 	{
 		return 0;
 	}
@@ -885,7 +888,7 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 		snprintf(undo_msg, sizeof(undo_msg), "%s/%s/%s/ in %s: ", desc, lhs, rhs,
 				replace_home_part(flist_get_dir(view)));
 	}
-	append_marked_files(view, undo_msg, NULL);
+	fops_append_marked_files(view, undo_msg, NULL);
 	cmd_group_begin(undo_msg);
 
 	nrenamed = 0;
@@ -894,10 +897,10 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *const new_fname = dest[i++];
-		if(mv_file(entry->name, entry->origin, new_fname, entry->origin, OP_MOVE, 1,
-					NULL) == 0)
+		if(fops_mv_file(entry->name, entry->origin, new_fname, entry->origin,
+					OP_MOVE, 1, NULL) == 0)
 		{
-			fixup_entry_after_rename(view, entry, new_fname);
+			fops_fixup_entry_after_rename(view, entry, new_fname);
 			++nrenamed;
 		}
 	}
@@ -910,7 +913,7 @@ rename_marked(FileView *view, const char desc[], const char lhs[],
 }
 
 const char *
-substitute_in_name(const char name[], const char pattern[], const char sub[],
+fops_name_subst(const char name[], const char pattern[], const char sub[],
 		int glob)
 {
 	static char buf[PATH_MAX];

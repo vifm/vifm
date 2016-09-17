@@ -89,7 +89,7 @@ static struct
 put_confirm;
 
 int
-put_files(FileView *view, int at, int reg_name, int move)
+fops_put(FileView *view, int at, int reg_name, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 	const char *const descr = move ? "Putting" : "putting";
@@ -97,18 +97,18 @@ put_files(FileView *view, int at, int reg_name, int move)
 }
 
 int
-put_files_bg(FileView *view, int at, int reg_name, int move)
+fops_put_bg(FileView *view, int at, int reg_name, int move)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	size_t task_desc_len;
 	int i;
 	bg_args_t *args;
 	reg_t *reg;
-	const char *const dst_dir = get_dst_dir(view, at);
+	const char *const dst_dir = fops_get_dst_dir(view, at);
 
 	/* Check that operation generally makes sense given our input. */
 
-	if(!can_add_files_to_view(view, at))
+	if(!fops_view_can_be_extended(view, at))
 	{
 		return 0;
 	}
@@ -144,13 +144,13 @@ put_files_bg(FileView *view, int at, int reg_name, int move)
 			continue;
 		}
 
-		append_fname(task_desc, task_desc_len, src);
+		fops_append_fname(task_desc, task_desc_len, src);
 		task_desc_len = strlen(task_desc);
 
 		args->sel_list_len = add_to_string_array(&args->sel_list,
 				args->sel_list_len, 1, src);
 
-		dst_name = get_dst_name(src, is_under_trash(src));
+		dst_name = fops_get_dst_name(src, is_under_trash(src));
 
 		/* Check that no destination files have the same name. */
 		for(j = 0; j < args->nlines; ++j)
@@ -158,7 +158,7 @@ put_files_bg(FileView *view, int at, int reg_name, int move)
 			if(stroscmp(get_last_path_component(args->list[j]), dst_name) == 0)
 			{
 				status_bar_errorf("Two destination files have name \"%s\"", dst_name);
-				free_bg_args(args);
+				fops_free_bg_args(args);
 				return 1;
 			}
 		}
@@ -169,20 +169,20 @@ put_files_bg(FileView *view, int at, int reg_name, int move)
 		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
 		{
 			status_bar_errorf("File \"%s\" already exists", dst);
-			free_bg_args(args);
+			fops_free_bg_args(args);
 			return 1;
 		}
 	}
 
 	/* Initiate the operation. */
 
-	args->ops = get_bg_ops((args->move ? OP_MOVE : OP_COPY),
+	args->ops = fops_get_bg_ops((args->move ? OP_MOVE : OP_COPY),
 			move ? "Putting" : "putting", args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg,
 				args) != 0)
 	{
-		free_bg_args(args);
+		fops_free_bg_args(args);
 
 		show_error_msg("Can't put files",
 				"Failed to initiate background operation");
@@ -198,7 +198,7 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 	size_t i;
 	bg_args_t *const args = arg;
 	ops_t *ops = args->ops;
-	bg_ops_init(ops, bg_op);
+	fops_bg_ops_init(ops, bg_op);
 
 	if(ops->use_system_calls)
 	{
@@ -233,7 +233,7 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 
 		if(path_exists(dst, NODEREF))
 		{
-			/* This file wasn't here before (when checking in put_files_bg()), won't
+			/* This file wasn't here before (when checking in fops_put_bg()), won't
 			 * overwrite. */
 			continue;
 		}
@@ -242,11 +242,11 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 		(void)perform_operation(ops->main_op, ops, (void *)1, src, dst);
 	}
 
-	free_bg_args(args);
+	fops_free_bg_args(args);
 }
 
 int
-put_links(FileView *view, int reg_name, int relative)
+fops_put_links(FileView *view, int reg_name, int relative)
 {
 	const CopyMoveLikeOp op = relative ? CMLO_LINK_REL : CMLO_LINK_ABS;
 	return initiate_put_files(view, -1, op, "Symlinking", reg_name);
@@ -260,9 +260,9 @@ initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
 {
 	reg_t *reg;
 	int i;
-	const char *const dst_dir = get_dst_dir(view, at);
+	const char *const dst_dir = fops_get_dst_dir(view, at);
 
-	if(!can_add_files_to_view(view, -1))
+	if(!fops_view_can_be_extended(view, -1))
 	{
 		return 0;
 	}
@@ -334,7 +334,7 @@ static void
 reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
 		const char dst_dir[])
 {
-	free_ops(put_confirm.ops);
+	fops_free_ops(put_confirm.ops);
 	free(put_confirm.dst_name);
 	free(put_confirm.dst_dir);
 	free(put_confirm.file_order);
@@ -342,7 +342,7 @@ reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
 	put_confirm.dst_dir = strdup(dst_dir);
-	put_confirm.ops = get_ops(cmlo_to_op(main_op), descr, dst_dir, dst_dir);
+	put_confirm.ops = fops_get_ops(cmlo_to_op(main_op), descr, dst_dir, dst_dir);
 }
 
 /* Gets operation kind that corresponds to copy/move-like operation.  Returns
@@ -399,7 +399,7 @@ is_dir_clash(const char src_path[], const char dst_dir[])
 	char dst_path[PATH_MAX];
 
 	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
-			get_dst_name(src_path, is_under_trash(src_path)));
+			fops_get_dst_name(src_path, is_under_trash(src_path)));
 	chosp(dst_path);
 
 	return is_dir(dst_path);
@@ -458,7 +458,8 @@ put_files_i(FileView *view, int start)
 		else if(put_result < 0)
 		{
 			status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
-					(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
+					(put_confirm.processed == 1) ? "" : "s",
+					fops_get_cancellation_suffix());
 			return 1;
 		}
 		++put_confirm.index;
@@ -467,7 +468,7 @@ put_files_i(FileView *view, int start)
 	regs_pack(put_confirm.reg->name);
 
 	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
-			(put_confirm.processed == 1) ? "" : "s", get_cancellation_suffix());
+			(put_confirm.processed == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	ui_view_schedule_reload(put_confirm.view);
 
@@ -525,7 +526,7 @@ put_next(int force)
 	dst_name = put_confirm.dst_name;
 	if(dst_name == NULL)
 	{
-		dst_name = get_dst_name(src_buf, from_trash);
+		dst_name = fops_get_dst_name(src_buf, from_trash);
 	}
 
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", dst_dir, dst_name);
@@ -609,7 +610,8 @@ put_next(int force)
 		op = merge ? OP_COPYF : OP_COPY;
 	}
 
-	progress_msg("Putting files", put_confirm.index, put_confirm.reg->nfiles);
+	fops_progress_msg("Putting files", put_confirm.index,
+			put_confirm.reg->nfiles);
 
 	/* Merging directory on move requires special handling as it can't be done by
 	 * move operation itself. */
@@ -745,7 +747,7 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 		snprintf(src_path, sizeof(src_path), "%s/%s", src, d->d_name);
 		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst, d->d_name);
 
-		if(is_dir_entry(dst_path, d))
+		if(fops_is_dir_entry(dst_path, d))
 		{
 			if(merge_dirs(src_path, dst_path, ops) != 0)
 			{

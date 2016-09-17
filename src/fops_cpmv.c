@@ -55,7 +55,7 @@ static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 		int bg, int cancellable, ops_t *ops);
 
 int
-cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
+fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 		int force)
 {
 	int err;
@@ -93,14 +93,14 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	switch(op)
 	{
 		case CMLO_COPY:
-			ops = get_ops(OP_COPY, "Copying", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), path);
 			break;
 		case CMLO_MOVE:
-			ops = get_ops(OP_MOVE, "Moving", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_MOVE, "Moving", flist_get_dir(view), path);
 			break;
 		case CMLO_LINK_REL:
 		case CMLO_LINK_ABS:
-			ops = get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path);
 			break;
 
 		default:
@@ -110,7 +110,7 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 
 	ui_cancellation_reset();
 
-	nmarked_files = enqueue_marked_files(ops, view, path, 0);
+	nmarked_files = fops_enqueue_marked_files(ops, view, path, 0);
 
 	cmd_group_begin(undo_msg);
 	i = 0;
@@ -143,16 +143,17 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 
 		if(op == CMLO_COPY)
 		{
-			progress_msg("Copying files", i, nmarked_files);
+			fops_progress_msg("Copying files", i, nmarked_files);
 		}
 		else if(op == CMLO_MOVE)
 		{
-			progress_msg("Moving files", i, nmarked_files);
+			fops_progress_msg("Moving files", i, nmarked_files);
 		}
 
 		if(op == CMLO_MOVE)
 		{
-			err = mv_file(entry->name, entry->origin, dst, path, OP_MOVE, 1, ops);
+			err = fops_mv_file(entry->name, entry->origin, dst, path, OP_MOVE, 1,
+					ops);
 			if(err != 0)
 			{
 				view->list_pos = find_file_pos_in_list(view, entry->name);
@@ -176,9 +177,9 @@ cpmv_files(FileView *view, char **list, int nlines, CopyMoveLikeOp op,
 	}
 
 	status_bar_messagef("%d file%s successfully processed%s", ops->succeeded,
-			(ops->succeeded == 1) ? "" : "s", get_cancellation_suffix());
+			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
-	free_ops(ops);
+	fops_free_ops(ops);
 
 	return 1;
 }
@@ -198,7 +199,7 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 }
 
 int
-cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
+fops_cpmv_bg(FileView *view, char *list[], int nlines, int move, int force)
 {
 	int err;
 	size_t i;
@@ -214,13 +215,13 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 			&args->from_file);
 	if(err != 0)
 	{
-		free_bg_args(args);
+		fops_free_bg_args(args);
 		return err > 0;
 	}
 
 	args->list = args->from_file ? list : copy_string_array(list, nlines);
 
-	general_prepare_for_bg_task(view, args);
+	fops_prepare_for_bg_task(view, args);
 
 	args->is_in_trash = malloc(args->sel_list_len);
 	for(i = 0U; i < args->sel_list_len; ++i)
@@ -236,17 +237,17 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 		for(i = 0; i < args->nlines; ++i)
 		{
 			args->list[i] =
-				strdup(get_dst_name(args->sel_list[i], args->is_in_trash[i]));
+				strdup(fops_get_dst_name(args->sel_list[i], args->is_in_trash[i]));
 		}
 	}
 
-	args->ops = get_bg_ops(move ? OP_MOVE : OP_COPY, move ? "moving" : "copying",
-			args->path);
+	args->ops = fops_get_bg_ops(move ? OP_MOVE : OP_COPY,
+			move ? "moving" : "copying", args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
 				args) != 0)
 	{
-		free_bg_args(args);
+		fops_free_bg_args(args);
 
 		show_error_msg("Can't process files",
 				"Failed to initiate background operation");
@@ -270,40 +271,40 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(op == CMLO_MOVE)
 	{
-		if(!can_change_view_files(view))
+		if(!fops_view_can_be_changed(view))
 		{
 			return -1;
 		}
 	}
-	else if(op == CMLO_COPY && !can_read_selected_files(view))
+	else if(op == CMLO_COPY && !fops_can_read_selected_files(view))
 	{
 		return -1;
 	}
 
 	if(*nlines == 1)
 	{
-		if(check_dir_path(other_view, (*list)[0], dst_path, dst_path_len))
+		if(fops_check_dir_path(other_view, (*list)[0], dst_path, dst_path_len))
 		{
 			*nlines = 0;
 		}
 	}
 	else
 	{
-		copy_str(dst_path, dst_path_len, get_dst_dir(other_view, -1));
+		copy_str(dst_path, dst_path_len, fops_get_dst_dir(other_view, -1));
 	}
 
-	if(!can_add_files_to_view(other_view, -1) ||
-			!check_if_dir_writable(DR_DESTINATION, dst_path))
+	if(!fops_view_can_be_extended(other_view, -1) ||
+			!fops_is_dir_writable(DR_DESTINATION, dst_path))
 	{
 		return -1;
 	}
 
-	marked = grab_marked_files(view, &nmarked);
+	marked = fops_grab_marked_files(view, &nmarked);
 
 	*from_file = *nlines < 0;
 	if(*from_file)
 	{
-		*list = edit_list(nmarked, marked, nlines, 1);
+		*list = fops_edit_list(nmarked, marked, nlines, 1);
 		if(*list == NULL)
 		{
 			free_string_array(marked, nmarked);
@@ -312,7 +313,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 	}
 
 	if(*nlines > 0 &&
-			(!is_name_list_ok(nmarked, *nlines, *list, NULL) ||
+			(!fops_is_name_list_ok(nmarked, *nlines, *list, NULL) ||
 			!is_copy_list_ok(dst_path, *nlines, *list, force)))
 	{
 		error = 1;
@@ -358,7 +359,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 			replace_home_part(flist_get_dir(view)));
 	snprintf(undo_msg + strlen(undo_msg), undo_msg_len - strlen(undo_msg),
 			"%s: ", replace_home_part(dst_path));
-	append_marked_files(view, undo_msg, (*nlines > 0) ? *list : NULL);
+	fops_append_marked_files(view, undo_msg, (*nlines > 0) ? *list : NULL);
 
 	if(op == CMLO_MOVE)
 	{
@@ -459,7 +460,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 	size_t i;
 	bg_args_t *const args = arg;
 	ops_t *ops = args->ops;
-	bg_ops_init(ops, bg_op);
+	fops_bg_ops_init(ops, bg_op);
 
 	if(ops->use_system_calls)
 	{
@@ -483,7 +484,7 @@ cpmv_files_in_bg(bg_op_t *bg_op, void *arg)
 		++bg_op->done;
 	}
 
-	free_bg_args(args);
+	fops_free_bg_args(args);
 }
 
 /* Actual implementation of background file copying/moving. */
@@ -500,7 +501,7 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 
 	if(move)
 	{
-		(void)mv_file_f(src, dst_full, OP_MOVE, 1, 0, ops);
+		(void)fops_mv_file_f(src, dst_full, OP_MOVE, 1, 0, ops);
 	}
 	else
 	{
