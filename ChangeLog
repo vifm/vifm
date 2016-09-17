@@ -89,6 +89,9 @@
 	child directories via p, P, :move, :copy, :alink and :rlink.  Thanks to
 	Marius Schmidl.
 
+	Fixed concatenation of error lists without separator (newline).  Thanks to
+	Behrooz.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
