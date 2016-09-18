@@ -52,6 +52,8 @@
 
 	Display path to the conflicting file in conflict resolution dialog.
 
+	Provide better messages on i/o errors with 'syscalls'.  Thanks to Behrooz.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -88,6 +90,9 @@
 	Fixed possible data loss on moving/copying files over their own parent or
 	child directories via p, P, :move, :copy, :alink and :rlink.  Thanks to
 	Marius Schmidl.
+
+	Fixed concatenation of error lists without separator (newline).  Thanks to
+	Behrooz.
 
 0.8.2-beta to 0.8.2
 

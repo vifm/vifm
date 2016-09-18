@@ -153,6 +153,21 @@ TEST(merge_directories_creating_intermediate_parent_dirs_copy)
 	stats_update_shell_type("/bin/sh");
 }
 
+TEST(error_lists_are_joined_with_newline_separator)
+{
+	ops_t *ops;
+
+	cfg.use_system_calls = 1;
+
+	assert_non_null(ops = ops_alloc(OP_MKDIR, 0, "test", ".", "."));
+
+	assert_failure(perform_operation(OP_MKDIR, ops, NULL, ".", NULL));
+	assert_failure(perform_operation(OP_MKDIR, ops, NULL, ".", NULL));
+	assert_non_null(strchr(ops->errors, '\n'));
+
+	ops_free(ops);
+}
+
 static void
 perform_merge(int op)
 {

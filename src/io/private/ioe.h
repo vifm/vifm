@@ -23,8 +23,9 @@
 
 /* ioe - private functions of Input/Output error reporting */
 
-/* Appends new error entry to the elist.  Returns non-zero on error, otherwise
- * zero is returned. */
+/* Appends new error entry to the elist.  Either error_code shouldn't be equal
+ * to IO_ERR_UNKNOWN or msg shouldn't be empty.  Returns non-zero on error,
+ * otherwise zero is returned. */
 int ioe_errlst_append(ioe_errlst_t *elist, const char path[], int error_code,
 		const char msg[]);
 

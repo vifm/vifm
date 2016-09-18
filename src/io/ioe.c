@@ -20,6 +20,7 @@
 
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
+#include <string.h> /* strerror() */
 
 #include "../engine/text_buffer.h"
 #include "../utils/path.h"
@@ -63,7 +64,20 @@ ioe_errlst_to_str(const ioe_errlst_t *elist)
 	for(i = 0U; i < elist->error_count; ++i)
 	{
 		const ioe_err_t *const err = &elist->errors[i];
-		vle_tb_append_linef(str, "%s: %s", replace_home_part(err->path), err->msg);
+		const char *const path = replace_home_part(err->path);
+		if(err->error_code == IO_ERR_UNKNOWN)
+		{
+			vle_tb_append_linef(str, "%s: %s", path, err->msg);
+		}
+		else if(err->msg[0] == '\0')
+		{
+			vle_tb_append_linef(str, "%s: %s", path, strerror(err->error_code));
+		}
+		else
+		{
+			vle_tb_append_linef(str, "%s: %s (%s)", path, err->msg,
+					strerror(err->error_code));
+		}
 	}
 
 	return vle_tb_release(str);

@@ -37,7 +37,7 @@
 #include <stdio.h> /* FILE fpos_t fclose() fgetpos() fread() fseek() fsetpos()
                       fwrite() snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strchr() strerror() */
+#include <string.h> /* strchr() */
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
@@ -76,20 +76,22 @@ iop_mkfile(io_args_t *const args)
 	if(path_exists(path, DEREF))
 	{
 		(void)ioe_errlst_append(&args->result.errors, path, EEXIST,
-				strerror(EEXIST));
+				"Such file already exists");
 		return -1;
 	}
 
 	f = os_fopen(path, "wb");
 	if(f == NULL)
 	{
-		(void)ioe_errlst_append(&args->result.errors, path, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, path, errno,
+				"Failed to open file for writing");
 		return -1;
 	}
 
 	if(fclose(f) != 0)
 	{
-		(void)ioe_errlst_append(&args->result.errors, path, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, path, errno,
+				"Error while closing the file");
 		return -1;
 	}
 
@@ -125,7 +127,7 @@ iop_mkdir(io_args_t *const args)
 			if(os_mkdir(partial_path, S_IRWXU) != 0)
 			{
 				(void)ioe_errlst_append(&args->result.errors, partial_path, errno,
-						strerror(errno));
+						"Failed to create one of intermediate directories");
 
 				free(partial_path);
 				return -1;
@@ -136,7 +138,7 @@ iop_mkdir(io_args_t *const args)
 		if(os_chmod(path, mode) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, partial_path, errno,
-					strerror(errno));
+					"Failed to setup directory permissions");
 			free(partial_path);
 			return 1;
 		}
@@ -148,7 +150,8 @@ iop_mkdir(io_args_t *const args)
 
 	if(os_mkdir(path, mode) != 0)
 	{
-		(void)ioe_errlst_append(&args->result.errors, path, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, path, errno,
+				"Failed to create directory");
 		return 1;
 	}
 	return 0;
@@ -172,7 +175,8 @@ iop_rmfile(io_args_t *const args)
 		result = unlink(path);
 		if(result != 0)
 		{
-			if(sig_err(args, &result, path, errno, strerror(errno)) == IO_ECR_RETRY)
+			if(sig_err(args, &result, path, errno,
+						"Failed to unlink file") == IO_ECR_RETRY)
 			{
 				continue;
 			}
@@ -232,7 +236,8 @@ iop_rmdir(io_args_t *const args)
 		result = rmdir(path);
 		if(result != 0)
 		{
-			if(sig_err(args, &result, path, errno, strerror(errno)) == IO_ECR_RETRY)
+			if(sig_err(args, &result, path, errno,
+						"Failed to remove directory") == IO_ECR_RETRY)
 			{
 				continue;
 			}
@@ -304,7 +309,7 @@ iop_cp(io_args_t *const args)
 		{
 			flags |= COPY_FILE_FAIL_IF_EXISTS;
 		}
-		else if(path_exists(dst, DEREF))
+		else if(path_exists(dst, NODEREF))
 		{
 			/* Ask user whether to overwrite destination file. */
 			if(confirm != NULL && !confirm(args, src, dst))
@@ -379,13 +384,14 @@ iop_cp(io_args_t *const args)
 	if(is_dir(src))
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, EISDIR,
-				strerror(EISDIR));
+				"Target path specifies existing directory");
 		return 1;
 	}
 
 	if(os_stat(src, &st) != 0)
 	{
-		(void)ioe_errlst_append(&args->result.errors, src, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, src, errno,
+				"Failed to stat() source file");
 		return 1;
 	}
 
@@ -404,7 +410,7 @@ iop_cp(io_args_t *const args)
 		if(in == NULL)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					strerror(errno));
+					"Failed to open source file");
 			return 1;
 		}
 	}
@@ -417,7 +423,7 @@ iop_cp(io_args_t *const args)
 	{
 		int ec;
 
-		if(path_exists(dst, DEREF))
+		if(path_exists(dst, NODEREF))
 		{
 			/* Ask user whether to overwrite destination file. */
 			if(confirm != NULL && !confirm(args, src, dst))
@@ -425,7 +431,7 @@ iop_cp(io_args_t *const args)
 				if(in != NULL && fclose(in) != 0)
 				{
 					(void)ioe_errlst_append(&args->result.errors, src, errno,
-							strerror(errno));
+							"Error while closing source file");
 				}
 				return 0;
 			}
@@ -435,11 +441,11 @@ iop_cp(io_args_t *const args)
 		if(ec != 0 && errno != ENOENT)
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, errno,
-					strerror(errno));
+					"Failed to unlink file");
 			if(in != NULL && fclose(in) != 0)
 			{
 				(void)ioe_errlst_append(&args->result.errors, src, errno,
-						strerror(errno));
+						"Error while closing source file");
 			}
 			return ec;
 		}
@@ -449,14 +455,14 @@ iop_cp(io_args_t *const args)
 		 * but this approach has disadvantage of requiring more free space on
 		 * destination file system. */
 	}
-	else if(path_exists(dst, DEREF))
+	else if(path_exists(dst, NODEREF))
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, EEXIST,
-				strerror(EEXIST));
+				"Destination path exists");
 		if(in != NULL && fclose(in) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					strerror(errno));
+					"Error while closing source file");
 		}
 		return 1;
 	}
@@ -468,7 +474,7 @@ iop_cp(io_args_t *const args)
 		if(mkfifo(dst, st.st_mode & 07777) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					strerror(errno));
+					"Failed to create FIFO");
 			return 1;
 		}
 		return 0;
@@ -480,7 +486,7 @@ iop_cp(io_args_t *const args)
 		if(mknod(dst, st.st_mode & (S_IFMT | 07777), st.st_rdev) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					strerror(errno));
+					"Failed to create node");
 			return 1;
 		}
 		return 0;
@@ -490,11 +496,12 @@ iop_cp(io_args_t *const args)
 	out = os_fopen(dst, open_mode);
 	if(out == NULL)
 	{
-		(void)ioe_errlst_append(&args->result.errors, dst, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, dst, errno,
+				"Failed to open destination file");
 		if(fclose(in) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,
-					strerror(errno));
+					"Error while closing source file");
 		}
 		return 1;
 	}
@@ -536,7 +543,7 @@ iop_cp(io_args_t *const args)
 		if(fwrite(&block, 1, nread, out) != nread)
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, errno,
-					strerror(errno));
+					"Write to destination file failed");
 			error = 1;
 			break;
 		}
@@ -545,16 +552,19 @@ iop_cp(io_args_t *const args)
 	}
 	if(!cloned && nread == 0U && !feof(in) && ferror(in))
 	{
-		(void)ioe_errlst_append(&args->result.errors, src, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, src, errno,
+				"Read from destination file failed");
 	}
 
 	if(fclose(in) != 0)
 	{
-		(void)ioe_errlst_append(&args->result.errors, src, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, src, errno,
+				"Error while closing source file");
 	}
 	if(fclose(out) != 0)
 	{
-		(void)ioe_errlst_append(&args->result.errors, dst, errno, strerror(errno));
+		(void)ioe_errlst_append(&args->result.errors, dst, errno,
+				"Error while closing destination file");
 	}
 
 	if(error == 0 && os_lstat(src, &src_st) == 0)
@@ -563,7 +573,7 @@ iop_cp(io_args_t *const args)
 		if(error != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, errno,
-					strerror(errno));
+					"Failed to setup file permissions");
 		}
 	}
 
@@ -658,19 +668,19 @@ iop_ln(io_args_t *const args)
 			if(result != 0)
 			{
 				(void)ioe_errlst_append(&args->result.errors, path, errno,
-						strerror(errno));
+						"Error while creating symbolic link");
 			}
 		}
 		else
 		{
 			(void)ioe_errlst_append(&args->result.errors, target, errno,
-					strerror(errno));
+					"Error while removing existing destination");
 		}
 	}
 	else if(result != 0 && errno != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, errno,
-				strerror(errno));
+				"Error while creating symbolic link");
 	}
 #else
 	char cmd[6 + PATH_MAX*2 + 1];
@@ -680,7 +690,7 @@ iop_ln(io_args_t *const args)
 	if(!overwrite && path_exists(target, DEREF))
 	{
 		(void)ioe_errlst_append(&args->result.errors, target, EEXIST,
-				strerror(EEXIST));
+				"Destination path already exists");
 		return -1;
 	}
 
