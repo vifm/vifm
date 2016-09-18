@@ -18,12 +18,12 @@
 
 #include "variables.h"
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h> /* free() realloc() */
-#include <string.h>
+#include <string.h> /* strcmp() */
 
 #include "../compat/reallocarray.h"
 #include "../utils/env.h"
@@ -58,6 +58,14 @@ typedef enum
 }
 VariableOperation;
 
+/* Description of a builtin variable. */
+typedef struct
+{
+	char *name; /* Name of the variable (including "v:" prefix). */
+	var_t val;  /* Current value of the variable. */
+}
+builtinvar_t;
+
 typedef struct
 {
 	char *name;
@@ -74,6 +82,7 @@ const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 static void init_var(const char *env);
+static void clear_builtinvars(void);
 static int extract_name(const char **in, VariableType *type, size_t buf_len,
 		char buf[]);
 static int extract_op(const char **in, VariableOperation *vo);
@@ -97,6 +106,10 @@ static void clear_record(envvar_t *record);
 static int initialized;
 static envvar_t *vars;
 static size_t nvars;
+/* List of builtin variables. */
+static builtinvar_t *builtin_vars;
+/* Number of builtin variables. */
+static size_t nbuiltins;
 
 void
 init_variables(void)
@@ -105,7 +118,7 @@ init_variables(void)
 	extern char **environ;
 
 	if(nvars > 0)
-		clear_variables();
+		clear_envvars();
 
 	/* Count environment variables. */
 	env_count = 0;
@@ -135,7 +148,7 @@ init_variables(void)
 }
 
 const char *
-local_getenv(const char *envname)
+local_getenv(const char envname[])
 {
 	envvar_t *record = find_record(envname);
 	return (record == NULL || record->removed) ? "" : record->val;
@@ -166,6 +179,30 @@ init_var(const char *env)
 void
 clear_variables(void)
 {
+	assert(initialized);
+
+	clear_builtinvars();
+	clear_envvars();
+}
+
+/* Clears the list of builtin variables. */
+static void
+clear_builtinvars(void)
+{
+	size_t i;
+	for(i = 0U; i < nbuiltins; ++i)
+	{
+		free(builtin_vars[i].name);
+		var_free(builtin_vars[i].val);
+	}
+	nbuiltins = 0U;
+	free(builtin_vars);
+	builtin_vars = NULL;
+}
+
+void
+clear_envvars(void)
+{
 	size_t i;
 	assert(initialized);
 
@@ -192,7 +229,7 @@ clear_variables(void)
 }
 
 int
-let_variables(const char *cmd)
+let_variables(const char cmd[])
 {
 	char name[VAR_NAME_MAX + 1];
 	int error;
@@ -565,7 +602,7 @@ get_record(const char *name)
 	envvar_t *p = NULL;
 	size_t i;
 
-	/* search for existent variable */
+	/* Search for existing variable. */
 	for(i = 0U; i < nvars; ++i)
 	{
 		if(vars[i].name == NULL)
@@ -576,16 +613,16 @@ get_record(const char *name)
 
 	if(p == NULL)
 	{
-		/* try to reallocate list of variables */
-		p = realloc(vars, sizeof(*vars)*(nvars + 1));
+		/* Try to reallocate list of variables. */
+		p = realloc(vars, sizeof(*vars)*(nvars + 1U));
 		if(p == NULL)
 			return NULL;
 		vars = p;
 		p = &vars[nvars];
-		nvars++;
+		++nvars;
 	}
 
-	/* initialize new record */
+	/* Initialize new record. */
 	p->initial = strdup("");
 	p->name = strdup(name);
 	p->val = strdup("");
@@ -600,7 +637,7 @@ get_record(const char *name)
 }
 
 int
-unlet_variables(const char *cmd)
+unlet_variables(const char cmd[])
 {
 	int error = 0;
 	assert(initialized);
@@ -718,7 +755,7 @@ clear_record(envvar_t *record)
 }
 
 void
-complete_variables(const char *cmd, const char **start)
+complete_variables(const char cmd[], const char **start)
 {
 	size_t i;
 	size_t len;
@@ -747,6 +784,70 @@ complete_variables(const char *cmd, const char **start)
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(cmd);
+}
+
+var_t
+getvar(const char varname[])
+{
+	size_t i;
+	for(i = 0U; i < nbuiltins; ++i)
+	{
+		if(strcmp(builtin_vars[i].name, varname) == 0)
+		{
+			return builtin_vars[i].val;
+		}
+	}
+
+	return var_error();
+}
+
+int
+setvar(const char varname[], var_t val)
+{
+	builtinvar_t new_var;
+	size_t i;
+	void *p;
+
+	if(!starts_with_lit(varname, "v:"))
+	{
+		return 1;
+	}
+
+	/* Initialize new variable before doing anything else. */
+	new_var.name = strdup(varname);
+	new_var.val = var_clone(val);
+	if(new_var.name == NULL || new_var.val.type == VTYPE_ERROR)
+	{
+		free(new_var.name);
+		var_free(new_var.val);
+		return 1;
+	}
+
+	/* Search for existing variable. */
+	for(i = 0U; i < nbuiltins; ++i)
+	{
+		if(strcmp(builtin_vars[i].name, varname) == 0)
+		{
+			free(builtin_vars[i].name);
+			var_free(builtin_vars[i].val);
+			builtin_vars[i] = new_var;
+			return 0;
+		}
+	}
+
+	/* Try to reallocate list of variables. */
+	p = realloc(builtin_vars, sizeof(*builtin_vars)*(nbuiltins + 1U));
+	if(p == NULL)
+	{
+		free(new_var.name);
+		var_free(new_var.val);
+		return 1;
+	}
+	builtin_vars = p;
+	builtin_vars[nbuiltins] = new_var;
+	++nbuiltins;
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

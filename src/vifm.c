@@ -516,7 +516,7 @@ vifm_restart(void)
 	bmarks_clear();
 
 	/* Reset variables. */
-	clear_variables();
+	clear_envvars();
 	init_variables();
 	/* This update is needed as clear_variables() will reset $PATH. */
 	update_path_env(1);
