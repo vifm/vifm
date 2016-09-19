@@ -19,6 +19,8 @@
 #ifndef VIFM__ENGINE__VARIABLES_H__
 #define VIFM__ENGINE__VARIABLES_H__
 
+#include "var.h"
+
 /* This module handles :let command */
 
 /* List of valid first characters in the name of an environment variable. */
@@ -27,32 +29,41 @@ extern const char ENV_VAR_NAME_FIRST_CHAR[];
 /* List of valid non-first characters in the name of an environment variable. */
 extern const char ENV_VAR_NAME_CHARS[];
 
-/* Initializes variables module.  Should be called before any of other
- * functions.
- * handler can be NULL
- */
+/* Initializes variables module.  Should be called before any other function.
+ * Builtin variables are not reinitialized. */
 void init_variables(void);
 
 /* Gets cached value of environment variable envname.  Returns empty string if
  * requested variable doesn't exist. */
-const char * local_getenv(const char *envname);
+const char * local_getenv(const char envname[]);
 
-/* Removes all defined variables and resets environment variables to their
- * initial values
- */
+/* Gets variables value by its name.  Returns the value, which is var_error() in
+ * case requested variable doesn't exist. */
+var_t getvar(const char varname[]);
+
+/* Sets/creates builtin variables.  Variable is cloned.  Returns non-zero on
+ * error, otherwise zero is returned. */
+int setvar(const char varname[], var_t var);
+
+/* Removes all variables and resets environment variables to their initial
+ * values.  Doesn't remove builtin variables. */
 void clear_variables(void);
+
+/* Removes all defined environment variables and resets environment variables to
+ * their initial values. */
+void clear_envvars(void);
 
 /* Processes :let command arguments.  Returns non-zero on error, otherwise zero
  * is returned. */
-int let_variables(const char *cmd);
+int let_variables(const char cmd[]);
 
-/* Processes :unlet command arguments
- * Returns non-zero on error
- */
-int unlet_variables(const char *cmd);
+/* Processes :unlet command arguments.  Returns non-zero on error, otherwise
+ * zero is returned. */
+int unlet_variables(const char cmd[]);
 
-/* Performs :let command completion */
-void complete_variables(const char *cmd, const char **start);
+/* Performs :let command completion.  var should point to beginning of a
+ * variable's name.  *start is set to completion insertion position in var. */
+void complete_variables(const char var[], const char **start);
 
 #endif /* VIFM__ENGINE__VARIABLES_H__ */
 

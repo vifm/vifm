@@ -63,7 +63,7 @@ var_t var_error(void);
 /* Constructs variable in convenient way. */
 var_t var_new(VarType type, const var_val_t value);
 
-/* Convenient function to clones a variable. */
+/* Convenience function that clones a variable. */
 var_t var_clone(var_t var);
 
 /* Converts variable to a string.  Returns new string, which should be freed by

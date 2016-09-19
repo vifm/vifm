@@ -15,6 +15,7 @@
 #include "../../src/engine/completion.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/options.h"
+#include "../../src/engine/variables.h"
 #include "../../src/int/path_env.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/utils/env.h"
@@ -527,6 +528,14 @@ TEST(envvars_are_completed_for_edit)
 	env_set("RRRRRARE_VARIABLE2", "2");
 
 	ASSERT_COMPLETION(L"edit $RRRRRARE_VARIA", L"edit $RRRRRARE_VARIABLE1");
+}
+
+TEST(builtinvars_are_completed_for_echo)
+{
+	init_variables();
+	assert_success(setvar("v:test", var_from_bool(1)));
+	ASSERT_COMPLETION(L"echo v:", L"echo v:test");
+	clear_variables();
 }
 
 TEST(select_is_completed)

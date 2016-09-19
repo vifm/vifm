@@ -36,6 +36,10 @@ char ** ipc_list(int *len);
  * one (VIFM).  The callback_func will be called by ipc_check(). */
 void ipc_init(const char name[], ipc_callback callback_func);
 
+/* Retrieves name of the IPC server.  Returns the name or an empty string if IPC
+ * is not available (ipc_enabled() returns zero). */
+const char * ipc_get_name(void);
+
 /* Checks for incoming messages.  Calls callback passed to ipc_init(). */
 void ipc_check(void);
 

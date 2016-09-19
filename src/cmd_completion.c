@@ -145,7 +145,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 
 			complete_real_option_names(start, scope);
 		}
-		else if(dollar == NULL)
+		else if(dollar == NULL && !starts_with_lit(arg, "v:"))
 		{
 			function_complete_name(arg, &start);
 		}

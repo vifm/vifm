@@ -180,6 +180,14 @@ main(int argc, char *argv[])
 	}
 
 	ipc_init(vifm_args.server_name, &parse_received_arguments);
+	/* Export chosen server name to parsing unit. */
+	{
+		var_val_t value = { .string = (char *)ipc_get_name() };
+		var_t var = var_new(VTYPE_STRING, value);
+		setvar("v:servername", var);
+		var_free(var);
+	}
+
 	args_process(&vifm_args, 0);
 
 	init_background();
@@ -516,7 +524,7 @@ vifm_restart(void)
 	bmarks_clear();
 
 	/* Reset variables. */
-	clear_variables();
+	clear_envvars();
 	init_variables();
 	/* This update is needed as clear_variables() will reset $PATH. */
 	update_path_env(1);

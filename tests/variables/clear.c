@@ -48,5 +48,19 @@ TEST(envvar_reset_on_clear)
 	}
 }
 
+TEST(builtinvvar_survive_clear_envvars)
+{
+	assert_success(setvar("v:test", var_from_bool(1)));
+	clear_envvars();
+	assert_true(getvar("v:test").type != VTYPE_ERROR);
+}
+
+TEST(builtinvvar_do_not_survive_clear_variables)
+{
+	assert_success(setvar("v:test", var_from_bool(1)));
+	clear_variables();
+	assert_true(getvar("v:test").type == VTYPE_ERROR);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

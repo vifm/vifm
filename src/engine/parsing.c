@@ -57,8 +57,7 @@
 #include "var.h"
 #include "variables.h"
 
-#define ENVVAR_NAME_LENGTH_MAX 1024
-#define NAME_LENGTH_MAX 256
+#define VAR_NAME_LENGTH_MAX 1024
 #define CMD_LINE_LENGTH_MAX 4096
 
 /* Supported types of tokens. */
@@ -135,6 +134,7 @@ static int parse_singly_quoted_char(const char **in, char buffer[]);
 static var_t parse_doubly_quoted_string(const char **in);
 static int parse_doubly_quoted_char(const char **in, char buffer[]);
 static var_t eval_envvar(const char **in);
+static var_t eval_builtinvar(const char **in);
 static var_t eval_opt(const char **in);
 static expr_t parse_logical_not(const char **in);
 static int parse_sequence(const char **in, const char first[],
@@ -760,8 +760,8 @@ parse_concat_expr(const char **in)
 	return result;
 }
 
-/* term ::= signed_number | number | sqstr | dqstr | envvar | funccall | opt |
- *          logical_not */
+/* term ::= signed_number | number | sqstr | dqstr | envvar | builtinvar |
+ *          funccall | opt | logical_not */
 static expr_t
 parse_term(const char **in)
 {
@@ -800,7 +800,14 @@ parse_term(const char **in)
 		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
 			{
-				result = parse_funccall(in);
+				if(**in == ':')
+				{
+					result.value = eval_builtinvar(in);
+				}
+				else
+				{
+					result = parse_funccall(in);
+				}
 				break;
 			}
 			/* break is omitted intentionally. */
@@ -984,7 +991,7 @@ eval_envvar(const char **in)
 {
 	var_val_t var_val;
 
-	char name[ENVVAR_NAME_LENGTH_MAX];
+	char name[VAR_NAME_LENGTH_MAX];
 	if(!parse_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
 		sizeof(name), name))
 	{
@@ -994,6 +1001,41 @@ eval_envvar(const char **in)
 
 	var_val.const_string = getenv_fu(name);
 	return var_new(VTYPE_STRING, var_val);
+}
+
+/* builtinvar ::= 'v:' varname */
+static var_t
+eval_builtinvar(const char **in)
+{
+	var_t var_value;
+	char name[VAR_NAME_LENGTH_MAX];
+	strcpy(name, "v:");
+
+	if(last_token.c != 'v' || **in != ':')
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return var_false();
+	}
+
+	get_next(in);
+	get_next(in);
+
+	/* XXX: re-using environment variable constants, but could make new ones. */
+	if(!parse_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
+				sizeof(name) - 2U, &name[2]))
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return var_false();
+	}
+
+	var_value = getvar(name);
+	if(var_value.type == VTYPE_ERROR)
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return var_false();
+	}
+
+	return var_clone(var_value);
 }
 
 /* envvar ::= '&' [ 'l:' | 'g:' ] optname */

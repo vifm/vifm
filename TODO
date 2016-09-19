@@ -77,7 +77,6 @@ Possible things to add:
   * Improve sorting (iext; choosing multiple sorting keys in dialog).
     (partially done)
   * Consider escaping of tilde in paths.
-  * Might want to export server name via builtin function.
   * Wrapping of lines in the menus.
   * Something like :g/.../com and :v/.../com in Vim.
   * Don't reread config files on :restart for --no-configs session.

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 09
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3590,6 +3590,7 @@ Expression syntax summary, from least to most significant:
            'string'                string constant, ' is doubled
            &option                 option value
            $VAR                    environment variable
+           v:var                   builtin variable
            function(expr1, ...)    function call
 
 ".." indicates that the operations in this level can be concatenated.
@@ -3749,6 +3750,13 @@ Examples: >
   'This is my $PATH env: ' . $PATH
   'vifmrc at ' . $MYVIFMRC . ' is used.'
 <
+
+builtin variable                               *vifm-expr-variable*
+--------------------
+v:var                 builtin variable
+
+Information exposed by vifm for use in scripting.  Only |vifm-v:servername| at
+the moment.
 
 function call                                  *vifm-expr-function*
 -------------
@@ -4683,7 +4691,12 @@ If there are several running instances, the target can be specified with
     vifm --server-name work --remote ~/work/project
 
 List of names of running instances can be obtained via |vifm---server-list|
-option.
+option.  Name of the current one is available via v:servername.
+
+                                               *vifm-v:servername*
+v:servername                                   *vifm-servername-variable*
+    server name of the running vifm instance.  Empty if client-server feature
+    is disabled.
 
 --------------------------------------------------------------------------------
 *vifm-plugin*
