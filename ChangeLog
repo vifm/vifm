@@ -19,6 +19,10 @@
 	Added %Iu and %IU macros, which are %u and %U equivalent, but work better
 	if external command is interactive and changes terminal state.
 
+	Added v:servername variable, which provides access to server name of the
+	running instance used by --remote feature.  Thanks to Marcin
+	Kurczewski (a.k.a. rr-).
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

@@ -40,6 +40,12 @@ ipc_init(const char name[], ipc_callback callback_func)
 {
 }
 
+const char *
+ipc_get_name(void)
+{
+	return "";
+}
+
 void
 ipc_check(void)
 {
@@ -179,6 +185,12 @@ cleanup_at_exit(void)
 #else
 	CloseHandle(pipe_file);
 #endif
+}
+
+const char *
+ipc_get_name(void)
+{
+	return get_last_path_component(pipe_path) + (sizeof(PREFIX) - 1U);
 }
 
 void

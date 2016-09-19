@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 09, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 19, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4304,6 +4304,7 @@ expr6      number                  number constant
            'string'                string constant, ' is doubled
            &option                 option value
            $VAR                    environment variable
+           v:var                   builtin variable
            function(expr1, ...)    function call
 
 ".." indicates that the operations in this level can be concatenated.
@@ -4518,6 +4519,15 @@ Examples:
   'This is my $PATH env: ' . $PATH
   'vifmrc at ' . $MYVIFMRC . ' is used.'
 .EE
+
+builtin variable
+.br
+--------------------
+.br
+v:var                 builtin variable
+
+Information exposed by vifm for use in scripting.  Only v:servername at the
+moment.
 
 function call
 .br
@@ -5559,6 +5569,12 @@ If there are several running instances, the target can be specified with
 .EE
 
 List of names of running instances can be obtained via \-\-server\-list option.
+Name of the current one is available via v:servername.
+
+.TP
+.BI "v:servername"
+server name of the running vifm instance.  Empty if client-server feature is
+disabled.
 .\" ---------------------------------------------------------------------------
 .SH Plugin
 .\" ---------------------------------------------------------------------------
