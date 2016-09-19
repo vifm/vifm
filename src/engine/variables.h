@@ -61,8 +61,9 @@ int let_variables(const char cmd[]);
  * zero is returned. */
 int unlet_variables(const char cmd[]);
 
-/* Performs :let command completion. */
-void complete_variables(const char cmd[], const char **start);
+/* Performs :let command completion.  var should point to beginning of a
+ * variable's name.  *start is set to completion insertion position in var. */
+void complete_variables(const char var[], const char **start);
 
 #endif /* VIFM__ENGINE__VARIABLES_H__ */
 

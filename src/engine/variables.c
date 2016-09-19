@@ -102,6 +102,8 @@ static char * skip_non_whitespace(const char str[]);
 static envvar_t * find_record(const char *name);
 static void free_record(envvar_t *record);
 static void clear_record(envvar_t *record);
+static void complete_envvars(const char var[], const char **start);
+static void complete_builtinvars(const char var[], const char **start);
 
 static int initialized;
 static envvar_t *vars;
@@ -755,35 +757,74 @@ clear_record(envvar_t *record)
 }
 
 void
-complete_variables(const char cmd[], const char **start)
+complete_variables(const char var[], const char **start)
+{
+	assert(initialized && "Variables unit is not initialized.");
+
+	if(var[0] == '$')
+	{
+		complete_envvars(var, start);
+	}
+	else if(var[0] == 'v' && var[1] == ':')
+	{
+		complete_builtinvars(var, start);
+	}
+	else
+	{
+		*start = var;
+		vle_compl_add_match(var, "");
+	}
+}
+
+/* Completes environment variable name.  var should point to "$...".  *start is
+ * set to completion insertion position in var. */
+static void
+complete_envvars(const char var[], const char **start)
 {
 	size_t i;
 	size_t len;
-	assert(initialized && "Variables unit is not initialized.");
 
-	/* Currently we support only environment variables. */
-	if(*cmd != '$')
-	{
-		*start = cmd;
-		vle_compl_add_match(cmd, "");
-		return;
-	}
-	++cmd;
-	*start = cmd;
+	++var;
+	*start = var;
 
 	/* Add all variables that start with given beginning. */
-	len = strlen(cmd);
+	len = strlen(var);
 	for(i = 0U; i < nvars; ++i)
 	{
 		if(vars[i].name == NULL)
 			continue;
 		if(vars[i].removed)
 			continue;
-		if(strnoscmp(vars[i].name, cmd, len) == 0)
+		if(strnoscmp(vars[i].name, var, len) == 0)
 			vle_compl_add_match(vars[i].name, vars[i].val);
 	}
 	vle_compl_finish_group();
-	vle_compl_add_last_match(cmd);
+	vle_compl_add_last_match(var);
+}
+
+/* Completes builtin variable name.  var should point to "v:...".  *start is
+ * set to completion insertion position in var. */
+static void
+complete_builtinvars(const char var[], const char **start)
+{
+	size_t i;
+	size_t len;
+
+	*start = var;
+
+	/* Add all variables that start with given beginning. */
+	len = strlen(var);
+	for(i = 0U; i < nbuiltins; ++i)
+	{
+		if(strncmp(builtin_vars[i].name, var, len) == 0)
+		{
+			char *const str_val = var_to_string(builtin_vars[i].val);
+			vle_compl_add_match(builtin_vars[i].name, str_val);
+			free(str_val);
+		}
+	}
+	vle_compl_finish_group();
+	vle_compl_add_last_match(var);
 }
 
 var_t
