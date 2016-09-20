@@ -27,7 +27,6 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
-#include "../ui/ui.h"
 #include "../status.h"
 
 /* Type of operating environment in which the application is running. */
@@ -37,6 +36,9 @@ typedef enum
 	ET_WIN,  /* Runs on Windows. */
 }
 EnvType;
+
+/* Forward declaration. */
+struct dir_entry_t;
 
 /* Callback for process_cmd_output() function. */
 typedef void (*cmd_output_handler)(const char line[], void *arg);
@@ -211,12 +213,12 @@ void update_terminal_settings(void);
 
 /* Fills the buffer with string representation of owner user for the entry.  The
  * as_num flag forces formatting as integer. */
-void get_uid_string(const dir_entry_t *entry, int as_num, size_t buf_len,
+void get_uid_string(const struct dir_entry_t *entry, int as_num, size_t buf_len,
 		char buf[]);
 
 /* Fills the buffer with string representation of owner group for the entry.
  * The as_num flag forces formatting as integer. */
-void get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len,
+void get_gid_string(const struct dir_entry_t *entry, int as_num, size_t buf_len,
 		char buf[]);
 
 /* Reopens real terminal and binds it to stdout.  Returns NULL on error (message

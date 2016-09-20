@@ -153,6 +153,7 @@ typedef struct
 }
 history_t;
 
+/* Description of a single directory entry. */
 typedef struct dir_entry_t
 {
 	char *name;
