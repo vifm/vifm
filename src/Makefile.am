@@ -117,6 +117,7 @@ vifm_SOURCES = \
 	io/ionotif.h \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
+	io/private/ioc.c io/private/ioc.h \
 	io/private/ioe.c io/private/ioe.h \
 	io/private/ioeta.c io/private/ioeta.h \
 	io/private/ionotif.c io/private/ionotif.h \

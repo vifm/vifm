@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 16 September, 2016
+Updated: 20 September, 2016
 Version: 0.8.2
 
 Brief Description
@@ -100,6 +100,7 @@ Package content
     |  |  |
     |  |  |-- private/ - internal part of i/o
     |  |  |  |
+    |  |  |  |-- ioc.c - implementation of common i/o routines
     |  |  |  |-- ioeta.c - internal part of i/o estimations
     |  |  |  |-- ionotif.c - internal part of i/o notifications
     |  |  |  `-- traverser.c - file system traversing routine

@@ -117,13 +117,14 @@ static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
 static int ops_uses_syscalls(const ops_t *ops);
 static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
-		io_args_t *const args);
+		io_args_t *const args, int cancellable);
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
 static IoErrCbResult dispatch_error(io_args_t *args, const ioe_err_t *err);
 static char prompt_user(const io_args_t *args, const char title[],
 		const char msg[], const response_variant variants[]);
+static int ui_cancellation_hook(void *arg);
 
 /* List of functions that implement operations. */
 static op_func op_funcs[] = {
@@ -392,10 +393,8 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 
 	io_args_t args = {
 		.arg1.path = src,
-
-		.cancellable = data == NULL,
 	};
-	return exec_io_op(ops, &ior_rm, &args);
+	return exec_io_op(ops, &ior_rm, &args, data == NULL);
 }
 
 /* OP_COPY operation handler.  Copies file/directory without overwriting
@@ -497,10 +496,8 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		.arg2.dst = dst,
 		.arg3.crs = ca_to_crs(conflict_action),
 		.arg4.fast_file_cloning = fast_file_cloning,
-
-		.cancellable = data == NULL,
 	};
-	return exec_io_op(ops, &ior_cp, &args);
+	return exec_io_op(ops, &ior_cp, &args, data == NULL);
 }
 
 /* OP_MOVE operation handler.  Moves file/directory without overwriting
@@ -600,10 +597,8 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 			.arg3.crs = ca_to_crs(conflict_action),
 			/* It's safe to always use fast file cloning on moving files. */
 			.arg4.fast_file_cloning = 1,
-
-			.cancellable = data == NULL,
 		};
-		result = exec_io_op(ops, &ior_mv, &args);
+		result = exec_io_op(ops, &ior_mv, &args, data == NULL);
 	}
 
 	if(result == 0)
@@ -790,7 +785,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 		.arg2.target = dst,
 		.arg3.crs = IO_CRS_REPLACE_FILES,
 	};
-	return exec_io_op(ops, &iop_ln, &args);
+	return exec_io_op(ops, &iop_ln, &args, 0);
 }
 
 static int
@@ -847,7 +842,7 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 		.arg2.process_parents = data != NULL,
 		.arg3.mode = 0755,
 	};
-	return exec_io_op(ops, &iop_mkdir, &args);
+	return exec_io_op(ops, &iop_mkdir, &args, 0);
 }
 
 static int
@@ -875,7 +870,7 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 	io_args_t args = {
 		.arg1.path = src,
 	};
-	return exec_io_op(ops, &iop_rmdir, &args);
+	return exec_io_op(ops, &iop_rmdir, &args, 0);
 }
 
 static int
@@ -912,7 +907,7 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 	io_args_t args = {
 		.arg1.path = src,
 	};
-	return exec_io_op(ops, &iop_mkfile, &args);
+	return exec_io_op(ops, &iop_mkfile, &args, 0);
 }
 
 /* Checks whether specific operation should use system calls.  Returns non-zero
@@ -926,7 +921,8 @@ ops_uses_syscalls(const ops_t *ops)
 /* Executes i/o operation with some predefined pre/post actions.  Returns exit
  * code of i/o operation. */
 static int
-exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
+exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args,
+		int cancellable)
 {
 	int result;
 
@@ -943,16 +939,17 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args)
 		ioe_errlst_init(&args->result.errors);
 	}
 
-	if(args->cancellable)
+	if(cancellable)
 	{
 		ui_cancellation_enable();
+		args->cancellation.hook = &ui_cancellation_hook;
 	}
 
 	curr_ops = ops;
 	result = func(args);
 	curr_ops = NULL;
 
-	if(args->cancellable)
+	if(cancellable)
 	{
 		ui_cancellation_disable();
 	}
@@ -1099,17 +1096,24 @@ prompt_user(const io_args_t *args, const char title[], const char msg[],
 
 	/* Active cancellation conflicts with input processing by putting terminal in
 	 * a cooked mode. */
-	if(args->cancellable)
+	if(args->cancellation.hook != NULL)
 	{
 		raw();
 	}
 	response = prompt_msg_custom(title, msg, variants);
-	if(args->cancellable)
+	if(args->cancellation.hook != NULL)
 	{
 		noraw();
 	}
 
 	return response;
+}
+
+/* Implementation of cancellation hook for I/O unit. */
+static int
+ui_cancellation_hook(void *arg)
+{
+	return ui_cancellation_requested();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

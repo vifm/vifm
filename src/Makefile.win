@@ -47,8 +47,8 @@ engine := $(addprefix engine/, $(engine))
 int := file_magic.c fuse.c path_env.c term_title.c vim.c
 int := $(addprefix int/, $(int))
 
-io := private/ioe.c private/ioeta.c private/ionotif.c private/traverser.c
-io += ioe.c ioeta.c iop.c ior.c
+io := private/ioc.c private/ioe.c private/ioeta.c private/ionotif.c
+io += private/traverser.c ioe.c ioeta.c iop.c ior.c
 io := $(addprefix io/, $(io))
 
 menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c colorscheme_menu.c \

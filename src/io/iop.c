@@ -41,7 +41,6 @@
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
-#include "../ui/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -49,7 +48,7 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
-#include "../background.h"
+#include "private/ioc.h"
 #include "private/ioe.h"
 #include "private/ioeta.h"
 #include "ioc.h"
@@ -283,7 +282,6 @@ iop_cp(io_args_t *const args)
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
 	const io_confirm confirm = args->confirm;
-	const int cancellable = args->cancellable;
 	struct stat st;
 
 	char block[BLOCK_SIZE];
@@ -357,7 +355,7 @@ iop_cp(io_args_t *const args)
 			.arg2.target = dst,
 			.arg3.crs = crs,
 
-			.cancellable = cancellable,
+			.cancellation = args->cancellation,
 
 			.result = args->result,
 		};
@@ -534,7 +532,7 @@ iop_cp(io_args_t *const args)
 
 	while(!cloned && (nread = fread(&block, 1, sizeof(block), in)) != 0U)
 	{
-		if(cancellable && ui_cancellation_requested())
+		if(io_cancelled(args))
 		{
 			error = 1;
 			break;
@@ -629,12 +627,7 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 
 	last_size = transferred.QuadPart;
 
-	if(args->cancellable && ui_cancellation_requested())
-	{
-		return PROGRESS_CANCEL;
-	}
-
-	return PROGRESS_CONTINUE;
+	return io_cancelled(args) ? PROGRESS_CANCEL : PROGRESS_CONTINUE;
 }
 
 #endif

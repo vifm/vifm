@@ -52,6 +52,10 @@ typedef struct io_args_t io_args_t;
  * positive response and zero otherwise. */
 typedef int (*io_confirm)(io_args_t *args, const char src[], const char dst[]);
 
+/* Type for hook responsible for querying cancellation status.  Should return
+ * non-zero if operation is to be cancelled and zero otherwise. */
+typedef int (*io_cancellation_hook)(void *arg);
+
 /* Type of I/O operation result. */
 typedef struct
 {
@@ -63,6 +67,14 @@ typedef struct
 	ioe_errlst_t errors;
 }
 io_result_t;
+
+/* Cancellation settings for I/O operations. */
+typedef struct
+{
+	io_cancellation_hook hook; /* Hook to query cancellation state. */
+	void *arg;                 /* Parameter for the hook. */
+}
+io_cancellation_t;
 
 struct io_args_t
 {
@@ -103,9 +115,8 @@ struct io_args_t
 	}
 	arg4;
 
-	/* Whether this operation should expect cancellation requests from the
-	 * outside. */
-	int cancellable;
+	/* Provides means for cancellation checking. */
+	io_cancellation_t cancellation;
 
 	/* File overwrite confirmation callback.  Set to NULL to silently
 	 * overwrite. */
