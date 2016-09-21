@@ -21,7 +21,12 @@
 int
 io_cancelled(const io_args_t *args)
 {
-	const io_cancellation_t *const info = &args->cancellation;
+	return cancelled(&args->cancellation);
+}
+
+int
+cancelled(const io_cancellation_t *info)
+{
 	return info->hook != NULL && info->hook(info->arg);
 }
 

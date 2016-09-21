@@ -21,9 +21,14 @@
 
 #include "../ioc.h"
 
-/* Checks whether given I/O operation was cancelled (uses hook provided in
- * operation arguments). */
+/* Convenience function that checks whether given I/O operation was cancelled
+ * (uses hook provided in operation arguments).  Returns non-zero if so,
+ * otherwise zero is returned. */
 int io_cancelled(const io_args_t *args);
+
+/* Checks whether operation was cancelled via cancellation hook.  Returns
+ * non-zero if so, otherwise zero is returned.  */
+int cancelled(const io_cancellation_t *info);
 
 #endif /* VIFM__IO__PRIVATE__IOC_H__ */
 

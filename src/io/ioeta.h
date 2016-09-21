@@ -65,11 +65,14 @@ typedef struct ioeta_estim_t
 
 	/* Custom parameter for notification callbacks. */
 	void *param;
+
+	/* Provides means for cancellation checking. */
+	io_cancellation_t cancellation;
 }
 ioeta_estim_t;
 
 /* Allocates and initializes new ioeta_estim_t. */
-ioeta_estim_t * ioeta_alloc(void *param);
+ioeta_estim_t * ioeta_alloc(void *param, io_cancellation_t cancellation);
 
 /* Frees ioeta_estim_t.  The estim can be NULL. */
 void ioeta_free(ioeta_estim_t *estim);
