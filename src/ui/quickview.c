@@ -93,7 +93,6 @@ static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static void write_message(const char msg[]);
 static void cleanup_for_text(void);
 static char * get_viewer_command(const char viewer[]);
-static char * get_typed_fname(const char path[]);
 
 void
 toggle_quick_view(void)
@@ -678,19 +677,12 @@ qv_cleanup(FileView *view, const char cmd[])
 const char *
 qv_get_viewer(const char path[])
 {
-	char *const typed_fname = get_typed_fname(path);
+	char *const typed_fname = is_dir(path)
+	                        ? format_str("%s/", path)
+	                        : strdup(path);
 	const char *const viewer = ft_get_viewer(typed_fname);
 	free(typed_fname);
 	return viewer;
-}
-
-/* Gets typed filename (not path, just name).  Allocates memory, that should be
- * freed by the caller. */
-static char *
-get_typed_fname(const char path[])
-{
-	const char *const last_part = get_last_path_component(path);
-	return is_dir(path) ? format_str("%s/", last_part) : strdup(last_part);
 }
 
 void

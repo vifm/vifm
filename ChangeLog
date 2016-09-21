@@ -104,6 +104,9 @@
 	Fixed buffer overflow on obtaining file mime-type.  Thanks to Abdó
 	Roig-Maranges (a.k.a. aroig).
 
+	Fixed previewing symbolic links, which not always were resolved to their
+	target (even reachable one).  Thanks to Abdó Roig-Maranges (a.k.a. aroig).
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
