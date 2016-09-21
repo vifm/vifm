@@ -22,9 +22,13 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 
+#include "ioc.h"
+
 /* ioeta - Input/Output estimation */
 
-typedef struct
+/* Set of data describing estimation process and state.  Managed by ioeta_*
+ * functions. */
+typedef struct ioeta_estim_t
 {
 	/* Total number of items to process (T). */
 	size_t total_items;

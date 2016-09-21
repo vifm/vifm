@@ -22,7 +22,6 @@
 #include <sys/types.h> /* gid_t mode_t uid_t */
 
 #include "ioe.h"
-#include "ioeta.h"
 
 /* ioc - I/O common - Input/Output common */
 
@@ -123,7 +122,7 @@ struct io_args_t
 	io_confirm confirm;
 
 	/* Set to NULL to do not use estimates. */
-	ioeta_estim_t *estim;
+	struct ioeta_estim_t *estim;
 
 	/* Output of the operation after it finishes. */
 	io_result_t result;
