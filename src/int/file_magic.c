@@ -31,7 +31,6 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* popen() */
-#include <string.h> /* strcpy() */
 
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -41,8 +40,8 @@
 
 static assoc_records_t handlers;
 
-static int get_gtk_mimetype(const char filename[], char buf[]);
-static int get_magic_mimetype(const char filename[], char buf[]);
+static int get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz);
+static int get_magic_mimetype(const char filename[], char buf[], size_t buf_sz);
 static int get_file_mimetype(const char filename[], char buf[], size_t buf_sz);
 static assoc_records_t get_handlers(const char mime_type[]);
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
@@ -61,9 +60,9 @@ get_mimetype(const char file[])
 {
 	static char mimetype[128];
 
-	if(get_gtk_mimetype(file, mimetype) == -1)
+	if(get_gtk_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 	{
-		if(get_magic_mimetype(file, mimetype) == -1)
+		if(get_magic_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 		{
 			if(get_file_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 			{
@@ -76,7 +75,7 @@ get_mimetype(const char file[])
 }
 
 static int
-get_gtk_mimetype(const char filename[], char buf[])
+get_gtk_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
 #ifdef HAVE_LIBGTK
 	GFile *file;
@@ -96,7 +95,7 @@ get_gtk_mimetype(const char filename[], char buf[])
 		return -1;
 	}
 
-	strcpy(buf, g_file_info_get_content_type(info));
+	copy_str(buf, buf_sz, g_file_info_get_content_type(info));
 	g_object_unref(info);
 	g_object_unref(file);
 	return 0;
@@ -106,7 +105,7 @@ get_gtk_mimetype(const char filename[], char buf[])
 }
 
 static int
-get_magic_mimetype(const char filename[], char buf[])
+get_magic_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
 #ifdef HAVE_LIBMAGIC
 	magic_t magic;
@@ -127,10 +126,11 @@ get_magic_mimetype(const char filename[], char buf[])
 	descr = magic_file(magic, filename);
 	if(descr == NULL)
 	{
+		magic_close(magic);
 		return -1;
 	}
 
-	strcpy(buf, descr);
+	copy_str(buf, buf_sz, descr);
 #if !HAVE_DECL_MAGIC_MIME_TYPE
 	break_atr(buf, ';');
 #endif
