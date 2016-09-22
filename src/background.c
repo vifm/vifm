@@ -354,7 +354,7 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 			status = -1;
 			break;
 		}
-		process_cancel_request(pid);
+		process_cancel_request(pid, &ui_cancellation_info);
 	}
 
 	if(cancellable)
@@ -431,7 +431,7 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 			ui_cancellation_enable();
 		}
 
-		wait_for_data_from(pid, NULL, error_pipe[0]);
+		wait_for_data_from(pid, NULL, error_pipe[0], &ui_cancellation_info);
 
 		buf[0] = '\0';
 		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
@@ -445,7 +445,7 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 				strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
 			}
 
-			wait_for_data_from(pid, NULL, error_pipe[0]);
+			wait_for_data_from(pid, NULL, error_pipe[0], &ui_cancellation_info);
 		}
 		close(error_pipe[0]);
 

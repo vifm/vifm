@@ -110,7 +110,8 @@ recover_after_shellout(void)
 }
 
 void
-wait_for_data_from(pid_t pid, FILE *f, int fd)
+wait_for_data_from(pid_t pid, FILE *f, int fd,
+		const struct cancellation_t *cancellation)
 {
 	/* Do nothing.  No need to wait for anything on this platform. */
 }

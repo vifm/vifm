@@ -164,10 +164,13 @@ int get_mount_point(const char path[], size_t buf_len, char buf[]);
  * otherwise zero is returned. */
 int traverse_mount_points(mptraverser client, void *arg);
 
+struct cancellation_t;
+
 /* Waits until non-blocking read operation is available for given file
  * descriptor (uses f if it's not NULL, otherwise fd is used) that is associated
  * with a process.  Process operation cancellation requests from a user. */
-void wait_for_data_from(pid_t pid, FILE *f, int fd);
+void wait_for_data_from(pid_t pid, FILE *f, int fd,
+		const struct cancellation_t *cancellation);
 
 /* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
  * is returned. */
