@@ -85,7 +85,7 @@ received_sigchld(void)
 	{
 		if(WIFEXITED(status))
 		{
-			add_finished_job(pid, WEXITSTATUS(status));
+			bg_process_finished_cb(pid, WEXITSTATUS(status));
 		}
 	}
 }

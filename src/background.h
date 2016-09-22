@@ -30,7 +30,7 @@
 
 #include "compat/pthread.h"
 
-/* Special value of total amount of work in job_t structure to indicate
+/* Special value of total amount of work in bg_job_t structure to indicate
  * undefined total number of countable operations. */
 #define BG_UNDEFINED_TOTAL (-1)
 
@@ -58,7 +58,7 @@ typedef struct bg_op_t
 bg_op_t;
 
 /* Description of background activity. */
-typedef struct job_t
+typedef struct bg_job_t
 {
 	BgJobType type; /* Type of background job. */
 	pid_t pid;
@@ -82,20 +82,22 @@ typedef struct job_t
 #else
 	HANDLE hprocess;
 #endif
-	struct job_t *next;
+	struct bg_job_t *next;
 }
-job_t;
+bg_job_t;
 
 /* Background task entry point function signature. */
 typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 
-extern struct job_t *jobs;
+/* List of background jobs.  Use bg_jobs_freeze() before accessing it. */
+extern struct bg_job_t *bg_jobs;
 
 /* Prepare background unit for the work. */
-void init_background(void);
+void bg_init(void);
 
-/* Returns zero on success, otherwise non-zero is returned. */
-int start_background_job(const char *cmd, int skip_errors);
+/* Creates background job running external command.  Returns zero on success,
+ * otherwise non-zero is returned. */
+int bg_run_external(const char cmd[], int skip_errors);
 
 struct cancellation_t;
 
@@ -103,25 +105,28 @@ struct cancellation_t;
  * error uses exit status only.  cancelled can be NULL when operations is not
  * cancellable.  Returns status on success, otherwise -1 is returned.  Sets
  * correct value of *cancelled even on error. */
-int background_and_wait_for_status(char cmd[],
+int bg_and_wait_for_status(char cmd[],
 		const struct cancellation_t *cancellation, int *cancelled);
 
 /* Runs command in background and displays its errors to a user.  To determine
  * an error uses both stderr stream and exit status.  Returns zero on success,
  * otherwise non-zero is returned. */
-int background_and_wait_for_errors(char cmd[],
+int bg_and_wait_for_errors(char cmd[],
 		const struct cancellation_t *cancellation);
 
 /* Runs command in a background and redirects its stdout and stderr streams to
  * file streams which are set.  Returns id of background process ((pid_t)0 for
  * non-*nix like systems) or (pid_t)-1 on error. */
-pid_t background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
+pid_t bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err);
 
-/* Mark background job specified by its process id, which is finished with the
- * exit_code. */
-void add_finished_job(pid_t pid, int exit_code);
+/* Callback-like function that marks background job specified by its process id,
+ * which is finished with the exit_code. */
+void bg_process_finished_cb(pid_t pid, int exit_code);
 
-void check_background_jobs(void);
+/* Checks status of background jobs (their streams and state).  Removes finished
+ * ones from the list, displays any pending error messages, corrects job bar if
+ * needed. */
+void bg_check(void);
 
 /* Starts new background task, which is run in a separate thread.  Returns zero
  * on success, otherwise non-zero is returned. */
@@ -132,8 +137,8 @@ int bg_execute(const char descr[], const char op_descr[], int total,
  * by vifm) running in background. */
 int bg_has_active_jobs(void);
 
-/* Performs preparations necessary for safe access of the jobs list.  Effect of
- * calling this function must be reverted by calling bg_jobs_unfreeze().
+/* Performs preparations necessary for safe access of the bg_jobs list.  Effect
+ * of calling this function must be reverted by calling bg_jobs_unfreeze().
  * Returns zero on success, otherwise non-zero is returned. */
 int bg_jobs_freeze(void);
 
@@ -142,18 +147,18 @@ void bg_jobs_unfreeze(void);
 
 /* Cancels the job.  Returns non-zero if job wasn't cancelled before, but is
  * after this call, otherwise zero is returned. */
-int bg_job_cancel(job_t *job);
+int bg_job_cancel(bg_job_t *job);
 
 /* Checks whether the job has been cancelled.  Returns non-zero if so, otherwise
  * zero is returned. */
-int bg_job_cancelled(job_t *job);
+int bg_job_cancelled(bg_job_t *job);
 
 /* Temporary locks bg_op_t structure to ensure that it's not modified by
  * anyone during reading/updating its fields.  The structure must be part of
- * job_t. */
+ * bg_job_t. */
 void bg_op_lock(bg_op_t *bg_op);
 
-/* Unlocks bg_op_t structure.  The structure must be part of job_t. */
+/* Unlocks bg_op_t structure.  The structure must be part of bg_job_t. */
 void bg_op_unlock(bg_op_t *bg_op);
 
 /* Callback-like function to report that state of background operation

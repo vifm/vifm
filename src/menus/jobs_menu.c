@@ -34,12 +34,12 @@
 
 static int execute_jobs_cb(FileView *view, menu_info *m);
 static KHandlerResponse jobs_khandler(menu_info *m, const wchar_t keys[]);
-static int cancel_job(menu_info *m, job_t *job);
+static int cancel_job(menu_info *m, bg_job_t *job);
 
 int
 show_jobs_menu(FileView *view)
 {
-	job_t *p;
+	bg_job_t *p;
 	int i;
 
 	static menu_info m;
@@ -48,11 +48,11 @@ show_jobs_menu(FileView *view)
 	m.execute_handler = &execute_jobs_cb;
 	m.key_handler = &jobs_khandler;
 
-	check_background_jobs();
+	bg_check();
 
 	bg_jobs_freeze();
 
-	p = jobs;
+	p = bg_jobs;
 
 	i = 0;
 	while(p != NULL)
@@ -126,14 +126,14 @@ jobs_khandler(menu_info *m, const wchar_t keys[])
 /* Cancels the job if it's still running.  Returns non-zero if operation was
  * cancelled, otherwise it's already finished and zero is returned. */
 static int
-cancel_job(menu_info *m, job_t *job)
+cancel_job(menu_info *m, bg_job_t *job)
 {
-	job_t *p;
+	bg_job_t *p;
 
 	/* We have to make sure the job pointer is still valid and the job is
 	 * running. */
 	bg_jobs_freeze();
-	for(p = jobs; p != NULL; p = p->next)
+	for(p = bg_jobs; p != NULL; p = p->next)
 	{
 		if(p == job && p->running)
 		{

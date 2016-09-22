@@ -215,7 +215,7 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 {
 	if(bg)
 	{
-		return start_background_job(cmd, 0);
+		return bg_run_external(cmd, 0);
 	}
 
 	return shellout(cmd, PAUSE_ON_ERROR, use_term_multiplexer);

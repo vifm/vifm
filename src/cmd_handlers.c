@@ -873,7 +873,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->bg)
 	{
-		start_background_job(com, 0);
+		bg_run_external(com, 0);
 	}
 	else
 	{
@@ -2366,7 +2366,7 @@ help_cmd(const cmd_info_t *cmd_info)
 
 	if(bg)
 	{
-		start_background_job(cmd, 0);
+		bg_run_external(cmd, 0);
 	}
 	else
 	{
@@ -4420,7 +4420,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 		if(*com_beginning != '\0' && bg)
 		{
-			start_background_job(com_beginning, 0);
+			bg_run_external(com_beginning, 0);
 		}
 		else if(strlen(com_beginning) > 0)
 		{
@@ -4443,7 +4443,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(bg)
 	{
-		start_background_job(expanded_com, 0);
+		bg_run_external(expanded_com, 0);
 	}
 	else
 	{

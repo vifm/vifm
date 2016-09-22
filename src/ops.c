@@ -1139,11 +1139,9 @@ ui_cancellation_hook(void *arg)
 static int
 run_operation_command(ops_t *ops, char cmd[], int cancellable)
 {
-	int result;
-
 	if(!cancellable)
 	{
-		return background_and_wait_for_errors(cmd, &no_cancellation);
+		return bg_and_wait_for_errors(cmd, &no_cancellation);
 	}
 
 	if(ops != NULL && ops->bg)
@@ -1152,7 +1150,7 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 			.arg = ops->bg_op,
 			.hook = &bg_cancellation_hook,
 		};
-		return background_and_wait_for_errors(cmd, &bg_cancellation_info);
+		return bg_and_wait_for_errors(cmd, &bg_cancellation_info);
 	}
 	else
 	{
@@ -1160,7 +1158,7 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 		/* ui_cancellation_reset() should be called outside this unit to allow
 		 * bulking several operations together. */
 		ui_cancellation_enable();
-		result = background_and_wait_for_errors(cmd, &ui_cancellation_info);
+		result = bg_and_wait_for_errors(cmd, &ui_cancellation_info);
 		ui_cancellation_disable();
 		return result;
 	}

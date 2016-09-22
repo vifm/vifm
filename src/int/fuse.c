@@ -230,14 +230,13 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
 	if(foreground)
 	{
-		status = background_and_wait_for_status(buf, &no_cancellation, &cancelled);
+		status = bg_and_wait_for_status(buf, &no_cancellation, &cancelled);
 	}
 	else
 	{
 		ui_cancellation_reset();
 		ui_cancellation_enable();
-		status = background_and_wait_for_status(buf, &ui_cancellation_info,
-				&cancelled);
+		status = bg_and_wait_for_status(buf, &ui_cancellation_info, &cancelled);
 		ui_cancellation_disable();
 	}
 
@@ -559,7 +558,7 @@ fuse_try_unmount(FileView *view)
 	}
 
 	status_bar_message("FUSE unmounting selected file, please stand by..");
-	status = background_and_wait_for_status(buf, &no_cancellation, NULL);
+	status = bg_and_wait_for_status(buf, &no_cancellation, NULL);
 	ui_sb_clear();
 	/* check child status */
 	if(!WIFEXITED(status) || WEXITSTATUS(status))

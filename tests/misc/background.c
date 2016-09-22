@@ -10,7 +10,7 @@
 TEST(background_redirects_streams_properly, IF(not_windows))
 {
 	update_string(&cfg.shell, "/bin/sh");
-	assert_success(background_and_wait_for_errors("echo a", &no_cancellation));
+	assert_success(bg_and_wait_for_errors("echo a", &no_cancellation));
 	update_string(&cfg.shell, NULL);
 }
 
