@@ -91,6 +91,12 @@ remove_current_item(menu_info *m)
 		remove_from_string_array(m->data, m->len, m->pos);
 	}
 
+	if(m->void_data != NULL)
+	{
+		memmove(m->void_data + m->pos, m->void_data + m->pos + 1,
+				sizeof(*m->void_data)*((m->len - 1) - m->pos));
+	}
+
 	if(m->matches != NULL)
 	{
 		if(m->matches[m->pos][0] >= 0)
@@ -130,6 +136,7 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->title = title;
 	m->items = NULL;
 	m->data = NULL;
+	m->void_data = NULL;
 	m->key_handler = NULL;
 	m->extra_data = 0;
 	m->execute_handler = NULL;
@@ -140,13 +147,14 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 void
 reset_popup_menu(menu_info *m)
 {
-	/* Menu elements don't always have data associated with them.  That's why we
-	 * need this check. */
+	/* Menu elements don't always have data associated with them, but len isn't
+	 * zero.  That's why we need this check. */
 	if(m->data != NULL)
 	{
 		free_string_array(m->data, m->len);
 	}
 	free_string_array(m->items, m->len);
+	free(m->void_data);
 	free(m->regexp);
 	free(m->matches);
 	free(m->title);
@@ -554,7 +562,8 @@ output_handler(const char line[], void *arg)
 }
 
 /* Replaces *str with a copy of the with string extended by the suffix.  *str
- * can be NULL in which case it's treated as empty string. equal to the with (then function does nothing).  Returns non-zero if memory allocation
+ * can be NULL in which case it's treated as empty string, equal to the with
+ * (then function does nothing).  Returns non-zero if memory allocation
  * failed. */
 static void
 append_to_string(char **str, const char suffix[])

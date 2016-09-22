@@ -36,6 +36,9 @@ KHandlerResponse;
 
 typedef struct menu_info
 {
+	/* TODO: consider using single array of menu entries instead of several arrays
+	 *       of different kinds. */
+
 	int top;
 	int current; /* Cursor position on the menu_win. */
 	int len;
@@ -54,9 +57,11 @@ typedef struct menu_info
 	char *title;
 	/* Contains titles of all menu items. */
 	char **items;
-	/* Contains additional data, associated with each of menu items, can be
+	/* Contains additional string data, associated with each of menu items, can be
 	 * NULL. */
 	char **data;
+	/* Contains additional pointers for each menu entry, can be NULL. */
+	void **void_data;
 	/* Menu-specific shortcut handler, can be NULL.  Returns code that specifies
 	 * both taken actions and what should be done next. */
 	KHandlerResponse (*key_handler)(struct menu_info *m, const wchar_t keys[]);
