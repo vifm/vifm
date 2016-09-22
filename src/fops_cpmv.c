@@ -501,11 +501,11 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 
 	if(move)
 	{
-		(void)fops_mv_file_f(src, dst_full, OP_MOVE, 1, 0, ops);
+		(void)fops_mv_file_f(src, dst_full, OP_MOVE, 1, 1, ops);
 	}
 	else
 	{
-		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 0, ops);
+		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 1, ops);
 	}
 }
 

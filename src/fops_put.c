@@ -239,7 +239,7 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 		}
 
 		bg_op_set_descr(bg_op, src);
-		(void)perform_operation(ops->main_op, ops, (void *)1, src, dst);
+		(void)perform_operation(ops->main_op, ops, NULL, src, dst);
 	}
 
 	fops_free_bg_args(args);

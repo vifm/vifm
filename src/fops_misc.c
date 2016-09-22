@@ -30,6 +30,7 @@
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
+#include "utils/cancellation.h"
 #include "utils/fs.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -68,7 +69,8 @@ static void go_to_first_file(FileView *view, char *names[], int count);
 static void update_dir_entry_size(const FileView *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(bg_op_t *bg_op, void *arg);
-static void dir_size(char path[], int force);
+static void dir_size(bg_op_t *bg_op, char path[], int force);
+static int bg_cancellation_hook(void *arg);
 static void redraw_after_path_change(FileView *view, const char path[]);
 #ifndef _WIN32
 static void change_owner_cb(const char new_owner[]);
@@ -355,7 +357,7 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 {
 	if(!use_trash)
 	{
-		(void)perform_operation(OP_REMOVE, ops, (void *)1, path, NULL);
+		(void)perform_operation(OP_REMOVE, ops, NULL, path, NULL);
 		return;
 	}
 
@@ -364,7 +366,7 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 		const char *const fname = get_last_path_component(path);
 		char *const trash_name = gen_trash_name(path, fname);
 		const char *const dest = (trash_name != NULL) ? trash_name : fname;
-		(void)perform_operation(OP_MOVE, ops, (void *)1, path, dest);
+		(void)perform_operation(OP_MOVE, ops, NULL, path, dest);
 		free(trash_name);
 	}
 }
@@ -1055,7 +1057,7 @@ dir_size_bg(bg_op_t *bg_op, void *arg)
 {
 	dir_size_args_t *const args = arg;
 
-	dir_size(args->path, args->force);
+	dir_size(bg_op, args->path, args->force);
 
 	free(args->path);
 	free(args);
@@ -1064,14 +1066,26 @@ dir_size_bg(bg_op_t *bg_op, void *arg)
 /* Calculates directory size and triggers view updates if necessary.  Changes
  * path. */
 static void
-dir_size(char path[], int force)
+dir_size(bg_op_t *bg_op, char path[], int force)
 {
-	(void)fops_dir_size(path, force);
+	const cancellation_t bg_cancellation_info = {
+		.arg = bg_op,
+		.hook = &bg_cancellation_hook,
+	};
+
+	(void)fops_dir_size(path, force, &bg_cancellation_info);
 
 	remove_last_path_component(path);
 
 	redraw_after_path_change(&lwin, path);
 	redraw_after_path_change(&rwin, path);
+}
+
+/* Implementation of cancellation hook for background tasks. */
+static int
+bg_cancellation_hook(void *arg)
+{
+	return bg_op_cancelled(arg);
 }
 
 /* Schedules view redraw in case path change might have affected it. */

@@ -49,6 +49,7 @@
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
+#include "utils/cancellation.h"
 #ifdef _WIN32
 #include "utils/env.h"
 #endif
@@ -1021,7 +1022,8 @@ fops_is_dir_writable(DirRole dir_role, const char path[])
 }
 
 uint64_t
-fops_dir_size(const char path[], int force_update)
+fops_dir_size(const char path[], int force_update,
+		const struct cancellation_t *cancellation)
 {
 	DIR* dir;
 	struct dirent* dentry;
@@ -1057,13 +1059,19 @@ fops_dir_size(const char path[], int force_update)
 			dcache_get_at(full_path, &dir_size, NULL);
 			if(dir_size == DCACHE_UNKNOWN || force_update)
 			{
-				dir_size = fops_dir_size(full_path, force_update);
+				dir_size = fops_dir_size(full_path, force_update, cancellation);
 			}
 			size += dir_size;
 		}
 		else
 		{
 			size += get_file_size(full_path);
+		}
+
+		if(cancellation_requested(cancellation))
+		{
+			os_closedir(dir);
+			return 0U;
 		}
 	}
 
