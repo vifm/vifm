@@ -129,6 +129,7 @@ static int ui_cancellation_hook(void *arg);
 #ifndef _WIN32
 static int run_operation_command(ops_t *ops, char cmd[], int cancellable);
 #endif
+static int bg_cancellation_hook(void *arg);
 
 /* List of functions that implement operations. */
 static op_func op_funcs[] = {
@@ -945,15 +946,25 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args,
 
 	if(cancellable)
 	{
-		ui_cancellation_enable();
-		args->cancellation.hook = &ui_cancellation_hook;
+		if(ops != NULL && ops->bg)
+		{
+			args->cancellation.arg = ops->bg_op;
+			args->cancellation.hook = &bg_cancellation_hook;
+		}
+		else
+		{
+			/* ui_cancellation_reset() should be called outside this unit to allow
+			 * bulking several operations together. */
+			ui_cancellation_enable();
+			args->cancellation.hook = &ui_cancellation_hook;
+		}
 	}
 
 	curr_ops = ops;
 	result = func(args);
 	curr_ops = NULL;
 
-	if(cancellable)
+	if(cancellable && (ops == NULL || !ops->bg))
 	{
 		ui_cancellation_disable();
 	}
@@ -1135,15 +1146,34 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 		return background_and_wait_for_errors(cmd, &no_cancellation);
 	}
 
-	/* ui_cancellation_reset() should be called outside this unit to allow bulking
-	 * several operations together. */
-	ui_cancellation_enable();
-	result = background_and_wait_for_errors(cmd, &ui_cancellation_info);
-	ui_cancellation_disable();
-	return result;
+	if(ops != NULL && ops->bg)
+	{
+		const cancellation_t bg_cancellation_info = {
+			.arg = ops->bg_op,
+			.hook = &bg_cancellation_hook,
+		};
+		return background_and_wait_for_errors(cmd, &bg_cancellation_info);
+	}
+	else
+	{
+		int result;
+		/* ui_cancellation_reset() should be called outside this unit to allow
+		 * bulking several operations together. */
+		ui_cancellation_enable();
+		result = background_and_wait_for_errors(cmd, &ui_cancellation_info);
+		ui_cancellation_disable();
+		return result;
+	}
 }
 
 #endif
+
+/* Implementation of cancellation hook for background tasks. */
+static int
+bg_cancellation_hook(void *arg)
+{
+	return bg_op_cancelled(arg);
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

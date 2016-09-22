@@ -796,6 +796,7 @@ edit_file(const char filepath[], int force_changed)
 void
 fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 {
+	ops->bg_op = bg_op;
 	if(ops->estim != NULL)
 	{
 		progress_data_t *const pdata = ops->estim->param;
