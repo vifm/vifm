@@ -23,6 +23,10 @@
 	running instance used by --remote feature.  Thanks to Marcin
 	Kurczewski (a.k.a. rr-).
 
+	Added dd key to :jobs menu, which requests cancellation of background
+	operation.  Background :put, :copy, :move, :delete and also size
+	calculation with ga and gA can be cancelled this way.  Thanks to blurm.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 20, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 22, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4904,6 +4904,13 @@ d (*nix only) \- (only for execute flags) means u\-x+X, g\-x+X or o\-x+X \
 argument for the chmod program.  If you're not on OS X and want to remove \
 execute permission bit from all files, but preserve it for directories, set \
 all execute flags to 'd' and check \(aqSet Recursively\(aq flag.
+.LP
+.B Jobs menu
+
+dd requests cancellation of job under cursor.  The job won't be removed from
+the list, but marked as being cancelled (if cancellation is applicable).  A
+message will pop up if the job has already stopped.
+
 .\" ---------------------------------------------------------------------------
 .SH Custom views
 .\" ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 20
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 22
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4122,6 +4122,12 @@ d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
     chmod program.  If you're not on OS X and want to remove execute permission
     bit from all files, but preserve it for directories, set all execute flags
     to 'd' and check 'Set Recursively' flag.
+
+Jobs menu~
+
+dd requests cancellation of job under cursor.  The job won't be removed from
+the list, but marked as being cancelled (if cancellation is applicable).  A
+message will pop up if the job has already stopped.
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*
