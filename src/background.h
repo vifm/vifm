@@ -95,11 +95,14 @@ void init_background(void);
 /* Returns zero on success, otherwise non-zero is returned. */
 int start_background_job(const char *cmd, int skip_errors);
 
+struct cancellation_t;
+
 /* Runs command in background not redirecting its streams.  To determine an
- * error uses exit status only.  cancelled can be NULL when cancellable is 0.
- * Returns status on success, otherwise -1 is returned.  Sets correct value of
- * *cancelled even on error. */
-int background_and_wait_for_status(char cmd[], int cancellable, int *cancelled);
+ * error uses exit status only.  cancelled can be NULL when operations is not
+ * cancellable.  Returns status on success, otherwise -1 is returned.  Sets
+ * correct value of *cancelled even on error. */
+int background_and_wait_for_status(char cmd[],
+		const struct cancellation_t *cancellation, int *cancelled);
 
 /* Runs command in background and displays its errors to a user.  To determine
  * an error uses both stderr stream and exit status.  Returns zero on success,

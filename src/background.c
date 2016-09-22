@@ -44,6 +44,7 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
 #include "ui/statusline.h"
+#include "utils/cancellation.h"
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/log.h"
@@ -303,13 +304,14 @@ job_free(job_t *const job)
 
 /* Used for FUSE mounting and unmounting only. */
 int
-background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
+background_and_wait_for_status(char cmd[],
+		const struct cancellation_t *cancellation, int *cancelled)
 {
 #ifndef _WIN32
 	pid_t pid;
 	int status;
 
-	if(cancellable)
+	if(cancellation_possible(cancellation))
 	{
 		*cancelled = 0;
 	}
@@ -340,11 +342,6 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		_Exit(127);
 	}
 
-	if(cancellable)
-	{
-		ui_cancellation_enable();
-	}
-
 	while(waitpid(pid, &status, 0) == -1)
 	{
 		if(errno != EINTR)
@@ -354,16 +351,15 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 			status = -1;
 			break;
 		}
-		process_cancel_request(pid, &ui_cancellation_info);
+		process_cancel_request(pid, cancellation);
 	}
 
-	if(cancellable)
+	if(cancellation_possible(cancellation))
 	{
-		if(ui_cancellation_requested())
+		if(cancellation_requested(cancellation))
 		{
 			*cancelled = 1;
 		}
-		ui_cancellation_disable();
 	}
 
 	(void)set_sigchld(0);
