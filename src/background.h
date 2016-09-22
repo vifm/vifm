@@ -140,6 +140,14 @@ int bg_jobs_freeze(void);
 /* Undoes changes made by bg_jobs_freeze(). */
 void bg_jobs_unfreeze(void);
 
+/* Cancels the job.  Returns non-zero if job wasn't cancelled before, but is
+ * after this call, otherwise zero is returned. */
+int bg_job_cancel(job_t *job);
+
+/* Checks whether the job has been cancelled.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int bg_job_cancelled(job_t *job);
+
 /* Temporary locks bg_op_t structure to ensure that it's not modified by
  * anyone during reading/updating its fields.  The structure must be part of
  * job_t. */
@@ -156,11 +164,6 @@ void bg_op_changed(bg_op_t *bg_op);
  * lock -> <change> -> unlock -> changed sequence for more generic cases.  Fires
  * operation change. */
 void bg_op_set_descr(bg_op_t *bg_op, const char descr[]);
-
-/* Convenience method to cancel background job, use
- * lock -> <change> -> unlock -> changed sequence for more generic cases.  Fires
- * operation change. */
-void bg_op_cancel(bg_op_t *bg_op);
 
 /* Convenience method to check for background job cancellation, use
  * lock -> <check> -> unlock -> changed sequence for more generic cases.

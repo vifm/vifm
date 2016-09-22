@@ -109,8 +109,9 @@ static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess,
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(job_t *job);
 static void make_current_job_key(void);
+static int bg_op_cancel(bg_op_t *bg_op);
 
-job_t *jobs;
+job_t *jobs = NULL;
 
 static pthread_key_t current_job;
 
@@ -953,6 +954,26 @@ bg_jobs_unfreeze(void)
 	(void)set_sigchld(0);
 }
 
+int
+bg_job_cancel(job_t *job)
+{
+	if(job->type != BJT_COMMAND)
+	{
+		return !bg_op_cancel(&job->bg_op);
+	}
+	return 0;
+}
+
+int
+bg_job_cancelled(job_t *job)
+{
+	if(job->type != BJT_COMMAND)
+	{
+		return bg_op_cancelled(&job->bg_op);
+	}
+	return 0;
+}
+
 void
 bg_op_lock(bg_op_t *bg_op)
 {
@@ -983,14 +1004,20 @@ bg_op_set_descr(bg_op_t *bg_op, const char descr[])
 	bg_op_changed(bg_op);
 }
 
-void
+/* Convenience method to cancel background job.  Returns previous version of the
+ * cancellation flag. */
+static int
 bg_op_cancel(bg_op_t *bg_op)
 {
+	int was_cancelled;
+
 	bg_op_lock(bg_op);
+	was_cancelled = bg_op->cancelled;
 	bg_op->cancelled = 1;
 	bg_op_unlock(bg_op);
 
 	bg_op_changed(bg_op);
+	return was_cancelled;
 }
 
 int
