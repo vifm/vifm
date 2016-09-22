@@ -52,6 +52,8 @@ typedef struct bg_op_t
 
 	int progress; /* Progress in percents.  -1 if task doesn't provide one. */
 	char *descr;  /* Description of current activity, can be NULL. */
+
+	int cancelled; /* Whether cancellation has been requested. */
 }
 bg_op_t;
 
@@ -154,6 +156,16 @@ void bg_op_changed(bg_op_t *bg_op);
  * lock -> <change> -> unlock -> changed sequence for more generic cases.  Fires
  * operation change. */
 void bg_op_set_descr(bg_op_t *bg_op, const char descr[]);
+
+/* Convenience method to cancel background job, use
+ * lock -> <change> -> unlock -> changed sequence for more generic cases.  Fires
+ * operation change. */
+void bg_op_cancel(bg_op_t *bg_op);
+
+/* Convenience method to check for background job cancellation, use
+ * lock -> <check> -> unlock -> changed sequence for more generic cases.
+ * Returns non-zero if cancellation requested, otherwise zero is returned. */
+int bg_op_cancelled(bg_op_t *bg_op);
 
 #endif /* VIFM__BACKGROUND_H__ */
 

@@ -861,6 +861,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->bg_op.done = 0;
 	new->bg_op.progress = -1;
 	new->bg_op.descr = NULL;
+	new->bg_op.cancelled = 0;
 
 	jobs = new;
 	return new;
@@ -980,6 +981,28 @@ bg_op_set_descr(bg_op_t *bg_op, const char descr[])
 	bg_op_unlock(bg_op);
 
 	bg_op_changed(bg_op);
+}
+
+void
+bg_op_cancel(bg_op_t *bg_op)
+{
+	bg_op_lock(bg_op);
+	bg_op->cancelled = 1;
+	bg_op_unlock(bg_op);
+
+	bg_op_changed(bg_op);
+}
+
+int
+bg_op_cancelled(bg_op_t *bg_op)
+{
+	int cancelled;
+
+	bg_op_lock(bg_op);
+	cancelled = bg_op->cancelled;
+	bg_op_unlock(bg_op);
+
+	return cancelled;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

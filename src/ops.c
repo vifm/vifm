@@ -126,7 +126,9 @@ static IoErrCbResult dispatch_error(io_args_t *args, const ioe_err_t *err);
 static char prompt_user(const io_args_t *args, const char title[],
 		const char msg[], const response_variant variants[]);
 static int ui_cancellation_hook(void *arg);
+#ifndef _WIN32
 static int run_operation_command(ops_t *ops, char cmd[], int cancellable);
+#endif
 
 /* List of functions that implement operations. */
 static op_func op_funcs[] = {
@@ -1118,6 +1120,8 @@ ui_cancellation_hook(void *arg)
 	return ui_cancellation_requested();
 }
 
+#ifndef _WIN32
+
 /* Runs command in background and displays its errors to a user.  To determine
  * an error uses both stderr stream and exit status.  Returns zero on success,
  * otherwise non-zero is returned. */
@@ -1138,6 +1142,8 @@ run_operation_command(ops_t *ops, char cmd[], int cancellable)
 	ui_cancellation_disable();
 	return result;
 }
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
