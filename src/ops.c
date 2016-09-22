@@ -43,6 +43,7 @@
 #include "io/ior.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "ui/cancellation.h"
+#include "utils/cancellation.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -125,6 +126,7 @@ static IoErrCbResult dispatch_error(io_args_t *args, const ioe_err_t *err);
 static char prompt_user(const io_args_t *args, const char title[],
 		const char msg[], const response_variant variants[]);
 static int ui_cancellation_hook(void *arg);
+static int run_operation_command(ops_t *ops, char cmd[], int cancellable);
 
 /* List of functions that implement operations. */
 static op_func op_funcs[] = {
@@ -316,7 +318,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 		free(escaped);
 
 		LOG_INFO_MSG("Running trash command: \"%s\"", cmd);
-		return background_and_wait_for_errors(cmd, cancellable);
+		return run_operation_command(ops, cmd, cancellable);
 #else
 		char cmd[PATH_MAX*2 + 1];
 		snprintf(cmd, sizeof(cmd), "%s \"%s\"", delete_prg, src);
@@ -340,7 +342,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 
 		snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
 		LOG_INFO_MSG("Running rm command: \"%s\"", cmd);
-		result = background_and_wait_for_errors(cmd, cancellable);
+		result = run_operation_command(ops, cmd, cancellable);
 
 		free(escaped);
 		return result;
@@ -455,7 +457,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 				fast_file_cloning ? REFLINK_AUTO : "",
 				escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
-		result = background_and_wait_for_errors(cmd, cancellable);
+		result = run_operation_command(ops, cmd, cancellable);
 
 		free(escaped_dst);
 		free(escaped_src);
@@ -563,7 +565,7 @@ op_mv(ops_t *ops, void *data, const char src[], const char dst[],
 		free(escaped_src);
 
 		LOG_INFO_MSG("Running mv command: \"%s\"", cmd);
-		result = background_and_wait_for_errors(cmd, cancellable);
+		result = run_operation_command(ops, cmd, cancellable);
 		if(result != 0)
 		{
 			return result;
@@ -638,7 +640,7 @@ op_chown(ops_t *ops, void *data, const char *src, const char *dst)
 	free(escaped);
 
 	LOG_INFO_MSG("Running chown command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
+	return run_operation_command(ops, cmd, 1);
 #else
 	return -1;
 #endif
@@ -657,7 +659,7 @@ op_chgrp(ops_t *ops, void *data, const char *src, const char *dst)
 	free(escaped);
 
 	LOG_INFO_MSG("Running chgrp command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
+	return run_operation_command(ops, cmd, 1);
 #else
 	return -1;
 #endif
@@ -675,7 +677,7 @@ op_chmod(ops_t *ops, void *data, const char *src, const char *dst)
 	free(escaped);
 
 	LOG_INFO_MSG("Running chmod command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
+	return run_operation_command(ops, cmd, 1);
 }
 
 static int
@@ -689,7 +691,7 @@ op_chmodr(ops_t *ops, void *data, const char *src, const char *dst)
 	free(escaped);
 
 	LOG_INFO_MSG("Running chmodr command: \"%s\"", cmd);
-	return background_and_wait_for_errors(cmd, 1);
+	return run_operation_command(ops, cmd, 1);
 }
 #else
 static int
@@ -761,7 +763,7 @@ op_symlink(ops_t *ops, void *data, const char *src, const char *dst)
 #ifndef _WIN32
 		snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
 		LOG_INFO_MSG("Running ln command: \"%s\"", cmd);
-		result = background_and_wait_for_errors(cmd, 1);
+		result = run_operation_command(ops, cmd, 1);
 #else
 		if(get_exe_dir(exe_dir, ARRAY_LEN(exe_dir)) != 0)
 		{
@@ -802,7 +804,7 @@ op_mkdir(ops_t *ops, void *data, const char *src, const char *dst)
 				escaped);
 		free(escaped);
 		LOG_INFO_MSG("Running mkdir command: \"%s\"", cmd);
-		return background_and_wait_for_errors(cmd, 1);
+		return run_operation_command(ops, cmd, 1);
 #else
 		if(data == NULL)
 		{
@@ -858,7 +860,7 @@ op_rmdir(ops_t *ops, void *data, const char *src, const char *dst)
 		snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
 		free(escaped);
 		LOG_INFO_MSG("Running rmdir command: \"%s\"", cmd);
-		return background_and_wait_for_errors(cmd, 1);
+		return run_operation_command(ops, cmd, 1);
 #else
 		wchar_t *const utf16_path = utf8_to_utf16(src);
 		const BOOL r = RemoveDirectoryW(utf16_path);
@@ -886,7 +888,7 @@ op_mkfile(ops_t *ops, void *data, const char *src, const char *dst)
 		snprintf(cmd, sizeof(cmd), "touch %s", escaped);
 		free(escaped);
 		LOG_INFO_MSG("Running touch command: \"%s\"", cmd);
-		return background_and_wait_for_errors(cmd, 1);
+		return run_operation_command(ops, cmd, 1);
 #else
 		HANDLE hfile;
 
@@ -1114,6 +1116,27 @@ static int
 ui_cancellation_hook(void *arg)
 {
 	return ui_cancellation_requested();
+}
+
+/* Runs command in background and displays its errors to a user.  To determine
+ * an error uses both stderr stream and exit status.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+run_operation_command(ops_t *ops, char cmd[], int cancellable)
+{
+	int result;
+
+	if(!cancellable)
+	{
+		return background_and_wait_for_errors(cmd, &no_cancellation);
+	}
+
+	/* ui_cancellation_reset() should be called outside this unit to allow bulking
+	 * several operations together. */
+	ui_cancellation_enable();
+	result = background_and_wait_for_errors(cmd, &ui_cancellation_info);
+	ui_cancellation_disable();
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

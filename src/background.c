@@ -42,7 +42,6 @@
 #include "cfg/config.h"
 #include "compat/pthread.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "ui/cancellation.h"
 #include "ui/statusline.h"
 #include "utils/cancellation.h"
 #include "utils/env.h"
@@ -388,7 +387,8 @@ error_msg(const char *title, const char *text)
 #endif
 
 int
-background_and_wait_for_errors(char cmd[], int cancellable)
+background_and_wait_for_errors(char cmd[],
+		const struct cancellation_t *cancellation)
 {
 #ifndef _WIN32
 	pid_t pid;
@@ -422,12 +422,7 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		if(cancellable)
-		{
-			ui_cancellation_enable();
-		}
-
-		wait_for_data_from(pid, NULL, error_pipe[0], &ui_cancellation_info);
+		wait_for_data_from(pid, NULL, error_pipe[0], cancellation);
 
 		buf[0] = '\0';
 		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
@@ -441,14 +436,9 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 				strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
 			}
 
-			wait_for_data_from(pid, NULL, error_pipe[0], &ui_cancellation_info);
+			wait_for_data_from(pid, NULL, error_pipe[0], cancellation);
 		}
 		close(error_pipe[0]);
-
-		if(cancellable)
-		{
-			ui_cancellation_disable();
-		}
 
 		if(result != 0)
 		{
