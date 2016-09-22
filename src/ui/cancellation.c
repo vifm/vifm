@@ -22,9 +22,8 @@
 
 #include <assert.h> /* assert() */
 
+#include "../utils/cancellation.h"
 #include "../status.h"
-
-static int ui_cancellation_enabled(void);
 
 /* State of cancellation request processing. */
 typedef enum
@@ -36,9 +35,21 @@ typedef enum
 }
 cancellation_request_state;
 
+static int ui_cancellation_hook(void *arg);
+static int ui_cancellation_enabled(void);
+
+const cancellation_t ui_cancellation_info = { .hook = &ui_cancellation_hook };
+
 /* Whether cancellation was requested.  Used by ui_cancellation_* group of
  * functions. */
 static cancellation_request_state cancellation_state;
+
+/* Implementation of cancellation hook for. */
+static int
+ui_cancellation_hook(void *arg)
+{
+	return ui_cancellation_requested();
+}
 
 void
 ui_cancellation_reset(void)

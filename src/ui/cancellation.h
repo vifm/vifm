@@ -19,7 +19,7 @@
 #ifndef VIFM__UI__CANCELLATION_H__
 #define VIFM__UI__CANCELLATION_H__
 
-/* Managing operation cancellation.  Typical usage:
+/* Managing foreground operation cancellation.  Typical usage:
  *
  *   ui_cancellation_reset();
  *   ui_cancellation_enable();
@@ -28,6 +28,9 @@
  *   with child process which will get Ctrl-C request from the user.
  *   ...
  *   ui_cancellation_disable(); */
+
+/* Convenience object for cases when UI cancellation is in use. */
+extern const struct cancellation_t ui_cancellation_info;
 
 /* Resets state so that ui_cancellation_requested() returns zero. */
 void ui_cancellation_reset(void);
