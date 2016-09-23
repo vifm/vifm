@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 19
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 23
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -106,11 +106,12 @@ The other command line arguments are:
     name of target or this instance (sequential numbers are appended on name
     conflict).
 --remote                                       *vifm---remote*
-    sends the rest of command line to the active vifm server (one of already
-    running instances if any).  When there is no server, quits silently.
-    There is no limit on how many arguments can be processed.  One can
-    combine --remote with -c <command> or +<command> to execute command in
-    already running instance of vifm.  See also |vifm-clientserver|.
+    sends the rest of the command line to another instance of vifm.
+    --server-name is treated just like any other argument and should precede
+    --remote on the command line.  When there is no server, quits silently.
+    There is no limit on how many arguments can be processed.  One can combine
+    --remote with -c <command> or +<command> to execute commands in already
+    running instance of vifm.  See also |vifm-clientserver|.
 -c <command>, +<command>                       *vifm--c* *vifm--+c*
     run command-line mode <command> on startup.  Commands in such arguments
     are executed in the order they appear in command line.  Commands with
@@ -4121,6 +4122,14 @@ d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
     chmod program.  If you're not on OS X and want to remove execute permission
     bit from all files, but preserve it for directories, set all execute flags
     to 'd' and check 'Set Recursively' flag.
+
+Jobs menu~
+
+dd requests cancellation of job under cursor.  The job won't be removed from
+the list, but marked as being cancelled (if cancellation was successfully
+requested).  A message will pop up if the job has already stopped.
+Note that on Windows cancelling external programs like this might not work,
+because their parent shell doesn't have any windows.
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*

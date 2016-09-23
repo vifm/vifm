@@ -28,7 +28,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
-#include <stddef.h> /* wchar_t NULL */
+#include <stddef.h> /* NULL wchar_t */
 #include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
 #include <string.h>
 #include <sys/stat.h> /* O_RDONLY */
@@ -42,8 +42,8 @@
 #include "cfg/config.h"
 #include "compat/pthread.h"
 #include "modes/dialogs/msg_dialog.h"
-#include "ui/cancellation.h"
 #include "ui/statusline.h"
+#include "utils/cancellation.h"
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/log.h"
@@ -93,41 +93,43 @@ typedef struct
 {
 	bg_task_func func; /* Function to execute in a background thread. */
 	void *args;        /* Argument to pass. */
-	job_t *job;        /* Job identifier that corresponds to the task. */
+	bg_job_t *job;     /* Job identifier that corresponds to the task. */
 }
 background_task_args;
 
-static void job_check(job_t *const job);
-static void job_free(job_t *const job);
+static void job_check(bg_job_t *const job);
+static void job_free(bg_job_t *const job);
 #ifndef _WIN32
-static job_t * add_background_job(pid_t pid, const char cmd[], int fd,
+static bg_job_t * add_background_job(pid_t pid, const char cmd[], int fd,
 		BgJobType type);
 #else
-static job_t * add_background_job(pid_t pid, const char cmd[], HANDLE hprocess,
-		BgJobType type);
+static bg_job_t * add_background_job(pid_t pid, const char cmd[],
+		HANDLE hprocess, BgJobType type);
 #endif
 static void * background_task_bootstrap(void *arg);
-static void set_current_job(job_t *job);
+static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
+static int bg_op_cancel(bg_op_t *bg_op);
 
-job_t *jobs;
+bg_job_t *bg_jobs = NULL;
 
+/* Thread local storage for bg_job_t associated with active thread. */
 static pthread_key_t current_job;
 
 void
-init_background(void)
+bg_init(void)
 {
 	/* Initialize state for the main thread. */
 	set_current_job(NULL);
 }
 
 void
-add_finished_job(pid_t pid, int exit_code)
+bg_process_finished_cb(pid_t pid, int exit_code)
 {
-	job_t *job;
+	bg_job_t *job;
 
-	/* Mark any finished jobs */
-	job = jobs;
+	/* Mark any finished jobs. */
+	job = bg_jobs;
 	while(job != NULL)
 	{
 		if(job->pid == pid)
@@ -141,11 +143,11 @@ add_finished_job(pid_t pid, int exit_code)
 }
 
 void
-check_background_jobs(void)
+bg_check(void)
 {
-	job_t *head = jobs;
-	job_t *prev;
-	job_t *p;
+	bg_job_t *head = bg_jobs;
+	bg_job_t *prev;
+	bg_job_t *p;
 
 	/* Quit if there is no jobs or list is unavailable (e.g. used by another
 	 * invocation of this function). */
@@ -159,8 +161,8 @@ check_background_jobs(void)
 		return;
 	}
 
-	head = jobs;
-	jobs = NULL;
+	head = bg_jobs;
+	bg_jobs = NULL;
 
 	p = head;
 	prev = NULL;
@@ -183,7 +185,7 @@ check_background_jobs(void)
 		/* Remove job if it is finished now. */
 		if(!running)
 		{
-			job_t *j = p;
+			bg_job_t *j = p;
 			if(prev != NULL)
 				prev->next = p->next;
 			else
@@ -205,8 +207,8 @@ check_background_jobs(void)
 		}
 	}
 
-	assert(jobs == NULL && "Job list shouldn't be used by anyone.");
-	jobs = head;
+	assert(bg_jobs == NULL && "Job list shouldn't be used by anyone.");
+	bg_jobs = head;
 
 	bg_jobs_unfreeze();
 }
@@ -214,7 +216,7 @@ check_background_jobs(void)
 /* Checks status of the job.  Processes error stream or checks whether process
  * is still running. */
 static void
-job_check(job_t *const job)
+job_check(bg_job_t *const job)
 {
 #ifndef _WIN32
 	fd_set ready;
@@ -269,10 +271,10 @@ job_check(job_t *const job)
 #endif
 }
 
-/* Frees resources allocated by the job as well as the job_t structure itself.
- * The job can be NULL. */
+/* Frees resources allocated by the job as well as the bg_job_t structure
+ * itself.  The job can be NULL. */
 static void
-job_free(job_t *const job)
+job_free(bg_job_t *const job)
 {
 	if(job == NULL)
 	{
@@ -303,13 +305,14 @@ job_free(job_t *const job)
 
 /* Used for FUSE mounting and unmounting only. */
 int
-background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
+bg_and_wait_for_status(char cmd[],
+		const struct cancellation_t *cancellation, int *cancelled)
 {
 #ifndef _WIN32
 	pid_t pid;
 	int status;
 
-	if(cancellable)
+	if(cancellation_possible(cancellation))
 	{
 		*cancelled = 0;
 	}
@@ -340,11 +343,6 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 		_Exit(127);
 	}
 
-	if(cancellable)
-	{
-		ui_cancellation_enable();
-	}
-
 	while(waitpid(pid, &status, 0) == -1)
 	{
 		if(errno != EINTR)
@@ -354,16 +352,15 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 			status = -1;
 			break;
 		}
-		process_cancel_request(pid);
+		process_cancel_request(pid, cancellation);
 	}
 
-	if(cancellable)
+	if(cancellation_possible(cancellation))
 	{
-		if(ui_cancellation_requested())
+		if(cancellation_requested(cancellation))
 		{
 			*cancelled = 1;
 		}
-		ui_cancellation_disable();
 	}
 
 	(void)set_sigchld(0);
@@ -379,7 +376,7 @@ background_and_wait_for_status(char cmd[], int cancellable, int *cancelled)
 static void
 error_msg(const char *title, const char *text)
 {
-	job_t *job = pthread_getspecific(current_job);
+	bg_job_t *job = pthread_getspecific(current_job);
 	if(job == NULL)
 	{
 		show_error_msg(title, text);
@@ -392,7 +389,7 @@ error_msg(const char *title, const char *text)
 #endif
 
 int
-background_and_wait_for_errors(char cmd[], int cancellable)
+bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 {
 #ifndef _WIN32
 	pid_t pid;
@@ -426,12 +423,7 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		if(cancellable)
-		{
-			ui_cancellation_enable();
-		}
-
-		wait_for_data_from(pid, NULL, error_pipe[0]);
+		wait_for_data_from(pid, NULL, error_pipe[0], cancellation);
 
 		buf[0] = '\0';
 		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
@@ -445,14 +437,9 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 				strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
 			}
 
-			wait_for_data_from(pid, NULL, error_pipe[0]);
+			wait_for_data_from(pid, NULL, error_pipe[0], cancellation);
 		}
 		close(error_pipe[0]);
-
-		if(cancellable)
-		{
-			ui_cancellation_disable();
-		}
 
 		if(result != 0)
 		{
@@ -478,7 +465,7 @@ background_and_wait_for_errors(char cmd[], int cancellable)
 
 #ifndef _WIN32
 pid_t
-background_and_capture(char *cmd, int user_sh, FILE **out, FILE **err)
+bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 {
 	pid_t pid;
 	int out_pipe[2];
@@ -606,7 +593,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 }
 
 pid_t
-background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
+bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 {
 	int out_fd, out_pipe[2];
 	int err_fd, err_pipe[2];
@@ -649,9 +636,9 @@ background_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 #endif
 
 int
-start_background_job(const char *cmd, int skip_errors)
+bg_run_external(const char cmd[], int skip_errors)
 {
-	job_t *job = NULL;
+	bg_job_t *job = NULL;
 #ifndef _WIN32
 	pid_t pid;
 	int error_pipe[2];
@@ -710,7 +697,8 @@ start_background_job(const char *cmd, int skip_errors)
 
 		setpgid(0, 0);
 
-		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command), environ);
+		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command),
+				environ);
 		_Exit(127);
 	}
 	else
@@ -840,14 +828,14 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 /* Creates structure that describes background job and registers it in the list
  * of jobs. */
 #ifndef _WIN32
-static job_t *
+static bg_job_t *
 add_background_job(pid_t pid, const char cmd[], int fd, BgJobType type)
 #else
-static job_t *
+static bg_job_t *
 add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 #endif
 {
-	job_t *new = malloc(sizeof(*new));
+	bg_job_t *new = malloc(sizeof(*new));
 	if(new == NULL)
 	{
 		show_error_msg("Memory error", "Unable to allocate enough memory");
@@ -856,7 +844,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->type = type;
 	new->pid = pid;
 	new->cmd = strdup(cmd);
-	new->next = jobs;
+	new->next = bg_jobs;
 #ifndef _WIN32
 	new->fd = fd;
 #else
@@ -865,6 +853,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->skip_errors = 0;
 	new->running = 1;
 	new->error = NULL;
+	new->cancelled = 0;
 
 	if(type != BJT_COMMAND)
 	{
@@ -875,8 +864,9 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->bg_op.done = 0;
 	new->bg_op.progress = -1;
 	new->bg_op.descr = NULL;
+	new->bg_op.cancelled = 0;
 
-	jobs = new;
+	bg_jobs = new;
 	return new;
 }
 
@@ -905,7 +895,7 @@ background_task_bootstrap(void *arg)
 
 /* Stores pointer to the job in a thread-local storage. */
 static void
-set_current_job(job_t *job)
+set_current_job(bg_job_t *job)
 {
 	static pthread_once_t once = PTHREAD_ONCE_INIT;
 	pthread_once(&once, &make_current_job_key);
@@ -923,7 +913,7 @@ make_current_job_key(void)
 int
 bg_has_active_jobs(void)
 {
-	job_t *job;
+	bg_job_t *job;
 	int running;
 
 	if(bg_jobs_freeze() != 0)
@@ -934,7 +924,7 @@ bg_has_active_jobs(void)
 	}
 
 	running = 0;
-	for(job = jobs; job != NULL && !running; job = job->next)
+	for(job = bg_jobs; job != NULL && !running; job = job->next)
 	{
 		if(job->type == BJT_OPERATION)
 		{
@@ -966,17 +956,62 @@ bg_jobs_unfreeze(void)
 	(void)set_sigchld(0);
 }
 
+int
+bg_job_cancel(bg_job_t *job)
+{
+	int was_cancelled;
+
+	if(job->type != BJT_COMMAND)
+	{
+		return !bg_op_cancel(&job->bg_op);
+	}
+
+	was_cancelled = job->cancelled;
+#ifndef _WIN32
+	if(kill(job->pid, SIGINT) == 0)
+	{
+		job->cancelled = 1;
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Failed to send SIGINT to %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+#else
+	if(win_cancel_process(job->pid, job->hprocess) == 0)
+	{
+		job->cancelled = 1;
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Failed to send WM_CLOSE to %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+#endif
+	return !was_cancelled;
+}
+
+int
+bg_job_cancelled(bg_job_t *job)
+{
+	if(job->type != BJT_COMMAND)
+	{
+		return bg_op_cancelled(&job->bg_op);
+	}
+	return job->cancelled;
+}
+
 void
 bg_op_lock(bg_op_t *bg_op)
 {
-	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
+	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
 	pthread_spin_lock(&job->bg_op_lock);
 }
 
 void
 bg_op_unlock(bg_op_t *bg_op)
 {
-	job_t *const job = STRUCT_FROM_FIELD(job_t, bg_op, bg_op);
+	bg_job_t *const job = STRUCT_FROM_FIELD(bg_job_t, bg_op, bg_op);
 	pthread_spin_unlock(&job->bg_op_lock);
 }
 
@@ -994,6 +1029,34 @@ bg_op_set_descr(bg_op_t *bg_op, const char descr[])
 	bg_op_unlock(bg_op);
 
 	bg_op_changed(bg_op);
+}
+
+/* Convenience method to cancel background job.  Returns previous version of the
+ * cancellation flag. */
+static int
+bg_op_cancel(bg_op_t *bg_op)
+{
+	int was_cancelled;
+
+	bg_op_lock(bg_op);
+	was_cancelled = bg_op->cancelled;
+	bg_op->cancelled = 1;
+	bg_op_unlock(bg_op);
+
+	bg_op_changed(bg_op);
+	return was_cancelled;
+}
+
+int
+bg_op_cancelled(bg_op_t *bg_op)
+{
+	int cancelled;
+
+	bg_op_lock(bg_op);
+	cancelled = bg_op->cancelled;
+	bg_op_unlock(bg_op);
+
+	return cancelled;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

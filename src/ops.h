@@ -77,16 +77,17 @@ ErrorResolutionPolicy;
  * helps to keep track of progress. */
 typedef struct
 {
-	OPS main_op;          /* Primary operation performed on items. */
-	int total;            /* Total number of items to be processed. */
-	int current;          /* Number of current item. */
-	int succeeded;        /* Number of successfully processed items. */
-	ioeta_estim_t *estim; /* When non-NULL, populated with estimates for items and
-	                         also frees it on ops_free(). */
-	const char *descr;    /* Description of operations. */
-	int shallow_eta;      /* Count only top level items, without recursion. */
-	int bg;               /* Executed in background (no user interaction). */
-	char *errors;         /* Multi-line string of errors. */
+	OPS main_op;           /* Primary operation performed on items. */
+	int total;             /* Total number of items to be processed. */
+	int current;           /* Number of current item. */
+	int succeeded;         /* Number of successfully processed items. */
+	ioeta_estim_t *estim;  /* When non-NULL, populated with estimates for items
+	                          and also frees it on ops_free(). */
+	const char *descr;     /* Description of operations. */
+	int shallow_eta;       /* Count only top level items, without recursion. */
+	int bg;                /* Executed in background (no user interaction). */
+	struct bg_op_t *bg_op; /* Information for background operation. */
+	char *errors;          /* Multi-line string of errors. */
 
 	/* It's unsafe to access global cfg object from threads performing background
 	 * operations, so copy them and use the copies. */

@@ -29,13 +29,13 @@
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
-#include "../ui/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../background.h"
+#include "private/ioc.h"
 #include "private/ioe.h"
 #include "private/ioeta.h"
 #include "private/traverser.h"
@@ -67,7 +67,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 	io_args_t *const rm_args = param;
 	VisitResult result = VR_OK;
 
-	if(rm_args->cancellable && ui_cancellation_requested())
+	if(io_cancelled(rm_args))
 	{
 		return VR_CANCELLED;
 	}
@@ -83,7 +83,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 				io_args_t args = {
 					.arg1.path = full_path,
 
-					.cancellable = rm_args->cancellable,
+					.cancellation = rm_args->cancellation,
 					.estim = rm_args->estim,
 
 					.result = rm_args->result,
@@ -98,7 +98,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 				io_args_t args = {
 					.arg1.path = full_path,
 
-					.cancellable = rm_args->cancellable,
+					.cancellation = rm_args->cancellation,
 					.estim = rm_args->estim,
 
 					.result = rm_args->result,
@@ -131,7 +131,7 @@ ior_cp(io_args_t *const args)
 		io_args_t rm_args = {
 			.arg1.path = dst,
 
-			.cancellable = args->cancellable,
+			.cancellation = args->cancellation,
 			.estim = args->estim,
 
 			.result = args->result,
@@ -141,7 +141,7 @@ ior_cp(io_args_t *const args)
 		args->result = rm_args.result;
 		if(result != 0)
 		{
-			if(!args->cancellable || !ui_cancellation_requested())
+			if(!io_cancelled(args))
 			{
 				(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 						"Failed to remove");
@@ -216,7 +216,7 @@ ior_mv(io_args_t *const args)
 					io_args_t rm_args = {
 						.arg1.path = src,
 
-						.cancellable = args->cancellable,
+						.cancellation = args->cancellation,
 						.estim = args->estim,
 
 						.result = args->result,
@@ -244,7 +244,7 @@ ior_mv(io_args_t *const args)
 				io_args_t rm_args = {
 					.arg1.path = dst,
 
-					.cancellable = args->cancellable,
+					.cancellation = args->cancellation,
 					.estim = args->estim,
 
 					.result = args->result,
@@ -260,7 +260,7 @@ ior_mv(io_args_t *const args)
 				args->result = rm_args.result;
 				if(error != 0)
 				{
-					if(!args->cancellable || !ui_cancellation_requested())
+					if(!io_cancelled(args))
 					{
 						(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 								"Failed to remove");
@@ -284,7 +284,7 @@ ior_mv(io_args_t *const args)
 					io_args_t rm_args = {
 						.arg1.path = dst,
 
-						.cancellable = args->cancellable,
+						.cancellation = args->cancellation,
 						.estim = args->estim,
 
 						.result = args->result,
@@ -294,7 +294,7 @@ ior_mv(io_args_t *const args)
 					args->result = rm_args.result;
 					if(error != 0)
 					{
-						if(!args->cancellable || !ui_cancellation_requested())
+						if(!io_cancelled(args))
 						{
 							(void)ioe_errlst_append(&args->result.errors, dst, IO_ERR_UNKNOWN,
 									"Failed to remove");
@@ -342,7 +342,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	VisitResult result = VR_OK;
 	const char *rel_part;
 
-	if(cp_args->cancellable && ui_cancellation_requested())
+	if(io_cancelled(cp_args))
 	{
 		return VR_CANCELLED;
 	}
@@ -364,7 +364,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					/* Temporary fake rights so we can add files to the directory. */
 					.arg3.mode = 0700,
 
-					.cancellable = cp_args->cancellable,
+					.cancellation = cp_args->cancellation,
 					.estim = cp_args->estim,
 
 					.result = cp_args->result,
@@ -383,7 +383,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					/* It's safe to always use fast file cloning on moving files. */
 					.arg4.fast_file_cloning = cp ? cp_args->arg4.fast_file_cloning : 1,
 
-					.cancellable = cp_args->cancellable,
+					.cancellation = cp_args->cancellation,
 					.confirm = cp_args->confirm,
 					.estim = cp_args->estim,
 
@@ -403,7 +403,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 					io_args_t rm_args = {
 						.arg1.path = full_path,
 
-						.cancellable = cp_args->cancellable,
+						.cancellation = cp_args->cancellation,
 						.estim = cp_args->estim,
 
 						.result = cp_args->result,

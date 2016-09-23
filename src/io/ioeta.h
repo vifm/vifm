@@ -22,9 +22,13 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 
+#include "ioc.h"
+
 /* ioeta - Input/Output estimation */
 
-typedef struct
+/* Set of data describing estimation process and state.  Managed by ioeta_*
+ * functions. */
+typedef struct ioeta_estim_t
 {
 	/* Total number of items to process (T). */
 	size_t total_items;
@@ -61,11 +65,14 @@ typedef struct
 
 	/* Custom parameter for notification callbacks. */
 	void *param;
+
+	/* Provides means for cancellation checking. */
+	io_cancellation_t cancellation;
 }
 ioeta_estim_t;
 
 /* Allocates and initializes new ioeta_estim_t. */
-ioeta_estim_t * ioeta_alloc(void *param);
+ioeta_estim_t * ioeta_alloc(void *param, io_cancellation_t cancellation);
 
 /* Frees ioeta_estim_t.  The estim can be NULL. */
 void ioeta_free(ioeta_estim_t *estim);

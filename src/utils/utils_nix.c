@@ -53,9 +53,9 @@
 #include "../compat/mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
-#include "../ui/cancellation.h"
 #include "../running.h"
 #include "../status.h"
+#include "cancellation.h"
 #include "env.h"
 #include "filemon.h"
 #include "fs.h"
@@ -154,7 +154,8 @@ recover_after_shellout(void)
 }
 
 void
-wait_for_data_from(pid_t pid, FILE *f, int fd)
+wait_for_data_from(pid_t pid, FILE *f, int fd,
+		const struct cancellation_t *cancellation)
 {
 	const struct timeval ts_init = { .tv_sec = 0, .tv_usec = 1000 };
 	struct timeval ts;
@@ -167,7 +168,7 @@ wait_for_data_from(pid_t pid, FILE *f, int fd)
 
 	do
 	{
-		process_cancel_request(pid);
+		process_cancel_request(pid, cancellation);
 		ts = ts_init;
 		FD_SET(fd, &read_ready);
 		select_result = select(fd + 1, &read_ready, NULL, NULL, &ts);
@@ -187,9 +188,9 @@ set_sigchld(int block)
 }
 
 void
-process_cancel_request(pid_t pid)
+process_cancel_request(pid_t pid, const struct cancellation_t *cancellation)
 {
-	if(ui_cancellation_requested())
+	if(cancellation_requested(cancellation))
 	{
 		if(kill(pid, SIGINT) != 0)
 		{

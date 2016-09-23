@@ -6,9 +6,11 @@
 #include "../../src/io/ioeta.h"
 #include "../../src/io/iop.h"
 
+static const io_cancellation_t no_cancellation;
+
 TEST(non_existent_path_yields_zero_size)
 {
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+	ioeta_estim_t *const estim = ioeta_alloc(NULL, no_cancellation);
 
 	ioeta_calculate(estim, "does-not-exist:;", 0);
 
@@ -22,7 +24,7 @@ TEST(non_existent_path_yields_zero_size)
 
 TEST(empty_files_are_ok)
 {
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+	ioeta_estim_t *const estim = ioeta_alloc(NULL, no_cancellation);
 
 	ioeta_calculate(estim, TEST_DATA_PATH "/existing-files", 0);
 
@@ -36,7 +38,7 @@ TEST(empty_files_are_ok)
 
 TEST(non_empty_files_are_ok)
 {
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+	ioeta_estim_t *const estim = ioeta_alloc(NULL, no_cancellation);
 
 	ioeta_calculate(estim, TEST_DATA_PATH "/various-sizes", 0);
 
@@ -50,7 +52,7 @@ TEST(non_empty_files_are_ok)
 
 TEST(shallow_estimation_does_not_recur)
 {
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+	ioeta_estim_t *const estim = ioeta_alloc(NULL, no_cancellation);
 
 	ioeta_calculate(estim, TEST_DATA_PATH "/various-sizes", 1);
 
@@ -66,7 +68,7 @@ TEST(shallow_estimation_does_not_recur)
 
 TEST(symlink_calculated_as_zero_bytes)
 {
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+	ioeta_estim_t *const estim = ioeta_alloc(NULL, no_cancellation);
 
 	{
 		io_args_t args = {

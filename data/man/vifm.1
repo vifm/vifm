@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 19, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 23, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -81,10 +81,11 @@ Name of target or this instance (sequential numbers are appended on name
 conflict).
 .TP
 .BI "\-\-remote"
-Sends the rest of command line to the active vifm server (one of already running
-instances if any).  When there is no server, quits silently.  There is no limit
-on how many arguments can be processed.  One can combine \-\-remote with \-c
-<command> or +<command> to execute command in already running instance of vifm.
+Sends the rest of the command line to another instance of vifm, \-\-server\-name
+is treated just like any other argument and should precede \-\-remote on the
+command line.  When there is no server, quits silently.  There is no limit on
+how many arguments can be processed.  One can combine \-\-remote with \-c
+<command> or +<command> to execute commands in already running instance of vifm.
 See also "Client\-Server" section below.
 .TP
 .BI "\-c <command> or +<command>"
@@ -4903,6 +4904,15 @@ d (*nix only) \- (only for execute flags) means u\-x+X, g\-x+X or o\-x+X \
 argument for the chmod program.  If you're not on OS X and want to remove \
 execute permission bit from all files, but preserve it for directories, set \
 all execute flags to 'd' and check \(aqSet Recursively\(aq flag.
+.LP
+.B Jobs menu
+
+dd requests cancellation of job under cursor.  The job won't be removed from
+the list, but marked as being cancelled (if cancellation was successfully
+requested).  A message will pop up if the job has already stopped.
+Note that on Windows cancelling external programs like this might not work,
+because their parent shell doesn't have any windows.
+
 .\" ---------------------------------------------------------------------------
 .SH Custom views
 .\" ---------------------------------------------------------------------------

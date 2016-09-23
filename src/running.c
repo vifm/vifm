@@ -603,7 +603,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	else if(bg)
 	{
 		assert(flags != MF_IGNORE && "This case is for run_ext_command()");
-		(void)start_background_job(cmd, flags == MF_IGNORE);
+		(void)bg_run_external(cmd, flags == MF_IGNORE);
 	}
 	else
 	{
@@ -644,7 +644,7 @@ run_implicit_prog(FileView *view, const char prog_spec[], int pause,
 
 	if(bg)
 	{
-		(void)start_background_job(cmd, 0);
+		(void)bg_run_external(cmd, 0);
 	}
 	else
 	{
@@ -1186,7 +1186,7 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 			int error;
 
 			setup_shellout_env();
-			error = (start_background_job(cmd, 1) != 0);
+			error = (bg_run_external(cmd, 1) != 0);
 			cleanup_shellout_env();
 
 			if(error)
@@ -1239,7 +1239,7 @@ output_to_statusbar(const char cmd[])
 	int error;
 
 	setup_shellout_env();
-	error = (background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	error = (bg_run_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
 	cleanup_shellout_env();
 	if(error)
 	{
@@ -1277,7 +1277,7 @@ output_to_nowhere(const char cmd[])
 	int error;
 
 	setup_shellout_env();
-	error = (background_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
+	error = (bg_run_and_capture((char *)cmd, 1, &file, &err) == (pid_t)-1);
 	cleanup_shellout_env();
 	if(error)
 	{

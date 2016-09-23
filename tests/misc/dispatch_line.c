@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <stdlib.h> /* free() */
+
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/utils/utils.h"

@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/cancellation.h"
 #include "../../src/utils/str.h"
 #include "../../src/background.h"
 
@@ -9,7 +10,7 @@
 TEST(background_redirects_streams_properly, IF(not_windows))
 {
 	update_string(&cfg.shell, "/bin/sh");
-	assert_int_equal(0, background_and_wait_for_errors("echo a", 0));
+	assert_success(bg_and_wait_for_errors("echo a", &no_cancellation));
 	update_string(&cfg.shell, NULL);
 }
 

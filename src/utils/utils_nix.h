@@ -28,9 +28,12 @@
 #define PAUSE_CMD "vifm-pause"
 #define PAUSE_STR "; "PAUSE_CMD
 
+struct cancellation_t;
+
 /* Checks whether cancelling of current operation is requested and sends SIGINT
  * to process specified by its process id to request cancellation. */
-void process_cancel_request(pid_t pid);
+void process_cancel_request(pid_t pid,
+		const struct cancellation_t *cancellation);
 
 /* Waits for a process to finish and queries for its exit status.  Returns exit
  * status of the process specified by its identifier. */

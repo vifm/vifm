@@ -129,7 +129,7 @@ event_loop(const int *quit)
 
 			modes_periodic();
 
-			check_background_jobs();
+			bg_check();
 
 			got_input = (get_char_async_loop(status_bar, &c, actual_timeout) != ERR);
 

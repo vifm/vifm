@@ -63,6 +63,7 @@ static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
 static FILE * use_info_prog_internal(const char cmd[], int out_pipe[2]);
+static BOOL CALLBACK close_app_enum(HWND hwnd, LPARAM lParam);
 
 void
 pause_shell(void)
@@ -110,7 +111,8 @@ recover_after_shellout(void)
 }
 
 void
-wait_for_data_from(pid_t pid, FILE *f, int fd)
+wait_for_data_from(pid_t pid, FILE *f, int fd,
+		const struct cancellation_t *cancellation)
 {
 	/* Do nothing.  No need to wait for anything on this platform. */
 }
@@ -795,6 +797,28 @@ clone_timestamps(const char path[], const char from[], const struct stat *st)
 	}
 	free(utf16_from);
 	free(utf16_path);
+}
+
+int
+win_cancel_process(DWORD pid, HANDLE hprocess)
+{
+	return EnumWindows((WNDENUMPROC)&close_app_enum, (LPARAM)pid) == FALSE;
+}
+
+/* EnumWindows callback that sends WM_CLOSE message to all windows of a
+ * process. */
+static BOOL CALLBACK
+close_app_enum(HWND hwnd, LPARAM lParam)
+{
+	DWORD dwID;
+	GetWindowThreadProcessId(hwnd, &dwID);
+
+	if(dwID == (DWORD)lParam)
+	{
+		PostMessage(hwnd, WM_CLOSE, 0, 0);
+	}
+
+	return TRUE;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

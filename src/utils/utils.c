@@ -89,7 +89,7 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 
 	LOG_INFO_MSG("Capturing output of the command: %s", cmd);
 
-	pid = background_and_capture((char *)cmd, user_sh, &file, &err);
+	pid = bg_run_and_capture((char *)cmd, user_sh, &file, &err);
 	if(pid == (pid_t)-1)
 	{
 		return 1;
@@ -103,7 +103,7 @@ process_cmd_output(const char descr[], const char cmd[], int user_sh,
 		show_progress("", 0);
 	}
 
-	wait_for_data_from(pid, file, 0);
+	wait_for_data_from(pid, file, 0, &ui_cancellation_info);
 	lines = read_stream_lines(file, &nlines, 1,
 			interactive ? NULL : &show_progress_cb, descr);
 

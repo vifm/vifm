@@ -207,10 +207,13 @@ const char * fops_get_dst_dir(const FileView *view, int at);
  * returned. */
 int fops_is_dir_writable(DirRole dir_role, const char path[]);
 
+struct cancellation_t;
+
 /* Calculates size of a directory specified by path possibly using cache of
  * known sizes.  Forcing disables using previously cached values.  Returns size
  * of a directory or zero on error. */
-uint64_t fops_dir_size(const char path[], int force);
+uint64_t fops_dir_size(const char path[], int force,
+		const struct cancellation_t *cancellation);
 
 #endif /* VIFM__FOPS_COMMON_H__ */
 

@@ -49,6 +49,7 @@
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/ui.h"
+#include "utils/cancellation.h"
 #ifdef _WIN32
 #include "utils/env.h"
 #endif
@@ -107,6 +108,7 @@ static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
+static int ui_cancellation_hook(void *arg);
 static int edit_file(const char filepath[], int force_changed);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 
@@ -638,9 +640,18 @@ fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
 	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
 	if(ops->use_system_calls)
 	{
-		ops->estim = ioeta_alloc(alloc_progress_data(0, ops));
+		progress_data_t *const pdata = alloc_progress_data(0, ops);
+		const io_cancellation_t cancellation = { .hook = &ui_cancellation_hook };
+		ops->estim = ioeta_alloc(pdata, cancellation);
 	}
 	return ops;
+}
+
+/* Implementation of cancellation hook for I/O unit. */
+static int
+ui_cancellation_hook(void *arg)
+{
+	return ui_cancellation_requested();
 }
 
 void
@@ -786,6 +797,7 @@ edit_file(const char filepath[], int force_changed)
 void
 fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 {
+	ops->bg_op = bg_op;
 	if(ops->estim != NULL)
 	{
 		progress_data_t *const pdata = ops->estim->param;
@@ -800,7 +812,8 @@ fops_get_bg_ops(OPS main_op, const char descr[], const char dir[])
 	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = alloc_progress_data(1, NULL);
-		ops->estim = ioeta_alloc(pdata);
+		const io_cancellation_t no_cancellation = {};
+		ops->estim = ioeta_alloc(pdata, no_cancellation);
 	}
 	return ops;
 }
@@ -1009,7 +1022,8 @@ fops_is_dir_writable(DirRole dir_role, const char path[])
 }
 
 uint64_t
-fops_dir_size(const char path[], int force_update)
+fops_dir_size(const char path[], int force_update,
+		const struct cancellation_t *cancellation)
 {
 	DIR* dir;
 	struct dirent* dentry;
@@ -1045,13 +1059,19 @@ fops_dir_size(const char path[], int force_update)
 			dcache_get_at(full_path, &dir_size, NULL);
 			if(dir_size == DCACHE_UNKNOWN || force_update)
 			{
-				dir_size = fops_dir_size(full_path, force_update);
+				dir_size = fops_dir_size(full_path, force_update, cancellation);
 			}
 			size += dir_size;
 		}
 		else
 		{
 			size += get_file_size(full_path);
+		}
+
+		if(cancellation_requested(cancellation))
+		{
+			os_closedir(dir);
+			return 0U;
 		}
 	}
 

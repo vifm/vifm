@@ -117,6 +117,7 @@ vifm_SOURCES = \
 	io/ionotif.h \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
+	io/private/ioc.c io/private/ioc.h \
 	io/private/ioe.c io/private/ioe.h \
 	io/private/ioeta.c io/private/ioeta.h \
 	io/private/ionotif.c io/private/ionotif.h \
@@ -176,6 +177,7 @@ vifm_SOURCES = \
 	ui/statusline.c ui/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
+	utils/cancellation.c utils/cancellation.h \
 	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \

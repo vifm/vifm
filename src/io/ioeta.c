@@ -23,7 +23,7 @@
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() free() */
 
-#include "../ui/cancellation.h"
+#include "private/ioc.h"
 #include "private/ioeta.h"
 #include "private/traverser.h"
 
@@ -31,10 +31,11 @@ static VisitResult eta_visitor(const char full_path[], VisitAction action,
 		void *param);
 
 ioeta_estim_t *
-ioeta_alloc(void *param)
+ioeta_alloc(void *param, io_cancellation_t cancellation)
 {
 	ioeta_estim_t *const estim = calloc(1U, sizeof(*estim));
 	estim->param = param;
+	estim->cancellation = cancellation;
 	return estim;
 }
 
@@ -69,7 +70,7 @@ eta_visitor(const char full_path[], VisitAction action, void *param)
 {
 	ioeta_estim_t *const estim = param;
 
-	if(ui_cancellation_requested())
+	if(cancelled(&estim->cancellation))
 	{
 		return VR_CANCELLED;
 	}

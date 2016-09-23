@@ -47,8 +47,8 @@ engine := $(addprefix engine/, $(engine))
 int := file_magic.c fuse.c path_env.c term_title.c vim.c
 int := $(addprefix int/, $(int))
 
-io := private/ioe.c private/ioeta.c private/ionotif.c private/traverser.c
-io += ioe.c ioeta.c iop.c ior.c
+io := private/ioc.c private/ioe.c private/ioeta.c private/ionotif.c
+io += private/traverser.c ioe.c ioeta.c iop.c ior.c
 io := $(addprefix io/, $(io))
 
 menus := apropos_menu.c bmarks_menu.c cabbrevs_menu.c colorscheme_menu.c \
@@ -70,10 +70,10 @@ ui := cancellation.c color_manager.c color_scheme.c column_view.c escape.c
 ui += fileview.c statusbar.c statusline.c quickview.c ui.c
 ui := $(addprefix ui/, $(ui))
 
-utilities := dynarray.c env.c file_streams.c filemon.c filter.c fs.c fsdata.c \
-             fsddata.c fswatch_win.c globs.c int_stack.c log.c matcher.c \
-             matchers.c path.c regexp.c str.c string_array.c trie.c utf8.c \
-             utils.c utils_win.c
+utilities := cancellation.c dynarray.c env.c file_streams.c filemon.c filter.c \
+             fs.c fsdata.c fsddata.c fswatch_win.c globs.c int_stack.c log.c \
+             matcher.c matchers.c path.c regexp.c str.c string_array.c trie.c \
+             utf8.c utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \

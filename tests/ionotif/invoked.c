@@ -18,7 +18,8 @@ static ioeta_estim_t *estim;
 
 SETUP()
 {
-	estim = ioeta_alloc(NULL);
+	const io_cancellation_t no_cancellation = {};
+	estim = ioeta_alloc(NULL, no_cancellation);
 
 	invoked_eta = 0;
 	invoked_progress = 0;

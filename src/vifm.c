@@ -190,7 +190,7 @@ main(int argc, char *argv[])
 
 	args_process(&vifm_args, 0);
 
-	init_background();
+	bg_init();
 
 	fops_init(&enter_prompt_mode, &prompt_msg_custom);
 

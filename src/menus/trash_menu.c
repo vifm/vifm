@@ -37,6 +37,7 @@
 static KHandlerResponse trash_khandler(menu_info *m, const wchar_t keys[]);
 static KHandlerResponse restore_current(menu_info *m);
 static KHandlerResponse delete_current(menu_info *m);
+static int ui_cancellation_hook(void *arg);
 
 int
 show_trash_menu(FileView *view)
@@ -114,7 +115,7 @@ delete_current(menu_info *m)
 	io_args_t args = {
 		.arg1.path = trash_list[m->pos].trash_name,
 
-		.cancellable = 1,
+		.cancellation.hook = &ui_cancellation_hook,
 	};
 	ioe_errlst_init(&args.result.errors);
 
@@ -136,6 +137,13 @@ delete_current(menu_info *m)
 	ioe_errlst_free(&args.result.errors);
 	remove_current_item(m);
 	return KHR_REFRESH_WINDOW;
+}
+
+/* Implementation of cancellation hook for I/O unit. */
+static int
+ui_cancellation_hook(void *arg)
+{
+	return ui_cancellation_requested();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

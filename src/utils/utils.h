@@ -27,7 +27,6 @@
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
 
-#include "../ui/ui.h"
 #include "../status.h"
 
 /* Type of operating environment in which the application is running. */
@@ -37,6 +36,9 @@ typedef enum
 	ET_WIN,  /* Runs on Windows. */
 }
 EnvType;
+
+/* Forward declaration. */
+struct dir_entry_t;
 
 /* Callback for process_cmd_output() function. */
 typedef void (*cmd_output_handler)(const char line[], void *arg);
@@ -162,10 +164,13 @@ int get_mount_point(const char path[], size_t buf_len, char buf[]);
  * otherwise zero is returned. */
 int traverse_mount_points(mptraverser client, void *arg);
 
+struct cancellation_t;
+
 /* Waits until non-blocking read operation is available for given file
  * descriptor (uses f if it's not NULL, otherwise fd is used) that is associated
  * with a process.  Process operation cancellation requests from a user. */
-void wait_for_data_from(pid_t pid, FILE *f, int fd);
+void wait_for_data_from(pid_t pid, FILE *f, int fd,
+		const struct cancellation_t *cancellation);
 
 /* Blocks/unblocks SIGCHLD signal.  Returns zero on success, otherwise non-zero
  * is returned. */
@@ -211,12 +216,12 @@ void update_terminal_settings(void);
 
 /* Fills the buffer with string representation of owner user for the entry.  The
  * as_num flag forces formatting as integer. */
-void get_uid_string(const dir_entry_t *entry, int as_num, size_t buf_len,
+void get_uid_string(const struct dir_entry_t *entry, int as_num, size_t buf_len,
 		char buf[]);
 
 /* Fills the buffer with string representation of owner group for the entry.
  * The as_num flag forces formatting as integer. */
-void get_gid_string(const dir_entry_t *entry, int as_num, size_t buf_len,
+void get_gid_string(const struct dir_entry_t *entry, int as_num, size_t buf_len,
 		char buf[]);
 
 /* Reopens real terminal and binds it to stdout.  Returns NULL on error (message

@@ -577,7 +577,7 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 			str_to_lower(entry->name, block, sizeof(block));
 			return strdup(block);
 		case CT_SIZE:
-			return format_str("%llu", (unsigned long long)entry->size);
+			return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
 		case CT_CONTENTS:
 			in = os_fopen(path, "rb");
 			if(in == NULL)
@@ -591,8 +591,8 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 				XX(update)(&st, block, nread);
 			}
 			fclose(in);
-			return format_str("%llu|%llu", (unsigned long long)entry->size,
-					(unsigned long long)XX(digest)(&st));
+			return format_str("%" PRINTF_ULL "|%" PRINTF_ULL,
+					(unsigned long long)entry->size, (unsigned long long)XX(digest)(&st));
 	}
 	assert(0 && "Unexpected diffing type.");
 	return strdup("");

@@ -135,19 +135,20 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	int/fuse.$(OBJEXT) int/path_env.$(OBJEXT) \
 	int/term_title.$(OBJEXT) int/vim.$(OBJEXT) io/ioe.$(OBJEXT) \
 	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
-	io/private/ioe.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
-	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
-	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
-	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
-	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
-	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
-	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
-	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
-	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
-	menus/marks_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
-	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
-	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
+	io/private/ioc.$(OBJEXT) io/private/ioe.$(OBJEXT) \
+	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
+	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
+	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
+	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
+	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
+	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
+	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
+	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
+	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
+	menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -160,22 +161,22 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	ui/column_view.$(OBJEXT) ui/escape.$(OBJEXT) \
 	ui/fileview.$(OBJEXT) ui/quickview.$(OBJEXT) \
 	ui/statusbar.$(OBJEXT) ui/statusline.$(OBJEXT) ui/ui.$(OBJEXT) \
-	utils/dynarray.$(OBJEXT) utils/env.$(OBJEXT) \
-	utils/file_streams.$(OBJEXT) utils/filemon.$(OBJEXT) \
-	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
-	utils/fsdata.$(OBJEXT) utils/fsddata.$(OBJEXT) \
-	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
-	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
-	utils/matcher.$(OBJEXT) utils/matchers.$(OBJEXT) \
-	utils/path.$(OBJEXT) utils/regexp.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
-	background.$(OBJEXT) bmarks.$(OBJEXT) \
-	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
-	cmd_completion.$(OBJEXT) cmd_core.$(OBJEXT) \
-	cmd_handlers.$(OBJEXT) compare.$(OBJEXT) dir_stack.$(OBJEXT) \
-	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	utils/cancellation.$(OBJEXT) utils/dynarray.$(OBJEXT) \
+	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
+	utils/filemon.$(OBJEXT) utils/filter.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/fsdata.$(OBJEXT) \
+	utils/fsddata.$(OBJEXT) utils/fswatch_nix.$(OBJEXT) \
+	utils/globs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
+	utils/matchers.$(OBJEXT) utils/path.$(OBJEXT) \
+	utils/regexp.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
+	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) cmd_completion.$(OBJEXT) \
+	cmd_core.$(OBJEXT) cmd_handlers.$(OBJEXT) compare.$(OBJEXT) \
+	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fops_common.$(OBJEXT) \
 	fops_cpmv.$(OBJEXT) fops_misc.$(OBJEXT) fops_put.$(OBJEXT) \
 	fops_rename.$(OBJEXT) filetype.$(OBJEXT) filtering.$(OBJEXT) \
@@ -672,6 +673,7 @@ vifm_SOURCES = \
 	io/ionotif.h \
 	io/iop.c io/iop.h \
 	io/ior.c io/ior.h \
+	io/private/ioc.c io/private/ioc.h \
 	io/private/ioe.c io/private/ioe.h \
 	io/private/ioeta.c io/private/ioeta.h \
 	io/private/ionotif.c io/private/ionotif.h \
@@ -731,6 +733,7 @@ vifm_SOURCES = \
 	ui/statusline.c ui/statusline.h \
 	ui/ui.c ui/ui.h \
 	\
+	utils/cancellation.c utils/cancellation.h \
 	utils/darray.h \
 	utils/dynarray.c utils/dynarray.h \
 	utils/env.c utils/env.h \
@@ -1004,6 +1007,8 @@ io/private/$(am__dirstamp):
 io/private/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) io/private/$(DEPDIR)
 	@: > io/private/$(DEPDIR)/$(am__dirstamp)
+io/private/ioc.$(OBJEXT): io/private/$(am__dirstamp) \
+	io/private/$(DEPDIR)/$(am__dirstamp)
 io/private/ioe.$(OBJEXT): io/private/$(am__dirstamp) \
 	io/private/$(DEPDIR)/$(am__dirstamp)
 io/private/ioeta.$(OBJEXT): io/private/$(am__dirstamp) \
@@ -1128,6 +1133,8 @@ utils/$(am__dirstamp):
 utils/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) utils/$(DEPDIR)
 	@: > utils/$(DEPDIR)/$(am__dirstamp)
+utils/cancellation.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/dynarray.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/env.$(OBJEXT): utils/$(am__dirstamp) \
@@ -1302,6 +1309,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/iop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/$(DEPDIR)/ior.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioe.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ioeta.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@io/private/$(DEPDIR)/ionotif.Po@am__quote@
@@ -1350,6 +1358,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/statusline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ui/$(DEPDIR)/ui.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/cancellation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/dynarray.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@

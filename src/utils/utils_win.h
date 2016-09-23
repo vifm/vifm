@@ -20,6 +20,10 @@
 #ifndef VIFM__UTILS__UTILS_WIN_H__
 #define VIFM__UTILS__UTILS_WIN_H__
 
+#ifdef _WIN32
+#include <windef.h>
+#endif
+
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint32_t */
 #include <stdio.h> /* FILE */
@@ -72,6 +76,10 @@ const char * escape_for_cd(const char str[]);
  * application close.  Don't use tmpfile(), they utterly failed to implement
  * it. */
 FILE * win_tmpfile();
+
+/* Tries to cancel process gracefully.  Returns zero if cancellation was
+ * requested, otherwise non-zero is returned. */
+int win_cancel_process(DWORD pid, HANDLE hprocess);
 
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 

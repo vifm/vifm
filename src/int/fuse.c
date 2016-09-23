@@ -35,8 +35,10 @@
 #include "../compat/os.h"
 #include "../menus/menus.h"
 #include "../modes/dialogs/msg_dialog.h"
+#include "../ui/cancellation.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
+#include "../utils/cancellation.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
@@ -226,7 +228,17 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	strcat(buf, " 2> ");
 	strcat(buf, errors_file);
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
-	status = background_and_wait_for_status(buf, !foreground, &cancelled);
+	if(foreground)
+	{
+		status = bg_and_wait_for_status(buf, &no_cancellation, &cancelled);
+	}
+	else
+	{
+		ui_cancellation_reset();
+		ui_cancellation_enable();
+		status = bg_and_wait_for_status(buf, &ui_cancellation_info, &cancelled);
+		ui_cancellation_disable();
+	}
 
 	ui_sb_clear();
 
@@ -546,7 +558,7 @@ fuse_try_unmount(FileView *view)
 	}
 
 	status_bar_message("FUSE unmounting selected file, please stand by..");
-	status = background_and_wait_for_status(buf, 0, NULL);
+	status = bg_and_wait_for_status(buf, &no_cancellation, NULL);
 	ui_sb_clear();
 	/* check child status */
 	if(!WIFEXITED(status) || WEXITSTATUS(status))

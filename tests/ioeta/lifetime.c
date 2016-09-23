@@ -11,7 +11,8 @@ TEST(free_of_null_is_ok)
 
 TEST(alloc_initializes_all_fields)
 {
-	ioeta_estim_t *const estim = ioeta_alloc(NULL);
+	const io_cancellation_t no_cancellation = {};
+	ioeta_estim_t *const estim = ioeta_alloc(NULL, no_cancellation);
 
 	assert_int_equal(0, estim->total_items);
 	assert_int_equal(0, estim->current_item);
