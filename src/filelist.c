@@ -1495,7 +1495,7 @@ flist_custom_uncompress_tree(FileView *view)
 		char full_path[PATH_MAX];
 		void *data = &entries[i];
 		get_full_path_of(&entries[i], sizeof(full_path), full_path);
-		fsdata_set(tree, full_path + path_prefix_len, &data, sizeof(&entries[i]));
+		fsdata_set(tree, full_path + path_prefix_len, &data, sizeof(data));
 	}
 
 	fsdata_traverse(tree, &uncompress_traverser, view);
