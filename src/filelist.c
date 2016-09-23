@@ -3160,6 +3160,7 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 	if(is_parent_dir(entry->name))
 	{
 		copy_str(buf, buf_len, name);
+		free(free_this);
 		return;
 	}
 
