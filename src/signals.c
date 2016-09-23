@@ -87,6 +87,11 @@ received_sigchld(void)
 		{
 			bg_process_finished_cb(pid, WEXITSTATUS(status));
 		}
+		else if(WIFSIGNALED(status))
+		{
+			/* Child was terminated by a signal. */
+			bg_process_finished_cb(pid, -1);
+		}
 	}
 }
 

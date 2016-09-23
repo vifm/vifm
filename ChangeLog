@@ -62,6 +62,9 @@
 
 	Provide better messages on i/o errors with 'syscalls'.  Thanks to Behrooz.
 
+	Remove background commands from the :jobs list when corresponding
+	processes get terminated by a signal.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
