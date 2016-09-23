@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 22, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 23, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4908,8 +4908,10 @@ all execute flags to 'd' and check \(aqSet Recursively\(aq flag.
 .B Jobs menu
 
 dd requests cancellation of job under cursor.  The job won't be removed from
-the list, but marked as being cancelled (if cancellation is applicable).  A
-message will pop up if the job has already stopped.
+the list, but marked as being cancelled (if cancellation was successfully
+requested).  A message will pop up if the job has already stopped.
+Note that on Windows cancelling external programs like this might not work,
+because their parent shell doesn't have any windows.
 
 .\" ---------------------------------------------------------------------------
 .SH Custom views

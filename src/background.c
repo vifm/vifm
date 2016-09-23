@@ -853,6 +853,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->skip_errors = 0;
 	new->running = 1;
 	new->error = NULL;
+	new->cancelled = 0;
 
 	if(type != BJT_COMMAND)
 	{
@@ -958,11 +959,36 @@ bg_jobs_unfreeze(void)
 int
 bg_job_cancel(bg_job_t *job)
 {
+	int was_cancelled;
+
 	if(job->type != BJT_COMMAND)
 	{
 		return !bg_op_cancel(&job->bg_op);
 	}
-	return 0;
+
+	was_cancelled = job->cancelled;
+#ifndef _WIN32
+	if(kill(job->pid, SIGINT) == 0)
+	{
+		job->cancelled = 1;
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Failed to send SIGINT to %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+#else
+	if(win_cancel_process(job->pid, job->hprocess) == 0)
+	{
+		job->cancelled = 1;
+	}
+	else
+	{
+		LOG_SERROR_MSG(errno, "Failed to send WM_CLOSE to %" PRINTF_ULL,
+				(unsigned long long)job->pid);
+	}
+#endif
+	return !was_cancelled;
 }
 
 int
@@ -972,7 +998,7 @@ bg_job_cancelled(bg_job_t *job)
 	{
 		return bg_op_cancelled(&job->bg_op);
 	}
-	return 0;
+	return job->cancelled;
 }
 
 void
