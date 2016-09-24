@@ -230,7 +230,8 @@ fuse_mount(FileView *view, char file_full_path[], const char param[],
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
 	if(foreground)
 	{
-		status = bg_and_wait_for_status(buf, &no_cancellation, &cancelled);
+		cancelled = 0;
+		status = bg_and_wait_for_status(buf, &no_cancellation, NULL);
 	}
 	else
 	{
