@@ -1504,8 +1504,7 @@ flist_custom_uncompress_tree(FileView *view)
 	dynarray_free(entries);
 }
 
-/* fsdata_traverse() callback that builds flattens the tree into array of
- * entries. */
+/* fsdata_traverse() callback that flattens the tree into array of entries. */
 static void
 uncompress_traverser(const char name[], int valid, const void *parent_data,
 		void *data, void *arg)
