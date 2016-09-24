@@ -355,12 +355,9 @@ bg_and_wait_for_status(char cmd[],
 		process_cancel_request(pid, cancellation);
 	}
 
-	if(cancellation_possible(cancellation))
+	if(cancellation_requested(cancellation))
 	{
-		if(cancellation_requested(cancellation))
-		{
-			*cancelled = 1;
-		}
+		*cancelled = 1;
 	}
 
 	(void)set_sigchld(0);
