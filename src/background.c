@@ -134,6 +134,8 @@ bg_process_finished_cb(pid_t pid, int exit_code)
 	{
 		if(job->pid == pid)
 		{
+			/* No locking is needed here because this is not a background thread
+			 * operation. */
 			job->running = 0;
 			job->exit_code = exit_code;
 			break;
