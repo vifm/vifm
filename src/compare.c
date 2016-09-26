@@ -194,17 +194,21 @@ make_unique_lists(entries_t curr, entries_t other)
 static void
 leave_only_dups(entries_t *curr, entries_t *other)
 {
-	int i, j = 0;
-
 	int new_id = 0;
-	for(i = 0; i < other->nentries; ++i)
+	int i = 0, j = 0;
+
+	/* Skip leading unmatched files. */
+	while(i < other->nentries && other->entries[i].id == -1)
+	{
+		++i;
+	}
+
+	/* Process sequences of files in two lists. */
+	while(i < other->nentries)
 	{
 		const int id = other->entries[i].id;
-		if(id == -1)
-		{
-			continue;
-		}
 
+		/* Skip sequence of unmatched files. */
 		while(j < curr->nentries && curr->entries[j].id < id)
 		{
 			curr->entries[j++].id = -1;
@@ -212,13 +216,29 @@ leave_only_dups(entries_t *curr, entries_t *other)
 
 		if(j < curr->nentries && curr->entries[j].id == id)
 		{
-			other->entries[i].id = ++new_id;
+			/* Allocate next id when we find a matching pair of files in both
+			 * lists. */
+			++new_id;
+			/* Update sequence of identical ids for other list. */
+			do
+			{
+				other->entries[i++].id = new_id;
+			}
+			while(i < other->nentries && other->entries[i].id == id);
+
+			/* Update sequence of identical ids for current list. */
+			do
+			{
+				curr->entries[j++].id = new_id;
+			}
+			while(j < curr->nentries && curr->entries[j].id == id);
 		}
-		while(j < curr->nentries && curr->entries[j].id == id)
-		{
-			curr->entries[j].id = new_id;
-			++j;
-		}
+	}
+
+	/* Exclude unprocessed files in the tail. */
+	while(j < curr->nentries)
+	{
+		curr->entries[j++].id = -1;
 	}
 
 	(void)zap_entries(other_view, other->entries, &other->nentries,

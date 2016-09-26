@@ -634,6 +634,26 @@ TEST(filtering_updates_two_bound_views)
 	assert_int_equal(CV_REGULAR, rwin.custom.type);
 }
 
+TEST(two_pane_dups_renumbering)
+{
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-1");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
+	compare_two_panes(CT_CONTENTS, LT_DUPS, 1);
+
+	basic_panes_check(2);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-1"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
+}
+
 static void
 basic_panes_check(int expected_len)
 {
