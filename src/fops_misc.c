@@ -1165,7 +1165,11 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 void
 fops_chuser(void)
 {
-	mark_selection_or_current(curr_view);
+	if(mark_selection_or_current(curr_view) == 0)
+	{
+		show_error_msg("Change owner", "No files to process");
+		return;
+	}
 	fops_line_prompt("New owner: ", "", &change_owner_cb, &complete_owner, 0);
 }
 
@@ -1202,7 +1206,11 @@ complete_owner(const char str[], void *arg)
 void
 fops_chgroup(void)
 {
-	mark_selection_or_current(curr_view);
+	if(mark_selection_or_current(curr_view) == 0)
+	{
+		show_error_msg("Change group", "No files to process");
+		return;
+	}
 	fops_line_prompt("New group: ", "", &change_group_cb, &complete_group, 0);
 }
 

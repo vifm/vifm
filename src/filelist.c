@@ -3229,17 +3229,23 @@ clear_marking(FileView *view)
 	}
 }
 
-void
+int
 mark_selected(FileView *view)
 {
 	int i;
+	int nmarked = 0;
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		view->dir_entry[i].marked = view->dir_entry[i].selected;
+		if(view->dir_entry[i].marked)
+		{
+			++nmarked;
+		}
 	}
+	return nmarked;
 }
 
-void
+int
 mark_selection_or_current(FileView *view)
 {
 	dir_entry_t *const curr = get_current_entry(view);
@@ -3248,7 +3254,7 @@ mark_selection_or_current(FileView *view)
 		curr->selected = 1;
 		view->selected_files = 1;
 	}
-	mark_selected(view);
+	return mark_selected(view);
 }
 
 int

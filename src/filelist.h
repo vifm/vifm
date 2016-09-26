@@ -220,11 +220,11 @@ void get_short_path_of(const FileView *view, const dir_entry_t *entry,
 void check_marking(FileView *view, int count, const int indexes[]);
 /* Marks files at positions specified in the indexes array of size count. */
 void mark_files_at(FileView *view, int count, const int indexes[]);
-/* Marks selected files of the view. */
-void mark_selected(FileView *view);
+/* Marks selected files of the view.  Returns number of marked files. */
+int mark_selected(FileView *view);
 /* Same as mark_selected() function, but when selection is absent current file
- * is marked. */
-void mark_selection_or_current(FileView *view);
+ * is marked.  Returns number of marked files. */
+int mark_selection_or_current(FileView *view);
 /* Counts number of marked files that can be processed (thus excluding parent
  * directory, which is "..").  Returns the count. */
 int flist_count_marked(FileView *const view);
