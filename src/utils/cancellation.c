@@ -25,7 +25,7 @@ const cancellation_t no_cancellation = {};
 int
 cancellation_requested(const cancellation_t *info)
 {
-	return info->hook != NULL && info->hook(info->arg);
+	return cancellation_possible(info) && info->hook(info->arg);
 }
 
 int

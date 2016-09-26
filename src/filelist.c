@@ -1495,7 +1495,7 @@ flist_custom_uncompress_tree(FileView *view)
 		char full_path[PATH_MAX];
 		void *data = &entries[i];
 		get_full_path_of(&entries[i], sizeof(full_path), full_path);
-		fsdata_set(tree, full_path + path_prefix_len, &data, sizeof(&entries[i]));
+		fsdata_set(tree, full_path + path_prefix_len, &data, sizeof(data));
 	}
 
 	fsdata_traverse(tree, &uncompress_traverser, view);
@@ -1504,8 +1504,7 @@ flist_custom_uncompress_tree(FileView *view)
 	dynarray_free(entries);
 }
 
-/* fsdata_traverse() callback that builds flattens the tree into array of
- * entries. */
+/* fsdata_traverse() callback that flattens the tree into array of entries. */
 static void
 uncompress_traverser(const char name[], int valid, const void *parent_data,
 		void *data, void *arg)
@@ -3160,6 +3159,7 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 	if(is_parent_dir(entry->name))
 	{
 		copy_str(buf, buf_len, name);
+		free(free_this);
 		return;
 	}
 

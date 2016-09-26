@@ -401,16 +401,9 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 static size_t
 get_char_width_esc(const char str[])
 {
-	if(*str != '\033')
-	{
-		return utf8_chrw(str);
-	}
-	else
-	{
-		const char *pos = strchr(str, 'm');
-		pos = (pos == NULL) ? (str + strlen(str)) : (pos + 1);
-		return pos - str;
-	}
+	return (*str == '\033')
+	     ? (size_t)(after_first(str, 'm') - str)
+	     : utf8_chrw(str);
 }
 
 /* Prints the leading character of the str to the win window parsing terminal
@@ -421,7 +414,8 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 	if(str[0] == '\033')
 	{
 		esc_state_update(state, str);
-		wattrset(win, COLOR_PAIR(colmgr_get_pair(state->fg, state->bg)) | state->attrs);
+		wattrset(win,
+				COLOR_PAIR(colmgr_get_pair(state->fg, state->bg)) | state->attrs);
 	}
 	else
 	{

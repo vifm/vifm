@@ -164,7 +164,8 @@ static enum
 };
 ARRAY_GUARD(opers, OP_COUNT);
 
-static int data_is_ptr[] = {
+/* Flags that indicate which operations have data that must be free()'d. */
+static const char data_is_ptr[] = {
 	0, /* OP_NONE */
 	1, /* OP_USR */
 	0, /* OP_REMOVE */
