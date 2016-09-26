@@ -1,0 +1,114 @@
+#!/usr/bin/env perl
+
+# piece of manpages (lintian check script)
+
+# Copyright (C) 1998 Christian Schwarz
+# Copyright (C) 2014 xaizek
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, you can find it on the World Wide
+# Web at http://www.gnu.org/copyleft/gpl.html, or write to the Free
+# Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+# MA 02110-1301, USA.
+
+# DESCRIPTION OF THE MISTAKE
+#
+# This manual page seems to contain a hyphen where a minus sign was
+# intended. By default, "-" chars are interpreted as hyphens (U+2010) by
+# groff, not as minus signs (U+002D). Since options to programs use minus
+# signs (U+002D), this means for example in UTF-8 locales that you cannot
+# cut and paste options, nor search for them easily. The Debian groff
+# package currently forces "-" to be interpreted as a minus sign due to
+# the number of manual pages with this problem, but this is a
+# Debian-specific modification and hopefully eventually can be removed.
+#
+# "-" must be escaped ("\-") to be interpreted as minus. If you really
+# intend a hyphen (normally you don't), write it as "\(hy" to emphasise
+# that fact. See groff(7) and especially groff_char(7) for details, and
+# also the thread starting with
+# https://lists.debian.org/debian-devel/2003/debian-devel-200303/msg01481.html
+#
+# If you use some tool that converts your documentation to groff format,
+# this tag may indicate a bug in the tool. Some tools convert dashes of
+# any kind to hyphens. The safe way of converting dashes is to convert
+# them to "\-".
+#
+# Refer to /usr/share/doc/groff-base/README.Debian and the groff_char(7)
+# manual page for details.
+
+use strict;
+use warnings;
+
+use File::Basename;
+
+my $manfilepath = shift;
+
+my ($name, $path, $suffix) = fileparse($manfilepath);
+
+my @pieces = split(/\./, $name);
+die("Filed to parse file name: '$name'") if not @pieces;
+
+my $ext = pop @pieces;
+if ($ext ne 'gz') {
+    push @pieces, $ext;
+}
+my $fn_section = pop @pieces;
+
+open (MANFILE, '-|', "cat \Q$manfilepath\E 2>/dev/null")
+    or die("cannot open $manfilepath: $!");
+my @manfile = ();
+while (<MANFILE>) { push @manfile, $_; }
+close MANFILE;
+
+# Now we search through the whole man page for some common errors
+my $lc = 0;
+my $hc = 0;
+my $draft_mode = 0;
+foreach my $line (@manfile) {
+    $lc++;
+    chomp $line;
+    next if $line =~ /^\.\\\"/o; # comments .\"
+
+    # Catch hyphens used as minus signs by looking for ones at the
+    # beginning of a word, but don't generate false positives on \s-1
+    # (small font), \*(-- (pod2man long dash), or things like \h'-1'.
+    # Ignoring hyphens contained in draft mode (.eo).  Do catch
+    # hyphens after \f[C], a groff font change.
+    $draft_mode = 1 if $line =~ /^\.\s*eo/;
+    $draft_mode = 0 if $line =~ /^\.\s*ec/;
+    if (not $draft_mode
+        and $line =~ /^(
+                        ([^\.].*)?
+                        [\s\'\"\`\(\[\]]
+                        (?<! \\s | \*\( | \(- | \w\' )
+                        )?
+                        (--?\w+)/ox) {
+        $hc++;
+        report($manfilepath, $lc);
+    }
+}
+
+sub report {
+    my $file = shift;
+    my $line = shift;
+
+    my $msg = "hyphen is used as minus sign";
+
+    print "$file:$line: $msg\n"
+}
+
+if ($hc != 0) {
+    exit 1;
+}
+
+exit 0;
