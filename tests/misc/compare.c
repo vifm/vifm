@@ -654,6 +654,33 @@ TEST(two_pane_dups_renumbering)
 	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
 }
 
+TEST(removing_all_files_of_same_id_and_fake_entry_on_the_other_side)
+{
+	copy_file(TEST_DATA_PATH "/read/binary-data", SANDBOX_PATH "/binary-data");
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-1");
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-2");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+
+	basic_panes_check(7);
+
+	assert_success(remove(SANDBOX_PATH "/dos-eof-1"));
+	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
+	load_dir_list(&lwin, 1);
+
+	basic_panes_check(6);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+	assert_int_equal(4, lwin.dir_entry[3].id);
+	assert_int_equal(5, lwin.dir_entry[4].id);
+	assert_int_equal(6, lwin.dir_entry[5].id);
+
+	assert_success(remove(SANDBOX_PATH "/binary-data"));
+}
+
 static void
 basic_panes_check(int expected_len)
 {

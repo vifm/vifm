@@ -1924,14 +1924,14 @@ find_separator(FileView *view, int idx)
 
 	for(i = idx; i >= 0 && view->dir_entry[i].id == id; --i)
 	{
-		if(fentry_is_fake(&view->dir_entry[i]))
+		if(!view->dir_entry[i].temporary && fentry_is_fake(&view->dir_entry[i]))
 		{
 			return i;
 		}
 	}
 	for(i = idx + 1; i < view->list_rows && view->dir_entry[i].id == id; ++i)
 	{
-		if(fentry_is_fake(&view->dir_entry[i]))
+		if(!view->dir_entry[i].temporary && fentry_is_fake(&view->dir_entry[i]))
 		{
 			return i;
 		}
