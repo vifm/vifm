@@ -634,7 +634,8 @@ ops_t *
 fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
 		const char target_dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
+	ops_t *const ops = ops_alloc(main_op, ORM_FOREGROUND, descr, base_dir,
+			target_dir);
 	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = alloc_progress_data(0, ops);
@@ -807,7 +808,7 @@ fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op)
 ops_t *
 fops_get_bg_ops(OPS main_op, const char descr[], const char dir[])
 {
-	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir);
+	ops_t *const ops = ops_alloc(main_op, ORM_BACKGROUND, descr, dir, dir);
 	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = alloc_progress_data(1, NULL);

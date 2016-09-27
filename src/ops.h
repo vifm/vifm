@@ -73,6 +73,14 @@ typedef enum
 }
 ErrorResolutionPolicy;
 
+/* The way operation is being run. */
+typedef enum
+{
+	ORM_FOREGROUND,  /* Completely in the main thread. */
+	ORM_BACKGROUND,  /* Completely in background thread. */
+}
+OpRunningMode;
+
 /* Description of file operation on a set of files.  Collects information and
  * helps to keep track of progress. */
 typedef struct
@@ -85,7 +93,6 @@ typedef struct
 	                          and also frees it on ops_free(). */
 	const char *descr;     /* Description of operations. */
 	int shallow_eta;       /* Count only top level items, without recursion. */
-	int bg;                /* Executed in background (no user interaction). */
 	struct bg_op_t *bg_op; /* Information for background operation. */
 	char *errors;          /* Multi-line string of errors. */
 
@@ -100,6 +107,7 @@ typedef struct
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */
 
+	OpRunningMode run_mode;       /* How operation is executed. */
 	ConflictResolutionPolicy crp; /* What should be done on conflicts. */
 	ErrorResolutionPolicy erp;    /* What should be done on unexpected errors. */
 
@@ -107,8 +115,9 @@ typedef struct
 }
 ops_t;
 
-/* Allocates and initializes new ops_t.  Returns just allocated structure. */
-ops_t * ops_alloc(OPS main_op, int bg, const char descr[],
+/* Allocates and initializes new ops_t.  Returns just allocated structure or
+ * NULL on error. */
+ops_t * ops_alloc(OPS main_op, OpRunningMode run_mode, const char descr[],
 		const char base_dir[], const char target_dir[]);
 
 /* Describes main operation with one generic word.  Returns the description. */
