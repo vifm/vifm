@@ -66,6 +66,9 @@
 	Remove background commands from the :jobs list when corresponding
 	processes get terminated by a signal.
 
+	Use <exe file location>/data/colors as global storage of color schemes on
+	Windows.  Thanks to r44083.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -117,6 +120,9 @@
 
 	Fixed bogus "fuse mount was cancelled" message on %FOREGROUND mount
 	failing.
+
+	Fixed determining location of distributed files on Windows (help file and
+	sample vifmrc weren't installed).  Thanks to r44083.
 
 0.8.2-beta to 0.8.2
 

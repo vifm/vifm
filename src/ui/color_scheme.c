@@ -401,6 +401,7 @@ static file_hi_t * clone_cs_highlights(const col_scheme_t *from);
 static void reset_cs_colors(col_scheme_t *cs);
 static int source_cs(const char name[]);
 static void get_cs_path(const char name[], char buf[], size_t buf_size);
+static const char * get_global_colors_dir(void);
 static void check_cs(col_scheme_t *cs);
 static void load_color_pairs(col_scheme_t *cs);
 static void ensure_dir_map_exists(void);
@@ -507,7 +508,7 @@ list_cs_files(int *len)
 	*len = 0;
 
 	list = list_regular_files(cfg.colors_dir, list, len);
-	list = list_regular_files(GLOBAL_COLORS_DIR, list, len);
+	list = list_regular_files(get_global_colors_dir(), list, len);
 
 	return list;
 }
@@ -858,13 +859,31 @@ get_cs_path(const char name[], char buf[], size_t buf_size)
 		return;
 	}
 
-	snprintf(buf, buf_size, GLOBAL_COLORS_DIR "/%s.vifm", name);
+	snprintf(buf, buf_size, "%s/%s.vifm", get_global_colors_dir(),
+			name);
 	if(is_regular_file(buf))
 	{
 		return;
 	}
 
 	(void)cut_suffix(buf, ".vifm");
+}
+
+/* Retrieves path to global directory containing color schemes.  Returns the
+ * path. */
+static const char *
+get_global_colors_dir(void)
+{
+#ifndef _WIN32
+	return GLOBAL_COLORS_DIR;
+#else
+	static char dir_path[PATH_MAX];
+	if(dir_path[0] == '\0')
+	{
+		snprintf(dir_path, sizeof(dir_path), "%s/colors", get_installed_data_dir());
+	}
+	return dir_path;
+#endif
 }
 
 /* Checks whether colorscheme is in unusable state and resets it to normal
