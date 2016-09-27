@@ -135,10 +135,11 @@ void bg_process_finished_cb(pid_t pid, int exit_code);
  * needed. */
 void bg_check(void);
 
-/* Starts new background task, which is run in a separate thread.  Returns zero
- * on success, otherwise non-zero is returned. */
+/* Starts new background task, which is run in a separate thread.  Creates
+ * detached thread unless id is not NULL.  Returns zero on success, otherwise
+ * non-zero is returned. */
 int bg_execute(const char descr[], const char op_descr[], int total,
-		int important, bg_task_func task_func, void *args);
+		int important, bg_task_func task_func, void *args, pthread_t *id);
 
 /* Checks whether there are any internal jobs (not external applications tracked
  * by vifm) running in background. */

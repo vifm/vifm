@@ -374,7 +374,7 @@ fops_delete_bg(view_t *view, int use_trash)
 			use_trash ? "deleting" : "Deleting", args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &delete_files_in_bg,
-				args) != 0)
+				args, NULL) != 0)
 	{
 		fops_free_bg_args(args);
 
@@ -1125,8 +1125,8 @@ start_dir_size_calc(const char path[], int force)
 
 	snprintf(task_desc, sizeof(task_desc), "Calculating size: %s", path);
 
-	if(bg_execute(task_desc, path, BG_UNDEFINED_TOTAL, 0, &dir_size_bg,
-				args) != 0)
+	if(bg_execute(task_desc, path, BG_UNDEFINED_TOTAL, 0, &dir_size_bg, args,
+				NULL) != 0)
 	{
 		free(args->path);
 		free(args);

@@ -305,7 +305,7 @@ fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int force)
 			move ? "moving" : "copying", args->path);
 
 	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &cpmv_files_in_bg,
-				args) != 0)
+				args, NULL) != 0)
 	{
 		fops_free_bg_args(args);
 

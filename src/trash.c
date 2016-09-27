@@ -296,7 +296,7 @@ empty_trash_dir(const char trash_dir[], int can_delete)
 	char *trash_dir_copy = format_str("%c%s", can_delete ? '1' : '0', trash_dir);
 
 	if(bg_execute(task_desc, op_desc, BG_UNDEFINED_TOTAL, 1, &empty_trash_in_bg,
-			trash_dir_copy) != 0)
+			trash_dir_copy, NULL) != 0)
 	{
 		free(trash_dir_copy);
 	}

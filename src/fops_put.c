@@ -185,8 +185,8 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 	args->ops = fops_get_bg_ops((args->move ? OP_MOVE : OP_COPY),
 			move ? "Putting" : "putting", args->path);
 
-	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg,
-				args) != 0)
+	if(bg_execute(task_desc, "...", args->sel_list_len, 1, &put_files_in_bg, args,
+				NULL) != 0)
 	{
 		fops_free_bg_args(args);
 
