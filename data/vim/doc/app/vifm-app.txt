@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 23
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4314,7 +4314,7 @@ pane).
 
 Files are gathered in this way:
  - recursively starting at current location of the view;
- - no files are excluded;
+ - dot files are excluded if view hides them at the moment of comparison;
  - directories are not taken into account;
  - symbolic links to directories are ignored.
 

@@ -61,7 +61,8 @@ static int id_sorter(const void *first, const void *second);
 static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
 		CompareType ct, int dups_only);
-static void list_files_recursively(const char path[], strlist_t *list);
+static void list_files_recursively(const char path[], int skip_dot_files,
+		strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
 
@@ -463,7 +464,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	int last_progress = 0;
 
 	show_progress("Listing...", 0);
-	list_files_recursively(flist_get_dir(view), &files);
+	list_files_recursively(flist_get_dir(view), view->hide_dot, &files);
 
 	show_progress("Querying...", 0);
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
@@ -520,7 +521,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 
 /* Collects files under specified file system tree. */
 static void
-list_files_recursively(const char path[], strlist_t *list)
+list_files_recursively(const char path[], int skip_dot_files, strlist_t *list)
 {
 	int i;
 
@@ -535,12 +536,19 @@ list_files_recursively(const char path[], strlist_t *list)
 	/* Visit all subdirectories ignoring symbolic links to directories. */
 	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
-		char *const full_path = format_str("%s/%s", path, lst[i]);
+		char *full_path;
+		if(skip_dot_files && lst[i][0] == '.')
+		{
+			update_string(&lst[i], NULL);
+			continue;
+		}
+
+		full_path = format_str("%s/%s", path, lst[i]);
 		if(is_dir(full_path))
 		{
 			if(!is_symlink(full_path))
 			{
-				list_files_recursively(full_path, list);
+				list_files_recursively(full_path, skip_dot_files, list);
 			}
 			free(full_path);
 			update_string(&lst[i], NULL);

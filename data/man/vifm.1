@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 23, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 27, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5100,7 +5100,7 @@ pane).
 
 Files are gathered in this way:
  \- recursively starting at current location of the view;
- \- no files are excluded;
+ \- dot files are excluded if view hides them at the moment of comparison;
  \- directories are not taken into account;
  \- symbolic links to directories are ignored.
 .\" ---------------------------------------------------------------------------

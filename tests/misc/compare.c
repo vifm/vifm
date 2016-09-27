@@ -681,6 +681,16 @@ TEST(removing_all_files_of_same_id_and_fake_entry_on_the_other_side)
 	assert_success(remove(SANDBOX_PATH "/binary-data"));
 }
 
+TEST(compare_considers_dot_filter)
+{
+	lwin.hide_dot = 1;
+	rwin.hide_dot = 1;
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/tree");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+	basic_panes_check(5);
+}
+
 static void
 basic_panes_check(int expected_len)
 {
