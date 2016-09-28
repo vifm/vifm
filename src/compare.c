@@ -60,14 +60,14 @@ static void fill_side_by_side(entries_t curr, entries_t other, int group_paths);
 static int id_sorter(const void *first, const void *second);
 static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
-		CompareType ct, int dups_only);
+		CompareType ct, int skip_empty, int dups_only);
 static void list_files_recursively(const char path[], int skip_dot_files,
 		strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
 
 int
-compare_two_panes(CompareType ct, ListType lt, int group_paths)
+compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 {
 	int next_id = 1;
 	entries_t curr, other;
@@ -76,8 +76,9 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
-	curr = make_diff_list(trie, curr_view, &next_id, ct, 0);
-	other = make_diff_list(trie, other_view, &next_id, ct, lt == LT_DUPS);
+	curr = make_diff_list(trie, curr_view, &next_id, ct, skip_empty, 0);
+	other = make_diff_list(trie, other_view, &next_id, ct, skip_empty,
+			lt == LT_DUPS);
 
 	ui_cancellation_disable();
 	trie_free(trie);
@@ -338,7 +339,7 @@ fill_side_by_side(entries_t curr, entries_t other, int group_paths)
 }
 
 int
-compare_one_pane(FileView *view, CompareType ct, ListType lt)
+compare_one_pane(FileView *view, CompareType ct, ListType lt, int skip_empty)
 {
 	int i, dup_id;
 	FileView *other = (view == curr_view) ? other_view : curr_view;
@@ -352,7 +353,7 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
-	curr = make_diff_list(trie, view, &next_id, ct, 0);
+	curr = make_diff_list(trie, view, &next_id, ct, skip_empty, 0);
 
 	ui_cancellation_disable();
 	trie_free(trie);
@@ -456,7 +457,7 @@ put_or_free(FileView *view, dir_entry_t *entry, int id, int take)
  * trie. */
 static entries_t
 make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
-		int dups_only)
+		int skip_empty, int dups_only)
 {
 	int i;
 	strlist_t files = {};
@@ -472,11 +473,19 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		char progress_msg[128];
 		int progress;
 		void *data;
+		char *fingerprint;
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
 				path);
-		char *const fingerprint = get_file_fingerprint(path, entry, ct);
 
+		if(skip_empty && entry->size == 0)
+		{
+			free_dir_entry(view, entry);
+			--r.nentries;
+			continue;
+		}
+
+		fingerprint = get_file_fingerprint(path, entry, ct);
 		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
 		 * files isn't readable), ignore the file and keep going. */
 		if(is_null_or_empty(fingerprint))

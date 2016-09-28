@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 27, 2016" "vifm 0.8.2"
+.TH VIFM 1 "September 28, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1517,7 +1517,7 @@ equals
 .BI "                                         :compare"
 .TP
 .BI ":compare [byname | bysize | bycontents | listall | listunique | listdups |\
- ofboth | ofone | groupids | grouppaths]..."
+ ofboth | ofone | groupids | grouppaths | skipempty]..."
 compare files in one or two views according the arguments.  The default
 is "bycontents listall ofboth grouppaths".  See "Compare views" section below
 for details.  Tree structure is incompatible with ls-like view, so value of
@@ -5037,6 +5037,9 @@ How results are grouped (has no effect if "ofone" specified):
  \- groupids   \- files considered identical are always adjacent in output;
  \- grouppaths \- file system ordering is preferred (this also enables \
 displaying identically named files as mismatches).
+
+Which files to omit:
+ \- skipempty \- ignore empty files.
 
 Note that file contents is not compared directly for performance reasons and
 even though a fast hashing function is used (as opposed to cryptographically

@@ -412,6 +412,8 @@ complete_compare(const char str[])
 
 		{ "groupids",   "group files in two panes by ids" },
 		{ "grouppaths", "group files in two panes by paths" },
+
+		{ "skipempty",  "exclude empty files from comparison" },
 	};
 
 	complete_from_string_list(str, lines, ARRAY_LEN(lines), 0);

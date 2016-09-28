@@ -42,11 +42,13 @@ ListType;
 /* Composes two panes containing information about derived from two file system
  * trees.  If group_paths is zero, views are sorted by ids.  Returns non-zero if
  * status bar message should be preserved. */
-int compare_two_panes(CompareType ct, ListType lt, int group_paths);
+int compare_two_panes(CompareType ct, ListType lt, int group_paths,
+		int skip_empty);
 
 /* Replaces single pane with information derived from its files.  Returns
  * non-zero if status bar message should be preserved. */
-int compare_one_pane(FileView *view, CompareType ct, ListType lt);
+int compare_one_pane(FileView *view, CompareType ct, ListType lt,
+		int skip_empty);
 
 #endif /* VIFM__DIFF_H__ */
 

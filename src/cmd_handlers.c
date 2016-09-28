@@ -140,7 +140,7 @@ static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static int compare_cmd(const cmd_info_t *cmd_info);
 static int parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
-		ListType *lt, int *single_pane, int *group_ids);
+		ListType *lt, int *single_pane, int *group_ids, int *skip_empty);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
@@ -1739,16 +1739,16 @@ compare_cmd(const cmd_info_t *cmd_info)
 {
 	CompareType ct = CT_CONTENTS;
 	ListType lt = LT_ALL;
-	int single_pane = 0, group_ids = 0;
+	int single_pane = 0, group_ids = 0, skip_empty = 0;
 	if(parse_compare_properties(cmd_info, &ct, &lt, &single_pane,
-				&group_ids) != 0)
+				&group_ids, &skip_empty) != 0)
 	{
 		return 1;
 	}
 
 	return single_pane
-	     ? (compare_one_pane(curr_view, ct, lt) != 0)
-	     : (compare_two_panes(ct, lt, !group_ids) != 0);
+	     ? (compare_one_pane(curr_view, ct, lt, skip_empty) != 0)
+	     : (compare_two_panes(ct, lt, !group_ids, skip_empty) != 0);
 }
 
 /* Parses comparison properties.  Default values for arguments should be set
@@ -1756,7 +1756,7 @@ compare_cmd(const cmd_info_t *cmd_info)
  * error message is displayed on the status bar. */
 static int
 parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
-		ListType *lt, int *single_pane, int *group_ids)
+		ListType *lt, int *single_pane, int *group_ids, int *skip_empty)
 {
 	int i;
 	for(i = 0; i < cmd_info->argc; ++i)
@@ -1772,6 +1772,7 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 		else if(strcmp(property, "ofone") == 0)      *single_pane = 1;
 		else if(strcmp(property, "groupids") == 0)   *group_ids = 1;
 		else if(strcmp(property, "grouppaths") == 0) *group_ids = 0;
+		else if(strcmp(property, "skipempty") == 0)  *skip_empty = 1;
 		else
 		{
 			status_bar_errorf("Unknown comparison property: %s", property);

@@ -681,6 +681,11 @@ TEST(compare)
 	create_file(SANDBOX_PATH "/file");
 
 	to_canonic_path(SANDBOX_PATH, cwd, lwin.curr_dir, sizeof(lwin.curr_dir));
+
+	/* The file is empty so nothing to do when "skipempty" is specified. */
+	assert_success(exec_commands("compare ofone skipempty", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+
 	(void)exec_commands("compare byname bysize bycontents listall listdups "
 			"listunique ofboth ofone groupids grouppaths", &lwin, CIT_COMMAND);
 	assert_true(flist_custom_active(&lwin));
