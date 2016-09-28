@@ -19,6 +19,7 @@
 #ifndef VIFM__OPS_H__
 #define VIFM__OPS_H__
 
+#include "compat/pthread.h"
 #include "io/ioeta.h"
 
 /* Kinds of operations on files. */
@@ -77,6 +78,7 @@ ErrorResolutionPolicy;
 typedef enum
 {
 	ORM_FOREGROUND,  /* Completely in the main thread. */
+	ORM_DETACHED_UI, /* Operation is done in background, but it's synchronous. */
 	ORM_BACKGROUND,  /* Completely in background thread. */
 }
 OpRunningMode;
@@ -107,6 +109,9 @@ typedef struct
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */
 
+	/* Lock to be held while accessing UI for ORM_DETACHED_UI ops. */
+	pthread_spinlock_t detached_ui_lock;
+
 	OpRunningMode run_mode;       /* How operation is executed. */
 	ConflictResolutionPolicy crp; /* What should be done on conflicts. */
 	ErrorResolutionPolicy erp;    /* What should be done on unexpected errors. */
@@ -129,6 +134,12 @@ void ops_enqueue(ops_t *ops, const char src[], const char dst[]);
 
 /* Advances ops to the next item. */
 void ops_advance(ops_t *ops, int succeeded);
+
+      
+void ops_lock_ui(ops_t *ops);
+
+      
+void ops_unlock_ui(ops_t *ops);
 
 /* Frees ops_t.  The ops can be NULL. */
 void ops_free(ops_t *ops);

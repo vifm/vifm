@@ -935,12 +935,12 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	if(id == NULL)
 	{
 		id = &discarded_id;
-	}
-	else if(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0)
-	{
-		free(task_args);
-		(void)pthread_attr_destroy(&attr);
-		return 1;
+		if(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0)
+		{
+			free(task_args);
+			(void)pthread_attr_destroy(&attr);
+			return 1;
+		}
 	}
 
 	replace_string(&task_args->job->bg_op.descr, op_descr);

@@ -39,6 +39,19 @@
 #include "trash.h"
 #include "undo.h"
 
+       
+typedef struct
+{
+	FileView *view;           
+	char **list;
+	int nlines;
+	CopyMoveLikeOp op;
+	int force;
+	int result;
+}
+cpmv_detach;
+
+static void cpmv_detached_bg(bg_op_t *bg_op, void *arg);
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops,
 		int force);
@@ -59,6 +72,52 @@ static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 int
 fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 {
+	cpmv_detach args = {
+		.view = view,
+		.list = list,
+		.nlines = nlines,
+		.op = op,
+		.force = force,
+	};
+	pthread_t id;
+	void *param;
+
+	if(bg_execute("", "...", 0, 0, &cpmv_detached_bg, &args, &id) != 0)    
+	{
+		show_error_msg("Can't process files",
+				"Failed to initiate background operation");
+		return 0;
+	}
+
+	/* ops_lock_ui(ops); */
+	/* asdf */
+	/* wtimeout(status_bar, 200); */        
+	/* result = compat_wget_wch(win, c); */
+	/* if(result != ERR) */
+	/* { */
+	/* 	return result; */
+	/* } */
+	//if(ui_cancellation_requested())
+	//pthread_kill(id, SIGINT);
+	/* ops_unlock_ui(ops); */
+
+
+	pthread_join(id, &param);         
+	return (int)(size_t)param;
+}
+
+        
+static void
+cpmv_detached_bg(bg_op_t *bg_op, void *arg)
+{
+	cpmv_detach *args = arg;
+
+	FileView *view = args->view;
+	char **list = args->list;
+	int nlines = args->nlines;
+	CopyMoveLikeOp op = args->op;
+	int force = args->force;
+
 	int err;
 	int nmarked_files;
 	int custom_fnames;
@@ -73,14 +132,16 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	{
 		show_error_msg("Symbolic Links Error",
 				"Your OS doesn't support symbolic links");
-		return 0;
+		args->result = 0;
+		return;
 	}
 
 	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
 			sizeof(undo_msg), path, sizeof(path), &from_file);
 	if(err != 0)
 	{
-		return err > 0;
+		args->result = err > 0;
+		return;
 	}
 
 	if(pane_in_dir(view, path) && force)
@@ -88,28 +149,28 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		show_error_msg("Operation Error",
 				"Forcing overwrite when destination and source is same directory will "
 				"lead to losing data");
-		return 0;
+		args->result = 0;
+		return;
 	}
 
 	switch(op)
 	{
 		case CMLO_COPY:
-			ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), path, 1);
 			break;
 		case CMLO_MOVE:
-			ops = fops_get_ops(OP_MOVE, "Moving", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_MOVE, "Moving", flist_get_dir(view), path, 1);
 			break;
 		case CMLO_LINK_REL:
 		case CMLO_LINK_ABS:
-			ops = fops_get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path, 1);
 			break;
 
 		default:
 			assert(0 && "Unexpected operation type.");
-			return 0;
+			args->result = 0;
+			return;
 	}
-
-	ui_cancellation_reset();
 
 	nmarked_files = fops_enqueue_marked_files(ops, view, path, 0);
 
@@ -182,7 +243,8 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 
 	fops_free_ops(ops);
 
-	return 1;
+	args->result = 1;
+	return;
 }
 
 void

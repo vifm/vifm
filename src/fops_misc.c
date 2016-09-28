@@ -143,7 +143,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 	un_group_open(undo_msg);
 
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
-			curr_dir);
+			curr_dir, 0);
 
 	ui_cancellation_reset();
 
@@ -569,7 +569,7 @@ change_link_cb(const char new_target[])
 		return;
 	}
 
-	ops = fops_get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir);
+	ops = fops_get_ops(OP_SYMLINK2, "re-targeting", curr_dir, curr_dir, 0);
 
 	fname = get_last_path_component(full_path);
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
@@ -686,7 +686,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	fops_append_marked_files(view, undo_msg, list);
 
 	ops = fops_get_ops(OP_COPY, "Cloning", curr_dir,
-			with_dir ? list[0] : curr_dir);
+			with_dir ? list[0] : curr_dir, 0);
 
 	ui_cancellation_reset();
 
@@ -958,7 +958,7 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 
 	ui_cancellation_reset();
 
-	ops = fops_get_ops(OP_MKFILE, "touching", dst_dir, dst_dir);
+	ops = fops_get_ops(OP_MKFILE, "touching", dst_dir, dst_dir, 0);
 
 	snprintf(buf, sizeof(buf), "touch in %s: ", replace_home_part(dst_dir));
 
@@ -1257,7 +1257,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 	snprintf(undo_msg, sizeof(undo_msg), "ch%s in %s: ",
 			((u && g) || u) ? "own" : "grp", replace_home_part(curr_dir));
 
-	ops = fops_get_ops(OP_CHOWN, "re-owning", curr_dir, curr_dir);
+	ops = fops_get_ops(OP_CHOWN, "re-owning", curr_dir, curr_dir, 0);
 	(void)fops_enqueue_marked_files(ops, view, NULL, 0);
 
 	fops_append_marked_files(view, undo_msg, NULL);

@@ -172,6 +172,15 @@ ops_alloc(OPS main_op, OpRunningMode run_mode, const char descr[],
 		return NULL;
 	}
 
+	if(run_mode == ORM_DETACHED_UI)
+	{
+		if(pthread_spin_init(&ops->detached_ui_lock, PTHREAD_PROCESS_PRIVATE) != 0)
+		{
+			free(ops);
+			return NULL;
+		}
+	}
+
 	ops->main_op = main_op;
 	ops->descr = descr;
 	update_string(&ops->slow_fs_list, cfg.slow_fs_list);
@@ -254,11 +263,34 @@ ops_advance(ops_t *ops, int succeeded)
 }
 
 void
+ops_lock_ui(ops_t *ops)
+{
+	if(ops->run_mode == ORM_DETACHED_UI)
+	{
+		(void)pthread_spin_lock(&ops->detached_ui_lock);
+	}
+}
+
+void
+ops_unlock_ui(ops_t *ops)
+{
+	if(ops->run_mode == ORM_DETACHED_UI)
+	{
+		(void)pthread_spin_unlock(&ops->detached_ui_lock);
+	}
+}
+
+void
 ops_free(ops_t *ops)
 {
 	if(ops == NULL)
 	{
 		return;
+	}
+
+	if(ops->run_mode == ORM_DETACHED_UI)
+	{
+		(void)pthread_spin_destroy(&ops->detached_ui_lock);
 	}
 
 	ioeta_free(ops->estim);

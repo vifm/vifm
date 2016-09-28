@@ -350,7 +350,8 @@ reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
 	put_confirm.dst_dir = strdup(dst_dir);
-	put_confirm.ops = fops_get_ops(cmlo_to_op(main_op), descr, dst_dir, dst_dir);
+	put_confirm.ops = fops_get_ops(cmlo_to_op(main_op), descr, dst_dir, dst_dir,
+			0);
 }
 
 /* Gets operation kind that corresponds to copy/move-like operation.  Returns

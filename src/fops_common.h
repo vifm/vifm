@@ -124,7 +124,7 @@ int fops_enqueue_marked_files(ops_t *ops, struct view_t *view,
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
  * newly allocated structure, which should be freed by free_ops(). */
 ops_t * fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
-		const char target_dir[]);
+		const char target_dir[], int detached_ui);
 
 /* Displays simple operation progress message.  The ready is zero based. */
 void fops_progress_msg(const char text[], int ready, int total);

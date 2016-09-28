@@ -632,10 +632,10 @@ fops_enqueue_marked_files(ops_t *ops, view_t *view, const char dst_hint[],
 
 ops_t *
 fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
-		const char target_dir[])
+		const char target_dir[], int detached_ui)
 {
-	ops_t *const ops = ops_alloc(main_op, ORM_FOREGROUND, descr, base_dir,
-			target_dir);
+	OpRunningMode orm = detached_ui ? ORM_DETACHED_UI : ORM_FOREGROUND;
+	ops_t *const ops = ops_alloc(main_op, orm, descr, base_dir, target_dir);
 	if(ops->use_system_calls)
 	{
 		progress_data_t *const pdata = alloc_progress_data(0, ops);
