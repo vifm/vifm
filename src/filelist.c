@@ -622,8 +622,8 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 
 	if(custom_list_is_incomplete(view))
 	{
-		entry = entry_from_path(view->custom.entries, view->custom.entry_count,
-				full_path);
+		entry = entry_from_path(view->local_filter.entries,
+				view->local_filter.entry_count, full_path);
 		if(entry == NULL)
 		{
 			/* No such entry in the view at all. */
@@ -1247,6 +1247,9 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 static void
 on_location_change(FileView *view, int force)
 {
+	free_dir_entries(view, &view->local_filter.entries,
+			&view->local_filter.entry_count);
+
 	if(force || (cfg.cvoptions & CVO_LOCALFILTER))
 	{
 		filters_dir_updated(view);
@@ -1424,8 +1427,8 @@ flist_custom_clone(FileView *to, const FileView *from)
 
 	if(custom_list_is_incomplete(from))
 	{
-		src = from->custom.entries;
-		nentries = from->custom.entry_count;
+		src = from->local_filter.entries;
+		nentries = from->local_filter.entry_count;
 	}
 	else
 	{
@@ -1833,7 +1836,7 @@ populate_custom_view(FileView *view, int reload)
 		{
 			/* Load initial list of custom entries if it's available. */
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
-					view->custom.entries, view->custom.entry_count);
+					view->local_filter.entries, view->local_filter.entry_count);
 		}
 
 		(void)zap_entries(view, view->dir_entry, &view->list_rows,
@@ -1976,19 +1979,19 @@ update_dir_watcher(FileView *view)
 static int
 custom_list_is_incomplete(const FileView *view)
 {
-	if(view->custom.entry_count == 0)
+	if(view->local_filter.entry_count == 0)
 	{
 		return 0;
 	}
 
 	if(view->list_rows == 1 && is_parent_dir(view->dir_entry[0].name) &&
-			!(view->custom.entry_count == 1 &&
-				is_parent_dir(view->custom.entries[0].name)))
+			!(view->local_filter.entry_count == 1 &&
+				is_parent_dir(view->local_filter.entries[0].name)))
 	{
 		return 1;
 	}
 
-	return view->list_rows != view->custom.entry_count;
+	return view->list_rows != view->local_filter.entry_count;
 }
 
 /* zap_entries() filter to filter-out inexistent files or files which names

@@ -206,15 +206,14 @@ typedef struct
 	/* Directory we're currently in. */
 	char curr_dir[PATH_MAX];
 
-	/* Parameters related to custom filling. */
+	/* Data related to custom filling. */
 	struct
 	{
 		/* Type of the custom view. */
 		CVType type;
 
 		/* This is temporary storage for custom list entries used during its
-		 * construction as well as storage for unfiltered custom list if local
-		 * filter is not empty. */
+		 * construction. */
 		dir_entry_t *entries; /* File entries. */
 		int entry_count;      /* Number of file entries. */
 
@@ -290,6 +289,10 @@ typedef struct
 	/* Various parameters related to local filter. */
 	struct
 	{
+		/* Original list of custom entries saved because otherwise we lose it. */
+		dir_entry_t *entries; /* File entries. */
+		int entry_count;      /* Number of file entries. */
+
 		/* Local filename filter. */
 		filter_t filter;
 		/* Whether interactive filtering in progress. */

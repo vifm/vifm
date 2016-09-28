@@ -134,6 +134,9 @@
 	Fixed restoring custom list on removing or changing local filter when
 	'incsearch' is off.
 
+	Fixed losing original custom list of files after failed load of new custom
+	list if local filter isn't empty.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
