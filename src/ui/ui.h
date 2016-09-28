@@ -218,6 +218,10 @@ typedef struct
 		dir_entry_t *entries; /* File entries. */
 		int entry_count;      /* Number of file entries. */
 
+		/* Title of the custom view being constructed.  Discarded if finishing
+		 * fails. */
+		char *next_title;
+
 		/* Directory we were in before custom view activation. */
 		char *orig_dir;
 		/* Title for the custom view. */

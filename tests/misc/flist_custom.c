@@ -579,6 +579,17 @@ TEST(files_are_excluded_from_custom_view)
 	assert_int_equal(0, lwin.selected_files);
 }
 
+TEST(cv_flist_title_is_preserved_on_next_cv_load_failure)
+{
+	setup_custom_view(&lwin, 0);
+	assert_string_equal("test", lwin.custom.title);
+
+	flist_custom_start(&lwin, "test-2");
+	assert_false(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_string_equal("test", lwin.custom.title);
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])

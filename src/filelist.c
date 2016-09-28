@@ -942,7 +942,7 @@ void
 flist_custom_start(FileView *view, const char title[])
 {
 	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
-	(void)replace_string(&view->custom.title, title);
+	(void)replace_string(&view->custom.next_title, title);
 
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = trie_create();
@@ -1165,10 +1165,13 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 	if(empty_view && !allow_empty)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
-		free(view->custom.title);
-		view->custom.title = NULL;
+		update_string(&view->custom.next_title, NULL);
 		return 1;
 	}
+
+	free(view->custom.title);
+	view->custom.title = view->custom.next_title;
+	view->custom.next_title = NULL;
 
 	/* If there are no files and we are allowed to add ".." directory, do it. */
 	if(empty_view || (!cv_unsorted(type) && cfg_parent_dir_is_visible(0)))
