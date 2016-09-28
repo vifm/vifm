@@ -753,6 +753,14 @@ local_filter_apply(FileView *view, const char filter[])
 
 	(void)filter_set(&view->local_filter.filter, filter);
 	cfg_save_filter_history(view->local_filter.filter.raw);
+
+	if(flist_custom_active(view) && view->custom.type != CV_TREE &&
+			view->custom.entry_count == 0)
+	{
+		/* Save unfiltered (by local filter) list for further use. */
+		replace_dir_entries(view, &view->custom.entries,
+				&view->custom.entry_count, view->dir_entry, view->list_rows);
+	}
 }
 
 void

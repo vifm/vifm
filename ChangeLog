@@ -131,6 +131,9 @@
 	Fixed resetting custom view title to "(null)" when loading another custom
 	view in the same pane failed.
 
+	Fixed restoring custom list on removing or changing local filter when
+	'incsearch' is off.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
