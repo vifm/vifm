@@ -24,6 +24,9 @@
 /* Declaration of opaque trie type. */
 typedef struct trie_t trie_t;
 
+/* Type of function to free data in the trie via trie_free_with_data() . */
+typedef void (*trie_free_func)(void *ptr);
+
 /* Creates new empty trie.  Returns NULL on error. */
 trie_t * trie_create(void);
 
@@ -35,8 +38,8 @@ trie_t * trie_clone(trie_t *trie);
 void trie_free(trie_t *trie);
 
 /* Frees memory allocated for the trie.  Freeing of NULL trie is OK.  All data
- * associated with trie entries is freed by calling free() on it. */
-void trie_free_with_data(trie_t *trie);
+ * associated with trie entries is freed by calling free_func() on it. */
+void trie_free_with_data(trie_t *trie, trie_free_func free_func);
 
 /* Inserts string to the trie if it's not already there.  Returns negative value
  * on error, zero on successful insertion and positive number if element was

@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stddef.h> /* NULL */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
 #include "../../src/utils/trie.h"
@@ -138,7 +139,7 @@ TEST(free_with_data_removes_data)
 	assert_true(trie_set(trie, "str", strdup("str")) == 0);
 	assert_true(trie_set(trie, "something", strdup("something")) == 0);
 
-	trie_free_with_data(trie);
+	trie_free_with_data(trie, &free);
 }
 
 TEST(cloning_null_trie_is_ok)

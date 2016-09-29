@@ -96,14 +96,14 @@ trie_free(trie_t *trie)
 }
 
 void
-trie_free_with_data(trie_t *trie)
+trie_free_with_data(trie_t *trie, trie_free_func free_func)
 {
 	if(trie != NULL)
 	{
-		trie_free_with_data(trie->left);
-		trie_free_with_data(trie->right);
-		trie_free_with_data(trie->children);
-		free(trie->data);
+		trie_free_with_data(trie->left, free_func);
+		trie_free_with_data(trie->right, free_func);
+		trie_free_with_data(trie->children, free_func);
+		free_func(trie->data);
 		free(trie);
 	}
 }
