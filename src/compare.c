@@ -65,6 +65,8 @@ static void list_files_recursively(const char path[], int skip_dot_files,
 		strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
+static int get_file_id(trie_t *trie, const char fingerprint[], int *id);
+static void put_file_id(trie_t *trie, const char fingerprint[], int id);
 
 int
 compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
@@ -472,7 +474,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	{
 		char progress_msg[128];
 		int progress;
-		void *data;
+		int existing_id;
 		char *fingerprint;
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
@@ -497,9 +499,9 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		}
 
 		entry->tag = i;
-		if(trie_get(trie, fingerprint, &data) == 0)
+		if(get_file_id(trie, fingerprint, &existing_id))
 		{
-			entry->id = (int)(uintptr_t)data;
+			entry->id = existing_id;
 		}
 		else if(dups_only)
 		{
@@ -509,7 +511,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		{
 			entry->id = *next_id;
 			++*next_id;
-			trie_set(trie, fingerprint, (void *)(uintptr_t)entry->id);
+			put_file_id(trie, fingerprint, entry->id);
 		}
 
 		free(fingerprint);
@@ -638,6 +640,27 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 #undef XX__
 #undef XX_
 #undef XX
+}
+
+/* Retrieves file from the trie by its fingerprint.  Returns non-zero if it was
+ * in the trie and sets *id, otherwise zero is returned. */
+static int
+get_file_id(trie_t *trie, const char fingerprint[], int *id)
+{
+	void *data;
+	if(trie_get(trie, fingerprint, &data) != 0)
+	{
+		return 0;
+	}
+	*id = (int)(uintptr_t)data;
+	return 1;
+}
+
+/* Stores id of a file with given fingerprint in the trie. */
+static void
+put_file_id(trie_t *trie, const char fingerprint[], int id)
+{
+	trie_set(trie, fingerprint, (void *)(uintptr_t)id);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
