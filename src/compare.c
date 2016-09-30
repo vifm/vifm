@@ -52,6 +52,14 @@ typedef struct
 }
 entries_t;
 
+/* Entry in singly-bounded list of files that have matched fingerprints. */
+typedef struct compare_record_t
+{
+	int id;                        /* Chosen id. */
+	struct compare_record_t *next; /* Next entry in the list. */
+}
+compare_record_t;
+
 static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
 static int is_not_duplicate(FileView *view, const dir_entry_t *entry,
@@ -67,6 +75,7 @@ static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
 static int get_file_id(trie_t *trie, const char fingerprint[], int *id);
 static void put_file_id(trie_t *trie, const char fingerprint[], int id);
+static void free_compare_records(void *ptr);
 
 int
 compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
@@ -83,7 +92,7 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 			lt == LT_DUPS);
 
 	ui_cancellation_disable();
-	trie_free(trie);
+	trie_free_with_data(trie, &free_compare_records);
 
 	/* Clear progress message displayed by make_diff_list(). */
 	ui_sb_quick_msg_clear();
@@ -358,7 +367,7 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt, int skip_empty)
 	curr = make_diff_list(trie, view, &next_id, ct, skip_empty, 0);
 
 	ui_cancellation_disable();
-	trie_free(trie);
+	trie_free_with_data(trie, &free_compare_records);
 
 	/* Clear progress message displayed by make_diff_list(). */
 	ui_sb_quick_msg_clear();
@@ -648,11 +657,13 @@ static int
 get_file_id(trie_t *trie, const char fingerprint[], int *id)
 {
 	void *data;
+	compare_record_t *record;
 	if(trie_get(trie, fingerprint, &data) != 0)
 	{
 		return 0;
 	}
-	*id = (int)(uintptr_t)data;
+	record = data;
+	*id = record->id;
 	return 1;
 }
 
@@ -660,7 +671,28 @@ get_file_id(trie_t *trie, const char fingerprint[], int *id)
 static void
 put_file_id(trie_t *trie, const char fingerprint[], int id)
 {
-	trie_set(trie, fingerprint, (void *)(uintptr_t)id);
+	compare_record_t *const record = malloc(sizeof(*record));
+	void *data = NULL;
+	(void)trie_get(trie, fingerprint, &data);
+
+	record->id = id;
+	record->next = data;
+
+	trie_set(trie, fingerprint, record);
+}
+
+/* Frees list of compare entries.  Implements data free function for
+ * trie_free_with_data(). */
+static void
+free_compare_records(void *ptr)
+{
+	compare_record_t *record = ptr;
+	while(record != NULL)
+	{
+		compare_record_t *const current = record;
+		record = record->next;
+		free(current);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
