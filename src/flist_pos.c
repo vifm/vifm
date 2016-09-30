@@ -248,7 +248,10 @@ flist_find_group(const FileView *view, int next)
 	const char *ext = get_last_ext(pentry->name);
 	size_t char_width = utf8_chrw(pentry->name);
 	wchar_t ch = towupper(get_first_wchar(pentry->name));
-	const SortingKey sorting_key = abs(view->sort[0]);
+	const SortingKey sorting_key =
+		flist_custom_active(view) && cv_compare(view->custom.type)
+		? SK_BY_ID
+		: abs(view->sort[0]);
 	const int is_dir = is_directory_entry(pentry);
 	const char *const type_str = get_type_str(pentry->type);
 	regmatch_t pmatch = { .rm_so = 0, .rm_eo = 0 };
@@ -397,6 +400,15 @@ flist_find_group(const FileView *view, int next)
 				}
 				break;
 #endif
+		}
+		/* Id sorting is builtin only and is defined outside SortingKey
+		 * enumeration. */
+		if((int)sorting_key == SK_BY_ID)
+		{
+			if(nentry->id != pentry->id)
+			{
+				return pos;
+			}
 		}
 	}
 	return pos;
