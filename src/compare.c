@@ -60,13 +60,14 @@ static void fill_side_by_side(entries_t curr, entries_t other, int group_paths);
 static int id_sorter(const void *first, const void *second);
 static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
-		CompareType ct, int dups_only);
-static void list_files_recursively(const char path[], strlist_t *list);
+		CompareType ct, int skip_empty, int dups_only);
+static void list_files_recursively(const char path[], int skip_dot_files,
+		strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
 
 int
-compare_two_panes(CompareType ct, ListType lt, int group_paths)
+compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 {
 	int next_id = 1;
 	entries_t curr, other;
@@ -75,8 +76,9 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths)
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
-	curr = make_diff_list(trie, curr_view, &next_id, ct, 0);
-	other = make_diff_list(trie, other_view, &next_id, ct, lt == LT_DUPS);
+	curr = make_diff_list(trie, curr_view, &next_id, ct, skip_empty, 0);
+	other = make_diff_list(trie, other_view, &next_id, ct, skip_empty,
+			lt == LT_DUPS);
 
 	ui_cancellation_disable();
 	trie_free(trie);
@@ -194,17 +196,21 @@ make_unique_lists(entries_t curr, entries_t other)
 static void
 leave_only_dups(entries_t *curr, entries_t *other)
 {
-	int i, j = 0;
-
 	int new_id = 0;
-	for(i = 0; i < other->nentries; ++i)
+	int i = 0, j = 0;
+
+	/* Skip leading unmatched files. */
+	while(i < other->nentries && other->entries[i].id == -1)
+	{
+		++i;
+	}
+
+	/* Process sequences of files in two lists. */
+	while(i < other->nentries)
 	{
 		const int id = other->entries[i].id;
-		if(id == -1)
-		{
-			continue;
-		}
 
+		/* Skip sequence of unmatched files. */
 		while(j < curr->nentries && curr->entries[j].id < id)
 		{
 			curr->entries[j++].id = -1;
@@ -212,13 +218,29 @@ leave_only_dups(entries_t *curr, entries_t *other)
 
 		if(j < curr->nentries && curr->entries[j].id == id)
 		{
-			other->entries[i].id = ++new_id;
+			/* Allocate next id when we find a matching pair of files in both
+			 * lists. */
+			++new_id;
+			/* Update sequence of identical ids for other list. */
+			do
+			{
+				other->entries[i++].id = new_id;
+			}
+			while(i < other->nentries && other->entries[i].id == id);
+
+			/* Update sequence of identical ids for current list. */
+			do
+			{
+				curr->entries[j++].id = new_id;
+			}
+			while(j < curr->nentries && curr->entries[j].id == id);
 		}
-		while(j < curr->nentries && curr->entries[j].id == id)
-		{
-			curr->entries[j].id = new_id;
-			++j;
-		}
+	}
+
+	/* Exclude unprocessed files in the tail. */
+	while(j < curr->nentries)
+	{
+		curr->entries[j++].id = -1;
 	}
 
 	(void)zap_entries(other_view, other->entries, &other->nentries,
@@ -317,7 +339,7 @@ fill_side_by_side(entries_t curr, entries_t other, int group_paths)
 }
 
 int
-compare_one_pane(FileView *view, CompareType ct, ListType lt)
+compare_one_pane(FileView *view, CompareType ct, ListType lt, int skip_empty)
 {
 	int i, dup_id;
 	FileView *other = (view == curr_view) ? other_view : curr_view;
@@ -331,7 +353,7 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt)
 	ui_cancellation_reset();
 	ui_cancellation_enable();
 
-	curr = make_diff_list(trie, view, &next_id, ct, 0);
+	curr = make_diff_list(trie, view, &next_id, ct, skip_empty, 0);
 
 	ui_cancellation_disable();
 	trie_free(trie);
@@ -435,7 +457,7 @@ put_or_free(FileView *view, dir_entry_t *entry, int id, int take)
  * trie. */
 static entries_t
 make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
-		int dups_only)
+		int skip_empty, int dups_only)
 {
 	int i;
 	strlist_t files = {};
@@ -443,7 +465,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	int last_progress = 0;
 
 	show_progress("Listing...", 0);
-	list_files_recursively(flist_get_dir(view), &files);
+	list_files_recursively(flist_get_dir(view), view->hide_dot, &files);
 
 	show_progress("Querying...", 0);
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
@@ -451,11 +473,19 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		char progress_msg[128];
 		int progress;
 		void *data;
+		char *fingerprint;
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
 				path);
-		char *const fingerprint = get_file_fingerprint(path, entry, ct);
 
+		if(skip_empty && entry->size == 0)
+		{
+			free_dir_entry(view, entry);
+			--r.nentries;
+			continue;
+		}
+
+		fingerprint = get_file_fingerprint(path, entry, ct);
 		/* In case we couldn't obtain fingerprint (e.g., comparing by contents and
 		 * files isn't readable), ignore the file and keep going. */
 		if(is_null_or_empty(fingerprint))
@@ -500,7 +530,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 
 /* Collects files under specified file system tree. */
 static void
-list_files_recursively(const char path[], strlist_t *list)
+list_files_recursively(const char path[], int skip_dot_files, strlist_t *list)
 {
 	int i;
 
@@ -515,12 +545,19 @@ list_files_recursively(const char path[], strlist_t *list)
 	/* Visit all subdirectories ignoring symbolic links to directories. */
 	for(i = 0; i < len && !ui_cancellation_requested(); ++i)
 	{
-		char *const full_path = format_str("%s/%s", path, lst[i]);
+		char *full_path;
+		if(skip_dot_files && lst[i][0] == '.')
+		{
+			update_string(&lst[i], NULL);
+			continue;
+		}
+
+		full_path = format_str("%s/%s", path, lst[i]);
 		if(is_dir(full_path))
 		{
 			if(!is_symlink(full_path))
 			{
-				list_files_recursively(full_path, list);
+				list_files_recursively(full_path, skip_dot_files, list);
 			}
 			free(full_path);
 			update_string(&lst[i], NULL);

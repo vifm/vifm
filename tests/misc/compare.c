@@ -46,7 +46,7 @@ TEARDOWN()
 TEST(files_are_compared_by_name)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
-	compare_one_pane(&lwin, CT_NAME, LT_ALL);
+	compare_one_pane(&lwin, CT_NAME, LT_ALL, 0);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(3, lwin.list_rows);
@@ -58,7 +58,7 @@ TEST(files_are_compared_by_name)
 TEST(files_are_compared_by_size)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
-	compare_one_pane(&lwin, CT_SIZE, LT_ALL);
+	compare_one_pane(&lwin, CT_SIZE, LT_ALL, 0);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(3, lwin.list_rows);
@@ -70,7 +70,7 @@ TEST(files_are_compared_by_size)
 TEST(files_are_compared_by_contents)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(4, lwin.list_rows);
@@ -84,7 +84,7 @@ TEST(two_panes_all_group_ids)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, 0);
+	compare_two_panes(CT_NAME, LT_ALL, 0, 0);
 
 	basic_panes_check(4);
 
@@ -109,7 +109,7 @@ TEST(two_panes_all_group_paths)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, 1);
+	compare_two_panes(CT_NAME, LT_ALL, 1, 0);
 
 	basic_panes_check(4);
 
@@ -134,7 +134,7 @@ TEST(two_panes_dups_one_is_empty)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 
 	basic_panes_check(4);
 
@@ -157,7 +157,7 @@ TEST(two_panes_dups)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_DUPS, 1);
+	compare_two_panes(CT_CONTENTS, LT_DUPS, 1, 0);
 
 	basic_panes_check(3);
 
@@ -177,7 +177,7 @@ TEST(two_panes_unique)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 1);
+	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 1, 0);
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(1, rwin.list_rows);
@@ -194,7 +194,7 @@ TEST(single_pane_all)
 	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(4, lwin.list_rows);
@@ -214,7 +214,7 @@ TEST(single_pane_all)
 TEST(single_pane_dups)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS, 0);
 
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(5, lwin.list_rows);
@@ -234,7 +234,7 @@ TEST(single_pane_unique)
 	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_UNIQUE);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_UNIQUE, 0);
 
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	assert_int_equal(1, lwin.list_rows);
@@ -248,7 +248,7 @@ TEST(single_pane_unique)
 TEST(empty_root_directories_abort_single_comparison)
 {
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 
 	assert_false(flist_custom_active(&lwin));
 }
@@ -258,7 +258,7 @@ TEST(empty_root_directories_abort_dual_comparison)
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, SANDBOX_PATH);
 
-	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 	assert_false(flist_custom_active(&lwin));
 }
 
@@ -267,7 +267,7 @@ TEST(empty_unique_cv_are_created)
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, SANDBOX_PATH);
 
-	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 0);
+	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 0, 0);
 	assert_true(flist_custom_active(&lwin));
 	assert_true(flist_custom_active(&rwin));
 
@@ -281,7 +281,7 @@ TEST(empty_unique_cv_are_created)
 TEST(listing_wrong_path_does_nothing)
 {
 	strcpy(lwin.curr_dir, SANDBOX_PATH "/does-not-exist");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 
 	assert_false(flist_custom_active(&lwin));
 }
@@ -289,7 +289,7 @@ TEST(listing_wrong_path_does_nothing)
 TEST(files_are_found_recursively)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 
 	assert_int_equal(7, lwin.list_rows);
 }
@@ -302,7 +302,7 @@ TEST(compare_skips_dir_symlinks, IF(not_windows))
 #endif
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 	assert_false(flist_custom_active(&lwin));
 
 	assert_success(remove(SANDBOX_PATH "/link"));
@@ -314,7 +314,7 @@ TEST(not_available_files_are_ignored, IF(not_windows))
 	assert_success(chmod(SANDBOX_PATH "/utf8-bom", 0000));
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 	assert_false(flist_custom_active(&lwin));
 
 	assert_success(remove(SANDBOX_PATH "/utf8-bom"));
@@ -331,7 +331,7 @@ TEST(relatively_complex_match)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 
 	basic_panes_check(8);
 
@@ -372,7 +372,7 @@ TEST(two_panes_are_left_in_sync)
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
 
-	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 	assert_true(flist_custom_active(&lwin));
 	assert_true(flist_custom_active(&rwin));
 
@@ -394,7 +394,7 @@ TEST(exclude_works_with_entries_or_their_groups)
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 	basic_panes_check(5);
 
 	/* Does nothing on separator. */
@@ -436,7 +436,7 @@ TEST(local_filter_is_not_set)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, 0);
+	compare_two_panes(CT_NAME, LT_ALL, 0, 0);
 
 	exec_command("f", &lwin, CIT_FILTER_PATTERN);
 	assert_true(filter_is_empty(&lwin.local_filter.filter));
@@ -458,7 +458,7 @@ TEST(removed_files_disappear_in_both_views_on_reload)
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/a");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 	basic_panes_check(5);
 
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-1"));
@@ -489,7 +489,7 @@ TEST(comparison_views_are_closed_when_no_files_are_left)
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
 	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 	basic_panes_check(1);
 
 	assert_success(remove(SANDBOX_PATH "/a/same-content-different-name-1"));
@@ -511,7 +511,7 @@ TEST(comparison_views_are_closed_when_no_files_are_left)
 TEST(sorting_is_not_changed)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 
 	change_sort_type(&lwin, SK_BY_SIZE, 0);
 	assert_int_equal(SK_NONE, lwin.sort[0]);
@@ -526,7 +526,7 @@ TEST(cursor_moves_in_both_views_synchronously)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, 0);
+	compare_two_panes(CT_NAME, LT_ALL, 0, 0);
 
 	assert_int_equal(0, lwin.list_pos);
 	assert_int_equal(lwin.list_pos, rwin.list_pos);
@@ -544,8 +544,8 @@ TEST(two_independent_compare_views_are_not_bound)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
-	compare_one_pane(&rwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
+	compare_one_pane(&rwin, CT_CONTENTS, LT_ALL, 0);
 
 	assert_int_equal(0, lwin.list_pos);
 	assert_int_equal(lwin.list_pos, rwin.list_pos);
@@ -563,12 +563,12 @@ TEST(diff_is_closed_by_single_compare)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_NAME, LT_ALL, 0);
+	compare_two_panes(CT_NAME, LT_ALL, 0, 0);
 
 	assert_int_equal(CV_DIFF, lwin.custom.type);
 	assert_int_equal(CV_DIFF, rwin.custom.type);
 
-	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 	assert_int_equal(CV_COMPARE, lwin.custom.type);
 	assert_int_equal(CV_REGULAR, rwin.custom.type);
 }
@@ -579,7 +579,7 @@ TEST(filtering_fake_entry_does_nothing)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 1);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 
 	assert_int_equal(4, lwin.list_rows);
 	assert_int_equal(4, rwin.list_rows);
@@ -600,7 +600,7 @@ TEST(filtering_updates_two_bound_views)
 	other_view = &lwin;
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
-	compare_two_panes(CT_CONTENTS, LT_ALL, 0);
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 
 	/* Check that single file is excluded. */
 
@@ -632,6 +632,71 @@ TEST(filtering_updates_two_bound_views)
 	filter_selected_files(&lwin);
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	assert_int_equal(CV_REGULAR, rwin.custom.type);
+}
+
+TEST(two_pane_dups_renumbering)
+{
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-1");
+	copy_file(TEST_DATA_PATH "/read/utf8-bom", SANDBOX_PATH "/utf8-bom-2");
+
+	curr_view = &rwin;
+	other_view = &lwin;
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
+	compare_two_panes(CT_CONTENTS, LT_DUPS, 1, 0);
+
+	basic_panes_check(2);
+
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(1, lwin.dir_entry[1].id);
+
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-1"));
+	assert_success(remove(SANDBOX_PATH "/utf8-bom-2"));
+}
+
+TEST(removing_all_files_of_same_id_and_fake_entry_on_the_other_side)
+{
+	copy_file(TEST_DATA_PATH "/read/binary-data", SANDBOX_PATH "/binary-data");
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-1");
+	copy_file(TEST_DATA_PATH "/read/dos-eof", SANDBOX_PATH "/dos-eof-2");
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/read");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+
+	basic_panes_check(7);
+
+	assert_success(remove(SANDBOX_PATH "/dos-eof-1"));
+	assert_success(remove(SANDBOX_PATH "/dos-eof-2"));
+	load_dir_list(&lwin, 1);
+
+	basic_panes_check(6);
+	assert_int_equal(1, lwin.dir_entry[0].id);
+	assert_int_equal(2, lwin.dir_entry[1].id);
+	assert_int_equal(3, lwin.dir_entry[2].id);
+	assert_int_equal(4, lwin.dir_entry[3].id);
+	assert_int_equal(5, lwin.dir_entry[4].id);
+	assert_int_equal(6, lwin.dir_entry[5].id);
+
+	assert_success(remove(SANDBOX_PATH "/binary-data"));
+}
+
+TEST(compare_considers_dot_filter)
+{
+	lwin.hide_dot = 1;
+	rwin.hide_dot = 1;
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/tree");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	basic_panes_check(5);
+}
+
+TEST(empty_failes_are_skipped_if_requested)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 1);
+	basic_panes_check(4);
 }
 
 static void

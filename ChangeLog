@@ -124,6 +124,19 @@
 	Fixed determining location of distributed files on Windows (help file and
 	sample vifmrc weren't installed).  Thanks to r44083.
 
+	Fixed drawing file list in single-pane layout when 'scrollbind'
+	set (parts of the other view was visible when 'relativenumber' is set).
+	Thanks to filterfalse.
+
+	Fixed resetting custom view title to "(null)" when loading another custom
+	view in the same pane failed.
+
+	Fixed restoring custom list on removing or changing local filter when
+	'incsearch' is off.
+
+	Fixed losing original custom list of files after failed load of new custom
+	list if local filter isn't empty.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

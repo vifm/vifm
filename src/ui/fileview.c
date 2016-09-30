@@ -542,8 +542,11 @@ consider_scroll_bind(FileView *view)
 
 		other->curr_line = other->list_pos - other->top_line;
 
-		draw_dir_list(other);
-		refresh_view_win(other);
+		if(window_shows_dirlist(other))
+		{
+			draw_dir_list(other);
+			refresh_view_win(other);
+		}
 	}
 }
 

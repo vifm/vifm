@@ -622,8 +622,8 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 
 	if(custom_list_is_incomplete(view))
 	{
-		entry = entry_from_path(view->custom.entries, view->custom.entry_count,
-				full_path);
+		entry = entry_from_path(view->local_filter.entries,
+				view->local_filter.entry_count, full_path);
 		if(entry == NULL)
 		{
 			/* No such entry in the view at all. */
@@ -942,7 +942,7 @@ void
 flist_custom_start(FileView *view, const char title[])
 {
 	free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
-	(void)replace_string(&view->custom.title, title);
+	(void)replace_string(&view->custom.next_title, title);
 
 	trie_free(view->custom.paths_cache);
 	view->custom.paths_cache = trie_create();
@@ -1165,10 +1165,13 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 	if(empty_view && !allow_empty)
 	{
 		free_dir_entries(view, &view->custom.entries, &view->custom.entry_count);
-		free(view->custom.title);
-		view->custom.title = NULL;
+		update_string(&view->custom.next_title, NULL);
 		return 1;
 	}
+
+	free(view->custom.title);
+	view->custom.title = view->custom.next_title;
+	view->custom.next_title = NULL;
 
 	/* If there are no files and we are allowed to add ".." directory, do it. */
 	if(empty_view || (!cv_unsorted(type) && cfg_parent_dir_is_visible(0)))
@@ -1244,6 +1247,9 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 static void
 on_location_change(FileView *view, int force)
 {
+	free_dir_entries(view, &view->local_filter.entries,
+			&view->local_filter.entry_count);
+
 	if(force || (cfg.cvoptions & CVO_LOCALFILTER))
 	{
 		filters_dir_updated(view);
@@ -1421,8 +1427,8 @@ flist_custom_clone(FileView *to, const FileView *from)
 
 	if(custom_list_is_incomplete(from))
 	{
-		src = from->custom.entries;
-		nentries = from->custom.entry_count;
+		src = from->local_filter.entries;
+		nentries = from->local_filter.entry_count;
 	}
 	else
 	{
@@ -1830,7 +1836,7 @@ populate_custom_view(FileView *view, int reload)
 		{
 			/* Load initial list of custom entries if it's available. */
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
-					view->custom.entries, view->custom.entry_count);
+					view->local_filter.entries, view->local_filter.entry_count);
 		}
 
 		(void)zap_entries(view, view->dir_entry, &view->list_rows,
@@ -1924,14 +1930,14 @@ find_separator(FileView *view, int idx)
 
 	for(i = idx; i >= 0 && view->dir_entry[i].id == id; --i)
 	{
-		if(fentry_is_fake(&view->dir_entry[i]))
+		if(!view->dir_entry[i].temporary && fentry_is_fake(&view->dir_entry[i]))
 		{
 			return i;
 		}
 	}
 	for(i = idx + 1; i < view->list_rows && view->dir_entry[i].id == id; ++i)
 	{
-		if(fentry_is_fake(&view->dir_entry[i]))
+		if(!view->dir_entry[i].temporary && fentry_is_fake(&view->dir_entry[i]))
 		{
 			return i;
 		}
@@ -1973,19 +1979,19 @@ update_dir_watcher(FileView *view)
 static int
 custom_list_is_incomplete(const FileView *view)
 {
-	if(view->custom.entry_count == 0)
+	if(view->local_filter.entry_count == 0)
 	{
 		return 0;
 	}
 
 	if(view->list_rows == 1 && is_parent_dir(view->dir_entry[0].name) &&
-			!(view->custom.entry_count == 1 &&
-				is_parent_dir(view->custom.entries[0].name)))
+			!(view->local_filter.entry_count == 1 &&
+				is_parent_dir(view->local_filter.entries[0].name)))
 	{
 		return 1;
 	}
 
-	return view->list_rows != view->custom.entry_count;
+	return view->list_rows != view->local_filter.entry_count;
 }
 
 /* zap_entries() filter to filter-out inexistent files or files which names
@@ -3229,17 +3235,23 @@ clear_marking(FileView *view)
 	}
 }
 
-void
+int
 mark_selected(FileView *view)
 {
 	int i;
+	int nmarked = 0;
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		view->dir_entry[i].marked = view->dir_entry[i].selected;
+		if(view->dir_entry[i].marked)
+		{
+			++nmarked;
+		}
 	}
+	return nmarked;
 }
 
-void
+int
 mark_selection_or_current(FileView *view)
 {
 	dir_entry_t *const curr = get_current_entry(view);
@@ -3248,7 +3260,7 @@ mark_selection_or_current(FileView *view)
 		curr->selected = 1;
 		view->selected_files = 1;
 	}
-	mark_selected(view);
+	return mark_selected(view);
 }
 
 int

@@ -215,7 +215,7 @@ TEST(getpanetype_for_compare_view)
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/rename");
 
 	opt_handlers_setup();
-	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS);
+	compare_one_pane(&lwin, CT_CONTENTS, LT_DUPS, 0);
 	opt_handlers_teardown();
 
 	curr_view = &lwin;

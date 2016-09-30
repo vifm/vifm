@@ -160,8 +160,8 @@ filter_selected_files(FileView *view)
 			&is_newly_filtered, &filter, 0, 1);
 	if(flist_custom_active(view))
 	{
-		(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
-				&is_newly_filtered, &filter, 1, 1);
+		(void)zap_entries(view, view->local_filter.entries,
+				&view->local_filter.entry_count, &is_newly_filtered, &filter, 1, 1);
 	}
 	else
 	{
@@ -421,8 +421,8 @@ load_unfiltered_list(FileView *const view)
 	else
 	{
 		/* Save unfiltered (by local filter) list for further use. */
-		replace_dir_entries(view, &view->custom.entries,
-				&view->custom.entry_count, view->dir_entry, view->list_rows);
+		replace_dir_entries(view, &view->local_filter.entries,
+				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
 	}
 
 	view->local_filter.unfiltered = view->dir_entry;
@@ -753,6 +753,14 @@ local_filter_apply(FileView *view, const char filter[])
 
 	(void)filter_set(&view->local_filter.filter, filter);
 	cfg_save_filter_history(view->local_filter.filter.raw);
+
+	if(flist_custom_active(view) && view->custom.type != CV_TREE &&
+			view->local_filter.entry_count == 0)
+	{
+		/* Save unfiltered (by local filter) list for further use. */
+		replace_dir_entries(view, &view->local_filter.entries,
+				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
+	}
 }
 
 void
