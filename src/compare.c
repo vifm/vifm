@@ -21,9 +21,11 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* INTPTR_MAX INT64_MAX */
-#include <stdio.h> /* FILE fclose() fopen() fread() */
-#include <stdlib.h> /* free() qsort() */
+#include <stdio.h> /* FILE fclose() feof() fopen() fread() */
+#include <stdlib.h> /* free() malloc() qsort() */
+#include <string.h> /* memcmp() */
 
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -44,6 +46,12 @@
 #define XXH_PRIVATE_API
 #include "utils/xxhash.h"
 
+/* Amount of data to read at once. */
+#define BLOCK_SIZE (32*1024)
+
+/* Amount of data to hash for coarse comparison. */
+#define PREFIX_SIZE (256*1024)
+
 /* List of entries bundled with its size. */
 typedef struct
 {
@@ -51,6 +59,15 @@ typedef struct
 	int nentries;         /* Number entries in the list. */
 }
 entries_t;
+
+/* Entry in singly-bounded list of files that have matched fingerprints. */
+typedef struct compare_record_t
+{
+	char *path;                    /* Full path to file with sample content. */
+	int id;                        /* Chosen id. */
+	struct compare_record_t *next; /* Next entry in the list. */
+}
+compare_record_t;
 
 static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
@@ -65,6 +82,14 @@ static void list_files_recursively(const char path[], int skip_dot_files,
 		strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct);
+static char * get_contents_fingerprint(const char path[],
+		const dir_entry_t *entry);
+static int get_file_id(trie_t *trie, const char path[],
+		const char fingerprint[], int *id, CompareType ct);
+static int files_are_identical(const char a[], const char b[]);
+static void put_file_id(trie_t *trie, const char path[],
+		const char fingerprint[], int id, CompareType ct);
+static void free_compare_records(void *ptr);
 
 int
 compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
@@ -81,7 +106,7 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 			lt == LT_DUPS);
 
 	ui_cancellation_disable();
-	trie_free(trie);
+	trie_free_with_data(trie, &free_compare_records);
 
 	/* Clear progress message displayed by make_diff_list(). */
 	ui_sb_quick_msg_clear();
@@ -356,7 +381,7 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt, int skip_empty)
 	curr = make_diff_list(trie, view, &next_id, ct, skip_empty, 0);
 
 	ui_cancellation_disable();
-	trie_free(trie);
+	trie_free_with_data(trie, &free_compare_records);
 
 	/* Clear progress message displayed by make_diff_list(). */
 	ui_sb_quick_msg_clear();
@@ -472,7 +497,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	{
 		char progress_msg[128];
 		int progress;
-		void *data;
+		int existing_id;
 		char *fingerprint;
 		const char *const path = files.items[i];
 		dir_entry_t *const entry = entry_list_add(view, &r.entries, &r.nentries,
@@ -497,9 +522,9 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		}
 
 		entry->tag = i;
-		if(trie_get(trie, fingerprint, &data) == 0)
+		if(get_file_id(trie, path, fingerprint, &existing_id, ct))
 		{
-			entry->id = (int)(uintptr_t)data;
+			entry->id = existing_id;
 		}
 		else if(dups_only)
 		{
@@ -509,7 +534,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		{
 			entry->id = *next_id;
 			++*next_id;
-			trie_set(trie, fingerprint, (void *)(uintptr_t)entry->id);
+			put_file_id(trie, path, fingerprint, entry->id, ct);
 		}
 
 		free(fingerprint);
@@ -585,10 +610,35 @@ list_files_recursively(const char path[], int skip_dot_files, strlist_t *list)
 
 /* Computes fingerprint of the file specified by path and entry.  Type of the
  * fingerprint is determined by ct parameter.  Returns newly allocated string
- * with the fingerprint. */
+ * with the fingerprint, which is empty or NULL on error. */
 static char *
 get_file_fingerprint(const char path[], const dir_entry_t *entry,
 		CompareType ct)
+{
+	switch(ct)
+	{
+		char name[NAME_MAX + 1];
+
+		case CT_NAME:
+			if(case_sensitive_paths(path))
+			{
+				return strdup(entry->name);
+			}
+			str_to_lower(entry->name, name, sizeof(name));
+			return strdup(name);
+		case CT_SIZE:
+			return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
+		case CT_CONTENTS:
+			return get_contents_fingerprint(path, entry);
+	}
+	assert(0 && "Unexpected diffing type.");
+	return strdup("");
+}
+
+/* Makes fingerprint of file contents (all or part of it of fixed size).
+ * Returns the fingerprint as a string, which is empty or NULL on error. */
+static char *
+get_contents_fingerprint(const char path[], const dir_entry_t *entry)
 {
 #if INTPTR_MAX == INT64_MAX
 #define XX_BITS 64
@@ -599,45 +649,162 @@ get_file_fingerprint(const char path[], const dir_entry_t *entry,
 #define XX_(name, bits) XX__(name, bits)
 #define XX(name) XX_(name, XX_BITS)
 
-	switch(ct)
+	XX(state_t) st;
+	char block[BLOCK_SIZE];
+	size_t to_read = PREFIX_SIZE;
+	FILE *in = os_fopen(path, "rb");
+	if(in == NULL)
 	{
-		XX(state_t) st;
-		char block[32*1024];
-		size_t nread;
-		FILE *in;
-
-		case CT_NAME:
-			if(case_sensitive_paths(path))
-			{
-				return strdup(entry->name);
-			}
-			str_to_lower(entry->name, block, sizeof(block));
-			return strdup(block);
-		case CT_SIZE:
-			return format_str("%" PRINTF_ULL, (unsigned long long)entry->size);
-		case CT_CONTENTS:
-			in = os_fopen(path, "rb");
-			if(in == NULL)
-			{
-				return strdup("");
-			}
-
-			XX(reset)(&st, 0U);
-			while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
-			{
-				XX(update)(&st, block, nread);
-			}
-			fclose(in);
-			return format_str("%" PRINTF_ULL "|%" PRINTF_ULL,
-					(unsigned long long)entry->size, (unsigned long long)XX(digest)(&st));
+		return strdup("");
 	}
-	assert(0 && "Unexpected diffing type.");
-	return strdup("");
+
+	XX(reset)(&st, 0U);
+	while(to_read != 0U)
+	{
+		const size_t portion = MIN(sizeof(block), to_read);
+		const size_t nread = fread(&block, 1, portion, in);
+		if(nread == 0U)
+		{
+			break;
+		}
+
+		XX(update)(&st, block, nread);
+		to_read -= nread;
+	}
+	fclose(in);
+
+	return format_str("%" PRINTF_ULL "|%" PRINTF_ULL,
+			(unsigned long long)entry->size, (unsigned long long)XX(digest)(&st));
 
 #undef XX_BITS
 #undef XX__
 #undef XX_
 #undef XX
+}
+
+/* Retrieves file from the trie by its fingerprint.  Returns non-zero if it was
+ * in the trie and sets *id, otherwise zero is returned. */
+static int
+get_file_id(trie_t *trie, const char path[], const char fingerprint[], int *id,
+		CompareType ct)
+{
+	void *data;
+	compare_record_t *record;
+	if(trie_get(trie, fingerprint, &data) != 0)
+	{
+		return 0;
+	}
+	record = data;
+
+	/* Comparison by contents is the only one when we need to resolve fingerprint
+	 * conflicts. */
+	if(ct != CT_CONTENTS)
+	{
+		*id = record->id;
+		return 1;
+	}
+
+	/* Fingerprint does not guarantee a match, go through files and find file with
+	 * identical content. */
+	do
+	{
+		if(files_are_identical(path, record->path))
+		{
+			*id = record->id;
+			return 1;
+		}
+		record = record->next;
+	}
+	while(record != NULL);
+
+	return 0;
+}
+
+/* Checks whether two files specified by their names hold identical content.
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+files_are_identical(const char a[], const char b[])
+{
+	char a_block[BLOCK_SIZE], b_block[BLOCK_SIZE];
+	FILE *const a_file = fopen(a, "rb");
+	FILE *const b_file = fopen(b, "rb");
+
+	if(a_file == NULL || b_file == NULL)
+	{
+		if(a_file != NULL)
+		{
+			fclose(a_file);
+		}
+		if(b_file != NULL)
+		{
+			fclose(b_file);
+		}
+		return 0;
+	}
+
+	while(1)
+	{
+		const size_t a_read = fread(&a_block, 1, sizeof(a_block), a_file);
+		const size_t b_read = fread(&b_block, 1, sizeof(b_block), b_file);
+		if(a_read == 0U && b_read == 0U && feof(a_file) && feof(b_file))
+		{
+			/* Ends of both files are reached. */
+			break;
+		}
+
+		if(a_read == 0 || b_read == 0U || a_read != b_read ||
+				memcmp(a_block, b_block, a_read) != 0)
+		{
+			fclose(a_file);
+			fclose(b_file);
+			return 0;
+		}
+	}
+
+	fclose(a_file);
+	fclose(b_file);
+	return 1;
+}
+
+/* Stores id of a file with given fingerprint in the trie. */
+static void
+put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
+		CompareType ct)
+{
+	compare_record_t *const record = malloc(sizeof(*record));
+	void *data = NULL;
+	(void)trie_get(trie, fingerprint, &data);
+
+	record->id = id;
+	record->next = data;
+
+	/* Comparison by contents is the only one when we need to resolve fingerprint
+	 * conflicts. */
+	if(ct == CT_CONTENTS)
+	{
+		record->path = strdup(path);
+	}
+	else
+	{
+		record->path = NULL;
+	}
+
+	trie_set(trie, fingerprint, record);
+}
+
+/* Frees list of compare entries.  Implements data free function for
+ * trie_free_with_data(). */
+static void
+free_compare_records(void *ptr)
+{
+	compare_record_t *record = ptr;
+	while(record != NULL)
+	{
+		compare_record_t *const current = record;
+		record = record->next;
+		free(current->path);
+		free(current);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

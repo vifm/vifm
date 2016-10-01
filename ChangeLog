@@ -125,7 +125,7 @@
 	sample vifmrc weren't installed).  Thanks to r44083.
 
 	Fixed drawing file list in single-pane layout when 'scrollbind'
-	set (parts of the other view was visible when 'relativenumber' is set).
+	set (parts of the other view were visible when 'relativenumber' is set).
 	Thanks to filterfalse.
 
 	Fixed resetting custom view title to "(null)" when loading another custom

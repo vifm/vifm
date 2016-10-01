@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 28
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 30
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4259,11 +4259,6 @@ How results are grouped (has no effect if "ofone" specified):
 
 Which files to omit:
  - skipempty - ignore empty files.
-
-Note that file contents is not compared directly for performance reasons and
-even though a fast hashing function is used (as opposed to cryptographically
-secure one) the probability of hashing two different files to the same value
-is extremely low.  This might change in the future.
 
 Each argument can appear multiple times, the rightmost one of the group is
 considered.  Arguments alter default behaviour instead of substituting it.
