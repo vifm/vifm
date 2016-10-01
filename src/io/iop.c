@@ -545,13 +545,13 @@ iop_cp_internal(io_args_t *args)
 
 	if(!error && !cloned)
 	{
-		while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
+		while((nread = fread(&block, 1, sizeof(block), in)) == sizeof(block))
 		{
-			if(io_cancelled(args))
-			{
-				error = 1;
-				break;
-			}
+			/* if(io_cancelled(args)) */
+			/* { */
+			/* 	error = 1; */
+			/* 	break; */
+			/* } */
 
 			if(fwrite(&block, 1, nread, out) != nread)
 			{

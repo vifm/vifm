@@ -212,7 +212,7 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 	}
 
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
-			curr_dir);
+			curr_dir, 0);
 
 	ui_cancellation_reset();
 

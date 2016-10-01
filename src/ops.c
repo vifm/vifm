@@ -1156,11 +1156,15 @@ static char
 prompt_user(const io_args_t *args, const char title[], const char msg[],
 		const response_variant variants[])
 {
+	ops_lock_ui(curr_ops);
+
 	/* Active cancellation conflicts with input processing by putting terminal in
 	 * a cooked mode. */
 	const int cancellation_state = ui_cancellation_pause();
 	const char response = prompt_msg_custom(title, msg, variants);
 	ui_cancellation_resume(cancellation_state);
+
+	ops_unlock_ui(curr_ops);
 
 	return response;
 }
