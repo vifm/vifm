@@ -408,7 +408,7 @@ remote_cd(FileView *view, const char path[], int handle)
 		leave_view_mode();
 	}
 
-	if(curr_stats.view)
+	if(curr_stats.view && (handle || view == other_view))
 	{
 		toggle_quick_view();
 	}
