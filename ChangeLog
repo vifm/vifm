@@ -69,6 +69,9 @@
 	Use <exe file location>/data/colors as global storage of color schemes on
 	Windows.  Thanks to r44083.
 
+	Don't disable preview on `--remote --select` if it doesn't hide updated
+	pane.  Thanks to Marcin Kurczewski (a.k.a. rr-).
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

@@ -75,6 +75,8 @@ TEARDOWN()
 	columns_free(rwin.columns);
 	rwin.columns = NULL;
 	update_string(&rwin.view_columns, NULL);
+
+	columns_clear_column_descs();
 }
 
 static void

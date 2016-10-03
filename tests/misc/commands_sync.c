@@ -19,6 +19,7 @@
 
 #include "utils.h"
 
+static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 
@@ -144,6 +145,39 @@ TEST(sync_syncs_trees)
 	columns_free(other_view->columns);
 	other_view->columns = NULL;
 	columns_set_line_print_func(NULL);
+}
+
+TEST(sync_all_does_not_turn_destination_into_tree)
+{
+	columns_add_column_desc(SK_BY_NAME, &format_none);
+	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_set_line_print_func(&column_line_print);
+
+	opt_handlers_setup();
+
+	other_view->curr_dir[0] = '\0';
+	other_view->custom.type = CV_REGULAR;
+	other_view->columns = columns_create();
+
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	populate_dir_list(curr_view, 0);
+	local_filter_apply(curr_view, "a");
+
+	assert_success(exec_commands("sync! all", curr_view, CIT_COMMAND));
+	assert_false(other_view->custom.type == CV_TREE);
+
+	columns_free(other_view->columns);
+	other_view->columns = NULL;
+	opt_handlers_teardown();
+	columns_set_line_print_func(NULL);
+
+	columns_clear_column_descs();
+}
+
+static void
+format_none(int id, const void *data, size_t buf_len, char buf[])
+{
+	buf[0] = '\0';
 }
 
 TEST(tree_syncing_applies_properties_of_destination_view)
