@@ -48,6 +48,7 @@
 #include "../dir_stack.h"
 #include "../filelist.h"
 #include "../filetype.h"
+#include "../filtering.h"
 #include "../marks.h"
 #include "../opt_handlers.h"
 #include "../registers.h"
@@ -444,8 +445,7 @@ set_view_property(FileView *view, char type, const char value[])
 {
 	if(type == PROP_TYPE_DOTFILES)
 	{
-		const int bool_val = atoi(value);
-		view->hide_dot = bool_val;
+		set_dot_files_visible(view, !atoi(value));
 	}
 	else if(type == PROP_TYPE_AUTO_FILTER)
 	{
