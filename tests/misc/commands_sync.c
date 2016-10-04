@@ -245,5 +245,10 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
 }
 
+TEST(incorrect_parameter_causes_error)
+{
+	assert_failure(exec_commands("sync! nosuchthing", curr_view, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
