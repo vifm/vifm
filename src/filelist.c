@@ -193,7 +193,6 @@ init_flist(FileView *view)
 	view->history_pos = 0;
 	view->on_slow_fs = 0;
 
-	view->hide_dot = 1;
 	view->matches = 0;
 
 	view->custom.entries = NULL;
@@ -226,6 +225,8 @@ reset_view(FileView *view)
 {
 	fview_view_reset(view);
 	filters_view_reset(view);
+
+	view->hide_dot_g = view->hide_dot = 1;
 
 	memset(&view->sort[0], SK_NONE, sizeof(view->sort));
 	ui_view_sort_list_ensure_well_formed(view, view->sort);

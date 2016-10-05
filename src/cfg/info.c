@@ -998,6 +998,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width_g);
 	fprintf(fp, "=[%srelativenumber\n", (lwin.num_type_g & NT_REL) ? "" : "no");
 	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type_g & NT_REL) ? "" : "no");
+	fprintf(fp, "=[%sdotfiles\n", lwin.hide_dot_g ? "" : "no");
+	fprintf(fp, "=]%sdotfiles\n", rwin.hide_dot_g ? "" : "no");
 
 	fprintf(fp, "%s", "=confirm=");
 	if(cfg.confirm & CONFIRM_DELETE)

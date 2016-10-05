@@ -60,7 +60,11 @@ void clone_local_options(const FileView *from, FileView *to, int defer_slow);
  * message. */
 int process_set_args(const char args[], int global, int local);
 
+/* Loads current sorting of the view into an option. */
 void load_sort_option(FileView *view);
+
+/* Loads current value of dot filter into an option. */
+void load_dot_filter_option(FileView *view);
 
 /* Updates view columns value as if 'viewcolumns' option has been changed.
  * Doesn't change actual value of the option, which is important for setting
