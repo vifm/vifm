@@ -155,7 +155,7 @@ quick_view_file(FileView *view)
 
 	ui_view_erase(other_view);
 
-	curr = &view->dir_entry[view->list_pos];
+	curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
 	{
 		view_entry(curr);

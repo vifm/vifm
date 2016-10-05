@@ -30,13 +30,18 @@
  * zero is returned and error message is printed on the statusbar. */
 int qv_can_show(void);
 
+/* Draws current file of the view in other view.  Does nothing if drawing
+ * doesn't make sense (e.g. only one pane is visible). */
 void quick_view_file(FileView *view);
 
+/* Toggles state of the quick view. */
 void toggle_quick_view(void);
 
 /* Quits preview pane or view modes. */
 void preview_close(void);
 
+/* Expands and executes viewer command.  Returns file containing results of the
+ * viewer. */
 FILE * use_info_prog(const char viewer[]);
 
 /* Performs view clearing with the given command. */
