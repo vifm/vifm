@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/options.h"
+#include "../../src/engine/text_buffer.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/utils/dynarray.h"
@@ -38,6 +39,8 @@ SETUP()
 	lwin.num_width_g = 4;
 	lwin.num_width = 4;
 	lwin.ls_view = 0;
+	lwin.hide_dot = 1;
+	lwin.hide_dot_g = 1;
 	update_string(&lwin.sort_groups, "");
 	update_string(&lwin.sort_groups_g, "");
 
@@ -51,6 +54,8 @@ SETUP()
 	rwin.num_width_g = 4;
 	rwin.num_width = 4;
 	rwin.ls_view = 0;
+	rwin.hide_dot_g = 1;
+	rwin.hide_dot = 1;
 
 	/* Name+size matches default column view setting ("-{name},{}"). */
 	columns_add_column_desc(SK_BY_NAME, &format_none);
@@ -346,6 +351,47 @@ TEST(suggestoptions_delay_number)
 				CIT_COMMAND));
 
 	assert_int_equal(100, cfg.sug.delay);
+}
+
+TEST(dotfiles)
+{
+	assert_success(exec_commands("setlocal dotfiles", &lwin, CIT_COMMAND));
+	assert_true(lwin.hide_dot_g);
+	assert_false(lwin.hide_dot);
+
+	assert_success(exec_commands("setglobal nodotfiles", &lwin, CIT_COMMAND));
+	assert_true(lwin.hide_dot_g);
+	assert_false(lwin.hide_dot);
+
+	assert_success(exec_commands("set dotfiles", &lwin, CIT_COMMAND));
+	assert_false(lwin.hide_dot_g);
+	assert_false(lwin.hide_dot);
+
+	curr_stats.global_local_settings = 1;
+	assert_success(exec_commands("set nodotfiles", &lwin, CIT_COMMAND));
+	assert_true(lwin.hide_dot_g);
+	assert_true(lwin.hide_dot);
+	assert_true(rwin.hide_dot_g);
+	assert_true(rwin.hide_dot);
+	curr_stats.global_local_settings = 0;
+
+	vle_tb_clear(vle_err);
+	load_view_options(&lwin);
+	assert_success(set_options("dotfiles?", OPT_GLOBAL));
+	assert_success(set_options("dotfiles?", OPT_LOCAL));
+	load_view_options(&rwin);
+	assert_success(set_options("dotfiles?", OPT_GLOBAL));
+	assert_success(set_options("dotfiles?", OPT_LOCAL));
+	assert_string_equal("nodotfiles\nnodotfiles\nnodotfiles\nnodotfiles",
+			vle_tb_get_data(vle_err));
+
+	rwin.sort_g[0] = SK_BY_NAME;
+
+	assert_success(exec_commands("setlocal dotfiles", &rwin, CIT_COMMAND));
+	reset_local_options(&rwin);
+	vle_tb_clear(vle_err);
+	assert_success(set_options("dotfiles?", OPT_LOCAL));
+	assert_string_equal("nodotfiles", vle_tb_get_data(vle_err));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

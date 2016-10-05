@@ -47,6 +47,7 @@ const char *tags[] = {
 	"vifm-'deleteprg'",
 	"vifm-'dirsize'",
 	"vifm-'dotdirs'",
+	"vifm-'dotfiles'",
 	"vifm-'fastrun'",
 	"vifm-'fcs'",
 	"vifm-'fillchars'",

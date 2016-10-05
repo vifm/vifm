@@ -250,7 +250,7 @@ typedef struct
 	/* Last used search pattern, empty if none. */
 	char last_search[NAME_MAX];
 
-	int hide_dot; /* Whether dot files are hidden. */
+	int hide_dot, hide_dot_g; /* Whether dot files are hidden. */
 	int prev_invert;
 	int invert; /* whether to invert the filename pattern */
 	int curr_line; /* current line # of the window  */

@@ -28,6 +28,9 @@
 	ga and gA as well as applications started in background can be cancelled
 	this way.  Thanks to blurm.
 
+	Added 'dotfiles' (local) option, which exposes dot files filter as an
+	option.  Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

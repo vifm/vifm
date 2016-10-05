@@ -48,6 +48,7 @@
 #include "../dir_stack.h"
 #include "../filelist.h"
 #include "../filetype.h"
+#include "../filtering.h"
 #include "../marks.h"
 #include "../opt_handlers.h"
 #include "../registers.h"
@@ -444,8 +445,7 @@ set_view_property(FileView *view, char type, const char value[])
 {
 	if(type == PROP_TYPE_DOTFILES)
 	{
-		const int bool_val = atoi(value);
-		view->hide_dot = bool_val;
+		set_dot_files_visible(view, !atoi(value));
 	}
 	else if(type == PROP_TYPE_AUTO_FILTER)
 	{
@@ -998,6 +998,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]numberwidth=%d\n", rwin.num_width_g);
 	fprintf(fp, "=[%srelativenumber\n", (lwin.num_type_g & NT_REL) ? "" : "no");
 	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type_g & NT_REL) ? "" : "no");
+	fprintf(fp, "=[%sdotfiles\n", lwin.hide_dot_g ? "" : "no");
+	fprintf(fp, "=]%sdotfiles\n", rwin.hide_dot_g ? "" : "no");
 
 	fprintf(fp, "%s", "=confirm=");
 	if(cfg.confirm & CONFIRM_DELETE)

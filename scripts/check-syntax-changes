@@ -45,7 +45,7 @@ function to_html
         +"source $syntax_script" \
         +'runtime syntax/2html.vim' \
         +'wqa' \
-        "$src" 2> /dev/null || true
+        "$src" > /dev/null 2>&1 || true
     mv "$out" "$dst"
 }
 

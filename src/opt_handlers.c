@@ -86,6 +86,7 @@ static void init_dirsize(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
 static void init_timefmt(optval_t *val);
 static void init_trashdir(optval_t *val);
+static void init_dotfiles(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_iooptions(optval_t *val);
@@ -147,6 +148,8 @@ static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
 static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
+static void dotfiles_global(OPT_OP op, optval_t val);
+static void dotfiles_local(OPT_OP op, optval_t val);
 static void lsview_global(OPT_OP op, optval_t val);
 static void lsview_local(OPT_OP op, optval_t val);
 static void number_global(OPT_OP op, optval_t val);
@@ -689,6 +692,10 @@ options[] = {
 	},
 
 	/* Local options. */
+	{ "dotfiles", "", "show dot files",
+	  OPT_BOOL, 0, NULL, &dotfiles_global, &dotfiles_local,
+	  { .init = &init_dotfiles },
+	},
 	{ "lsview", "", "display items in a table",
 	  OPT_BOOL, 0, NULL, &lsview_global, &lsview_local,
 	  { .init = &init_lsview },
@@ -857,6 +864,13 @@ static void
 init_trashdir(optval_t *val)
 {
 	val->str_val = cfg.trash_dir;
+}
+
+/* Initializes 'dotfiles' option from global value. */
+static void
+init_dotfiles(optval_t *val)
+{
+	val->bool_val = !curr_view->hide_dot_g;
 }
 
 static void
@@ -1033,6 +1047,10 @@ reset_local_options(FileView *view)
 	memcpy(view->sort, view->sort_g, sizeof(view->sort));
 	load_sort_option_inner(view, view->sort);
 
+	view->hide_dot = view->hide_dot_g;
+	val.int_val = !view->hide_dot_g;
+	set_option("dotfiles", val, OPT_LOCAL);
+
 	fview_set_lsview(view, view->ls_view_g);
 	val.int_val = view->ls_view_g;
 	set_option("lsview", val, OPT_LOCAL);
@@ -1074,6 +1092,11 @@ load_view_options(FileView *view)
 	val.str_val = view->sort_groups_g;
 	set_option("sortgroups", val, OPT_GLOBAL);
 
+	val.bool_val = !view->hide_dot;
+	set_option("dotfiles", val, OPT_LOCAL);
+	val.bool_val = !view->hide_dot_g;
+	set_option("dotfiles", val, OPT_GLOBAL);
+
 	val.bool_val = view->ls_view;
 	set_option("lsview", val, OPT_LOCAL);
 	val.bool_val = view->ls_view_g;
@@ -1108,6 +1131,9 @@ clone_local_options(const FileView *from, FileView *to, int defer_slow)
 
 	to->num_type = from->num_type;
 	to->num_type_g = from->num_type_g;
+
+	to->hide_dot = from->hide_dot;
+	to->hide_dot_g = from->hide_dot_g;
 
 	replace_string(&to->sort_groups, from->sort_groups);
 	replace_string(&to->sort_groups_g, from->sort_groups_g);
@@ -1937,6 +1963,30 @@ sortnumbers_handler(OPT_OP op, optval_t val)
 	redraw_lists();
 }
 
+/* Handles switch that controls visibility of dot files globally. */
+static void
+dotfiles_global(OPT_OP op, optval_t val)
+{
+	curr_view->hide_dot_g = !val.bool_val;
+	if(curr_stats.global_local_settings)
+	{
+		other_view->hide_dot_g = !val.bool_val;
+	}
+}
+
+/* Handles switch that controls visibility of dot files locally. */
+static void
+dotfiles_local(OPT_OP op, optval_t val)
+{
+	curr_view->hide_dot = !val.bool_val;
+	ui_view_schedule_reload(curr_view);
+	if(curr_stats.global_local_settings)
+	{
+		other_view->hide_dot = !val.bool_val;
+		ui_view_schedule_reload(other_view);
+	}
+}
+
 /* Handles switch that controls column vs. ls-like view in global option. */
 static void
 lsview_global(OPT_OP op, optval_t val)
@@ -2334,6 +2384,15 @@ set_viewcolumns(FileView *view, const char view_columns[])
 {
 	const int update_columns_ui = ui_view_displays_columns(view);
 	set_view_columns_option(view, view_columns, update_columns_ui);
+}
+
+void
+load_dot_filter_option(FileView *view)
+{
+	const optval_t val = { .bool_val = !view->hide_dot };
+	view->hide_dot_g = view->hide_dot;
+	set_option("dotfiles", val, OPT_GLOBAL);
+	set_option("dotfiles", val, OPT_LOCAL);
 }
 
 void

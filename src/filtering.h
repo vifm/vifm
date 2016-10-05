@@ -35,6 +35,7 @@ void filters_view_reset(FileView *view);
 
 /* Generic filters related functions. */
 
+/* Sets new value of dot files filter. */
 void set_dot_files_visible(FileView *view, int visible);
 
 void toggle_dot_files(FileView *view);
