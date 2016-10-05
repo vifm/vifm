@@ -55,6 +55,7 @@
 #include "colors.h"
 #include "escape.h"
 #include "fileview.h"
+#include "statusbar.h"
 #include "ui.h"
 
 /* Size of buffer holding preview line (in characters). */
@@ -93,6 +94,22 @@ static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static void write_message(const char msg[]);
 static void cleanup_for_text(void);
 static char * get_viewer_command(const char viewer[]);
+
+int
+qv_can_show(void)
+{
+	if(curr_stats.number_of_windows == 1)
+	{
+		status_bar_error("Cannot view files in one window mode");
+		return 0;
+	}
+	if(other_view->explore_mode)
+	{
+		status_bar_error("Other view is already used for file viewing");
+		return 0;
+	}
+	return 1;
+}
 
 void
 toggle_quick_view(void)

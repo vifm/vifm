@@ -43,6 +43,21 @@ TEST(preview_can_match_agains_full_paths)
 	ft_reset(0);
 }
 
+TEST(when_preview_can_be_shown)
+{
+	assert_true(qv_can_show());
+
+	other_view->explore_mode = 1;
+	assert_false(qv_can_show());
+	other_view->explore_mode = 0;
+	assert_true(qv_can_show());
+
+	curr_stats.number_of_windows = 1;
+	assert_false(qv_can_show());
+	curr_stats.number_of_windows = 2;
+	assert_true(qv_can_show());
+}
+
 static void
 check_only_one_line_displayed(void)
 {

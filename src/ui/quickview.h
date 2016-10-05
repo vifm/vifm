@@ -26,6 +26,10 @@
 #include "../utils/test_helpers.h"
 #include "ui.h"
 
+/* Checks whether quick view can be shown.  Returns non-zero if so, otherwise
+ * zero is returned and error message is printed on the statusbar. */
+int qv_can_show(void);
+
 void quick_view_file(FileView *view);
 
 void toggle_quick_view(void);
