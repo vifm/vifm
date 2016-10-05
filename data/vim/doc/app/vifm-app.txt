@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Sep 30
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 05
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -325,7 +325,8 @@ Filters~
                                                *vifm-filters*
 There are three basic file filters:
  - dot files filter (excluding "." and ".." special directories, which
-   appearance is controlled by the |vifm-'dotdirs'| option)
+   appearance is controlled by the |vifm-'dotdirs'| option), see
+   |vifm-'dotfiles'|
  - manual filter for file names
  - automatic filter for file names
  - local filter for file names (see |vifm-=|)
@@ -2775,6 +2776,13 @@ Controls displaying of dot directories.  The following values are possible:
 
 Note that empty directories always contain "../" entry regardless of value of
 this option.  "../" disappears at the moment at least one file is created.
+
+                                               *vifm-'dotfiles'*
+dotfiles
+type: boolean
+default: false
+
+Whether dot files are shown in the view.  Can be controlled with z* bindings.
 
                                                *vifm-'fastrun'*
 fastrun

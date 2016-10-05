@@ -358,6 +358,10 @@ compare
 hi CurrLine
 hi CmpMismatch
 
+" "set" should be highlighted as :command
+" "dotfiles" should be highlighted as 'option'
+set dotfiles
+
 " TODO
 
 " ":echo" should be highlighted as :commands

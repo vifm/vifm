@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 30, 2016" "vifm 0.8.2"
+.TH VIFM 1 "October 05, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -394,7 +394,7 @@ There are three basic file filters:
 .RS 2
 .IP \- 2
 dot files filter (excluding "." and ".." special directories, which appearance
-is controlled by the 'dotdirs' option);
+is controlled by the 'dotdirs' option), see 'dotfiles' option;
 .IP \- 2
 manual filter for file names;
 .IP \- 2
@@ -3367,6 +3367,13 @@ Controls displaying of dot directories.  The following values are possible:
 
 Note that empty directories always contain "../" entry regardless of value of
 this option.  "../" disappears at the moment at least one file is created.
+.TP
+.BI 'dotfiles'
+type: boolean
+.br
+default: false
+.br
+Whether dot files are shown in the view.  Can be controlled with z* bindings.
 .TP
 .BI 'fastrun'
 type: boolean
