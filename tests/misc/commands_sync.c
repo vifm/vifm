@@ -174,6 +174,39 @@ TEST(sync_all_does_not_turn_destination_into_tree)
 	columns_clear_column_descs();
 }
 
+TEST(sync_localopts_clones_local_options)
+{
+	columns_add_column_desc(SK_BY_NAME, &format_none);
+	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_set_line_print_func(&column_line_print);
+
+	lwin.hide_dot = 1;
+	lwin.hide_dot_g = 1;
+	rwin.hide_dot = 0;
+	rwin.hide_dot_g = 0;
+
+	opt_handlers_setup();
+
+	other_view->curr_dir[0] = '\0';
+	other_view->custom.type = CV_REGULAR;
+	other_view->columns = columns_create();
+
+	assert_true(change_directory(curr_view, SANDBOX_PATH) >= 0);
+	populate_dir_list(curr_view, 0);
+	local_filter_apply(curr_view, "a");
+
+	assert_success(exec_commands("sync! localopts", curr_view, CIT_COMMAND));
+	assert_true(rwin.hide_dot_g);
+	assert_true(rwin.hide_dot);
+
+	columns_free(other_view->columns);
+	other_view->columns = NULL;
+	opt_handlers_teardown();
+	columns_set_line_print_func(NULL);
+
+	columns_clear_column_descs();
+}
+
 static void
 format_none(int id, const void *data, size_t buf_len, char buf[])
 {
