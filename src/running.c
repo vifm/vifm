@@ -51,7 +51,9 @@
 #include "int/vim.h"
 #include "menus/users_menu.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "modes/view.h"
 #include "ui/statusbar.h"
+#include "ui/quickview.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/fs.h"
@@ -117,6 +119,7 @@ static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char start[], int background);
 static void output_to_statusbar(const char cmd[]);
+static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
 static void run_in_split(const FileView *view, const char cmd[]);
 static void path_handler(const char line[], void *arg);
@@ -1178,6 +1181,11 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 		*save_msg = 1;
 		return -1;
 	}
+	else if(flags == MF_PREVIEW_OUTPUT)
+	{
+		*save_msg = output_to_preview(cmd);
+		return -1;
+	}
 	else if(flags == MF_IGNORE)
 	{
 		*save_msg = 0;
@@ -1267,6 +1275,19 @@ output_to_statusbar(const char cmd[])
 
 	status_bar_message((lines == NULL) ? "" : lines);
 	free(lines);
+}
+
+/* Runs the command and captures its output into abandoned preview.  Returns new
+ * value for the save_msg flag. */
+static int
+output_to_preview(const char cmd[])
+{
+	if(qv_ensure_is_shown() != 0)
+	{
+		return 1;
+	}
+	make_abandoned_view(other_view, cmd);
+	return 0;
 }
 
 /* Executes the cmd ignoring its output. */

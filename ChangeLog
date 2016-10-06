@@ -31,6 +31,9 @@
 	Added 'dotfiles' (local) option, which exposes dot files filter as an
 	option.  Thanks to filterfalse.
 
+	Added %q macro that redirects command output into quick view.  Thanks to
+	svenn71.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

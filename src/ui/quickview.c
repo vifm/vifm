@@ -96,6 +96,17 @@ static void cleanup_for_text(void);
 static char * get_viewer_command(const char viewer[]);
 
 int
+qv_ensure_is_shown(void)
+{
+	if(!curr_stats.view && !qv_can_show())
+	{
+		return 1;
+	}
+	curr_stats.view = 1;
+	return 0;
+}
+
+int
 qv_can_show(void)
 {
 	if(curr_stats.number_of_windows == 1)

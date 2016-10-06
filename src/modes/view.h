@@ -27,6 +27,10 @@ void init_view_mode(void);
 /* Enters view mode when possible.  View is the expected output area. */
 void enter_view_mode(FileView *view, int explore);
 
+/* Creates abandoned view in the view using output of passed command as a
+ * source, but doesn't enter the view mode. */
+void make_abandoned_view(FileView *view, const char cmd[]);
+
 void leave_view_mode(void);
 
 /* Quits view from explore mode.  Assumes the view is not an active one.

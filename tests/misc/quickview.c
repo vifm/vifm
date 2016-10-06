@@ -43,6 +43,17 @@ TEST(preview_can_match_agains_full_paths)
 	ft_reset(0);
 }
 
+TEST(preview_enabled_if_possible)
+{
+	assert_success(qv_ensure_is_shown());
+	assert_success(qv_ensure_is_shown());
+
+	curr_stats.view = 0;
+	other_view->explore_mode = 1;
+	assert_failure(qv_ensure_is_shown());
+	other_view->explore_mode = 0;
+}
+
 TEST(when_preview_can_be_shown)
 {
 	assert_true(qv_can_show());

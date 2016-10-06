@@ -123,7 +123,6 @@ Possible things to add:
   * Possibility to make colorful background per column.
   * Add a key to menu mode to repeat command and update menu.
   * Extract vim plugin part of install to vifm.vim README.
-  * A macro to redirect command output into view pane.
   * File access history.
   * Make :alink, :copy, ... accept globs (e.g. :co *.c).
   * Highlight first line of command-editing buffer in different color.

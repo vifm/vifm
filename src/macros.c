@@ -238,6 +238,9 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 			case 'S': /* Show command output in the status bar */
 				set_flags(flags, MF_STATUSBAR_OUTPUT);
 				break;
+			case 'q': /* Show command output in the preview */
+				set_flags(flags, MF_PREVIEW_OUTPUT);
+				break;
 			case 's': /* Split in new screen region and execute command there. */
 				set_flags(flags, MF_SPLIT);
 				break;
@@ -705,6 +708,7 @@ macros_to_str(MacroFlags flags)
 		case MF_MENU_OUTPUT: return "%m";
 		case MF_MENU_NAV_OUTPUT: return "%M";
 		case MF_STATUSBAR_OUTPUT: return "%S";
+		case MF_PREVIEW_OUTPUT: return "%q";
 		case MF_CUSTOMVIEW_OUTPUT: return "%u";
 		case MF_VERYCUSTOMVIEW_OUTPUT: return "%U";
 		case MF_CUSTOMVIEW_IOUTPUT: return "%Iu";

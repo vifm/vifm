@@ -33,6 +33,7 @@ typedef enum
 	MF_MENU_OUTPUT,      /* Redirect output to the menu. */
 	MF_MENU_NAV_OUTPUT,  /* Redirect output to the navigation menu. */
 	MF_STATUSBAR_OUTPUT, /* Redirect output to the status bar. */
+	MF_PREVIEW_OUTPUT,   /* Redirect output to the preview. */
 
 	/* Redirect output into custom view. */
 	MF_CUSTOMVIEW_OUTPUT,     /* Applying current sorting. */
