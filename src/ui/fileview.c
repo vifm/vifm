@@ -1640,7 +1640,7 @@ fview_position_updated(FileView *view)
 
 		if(curr_stats.view)
 		{
-			quick_view_file(view);
+			qv_draw(view);
 		}
 	}
 }

@@ -4019,8 +4019,10 @@ view_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 	if(curr_stats.view && cmd_info->emark)
+	{
 		return 0;
-	toggle_quick_view();
+	}
+	qv_toggle();
 	return 0;
 }
 

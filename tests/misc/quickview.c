@@ -67,7 +67,7 @@ TEST(preview_enabled_if_possible)
 TEST(preview_is_closed_on_request)
 {
 	assert_success(qv_ensure_is_shown());
-	preview_close();
+	qv_hide();
 	assert_false(curr_stats.view);
 }
 
@@ -84,7 +84,7 @@ TEST(macros_are_expanded_for_viewer)
 #endif
 
 	strcpy(curr_view->curr_dir, "echo");
-	fp = use_info_prog("%d 1");
+	fp = qv_execute_viewer("%d 1");
 	assert_non_null(fp);
 
 	text = read_nonseekable_stream(fp, &text_len, NULL, NULL);

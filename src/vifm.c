@@ -410,7 +410,7 @@ remote_cd(FileView *view, const char path[], int handle)
 
 	if(curr_stats.view && (handle || view == other_view))
 	{
-		toggle_quick_view();
+		qv_toggle();
 	}
 
 	copy_str(buf, sizeof(buf), path);

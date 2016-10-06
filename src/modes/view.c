@@ -490,7 +490,7 @@ leave_view_mode(void)
 	}
 	else
 	{
-		quick_view_file(curr_view);
+		qv_draw(curr_view);
 	}
 
 	ui_view_title_update(curr_view);
@@ -881,7 +881,7 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	ui_views_update_titles();
 	if(curr_stats.view)
 	{
-		quick_view_file(curr_view);
+		qv_draw(curr_view);
 	}
 }
 
@@ -903,7 +903,7 @@ static void
 cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_view_mode();
-	preview_close();
+	qv_hide();
 }
 
 static void
@@ -1108,7 +1108,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		}
 		if(vi->viewer == NULL)
 		{
-			fp = use_info_prog(viewer);
+			fp = qv_execute_viewer(viewer);
 		}
 		else
 		{

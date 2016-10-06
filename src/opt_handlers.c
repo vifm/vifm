@@ -2853,7 +2853,7 @@ text_option_changed(void)
 {
 	if(curr_stats.view)
 	{
-		quick_view_file(curr_view);
+		qv_draw(curr_view);
 	}
 	else if(other_view->explore_mode)
 	{
