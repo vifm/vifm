@@ -55,6 +55,7 @@
 #include "colors.h"
 #include "escape.h"
 #include "fileview.h"
+#include "statusbar.h"
 #include "ui.h"
 
 /* Size of buffer holding preview line (in characters). */
@@ -92,10 +93,37 @@ static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static void write_message(const char msg[]);
 static void cleanup_for_text(void);
-static char * get_viewer_command(const char viewer[]);
+static char * expand_viewer_command(const char viewer[]);
+
+int
+qv_ensure_is_shown(void)
+{
+	if(!curr_stats.view && !qv_can_show())
+	{
+		return 1;
+	}
+	curr_stats.view = 1;
+	return 0;
+}
+
+int
+qv_can_show(void)
+{
+	if(curr_stats.number_of_windows == 1)
+	{
+		status_bar_error("Cannot view files in one window mode");
+		return 0;
+	}
+	if(other_view->explore_mode)
+	{
+		status_bar_error("Other view is already used for file viewing");
+		return 0;
+	}
+	return 1;
+}
 
 void
-toggle_quick_view(void)
+qv_toggle(void)
 {
 	if(curr_stats.view)
 	{
@@ -121,12 +149,12 @@ toggle_quick_view(void)
 	else
 	{
 		curr_stats.view = 1;
-		quick_view_file(curr_view);
+		qv_draw(curr_view);
 	}
 }
 
 void
-quick_view_file(FileView *view)
+qv_draw(FileView *view)
 {
 	const dir_entry_t *curr;
 
@@ -138,7 +166,7 @@ quick_view_file(FileView *view)
 
 	ui_view_erase(other_view);
 
-	curr = &view->dir_entry[view->list_pos];
+	curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
 	{
 		view_entry(curr);
@@ -233,7 +261,7 @@ view_file(const char path[])
 			qv_cleanup(other_view, curr_stats.preview_cleanup);
 			usleep(50000);
 		}
-		fp = use_info_prog(viewer);
+		fp = qv_execute_viewer(viewer);
 		if(fp == NULL)
 		{
 			write_message("Cannot read viewer output");
@@ -595,11 +623,11 @@ cleanup_for_text(void)
 }
 
 void
-preview_close(void)
+qv_hide(void)
 {
 	if(curr_stats.view)
 	{
-		toggle_quick_view();
+		qv_toggle();
 	}
 	if(lwin.explore_mode)
 	{
@@ -612,14 +640,14 @@ preview_close(void)
 }
 
 FILE *
-use_info_prog(const char viewer[])
+qv_execute_viewer(const char viewer[])
 {
 	FILE *fp;
-	char *cmd;
+	char *expanded;
 
-	cmd = get_viewer_command(viewer);
-	fp = read_cmd_output(cmd);
-	free(cmd);
+	expanded = expand_viewer_command(viewer);
+	fp = read_cmd_output(expanded);
+	free(expanded);
 
 	return fp;
 }
@@ -627,7 +655,7 @@ use_info_prog(const char viewer[])
 /* Returns a pointer to newly allocated memory, which should be released by the
  * caller. */
 static char *
-get_viewer_command(const char viewer[])
+expand_viewer_command(const char viewer[])
 {
 	char *result;
 	if(strchr(viewer, '%') == NULL)
@@ -664,7 +692,7 @@ qv_cleanup(FileView *view, const char cmd[])
 
 	curr_view = view;
 	curr_stats.clear_preview = 1;
-	fp = use_info_prog(cmd);
+	fp = qv_execute_viewer(cmd);
 	curr_stats.clear_preview = 0;
 	curr_view = curr;
 

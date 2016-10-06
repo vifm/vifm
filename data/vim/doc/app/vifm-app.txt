@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 05
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 06
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2374,6 +2374,9 @@ The command macros may be used in user commands.
             %command.
                                                                *vifm-%S*
   %S        show command output in the status bar.
+                                                               *vifm-%q*
+  %q        redirect command output to quick view, which is activated if
+            disabled.
                                                                *vifm-%s*
   %s        execute command in split window of active terminal
             multiplexer (ignored if not running inside one).

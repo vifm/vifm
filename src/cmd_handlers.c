@@ -4014,19 +4014,15 @@ unselect_cmd(const cmd_info_t *cmd_info)
 static int
 view_cmd(const cmd_info_t *cmd_info)
 {
-	if(curr_stats.number_of_windows == 1 && (!curr_stats.view || cmd_info->emark))
+	if((!curr_stats.view || cmd_info->emark) && !qv_can_show())
 	{
-		status_bar_error("Cannot view files in one window mode");
-		return 1;
-	}
-	if(other_view->explore_mode)
-	{
-		status_bar_error("Other view already is used for file viewing");
 		return 1;
 	}
 	if(curr_stats.view && cmd_info->emark)
+	{
 		return 0;
-	toggle_quick_view();
+	}
+	qv_toggle();
 	return 0;
 }
 

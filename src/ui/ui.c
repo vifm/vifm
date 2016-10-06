@@ -671,7 +671,7 @@ reload_lists(void)
 		ui_view_title_update(other_view);
 		if(curr_stats.view)
 		{
-			quick_view_file(curr_view);
+			qv_draw(curr_view);
 		}
 		else if(!other_view->explore_mode)
 		{
@@ -912,7 +912,7 @@ redraw_lists(void)
 	{
 		if(curr_stats.view)
 		{
-			quick_view_file(curr_view);
+			qv_draw(curr_view);
 			refresh_view_win(other_view);
 		}
 		else if(!other_view->explore_mode)

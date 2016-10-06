@@ -865,7 +865,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 {
-	preview_close();
+	qv_hide();
 }
 
 /* Decrements first number in names of marked files of the view [count=1]

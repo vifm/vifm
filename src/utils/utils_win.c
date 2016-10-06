@@ -62,7 +62,7 @@ static int should_wait_for_program(const char cmd[]);
 static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
-static FILE * use_info_prog_internal(const char cmd[], int out_pipe[2]);
+static FILE * read_cmd_output_internal(const char cmd[], int out_pipe[2]);
 static BOOL CALLBACK close_app_enum(HWND hwnd, LPARAM lParam);
 
 void
@@ -676,7 +676,7 @@ read_cmd_output(const char cmd[])
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	result = use_info_prog_internal(cmd, out_pipe);
+	result = read_cmd_output_internal(cmd, out_pipe);
 
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
@@ -702,7 +702,7 @@ get_installed_data_dir(void)
 }
 
 static FILE *
-use_info_prog_internal(const char cmd[], int out_pipe[2])
+read_cmd_output_internal(const char cmd[], int out_pipe[2])
 {
 	char *args[4];
 	int retcode;

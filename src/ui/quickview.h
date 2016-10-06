@@ -26,14 +26,28 @@
 #include "../utils/test_helpers.h"
 #include "ui.h"
 
-void quick_view_file(FileView *view);
+/* Enables quick view (just enables, no drawing) if possible.  Returns zero on
+ * success, otherwise non-zero is returned and error message is printed on the
+ * statusbar.*/
+int qv_ensure_is_shown(void);
 
-void toggle_quick_view(void);
+/* Checks whether quick view can be shown.  Returns non-zero if so, otherwise
+ * zero is returned and error message is printed on the statusbar. */
+int qv_can_show(void);
+
+/* Draws current file of the view in other view.  Does nothing if drawing
+ * doesn't make sense (e.g. only one pane is visible). */
+void qv_draw(FileView *view);
+
+/* Toggles state of the quick view. */
+void qv_toggle(void);
 
 /* Quits preview pane or view modes. */
-void preview_close(void);
+void qv_hide(void);
 
-FILE * use_info_prog(const char viewer[]);
+/* Expands and executes viewer command.  Returns file containing results of the
+ * viewer. */
+FILE * qv_execute_viewer(const char viewer[]);
 
 /* Performs view clearing with the given command. */
 void qv_cleanup(FileView *view, const char cmd[]);
@@ -54,7 +68,7 @@ void qv_get_path_to_explore(const dir_entry_t *entry, char buf[],
 
 TSTATIC_DEFS(
 	void view_stream(FILE *fp, int wrapped);
-);
+)
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */
 
