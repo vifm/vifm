@@ -146,6 +146,8 @@
 	Fixed losing original custom list of files after failed load of new custom
 	list if local filter isn't empty.
 
+	Fixed some blinking on redrawing screen when middle border isn't visible.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
