@@ -375,8 +375,7 @@ make_abandoned_view(FileView *view, const char cmd[])
 
 	if(load_view_data(vi, "File viewing", full_path, NOSILENT) != 0)
 	{
-		update_string(&vi->viewer, NULL);
-		update_string(&vi->filename, NULL);
+		reset_view_info(vi);
 		return;
 	}
 
@@ -536,6 +535,10 @@ init_view_info(view_info_t *vi)
 	vi->width = -1;
 	vi->last_search_backward = -1;
 	vi->search_repeat = NO_COUNT_GIVEN;
+	vi->nlines = 0;
+	vi->lines = NULL;
+	vi->widths = NULL;
+	vi->filename = NULL;
 	vi->viewer = NULL;
 }
 
