@@ -87,7 +87,7 @@ static stic_void_void stic_fixture_setup = 0;
 static stic_void_void stic_fixture_teardown = 0;
 
 const char *stic_current_test_name;
-const stic_void_void stic_current_test;
+stic_void_void stic_current_test;
 const char *stic_suite_name;
 
 void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line) = stic_simple_test_result_log;
