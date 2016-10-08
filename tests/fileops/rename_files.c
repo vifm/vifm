@@ -1,12 +1,16 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() unlink() */
+#include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include "../../src/ui/ui.h"
 #include "../../src/filelist.h"
+#include "../../src/fops_common.h"
 #include "../../src/fops_rename.h"
 
 #include "utils.h"
+
+static void broken_link_name(const char prompt[], const char filename[],
+		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
 
 SETUP()
 {
@@ -83,6 +87,31 @@ TEST(interdependent_rename)
 
 	assert_success(unlink(SANDBOX_PATH "/file2"));
 	assert_success(unlink(SANDBOX_PATH "/file3"));
+}
+
+TEST(rename_to_broken_symlink_name, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("no-such-file", SANDBOX_PATH "/broken-link"));
+#endif
+
+	create_empty_file(SANDBOX_PATH "/a-file");
+
+	populate_dir_list(&lwin, 0);
+	lwin.list_pos = 0;
+	fops_init(&broken_link_name, NULL);
+	fops_rename_current(&lwin, 0);
+
+	assert_success(unlink(SANDBOX_PATH "/a-file"));
+	assert_success(unlink(SANDBOX_PATH "/broken-link"));
+}
+
+static void
+broken_link_name(const char prompt[], const char filename[], fo_prompt_cb cb,
+		fo_complete_cmd_func complete, int allow_ee)
+{
+	cb("broken-link");
 }
 
 /* No tests for custom/tree view, because control doesn't reach necessary checks
