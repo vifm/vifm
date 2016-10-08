@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() */
+#include <unistd.h> /* chdir() symlink() unlink() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/utils/fs.h"
@@ -135,6 +135,23 @@ TEST(cloning_does_not_work_in_custom_view)
 	assert_failure(unlink(SANDBOX_PATH "/a-clone"));
 
 	assert_success(unlink(SANDBOX_PATH "/do-not-clone-me"));
+}
+
+TEST(cloning_of_broken_symlink, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("no-such-file", SANDBOX_PATH "/broken-link"));
+#endif
+
+	flist_load_tree(&lwin, SANDBOX_PATH);
+
+	/* Without specifying new name. */
+	lwin.dir_entry[0].marked = 1;
+	(void)fops_clone(&lwin, NULL, 0, 0, 1);
+	assert_success(unlink(SANDBOX_PATH "/broken-link(1)"));
+
+	assert_success(unlink(SANDBOX_PATH "/broken-link"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -625,7 +625,7 @@ fops_clone(FileView *view, char *list[], int nlines, int force, int copies)
 		}
 		else
 		{
-			clone_name = path_exists_at(clone_dst, name, DEREF)
+			clone_name = path_exists_at(clone_dst, name, NODEREF)
 			           ? gen_clone_name(clone_dst, name)
 			           : name;
 		}
@@ -635,7 +635,7 @@ fops_clone(FileView *view, char *list[], int nlines, int force, int copies)
 		err = 0;
 		for(j = 0; j < copies; ++j)
 		{
-			if(path_exists_at(clone_dst, clone_name, DEREF))
+			if(path_exists_at(clone_dst, clone_name, NODEREF))
 			{
 				clone_name = gen_clone_name(clone_dst, custom_fnames ? list[i] : name);
 			}

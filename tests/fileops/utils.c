@@ -94,5 +94,15 @@ set_to_sandbox_path(char buf[], size_t buf_len)
 	}
 }
 
+int
+not_windows(void)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	return 1;
+#endif
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
