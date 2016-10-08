@@ -535,7 +535,7 @@ int run_tests(stic_void_void tests)
 				 (stic_suite_name[0] != '\0') ? " " : "", stic_suite_name);
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
-	sprintf(s,"%d tests run", sea_tests_run);
+	sprintf(s,"%d test%s run", sea_tests_run, sea_tests_run == 1 ? "" : "s");
 	stic_header_printer(s, stic_screen_width, ' ');
 
 	if (end - start == 0)
