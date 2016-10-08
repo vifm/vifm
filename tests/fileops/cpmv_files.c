@@ -19,7 +19,6 @@
 #include "utils.h"
 
 static void check_directory_clash(int parent_to_child, CopyMoveLikeOp op);
-static int not_windows(void);
 
 static char *saved_cwd;
 
@@ -347,16 +346,6 @@ check_directory_clash(int parent_to_child, CopyMoveLikeOp op)
 	assert_success(remove(SANDBOX_PATH "/dir/dir/file"));
 	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
-}
-
-static int
-not_windows(void)
-{
-#ifdef _WIN32
-	return 0;
-#else
-	return 1;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -94,6 +94,7 @@ static void create_windows(void);
 static void update_geometry(void);
 static int get_working_area_height(void);
 static void clear_border(WINDOW *border);
+static int middle_border_is_visible(void);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
@@ -561,7 +562,10 @@ update_screen(UpdateType update_kind)
 		clear_border(lborder);
 		clear_border(rborder);
 	}
-	clear_border(mborder);
+	if(middle_border_is_visible())
+	{
+		clear_border(mborder);
+	}
 
 	if(curr_stats.term_state != TS_NORMAL)
 	{
@@ -648,6 +652,14 @@ clear_border(WINDOW *border)
 	}
 
 	wnoutrefresh(border);
+}
+
+/* Checks whether mborder should be displayed/updated.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+middle_border_is_visible(void)
+{
+	return (curr_stats.number_of_windows == 2 && curr_stats.split == VSPLIT);
 }
 
 /* Updates (redraws or reloads) views. */

@@ -87,7 +87,7 @@ static stic_void_void stic_fixture_setup = 0;
 static stic_void_void stic_fixture_teardown = 0;
 
 const char *stic_current_test_name;
-const stic_void_void stic_current_test;
+stic_void_void stic_current_test;
 const char *stic_suite_name;
 
 void (*stic_simple_test_result)(int passed, char* reason, const char* function, const char file[], unsigned int line) = stic_simple_test_result_log;
@@ -535,7 +535,7 @@ int run_tests(stic_void_void tests)
 				 (stic_suite_name[0] != '\0') ? " " : "", stic_suite_name);
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
-	sprintf(s,"%d tests run", sea_tests_run);
+	sprintf(s,"%d test%s run", sea_tests_run, sea_tests_run == 1 ? "" : "s");
 	stic_header_printer(s, stic_screen_width, ' ');
 
 	if (end - start == 0)

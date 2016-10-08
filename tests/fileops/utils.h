@@ -23,6 +23,10 @@ void wait_for_bg(void);
 /* Writes absolute path to the sandbox into the buffer. */
 void set_to_sandbox_path(char buf[], size_t buf_len);
 
+/* Whether running on non-Windowsla.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int not_windows(void);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
