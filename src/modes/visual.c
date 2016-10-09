@@ -1201,7 +1201,7 @@ find_goto(int ch, int count, int backward)
 	pos = ffind(ch, backward, 1);
 	if(pos < 0 || pos == view->list_pos)
 		return;
-	while(--count > 0)
+	while(count-- > 0)
 	{
 		goto_pos(pos);
 		pos = ffind(ch, backward, 1);
