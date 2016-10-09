@@ -523,15 +523,14 @@ cmd_D(key_info_t key_info, keys_info_t *keys_info)
 	delete(key_info, 0);
 }
 
+/* Navigates to previous word which starts with specified character. */
 static void
 cmd_F(key_info_t key_info, keys_info_t *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 1;
 
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	find_goto(key_info.multi, key_info.count, 1);
+	find_goto(key_info.multi, def_count(key_info.count), 1);
 }
 
 static void
@@ -626,15 +625,16 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 	goto_pos(line - 1);
 }
 
+/* Continues navigation to word which starts with specified character in
+ * opposite direction. */
 static void
 cmd_comma(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(last_fast_search_backward == -1)
-		return;
-
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	find_goto(last_fast_search_char, key_info.count, !last_fast_search_backward);
+	if(last_fast_search_backward != -1)
+	{
+		find_goto(last_fast_search_char, def_count(key_info.count),
+				!last_fast_search_backward);
+	}
 }
 
 /* Move cursor to the first column in ls-view sub-mode selecting or unselecting
@@ -656,15 +656,16 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	enter_cmdline_mode(CLS_COMMAND, "", NULL);
 }
 
+/* Continues navigation to word which starts with specified character in initial
+ * direction. */
 static void
 cmd_semicolon(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(last_fast_search_backward == -1)
-		return;
-
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	find_goto(last_fast_search_char, key_info.count, last_fast_search_backward);
+	if(last_fast_search_backward != -1)
+	{
+		find_goto(last_fast_search_char, def_count(key_info.count),
+				last_fast_search_backward);
+	}
 }
 
 /* Search forward. */
@@ -718,15 +719,14 @@ delete(key_info_t key_info, int use_trash)
 	}
 }
 
+/* Navigates to next word which starts with specified character. */
 static void
 cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 0;
 
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	find_goto(key_info.multi, key_info.count, 0);
+	find_goto(key_info.multi, def_count(key_info.count), 0);
 }
 
 /* Calculate size of selected directories ignoring cached sizes. */
@@ -1194,13 +1194,16 @@ cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 	goto_pos(flist_find_dir_group(view, 1));
 }
 
+/* Navigates to next/previous file which starts with given character. */
 static void
 find_goto(int ch, int count, int backward)
 {
-	int pos;
-	pos = ffind(ch, backward, 1);
+	int pos = ffind(ch, backward, 1);
 	if(pos < 0 || pos == view->list_pos)
+	{
 		return;
+	}
+
 	while(count-- > 0)
 	{
 		goto_pos(pos);
