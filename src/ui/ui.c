@@ -508,8 +508,8 @@ update_geometry(void)
 	update_term_size();
 
 #ifdef _WIN32
-	getmaxyx(stdscr, screen_y, screen_x);
-	resize_term(screen_y, screen_x);
+	/* This resizes vifm to window size. */
+	resize_term(0, 0);
 #endif
 
 	getmaxyx(stdscr, screen_y, screen_x);
