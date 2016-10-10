@@ -1,0 +1,99 @@
+This file is part of MXE.
+See index.html for further information.
+
+Resizing detection and manual handling for Windows
+
+diff --git a/win32/pdckbd.c b/win32/pdckbd.c
+index 9d4f73c..f4ca7c2 100644
+--- a/win32/pdckbd.c
++++ b/win32/pdckbd.c
+@@ -606,6 +606,8 @@ int PDC_get_key(void)
+             key_count = 1;
+         else if (save_ip.EventType == KEY_EVENT)
+             key_count = _get_key_count();
++        else if (save_ip.EventType == WINDOW_BUFFER_SIZE_EVENT)
++            key_count = 1;
+     }
+ 
+     if (key_count)
+@@ -619,6 +621,33 @@ int PDC_get_key(void)
+ 
+         case MOUSE_EVENT:
+             return _process_mouse_event();
++
++        case WINDOW_BUFFER_SIZE_EVENT:
++            if (save_ip.Event.WindowBufferSizeEvent.dwSize.Y != LINES ||
++                save_ip.Event.WindowBufferSizeEvent.dwSize.X != COLS)
++            {
++                INPUT_RECORD ip;
++                DWORD count;
++                bool have_click = FALSE;
++
++                /* Drain whole sequence of resize events. */
++                while (PeekConsoleInput(pdc_con_in, &ip, 1, &count) &&
++                       count == 1 && ip.EventType == WINDOW_BUFFER_SIZE_EVENT)
++                {
++                    ReadConsoleInput(pdc_con_in, &ip, 1, &count);
++                    if(event_count > 0)
++                    {
++                        --event_count;
++                    }
++                }
++
++                if (!SP->resized)
++                {
++                    SP->resized = TRUE;
++                    return KEY_RESIZE;
++                }
++            }
++            break;
+         }
+     }
+ 
+@@ -638,12 +667,12 @@ void PDC_flushinp(void)
+ int PDC_mouse_set(void)
+ {
+     /* If turning on mouse input: Set ENABLE_MOUSE_INPUT, and clear 
+-       all other flags, including the extended flags;
++       all other flags except window resize event, including the extended flags;
+        If turning off the mouse: Set QuickEdit Mode to the status it 
+-       had on startup, and clear all other flags */
++       had on startup, and clear all other flags but window resize event */
+ 
+-    SetConsoleMode(pdc_con_in, SP->_trap_mbe ?
+-                   (ENABLE_MOUSE_INPUT|0x0080) : (pdc_quick_edit|0x0080));
++    SetConsoleMode(pdc_con_in, ENABLE_WINDOW_INPUT | (SP->_trap_mbe ?
++                   (ENABLE_MOUSE_INPUT|0x0080) : (pdc_quick_edit|0x0080)));
+ 
+     memset(&old_mouse_status, 0, sizeof(old_mouse_status));
+ 
+diff --git a/win32/pdcscrn.c b/win32/pdcscrn.c
+index 4d9ce51..05d8410 100644
+--- a/win32/pdcscrn.c
++++ b/win32/pdcscrn.c
+@@ -468,6 +468,17 @@ int PDC_resize_screen(int nlines, int ncols)
+     SMALL_RECT rect;
+     COORD size, max;
+ 
++    /* Treat this combination as a request to resize to window size.  Note that
++     * this is window size, not screen buffer size, thus scrolling won't be
++     * available. */
++    if (nlines == 0 && ncols == 0)
++    {
++        CONSOLE_SCREEN_BUFFER_INFO csbi;
++        GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
++        nlines = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
++        ncols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
++    }
++
+     if (nlines < 2 || ncols < 2)
+         return ERR;
+ 
+@@ -493,6 +504,7 @@ int PDC_resize_screen(int nlines, int ncols)
+     SetConsoleScreenBufferSize(pdc_con_out, size);
+     SetConsoleActiveScreenBuffer(pdc_con_out);
+ 
++    SP->resized = FALSE;
+     return OK;
+ }
+ 
