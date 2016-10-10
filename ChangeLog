@@ -78,6 +78,8 @@
 	Don't disable preview on `--remote --select` if it doesn't hide updated
 	pane.  Thanks to Marcin Kurczewski (a.k.a. rr-).
 
+	Try to match terminal size on Windows.  Thanks to randomizedthinking.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

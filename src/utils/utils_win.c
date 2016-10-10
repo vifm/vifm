@@ -566,9 +566,10 @@ stop_process(void)
 void
 update_terminal_settings(void)
 {
+	/* We need ENABLE_WINDOW_INPUT flag to get terminal resize event. */
 	SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), ENABLE_ECHO_INPUT |
 			ENABLE_EXTENDED_FLAGS | ENABLE_INSERT_MODE | ENABLE_LINE_INPUT |
-			ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE);
+			ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE | ENABLE_WINDOW_INPUT);
 }
 
 void

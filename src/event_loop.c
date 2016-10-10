@@ -156,6 +156,13 @@ event_loop(const int *quit)
 				timeout = cfg.timeout_len;
 				continue;
 			}
+
+			if(got_input && c == KEY_RESIZE)
+			{
+				modes_redraw();
+				continue;
+			}
+
 			break;
 		}
 		while(1);
