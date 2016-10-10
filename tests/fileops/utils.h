@@ -23,7 +23,7 @@ void wait_for_bg(void);
 /* Writes absolute path to the sandbox into the buffer. */
 void set_to_sandbox_path(char buf[], size_t buf_len);
 
-/* Whether running on non-Windowsla.  Returns non-zero if so, otherwise zero is
+/* Whether running on non-Windows.  Returns non-zero if so, otherwise zero is
  * returned. */
 int not_windows(void);
 

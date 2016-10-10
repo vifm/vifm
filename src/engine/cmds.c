@@ -27,7 +27,6 @@
 
 #include "../compat/reallocarray.h"
 #include "../utils/darray.h"
-#include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
