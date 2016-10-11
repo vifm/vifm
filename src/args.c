@@ -129,7 +129,7 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 			case 'l': /* --logging */
 				args->logging = 1;
-				if(optarg != NULL)
+				if(!is_null_or_empty(optarg))
 				{
 					replace_string(&args->startup_log_path, optarg);
 				}
