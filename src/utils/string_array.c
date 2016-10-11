@@ -26,7 +26,6 @@
 #include <stdlib.h> /* free() malloc() realloc() */
 #include <string.h> /* strcspn() */
 
-#include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
 #include "file_streams.h"
