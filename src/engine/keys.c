@@ -173,6 +173,15 @@ vle_keys_reset(void)
 	def_handlers = NULL;
 }
 
+void
+vle_keys_user_clear(void)
+{
+	free_forest(user_cmds_root, max_modes);
+
+	user_cmds_root = calloc(max_modes, sizeof(*user_cmds_root));
+	assert(user_cmds_root != NULL);
+}
+
 /* Releases array of trees of length size including trees. */
 static void
 free_forest(key_chunk_t *forest, size_t size)
@@ -183,19 +192,6 @@ free_forest(key_chunk_t *forest, size_t size)
 		free_tree(&forest[i]);
 	}
 	free(forest);
-}
-
-void
-vle_keys_user_clear(void)
-{
-	int i;
-
-	for(i = 0; i < max_modes; i++)
-		free_tree(&user_cmds_root[i]);
-	free(user_cmds_root);
-
-	user_cmds_root = calloc(max_modes, sizeof(*user_cmds_root));
-	assert(user_cmds_root != NULL);
 }
 
 static void
