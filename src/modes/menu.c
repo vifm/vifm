@@ -264,8 +264,12 @@ init_menu_mode(void)
 
 	vle_keys_set_def_handler(MENU_MODE, key_handler);
 
-	init_cmds(0, &cmds_conf);
-	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
+	/* Double initialization can happen in tests. */
+	if(cmds_conf.inner == NULL)
+	{
+		init_cmds(0, &cmds_conf);
+		add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
+	}
 }
 
 static int
