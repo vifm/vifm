@@ -2387,10 +2387,9 @@ set_viewcolumns(FileView *view, const char view_columns[])
 }
 
 void
-load_dot_filter_option(FileView *view)
+load_dot_filter_option(const FileView *view)
 {
 	const optval_t val = { .bool_val = !view->hide_dot };
-	view->hide_dot_g = view->hide_dot;
 	set_option("dotfiles", val, OPT_GLOBAL);
 	set_option("dotfiles", val, OPT_LOCAL);
 }
