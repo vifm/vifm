@@ -61,7 +61,7 @@ SETUP()
 	static int option_changed;
 	optval_t val;
 
-	init_options(&option_changed);
+	init_options(&option_changed, NULL);
 
 	val.str_val = "";
 	cpoptions[0] = '\0';

@@ -71,7 +71,7 @@ SETUP()
 	execute_cmd("command baz b");
 	execute_cmd("command foo c");
 
-	init_options(&option_changed);
+	init_options(&option_changed, NULL);
 	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			&dummy_handler, def);
 	add_option("path", "pt", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,

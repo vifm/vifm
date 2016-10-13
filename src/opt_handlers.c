@@ -737,7 +737,7 @@ void
 init_option_handlers(void)
 {
 	static int opt_changed;
-	init_options(&opt_changed);
+	init_options(&opt_changed, NULL);
 	load_options_defaults();
 	add_options();
 }

@@ -20,7 +20,7 @@ SETUP()
 	static int option_changed;
 	optval_t def = { .str_val = "/tmp" };
 
-	init_options(&option_changed);
+	init_options(&option_changed, NULL);
 
 	def.str_val = "/tmp";
 	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
