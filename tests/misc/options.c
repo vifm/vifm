@@ -394,5 +394,37 @@ TEST(dotfiles)
 	assert_string_equal("nodotfiles", vle_tb_get_data(vle_err));
 }
 
+TEST(global_local_always_updates_two_views)
+{
+	lwin.ls_view_g = lwin.ls_view = 1;
+	rwin.ls_view_g = rwin.ls_view = 0;
+	lwin.hide_dot_g = lwin.hide_dot = 0;
+	rwin.hide_dot_g = rwin.hide_dot = 1;
+
+	load_view_options(curr_view);
+
+	curr_stats.global_local_settings = 1;
+	assert_success(exec_commands("set nodotfiles lsview", &lwin, CIT_COMMAND));
+	assert_true(lwin.ls_view_g);
+	assert_true(lwin.ls_view);
+	assert_true(rwin.ls_view_g);
+	assert_true(rwin.ls_view);
+	assert_true(lwin.hide_dot_g);
+	assert_true(lwin.hide_dot);
+	assert_true(rwin.hide_dot_g);
+	assert_true(rwin.hide_dot);
+	curr_stats.global_local_settings = 0;
+}
+
+TEST(global_local_updates_regular_options_only_once)
+{
+	cfg.tab_stop = 0;
+
+	curr_stats.global_local_settings = 1;
+	assert_success(exec_commands("set tabstop+=10", &lwin, CIT_COMMAND));
+	assert_int_equal(10, cfg.tab_stop);
+	curr_stats.global_local_settings = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
