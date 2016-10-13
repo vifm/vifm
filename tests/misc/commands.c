@@ -10,6 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/functions.h"
+#include "../../src/engine/keys.h"
 #include "../../src/int/file_magic.h"
 #include "../../src/modes/modes.h"
 #include "../../src/utils/dynarray.h"
@@ -448,6 +449,7 @@ TEST(wincmd_can_switch_views)
 
 	opt_handlers_teardown();
 	assert_success(reset_status(&cfg));
+	vle_keys_reset();
 }
 
 TEST(yank_works_with_ranges)
