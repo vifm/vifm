@@ -69,6 +69,8 @@ SETUP()
 	other_view = &lwin;
 
 	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/..", test_data);
+
+	init_commands();
 }
 
 TEARDOWN()
@@ -77,6 +79,8 @@ TEARDOWN()
 	update_string(&cfg.fuse_home, NULL);
 
 	view_teardown(&lwin);
+
+	reset_cmds();
 }
 
 TEST(empty_list_is_not_accepted)
