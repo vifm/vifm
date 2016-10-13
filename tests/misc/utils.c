@@ -87,6 +87,7 @@ view_setup(FileView *view)
 	view->list_pos = 0;
 	view->dir_entry = NULL;
 	view->hide_dot = 0;
+	view->hide_dot_g = 0;
 	view->invert = 1;
 	view->selected_files = 0;
 

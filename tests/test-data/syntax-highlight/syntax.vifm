@@ -359,8 +359,8 @@ hi CurrLine
 hi CmpMismatch
 
 " "set" should be highlighted as :command
-" "dotfiles" should be highlighted as 'option'
-set dotfiles
+" "*dotfiles" should be highlighted as 'option'
+set dotfiles nodotfiles invdotfiles dotfiles!
 
 " TODO
 

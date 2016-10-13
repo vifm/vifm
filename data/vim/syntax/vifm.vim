@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: October 05, 2016
+" Last Change: October 13, 2016
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -130,14 +130,15 @@ syntax keyword vifmOption contained aproposprg autochpos cdpath cd chaselinks
 		\ wordchars wrap wrapscan ws
 
 " Disabled boolean options
-syntax keyword vifmOption contained noautochpos nocf nochaselinks nofastrun
-		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noincsearch nois
-		\ nolaststatus nols nolsview nonumber nonu norelativenumber nornu
-		\ noscrollbind noscb norunexec nosmartcase noscs nosortnumbers nosyscalls
-		\ notitle notrash novimhelp nowildmenu nowmnu nowrap nowrapscan nows
+syntax keyword vifmOption contained noautochpos nocf nochaselinks nodotfiles
+		\ nofastrun nofollowlinks nohlsearch nohls noiec noignorecase noic
+		\ noincsearch nois nolaststatus nols nolsview nonumber nonu norelativenumber
+		\ nornu noscrollbind noscb norunexec nosmartcase noscs nosortnumbers
+		\ nosyscalls notitle notrash novimhelp nowildmenu nowmnu nowrap nowrapscan
+		\ nows
 
 " Inverted boolean options
-syntax keyword vifmOption contained invautochpos invcf invchaselinks
+syntax keyword vifmOption contained invautochpos invcf invchaselinks invdotfiles
 		\ invfastrun invfollowlinks invhlsearch invhls inviec invignorecase invic
 		\ invincsearch invis invlaststatus invls invlsview invnumber invnu
 		\ invrelativenumber invrnu invscrollbind invscb invrunexec invsmartcase

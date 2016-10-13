@@ -4,11 +4,16 @@
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/opt_handlers.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -209,6 +214,40 @@ TEST(file_after_directory_is_hidden)
 	filter_selected_files(&lwin);
 
 	assert_int_equal(1, lwin.list_rows);
+}
+
+TEST(global_local_nature_of_normal_zo)
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+
+	view_teardown(&rwin);
+	view_setup(&rwin);
+
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	lwin.hide_dot_g = lwin.hide_dot = 0;
+	rwin.hide_dot_g = rwin.hide_dot = 1;
+
+	opt_handlers_setup();
+	load_view_options(curr_view);
+
+	init_modes();
+
+	curr_stats.global_local_settings = 1;
+
+	assert_success(exec_commands("normal zo", &lwin, CIT_COMMAND));
+	assert_false(lwin.hide_dot_g);
+	assert_false(lwin.hide_dot);
+	assert_false(rwin.hide_dot_g);
+	assert_false(rwin.hide_dot);
+
+	curr_stats.global_local_settings = 0;
+
+	vle_keys_reset();
+	reset_cmds();
+	opt_handlers_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

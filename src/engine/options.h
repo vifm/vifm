@@ -69,9 +69,15 @@ optval_t;
 /* Function type for option handler. */
 typedef void (*opt_handler)(OPT_OP op, optval_t val);
 
+/* Type of handler that is invoked on every option set, even if option value
+ * is not changed.  Can be used to implement custom logic. */
+typedef void (*opt_uni_handler)(const char name[], optval_t val,
+		OPT_SCOPE scope);
+
 /* Initializes option module.  opts_changed_flag will be set to true after at
- * least one option will change it value using set_options(...) function. */
-void init_options(int *opts_changed_flag);
+ * least one option will change its value using set_options(...) function.
+ * universal_handler can be NULL. */
+void init_options(int *opts_changed_flag, opt_uni_handler universal_handler);
 
 /* Resets an option to its default value. */
 void reset_option_to_default(const char name[], OPT_SCOPE scope);

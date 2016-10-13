@@ -64,7 +64,7 @@ int process_set_args(const char args[], int global, int local);
 void load_sort_option(FileView *view);
 
 /* Loads current value of dot filter into an option. */
-void load_dot_filter_option(FileView *view);
+void load_dot_filter_option(const FileView *view);
 
 /* Updates view columns value as if 'viewcolumns' option has been changed.
  * Doesn't change actual value of the option, which is important for setting

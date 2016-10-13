@@ -57,6 +57,8 @@ typedef void (*mod_t)(char buffer[], char value);
 /* Type of callback for the enum_options() function. */
 typedef void (*opt_traverse)(opt_t *opt);
 
+static void do_nothing_handler(const char name[], optval_t val,
+		OPT_SCOPE scope);
 static void reset_options(OPT_SCOPE scope);
 static opt_t * add_option_inner(const char name[], const char descr[],
 		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[][2],
@@ -105,20 +107,32 @@ static int complete_char_value(const opt_t *opt, const char beginning[]);
 
 /* Characters that can occur after option values. */
 static const char ENDING_CHARS[] = "!?&";
-/* Characters that can between option names and values. */
+/* Characters that can occur between option names and values. */
 static const char MIDDLE_CHARS[] = "^+-=:";
 
 static int *opts_changed;
+/* Handler to call on setting (not necessary changing) of any option. */
+static opt_uni_handler uni_handler;
 
 static opt_t *options;
 static size_t option_count;
 
 void
-init_options(int *opts_changed_flag)
+init_options(int *opts_changed_flag, opt_uni_handler universal_handler)
 {
 	assert(opts_changed_flag != NULL);
 
 	opts_changed = opts_changed_flag;
+	uni_handler = (universal_handler == NULL)
+	            ? &do_nothing_handler
+	            : universal_handler;
+}
+
+/* Just to omit checks of uni_handler for NULL. */
+static void
+do_nothing_handler(const char name[], optval_t val, OPT_SCOPE scope)
+{
+	/* Do nothing. */
 }
 
 void
@@ -684,6 +698,7 @@ set_on(opt_t *opt)
 		opt->val.bool_val = 1;
 		notify_option_update(opt, OP_ON, opt->val);
 	}
+	uni_handler(opt->name, opt->val, opt->scope);
 
 	return 0;
 }
@@ -700,6 +715,7 @@ set_off(opt_t *opt)
 		opt->val.bool_val = 0;
 		notify_option_update(opt, OP_OFF, opt->val);
 	}
+	uni_handler(opt->name, opt->val, opt->scope);
 
 	return 0;
 }
@@ -713,6 +729,7 @@ set_inv(opt_t *opt)
 
 	opt->val.bool_val = !opt->val.bool_val;
 	notify_option_update(opt, opt->val.bool_val ? OP_ON : OP_OFF, opt->val);
+	uni_handler(opt->name, opt->val, opt->scope);
 
 	return 0;
 }
@@ -783,6 +800,7 @@ set_set(opt_t *opt, const char value[])
 		assert(0 && "Unknown type of option.");
 	}
 
+	uni_handler(opt->name, opt->val, opt->scope);
 	return 0;
 }
 
@@ -802,6 +820,8 @@ set_reset(opt_t *opt)
 		opt->val.int_val = opt->def.int_val;
 		notify_option_update(opt, OP_RESET, opt->val);
 	}
+
+	uni_handler(opt->name, opt->val, opt->scope);
 	return 0;
 }
 
@@ -872,6 +892,7 @@ set_add(opt_t *opt, const char value[])
 		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 
+	uni_handler(opt->name, opt->val, opt->scope);
 	return 0;
 }
 
@@ -918,6 +939,7 @@ set_remove(opt_t *opt, const char value[])
 		}
 	}
 
+	uni_handler(opt->name, opt->val, opt->scope);
 	return 0;
 }
 
@@ -935,6 +957,7 @@ set_hat(opt_t *opt, const char value[])
 	{
 		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
+	uni_handler(opt->name, opt->val, opt->scope);
 
 	return 0;
 }

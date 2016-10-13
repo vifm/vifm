@@ -79,6 +79,7 @@ typedef struct
 }
 optinit_t;
 
+static void uni_handler(const char name[], optval_t val, OPT_SCOPE scope);
 static void init_classify(optval_t *val);
 static char * double_commas(const char str[]);
 static void init_cpoptions(optval_t *val);
@@ -691,7 +692,7 @@ options[] = {
 	  { .ref.bool_val = &cfg.wrap_scan },
 	},
 
-	/* Local options. */
+	/* Local options must be grouped here. */
 	{ "dotfiles", "", "show dot files",
 	  OPT_BOOL, 0, NULL, &dotfiles_global, &dotfiles_local,
 	  { .init = &init_dotfiles },
@@ -737,9 +738,75 @@ void
 init_option_handlers(void)
 {
 	static int opt_changed;
-	init_options(&opt_changed);
+	init_options(&opt_changed, &uni_handler);
 	load_options_defaults();
 	add_options();
+}
+
+/* Additional handler for processing of global-local options, namely for
+ * updating the other view. */
+static void
+uni_handler(const char name[], optval_t val, OPT_SCOPE scope)
+{
+	/* += and similar operators act in their way only for the current view, the
+	 * other view just gets value resulted from the operation.  The behaviour is
+	 * fine and doesn't seem to be a bug. */
+
+	static size_t first_local = (size_t)-1;
+
+	size_t i;
+
+	if(!curr_stats.global_local_settings)
+	{
+		return;
+	}
+
+	/* Find first local option once. */
+	if(first_local == (size_t)-1)
+	{
+		for(first_local = 0U; first_local < ARRAY_LEN(options); ++first_local)
+		{
+			if(options[first_local].local_handler != NULL)
+			{
+				break;
+			}
+		}
+	}
+
+	/* Look up option name and update it in the other view if found. */
+	for(i = first_local; i < ARRAY_LEN(options); ++i)
+	{
+		if(strcmp(options[i].name, name) == 0)
+		{
+			FileView *const tmp_view = curr_view;
+			curr_view = other_view;
+			load_view_options(curr_view);
+
+			/* Make sure option value remains valid even if updated in the handler. */
+			if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
+			{
+				val.str_val = strdup(val.str_val);
+			}
+
+			if(scope == OPT_LOCAL)
+			{
+				options[i].local_handler(OP_SET, val);
+			}
+			else
+			{
+				options[i].global_handler(OP_SET, val);
+			}
+
+			if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
+			{
+				free(val.str_val);
+			}
+
+			curr_view = tmp_view;
+			load_view_options(curr_view);
+			break;
+		}
+	}
 }
 
 /* Composes the default value for the 'classify' option. */
@@ -1008,7 +1075,7 @@ load_options_defaults(void)
 		{
 			options[i].initializer.init(&options[i].val);
 		}
-		else if(options[i].type == OPT_STR || options[i].type == OPT_STRLIST)
+		else if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
 		{
 			options[i].val.str_val = *options[i].initializer.ref.str_val;
 		}
@@ -1247,6 +1314,7 @@ process_set_args(const char args[], int global, int local)
 	{
 		status_bar_message(text_buffer);
 	}
+
 	return error ? -1 : (text_buffer[0] != '\0');
 }
 
@@ -1968,10 +2036,6 @@ static void
 dotfiles_global(OPT_OP op, optval_t val)
 {
 	curr_view->hide_dot_g = !val.bool_val;
-	if(curr_stats.global_local_settings)
-	{
-		other_view->hide_dot_g = !val.bool_val;
-	}
 }
 
 /* Handles switch that controls visibility of dot files locally. */
@@ -1980,11 +2044,6 @@ dotfiles_local(OPT_OP op, optval_t val)
 {
 	curr_view->hide_dot = !val.bool_val;
 	ui_view_schedule_reload(curr_view);
-	if(curr_stats.global_local_settings)
-	{
-		other_view->hide_dot = !val.bool_val;
-		ui_view_schedule_reload(other_view);
-	}
 }
 
 /* Handles switch that controls column vs. ls-like view in global option. */
@@ -1992,10 +2051,6 @@ static void
 lsview_global(OPT_OP op, optval_t val)
 {
 	curr_view->ls_view_g = val.bool_val;
-	if(curr_stats.global_local_settings)
-	{
-		other_view->ls_view_g = val.bool_val;
-	}
 }
 
 /* Handles switch that controls column vs. ls-like view in local option. */
@@ -2003,10 +2058,6 @@ static void
 lsview_local(OPT_OP op, optval_t val)
 {
 	fview_set_lsview(curr_view, val.bool_val);
-	if(curr_stats.global_local_settings)
-	{
-		fview_set_lsview(other_view, val.bool_val);
-	}
 }
 
 /* Handles file numbers displaying toggle in global option. */
@@ -2014,10 +2065,6 @@ static void
 number_global(OPT_OP op, optval_t val)
 {
 	update_num_type(curr_view, &curr_view->num_type_g, NT_SEQ, val.bool_val);
-	if(curr_stats.global_local_settings)
-	{
-		update_num_type(other_view, &other_view->num_type_g, NT_SEQ, val.bool_val);
-	}
 }
 
 /* Handles file numbers displaying toggle in local option. */
@@ -2025,10 +2072,6 @@ static void
 number_local(OPT_OP op, optval_t val)
 {
 	update_num_type(curr_view, &curr_view->num_type, NT_SEQ, val.bool_val);
-	if(curr_stats.global_local_settings)
-	{
-		update_num_type(other_view, &other_view->num_type, NT_SEQ, val.bool_val);
-	}
 }
 
 /* Handles changes of minimum width of file number field in global option. */
@@ -2036,10 +2079,6 @@ static void
 numberwidth_global(OPT_OP op, optval_t val)
 {
 	set_numberwidth(curr_view, &curr_view->num_width_g, val.int_val);
-	if(curr_stats.global_local_settings)
-	{
-		set_numberwidth(other_view, &other_view->num_width_g, val.int_val);
-	}
 }
 
 /* Handles changes of minimum width of file number field in local option. */
@@ -2047,10 +2086,6 @@ static void
 numberwidth_local(OPT_OP op, optval_t val)
 {
 	set_numberwidth(curr_view, &curr_view->num_width, val.int_val);
-	if(curr_stats.global_local_settings)
-	{
-		set_numberwidth(other_view, &other_view->num_width, val.int_val);
-	}
 }
 
 /* Sets number width for the view. */
@@ -2070,10 +2105,6 @@ static void
 relativenumber_global(OPT_OP op, optval_t val)
 {
 	update_num_type(curr_view, &curr_view->num_type_g, NT_REL, val.bool_val);
-	if(curr_stats.global_local_settings)
-	{
-		update_num_type(other_view, &other_view->num_type_g, NT_REL, val.bool_val);
-	}
 }
 
 /* Handles relative file numbers displaying toggle in local option. */
@@ -2081,10 +2112,6 @@ static void
 relativenumber_local(OPT_OP op, optval_t val)
 {
 	update_num_type(curr_view, &curr_view->num_type, NT_REL, val.bool_val);
-	if(curr_stats.global_local_settings)
-	{
-		update_num_type(other_view, &other_view->num_type, NT_REL, val.bool_val);
-	}
 }
 
 /* Handles toggling of boolean number related option and updates current view if
@@ -2110,15 +2137,7 @@ update_num_type(FileView *view, NumberingType *num_type, NumberingType type,
 static void
 sort_global(OPT_OP op, optval_t val)
 {
-	char *const value = strdup(val.str_val);
-
-	set_sort(curr_view, curr_view->sort_g, value);
-	if(curr_stats.global_local_settings)
-	{
-		set_sort(other_view, other_view->sort_g, value);
-	}
-
-	free(value);
+	set_sort(curr_view, curr_view->sort_g, val.str_val);
 }
 
 /* Handler for local 'sort' option, parses the value and checks it for
@@ -2126,27 +2145,13 @@ sort_global(OPT_OP op, optval_t val)
 static void
 sort_local(OPT_OP op, optval_t val)
 {
-	char *const value = strdup(val.str_val);
-
 	/* Make sure we don't sort unsorted custom view on :restart or when it's a
 	 * compare view. */
 	char *const sort = (curr_stats.restart_in_progress ||
 	                    cv_compare(curr_view->custom.type))
 	                 ? ui_view_sort_list_get(curr_view)
 	                 : curr_view->sort;
-	set_sort(curr_view, sort, value);
-	if(curr_stats.global_local_settings)
-	{
-		/* Make sure we don't sort unsorted custom view on :restart or when it's a
-		 * compare view. */
-		char *const sort = (curr_stats.restart_in_progress ||
-		                    cv_compare(other_view->custom.type))
-		                 ? ui_view_sort_list_get(other_view)
-		                 : other_view->sort;
-		set_sort(other_view, sort, value);
-	}
-
-	free(value);
+	set_sort(curr_view, sort, val.str_val);
 }
 
 /* Sets sorting value for the view. */
@@ -2216,32 +2221,15 @@ set_sort(FileView *view, char sort_keys[], char order[])
 static void
 sortgroups_global(OPT_OP op, optval_t val)
 {
-	char *const value = strdup(val.str_val);
-
-	set_sortgroups(curr_view, &curr_view->sort_groups_g, value);
-	if(curr_stats.global_local_settings)
-	{
-		set_sortgroups(other_view, &other_view->sort_groups_g, value);
-	}
-
-	free(value);
+	set_sortgroups(curr_view, &curr_view->sort_groups_g, val.str_val);
 }
 
 /* Handles local 'sortgroup' option changes. */
 static void
 sortgroups_local(OPT_OP op, optval_t val)
 {
-	char *const value = strdup(val.str_val);
-
-	set_sortgroups(curr_view, &curr_view->sort_groups, value);
+	set_sortgroups(curr_view, &curr_view->sort_groups, val.str_val);
 	sorting_changed(curr_view, 0);
-	if(curr_stats.global_local_settings)
-	{
-		set_sortgroups(other_view, &other_view->sort_groups, value);
-		sorting_changed(other_view, 0);
-	}
-
-	free(value);
 }
 
 /* Sets sort_groups fields (*opt) of the view to the value handling malformed
@@ -2314,10 +2302,6 @@ static void
 sortorder_global(OPT_OP op, optval_t val)
 {
 	set_sortorder(curr_view, (val.enum_item == 1) ? 0 : 1, curr_view->sort_g);
-	if(curr_stats.global_local_settings)
-	{
-		set_sortorder(other_view, (val.enum_item == 1) ? 0 : 1, other_view->sort_g);
-	}
 }
 
 /* Handles local 'sortorder' option and corrects ordering for primary sorting
@@ -2326,10 +2310,6 @@ static void
 sortorder_local(OPT_OP op, optval_t val)
 {
 	set_sortorder(curr_view, (val.enum_item == 1) ? 0 : 1, curr_view->sort);
-	if(curr_stats.global_local_settings)
-	{
-		set_sortorder(other_view, (val.enum_item == 1) ? 0 : 1, other_view->sort);
-	}
 }
 
 /* Updates sorting order for the view. */
@@ -2352,30 +2332,14 @@ set_sortorder(FileView *view, int ascending, char sort_keys[])
 static void
 viewcolumns_global(OPT_OP op, optval_t val)
 {
-	char *const value = strdup(val.str_val);
-
-	replace_string(&curr_view->view_columns_g, value);
-	if(curr_stats.global_local_settings)
-	{
-		replace_string(&other_view->view_columns_g, value);
-	}
-
-	free(value);
+	replace_string(&curr_view->view_columns_g, val.str_val);
 }
 
 /* Handler of local 'viewcolumns' option, which defines custom view columns. */
 static void
 viewcolumns_local(OPT_OP op, optval_t val)
 {
-	char *const value = strdup(val.str_val);
-
-	set_viewcolumns(curr_view, value);
-	if(curr_stats.global_local_settings)
-	{
-		set_viewcolumns(other_view, value);
-	}
-
-	free(value);
+	set_viewcolumns(curr_view, val.str_val);
 }
 
 /* Setups view columns for the view. */
@@ -2387,10 +2351,9 @@ set_viewcolumns(FileView *view, const char view_columns[])
 }
 
 void
-load_dot_filter_option(FileView *view)
+load_dot_filter_option(const FileView *view)
 {
 	const optval_t val = { .bool_val = !view->hide_dot };
-	view->hide_dot_g = view->hide_dot;
 	set_option("dotfiles", val, OPT_GLOBAL);
 	set_option("dotfiles", val, OPT_LOCAL);
 }
