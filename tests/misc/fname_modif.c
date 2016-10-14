@@ -212,18 +212,18 @@ TEST(colon_tilde)
 	free(expanded);
 
 	expanded = expand_macros(" cp %F:~ ", "", &flags, 1);
-	assert_string_equal(" cp ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
+	assert_string_equal(" cp \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
 	expanded = expand_macros(" cp %b:p:~ ", "", &flags, 1);
 	assert_string_equal(
-			" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
+			" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
 	expanded = expand_macros(" cp %b:~ ", "", &flags, 1);
-	assert_string_equal(" cp lfile0 lfile2 ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
+	assert_string_equal(" cp lfile0 lfile2 \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
@@ -236,7 +236,7 @@ TEST(colon_tilde)
 	free(expanded);
 
 	expanded = expand_macros(" cp %C:~ ", "", &flags, 1);
-	assert_string_equal(" cp ~" SL "rfile5 ", expanded);
+	assert_string_equal(" cp \\~" SL "rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(" cp %d:~ ", "", &flags, 1);
@@ -244,7 +244,7 @@ TEST(colon_tilde)
 	free(expanded);
 
 	expanded = expand_macros(" cp %D:~ ", "", &flags, 1);
-	assert_string_equal(" cp ~ ", expanded);
+	assert_string_equal(" cp \\~ ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(" cp %rz:~ ", "", &flags, 1);
@@ -266,7 +266,7 @@ TEST(colon_dot)
 	free(expanded);
 
 	expanded = expand_macros(" cp %F:~:. ", "", &flags, 1);
-	assert_string_equal(" cp ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
+	assert_string_equal(" cp \\~" SL "rfile1 \\~" SL "rfile3 \\~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
@@ -326,7 +326,7 @@ TEST(colon_h)
 	free(expanded);
 
 	expanded = expand_macros(" cp %F:~:h ", "", &flags, 1);
-	assert_string_equal(" cp ~ ~ ~ ", expanded);
+	assert_string_equal(" cp \\~ \\~ \\~ ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(" cp %F:h ", "", &flags, 1);
