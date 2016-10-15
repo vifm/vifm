@@ -283,10 +283,12 @@ main(int argc, char *argv[])
 	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
 	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
 
-	exec_startup_commands(&vifm_args);
-
 	update_screen(UT_FULL);
 	modes_update();
+
+	/* Run startup commands after loading file lists into views, so that commands
+	 * like +1 work. */
+	exec_startup_commands(&vifm_args);
 
 	curr_stats.load_stage = 3;
 

@@ -83,6 +83,9 @@
 	Escape first tilde in paths that go to the shell.  Thanks to Marius
 	Schmidl.
 
+	Make +{num} and similar options work (actually affect cursor of the view).
+	Thanks to filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
