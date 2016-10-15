@@ -144,8 +144,12 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 			case 1: /* Positional argument. */
 				if(argv[optind - 1][0] == '+')
 				{
-					args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1,
-							argv[optind - 1] + 1);
+					const char *cmd = argv[optind - 1] + 1;
+					if(*cmd == '\0')
+					{
+						cmd = "$";
+					}
+					args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1, cmd);
 				}
 				else
 				{

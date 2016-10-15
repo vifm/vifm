@@ -86,6 +86,8 @@
 	Make +{num} and similar options work (actually affect cursor of the view).
 	Thanks to filterfalse.
 
+	Treat "+" option the same way as Vim (like :$).  Thanks to filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
