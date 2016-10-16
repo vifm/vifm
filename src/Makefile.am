@@ -70,6 +70,14 @@ desktoppixdir = $(datadir)/pixmaps
 desktoppixfile = ../data/graphics/vifm.png
 dist_desktoppix_DATA = $(desktoppixfile)
 
+bashcompldir = $(datadir)/bash-completion/completions
+bashcomplfile = ../data/shell-completion/bash/vifm
+dist_bashcompl_DATA = $(bashcomplfile)
+
+zshcompldir = $(datadir)/zsh-site-functions
+zshcomplfile = ../data/shell-completion/zsh/_vifm
+dist_zshcompl_DATA = $(zshcomplfile)
+
 docsfile = ../AUTHORS ../BUGS ../COPYING ../ChangeLog ../FAQ ../INSTALL \
 					 ../NEWS ../README ../TODO
 docsdir = $(docdir)
