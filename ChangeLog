@@ -34,6 +34,8 @@
 	Added %q macro that redirects command output into quick view.  Thanks to
 	svenn71.
 
+	Added shell completion for bash and zsh.  Patches by filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
