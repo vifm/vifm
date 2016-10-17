@@ -86,7 +86,8 @@ Vetter (a.k.a. jubalh).
 Some build system fixes/updates/best practices by Hendrik Jaeger (a.k.a.
 henk).
 
-Patches for Vim plugin, vifm-screen-split and documentation by filterfalse.
+Shell completions and patches for Vim plugin, vifm-screen-split and
+documentation by filterfalse.
 
 Christian Fillion (a.k.a. cfillion) fixed crash on navigation to end of line
 in command-line mode.

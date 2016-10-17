@@ -98,10 +98,12 @@ vim_edit_files(int nfiles, char *files[])
 
 	for(i = 0; i < nfiles; ++i)
 	{
-		char *const escaped = shell_like_escape(files[i], 0);
+		char *const expanded_path = expand_tilde(files[i]);
+		char *const escaped = shell_like_escape(expanded_path, 0);
 		(void)strappendch(&cmd, &len, ' ');
 		(void)strappend(&cmd, &len, escaped);
 		free(escaped);
+		free(expanded_path);
 	}
 
 	error = (cmd == NULL || run_vim(cmd, bg, 1));

@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 06, 2016" "vifm 0.8.2"
+.TH VIFM 1 "October 15, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -92,7 +92,8 @@ See also "Client\-Server" section below.
 Run command-line mode <command> on startup.  Commands in such arguments are
 executed in the order they appear in command line.  Commands with spaces or
 special symbols must be enclosed in double or single quotes or all special
-symbols should be escaped (the exact syntax strongly depends on shell).
+symbols should be escaped (the exact syntax strongly depends on shell).  "+"
+argument is equivalent to "$" and thus picks last item of of the view.
 .TP
 .BI "\-\-help, \-h"
 Show a brief command summary and exit vifm.

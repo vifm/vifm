@@ -34,6 +34,8 @@
 	Added %q macro that redirects command output into quick view.  Thanks to
 	svenn71.
 
+	Added shell completion for bash and zsh.  Patches by filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
@@ -79,6 +81,14 @@
 	pane.  Thanks to Marcin Kurczewski (a.k.a. rr-).
 
 	Try to match terminal size on Windows.  Thanks to randomizedthinking.
+
+	Escape first tilde in paths that go to the shell.  Thanks to Marius
+	Schmidl.
+
+	Make +{num} and similar options work (actually affect cursor of the view).
+	Thanks to filterfalse.
+
+	Treat "+" option the same way as Vim (like :$).  Thanks to filterfalse.
 
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.

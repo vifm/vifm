@@ -1,0 +1,46 @@
+#compdef vifm
+
+local curcontext="$curcontext" state state_descr line expl
+typeset -A opt_args
+
+_path_or_hyphen() {
+  _alternative \
+    'files:path:_files' \
+    'hyphen:hyphen:(-)'
+}
+
+_arguments -C -s \
+  '--select[open parent directory of the given path and select specified file in it]:path:_files' \
+  '-f[makes vifm instead of opening files write selection to $VIFM/vimfiles and quit]' \
+  '--choose-files[sets output file to write selection into on exit instead of opening files]:path or hyphen:_path_or_hyphen' \
+  '--choose-dir[sets output file to write last visited directory into on exit]:path or hyphen:_path_or_hyphen' \
+  '--delimiter[sets separator for list of file paths written out by vifm]:delimiter: ' \
+  '--on-choose[sets command to be executed on selected files instead of opening them]:command:_cmdstring' \
+  '--logging=-[log some operational details]::startup log path:_files' \
+  '--server-list[list available server names and exit]' \
+  '--server-name[name of target or this instance]:server name:->server' \
+  '--remote[passes all arguments that left in command line to active vifm server]' \
+  '*'{-c,+-}'[run command on startup]:command: ' \
+  {-h,--help}'[show help message and quit]' \
+  {-v,--version}'[show version number and quit]' \
+  '--no-configs[don'\''t read vifmrc and vifminfo]' \
+  '1::path:->path' \
+  '2::path:->path' && return
+
+if [[ $state == path ]]; then
+  # only one hyphen is allowed
+  if (( ! ${line[(I)-]} )); then
+    _path_or_hyphen && return
+  else
+    _description files expl $state_descr
+    _files "$expl[@]" && return
+  fi
+elif [[ $state == server ]]; then
+  local -a servers
+  servers=( ${(f)"$(_call_program servers $words[1] --server-list 2>/dev/null)"} )
+  _wanted servers expl $state_descr compadd -M 'm:{a-z}={A-Z}' -a servers && return
+fi
+
+return 1
+
+# vim: ft=zsh sw=2 ts=2 et

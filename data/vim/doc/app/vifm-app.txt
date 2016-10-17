@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 06
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 15
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -117,7 +117,8 @@ The other command line arguments are:
     are executed in the order they appear in command line.  Commands with
     spaces or special symbols must be enclosed in double or single quotes or
     all special symbols should be escaped (the exact syntax strongly depends
-    on shell).
+    on shell).  "+" argument is equivalent to "$" and thus picks last item
+    of the view.
 --help, -h                                     *vifm---help* *vifm--h*
     show a brief command summary and exit vifm.
 --version, -v                                  *vifm---version* *vifm--v*

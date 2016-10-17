@@ -97,27 +97,28 @@ am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(dist_bin_SCRIPTS) \
-	$(dist_desktopapp_DATA) $(dist_desktoppix_DATA) \
-	$(dist_docs_DATA) $(dist_pkgdata_DATA) \
+	$(dist_bashcompl_DATA) $(dist_desktopapp_DATA) \
+	$(dist_desktoppix_DATA) $(dist_docs_DATA) $(dist_pkgdata_DATA) \
 	$(dist_vim_autoload_vifm__DATA) $(dist_vim_colors__DATA) \
 	$(dist_vim_doc__DATA) $(dist_vim_ftdetect__DATA) \
 	$(dist_vim_ftplugin__DATA) $(dist_vim_plugin__DATA) \
 	$(dist_vim_syntax__DATA) $(dist_vimdoc_doc__DATA) \
-	$(am__DIST_COMMON)
+	$(dist_zshcompl_DATA) $(am__DIST_COMMON)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" \
-	"$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" \
-	"$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" \
+	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompldir)" \
+	"$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" \
+	"$(DESTDIR)$(docsdir)" "$(DESTDIR)$(pkgdatadir)" \
+	"$(DESTDIR)$(vim_autoload_vifm_dir)" \
 	"$(DESTDIR)$(vim_colors_dir)" "$(DESTDIR)$(vim_doc_dir)" \
 	"$(DESTDIR)$(vim_ftdetect_dir)" \
 	"$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" \
 	"$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" \
-	"$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_doc_dir)" \
-	"$(DESTDIR)$(vimdoc_doc_dir)"
+	"$(DESTDIR)$(zshcompldir)" "$(DESTDIR)$(pkgdatadir)" \
+	"$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
@@ -256,14 +257,14 @@ am__can_run_installinfo = \
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(dist_man_MANS)
-DATA = $(dist_desktopapp_DATA) $(dist_desktoppix_DATA) \
-	$(dist_docs_DATA) $(dist_pkgdata_DATA) \
+DATA = $(dist_bashcompl_DATA) $(dist_desktopapp_DATA) \
+	$(dist_desktoppix_DATA) $(dist_docs_DATA) $(dist_pkgdata_DATA) \
 	$(dist_vim_autoload_vifm__DATA) $(dist_vim_colors__DATA) \
 	$(dist_vim_doc__DATA) $(dist_vim_ftdetect__DATA) \
 	$(dist_vim_ftplugin__DATA) $(dist_vim_plugin__DATA) \
 	$(dist_vim_syntax__DATA) $(dist_vimdoc_doc__DATA) \
-	$(nodist_pkgdata_DATA) $(nodist_vim_doc__DATA) \
-	$(nodist_vimdoc_doc__DATA)
+	$(dist_zshcompl_DATA) $(nodist_pkgdata_DATA) \
+	$(nodist_vim_doc__DATA) $(nodist_vimdoc_doc__DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -626,6 +627,12 @@ dist_desktopapp_DATA = $(desktopappfile)
 desktoppixdir = $(datadir)/pixmaps
 desktoppixfile = ../data/graphics/vifm.png
 dist_desktoppix_DATA = $(desktoppixfile)
+bashcompldir = $(datadir)/bash-completion/completions
+bashcomplfile = ../data/shell-completion/bash/vifm
+dist_bashcompl_DATA = $(bashcomplfile)
+zshcompldir = $(datadir)/zsh-site-functions
+zshcomplfile = ../data/shell-completion/zsh/_vifm
+dist_zshcompl_DATA = $(zshcomplfile)
 docsfile = ../AUTHORS ../BUGS ../COPYING ../ChangeLog ../FAQ ../INSTALL \
 					 ../NEWS ../README ../TODO
 
@@ -1440,6 +1447,27 @@ uninstall-man1:
 	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^1][0-9a-z]*$$,1,;x' \
 	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
 	dir='$(DESTDIR)$(man1dir)'; $(am__uninstall_files_from_dir)
+install-dist_bashcomplDATA: $(dist_bashcompl_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_bashcompl_DATA)'; test -n "$(bashcompldir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(bashcompldir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(bashcompldir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(bashcompldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(bashcompldir)" || exit $$?; \
+	done
+
+uninstall-dist_bashcomplDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_bashcompl_DATA)'; test -n "$(bashcompldir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(bashcompldir)'; $(am__uninstall_files_from_dir)
 install-dist_desktopappDATA: $(dist_desktopapp_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_desktopapp_DATA)'; test -n "$(desktopappdir)" || list=; \
@@ -1692,6 +1720,27 @@ uninstall-dist_vimdoc_doc_DATA:
 	@list='$(dist_vimdoc_doc__DATA)'; test -n "$(vimdoc_doc_dir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(vimdoc_doc_dir)'; $(am__uninstall_files_from_dir)
+install-dist_zshcomplDATA: $(dist_zshcompl_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_zshcompl_DATA)'; test -n "$(zshcompldir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(zshcompldir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(zshcompldir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(zshcompldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(zshcompldir)" || exit $$?; \
+	done
+
+uninstall-dist_zshcomplDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_zshcompl_DATA)'; test -n "$(zshcompldir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(zshcompldir)'; $(am__uninstall_files_from_dir)
 install-nodist_pkgdataDATA: $(nodist_pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(nodist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
@@ -2007,7 +2056,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_colors_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompldir)" "$(DESTDIR)$(desktopappdir)" "$(DESTDIR)$(desktoppixdir)" "$(DESTDIR)$(docsdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_autoload_vifm_dir)" "$(DESTDIR)$(vim_colors_dir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vim_ftdetect_dir)" "$(DESTDIR)$(vim_ftplugin_dir)" "$(DESTDIR)$(vim_plugin_dir)" "$(DESTDIR)$(vim_syntax_dir)" "$(DESTDIR)$(vimdoc_doc_dir)" "$(DESTDIR)$(zshcompldir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -2089,15 +2138,16 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_desktopappDATA \
-	install-dist_desktoppixDATA install-dist_docsDATA \
-	install-dist_pkgdataDATA install-dist_vim_autoload_vifm_DATA \
+install-data-am: install-dist_bashcomplDATA \
+	install-dist_desktopappDATA install-dist_desktoppixDATA \
+	install-dist_docsDATA install-dist_pkgdataDATA \
+	install-dist_vim_autoload_vifm_DATA \
 	install-dist_vim_colors_DATA install-dist_vim_doc_DATA \
 	install-dist_vim_ftdetect_DATA install-dist_vim_ftplugin_DATA \
 	install-dist_vim_plugin_DATA install-dist_vim_syntax_DATA \
-	install-dist_vimdoc_doc_DATA install-man \
-	install-nodist_pkgdataDATA install-nodist_vim_doc_DATA \
-	install-nodist_vimdoc_doc_DATA
+	install-dist_vimdoc_doc_DATA install-dist_zshcomplDATA \
+	install-man install-nodist_pkgdataDATA \
+	install-nodist_vim_doc_DATA install-nodist_vimdoc_doc_DATA
 
 install-dvi: install-dvi-am
 
@@ -2142,17 +2192,18 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-dist_binSCRIPTS \
-	uninstall-dist_desktopappDATA uninstall-dist_desktoppixDATA \
-	uninstall-dist_docsDATA uninstall-dist_pkgdataDATA \
+uninstall-am: uninstall-binPROGRAMS uninstall-dist_bashcomplDATA \
+	uninstall-dist_binSCRIPTS uninstall-dist_desktopappDATA \
+	uninstall-dist_desktoppixDATA uninstall-dist_docsDATA \
+	uninstall-dist_pkgdataDATA \
 	uninstall-dist_vim_autoload_vifm_DATA \
 	uninstall-dist_vim_colors_DATA uninstall-dist_vim_doc_DATA \
 	uninstall-dist_vim_ftdetect_DATA \
 	uninstall-dist_vim_ftplugin_DATA \
 	uninstall-dist_vim_plugin_DATA uninstall-dist_vim_syntax_DATA \
-	uninstall-dist_vimdoc_doc_DATA uninstall-man \
-	uninstall-nodist_pkgdataDATA uninstall-nodist_vim_doc_DATA \
-	uninstall-nodist_vimdoc_doc_DATA
+	uninstall-dist_vimdoc_doc_DATA uninstall-dist_zshcomplDATA \
+	uninstall-man uninstall-nodist_pkgdataDATA \
+	uninstall-nodist_vim_doc_DATA uninstall-nodist_vimdoc_doc_DATA
 
 uninstall-man: uninstall-man1
 
@@ -2163,23 +2214,24 @@ uninstall-man: uninstall-man1
 	ctags ctags-am distclean distclean-compile distclean-generic \
 	distclean-local distclean-tags distdir dvi dvi-am html html-am \
 	info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dist_binSCRIPTS \
-	install-dist_desktopappDATA install-dist_desktoppixDATA \
-	install-dist_docsDATA install-dist_pkgdataDATA \
-	install-dist_vim_autoload_vifm_DATA \
+	install-data install-data-am install-dist_bashcomplDATA \
+	install-dist_binSCRIPTS install-dist_desktopappDATA \
+	install-dist_desktoppixDATA install-dist_docsDATA \
+	install-dist_pkgdataDATA install-dist_vim_autoload_vifm_DATA \
 	install-dist_vim_colors_DATA install-dist_vim_doc_DATA \
 	install-dist_vim_ftdetect_DATA install-dist_vim_ftplugin_DATA \
 	install-dist_vim_plugin_DATA install-dist_vim_syntax_DATA \
-	install-dist_vimdoc_doc_DATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-nodist_pkgdataDATA install-nodist_vim_doc_DATA \
-	install-nodist_vimdoc_doc_DATA install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am recheck tags tags-am \
-	uninstall uninstall-am uninstall-binPROGRAMS \
+	install-dist_vimdoc_doc_DATA install-dist_zshcomplDATA \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-man1 install-nodist_pkgdataDATA \
+	install-nodist_vim_doc_DATA install-nodist_vimdoc_doc_DATA \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	recheck tags tags-am uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-dist_bashcomplDATA \
 	uninstall-dist_binSCRIPTS uninstall-dist_desktopappDATA \
 	uninstall-dist_desktoppixDATA uninstall-dist_docsDATA \
 	uninstall-dist_pkgdataDATA \
@@ -2188,9 +2240,9 @@ uninstall-man: uninstall-man1
 	uninstall-dist_vim_ftdetect_DATA \
 	uninstall-dist_vim_ftplugin_DATA \
 	uninstall-dist_vim_plugin_DATA uninstall-dist_vim_syntax_DATA \
-	uninstall-dist_vimdoc_doc_DATA uninstall-man uninstall-man1 \
-	uninstall-nodist_pkgdataDATA uninstall-nodist_vim_doc_DATA \
-	uninstall-nodist_vimdoc_doc_DATA
+	uninstall-dist_vimdoc_doc_DATA uninstall-dist_zshcomplDATA \
+	uninstall-man uninstall-man1 uninstall-nodist_pkgdataDATA \
+	uninstall-nodist_vim_doc_DATA uninstall-nodist_vimdoc_doc_DATA
 
 .PRECIOUS: Makefile
 

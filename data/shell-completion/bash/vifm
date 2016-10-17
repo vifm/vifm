@@ -1,0 +1,75 @@
+# bash completion for vifm(1)           -*- shell-script -*-
+
+# This function counts the number of args, excluding options and vifm commands.
+# Single hyphen counts as arg.
+_vifm_args() {
+    local cword words
+    __reassemble_comp_words_by_ref "$1" words cword
+
+    args=1
+    hyphen=false
+    local w prev
+    for w in "${words[@]:1:cword-1}"; do
+        if [[ $w == - && $prev != --choose-@(dir|files) ]]; then
+            hyphen=true
+            args=$(($args+1))
+        elif [[ $w != [-+]* ]]; then
+            args=$(($args+1))
+        fi
+        prev="$w"
+    done
+}
+
+_vifm() {
+    local cur prev words cword split
+    _init_completion || return
+
+    case $prev in
+        --delimiter|--on-choose|-c)
+            return
+            ;;
+        --choose-dir|--choose-files)
+            [[ ! $cur || $cur == - ]] && COMPREPLY=( - )
+            _filedir
+            return
+            ;;
+        --server-name)
+            local -a servers
+            mapfile -t servers < <(command vifm --server-list 2>/dev/null)
+            COMPREPLY=()
+            local quoted_match
+            while read -r match; do
+                printf -v quoted_match '%q' "$match"
+                COMPREPLY+=("$quoted_match")
+            done < <(compgen -W '"${servers[@]}"' -- "$cur")
+            return
+            ;;
+    esac
+
+    if [[ $cur == -* ]]; then
+        COMPREPLY=( $( compgen -W '--select -f --choose-files --choose-dir
+            --delimiter --on-choose --logging= --server-list --server-name
+            --remote --server-name -c -h --help -v --version --no-configs' \
+            -- "$cur" ) )
+        [[ $COMPREPLY == *= ]] && compopt -o nospace
+        return
+    elif [[ $cur == + ]]; then
+        COMPREPLY=( $( compgen -W '+' -- "$cur" ) )
+        compopt -o nospace
+        return
+    fi
+
+    local args hyphen
+    _vifm_args
+    case $args in
+        1|2)
+            if ! $hyphen; then
+                [[ ! $cur || $cur == - ]] && COMPREPLY=( - )
+            fi
+            _filedir
+            ;;
+    esac
+} &&
+complete -F _vifm vifm
+
+# ex: ts=4 sw=4 et filetype=sh

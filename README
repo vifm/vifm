@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2016
 
-Updated: 22 September, 2016
+Updated: 16 October, 2016
 Version: 0.8.2
 
 Brief Description
@@ -44,6 +44,7 @@ Package content
     |  |-- colors/ - sample color schemes
     |  |-- graphics/ - icons
     |  |-- man/ - manual pages
+    |  |-- shell-completion/ - scripts implementing shell completion
     |  `-- vim/ - plugin for Vim
     |
     |-- patches/ - patches for software vifm depends on
