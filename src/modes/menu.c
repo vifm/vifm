@@ -290,7 +290,9 @@ void
 enter_menu_mode(menu_info *m, FileView *active_view)
 {
 	if(curr_stats.load_stage < 2)
+	{
 		return;
+	}
 
 	assert(m->len > 0 && "Menu cannot be empty.");
 
@@ -303,6 +305,15 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 	was_redraw = 0;
 
 	init_cmds(0, &cmds_conf);
+}
+
+void
+reenter_menu_mode(menu_info *m)
+{
+	assert(vle_mode_is(MENU_MODE) && "Can't reenter if not in menu mode.");
+	assert(m->len > 0 && "Menu cannot be empty.");
+
+	menu = m;
 }
 
 void

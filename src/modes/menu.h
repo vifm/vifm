@@ -29,6 +29,9 @@ void init_menu_mode(void);
 
 void enter_menu_mode(menu_info *m, FileView *active_view);
 
+/* Replaces menu of the menu mode. */
+void reenter_menu_mode(menu_info *m);
+
 void menu_pre(void);
 
 /* Performs post-actions (at the end of input processing loop) for menus. */
