@@ -227,7 +227,7 @@ job_check(bg_job_t *const job)
 
 	/* XXX: aren't we doing extra/unneeded work for background threads here? */
 
-	/* Setup pipe for reading */
+	/* Setup pipe for reading. */
 	FD_ZERO(&ready);
 	if(job->fd >= 0)
 	{
@@ -235,15 +235,14 @@ job_check(bg_job_t *const job)
 		max_fd = job->fd;
 	}
 
-	if(job->error != NULL)
+	if(job->last_error != NULL)
 	{
 		if(!job->skip_errors)
 		{
 			job->skip_errors = prompt_error_msg("Background Process Error",
-					job->error);
+					job->last_error);
 		}
-		free(job->error);
-		job->error = NULL;
+		update_string(&job->last_error, NULL);
 	}
 
 	while(select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
@@ -302,6 +301,7 @@ job_free(bg_job_t *const job)
 #endif
 	free(job->bg_op.descr);
 	free(job->cmd);
+	free(job->last_error);
 	free(job);
 }
 
@@ -382,7 +382,7 @@ error_msg(const char *title, const char *text)
 	}
 	else
 	{
-		(void)replace_string(&job->error, text);
+		(void)replace_string(&job->last_error, text);
 	}
 }
 #endif
@@ -851,7 +851,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 #endif
 	new->skip_errors = 0;
 	new->running = 1;
-	new->error = NULL;
+	new->last_error = NULL;
 	new->cancelled = 0;
 
 	if(type != BJT_COMMAND)

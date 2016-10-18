@@ -64,7 +64,7 @@ typedef struct bg_job_t
 	pid_t pid;
 	char *cmd;
 	int skip_errors;
-	char *error;
+	char *last_error;
 	int cancelled;  /* Whether cancellation has been requested. */
 
 	/* The lock is meant to guard running and exit_code updates in background
