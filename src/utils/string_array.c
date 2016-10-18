@@ -35,8 +35,6 @@ static char * read_seekable_stream(FILE *const fp, size_t *read);
 static size_t get_remaining_stream_size(FILE *const fp);
 static char ** text_to_lines(char text[], size_t text_len, int *nlines,
 		int null_sep);
-static char ** break_into_lines(char text[], size_t text_len, int *nlines,
-		int null_sep);
 
 int
 add_to_string_array(char ***array, int len, int count, ...)
@@ -348,10 +346,7 @@ text_to_lines(char text[], size_t text_len, int *nlines, int null_sep)
 	return list;
 }
 
-/* Converts text of length text_len into an array of strings.  Returns non-NULL
- * on success, otherwise NULL is returned, *nlines is untouched.  For empty file
- * non-NULL will be returned, but *nlines will be zero. */
-static char **
+char **
 break_into_lines(char text[], size_t text_len, int *nlines, int null_sep)
 {
 	const char *const seps = null_sep ? "" : "\n\r";
@@ -376,7 +371,7 @@ break_into_lines(char text[], size_t text_len, int *nlines, int null_sep)
 		{
 			do
 			{
-				after_line++;
+				++after_line;
 			}
 			while(after_line < end && after_line[0] == '\0');
 		}
