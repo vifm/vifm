@@ -74,6 +74,8 @@ typedef struct menu_info
 	char *empty_msg;
 	/* Number of times to repeat search. */
 	int search_repeat;
+
+	int initialized; /* Marker that shows whether menu info was initialized. */
 }
 menu_info;
 
