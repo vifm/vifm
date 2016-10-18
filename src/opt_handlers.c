@@ -780,13 +780,16 @@ uni_handler(const char name[], optval_t val, OPT_SCOPE scope)
 		{
 			FileView *const tmp_view = curr_view;
 			curr_view = other_view;
-			load_view_options(curr_view);
 
-			/* Make sure option value remains valid even if updated in the handler. */
+			/* Make sure option value remains valid even if updated in the handler.
+			 * Do this before calling load_view_options(), because it can change the
+			 * value. */
 			if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
 			{
 				val.str_val = strdup(val.str_val);
 			}
+
+			load_view_options(curr_view);
 
 			if(scope == OPT_LOCAL)
 			{
