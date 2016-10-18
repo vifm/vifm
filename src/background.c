@@ -100,6 +100,7 @@ background_task_args;
 static void job_check(bg_job_t *const job);
 static void job_free(bg_job_t *const job);
 #ifndef _WIN32
+static void error_msg(const char title[], const char text[]);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[], int fd,
 		BgJobType type);
 #else
@@ -371,22 +372,6 @@ bg_and_wait_for_status(char cmd[],
 #endif
 }
 
-#ifndef _WIN32
-static void
-error_msg(const char *title, const char *text)
-{
-	bg_job_t *job = pthread_getspecific(current_job);
-	if(job == NULL)
-	{
-		show_error_msg(title, text);
-	}
-	else
-	{
-		(void)replace_string(&job->last_error, text);
-	}
-}
-#endif
-
 int
 bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 {
@@ -463,6 +448,22 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 }
 
 #ifndef _WIN32
+/* Either displays error message to the user for foreground operations or saves
+ * it for displaying on the next invocation of bg_check(). */
+static void
+error_msg(const char title[], const char text[])
+{
+	bg_job_t *job = pthread_getspecific(current_job);
+	if(job == NULL)
+	{
+		show_error_msg(title, text);
+	}
+	else
+	{
+		(void)replace_string(&job->last_error, text);
+	}
+}
+
 pid_t
 bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 {
