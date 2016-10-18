@@ -250,14 +250,16 @@ job_check(bg_job_t *const job)
 	{
 		char err_msg[ERR_MSG_LEN];
 
-		const ssize_t nread = read(job->fd, err_msg, sizeof(err_msg) - 1);
-		if(nread == 0)
+		const ssize_t nread = read(job->fd, err_msg, sizeof(err_msg) - 1U);
+		if(nread <= 0)
 		{
 			break;
 		}
-		else if(nread > 0 && !job->skip_errors)
+
+		err_msg[nread] = '\0';
+		(void)strappend(&job->errors, &job->errors_len, err_msg);
+		if(!job->skip_errors)
 		{
-			err_msg[nread] = '\0';
 			job->skip_errors = prompt_error_msg("Background Process Error", err_msg);
 		}
 	}
@@ -303,6 +305,7 @@ job_free(bg_job_t *const job)
 	free(job->bg_op.descr);
 	free(job->cmd);
 	free(job->last_error);
+	free(job->errors);
 	free(job);
 }
 
@@ -853,6 +856,8 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->skip_errors = 0;
 	new->running = 1;
 	new->last_error = NULL;
+	new->errors = NULL;
+	new->errors_len = 0U;
 	new->cancelled = 0;
 
 	if(type != BJT_COMMAND)

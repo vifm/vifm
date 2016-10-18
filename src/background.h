@@ -61,11 +61,14 @@ bg_op_t;
 typedef struct bg_job_t
 {
 	BgJobType type; /* Type of background job. */
+	int cancelled;  /* Whether cancellation has been requested. */
 	pid_t pid;
 	char *cmd;
-	int skip_errors;
-	char *last_error;
-	int cancelled;  /* Whether cancellation has been requested. */
+
+	int skip_errors;   /* Do not show future errors. */
+	char *last_error;  /* Last error which hasn't been shown yet. */
+	char *errors;      /* Whole error stream collected. */
+	size_t errors_len; /* Length of the error field. */
 
 	/* The lock is meant to guard running and exit_code updates in background
 	 * jobs. */
