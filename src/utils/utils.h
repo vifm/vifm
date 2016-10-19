@@ -176,6 +176,9 @@ void wait_for_data_from(pid_t pid, FILE *f, int fd,
  * is returned. */
 int set_sigchld(int block);
 
+/* Blocks all signals of current thread that can be blocked. */
+void block_all_thread_signals(void);
+
 /* Checks for executable by its path.  Mutates path by appending executable
  * prefixes on Windows.  Returns non-zero if path points to an executable,
  * otherwise zero is returned. */

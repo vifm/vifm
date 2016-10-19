@@ -33,6 +33,7 @@
 #include <sys/wait.h> /* waitpid */
 #include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() getgrgid_r() */
+#include <pthread.h> /* pthread_sigmask() */
 #include <pwd.h> /* getpwnam() getpwuid_r() */
 #include <unistd.h> /* X_OK dup() dup2() getpid() isatty() pause() sysconf()
                        ttyname() */
@@ -40,9 +41,8 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <errno.h> /* EINTR errno */
-#include <signal.h> /* SIGINT SIGTSTP SIGCHLD SIG_DFL SIG_BLOCK SIG_UNBLOCK
-                       sigset_t kill() sigaddset() sigemptyset() signal()
-                       sigprocmask() */
+#include <signal.h> /* SIG* SIG_* sigset_t kill() sigaddset() sigemptyset()
+                       sigfillset() signal() sigprocmask() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE stderr fdopen() fprintf() snprintf() */
 #include <stdlib.h> /* atoi() free() */
@@ -185,6 +185,14 @@ set_sigchld(int block)
 	return sigemptyset(&sigchld_mask) == -1
 	    || sigaddset(&sigchld_mask, SIGCHLD) == -1
 	    || sigprocmask(action, &sigchld_mask, NULL) == -1;
+}
+
+void
+block_all_thread_signals(void)
+{
+	sigset_t set;
+	sigfillset(&set);
+	pthread_sigmask(SIG_SETMASK, &set, NULL);
 }
 
 void
