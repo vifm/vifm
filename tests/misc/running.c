@@ -13,12 +13,18 @@
 #include "../../src/utils/matchers.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/background.h"
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/running.h"
 #include "../../src/status.h"
 
 static int prog_exists(const char name[]);
+
+SETUP_ONCE()
+{
+	bg_init();
+}
 
 SETUP()
 {
