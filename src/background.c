@@ -928,9 +928,7 @@ bg_has_active_jobs(void)
 	{
 		if(job->type == BJT_OPERATION)
 		{
-			pthread_spin_lock(&job->status_lock);
-			running |= job->running;
-			pthread_spin_unlock(&job->status_lock);
+			running |= bg_job_is_running(job);
 		}
 	}
 
@@ -999,6 +997,16 @@ bg_job_cancelled(bg_job_t *job)
 		return bg_op_cancelled(&job->bg_op);
 	}
 	return job->cancelled;
+}
+
+int
+bg_job_is_running(bg_job_t *job)
+{
+	int running;
+	pthread_spin_lock(&job->status_lock);
+	running = job->running;
+	pthread_spin_unlock(&job->status_lock);
+	return running;
 }
 
 void

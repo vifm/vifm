@@ -61,7 +61,7 @@ show_jobs_menu(FileView *view)
 	i = 0;
 	while(p != NULL)
 	{
-		if(p->running)
+		if(bg_job_is_running(p))
 		{
 			char info_buf[24];
 			char item_buf[sizeof(info_buf) + strlen(p->cmd) + 1024];
@@ -145,7 +145,7 @@ cancel_job(menu_info *m, bg_job_t *job)
 	bg_jobs_freeze();
 	for(p = bg_jobs; p != NULL; p = p->next)
 	{
-		if(p == job && p->running)
+		if(p == job && bg_job_is_running(job))
 		{
 			if(bg_job_cancel(job))
 			{

@@ -156,6 +156,10 @@ int bg_job_cancel(bg_job_t *job);
  * zero is returned. */
 int bg_job_cancelled(bg_job_t *job);
 
+/* Checks whether the job is still running.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int bg_job_is_running(bg_job_t *job);
+
 /* Temporary locks bg_op_t structure to ensure that it's not modified by
  * anyone during reading/updating its fields.  The structure must be part of
  * bg_job_t. */
