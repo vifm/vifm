@@ -175,15 +175,9 @@ bg_check(void)
 
 		job_check(p);
 
-		if(p->type != BJT_COMMAND)
-		{
-			pthread_spin_lock(&p->status_lock_for_bg);
-		}
+		pthread_spin_lock(&p->status_lock);
 		running = p->running;
-		if(p->type != BJT_COMMAND)
-		{
-			pthread_spin_unlock(&p->status_lock_for_bg);
-		}
+		pthread_spin_unlock(&p->status_lock);
 
 		/* Remove job if it is finished now. */
 		if(!running)
@@ -285,9 +279,9 @@ job_free(bg_job_t *const job)
 		return;
 	}
 
+	pthread_spin_destroy(&job->status_lock);
 	if(job->type != BJT_COMMAND)
 	{
-		pthread_spin_destroy(&job->status_lock_for_bg);
 		pthread_spin_destroy(&job->bg_op_lock);
 	}
 
@@ -815,10 +809,10 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	if(pthread_create(&id, &attr, &background_task_bootstrap, task_args) != 0)
 	{
 		/* Mark job as finished with error. */
-		pthread_spin_lock(&task_args->job->status_lock_for_bg);
+		pthread_spin_lock(&task_args->job->status_lock);
 		task_args->job->running = 0;
 		task_args->job->exit_code = 1;
-		pthread_spin_unlock(&task_args->job->status_lock_for_bg);
+		pthread_spin_unlock(&task_args->job->status_lock);
 
 		free(task_args);
 		ret = 1;
@@ -860,9 +854,9 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->errors_len = 0U;
 	new->cancelled = 0;
 
+	pthread_spin_init(&new->status_lock, PTHREAD_PROCESS_PRIVATE);
 	if(type != BJT_COMMAND)
 	{
-		pthread_spin_init(&new->status_lock_for_bg, PTHREAD_PROCESS_PRIVATE);
 		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
 	}
 	new->bg_op.total = 0;
@@ -889,10 +883,10 @@ background_task_bootstrap(void *arg)
 	task_args->func(&task_args->job->bg_op, task_args->args);
 
 	/* Mark task as finished normally. */
-	pthread_spin_lock(&task_args->job->status_lock_for_bg);
+	pthread_spin_lock(&task_args->job->status_lock);
 	task_args->job->running = 0;
 	task_args->job->exit_code = 0;
-	pthread_spin_unlock(&task_args->job->status_lock_for_bg);
+	pthread_spin_unlock(&task_args->job->status_lock);
 
 	free(task_args);
 
@@ -934,9 +928,9 @@ bg_has_active_jobs(void)
 	{
 		if(job->type == BJT_OPERATION)
 		{
-			pthread_spin_lock(&job->status_lock_for_bg);
+			pthread_spin_lock(&job->status_lock);
 			running |= job->running;
-			pthread_spin_unlock(&job->status_lock_for_bg);
+			pthread_spin_unlock(&job->status_lock);
 		}
 	}
 

@@ -70,12 +70,11 @@ typedef struct bg_job_t
 	char *errors;      /* Whole error stream collected. */
 	size_t errors_len; /* Length of the error field. */
 
-	/* The lock is meant to guard running and exit_code updates in background
-	 * jobs. */
-	pthread_spinlock_t status_lock_for_bg;
-	int running;
+	/* The lock is meant to guard state-related fields. */
+	pthread_spinlock_t status_lock;
+	int running;   /* Whether this job is still running. */
 	/* TODO: use or remove this (set to correct value, but not used). */
-	int exit_code;
+	int exit_code; /* Exit code of external command. */
 
 	/* For background operations and tasks. */
 	pthread_spinlock_t bg_op_lock;
