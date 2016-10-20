@@ -31,6 +31,7 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* popen() */
+#include <unistd.h> /* read() */
 
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -110,33 +111,53 @@ get_magic_mimetype(const char filename[], char buf[], size_t buf_sz)
 #ifdef HAVE_LIBMAGIC
 	magic_t magic;
 	const char *descr;
+	pid_t pid;
+	int pipes[2];
+	ssize_t r;
+
+	if (pipe(pipes) == -1)
+		return -1;
+
+	switch (pid = fork()) {
+		case -1:
+			return -1;
+		case 0:
+			close(pipes[0]);
 
 #if HAVE_DECL_MAGIC_MIME_TYPE
-	magic = magic_open(MAGIC_MIME_TYPE);
+			magic = magic_open(MAGIC_MIME_TYPE);
 #else
-	magic = magic_open(MAGIC_MIME);
+			magic = magic_open(MAGIC_MIME);
 #endif
-	if(magic == NULL)
-	{
-		return -1;
-	}
+			if (magic == NULL)
+				_exit(-1);
 
-	magic_load(magic, NULL);
+			if (magic_load(magic, NULL) == -1) {
+				magic_close(magic);
+				_exit(-1);
+			}
 
-	descr = magic_file(magic, filename);
-	if(descr == NULL)
-	{
-		magic_close(magic);
-		return -1;
-	}
+			if((descr = magic_file(magic, filename)) == NULL) {
+				magic_close(magic);
+				_exit(-1);
+			}
 
-	copy_str(buf, buf_sz, descr);
 #if !HAVE_DECL_MAGIC_MIME_TYPE
-	break_atr(buf, ';');
+			break_atr(descr, ';');
 #endif
-
-	magic_close(magic);
-	return 0;
+			if (write(pipes[1], descr, strlen(descr)) == -1)
+				_exit(-1);
+			close(pipes[1]);
+			magic_close(magic);
+			_exit(0);
+		default:
+			close(pipes[1]);
+			r = read(pipes[0], buf, buf_sz - 1);
+			buf[r] = '\0';
+			close(pipes[0]);
+			waitpid(pid, NULL, 0);
+	}
+	return (r == -1 || r == 0) ? -1 : 0;
 #else /* #ifdef HAVE_LIBMAGIC */
 	return -1;
 #endif /* #ifdef HAVE_LIBMAGIC */
@@ -146,30 +167,36 @@ static int
 get_file_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
 #ifdef HAVE_FILE_PROG
-	FILE *pipe;
-	char command[1024];
 	char *const escaped_filename = shell_like_escape(filename, 0);
+	int pipes[2];
+	pid_t pid;
+	ssize_t r;
 
-	/* Use the file command to get mimetype */
-	snprintf(command, sizeof(command), "file %s -b --mime-type",
-			escaped_filename);
-	free(escaped_filename);
-
-	if((pipe = popen(command, "r")) == NULL)
-	{
+	if (pipe(pipes) == -1)
 		return -1;
+
+	switch (pid = fork())
+	{
+		case -1:
+			printf("ERROR: forking child process failed\n");
+			return -1;
+		case 0:
+			dup2 (pipes[1], STDOUT_FILENO);
+			close(pipes[0]);
+			close(pipes[1]);
+			/* Use the file command to get mimetype */
+			execl("/usr/bin/file", "file", "-b", "--mime-type", escaped_filename, NULL);
+			_exit(-1);
+		default:
+			close(pipes[1]);
+			if ((r = read(pipes[0], buf, buf_sz - 1)) == -1)
+				r = 0; /* if read(2) failed, we still want buf to be a C string */
+			buf[r] = '\0';
+			waitpid(pid, NULL, 0);
+			close(pipes[0]);
 	}
 
-	if(fgets(buf, buf_sz, pipe) != buf)
-	{
-		pclose(pipe);
-		return -1;
-	}
-
-	pclose(pipe);
-	chomp(buf);
-
-	return 0;
+	return (r == 0) ? -1 : 0;
 #else /* #ifdef HAVE_FILE_PROG */
 	return -1;
 #endif /* #ifdef HAVE_FILE_PROG */
