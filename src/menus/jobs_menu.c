@@ -35,6 +35,11 @@
 static int execute_jobs_cb(FileView *view, menu_info *m);
 static KHandlerResponse jobs_khandler(menu_info *m, const wchar_t keys[]);
 static int cancel_job(menu_info *m, bg_job_t *job);
+static void show_job_errors(menu_info *m, bg_job_t *job);
+static KHandlerResponse errs_khandler(menu_info *m, const wchar_t keys[]);
+
+/* Menu jobs description. */
+static menu_info jobs_m;
 
 int
 show_jobs_menu(FileView *view)
@@ -42,11 +47,10 @@ show_jobs_menu(FileView *view)
 	bg_job_t *p;
 	int i;
 
-	static menu_info m;
-	init_menu_info(&m, strdup("Pid --- Command"),
+	init_menu_info(&jobs_m, strdup("Pid --- Command"),
 			strdup("No jobs currently running"));
-	m.execute_handler = &execute_jobs_cb;
-	m.key_handler = &jobs_khandler;
+	jobs_m.execute_handler = &execute_jobs_cb;
+	jobs_m.key_handler = &jobs_khandler;
 
 	bg_check();
 
@@ -57,7 +61,7 @@ show_jobs_menu(FileView *view)
 	i = 0;
 	while(p != NULL)
 	{
-		if(p->running)
+		if(bg_job_is_running(p))
 		{
 			char info_buf[24];
 			char item_buf[sizeof(info_buf) + strlen(p->cmd) + 1024];
@@ -79,9 +83,10 @@ show_jobs_menu(FileView *view)
 
 			snprintf(item_buf, sizeof(item_buf), "%-8s  %s%s", info_buf, p->cmd,
 					bg_job_cancelled(p) ? " (cancelling...)" : "");
-			i = add_to_string_array(&m.items, i, 1, item_buf);
-			m.void_data = reallocarray(m.void_data, i, sizeof(*m.void_data));
-			m.void_data[i - 1] = p;
+			i = add_to_string_array(&jobs_m.items, i, 1, item_buf);
+			jobs_m.void_data = reallocarray(jobs_m.void_data, i,
+					sizeof(*jobs_m.void_data));
+			jobs_m.void_data[i - 1] = p;
 		}
 
 		p = p->next;
@@ -89,9 +94,9 @@ show_jobs_menu(FileView *view)
 
 	bg_jobs_unfreeze();
 
-	m.len = i;
+	jobs_m.len = i;
 
-	return display_menu(&m, view);
+	return display_menu(&jobs_m, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
@@ -119,6 +124,11 @@ jobs_khandler(menu_info *m, const wchar_t keys[])
 		draw_menu(m);
 		return KHR_REFRESH_WINDOW;
 	}
+	else if(wcscmp(keys, L"e") == 0)
+	{
+		show_job_errors(m, m->void_data[m->pos]);
+		return KHR_REFRESH_WINDOW;
+	}
 	/* TODO: maybe use DD for forced termination? */
 	return KHR_UNHANDLED;
 }
@@ -135,7 +145,7 @@ cancel_job(menu_info *m, bg_job_t *job)
 	bg_jobs_freeze();
 	for(p = bg_jobs; p != NULL; p = p->next)
 	{
-		if(p == job && p->running)
+		if(p == job && bg_job_is_running(job))
 		{
 			if(bg_job_cancel(job))
 			{
@@ -149,6 +159,67 @@ cancel_job(menu_info *m, bg_job_t *job)
 	bg_jobs_unfreeze();
 
 	return (p != NULL);
+}
+
+/* Shows job errors if there is something and the job is still running.
+ * Switches to separate menu description. */
+static void
+show_job_errors(menu_info *m, bg_job_t *job)
+{
+	char *cmd = NULL, *errors = NULL;
+	size_t errors_len;
+	bg_job_t *p;
+
+	/* We have to make sure the job pointer is still valid and the job is
+	 * running. */
+	bg_jobs_freeze();
+	for(p = bg_jobs; p != NULL; p = p->next)
+	{
+		if(p == job)
+		{
+			cmd = strdup(job->cmd);
+			errors = strdup(job->errors == NULL ? "" : job->errors);
+			errors_len = job->errors_len;
+			break;
+		}
+	}
+	bg_jobs_unfreeze();
+
+	if(p == NULL)
+	{
+		show_error_msg("Job errors", "The job has already finished");
+	}
+	else if(is_null_or_empty(errors))
+	{
+		show_error_msg("Job errors", "No errors to show");
+	}
+	else
+	{
+		static menu_info m;
+
+		init_menu_info(&m, format_str("Job errors (%s)", cmd), NULL);
+		m.key_handler = &errs_khandler;
+		m.items = break_into_lines(errors, errors_len, &m.len, 0);
+
+		reenter_menu_mode(&m);
+		draw_menu(&m);
+	}
+	free(cmd);
+	free(errors);
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+errs_khandler(menu_info *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"h") == 0)
+	{
+		reenter_menu_mode(&jobs_m);
+		draw_menu(&jobs_m);
+		return KHR_REFRESH_WINDOW;
+	}
+	return KHR_UNHANDLED;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -17,3 +17,23 @@
    fun:re_compile_fastmap
    fun:regcomp
 }
+
+{
+   thread-tls-1
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create*
+}
+
+{
+   thread-tls-2
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:_dl_allocate_tls
+   fun:pthread_create*
+}

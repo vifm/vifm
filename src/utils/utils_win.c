@@ -123,6 +123,12 @@ set_sigchld(int block)
 	return 0;
 }
 
+void
+block_all_thread_signals(void)
+{
+	/* No normal signals on Windows. */
+}
+
 int
 refers_to_slower_fs(const char from[], const char to[])
 {

@@ -61,18 +61,25 @@ bg_op_t;
 typedef struct bg_job_t
 {
 	BgJobType type; /* Type of background job. */
+	int cancelled;  /* Whether cancellation has been requested. */
 	pid_t pid;
 	char *cmd;
-	int skip_errors;
-	char *error;
-	int cancelled;  /* Whether cancellation has been requested. */
 
-	/* The lock is meant to guard running and exit_code updates in background
-	 * jobs. */
-	pthread_spinlock_t status_lock_for_bg;
-	int running;
+	int skip_errors;   /* Do not show future errors. */
+
+	/* The lock is meant to guard error-related fields. */
+	pthread_spinlock_t errors_lock;
+	char *new_errors;      /* Portion of stderr which hasn't been shown yet. */
+	size_t new_errors_len; /* Length of the new_errors field. */
+	char *errors;          /* Whole error stream collected. */
+	size_t errors_len;     /* Length of the errors field. */
+
+	/* The lock is meant to guard state-related fields. */
+	pthread_spinlock_t status_lock;
+	int running;   /* Whether this job is still running. */
+	int in_use;    /* Whether this job description is in use by someone. */
 	/* TODO: use or remove this (set to correct value, but not used). */
-	int exit_code;
+	int exit_code; /* Exit code of external command. */
 
 	/* For background operations and tasks. */
 	pthread_spinlock_t bg_op_lock;
@@ -83,7 +90,9 @@ typedef struct bg_job_t
 #else
 	HANDLE hprocess;
 #endif
-	struct bg_job_t *next;
+
+	struct bg_job_t *next;     /* Link to the next element in bg_jobs list. */
+	struct bg_job_t *err_next; /* Link to the next element in error read list. */
 }
 bg_job_t;
 
@@ -91,7 +100,7 @@ bg_job_t;
 typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 
 /* List of background jobs.  Use bg_jobs_freeze() before accessing it. */
-extern struct bg_job_t *bg_jobs;
+extern bg_job_t *bg_jobs;
 
 /* Prepare background unit for the work. */
 void bg_init(void);
@@ -153,6 +162,10 @@ int bg_job_cancel(bg_job_t *job);
 /* Checks whether the job has been cancelled.  Returns non-zero if so, otherwise
  * zero is returned. */
 int bg_job_cancelled(bg_job_t *job);
+
+/* Checks whether the job is still running.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int bg_job_is_running(bg_job_t *job);
 
 /* Temporary locks bg_op_t structure to ensure that it's not modified by
  * anyone during reading/updating its fields.  The structure must be part of

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 15
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -4142,6 +4142,9 @@ the list, but marked as being cancelled (if cancellation was successfully
 requested).  A message will pop up if the job has already stopped.
 Note that on Windows cancelling external programs like this might not work,
 because their parent shell doesn't have any windows.
+
+e key displays errors of selected job if any were collected.  They are
+displayed in a new menu, but you can get back to jobs menu by pressing h.
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*

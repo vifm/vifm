@@ -36,6 +36,9 @@
 
 	Added shell completion for bash and zsh.  Patches by filterfalse.
 
+	Added e key to :jobs menu that displays list of errors issues by that
+	jobs, if any.  h key goes back to :jobs menu.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
@@ -89,6 +92,10 @@
 	Thanks to filterfalse.
 
 	Treat "+" option the same way as Vim (like :$).  Thanks to filterfalse.
+
+	Read error output of background commands independently of main
+	thread (prevents blocking of tools which produce huge amount of output).
+	Thanks to Stas Malavin.
 
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.

@@ -122,6 +122,11 @@ menu_current_line_erase(menu_info *m)
 void
 init_menu_info(menu_info *m, char title[], char empty_msg[])
 {
+	if(m->initialized)
+	{
+		reset_popup_menu(m);
+	}
+
 	m->top = 0;
 	m->current = 1;
 	m->len = 0;
@@ -142,6 +147,7 @@ init_menu_info(menu_info *m, char title[], char empty_msg[])
 	m->execute_handler = NULL;
 	m->empty_msg = empty_msg;
 	m->search_repeat = 0;
+	m->initialized = 1;
 }
 
 void
@@ -152,6 +158,7 @@ reset_popup_menu(menu_info *m)
 	if(m->data != NULL)
 	{
 		free_string_array(m->data, m->len);
+		m->data = NULL;
 	}
 	free_string_array(m->items, m->len);
 	free(m->void_data);
@@ -159,6 +166,7 @@ reset_popup_menu(menu_info *m)
 	free(m->matches);
 	free(m->title);
 	free(m->empty_msg);
+	m->initialized = 0;
 
 	werase(menu_win);
 }

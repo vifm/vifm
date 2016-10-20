@@ -24,13 +24,6 @@
 #endif
 
 #include <fcntl.h> /* open() */
-#include <unistd.h> /* select() */
-
-#include <assert.h> /* assert() */
-#include <errno.h> /* errno */
-#include <stddef.h> /* NULL wchar_t */
-#include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
-#include <string.h>
 #include <sys/stat.h> /* O_RDONLY */
 #include <sys/types.h> /* pid_t ssize_t */
 #ifndef _WIN32
@@ -38,6 +31,13 @@
 #include <sys/time.h> /* timeval */
 #include <sys/wait.h> /* WEXITSTATUS() waitpid() */
 #endif
+#include <unistd.h> /* select() */
+
+#include <assert.h> /* assert() */
+#include <errno.h> /* errno */
+#include <stddef.h> /* NULL wchar_t */
+#include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
+#include <string.h> /* memcpy() */
 
 #include "cfg/config.h"
 #include "compat/pthread.h"
@@ -67,6 +67,16 @@
  * UI.
  *
  * Operations are displayed on designated job bar.
+ *
+ * On non-Windows systems background thread reads data from error streams of
+ * external applications, which are then displayed by main thread.  This thread
+ * maintains its own list of jobs (via err_next field), which is added to by
+ * building a temporary list with new_err_jobs pointing to its head.  Every job
+ * that has associated external process has the following life cycle:
+ *  1. Created by main thread and passed to error thread through new_err_jobs.
+ *  2. Either gets marked by signal handler or its stream reaches EOF.
+ *  3. It's in_use flag is reset.
+ *  4. Main thread frees corresponding entry.
  */
 
 /* Turns pointer (P) to field (F) of a structure (S) to address of that
@@ -100,6 +110,10 @@ background_task_args;
 static void job_check(bg_job_t *const job);
 static void job_free(bg_job_t *const job);
 #ifndef _WIN32
+static void * error_thread(void *p);
+static int update_job_list(bg_job_t **jobs, fd_set *set);
+static void report_error_msg(const char title[], const char text[]);
+static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[], int fd,
 		BgJobType type);
 #else
@@ -113,12 +127,40 @@ static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
 
+#ifndef _WIN32
+/* Head of list of newly started jobs. */
+static bg_job_t *new_err_jobs;
+/* Mutex to protect new_err_jobs. */
+static pthread_mutex_t new_err_jobs_lock = PTHREAD_MUTEX_INITIALIZER;
+/* Conditional variable to signal availability of new jobs in new_err_jobs. */
+static pthread_cond_t new_err_jobs_cond = PTHREAD_COND_INITIALIZER;
+#endif
+
 /* Thread local storage for bg_job_t associated with active thread. */
 static pthread_key_t current_job;
 
 void
 bg_init(void)
 {
+#ifndef _WIN32
+	pthread_t id;
+	pthread_attr_t attr;
+	int err;
+
+	err = pthread_attr_init(&attr);
+	assert(err == 0);
+	err = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	assert(err == 0);
+
+	err = pthread_create(&id, &attr, &error_thread, NULL);
+	assert(err == 0);
+
+	err = pthread_attr_destroy(&attr);
+	assert(err == 0);
+
+	(void)err;
+#endif
+
 	/* Initialize state for the main thread. */
 	set_current_job(NULL);
 }
@@ -134,10 +176,10 @@ bg_process_finished_cb(pid_t pid, int exit_code)
 	{
 		if(job->pid == pid)
 		{
-			/* No locking is needed here because this is not a background thread
-			 * operation. */
+			pthread_spin_lock(&job->status_lock);
 			job->running = 0;
 			job->exit_code = exit_code;
+			pthread_spin_unlock(&job->status_lock);
 			break;
 		}
 		job = job->next;
@@ -170,22 +212,16 @@ bg_check(void)
 	prev = NULL;
 	while(p != NULL)
 	{
-		int running;
+		int can_remove;
 
 		job_check(p);
 
-		if(p->type != BJT_COMMAND)
-		{
-			pthread_spin_lock(&p->status_lock_for_bg);
-		}
-		running = p->running;
-		if(p->type != BJT_COMMAND)
-		{
-			pthread_spin_unlock(&p->status_lock_for_bg);
-		}
+		pthread_spin_lock(&p->status_lock);
+		can_remove = (!p->running && !p->in_use);
+		pthread_spin_unlock(&p->status_lock);
 
 		/* Remove job if it is finished now. */
-		if(!running)
+		if(can_remove)
 		{
 			bg_job_t *j = p;
 			if(prev != NULL)
@@ -221,46 +257,25 @@ static void
 job_check(bg_job_t *const job)
 {
 #ifndef _WIN32
-	fd_set ready;
-	int max_fd = 0;
-	struct timeval ts = { .tv_sec = 0, .tv_usec = 1000 };
+	char *new_errors;
 
-	/* XXX: aren't we doing extra/unneeded work for background threads here? */
-
-	/* Setup pipe for reading */
-	FD_ZERO(&ready);
-	if(job->fd >= 0)
+	/* Display portions of errors from the job while there are any. */
+	do
 	{
-		FD_SET(job->fd, &ready);
-		max_fd = job->fd;
-	}
+		pthread_spin_lock(&job->errors_lock);
+		new_errors = job->new_errors;
+		job->new_errors = NULL;
+		job->new_errors_len = 0U;
+		pthread_spin_unlock(&job->errors_lock);
 
-	if(job->error != NULL)
-	{
-		if(!job->skip_errors)
+		if(new_errors != NULL && !job->skip_errors)
 		{
 			job->skip_errors = prompt_error_msg("Background Process Error",
-					job->error);
+					new_errors);
 		}
-		free(job->error);
-		job->error = NULL;
+		free(new_errors);
 	}
-
-	while(select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
-	{
-		char err_msg[ERR_MSG_LEN];
-
-		const ssize_t nread = read(job->fd, err_msg, sizeof(err_msg) - 1);
-		if(nread == 0)
-		{
-			break;
-		}
-		else if(nread > 0 && !job->skip_errors)
-		{
-			err_msg[nread] = '\0';
-			job->skip_errors = prompt_error_msg("Background Process Error", err_msg);
-		}
-	}
+	while(new_errors != NULL);
 #else
 	DWORD retcode;
 	if(GetExitCodeProcess(job->hprocess, &retcode) != 0)
@@ -283,9 +298,10 @@ job_free(bg_job_t *const job)
 		return;
 	}
 
+	pthread_spin_destroy(&job->errors_lock);
+	pthread_spin_destroy(&job->status_lock);
 	if(job->type != BJT_COMMAND)
 	{
-		pthread_spin_destroy(&job->status_lock_for_bg);
 		pthread_spin_destroy(&job->bg_op_lock);
 	}
 
@@ -302,6 +318,8 @@ job_free(bg_job_t *const job)
 #endif
 	free(job->bg_op.descr);
 	free(job->cmd);
+	free(job->new_errors);
+	free(job->errors);
 	free(job);
 }
 
@@ -371,22 +389,6 @@ bg_and_wait_for_status(char cmd[],
 #endif
 }
 
-#ifndef _WIN32
-static void
-error_msg(const char *title, const char *text)
-{
-	bg_job_t *job = pthread_getspecific(current_job);
-	if(job == NULL)
-	{
-		show_error_msg(title, text);
-	}
-	else
-	{
-		(void)replace_string(&job->error, text);
-	}
-}
-#endif
-
 int
 bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 {
@@ -397,7 +399,7 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 
 	if(pipe(error_pipe) != 0)
 	{
-		error_msg("File pipe error", "Error creating pipe");
+		report_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
@@ -442,7 +444,7 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 
 		if(result != 0)
 		{
-			error_msg("Background Process Error", buf);
+			report_error_msg("Background Process Error", buf);
 		}
 		else
 		{
@@ -463,6 +465,169 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 }
 
 #ifndef _WIN32
+/* Entry point of a thread which reads input from input of active background
+ * programs.  Does not return. */
+static void *
+error_thread(void *p)
+{
+	bg_job_t *jobs = NULL;
+
+	block_all_thread_signals();
+
+	while(1)
+	{
+		fd_set active, ready;
+		const int max_fd = update_job_list(&jobs, &active);
+		struct timeval timeout = { .tv_sec = 0, .tv_usec = 250*1000 }, ts = timeout;
+
+		while(select(max_fd + 1, memcpy(&ready, &active, sizeof(active)), NULL,
+					NULL, &ts) > 0)
+		{
+			int need_update_list = (jobs == NULL);
+
+			bg_job_t **job = &jobs;
+			while(*job != NULL)
+			{
+				bg_job_t *const j = *job;
+				char err_msg[ERR_MSG_LEN];
+				ssize_t nread;
+
+				if(!FD_ISSET(j->fd, &ready))
+				{
+					goto next_job;
+				}
+
+				nread = read(j->fd, err_msg, sizeof(err_msg) - 1U);
+				if(nread < 0)
+				{
+					need_update_list = 1;
+					goto next_job;
+				}
+
+				if(nread == 0)
+				{
+					/* Reached EOF, cut this job out of our list and allow its
+					 * deletion. */
+					pthread_spin_lock(&j->status_lock);
+					j->in_use = 0;
+					*job = j->err_next;
+					pthread_spin_unlock(&j->status_lock);
+					continue;
+				}
+
+				err_msg[nread] = '\0';
+				append_error_msg(j, err_msg);
+
+			next_job:
+				job = &j->err_next;
+			}
+
+			if(!need_update_list)
+			{
+				pthread_mutex_lock(&new_err_jobs_lock);
+				need_update_list = (new_err_jobs != NULL);
+				pthread_mutex_unlock(&new_err_jobs_lock);
+			}
+			if(need_update_list)
+			{
+				break;
+			}
+
+			ts = timeout;
+		}
+	}
+	return NULL;
+}
+
+/* Updates *jobs by removing finished tasks and adding new ones.  Initializes
+ * *set in the process.  Returns max file descriptor number of the set. */
+static int
+update_job_list(bg_job_t **jobs, fd_set *set)
+{
+	int max_fd;
+	bg_job_t *new_jobs;
+	bg_job_t **job;
+
+	/* Add new tasks to internal list, wait if there are no jobs. */
+	pthread_mutex_lock(&new_err_jobs_lock);
+	while(*jobs == NULL && new_err_jobs == NULL)
+	{
+		pthread_cond_wait(&new_err_jobs_cond, &new_err_jobs_lock);
+	}
+	new_jobs = new_err_jobs;
+	new_err_jobs = NULL;
+	pthread_mutex_unlock(&new_err_jobs_lock);
+
+	/* Prepend new jobs to the list. */
+	while(new_jobs != NULL)
+	{
+		bg_job_t *const new_job = new_jobs;
+		new_jobs = new_jobs->err_next;
+
+		assert(new_job->type == BJT_COMMAND &&
+				"Only external commands should be here.");
+
+		new_job->err_next = *jobs;
+		*jobs = new_job;
+	}
+
+	FD_ZERO(set);
+
+	max_fd = 0;
+	job = jobs;
+	while(*job != NULL)
+	{
+		bg_job_t *const j = *job;
+
+		pthread_spin_lock(&j->status_lock);
+		/* If finished, reset in_use mark and drop it from the list. */
+		if(!j->running)
+		{
+			j->in_use = 0;
+			*job = j->err_next;
+			pthread_spin_unlock(&j->status_lock);
+			continue;
+		}
+		pthread_spin_unlock(&j->status_lock);
+
+		FD_SET(j->fd, set);
+		if(j->fd > max_fd)
+		{
+			max_fd = j->fd;
+		}
+
+		job = &j->err_next;
+	}
+
+	return max_fd;
+}
+
+/* Either displays error message to the user for foreground operations or saves
+ * it for displaying on the next invocation of bg_check(). */
+static void
+report_error_msg(const char title[], const char text[])
+{
+	bg_job_t *const job = pthread_getspecific(current_job);
+	if(job == NULL)
+	{
+		show_error_msg(title, text);
+	}
+	else
+	{
+		append_error_msg(job, text);
+	}
+}
+
+/* Appends message to error-related fields of the job. */
+static void
+append_error_msg(bg_job_t *job, const char err_msg[])
+{
+	pthread_spin_lock(&job->errors_lock);
+	(void)strappend(&job->errors, &job->errors_len, err_msg);
+	(void)strappend(&job->new_errors, &job->new_errors_len, err_msg);
+	pthread_spin_unlock(&job->errors_lock);
+}
+
 pid_t
 bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 {
@@ -811,10 +976,10 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	if(pthread_create(&id, &attr, &background_task_bootstrap, task_args) != 0)
 	{
 		/* Mark job as finished with error. */
-		pthread_spin_lock(&task_args->job->status_lock_for_bg);
+		pthread_spin_lock(&task_args->job->status_lock);
 		task_args->job->running = 0;
 		task_args->job->exit_code = 1;
-		pthread_spin_unlock(&task_args->job->status_lock_for_bg);
+		pthread_spin_unlock(&task_args->job->status_lock);
 
 		free(task_args);
 		ret = 1;
@@ -844,19 +1009,35 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->pid = pid;
 	new->cmd = strdup(cmd);
 	new->next = bg_jobs;
+	new->skip_errors = 0;
+	new->new_errors = NULL;
+	new->new_errors_len = 0U;
+	new->errors = NULL;
+	new->errors_len = 0U;
+	new->cancelled = 0;
+
+	pthread_spin_init(&new->errors_lock, PTHREAD_PROCESS_PRIVATE);
+	pthread_spin_init(&new->status_lock, PTHREAD_PROCESS_PRIVATE);
+	new->running = 1;
+	new->in_use = (type == BJT_COMMAND);
+	new->exit_code = -1;
+
 #ifndef _WIN32
 	new->fd = fd;
+	if(fd != -1)
+	{
+		pthread_mutex_lock(&new_err_jobs_lock);
+		new->err_next = new_err_jobs;
+		new_err_jobs = new;
+		pthread_mutex_unlock(&new_err_jobs_lock);
+		pthread_cond_signal(&new_err_jobs_cond);
+	}
 #else
 	new->hprocess = hprocess;
 #endif
-	new->skip_errors = 0;
-	new->running = 1;
-	new->error = NULL;
-	new->cancelled = 0;
 
 	if(type != BJT_COMMAND)
 	{
-		pthread_spin_init(&new->status_lock_for_bg, PTHREAD_PROCESS_PRIVATE);
 		pthread_spin_init(&new->bg_op_lock, PTHREAD_PROCESS_PRIVATE);
 	}
 	new->bg_op.total = 0;
@@ -877,15 +1058,16 @@ background_task_bootstrap(void *arg)
 {
 	background_task_args *const task_args = arg;
 
+	block_all_thread_signals();
 	set_current_job(task_args->job);
 
 	task_args->func(&task_args->job->bg_op, task_args->args);
 
 	/* Mark task as finished normally. */
-	pthread_spin_lock(&task_args->job->status_lock_for_bg);
+	pthread_spin_lock(&task_args->job->status_lock);
 	task_args->job->running = 0;
 	task_args->job->exit_code = 0;
-	pthread_spin_unlock(&task_args->job->status_lock_for_bg);
+	pthread_spin_unlock(&task_args->job->status_lock);
 
 	free(task_args);
 
@@ -927,9 +1109,7 @@ bg_has_active_jobs(void)
 	{
 		if(job->type == BJT_OPERATION)
 		{
-			pthread_spin_lock(&job->status_lock_for_bg);
-			running |= job->running;
-			pthread_spin_unlock(&job->status_lock_for_bg);
+			running |= bg_job_is_running(job);
 		}
 	}
 
@@ -998,6 +1178,16 @@ bg_job_cancelled(bg_job_t *job)
 		return bg_op_cancelled(&job->bg_op);
 	}
 	return job->cancelled;
+}
+
+int
+bg_job_is_running(bg_job_t *job)
+{
+	int running;
+	pthread_spin_lock(&job->status_lock);
+	running = job->running;
+	pthread_spin_unlock(&job->status_lock);
+	return running;
 }
 
 void

@@ -98,6 +98,12 @@ char ** read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic,
 char * read_nonseekable_stream(FILE *fp, size_t *read, progress_cb cb,
 		const void *arg);
 
+/* Converts text of length text_len into an array of strings.  Returns non-NULL
+ * on success, otherwise NULL is returned, *nlines is untouched.  For empty file
+ * non-NULL will be returned, but *nlines will be zero. */
+char ** break_into_lines(char text[], size_t text_len, int *nlines,
+		int null_sep);
+
 /* Overwrites file specified by filepath with lines.  Returns zero on success,
  * otherwise non-zero is returned and errno contains error code. */
 int write_file_of_lines(const char filepath[], char *strs[], size_t nstrs);
