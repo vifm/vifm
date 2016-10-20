@@ -66,13 +66,18 @@ typedef struct bg_job_t
 	char *cmd;
 
 	int skip_errors;   /* Do not show future errors. */
-	char *last_error;  /* Last error which hasn't been shown yet. */
-	char *errors;      /* Whole error stream collected. */
-	size_t errors_len; /* Length of the error field. */
+
+	/* The lock is meant to guard error-related fields. */
+	pthread_spinlock_t errors_lock;
+	char *new_errors;      /* Portion of stderr which hasn't been shown yet. */
+	size_t new_errors_len; /* Length of the new_errors field. */
+	char *errors;          /* Whole error stream collected. */
+	size_t errors_len;     /* Length of the errors field. */
 
 	/* The lock is meant to guard state-related fields. */
 	pthread_spinlock_t status_lock;
 	int running;   /* Whether this job is still running. */
+	int in_use;    /* Whether this job description is in use by someone. */
 	/* TODO: use or remove this (set to correct value, but not used). */
 	int exit_code; /* Exit code of external command. */
 
@@ -85,7 +90,9 @@ typedef struct bg_job_t
 #else
 	HANDLE hprocess;
 #endif
-	struct bg_job_t *next;
+
+	struct bg_job_t *next;     /* Link to the next element in bg_jobs list. */
+	struct bg_job_t *err_next; /* Link to the next element in error read list. */
 }
 bg_job_t;
 

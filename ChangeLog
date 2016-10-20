@@ -93,6 +93,10 @@
 
 	Treat "+" option the same way as Vim (like :$).  Thanks to filterfalse.
 
+	Read error output of background commands independently of main
+	thread (prevents blocking of tools which produce huge amount of output).
+	Thanks to Stas Malavin.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
