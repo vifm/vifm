@@ -93,7 +93,7 @@ bg_job_t;
 typedef void (*bg_task_func)(bg_op_t *bg_op, void *arg);
 
 /* List of background jobs.  Use bg_jobs_freeze() before accessing it. */
-extern struct bg_job_t *bg_jobs;
+extern bg_job_t *bg_jobs;
 
 /* Prepare background unit for the work. */
 void bg_init(void);
