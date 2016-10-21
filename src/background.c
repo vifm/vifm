@@ -144,20 +144,8 @@ bg_init(void)
 {
 #ifndef _WIN32
 	pthread_t id;
-	pthread_attr_t attr;
-	int err;
-
-	err = pthread_attr_init(&attr);
+	const int err = pthread_create(&id, NULL, &error_thread, NULL);
 	assert(err == 0);
-	err = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	assert(err == 0);
-
-	err = pthread_create(&id, &attr, &error_thread, NULL);
-	assert(err == 0);
-
-	err = pthread_attr_destroy(&attr);
-	assert(err == 0);
-
 	(void)err;
 #endif
 
@@ -472,6 +460,7 @@ error_thread(void *p)
 {
 	bg_job_t *jobs = NULL;
 
+	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
 
 	while(1)
@@ -931,7 +920,6 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 		bg_task_func task_func, void *args)
 {
 	pthread_t id;
-	pthread_attr_t attr;
 	int ret;
 
 	background_task_args *const task_args = malloc(sizeof(*task_args));
@@ -951,19 +939,6 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 		return 1;
 	}
 
-	if(pthread_attr_init(&attr) != 0)
-	{
-		free(task_args);
-		return 1;
-	}
-
-	if(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0)
-	{
-		free(task_args);
-		(void)pthread_attr_destroy(&attr);
-		return 1;
-	}
-
 	replace_string(&task_args->job->bg_op.descr, op_descr);
 	task_args->job->bg_op.total = total;
 
@@ -973,7 +948,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	}
 
 	ret = 0;
-	if(pthread_create(&id, &attr, &background_task_bootstrap, task_args) != 0)
+	if(pthread_create(&id, NULL, &background_task_bootstrap, task_args) != 0)
 	{
 		/* Mark job as finished with error. */
 		pthread_spin_lock(&task_args->job->status_lock);
@@ -985,7 +960,6 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 		ret = 1;
 	}
 
-	(void)pthread_attr_destroy(&attr);
 	return ret;
 }
 
@@ -1058,6 +1032,7 @@ background_task_bootstrap(void *arg)
 {
 	background_task_args *const task_args = arg;
 
+	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
 	set_current_job(task_args->job);
 
