@@ -108,12 +108,6 @@ event_loop(const int *quit)
 		size_t counter;
 		int got_input;
 
-		if(!ensure_term_is_ready())
-		{
-			wait_for_enter = 0;
-			continue;
-		}
-
 		lwin.user_selection = 1;
 		rwin.user_selection = 1;
 
@@ -127,18 +121,17 @@ event_loop(const int *quit)
 			                         ? MIN(timeout, cfg.sug.delay)
 			                         : timeout;
 
+			if(!ensure_term_is_ready())
+			{
+				wait_for_enter = 0;
+				continue;
+			}
+
 			modes_periodic();
 
 			bg_check();
 
 			got_input = (get_char_async_loop(status_bar, &c, actual_timeout) != ERR);
-
-			/* This loop can be infinite if terminal becomes not available, so force
-			 * checking terminal state here. */
-			if(!got_input && !ui_term_is_alive())
-			{
-				vifm_finish("Terminal is not available.");
-			}
 
 			/* If suggestion delay timed out, reset it and wait the rest of the
 			 * timeout. */

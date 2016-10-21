@@ -1086,17 +1086,6 @@ update_term_size(void)
 #endif
 }
 
-int
-ui_term_is_alive(void)
-{
-#ifndef _WIN32
-	struct winsize ws;
-	return (ioctl(0, TIOCGWINSZ, &ws) != -1);
-#else
-	return 1;
-#endif
-}
-
 /* Re-layouts windows located on status bar (status bar itself, input and the
  * ruler). */
 static void

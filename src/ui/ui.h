@@ -399,10 +399,6 @@ void ui_ruler_set(const char val[]);
  * term_state in status structure. */
 void ui_update_term_state(void);
 
-/* Performs a quick check whether terminal is functional.  Returns non-zero if
- * so, otherwise zero is returned. */
-int ui_term_is_alive(void);
-
 /* Checks whether given character was pressed, ignores any other characters. */
 int ui_char_pressed(wint_t c);
 
