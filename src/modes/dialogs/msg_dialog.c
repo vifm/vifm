@@ -237,7 +237,18 @@ show_error_msgf(const char title[], const char format[], ...)
 int
 prompt_error_msg(const char title[], const char message[])
 {
-	return prompt_error_msg_internal(title, message, 1);
+	char portion[1024];
+	do
+	{
+		snprintf(portion, sizeof(portion), "%s", message);
+		message += strlen(portion);
+		if(prompt_error_msg_internal(title, portion, 1))
+		{
+			return 1;
+		}
+	}
+	while(*message != '\0');
+	return 0;
 }
 
 int
