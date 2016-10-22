@@ -418,7 +418,7 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
 	{
-		if(len >= 2 && undo_msg[len - 2] != ':')
+		if(len >= 2U && undo_msg[len - 2U] != ':')
 		{
 			strncat(undo_msg + len, ", ", sizeof(undo_msg) - len - 1);
 			len += strlen(undo_msg + len);

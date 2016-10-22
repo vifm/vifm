@@ -81,7 +81,7 @@ int refers_to_slower_fs(const char from[], const char to[]);
 
 /* Fills supplied buffer with user friendly representation of file size.
  * Returns non-zero in case resulting string is a shortened variant of size. */
-int friendly_size_notation(uint64_t num, int str_size, char *str);
+int friendly_size_notation(uint64_t num, int str_size, char str[]);
 
 /* Returns pointer to a statically allocated buffer. */
 const char * enclose_in_dquotes(const char str[]);
