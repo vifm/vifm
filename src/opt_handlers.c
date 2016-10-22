@@ -1270,9 +1270,9 @@ load_sort_option_inner(FileView *view, char sort_keys[])
 		const char option_mark = (sort_option < 0) ? '-' : '+';
 		const char *const option_name = sort_enum[abs(sort_option)];
 
-		opt_val_len += snprintf(opt_val + opt_val_len,
-				sizeof(opt_val) - opt_val_len, "%s%c%s", comma, option_mark,
-				option_name);
+		snprintf(opt_val + opt_val_len, sizeof(opt_val) - opt_val_len, "%s%c%s",
+				comma, option_mark, option_name);
+		opt_val_len += strlen(opt_val + opt_val_len);
 	}
 
 	val.str_val = opt_val;

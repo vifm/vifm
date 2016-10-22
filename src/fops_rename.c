@@ -291,28 +291,30 @@ static int
 perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 		char *dst[])
 {
-	char buf[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
-	size_t buf_len;
+	char undo_msg[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
+	size_t undo_msg_len;
 	int i;
 	int renamed = 0;
 	char **const orig_names = calloc(len, sizeof(*orig_names));
 	const char *const curr_dir = flist_get_dir(view);
 
-	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
+	snprintf(undo_msg, sizeof(undo_msg), "rename in %s: ",
 			replace_home_part(curr_dir));
+	undo_msg_len = strlen(undo_msg);
 
-	for(i = 0; i < len && buf_len < COMMAND_GROUP_INFO_LEN; i++)
+	for(i = 0; i < len && undo_msg_len < COMMAND_GROUP_INFO_LEN; ++i)
 	{
-		if(buf[buf_len - 2] != ':')
+		if(undo_msg[undo_msg_len - 2U] != ':')
 		{
-			strncat(buf, ", ", sizeof(buf) - buf_len - 1);
-			buf_len = strlen(buf);
+			strncat(undo_msg, ", ", sizeof(undo_msg) - undo_msg_len - 1U);
+			undo_msg_len = strlen(undo_msg);
 		}
-		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s to %s",
-				files[i], dst[i]);
+		snprintf(undo_msg + undo_msg_len, sizeof(undo_msg) - undo_msg_len,
+				"%s to %s", files[i], dst[i]);
+		undo_msg_len += strlen(undo_msg + undo_msg_len);
 	}
 
-	cmd_group_begin(buf);
+	cmd_group_begin(undo_msg);
 
 	/* Stage 1: give files that are in both source and destination lists temporary
 	 *          names. */

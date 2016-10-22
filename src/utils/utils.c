@@ -210,7 +210,7 @@ expand_envvars(const char str[], int escape_vals)
 }
 
 int
-friendly_size_notation(uint64_t num, int str_size, char *str)
+friendly_size_notation(uint64_t num, int str_size, char str[])
 {
 	static const char* iec_units[] = {
 		"  B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"
@@ -226,29 +226,29 @@ friendly_size_notation(uint64_t num, int str_size, char *str)
 
 	units = cfg.use_iec_prefixes ? iec_units : si_units;
 
-	u = 0;
-	while(d >= 1023.5 && u < ARRAY_LEN(iec_units) - 1)
+	u = 0U;
+	while(d >= 1023.5 && u < ARRAY_LEN(iec_units) - 1U)
 	{
 		d /= 1024.0;
-		u++;
+		++u;
 	}
-	if(u == 0)
+
+	if(u == 0 || d > 9)
 	{
 		snprintf(str, str_size, "%.0f %s", d, units[u]);
 	}
 	else
 	{
-		if(d > 9)
-			snprintf(str, str_size, "%.0f %s", d, units[u]);
-		else
+		size_t len;
+		snprintf(str, str_size, "%.1f %s", d, units[u]);
+		len = strlen(str);
+		if(str[len - strlen(units[u]) - 1U - 1U] == '0')
 		{
-			size_t len = snprintf(str, str_size, "%.1f %s", d, units[u]);
-			if(str[len - strlen(units[u]) - 1 - 1] == '0')
-				snprintf(str, str_size, "%.0f %s", d, units[u]);
+			snprintf(str, str_size, "%.0f %s", d, units[u]);
 		}
 	}
 
-	return u > 0;
+	return u > 0U;
 }
 
 const char *
@@ -280,12 +280,13 @@ make_name_unique(const char filename[])
 	int i;
 
 #ifndef _WIN32
-	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
+	snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
 			get_pid());
 #else
 	/* TODO: think about better name uniqualization on Windows. */
-	len = snprintf(unique, sizeof(unique), "%s_%u_00", filename, get_pid());
+	snprintf(unique, sizeof(unique), "%s_%u_00", filename, get_pid());
 #endif
+	len = strlen(unique);
 	i = 0;
 
 	while(path_exists(unique, DEREF))

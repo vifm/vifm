@@ -70,7 +70,7 @@ wait_for_bg(void)
 	int counter = 0;
 	while(bg_has_active_jobs())
 	{
-		usleep(2000);
+		usleep(5000);
 		if(++counter > 100)
 		{
 			assert_fail("Waiting for too long.");

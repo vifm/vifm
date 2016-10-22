@@ -97,6 +97,9 @@
 	thread (prevents blocking of tools which produce huge amount of output).
 	Thanks to Stas Malavin.
 
+	Limit maximum height of message popup, just print how many lines we're
+	skipping.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -173,6 +176,8 @@
 	Svyatoslav Mishyn (a.k.a. juef).
 
 	Fixed F, f, ; and , keys in visual mode.
+
+	Fixed detection of too-small-terminal state.
 
 0.8.2-beta to 0.8.2
 

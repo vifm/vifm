@@ -237,7 +237,18 @@ show_error_msgf(const char title[], const char format[], ...)
 int
 prompt_error_msg(const char title[], const char message[])
 {
-	return prompt_error_msg_internal(title, message, 1);
+	char portion[1024];
+	do
+	{
+		snprintf(portion, sizeof(portion), "%s", message);
+		message += strlen(portion);
+		if(prompt_error_msg_internal(title, portion, 1))
+		{
+			return 1;
+		}
+	}
+	while(*message != '\0');
+	return 0;
 }
 
 int
@@ -472,6 +483,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 
 	int sw, sh;
 	int w, h;
+	int max_h;
 	int len;
 	size_t ctrl_msg_n;
 	size_t wctrl_msg;
@@ -483,7 +495,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 
 	ctrl_msg_n = MAX(measure_sub_lines(ctrl_msg, &wctrl_msg), 1U);
 
-	h = sh - 2 - ctrl_msg_n + !cfg.display_statusline;
+	max_h = sh - 2 - ctrl_msg_n + !cfg.display_statusline;
+	h = max_h;
 	/* The outermost condition is for VLA below (to calm static analyzers). */
 	w = MAX(2 + 2*margin, MIN(sw - 2,
 	        MAX(MAX(recommended_width, sw/3),
@@ -503,9 +516,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	}
 	else
 	{
-		int i;
+		int i = 0;
 		int cy = 2;
-		i = 0;
 		while(i < len)
 		{
 			int j;
@@ -525,6 +537,18 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 
 			if(buf[0] == '\0')
 				continue;
+
+			if(cy >= max_h - (int)ctrl_msg_n - 3)
+			{
+				/* Skip trailing part of the message if it's too long, just print how
+				 * many lines we're omitting. */
+				size_t max_len;
+				const int more_lines = 1U + measure_sub_lines(msg + i, &max_len);
+				snprintf(buf, sizeof(buf), "<<%d more line%s not shown>>", more_lines,
+						(more_lines == 1) ? "" : "s");
+				/* Make sure this is the last iteration of the loop. */
+				i = len;
+			}
 
 			h = 1 + cy + 1 + ctrl_msg_n + 1;
 			wresize(error_win, h, w);
