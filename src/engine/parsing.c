@@ -530,7 +530,8 @@ eval_concat(int nops, expr_t ops[])
 			break;
 		}
 
-		res_len += snprintf(res + res_len, sizeof(res) - res_len, "%s", str_val);
+		copy_str(res + res_len, sizeof(res) - res_len, str_val);
+		res_len += strlen(res + res_len);
 		free(str_val);
 	}
 

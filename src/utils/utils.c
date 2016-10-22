@@ -242,7 +242,9 @@ friendly_size_notation(uint64_t num, int str_size, char *str)
 			snprintf(str, str_size, "%.0f %s", d, units[u]);
 		else
 		{
-			size_t len = snprintf(str, str_size, "%.1f %s", d, units[u]);
+			size_t len;
+			snprintf(str, str_size, "%.1f %s", d, units[u]);
+			len = strlen(str);
 			if(str[len - strlen(units[u]) - 1 - 1] == '0')
 				snprintf(str, str_size, "%.0f %s", d, units[u]);
 		}
@@ -280,12 +282,13 @@ make_name_unique(const char filename[])
 	int i;
 
 #ifndef _WIN32
-	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
+	snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
 			get_pid());
 #else
 	/* TODO: think about better name uniqualization on Windows. */
-	len = snprintf(unique, sizeof(unique), "%s_%u_00", filename, get_pid());
+	snprintf(unique, sizeof(unique), "%s_%u_00", filename, get_pid());
 #endif
+	len = strlen(unique);
 	i = 0;
 
 	while(path_exists(unique, DEREF))

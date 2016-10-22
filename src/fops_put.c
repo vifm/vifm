@@ -127,8 +127,9 @@ fops_put_bg(FileView *view, int at, int reg_name, int move)
 	args->move = move;
 	copy_str(args->path, sizeof(args->path), dst_dir);
 
-	task_desc_len = snprintf(task_desc, sizeof(task_desc), "%cut in %s: ",
-			move ? 'P' : 'p', replace_home_part(dst_dir));
+	snprintf(task_desc, sizeof(task_desc), "%cut in %s: ", move ? 'P' : 'p',
+			replace_home_part(dst_dir));
+	task_desc_len = strlen(task_desc);
 	for(i = 0; i < reg->nfiles; ++i)
 	{
 		char *const src = reg->files[i];

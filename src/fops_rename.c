@@ -298,8 +298,8 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 	char **const orig_names = calloc(len, sizeof(*orig_names));
 	const char *const curr_dir = flist_get_dir(view);
 
-	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
-			replace_home_part(curr_dir));
+	snprintf(buf, sizeof(buf), "rename in %s: ", replace_home_part(curr_dir));
+	buf_len = strlen(buf);
 
 	for(i = 0; i < len && buf_len < COMMAND_GROUP_INFO_LEN; i++)
 	{
@@ -308,8 +308,9 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 			strncat(buf, ", ", sizeof(buf) - buf_len - 1);
 			buf_len = strlen(buf);
 		}
-		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s to %s",
-				files[i], dst[i]);
+		snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s to %s", files[i],
+				dst[i]);
+		buf_len += strlen(buf + buf_len);
 	}
 
 	cmd_group_begin(buf);

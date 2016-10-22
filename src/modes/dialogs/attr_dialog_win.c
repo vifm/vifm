@@ -413,8 +413,10 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
 	{
-		size_t len = snprintf(undo_msg, sizeof(undo_msg), "chmod in %s: ",
+		size_t len;
+		snprintf(undo_msg, sizeof(undo_msg), "chmod in %s: ",
 				replace_home_part(flist_get_dir(view)));
+		len = strlen(undo_msg);
 
 		if(len >= 2 && undo_msg[len - 2] != ':')
 		{
