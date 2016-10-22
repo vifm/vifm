@@ -468,17 +468,17 @@ files_chmod(FileView *view, const char *mode, int recurse_dirs)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	dir_entry_t *entry;
+	size_t len;
+
+	snprintf(undo_msg, sizeof(undo_msg), "chmod in %s: ",
+			replace_home_part(flist_get_dir(view)));
+	len = strlen(undo_msg);
 
 	ui_cancellation_reset();
 
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
 	{
-		size_t len;
-		snprintf(undo_msg, sizeof(undo_msg), "chmod in %s: ",
-				replace_home_part(flist_get_dir(view)));
-		len = strlen(undo_msg);
-
 		if(len >= 2 && undo_msg[len - 2] != ':')
 		{
 			strncat(undo_msg + len, ", ", sizeof(undo_msg) - len - 1);
