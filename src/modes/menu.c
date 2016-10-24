@@ -64,18 +64,18 @@ static int skip_at_beginning(int id, const char *args);
 
 static int key_handler(wchar_t key);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
-static int can_scroll_menu_up(const menu_info *menu);
+static int can_scroll_menu_up(const menu_data_t *menu);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
-static int can_scroll_menu_down(const menu_info *menu);
-static void change_menu_top(menu_info *const menu, int delta);
+static int can_scroll_menu_down(const menu_data_t *menu);
+static void change_menu_top(menu_data_t *const menu, int delta);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void update_ui_on_leaving(void);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
-static int get_effective_menu_scroll_offset(const menu_info *menu);
+static int get_effective_menu_scroll_offset(const menu_data_t *menu);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
@@ -103,7 +103,7 @@ static void cmd_zh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zz(key_info_t key_info, keys_info_t *keys_info);
-static int all_lines_visible(const menu_info *const menu);
+static int all_lines_visible(const menu_data_t *const menu);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
@@ -111,7 +111,7 @@ static int write_cmd(const cmd_info_t *cmd_info);
 static void leave_menu_mode(int reset_selection);
 
 static FileView *view;
-static menu_info *menu;
+static menu_data_t *menu;
 static int last_search_backward;
 static int was_redraw;
 static int saved_top, saved_pos;
@@ -287,7 +287,7 @@ key_handler(wchar_t key)
 }
 
 void
-enter_menu_mode(menu_info *m, FileView *active_view)
+enter_menu_mode(menu_data_t *m, FileView *active_view)
 {
 	if(curr_stats.load_stage < 2)
 	{
@@ -308,11 +308,12 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 }
 
 void
-reenter_menu_mode(menu_info *m)
+reenter_menu_mode(menu_data_t *m)
 {
 	assert(vle_mode_is(MENU_MODE) && "Can't reenter if not in menu mode.");
 	assert(m->len > 0 && "Menu cannot be empty.");
 
+	menus_replace_menu(m);
 	menu = m;
 }
 
@@ -338,7 +339,7 @@ void
 menu_redraw(void)
 {
 	was_redraw = 1;
-	redraw_menu(menu);
+	redraw_menu(menu->state);
 }
 
 static void
@@ -347,11 +348,14 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 	if(can_scroll_menu_up(menu))
 	{
 		const int s = get_effective_menu_scroll_offset(menu);
-		const int off = (menu->win_rows - 2) - SCROLL_GAP;
+		const int off = (getmaxy(menu_win) - 2) - SCROLL_GAP;
 		menu->pos = get_last_visible_line(menu) - off;
 		change_menu_top(menu, -off);
-		if(cfg.scroll_off > 0 && menu->top + (menu->win_rows - 3) - menu->pos < s)
-			menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
+		if(cfg.scroll_off > 0 &&
+				menu->top + (getmaxy(menu_win) - 3) - menu->pos < s)
+		{
+			menu->pos -= s - (menu->top + (getmaxy(menu_win) - 3) - menu->pos);
+		}
 
 		update_menu();
 	}
@@ -359,7 +363,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 
 /* Returns non-zero if menu can be scrolled up. */
 static int
-can_scroll_menu_up(const menu_info *menu)
+can_scroll_menu_up(const menu_data_t *menu)
 {
 	return menu->top > 0;
 }
@@ -374,11 +378,13 @@ static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int s = get_effective_menu_scroll_offset(menu);
-	menu_current_line_erase(menu);
-	menu->top += DIV_ROUND_UP(menu->win_rows - 3, 2);
-	menu->pos += DIV_ROUND_UP(menu->win_rows - 3, 2);
+	menu_current_line_erase(menu->state);
+	menu->top += DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
+	menu->pos += DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
+	{
 		menu->pos += s - (menu->pos - menu->top);
+	}
 
 	update_menu();
 }
@@ -390,9 +396,11 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 	{
 		int off = MAX(cfg.scroll_off, 0);
 		if(menu->pos <= menu->top + off)
+		{
 			menu->pos = menu->top + 1 + off;
+		}
 
-		menu->top++;
+		++menu->top;
 		update_menu();
 	}
 }
@@ -403,11 +411,13 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 	if(can_scroll_menu_down(menu))
 	{
 		const int s = get_effective_menu_scroll_offset(menu);
-		const int off = (menu->win_rows - 2) - SCROLL_GAP;
+		const int off = (getmaxy(menu_win) - 2) - SCROLL_GAP;
 		menu->pos = menu->top + off;
 		change_menu_top(menu, off);
 		if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
+		{
 			menu->pos += s - (menu->pos - menu->top);
+		}
 
 		update_menu();
 	}
@@ -415,22 +425,23 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 
 /* Returns non-zero if menu can be scrolled down. */
 static int
-can_scroll_menu_down(const menu_info *menu)
+can_scroll_menu_down(const menu_data_t *menu)
 {
 	return get_last_visible_line(menu) < menu->len - 1;
 }
 
 /* Moves top line of the menu ensuring that its value is correct. */
 static void
-change_menu_top(menu_info *const menu, int delta)
+change_menu_top(menu_data_t *const menu, int delta)
 {
-	menu->top = MAX(MIN(menu->top + delta, menu->len - (menu->win_rows - 2)), 0);
+	menu->top =
+		MAX(MIN(menu->top + delta, menu->len - (getmaxy(menu_win) - 2)), 0);
 }
 
 int
-get_last_visible_line(const menu_info *menu)
+get_last_visible_line(const menu_data_t *menu)
 {
-	return menu->top + (menu->win_rows - 2) - 1;
+	return menu->top + (getmaxy(menu_win) - 2) - 1;
 }
 
 /* Redraw TUI. */
@@ -443,7 +454,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
-	static menu_info *saved_menu;
+	static menu_data_t *saved_menu;
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	saved_menu = menu;
@@ -456,11 +467,11 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	if(!vle_mode_is(MENU_MODE))
 	{
-		reset_popup_menu(saved_menu);
+		reset_menu_data(saved_menu);
 	}
 	else if(menu != saved_menu)
 	{
-		reset_popup_menu(saved_menu);
+		reset_menu_data(saved_menu);
 		update_menu();
 	}
 
@@ -485,24 +496,28 @@ static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int s = get_effective_menu_scroll_offset(menu);
-	menu_current_line_erase(menu);
+	menu_current_line_erase(menu->state);
 
-	if(cfg.scroll_off > 0 && menu->top + menu->win_rows - menu->pos < s)
-		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
+	if(cfg.scroll_off > 0 && menu->top + getmaxy(menu_win) - menu->pos < s)
+	{
+		menu->pos -= s - (menu->top + (getmaxy(menu_win) - 3) - menu->pos);
+	}
 
-	menu->top -= DIV_ROUND_UP(menu->win_rows - 3, 2);
+	menu->top -= DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
 	if(menu->top < 0)
+	{
 		menu->top = 0;
-	menu->pos -= DIV_ROUND_UP(menu->win_rows - 3, 2);
+	}
+	menu->pos -= DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
 
 	update_menu();
 }
 
 /* Returns scroll offset value for the menu taking menu height into account. */
 static int
-get_effective_menu_scroll_offset(const menu_info *menu)
+get_effective_menu_scroll_offset(const menu_data_t *menu)
 {
-	return MIN(DIV_ROUND_UP(menu->win_rows - 3, 2) - 1, cfg.scroll_off);
+	return MIN(DIV_ROUND_UP(getmaxy(menu_win) - 3, 2) - 1, cfg.scroll_off);
 }
 
 static void
@@ -511,10 +526,12 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 	if(can_scroll_menu_up(menu))
 	{
 		int off = MAX(cfg.scroll_off, 0);
-		if(menu->pos >= menu->top + menu->win_rows - 3 - off)
-			menu->pos = menu->top - 1 + menu->win_rows - 3 - off;
+		if(menu->pos >= menu->top + getmaxy(menu_win) - 3 - off)
+		{
+			menu->pos = menu->top - 1 + getmaxy(menu_win) - 3 - off;
+		}
 
-		menu->top--;
+		--menu->top;
 		update_menu();
 	}
 }
@@ -522,11 +539,8 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
-	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 0;
-	menu->backward_search = 0;
-	free(menu->regexp);
-	menu->regexp = NULL;
+	menu_new_search(menu->state, last_search_backward, def_count(key_info.count));
 	enter_cmdline_mode(CLS_MENU_FSEARCH, "", menu);
 }
 
@@ -542,10 +556,8 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 {
-	menu->search_repeat = def_count(key_info.count);
 	last_search_backward = 1;
-	menu->backward_search = 1;
-	free(menu->regexp);
+	menu_new_search(menu->state, last_search_backward, def_count(key_info.count));
 	enter_cmdline_mode(CLS_MENU_BSEARCH, "", menu);
 }
 
@@ -560,10 +572,12 @@ static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
+	{
 		key_info.count = menu->len;
+	}
 
-	menu_current_line_erase(menu);
-	move_to_menu_pos(key_info.count - 1, menu);
+	menu_current_line_erase(menu->state);
+	move_to_menu_pos(key_info.count - 1, menu->state);
 	wrefresh(menu_win);
 }
 
@@ -572,16 +586,15 @@ cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
 	int top;
 	int off = MAX(cfg.scroll_off, 0);
-	if(off > menu->win_rows/2)
+	if(off > getmaxy(menu_win)/2)
+	{
 		return;
+	}
 
-	if(menu->top == 0)
-		top = 0;
-	else
-		top = menu->top + off;
+	top = (menu->top == 0) ? 0 : (menu->top + off);
 
-	menu_current_line_erase(menu);
-	move_to_menu_pos(top, menu);
+	menu_current_line_erase(menu->state);
+	move_to_menu_pos(top, menu->state);
 	wrefresh(menu_win);
 }
 
@@ -599,16 +612,19 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	off = MAX(cfg.scroll_off, 0);
-	if(off > menu->win_rows/2)
+	if(off > getmaxy(menu_win)/2)
+	{
 		return;
+	}
 
-	if(menu->top + menu->win_rows < menu->len - 1)
-		top = menu->top + menu->win_rows - off;
-	else
-		top = menu->top + menu->win_rows;
+	top = menu->top + getmaxy(menu_win);
+	if(menu->top + getmaxy(menu_win) < menu->len - 1)
+	{
+		top -= off;
+	}
 
-	menu_current_line_erase(menu);
-	move_to_menu_pos(top - 3, menu);
+	menu_current_line_erase(menu->state);
+	move_to_menu_pos(top - 3, menu->state);
 	wrefresh(menu_win);
 }
 
@@ -617,13 +633,17 @@ static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
 	int new_pos;
-	if(menu->len < menu->win_rows)
+	if(menu->len < getmaxy(menu_win))
+	{
 		new_pos = DIV_ROUND_UP(menu->len, 2);
+	}
 	else
-		new_pos = menu->top + DIV_ROUND_UP(menu->win_rows - 3, 2);
+	{
+		new_pos = menu->top + DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
+	}
 
-	menu_current_line_erase(menu);
-	move_to_menu_pos(MAX(0, new_pos - 1), menu);
+	menu_current_line_erase(menu->state);
+	move_to_menu_pos(MAX(0, new_pos - 1), menu->state);
 	wrefresh(menu_win);
 }
 
@@ -633,7 +653,7 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 	key_info.count = def_count(key_info.count);
 	while(key_info.count-- > 0)
 	{
-		menus_search(menu, !last_search_backward);
+		menus_search(menu->state, !last_search_backward);
 	}
 }
 
@@ -648,7 +668,7 @@ cmd_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 dump_into_custom_view(int very)
 {
-	if(menu_to_custom_view(menu, view, very) != 0)
+	if(menu_to_custom_view(menu->state, view, very) != 0)
 	{
 		show_error_msg("Menu transformation",
 				"No valid paths discovered in menu content");
@@ -712,40 +732,33 @@ pass_combination_to_khandler(const wchar_t keys[])
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	menu_current_line_erase(menu);
-	move_to_menu_pos(key_info.count - 1, menu);
+	menu_current_line_erase(menu->state);
+	move_to_menu_pos(def_count(key_info.count) - 1, menu->state);
 	wrefresh(menu_win);
 }
 
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->pos == menu->len - 1)
-		return;
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	menu_current_line_erase(menu);
-	menu->pos += key_info.count;
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+	if(menu->pos != menu->len - 1)
+	{
+		menu_current_line_erase(menu->state);
+		menu->pos += def_count(key_info.count);
+		move_to_menu_pos(menu->pos, menu->state);
+		wrefresh(menu_win);
+	}
 }
 
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->pos == 0)
-		return;
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	menu_current_line_erase(menu);
-	menu->pos -= key_info.count;
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+	if(menu->pos != 0)
+	{
+		menu_current_line_erase(menu->state);
+		menu->pos -= def_count(key_info.count);
+		move_to_menu_pos(menu->pos, menu->state);
+		wrefresh(menu_win);
+	}
 }
 
 static void
@@ -754,7 +767,7 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 	key_info.count = def_count(key_info.count);
 	while(key_info.count-- > 0)
 	{
-		menus_search(menu, last_search_backward);
+		menus_search(menu->state, last_search_backward);
 	}
 }
 
@@ -825,10 +838,14 @@ cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_menu_up(menu))
 	{
-		if(menu->pos < menu->win_rows)
+		if(menu->pos < getmaxy(menu_win))
+		{
 			menu->top = 0;
+		}
 		else
-			menu->top = menu->pos - (menu->win_rows - 3);
+		{
+			menu->top = menu->pos - (getmaxy(menu_win) - 3);
+		}
 		update_menu();
 	}
 }
@@ -836,10 +853,11 @@ cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zH(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->hor_pos == 0)
-		return;
-	menu->hor_pos = MAX(0, menu->hor_pos - (getmaxx(menu_win) - 4));
-	update_menu();
+	if(menu->hor_pos != 0)
+	{
+		menu->hor_pos = MAX(0, menu->hor_pos - (getmaxx(menu_win) - 4));
+		update_menu();
+	}
 }
 
 static void
@@ -852,20 +870,17 @@ cmd_zL(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zh(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->hor_pos == 0)
-		return;
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	menu->hor_pos = MAX(0, menu->hor_pos - key_info.count);
-	update_menu();
+	if(menu->hor_pos != 0)
+	{
+		menu->hor_pos = MAX(0, menu->hor_pos - def_count(key_info.count));
+		update_menu();
+	}
 }
 
 static void
 cmd_zl(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	menu->hor_pos += key_info.count;
+	menu->hor_pos += def_count(key_info.count);
 	update_menu();
 }
 
@@ -874,10 +889,10 @@ cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_menu_down(menu))
 	{
-		if(menu->len - menu->pos >= menu->win_rows - 3 + 1)
+		if(menu->len - menu->pos >= getmaxy(menu_win) - 3 + 1)
 			menu->top = menu->pos;
 		else
-			menu->top = menu->len - (menu->win_rows - 3 + 1);
+			menu->top = menu->len - (getmaxy(menu_win) - 3 + 1);
 		update_menu();
 	}
 }
@@ -887,12 +902,12 @@ cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!all_lines_visible(menu))
 	{
-		if(menu->pos <= (menu->win_rows - 3)/2)
+		if(menu->pos <= (getmaxy(menu_win) - 3)/2)
 			menu->top = 0;
-		else if(menu->pos > menu->len - DIV_ROUND_UP(menu->win_rows - 3, 2))
-			menu->top = menu->len - (menu->win_rows - 3 + 1);
+		else if(menu->pos > menu->len - DIV_ROUND_UP(getmaxy(menu_win) - 3, 2))
+			menu->top = menu->len - (getmaxy(menu_win) - 3 + 1);
 		else
-			menu->top = menu->pos - DIV_ROUND_UP(menu->win_rows - 3, 2);
+			menu->top = menu->pos - DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
 
 		update_menu();
 	}
@@ -900,27 +915,28 @@ cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 
 /* Returns non-zero if all menu lines are visible, so no scrolling is needed. */
 static int
-all_lines_visible(const menu_info *const menu)
+all_lines_visible(const menu_data_t *const menu)
 {
-	return menu->len <= menu->win_rows - 2;
+	return menu->len <= getmaxy(menu_win) - 2;
 }
 
 void
 update_menu(void)
 {
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
+	draw_menu(menu->state);
+	move_to_menu_pos(menu->pos, menu->state);
 	wrefresh(menu_win);
 }
 
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->end == NOT_DEF)
-		return 0;
-	menu_current_line_erase(menu);
-	move_to_menu_pos(cmd_info->end, menu);
-	wrefresh(menu_win);
+	if(cmd_info->end != NOT_DEF)
+	{
+		menu_current_line_erase(menu->state);
+		move_to_menu_pos(cmd_info->end, menu->state);
+		wrefresh(menu_win);
+	}
 	return 0;
 }
 
@@ -928,7 +944,7 @@ goto_cmd(const cmd_info_t *cmd_info)
 static int
 nohlsearch_cmd(const cmd_info_t *cmd_info)
 {
-	menus_reset_search_highlight(menu);
+	menus_reset_search_highlight(menu->state);
 	return 0;
 }
 
@@ -1003,7 +1019,7 @@ leave_menu_mode(int reset_selection)
 		return;
 	}
 
-	reset_popup_menu(menu);
+	reset_menu_data(menu);
 
 	if(reset_selection)
 	{

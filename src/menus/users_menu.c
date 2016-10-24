@@ -26,26 +26,26 @@
 #include "../modes/menu.h"
 #include "menus.h"
 
-static int execute_users_cb(FileView *view, menu_info *m);
-static KHandlerResponse users_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_users_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse users_khandler(menu_data_t *m, const wchar_t keys[]);
 
 int
 show_user_menu(FileView *view, const char command[], int navigate)
 {
-	static menu_info m;
-	init_menu_info(&m, strdup(command), strdup("No results found"));
+	static menu_data_t m;
+	init_menu_data(&m, strdup(command), strdup("No results found"));
 	m.extra_data = navigate;
 
 	m.execute_handler = &execute_users_cb;
 	m.key_handler = &users_khandler;
 
-	return capture_output_to_menu(view, command, 1, &m);
+	return capture_output_to_menu(view, command, 1, m.state);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_users_cb(FileView *view, menu_info *m)
+execute_users_cb(FileView *view, menu_data_t *m)
 {
 	const int navigate = m->extra_data;
 	if(navigate)
@@ -58,7 +58,7 @@ execute_users_cb(FileView *view, menu_info *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-users_khandler(menu_info *m, const wchar_t keys[])
+users_khandler(menu_data_t *m, const wchar_t keys[])
 {
 	const int navigate = m->extra_data;
 	if(navigate)

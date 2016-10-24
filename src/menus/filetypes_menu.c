@@ -44,16 +44,17 @@
 static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
-static int execute_filetype_cb(FileView *view, menu_info *m);
-static KHandlerResponse filetypes_khandler(menu_info *m, const wchar_t keys[]);
-static void fill_menu_from_records(menu_info *m,
+static int execute_filetype_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse filetypes_khandler(menu_data_t *m,
+		const wchar_t keys[]);
+static void fill_menu_from_records(menu_data_t *m,
 		const assoc_records_t *records);
 static int max_desc_len(const assoc_records_t *records);
 
 int
 show_file_menu(FileView *view, int background)
 {
-	static menu_info m;
+	static menu_data_t m;
 
 	int i;
 	int max_len;
@@ -72,7 +73,7 @@ show_file_menu(FileView *view, int background)
 	magic = get_magic_handlers(typed_name);
 	free(typed_name);
 
-	init_menu_info(&m, strdup("Filetype associated commands"),
+	init_menu_data(&m, strdup("Filetype associated commands"),
 			strdup("No programs set for this filetype"));
 
 	m.execute_handler = &execute_filetype_cb;
@@ -105,7 +106,7 @@ show_file_menu(FileView *view, int background)
 				form_filetype_menu_entry(magic.list[i], max_len));
 	}
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Returns pointer to a statically allocated buffer */
@@ -145,7 +146,7 @@ form_filetype_data_entry(assoc_record_t prog)
 /* Callback that is invoked when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_filetype_cb(FileView *view, menu_info *m)
+execute_filetype_cb(FileView *view, menu_data_t *m)
 {
 	if(get_current_entry(view)->type == FT_DIR && m->pos == 0)
 	{
@@ -153,7 +154,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	}
 	else
 	{
-		const char *prog_str = strchr(m->data[m->pos], '|') + 1;
+		const char *const prog_str = strchr(m->data[m->pos], '|') + 1;
 		if(prog_str[0] != '\0')
 		{
 			int background = m->extra_data & 1;
@@ -169,11 +170,11 @@ execute_filetype_cb(FileView *view, menu_info *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-filetypes_khandler(menu_info *m, const wchar_t keys[])
+filetypes_khandler(menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"c") == 0)
 	{
-		const char *prog_str = after_first(m->data[m->pos], '|');
+		const char *const prog_str = after_first(m->data[m->pos], '|');
 		if(prog_str[0] != '\0')
 		{
 			menu_morph_into_cmdline(CLS_COMMAND, prog_str, 1);
@@ -186,40 +187,40 @@ filetypes_khandler(menu_info *m, const wchar_t keys[])
 int
 show_fileprograms_menu(FileView *view, const char fname[])
 {
-	static menu_info m;
+	static menu_data_t m;
 
 	assoc_records_t file_programs;
 
-	init_menu_info(&m, format_str("Programs that match %s", fname),
+	init_menu_data(&m, format_str("Programs that match %s", fname),
 			format_str("No programs match %s", fname));
 
 	file_programs = ft_get_all_programs(fname);
 	fill_menu_from_records(&m, &file_programs);
 	ft_assoc_records_free(&file_programs);
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 int
 show_fileviewers_menu(FileView *view, const char fname[])
 {
-	static menu_info m;
+	static menu_data_t m;
 
 	assoc_records_t file_viewers;
 
-	init_menu_info(&m, format_str("Viewers that match %s", fname),
+	init_menu_data(&m, format_str("Viewers that match %s", fname),
 			format_str("No viewers match %s", fname));
 
 	file_viewers = ft_get_all_viewers(fname);
 	fill_menu_from_records(&m, &file_viewers);
 	ft_assoc_records_free(&file_viewers);
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Fills the menu with commands from association records. */
 static void
-fill_menu_from_records(menu_info *m, const assoc_records_t *records)
+fill_menu_from_records(menu_data_t *m, const assoc_records_t *records)
 {
 	int i;
 	const int max_len = max_desc_len(records);

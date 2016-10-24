@@ -501,7 +501,7 @@ handle_nonempty_input(void)
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
 			result = search_menu_list(mbinput, sub_mode_ptr, 0);
-			update_state(result, ((menu_info *)sub_mode_ptr)->matching_entries);
+			update_state(result, menu_get_matches(sub_mode_ptr));
 			break;
 		case CLS_FILTER:
 			set_local_filter(mbinput);

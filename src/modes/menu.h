@@ -27,10 +27,10 @@
 /* Initializes menu mode. */
 void init_menu_mode(void);
 
-void enter_menu_mode(menu_info *m, FileView *active_view);
+void enter_menu_mode(menu_data_t *m, FileView *active_view);
 
 /* Replaces menu of the menu mode. */
-void reenter_menu_mode(menu_info *m);
+void reenter_menu_mode(menu_data_t *m);
 
 void menu_pre(void);
 
@@ -59,7 +59,7 @@ void execute_cmdline_command(const char cmd[]);
 /* Returns index of last visible line in the menu.  Value returned may be
  * greater than or equal to number of lines in the menu, which should be
  * treated correctly. */
-int get_last_visible_line(const menu_info *m);
+int get_last_visible_line(const menu_data_t *m);
 
 #endif /* VIFM__MODES__MENU_H__ */
 
