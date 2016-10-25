@@ -46,7 +46,7 @@ TEARDOWN()
 TEST(empty_path_without_linenum)
 {
 	int line_num;
-	char *const path = parse_file_spec("", &line_num);
+	char *const path = parse_file_spec("", &line_num, ".");
 
 	assert_string_equal("./", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -57,7 +57,7 @@ TEST(empty_path_without_linenum)
 TEST(empty_path_with_linenum)
 {
 	int line_num;
-	char *const path = parse_file_spec(":78:", &line_num);
+	char *const path = parse_file_spec(":78:", &line_num, ".");
 
 	assert_string_equal("./", path);
 	assert_int_equal(78, line_num);
@@ -68,7 +68,7 @@ TEST(empty_path_with_linenum)
 TEST(absolute_path_without_linenum)
 {
 	int line_num;
-	char *const path = parse_file_spec(test_data, &line_num);
+	char *const path = parse_file_spec(test_data, &line_num, ".");
 
 	assert_string_equal(test_data, path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -79,7 +79,7 @@ TEST(absolute_path_without_linenum)
 TEST(tilde_path_is_expanded)
 {
 	int line_num;
-	char *const path = parse_file_spec("~", &line_num);
+	char *const path = parse_file_spec("~", &line_num, ".");
 	assert_false(strcmp(path, "~") == 0);
 	free(path);
 }
@@ -92,7 +92,7 @@ TEST(absolute_path_with_linenum)
 	char *path;
 
 	snprintf(spec, sizeof(spec), "%s:1234:", test_data);
-	path = parse_file_spec(spec, &line_num);
+	path = parse_file_spec(spec, &line_num, ".");
 
 	assert_string_equal(test_data, path);
 	assert_int_equal(1234, line_num);
@@ -103,7 +103,7 @@ TEST(absolute_path_with_linenum)
 TEST(relative_path_without_linenum)
 {
 	int line_num;
-	char *const path = parse_file_spec("existing-files/a", &line_num);
+	char *const path = parse_file_spec("existing-files/a", &line_num, ".");
 
 	assert_string_equal("./existing-files/a", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -114,7 +114,7 @@ TEST(relative_path_without_linenum)
 TEST(relative_path_without_linenum_ends_with_colon)
 {
 	int line_num;
-	char *const path = parse_file_spec("existing-files/a:", &line_num);
+	char *const path = parse_file_spec("existing-files/a:", &line_num, ".");
 
 	assert_string_equal("./existing-files/a", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -125,7 +125,7 @@ TEST(relative_path_without_linenum_ends_with_colon)
 TEST(relative_path_without_linenum_with_text)
 {
 	int line_num;
-	char *const path = parse_file_spec("existing-files/a: text", &line_num);
+	char *const path = parse_file_spec("existing-files/a: text", &line_num, ".");
 
 	assert_string_equal("./existing-files/a", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -136,7 +136,7 @@ TEST(relative_path_without_linenum_with_text)
 TEST(relative_path_with_linenum)
 {
 	int line_num;
-	char *const path = parse_file_spec("existing-files/a:9876:", &line_num);
+	char *const path = parse_file_spec("existing-files/a:9876:", &line_num, ".");
 
 	assert_string_equal("./existing-files/a", path);
 	assert_int_equal(9876, line_num);
@@ -147,7 +147,7 @@ TEST(relative_path_with_linenum)
 TEST(empty_path_linenum_no_trailing_colon)
 {
 	int line_num;
-	char *const path = parse_file_spec(":78", &line_num);
+	char *const path = parse_file_spec(":78", &line_num, ".");
 
 	assert_string_equal("./", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -163,7 +163,7 @@ TEST(absolute_path_linenum_no_trailing_colon)
 	char *path;
 
 	snprintf(spec, sizeof(spec), "%s:1234", test_data);
-	path = parse_file_spec(spec, &line_num);
+	path = parse_file_spec(spec, &line_num, ".");
 
 	assert_string_equal(test_data, path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -174,7 +174,7 @@ TEST(absolute_path_linenum_no_trailing_colon)
 TEST(relative_path_linenum_no_trailing_colon)
 {
 	int line_num;
-	char *const path = parse_file_spec("existing-files/a:9876", &line_num);
+	char *const path = parse_file_spec("existing-files/a:9876", &line_num, ".");
 
 	assert_string_equal("./existing-files/a", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -185,7 +185,7 @@ TEST(relative_path_linenum_no_trailing_colon)
 TEST(linenum_non_digit)
 {
 	int line_num;
-	char *const path = parse_file_spec("existing-files/a:a:", &line_num);
+	char *const path = parse_file_spec("existing-files/a:a:", &line_num, ".");
 
 	assert_string_equal("./existing-files/a", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -196,7 +196,7 @@ TEST(linenum_non_digit)
 TEST(linenum_non_number)
 {
 	int line_num;
-	char *const path = parse_file_spec("repos/repo:7a:", &line_num);
+	char *const path = parse_file_spec("repos/repo:7a:", &line_num, ".");
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -207,7 +207,7 @@ TEST(linenum_non_number)
 TEST(colon_in_name_with_linenum)
 {
 	int line_num;
-	char *const path = parse_file_spec("repos/repo:7a:::a4:17:text", &line_num);
+	char *path = parse_file_spec("repos/repo:7a:::a4:17:text", &line_num, ".");
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -218,7 +218,7 @@ TEST(colon_in_name_with_linenum)
 TEST(win_absolute_path_without_linenum, IF(windows))
 {
 	int line_num;
-	char *const path = parse_file_spec(test_data, &line_num);
+	char *const path = parse_file_spec(test_data, &line_num, ".");
 
 	assert_string_equal(test_data, path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -229,7 +229,7 @@ TEST(win_absolute_path_without_linenum, IF(windows))
 TEST(win_absolute_path_with_linenum, IF(windows))
 {
 	int line_num;
-	char *const path = parse_file_spec("c:/home/user:1234:", &line_num);
+	char *const path = parse_file_spec("c:/home/user:1234:", &line_num, ".");
 
 	assert_string_equal("c:/home/user", path);
 	assert_int_equal(1234, line_num);
@@ -240,7 +240,7 @@ TEST(win_absolute_path_with_linenum, IF(windows))
 TEST(win_relative_path_without_linenum, IF(windows))
 {
 	int line_num;
-	char *const path = parse_file_spec("repos\\repo", &line_num);
+	char *const path = parse_file_spec("repos\\repo", &line_num, ".");
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(DEFAULT_LINENUM, line_num);
@@ -251,7 +251,7 @@ TEST(win_relative_path_without_linenum, IF(windows))
 TEST(win_relative_path_with_linenum, IF(windows))
 {
 	int line_num;
-	char *const path = parse_file_spec("repos\\repo:9876:", &line_num);
+	char *const path = parse_file_spec("repos\\repo:9876:", &line_num, ".");
 
 	assert_string_equal("./repos/repo", path);
 	assert_int_equal(9876, line_num);

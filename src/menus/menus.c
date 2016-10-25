@@ -314,7 +314,7 @@ goto_selected_file(FileView *view, const char spec[], int try_open)
 	char *path_buf;
 	int line_num;
 
-	path_buf = parse_file_spec(spec, &line_num);
+	path_buf = parse_file_spec(spec, &line_num, ".");
 	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -718,7 +718,7 @@ filelist_khandler(menu_data_t *m, const wchar_t keys[])
 	{
 		/* Insert just file name. */
 		int line_num;
-		char *const path = parse_file_spec(m->items[m->pos], &line_num);
+		char *const path = parse_file_spec(m->items[m->pos], &line_num, ".");
 		if(path == NULL)
 		{
 			show_error_msg("Command insertion", "No valid filename found");
@@ -751,7 +751,7 @@ menu_to_custom_view(menu_state_t *m, FileView *view, int very)
 			continue;
 		}
 
-		path = parse_file_spec(m->d->items[i], &line_num);
+		path = parse_file_spec(m->d->items[i], &line_num, ".");
 		if(path == NULL)
 		{
 			continue;

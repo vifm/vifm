@@ -154,7 +154,7 @@ int is_graphics_viewer(const char viewer[]);
 /* Extracts path and line number from the spec (default line number is 1).
  * Returns path in as newly allocated string and sets *line_num to line number,
  * otherwise NULL is returned. */
-char * parse_file_spec(const char spec[], int *line_num);
+char * parse_file_spec(const char spec[], int *line_num, const char cwd[]);
 
 /* Fills buf of the length buf_len with path to mount point of the path.
  * Returns non-zero on error, otherwise zero is returned. */

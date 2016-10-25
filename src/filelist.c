@@ -3306,7 +3306,7 @@ flist_add_custom_line(FileView *view, const char line[])
 	/* Skip empty lines. */
 	char *const path = (skip_whitespace(line)[0] == '\0')
 	                 ? NULL
-	                 : parse_file_spec(line, &line_num);
+	                 : parse_file_spec(line, &line_num, ".");
 	if(path != NULL)
 	{
 		flist_custom_add(view, path);

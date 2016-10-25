@@ -550,11 +550,11 @@ def_count(int count)
 }
 
 char *
-parse_file_spec(const char spec[], int *line_num)
+parse_file_spec(const char spec[], int *line_num, const char cwd[])
 {
 	char *path_buf;
 	const char *colon;
-	const size_t bufs_len = 2 + strlen(spec) + 1 + 1;
+	const size_t bufs_len = strlen(cwd) + 1U + strlen(spec) + 1U + 1U;
 
 	path_buf = malloc(bufs_len);
 	if(path_buf == NULL)
@@ -568,7 +568,7 @@ parse_file_spec(const char spec[], int *line_num)
 	}
 	else
 	{
-		copy_str(path_buf, bufs_len, "./");
+		snprintf(path_buf, bufs_len, "%s/", cwd);
 	}
 
 #ifdef _WIN32
