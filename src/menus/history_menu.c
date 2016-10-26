@@ -84,7 +84,7 @@ show_history(FileView *view, HistoryType type, hist_t *hist, const char title[])
 	int i;
 	static menu_data_t m;
 
-	init_menu_data(&m, strdup(title), strdup("History disabled or empty"));
+	init_menu_data(&m, view, strdup(title), strdup("History disabled or empty"));
 	m.execute_handler = &execute_history_cb;
 	m.key_handler = &history_khandler;
 	m.extra_data = type;

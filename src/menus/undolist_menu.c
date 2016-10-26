@@ -34,7 +34,7 @@ show_undolist_menu(FileView *view, int with_details)
 	char **p;
 
 	static menu_data_t m;
-	init_menu_data(&m, strdup("Undolist"), strdup("Undolist is empty"));
+	init_menu_data(&m, view, strdup("Undolist"), strdup("Undolist is empty"));
 
 	m.items = undolist(with_details);
 	p = m.items;

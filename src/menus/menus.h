@@ -72,6 +72,9 @@ typedef struct menu_data_t
 	 * NULL if this cannot happen. */
 	char *empty_msg;
 
+	/* Base for relative paths for navigation. */
+	char *cwd;
+
 	menu_state_t *state; /* Opaque pointer to menu mode state. */
 	int initialized;     /* Marker that shows whether menu data needs freeing. */
 }
@@ -80,7 +83,8 @@ menu_data_t;
 /* Fills fields of menu_data_t structure with some safe values.  empty_msg is
  * text displayed by display_menu() function in case menu is empty, it can be
  * NULL if this cannot happen and will be freed by reset_menu_data(). */
-void init_menu_data(menu_data_t *m, char title[], char empty_msg[]);
+void init_menu_data(menu_data_t *m, FileView *view, char title[],
+		char empty_msg[]);
 
 /* Frees resources associated with the menu and clears menu window. */
 void reset_menu_data(menu_data_t *m);

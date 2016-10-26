@@ -48,7 +48,7 @@ show_marks_menu(FileView *view, const char marks[])
 	size_t max_len;
 
 	static menu_data_t m;
-	init_menu_data(&m, strdup("Mark -- Directory -- File"),
+	init_menu_data(&m, view, strdup("Mark -- Directory -- File"),
 			strdup("No marks set"));
 	m.execute_handler = &execute_mark_cb;
 	m.key_handler = &mark_khandler;

@@ -37,7 +37,7 @@ int
 show_colorschemes_menu(FileView *view)
 {
 	static menu_data_t m;
-	init_menu_data(&m, strdup("Choose the default Color Scheme"),
+	init_menu_data(&m, view, strdup("Choose the default Color Scheme"),
 			strdup("No color schemes found"));
 	m.execute_handler = &execute_colorscheme_cb;
 

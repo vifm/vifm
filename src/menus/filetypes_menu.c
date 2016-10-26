@@ -73,7 +73,7 @@ show_file_menu(FileView *view, int background)
 	magic = get_magic_handlers(typed_name);
 	free(typed_name);
 
-	init_menu_data(&m, strdup("Filetype associated commands"),
+	init_menu_data(&m, view, strdup("Filetype associated commands"),
 			strdup("No programs set for this filetype"));
 
 	m.execute_handler = &execute_filetype_cb;
@@ -191,7 +191,7 @@ show_fileprograms_menu(FileView *view, const char fname[])
 
 	assoc_records_t file_programs;
 
-	init_menu_data(&m, format_str("Programs that match %s", fname),
+	init_menu_data(&m, view, format_str("Programs that match %s", fname),
 			format_str("No programs match %s", fname));
 
 	file_programs = ft_get_all_programs(fname);
@@ -208,7 +208,7 @@ show_fileviewers_menu(FileView *view, const char fname[])
 
 	assoc_records_t file_viewers;
 
-	init_menu_data(&m, format_str("Viewers that match %s", fname),
+	init_menu_data(&m, view, format_str("Viewers that match %s", fname),
 			format_str("No viewers match %s", fname));
 
 	file_viewers = ft_get_all_viewers(fname);

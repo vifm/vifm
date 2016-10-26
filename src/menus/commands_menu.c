@@ -51,7 +51,7 @@ show_commands_menu(FileView *view)
 	size_t cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
 
 	static menu_data_t m;
-	init_menu_data(&m, strdup("Command ------ Action"),
+	init_menu_data(&m, view, strdup("Command ------ Action"),
 			strdup("No commands set"));
 	m.execute_handler = &execute_commands_cb;
 	m.key_handler = &commands_khandler;

@@ -16,7 +16,7 @@ static menu_data_t m;
 
 SETUP()
 {
-	init_menu_data(&m, strdup("test"), strdup("No matches"));
+	init_menu_data(&m, &lwin, strdup("test"), strdup("No matches"));
 
 	m.len = add_to_string_array(&m.items, m.len, 1, "a");
 	m.len = add_to_string_array(&m.items, m.len, 1, "b");

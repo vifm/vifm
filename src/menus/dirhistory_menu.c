@@ -39,7 +39,7 @@ show_history_menu(FileView *view)
 	int need_cleanup;
 
 	static menu_data_t m;
-	init_menu_data(&m, strdup("Directory History"),
+	init_menu_data(&m, view, strdup("Directory History"),
 			strdup("History disabled or empty"));
 
 	m.execute_handler = &execute_dirhistory_cb;

@@ -53,7 +53,7 @@ show_map_menu(FileView *view, const char mode_str[], int mode,
 	const int dialogs = mode == SORT_MODE || mode == ATTR_MODE
 	                 || mode == CHANGE_MODE || mode == FILE_INFO_MODE;
 
-	init_menu_data(&m,
+	init_menu_data(&m, view,
 			format_str("Mappings for %s mode%s", mode_str, dialogs ? "s" : ""),
 			strdup("No mappings found"));
 

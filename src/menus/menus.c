@@ -142,7 +142,7 @@ menu_current_line_erase(menu_state_t *m)
 }
 
 void
-init_menu_data(menu_data_t *m, char title[], char empty_msg[])
+init_menu_data(menu_data_t *m, FileView *view, char title[], char empty_msg[])
 {
 	if(m->initialized)
 	{
@@ -167,6 +167,7 @@ init_menu_data(menu_data_t *m, char title[], char empty_msg[])
 	m->extra_data = 0;
 	m->execute_handler = NULL;
 	m->empty_msg = empty_msg;
+	m->cwd = strdup(flist_get_dir(view));
 	m->state = &menu_state;
 	m->initialized = 1;
 }
@@ -190,6 +191,7 @@ reset_menu_data(menu_data_t *m)
 	free(m->void_data);
 	free(m->title);
 	free(m->empty_msg);
+	free(m->cwd);
 	m->initialized = 0;
 
 	reset_menu_state(m->state);

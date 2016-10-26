@@ -39,7 +39,7 @@ int
 show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match)
 {
 	static menu_data_t m;
-	init_menu_data(&m, strdup("Bookmarks"), strdup("No bookmarks found"));
+	init_menu_data(&m, view, strdup("Bookmarks"), strdup("No bookmarks found"));
 	m.execute_handler = &execute_bmarks_cb;
 	m.key_handler = &bmarks_khandler;
 

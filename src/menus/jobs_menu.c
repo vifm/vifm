@@ -49,7 +49,7 @@ show_jobs_menu(FileView *view)
 	bg_job_t *p;
 	int i;
 
-	init_menu_data(&jobs_m, strdup("Pid --- Command"),
+	init_menu_data(&jobs_m, view, strdup("Pid --- Command"),
 			strdup("No jobs currently running"));
 	jobs_m.execute_handler = &execute_jobs_cb;
 	jobs_m.key_handler = &jobs_khandler;
@@ -199,7 +199,7 @@ show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job)
 	{
 		static menu_data_t m;
 
-		init_menu_data(&m, format_str("Job errors (%s)", cmd), NULL);
+		init_menu_data(&m, view, format_str("Job errors (%s)", cmd), NULL);
 		m.key_handler = &errs_khandler;
 		m.items = break_into_lines(errors, errors_len, &m.len, 0);
 
