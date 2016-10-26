@@ -262,7 +262,7 @@ init_menu_mode(void)
 
 	(void)ret_code;
 
-	vle_keys_set_def_handler(MENU_MODE, key_handler);
+	vle_keys_set_def_handler(MENU_MODE, &key_handler);
 
 	/* Double initialization can happen in tests. */
 	if(cmds_conf.inner == NULL)
