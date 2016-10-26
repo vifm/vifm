@@ -555,6 +555,7 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 	char *path_buf;
 	const char *colon;
 	const size_t bufs_len = strlen(cwd) + 1U + strlen(spec) + 1U + 1U;
+	char canonicalized[PATH_MAX];
 
 	path_buf = malloc(bufs_len);
 	if(path_buf == NULL)
@@ -613,12 +614,19 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 	}
 
 	chomp(path_buf);
+	canonicalize_path(path_buf, canonicalized, sizeof(canonicalized));
+	free(path_buf);
+
+	if(!is_root_dir(canonicalized) && strcmp(canonicalized, "./") != 0)
+	{
+		chosp(canonicalized);
+	}
 
 #ifdef _WIN32
-	to_forward_slash(path_buf);
+	to_forward_slash(canonicalized);
 #endif
 
-	return replace_tilde(path_buf);
+	return replace_tilde(strdup(canonicalized));
 }
 
 /* Checks whether str points to a valid line number.  Returns non-zero if so,

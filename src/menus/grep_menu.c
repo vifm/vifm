@@ -97,7 +97,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 static int
 execute_grep_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(view, m->items[m->pos], 1);
+	(void)goto_selected_file(m, view, m->items[m->pos], 1);
 	return 1;
 }
 

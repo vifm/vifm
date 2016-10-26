@@ -72,7 +72,7 @@ show_locate_menu(FileView *view, const char args[])
 static int
 execute_locate_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(view, m->items[m->pos], 0);
+	(void)goto_selected_file(m, view, m->items[m->pos], 0);
 	return 0;
 }
 

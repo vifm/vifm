@@ -45,7 +45,8 @@ TEST(can_navigate_to_broken_symlink, IF(not_windows))
 	/* Were trying to open broken link, which will fail, but the parsing part
 	 * should succeed. */
 	restore_cwd(saved_cwd);
-	assert_success(goto_selected_file(&lwin, SANDBOX_PATH "/broken-link:", 1));
+	assert_success(goto_selected_file(&m, &lwin, SANDBOX_PATH "/broken-link:",
+				1));
 
 	assert_success(remove(SANDBOX_PATH "/broken-link"));
 }

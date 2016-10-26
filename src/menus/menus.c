@@ -75,6 +75,8 @@ static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static void init_menu_state(menu_state_t *ms);
+static const char * get_relative_path_base(const menu_data_t *m,
+		const FileView *view);
 static int search_menu(menu_state_t *ms, int start_pos, int print_errors);
 static int search_menu_forwards(menu_state_t *m, int start_pos);
 static int search_menu_backwards(menu_state_t *m, int start_pos);
@@ -311,12 +313,13 @@ redraw_menu(menu_state_t *m)
 }
 
 int
-goto_selected_file(FileView *view, const char spec[], int try_open)
+goto_selected_file(menu_data_t *m, FileView *view, const char spec[],
+		int try_open)
 {
 	char *path_buf;
 	int line_num;
 
-	path_buf = parse_file_spec(spec, &line_num, ".");
+	path_buf = parse_file_spec(spec, &line_num, get_relative_path_base(m, view));
 	if(path_buf == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -708,19 +711,20 @@ filelist_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{
-		(void)goto_selected_file(curr_view, m->items[m->pos], 0);
+		(void)goto_selected_file(m, curr_view, m->items[m->pos], 0);
 		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		(void)goto_selected_file(curr_view, m->items[m->pos], 1);
+		(void)goto_selected_file(m, curr_view, m->items[m->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"c") == 0)
 	{
 		/* Insert just file name. */
 		int line_num;
-		char *const path = parse_file_spec(m->items[m->pos], &line_num, ".");
+		const char *const rel_base = get_relative_path_base(m, view);
+		char *const path = parse_file_spec(m->items[m->pos], &line_num, rel_base);
 		if(path == NULL)
 		{
 			show_error_msg("Command insertion", "No valid filename found");
@@ -739,6 +743,7 @@ menu_to_custom_view(menu_state_t *m, FileView *view, int very)
 {
 	int i;
 	char *current = NULL;
+	const char *const rel_base = get_relative_path_base(m->d, view);
 
 	flist_custom_start(view, m->d->title);
 
@@ -753,7 +758,7 @@ menu_to_custom_view(menu_state_t *m, FileView *view, int very)
 			continue;
 		}
 
-		path = parse_file_spec(m->d->items[i], &line_num, ".");
+		path = parse_file_spec(m->d->items[i], &line_num, rel_base);
 		if(path == NULL)
 		{
 			continue;
@@ -795,6 +800,19 @@ menu_to_custom_view(menu_state_t *m, FileView *view, int very)
 	}
 
 	return 0;
+}
+
+/* Gets base for relative paths navigated to from the menu.  Returns the
+ * path.  The purpose is to omit "././" or "..././..." in paths shown to a
+ * user. */
+static const char *
+get_relative_path_base(const menu_data_t *m, const FileView *view)
+{
+	if(paths_are_same(m->cwd, flist_get_dir(view)))
+	{
+		return ".";
+	}
+	return m->cwd;
 }
 
 int
