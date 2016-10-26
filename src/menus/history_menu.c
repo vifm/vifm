@@ -44,7 +44,8 @@ HistoryType;
 static int show_history(FileView *view, HistoryType type, hist_t *hist,
 		const char title[]);
 static int execute_history_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse history_khandler(menu_data_t *m, const wchar_t keys[]);
+static KHandlerResponse history_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_cmdhistory_menu(FileView *view)
@@ -132,7 +133,7 @@ execute_history_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-history_khandler(menu_data_t *m, const wchar_t keys[])
+history_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"c") == 0)
 	{

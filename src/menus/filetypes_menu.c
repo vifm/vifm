@@ -45,7 +45,7 @@ static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
 static int execute_filetype_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse filetypes_khandler(menu_data_t *m,
+static KHandlerResponse filetypes_khandler(FileView *view, menu_data_t *m,
 		const wchar_t keys[]);
 static void fill_menu_from_records(menu_data_t *m,
 		const assoc_records_t *records);
@@ -170,7 +170,7 @@ execute_filetype_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-filetypes_khandler(menu_data_t *m, const wchar_t keys[])
+filetypes_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"c") == 0)
 	{

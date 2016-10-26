@@ -702,7 +702,7 @@ prepare_targets(FileView *view)
 }
 
 KHandlerResponse
-filelist_khandler(menu_data_t *m, const wchar_t keys[])
+filelist_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{

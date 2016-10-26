@@ -707,7 +707,7 @@ pass_combination_to_khandler(const wchar_t keys[])
 		return 0;
 	}
 
-	handler_response = menu->key_handler(menu, keys);
+	handler_response = menu->key_handler(view, menu, keys);
 
 	switch(handler_response)
 	{

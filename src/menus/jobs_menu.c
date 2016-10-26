@@ -33,10 +33,12 @@
 #include "menus.h"
 
 static int execute_jobs_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse jobs_khandler(menu_data_t *m, const wchar_t keys[]);
+static KHandlerResponse jobs_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 static int cancel_job(menu_data_t *m, bg_job_t *job);
-static void show_job_errors(menu_data_t *m, bg_job_t *job);
-static KHandlerResponse errs_khandler(menu_data_t *m, const wchar_t keys[]);
+static void show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job);
+static KHandlerResponse errs_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 /* Menu jobs description. */
 static menu_data_t jobs_m;
@@ -111,7 +113,7 @@ execute_jobs_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-jobs_khandler(menu_data_t *m, const wchar_t keys[])
+jobs_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
@@ -126,7 +128,7 @@ jobs_khandler(menu_data_t *m, const wchar_t keys[])
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		show_job_errors(m, m->void_data[m->pos]);
+		show_job_errors(view, m, m->void_data[m->pos]);
 		return KHR_REFRESH_WINDOW;
 	}
 	/* TODO: maybe use DD for forced termination? */
@@ -164,7 +166,7 @@ cancel_job(menu_data_t *m, bg_job_t *job)
 /* Shows job errors if there is something and the job is still running.
  * Switches to separate menu description. */
 static void
-show_job_errors(menu_data_t *m, bg_job_t *job)
+show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job)
 {
 	char *cmd = NULL, *errors = NULL;
 	size_t errors_len;
@@ -211,7 +213,7 @@ show_job_errors(menu_data_t *m, bg_job_t *job)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-errs_khandler(menu_data_t *m, const wchar_t keys[])
+errs_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"h") == 0)
 	{

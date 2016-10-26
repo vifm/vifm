@@ -27,7 +27,8 @@
 #include "menus.h"
 
 static int execute_users_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse users_khandler(menu_data_t *m, const wchar_t keys[]);
+static KHandlerResponse users_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_user_menu(FileView *view, const char command[], int navigate)
@@ -58,12 +59,12 @@ execute_users_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-users_khandler(menu_data_t *m, const wchar_t keys[])
+users_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	const int navigate = m->extra_data;
 	if(navigate)
 	{
-		return filelist_khandler(m, keys);
+		return filelist_khandler(view, m, keys);
 	}
 	else if(wcscmp(keys, L"c") == 0)
 	{

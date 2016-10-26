@@ -32,7 +32,8 @@
 
 static char * format_item(const char trash_dir[], int calc_size);
 static int execute_trashes_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse trashes_khandler(menu_data_t *m, const wchar_t keys[]);
+static KHandlerResponse trashes_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_trashes_menu(FileView *view, int calc_size)
@@ -102,7 +103,7 @@ execute_trashes_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-trashes_khandler(menu_data_t *m, const wchar_t keys[])
+trashes_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
