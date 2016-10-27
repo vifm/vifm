@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 18
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Oct 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1316,6 +1316,10 @@ The builtin commands are:
     is "bycontents listall ofboth grouppaths".  See |vifm-compare-views| for
     details.  Tree structure is incompatible with ls-like view, so value of
     |vifm-'lsview'| option is ignored.
+
+:cope[n]                                       *vifm-:copen* *vifm-:cope*
+    opens menu with contents of the last displayed menu with navigation to
+    files by default, if any.
 
                                                *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &]

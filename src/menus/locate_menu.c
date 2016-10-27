@@ -54,6 +54,8 @@ show_locate_menu(FileView *view, const char args[])
 	init_menu_data(&m, view, format_str("Locate %s", margs),
 			strdup("No files found"));
 	free(margs);
+
+	m.stashable = 1;
 	m.execute_handler = &execute_locate_cb;
 	m.key_handler = &filelist_khandler;
 

@@ -58,9 +58,6 @@ typedef struct menu_data_t
 
 	/* Menu-specific shortcut handler, can be NULL.  Returns code that specifies
 	 * both taken actions and what should be done next. */
-
-	/* For filetype background, mime flags and such. */
-	int extra_data;
 	KHandlerResponse (*key_handler)(FileView *view, struct menu_data_t *m,
 			const wchar_t keys[]);
 
@@ -74,6 +71,13 @@ typedef struct menu_data_t
 
 	/* Base for relative paths for navigation. */
 	char *cwd;
+
+	/* For filetype background, mime flags and such. */
+	int extra_data;
+
+	/* Whether this menu when non-empty should be saved for future use on closing
+	 * menu. */
+	int stashable;
 
 	menu_state_t *state; /* Opaque pointer to menu mode state. */
 	int initialized;     /* Marker that shows whether menu data needs freeing. */
@@ -127,6 +131,10 @@ int capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */
 int display_menu(menu_state_t *m, FileView *view);
+
+/* Restore previously saved menu.  Returns non-zero if status bar message should
+ * be saved. */
+int unstash_menu(FileView *view);
 
 /* Predefined key handler for processing keys on elements of file lists.
  * Returns code that specifies both taken actions and what should be done

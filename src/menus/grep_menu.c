@@ -66,6 +66,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	init_menu_data(&m, view, format_str("Grep %s", args),
 			format_str("No matches found: %s", args));
 
+	m.stashable = 1;
 	m.execute_handler = &execute_grep_cb;
 	m.key_handler = &filelist_khandler;
 

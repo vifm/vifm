@@ -352,6 +352,8 @@ cqu
 cqui
 cquit
 compare
+cope
+copen
 
 " "hi" should be highlighted as :command and CurrLine/CmpMismatch as highlight
 " groups

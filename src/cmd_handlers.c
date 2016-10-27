@@ -139,6 +139,7 @@ static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static int compare_cmd(const cmd_info_t *cmd_info);
+static int copen_cmd(const cmd_info_t *cmd_info);
 static int parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 		ListType *lt, int *single_pane, int *group_ids, int *skip_empty);
 static int cunmap_cmd(const cmd_info_t *cmd_info);
@@ -384,6 +385,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "compare directories in two panes",
 	  .flags = HAS_COMMENT,
 	  .handler = &compare_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "copen",             .abbr = "cope",  .id = -1,
+	  .descr = "reopen last displayed navigation menu",
+	  .flags = HAS_COMMENT,
+	  .handler = &copen_cmd,       .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "copy",              .abbr = "co",    .id = COM_COPY,
 	  .descr = "copy files",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_BG_FLAG | HAS_QUOTED_ARGS | HAS_COMMENT
@@ -1749,6 +1754,14 @@ compare_cmd(const cmd_info_t *cmd_info)
 	return single_pane
 	     ? (compare_one_pane(curr_view, ct, lt, skip_empty) != 0)
 	     : (compare_two_panes(ct, lt, !group_ids, skip_empty) != 0);
+}
+
+/* Opens menu with contents of the last displayed menu with navigation to files
+ * by default, if any. */
+static int
+copen_cmd(const cmd_info_t *cmd_info)
+{
+	return unstash_menu(curr_view) != 0;
 }
 
 /* Parses comparison properties.  Default values for arguments should be set

@@ -102,6 +102,9 @@ struct menu_state_t
 }
 menu_state;
 
+/* Temporary storage for data of the last stashable menu. */
+static menu_data_t menu_data_stash;
+
 void
 remove_current_item(menu_state_t *ms)
 {
@@ -179,6 +182,22 @@ reset_menu_data(menu_data_t *m)
 {
 	if(!m->initialized)
 	{
+		return;
+	}
+
+	/* On releasing of non-empty stashable menu, but not the stash. */
+	if(m->stashable && m->len > 0 && m != &menu_data_stash)
+	{
+		/* Release previously stashed menu, if any. */
+		if(menu_data_stash.initialized)
+		{
+			menu_data_stash.state = NULL;
+			reset_menu_data(&menu_data_stash);
+		}
+
+		menu_data_stash = *m;
+		m->initialized = 0;
+		reset_menu_state(m->state);
 		return;
 	}
 
@@ -704,6 +723,25 @@ prepare_targets(FileView *view)
 	}
 
 	return (vifm_chdir(flist_get_dir(view)) == 0) ? strdup(".") : NULL;
+}
+
+int
+unstash_menu(FileView *view)
+{
+	static menu_data_t menu_data_storage;
+
+	if(!menu_data_stash.initialized)
+	{
+		status_bar_message("No saved menu to display");
+		return 1;
+	}
+
+	reset_menu_data(&menu_data_storage);
+	menu_data_storage = menu_data_stash;
+	menu_data_stash.initialized = 0;
+	menu_state.d = &menu_data_storage;
+
+	return display_menu(menu_data_storage.state, view);
 }
 
 KHandlerResponse
