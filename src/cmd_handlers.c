@@ -381,7 +381,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK,
 	  .handler = &command_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "compare",           .abbr = NULL,    .id = COM_COMPARE,
-	  .descr = "compares directories in two panes",
+	  .descr = "compare directories in two panes",
 	  .flags = HAS_COMMENT,
 	  .handler = &compare_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "copy",              .abbr = "co",    .id = COM_COPY,
