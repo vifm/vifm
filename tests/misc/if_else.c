@@ -26,6 +26,12 @@ SETUP()
 	init_commands();
 	lwin.selected_files = 0;
 	remove_tmp_vars();
+	curr_view = &lwin;
+}
+
+TEARDOWN()
+{
+	curr_view = NULL;
 }
 
 TEST(if_without_else_true_condition)
