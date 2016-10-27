@@ -423,7 +423,9 @@ save_view_history(FileView *view, const char path[], const char file[], int pos)
 	{
 		x = view->history_num - 1;
 		while(x > view->history_pos)
-			view->history[x--].dir[0] = '\0';
+		{
+			cfg_free_history_items(&view->history[x--], 1);
+		}
 		view->history_num = view->history_pos + 1;
 	}
 	x = view->history_num;

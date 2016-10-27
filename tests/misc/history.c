@@ -5,8 +5,11 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
+
+#include "utils.h"
 
 #define INITIAL_SIZE 10
 
@@ -24,6 +27,10 @@
 
 SETUP()
 {
+	update_string(&cfg.slow_fs_list, "");
+
+	view_setup(&lwin);
+
 	/* lwin */
 	strcpy(lwin.curr_dir, "/lwin");
 
@@ -50,17 +57,19 @@ SETUP()
 	cfg_resize_histories(0);
 
 	cfg_resize_histories(INITIAL_SIZE);
+
+	curr_view = NULL;
 }
 
 TEARDOWN()
 {
 	int i;
 
+	update_string(&cfg.slow_fs_list, NULL);
+
 	cfg_resize_histories(0);
 
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	dynarray_free(lwin.dir_entry);
+	view_teardown(&lwin);
 
 	for(i = 0; i < rwin.list_rows; i++)
 		free(rwin.dir_entry[i].name);
@@ -140,6 +149,18 @@ TEST(add_after_increasing_ok)
 	{
 		save_to_history(str + i);
 	}
+}
+
+TEST(navigating_within_history)
+{
+	save_to_history(SANDBOX_PATH);
+	save_to_history(TEST_DATA_PATH);
+
+	navigate_backward_in_history(&lwin);
+
+	/* This overwrites previously active history entries and should not result in
+	 * memory leaks. */
+	save_to_history("somewhere");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

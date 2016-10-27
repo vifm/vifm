@@ -179,6 +179,9 @@
 
 	Fixed detection of too-small-terminal state.
 
+	Fixed memory leak of forgotten history entries after going back in
+	history.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
