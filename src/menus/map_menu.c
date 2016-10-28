@@ -39,7 +39,7 @@ static void add_mapping_item(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 
 /* Menu object is global to make it available in add_mapping_item(). */
-static menu_info m;
+static menu_data_t m;
 
 /* Prefix to check LHS against. */
 static const wchar_t *prefix;
@@ -53,7 +53,7 @@ show_map_menu(FileView *view, const char mode_str[], int mode,
 	const int dialogs = mode == SORT_MODE || mode == ATTR_MODE
 	                 || mode == CHANGE_MODE || mode == FILE_INFO_MODE;
 
-	init_menu_info(&m,
+	init_menu_data(&m, view,
 			format_str("Mappings for %s mode%s", mode_str, dialogs ? "s" : ""),
 			strdup("No mappings found"));
 
@@ -62,7 +62,7 @@ show_map_menu(FileView *view, const char mode_str[], int mode,
 
 	vle_keys_list(mode, &add_mapping_item, dialogs);
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Adds matching key information to the menu after pre-formatting. */

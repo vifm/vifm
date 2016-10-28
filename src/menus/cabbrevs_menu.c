@@ -31,7 +31,8 @@
 #include "../bracket_notation.h"
 #include "menus.h"
 
-static KHandlerResponse commands_khandler(menu_info *m, const wchar_t keys[]);
+static KHandlerResponse commands_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_cabbrevs_menu(FileView *view)
@@ -40,8 +41,8 @@ show_cabbrevs_menu(FileView *view)
 	const wchar_t *lhs, *rhs;
 	int no_remap;
 
-	static menu_info m;
-	init_menu_info(&m, strdup("Abbreviation -- N -- Replacement"),
+	static menu_data_t m;
+	init_menu_data(&m, view, strdup("Abbreviation -- N -- Replacement"),
 			strdup("No abbreviation set"));
 	m.key_handler = &commands_khandler;
 
@@ -52,13 +53,13 @@ show_cabbrevs_menu(FileView *view)
 		m.len = put_into_string_array(&m.items, m.len, descr);
 	}
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-commands_khandler(menu_info *m, const wchar_t keys[])
+commands_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0) /* Remove element. */
 	{
@@ -68,7 +69,7 @@ commands_khandler(menu_info *m, const wchar_t keys[])
 		snprintf(cmd_buf, sizeof(cmd_buf), "cunabbrev %s", m->items[m->pos]);
 		execute_cmdline_command(cmd_buf);
 
-		remove_current_item(m);
+		remove_current_item(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

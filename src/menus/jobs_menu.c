@@ -32,14 +32,16 @@
 #include "../background.h"
 #include "menus.h"
 
-static int execute_jobs_cb(FileView *view, menu_info *m);
-static KHandlerResponse jobs_khandler(menu_info *m, const wchar_t keys[]);
-static int cancel_job(menu_info *m, bg_job_t *job);
-static void show_job_errors(menu_info *m, bg_job_t *job);
-static KHandlerResponse errs_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_jobs_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse jobs_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
+static int cancel_job(menu_data_t *m, bg_job_t *job);
+static void show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job);
+static KHandlerResponse errs_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 /* Menu jobs description. */
-static menu_info jobs_m;
+static menu_data_t jobs_m;
 
 int
 show_jobs_menu(FileView *view)
@@ -47,7 +49,7 @@ show_jobs_menu(FileView *view)
 	bg_job_t *p;
 	int i;
 
-	init_menu_info(&jobs_m, strdup("Pid --- Command"),
+	init_menu_data(&jobs_m, view, strdup("Pid --- Command"),
 			strdup("No jobs currently running"));
 	jobs_m.execute_handler = &execute_jobs_cb;
 	jobs_m.key_handler = &jobs_khandler;
@@ -96,13 +98,13 @@ show_jobs_menu(FileView *view)
 
 	jobs_m.len = i;
 
-	return display_menu(&jobs_m, view);
+	return display_menu(jobs_m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_jobs_cb(FileView *view, menu_info *m)
+execute_jobs_cb(FileView *view, menu_data_t *m)
 {
 	/* TODO: write code for job control. */
 	return 0;
@@ -111,7 +113,7 @@ execute_jobs_cb(FileView *view, menu_info *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-jobs_khandler(menu_info *m, const wchar_t keys[])
+jobs_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
@@ -121,12 +123,12 @@ jobs_khandler(menu_info *m, const wchar_t keys[])
 			return KHR_REFRESH_WINDOW;
 		}
 
-		draw_menu(m);
+		draw_menu(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		show_job_errors(m, m->void_data[m->pos]);
+		show_job_errors(view, m, m->void_data[m->pos]);
 		return KHR_REFRESH_WINDOW;
 	}
 	/* TODO: maybe use DD for forced termination? */
@@ -136,7 +138,7 @@ jobs_khandler(menu_info *m, const wchar_t keys[])
 /* Cancels the job if it's still running.  Returns non-zero if operation was
  * cancelled, otherwise it's already finished and zero is returned. */
 static int
-cancel_job(menu_info *m, bg_job_t *job)
+cancel_job(menu_data_t *m, bg_job_t *job)
 {
 	bg_job_t *p;
 
@@ -164,7 +166,7 @@ cancel_job(menu_info *m, bg_job_t *job)
 /* Shows job errors if there is something and the job is still running.
  * Switches to separate menu description. */
 static void
-show_job_errors(menu_info *m, bg_job_t *job)
+show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job)
 {
 	char *cmd = NULL, *errors = NULL;
 	size_t errors_len;
@@ -195,14 +197,14 @@ show_job_errors(menu_info *m, bg_job_t *job)
 	}
 	else
 	{
-		static menu_info m;
+		static menu_data_t m;
 
-		init_menu_info(&m, format_str("Job errors (%s)", cmd), NULL);
+		init_menu_data(&m, view, format_str("Job errors (%s)", cmd), NULL);
 		m.key_handler = &errs_khandler;
 		m.items = break_into_lines(errors, errors_len, &m.len, 0);
 
 		reenter_menu_mode(&m);
-		draw_menu(&m);
+		draw_menu(m.state);
 	}
 	free(cmd);
 	free(errors);
@@ -211,12 +213,12 @@ show_job_errors(menu_info *m, bg_job_t *job)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-errs_khandler(menu_info *m, const wchar_t keys[])
+errs_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"h") == 0)
 	{
 		reenter_menu_mode(&jobs_m);
-		draw_menu(&jobs_m);
+		draw_menu(jobs_m.state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

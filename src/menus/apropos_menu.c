@@ -37,7 +37,7 @@
 #include "../status.h"
 #include "menus.h"
 
-static int execute_apropos_cb(FileView *view, menu_info *m);
+static int execute_apropos_cb(FileView *view, menu_data_t *m);
 TSTATIC int parse_apropos_line(const char line[], char section[],
 		size_t section_len, char topic[], size_t topic_len);
 
@@ -50,15 +50,15 @@ show_apropos_menu(FileView *view, const char args[])
 		{ .letter = 'a', .value = args, .uses_left = 1, .group = -1 },
 	};
 
-	static menu_info m;
-	init_menu_info(&m, format_str("Apropos %s", args),
+	static menu_data_t m;
+	init_menu_data(&m, view, format_str("Apropos %s", args),
 			format_str("No matches for \'%s\'", args));
 	m.execute_handler = &execute_apropos_cb;
 
 	status_bar_message("apropos...");
 
 	cmd = expand_custom_macros(cfg.apropos_prg, ARRAY_LEN(macros), macros);
-	save_msg = capture_output_to_menu(view, cmd, 0, &m);
+	save_msg = capture_output_to_menu(view, cmd, 0, m.state);
 	free(cmd);
 	return save_msg;
 }
@@ -66,7 +66,7 @@ show_apropos_menu(FileView *view, const char args[])
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_apropos_cb(FileView *view, menu_info *m)
+execute_apropos_cb(FileView *view, menu_data_t *m)
 {
 	char section[64], topic[64];
 	char command[256];

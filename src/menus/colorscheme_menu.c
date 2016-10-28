@@ -31,13 +31,13 @@
 #include "menus.h"
 
 static int sorter(const void *first, const void *second);
-static int execute_colorscheme_cb(FileView *view, menu_info *m);
+static int execute_colorscheme_cb(FileView *view, menu_data_t *m);
 
 int
 show_colorschemes_menu(FileView *view)
 {
-	static menu_info m;
-	init_menu_info(&m, strdup("Choose the default Color Scheme"),
+	static menu_data_t m;
+	init_menu_data(&m, view, strdup("Choose the default Color Scheme"),
 			strdup("No color schemes found"));
 	m.execute_handler = &execute_colorscheme_cb;
 
@@ -53,7 +53,7 @@ show_colorschemes_menu(FileView *view)
 	m.pos = string_array_pos_case(m.items, m.len, cfg.cs.name);
 #endif
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Sorting function for qsort(). */
@@ -68,7 +68,7 @@ sorter(const void *first, const void *second)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_colorscheme_cb(FileView *view, menu_info *m)
+execute_colorscheme_cb(FileView *view, menu_data_t *m)
 {
 	cs_load_primary(m->items[m->pos]);
 	return 0;

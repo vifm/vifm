@@ -30,7 +30,7 @@
 #include "../filelist.h"
 #include "menus.h"
 
-static int execute_dirhistory_cb(FileView *view, menu_info *m);
+static int execute_dirhistory_cb(FileView *view, menu_data_t *m);
 
 int
 show_history_menu(FileView *view)
@@ -38,8 +38,8 @@ show_history_menu(FileView *view)
 	int i;
 	int need_cleanup;
 
-	static menu_info m;
-	init_menu_info(&m, strdup("Directory History"),
+	static menu_data_t m;
+	init_menu_data(&m, view, strdup("Directory History"),
 			strdup("History disabled or empty"));
 
 	m.execute_handler = &execute_dirhistory_cb;
@@ -116,13 +116,13 @@ show_history_menu(FileView *view)
 	}
 	m.pos = m.len - 1 - m.pos;
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_dirhistory_cb(FileView *view, menu_info *m)
+execute_dirhistory_cb(FileView *view, menu_data_t *m)
 {
 	goto_selected_directory(view, m->items[m->pos]);
 	return 0;

@@ -29,16 +29,17 @@
 #include "../status.h"
 #include "menus.h"
 
-static int execute_bmarks_cb(FileView *view, menu_info *m);
-static KHandlerResponse bmarks_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_bmarks_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse bmarks_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
 		void *arg);
 
 int
 show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match)
 {
-	static menu_info m;
-	init_menu_info(&m, strdup("Bookmarks"), strdup("No bookmarks found"));
+	static menu_data_t m;
+	init_menu_data(&m, view, strdup("Bookmarks"), strdup("No bookmarks found"));
 	m.execute_handler = &execute_bmarks_cb;
 	m.key_handler = &bmarks_khandler;
 
@@ -53,19 +54,19 @@ show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match)
 
 	if(go_on_single_match && m.len == 1)
 	{
-		(void)goto_selected_file(view, m.items[m.pos], 0);
-		reset_popup_menu(&m);
+		(void)goto_selected_file(&m, view, m.items[m.pos], 0);
+		reset_menu_data(&m);
 		return curr_stats.save_msg;
 	}
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Callback for listings of bookmarks. */
 static void
 bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 {
-	menu_info *m = arg;
+	menu_data_t *m = arg;
 	char *line = format_str("%s: ", replace_home_part_strict(path));
 	size_t len = strlen(line);
 
@@ -86,31 +87,31 @@ bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_bmarks_cb(FileView *view, menu_info *m)
+execute_bmarks_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(view, m->data[m->pos], 0);
+	(void)goto_selected_file(m, view, m->data[m->pos], 0);
 	return 0;
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-bmarks_khandler(menu_info *m, const wchar_t keys[])
+bmarks_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		bmarks_remove(m->data[m->pos]);
-		remove_current_item(m);
+		remove_current_item(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"gf") == 0)
 	{
-		(void)goto_selected_file(curr_view, m->data[m->pos], 0);
+		(void)goto_selected_file(m, curr_view, m->data[m->pos], 0);
 		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		(void)goto_selected_file(curr_view, m->data[m->pos], 1);
+		(void)goto_selected_file(m, curr_view, m->data[m->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
 	/* Can't reuse filelist_khandler() here as it works with m->items, not with

@@ -32,7 +32,7 @@
 #include "../macros.h"
 #include "menus.h"
 
-static int execute_grep_cb(FileView *view, menu_info *m);
+static int execute_grep_cb(FileView *view, menu_data_t *m);
 
 int
 show_grep_menu(FileView *view, const char args[], int invert)
@@ -54,7 +54,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 		[M_U] = { .letter = 'U', .value = "",   .uses_left = 1, .group = -1 },
 	};
 
-	static menu_info m;
+	static menu_data_t m;
 
 	targets = prepare_targets(view);
 	if(targets == NULL)
@@ -63,9 +63,10 @@ show_grep_menu(FileView *view, const char args[], int invert)
 		return 0;
 	}
 
-	init_menu_info(&m, format_str("Grep %s", args),
+	init_menu_data(&m, view, format_str("Grep %s", args),
 			format_str("No matches found: %s", args));
 
+	m.stashable = 1;
 	m.execute_handler = &execute_grep_cb;
 	m.key_handler = &filelist_khandler;
 
@@ -95,9 +96,9 @@ show_grep_menu(FileView *view, const char args[], int invert)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_grep_cb(FileView *view, menu_info *m)
+execute_grep_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(view, m->items[m->pos], 1);
+	(void)goto_selected_file(m, view, m->items[m->pos], 1);
 	return 1;
 }
 

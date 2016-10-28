@@ -25,14 +25,14 @@
 #include "../dir_stack.h"
 #include "menus.h"
 
-static int execute_dirstack_cb(FileView *view, menu_info *m);
+static int execute_dirstack_cb(FileView *view, menu_data_t *m);
 
 int
 show_dirstack_menu(FileView *view)
 {
-	static menu_info m;
+	static menu_data_t m;
 	/* Directory stack always contains at least one item (current directories). */
-	init_menu_info(&m, strdup("Directory Stack"), NULL);
+	init_menu_data(&m, view, strdup("Directory Stack"), NULL);
 	m.execute_handler = &execute_dirstack_cb;
 
 	m.items = dir_stack_list();
@@ -40,24 +40,24 @@ show_dirstack_menu(FileView *view)
 	m.len = -1;
 	while(m.items[++m.len] != NULL);
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_dirstack_cb(FileView *view, menu_info *m)
+execute_dirstack_cb(FileView *view, menu_data_t *m)
 {
 	if(m->items[m->pos][0] != '-')
 	{
 		int pos = 0;
 		int i;
 
-		for(i = 0; i < m->pos; i++)
+		for(i = 0; i < m->pos; ++i)
 		{
 			if(m->items[i][0] == '-')
 			{
-				pos++;
+				++pos;
 			}
 		}
 		dir_stack_rotate(pos);

@@ -38,7 +38,7 @@
 #define DEFAULT_PREDICATE "-name"
 #endif
 
-static int execute_find_cb(FileView *view, menu_info *m);
+static int execute_find_cb(FileView *view, menu_data_t *m);
 
 int
 show_find_menu(FileView *view, int with_path, const char args[])
@@ -59,7 +59,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 		[M_U] = { .letter = 'U', .value = "",   .uses_left = 1, .group = -1 },
 	};
 
-	static menu_info m;
+	static menu_data_t m;
 
 	if(with_path)
 	{
@@ -92,8 +92,10 @@ show_find_menu(FileView *view, int with_path, const char args[])
 		}
 	}
 
-	init_menu_info(&m, format_str("Find %s", args), strdup("No files found"));
+	init_menu_data(&m, view, format_str("Find %s", args),
+			strdup("No files found"));
 
+	m.stashable = 1;
 	m.execute_handler = &execute_find_cb;
 	m.key_handler = &filelist_khandler;
 
@@ -113,9 +115,9 @@ show_find_menu(FileView *view, int with_path, const char args[])
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_find_cb(FileView *view, menu_info *m)
+execute_find_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(view, m->items[m->pos], 0);
+	(void)goto_selected_file(m, view, m->items[m->pos], 0);
 	return 0;
 }
 

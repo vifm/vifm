@@ -36,8 +36,9 @@
 #include "../marks.h"
 #include "menus.h"
 
-static int execute_mark_cb(FileView *view, menu_info *m);
-static KHandlerResponse mark_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_mark_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse mark_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_marks_menu(FileView *view, const char marks[])
@@ -46,8 +47,8 @@ show_marks_menu(FileView *view, const char marks[])
 	int i;
 	size_t max_len;
 
-	static menu_info m;
-	init_menu_info(&m, strdup("Mark -- Directory -- File"),
+	static menu_data_t m;
+	init_menu_data(&m, view, strdup("Mark -- Directory -- File"),
 			strdup("No marks set"));
 	m.execute_handler = &execute_mark_cb;
 	m.key_handler = &mark_khandler;
@@ -115,13 +116,13 @@ show_marks_menu(FileView *view, const char marks[])
 	}
 	m.len = i;
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_mark_cb(FileView *view, menu_info *m)
+execute_mark_cb(FileView *view, menu_data_t *m)
 {
 	goto_mark(view, m->items[m->pos][0]);
 	return 0;
@@ -130,12 +131,12 @@ execute_mark_cb(FileView *view, menu_info *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-mark_khandler(menu_info *m, const wchar_t keys[])
+mark_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		clear_mark(m->items[m->pos][0]);
-		remove_current_item(m);
+		remove_current_item(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

@@ -39,8 +39,9 @@
 /* Minimal length of command name column. */
 #define CMDNAME_COLUMN_MIN_WIDTH 10
 
-static int execute_commands_cb(FileView *view, menu_info *m);
-static KHandlerResponse commands_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_commands_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse commands_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_commands_menu(FileView *view)
@@ -49,8 +50,8 @@ show_commands_menu(FileView *view)
 	int i;
 	size_t cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
 
-	static menu_info m;
-	init_menu_info(&m, strdup("Command ------ Action"),
+	static menu_data_t m;
+	init_menu_data(&m, view, strdup("Command ------ Action"),
 			strdup("No commands set"));
 	m.execute_handler = &execute_commands_cb;
 	m.key_handler = &commands_khandler;
@@ -72,7 +73,7 @@ show_commands_menu(FileView *view)
 	m.len /= 2;
 
 	m.items = (m.len != 0) ? reallocarray(NULL, m.len, sizeof(char *)) : NULL;
-	for(i = 0; i < m.len; i++)
+	for(i = 0; i < m.len; ++i)
 	{
 		m.items[i] = format_str("%-*s %s", (int)cmdname_width, list[i*2],
 				list[i*2 + 1]);
@@ -80,13 +81,13 @@ show_commands_menu(FileView *view)
 
 	free_string_array(list, m.len*2);
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_commands_cb(FileView *view, menu_info *m)
+execute_commands_cb(FileView *view, menu_data_t *m)
 {
 	break_at(m->items[m->pos], ' ');
 	exec_command(m->items[m->pos], view, CIT_COMMAND);
@@ -96,7 +97,7 @@ execute_commands_cb(FileView *view, menu_info *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-commands_khandler(menu_info *m, const wchar_t keys[])
+commands_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
@@ -107,12 +108,12 @@ commands_khandler(menu_info *m, const wchar_t keys[])
 		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos]);
 		execute_cmdline_command(cmd_buf);
 
-		remove_current_item(m);
+		remove_current_item(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"c") == 0)
 	{
-		const char *const rhs = skip_whitespace(after_first(m->items[m->pos], ' '));
+		const char *rhs = skip_whitespace(after_first(m->items[m->pos], ' '));
 		/* Insert command RHS. */
 		if(rhs[0] == ':')
 		{

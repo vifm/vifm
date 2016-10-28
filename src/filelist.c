@@ -423,7 +423,9 @@ save_view_history(FileView *view, const char path[], const char file[], int pos)
 	{
 		x = view->history_num - 1;
 		while(x > view->history_pos)
-			view->history[x--].dir[0] = '\0';
+		{
+			cfg_free_history_items(&view->history[x--], 1);
+		}
 		view->history_num = view->history_pos + 1;
 	}
 	x = view->history_num;
@@ -3306,7 +3308,7 @@ flist_add_custom_line(FileView *view, const char line[])
 	/* Skip empty lines. */
 	char *const path = (skip_whitespace(line)[0] == '\0')
 	                 ? NULL
-	                 : parse_file_spec(line, &line_num);
+	                 : parse_file_spec(line, &line_num, ".");
 	if(path != NULL)
 	{
 		flist_custom_add(view, path);

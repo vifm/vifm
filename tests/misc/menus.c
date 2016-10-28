@@ -12,12 +12,11 @@
 
 #include "utils.h"
 
-static menu_info m;
+static menu_data_t m;
 
 SETUP()
 {
-	init_menu_info(&m, strdup("test"), strdup("No matches"));
-	m.search_repeat = 1;
+	init_menu_data(&m, &lwin, strdup("test"), strdup("No matches"));
 
 	m.len = add_to_string_array(&m.items, m.len, 1, "a");
 	m.len = add_to_string_array(&m.items, m.len, 1, "b");
@@ -26,7 +25,7 @@ SETUP()
 
 TEARDOWN()
 {
-	reset_popup_menu(&m);
+	reset_menu_data(&m);
 }
 
 TEST(can_navigate_to_broken_symlink, IF(not_windows))
@@ -46,40 +45,43 @@ TEST(can_navigate_to_broken_symlink, IF(not_windows))
 	/* Were trying to open broken link, which will fail, but the parsing part
 	 * should succeed. */
 	restore_cwd(saved_cwd);
-	assert_success(goto_selected_file(&lwin, SANDBOX_PATH "/broken-link:", 1));
+	assert_success(goto_selected_file(&m, &lwin, SANDBOX_PATH "/broken-link:",
+				1));
 
 	assert_success(remove(SANDBOX_PATH "/broken-link"));
 }
 
 TEST(nothing_is_searched_if_no_pattern)
 {
-	menus_search(&m, 0);
-	assert_int_equal(0, m.matching_entries);
+	menus_search(m.state, 0);
+	assert_int_equal(0, menu_get_matches(m.state));
 }
 
 TEST(nothing_is_searched_for_wrong_pattern)
 {
+	menu_new_search(m.state, 0, 1);
 	assert_true(search_menu_list("*a", &m, 1));
-	assert_int_equal(0, m.matching_entries);
+	assert_int_equal(0, menu_get_matches(m.state));
 }
 
 TEST(search_via_menu_search)
 {
+	menu_new_search(m.state, 0, 1);
 	assert_true(search_menu_list("[abc]", &m, 1));
 	assert_int_equal(1, m.pos);
-	menus_search(&m, 0);
+	menus_search(m.state, 0);
 	assert_int_equal(2, m.pos);
 }
 
 TEST(ok_to_print_message_if_there_is_no_pattern)
 {
-	menu_print_search_msg(&m);
+	menu_print_search_msg(m.state);
 }
 
 TEST(ok_to_print_message_for_wrong_pattern)
 {
 	assert_true(search_menu_list("*", &m, 1));
-	menu_print_search_msg(&m);
+	menu_print_search_msg(m.state);
 }
 
 TEST(forward_found_no_wrap)
@@ -136,32 +138,32 @@ TEST(forward_find_next_wrap)
 TEST(backward_found_no_wrap)
 {
 	m.pos = 2;
-	m.backward_search = 1;
 	cfg.wrap_scan = 0;
+	menu_new_search(m.state, 1, 1);
 	assert_true(search_menu_list("a", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
 TEST(backward_found_wrap)
 {
-	m.backward_search = 1;
 	cfg.wrap_scan = 1;
+	menu_new_search(m.state, 1, 1);
 	assert_true(search_menu_list("c", &m, 1));
 	assert_int_equal(2, m.pos);
 }
 
 TEST(backward_not_found_no_wrap)
 {
-	m.backward_search = 1;
 	cfg.wrap_scan = 0;
+	menu_new_search(m.state, 1, 1);
 	assert_true(search_menu_list("d", &m, 1));
 	assert_int_equal(0, m.pos);
 }
 
 TEST(backward_not_found_wrap)
 {
-	m.backward_search = 1;
 	cfg.wrap_scan = 1;
+	menu_new_search(m.state, 1, 1);
 	assert_true(search_menu_list("d", &m, 1));
 	assert_int_equal(0, m.pos);
 }
@@ -169,8 +171,8 @@ TEST(backward_not_found_wrap)
 TEST(backward_find_next_no_wrap)
 {
 	m.pos = 2;
-	m.backward_search = 1;
 	cfg.wrap_scan = 0;
+	menu_new_search(m.state, 1, 1);
 	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
 	assert_true(search_menu_list(".", &m, 1));
@@ -182,8 +184,8 @@ TEST(backward_find_next_no_wrap)
 TEST(backward_find_next_wrap)
 {
 	m.pos = 2;
-	m.backward_search = 1;
 	cfg.wrap_scan = 1;
+	menu_new_search(m.state, 1, 1);
 	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
 	assert_true(search_menu_list(".", &m, 1));
@@ -194,6 +196,7 @@ TEST(backward_find_next_wrap)
 
 TEST(null_pattern_causes_pattern_reuse)
 {
+	menu_new_search(m.state, 0, 1);
 	assert_true(search_menu_list(".", &m, 1));
 	assert_int_equal(1, m.pos);
 	assert_true(search_menu_list(NULL, &m, 1));

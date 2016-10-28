@@ -34,9 +34,10 @@
 #include "../undo.h"
 #include "menus.h"
 
-static KHandlerResponse trash_khandler(menu_info *m, const wchar_t keys[]);
-static KHandlerResponse restore_current(menu_info *m);
-static KHandlerResponse delete_current(menu_info *m);
+static KHandlerResponse trash_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
+static KHandlerResponse restore_current(menu_data_t *m);
+static KHandlerResponse delete_current(menu_data_t *m);
 static int ui_cancellation_hook(void *arg);
 
 int
@@ -44,14 +45,14 @@ show_trash_menu(FileView *view)
 {
 	int i;
 
-	static menu_info m;
-	init_menu_info(&m, strdup("Original paths of files in trash"),
+	static menu_data_t m;
+	init_menu_data(&m, view, strdup("Original paths of files in trash"),
 			strdup("No files in trash"));
 	m.key_handler = &trash_khandler;
 
 	trash_prune_dead_entries();
 
-	for(i = 0; i < nentries; i++)
+	for(i = 0; i < nentries; ++i)
 	{
 		const trash_entry_t *const entry = &trash_list[i];
 		if(is_under_trash(entry->trash_name))
@@ -60,13 +61,13 @@ show_trash_menu(FileView *view)
 		}
 	}
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-trash_khandler(menu_info *m, const wchar_t keys[])
+trash_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"r") == 0)
 	{
@@ -81,7 +82,7 @@ trash_khandler(menu_info *m, const wchar_t keys[])
 
 /* Restores current item from the trash. */
 static KHandlerResponse
-restore_current(menu_info *m)
+restore_current(menu_data_t *m)
 {
 	char *trash_path;
 	int err;
@@ -102,13 +103,13 @@ restore_current(menu_info *m)
 		return KHR_UNHANDLED;
 	}
 
-	remove_current_item(m);
+	remove_current_item(m->state);
 	return KHR_REFRESH_WINDOW;
 }
 
 /* Deletes current item from the trash. */
 static KHandlerResponse
-delete_current(menu_info *m)
+delete_current(menu_data_t *m)
 {
 	int ret;
 
@@ -135,7 +136,7 @@ delete_current(menu_info *m)
 	}
 
 	ioe_errlst_free(&args.result.errors);
-	remove_current_item(m);
+	remove_current_item(m->state);
 	return KHR_REFRESH_WINDOW;
 }
 

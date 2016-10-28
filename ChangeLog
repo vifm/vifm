@@ -39,6 +39,11 @@
 	Added e key to :jobs menu that displays list of errors issues by that
 	jobs, if any.  h key goes back to :jobs menu.
 
+	Added :copen command to restore last menu that supports navigation.
+	Thanks to Sassan Haradji (a.k.a. sassanh).
+
+	Added % key to menu mode.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
@@ -178,6 +183,9 @@
 	Fixed F, f, ; and , keys in visual mode.
 
 	Fixed detection of too-small-terminal state.
+
+	Fixed memory leak of forgotten history entries after going back in
+	history.
 
 0.8.2-beta to 0.8.2
 

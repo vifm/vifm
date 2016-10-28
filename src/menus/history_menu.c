@@ -43,8 +43,9 @@ HistoryType;
 
 static int show_history(FileView *view, HistoryType type, hist_t *hist,
 		const char title[]);
-static int execute_history_cb(FileView *view, menu_info *m);
-static KHandlerResponse history_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_history_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse history_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_cmdhistory_menu(FileView *view)
@@ -81,9 +82,9 @@ static int
 show_history(FileView *view, HistoryType type, hist_t *hist, const char title[])
 {
 	int i;
-	static menu_info m;
+	static menu_data_t m;
 
-	init_menu_info(&m, strdup(title), strdup("History disabled or empty"));
+	init_menu_data(&m, view, strdup(title), strdup("History disabled or empty"));
 	m.execute_handler = &execute_history_cb;
 	m.key_handler = &history_khandler;
 	m.extra_data = type;
@@ -93,13 +94,13 @@ show_history(FileView *view, HistoryType type, hist_t *hist, const char title[])
 		m.len = add_to_string_array(&m.items, m.len, 1, hist->items[i]);
 	}
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Callback that is invoked when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_history_cb(FileView *view, menu_info *m)
+execute_history_cb(FileView *view, menu_data_t *m)
 {
 	const char *const line = m->items[m->pos];
 
@@ -132,7 +133,7 @@ execute_history_cb(FileView *view, menu_info *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-history_khandler(menu_info *m, const wchar_t keys[])
+history_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"c") == 0)
 	{

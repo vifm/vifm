@@ -31,8 +31,9 @@
 #include "menus.h"
 
 static char * format_item(const char trash_dir[], int calc_size);
-static int execute_trashes_cb(FileView *view, menu_info *m);
-static KHandlerResponse trashes_khandler(menu_info *m, const wchar_t keys[]);
+static int execute_trashes_cb(FileView *view, menu_data_t *m);
+static KHandlerResponse trashes_khandler(FileView *view, menu_data_t *m,
+		const wchar_t keys[]);
 
 int
 show_trashes_menu(FileView *view, int calc_size)
@@ -41,8 +42,8 @@ show_trashes_menu(FileView *view, int calc_size)
 	int ntrashes;
 	int i;
 
-	static menu_info m;
-	init_menu_info(&m,
+	static menu_data_t m;
+	init_menu_data(&m, view,
 			format_str("%sNon-empty trash directories", calc_size ? "[  size] " : ""),
 			strdup("No non-empty trash directories found"));
 
@@ -61,7 +62,7 @@ show_trashes_menu(FileView *view, int calc_size)
 
 	free_string_array(trashes, ntrashes);
 
-	return display_menu(&m, view);
+	return display_menu(m.state, view);
 }
 
 /* Formats single menu item.  Returns pointer to newly allocated string. */
@@ -91,7 +92,7 @@ format_item(const char trash_dir[], int calc_size)
 /* Callback that is called when menu item is selected.  Return non-zero to stay
  * in menu mode and zero otherwise. */
 static int
-execute_trashes_cb(FileView *view, menu_info *m)
+execute_trashes_cb(FileView *view, menu_data_t *m)
 {
 	const char *const item = m->items[m->pos];
 	const char *const trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
@@ -102,14 +103,14 @@ execute_trashes_cb(FileView *view, menu_info *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-trashes_khandler(menu_info *m, const wchar_t keys[])
+trashes_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		const char *const item = m->items[m->pos];
-		const char *const trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
+		const char *trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
 		trash_empty(trash_dir);
-		remove_current_item(m);
+		remove_current_item(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;
