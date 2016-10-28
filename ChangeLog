@@ -42,6 +42,8 @@
 	Added :copen command to restore last menu that supports navigation.
 	Thanks to Sassan Haradji (a.k.a. sassanh).
 
+	Added % key to menu mode.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

@@ -78,6 +78,7 @@ static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static int get_effective_menu_scroll_offset(const menu_data_t *menu);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_B(key_info_t key_info, keys_info_t *keys_info);
@@ -117,46 +118,47 @@ static int was_redraw;
 static int saved_top, saved_pos;
 
 static keys_add_info_t builtin_cmds[] = {
-	{WK_C_b,    {{&cmd_ctrl_b}, .descr = "scroll page up"}},
-	{WK_C_c,    {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
-	{WK_C_d,    {{&cmd_ctrl_d}, .descr = "scroll half-page down"}},
-	{WK_C_e,    {{&cmd_ctrl_e}, .descr = "scroll one line down"}},
-	{WK_C_f,    {{&cmd_ctrl_f}, .descr = "scroll page down"}},
-	{WK_C_l,    {{&cmd_ctrl_l}, .descr = "redraw"}},
-	{WK_CR,     {{&cmd_return}, .descr = "pick current item"}},
-	{WK_C_n,    {{&cmd_j},      .descr = "go to item below"}},
-	{WK_C_p,    {{&cmd_k},      .descr = "go to item above"}},
-	{WK_C_u,    {{&cmd_ctrl_u}, .descr = "scroll half-page up"}},
-	{WK_C_y,    {{&cmd_ctrl_y}, .descr = "scroll one line up"}},
-	{WK_ESC,    {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
-	{WK_SLASH,  {{&cmd_slash},  .descr = "search forward"}},
-	{WK_COLON,  {{&cmd_colon},  .descr = "go to cmdline mode"}},
-	{WK_QM,     {{&cmd_qmark},  .descr = "search backward"}},
-	{WK_B,      {{&cmd_B},      .descr = "make unsorted custom view"}},
-	{WK_G,      {{&cmd_G},      .descr = "go to the last item"}},
-	{WK_H,      {{&cmd_H},      .descr = "go to top of viewport"}},
-	{WK_L,      {{&cmd_L},      .descr = "go to bottom of viewport"}},
-	{WK_M,      {{&cmd_M},      .descr = "go to middle of viewport"}},
-	{WK_N,      {{&cmd_N},      .descr = "go to previous search match"}},
-	{WK_Z WK_Z, {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
-	{WK_Z WK_Q, {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
-	{WK_b,      {{&cmd_b},      .descr = "make custom view"}},
-	{WK_d WK_d, {{&cmd_dd},     .descr = "remove files"}},
-	{WK_g WK_f, {{&cmd_gf},     .descr = "navigate to file location"}},
-	{WK_g WK_g, {{&cmd_gg},     .descr = "go to the first item"}},
-	{WK_j,      {{&cmd_j},      .descr = "go to item below"}},
-	{WK_k,      {{&cmd_k},      .descr = "go to item above"}},
-	{WK_l,      {{&cmd_return}, .descr = "pick current item"}},
-	{WK_n,      {{&cmd_n},      .descr = "go to next search match"}},
-	{WK_q,      {{&cmd_ctrl_c}, .descr = "leave menu mode"}},
-	{WK_v,      {{&cmd_v},      .descr = "use items as Vim quickfix list"}},
-	{WK_z WK_b, {{&cmd_zb},     .descr = "push cursor to the bottom"}},
-	{WK_z WK_H, {{&cmd_zH},     .descr = "scroll page left"}},
-	{WK_z WK_L, {{&cmd_zL},     .descr = "scroll page right"}},
-	{WK_z WK_h, {{&cmd_zh},     .descr = "scroll one column left"}},
-	{WK_z WK_l, {{&cmd_zl},     .descr = "scroll one column right"}},
-	{WK_z WK_t, {{&cmd_zt},     .descr = "push cursor to the top"}},
-	{WK_z WK_z, {{&cmd_zz},     .descr = "center cursor position"}},
+	{WK_C_b,     {{&cmd_ctrl_b},  .descr = "scroll page up"}},
+	{WK_C_c,     {{&cmd_ctrl_c},  .descr = "leave menu mode"}},
+	{WK_C_d,     {{&cmd_ctrl_d},  .descr = "scroll half-page down"}},
+	{WK_C_e,     {{&cmd_ctrl_e},  .descr = "scroll one line down"}},
+	{WK_C_f,     {{&cmd_ctrl_f},  .descr = "scroll page down"}},
+	{WK_C_l,     {{&cmd_ctrl_l},  .descr = "redraw"}},
+	{WK_CR,      {{&cmd_return},  .descr = "pick current item"}},
+	{WK_C_n,     {{&cmd_j},       .descr = "go to item below"}},
+	{WK_C_p,     {{&cmd_k},       .descr = "go to item above"}},
+	{WK_C_u,     {{&cmd_ctrl_u},  .descr = "scroll half-page up"}},
+	{WK_C_y,     {{&cmd_ctrl_y},  .descr = "scroll one line up"}},
+	{WK_ESC,     {{&cmd_ctrl_c},  .descr = "leave menu mode"}},
+	{WK_SLASH,   {{&cmd_slash},   .descr = "search forward"}},
+	{WK_PERCENT, {{&cmd_percent}, .descr = "go to [count]% position"}},
+	{WK_COLON,   {{&cmd_colon},   .descr = "go to cmdline mode"}},
+	{WK_QM,      {{&cmd_qmark},   .descr = "search backward"}},
+	{WK_B,       {{&cmd_B},       .descr = "make unsorted custom view"}},
+	{WK_G,       {{&cmd_G},       .descr = "go to the last item"}},
+	{WK_H,       {{&cmd_H},       .descr = "go to top of viewport"}},
+	{WK_L,       {{&cmd_L},       .descr = "go to bottom of viewport"}},
+	{WK_M,       {{&cmd_M},       .descr = "go to middle of viewport"}},
+	{WK_N,       {{&cmd_N},       .descr = "go to previous search match"}},
+	{WK_Z WK_Z,  {{&cmd_ctrl_c},  .descr = "leave menu mode"}},
+	{WK_Z WK_Q,  {{&cmd_ctrl_c},  .descr = "leave menu mode"}},
+	{WK_b,       {{&cmd_b},       .descr = "make custom view"}},
+	{WK_d WK_d,  {{&cmd_dd},      .descr = "remove files"}},
+	{WK_g WK_f,  {{&cmd_gf},      .descr = "navigate to file location"}},
+	{WK_g WK_g,  {{&cmd_gg},      .descr = "go to the first item"}},
+	{WK_j,       {{&cmd_j},       .descr = "go to item below"}},
+	{WK_k,       {{&cmd_k},       .descr = "go to item above"}},
+	{WK_l,       {{&cmd_return},  .descr = "pick current item"}},
+	{WK_n,       {{&cmd_n},       .descr = "go to next search match"}},
+	{WK_q,       {{&cmd_ctrl_c},  .descr = "leave menu mode"}},
+	{WK_v,       {{&cmd_v},       .descr = "use items as Vim quickfix list"}},
+	{WK_z WK_b,  {{&cmd_zb},      .descr = "push cursor to the bottom"}},
+	{WK_z WK_H,  {{&cmd_zH},      .descr = "scroll page left"}},
+	{WK_z WK_L,  {{&cmd_zL},      .descr = "scroll page right"}},
+	{WK_z WK_h,  {{&cmd_zh},      .descr = "scroll one column left"}},
+	{WK_z WK_l,  {{&cmd_zl},      .descr = "scroll one column right"}},
+	{WK_z WK_t,  {{&cmd_zt},      .descr = "push cursor to the top"}},
+	{WK_z WK_z,  {{&cmd_zz},      .descr = "center cursor position"}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE},       {{&cmd_ctrl_b}, .descr = "scroll page up"}},
 	{{KEY_NPAGE},       {{&cmd_ctrl_f}, .descr = "scroll page down"}},
@@ -542,6 +544,20 @@ cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 	last_search_backward = 0;
 	menu_new_search(menu->state, last_search_backward, def_count(key_info.count));
 	enter_cmdline_mode(CLS_MENU_FSEARCH, "", menu);
+}
+
+/* Jump to percent of list. */
+static void
+cmd_percent(key_info_t key_info, keys_info_t *keys_info)
+{
+	int line;
+	if(key_info.count == NO_COUNT_GIVEN || key_info.count > 100)
+	{
+		return;
+	}
+	line = (key_info.count*menu->len)/100;
+	move_to_menu_pos(line, menu->state);
+	wrefresh(menu_win);
 }
 
 static void
