@@ -74,8 +74,10 @@ static void draw_menu_frame(const menu_state_t *m);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
-static void init_menu_state(menu_state_t *ms);
+static void init_menu_state(menu_state_t *ms, FileView *view);
 static const char * get_relative_path_base(const menu_data_t *m,
+		const FileView *view);
+static int menu_and_view_are_in_sync(const menu_data_t *m,
 		const FileView *view);
 static int search_menu(menu_state_t *ms, int start_pos, int print_errors);
 static int search_menu_forwards(menu_state_t *m, int start_pos);
@@ -99,6 +101,8 @@ struct menu_state_t
 	char *regexp;
 	/* Number of times to repeat search. */
 	int search_repeat;
+	/* View associated with the menu (e.g. to navigate to a file in it). */
+	FileView *view;
 }
 menu_state;
 
@@ -222,18 +226,22 @@ reset_menu_data(menu_data_t *m)
 static void
 reset_menu_state(menu_state_t *ms)
 {
-	if(ms != NULL)
+	if(ms == NULL)
 	{
-		update_string(&ms->regexp, NULL);
-		free(ms->matches);
-		ms->matches = NULL;
+		return;
+	}
 
-		if(menu_state.d != NULL)
-		{
-			menu_state.d->state = NULL;
-		}
+	update_string(&ms->regexp, NULL);
+	free(ms->matches);
+	ms->matches = NULL;
+
+	if(menu_state.d != NULL)
+	{
 		menu_state.d->state = NULL;
 	}
+	menu_state.d->state = NULL;
+
+	ms->view = NULL;
 }
 
 void
@@ -583,7 +591,11 @@ static void
 draw_menu_frame(const menu_state_t *m)
 {
 	const size_t title_len = getmaxx(menu_win) - 2*4;
-	char *const title = strdup(m->d->title);
+	const char *const suffix = menu_and_view_are_in_sync(m->d, m->view)
+	                         ? ""
+	                         : replace_home_part(m->d->cwd);
+	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
+	char *const title = format_str("%s%s%s", m->d->title, at, suffix);
 
 	if(utf8_strsw(title) > title_len)
 	{
@@ -686,7 +698,7 @@ display_menu(menu_state_t *m, FileView *view)
 		return 1;
 	}
 
-	init_menu_state(m);
+	init_menu_state(m, view);
 
 	setup_menu();
 	draw_menu(m);
@@ -697,7 +709,7 @@ display_menu(menu_state_t *m, FileView *view)
 
 /* Initializes menu state structure with default/initial value. */
 static void
-init_menu_state(menu_state_t *ms)
+init_menu_state(menu_state_t *ms, FileView *view)
 {
 	ms->current = 1;
 	ms->win_rows = getmaxy(menu_win);
@@ -707,6 +719,7 @@ init_menu_state(menu_state_t *ms)
 	ms->matches = NULL;
 	ms->regexp = NULL;
 	ms->search_repeat = 0;
+	ms->view = view;
 }
 
 char *
@@ -846,11 +859,20 @@ menu_to_custom_view(menu_state_t *m, FileView *view, int very)
 static const char *
 get_relative_path_base(const menu_data_t *m, const FileView *view)
 {
-	if(paths_are_same(m->cwd, flist_get_dir(view)))
+	if(menu_and_view_are_in_sync(m, view))
 	{
 		return ".";
 	}
 	return m->cwd;
+}
+
+/* Checks whether menu working directory and current directory of the view are
+ * in sync.  Returns non-zero if so, otherwise zero is returned. */
+static int
+menu_and_view_are_in_sync(const menu_data_t *m, const FileView *view)
+{
+	/* NULL check is for tests. */
+	return (view == NULL || paths_are_same(m->cwd, flist_get_dir(view)));
 }
 
 int
