@@ -48,6 +48,7 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../signals.h"
 #include "private/ioc.h"
 #include "private/ioe.h"
 #include "private/ioeta.h"
@@ -545,13 +546,15 @@ iop_cp_internal(io_args_t *args)
 
 	if(!error && !cloned)
 	{
-		while((nread = fread(&block, 1, sizeof(block), in)) == 0U)
+		sigint_a();
+		while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 		{
-			if(io_cancelled(args))
-			{
-				error = 1;
-				break;
-			}
+			sigint_b();
+			/* if(io_cancelled(args)) */
+			/* { */
+			/* 	error = 1; */
+			/* 	break; */
+			/* } */
 
 			if(fwrite(&block, 1, nread, out) != nread)
 			{
@@ -564,6 +567,10 @@ iop_cp_internal(io_args_t *args)
 			ioeta_update(args->estim, NULL, NULL, 0, nread);
 		}
 
+		if(!error)
+		{
+			sigint_b();
+		}
 		if(nread == 0U && !feof(in) && ferror(in))
 		{
 			(void)ioe_errlst_append(&args->result.errors, src, errno,

@@ -22,6 +22,9 @@
 
 void setup_signals(void);
 
+void sigint_a(void);
+void sigint_b(void);
+
 #endif /* VIFM__SIGNALS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
