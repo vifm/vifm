@@ -42,7 +42,8 @@
 	Added :copen command to restore last menu that supports navigation.
 	Thanks to Sassan Haradji (a.k.a. sassanh).
 
-	Added % key to menu mode.
+	Added % key to menu mode, which navigates to [count]-th percent of the
+	list.
 
 	Enable restoring files from trash from custom views.
 
