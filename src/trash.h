@@ -22,8 +22,9 @@
 /* Description of a single trash item. */
 typedef struct
 {
-	char *path;       /* Original full path of file before its removal. */
-	char *trash_name; /* Full path of file inside trash directory. */
+	char *path;            /* Original full path of file before its removal. */
+	char *trash_name;      /* Full path of file inside trash directory. */
+	char *real_trash_name; /* Full path of file inside trash directory. */
 }
 trash_entry_t;
 

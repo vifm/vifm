@@ -107,6 +107,9 @@ static int get_resident_type_traverser(const char path[],
 static int is_trash_directory_traverser(const char path[],
 		const char trash_dir[], int user_specific, void *arg);
 static int path_is(PathCheckType check, const char path[], const char other[]);
+static int entry_is(PathCheckType check, trash_entry_t *entry,
+		const char other[]);
+static void make_real_path(const char path[], char buf[], size_t buf_len);
 static void traverse_specs(const char base_path[], traverser client, void *arg);
 static char * expand_uid(const char spec[], int *expanded);
 static char * get_rooted_trash_dir(const char base_path[], const char spec[]);
@@ -314,11 +317,11 @@ remove_trash_entries(const char trash_dir[])
 
 	for(i = 0; i < nentries; ++i)
 	{
-		if(trash_dir == NULL ||
-				path_is(PREFIXED_WITH, trash_list[i].trash_name, trash_dir))
+		if(trash_dir == NULL || entry_is(PREFIXED_WITH, &trash_list[i], trash_dir))
 		{
 			free(trash_list[i].path);
 			free(trash_list[i].trash_name);
+			free(trash_list[i].real_trash_name);
 			continue;
 		}
 
@@ -370,6 +373,7 @@ add_to_trash(const char path[], const char trash_name[])
 
 	trash_list[nentries].path = strdup(path);
 	trash_list[nentries].trash_name = strdup(trash_name);
+	trash_list[nentries].real_trash_name = NULL;
 	if(trash_list[nentries].path == NULL ||
 			trash_list[nentries].trash_name == NULL)
 	{
@@ -388,7 +392,7 @@ is_in_trash(const char trash_name[])
 	int i;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(path_is(SAME_AS, trash_list[i].trash_name, trash_name))
+		if(entry_is(SAME_AS, &trash_list[i], trash_name))
 		{
 			return 1;
 		}
@@ -481,7 +485,7 @@ restore_from_trash(const char trash_name[])
 
 	for(i = 0; i < nentries; ++i)
 	{
-		if(path_is(SAME_AS, trash_list[i].trash_name, trash_name))
+		if(entry_is(SAME_AS, &trash_list[i], trash_name))
 		{
 			break;
 		}
@@ -529,7 +533,7 @@ remove_from_trash(const char trash_name[])
 	int i;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(path_is(SAME_AS, trash_list[i].trash_name, trash_name))
+		if(entry_is(SAME_AS, &trash_list[i], trash_name))
 		{
 			break;
 		}
@@ -541,6 +545,7 @@ remove_from_trash(const char trash_name[])
 
 	free(trash_list[i].path);
 	free(trash_list[i].trash_name);
+	free(trash_list[i].real_trash_name);
 	memmove(trash_list + i, trash_list + i + 1,
 			sizeof(*trash_list)*((nentries - 1) - i));
 
@@ -696,32 +701,79 @@ is_trash_directory_traverser(const char path[], const char trash_dir[],
 static int
 path_is(PathCheckType check, const char path[], const char other[])
 {
-	char path_copy[PATH_MAX*2], other_copy[PATH_MAX*2];
-	char path_real_dir[PATH_MAX*2], other_real_dir[PATH_MAX*2];
+	char path_real[PATH_MAX*2], other_real[PATH_MAX*2];
 
-	copy_str(path_copy, sizeof(path_copy), path);
-	copy_str(other_copy, sizeof(other_copy), other);
-
-	remove_last_path_component(path_copy);
-	remove_last_path_component(other_copy);
-
-	if(os_realpath(path_copy, path_real_dir) != path_real_dir ||
-			os_realpath(other_copy, other_real_dir) != other_real_dir)
-	{
-		return (check == PREFIXED_WITH)
-		     ? path_starts_with(path, other)
-		     : paths_are_same(path, other);
-	}
-
-	snprintf(path_copy, sizeof(path_copy), "%s%s%s", path_real_dir,
-			ends_with_slash(path_real_dir) ? "" : "/", get_last_path_component(path));
-	snprintf(other_copy, sizeof(other_copy), "%s%s%s", other_real_dir,
-			ends_with_slash(other_real_dir) ? "" : "/",
-			get_last_path_component(other));
+	make_real_path(path, path_real, sizeof(path_real));
+	make_real_path(other, other_real, sizeof(other_real));
 
 	return (check == PREFIXED_WITH)
-	     ? path_starts_with(path_copy, other_copy)
-	     : paths_are_same(path_copy, other_copy);
+	     ? path_starts_with(path_real, other_real)
+	     : paths_are_same(path_real, other_real);
+}
+
+/* An optimized for entries version of path_is(). */
+static int
+entry_is(PathCheckType check, trash_entry_t *entry, const char other[])
+{
+	char real[PATH_MAX*2];
+
+	if(entry->real_trash_name == NULL)
+	{
+		char real[PATH_MAX*2];
+		make_real_path(entry->trash_name, real, sizeof(real));
+		entry->real_trash_name = strdup(real);
+	}
+
+	make_real_path(other, real, sizeof(real));
+
+	return (check == PREFIXED_WITH)
+	     ? path_starts_with(entry->real_trash_name, real)
+	     : paths_are_same(entry->real_trash_name, real);
+}
+
+/* Resolves all but last path components in the path.  Permanently caches
+ * results of previous invocations. */
+static void
+make_real_path(const char path[], char buf[], size_t buf_len)
+{
+	/* This cache only grows, but as number of distinct trash directories is
+	 * likely to be limited, not much space should be wasted. */
+	static char **link, **real;
+	static int nrecords;
+
+	int pos;
+	char copy[PATH_MAX*2];
+	char real_dir[PATH_MAX*2];
+
+	copy_str(copy, sizeof(copy), path);
+	remove_last_path_component(copy);
+
+	pos = string_array_pos(link, nrecords, copy);
+	if(pos != -1)
+	{
+		copy_str(real_dir, sizeof(real_dir), real[pos]);
+	}
+	else if(os_realpath(copy, real_dir) != real_dir)
+	{
+		copy_str(real_dir, sizeof(real_dir), path);
+	}
+	else
+	{
+		if(add_to_string_array(&link, nrecords, 1, copy) == nrecords + 1)
+		{
+			if(add_to_string_array(&real, nrecords, 1, real_dir) == nrecords + 1)
+			{
+				++nrecords;
+			}
+			else
+			{
+				free(link[nrecords]);
+			}
+		}
+	}
+
+	snprintf(buf, buf_len, "%s%s%s", real_dir,
+			ends_with_slash(real_dir) ? "" : "/", get_last_path_component(path));
 }
 
 /* Calls client traverser for each trash directory specification defined by
