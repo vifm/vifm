@@ -359,7 +359,7 @@ add_to_trash(const char path[], const char trash_name[])
 		return -1;
 	}
 
-	if(is_in_trash(trash_name))
+	if(trash_includes(path))
 	{
 		return 0;
 	}
@@ -387,12 +387,13 @@ add_to_trash(const char path[], const char trash_name[])
 }
 
 int
-is_in_trash(const char trash_name[])
+trash_includes(const char original_path[])
 {
 	int i;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(entry_is(SAME_AS, &trash_list[i], trash_name))
+		/* Assuming canonicalized paths for this unit. */
+		if(stroscmp(original_path, trash_list[i].path) == 0)
 		{
 			return 1;
 		}
