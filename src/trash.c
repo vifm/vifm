@@ -354,11 +354,6 @@ add_to_trash(const char path[], const char trash_name[])
 {
 	void *p;
 
-	if(!exists_in_trash(trash_name))
-	{
-		return -1;
-	}
-
 	if(trash_includes(path))
 	{
 		return 0;
