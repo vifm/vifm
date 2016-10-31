@@ -34,6 +34,7 @@
 #include "../ui/fileview.h"
 #include "../ui/ui.h"
 #include "../utils/file_streams.h"
+#include "../utils/filemon.h"
 #include "../utils/filter.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
@@ -67,7 +68,7 @@ static void get_history(FileView *view, int reread, const char *dir,
 static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
-static void update_info_file(const char filename[]);
+static void update_info_file(const char filename[], int merge);
 static void process_hist_entry(FileView *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -101,6 +102,9 @@ static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
 
+/* Monitor to check for changes of vifminfo file. */
+static filemon_t vifminfo_mon;
+
 void
 read_info_file(int reread)
 {
@@ -114,6 +118,8 @@ read_info_file(int reread)
 
 	if((fp = os_fopen(info_file, "r")) == NULL)
 		return;
+
+	(void)filemon_from_file(info_file, &vifminfo_mon);
 
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
@@ -472,7 +478,14 @@ write_info_file(void)
 
 	if(os_access(info_file, R_OK) != 0 || copy_file(info_file, tmp_file) == 0)
 	{
-		update_info_file(tmp_file);
+		filemon_t current_vifminfo_mon;
+		int vifminfo_changed;
+
+		vifminfo_changed = filemon_from_file(info_file, &current_vifminfo_mon) != 0
+		                || !filemon_equal(&vifminfo_mon, &current_vifminfo_mon);
+
+		update_info_file(tmp_file, vifminfo_changed);
+		(void)filemon_from_file(tmp_file, &vifminfo_mon);
 
 		if(rename_file(tmp_file, info_file) != 0)
 		{
@@ -536,7 +549,7 @@ copy_file_internal(FILE *const src, FILE *const dst)
 /* Reads contents of the filename file as an info file and updates it with the
  * state of current instance. */
 static void
-update_info_file(const char filename[])
+update_info_file(const char filename[], int merge)
 {
 	/* TODO: refactor this function update_info_file() */
 
@@ -563,7 +576,7 @@ update_info_file(const char filename[])
 
 	non_conflicting_marks = strdup(valid_marks);
 
-	if((fp = os_fopen(filename, "r")) != NULL)
+	if(merge && (fp = os_fopen(filename, "r")) != NULL)
 	{
 		size_t nlhp = 0UL, nrhp = 0UL, nbt = 0UL, nbmt = 0UL;
 		char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
