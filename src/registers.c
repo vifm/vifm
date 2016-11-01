@@ -125,10 +125,6 @@ regs_append(int reg_name, const char file[])
 	{
 		return 1;
 	}
-	if(!path_exists(file, NODEREF))
-	{
-		return 1;
-	}
 	if(check_for_duplicate_file_names(reg, file))
 	{
 		return 1;

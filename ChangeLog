@@ -42,7 +42,8 @@
 	Added :copen command to restore last menu that supports navigation.
 	Thanks to Sassan Haradji (a.k.a. sassanh).
 
-	Added % key to menu mode.
+	Added % key to menu mode, which navigates to [count]-th percent of the
+	list.
 
 	Enable restoring files from trash from custom views.
 
@@ -104,6 +105,15 @@
 
 	Limit maximum height of message popup, just print how many lines we're
 	skipping.
+
+	No vifminfo merging if file change isn't detected.  Might result in faster
+	quitting in some cases.  Not accounting for some changes is still possible
+	when multiple instances quit simultaneously, but same could happen without
+	this change.
+
+	Improve performance of startup and exit by omitting file existence checks.
+	The cost is possibly old files staying in the state, but it should be for
+	long time.  Thanks to Marcin Kurczewski (a.k.a. rr-).
 
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
@@ -186,6 +196,8 @@
 
 	Fixed memory leak of forgotten history entries after going back in
 	history.
+
+	Fixed updating progress when performing operations on empty files.
 
 0.8.2-beta to 0.8.2
 

@@ -200,7 +200,8 @@ calc_io_progress(const io_progress_t *const state, int *skip)
 	}
 	else if(estim->total_bytes == 0)
 	{
-		return 0;
+		/* When files are empty, use their number for progress counting. */
+		return (estim->current_item*100*IO_PRECISION)/estim->total_items;
 	}
 	else if(pdata->last_progress >= 100*IO_PRECISION &&
 			estim->current_byte == estim->total_bytes)

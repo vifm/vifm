@@ -22,8 +22,9 @@
 /* Description of a single trash item. */
 typedef struct
 {
-	char *path;       /* Original full path of file before its removal. */
-	char *trash_name; /* Full path of file inside trash directory. */
+	char *path;            /* Original full path of file before its removal. */
+	char *trash_name;      /* Full path of file inside trash directory. */
+	char *real_trash_name; /* Full path of file inside trash directory. */
 }
 trash_entry_t;
 
@@ -50,7 +51,9 @@ void trash_file_moved(const char src[], const char dst[]);
 
 int add_to_trash(const char path[], const char trash_name[]);
 
-int is_in_trash(const char trash_name[]);
+/* Checks whether given original path of the file is registered.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int trash_includes(const char original_path[]);
 
 /* Lists all non-empty trash directories.  Puts number of elements to *ntrashes.
  * Caller should free array and all its elements using free().  On error returns
