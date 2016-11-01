@@ -98,6 +98,7 @@ static trashes_list get_list_of_trashes(void);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[]);
 static void remove_from_trash(const char trash_name[]);
+static void free_entry(const trash_entry_t *entry);
 static int pick_trash_dir_traverser(const char base_path[],
 		const char trash_dir[], int user_specific, void *arg);
 static int is_rooted_trash_dir(const char spec[]);
@@ -319,9 +320,7 @@ remove_trash_entries(const char trash_dir[])
 	{
 		if(trash_dir == NULL || entry_is(PREFIXED_WITH, &trash_list[i], trash_dir))
 		{
-			free(trash_list[i].path);
-			free(trash_list[i].trash_name);
-			free(trash_list[i].real_trash_name);
+			free_entry(&trash_list[i]);
 			continue;
 		}
 
@@ -372,8 +371,7 @@ add_to_trash(const char path[], const char trash_name[])
 	if(trash_list[nentries].path == NULL ||
 			trash_list[nentries].trash_name == NULL)
 	{
-		free(trash_list[nentries].path);
-		free(trash_list[nentries].trash_name);
+		free_entry(&trash_list[nentries]);
 		return -1;
 	}
 
@@ -539,13 +537,20 @@ remove_from_trash(const char trash_name[])
 		return;
 	}
 
-	free(trash_list[i].path);
-	free(trash_list[i].trash_name);
-	free(trash_list[i].real_trash_name);
+	free_entry(&trash_list[i]);
 	memmove(trash_list + i, trash_list + i + 1,
 			sizeof(*trash_list)*((nentries - 1) - i));
 
 	--nentries;
+}
+
+/* Frees memory allocated by given trash entry. */
+static void
+free_entry(const trash_entry_t *entry)
+{
+	free(entry->path);
+	free(entry->trash_name);
+	free(entry->real_trash_name);
 }
 
 char *
