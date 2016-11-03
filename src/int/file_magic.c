@@ -31,7 +31,7 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* popen() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strdup() */
 
 #include "../utils/fs.h"
 #include "../utils/path.h"
@@ -64,7 +64,7 @@ get_magic_handlers(const char file[])
 
 	if(get_link_target_abs(file, symlink_base, real_path, sizeof(real_path)) != 0)
 	{
-		strcpy(real_path, ".");
+		copy_str(real_path, sizeof(real_path), file);
 	}
 
 	free(symlink_base);
