@@ -202,6 +202,9 @@
 
 	Fixed updating progress when performing operations on empty files.
 
+	Fixed selection of current file on cancelled go or gp.  Thanks to
+	filterfalse.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

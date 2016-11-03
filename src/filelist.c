@@ -3228,16 +3228,6 @@ mark_files_at(FileView *view, int count, const int indexes[])
 	}
 }
 
-static void
-clear_marking(FileView *view)
-{
-	int i;
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		view->dir_entry[i].marked = 0;
-	}
-}
-
 int
 mark_selected(FileView *view)
 {
@@ -3260,10 +3250,22 @@ mark_selection_or_current(FileView *view)
 	dir_entry_t *const curr = get_current_entry(view);
 	if(view->selected_files == 0 && fentry_is_valid(curr))
 	{
-		curr->selected = 1;
-		view->selected_files = 1;
+		clear_marking(view);
+		curr->marked = 1;
+		return 1;
 	}
 	return mark_selected(view);
+}
+
+/* Unmarks all entries of the view. */
+static void
+clear_marking(FileView *view)
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].marked = 0;
+	}
 }
 
 int
