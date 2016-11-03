@@ -115,6 +115,9 @@
 	The cost is possibly old files staying in the state, but it should be for
 	long time.  Thanks to Marcin Kurczewski (a.k.a. rr-).
 
+	Resolve symbolic link for listing associated programs from desktop-files.
+	Thanks to filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -198,6 +201,9 @@
 	history.
 
 	Fixed updating progress when performing operations on empty files.
+
+	Fixed selection of current file on cancelled go or gp.  Thanks to
+	filterfalse.
 
 0.8.2-beta to 0.8.2
 

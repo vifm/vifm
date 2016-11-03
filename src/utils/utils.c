@@ -615,12 +615,14 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 
 	chomp(path_buf);
 	canonicalize_path(path_buf, canonicalized, sizeof(canonicalized));
-	free(path_buf);
 
-	if(!is_root_dir(canonicalized) && strcmp(canonicalized, "./") != 0)
+	if(!ends_with_slash(path_buf) && !is_root_dir(canonicalized) &&
+			strcmp(canonicalized, "./") != 0)
 	{
 		chosp(canonicalized);
 	}
+
+	free(path_buf);
 
 #ifdef _WIN32
 	to_forward_slash(canonicalized);

@@ -1,6 +1,6 @@
 #compdef vifm
 
-local curcontext="$curcontext" state state_descr line expl
+local curcontext="$curcontext" state state_descr line expl ret=1
 typeset -A opt_args
 
 _path_or_hyphen() {
@@ -25,22 +25,22 @@ _arguments -C -s \
   {-v,--version}'[show version number and quit]' \
   '--no-configs[don'\''t read vifmrc and vifminfo]' \
   '1::path:->path' \
-  '2::path:->path' && return
+  '2::path:->path' && ret=0
 
 if [[ $state == path ]]; then
   # only one hyphen is allowed
   if (( ! ${line[(I)-]} )); then
-    _path_or_hyphen && return
+    _path_or_hyphen && ret=0
   else
     _description files expl $state_descr
-    _files "$expl[@]" && return
+    _files "$expl[@]" && ret=0
   fi
 elif [[ $state == server ]]; then
   local -a servers
   servers=( ${(f)"$(_call_program servers $words[1] --server-list 2>/dev/null)"} )
-  _wanted servers expl $state_descr compadd -M 'm:{a-z}={A-Z}' -a servers && return
+  _wanted servers expl $state_descr compadd -M 'm:{a-z}={A-Z}' -a servers && ret=0
 fi
 
-return 1
+return ret
 
 # vim: ft=zsh sw=2 ts=2 et

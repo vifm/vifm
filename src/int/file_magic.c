@@ -31,7 +31,9 @@
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <stdio.h> /* popen() */
+#include <string.h> /* strcpy() strdup() */
 
+#include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../filetype.h"
@@ -52,7 +54,22 @@ static void parse_app_dir(const char directory[], const char mime_type[],
 assoc_records_t
 get_magic_handlers(const char file[])
 {
-	return get_handlers(get_mimetype(file));
+	char real_path[PATH_MAX];
+	char *const symlink_base = strdup(file);
+
+	if(!is_root_dir(symlink_base))
+	{
+		remove_last_path_component(symlink_base);
+	}
+
+	if(get_link_target_abs(file, symlink_base, real_path, sizeof(real_path)) != 0)
+	{
+		strcpy(real_path, ".");
+	}
+
+	free(symlink_base);
+
+	return get_handlers(get_mimetype(real_path));
 }
 
 const char *
