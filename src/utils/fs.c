@@ -166,24 +166,29 @@ path_exists_at(const char path[], const char filename[], int deref)
 static int
 path_exists_internal(const char path[], const char filename[], int deref)
 {
-	const char *path_to_check;
 	char full[PATH_MAX];
 	if(path == NULL)
 	{
-		path_to_check = filename;
+		copy_str(full, sizeof(full), filename);
 	}
 	else
 	{
 		snprintf(full, sizeof(full), "%s/%s", path, filename);
-		path_to_check = full;
+	}
+
+	/* At least on Windows extra trailing slash can mess up the check, so get rid
+	 * of it. */
+	if(!is_root_dir(full))
+	{
+		chosp(full);
 	}
 
 	if(!deref)
 	{
 		struct stat st;
-		return os_lstat(path_to_check, &st) == 0;
+		return os_lstat(full, &st) == 0;
 	}
-	return os_access(path_to_check, F_OK) == 0;
+	return os_access(full, F_OK) == 0;
 }
 
 int

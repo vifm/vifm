@@ -616,6 +616,10 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 	chomp(path_buf);
 	canonicalize_path(path_buf, canonicalized, sizeof(canonicalized));
 
+#ifdef _WIN32
+	to_forward_slash(canonicalized);
+#endif
+
 	if(!ends_with_slash(path_buf) && !is_root_dir(canonicalized) &&
 			strcmp(canonicalized, "./") != 0)
 	{
@@ -623,10 +627,6 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 	}
 
 	free(path_buf);
-
-#ifdef _WIN32
-	to_forward_slash(canonicalized);
-#endif
 
 	return replace_tilde(strdup(canonicalized));
 }

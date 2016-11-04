@@ -82,7 +82,7 @@ show_file_menu(FileView *view, int background)
 
 	max_len = MAX(max_desc_len(&ft), max_desc_len(&magic));
 
-	for(i = 0; i < ft.count; i++)
+	for(i = 0; i < ft.count; ++i)
 	{
 		(void)add_to_string_array(&m.data, m.len, 1,
 				form_filetype_data_entry(ft.list[i]));
@@ -90,15 +90,17 @@ show_file_menu(FileView *view, int background)
 				form_filetype_menu_entry(ft.list[i], max_len));
 	}
 
+	/* Add empty line separator if there is at least one other item. */
+	if(ft.count > 0 || magic.count > 0)
+	{
+		(void)add_to_string_array(&m.data, m.len, 1,
+				form_filetype_data_entry(NONE_PSEUDO_PROG));
+		m.len = add_to_string_array(&m.items, m.len, 1, "");
+	}
+
 	ft_assoc_records_free(&ft);
 
-#ifdef ENABLE_DESKTOP_FILES
-	(void)add_to_string_array(&m.data, m.len, 1,
-			form_filetype_data_entry(NONE_PSEUDO_PROG));
-	m.len = add_to_string_array(&m.items, m.len, 1, "");
-#endif
-
-	for(i = 0; i < magic.count; i++)
+	for(i = 0; i < magic.count; ++i)
 	{
 		(void)add_to_string_array(&m.data, m.len, 1,
 				form_filetype_data_entry(magic.list[i]));

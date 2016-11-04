@@ -905,19 +905,6 @@ fill_with_shared(FileView *view)
 
 	free(wserver);
 }
-
-static time_t
-win_to_unix_time(FILETIME ft)
-{
-	const uint64_t WINDOWS_TICK = 10000000;
-	const uint64_t SEC_TO_UNIX_EPOCH = 11644473600LL;
-	uint64_t win_time;
-
-	win_time = ft.dwHighDateTime;
-	win_time = (win_time << 32) | ft.dwLowDateTime;
-
-	return win_time/WINDOWS_TICK - SEC_TO_UNIX_EPOCH;
-}
 #endif
 
 char *

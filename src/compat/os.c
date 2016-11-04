@@ -275,10 +275,10 @@ resolve_mount_points(const char path[])
 int
 os_stat(const char path[], struct stat *buf)
 {
+	HANDLE hfile;
 	struct _stat st;
 	wchar_t *const utf16_path = utf8_to_utf16(path);
 	const int result = _wstat(utf16_path, &st);
-	free(utf16_path);
 
 	memset(buf, 0, sizeof(*buf));
 	buf->st_dev = st.st_dev;
@@ -292,6 +292,25 @@ os_stat(const char path[], struct stat *buf)
 	buf->st_atime = st.st_atime;
 	buf->st_mtime = st.st_mtime;
 	buf->st_ctime = st.st_ctime;
+
+	/* M$ CRT stands for Crappiest Run-Time, _wstat returns invalid time for files
+	 * that were created when DST had different value and time adjustment setting
+	 * is enabled. */
+	hfile = CreateFileW(utf16_path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+			NULL);
+	free(utf16_path);
+	if(hfile != INVALID_HANDLE_VALUE)
+	{
+		FILETIME ctime, atime, mtime;
+		if(GetFileTime(hfile, &ctime, &atime, &mtime))
+		{
+			buf->st_ctime = win_to_unix_time(ctime);
+			buf->st_atime = win_to_unix_time(atime);
+			buf->st_mtime = win_to_unix_time(mtime);
+		}
+		CloseHandle(hfile);
+	}
 
 	return result;
 }

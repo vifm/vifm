@@ -93,6 +93,26 @@ TEST(trailing_slash_of_path_is_preserved)
 	chosp(test_data);
 }
 
+TEST(trailing_forward_slash_of_path_is_preserved, IF(windows))
+{
+	int line_num;
+	char *path;
+
+	strcat(test_data, "\\");
+
+	path = parse_file_spec(test_data, &line_num, ".");
+
+	chosp(test_data);
+	strcat(test_data, "/");
+
+	assert_string_equal(test_data, path);
+	assert_int_equal(DEFAULT_LINENUM, line_num);
+
+	free(path);
+
+	chosp(test_data);
+}
+
 TEST(tilde_path_is_expanded)
 {
 	int line_num;

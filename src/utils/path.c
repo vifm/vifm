@@ -54,11 +54,15 @@ chosp(char path[])
 	size_t len;
 
 	if(path[0] == '\0')
+	{
 		return;
+	}
 
 	len = strlen(path);
-	if(path[len - 1] == '/')
+	if(path[len - 1] == '/' || path[len - 1] == '\\')
+	{
 		path[len - 1] = '\0';
+	}
 }
 
 int

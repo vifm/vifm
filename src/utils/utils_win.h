@@ -20,9 +20,7 @@
 #ifndef VIFM__UTILS__UTILS_WIN_H__
 #define VIFM__UTILS__UTILS_WIN_H__
 
-#ifdef _WIN32
-#include <windef.h>
-#endif
+#include <windows.h>
 
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint32_t */
@@ -80,6 +78,9 @@ FILE * win_tmpfile();
 /* Tries to cancel process gracefully.  Returns zero if cancellation was
  * requested, otherwise non-zero is returned. */
 int win_cancel_process(DWORD pid, HANDLE hprocess);
+
+/* Converts FILETIME to time_t.  Returns converted time. */
+time_t win_to_unix_time(FILETIME ft);
 
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 
