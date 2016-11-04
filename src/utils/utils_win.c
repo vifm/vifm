@@ -833,5 +833,18 @@ close_app_enum(HWND hwnd, LPARAM lParam)
 	return TRUE;
 }
 
+time_t
+win_to_unix_time(FILETIME ft)
+{
+	const uint64_t WINDOWS_TICK = 10000000;
+	const uint64_t SEC_TO_UNIX_EPOCH = 11644473600LL;
+
+	/* Be careful with types here, first line is important. */
+	uint64_t win_time = ft.dwHighDateTime;
+	win_time = (win_time << 32) | ft.dwLowDateTime;
+
+	return win_time/WINDOWS_TICK - SEC_TO_UNIX_EPOCH;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
