@@ -719,6 +719,10 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		args[3] = NULL;
 	}
 
+	/* XXX: using unicode version of spawn breaks commands like `:!echo hi%S` when
+	 *      'shell' is "bash".  Windows version of bash seems to process some
+	 *      strings in unicode as ASCII.  Using narrow version on the other hand
+	 *      will break use of non-ASCII paths on English version of Windows... */
 	code = _wspawnvp(P_NOWAIT, args[0], (const wchar_t **)args);
 
 	free(wide_sh);
