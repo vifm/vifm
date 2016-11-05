@@ -946,7 +946,9 @@ int
 ffind(const FileView *view, int ch, int backward, int wrap)
 {
 	int x;
-	int upcase = cfg.ignore_case && !(cfg.smart_case && iswupper(ch));
+	const int upcase = (cfg.case_override & CO_GOTO_FILE)
+	                 ? (cfg.case_ignore & CO_GOTO_FILE)
+	                 : (cfg.ignore_case && !(cfg.smart_case && iswupper(ch)));
 
 	if(upcase)
 	{

@@ -522,6 +522,22 @@ TEST(highlight_is_completed)
 	ASSERT_COMPLETION(L"hi WildMenu cter", L"hi WildMenu cterm");
 }
 
+TEST(case_override_of_paths)
+{
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "existing-files", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
+
+	cfg.ignore_case = 0;
+	cfg.case_override = CO_PATH_COMPL;
+	cfg.case_ignore = CO_PATH_COMPL;
+
+	ASSERT_COMPLETION(L"edit A", L"edit a");
+
+	cfg.case_override = 0;
+	cfg.case_ignore = 0;
+}
+
 TEST(envvars_are_completed_for_edit)
 {
 	env_set("RRRRRARE_VARIABLE1", "1");

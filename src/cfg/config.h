@@ -49,6 +49,15 @@ typedef enum
 }
 DotDirs;
 
+/* Tweaks of case sensitivity. */
+typedef enum
+{
+	CO_PATH_COMPL = 1 << 0, /* Completion of paths. */
+	CO_GOTO_FILE  = 1 << 1, /* Navigation to files via f/F/,/;. */
+	NUM_CASE_OPTS =      2  /* Number of case options for compile checks. */
+}
+CaseOpts;
+
 /* Possible flags that regulate key suggestions. */
 typedef enum
 {
@@ -248,6 +257,13 @@ typedef struct config_t
 
 	/* Whether various things should be reset on entering/leaving custom views. */
 	int cvoptions;
+
+	/* Tweaks of case sensitivity.  Values of these variables change the default
+	 * behaviour with regard to case sensitivity of various aspects.  These are
+	 * bit sets of CO_* flags. */
+	int case_override; /* Flag set here means the fact of the override. */
+	int case_ignore;   /* Flag here means case should be either always ignored or
+	                      always respected. */
 }
 config_t;
 
