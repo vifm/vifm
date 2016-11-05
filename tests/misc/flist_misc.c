@@ -2,6 +2,8 @@
 
 #include <string.h> /* strcpy() */
 
+#include "../../src/cfg/config.h"
+#include "../../src/modes/normal.h"
 #include "../../src/ui/ui.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
@@ -24,6 +26,8 @@ TEARDOWN()
 	view_teardown(&lwin);
 
 	opt_handlers_teardown();
+
+	cfg.ignore_case = 0;
 }
 
 TEST(compare_view_defines_id_grouping)
@@ -37,6 +41,23 @@ TEST(compare_view_defines_id_grouping)
 	assert_int_equal(1, lwin.list_pos = flist_find_group(&lwin, 1));
 	assert_int_equal(2, lwin.list_pos = flist_find_group(&lwin, 1));
 	assert_int_equal(1, lwin.list_pos = flist_find_group(&lwin, 0));
+}
+
+TEST(goto_file_nagivates_to_files)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	load_dir_list(&lwin, 1);
+
+	cfg.ignore_case = 1;
+
+	assert_int_equal(-1, ffind('a', 0, 0));
+	assert_int_equal(-1, ffind('A', 1, 0));
+	assert_int_equal(0, ffind('A', 0, 1));
+	assert_int_equal(0, ffind('a', 1, 1));
+	assert_int_equal(1, ffind('b', 0, 0));
+	assert_int_equal(-1, ffind('B', 1, 0));
+	assert_int_equal(1, ffind('B', 0, 1));
+	assert_int_equal(1, ffind('b', 1, 1));
 }
 
 TEST(current_unselected_file_is_marked)
