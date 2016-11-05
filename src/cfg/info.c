@@ -1028,6 +1028,13 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "nonrootparent,");
 	fprintf(fp, "\n");
 
+	fprintf(fp, "%s", "=caseoptions=");
+	if(cfg.case_override & CO_PATH_COMPL)
+		fprintf(fp, "%c", (cfg.case_ignore & CO_PATH_COMPL) ? 'p' : 'P');
+	if(cfg.case_override & CO_GOTO_FILE)
+		fprintf(fp, "%c", (cfg.case_ignore & CO_GOTO_FILE) ? 'g' : 'G');
+	fprintf(fp, "\n");
+
 	fprintf(fp, "%s", "=suggestoptions=");
 	if(cfg.sug.flags & SF_NORMAL)
 		fprintf(fp, "%s", "normal,");

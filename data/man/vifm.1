@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 27, 2016" "vifm 0.8.2"
+.TH VIFM 1 "November 05, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3247,6 +3247,25 @@ type: integer
 default: terminal width on startup
 .br
 Terminal width in characters.
+.TP
+.BI "'caseoptions'"
+type: charset
+.br
+default: ""
+.br
+This option gives additional control over case sensitivity by allowing
+overriding default behaviour to either always be case sensitive or
+always be case insensitive.  Possible values form pairs of lower and
+upper case letters that configure specific aspect of behaviour:
+  p - always ignore case of paths during completion.
+  P - always match case of paths during completion.
+  g - always ignore case of characters for f/F/;/,.
+  G - always match case of characters for f/F/;/,.
+
+At most one item of each pair takes affect, if both or more are present, only
+the last one matters.  When none of pair's elements are present, the behaviour
+is default (depends on operating system for path completion and on values of
+\'ignorecase' and 'smartcase' options for file navigation).
 .TP
 .BI "'cdpath' 'cd'"
 type: string list

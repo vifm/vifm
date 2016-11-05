@@ -45,6 +45,9 @@
 	Added % key to menu mode, which navigates to [count]-th percent of the
 	list.
 
+	Added 'caseoptions' option that enables more fine-grained control over
+	case sensitivity.  Thanks to Alexandru Geana (a.k.a. alegen).
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
