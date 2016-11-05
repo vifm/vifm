@@ -3,7 +3,6 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
-#include "../../src/modes/normal.h"
 #include "../../src/ui/ui.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
@@ -50,14 +49,14 @@ TEST(goto_file_nagivates_to_files)
 
 	cfg.ignore_case = 1;
 
-	assert_int_equal(-1, ffind(&lwin, 'a', 0, 0));
-	assert_int_equal(-1, ffind(&lwin, 'A', 1, 0));
-	assert_int_equal(0, ffind(&lwin, 'A', 0, 1));
-	assert_int_equal(0, ffind(&lwin, 'a', 1, 1));
-	assert_int_equal(1, ffind(&lwin, 'b', 0, 0));
-	assert_int_equal(-1, ffind(&lwin, 'B', 1, 0));
-	assert_int_equal(1, ffind(&lwin, 'B', 0, 1));
-	assert_int_equal(1, ffind(&lwin, 'b', 1, 1));
+	assert_int_equal(-1, flist_find_by_ch(&lwin, 'a', 0, 0));
+	assert_int_equal(-1, flist_find_by_ch(&lwin, 'A', 1, 0));
+	assert_int_equal(0, flist_find_by_ch(&lwin, 'A', 0, 1));
+	assert_int_equal(0, flist_find_by_ch(&lwin, 'a', 1, 1));
+	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 0, 0));
+	assert_int_equal(-1, flist_find_by_ch(&lwin, 'B', 1, 0));
+	assert_int_equal(1, flist_find_by_ch(&lwin, 'B', 0, 1));
+	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 1, 1));
 }
 
 TEST(goto_file_nagivates_to_files_with_case_override)
@@ -69,14 +68,14 @@ TEST(goto_file_nagivates_to_files_with_case_override)
 	cfg.case_override = CO_GOTO_FILE;
 	cfg.case_ignore = 0;
 
-	assert_int_equal(-1, ffind(&lwin, 'a', 0, 0));
-	assert_int_equal(-1, ffind(&lwin, 'A', 1, 0));
-	assert_int_equal(0, ffind(&lwin, 'A', 0, 1));
-	assert_int_equal(0, ffind(&lwin, 'a', 1, 1));
-	assert_int_equal(1, ffind(&lwin, 'b', 0, 0));
-	assert_int_equal(-1, ffind(&lwin, 'B', 1, 0));
-	assert_int_equal(0, ffind(&lwin, 'B', 0, 1));
-	assert_int_equal(1, ffind(&lwin, 'b', 1, 1));
+	assert_int_equal(-1, flist_find_by_ch(&lwin, 'a', 0, 0));
+	assert_int_equal(-1, flist_find_by_ch(&lwin, 'A', 1, 0));
+	assert_int_equal(0, flist_find_by_ch(&lwin, 'A', 0, 1));
+	assert_int_equal(0, flist_find_by_ch(&lwin, 'a', 1, 1));
+	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 0, 0));
+	assert_int_equal(-1, flist_find_by_ch(&lwin, 'B', 1, 0));
+	assert_int_equal(0, flist_find_by_ch(&lwin, 'B', 0, 1));
+	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 1, 1));
 
 	cfg.case_override = 0;
 }
