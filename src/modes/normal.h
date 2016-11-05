@@ -45,7 +45,9 @@ void normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info);
 
 void normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 
-int ffind(int ch, int backward, int wrap);
+/* Finds next/previous file which starts with the given character.  Returns
+ * -1 if nothing was found, otherwise new position. */
+int ffind(const FileView *view, int ch, int backward, int wrap);
 
 /* Kind of callback to allow starting searches from the module and rely on other
  * modules.  Returns new value for status bar message flag, but when

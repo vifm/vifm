@@ -50,14 +50,14 @@ TEST(goto_file_nagivates_to_files)
 
 	cfg.ignore_case = 1;
 
-	assert_int_equal(-1, ffind('a', 0, 0));
-	assert_int_equal(-1, ffind('A', 1, 0));
-	assert_int_equal(0, ffind('A', 0, 1));
-	assert_int_equal(0, ffind('a', 1, 1));
-	assert_int_equal(1, ffind('b', 0, 0));
-	assert_int_equal(-1, ffind('B', 1, 0));
-	assert_int_equal(1, ffind('B', 0, 1));
-	assert_int_equal(1, ffind('b', 1, 1));
+	assert_int_equal(-1, ffind(&lwin, 'a', 0, 0));
+	assert_int_equal(-1, ffind(&lwin, 'A', 1, 0));
+	assert_int_equal(0, ffind(&lwin, 'A', 0, 1));
+	assert_int_equal(0, ffind(&lwin, 'a', 1, 1));
+	assert_int_equal(1, ffind(&lwin, 'b', 0, 0));
+	assert_int_equal(-1, ffind(&lwin, 'B', 1, 0));
+	assert_int_equal(1, ffind(&lwin, 'B', 0, 1));
+	assert_int_equal(1, ffind(&lwin, 'b', 1, 1));
 }
 
 TEST(current_unselected_file_is_marked)

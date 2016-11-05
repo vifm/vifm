@@ -1198,7 +1198,7 @@ cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 static void
 find_goto(int ch, int count, int backward)
 {
-	int pos = ffind(ch, backward, 1);
+	int pos = ffind(view, ch, backward, 1);
 	if(pos < 0 || pos == view->list_pos)
 	{
 		return;
@@ -1207,7 +1207,7 @@ find_goto(int ch, int count, int backward)
 	while(count-- > 0)
 	{
 		goto_pos(pos);
-		pos = ffind(ch, backward, 1);
+		pos = ffind(view, ch, backward, 1);
 	}
 }
 
