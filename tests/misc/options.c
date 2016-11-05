@@ -426,5 +426,16 @@ TEST(global_local_updates_regular_options_only_once)
 	curr_stats.global_local_settings = 0;
 }
 
+TEST(caseoptions_are_normalized)
+{
+	assert_success(exec_commands("set caseoptions=pPGg", &lwin, CIT_COMMAND));
+	assert_string_equal("Pg", get_option_value("caseoptions", OPT_GLOBAL));
+	assert_int_equal(CO_GOTO_FILE | CO_PATH_COMPL, cfg.case_override);
+	assert_int_equal(CO_GOTO_FILE, cfg.case_ignore);
+
+	cfg.case_ignore = 0;
+	cfg.case_override = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

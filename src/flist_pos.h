@@ -107,6 +107,12 @@ int flist_find_dir_group(const FileView *view, int next);
  * non-zero if file was found. */
 int ensure_file_is_selected(FileView *view, const char name[]);
 
+/* Finds next/previous file which starts with the given character.  Returns
+ * -1 if nothing was found, otherwise new position.  When wrapping, can also
+ * return current position to signify that there is nowhere to move (no check
+ * whether it matches is performed). */
+int flist_find_by_ch(const FileView *view, int ch, int backward, int wrap);
+
 #endif /* VIFM__FLIST_POS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

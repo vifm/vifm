@@ -942,64 +942,6 @@ cmd_F(key_info_t key_info, keys_info_t *keys_info)
 	find_goto(key_info.multi, def_count(key_info.count), 1, keys_info);
 }
 
-/* Returns negative number if nothing was found */
-int
-ffind(int ch, int backward, int wrap)
-{
-	int x;
-	int upcase = cfg.ignore_case && !(cfg.smart_case && iswupper(ch));
-
-	if(upcase)
-		ch = towupper(ch);
-
-	x = curr_view->list_pos;
-	do
-	{
-		if(backward)
-		{
-			x--;
-			if(x < 0)
-			{
-				if(wrap)
-					x = curr_view->list_rows - 1;
-				else
-					return -1;
-			}
-		}
-		else
-		{
-			x++;
-			if(x > curr_view->list_rows - 1)
-			{
-				if(wrap)
-					x = 0;
-				else
-					return -1;
-			}
-		}
-
-		if(ch > 255)
-		{
-			wchar_t wc = get_first_wchar(curr_view->dir_entry[x].name);
-			if(upcase)
-				wc = towupper(wc);
-			if(wc == ch)
-				break;
-		}
-		else
-		{
-			int c = curr_view->dir_entry[x].name[0];
-			if(upcase)
-				c = towupper(c);
-			if(c == ch)
-				break;
-		}
-	}
-	while(x != curr_view->list_pos);
-
-	return x;
-}
-
 /* Navigates to next/previous file which starts with given character. */
 static void
 find_goto(int ch, int count, int backward, keys_info_t *keys_info)
@@ -1007,13 +949,13 @@ find_goto(int ch, int count, int backward, keys_info_t *keys_info)
 	int pos;
 	int old_pos = curr_view->list_pos;
 
-	pos = ffind(ch, backward, !keys_info->selector);
+	pos = flist_find_by_ch(curr_view, ch, backward, !keys_info->selector);
 	if(pos < 0 || pos == curr_view->list_pos)
 		return;
 	while(--count > 0)
 	{
 		curr_view->list_pos = pos;
-		pos = ffind(ch, backward, !keys_info->selector);
+		pos = flist_find_by_ch(curr_view, ch, backward, !keys_info->selector);
 	}
 
 	if(keys_info->selector)

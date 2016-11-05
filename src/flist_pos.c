@@ -501,5 +501,66 @@ file_can_be_displayed(const char directory[], const char filename[])
 	return path_exists_at(directory, filename, DEREF);
 }
 
+int
+flist_find_by_ch(const FileView *view, int ch, int backward, int wrap)
+{
+	int x;
+	const int upcase = (cfg.case_override & CO_GOTO_FILE)
+	                 ? (cfg.case_ignore & CO_GOTO_FILE)
+	                 : (cfg.ignore_case && !(cfg.smart_case && iswupper(ch)));
+
+	if(upcase)
+	{
+		ch = towupper(ch);
+	}
+
+	x = view->list_pos;
+	do
+	{
+		if(backward)
+		{
+			x--;
+			if(x < 0)
+			{
+				if(wrap)
+					x = view->list_rows - 1;
+				else
+					return -1;
+			}
+		}
+		else
+		{
+			x++;
+			if(x > view->list_rows - 1)
+			{
+				if(wrap)
+					x = 0;
+				else
+					return -1;
+			}
+		}
+
+		if(ch > 255)
+		{
+			wchar_t wc = get_first_wchar(view->dir_entry[x].name);
+			if(upcase)
+				wc = towupper(wc);
+			if(wc == ch)
+				break;
+		}
+		else
+		{
+			int c = view->dir_entry[x].name[0];
+			if(upcase)
+				c = towupper(c);
+			if(c == ch)
+				break;
+		}
+	}
+	while(x != view->list_pos);
+
+	return x;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

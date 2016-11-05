@@ -45,8 +45,6 @@ void normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info);
 
 void normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 
-int ffind(int ch, int backward, int wrap);
-
 /* Kind of callback to allow starting searches from the module and rely on other
  * modules.  Returns new value for status bar message flag, but when
  * print_errors isn't requested can return -1 to indicate issues with the

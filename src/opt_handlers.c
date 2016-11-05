@@ -103,6 +103,7 @@ static void add_options(void);
 static void load_sort_option_inner(FileView *view, char sort_keys[]);
 static void aproposprg_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
+static void caseoptions_handler(OPT_OP op, optval_t val);
 static void cdpath_handler(OPT_OP op, optval_t val);
 static void chaselinks_handler(OPT_OP op, optval_t val);
 static void classify_handler(OPT_OP op, optval_t val);
@@ -232,6 +233,16 @@ static const char *sort_enum[] = {
 #endif
 };
 ARRAY_GUARD(sort_enum, 1 + SK_COUNT);
+
+/* Possible values of 'caseoptions'. */
+static const char *caseoptions_vals[][2] = {
+	{ "pPgG", "all caseoptions values" },
+	{ "p", "always ignore case of paths during completion" },
+	{ "P", "always match case of paths during completion" },
+	{ "g", "always ignore case of characters for f/F/;/," },
+	{ "G", "always match case of characters for f/F/;/," },
+};
+ARRAY_GUARD(caseoptions_vals, 1 + NUM_CASE_OPTS*2);
 
 /* Possible values of 'cpoptions'. */
 static const char *cpoptions_vals[][2] = {
@@ -456,6 +467,11 @@ options[] = {
 	{ "autochpos", "", "restore cursor after cd",
 	  OPT_BOOL, 0, NULL, &autochpos_handler, NULL,
 	  { .ref.bool_val = &cfg.auto_ch_pos },
+	},
+	{ "caseoptions", "", "case sensitivity overrides",
+	  OPT_CHARSET, ARRAY_LEN(caseoptions_vals), caseoptions_vals,
+		&caseoptions_handler, NULL,
+	  { .ref.str_val = &empty },
 	},
 	{ "cdpath", "cd", "list of prefixes for relative cd",
 	  OPT_STRLIST, 0, NULL, &cdpath_handler, NULL,
@@ -1336,6 +1352,52 @@ autochpos_handler(OPT_OP op, optval_t val)
 		flist_hist_clear(curr_view);
 		flist_hist_clear(other_view);
 	}
+}
+
+/* Handles changes of 'caseoptions' option.  Updates configuration and
+ * normalizes option value. */
+static void
+caseoptions_handler(OPT_OP op, optval_t val)
+{
+	char valid_val[32];
+	const char *p;
+
+	cfg.case_override = 0;
+	cfg.case_ignore = 0;
+
+	p = val.str_val;
+	while(*p != '\0')
+	{
+		if(*p == 'P' || *p == 'p')
+		{
+			cfg.case_override |= CO_PATH_COMPL;
+			cfg.case_ignore = (*p == 'p')
+			                ? (cfg.case_ignore | CO_PATH_COMPL)
+			                : (cfg.case_ignore & ~CO_PATH_COMPL);
+		}
+		else if(*p == 'g' || *p == 'G')
+		{
+			cfg.case_override |= CO_GOTO_FILE;
+			cfg.case_ignore = (*p == 'g')
+			                ? (cfg.case_ignore | CO_GOTO_FILE)
+			                : (cfg.case_ignore & ~CO_GOTO_FILE);
+		}
+
+		++p;
+	}
+
+	valid_val[0] = '\0';
+	if(cfg.case_override & CO_PATH_COMPL)
+	{
+		strcat(valid_val, (cfg.case_ignore & CO_PATH_COMPL) ? "p" : "P");
+	}
+	if(cfg.case_override & CO_GOTO_FILE)
+	{
+		strcat(valid_val, (cfg.case_ignore & CO_GOTO_FILE) ? "g" : "G");
+	}
+	val.str_val = valid_val;
+
+	set_option("caseoptions", val, OPT_GLOBAL);
 }
 
 /* Specifies directories to check on cding by relative path. */

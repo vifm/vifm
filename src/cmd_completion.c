@@ -96,6 +96,8 @@ static int is_dirent_targets_exec(const struct dirent *d);
 #ifdef _WIN32
 static void complete_with_shared(const char *server, const char *file);
 #endif
+static int file_matches(const char fname[], const char prefix[],
+		size_t prefix_len);
 
 int
 complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
@@ -994,7 +996,7 @@ filename_completion_internal(DIR *dir, const char filename[],
 	{
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
-		if(strnoscmp(d->d_name, filename, filename_len) != 0)
+		if(!file_matches(d->d_name, filename, filename_len))
 			continue;
 
 		if(type == CT_DIRONLY && !is_dirent_targets_dir(d))
@@ -1111,7 +1113,7 @@ complete_with_shared(const char *server, const char *file)
 				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
 						sizeof(buf), NULL, NULL);
 				strcat(buf, "/");
-				if(strnoscmp(buf, file, len) == 0)
+				if(file_matches(buf, file, len))
 				{
 					vle_compl_put_match(shell_like_escape(buf, 1), "");
 				}
@@ -1124,6 +1126,26 @@ complete_with_shared(const char *server, const char *file)
 }
 
 #endif
+
+/* Checks whether file name has specified prefix accounting for system kind and
+ * case sensitivity options.  Returns non-zero if so, otherwise zero is
+ * returned. */
+static int
+file_matches(const char fname[], const char prefix[], size_t prefix_len)
+{
+	int cmp;
+	if(cfg.case_override & CO_PATH_COMPL)
+	{
+		cmp = (cfg.case_ignore & CO_PATH_COMPL)
+		    ? strncasecmp(fname, prefix, prefix_len)
+		    : strncmp(fname, prefix, prefix_len);
+	}
+	else
+	{
+		cmp = strnoscmp(fname, prefix, prefix_len);
+	}
+	return (cmp == 0);
+}
 
 int
 external_command_exists(const char cmd[])

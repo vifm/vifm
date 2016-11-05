@@ -216,6 +216,9 @@ cfg_init(void)
 
 	cfg.fast_file_cloning = 0;
 	cfg.cvoptions = 0;
+
+	cfg.case_override = 0;
+	cfg.case_ignore = 0;
 }
 
 void

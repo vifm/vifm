@@ -34,6 +34,7 @@ const char *tags[] = {
 	"vifm-'",
 	"vifm-'aproposprg'",
 	"vifm-'autochpos'",
+	"vifm-'caseoptions'",
 	"vifm-'cd'",
 	"vifm-'cdpath'",
 	"vifm-'cf'",
