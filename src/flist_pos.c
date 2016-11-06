@@ -449,6 +449,34 @@ flist_find_dir_group(const FileView *view, int next)
 }
 
 int
+flist_next_dir(const FileView *view)
+{
+	int pos = view->list_pos;
+	while(++pos < view->list_rows)
+	{
+		if(is_directory_entry(&view->dir_entry[pos]))
+		{
+			break;
+		}
+	}
+	return (pos == view->list_rows ? view->list_pos : pos);
+}
+
+int
+flist_prev_dir(const FileView *view)
+{
+	int pos = view->list_pos;
+	while(--pos >= 0)
+	{
+		if(is_directory_entry(&view->dir_entry[pos]))
+		{
+			break;
+		}
+	}
+	return (pos < 0 ? view->list_pos : pos);
+}
+
+int
 ensure_file_is_selected(FileView *view, const char name[])
 {
 	int file_pos;

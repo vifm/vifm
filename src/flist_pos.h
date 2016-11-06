@@ -103,6 +103,14 @@ int flist_find_group(const FileView *view, int next);
  * entry in corner cases). */
 int flist_find_dir_group(const FileView *view, int next);
 
+/* Finds position of the next directory entry.  Returns new position which isn't
+ * changed if no next directory is found. */
+int flist_next_dir(const FileView *view);
+
+/* Finds position of the previous directory entry.  Returns new position which
+ * isn't changed if no previous directory is found. */
+int flist_prev_dir(const FileView *view);
+
 /* Remove dot and regexp filters if it's needed to make file visible.  Returns
  * non-zero if file was found. */
 int ensure_file_is_selected(FileView *view, const char name[]);

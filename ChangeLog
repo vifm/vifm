@@ -48,6 +48,9 @@
 	Added 'caseoptions' option that enables more fine-grained control over
 	case sensitivity.  Thanks to Alexandru Geana (a.k.a. alegen).
 
+	Added [d and ]d shortcuts to navigate to previous/next directory entry.
+	Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

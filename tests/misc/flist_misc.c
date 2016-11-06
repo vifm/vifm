@@ -80,6 +80,22 @@ TEST(goto_file_nagivates_to_files_with_case_override)
 	cfg.case_override = 0;
 }
 
+TEST(find_directory)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree/dir1");
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_int_equal(0, flist_next_dir(&lwin));
+	assert_int_equal(0, flist_prev_dir(&lwin));
+
+	lwin.list_pos = 1;
+
+	assert_int_equal(1, flist_next_dir(&lwin));
+	assert_int_equal(0, flist_prev_dir(&lwin));
+}
+
 TEST(current_unselected_file_is_marked)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");

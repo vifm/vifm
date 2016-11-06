@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 05
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 07
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -577,6 +577,13 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 }                                              *vifm-}*
     same as {, but in forward direction.
+
+
+[d                                             *vifm-[d*
+    go to previous directory entry or do nothing.
+
+]d                                             *vifm-]d*
+    go to next directory entry or do nothing.
 
 Using Count~
                                                *vifm-count* *vifm-[count]*
