@@ -562,12 +562,12 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 
 (                                              *vifm-(*
-    goto previous group.  Groups are defined by primary sorting key.
+    go to previous group.  Groups are defined by primary sorting key.
     For name and iname members of each group have same first letter,
     for all other sorting keys vifm uses size, uid, ...
 
 )                                              *vifm-)*
-    goto next group.  See ( key description above.
+    go to next group.  See ( key description above.
 
 
 {                                              *vifm-{*
