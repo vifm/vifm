@@ -3004,7 +3004,8 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 int
 is_directory_entry(const dir_entry_t *entry)
 {
-	if(entry->type == FT_DIR)
+	/* If node has child nodes, it must be a directory. */
+	if(entry->type == FT_DIR || entry->child_count != 0)
 	{
 		return 1;
 	}
