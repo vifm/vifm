@@ -246,8 +246,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_RP,         {{&cmd_right_paren}, .descr = "go to next group of files"}},
 	{WK_LB WK_d,    {{&cmd_lb_d}, .descr = "go to previous dir"}},
 	{WK_RB WK_d,    {{&cmd_rb_d}, .descr = "go to next dir"}},
-	{WK_LCB,        {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir"}},
-	{WK_RCB,        {{&cmd_right_curly_bracket}, .descr = "go to next file/dir"}},
+	{WK_LCB,        {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir group"}},
+	{WK_RCB,        {{&cmd_right_curly_bracket}, .descr = "go to next file/dir group"}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE},   {{&cmd_ctrl_b}, .descr = "scroll page up"}},
 	{{KEY_NPAGE},   {{&cmd_ctrl_f}, .descr = "scroll page down"}},
