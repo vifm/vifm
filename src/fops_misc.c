@@ -218,7 +218,6 @@ fops_delete_bg(FileView *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
-	unsigned int i;
 	const char *const top_dir = get_top_dir(view);
 	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
 
@@ -247,22 +246,26 @@ fops_delete_bg(FileView *view, int use_trash)
 		return 1;
 	}
 
-	for(i = 0U; i < args->sel_list_len; ++i)
+	if(use_trash)
 	{
-		const char *const full_file_path = args->sel_list[i];
-		if(is_trash_directory(full_file_path))
+		unsigned int i;
+		for(i = 0U; i < args->sel_list_len; ++i)
 		{
-			show_error_msg("Can't perform deletion",
-					"You cannot delete trash directory to trash");
-			fops_free_bg_args(args);
-			return 0;
-		}
-		else if(is_under_trash(full_file_path))
-		{
-			show_error_msgf("Skipping file deletion", "File is already in trash: %s",
-					full_file_path);
-			fops_free_bg_args(args);
-			return 0;
+			const char *const full_file_path = args->sel_list[i];
+			if(is_trash_directory(full_file_path))
+			{
+				show_error_msg("Can't perform deletion",
+						"You cannot delete trash directory to trash");
+				fops_free_bg_args(args);
+				return 0;
+			}
+			else if(is_under_trash(full_file_path))
+			{
+				show_error_msgf("Skipping file deletion",
+						"File is already in trash: %s", full_file_path);
+				fops_free_bg_args(args);
+				return 0;
+			}
 		}
 	}
 
