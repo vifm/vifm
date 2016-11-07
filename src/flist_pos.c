@@ -42,6 +42,8 @@ static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, entry_predicate pred);
 static const char * get_last_ext(const char name[]);
+static int find_next(const FileView *view, entry_predicate pred);
+static int find_prev(const FileView *view, entry_predicate pred);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 
 int
@@ -451,10 +453,24 @@ flist_find_dir_group(const FileView *view, int next)
 int
 flist_next_dir(const FileView *view)
 {
+	return find_next(view, &is_directory_entry);
+}
+
+int
+flist_prev_dir(const FileView *view)
+{
+	return find_prev(view, &is_directory_entry);
+}
+
+/* Finds position of the next entry matching the predicate.  Returns new
+ * position which isn't changed if no next directory is found. */
+static int
+find_next(const FileView *view, entry_predicate pred)
+{
 	int pos = view->list_pos;
 	while(++pos < view->list_rows)
 	{
-		if(is_directory_entry(&view->dir_entry[pos]))
+		if(pred(&view->dir_entry[pos]))
 		{
 			break;
 		}
@@ -462,13 +478,15 @@ flist_next_dir(const FileView *view)
 	return (pos == view->list_rows ? view->list_pos : pos);
 }
 
-int
-flist_prev_dir(const FileView *view)
+/* Finds position of the previous entry matching the predicate.  Returns new
+ * position which isn't changed if no previous directory is found. */
+static int
+find_prev(const FileView *view, entry_predicate pred)
 {
 	int pos = view->list_pos;
 	while(--pos >= 0)
 	{
-		if(is_directory_entry(&view->dir_entry[pos]))
+		if(pred(&view->dir_entry[pos]))
 		{
 			break;
 		}
