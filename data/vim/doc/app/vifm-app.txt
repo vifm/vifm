@@ -592,6 +592,13 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 ]s                                             *vifm-]s*
     go to next selected entry or do nothing.
 
+
+[z                                             *vifm-[z*
+    go to first sibling of current entry.
+
+]z                                             *vifm-]z*
+    go to last sibling of current entry.
+
 Using Count~
                                                *vifm-count* *vifm-[count]*
 You can use count with commands like yy.

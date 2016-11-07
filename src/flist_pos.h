@@ -103,6 +103,14 @@ int flist_find_group(const FileView *view, int next);
  * entry in corner cases). */
 int flist_find_dir_group(const FileView *view, int next);
 
+/* Finds position of the first child of the parent of the current node.  Returns
+ * new position which isn't changed if already at first child. */
+int flist_first_sibling(const FileView *view);
+
+/* Finds position of the last child of the parent of the current node.  Returns
+ * new position which isn't changed if already at last child. */
+int flist_last_sibling(const FileView *view);
+
 /* Finds position of the next directory entry.  Returns new position which isn't
  * changed if no next directory is found. */
 int flist_next_dir(const FileView *view);

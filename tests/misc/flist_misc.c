@@ -115,6 +115,24 @@ TEST(find_selected)
 	assert_int_equal(0, flist_prev_selected(&lwin));
 }
 
+TEST(find_first_and_last_siblings)
+{
+	flist_load_tree(&lwin, TEST_DATA_PATH "/tree");
+	assert_int_equal(12, lwin.list_rows);
+
+	assert_int_equal(0, flist_first_sibling(&lwin));
+	assert_int_equal(11, flist_last_sibling(&lwin));
+
+	lwin.list_pos = 8;
+
+	assert_int_equal(0, flist_first_sibling(&lwin));
+	assert_int_equal(11, flist_last_sibling(&lwin));
+
+	lwin.list_pos = 11;
+	assert_int_equal(0, flist_first_sibling(&lwin));
+	assert_int_equal(11, flist_last_sibling(&lwin));
+}
+
 TEST(current_unselected_file_is_marked)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");

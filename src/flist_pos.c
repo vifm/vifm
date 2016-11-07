@@ -451,6 +451,40 @@ flist_find_dir_group(const FileView *view, int next)
 }
 
 int
+flist_first_sibling(const FileView *view)
+{
+	const int parent = view->list_pos - view->dir_entry[view->list_pos].child_pos;
+	return (parent == view->list_pos ? 0 : parent + 1);
+}
+
+int
+flist_last_sibling(const FileView *view)
+{
+	int pos = view->list_pos - view->dir_entry[view->list_pos].child_pos;
+	if(pos == view->list_pos)
+	{
+		/* For top-level entry, find the last top-level entry. */
+		pos = view->list_rows - 1;
+		while(view->dir_entry[pos].child_pos != 0)
+		{
+			pos -= view->dir_entry[pos].child_pos;
+		}
+	}
+	else
+	{
+		/* For non-top-level entry, go to last tree item and go up until our
+		 * child. */
+		const int parent = pos;
+		pos = parent + view->dir_entry[parent].child_count;
+		while(pos - view->dir_entry[pos].child_pos != parent)
+		{
+			pos -= view->dir_entry[pos].child_pos;
+		}
+	}
+	return pos;
+}
+
+int
 flist_next_dir(const FileView *view)
 {
 	return find_next(view, &is_directory_entry);

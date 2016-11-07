@@ -148,6 +148,8 @@ static void cmd_lb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_s(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_z(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_z(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_curly_bracket(key_info_t key_info,
 		keys_info_t *keys_info);
@@ -250,6 +252,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_RB WK_d,    {{&cmd_rb_d}, .descr = "go to next dir"}},
 	{WK_LB WK_s,    {{&cmd_lb_s}, .descr = "go to previous selected entry"}},
 	{WK_RB WK_s,    {{&cmd_rb_s}, .descr = "go to next selected entry"}},
+	{WK_LB WK_z,    {{&cmd_lb_z}, .descr = "go to first sibling"}},
+	{WK_RB WK_z,    {{&cmd_rb_z}, .descr = "go to last sibling"}},
 	{WK_LCB,        {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir group"}},
 	{WK_RCB,        {{&cmd_right_curly_bracket}, .descr = "go to next file/dir group"}},
 #ifdef ENABLE_EXTENDED_KEYS
@@ -1212,6 +1216,20 @@ static void
 cmd_rb_s(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_pos(flist_next_selected(view));
+}
+
+/* Go to first sibling of the current entry. */
+static void
+cmd_lb_z(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(flist_first_sibling(view));
+}
+
+/* Go to last sibling of the current entry. */
+static void
+cmd_rb_z(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(flist_last_sibling(view));
 }
 
 /* Moves cursor to the beginning of the previous group of files defined by them

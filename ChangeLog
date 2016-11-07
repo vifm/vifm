@@ -54,6 +54,9 @@
 	Added [s and ]s shortcuts to navigate to previous/next selected entry.
 	Thanks to filterfalse.
 
+	Added [z and ]z shortcuts to navigate to first/last sibling in a tree.
+	Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
