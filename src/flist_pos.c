@@ -462,6 +462,18 @@ flist_prev_dir(const FileView *view)
 	return find_prev(view, &is_directory_entry);
 }
 
+int
+flist_next_selected(const FileView *view)
+{
+	return find_next(view, &is_entry_selected);
+}
+
+int
+flist_prev_selected(const FileView *view)
+{
+	return find_prev(view, &is_entry_selected);
+}
+
 /* Finds position of the next entry matching the predicate.  Returns new
  * position which isn't changed if no next directory is found. */
 static int

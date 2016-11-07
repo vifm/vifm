@@ -96,6 +96,25 @@ TEST(find_directory)
 	assert_int_equal(0, flist_prev_dir(&lwin));
 }
 
+TEST(find_selected)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(3, lwin.list_rows);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_int_equal(2, flist_next_selected(&lwin));
+	assert_int_equal(0, flist_prev_selected(&lwin));
+
+	lwin.list_pos = 1;
+
+	assert_int_equal(2, flist_next_selected(&lwin));
+	assert_int_equal(0, flist_prev_selected(&lwin));
+}
+
 TEST(current_unselected_file_is_marked)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");

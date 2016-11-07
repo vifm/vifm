@@ -51,6 +51,9 @@
 	Added [d and ]d shortcuts to navigate to previous/next directory entry.
 	Thanks to filterfalse.
 
+	Added [s and ]s shortcuts to navigate to previous/next selected entry.
+	Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

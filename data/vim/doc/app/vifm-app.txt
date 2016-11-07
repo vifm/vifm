@@ -585,6 +585,13 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 ]d                                             *vifm-]d*
     go to next directory entry or do nothing.
 
+
+[s                                             *vifm-[s*
+    go to previous selected entry or do nothing.
+
+]s                                             *vifm-]s*
+    go to next selected entry or do nothing.
+
 Using Count~
                                                *vifm-count* *vifm-[count]*
 You can use count with commands like yy.

@@ -111,6 +111,14 @@ int flist_next_dir(const FileView *view);
  * isn't changed if no previous directory is found. */
 int flist_prev_dir(const FileView *view);
 
+/* Finds position of the next selected entry.  Returns new position which isn't
+ * changed if no next selected entry is found. */
+int flist_next_selected(const FileView *view);
+
+/* Finds position of the previous selected entry.  Returns new position which
+ * isn't changed if no previous selected entry is found. */
+int flist_prev_selected(const FileView *view);
+
 /* Remove dot and regexp filters if it's needed to make file visible.  Returns
  * non-zero if file was found. */
 int ensure_file_is_selected(FileView *view, const char name[]);
