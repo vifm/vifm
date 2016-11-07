@@ -50,6 +50,11 @@ ioeta_add_file(ioeta_estim_t *estim, const char path[])
 void
 ioeta_add_dir(ioeta_estim_t *estim, const char path[])
 {
+	/* TODO: think about counting directories, otherwise copying of large amount
+	 *       of empty directories or hierarchy of empty directories produces weird
+	 *       progress reports and it even might be the reason of getting more than
+	 *       100% progress. */
+
 	replace_string(&estim->item, path);
 
 	ionotif_notify(IO_PS_ESTIMATING, estim);
