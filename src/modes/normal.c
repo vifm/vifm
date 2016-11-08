@@ -218,6 +218,8 @@ static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z_j(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_s(key_info_t key_info, keys_info_t *keys_info);
@@ -385,6 +387,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_RP,            {{&cmd_right_paren}, .descr = "go to next group of files"}},
 	{WK_z WK_k,        {{&cmd_z_k},  .descr = "go to previous sibling dir"}},
 	{WK_z WK_j,        {{&cmd_z_j},  .descr = "go to next sibling dir"}},
+	{WK_LB WK_c,       {{&cmd_lb_c}, .descr = "go to previous mismatch"}},
+	{WK_RB WK_c,       {{&cmd_rb_c}, .descr = "go to next mismatch"}},
 	{WK_LB WK_d,       {{&cmd_lb_d}, .descr = "go to previous dir"}},
 	{WK_RB WK_d,       {{&cmd_rb_d}, .descr = "go to next dir"}},
 	{WK_LB WK_s,       {{&cmd_lb_s}, .descr = "go to previous selected entry"}},
@@ -443,6 +447,8 @@ static keys_add_info_t selectors[] = {
 	{WK_RP,      {{&cmd_right_paren}, .descr = "to next group of files"}},
 	{WK_z WK_k,  {{&cmd_z_k},  .descr = "to previous sibling dir"}},
 	{WK_z WK_j,  {{&cmd_z_j},  .descr = "to next sibling dir"}},
+	{WK_LB WK_c, {{&cmd_lb_c}, .descr = "to previous mismatch"}},
+	{WK_RB WK_c, {{&cmd_rb_c}, .descr = "to next mismatch"}},
 	{WK_LB WK_d, {{&cmd_lb_d}, .descr = "to previous dir"}},
 	{WK_RB WK_d, {{&cmd_rb_d}, .descr = "to next dir"}},
 	{WK_LB WK_s, {{&cmd_lb_s}, .descr = "to previous selected entry"}},
@@ -1987,6 +1993,22 @@ static void
 cmd_z_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	pick_or_move(keys_info, flist_next_dir_sibling(curr_view));
+}
+
+/* Go to or pick files until and including previous mismatched entry or do
+ * nothing. */
+static void
+cmd_lb_c(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_prev_mismatch(curr_view));
+}
+
+/* Go to or pick files until and including next mismatched entry or do
+ * nothing. */
+static void
+cmd_rb_c(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_next_mismatch(curr_view));
 }
 
 /* Go to or pick files until and including previous directory entry or do

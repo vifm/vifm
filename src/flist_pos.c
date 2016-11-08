@@ -42,6 +42,7 @@ static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static void move_cursor_out_of_scope(FileView *view, entry_predicate pred);
 static const char * get_last_ext(const char name[]);
+static int is_mismatched_entry(const dir_entry_t *entry);
 static int find_next(const FileView *view, entry_predicate pred);
 static int find_prev(const FileView *view, entry_predicate pred);
 static int file_can_be_displayed(const char directory[], const char filename[]);
@@ -561,6 +562,40 @@ int
 flist_prev_selected(const FileView *view)
 {
 	return find_prev(view, &is_entry_selected);
+}
+
+int
+flist_next_mismatch(const FileView *view)
+{
+	return (view->custom.type == CV_DIFF)
+	     ? find_next(view, &is_mismatched_entry)
+	     : view->list_pos;
+}
+
+int
+flist_prev_mismatch(const FileView *view)
+{
+	return (view->custom.type == CV_DIFF)
+	     ? find_prev(view, &is_mismatched_entry)
+	     : view->list_pos;
+}
+
+/* Checks whether entry corresponds to comparison mismatch.  Returns non-zero if
+ * so, otherwise zero is returned. */
+static int
+is_mismatched_entry(const dir_entry_t *entry)
+{
+	/* To avoid passing view pointer here, we exploit the fact that entry_to_pos()
+	 * checks whether it's argument belongs to the given view. */
+	int pos = entry_to_pos(&lwin, entry);
+	FileView *other = &rwin;
+	if(pos == -1)
+	{
+		pos = entry_to_pos(&rwin, entry);
+		other = &lwin;
+	}
+
+	return (other->dir_entry[pos].id != entry->id);
 }
 
 /* Finds position of the next entry matching the predicate.  Returns new

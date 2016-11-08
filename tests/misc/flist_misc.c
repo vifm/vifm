@@ -152,6 +152,38 @@ TEST(find_next_and_prev_dir_sibling)
 	assert_int_equal(11, flist_next_dir_sibling(&lwin));
 }
 
+TEST(find_next_and_prev_mismatches)
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	view_setup(&rwin);
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+
+	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(4, rwin.list_rows);
+
+	lwin.list_pos = 0;
+
+	assert_int_equal(0, flist_prev_mismatch(&lwin));
+	assert_int_equal(2, flist_next_mismatch(&lwin));
+
+	lwin.list_pos = 2;
+
+	assert_int_equal(2, flist_prev_mismatch(&lwin));
+	assert_int_equal(2, flist_next_mismatch(&lwin));
+
+	lwin.list_pos = 3;
+
+	assert_int_equal(2, flist_prev_mismatch(&lwin));
+	assert_int_equal(3, flist_next_mismatch(&lwin));
+
+	view_teardown(&rwin);
+}
+
 TEST(current_unselected_file_is_marked)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");

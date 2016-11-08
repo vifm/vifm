@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 08
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -577,6 +577,14 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 }                                              *vifm-}*
     same as {, but in forward direction.
+
+
+[c                                             *vifm-[c*
+    go to previous mismatched entry in directory comparison view or do
+    nothing.
+
+]c                                             *vifm-]c*
+    go to next mismatched entry in directory comparison view or do nothing.
 
 
 [d                                             *vifm-[d*
