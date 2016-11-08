@@ -485,6 +485,61 @@ flist_last_sibling(const FileView *view)
 }
 
 int
+flist_next_dir_sibling(const FileView *view)
+{
+	int pos = view->list_pos;
+	const int parent = view->dir_entry[pos].child_pos == 0
+	                 ? -1
+	                 : pos - view->dir_entry[pos].child_pos;
+	const int past_end = parent == -1
+	                   ? view->list_rows
+	                   : parent + view->dir_entry[parent].child_count;
+	pos += view->dir_entry[pos].child_count + 1;
+	while(pos < past_end)
+	{
+		dir_entry_t *const e = &view->dir_entry[pos];
+		if(is_directory_entry(e))
+		{
+			break;
+		}
+		/* Skip over whole sub-tree. */
+		pos += e->child_count + 1;
+	}
+	return (pos < past_end ? pos : view->list_pos);
+}
+
+int
+flist_prev_dir_sibling(const FileView *view)
+{
+	int pos = view->list_pos;
+	/* Determine original parent (-1 for top-most entry). */
+	const int parent = view->dir_entry[pos].child_pos == 0
+	                 ? -1
+	                 : pos - view->dir_entry[pos].child_pos;
+	--pos;
+	while(pos > parent)
+	{
+		dir_entry_t *const e = &view->dir_entry[pos];
+		const int p = (e->child_pos == 0) ? -1 : (pos - e->child_pos);
+		/* If we find ourselves deeper than originally, just go up one level. */
+		if(p != parent)
+		{
+			pos = p;
+			continue;
+		}
+
+		/* We're looking for directories. */
+		if(is_directory_entry(e))
+		{
+			break;
+		}
+		/* We're on a file on the same level. */
+		--pos;
+	}
+	return (pos > parent ? pos : view->list_pos);
+}
+
+int
 flist_next_dir(const FileView *view)
 {
 	return find_next(view, &is_directory_entry);

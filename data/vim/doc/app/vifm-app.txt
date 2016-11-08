@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 07
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 08
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -598,6 +598,13 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 ]z                                             *vifm-]z*
     go to last sibling of current entry.
+
+
+zj                                             *vifm-zj*
+    go to next directory sibling of current entry or do nothing.
+
+zk                                             *vifm-zk*
+    go to previous directory sibling of current entry or do nothing.
 
 Using Count~
                                                *vifm-count* *vifm-[count]*

@@ -111,6 +111,14 @@ int flist_first_sibling(const FileView *view);
  * new position which isn't changed if already at last child. */
 int flist_last_sibling(const FileView *view);
 
+/* Finds position of the next sibling directory entry.  Returns new position
+ * which isn't changed if nothing was found. */
+int flist_next_dir_sibling(const FileView *view);
+
+/* Finds position of the previous sibling directory entry.  Returns new position
+ * which isn't changed if nothing was found. */
+int flist_prev_dir_sibling(const FileView *view);
+
 /* Finds position of the next directory entry.  Returns new position which isn't
  * changed if no next directory is found. */
 int flist_next_dir(const FileView *view);

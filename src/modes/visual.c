@@ -144,6 +144,8 @@ static void cmd_zd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_z_k(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_z_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_s(key_info_t key_info, keys_info_t *keys_info);
@@ -248,6 +250,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_z WK_z,     {{&normal_cmd_zz},   .descr = "center cursor position"}},
 	{WK_LP,         {{&cmd_left_paren},  .descr = "go to previous group of files"}},
 	{WK_RP,         {{&cmd_right_paren}, .descr = "go to next group of files"}},
+	{WK_z WK_k,     {{&cmd_z_k},  .descr = "go to previous sibling dir"}},
+	{WK_z WK_j,     {{&cmd_z_j},  .descr = "go to next sibling dir"}},
 	{WK_LB WK_d,    {{&cmd_lb_d}, .descr = "go to previous dir"}},
 	{WK_RB WK_d,    {{&cmd_rb_d}, .descr = "go to next dir"}},
 	{WK_LB WK_s,    {{&cmd_lb_s}, .descr = "go to previous selected entry"}},
@@ -1188,6 +1192,20 @@ static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_pos(flist_find_group(view, 1));
+}
+
+/* Go to previous sibling directory entry or do nothing. */
+static void
+cmd_z_k(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(flist_prev_dir_sibling(view));
+}
+
+/* Go to next sibling directory entry or do nothing. */
+static void
+cmd_z_j(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_pos(flist_next_dir_sibling(view));
 }
 
 /* Go to previous directory entry or do nothing. */

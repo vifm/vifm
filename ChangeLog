@@ -57,6 +57,9 @@
 	Added [z and ]z shortcuts to navigate to first/last sibling in a tree.
 	Thanks to filterfalse.
 
+	Added zj and zk shortcuts to navigate to next/previous directory sibling
+	in a tree.  Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
