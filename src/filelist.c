@@ -3549,7 +3549,7 @@ add_files_recursively(FileView *view, const char path[], trie_t *excluded_paths,
 
 		free(full_path);
 
-		show_progress("Building tree...", 10000);
+		show_progress("Building tree...", 1000);
 	}
 
 	free_string_array(lst, len);
