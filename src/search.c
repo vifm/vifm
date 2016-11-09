@@ -61,7 +61,7 @@ find_and_goto_pattern(FileView *view, int wrap_start, int backward)
 			return 0;
 		}
 	}
-	fview_cursor_redraw(view);
+	ui_view_schedule_redraw(view);
 	return 1;
 }
 
@@ -120,6 +120,10 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	}
 
 	reset_search_results(view);
+
+	/* We at least could wipe out previous search results, so schedule a
+	 * redraw. */
+	ui_view_schedule_redraw(view);
 
 	if(pattern[0] == '\0')
 	{
@@ -185,12 +189,6 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		const int was_found = move ? goto_search_match(view, backward) : 1;
 		*found = was_found;
 
-		if(cfg.hl_search && !was_found)
-		{
-			/* Update the view.  Its look might have changed, because of selection. */
-			fview_cursor_redraw(view);
-		}
-
 		if(!cfg.hl_search)
 		{
 			if(print_errors)
@@ -203,7 +201,6 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 	}
 	else
 	{
-		fview_cursor_redraw(view);
 		if(print_errors)
 		{
 			print_search_fail_msg(view, backward);
