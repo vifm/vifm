@@ -80,6 +80,110 @@ TEST(goto_file_nagivates_to_files_with_case_override)
 	cfg.case_override = 0;
 }
 
+TEST(find_directory)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree/dir1");
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_int_equal(0, flist_next_dir(&lwin));
+	assert_int_equal(0, flist_prev_dir(&lwin));
+
+	lwin.list_pos = 1;
+
+	assert_int_equal(1, flist_next_dir(&lwin));
+	assert_int_equal(0, flist_prev_dir(&lwin));
+}
+
+TEST(find_selected)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(3, lwin.list_rows);
+	lwin.dir_entry[0].selected = 1;
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 2;
+
+	assert_int_equal(2, flist_next_selected(&lwin));
+	assert_int_equal(0, flist_prev_selected(&lwin));
+
+	lwin.list_pos = 1;
+
+	assert_int_equal(2, flist_next_selected(&lwin));
+	assert_int_equal(0, flist_prev_selected(&lwin));
+}
+
+TEST(find_first_and_last_siblings)
+{
+	flist_load_tree(&lwin, TEST_DATA_PATH "/tree");
+	assert_int_equal(12, lwin.list_rows);
+
+	assert_int_equal(0, flist_first_sibling(&lwin));
+	assert_int_equal(11, flist_last_sibling(&lwin));
+
+	lwin.list_pos = 8;
+
+	assert_int_equal(0, flist_first_sibling(&lwin));
+	assert_int_equal(11, flist_last_sibling(&lwin));
+
+	lwin.list_pos = 11;
+	assert_int_equal(0, flist_first_sibling(&lwin));
+	assert_int_equal(11, flist_last_sibling(&lwin));
+}
+
+TEST(find_next_and_prev_dir_sibling)
+{
+	flist_load_tree(&lwin, TEST_DATA_PATH "/tree");
+	assert_int_equal(12, lwin.list_rows);
+
+	assert_int_equal(0, flist_prev_dir_sibling(&lwin));
+	assert_int_equal(8, flist_next_dir_sibling(&lwin));
+
+	lwin.list_pos = 8;
+
+	assert_int_equal(0, flist_prev_dir_sibling(&lwin));
+	assert_int_equal(8, flist_next_dir_sibling(&lwin));
+
+	lwin.list_pos = 11;
+
+	assert_int_equal(8, flist_prev_dir_sibling(&lwin));
+	assert_int_equal(11, flist_next_dir_sibling(&lwin));
+}
+
+TEST(find_next_and_prev_mismatches)
+{
+	curr_view = &lwin;
+	other_view = &rwin;
+
+	view_setup(&rwin);
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+
+	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(4, rwin.list_rows);
+
+	lwin.list_pos = 0;
+
+	assert_int_equal(0, flist_prev_mismatch(&lwin));
+	assert_int_equal(2, flist_next_mismatch(&lwin));
+
+	lwin.list_pos = 2;
+
+	assert_int_equal(2, flist_prev_mismatch(&lwin));
+	assert_int_equal(2, flist_next_mismatch(&lwin));
+
+	lwin.list_pos = 3;
+
+	assert_int_equal(2, flist_prev_mismatch(&lwin));
+	assert_int_equal(3, flist_next_mismatch(&lwin));
+
+	view_teardown(&rwin);
+}
+
 TEST(current_unselected_file_is_marked)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");

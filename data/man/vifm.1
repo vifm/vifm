@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 05, 2016" "vifm 0.8.2"
+.TH VIFM 1 "November 09, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -642,12 +642,12 @@ nothing right after startup or :restart command).  The command doesn't depend on
 command-line history and can be used with completely disabled history.
 .TP
 .BI (
-goto previous group.  Groups are defined by primary sorting key.  For name and
+go to previous group.  Groups are defined by primary sorting key.  For name and
 iname members of each group have same first letter, for all other sorting keys
 vifm uses size, uid, ...
 .TP
 .BI )
-goto next group.  See ( key description above.
+go to next group.  See ( key description above.
 .TP
 .BI {
 similar to ( key, but always considers whether entry is file or directory and
@@ -655,6 +655,36 @@ thus speeds up navigation to closest previous entry of the opposite type.
 .TP
 .BI }
 same as {, but in forward direction.
+.TP
+.BI [c
+go to previous mismatched entry in directory comparison view or do nothing.
+.TP
+.BI ]c
+go to next mismatched entry in directory comparison view or do nothing.
+.TP
+.BI [d
+go to previous directory entry or do nothing.
+.TP
+.BI ]d
+go to next directory entry or do nothing.
+.TP
+.BI [s
+go to previous selected entry or do nothing.
+.TP
+.BI ]s
+go to next selected entry or do nothing.
+.TP
+.BI [z
+go to first sibling of current entry.
+.TP
+.BI ]z
+go to last sibling of current entry.
+.TP
+.BI zj
+go to next directory sibling of current entry or do nothing.
+.TP
+.BI zk
+go to previous directory sibling of current entry or do nothing.
 .\" ---------------------------------------------------------------------------
 .SH Using Count
 .\" ---------------------------------------------------------------------------

@@ -216,6 +216,16 @@ static void cmd_zo(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zr(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_z_k(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_z_j(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_d(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_d(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_s(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_s(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_z(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_z(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_curly_bracket(key_info_t key_info,
 		keys_info_t *keys_info);
@@ -375,8 +385,18 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_z WK_z,        {{&normal_cmd_zz},   .descr = "center cursor position"}},
 	{WK_LP,            {{&cmd_left_paren},  .descr = "go to previous group of files"}},
 	{WK_RP,            {{&cmd_right_paren}, .descr = "go to next group of files"}},
-	{WK_LCB,           {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir"}},
-	{WK_RCB,           {{&cmd_right_curly_bracket}, .descr = "go to next file/dir"}},
+	{WK_z WK_k,        {{&cmd_z_k},  .descr = "go to previous sibling dir"}},
+	{WK_z WK_j,        {{&cmd_z_j},  .descr = "go to next sibling dir"}},
+	{WK_LB WK_c,       {{&cmd_lb_c}, .descr = "go to previous mismatch"}},
+	{WK_RB WK_c,       {{&cmd_rb_c}, .descr = "go to next mismatch"}},
+	{WK_LB WK_d,       {{&cmd_lb_d}, .descr = "go to previous dir"}},
+	{WK_RB WK_d,       {{&cmd_rb_d}, .descr = "go to next dir"}},
+	{WK_LB WK_s,       {{&cmd_lb_s}, .descr = "go to previous selected entry"}},
+	{WK_RB WK_s,       {{&cmd_rb_s}, .descr = "go to next selected entry"}},
+	{WK_LB WK_z,       {{&cmd_lb_z}, .descr = "go to first sibling"}},
+	{WK_RB WK_z,       {{&cmd_rb_z}, .descr = "go to last sibling"}},
+	{WK_LCB,           {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir group"}},
+	{WK_RCB,           {{&cmd_right_curly_bracket}, .descr = "go to next file/dir group"}},
 #ifndef _WIN32
 	{WK_c WK_g,        {{&cmd_cg}, .descr = "change group"}},
 	{WK_c WK_o,        {{&cmd_co}, .descr = "change owner"}},
@@ -425,13 +445,23 @@ static keys_add_info_t selectors[] = {
 	{WK_s,       {{&selector_s},      .descr = "selected files"}},
 	{WK_LP,      {{&cmd_left_paren},  .descr = "to previous group of files"}},
 	{WK_RP,      {{&cmd_right_paren}, .descr = "to next group of files"}},
-	{WK_LCB,     {{&cmd_left_curly_bracket},  .descr = "to previous file/dir"}},
-	{WK_RCB,     {{&cmd_right_curly_bracket}, .descr = "to next file/dir"}},
+	{WK_z WK_k,  {{&cmd_z_k},  .descr = "to previous sibling dir"}},
+	{WK_z WK_j,  {{&cmd_z_j},  .descr = "to next sibling dir"}},
+	{WK_LB WK_c, {{&cmd_lb_c}, .descr = "to previous mismatch"}},
+	{WK_RB WK_c, {{&cmd_rb_c}, .descr = "to next mismatch"}},
+	{WK_LB WK_d, {{&cmd_lb_d}, .descr = "to previous dir"}},
+	{WK_RB WK_d, {{&cmd_rb_d}, .descr = "to next dir"}},
+	{WK_LB WK_s, {{&cmd_lb_s}, .descr = "to previous selected entry"}},
+	{WK_RB WK_s, {{&cmd_rb_s}, .descr = "to next selected entry"}},
+	{WK_LB WK_z, {{&cmd_lb_z}, .descr = "to first sibling"}},
+	{WK_RB WK_z, {{&cmd_rb_z}, .descr = "to last sibling"}},
+	{WK_LCB,     {{&cmd_left_curly_bracket},  .descr = "to previous file/dir group"}},
+	{WK_RCB,     {{&cmd_right_curly_bracket}, .descr = "to next file/dir group"}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_DOWN}, {{&cmd_j},  .descr = "to item below"}},
 	{{KEY_UP},   {{&cmd_k},  .descr = "to item above"}},
 	{{KEY_HOME}, {{&cmd_gg}, .descr = "to the first item"}},
-	{{KEY_END},  {{&cmd_G},  .descr = "go to the last item"}},
+	{{KEY_END},  {{&cmd_G},  .descr = "to the last item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -1608,7 +1638,7 @@ search(key_info_t key_info, int backward)
 		const char *const pattern = cfg_get_last_search_pattern();
 		curr_stats.save_msg = (find_pattern(curr_view, pattern, backward, 1, &found,
 				0) != 0);
-		key_info.count--;
+		--key_info.count;
 	}
 
 	while(key_info.count-- > 0)
@@ -1947,6 +1977,84 @@ static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	pick_or_move(keys_info, flist_find_group(curr_view, 1));
+}
+
+/* Go to or pick files until and including previous sibling directory entry or
+ * do nothing. */
+static void
+cmd_z_k(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_prev_dir_sibling(curr_view));
+}
+
+/* Go to or pick files until and including next sibling directory entry or do
+ * nothing. */
+static void
+cmd_z_j(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_next_dir_sibling(curr_view));
+}
+
+/* Go to or pick files until and including previous mismatched entry or do
+ * nothing. */
+static void
+cmd_lb_c(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_prev_mismatch(curr_view));
+}
+
+/* Go to or pick files until and including next mismatched entry or do
+ * nothing. */
+static void
+cmd_rb_c(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_next_mismatch(curr_view));
+}
+
+/* Go to or pick files until and including previous directory entry or do
+ * nothing. */
+static void
+cmd_lb_d(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_prev_dir(curr_view));
+}
+
+/* Go to or pick files until and including next directory entry or do
+ * nothing. */
+static void
+cmd_rb_d(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_next_dir(curr_view));
+}
+
+/* Go to or pick files until and including previous selected entry or do
+ * nothing. */
+static void
+cmd_lb_s(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_prev_selected(curr_view));
+}
+
+/* Go to or pick files until and including next selected entry or do nothing. */
+static void
+cmd_rb_s(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_next_selected(curr_view));
+}
+
+/* Go to or pick files until and including first sibling of the current
+ * entry. */
+static void
+cmd_lb_z(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_first_sibling(curr_view));
+}
+
+/* Go to or pick files until and including last sibling of the current entry. */
+static void
+cmd_rb_z(key_info_t key_info, keys_info_t *keys_info)
+{
+	pick_or_move(keys_info, flist_last_sibling(curr_view));
 }
 
 /* Moves cursor to the beginning of the previous group of files defined by them

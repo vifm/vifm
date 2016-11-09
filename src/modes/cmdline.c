@@ -134,6 +134,7 @@ static int sub_mode_allows_ee;
 
 static int def_handler(wchar_t key);
 static void update_cmdline_text(line_stats_t *stat);
+static void draw_cmdline_text(line_stats_t *stat);
 static void input_line_changed(void);
 static void handle_empty_input(void);
 static void handle_nonempty_input(void);
@@ -369,14 +370,20 @@ def_handler(wchar_t key)
 	return 0;
 }
 
-/* Update test displayed on the command line and cursor. */
+/* Processes input change and redraw of resulting command-line. */
 static void
 update_cmdline_text(line_stats_t *stat)
 {
+	input_line_changed();
+	draw_cmdline_text(stat);
+}
+
+/* Updates text displayed on the command line and cursor within it. */
+static void
+draw_cmdline_text(line_stats_t *stat)
+{
 	int pair = -1;
 	int attr = 0;
-
-	input_line_changed();
 
 	werase(status_bar);
 
@@ -420,7 +427,7 @@ input_line_changed(void)
 	 * wrong place. */
 	curs_set(0);
 
-	set_view_port();
+	/* set_view_port() should not be called if none of the conditions are true. */
 
 	input_stat.state = PS_NORMAL;
 	if(is_input_line_empty())
@@ -428,12 +435,14 @@ input_line_changed(void)
 		free(previous);
 		previous = NULL;
 
+		set_view_port();
 		handle_empty_input();
 	}
 	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
 		(void)replace_wstring(&previous, input_stat.line);
 
+		set_view_port();
 		handle_nonempty_input();
 	}
 
@@ -670,7 +679,7 @@ redraw_cmdline(void)
 
 	line_width = getmaxx(stdscr);
 	update_cmdline_size();
-	update_cmdline_text(&input_stat);
+	draw_cmdline_text(&input_stat);
 	curs_set(1);
 
 	if(input_stat.complete_continue && cfg.wild_menu)

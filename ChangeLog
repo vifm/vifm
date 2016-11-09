@@ -48,6 +48,21 @@
 	Added 'caseoptions' option that enables more fine-grained control over
 	case sensitivity.  Thanks to Alexandru Geana (a.k.a. alegen).
 
+	Added [d and ]d shortcuts to navigate to previous/next directory entry.
+	Thanks to filterfalse.
+
+	Added [s and ]s shortcuts to navigate to previous/next selected entry.
+	Thanks to filterfalse.
+
+	Added [z and ]z shortcuts to navigate to first/last sibling in a tree.
+	Thanks to filterfalse.
+
+	Added zj and zk shortcuts to navigate to next/previous directory sibling
+	in a tree.  Thanks to filterfalse.
+
+	Added [c and ]c shortcuts to navigate to previous/next mismatch in
+	directory comparison view.  Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

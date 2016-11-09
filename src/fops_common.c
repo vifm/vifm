@@ -200,6 +200,10 @@ calc_io_progress(const io_progress_t *const state, int *skip)
 	}
 	else if(estim->total_bytes == 0)
 	{
+		if(estim->total_items == 0)
+		{
+			return 0;
+		}
 		/* When files are empty, use their number for progress counting. */
 		return (estim->current_item*100*IO_PRECISION)/estim->total_items;
 	}

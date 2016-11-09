@@ -72,6 +72,8 @@
 #define WK_EQUALS  L"="
 #define WK_ESC     L"\x1b"
 #define WK_GT      L">"
+#define WK_LB      L"["
+#define WK_RB      L"]"
 #define WK_LCB     L"{"
 #define WK_LP      L"("
 #define WK_LT      L"<"

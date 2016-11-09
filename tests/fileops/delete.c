@@ -10,6 +10,7 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/filelist.h"
+#include "../../src/fops_common.h"
 #include "../../src/fops_misc.h"
 #include "../../src/registers.h"
 #include "../../src/trash.h"
@@ -232,6 +233,51 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 
 	assert_success(unlink(SANDBOX_PATH "/dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(trash_is_not_checked_on_permanent_bg_remove)
+{
+	assert_success(set_trash_dir(lwin.curr_dir));
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_delete_bg(&lwin, 0);
+	wait_for_bg();
+
+	assert_failure(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(empty_directory_is_removed)
+{
+	/* Make sure I/O notification is registered. */
+	fops_init(NULL, NULL);
+
+	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
+			++cfg.use_system_calls)
+	{
+		int bg;
+		for(bg = 0; bg < 2; ++bg)
+		{
+			create_empty_dir(SANDBOX_PATH "/dir");
+
+			populate_dir_list(&lwin, 0);
+			lwin.dir_entry[0].marked = 1;
+
+			if(!bg)
+			{
+				(void)fops_delete(&lwin, 'x', 0);
+			}
+			else
+			{
+				(void)fops_delete_bg(&lwin, 0);
+				wait_for_bg();
+			}
+
+			assert_failure(rmdir(SANDBOX_PATH "/dir"));
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

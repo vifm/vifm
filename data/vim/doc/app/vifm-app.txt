@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 05
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 09
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -562,12 +562,12 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 
 (                                              *vifm-(*
-    goto previous group.  Groups are defined by primary sorting key.
+    go to previous group.  Groups are defined by primary sorting key.
     For name and iname members of each group have same first letter,
     for all other sorting keys vifm uses size, uid, ...
 
 )                                              *vifm-)*
-    goto next group.  See ( key description above.
+    go to next group.  See ( key description above.
 
 
 {                                              *vifm-{*
@@ -577,6 +577,42 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 }                                              *vifm-}*
     same as {, but in forward direction.
+
+
+[c                                             *vifm-[c*
+    go to previous mismatched entry in directory comparison view or do
+    nothing.
+
+]c                                             *vifm-]c*
+    go to next mismatched entry in directory comparison view or do nothing.
+
+
+[d                                             *vifm-[d*
+    go to previous directory entry or do nothing.
+
+]d                                             *vifm-]d*
+    go to next directory entry or do nothing.
+
+
+[s                                             *vifm-[s*
+    go to previous selected entry or do nothing.
+
+]s                                             *vifm-]s*
+    go to next selected entry or do nothing.
+
+
+[z                                             *vifm-[z*
+    go to first sibling of current entry.
+
+]z                                             *vifm-]z*
+    go to last sibling of current entry.
+
+
+zj                                             *vifm-zj*
+    go to next directory sibling of current entry or do nothing.
+
+zk                                             *vifm-zk*
+    go to previous directory sibling of current entry or do nothing.
 
 Using Count~
                                                *vifm-count* *vifm-[count]*
