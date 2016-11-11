@@ -47,7 +47,6 @@ Vi(m) specific features:
   * Completion of first argument for :map commands.
   * Make gU2U and similar commands work as in Vim.
   * Change file list filters to use fold levels.
-  * Quickfix list support.
   * /, ?, n, N as selectors.
   * Fix '' to go back to all jumps G gg links (in one directory?).
   * Maybe make zf and zd more Vim-like.
@@ -91,6 +90,7 @@ Possible things to add:
   * Use system wide mimetypes file. /etc/mailcap?
   * Add "|" command to menu to process list with external tool.
   * "Blow directory" command to replace directory with its content.
+  * Emacs like Dired or Helm incremental search and complete
   * Some key to (un)select all files with extension of current file.
   * $_ env var and Alt-T combination as in bash shell.
   * Templates for :touch.
@@ -102,7 +102,6 @@ Possible things to add:
   * Parse escape sequences in menus as in preview.
   * Virtual File System - currently vifm can use FUSE to mount most file
     systems.
-  * ]s/[s || ]t/[t || ]h/[h to go to the next/previous selected file.
   * Add removable media managing.
   * Something to control behaviour of menu picks.
   * Like gv but to select just pasted files (gp?).
@@ -113,7 +112,6 @@ Possible things to add:
   * Support of command line arguments like ~/some.ssh/server/path (for FUSE).
   * Treat `:filter pattern` as `:filter \<pattern\>`.
   * Add search history for less-like mode.
-  * Add a flag to 'grepprg' to enable parsing of `ag -H ...` output.
   * "Rename existing file" option on name conflicts.
   * Make use of new job information in :jobs menu.
   * Update visible symlinks in the other pane on updating current pane.
@@ -122,6 +120,7 @@ Possible things to add:
   * Asynchronous quick preview?
   * Possibility to make colorful background per column.
   * Add a key to menu mode to repeat command and update menu.
+  * Consider preserving more on file copy (xattr, ACL, sparse files).
   * Extract vim plugin part of install to vifm.vim README.
   * File access history.
   * Make :alink, :copy, ... accept globs (e.g. :co *.c).
@@ -167,6 +166,7 @@ Questionable things:
   * Consider caching directory sizes in vifminfo.
   * Shell alias execution (and completion)
   * Decide whether redefining command shortcuts like :fil should be allowed.
+  * Add a flag to 'grepprg' to enable parsing of `ag -H ...` output.
   * Ability to hide command line when not active.
   * Add tags to angle bracket maps in vimdoc.
   * :alias
