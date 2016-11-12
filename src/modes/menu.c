@@ -29,6 +29,7 @@
 #include <string.h> /* strerror() */
 
 #include "../cfg/config.h"
+#include "../compat/curses.h"
 #include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
@@ -160,15 +161,15 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_z WK_t,  {{&cmd_zt},      .descr = "push cursor to the top"}},
 	{WK_z WK_z,  {{&cmd_zz},      .descr = "center cursor position"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_PPAGE},       {{&cmd_ctrl_b}, .descr = "scroll page up"}},
-	{{KEY_NPAGE},       {{&cmd_ctrl_f}, .descr = "scroll page down"}},
-	{{KEY_UP},          {{&cmd_k},      .descr = "go to item above"}},
-	{{KEY_DOWN},        {{&cmd_j},      .descr = "go to item below"}},
-	{{KEY_RIGHT},       {{&cmd_return}, .descr = "pick current item"}},
-	{{KEY_HOME},        {{&cmd_gg},     .descr = "go to the first item"}},
-	{{KEY_END},         {{&cmd_G},      .descr = "go to the last item"}},
-	{{WC_z, KEY_LEFT},  {{&cmd_zh},     .descr = "scroll one column left"}},
-	{{WC_z, KEY_RIGHT}, {{&cmd_zl},     .descr = "scroll one column right"}},
+	{{K(KEY_PPAGE)},       {{&cmd_ctrl_b}, .descr = "scroll page up"}},
+	{{K(KEY_NPAGE)},       {{&cmd_ctrl_f}, .descr = "scroll page down"}},
+	{{K(KEY_UP)},          {{&cmd_k},      .descr = "go to item above"}},
+	{{K(KEY_DOWN)},        {{&cmd_j},      .descr = "go to item below"}},
+	{{K(KEY_RIGHT)},       {{&cmd_return}, .descr = "pick current item"}},
+	{{K(KEY_HOME)},        {{&cmd_gg},     .descr = "go to the first item"}},
+	{{K(KEY_END)},         {{&cmd_G},      .descr = "go to the last item"}},
+	{{WC_z, K(KEY_LEFT)},  {{&cmd_zh},     .descr = "scroll one column left"}},
+	{{WC_z, K(KEY_RIGHT)}, {{&cmd_zl},     .descr = "scroll one column right"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

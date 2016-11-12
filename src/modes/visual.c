@@ -27,6 +27,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
+#include "../compat/curses.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -265,11 +266,11 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_LCB,        {{&cmd_left_curly_bracket},  .descr = "go to previous file/dir group"}},
 	{WK_RCB,        {{&cmd_right_curly_bracket}, .descr = "go to next file/dir group"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_PPAGE},   {{&cmd_ctrl_b}, .descr = "scroll page up"}},
-	{{KEY_NPAGE},   {{&cmd_ctrl_f}, .descr = "scroll page down"}},
-	{{KEY_DOWN},    {{&cmd_j},      .descr = "go to item below"}},
-	{{KEY_UP},      {{&cmd_k},      .descr = "go to item above"}},
-	{{KEY_RIGHT},   {{&cmd_l},      .descr = "open selection/go to item to the right"}},
+	{{K(KEY_PPAGE)},   {{&cmd_ctrl_b}, .descr = "scroll page up"}},
+	{{K(KEY_NPAGE)},   {{&cmd_ctrl_f}, .descr = "scroll page down"}},
+	{{K(KEY_DOWN)},    {{&cmd_j},      .descr = "go to item below"}},
+	{{K(KEY_UP)},      {{&cmd_k},      .descr = "go to item above"}},
+	{{K(KEY_RIGHT)},   {{&cmd_l},      .descr = "open selection/go to item to the right"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

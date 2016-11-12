@@ -23,6 +23,13 @@
 
 #include <wchar.h> /* wchar_t wint_t */
 
+/* Moves curses functional keys (KEY_*) to Unicode Private Use Area starting
+ * from U+E000, which shouldn't clash with anything except for maybe iconic
+ * fonts, but by convention they start from U+F000, so even that shouldn't
+ * happen. (Solution that guarantees no clashes ever is possible, but very
+ * inconvenient for implementation as it needs more than just wchar_t.) */
+#define K(x) ((wchar_t)((wint_t)0xe000 + (x)))
+
 /* OpenBSD has perverted ncurses library, which has stubs with infinite loops
  * instead of real wide functions.  As there is only a couple of wide functions
  * in use, they can be emulated. */

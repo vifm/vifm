@@ -6,6 +6,7 @@
 #include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* free() */
 
+#include "../../src/compat/curses.h"
 #include "../../src/modes/wk.h"
 #include "../../src/utils/utils.h"
 #include "../../src/bracket_notation.h"
@@ -37,16 +38,33 @@ TEST(c_h_is_bs_at_start_only, IF(locale_works))
 TEST(backspace_is_bs_always, IF(locale_works))
 {
 	{
-		const wchar_t key_seq[] = { KEY_BACKSPACE, L'\0' };
+		const wchar_t key_seq[] = { K(KEY_BACKSPACE), L'\0' };
 		char *const spec = wstr_to_spec(key_seq);
 		assert_string_equal("<bs>", spec);
 		free(spec);
 	}
 
 	{
-		const wchar_t key_seq[] = { WC_C_w, KEY_BACKSPACE, L'\0' };
+		const wchar_t key_seq[] = { WC_C_w, K(KEY_BACKSPACE), L'\0' };
 		char *const spec = wstr_to_spec(key_seq);
 		assert_string_equal("<c-w><bs>", spec);
+		free(spec);
+	}
+}
+
+TEST(functional_keys_do_not_clash_with_characters, IF(locale_works))
+{
+	{
+		const wchar_t key_seq[] = { L'š', L'\0' };
+		char *const spec = wstr_to_spec(key_seq);
+		assert_string_equal("š", spec);
+		free(spec);
+	}
+
+	{
+		const wchar_t key_seq[] = { WC_C_w, L'ć', L'\0' };
+		char *const spec = wstr_to_spec(key_seq);
+		assert_string_equal("<c-w>ć", spec);
 		free(spec);
 	}
 }

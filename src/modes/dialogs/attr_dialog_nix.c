@@ -31,6 +31,7 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strncat() strlen() */
 
+#include "../../compat/curses.h"
 #include "../../compat/fs_limits.h"
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
@@ -101,11 +102,11 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_q,      {{&cmd_ctrl_c}, .descr = "close the dialog"}},
 	{WK_t,      {{&cmd_space},  .descr = "toggle current item"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_HOME},  {{&cmd_gg},     .descr = "go to the first item"}},
-	{{KEY_END},   {{&cmd_G},      .descr = "go to the last item"}},
-	{{KEY_UP},    {{&cmd_k},      .descr = "go to item above"}},
-	{{KEY_DOWN},  {{&cmd_j},      .descr = "go to item below"}},
-	{{KEY_RIGHT}, {{&cmd_return}, .descr = "update permissions"}},
+	{{K(KEY_HOME)},  {{&cmd_gg},     .descr = "go to the first item"}},
+	{{K(KEY_END)},   {{&cmd_G},      .descr = "go to the last item"}},
+	{{K(KEY_UP)},    {{&cmd_k},      .descr = "go to item above"}},
+	{{K(KEY_DOWN)},  {{&cmd_j},      .descr = "go to item below"}},
+	{{K(KEY_RIGHT)}, {{&cmd_return}, .descr = "update permissions"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

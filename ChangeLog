@@ -223,6 +223,9 @@
 	Fixed selection of current file on cancelled go or gp.  Thanks to
 	filterfalse.
 
+	Fixed treating characters like š and ć (with low Unicode values, just
+	above 0x100) as functional keys on input.  Thanks to granderil.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
