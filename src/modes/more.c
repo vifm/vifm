@@ -26,6 +26,7 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
+#include "../compat/curses.h"
 #include "../compat/reallocarray.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
@@ -102,13 +103,13 @@ static keys_add_info_t builtin_keys[] = {
 	{WK_u,     {{&cmd_up_page},     .descr = "scroll page up"}},
 
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BACKSPACE}, {{&cmd_up_line},     .descr = "scroll one line up"}},
-	{{KEY_DOWN},      {{&cmd_down_line},   .descr = "scroll one line down"}},
-	{{KEY_UP},        {{&cmd_up_line},     .descr = "scroll one line up"}},
-	{{KEY_HOME},      {{&cmd_top},         .descr = "scroll to the beginning"}},
-	{{KEY_END},       {{&cmd_bottom},      .descr = "scroll to the end"}},
-	{{KEY_NPAGE},     {{&cmd_down_screen}, .descr = "scroll one screen down"}},
-	{{KEY_PPAGE},     {{&cmd_up_screen},   .descr = "scroll one screen up"}},
+	{{K(KEY_BACKSPACE)}, {{&cmd_up_line},     .descr = "scroll one line up"}},
+	{{K(KEY_DOWN)},      {{&cmd_down_line},   .descr = "scroll one line down"}},
+	{{K(KEY_UP)},        {{&cmd_up_line},     .descr = "scroll one line up"}},
+	{{K(KEY_HOME)},      {{&cmd_top},         .descr = "scroll to the beginning"}},
+	{{K(KEY_END)},       {{&cmd_bottom},      .descr = "scroll to the end"}},
+	{{K(KEY_NPAGE)},     {{&cmd_down_screen}, .descr = "scroll one screen down"}},
+	{{K(KEY_PPAGE)},     {{&cmd_up_screen},   .descr = "scroll one screen up"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

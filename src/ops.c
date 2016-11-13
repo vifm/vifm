@@ -38,6 +38,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
+#include "compat/reallocarray.h"
 #include "io/ioeta.h"
 #include "io/iop.h"
 #include "io/ior.h"
@@ -358,7 +359,12 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 			copy_str(path, sizeof(path), src);
 			to_back_slash(path);
 
-			wchar_t *const utf16_path = utf8_to_utf16(path);
+			wchar_t *utf16_path = utf8_to_utf16(path);
+
+			/* SHFileOperationW requires pFrom to be double-nul terminated. */
+			const size_t len = wcslen(utf16_path);
+			utf16_path = reallocarray(utf16_path, len + 1U + 1U, sizeof(*utf16_path));
+			utf16_path[len + 1U] = L'\0';
 
 			SHFILEOPSTRUCTW fo = {
 				.hwnd = NULL,

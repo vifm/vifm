@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "../../cfg/config.h"
+#include "../../compat/curses.h"
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
 #include "../../ui/colors.h"
@@ -74,11 +75,11 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_g,      {{&cmd_g},      .descr = "change group"}},
 	{WK_p,      {{&cmd_p},      .descr = "change file permissions/attributes"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_UP},    {{&cmd_k},      .descr = "go to item above"}},
-	{{KEY_DOWN},  {{&cmd_j},      .descr = "go to item below"}},
-	{{KEY_RIGHT}, {{&cmd_return}, .descr = "perform selected action"}},
-	{{KEY_HOME},  {{&cmd_gg},     .descr = "go to the first item"}},
-	{{KEY_END},   {{&cmd_G},      .descr = "go to the last item"}},
+	{{K(KEY_UP)},    {{&cmd_k},      .descr = "go to item above"}},
+	{{K(KEY_DOWN)},  {{&cmd_j},      .descr = "go to item below"}},
+	{{K(KEY_RIGHT)}, {{&cmd_return}, .descr = "perform selected action"}},
+	{{K(KEY_HOME)},  {{&cmd_gg},     .descr = "go to the first item"}},
+	{{K(KEY_END)},   {{&cmd_G},      .descr = "go to the last item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

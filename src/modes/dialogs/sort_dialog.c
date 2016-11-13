@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "../../cfg/config.h"
+#include "../../compat/curses.h"
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
 #include "../../ui/colors.h"
@@ -160,12 +161,12 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_c,      {{&cmd_c},      .descr = "by creation time"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_UP},    {{&cmd_k},      .descr = "go to item above"}},
-	{{KEY_DOWN},  {{&cmd_j},      .descr = "go to item below"}},
-	{{KEY_LEFT},  {{&cmd_h},      .descr = "toggle ordering"}},
-	{{KEY_RIGHT}, {{&cmd_return}, .descr = "apply selected sorting"}},
-	{{KEY_HOME},  {{&cmd_gg},     .descr = "go to the first item"}},
-	{{KEY_END},   {{&cmd_G},      .descr = "go to the last item"}},
+	{{K(KEY_UP)},    {{&cmd_k},      .descr = "go to item above"}},
+	{{K(KEY_DOWN)},  {{&cmd_j},      .descr = "go to item below"}},
+	{{K(KEY_LEFT)},  {{&cmd_h},      .descr = "toggle ordering"}},
+	{{K(KEY_RIGHT)}, {{&cmd_return}, .descr = "apply selected sorting"}},
+	{{K(KEY_HOME)},  {{&cmd_gg},     .descr = "go to the first item"}},
+	{{K(KEY_END)},   {{&cmd_G},      .descr = "go to the last item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

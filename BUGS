@@ -7,7 +7,6 @@
 * There is no sshfs like FUSE for servers that provide only scp.
 * Trailing "\ " in :map commands prevents cutting of the space.
 * noremap shows wrong keys?
-* :view and then DD on empty directory causes statusbar msg flicker.
 * "*" at the beginning of a glob doesn't match empty string.
 * :filetype checks don't expand ~ and environment variables.
 * :apropos command doesn't escape its arguments.

@@ -288,15 +288,15 @@ static keys_add_info_t builtin_cmds[] = {
 	{{ALT_PERIOD},    {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BACKSPACE}, {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
-	{{KEY_DOWN},      {{&cmd_down},   .descr = "prefix-complete next history item"}},
-	{{KEY_UP},        {{&cmd_up},     .descr = "prefix-complete previous history item"}},
-	{{KEY_LEFT},      {{&cmd_left},   .descr = "move cursor to the left"}},
-	{{KEY_RIGHT},     {{&cmd_right},  .descr = "move cursor to the right"}},
-	{{KEY_HOME},      {{&cmd_home},   .descr = "move cursor to the beginning"}},
-	{{KEY_END},       {{&cmd_end},    .descr = "move cursor to the end"}},
-	{{KEY_DC},        {{&cmd_delete}, .descr = "delete current character"}},
-	{{KEY_BTAB},      {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
+	{{K(KEY_BACKSPACE)}, {{&cmd_ctrl_h}, .descr = "remove char to the left"}},
+	{{K(KEY_DOWN)},      {{&cmd_down},   .descr = "prefix-complete next history item"}},
+	{{K(KEY_UP)},        {{&cmd_up},     .descr = "prefix-complete previous history item"}},
+	{{K(KEY_LEFT)},      {{&cmd_left},   .descr = "move cursor to the left"}},
+	{{K(KEY_RIGHT)},     {{&cmd_right},  .descr = "move cursor to the right"}},
+	{{K(KEY_HOME)},      {{&cmd_home},   .descr = "move cursor to the beginning"}},
+	{{K(KEY_END)},       {{&cmd_end},    .descr = "move cursor to the end"}},
+	{{K(KEY_DC)},        {{&cmd_delete}, .descr = "delete current character"}},
+	{{K(KEY_BTAB)},      {{&cmd_shift_tab}, .descr = "complete in reverse order"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -332,7 +332,7 @@ def_handler(wchar_t key)
 
 	/* There is no need for resetting completion because of terminal dimensions
 	 * change (note also that iswprint(KEY_RESIZE) might return false). */
-	if(key == KEY_RESIZE)
+	if(key == K(KEY_RESIZE))
 	{
 		return 0;
 	}

@@ -30,6 +30,7 @@
 #include <stdlib.h> /* free() */
 
 #include "../cfg/config.h"
+#include "../compat/curses.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
@@ -281,16 +282,16 @@ static keys_add_info_t builtin_cmds[] = {
 	{{ALT_V},          {{&cmd_b}, .descr = "scroll page up"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
-	{{WC_C_w, KEY_BACKSPACE}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},
-	{{KEY_PPAGE},             {{&cmd_b}, .descr = "scroll page up"}},
-	{{KEY_NPAGE},             {{&cmd_f}, .descr = "scroll page down"}},
-	{{KEY_DOWN},              {{&cmd_j}, .descr = "scroll one line down"}},
-	{{KEY_UP},                {{&cmd_k}, .descr = "scroll one line up"}},
-	{{KEY_HOME},              {{&cmd_g}, .descr = "scroll to the beginning"}},
-	{{KEY_END},               {{&cmd_G}, .descr = "scroll to the end"}},
-	{{KEY_BTAB},              {{&cmd_q}, .descr = "leave view mode"}},
+	{{WC_C_w, K(KEY_BACKSPACE)}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},
+	{{K(KEY_PPAGE)},             {{&cmd_b}, .descr = "scroll page up"}},
+	{{K(KEY_NPAGE)},             {{&cmd_f}, .descr = "scroll page down"}},
+	{{K(KEY_DOWN)},              {{&cmd_j}, .descr = "scroll one line down"}},
+	{{K(KEY_UP)},                {{&cmd_k}, .descr = "scroll one line up"}},
+	{{K(KEY_HOME)},              {{&cmd_g}, .descr = "scroll to the beginning"}},
+	{{K(KEY_END)},               {{&cmd_G}, .descr = "scroll to the end"}},
+	{{K(KEY_BTAB)},              {{&cmd_q}, .descr = "leave view mode"}},
 #else
-	{WK_ESCAPE L"[Z",         {{&cmd_q}, .descr = "leave view mode"}},
+	{WK_ESCAPE L"[Z",            {{&cmd_q}, .descr = "leave view mode"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

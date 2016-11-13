@@ -150,7 +150,7 @@ event_loop(const int *quit)
 				continue;
 			}
 
-			if(got_input && c == KEY_RESIZE)
+			if(got_input && c == K(KEY_RESIZE))
 			{
 				modes_redraw();
 				continue;
@@ -332,8 +332,8 @@ ensure_term_is_ready(void)
  *  - checks for new IPC messages;
  *  - checks whether contents of displayed directories changed;
  *  - redraws UI if requested.
- * Returns KEY_CODE_YES for functional keys, OK for wide character and ERR
- * otherwise (e.g. after timeout). */
+ * Returns KEY_CODE_YES for functional keys (preprocesses *c in this case), OK
+ * for wide character and ERR otherwise (e.g. after timeout). */
 static int
 get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 {
@@ -375,6 +375,10 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 			result = compat_wget_wch(win, c);
 			if(result != ERR)
 			{
+				if(result == KEY_CODE_YES)
+				{
+					*c = K(*c);
+				}
 				return result;
 			}
 

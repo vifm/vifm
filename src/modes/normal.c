@@ -36,6 +36,7 @@
 
 #include "../cfg/config.h"
 #include "../cfg/hist.h"
+#include "../compat/curses.h"
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 #include "../engine/keys.h"
@@ -404,16 +405,16 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_g WK_r,        {{&cmd_gr}, .descr = "open file with rights elevation"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
-	{{WC_C_w, KEY_BACKSPACE}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},
-	{{KEY_PPAGE},             {{&cmd_ctrl_b},  .descr = "scroll page up"}},
-	{{KEY_NPAGE},             {{&cmd_ctrl_f},  .descr = "scroll page down"}},
-	{{KEY_LEFT},              {{&cmd_h},       .descr = "go to parent directory/item to the left"}},
-	{{KEY_DOWN},              {{&cmd_j},       .descr = "go to item below"}},
-	{{KEY_UP},                {{&cmd_k},       .descr = "go to item above"}},
-	{{KEY_RIGHT},             {{&cmd_l},       .descr = "open file/go to item to the right"}},
-	{{KEY_HOME},              {{&cmd_gg},      .descr = "go to the first item"}},
-	{{KEY_END},               {{&cmd_G},       .descr = "go to the last item"}},
-	{{KEY_BTAB},              {{&cmd_shift_tab}, .descr = "switch to view pane"}},
+	{{WC_C_w, K(KEY_BACKSPACE)}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},
+	{{K(KEY_PPAGE)},             {{&cmd_ctrl_b},  .descr = "scroll page up"}},
+	{{K(KEY_NPAGE)},             {{&cmd_ctrl_f},  .descr = "scroll page down"}},
+	{{K(KEY_LEFT)},              {{&cmd_h},       .descr = "go to parent directory/item to the left"}},
+	{{K(KEY_DOWN)},              {{&cmd_j},       .descr = "go to item below"}},
+	{{K(KEY_UP)},                {{&cmd_k},       .descr = "go to item above"}},
+	{{K(KEY_RIGHT)},             {{&cmd_l},       .descr = "open file/go to item to the right"}},
+	{{K(KEY_HOME)},              {{&cmd_gg},      .descr = "go to the first item"}},
+	{{K(KEY_END)},               {{&cmd_G},       .descr = "go to the last item"}},
+	{{K(KEY_BTAB)},              {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #else
 	{WK_ESC L"[Z",            {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #endif /* ENABLE_EXTENDED_KEYS */
@@ -458,10 +459,10 @@ static keys_add_info_t selectors[] = {
 	{WK_LCB,     {{&cmd_left_curly_bracket},  .descr = "to previous file/dir group"}},
 	{WK_RCB,     {{&cmd_right_curly_bracket}, .descr = "to next file/dir group"}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_DOWN}, {{&cmd_j},  .descr = "to item below"}},
-	{{KEY_UP},   {{&cmd_k},  .descr = "to item above"}},
-	{{KEY_HOME}, {{&cmd_gg}, .descr = "to the first item"}},
-	{{KEY_END},  {{&cmd_G},  .descr = "to the last item"}},
+	{{K(KEY_DOWN)}, {{&cmd_j},  .descr = "to item below"}},
+	{{K(KEY_UP)},   {{&cmd_k},  .descr = "to item above"}},
+	{{K(KEY_HOME)}, {{&cmd_gg}, .descr = "to the first item"}},
+	{{K(KEY_END)},  {{&cmd_G},  .descr = "to the last item"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
