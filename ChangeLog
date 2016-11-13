@@ -226,6 +226,9 @@
 	Fixed treating characters like š and ć (with low Unicode values, just
 	above 0x100) as functional keys on input.  Thanks to granderil.
 
+	Fixed recursive permanent removal of directories on Windows when
+	'syscalls' isn't set, which could fail for no reason.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
