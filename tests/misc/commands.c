@@ -278,6 +278,19 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_true(paths_are_equal(rwin.curr_dir, path));
 }
 
+TEST(envvars_of_commands_come_from_variables_unit)
+{
+	assert_success(chdir(test_data));
+
+	strcpy(lwin.curr_dir, test_data);
+
+	assert_false(is_root_dir(lwin.curr_dir));
+	assert_success(exec_commands("let $ABCDE = '/'", &lwin, CIT_COMMAND));
+	env_set("ABCDE", SANDBOX_PATH);
+	assert_success(exec_commands("cd $ABCDE", &lwin, CIT_COMMAND));
+	assert_true(is_root_dir(lwin.curr_dir));
+}
+
 TEST(cpmv_does_not_crash_on_wrong_list_access)
 {
 	char path[PATH_MAX];

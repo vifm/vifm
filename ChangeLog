@@ -229,6 +229,10 @@
 	Fixed recursive permanent removal of directories on Windows when
 	'syscalls' isn't set, which could fail for no reason.
 
+	Fixed inconsistency of using environment variables from different
+	sources (internal state versus runtime).  Thanks to Jochen
+	Schweizer (a.k.a. durcheinandr).
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

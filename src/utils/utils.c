@@ -42,6 +42,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../engine/keys.h"
+#include "../engine/variables.h"
 #include "../int/fuse.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
@@ -171,8 +172,8 @@ expand_envvars(const char str[], int escape_vals)
 			}
 			*q = '\0';
 
-			var_value = env_get(var_name);
-			if(var_value != NULL)
+			var_value = local_getenv(var_name);
+			if(!is_null_or_empty(var_value))
 			{
 				char *escaped_var_value = NULL;
 				if(escape_vals)
