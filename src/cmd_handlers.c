@@ -674,7 +674,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &rlink_cmd,       .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "screen",            .abbr = NULL,    .id = -1,
 	  .descr = "view/toggle terminal multiplexer support",
-	  .flags = HAS_COMMENT | HAS_QMARK_NO_ARGS,
+	  .flags = HAS_COMMENT | HAS_EMARK | HAS_QMARK_NO_ARGS,
 	  .handler = &screen_cmd,      .min_args = 0,   .max_args = 0, },
 	{ .name = "select",            .abbr = NULL,    .id = COM_SELECT,
 	  .descr = "select files matching pattern or range",
@@ -3445,7 +3445,7 @@ link_cmd(const cmd_info_t *cmd_info, int absolute)
 			cmd_info->emark) != 0;
 }
 
-/* Shows status of terminal multiplexers support or toggles it. */
+/* Shows status of terminal multiplexers support, sets it or toggles it. */
 static int
 screen_cmd(const cmd_info_t *cmd_info)
 {
@@ -3470,7 +3470,16 @@ screen_cmd(const cmd_info_t *cmd_info)
 		}
 		return 1;
 	}
-	cfg_set_use_term_multiplexer(!cfg.use_term_multiplexer);
+
+	if(cmd_info->emark)
+	{
+		cfg_set_use_term_multiplexer(1);
+	}
+	else
+	{
+		cfg_set_use_term_multiplexer(!cfg.use_term_multiplexer);
+	}
+
 	return 0;
 }
 

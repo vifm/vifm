@@ -711,6 +711,25 @@ TEST(compare)
 	opt_handlers_teardown();
 }
 
+TEST(screen)
+{
+	assert_false(cfg.use_term_multiplexer);
+
+	/* :screen toggles the option. */
+	assert_success(exec_commands("screen", &lwin, CIT_COMMAND));
+	assert_true(cfg.use_term_multiplexer);
+	assert_success(exec_commands("screen", &lwin, CIT_COMMAND));
+	assert_false(cfg.use_term_multiplexer);
+
+	/* :screen! sets it to on. */
+	assert_success(exec_commands("screen!", &lwin, CIT_COMMAND));
+	assert_true(cfg.use_term_multiplexer);
+	assert_success(exec_commands("screen!", &lwin, CIT_COMMAND));
+	assert_true(cfg.use_term_multiplexer);
+
+	cfg.use_term_multiplexer = 0;
+}
+
 static void
 check_filetype(void)
 {
