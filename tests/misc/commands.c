@@ -278,6 +278,19 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_true(paths_are_equal(rwin.curr_dir, path));
 }
 
+TEST(envvars_of_commands_come_from_variables_unit)
+{
+	assert_success(chdir(test_data));
+
+	strcpy(lwin.curr_dir, test_data);
+
+	assert_false(is_root_dir(lwin.curr_dir));
+	assert_success(exec_commands("let $ABCDE = '/'", &lwin, CIT_COMMAND));
+	env_set("ABCDE", SANDBOX_PATH);
+	assert_success(exec_commands("cd $ABCDE", &lwin, CIT_COMMAND));
+	assert_true(is_root_dir(lwin.curr_dir));
+}
+
 TEST(cpmv_does_not_crash_on_wrong_list_access)
 {
 	char path[PATH_MAX];
@@ -696,6 +709,25 @@ TEST(compare)
 	assert_success(remove(SANDBOX_PATH "/file"));
 
 	opt_handlers_teardown();
+}
+
+TEST(screen)
+{
+	assert_false(cfg.use_term_multiplexer);
+
+	/* :screen toggles the option. */
+	assert_success(exec_commands("screen", &lwin, CIT_COMMAND));
+	assert_true(cfg.use_term_multiplexer);
+	assert_success(exec_commands("screen", &lwin, CIT_COMMAND));
+	assert_false(cfg.use_term_multiplexer);
+
+	/* :screen! sets it to on. */
+	assert_success(exec_commands("screen!", &lwin, CIT_COMMAND));
+	assert_true(cfg.use_term_multiplexer);
+	assert_success(exec_commands("screen!", &lwin, CIT_COMMAND));
+	assert_true(cfg.use_term_multiplexer);
+
+	cfg.use_term_multiplexer = 0;
 }
 
 static void

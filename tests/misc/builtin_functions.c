@@ -7,6 +7,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
+#include "../../src/engine/variables.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
@@ -25,6 +26,7 @@ SETUP()
 
 	init_builtin_functions();
 	init_parser(NULL);
+	init_variables();
 
 	view_setup(&lwin);
 
@@ -33,6 +35,7 @@ SETUP()
 
 TEARDOWN()
 {
+	clear_envvars();
 	function_reset_all();
 	update_string(&cfg.shell, NULL);
 
@@ -63,7 +66,7 @@ TEST(executable_false_for_dir)
 
 TEST(expand_expands_environment_variables)
 {
-	env_set("OPEN_ME", "Found something interesting?");
+	let_variables("$OPEN_ME = 'Found something interesting?'");
 	ASSERT_OK("expand('$OPEN_ME')", "Found something interesting?");
 }
 

@@ -194,9 +194,12 @@ TEST(error_on_wrong_event_name)
 
 TEST(envvars_are_expanded)
 {
+	char cmd[PATH_MAX];
+
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
-	env_set("dir", sandbox);
+	snprintf(cmd, sizeof(cmd), "let $dir = '%s'", sandbox);
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 	assert_success(exec_commands("autocmd DirEnter $dir let $a = 1", &lwin,
 				CIT_COMMAND));
 

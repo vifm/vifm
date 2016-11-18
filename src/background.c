@@ -31,6 +31,7 @@
 #include <sys/time.h> /* timeval */
 #include <sys/wait.h> /* WEXITSTATUS() waitpid() */
 #endif
+#include <signal.h> /* kill() */
 #include <unistd.h> /* select() */
 
 #include <assert.h> /* assert() */

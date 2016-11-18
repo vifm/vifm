@@ -63,6 +63,9 @@
 	Added [c and ]c shortcuts to navigate to previous/next mismatch in
 	directory comparison view.  Thanks to filterfalse.
 
+	Added :screen! form that enables terminal multiplexers support (instead of
+	toggling it as :screen does).  Thanks to Marcos Cruz.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
@@ -228,6 +231,10 @@
 
 	Fixed recursive permanent removal of directories on Windows when
 	'syscalls' isn't set, which could fail for no reason.
+
+	Fixed inconsistency of using environment variables from different
+	sources (internal state versus runtime).  Thanks to Jochen
+	Schweizer (a.k.a. durcheinandr).
 
 0.8.2-beta to 0.8.2
 

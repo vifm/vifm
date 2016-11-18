@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 09
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2024,6 +2024,8 @@ order using the '.' operator.  Any whitespace is ignored.
     multiplexer window for each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument or
     tmux (1.8 version or newer is recommended).
+:screen!
+    enable integration with terminal multiplexers.
 :screen?
     display whether integration with terminal multiplexers is enabled.
 

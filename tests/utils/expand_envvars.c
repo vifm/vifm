@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include "../../src/utils/env.h"
+#include "../../src/engine/variables.h"
 #include "../../src/utils/utils.h"
 
 #define VAR_A               "VAR_A"
@@ -13,14 +13,14 @@
 
 SETUP()
 {
-	env_set(VAR_A, VAR_A_VAL);
-	env_set(VAR_B, VAR_B_VAL);
+	init_variables();
+	let_variables("$" VAR_A " = '" VAR_A_VAL "'");
+	let_variables("$" VAR_B " = '" VAR_B_VAL "'");
 }
 
 TEARDOWN()
 {
-	env_remove(VAR_A);
-	env_remove(VAR_B);
+	clear_envvars();
 }
 
 TEST(empty_string_ok)
