@@ -699,6 +699,33 @@ TEST(empty_failes_are_skipped_if_requested)
 	basic_panes_check(4);
 }
 
+TEST(custom_views_are_compared)
+{
+	strcpy(lwin.curr_dir, "no-such-path");
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin,
+			TEST_DATA_PATH "/compare/a/same-content-different-name-1");
+	flist_custom_add(&lwin,
+			TEST_DATA_PATH "/compare/a/same-name-different-content");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/compare/a/same-name-same-content");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
+
+	compare_two_panes(CT_NAME, LT_ALL, 1, 0);
+
+	basic_panes_check(4);
+
+	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
+	assert_string_equal("same-content-different-name-1", rwin.dir_entry[0].name);
+	assert_string_equal("", lwin.dir_entry[1].name);
+	assert_string_equal("same-content-different-name-2", rwin.dir_entry[1].name);
+	assert_string_equal("same-name-different-content", lwin.dir_entry[2].name);
+	assert_string_equal("same-name-different-content", rwin.dir_entry[2].name);
+	assert_string_equal("same-name-same-content", lwin.dir_entry[3].name);
+	assert_string_equal("same-name-same-content", rwin.dir_entry[3].name);
+}
+
 static void
 basic_panes_check(int expected_len)
 {

@@ -34,6 +34,7 @@
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/fs.h"
+#include "utils/fsdata.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -78,6 +79,9 @@ static int id_sorter(const void *first, const void *second);
 static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
 		CompareType ct, int skip_empty, int dups_only);
+static void list_view_entries(const FileView *view, strlist_t *list);
+static void append_valid_nodes(const char name[], int valid,
+		const void *parent_data, void *data, void *arg);
 static void list_files_recursively(const char path[], int skip_dot_files,
 		strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
@@ -490,7 +494,15 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	int last_progress = 0;
 
 	show_progress("Listing...", 0);
-	list_files_recursively(flist_get_dir(view), view->hide_dot, &files);
+	if(flist_custom_active(view) &&
+			ONE_OF(view->custom.type, CV_REGULAR, CV_VERY))
+	{
+		list_view_entries(view, &files);
+	}
+	else
+	{
+		list_files_recursively(flist_get_dir(view), view->hide_dot, &files);
+	}
 
 	show_progress("Querying...", 0);
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
@@ -551,6 +563,46 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 
 	free_string_array(files.items, files.nitems);
 	return r;
+}
+
+/* Fills the list with entries of the view in hierarchical order (pre-order tree
+ * traversal). */
+static void
+list_view_entries(const FileView *view, strlist_t *list)
+{
+	int i;
+
+	fsdata_t *const tree = fsdata_create(0, 0);
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		char full_path[PATH_MAX];
+		void *data = &view->dir_entry[i];
+		get_full_path_of(&view->dir_entry[i], sizeof(full_path), full_path);
+		fsdata_set(tree, full_path, &data, sizeof(data));
+	}
+
+	fsdata_traverse(tree, &append_valid_nodes, list);
+
+	fsdata_free(tree);
+}
+
+/* fsdata_traverse() callback that collects names of existing files into a
+ * list. */
+static void
+append_valid_nodes(const char name[], int valid, const void *parent_data,
+		void *data, void *arg)
+{
+	strlist_t *const list = arg;
+	dir_entry_t *const entry = *(dir_entry_t **)data;
+
+	if(valid)
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		list->nitems = add_to_string_array(&list->items, list->nitems, 1,
+				full_path);
+	}
 }
 
 /* Collects files under specified file system tree. */
