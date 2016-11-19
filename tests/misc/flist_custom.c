@@ -23,6 +23,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/flist_hist.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
 #include "../../src/running.h"

@@ -48,6 +48,7 @@
 #include "../cmd_core.h"
 #include "../dir_stack.h"
 #include "../filelist.h"
+#include "../flist_hist.h"
 #include "../filetype.h"
 #include "../filtering.h"
 #include "../marks.h"

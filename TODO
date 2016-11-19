@@ -149,7 +149,6 @@ Questionable things:
   * Consider conflict resolution for :move and alike.
   * Builtin function (or variable?) to get number of selected files.
   * Make directory stack menu interactive?
-  * Key like ' but that executes bookmark?
   * Tree-like view with support of foldings (for each directory). (partially
     done)
   * Consider adding "da" to remove all elements in :bmarks menu.
@@ -184,7 +183,6 @@ Code improvements:
     copy_str(). (partially done)
   * Consider mentioning libncursesw5-dev in configuration error for
     Debian-based systems.
-  * Extract history related code out of filelist.c to separate file.
   * Reduce number of magic numbers. (partially done)
   * Add function to count size of NULL-terminated array.
   * Think about window_rows and window_width members of FileView.

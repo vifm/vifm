@@ -7,7 +7,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
-#include "../../src/filelist.h"
+#include "../../src/flist_hist.h"
 
 #include "utils.h"
 

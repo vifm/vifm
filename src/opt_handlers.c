@@ -48,6 +48,7 @@
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "filelist.h"
+#include "flist_hist.h"
 #include "search.h"
 #include "sort.h"
 #include "status.h"

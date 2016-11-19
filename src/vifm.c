@@ -77,6 +77,7 @@
 #include "event_loop.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "flist_hist.h"
 #include "flist_pos.h"
 #include "fops_common.h"
 #include "ipc.h"

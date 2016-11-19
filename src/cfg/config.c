@@ -56,6 +56,7 @@
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
+#include "../flist_hist.h"
 #include "../marks.h"
 #include "../opt_handlers.h"
 #include "../status.h"

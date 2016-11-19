@@ -89,6 +89,7 @@
 #include "filelist.h"
 #include "filetype.h"
 #include "filtering.h"
+#include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
 #include "fops_cpmv.h"

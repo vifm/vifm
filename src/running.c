@@ -67,6 +67,7 @@
 #include "background.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
 #include "macros.h"

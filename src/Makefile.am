@@ -234,6 +234,7 @@ vifm_SOURCES = \
 	fops_rename.c fops_rename.h \
 	filetype.c filetype.h \
 	filtering.c filtering.h \
+	flist_hist.c flist_hist.h \
 	flist_pos.c flist_pos.h \
 	flist_sel.c flist_sel.h \
 	ipc.c ipc.h \

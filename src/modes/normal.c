@@ -54,6 +54,7 @@
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
+#include "../flist_hist.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
 #include "../flist_sel.h"
