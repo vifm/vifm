@@ -439,7 +439,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 	{
 		view->list_rows = 1;
 	}
-	save_view_history(view, dir, file, pos);
+	flist_hist_save(view, dir, file, pos);
 	if(!reread)
 	{
 		view->list_rows = list_rows;
@@ -906,7 +906,7 @@ process_hist_entry(FileView *view, const char dir[], const char file[], int pos,
 		char ***lh, int *nlh, int **lhp, size_t *nlhp)
 {
 	if(view->history_pos + *nlh/2 == cfg.history_len - 1 ||
-			is_in_view_history(view, dir) || !is_dir(dir))
+			flist_hist_contains(view, dir) || !is_dir(dir))
 	{
 		return;
 	}
@@ -1286,7 +1286,7 @@ write_view_history(FILE *fp, FileView *view, const char str[], char mark,
 		int prev_count, char *prev[], int pos[])
 {
 	int i;
-	save_view_history(view, NULL, NULL, -1);
+	flist_hist_save(view, NULL, NULL, -1);
 	fprintf(fp, "\n# %s window history (oldest to newest):\n", str);
 	for(i = 0; i < prev_count; i += 2)
 	{

@@ -845,8 +845,8 @@ cfg_resize_histories(int new_len)
 
 	if(old_len == 0)
 	{
-		save_view_history(&lwin, NULL, NULL, -1);
-		save_view_history(&rwin, NULL, NULL, -1);
+		flist_hist_save(&lwin, NULL, NULL, -1);
+		flist_hist_save(&rwin, NULL, NULL, -1);
 	}
 }
 

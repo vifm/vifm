@@ -32,7 +32,7 @@
 static void navigate_to_history_pos(FileView *view, int pos);
 
 void
-navigate_backward_in_history(FileView *view)
+flist_hist_go_back(FileView *view)
 {
 	/* When in custom view, we don't want to skip top history item. */
 	int pos = flist_custom_active(view)
@@ -57,7 +57,7 @@ navigate_backward_in_history(FileView *view)
 }
 
 void
-navigate_forward_in_history(FileView *view)
+flist_hist_go_forward(FileView *view)
 {
 	int pos = view->history_pos + 1;
 
@@ -98,7 +98,7 @@ navigate_to_history_pos(FileView *view, int pos)
 }
 
 void
-save_view_history(FileView *view, const char path[], const char file[], int pos)
+flist_hist_save(FileView *view, const char path[], const char file[], int pos)
 {
 	int x;
 
@@ -163,17 +163,25 @@ save_view_history(FileView *view, const char path[], const char file[], int pos)
 }
 
 int
-is_in_view_history(FileView *view, const char *path)
+flist_hist_contains(FileView *view, const char path[])
 {
 	int i;
+
 	if(view->history == NULL || view->history_num <= 0)
+	{
 		return 0;
-	for(i = view->history_pos; i >= 0; i--)
+	}
+
+	for(i = view->history_pos; i >= 0; --i)
 	{
 		if(strlen(view->history[i].dir) < 1)
+		{
 			break;
+		}
 		if(stroscmp(view->history[i].dir, path) == 0)
+		{
 			return 1;
+		}
 	}
 	return 0;
 }

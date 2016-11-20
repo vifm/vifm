@@ -433,7 +433,7 @@ change_directory(FileView *view, const char directory[])
 
 	if(is_dir_list_loaded(view))
 	{
-		save_view_history(view, NULL, NULL, -1);
+		flist_hist_save(view, NULL, NULL, -1);
 	}
 
 	if(is_path_absolute(directory))
@@ -582,7 +582,7 @@ change_directory(FileView *view, const char directory[])
 
 	if(is_dir_list_loaded(view))
 	{
-		save_view_history(view, NULL, "", -1);
+		flist_hist_save(view, NULL, "", -1);
 	}
 
 	/* Perform additional actions on leaving custom view. */
@@ -956,7 +956,7 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 		 * view. */
 		if(is_dir_list_loaded(view))
 		{
-			save_view_history(view, NULL, NULL, -1);
+			flist_hist_save(view, NULL, NULL, -1);
 		}
 
 		(void)replace_string(&view->custom.orig_dir, dir);

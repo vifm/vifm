@@ -624,7 +624,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		navigate_forward_in_history(curr_view);
+		flist_hist_go_forward(curr_view);
 	}
 }
 
@@ -647,7 +647,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
 {
-	navigate_backward_in_history(curr_view);
+	flist_hist_go_back(curr_view);
 }
 
 static void
