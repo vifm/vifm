@@ -250,11 +250,11 @@ main(int argc, char *argv[])
 
 		if(strcmp(vifm_args.lwin_path, "-") == 0)
 		{
-			flist_set(&lwin, "-", dir, files, nfiles);
+			flist_custom_set(&lwin, "-", dir, files, nfiles);
 		}
 		else if(strcmp(vifm_args.rwin_path, "-") == 0)
 		{
-			flist_set(&rwin, "-", dir, files, nfiles);
+			flist_custom_set(&rwin, "-", dir, files, nfiles);
 		}
 	}
 	/* Load colors in any case to load color pairs. */

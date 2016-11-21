@@ -1384,7 +1384,7 @@ output_to_custom_flist(FileView *view, const char cmd[], int very,
 		return 1;
 	}
 
-	flist_end_custom(view, very);
+	flist_custom_end(view, very);
 	return 0;
 }
 
@@ -1394,7 +1394,7 @@ static void
 path_handler(const char line[], void *arg)
 {
 	FileView *view = arg;
-	flist_add_custom_line(view, line);
+	flist_custom_add_spec(view, line);
 }
 
 int

@@ -3039,8 +3039,8 @@ flist_count_marked(FileView *const view)
 }
 
 void
-flist_set(FileView *view, const char title[], const char path[], char *lines[],
-		int nlines)
+flist_custom_set(FileView *view, const char title[], const char path[],
+		char *lines[], int nlines)
 {
 	int i;
 
@@ -3054,14 +3054,14 @@ flist_set(FileView *view, const char title[], const char path[], char *lines[],
 
 	for(i = 0; i < nlines; ++i)
 	{
-		flist_add_custom_line(view, lines[i]);
+		flist_custom_add_spec(view, lines[i]);
 	}
 
-	flist_end_custom(view, 1);
+	flist_custom_end(view, 1);
 }
 
 void
-flist_add_custom_line(FileView *view, const char line[])
+flist_custom_add_spec(FileView *view, const char line[])
 {
 	int line_num;
 	/* Skip empty lines. */
@@ -3076,7 +3076,7 @@ flist_add_custom_line(FileView *view, const char line[])
 }
 
 void
-flist_end_custom(FileView *view, int very)
+flist_custom_end(FileView *view, int very)
 {
 	if(flist_custom_finish(view, very ? CV_VERY : CV_REGULAR, 0) != 0)
 	{
