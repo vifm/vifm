@@ -82,7 +82,7 @@ fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 		return err > 0;
 	}
 
-	if(pane_in_dir(curr_view, path) && force)
+	if(pane_in_dir(view, path) && force)
 	{
 		show_error_msg("Operation Error",
 				"Forcing overwrite when destination and source is same directory will "
@@ -265,6 +265,8 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
 		size_t dst_path_len, int *from_file)
 {
+	FileView *const other = (view == curr_view) ? other_view : curr_view;
+
 	char **marked;
 	size_t nmarked;
 	int error = 0;
@@ -283,17 +285,17 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines == 1)
 	{
-		if(fops_check_dir_path(other_view, (*list)[0], dst_path, dst_path_len))
+		if(fops_check_dir_path(other, (*list)[0], dst_path, dst_path_len))
 		{
 			*nlines = 0;
 		}
 	}
 	else
 	{
-		copy_str(dst_path, dst_path_len, fops_get_dst_dir(other_view, -1));
+		copy_str(dst_path, dst_path_len, fops_get_dst_dir(other, -1));
 	}
 
-	if(!fops_view_can_be_extended(other_view, -1) ||
+	if(!fops_view_can_be_extended(other, -1) ||
 			!fops_is_dir_writable(DR_DESTINATION, dst_path))
 	{
 		return -1;
