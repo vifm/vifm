@@ -35,6 +35,10 @@
 #include "registers.h"
 #include "trash.h"
 
+/* XXX: the unit isn't clever enough to handle operations on the same file
+ *      within group of changes, hence fake OP_MOVETMP* operations.  Hard to
+ *      tell if this can be done without such workarounds, but worth a try. */
+
 typedef struct
 {
 	char *msg;
