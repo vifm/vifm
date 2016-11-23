@@ -763,14 +763,14 @@ fill_undolist_detail(char **list)
 			const char *p;
 
 			p = get_op_desc(cmd->do_op);
-			if((*list = format_str("do: %s", p)) == NULL)
+			if((*list = format_str("  do: %s", p)) == NULL)
 			{
 				return list;
 			}
 			++list;
 
 			p = get_op_desc(cmd->undo_op);
-			if((*list = format_str("undo: %s", p)) == NULL)
+			if((*list = format_str("  undo: %s", p)) == NULL)
 			{
 				return list;
 			}

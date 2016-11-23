@@ -17,18 +17,18 @@ TEST(detail)
 	assert_true(list[11] == NULL);
 
 	assert_string_equal("msg3", list[0]);
-	assert_string_equal("do: mv do_msg3 to undo_msg3", list[1]);
-	assert_string_equal("undo: mv undo_msg3 to do_msg3", list[2]);
+	assert_string_equal("  do: mv do_msg3 to undo_msg3", list[1]);
+	assert_string_equal("  undo: mv undo_msg3 to do_msg3", list[2]);
 
 	assert_string_equal("msg2", list[3]);
-	assert_string_equal("do: mv do_msg2_cmd2 to undo_msg2_cmd2", list[4]);
-	assert_string_equal("undo: mv undo_msg2_cmd2 to do_msg2_cmd2", list[5]);
-	assert_string_equal("do: mv do_msg2_cmd1 to undo_msg2_cmd1", list[6]);
-	assert_string_equal("undo: mv undo_msg2_cmd1 to do_msg2_cmd1", list[7]);
+	assert_string_equal("  do: mv do_msg2_cmd2 to undo_msg2_cmd2", list[4]);
+	assert_string_equal("  undo: mv undo_msg2_cmd2 to do_msg2_cmd2", list[5]);
+	assert_string_equal("  do: mv do_msg2_cmd1 to undo_msg2_cmd1", list[6]);
+	assert_string_equal("  undo: mv undo_msg2_cmd1 to do_msg2_cmd1", list[7]);
 
 	assert_string_equal("msg1", list[8]);
-	assert_string_equal("do: mv do_msg1 to undo_msg1", list[9]);
-	assert_string_equal("undo: mv undo_msg1 to do_msg1", list[10]);
+	assert_string_equal("  do: mv do_msg1 to undo_msg1", list[9]);
+	assert_string_equal("  undo: mv undo_msg1 to do_msg1", list[10]);
 
 	p = list;
 	while(*p != NULL)
@@ -70,12 +70,12 @@ TEST(detail_smaller_limit)
 	assert_true(list[6] == NULL);
 
 	assert_string_equal("msg3", list[0]);
-	assert_string_equal("do: mv do_msg3 to undo_msg3", list[1]);
-	assert_string_equal("undo: mv undo_msg3 to do_msg3", list[2]);
+	assert_string_equal("  do: mv do_msg3 to undo_msg3", list[1]);
+	assert_string_equal("  undo: mv undo_msg3 to do_msg3", list[2]);
 
 	assert_string_equal("msg2", list[3]);
-	assert_string_equal("do: mv do_msg2_cmd2 to undo_msg2_cmd2", list[4]);
-	assert_string_equal("undo: mv undo_msg2_cmd2 to do_msg2_cmd2", list[5]);
+	assert_string_equal("  do: mv do_msg2_cmd2 to undo_msg2_cmd2", list[4]);
+	assert_string_equal("  undo: mv undo_msg2_cmd2 to do_msg2_cmd2", list[5]);
 
 	p = list;
 	while(*p != NULL)
