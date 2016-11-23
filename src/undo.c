@@ -839,8 +839,8 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "ln -s %s to %s", op.src, op.dst);
 			break;
 		case OP_MKDIR:
-			snprintf(buf, sizeof(buf), "mkdir %s%s", op.src,
-					(op.data == NULL) ? "" : "-p ");
+			snprintf(buf, sizeof(buf), "mkdir %s%s", (op.data == NULL) ? "" : "-p ",
+					op.src);
 			break;
 		case OP_RMDIR:
 			snprintf(buf, sizeof(buf), "rmdir %s", op.src);
