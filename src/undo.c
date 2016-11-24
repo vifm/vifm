@@ -806,14 +806,18 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "rm %s", op.src);
 			break;
 		case OP_COPY:
+		case OP_COPYA:
 			snprintf(buf, sizeof(buf), "cp %s to %s", op.src, op.dst);
 			break;
 		case OP_COPYF:
 			snprintf(buf, sizeof(buf), "cp -f %s to %s", op.src, op.dst);
 			break;
 		case OP_MOVE:
+		case OP_MOVEA:
 		case OP_MOVETMP1:
 		case OP_MOVETMP2:
+		case OP_MOVETMP3:
+		case OP_MOVETMP4:
 			snprintf(buf, sizeof(buf), "mv %s to %s", op.src, op.dst);
 			break;
 		case OP_MOVEF:
@@ -855,8 +859,8 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "touch %s", op.src);
 			break;
 
-		default:
-			strcpy(buf, "ERROR, update get_op_desc() function");
+		case OP_COUNT:
+			strcpy(buf, "ERROR, not a valid operation kind");
 			break;
 	}
 
