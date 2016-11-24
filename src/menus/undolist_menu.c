@@ -43,18 +43,20 @@ show_undolist_menu(FileView *view, int with_details)
 		++m.len;
 	}
 
-	move_to_menu_pos(get_undolist_pos(with_details), m.state);
-
+	/* Add additional entry before setting position. */
 	if(m.len > 0)
 	{
-		size_t len;
-
 		m.len = add_to_string_array(&m.items, m.len, 1, "list end");
+	}
 
-		/* Add current position mark to menu item. */
-		len = (m.items[m.pos] != NULL) ? strlen(m.items[m.pos]) : 0;
-		m.items[m.pos] = realloc(m.items[m.pos], len + 1 + 1);
-		memmove(m.items[m.pos] + 1, m.items[m.pos], len + 1);
+	move_to_menu_pos(get_undolist_pos(with_details), m.state);
+
+	/* Add current position mark to menu item. */
+	if(m.len > 0)
+	{
+		const size_t len = (m.items[m.pos] != NULL) ? strlen(m.items[m.pos]) : 0;
+		m.items[m.pos] = realloc(m.items[m.pos], len + 1U + 1U);
+		memmove(m.items[m.pos] + 1, m.items[m.pos], len + 1U);
 		m.items[m.pos][0] = '*';
 	}
 
