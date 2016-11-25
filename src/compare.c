@@ -41,6 +41,8 @@
 #include "utils/string_array.h"
 #include "utils/trie.h"
 #include "filelist.h"
+#include "fops_cpmv.h"
+#include "fops_misc.h"
 #include "running.h"
 
 /* This is the only unit that uses xxhash, so import it directly here. */
@@ -857,6 +859,61 @@ free_compare_records(void *ptr)
 		free(current->path);
 		free(current);
 	}
+}
+
+int
+compare_move(FileView *from, FileView *to)
+{
+	dir_entry_t *const curr = &from->dir_entry[from->list_pos];
+	dir_entry_t *const other = &to->dir_entry[from->list_pos];
+
+	if(from->custom.type != CV_DIFF)
+	{
+		status_bar_error("Not in diff mode");
+		return 1;
+	}
+
+	if(curr->id == other->id && !fentry_is_fake(curr) && !fentry_is_fake(other))
+	{
+		/* Nothing to do if files are already equal. */
+		return 0;
+	}
+
+	if(fentry_is_fake(curr))
+	{
+		/* Just remove the other file (it can't be fake entry too). */
+		return fops_delete_current(to, 1, 0);
+	}
+
+	if(fentry_is_fake(other))
+	{
+		char dst_path[PATH_MAX];
+		char canonical[PATH_MAX];
+		snprintf(dst_path, sizeof(dst_path), "%s/%s/%s", flist_get_dir(to),
+				curr->origin + strlen(flist_get_dir(from)), curr->name);
+		canonicalize_path(dst_path, canonical, sizeof(canonical));
+
+		/* Copy current file to position of the other one using relative path with
+		 * different base. */
+		fops_replace(from, canonical, 0);
+
+		/* Update the other entry to not be fake. */
+		remove_last_path_component(canonical);
+		replace_string(&other->name, curr->name);
+		replace_string(&other->origin, canonical);
+	}
+	else
+	{
+		char dst_path[PATH_MAX];
+		get_full_path_of(other, sizeof(dst_path), dst_path);
+
+		/* Overwrite file in the other pane with corresponding file from current
+		 * pane. */
+		fops_replace(from, dst_path, 1);
+	}
+
+	other->id = curr->id;
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -37,6 +37,10 @@ CopyMoveLikeOp;
 int fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 		int force);
 
+/* Replaces file specified by dst with a copy of the current file of the
+ * view. */
+void fops_replace(FileView *view, const char dst[], int force);
+
 /* Copies or moves marked files to the other view in background.  Returns new
  * value for save_msg flag. */
 int fops_cpmv_bg(FileView *view, char *list[], int nlines, int move, int force);

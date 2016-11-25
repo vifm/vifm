@@ -29,6 +29,11 @@
  * specified register.  Returns new value for save_msg flag. */
 int fops_delete(FileView *view, int reg, int use_trash);
 
+/* Removes current entry of the view.  Non-zero nested flag means that this is
+ * not a standalone operation and is surrounded by other file operations.
+ * Returns new value for save_msg flag. */
+int fops_delete_current(FileView *view, int use_trash, int nested);
+
 /* Removes marked files (optionally into trash directory) of the view to
  * specified register.  Returns new value for save_msg flag. */
 int fops_delete_bg(FileView *view, int use_trash);

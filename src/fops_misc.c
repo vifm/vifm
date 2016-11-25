@@ -54,7 +54,8 @@ typedef struct
 }
 dir_size_args_t;
 
-static int delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash);
+static int delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash,
+		int nested);
 static const char * get_top_dir(const FileView *view);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
@@ -130,7 +131,7 @@ fops_delete(FileView *view, int reg, int use_trash)
 		int result;
 
 		fops_progress_msg("Deleting files", i++, nmarked_files);
-		result = delete_file(entry, ops, reg, use_trash);
+		result = delete_file(entry, ops, reg, use_trash, 0);
 
 		if(result == 0 && entry_to_pos(view, entry) == view->list_pos)
 		{
@@ -157,10 +158,60 @@ fops_delete(FileView *view, int reg, int use_trash)
 	return 1;
 }
 
+int
+fops_delete_current(FileView *view, int use_trash, int nested)
+{
+	char undo_msg[COMMAND_GROUP_INFO_LEN];
+	dir_entry_t *entry;
+	ops_t *ops;
+	const char *const top_dir = get_top_dir(view);
+	const char *const curr_dir = top_dir == NULL ? flist_get_dir(view) : top_dir;
+
+	use_trash = use_trash && cfg.use_trash;
+
+	/* This check for the case when we are for sure in the trash. */
+	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
+	{
+		show_error_msg("Can't perform deletion",
+				"Current directory is under trash directory");
+		return 0;
+	}
+
+	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
+			replace_home_part(curr_dir));
+	if(!nested)
+	{
+		cmd_group_begin(undo_msg);
+	}
+
+	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
+			curr_dir);
+
+	ui_cancellation_reset();
+
+	entry = &view->dir_entry[view->list_pos];
+
+	fops_progress_msg("Deleting files", 0, 1);
+	(void)delete_file(entry, ops, BLACKHOLE_REG_NAME, use_trash, nested);
+
+	if(!nested)
+	{
+		cmd_group_end();
+		ui_views_reload_filelists();
+	}
+
+	status_bar_messagef("%d %s %celeted%s", ops->succeeded,
+			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
+			fops_get_cancellation_suffix());
+
+	fops_free_ops(ops);
+	return 1;
+}
+
 /* Removes single file specified by its entry.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash)
+delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 {
 	char full_path[PATH_MAX];
 	int result;
@@ -194,10 +245,11 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash)
 	}
 	else
 	{
+		const OPS op = nested ? OP_MOVETMP4 : OP_MOVE;
 		char *const dest = gen_trash_name(entry->origin, entry->name);
 		if(dest != NULL)
 		{
-			result = perform_operation(OP_MOVE, ops, NULL, full_path, dest);
+			result = perform_operation(op, ops, NULL, full_path, dest);
 			/* For some reason "rm" sometimes returns 0 on cancellation. */
 			if(path_exists(full_path, DEREF))
 			{
@@ -205,7 +257,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash)
 			}
 			if(result == 0)
 			{
-				add_operation(OP_MOVE, NULL, NULL, full_path, dest);
+				add_operation(op, NULL, NULL, full_path, dest);
 				regs_append(reg, dest);
 			}
 			free(dest);

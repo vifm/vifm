@@ -50,6 +50,10 @@ int compare_two_panes(CompareType ct, ListType lt, int group_paths,
 int compare_one_pane(FileView *view, CompareType ct, ListType lt,
 		int skip_empty);
 
+/* Moves current file from one view to the other.  Returns non-zero if status
+ * bar message should be preserved. */
+int compare_move(FileView *from, FileView *to);
+
 #endif /* VIFM__DIFF_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
