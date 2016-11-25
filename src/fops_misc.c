@@ -54,6 +54,7 @@ typedef struct
 }
 dir_size_args_t;
 
+static int delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash);
 static const char * get_top_dir(const FileView *view);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
@@ -126,67 +127,10 @@ fops_delete(FileView *view, int reg, int use_trash)
 	i = 0;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		char full_path[PATH_MAX];
 		int result;
 
-		get_full_path_of(entry, sizeof(full_path), full_path);
-
 		fops_progress_msg("Deleting files", i++, nmarked_files);
-
-		if(use_trash)
-		{
-			if(is_trash_directory(full_path))
-			{
-				show_error_msg("Can't perform deletion",
-						"You cannot delete trash directory to trash");
-				result = -1;
-			}
-			else if(is_under_trash(full_path))
-			{
-				show_error_msgf("Skipping file deletion",
-						"File is already in trash: %s", full_path);
-				result = -1;
-			}
-			else
-			{
-				char *const dest = gen_trash_name(entry->origin, entry->name);
-				if(dest != NULL)
-				{
-					result = perform_operation(OP_MOVE, ops, NULL, full_path, dest);
-					/* For some reason "rm" sometimes returns 0 on cancellation. */
-					if(path_exists(full_path, DEREF))
-					{
-						result = -1;
-					}
-					if(result == 0)
-					{
-						add_operation(OP_MOVE, NULL, NULL, full_path, dest);
-						regs_append(reg, dest);
-					}
-					free(dest);
-				}
-				else
-				{
-					show_error_msgf("No trash directory is available",
-							"Either correct trash directory paths or prune files.  "
-							"Deletion failed on: %s", entry->name);
-					result = -1;
-				}
-			}
-		}
-		else
-		{
-			result = perform_operation(OP_REMOVE, ops, NULL, full_path, NULL);
-			/* For some reason "rm" sometimes returns 0 on cancellation. */
-			if(path_exists(full_path, DEREF))
-			{
-				result = -1;
-			}
-			if(result == 0)
-			{
-				add_operation(OP_REMOVE, NULL, NULL, full_path, "");
-			}
-		}
+		result = delete_file(entry, ops, reg, use_trash);
 
 		if(result == 0 && entry_to_pos(view, entry) == view->list_pos)
 		{
@@ -211,6 +155,71 @@ fops_delete(FileView *view, int reg, int use_trash)
 
 	fops_free_ops(ops);
 	return 1;
+}
+
+/* Removes single file specified by its entry.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
+delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash)
+{
+	char full_path[PATH_MAX];
+	int result;
+
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	if(!use_trash)
+	{
+		result = perform_operation(OP_REMOVE, ops, NULL, full_path, NULL);
+		/* For some reason "rm" sometimes returns 0 on cancellation. */
+		if(path_exists(full_path, NODEREF))
+		{
+			result = -1;
+		}
+		if(result == 0)
+		{
+			add_operation(OP_REMOVE, NULL, NULL, full_path, "");
+		}
+	}
+	else if(is_trash_directory(full_path))
+	{
+		show_error_msg("Can't perform deletion",
+				"You cannot delete trash directory to trash");
+		result = -1;
+	}
+	else if(is_under_trash(full_path))
+	{
+		show_error_msgf("Skipping file deletion",
+				"File is already in trash: %s", full_path);
+		result = -1;
+	}
+	else
+	{
+		char *const dest = gen_trash_name(entry->origin, entry->name);
+		if(dest != NULL)
+		{
+			result = perform_operation(OP_MOVE, ops, NULL, full_path, dest);
+			/* For some reason "rm" sometimes returns 0 on cancellation. */
+			if(path_exists(full_path, DEREF))
+			{
+				result = -1;
+			}
+			if(result == 0)
+			{
+				add_operation(OP_MOVE, NULL, NULL, full_path, dest);
+				regs_append(reg, dest);
+			}
+			free(dest);
+		}
+		else
+		{
+			show_error_msgf("No trash directory is available",
+					"Either correct trash directory paths or prune files.  "
+					"Deletion failed on: %s", entry->name);
+			result = -1;
+		}
+	}
+
+	return result;
 }
 
 int
