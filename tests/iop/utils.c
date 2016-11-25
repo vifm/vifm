@@ -2,7 +2,7 @@
 
 #include <stic.h>
 
-#include <stdio.h> /* EOF FILE fclose() fopen() */
+#include <stdio.h> /* EOF FILE fclose() fgetc() fopen() */
 
 #include "../../src/io/iop.h"
 
