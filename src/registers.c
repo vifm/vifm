@@ -34,8 +34,6 @@
 
 /* Name of the "unnamed" (the default) register. */
 #define UNNAMED_REG_NAME '"'
-/* Name of the "black hole" register. */
-#define BLACKHOLE_REG_NAME '_'
 /* Number of registers named as alphabet letters. */
 #define NUM_LETTER_REGISTERS 26
 /* Number of all available registers (excludes 26 uppercase letters). */
