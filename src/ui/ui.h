@@ -135,6 +135,15 @@ typedef enum
 }
 CVType;
 
+/* Type of file comparison. */
+typedef enum
+{
+	CT_NAME,     /* Compare just names. */
+	CT_SIZE,     /* Compare file sizes. */
+	CT_CONTENTS, /* Compare file contents by combining size and hash. */
+}
+CompareType;
+
 /* Type of scheduled view update event. */
 typedef enum
 {
@@ -211,6 +220,8 @@ typedef struct
 	{
 		/* Type of the custom view. */
 		CVType type;
+
+		CompareType diff_cmp_type; /* Type of comparison view for CV_DIFF type. */
 
 		/* This is temporary storage for custom list entries used during its
 		 * construction. */

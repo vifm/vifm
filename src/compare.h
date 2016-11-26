@@ -21,15 +21,6 @@
 
 #include "ui/ui.h"
 
-/* Type of file comparison. */
-typedef enum
-{
-	CT_NAME,     /* Compare just names. */
-	CT_SIZE,     /* Compare file sizes. */
-	CT_CONTENTS, /* Compare file contents by combining size and hash. */
-}
-CompareType;
-
 /* Type of files to list after a comparison. */
 typedef enum
 {

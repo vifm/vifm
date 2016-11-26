@@ -161,6 +161,8 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 
 	curr_view->list_pos = 0;
 	other_view->list_pos = 0;
+	curr_view->custom.diff_cmp_type = ct;
+	other_view->custom.diff_cmp_type = ct;
 
 	assert(curr_view->list_rows == other_view->list_rows &&
 			"Diff views must be in sync!");
@@ -864,6 +866,11 @@ free_compare_records(void *ptr)
 int
 compare_move(FileView *from, FileView *to)
 {
+	char from_path[PATH_MAX], to_path[PATH_MAX];
+	char *from_fingerprint, *to_fingerprint;
+
+	const CompareType ct = from->custom.diff_cmp_type;
+
 	dir_entry_t *const curr = &from->dir_entry[from->list_pos];
 	dir_entry_t *const other = &to->dir_entry[from->list_pos];
 
@@ -885,13 +892,16 @@ compare_move(FileView *from, FileView *to)
 		return fops_delete_current(to, 1, 0);
 	}
 
+	get_full_path_of(curr, sizeof(from_path), from_path);
+	get_full_path_of(other, sizeof(to_path), to_path);
+
 	if(fentry_is_fake(other))
 	{
-		char dst_path[PATH_MAX];
+		char to_path[PATH_MAX];
 		char canonical[PATH_MAX];
-		snprintf(dst_path, sizeof(dst_path), "%s/%s/%s", flist_get_dir(to),
+		snprintf(to_path, sizeof(to_path), "%s/%s/%s", flist_get_dir(to),
 				curr->origin + strlen(flist_get_dir(from)), curr->name);
-		canonicalize_path(dst_path, canonical, sizeof(canonical));
+		canonicalize_path(to_path, canonical, sizeof(canonical));
 
 		/* Copy current file to position of the other one using relative path with
 		 * different base. */
@@ -904,15 +914,37 @@ compare_move(FileView *from, FileView *to)
 	}
 	else
 	{
-		char dst_path[PATH_MAX];
-		get_full_path_of(other, sizeof(dst_path), dst_path);
-
 		/* Overwrite file in the other pane with corresponding file from current
 		 * pane. */
-		fops_replace(from, dst_path, 1);
+		fops_replace(from, to_path, 1);
 	}
 
-	other->id = curr->id;
+	/* Obtaining file fingerprint relies on size field of entries, so try to load
+	 * it and ignore if it fails. */
+	other->size = get_file_size(to_path);
+
+	/* Try to update id of the other entry by computing fingerprint of both files
+	 * and checking if they match. */
+
+	from_fingerprint = get_file_fingerprint(from_path, curr, ct);
+	to_fingerprint = get_file_fingerprint(to_path, other, ct);
+
+	if(!is_null_or_empty(from_fingerprint) && !is_null_or_empty(to_fingerprint))
+	{
+		int match = (strcmp(from_fingerprint, to_fingerprint) == 0);
+		if(match && ct == CT_CONTENTS)
+		{
+			match = files_are_identical(from_path, to_path);
+		}
+		if(match)
+		{
+			other->id = curr->id;
+		}
+	}
+
+	free(from_fingerprint);
+	free(to_fingerprint);
+
 	return 0;
 }
 
