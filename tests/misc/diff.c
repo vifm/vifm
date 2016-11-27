@@ -8,8 +8,10 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/compare.h"
+#include "../../src/event_loop.h"
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
@@ -17,6 +19,9 @@
 
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
+static void format_none(int id, const void *data, size_t buf_len, char buf[]);
+static void column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[]);
 static int files_are_identical(const char a[], const char b[]);
 
 SETUP()
@@ -84,6 +89,55 @@ TEST(moving_fake_entry_removes_the_other_file)
 	(void)compare_move(&lwin, &rwin);
 
 	assert_failure(remove(SANDBOX_PATH "/empty"));
+}
+
+TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
+{
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/b");
+
+	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
+	rwin.list_pos = 3;
+	lwin.list_pos = 3;
+	(void)compare_move(&lwin, &rwin);
+
+	columns_add_column_desc(SK_BY_NAME, &format_none);
+	columns_add_column_desc(SK_BY_ID, &format_none);
+	columns_set_line_print_func(&column_line_print);
+	lwin.columns = columns_create();
+	rwin.columns = columns_create();
+	lwin.column_count = 1;
+	rwin.column_count = 1;
+	curr_stats.load_stage = 2;
+
+	assert_true(process_scheduled_updates_of_view(&lwin));
+	assert_true(process_scheduled_updates_of_view(&rwin));
+
+	curr_stats.load_stage = 0;
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	columns_free(rwin.columns);
+	rwin.columns = NULL;
+	columns_set_line_print_func(NULL);
+
+	assert_true(lwin.dir_entry[3].id == rwin.dir_entry[3].id);
+	assert_true(lwin.dir_entry[3].size == rwin.dir_entry[3].size);
+	assert_true(lwin.dir_entry[3].mtime == rwin.dir_entry[3].mtime);
+
+	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
+}
+
+static void
+format_none(int id, const void *data, size_t buf_len, char buf[])
+{
+	buf[0] = '\0';
+}
+
+static void
+column_line_print(const void *data, int column_id, const char buf[],
+		size_t offset, AlignType align, const char full_column[])
+{
+	/* Do nothing. */
 }
 
 TEST(moving_mismatched_entry_makes_files_equal)

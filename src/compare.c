@@ -886,6 +886,11 @@ compare_move(FileView *from, FileView *to)
 		return 0;
 	}
 
+	/* We're going at least to try to update one of views (which might refer to
+	 * the same directory), so schedule a reload. */
+	ui_view_schedule_reload(from);
+	ui_view_schedule_reload(to);
+
 	if(fentry_is_fake(curr))
 	{
 		/* Just remove the other file (it can't be fake entry too). */
