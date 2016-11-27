@@ -89,6 +89,7 @@
 #include "filelist.h"
 #include "filetype.h"
 #include "filtering.h"
+#include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
 #include "fops_cpmv.h"
@@ -3856,7 +3857,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 			(void)consider_scroll_offset(other_view);
 		}
 
-		save_view_history(other_view, NULL, NULL, -1);
+		flist_hist_save(other_view, NULL, NULL, -1);
 	}
 
 	ui_view_schedule_redraw(other_view);

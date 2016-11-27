@@ -68,6 +68,7 @@
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "filtering.h"
+#include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
 #include "macros.h"
@@ -82,7 +83,6 @@ static void init_view(FileView *view);
 static void init_flist(FileView *view);
 static void reset_view(FileView *view);
 static void init_view_history(FileView *view);
-static void navigate_to_history_pos(FileView *view, int pos);
 static int navigate_to_file_in_custom_view(FileView *view, const char dir[],
 		const char file[]);
 static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
@@ -306,237 +306,6 @@ invert_sorting_order(FileView *view)
 }
 
 void
-navigate_backward_in_history(FileView *view)
-{
-	/* When in custom view, we don't want to skip top history item. */
-	int pos = flist_custom_active(view)
-	        ? view->history_pos
-	        : (view->history_pos - 1);
-
-	while(pos >= 0)
-	{
-		const char *const dir = view->history[pos].dir;
-		if(is_valid_dir(dir) && !paths_are_equal(view->curr_dir, dir))
-		{
-			break;
-		}
-
-		--pos;
-	}
-
-	if(pos >= 0)
-	{
-		navigate_to_history_pos(view, pos);
-	}
-}
-
-void
-navigate_forward_in_history(FileView *view)
-{
-	int pos = view->history_pos + 1;
-
-	while(pos <= view->history_num - 1)
-	{
-		const char *const dir = view->history[pos].dir;
-		if(is_valid_dir(dir) && !paths_are_equal(view->curr_dir, dir))
-		{
-			break;
-		}
-
-		++pos;
-	}
-
-	if(pos <= view->history_num - 1)
-	{
-		navigate_to_history_pos(view, pos);
-	}
-}
-
-/* Changes current directory of the view to one of previously visited
- * locations. */
-static void
-navigate_to_history_pos(FileView *view, int pos)
-{
-	curr_stats.drop_new_dir_hist = 1;
-	if(change_directory(view, view->history[pos].dir) < 0)
-	{
-		curr_stats.drop_new_dir_hist = 0;
-		return;
-	}
-	curr_stats.drop_new_dir_hist = 0;
-
-	load_dir_list(view, 0);
-	flist_set_pos(view, find_file_pos_in_list(view, view->history[pos].file));
-
-	view->history_pos = pos;
-}
-
-void
-flist_hist_clear(FileView *view)
-{
-	int i;
-	for(i = 0; i <= view->history_pos && i < view->history_num; ++i)
-	{
-		view->history[i].file[0] = '\0';
-	}
-}
-
-void
-save_view_history(FileView *view, const char path[], const char file[], int pos)
-{
-	int x;
-
-	/* This could happen on FUSE error. */
-	if(view->list_rows <= 0 && file == NULL)
-		return;
-
-	if(cfg.history_len <= 0)
-		return;
-
-	if(flist_custom_active(view))
-		return;
-
-	if(path == NULL)
-		path = view->curr_dir;
-	if(file == NULL)
-		file = get_current_entry(view)->name;
-	if(pos < 0)
-		pos = view->list_pos;
-
-	if(view->history_num > 0 &&
-			stroscmp(view->history[view->history_pos].dir, path) == 0)
-	{
-		if(curr_stats.load_stage < 2 || file[0] == '\0')
-			return;
-		x = view->history_pos;
-		(void)replace_string(&view->history[x].file, file);
-		view->history[x].rel_pos = pos - view->top_line;
-		return;
-	}
-
-	if(curr_stats.drop_new_dir_hist)
-	{
-		return;
-	}
-
-	if(view->history_num > 0 && view->history_pos != view->history_num - 1)
-	{
-		x = view->history_num - 1;
-		while(x > view->history_pos)
-		{
-			cfg_free_history_items(&view->history[x--], 1);
-		}
-		view->history_num = view->history_pos + 1;
-	}
-	x = view->history_num;
-
-	if(x == cfg.history_len)
-	{
-		cfg_free_history_items(view->history, 1);
-		memmove(view->history, view->history + 1,
-				sizeof(history_t)*(cfg.history_len - 1));
-
-		x--;
-		view->history_num = x;
-	}
-	view->history[x].dir = strdup(path);
-	view->history[x].file = strdup(file);
-	view->history[x].rel_pos = pos - view->top_line;
-	view->history_num++;
-	view->history_pos = view->history_num - 1;
-}
-
-int
-is_in_view_history(FileView *view, const char *path)
-{
-	int i;
-	if(view->history == NULL || view->history_num <= 0)
-		return 0;
-	for(i = view->history_pos; i >= 0; i--)
-	{
-		if(strlen(view->history[i].dir) < 1)
-			break;
-		if(stroscmp(view->history[i].dir, path) == 0)
-			return 1;
-	}
-	return 0;
-}
-
-void
-flist_hist_lookup(FileView *view, const FileView *source)
-{
-	int pos = 0;
-	int rel_pos = -1;
-
-	if(cfg.history_len > 0 && source->history_num > 0 && curr_stats.ch_pos)
-	{
-		int x;
-		int found = 0;
-		x = source->history_pos;
-		if(stroscmp(source->history[x].dir, view->curr_dir) == 0 &&
-				source->history[x].file[0] == '\0')
-			x--;
-		for(; x >= 0; x--)
-		{
-			if(source->history[x].dir[0] == '\0')
-				break;
-			if(stroscmp(source->history[x].dir, view->curr_dir) == 0)
-			{
-				found = 1;
-				break;
-			}
-		}
-		if(found)
-		{
-			pos = find_file_pos_in_list(view, source->history[x].file);
-			rel_pos = source->history[x].rel_pos;
-		}
-		else if(path_starts_with(view->last_dir, view->curr_dir) &&
-				stroscmp(view->last_dir, view->curr_dir) != 0 &&
-				strchr(view->last_dir + strlen(view->curr_dir) + 1, '/') == NULL)
-		{
-			/* This handles positioning of cursor on directory we just left by doing
-			 * `cd ..` or equivalent. */
-
-			const char *const dir_name = view->last_dir + strlen(view->curr_dir) + 1U;
-			pos = find_file_pos_in_list(view, dir_name);
-			rel_pos = -1;
-		}
-		else
-		{
-			view->list_pos = 0;
-			view->curr_line = 0;
-			view->top_line = 0;
-			return;
-		}
-	}
-
-	if(pos < 0)
-		pos = 0;
-	view->list_pos = pos;
-	if(rel_pos >= 0)
-	{
-		view->top_line = pos - MIN((int)view->window_cells - 1, rel_pos);
-		if(view->top_line < 0)
-			view->top_line = 0;
-		view->curr_line = pos - view->top_line;
-	}
-	else
-	{
-		const int last = (int)get_last_visible_cell(view);
-		if(view->list_pos < (int)view->window_cells)
-		{
-			scroll_up(view, view->top_line);
-		}
-		else if(view->list_pos > last)
-		{
-			scroll_down(view, view->list_pos - last);
-		}
-	}
-	(void)consider_scroll_offset(view);
-}
-
-void
 leave_invalid_dir(FileView *view)
 {
 	struct stat s;
@@ -664,7 +433,7 @@ change_directory(FileView *view, const char directory[])
 
 	if(is_dir_list_loaded(view))
 	{
-		save_view_history(view, NULL, NULL, -1);
+		flist_hist_save(view, NULL, NULL, -1);
 	}
 
 	if(is_path_absolute(directory))
@@ -813,7 +582,7 @@ change_directory(FileView *view, const char directory[])
 
 	if(is_dir_list_loaded(view))
 	{
-		save_view_history(view, NULL, "", -1);
+		flist_hist_save(view, NULL, "", -1);
 	}
 
 	/* Perform additional actions on leaving custom view. */
@@ -1187,7 +956,7 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 		 * view. */
 		if(is_dir_list_loaded(view))
 		{
-			save_view_history(view, NULL, NULL, -1);
+			flist_hist_save(view, NULL, NULL, -1);
 		}
 
 		(void)replace_string(&view->custom.orig_dir, dir);
@@ -3270,8 +3039,8 @@ flist_count_marked(FileView *const view)
 }
 
 void
-flist_set(FileView *view, const char title[], const char path[], char *lines[],
-		int nlines)
+flist_custom_set(FileView *view, const char title[], const char path[],
+		char *lines[], int nlines)
 {
 	int i;
 
@@ -3285,14 +3054,14 @@ flist_set(FileView *view, const char title[], const char path[], char *lines[],
 
 	for(i = 0; i < nlines; ++i)
 	{
-		flist_add_custom_line(view, lines[i]);
+		flist_custom_add_spec(view, lines[i]);
 	}
 
-	flist_end_custom(view, 1);
+	flist_custom_end(view, 1);
 }
 
 void
-flist_add_custom_line(FileView *view, const char line[])
+flist_custom_add_spec(FileView *view, const char line[])
 {
 	int line_num;
 	/* Skip empty lines. */
@@ -3307,7 +3076,7 @@ flist_add_custom_line(FileView *view, const char line[])
 }
 
 void
-flist_end_custom(FileView *view, int very)
+flist_custom_end(FileView *view, int very)
 {
 	if(flist_custom_finish(view, very ? CV_VERY : CV_REGULAR, 0) != 0)
 	{

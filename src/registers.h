@@ -25,6 +25,9 @@
 /* Name of the default register. */
 #define DEFAULT_REG_NAME '"'
 
+/* Name of the "black hole" register. */
+#define BLACKHOLE_REG_NAME '_'
+
 /* Holds register data. */
 typedef struct
 {

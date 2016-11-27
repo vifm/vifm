@@ -21,15 +21,6 @@
 
 #include "ui/ui.h"
 
-/* Type of file comparison. */
-typedef enum
-{
-	CT_NAME,     /* Compare just names. */
-	CT_SIZE,     /* Compare file sizes. */
-	CT_CONTENTS, /* Compare file contents by combining size and hash. */
-}
-CompareType;
-
 /* Type of files to list after a comparison. */
 typedef enum
 {
@@ -49,6 +40,10 @@ int compare_two_panes(CompareType ct, ListType lt, int group_paths,
  * non-zero if status bar message should be preserved. */
 int compare_one_pane(FileView *view, CompareType ct, ListType lt,
 		int skip_empty);
+
+/* Moves current file from one view to the other.  Returns non-zero if status
+ * bar message should be preserved. */
+int compare_move(FileView *from, FileView *to);
 
 #endif /* VIFM__DIFF_H__ */
 

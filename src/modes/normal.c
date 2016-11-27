@@ -52,8 +52,10 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../compare.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
+#include "../flist_hist.h"
 #include "../filtering.h"
 #include "../flist_pos.h"
 #include "../flist_sel.h"
@@ -163,6 +165,8 @@ static void cmd_D_selector(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d_selector(key_info_t key_info, keys_info_t *keys_info);
 static void call_delete(key_info_t key_info, keys_info_t *keys_info,
 		int use_trash);
+static void cmd_do(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_dp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gA(key_info_t key_info, keys_info_t *keys_info);
@@ -332,6 +336,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_c WK_w,        {{&cmd_cw}, .descr = "rename files"}},
 	{WK_D WK_D,        {{&cmd_DD}, .nim = 1, .descr = "remove files permanently"}},
 	{WK_d WK_d,        {{&cmd_dd}, .nim = 1, .descr = "remove files"}},
+	{WK_d WK_o,        {{&cmd_do}, .descr = "obtain current file"}},
+	{WK_d WK_p,        {{&cmd_dp}, .descr = "put current file"}},
 	{WK_D,             {{&cmd_D_selector}, FOLLOWED_BY_SELECTOR, .descr = "remove files permanently"}},
 	{WK_d,             {{&cmd_d_selector}, FOLLOWED_BY_SELECTOR, .descr = "remove files"}},
 	{WK_e,             {{&cmd_e}, .descr = "explore file contents"}},
@@ -623,7 +629,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		navigate_forward_in_history(curr_view);
+		flist_hist_go_forward(curr_view);
 	}
 }
 
@@ -646,7 +652,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
 {
-	navigate_backward_in_history(curr_view);
+	flist_hist_go_back(curr_view);
 }
 
 static void
@@ -1492,6 +1498,20 @@ call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 				use_trash);
 		free_list_of_file_indexes(keys_info);
 	}
+}
+
+/* Applies change from other compare to current one. */
+static void
+cmd_do(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = (compare_move(other_view, curr_view) != 0);
+}
+
+/* Applies change from current compare to other one. */
+static void
+cmd_dp(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = (compare_move(curr_view, other_view) != 0);
 }
 
 static void

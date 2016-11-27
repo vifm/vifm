@@ -56,6 +56,7 @@
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
+#include "../flist_hist.h"
 #include "../marks.h"
 #include "../opt_handlers.h"
 #include "../status.h"
@@ -844,8 +845,8 @@ cfg_resize_histories(int new_len)
 
 	if(old_len == 0)
 	{
-		save_view_history(&lwin, NULL, NULL, -1);
-		save_view_history(&rwin, NULL, NULL, -1);
+		flist_hist_save(&lwin, NULL, NULL, -1);
+		flist_hist_save(&rwin, NULL, NULL, -1);
 	}
 }
 

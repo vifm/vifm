@@ -67,6 +67,7 @@
 #include "background.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
 #include "macros.h"
@@ -759,7 +760,7 @@ cd_updir(FileView *view, int levels)
 	}
 
 	curr_stats.drop_new_dir_hist = 0;
-	save_view_history(view, NULL, NULL, -1);
+	flist_hist_save(view, NULL, NULL, -1);
 }
 
 /* Goes one directory up from current location.  Returns zero unless it won't
@@ -1383,7 +1384,7 @@ output_to_custom_flist(FileView *view, const char cmd[], int very,
 		return 1;
 	}
 
-	flist_end_custom(view, very);
+	flist_custom_end(view, very);
 	return 0;
 }
 
@@ -1393,7 +1394,7 @@ static void
 path_handler(const char line[], void *arg)
 {
 	FileView *view = arg;
-	flist_add_custom_line(view, line);
+	flist_custom_add_spec(view, line);
 }
 
 int

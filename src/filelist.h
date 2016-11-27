@@ -91,27 +91,6 @@ void leave_invalid_dir(FileView *view);
  * if so, otherwise zero is returned. */
 int pane_in_dir(const FileView *view, const char path[]);
 
-/* Directory history related functions. */
-
-/* Changes current directory of the view to next location backward in
- * history, if available. */
-void navigate_backward_in_history(FileView *view);
-/* Changes current directory of the view to next location forward in history, if
- * available. */
-void navigate_forward_in_history(FileView *view);
-/* Adds new entry to directory history of the view or updates an existing entry.
- * If path is NULL, current path is used.  If file is NULL current file is used.
- * If pos is negative, current position is used.  Empty file name signifies
- * visiting directory, which shouldn't reset name of previously active file in
- * it. */
-void save_view_history(FileView *view, const char path[], const char file[],
-		int pos);
-int is_in_view_history(FileView *view, const char *path);
-/* Empties history of the view. */
-void flist_hist_clear(FileView *view);
-/* Looks up history in the source to update cursor position in the view. */
-void flist_hist_lookup(FileView *view, const FileView *source);
-
 /* Typed (with trailing slash for directories) file name function. */
 
 /* Gets typed path for the entry.  On return allocates memory, that should be
@@ -131,12 +110,21 @@ dir_entry_t * flist_custom_add(FileView *view, const char path[]);
 /* Puts an entry to custom list of files, contents of the entry gets stolen.
  * Returns pointer to just added entry or NULL on error. */
 dir_entry_t * flist_custom_put(FileView *view, dir_entry_t *entry);
+/* Parses line to extract path and adds it to custom view or does nothing. */
+void flist_custom_add_spec(FileView *view, const char line[]);
 /* Appends entry separator to the list with specified id. */
 void flist_custom_add_separator(FileView *view, int id);
 /* Finishes file list population, handles empty resulting list corner case.
  * Non-zero allow_empty makes a single-entry (..) view instead of aborting.
  * Returns zero on success, otherwise (on empty list) non-zero is returned. */
 int flist_custom_finish(FileView *view, CVType type, int allow_empty);
+/* A more high level version of flist_custom_finish(), which takes care of error
+ * handling and cursor position. */
+void flist_custom_end(FileView *view, int very);
+/* Loads list of paths (absolute or relative to the path) into custom view.
+ * Exists with error message on failed attempt. */
+void flist_custom_set(FileView *view, const char title[], const char path[],
+		char *lines[], int nlines);
 /* Removes selected files or current one from custom view.  Zero selection_only
  * enables excluding files that share ids with selected items. */
 void flist_custom_exclude(FileView *view, int selection_only);
@@ -273,15 +261,6 @@ void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 void free_dir_entry(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
 void add_parent_dir(FileView *view);
-/* Loads list of paths (absolute or relative to the path) into custom view.
- * Exists with error message on failed attempt. */
-void flist_set(FileView *view, const char title[], const char path[],
-		char *lines[], int nlines);
-/* Parses line to extract path and adds it to custom view or does nothing. */
-void flist_add_custom_line(FileView *view, const char line[]);
-/* A more high level version of flist_custom_finish(), which takes care of error
- * handling and cursor position. */
-void flist_end_custom(FileView *view, int very);
 /* Changes name of a file entry, performing additional required updates. */
 void fentry_rename(FileView *view, dir_entry_t *entry, const char to[]);
 /* Checks whether this is fake entry for internal purposes, which should not be

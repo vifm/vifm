@@ -37,7 +37,6 @@
 #include "filelist.h"
 #include "flist_sel.h"
 
-static int find_and_goto_pattern(FileView *view, int wrap_start, int backward);
 static int find_and_goto_match(FileView *view, int start, int backward);
 static void print_result(const FileView *const view, int found, int backward);
 
@@ -45,15 +44,6 @@ int
 goto_search_match(FileView *view, int backward)
 {
 	const int wrap_start = backward ? view->list_rows : -1;
-	return find_and_goto_pattern(view, wrap_start, backward);
-}
-
-/* Looks for a search match in specified direction navigates to it if match is
- * found.  Wraps search around specified wrap start position, when requested.
- * Returns non-zero if something was found, otherwise zero is returned. */
-static int
-find_and_goto_pattern(FileView *view, int wrap_start, int backward)
-{
 	if(!find_and_goto_match(view, view->list_pos, backward))
 	{
 		if(!cfg.wrap_scan || !find_and_goto_match(view, wrap_start, backward))
@@ -61,7 +51,12 @@ find_and_goto_pattern(FileView *view, int wrap_start, int backward)
 			return 0;
 		}
 	}
+
+	/* Redraw the cursor which also might synchronize cursors of two views. */
+	fview_cursor_redraw(view);
+	/* Schedule redraw of the view to highlight search matches. */
 	ui_view_schedule_redraw(view);
+
 	return 1;
 }
 

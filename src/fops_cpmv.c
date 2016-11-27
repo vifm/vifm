@@ -34,12 +34,14 @@
 #include "filelist.h"
 #include "flist_pos.h"
 #include "fops_common.h"
+#include "fops_misc.h"
 #include "ops.h"
 #include "trash.h"
 #include "undo.h"
 
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops);
+		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops,
+		int force);
 static int cpmv_prepare(FileView *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char dst_path[], size_t dst_path_len, int *from_file);
@@ -52,7 +54,7 @@ static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
 static void cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[],
 		int move, int force, int from_trash, const char dst_dir[]);
 static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
-		int bg, int cancellable, ops_t *ops);
+		int bg, int cancellable, ops_t *ops, int force);
 
 int
 fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
@@ -82,7 +84,7 @@ fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 		return err > 0;
 	}
 
-	if(pane_in_dir(curr_view, path) && force)
+	if(pane_in_dir(view, path) && force)
 	{
 		show_error_msg("Operation Error",
 				"Forcing overwrite when destination and source is same directory will "
@@ -136,7 +138,7 @@ fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-		if(path_exists(dst_full, DEREF) && !from_trash)
+		if(path_exists(dst_full, NODEREF) && !from_trash)
 		{
 			(void)perform_operation(OP_REMOVESL, NULL, NULL, dst_full, NULL);
 		}
@@ -161,7 +163,7 @@ fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 		}
 		else
 		{
-			err = cp_file(entry->origin, path, entry->name, dst, op, 1, ops);
+			err = cp_file(entry->origin, path, entry->name, dst, op, 1, ops, 0);
 		}
 
 		ops_advance(ops, err == 0);
@@ -184,18 +186,77 @@ fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 	return 1;
 }
 
+void
+fops_replace(FileView *view, const char dst[], int force)
+{
+	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+	dir_entry_t *entry;
+	char dst_dir[PATH_MAX];
+	char src_full[PATH_MAX];
+	const char *const fname = get_last_path_component(dst);
+	ops_t *ops;
+	void *cp = (void *)(size_t)1;
+
+	copy_str(dst_dir, sizeof(dst_dir), dst);
+	remove_last_path_component(dst_dir);
+
+	entry = &view->dir_entry[view->list_pos];
+	get_full_path_of(entry, sizeof(src_full), src_full);
+
+	if(paths_are_same(src_full, dst))
+	{
+		/* Nothing to do if destination and source are the same file. */
+		return;
+	}
+
+	ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), dst_dir);
+
+	snprintf(undo_msg, sizeof(undo_msg), "Copying %s to %s",
+			replace_home_part(src_full), dst_dir);
+
+	cmd_group_begin(undo_msg);
+
+	ui_cancellation_reset();
+
+	if(path_exists(dst, NODEREF) && force)
+	{
+		FileView *const other = (view == curr_view) ? other_view : curr_view;
+		(void)fops_delete_current(other, 1, 1);
+	}
+
+	fops_progress_msg("Copying files", 0, 1);
+
+	if(!ui_cancellation_requested() && !is_valid_dir(dst_dir) &&
+			perform_operation(OP_MKDIR, NULL, cp, dst_dir, NULL) == 0)
+	{
+		add_operation(OP_MKDIR, cp, NULL, dst_dir, "");
+	}
+
+	if(!ui_cancellation_requested())
+	{
+		(void)cp_file(entry->origin, dst_dir, entry->name, fname, CMLO_COPY, 1, ops,
+				1);
+	}
+
+	cmd_group_end();
+
+	ui_views_reload_filelists();
+
+	fops_free_ops(ops);
+}
+
 /* Adapter for cp_file_f() that accepts paths broken into directory/file
  * parts. */
 static int
 cp_file(const char src_dir[], const char dst_dir[], const char src[],
-		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops)
+		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops, int force)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 
 	to_canonic_path(src, src_dir, full_src, sizeof(full_src));
 	to_canonic_path(dst, dst_dir, full_dst, sizeof(full_dst));
 
-	return cp_file_f(full_src, full_dst, op, 0, cancellable, ops);
+	return cp_file_f(full_src, full_dst, op, 0, cancellable, ops, force);
 }
 
 int
@@ -265,6 +326,8 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
 		size_t dst_path_len, int *from_file)
 {
+	FileView *const other = (view == curr_view) ? other_view : curr_view;
+
 	char **marked;
 	size_t nmarked;
 	int error = 0;
@@ -283,17 +346,17 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(*nlines == 1)
 	{
-		if(fops_check_dir_path(other_view, (*list)[0], dst_path, dst_path_len))
+		if(fops_check_dir_path(other, (*list)[0], dst_path, dst_path_len))
 		{
 			*nlines = 0;
 		}
 	}
 	else
 	{
-		copy_str(dst_path, dst_path_len, fops_get_dst_dir(other_view, -1));
+		copy_str(dst_path, dst_path_len, fops_get_dst_dir(other, -1));
 	}
 
-	if(!fops_view_can_be_extended(other_view, -1) ||
+	if(!fops_view_can_be_extended(other, -1) ||
 			!fops_is_dir_writable(DR_DESTINATION, dst_path))
 	{
 		return -1;
@@ -494,7 +557,7 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 {
 	char dst_full[PATH_MAX];
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
-	if(path_exists(dst_full, DEREF) && !from_trash)
+	if(force && path_exists(dst_full, DEREF) && !from_trash)
 	{
 		(void)perform_operation(OP_REMOVESL, NULL, (void *)1, dst_full, NULL);
 	}
@@ -505,7 +568,7 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 	}
 	else
 	{
-		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 1, ops);
+		(void)cp_file_f(src, dst_full, CMLO_COPY, 1, 1, ops, 0);
 	}
 }
 
@@ -513,7 +576,7 @@ cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
  * non-zero is returned. */
 static int
 cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
-		int cancellable, ops_t *ops)
+		int cancellable, ops_t *ops, int force)
 {
 	char rel_path[PATH_MAX];
 
@@ -527,7 +590,7 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 
 	if(op == CMLO_COPY)
 	{
-		file_op = OP_COPY;
+		file_op = force ? OP_COPYF : OP_COPY;
 	}
 	else
 	{

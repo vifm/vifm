@@ -7,7 +7,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
-#include "../../src/filelist.h"
+#include "../../src/flist_hist.h"
 
 #include "utils.h"
 
@@ -83,8 +83,8 @@ save_to_history(const char str[])
 	cfg_save_search_history(str);
 	cfg_save_prompt_history(str);
 
-	save_view_history(&lwin, str, str + 1, 0);
-	save_view_history(&rwin, str, str + 1, 0);
+	flist_hist_save(&lwin, str, str + 1, 0);
+	flist_hist_save(&rwin, str, str + 1, 0);
 }
 
 TEST(view_history_after_reset_contains_valid_data)
@@ -101,8 +101,8 @@ TEST(view_history_avoids_duplicates)
 	assert_int_equal(1, lwin.history_num);
 	assert_int_equal(1, rwin.history_num);
 
-	save_view_history(&lwin, NULL, NULL, -1);
-	save_view_history(&rwin, NULL, NULL, -1);
+	flist_hist_save(&lwin, NULL, NULL, -1);
+	flist_hist_save(&rwin, NULL, NULL, -1);
 
 	assert_int_equal(1, lwin.history_num);
 	assert_int_equal(1, rwin.history_num);
@@ -156,7 +156,7 @@ TEST(navigating_within_history)
 	save_to_history(SANDBOX_PATH);
 	save_to_history(TEST_DATA_PATH);
 
-	navigate_backward_in_history(&lwin);
+	flist_hist_go_back(&lwin);
 
 	/* This overwrites previously active history entries and should not result in
 	 * memory leaks. */

@@ -66,6 +66,9 @@
 	Added :screen! form that enables terminal multiplexers support (instead of
 	toggling it as :screen does).  Thanks to Marcos Cruz.
 
+	Added do and dp keys to compare views for applying changes in files.
+	Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

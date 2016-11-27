@@ -181,8 +181,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fops_common.$(OBJEXT) \
 	fops_cpmv.$(OBJEXT) fops_misc.$(OBJEXT) fops_put.$(OBJEXT) \
 	fops_rename.$(OBJEXT) filetype.$(OBJEXT) filtering.$(OBJEXT) \
-	flist_pos.$(OBJEXT) flist_sel.$(OBJEXT) ipc.$(OBJEXT) \
-	macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
+	flist_hist.$(OBJEXT) flist_pos.$(OBJEXT) flist_sel.$(OBJEXT) \
+	ipc.$(OBJEXT) macros.$(OBJEXT) marks.$(OBJEXT) ops.$(OBJEXT) \
 	opt_handlers.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
 	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
 	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
@@ -789,6 +789,7 @@ vifm_SOURCES = \
 	fops_rename.c fops_rename.h \
 	filetype.c filetype.h \
 	filtering.c filtering.h \
+	flist_hist.c flist_hist.h \
 	flist_pos.c flist_pos.h \
 	flist_sel.c flist_sel.h \
 	ipc.c ipc.h \
@@ -1259,6 +1260,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filename_modifiers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filtering.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flist_hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flist_pos.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flist_sel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fops_common.Po@am__quote@

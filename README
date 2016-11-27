@@ -217,6 +217,7 @@ Package content
     |  |-- filename_modifiers.c - expands filename modifiers
     |  |-- filetype.c - stores filetype information from vifmrc
     |  |-- filtering.c - managing file filters
+    |  |-- flist_hist.c - file list history related code
     |  |-- flist_pos.c - most of file list scrolling/cursor positioning code
     |  |-- flist_sel.c - most of file list selection handling code
     |  |-- fops_common.c - shared functionality of high-level file operations

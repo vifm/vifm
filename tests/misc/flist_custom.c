@@ -23,6 +23,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
+#include "../../src/flist_hist.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
 #include "../../src/running.h"
@@ -383,7 +384,7 @@ TEST(location_is_saved_on_entering_custom_view)
 	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), cwd);
 
 	/* Put specific history entry and make sure it's used. */
-	save_view_history(&lwin, lwin.curr_dir, "b", 1);
+	flist_hist_save(&lwin, lwin.curr_dir, "b", 1);
 	load_dir_list(&lwin, 0);
 	assert_string_equal(lwin.curr_dir, cwd);
 	assert_string_equal("b", lwin.dir_entry[lwin.list_pos].name);

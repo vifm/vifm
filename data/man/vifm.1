@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 18, 2016" "vifm 0.8.2"
+.TH VIFM 1 "November 27, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -620,6 +620,23 @@ undo last change.
 .TP
 .BI Ctrl-R
 redo last change.
+.TP
+.BI dp
+in compare view of "ofboth grouppaths" kind, makes corresponding entry of the
+other pane equal to the current one.  The semantics is as follows:
+ \- nothing done for identical entries
+ \- if file is missing in current view, its pair gets removed
+ \- if file is missing or differs in other view, it's replaced
+ \- file pairs are defined by matching relative paths
+.br
+File removal obeys 'trash' option.  When the option is enabled, the operation
+can be undone/redone (although results won't be visible automatically).
+.br
+Unlike in Vim, this operation is performed on a single line rather than
+a set of adjacent changes.
+.TP
+.BI do
+same as dp, but applies changes in the opposite direction.
 .TP
 .BI "v or V"
 enter visual mode, clears current selection.

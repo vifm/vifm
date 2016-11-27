@@ -77,6 +77,7 @@
 #include "event_loop.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "flist_hist.h"
 #include "flist_pos.h"
 #include "fops_common.h"
 #include "ipc.h"
@@ -249,11 +250,11 @@ main(int argc, char *argv[])
 
 		if(strcmp(vifm_args.lwin_path, "-") == 0)
 		{
-			flist_set(&lwin, "-", dir, files, nfiles);
+			flist_custom_set(&lwin, "-", dir, files, nfiles);
 		}
 		else if(strcmp(vifm_args.rwin_path, "-") == 0)
 		{
-			flist_set(&rwin, "-", dir, files, nfiles);
+			flist_custom_set(&rwin, "-", dir, files, nfiles);
 		}
 	}
 	/* Load colors in any case to load color pairs. */
@@ -276,8 +277,8 @@ main(int argc, char *argv[])
 	 * history.  This is not done automatically as history manipulation should be
 	 * postponed until views are fully loaded, otherwise there is no correct
 	 * information about current file and relative cursor position. */
-	save_view_history(&lwin, NULL, NULL, -1);
-	save_view_history(&rwin, NULL, NULL, -1);
+	flist_hist_save(&lwin, NULL, NULL, -1);
+	flist_hist_save(&rwin, NULL, NULL, -1);
 
 	/* Trigger auto-commands for initial directories. */
 	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
@@ -533,8 +534,8 @@ vifm_restart(void)
 
 	reset_views();
 	read_info_file(1);
-	save_view_history(&lwin, NULL, NULL, -1);
-	save_view_history(&rwin, NULL, NULL, -1);
+	flist_hist_save(&lwin, NULL, NULL, -1);
+	flist_hist_save(&rwin, NULL, NULL, -1);
 
 	/* Color schemes. */
 	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&

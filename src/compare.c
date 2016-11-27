@@ -34,12 +34,15 @@
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/fs.h"
+#include "utils/fsdata.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/trie.h"
 #include "filelist.h"
+#include "fops_cpmv.h"
+#include "fops_misc.h"
 #include "running.h"
 
 /* This is the only unit that uses xxhash, so import it directly here. */
@@ -78,6 +81,9 @@ static int id_sorter(const void *first, const void *second);
 static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
 		CompareType ct, int skip_empty, int dups_only);
+static void list_view_entries(const FileView *view, strlist_t *list);
+static void append_valid_nodes(const char name[], int valid,
+		const void *parent_data, void *data, void *arg);
 static void list_files_recursively(const char path[], int skip_dot_files,
 		strlist_t *list);
 static char * get_file_fingerprint(const char path[], const dir_entry_t *entry,
@@ -155,6 +161,10 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 
 	curr_view->list_pos = 0;
 	other_view->list_pos = 0;
+	curr_view->custom.diff_cmp_type = ct;
+	other_view->custom.diff_cmp_type = ct;
+	curr_view->custom.diff_path_group = group_paths;
+	other_view->custom.diff_path_group = group_paths;
 
 	assert(curr_view->list_rows == other_view->list_rows &&
 			"Diff views must be in sync!");
@@ -490,7 +500,15 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	int last_progress = 0;
 
 	show_progress("Listing...", 0);
-	list_files_recursively(flist_get_dir(view), view->hide_dot, &files);
+	if(flist_custom_active(view) &&
+			ONE_OF(view->custom.type, CV_REGULAR, CV_VERY))
+	{
+		list_view_entries(view, &files);
+	}
+	else
+	{
+		list_files_recursively(flist_get_dir(view), view->hide_dot, &files);
+	}
 
 	show_progress("Querying...", 0);
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
@@ -551,6 +569,46 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 
 	free_string_array(files.items, files.nitems);
 	return r;
+}
+
+/* Fills the list with entries of the view in hierarchical order (pre-order tree
+ * traversal). */
+static void
+list_view_entries(const FileView *view, strlist_t *list)
+{
+	int i;
+
+	fsdata_t *const tree = fsdata_create(0, 0);
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		char full_path[PATH_MAX];
+		void *data = &view->dir_entry[i];
+		get_full_path_of(&view->dir_entry[i], sizeof(full_path), full_path);
+		fsdata_set(tree, full_path, &data, sizeof(data));
+	}
+
+	fsdata_traverse(tree, &append_valid_nodes, list);
+
+	fsdata_free(tree);
+}
+
+/* fsdata_traverse() callback that collects names of existing files into a
+ * list. */
+static void
+append_valid_nodes(const char name[], int valid, const void *parent_data,
+		void *data, void *arg)
+{
+	strlist_t *const list = arg;
+	dir_entry_t *const entry = *(dir_entry_t **)data;
+
+	if(valid)
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		list->nitems = add_to_string_array(&list->items, list->nitems, 1,
+				full_path);
+	}
 }
 
 /* Collects files under specified file system tree. */
@@ -805,6 +863,96 @@ free_compare_records(void *ptr)
 		free(current->path);
 		free(current);
 	}
+}
+
+int
+compare_move(FileView *from, FileView *to)
+{
+	char from_path[PATH_MAX], to_path[PATH_MAX];
+	char *from_fingerprint, *to_fingerprint;
+
+	const CompareType ct = from->custom.diff_cmp_type;
+
+	dir_entry_t *const curr = &from->dir_entry[from->list_pos];
+	dir_entry_t *const other = &to->dir_entry[from->list_pos];
+
+	if(from->custom.type != CV_DIFF || !from->custom.diff_path_group)
+	{
+		status_bar_error("Not in diff mode with path grouping");
+		return 1;
+	}
+
+	if(curr->id == other->id && !fentry_is_fake(curr) && !fentry_is_fake(other))
+	{
+		/* Nothing to do if files are already equal. */
+		return 0;
+	}
+
+	/* We're going at least to try to update one of views (which might refer to
+	 * the same directory), so schedule a reload. */
+	ui_view_schedule_reload(from);
+	ui_view_schedule_reload(to);
+
+	if(fentry_is_fake(curr))
+	{
+		/* Just remove the other file (it can't be fake entry too). */
+		return fops_delete_current(to, 1, 0);
+	}
+
+	get_full_path_of(curr, sizeof(from_path), from_path);
+	get_full_path_of(other, sizeof(to_path), to_path);
+
+	if(fentry_is_fake(other))
+	{
+		char to_path[PATH_MAX];
+		char canonical[PATH_MAX];
+		snprintf(to_path, sizeof(to_path), "%s/%s/%s", flist_get_dir(to),
+				curr->origin + strlen(flist_get_dir(from)), curr->name);
+		canonicalize_path(to_path, canonical, sizeof(canonical));
+
+		/* Copy current file to position of the other one using relative path with
+		 * different base. */
+		fops_replace(from, canonical, 0);
+
+		/* Update the other entry to not be fake. */
+		remove_last_path_component(canonical);
+		replace_string(&other->name, curr->name);
+		replace_string(&other->origin, canonical);
+	}
+	else
+	{
+		/* Overwrite file in the other pane with corresponding file from current
+		 * pane. */
+		fops_replace(from, to_path, 1);
+	}
+
+	/* Obtaining file fingerprint relies on size field of entries, so try to load
+	 * it and ignore if it fails. */
+	other->size = get_file_size(to_path);
+
+	/* Try to update id of the other entry by computing fingerprint of both files
+	 * and checking if they match. */
+
+	from_fingerprint = get_file_fingerprint(from_path, curr, ct);
+	to_fingerprint = get_file_fingerprint(to_path, other, ct);
+
+	if(!is_null_or_empty(from_fingerprint) && !is_null_or_empty(to_fingerprint))
+	{
+		int match = (strcmp(from_fingerprint, to_fingerprint) == 0);
+		if(match && ct == CT_CONTENTS)
+		{
+			match = files_are_identical(from_path, to_path);
+		}
+		if(match)
+		{
+			other->id = curr->id;
+		}
+	}
+
+	free(from_fingerprint);
+	free(to_fingerprint);
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

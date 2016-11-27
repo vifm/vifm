@@ -35,6 +35,10 @@
 #include "registers.h"
 #include "trash.h"
 
+/* XXX: the unit isn't clever enough to handle operations on the same file
+ *      within group of changes, hence fake OP_MOVETMP* operations.  Hard to
+ *      tell if this can be done without such workarounds, but worth a try. */
+
 typedef struct
 {
 	char *msg;
@@ -82,8 +86,8 @@ static OPS undo_op[] = {
 	OP_MOVE,     /* OP_MOVEA */
 	OP_MOVETMP1, /* OP_MOVETMP1 */
 	OP_MOVETMP2, /* OP_MOVETMP2 */
-	OP_MOVETMP3, /* OP_MOVETMP1 */
-	OP_MOVETMP4, /* OP_MOVETMP2 */
+	OP_MOVETMP3, /* OP_MOVETMP3 */
+	OP_MOVETMP4, /* OP_MOVETMP4 */
 	OP_CHOWN,    /* OP_CHOWN */
 	OP_CHGRP,    /* OP_CHGRP */
 #ifndef _WIN32
@@ -108,58 +112,58 @@ static enum
 	OPER_NON,
 } opers[][8] = {
 	/* 1st arg   2nd arg   exists    absent   */
-	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_NONE */
+	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* redo OP_NONE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
-	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_USR  */
+	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* redo OP_USR  */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_REMOVE */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_REMOVE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE   */
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_REMOVESL */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_REMOVESL */
 	  OPER_2ND, OPER_1ST, OPER_NON, OPER_NON, }, /* undo OP_SYMLINK2 */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPY   */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* redo OP_COPY   */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPYF  */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* redo OP_COPYF  */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPYA  */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* redo OP_COPYA  */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVE */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* redo OP_MOVE */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVEF */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* redo OP_MOVEF */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE  */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVEA */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* redo OP_MOVEA */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE  */
-	{ OPER_1ST, OPER_2ND, OPER_2ND, OPER_NON,    /* do   OP_MOVETMP1 */
+	{ OPER_1ST, OPER_2ND, OPER_2ND, OPER_NON,    /* redo OP_MOVETMP1 */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP1 */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* do   OP_MOVETMP2 */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* redo OP_MOVETMP2 */
 		OPER_2ND, OPER_1ST, OPER_1ST, OPER_NON, }, /* undo OP_MOVETMP2 */
-	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* do   OP_MOVETMP3 */
+	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* redo OP_MOVETMP3 */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVETMP3 */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVETMP4 */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* redo OP_MOVETMP4 */
 		OPER_2ND, OPER_1ST, OPER_NON, OPER_NON, }, /* undo OP_MOVETMP4 */
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHOWN */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_CHOWN */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHOWN */
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHGRP */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_CHGRP */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHGRP */
 #ifndef _WIN32
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMOD */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_CHMOD */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMOD */
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMODR */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_CHMODR */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMODR */
 #else
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_ADDATTR */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_ADDATTR */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_SUBATTR */
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_SUBATTR */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_SUBATTR */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_ADDATTR */
 #endif
-	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* do   OP_SYMLINK */
+	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* redo OP_SYMLINK */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE  */
-	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_NON,    /* do   OP_SYMLINK2 */
+	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_NON,    /* redo OP_SYMLINK2 */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVESL */
-	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* do   OP_MKDIR */
+	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* redo OP_MKDIR */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_RMDIR */
-	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_RMDIR */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* redo OP_RMDIR */
 		OPER_1ST, OPER_NON, OPER_NON, OPER_1ST, }, /* undo OP_MKDIR */
-	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* do   OP_MKFILE */
+	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* redo OP_MKFILE */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_REMOVE  */
 };
 ARRAY_GUARD(opers, OP_COUNT);
@@ -763,16 +767,18 @@ fill_undolist_detail(char **list)
 			const char *p;
 
 			p = get_op_desc(cmd->do_op);
-			if((*list = malloc(4 + strlen(p) + 1)) == NULL)
+			if((*list = format_str("  do: %s", p)) == NULL)
+			{
 				return list;
-			sprintf(*list, "do: %s", p);
-			list++;
+			}
+			++list;
 
 			p = get_op_desc(cmd->undo_op);
-			if((*list = malloc(6 + strlen(p) + 1)) == NULL)
+			if((*list = format_str("  undo: %s", p)) == NULL)
+			{
 				return list;
-			sprintf(*list, "undo: %s", p);
-			list++;
+			}
+			++list;
 
 			cmd = cmd->prev;
 			--left;
@@ -800,14 +806,18 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "rm %s", op.src);
 			break;
 		case OP_COPY:
+		case OP_COPYA:
 			snprintf(buf, sizeof(buf), "cp %s to %s", op.src, op.dst);
 			break;
 		case OP_COPYF:
 			snprintf(buf, sizeof(buf), "cp -f %s to %s", op.src, op.dst);
 			break;
 		case OP_MOVE:
+		case OP_MOVEA:
 		case OP_MOVETMP1:
 		case OP_MOVETMP2:
+		case OP_MOVETMP3:
+		case OP_MOVETMP4:
 			snprintf(buf, sizeof(buf), "mv %s to %s", op.src, op.dst);
 			break;
 		case OP_MOVEF:
@@ -839,8 +849,8 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "ln -s %s to %s", op.src, op.dst);
 			break;
 		case OP_MKDIR:
-			snprintf(buf, sizeof(buf), "mkdir %s%s", op.src,
-					(op.data == NULL) ? "" : "-p ");
+			snprintf(buf, sizeof(buf), "mkdir %s%s", (op.data == NULL) ? "" : "-p ",
+					op.src);
 			break;
 		case OP_RMDIR:
 			snprintf(buf, sizeof(buf), "rmdir %s", op.src);
@@ -849,8 +859,8 @@ get_op_desc(op_t op)
 			snprintf(buf, sizeof(buf), "touch %s", op.src);
 			break;
 
-		default:
-			strcpy(buf, "ERROR, update get_op_desc() function");
+		case OP_COUNT:
+			strcpy(buf, "ERROR, not a valid operation kind");
 			break;
 	}
 

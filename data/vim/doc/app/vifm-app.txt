@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 18
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -538,6 +538,20 @@ t - select or unselect (tag) the current file. *vifm-t*
 
 u - undo last change.                          *vifm-u*
 Ctrl-R - redo last change.                     *vifm-CTRL-R*
+
+dp                                             *vifm-dp*
+    in compare view of "ofboth grouppaths" kind, makes corresponding entry
+    of the other pane equal to the current one.  The semantics is as follows:
+     - nothing done for identical entries
+     - if file is missing in current view, its pair gets removed
+     - if file is missing or differs in other view, it is replaced
+    File removal obeys |vifm-'trash'| option.  When the option is enabled, the
+    operation can be undone/redone (although results won't be visible
+    automatically).
+    Unlike in Vim, this operation is performed on a single line rather than
+    a set of adjacent changes.
+do                                             *vifm-do*
+    same as dp, but applies changes in the opposite direction.
 
 v or V                                         *vifm-v* *vifm-V*
     start visual selection of files, clears current selection.
