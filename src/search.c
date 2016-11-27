@@ -61,7 +61,12 @@ find_and_goto_pattern(FileView *view, int wrap_start, int backward)
 			return 0;
 		}
 	}
+
+	/* Redraw the cursor which also might synchronize cursors of two views. */
+	fview_cursor_redraw(view);
+	/* Schedule redraw of the view to highlight search matches. */
 	ui_view_schedule_redraw(view);
+
 	return 1;
 }
 
