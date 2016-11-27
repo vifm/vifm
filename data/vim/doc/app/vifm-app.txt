@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 25
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Nov 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -540,8 +540,8 @@ u - undo last change.                          *vifm-u*
 Ctrl-R - redo last change.                     *vifm-CTRL-R*
 
 dp                                             *vifm-dp*
-    in compare view of "ofboth" kind, makes corresponding entry of the other
-    pane equal to the current one.  The semantics is as follows:
+    in compare view of "ofboth grouppaths" kind, makes corresponding entry
+    of the other pane equal to the current one.  The semantics is as follows:
      - nothing done for identical entries
      - if file is missing in current view, its pair gets removed
      - if file is missing or differs in other view, it is replaced

@@ -221,7 +221,9 @@ typedef struct
 		/* Type of the custom view. */
 		CVType type;
 
-		CompareType diff_cmp_type; /* Type of comparison view for CV_DIFF type. */
+		/* Additional data about CV_DIFF type. */
+		CompareType diff_cmp_type; /* Type of comparison. */
+		int diff_path_group;       /* Whether entries are grouped by paths. */
 
 		/* This is temporary storage for custom list entries used during its
 		 * construction. */
