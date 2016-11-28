@@ -971,6 +971,7 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 	view->custom.entry_count = 0;
 	view->dir_entry = dynarray_shrink(view->dir_entry);
 	view->filtered = 0;
+	view->matches = 0;
 
 	/* Kind of custom view must be set to correct value before option loading and
 	 * sorting. */

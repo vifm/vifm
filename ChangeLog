@@ -239,6 +239,8 @@
 	sources (internal state versus runtime).  Thanks to Jochen
 	Schweizer (a.k.a. durcheinandr).
 
+	Fixed n/N not restarting search in custom views.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
