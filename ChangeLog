@@ -247,6 +247,9 @@
 	Fixed view columns when column with dynamic alignment is not the first
 	one.
 
+	Fixed :pwd in custom views to make it display main directory (didn't
+	display anything).  Thanks to filterfalse.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

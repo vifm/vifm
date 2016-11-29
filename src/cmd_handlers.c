@@ -3331,7 +3331,7 @@ put_cmd(const cmd_info_t *cmd_info)
 static int
 pwd_cmd(const cmd_info_t *cmd_info)
 {
-	status_bar_message(curr_view->curr_dir);
+	status_bar_message(flist_get_dir(curr_view));
 	return 1;
 }
 
