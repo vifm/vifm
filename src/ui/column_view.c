@@ -75,7 +75,8 @@ static AlignType decorate_output(const column_t *col, char buf[],
 static void add_ellipsis(AlignType align, char buf[]);
 static size_t calculate_max_width(const column_t *col, size_t len,
 		size_t max_line_width);
-static size_t calculate_start_pos(const column_t *col, const char buf[]);
+static size_t calculate_start_pos(const column_t *col, const char buf[],
+		AlignType align);
 static void fill_gap_pos(const void *data, size_t from, size_t to);
 static size_t get_width_on_screen(const char str[]);
 static void recalculate_if_needed(columns_t *cols, size_t max_width);
@@ -282,7 +283,7 @@ columns_format_line(columns_t *cols, const void *data, size_t max_line_width)
 		col->func(col->info.column_id, data, sizeof(col_buffer), col_buffer);
 		strcpy(full_column, col_buffer);
 		align = decorate_output(col, col_buffer, max_line_width);
-		cur_col_start = calculate_start_pos(col, col_buffer);
+		cur_col_start = calculate_start_pos(col, col_buffer, align);
 
 		/* Ensure that we are not trying to draw current column in the middle of a
 		 * character inside previous column. */
@@ -417,9 +418,9 @@ calculate_max_width(const column_t *col, size_t len, size_t max_line_width)
 
 /* Calculates start position for outputting content of the col. */
 static size_t
-calculate_start_pos(const column_t *col, const char buf[])
+calculate_start_pos(const column_t *col, const char buf[], AlignType align)
 {
-	if(col->info.align == AT_LEFT)
+	if(align == AT_LEFT)
 	{
 		return col->start;
 	}
@@ -427,7 +428,7 @@ calculate_start_pos(const column_t *col, const char buf[])
 	{
 		const size_t end = col->start + col->width;
 		const size_t len = get_width_on_screen(buf);
-		return (end > len && col->info.align == AT_RIGHT) ? (end - len) : 0;
+		return (end > len && align == AT_RIGHT) ? (end - len) : 0;
 	}
 }
 

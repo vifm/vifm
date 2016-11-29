@@ -244,6 +244,9 @@
 	Fixed full path patterns ({{globs}} and //regexp//) not working with file
 	highlighting in :highlight.  Thanks to granderil.
 
+	Fixed view columns when column with dynamic alignment is not the first
+	one.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
