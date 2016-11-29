@@ -1157,7 +1157,9 @@ static void
 mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
-	const col_attr_t *color = cs_get_file_hi(cs, entry->name, &entry->hi_num);
+	char *const typed_fname = get_typed_entry_fpath(entry);
+	const col_attr_t *color = cs_get_file_hi(cs, typed_fname, &entry->hi_num);
+	free(typed_fname);
 	if(color != NULL)
 	{
 		cs_mix_colors(col, color);
