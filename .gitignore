@@ -6,8 +6,9 @@
 /src/runtests
 /src/test-suite.log
 
-# created during build process
+# created during build/test process
 /tests/bin/
+/tests/sandbox/
 
 # autotools generated files
 /autom4te.cache/
