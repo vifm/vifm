@@ -278,7 +278,7 @@ correct_size(FileView *view)
 /* Updates TUI elements sizes and coordinates for single window
  * configuration. */
 static void
-only_layout(FileView *view, int screen_x, int screen_y)
+only_layout(FileView *view, int screen_x)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
@@ -294,7 +294,7 @@ only_layout(FileView *view, int screen_x, int screen_y)
 /* Updates TUI elements sizes and coordinates for vertical configuration of
  * panes: left one and right one. */
 static void
-vertical_layout(int screen_x, int screen_y)
+vertical_layout(int screen_x)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -1 : 0;
@@ -458,8 +458,8 @@ resize_all(void)
 
 	if(curr_stats.number_of_windows == 1)
 	{
-		only_layout(&lwin, screen_x, screen_y);
-		only_layout(&rwin, screen_x, screen_y);
+		only_layout(&lwin, screen_x);
+		only_layout(&rwin, screen_x);
 
 		mvwin(ltop_line1, 0, 0);
 		mvwin(ltop_line2, 0, 0);
@@ -471,7 +471,7 @@ resize_all(void)
 		if(curr_stats.split == HSPLIT)
 			horizontal_layout(screen_x, screen_y);
 		else
-			vertical_layout(screen_x, screen_y);
+			vertical_layout(screen_x);
 	}
 
 	correct_size(&lwin);
