@@ -541,7 +541,6 @@ substitute_specsw(const wchar_t cmd[])
 	buf = reallocarray(NULL, len, sizeof(wchar_t));
 	if(buf == NULL)
 	{
-		free(buf);
 		return NULL;
 	}
 
