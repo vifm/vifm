@@ -3151,9 +3151,23 @@ fentry_is_valid(const dir_entry_t *entry)
 int
 flist_load_tree(FileView *view, const char path[])
 {
+	const dir_entry_t *entry;
+	char full_path[PATH_MAX];
+
+	if(view->list_rows > 0)
+	{
+		get_current_full_path(view, sizeof(full_path), full_path);
+	}
+
 	if(flist_load_tree_internal(view, path, 0) != 0)
 	{
 		return 1;
+	}
+
+	entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+	if(entry != NULL)
+	{
+		view->list_pos = entry_to_pos(view, entry);
 	}
 
 	ui_view_schedule_redraw(view);

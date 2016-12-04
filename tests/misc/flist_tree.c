@@ -760,6 +760,17 @@ TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
+TEST(cursor_is_set_on_previous_file)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
+	load_dir_list(&lwin, 1);
+	assert_int_equal(3, lwin.list_rows);
+	lwin.list_pos = 1;
+
+	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_int_equal(8, lwin.list_pos);
+}
+
 static void
 verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 {
