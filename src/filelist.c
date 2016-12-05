@@ -1617,8 +1617,10 @@ filter_in_compare(FileView *view, void *arg, zap_filter filter)
 	zap_compare_view(view, other, filter, arg);
 	if(view->list_rows == 0)
 	{
-		show_error_msg("Comparison", "No files left in the views, leaving them.");
+		/* Load views before showing the message as event loop in message dialog can
+		 * try to reload views. */
 		cd_updir(view, 1);
+		show_error_msg("Comparison", "No files left in the views, left the mode.");
 		return 1;
 	}
 
