@@ -191,9 +191,11 @@ int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
-/* Fills the buffer with the full path to file under cursor. */
+/* Fills the buffer with the full path to file under cursor.  Set to empty if
+ * there are no files in the view. */
 void get_current_full_path(const FileView *view, size_t buf_len, char buf[]);
-/* Fills the buffer with the full path to file at specified position. */
+/* Fills the buffer with the full path to file at specified position.  Set to
+ * empty if there are no files in the view. */
 void get_full_path_at(const FileView *view, int pos, size_t buf_len,
 		char buf[]);
 /* Fills the buffer with the full path to file of specified file list entry. */

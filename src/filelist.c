@@ -2879,6 +2879,11 @@ get_current_full_path(const FileView *view, size_t buf_len, char buf[])
 void
 get_full_path_at(const FileView *view, int pos, size_t buf_len, char buf[])
 {
+	if(pos < 0 || pos >= view->list_rows)
+	{
+		copy_str(buf, buf_len, "");
+		return;
+	}
 	get_full_path_of(&view->dir_entry[pos], buf_len, buf);
 }
 
@@ -3151,23 +3156,22 @@ fentry_is_valid(const dir_entry_t *entry)
 int
 flist_load_tree(FileView *view, const char path[])
 {
-	const dir_entry_t *entry;
 	char full_path[PATH_MAX];
-
-	if(view->list_rows > 0)
-	{
-		get_current_full_path(view, sizeof(full_path), full_path);
-	}
+	get_current_full_path(view, sizeof(full_path), full_path);
 
 	if(flist_load_tree_internal(view, path, 0) != 0)
 	{
 		return 1;
 	}
 
-	entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
-	if(entry != NULL)
+	if(full_path[0] != '\0')
 	{
-		view->list_pos = entry_to_pos(view, entry);
+		const dir_entry_t *entry;
+		entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+		if(entry != NULL)
+		{
+			view->list_pos = entry_to_pos(view, entry);
+		}
 	}
 
 	ui_view_schedule_redraw(view);
