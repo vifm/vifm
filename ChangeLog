@@ -142,6 +142,9 @@
 	Resolve symbolic link for listing associated programs from desktop-files.
 	Thanks to filterfalse.
 
+	Don't move cursor off "../" before start of local filtering.  Thanks to
+	filterfalse.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

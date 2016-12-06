@@ -676,9 +676,9 @@ local_filter_update_view(FileView *view, int rel_pos)
 	if(pos >= 0)
 	{
 		if(pos == 0 && is_parent_dir(view->dir_entry[0].name) &&
-				view->list_rows > 0)
+				view->list_rows > 1 && !filter_is_empty(&view->local_filter.filter))
 		{
-			pos++;
+			++pos;
 		}
 
 		view->list_pos = pos;
