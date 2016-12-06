@@ -69,6 +69,9 @@
 	Added do and dp keys to compare views for applying changes in files.
 	Thanks to filterfalse.
 
+	Added %f 'statusline' macro that inserts relative path of the entry, which
+	might be useful for non-regular views.  Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
@@ -141,6 +144,9 @@
 
 	Resolve symbolic link for listing associated programs from desktop-files.
 	Thanks to filterfalse.
+
+	Don't move cursor off "../" before start of local filtering.  Thanks to
+	filterfalse.
 
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
@@ -238,6 +244,17 @@
 	Fixed inconsistency of using environment variables from different
 	sources (internal state versus runtime).  Thanks to Jochen
 	Schweizer (a.k.a. durcheinandr).
+
+	Fixed n/N not restarting search in custom views.
+
+	Fixed full path patterns ({{globs}} and //regexp//) not working with file
+	highlighting in :highlight.  Thanks to granderil.
+
+	Fixed view columns when column with dynamic alignment is not the first
+	one.
+
+	Fixed :pwd in custom views to make it display main directory (didn't
+	display anything).  Thanks to filterfalse.
 
 0.8.2-beta to 0.8.2
 

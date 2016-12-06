@@ -191,18 +191,21 @@ int iter_selection_or_current(FileView *view, dir_entry_t **entry);
 /* Maps one of file list entries to its position in the list.  Returns the
  * position or -1 on wrong entry. */
 int entry_to_pos(const FileView *view, const dir_entry_t *entry);
-/* Fills the buffer with the full path to file under cursor. */
+/* Fills the buffer with the full path to file under cursor.  Set to empty if
+ * there are no files in the view. */
 void get_current_full_path(const FileView *view, size_t buf_len, char buf[]);
-/* Fills the buffer with the full path to file at specified position. */
+/* Fills the buffer with the full path to file at specified position.  Set to
+ * empty if there are no files in the view. */
 void get_full_path_at(const FileView *view, int pos, size_t buf_len,
 		char buf[]);
 /* Fills the buffer with the full path to file of specified file list entry. */
 void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
 /* Fills the buffer with short path of specified file list entry.  The
  * shortening occurs for files under original directory of custom views.
- * Non-zero format enables file type specific decoration. */
+ * Non-zero format enables file type specific decoration.  Non-zero drop_prefix
+ * requests omitting file prefix for trees. */
 void get_short_path_of(const FileView *view, const dir_entry_t *entry,
-		int format, size_t buf_len, char buf[]);
+		int format, int drop_prefix, size_t buf_len, char buf[]);
 /* Ensures that either entries at specified positions, selected entries or file
  * under cursor is marked. */
 void check_marking(FileView *view, int count, const int indexes[]);
@@ -228,7 +231,7 @@ int zap_entries(FileView *view, dir_entry_t *entries, int *count,
 int filter_in_compare(FileView *view, void *arg, zap_filter filter);
 /* Finds directory entry in the list of entries by the path.  Returns pointer to
  * the found entry or NULL. */
-dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
+dir_entry_t * entry_from_path(FileView *view, dir_entry_t *entries, int count,
 		const char path[]);
 /* Retrieves number of items in a directory specified by the entry.  Returns the
  * number, which is zero for files. */

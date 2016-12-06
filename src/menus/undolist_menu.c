@@ -55,9 +55,13 @@ show_undolist_menu(FileView *view, int with_details)
 	if(m.len > 0)
 	{
 		const size_t len = (m.items[m.pos] != NULL) ? strlen(m.items[m.pos]) : 0;
-		m.items[m.pos] = realloc(m.items[m.pos], len + 1U + 1U);
-		memmove(m.items[m.pos] + 1, m.items[m.pos], len + 1U);
-		m.items[m.pos][0] = '*';
+		char *const new_line = realloc(m.items[m.pos], len + 1U + 1U);
+		if(new_line != NULL)
+		{
+			m.items[m.pos] = new_line;
+			memmove(m.items[m.pos] + 1, m.items[m.pos], len + 1U);
+			m.items[m.pos][0] = '*';
+		}
 	}
 
 	return display_menu(m.state, view);

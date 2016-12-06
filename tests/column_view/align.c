@@ -10,6 +10,7 @@
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align);
 static void column1_func(int id, const void *data, size_t buf_len, char *buf);
+static void column2_func(int id, const void *data, size_t buf_len, char *buf);
 
 static const size_t MAX_WIDTH = 80;
 
@@ -47,6 +48,12 @@ column1_func(int id, const void *data, size_t buf_len, char *buf)
 	snprintf(buf, buf_len + 1, "%s",
 			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+}
+
+static void
+column2_func(int id, const void *data, size_t buf_len, char *buf)
+{
+	snprintf(buf, buf_len + 1, "%s", "bxx");
 }
 
 static void
@@ -165,6 +172,40 @@ TEST(dyn_align)
 	columns_format_line(cols, NULL, 1);
 	assert_string_equal("g", print_buffer);
 	assert_int_equal(AT_RIGHT, last_align);
+
+	columns_free(cols);
+}
+
+TEST(dyn_align_on_the_right)
+{
+	static column_info_t column_info1 = {
+		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_RIGHT,    .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+	};
+
+	static column_info_t column_info2 = {
+		.column_id = COL2_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_DYN,      .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+	};
+
+	columns_t *const cols = columns_create();
+	columns_add_column(cols, column_info1);
+	columns_add_column(cols, column_info2);
+
+	col2_next = &column1_func2;
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 8);
+	assert_string_equal("aaaadefg", print_buffer);
+
+	col1_next = &column1_func2;
+	col2_next = &column2_func;
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	columns_format_line(cols, NULL, 16);
+	assert_string_equal(" abcdefgbxx     ", print_buffer);
+
+	col2_next = NULL;
 
 	columns_free(cols);
 }

@@ -415,7 +415,7 @@ append_entry(FileView *view, char expanded[], PathType type, dir_entry_t *entry,
 			copy_str(path, sizeof(path), entry->name);
 			break;
 		case PT_REL:
-			get_short_path_of(view, entry, 0, sizeof(path), path);
+			get_short_path_of(view, entry, 0, 0, sizeof(path), path);
 			break;
 		case PT_FULL:
 			get_full_path_of(entry, sizeof(path), path);

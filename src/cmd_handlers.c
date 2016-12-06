@@ -1483,7 +1483,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 			}
 			else
 			{
-				snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir,
+				snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(curr_view),
 						directory);
 				(void)replace_string(&directory, path_buf);
 			}
@@ -1710,14 +1710,14 @@ remove_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
 static char *
 get_bmark_dir(const cmd_info_t *cmd_info)
 {
+	const char *const cwd = flist_get_dir(curr_view);
+
 	if(cmd_info->emark)
 	{
 		return make_bmark_path(cmd_info->argv[0]);
 	}
 
-	return is_root_dir(curr_view->curr_dir)
-	     ? strdup(curr_view->curr_dir)
-	     : format_str("%s/", curr_view->curr_dir);
+	return is_root_dir(cwd) ? strdup(cwd) : format_str("%s/", cwd);
 }
 
 /* Prepares path for a bookmark.  Returns newly allocated string. */
@@ -1725,6 +1725,7 @@ static char *
 make_bmark_path(const char path[])
 {
 	char *ret;
+	const char *const cwd = flist_get_dir(curr_view);
 	char *const expanded = replace_tilde(ma_expand_single(path));
 
 	if(is_path_absolute(expanded))
@@ -1732,8 +1733,7 @@ make_bmark_path(const char path[])
 		return expanded;
 	}
 
-	ret = format_str("%s%s%s", curr_view->curr_dir,
-			is_root_dir(curr_view->curr_dir) ? "" : "/", expanded);
+	ret = format_str("%s%s%s", cwd, is_root_dir(cwd) ? "" : "/", expanded);
 	free(expanded);
 	return ret;
 }
@@ -3331,7 +3331,7 @@ put_cmd(const cmd_info_t *cmd_info)
 static int
 pwd_cmd(const cmd_info_t *cmd_info)
 {
-	status_bar_message(curr_view->curr_dir);
+	status_bar_message(flist_get_dir(curr_view));
 	return 1;
 }
 

@@ -921,7 +921,9 @@ column_line_print(const void *data, int column_id, const char buf[],
 	const int line_attrs = prepare_col_color(view, entry, primary,
 			cdt->line_hi_group, cdt->is_current);
 
-	if(*cdt->prefix_len != 0U && align == AT_RIGHT)
+	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
+
+	if(extra_prefix != 0U && align == AT_RIGHT)
 	{
 		/* Prefix length requires correction if left hand side of file name is
 		 * trimmed. */
@@ -930,32 +932,32 @@ column_line_print(const void *data, int column_id, const char buf[],
 		{
 			/* As left side is trimmed and might contain ellipsis calculate offsets
 			 * according to the right side. */
-			width -= utf8_strsw(full_column + *cdt->prefix_len);
-			*cdt->prefix_len = utf8_strsnlen(buf, width);
+			width -= utf8_strsw(full_column + extra_prefix);
+			extra_prefix = utf8_strsnlen(buf, width);
 		}
 	}
 
-	prefix_len = padding + view->real_num_width + *cdt->prefix_len;
+	prefix_len = padding + view->real_num_width + extra_prefix;
 	final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(numbers_visible)
 	{
-		const int column = final_offset - *cdt->prefix_len - view->real_num_width;
+		const int column = final_offset - extra_prefix - view->real_num_width;
 		draw_line_number(cdt, column);
 	}
 
-	if(*cdt->prefix_len != 0U)
+	if(extra_prefix != 0U)
 	{
 		/* Copy prefix part into working buffer. */
-		strncpy(print_buf, buf, *cdt->prefix_len);
-		print_buf[*cdt->prefix_len] = '\0';
-		buf += *cdt->prefix_len;
-		full_column += *cdt->prefix_len;
+		strncpy(print_buf, buf, extra_prefix);
+		print_buf[extra_prefix] = '\0';
+		buf += extra_prefix;
+		full_column += extra_prefix;
 
-		checked_wmove(view->win, cdt->current_line,
-				final_offset - *cdt->prefix_len);
+		checked_wmove(view->win, cdt->current_line, final_offset - extra_prefix);
 		wprinta(view->win, print_buf,
 				prepare_col_color(view, entry, 0, cdt->line_hi_group, cdt->is_current));
+
 		*cdt->prefix_len = 0U;
 	}
 
@@ -1155,7 +1157,9 @@ static void
 mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
-	const col_attr_t *color = cs_get_file_hi(cs, entry->name, &entry->hi_num);
+	char *const typed_fname = get_typed_entry_fpath(entry);
+	const col_attr_t *color = cs_get_file_hi(cs, typed_fname, &entry->hi_num);
+	free(typed_fname);
 	if(color != NULL)
 	{
 		cs_mix_colors(col, color);
@@ -1183,7 +1187,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 	if(!ui_view_displays_columns(view) || view->custom.type != CV_TREE)
 	{
 		/* File name possibly with path prefix. */
-		get_short_path_of(view, entry, 1, buf_len + 1U, buf);
+		get_short_path_of(view, entry, 1, 0, buf_len + 1U, buf);
 		return;
 	}
 
@@ -1217,7 +1221,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 		buf[len - 1U - i] = t;
 	}
 
-	get_short_path_of(view, entry, 1, buf_len + 1U - len, buf + len);
+	get_short_path_of(view, entry, 1, 1, buf_len + 1U - len, buf + len);
 	*cdt->prefix_len = len;
 }
 
@@ -1546,7 +1550,8 @@ get_filename_width(const FileView *view, int i)
 	if(flist_custom_active(view))
 	{
 		char name[NAME_MAX];
-		get_short_path_of(view, entry, 0, sizeof(name), name);
+		/* XXX: should this be formatted name?. */
+		get_short_path_of(view, entry, 0, 0, sizeof(name), name);
 		name_len = utf8_strsw(name);
 	}
 	else

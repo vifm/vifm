@@ -394,7 +394,7 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 
 	if(custom_list_is_incomplete(view))
 	{
-		entry = entry_from_path(view->local_filter.entries,
+		entry = entry_from_path(view, view->local_filter.entries,
 				view->local_filter.entry_count, full_path);
 		if(entry == NULL)
 		{
@@ -410,7 +410,7 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 		}
 	}
 
-	entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+	entry = entry_from_path(view, view->dir_entry, view->list_rows, full_path);
 	if(entry == NULL)
 	{
 		/* File might not exist anymore at that location. */
@@ -971,6 +971,7 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 	view->custom.entry_count = 0;
 	view->dir_entry = dynarray_shrink(view->dir_entry);
 	view->filtered = 0;
+	view->matches = 0;
 
 	/* Kind of custom view must be set to correct value before option loading and
 	 * sorting. */
@@ -1367,7 +1368,7 @@ flist_goto_by_path(FileView *view, const char path[])
 		return;
 	}
 
-	entry = entry_from_path(view->dir_entry, view->list_rows, path);
+	entry = entry_from_path(view, view->dir_entry, view->list_rows, path);
 	if(entry != NULL)
 	{
 		view->list_pos = entry_to_pos(view, entry);
@@ -1375,13 +1376,14 @@ flist_goto_by_path(FileView *view, const char path[])
 }
 
 dir_entry_t *
-entry_from_path(dir_entry_t *entries, int count, const char path[])
+entry_from_path(FileView *view, dir_entry_t *entries, int count,
+		const char path[])
 {
 	char canonic_path[PATH_MAX];
 	const char *fname;
 	int i;
 
-	to_canonic_path(path, flist_get_dir(curr_view), canonic_path,
+	to_canonic_path(path, flist_get_dir(view), canonic_path,
 			sizeof(canonic_path));
 
 	fname = get_last_path_component(canonic_path);
@@ -1616,8 +1618,10 @@ filter_in_compare(FileView *view, void *arg, zap_filter filter)
 	zap_compare_view(view, other, filter, arg);
 	if(view->list_rows == 0)
 	{
-		show_error_msg("Comparison", "No files left in the views, leaving them.");
+		/* Load views before showing the message as event loop in message dialog can
+		 * try to reload views. */
 		cd_updir(view, 1);
+		show_error_msg("Comparison", "No files left in the views, left the mode.");
 		return 1;
 	}
 
@@ -2878,6 +2882,11 @@ get_current_full_path(const FileView *view, size_t buf_len, char buf[])
 void
 get_full_path_at(const FileView *view, int pos, size_t buf_len, char buf[])
 {
+	if(pos < 0 || pos >= view->list_rows)
+	{
+		copy_str(buf, buf_len, "");
+		return;
+	}
 	get_full_path_of(&view->dir_entry[pos], buf_len, buf);
 }
 
@@ -2890,7 +2899,7 @@ get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 
 void
 get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
-		size_t buf_len, char buf[])
+		int drop_prefix, size_t buf_len, char buf[])
 {
 	char name[NAME_MAX];
 	const char *path = entry->origin;
@@ -2904,9 +2913,9 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 		return;
 	}
 
-	if(format && view->custom.type == CV_TREE && ui_view_displays_columns(view) &&
-			entry->child_pos != 0)
+	if(drop_prefix && entry->child_pos != 0)
 	{
+		/* Replace root to force obtaining of file name only. */
 		const dir_entry_t *const parent = entry - entry->child_pos;
 		free_this = format_str("%s/%s", parent->origin, parent->name);
 		root_path = free_this;
@@ -3150,9 +3159,22 @@ fentry_is_valid(const dir_entry_t *entry)
 int
 flist_load_tree(FileView *view, const char path[])
 {
+	char full_path[PATH_MAX];
+	get_current_full_path(view, sizeof(full_path), full_path);
+
 	if(flist_load_tree_internal(view, path, 0) != 0)
 	{
 		return 1;
+	}
+
+	if(full_path[0] != '\0')
+	{
+		const dir_entry_t *entry;
+		entry = entry_from_path(view, view->dir_entry, view->list_rows, full_path);
+		if(entry != NULL)
+		{
+			view->list_pos = entry_to_pos(view, entry);
+		}
 	}
 
 	ui_view_schedule_redraw(view);

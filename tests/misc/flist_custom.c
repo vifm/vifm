@@ -644,6 +644,19 @@ TEST(failed_loadin_of_cv_does_not_override_saved_list)
 	filter_dispose(&lwin.auto_filter);
 }
 
+TEST(loading_cv_resets_search_results)
+{
+	lwin.matches = 100;
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	/* We need to reset the count as its non-zero value implies that search has
+	 * already been done. */
+	assert_int_equal(0, lwin.matches);
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
