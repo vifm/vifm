@@ -2899,7 +2899,7 @@ get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 
 void
 get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
-		size_t buf_len, char buf[])
+		int drop_prefix, size_t buf_len, char buf[])
 {
 	char name[NAME_MAX];
 	const char *path = entry->origin;
@@ -2913,9 +2913,9 @@ get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 		return;
 	}
 
-	if(format && view->custom.type == CV_TREE && ui_view_displays_columns(view) &&
-			entry->child_pos != 0)
+	if(drop_prefix && entry->child_pos != 0)
 	{
+		/* Replace root to force obtaining of file name only. */
 		const dir_entry_t *const parent = entry - entry->child_pos;
 		free_this = format_str("%s/%s", parent->origin, parent->name);
 		root_path = free_this;

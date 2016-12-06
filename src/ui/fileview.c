@@ -1187,7 +1187,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 	if(!ui_view_displays_columns(view) || view->custom.type != CV_TREE)
 	{
 		/* File name possibly with path prefix. */
-		get_short_path_of(view, entry, 1, buf_len + 1U, buf);
+		get_short_path_of(view, entry, 1, 0, buf_len + 1U, buf);
 		return;
 	}
 
@@ -1221,7 +1221,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 		buf[len - 1U - i] = t;
 	}
 
-	get_short_path_of(view, entry, 1, buf_len + 1U - len, buf + len);
+	get_short_path_of(view, entry, 1, 1, buf_len + 1U - len, buf + len);
 	*cdt->prefix_len = len;
 }
 
@@ -1550,7 +1550,8 @@ get_filename_width(const FileView *view, int i)
 	if(flist_custom_active(view))
 	{
 		char name[NAME_MAX];
-		get_short_path_of(view, entry, 0, sizeof(name), name);
+		/* XXX: should this be formatted name?. */
+		get_short_path_of(view, entry, 0, 0, sizeof(name), name);
 		name_len = utf8_strsw(name);
 	}
 	else
