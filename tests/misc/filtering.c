@@ -271,5 +271,21 @@ TEST(cursor_is_not_moved_from_parent_dir_initially)
 	cfg.dot_dirs = 0;
 }
 
+TEST(cursor_is_moved_to_nearest_neighbour)
+{
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/read/binary-data");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/read/dos-eof");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/read/two-lines");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/read/very-long-line");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	lwin.list_pos = 1;
+	assert_int_equal(0, local_filter_set(&lwin, "l"));
+	local_filter_update_view(&lwin, 0);
+	assert_int_equal(0, lwin.list_pos);
+	local_filter_cancel(&lwin);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
