@@ -69,6 +69,9 @@
 	Added do and dp keys to compare views for applying changes in files.
 	Thanks to filterfalse.
 
+	Added %f 'statusline' macro that inserts relative path of the entry, which
+	might be useful for non-regular views.  Thanks to filterfalse.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to
