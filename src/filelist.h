@@ -230,7 +230,7 @@ int zap_entries(FileView *view, dir_entry_t *entries, int *count,
 int filter_in_compare(FileView *view, void *arg, zap_filter filter);
 /* Finds directory entry in the list of entries by the path.  Returns pointer to
  * the found entry or NULL. */
-dir_entry_t * entry_from_path(dir_entry_t *entries, int count,
+dir_entry_t * entry_from_path(FileView *view, dir_entry_t *entries, int count,
 		const char path[]);
 /* Retrieves number of items in a directory specified by the entry.  Returns the
  * number, which is zero for files. */

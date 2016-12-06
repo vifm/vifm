@@ -424,7 +424,7 @@ load_unfiltered_list(FileView *const view)
 		populate_dir_list(view, 1);
 
 		/* Resolve current file position in updated list. */
-		entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+		entry = entry_from_path(view, view->dir_entry, view->list_rows, full_path);
 		if(entry != NULL)
 		{
 			current_file_pos = entry_to_pos(view, entry);

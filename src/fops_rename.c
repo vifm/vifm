@@ -367,7 +367,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 			++renamed;
 
 			to_canonic_path(old_name, curr_dir, path, sizeof(path));
-			entry = entry_from_path(view->dir_entry, view->list_rows, path);
+			entry = entry_from_path(view, view->dir_entry, view->list_rows, path);
 			if(entry == NULL)
 			{
 				continue;
@@ -382,7 +382,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 
 			if(flist_custom_active(view))
 			{
-				entry = entry_from_path(view->custom.entries,
+				entry = entry_from_path(view, view->custom.entries,
 						view->custom.entry_count, path);
 				if(entry != NULL)
 				{

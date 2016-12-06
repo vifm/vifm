@@ -277,7 +277,7 @@ check_mark_directory(FileView *view, char m)
 		dir_entry_t *entry;
 		char path[PATH_MAX];
 		snprintf(path, sizeof(path), "%s/%s", mark->directory, mark->file);
-		entry = entry_from_path(view->dir_entry, view->list_rows, path);
+		entry = entry_from_path(view, view->dir_entry, view->list_rows, path);
 		if(entry != NULL)
 		{
 			return entry_to_pos(view, entry);

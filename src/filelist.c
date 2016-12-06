@@ -394,7 +394,7 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 
 	if(custom_list_is_incomplete(view))
 	{
-		entry = entry_from_path(view->local_filter.entries,
+		entry = entry_from_path(view, view->local_filter.entries,
 				view->local_filter.entry_count, full_path);
 		if(entry == NULL)
 		{
@@ -410,7 +410,7 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 		}
 	}
 
-	entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+	entry = entry_from_path(view, view->dir_entry, view->list_rows, full_path);
 	if(entry == NULL)
 	{
 		/* File might not exist anymore at that location. */
@@ -1368,7 +1368,7 @@ flist_goto_by_path(FileView *view, const char path[])
 		return;
 	}
 
-	entry = entry_from_path(view->dir_entry, view->list_rows, path);
+	entry = entry_from_path(view, view->dir_entry, view->list_rows, path);
 	if(entry != NULL)
 	{
 		view->list_pos = entry_to_pos(view, entry);
@@ -1376,13 +1376,14 @@ flist_goto_by_path(FileView *view, const char path[])
 }
 
 dir_entry_t *
-entry_from_path(dir_entry_t *entries, int count, const char path[])
+entry_from_path(FileView *view, dir_entry_t *entries, int count,
+		const char path[])
 {
 	char canonic_path[PATH_MAX];
 	const char *fname;
 	int i;
 
-	to_canonic_path(path, flist_get_dir(curr_view), canonic_path,
+	to_canonic_path(path, flist_get_dir(view), canonic_path,
 			sizeof(canonic_path));
 
 	fname = get_last_path_component(canonic_path);
@@ -3169,7 +3170,7 @@ flist_load_tree(FileView *view, const char path[])
 	if(full_path[0] != '\0')
 	{
 		const dir_entry_t *entry;
-		entry = entry_from_path(view->dir_entry, view->list_rows, full_path);
+		entry = entry_from_path(view, view->dir_entry, view->list_rows, full_path);
 		if(entry != NULL)
 		{
 			view->list_pos = entry_to_pos(view, entry);
