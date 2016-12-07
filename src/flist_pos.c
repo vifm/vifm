@@ -255,7 +255,7 @@ flist_find_group(const FileView *view, int next)
 		flist_custom_active(view) && cv_compare(view->custom.type)
 		? SK_BY_ID
 		: abs(view->sort[0]);
-	const int is_dir = is_directory_entry(pentry);
+	const int is_dir = fentry_is_dir(pentry);
 	const char *const type_str = get_type_str(pentry->type);
 	regmatch_t pmatch = { .rm_so = 0, .rm_eo = 0 };
 #ifndef _WIN32
@@ -274,7 +274,7 @@ flist_find_group(const FileView *view, int next)
 		switch(sorting_key)
 		{
 			case SK_BY_FILEEXT:
-				if(is_directory_entry(nentry))
+				if(fentry_is_dir(nentry))
 				{
 					if(strncmp(pentry->name, nentry->name, char_width) != 0)
 					{
@@ -360,7 +360,7 @@ flist_find_group(const FileView *view, int next)
 					return pos;
 				break;
 			case SK_BY_DIR:
-				if(is_dir != is_directory_entry(nentry))
+				if(is_dir != fentry_is_dir(nentry))
 				{
 					return pos;
 				}
@@ -437,13 +437,13 @@ flist_find_dir_group(const FileView *view, int next)
 
 	int pos = curr_view->list_pos;
 	dir_entry_t *pentry = &curr_view->dir_entry[pos];
-	const int is_dir = is_directory_entry(pentry);
+	const int is_dir = fentry_is_dir(pentry);
 	while(pos > lb && pos < ub)
 	{
 		dir_entry_t *nentry;
 		pos += inc;
 		nentry = &curr_view->dir_entry[pos];
-		if(is_dir != is_directory_entry(nentry))
+		if(is_dir != fentry_is_dir(nentry))
 		{
 			break;
 		}
@@ -499,7 +499,7 @@ flist_next_dir_sibling(const FileView *view)
 	while(pos < past_end)
 	{
 		dir_entry_t *const e = &view->dir_entry[pos];
-		if(is_directory_entry(e))
+		if(fentry_is_dir(e))
 		{
 			break;
 		}
@@ -530,7 +530,7 @@ flist_prev_dir_sibling(const FileView *view)
 		}
 
 		/* We're looking for directories. */
-		if(is_directory_entry(e))
+		if(fentry_is_dir(e))
 		{
 			break;
 		}
@@ -543,13 +543,13 @@ flist_prev_dir_sibling(const FileView *view)
 int
 flist_next_dir(const FileView *view)
 {
-	return find_next(view, &is_directory_entry);
+	return find_next(view, &fentry_is_dir);
 }
 
 int
 flist_prev_dir(const FileView *view)
 {
-	return find_prev(view, &is_directory_entry);
+	return find_prev(view, &fentry_is_dir);
 }
 
 int

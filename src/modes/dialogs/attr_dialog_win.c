@@ -203,7 +203,7 @@ get_attrs(void)
 		}
 
 		diff |= (entry->attrs ^ attributes);
-		file_is_dir |= is_directory_entry(entry);
+		file_is_dir |= fentry_is_dir(entry);
 	}
 	if(first)
 	{

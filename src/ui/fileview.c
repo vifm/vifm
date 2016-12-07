@@ -1249,7 +1249,7 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
 	uint64_t size = DCACHE_UNKNOWN;
 
-	if(is_directory_entry(entry))
+	if(fentry_is_dir(entry))
 	{
 		uint64_t nitems;
 		dcache_get_of(entry, &size, &nitems);
@@ -1286,7 +1286,7 @@ format_nitems(int id, const void *data, size_t buf_len, char buf[])
 	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];
 	uint64_t nitems;
 
-	if(!is_directory_entry(entry))
+	if(!fentry_is_dir(entry))
 	{
 		copy_str(buf, buf_len + 1, " 0");
 		return;
@@ -1355,7 +1355,7 @@ format_fileext(int id, const void *data, size_t buf_len, char buf[])
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 
-	if(!is_directory_entry(entry))
+	if(!fentry_is_dir(entry))
 	{
 		format_ext(id, data, buf_len, buf);
 	}
@@ -1408,7 +1408,7 @@ format_dir(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
-	const char *type = is_directory_entry(entry) ? "dir" : "file";
+	const char *type = fentry_is_dir(entry) ? "dir" : "file";
 	snprintf(buf, buf_len, " %s", type);
 }
 
