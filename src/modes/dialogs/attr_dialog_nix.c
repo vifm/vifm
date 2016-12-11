@@ -293,8 +293,8 @@ redraw_attr_dialog(void)
 		waddstr(change_win, "...");
 	}
 
-	curs_set(1);
 	checked_wmove(change_win, curr, col);
+	curs_set(1);
 	wrefresh(change_win);
 }
 
