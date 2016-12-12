@@ -625,6 +625,7 @@ draw_curr(void)
 {
 	mvwaddch(change_win, curr, col, '>');
 	wrefresh(change_win);
+	checked_wmove(change_win, curr, col);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

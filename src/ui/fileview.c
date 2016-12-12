@@ -957,8 +957,6 @@ column_line_print(const void *data, int column_id, const char buf[],
 		checked_wmove(view->win, cdt->current_line, final_offset - extra_prefix);
 		wprinta(view->win, print_buf,
 				prepare_col_color(view, entry, 0, cdt->line_hi_group, cdt->is_current));
-
-		*cdt->prefix_len = 0U;
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
@@ -1642,6 +1640,9 @@ fview_position_updated(FileView *view)
 		/* We're updating view non-lazily above, so doing the same with the
 		 * ruler. */
 		ui_ruler_update(view, 0);
+
+		checked_wmove(view->win, cdt.current_line,
+				cdt.column_offset + prefix_len + (cfg.extra_padding != 0));
 
 		if(curr_stats.view)
 		{

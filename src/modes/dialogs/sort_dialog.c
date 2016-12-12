@@ -524,6 +524,7 @@ static void
 print_at_pos(void)
 {
 	mvwaddstr(sort_win, curr, col, caps[descending]);
+	checked_wmove(sort_win, curr, col);
 }
 
 static void

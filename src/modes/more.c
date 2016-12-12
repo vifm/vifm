@@ -206,6 +206,7 @@ modmore_redraw(void)
 	goto_vline(curr_vline);
 
 	draw_all(get_text_beginning());
+	checked_wmove(menu_win, 0, 0);
 
 	was_redraw = 1;
 }

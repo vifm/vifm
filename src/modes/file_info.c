@@ -210,6 +210,7 @@ redraw_file_info_dialog(void)
 	checked_wmove(menu_win, 0, 3);
 	wprint(menu_win, " File Information ");
 	wrefresh(menu_win);
+	checked_wmove(menu_win, 2, 2);
 
 	was_redraw = 1;
 }

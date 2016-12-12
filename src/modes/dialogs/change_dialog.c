@@ -286,6 +286,7 @@ static void
 print_at_pos(void)
 {
 	mvwaddstr(change_win, curr, col, "*");
+	checked_wmove(change_win, curr, col);
 }
 
 static void
