@@ -314,8 +314,8 @@ sort_dir_list(const void *one, const void *two)
 	const dir_entry_t *const first = one;
 	const dir_entry_t *const second = two;
 
-	const int first_is_dir = is_directory_entry(first);
-	const int second_is_dir = is_directory_entry(second);
+	const int first_is_dir = fentry_is_dir(first);
+	const int second_is_dir = fentry_is_dir(second);
 
 	if(first_is_dir && is_parent_dir(first->name))
 	{

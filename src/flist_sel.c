@@ -348,7 +348,7 @@ flist_sel_by_pattern(FileView *view, const char pattern[], int erase_old,
 		get_full_path_of(entry, sizeof(file_path) - 1U, file_path);
 
 		if(matchers_match(ms, file_path) ||
-				(is_directory_entry(entry) && matchers_match_dir(ms, file_path)))
+				(fentry_is_dir(entry) && matchers_match_dir(ms, file_path)))
 		{
 			entry->selected = select;
 			view->selected_files += (select ? 1 : -1);

@@ -311,6 +311,7 @@ move_to_menu_pos(int pos, menu_state_t *ms)
 	{
 		draw_menu_item(ms, m->pos, ms->current, 0);
 	}
+	checked_wmove(menu_win, ms->current, 2);
 
 	show_position_in_menu(m);
 }

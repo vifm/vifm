@@ -148,6 +148,9 @@
 	Don't move cursor off "../" before start of local filtering.  Thanks to
 	filterfalse.
 
+	Put hardware cursor according to current mode and cursor within it.
+	Thanks to Tyler Spivey.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

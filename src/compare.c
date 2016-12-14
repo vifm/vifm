@@ -582,10 +582,13 @@ list_view_entries(const FileView *view, strlist_t *list)
 
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		char full_path[PATH_MAX];
-		void *data = &view->dir_entry[i];
-		get_full_path_of(&view->dir_entry[i], sizeof(full_path), full_path);
-		fsdata_set(tree, full_path, &data, sizeof(data));
+		if(!fentry_is_dir(&view->dir_entry[i]))
+		{
+			char full_path[PATH_MAX];
+			void *data = &view->dir_entry[i];
+			get_full_path_of(&view->dir_entry[i], sizeof(full_path), full_path);
+			fsdata_set(tree, full_path, &data, sizeof(data));
+		}
 	}
 
 	fsdata_traverse(tree, &append_valid_nodes, list);

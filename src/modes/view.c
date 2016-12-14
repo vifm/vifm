@@ -666,6 +666,8 @@ draw(void)
 		}
 	}
 	refresh_view_win(vi->view);
+
+	checked_wmove(vi->view->win, ui_qv_top(vi->view), ui_qv_left(vi->view));
 }
 
 int

@@ -255,7 +255,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 2, " [   ] m Time Modified");
 	assert(cy - top == SK_COUNT &&
 			"Sort dialog and sort options should not diverge");
-	mvwaddstr(sort_win, curr, 4, caps[descending]);
+	print_at_pos();
 
 	wrefresh(sort_win);
 }
@@ -524,6 +524,7 @@ static void
 print_at_pos(void)
 {
 	mvwaddstr(sort_win, curr, col, caps[descending]);
+	checked_wmove(sort_win, curr, col);
 }
 
 static void

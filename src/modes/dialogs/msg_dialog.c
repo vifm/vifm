@@ -488,6 +488,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	size_t ctrl_msg_n;
 	size_t wctrl_msg;
 	size_t i;
+	int first_line_x = 1;
+	const int first_line_y = 2;
 
 	curs_set(0);
 
@@ -508,16 +510,17 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	len = strlen(msg);
 	if(len <= w - 2 && strchr(msg, '\n') == NULL)
 	{
+		first_line_x = (w - len)/2;
 		h = 5 + ctrl_msg_n;
 		wresize(error_win, h, w);
 		mvwin(error_win, (sh - h)/2, (sw - w)/2);
-		checked_wmove(error_win, 2, (w - len)/2);
+		checked_wmove(error_win, first_line_y, first_line_x);
 		wprint(error_win, msg);
 	}
 	else
 	{
 		int i = 0;
-		int cy = 2;
+		int cy = first_line_y;
 		while(i < len)
 		{
 			int j;
@@ -555,6 +558,10 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
 			cx = centered ? (w - utf8_strsw(buf))/2 : (1 + margin);
+			if(cy == first_line_y)
+			{
+				first_line_x = cx;
+			}
 			checked_wmove(error_win, cy++, cx);
 			wprint(error_win, buf);
 		}
@@ -573,6 +580,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 		mvwaddnstr(error_win, h - i - 1, MAX(0, (w - (int)len)/2), ctrl_msg, len);
 		ctrl_msg = skip_char(ctrl_msg + len + 1U, '/');
 	}
+
+	checked_wmove(error_win, first_line_y, first_line_x);
 }
 
 /* Counts number of sub-lines (separated by new-line character in the msg.  Sets

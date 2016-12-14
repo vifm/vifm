@@ -682,7 +682,7 @@ get_typed_entry_fpath(const dir_entry_t *entry)
 	const char *type_suffix;
 	char full_path[PATH_MAX];
 
-	type_suffix = is_directory_entry(entry) ? "/" : "";
+	type_suffix = fentry_is_dir(entry) ? "/" : "";
 
 	get_full_path_of(entry, sizeof(full_path), full_path);
 	return format_str("%s%s", full_path, type_suffix);
@@ -2766,31 +2766,12 @@ get_file_size_by_entry(const FileView *view, size_t pos)
 	const dir_entry_t *const entry = &view->dir_entry[pos];
 
 	size = DCACHE_UNKNOWN;
-	if(is_directory_entry(entry))
+	if(fentry_is_dir(entry))
 	{
 		dcache_get_of(entry, &size, NULL);
 	}
 
 	return (size == DCACHE_UNKNOWN) ? entry->size : size;
-}
-
-int
-is_directory_entry(const dir_entry_t *entry)
-{
-	/* If node has child nodes, it must be a directory. */
-	if(entry->type == FT_DIR || entry->child_count != 0)
-	{
-		return 1;
-	}
-
-	if(entry->type == FT_LINK)
-	{
-		char full_path[PATH_MAX];
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		return (get_symlink_type(full_path) != SLT_UNKNOWN);
-	}
-
-	return 0;
 }
 
 int
@@ -3116,7 +3097,7 @@ fentry_rename(FileView *view, dir_entry_t *entry, const char to[])
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
 
-	if(flist_custom_active(view) && is_directory_entry(entry))
+	if(flist_custom_active(view) && fentry_is_dir(entry))
 	{
 		int i;
 		char *const root = format_str("%s/%s", entry->origin, old_name);
@@ -3154,6 +3135,25 @@ int
 fentry_is_valid(const dir_entry_t *entry)
 {
 	return !fentry_is_fake(entry) && !is_parent_dir(entry->name);
+}
+
+int
+fentry_is_dir(const dir_entry_t *entry)
+{
+	/* If node has child nodes, it must be a directory. */
+	if(entry->type == FT_DIR || entry->child_count != 0)
+	{
+		return 1;
+	}
+
+	if(entry->type == FT_LINK)
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		return (get_symlink_type(full_path) != SLT_UNKNOWN);
+	}
+
+	return 0;
 }
 
 int

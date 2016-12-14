@@ -203,7 +203,7 @@ get_attrs(void)
 		}
 
 		diff |= (entry->attrs ^ attributes);
-		file_is_dir |= is_directory_entry(entry);
+		file_is_dir |= fentry_is_dir(entry);
 	}
 	if(first)
 	{
@@ -625,6 +625,7 @@ draw_curr(void)
 {
 	mvwaddch(change_win, curr, col, '>');
 	wrefresh(change_win);
+	checked_wmove(change_win, curr, col);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

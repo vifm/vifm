@@ -149,7 +149,7 @@ enter_attr_mode(FileView *active_view)
 		}
 
 		diff |= (entry->mode ^ fmode);
-		file_is_dir |= is_directory_entry(entry);
+		file_is_dir |= fentry_is_dir(entry);
 
 		if(uid != 0 && entry->uid != uid)
 		{
@@ -293,8 +293,8 @@ redraw_attr_dialog(void)
 		waddstr(change_win, "...");
 	}
 
-	curs_set(1);
 	checked_wmove(change_win, curr, col);
+	curs_set(1);
 	wrefresh(change_win);
 }
 

@@ -59,6 +59,7 @@ static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
 TSTATIC int process_scheduled_updates_of_view(FileView *view);
+static void update_hardware_cursor(void);
 static int should_check_views_for_changes(void);
 static void check_view_for_changes(FileView *view);
 static void reset_input_buf(wchar_t curr_input_buf[],
@@ -372,6 +373,11 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 				display_suggestion_box(curr_input_buf);
 			}
 
+			/* Update cursor before waiting for input.  Modes set cursor correctly
+			 * within corresponding windows, but we need to call refresh on one of
+			 * them to make it active. */
+			update_hardware_cursor();
+
 			result = compat_wget_wch(win, c);
 			if(result != ERR)
 			{
@@ -444,6 +450,39 @@ process_scheduled_updates_of_view(FileView *view)
 		default:
 			assert(0 && "Unexpected type of scheduled UI event.");
 			return 0;
+	}
+}
+
+/* Updates hardware cursor to be on currently active area of the interface,
+ * which depends mainly on current mode.. */
+static void
+update_hardware_cursor(void)
+{
+	if(is_status_bar_multiline())
+	{
+		checked_wmove(status_bar, 0, 0);
+		wrefresh(status_bar);
+		return;
+	}
+
+	switch(vle_mode_get())
+	{
+		case MENU_MODE:
+		case FILE_INFO_MODE:
+		case MORE_MODE: wrefresh(menu_win);       break;
+		case CHANGE_MODE:
+		case ATTR_MODE: wrefresh(change_win);     break;
+		case MSG_MODE:  wrefresh(error_win);      break;
+		case VIEW_MODE: wrefresh(curr_view->win); break;
+		case SORT_MODE: wrefresh(sort_win);       break;
+
+		case NORMAL_MODE:
+		case VISUAL_MODE:
+			if(should_check_views_for_changes())
+			{
+				wrefresh(curr_view->win);
+			}
+			break;
 	}
 }
 
@@ -600,7 +639,6 @@ prepare_suggestion_box(int *height)
 		ui_stat_reposition(getmaxy(status_bar), 1);
 		win = stat_win;
 	}
-
 
 	wbkgdset(win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
 	werase(win);

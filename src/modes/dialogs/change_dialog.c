@@ -140,7 +140,7 @@ redraw_change_dialog(void)
 #else
 	mvwaddstr(change_win, 4, 3, " [ ] p Properties");
 #endif
-	mvwaddch(change_win, 2, 5, '*');
+	print_at_pos();
 
 	getmaxyx(stdscr, y, x);
 	mvwin(change_win, (y - getmaxy(change_win))/2, (x - getmaxx(change_win))/2);
@@ -286,6 +286,7 @@ static void
 print_at_pos(void)
 {
 	mvwaddstr(change_win, curr, col, "*");
+	checked_wmove(change_win, curr, col);
 }
 
 static void

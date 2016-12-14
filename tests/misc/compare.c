@@ -726,6 +726,25 @@ TEST(custom_views_are_compared)
 	assert_string_equal("same-name-same-content", rwin.dir_entry[3].name);
 }
 
+TEST(directories_are_not_added_from_custom_views)
+{
+	strcpy(lwin.curr_dir, "no-such-path");
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin,
+			TEST_DATA_PATH "/compare/a/same-content-different-name-1");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/compare/a/");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	strcpy(rwin.curr_dir, SANDBOX_PATH);
+
+	compare_two_panes(CT_NAME, LT_ALL, 1, 0);
+
+	basic_panes_check(1);
+
+	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
+	assert_string_equal("", rwin.dir_entry[0].name);
+}
+
 static void
 basic_panes_check(int expected_len)
 {

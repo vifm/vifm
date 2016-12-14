@@ -204,7 +204,7 @@ TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	assert_int_equal(1, lwin.list_rows);
-	assert_true(is_directory_entry(&lwin.dir_entry[0]));
+	assert_true(fentry_is_dir(&lwin.dir_entry[0]));
 
 	assert_success(remove("dir-link"));
 }
