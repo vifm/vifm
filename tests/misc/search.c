@@ -200,5 +200,25 @@ TEST(find_npattern_returns_zero_if_msg_is_not_printed)
 	cfg.hl_search = 0;
 }
 
+TEST(matching_directories)
+{
+	int found;
+
+	cfg.hl_search = 1;
+
+	assert_success(chdir(TEST_DATA_PATH "/tree"));
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
+	populate_dir_list(&lwin, 0);
+
+	find_pattern(&lwin, "1/", 0, 0, &found, 0);
+	assert_true(found);
+	assert_string_equal("dir1", lwin.dir_entry[0].name);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_string_equal("dir5", lwin.dir_entry[1].name);
+	assert_false(lwin.dir_entry[1].selected);
+
+	cfg.hl_search = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 06, 2016" "vifm 0.8.2"
+.TH VIFM 1 "December 19, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -350,6 +350,11 @@ cursor to previous match.
 .TP
 .BI "?"
 perform backward search with top item of search pattern history.
+.TP
+Trailing slash for directories is taken into account, so /\\/ searches for \
+directories and symbolic links to directories.  At the moment // works too, \
+but this can change in the future, so consider escaping the slash if not \
+typing pattern by hand.
 .TP
 Matches are automatically selected if 'hlsearch' is set.  Enabling 'incsearch' \
 makes search interactive.  'ignorecase' and 'smartcase' options affect case \

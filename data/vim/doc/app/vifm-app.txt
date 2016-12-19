@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Dec 06
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Dec 19
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -286,6 +286,11 @@ Searching~
     advance cursor to previous match.
 ?
     perform backward search with top item of search pattern history.
+
+Trailing slash for directories is taken into account, so `/\/` searches for
+directories and symbolic links to directories.  At the moment `//` works too,
+but this can change in the future, so consider escaping the slash if not
+typing pattern by hand.
 
 Matches are automatically selected if |vifm-'hlsearch'| is set.  Enabling
 |vifm-'incsearch'| makes search interactive.  |vifm-'ignorecase'| and

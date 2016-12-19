@@ -1030,6 +1030,13 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 	lo = name_offset + entry->match_left;
 	ro = name_offset + entry->match_right;
 
+	if(buf_len - strlen(suffix) <= lo)
+	{
+		/* Don't highlight anything past the end of file name (like trailing
+		 * slash). */
+		return;
+	}
+
 	if(align == AT_LEFT && buf_len < ro)
 	{
 		/* Right end of the match isn't visible. */

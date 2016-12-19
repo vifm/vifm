@@ -136,16 +136,26 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 		{
 			regmatch_t matches[1];
 			dir_entry_t *const entry = &view->dir_entry[i];
+			const char *name = entry->name;
+			char *free_this = NULL;
 
-			if(is_parent_dir(entry->name))
+			if(is_parent_dir(name))
 			{
 				continue;
 			}
 
-			if(regexec(&re, entry->name, 1, matches, 0) != 0)
+			if(fentry_is_dir(entry))
 			{
+				free_this = format_str("%s/", name);
+				name = free_this;
+			}
+
+			if(regexec(&re, name, 1, matches, 0) != 0)
+			{
+				free(free_this);
 				continue;
 			}
+			free(free_this);
 
 			entry->search_match = nmatches + 1;
 			entry->match_left = matches[0].rm_so;
