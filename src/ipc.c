@@ -87,7 +87,7 @@ ipc_send(const char whom[], char *data[])
 #include <unistd.h> /* close() open() select() unlink() */
 
 #include <assert.h> /* assert() */
-#include <errno.h> /* EEXIST ENXIO errno */
+#include <errno.h> /* EACCES EEXIST EDQUOT ENOSPC ENXIO errno */
 #include <stddef.h> /* NULL size_t ssize_t */
 #include <stdio.h> /* FILE fclose() fdopen() fread() fwrite() */
 #include <stdlib.h> /* atexit() free() malloc() qsort() snprintf() */
@@ -125,7 +125,7 @@ list_data_t;
 static void cleanup_at_exit(void);
 static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
 static char * receive_pkg(void);
-static read_pipe_t try_use_pipe(const char path[]);
+static read_pipe_t try_use_pipe(const char path[], int *fatal);
 static void handle_pkg(const char pkg[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(void);
@@ -149,7 +149,7 @@ static read_pipe_t pipe_file;
 int
 ipc_enabled(void)
 {
-	return 1;
+	return (initialized > 0);
 }
 
 void
@@ -190,6 +190,11 @@ cleanup_at_exit(void)
 const char *
 ipc_get_name(void)
 {
+	if(initialized < 0)
+	{
+		return "";
+	}
+
 	return get_last_path_component(pipe_path) + (sizeof(PREFIX) - 1U);
 }
 
@@ -331,11 +336,12 @@ create_pipe(const char name[], char path_buf[], size_t len)
 {
 	int id = 0;
 	read_pipe_t rp;
+	int fatal;
 
 	/* Try to use name as is at first. */
 	snprintf(path_buf, len, "%s/" PREFIX "%s", get_ipc_dir(), name);
-	rp = try_use_pipe(path_buf);
-	while(rp == NULL_READ_PIPE)
+	rp = try_use_pipe(path_buf, &fatal);
+	while(rp == NULL_READ_PIPE && !fatal)
 	{
 		snprintf(path_buf, len, "%s/" PREFIX "%s%d", get_ipc_dir(), name, ++id);
 
@@ -344,28 +350,38 @@ create_pipe(const char name[], char path_buf[], size_t len)
 			return NULL_READ_PIPE;
 		}
 
-		rp = try_use_pipe(path_buf);
+		rp = try_use_pipe(path_buf, &fatal);
 	}
 
 	return rp;
 }
 
 /* Either creates a pipe or reused previously abandoned one.  Returns
- * NULL_READ_PIPE on failure or valid file descriptor otherwise. */
+ * NULL_READ_PIPE on failure (with *fatal set to non-zero if further tries don't
+ * make any sense) or valid file descriptor otherwise. */
 static read_pipe_t
-try_use_pipe(const char path[])
+try_use_pipe(const char path[], int *fatal)
 {
 #ifndef WIN32_PIPE_READ
 	FILE *f;
 	int fd;
 
+	*fatal = 0;
+
 	/* Try to create a pipe. */
 	if(mkfifo(path, 0600) == 0)
 	{
 		/* Open if created. */
-		int fd = open(path, O_RDONLY | O_NONBLOCK);
+		const int fd = open(path, O_RDONLY | O_NONBLOCK);
 		if(fd == -1)
 		{
+			if(errno == EACCES)
+			{
+				/* If we created a file that we can't open, remove it and assume that
+				 * something is fundamentally wrong with the system setup. */
+				(void)unlink(path);
+				*fatal = 1;
+			}
 			return NULL_READ_PIPE;
 		}
 		return fdopen(fd, "r");
@@ -375,6 +391,8 @@ try_use_pipe(const char path[])
 	 * exists and is in use. */
 	if(errno != EEXIST || pipe_is_in_use(path))
 	{
+		/* No retries if file-system is unable to create more files. */
+		*fatal = (errno == EDQUOT || errno == ENOSPC);
 		return NULL_READ_PIPE;
 	}
 
@@ -393,6 +411,7 @@ try_use_pipe(const char path[])
 	}
 	return f;
 #else
+	*fatal = 0;
 	return CreateNamedPipeA(path,
 			PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE,
 			PIPE_TYPE_BYTE | PIPE_NOWAIT | PIPE_REJECT_REMOTE_CLIENTS,
