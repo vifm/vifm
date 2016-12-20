@@ -794,7 +794,7 @@ break_cmdline(const char cmdline[], int for_menu)
 	 * - cmdline   -- points to the start of the last command. */
 	while(*cmdline != '\0')
 	{
-		if(args_kind == CAT_REGULAR && *raw == '\\')
+		if(args_kind == CAT_REGULAR && raw[0] == '\\' && raw[1] != '\0')
 		{
 			if(*(raw + 1) == '|')
 			{
