@@ -742,5 +742,12 @@ TEST(background_mark_is_removed_properly_in_presence_of_a_quote)
 	assert_success(execute_cmd("put \" &"));
 }
 
+TEST(escaping_allows_use_of_spaces)
+{
+	assert_success(execute_cmd("edit \\ something"));
+	assert_int_equal(1, cmdi.argc);
+	assert_string_equal(" something", arg);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
