@@ -22,7 +22,8 @@
 #include <regex.h>
 
 #include <fcntl.h>
-#include <sys/stat.h> /* stat */
+#include <sys/stat.h> /* stat umask() */
+#include <sys/types.h> /* mode_t */
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
@@ -741,15 +742,20 @@ fops_edit_list(size_t count, char **orig, int *nlines, int ignore_change)
 {
 	char rename_file[PATH_MAX];
 	char **list = NULL;
+	mode_t saved_umask;
 
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
+	/* Allow temporary file to be only readable and writable by current user. */
+	saved_umask = umask(~0600);
 	if(write_file_of_lines(rename_file, orig, count) != 0)
 	{
+		(void)umask(saved_umask);
 		show_error_msgf("Error Getting List Of Renames",
 				"Can't create temporary file \"%s\": %s", rename_file, strerror(errno));
 		return NULL;
 	}
+	(void)umask(saved_umask);
 
 	if(edit_file(rename_file, ignore_change) > 0)
 	{

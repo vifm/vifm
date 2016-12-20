@@ -157,6 +157,9 @@
 	Made IPC unit more fault-tolerant regarding inability to create files.
 	Thanks to filterfalse.
 
+	Make temporary rename files accessible only by the user.  Thanks to
+	aleksejrs.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
