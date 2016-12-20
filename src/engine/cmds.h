@@ -100,17 +100,21 @@ enum
 	HAS_ENVVARS          = 0x0008, /* Expand environment variables. */
 	HAS_SELECTION_SCOPE  = 0x0010, /* Select files in a range. */
 	HAS_BG_FLAG          = 0x0020, /* Background (can have " &" at the end). */
-	HAS_REGEXP_ARGS      = 0x0040, /* Process /.../-arguments. */
-	HAS_QUOTED_ARGS      = 0x0080, /* Process '- and "-quoted args. */
-	HAS_COMMENT          = 0x0100, /* Trailing comment is allowed. */
+	HAS_COMMENT          = 0x0040, /* Trailing comment is allowed. */
+
+	/* HAS_RAW_ARGS flag can't be combined with the other two, but they can be
+	 * specified at the same time. */
+	HAS_RAW_ARGS         = 0x0080, /* No special processing of arguments. */
+	HAS_REGEXP_ARGS      = 0x0100, /* Process /.../-arguments. */
+	HAS_QUOTED_ARGS      = 0x0200, /* Process '- and "-quoted args. */
 
 	/* Must be at most one of these. */
-	HAS_QMARK_NO_ARGS    = 0x0200, /* No args after qmark. */
-	HAS_QMARK_WITH_ARGS  = 0x0400, /* Args after qmark are allowed. */
+	HAS_QMARK_NO_ARGS    = 0x0400, /* No args after qmark. */
+	HAS_QMARK_WITH_ARGS  = 0x0800, /* Args after qmark are allowed. */
 
 	/* Must be at most one of these. */
-	HAS_MACROS_FOR_CMD   = 0x0800, /* Expand macros without special escaping. */
-	HAS_MACROS_FOR_SHELL = 0x1000, /* Expand macros with shell escaping. */
+	HAS_MACROS_FOR_CMD   = 0x1000, /* Expand macros without special escaping. */
+	HAS_MACROS_FOR_SHELL = 0x2000, /* Expand macros with shell escaping. */
 };
 
 /* New commands specification for add_builtin_commands(). */
@@ -205,7 +209,8 @@ char * vle_cmds_next_arg(const char args[]);
 TSTATIC_DEFS(
 	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
-			int quotes, int comments, int *last_arg, int (**positions)[2]);
+			int quotes, int noescaping, int comments, int *last_arg,
+			int (**positions)[2]);
 )
 
 #endif /* VIFM__ENGINE__CMDS_H__ */
