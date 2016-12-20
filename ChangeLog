@@ -265,6 +265,9 @@
 	Fixed :pwd in custom views to make it display main directory (didn't
 	display anything).  Thanks to filterfalse.
 
+	Fixed :noremap, which didn't accept ! and didn't reject less than two
+	arguments.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
