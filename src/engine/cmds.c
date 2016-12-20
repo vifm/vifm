@@ -1261,7 +1261,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
 				{
-					i++;
+					++i;
 				}
 				break;
 			case S_QUOTING:
@@ -1269,7 +1269,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				{
 					if(cmdstr[i + 1] == '\'')
 					{
-						i++;
+						++i;
 					}
 					else
 					{
@@ -1284,7 +1284,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
 				{
-					i++;
+					++i;
 				}
 				break;
 			case R_QUOTING:
@@ -1292,7 +1292,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 					state = QARG;
 				else if(cmdstr[i] == '\\' && cmdstr[i + 1] == '/')
 				{
-						i++;
+					++i;
 				}
 				break;
 
