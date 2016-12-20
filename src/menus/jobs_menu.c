@@ -169,7 +169,7 @@ static void
 show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job)
 {
 	char *cmd = NULL, *errors = NULL;
-	size_t errors_len;
+	size_t errors_len = 0U;
 	bg_job_t *p;
 
 	/* We have to make sure the job pointer is still valid and the job is

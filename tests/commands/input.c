@@ -39,7 +39,7 @@ static const cmd_add_t commands[] = {
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_EMARK,
 	  .handler = &delete_cmd,     .min_args = 0, .max_args = 1, },
 	{ .name = "edia",             .abbr = NULL,  .id = -1,      .descr = "descr",
-	  .flags = HAS_RANGE,
+	  .flags = HAS_RANGE | HAS_RAW_ARGS,
 	  .handler = &edia_cmd,       .min_args = 0, .max_args = NOT_DEF, },
 	{ .name = "edit",             .abbr = "e",   .id = -1,      .descr = "descr",
 	  .flags = HAS_RANGE,
@@ -127,7 +127,13 @@ delete_cmd(const cmd_info_t* cmd_info)
 static int
 edia_cmd(const cmd_info_t* cmd_info)
 {
+	cmdi = *cmd_info;
 	cmdi.usr1 = 1;
+	if(cmdi.argc > 0)
+	{
+		free(arg);
+		arg = strdup(cmdi.argv[0]);
+	}
 	return 0;
 }
 
@@ -740,6 +746,20 @@ TEST(closing_double_quote_is_taken_as_comment)
 TEST(background_mark_is_removed_properly_in_presence_of_a_quote)
 {
 	assert_success(execute_cmd("put \" &"));
+}
+
+TEST(escaping_allows_use_of_spaces)
+{
+	assert_success(execute_cmd("edit \\ something"));
+	assert_int_equal(1, cmdi.argc);
+	assert_string_equal(" something", arg);
+}
+
+TEST(escaping_is_ignored_for_raw_arguments)
+{
+	assert_success(execute_cmd("edia \\ something"));
+	assert_int_equal(2, cmdi.argc);
+	assert_string_equal("\\", arg);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

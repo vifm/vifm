@@ -65,6 +65,8 @@ typedef struct cmd_t
 	unsigned int envvars : 1;          /* Expand environment variables. */
 	unsigned int select : 1;           /* Select files in a range. */
 	unsigned int bg : 1;               /* Bg (can have " &" at the end). */
+	unsigned int noescaping : 1;       /* Don't process \-escaping in unquoted
+	                                      args. */
 	unsigned int regexp : 1;           /* Process /.../-arguments. */
 	unsigned int quote : 1;            /* Process '- and "-quoted args. */
 	unsigned int comment : 1;          /* Trailing comment is allowed. */
@@ -117,7 +119,8 @@ static int is_correct_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
-		int regexp, int quotes, int comments, int *last_arg, int (**positions)[2]);
+		int regexp, int quotes, int noescaping, int comments, int *last_arg,
+		int (**positions)[2]);
 static int is_separator(char c, char sep);
 
 void
@@ -263,7 +266,8 @@ execute_cmd(const char cmd[])
 	}
 
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
-			cur->regexp, cur->quote, cur->comment, NULL, &cmd_info.argvp);
+			cur->regexp, cur->quote, cur->noescaping, cur->comment, NULL,
+			&cmd_info.argvp);
 	if(cmd_info.argc > 0)
 	{
 		last_end = cmd_info.argvp[cmd_info.argc - 1][1];
@@ -802,7 +806,7 @@ complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info,
 		int (*argvp)[2];
 		int last_arg = 0;
 
-		argv = dispatch_line(args, &argc, ' ', 0, 1, 0, &last_arg, &argvp);
+		argv = dispatch_line(args, &argc, ' ', 0, 1, 0, 0, &last_arg, &argvp);
 
 		cmd_info->args = (char *)args;
 		cmd_info->argc = argc;
@@ -1051,6 +1055,10 @@ command_cmd(const cmd_info_t *cmd_info)
 static void
 init_command_flags(cmd_t *cmd, int flags)
 {
+	assert((flags & (HAS_RAW_ARGS | HAS_REGEXP_ARGS)) !=
+			(HAS_RAW_ARGS | HAS_REGEXP_ARGS) && "Wrong flags combination.");
+	assert((flags & (HAS_RAW_ARGS | HAS_QUOTED_ARGS)) !=
+			(HAS_RAW_ARGS | HAS_QUOTED_ARGS) && "Wrong flags combination.");
 	assert((flags & (HAS_QMARK_NO_ARGS | HAS_QMARK_WITH_ARGS)) !=
 			(HAS_QMARK_NO_ARGS | HAS_QMARK_WITH_ARGS) && "Wrong flags combination.");
 	assert((flags & (HAS_MACROS_FOR_CMD | HAS_MACROS_FOR_SHELL)) !=
@@ -1065,6 +1073,7 @@ init_command_flags(cmd_t *cmd, int flags)
 	cmd->bg = ((flags & HAS_BG_FLAG) != 0);
 	cmd->regexp = ((flags & HAS_REGEXP_ARGS) != 0);
 	cmd->quote = ((flags & HAS_QUOTED_ARGS) != 0);
+	cmd->noescaping = ((flags & HAS_RAW_ARGS) != 0);
 	cmd->comment = ((flags & HAS_COMMENT) != 0);
 	cmd->qmark = ((flags & (HAS_QMARK_NO_ARGS | HAS_QMARK_WITH_ARGS)) != 0);
 	cmd->args_after_qmark = ((flags & HAS_QMARK_WITH_ARGS) != 0);
@@ -1160,7 +1169,7 @@ get_last_argument(const char cmd[], int quotes, size_t *len)
 	int last_start = 0;
 	int last_end = 0;
 
-	argv = dispatch_line(cmd, &argc, ' ', 0, quotes, 0, NULL, &argvp);
+	argv = dispatch_line(cmd, &argc, ' ', 0, quotes, 0, 0, NULL, &argvp);
 
 	if(argc > 0)
 	{
@@ -1174,12 +1183,13 @@ get_last_argument(const char cmd[], int quotes, size_t *len)
 	return (char *)cmd + last_start;
 }
 
-/* Splits argument string into array of strings.  Returns NULL if no arguments
- * are found or an error occurred.  Always sets *count (to negative value on
+/* Splits argument string into array of strings.  Non-zero noescaping means that
+ * unquoted arguments don't have escaping.  Returns NULL if no arguments are
+ * found or an error occurred.  Always sets *count (to negative value on
  * unmatched quotes and to zero on all other errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
-		int comments, int *last_pos, int (**positions)[2])
+		int noescaping, int comments, int *last_pos, int (**positions)[2])
 {
 	char *cmdstr;
 	int len;
@@ -1233,9 +1243,10 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 					st = i;
 					state = NO_QUOTING;
 
-					/* Skip escaped character.  If not and it's a separator, beginning of
-					 * the argument will be skipped. */
-					if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
+					/* Omit escaped character from processign to account for possible case
+					 * when it's a separator, which would lead to breaking argument into
+					 * pieces. */
+					if(!noescaping && cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
 					{
 						++i;
 					}
@@ -1259,9 +1270,9 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				{
 					state = ARG;
 				}
-				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
+				else if(!noescaping && cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
 				{
-					i++;
+					++i;
 				}
 				break;
 			case S_QUOTING:
@@ -1269,7 +1280,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				{
 					if(cmdstr[i + 1] == '\'')
 					{
-						i++;
+						++i;
 					}
 					else
 					{
@@ -1282,17 +1293,19 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				{
 					state = QARG;
 				}
-				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
+				else if(!noescaping && cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
 				{
-					i++;
+					++i;
 				}
 				break;
 			case R_QUOTING:
 				if(cmdstr[i] == '/')
-					state = QARG;
-				else if(cmdstr[i] == '\\' && cmdstr[i + 1] == '/')
 				{
-						i++;
+					state = QARG;
+				}
+				else if(!noescaping && cmdstr[i] == '\\' && cmdstr[i + 1] == '/')
+				{
+					++i;
 				}
 				break;
 
@@ -1325,7 +1338,12 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			cmdstr[i] = c;
 			switch(prev_state)
 			{
-				case NO_QUOTING: unescape(last_arg, sep != ' ');    break;
+				case NO_QUOTING:
+					if(!noescaping)
+					{
+						unescape(last_arg, sep != ' ');
+					}
+					break;
 				case  S_QUOTING: expand_squotes_escaping(last_arg); break;
 				case  D_QUOTING: expand_dquotes_escaping(last_arg); break;
 				case  R_QUOTING: unescape(last_arg, 1);             break;

@@ -151,6 +151,15 @@
 	Put hardware cursor according to current mode and cursor within it.
 	Thanks to Tyler Spivey.
 
+	Made search consider trailing slash for directories and symbolic links that
+	point to directories.  Thanks to filterfalse.
+
+	Made IPC unit more fault-tolerant regarding inability to create files.
+	Thanks to filterfalse.
+
+	Make temporary rename files accessible only by the user.  Thanks to
+	aleksejrs.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -258,6 +267,15 @@
 
 	Fixed :pwd in custom views to make it display main directory (didn't
 	display anything).  Thanks to filterfalse.
+
+	Fixed :noremap, which didn't accept ! and didn't reject less than two
+	arguments.
+
+	Fixed backslash in arguments for :*[un]map commands (required \ to be
+	written as \\).  Thanks to filterfalse.
+
+	Fixed use of uninitialized memory on parsing commands that end with
+	backslash.
 
 0.8.2-beta to 0.8.2
 

@@ -730,6 +730,40 @@ TEST(screen)
 	cfg.use_term_multiplexer = 0;
 }
 
+TEST(map_commands_count_arguments_correctly)
+{
+	init_modes();
+
+	/* Each map command below should receive two arguments: "\\" and "j". */
+	/* Each unmap command below should receive single argument: "\\". */
+	assert_success(exec_commands("cmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("cnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("cunmap \\", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("dmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("dnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("dunmap \\", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("mmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("mnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("munmap \\", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nunmap \\", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("map \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("noremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("unmap \\", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("map! \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("noremap! \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("unmap! \\", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("qmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("qnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("qunmap \\", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("vmap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("vnoremap \\ j", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("vunmap \\", &lwin, CIT_COMMAND));
+
+	vle_keys_reset();
+}
+
 static void
 check_filetype(void)
 {
