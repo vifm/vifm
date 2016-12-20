@@ -4152,8 +4152,10 @@ vunmap_cmd(const cmd_info_t *cmd_info)
 	return do_unmap(cmd_info->argv[0], VISUAL_MODE);
 }
 
+/* Unmaps keys for the specified mode.  Returns zero on success, otherwise
+ * non-zero is returned and message is printed on the statusbar. */
 static int
-do_unmap(const char *keys, int mode)
+do_unmap(const char keys[], int mode)
 {
 	int result;
 	wchar_t *subst;
