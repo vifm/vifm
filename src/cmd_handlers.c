@@ -3983,10 +3983,12 @@ unmap_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(!vle_keys_user_exists(subst, NORMAL_MODE))
 	{
+		status_bar_error("No such mapping in normal mode");
 		result = -1;
 	}
 	else if(!vle_keys_user_exists(subst, VISUAL_MODE))
 	{
+		status_bar_error("No such mapping in visual mode");
 		result = -2;
 	}
 	else
@@ -3996,12 +3998,10 @@ unmap_cmd(const cmd_info_t *cmd_info)
 	}
 	free(subst);
 
-	if(result == -1)
-		status_bar_error("No such mapping in normal mode");
-	else if(result == -2)
-		status_bar_error("No such mapping in visual mode");
-	else
-		status_bar_error("Error");
+	if(result > 0)
+	{
+		status_bar_error("Error while unmapping keys");
+	}
 	return result != 0;
 }
 
