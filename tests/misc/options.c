@@ -271,6 +271,14 @@ TEST(classify_account_assumes_trailing_slashes_for_dirs)
 	assert_string_equal("]", suffix);
 }
 
+TEST(classify_state_is_not_changed_if_format_is_wong)
+{
+	assert_success(exec_commands("set classify=*::*ad::@", &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.name_dec_count);
+	assert_failure(exec_commands("set classify=*:*ad:@", &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.name_dec_count);
+}
+
 TEST(suggestoptions_all_values)
 {
 	cfg.sug.flags = 0;

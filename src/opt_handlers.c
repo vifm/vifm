@@ -112,6 +112,7 @@ static int str_to_classify(const char str[], char type_decs[FT_COUNT][2][9]);
 static const char * pick_out_decoration(char classify_item[], FileType *type,
 		const char **expr);
 static int validate_decorations(const char prefix[], const char suffix[]);
+static void free_file_decs(file_dec_t *name_decs, int count);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
@@ -1469,7 +1470,6 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 	int error_encountered;
 	file_dec_t *name_decs = NULL;
 	DA_INSTANCE(name_decs);
-	int i;
 
 	str_copy = strdup(str);
 	if(str_copy == NULL)
@@ -1541,14 +1541,16 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 	}
 	free(str_copy);
 
-	for(i = 0; i < cfg.name_dec_count; ++i)
+	if(error_encountered)
 	{
-		matchers_free(cfg.name_decs[i].matchers);
+		free_file_decs(name_decs, DA_SIZE(name_decs));
 	}
-	free(cfg.name_decs);
-
-	cfg.name_decs = name_decs;
-	cfg.name_dec_count = DA_SIZE(name_decs);
+	else
+	{
+		free_file_decs(cfg.name_decs, cfg.name_dec_count);
+		cfg.name_decs = name_decs;
+		cfg.name_dec_count = DA_SIZE(name_decs);
+	}
 
 	return error_encountered;
 }
@@ -1605,6 +1607,19 @@ validate_decorations(const char prefix[], const char suffix[])
 		error = 1;
 	}
 	return error;
+}
+
+/* Frees array of file declarations of length count (both elements and array
+ * itself). */
+static void
+free_file_decs(file_dec_t *name_decs, int count)
+{
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		matchers_free(name_decs[i].matchers);
+	}
+	free(name_decs);
 }
 
 /* Handles updates of the global 'columns' option, which reflects width of
