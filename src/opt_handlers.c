@@ -134,8 +134,6 @@ static void iec_handler(OPT_OP op, optval_t val);
 static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
 static void iooptions_handler(OPT_OP op, optval_t val);
-static int parse_range(const char range[], int *from, int *to);
-static int parse_endpoint(const char **str, int *endpoint);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
 static void locateprg_handler(OPT_OP op, optval_t val);
@@ -203,6 +201,8 @@ static void vimhelp_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
 static void wildstyle_handler(OPT_OP op, optval_t val);
 static void wordchars_handler(OPT_OP op, optval_t val);
+static int parse_range(const char range[], int *from, int *to);
+static int parse_endpoint(const char **str, int *endpoint);
 static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
@@ -1867,72 +1867,6 @@ iooptions_handler(OPT_OP op, optval_t val)
 	cfg.fast_file_cloning = ((val.set_items & 1) != 0);
 }
 
-/* Parses range, which can be shortened to single endpoint if first element
- * matches last one.  Returns non-zero on error, otherwise zero is returned. */
-static int
-parse_range(const char range[], int *from, int *to)
-{
-	const char *p = range;
-
-	if(parse_endpoint(&p, from) != 0)
-	{
-		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
-		return 1;
-	}
-	if(*p == '-')
-	{
-		++p;
-		if(parse_endpoint(&p, to) != 0)
-		{
-			vle_tb_append_linef(vle_err, "Wrong range: %s", range);
-			return 1;
-		}
-	}
-	else
-	{
-		*to = *from;
-	}
-
-	if(*p != '\0')
-	{
-		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
-		return 1;
-	}
-
-	if(*from > *to)
-	{
-		vle_tb_append_linef(vle_err, "Inversed range: %s", range);
-		return 1;
-	}
-
-	return 0;
-}
-
-/* Parses single endpoint of a range.  It's either a number or a character.
- * Returns non-zero on error, otherwise zero is returned. */
-static int
-parse_endpoint(const char **str, int *endpoint)
-{
-	if(isdigit(**str))
-	{
-		char *endptr;
-		const long int val = strtol(*str, &endptr, 10);
-		if(val < 0 || val >= 256)
-		{
-			vle_tb_append_linef(vle_err, "Wrong value: %ld", val);
-			return 1;
-		}
-		*str = endptr;
-		*endpoint = val;
-	}
-	else
-	{
-		*endpoint = **str;
-		++*str;
-	}
-	return 0;
-}
-
 static void
 laststatus_handler(OPT_OP op, optval_t val)
 {
@@ -2881,6 +2815,72 @@ wordchars_handler(OPT_OP op, optval_t val)
 	{
 		memcpy(&cfg.word_chars, &word_chars, sizeof(cfg.word_chars));
 	}
+}
+
+/* Parses range, which can be shortened to single endpoint if first element
+ * matches last one.  Returns non-zero on error, otherwise zero is returned. */
+static int
+parse_range(const char range[], int *from, int *to)
+{
+	const char *p = range;
+
+	if(parse_endpoint(&p, from) != 0)
+	{
+		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
+		return 1;
+	}
+	if(*p == '-')
+	{
+		++p;
+		if(parse_endpoint(&p, to) != 0)
+		{
+			vle_tb_append_linef(vle_err, "Wrong range: %s", range);
+			return 1;
+		}
+	}
+	else
+	{
+		*to = *from;
+	}
+
+	if(*p != '\0')
+	{
+		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
+		return 1;
+	}
+
+	if(*from > *to)
+	{
+		vle_tb_append_linef(vle_err, "Inversed range: %s", range);
+		return 1;
+	}
+
+	return 0;
+}
+
+/* Parses single endpoint of a range.  It's either a number or a character.
+ * Returns non-zero on error, otherwise zero is returned. */
+static int
+parse_endpoint(const char **str, int *endpoint)
+{
+	if(isdigit(**str))
+	{
+		char *endptr;
+		const long int val = strtol(*str, &endptr, 10);
+		if(val < 0 || val >= 256)
+		{
+			vle_tb_append_linef(vle_err, "Wrong value: %ld", val);
+			return 1;
+		}
+		*str = endptr;
+		*endpoint = val;
+	}
+	else
+	{
+		*endpoint = **str;
+		++*str;
+	}
+	return 0;
 }
 
 static void
