@@ -2877,7 +2877,7 @@ parse_endpoint(const char **str, int *endpoint)
 	}
 	else
 	{
-		*endpoint = **str;
+		*endpoint = (unsigned char)**str;
 		++*str;
 	}
 	return 0;

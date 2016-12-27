@@ -278,8 +278,11 @@
 	Fixed use of uninitialized memory on parsing commands that end with
 	backslash.
 
-	Fixed 'wordchars' parsing, which did not process range end as inclusive.
-	Thanks to filterfalse.
+	Fixed 'wordchars' parsing to process range end as inclusive.  Thanks to
+	filterfalse.
+
+	Fixed 'wordchars' parsing to handle non-ascii input without memory
+	violation.
 
 0.8.2-beta to 0.8.2
 

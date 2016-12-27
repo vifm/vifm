@@ -479,6 +479,10 @@ TEST(wrong_ranges_are_handled_properly)
 	assert_failure(exec_commands("set wordchars=c-a", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
 
+	/* Inversed range with negative beginning. */
+	assert_failure(exec_commands("set wordchars=\xff-10", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+
 	/* Non single character range. */
 	assert_failure(exec_commands("set wordchars=a-bc", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
