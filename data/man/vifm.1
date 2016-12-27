@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 19, 2016" "vifm 0.8.2"
+.TH VIFM 1 "December 27, 2016" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4764,7 +4764,7 @@ Usage example:
 
 .EX
   " automatically split vertically before enabling preview
-  :nnoremap w :if layoutis('only') | vsplit | endif | view<cr>
+  :nnoremap w :if layoutis('only') | vsplit | endif | view!<cr>
 .EE
 
 .BI paneisat({loc})

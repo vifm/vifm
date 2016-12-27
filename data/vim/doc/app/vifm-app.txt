@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Dec 19
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Dec 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3976,7 +3976,7 @@ Any other value yields 0.
 
 Usage example: >
   " automatically split vertically before enabling preview
-  :nnoremap w :if layoutis('only') | vsplit | endif | view<cr>
+  :nnoremap w :if layoutis('only') | vsplit | endif | view!<cr>
 <
 
 paneisat({loc})                                *vifm-paneisat()*
