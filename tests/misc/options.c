@@ -445,5 +445,58 @@ TEST(caseoptions_are_normalized)
 	cfg.case_override = 0;
 }
 
+TEST(range_in_wordchars_are_inclusive)
+{
+	int i;
+
+	assert_success(exec_commands("set wordchars=a-c,d", &lwin, CIT_COMMAND));
+
+	for(i = 0; i < 255; ++i)
+	{
+		if(i != 'a' && i != 'b' && i != 'c' && i != 'd')
+		{
+			assert_false(cfg.word_chars[i]);
+		}
+	}
+
+	assert_true(cfg.word_chars['a']);
+	assert_true(cfg.word_chars['b']);
+	assert_true(cfg.word_chars['c']);
+	assert_true(cfg.word_chars['d']);
+}
+
+TEST(wrong_ranges_are_handled_properly)
+{
+	unsigned int i;
+	char word_chars[sizeof(cfg.word_chars)];
+	for(i = 0; i < sizeof(word_chars); ++i)
+	{
+		cfg.word_chars[i] = i;
+		word_chars[i] = i;
+	}
+
+	/* Inversed range. */
+	assert_failure(exec_commands("set wordchars=c-a", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+
+	/* Non single character range. */
+	assert_failure(exec_commands("set wordchars=a-bc", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+
+	/* Half-open ranges. */
+	assert_failure(exec_commands("set wordchars=a-", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+	assert_failure(exec_commands("set wordchars=-a", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+
+	/* Bad numerical values. */
+	assert_failure(exec_commands("set wordchars=-1", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+	assert_failure(exec_commands("set wordchars=666", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+	assert_failure(exec_commands("set wordchars=40-1000", &lwin, CIT_COMMAND));
+	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

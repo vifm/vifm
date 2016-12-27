@@ -2804,7 +2804,7 @@ wordchars_handler(OPT_OP op, optval_t val)
 			break;
 		}
 
-		while(from < to)
+		while(from <= to)
 		{
 			word_chars[from++] = 1;
 		}

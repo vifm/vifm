@@ -278,6 +278,9 @@
 	Fixed use of uninitialized memory on parsing commands that end with
 	backslash.
 
+	Fixed 'wordchars' parsing, which did not process range end as inclusive.
+	Thanks to filterfalse.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
