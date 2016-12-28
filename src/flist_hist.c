@@ -98,7 +98,8 @@ navigate_to_history_pos(FileView *view, int pos)
 }
 
 void
-flist_hist_save(FileView *view, const char path[], const char file[], int pos)
+flist_hist_save(FileView *view, const char path[], const char file[],
+		int rel_pos)
 {
 	int x;
 
@@ -116,8 +117,8 @@ flist_hist_save(FileView *view, const char path[], const char file[], int pos)
 		path = view->curr_dir;
 	if(file == NULL)
 		file = get_current_entry(view)->name;
-	if(pos < 0)
-		pos = view->list_pos;
+	if(rel_pos < 0)
+		rel_pos = view->list_pos - view->top_line;
 
 	if(view->history_num > 0 &&
 			stroscmp(view->history[view->history_pos].dir, path) == 0)
@@ -126,7 +127,7 @@ flist_hist_save(FileView *view, const char path[], const char file[], int pos)
 			return;
 		x = view->history_pos;
 		(void)replace_string(&view->history[x].file, file);
-		view->history[x].rel_pos = pos - view->top_line;
+		view->history[x].rel_pos = rel_pos;
 		return;
 	}
 
@@ -152,13 +153,13 @@ flist_hist_save(FileView *view, const char path[], const char file[], int pos)
 		memmove(view->history, view->history + 1,
 				sizeof(history_t)*(cfg.history_len - 1));
 
-		x--;
+		--x;
 		view->history_num = x;
 	}
 	view->history[x].dir = strdup(path);
 	view->history[x].file = strdup(file);
-	view->history[x].rel_pos = pos - view->top_line;
-	view->history_num++;
+	view->history[x].rel_pos = rel_pos;
+	++view->history_num;
 	view->history_pos = view->history_num - 1;
 }
 

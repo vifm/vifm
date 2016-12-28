@@ -163,5 +163,35 @@ TEST(navigating_within_history)
 	save_to_history("somewhere");
 }
 
+TEST(specified_file_position_is_unaffected_by_top_line)
+{
+	lwin.top_line = 3;
+	flist_hist_save(&lwin, "/dir", "file", 0);
+	assert_string_equal("/dir", lwin.history[1].dir);
+	assert_string_equal("file", lwin.history[1].file);
+	assert_int_equal(0, lwin.history[1].rel_pos);
+}
+
+TEST(history_size_reduction_leaves_correct_number_of_elements)
+{
+	assert_int_equal(1, lwin.history_num);
+	flist_hist_save(&lwin, "/dir1", "file1", 1);
+	flist_hist_save(&lwin, "/dir2", "file2", 2);
+	assert_int_equal(2, lwin.history_pos);
+	assert_int_equal(3, lwin.history_num);
+
+	cfg_resize_histories(2);
+
+	assert_int_equal(1, lwin.history_pos);
+	assert_int_equal(2, lwin.history_num);
+
+	assert_string_equal("/dir1", lwin.history[0].dir);
+	assert_string_equal("file1", lwin.history[0].file);
+	assert_int_equal(1, lwin.history[0].rel_pos);
+	assert_string_equal("/dir2", lwin.history[1].dir);
+	assert_string_equal("file2", lwin.history[1].file);
+	assert_int_equal(2, lwin.history[1].rel_pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

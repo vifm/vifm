@@ -906,9 +906,9 @@ reduce_view_history(FileView *view, int size)
 	memmove(view->history, view->history + delta,
 			sizeof(history_t)*(view->history_num - delta));
 
-	if(view->history_num >= size)
+	if(view->history_num > size)
 	{
-		view->history_num = size - 1;
+		view->history_num = size;
 	}
 	view->history_pos -= delta;
 }

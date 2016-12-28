@@ -33,11 +33,12 @@ void flist_hist_go_forward(FileView *view);
 
 /* Adds new entry to directory history of the view or updates an existing entry.
  * If path is NULL, current path is used.  If file is NULL current file is used.
- * If pos is negative, current position is used.  Empty file name signifies
+ * rel_pos specifies position of file relative to top of the view.  If rel_pos
+ * is negative, it's computed for current file.  Empty file name signifies
  * visiting directory, which shouldn't reset name of previously active file in
  * it. */
 void flist_hist_save(FileView *view, const char path[], const char file[],
-		int pos);
+		int rel_pos);
 
 /* Checks whether given path to directory is in view history.  Returns non-zero
  * if so, otherwise zero is returned. */

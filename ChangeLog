@@ -88,7 +88,8 @@
 	Accept paths in :touch, not just file names.  Thanks to filterfalse.
 
 	Consider trailing slash for directories or symbolic links that point to
-	directories for patterns in 'classify'.
+	directories in 'classify' patterns by file name (e.g., this works now:
+	`[::*/::]`).
 
 	Do not resolve symbolic links in directory preview.  Thanks to
 	filterfalse.
@@ -276,6 +277,19 @@
 
 	Fixed use of uninitialized memory on parsing commands that end with
 	backslash.
+
+	Fixed 'wordchars' parsing to process range end as inclusive.  Thanks to
+	filterfalse.
+
+	Fixed 'wordchars' parsing to handle non-ascii input without memory
+	violation.
+
+	Fixed incorrect 'sort' state after :restart.  Thanks to sudo-nice.
+
+	Fixed possible skewing of relative files positions in history by :restart.
+
+	Fixed off-by-one error on reducing history size, which could led to
+	loosing last directory history element.
 
 0.8.2-beta to 0.8.2
 

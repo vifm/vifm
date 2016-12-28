@@ -1654,11 +1654,11 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 }
 
 char *
-ui_view_sort_list_get(const FileView *view)
+ui_view_sort_list_get(const FileView *view, const char sort[])
 {
 	return (flist_custom_active(view) && ui_view_unsorted(view))
 	     ? (char *)view->custom.sort
-	     : (char *)view->sort_g;
+	     : (char *)sort;
 }
 
 int

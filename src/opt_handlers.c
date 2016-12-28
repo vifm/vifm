@@ -112,6 +112,7 @@ static int str_to_classify(const char str[], char type_decs[FT_COUNT][2][9]);
 static const char * pick_out_decoration(char classify_item[], FileType *type,
 		const char **expr);
 static int validate_decorations(const char prefix[], const char suffix[]);
+static void free_file_decs(file_dec_t *name_decs, int count);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
@@ -133,8 +134,6 @@ static void iec_handler(OPT_OP op, optval_t val);
 static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
 static void iooptions_handler(OPT_OP op, optval_t val);
-static int parse_range(const char range[], int *from, int *to);
-static int parse_endpoint(const char **str, int *endpoint);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
 static void locateprg_handler(OPT_OP op, optval_t val);
@@ -202,6 +201,8 @@ static void vimhelp_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
 static void wildstyle_handler(OPT_OP op, optval_t val);
 static void wordchars_handler(OPT_OP op, optval_t val);
+static int parse_range(const char range[], int *from, int *to);
+static int parse_endpoint(const char **str, int *endpoint);
 static void wrap_handler(OPT_OP op, optval_t val);
 static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
@@ -1469,7 +1470,6 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 	int error_encountered;
 	file_dec_t *name_decs = NULL;
 	DA_INSTANCE(name_decs);
-	int i;
 
 	str_copy = strdup(str);
 	if(str_copy == NULL)
@@ -1541,14 +1541,16 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 	}
 	free(str_copy);
 
-	for(i = 0; i < cfg.name_dec_count; ++i)
+	if(error_encountered)
 	{
-		matchers_free(cfg.name_decs[i].matchers);
+		free_file_decs(name_decs, DA_SIZE(name_decs));
 	}
-	free(cfg.name_decs);
-
-	cfg.name_decs = name_decs;
-	cfg.name_dec_count = DA_SIZE(name_decs);
+	else
+	{
+		free_file_decs(cfg.name_decs, cfg.name_dec_count);
+		cfg.name_decs = name_decs;
+		cfg.name_dec_count = DA_SIZE(name_decs);
+	}
 
 	return error_encountered;
 }
@@ -1605,6 +1607,19 @@ validate_decorations(const char prefix[], const char suffix[])
 		error = 1;
 	}
 	return error;
+}
+
+/* Frees array of file declarations of length count (both elements and array
+ * itself). */
+static void
+free_file_decs(file_dec_t *name_decs, int count)
+{
+	int i;
+	for(i = 0; i < count; ++i)
+	{
+		matchers_free(name_decs[i].matchers);
+	}
+	free(name_decs);
 }
 
 /* Handles updates of the global 'columns' option, which reflects width of
@@ -1850,72 +1865,6 @@ static void
 iooptions_handler(OPT_OP op, optval_t val)
 {
 	cfg.fast_file_cloning = ((val.set_items & 1) != 0);
-}
-
-/* Parses range, which can be shortened to single endpoint if first element
- * matches last one.  Returns non-zero on error, otherwise zero is returned. */
-static int
-parse_range(const char range[], int *from, int *to)
-{
-	const char *p = range;
-
-	if(parse_endpoint(&p, from) != 0)
-	{
-		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
-		return 1;
-	}
-	if(*p == '-')
-	{
-		++p;
-		if(parse_endpoint(&p, to) != 0)
-		{
-			vle_tb_append_linef(vle_err, "Wrong range: %s", range);
-			return 1;
-		}
-	}
-	else
-	{
-		*to = *from;
-	}
-
-	if(*p != '\0')
-	{
-		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
-		return 1;
-	}
-
-	if(*from > *to)
-	{
-		vle_tb_append_linef(vle_err, "Inversed range: %s", range);
-		return 1;
-	}
-
-	return 0;
-}
-
-/* Parses single endpoint of a range.  It's either a number or a character.
- * Returns non-zero on error, otherwise zero is returned. */
-static int
-parse_endpoint(const char **str, int *endpoint)
-{
-	if(isdigit(**str))
-	{
-		char *endptr;
-		const long int val = strtol(*str, &endptr, 10);
-		if(val < 0 || val >= 256)
-		{
-			vle_tb_append_linef(vle_err, "Wrong value: %ld", val);
-			return 1;
-		}
-		*str = endptr;
-		*endpoint = val;
-	}
-	else
-	{
-		*endpoint = **str;
-		++*str;
-	}
-	return 0;
 }
 
 static void
@@ -2215,7 +2164,7 @@ sort_local(OPT_OP op, optval_t val)
 	 * compare view. */
 	char *const sort = (curr_stats.restart_in_progress ||
 	                    cv_compare(curr_view->custom.type))
-	                 ? ui_view_sort_list_get(curr_view)
+	                 ? ui_view_sort_list_get(curr_view, curr_view->sort)
 	                 : curr_view->sort;
 	set_sort(curr_view, sort, val.str_val);
 }
@@ -2496,20 +2445,7 @@ map_name(const char name[], void *arg)
 	if(*name == '\0')
 	{
 		const FileView *const view = arg;
-
-		const char *sort;
-
-		if(curr_stats.restart_in_progress)
-		{
-			sort = ui_view_sort_list_get(view);
-		}
-		else
-		{
-			sort = (flist_custom_active(view) && ui_view_unsorted(view))
-			      ? (char *)view->custom.sort
-			      : (char *)view->sort;
-		}
-
+		const char *const sort = ui_view_sort_list_get(view, view->sort);
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
 
@@ -2855,7 +2791,7 @@ wordchars_handler(OPT_OP op, optval_t val)
 			break;
 		}
 
-		while(from < to)
+		while(from <= to)
 		{
 			word_chars[from++] = 1;
 		}
@@ -2866,6 +2802,78 @@ wordchars_handler(OPT_OP op, optval_t val)
 	{
 		memcpy(&cfg.word_chars, &word_chars, sizeof(cfg.word_chars));
 	}
+}
+
+/* Parses range, which can be shortened to single endpoint if first element
+ * matches last one.  Returns non-zero on error, otherwise zero is returned. */
+static int
+parse_range(const char range[], int *from, int *to)
+{
+	const char *p = range;
+
+	if(parse_endpoint(&p, from) != 0)
+	{
+		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
+		return 1;
+	}
+	if(*p == '-')
+	{
+		++p;
+		if(parse_endpoint(&p, to) != 0)
+		{
+			vle_tb_append_linef(vle_err, "Wrong range: %s", range);
+			return 1;
+		}
+	}
+	else
+	{
+		*to = *from;
+	}
+
+	if(*p != '\0')
+	{
+		vle_tb_append_linef(vle_err, "Wrong range: %s", range);
+		return 1;
+	}
+
+	if(*from > *to)
+	{
+		vle_tb_append_linef(vle_err, "Inversed range: %s", range);
+		return 1;
+	}
+
+	return 0;
+}
+
+/* Parses single endpoint of a range.  It's either a number or a character.
+ * Returns non-zero on error, otherwise zero is returned. */
+static int
+parse_endpoint(const char **str, int *endpoint)
+{
+	if(**str == '\0')
+	{
+		vle_tb_append_line(vle_err, "Range bound can't be empty");
+		return 1;
+	}
+
+	if(isdigit(**str))
+	{
+		char *endptr;
+		const long int val = strtol(*str, &endptr, 10);
+		if(val < 0 || val >= 256)
+		{
+			vle_tb_append_linef(vle_err, "Wrong value: %ld", val);
+			return 1;
+		}
+		*str = endptr;
+		*endpoint = val;
+	}
+	else
+	{
+		*endpoint = (unsigned char)**str;
+		++*str;
+	}
+	return 0;
 }
 
 static void
