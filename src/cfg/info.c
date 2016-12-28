@@ -64,8 +64,8 @@ static void get_sort_info(FileView *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
 static void ensure_history_not_full(hist_t *hist);
-static void get_history(FileView *view, int reread, const char *dir,
-		const char *file, int pos);
+static void get_history(FileView *view, int reread, const char dir[],
+		const char file[], int rel_pos);
 static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
@@ -265,7 +265,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
-			FileView *const view = (type == LINE_TYPE_LWIN_HIST ) ? &lwin : &rwin;
+			FileView *const view = (type == LINE_TYPE_LWIN_HIST) ? &lwin : &rwin;
 			if(line_val[0] == '\0')
 			{
 				if(!reread && view->history_num > 0)
@@ -276,8 +276,8 @@ read_info_file(int reread)
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				const int pos = read_optional_number(fp);
-				get_history(view, reread, line_val, line2, pos);
+				const int rel_pos = read_optional_number(fp);
+				get_history(view, reread, line_val, line2, rel_pos);
 			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
@@ -425,8 +425,8 @@ ensure_history_not_full(hist_t *hist)
 
 /* Loads single history entry from vifminfo into the view. */
 static void
-get_history(FileView *view, int reread, const char *dir, const char *file,
-		int pos)
+get_history(FileView *view, int reread, const char dir[], const char file[],
+		int rel_pos)
 {
 	const int list_rows = view->list_rows;
 
@@ -439,7 +439,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 	{
 		view->list_rows = 1;
 	}
-	flist_hist_save(view, dir, file, pos);
+	flist_hist_save(view, dir, file, rel_pos);
 	if(!reread)
 	{
 		view->list_rows = list_rows;
