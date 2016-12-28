@@ -2850,6 +2850,12 @@ parse_range(const char range[], int *from, int *to)
 static int
 parse_endpoint(const char **str, int *endpoint)
 {
+	if(**str == '\0')
+	{
+		vle_tb_append_line(vle_err, "Range bound can't be empty");
+		return 1;
+	}
+
 	if(isdigit(**str))
 	{
 		char *endptr;
