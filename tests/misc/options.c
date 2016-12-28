@@ -8,6 +8,7 @@
 #include "../../src/engine/text_buffer.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -500,6 +501,21 @@ TEST(wrong_ranges_are_handled_properly)
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
 	assert_failure(exec_commands("set wordchars=40-1000", &lwin, CIT_COMMAND));
 	assert_success(memcmp(cfg.word_chars, word_chars, 256));
+}
+
+TEST(sorting_is_set_correctly_on_restart)
+{
+	lwin.sort[0] = SK_BY_NAME;
+	ui_view_sort_list_ensure_well_formed(&lwin, lwin.sort);
+	lwin.sort_g[0] = SK_BY_NAME;
+	ui_view_sort_list_ensure_well_formed(&lwin, lwin.sort_g);
+
+	curr_stats.restart_in_progress = 1;
+	assert_success(exec_commands("set sort=+iname", &lwin, CIT_COMMAND));
+	curr_stats.restart_in_progress = 0;
+
+	assert_int_equal(SK_BY_INAME, lwin.sort[0]);
+	assert_int_equal(SK_BY_INAME, lwin.sort_g[0]);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -547,9 +547,10 @@ int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
  * "iname" for views, except for unsorted custom view). */
 void ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[]);
 
-/* Picks sort array for the view taking custom view into account.  Returns
- * pointer to the array. */
-char * ui_view_sort_list_get(const FileView *view);
+/* Picks sort array for the view taking custom view into account.  sort should
+ * point to sorting array preferred by default.  Returns pointer to the
+ * array. */
+char * ui_view_sort_list_get(const FileView *view, const char sort[]);
 
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */

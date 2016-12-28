@@ -373,7 +373,7 @@ static void
 get_sort_info(FileView *view, const char line[])
 {
 	char *const sort = curr_stats.restart_in_progress
-	                 ? ui_view_sort_list_get(view)
+	                 ? ui_view_sort_list_get(view, view->sort)
 	                 : view->sort;
 
 	int j = 0;
@@ -1461,7 +1461,7 @@ static void
 put_sort_info(FILE *fp, char leading_char, const FileView *view)
 {
 	int i = -1;
-	const char *const sort = ui_view_sort_list_get(view);
+	const char *const sort = ui_view_sort_list_get(view, view->sort_g);
 
 	fputc(leading_char, fp);
 	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)

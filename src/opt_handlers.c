@@ -2164,7 +2164,7 @@ sort_local(OPT_OP op, optval_t val)
 	 * compare view. */
 	char *const sort = (curr_stats.restart_in_progress ||
 	                    cv_compare(curr_view->custom.type))
-	                 ? ui_view_sort_list_get(curr_view)
+	                 ? ui_view_sort_list_get(curr_view, curr_view->sort)
 	                 : curr_view->sort;
 	set_sort(curr_view, sort, val.str_val);
 }
@@ -2445,20 +2445,7 @@ map_name(const char name[], void *arg)
 	if(*name == '\0')
 	{
 		const FileView *const view = arg;
-
-		const char *sort;
-
-		if(curr_stats.restart_in_progress)
-		{
-			sort = ui_view_sort_list_get(view);
-		}
-		else
-		{
-			sort = (flist_custom_active(view) && ui_view_unsorted(view))
-			      ? (char *)view->custom.sort
-			      : (char *)view->sort;
-		}
-
+		const char *const sort = ui_view_sort_list_get(view, view->sort);
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
 
