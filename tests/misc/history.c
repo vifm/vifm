@@ -163,5 +163,14 @@ TEST(navigating_within_history)
 	save_to_history("somewhere");
 }
 
+TEST(specified_file_position_is_unaffected_by_top_line)
+{
+	lwin.top_line = 3;
+	flist_hist_save(&lwin, "/dir", "file", 0);
+	assert_string_equal("/dir", lwin.history[1].dir);
+	assert_string_equal("file", lwin.history[1].file);
+	assert_int_equal(0, lwin.history[1].rel_pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

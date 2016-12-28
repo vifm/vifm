@@ -286,6 +286,8 @@
 
 	Fixed incorrect 'sort' state after :restart.  Thanks to sudo-nice.
 
+	Fixed possible skewing of relative files positions in history by :restart.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
