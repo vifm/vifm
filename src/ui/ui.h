@@ -336,9 +336,9 @@ typedef struct
 	/* Primary group in compiled form. */
 	regex_t primary_group;
 
-	int history_num;
-	int history_pos;
-	history_t *history;
+	int history_num;    /* Number of used history elements. */
+	int history_pos;    /* Current position in history. */
+	history_t *history; /* Directory history itself. */
 
 	col_scheme_t cs;
 
