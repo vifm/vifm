@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 03
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 07
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3007,7 +3007,8 @@ iec
 type: boolean
 default: false
 
-Use KiB, MiB, ... instead of KB, MB, ...
+Use KiB, MiB, ... suffixes instead of K, M, ... when printing size in
+human-friendly format.
 
                                                *vifm-'ignorecase'* *vifm-'ic'*
 ignorecase ic
