@@ -294,6 +294,8 @@
 	Fixed parsing of 'classify' when it includes an entry with empty prefix.
 	Thanks to filterfalse.
 
+	Fixed navigation from menus on Windows.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
