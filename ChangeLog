@@ -296,8 +296,8 @@
 
 	Fixed navigation from menus on Windows.
 
-	Fixed tilde expansion when checking command existence.  Thanks to
-	sudo-nice.
+	Fixed tilde expansion and expansion of environment variables when
+	checking command existence.  Thanks to sudo-nice.
 
 0.8.2-beta to 0.8.2
 
