@@ -280,6 +280,35 @@ TEST(classify_state_is_not_changed_if_format_is_wong)
 	assert_int_equal(1, cfg.name_dec_count);
 }
 
+TEST(classify_does_not_stop_on_empty_prefix)
+{
+	dir_entry_t entry = {
+		.name = "read",
+		.origin = TEST_DATA_PATH,
+		.name_dec_num = -1,
+	};
+
+	const char *prefix, *suffix;
+
+	assert_success(exec_commands("set classify=:dir:/,:link:@,:fifo:|", &lwin,
+				CIT_COMMAND));
+
+	entry.type = FT_DIR;
+	ui_get_decors(&entry, &prefix, &suffix);
+	assert_string_equal("", prefix);
+	assert_string_equal("/", suffix);
+
+	entry.type = FT_LINK;
+	ui_get_decors(&entry, &prefix, &suffix);
+	assert_string_equal("", prefix);
+	assert_string_equal("@", suffix);
+
+	entry.type = FT_FIFO;
+	ui_get_decors(&entry, &prefix, &suffix);
+	assert_string_equal("", prefix);
+	assert_string_equal("|", suffix);
+}
+
 TEST(suggestoptions_all_values)
 {
 	cfg.sug.flags = 0;

@@ -1030,11 +1030,15 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 	lo = name_offset + entry->match_left;
 	ro = name_offset + entry->match_right;
 
-	if(buf_len - strlen(suffix) <= lo)
+	if((size_t)entry->match_right >= strlen(fname) - strlen(suffix))
 	{
-		/* Don't highlight anything past the end of file name (like trailing
-		 * slash). */
-		return;
+		/* Don't highlight anything past the end of file name except for single
+		 * trailing slash. */
+		ro -= entry->match_right - (strlen(fname) - strlen(suffix));
+		if(suffix[0] == '/')
+		{
+			++ro;
+		}
 	}
 
 	if(align == AT_LEFT && buf_len < ro)

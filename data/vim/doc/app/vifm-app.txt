@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2016 Dec 27
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 07
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -258,7 +258,7 @@ Ctrl-W | and Ctrl-W _ maximize current view by default.
 Marks~
 
 Marks are set the same way as they are in vi.
-You can use this characters for marks [a-z][A-Z][0-9].
+You can use these characters for marks [a-z][A-Z][0-9].
 
 m[a-z][A-Z][0-9]                               *vifm-m*
     set a mark for the file at the current cursor position.
@@ -3007,7 +3007,8 @@ iec
 type: boolean
 default: false
 
-Use KiB, MiB, ... instead of KB, MB, ...
+Use KiB, MiB, ... suffixes instead of K, M, ... when printing size in
+human-friendly format.
 
                                                *vifm-'ignorecase'* *vifm-'ic'*
 ignorecase ic

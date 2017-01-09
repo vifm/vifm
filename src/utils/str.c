@@ -911,18 +911,23 @@ split_and_get(char str[], char sep, char **state)
 char *
 split_and_get_dc(char str[], char **state)
 {
-	if(str[0] == '\0')
+	if(*state == NULL)
 	{
-		return NULL;
+		/* Do nothing on empty input. */
+		if(str[0] == '\0')
+		{
+			return NULL;
+		}
 	}
-
-	if(*state != NULL)
+	else
 	{
+		/* Check if we reached end of input. */
 		if(**state == '\0')
 		{
 			return NULL;
 		}
 
+		/* Process next item of the list. */
 		str = *state;
 	}
 
