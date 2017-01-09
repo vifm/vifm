@@ -296,6 +296,9 @@
 
 	Fixed navigation from menus on Windows.
 
+	Fixed tilde expansion when checking command existence.  Thanks to
+	sudo-nice.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
