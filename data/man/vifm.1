@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 07, 2017" "vifm 0.8.2"
+.TH VIFM 1 "January 10, 2017" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -582,8 +582,10 @@ only for *nix
 .br
 change file group.
 .TP
-.BI cp
-change file attributes (permission on *nix and properties on Windows).
+.BI [count]cp
+change file attributes (permission on *nix and properties on Windows).  If
+[count] is specified, it's treated as numerical argument for non-recursive
+`chmod` command (of the form [0-7]{3,4}).
 .TP
 .BI [count]C
 clone file [count] times.

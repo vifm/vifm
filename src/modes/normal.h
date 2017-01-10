@@ -26,6 +26,9 @@
 /* Initializes normal mode. */
 void init_normal_mode(void);
 
+/* Change file attributes (permissions or properties). */
+void normal_cmd_cp(FileView *view, key_info_t key_info);
+
 void normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info);
 
 void normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info);

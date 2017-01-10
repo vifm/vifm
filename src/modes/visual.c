@@ -776,9 +776,11 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 	update_marks(view);
 	ub = check_mark_directory(view, '<');
 	if(ub != -1)
+	{
 		view->list_pos = ub;
+	}
 
-	enter_attr_mode(view);
+	normal_cmd_cp(view, key_info);
 }
 
 /* Renames selected files of the view. */
