@@ -465,7 +465,7 @@ set_perm_string(FileView *view, const int perms[13], const int origin_perms[13],
 }
 
 void
-files_chmod(FileView *view, const char *mode, int recurse_dirs)
+files_chmod(FileView *view, const char mode[], int recurse_dirs)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	dir_entry_t *entry;
