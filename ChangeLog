@@ -72,6 +72,9 @@
 	Added %f 'statusline' macro that inserts relative path of the entry, which
 	might be useful for non-regular views.  Thanks to filterfalse.
 
+	Added meaning to [count] of cp shortcut, which is now processed as
+	numerical argument for non-recursive `chmod` command.  Thanks to sudo-nice.
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

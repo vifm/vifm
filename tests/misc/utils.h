@@ -18,6 +18,12 @@ void opt_handlers_setup(void);
 /* Cleans up option handlers. */
 void opt_handlers_teardown(void);
 
+/* Prepares undo unit for file operations. */
+void undo_setup(void);
+
+/* Cleans up undo unit. */
+void undo_teardown(void);
+
 /* Initializes view with safe defaults. */
 void view_setup(FileView *view);
 

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 07
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -500,9 +500,10 @@ co - change file owner.                        {only for *nix}
                                                *vifm-cg*
 cg - change file group.                        {only for *nix}
 
-cp                                             *vifm-cp*
+[count]cp                                      *vifm-cp*
     change file attributes (permission on *nix and properties on
-    Windows).
+    Windows).  If [count] is specified, it's treated as numerical argument
+    for non-recursive `chmod` command (of the form `[0-7]{3,4}`).
 
 
 [count]C                                       *vifm-C*

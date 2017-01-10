@@ -2,7 +2,7 @@
 
 #include <sys/stat.h> /* stat chmod() */
 #include <sys/types.h> /* stat */
-#include <unistd.h> /* F_OK access() lstat() */
+#include <unistd.h> /* F_OK access() */
 
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"

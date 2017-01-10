@@ -30,7 +30,7 @@
 #include <stddef.h> /* size_t wchar_t */
 #include <stdio.h>  /* snprintf() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* strncmp() */
+#include <string.h> /* strncmp() strspn() */
 #include <wctype.h> /* towupper() */
 #include <wchar.h> /* wcscpy() */
 
@@ -1410,7 +1410,38 @@ cmd_co(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_attr_mode(curr_view);
+	normal_cmd_cp(curr_view, key_info);
+}
+
+void
+normal_cmd_cp(FileView *view, key_info_t key_info)
+{
+#ifndef _WIN32
+	char mode[32];
+	int len;
+
+	if(key_info.count == NO_COUNT_GIVEN)
+	{
+		enter_attr_mode(view);
+		return;
+	}
+
+	len = snprintf(mode, sizeof(mode), "%04d", key_info.count);
+	if(len != 4 || ((int)strspn(mode, "01234567") != len))
+	{
+		/* Update view because there might be not reflected changes of cursor
+		 * position (when called from visual mode). */
+		redraw_view(view);
+
+		status_bar_errorf("Incorrect file mode: %s", mode);
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	files_chmod(view, mode, 0);
+#else
+	enter_attr_mode(view);
+#endif
 }
 
 /* Change word (rename file or files). */

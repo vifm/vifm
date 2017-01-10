@@ -18,6 +18,10 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
+#include "../../src/undo.h"
+
+static int exec_func(OPS op, void *data, const char *src, const char *dst);
+static int op_avail(OPS op);
 
 void
 opt_handlers_setup(void)
@@ -77,6 +81,31 @@ opt_handlers_teardown(void)
 	update_string(&rwin.view_columns_g, NULL);
 	update_string(&rwin.sort_groups, NULL);
 	update_string(&rwin.sort_groups_g, NULL);
+}
+
+void
+undo_setup(void)
+{
+	static int max_undo_levels = 0;
+	init_undo_list(&exec_func, &op_avail, NULL, &max_undo_levels);
+}
+
+static int
+exec_func(OPS op, void *data, const char *src, const char *dst)
+{
+	return 0;
+}
+
+static int
+op_avail(OPS op)
+{
+	return 0;
+}
+
+void
+undo_teardown(void)
+{
+	reset_undo_list();
 }
 
 void

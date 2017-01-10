@@ -30,7 +30,9 @@ void enter_attr_mode(FileView *active_view);
 
 void redraw_attr_dialog(void);
 
-void files_chmod(FileView *view, const char *mode, int recurse_dirs);
+/* Changes permissions of selected (or just current) files of the view possibly
+ * recurring in directories. */
+void files_chmod(FileView *view, const char mode[], int recurse_dirs);
 
 TSTATIC_DEFS(
 	void set_perm_string(FileView *view, const int perms[13],
