@@ -13,12 +13,9 @@
 #include "../../src/compare.h"
 #include "../../src/event_loop.h"
 #include "../../src/ops.h"
-#include "../../src/undo.h"
 
 #include "utils.h"
 
-static int exec_func(OPS op, void *data, const char *src, const char *dst);
-static int op_avail(OPS op);
 static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
@@ -26,8 +23,6 @@ static int files_are_identical(const char a[], const char b[]);
 
 SETUP()
 {
-	static int max_undo_levels = 0;
-
 	curr_view = &lwin;
 	other_view = &rwin;
 
@@ -38,19 +33,8 @@ SETUP()
 
 	cfg.delete_prg = strdup("");
 	cfg.use_system_calls = 1;
-	init_undo_list(&exec_func, &op_avail, NULL, &max_undo_levels);
-}
 
-static int
-exec_func(OPS op, void *data, const char *src, const char *dst)
-{
-	return 0;
-}
-
-static int
-op_avail(OPS op)
-{
-	return 0;
+	undo_setup();
 }
 
 TEARDOWN()
@@ -61,6 +45,8 @@ TEARDOWN()
 	opt_handlers_teardown();
 
 	free(cfg.delete_prg);
+
+	undo_teardown();
 }
 
 TEST(moving_does_not_work_in_non_diff)

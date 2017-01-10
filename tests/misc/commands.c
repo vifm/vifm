@@ -29,8 +29,6 @@
 #include "utils.h"
 
 static int builtin_cmd(const cmd_info_t* cmd_info);
-static int exec_func(OPS op, void *data, const char *src, const char *dst);
-static int op_avail(OPS op);
 static void check_filetype(void);
 static int prog_exists(const char name[]);
 static int has_mime_type_detection(void);
@@ -77,8 +75,6 @@ SETUP_ONCE()
 
 SETUP()
 {
-	static int max_undo_levels = 0;
-
 	view_setup(&lwin);
 	view_setup(&rwin);
 
@@ -109,7 +105,7 @@ SETUP()
 
 	called = 0;
 
-	init_undo_list(&exec_func, &op_avail, NULL, &max_undo_levels);
+	undo_setup();
 }
 
 TEARDOWN()
@@ -125,7 +121,8 @@ TEARDOWN()
 	view_teardown(&rwin);
 
 	reset_cmds();
-	reset_undo_list();
+
+	undo_teardown();
 }
 
 static int
@@ -140,18 +137,6 @@ builtin_cmd(const cmd_info_t* cmd_info)
 	}
 
 	return 0;
-}
-
-static int
-exec_func(OPS op, void *data, const char *src, const char *dst)
-{
-	return 0;
-}
-
-static int
-op_avail(OPS op)
-{
-	return op == OP_MOVE;
 }
 
 TEST(space_amp)
