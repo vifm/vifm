@@ -75,6 +75,9 @@
 	Added meaning to [count] of cp shortcut, which is now processed as
 	numerical argument for non-recursive `chmod` command.  Thanks to sudo-nice.
 
+	Changed size formatting to round from zero (matches behaviour of e.g.
+	`ls`).
+
 	Enable restoring files from trash from custom views.
 
 	View current directory on ".." for quickview/view mode.  Thanks to

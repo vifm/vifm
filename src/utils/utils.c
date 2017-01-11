@@ -32,6 +32,7 @@
 
 #include <ctype.h> /* isalnum() isalpha() */
 #include <errno.h> /* errno */
+#include <math.h> /* modf() pow() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() */
@@ -59,6 +60,7 @@
 #include "string_array.h"
 
 static void show_progress_cb(const void *descr);
+static double split_size_double(double d, int *ifraction, int *fraction_width);
 #ifdef _WIN32
 static void unquote(char quoted[]);
 #endif
@@ -221,35 +223,69 @@ friendly_size_notation(uint64_t num, int str_size, char str[])
 	};
 	ARRAY_GUARD(iec_units, ARRAY_LEN(si_units));
 
-	const char** units;
-	size_t u;
+	int fraction = 0, fraction_width;
+	const char **units = cfg.use_iec_prefixes ? iec_units : si_units;
+	size_t u = 0U;
 	double d = num;
 
-	units = cfg.use_iec_prefixes ? iec_units : si_units;
-
-	u = 0U;
 	while(d >= 1023.5 && u < ARRAY_LEN(iec_units) - 1U)
 	{
 		d /= 1024.0;
 		++u;
 	}
 
-	if(u == 0 || d > 9)
+	if(u != 0 && d <= 9)
+	{
+		d = split_size_double(d, &fraction, &fraction_width);
+	}
+
+	if(fraction == 0)
 	{
 		snprintf(str, str_size, "%.0f %s", d, units[u]);
 	}
 	else
 	{
-		size_t len;
-		snprintf(str, str_size, "%.1f %s", d, units[u]);
-		len = strlen(str);
-		if(str[len - strlen(units[u]) - 1U - 1U] == '0')
-		{
-			snprintf(str, str_size, "%.0f %s", d, units[u]);
-		}
+		snprintf(str, str_size, "%.0f.%0*d %s", d, fraction_width, fraction,
+				units[u]);
 	}
 
 	return u > 0U;
+}
+
+/* Breaks size (floating point, not integer) into integer and fractional parts
+ * rounding and truncating them as necessary.  Sets *ifraction and
+ * *fraction_width.  Returns new value for the size (truncated and/or
+ * rounded). */
+static double
+split_size_double(double size, int *ifraction, int *fraction_width)
+{
+	double integer, ten_power, dfraction;
+
+	*fraction_width = 1;
+
+	ten_power = pow(10, *fraction_width + 1);
+	dfraction = modf(size, &integer);
+	*ifraction = DIV_ROUND_UP(ten_power*dfraction, 10);;
+
+	if(*ifraction >= ten_power/10.0)
+	{
+		/* Overflow into integer part during rounding. */
+		integer += 1.0;
+		*ifraction -= ten_power/10.0;
+	}
+	else if(*ifraction == 0 && dfraction != 0.0)
+	{
+		/* Fractional part is too small, "round up" to make it visible. */
+		*ifraction = 1;
+	}
+
+	/* Skip trailing zeroes. */
+	for(; *fraction_width != 0 && *ifraction%10 == 0; --*fraction_width)
+	{
+		*ifraction /= 10;
+	}
+
+	return (*ifraction == 0) ? size : integer;
 }
 
 const char *

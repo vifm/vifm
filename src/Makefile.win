@@ -23,7 +23,7 @@ endif
 MANGEN := groff
 UNDER_VCS := $(shell [ "`which git 2> /dev/null`" -a -d ../.git ] && echo 1)
 
-LIBS := -lregex -lnetapi32 -lpthread -lws2_32
+LIBS := -lregex -lnetapi32 -lpthread -lws2_32 -lm
 ifeq ($(OS),Windows_NT)
     LIBS += -lpdcurses
 else

@@ -27,5 +27,16 @@ TEST(problem_1024)
 	assert_string_equal("1 M", buf);
 }
 
+TEST(from_zero_rounding)
+{
+	char buf[16];
+
+	friendly_size_notation(8*1024 - 1, sizeof(buf), buf);
+	assert_string_equal("8 K", buf);
+
+	friendly_size_notation(8*1024 + 1, sizeof(buf), buf);
+	assert_string_equal("8.1 K", buf);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
