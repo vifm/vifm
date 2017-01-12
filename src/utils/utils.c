@@ -266,7 +266,7 @@ static const char **
 get_size_suffixes(void)
 {
 	return (cfg.sizefmt.base == 1000) ? si_units :
-	       (cfg.use_iec_prefixes ? iec_i_units : iec_units);
+	       (cfg.sizefmt.ieci_prefixes ? iec_i_units : iec_units);
 }
 
 /* Breaks size (floating point, not integer) into integer and fractional parts

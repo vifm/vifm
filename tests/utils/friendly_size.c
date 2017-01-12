@@ -5,7 +5,7 @@
 
 SETUP()
 {
-	cfg.use_iec_prefixes = 0;
+	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.base = 1024;
 	cfg.sizefmt.precision = 0;
 }
@@ -68,7 +68,7 @@ TEST(iec_2)
 	char buf[16];
 
 	cfg.sizefmt.precision = 2;
-	cfg.use_iec_prefixes = 1;
+	cfg.sizefmt.ieci_prefixes = 1;
 
 	friendly_size_notation(111, sizeof(buf), buf);
 	assert_string_equal("111   B", buf);

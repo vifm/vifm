@@ -124,7 +124,6 @@ cfg_init(void)
 	cfg.auto_execute = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
 	cfg.wrap_quick_view = 1;
-	cfg.use_iec_prefixes = 0;
 	cfg.undo_levels = 100;
 	cfg.sort_numbers = 0;
 	cfg.follow_links = 1;
@@ -223,6 +222,7 @@ cfg_init(void)
 
 	cfg.sizefmt.base = 1024;
 	cfg.sizefmt.precision = 0;
+	cfg.sizefmt.ieci_prefixes = 0;
 }
 
 void

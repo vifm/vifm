@@ -556,7 +556,7 @@ options[] = {
 	},
 	{ "iec", "", "use IEC notation for sizes",
 	  OPT_BOOL, 0, NULL, &iec_handler, NULL,
-	  { .ref.bool_val = &cfg.use_iec_prefixes },
+	  { .ref.bool_val = &cfg.sizefmt.ieci_prefixes },
 	},
 	{ "ignorecase", "ic", "ignore case on searches",
 	  OPT_BOOL, 0, NULL, &ignorecase_handler, NULL,
@@ -1843,7 +1843,7 @@ hlsearch_handler(OPT_OP op, optval_t val)
 static void
 iec_handler(OPT_OP op, optval_t val)
 {
-	cfg.use_iec_prefixes = val.bool_val;
+	cfg.sizefmt.ieci_prefixes = val.bool_val;
 
 	redraw_lists();
 }
