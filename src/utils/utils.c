@@ -60,11 +60,25 @@
 #include "string_array.h"
 
 static void show_progress_cb(const void *descr);
+static const char ** get_size_suffixes(void);
 static double split_size_double(double d, int *ifraction, int *fraction_width);
 #ifdef _WIN32
 static void unquote(char quoted[]);
 #endif
 static int is_line_spec(const char str[]);
+
+/* Size suffixes of different kinds. */
+static const char *iec_i_units[] = {
+	"  B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"
+};
+static const char *iec_units[] = {
+	"B", "K", "M", "G", "T", "P", "E", "Z", "Y"
+};
+static const char *si_units[] = {
+	" B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"
+};
+ARRAY_GUARD(iec_units, ARRAY_LEN(iec_i_units));
+ARRAY_GUARD(si_units, ARRAY_LEN(iec_units));
 
 int
 vifm_system(char command[])
@@ -215,26 +229,21 @@ expand_envvars(const char str[], int escape_vals)
 int
 friendly_size_notation(uint64_t num, int str_size, char str[])
 {
-	static const char* iec_units[] = {
-		"  B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"
-	};
-	static const char* si_units[] = {
-		"B", "K", "M", "G", "T", "P", "E", "Z", "Y"
-	};
-	ARRAY_GUARD(iec_units, ARRAY_LEN(si_units));
-
 	int fraction = 0, fraction_width;
-	const char **units = cfg.use_iec_prefixes ? iec_units : si_units;
+	const char **const units = get_size_suffixes();
 	size_t u = 0U;
 	double d = num;
 
-	while(d >= 1023.5 && u < ARRAY_LEN(iec_units) - 1U)
+	while(d >= cfg.sizefmt.base - 0.5 && u < ARRAY_LEN(iec_i_units) - 1U)
 	{
-		d /= 1024.0;
+		d /= cfg.sizefmt.base;
 		++u;
 	}
 
-	if(u != 0 && d <= 9)
+	/* Fractional part is ignored when it's absent (we didn't divide anything) and
+	 * when we format size in previously used manner and hide it for values
+	 * greater than 9. */
+	if(u != 0U && !(cfg.sizefmt.precision == 0 && d > 9.0))
 	{
 		d = split_size_double(d, &fraction, &fraction_width);
 	}
@@ -252,6 +261,14 @@ friendly_size_notation(uint64_t num, int str_size, char str[])
 	return u > 0U;
 }
 
+/* Picks size suffixes as per configuration.  Returns one of *_units arrays. */
+static const char **
+get_size_suffixes(void)
+{
+	return (cfg.sizefmt.base == 1000) ? si_units :
+	       (cfg.use_iec_prefixes ? iec_i_units : iec_units);
+}
+
 /* Breaks size (floating point, not integer) into integer and fractional parts
  * rounding and truncating them as necessary.  Sets *ifraction and
  * *fraction_width.  Returns new value for the size (truncated and/or
@@ -261,7 +278,7 @@ split_size_double(double size, int *ifraction, int *fraction_width)
 {
 	double integer, ten_power, dfraction;
 
-	*fraction_width = 1;
+	*fraction_width = (cfg.sizefmt.precision == 0) ? 1 : cfg.sizefmt.precision;
 
 	ten_power = pow(10, *fraction_width + 1);
 	dfraction = modf(size, &integer);

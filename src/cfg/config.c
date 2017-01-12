@@ -220,6 +220,9 @@ cfg_init(void)
 
 	cfg.case_override = 0;
 	cfg.case_ignore = 0;
+
+	cfg.sizefmt.base = 1024;
+	cfg.sizefmt.precision = 0;
 }
 
 void
