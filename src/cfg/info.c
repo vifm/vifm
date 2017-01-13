@@ -981,6 +981,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
 	fprintf(fp, "=shortmess=%s\n",
 			escape_spaces(get_option_value("shortmess", OPT_GLOBAL)));
+	fprintf(fp, "=sizefmt=%s\n",
+			escape_spaces(get_option_value("sizefmt", OPT_GLOBAL)));
 #ifndef _WIN32
 	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif

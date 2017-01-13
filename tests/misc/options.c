@@ -579,5 +579,49 @@ TEST(values_in_fillchars_are_deduplicated)
 	update_string(&cfg.border_filler, NULL);
 }
 
+TEST(sizefmt_is_set_on_correct_input)
+{
+	cfg.sizefmt.base = -1;
+	cfg.sizefmt.precision = -1;
+
+	assert_success(exec_commands("set sizefmt=units:iec", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1024, cfg.sizefmt.base);
+	assert_int_equal(0, cfg.sizefmt.precision);
+
+	assert_success(exec_commands("set sizefmt=units:si,precision:1", &lwin,
+				CIT_COMMAND));
+
+	assert_int_equal(1000, cfg.sizefmt.base);
+	assert_int_equal(1, cfg.sizefmt.precision);
+}
+
+TEST(sizefmt_not_changed_on_wrong_input)
+{
+	cfg.sizefmt.base = -1;
+	cfg.sizefmt.precision = -1;
+
+	assert_failure(exec_commands("set sizefmt=wrong", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("set sizefmt=units:wrong", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("set sizefmt=precision:0", &lwin, CIT_COMMAND));
+
+	assert_int_equal(-1, cfg.sizefmt.base);
+	assert_int_equal(-1, cfg.sizefmt.precision);
+}
+
+TEST(values_in_sizefmt_are_deduplicated)
+{
+	(void)replace_string(&cfg.border_filler, "x");
+
+	assert_success(exec_commands("set sizefmt=units:si", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("set sizefmt+=units:iec,precision:10", &lwin,
+				CIT_COMMAND));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("sizefmt?", OPT_GLOBAL));
+	assert_string_equal("  sizefmt=units:iec,precision:10",
+			vle_tb_get_data(vle_err));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
