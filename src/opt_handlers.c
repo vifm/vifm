@@ -122,7 +122,7 @@ static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
 static void fillchars_handler(OPT_OP op, optval_t val);
-static void reset_fillchars(void);
+static void load_fillchars(void);
 static void findprg_handler(OPT_OP op, optval_t val);
 static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
@@ -1739,8 +1739,9 @@ fillchars_handler(OPT_OP op, optval_t val)
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
-	/* XXX: we shouldn't reset this value unless format is correct. */
-	(void)replace_string(&cfg.border_filler, " ");
+	/* Save current state. */
+	char *const old_border = cfg.border_filler;
+	cfg.border_filler = NULL;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -1758,18 +1759,31 @@ fillchars_handler(OPT_OP op, optval_t val)
 	}
 	free(new_val);
 
-	if(part != NULL)
+	/* Restore previous state of unset elements or drop saved state. */
+	if(cfg.border_filler == NULL)
 	{
-		reset_fillchars();
+		cfg.border_filler = old_border;
+	}
+	else
+	{
+		free(old_border);
 	}
 
-	curr_stats.need_update = UT_REDRAW;
+	/* In case of error, restore previous value, otherwise reload it anyway to
+	 * remove any duplicates. */
+	load_fillchars();
+
+	if(part == NULL)
+	{
+		/* Schedule a redraw if option was set successfully. */
+		curr_stats.need_update = UT_REDRAW;
+	}
 }
 
-/* Resets value of 'fillchars' option by composing it from current
+/* Sets value of 'fillchars' option by composing it from current
  * configuration. */
 static void
-reset_fillchars(void)
+load_fillchars(void)
 {
 	optval_t val;
 	char value[128];

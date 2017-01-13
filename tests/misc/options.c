@@ -547,5 +547,37 @@ TEST(sorting_is_set_correctly_on_restart)
 	assert_int_equal(SK_BY_INAME, lwin.sort_g[0]);
 }
 
+TEST(fillchars_is_set_on_correct_input)
+{
+	(void)replace_string(&cfg.border_filler, "x");
+	assert_success(exec_commands("set fillchars=vborder:a", &lwin, CIT_COMMAND));
+	assert_string_equal("a", cfg.border_filler);
+	update_string(&cfg.border_filler, NULL);
+}
+
+TEST(fillchars_not_changed_on_wrong_input)
+{
+	(void)replace_string(&cfg.border_filler, "x");
+	assert_failure(exec_commands("set fillchars=vorder:a", &lwin, CIT_COMMAND));
+	assert_string_equal("x", cfg.border_filler);
+	update_string(&cfg.border_filler, NULL);
+}
+
+TEST(values_in_fillchars_are_deduplicated)
+{
+	(void)replace_string(&cfg.border_filler, "x");
+
+	assert_success(exec_commands("set fillchars=vborder:a", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("set fillchars+=vborder:b", &lwin, CIT_COMMAND));
+	assert_string_equal("b", cfg.border_filler);
+	update_string(&cfg.border_filler, NULL);
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("fillchars?", OPT_GLOBAL));
+	assert_string_equal("  fillchars=vborder:b", vle_tb_get_data(vle_err));
+
+	update_string(&cfg.border_filler, NULL);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
