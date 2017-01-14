@@ -92,6 +92,7 @@ const char *tags[] = {
 	"vifm-'shell'",
 	"vifm-'shm'",
 	"vifm-'shortmess'",
+	"vifm-'sizefmt'",
 	"vifm-'slowfs'",
 	"vifm-'smartcase'",
 	"vifm-'so'",

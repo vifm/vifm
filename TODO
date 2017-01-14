@@ -35,10 +35,10 @@ Vi(m) specific features:
   * Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
   * Add support of n flag for :substitute command.
   * :let mapleader and <leader> support.
+  * A way to unset a filename-highlight.
   * Ctrl-W F key.
   * Add support of [count] for Ctrl-E/Ctrl-Y/H/M/L.
   * nrformats option as in Vim.
-  * Better registers support. (partially done)
   * Add support of ^= in :set command for more option kinds.
   * Better ranges (add support for search patterns).
   * :map without arguments.
@@ -98,7 +98,6 @@ Possible things to add:
   * Add g/ and g? commands (search, but don't select files).
   * Support true-colors for colorschemes.
   * IPC among all running vifm instances (share settings among instances).
-  * More flexible control over displaying file size.
   * Parse escape sequences in menus as in preview.
   * Virtual File System - currently vifm can use FUSE to mount most file
     systems.
@@ -196,6 +195,7 @@ Code improvements:
   * Separate filelist data from view data (extract into separate structure).
   * Improve logging (print back trace in some cases, increase verbosity).
   * Try reimplementing cmd_core.c:line_pos by calling dispatch_line.
+  * Write syscalls implementation of chgrp, chmod and chown.
   * Sane asynchronous signals handling.
   * Move startup and init code out of config.c and vifm.c to separate file.
   * Consider using curses panes, not just windows.

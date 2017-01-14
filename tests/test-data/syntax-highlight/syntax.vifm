@@ -363,8 +363,10 @@ hi CmpMismatch
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'
 " "caseoptions" should be highlighted as 'option'
+" "sizefmt" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
+set sizefmt
 
 " TODO
 
