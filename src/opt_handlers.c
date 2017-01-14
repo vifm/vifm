@@ -23,7 +23,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
-#include <limits.h> /* INT_MIN */
+#include <limits.h> /* INT_MAX INT_MIN */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* abs() free() */
@@ -91,6 +91,7 @@ static void init_trashdir(optval_t *val);
 static void init_dotfiles(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_shortmess(optval_t *val);
+static void init_sizefmt(optval_t *val);
 static void init_iooptions(optval_t *val);
 static void init_number(optval_t *val);
 static void init_numberwidth(optval_t *val);
@@ -122,7 +123,7 @@ static void dirsize_handler(OPT_OP op, optval_t val);
 static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
 static void fillchars_handler(OPT_OP op, optval_t val);
-static void reset_fillchars(void);
+static void load_fillchars(void);
 static void findprg_handler(OPT_OP op, optval_t val);
 static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
@@ -145,6 +146,8 @@ static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
 static void shell_handler(OPT_OP op, optval_t val);
 static void shortmess_handler(OPT_OP op, optval_t val);
+static void sizefmt_handler(OPT_OP op, optval_t val);
+static optval_t make_sizefmt_value(void);
 #ifndef _WIN32
 static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
@@ -556,7 +559,7 @@ options[] = {
 	},
 	{ "iec", "", "use IEC notation for sizes",
 	  OPT_BOOL, 0, NULL, &iec_handler, NULL,
-	  { .ref.bool_val = &cfg.use_iec_prefixes },
+	  { .ref.bool_val = &cfg.sizefmt.ieci_prefixes },
 	},
 	{ "ignorecase", "ic", "ignore case on searches",
 	  OPT_BOOL, 0, NULL, &ignorecase_handler, NULL,
@@ -611,6 +614,10 @@ options[] = {
 	  OPT_CHARSET, ARRAY_LEN(shortmess_vals), shortmess_vals, &shortmess_handler,
 		NULL,
 	  { .init = &init_shortmess },
+	},
+	{ "sizefmt", "", "human-friendly size format",
+	  OPT_STRLIST, 0, NULL, &sizefmt_handler, NULL,
+	  { .init = &init_sizefmt },
 	},
 #ifndef _WIN32
 	{ "slowfs", "", "list of slow filesystem types",
@@ -975,6 +982,13 @@ init_shortmess(optval_t *val)
 	snprintf(buf, sizeof(buf), "%s%s", cfg.trunc_normal_sb_msgs ? "T" : "",
 			cfg.shorten_title_paths ? "p" : "");
 	val->str_val = buf;
+}
+
+/* Initializes 'sizefmt' from current configuration state. */
+static void
+init_sizefmt(optval_t *val)
+{
+	*val = make_sizefmt_value();
 }
 
 /* Initializes value of 'iooptions' from configuration. */
@@ -1739,8 +1753,9 @@ fillchars_handler(OPT_OP op, optval_t val)
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
-	/* XXX: we shouldn't reset this value unless format is correct. */
-	(void)replace_string(&cfg.border_filler, " ");
+	/* Save current state. */
+	char *const old_border = cfg.border_filler;
+	cfg.border_filler = NULL;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -1758,21 +1773,34 @@ fillchars_handler(OPT_OP op, optval_t val)
 	}
 	free(new_val);
 
-	if(part != NULL)
+	/* Restore previous state of unset elements or drop saved state. */
+	if(cfg.border_filler == NULL)
 	{
-		reset_fillchars();
+		cfg.border_filler = old_border;
+	}
+	else
+	{
+		free(old_border);
 	}
 
-	curr_stats.need_update = UT_REDRAW;
+	/* In case of error, restore previous value, otherwise reload it anyway to
+	 * remove any duplicates. */
+	load_fillchars();
+
+	if(part == NULL)
+	{
+		/* Schedule a redraw if option was set successfully. */
+		curr_stats.need_update = UT_REDRAW;
+	}
 }
 
-/* Resets value of 'fillchars' option by composing it from current
+/* Sets value of 'fillchars' option by composing it from current
  * configuration. */
 static void
-reset_fillchars(void)
+load_fillchars(void)
 {
-	optval_t val;
 	char value[128];
+	const optval_t val = { .str_val = value };
 
 	value[0] = '\0';
 
@@ -1781,7 +1809,6 @@ reset_fillchars(void)
 		snprintf(value, sizeof(value), "vborder:%s", cfg.border_filler);
 	}
 
-	val.str_val = value;
 	set_option("fillchars", val, OPT_GLOBAL);
 }
 
@@ -1843,7 +1870,7 @@ hlsearch_handler(OPT_OP op, optval_t val)
 static void
 iec_handler(OPT_OP op, optval_t val)
 {
-	cfg.use_iec_prefixes = val.bool_val;
+	cfg.sizefmt.ieci_prefixes = val.bool_val;
 
 	redraw_lists();
 }
@@ -2021,6 +2048,90 @@ shortmess_handler(OPT_OP op, optval_t val)
 	}
 
 	ui_views_update_titles();
+}
+
+/* Handles changes of 'sizefmt' option by parsing string value and updating
+ * configuration values. */
+static void
+sizefmt_handler(OPT_OP op, optval_t val)
+{
+	char *const new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	int base = -1, precision = 0;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(starts_with_lit(part, "units:"))
+		{
+			const char *const val = after_first(part, ':');
+			if(strcmp(val, "iec") == 0)
+			{
+				base = 1024;
+			}
+			else if(strcmp(val, "si") == 0)
+			{
+				base = 1000;
+			}
+			else
+			{
+				vle_tb_append_linef(vle_err, "Invalid units value: %s", val);
+				break;
+			}
+		}
+		else if(starts_with_lit(part, "precision:"))
+		{
+			const char *const val = after_first(part, ':');
+			if(!read_int(val, &precision) || precision <= 0 || precision > INT_MAX)
+			{
+				vle_tb_append_linef(vle_err, "Invalid precision value: %s", val);
+				break;
+			}
+		}
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err, "Unknown key for 'sizefmt' option: %s",
+					part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL && base != -1)
+	{
+		cfg.sizefmt.base = base;
+		cfg.sizefmt.precision = precision;
+
+		curr_stats.need_update = UT_REDRAW;
+	}
+	else if(base == -1)
+	{
+		vle_tb_append_line(vle_err, "'sizefmt' value is missing units type");
+	}
+
+	/* In case of error, restore previous value, otherwise reload it anyway to
+	 * remove any duplicates. */
+	set_option("sizefmt", make_sizefmt_value(), OPT_GLOBAL);
+}
+
+/* Makes string value describing 'sizefmt' from current configuration state.
+ * The value is statically allocated.  Returns the value. */
+static optval_t
+make_sizefmt_value(void)
+{
+	static char value[128];
+	static const optval_t val = { .str_val = value };
+
+	const int len = snprintf(value, sizeof(value), "units:%s",
+			cfg.sizefmt.base == 1024 ? "iec" : "si");
+	if(cfg.sizefmt.precision != 0)
+	{
+		snprintf(value + len, sizeof(value) - len, ",precision:%d",
+				cfg.sizefmt.precision);
+	}
+
+	return val;
 }
 
 #ifndef _WIN32

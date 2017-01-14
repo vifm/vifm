@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 10, 2017" "vifm 0.8.2"
+.TH VIFM 1 "January 14, 2017" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3475,8 +3475,9 @@ type: string list
 default: ""
 .br
 Sets characters used to fill borders.
-  item       default  Used for
-  vborder:c  ' '      left, middle and right vertical borders
+
+  item         default    used for
+  vborder:c    ' '        left, middle and right vertical borders
 
 If value is omitted, its default value is used.  Example:
 .EX
@@ -3819,6 +3820,31 @@ T \- truncate status-bar messages in the middle if they are too long to fit on \
 the command line.  "..." will appear in the middle.
 .br
 p \- use tilde shortening in view titles.
+
+.TP
+.BI 'sizefmt'
+type: string list
+.br
+default: "units:iec"
+.br
+Configures the way size is formatted in human-friendly way.
+
+    item          value         meaning
+    units:        iec           Use 1024 byte units (K or KiB, etc.).
+                                See 'iec' option.
+                  si            Use 1000 byte units (KB, etc.).
+    precision:    i > 0         How many fraction digits to consider.
+                  {not set}     Precision of 1 for integer part < 10,
+                                0 otherwise (provides old behaviour).
+
+Numbers are rounded from zero.  Trailing zeros are dropped.
+
+Example:
+.EX
+
+  set sizefmt=units:iec,precision:2
+.EE
+
 .TP
 .BI 'slowfs'
 type: string list

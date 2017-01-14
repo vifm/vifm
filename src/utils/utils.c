@@ -32,6 +32,7 @@
 
 #include <ctype.h> /* isalnum() isalpha() */
 #include <errno.h> /* errno */
+#include <math.h> /* modf() pow() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() */
@@ -59,10 +60,25 @@
 #include "string_array.h"
 
 static void show_progress_cb(const void *descr);
+static const char ** get_size_suffixes(void);
+static double split_size_double(double d, int *ifraction, int *fraction_width);
 #ifdef _WIN32
 static void unquote(char quoted[]);
 #endif
 static int is_line_spec(const char str[]);
+
+/* Size suffixes of different kinds. */
+static const char *iec_i_units[] = {
+	"  B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"
+};
+static const char *iec_units[] = {
+	"B", "K", "M", "G", "T", "P", "E", "Z", "Y"
+};
+static const char *si_units[] = {
+	" B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"
+};
+ARRAY_GUARD(iec_units, ARRAY_LEN(iec_i_units));
+ARRAY_GUARD(si_units, ARRAY_LEN(iec_units));
 
 int
 vifm_system(char command[])
@@ -213,43 +229,80 @@ expand_envvars(const char str[], int escape_vals)
 int
 friendly_size_notation(uint64_t num, int str_size, char str[])
 {
-	static const char* iec_units[] = {
-		"  B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"
-	};
-	static const char* si_units[] = {
-		"B", "K", "M", "G", "T", "P", "E", "Z", "Y"
-	};
-	ARRAY_GUARD(iec_units, ARRAY_LEN(si_units));
-
-	const char** units;
-	size_t u;
+	int fraction = 0, fraction_width;
+	const char **const units = get_size_suffixes();
+	size_t u = 0U;
 	double d = num;
 
-	units = cfg.use_iec_prefixes ? iec_units : si_units;
-
-	u = 0U;
-	while(d >= 1023.5 && u < ARRAY_LEN(iec_units) - 1U)
+	while(d >= cfg.sizefmt.base - 0.5 && u < ARRAY_LEN(iec_i_units) - 1U)
 	{
-		d /= 1024.0;
+		d /= cfg.sizefmt.base;
 		++u;
 	}
 
-	if(u == 0 || d > 9)
+	/* Fractional part is ignored when it's absent (we didn't divide anything) and
+	 * when we format size in previously used manner and hide it for values
+	 * greater than 9. */
+	if(u != 0U && !(cfg.sizefmt.precision == 0 && d > 9.0))
+	{
+		d = split_size_double(d, &fraction, &fraction_width);
+	}
+
+	if(fraction == 0)
 	{
 		snprintf(str, str_size, "%.0f %s", d, units[u]);
 	}
 	else
 	{
-		size_t len;
-		snprintf(str, str_size, "%.1f %s", d, units[u]);
-		len = strlen(str);
-		if(str[len - strlen(units[u]) - 1U - 1U] == '0')
-		{
-			snprintf(str, str_size, "%.0f %s", d, units[u]);
-		}
+		snprintf(str, str_size, "%.0f.%0*d %s", d, fraction_width, fraction,
+				units[u]);
 	}
 
 	return u > 0U;
+}
+
+/* Picks size suffixes as per configuration.  Returns one of *_units arrays. */
+static const char **
+get_size_suffixes(void)
+{
+	return (cfg.sizefmt.base == 1000) ? si_units :
+	       (cfg.sizefmt.ieci_prefixes ? iec_i_units : iec_units);
+}
+
+/* Breaks size (floating point, not integer) into integer and fractional parts
+ * rounding and truncating them as necessary.  Sets *ifraction and
+ * *fraction_width.  Returns new value for the size (truncated and/or
+ * rounded). */
+static double
+split_size_double(double size, int *ifraction, int *fraction_width)
+{
+	double integer, ten_power, dfraction;
+
+	*fraction_width = (cfg.sizefmt.precision == 0) ? 1 : cfg.sizefmt.precision;
+
+	ten_power = pow(10, *fraction_width + 1);
+	dfraction = modf(size, &integer);
+	*ifraction = DIV_ROUND_UP(ten_power*dfraction, 10);;
+
+	if(*ifraction >= ten_power/10.0)
+	{
+		/* Overflow into integer part during rounding. */
+		integer += 1.0;
+		*ifraction -= ten_power/10.0;
+	}
+	else if(*ifraction == 0 && dfraction != 0.0)
+	{
+		/* Fractional part is too small, "round up" to make it visible. */
+		*ifraction = 1;
+	}
+
+	/* Skip trailing zeroes. */
+	for(; *fraction_width != 0 && *ifraction%10 == 0; --*fraction_width)
+	{
+		*ifraction /= 10;
+	}
+
+	return (*ifraction == 0) ? size : integer;
 }
 
 const char *

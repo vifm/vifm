@@ -966,7 +966,7 @@ write_options(FILE *const fp)
 	fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
 	fprintf(fp, "=history=%d\n", cfg.history_len);
 	fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
-	fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
+	fprintf(fp, "=%siec\n", cfg.sizefmt.ieci_prefixes ? "" : "no");
 	fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 	fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
 	fprintf(fp, "=%slaststatus\n", cfg.display_statusline ? "" : "no");
@@ -981,6 +981,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
 	fprintf(fp, "=shortmess=%s\n",
 			escape_spaces(get_option_value("shortmess", OPT_GLOBAL)));
+	fprintf(fp, "=sizefmt=%s\n",
+			escape_spaces(get_option_value("sizefmt", OPT_GLOBAL)));
 #ifndef _WIN32
 	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif

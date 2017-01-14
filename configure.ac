@@ -366,6 +366,10 @@ dnl Use 64-bit off_t type
 AC_DEFINE([_FILE_OFFSET_BITS], [64],
           [Enable large file processing on 32-bit systems.])
 
+dnl Use math library if present (standard doesn't require it to be separated
+dnl from libc)
+AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"])
+
 dnl Use pthread library
 AC_CHECK_LIB(pthread, pthread_create,
 	[LIBS="$LIBS -lpthread"

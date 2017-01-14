@@ -135,7 +135,6 @@ typedef struct config_t
 	int history_len;
 
 	int auto_execute;
-	int use_iec_prefixes;
 	int wrap_quick_view;
 	char *time_format;
 	/* This one should be set using cfg_set_fuse_home() function. */
@@ -264,6 +263,16 @@ typedef struct config_t
 	int case_override; /* Flag set here means the fact of the override. */
 	int case_ignore;   /* Flag here means case should be either always ignored or
 	                      always respected. */
+
+	/* Settings of size formatting. */
+	struct
+	{
+		int base;          /* Base of units to use (either 1000 or 1024). */
+		int precision;     /* Number of digits after dot to consider (0 for old
+		                      behaviour). */
+		int ieci_prefixes; /* When base is 1024, whether to say KiB instead of K. */
+	}
+	sizefmt;
 }
 config_t;
 
