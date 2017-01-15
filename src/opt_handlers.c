@@ -320,6 +320,12 @@ static const char *fillchars_enum[][2] = {
 	{ "vborder:", "filler of vertical borders" },
 };
 
+/* Possible keys of 'sizefmt' option. */
+static const char *sizefmt_enum[][2] = {
+	{ "units:",     "iec (1024) or si (1000) unit size" },
+	{ "precision:", "maximum width of fraction part" },
+};
+
 /* Possible values of 'sort' option. */
 static const char *sort_types[][2] = {
 	{ "ext",  "by file/directory extension" },
@@ -525,8 +531,8 @@ options[] = {
 	  { .ref.bool_val = &cfg.fast_run },
 	},
 	{ "fillchars", "fcs", "fillers for interface parts",
-		OPT_STRLIST, ARRAY_LEN(fillchars_enum), fillchars_enum, &fillchars_handler,
-		NULL,
+	  OPT_STRLIST, ARRAY_LEN(fillchars_enum), fillchars_enum, &fillchars_handler,
+	  NULL,
 	  { .ref.str_val = &empty },
 	},
 	{ "findprg", "", ":find invocation format",
@@ -616,7 +622,7 @@ options[] = {
 	  { .init = &init_shortmess },
 	},
 	{ "sizefmt", "", "human-friendly size format",
-	  OPT_STRLIST, 0, NULL, &sizefmt_handler, NULL,
+	  OPT_STRLIST, ARRAY_LEN(sizefmt_enum), sizefmt_enum, &sizefmt_handler, NULL,
 	  { .init = &init_sizefmt },
 	},
 #ifndef _WIN32
