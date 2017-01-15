@@ -528,6 +528,7 @@ remove_last_path_component(char path[])
 {
 	char *slash;
 
+	/* Get rid of trailing slashes, if any (in rather inefficient way). */
 	while(ends_with_slash(path))
 	{
 		chosp(path);
@@ -536,12 +537,17 @@ remove_last_path_component(char path[])
 	slash = strrchr(path, '/');
 	if(slash == NULL)
 	{
+		/* At most one item of path is left. */
 		path[0] = '\0';
+		return;
 	}
-	else
+
+	/* Take care to do not turn path in root into no path (should become just
+	 * root). */
+	slash[1] = '\0';
+	if(!is_root_dir(path))
 	{
-		const int offset = is_root_dir(path) ? 1 : 0;
-		slash[offset] = '\0';
+		slash[0] = '\0';
 	}
 }
 
