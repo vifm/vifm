@@ -50,7 +50,7 @@ TEST(make_dirs_does_nothing_for_custom_view)
 
 	for(i = 0; i < lwin.list_rows; ++i)
 	{
-		free_dir_entry(&lwin, &lwin.dir_entry[i]);
+		fentry_free(&lwin, &lwin.dir_entry[i]);
 	}
 	dynarray_free(lwin.dir_entry);
 

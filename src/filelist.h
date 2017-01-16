@@ -262,7 +262,7 @@ dir_entry_t * entry_list_add(FileView *view, dir_entry_t **list, int *list_size,
  * *count to safe values. */
 void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 /* Frees single directory entry. */
-void free_dir_entry(const FileView *view, dir_entry_t *entry);
+void fentry_free(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
 void add_parent_dir(FileView *view);
 /* Changes name of a file entry, performing additional required updates. */

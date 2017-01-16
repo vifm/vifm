@@ -141,13 +141,13 @@ view_teardown(FileView *view)
 
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		free_dir_entry(view, &view->dir_entry[i]);
+		fentry_free(view, &view->dir_entry[i]);
 	}
 	dynarray_free(view->dir_entry);
 
 	for(i = 0; i < view->custom.entry_count; ++i)
 	{
-		free_dir_entry(view, &view->custom.entries[i]);
+		fentry_free(view, &view->custom.entries[i]);
 	}
 	dynarray_free(view->custom.entries);
 

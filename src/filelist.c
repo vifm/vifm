@@ -1661,7 +1661,7 @@ zap_compare_view(FileView *view, FileView *other, zap_filter filter, void *arg)
 			const int separator = find_separator(other, i);
 			if(separator >= 0)
 			{
-				free_dir_entry(view, entry);
+				fentry_free(view, entry);
 				other->dir_entry[separator].temporary = 1;
 
 				if(view->list_pos == i)
@@ -1867,7 +1867,7 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 		for(k = 0; k < nremoved; ++k)
 		{
-			free_dir_entry(view, &entry[k]);
+			fentry_free(view, &entry[k]);
 		}
 
 		if(view->list_pos >= i && view->list_pos < i + nremoved)
@@ -2066,7 +2066,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 	}
 	else
 	{
-		free_dir_entry(view, entry);
+		fentry_free(view, entry);
 	}
 
 	return 0;
@@ -2358,7 +2358,7 @@ free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
 	int i;
 	for(i = 0; i < *count; ++i)
 	{
-		free_dir_entry(view, &(*entries)[i]);
+		fentry_free(view, &(*entries)[i]);
 	}
 
 	dynarray_free(*entries);
@@ -2367,7 +2367,7 @@ free_dir_entries(FileView *view, dir_entry_t **entries, int *count)
 }
 
 void
-free_dir_entry(const FileView *view, dir_entry_t *entry)
+fentry_free(const FileView *view, dir_entry_t *entry)
 {
 	free(entry->name);
 	entry->name = NULL;
@@ -2410,7 +2410,7 @@ entry_list_add(FileView *view, dir_entry_t **list, int *list_size,
 
 	if(fill_dir_entry_by_path(dir_entry, path) != 0)
 	{
-		free_dir_entry(view, dir_entry);
+		fentry_free(view, dir_entry);
 		return NULL;
 	}
 
@@ -2811,7 +2811,7 @@ list_sibling_dirs(FileView *view)
 
 		if(!fentry_is_dir(entry))
 		{
-			free_dir_entry(view, entry);
+			fentry_free(view, entry);
 			--parent_dirs.nentries;
 		}
 	}
@@ -3572,7 +3572,7 @@ init_parent_entry(FileView *view, dir_entry_t *entry, const char path[])
 	/* Load the inode info or leave blank values in entry. */
 	if(os_lstat(path, &s) != 0)
 	{
-		free_dir_entry(view, entry);
+		fentry_free(view, entry);
 		LOG_SERROR_MSG(errno, "Can't lstat() \"%s\"", path);
 		log_cwd();
 		return 1;
