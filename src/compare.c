@@ -55,14 +55,6 @@
 /* Amount of data to hash for coarse comparison. */
 #define PREFIX_SIZE (256*1024)
 
-/* List of entries bundled with its size. */
-typedef struct
-{
-	dir_entry_t *entries; /* List of entries. */
-	int nentries;         /* Number entries in the list. */
-}
-entries_t;
-
 /* Entry in singly-bounded list of files that have matched fingerprints. */
 typedef struct compare_record_t
 {

@@ -207,6 +207,14 @@ typedef struct dir_entry_t
 }
 dir_entry_t;
 
+/* List of entries bundled with its size. */
+typedef struct
+{
+	dir_entry_t *entries; /* List of entries. */
+	int nentries;         /* Number entries in the list. */
+}
+entries_t;
+
 typedef struct
 {
 	WINDOW *win;
