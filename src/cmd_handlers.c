@@ -246,6 +246,8 @@ static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
+static int siblnext_cmd(const cmd_info_t *cmd_info);
+static int siblprev_cmd(const cmd_info_t *cmd_info);
 static int sort_cmd(const cmd_info_t *cmd_info);
 static int source_cmd(const cmd_info_t *cmd_info);
 static int split_cmd(const cmd_info_t *cmd_info);
@@ -698,6 +700,14 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "spawn shell",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &shell_cmd,       .min_args = 0,   .max_args = 0, },
+	{ .name = "siblnext",          .abbr = NULL,    .id = -1,
+	  .descr = "navigate to next sibling directory",
+	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .handler = &siblnext_cmd,    .min_args = 0,   .max_args = 0, },
+	{ .name = "siblprev",          .abbr = NULL,    .id = -1,
+	  .descr = "navigate to previous sibling directory",
+	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .handler = &siblprev_cmd,    .min_args = 0,   .max_args = 0, },
 	{ .name = "sort",              .abbr = "sor",   .id = -1,
 	  .descr = "display sorting dialog",
 	  .flags = HAS_COMMENT,
@@ -3557,6 +3567,20 @@ shell_cmd(const cmd_info_t *cmd_info)
 	load_real_path_env();
 
 	return 0;
+}
+
+/* Navigates to next sibling directory. */
+static int
+siblnext_cmd(const cmd_info_t *cmd_info)
+{
+	return (go_to_sibling_dir(curr_view, 1, cmd_info->emark) != 0);
+}
+
+/* Navigates to previous sibling directory. */
+static int
+siblprev_cmd(const cmd_info_t *cmd_info)
+{
+	return (go_to_sibling_dir(curr_view, 0, cmd_info->emark) != 0);
 }
 
 static int

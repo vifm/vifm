@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* F_OK access() chdir() rmdir() symlink() */
+#include <unistd.h> /* F_OK access() chdir() rmdir() symlink() unlink() */
 
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */

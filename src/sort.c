@@ -70,6 +70,10 @@ static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
 
 /* View which is being sorted. */
 static FileView* view;
+/* Picked sort array of the view. */
+static const char *view_sort;
+/* Picked sort groups setting of the view. */
+static const char *view_sort_groups;
 /* Whether the view displays custom file list. */
 static int custom_view;
 /* Whether it's descending sort. */
@@ -91,6 +95,8 @@ sort_view(FileView *v)
 	}
 
 	view = v;
+	view_sort = v->sort;
+	view_sort_groups = v->sort_groups;
 	custom_view = flist_custom_active(v);
 
 	if(!custom_view || v->custom.type != CV_TREE)
@@ -161,6 +167,23 @@ sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 	}
 }
 
+void
+sort_entries(FileView *v, entries_t entries)
+{
+	if(v->sort_g[0] > SK_LAST)
+	{
+		/* Completely skip sorting if primary key isn't set. */
+		return;
+	}
+
+	view = v;
+	view_sort = v->sort_g;
+	view_sort_groups = v->sort_groups_g;
+	custom_view = flist_custom_active(v);
+
+	sort_sequence(entries.entries, entries.nentries);
+}
+
 /* Sorts sequence of file entries (plain list, not tree). */
 static void
 sort_sequence(dir_entry_t *entries, size_t nentries)
@@ -168,7 +191,7 @@ sort_sequence(dir_entry_t *entries, size_t nentries)
 	int i = SK_COUNT;
 	while(--i >= 0)
 	{
-		const char sorting_key = view->sort[i];
+		const char sorting_key = view_sort[i];
 
 		if(abs(sorting_key) > SK_LAST)
 		{
@@ -184,7 +207,7 @@ sort_sequence(dir_entry_t *entries, size_t nentries)
 		sort_by_key(entries, nentries, sorting_key, NULL);
 	}
 
-	if(!ui_view_sort_list_contains(view->sort, SK_BY_DIR))
+	if(!ui_view_sort_list_contains(view_sort, SK_BY_DIR))
 	{
 		sort_by_key(entries, nentries, SK_BY_DIR, NULL);
 	}
@@ -196,9 +219,10 @@ sort_by_groups(dir_entry_t *entries, size_t nentries)
 {
 	char **groups = NULL;
 	int ngroups = 0;
+	const int optimize = (view_sort_groups != view->sort_groups_g);
 	int i;
 
-	char *const copy = strdup(view->sort_groups);
+	char *const copy = strdup(view_sort_groups);
 	char *group = copy, *state = NULL;
 	while((group = split_and_get(group, ',', &state)) != NULL)
 	{
@@ -206,14 +230,14 @@ sort_by_groups(dir_entry_t *entries, size_t nentries)
 	}
 	free(copy);
 
-	for(i = ngroups - 1; i >= 1; --i)
+	for(i = ngroups - (optimize ? 1 : 0); i >= 1; --i)
 	{
 		regex_t regex;
 		(void)regcomp(&regex, groups[i], REG_EXTENDED | REG_ICASE);
 		sort_by_key(entries, nentries, SK_BY_GROUPS, &regex);
 		regfree(&regex);
 	}
-	if(ngroups != 0)
+	if(optimize && ngroups != 0)
 	{
 		sort_by_key(entries, nentries, SK_BY_GROUPS, &view->primary_group);
 	}

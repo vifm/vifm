@@ -143,6 +143,9 @@ TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
 		const char path[], int *updir, char buf[], size_t buf_size);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
+static entries_t list_sibling_dirs(FileView *view);
+static dir_entry_t * pick_sibling(FileView *view, entries_t parent_dirs,
+		int next, int wrap, int *wrapped);
 static int iter_entries(FileView *view, dir_entry_t **entry,
 		entry_predicate pred);
 static void clear_marking(FileView *view);
@@ -2737,6 +2740,137 @@ find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 	free(free_this);
 
 	snprintf(buf, buf_size, "%s/%s", base_dir, dst);
+}
+
+int
+go_to_sibling_dir(FileView *view, int next, int wrap)
+{
+	entries_t parent_dirs;
+	dir_entry_t *entry;
+	int save_msg = 0;
+
+	if(is_root_dir(flist_get_dir(view)) || flist_custom_active(view))
+	{
+		return 0;
+	}
+
+	parent_dirs = list_sibling_dirs(view);
+	if(parent_dirs.nentries < 0)
+	{
+		show_error_msg("Error", "Can't list parent directory");
+		return 0;
+	}
+
+	/* Sort list of entries. */
+	sort_entries(view, parent_dirs);
+
+	entry = pick_sibling(view, parent_dirs, next, wrap, &save_msg);
+	if(entry != NULL)
+	{
+		char full_path[PATH_MAX];
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		if(change_directory(view, full_path) >= 0)
+		{
+			load_dir_list(view, 0);
+		}
+	}
+
+	free_dir_entries(view, &parent_dirs.entries, &parent_dirs.nentries);
+	return save_msg;
+}
+
+/* Lists siblings of current directory of the view (includes current directory
+ * as well).  Returns the list, which is of length -1 on error. */
+static entries_t
+list_sibling_dirs(FileView *view)
+{
+	entries_t parent_dirs = {};
+	char *path;
+	int len, i;
+	char **list;
+
+	/* Make list of entries from parent directories which are
+	 * either directories or symbolic links to directories. */
+	path = strdup(flist_get_dir(view));
+	remove_last_path_component(path);
+
+	list = list_all_files(path, &len);
+	if(len < 0)
+	{
+		free(path);
+		parent_dirs.nentries = -1;
+		return parent_dirs;
+	}
+
+	for(i = 0; i < len; ++i)
+	{
+		char *const full_path = format_str("%s/%s", path, list[i]);
+		dir_entry_t *entry = entry_list_add(view, &parent_dirs.entries,
+				&parent_dirs.nentries, full_path);
+		free(full_path);
+
+		if(!fentry_is_dir(entry))
+		{
+			free_dir_entry(view, entry);
+			--parent_dirs.nentries;
+		}
+	}
+	free(path);
+	free_string_array(list, len);
+
+	return parent_dirs;
+}
+
+/* Picks next or previous sibling from the list with optional wrapping.
+ * *wrapped is set to non-zero if wrapping happened.  Returns pointer to picked
+ * sibling or NULL on error or if can't pick. */
+static dir_entry_t *
+pick_sibling(FileView *view, entries_t parent_dirs, int next, int wrap,
+		int *wrapped)
+{
+	dir_entry_t *entry;
+	int i;
+
+	/* Find parent entry. */
+	entry = entry_from_path(view, parent_dirs.entries, parent_dirs.nentries,
+			flist_get_dir(view));
+	if(entry == NULL)
+	{
+		show_error_msg("Error", "Can't find current directory position");
+		return NULL;
+	}
+
+	*wrapped = 0;
+
+	i = entry - parent_dirs.entries;
+	if(next && i < parent_dirs.nentries - 1)
+	{
+		++entry;
+	}
+	else if(!next && i > 0)
+	{
+		--entry;
+	}
+	else if(wrap)
+	{
+		if(next)
+		{
+			entry = &parent_dirs.entries[0];
+			status_bar_error("Hit BOTTOM, continuing at TOP");
+		}
+		else
+		{
+			entry = &parent_dirs.entries[parent_dirs.nentries - 1];
+			status_bar_error("Hit TOP, continuing at BOTTOM");
+		}
+		*wrapped = 1;
+	}
+	else
+	{
+		entry = NULL;
+	}
+
+	return entry;
 }
 
 int
