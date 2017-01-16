@@ -26,7 +26,6 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 
-#include "asserts.h"
 #include "utils.h"
 
 #define ASSERT_COMPLETION(initial, expected) \
@@ -35,6 +34,15 @@
 		prepare_for_line_completion(initial); \
 		assert_success(line_completion(&stats)); \
 		assert_wstring_equal(expected, stats.line); \
+	} \
+	while (0)
+
+#define ASSERT_NEXT_MATCH(str) \
+	do \
+	{ \
+		char *const buf = vle_compl_next(); \
+		assert_string_equal((str), buf); \
+		free(buf); \
 	} \
 	while (0)
 
@@ -101,6 +109,31 @@ TEARDOWN()
 static void
 dummy_handler(OPT_OP op, optval_t val)
 {
+}
+
+TEST(vim_like_completion)
+{
+	vle_compl_reset();
+	assert_int_equal(0, complete_cmd("e", NULL));
+	ASSERT_NEXT_MATCH("echo");
+	ASSERT_NEXT_MATCH("edit");
+	ASSERT_NEXT_MATCH("else");
+	ASSERT_NEXT_MATCH("elseif");
+	ASSERT_NEXT_MATCH("empty");
+	ASSERT_NEXT_MATCH("endif");
+	ASSERT_NEXT_MATCH("execute");
+	ASSERT_NEXT_MATCH("exit");
+	ASSERT_NEXT_MATCH("e");
+
+	vle_compl_reset();
+	assert_int_equal(0, complete_cmd("vm", NULL));
+	ASSERT_NEXT_MATCH("vmap");
+	ASSERT_NEXT_MATCH("vmap");
+
+	vle_compl_reset();
+	assert_int_equal(0, complete_cmd("j", NULL));
+	ASSERT_NEXT_MATCH("jobs");
+	ASSERT_NEXT_MATCH("jobs");
 }
 
 TEST(leave_spaces_at_begin)
