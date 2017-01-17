@@ -78,6 +78,10 @@
 	Added 'sizefmt' option that configures formatting of human-friendly size.
 	Thanks to sudo-nice.
 
+	Added :siblnext and :siblprev commands.  They change directory to next or
+	previous sibling directories of current path (in global sorting order of
+	current pane).  Thanks to sudo-nice.
+
 	Changed size formatting to round from zero (matches behaviour of e.g.
 	`ls`).
 

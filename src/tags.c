@@ -315,6 +315,8 @@ const char *tags[] = {
 	"vifm-:setlocal",
 	"vifm-:sh",
 	"vifm-:shell",
+	"vifm-:siblnext",
+	"vifm-:siblprev",
 	"vifm-:so",
 	"vifm-:sor",
 	"vifm-:sort",

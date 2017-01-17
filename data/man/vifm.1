@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 14, 2017" "vifm 0.8.2"
+.TH VIFM 1 "January 17, 2017" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2494,6 +2494,29 @@ same as :set, but changes/prints only local values of local options.
 start a shell in current directory.  "!" suppresses spawning dedicated
 window of terminal multiplexer for a shell.  To make vifm adaptive to
 environment it uses $SHELL if it's defined, otherwise 'shell' value is used.
+
+.TP
+.BI "                                         :siblnext"
+.TP
+.BI :siblnext[!]
+
+change directory to next sibling directory of current path using value of
+global sort option of current pane.  "!" enables wrapping.
+
+For example, say, you're at /boot and root listing starts like this:
+
+    bin/
+    boot/
+    dev/
+    ...
+
+Issuing :siblnext will navigate to /dev.
+
+.TP
+.BI "                                         :siblprev"
+.TP
+.BI :siblprev[!]
+same as :siblnext, but in the opposite direction.
 .TP
 .BI "                                         :sort"
 .TP
