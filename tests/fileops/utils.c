@@ -37,7 +37,7 @@ view_teardown(FileView *view)
 
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		free_dir_entry(view, &view->dir_entry[i]);
+		fentry_free(view, &view->dir_entry[i]);
 	}
 	dynarray_free(view->dir_entry);
 

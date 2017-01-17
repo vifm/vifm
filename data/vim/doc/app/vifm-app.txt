@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 14
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 17
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2124,6 +2124,20 @@ yet supported) and might be changed in future releases, or get an alias.
     window of terminal multiplexer for a shell.  To make vifm adaptive to
     environment it uses $SHELL if it's defined, otherwise |vifm-'shell'|
     value is used.
+
+:siblnext[!]                                   *vifm-:siblnext*
+    change directory to next sibling directory of current path using value of
+    global sort option of current pane.  "!" enables wrapping.
+
+    For example, say, you're at `/boot` and root listing starts like this: >
+     bin/
+     boot/
+     dev/
+     ...
+<    Issuing :siblnext will navigate to `/dev`.
+
+:siblprev[!]                                   *vifm-:siblprev*
+    same as :siblnext, but in the opposite direction.
 
 :sor[t]                                        *vifm-:sort* *vifm-:sor*
     display dialog with different sorting methods, where one can select

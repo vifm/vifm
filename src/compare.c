@@ -55,14 +55,6 @@
 /* Amount of data to hash for coarse comparison. */
 #define PREFIX_SIZE (256*1024)
 
-/* List of entries bundled with its size. */
-typedef struct
-{
-	dir_entry_t *entries; /* List of entries. */
-	int nentries;         /* Number entries in the list. */
-}
-entries_t;
-
 /* Entry in singly-bounded list of files that have matched fingerprints. */
 typedef struct compare_record_t
 {
@@ -202,11 +194,11 @@ make_unique_lists(entries_t curr, entries_t other)
 
 		while(j < curr.nentries && curr.entries[j].id == id)
 		{
-			free_dir_entry(curr_view, &curr.entries[j++]);
+			fentry_free(curr_view, &curr.entries[j++]);
 		}
 		while(i < other.nentries && other.entries[i].id == id)
 		{
-			free_dir_entry(other_view, &other.entries[i++]);
+			fentry_free(other_view, &other.entries[i++]);
 		}
 		--i;
 	}
@@ -483,7 +475,7 @@ put_or_free(FileView *view, dir_entry_t *entry, int id, int take)
 	}
 	else
 	{
-		free_dir_entry(view, entry);
+		fentry_free(view, entry);
 	}
 }
 
@@ -523,7 +515,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 
 		if(skip_empty && entry->size == 0)
 		{
-			free_dir_entry(view, entry);
+			fentry_free(view, entry);
 			--r.nentries;
 			continue;
 		}
@@ -534,7 +526,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		if(is_null_or_empty(fingerprint))
 		{
 			free(fingerprint);
-			free_dir_entry(view, entry);
+			fentry_free(view, entry);
 			--r.nentries;
 			continue;
 		}

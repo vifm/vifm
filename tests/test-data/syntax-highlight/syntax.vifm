@@ -354,6 +354,8 @@ cquit
 compare
 cope
 copen
+siblnext
+siblprev
 
 " "hi" should be highlighted as :command and CurrLine/CmpMismatch as highlight
 " groups

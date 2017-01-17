@@ -14,9 +14,17 @@ TEST(empty_path)
 
 TEST(root_path)
 {
+	/* XXX: is this behaviour we want for root? */
 	char path[PATH_MAX] = "/";
 	remove_last_path_component(path);
 	assert_string_equal("", path);
+}
+
+TEST(dir_in_root)
+{
+	char path[PATH_MAX] = "/bin";
+	remove_last_path_component(path);
+	assert_string_equal("/", path);
 }
 
 TEST(path_does_not_end_with_slash)

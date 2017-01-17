@@ -66,7 +66,7 @@ TEST(file_group_is_changed, IF(has_more_than_one_group))
 
 	for(i = 0; i < lwin.list_rows; ++i)
 	{
-		free_dir_entry(&lwin, &lwin.dir_entry[i]);
+		fentry_free(&lwin, &lwin.dir_entry[i]);
 	}
 	dynarray_free(lwin.dir_entry);
 

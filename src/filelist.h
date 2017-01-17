@@ -90,6 +90,10 @@ void leave_invalid_dir(FileView *view);
 /* Checks if the view is the directory specified by the path.  Returns non-zero
  * if so, otherwise zero is returned. */
 int pane_in_dir(const FileView *view, const char path[]);
+/* Navigates to next/previous sibling directory (does nothing for root or custom
+ * view) with optional wrapping.  Returns non-zero if statusbar message should
+ * be preserved. */
+int go_to_sibling_dir(FileView *view, int next, int wrap);
 
 /* Typed (with trailing slash for directories) file name function. */
 
@@ -258,7 +262,7 @@ dir_entry_t * entry_list_add(FileView *view, dir_entry_t **list, int *list_size,
  * *count to safe values. */
 void free_dir_entries(FileView *view, dir_entry_t **entries, int *count);
 /* Frees single directory entry. */
-void free_dir_entry(const FileView *view, dir_entry_t *entry);
+void fentry_free(const FileView *view, dir_entry_t *entry);
 /* Adds parent directory entry (..) to filelist. */
 void add_parent_dir(FileView *view);
 /* Changes name of a file entry, performing additional required updates. */
@@ -270,8 +274,8 @@ int fentry_is_fake(const dir_entry_t *entry);
  * file operations or even just selected.  Currently this checks for entry not
  * being ".." nor fake. */
 int fentry_is_valid(const dir_entry_t *entry);
-/* Checks whether entry corresponds to a directory.  Returns non-zero if so,
- * otherwise zero is returned. */
+/* Checks whether entry corresponds to a directory (including symbolic links to
+ * directories).  Returns non-zero if so, otherwise zero is returned. */
 int fentry_is_dir(const dir_entry_t *entry);
 /* Loads directory tree specified by its path into the view.  Considers various
  * filters.  Returns zero on success, otherwise non-zero is returned. */

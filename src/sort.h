@@ -26,6 +26,9 @@
 /* Sorts entries of the view according to its sorting configuration. */
 void sort_view(FileView *view);
 
+/* Sorts specified entries using global settings of the view. */
+void sort_entries(FileView *view, entries_t entries);
+
 /* Maps primary sort key to second column type.  Returns secondary key that
  * corresponds to the primary one. */
 SortingKey get_secondary_key(SortingKey primary_key);
