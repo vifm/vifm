@@ -40,7 +40,7 @@ esac
 dnl code relies on `char` being `signed char`
 CFLAGS="$CFLAGS -fsigned-char"
 
-dnl pass some CFLAGS to tests
+dnl pass some CFLAGS to tests (TESTS_CFLAGS is also extended below)
 TESTS_CFLAGS="$CFLAGS"
 AC_SUBST([TESTS_CFLAGS])
 
@@ -705,6 +705,7 @@ fi
 
 if test "$developer" = "yes"; then
 	CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
+	TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
 fi
 
 if test "$coverage" = "yes"; then
