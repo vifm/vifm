@@ -65,7 +65,7 @@ TEST(length_is_less_or_equal_to_string_length, IF(locale_works))
 	const char *str = "01 R\366yksopp - You Know I Have To Go (\326z"
 	                  "g\374r \326zkan 5 AM Edit).mp3";
 	const size_t len = strlen(str);
-	int i;
+	size_t i;
 
 	for(i = 0; i < len; ++i)
 	{
