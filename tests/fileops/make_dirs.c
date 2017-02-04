@@ -176,7 +176,7 @@ TEST(make_dirs_considers_tree_structure)
 TEST(check_by_absolute_path_is_performed_beforehand)
 {
 	char name_a[] = "a";
-	char name_b[PATH_MAX];
+	char name_b[PATH_MAX + 8];
 	char *names[] = { name_a, name_b };
 
 	snprintf(name_b, sizeof(name_b), "%s/b", lwin.curr_dir);

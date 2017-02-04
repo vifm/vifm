@@ -88,7 +88,7 @@ TEARDOWN()
 TEST(full_path_regexps_are_handled_for_selection)
 {
 	matchers_t *ms;
-	char pattern[PATH_MAX];
+	char pattern[PATH_MAX + 16];
 	char *error;
 
 	/* Mind that there is no chdir(), this additionally checks that origins are
@@ -108,7 +108,7 @@ TEST(full_path_regexps_are_handled_for_selection)
 TEST(full_path_regexps_are_handled_for_selection2)
 {
 	matchers_t *ms;
-	char pattern[PATH_MAX];
+	char pattern[PATH_MAX + 16];
 	char *error;
 
 	/* Mind that there is no chdir(), this additionally checks that origins are
