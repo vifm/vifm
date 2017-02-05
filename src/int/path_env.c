@@ -85,7 +85,7 @@ path_env_was_changed(int force)
 static void
 append_scripts_dirs(void)
 {
-	char scripts_dir[PATH_MAX];
+	char scripts_dir[PATH_MAX + 16];
 	snprintf(scripts_dir, sizeof(scripts_dir), "%s/" SCRIPTS_DIR, cfg.config_dir);
 	add_dirs_to_path(scripts_dir);
 }

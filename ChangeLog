@@ -1,5 +1,7 @@
 0.8.2 to current
 
+	Removed -Werror in tests from non-developer builds.
+
 	Added tree view.  Thanks to filterfalse and Kornel.
 
 	Added :tree command that converts current view into a tree.

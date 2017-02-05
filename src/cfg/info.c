@@ -112,7 +112,7 @@ read_info_file(int reread)
 	/* TODO: refactor this function read_info_file() */
 
 	FILE *fp;
-	char info_file[PATH_MAX];
+	char info_file[PATH_MAX + 16];
 	char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
@@ -471,8 +471,8 @@ set_view_property(FileView *view, char type, const char value[])
 void
 write_info_file(void)
 {
-	char info_file[PATH_MAX];
-	char tmp_file[PATH_MAX];
+	char info_file[PATH_MAX + 16];
+	char tmp_file[PATH_MAX + 16];
 
 	(void)snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 	(void)snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());

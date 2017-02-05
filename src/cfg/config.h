@@ -114,10 +114,11 @@ file_dec_t;
 
 typedef struct config_t
 {
-	char home_dir[PATH_MAX];   /* Ends with a slash. */
-	char config_dir[PATH_MAX]; /* Where local configuration files are stored. */
-	char colors_dir[PATH_MAX]; /* Where local color files are stored. */
-	char data_dir[PATH_MAX];   /* Where to store data files. */
+	char home_dir[PATH_MAX];       /* Ends with a slash. */
+	char config_dir[PATH_MAX];     /* Where local configuration files are
+	                                  stored. */
+	char colors_dir[PATH_MAX + 8]; /* Where local color files are stored. */
+	char data_dir[PATH_MAX];       /* Where to store data files. */
 
 	/* This one should be set using set_trash_dir() function. */
 	char trash_dir[PATH_MAX];

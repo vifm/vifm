@@ -443,8 +443,8 @@ cs_rename_all(void)
 
 	while((d = os_readdir(dir)) != NULL)
 	{
-		char full_old_path[PATH_MAX];
-		char full_new_path[PATH_MAX];
+		char full_old_path[PATH_MAX + 16 + NAME_MAX];
+		char full_new_path[PATH_MAX + 16 + NAME_MAX];
 		snprintf(full_old_path, sizeof(full_old_path), "%s/%s", cfg.colors_dir,
 				d->d_name);
 		snprintf(full_new_path, sizeof(full_new_path), "%s/%s.vifm", cfg.colors_dir,
@@ -525,7 +525,7 @@ void
 cs_write(void)
 {
 	FILE *fp;
-	char def_cs_path[PATH_MAX];
+	char def_cs_path[PATH_MAX + 32];
 	size_t i;
 
 	if(create_path(cfg.colors_dir, S_IRWXU) != 0)

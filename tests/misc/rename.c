@@ -2,6 +2,8 @@
 
 #include <unistd.h> /* chdir() */
 
+#include <stddef.h> /* size_t */
+
 #include "../../src/ui/ui.h"
 #include "../../src/utils/macros.h"
 #include "../../src/fops_common.h"
@@ -77,7 +79,7 @@ TEST(single_file_rename)
 
 TEST(rename_list_checks)
 {
-	int i;
+	size_t i;
 	char *list[] = { "a", "aa", "aaa" };
 	char *files[] = { "", "aa", "bbb" };
 	ARRAY_GUARD(files, ARRAY_LEN(list));
