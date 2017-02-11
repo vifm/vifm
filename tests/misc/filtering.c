@@ -8,6 +8,7 @@
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/filter.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -99,6 +100,9 @@ SETUP()
 	rwin.invert = cfg.filter_inverted_by_default;
 
 	rwin.column_count = 1;
+
+	update_string(&lwin.prev_manual_filter, "");
+	update_string(&lwin.prev_auto_filter, "");
 }
 
 TEARDOWN()
@@ -107,6 +111,9 @@ TEARDOWN()
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
+
+	update_string(&lwin.prev_manual_filter, NULL);
+	update_string(&lwin.prev_auto_filter, NULL);
 }
 
 TEST(filtering)
@@ -285,6 +292,65 @@ TEST(cursor_is_moved_to_nearest_neighbour)
 	local_filter_update_view(&lwin, 0);
 	assert_int_equal(0, lwin.list_pos);
 	local_filter_cancel(&lwin);
+}
+
+TEST(removed_filename_filter_is_stored)
+{
+	assert_success(filter_set(&lwin.auto_filter, "a"));
+	assert_success(filter_set(&lwin.manual_filter, "b"));
+
+	remove_filename_filter(&lwin);
+
+	assert_string_equal("a", lwin.prev_auto_filter);
+	assert_string_equal("b", lwin.prev_manual_filter);
+}
+
+TEST(filename_filter_can_removed_at_most_once)
+{
+	assert_success(filter_set(&lwin.auto_filter, "a"));
+	assert_success(filter_set(&lwin.manual_filter, "b"));
+
+	remove_filename_filter(&lwin);
+	remove_filename_filter(&lwin);
+
+	assert_string_equal("a", lwin.prev_auto_filter);
+	assert_string_equal("b", lwin.prev_manual_filter);
+}
+
+TEST(filename_filter_can_be_cleared)
+{
+	assert_success(filter_set(&lwin.auto_filter, "a"));
+	assert_success(filter_set(&lwin.manual_filter, "b"));
+
+	filename_filter_clear(&lwin);
+
+	assert_true(filter_is_empty(&lwin.auto_filter));
+	assert_true(filter_is_empty(&lwin.manual_filter));
+
+	assert_true(filename_filter_is_empty(&lwin));
+}
+
+TEST(filename_filter_can_be_restored)
+{
+	assert_success(filter_set(&lwin.auto_filter, "a"));
+	assert_success(filter_set(&lwin.manual_filter, "b"));
+
+	remove_filename_filter(&lwin);
+	restore_filename_filter(&lwin);
+
+	assert_string_equal("a", lwin.auto_filter.raw);
+	assert_string_equal("b", lwin.manual_filter.raw);
+}
+
+TEST(filename_filter_is_not_restored_from_empty_state)
+{
+	assert_success(filter_set(&lwin.auto_filter, "a"));
+	assert_success(filter_set(&lwin.manual_filter, "b"));
+
+	restore_filename_filter(&lwin);
+
+	assert_string_equal("a", lwin.auto_filter.raw);
+	assert_string_equal("b", lwin.manual_filter.raw);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
