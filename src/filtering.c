@@ -248,6 +248,11 @@ filename_filter_clear(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
+	if(view->prev_manual_filter[0] == '\0' && view->prev_auto_filter[0] == '\0')
+	{
+		return;
+	}
+
 	(void)filter_set(&view->manual_filter, view->prev_manual_filter);
 	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;

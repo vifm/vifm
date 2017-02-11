@@ -178,6 +178,9 @@
 
 	Better handling of setting 'fillchars' to incorrect or excessive value.
 
+	Prevent clearing filters on zM if there were no zO preceding it.  Thanks
+	to sudo-nice.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 

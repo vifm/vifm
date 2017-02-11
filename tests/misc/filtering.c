@@ -342,5 +342,16 @@ TEST(filename_filter_can_be_restored)
 	assert_string_equal("b", lwin.manual_filter.raw);
 }
 
+TEST(filename_filter_is_not_restored_from_empty_state)
+{
+	assert_success(filter_set(&lwin.auto_filter, "a"));
+	assert_success(filter_set(&lwin.manual_filter, "b"));
+
+	restore_filename_filter(&lwin);
+
+	assert_string_equal("a", lwin.auto_filter.raw);
+	assert_string_equal("b", lwin.manual_filter.raw);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
