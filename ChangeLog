@@ -319,6 +319,8 @@
 	Fixed tilde expansion and expansion of environment variables when
 	checking command existence.  Thanks to sudo-nice.
 
+	Fixed displaying separator in `:*map prefix` menus.  Thanks to nicodebo.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
