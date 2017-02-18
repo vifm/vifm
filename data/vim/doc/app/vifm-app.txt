@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Jan 17
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Feb 18
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -330,9 +330,8 @@ alone and they don't wrap when they are used as selectors.
 Filters~
                                                *vifm-filters*
 There are three basic file filters:
- - dot files filter (excluding "." and ".." special directories, which
-   appearance is controlled by the |vifm-'dotdirs'| option), see
-   |vifm-'dotfiles'|
+ - dot files filter (excluding "." and ".." special directories, whose
+   appearance is controlled by the |vifm-'dotdirs'| option)
  - manual filter for file names
  - automatic filter for file names
  - local filter for file names (see |vifm-=|)
