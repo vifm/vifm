@@ -2,10 +2,17 @@
 
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
+#include <string.h> /* memset() */
+
+#include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_common.h"
 #include "../../src/fops_rename.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -112,6 +119,48 @@ broken_link_name(const char prompt[], const char filename[], fo_prompt_cb cb,
 		fo_complete_cmd_func complete, int allow_ee)
 {
 	cb("broken-link");
+}
+
+TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
+{
+	char long_name[NAME_MAX + 1];
+	char path[PATH_MAX + 1];
+
+	char *saved_cwd = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
+
+	update_string(&cfg.shell, "/bin/sh");
+	stats_update_shell_type(cfg.shell);
+
+	curr_stats.exec_env_type = EET_LINUX_NATIVE;
+	update_string(&cfg.vi_command, "sed -i 'y/1/2/' < ");
+
+	memset(long_name, '1', sizeof(long_name) - 1U);
+	long_name[sizeof(long_name) - 1U] = '\0';
+	snprintf(path, sizeof(path), "%s/%s", SANDBOX_PATH, long_name);
+
+	create_empty_file(path);
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	create_empty_file("-f");
+
+	(void)fops_rename(&lwin, NULL, 0, 0);
+
+	memset(long_name, '2', sizeof(long_name) - 1U);
+	long_name[sizeof(long_name) - 1U] = '\0';
+	snprintf(path, sizeof(path), "%s/%s", SANDBOX_PATH, long_name);
+	assert_success(unlink(path));
+
+	assert_success(unlink("-f"));
+
+	update_string(&cfg.vi_command, NULL);
+
+	update_string(&cfg.shell, NULL);
+	stats_update_shell_type("/bin/sh");
+
+	restore_cwd(saved_cwd);
 }
 
 /* No tests for custom/tree view, because control doesn't reach necessary checks

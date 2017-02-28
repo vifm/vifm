@@ -321,6 +321,9 @@
 
 	Fixed displaying separator in `:*map prefix` menus.  Thanks to nicodebo.
 
+	Fixed truncation of file names of length NAME_MAX in some cases.  Thanks
+	to aleksejrs.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.

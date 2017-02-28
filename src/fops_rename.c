@@ -188,7 +188,7 @@ fops_rename(FileView *view, char *list[], int nlines, int recursive)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
-		char path[PATH_MAX];
+		char path[PATH_MAX + 1];
 		get_short_path_of(view, entry, 0, 0, sizeof(path), path);
 
 		if(recursive)
