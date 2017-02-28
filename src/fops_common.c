@@ -737,7 +737,7 @@ fops_check_dir_path(const FileView *view, const char path[], char buf[],
 }
 
 char **
-fops_edit_list(size_t count, char **orig, int *nlines, int ignore_change)
+fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
 {
 	char rename_file[PATH_MAX];
 	char **list = NULL;
@@ -770,7 +770,7 @@ fops_edit_list(size_t count, char **orig, int *nlines, int ignore_change)
 					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
 		}
 
-		if(!ignore_change)
+		if(!load_always)
 		{
 			size_t i = count - 1U;
 			if((size_t)*nlines == count)

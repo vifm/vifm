@@ -148,10 +148,10 @@ int fops_check_dir_path(const FileView *view, const char path[], char buf[],
 		size_t buf_len);
 
 /* Prompts user with a file containing lines from orig array of length count and
- * returns modified list of strings of length *nlines or NULL on error.  The
- * ignore_change parameter makes function think that file is always changed. */
-char ** fops_edit_list(size_t count, char **orig, int *nlines,
-		int ignore_change);
+ * returns modified list of strings of length *nlines or NULL on error or
+ * unchanged list unless load_always is non-zero. */
+char ** fops_edit_list(size_t count, char *orig[], int *nlines,
+		int load_always);
 
 /* Finishes initialization of ops for background processes. */
 void fops_bg_ops_init(ops_t *ops, bg_op_t *bg_op);
