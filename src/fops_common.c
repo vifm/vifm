@@ -743,6 +743,8 @@ fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
 	char **list = NULL;
 	mode_t saved_umask;
 
+	*nlines = 0;
+
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
 	/* Allow temporary file to be only readable and writable by current user. */
