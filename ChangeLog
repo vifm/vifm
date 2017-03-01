@@ -324,6 +324,9 @@
 	Fixed truncation of file names of length NAME_MAX in some cases.  Thanks
 	to aleksejrs.
 
+	Fixed crash due to assertion on answering y/n/Enter/Ctrl-C in prompt
+	dialog that doesn't provide such options.  Thanks to aleksejrs.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
