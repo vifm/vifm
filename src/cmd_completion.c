@@ -596,7 +596,7 @@ complete_progs(const char *str, assoc_records_t records)
 	for(i = 0; i < records.count; i++)
 	{
 		const assoc_record_t *const assoc = &records.list[i];
-		char cmd[NAME_MAX];
+		char cmd[NAME_MAX + 1];
 
 		(void)extract_cmd_name(assoc->command, 1, sizeof(cmd), cmd);
 
@@ -788,7 +788,7 @@ fast_run_complete(const char cmd[])
 {
 	char *result = NULL;
 	const char *args;
-	char command[NAME_MAX];
+	char command[NAME_MAX + 1];
 	char *completed;
 
 	args = extract_cmd_name(cmd, 0, sizeof(command), command);

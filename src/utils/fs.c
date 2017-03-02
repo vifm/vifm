@@ -917,7 +917,7 @@ readlink(const char *path, char *buf, size_t len)
 int
 is_on_fat_volume(const char *path)
 {
-	char buf[NAME_MAX];
+	char buf[NAME_MAX + 1];
 	char fs[16];
 	if(is_unc_path(path))
 	{

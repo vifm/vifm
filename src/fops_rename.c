@@ -67,7 +67,7 @@ static const char * substitute_regexp(const char src[], const char sub[],
 		const regmatch_t matches[], int *off);
 
 /* Temporary storage for extension of file being renamed in name-only mode. */
-static char rename_file_ext[NAME_MAX];
+static char rename_file_ext[NAME_MAX + 1];
 
 void
 fops_rename_current(FileView *view, int name_only)
@@ -535,7 +535,7 @@ fops_incdec(FileView *view, int k)
 TSTATIC const char *
 incdec_name(const char fname[], int k)
 {
-	static char result[NAME_MAX];
+	static char result[NAME_MAX + 1];
 	char format[16];
 	char *b, *e;
 	int i, n;
@@ -607,7 +607,7 @@ fops_case(FileView *view, int to_upper)
 	while(iter_marked_entries(view, &entry))
 	{
 		const char *const old_fname = entry->name;
-		char new_fname[NAME_MAX];
+		char new_fname[NAME_MAX + 1];
 
 		/* Ignore too small buffer errors by not caring about part that didn't
 		 * fit. */
@@ -816,7 +816,7 @@ fops_tr(FileView *view, const char from[], const char to[])
 static const char *
 substitute_tr(const char name[], const char pattern[], const char sub[])
 {
-	static char buf[NAME_MAX];
+	static char buf[NAME_MAX + 1];
 	char *p = buf;
 	while(*name != '\0')
 	{
@@ -953,7 +953,7 @@ static const char *
 gsubstitute_regexp(regex_t *re, const char src[], const char sub[],
 		regmatch_t matches[])
 {
-	static char buf[NAME_MAX];
+	static char buf[NAME_MAX + 1];
 	int off = 0;
 
 	copy_str(buf, sizeof(buf), src);
@@ -983,12 +983,14 @@ static const char *
 substitute_regexp(const char src[], const char sub[],
 		const regmatch_t matches[], int *off)
 {
-	static char buf[NAME_MAX];
+	static char buf[NAME_MAX + 1];
 	char *dst = buf;
 	int i;
 
-	for(i = 0; i < matches[0].rm_so; i++)
+	for(i = 0; i < matches[0].rm_so; ++i)
+	{
 		*dst++ = src[i];
+	}
 
 	while(*sub != '\0')
 	{

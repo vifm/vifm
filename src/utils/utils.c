@@ -176,7 +176,7 @@ expand_envvars(const char str[], int escape_vals)
 	{
 		if(!prev_slash && *str == '$' && isalpha(str[1]))
 		{
-			char var_name[NAME_MAX];
+			char var_name[NAME_MAX + 1];
 			const char *p = str + 1;
 			char *q = var_name;
 			const char *var_value;

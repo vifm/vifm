@@ -256,7 +256,7 @@ handle_process(const char cmd[], HANDLE proc, int *got_exit_code)
 static int
 should_wait_for_program(const char cmd[])
 {
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 	char path[PATH_MAX];
 
 	(void)extract_cmd_name(cmd, 0, sizeof(name), name);
@@ -351,7 +351,7 @@ int
 is_win_executable(const char name[])
 {
 	const char *p;
-	char name_buf[NAME_MAX];
+	char name_buf[NAME_MAX + 1];
 	char ext_buf[16];
 
 	snprintf(name_buf, sizeof(name_buf), "%s", name);
@@ -468,7 +468,7 @@ int
 executable_exists(const char path[])
 {
 	const char *p;
-	char path_buf[NAME_MAX];
+	char path_buf[NAME_MAX + 1];
 	size_t pos;
 
 	if(strchr(after_last(path, '/'), '.') != NULL)
@@ -518,7 +518,7 @@ get_exec_env_type(void)
 ShellType
 get_shell_type(const char shell_cmd[])
 {
-	char shell[NAME_MAX];
+	char shell[NAME_MAX + 1];
 	const char *shell_name;
 
 	(void)extract_cmd_name(shell_cmd, 0, sizeof(shell), shell);

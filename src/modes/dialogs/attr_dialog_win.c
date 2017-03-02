@@ -227,7 +227,7 @@ get_attrs(void)
 static const char *
 get_title(void)
 {
-	static char title[NAME_MAX];
+	static char title[NAME_MAX + 1];
 
 	const int first_file_index = get_first_file_index();
 

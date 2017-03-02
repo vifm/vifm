@@ -1047,7 +1047,7 @@ eval_opt(const char **in)
 	const opt_t *option;
 	var_val_t var_val;
 
-	char name[OPTION_NAME_MAX];
+	char name[OPTION_NAME_MAX + 1];
 
 	if((last_token.c == 'l' || last_token.c == 'g') && **in == ':')
 	{

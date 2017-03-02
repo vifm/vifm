@@ -393,7 +393,7 @@ open_selected_file(const char path[], int line_num)
 static void
 navigate_to_selected_file(FileView *view, const char path[])
 {
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 	char *dir = strdup(path);
 	char *const last_slash = find_slashr(dir);
 

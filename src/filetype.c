@@ -128,7 +128,7 @@ find_existing_cmd_record(const assoc_records_t *records)
 	int i;
 	for(i = 0; i < records->count; ++i)
 	{
-		char cmd_name[NAME_MAX];
+		char cmd_name[NAME_MAX + 1];
 		(void)extract_cmd_name(records->list[i].command, 0, sizeof(cmd_name),
 				cmd_name);
 

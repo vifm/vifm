@@ -94,21 +94,21 @@ PromptState;
 /* Holds state of the command-line editing mode. */
 typedef struct
 {
-	wchar_t *line;            /* the line reading */
-	wchar_t *initial_line;    /* initial state of the line */
-	int index;                /* index of the current character in cmdline */
-	int curs_pos;             /* position of the cursor in status bar*/
-	int len;                  /* length of the string */
-	int cmd_pos;              /* position in the history */
-	wchar_t prompt[NAME_MAX]; /* prompt */
-	int prompt_wid;           /* width of prompt */
-	int complete_continue;    /* if non-zero, continue the previous completion */
-	int dot_pos;              /* history position for dot completion, or < 0 */
-	size_t dot_index;         /* dot completion line index */
-	size_t dot_len;           /* dot completion previous completion len */
-	HIST history_search;      /* HIST_* */
-	int hist_search_len;      /* length of history search pattern */
-	wchar_t *line_buf;        /* content of line before using history */
+	wchar_t *line;                /* the line reading */
+	wchar_t *initial_line;        /* initial state of the line */
+	int index;                    /* index of the current character in cmdline */
+	int curs_pos;                 /* position of the cursor in status bar*/
+	int len;                      /* length of the string */
+	int cmd_pos;                  /* position in the history */
+	wchar_t prompt[NAME_MAX + 1]; /* prompt */
+	int prompt_wid;               /* width of prompt */
+	int complete_continue;        /* if non-zero, continue previous completion */
+	int dot_pos;                  /* history pos for dot completion, or < 0 */
+	size_t dot_index;             /* dot completion line index */
+	size_t dot_len;               /* dot completion previous completion len */
+	HIST history_search;          /* HIST_* */
+	int hist_search_len;          /* length of history search pattern */
+	wchar_t *line_buf;            /* content of line before using history */
 	int reverse_completion;
 	complete_cmd_func complete;
 	int search_mode;
