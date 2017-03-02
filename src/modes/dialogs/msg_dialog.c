@@ -190,7 +190,7 @@ handle_response(Result r)
 	};
 
 	(void)def_handler(r_to_c[r]);
-	/* Default handler might have requested quitting. */
+	/* Default handler might have already requested quitting. */
 	if(!quit)
 	{
 		if(accept_mask & MASK(r))
@@ -338,7 +338,7 @@ prompt_msg_internal(const char title[], const char message[],
 
 	redraw_error_msg(title, message, 0, 0);
 
-	enter(MASK(R_YES, R_NO));
+	enter(variants == NULL ? MASK(R_YES, R_NO) : 0);
 
 	touchwin(stdscr);
 

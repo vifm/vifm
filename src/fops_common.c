@@ -110,7 +110,6 @@ static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
 static int is_file_name_changed(const char old[], const char new[]);
 static int ui_cancellation_hook(void *arg);
-static int edit_file(const char filepath[], int force_changed);
 static progress_data_t * alloc_progress_data(int bg, void *info);
 
 line_prompt_func fops_line_prompt;
@@ -738,11 +737,13 @@ fops_check_dir_path(const FileView *view, const char path[], char buf[],
 }
 
 char **
-fops_edit_list(size_t count, char **orig, int *nlines, int ignore_change)
+fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
 {
 	char rename_file[PATH_MAX];
 	char **list = NULL;
 	mode_t saved_umask;
+
+	*nlines = 0;
 
 	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
@@ -757,7 +758,12 @@ fops_edit_list(size_t count, char **orig, int *nlines, int ignore_change)
 	}
 	(void)umask(saved_umask);
 
-	if(edit_file(rename_file, ignore_change) > 0)
+	if(vim_view_file(rename_file, -1, -1, 0) != 0)
+	{
+		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
+				rename_file);
+	}
+	else
 	{
 		list = read_file_of_lines(rename_file, nlines);
 		if(list == NULL)
@@ -765,44 +771,32 @@ fops_edit_list(size_t count, char **orig, int *nlines, int ignore_change)
 			show_error_msgf("Error Getting List Of Renames",
 					"Can't open temporary file \"%s\": %s", rename_file, strerror(errno));
 		}
+
+		if(!load_always)
+		{
+			size_t i = count - 1U;
+			if((size_t)*nlines == count)
+			{
+				for(i = 0U; i < count; ++i)
+				{
+					if(strcmp(list[i], orig[i]) != 0)
+					{
+						break;
+					}
+				}
+			}
+
+			if(i == count)
+			{
+				free_string_array(list, *nlines);
+				list = NULL;
+				*nlines = 0;
+			}
+		}
 	}
 
 	unlink(rename_file);
 	return list;
-}
-
-/* Edits the filepath in the editor checking whether it was changed.  Returns
- * negative value on error, zero when no changes were detected and positive
- * number otherwise. */
-static int
-edit_file(const char filepath[], int force_changed)
-{
-	struct stat st_before, st_after;
-
-	if(!force_changed && os_stat(filepath, &st_before) != 0)
-	{
-		show_error_msgf("Error Editing File",
-				"Could not stat file \"%s\" before edit: %s", filepath,
-				strerror(errno));
-		return -1;
-	}
-
-	if(vim_view_file(filepath, -1, -1, 0) != 0)
-	{
-		show_error_msgf("Error Editing File", "Editing of file \"%s\" failed.",
-				filepath);
-		return -1;
-	}
-
-	if(!force_changed && os_stat(filepath, &st_after) != 0)
-	{
-		show_error_msgf("Error Editing File",
-				"Could not stat file \"%s\" after edit: %s", filepath, strerror(errno));
-		return -1;
-	}
-
-	return force_changed || memcmp(&st_after.st_mtime, &st_before.st_mtime,
-			sizeof(st_after.st_mtime)) != 0;
 }
 
 void

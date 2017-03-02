@@ -1558,7 +1558,7 @@ get_filename_width(const FileView *view, int i)
 	size_t name_len;
 	if(flist_custom_active(view))
 	{
-		char name[NAME_MAX];
+		char name[NAME_MAX + 1];
 		/* XXX: should this be formatted name?. */
 		get_short_path_of(view, entry, 0, 0, sizeof(name), name);
 		name_len = utf8_strsw(name);

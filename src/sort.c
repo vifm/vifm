@@ -533,7 +533,7 @@ compare_item_count(const dir_entry_t *f, int fdir, const dir_entry_t *s,
 static int
 compare_group(const char f[], const char s[], regex_t *regex)
 {
-	char fname[NAME_MAX], sname[NAME_MAX];
+	char fname[NAME_MAX + 1], sname[NAME_MAX + 1];
 	regmatch_t fmatch = get_group_match(regex, f);
 	regmatch_t smatch = get_group_match(regex, s);
 
@@ -621,8 +621,8 @@ static int
 compare_file_names(const char s[], const char t[], int ignore_case)
 {
 	const char *s_val = s, *t_val = t;
-	char s_buf[NAME_MAX];
-	char t_buf[NAME_MAX];
+	char s_buf[NAME_MAX + 1];
+	char t_buf[NAME_MAX + 1];
 	int result;
 
 	if(ignore_case)

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Feb 18
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Feb 25
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3843,7 +3843,7 @@ Examples: >
 
 literal-string                                 *vifm-literal-string*
 --------------
-'string'              string constant           *vifm-expr-'*
+'string'              string constant          *vifm-expr-'*
 
 Note that single quotes are used.
 

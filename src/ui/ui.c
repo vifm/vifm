@@ -180,8 +180,11 @@ setup_ncurses_interface(void)
 
 #if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
 #ifdef HAVE_SET_ESCDELAY_FUNC
-	/* Use ncurses specific function to disable delay after pressing escape key */
-	set_escdelay(0);
+	/* Use ncurses specific function to make delay after pressing escape key
+	 * unnoticeable.  Used to be zero, but in some corner cases multiple bytes
+	 * composing a functional key code might be handled to the application with a
+	 * delay. */
+	set_escdelay(5);
 #endif
 #endif
 

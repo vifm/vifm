@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2016 June 28
+" Last Change: 2017 February 28
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -155,9 +155,9 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 
 	if !empty(opentype) && !empty(opentype[0]) &&
 		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
-	   let editcmd = has('win32') ? opentype[0][1:-2] : opentype[0]
+		let editcmd = has('win32') ? opentype[0][1:-2] : opentype[0]
 	else
-		 let editcmd = a:editcmd
+		let editcmd = a:editcmd
 	endif
 
 	if editcmd == 'edit'

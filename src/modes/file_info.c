@@ -281,7 +281,7 @@ show_file_type(FileView *view, int curr_y)
 		char full_path[PATH_MAX];
 		FILE *pipe;
 		char command[1024];
-		char buf[NAME_MAX];
+		char buf[NAME_MAX + 1];
 		char *escaped_full_path;
 
 		get_current_full_path(view, sizeof(full_path), full_path);

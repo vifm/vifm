@@ -73,15 +73,19 @@ add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 
 	char *mb_lhs;
 
-	if(wcsncmp(prefix, lhs, prefix_len) != 0)
+	const int is_separator = (lhs[0] == L'\0');
+	if(!is_separator)
 	{
-		return;
-	}
+		if(wcsncmp(prefix, lhs, prefix_len) != 0)
+		{
+			return;
+		}
 
-	/* Handle empty RHS, but don't affect separator line. */
-	if(rhs[0] == L'\0' && lhs[0] != L'\0' && descr[0] == '\0')
-	{
-		rhs = L"<nop>";
+		/* Handle empty RHS. */
+		if(rhs[0] == L'\0' && descr[0] == '\0')
+		{
+			rhs = L"<nop>";
+		}
 	}
 
 	mb_lhs = wstr_to_spec(lhs);

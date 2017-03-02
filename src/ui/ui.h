@@ -269,7 +269,7 @@ typedef struct
 	/* Number of files that match current search pattern. */
 	int matches;
 	/* Last used search pattern, empty if none. */
-	char last_search[NAME_MAX];
+	char last_search[NAME_MAX + 1];
 
 	int hide_dot, hide_dot_g; /* Whether dot files are hidden. */
 	int prev_invert;

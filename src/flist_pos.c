@@ -634,7 +634,7 @@ int
 ensure_file_is_selected(FileView *view, const char name[])
 {
 	int file_pos;
-	char nm[NAME_MAX];
+	char nm[NAME_MAX + 1];
 
 	/* Don't reset filters to find "file with empty name". */
 	if(name[0] == '\0')

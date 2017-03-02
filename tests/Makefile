@@ -159,7 +159,7 @@ ifdef win_env
 endif
 
 ifdef DEBUG
-    override CFLAGS += -g -Og
+    override CFLAGS += -g -O0
     override LDFLAGS += -g
     ifdef unix_env
         override LDFLAGS += -rdynamic

@@ -92,6 +92,8 @@ TEST(sibl_handles_errors_without_failures)
 
 TEST(sibl_skips_files_and_can_work_without_sorting)
 {
+	char *const saved_cwd = save_cwd();
+
 	assert_success(os_mkdir(SANDBOX_PATH "/a", 0700));
 	create_file(SANDBOX_PATH "/b");
 
@@ -100,6 +102,8 @@ TEST(sibl_skips_files_and_can_work_without_sorting)
 	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
 	exec_commands("siblnext!", &lwin, CIT_COMMAND);
 	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH "/a"));
+
+	restore_cwd(saved_cwd);
 
 	assert_success(rmdir(SANDBOX_PATH "/a"));
 	assert_success(unlink(SANDBOX_PATH "/b"));

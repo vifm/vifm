@@ -3,11 +3,19 @@
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* size_t */
+#include <string.h> /* memset() */
 
+#include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
+#include "../../src/utils/str.h"
+#include "../../src/utils/string_array.h"
 #include "../../src/fops_common.h"
 #include "../../src/fops_rename.h"
+
+#include "utils.h"
 
 TEST(names_less_than_files)
 {
@@ -90,6 +98,75 @@ TEST(rename_list_checks)
 	{
 		assert_false(dup[i]);
 	}
+}
+
+TEST(file_name_list_can_be_reread)
+{
+	char long_name[PATH_MAX + NAME_MAX + 1];
+	char *list[] = { "aaa", long_name };
+	int nlines;
+	char **new_list;
+
+	memset(long_name, '1', sizeof(long_name) - 1U);
+	long_name[sizeof(long_name) - 1U] = '\0';
+
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+#else
+	replace_string(&cfg.shell, "cmd");
+#endif
+	stats_update_shell_type(cfg.shell);
+
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, "echo ");
+
+	new_list = fops_edit_list(ARRAY_LEN(list), list, &nlines, 1);
+	assert_int_equal(2, nlines);
+	if(nlines >= 2)
+	{
+		assert_string_equal(list[0], new_list[0]);
+		assert_string_equal(list[1], new_list[1]);
+	}
+	free_string_array(new_list, nlines);
+
+	update_string(&cfg.vi_command, NULL);
+
+	update_string(&cfg.shell, NULL);
+	stats_update_shell_type("/bin/sh");
+}
+
+TEST(file_name_list_can_be_changed, IF(not_windows))
+{
+	char *list[] = { "aaa" };
+	int nlines;
+	char **new_list;
+
+	char *saved_cwd = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
+
+	update_string(&cfg.shell, "/bin/sh");
+	stats_update_shell_type(cfg.shell);
+
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, "sed -i 'y/a/b/' < ");
+
+	create_file("-f");
+
+	new_list = fops_edit_list(ARRAY_LEN(list), list, &nlines, 0);
+	assert_int_equal(1, nlines);
+	if(nlines >= 1)
+	{
+		assert_string_equal("bbb", new_list[0]);
+	}
+	free_string_array(new_list, nlines);
+
+	update_string(&cfg.vi_command, NULL);
+
+	update_string(&cfg.shell, NULL);
+
+	assert_success(unlink("-f"));
+
+	restore_cwd(saved_cwd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -628,7 +628,7 @@ run_implicit_prog(FileView *view, const char prog_spec[], int pause,
 	char cmd[NAME_MAX + 1 + NAME_MAX + 1];
 	const char *name_macro;
 	char *file_name;
-	char spec[strlen(prog_spec) + 1];
+	char spec[strlen(prog_spec) + 1U];
 
 	strcpy(spec, prog_spec);
 	bg = cut_suffix(spec, " &") || force_bg;

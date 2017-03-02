@@ -3016,7 +3016,7 @@ void
 get_short_path_of(const FileView *view, const dir_entry_t *entry, int format,
 		int drop_prefix, size_t buf_len, char buf[])
 {
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 	const char *path = entry->origin;
 
 	char *free_this = NULL;

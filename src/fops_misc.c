@@ -751,9 +751,9 @@ is_clone_list_ok(int count, char *list[])
 TSTATIC const char *
 gen_clone_name(const char dir[], const char normal_name[])
 {
-	static char result[NAME_MAX];
+	static char result[NAME_MAX + 1];
 
-	char extension[NAME_MAX];
+	char extension[NAME_MAX + 1];
 	int i;
 	size_t len;
 	char *p;

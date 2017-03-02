@@ -274,7 +274,7 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 char *
 get_execv_path(char shell[])
 {
-	static char name[NAME_MAX];
+	static char name[NAME_MAX + 1];
 	(void)extract_cmd_name(shell, 0, sizeof(name), name);
 	return name;
 }
@@ -297,7 +297,7 @@ make_execv_array(char shell[], char cmd[])
 	const size_t npieces = 1U;
 #endif
 
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 
 	char **args = reallocarray(NULL, 4 + npieces + 1, sizeof(*args));
 	char *eval_cmd;

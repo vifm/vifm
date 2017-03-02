@@ -451,7 +451,7 @@ static char *
 try_replace_tilde(const char path[])
 {
 #ifndef _WIN32
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 	const char *p;
 	char *result;
 	struct passwd *pw;
