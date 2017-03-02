@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2017 February 28
+" Last Change: 2017 March 02
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -160,12 +160,6 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 		let editcmd = a:editcmd
 	endif
 
-	if editcmd == 'edit'
-		call map(flist, 'fnamemodify(v:val, ":.")')
-		execute 'args' join(flist)
-		return
-	endif
-
 	" Don't split if current window is empty
 	let firstfile = flist[0]
 	if expand('%') == '' && editcmd =~ '^v\?split$'
@@ -173,8 +167,15 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 		let flist = flist[1:-1]
 	endif
 
+	if editcmd == 'edit' && len(flist) > 1
+		silent! %argdelete
+	endif
+
 	for file in flist
 		execute editcmd fnamemodify(file, ':.')
+		if editcmd == 'edit' && len(flist) > 1
+			argadd
+		endif
 	endfor
 	" Go to first file
 	execute 'drop' firstfile
