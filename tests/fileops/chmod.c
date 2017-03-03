@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() rmdir() */
 
 #include <stdlib.h> /* free() */
