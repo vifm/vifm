@@ -330,6 +330,9 @@
 	Fixed inconsistent behaviour of :EditVifm in plugin with regard to
 	"[No Name]" buffer.  Thanks to Phil Runninger.
 
+	Work around :drop command being disabled in the plugin.  Thanks to Phil
+	Runninger.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
