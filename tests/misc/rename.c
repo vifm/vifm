@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() */
 
 #include <stddef.h> /* size_t */
@@ -140,6 +141,7 @@ TEST(file_name_list_can_be_changed, IF(not_windows))
 	char *list[] = { "aaa" };
 	int nlines;
 	char **new_list;
+	FILE *fp;
 
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
@@ -147,10 +149,15 @@ TEST(file_name_list_can_be_changed, IF(not_windows))
 	update_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 
-	curr_stats.exec_env_type = EET_EMULATOR;
-	update_string(&cfg.vi_command, "sed -i 'y/a/b/' < ");
+	fp = fopen(SANDBOX_PATH "/script", "w");
+	fputs("#!/bin/sh\n", fp);
+	fputs("sed 'y/a/b/' < $2 > $2_out\n", fp);
+	fputs("mv $2_out $2\n", fp);
+	fclose(fp);
+	assert_success(chmod(SANDBOX_PATH "/script", 0777));
 
-	create_file("-f");
+	curr_stats.exec_env_type = EET_EMULATOR;
+	update_string(&cfg.vi_command, SANDBOX_PATH "/script");
 
 	new_list = fops_edit_list(ARRAY_LEN(list), list, &nlines, 0);
 	assert_int_equal(1, nlines);
@@ -164,7 +171,7 @@ TEST(file_name_list_can_be_changed, IF(not_windows))
 
 	update_string(&cfg.shell, NULL);
 
-	assert_success(unlink("-f"));
+	assert_success(unlink("script"));
 
 	restore_cwd(saved_cwd);
 }

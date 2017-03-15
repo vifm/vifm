@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2017 February 28
+" Last Change: 2017 March 15
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -26,11 +26,22 @@ let s:script_path = expand('<sfile>')
 " :DiffVifm - load file for :vert diffsplit.
 " :TabVifm - load file or files in tabs.
 
+" Check whether :drop command is available
+try
+	drop
+catch E471
+	let s:has_drop = 1
+catch E319
+	let s:has_drop = 0
+endtry
+
+let s:tab_drop_cmd = (s:has_drop ? 'tablast | tab drop' : 'tabedit')
+
 command! -bar -nargs=* -complete=dir EditVifm :call s:StartVifm('edit', <f-args>)
 command! -bar -nargs=* -complete=dir VsplitVifm :call s:StartVifm('vsplit', <f-args>)
 command! -bar -nargs=* -complete=dir SplitVifm :call s:StartVifm('split', <f-args>)
 command! -bar -nargs=* -complete=dir DiffVifm :call s:StartVifm('vert diffsplit', <f-args>)
-command! -bar -nargs=* -complete=dir TabVifm :call s:StartVifm('tablast | tab drop', <f-args>)
+command! -bar -nargs=* -complete=dir TabVifm :call s:StartVifm(s:tab_drop_cmd, <f-args>)
 
 function! s:StartVifm(editcmd, ...)
 	echohl WarningMsg | echo 'vifm executable wasn''t found' | echohl None
@@ -84,7 +95,7 @@ function! s:StartVifm(editcmd, ...)
 	    \ '+command VsplitVim :let $VIFM_OPEN_TYPE=''vsplit''' . edit,
 	    \ '+command SplitVim  :let $VIFM_OPEN_TYPE=''split''' . edit,
 	    \ '+command DiffVim   :let $VIFM_OPEN_TYPE=''vert diffsplit''' . edit,
-	    \ '+command TabVim    :let $VIFM_OPEN_TYPE=''tablast | tab drop''' . edit]
+	    \ '+command TabVim    :let $VIFM_OPEN_TYPE='''.s:tab_drop_cmd."'" . edit]
 	call map(pickargs, 'shellescape(v:val, 1)')
 	let pickargsstr = join(pickargs, ' ')
 
@@ -160,24 +171,31 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 		let editcmd = a:editcmd
 	endif
 
-	if editcmd == 'edit'
-		call map(flist, 'fnamemodify(v:val, ":.")')
-		execute 'args' join(flist)
-		return
-	endif
-
 	" Don't split if current window is empty
 	let firstfile = flist[0]
-	if expand('%') == '' && editcmd =~ '^v\?split$'
+	if empty(expand('%')) && editcmd =~ '^v\?split$'
 		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
 	endif
 
+	if editcmd == 'edit' && len(flist) > 1
+		silent! %argdelete
+	endif
+
 	for file in flist
 		execute editcmd fnamemodify(file, ':.')
+		if editcmd == 'edit' && len(flist) > 1
+			argadd
+		endif
 	endfor
-	" Go to first file
-	execute 'drop' firstfile
+
+	" Go to the first file working around possibility that :drop command is not
+	" evailable, if possible
+	if s:has_drop
+		execute 'drop' firstfile
+	elseif editcmd == 'edit'
+		execute 'buffer' fnamemodify(firstfile, ':.')
+	endif
 endfunction
 
 function! s:PreparePath(path)

@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* rmdir() symlink() unlink() */
 
 #include <string.h> /* memset() */
@@ -125,6 +126,7 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 {
 	char long_name[NAME_MAX + 1];
 	char path[PATH_MAX + 1];
+	FILE *fp;
 
 	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
@@ -132,8 +134,15 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	update_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 
+	fp = fopen(SANDBOX_PATH "/script", "w");
+	fputs("#!/bin/sh\n", fp);
+	fputs("sed 'y/1/2/' < $2 > $2_out\n", fp);
+	fputs("mv $2_out $2\n", fp);
+	fclose(fp);
+	assert_success(chmod(SANDBOX_PATH "/script", 0777));
+
 	curr_stats.exec_env_type = EET_LINUX_NATIVE;
-	update_string(&cfg.vi_command, "sed -i 'y/1/2/' < ");
+	update_string(&cfg.vi_command, SANDBOX_PATH "/script");
 
 	memset(long_name, '1', sizeof(long_name) - 1U);
 	long_name[sizeof(long_name) - 1U] = '\0';
@@ -144,8 +153,6 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
 
-	create_empty_file("-f");
-
 	(void)fops_rename(&lwin, NULL, 0, 0);
 
 	memset(long_name, '2', sizeof(long_name) - 1U);
@@ -153,7 +160,7 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	snprintf(path, sizeof(path), "%s/%s", SANDBOX_PATH, long_name);
 	assert_success(unlink(path));
 
-	assert_success(unlink("-f"));
+	assert_success(unlink("script"));
 
 	update_string(&cfg.vi_command, NULL);
 
