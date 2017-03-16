@@ -31,7 +31,7 @@
 
 #include <sys/stat.h> /* S_* statbuf */
 #include <sys/types.h> /* size_t mode_t */
-#include <unistd.h> /* getcwd() pathconf() readlink() */
+#include <unistd.h> /* pathconf() readlink() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
@@ -828,7 +828,7 @@ count_dir_items(const char path[])
 char *
 get_cwd(char buf[], size_t size)
 {
-	if(getcwd(buf, size) == NULL)
+	if(os_getcwd(buf, size) == NULL)
 	{
 		return NULL;
 	}
@@ -842,7 +842,7 @@ char *
 save_cwd(void)
 {
 	char cwd[PATH_MAX];
-	if(getcwd(cwd, sizeof(cwd)) != cwd)
+	if(os_getcwd(cwd, sizeof(cwd)) != cwd)
 	{
 		return NULL;
 	}

@@ -324,6 +324,33 @@ os_system(const char command[])
 	return result;
 }
 
+char *
+os_getcwd(char buf[], size_t size)
+{
+	char *utf8_buf;
+	wchar_t wbuf[size];
+	if(_wgetcwd(wbuf, sizeof(wbuf)) == NULL)
+	{
+		return NULL;
+	}
+
+	utf8_buf = utf8_from_utf16(wbuf);
+	if(utf8_buf == NULL)
+	{
+		return NULL;
+	}
+
+	if(strlen(utf8_buf) + 1U > size)
+	{
+		free(utf8_buf);
+		return NULL;
+	}
+
+	copy_str(buf, size, utf8_buf);
+	free(utf8_buf);
+	return buf;
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

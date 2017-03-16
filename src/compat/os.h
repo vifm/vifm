@@ -31,7 +31,7 @@
 #ifndef _WIN32
 
 #include <sys/stat.h> /* mkdir() */
-#include <unistd.h> /* access() chdir() chmod() lstat() rename() */
+#include <unistd.h> /* access() chdir() chmod() getcwd() lstat() rename() */
 
 #include <stdlib.h> /* realpath() system() */
 
@@ -49,6 +49,7 @@
 #define os_stat stat
 #define os_system system
 #define os_tmpfile tmpfile
+#define os_getcwd getcwd
 
 #else
 
@@ -90,6 +91,10 @@ char * os_realpath(const char path[], char resolved_path[]);
 int os_stat(const char path[], struct stat *buf);
 
 int os_system(const char command[]);
+
+/* Retrieves current working directory.  Returns buf on success and NULL on
+ * failure. */
+char * os_getcwd(char buf[], size_t size);
 
 #endif
 
