@@ -38,6 +38,7 @@
 
 #include "cfg/config.h"
 #include "cfg/info.h"
+#include "compat/reallocarray.h"
 #include "engine/autocmds.h"
 #include "compat/fs_limits.h"
 #include "engine/cmds.h"
@@ -65,6 +66,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/utf8.h"
 #include "utils/utils.h"
 #include "args.h"
 #include "background.h"
@@ -91,6 +93,7 @@
 #include "trash.h"
 #include "undo.h"
 
+static int vifm_main(int argc, char *argv[]);
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
@@ -107,10 +110,47 @@ static void _gnuc_noreturn vifm_leave(int exit_code, int cquit);
 /* Command-line arguments in parsed form. */
 static args_t vifm_args;
 
+#ifndef _WIN32
+
 int
 main(int argc, char *argv[])
 {
-	/* TODO: refactor main() function */
+	return vifm_main(argc, argv);
+}
+
+#else
+
+int
+main()
+{
+	extern int _CRT_glob;
+	extern void __wgetmainargs(int *, wchar_t ***, wchar_t ***, int, int *);
+
+	char **utf8_argv;
+	int i;
+
+	wchar_t **envp, **argv;
+	int argc, si = 0;
+	__wgetmainargs(&argc, &argv, &envp, _CRT_glob, &si);
+
+	utf8_argv = reallocarray(NULL, argc + 1, sizeof(*utf8_argv));
+
+	for(i = 0; i < argc; ++i)
+	{
+		utf8_argv[i] = utf8_from_utf16(argv[i]);
+	}
+	utf8_argv[i] = NULL;
+
+	return vifm_main(argc, utf8_argv);
+}
+
+#endif
+
+/* Entry-point.  Has same semantics as main(). */
+static int
+vifm_main(int argc, char *argv[])
+{
+	/* TODO: refactor vifm_main() function */
 
 	static const int quit = 0;
 

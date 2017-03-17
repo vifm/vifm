@@ -337,6 +337,9 @@
 	Windows when path includes non-latin characters.  Thanks to
 	khaoos-abominable.
 
+	Fixed processing of non-latin characters provided in command-line options
+	on Windows.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
