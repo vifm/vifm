@@ -85,7 +85,7 @@ wchar_t utf8_first_char(const char utf8[]);
  * Returns the number. */
 size_t utf8_widen_len(const char utf8[]);
 
-/* Converts utf-16 to utf-8 string. Returns newly allocated utf-16 string. */
+/* Converts utf-16 to utf-8 string.  Returns newly allocated utf-16 string. */
 char * utf8_from_utf16(const wchar_t utf16[]);
 
 #endif
