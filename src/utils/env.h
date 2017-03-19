@@ -22,6 +22,10 @@
 
 /* Environment variables related functions. */
 
+/* Lists names of existing environment variables.  Returns the array of the
+ * length *count (always initialized). */
+char ** env_list(int *count);
+
 /* Returns environment variable value or NULL if it doesn't exist. */
 const char * env_get(const char name[]);
 

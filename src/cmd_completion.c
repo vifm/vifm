@@ -59,10 +59,12 @@
 #include "ui/color_scheme.h"
 #include "ui/colors.h"
 #include "ui/statusbar.h"
+#include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/utils.h"
 #include "bmarks.h"
 #include "cmd_core.h"
@@ -722,26 +724,21 @@ complete_highlight_arg(const char *str)
 static void
 complete_envvar(const char str[])
 {
-	extern char **environ;
-	char **p = environ;
 	const size_t len = strlen(str);
 
-	while(*p != NULL)
+	int env_count;
+	char **const env_lst = env_list(&env_count);
+
+	int i;
+	for(i = 0; i < env_count; ++i)
 	{
-		if(strncmp(*p, str, len) == 0)
+		if(strncmp(env_lst[i], str, len) == 0)
 		{
-			char *const equal = strchr(*p, '=');
-			/* Actually equal shouldn't be NULL unless environ content is corrupted.
-			 * But the check below won't harm. */
-			if(equal != NULL)
-			{
-				*equal = '\0';
-				vle_compl_add_match(*p, equal + 1);
-				*equal = '=';
-			}
+			vle_compl_add_match(env_lst[i], env_get(env_lst[i]));
 		}
-		p++;
 	}
+
+	free_string_array(env_lst, env_count);
 
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
