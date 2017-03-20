@@ -181,6 +181,9 @@
 	Prevent clearing filters on zM if there were no zO preceding it.  Thanks
 	to sudo-nice.
 
+	Work around :drop command being disabled in the plugin.  Thanks to Phil
+	Runninger.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -330,8 +333,15 @@
 	Fixed inconsistent behaviour of :EditVifm in plugin with regard to
 	"[No Name]" buffer.  Thanks to Phil Runninger.
 
-	Work around :drop command being disabled in the plugin.  Thanks to Phil
-	Runninger.
+	Fixed operations which involve changing current working directory on
+	Windows when path includes non-latin characters.  Thanks to
+	khaoos-abominable.
+
+	Fixed processing of non-latin characters provided in command-line options
+	on Windows.
+
+	Fixed processing of environment variables containing non-latin characters
+	on Windows.
 
 0.8.2-beta to 0.8.2
 

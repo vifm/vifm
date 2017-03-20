@@ -22,14 +22,124 @@
 #include <stdarg.h> /* va_list va_start() va_arg() va_end() */
 #ifdef _WIN32
 #include <stdio.h> /* sprintf() */
-#include <string.h> /* strlen() */
 #endif
-#include <stdlib.h> /* getenv() unsetenv() env_set() */
+#include <stdlib.h> /* free() getenv() setenv() unsetenv() */
+#include <string.h> /* strchr() strlen() */
+#include <wchar.h> /* wcschr() */
+
+#include "string_array.h"
+#include "utf8.h"
+
+char **
+env_list(int *count)
+{
+#ifndef _WIN32
+	extern char **environ;
+
+	char **lst = NULL;
+	char **env;
+
+	*count = 0;
+
+	for(env = environ; *env != NULL; ++env)
+	{
+		char *const equal = strchr(*env, '=');
+		/* Actually equal shouldn't be NULL unless environ content is corrupted.
+		 * But the check below won't harm. */
+		if(equal != NULL)
+		{
+			*equal = '\0';
+			*count = add_to_string_array(&lst, *count, 1, *env);
+			*equal = '=';
+		}
+	}
+
+	return lst;
+#else
+	extern wchar_t **_wenviron;
+
+	char **lst = NULL;
+	wchar_t **env;
+
+	*count = 0;
+
+	for(env = _wenviron; *env != NULL; ++env)
+	{
+		wchar_t *const equal = wcschr(*env, L'=');
+		/* Actually equal shouldn't be NULL unless environ content is corrupted.
+		 * But the check below won't harm. */
+		if(equal != NULL)
+		{
+			char *val;
+
+			*equal = L'\0';
+			val = utf8_from_utf16(*env);
+			*equal = L'=';
+
+			if(val != NULL && put_into_string_array(&lst, *count, val) == *count + 1)
+			{
+				++*count;
+			}
+			else
+			{
+				free(val);
+			}
+		}
+	}
+
+	return lst;
+#endif
+}
 
 const char *
 env_get(const char name[])
 {
+#ifndef _WIN32
 	return getenv(name);
+#else
+	/* This cache only grows, but as number of distinct variables is likely to be
+	 * limited to a reasonable number, not much space should be wasted. */
+	static char **names, **values;
+	static int ncached;
+
+	wchar_t *u16name;
+	const wchar_t *u16val;
+
+	int pos = string_array_pos(names, ncached, name);
+	if(pos == -1)
+	{
+		if(add_to_string_array(&names, ncached, 1, name) == ncached + 1)
+		{
+			if(put_into_string_array(&values, ncached, NULL) == ncached + 1)
+			{
+				pos = ncached;
+				++ncached;
+			}
+		}
+	}
+
+	if(pos == -1)
+	{
+		return NULL;
+	}
+
+	u16name = utf8_to_utf16(name);
+	if(u16name == NULL)
+	{
+		--ncached;
+		return NULL;
+	}
+
+	u16val = _wgetenv(u16name);
+	free(u16name);
+	if(u16val == NULL)
+	{
+		return NULL;
+	}
+
+	values[pos] = utf8_from_utf16(u16val);
+	return values[pos];
+#endif
 }
 
 const char *
@@ -73,9 +183,12 @@ env_set(const char name[], const char value[])
 #ifndef _WIN32
 	setenv(name, value, 1);
 #else
+	wchar_t *u16buf;
 	char buf[strlen(name) + 1 + strlen(value) + 1];
 	sprintf(buf, "%s=%s", name, value);
-	putenv(buf);
+	u16buf = utf8_to_utf16(buf);
+	_wputenv(u16buf);
+	free(u16buf);
 #endif
 }
 

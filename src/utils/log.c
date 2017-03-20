@@ -171,7 +171,7 @@ log_cwd(void)
 	if(verbosity <= 0 || log == NULL)
 		return;
 
-	if(getcwd(buf, sizeof(buf)) == NULL)
+	if(os_getcwd(buf, sizeof(buf)) == NULL)
 		log_msg("%s", "getwd() error");
 	else
 		log_msg("getwd() returned \"%s\"", buf);

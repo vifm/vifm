@@ -574,11 +574,14 @@ change_directory(FileView *view, const char directory[])
 	}
 
 	if(!is_root_dir(dir_dup))
+	{
 		chosp(dir_dup);
+	}
 
 	flist_sel_view_reloaded(view, location_changed);
 
-	/* Need to use setenv instead of getcwd for a symlink directory */
+	/* Need to use dir_dup instead of calling get_cwd() to avoid resolving
+	 * symbolic links in path. */
 	env_set("PWD", dir_dup);
 
 	copy_str(view->curr_dir, sizeof(view->curr_dir), dir_dup);

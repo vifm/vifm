@@ -29,6 +29,7 @@
 #include "../utils/env.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "private/options.h"
 #include "completion.h"
 #include "parsing.h"
@@ -81,7 +82,7 @@ const char ENV_VAR_NAME_FIRST_CHAR[] = "abcdefghijklmnopqrstuvwxyz"
 const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
-static void init_var(const char *env);
+static void init_var(const char name[], const char value[]);
 static void clear_builtinvars(void);
 static int extract_name(const char **in, VariableType *type, size_t buf_len,
 		char buf[]);
@@ -117,16 +118,14 @@ void
 init_variables(void)
 {
 	int env_count;
-	extern char **environ;
+	char **env_lst;
 
 	if(nvars > 0)
+	{
 		clear_envvars();
+	}
 
-	/* Count environment variables. */
-	env_count = 0;
-	while(environ[env_count] != NULL)
-		env_count++;
-
+	env_lst = env_list(&env_count);
 	if(env_count > 0)
 	{
 		int i;
@@ -136,13 +135,13 @@ init_variables(void)
 		assert(vars != NULL && "Failed to allocate memory for env vars.");
 
 		/* Initialize variable list. */
-		i = 0;
-		while(environ[i] != NULL)
+		for(i = 0; i < env_count; ++i)
 		{
-			init_var(environ[i]);
-			i++;
+			init_var(env_lst[i], env_get(env_lst[i]));
 		}
 	}
+
+	free_string_array(env_lst, env_count);
 
 	init_parser(&local_getenv);
 
@@ -156,22 +155,20 @@ local_getenv(const char envname[])
 	return (record == NULL || record->removed) ? "" : record->val;
 }
 
+/* Initializes environment variable inherited from parent process. */
 static void
-init_var(const char *env)
+init_var(const char name[], const char value[])
 {
-	envvar_t *record;
-	char name[VAR_NAME_MAX + 1];
-	char *p = strchr(env, '=');
-	assert(p != NULL);
-
-	copy_str(name, MIN(sizeof(name), (size_t)(p - env + 1)), env);
-	record = get_record(name);
+	envvar_t *const record = get_record(name);
 	if(record == NULL)
+	{
 		return;
+	}
+
 	record->from_parent = 1;
 
-	(void)replace_string(&record->initial, p + 1);
-	(void)replace_string(&record->val, p + 1);
+	(void)replace_string(&record->initial, value);
+	(void)replace_string(&record->val, value);
 	if(record->initial == NULL || record->val == NULL)
 	{
 		free_record(record);
