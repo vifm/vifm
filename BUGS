@@ -14,3 +14,4 @@
 * :filetype checks don't expand ~ and environment variables.
 * :apropos command doesn't escape its arguments.
 * gid/uid are displayed as -1 on some file systems.
+* Files with \n mess up vifminfo.

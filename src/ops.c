@@ -162,6 +162,32 @@ ARRAY_GUARD(op_funcs, OP_COUNT);
 /* Operation that is processed at the moment. */
 static ops_t *curr_ops;
 
+/* Protects accesses to job_bar_changed variable. */
+static pthread_spinlock_t job_bar_changed_lock;
+
+    
+static void
+init_job_bar_changed_lock(void);
+
+/* Gets spinlock for the job_bar_changed variable in thread-safe way.  Returns
+ * the lock. */
+static pthread_spinlock_t *
+get_job_bar_changed_lock(void)
+{
+	static pthread_once_t once = PTHREAD_ONCE_INIT;
+	pthread_once(&once, &init_job_bar_changed_lock);
+	return &job_bar_changed_lock;
+}
+
+/* Performs spinlock initialization at most once. */
+static void
+init_job_bar_changed_lock(void)
+{
+	int ret = pthread_spin_init(&job_bar_changed_lock, PTHREAD_PROCESS_PRIVATE);
+	assert(ret == 0 && "Failed to initialize spinlock!");
+	(void)ret;
+}
+
 ops_t *
 ops_alloc(OPS main_op, OpRunningMode run_mode, const char descr[],
 		const char base_dir[], const char target_dir[])
@@ -170,15 +196,6 @@ ops_alloc(OPS main_op, OpRunningMode run_mode, const char descr[],
 	if(ops == NULL)
 	{
 		return NULL;
-	}
-
-	if(run_mode == ORM_DETACHED_UI)
-	{
-		if(pthread_spin_init(&ops->detached_ui_lock, PTHREAD_PROCESS_PRIVATE) != 0)
-		{
-			free(ops);
-			return NULL;
-		}
 	}
 
 	ops->main_op = main_op;
@@ -265,18 +282,18 @@ ops_advance(ops_t *ops, int succeeded)
 void
 ops_lock_ui(ops_t *ops)
 {
-	if(ops->run_mode == ORM_DETACHED_UI)
+	if(ops == NULL || ops->run_mode == ORM_DETACHED_UI)
 	{
-		(void)pthread_spin_lock(&ops->detached_ui_lock);
+		(void)pthread_spin_lock(get_job_bar_changed_lock());
 	}
 }
 
 void
 ops_unlock_ui(ops_t *ops)
 {
-	if(ops->run_mode == ORM_DETACHED_UI)
+	if(ops == NULL || ops->run_mode == ORM_DETACHED_UI)
 	{
-		(void)pthread_spin_unlock(&ops->detached_ui_lock);
+		(void)pthread_spin_unlock(get_job_bar_changed_lock());
 	}
 }
 
@@ -286,11 +303,6 @@ ops_free(ops_t *ops)
 	if(ops == NULL)
 	{
 		return;
-	}
-
-	if(ops->run_mode == ORM_DETACHED_UI)
-	{
-		(void)pthread_spin_destroy(&ops->detached_ui_lock);
 	}
 
 	ioeta_free(ops->estim);
@@ -998,7 +1010,9 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
 		{
 			/* ui_cancellation_reset() should be called outside this unit to allow
 			 * bulking several operations together. */
+				ops_lock_ui(ops);   
 			ui_cancellation_enable();
+				ops_unlock_ui(ops);   
 			args->cancellation.hook = &ui_cancellation_hook;
 		}
 	}
@@ -1009,7 +1023,9 @@ exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
 
 	if(cancellable && !background)
 	{
+			ops_lock_ui(ops);   
 		ui_cancellation_disable();
+			ops_unlock_ui(ops);   
 	}
 
 	if(ops != NULL)

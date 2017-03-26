@@ -109,9 +109,6 @@ typedef struct
 	char *target_dir; /* Target directory of the operation (same as base_dir if
 	                     none). */
 
-	/* Lock to be held while accessing UI for ORM_DETACHED_UI ops. */
-	pthread_spinlock_t detached_ui_lock;
-
 	OpRunningMode run_mode;       /* How operation is executed. */
 	ConflictResolutionPolicy crp; /* What should be done on conflicts. */
 	ErrorResolutionPolicy erp;    /* What should be done on unexpected errors. */

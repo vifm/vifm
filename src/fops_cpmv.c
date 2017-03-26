@@ -93,7 +93,6 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	int from_file;
 	ops_t *ops;
 	pthread_t id;
-	void *param;
 
 	if((op == CMLO_LINK_REL || op == CMLO_LINK_ABS) && !symlinks_available())
 	{
@@ -102,7 +101,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		return 0;
 	}
 
-	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
+	err = cpmv_prepare(view, &list, &args.nlines, op, force, undo_msg,
 			sizeof(undo_msg), path, sizeof(path), &from_file);
 	if(err != 0)
 	{
@@ -136,6 +135,8 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	}
 
 	args.ops = ops;
+
+	ui_cancellation_reset();
 
 	if(bg_execute("", "...", 0, 0, &cpmv_detached_bg, &args, &id) != 0)    
 	{
@@ -173,23 +174,18 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	}
 	pthread_kill(id, SIGINT);
 
-	pthread_join(id, &param);         
+	pthread_join(id, NULL);         
 
 	if(from_file)
 	{
 		free_string_array(list, nlines);
 	}
 
-	if((int)(size_t)param == 0)
-	{
-		return 0;
-	}
-
 	ui_sb_msgf("%d file%s successfully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
-	return 1;
+	return args.result;
 }
 
         
@@ -205,7 +201,7 @@ cpmv_detached_bg(bg_op_t *bg_op, void *arg)
 	ops_t *const ops = args->ops;
 	const char *path = args->path;
 
-	int custom_fnames = (nlines > 0);
+	const int custom_fnames = (nlines > 0);
 	int i = 0;
 	dir_entry_t *entry = NULL;
 
@@ -269,7 +265,6 @@ cpmv_detached_bg(bg_op_t *bg_op, void *arg)
 	ui_views_reload_filelists();
 
 	args->result = 1;
-	return;
 }
 
 void
