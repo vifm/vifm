@@ -213,26 +213,26 @@ void
 sigint_a(void)
 {
 	return;
-	struct sigaction handle_signal_action;
+	/* struct sigaction handle_signal_action; */
 
-	handle_signal_action.sa_handler = &handle_signal;
-	sigemptyset(&handle_signal_action.sa_mask);
-	handle_signal_action.sa_flags = 0;
+	/* handle_signal_action.sa_handler = &handle_signal; */
+	/* sigemptyset(&handle_signal_action.sa_mask); */
+	/* handle_signal_action.sa_flags = 0; */
 
-	sigaction(SIGINT, &handle_signal_action, NULL);
+	/* sigaction(SIGINT, &handle_signal_action, NULL); */
 }
 
 void
 sigint_b(void)
 {
 	return;
-	struct sigaction handle_signal_action;
+	/* struct sigaction handle_signal_action; */
 
-	handle_signal_action.sa_handler = &handle_signal;
-	sigemptyset(&handle_signal_action.sa_mask);
-	handle_signal_action.sa_flags = SA_RESTART;
+	/* handle_signal_action.sa_handler = &handle_signal; */
+	/* sigemptyset(&handle_signal_action.sa_mask); */
+	/* handle_signal_action.sa_flags = SA_RESTART; */
 
-	sigaction(SIGINT, &handle_signal_action, NULL);
+	/* sigaction(SIGINT, &handle_signal_action, NULL); */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
