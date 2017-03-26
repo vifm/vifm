@@ -178,7 +178,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 
 	if(from_file)
 	{
-		free_string_array(list, nlines);
+		free_string_array(list, args.nlines);
 	}
 
 	ui_sb_msgf("%d file%s successfully processed%s", ops->succeeded,
