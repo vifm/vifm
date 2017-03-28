@@ -204,6 +204,7 @@ typedef struct dir_entry_t
 	unsigned int was_selected : 1; /* Previous selection state for Visual mode. */
 	unsigned int marked : 1;       /* Whether file should be processed. */
 	unsigned int temporary : 1;    /* Whether this is temporary node. */
+	unsigned int dir_link : 1;     /* Whether this is symlink to a directory. */
 }
 dir_entry_t;
 

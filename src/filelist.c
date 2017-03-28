@@ -811,11 +811,12 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 
 	if(entry->type == FT_LINK)
 	{
-		/* Query mode of symbolic link target. */
-
 		struct stat s;
 
-		const SymLinkType symlink_type = get_symlink_type(entry->name);
+		const SymLinkType symlink_type = get_symlink_type(path);
+		entry->dir_link = (symlink_type != SLT_UNKNOWN);
+
+		/* Query mode of symbolic link target. */
 		if(symlink_type != SLT_SLOW && os_stat(entry->name, &s) == 0)
 		{
 			entry->mode = s.st_mode;
@@ -876,6 +877,9 @@ fill_dir_entry(dir_entry_t *entry, const char path[],
 
 	if(is_win_symlink(ffd->dwFileAttributes, ffd->dwReserved0))
 	{
+		const SymLinkType symlink_type = get_symlink_type(path);
+		entry->dir_link = (symlink_type != SLT_UNKNOWN);
+
 		entry->type = FT_LINK;
 	}
 	else if(ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -2303,6 +2307,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->ctime = (time_t)0;
 
 	entry->type = FT_UNK;
+	entry->dir_link = 0;
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
 
@@ -3277,20 +3282,7 @@ fentry_is_valid(const dir_entry_t *entry)
 int
 fentry_is_dir(const dir_entry_t *entry)
 {
-	/* If node has child nodes, it must be a directory. */
-	if(entry->type == FT_DIR || entry->child_count != 0)
-	{
-		return 1;
-	}
-
-	if(entry->type == FT_LINK)
-	{
-		char full_path[PATH_MAX];
-		get_full_path_of(entry, sizeof(full_path), full_path);
-		return (get_symlink_type(full_path) != SLT_UNKNOWN);
-	}
-
-	return 0;
+	return (entry->type == FT_LINK) ? entry->dir_link : (entry->type == FT_DIR);
 }
 
 int
