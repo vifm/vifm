@@ -209,6 +209,13 @@ ior_mv(io_args_t *const args)
 	switch(errno)
 	{
 		case EXDEV:
+#ifndef _WIN32
+		/* At least SSHFS fails to propagate EXDEV and reports EPERM.  So we try to
+		 * do the copy across mounts anyway, which might actually work despite the
+		 * error code. */
+		case EPERM:
+		case EACCES:
+#endif
 			{
 				int result = ior_cp(args);
 				if(result == 0)
