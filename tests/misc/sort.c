@@ -81,6 +81,7 @@ TEST(symlink_to_dir)
 	replace_string(&lwin.dir_entry[2].name, "self");
 	lwin.dir_entry[2].type = FT_LINK;
 	lwin.dir_entry[2].origin = lwin.curr_dir;
+	lwin.dir_entry[2].dir_link = 1;
 
 	cfg.slow_fs_list = strdup("");
 

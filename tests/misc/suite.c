@@ -13,6 +13,15 @@ DEFINE_SUITE();
 
 SETUP_ONCE()
 {
+#ifdef _WIN32
+	extern int _CRT_glob;
+	extern void __wgetmainargs(int *, wchar_t ***, wchar_t ***, int, int *);
+
+	wchar_t **envp, **argv;
+	int argc, si = 0;
+	__wgetmainargs(&argc, &argv, &envp, _CRT_glob, &si);
+#endif
+
 	/* Remember original path in global SETUP_ONCE instead of SETUP to make sure
 	 * nothing will change the path before we try to save it. */
 	saved_cwd = save_cwd();

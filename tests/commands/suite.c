@@ -35,6 +35,18 @@ cmds_conf_t cmds_conf = {
 
 DEFINE_SUITE();
 
+#ifdef _WIN32
+SETUP_ONCE()
+{
+	extern int _CRT_glob;
+	extern void __wgetmainargs(int *, wchar_t ***, wchar_t ***, int, int *);
+
+	wchar_t **envp, **argv;
+	int argc, si = 0;
+	__wgetmainargs(&argc, &argv, &envp, _CRT_glob, &si);
+}
+#endif
+
 SETUP()
 {
 	cmd_add_t command = {

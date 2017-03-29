@@ -184,6 +184,13 @@
 	Work around :drop command being disabled in the plugin.  Thanks to Phil
 	Runninger.
 
+	Try harder to move files by not giving up on getting permission error,
+	which isn't always a reliable indication of actual permission error.  Only
+	when 'syscalls' is on.  Thanks to Marcin Kurczewski (a.k.a. rr-).
+
+	Improved sorting performance in the presence of huge amount of symbolic
+	links.  Thanks to Marcin Kurczewski (a.k.a. rr-).
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
