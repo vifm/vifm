@@ -3370,7 +3370,8 @@ are supported:
 Percent sign can be followed by optional minimum field width.  Add '-' before
 minimum field width if you want field to be right aligned.
 
-On Windows file properties include next flags (upper case means flag is on):
+On Windows file properties include the following flags (upper case means flag
+is on):
     A - archive
     H - hidden
     I - content isn't indexed
