@@ -87,6 +87,9 @@
 	Added %D 'statusline' macro that displays path of the other pane in
 	single-pane layout.  Thanks to sudo-nice.
 
+	Added %T 'statusline' macro that displays symbolic link target.  Thanks to
+	sudo-nice.
+
 	Changed size formatting to round from zero (matches behaviour of e.g.
 	`ls`).
 

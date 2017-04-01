@@ -78,6 +78,12 @@ TEST(t_macro_expanded)
 	ASSERT_EXPANDED("%t");
 }
 
+TEST(T_macro_expanded)
+{
+	lwin.dir_entry[0].type = FT_LINK;
+	ASSERT_EXPANDED("%T");
+}
+
 TEST(f_macro_expanded)
 {
 	ASSERT_EXPANDED("%f");
@@ -164,7 +170,7 @@ TEST(percent_macro_expanded)
 
 TEST(wrong_macros_ignored)
 {
-	static const char STATUS_CHARS[] = "tfAugsEdD-lLS%[]z";
+	static const char STATUS_CHARS[] = "tTfAugsEdD-lLS%[]z";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -179,7 +185,7 @@ TEST(wrong_macros_ignored)
 
 TEST(wrong_macros_with_width_field_ignored)
 {
-	static const char STATUS_CHARS[] = "tfAugsEdD-lLS%[]z";
+	static const char STATUS_CHARS[] = "tTfAugsEdD-lLS%[]z";
 	int i;
 
 	for(i = 1; i <= 255; ++i)

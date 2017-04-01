@@ -3355,6 +3355,7 @@ Determines the content of the status line (the line right above command-line).
 Empty string means use same format like in previous versions.  Following macros
 are supported:
     %t - file name (considering value of the |vifm-'classify'| option)
+    %T - symbolic link target (empty for other filetypes)
     %f - file name relative to current directory (considers 'classify')
     %A - file attributes (permissions on *nix or properties on Windows)
     %u - user name or uid (if it cannot be resolved)
