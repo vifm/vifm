@@ -24,7 +24,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* RAND_MAX rand() */
+#include <stdlib.h> /* RAND_MAX free() rand() */
 #include <string.h> /* strcat() strdup() strlen() */
 #include <time.h> /* time() */
 #include <unistd.h>
@@ -36,6 +36,7 @@
 #include "../modes/modes.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
@@ -200,7 +201,7 @@ refresh_window(WINDOW *win, int lazily)
 TSTATIC char *
 expand_status_line_macros(FileView *view, const char format[])
 {
-	return expand_view_macros(view, format, "tfAugsEd-lLSz%[]");
+	return expand_view_macros(view, format, "tfAugsEdD-lLSz%[]");
 }
 
 /* Expands possibly limited set of view macros.  Returns newly allocated string,
@@ -326,6 +327,17 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 				break;
 			case 'z':
 				copy_str(buf, sizeof(buf), get_tip());
+				break;
+			case 'D':
+				if(curr_stats.number_of_windows == 1)
+				{
+					FileView *const other = (view == curr_view) ? other_view : curr_view;
+					copy_str(buf, sizeof(buf), replace_home_part(other->curr_dir));
+				}
+				else
+				{
+					buf[0] = '\0';
+				}
 				break;
 			case '[':
 				{
