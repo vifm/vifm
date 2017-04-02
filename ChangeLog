@@ -90,6 +90,9 @@
 	Added %T 'statusline' macro that displays symbolic link target.  Thanks to
 	sudo-nice.
 
+	Added %a 'statusline' macro that displays amount of free space available at
+	current partition.  Thanks to sudo-nice.
+
 	Changed size formatting to round from zero (matches behaviour of e.g.
 	`ls`).
 

@@ -28,6 +28,7 @@
 
 #include <sys/select.h> /* select() FD_SET FD_ZERO */
 #include <sys/stat.h> /* O_* S_* */
+#include <sys/statvfs.h> /* statvfs statvfs() */
 #include <sys/time.h> /* timeval futimens() utimes() */
 #include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* waitpid */
@@ -1031,6 +1032,18 @@ clone_timestamps(const char path[], const char from[], const struct stat *st)
 	tv[1].tv_usec = 0;
 #endif
 	utimes(path, tv);
+}
+
+uint64_t
+get_free_space(const char at[])
+{
+	struct statvfs st;
+	if(statvfs(at, &st) != 0)
+	{
+		return 0;
+	}
+
+	return (uint64_t)st.f_bsize*st.f_bfree;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
