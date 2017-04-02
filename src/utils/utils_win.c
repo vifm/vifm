@@ -63,6 +63,7 @@ static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
 static FILE * read_cmd_output_internal(const char cmd[], int out_pipe[2]);
+static char * get_root_path(const char path[]);
 static BOOL CALLBACK close_app_enum(HWND hwnd, LPARAM lParam);
 
 void
@@ -809,6 +810,44 @@ clone_timestamps(const char path[], const char from[], const struct stat *st)
 	}
 	free(utf16_from);
 	free(utf16_path);
+}
+
+uint64_t
+get_free_space(const char at[])
+{
+	char *const root_path = get_root_path(at);
+	DWORD sectors_per_cluster, bytes_per_sector, number_of_free_clusters;
+	DWORD total_number_of_clusters;
+	if(!GetDiskFreeSpaceA(root_path, &sectors_per_cluster,
+				&bytes_per_sector, &number_of_free_clusters, &total_number_of_clusters))
+	{
+		free(root_path);
+		return 0;
+	}
+	free(root_path);
+
+	return (uint64_t)bytes_per_sector*sectors_per_cluster*number_of_free_clusters;
+}
+
+/* Extracts root part of the path (drive name or UNC share name).  Returns newly
+ * allocated string. */
+static char *
+get_root_path(const char path[])
+{
+	const char *slash;
+	char *root;
+
+	if(!is_unc_path(path))
+	{
+		const char root_path[] = { path[0], ':', '\\', '\0' };
+		return strdup(root_path);
+	}
+
+	slash = until_first(after_first(path + 2, '/'), '/');
+	root = format_str("%.*s\\", (int)(slash - path), path);
+
+	to_forward_slash(root);
+	return root;
 }
 
 int

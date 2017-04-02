@@ -249,6 +249,10 @@ const char * get_installed_data_dir(void);
 void clone_timestamps(const char path[], const char from[],
 		const struct stat *st);
 
+/* Retrives amount of free space at location specified by the path.  Returns the
+ * amount in bytes. */
+uint64_t get_free_space(const char at[]);
+
 #ifdef _WIN32
 #include "utils_win.h"
 #else

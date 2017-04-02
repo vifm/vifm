@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 18, 2017" "vifm 0.8.2"
+.TH VIFM 1 "April 02, 2017" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4019,6 +4019,8 @@ are supported:
 .IP \- 2
 %t \- file name (considering value of the 'classify' option)
 .IP \- 2
+%T - symbolic link target (empty for other filetypes)
+.IP \- 2
 %f - file name relative to current directory (considers 'classify')
 .IP \- 2
 %A \- file attributes (permissions on *nix or properties on Windows)
@@ -4034,6 +4036,10 @@ since it cannot be selected
 .IP \- 2
 %d \- file modification date (uses 'timefmt' option)
 .IP \- 2
+%D \- path of the other pane for single-pane layout
+.IP \- 2
+%a - amount of free space available at current partition
+.IP \- 2
 %z - short tips/tricks/hints that chosen randomly after one minute period
 .IP \- 2
 all 'rulerformat' macros
@@ -4048,7 +4054,8 @@ Example:
   set statusline="  %t%= %A %10u:%\-7g %15s %20d "
 .EE
 
-On Windows file properties include next flags (upper case means flag is on):
+On Windows file properties include the following flags (upper case means flag is
+on):
 .br
  A \- archive
 .br

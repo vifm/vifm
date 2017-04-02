@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Feb 25
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Apr 02
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3355,6 +3355,7 @@ Determines the content of the status line (the line right above command-line).
 Empty string means use same format like in previous versions.  Following macros
 are supported:
     %t - file name (considering value of the |vifm-'classify'| option)
+    %T - symbolic link target (empty for other filetypes)
     %f - file name relative to current directory (considers 'classify')
     %A - file attributes (permissions on *nix or properties on Windows)
     %u - user name or uid (if it cannot be resolved)
@@ -3364,12 +3365,15 @@ are supported:
          files are selected, except that it will never show size of ../ in
          visual mode, since it cannot be selected
     %d - file modification date (uses |vifm-'timefmt'| option)
+    %D - path of the other pane for single-pane layout
+    %a - amount of free space available at current partition
     %z - short tips/tricks/hints that chosen randomly after one minute period
     all |vifm-'rulerformat'| macros
 Percent sign can be followed by optional minimum field width.  Add '-' before
 minimum field width if you want field to be right aligned.
 
-On Windows file properties include next flags (upper case means flag is on):
+On Windows file properties include the following flags (upper case means flag
+is on):
     A - archive
     H - hidden
     I - content isn't indexed

@@ -7,6 +7,7 @@
 #include "../../src/ui/statusline.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
+#include "../../src/status.h"
 
 /* Checks that expanded string isn't equal to format string. */
 #define ASSERT_EXPANDED(format) \
@@ -77,9 +78,22 @@ TEST(t_macro_expanded)
 	ASSERT_EXPANDED("%t");
 }
 
+TEST(T_macro_expanded)
+{
+	lwin.dir_entry[0].type = FT_LINK;
+	ASSERT_EXPANDED("%T");
+}
+
 TEST(f_macro_expanded)
 {
 	ASSERT_EXPANDED("%f");
+}
+
+TEST(a_macro_expanded)
+{
+	ASSERT_EXPANDED("%a");
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	ASSERT_EXPANDED("%a");
 }
 
 TEST(A_macro_expanded)
@@ -110,6 +124,14 @@ TEST(E_macro_expanded)
 TEST(d_macro_expanded)
 {
 	ASSERT_EXPANDED("%d");
+}
+
+TEST(D_macro_expanded)
+{
+	curr_stats.number_of_windows = 1;
+	ASSERT_EXPANDED("%D");
+	curr_stats.number_of_windows = 2;
+	ASSERT_EXPANDED("%D");
 }
 
 TEST(l_macro_expanded)
@@ -155,7 +177,7 @@ TEST(percent_macro_expanded)
 
 TEST(wrong_macros_ignored)
 {
-	static const char STATUS_CHARS[] = "tfAugsEd-lLS%[]z";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-lLS%[]z";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -170,7 +192,7 @@ TEST(wrong_macros_ignored)
 
 TEST(wrong_macros_with_width_field_ignored)
 {
-	static const char STATUS_CHARS[] = "tfAugsEd-lLS%[]z";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-lLS%[]z";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
