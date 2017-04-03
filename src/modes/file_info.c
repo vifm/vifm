@@ -124,7 +124,7 @@ redraw_file_info_dialog(void)
 {
 	const dir_entry_t *curr;
 	char perm_buf[26];
-	char size_buf[56];
+	char size_buf[64];
 	char buf[256];
 #ifndef _WIN32
 	char id_buf[26];

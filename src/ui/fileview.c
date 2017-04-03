@@ -1252,7 +1252,7 @@ format_primary_group(int id, const void *data, size_t buf_len, char buf[])
 static void
 format_size(int id, const void *data, size_t buf_len, char buf[])
 {
-	char str[24];
+	char str[64];
 	const column_data_t *cdt = data;
 	const FileView *view = cdt->view;
 	const dir_entry_t *const entry = &view->dir_entry[cdt->line_pos];

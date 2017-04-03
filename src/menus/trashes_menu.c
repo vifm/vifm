@@ -71,7 +71,7 @@ format_item(const char trash_dir[], int calc_size)
 {
 	char msg[PATH_MAX];
 	uint64_t size;
-	char size_str[24];
+	char size_str[64];
 
 	if(!calc_size)
 	{
