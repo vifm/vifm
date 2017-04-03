@@ -638,12 +638,12 @@ vifm_try_leave(int write_info, int cquit, int force)
 	{
 		vim_write_empty_file_list();
 	}
-
 #ifdef _WIN32
-	system("cls");
+	erase();
+	refresh();
 #endif
-
 	endwin();
+
 	vifm_leave(EXIT_SUCCESS, cquit);
 }
 

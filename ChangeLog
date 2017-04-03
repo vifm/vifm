@@ -359,6 +359,9 @@
 	Fixed processing of environment variables containing non-latin characters
 	on Windows.
 
+	Fixed printing ^L character for --choose-dir on Windows.  Thanks to Phil
+	Runninger.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
