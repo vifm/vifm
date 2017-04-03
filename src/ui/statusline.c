@@ -127,7 +127,7 @@ update_stat_window_old(FileView *view, int lazy_redraw)
 	size_t print_width;
 	char *filename;
 
-	if(fentry_is_fake(curr))
+	if(curr == NULL || fentry_is_fake(curr))
 	{
 		werase(stat_win);
 		refresh_window(stat_win, lazy_redraw);
@@ -225,6 +225,11 @@ parse_view_macros(FileView *view, const char **format, const char macros[],
 	size_t len = 0;
 	char c;
 	int nexpansions = 0;
+
+	if(curr == NULL || fentry_is_fake(curr))
+	{
+		return result;
+	}
 
 	while((c = **format) != '\0')
 	{
