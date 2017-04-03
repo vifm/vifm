@@ -228,8 +228,8 @@ calc_io_progress(const io_progress_t *const state, int *skip)
 static void
 io_progress_fg(const io_progress_t *const state, int progress)
 {
-	char current_size_str[16];
-	char total_size_str[16];
+	char current_size_str[64];
+	char total_size_str[64];
 	char src_path[PATH_MAX];
 	const char *title, *ctrl_msg;
 	const char *target_name;
@@ -327,8 +327,8 @@ io_progress_fg_sb(const io_progress_t *const state, int progress)
 	progress_data_t *const pdata = estim->param;
 	ops_t *const ops = pdata->ops;
 
-	char current_size_str[16];
-	char total_size_str[16];
+	char current_size_str[64];
+	char total_size_str[64];
 	char pretty_path[PATH_MAX];
 	char *suffix;
 
@@ -394,8 +394,8 @@ io_progress_bg(const io_progress_t *const state, int progress)
 static char *
 format_file_progress(const ioeta_estim_t *estim, int precision)
 {
-	char current_size[16];
-	char total_size[16];
+	char current_size[64];
+	char total_size[64];
 
 	const int file_progress = (estim->total_file_bytes == 0U) ? 0 :
 		(estim->current_file_byte*100*precision)/estim->total_file_bytes;

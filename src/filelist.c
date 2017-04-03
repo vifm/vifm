@@ -628,7 +628,9 @@ is_dir_list_loaded(FileView *view)
 }
 
 #ifdef _WIN32
-static void
+/* Appends list of shares to filelist of the view.  Returns zero on success,
+ * otherwise non-zero is returned. */
+static int
 fill_with_shared(FileView *view)
 {
 	NET_API_STATUS res;
@@ -638,7 +640,7 @@ fill_with_shared(FileView *view)
 	if(wserver == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
+		return 1;
 	}
 
 	do
@@ -679,6 +681,8 @@ fill_with_shared(FileView *view)
 	while(res == ERROR_MORE_DATA);
 
 	free(wserver);
+
+	return (res != ERROR_SUCCESS);
 }
 #endif
 
@@ -1519,7 +1523,34 @@ populate_dir_list_internal(FileView *view, int reload)
 		return 1;
 	}
 
-	if(update_dir_list(view, reload) != 0)
+	if(is_unc_root(view->curr_dir))
+	{
+#ifdef _WIN32
+		free_view_entries(view);
+		if(fill_with_shared(view) == 0)
+		{
+			if(view->list_rows == 0)
+			{
+				add_parent_dir(view);
+			}
+		}
+		else
+		{
+			show_error_msgf("Share enumeration error",
+					"Can't load list of shares of %s", view->curr_dir);
+
+			leave_invalid_dir(view);
+			if(update_dir_list(view, reload) != 0)
+			{
+				/* We don't have read access, only execute, or there were other
+				 * problems. */
+				free_view_entries(view);
+				add_parent_dir(view);
+			}
+		}
+#endif
+	}
+	else if(update_dir_list(view, reload) != 0)
 	{
 		/* We don't have read access, only execute, or there were other problems. */
 		free_view_entries(view);
@@ -1968,15 +1999,6 @@ update_dir_list(FileView *view, int reload)
 	int prev_list_rows;
 
 	start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
-
-#ifdef _WIN32
-	if(is_unc_root(view->curr_dir))
-	{
-		fill_with_shared(view);
-		free_dir_entries(view, &prev_dir_entries, &prev_list_rows);
-		return 0;
-	}
-#endif
 
 	if(enum_dir_content(view->curr_dir, &add_file_entry_to_view, view) != 0)
 	{

@@ -200,6 +200,9 @@
 	Improved sorting performance in the presence of huge amount of symbolic
 	links.  Thanks to Marcin Kurczewski (a.k.a. rr-).
 
+	Properly recover from invalid/strange UNC root on Windows.  Don't end up
+	with empty filelist.
+
 	Fixed redirecting stdout of background commands to /dev/null, which could
 	be unwritable descriptor.  Thanks to c02y.
 
@@ -358,6 +361,9 @@
 
 	Fixed processing of environment variables containing non-latin characters
 	on Windows.
+
+	Fixed printing ^L character for --choose-dir on Windows.  Thanks to Phil
+	Runninger.
 
 0.8.2-beta to 0.8.2
 
