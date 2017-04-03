@@ -108,5 +108,18 @@ TEST(iec_3)
 	assert_string_equal("9.824 M", buf);
 }
 
+TEST(huge_precision)
+{
+	char buf[64];
+
+	cfg.sizefmt.precision = 10;
+	friendly_size_notation(231093, sizeof(buf), buf);
+	assert_string_equal("225.6767578125 K", buf);
+
+	cfg.sizefmt.precision = 25;
+	friendly_size_notation(231093, sizeof(buf), buf);
+	assert_string_equal("225.6767578125 K", buf);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

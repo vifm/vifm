@@ -61,7 +61,8 @@
 
 static void show_progress_cb(const void *descr);
 static const char ** get_size_suffixes(void);
-static double split_size_double(double d, int *ifraction, int *fraction_width);
+static double split_size_double(double d, unsigned long long *ifraction,
+		int *fraction_width);
 #ifdef _WIN32
 static void unquote(char quoted[]);
 #endif
@@ -229,7 +230,8 @@ expand_envvars(const char str[], int escape_vals)
 int
 friendly_size_notation(uint64_t num, int str_size, char str[])
 {
-	int fraction = 0, fraction_width;
+	unsigned long long fraction = 0ULL;
+	int fraction_width;
 	const char **const units = get_size_suffixes();
 	size_t u = 0U;
 	double d = num;
@@ -254,7 +256,7 @@ friendly_size_notation(uint64_t num, int str_size, char str[])
 	}
 	else
 	{
-		snprintf(str, str_size, "%.0f.%0*d %s", d, fraction_width, fraction,
+		snprintf(str, str_size, "%.0f.%0*" PRINTF_ULL " %s", d, fraction_width, fraction,
 				units[u]);
 	}
 
@@ -274,15 +276,21 @@ get_size_suffixes(void)
  * *fraction_width.  Returns new value for the size (truncated and/or
  * rounded). */
 static double
-split_size_double(double size, int *ifraction, int *fraction_width)
+split_size_double(double size, unsigned long long *ifraction, int *fraction_width)
 {
-	double integer, ten_power, dfraction;
+	double ten_power, dfraction, integer;
 
 	*fraction_width = (cfg.sizefmt.precision == 0) ? 1 : cfg.sizefmt.precision;
 
 	ten_power = pow(10, *fraction_width + 1);
+	while(ten_power > ULLONG_MAX)
+	{
+		ten_power /= 10;
+		--*fraction_width;
+	}
+
 	dfraction = modf(size, &integer);
-	*ifraction = DIV_ROUND_UP(ten_power*dfraction, 10);;
+	*ifraction = DIV_ROUND_UP(ten_power*dfraction, 10);
 
 	if(*ifraction >= ten_power/10.0)
 	{
