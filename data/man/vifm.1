@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 02, 2017" "vifm 0.8.2"
+.TH VIFM 1 "May 04, 2017" "vifm 0.8.2"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4177,6 +4177,38 @@ Default value tries to use trash directory per mount point and falls back to
 
 Will attempt to create the directory if it does not exist.  See
 "Trash directory" section below.
+.TP
+.BI 'trash_filefmt_zero'
+type: string
+.br
+default: "%name"
+.br
+The name of a file when it is moved to the trash directory and no other files in
+the trash directory have the same name. The '%name' token is replaced with the
+name of the actual file. The token can be combined with other characters, or
+with the '%count' token which in this case would always be zero.
+
+See also 'trash_filefmt_more'.
+.TP
+.BI 'trash_filefmt_more'
+type: string
+.br
+default: "%name (%count)"
+.br
+The name of a file when it is moved to the trash directory and other files exist
+in the trash directory with the same, or a similar name. The '%name' token is
+replaced with the name of the actual file, while the '%count' token is replaced
+with the number of files with the same or a similar name. The tokens can be
+combined with other characters.
+
+As an example, if there are two files with the names
+    example
+    example (1)
+in the trash directory, and the user deletes a third file called example (not in
+the trash directory), then the contents of the trash directory would become
+    example
+    example (1)
+    example (2)
 .TP
 .BI "'tuioptions' 'to'"
 type: charset
