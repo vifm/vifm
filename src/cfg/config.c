@@ -134,6 +134,8 @@ cfg_init(void)
 	cfg.vi_x_command = strdup("");
 	cfg.vi_x_cmd_bg = 0;
 	cfg.use_trash = 1;
+	cfg.trash_filefmt_zero = strdup("%name");
+	cfg.trash_filefmt_more = strdup("%name (%count)");
 	cfg.use_term_multiplexer = 0;
 	cfg.use_vim_help = 0;
 	cfg.wild_menu = 0;

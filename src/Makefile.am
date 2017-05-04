@@ -206,6 +206,7 @@ vifm_SOURCES = \
 	utils/regexp.c utils/regexp.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
+	utils/strnrep.c utils/strnrep.h \
 	utils/test_helpers.h \
 	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \

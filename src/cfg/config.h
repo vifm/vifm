@@ -120,14 +120,16 @@ typedef struct config_t
 	char colors_dir[PATH_MAX + 8]; /* Where local color files are stored. */
 	char data_dir[PATH_MAX];       /* Where to store data files. */
 
+	int use_trash;
 	/* This one should be set using set_trash_dir() function. */
 	char trash_dir[PATH_MAX];
+	char *trash_filefmt_zero;
+	char *trash_filefmt_more;
 	char log_file[PATH_MAX];
 	char *vi_command;
 	int vi_cmd_bg;
 	char *vi_x_command;
 	int vi_x_cmd_bg;
-	int use_trash;
 
 	/* Whether support of terminal multiplexers is enabled. */
 	int use_term_multiplexer;

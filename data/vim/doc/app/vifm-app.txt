@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Apr 02
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 May 04
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3469,6 +3469,39 @@ Default value tries to use trash directory per mount point and falls back to
 ~/.vifm/Trash on failure.
 
 Will attempt to create the directory if it does not exist.
+
+                                               *vifm-'trash_filefmt_zero'*
+trash_filefmt_zero
+type: string
+default: "%name"
+
+The name of a file when it is moved to the trash directory and no other files in
+the trash directory have the same name. The '%name' token is replaced with the
+name of the actual file. The token can be combined with other characters, or
+with the '%count' token which in this case would always be zero.
+
+See also 'trash_filefmt_more'.
+
+                                               *vifm-'trash_filefmt_more'*
+
+trash_filefmt_more
+type: string
+default: "%name (%count)"
+
+The name of a file when it is moved to the trash directory and other files exist
+in the trash directory with the same, or a similar name. The '%name' token is
+replaced with the name of the actual file, while the '%count' token is replaced
+with the number of files with the same or a similar name. The tokens can be
+combined with other characters.
+
+As an example, if there are two files with the names
+    example
+    example (1)
+in the trash directory, and the user deletes a third file called example (not in
+the trash directory), then the contents of the trash directory would become
+    example
+    example (1)
+    example (2)
 
                                                *vifm-'timeoutlen'* *vifm-'tm'*
 timeoutlen tm
