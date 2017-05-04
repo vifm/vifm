@@ -195,6 +195,8 @@ static void timeoutlen_handler(OPT_OP op, optval_t val);
 static void title_handler(OPT_OP op, optval_t val);
 static void trash_handler(OPT_OP op, optval_t val);
 static void trashdir_handler(OPT_OP op, optval_t val);
+static void trash_filefmt_zero_handler(OPT_OP op, optval_t val);
+static void trash_filefmt_more_handler(OPT_OP op, optval_t val);
 static void tuioptions_handler(OPT_OP op, optval_t val);
 static void undolevels_handler(OPT_OP op, optval_t val);
 static void vicmd_handler(OPT_OP op, optval_t val);
@@ -675,6 +677,14 @@ options[] = {
 	{ "trashdir", "", "path to trash directory",
 	  OPT_STRLIST, 0, NULL, &trashdir_handler, NULL,
 	  { .init = &init_trashdir },
+	},
+	{ "trash_filefmt_zero", "", "file name when moved to the trash directory and no other files exist with the same name",
+	  OPT_STR, 0, NULL, &trash_filefmt_zero_handler, NULL,
+	  { .ref.str_val = &cfg.trash_filefmt_zero },
+	},
+	{ "trash_filefmt_more", "", "file name when moved to the trash directory and another file exists with the same name",
+	  OPT_STR, 0, NULL, &trash_filefmt_more_handler, NULL,
+	  { .ref.str_val = &cfg.trash_filefmt_more },
 	},
 	{ "tuioptions", "to", "TUI look tweaks",
 	  OPT_CHARSET, ARRAY_LEN(tuioptions_vals), tuioptions_vals,
@@ -2809,6 +2819,24 @@ trashdir_handler(OPT_OP op, optval_t val)
 		set_option("trashdir", val, OPT_GLOBAL);
 	}
 	free(expanded_path);
+}
+
+static void
+trash_filefmt_zero_handler(OPT_OP op, optval_t val)
+{
+	if (cfg.trash_filefmt_zero != NULL)
+		free(cfg.trash_filefmt_zero);
+	cfg.trash_filefmt_zero = malloc(strlen(val.str_val) + 1);
+	strcpy(cfg.trash_filefmt_zero, val.str_val);
+}
+
+static void
+trash_filefmt_more_handler(OPT_OP op, optval_t val)
+{
+	if (cfg.trash_filefmt_more != NULL)
+		free(cfg.trash_filefmt_more);
+	cfg.trash_filefmt_more = malloc(strlen(val.str_val) + 1);
+	strcpy(cfg.trash_filefmt_more, val.str_val);
 }
 
 /* Parses set of TUI flags and changes appearance configuration accordingly. */
