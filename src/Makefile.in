@@ -226,11 +226,11 @@ am__v_P_1 = :
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 = 
+am__v_GEN_1 =
 AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
-am__v_at_1 = 
+am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -240,13 +240,13 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 AM_V_CC = $(am__v_CC_@AM_V@)
 am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
 am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 = 
+am__v_CC_1 =
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 = 
+am__v_CCLD_1 =
 SOURCES = $(vifm_SOURCES) $(nodist_vifm_SOURCES)
 DIST_SOURCES = $(vifm_SOURCES)
 am__can_run_installinfo = \
@@ -761,6 +761,7 @@ vifm_SOURCES = \
 	utils/regexp.c utils/regexp.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
+	utils/strnrep.c utils/strnrep.h \
 	utils/test_helpers.h \
 	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \
@@ -1188,7 +1189,7 @@ utils/utils.$(OBJEXT): utils/$(am__dirstamp) \
 utils/utils_nix.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 
-vifm$(EXEEXT): $(vifm_OBJECTS) $(vifm_DEPENDENCIES) $(EXTRA_vifm_DEPENDENCIES) 
+vifm$(EXEEXT): $(vifm_OBJECTS) $(vifm_DEPENDENCIES) $(EXTRA_vifm_DEPENDENCIES)
 	@rm -f vifm$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(vifm_OBJECTS) $(vifm_LDADD) $(LIBS)
 install-dist_binSCRIPTS: $(dist_bin_SCRIPTS)
