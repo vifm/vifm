@@ -39,6 +39,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/strnrep.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "ops.h"
@@ -558,19 +559,36 @@ gen_trash_name(const char base_path[], const char name[])
 {
 	struct stat st;
 	char buf[PATH_MAX];
+	char count[10];
 	int i;
-	char *const trash_dir = pick_trash_dir(base_path);
+	strmap_t *map;
 
+	char *const trash_dir = pick_trash_dir(base_path);
 	if(trash_dir == NULL)
 	{
 		return NULL;
 	}
 
+	map = strmap_malloc(2);
+	if (map == NULL)
+	{
+		return NULL;
+	}
+	strmap_add(map, "%name", name);
+
 	i = 0;
 	do
 	{
-		snprintf(buf, sizeof(buf), "%s/%03d_%s", trash_dir, i++, name);
+		snprintf(count, sizeof(count), "%d", i);
+		strmap_set(map, "%count", count);
+		if (i == 0) {
+		  snprintf(buf, sizeof(buf), "%s/%s", trash_dir, cfg.trash_filefmt_zero);
+		} else {
+		  snprintf(buf, sizeof(buf), "%s/%s", trash_dir, cfg.trash_filefmt_more);
+		}
+		strnrep(buf, buf, sizeof(buf), map);
 		chosp(buf);
+		i++;
 	}
 	while(os_lstat(buf, &st) == 0);
 
