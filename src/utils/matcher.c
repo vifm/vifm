@@ -44,7 +44,7 @@ struct matcher_t
 {
 	MType type;    /* Type of the matcher's pattern. */
 	char *expr;    /* User-entered pattern. */
-	char *undec;   /* User-entered pattern undecorated pattern. */
+	char *undec;   /* User-entered pattern with decoration stripped. */
 	char *raw;     /* Raw stripped value (regular expression). */
 	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */

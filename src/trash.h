@@ -24,7 +24,7 @@ typedef struct
 {
 	char *path;            /* Original full path of file before its removal. */
 	char *trash_name;      /* Full path of file inside trash directory. */
-	char *real_trash_name; /* Full path of file inside trash directory. */
+	char *real_trash_name; /* trash_name with symlinks resolved. */
 }
 trash_entry_t;
 

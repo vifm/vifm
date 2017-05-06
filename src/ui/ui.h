@@ -299,7 +299,7 @@ typedef struct
 	/* Filter which is controlled by user. */
 	filter_t manual_filter;
 	/* Stores previous raw value of the manual_filter to make filter restoring
-	 * possible.  Not NULL. */
+	 * possible.  Always not NULL. */
 	char *prev_manual_filter;
 
 	/* Filter which is controlled automatically and never filled by user. */
