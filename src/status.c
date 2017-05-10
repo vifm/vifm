@@ -103,6 +103,8 @@ init_status(config_t *config)
 static void
 load_def_values(status_t *stats, config_t *config)
 {
+	size_t i;
+
 	pending_redraw = 0;
 
 	stats->need_update = UT_NONE;
@@ -131,6 +133,10 @@ load_def_values(status_t *stats, config_t *config)
 	stats->msg_tail = 0;
 	stats->save_msg_in_list = 1;
 	stats->allow_sb_msg_truncation = 1;
+	for(i = 0U; i < ARRAY_LEN(stats->msgs); ++i)
+	{
+		update_string(&stats->msgs[i], NULL);
+	}
 
 	stats->scroll_bind_off = 0;
 	stats->split = VSPLIT;
