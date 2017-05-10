@@ -20,6 +20,7 @@
 #define VIFM__UI__STATUSBAR_H__
 
 #include "../utils/macros.h"
+#include "../utils/test_helpers.h"
 
 /* Managing status bar. */
 
@@ -43,6 +44,10 @@ void status_bar_error(const char message[]);
 void status_bar_errorf(const char message[], ...) _gnuc_printf(1, 2);
 
 int is_status_bar_multiline(void);
+
+TSTATIC_DEFS(
+	const char * get_last_message(void);
+)
 
 #endif /* VIFM__UI__STATUSBAR_H__ */
 
