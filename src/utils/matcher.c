@@ -44,7 +44,7 @@ struct matcher_t
 {
 	MType type;    /* Type of the matcher's pattern. */
 	char *expr;    /* User-entered pattern. */
-	char *undec;   /* User-entered pattern undecorated pattern. */
+	char *undec;   /* User-entered pattern with decoration stripped. */
 	char *raw;     /* Raw stripped value (regular expression). */
 	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */
@@ -61,7 +61,7 @@ static int parse_glob(matcher_t *m, int strip, char **error);
 static int parse_re(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static void free_matcher_items(matcher_t *matcher);
-static int is_negated(const char **expr, int allow_empty);
+static int is_negated(const char **expr);
 static int is_re_expr(const char expr[], int allow_empty);
 static int is_globs_expr(const char expr[]);
 static int is_mime_expr(const char expr[]);
@@ -71,7 +71,7 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		const char on_empty_re[], char **error)
 {
 	const char *orig_expr = expr;
-	const int negated = is_negated(&expr, 1);
+	const int negated = is_negated(&expr);
 	const int re = is_re_expr(expr, 1), glob = is_globs_expr(expr);
 	int strip;
 	const int full_path = is_full_path(expr, re, glob, &strip);
@@ -364,10 +364,10 @@ matcher_includes(const matcher_t *matcher, const matcher_t *like)
 /* Checks whether *expr specifies negated pattern.  Adjusts pointer if so.
  * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_negated(const char **expr, int allow_empty)
+is_negated(const char **expr)
 {
 	if(**expr == '!' &&
-			(is_re_expr(*expr + 1, allow_empty) || is_globs_expr(*expr + 1) ||
+			(is_re_expr(*expr + 1, 1) || is_globs_expr(*expr + 1) ||
 			 is_mime_expr(*expr + 1)))
 	{
 		++*expr;

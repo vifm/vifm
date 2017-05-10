@@ -17,6 +17,18 @@
 
 #include "utils.h"
 
+SETUP()
+{
+	view_setup(&lwin);
+	view_setup(&rwin);
+}
+
+TEARDOWN()
+{
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+}
+
 TEST(view_sorting_is_read_from_vifminfo)
 {
 	FILE *const f = fopen(SANDBOX_PATH "/vifminfo", "w");
@@ -74,6 +86,40 @@ TEST(filetypes_are_deduplicated)
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 	reset_cmds();
+}
+
+TEST(correct_manual_filters_are_read_from_vifminfo)
+{
+	FILE *const f = fopen(SANDBOX_PATH "/vifminfo", "w");
+	fprintf(f, "%c%s\n", LINE_TYPE_LWIN_FILT, "abc");
+	fprintf(f, "%c%s\n", LINE_TYPE_RWIN_FILT, "cba");
+	fclose(f);
+
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	read_info_file(1);
+
+	assert_string_equal("abc", lwin.prev_manual_filter);
+	assert_string_equal("abc", lwin.manual_filter.raw);
+	assert_string_equal("cba", rwin.prev_manual_filter);
+	assert_string_equal("cba", rwin.manual_filter.raw);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+}
+
+TEST(incorrect_manual_filters_in_vifminfo_are_cleared)
+{
+	FILE *const f = fopen(SANDBOX_PATH "/vifminfo", "w");
+	fprintf(f, "%c%s\n", LINE_TYPE_LWIN_FILT, "*");
+	fprintf(f, "%c%s\n", LINE_TYPE_RWIN_FILT, "?");
+	fclose(f);
+
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	read_info_file(1);
+
+	assert_false(lwin.manual_filter.is_regex_valid);
+	assert_false(rwin.manual_filter.is_regex_valid);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -32,19 +32,21 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
+#include "../status.h"
 #include "color_manager.h"
 #include "statusline.h"
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
 static void status_bar_message_i(const char message[], int error);
-static void save_status_bar_msg(const char msg[]);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 
 /* Message displayed on multi-line or too long status bar message. */
 static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
 
+/* Last message that was printed on the statusbar. */
+static char *last_message;
 static int multiline_status_bar;
 
 void
@@ -152,11 +154,10 @@ vstatus_bar_messagef(int error, const char format[], va_list ap)
 }
 
 static void
-status_bar_message_i(const char message[], int error)
+status_bar_message_i(const char msg[], int error)
 {
 	/* TODO: Refactor this function status_bar_message_i() */
 
-	static char *msg;
 	static int err;
 
 	int len;
@@ -165,21 +166,27 @@ status_bar_message_i(const char message[], int error)
 	const char *out_msg;
 	char truncated_msg[2048];
 
-	if(curr_stats.load_stage == 0)
+	if(msg != NULL)
 	{
-		return;
-	}
-
-	if(message != NULL)
-	{
-		if(replace_string(&msg, message))
+		if(replace_string(&last_message, msg))
 		{
 			return;
 		}
 
 		err = error;
 
-		save_status_bar_msg(msg);
+		stats_save_msg(last_message);
+	}
+	else
+	{
+		msg = last_message;
+	}
+
+	/* We bail out here instead of right at the top to record the message to make
+	 * it accessible in tests. */
+	if(curr_stats.load_stage == 0)
+	{
+		return;
 	}
 
 	if(msg == NULL || vle_mode_is(CMDLINE_MODE))
@@ -265,30 +272,6 @@ status_bar_message_i(const char message[], int error)
 	doupdate();
 }
 
-static void
-save_status_bar_msg(const char msg[])
-{
-	if(!curr_stats.save_msg_in_list || *msg == '\0')
-	{
-		return;
-	}
-
-	if(curr_stats.msg_tail != curr_stats.msg_head &&
-			strcmp(curr_stats.msgs[curr_stats.msg_tail], msg) == 0)
-	{
-		return;
-	}
-
-	curr_stats.msg_tail = (curr_stats.msg_tail + 1) % ARRAY_LEN(curr_stats.msgs);
-	if(curr_stats.msg_tail == curr_stats.msg_head)
-	{
-		free(curr_stats.msgs[curr_stats.msg_head]);
-		curr_stats.msg_head = (curr_stats.msg_head + 1) %
-				ARRAY_LEN(curr_stats.msgs);
-	}
-	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
-}
-
 /* Truncate the msg to the width by placing ellipsis in the middle and put the
  * result to the buffer. */
 static void
@@ -309,6 +292,12 @@ int
 is_status_bar_multiline(void)
 {
 	return multiline_status_bar;
+}
+
+const char *
+get_last_message(void)
+{
+	return last_message;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

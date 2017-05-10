@@ -2657,5 +2657,11 @@ stop_regular_completion(void)
 	}
 }
 
+line_stats_t *
+get_line_stats(void)
+{
+	return &input_stat;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

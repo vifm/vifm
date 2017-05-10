@@ -7,7 +7,7 @@
 #include "../../src/status.h"
 
 /* Because of fmemopen(). */
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 
 TEST(writing_directory_on_stdout_prints_newline)
 {

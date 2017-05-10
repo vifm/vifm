@@ -2187,7 +2187,8 @@ display_filters_info(const FileView *view)
 	char *const manualf = get_filter_info("Name", &view->manual_filter);
 	char *const autof = get_filter_info("Auto", &view->auto_filter);
 
-	status_bar_messagef("Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf, autof);
+	status_bar_messagef("Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf,
+			autof);
 
 	free(localf);
 	free(manualf);

@@ -25,7 +25,7 @@ TEARDOWN()
 	free(stats.line);
 }
 
-TEST(yank_works_with_ranges)
+TEST(entry_matching_input_is_skipped)
 {
 	hist_t hist;
 	assert_success(hist_init(&hist, 10U));

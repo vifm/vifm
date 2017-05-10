@@ -28,9 +28,9 @@
 typedef struct matcher_t matcher_t;
 
 /* Parses matcher expression and allocates matcher.  on_empty_re string is used
- * if passed in regexp is empty.  Returns matcher on success, otherwise NULL is
- * returned and *error is initialized with newly allocated string describing the
- * error. */
+ * if passed in regexp is empty.  Returns matcher on success and sets *error to
+ * NULL, otherwise NULL is returned and *error is initialized with newly
+ * allocated string describing the error. */
 matcher_t * matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		const char on_empty_re[], char **error);
 

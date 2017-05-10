@@ -116,9 +116,12 @@ TEST(huge_precision)
 	friendly_size_notation(231093, sizeof(buf), buf);
 	assert_string_equal("225.6767578125 K", buf);
 
+	/* Compiler optimizes operations somewhat differently. */
+#ifndef _WIN32
 	cfg.sizefmt.precision = 25;
 	friendly_size_notation(231093, sizeof(buf), buf);
 	assert_string_equal("225.6767578125 K", buf);
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
