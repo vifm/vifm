@@ -18,6 +18,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -143,7 +144,8 @@ TEST(reload_considers_local_filter)
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("b", lwin.dir_entry[0].name);
 
-	filter_dispose(&lwin.manual_filter);
+	matcher_free(lwin.manual_filter);
+	lwin.manual_filter = NULL;
 	filter_dispose(&lwin.auto_filter);
 }
 
@@ -218,7 +220,8 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 	load_dir_list(&lwin, 1);
 	assert_int_equal(1, lwin.filtered);
 
-	filter_dispose(&lwin.manual_filter);
+	matcher_free(lwin.manual_filter);
+	lwin.manual_filter = NULL;
 	filter_dispose(&lwin.auto_filter);
 }
 
@@ -623,7 +626,8 @@ TEST(applying_local_filter_saves_custom_list)
 	load_dir_list(&lwin, 1);
 	assert_int_equal(2, lwin.list_rows);
 
-	filter_dispose(&lwin.manual_filter);
+	matcher_free(lwin.manual_filter);
+	lwin.manual_filter = NULL;
 	filter_dispose(&lwin.auto_filter);
 }
 
@@ -648,7 +652,8 @@ TEST(excluded_entries_do_not_return)
 	load_dir_list(&lwin, 1);
 	assert_int_equal(1, lwin.list_rows);
 
-	filter_dispose(&lwin.manual_filter);
+	matcher_free(lwin.manual_filter);
+	lwin.manual_filter = NULL;
 	filter_dispose(&lwin.auto_filter);
 }
 
@@ -675,7 +680,8 @@ TEST(excluding_entries_does_not_affect_local_filter_list)
 	load_dir_list(&lwin, 1);
 	assert_int_equal(2, lwin.list_rows);
 
-	filter_dispose(&lwin.manual_filter);
+	matcher_free(lwin.manual_filter);
+	lwin.manual_filter = NULL;
 	filter_dispose(&lwin.auto_filter);
 }
 
@@ -701,7 +707,8 @@ TEST(failed_loadin_of_cv_does_not_override_saved_list)
 	load_dir_list(&lwin, 1);
 	assert_int_equal(2, lwin.list_rows);
 
-	filter_dispose(&lwin.manual_filter);
+	matcher_free(lwin.manual_filter);
+	lwin.manual_filter = NULL;
 	filter_dispose(&lwin.auto_filter);
 }
 
@@ -757,7 +764,8 @@ TEST(cursor_is_positioned_close_to_disappeared_file)
 	/* Both 2 and 1 are valid answers, list_pos is automatically corrected. */
 	assert_true(lwin.list_pos == 1 || lwin.list_pos == 2);
 
-	filter_dispose(&lwin.manual_filter);
+	matcher_free(lwin.manual_filter);
+	lwin.manual_filter = NULL;
 	filter_dispose(&lwin.auto_filter);
 
 	restore_cwd(saved_cwd);

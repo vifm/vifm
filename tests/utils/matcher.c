@@ -172,22 +172,44 @@ TEST(empty_regexp)
 	char *error;
 	matcher_t *m;
 
+	assert_non_null(m = matcher_alloc("", 0, 0, ".*\\.ext", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "/tmp/a.ext"));
+	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal(".*\\.ext", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
+	matcher_free(m);
+
 	assert_non_null(m = matcher_alloc("//", 0, 1, ".*\\.ext", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/tmp/a.ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("/.*\\.ext/", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
 	matcher_free(m);
 
 	assert_non_null(m = matcher_alloc("//i", 0, 1, ".*\\.ext", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/tmp/a.Ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("/.*\\.ext/i", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
+	matcher_free(m);
+
+	assert_non_null(m = matcher_alloc("//Iii", 0, 1, ".*\\.ext", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "/tmp/a.Ext"));
+	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("/.*\\.ext/Iii", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
 	matcher_free(m);
 
 	assert_non_null(m = matcher_alloc("////I", 0, 1, "tmp/.*\\.Ext", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/tmp/a.Ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("//tmp/.*\\.Ext//I", matcher_get_expr(m));
+	assert_string_equal("tmp/.*\\.Ext", matcher_get_undec(m));
 	matcher_free(m);
 }
 

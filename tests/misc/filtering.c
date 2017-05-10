@@ -11,6 +11,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -172,7 +173,7 @@ TEST(filtering_dir_does_not_filter_file)
 
 TEST(filtering_files_does_not_filter_dirs)
 {
-	(void)filter_set(&rwin.manual_filter, "^.*\\.d$");
+	(void)replace_matcher(&rwin.manual_filter, "^.*\\.d$");
 
 	assert_visible(rwin, rwin.dir_entry[0].name, 1);
 	assert_visible(rwin, rwin.dir_entry[1].name, 1);
@@ -187,7 +188,7 @@ TEST(filtering_files_does_not_filter_dirs)
 
 TEST(filtering_dirs_does_not_filter_files)
 {
-	(void)filter_set(&rwin.manual_filter, "^.*\\.d/$");
+	(void)replace_matcher(&rwin.manual_filter, "^.*\\.d/$");
 
 	assert_hidden(rwin, rwin.dir_entry[0].name, 1);
 	assert_hidden(rwin, rwin.dir_entry[1].name, 1);
@@ -202,7 +203,7 @@ TEST(filtering_dirs_does_not_filter_files)
 
 TEST(filtering_files_and_dirs)
 {
-	(void)filter_set(&rwin.manual_filter, "^.*\\.d/?$");
+	(void)replace_matcher(&rwin.manual_filter, "^.*\\.d/?$");
 
 	assert_hidden(rwin, rwin.dir_entry[0].name, 1);
 	assert_hidden(rwin, rwin.dir_entry[1].name, 1);
@@ -319,7 +320,7 @@ TEST(cursor_is_moved_to_nearest_neighbour)
 TEST(removed_filename_filter_is_stored)
 {
 	assert_success(filter_set(&lwin.auto_filter, "a"));
-	assert_success(filter_set(&lwin.manual_filter, "b"));
+	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
 	remove_filename_filter(&lwin);
 
@@ -330,7 +331,7 @@ TEST(removed_filename_filter_is_stored)
 TEST(filename_filter_can_removed_at_most_once)
 {
 	assert_success(filter_set(&lwin.auto_filter, "a"));
-	assert_success(filter_set(&lwin.manual_filter, "b"));
+	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
 	remove_filename_filter(&lwin);
 	remove_filename_filter(&lwin);
@@ -342,12 +343,12 @@ TEST(filename_filter_can_removed_at_most_once)
 TEST(filename_filter_can_be_cleared)
 {
 	assert_success(filter_set(&lwin.auto_filter, "a"));
-	assert_success(filter_set(&lwin.manual_filter, "b"));
+	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
 	filename_filter_clear(&lwin);
 
 	assert_true(filter_is_empty(&lwin.auto_filter));
-	assert_true(filter_is_empty(&lwin.manual_filter));
+	assert_true(matcher_is_empty(lwin.manual_filter));
 
 	assert_true(filename_filter_is_empty(&lwin));
 }
@@ -355,24 +356,24 @@ TEST(filename_filter_can_be_cleared)
 TEST(filename_filter_can_be_restored)
 {
 	assert_success(filter_set(&lwin.auto_filter, "a"));
-	assert_success(filter_set(&lwin.manual_filter, "b"));
+	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
 	remove_filename_filter(&lwin);
 	restore_filename_filter(&lwin);
 
 	assert_string_equal("a", lwin.auto_filter.raw);
-	assert_string_equal("b", lwin.manual_filter.raw);
+	assert_string_equal("b", matcher_get_expr(lwin.manual_filter));
 }
 
 TEST(filename_filter_is_not_restored_from_empty_state)
 {
 	assert_success(filter_set(&lwin.auto_filter, "a"));
-	assert_success(filter_set(&lwin.manual_filter, "b"));
+	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
 	restore_filename_filter(&lwin);
 
 	assert_string_equal("a", lwin.auto_filter.raw);
-	assert_string_equal("b", lwin.manual_filter.raw);
+	assert_string_equal("b", matcher_get_expr(lwin.manual_filter));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

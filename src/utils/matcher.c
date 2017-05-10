@@ -91,18 +91,19 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		return NULL;
 	}
 
-	if(compile_expr(&m, strip, cs_by_def, on_empty_re, error) != 0)
-	{
-		free(m.raw);
-		free(m.undec);
-		return NULL;
-	}
-
 	m.expr = strdup(orig_expr);
 	if(m.expr == NULL)
 	{
+		free(m.raw);
 		replace_string(error, "Failed to clone match expr.");
-		free_matcher_items(&m);
+		return NULL;
+	}
+
+	if(compile_expr(&m, strip, cs_by_def, on_empty_re, error) != 0)
+	{
+		free(m.raw);
+		free(m.expr);
+		free(m.undec);
 		return NULL;
 	}
 
@@ -265,7 +266,11 @@ parse_re(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 
 	if(m->raw[0] == '\0')
 	{
+		const char *const mark = (strip == 2) ? "//" : (strip == 1 ? "/" : "");
+
 		replace_string(&m->raw, on_empty_re);
+		put_string(&m->expr, format_str("%s%s%s%s", mark, on_empty_re, mark,
+				m->expr + strip*2));
 	}
 
 	m->undec = strdup(m->raw);
@@ -364,6 +369,12 @@ int
 matcher_is_empty(const matcher_t *matcher)
 {
 	return (matcher->raw[0] == '\0');
+}
+
+const char *
+matcher_get_expr(const matcher_t *matcher)
+{
+	return matcher->expr;
 }
 
 const char *

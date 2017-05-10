@@ -9,6 +9,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
@@ -17,6 +18,7 @@ static FileView *const view = &lwin;
 SETUP()
 {
 	char cwd[PATH_MAX];
+	char *error;
 
 	assert_success(chdir(SANDBOX_PATH));
 
@@ -32,7 +34,7 @@ SETUP()
 	assert_success(os_mkdir("3", 0000));
 
 	filter_init(&view->local_filter.filter, 1);
-	filter_init(&view->manual_filter, 1);
+	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
 	filter_init(&view->auto_filter, 1);
 	view->sort[0] = SK_BY_NAME;
 	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
@@ -50,7 +52,8 @@ TEARDOWN()
 	dynarray_free(view->dir_entry);
 
 	filter_dispose(&view->auto_filter);
-	filter_dispose(&view->manual_filter);
+	matcher_free(view->manual_filter);
+	view->manual_filter = NULL;
 	filter_dispose(&view->local_filter.filter);
 
 	(void)rmdir("0");

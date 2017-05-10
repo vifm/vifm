@@ -143,7 +143,7 @@ TEST(tree_accounts_for_auto_filter)
 
 TEST(tree_accounts_for_manual_filter)
 {
-	(void)filter_set(&lwin.manual_filter, "^\\.hidden$");
+	(void)replace_matcher(&lwin.manual_filter, "^\\.hidden$");
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(11, lwin.list_rows);
 	validate_tree(&lwin);
@@ -491,7 +491,7 @@ TEST(local_filter_does_not_block_visiting_directories)
 	validate_tree(&lwin);
 
 	/* Set manual filter to make sure that local filter doesn't dominate it. */
-	(void)filter_set(&lwin.manual_filter, "2");
+	(void)replace_matcher(&lwin.manual_filter, "2");
 
 	(void)filter_set(&lwin.local_filter.filter, "file");
 	load_dir_list(&lwin, 1);

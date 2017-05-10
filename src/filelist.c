@@ -59,6 +59,7 @@
 #include "utils/fswatch.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/matcher.h"
 #include "utils/path.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
@@ -2309,7 +2310,7 @@ rescue_from_empty_filelist(FileView *view)
 
 	show_error_msgf("Filter error",
 			"The %s\"%s\" pattern did not match any files. It was reset.",
-			view->invert ? "" : "inverted ", view->manual_filter.raw);
+			view->invert ? "" : "inverted ", matcher_get_expr(view->manual_filter));
 
 	filename_filter_clear(view);
 

@@ -39,6 +39,7 @@
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
+#include "../utils/matcher.h"
 #include "../utils/matchers.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -66,6 +67,7 @@ static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 static void ensure_history_not_full(hist_t *hist);
 static void get_history(FileView *view, int reread, const char dir[],
 		const char file[], int rel_pos);
+static void set_manual_filter(FileView *view, const char value[]);
 static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
@@ -324,13 +326,11 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_FILT)
 		{
-			(void)replace_string(&lwin.prev_manual_filter, line_val);
-			(void)filter_set(&lwin.manual_filter, line_val);
+			set_manual_filter(&lwin, line_val);
 		}
 		else if(type == LINE_TYPE_RWIN_FILT)
 		{
-			(void)replace_string(&rwin.prev_manual_filter, line_val);
-			(void)filter_set(&rwin.manual_filter, line_val);
+			set_manual_filter(&rwin, line_val);
 		}
 		else if(type == LINE_TYPE_LWIN_FILT_INV)
 		{
@@ -444,6 +444,30 @@ get_history(FileView *view, int reread, const char dir[], const char file[],
 	{
 		view->list_rows = list_rows;
 	}
+}
+
+/* Sets manual filter of the view and its previous state to given value. */
+static void
+set_manual_filter(FileView *view, const char value[])
+{
+	char *error;
+	matcher_t *matcher;
+
+	(void)replace_string(&view->prev_manual_filter, value);
+	matcher = matcher_alloc(value, FILTER_DEF_CASE_SENSITIVITY, 0, "", &error);
+	free(error);
+
+	/* If setting filter value has failed, try to setup an empty value instead. */
+	if(matcher == NULL)
+	{
+		(void)replace_string(&view->prev_manual_filter, "");
+		matcher = matcher_alloc("", FILTER_DEF_CASE_SENSITIVITY, 0, "", &error);
+		free(error);
+		assert(matcher != NULL && "Can't init manual filter.");
+	}
+
+	matcher_free(view->manual_filter);
+	view->manual_filter = matcher;
 }
 
 /* Sets view property specified by the type to the value. */
@@ -1400,11 +1424,11 @@ static void
 write_general_state(FILE *const fp)
 {
 	fputs("\n# State:\n", fp);
-	fprintf(fp, "f%s\n", lwin.manual_filter.raw);
+	fprintf(fp, "f%s\n", matcher_get_expr(lwin.manual_filter));
 	fprintf(fp, "i%d\n", lwin.invert);
 	fprintf(fp, "[.%d\n", lwin.hide_dot);
 	fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
-	fprintf(fp, "F%s\n", rwin.manual_filter.raw);
+	fprintf(fp, "F%s\n", matcher_get_expr(rwin.manual_filter));
 	fprintf(fp, "I%d\n", rwin.invert);
 	fprintf(fp, "].%d\n", rwin.hide_dot);
 	fprintf(fp, "]F%s\n", rwin.auto_filter.raw);

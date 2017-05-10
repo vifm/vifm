@@ -26,6 +26,7 @@
 #include "compat/reallocarray.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
+#include "utils/matcher.h"
 #include "utils/path.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
@@ -38,6 +39,7 @@
 static void reset_filter(filter_t *filter);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
+static void replace_matcher(matcher_t **matcher, const char expr[]);
 static int file_is_filtered(FileView *view, const char filename[], int is_dir,
 		int apply_local_filter);
 static int get_unfiltered_pos(const FileView *const view, int pos);
@@ -61,7 +63,7 @@ filters_view_reset(FileView *view)
 	view->prev_invert = view->invert;
 
 	(void)replace_string(&view->prev_manual_filter, "");
-	reset_filter(&view->manual_filter);
+	replace_matcher(&view->manual_filter, "");
 	(void)replace_string(&view->prev_auto_filter, "");
 	reset_filter(&view->auto_filter);
 
@@ -220,7 +222,8 @@ remove_filename_filter(FileView *view)
 		return;
 	}
 
-	(void)replace_string(&view->prev_manual_filter, view->manual_filter.raw);
+	(void)replace_string(&view->prev_manual_filter,
+			matcher_get_expr(view->manual_filter));
 	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);
 	view->prev_invert = view->invert;
 
@@ -233,7 +236,7 @@ remove_filename_filter(FileView *view)
 int
 filename_filter_is_empty(FileView *view)
 {
-	return filter_is_empty(&view->manual_filter)
+	return matcher_is_empty(view->manual_filter)
 	    && filter_is_empty(&view->auto_filter);
 }
 
@@ -241,7 +244,7 @@ void
 filename_filter_clear(FileView *view)
 {
 	filter_clear(&view->auto_filter);
-	filter_clear(&view->manual_filter);
+	replace_matcher(&view->manual_filter, "");
 	view->invert = 1;
 }
 
@@ -253,10 +256,23 @@ restore_filename_filter(FileView *view)
 		return;
 	}
 
-	(void)filter_set(&view->manual_filter, view->prev_manual_filter);
+	replace_matcher(&view->manual_filter, view->prev_manual_filter);
+
 	(void)filter_set(&view->auto_filter, view->prev_auto_filter);
 	view->invert = view->prev_invert;
 	ui_view_schedule_reload(view);
+}
+
+/* Changes *matcher to have the value of the expr.  The operation is assumed to
+ * succeed, but it's not guaranteed. */
+static void
+replace_matcher(matcher_t **matcher, const char expr[])
+{
+	char *error;
+
+	matcher_free(*matcher);
+	*matcher = matcher_alloc(expr, FILTER_DEF_CASE_SENSITIVITY, 0, "", &error);
+	free(error);
 }
 
 void
@@ -305,12 +321,12 @@ file_is_filtered(FileView *view, const char filename[], int is_dir,
 		return 0;
 	}
 
-	if(filter_is_empty(&view->manual_filter))
+	if(matcher_is_empty(view->manual_filter))
 	{
 		return 1;
 	}
 
-	if(filter_matches(&view->manual_filter, filename) > 0)
+	if(matcher_matches(view->manual_filter, filename) > 0)
 	{
 		return !view->invert;
 	}
