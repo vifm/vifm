@@ -121,6 +121,7 @@ TSTATIC_DEFS(
 	int line_completion(line_stats_t *stat);
 	const wchar_t * extract_abbrev(line_stats_t *stat, int *pos, int *no_remap);
 	void hist_prev(line_stats_t *stat, const hist_t *hist, size_t len);
+	line_stats_t * get_line_stats(void);
 )
 
 #endif /* VIFM__MODES__CMDLINE_H__ */
