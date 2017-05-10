@@ -32,13 +32,13 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/utf8.h"
+#include "../status.h"
 #include "color_manager.h"
 #include "statusline.h"
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
 static void status_bar_message_i(const char message[], int error);
-static void save_status_bar_msg(const char msg[]);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 
@@ -175,7 +175,7 @@ status_bar_message_i(const char msg[], int error)
 
 		err = error;
 
-		save_status_bar_msg(last_message);
+		stats_save_msg(last_message);
 	}
 	else
 	{
@@ -270,30 +270,6 @@ status_bar_message_i(const char msg[], int error)
 	/* This is needed because update_all_windows() doesn't call doupdate() if
 	 * curr_stats.load_stage == 1. */
 	doupdate();
-}
-
-static void
-save_status_bar_msg(const char msg[])
-{
-	if(!curr_stats.save_msg_in_list || *msg == '\0')
-	{
-		return;
-	}
-
-	if(curr_stats.msg_tail != curr_stats.msg_head &&
-			strcmp(curr_stats.msgs[curr_stats.msg_tail], msg) == 0)
-	{
-		return;
-	}
-
-	curr_stats.msg_tail = (curr_stats.msg_tail + 1) % ARRAY_LEN(curr_stats.msgs);
-	if(curr_stats.msg_tail == curr_stats.msg_head)
-	{
-		free(curr_stats.msgs[curr_stats.msg_head]);
-		curr_stats.msg_head = (curr_stats.msg_head + 1) %
-				ARRAY_LEN(curr_stats.msgs);
-	}
-	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
 }
 
 /* Truncate the msg to the width by placing ellipsis in the middle and put the

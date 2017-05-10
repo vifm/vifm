@@ -341,6 +341,29 @@ stats_file_choose_action_set(void)
 }
 
 void
+stats_save_msg(const char msg[])
+{
+	if(!curr_stats.save_msg_in_list || msg[0] == '\0')
+	{
+		return;
+	}
+
+	if(curr_stats.msg_tail != curr_stats.msg_head &&
+			strcmp(curr_stats.msgs[curr_stats.msg_tail], msg) == 0)
+	{
+		return;
+	}
+
+	curr_stats.msg_tail = (curr_stats.msg_tail + 1)%ARRAY_LEN(curr_stats.msgs);
+	if(curr_stats.msg_tail == curr_stats.msg_head)
+	{
+		free(curr_stats.msgs[curr_stats.msg_head]);
+		curr_stats.msg_head = (curr_stats.msg_head + 1)%ARRAY_LEN(curr_stats.msgs);
+	}
+	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
+}
+
+void
 dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 {
 	dcache_get(path, size, nitems, 0);

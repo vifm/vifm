@@ -226,6 +226,9 @@ void stats_set_on_choose(const char command[]);
  * so, otherwise zero is returned. */
 int stats_file_choose_action_set(void);
 
+/* Records status bar message. */
+void stats_save_msg(const char msg[]);
+
 /* Caching of information about directories. */
 
 /* Retrieves information about the path.  size and/or nitems can be NULL.  On
