@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <stdlib.h> /* free() */
+
 #include "../../src/int/file_magic.h"
 #include "../../src/utils/matcher.h"
 
@@ -163,6 +165,16 @@ TEST(empty_regexp)
 	assert_true(matcher_matches(m, "/tmp/a.Ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
 	matcher_free(m);
+}
+
+TEST(wrong_regex_flag)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_null(m = matcher_alloc("/reg/x", 0, 1, ".*\\.ext", &error));
+	assert_non_null(error);
+	free(error);
 }
 
 TEST(expr_includes_itself)

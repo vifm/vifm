@@ -384,8 +384,7 @@ is_re_expr(const char expr[], int allow_empty)
 	const char *e = strrchr(expr, '/');
 	return expr[0] == '/'                        /* Starts with slash. */
 	    && e != NULL && e != expr                /* Has second slash. */
-	    && (allow_empty || e - expr > 1)         /* Not empty pattern. */
-	    && strspn(e + 1, "iI") == strlen(e + 1); /* Has only correct flags. */
+	    && (allow_empty || e - expr > 1);        /* Not empty pattern. */
 }
 
 /* Checks whether expr is a glob file name pattern.  Returns non-zero if so,
