@@ -676,7 +676,11 @@ TEST(filter_prints_non_empty_filters)
 {
 	const char *expected = "Filter -- Flags -- Value\n"
 	                       "Local     I        local\n"
+#ifndef _WIN32
 	                       "Name      I        abc\n"
+#else
+	                       "Name      i        abc\n"
+#endif
 	                       "Auto               ";
 
 	assert_success(exec_commands("filter abc", &lwin, CIT_COMMAND));
