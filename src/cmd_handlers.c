@@ -493,7 +493,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "filter",            .abbr = NULL,    .id = COM_FILTER,
 	  .descr = "set/reset file filter",
 	  .flags = HAS_EMARK | HAS_REGEXP_ARGS | HAS_QMARK_NO_ARGS,
-	  .handler = &filter_cmd,      .min_args = 0,   .max_args = 2, },
+	  .handler = &filter_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "find",              .abbr = "fin",   .id = COM_FIND,
 	  .descr = "query find results",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_MACROS_FOR_CMD
@@ -3584,7 +3584,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 3)
 	{
 		/* TODO: maybe extract into a function to generalize code with
-		 * filter_cmd(). */
+		 * parse_case_flag(). */
 		const char *flags = cmd_info->argv[2];
 		while(*flags != '\0')
 		{

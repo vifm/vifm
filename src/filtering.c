@@ -304,6 +304,8 @@ file_is_filtered(FileView *view, const char filename[], int is_dir,
 {
 	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
+	char path[PATH_MAX + sizeof(name_with_slash)];
+
 	if(is_dir)
 	{
 		append_slash(filename, name_with_slash, sizeof(name_with_slash));
@@ -326,14 +328,17 @@ file_is_filtered(FileView *view, const char filename[], int is_dir,
 		return 1;
 	}
 
-	if(matcher_matches(view->manual_filter, filename) > 0)
+	if(matcher_is_full_path(view->manual_filter))
 	{
-		return !view->invert;
+		const size_t nchars = copy_str(path, sizeof(path) - 1, view->curr_dir);
+		path[nchars - 1U] = '/';
+		copy_str(path + nchars, sizeof(path) - nchars, filename);
+		filename = path;
 	}
-	else
-	{
-		return view->invert;
-	}
+
+	return matcher_matches(view->manual_filter, filename)
+		   ? !view->invert
+		   : view->invert;
 }
 
 void

@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <stdlib.h> /* free() */
-#include <string.h> /* strdup() */
+#include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
@@ -44,6 +44,7 @@ SETUP()
 
 	lwin.list_rows = 7;
 	lwin.list_pos = 2;
+	strcpy(lwin.curr_dir, "/some/path");
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("with(round)");
@@ -374,6 +375,37 @@ TEST(filename_filter_is_not_restored_from_empty_state)
 
 	assert_string_equal("a", lwin.auto_filter.raw);
 	assert_string_equal("b", matcher_get_expr(lwin.manual_filter));
+}
+
+TEST(filename_filter_can_match_full_paths)
+{
+	assert_success(replace_matcher(&lwin.manual_filter, "///some/path/b$//"));
+	assert_visible(lwin, "a", 0);
+	assert_visible(lwin, "a", 0);
+	assert_hidden(lwin, "b", 0);
+	assert_visible(lwin, "b", 1);
+
+	assert_success(replace_matcher(&lwin.manual_filter, "{{/some/path/b}}"));
+	assert_visible(lwin, "a", 0);
+	assert_visible(lwin, "a", 0);
+	assert_hidden(lwin, "b", 0);
+	assert_visible(lwin, "b", 1);
+
+	assert_success(replace_matcher(&lwin.manual_filter, "///other/path/b//"));
+	assert_visible(lwin, "b", 0);
+	assert_visible(lwin, "b", 1);
+
+	assert_success(replace_matcher(&lwin.manual_filter, "{{/other/path/b}}"));
+	assert_visible(lwin, "b", 0);
+	assert_visible(lwin, "b", 1);
+
+	assert_success(replace_matcher(&lwin.manual_filter,
+				"//^/some/path/[^/]*\\.png$//"));
+	assert_hidden(lwin, "a.png", 0);
+	assert_visible(lwin, "a.png", 1);
+	strcat(lwin.curr_dir, "/nested");
+	assert_visible(lwin, "a.png", 0);
+	assert_visible(lwin, "a.png", 1);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -773,5 +773,15 @@ TEST(filter_can_invert_manual_filter)
 	assert_false(curr_view->invert);
 }
 
+TEST(filter_accepts_full_path_patterns)
+{
+	assert_success(exec_commands("filter ///some/path//", &lwin, CIT_COMMAND));
+}
+
+TEST(filter_accepts_paths_with_many_spaces)
+{
+	assert_success(exec_commands("filter { a b c d e }", &lwin, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
