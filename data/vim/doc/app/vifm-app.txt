@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 Apr 02
+*vifm-app.txt*    For Vifm version 0.8.2  Last change: 2017 May 12
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2634,7 +2634,8 @@ matching.
 
 The last form is implicitly refers to one of the others.  |vifm-:highlight|
 does not accept undecorated form, while |vifm-:filetype|, |vifm-:filextype|,
-|vifm-:fileviewer| and |vifm-'classify'| treat it as list of name globs.
+|vifm-:fileviewer|, |vifm-:select|, |vifm-:unselect| and |vifm-'classify'|
+treat it as list of name globs.
 
 Regular expression patterns are case insensitive by default.
 
