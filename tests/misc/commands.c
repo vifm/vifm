@@ -707,6 +707,12 @@ TEST(filter_with_empty_value_reuses_last_search)
 	assert_string_equal(expected, get_last_message());
 }
 
+TEST(filter_accepts_pipe_without_escaping)
+{
+	assert_success(exec_commands("filter /a|b/", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("filter a|b", &lwin, CIT_COMMAND));
+}
+
 TEST(filter_prints_whole_manual_filter_expression)
 {
 	const char *expected = "Filter -- Flags -- Value\n"

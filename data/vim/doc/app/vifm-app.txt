@@ -1583,25 +1583,24 @@ The builtin commands are:
     filename.
 
                                                *vifm-:filter*
-:filter[!] regular_expression
-:filter[!] /regular_expression/[flags]
-    filter files matching the pattern out of directory listing.  Use
-    :filter to show all files.  Using second variant you can use the bar ('|')
-    symbol without escaping.  Empty regular expression (specified by //, "" or
-    '') means using of the last search pattern.  Use '!' to control state of
-    filter inversion after updating filter value (see |vifm-cpo-f|).  Filter is
-    matched case sensitively on *nix and case insensitively on Windows.
-    See |vifm-filters|.
+:filter[!] {pattern}
+    filter files matching the pattern out of directory listings.  '!'
+    controls state of filter inversion after updating filter value
+    (see |vifm-cpo-f|).  Filter is matched case sensitively on *nix and
+    case insensitively on Windows.  See |vifm-filters| and |vifm-patterns|.
 
-    Supported flags:
-      - "i" makes filter case insensitive;
-      - "I" makes filter case sensitive.
+    Example: >
+        " filter all files ending in .o from the filelist.
+        :filter /\.o$/
 
-    Flags might be repeated multiple times, later ones win (e.g. "iiiI" is
-    equivalent to "I" and "IiIi" is the same as "i").
+:filter[!] {empty-pattern}
+    same as above, but use last search pattern as pattern value.
+
+    Example: >
+        :filter //I
 
 :filter
-    reset filter (set it to empty string) and show all files.
+    reset filter (set it to an empty string) and show all files.
 :filter!
     same as |vifm-:invert|.
 :filter?
@@ -2626,8 +2625,14 @@ There are six possible ways to write a single pattern:
  5. [!]<comma-separated-mime-type-globs>
  6. undecorated-pattern
 
-To combine several patterns (AND them), make sure you're using of the first
-five forms and write patterns one after another, like this: >
+Flags of regular expressions mean the following:
+  - "i" makes filter case insensitive;
+  - "I" makes filter case sensitive.
+They can be repeated multiple times, but the later one takes precedence (e.g.
+"iiiI" is equivalent to "I" and "IiIi" is the same as "i").
+
+To combine several patterns (AND them), make sure you're using one of the
+first five forms and write patterns one after another, like this: >
  <text/plain>{*.vifm}
 Mind that if you make a mistake the whole string will be treated as the sixth
 form.
@@ -2645,7 +2650,8 @@ does not accept undecorated form, while |vifm-:filetype|, |vifm-:filextype|,
 |vifm-:fileviewer|, |vifm-:select|, |vifm-:unselect| and |vifm-'classify'|
 treat it as list of name globs.
 
-Regular expression patterns are case insensitive by default.
+Regular expression patterns are case insensitive by default, see description
+of commands, which might override default behaviour.
 
 |vifm-globs| section provides short overview of globs and some important points
 that one needs to know about them.

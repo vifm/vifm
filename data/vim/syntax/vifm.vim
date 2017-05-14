@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: January 17, 2017
+" Last Change: May 14, 2017
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -15,11 +15,11 @@ set cpo-=C
 " General commands
 syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
 		\ chmod chown clone compare cope[n] co[py] cq[uit] d[elete] delbmarks
-		\ delm[arks] di[splay] dirs e[dit] el[se] empty en[dif] exi[t] file filter
-		\ fin[d] fini[sh] gr[ep] h[elp] his[tory] jobs locate ls lstrash marks
-		\ mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t] pw[d] q[uit]
-		\ redr[aw] reg[isters] rename restart restore rlink screen sh[ell] siblnext
-		\ siblprev sor[t] sp[lit] s[ubstitute] touch tr trashes tree sync undol[ist]
+		\ delm[arks] di[splay] dirs e[dit] el[se] empty en[dif] exi[t] file fin[d]
+    \ fini[sh] gr[ep] h[elp] his[tory] jobs locate ls lstrash marks mes[sages]
+		\ mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t] pw[d] q[uit] redr[aw]
+		\ reg[isters] rename restart restore rlink screen sh[ell] siblnext siblprev
+		\ sor[t] sp[lit] s[ubstitute] touch tr trashes tree sync undol[ist]
 		\ ve[rsion] vie[w] vifm vs[plit] winc[md] w[rite] wq x[it] y[ank]
 		\ nextgroup=vifmArgs
 
@@ -51,7 +51,7 @@ syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 syntax keyword vifmExprCommand contained if ec[ho] elsei[f] exe[cute]
 syntax keyword vifmNormalCommand contained norm[al]
 		\ nextgroup=vifmColonSubcommand
-syntax keyword vifmSelectCommands contained select unselect skipwhite
+syntax match vifmPatternCommands contained /\<\(filter\(!\|\>\)\|select\(!\|\>\)\|unselect\>\)/ skipwhite
 		\ nextgroup=vifmPattern
 
 " List of event names for autocommands (case insensitive)
@@ -153,7 +153,7 @@ syntax region vifmStatement start='^\(\s\|:\)*'
 		\,vifmFtCommandSt,vifmCMapAbbr,vifmMap,vifmMapSt,vifmCMapSt,vifmExecute
 		\,vifmComment,vifmInlineComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
 		\,vifmCdCommandSt,vifmSet,vifmArgument,vifmSoCommandSt,vifmPrefixCommands
-		\,vifmAutocmdCommand,vifmAutoEvent,vifmSelectCommands
+		\,vifmAutocmdCommand,vifmAutoEvent,vifmPatternCommands
 " Contained statement with highlighting of angle-brace notation.
 syntax region vifmStatementCN start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
@@ -170,7 +170,7 @@ syntax region vifmStatementC start='\(\s\|:\)*'
 		\,vifmComment,vifmInlineComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
 		\,vifmCdCommandSt,vifmSet,vifmArgument,vifmSoCommand,vifmSoCommandSt
 		\,vifmInvertCommand,vifmInvertCommandSt,vifmPrefixCommands
-		\,vifmAutocmdCommand,vifmAutoEvent,vifmSelectCommands
+		\,vifmAutocmdCommand,vifmAutoEvent,vifmPatternCommands
 syntax region vifmCmdCommandSt start='^\(\s\|:\)*com\%[mand]\>'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmCmdCommand,vifmComment,vifmInlineComment,vifmNotComment
@@ -386,7 +386,7 @@ syntax match vifmHiClear contained /\s*\<clear\>\s*/
 
 " Highlight
 highlight link vifmAutocmdCommand Statement
-highlight link vifmSelectCommands Statement
+highlight link vifmPatternCommands Statement
 highlight link vifmComment Comment
 highlight link vifmInlineComment Comment
 highlight link vifmCommand Statement

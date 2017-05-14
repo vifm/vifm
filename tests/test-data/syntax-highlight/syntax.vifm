@@ -187,7 +187,9 @@ else
     vsplit
 endif
 
-" "d" between vertical bars should NOT be highlighted in either of lines
+" both patterns should be highlighted
+" "d" between vertical bars should NOT be highlighted in any special way in
+" either of lines
 windo filter! /^.*\.(o|d|class|pyc)$|^\$RECYCLE\.BIN\/$/
 windo filter /^.*\.(o|d|class|pyc)$|^\$RECYCLE\.BIN\/$/
 
@@ -321,8 +323,10 @@ endif
 
 " commands should be highlighted, patterns too
 select   /*/
+select!  /*/
 unselect !{pat}
 " only commands should be highlighted
+unselect! /*/
 unselect ! cmd
 unselect pat
 
