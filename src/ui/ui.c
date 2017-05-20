@@ -720,7 +720,14 @@ change_window(void)
 
 	if(curr_stats.view && !is_dir_list_loaded(curr_view))
 	{
+		/* This view hasn't been loaded since startup yet, do it now. */
 		navigate_to(curr_view, curr_view->curr_dir);
+	}
+	else
+	{
+		/* Change working directory, so that %c macro and other cwd-sensitive things
+		 * work as expected. */
+		(void)vifm_chdir(flist_get_dir(curr_view));
 	}
 
 	if(window_shows_dirlist(&lwin) && window_shows_dirlist(&rwin))

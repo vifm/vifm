@@ -164,7 +164,7 @@ event_loop(const int *quit)
 		suggestions_are_visible = 0;
 
 		/* Ensure that current working directory is set correctly (some pieces of
-		 * code rely on this). */
+		 * code rely on this, e.g. %c macro in current directory). */
 		(void)vifm_chdir(flist_get_dir(curr_view));
 
 		if(got_input)
