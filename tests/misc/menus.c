@@ -6,7 +6,11 @@
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/keys.h"
+#include "../../src/menus/map_menu.h"
 #include "../../src/menus/menus.h"
+#include "../../src/modes/modes.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
 
@@ -201,6 +205,22 @@ TEST(null_pattern_causes_pattern_reuse)
 	assert_int_equal(1, m.pos);
 	assert_true(search_menu_list(NULL, &m, 1));
 	assert_int_equal(2, m.pos);
+}
+
+TEST(empty_mappings_menu_is_not_displayed)
+{
+	init_modes();
+
+	status_bar_message("");
+	assert_failure(show_map_menu(&lwin, "normal", NORMAL_MODE, L"nonsense"));
+	assert_string_equal("No mappings found", get_last_message());
+
+	vle_keys_user_add(L"this", L"that", NORMAL_MODE, 0);
+	status_bar_message("");
+	assert_failure(show_map_menu(&lwin, "normal", NORMAL_MODE, L"nonsense"));
+	assert_string_equal("No mappings found", get_last_message());
+
+	vle_keys_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
