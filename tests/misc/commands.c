@@ -676,7 +676,11 @@ TEST(filter_prints_non_empty_filters)
 {
 	const char *expected = "Filter -- Flags -- Value\n"
 	                       "Local     I        local\n"
+#ifndef _WIN32
 	                       "Name      I        abc\n"
+#else
+	                       "Name      i        abc\n"
+#endif
 	                       "Auto               ";
 
 	assert_success(exec_commands("filter abc", &lwin, CIT_COMMAND));
@@ -685,6 +689,40 @@ TEST(filter_prints_non_empty_filters)
 	status_bar_message("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, get_last_message());
+}
+
+TEST(filter_with_empty_value_reuses_last_search)
+{
+#ifndef _WIN32
+#define I "I"
+#else
+#define I "i"
+#endif
+
+	const char *expected = "Filter -- Flags -- Value\n"
+	                       "Local              \n"
+	                       "Name      " I "        pattern\n"
+	                       "Auto               ";
+
+	cfg_resize_histories(5);
+	cfg_save_search_history("pattern");
+
+	assert_success(exec_commands("filter //" I, &lwin, CIT_COMMAND));
+	status_bar_message("");
+	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, get_last_message());
+
+	assert_success(exec_commands("filter ''", &lwin, CIT_COMMAND));
+	status_bar_message("");
+	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, get_last_message());
+
+	assert_success(exec_commands("filter \"\"", &lwin, CIT_COMMAND));
+	status_bar_message("");
+	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, get_last_message());
+
+#undef I
 }
 
 TEST(filter_without_args_resets_manual_filter)

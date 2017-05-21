@@ -62,6 +62,15 @@ show_map_menu(FileView *view, const char mode_str[], int mode,
 
 	vle_keys_list(mode, &add_mapping_item, dialogs);
 
+	/* If we filtered out all meaningful lines, clear the menu. */
+	if(m.len == 1 && *m.items[0] == '\0')
+	{
+		free(m.items[0]);
+		free(m.items);
+		m.items = NULL;
+		m.len = 0;
+	}
+
 	return display_menu(m.state, view);
 }
 
@@ -92,7 +101,11 @@ add_mapping_item(const wchar_t lhs[], const wchar_t rhs[], const char descr[])
 
 	m.items = reallocarray(m.items, m.len + 1, sizeof(char *));
 
-	if(rhs[0] == L'\0')
+	if(is_separator)
+	{
+		m.items[m.len++] = strdup("");
+	}
+	else if(rhs[0] == L'\0')
 	{
 		m.items[m.len++] = format_str("%-*s %s", MAP_WIDTH, mb_lhs, descr);
 	}

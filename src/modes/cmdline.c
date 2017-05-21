@@ -732,7 +732,10 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 
 	update_cmdline_size();
 	update_cmdline_text(&input_stat);
-	curs_set(1);
+	if(curr_stats.load_stage > 0)
+	{
+		curs_set(1);
+	}
 
 	curr_stats.save_msg = 1;
 
@@ -816,7 +819,10 @@ leave_cmdline_mode(void)
 	input_stat.initial_line = NULL;
 	input_stat.line_buf = NULL;
 
-	curs_set(0);
+	if(curr_stats.load_stage > 0)
+	{
+		curs_set(0);
+	}
 	curr_stats.save_msg = 0;
 	ui_sb_clear();
 
