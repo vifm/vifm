@@ -174,6 +174,7 @@ vifm_main(int argc, char *argv[])
 		files = read_stream_lines(stdin, &nfiles, 1, NULL, NULL);
 		if(reopen_term_stdin() != 0)
 		{
+			free_string_array(files, nfiles);
 			return EXIT_FAILURE;
 		}
 	}
@@ -201,6 +202,8 @@ vifm_main(int argc, char *argv[])
 
 	if(init_status(&cfg) != 0)
 	{
+		free_string_array(files, nfiles);
+
 		puts("Error during session status initialization.");
 		return -1;
 	}
@@ -256,11 +259,13 @@ vifm_main(int argc, char *argv[])
 	curr_stats.original_stdout = reopen_term_stdout();
 	if(curr_stats.original_stdout == NULL)
 	{
+		free_string_array(files, nfiles);
 		return -1;
 	}
 
 	if(!setup_ncurses_interface())
 	{
+		free_string_array(files, nfiles);
 		return -1;
 	}
 
@@ -297,6 +302,7 @@ vifm_main(int argc, char *argv[])
 			flist_custom_set(&rwin, "-", dir, files, nfiles);
 		}
 	}
+	free_string_array(files, nfiles);
 	/* Load colors in any case to load color pairs. */
 	cs_load_pairs();
 
