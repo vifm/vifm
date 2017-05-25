@@ -505,7 +505,6 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	show_progress("Querying...", 0);
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
 	{
-		char progress_msg[128];
 		int progress;
 		int existing_id;
 		char *fingerprint;
@@ -552,6 +551,8 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		progress = (i*100)/files.nitems;
 		if(progress != last_progress)
 		{
+			char progress_msg[128];
+
 			last_progress = progress;
 			snprintf(progress_msg, sizeof(progress_msg), "Querying... %d (% 2d%%)", i,
 					progress);
