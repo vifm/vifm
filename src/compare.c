@@ -395,7 +395,10 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt, int skip_empty)
 		return 1;
 	}
 
-	qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
+	if(curr.entries != NULL)
+	{
+		qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
+	}
 
 	flist_custom_start(view, title);
 
@@ -505,7 +508,6 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 	show_progress("Querying...", 0);
 	for(i = 0; i < files.nitems && !ui_cancellation_requested(); ++i)
 	{
-		char progress_msg[128];
 		int progress;
 		int existing_id;
 		char *fingerprint;
@@ -552,6 +554,8 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 		progress = (i*100)/files.nitems;
 		if(progress != last_progress)
 		{
+			char progress_msg[128];
+
 			last_progress = progress;
 			snprintf(progress_msg, sizeof(progress_msg), "Querying... %d (% 2d%%)", i,
 					progress);
@@ -833,16 +837,13 @@ put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
 
 	/* Comparison by contents is the only one when we need to resolve fingerprint
 	 * conflicts. */
-	if(ct == CT_CONTENTS)
-	{
-		record->path = strdup(path);
-	}
-	else
-	{
-		record->path = NULL;
-	}
+	record->path = (ct == CT_CONTENTS ? strdup(path) : NULL);
 
-	trie_set(trie, fingerprint, record);
+	if(trie_set(trie, fingerprint, record) < 0)
+	{
+		free(record->path);
+		free(record);
+	}
 }
 
 /* Frees list of compare entries.  Implements data free function for

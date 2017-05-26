@@ -334,7 +334,7 @@ receive_pkg(void)
 static read_pipe_t
 create_pipe(const char name[], char path_buf[], size_t len)
 {
-	int id = 0;
+	unsigned int id = 0U;
 	read_pipe_t rp;
 	int fatal;
 
@@ -343,7 +343,7 @@ create_pipe(const char name[], char path_buf[], size_t len)
 	rp = try_use_pipe(path_buf, &fatal);
 	while(rp == NULL_READ_PIPE && !fatal)
 	{
-		snprintf(path_buf, len, "%s/" PREFIX "%s%d", get_ipc_dir(), name, ++id);
+		snprintf(path_buf, len, "%s/" PREFIX "%s%u", get_ipc_dir(), name, ++id);
 
 		if(id == 0)
 		{

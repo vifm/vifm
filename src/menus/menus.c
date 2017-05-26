@@ -240,7 +240,7 @@ reset_menu_state(menu_state_t *ms)
 	{
 		menu_state.d->state = NULL;
 	}
-	menu_state.d->state = NULL;
+	menu_state.d = NULL;
 
 	ms->view = NULL;
 }

@@ -2088,7 +2088,7 @@ sizefmt_handler(OPT_OP op, optval_t val)
 		else if(starts_with_lit(part, "precision:"))
 		{
 			const char *const val = after_first(part, ':');
-			if(!read_int(val, &precision) || precision <= 0 || precision > INT_MAX)
+			if(!read_int(val, &precision) || precision <= 0)
 			{
 				vle_tb_append_linef(vle_err, "Invalid precision value: %s", val);
 				break;
@@ -2670,8 +2670,8 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 	}
 }
 
-/* Converts line to a number.  Handles overflow/underflow.  Returns non-zero on
- * success and zero otherwise. */
+/* Converts line to a number.  Handles overflow/underflow by saturating
+ * resulting value.  Returns non-zero on success and zero otherwise. */
 static int
 read_int(const char line[], int *i)
 {
