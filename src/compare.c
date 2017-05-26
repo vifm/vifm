@@ -837,16 +837,13 @@ put_file_id(trie_t *trie, const char path[], const char fingerprint[], int id,
 
 	/* Comparison by contents is the only one when we need to resolve fingerprint
 	 * conflicts. */
-	if(ct == CT_CONTENTS)
-	{
-		record->path = strdup(path);
-	}
-	else
-	{
-		record->path = NULL;
-	}
+	record->path = (ct == CT_CONTENTS ? strdup(path) : NULL);
 
-	trie_set(trie, fingerprint, record);
+	if(trie_set(trie, fingerprint, record) < 0)
+	{
+		free(record->path);
+		free(record);
+	}
 }
 
 /* Frees list of compare entries.  Implements data free function for
