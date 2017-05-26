@@ -395,7 +395,10 @@ compare_one_pane(FileView *view, CompareType ct, ListType lt, int skip_empty)
 		return 1;
 	}
 
-	qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
+	if(curr.entries != NULL)
+	{
+		qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
+	}
 
 	flist_custom_start(view, title);
 
