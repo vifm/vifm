@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2017 March 15
+" Last Change: 2017 May 28
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -185,7 +185,7 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	for file in flist
 		execute editcmd fnamemodify(file, ':.')
 		if editcmd == 'edit' && len(flist) > 1
-			argadd
+			execute 'argadd' fnamemodify(file, ':.')
 		endif
 	endfor
 

@@ -368,6 +368,9 @@
 	Fixed updating CWD on switching views.  Thanks to Svyatoslav
 	Mishyn (a.k.a. juef).
 
+	Fixed plugin in versions of Vim where :argadd without argument doesn't
+	work.  Thanks to eco0414.
+
 0.8.2-beta to 0.8.2
 
 	Added support for matchit to filetype plugin.  Patch by filterfalse.
