@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@openmailbox.org>
-" Last Change: 2017 March 15
+" Last Change: 2017 May 30
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -178,6 +178,8 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 		let flist = flist[1:-1]
 	endif
 
+	" We emulate :args to not leave unnamed buffer around after we open our
+	" buffers.
 	if editcmd == 'edit' && len(flist) > 1
 		silent! %argdelete
 	endif
@@ -185,16 +187,17 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	for file in flist
 		execute editcmd fnamemodify(file, ':.')
 		if editcmd == 'edit' && len(flist) > 1
-			argadd
+			execute 'argadd' fnamemodify(file, ':.')
 		endif
 	endfor
 
 	" Go to the first file working around possibility that :drop command is not
 	" evailable, if possible
-	if s:has_drop
-		execute 'drop' firstfile
-	elseif editcmd == 'edit'
+	if editcmd == 'edit'
 		execute 'buffer' fnamemodify(firstfile, ':.')
+	elseif s:has_drop
+		" Mind that drop replaces arglist, so don't use it with :edit.
+		execute 'drop' firstfile
 	endif
 endfunction
 
