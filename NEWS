@@ -1,3 +1,211 @@
+June 04, 2017
+=============
+
+vifm v0.9 beta
+--------------
+
+New version brings two new ways of viewing and processing file lists, namely
+tree-view and directory-comparison.  As usual, previously existing facilities
+were extended and improved to become more useful.
+
+The beta stage will last about two weeks.  In case any serious bugs are found
+during this period, another beta version might be released.
+
+Main changes:
+ - introduced tree-like representation of files;
+ - added directory comparison facilities;
+ - added ability to restore last navigation menu;
+ - background operations and programs can now be cancelled;
+ - dismissed error output of external programs can now be queried;
+ - added shell completion for bash and zsh;
+ - now it's possible to configure mappings in dialogs.
+
+More detailed list of changes.
+
+Packaging:
+ - Removed -Werror in tests from non-developer builds.
+
+Command-line mode:
+ - added :tree command that converts current view into a tree (thanks to
+   filterfalse and Kornel);
+ - added :dmap, :dnoremap and :dunmap commands to configure mappings in dialogs
+   (thanks to Sassan Haradji, a.k.a. sassanh);
+ - added "tree" parameter to :sync! that enables synchronization of tree view
+   (thanks to filterfalse);
+ - added :compare command to perform comparison in one or two directory trees
+   (thanks to anonymous on SourceForge discussion forum and aleksejrs);
+ - added :copen command to restore last menu that supports navigation (thanks to
+   Sassan Haradji, a.k.a. sassanh);
+ - added :screen! form that enables terminal multiplexers support (instead of
+   toggling it as :screen does) (thanks to Marcos Cruz);
+ - added :siblnext and :siblprev commands.  They change directory to next or
+   previous sibling directories of current path (in global sorting order of
+   current pane) (thanks to sudo-nice);
+ - made :put, :touch and :mkdir accept [line] range, which can be used to
+   specify target position in tree-view (thanks to filterfalse);
+ - accept paths in :touch, not just file names (thanks to filterfalse);
+ - disallow applying :chmod on ".." entry;
+ - disallow selecting ".." entry with :select command.
+
+Macros:
+ - added %Iu and %IU macros, which are %u and %U equivalents, but work better if
+   external command is interactive and changes terminal state;
+ - added %q macro that redirects command output into quick view (thanks to
+   svenn71).
+
+:set command and options:
+ - added 'dotfiles' (local) option, which exposes dot files filter as an option
+   (thanks to filterfalse);
+ - added 'caseoptions' option that enables more fine-grained control over case
+   sensitivity (thanks to Alexandru Geana, a.k.a. alegen);
+ - added 'sizefmt' option that configures formatting of human-friendly size
+   (thanks to sudo-nice);
+ - added %f 'statusline' macro that inserts relative path of the entry, which
+   might be useful for non-regular views (thanks to filterfalse);
+ - added %D 'statusline' macro that displays path of the other pane in
+   single-pane layout (thanks to sudo-nice);
+ - added %T 'statusline' macro that displays symbolic link target (thanks to
+   sudo-nice);
+ - added %a 'statusline' macro that displays amount of free space available at
+   current partition (thanks to sudo-nice);
+ - consider trailing slash for directories or symbolic links that point to
+   directories in 'classify' patterns by file name (e.g., this works now:
+   `[::*/::]`);
+ - better handling of setting 'fillchars' to incorrect or excessive value.
+
+Normal and visual modes:
+ - added [d and ]d shortcuts to navigate to previous/next directory entry
+   (thanks to filterfalse);
+ - added [s and ]s shortcuts to navigate to previous/next selected entry
+   (thanks to filterfalse);
+ - added [z and ]z shortcuts to navigate to first/last sibling in a tree
+   (thanks to filterfalse);
+ - added zj and zk shortcuts to navigate to next/previous directory sibling in a
+   tree (thanks to filterfalse);
+ - added [c and ]c shortcuts to navigate to previous/next mismatch in directory
+   comparison view (thanks to filterfalse);
+ - added do and dp keys to compare views for applying changes in files (thanks
+   to filterfalse).
+
+Menus and dialogs:
+ - added dd key to :jobs menu, which requests cancellation of background
+   operation.  Background :put, :copy, :move, :delete, size calculation with ga
+   and gA as well as applications started in background can be cancelled this
+   way (thanks to blurm);
+ - added e key to :jobs menu that displays list of errors issues by that jobs,
+   if any.  h key goes back to :jobs menu;
+ - added % key to menu mode, which navigates to [count]-th percent of the list;
+ - added meaning to [count] of cp shortcut, which is now processed as numerical
+   argument for non-recursive `chmod` command (thanks to sudo-nice);
+ - partially return progress report for menus.  Was disabled by introduction of
+   null byte heuristic.
+
+File operations:
+ - enable restoring files from trash from custom views;
+ - disallow moving/copying/linking files into custom view (put is forbidden, so
+   makes sense to forbid these too);
+ - try harder to move files by not giving up on getting permission error, which
+   isn't always a reliable indication of actual permission error.  Only when
+   'syscalls' is on (thanks to Marcin Kurczewski, a.k.a. rr-).
+
+File preview:
+ - view current directory on ".." for quickview/view mode (thanks to
+   filterfalse);
+ - enable cancellation of tree preview construction (thanks to filterfalse);
+ - do not resolve symbolic links in directory preview (thanks to filterfalse).
+
+Security:
+ - make temporary rename files accessible only by the user (thanks to
+   aleksejrs).
+
+Performance:
+ - improve performance of startup and exit by omitting file existence checks.
+   The cost is possibly old files staying in the state, but it should be for
+   long time (thanks to Marcin Kurczewski, a.k.a. rr-);
+ - improved sorting performance in the presence of huge amount of symbolic links
+   (thanks to Marcin Kurczewski, a.k.a. rr-).
+
+Invocation:
+ - don't disable preview on `--remote --select` if it doesn't hide updated pane
+   (thanks to Marcin Kurczewski, a.k.a. rr-);
+ - make +{num} and similar options work (actually affect cursor of the view)
+   (thanks to filterfalse);
+ - treat "+" option the same way as Vim (like :$) (thanks to filterfalse).
+
+Scripting:
+ - added v:servername variable, which provides access to server name of the
+   running instance used by --remote feature (thanks to Marcin Kurczewski,
+   a.k.a. rr-);
+ - getpanetype() got new value ("tree") to indicate tree-view (thanks to
+   filterfalse).
+
+TUI (Text User Interface):
+ - limited maximum height of message popup, just print how many lines we're
+   skipping;
+ - put hardware cursor according to current mode and cursor within it (thanks to
+   Tyler Spivey);
+ - display path to the conflicting file in conflict resolution dialog;
+ - provide better messages on i/o errors with 'syscalls' (thanks to Behrooz).
+
+File filtering:
+ - don't move cursor off "../" before start of local filtering (thanks to
+   filterfalse);
+ - prevent clearing filters on zM if there were no zO preceding it (thanks to
+   sudo-nice).
+
+Color schemes:
+ - added CmpMismatch highlight group for highlighting mismatched files on
+   side-by-side comparison.
+
+Integration:
+ - added completion scripts for bash and zsh (patches by filterfalse);
+ - escape first tilde in paths that go to the shell (thanks to Marius Schmidl);
+ - resolve symbolic link for listing associated programs from desktop-files
+   (thanks to filterfalse).
+
+Vim-plugin:
+ - work around :drop command being disabled in the plugin (thanks to Phil
+   Runninger);
+ - fixed inconsistent behaviour of :EditVifm in plugin with regard to
+   "[No Name]" buffer (thanks to Phil Runninger);
+ - fixed plugin in versions of Vim where :argadd without argument doesn't work
+   (thanks to eco0414).
+
+Only on Windows:
+ - use <exe file location>/data/colors as global storage of color schemes on
+   Windows (thanks to r44083);
+ - handle terminal resize on Windows 10 (thanks to randomizedthinking);
+ - properly recover from invalid/strange UNC root on Windows.  Don't end up with
+   empty filelist;
+ - fixed use of non-latin characters in environment variables and command-line
+   options (thanks to khaoos-abominable).
+
+Important fixes:
+ - fixed redirecting stdout of background commands to /dev/null, which could be
+   unwritable descriptor (thanks to c02y);
+ - fixed possible data loss on moving/copying files over their own parent or
+   child directories via p, P, :move, :copy, :alink and :rlink (thanks to Marius
+   Schmidl);
+ - fixed detection of too-small-terminal state;
+ - fixed treating characters like š and ć (with low Unicode values, just above
+   0x100) as functional keys on input (thanks to granderil).
+
+Other changes:
+ - changed size formatting to round from zero (matches behaviour of e.g. `ls`);
+ - read error output of background commands independently of main thread
+   (prevents blocking of tools which produce huge amount of output) (thanks to
+   Stas Malavin);
+ - no vifminfo merging if file change isn't detected.  Might result in faster
+   quitting in some cases.  Not accounting for some changes is still possible
+   when multiple instances quit simultaneously, but same could happen without
+   this change;
+ - made search consider trailing slash for directories and symbolic links that
+   point to directories (thanks to filterfalse).
+
+See change log for the full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 July 16, 2016
 =============
 
