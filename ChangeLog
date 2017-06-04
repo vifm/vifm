@@ -1,4 +1,4 @@
-0.8.2 to current
+0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.
 
@@ -18,7 +18,7 @@
 	Added CmpMismatch highlight group for highlighting mismatched files on
 	side-by-side comparison.
 
-	Added %Iu and %IU macros, which are %u and %U equivalent, but work better
+	Added %Iu and %IU macros, which are %u and %U equivalents, but work better
 	if external command is interactive and changes terminal state.
 
 	Added v:servername variable, which provides access to server name of the
@@ -141,7 +141,7 @@
 	Don't disable preview on `--remote --select` if it doesn't hide updated
 	pane.  Thanks to Marcin Kurczewski (a.k.a. rr-).
 
-	Try to match terminal size on Windows.  Thanks to randomizedthinking.
+	Handle terminal resize on Windows 10.  Thanks to randomizedthinking.
 
 	Escape first tilde in paths that go to the shell.  Thanks to Marius
 	Schmidl.
@@ -155,7 +155,7 @@
 	thread (prevents blocking of tools which produce huge amount of output).
 	Thanks to Stas Malavin.
 
-	Limit maximum height of message popup, just print how many lines we're
+	Limited maximum height of message popup, just print how many lines we're
 	skipping.
 
 	No vifminfo merging if file change isn't detected.  Might result in faster
