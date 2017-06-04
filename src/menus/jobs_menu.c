@@ -204,7 +204,6 @@ show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job)
 		m.items = break_into_lines(errors, errors_len, &m.len, 0);
 
 		reenter_menu_mode(&m);
-		draw_menu(m.state);
 	}
 	free(cmd);
 	free(errors);
@@ -218,7 +217,6 @@ errs_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 	if(wcscmp(keys, L"h") == 0)
 	{
 		reenter_menu_mode(&jobs_m);
-		draw_menu(jobs_m.state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

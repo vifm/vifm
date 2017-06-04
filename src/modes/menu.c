@@ -317,6 +317,7 @@ reenter_menu_mode(menu_data_t *m)
 	assert(m->len > 0 && "Menu cannot be empty.");
 
 	menus_replace_menu(m);
+	redraw_menu(m->state);
 	menu = m;
 }
 
