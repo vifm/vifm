@@ -244,16 +244,11 @@ TEST(put_files_copies_files_according_to_tree_structure)
 TEST(overwrite_request_accounts_for_target_file_rename)
 {
 	struct stat st;
-	FILE *f;
 	char *saved_cwd = save_cwd();
 	char src_file[PATH_MAX + 1];
 
-	f = fopen(SANDBOX_PATH "/binary-data", "w");
-	fclose(f);
-
-	f = fopen(SANDBOX_PATH "/b", "w");
-	fclose(f);
-
+	create_empty_file(SANDBOX_PATH "/binary-data");
+	create_empty_file(SANDBOX_PATH "/b");
 
 	make_abs_path(src_file, sizeof(src_file), TEST_DATA_PATH, "read/binary-data",
 			saved_cwd);

@@ -62,10 +62,7 @@ TEST(move_file)
 	char new_fname[] = "new_name";
 	char *list[] = { &new_fname[0] };
 
-	FILE *const f = fopen(lwin.dir_entry[0].name, "w");
-	fclose(f);
-
-	assert_true(path_exists(lwin.dir_entry[0].name, DEREF));
+	create_empty_file(lwin.dir_entry[0].name);
 
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);

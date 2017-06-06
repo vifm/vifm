@@ -15,6 +15,8 @@
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
 
+#include "utils.h"
+
 static int get_gids(gid_t *gid1, gid_t *gid2);
 static int has_more_than_one_group(void);
 
@@ -27,7 +29,6 @@ SETUP()
 
 TEST(file_group_is_changed, IF(has_more_than_one_group))
 {
-	FILE *f;
 
 	int i;
 	struct stat s;
@@ -43,12 +44,8 @@ TEST(file_group_is_changed, IF(has_more_than_one_group))
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	assert_success(chdir(lwin.curr_dir));
 
-	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
-	f = fopen(SANDBOX_PATH "/dir/chown-me", "w");
-	if(f != NULL)
-	{
-		fclose(f);
-	}
+	create_empty_dir("dir");
+	create_empty_file("dir/chown-me");
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, SANDBOX_PATH "/dir/chown-me");
