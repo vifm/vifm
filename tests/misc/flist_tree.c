@@ -25,8 +25,8 @@
 #include "utils.h"
 
 static int load_tree(FileView *view, const char path[]);
-static void verify_tree_node(column_data_t *cdt, int idx, const char
-		expected[]);
+static void verify_tree_node(column_data_t *cdt, int idx,
+		const char expected[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static int remove_selected(FileView *view, const dir_entry_t *entry, void *arg);
@@ -307,7 +307,7 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 
 TEST(nested_directory_change_detection)
 {
-	struct stat st;
+	struct stat st1, st2;
 
 	update_string(&cfg.ruler_format, "");
 
@@ -317,23 +317,33 @@ TEST(nested_directory_change_detection)
 
 	/* Use presumably older timestamp for directory to be changed (we need one
 	 * second difference). */
-	assert_success(os_lstat(TEST_DATA_PATH, &st));
-	clone_timestamps(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st);
+	assert_success(os_lstat(TEST_DATA_PATH, &st1));
+	clone_timestamps(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st1);
 
-	assert_success(load_tree(&lwin, SANDBOX_PATH));
-	assert_int_equal(3, lwin.list_rows);
+	assert_success(os_lstat(SANDBOX_PATH "/nested-dir", &st2));
+	/* On WINE time stamps aren't really cloned (even though success is
+	 * reported). */
+	if(st1.st_mtime == st2.st_mtime)
+	{
+		assert_success(load_tree(&lwin, SANDBOX_PATH));
+		assert_int_equal(3, lwin.list_rows);
 
-	check_if_filelist_have_changed(&lwin);
-	ui_view_query_scheduled_event(&lwin);
-	assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
-	check_if_filelist_have_changed(&lwin);
+		check_if_filelist_have_changed(&lwin);
+		ui_view_query_scheduled_event(&lwin);
+		assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
+		check_if_filelist_have_changed(&lwin);
 
-	curr_stats.load_stage = 2;
-	assert_true(process_scheduled_updates_of_view(&lwin));
-	curr_stats.load_stage = 0;
+		curr_stats.load_stage = 2;
+		assert_true(process_scheduled_updates_of_view(&lwin));
+		curr_stats.load_stage = 0;
 
-	assert_int_equal(2, lwin.list_rows);
-	validate_tree(&lwin);
+		assert_int_equal(2, lwin.list_rows);
+		validate_tree(&lwin);
+	}
+	else
+	{
+		assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
+	}
 
 	assert_success(remove(SANDBOX_PATH "/nested-dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
