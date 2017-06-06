@@ -420,7 +420,7 @@ TEST(bang_abs_path_completion)
 
 TEST(tilde_is_completed_after_emark)
 {
-	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "",
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
 			saved_cwd);
 	ASSERT_COMPLETION(L"!~/", L"!~/compare/");
 }

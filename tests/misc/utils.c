@@ -187,11 +187,12 @@ make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
 {
 	if(is_path_absolute(base))
 	{
-		snprintf(buf, buf_len, "%s/%s", base, sub);
+		snprintf(buf, buf_len, "%s%s%s", base, (sub[0] == '\0' ? "" : "/"), sub);
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s/%s/%s", cwd, base, sub);
+		snprintf(buf, buf_len, "%s/%s%s%s", cwd, base, (sub[0] == '\0' ? "" : "/"),
+				sub);
 	}
 }
 
