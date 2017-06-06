@@ -39,20 +39,16 @@ static void double_clash_with_put(int move);
 
 static fo_prompt_cb rename_cb;
 
+static char *saved_cwd;
+
 SETUP()
 {
+	saved_cwd = save_cwd();
+
 	regs_init();
 
-	if(is_path_absolute(SANDBOX_PATH))
-	{
-		strcpy(lwin.curr_dir, SANDBOX_PATH);
-	}
-	else
-	{
-		char cwd[PATH_MAX];
-		assert_non_null(get_cwd(cwd, sizeof(cwd)));
-		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", cwd, SANDBOX_PATH);
-	}
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
 
 	rename_cb = NULL;
 }
@@ -60,6 +56,7 @@ SETUP()
 TEARDOWN()
 {
 	regs_reset();
+	restore_cwd(saved_cwd);
 }
 
 static void
@@ -247,9 +244,9 @@ TEST(put_files_copies_files_according_to_tree_structure)
 TEST(overwrite_request_accounts_for_target_file_rename)
 {
 	struct stat st;
-	char src_file[PATH_MAX];
 	FILE *f;
-	char *saved_cwd;
+	char *saved_cwd = save_cwd();
+	char src_file[PATH_MAX + 1];
 
 	f = fopen(SANDBOX_PATH "/binary-data", "w");
 	fclose(f);
@@ -257,23 +254,13 @@ TEST(overwrite_request_accounts_for_target_file_rename)
 	f = fopen(SANDBOX_PATH "/b", "w");
 	fclose(f);
 
-	if(is_path_absolute(TEST_DATA_PATH))
-	{
-		snprintf(src_file, sizeof(src_file), "%s/read/binary-data", TEST_DATA_PATH);
-	}
-	else
-	{
-		char cwd[PATH_MAX];
-		assert_non_null(get_cwd(cwd, sizeof(cwd)));
-		snprintf(src_file, sizeof(src_file), "%s/%s/read/binary-data", cwd,
-				TEST_DATA_PATH);
-	}
 
+	make_abs_path(src_file, sizeof(src_file), TEST_DATA_PATH, "read/binary-data",
+			saved_cwd);
 	assert_success(regs_append('a', src_file));
 
 	fops_init(&line_prompt, &options_prompt_rename);
 
-	saved_cwd = save_cwd();
 	(void)fops_put(&lwin, -1, 'a', 0);
 	restore_cwd(saved_cwd);
 

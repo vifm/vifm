@@ -16,9 +16,17 @@
 
 #include "utils.h"
 
+static char *saved_cwd;
+
 SETUP()
 {
 	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
+	saved_cwd = save_cwd();
+}
+
+TEARDOWN()
+{
+	restore_cwd(saved_cwd);
 }
 
 TEST(make_dirs_does_nothing_for_custom_view)
@@ -27,17 +35,8 @@ TEST(make_dirs_does_nothing_for_custom_view)
 	char path[] = "dir";
 	char *paths[] = {path};
 
-	if(is_path_absolute(TEST_DATA_PATH))
-	{
-		strcpy(lwin.curr_dir, TEST_DATA_PATH);
-	}
-	else
-	{
-		char cwd[PATH_MAX];
-		assert_non_null(get_cwd(cwd, sizeof(cwd)));
-		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", cwd,
-				TEST_DATA_PATH);
-	}
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "",
+			saved_cwd);
 
 	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
 
@@ -125,17 +124,10 @@ TEST(make_dirs_creates_sub_dirs_by_abs_path)
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
 	{
-		char path[PATH_MAX];
-		char *paths[] = {path};
+		char path[PATH_MAX + 1];
+		char *paths[] = { path };
 
-		if(is_path_absolute(SANDBOX_PATH))
-		{
-			snprintf(path, sizeof(path), "%s/parent/child", SANDBOX_PATH);
-		}
-		else
-		{
-			snprintf(path, sizeof(path), "%s/%s/parent/child", cwd, SANDBOX_PATH);
-		}
+		make_abs_path(path, sizeof(path), SANDBOX_PATH, "parent/child", saved_cwd);
 
 		fops_mkdirs(&lwin, -1, paths, 1, 1);
 		assert_true(is_dir(SANDBOX_PATH "/parent/child"));

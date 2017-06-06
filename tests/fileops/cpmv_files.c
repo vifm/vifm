@@ -25,20 +25,11 @@ static char *saved_cwd;
 SETUP()
 {
 	saved_cwd = save_cwd();
-	assert_success(chdir(SANDBOX_PATH));
 
-	if(is_path_absolute(SANDBOX_PATH))
-	{
-		strcpy(lwin.curr_dir, SANDBOX_PATH);
-		strcpy(rwin.curr_dir, SANDBOX_PATH);
-	}
-	else
-	{
-		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", saved_cwd,
-				SANDBOX_PATH);
-		snprintf(rwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s", saved_cwd,
-				SANDBOX_PATH);
-	}
+	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
+	set_to_sandbox_path(rwin.curr_dir, sizeof(rwin.curr_dir));
+
+	assert_success(chdir(SANDBOX_PATH));
 
 	/* lwin */
 	view_setup(&lwin);

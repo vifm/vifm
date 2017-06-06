@@ -94,6 +94,21 @@ set_to_sandbox_path(char buf[], size_t buf_len)
 	}
 }
 
+void
+make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
+		const char cwd[])
+{
+	if(is_path_absolute(base))
+	{
+		snprintf(buf, buf_len, "%s%s%s", base, (sub[0] == '\0' ? "" : "/"), sub);
+	}
+	else
+	{
+		snprintf(buf, buf_len, "%s/%s%s%s", cwd, base, (sub[0] == '\0' ? "" : "/"),
+				sub);
+	}
+}
+
 int
 not_windows(void)
 {
