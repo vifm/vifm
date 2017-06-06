@@ -67,10 +67,11 @@ TEST(move_file)
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
 
-	assert_false(path_exists(lwin.dir_entry[0].name, DEREF));
-	assert_true(path_exists(new_fname, DEREF));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
-	(void)unlink(new_fname);
+	assert_false(path_exists_at(SANDBOX_PATH, lwin.dir_entry[0].name, DEREF));
+	assert_success(unlink(SANDBOX_PATH "/new_name"));
 }
 
 TEST(make_relative_link, IF(not_windows))
@@ -124,8 +125,6 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 	flist_custom_add(&rwin, TEST_DATA_PATH "/rename/a");
 	assert_true(flist_custom_finish(&rwin, CV_REGULAR, 0) == 0);
 	assert_int_equal(2, rwin.list_rows);
-
-	assert_success(chdir(SANDBOX_PATH));
 
 	curr_view = &rwin;
 	other_view = &lwin;
@@ -315,9 +314,9 @@ TEST(parent_overwrite_is_prevented_on_file_move)
 static void
 check_directory_clash(int parent_to_child, CopyMoveLikeOp op)
 {
-	create_empty_dir(SANDBOX_PATH "/dir");
-	create_empty_dir(SANDBOX_PATH "/dir/dir");
-	create_empty_file(SANDBOX_PATH "/dir/dir/file");
+	create_empty_dir("dir");
+	create_empty_dir("dir/dir");
+	create_empty_file("dir/dir/file");
 
 	strcat(parent_to_child ? rwin.curr_dir : lwin.curr_dir, "/dir");
 

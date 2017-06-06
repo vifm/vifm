@@ -36,14 +36,17 @@ TEST(change_window_updates_pwd)
 	char expected_cwd[PATH_MAX + 1];
 	char cwd[PATH_MAX + 1];
 
+	char *const saved_cwd = save_cwd();
+
 	curr_view = &lwin;
 	other_view = &rwin;
 
 	assert_success(chdir(SANDBOX_PATH));
 	assert_non_null(get_cwd(expected_cwd, sizeof(expected_cwd)));
+	restore_cwd(saved_cwd);
 
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
+	strcpy(rwin.curr_dir, expected_cwd);
 
 	change_window();
 

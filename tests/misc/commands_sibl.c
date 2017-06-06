@@ -4,6 +4,7 @@
 
 #include <string.h> /* memset() strcpy() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
@@ -11,6 +12,13 @@
 #include "../../src/filelist.h"
 
 #include "utils.h"
+
+static char cwd[PATH_MAX + 1];
+
+SETUP_ONCE()
+{
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+}
 
 SETUP()
 {
@@ -35,8 +43,11 @@ TEARDOWN()
 
 TEST(sibl_do_nothing_in_cv)
 {
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a", cwd);
+
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
@@ -45,23 +56,30 @@ TEST(sibl_do_nothing_in_cv)
 
 TEST(sibl_navigate_correctly)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/read");
+	char path[PATH_MAX + 1];
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			cwd);
 
 	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
-	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/rename"));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "rename", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
 
 	assert_success(exec_commands("siblprev", &lwin, CIT_COMMAND));
-	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/read"));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
 }
 
 TEST(sibl_does_not_wrap_by_default)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/various-sizes");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"various-sizes", cwd);
 
 	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/various-sizes"));
 
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "compare",
+			cwd);
 
 	assert_success(exec_commands("siblprev", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/compare"));
@@ -69,39 +87,50 @@ TEST(sibl_does_not_wrap_by_default)
 
 TEST(sibl_wrap)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/various-sizes");
+	char path[PATH_MAX + 1];
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"various-sizes", cwd);
 
 	exec_commands("siblnext!", &lwin, CIT_COMMAND);
-	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/compare"));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "compare", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
 
 	exec_commands("siblprev!", &lwin, CIT_COMMAND);
-	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/various-sizes"));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "various-sizes", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
 }
 
 TEST(sibl_handles_errors_without_failures)
 {
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "not_a_valid_last_entry",
+			cwd);
+
 	strcpy(lwin.curr_dir, "not/a/valid/path");
 	exec_commands("siblnext!", &lwin, CIT_COMMAND);
 	assert_string_equal(lwin.curr_dir, "not/a/valid/path");
 
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/not_a_valid_last_entry");
+	strcpy(lwin.curr_dir, path);
 	exec_commands("siblprev", &lwin, CIT_COMMAND);
-	assert_true(paths_are_same(lwin.curr_dir,
-				TEST_DATA_PATH "/not_a_valid_last_entry"));
+	assert_true(paths_are_same(lwin.curr_dir, path));
 }
 
 TEST(sibl_skips_files_and_can_work_without_sorting)
 {
+	char path[PATH_MAX + 1];
 	char *const saved_cwd = save_cwd();
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "a", cwd);
 
 	assert_success(os_mkdir(SANDBOX_PATH "/a", 0700));
 	create_file(SANDBOX_PATH "/b");
 
 	lwin.sort_g[0] = SK_NONE;
 
-	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
+	strcpy(lwin.curr_dir, path);
 	exec_commands("siblnext!", &lwin, CIT_COMMAND);
-	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH "/a"));
+	assert_true(paths_are_same(lwin.curr_dir, path));
 
 	restore_cwd(saved_cwd);
 
@@ -111,12 +140,16 @@ TEST(sibl_skips_files_and_can_work_without_sorting)
 
 TEST(sibl_uses_global_sort_option)
 {
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "rename", cwd);
+
 	lwin.sort[0] = -SK_BY_NAME;
 
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/read");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			cwd);
 
 	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
-	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/rename"));
+	assert_true(paths_are_same(lwin.curr_dir, path));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

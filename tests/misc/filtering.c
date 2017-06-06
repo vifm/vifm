@@ -4,11 +4,13 @@
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/filter.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -23,6 +25,13 @@
 
 #define assert_visible(view, name, dir) \
 	assert_true(filters_file_is_visible(&view, name, dir))
+
+static char cwd[PATH_MAX + 1];
+
+SETUP_ONCE()
+{
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+}
 
 SETUP()
 {
@@ -208,12 +217,16 @@ TEST(filtering_files_and_dirs)
 
 TEST(file_after_directory_is_hidden)
 {
+	char path[PATH_MAX + 1];
+
 	view_teardown(&lwin);
 	view_setup(&lwin);
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/read");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/read/very-long-line");
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read", cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/very-long-line", cwd);
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.dir_entry[1].selected = 1;
@@ -259,10 +272,13 @@ TEST(global_local_nature_of_normal_zo)
 
 TEST(cursor_is_not_moved_from_parent_dir_initially)
 {
+	char path[PATH_MAX + 1];
+
 	cfg.dot_dirs = DD_NONROOT_PARENT;
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/read/very-long-line");
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/very-long-line", cwd);
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.list_pos = 0;
@@ -280,11 +296,17 @@ TEST(cursor_is_not_moved_from_parent_dir_initially)
 
 TEST(cursor_is_moved_to_nearest_neighbour)
 {
+	char path[PATH_MAX + 1];
+
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/read/binary-data");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/read/dos-eof");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/read/two-lines");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/read/very-long-line");
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/binary-data", cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/dos-eof", cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/two-lines", cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/very-long-line", cwd);
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.list_pos = 1;

@@ -20,8 +20,11 @@ static char *saved_cwd;
 
 SETUP()
 {
-	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
 	saved_cwd = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
 }
 
 TEARDOWN()
@@ -94,9 +97,10 @@ TEST(make_dirs_creates_one_dir)
 		char *paths[] = {path};
 
 		fops_mkdirs(&lwin, -1, paths, 1, 0);
-		assert_true(is_dir(SANDBOX_PATH "/dir"));
 
-		assert_success(rmdir(SANDBOX_PATH "/dir"));
+		assert_true(is_dir("dir"));
+
+		assert_success(rmdir("dir"));
 	}
 }
 
@@ -106,21 +110,18 @@ TEST(make_dirs_creates_sub_dirs_by_rel_path)
 			++cfg.use_system_calls)
 	{
 		char path[] = "parent/child";
-		char *paths[] = {path};
+		char *paths[] = { path };
 
 		fops_mkdirs(&lwin, -1, paths, 1, 1);
-		assert_true(is_dir(SANDBOX_PATH "/parent/child"));
+		assert_true(is_dir("parent/child"));
 
-		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
-		assert_success(rmdir(SANDBOX_PATH "/parent"));
+		assert_success(rmdir("parent/child"));
+		assert_success(rmdir("parent"));
 	}
 }
 
 TEST(make_dirs_creates_sub_dirs_by_abs_path)
 {
-	char cwd[PATH_MAX];
-	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
 	{
@@ -130,10 +131,10 @@ TEST(make_dirs_creates_sub_dirs_by_abs_path)
 		make_abs_path(path, sizeof(path), SANDBOX_PATH, "parent/child", saved_cwd);
 
 		fops_mkdirs(&lwin, -1, paths, 1, 1);
-		assert_true(is_dir(SANDBOX_PATH "/parent/child"));
+		assert_true(is_dir("parent/child"));
 
-		assert_success(rmdir(SANDBOX_PATH "/parent/child"));
-		assert_success(rmdir(SANDBOX_PATH "/parent"));
+		assert_success(rmdir("parent/child"));
+		assert_success(rmdir("parent"));
 	}
 }
 
@@ -144,9 +145,9 @@ TEST(make_dirs_considers_tree_structure)
 
 	view_setup(&lwin);
 
-	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_dir("dir");
 
-	flist_load_tree(&lwin, SANDBOX_PATH);
+	flist_load_tree(&lwin, lwin.curr_dir);
 
 	/* Set at to -1. */
 	lwin.list_pos = 0;
@@ -157,10 +158,10 @@ TEST(make_dirs_considers_tree_structure)
 
 	/* Remove both files afterward to make sure they can both be created at the
 	 * same time. */
-	assert_success(rmdir(SANDBOX_PATH "/new-dir"));
-	assert_success(rmdir(SANDBOX_PATH "/dir/new-dir"));
+	assert_success(rmdir("new-dir"));
+	assert_success(rmdir("dir/new-dir"));
 
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	assert_success(rmdir("dir"));
 
 	view_teardown(&lwin);
 }
@@ -176,8 +177,8 @@ TEST(check_by_absolute_path_is_performed_beforehand)
 
 	(void)fops_mkdirs(&lwin, -1, names, 2, 0);
 
-	assert_failure(rmdir(SANDBOX_PATH "/a"));
-	assert_success(rmdir(SANDBOX_PATH "/b"));
+	assert_failure(rmdir("a"));
+	assert_success(rmdir("b"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

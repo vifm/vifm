@@ -36,14 +36,14 @@ static void column_line_print(const void *data, int column_id, const char buf[],
 static void setup_custom_view(FileView *view, int very);
 static int filenames_can_include_newline(void);
 
-static char test_data[PATH_MAX];
+static char cwd[PATH_MAX + 1];
+static char test_data[PATH_MAX + 1];
 static const size_t MAX_WIDTH = 20;
 static char buf1[80 + 1];
 static char buf2[80 + 1];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
@@ -162,7 +162,7 @@ TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 
 	assert_false(flist_custom_active(&lwin));
 
-	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH);
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, test_file);
 	flist_custom_add(&lwin, "./broken-link");
@@ -191,7 +191,7 @@ TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 
 	assert_false(flist_custom_active(&lwin));
 
-	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH);
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, "./dir-link");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
@@ -482,8 +482,13 @@ TEST(custom_view_does_not_reset_local_state)
 
 TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 {
-	FILE *const f = fopen(SANDBOX_PATH "/list", "w");
-	fprintf(f, "%s%c", SANDBOX_PATH "/a\nb", '\0');
+	char path[PATH_MAX + 1];
+	FILE *f;
+
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "a\nb", cwd);
+
+	f = fopen(SANDBOX_PATH "/list", "w");
+	fprintf(f, "%s%c", path, '\0');
 	fclose(f);
 
 	assert_success(chdir(SANDBOX_PATH));
@@ -548,22 +553,33 @@ TEST(renaming_dir_in_cv_adjust_its_children_entries)
 
 TEST(symlinks_are_not_resolved_in_origins, IF(not_windows))
 {
+	char path[PATH_MAX + 1];
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH "/existing-files",
-				SANDBOX_PATH "/link"));
+	{
+		char src[PATH_MAX + 1], dst[PATH_MAX + 1];
+		make_abs_path(src, sizeof(src), TEST_DATA_PATH, "existing-files", cwd);
+		make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "link", cwd);
+		assert_success(symlink(src, dst));
+	}
 #endif
 
 	assert_success(chdir(SANDBOX_PATH "/link"));
-	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH "/link");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "link",
+			cwd);
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, SANDBOX_PATH "/link"); /* Absolute path. */
-	flist_custom_add(&lwin, "a");                  /* Relative path. */
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "link", cwd);
+	flist_custom_add(&lwin, path); /* Absolute path. */
+	flist_custom_add(&lwin, "a");  /* Relative path. */
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	assert_true(paths_are_equal(SANDBOX_PATH, lwin.dir_entry[0].origin));
-	assert_true(paths_are_equal(SANDBOX_PATH "/link", lwin.dir_entry[1].origin));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "", cwd);
+	assert_true(paths_are_equal(path, lwin.dir_entry[0].origin));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "link", cwd);
+	assert_true(paths_are_equal(path, lwin.dir_entry[1].origin));
 
-	assert_success(remove(SANDBOX_PATH "/link"));
+	assert_success(remove(path));
 }
 
 TEST(files_are_excluded_from_custom_view)

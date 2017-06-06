@@ -4,6 +4,7 @@
 
 #include <stdio.h> /* fopen() fclose() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/int/file_magic.h"
 #include "../../src/utils/fs.h"
@@ -25,7 +26,9 @@ TEST(escaping_for_determining_mime_type, IF(has_mime_type_detection))
 TEST(relatively_large_file_name_does_not_crash,
 		IF(has_mime_type_detection_and_symlinks))
 {
-	char path[PATH_MAX];
+	char *const saved_cwd = save_cwd();
+
+	char path[PATH_MAX + 1];
 
 	const char *const long_name = SANDBOX_PATH "/A/111111111111111111111111111111"
 		"11111111111222222222222222222222222222222222223333333333333333333333333333"
@@ -47,7 +50,8 @@ TEST(relatively_large_file_name_does_not_crash,
 
 	assert_success(chdir(SANDBOX_PATH "/B"));
 	assert_non_null(get_mimetype(get_last_path_component(path)));
-	assert_success(chdir(SANDBOX_PATH));
+
+	restore_cwd(saved_cwd);
 
 	assert_success(unlink(long_name));
 	assert_success(unlink(SANDBOX_PATH "/B/123.mp3"));

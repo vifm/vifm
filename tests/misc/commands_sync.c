@@ -23,6 +23,8 @@ static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 
+static char *saved_cwd;
+
 SETUP()
 {
 	curr_view = &lwin;
@@ -34,10 +36,14 @@ SETUP()
 
 	view_setup(&lwin);
 	view_setup(&rwin);
+
+	saved_cwd = save_cwd();
 }
 
 TEARDOWN()
 {
+	restore_cwd(saved_cwd);
+
 	reset_cmds();
 
 	free(cfg.slow_fs_list);
@@ -101,10 +107,13 @@ TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 	opt_handlers_setup();
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 
-	flist_load_tree(curr_view, SANDBOX_PATH);
+	assert_non_null(get_cwd(curr_view->curr_dir, sizeof(curr_view->curr_dir)));
+	assert_success(flist_load_tree(curr_view, SANDBOX_PATH));
 	assert_int_equal(2, curr_view->list_rows);
 
 	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_true(flist_custom_active(other_view));
 	assert_int_equal(1, other_view->list_rows);
@@ -128,7 +137,7 @@ TEST(sync_syncs_trees)
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "..", cwd);
 
-	flist_load_tree(curr_view, TEST_DATA_PATH "/tree");
+	assert_success(flist_load_tree(curr_view, TEST_DATA_PATH "/tree"));
 
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
@@ -225,7 +234,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "..", cwd);
 
-	flist_load_tree(curr_view, TEST_DATA_PATH "/tree");
+	assert_success(flist_load_tree(curr_view, TEST_DATA_PATH "/tree"));
 
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
@@ -258,22 +267,31 @@ column_line_print(const void *data, int column_id, const char buf[],
 
 TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 {
-	char canonic_path[PATH_MAX];
+	char buf[PATH_MAX + 1];
+	char canonic_path[PATH_MAX + 1];
 
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH "/existing-files",
-				SANDBOX_PATH "/dir-link"));
+	{
+		char src[PATH_MAX + 1], dst[PATH_MAX + 1];
+		make_abs_path(src, sizeof(src), TEST_DATA_PATH, "existing-files",
+				saved_cwd);
+		make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "dir-link", saved_cwd);
+		assert_success(symlink(src, dst));
+	}
 #endif
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));
-	to_canonic_path(SANDBOX_PATH "/dir-link", "/fake-root", curr_view->curr_dir,
+	make_abs_path(buf, sizeof(buf), SANDBOX_PATH, "dir-link", saved_cwd);
+	to_canonic_path(buf, "/fake-root", curr_view->curr_dir,
 			sizeof(curr_view->curr_dir));
 
 	assert_success(exec_commands("sync ../dir-link/..", curr_view, CIT_COMMAND));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
-	to_canonic_path(SANDBOX_PATH, "/fake-root", canonic_path,
-			sizeof(canonic_path));
+	make_abs_path(buf, sizeof(buf), SANDBOX_PATH, "", saved_cwd);
+	to_canonic_path(buf, "/fake-root", canonic_path, sizeof(canonic_path));
 	assert_string_equal(canonic_path, other_view->curr_dir);
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
 }

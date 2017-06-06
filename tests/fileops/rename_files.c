@@ -20,10 +20,15 @@
 static void broken_link_name(const char prompt[], const char filename[],
 		fo_prompt_cb cb, fo_complete_cmd_func complete, int allow_ee);
 
+static char *saved_cwd;
+
 SETUP()
 {
+	saved_cwd = save_cwd();
+
 	view_setup(&lwin);
-	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
 
 	curr_view = &lwin;
 }
@@ -31,6 +36,7 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+	restore_cwd(saved_cwd);
 }
 
 TEST(generally_renames_files)
@@ -47,6 +53,8 @@ TEST(generally_renames_files)
 	lwin.dir_entry[1].marked = 1;
 
 	(void)fops_rename(&lwin, names, 2, 0);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(rmdir(SANDBOX_PATH "/file"));
 	assert_success(unlink(SANDBOX_PATH "/dir"));
@@ -68,6 +76,8 @@ TEST(renames_files_recursively)
 	lwin.dir_entry[1].marked = 1;
 
 	(void)fops_rename(&lwin, names, 2, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(unlink(SANDBOX_PATH "/dir1/file2"));
 	assert_success(unlink(SANDBOX_PATH "/dir2/file1"));
@@ -92,6 +102,8 @@ TEST(interdependent_rename)
 
 	/* Make sure reloading doesn't fail with an assert of duplicated file name. */
 	populate_dir_list(&lwin, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(unlink(SANDBOX_PATH "/file2"));
 	assert_success(unlink(SANDBOX_PATH "/file3"));
@@ -110,6 +122,8 @@ TEST(rename_to_broken_symlink_name, IF(not_windows))
 	lwin.list_pos = 0;
 	fops_init(&broken_link_name, NULL);
 	fops_rename_current(&lwin, 0);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(unlink(SANDBOX_PATH "/a-file"));
 	assert_success(unlink(SANDBOX_PATH "/broken-link"));
@@ -125,40 +139,39 @@ broken_link_name(const char prompt[], const char filename[], fo_prompt_cb cb,
 TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 {
 	char long_name[NAME_MAX + 1];
-	char path[PATH_MAX + 1];
 	FILE *fp;
 
-	char *saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
 	update_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 
-	fp = fopen(SANDBOX_PATH "/script", "w");
+	fp = fopen("script", "w");
 	fputs("#!/bin/sh\n", fp);
 	fputs("sed 'y/1/2/' < $2 > $2_out\n", fp);
 	fputs("mv $2_out $2\n", fp);
 	fclose(fp);
-	assert_success(chmod(SANDBOX_PATH "/script", 0777));
+	assert_success(chmod("script", 0777));
 
 	curr_stats.exec_env_type = EET_LINUX_NATIVE;
-	update_string(&cfg.vi_command, SANDBOX_PATH "/script");
+	update_string(&cfg.vi_command, "./script");
 
 	memset(long_name, '1', sizeof(long_name) - 1U);
 	long_name[sizeof(long_name) - 1U] = '\0';
-	snprintf(path, sizeof(path), "%s/%s", SANDBOX_PATH, long_name);
 
-	create_empty_file(path);
+	create_empty_file(long_name);
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
 
 	(void)fops_rename(&lwin, NULL, 0, 0);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
 
 	memset(long_name, '2', sizeof(long_name) - 1U);
 	long_name[sizeof(long_name) - 1U] = '\0';
-	snprintf(path, sizeof(path), "%s/%s", SANDBOX_PATH, long_name);
-	assert_success(unlink(path));
+	assert_success(unlink(long_name));
 
 	assert_success(unlink("script"));
 
@@ -166,8 +179,6 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 
 	update_string(&cfg.shell, NULL);
 	stats_update_shell_type("/bin/sh");
-
-	restore_cwd(saved_cwd);
 }
 
 /* No tests for custom/tree view, because control doesn't reach necessary checks

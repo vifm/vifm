@@ -10,6 +10,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/compare.h"
 #include "../../src/event_loop.h"
 #include "../../src/ops.h"
@@ -20,6 +21,8 @@ static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static int files_are_identical(const char a[], const char b[]);
+
+static char *saved_cwd;
 
 SETUP()
 {
@@ -35,10 +38,14 @@ SETUP()
 	cfg.use_system_calls = 1;
 
 	undo_setup();
+
+	saved_cwd = save_cwd();
 }
 
 TEARDOWN()
 {
+	restore_cwd(saved_cwd);
+
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 
@@ -79,8 +86,10 @@ TEST(moving_fake_entry_removes_the_other_file)
 
 TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
 {
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"compare/b", saved_cwd);
 
 	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 	rwin.list_pos = 3;
@@ -128,8 +137,10 @@ column_line_print(const void *data, int column_id, const char buf[],
 
 TEST(moving_mismatched_entry_makes_files_equal)
 {
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"compare/b", saved_cwd);
 
 	copy_file(TEST_DATA_PATH "/compare/a/same-name-different-content",
 			SANDBOX_PATH "/same-name-different-content");
@@ -180,8 +191,10 @@ TEST(moving_equal_does_nothing)
 
 TEST(file_id_is_not_updated_on_failed_move, IF(not_windows))
 {
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/b");
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"compare/b", saved_cwd);
 
 	copy_file(TEST_DATA_PATH "/compare/a/same-name-different-content",
 			SANDBOX_PATH "/same-name-different-content");
