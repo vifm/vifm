@@ -348,6 +348,8 @@ os_getcwd(char buf[], size_t size)
 
 	copy_str(buf, size, utf8_buf);
 	free(utf8_buf);
+
+	to_forward_slash(buf);
 	return buf;
 }
 
