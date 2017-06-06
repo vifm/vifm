@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() */
-
 #include <string.h> /* strcpy() */
 
 #include "../../src/ui/ui.h"
