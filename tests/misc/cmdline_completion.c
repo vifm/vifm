@@ -256,8 +256,12 @@ TEST(dquoted_completion)
 
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
 {
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
 	assert_success(chdir(SANDBOX_PATH));
-	strcpy(curr_view->curr_dir, SANDBOX_PATH);
+	assert_true(get_cwd(curr_view->curr_dir, sizeof(curr_view->curr_dir)) ==
+			curr_view->curr_dir);
 
 	create_file("d-quote-\"-in-name");
 	create_file("d-quote-\"-in-name-2");
@@ -420,7 +424,7 @@ TEST(bang_abs_path_completion)
 
 TEST(tilde_is_completed_after_emark)
 {
-	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "",
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
 			saved_cwd);
 	ASSERT_COMPLETION(L"!~/", L"!~/compare/");
 }
@@ -613,16 +617,27 @@ TEST(compare_is_completed)
 
 TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 {
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(TEST_DATA_PATH "/compare", SANDBOX_PATH "/dir-link"));
+	{
+		char src[PATH_MAX + 1], dst[PATH_MAX + 1];
+		make_abs_path(src, sizeof(src), TEST_DATA_PATH, "compare", saved_cwd);
+		make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "dir-link", saved_cwd);
+		assert_success(symlink(src, dst));
+	}
 #endif
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));
-	strcpy(curr_view->curr_dir, SANDBOX_PATH "/dir-link");
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir), SANDBOX_PATH,
+			"dir-link", saved_cwd);
 
 	ASSERT_COMPLETION(L"cd ../d", L"cd ../dir-link/");
 
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
 }
 

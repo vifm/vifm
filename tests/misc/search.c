@@ -11,8 +11,12 @@
 #include "../../src/search.h"
 #include "utils.h"
 
+static char *saved_cwd;
+
 SETUP()
 {
+	saved_cwd = save_cwd();
+
 	view_setup(&lwin);
 
 	assert_success(chdir(TEST_DATA_PATH "/read"));
@@ -27,6 +31,8 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
+
+	restore_cwd(saved_cwd);
 }
 
 TEST(matches_can_be_highlighted)
@@ -205,6 +211,9 @@ TEST(matching_directories)
 	int found;
 
 	cfg.hl_search = 1;
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(chdir(TEST_DATA_PATH "/tree"));
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));

@@ -7,10 +7,12 @@
 #include <string.h> /* memset() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
 #include "../../src/event_loop.h"
@@ -22,13 +24,21 @@
 
 #include "utils.h"
 
-static void verify_tree_node(column_data_t *cdt, int idx, const char
-		expected[]);
+static int load_tree(FileView *view, const char path[]);
+static void verify_tree_node(column_data_t *cdt, int idx,
+		const char expected[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static int remove_selected(FileView *view, const dir_entry_t *entry, void *arg);
 static void validate_tree(const FileView *view);
 static void validate_parents(const dir_entry_t *entries, int nchildren);
+
+static char cwd[PATH_MAX + 1];
+
+SETUP_ONCE()
+{
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+}
 
 SETUP()
 {
@@ -62,7 +72,7 @@ TEST(empty_directory_tree_is_created)
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH "/empty-dir"));
+	assert_success(load_tree(&lwin, SANDBOX_PATH "/empty-dir"));
 	assert_int_equal(1, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -73,7 +83,7 @@ TEST(empty_directory_tree_is_created_dotdirs_option)
 {
 	cfg.dot_dirs = DD_NONROOT_PARENT;
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(1, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -82,7 +92,7 @@ TEST(empty_directory_tree_is_created_dotdirs_option)
 
 TEST(complex_tree_is_built_correctly)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	validate_tree(&lwin);
 }
@@ -94,14 +104,14 @@ TEST(symlinks_are_loaded_as_files, IF(not_windows))
 	assert_success(symlink(TEST_DATA_PATH, SANDBOX_PATH "/link"));
 #endif
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(0, lwin.filtered);
 	validate_tree(&lwin);
 
 	(void)filter_set(&lwin.local_filter.filter, "a");
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(1, lwin.filtered);
 	validate_tree(&lwin);
@@ -113,20 +123,20 @@ TEST(tree_accounts_for_dot_filter)
 {
 	lwin.hide_dot = 1;
 
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(10, lwin.list_rows);
 	validate_tree(&lwin);
 }
 
 TEST(tree_accounts_for_auto_filter)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	lwin.dir_entry[11].selected = 1;
 	lwin.selected_files = 1;
 	filter_selected_files(&lwin);
 
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(11, lwin.list_rows);
 	validate_tree(&lwin);
 }
@@ -134,7 +144,7 @@ TEST(tree_accounts_for_auto_filter)
 TEST(tree_accounts_for_manual_filter)
 {
 	(void)filter_set(&lwin.manual_filter, "^\\.hidden$");
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(11, lwin.list_rows);
 	validate_tree(&lwin);
 }
@@ -142,7 +152,7 @@ TEST(tree_accounts_for_manual_filter)
 TEST(tree_accounts_for_local_filter)
 {
 	(void)filter_set(&lwin.local_filter.filter, "file|dir");
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(10, lwin.list_rows);
 	validate_tree(&lwin);
 }
@@ -150,7 +160,7 @@ TEST(tree_accounts_for_local_filter)
 TEST(leafs_are_suppressed_by_local_filtering)
 {
 	(void)filter_set(&lwin.local_filter.filter, "dir");
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(5, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -167,7 +177,7 @@ TEST(leafs_are_not_matched_by_local_filtering)
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-1", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-2", 0700));
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(4, lwin.list_rows);
 
 	assert_int_equal(1, local_filter_set(&lwin, "\\."));
@@ -192,7 +202,7 @@ TEST(leafs_are_returned_if_local_filter_is_emptied)
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-1", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir-2", 0700));
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(4, lwin.list_rows);
 	assert_int_equal(0, local_filter_set(&lwin, "."));
 	local_filter_accept(&lwin);
@@ -220,7 +230,7 @@ TEST(reloading_does_not_count_as_location_change)
 {
 	cfg.cvoptions = CVO_LOCALFILTER;
 
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -242,7 +252,7 @@ TEST(tree_is_reloaded_manually_with_file_updates)
 	create_file(SANDBOX_PATH "/a");
 	create_file(SANDBOX_PATH "/nested-dir/b");
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(3, lwin.list_rows);
 
 	/* On removal of single file in directory, it's replaced with ".." entry. */
@@ -275,7 +285,7 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 	assert_success(os_lstat(TEST_DATA_PATH, &st));
 	clone_timestamps(SANDBOX_PATH, TEST_DATA_PATH, &st);
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(2, lwin.list_rows);
 
 	check_if_filelist_have_changed(&lwin);
@@ -297,7 +307,7 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 
 TEST(nested_directory_change_detection)
 {
-	struct stat st;
+	struct stat st1, st2;
 
 	update_string(&cfg.ruler_format, "");
 
@@ -307,23 +317,33 @@ TEST(nested_directory_change_detection)
 
 	/* Use presumably older timestamp for directory to be changed (we need one
 	 * second difference). */
-	assert_success(os_lstat(TEST_DATA_PATH, &st));
-	clone_timestamps(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st);
+	assert_success(os_lstat(TEST_DATA_PATH, &st1));
+	clone_timestamps(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st1);
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
-	assert_int_equal(3, lwin.list_rows);
+	assert_success(os_lstat(SANDBOX_PATH "/nested-dir", &st2));
+	/* On WINE time stamps aren't really cloned (even though success is
+	 * reported). */
+	if(st1.st_mtime == st2.st_mtime)
+	{
+		assert_success(load_tree(&lwin, SANDBOX_PATH));
+		assert_int_equal(3, lwin.list_rows);
 
-	check_if_filelist_have_changed(&lwin);
-	ui_view_query_scheduled_event(&lwin);
-	assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
-	check_if_filelist_have_changed(&lwin);
+		check_if_filelist_have_changed(&lwin);
+		ui_view_query_scheduled_event(&lwin);
+		assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
+		check_if_filelist_have_changed(&lwin);
 
-	curr_stats.load_stage = 2;
-	assert_true(process_scheduled_updates_of_view(&lwin));
-	curr_stats.load_stage = 0;
+		curr_stats.load_stage = 2;
+		assert_true(process_scheduled_updates_of_view(&lwin));
+		curr_stats.load_stage = 0;
 
-	assert_int_equal(2, lwin.list_rows);
-	validate_tree(&lwin);
+		assert_int_equal(2, lwin.list_rows);
+		validate_tree(&lwin);
+	}
+	else
+	{
+		assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
+	}
 
 	assert_success(remove(SANDBOX_PATH "/nested-dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
@@ -336,7 +356,7 @@ TEST(excluding_dir_in_tree_excludes_its_children)
 	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
 	create_file(SANDBOX_PATH "/nested-dir/a");
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(2, lwin.list_rows);
 
 	lwin.dir_entry[0].selected = 1;
@@ -358,7 +378,7 @@ TEST(excluding_nested_dir_in_tree_adds_dummy)
 	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir/nested-dir2", 0700));
 	create_file(SANDBOX_PATH "/nested-dir/nested-dir2/a");
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(3, lwin.list_rows);
 
 	lwin.dir_entry[1].selected = 1;
@@ -378,7 +398,7 @@ TEST(excluding_nested_dir_in_tree_adds_dummy)
 
 TEST(excluding_single_leaf_file_adds_dummy_correctly)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 
 	lwin.dir_entry[6].selected = 1;
@@ -393,7 +413,7 @@ TEST(excluding_single_leaf_file_adds_dummy_correctly)
 
 TEST(excluding_middle_directory_from_chain_adds_dummy_correctly)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 
 	/* First, hide one of directories to get dir1 -> dir2 -> dir4 -> file3. */
@@ -421,7 +441,7 @@ TEST(excluding_middle_directory_from_chain_adds_dummy_correctly)
 
 TEST(excluded_paths_do_not_appear_after_view_reload)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 
 	lwin.dir_entry[2].selected = 1;
@@ -447,7 +467,7 @@ TEST(excluded_paths_do_not_appear_after_view_reload)
 
 TEST(excluding_all_children_places_a_dummy)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 
 	lwin.dir_entry[3].selected = 1;
@@ -466,7 +486,7 @@ TEST(excluding_all_children_places_a_dummy)
 
 TEST(local_filter_does_not_block_visiting_directories)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -487,7 +507,7 @@ TEST(dot_filter_dominates_local_filter_in_tree)
 	assert_success(os_mkdir(SANDBOX_PATH "/.nested-dir", 0700));
 	create_file(SANDBOX_PATH "/.nested-dir/a");
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
 	validate_tree(&lwin);
@@ -505,7 +525,7 @@ TEST(dot_filter_dominates_local_filter_in_tree)
 TEST(non_matching_local_filter_results_in_single_dummy)
 {
 	(void)filter_set(&lwin.local_filter.filter, "no matches");
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
 	validate_tree(&lwin);
@@ -513,7 +533,7 @@ TEST(non_matching_local_filter_results_in_single_dummy)
 
 TEST(zapping_a_tree_reassigns_children)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -532,7 +552,7 @@ TEST(tree_sorting_considers_structure)
 	lwin.sort[0] = SK_BY_NAME;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(10, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -565,7 +585,7 @@ TEST(tree_sorting_considers_structure)
 
 TEST(nodes_are_reparented_on_filtering)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -577,7 +597,7 @@ TEST(nodes_are_reparented_on_filtering)
 
 TEST(sorting_of_filtered_list_accounts_for_tree)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(12, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -601,7 +621,7 @@ TEST(filtering_does_not_break_the_tree_with_empty_dir)
 	cfg.dot_dirs = DD_NONROOT_PARENT;
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(3, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -618,7 +638,7 @@ TEST(filtering_does_not_confuse_leafs_with_parent_ref)
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -634,7 +654,7 @@ TEST(filtering_does_not_hide_parent_refs)
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -653,7 +673,7 @@ TEST(short_paths_consider_tree_structure)
 	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
 
 	(void)filter_set(&lwin.local_filter.filter, "2");
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(2, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -671,7 +691,7 @@ TEST(tree_prefixes_are_correct)
 	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
 	lwin.hide_dot = 1;
 
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(10, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -691,7 +711,7 @@ TEST(dotdirs_do_not_mess_up_change_detection)
 {
 	cfg.dot_dirs = DD_NONROOT_PARENT;
 
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 
 	/* Discard results of the first check. */
 	check_if_filelist_have_changed(&lwin);
@@ -709,7 +729,7 @@ TEST(dotdirs_do_not_mess_up_change_detection)
 
 TEST(tree_reload_preserves_selection)
 {
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.dir_entry[1].selected = 1;
@@ -729,7 +749,7 @@ TEST(marks_unit_is_able_to_find_leafs)
 {
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 
 	set_spec_mark('<', lwin.dir_entry[1].origin, lwin.dir_entry[1].name);
 	assert_int_equal(1, check_mark_directory(&lwin, '<'));
@@ -744,7 +764,7 @@ TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir/subsubdir", 0700));
 	create_file(SANDBOX_PATH "/dir/file");
 
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(load_tree(&lwin, SANDBOX_PATH));
 
 	lwin.list_pos = 3;
 	create_file(SANDBOX_PATH "/dir/subdir/subsubdir/file");
@@ -762,13 +782,21 @@ TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 
 TEST(cursor_is_set_on_previous_file)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH , "tree",
+			cwd);
 	load_dir_list(&lwin, 1);
 	assert_int_equal(3, lwin.list_rows);
 	lwin.list_pos = 1;
 
-	assert_success(flist_load_tree(&lwin, TEST_DATA_PATH "/tree"));
+	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(8, lwin.list_pos);
+}
+
+static int
+load_tree(FileView *view, const char path[])
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), path, "", cwd);
+	return flist_load_tree(&lwin, lwin.curr_dir);
 }
 
 static void

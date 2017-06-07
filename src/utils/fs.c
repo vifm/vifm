@@ -832,9 +832,6 @@ get_cwd(char buf[], size_t size)
 	{
 		return NULL;
 	}
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
 	return buf;
 }
 

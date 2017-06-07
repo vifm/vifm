@@ -44,32 +44,18 @@ static const cmd_add_t commands[] = {
 static int called;
 static int bg;
 static char *arg;
+static char *saved_cwd;
 
-static char cwd[PATH_MAX];
-static char sandbox[PATH_MAX];
-static char test_data[PATH_MAX];
+static char cwd[PATH_MAX + 1];
+static char sandbox[PATH_MAX + 1];
+static char test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
-	if(is_path_absolute(SANDBOX_PATH))
-	{
-		snprintf(sandbox, sizeof(sandbox), "%s", SANDBOX_PATH);
-	}
-	else
-	{
-		snprintf(sandbox, sizeof(sandbox), "%s/%s", cwd, SANDBOX_PATH);
-	}
-
-	if(is_path_absolute(TEST_DATA_PATH))
-	{
-		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
-	}
-	else
-	{
-		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
-	}
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
 }
 
 SETUP()
@@ -105,10 +91,14 @@ SETUP()
 	called = 0;
 
 	undo_setup();
+
+	saved_cwd = save_cwd();
 }
 
 TEARDOWN()
 {
+	restore_cwd(saved_cwd);
+
 	update_string(&cfg.cd_path, NULL);
 	update_string(&cfg.fuse_home, NULL);
 	update_string(&cfg.slow_fs_list, NULL);
@@ -378,19 +368,20 @@ TEST(tr_extends_second_field)
 
 TEST(putting_files_works)
 {
-	char *saved_cwd;
+	char path[PATH_MAX + 1];
 
 	regs_init();
 
 	assert_success(os_mkdir(SANDBOX_PATH "/empty-dir", 0700));
-	assert_success(flist_load_tree(&lwin, SANDBOX_PATH));
+	assert_success(flist_load_tree(&lwin, sandbox));
 
-	regs_append(DEFAULT_REG_NAME, TEST_DATA_PATH "/read/binary-data");
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read/binary-data", cwd);
+	assert_success(regs_append(DEFAULT_REG_NAME, path));
 	lwin.list_pos = 1;
 
-	saved_cwd = save_cwd();
 	assert_true(exec_commands("put", &lwin, CIT_COMMAND) != 0);
 	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(unlink(SANDBOX_PATH "/empty-dir/binary-data"));
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
@@ -473,45 +464,58 @@ TEST(yank_works_with_ranges)
 
 TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 {
-	char canonic_path[PATH_MAX];
+	char canonic_path[PATH_MAX + 1];
+	char buf[PATH_MAX + 1];
 
 	assert_success(os_mkdir(SANDBOX_PATH "/dir1", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/dir1/dir2", 0700));
 
 	/* symlink() is not available on Windows, but the rest of the code is fine. */
 #ifndef _WIN32
-	assert_success(symlink(SANDBOX_PATH "/dir1/dir2", SANDBOX_PATH "/dir-link"));
+	{
+		char src[PATH_MAX + 1], dst[PATH_MAX + 1];
+		make_abs_path(src, sizeof(src), SANDBOX_PATH, "dir1/dir2", saved_cwd);
+		make_abs_path(dst, sizeof(dst), SANDBOX_PATH, "dir-link", saved_cwd);
+		assert_success(symlink(src, dst));
+	}
 #endif
 
 	assert_success(chdir(SANDBOX_PATH "/dir-link"));
-	to_canonic_path(SANDBOX_PATH "/dir-link", "/fake-root", lwin.curr_dir,
+	make_abs_path(buf, sizeof(buf), SANDBOX_PATH, "dir-link", saved_cwd);
+	to_canonic_path(buf, "/fake-root", lwin.curr_dir,
 			sizeof(lwin.curr_dir));
-	to_canonic_path(SANDBOX_PATH, "/fake-root", canonic_path,
+	to_canonic_path(sandbox, "/fake-root", canonic_path,
 			sizeof(canonic_path));
 
 	/* :mkdir */
 	(void)exec_commands("mkdir ../dir", &lwin, CIT_COMMAND);
-	assert_true(is_dir(SANDBOX_PATH "/dir"));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 
 	/* :clone file name. */
 	create_file(SANDBOX_PATH "/dir-link/file");
 	populate_dir_list(&lwin, 1);
 	(void)exec_commands("clone ../file-clone", &lwin, CIT_COMMAND);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 	assert_success(remove(SANDBOX_PATH "/file-clone"));
 	assert_success(remove(SANDBOX_PATH "/dir-link/file"));
 
 	/* :colorscheme */
-	strcpy(cfg.colors_dir, TEST_DATA_PATH "/scripts/");
-	assert_success(
-			exec_commands("colorscheme set-env " SANDBOX_PATH "/../dir-link/..",
-				&lwin, CIT_COMMAND));
+	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
+			"scripts/", saved_cwd);
+	snprintf(buf, sizeof(buf), "colorscheme set-env %s/../dir-link/..",
+			sandbox);
+	assert_success(exec_commands(buf, &lwin, CIT_COMMAND));
 	cs_load_defaults();
 
 	/* :cd */
 	assert_success(exec_commands("cd ../dir-link/..", &lwin, CIT_COMMAND));
 	assert_string_equal(canonic_path, lwin.curr_dir);
 
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
 	assert_success(rmdir(SANDBOX_PATH "/dir1/dir2"));
 	assert_success(rmdir(SANDBOX_PATH "/dir1"));
@@ -524,7 +528,7 @@ TEST(find_command, IF(not_windows))
 	replace_string(&cfg.shell, "/bin/sh");
 
 	assert_success(chdir(TEST_DATA_PATH));
-	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	strcpy(lwin.curr_dir, test_data);
 
 	assert_success(exec_commands("set findprg='find %s %a %u'", &lwin,
 				CIT_COMMAND));
@@ -545,7 +549,7 @@ TEST(find_command, IF(not_windows))
 	view_setup(&lwin);
 
 	/* Repeat last search. */
-	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	strcpy(lwin.curr_dir, test_data);
 	assert_success(exec_commands("find", &lwin, CIT_COMMAND));
 	assert_int_equal(4, lwin.list_rows);
 
@@ -559,7 +563,7 @@ TEST(grep_command, IF(not_windows))
 	replace_string(&cfg.shell, "/bin/sh");
 
 	assert_success(chdir(TEST_DATA_PATH "/scripts"));
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/scripts");
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
 
 	assert_success(exec_commands("set grepprg='grep -n -H -r %i %a %s %u'", &lwin,
 				CIT_COMMAND));

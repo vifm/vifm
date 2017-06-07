@@ -6,13 +6,23 @@
 
 #include "../../src/compat/os.h"
 #include "../../src/ui/quickview.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
 
 #include "utils.h"
 
+static char *saved_cwd;
+
 SETUP()
 {
+	saved_cwd = save_cwd();
+
 	assert_success(chdir(SANDBOX_PATH));
+}
+
+TEARDOWN()
+{
+	restore_cwd(saved_cwd);
 }
 
 TEST(file_can_not_be_viewed)
@@ -187,6 +197,9 @@ TEST(symlinks_are_not_resolved_in_tree_preview, IF(not_windows))
 	int nlines;
 	FILE *fp;
 	char **lines;
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0777));
 

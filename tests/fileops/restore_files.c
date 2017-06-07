@@ -5,6 +5,7 @@
 #include <string.h> /* strcat() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
@@ -13,6 +14,7 @@
 
 #include "utils.h"
 
+char trash_dir[PATH_MAX + 1];
 static char *saved_cwd;
 
 SETUP()
@@ -24,9 +26,11 @@ SETUP()
 	saved_cwd = save_cwd();
 	populate_dir_list(&lwin, 0);
 	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	cfg.use_trash = 1;
-	set_trash_dir(SANDBOX_PATH "/trash");
+	make_abs_path(trash_dir, sizeof(trash_dir), SANDBOX_PATH, "trash", saved_cwd);
+	set_trash_dir(trash_dir);
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_delete(&lwin, 'a', 1);
 }
@@ -34,17 +38,18 @@ SETUP()
 TEARDOWN()
 {
 	view_teardown(&lwin);
-	assert_success(rmdir(SANDBOX_PATH "/trash"));
+	restore_cwd(saved_cwd);
+	assert_success(rmdir(trash_dir));
 }
 
 TEST(files_not_directly_in_trash_are_not_restored)
 {
-	set_trash_dir(SANDBOX_PATH);
+	set_trash_dir(lwin.curr_dir);
 
 	strcat(lwin.curr_dir, "/trash");
-	saved_cwd = save_cwd();
 	populate_dir_list(&lwin, 0);
 	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_restore(&lwin);
@@ -54,12 +59,10 @@ TEST(files_not_directly_in_trash_are_not_restored)
 
 TEST(generally_restores_files)
 {
-	set_trash_dir(SANDBOX_PATH "/trash");
-
-	strcat(lwin.curr_dir, "/trash");
-	saved_cwd = save_cwd();
+	strcpy(lwin.curr_dir, trash_dir);
 	populate_dir_list(&lwin, 0);
 	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_restore(&lwin);
@@ -69,8 +72,11 @@ TEST(generally_restores_files)
 
 TEST(works_with_custom_view)
 {
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "trash/000_file", saved_cwd);
+
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, SANDBOX_PATH "/trash/000_file");
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.dir_entry[0].marked = 1;
@@ -81,7 +87,7 @@ TEST(works_with_custom_view)
 
 TEST(works_with_tree_view)
 {
-	flist_load_tree(&lwin, SANDBOX_PATH);
+	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
 
 	lwin.dir_entry[1].marked = 1;
 	(void)fops_restore(&lwin);

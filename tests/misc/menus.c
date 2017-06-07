@@ -6,6 +6,7 @@
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/menus/map_menu.h"
 #include "../../src/menus/menus.h"
@@ -35,6 +36,7 @@ TEARDOWN()
 TEST(can_navigate_to_broken_symlink, IF(not_windows))
 {
 	char *saved_cwd;
+	char buf[PATH_MAX + 1];
 
 	strcpy(lwin.curr_dir, ".");
 
@@ -46,11 +48,11 @@ TEST(can_navigate_to_broken_symlink, IF(not_windows))
 	assert_success(symlink("/wrong/path", "broken-link"));
 #endif
 
+	make_abs_path(buf, sizeof(buf), SANDBOX_PATH , "broken-link:", saved_cwd);
 	/* Were trying to open broken link, which will fail, but the parsing part
 	 * should succeed. */
 	restore_cwd(saved_cwd);
-	assert_success(goto_selected_file(&m, &lwin, SANDBOX_PATH "/broken-link:",
-				1));
+	assert_success(goto_selected_file(&m, &lwin, buf, 1));
 
 	assert_success(remove(SANDBOX_PATH "/broken-link"));
 }

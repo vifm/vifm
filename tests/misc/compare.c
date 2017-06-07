@@ -6,6 +6,7 @@
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
@@ -24,6 +25,8 @@
 
 static void basic_panes_check(int expected_len);
 
+static char *saved_cwd;
+
 SETUP()
 {
 	curr_view = &lwin;
@@ -33,10 +36,14 @@ SETUP()
 	view_setup(&rwin);
 
 	opt_handlers_setup();
+
+	saved_cwd = save_cwd();
 }
 
 TEARDOWN()
 {
+	restore_cwd(saved_cwd);
+
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 
@@ -426,6 +433,9 @@ TEST(exclude_works_with_entries_or_their_groups)
 	assert_false(flist_custom_active(&lwin));
 	assert_false(flist_custom_active(&rwin));
 
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-1"));
 	assert_success(remove(SANDBOX_PATH "/same-content-different-name-2"));
 	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
@@ -477,8 +487,6 @@ TEST(removed_files_disappear_in_both_views_on_reload)
 
 TEST(comparison_views_are_closed_when_no_files_are_left)
 {
-	char *const saved_cwd = save_cwd();
-
 	assert_success(os_mkdir(SANDBOX_PATH "/a", 0777));
 	assert_success(os_mkdir(SANDBOX_PATH "/b", 0777));
 
@@ -503,6 +511,7 @@ TEST(comparison_views_are_closed_when_no_files_are_left)
 	assert_false(flist_custom_active(&rwin));
 
 	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
 
 	assert_success(rmdir(SANDBOX_PATH "/a"));
 	assert_success(rmdir(SANDBOX_PATH "/b"));
@@ -701,13 +710,19 @@ TEST(empty_failes_are_skipped_if_requested)
 
 TEST(custom_views_are_compared)
 {
+	char path[PATH_MAX + 1];
+
 	strcpy(lwin.curr_dir, "no-such-path");
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin,
-			TEST_DATA_PATH "/compare/a/same-content-different-name-1");
-	flist_custom_add(&lwin,
-			TEST_DATA_PATH "/compare/a/same-name-different-content");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/compare/a/same-name-same-content");
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH,
+			"compare/a/same-content-different-name-1", saved_cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH,
+			"compare/a/same-name-different-content", saved_cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH,
+			"compare/a/same-name-same-content", saved_cwd);
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
@@ -728,11 +743,15 @@ TEST(custom_views_are_compared)
 
 TEST(directories_are_not_added_from_custom_views)
 {
+	char path[PATH_MAX + 1];
+
 	strcpy(lwin.curr_dir, "no-such-path");
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin,
-			TEST_DATA_PATH "/compare/a/same-content-different-name-1");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/compare/a/");
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH,
+			"compare/a/same-content-different-name-1", saved_cwd);
+	flist_custom_add(&lwin, path);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "compare/a/", saved_cwd);
+	flist_custom_add(&lwin, path);
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	strcpy(rwin.curr_dir, SANDBOX_PATH);

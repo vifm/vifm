@@ -44,8 +44,8 @@ TEST(marked_files_are_removed_permanently)
 		int bg;
 		for(bg = 0; bg < 2; ++bg)
 		{
-			create_empty_file(SANDBOX_PATH "/a");
-			create_empty_file(SANDBOX_PATH "/b");
+			create_empty_file("a");
+			create_empty_file("b");
 
 			populate_dir_list(&lwin, 0);
 			lwin.dir_entry[0].marked = 1;
@@ -60,8 +60,8 @@ TEST(marked_files_are_removed_permanently)
 				wait_for_bg();
 			}
 
-			assert_failure(unlink(SANDBOX_PATH "/a"));
-			assert_success(unlink(SANDBOX_PATH "/b"));
+			assert_failure(unlink("a"));
+			assert_success(unlink("b"));
 		}
 	}
 }
@@ -71,7 +71,7 @@ TEST(files_in_trash_are_not_removed_to_trash)
 	cfg.use_trash = 1;
 	set_trash_dir(lwin.curr_dir);
 
-	create_empty_file(SANDBOX_PATH "/a");
+	create_empty_file("a");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -80,15 +80,15 @@ TEST(files_in_trash_are_not_removed_to_trash)
 	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
-	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink("a"));
 }
 
 TEST(trash_is_not_removed_to_trash)
 {
 	cfg.use_trash = 1;
-	set_trash_dir(SANDBOX_PATH "/trash");
+	set_trash_dir("trash");
 
-	create_empty_dir(SANDBOX_PATH "/trash");
+	create_empty_dir("trash");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -97,13 +97,16 @@ TEST(trash_is_not_removed_to_trash)
 	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
-	assert_success(rmdir(SANDBOX_PATH "/trash"));
+	assert_success(rmdir("trash"));
 }
 
 TEST(marked_files_are_removed_to_trash)
 {
+	char trash_dir[PATH_MAX + 1];
+	make_abs_path(trash_dir, sizeof(trash_dir), SANDBOX_PATH, "trash", saved_cwd);
+
 	cfg.use_trash = 1;
-	set_trash_dir(SANDBOX_PATH "/trash");
+	set_trash_dir(trash_dir);
 
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
@@ -111,13 +114,17 @@ TEST(marked_files_are_removed_to_trash)
 		int bg;
 		for(bg = 0; bg < 2; ++bg)
 		{
-			create_empty_dir(SANDBOX_PATH "/trash");
+			create_empty_dir("trash");
 
-			create_empty_file(SANDBOX_PATH "/a");
-			create_empty_file(SANDBOX_PATH "/b");
+			create_empty_file("a");
+			create_empty_file("b");
 
 			populate_dir_list(&lwin, 0);
 			lwin.dir_entry[2].marked = 1;
+
+			restore_cwd(saved_cwd);
+			saved_cwd = save_cwd();
+			assert_success(chdir(SANDBOX_PATH));
 
 			if(!bg)
 			{
@@ -129,11 +136,11 @@ TEST(marked_files_are_removed_to_trash)
 				wait_for_bg();
 			}
 
-			assert_success(unlink(SANDBOX_PATH "/a"));
-			assert_failure(unlink(SANDBOX_PATH "/b"));
+			assert_success(unlink("a"));
+			assert_failure(unlink("b"));
 
-			assert_success(unlink(SANDBOX_PATH "/trash/000_b"));
-			assert_success(rmdir(SANDBOX_PATH "/trash"));
+			assert_success(unlink("trash/000_b"));
+			assert_success(rmdir("trash"));
 		}
 	}
 }
@@ -141,7 +148,7 @@ TEST(marked_files_are_removed_to_trash)
 TEST(nested_file_is_removed)
 {
 	cfg.use_trash = 1;
-	set_trash_dir(SANDBOX_PATH "/trash");
+	set_trash_dir("trash");
 
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
@@ -154,14 +161,16 @@ TEST(nested_file_is_removed)
 			{
 				if(to_trash)
 				{
-					create_empty_dir(SANDBOX_PATH "/trash");
+					create_empty_dir("trash");
 				}
-				create_empty_dir(SANDBOX_PATH "/dir");
+				create_empty_dir("dir");
 
-				create_empty_file(SANDBOX_PATH "/dir/a");
-				create_empty_file(SANDBOX_PATH "/dir/b");
+				create_empty_file("dir/a");
+				create_empty_file("dir/b");
 
-				flist_load_tree(&lwin, SANDBOX_PATH);
+				make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
+						saved_cwd);
+				assert_success(flist_load_tree(&lwin, lwin.curr_dir));
 				lwin.dir_entry[2].marked = 1;
 
 				if(!bg)
@@ -174,14 +183,18 @@ TEST(nested_file_is_removed)
 					wait_for_bg();
 				}
 
-				assert_success(unlink(SANDBOX_PATH "/dir/a"));
-				assert_failure(unlink(SANDBOX_PATH "/dir/b"));
-				assert_success(rmdir(SANDBOX_PATH "/dir"));
+				restore_cwd(saved_cwd);
+				saved_cwd = save_cwd();
+				assert_success(chdir(SANDBOX_PATH));
+
+				assert_success(unlink("dir/a"));
+				assert_failure(unlink("dir/b"));
+				assert_success(rmdir("dir"));
 
 				if(to_trash)
 				{
-					assert_success(unlink(SANDBOX_PATH "/trash/000_b"));
-					assert_success(rmdir(SANDBOX_PATH "/trash"));
+					assert_success(unlink("trash/000_b"));
+					assert_success(rmdir("trash"));
 				}
 			}
 		}
@@ -195,12 +208,12 @@ TEST(files_in_trash_are_not_removed_to_trash_in_cv)
 	set_trash_dir(lwin.curr_dir);
 	remove_last_path_component(lwin.curr_dir);
 
-	create_empty_dir(SANDBOX_PATH "/dir");
-	create_empty_file(SANDBOX_PATH "/dir/a");
+	create_empty_dir("dir");
+	create_empty_file("dir/a");
 
 	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, SANDBOX_PATH "/dir");
-	flist_custom_add(&lwin, SANDBOX_PATH "/dir/a");
+	flist_custom_add(&lwin, "dir");
+	flist_custom_add(&lwin, "dir/a");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	lwin.dir_entry[1].marked = 1;
@@ -210,20 +223,19 @@ TEST(files_in_trash_are_not_removed_to_trash_in_cv)
 	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
-	assert_success(unlink(SANDBOX_PATH "/dir/a"));
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	assert_success(unlink("dir/a"));
+	assert_success(rmdir("dir"));
 }
 
 TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 {
 	cfg.use_trash = 1;
-	strcat(lwin.curr_dir, "/dir");
-	set_trash_dir(lwin.curr_dir);
+	set_trash_dir("dir");
 
-	create_empty_dir(SANDBOX_PATH "/dir");
-	create_empty_file(SANDBOX_PATH "/dir/a");
+	create_empty_dir("dir");
+	create_empty_file("dir/a");
 
-	flist_load_tree(&lwin, SANDBOX_PATH);
+	assert_success(flist_load_tree(&lwin, "."));
 	lwin.dir_entry[1].marked = 1;
 	lwin.list_pos = 1;
 
@@ -231,14 +243,14 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 	(void)fops_delete_bg(&lwin, 1);
 	wait_for_bg();
 
-	assert_success(unlink(SANDBOX_PATH "/dir/a"));
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	assert_success(unlink("dir/a"));
+	assert_success(rmdir("dir"));
 }
 
 TEST(trash_is_not_checked_on_permanent_bg_remove)
 {
 	assert_success(set_trash_dir(lwin.curr_dir));
-	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_dir("dir");
 
 	populate_dir_list(&lwin, 0);
 	lwin.dir_entry[0].marked = 1;
@@ -246,7 +258,7 @@ TEST(trash_is_not_checked_on_permanent_bg_remove)
 	(void)fops_delete_bg(&lwin, 0);
 	wait_for_bg();
 
-	assert_failure(rmdir(SANDBOX_PATH "/dir"));
+	assert_failure(rmdir("dir"));
 }
 
 TEST(empty_directory_is_removed)
@@ -260,7 +272,7 @@ TEST(empty_directory_is_removed)
 		int bg;
 		for(bg = 0; bg < 2; ++bg)
 		{
-			create_empty_dir(SANDBOX_PATH "/dir");
+			create_empty_dir("dir");
 
 			populate_dir_list(&lwin, 0);
 			lwin.dir_entry[0].marked = 1;
@@ -275,7 +287,7 @@ TEST(empty_directory_is_removed)
 				wait_for_bg();
 			}
 
-			assert_failure(rmdir(SANDBOX_PATH "/dir"));
+			assert_failure(rmdir("dir"));
 		}
 	}
 }

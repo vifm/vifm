@@ -17,7 +17,8 @@ SETUP()
 	saved_cwd = save_cwd();
 	assert_success(chdir(SANDBOX_PATH));
 
-	set_to_sandbox_path(lwin.curr_dir, sizeof(lwin.curr_dir));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
+			saved_cwd);
 }
 
 TEARDOWN()
@@ -68,12 +69,12 @@ TEST(make_files_creates_files)
 
 TEST(make_files_creates_files_by_paths)
 {
-	char name_a[] = SANDBOX_PATH "/a";
+	char name_a[] = "a";
 	char *names[] = { name_a };
 
 	(void)fops_mkfiles(&lwin, -1, names, 1);
 
-	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink("a"));
 }
 
 TEST(make_files_considers_tree_structure)
@@ -115,8 +116,8 @@ TEST(check_by_absolute_path_is_performed_beforehand)
 
 	(void)fops_mkfiles(&lwin, -1, names, 2);
 
-	assert_failure(unlink(SANDBOX_PATH "/a"));
-	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_failure(unlink("a"));
+	assert_success(unlink("b"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

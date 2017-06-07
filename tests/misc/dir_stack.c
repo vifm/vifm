@@ -3,7 +3,9 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strcpy() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
@@ -13,6 +15,13 @@
 #include "utils.h"
 
 static void load_view_pair(const char left_path[], const char right_path[]);
+
+static char cwd[PATH_MAX + 1];
+
+SETUP_ONCE()
+{
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+}
 
 SETUP()
 {
@@ -177,11 +186,14 @@ TEST(rotate_rotates_the_stack)
 static void
 load_view_pair(const char left_path[], const char right_path[])
 {
-	to_canonic_path(left_path, "/fake-root", lwin.curr_dir,
-			sizeof(lwin.curr_dir));
+	char path[PATH_MAX + 1];
+
+	make_abs_path(path, sizeof(path), left_path, "", cwd);
+	to_canonic_path(path, "", lwin.curr_dir, sizeof(lwin.curr_dir));
 	populate_dir_list(&lwin, 0);
-	to_canonic_path(right_path, "/fake-root", rwin.curr_dir,
-			sizeof(rwin.curr_dir));
+
+	make_abs_path(path, sizeof(path), right_path, "", cwd);
+	to_canonic_path(path, "", rwin.curr_dir, sizeof(rwin.curr_dir));
 	populate_dir_list(&rwin, 0);
 }
 

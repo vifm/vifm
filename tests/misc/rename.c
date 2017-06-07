@@ -149,15 +149,15 @@ TEST(file_name_list_can_be_changed, IF(not_windows))
 	update_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 
-	fp = fopen(SANDBOX_PATH "/script", "w");
+	fp = fopen("script", "w");
 	fputs("#!/bin/sh\n", fp);
 	fputs("sed 'y/a/b/' < $2 > $2_out\n", fp);
 	fputs("mv $2_out $2\n", fp);
 	fclose(fp);
-	assert_success(chmod(SANDBOX_PATH "/script", 0777));
+	assert_success(chmod("script", 0777));
 
 	curr_stats.exec_env_type = EET_EMULATOR;
-	update_string(&cfg.vi_command, SANDBOX_PATH "/script");
+	update_string(&cfg.vi_command, "./script");
 
 	new_list = fops_edit_list(ARRAY_LEN(list), list, &nlines, 0);
 	assert_int_equal(1, nlines);

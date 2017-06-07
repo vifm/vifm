@@ -3,12 +3,21 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_pos.h"
 
 #include "utils.h"
+
+static char cwd[PATH_MAX + 1];
+
+SETUP_ONCE()
+{
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+}
 
 SETUP()
 {
@@ -31,7 +40,8 @@ TEARDOWN()
 
 TEST(compare_view_defines_id_grouping)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"compare/a", cwd);
 	compare_one_pane(&lwin, CT_CONTENTS, LT_ALL, 0);
 
 	assert_int_equal(3, lwin.list_rows);
@@ -44,7 +54,8 @@ TEST(compare_view_defines_id_grouping)
 
 TEST(goto_file_nagivates_to_files)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
 	load_dir_list(&lwin, 1);
 
 	cfg.ignore_case = 1;
@@ -61,7 +72,8 @@ TEST(goto_file_nagivates_to_files)
 
 TEST(goto_file_nagivates_to_files_with_case_override)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
 	load_dir_list(&lwin, 1);
 
 	cfg.ignore_case = 1;
@@ -82,7 +94,8 @@ TEST(goto_file_nagivates_to_files_with_case_override)
 
 TEST(find_directory)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree/dir1");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"tree/dir1", cwd);
 	load_dir_list(&lwin, 1);
 
 	assert_int_equal(2, lwin.list_rows);
@@ -98,7 +111,8 @@ TEST(find_directory)
 
 TEST(find_selected)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
 	load_dir_list(&lwin, 1);
 
 	assert_int_equal(3, lwin.list_rows);
@@ -117,7 +131,9 @@ TEST(find_selected)
 
 TEST(find_first_and_last_siblings)
 {
-	flist_load_tree(&lwin, TEST_DATA_PATH "/tree");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "tree",
+			cwd);
+	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
 	assert_int_equal(12, lwin.list_rows);
 
 	assert_int_equal(0, flist_first_sibling(&lwin));
@@ -135,7 +151,9 @@ TEST(find_first_and_last_siblings)
 
 TEST(find_next_and_prev_dir_sibling)
 {
-	flist_load_tree(&lwin, TEST_DATA_PATH "/tree");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "tree",
+			cwd);
+	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
 	assert_int_equal(12, lwin.list_rows);
 
 	assert_int_equal(0, flist_prev_dir_sibling(&lwin));
@@ -186,7 +204,8 @@ TEST(find_next_and_prev_mismatches)
 
 TEST(current_unselected_file_is_marked)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
 	load_dir_list(&lwin, 1);
 
 	assert_int_equal(0, lwin.list_pos);
@@ -204,7 +223,8 @@ TEST(current_unselected_file_is_marked)
 
 TEST(selection_is_marked)
 {
-	strcpy(lwin.curr_dir, TEST_DATA_PATH "/existing-files");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
 	load_dir_list(&lwin, 1);
 
 	assert_int_equal(0, lwin.list_pos);
