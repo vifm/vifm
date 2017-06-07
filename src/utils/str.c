@@ -355,7 +355,7 @@ stroscmp(const char *s, const char *t)
 int
 strnoscmp(const char *s, const char *t, size_t n)
 {
-#ifndef _WIN32
+#ifdef _WIN32
 	return strncmp(s, t, n);
 #else
 	return strncasecmp(s, t, n);
