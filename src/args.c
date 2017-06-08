@@ -41,7 +41,7 @@ static void handle_arg_or_fail(const char arg[], int select, const char dir[],
 		args_t *args);
 static int handle_path_arg(const char arg[], int select, const char dir[],
 		args_t *args);
-static int is_path_arg(const char arg[]);
+static int is_path_arg(const char arg[], int select);
 static void parse_path(const char dir[], const char path[], char buf[]);
 static void process_general_args(args_t *args);
 static void show_help_msg(const char wrong_arg[]);
@@ -235,7 +235,9 @@ handle_arg_or_fail(const char arg[], int select, const char dir[], args_t *args)
 		quit_on_arg_parsing(EXIT_FAILURE);
 	}
 #ifdef ENABLE_REMOTE_CMDS
-	else
+	/* IPC won't happen before full initialization.  Yet this check will allow
+	 * testing this unit. */
+	else if(curr_stats.load_stage > 2)
 	{
 		show_error_msgf("--remote error", "Invalid argument: %s", arg);
 	}
@@ -247,7 +249,7 @@ handle_arg_or_fail(const char arg[], int select, const char dir[], args_t *args)
 static int
 handle_path_arg(const char arg[], int select, const char dir[], args_t *args)
 {
-	if(!is_path_arg(arg))
+	if(!is_path_arg(arg, select))
 	{
 		return 1;
 	}
@@ -269,11 +271,11 @@ handle_path_arg(const char arg[], int select, const char dir[], args_t *args)
 /* Checks whether argument mentions a valid path.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
-is_path_arg(const char arg[])
+is_path_arg(const char arg[], int select)
 {
 	/* FIXME: why allow inexistent absolute paths? */
 	return path_exists(arg, DEREF) || is_path_absolute(arg) || is_root_dir(arg)
-		  || strcmp(arg, "-") == 0;
+		  || (!select && strcmp(arg, "-") == 0);
 }
 
 /* Ensures that path is in suitable form for processing.  buf should be at least

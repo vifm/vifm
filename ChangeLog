@@ -6,6 +6,9 @@
 	Fixed incorrect existence check for files that end with forward slash on
 	*nix.  Thanks to filterfalse.
 
+	Fixed treating `--select -` as `-` on command-line.  Thanks to
+	filterfalse.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.
