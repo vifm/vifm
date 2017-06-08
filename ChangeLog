@@ -3,6 +3,9 @@
 	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
 	filterfalse.
 
+	Fixed incorrect existence check for files that end with forward slash on
+	*nix.  Thanks to filterfalse.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.

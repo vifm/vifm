@@ -59,7 +59,11 @@ chosp(char path[])
 	}
 
 	len = strlen(path);
+#ifndef _WIN32
+	if(path[len - 1] == '/')
+#else
 	if(path[len - 1] == '/' || path[len - 1] == '\\')
+#endif
 	{
 		path[len - 1] = '\0';
 	}
