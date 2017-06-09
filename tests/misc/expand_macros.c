@@ -14,6 +14,8 @@
 #include "../../src/macros.h"
 #include "../../src/registers.h"
 
+#include "utils.h"
+
 #ifdef _WIN32
 #define SL "\\\\"
 #else
@@ -450,6 +452,25 @@ TEST(singly_not_expanded_multiple_files_register)
 	free(expanded);
 
 	regs_reset();
+}
+
+TEST(dollar_and_backtick_are_escaped_in_dquotes)
+{
+	char *expanded;
+
+	lwin.list_pos = 3;
+	assert_success(replace_string(&lwin.dir_entry[lwin.list_pos].name, "a$`b"));
+
+	expanded = expand_macros("%\"c", "", NULL, 0);
+	if(not_windows())
+	{
+		assert_string_equal("\"a\\$\\`b\"", expanded);
+	}
+	else
+	{
+		assert_string_equal("\"a$`b\"", expanded);
+	}
+	free(expanded);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

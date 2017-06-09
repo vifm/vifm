@@ -1,5 +1,7 @@
 0.9-beta to current
 
+	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
+
 	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
 	filterfalse.
 

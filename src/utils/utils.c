@@ -316,15 +316,18 @@ split_size_double(double size, unsigned long long *ifraction, int *fraction_widt
 const char *
 enclose_in_dquotes(const char str[])
 {
-	static char buf[PATH_MAX];
+	static char buf[1 + PATH_MAX*2 + 1 + 1];
 	char *p;
 
 	p = buf;
 	*p++ = '"';
 	while(*str != '\0')
 	{
-		if(*str == '\\' || *str == '"')
+		if(*str == '\\' || *str == '"' ||
+				(curr_stats.shell_type == ST_NORMAL && (*str == '$' || *str == '`')))
+		{
 			*p++ = '\\';
+		}
 		*p++ = *str;
 
 		str++;
