@@ -294,20 +294,19 @@ vifm_main(int argc, char *argv[])
 	{
 		load_scheme();
 		cfg_load();
+	}
 
-		if(lwin_cv)
-		{
-			flist_custom_set(&lwin, "-", dir, files, nfiles);
-		}
-		else if(rwin_cv)
-		{
-			flist_custom_set(&rwin, "-", dir, files, nfiles);
-		}
+	if(lwin_cv)
+	{
+		flist_custom_set(&lwin, "-", dir, files, nfiles);
+	}
+	else if(rwin_cv)
+	{
+		flist_custom_set(&rwin, "-", dir, files, nfiles);
 	}
 	free_string_array(files, nfiles);
-	/* Load colors in any case to load color pairs. */
-	cs_load_pairs();
 
+	cs_load_pairs();
 	cs_write();
 	setup_signals();
 

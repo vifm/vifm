@@ -9,6 +9,9 @@
 	Fixed treating `--select -` as `-` on command-line.  Thanks to
 	filterfalse.
 
+	Fixed ignoring `-` when `--no-configs` is specified.  Thanks to
+	filterfalse.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.
