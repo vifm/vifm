@@ -157,6 +157,7 @@ vifm_main(int argc, char *argv[])
 	char dir[PATH_MAX];
 	char **files = NULL;
 	int nfiles = 0;
+	int lwin_cv, rwin_cv;
 
 	if(get_cwd(dir, sizeof(dir)) == NULL)
 	{
@@ -168,8 +169,9 @@ vifm_main(int argc, char *argv[])
 	args_parse(&vifm_args, argc, argv, dir);
 	args_process(&vifm_args, 1);
 
-	if(strcmp(vifm_args.lwin_path, "-") == 0 ||
-			strcmp(vifm_args.rwin_path, "-") == 0)
+	lwin_cv = (strcmp(vifm_args.lwin_path, "-") == 0 && vifm_args.lwin_handle);
+	rwin_cv = (strcmp(vifm_args.rwin_path, "-") == 0 && vifm_args.rwin_handle);
+	if(lwin_cv || rwin_cv)
 	{
 		files = read_stream_lines(stdin, &nfiles, 1, NULL, NULL);
 		if(reopen_term_stdin() != 0)
@@ -292,20 +294,19 @@ vifm_main(int argc, char *argv[])
 	{
 		load_scheme();
 		cfg_load();
+	}
 
-		if(strcmp(vifm_args.lwin_path, "-") == 0)
-		{
-			flist_custom_set(&lwin, "-", dir, files, nfiles);
-		}
-		else if(strcmp(vifm_args.rwin_path, "-") == 0)
-		{
-			flist_custom_set(&rwin, "-", dir, files, nfiles);
-		}
+	if(lwin_cv)
+	{
+		flist_custom_set(&lwin, "-", dir, files, nfiles);
+	}
+	else if(rwin_cv)
+	{
+		flist_custom_set(&rwin, "-", dir, files, nfiles);
 	}
 	free_string_array(files, nfiles);
-	/* Load colors in any case to load color pairs. */
-	cs_load_pairs();
 
+	cs_load_pairs();
 	cs_write();
 	setup_signals();
 
@@ -474,7 +475,7 @@ remote_cd(FileView *view, const char path[], int handle)
 static void
 check_path_for_file(FileView *view, const char path[], int handle)
 {
-	if(path[0] == '\0' || is_dir(path) || strcmp(path, "-") == 0)
+	if(path[0] == '\0' || is_dir(path) || (handle && strcmp(path, "-") == 0))
 	{
 		return;
 	}

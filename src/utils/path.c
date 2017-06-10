@@ -59,7 +59,11 @@ chosp(char path[])
 	}
 
 	len = strlen(path);
+#ifndef _WIN32
+	if(path[len - 1] == '/')
+#else
 	if(path[len - 1] == '/' || path[len - 1] == '\\')
+#endif
 	{
 		path[len - 1] = '\0';
 	}
@@ -327,7 +331,7 @@ is_unc_root(const char *path)
 }
 
 char *
-shell_like_escape(const char string[], int quote_percent)
+shell_like_escape(const char string[], int internal)
 {
 	size_t len;
 	size_t i;
@@ -335,7 +339,7 @@ shell_like_escape(const char string[], int quote_percent)
 
 	len = strlen(string);
 
-	dup = ret = malloc(len*2 + 2 + 1);
+	dup = ret = malloc(len*3 + 2 + 1);
 
 	if(*string == '-')
 	{
@@ -348,15 +352,16 @@ shell_like_escape(const char string[], int quote_percent)
 		switch(*string)
 		{
 			case '%':
-				if(quote_percent)
+				if(internal)
+				{
 					*dup++ = '%';
+				}
 				break;
 
 			/* Escape the following characters anywhere in the line. */
 			case '\'':
 			case '\\':
 			case '\r':
-			case '\n':
 			case '\t':
 			case '"':
 			case ';':
@@ -379,6 +384,17 @@ shell_like_escape(const char string[], int quote_percent)
 			case '#':
 				*dup++ = '\\';
 				break;
+
+			case '\n':
+				if(internal)
+				{
+					break;
+				}
+
+				*dup++ = '"';
+				*dup++ = '\n';
+				*dup = '"';
+				continue;
 
 			/* Escape the following characters only at the beginning of the line. */
 			case '~':

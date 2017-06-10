@@ -1,3 +1,30 @@
+0.9-beta to current
+
+	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
+
+	Don't use :filextype in sample vifmrc for OS X, we can't tell whether
+	graphical system is running.  Thanks to piotryordanov.
+
+	Do not add extra slash to path on picking files in the root.  Thanks to
+	filterfalse.
+
+	Properly escape newline when passing things into shell.  Thanks to
+	filterfalse.
+
+	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
+	filterfalse.
+
+	Fixed incorrect existence check for files that end with forward slash on
+	*nix.  Thanks to filterfalse.
+
+	Fixed treating `--select -` as `-` on command-line.  Thanks to
+	filterfalse.
+
+	Fixed ignoring `-` when `--no-configs` is specified.  Thanks to
+	filterfalse.
+
+	Fixed choosing files in custom views with --on-choose.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.

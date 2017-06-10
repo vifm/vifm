@@ -117,7 +117,16 @@ static uint64_t get_updated_time(uint64_t prev);
 void
 ui_ruler_update(FileView *view, int lazy_redraw)
 {
+	const int ruler_is_visible = !vle_mode_is(CMDLINE_MODE)
+	                          && !is_status_bar_multiline();
 	char *expanded;
+
+	if(!ruler_is_visible)
+	{
+		/* Do nothing, especially don't update layout because it might be a custom
+		 * layout at the moment. */
+		return;
+	}
 
 	update_statusbar_layout();
 

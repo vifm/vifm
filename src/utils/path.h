@@ -58,9 +58,10 @@ int is_root_dir(const char *path);
 int is_unc_root(const char *path);
 
 /* Escapes the string for the purpose of inserting it into the shell or
- * command-line.  quote_percent means prepend percent sign with a percent sign.
+ * command-line.  internal flag enables prepending percent sign with a percent
+ * sign and not escaping newline, because we do only worse.
  * Returns new string, caller should free it. */
-char * shell_like_escape(const char string[], int quote_percent);
+char * shell_like_escape(const char string[], int internal);
 
 /* Replaces leading path to home directory with a tilde, trims trailing slash.
  * Returns pointer to a statically allocated buffer of size PATH_MAX. */

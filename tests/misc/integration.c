@@ -1,10 +1,16 @@
 #include <stic.h>
 
 #include <stdio.h> /* fclose() fmemopen() remove() */
+#include <string.h> /* strcpy() */
 
+#include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/int/vim.h"
 #include "../../src/utils/fs.h"
+#include "../../src/filelist.h"
 #include "../../src/status.h"
+
+#include "utils.h"
 
 /* Because of fmemopen(). */
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -42,6 +48,65 @@ TEST(writing_directory_to_a_file_prints_newline)
 
 	assert_int_equal(11, get_file_size(out_spec));
 	assert_success(remove(out_spec));
+}
+
+TEST(paths_in_root_do_not_have_extra_slash_on_choosing)
+{
+	char file[] = "bin";
+	char *files[] = { file };
+	char out_buf[100] = { };
+	char out_spec[] = "-";
+
+	strcpy(lwin.curr_dir, "/");
+
+	assert_success(init_status(&cfg));
+
+	curr_stats.chosen_files_out = out_spec;
+	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
+
+	vim_write_file_list(&lwin, 1, files);
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+	curr_stats.chosen_files_out = NULL;
+
+	assert_string_equal("/bin\n", out_buf);
+}
+
+TEST(path_are_formed_right_on_choosing_in_cv)
+{
+	char file[] = "file";
+	char *files[] = { file };
+	char out_buf[100] = { };
+	char out_spec[] = "-";
+
+	char cwd[PATH_MAX + 1];
+	char expected[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	view_setup(&lwin);
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	make_abs_path(expected, sizeof(expected), SANDBOX_PATH, "file\n", cwd);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, ".");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(init_status(&cfg));
+
+	curr_stats.chosen_files_out = out_spec;
+	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
+
+	vim_write_file_list(&lwin, 1, files);
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+	curr_stats.chosen_files_out = NULL;
+
+	assert_string_equal(expected, out_buf);
+
+	view_teardown(&lwin);
 }
 
 #endif
