@@ -23,6 +23,8 @@
 	Fixed ignoring `-` when `--no-configs` is specified.  Thanks to
 	filterfalse.
 
+	Fixed choosing files in custom views with --on-choose.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.
