@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9-beta  Last change: 2017 Jun 04
+*vifm-app.txt*    For Vifm version 0.9-beta  Last change: 2017 Jun 10
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1551,6 +1551,9 @@ The builtin commands are:
     The purpose of such differentiation is to allow comfortable use of vifm
     with same settings in desktop environment/through remote connection (SSH)/
     in native console.
+
+    Note that on OS X $DISPLAY isn't defined unless you define it, so
+    :filextype should be used only if you set $DISPLAY in some way.
 
 :filext[ype] filename
     list (in menu mode) currently registered patterns that match specified

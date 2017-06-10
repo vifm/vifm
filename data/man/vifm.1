@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 04, 2017" "vifm 0.9-beta"
+.TH VIFM 1 "June 10, 2017" "vifm 0.9-beta"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1810,6 +1810,9 @@ Just as if all :filextype commands were not there.
 The purpose of such differentiation is to allow comfortable use of vifm
 with same settings in desktop environment/through remote connection (SSH)/\
 in native console.
+
+Note that on OS X $DISPLAY isn't defined unless you define it, so
+:filextype should be used only if you set $DISPLAY in some way.
 .TP
 .BI ":filext[ype] filename"
 list (in menu mode) currently registered patterns that match specified file
