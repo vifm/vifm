@@ -473,5 +473,17 @@ TEST(dollar_and_backtick_are_escaped_in_dquotes)
 	free(expanded);
 }
 
+TEST(newline_is_escaped_with_quotes)
+{
+	char *expanded;
+
+	lwin.list_pos = 3;
+	assert_success(replace_string(&lwin.dir_entry[lwin.list_pos].name, "a\nb"));
+
+	expanded = expand_macros("%c", "", NULL, 0);
+	assert_string_equal("a\"\n\"b", expanded);
+	free(expanded);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

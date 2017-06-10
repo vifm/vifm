@@ -8,6 +8,9 @@
 	Do not add extra slash to path on picking files in the root.  Thanks to
 	filterfalse.
 
+	Properly escape newline when passing things into shell.  Thanks to
+	filterfalse.
+
 	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
 	filterfalse.
 
