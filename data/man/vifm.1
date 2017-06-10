@@ -1751,6 +1751,11 @@ actions:
          \\ {Extract here}
          \\ tar \-xf %c,
 .EE
+
+Note that on OS X when `open` is used to call an app, vifm is unable to
+check whether that app is actually available.  So if automatic skipping
+of programs that aren't there is desirable, `open` should be replaced
+with an actual command.
 .TP
 .BI ":filet[ype] filename"
 list (in menu mode) currently registered patterns that match specified file
