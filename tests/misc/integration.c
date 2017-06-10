@@ -1,7 +1,9 @@
 #include <stic.h>
 
 #include <stdio.h> /* fclose() fmemopen() remove() */
+#include <string.h> /* strcpy() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/int/vim.h"
 #include "../../src/utils/fs.h"
 #include "../../src/status.h"
@@ -42,6 +44,29 @@ TEST(writing_directory_to_a_file_prints_newline)
 
 	assert_int_equal(11, get_file_size(out_spec));
 	assert_success(remove(out_spec));
+}
+
+TEST(paths_in_root_do_not_have_extra_slash_on_choosing)
+{
+	char file[] = "bin";
+	char *files[] = { file };
+	char out_buf[100] = { };
+	char out_spec[] = "-";
+
+	strcpy(lwin.curr_dir, "/");
+
+	assert_success(init_status(&cfg));
+
+	curr_stats.chosen_files_out = out_spec;
+	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
+
+	vim_write_file_list(&lwin, 1, files);
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+	curr_stats.chosen_files_out = NULL;
+
+	assert_string_equal("/bin\n", out_buf);
 }
 
 #endif

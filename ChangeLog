@@ -5,6 +5,9 @@
 	Don't use :filextype in sample vifmrc for OS X, we can't tell whether
 	graphical system is running.  Thanks to piotryordanov.
 
+	Do not add extra slash to path on picking files in the root.  Thanks to
+	filterfalse.
+
 	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
 	filterfalse.
 

@@ -291,7 +291,9 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 			}
 			else
 			{
-				fprintf(fp, "%s/%s%c%s", view->curr_dir, files[i], delim_c, delim_str);
+				const char *const sep = (ends_with_slash(view->curr_dir) ? "" : "/");
+				fprintf(fp, "%s%s%s%c%s", view->curr_dir, sep, files[i], delim_c,
+						delim_str);
 			}
 		}
 	}
