@@ -2,8 +2,9 @@
 
 #include <stdio.h> /* remove() */
 
-#include "../../src/utils/fs.h"
+#include "../../src/compat/os.h"
 #include "../../src/utils/macros.h"
+#include "../../src/utils/path.h"
 #include "../../src/args.h"
 #include "../../src/status.h"
 
@@ -32,6 +33,18 @@ TEST(chooseopt_options_are_not_set)
 	args_free(&args);
 }
 
+TEST(dash_is_accepted)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "-", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+
+	assert_string_equal("-", args.lwin_path);
+
+	args_free(&args);
+}
+
 TEST(select_does_not_accept_dash_if_no_such_file)
 {
 	args_t args = { .lwin_handle = 135 };
@@ -51,15 +64,28 @@ TEST(select_accepts_dash_if_such_file_exists)
 	args_t args = { };
 	char *argv[] = { "vifm", "--select", "-", NULL };
 
-	char *const saved_cwd = save_cwd();
 	create_file("-");
 
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
 
-	assert_string_equal("-", args.lwin_path);
+	assert_string_equal("/-", args.lwin_path);
 
 	assert_success(remove("-"));
-	restore_cwd(saved_cwd);
+	args_free(&args);
+}
+
+TEST(select_accepts_dash_if_such_directory_exists)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "--select", "-", NULL };
+
+	assert_success(os_mkdir("-", 0700));
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+
+	assert_string_equal("/-", args.lwin_path);
+
+	assert_success(remove("-"));
 	args_free(&args);
 }
 
