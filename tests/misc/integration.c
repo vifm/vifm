@@ -73,6 +73,64 @@ TEST(paths_in_root_do_not_have_extra_slash_on_choosing)
 	assert_string_equal("/bin\n", out_buf);
 }
 
+TEST(abs_paths_are_not_touched_on_choosing)
+{
+	char file[] = "/bin";
+	char *files[] = { file };
+	char out_buf[100] = { };
+	char out_spec[] = "-";
+
+	strcpy(lwin.curr_dir, "/etc");
+
+	assert_success(init_status(&cfg));
+
+	curr_stats.chosen_files_out = out_spec;
+	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
+
+	vim_write_file_list(&lwin, 1, files);
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+	curr_stats.chosen_files_out = NULL;
+
+	assert_string_equal("/bin\n", out_buf);
+}
+
+TEST(selection_can_be_chosen)
+{
+	char out_buf[100] = { };
+	char out_spec[] = "-";
+
+	char cwd[PATH_MAX + 1];
+	char expected[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	view_setup(&lwin);
+
+	strcpy(lwin.curr_dir, "/");
+	strcpy(expected, "/bin\n");
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "bin");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	lwin.dir_entry[0].selected = 1;
+
+	assert_success(init_status(&cfg));
+
+	curr_stats.chosen_files_out = out_spec;
+	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
+
+	vim_write_file_list(&lwin, 0, NULL);
+
+	fclose(curr_stats.original_stdout);
+	curr_stats.original_stdout = NULL;
+	curr_stats.chosen_files_out = NULL;
+
+	assert_string_equal(expected, out_buf);
+
+	view_teardown(&lwin);
+}
+
 TEST(path_are_formed_right_on_choosing_in_cv)
 {
 	char file[] = "file";
