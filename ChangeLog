@@ -28,6 +28,9 @@
 	Fixed redrawing view after loading custom list in case when cursor is
 	positioned on ".." entry.  Thanks to filterfalse.
 
+	Fixed restoring of excluded items from custom view if local filter isn't
+	empty.  Thanks to filterfalse.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.

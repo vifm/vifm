@@ -1087,6 +1087,13 @@ flist_custom_exclude(FileView *view, int selection_only)
 	}
 
 	(void)exclude_temporary_entries(view);
+
+	if(view->local_filter.entry_count != 0)
+	{
+		/* If local filter has made a copy of list of entries, update it. */
+		replace_dir_entries(view, &view->local_filter.entries,
+				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
+	}
 }
 
 /* Removes selected files from compare view.  Zero selection_only enables
