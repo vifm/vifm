@@ -1011,6 +1011,7 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 
 	sort_dir_list(0, view);
 
+	ui_view_schedule_redraw(view);
 	flist_ensure_pos_is_valid(view);
 
 	return 0;

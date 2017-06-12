@@ -25,6 +25,9 @@
 
 	Fixed choosing files in custom views with --on-choose.
 
+	Fixed redrawing view after loading custom list in case when cursor is
+	positioned on ".." entry.  Thanks to filterfalse.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.
