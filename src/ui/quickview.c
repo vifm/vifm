@@ -718,12 +718,21 @@ qv_get_path_to_explore(const dir_entry_t *entry, char buf[], size_t buf_len)
 {
 	if(entry->type == FT_DIR && is_parent_dir(entry->name))
 	{
-		copy_str(buf, buf_len, entry->origin);
+		char *const typed_fname = format_str("%s%s../", entry->origin,
+				ends_with_slash(entry->origin) ? "" : "/");
+
+		/* In the absence of handler for ".." entry, transform it into path to its
+		 * origin. */
+		if(ft_get_viewer(typed_fname) == NULL)
+		{
+			free(typed_fname);
+			copy_str(buf, buf_len, entry->origin);
+			return;
+		}
+		free(typed_fname);
 	}
-	else
-	{
-		get_full_path_of(entry, buf_len, buf);
-	}
+
+	get_full_path_of(entry, buf_len, buf);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
