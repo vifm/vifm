@@ -461,16 +461,18 @@ TEST(dollar_and_backtick_are_escaped_in_dquotes)
 	lwin.list_pos = 3;
 	assert_success(replace_string(&lwin.dir_entry[lwin.list_pos].name, "a$`b"));
 
+	curr_stats.shell_type = ST_NORMAL;
 	expanded = expand_macros("%\"c", "", NULL, 0);
-	if(not_windows())
-	{
-		assert_string_equal("\"a\\$\\`b\"", expanded);
-	}
-	else
-	{
-		assert_string_equal("\"a$`b\"", expanded);
-	}
+	assert_string_equal("\"a\\$\\`b\"", expanded);
 	free(expanded);
+
+	curr_stats.shell_type = ST_CMD;
+	expanded = expand_macros("%\"c", "", NULL, 0);
+	assert_string_equal("\"a$`b\"", expanded);
+	free(expanded);
+
+	/* Restore normal value or some further tests can get broken. */
+	curr_stats.shell_type = ST_NORMAL;
 }
 
 TEST(newline_is_escaped_with_quotes)

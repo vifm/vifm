@@ -1011,6 +1011,7 @@ flist_custom_finish_internal(FileView *view, CVType type, int reload,
 
 	sort_dir_list(0, view);
 
+	ui_view_schedule_redraw(view);
 	flist_ensure_pos_is_valid(view);
 
 	return 0;
@@ -1086,6 +1087,13 @@ flist_custom_exclude(FileView *view, int selection_only)
 	}
 
 	(void)exclude_temporary_entries(view);
+
+	if(view->local_filter.entry_count != 0)
+	{
+		/* If local filter has made a copy of list of entries, update it. */
+		replace_dir_entries(view, &view->local_filter.entries,
+				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
+	}
 }
 
 /* Removes selected files from compare view.  Zero selection_only enables

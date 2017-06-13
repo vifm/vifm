@@ -277,7 +277,9 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 		dir_entry_t *entry = NULL;
 		while(iter_active_area((FileView *)view, &entry))
 		{
-			fprintf(fp, "%s/%s%c%s", entry->origin, entry->name, delim_c, delim_str);
+			const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
+			fprintf(fp, "%s%s%s%c%s", entry->origin, sep, entry->name, delim_c,
+					delim_str);
 		}
 	}
 	else
