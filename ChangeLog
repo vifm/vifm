@@ -14,6 +14,8 @@
 	View current directory on ".." for quickview/view mode only if no viewer
 	matches such entry.
 
+	Expand macros in :[un]select !{command}.  Thanks to Michael Corvin.
+
 	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
 	filterfalse.
 
