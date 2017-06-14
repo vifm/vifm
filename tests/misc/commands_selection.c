@@ -278,6 +278,20 @@ TEST(select_and_unselect_accept_external_command)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(select_expands_macros_in_external_command)
+{
+	strcpy(lwin.curr_dir, cwd);
+	assert_success(chdir(cwd));
+
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select !echo %c", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+}
+
 TEST(select_and_unselect_consider_trailing_slash)
 {
 	strcpy(lwin.curr_dir, cwd);

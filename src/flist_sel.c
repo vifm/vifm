@@ -248,19 +248,22 @@ select_unselect_entry(FileView *view, dir_entry_t *entry, int select)
 }
 
 int
-flist_sel_by_filter(FileView *view, const char pattern[], int erase_old,
-		int select)
+flist_sel_by_filter(FileView *view, const char cmd[], int erase_old, int select)
 {
 	trie_t *selection_trie;
 	char **files;
 	int nfiles;
 	int i;
 
-	if(run_cmd_for_output(pattern, &files, &nfiles) != 0)
+	char *const expanded_cmd = expand_macros(cmd, NULL, NULL, 1);
+
+	if(run_cmd_for_output(expanded_cmd, &files, &nfiles) != 0)
 	{
+		free(expanded_cmd);
 		status_bar_error("Failed to start/read output of external command");
 		return 1;
 	}
+	free(expanded_cmd);
 
 	/* Append to previous selection unless ! is specified. */
 	if(select && erase_old)

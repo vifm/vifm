@@ -652,6 +652,33 @@ TEST(excluded_entries_do_not_return)
 	filter_dispose(&lwin.auto_filter);
 }
 
+TEST(excluding_entries_does_not_affect_local_filter_list)
+{
+	filters_view_reset(&lwin);
+
+	assert_false(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/c");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	local_filter_apply(&lwin, "[ab]");
+	load_dir_list(&lwin, 1);
+	assert_int_equal(2, lwin.list_rows);
+
+	flist_custom_exclude(&lwin, 0);
+	assert_int_equal(1, lwin.list_rows);
+
+	local_filter_remove(&lwin);
+	load_dir_list(&lwin, 1);
+	assert_int_equal(2, lwin.list_rows);
+
+	filter_dispose(&lwin.manual_filter);
+	filter_dispose(&lwin.auto_filter);
+}
+
 TEST(failed_loadin_of_cv_does_not_override_saved_list)
 {
 	filters_view_reset(&lwin);

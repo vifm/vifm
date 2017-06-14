@@ -60,8 +60,8 @@ typedef struct
 }
 custom_macro_t;
 
-/* args and flags parameters can equal NULL. The string returned needs to be
- * freed in the calling function. After executing flags is one of MF_*
+/* args and flags parameters can equal NULL.  The string returned needs to be
+ * freed in the calling function.  After executing flags is one of MF_*
  * values. */
 char * expand_macros(const char command[], const char args[], MacroFlags *flags,
 		int for_shell);

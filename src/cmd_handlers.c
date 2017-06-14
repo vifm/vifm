@@ -4411,14 +4411,14 @@ get_reg(const char arg[], int *reg)
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
-	char *expanded_com = NULL;
+	char *expanded_com;
 	MacroFlags flags;
 	int external = 1;
 	int bg;
 	int save_msg = 0;
 	int handled;
 
-	/* Expand macros in a binded command. */
+	/* Expand macros in a bound command. */
 	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
 			get_cmd_id(cmd_info->cmd) == COM_EXECUTE);
 

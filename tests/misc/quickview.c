@@ -133,6 +133,24 @@ TEST(quick_view_picks_current_directory)
 	assert_string_equal("/path", path);
 }
 
+TEST(quick_view_picks_parent_directory_if_there_is_a_match)
+{
+	char origin[] = "/path";
+	char name[] = "..";
+	dir_entry_t entry = { .origin = origin, .name = name, .type = FT_DIR };
+	char path[PATH_MAX + 1];
+
+	char *error;
+	matchers_t *ms = matchers_alloc("../", 0, 1, "", &error);
+	assert_non_null(ms);
+	ft_set_viewers(ms, "do something");
+
+	qv_get_path_to_explore(&entry, path, sizeof(path));
+	assert_string_equal("/path/..", path);
+
+	ft_reset(0);
+}
+
 static void
 check_only_one_line_displayed(void)
 {
