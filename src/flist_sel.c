@@ -248,15 +248,14 @@ select_unselect_entry(FileView *view, dir_entry_t *entry, int select)
 }
 
 int
-flist_sel_by_filter(FileView *view, const char pattern[], int erase_old,
-		int select)
+flist_sel_by_filter(FileView *view, const char cmd[], int erase_old, int select)
 {
 	trie_t *selection_trie;
 	char **files;
 	int nfiles;
 	int i;
 
-	if(run_cmd_for_output(pattern, &files, &nfiles) != 0)
+	if(run_cmd_for_output(cmd, &files, &nfiles) != 0)
 	{
 		status_bar_error("Failed to start/read output of external command");
 		return 1;

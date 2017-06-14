@@ -1885,6 +1885,7 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 		if(filter(view, entry, arg))
 		{
+			/* We're keeping this entry. */
 			if(i != j)
 			{
 				entries[j] = entries[i];

@@ -56,7 +56,7 @@ void flist_sel_by_range(FileView *view, int begin, int end, int select);
 /* Selects or unselects entries that match list of files supplied by external
  * utility.  Returns zero on success, otherwise non-zero is returned and error
  * message is printed on statusbar. */
-int flist_sel_by_filter(FileView *view, const char pattern[], int erase_old,
+int flist_sel_by_filter(FileView *view, const char cmd[], int erase_old,
 		int select);
 
 /* Selects or unselects entries that match given pattern.  Returns zero on
