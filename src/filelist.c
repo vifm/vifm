@@ -102,6 +102,7 @@ static void disable_view_sorting(FileView *view);
 static void enable_view_sorting(FileView *view);
 static void exclude_in_compare(FileView *view, int selection_only);
 static void mark_group(FileView *view, FileView *other, int idx);
+static int got_excluded(FileView *view, const dir_entry_t *entry, void *arg);
 static int exclude_temporary_entries(FileView *view);
 static int is_temporary(FileView *view, const dir_entry_t *entry, void *arg);
 static void uncompress_traverser(const char name[], int valid,
@@ -1061,6 +1062,7 @@ void
 flist_custom_exclude(FileView *view, int selection_only)
 {
 	dir_entry_t *entry;
+	trie_t *excluded;
 
 	if(!flist_custom_active(view))
 	{
@@ -1074,26 +1076,29 @@ flist_custom_exclude(FileView *view, int selection_only)
 	}
 
 	entry = NULL;
+	excluded = trie_create();
 	while(iter_selection_or_current(view, &entry))
 	{
+		char full_path[PATH_MAX];
+
 		entry->temporary = 1;
+
+		get_full_path_of(entry, sizeof(full_path), full_path);
+		(void)trie_put(excluded, full_path);
 
 		if(view->custom.type == CV_TREE)
 		{
-			char full_path[PATH_MAX];
-			get_full_path_of(entry, sizeof(full_path), full_path);
 			(void)trie_put(view->custom.excluded_paths, full_path);
 		}
 	}
 
-	(void)exclude_temporary_entries(view);
+	/* Update copy of list of entries made by local filter (it might be empty,
+	 * which is OK). */
+	(void)zap_entries(view, view->local_filter.entries,
+			&view->local_filter.entry_count, &got_excluded, excluded, 1, 1);
+	trie_free(excluded);
 
-	if(view->local_filter.entry_count != 0)
-	{
-		/* If local filter has made a copy of list of entries, update it. */
-		replace_dir_entries(view, &view->local_filter.entries,
-				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
-	}
+	(void)exclude_temporary_entries(view);
 }
 
 /* Removes selected files from compare view.  Zero selection_only enables
@@ -1159,6 +1164,22 @@ mark_group(FileView *view, FileView *other, int idx)
 			other->dir_entry[i].temporary = 1;
 		}
 	}
+}
+
+/* zap_entries() filter to filter-out files, which were just excluded from the
+ * view.  Returns non-zero if entry is to be kept and zero otherwise. */
+static int
+got_excluded(FileView *view, const dir_entry_t *entry, void *arg)
+{
+	void *data;
+	trie_t *const excluded = arg;
+	int excluded_entry;
+
+	char full_path[PATH_MAX];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	excluded_entry = (trie_get(excluded, full_path, &data) == 0);
+	return !excluded_entry;
 }
 
 /* Excludes view entries that are marked as "temporary".  Returns number of
