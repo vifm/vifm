@@ -16,6 +16,9 @@
 
 	Expand macros in :[un]select !{command}.  Thanks to Michael Corvin.
 
+	Update the other view after file deletion (that file might be visible
+	there too).
+
 	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
 	filterfalse.
 
