@@ -328,8 +328,10 @@ vifm_main(int argc, char *argv[])
 	flist_hist_save(&rwin, NULL, NULL, -1);
 
 	/* Trigger auto-commands for initial directories. */
-	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
-	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
+	(void)vifm_chdir(flist_get_dir(&lwin));
+	vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
+	(void)vifm_chdir(flist_get_dir(&rwin));
+	vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
 
 	update_screen(UT_FULL);
 	modes_update();
@@ -605,8 +607,10 @@ vifm_restart(void)
 	curr_stats.restart_in_progress = 0;
 
 	/* Trigger auto-commands for initial directories. */
-	vle_aucmd_execute("DirEnter", lwin.curr_dir, &lwin);
-	vle_aucmd_execute("DirEnter", rwin.curr_dir, &rwin);
+	(void)vifm_chdir(flist_get_dir(&lwin));
+	vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
+	(void)vifm_chdir(flist_get_dir(&rwin));
+	vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
 
 	update_screen(UT_REDRAW);
 }
