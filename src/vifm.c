@@ -622,6 +622,9 @@ exec_startup_commands(const args_t *args)
 	size_t i;
 	for(i = 0; i < args->ncmds; ++i)
 	{
+		/* Make sure we're executing commands in correct directory. */
+		(void)vifm_chdir(flist_get_dir(curr_view));
+
 		(void)exec_commands(args->cmds[i], curr_view, CIT_COMMAND);
 	}
 }

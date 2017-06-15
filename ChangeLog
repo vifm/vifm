@@ -19,6 +19,8 @@
 	Update the other view after file deletion (that file might be visible
 	there too).
 
+	Execute startup commands in directory of current pane.
+
 	Fixed ruler being updated when it shouldn't even be visible.  Thanks to
 	filterfalse.
 
