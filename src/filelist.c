@@ -150,6 +150,7 @@ static dir_entry_t * pick_sibling(FileView *view, entries_t parent_dirs,
 static int iter_entries(FileView *view, dir_entry_t **entry,
 		entry_predicate pred);
 static void clear_marking(FileView *view);
+static int set_position_by_path(FileView *view, const char path[]);
 static int flist_load_tree_internal(FileView *view, const char path[],
 		int reload);
 static int make_tree(FileView *view, const char path[], int reload,
@@ -392,12 +393,12 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 		const char file[])
 {
 	char full_path[PATH_MAX];
-	dir_entry_t *entry;
 
 	snprintf(full_path, sizeof(full_path), "%s/%s", dir, file);
 
 	if(custom_list_is_incomplete(view))
 	{
+		const dir_entry_t *entry;
 		entry = entry_from_path(view, view->local_filter.entries,
 				view->local_filter.entry_count, full_path);
 		if(entry == NULL)
@@ -414,14 +415,12 @@ navigate_to_file_in_custom_view(FileView *view, const char dir[],
 		}
 	}
 
-	entry = entry_from_path(view, view->dir_entry, view->list_rows, full_path);
-	if(entry == NULL)
+	if(set_position_by_path(view, full_path) != 0)
 	{
 		/* File might not exist anymore at that location. */
 		return 1;
 	}
 
-	view->list_pos = entry_to_pos(view, entry);
 	ui_view_schedule_redraw(view);
 	return 0;
 }
@@ -1387,7 +1386,6 @@ void
 flist_goto_by_path(FileView *view, const char path[])
 {
 	char full_path[PATH_MAX];
-	dir_entry_t *entry;
 	const char *const name = get_last_path_component(path);
 
 	get_current_full_path(view, sizeof(full_path), full_path);
@@ -1411,11 +1409,7 @@ flist_goto_by_path(FileView *view, const char path[])
 		return;
 	}
 
-	entry = entry_from_path(view, view->dir_entry, view->list_rows, path);
-	if(entry != NULL)
-	{
-		view->list_pos = entry_to_pos(view, entry);
-	}
+	(void)set_position_by_path(view, path);
 }
 
 dir_entry_t *
@@ -3350,16 +3344,27 @@ flist_load_tree(FileView *view, const char path[])
 
 	if(full_path[0] != '\0')
 	{
-		const dir_entry_t *entry;
-		entry = entry_from_path(view, view->dir_entry, view->list_rows, full_path);
-		if(entry != NULL)
-		{
-			view->list_pos = entry_to_pos(view, entry);
-		}
+		(void)set_position_by_path(view, full_path);
 	}
 
 	ui_view_schedule_redraw(view);
 	return 0;
+}
+
+/* Looks up entry by its path in main entry list of the view and updates cursor
+ * position when such entry is found.  Returns zero if position was updated,
+ * otherwise non-zero is returned. */
+static int
+set_position_by_path(FileView *view, const char path[])
+{
+	const dir_entry_t *entry;
+	entry = entry_from_path(view, view->dir_entry, view->list_rows, path);
+	if(entry != NULL)
+	{
+		view->list_pos = entry_to_pos(view, entry);
+		return 0;
+	}
+	return 1;
 }
 
 int
