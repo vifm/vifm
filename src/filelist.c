@@ -1659,9 +1659,15 @@ populate_custom_view(FileView *view, int reload)
 	{
 		if(custom_list_is_incomplete(view))
 		{
-			/* Load initial list of custom entries if it's available. */
+			char selected_path[PATH_MAX];
+			get_current_full_path(view, sizeof(selected_path), selected_path);
+
+			/* Replacing list of entries invalidates cursor position, so we remember
+			 * previously selected file and try to position at it again. */
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
 					view->local_filter.entries, view->local_filter.entry_count);
+
+			(void)set_position_by_path(view, selected_path);
 		}
 
 		(void)zap_entries(view, view->dir_entry, &view->list_rows,
@@ -1932,7 +1938,11 @@ zap_entries(FileView *view, dir_entry_t *entries, int *count, zap_filter filter,
 			fentry_free(view, &entry[k]);
 		}
 
-		if(view->list_pos >= i && view->list_pos < i + nremoved)
+		/* If we're removing file from main list of entries and cursor is right on
+		 * this file, move cursor at position this file would take in resulting
+		 * list. */
+		if(entries == view->dir_entry && view->list_pos >= i &&
+				view->list_pos < i + nremoved)
 		{
 			view->list_pos = j;
 		}

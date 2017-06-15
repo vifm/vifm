@@ -39,6 +39,9 @@
 	Fixed restoring of excluded items from custom view if local filter isn't
 	empty.  Thanks to filterfalse.
 
+	Fixed incorrect cursor positioning on removing elements from custom view
+	with local filter.
+
 0.8.2 to 0.9-beta
 
 	Removed -Werror in tests from non-developer builds.
