@@ -149,6 +149,7 @@ fops_delete(FileView *view, int reg, int use_trash)
 	cmd_group_end();
 
 	ui_view_reset_selection_and_reload(view);
+	ui_view_schedule_reload(view == curr_view ? other_view : curr_view);
 
 	status_bar_messagef("%d %s %celeted%s", ops->succeeded,
 			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',

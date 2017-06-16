@@ -718,6 +718,54 @@ TEST(loading_cv_resets_search_results)
 	assert_int_equal(0, lwin.matches);
 }
 
+TEST(cursor_is_positioned_close_to_disappeared_file)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	assert_success(chdir(SANDBOX_PATH));
+	create_file("1");
+	create_file("2");
+	create_file("3");
+	create_file("4");
+	create_file("5");
+	create_file("6");
+
+	filters_view_reset(&lwin);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "1");
+	flist_custom_add(&lwin, "2");
+	flist_custom_add(&lwin, "3");
+	flist_custom_add(&lwin, "4");
+	flist_custom_add(&lwin, "5");
+	flist_custom_add(&lwin, "6");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(6, lwin.list_rows);
+
+	local_filter_apply(&lwin, "[4-6]");
+	load_dir_list(&lwin, 1);
+	assert_int_equal(3, lwin.list_rows);
+
+	lwin.list_pos = 2;
+	assert_success(unlink("6"));
+	/* This reloads view zipping removed and filtered-out files.  It should try to
+	 * stay close to original position. */
+	load_dir_list(&lwin, 1);
+	assert_int_equal(2, lwin.list_rows);
+
+	/* Both 2 and 1 are valid answers, list_pos is automatically corrected. */
+	assert_true(lwin.list_pos == 1 || lwin.list_pos == 2);
+
+	filter_dispose(&lwin.manual_filter);
+	filter_dispose(&lwin.auto_filter);
+
+	assert_success(chdir(SANDBOX_PATH));
+	assert_success(unlink("1"));
+	assert_success(unlink("2"));
+	assert_success(unlink("3"));
+	assert_success(unlink("4"));
+	assert_success(unlink("5"));
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
