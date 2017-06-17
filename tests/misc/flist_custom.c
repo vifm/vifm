@@ -720,6 +720,8 @@ TEST(loading_cv_resets_search_results)
 
 TEST(cursor_is_positioned_close_to_disappeared_file)
 {
+	char *const saved_cwd = save_cwd();
+
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
 	assert_success(chdir(SANDBOX_PATH));
 	create_file("1");
@@ -758,6 +760,7 @@ TEST(cursor_is_positioned_close_to_disappeared_file)
 	filter_dispose(&lwin.manual_filter);
 	filter_dispose(&lwin.auto_filter);
 
+	restore_cwd(saved_cwd);
 	assert_success(chdir(SANDBOX_PATH));
 	assert_success(unlink("1"));
 	assert_success(unlink("2"));
