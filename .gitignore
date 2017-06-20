@@ -12,14 +12,14 @@
 
 # autotools generated files
 /autom4te.cache/
+/build-aux/config.h
+/build-aux/stamp-h1
 /src/Makefile
 /src/runtests.log
 /src/runtests.trs
 /Makefile
-/config.h
 /config.log
 /config.status
-/stamp-h1
 .deps/
 .dirstamp
 

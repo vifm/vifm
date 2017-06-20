@@ -93,7 +93,7 @@ if [ "$target" = all -o "$target" = archive ]; then
         make distcheck
     else
         # remove config.h to make Makefile.win install default configuration
-        rm -f config.h
+        rm -f build-aux/config.h
 
         # build vifm
         make -C src/ -f Makefile.win clean

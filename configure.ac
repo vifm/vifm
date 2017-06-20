@@ -1,9 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(vifm, 0.9, xaizek@openmailbox.org, vifm, https://vifm.info)
-AC_CONFIG_SRCDIR(configure.ac)
+AC_CONFIG_SRCDIR(src/vifm.c)
+AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE([no-dist-gzip dist-bzip2])
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(build-aux/config.h)
 
 AC_DEFINE([PACKAGE_SYSCONF_DIR], [], [Configuration directory of the package.])
 AC_DEFINE([PACKAGE_DATA_DIR], [], [Data directory of the package.])
@@ -739,9 +740,10 @@ CFLAGS="$CFLAGS $SANITIZERS_CFLAGS"
 LDFLAGS="$LDFLAGS $SANITIZERS_CFLAGS"
 
 dnl Include config.h in all translation units implicitly
-CFLAGS="$CFLAGS -include ../config.h"
+CFLAGS="$CFLAGS -include ../build-aux/config.h"
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 src/Makefile
 ])
+AC_OUTPUT

@@ -123,8 +123,8 @@ AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
 override CFLAGS := $(CFLAGS) -MMD -pipe -Wall -Wno-char-subscripts \
-                   -Istic/ -include $(B)../config.h -fsigned-char -DTEST \
-                   -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
+                   -Istic/ -include $(B)../build-aux/config.h -fsigned-char \
+                   -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
 override LDFLAGS := $(LDFLAGS) -lpthread
 ifeq (,$(findstring clang,$(CC)))

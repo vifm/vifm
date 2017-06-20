@@ -23,7 +23,7 @@ update()
 # checks whether timestamps are OK, OK looks like this:
 # configure.ac
 #    < aclocal.m4
-#        < configure config.h.in `find . -name Makefile.in -print`
+#        < configure build-aux/config.h.in `find . -name Makefile.in -print`
 everything_is_up_to_date()
 {
     if [ ! configure.ac -ot aclocal.m4 ]; then
@@ -31,7 +31,8 @@ everything_is_up_to_date()
         return 1
     fi
 
-    for file in configure config.h.in `find . -name Makefile.in -print`; do
+    for file in configure build-aux/config.h.in \
+               `find . -name Makefile.in -print`; do
         if [ ! aclocal.m4 -ot "$file" ]; then
             echo "aclocal.m4 is not older than $file"
             return 1
@@ -59,7 +60,7 @@ next_second
 update configure
 
 # so does autoheader-generated config.h.in
-update config.h.in
+update build-aux/config.h.in
 
 # and all the automake-generated Makefile.in files
 update `find . -name Makefile.in -print`
