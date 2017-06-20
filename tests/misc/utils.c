@@ -5,6 +5,7 @@
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fread() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/cfg/config.h"
@@ -13,6 +14,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fswatch.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
@@ -111,6 +113,8 @@ undo_teardown(void)
 void
 view_setup(FileView *view)
 {
+	char *error;
+
 	view->list_rows = 0;
 	view->filtered = 0;
 	view->list_pos = 0;
@@ -121,7 +125,7 @@ view_setup(FileView *view)
 	view->selected_files = 0;
 
 	assert_success(filter_init(&view->local_filter.filter, 1));
-	assert_success(filter_init(&view->manual_filter, 1));
+	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
 	assert_success(filter_init(&view->auto_filter, 1));
 
 	strcpy(view->curr_dir, "/path");
@@ -153,7 +157,8 @@ view_teardown(FileView *view)
 
 	filter_dispose(&view->local_filter.filter);
 	filter_dispose(&view->auto_filter);
-	filter_dispose(&view->manual_filter);
+	matcher_free(view->manual_filter);
+	view->manual_filter = NULL;
 
 	view->custom.type = CV_REGULAR;
 
@@ -224,6 +229,18 @@ not_windows(void)
 #else
 	return 1;
 #endif
+}
+
+int
+replace_matcher(matcher_t **matcher, const char expr[])
+{
+	char *error;
+
+	matcher_free(*matcher);
+	*matcher = matcher_alloc(expr, FILTER_DEF_CASE_SENSITIVITY, 0, "", &error);
+	free(error);
+
+	return (*matcher == NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

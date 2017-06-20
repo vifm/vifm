@@ -13,6 +13,7 @@
 #include "../../src/filtering.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -53,8 +54,10 @@ TEARDOWN()
 static void
 init_view(FileView *view)
 {
+	char *error;
+
 	filter_init(&view->local_filter.filter, 1);
-	filter_init(&view->manual_filter, 1);
+	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
 	filter_init(&view->auto_filter, 1);
 
 	view->dir_entry = NULL;
@@ -77,7 +80,8 @@ free_view(FileView *view)
 	dynarray_free(view->dir_entry);
 
 	filter_dispose(&view->local_filter.filter);
-	filter_dispose(&view->manual_filter);
+	matcher_free(view->manual_filter);
+	view->manual_filter = NULL;
 	filter_dispose(&view->auto_filter);
 }
 

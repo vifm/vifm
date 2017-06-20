@@ -297,7 +297,7 @@ typedef struct
 	int explore_mode; /* shows whether this view is used for file exploring */
 
 	/* Filter which is controlled by user. */
-	filter_t manual_filter;
+	struct matcher_t *manual_filter;
 	/* Stores previous raw value of the manual_filter to make filter restoring
 	 * possible.  Always not NULL. */
 	char *prev_manual_filter;

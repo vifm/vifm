@@ -1,11 +1,37 @@
 #include <stic.h>
 
+#include <stdlib.h> /* free() */
+
 #include "../../src/int/file_magic.h"
 #include "../../src/utils/matcher.h"
 
 static void check_glob(matcher_t *m);
 static void check_regexp(matcher_t *m);
 static int has_mime_type_detection(void);
+
+TEST(empty_matcher_can_be_created)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("", 0, 0, "", &error));
+	assert_true(matcher_is_empty(m));
+
+	assert_false(matcher_matches(m, ""));
+	assert_false(matcher_matches(m, "a"));
+
+	matcher_free(m);
+}
+
+TEST(empty_matcher_matches_nothing_can_be_created)
+{
+	char *error;
+	matcher_t *m = matcher_alloc("", 0, 0, "", &error);
+	assert_true(matcher_is_empty(m));
+	assert_string_equal(NULL, error);
+
+	matcher_free(m);
+}
 
 TEST(glob)
 {
@@ -146,23 +172,55 @@ TEST(empty_regexp)
 	char *error;
 	matcher_t *m;
 
+	assert_non_null(m = matcher_alloc("", 0, 0, ".*\\.ext", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "/tmp/a.ext"));
+	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal(".*\\.ext", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
+	matcher_free(m);
+
 	assert_non_null(m = matcher_alloc("//", 0, 1, ".*\\.ext", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/tmp/a.ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("/.*\\.ext/", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
 	matcher_free(m);
 
 	assert_non_null(m = matcher_alloc("//i", 0, 1, ".*\\.ext", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/tmp/a.Ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("/.*\\.ext/i", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
+	matcher_free(m);
+
+	assert_non_null(m = matcher_alloc("//Iii", 0, 1, ".*\\.ext", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "/tmp/a.Ext"));
+	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("/.*\\.ext/Iii", matcher_get_expr(m));
+	assert_string_equal(".*\\.ext", matcher_get_undec(m));
 	matcher_free(m);
 
 	assert_non_null(m = matcher_alloc("////I", 0, 1, "tmp/.*\\.Ext", &error));
 	assert_null(error);
 	assert_true(matcher_matches(m, "/tmp/a.Ext"));
 	assert_false(matcher_matches(m, "/tmp/a.axt"));
+	assert_string_equal("//tmp/.*\\.Ext//I", matcher_get_expr(m));
+	assert_string_equal("tmp/.*\\.Ext", matcher_get_undec(m));
 	matcher_free(m);
+}
+
+TEST(wrong_regex_flag)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_null(m = matcher_alloc("/reg/x", 0, 1, ".*\\.ext", &error));
+	assert_non_null(error);
+	free(error);
 }
 
 TEST(expr_includes_itself)

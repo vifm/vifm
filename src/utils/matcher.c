@@ -49,7 +49,7 @@ struct matcher_t
 	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */
 	int negated;   /* Whether match is inverted. */
-	regex_t regex; /* The expression in compiled form. */
+	regex_t regex; /* The expression in compiled form, unless matcher is empty. */
 };
 
 static int is_full_path(const char expr[], int re, int glob, int *strip);
@@ -91,18 +91,19 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 		return NULL;
 	}
 
-	if(compile_expr(&m, strip, cs_by_def, on_empty_re, error) != 0)
-	{
-		free(m.raw);
-		free(m.undec);
-		return NULL;
-	}
-
 	m.expr = strdup(orig_expr);
 	if(m.expr == NULL)
 	{
+		free(m.raw);
 		replace_string(error, "Failed to clone match expr.");
-		free_matcher_items(&m);
+		return NULL;
+	}
+
+	if(compile_expr(&m, strip, cs_by_def, on_empty_re, error) != 0)
+	{
+		free(m.raw);
+		free(m.expr);
+		free(m.undec);
 		return NULL;
 	}
 
@@ -191,6 +192,12 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 			break;
 	}
 
+	if(m->raw[0] == '\0')
+	{
+		/* This is an empty matcher and we don't compile "". */
+		return 0;
+	}
+
 	err = regcomp(&m->regex, m->raw, m->cflags);
 	if(err != 0)
 	{
@@ -259,7 +266,11 @@ parse_re(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 
 	if(m->raw[0] == '\0')
 	{
+		const char *const mark = (strip == 2) ? "//" : (strip == 1 ? "/" : "");
+
 		replace_string(&m->raw, on_empty_re);
+		put_string(&m->expr, format_str("%s%s%s%s", mark, on_empty_re, mark,
+				m->expr + strip*2));
 	}
 
 	m->undec = strdup(m->raw);
@@ -289,7 +300,10 @@ matcher_clone(const matcher_t *matcher)
 	clone->raw = strdup(matcher->raw);
 	clone->undec = strdup(matcher->undec);
 
-	err = regcomp(&clone->regex, matcher->raw, matcher->cflags);
+	/* Don't compile regex for empty matcher. */
+	err = (clone->raw[0] == '\0')
+	    ? 0
+	    : regcomp(&clone->regex, matcher->raw, matcher->cflags);
 
 	if(err != 0 || clone->expr == NULL || clone->raw == NULL ||
 			clone->undec == NULL)
@@ -316,15 +330,25 @@ matcher_free(matcher_t *matcher)
 static void
 free_matcher_items(matcher_t *matcher)
 {
+	if(!matcher_is_empty(matcher))
+	{
+		/* Regex is compiled only for non-empty matchers. */
+		regfree(&matcher->regex);
+	}
 	free(matcher->expr);
 	free(matcher->raw);
 	free(matcher->undec);
-	regfree(&matcher->regex);
 }
 
 int
 matcher_matches(const matcher_t *matcher, const char path[])
 {
+	if(matcher_is_empty(matcher))
+	{
+		/* Empty matcher matches nothing, not even an empty string. */
+		return 0;
+	}
+
 	if(matcher->type == MT_MIME)
 	{
 		path = get_mimetype(path);
@@ -339,6 +363,18 @@ matcher_matches(const matcher_t *matcher, const char path[])
 	}
 
 	return (regexec(&matcher->regex, path, 0, NULL, 0) == 0)^matcher->negated;
+}
+
+int
+matcher_is_empty(const matcher_t *matcher)
+{
+	return (matcher->raw[0] == '\0');
+}
+
+const char *
+matcher_get_expr(const matcher_t *matcher)
+{
+	return matcher->expr;
 }
 
 const char *
@@ -384,8 +420,7 @@ is_re_expr(const char expr[], int allow_empty)
 	const char *e = strrchr(expr, '/');
 	return expr[0] == '/'                        /* Starts with slash. */
 	    && e != NULL && e != expr                /* Has second slash. */
-	    && (allow_empty || e - expr > 1)         /* Not empty pattern. */
-	    && strspn(e + 1, "iI") == strlen(e + 1); /* Has only correct flags. */
+	    && (allow_empty || e - expr > 1);        /* Not empty pattern. */
 }
 
 /* Checks whether expr is a glob file name pattern.  Returns non-zero if so,

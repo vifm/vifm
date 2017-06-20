@@ -36,8 +36,9 @@ int regexp_should_ignore_case(const char pattern[]);
  * allocated buffer. */
 const char * get_regexp_error(int err, const regex_t *re);
 
-/* *case_sensitive should be initialized with default value outside the call.
- * Returns zero on success, otherwise non-zero is returned. */
+/* Parses case flag of the regular expression.  *case_sensitive should be
+ * initialized with default value outside the call.  Returns zero on success,
+ * otherwise non-zero is returned. */
 int parse_case_flag(const char flags[], int *case_sensitive);
 
 /* Extracts first group match.  Returns the match, on error or missing first

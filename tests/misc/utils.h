@@ -47,6 +47,12 @@ void copy_file(const char src[], const char dst[]);
  * returned. */
 int not_windows(void);
 
+struct matcher_t;
+
+/* Changes *matcher to have the value of the expr.  The operation is assumed to
+ * succeed, but it's not guaranteed. */
+int replace_matcher(struct matcher_t **matcher, const char expr[]);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

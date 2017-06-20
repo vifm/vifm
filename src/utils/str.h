@@ -146,6 +146,10 @@ int replace_string(char **str, const char with[]);
  * *str is freed and set to NULL. */
 int update_string(char **str, const char to[]);
 
+/* Replaces *str with the with string, if it's non-NULL.  Returns non-zero if
+ * with is NULL, otherwise zero is returned. */
+int put_string(char **str, char with[]);
+
 /* Adds a character to the end of the string.  Returns the str argument. */
 char * strcatch(char str[], char c);
 

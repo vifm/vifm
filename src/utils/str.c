@@ -417,6 +417,19 @@ update_string(char **str, const char to[])
 	return replace_string(str, to);
 }
 
+int
+put_string(char **str, char with[])
+{
+	if(with == NULL)
+	{
+		return 1;
+	}
+
+	free(*str);
+	*str = with;
+	return 0;
+}
+
 char *
 strcatch(char str[], char c)
 {

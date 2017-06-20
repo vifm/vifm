@@ -59,6 +59,7 @@
 #include "utils/fswatch.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/matcher.h"
 #include "utils/path.h"
 #include "utils/regexp.h"
 #include "utils/str.h"
@@ -2309,7 +2310,7 @@ rescue_from_empty_filelist(FileView *view)
 
 	show_error_msgf("Filter error",
 			"The %s\"%s\" pattern did not match any files. It was reset.",
-			view->invert ? "" : "inverted ", view->manual_filter.raw);
+			view->invert ? "" : "inverted ", matcher_get_expr(view->manual_filter));
 
 	filename_filter_clear(view);
 
@@ -2498,7 +2499,7 @@ alloc_dir_entry(dir_entry_t **list, int list_size)
 }
 
 void
-check_if_filelist_have_changed(FileView *view)
+check_if_filelist_has_changed(FileView *view)
 {
 	int failed, changed;
 	const char *const curr_dir = flist_get_dir(view);

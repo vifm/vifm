@@ -72,6 +72,7 @@
 #include "utils/filter.h"
 #include "utils/fs.h"
 #include "utils/log.h"
+#include "utils/matcher.h"
 #include "utils/matchers.h"
 #include "utils/path.h"
 #include "utils/regexp.h"
@@ -173,10 +174,9 @@ static int filter_cmd(const cmd_info_t *cmd_info);
 static int update_filter(FileView *view, const cmd_info_t *cmd_info);
 static void display_filters_info(const FileView *view);
 static char * get_filter_info(const char name[], const filter_t *filter);
-static int set_view_filter(FileView *view, const char filter[], int invert,
-		int case_sensitive);
-static const char * get_filter_value(const char filter[]);
-static const char * try_compile_regex(const char regex[], int cflags);
+static char * get_matcher_info(const char name[], const matcher_t *matcher);
+static int set_view_filter(FileView *view, const char filter[],
+		const char fallback[], int invert);
 static int get_filter_inversion_state(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
 static int finish_cmd(const cmd_info_t *cmd_info);
@@ -493,8 +493,8 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &filextype_cmd,   .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "filter",            .abbr = NULL,    .id = COM_FILTER,
 	  .descr = "set/reset file filter",
-	  .flags = HAS_EMARK | HAS_QUOTED_ARGS | HAS_REGEXP_ARGS | HAS_QMARK_NO_ARGS,
-	  .handler = &filter_cmd,      .min_args = 0,   .max_args = 2, },
+	  .flags = HAS_EMARK | HAS_REGEXP_ARGS | HAS_QMARK_NO_ARGS,
+	  .handler = &filter_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "find",              .abbr = "fin",   .id = COM_FIND,
 	  .descr = "query find results",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_MACROS_FOR_CMD
@@ -2145,6 +2145,8 @@ filter_cmd(const cmd_info_t *cmd_info)
 static int
 update_filter(FileView *view, const cmd_info_t *cmd_info)
 {
+	const char *fallback = cfg_get_last_search_pattern();
+
 	if(cmd_info->argc == 0)
 	{
 		if(cmd_info->emark)
@@ -2152,31 +2154,14 @@ update_filter(FileView *view, const cmd_info_t *cmd_info)
 			toggle_filter_inversion(view);
 			return 0;
 		}
-		else
-		{
-			const int invert_filter = get_filter_inversion_state(cmd_info);
-			return set_view_filter(view, NULL, invert_filter,
-					FILTER_DEF_CASE_SENSITIVITY) != 0;
-		}
+
+		/* When no arguments are provided, we don't want to fall back to last
+		 * history entry. */
+		fallback = "";
 	}
-	else
-	{
-		int invert_filter;
-		int case_sensitive = FILTER_DEF_CASE_SENSITIVITY;
 
-		if(cmd_info->argc == 2)
-		{
-			if(parse_case_flag(cmd_info->argv[1], &case_sensitive) != 0)
-			{
-				return CMDS_ERR_TRAILING_CHARS;
-			}
-		}
-
-		invert_filter = get_filter_inversion_state(cmd_info);
-
-		return set_view_filter(view, cmd_info->argv[0], invert_filter,
-				case_sensitive) != 0;
-	}
+	return set_view_filter(view, cmd_info->args, fallback,
+			get_filter_inversion_state(cmd_info)) != 0;
 }
 
 /* Displays state of all filters on the status bar. */
@@ -2184,7 +2169,7 @@ static void
 display_filters_info(const FileView *view)
 {
 	char *const localf = get_filter_info("Local", &view->local_filter.filter);
-	char *const manualf = get_filter_info("Name", &view->manual_filter);
+	char *const manualf = get_matcher_info("Name", view->manual_filter);
 	char *const autof = get_filter_info("Auto", &view->auto_filter);
 
 	status_bar_messagef("Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf,
@@ -2215,6 +2200,17 @@ get_filter_info(const char name[], const filter_t *filter)
 	return format_str("%-6s    %-5s    %s", name, flags_str, filter->raw);
 }
 
+/* Composes description string for given matcher.  Returns NULL on out of
+ * memory error, otherwise a newly allocated string, which should be freed by
+ * the caller, is returned. */
+static char *
+get_matcher_info(const char name[], const matcher_t *matcher)
+{
+	const char *const flags = matcher_is_empty(matcher) ? "" : "---->";
+	const char *const value = matcher_get_expr(matcher);
+	return format_str("%-6s    %-5s    %s", name, flags, value);
+}
+
 /* Returns value for filter inversion basing on current configuration and
  * filter command. */
 static int
@@ -2229,72 +2225,28 @@ get_filter_inversion_state(const cmd_info_t *cmd_info)
 }
 
 /* Tries to update filter of the view rejecting incorrect regular expression.
- * NULL as filter value means filter reset, empty string means using of the last
- * search pattern.  Returns non-zero if message on the statusbar should be
- * saved, otherwise zero is returned. */
+ * On empty pattern fallback is used.  Returns non-zero if message on the
+ * statusbar should be saved, otherwise zero is returned. */
 static int
-set_view_filter(FileView *view, const char filter[], int invert,
-		int case_sensitive)
+set_view_filter(FileView *view, const char filter[], const char fallback[],
+		int invert)
 {
-	const char *error_msg;
-
-	filter = get_filter_value(filter);
-
-	error_msg = try_compile_regex(filter, REG_EXTENDED);
-	if(error_msg != NULL)
+	char *error;
+	matcher_t *const matcher = matcher_alloc(filter, FILTER_DEF_CASE_SENSITIVITY,
+			0, fallback, &error);
+	if(matcher == NULL)
 	{
-		status_bar_errorf("Name filter not set: %s", error_msg);
+		status_bar_errorf("Name filter not set: %s", error);
+		free(error);
 		return 1;
 	}
 
 	view->invert = invert;
-	(void)filter_change(&view->manual_filter, filter, case_sensitive);
+	matcher_free(view->manual_filter);
+	view->manual_filter = matcher;
 	(void)filter_clear(&view->auto_filter);
 	ui_view_schedule_reload(view);
 	return 0;
-}
-
-/* Returns new value for a filter taking special values of the filter into
- * account.  NULL means filter reset, empty string means using of the last
- * search pattern.  Returns possibly changed filter value, which might be
- * invalidated after adding new search pattern/changing history size. */
-static const char *
-get_filter_value(const char filter[])
-{
-	if(filter == NULL)
-	{
-		filter = "";
-	}
-	else if(filter[0] == '\0')
-	{
-		if(!hist_is_empty(&cfg.search_hist))
-		{
-			filter = cfg.search_hist.items[0];
-		}
-	}
-	return filter;
-}
-
-/* Tries to compile given regular expression and specified compile flags.
- * Returns NULL on success, otherwise statically allocated message describing
- * compiling error is returned. */
-static const char *
-try_compile_regex(const char regex[], int cflags)
-{
-	const char *error_msg = NULL;
-
-	if(regex[0] != '\0')
-	{
-		regex_t re;
-		const int err = regcomp(&re, regex, cflags);
-		if(err != 0)
-		{
-			error_msg = get_regexp_error(err, &re);
-		}
-		regfree(&re);
-	}
-
-	return error_msg;
 }
 
 static int
@@ -3639,7 +3591,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 3)
 	{
 		/* TODO: maybe extract into a function to generalize code with
-		 * filter_cmd(). */
+		 * parse_case_flag(). */
 		const char *flags = cmd_info->argv[2];
 		while(*flags != '\0')
 		{
@@ -3906,7 +3858,8 @@ sync_filters(void)
 
 	(void)filter_assign(&other_view->local_filter.filter,
 			&curr_view->local_filter.filter);
-	(void)filter_assign(&other_view->manual_filter, &curr_view->manual_filter);
+	matcher_free(other_view->manual_filter);
+	other_view->manual_filter = matcher_clone(curr_view->manual_filter);
 	(void)filter_assign(&other_view->auto_filter, &curr_view->auto_filter);
 	ui_view_schedule_reload(other_view);
 }

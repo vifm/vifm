@@ -9,6 +9,7 @@
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
@@ -99,9 +100,9 @@ TEST(correct_manual_filters_are_read_from_vifminfo)
 	read_info_file(1);
 
 	assert_string_equal("abc", lwin.prev_manual_filter);
-	assert_string_equal("abc", lwin.manual_filter.raw);
+	assert_string_equal("abc", matcher_get_expr(lwin.manual_filter));
 	assert_string_equal("cba", rwin.prev_manual_filter);
-	assert_string_equal("cba", rwin.manual_filter.raw);
+	assert_string_equal("cba", matcher_get_expr(rwin.manual_filter));
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }
@@ -116,8 +117,10 @@ TEST(incorrect_manual_filters_in_vifminfo_are_cleared)
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
-	assert_false(lwin.manual_filter.is_regex_valid);
-	assert_false(rwin.manual_filter.is_regex_valid);
+	assert_string_equal("", lwin.prev_manual_filter);
+	assert_string_equal("", matcher_get_expr(lwin.manual_filter));
+	assert_string_equal("", rwin.prev_manual_filter);
+	assert_string_equal("", matcher_get_expr(rwin.manual_filter));
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }

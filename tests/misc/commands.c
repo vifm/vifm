@@ -12,18 +12,15 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
-#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
-#include "../../src/filtering.h"
 #include "../../src/ops.h"
 #include "../../src/registers.h"
 #include "../../src/undo.h"
@@ -62,11 +59,6 @@ SETUP()
 {
 	view_setup(&lwin);
 	view_setup(&rwin);
-
-	/* Emulate proper history initialization (must happen after view
-	 * initialization). */
-	cfg_resize_histories(5);
-	cfg_resize_histories(0);
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -662,123 +654,6 @@ TEST(map_commands_count_arguments_correctly)
 	assert_success(exec_commands("vunmap \\", &lwin, CIT_COMMAND));
 
 	vle_keys_reset();
-}
-
-TEST(filter_prints_empty_filters_correctly)
-{
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name               \n"
-	                       "Auto               ";
-
-	status_bar_message("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
-}
-
-TEST(filter_prints_non_empty_filters)
-{
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local     I        local\n"
-#ifndef _WIN32
-	                       "Name      I        abc\n"
-#else
-	                       "Name      i        abc\n"
-#endif
-	                       "Auto               ";
-
-	assert_success(exec_commands("filter abc", &lwin, CIT_COMMAND));
-	local_filter_apply(&lwin, "local");
-
-	status_bar_message("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
-}
-
-TEST(filter_with_empty_value_reuses_last_search)
-{
-#ifndef _WIN32
-#define I "I"
-#else
-#define I "i"
-#endif
-
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name      " I "        pattern\n"
-	                       "Auto               ";
-
-	cfg_resize_histories(5);
-	cfg_save_search_history("pattern");
-
-	assert_success(exec_commands("filter //" I, &lwin, CIT_COMMAND));
-	status_bar_message("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
-
-	assert_success(exec_commands("filter ''", &lwin, CIT_COMMAND));
-	status_bar_message("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
-
-	assert_success(exec_commands("filter \"\"", &lwin, CIT_COMMAND));
-	status_bar_message("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
-
-#undef I
-}
-
-TEST(filter_without_args_resets_manual_filter)
-{
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name               \n"
-	                       "Auto               ";
-
-	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));
-
-	status_bar_message("");
-	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
-}
-
-TEST(filter_can_affect_both_views)
-{
-	assert_string_equal("", curr_view->manual_filter.raw);
-	assert_string_equal("", other_view->manual_filter.raw);
-	curr_view->invert = 1;
-	other_view->invert = 1;
-
-	curr_stats.global_local_settings = 1;
-	assert_success(exec_commands("filter /x/", &lwin, CIT_COMMAND));
-	curr_stats.global_local_settings = 0;
-
-	assert_string_equal("x", curr_view->manual_filter.raw);
-	assert_string_equal("x", other_view->manual_filter.raw);
-	assert_false(curr_view->invert);
-	assert_false(other_view->invert);
-}
-
-TEST(filter_can_setup_inverted_filter)
-{
-	assert_string_equal("", curr_view->manual_filter.raw);
-	curr_view->invert = 0;
-
-	assert_success(exec_commands("filter! /x/", &lwin, CIT_COMMAND));
-
-	assert_string_equal("x", curr_view->manual_filter.raw);
-	assert_true(curr_view->invert);
-}
-
-TEST(filter_can_invert_manual_filter)
-{
-	curr_view->invert = 0;
-	assert_success(exec_commands("filter!", &lwin, CIT_COMMAND));
-	assert_true(curr_view->invert);
-	assert_success(exec_commands("filter!", &lwin, CIT_COMMAND));
-	assert_false(curr_view->invert);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -44,6 +44,14 @@ void matcher_free(matcher_t *matcher);
  * zero is returned. */
 int matcher_matches(const matcher_t *matcher, const char path[]);
 
+/* Checks whether matcher is empty.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int matcher_is_empty(const matcher_t *matcher);
+
+/* Retrieves matcher expression exactly as it was specified on creation.
+ * Returns the expression. */
+const char * matcher_get_expr(const matcher_t *matcher);
+
 /* Retrieves undecorated original matcher expression.  Returns the
  * expression. */
 const char * matcher_get_undec(const matcher_t *matcher);

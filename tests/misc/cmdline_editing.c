@@ -5,6 +5,7 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/matcher.h"
 
 static line_stats_t *stats;
 
@@ -15,19 +16,22 @@ SETUP_ONCE()
 
 SETUP()
 {
+	char *error;
+
 	init_modes();
 	enter_cmdline_mode(CLS_COMMAND, "", NULL);
 
 	curr_view = &lwin;
-	filter_init(&curr_view->manual_filter, 0);
-	filter_set(&curr_view->manual_filter, "filt");
+	assert_non_null(curr_view->manual_filter =
+			matcher_alloc("{filt}", 0, 0, "", &error));
 }
 
 TEARDOWN()
 {
 	(void)vle_keys_exec_timed_out(WK_C_c);
 
-	filter_dispose(&curr_view->manual_filter);
+	matcher_free(curr_view->manual_filter);
+	curr_view->manual_filter = NULL;
 
 	vle_keys_reset();
 }
