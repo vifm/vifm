@@ -123,8 +123,8 @@ AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
 override CFLAGS := $(CFLAGS) -MMD -pipe -Wall -Wno-char-subscripts \
-                   -Istic/ -include $(B)../config.h -fsigned-char -DTEST \
-                   -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
+                   -Istic/ -include $(B)../build-aux/config.h -fsigned-char \
+                   -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
 override LDFLAGS := $(LDFLAGS) -lpthread
 ifeq (,$(findstring clang,$(CC)))
@@ -171,7 +171,7 @@ ifdef DEBUG
     ifeq ($(DEBUG),valgrind)
         TEST_RUN_PREFIX := valgrind --track-origins=yes --leak-check=full \
                            --log-file=valgrind-report --error-exitcode=5 \
-                           --suppressions=$(abspath .)/../.valgrind.supp
+                           --suppressions=$(abspath .)/../src/.valgrind.supp
         TEST_RUN_POST := || (e=$$$$?; if [ $$$$e -eq 5 ]; then \
                                           cat valgrind-report; \
                                       fi; \

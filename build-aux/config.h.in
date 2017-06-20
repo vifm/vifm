@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.ac by autoheader.  */
+/* build-aux/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* load libX11 dynamically */
 #undef DYN_X11

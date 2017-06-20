@@ -22,8 +22,8 @@ On *nix you need:
 *nix Installation (Cygwin emulates *nix environment, so follow these steps
 when building with Cygwin):
 
-    If you checkout sources from git, run fix-timestamps script first to
-    suppress any spurious build files regeneration.
+    If you checkout sources from git, run scripts/fix-timestamps script first
+    to suppress any spurious build files regeneration.
 
     ./configure
     make

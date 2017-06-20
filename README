@@ -1,8 +1,9 @@
 Vifm - vi[m] like file manager
 2001 - 2017
 
-Updated: 18 June, 2017
 Version: 0.9
+
+This file last updated: 20 June, 2017
 
 Brief Description
 
@@ -38,6 +39,8 @@ Contacts
 Package content
 
     .
+    |
+    |-- build-aux/ - part of autotools' machinery
     |
     |-- data/ - documentation, sample vifmrc, icons
     |  |
@@ -245,7 +248,7 @@ Package content
     |  |-- vifm.c - contains main initialization/termination code
     |  `-- win_helper.c - needed for temporary rights evaluation on Windows
     |
-    |-- tests/ - unit tests
+    |-- tests/ - test suites
     |
     |-- AUTHORS - list of code contributors
     |-- BUGS - some of known issues

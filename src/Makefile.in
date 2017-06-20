@@ -104,8 +104,8 @@ DIST_COMMON = $(srcdir)/Makefile.am $(dist_bin_SCRIPTS) \
 	$(dist_vim_ftplugin__DATA) $(dist_vim_plugin__DATA) \
 	$(dist_vim_syntax__DATA) $(dist_vimdoc_doc__DATA) \
 	$(dist_zshcompl_DATA) $(am__DIST_COMMON)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/config.h
+mkinstalldirs = $(SHELL) $(top_srcdir)/build-aux/mkinstalldirs
+CONFIG_HEADER = $(top_builddir)/build-aux/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
@@ -231,8 +231,8 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/build-aux
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -443,7 +443,7 @@ RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
 TEST_SUITE_LOG = test-suite.log
 TEST_EXTENSIONS = @EXEEXT@ .test
-LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
+LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
 am__set_b = \
   case '$@' in \
@@ -458,12 +458,13 @@ am__set_b = \
 am__test_logs1 = $(TESTS:=.log)
 am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
 TEST_LOGS = $(am__test_logs2:.test.log=.log)
-TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
+TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
 am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
-	$(top_srcdir)/depcomp $(top_srcdir)/mkinstalldirs \
-	$(top_srcdir)/test-driver
+	$(top_srcdir)/build-aux/depcomp \
+	$(top_srcdir)/build-aux/mkinstalldirs \
+	$(top_srcdir)/build-aux/test-driver
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
