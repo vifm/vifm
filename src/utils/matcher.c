@@ -49,7 +49,7 @@ struct matcher_t
 	int full_path; /* Matches full path instead of just file name. */
 	int cflags;    /* Regular expression compilation flags. */
 	int negated;   /* Whether match is inverted. */
-	regex_t regex; /* The expression in compiled form. */
+	regex_t regex; /* The expression in compiled form, unless matcher is empty. */
 };
 
 static int is_full_path(const char expr[], int re, int glob, int *strip);
@@ -191,6 +191,12 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 			break;
 	}
 
+	if(m->raw[0] == '\0')
+	{
+		/* This is an empty matcher and we don't compile "". */
+		return 0;
+	}
+
 	err = regcomp(&m->regex, m->raw, m->cflags);
 	if(err != 0)
 	{
@@ -289,7 +295,10 @@ matcher_clone(const matcher_t *matcher)
 	clone->raw = strdup(matcher->raw);
 	clone->undec = strdup(matcher->undec);
 
-	err = regcomp(&clone->regex, matcher->raw, matcher->cflags);
+	/* Don't compile regex for empty matcher. */
+	err = (clone->raw[0] == '\0')
+	    ? 0
+	    : regcomp(&clone->regex, matcher->raw, matcher->cflags);
 
 	if(err != 0 || clone->expr == NULL || clone->raw == NULL ||
 			clone->undec == NULL)
@@ -316,15 +325,25 @@ matcher_free(matcher_t *matcher)
 static void
 free_matcher_items(matcher_t *matcher)
 {
+	if(!matcher_is_empty(matcher))
+	{
+		/* Regex is compiled only for non-empty matchers. */
+		regfree(&matcher->regex);
+	}
 	free(matcher->expr);
 	free(matcher->raw);
 	free(matcher->undec);
-	regfree(&matcher->regex);
 }
 
 int
 matcher_matches(const matcher_t *matcher, const char path[])
 {
+	if(matcher_is_empty(matcher))
+	{
+		/* Empty matcher matches nothing, not even an empty string. */
+		return 0;
+	}
+
 	if(matcher->type == MT_MIME)
 	{
 		path = get_mimetype(path);
@@ -339,6 +358,12 @@ matcher_matches(const matcher_t *matcher, const char path[])
 	}
 
 	return (regexec(&matcher->regex, path, 0, NULL, 0) == 0)^matcher->negated;
+}
+
+int
+matcher_is_empty(const matcher_t *matcher)
+{
+	return (matcher->raw[0] == '\0');
 }
 
 const char *

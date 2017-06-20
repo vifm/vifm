@@ -9,6 +9,30 @@ static void check_glob(matcher_t *m);
 static void check_regexp(matcher_t *m);
 static int has_mime_type_detection(void);
 
+TEST(empty_matcher_can_be_created)
+{
+	char *error;
+	matcher_t *m;
+
+	assert_non_null(m = matcher_alloc("", 0, 0, "", &error));
+	assert_true(matcher_is_empty(m));
+
+	assert_false(matcher_matches(m, ""));
+	assert_false(matcher_matches(m, "a"));
+
+	matcher_free(m);
+}
+
+TEST(empty_matcher_matches_nothing_can_be_created)
+{
+	char *error;
+	matcher_t *m = matcher_alloc("", 0, 0, "", &error);
+	assert_true(matcher_is_empty(m));
+	assert_string_equal(NULL, error);
+
+	matcher_free(m);
+}
+
 TEST(glob)
 {
 	char *error;
