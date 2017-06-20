@@ -112,6 +112,24 @@ TEST(filter_without_args_resets_manual_filter)
 	assert_string_equal(expected, get_last_message());
 }
 
+TEST(filter_reset_is_not_affected_by_search_history)
+{
+	const char *expected = "Filter -- Flags -- Value\n"
+	                       "Local              \n"
+	                       "Name               \n"
+	                       "Auto               ";
+
+	cfg_resize_histories(5);
+	cfg_save_search_history("pattern");
+
+	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));
+
+	status_bar_message("");
+	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, get_last_message());
+}
+
 TEST(filter_can_affect_both_views)
 {
 	assert_string_equal("", matcher_get_expr(curr_view->manual_filter));

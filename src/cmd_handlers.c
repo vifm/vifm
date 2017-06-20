@@ -175,7 +175,8 @@ static int update_filter(FileView *view, const cmd_info_t *cmd_info);
 static void display_filters_info(const FileView *view);
 static char * get_filter_info(const char name[], const filter_t *filter);
 static char * get_matcher_info(const char name[], const matcher_t *matcher);
-static int set_view_filter(FileView *view, const char filter[], int invert);
+static int set_view_filter(FileView *view, const char filter[],
+		const char fallback[], int invert);
 static int get_filter_inversion_state(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
 static int finish_cmd(const cmd_info_t *cmd_info);
@@ -2144,6 +2145,8 @@ filter_cmd(const cmd_info_t *cmd_info)
 static int
 update_filter(FileView *view, const cmd_info_t *cmd_info)
 {
+	const char *fallback = cfg_get_last_search_pattern();
+
 	if(cmd_info->argc == 0)
 	{
 		if(cmd_info->emark)
@@ -2151,9 +2154,13 @@ update_filter(FileView *view, const cmd_info_t *cmd_info)
 			toggle_filter_inversion(view);
 			return 0;
 		}
+
+		/* When no arguments are provided, we don't want to fall back to last
+		 * history entry. */
+		fallback = "";
 	}
 
-	return set_view_filter(view, cmd_info->args,
+	return set_view_filter(view, cmd_info->args, fallback,
 			get_filter_inversion_state(cmd_info)) != 0;
 }
 
@@ -2218,15 +2225,15 @@ get_filter_inversion_state(const cmd_info_t *cmd_info)
 }
 
 /* Tries to update filter of the view rejecting incorrect regular expression.
- * NULL as filter value means filter reset, empty string means using of the last
- * search pattern.  Returns non-zero if message on the statusbar should be
- * saved, otherwise zero is returned. */
+ * On empty pattern fallback is used.  Returns non-zero if message on the
+ * statusbar should be saved, otherwise zero is returned. */
 static int
-set_view_filter(FileView *view, const char filter[], int invert)
+set_view_filter(FileView *view, const char filter[], const char fallback[],
+		int invert)
 {
 	char *error;
 	matcher_t *const matcher = matcher_alloc(filter, FILTER_DEF_CASE_SENSITIVITY,
-			0, cfg_get_last_search_pattern(), &error);
+			0, fallback, &error);
 	if(matcher == NULL)
 	{
 		status_bar_errorf("Name filter not set: %s", error);
