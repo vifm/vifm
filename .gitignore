@@ -19,14 +19,12 @@
 /config.h
 /config.log
 /config.status
-/libtool
 /stamp-h1
 .deps/
 .dirstamp
 
 # *nix executables
 /src/vifm
-/src/vifmrc-converter
 
 # compiler output
 *.o
