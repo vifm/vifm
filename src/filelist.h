@@ -161,7 +161,7 @@ char * get_current_file_name(FileView *view);
 dir_entry_t * get_current_entry(const FileView *view);
 /* Checks whether content in the current directory of the view changed and
  * reloads the view if so. */
-void check_if_filelist_have_changed(FileView *view);
+void check_if_filelist_has_changed(FileView *view);
 /* Checks whether cd'ing into path is possible. Shows cd errors to a user.
  * Returns non-zero if it's possible, zero otherwise. */
 int cd_is_possible(const char *path);

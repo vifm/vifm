@@ -288,10 +288,10 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(2, lwin.list_rows);
 
-	check_if_filelist_have_changed(&lwin);
+	check_if_filelist_has_changed(&lwin);
 	ui_view_query_scheduled_event(&lwin);
 	assert_success(remove(SANDBOX_PATH "/b"));
-	check_if_filelist_have_changed(&lwin);
+	check_if_filelist_has_changed(&lwin);
 
 	curr_stats.load_stage = 2;
 	assert_true(process_scheduled_updates_of_view(&lwin));
@@ -328,10 +328,10 @@ TEST(nested_directory_change_detection)
 		assert_success(load_tree(&lwin, SANDBOX_PATH));
 		assert_int_equal(3, lwin.list_rows);
 
-		check_if_filelist_have_changed(&lwin);
+		check_if_filelist_has_changed(&lwin);
 		ui_view_query_scheduled_event(&lwin);
 		assert_success(remove(SANDBOX_PATH "/nested-dir/b"));
-		check_if_filelist_have_changed(&lwin);
+		check_if_filelist_has_changed(&lwin);
 
 		curr_stats.load_stage = 2;
 		assert_true(process_scheduled_updates_of_view(&lwin));
@@ -714,14 +714,14 @@ TEST(dotdirs_do_not_mess_up_change_detection)
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 
 	/* Discard results of the first check. */
-	check_if_filelist_have_changed(&lwin);
+	check_if_filelist_has_changed(&lwin);
 	(void)ui_view_query_scheduled_event(&lwin);
 
-	check_if_filelist_have_changed(&lwin);
+	check_if_filelist_has_changed(&lwin);
 	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
-	check_if_filelist_have_changed(&lwin);
+	check_if_filelist_has_changed(&lwin);
 	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
-	check_if_filelist_have_changed(&lwin);
+	check_if_filelist_has_changed(&lwin);
 	assert_int_equal(UUE_NONE, ui_view_query_scheduled_event(&lwin));
 
 	cfg.dot_dirs = 0;

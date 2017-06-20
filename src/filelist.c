@@ -2499,7 +2499,7 @@ alloc_dir_entry(dir_entry_t **list, int list_size)
 }
 
 void
-check_if_filelist_have_changed(FileView *view)
+check_if_filelist_has_changed(FileView *view)
 {
 	int failed, changed;
 	const char *const curr_dir = flist_get_dir(view);
