@@ -132,7 +132,7 @@ ifeq (,$(findstring clang,$(CC)))
     override LDFLAGS += --coverage
 endif
 ifdef unix_env
-    MF := $(B)../src/Makefile
+    MF := $(abspath $(B)../src/Makefile)
     ifneq ($(wildcard $(MF)),)
         override LDFLAGS += \
             $(shell grep -m1    'LIBS =' $(MF) | sed 's/^[^=]*=//') \
