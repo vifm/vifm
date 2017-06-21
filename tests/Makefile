@@ -20,6 +20,7 @@
 #
 # make              -- builds and runs all tests
 # make build        -- builds all tests without running them
+# make check        -- builds all tests and then runs them
 # make <dir>        -- runs specific test suite
 # make <dir>.<name> -- runs specific fixture
 #
