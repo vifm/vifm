@@ -20,7 +20,7 @@
 #ifndef VIFM__UI__UI_H__
 #define VIFM__UI__UI_H__
 
-#include <sys/types.h>
+#include <sys/types.h> /* ino_t */
 
 #include <curses.h>
 #include <regex.h> /* regex_t */
@@ -87,6 +87,9 @@ typedef enum
 	SK_BY_NLINKS,         /* Number of hard links. */
 #endif
 	SK_BY_TARGET,         /* Symbolic link target (empty for other file types). */
+#ifndef _WIN32
+	SK_BY_INODE,          /* Inode number. */
+#endif
 	/* New elements *must* be added here to keep values stored in existing
 	 * vifminfo files valid.  Don't forget to update SK_LAST below. */
 }
@@ -102,7 +105,11 @@ enum
 #endif
 
 	/* Value of the last sort option. */
+#ifndef _WIN32
+	SK_LAST = SK_BY_INODE,
+#else
 	SK_LAST = SK_BY_TARGET,
+#endif
 
 	/* Number of sort options. */
 	SK_COUNT = SK_LAST,
@@ -172,6 +179,7 @@ typedef struct dir_entry_t
 	uid_t uid;
 	gid_t gid;
 	mode_t mode;
+	ino_t inode;      /* Inode number. */
 #else
 	uint32_t attrs;
 #endif

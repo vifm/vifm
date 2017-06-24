@@ -47,7 +47,7 @@ static const char * caps[] = { "a-z", "z-a" };
 #ifndef _WIN32
 #define CORRECTION 0
 #else
-#define CORRECTION -7
+#define CORRECTION -8
 #endif
 
 /* This maps actual sorting keys onto position of corresponding lines of the
@@ -71,14 +71,15 @@ static int indexes[] = {
 	[SK_BY_OWNER_ID]      = 10,
 	[SK_BY_OWNER_NAME]    = 11,
 	[SK_BY_NLINKS]        = 12,
+	[SK_BY_INODE]         = 13,
 #endif
-	[SK_BY_SIZE]          = 13 + CORRECTION,
-	[SK_BY_NITEMS]        = 14 + CORRECTION,
-	[SK_BY_GROUPS]        = 15 + CORRECTION,
-	[SK_BY_TARGET]        = 16 + CORRECTION,
-	[SK_BY_TIME_ACCESSED] = 17 + CORRECTION,
-	[SK_BY_TIME_CHANGED]  = 18 + CORRECTION,
-	[SK_BY_TIME_MODIFIED] = 19 + CORRECTION,
+	[SK_BY_SIZE]          = 14 + CORRECTION,
+	[SK_BY_NITEMS]        = 15 + CORRECTION,
+	[SK_BY_GROUPS]        = 16 + CORRECTION,
+	[SK_BY_TARGET]        = 17 + CORRECTION,
+	[SK_BY_TIME_ACCESSED] = 18 + CORRECTION,
+	[SK_BY_TIME_CHANGED]  = 19 + CORRECTION,
+	[SK_BY_TIME_MODIFIED] = 20 + CORRECTION,
 };
 ARRAY_GUARD(indexes, 1 + SK_COUNT);
 
@@ -105,6 +106,7 @@ static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_I(key_info_t key_info, keys_info_t *keys_info);
 #endif
 static void cmd_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
@@ -148,6 +150,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_o,      {{&cmd_o},      .descr = "sort by owner id"}},
 	{WK_O,      {{&cmd_O},      .descr = "sort by owner name"}},
 	{WK_L,      {{&cmd_L},      .descr = "sort by number of hard-links"}},
+	{WK_I,      {{&cmd_I},      .descr = "sort by inode number"}},
 #endif
 	{WK_s,      {{&cmd_s},      .descr = "sort by size"}},
 	{WK_i,      {{&cmd_i},      .descr = "sort by number of files in directory"}},
@@ -241,6 +244,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 2, " [   ] o Owner ID");
 	mvwaddstr(sort_win, cy++, 2, " [   ] O Owner Name");
 	mvwaddstr(sort_win, cy++, 2, " [   ] L Links Count");
+	mvwaddstr(sort_win, cy++, 2, " [   ] I Inode");
 #endif
 	mvwaddstr(sort_win, cy++, 2, " [   ] s Size");
 	mvwaddstr(sort_win, cy++, 2, " [   ] i Item Count");
@@ -447,6 +451,13 @@ static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
 	goto_line(top + indexes[SK_BY_NLINKS]);
+	cmd_return(key_info, keys_info);
+}
+
+static void
+cmd_I(key_info_t key_info, keys_info_t *keys_info)
+{
+	goto_line(top + indexes[SK_BY_INODE]);
 	cmd_return(key_info, keys_info);
 }
 

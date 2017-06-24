@@ -806,9 +806,10 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 	}
 
 	entry->size = (uintmax_t)s.st_size;
-	entry->mode = s.st_mode;
 	entry->uid = s.st_uid;
 	entry->gid = s.st_gid;
+	entry->mode = s.st_mode;
+	entry->inode = s.st_ino;
 	entry->mtime = s.st_mtime;
 	entry->atime = s.st_atime;
 	entry->ctime = s.st_ctime;
@@ -2355,6 +2356,7 @@ init_dir_entry(FileView *view, dir_entry_t *entry, const char name[])
 	entry->uid = (uid_t)-1;
 	entry->gid = (gid_t)-1;
 	entry->mode = (mode_t)0;
+	entry->inode = (ino_t)0;
 #else
 	entry->attrs = 0;
 #endif
@@ -3643,9 +3645,10 @@ init_parent_entry(FileView *view, dir_entry_t *entry, const char path[])
 
 #ifndef _WIN32
 	entry->size = (uintmax_t)s.st_size;
-	entry->mode = s.st_mode;
 	entry->uid = s.st_uid;
 	entry->gid = s.st_gid;
+	entry->mode = s.st_mode;
+	entry->inode = s.st_ino;
 #else
 	/* Windows doesn't like returning size of directories even if it can. */
 	entry->size = get_file_size(entry->name);

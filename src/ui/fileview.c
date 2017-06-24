@@ -118,6 +118,7 @@ static void format_mode(int id, const void *data, size_t buf_len, char buf[]);
 static void format_owner(int id, const void *data, size_t buf_len, char buf[]);
 static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
 static void format_nlinks(int id, const void *data, size_t buf_len, char buf[]);
+static void format_inode(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void format_id(int id, const void *data, size_t buf_len, char buf[]);
 static size_t calculate_column_width(FileView *view);
@@ -160,6 +161,8 @@ fview_init(void)
 		{ SK_BY_PERMISSIONS, &format_perms },
 
 		{ SK_BY_NLINKS, &format_nlinks },
+
+		{ SK_BY_INODE, &format_inode },
 #endif
 	};
 	ARRAY_GUARD(sort_to_func, SK_COUNT);
@@ -1471,6 +1474,15 @@ format_nlinks(int id, const void *data, size_t buf_len, char buf[])
 	const column_data_t *cdt = data;
 	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
 	snprintf(buf, buf_len, "%lu", (unsigned long)entry->nlinks);
+}
+
+/* Inode number format callback for column_view unit. */
+static void
+format_inode(int id, const void *data, size_t buf_len, char buf[])
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line_pos];
+	snprintf(buf, buf_len, "%lu", (unsigned long)entry->inode);
 }
 
 #endif

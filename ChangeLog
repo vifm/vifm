@@ -1,5 +1,8 @@
 0.9 to current
 
+	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
+	eco0414.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
