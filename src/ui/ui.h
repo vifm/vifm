@@ -172,24 +172,26 @@ history_t;
 /* Description of a single directory entry. */
 typedef struct dir_entry_t
 {
-	char *name;
-	char *origin;     /* Location where this file comes from. */
-	uint64_t size;
+	char *name;       /* File name. */
+	char *origin;     /* Location where this file comes from.  Points to
+	                     view::curr_dir for non-cv views, otherwise allocated on
+	                     a heap. */
+	uint64_t size;    /* File size in bytes. */
 #ifndef _WIN32
-	uid_t uid;
-	gid_t gid;
-	mode_t mode;
+	uid_t uid;        /* Owning user id. */
+	gid_t gid;        /* Owning group id. */
+	mode_t mode;      /* Mode of the file. */
 	ino_t inode;      /* Inode number. */
 #else
-	uint32_t attrs;
+	uint32_t attrs;   /* Attributes of the file. */
 #endif
-	time_t mtime;
-	time_t atime;
-	time_t ctime;
-	FileType type;
+	time_t mtime;     /* Modification time. */
+	time_t atime;     /* Access time. */
+	time_t ctime;     /* Creation time. */
+	FileType type;    /* File type. */
 	int nlinks;       /* Number of hard links to the entry. */
 
-	int id;           /* File uniqueness identifier. */
+	int id;           /* File uniqueness identifier on comparison. */
 
 	int tag;          /* Used to hold temporary data associated with the item,
 	                     e.g. by sorting comparer to perform stable sort or item
