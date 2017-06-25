@@ -1,7 +1,13 @@
 0.9 to current
 
+	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
+	eco0414.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
+
+	Improved parsing of optional numbers in vifminfo.  Thanks to Aris
+	Fergadis (a.k.a. afergadis).
 
 0.9-beta to 0.9
 

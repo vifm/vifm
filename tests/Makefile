@@ -20,6 +20,7 @@
 #
 # make              -- builds and runs all tests
 # make build        -- builds all tests without running them
+# make check        -- builds all tests and then runs them
 # make <dir>        -- runs specific test suite
 # make <dir>.<name> -- runs specific fixture
 #
@@ -132,7 +133,7 @@ ifeq (,$(findstring clang,$(CC)))
     override LDFLAGS += --coverage
 endif
 ifdef unix_env
-    MF := $(B)../src/Makefile
+    MF := $(abspath $(B)../src/Makefile)
     ifneq ($(wildcard $(MF)),)
         override LDFLAGS += \
             $(shell grep -m1    'LIBS =' $(MF) | sed 's/^[^=]*=//') \

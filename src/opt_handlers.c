@@ -235,6 +235,7 @@ static const char *sort_enum[] = {
 	[SK_BY_OWNER_NAME]    = "uname",
 	[SK_BY_PERMISSIONS]   = "perms",
 	[SK_BY_NLINKS]        = "nlinks",
+	[SK_BY_INODE]         = "inode",
 #endif
 };
 ARRAY_GUARD(sort_enum, 1 + SK_COUNT);
@@ -398,6 +399,10 @@ static const char *sort_types[][2] = {
 	{ "mode",  "by file mode" },
 	{ "+mode", "by file mode" },
 	{ "-mode", "by file mode" },
+
+	{ "inode",  "by file inode number" },
+	{ "+inode", "by file inode number" },
+	{ "-inode", "by file inode number" },
 
 	{ "uid",  "by user ID" },
 	{ "+uid", "by user ID" },

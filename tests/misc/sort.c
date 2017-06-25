@@ -432,5 +432,38 @@ TEST(groups_sorting_works)
 	assert_string_equal("11-todo-publish", lwin.dir_entry[6].name);
 }
 
+#ifndef _WIN32
+
+TEST(inode_sorting_works)
+{
+	view_teardown(&lwin);
+	assert_success(init_status(&cfg));
+
+	strcpy(lwin.curr_dir, TEST_DATA_PATH);
+	lwin.list_rows = 3;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("read");
+	lwin.dir_entry[0].inode = 10;
+	lwin.dir_entry[0].origin = lwin.curr_dir;
+	lwin.dir_entry[1].name = strdup("rename");
+	lwin.dir_entry[1].inode = 5;
+	lwin.dir_entry[1].origin = lwin.curr_dir;
+	lwin.dir_entry[2].name = strdup("various-sizes");
+	lwin.dir_entry[2].inode = 7;
+	lwin.dir_entry[2].origin = lwin.curr_dir;
+
+	lwin.sort[0] = SK_BY_INODE;
+	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
+
+	sort_view(&lwin);
+
+	assert_string_equal("rename", lwin.dir_entry[0].name);
+	assert_string_equal("various-sizes", lwin.dir_entry[1].name);
+	assert_string_equal("read", lwin.dir_entry[2].name);
+}
+
+#endif
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

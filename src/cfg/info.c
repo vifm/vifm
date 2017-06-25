@@ -22,7 +22,8 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* fgets() fprintf() fputc() fscanf() snprintf() */
+#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fgets() fprintf() fputc()
+                      fread() fscanf() fsetpos() fwrite() snprintf() */
 #include <stdlib.h> /* abs() free() */
 #include <string.h> /* memcpy() memset() strtol() strcmp() strchr() strlen() */
 
@@ -1503,18 +1504,33 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 static int
 read_optional_number(FILE *f)
 {
-	int num = -1;
-	const int c = getc(f);
+	int num;
+	int nread;
+	int c;
+	fpos_t pos;
 
-	if(c != EOF)
+	if(fgetpos(f, &pos) != 0)
 	{
-		ungetc(c, f);
-		if(isdigit(c) || c == '-' || c == '+')
-		{
-			const int nread = fscanf(f, "%30d\n", &num);
-			assert(nread == 1 && "Wrong number of read numbers.");
-			(void)nread;
-		}
+		return -1;
+	}
+
+	c = getc(f);
+	if(c == EOF)
+	{
+		return -1;
+	}
+	ungetc(c, f);
+
+	if(!isdigit(c) && c != '-' && c != '+')
+	{
+		return -1;
+	}
+
+	nread = fscanf(f, "%30d\n", &num);
+	if(nread != 1)
+	{
+		fsetpos(f, &pos);
+		return -1;
 	}
 
 	return num;

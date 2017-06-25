@@ -446,6 +446,10 @@ sort_dir_list(const void *one, const void *two)
 			retval = first->mode - second->mode;
 			break;
 
+		case SK_BY_INODE:
+			retval = first->inode - second->inode;
+			break;
+
 		case SK_BY_OWNER_NAME: /* FIXME */
 		case SK_BY_OWNER_ID:
 			retval = first->uid - second->uid;
@@ -657,6 +661,7 @@ get_secondary_key(SortingKey primary_key)
 		case SK_BY_GROUP_NAME:
 		case SK_BY_GROUP_ID:
 		case SK_BY_MODE:
+		case SK_BY_INODE:
 		case SK_BY_PERMISSIONS:
 		case SK_BY_NLINKS:
 #endif

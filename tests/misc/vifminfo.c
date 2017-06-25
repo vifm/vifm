@@ -125,5 +125,42 @@ TEST(incorrect_manual_filters_in_vifminfo_are_cleared)
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }
 
+TEST(file_with_newline_and_dash_in_history_does_not_cause_abort)
+{
+	FILE *const f = fopen(SANDBOX_PATH "/vifminfo", "w");
+	fputs("d/dev/shm/TEES/out\n", f);
+	fputs("\tAVxXQ1xDFJDzUCRLgIob\n-log.txt\n", f);
+	fputs("10\n", f);
+	fclose(f);
+
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	read_info_file(1);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+}
+
+TEST(optional_number_should_not_be_preceded_by_a_whitespace)
+{
+	FILE *const f = fopen(SANDBOX_PATH "/vifminfo", "w");
+	fputs("d/dev/shm/TEES/out1\n", f);
+	fputs("\tAVxXQ1xDFJDzUCRLgIob.log\n", f);
+	fputs("11\n", f);
+	fputs("d/dev/shm/TEES/out\n", f);
+	fputs("\tAVxXQ1xDFJDzUCRLgIob-log.txt\n", f);
+	fputs(" 10\n", f);
+	fclose(f);
+
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	read_info_file(1);
+
+	assert_int_equal(2, lwin.history_pos);
+	/* First entry is correct. */
+	assert_int_equal(11, lwin.history[1].rel_pos);
+	/* Second entry is not read in full. */
+	assert_int_equal(0, lwin.history[2].rel_pos);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

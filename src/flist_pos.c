@@ -386,6 +386,10 @@ flist_find_group(const FileView *view, int next)
 				if(nentry->mode != pentry->mode)
 					return pos;
 				break;
+			case SK_BY_INODE:
+				if(nentry->inode != pentry->inode)
+					return pos;
+				break;
 			case SK_BY_PERMISSIONS:
 				{
 					char nperms[16];
