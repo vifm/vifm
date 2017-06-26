@@ -117,7 +117,7 @@ enum
 	VI_COUNT, /* Number of view information structures. */
 };
 
-static int try_ressurect_abandoned(const char full_path[], int explore);
+static int try_resurrect_abandoned(const char full_path[], int explore);
 static void try_redraw_explore_view(const FileView *const view, int vi_index);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
@@ -322,7 +322,7 @@ enter_view_mode(FileView *view, int explore)
 	}
 
 	/* Either make use of abandoned view or prune it. */
-	if(try_ressurect_abandoned(full_path, explore) == 0)
+	if(try_resurrect_abandoned(full_path, explore) == 0)
 	{
 		ui_views_update_titles();
 		return;
@@ -387,7 +387,7 @@ make_abandoned_view(FileView *view, const char cmd[])
 /* Either makes use of abandoned view or prunes it.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-try_ressurect_abandoned(const char full_path[], int explore)
+try_resurrect_abandoned(const char full_path[], int explore)
 {
 	const int same_file = vi->abandoned
 	                   && vi->view == (explore ? curr_view : other_view)
