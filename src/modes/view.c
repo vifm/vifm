@@ -191,7 +191,7 @@ static int scroll_to_bottom(view_info_t *vi);
 static void reload_view(view_info_t *vi, int silent);
 
 static view_info_t view_info[VI_COUNT];
-static view_info_t* vi = &view_info[VI_QV];
+static view_info_t *vi = &view_info[VI_QV];
 
 static keys_add_info_t builtin_cmds[] = {
 	{WK_C_b,           {{&cmd_b},      .descr = "scroll page up"}},
