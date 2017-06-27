@@ -9,6 +9,8 @@
 	Improved parsing of optional numbers in vifminfo.  Thanks to Aris
 	Fergadis (a.k.a. afergadis).
 
+	Indicate preview created with %q with "Command: cmd".
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

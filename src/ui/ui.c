@@ -1557,6 +1557,11 @@ format_view_title(const FileView *view, path_func pf)
 	}
 	else if(curr_stats.view && view == other_view)
 	{
+		const char *const viewer = view_get_viewer();
+		if(viewer != NULL)
+		{
+			return format_str("Command: %s", viewer);
+		}
 		return format_str("File: %s", get_current_file_name(curr_view));
 	}
 	else if(flist_custom_active(view))
