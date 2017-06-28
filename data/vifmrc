@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 16 March, 2017)
+" Sample configuration file for vifm (last updated: 28 June, 2017)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -384,11 +384,11 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 
 " Customize view columns a bit (enable ellipsis for truncated file names)
 "
-" windo set viewcolumns=-{name}..,6{}.
+" set viewcolumns=-{name}..,6{}.
 
 " Filter-out build and temporary files
 "
-" windo filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
+" filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
 " ------------------------------------------------------------------------------
 
