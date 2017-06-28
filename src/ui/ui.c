@@ -1199,7 +1199,7 @@ void
 switch_panes(void)
 {
 	switch_panes_content();
-	try_activate_view_mode();
+	view_try_activate_mode();
 }
 
 void
@@ -1243,7 +1243,7 @@ switch_panes_content(void)
 
 	if(!vle_mode_is(VIEW_MODE))
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 
 	tmp = lwin.win;
@@ -1296,7 +1296,7 @@ void
 go_to_other_pane(void)
 {
 	change_window();
-	try_activate_view_mode();
+	view_try_activate_mode();
 }
 
 void

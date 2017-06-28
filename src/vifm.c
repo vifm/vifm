@@ -452,12 +452,12 @@ remote_cd(FileView *view, const char path[], int handle)
 
 	if(view->explore_mode)
 	{
-		leave_view_mode();
+		view_leave_mode();
 	}
 
 	if(view == other_view && vle_mode_is(VIEW_MODE))
 	{
-		leave_view_mode();
+		view_leave_mode();
 	}
 
 	if(curr_stats.view && (handle || view == other_view))

@@ -1287,7 +1287,7 @@ output_to_preview(const char cmd[])
 	{
 		return 1;
 	}
-	make_abandoned_view(other_view, cmd);
+	view_make_abandoned(other_view, cmd);
 	return 0;
 }
 

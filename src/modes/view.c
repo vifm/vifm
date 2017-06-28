@@ -296,7 +296,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_view_mode(void)
+view_init_mode(void)
 {
 	int ret_code;
 
@@ -311,7 +311,7 @@ init_view_mode(void)
 }
 
 void
-enter_view_mode(FileView *view, int explore)
+view_enter_mode(FileView *view, int explore)
 {
 	char full_path[PATH_MAX];
 
@@ -356,7 +356,7 @@ enter_view_mode(FileView *view, int explore)
 }
 
 void
-make_abandoned_view(FileView *view, const char cmd[])
+view_make_abandoned(FileView *view, const char cmd[])
 {
 	char full_path[PATH_MAX];
 
@@ -412,7 +412,7 @@ try_resurrect_abandoned(const char full_path[], int explore)
 }
 
 void
-try_activate_view_mode(void)
+view_try_activate_mode(void)
 {
 	if(curr_view->explore_mode)
 	{
@@ -477,7 +477,7 @@ try_redraw_explore_view(const FileView *const view, int vi_index)
 }
 
 void
-leave_view_mode(void)
+view_leave_mode(void)
 {
 	reset_view_info(vi);
 
@@ -502,7 +502,7 @@ leave_view_mode(void)
 }
 
 void
-view_explore_mode_quit(FileView *view)
+view_quit_explore_mode(FileView *view)
 {
 	assert(!vle_mode_is(VIEW_MODE) && "Unexpected mode.");
 	if(!view->explore_mode)
@@ -671,7 +671,7 @@ draw(void)
 }
 
 int
-find_vwpattern(const char *pattern, int backward)
+view_find_pattern(const char pattern[], int backward)
 {
 	int err;
 
@@ -707,7 +707,7 @@ cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_right_or_bottom())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 0, 1);
 }
@@ -717,7 +717,7 @@ cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_top_or_left())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 1, 0);
 }
@@ -727,7 +727,7 @@ cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_right_or_bottom())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 1, 1);
 }
@@ -737,7 +737,7 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_top_or_left())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 0, 0);
 }
@@ -751,7 +751,7 @@ get_active_view(void)
 }
 
 void
-view_switch_views(void)
+view_switch_panes(void)
 {
 	view_info_t saved_vi = view_info[VI_LWIN];
 	view_info[VI_LWIN] = view_info[VI_RWIN];
@@ -908,7 +908,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_view_mode();
+	view_leave_mode();
 	qv_hide();
 }
 
@@ -940,7 +940,7 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!curr_view->explore_mode)
 	{
-		leave_view_mode();
+		view_leave_mode();
 		return;
 	}
 
@@ -1441,7 +1441,7 @@ display_error(const char error_msg[])
 static void
 cmd_q(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_view_mode();
+	view_leave_mode();
 }
 
 static void
@@ -1522,7 +1522,7 @@ set_from_default_win(key_info_t *const key_info)
 }
 
 int
-draw_abandoned_view_mode(void)
+view_draw_abandoned(void)
 {
 	if(!vi->abandoned)
 	{
