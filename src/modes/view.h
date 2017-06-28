@@ -27,10 +27,6 @@ void view_init_mode(void);
 /* Enters view mode when possible.  View is the expected output area. */
 void view_enter_mode(FileView *view, int explore);
 
-/* Creates abandoned view in the view using output of passed command as a
- * source, but doesn't enter the view mode. */
-void view_make_abandoned(FileView *view, const char cmd[]);
-
 /* Leaves view mode. */
 void view_leave_mode(void);
 
@@ -64,17 +60,25 @@ int view_find_pattern(const char pattern[], int backward);
 /* Handles switch of panes. */
 void view_switch_panes(void);
 
-/* Tries to draw an abandoned view mode and updates internal state if needed.
- * Returns non-zero on success, otherwise zero is returned. */
-int view_draw_abandoned(void);
-
 /* Checks whether contents of either view should be updated. */
 void view_check_for_updates(void);
 
+/* Detached views.  These are the views which were either created in detached
+ * state or were detached from, but their state (position, etc.) is still
+ * maintained. */
+
+/* Creates detached view in the view using output of passed command as a
+ * source, but doesn't enter the view mode. */
+void view_detached_make(FileView *view, const char cmd[]);
+
+/* Tries to draw an detached view mode and updates internal state if needed.
+ * Returns non-zero on success, otherwise zero is returned. */
+int view_detached_draw(void);
+
 /* Retrieves viewer command associated with preview created with
- * view_make_abandoned().  Returns pointer to the viewer command or NULL, if
+ * view_detached_make().  Returns pointer to the viewer command or NULL, if
  * there is none. */
-const char * view_get_viewer(void);
+const char * view_detached_get_viewer(void);
 
 #endif /* VIFM__MODES__VIEW_H__ */
 

@@ -1278,7 +1278,7 @@ output_to_statusbar(const char cmd[])
 	free(lines);
 }
 
-/* Runs the command and captures its output into abandoned preview.  Returns new
+/* Runs the command and captures its output into detached preview.  Returns new
  * value for the save_msg flag. */
 static int
 output_to_preview(const char cmd[])
@@ -1287,7 +1287,7 @@ output_to_preview(const char cmd[])
 	{
 		return 1;
 	}
-	view_make_abandoned(other_view, cmd);
+	view_detached_make(other_view, cmd);
 	return 0;
 }
 

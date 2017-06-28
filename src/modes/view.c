@@ -102,7 +102,7 @@ typedef struct
 	char *filename; /* Full path to the file being viewed. */
 	char *viewer;   /* When non-NULL, specifies custom preview command (no
 	                   implicit %c). */
-	int abandoned;  /* Whether view mode was abandoned. */
+	int detached;   /* Whether view mode was detached. */
 	int graphics;   /* Whether viewer presumably displays graphics. */
 	int wrap;       /* Whether lines are wrapped. */
 }
@@ -117,7 +117,7 @@ enum
 	VI_COUNT, /* Number of view information structures. */
 };
 
-static int try_resurrect_abandoned(const char full_path[], int explore);
+static int try_resurrect_detached(const char full_path[], int explore);
 static void try_redraw_explore_view(const FileView *const view, int vi_index);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
@@ -321,8 +321,8 @@ view_enter_mode(FileView *view, int explore)
 		return;
 	}
 
-	/* Either make use of abandoned view or prune it. */
-	if(try_resurrect_abandoned(full_path, explore) == 0)
+	/* Either make use of detached view or prune it. */
+	if(try_resurrect_detached(full_path, explore) == 0)
 	{
 		ui_views_update_titles();
 		return;
@@ -356,7 +356,7 @@ view_enter_mode(FileView *view, int explore)
 }
 
 void
-view_make_abandoned(FileView *view, const char cmd[])
+view_detached_make(FileView *view, const char cmd[])
 {
 	char full_path[PATH_MAX];
 
@@ -372,7 +372,7 @@ view_make_abandoned(FileView *view, const char cmd[])
 	vi->view = view;
 	vi->viewer = strdup(cmd);
 	vi->filename = strdup(full_path);
-	vi->abandoned = 1;
+	vi->detached = 1;
 
 	if(load_view_data(vi, "File viewing", full_path, NOSILENT) != 0)
 	{
@@ -384,12 +384,12 @@ view_make_abandoned(FileView *view, const char cmd[])
 	view_redraw();
 }
 
-/* Either makes use of abandoned view or prunes it.  Returns zero on success,
+/* Either makes use of detached view or prunes it.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-try_resurrect_abandoned(const char full_path[], int explore)
+try_resurrect_detached(const char full_path[], int explore)
 {
-	const int same_file = vi->abandoned
+	const int same_file = vi->detached
 	                   && vi->view == (explore ? curr_view : other_view)
 	                   && vi->filename != NULL
 	                   && stroscmp(vi->filename, full_path) == 0;
@@ -877,7 +877,7 @@ cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 {
-	vi->abandoned = 1;
+	vi->detached = 1;
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	if(curr_view->explore_mode)
 	{
@@ -895,7 +895,7 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
-	vi->abandoned = 1;
+	vi->detached = 1;
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	switch_panes();
 	if(curr_stats.view)
@@ -1522,9 +1522,9 @@ set_from_default_win(key_info_t *const key_info)
 }
 
 int
-view_draw_abandoned(void)
+view_detached_draw(void)
 {
-	if(!vi->abandoned)
+	if(!vi->detached)
 	{
 		return 0;
 	}
@@ -1676,7 +1676,7 @@ reload_view(view_info_t *vi, int silent)
 }
 
 const char *
-view_get_viewer(void)
+view_detached_get_viewer(void)
 {
 	return vi->viewer;
 }
