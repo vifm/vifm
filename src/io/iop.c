@@ -741,7 +741,7 @@ sig_err(io_args_t *const args, int *result, const char path[], int error_code,
 	ioerr_cb errors = args->result.errors_cb;
 
 	ioe_err_t err = {
-		.path = (char*)path, .error_code = errno, .msg = (char*)msg,
+		.path = (char*)path, .error_code = error_code, .msg = (char*)msg,
 	};
 
 	assert(*result != 0 && "The function should be called on error path only.");
@@ -754,7 +754,7 @@ sig_err(io_args_t *const args, int *result, const char path[], int error_code,
 			*result = 0;
 			return IO_ECR_IGNORE;
 		case IO_ECR_BREAK:
-			(void)ioe_errlst_append(&args->result.errors, path, errno, msg);
+			(void)ioe_errlst_append(&args->result.errors, path, error_code, msg);
 			return IO_ECR_BREAK;
 
 		default:
