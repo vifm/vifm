@@ -159,7 +159,7 @@ qv_draw(FileView *view)
 	const dir_entry_t *curr;
 
 	if(curr_stats.load_stage < 2 || curr_stats.number_of_windows == 1 ||
-	   vle_mode_is(VIEW_MODE) || draw_abandoned_view_mode())
+	   vle_mode_is(VIEW_MODE) || view_detached_draw())
 	{
 		return;
 	}
@@ -631,11 +631,11 @@ qv_hide(void)
 	}
 	if(lwin.explore_mode)
 	{
-		view_explore_mode_quit(&lwin);
+		view_quit_explore_mode(&lwin);
 	}
 	if(rwin.explore_mode)
 	{
-		view_explore_mode_quit(&rwin);
+		view_quit_explore_mode(&rwin);
 	}
 }
 

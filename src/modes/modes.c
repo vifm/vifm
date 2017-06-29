@@ -83,7 +83,7 @@ static mode_init_func mode_init_funcs[] = {
 	&init_sort_dialog_mode,   /* SORT_MODE */
 	&init_attr_dialog_mode,   /* ATTR_MODE */
 	&init_change_dialog_mode, /* CHANGE_MODE */
-	&init_view_mode,          /* VIEW_MODE */
+	&view_init_mode,          /* VIEW_MODE */
 	&init_file_info_mode,     /* FILE_INFO_MODE */
 	&init_msg_dialog_mode,    /* MSG_MODE */
 	&modmore_init,            /* MORE_MODE */

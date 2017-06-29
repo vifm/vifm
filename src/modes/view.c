@@ -102,7 +102,7 @@ typedef struct
 	char *filename; /* Full path to the file being viewed. */
 	char *viewer;   /* When non-NULL, specifies custom preview command (no
 	                   implicit %c). */
-	int abandoned;  /* Whether view mode was abandoned. */
+	int detached;   /* Whether view mode was detached. */
 	int graphics;   /* Whether viewer presumably displays graphics. */
 	int wrap;       /* Whether lines are wrapped. */
 }
@@ -117,7 +117,7 @@ enum
 	VI_COUNT, /* Number of view information structures. */
 };
 
-static int try_ressurect_abandoned(const char full_path[], int explore);
+static int try_resurrect_detached(const char full_path[], int explore);
 static void try_redraw_explore_view(const FileView *const view, int vi_index);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
@@ -191,7 +191,7 @@ static int scroll_to_bottom(view_info_t *vi);
 static void reload_view(view_info_t *vi, int silent);
 
 static view_info_t view_info[VI_COUNT];
-static view_info_t* vi = &view_info[VI_QV];
+static view_info_t *vi = &view_info[VI_QV];
 
 static keys_add_info_t builtin_cmds[] = {
 	{WK_C_b,           {{&cmd_b},      .descr = "scroll page up"}},
@@ -296,7 +296,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_view_mode(void)
+view_init_mode(void)
 {
 	int ret_code;
 
@@ -311,7 +311,7 @@ init_view_mode(void)
 }
 
 void
-enter_view_mode(FileView *view, int explore)
+view_enter_mode(FileView *view, int explore)
 {
 	char full_path[PATH_MAX];
 
@@ -321,8 +321,8 @@ enter_view_mode(FileView *view, int explore)
 		return;
 	}
 
-	/* Either make use of abandoned view or prune it. */
-	if(try_ressurect_abandoned(full_path, explore) == 0)
+	/* Either make use of detached view or prune it. */
+	if(try_resurrect_detached(full_path, explore) == 0)
 	{
 		ui_views_update_titles();
 		return;
@@ -356,7 +356,7 @@ enter_view_mode(FileView *view, int explore)
 }
 
 void
-make_abandoned_view(FileView *view, const char cmd[])
+view_detached_make(FileView *view, const char cmd[])
 {
 	char full_path[PATH_MAX];
 
@@ -372,7 +372,7 @@ make_abandoned_view(FileView *view, const char cmd[])
 	vi->view = view;
 	vi->viewer = strdup(cmd);
 	vi->filename = strdup(full_path);
-	vi->abandoned = 1;
+	vi->detached = 1;
 
 	if(load_view_data(vi, "File viewing", full_path, NOSILENT) != 0)
 	{
@@ -384,12 +384,12 @@ make_abandoned_view(FileView *view, const char cmd[])
 	view_redraw();
 }
 
-/* Either makes use of abandoned view or prunes it.  Returns zero on success,
+/* Either makes use of detached view or prunes it.  Returns zero on success,
  * otherwise non-zero is returned. */
 static int
-try_ressurect_abandoned(const char full_path[], int explore)
+try_resurrect_detached(const char full_path[], int explore)
 {
-	const int same_file = vi->abandoned
+	const int same_file = vi->detached
 	                   && vi->view == (explore ? curr_view : other_view)
 	                   && vi->filename != NULL
 	                   && stroscmp(vi->filename, full_path) == 0;
@@ -412,7 +412,7 @@ try_ressurect_abandoned(const char full_path[], int explore)
 }
 
 void
-try_activate_view_mode(void)
+view_try_activate_mode(void)
 {
 	if(curr_view->explore_mode)
 	{
@@ -477,7 +477,7 @@ try_redraw_explore_view(const FileView *const view, int vi_index)
 }
 
 void
-leave_view_mode(void)
+view_leave_mode(void)
 {
 	reset_view_info(vi);
 
@@ -502,7 +502,7 @@ leave_view_mode(void)
 }
 
 void
-view_explore_mode_quit(FileView *view)
+view_quit_explore_mode(FileView *view)
 {
 	assert(!vle_mode_is(VIEW_MODE) && "Unexpected mode.");
 	if(!view->explore_mode)
@@ -671,7 +671,7 @@ draw(void)
 }
 
 int
-find_vwpattern(const char *pattern, int backward)
+view_find_pattern(const char pattern[], int backward)
 {
 	int err;
 
@@ -707,7 +707,7 @@ cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_right_or_bottom())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 0, 1);
 }
@@ -717,7 +717,7 @@ cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_top_or_left())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 1, 0);
 }
@@ -727,7 +727,7 @@ cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_right_or_bottom())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 1, 1);
 }
@@ -737,7 +737,7 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(is_top_or_left())
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 	move_window(get_active_view(), 0, 0);
 }
@@ -751,7 +751,7 @@ get_active_view(void)
 }
 
 void
-view_switch_views(void)
+view_switch_panes(void)
 {
 	view_info_t saved_vi = view_info[VI_LWIN];
 	view_info[VI_LWIN] = view_info[VI_RWIN];
@@ -877,7 +877,7 @@ cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 {
-	vi->abandoned = 1;
+	vi->detached = 1;
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	if(curr_view->explore_mode)
 	{
@@ -895,7 +895,7 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
-	vi->abandoned = 1;
+	vi->detached = 1;
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	switch_panes();
 	if(curr_stats.view)
@@ -908,7 +908,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_view_mode();
+	view_leave_mode();
 	qv_hide();
 }
 
@@ -940,7 +940,7 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!curr_view->explore_mode)
 	{
-		leave_view_mode();
+		view_leave_mode();
 		return;
 	}
 
@@ -1441,7 +1441,7 @@ display_error(const char error_msg[])
 static void
 cmd_q(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_view_mode();
+	view_leave_mode();
 }
 
 static void
@@ -1522,9 +1522,9 @@ set_from_default_win(key_info_t *const key_info)
 }
 
 int
-draw_abandoned_view_mode(void)
+view_detached_draw(void)
 {
-	if(!vi->abandoned)
+	if(!vi->detached)
 	{
 		return 0;
 	}
@@ -1673,6 +1673,12 @@ reload_view(view_info_t *vi, int silent)
 		replace_vi(vi, &new_vi);
 		view_redraw();
 	}
+}
+
+const char *
+view_detached_get_viewer(void)
+{
+	return vi->viewer;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1199,7 +1199,7 @@ void
 switch_panes(void)
 {
 	switch_panes_content();
-	try_activate_view_mode();
+	view_try_activate_mode();
 }
 
 void
@@ -1243,7 +1243,7 @@ switch_panes_content(void)
 
 	if(!vle_mode_is(VIEW_MODE))
 	{
-		view_switch_views();
+		view_switch_panes();
 	}
 
 	tmp = lwin.win;
@@ -1296,7 +1296,7 @@ void
 go_to_other_pane(void)
 {
 	change_window();
-	try_activate_view_mode();
+	view_try_activate_mode();
 }
 
 void
@@ -1557,6 +1557,11 @@ format_view_title(const FileView *view, path_func pf)
 	}
 	else if(curr_stats.view && view == other_view)
 	{
+		const char *const viewer = view_detached_get_viewer();
+		if(viewer != NULL)
+		{
+			return format_str("Command: %s", viewer);
+		}
 		return format_str("File: %s", get_current_file_name(curr_view));
 	}
 	else if(flist_custom_active(view))
