@@ -67,6 +67,31 @@ ioe_errlst_append(ioe_errlst_t *elist, const char path[], int error_code,
 }
 
 void
+ioe_errlst_splice(ioe_errlst_t *elist, ioe_errlst_t *other)
+{
+	void *p;
+
+	if(other->error_count == 0U)
+	{
+		return;
+	}
+
+	p = reallocarray(elist->errors, elist->error_count + other->error_count,
+			sizeof(*elist->errors));
+	if(p == NULL)
+	{
+		return;
+	}
+	elist->errors = p;
+
+	memcpy(&elist->errors[elist->error_count], &other->errors[0],
+			sizeof(*elist->errors)*other->error_count);
+
+	elist->error_count += other->error_count;
+	other->error_count = 0U;
+}
+
+void
 ioe_err_free(ioe_err_t *err)
 {
 	free(err->path);

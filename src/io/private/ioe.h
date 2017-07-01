@@ -29,6 +29,10 @@
 int ioe_errlst_append(ioe_errlst_t *elist, const char path[], int error_code,
 		const char msg[]);
 
+/* Appends all errors of *other to *elist.  other still needs to be freed.  On
+ * some error, lists are just left where they were. */
+void ioe_errlst_splice(ioe_errlst_t *elist, ioe_errlst_t *other);
+
 /* Frees single error.  err can't be NULL. */
 void ioe_err_free(ioe_err_t *err);
 

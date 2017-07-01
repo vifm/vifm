@@ -56,6 +56,11 @@
 /* Amount of data to transfer at once. */
 #define BLOCK_SIZE 32*1024
 
+/* Type of io function used by retry_wrapper(). */
+typedef int (*iop_func)(io_args_t *const args);
+
+static int iop_rmfile_internal(io_args_t *const args);
+static int iop_rmdir_internal(io_args_t *const args);
 static int clone_file(int dst_fd, int src_fd);
 #ifdef _WIN32
 static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
@@ -63,8 +68,7 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		LARGE_INTEGER stream_transfered, DWORD stream_num, DWORD reason,
 		HANDLE src_file, HANDLE dst_file, LPVOID param);
 #endif
-static IoErrCbResult sig_err(io_args_t *const args, int *result,
-		const char path[], int error_code, const char msg[]);
+static int retry_wrapper(iop_func func, io_args_t *const args);
 
 int
 iop_mkfile(io_args_t *const args)
@@ -159,6 +163,13 @@ iop_mkdir(io_args_t *const args)
 int
 iop_rmfile(io_args_t *const args)
 {
+	return retry_wrapper(&iop_rmfile_internal, args);
+}
+
+/* Implementation of iop_rmfile(). */
+static int
+iop_rmfile_internal(io_args_t *const args)
+{
 	const char *const path = args->arg1.path;
 
 	uint64_t size;
@@ -169,47 +180,28 @@ iop_rmfile(io_args_t *const args)
 	size = get_file_size(path);
 
 #ifndef _WIN32
-	do
+	result = unlink(path);
+	if(result != 0)
 	{
-		result = unlink(path);
-		if(result != 0)
-		{
-			if(sig_err(args, &result, path, errno,
-						"Failed to unlink file") == IO_ECR_RETRY)
-			{
-				continue;
-			}
-		}
-
-		break;
+		(void)ioe_errlst_append(&args->result.errors, path, errno,
+				"Failed to unlink file");
 	}
-	while(1);
 #else
 	{
 		wchar_t *const utf16_path = utf8_to_utf16(path);
 		const DWORD attributes = GetFileAttributesW(utf16_path);
 
-		do
+		if(attributes & FILE_ATTRIBUTE_READONLY)
 		{
-			if(attributes & FILE_ATTRIBUTE_READONLY)
-			{
-				SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
-			}
-			result = (DeleteFileW(utf16_path) == FALSE);
-
-			if(result != 0)
-			{
-				/* FIXME: use real system error message here. */
-				if(sig_err(args, &result, path, IO_ERR_UNKNOWN,
-							"File removal failed") == IO_ECR_RETRY)
-				{
-					continue;
-				}
-			}
-
-			break;
+			SetFileAttributesW(utf16_path, attributes & ~FILE_ATTRIBUTE_READONLY);
 		}
-		while(1);
+		result = (DeleteFileW(utf16_path) == FALSE);
+
+		if(result != 0)
+		{
+			(void)ioe_errlst_append(&args->result.errors, path, IO_ERR_UNKNOWN,
+					"File removal failed");
+		}
 
 		free(utf16_path);
 	}
@@ -223,6 +215,13 @@ iop_rmfile(io_args_t *const args)
 int
 iop_rmdir(io_args_t *const args)
 {
+	return retry_wrapper(&iop_rmdir_internal, args);
+}
+
+/* Implementation of iop_rmdir(). */
+static int
+iop_rmdir_internal(io_args_t *const args)
+{
 	const char *const path = args->arg1.path;
 
 	int result;
@@ -230,41 +229,23 @@ iop_rmdir(io_args_t *const args)
 	ioeta_update(args->estim, path, path, 0, 0);
 
 #ifndef _WIN32
-	do
+	result = rmdir(path);
+	if(result != 0)
 	{
-		result = rmdir(path);
-		if(result != 0)
-		{
-			if(sig_err(args, &result, path, errno,
-						"Failed to remove directory") == IO_ECR_RETRY)
-			{
-				continue;
-			}
-		}
-
-		break;
+		(void)ioe_errlst_append(&args->result.errors, path, errno,
+				"Failed to remove directory");
 	}
-	while(1);
 #else
 	{
 		wchar_t *const utf16_path = utf8_to_utf16(path);
 
-		do
+		result = (RemoveDirectoryW(utf16_path) == FALSE);
+		if(result != 0)
 		{
-			result = (RemoveDirectoryW(utf16_path) == FALSE);
-			if(result != 0)
-			{
-				/* FIXME: use real system error message here. */
-				if(sig_err(args, &result, path, IO_ERR_UNKNOWN,
-							"Directory removal failed") == IO_ECR_RETRY)
-				{
-					continue;
-				}
-			}
-
-			break;
+			/* FIXME: use real system error message here. */
+			(void)ioe_errlst_append(&args->result.errors, path, IO_ERR_UNKNOWN,
+					"Failed to remove directory");
 		}
-		while(1);
 
 		free(utf16_path);
 	}
@@ -732,35 +713,79 @@ iop_ln(io_args_t *const args)
 	return result;
 }
 
-/* Error handler that calls external code to figure out what to do and also logs
- * the error when needed.  Returns the response. */
-static IoErrCbResult
-sig_err(io_args_t *const args, int *result, const char path[], int error_code,
-		const char msg[])
+/* Implements detecting errors and querying user to decide whether to abort,
+ * retry or ignore.  Returns zero on success and non-zero on error. */
+static int
+retry_wrapper(iop_func func, io_args_t *const args)
 {
-	ioerr_cb errors = args->result.errors_cb;
+	int result;
+	ioeta_estim_t estim = {};
 
-	ioe_err_t err = {
-		.path = (char*)path, .error_code = error_code, .msg = (char*)msg,
-	};
+	/* Replace error list with an empty one to control which errors are going to
+	 * be remembered. */
+	ioe_errlst_t orig_errlist = args->result.errors;
+	ioe_errlst_t empty_errlist = { .active = args->result.errors.active };
+	args->result.errors = empty_errlist;
 
-	assert(*result != 0 && "The function should be called on error path only.");
-
-	switch((errors == NULL) ? IO_ECR_BREAK : errors(args, &err))
+	/* Make restoration point for the estimation if necessary. */
+	if(args->estim != NULL)
 	{
-		case IO_ECR_RETRY:
-			return IO_ECR_RETRY;
-		case IO_ECR_IGNORE:
-			*result = 0;
-			return IO_ECR_IGNORE;
-		case IO_ECR_BREAK:
-			(void)ioe_errlst_append(&args->result.errors, path, error_code, msg);
-			return IO_ECR_BREAK;
-
-		default:
-			assert(0 && "Unknown error handling result.");
-			return IO_ECR_BREAK;
+		estim = ioeta_save(args->estim);
 	}
+
+	while(1)
+	{
+		result = func(args);
+		if(result == 0 || args->result.errors_cb == NULL ||
+				args->result.errors.error_count == 0U)
+		{
+			ioe_errlst_splice(&orig_errlist, &args->result.errors);
+			break;
+		}
+
+		switch(args->result.errors_cb(args, &args->result.errors.errors[0]))
+		{
+			case IO_ECR_RETRY:
+				ioe_errlst_free(&args->result.errors);
+				args->result.errors = empty_errlist;
+				if(args->estim != NULL)
+				{
+					/* Restore previous state of progress before retrying. */
+					ioeta_restore(args->estim, &estim);
+				}
+				continue;
+
+			case IO_ECR_IGNORE:
+				result = 0;
+				ioe_errlst_free(&args->result.errors);
+				args->result.errors = empty_errlist;
+				if(args->estim != NULL)
+				{
+					/* When we ignore a file, in order to make progress look nice pretend
+					 * that this file was processed in full. */
+					ioeta_update(args->estim, args->estim->item, args->estim->target, 1,
+							args->estim->total_file_bytes - args->estim->current_file_byte);
+				}
+				break;
+
+			case IO_ECR_BREAK:
+				ioe_errlst_splice(&orig_errlist, &args->result.errors);
+				break;
+
+			default:
+				assert(0 && "Unknown error handling result.");
+				break;
+		}
+
+		break;
+	}
+
+	ioeta_release(&estim);
+
+	ioe_errlst_free(&args->result.errors);
+	args->result.errors = orig_errlist;
+
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

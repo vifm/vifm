@@ -55,6 +55,14 @@ int ioeta_silent_on(ioeta_estim_t *estim);
 /* Sets silence flag for the estimation.  Does nothing if estim is NULL. */
 void ioeta_silent_set(ioeta_estim_t *estim, int silent);
 
+/* Makes restoration point for state of the estimation.  Returns the restoration
+ * point to be passed to ioeta_restore.  It can be used to restore state
+ * multiple times and needs to be freed with ioeta_release() after last use. */
+ioeta_estim_t ioeta_save(const ioeta_estim_t *estim);
+
+/* Restores estimation to its previous state. */
+void ioeta_restore(ioeta_estim_t *estim, const ioeta_estim_t *save);
+
 #endif /* VIFM__IO__PRIVATE__IOETA_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
