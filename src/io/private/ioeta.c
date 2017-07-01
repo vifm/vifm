@@ -20,11 +20,19 @@
 
 #include <stddef.h> /* NULL */
 #include <stdint.h> /* uint64_t */
+#include <stdlib.h> /* free() */
 
 #include "../../utils/fs.h"
 #include "../../utils/str.h"
 #include "../ioeta.h"
 #include "ionotif.h"
+
+void
+ioeta_release(ioeta_estim_t *estim)
+{
+	free(estim->item);
+	free(estim->target);
+}
 
 void
 ioeta_add_item(ioeta_estim_t *estim, const char path[])

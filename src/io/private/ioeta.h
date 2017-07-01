@@ -25,6 +25,10 @@
 
 /* ioeta - private functions of Input/Output estimation */
 
+/* Frees resources of estimation, but not the structure itself.  estim can't be
+ * NULL. */
+void ioeta_release(ioeta_estim_t *estim);
+
 /* Adds zero-size item to the estimation. */
 void ioeta_add_item(ioeta_estim_t *estim, const char path[]);
 
