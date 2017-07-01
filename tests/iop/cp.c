@@ -10,12 +10,10 @@
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/utils.h"
 
 #include "utils.h"
 
 static void file_is_copied(const char original[]);
-static int not_windows(void);
 
 TEST(dir_is_not_copied)
 {
@@ -484,12 +482,6 @@ TEST(socket_is_copied, IF(can_create_sockets))
 }
 
 #endif
-
-static int
-not_windows(void)
-{
-	return get_env_type() != ET_WIN;
-}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -5,6 +5,7 @@
 #include <stdio.h> /* EOF FILE fclose() fgetc() fopen() */
 
 #include "../../src/io/iop.h"
+#include "../../src/utils/utils.h"
 
 void
 create_test_file(const char name[])
@@ -74,6 +75,12 @@ files_are_identical(const char a[], const char b[])
 	fclose(a_file);
 
 	return a_data == b_data && a_data == EOF;
+}
+
+int
+not_windows(void)
+{
+	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -5,14 +5,11 @@
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/utils.h"
 
 #include "utils.h"
 
 #define DIRECTORY_NAME SANDBOX_PATH "/directory-to-remove"
 #define FILE_NAME SANDBOX_PATH "/file-to-remove"
-
-static int not_windows(void);
 
 TEST(file_is_removed)
 {
@@ -94,12 +91,6 @@ TEST(symlink_is_removed_but_not_its_target, IF(not_windows))
 	}
 
 	assert_failure(access(FILE_NAME, F_OK));
-}
-
-static int
-not_windows(void)
-{
-	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
