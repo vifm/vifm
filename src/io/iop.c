@@ -59,6 +59,8 @@
 /* Type of io function used by retry_wrapper(). */
 typedef int (*iop_func)(io_args_t *const args);
 
+static int iop_mkfile_internal(io_args_t *const args);
+static int iop_mkdir_internal(io_args_t *const args);
 static int iop_rmfile_internal(io_args_t *const args);
 static int iop_rmdir_internal(io_args_t *const args);
 static int iop_cp_internal(io_args_t *const args);
@@ -69,10 +71,18 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		LARGE_INTEGER stream_transfered, DWORD stream_num, DWORD reason,
 		HANDLE src_file, HANDLE dst_file, LPVOID param);
 #endif
+static int iop_ln_internal(io_args_t *const args);
 static int retry_wrapper(iop_func func, io_args_t *const args);
 
 int
 iop_mkfile(io_args_t *const args)
+{
+	return retry_wrapper(&iop_mkfile_internal, args);
+}
+
+/* Implementation of iop_mkfile(). */
+static int
+iop_mkfile_internal(io_args_t *const args)
 {
 	FILE *f;
 	const char *const path = args->arg1.path;
@@ -104,6 +114,13 @@ iop_mkfile(io_args_t *const args)
 
 int
 iop_mkdir(io_args_t *const args)
+{
+	return retry_wrapper(&iop_mkdir_internal, args);
+}
+
+/* Implementation of iop_mkdir(). */
+static int
+iop_mkdir_internal(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 	const int create_parent = args->arg2.process_parents;
@@ -666,6 +683,13 @@ int iop_chmod(io_args_t *const args);
 
 int
 iop_ln(io_args_t *const args)
+{
+	return retry_wrapper(&iop_ln_internal, args);
+}
+
+/* Implementation of iop_ln(). */
+static int
+iop_ln_internal(io_args_t *const args)
 {
 	const char *const path = args->arg1.path;
 	const char *const target = args->arg2.target;

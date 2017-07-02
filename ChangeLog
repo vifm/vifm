@@ -3,8 +3,8 @@
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
 	eco0414.
 
-	Added retry/ignore/abort prompt for file copying when 'syscalls' is on.
-	Thanks to einhander.
+	Added retry/ignore/abort prompt for file copying and directory/file/symlink
+	creation when 'syscalls' is on.  Thanks to einhander.
 
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
