@@ -556,6 +556,7 @@ iop_cp(io_args_t *const args)
 	{
 		(void)ioe_errlst_append(&args->result.errors, dst, errno,
 				"Error while closing destination file");
+		error = 1;
 	}
 
 	if(error == 0 && os_lstat(src, &src_st) == 0)
