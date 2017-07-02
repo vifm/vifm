@@ -325,8 +325,8 @@ compile_info.c: update_compile_info
 update_compile_info:
 
 ../data/vifm-help.txt: $(abs_srcdir)/../data/man/vifm.1
-	mkdir -p ../data/
-	@if [ -n "$(MANGEN)" -a -n "$(SED)" ]; then \
+	$(AM_V_GEN)mkdir -p ../data/; \
+	if [ -n "$(MANGEN)" -a -n "$(SED)" ]; then \
 		if [ -n "$(COL)" ]; then \
 			$(MANGEN) -Tascii -man $(abs_srcdir)/../data/man/vifm.1 | $(SED) -e 's/\x1b\[[0-9]*m//g' -e 's/\x0d//g' | $(COL) -b >| '$@'; \
 		else \
@@ -336,8 +336,8 @@ update_compile_info:
 
 $(abs_srcdir)/../data/vim/doc/app/tags: \
                                   $(abs_srcdir)/../data/vim/doc/app/vifm-app.txt
-	mkdir -p ../data/vim/doc/app/
-	@if [ -n "$(PERL)" ]; then \
+	$(AM_V_GEN)mkdir -p ../data/vim/doc/app/; \
+	if [ -n "$(PERL)" ]; then \
 		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/app"; \
 	elif [ -n "$(VIM)" ]; then \
 		vim -e -s -c 'helptags $(abs_srcdir)/../data/vim/doc/app|q'; \
@@ -347,8 +347,8 @@ $(abs_srcdir)/../data/vim/doc/app/tags: \
 
 $(abs_srcdir)/../data/vim/doc/plugin/tags: \
                             $(abs_srcdir)/../data/vim/doc/plugin/vifm-plugin.txt
-	mkdir -p ../data/vim/doc/plugin/
-	@if [ -n "$(PERL)" ]; then \
+	$(AM_V_GEN)mkdir -p ../data/vim/doc/plugin/; \
+	if [ -n "$(PERL)" ]; then \
 		$(abs_srcdir)/helpztags "$(abs_srcdir)/../data/vim/doc/plugin"; \
 	elif [ -n "$(VIM)" ]; then \
 		vim -e -s -c 'helptags $(abs_srcdir)/../data/vim/doc/plugin|q'; \
@@ -357,7 +357,7 @@ $(abs_srcdir)/../data/vim/doc/plugin/tags: \
 	fi
 
 tags.c: $(abs_srcdir)/../data/vim/doc/app/tags
-	@if [ -s $(abs_srcdir)/../data/vim/doc/app/tags -a -n "$(AWK)" ]; then \
+	$(AM_V_GEN)if [ -s $(abs_srcdir)/../data/vim/doc/app/tags -a -n "$(AWK)" ]; then \
 		$(AWK) ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
