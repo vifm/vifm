@@ -20,11 +20,20 @@
 
 #include <stddef.h> /* NULL */
 #include <stdint.h> /* uint64_t */
+#include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 
 #include "../../utils/fs.h"
 #include "../../utils/str.h"
 #include "../ioeta.h"
 #include "ionotif.h"
+
+void
+ioeta_release(ioeta_estim_t *estim)
+{
+	free(estim->item);
+	free(estim->target);
+}
 
 void
 ioeta_add_item(ioeta_estim_t *estim, const char path[])
@@ -129,6 +138,35 @@ ioeta_silent_set(ioeta_estim_t *estim, int silent)
 	{
 		estim->silent = silent;
 	}
+}
+
+ioeta_estim_t
+ioeta_save(const ioeta_estim_t *estim)
+{
+	ioeta_estim_t copy = *estim;
+	copy.item = (copy.item == NULL ? NULL : strdup(copy.item));
+	copy.target = (copy.target == NULL ? NULL : strdup(copy.target));
+
+	return copy;
+}
+
+void
+ioeta_restore(ioeta_estim_t *estim, const ioeta_estim_t *save)
+{
+	char *item = estim->item;
+	char *target = estim->target;
+
+	if(estim->silent)
+	{
+		return;
+	}
+
+	update_string(&item, save->item);
+	update_string(&target, save->target);
+
+	*estim = *save;
+	estim->item = item;
+	estim->target = target;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

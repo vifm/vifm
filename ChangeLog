@@ -3,6 +3,9 @@
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
 	eco0414.
 
+	Added retry/ignore/abort prompt for file copying and directory/file/symlink
+	creation when 'syscalls' is on.  Thanks to einhander.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
@@ -10,6 +13,9 @@
 	Fergadis (a.k.a. afergadis).
 
 	Indicate preview created with %q with "Command: cmd".
+
+	Better detection of write errors on file copying.  The error was reported,
+	but it wasn't treated as a hard error specific case related to caching.
 
 0.9-beta to 0.9
 

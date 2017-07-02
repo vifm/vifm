@@ -5,10 +5,10 @@
 #include <stdio.h> /* remove() */
 
 #include "../../src/io/iop.h"
-#include "../../src/utils/utils.h"
+
+#include "utils.h"
 
 static void create_file(const char path[]);
-static int not_windows(void);
 
 static const char *const ORIG_FILE_NAME = "file";
 static const char *const ORIG_FILE_PATH = SANDBOX_PATH "/file";
@@ -153,12 +153,6 @@ create_file(const char path[])
 	}
 
 	assert_success(access(path, F_OK));
-}
-
-static int
-not_windows(void)
-{
-	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

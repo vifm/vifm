@@ -44,8 +44,7 @@ ioeta_free(ioeta_estim_t *estim)
 {
 	if(estim != NULL)
 	{
-		free(estim->item);
-		free(estim->target);
+		ioeta_release(estim);
 		free(estim);
 	}
 }

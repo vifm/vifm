@@ -1,21 +1,24 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod() */
-
+#ifndef _WIN32
+#include <sys/resource.h> /* setrlimit() */
+#include <sys/wait.h> /* waitpid() */
+#endif
+#include <sys/stat.h> /* chmod() stat */
 #include <sys/types.h> /* stat */
-#include <sys/stat.h> /* stat */
-#include <unistd.h> /* lstat() */
+#include <unistd.h> /* _Exit() lstat() */
+
+#include <signal.h> /* SIGXFSZ SIG_IGN signal() */
+#include <stdlib.h> /* EXIT_SUCCESS */
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/io/iop.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/utils.h"
 
 #include "utils.h"
 
 static void file_is_copied(const char original[]);
-static int not_windows(void);
 
 TEST(dir_is_not_copied)
 {
@@ -483,13 +486,45 @@ TEST(socket_is_copied, IF(can_create_sockets))
 	assert_int_equal(0, args.result.errors.error_count);
 }
 
-#endif
-
-static int
-not_windows(void)
+TEST(append_truncates_destination_files_on_error, IF(not_windows))
 {
-	return get_env_type() != ET_WIN;
+	pid_t pid;
+
+	clone_test_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/two-lines");
+
+	pid = fork();
+
+	if(pid == 0)
+	{
+		io_args_t args = {
+			.arg1.src = TEST_DATA_PATH "/read/dos-line-endings",
+			.arg2.dst = SANDBOX_PATH "/two-lines",
+			.arg3.crs = IO_CRS_APPEND_TO_FILES,
+		};
+
+		const struct rlimit rlim = { .rlim_cur = 25, .rlim_max = 25 };
+
+		(void)signal(SIGXFSZ, SIG_IGN);
+		assert_success(setrlimit(RLIMIT_FSIZE, &rlim));
+		assert_failure(iop_cp(&args));
+
+		_Exit(EXIT_SUCCESS);
+	}
+	else
+	{
+		int status;
+		assert_false(pid == -1);
+		assert_true(waitpid(pid, &status, 0) == pid);
+		assert_true(WIFEXITED(status));
+		assert_int_equal(EXIT_SUCCESS, WEXITSTATUS(status));
+	}
+
+	assert_int_equal(18, get_file_size(SANDBOX_PATH "/two-lines"));
+
+	delete_test_file(SANDBOX_PATH "/two-lines");
 }
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
