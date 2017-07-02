@@ -42,6 +42,8 @@ delete_test_file(const char name[])
 
 	assert_success(iop_rmfile(&args));
 	assert_int_equal(0, args.result.errors.error_count);
+
+	ioe_errlst_free(&args.result.errors);
 }
 
 int

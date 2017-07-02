@@ -61,6 +61,7 @@ typedef int (*iop_func)(io_args_t *const args);
 
 static int iop_rmfile_internal(io_args_t *const args);
 static int iop_rmdir_internal(io_args_t *const args);
+static int iop_cp_internal(io_args_t *const args);
 static int clone_file(int dst_fd, int src_fd);
 #ifdef _WIN32
 static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
@@ -259,6 +260,13 @@ iop_rmdir_internal(io_args_t *const args)
 int
 iop_cp(io_args_t *const args)
 {
+	return retry_wrapper(&iop_cp_internal, args);
+}
+
+/* Implementation of iop_cp(). */
+static int
+iop_cp_internal(io_args_t *const args)
+{
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
@@ -273,6 +281,7 @@ iop_cp(io_args_t *const args)
 	int cloned;
 	struct stat src_st;
 	const char *open_mode = "wb";
+	long orig_out_size = 0l;
 
 	ioeta_update(args->estim, src, dst, 0, 0);
 
@@ -496,6 +505,8 @@ iop_cp(io_args_t *const args)
 		fseek(out, 0, SEEK_END);
 		error = fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0;
 
+		orig_out_size = ftell(out);
+
 		if(!error)
 		{
 			ioeta_update(args->estim, NULL, NULL, 0, get_file_size(dst));
@@ -547,6 +558,24 @@ iop_cp(io_args_t *const args)
 			error = 1;
 		}
 	}
+
+	/* Note that we truncate output file even if operation was cancelled by the
+	 * user. */
+	if(crs == IO_CRS_APPEND_TO_FILES && error != 0)
+	{
+		int error;
+#ifndef _WIN32
+		error = ftruncate(fileno(out), (off_t)orig_out_size);
+#else
+		error = _chsize(fileno(out), orig_out_size);
+#endif
+		if(error != 0)
+		{
+			(void)ioe_errlst_append(&args->result.errors, src, errno,
+					"Error while truncating output file back to original size");
+		}
+	}
+
 	if(fclose(in) != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, errno,

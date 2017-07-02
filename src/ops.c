@@ -1079,6 +1079,12 @@ dispatch_error(io_args_t *args, const ioe_err_t *err)
 	char *msg;
 	char response;
 
+	/* For tests. */
+	if(curr_stats.load_stage == 0)
+	{
+		return IO_ECR_BREAK;
+	}
+
 	if(curr_ops->erp == ERP_IGNORE_ALL)
 	{
 		return IO_ECR_IGNORE;
