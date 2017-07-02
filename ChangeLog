@@ -11,6 +11,9 @@
 
 	Indicate preview created with %q with "Command: cmd".
 
+	Better detection of write errors on file copying.  The error was reported,
+	but it wasn't treated as a hard error specific case related to caching.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

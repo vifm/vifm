@@ -34,8 +34,8 @@
 #include <assert.h> /* assert() */
 #include <errno.h> /* EEXIST ENOENT EISDIR errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fread() fseek() fsetpos()
-                      fwrite() snprintf() */
+#include <stdio.h> /* FILE fpos_t fclose() fgetpos() fflush() fread() fseek()
+                      fsetpos() fwrite() snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() */
 
@@ -511,30 +511,42 @@ iop_cp(io_args_t *const args)
 
 	/* TODO: use sendfile() if platform supports it. */
 
-	while(!cloned && (nread = fread(&block, 1, sizeof(block), in)) != 0U)
+	if(!cloned)
 	{
-		if(io_cancelled(args))
+		while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 		{
-			error = 1;
-			break;
+			if(io_cancelled(args))
+			{
+				error = 1;
+				break;
+			}
+
+			if(fwrite(&block, 1, nread, out) != nread)
+			{
+				(void)ioe_errlst_append(&args->result.errors, dst, errno,
+						"Write to destination file failed");
+				error = 1;
+				break;
+			}
+
+			ioeta_update(args->estim, NULL, NULL, 0, nread);
 		}
 
-		if(fwrite(&block, 1, nread, out) != nread)
+		if(nread == 0U && !feof(in) && ferror(in))
+		{
+			(void)ioe_errlst_append(&args->result.errors, src, errno,
+					"Read from destination file failed");
+		}
+
+		/* fwrite() does caching, so we need to force flush to catch output errors
+		 * before fclose() (which also does fflush() internally). */
+		if(fflush(out) != 0)
 		{
 			(void)ioe_errlst_append(&args->result.errors, dst, errno,
 					"Write to destination file failed");
 			error = 1;
-			break;
 		}
-
-		ioeta_update(args->estim, NULL, NULL, 0, nread);
 	}
-	if(!cloned && nread == 0U && !feof(in) && ferror(in))
-	{
-		(void)ioe_errlst_append(&args->result.errors, src, errno,
-				"Read from destination file failed");
-	}
-
 	if(fclose(in) != 0)
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, errno,
