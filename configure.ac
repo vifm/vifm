@@ -3,6 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(vifm, 0.9, xaizek@openmailbox.org, vifm, https://vifm.info)
 AC_CONFIG_SRCDIR(src/vifm.c)
 AC_CONFIG_AUX_DIR(build-aux)
+AC_CONFIG_MACRO_DIR(build-aux/m4)
 AM_INIT_AUTOMAKE([no-dist-gzip dist-bzip2])
 AC_CONFIG_HEADERS(build-aux/config.h)
 
@@ -347,15 +348,13 @@ dnl Set PACKAGE_SOURCE_DIR in config.h.
 packagesrcdir=`cd $srcdir && pwd`
 AC_DEFINE_UNQUOTED(PACKAGE_SOURCE_DIR, "${packagesrcdir}")
 
-dnl Use -Wall if we have gcc.
-changequote(,)dnl
-if test "x$GCC" = "xyes"; then
-  case " $CFLAGS " in
-  *[\ \	]-Wall[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wall" ;;
-  esac
-fi
-changequote([,])dnl
+dnl Use -Wall if available.
+AX_CHECK_COMPILE_FLAG([-Wall], [
+    case " $CFLAGS " in
+      *[\ \	]-Wall[\ \	]*) ;;
+      *) CFLAGS="$CFLAGS -Wall" ;;
+    esac
+  ])
 
 dnl Define _DARWIN_C_SOURCE macro while compiling on OS X.
 if test -n "$OSX_HOST" ; then
