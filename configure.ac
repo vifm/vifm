@@ -371,11 +371,16 @@ dnl from libc)
 AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"])
 
 dnl Use pthread library
-AC_CHECK_LIB(pthread, pthread_create,
-	[LIBS="$LIBS -lpthread"
-	AC_CHECK_HEADER([pthread.h], [], [AC_MSG_ERROR([pthread.h header not found.])])
-	],
-	[AC_MSG_ERROR([libpthread not found])])
+AX_CHECK_COMPILE_FLAG([-pthread], [
+    TESTS_CFLAGS="$CFLAGS -pthread"
+    CFLAGS="$CFLAGS -pthread"
+    ], [
+    AC_CHECK_LIB(pthread, pthread_create,
+      [LIBS="$LIBS -lpthread"
+      AC_CHECK_HEADER([pthread.h], [], [AC_MSG_ERROR([pthread.h header not found.])])
+      ],
+      [AC_MSG_ERROR([libpthread not found])])
+  ])
 
 dnl Check for all required elements in pthread.h.
 AC_CHECK_FUNC([pthread_create], [], [AC_MSG_ERROR([pthread_create() function not found.])])
