@@ -6588,8 +6588,24 @@ if test "x$ac_cv_type_direntry_t" = xyes; then :
 fi
 
 if test -n "$HAVE_MNTENT_H" ; then
-	ac_fn_c_check_type "$LINENO" "mntent" "ac_cv_type_mntent" "$ac_includes_default"
+    ac_fn_c_check_type "$LINENO" "mntent" "ac_cv_type_mntent" "$ac_includes_default"
 if test "x$ac_cv_type_mntent" = xyes; then :
+
+fi
+
+else
+    ac_fn_c_check_type "$LINENO" "getmntinfo" "ac_cv_type_getmntinfo" "
+                     #include <sys/param.h>
+                     #include <sys/ucred.h>
+                     #include <sys/mount.h>
+
+"
+if test "x$ac_cv_type_getmntinfo" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GETMNTINFO 1
+_ACEOF
+
 
 fi
 

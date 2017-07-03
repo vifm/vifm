@@ -453,8 +453,7 @@ traverse_mount_points(mptraverser client, void *arg)
 		if(drive_exists(c))
 		{
 			const char drive[] = { c, ':', '/', '\0' };
-			struct mntent entry =
-			{
+			struct mntent entry = {
 				.mnt_dir = drive,
 				.mnt_type = "",
 			};

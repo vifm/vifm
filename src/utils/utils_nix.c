@@ -566,7 +566,7 @@ read_mnt_entries(unsigned int *nentries)
 		}
 	}
 
-	endmntent(f);
+	(void)endmntent(f);
 
 	return entries;
 }

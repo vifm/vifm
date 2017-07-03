@@ -35,6 +35,9 @@
 /* Define to 1 if you have the `futimens' function. */
 #undef HAVE_FUTIMENS
 
+/* Define to 1 if the system has the type `getmntinfo'. */
+#undef HAVE_GETMNTINFO
+
 /* inotify is available */
 #undef HAVE_INOTIFY
 
