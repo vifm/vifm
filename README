@@ -21,20 +21,34 @@ Brief Description
 Contacts
 
     Website: https://vifm.info/
-    Wiki: https://wiki.vifm.info/
-    Q&A: https://q2a.vifm.info/
-    Read-only news mailing list: vifm-announce@lists.sourceforge.net
-    Email for bugs, suggestions and comments on vifm: xaizek@openmailbox.org
+    Wiki:    https://wiki.vifm.info/
+    Q&A:     https://q2a.vifm.info/
 
-    Subscribe to the mailing list at:
-    https://lists.sourceforge.net/lists/listinfo/vifm-announce
+    Bugs and feature requests can be reported at:
+    * https://github.com/vifm/vifm/issues
+    * https://sourceforge.net/p/vifm/_list/tickets
+
+    The preferred way of posting usage questions is Q&A site:
+    * https://q2a.vifm.info/
+
+    Bugs, suggestions and comments can also be communicated via email:
+    * xaizek@openmailbox.org
+
+    Read-only and very low traffic news mailing list is at:
+    * vifm-announce@lists.sourceforge.net
+    Subscription form for it is here:
+    * https://lists.sourceforge.net/lists/listinfo/vifm-announce
 
     Repositories:
-    SorceForge: http://sourceforge.net/projects/vifm/
-    GitHub: https://github.com/vifm/vifm
+    * https://sourceforge.net/projects/vifm/
+    * https://github.com/vifm/vifm
 
     Vim plugin repositories:
-    GitHub: https://github.com/vifm/vifm.vim
+    * https://github.com/vifm/vifm.vim
+    * https://github.com/vifm/neovim-vifm
+
+    Collection of color schemes is available at:
+    * https://github.com/vifm/vifm-colors
 
 Package content
 
