@@ -51,8 +51,8 @@ struct mntent
 };
 
 #define setmntent(x,y) ((FILE *)0x1)
-struct mntent *getmntent __P ((FILE *fp));
-char *hasmntopt __P ((const struct mntent *mnt, const char option[]));
+struct mntent * getmntent(FILE *fp);
+char * hasmntopt(const struct mntent *mnt, const char option[]);
 #define endmntent(x) ((int)1)
 
 #endif /* VIFM__UTILS__MNTENT_H__ */
