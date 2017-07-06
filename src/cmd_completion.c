@@ -859,7 +859,7 @@ static void
 filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type)
 {
-	char buf[PATH_MAX];
+	char buf[PATH_MAX + 1];
 	if(is_root_dir(str))
 	{
 		snprintf(buf, sizeof(buf), "%s", str);
@@ -982,6 +982,7 @@ filename_completion(const char str[], CompletionType type,
 	restore_cwd(cwd);
 }
 
+/* The file completion core of filename_completion(). */
 static void
 filename_completion_internal(DIR *dir, const char filename[],
 		CompletionType type)
@@ -1040,7 +1041,7 @@ is_dirent_targets_exec(const struct dirent *d)
 #ifndef _WIN32
 
 void
-complete_user_name(const char *str)
+complete_user_name(const char str[])
 {
 	struct passwd *pw;
 	size_t len;

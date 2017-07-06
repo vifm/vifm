@@ -19,7 +19,7 @@
 #ifndef VIFM__COMPAT__OS_H__
 #define VIFM__COMPAT__OS_H__
 
-#include <sys/stat.h> /* S_IRXWU */
+#include <sys/stat.h> /* S_* */
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 
 #include <stdio.h> /* FILE */

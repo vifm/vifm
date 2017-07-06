@@ -645,7 +645,7 @@ remove_dir_content(const char path[])
 }
 
 int
-entry_is_link(const char path[], const struct dirent* dentry)
+entry_is_link(const char path[], const struct dirent *dentry)
 {
 #ifndef _WIN32
 	if(dentry->d_type == DT_LNK)
@@ -657,7 +657,7 @@ entry_is_link(const char path[], const struct dirent* dentry)
 }
 
 int
-entry_is_dir(const char full_path[], const struct dirent* dentry)
+entry_is_dir(const char full_path[], const struct dirent *dentry)
 {
 #ifndef _WIN32
 	return (dentry->d_type == DT_UNKNOWN)
