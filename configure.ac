@@ -276,7 +276,14 @@ AC_CHECK_DECL([REG_EXTENDED], [], [AC_MSG_ERROR([REG_EXTENDED not found in regex
 AC_CHECK_DECL([REG_ICASE], [], [AC_MSG_ERROR([REG_ICASE not found in regex.h])], [[#include <regex.h>]])
 AC_CHECK_DECL([REG_NOMATCH], [], [AC_MSG_ERROR([REG_NOMATCH not found in regex.h])], [[#include <regex.h>]])
 
-AC_CHECK_MEMBERS([struct stat.st_mtim])
+AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [[
+                  #include <sys/types.h>
+                  #include <sys/stat.h>
+                  #include <unistd.h>
+                ]])
+AC_CHECK_MEMBERS([struct dirent.d_type], [], [], [[
+                  #include <dirent.h>
+                ]])
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T

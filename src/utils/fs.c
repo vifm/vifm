@@ -39,6 +39,7 @@
 #include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
+#include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../io/iop.h"
@@ -648,7 +649,7 @@ int
 entry_is_link(const char path[], const struct dirent *dentry)
 {
 #ifndef _WIN32
-	if(dentry->d_type == DT_LNK)
+	if(get_dirent_type(dentry, path) == DT_LNK)
 	{
 		return 1;
 	}
@@ -660,9 +661,10 @@ int
 entry_is_dir(const char full_path[], const struct dirent *dentry)
 {
 #ifndef _WIN32
-	return (dentry->d_type == DT_UNKNOWN)
+	const unsigned char type = get_dirent_type(dentry, full_path);
+	return (type == DT_UNKNOWN)
 	     ? is_directory(full_path, 0)
-	     : dentry->d_type == DT_DIR;
+	     : type == DT_DIR;
 #else
 	const DWORD MASK = FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY;
 	const DWORD attrs = win_get_file_attrs(full_path);
@@ -672,18 +674,20 @@ entry_is_dir(const char full_path[], const struct dirent *dentry)
 }
 
 int
-is_dirent_targets_dir(const struct dirent *d)
+is_dirent_targets_dir(const char full_path[], const struct dirent *d)
 {
 #ifdef _WIN32
-	return is_dir(d->d_name);
+	return is_dir(full_path);
 #else
-	if(d->d_type == DT_UNKNOWN)
+	const unsigned char type = get_dirent_type(d, full_path);
+
+	if(type == DT_UNKNOWN)
 	{
-		return is_dir(d->d_name);
+		return is_dir(full_path);
 	}
 
-	return  d->d_type == DT_DIR
-	    || (d->d_type == DT_LNK && get_symlink_type(d->d_name) != SLT_UNKNOWN);
+	return  type == DT_DIR
+	    || (type == DT_LNK && get_symlink_type(full_path) != SLT_UNKNOWN);
 #endif
 }
 

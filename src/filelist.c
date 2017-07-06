@@ -90,11 +90,11 @@ static int fill_dir_entry_by_path(dir_entry_t *entry, const char path[]);
 #ifndef _WIN32
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const struct dirent *d);
-static int data_is_dir_entry(const struct dirent *d);
+static int data_is_dir_entry(const struct dirent *d, const char path[]);
 #else
 static int fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd);
-static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd);
+static int data_is_dir_entry(const WIN32_FIND_DATAW *ffd, const char path[]);
 #endif
 static int flist_custom_finish_internal(FileView *view, CVType type, int reload,
 		const char dir[], int allow_empty);
@@ -797,7 +797,7 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 	entry->type = get_type_from_mode(s.st_mode);
 	if(entry->type == FT_UNK)
 	{
-		entry->type = (d == NULL) ? FT_UNK : type_from_dir_entry(d);
+		entry->type = (d == NULL) ? FT_UNK : type_from_dir_entry(d, path);
 	}
 	if(entry->type == FT_UNK)
 	{
@@ -835,9 +835,9 @@ fill_dir_entry(dir_entry_t *entry, const char path[], const struct dirent *d)
 /* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
  * is returned. */
 static int
-data_is_dir_entry(const struct dirent *d)
+data_is_dir_entry(const struct dirent *d, const char path[])
 {
-	return is_dirent_targets_dir(d);
+	return is_dirent_targets_dir(path, d);
 }
 
 #else
@@ -909,7 +909,7 @@ fill_dir_entry(dir_entry_t *entry, const char path[],
 /* Checks whether file is a directory.  Returns non-zero if so, otherwise zero
  * is returned. */
 static int
-data_is_dir_entry(const WIN32_FIND_DATAW *ffd)
+data_is_dir_entry(const WIN32_FIND_DATAW *ffd, const char path[])
 {
 	return (ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
@@ -3574,7 +3574,11 @@ file_is_visible(FileView *view, const char filename[], int is_dir,
 
 	if(data != NULL)
 	{
-		is_dir = data_is_dir_entry(data);
+		char full_path[PATH_MAX + 1];
+		snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view),
+				filename);
+
+		is_dir = data_is_dir_entry(data, full_path);
 	}
 
 	return apply_local_filter

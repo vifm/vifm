@@ -42,6 +42,7 @@
                        strrchr() */
 
 #include "cfg/config.h"
+#include "compat/dtype.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/abbrevs.h"
@@ -92,9 +93,9 @@ static void complete_from_string_list(const char str[], const char *items[][2],
 static void complete_command_name(const char beginning[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
-static void filename_completion_internal(DIR *dir, const char filename[],
-		CompletionType type);
-static int is_dirent_targets_exec(const struct dirent *d);
+static void filename_completion_internal(DIR *dir, const char dir_path[],
+		const char filename[], CompletionType type);
+static int is_dirent_targets_exec(const struct dirent *d, const char path[]);
 #ifdef _WIN32
 static void complete_with_shared(const char *server, const char *file);
 #endif
@@ -967,7 +968,7 @@ filename_completion(const char str[], CompletionType type,
 	}
 	else
 	{
-		filename_completion_internal(dir, filename, type);
+		filename_completion_internal(dir, dirname, filename, type);
 		(void)vifm_chdir(flist_get_dir(curr_view));
 	}
 
@@ -984,28 +985,34 @@ filename_completion(const char str[], CompletionType type,
 
 /* The file completion core of filename_completion(). */
 static void
-filename_completion_internal(DIR *dir, const char filename[],
-		CompletionType type)
+filename_completion_internal(DIR *dir, const char dir_path[],
+		const char filename[], CompletionType type)
 {
 	struct dirent *d;
 
 	size_t filename_len = strlen(filename);
 	while((d = os_readdir(dir)) != NULL)
 	{
+		char full_path[PATH_MAX + 1];
+		int is_dir, is_exec;
+
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
 		if(!file_matches(d->d_name, filename, filename_len))
 			continue;
 
-		if(type == CT_DIRONLY && !is_dirent_targets_dir(d))
+		snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, d->d_name);
+		is_dir = is_dirent_targets_dir(full_path, d);
+		is_exec = is_dirent_targets_exec(d, full_path);
+
+		if(type == CT_DIRONLY && !is_dir)
 			continue;
-		else if(type == CT_EXECONLY && !is_dirent_targets_exec(d))
+		else if(type == CT_EXECONLY && !is_exec)
 			continue;
-		else if(type == CT_DIREXEC && !is_dirent_targets_dir(d) &&
-				!is_dirent_targets_exec(d))
+		else if(type == CT_DIREXEC && !is_dir && !is_exec)
 			continue;
 
-		if(is_dirent_targets_dir(d) && type != CT_ALL_WOS)
+		if(is_dir && type != CT_ALL_WOS)
 		{
 			vle_compl_put_path_match(format_str("%s/", d->d_name));
 		}
@@ -1025,16 +1032,17 @@ filename_completion_internal(DIR *dir, const char filename[],
 /* Uses dentry to check file type.  Returns non-zero for directories,
  * otherwise zero is returned.  Symbolic links are dereferenced. */
 static int
-is_dirent_targets_exec(const struct dirent *d)
+is_dirent_targets_exec(const struct dirent *d, const char path[])
 {
 #ifndef _WIN32
-	if(d->d_type == DT_DIR)
+	const unsigned char type = get_dirent_type(d, path);
+	if(type == DT_DIR)
 		return 0;
-	if(d->d_type == DT_LNK && get_symlink_type(d->d_name) != SLT_UNKNOWN)
+	if(type == DT_LNK && get_symlink_type(path) != SLT_UNKNOWN)
 		return 0;
-	return os_access(d->d_name, X_OK) == 0;
+	return os_access(path, X_OK) == 0;
 #else
-	return is_win_executable(d->d_name);
+	return is_win_executable(path);
 #endif
 }
 

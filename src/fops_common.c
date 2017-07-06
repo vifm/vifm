@@ -39,6 +39,7 @@
 #include <string.h> /* memcmp() strcmp() strdup() strlen() */
 
 #include "cfg/config.h"
+#include "compat/dtype.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "int/vim.h"
@@ -576,13 +577,14 @@ fops_grab_marked_files(FileView *view, size_t *nmarked)
 }
 
 int
-fops_is_dir_entry(const char full_path[], const struct dirent* dentry)
+fops_is_dir_entry(const char full_path[], const struct dirent *dentry)
 {
 #ifndef _WIN32
 	struct stat s;
-	if(dentry->d_type != DT_UNKNOWN)
+	const int type = get_dirent_type(dentry, full_path);
+	if(type != DT_UNKNOWN)
 	{
-		return dentry->d_type == DT_DIR;
+		return type == DT_DIR;
 	}
 	if(os_lstat(full_path, &s) == 0 && s.st_ino != 0)
 	{

@@ -23,6 +23,7 @@
 #include <string.h> /* strchr() strlen() */
 
 #include "../cfg/config.h"
+#include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
@@ -121,7 +122,7 @@ add_dirs_to_path(const char *path)
 		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
 				dentry->d_name);
 #ifndef _WIN32
-		if(dentry->d_type == DT_DIR)
+		if(get_dirent_type(dentry, full_path) == DT_DIR)
 #else
 		if(is_dir(full_path))
 #endif

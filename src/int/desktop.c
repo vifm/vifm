@@ -25,6 +25,7 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
 
+#include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../utils/path.h"
@@ -79,7 +80,7 @@ parse_desktop_files_internal(const char path[], const char mime_type[],
 
 		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
 				dentry->d_name);
-		if(dentry->d_type == DT_DIR)
+		if(get_dirent_type(dentry, full_path) == DT_DIR)
 		{
 			parse_desktop_files(full_path, mime_type);
 		}

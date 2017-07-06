@@ -91,6 +91,7 @@ vifm_SOURCES = \
 	cfg/info_chars.h \
 	\
 	compat/curses.c compat/curses.h \
+	compat/dtype.c compat/dtype.h \
 	compat/fs_limits.h \
 	compat/getopt.c compat/getopt1.c compat/getopt.h compat/getopt_int.h \
 	compat/mntent.c compat/mntent.h \

@@ -29,6 +29,7 @@
 #include <string.h> /* strcpy() strlen() */
 
 #include "../cfg/config.h"
+#include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
@@ -443,15 +444,19 @@ cs_rename_all(void)
 
 	while((d = os_readdir(dir)) != NULL)
 	{
+#ifndef _WIN32
+		unsigned char type;
+#endif
 		char full_old_path[PATH_MAX + 16 + NAME_MAX];
 		char full_new_path[PATH_MAX + 16 + NAME_MAX];
 		snprintf(full_old_path, sizeof(full_old_path), "%s/%s", cfg.colors_dir,
 				d->d_name);
 		snprintf(full_new_path, sizeof(full_new_path), "%s/%s.vifm", cfg.colors_dir,
 				d->d_name);
+
 #ifndef _WIN32
-		if(d->d_type == DT_REG ||
-				(d->d_type == DT_UNKNOWN && is_regular_file(full_old_path)))
+		type = get_dirent_type(d, full_old_path);
+		if(type == DT_REG || (type == DT_UNKNOWN && is_regular_file(full_old_path)))
 #else
 		if(is_regular_file(full_old_path))
 #endif

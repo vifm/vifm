@@ -55,7 +55,7 @@ FileType get_type_from_mode(mode_t mode);
 
 /* Converts dirent structure returned by call to readdir() to type from FileType
  * enumeration.  Returns item of the enumeration. */
-FileType type_from_dir_entry(const struct dirent *d);
+FileType type_from_dir_entry(const struct dirent *d, const char path[]);
 
 #endif
 
