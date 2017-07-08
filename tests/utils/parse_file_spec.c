@@ -10,9 +10,9 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/utils.h"
 
-#define DEFAULT_LINENUM 1
+#include "utils.h"
 
-static int windows(void);
+#define DEFAULT_LINENUM 1
 
 static char *saved_cwd;
 static char test_data[PATH_MAX];
@@ -294,16 +294,6 @@ TEST(win_relative_path_with_linenum, IF(windows))
 	assert_int_equal(9876, line_num);
 
 	free(path);
-}
-
-static int
-windows(void)
-{
-#ifdef _WIN32
-	return 1;
-#else
-	return 0;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
