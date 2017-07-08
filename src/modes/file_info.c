@@ -324,22 +324,26 @@ show_file_type(FileView *view, int curr_y)
 		const char *const type = (curr->type == FT_CHAR_DEV)
 		                       ? "Character Device"
 		                       : "Block Device";
-		char full_path[PATH_MAX];
-		struct stat st;
 
 		mvwaddstr(menu_win, curr_y, 8, type);
 
-		get_current_full_path(view, sizeof(full_path), full_path);
-		if(os_stat(full_path, &st) == 0)
+#if defined(major) && defined(minor)
 		{
-			char info[64];
+			char full_path[PATH_MAX];
+			struct stat st;
+			get_current_full_path(view, sizeof(full_path), full_path);
+			if(os_stat(full_path, &st) == 0)
+			{
+				char info[64];
 
-			snprintf(info, sizeof(info), "Device Id: 0x%x:0x%x", major(st.st_rdev),
-					minor(st.st_rdev));
+				snprintf(info, sizeof(info), "Device Id: 0x%x:0x%x", major(st.st_rdev),
+						minor(st.st_rdev));
 
-			curr_y += 2;
-			mvwaddstr(menu_win, curr_y, 2, info);
+				curr_y += 2;
+				mvwaddstr(menu_win, curr_y, 2, info);
+			}
 		}
+#endif
 	}
 	else if(curr->type == FT_SOCK)
 	{

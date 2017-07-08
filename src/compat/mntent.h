@@ -27,12 +27,17 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _WIN32
-#if defined(HAVE_MNTENT_H) && HAVE_MNTENT_H
-#include <mntent.h>
-#else
 #ifndef VIFM__UTILS__MNTENT_H__
 #define VIFM__UTILS__MNTENT_H__
+
+#if defined(HAVE_MNTENT_H) && HAVE_MNTENT_H
+/* We have a usable <mntent.h>. */
+
+#include <mntent.h>
+
+#elif defined(HAVE_GETMNTINFO) && HAVE_GETMNTINFO
+/* We can emulate *mntent() using getmntinfo(). */
+
 #include <stddef.h>
 #include <stdio.h>
 
@@ -51,19 +56,36 @@ struct mntent
 };
 
 #define setmntent(x,y) ((FILE *)0x1)
-struct mntent *getmntent __P ((FILE *fp));
-char *hasmntopt __P ((const struct mntent *mnt, const char option[]));
+struct mntent * getmntent(FILE *fp);
+char * hasmntopt(const struct mntent *mnt, const char option[]);
 #define endmntent(x) ((int)1)
 
-#endif /* VIFM__UTILS__MNTENT_H__ */
-#endif /* HAVE_MNTENT_H */
 #else
+/* The best we can do is provide stubs that do nothing. */
+
 struct mntent
 {
+#ifndef _WIN32
+	char *mnt_fsname;
+	char *mnt_dir;
+	char *mnt_type;
+	char *mnt_opts;
+	int mnt_freq;
+	int mnt_passno;
+#else
 	const char *mnt_dir;
 	const char *mnt_type;
+#endif
 };
-#endif /* _WIN32 */
+
+#define setmntent(x,y) ((FILE *)0x1)
+#define getmntent(x) ((struct mntent *)NULL)
+#define hasmntopt(x,y) ((char *)NULL)
+#define endmntent(x) ((int)1)
+
+#endif
+
+#endif /* VIFM__UTILS__MNTENT_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

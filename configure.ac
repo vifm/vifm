@@ -111,7 +111,13 @@ AC_CHECK_TYPE([time_t])
 AC_CHECK_TYPE([uint64_t])
 AC_CHECK_TYPE([direntry_t])
 if test -n "$HAVE_MNTENT_H" ; then
-	AC_CHECK_TYPE([mntent])
+    AC_CHECK_TYPE([mntent])
+else
+    AC_CHECK_TYPES([getmntinfo], [], [], [[
+                     #include <sys/param.h>
+                     #include <sys/ucred.h>
+                     #include <sys/mount.h>
+                   ]])
 fi
 AC_CHECK_TYPE([stat])
 AC_CHECK_TYPE([FILE])
@@ -270,7 +276,14 @@ AC_CHECK_DECL([REG_EXTENDED], [], [AC_MSG_ERROR([REG_EXTENDED not found in regex
 AC_CHECK_DECL([REG_ICASE], [], [AC_MSG_ERROR([REG_ICASE not found in regex.h])], [[#include <regex.h>]])
 AC_CHECK_DECL([REG_NOMATCH], [], [AC_MSG_ERROR([REG_NOMATCH not found in regex.h])], [[#include <regex.h>]])
 
-AC_CHECK_MEMBERS([struct stat.st_mtim])
+AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [[
+                  #include <sys/types.h>
+                  #include <sys/stat.h>
+                  #include <unistd.h>
+                ]])
+AC_CHECK_MEMBERS([struct dirent.d_type], [], [], [[
+                  #include <dirent.h>
+                ]])
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T

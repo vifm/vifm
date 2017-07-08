@@ -39,7 +39,8 @@
 
 #include "mntent.h"
 
-#if !defined(HAVE_MNTENT_H) || !HAVE_MNTENT_H
+#if (!defined(HAVE_MNTENT_H) || !HAVE_MNTENT_H) && \
+    defined(HAVE_GETMNTINFO) && HAVE_GETMNTINFO
 
 #include <sys/param.h>
 #include <sys/ucred.h>

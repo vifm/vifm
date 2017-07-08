@@ -25,6 +25,7 @@
 
 #include <assert.h> /* assert() */
 
+#include "compat/dtype.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
 
@@ -76,9 +77,9 @@ get_type_from_mode(mode_t mode)
 #ifndef _WIN32
 
 FileType
-type_from_dir_entry(const struct dirent *d)
+type_from_dir_entry(const struct dirent *d, const char path[])
 {
-	switch(d->d_type)
+	switch(get_dirent_type(d, path))
 	{
 		case DT_LNK:  return FT_LINK;
 		case DT_DIR:  return FT_DIR;

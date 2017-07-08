@@ -3,7 +3,7 @@ Vifm - vi[m] like file manager
 
 Version: 0.9
 
-This file last updated: 20 June, 2017
+This file last updated: 07 July, 2017
 
 Brief Description
 
@@ -81,6 +81,7 @@ Package content
     |  |-- compat/ - implementation of features that are missing on some OSes
     |  |  |
     |  |  |-- curses.c - emulation of some wide functions for OpenBSD
+    |  |  |-- dentry.c - emulation of d_entry field of struct direntry
     |  |  |-- getopt.c - part of glibc to have getopt_long() everywhere
     |  |  |-- getopt1.c - getopt.c public interface implementation
     |  |  |-- mntent.c - compatibility file for FreeBSD-like systems

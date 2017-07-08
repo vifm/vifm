@@ -25,6 +25,7 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
 
+#include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../utils/path.h"
@@ -39,8 +40,8 @@ static const char NAME_KEY[] = "Name=";
 static const char CAPTION_MACRO = 'c';
 static const char FILE_MACROS[] = "Uuf";
 
-static void parse_desktop_files_internal(const char *path,
-		const char *mime_type, assoc_records_t *result);
+static void parse_desktop_files_internal(const char path[],
+		const char mime_type[], assoc_records_t *result);
 static void process_file(const char *path, const char *file_mime_type,
 		assoc_records_t *result);
 static void expand_desktop(const char *str, char *buf);
@@ -54,7 +55,7 @@ parse_desktop_files(const char *path, const char *mime_type)
 }
 
 static void
-parse_desktop_files_internal(const char *path, const char *mime_type,
+parse_desktop_files_internal(const char path[], const char mime_type[],
 		assoc_records_t *result)
 {
 	DIR *dir;
@@ -70,21 +71,22 @@ parse_desktop_files_internal(const char *path, const char *mime_type,
 
 	while((dentry = os_readdir(dir)) != NULL)
 	{
-		char buf[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		if(is_builtin_dir(dentry->d_name))
 		{
 			continue;
 		}
 
-		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
-		if(dentry->d_type == DT_DIR)
+		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
+				dentry->d_name);
+		if(get_dirent_type(dentry, full_path) == DT_DIR)
 		{
-			parse_desktop_files(buf, mime_type);
+			parse_desktop_files(full_path, mime_type);
 		}
 		else
 		{
-			process_file(buf, mime_type, result);
+			process_file(full_path, mime_type, result);
 		}
 	}
 

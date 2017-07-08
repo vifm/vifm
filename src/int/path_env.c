@@ -23,6 +23,7 @@
 #include <string.h> /* strchr() strlen() */
 
 #include "../cfg/config.h"
+#include "../compat/dtype.h"
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
@@ -101,7 +102,9 @@ add_dirs_to_path(const char *path)
 
 	dir = os_opendir(path);
 	if(dir == NULL)
+	{
 		return;
+	}
 
 	slash = ends_with_slash(path) ? "" : "/";
 
@@ -109,21 +112,22 @@ add_dirs_to_path(const char *path)
 
 	while((dentry = os_readdir(dir)) != NULL)
 	{
-		char buf[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		if(is_builtin_dir(dentry->d_name))
 		{
 			continue;
 		}
 
-		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
+				dentry->d_name);
 #ifndef _WIN32
-		if(dentry->d_type == DT_DIR)
+		if(get_dirent_type(dentry, full_path) == DT_DIR)
 #else
-		if(is_dir(buf))
+		if(is_dir(full_path))
 #endif
 		{
-			add_dirs_to_path(buf);
+			add_dirs_to_path(full_path);
 		}
 	}
 

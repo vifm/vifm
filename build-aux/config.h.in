@@ -35,6 +35,9 @@
 /* Define to 1 if you have the `futimens' function. */
 #undef HAVE_FUTIMENS
 
+/* Define to 1 if the system has the type `getmntinfo'. */
+#undef HAVE_GETMNTINFO
+
 /* inotify is available */
 #undef HAVE_INOTIFY
 
@@ -76,6 +79,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define to 1 if `d_type' is a member of `struct dirent'. */
+#undef HAVE_STRUCT_DIRENT_D_TYPE
 
 /* Define to 1 if `st_mtim' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_MTIM
