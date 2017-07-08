@@ -33,6 +33,7 @@
 #include <sys/types.h> /* size_t mode_t */
 #include <unistd.h> /* pathconf() readlink() */
 
+#include <ctype.h> /* isalpha() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() */
@@ -890,7 +891,7 @@ win_get_file_attrs(const char path[])
 
 	if(is_path_absolute(path) && !is_unc_path(path))
 	{
-		if(!drive_exists(path[0]))
+		if(isalpha(path[0]) && !drive_exists(path[0]))
 		{
 			return INVALID_FILE_ATTRIBUTES;
 		}

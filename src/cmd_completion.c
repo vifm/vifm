@@ -95,7 +95,7 @@ static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
 static void filename_completion_internal(DIR *dir, const char dir_path[],
 		const char filename[], CompletionType type);
-static int is_dirent_targets_exec(const struct dirent *d, const char path[]);
+static int is_dirent_targets_exec(const struct dirent *d);
 #ifdef _WIN32
 static void complete_with_shared(const char *server, const char *file);
 #endif
@@ -988,28 +988,27 @@ static void
 filename_completion_internal(DIR *dir, const char dir_path[],
 		const char filename[], CompletionType type)
 {
+	/* It's OK to use relative paths here, because filename_completion()
+	 * guarantees that we are in correct directory. */
 	struct dirent *d;
 
 	size_t filename_len = strlen(filename);
 	while((d = os_readdir(dir)) != NULL)
 	{
-		char full_path[PATH_MAX + 1];
-		int is_dir, is_exec;
+		int is_dir;
 
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
 		if(!file_matches(d->d_name, filename, filename_len))
 			continue;
 
-		snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, d->d_name);
-		is_dir = is_dirent_targets_dir(full_path, d);
-		is_exec = is_dirent_targets_exec(d, full_path);
+		is_dir = is_dirent_targets_dir(d->d_name, d);
 
 		if(type == CT_DIRONLY && !is_dir)
 			continue;
-		else if(type == CT_EXECONLY && !is_exec)
+		else if(type == CT_EXECONLY && !is_dirent_targets_exec(d))
 			continue;
-		else if(type == CT_DIREXEC && !is_dir && !is_exec)
+		else if(type == CT_DIREXEC && !is_dir && !is_dirent_targets_exec(d))
 			continue;
 
 		if(is_dir && type != CT_ALL_WOS)
@@ -1032,17 +1031,19 @@ filename_completion_internal(DIR *dir, const char dir_path[],
 /* Uses dentry to check file type.  Returns non-zero for directories,
  * otherwise zero is returned.  Symbolic links are dereferenced. */
 static int
-is_dirent_targets_exec(const struct dirent *d, const char path[])
+is_dirent_targets_exec(const struct dirent *d)
 {
+	/* It's OK to use relative paths here, because filename_completion()
+	 * guarantees that we are in correct directory. */
 #ifndef _WIN32
-	const unsigned char type = get_dirent_type(d, path);
+	const unsigned char type = get_dirent_type(d, d->d_name);
 	if(type == DT_DIR)
 		return 0;
-	if(type == DT_LNK && get_symlink_type(path) != SLT_UNKNOWN)
+	if(type == DT_LNK && get_symlink_type(d->d_name) != SLT_UNKNOWN)
 		return 0;
-	return os_access(path, X_OK) == 0;
+	return os_access(d->d_name, X_OK) == 0;
 #else
-	return is_win_executable(path);
+	return is_win_executable(d->d_name);
 #endif
 }
 

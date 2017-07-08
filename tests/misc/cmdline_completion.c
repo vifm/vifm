@@ -306,7 +306,7 @@ TEST(help_cmd_escaping)
 	ASSERT_COMPLETION(L"help vifm-", L"help vifm-!!");
 }
 
-TEST(root_is_completed)
+TEST(root_entries_are_completed)
 {
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);

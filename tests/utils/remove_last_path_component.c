@@ -3,7 +3,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/utils/path.h"
 
-static int windows(void);
+#include "utils.h"
 
 TEST(empty_path)
 {
@@ -65,16 +65,6 @@ TEST(can_remove_path_completely_on_windows, IF(windows))
 
 	remove_last_path_component(path);
 	assert_true(path[0] == '\0');
-}
-
-static int
-windows(void)
-{
-#ifdef _WIN32
-	return 1;
-#else
-	return 0;
-#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

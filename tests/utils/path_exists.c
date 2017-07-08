@@ -6,7 +6,7 @@
 
 #include "../../src/utils/fs.h"
 
-static int not_windows(void);
+#include "utils.h"
 
 TEST(empty_string_null_returned)
 {
@@ -22,14 +22,4 @@ TEST(empty_string_null_returned)
 	}
 
 	assert_success(unlink(SANDBOX_PATH "/file"));
-}
-
-static int
-not_windows(void)
-{
-#ifndef _WIN32
-	return 1;
-#else
-	return 0;
-#endif
 }

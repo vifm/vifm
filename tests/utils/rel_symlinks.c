@@ -2,6 +2,8 @@
 
 #include "../../src/utils/path.h"
 
+#include "utils.h"
+
 TEST(in_one_dir)
 {
 	const char *buf;
@@ -75,9 +77,7 @@ TEST(different_subtree)
 	assert_string_equal("../home/file", buf);
 }
 
-#ifdef _WIN32
-
-TEST(windows_specific)
+TEST(windows_specific, IF(windows))
 {
 	const char *buf;
 
@@ -87,8 +87,6 @@ TEST(windows_specific)
 	buf = make_rel_path("c:/home/user1/", "d:/home/user1/dir1");
 	assert_string_equal("c:/home/user1/", buf);
 }
-
-#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
