@@ -301,7 +301,7 @@ matcher_clone(const matcher_t *matcher)
 	clone->undec = strdup(matcher->undec);
 
 	/* Don't compile regex for empty matcher. */
-	err = (clone->raw[0] == '\0')
+	err = (clone->raw != NULL && clone->raw[0] == '\0')
 	    ? 0
 	    : regcomp(&clone->regex, matcher->raw, matcher->cflags);
 
