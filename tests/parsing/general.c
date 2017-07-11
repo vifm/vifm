@@ -34,19 +34,19 @@ TEST(ends_with_dot_fail)
 
 TEST(fail_position_correct)
 {
-	ASSERT_FAIL("'b' c", PE_INVALID_EXPRESSION)
+	ASSERT_FAIL("'b' c", PE_INVALID_EXPRESSION);
 	assert_string_equal("'b' c", get_last_position());
 
-	ASSERT_FAIL("a b", PE_INVALID_EXPRESSION)
+	ASSERT_FAIL("a b", PE_INVALID_EXPRESSION);
 	assert_string_equal("a b", get_last_position());
 }
 
 TEST(spaces_and_fail_position_correct)
 {
-	ASSERT_FAIL("  'b' c", PE_INVALID_EXPRESSION)
+	ASSERT_FAIL("  'b' c", PE_INVALID_EXPRESSION);
 	assert_string_equal("'b' c", get_last_position());
 
-	ASSERT_FAIL("  a b", PE_INVALID_EXPRESSION)
+	ASSERT_FAIL("  a b", PE_INVALID_EXPRESSION);
 	assert_string_equal("a b", get_last_position());
 }
 
