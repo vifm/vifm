@@ -37,6 +37,7 @@
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL wchar_t */
+#include <stdint.h> /* uintptr_t */
 #include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
 #include <string.h> /* memcpy() */
 
@@ -116,12 +117,9 @@ static void * error_thread(void *p);
 static int update_job_list(bg_job_t **jobs, fd_set *set);
 static void report_error_msg(const char title[], const char text[]);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
-static bg_job_t * add_background_job(pid_t pid, const char cmd[], int fd,
-		BgJobType type);
-#else
-static bg_job_t * add_background_job(pid_t pid, const char cmd[],
-		HANDLE hprocess, BgJobType type);
 #endif
+static bg_job_t * add_background_job(pid_t pid, const char cmd[],
+		uintptr_t data, BgJobType type);
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
@@ -867,7 +865,8 @@ bg_run_external(const char cmd[], int skip_errors)
 		/* Close write end of pipe. */
 		close(error_pipe[1]);
 
-		job = add_background_job(pid, command, error_pipe[0], BJT_COMMAND);
+		job = add_background_job(pid, command, (uintptr_t)error_pipe[0],
+				BJT_COMMAND);
 		if(job == NULL)
 		{
 			free(command);
@@ -901,8 +900,8 @@ bg_run_external(const char cmd[], int skip_errors)
 	{
 		CloseHandle(pinfo.hThread);
 
-		job = add_background_job(pinfo.dwProcessId, sh_cmd, pinfo.hProcess,
-				BJT_COMMAND);
+		job = add_background_job(pinfo.dwProcessId, sh_cmd,
+				(uintptr_t)pinfo.hProcess, BJT_COMMAND);
 		if(job == NULL)
 		{
 			free(sh_cmd);
@@ -938,7 +937,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 
 	task_args->func = task_func;
 	task_args->args = args;
-	task_args->job = add_background_job(WRONG_PID, descr, NO_JOB_ID,
+	task_args->job = add_background_job(WRONG_PID, descr, (uintptr_t)NO_JOB_ID,
 			important ? BJT_OPERATION : BJT_TASK);
 
 	if(task_args->job == NULL)
@@ -973,13 +972,8 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 
 /* Creates structure that describes background job and registers it in the list
  * of jobs. */
-#ifndef _WIN32
 static bg_job_t *
-add_background_job(pid_t pid, const char cmd[], int fd, BgJobType type)
-#else
-static bg_job_t *
-add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
-#endif
+add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
 {
 	bg_job_t *new = malloc(sizeof(*new));
 	if(new == NULL)
@@ -1005,8 +999,8 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 	new->exit_code = -1;
 
 #ifndef _WIN32
-	new->fd = fd;
-	if(fd != -1)
+	new->fd = (int)data;
+	if(new->fd != -1)
 	{
 		pthread_mutex_lock(&new_err_jobs_lock);
 		new->err_next = new_err_jobs;
@@ -1015,7 +1009,7 @@ add_background_job(pid_t pid, const char cmd[], HANDLE hprocess, BgJobType type)
 		pthread_cond_signal(&new_err_jobs_cond);
 	}
 #else
-	new->hprocess = hprocess;
+	new->hprocess = (HANDLE)data;
 #endif
 
 	if(type != BJT_COMMAND)
