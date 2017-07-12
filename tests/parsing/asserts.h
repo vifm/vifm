@@ -5,6 +5,7 @@
 
 /* This should be a macro to see what test has failed. */
 #define ASSERT_OK(str, result) \
+	do \
 	{ \
 		char *str_res; \
 		var_t res_var = var_false(); \
@@ -13,10 +14,12 @@
 		assert_string_equal((result), str_res); \
 		free(str_res); \
 		var_free(res_var); \
-	}
+	} \
+	while(0)
 
 /* This should be a macro to see what test has failed. */
 #define ASSERT_INT_OK(str, result) \
+	do \
 	{ \
 		int int_res; \
 		var_t res_var = var_false(); \
@@ -24,15 +27,18 @@
 		int_res = var_to_integer(res_var); \
 		assert_int_equal((result), int_res); \
 		var_free(res_var); \
-	}
+	} \
+	while(0)
 
 /* This should be a macro to see what test has failed. */
 #define ASSERT_FAIL(str, error) \
+	do \
 	{ \
 		var_t res_var = var_false(); \
 		assert_int_equal((error), parse((str), &res_var)); \
 		var_free(res_var); \
-	}
+	} \
+	while(0)
 
 #endif /* VIFM_TESTS__PARSING__ASSERTS_H__ */
 
