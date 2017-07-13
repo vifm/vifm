@@ -1,10 +1,12 @@
 * Better to check for existence of $HOME.
 * On OpenBSD there might be issues with non-ascii characters.
 * Duplicate detection lags in custom views on :substitute.
+* filextype is useless on OS X.
 * :clone! is useless.
 * Hard copies of files are counted multiple times for ga/gA.
 * :change->Name renames only one file even when several are selected.
 * There is no sshfs like FUSE for servers that provide only scp.
+* inotify fails to recognize change of replaced directory.
 * Trailing "\ " in :map commands prevents cutting of the space.
 * noremap shows wrong keys?
 * "*" at the beginning of a glob doesn't match empty string.
