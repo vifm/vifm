@@ -200,8 +200,7 @@ is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 {
 	filter_t *const filter = arg;
 
-	/* FIXME: some very long file names won't be matched against some
-	 * regexps. */
+	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
 	const char *filename = entry->name;
 
@@ -855,8 +854,7 @@ local_filter_restore(FileView *view)
 int
 local_filter_matches(FileView *view, const dir_entry_t *entry)
 {
-	/* FIXME: some very long file names won't be matched against some
-	 * regexps. */
+	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
 	const char *filename = entry->name;
 	if(fentry_is_dir(entry))
