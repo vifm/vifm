@@ -2871,16 +2871,26 @@ list_sibling_dirs(FileView *view)
 
 	for(i = 0; i < len; ++i)
 	{
-		char *const full_path = format_str("%s/%s", path, list[i]);
-		dir_entry_t *entry = entry_list_add(view, &parent_dirs.entries,
-				&parent_dirs.nentries, full_path);
-		free(full_path);
+		char *full_path;
+		dir_entry_t *entry;
 
-		if(!fentry_is_dir(entry))
+		if(view->hide_dot && list[i][0] == '.')
+		{
+			continue;
+		}
+
+		full_path = format_str("%s/%s", path, list[i]);
+		entry = entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
+				full_path);
+
+		if(!fentry_is_dir(entry) ||
+				!filters_file_is_visible(view, path, list[i], 1, 0))
 		{
 			fentry_free(view, entry);
 			--parent_dirs.nentries;
 		}
+
+		free(full_path);
 	}
 	free(path);
 	free_string_array(list, len);
