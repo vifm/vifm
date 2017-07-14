@@ -3580,7 +3580,8 @@ file_is_visible(FileView *view, const char name[], int is_dir,
 		is_dir = data_is_dir_entry(data, full_path);
 	}
 
-	return filters_file_is_visible(view, name, is_dir, apply_local_filter);
+	return filters_file_is_visible(view, flist_get_dir(view), name, is_dir,
+			apply_local_filter);
 }
 
 /* Adds ".." directory leaf of an empty directory to the tree which is being

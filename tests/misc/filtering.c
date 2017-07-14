@@ -21,11 +21,13 @@
 
 #include "utils.h"
 
-#define assert_hidden(view, name, dir) \
-	assert_false(filters_file_is_visible(&view, name, dir, 1))
+#define assert_hidden(view, name, is_dir) \
+	assert_false( \
+			filters_file_is_visible(&view, flist_get_dir(&view), name, is_dir, 1))
 
-#define assert_visible(view, name, dir) \
-	assert_true(filters_file_is_visible(&view, name, dir, 1))
+#define assert_visible(view, name, is_dir) \
+	assert_true( \
+			filters_file_is_visible(&view, flist_get_dir(&view), name, is_dir, 1))
 
 static char cwd[PATH_MAX + 1];
 
