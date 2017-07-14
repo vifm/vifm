@@ -3581,9 +3581,7 @@ file_is_visible(FileView *view, const char filename[], int is_dir,
 		is_dir = data_is_dir_entry(data, full_path);
 	}
 
-	return apply_local_filter
-	     ? filters_file_is_visible(view, filename, is_dir)
-	     : filters_file_is_filtered(view, filename, is_dir);
+	return filters_file_is_visible(view, filename, is_dir, apply_local_filter);
 }
 
 /* Adds ".." directory leaf of an empty directory to the tree which is being
