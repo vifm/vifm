@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() unlink() */
+#include <unistd.h> /* chdir() rmdir() unlink() */
 
 #include <string.h> /* memset() strcpy() */
 
@@ -203,6 +203,28 @@ TEST(sibl_respects_name_filters)
 	assert_success(rmdir(SANDBOX_PATH "/a"));
 	assert_success(rmdir(SANDBOX_PATH "/b"));
 	assert_success(rmdir(SANDBOX_PATH "/c"));
+}
+
+TEST(sibl_works_inside_filtered_out_directory)
+{
+	char path[PATH_MAX + 1];
+
+	lwin.hide_dot = 1;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/a", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/.b", 0700));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, ".b", cwd);
+	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "a", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_success(chdir(cwd));
+
+	assert_success(rmdir(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/.b"));
+
+	lwin.hide_dot = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -2895,6 +2895,16 @@ list_sibling_dirs(FileView *view)
 	free(path);
 	free_string_array(list, len);
 
+	if(entry_from_path(view, parent_dirs.entries, parent_dirs.nentries,
+				flist_get_dir(view)) == NULL)
+	{
+		/* If we couldn't find our current directory in the list (because it got
+		 * filtered-out), add it to be able to determine where it would go if it
+		 * were visible. */
+		entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
+				flist_get_dir(view));
+	}
+
 	return parent_dirs;
 }
 
