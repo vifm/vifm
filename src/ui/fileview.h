@@ -44,8 +44,7 @@ void fview_view_cs_reset(FileView *view);
 /* Redraws directory list and puts inactive mark for the other view. */
 void draw_dir_list(FileView *view);
 
-/* Redraws directory list without any extra actions that are performed in
- * draw_dir_list(). */
+/* Redraws directory list without putting inactive mark if view == other. */
 void draw_dir_list_only(FileView *view);
 
 /* Updates view (maybe postponed) on the screen (redraws file list and
