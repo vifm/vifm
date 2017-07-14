@@ -330,7 +330,7 @@ file_is_filtered(FileView *view, const char filename[], int is_dir,
 
 	if(matcher_is_full_path(view->manual_filter))
 	{
-		const size_t nchars = copy_str(path, sizeof(path) - 1, view->curr_dir);
+		const size_t nchars = copy_str(path, sizeof(path) - 1, flist_get_dir(view));
 		path[nchars - 1U] = '/';
 		copy_str(path + nchars, sizeof(path) - nchars, filename);
 		filename = path;
