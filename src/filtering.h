@@ -58,9 +58,9 @@ void restore_filename_filter(FileView *view);
 void toggle_filter_inversion(FileView *view);
 
 /* Checks whether file/directory passes filename filters of the view.  Returns
- * non-zero if given filename passes filter and should be visible, otherwise
- * zero is returned, in which case the file should be hidden. */
-int filters_file_is_visible(FileView *view, const char filename[], int is_dir,
+ * non-zero if given name passes filters and should be visible, otherwise zero
+ * is returned, in which case the file should be hidden. */
+int filters_file_is_visible(FileView *view, const char name[], int is_dir,
 		int apply_local_filter);
 
 /* Callback-like function which triggers some view-specific updates after

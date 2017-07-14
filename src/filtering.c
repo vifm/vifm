@@ -281,7 +281,7 @@ toggle_filter_inversion(FileView *view)
 }
 
 int
-filters_file_is_visible(FileView *view, const char filename[], int is_dir,
+filters_file_is_visible(FileView *view, const char name[], int is_dir,
 		int apply_local_filter)
 {
 	/* FIXME: some very long file names won't be matched against some regexps. */
@@ -290,17 +290,17 @@ filters_file_is_visible(FileView *view, const char filename[], int is_dir,
 
 	if(is_dir)
 	{
-		append_slash(filename, name_with_slash, sizeof(name_with_slash));
-		filename = name_with_slash;
+		append_slash(name, name_with_slash, sizeof(name_with_slash));
+		name = name_with_slash;
 	}
 
-	if(filter_matches(&view->auto_filter, filename) > 0)
+	if(filter_matches(&view->auto_filter, name) > 0)
 	{
 		return 0;
 	}
 
 	if(apply_local_filter &&
-			filter_matches(&view->local_filter.filter, filename) == 0)
+			filter_matches(&view->local_filter.filter, name) == 0)
 	{
 		return 0;
 	}
@@ -314,13 +314,13 @@ filters_file_is_visible(FileView *view, const char filename[], int is_dir,
 	{
 		const size_t nchars = copy_str(path, sizeof(path) - 1, flist_get_dir(view));
 		path[nchars - 1U] = '/';
-		copy_str(path + nchars, sizeof(path) - nchars, filename);
-		filename = path;
+		copy_str(path + nchars, sizeof(path) - nchars, name);
+		name = path;
 	}
 
-	return matcher_matches(view->manual_filter, filename)
-		   ? !view->invert
-		   : view->invert;
+	return matcher_matches(view->manual_filter, name)
+	     ? !view->invert
+	     : view->invert;
 }
 
 void
