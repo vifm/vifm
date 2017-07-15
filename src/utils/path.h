@@ -95,7 +95,7 @@ void ensure_path_well_formed(char *path);
 
 /* Ensures that path to a file is of canonic absolute form.  No trailing slash
  * in the buffer except for the root path.  Canonic paths must be absolute, so
- * if input path isn't base is prepended to it. */
+ * if input path is relative base is prepended to it. */
 void to_canonic_path(const char path[], const char base[], char buf[],
 		size_t buf_len);
 
