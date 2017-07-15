@@ -477,7 +477,7 @@ set_view_property(FileView *view, char type, const char value[])
 {
 	if(type == PROP_TYPE_DOTFILES)
 	{
-		set_dot_files_visible(view, !atoi(value));
+		dot_filter_set(view, !atoi(value));
 	}
 	else if(type == PROP_TYPE_AUTO_FILTER)
 	{

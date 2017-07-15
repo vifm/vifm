@@ -134,7 +134,7 @@ TEST(tree_accounts_for_auto_filter)
 	assert_int_equal(12, lwin.list_rows);
 	lwin.dir_entry[11].selected = 1;
 	lwin.selected_files = 1;
-	filter_selected_files(&lwin);
+	name_filters_add_selection(&lwin);
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(11, lwin.list_rows);
