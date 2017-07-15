@@ -67,9 +67,9 @@ int filters_file_is_visible(FileView *view, const char dir[], const char name[],
  * directory of the view changes. */
 void filters_dir_updated(FileView *view);
 
-/* Filters out nodes that bear "temporary" mark.  The list can be NULL,
- * otherwise it's a memory to be used for new list. */
-void filter_temporary_nodes(FileView *view, dir_entry_t *list);
+/* Filters out nodes that bear "temporary" mark.  The entries can be NULL,
+ * otherwise it's a memory to be used for the new list as an optimization. */
+void filter_temporary_nodes(FileView *view, dir_entry_t entries[]);
 
 /* Local filter related functions. */
 

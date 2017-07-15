@@ -330,7 +330,7 @@ filters_dir_updated(FileView *view)
 }
 
 void
-filter_temporary_nodes(FileView *view, dir_entry_t *list)
+filter_temporary_nodes(FileView *view, dir_entry_t entries[])
 {
 	/* This is basically a simplified version of update_filtering_lists().  Not
 	 * sure if it's worth merging them. */
@@ -343,8 +343,8 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 		dir_entry_t *new_entry;
 		dir_entry_t *const entry = &view->dir_entry[i];
 
-		/* tag links to position of nodes passed through filter in list of
-		 * visible files.  Removed nodes have -1. */
+		/* The tag field links to position of nodes passed through filter in the
+		 * list of visible files.  Removed nodes have -1. */
 		entry->tag = -1;
 
 		if(entry->temporary)
@@ -353,7 +353,7 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 			continue;
 		}
 
-		new_entry = add_dir_entry(&list, &list_size, entry);
+		new_entry = add_dir_entry(&entries, &list_size, entry);
 		if(new_entry != NULL)
 		{
 			entry->tag = list_size - 1U;
@@ -364,7 +364,7 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 	}
 
 	dynarray_free(view->dir_entry);
-	view->dir_entry = list;
+	view->dir_entry = entries;
 	view->list_rows = list_size;
 }
 
