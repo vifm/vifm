@@ -158,7 +158,7 @@ static int make_tree(FileView *view, const char path[], int reload,
 		trie_t *excluded_paths);
 static int add_files_recursively(FileView *view, const char path[],
 		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
-static int file_is_visible(FileView *view, const char filename[], int is_dir,
+static int file_is_visible(FileView *view, const char name[], int is_dir,
 		const void *data, int apply_local_filter);
 static int add_directory_leaf(FileView *view, const char path[],
 		int parent_pos);
@@ -2871,19 +2871,39 @@ list_sibling_dirs(FileView *view)
 
 	for(i = 0; i < len; ++i)
 	{
-		char *const full_path = format_str("%s/%s", path, list[i]);
-		dir_entry_t *entry = entry_list_add(view, &parent_dirs.entries,
-				&parent_dirs.nentries, full_path);
-		free(full_path);
+		char *full_path;
+		dir_entry_t *entry;
 
-		if(!fentry_is_dir(entry))
+		if(view->hide_dot && list[i][0] == '.')
+		{
+			continue;
+		}
+
+		full_path = format_str("%s/%s", path, list[i]);
+		entry = entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
+				full_path);
+
+		if(!fentry_is_dir(entry) ||
+				!filters_file_is_visible(view, path, list[i], 1, 0))
 		{
 			fentry_free(view, entry);
 			--parent_dirs.nentries;
 		}
+
+		free(full_path);
 	}
 	free(path);
 	free_string_array(list, len);
+
+	if(entry_from_path(view, parent_dirs.entries, parent_dirs.nentries,
+				flist_get_dir(view)) == NULL)
+	{
+		/* If we couldn't find our current directory in the list (because it got
+		 * filtered-out), add it to be able to determine where it would go if it
+		 * were visible. */
+		entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
+				flist_get_dir(view));
+	}
 
 	return parent_dirs;
 }
@@ -3564,10 +3584,10 @@ add_files_recursively(FileView *view, const char path[], trie_t *excluded_paths,
  * is used when data is NULL, otherwise data_is_dir_entry() called (this is an
  * optimization).  Returns non-zero if so, otherwise zero is returned. */
 static int
-file_is_visible(FileView *view, const char filename[], int is_dir,
+file_is_visible(FileView *view, const char name[], int is_dir,
 		const void *data, int apply_local_filter)
 {
-	if(view->hide_dot && filename[0] == '.')
+	if(view->hide_dot && name[0] == '.')
 	{
 		return 0;
 	}
@@ -3575,15 +3595,13 @@ file_is_visible(FileView *view, const char filename[], int is_dir,
 	if(data != NULL)
 	{
 		char full_path[PATH_MAX + 1];
-		snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view),
-				filename);
+		snprintf(full_path, sizeof(full_path), "%s/%s", flist_get_dir(view), name);
 
 		is_dir = data_is_dir_entry(data, full_path);
 	}
 
-	return apply_local_filter
-	     ? filters_file_is_visible(view, filename, is_dir)
-	     : filters_file_is_filtered(view, filename, is_dir);
+	return filters_file_is_visible(view, flist_get_dir(view), name, is_dir,
+			apply_local_filter);
 }
 
 /* Adds ".." directory leaf of an empty directory to the tree which is being

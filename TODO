@@ -44,6 +44,7 @@ Vi(m) specific features:
   * :map without arguments.
   * Lazy redraw support.
   * Don't move cursor on search failure.
+  * Consider adding support for sequences like \<cr>.
   * Completion of first argument for :map commands.
   * Make gU2U and similar commands work as in Vim.
   * Change file list filters to use fold levels.

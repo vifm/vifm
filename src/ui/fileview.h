@@ -44,8 +44,7 @@ void fview_view_cs_reset(FileView *view);
 /* Redraws directory list and puts inactive mark for the other view. */
 void draw_dir_list(FileView *view);
 
-/* Redraws directory list without any extra actions that are performed in
- * draw_dir_list(). */
+/* Redraws directory list without putting inactive mark if view == other. */
 void draw_dir_list_only(FileView *view);
 
 /* Updates view (maybe postponed) on the screen (redraws file list and
@@ -160,7 +159,7 @@ typedef struct
 	int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
 	int is_current;    /* Whether this file is selected with the cursor. */
 
-	size_t current_line;  /* Line of the cell. */
+	size_t current_line;  /* Line of the cell within the view window. */
 	size_t column_offset; /* Offset in characters of the column. */
 
 	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).

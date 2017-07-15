@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <unistd.h> /* rmdir() unlink() */
+#include <unistd.h> /* chdir() rmdir() unlink() */
 
 #include <string.h> /* memset() strcpy() */
 
@@ -18,6 +18,8 @@ static char cwd[PATH_MAX + 1];
 SETUP_ONCE()
 {
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 SETUP()
@@ -150,6 +152,79 @@ TEST(sibl_uses_global_sort_option)
 
 	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, path));
+}
+
+TEST(sibl_respects_dot_filter)
+{
+	char path[PATH_MAX + 1];
+
+	lwin.hide_dot = 1;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/.a", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/b", 0700));
+
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "b", cwd);
+
+	strcpy(lwin.curr_dir, path);
+	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	strcpy(lwin.curr_dir, path);
+	assert_success(exec_commands("siblprev", &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_success(rmdir(SANDBOX_PATH "/.a"));
+	assert_success(rmdir(SANDBOX_PATH "/b"));
+
+	lwin.hide_dot = 0;
+}
+
+TEST(sibl_respects_name_filters)
+{
+	char path[PATH_MAX + 1];
+
+	(void)replace_matcher(&lwin.manual_filter, "a");
+	(void)filter_set(&lwin.auto_filter, "c");
+
+	assert_success(os_mkdir(SANDBOX_PATH "/a", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/b", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/c", 0700));
+
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "b", cwd);
+
+	strcpy(lwin.curr_dir, path);
+	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	strcpy(lwin.curr_dir, path);
+	assert_success(exec_commands("siblprev", &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_success(rmdir(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/b"));
+	assert_success(rmdir(SANDBOX_PATH "/c"));
+}
+
+TEST(sibl_works_inside_filtered_out_directory)
+{
+	char path[PATH_MAX + 1];
+
+	lwin.hide_dot = 1;
+
+	assert_success(os_mkdir(SANDBOX_PATH "/a", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/.b", 0700));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, ".b", cwd);
+	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "a", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_success(chdir(cwd));
+
+	assert_success(rmdir(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/.b"));
+
+	lwin.hide_dot = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

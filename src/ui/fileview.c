@@ -63,7 +63,7 @@ typedef struct
 	int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
 	int is_current;    /* Whether this file is selected with the cursor. */
 
-	size_t current_line;  /* Line of the cell. */
+	size_t current_line;  /* Line of the cell within the view window. */
 	size_t column_offset; /* Offset in characters of the column. */
 
 	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).

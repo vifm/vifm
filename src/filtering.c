@@ -40,8 +40,6 @@ static void reset_filter(filter_t *filter);
 static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
 		void *arg);
 static void replace_matcher(matcher_t **matcher, const char expr[]);
-static int file_is_filtered(FileView *view, const char filename[], int is_dir,
-		int apply_local_filter);
 static int get_unfiltered_pos(const FileView *const view, int pos);
 static int load_unfiltered_list(FileView *const view);
 static int list_is_incomplete(FileView *const view);
@@ -200,8 +198,7 @@ is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 {
 	filter_t *const filter = arg;
 
-	/* FIXME: some very long file names won't be matched against some
-	 * regexps. */
+	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
 	const char *filename = entry->name;
 
@@ -284,23 +281,8 @@ toggle_filter_inversion(FileView *view)
 }
 
 int
-filters_file_is_visible(FileView *view, const char filename[], int is_dir)
-{
-	return file_is_filtered(view, filename, is_dir, 1);
-}
-
-int
-filters_file_is_filtered(FileView *view, const char filename[], int is_dir)
-{
-	return file_is_filtered(view, filename, is_dir, 0);
-}
-
-/* Checks whether file/directory passes filename filters of the view.  Returns
- * non-zero if given filename passes filter and should be visible, otherwise
- * zero is returned, in which case the file should be hidden. */
-static int
-file_is_filtered(FileView *view, const char filename[], int is_dir,
-		int apply_local_filter)
+filters_file_is_visible(FileView *view, const char dir[], const char name[],
+		int is_dir, int apply_local_filter)
 {
 	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
@@ -308,17 +290,17 @@ file_is_filtered(FileView *view, const char filename[], int is_dir,
 
 	if(is_dir)
 	{
-		append_slash(filename, name_with_slash, sizeof(name_with_slash));
-		filename = name_with_slash;
+		append_slash(name, name_with_slash, sizeof(name_with_slash));
+		name = name_with_slash;
 	}
 
-	if(filter_matches(&view->auto_filter, filename) > 0)
+	if(filter_matches(&view->auto_filter, name) > 0)
 	{
 		return 0;
 	}
 
 	if(apply_local_filter &&
-			filter_matches(&view->local_filter.filter, filename) == 0)
+			filter_matches(&view->local_filter.filter, name) == 0)
 	{
 		return 0;
 	}
@@ -330,15 +312,15 @@ file_is_filtered(FileView *view, const char filename[], int is_dir,
 
 	if(matcher_is_full_path(view->manual_filter))
 	{
-		const size_t nchars = copy_str(path, sizeof(path) - 1, view->curr_dir);
+		const size_t nchars = copy_str(path, sizeof(path) - 1, dir);
 		path[nchars - 1U] = '/';
-		copy_str(path + nchars, sizeof(path) - nchars, filename);
-		filename = path;
+		copy_str(path + nchars, sizeof(path) - nchars, name);
+		name = path;
 	}
 
-	return matcher_matches(view->manual_filter, filename)
-		   ? !view->invert
-		   : view->invert;
+	return matcher_matches(view->manual_filter, name)
+	     ? !view->invert
+	     : view->invert;
 }
 
 void
@@ -855,8 +837,7 @@ local_filter_restore(FileView *view)
 int
 local_filter_matches(FileView *view, const dir_entry_t *entry)
 {
-	/* FIXME: some very long file names won't be matched against some
-	 * regexps. */
+	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];
 	const char *filename = entry->name;
 	if(fentry_is_dir(entry))
