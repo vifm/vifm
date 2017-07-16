@@ -63,28 +63,30 @@ list_dir_history(FileView *view, int *pos)
 
 	*pos = 0;
 
-	for(i = 0; i < view->history_num && i < cfg.history_len; i++)
+	for(i = 0; i < view->history_num && i < cfg.history_len; ++i)
 	{
 		int j;
 		if(view->history[i].dir[0] == '\0')
 			break;
-		for(j = i + 1; j < view->history_num && j < cfg.history_len; j++)
+
+		/* Ignore all appearances of a directory except for the last one. */
+		for(j = i + 1; j < view->history_num && j < cfg.history_len; ++j)
 			if(stroscmp(view->history[i].dir, view->history[j].dir) == 0)
 				break;
 		if(j < view->history_num && j < cfg.history_len)
 			continue;
+
 		if(!is_valid_dir(view->history[i].dir))
 		{
 			/* "Mark" directory as non-existent. */
-			free(view->history[i].dir);
-			view->history[i].dir = NULL;
+			update_string(&view->history[i].dir, NULL);
 			need_cleanup = 1;
 			continue;
 		}
 
-		/* Change the current dir to reflect the current file. */
 		if(stroscmp(view->history[i].dir, view->curr_dir) == 0)
 		{
+			/* Change the current dir to reflect the current file. */
 			(void)replace_string(&view->history[i].file, get_current_file_name(view));
 			*pos = list.nitems;
 		}
@@ -126,8 +128,8 @@ list_dir_history(FileView *view, int *pos)
 		view->history_num = j;
 	}
 
-	/* Reverse order in which items appear. */
-	for(i = 0; i < list.nitems/2; i++)
+	/* Reverse order in which items appear and adjust position. */
+	for(i = 0; i < list.nitems/2; ++i)
 	{
 		char *t = list.items[i];
 		list.items[i] = list.items[list.nitems - 1 - i];
