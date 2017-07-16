@@ -88,7 +88,7 @@ reset_filter(filter_t *filter)
 }
 
 void
-set_dot_files_visible(FileView *view, int visible)
+dot_filter_set(FileView *view, int visible)
 {
 	view->hide_dot_g = view->hide_dot = !visible;
 	ui_view_schedule_reload(view);
@@ -109,7 +109,7 @@ set_dot_files_visible(FileView *view, int visible)
 }
 
 void
-toggle_dot_files(FileView *view)
+dot_filter_toggle(FileView *view)
 {
 	view->hide_dot_g = view->hide_dot = !view->hide_dot;
 	ui_view_schedule_reload(view);
@@ -130,7 +130,7 @@ toggle_dot_files(FileView *view)
 }
 
 void
-filter_selected_files(FileView *view)
+name_filters_add_selection(FileView *view)
 {
 	dir_entry_t *entry;
 	filter_t filter;
@@ -212,9 +212,9 @@ is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 }
 
 void
-remove_filename_filter(FileView *view)
+name_filters_remove(FileView *view)
 {
-	if(filename_filter_is_empty(view))
+	if(name_filters_empty(view))
 	{
 		return;
 	}
@@ -224,21 +224,21 @@ remove_filename_filter(FileView *view)
 	(void)replace_string(&view->prev_auto_filter, view->auto_filter.raw);
 	view->prev_invert = view->invert;
 
-	filename_filter_clear(view);
+	name_filters_drop(view);
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 
 	ui_view_schedule_full_reload(view);
 }
 
 int
-filename_filter_is_empty(FileView *view)
+name_filters_empty(FileView *view)
 {
 	return matcher_is_empty(view->manual_filter)
 	    && filter_is_empty(&view->auto_filter);
 }
 
 void
-filename_filter_clear(FileView *view)
+name_filters_drop(FileView *view)
 {
 	filter_clear(&view->auto_filter);
 	replace_matcher(&view->manual_filter, "");
@@ -246,7 +246,7 @@ filename_filter_clear(FileView *view)
 }
 
 void
-restore_filename_filter(FileView *view)
+name_filters_restore(FileView *view)
 {
 	if(view->prev_manual_filter[0] == '\0' && view->prev_auto_filter[0] == '\0')
 	{
@@ -273,7 +273,7 @@ replace_matcher(matcher_t **matcher, const char expr[])
 }
 
 void
-toggle_filter_inversion(FileView *view)
+filters_invert(FileView *view)
 {
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
@@ -330,7 +330,7 @@ filters_dir_updated(FileView *view)
 }
 
 void
-filter_temporary_nodes(FileView *view, dir_entry_t *list)
+filters_drop_temporaries(FileView *view, dir_entry_t entries[])
 {
 	/* This is basically a simplified version of update_filtering_lists().  Not
 	 * sure if it's worth merging them. */
@@ -343,8 +343,8 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 		dir_entry_t *new_entry;
 		dir_entry_t *const entry = &view->dir_entry[i];
 
-		/* tag links to position of nodes passed through filter in list of
-		 * visible files.  Removed nodes have -1. */
+		/* The tag field links to position of nodes passed through filter in the
+		 * list of visible files.  Removed nodes have -1. */
 		entry->tag = -1;
 
 		if(entry->temporary)
@@ -353,7 +353,7 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 			continue;
 		}
 
-		new_entry = add_dir_entry(&list, &list_size, entry);
+		new_entry = add_dir_entry(&entries, &list_size, entry);
 		if(new_entry != NULL)
 		{
 			entry->tag = list_size - 1U;
@@ -364,7 +364,7 @@ filter_temporary_nodes(FileView *view, dir_entry_t *list)
 	}
 
 	dynarray_free(view->dir_entry);
-	view->dir_entry = list;
+	view->dir_entry = entries;
 	view->list_rows = list_size;
 }
 
@@ -513,7 +513,7 @@ store_local_filter_position(FileView *const view, int pos)
 static int
 update_filtering_lists(FileView *view, int add, int clear)
 {
-	/* filter_temporary_nodes() is similar function. */
+	/* filters_drop_temporaries() is a similar function. */
 
 	size_t i;
 	size_t list_size = 0U;

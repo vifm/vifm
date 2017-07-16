@@ -2304,7 +2304,7 @@ rescue_from_empty_filelist(FileView *view)
 	/* It is possible to set the file name filter so that no files are showing
 	 * in the / directory.  All other directories will always show at least the
 	 * ../ file.  This resets the filter and reloads the directory. */
-	if(filename_filter_is_empty(view))
+	if(name_filters_empty(view))
 	{
 		return 0;
 	}
@@ -2313,7 +2313,7 @@ rescue_from_empty_filelist(FileView *view)
 			"The %s\"%s\" pattern did not match any files. It was reset.",
 			view->invert ? "" : "inverted ", matcher_get_expr(view->manual_filter));
 
-	filename_filter_clear(view);
+	name_filters_drop(view);
 
 	load_dir_list(view, 1);
 	if(view->list_rows < 1)

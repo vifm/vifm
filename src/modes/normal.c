@@ -1940,32 +1940,32 @@ free_list_of_file_indexes(keys_info_t *keys_info)
 static void
 cmd_zM(key_info_t key_info, keys_info_t *keys_info)
 {
-	restore_filename_filter(curr_view);
+	name_filters_restore(curr_view);
 	local_filter_restore(curr_view);
-	set_dot_files_visible(curr_view, 0);
+	dot_filter_set(curr_view, 0);
 }
 
 /* Remove filename filter. */
 static void
 cmd_zO(key_info_t key_info, keys_info_t *keys_info)
 {
-	remove_filename_filter(curr_view);
+	name_filters_remove(curr_view);
 }
 
 /* Show all hidden files. */
 static void
 cmd_zR(key_info_t key_info, keys_info_t *keys_info)
 {
-	remove_filename_filter(curr_view);
+	name_filters_remove(curr_view);
 	local_filter_remove(curr_view);
-	set_dot_files_visible(curr_view, 1);
+	dot_filter_set(curr_view, 1);
 }
 
 /* Toggle dot files visibility. */
 static void
 cmd_za(key_info_t key_info, keys_info_t *keys_info)
 {
-	toggle_dot_files(curr_view);
+	dot_filter_toggle(curr_view);
 }
 
 /* Excludes entries from custom view. */
@@ -1991,21 +1991,21 @@ normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
-	filter_selected_files(curr_view);
+	name_filters_add_selection(curr_view);
 }
 
 /* Hide dot files. */
 static void
 cmd_zm(key_info_t key_info, keys_info_t *keys_info)
 {
-	set_dot_files_visible(curr_view, 0);
+	dot_filter_set(curr_view, 0);
 }
 
 /* Show all the dot files. */
 static void
 cmd_zo(key_info_t key_info, keys_info_t *keys_info)
 {
-	set_dot_files_visible(curr_view, 1);
+	dot_filter_set(curr_view, 1);
 }
 
 /* Reset local filter. */

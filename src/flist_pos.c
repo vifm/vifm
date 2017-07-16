@@ -656,15 +656,15 @@ ensure_file_is_selected(FileView *view, const char name[])
 	{
 		if(nm[0] == '.')
 		{
-			set_dot_files_visible(view, 1);
+			dot_filter_set(view, 1);
 			file_pos = find_file_pos_in_list(view, nm);
 		}
 
 		if(file_pos < 0)
 		{
-			remove_filename_filter(view);
+			name_filters_remove(view);
 
-			/* remove_filename_filter() postpones list of files reloading. */
+			/* name_filters_remove() postpones reloading of list files. */
 			populate_dir_list(view, 1);
 
 			file_pos = find_file_pos_in_list(view, nm);

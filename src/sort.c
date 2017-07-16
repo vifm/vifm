@@ -126,7 +126,7 @@ sort_view(FileView *v)
 	}
 	else
 	{
-		filter_temporary_nodes(v, unsorted_list);
+		filters_drop_temporaries(v, unsorted_list);
 	}
 }
 

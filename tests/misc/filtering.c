@@ -132,7 +132,7 @@ TEARDOWN()
 TEST(filtering)
 {
 	assert_int_equal(7, lwin.list_rows);
-	filter_selected_files(&lwin);
+	name_filters_add_selection(&lwin);
 	assert_int_equal(1, lwin.list_rows);
 
 	assert_string_equal("withnonodots", lwin.dir_entry[0].name);
@@ -147,7 +147,7 @@ TEST(filtering_file_does_not_filter_dir)
 	rwin.selected_files = 1;
 
 	assert_int_equal(8, rwin.list_rows);
-	filter_selected_files(&rwin);
+	name_filters_add_selection(&rwin);
 	assert_int_equal(7, rwin.list_rows);
 
 	assert_hidden(rwin, name, 0);
@@ -165,7 +165,7 @@ TEST(filtering_dir_does_not_filter_file)
 	rwin.selected_files = 1;
 
 	assert_int_equal(8, rwin.list_rows);
-	filter_selected_files(&rwin);
+	name_filters_add_selection(&rwin);
 	assert_int_equal(7, rwin.list_rows);
 
 	assert_hidden(rwin, name, 1);
@@ -235,7 +235,7 @@ TEST(file_after_directory_is_hidden)
 
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 1;
-	filter_selected_files(&lwin);
+	name_filters_add_selection(&lwin);
 
 	assert_int_equal(1, lwin.list_rows);
 }
@@ -325,7 +325,7 @@ TEST(removed_filename_filter_is_stored)
 	assert_success(filter_set(&lwin.auto_filter, "a"));
 	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
-	remove_filename_filter(&lwin);
+	name_filters_remove(&lwin);
 
 	assert_string_equal("a", lwin.prev_auto_filter);
 	assert_string_equal("b", lwin.prev_manual_filter);
@@ -336,8 +336,8 @@ TEST(filename_filter_can_removed_at_most_once)
 	assert_success(filter_set(&lwin.auto_filter, "a"));
 	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
-	remove_filename_filter(&lwin);
-	remove_filename_filter(&lwin);
+	name_filters_remove(&lwin);
+	name_filters_remove(&lwin);
 
 	assert_string_equal("a", lwin.prev_auto_filter);
 	assert_string_equal("b", lwin.prev_manual_filter);
@@ -348,12 +348,12 @@ TEST(filename_filter_can_be_cleared)
 	assert_success(filter_set(&lwin.auto_filter, "a"));
 	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
-	filename_filter_clear(&lwin);
+	name_filters_drop(&lwin);
 
 	assert_true(filter_is_empty(&lwin.auto_filter));
 	assert_true(matcher_is_empty(lwin.manual_filter));
 
-	assert_true(filename_filter_is_empty(&lwin));
+	assert_true(name_filters_empty(&lwin));
 }
 
 TEST(filename_filter_can_be_restored)
@@ -361,8 +361,8 @@ TEST(filename_filter_can_be_restored)
 	assert_success(filter_set(&lwin.auto_filter, "a"));
 	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
-	remove_filename_filter(&lwin);
-	restore_filename_filter(&lwin);
+	name_filters_remove(&lwin);
+	name_filters_restore(&lwin);
 
 	assert_string_equal("a", lwin.auto_filter.raw);
 	assert_string_equal("b", matcher_get_expr(lwin.manual_filter));
@@ -373,7 +373,7 @@ TEST(filename_filter_is_not_restored_from_empty_state)
 	assert_success(filter_set(&lwin.auto_filter, "a"));
 	assert_success(replace_matcher(&lwin.manual_filter, "b"));
 
-	restore_filename_filter(&lwin);
+	name_filters_restore(&lwin);
 
 	assert_string_equal("a", lwin.auto_filter.raw);
 	assert_string_equal("b", matcher_get_expr(lwin.manual_filter));

@@ -35,27 +35,17 @@ void filters_view_reset(FileView *view);
 
 /* Generic filters related functions. */
 
-/* Sets new value of dot files filter. */
-void set_dot_files_visible(FileView *view, int visible);
-
-void toggle_dot_files(FileView *view);
-
-void filter_selected_files(FileView *view);
-
-void remove_filename_filter(FileView *view);
-
-/* Checks whether file name filter of the view is empty.  Returns non-zero if
- * so, and zero otherwise. */
-int filename_filter_is_empty(FileView *view);
-
-/* Clears filename filter dropping (not remembering) its previous state. */
-void filename_filter_clear(FileView *view);
-
-void restore_filename_filter(FileView *view);
-
 /* Toggles filter inversion state of the view.  Reloads filelist and resets
  * cursor position. */
-void toggle_filter_inversion(FileView *view);
+void filters_invert(FileView *view);
+
+/* Filters out nodes that bear "temporary" mark.  The entries can be NULL,
+ * otherwise it's a memory to be used for the new list as an optimization. */
+void filters_drop_temporaries(FileView *view, dir_entry_t entries[]);
+
+/* Callback-like function which triggers some view-specific updates after
+ * directory of the view changes. */
+void filters_dir_updated(FileView *view);
 
 /* Checks whether file/directory passes filename filters of the view.  Returns
  * non-zero if given name passes filters and should be visible, otherwise zero
@@ -63,13 +53,37 @@ void toggle_filter_inversion(FileView *view);
 int filters_file_is_visible(FileView *view, const char dir[], const char name[],
 		int is_dir, int apply_local_filter);
 
-/* Callback-like function which triggers some view-specific updates after
- * directory of the view changes. */
-void filters_dir_updated(FileView *view);
+/* Dot filter related functions. */
 
-/* Filters out nodes that bear "temporary" mark.  The list can be NULL,
- * otherwise it's a memory to be used for new list. */
-void filter_temporary_nodes(FileView *view, dir_entry_t *list);
+/* Sets new value of the dot files filter of the view.  Performs updates of the
+ * view and options. */
+void dot_filter_set(FileView *view, int visible);
+
+/* Toggles state of the dot files filter of the view.  Performs updates of the
+ * view and options. */
+void dot_filter_toggle(FileView *view);
+
+/* Filename filters related functions. */
+
+/* Adds currently selected entries of the view or just current file (if no file
+ * is selected) to auto filename filter.  Performs necessary view updates. */
+void name_filters_add_selection(FileView *view);
+
+/* Clears both manual and auto filename filters remembering their state for
+ * future restoration.  Does nothing if both filters are already reset.
+ * Performs necessary view updates. */
+void name_filters_remove(FileView *view);
+
+/* Checks whether file name filter of the view is empty.  Returns non-zero if
+ * so, and zero otherwise. */
+int name_filters_empty(FileView *view);
+
+/* Clears filename filter dropping (not remembering) its previous state. */
+void name_filters_drop(FileView *view);
+
+/* Restores values of manual and auto filename filters (including state of
+ * filter inversion).  Schedules view update. */
+void name_filters_restore(FileView *view);
 
 /* Local filter related functions. */
 

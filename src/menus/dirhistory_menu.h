@@ -21,9 +21,18 @@
 #define VIFM__MENUS__DIRHISTORY_MENU_H__
 
 #include "../ui/ui.h"
+#include "../utils/test_helpers.h"
 
 /* Returns non-zero if status bar message should be saved. */
 int show_history_menu(FileView *view);
+
+#ifdef TEST
+#include "../utils/string_array.h"
+#endif
+
+TSTATIC_DEFS(
+	strlist_t list_dir_history(FileView *view, int *pos);
+)
 
 #endif /* VIFM__MENUS__DIRHISTORY_MENU_H__ */
 
