@@ -215,7 +215,10 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			{
 				printf("\n%s:\n", test_name);
 			}
-			printf("   (-) %s:%u\n       in %s\n       %s\n",
+			printf("   (-) FAILED\n"
+			       "       %s:%u: error: check failed\n"
+			       "       in %s\n"
+			       "       %s\n",
 			       file, line, function, reason );
 		}
 		sea_tests_failed++;
@@ -235,7 +238,9 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 				{
 					printf("\n%s\n", test_name);
 				}
-				printf("   (+) %s:%u\n       in %s\n", file, line, function);
+				printf("   (+) passed\n"
+				       "       %s:%u\n"
+				       "       in %s\n", file, line, function);
 			}
 			last_test = stic_current_test;
 		}
