@@ -27,16 +27,17 @@
 #include "../utils/fs.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../filelist.h"
 #include "menus.h"
 
 static int execute_dirhistory_cb(FileView *view, menu_data_t *m);
+TSTATIC strlist_t list_dir_history(FileView *view, int *pos);
 
 int
 show_history_menu(FileView *view)
 {
-	int i;
-	int need_cleanup;
+	strlist_t list;
 
 	static menu_data_t m;
 	init_menu_data(&m, view, strdup("Directory History"),
@@ -44,7 +45,24 @@ show_history_menu(FileView *view)
 
 	m.execute_handler = &execute_dirhistory_cb;
 
-	need_cleanup = 0;
+	list = list_dir_history(view, &m.pos);
+	m.items = list.items;
+	m.len = list.nitems;
+
+	return display_menu(m.state, view);
+}
+
+/* Lists directory history of the view.  Puts current position into *pos.
+ * Returns the list. */
+TSTATIC strlist_t
+list_dir_history(FileView *view, int *pos)
+{
+	int i;
+	int need_cleanup = 0;
+	strlist_t list = {};
+
+	*pos = 0;
+
 	for(i = 0; i < view->history_num && i < cfg.history_len; i++)
 	{
 		int j;
@@ -68,10 +86,11 @@ show_history_menu(FileView *view)
 		if(stroscmp(view->history[i].dir, view->curr_dir) == 0)
 		{
 			(void)replace_string(&view->history[i].file, get_current_file_name(view));
-			m.pos = m.len;
+			*pos = list.nitems;
 		}
 
-		m.len = add_to_string_array(&m.items, m.len, 1, view->history[i].dir);
+		list.nitems = add_to_string_array(&list.items, list.nitems, 1,
+				view->history[i].dir);
 	}
 
 	if(need_cleanup)
@@ -108,15 +127,15 @@ show_history_menu(FileView *view)
 	}
 
 	/* Reverse order in which items appear. */
-	for(i = 0; i < m.len/2; i++)
+	for(i = 0; i < list.nitems/2; i++)
 	{
-		char *t = m.items[i];
-		m.items[i] = m.items[m.len - 1 - i];
-		m.items[m.len - 1 - i] = t;
+		char *t = list.items[i];
+		list.items[i] = list.items[list.nitems - 1 - i];
+		list.items[list.nitems - 1 - i] = t;
 	}
-	m.pos = m.len - 1 - m.pos;
+	*pos = list.nitems - 1 - *pos;
 
-	return display_menu(m.state, view);
+	return list;
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
