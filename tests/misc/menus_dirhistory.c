@@ -6,6 +6,8 @@
 #include "../../src/menus/dirhistory_menu.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/fs.h"
+#include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
 
 #include "utils.h"
@@ -105,6 +107,32 @@ TEST(position_of_current_directory_is_determined)
 	list = list_dir_history(&lwin, &pos);
 
 	assert_int_equal(pos, 1);
+
+	free_string_array(list.items, list.nitems);
+}
+
+TEST(position_of_current_directory_is_determined_in_custom_view)
+{
+	int pos;
+	strlist_t list;
+
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "..",
+			cwd);
+
+	flist_hist_save(&lwin, TEST_DATA_PATH, "file2", 0);
+	flist_hist_save(&lwin, lwin.curr_dir, "file1", 0);
+	flist_hist_save(&lwin, SANDBOX_PATH, "file3", 0);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	list = list_dir_history(&lwin, &pos);
+
+	assert_int_equal(pos, 0);
 
 	free_string_array(list.items, list.nitems);
 }

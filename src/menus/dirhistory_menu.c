@@ -84,7 +84,7 @@ list_dir_history(FileView *view, int *pos)
 			continue;
 		}
 
-		if(stroscmp(view->history[i].dir, view->curr_dir) == 0)
+		if(stroscmp(view->history[i].dir, flist_get_dir(view)) == 0)
 		{
 			/* Change the current dir to reflect the current file. */
 			(void)replace_string(&view->history[i].file, get_current_file_name(view));
