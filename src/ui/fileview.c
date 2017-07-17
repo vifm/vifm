@@ -76,7 +76,7 @@ static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
 static int count_digits(int num);
 static int calculate_top_position(FileView *view, int top);
-static int get_line_color(const FileView *view, int pos);
+static int get_line_color(const FileView *view, const dir_entry_t *entry);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
 static void draw_cell(columns_t *columns, const column_data_t *cdt,
@@ -281,7 +281,7 @@ draw_dir_list_only(FileView *view)
 		const column_data_t cdt = {
 			.view = view,
 			.line_pos = x,
-			.line_hi_group = get_line_color(view, x),
+			.line_hi_group = get_line_color(view, &view->dir_entry[x]),
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
@@ -388,12 +388,11 @@ calculate_top_position(FileView *view, int top)
 	return result;
 }
 
-/* Calculates highlight group for the line specified by its position.  Returns
- * highlight group number. */
+/* Calculates highlight group for the entry.  Returns highlight group number. */
 static int
-get_line_color(const FileView *view, int pos)
+get_line_color(const FileView *view, const dir_entry_t *entry)
 {
-	switch(view->dir_entry[pos].type)
+	switch(entry->type)
 	{
 		case FT_DIR:
 			return DIRECTORY_COLOR;
@@ -407,9 +406,8 @@ get_line_color(const FileView *view, int pos)
 			else
 			{
 				char full[PATH_MAX];
-				get_full_path_at(view, pos, sizeof(full), full);
-				if(get_link_target_abs(full, view->dir_entry[pos].origin, full,
-							sizeof(full)) != 0)
+				get_full_path_of(entry, sizeof(full), full);
+				if(get_link_target_abs(full, entry->origin, full, sizeof(full)) != 0)
 				{
 					return BROKEN_LINK_COLOR;
 				}
@@ -636,7 +634,7 @@ put_inactive_mark(FileView *view)
 	calculate_table_conf(view, &col_count, &col_width);
 
 	line_attrs = prepare_inactive_color(view, get_current_entry(view),
-			get_line_color(view, view->list_pos));
+			get_line_color(view, get_current_entry(view)));
 
 	line = view->curr_line/col_count;
 	column = view->real_num_width + (view->curr_line%col_count)*col_width;
@@ -753,7 +751,7 @@ clear_current_line_bar(FileView *view, int is_current)
 		return;
 	}
 
-	cdt.line_hi_group = get_line_color(view, old_pos),
+	cdt.line_hi_group = get_line_color(view, &view->dir_entry[old_pos]),
 
 	calculate_table_conf(view, &col_count, &col_width);
 
@@ -1649,7 +1647,7 @@ fview_position_updated(FileView *view)
 	print_width = calculate_print_width(view, view->list_pos, col_width);
 
 	cdt.line_pos = view->list_pos;
-	cdt.line_hi_group = get_line_color(view, view->list_pos);
+	cdt.line_hi_group = get_line_color(view, get_current_entry(view));
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
