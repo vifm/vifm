@@ -153,10 +153,11 @@ TSTATIC_DEFS(
 	/* Packet set of parameters to pass as user data for processing columns. */
 	typedef struct
 	{
-		FileView *view;    /* View on which cell is being drawn. */
-		size_t line_pos;   /* File position in the file list (the view). */
-		int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
-		int is_current;    /* Whether this file is selected with the cursor. */
+		FileView *view;     /* View on which cell is being drawn. */
+		dir_entry_t *entry; /* Entry that is being displayed. */
+		size_t line_pos;    /* File position in the file list (the view). */
+		int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
+		int is_current;     /* Whether this file is selected with the cursor. */
 
 		size_t current_line;  /* Line of the cell within the view window. */
 		size_t column_offset; /* Offset in characters of the column. */
