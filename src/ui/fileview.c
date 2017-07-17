@@ -79,7 +79,7 @@ static int calculate_top_position(FileView *view, int top);
 static int get_line_color(const FileView *view, int pos);
 static size_t calculate_print_width(const FileView *view, int i,
 		size_t max_width);
-static void draw_cell(const FileView *view, const column_data_t *cdt,
+static void draw_cell(columns_t *columns, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
 static columns_t * get_view_columns(const FileView *view);
 static void consider_scroll_bind(FileView *view);
@@ -290,7 +290,7 @@ draw_dir_list_only(FileView *view)
 
 		const size_t print_width = calculate_print_width(view, x, col_width);
 
-		draw_cell(view, &cdt, col_width - coll_pad, print_width);
+		draw_cell(get_view_columns(view), &cdt, col_width - coll_pad, print_width);
 
 		++cell;
 		if(cell >= view->window_cells)
@@ -453,7 +453,7 @@ calculate_print_width(const FileView *view, int i, size_t max_width)
 
 /* Draws a full cell of the file list.  print_width <= col_width. */
 static void
-draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
+draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
 		size_t print_width)
 {
 	if(cfg.extra_padding)
@@ -461,7 +461,7 @@ draw_cell(const FileView *view, const column_data_t *cdt, size_t col_width,
 		column_line_print(cdt, FILL_COLUMN_ID, " ", -1, AT_LEFT, " ");
 	}
 
-	columns_format_line(get_view_columns(view), cdt, col_width);
+	columns_format_line(columns, cdt, col_width);
 
 	if(cfg.extra_padding)
 	{
@@ -778,7 +778,7 @@ clear_current_line_bar(FileView *view, int is_current)
 		}
 	}
 
-	draw_cell(view, &cdt, col_width, print_width);
+	draw_cell(get_view_columns(view), &cdt, col_width, print_width);
 }
 
 int
@@ -1653,7 +1653,7 @@ fview_position_updated(FileView *view)
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
-	draw_cell(view, &cdt, print_width, print_width);
+	draw_cell(get_view_columns(view), &cdt, print_width, print_width);
 
 	refresh_view_win(view);
 	update_stat_window(view, 0);
