@@ -63,6 +63,7 @@ typedef struct
 	size_t line_pos;    /* File position in the file list (the view). */
 	int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
 	int is_current;     /* Whether this file is selected with the cursor. */
+	int draw_numbers;   /* Whether to draw line numbers. */
 
 	size_t current_line;  /* Line of the cell within the view window. */
 	size_t column_offset; /* Offset in characters of the column. */
@@ -244,6 +245,7 @@ draw_dir_list_only(FileView *view)
 	size_t col_count;
 	int coll_pad;
 	int top = view->top_line;
+	int draw_numbers;
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -276,6 +278,7 @@ draw_dir_list_only(FileView *view)
 
 	cell = 0U;
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
+	draw_numbers = ui_view_displays_numbers(view);
 	for(x = top; x < view->list_rows; ++x)
 	{
 		size_t prefix_len = 0U;
@@ -285,6 +288,7 @@ draw_dir_list_only(FileView *view)
 			.line_pos = x,
 			.line_hi_group = get_line_color(view, &view->dir_entry[x]),
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
+			.draw_numbers = draw_numbers,
 			.current_line = cell/col_count,
 			.column_offset = (cell%col_count)*col_width,
 			.prefix_len = &prefix_len,
@@ -735,6 +739,7 @@ clear_current_line_bar(FileView *view, int is_current)
 		.entry = &view->dir_entry[old_pos],
 		.line_pos = old_pos,
 		.is_current = is_current,
+		.draw_numbers = ui_view_displays_numbers(view),
 		.prefix_len = &prefix_len,
 	};
 
@@ -918,7 +923,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 	FileView *view = cdt->view;
 	dir_entry_t *entry = cdt->entry;
 
-	const int numbers_visible = (offset == 0 && ui_view_displays_numbers(view));
+	const int numbers_visible = (offset == 0 && cdt->draw_numbers);
 	const int padding = (cfg.extra_padding != 0);
 
 	const int primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
@@ -941,7 +946,9 @@ column_line_print(const void *data, int column_id, const char buf[],
 		}
 	}
 
-	prefix_len = padding + view->real_num_width + extra_prefix;
+	prefix_len = padding
+	            + (cdt->draw_numbers ? view->real_num_width : 0)
+	            + extra_prefix;
 	final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(numbers_visible)
@@ -1583,6 +1590,7 @@ fview_position_updated(FileView *view)
 	column_data_t cdt = {
 		.view = view,
 		.is_current = 1,
+		.draw_numbers = ui_view_displays_numbers(view),
 		.prefix_len = &prefix_len,
 	};
 
