@@ -19,6 +19,8 @@
 
 	Make :siblnext and :siblprev commands respect dot and name filters.
 
+	Disable spell checking of vifm files in Vim except for comments.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 

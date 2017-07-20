@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: May 14, 2017
+" Last Change: July 18, 2017
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -372,9 +372,9 @@ syntax match vifmNotation '<\(esc\|cr\|space\|del\|nop\|\(s-\)\?tab\|home\|end\|
 syntax case match
 
 " Whole line comment
-syntax region vifmComment contained start='^\(\s\|:\)*"' end='$'
+syntax region vifmComment contained contains=@Spell start='^\(\s\|:\)*"' end='$'
 " Comment at the end of a line
-syntax match vifmInlineComment contained '\s"[^"]*$'
+syntax match vifmInlineComment contained contains=@Spell '\s"[^"]*$'
 " This prevents highlighting non-first line of multi-line command
 syntax match vifmNotComment contained '\s"[^"]*\(\(\n\s*\(\\\|"\)\)\@!\|$\)'
 
@@ -383,6 +383,9 @@ syntax match vifmEmpty /^\s*$/
 
 " :highlight clear
 syntax match vifmHiClear contained /\s*\<clear\>\s*/
+
+" Check spelling only in syntax elements marked with @Spell
+syntax spell notoplevel
 
 " Highlight
 highlight link vifmAutocmdCommand Statement
