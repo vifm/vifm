@@ -123,26 +123,26 @@ syntax keyword vifmOption contained aproposprg autochpos caseoptions cdpath cd
 		\ deleteprg dotdirs dotfiles dirsize fastrun fillchars fcs findprg
 		\ followlinks fusehome gdefault grepprg history hi hlsearch hls iec
 		\ ignorecase ic iooptions incsearch is laststatus lines locateprg ls lsview
-		\ mintimeoutlen number nu numberwidth nuw relativenumber rnu rulerformat ruf
-		\ runexec scrollbind scb scrolloff so sort sortgroups sortorder sortnumbers
-		\ shell sh shortmess shm sizefmt slowfs smartcase scs statusline stl
-		\ suggestoptions syscalls tabstop timefmt timeoutlen title tm trash trashdir
-		\ ts tuioptions to undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd
-		\ wildmenu wmnu wildstyle wordchars wrap wrapscan ws
+		\ millerview mintimeoutlen number nu numberwidth nuw relativenumber rnu
+		\ rulerformat ruf runexec scrollbind scb scrolloff so sort sortgroups
+		\ sortorder sortnumbers shell sh shortmess shm sizefmt slowfs smartcase scs
+		\ statusline stl suggestoptions syscalls tabstop timefmt timeoutlen title tm
+		\ trash trashdir ts tuioptions to undolevels ul vicmd viewcolumns vifminfo
+		\ vimhelp vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos nocf nochaselinks nodotfiles
 		\ nofastrun nofollowlinks nohlsearch nohls noiec noignorecase noic
-		\ noincsearch nois nolaststatus nols nolsview nonumber nonu norelativenumber
-		\ nornu noscrollbind noscb norunexec nosmartcase noscs nosortnumbers
-		\ nosyscalls notitle notrash novimhelp nowildmenu nowmnu nowrap nowrapscan
-		\ nows
+		\ noincsearch nois nolaststatus nols nolsview nomillerview nonumber nonu
+		\ norelativenumber nornu noscrollbind noscb norunexec nosmartcase noscs
+		\ nosortnumbers nosyscalls notitle notrash novimhelp nowildmenu nowmnu
+		\ nowrap nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invcf invchaselinks invdotfiles
 		\ invfastrun invfollowlinks invhlsearch invhls inviec invignorecase invic
-		\ invincsearch invis invlaststatus invls invlsview invnumber invnu
-		\ invrelativenumber invrnu invscrollbind invscb invrunexec invsmartcase
+		\ invincsearch invis invlaststatus invls invlsview invmillerview invnumber
+		\ invnu invrelativenumber invrnu invscrollbind invscb invrunexec invsmartcase
 		\ invscs invsortnumbers invsyscalls invtitle invtrash invvimhelp invwildmenu
 		\ invwmnu invwrap invwrapscan invws
 

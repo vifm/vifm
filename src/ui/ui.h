@@ -375,6 +375,9 @@ typedef struct
 	size_t column_count; /* Number of columns in the view, used for list view. */
 	size_t window_cells; /* Max number of files that can be displayed. */
 
+	/* Non-zero if miller columns view is enabled. */
+	int miller_view, miller_view_g;
+
 	/* Whether and how line numbers are displayed. */
 	NumberingType num_type, num_type_g;
 	/* Min number of characters reserved for number field. */

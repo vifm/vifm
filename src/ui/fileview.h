@@ -130,6 +130,9 @@ void update_scroll_bind_offset(void);
 /* Enables/disables ls-like style of the view. */
 void fview_set_lsview(FileView *view, int enabled);
 
+/* Enables/disables cascading columns style of the view. */
+void fview_set_millerview(FileView *view, int enabled);
+
 /* Evaluates number of columns in the view.  Returns the number. */
 size_t calculate_columns_count(FileView *view);
 

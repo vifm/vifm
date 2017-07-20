@@ -370,9 +370,11 @@ hi CmpMismatch
 " "*dotfiles" should be highlighted as 'option'
 " "caseoptions" should be highlighted as 'option'
 " "sizefmt" should be highlighted as 'option'
+" "*millerview" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
+set millerview nomillerview invmillerview
 
 " TODO
 

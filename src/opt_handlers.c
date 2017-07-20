@@ -90,6 +90,7 @@ static void init_timefmt(optval_t *val);
 static void init_trashdir(optval_t *val);
 static void init_dotfiles(optval_t *val);
 static void init_lsview(optval_t *val);
+static void init_millerview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_sizefmt(optval_t *val);
 static void init_iooptions(optval_t *val);
@@ -157,6 +158,8 @@ static void dotfiles_global(OPT_OP op, optval_t val);
 static void dotfiles_local(OPT_OP op, optval_t val);
 static void lsview_global(OPT_OP op, optval_t val);
 static void lsview_local(OPT_OP op, optval_t val);
+static void millerview_global(OPT_OP op, optval_t val);
+static void millerview_local(OPT_OP op, optval_t val);
 static void number_global(OPT_OP op, optval_t val);
 static void number_local(OPT_OP op, optval_t val);
 static void numberwidth_global(OPT_OP op, optval_t val);
@@ -737,6 +740,10 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &lsview_global, &lsview_local,
 	  { .init = &init_lsview },
 	},
+	{ "millerview", "", "display cascading lists",
+	  OPT_BOOL, 0, NULL, &millerview_global, &millerview_local,
+	  { .init = &init_millerview },
+	},
 	{ "number", "nu", "display line numbers",
 	  OPT_BOOL, 0, NULL, &number_global, &number_local,
 	  { .init = &init_number },
@@ -986,6 +993,13 @@ init_lsview(optval_t *val)
 	val->bool_val = curr_view->ls_view_g;
 }
 
+/* Initializes 'millerview' option from global value. */
+static void
+init_millerview(optval_t *val)
+{
+	val->bool_val = curr_view->miller_view_g;
+}
+
 /* Initializes 'shortmess' from current configuration state. */
 static void
 init_shortmess(optval_t *val)
@@ -1216,6 +1230,11 @@ load_view_options(FileView *view)
 	val.bool_val = view->ls_view_g;
 	set_option("lsview", val, OPT_GLOBAL);
 
+	val.bool_val = view->miller_view;
+	set_option("millerview", val, OPT_LOCAL);
+	val.bool_val = view->miller_view_g;
+	set_option("millerview", val, OPT_GLOBAL);
+
 	val.bool_val = view->num_type & NT_SEQ;
 	set_option("number", val, OPT_LOCAL);
 	val.bool_val = view->num_type_g & NT_SEQ;
@@ -1261,6 +1280,9 @@ clone_local_options(const FileView *from, FileView *to, int defer_slow)
 
 	to->ls_view_g = from->ls_view_g;
 	fview_set_lsview(to, from->ls_view);
+
+	to->miller_view_g = from->miller_view_g;
+	fview_set_millerview(to, from->miller_view);
 }
 
 void
@@ -2196,6 +2218,20 @@ static void
 lsview_local(OPT_OP op, optval_t val)
 {
 	fview_set_lsview(curr_view, val.bool_val);
+}
+
+/* Handles switch that controls cascading lists view in global option. */
+static void
+millerview_global(OPT_OP op, optval_t val)
+{
+	curr_view->miller_view_g = val.bool_val;
+}
+
+/* Handles switch that controls cascading lists view in local option. */
+static void
+millerview_local(OPT_OP op, optval_t val)
+{
+	fview_set_millerview(curr_view, val.bool_val);
 }
 
 /* Handles file numbers displaying toggle in global option. */

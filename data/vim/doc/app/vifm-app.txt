@@ -3106,6 +3106,15 @@ When this option is set, directory view will be displayed in multiple
 columns with file names similar to output of `ls -x` command.  See also
 |vifm-ls-view|.
 
+                                               *vifm-'millerview'*
+millerview
+type: boolean
+default: false
+scope: local
+
+When this option is set, directory view will be displayed in multiple
+cascading columns.
+
                                                *vifm-'mintimeoutlen'*
 mintimeoutlen
 type: integer

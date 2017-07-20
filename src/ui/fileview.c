@@ -205,6 +205,8 @@ fview_view_reset(FileView *view)
 	view->max_filename_width = 0;;
 	view->column_count = 1;
 
+	view->miller_view_g = view->miller_view = 0;
+
 	view->num_type_g = view->num_type = NT_NONE;
 	view->num_width_g = view->num_width = 4;
 	view->real_num_width = 0;
@@ -1489,6 +1491,16 @@ fview_set_lsview(FileView *view, int enabled)
 	if(view->ls_view != enabled)
 	{
 		view->ls_view = enabled;
+		ui_view_schedule_redraw(view);
+	}
+}
+
+void
+fview_set_millerview(FileView *view, int enabled)
+{
+	if(view->miller_view != enabled)
+	{
+		view->miller_view = enabled;
 		ui_view_schedule_redraw(view);
 	}
 }
