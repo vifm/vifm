@@ -979,6 +979,7 @@ init_dotfiles(optval_t *val)
 	val->bool_val = !curr_view->hide_dot_g;
 }
 
+/* Initializes 'lsview' option from global value. */
 static void
 init_lsview(optval_t *val)
 {
