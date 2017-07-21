@@ -2850,7 +2850,29 @@ go_to_sibling_dir(FileView *view, int next, int wrap)
 static entries_t
 list_sibling_dirs(FileView *view)
 {
-	entries_t parent_dirs = {};
+	entries_t parent_dirs = flist_list_siblings(view, 1);
+	if(parent_dirs.nentries < 0)
+	{
+		return parent_dirs;
+	}
+
+	if(entry_from_path(view, parent_dirs.entries, parent_dirs.nentries,
+				flist_get_dir(view)) == NULL)
+	{
+		/* If we couldn't find our current directory in the list (because it got
+		 * filtered-out), add it to be able to determine where it would go if it
+		 * were visible. */
+		entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
+				flist_get_dir(view));
+	}
+
+	return parent_dirs;
+}
+
+entries_t
+flist_list_siblings(FileView *view, int only_dirs)
+{
+	entries_t siblings = {};
 	char *path;
 	int len, i;
 	char **list;
@@ -2864,14 +2886,15 @@ list_sibling_dirs(FileView *view)
 	if(len < 0)
 	{
 		free(path);
-		parent_dirs.nentries = -1;
-		return parent_dirs;
+		siblings.nentries = -1;
+		return siblings;
 	}
 
 	for(i = 0; i < len; ++i)
 	{
 		char *full_path;
 		dir_entry_t *entry;
+		int is_dir;
 
 		if(view->hide_dot && list[i][0] == '.')
 		{
@@ -2879,14 +2902,15 @@ list_sibling_dirs(FileView *view)
 		}
 
 		full_path = format_str("%s/%s", path, list[i]);
-		entry = entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
+		entry = entry_list_add(view, &siblings.entries, &siblings.nentries,
 				full_path);
 
-		if(!fentry_is_dir(entry) ||
-				!filters_file_is_visible(view, path, list[i], 1, 0))
+		is_dir = fentry_is_dir(entry);
+		if((only_dirs && !is_dir) ||
+				!filters_file_is_visible(view, path, list[i], is_dir, 0))
 		{
 			fentry_free(view, entry);
-			--parent_dirs.nentries;
+			--siblings.nentries;
 		}
 
 		free(full_path);
@@ -2894,17 +2918,7 @@ list_sibling_dirs(FileView *view)
 	free(path);
 	free_string_array(list, len);
 
-	if(entry_from_path(view, parent_dirs.entries, parent_dirs.nentries,
-				flist_get_dir(view)) == NULL)
-	{
-		/* If we couldn't find our current directory in the list (because it got
-		 * filtered-out), add it to be able to determine where it would go if it
-		 * were visible. */
-		entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
-				flist_get_dir(view));
-	}
-
-	return parent_dirs;
+	return siblings;
 }
 
 /* Picks next or previous sibling from the list with optional wrapping.
