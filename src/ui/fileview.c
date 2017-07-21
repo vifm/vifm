@@ -43,6 +43,7 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
+#include "../flist_hist.h"
 #include "../flist_pos.h"
 #include "../opt_handlers.h"
 #include "../sort.h"
@@ -74,6 +75,9 @@ typedef struct
 }
 column_data_t;
 
+static void draw_left_column(FileView *view);
+static void print_column(FileView *view, entries_t entries, const char path[],
+		int width, int offset);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
 static int count_digits(int num);
@@ -243,6 +247,7 @@ void
 draw_dir_list_only(FileView *view)
 {
 	int x;
+	int lcol_size;
 	size_t cell;
 	size_t col_width;
 	size_t col_count;
@@ -279,9 +284,12 @@ draw_dir_list_only(FileView *view)
 
 	ui_view_erase(view);
 
+	draw_left_column(view);
+
 	cell = 0U;
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	draw_numbers = ui_view_displays_numbers(view);
+	lcol_size = ui_view_left_reserved(view);
 	for(x = top; x < view->list_rows; ++x)
 	{
 		size_t prefix_len = 0U;
@@ -293,7 +301,7 @@ draw_dir_list_only(FileView *view)
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.draw_numbers = draw_numbers,
 			.current_line = cell/col_count,
-			.column_offset = (cell%col_count)*col_width,
+			.column_offset = lcol_size + (cell%col_count)*col_width,
 			.prefix_len = &prefix_len,
 		};
 
@@ -317,6 +325,65 @@ draw_dir_list_only(FileView *view)
 	}
 
 	ui_view_win_changed(view);
+}
+
+/* Draws a column to the left of the main part of the view. */
+static void
+draw_left_column(FileView *view)
+{
+	entries_t siblings;
+	char *path;
+
+	const int lcol_width = ui_view_left_reserved(view)
+	                     - (cfg.extra_padding ? 1 : 0) - 1;
+	if(lcol_width <= 0)
+	{
+		return;
+	}
+
+	siblings = flist_list_siblings(view, 0);
+	if(siblings.nentries < 0)
+	{
+		return;
+	}
+
+	path = strdup(flist_get_dir(view));
+	remove_last_path_component(path);
+
+	print_column(view, siblings, path, lcol_width, 0);
+
+	free(path);
+	free_dir_entries(view, &siblings.entries, &siblings.nentries);
+}
+
+/* Prints column full of entry names. */
+static void
+print_column(FileView *view, entries_t entries, const char path[], int width,
+		int offset)
+{
+	int top, pos;
+	columns_t *columns = get_name_column();
+	int i;
+
+	sort_entries(view, entries);
+	pos = flist_hist_find(view, entries, path, &top);
+
+	for(i = top; i < entries.nentries && i - top <= view->window_rows; ++i)
+	{
+		size_t prefix_len = 0U;
+		const column_data_t cdt = {
+			.view = view,
+			.entry = &entries.entries[i],
+			.line_pos = i,
+			.line_hi_group = get_line_color(view, &entries.entries[i]),
+			.is_current = (i == pos),
+			.current_line = i - top,
+			.column_offset = offset,
+			.prefix_len = &prefix_len,
+		};
+
+		draw_cell(columns, &cdt, width, width - 1);
+	}
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
@@ -660,7 +727,8 @@ put_inactive_mark(FileView *view)
 			get_line_color(view, get_current_entry(view)));
 
 	line = view->curr_line/col_count;
-	column = view->real_num_width + (view->curr_line%col_count)*col_width;
+	column = view->real_num_width + ui_view_left_reserved(view)
+	       + (view->curr_line%col_count)*col_width;
 	checked_wmove(view->win, line, column);
 
 	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
@@ -781,7 +849,8 @@ clear_current_line_bar(FileView *view, int is_current)
 	calculate_table_conf(view, &col_count, &col_width);
 
 	cdt.current_line = old_cursor/col_count;
-	cdt.column_offset = (old_cursor%col_count)*col_width;
+	cdt.column_offset = ui_view_left_reserved(view)
+	                  + (old_cursor%col_count)*col_width;
 
 	print_width = calculate_print_width(view, old_pos, col_width);
 
@@ -1667,7 +1736,8 @@ fview_position_updated(FileView *view)
 	cdt.line_pos = view->list_pos;
 	cdt.line_hi_group = get_line_color(view, cdt.entry);
 	cdt.current_line = view->curr_line/col_count;
-	cdt.column_offset = (view->curr_line%col_count)*col_width;
+	cdt.column_offset = ui_view_left_reserved(view)
+	                  + (view->curr_line%col_count)*col_width;
 
 	draw_cell(get_view_columns(view), &cdt, print_width, print_width);
 

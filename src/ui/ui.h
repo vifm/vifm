@@ -597,6 +597,10 @@ FileType ui_view_entry_target_type(const dir_entry_t *entry);
  * width. */
 int ui_view_available_width(const FileView *view);
 
+/* Retrieves width reserved for something to the left of file list.  Returns the
+ * width. */
+int ui_view_left_reserved(const FileView *view);
+
 /* Retrieves column number at which quickview content should be displayed.
  * Returns the number. */
 int ui_qv_left(const FileView *view);

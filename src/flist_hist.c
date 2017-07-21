@@ -271,5 +271,58 @@ flist_hist_lookup(FileView *view, const FileView *source)
 	(void)consider_scroll_offset(view);
 }
 
+int
+flist_hist_find(const FileView *view, entries_t entries, const char dir[],
+		int *top)
+{
+	int pos;
+	history_t *const history = view->history;
+	int i = view->history_pos;
+
+	if(cfg.history_len <= 0)
+	{
+		*top = 0;
+		return 0;
+	}
+
+	if(stroscmp(history[i].dir, dir) == 0 && history[i].file[0] == '\0')
+	{
+		--i;
+	}
+
+	for(; i >= 0 && history[i].dir[0] != '\0'; --i)
+	{
+		if(stroscmp(history[i].dir, dir) == 0)
+		{
+			break;
+		}
+	}
+
+	pos = 0;
+	*top = 0;
+	if(i >= 0 && history[i].dir[0] != '\0')
+	{
+		for(pos = 0; pos < entries.nentries; ++pos)
+		{
+			if(stroscmp(entries.entries[pos].name, history[i].file) == 0)
+			{
+				break;
+			}
+		}
+		if(pos >= entries.nentries)
+		{
+			pos = 0;
+		}
+
+		*top = pos - MIN(entries.nentries, history[i].rel_pos);
+		if(*top < 0)
+		{
+			*top = 0;
+		}
+	}
+
+	return pos;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

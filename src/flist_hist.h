@@ -50,6 +50,12 @@ void flist_hist_clear(FileView *view);
 /* Looks up history in the source to update cursor position in the view. */
 void flist_hist_lookup(FileView *view, const FileView *source);
 
+/* Finds top and item positions for specified directory path.  Uses history from
+ * view and elements of entries.  Sets *top and returns position.  Both values
+ * are defaulted to zero for the case when search fails. */
+int flist_hist_find(const FileView *view, entries_t entries, const char dir[],
+		int *top);
+
 #endif /* VIFM__FLIST_HIST_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
