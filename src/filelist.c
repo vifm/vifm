@@ -2828,7 +2828,6 @@ go_to_sibling_dir(FileView *view, int next, int wrap)
 		return 0;
 	}
 
-	/* Sort list of entries. */
 	sort_entries(view, parent_dirs);
 
 	entry = pick_sibling(view, parent_dirs, next, wrap, &save_msg);

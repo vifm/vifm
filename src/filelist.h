@@ -285,8 +285,8 @@ int flist_load_tree(FileView *view, const char path[]);
 int flist_clone_tree(FileView *to, const FileView *from);
 
 TSTATIC_DEFS(
-	TSTATIC void pick_cd_path(FileView *view, const char base_dir[],
-			const char path[], int *updir, char buf[], size_t buf_size);
+	void pick_cd_path(FileView *view, const char base_dir[], const char path[],
+		int *updir, char buf[], size_t buf_size);
 )
 
 #endif /* VIFM__FILELIST_H__ */
