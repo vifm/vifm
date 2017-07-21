@@ -84,6 +84,7 @@ static size_t calculate_print_width(const FileView *view, int i,
 static void draw_cell(columns_t *columns, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
 static columns_t * get_view_columns(const FileView *view);
+static columns_t * get_name_column(void);
 static void consider_scroll_bind(FileView *view);
 static void put_inactive_mark(FileView *view);
 static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
@@ -493,16 +494,10 @@ get_view_columns(const FileView *view)
 	};
 
 	static columns_t *comparison_columns;
-	static columns_t *ls_columns;
 
 	if(!ui_view_displays_columns(view))
 	{
-		if(ls_columns == NULL)
-		{
-			ls_columns = columns_create();
-			columns_add_column(ls_columns, name_column);
-		}
-		return ls_columns;
+		return get_name_column();
 	}
 
 	if(cv_compare(view->custom.type))
@@ -517,6 +512,26 @@ get_view_columns(const FileView *view)
 	}
 
 	return view->columns;
+}
+
+/* Retrieves columns view handle consisting of a single name column.  Returns
+ * the handle. */
+static columns_t *
+get_name_column(void)
+{
+	static const column_info_t name_column = {
+		.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+	};
+	static columns_t *columns;
+
+	if(columns == NULL)
+	{
+		columns = columns_create();
+		columns_add_column(columns, name_column);
+	}
+
+	return columns;
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
