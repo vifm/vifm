@@ -3,7 +3,7 @@
 #include <sys/stat.h> /* chmod() */
 
 #include <stdint.h> /* uint64_t */
-#include <stdio.h> /* remove() */
+#include <stdio.h> /* remove() rename() */
 #include <string.h> /* strcmp() */
 
 #include "../../src/io/iop.h"
@@ -15,7 +15,7 @@
 #include "utils.h"
 
 static int not_windows(void);
-static int windows(void);
+static int can_rename_changing_case(void);
 
 TEST(file_is_moved)
 {
@@ -336,8 +336,7 @@ TEST(symlink_is_symlink_after_move, IF(not_windows))
 	delete_file(SANDBOX_PATH "/moved-sym-link");
 }
 
-/* Case insensitive renames are easier to check on Windows. */
-TEST(case_insensitive_rename, IF(windows))
+TEST(case_change_on_rename, IF(can_rename_changing_case))
 {
 	create_empty_file(SANDBOX_PATH "/a-file");
 
@@ -359,10 +358,20 @@ not_windows(void)
 }
 
 static int
-windows(void)
+can_rename_changing_case(void)
 {
-	return (env_get("_") == NULL || strcmp(env_get("_"), "/usr/bin/wine") != 0)
-	    && get_env_type() == ET_WIN;
+	int ok;
+	create_empty_file(SANDBOX_PATH "/file");
+	ok = rename(SANDBOX_PATH "/file", SANDBOX_PATH "/FiLe") == 0;
+	if(ok)
+	{
+		delete_file(SANDBOX_PATH "/FiLe");
+	}
+	else
+	{
+		delete_file(SANDBOX_PATH "/file");
+	}
+	return ok;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
