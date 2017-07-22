@@ -4,7 +4,7 @@
 
 ### **vifm** - vi[m] like file manager, _v0.9_, _2001 – 2017_
 
-_This file last updated on 20 July, 2017_
+_This file last updated on 22 July, 2017_
 
 ## Brief Description ##
 
@@ -51,6 +51,12 @@ Collection of color schemes is maintained [here][colors].
 
 ![Screenshot](data/graphics/screenshot.png)
 
+## Getting Started ##
+
+A good idea for quick start might be skimming over [cheatsheet][cheatsheet] for
+the main mode (that is Normal mode) and reading some sections on basic usage on
+[the wiki][wiki-manual].
+
 ## License ##
 
 GNU General Public License, version 2 or later.
@@ -65,6 +71,8 @@ GNU General Public License, version 2 or later.
 [bugs-sourceforge]: https://sourceforge.net/p/vifm/_list/tickets
 [repo-github]: https://github.com/vifm/vifm
 [repo-sourceforge]: https://sourceforge.net/projects/vifm/
+[cheatsheet]: https://vifm.info/cheatsheets.shtml
+[wiki-manual]: https://wiki.vifm.info/index.php?title=Manual
 
 [TT]: https://travis-ci.org/vifm/vifm.svg?branch=master
 [T]: https://travis-ci.org/vifm/vifm

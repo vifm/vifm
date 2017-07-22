@@ -367,13 +367,13 @@ typedef struct
 	/* Format string that specifies view columns. */
 	char *view_columns, *view_columns_g;
 
-	/* ls-like view related fields */
-	int ls_view, ls_view_g; /* Non-zero if ls-like view is enabled. */
+	/* ls-like view related fields. */
+	int ls_view, ls_view_g;    /* Non-zero if ls-like view is enabled. */
 	size_t max_filename_width; /* Maximum filename width (length in character
 	                            * positions on the screen) among all entries of
 	                            * the file list.  Zero if not calculated. */
-	size_t column_count; /* number of columns in the view, used for list view */
-	size_t window_cells; /* max number of files that can be displayed */
+	size_t column_count; /* Number of columns in the view, used for list view. */
+	size_t window_cells; /* Max number of files that can be displayed. */
 
 	/* Whether and how line numbers are displayed. */
 	NumberingType num_type, num_type_g;
@@ -573,18 +573,18 @@ char * ui_view_sort_list_get(const FileView *view, const char sort[]);
 
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
-int ui_view_displays_numbers(const FileView *const view);
+int ui_view_displays_numbers(const FileView *view);
 
 /* Checks whether view is visible on the screen.  Returns non-zero if so,
  * otherwise zero is returned. */
-int ui_view_is_visible(const FileView *const view);
+int ui_view_is_visible(const FileView *view);
 
 /* Clears directory history of the view. */
-void ui_view_clear_history(FileView *const view);
+void ui_view_clear_history(FileView *view);
 
 /* Checks whether view displays column view.  Returns non-zero if so, otherwise
  * zero is returned. */
-int ui_view_displays_columns(const FileView *const view);
+int ui_view_displays_columns(const FileView *view);
 
 /* Gets real type of file view entry.  Returns type of entry, resolving symbolic
  * link if needed. */
@@ -592,7 +592,7 @@ FileType ui_view_entry_target_type(const dir_entry_t *entry);
 
 /* Gets width of part of the view that is available for file list.  Returns the
  * width. */
-int ui_view_available_width(const FileView *const view);
+int ui_view_available_width(const FileView *view);
 
 /* Retrieves column number at which quickview content should be displayed.
  * Returns the number. */

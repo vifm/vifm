@@ -149,28 +149,25 @@ void fview_position_updated(FileView *view);
  * sorting changed. */
 void fview_sorting_updated(FileView *view);
 
-#ifdef TEST
-
-/* Packet set of parameters to pass as user data for processing columns. */
-typedef struct
-{
-	FileView *view;    /* View on which cell is being drawn. */
-	size_t line_pos;   /* File position in the file list (the view). */
-	int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
-	int is_current;    /* Whether this file is selected with the cursor. */
-
-	size_t current_line;  /* Line of the cell within the view window. */
-	size_t column_offset; /* Offset in characters of the column. */
-
-	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
-	                     * A pointer to allow changing value in const struct.
-	                     * Should be zero first time, then auto reset. */
-}
-column_data_t;
-
-#endif
-
 TSTATIC_DEFS(
+	/* Packet set of parameters to pass as user data for processing columns. */
+	typedef struct
+	{
+		FileView *view;    /* View on which cell is being drawn. */
+		size_t line_pos;   /* File position in the file list (the view). */
+		int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
+		int is_current;    /* Whether this file is selected with the cursor. */
+
+		size_t current_line;  /* Line of the cell within the view window. */
+		size_t column_offset; /* Offset in characters of the column. */
+
+		size_t *prefix_len; /* Data prefix length (should be drawn in neutral
+		                       color).  A pointer to allow changing value in const
+		                       struct.  Should be zero first time, then auto
+		                       reset. */
+	}
+	column_data_t;
+
 	void format_name(int id, const void *data, size_t buf_len, char buf[]);
 )
 

@@ -1686,19 +1686,19 @@ ui_view_sort_list_get(const FileView *view, const char sort[])
 }
 
 int
-ui_view_displays_numbers(const FileView *const view)
+ui_view_displays_numbers(const FileView *view)
 {
 	return view->num_type != NT_NONE && ui_view_displays_columns(view);
 }
 
 int
-ui_view_is_visible(const FileView *const view)
+ui_view_is_visible(const FileView *view)
 {
 	return curr_stats.number_of_windows == 2 || curr_view == view;
 }
 
 void
-ui_view_clear_history(FileView *const view)
+ui_view_clear_history(FileView *view)
 {
 	cfg_free_history_items(view->history, view->history_num);
 	view->history_num = 0;
@@ -1706,7 +1706,7 @@ ui_view_clear_history(FileView *const view)
 }
 
 int
-ui_view_displays_columns(const FileView *const view)
+ui_view_displays_columns(const FileView *view)
 {
 	return !view->ls_view
 	    || (flist_custom_active(view) &&
@@ -1730,7 +1730,7 @@ ui_view_entry_target_type(const dir_entry_t *entry)
 }
 
 int
-ui_view_available_width(const FileView *const view)
+ui_view_available_width(const FileView *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
 	return ((int)view->window_width + 1) + correction;

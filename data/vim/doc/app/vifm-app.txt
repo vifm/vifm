@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Jun 24
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Jul 20
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3096,6 +3096,16 @@ implicitly added after a space to the value of this option.
 Optional %u or %U macro could be used (if both specified %U is chosen) to
 force redirection to custom or unsorted custom view respectively.
 
+                                               *vifm-'lsview'*
+lsview
+type: boolean
+default: false
+scope: local
+
+When this option is set, directory view will be displayed in multiple
+columns with file names similar to output of `ls -x` command.  See also
+|vifm-ls-view|.
+
                                                *vifm-'mintimeoutlen'*
 mintimeoutlen
 type: integer
@@ -3106,16 +3116,6 @@ subsequent input polls, which affects various asynchronous
 operations (detecting changes made by external applications, monitoring
 background jobs, redrawing UI).  There are no strict guarantees, however the
 higher this value is, the less is CPU load in idle mode.
-
-                                               *vifm-'lsview'*
-lsview
-type: boolean
-default: false
-scope: local
-
-When this option is set, directory view will be displayed in multiple
-columns with file names similar to output of `ls -x` command.  See also
-|vifm-ls-view|.
 
                                                *vifm-'number'* *vifm-'nu'*
 number nu

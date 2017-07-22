@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 24, 2017" "vifm 0.9"
+.TH VIFM 1 "July 20, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3714,17 +3714,6 @@ the value of this option.
 Optional %u or %U macro could be used (if both specified %U is chosen) to force
 redirection to custom or unsorted custom view respectively.
 .TP
-.BI 'mintimeoutlen'
-type: integer
-.br
-default: 150
-.br
-The fracture of 'timeoutlen' in milliseconds that is waited between subsequent
-input polls, which affects various asynchronous operations (detecting changes
-made by external applications, monitoring background jobs, redrawing UI).  There
-are no strict guarantees, however the higher this value is, the less is CPU load
-in idle mode.
-.TP
 .BI 'lsview'
 type: boolean
 .br
@@ -3735,6 +3724,17 @@ scope: local
 When this option is set, directory view will be displayed in multiple columns
 with file names similar to output of `ls \-x` command.  See "ls-like view"
 section below for format description.
+.TP
+.BI 'mintimeoutlen'
+type: integer
+.br
+default: 150
+.br
+The fracture of 'timeoutlen' in milliseconds that is waited between subsequent
+input polls, which affects various asynchronous operations (detecting changes
+made by external applications, monitoring background jobs, redrawing UI).  There
+are no strict guarantees, however the higher this value is, the less is CPU load
+in idle mode.
 .TP
 .BI "'number' 'nu'"
 type: boolean
