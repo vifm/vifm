@@ -244,8 +244,10 @@ there for instructions.
     |-- BUGS - some of known issues
     |-- ChangeLog - list of changes
     |-- FAQ - some common questions
+    |-- HACKING.md - this file
     |-- INSTALL - building instructions
     |-- NEWS - like the ChangeLog, but in more human-readable format
-    |-- README - this file
+    |-- README - readme used for distribution
+    |-- README.md - readme to be displayed by code hosting services
     |-- THANKS - thanks to people that help to improve vifm
     `-- TODO - what still needs to be implemented
