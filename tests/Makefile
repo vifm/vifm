@@ -271,8 +271,16 @@ $(BUILD)$1/filelist: $1/. | $(BUILD)$1
 		echo -n '$$($1.src)' > $$@; \
 	fi
 
-$(BUILD)$1 $(SANDBOX_PATH)/$1:
+$(BUILD)$1:
 	$(AT)mkdir -p $$@
+
+ifeq ($(SANDBOX_PATH),sandbox)
+$(SANDBOX_PATH)/$1:
+	$(AT)mkdir -p $(B)$$@
+else
+$(SANDBOX_PATH)/$1:
+	$(AT)mkdir -p $$@
+endif
 
 $1: $$($1.bin)
 ifeq ($B,)
