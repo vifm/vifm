@@ -24,6 +24,10 @@
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 
+	Fixed compilation of modes/view.c when build is configured with
+	`--disable-extended-keys`.  Thanks to Bearcat M. Şándor (a.k.a.
+	bearcatsandor).
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
