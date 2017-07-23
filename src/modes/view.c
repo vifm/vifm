@@ -291,7 +291,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{{K(KEY_END)},               {{&cmd_G}, .descr = "scroll to the end"}},
 	{{K(KEY_BTAB)},              {{&cmd_q}, .descr = "leave view mode"}},
 #else
-	{WK_ESCAPE L"[Z",            {{&cmd_q}, .descr = "leave view mode"}},
+	{WK_ESC L"[Z",               {{&cmd_q}, .descr = "leave view mode"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
