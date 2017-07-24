@@ -100,8 +100,8 @@ static void draw_line_number(const column_data_t *cdt, int column);
 static void highlight_search(FileView *view, dir_entry_t *entry,
 		const char full_column[], char buf[], size_t buf_len, AlignType align,
 		int line, int col, int line_attrs);
-static int prepare_col_color(const FileView *view, dir_entry_t *entry,
-		int primary, int line_color, int current);
+static int prepare_col_color(const FileView *view, int primary,
+		const column_data_t *cdt);
 static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
 		int type_hi, col_attr_t *col);
 static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
@@ -999,8 +999,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 	const int padding = (cfg.extra_padding != 0);
 
 	const int primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
-	const int line_attrs = prepare_col_color(view, entry, primary,
-			cdt->line_hi_group, cdt->is_current);
+	const int line_attrs = prepare_col_color(view, primary, cdt);
 
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
 
@@ -1038,8 +1037,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 		full_column += extra_prefix;
 
 		checked_wmove(view->win, cdt->current_line, final_offset - extra_prefix);
-		wprinta(view->win, print_buf,
-				prepare_col_color(view, entry, 0, cdt->line_hi_group, cdt->is_current));
+		wprinta(view->win, print_buf, prepare_col_color(view, 0, cdt));
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
@@ -1076,7 +1074,6 @@ draw_line_number(const column_data_t *cdt, int column)
 {
 	FileView *const view = cdt->view;
 	const size_t i = cdt->line_pos;
-	dir_entry_t *const entry = cdt->entry;
 
 	const int mixed = (cdt->is_current && view->num_type == NT_MIX);
 	const char *const format = mixed ? "%-*d " : "%*d ";
@@ -1088,8 +1085,7 @@ draw_line_number(const column_data_t *cdt, int column)
 	snprintf(num_str, sizeof(num_str), format, view->real_num_width - 1, num);
 
 	checked_wmove(view->win, cdt->current_line, column);
-	wprinta(view->win, num_str,
-			prepare_col_color(view, entry, 0, cdt->line_hi_group, cdt->is_current));
+	wprinta(view->win, num_str, prepare_col_color(view, 0, cdt));
 }
 
 /* Highlights search match for the entry (assumed to be a search hit).  Modifies
@@ -1180,8 +1176,7 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 /* Calculate color attributes for a view column.  Returns attributes that can be
  * used for drawing on a window. */
 static int
-prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
-		int line_color, int current)
+prepare_col_color(const FileView *view, int primary, const column_data_t *cdt)
 {
 	FileView *const other = (view == &lwin) ? &rwin : &lwin;
 	const col_scheme_t *const cs = ui_view_get_cs(view);
@@ -1189,25 +1184,25 @@ prepare_col_color(const FileView *view, dir_entry_t *entry, int primary,
 
 	/* File-specific highlight affects only primary field for non-current lines
 	 * and whole line for the current line. */
-	if(primary || current)
+	if(primary || cdt->is_current)
 	{
-		mix_in_file_hi(view, entry, line_color, &col);
+		mix_in_file_hi(view, cdt->entry, cdt->line_hi_group, &col);
 	}
 
 	/* If two files on the same line in side-by-side comparison have different
 	 * ids, that's a mismatch. */
 	if(view->custom.type == CV_DIFF &&
-			other->dir_entry[entry_to_pos(view, entry)].id != entry->id)
+			other->dir_entry[entry_to_pos(view, cdt->entry)].id != cdt->entry->id)
 	{
 		cs_mix_colors(&col, &cs->color[MISMATCH_COLOR]);
 	}
 
-	if(entry->selected)
+	if(cdt->entry->selected)
 	{
 		cs_mix_colors(&col, &cs->color[SELECTED_COLOR]);
 	}
 
-	if(current)
+	if(cdt->is_current)
 	{
 		if(view == curr_view)
 		{
