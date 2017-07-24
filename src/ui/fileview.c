@@ -93,7 +93,7 @@ static void consider_scroll_bind(FileView *view);
 static void put_inactive_mark(FileView *view);
 static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
-static void clear_current_line_bar(FileView *view, int is_current);
+static void redraw_cell(FileView *view, int top, int cursor, int is_current);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
@@ -682,7 +682,7 @@ erase_current_line_bar(FileView *view)
 	}
 	else
 	{
-		clear_current_line_bar(view, 0);
+		redraw_cell(view, view->top_line, view->curr_line, 0);
 	}
 }
 
@@ -714,7 +714,7 @@ put_inactive_mark(FileView *view)
 	int line_attrs;
 	int line, column;
 
-	clear_current_line_bar(view, 1);
+	redraw_cell(view, view->top_line, view->curr_line, 1);
 
 	if(!cfg.extra_padding)
 	{
@@ -806,14 +806,14 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
 }
 
-/* Redraws directory list without any extra actions that are performed in
- * erase_current_line_bar().  is_current defines whether element under the
- * cursor is being erased. */
+/* Redraws single directory list entry.  is_current defines whether element
+ * is under the cursor and should be highlighted as such.  The function depends
+ * on passed in positions instead of view state to be independent from changes
+ * in the view. */
 static void
-clear_current_line_bar(FileView *view, int is_current)
+redraw_cell(FileView *view, int top, int cursor, int is_current)
 {
-	const int old_cursor = view->curr_line;
-	const int old_pos = view->top_line + old_cursor;
+	const int pos = top + cursor;
 	size_t col_width;
 	size_t col_count;
 	size_t print_width;
@@ -821,8 +821,8 @@ clear_current_line_bar(FileView *view, int is_current)
 	size_t prefix_len = 0U;
 	column_data_t cdt = {
 		.view = view,
-		.entry = &view->dir_entry[old_pos],
-		.line_pos = old_pos,
+		.entry = &view->dir_entry[pos],
+		.line_pos = pos,
 		.is_current = is_current,
 		.draw_numbers = ui_view_displays_numbers(view),
 		.prefix_len = &prefix_len,
@@ -833,26 +833,26 @@ clear_current_line_bar(FileView *view, int is_current)
 		return;
 	}
 
-	if(old_cursor < 0)
+	if(cursor < 0)
 	{
 		return;
 	}
 
-	if(old_pos < 0 || old_pos >= view->list_rows)
+	if(pos < 0 || pos >= view->list_rows)
 	{
 		/* The entire list is going to be redrawn so just return. */
 		return;
 	}
 
-	cdt.line_hi_group = get_line_color(view, &view->dir_entry[old_pos]),
+	cdt.line_hi_group = get_line_color(view, &view->dir_entry[pos]),
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	cdt.current_line = old_cursor/col_count;
+	cdt.current_line = cursor/col_count;
 	cdt.column_offset = ui_view_left_reserved(view)
-	                  + (old_cursor%col_count)*col_width;
+	                  + (cursor%col_count)*col_width;
 
-	print_width = calculate_print_width(view, old_pos, col_width);
+	print_width = calculate_print_width(view, pos, col_width);
 
 	if(!ui_view_displays_columns(view))
 	{
@@ -1678,6 +1678,9 @@ get_filetype_decoration_width(const dir_entry_t *entry)
 void
 fview_position_updated(FileView *view)
 {
+	const int old_top = view->top_line;
+	const int old_curr = view->curr_line;
+
 	int redraw = 0;
 	size_t col_width;
 	size_t col_count;
@@ -1702,7 +1705,6 @@ fview_position_updated(FileView *view)
 
 	if(view == other_view)
 	{
-		clear_current_line_bar(view, 0);
 		if(move_curr_line(view))
 		{
 			draw_dir_list(view);
@@ -1714,8 +1716,6 @@ fview_position_updated(FileView *view)
 		return;
 	}
 
-	erase_current_line_bar(view);
-
 	redraw = move_curr_line(view);
 
 	if(curr_stats.load_stage < 2)
@@ -1726,7 +1726,10 @@ fview_position_updated(FileView *view)
 	if(redraw)
 	{
 		draw_dir_list(view);
-		clear_current_line_bar(view, 0);
+	}
+	else
+	{
+		redraw_cell(view, old_top, old_curr, 0);
 	}
 
 	calculate_table_conf(view, &col_count, &col_width);
