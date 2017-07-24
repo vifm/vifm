@@ -58,8 +58,8 @@ void redraw_view_imm(FileView *view);
  * cursor) */
 void redraw_current_view(void);
 
-/* Restores normal appearance of item under the cursor. */
-void erase_current_line_bar(FileView *view);
+/* Adds inactive cursor mark to the view. */
+void put_inactive_mark(FileView *view);
 
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(FileView *view);

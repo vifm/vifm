@@ -724,7 +724,7 @@ change_window(void)
 
 	if(window_shows_dirlist(other_view))
 	{
-		erase_current_line_bar(other_view);
+		put_inactive_mark(other_view);
 	}
 
 	if(curr_stats.view && !is_dir_list_loaded(curr_view))

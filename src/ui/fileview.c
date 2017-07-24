@@ -90,7 +90,6 @@ static void draw_cell(columns_t *columns, const column_data_t *cdt,
 static columns_t * get_view_columns(const FileView *view);
 static columns_t * get_name_column(void);
 static void consider_scroll_bind(FileView *view);
-static void put_inactive_mark(FileView *view);
 static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
 		int line_color);
 static void redraw_cell(FileView *view, int top, int cursor, int is_current);
@@ -674,19 +673,6 @@ redraw_current_view(void)
 }
 
 void
-erase_current_line_bar(FileView *view)
-{
-	if(view == other_view)
-	{
-		put_inactive_mark(view);
-	}
-	else
-	{
-		redraw_cell(view, view->top_line, view->curr_line, 0);
-	}
-}
-
-void
 fview_cursor_redraw(FileView *view)
 {
 	if(view == curr_view)
@@ -705,8 +691,7 @@ fview_cursor_redraw(FileView *view)
 	}
 }
 
-/* Adds inactive cursor mark to the view. */
-static void
+void
 put_inactive_mark(FileView *view)
 {
 	size_t col_width;
