@@ -131,6 +131,7 @@ static size_t calculate_column_width(FileView *view);
 static size_t get_max_filename_width(const FileView *view);
 static size_t get_filename_width(const FileView *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
+static void position_hardware_cursor(FileView *view);
 static int move_curr_line(FileView *view);
 static void reset_view_columns(FileView *view);
 
@@ -1666,17 +1667,7 @@ fview_position_updated(FileView *view)
 	const int old_top = view->top_line;
 	const int old_curr = view->curr_line;
 
-	int redraw = 0;
-	size_t col_width;
-	size_t col_count;
-	size_t print_width;
-	size_t prefix_len = 0U;
-	column_data_t cdt = {
-		.view = view,
-		.is_current = 1,
-		.draw_numbers = ui_view_displays_numbers(view),
-		.prefix_len = &prefix_len,
-	};
+	int redraw;
 
 	if(view->curr_line > view->list_rows - 1)
 	{
@@ -1715,19 +1706,8 @@ fview_position_updated(FileView *view)
 	else
 	{
 		redraw_cell(view, old_top, old_curr, 0);
+		redraw_cell(view, view->top_line, view->curr_line, 1);
 	}
-
-	calculate_table_conf(view, &col_count, &col_width);
-	print_width = calculate_print_width(view, view->list_pos, col_width);
-
-	cdt.entry = get_current_entry(view);
-	cdt.line_pos = view->list_pos;
-	cdt.line_hi_group = get_line_color(view, cdt.entry);
-	cdt.current_line = view->curr_line/col_count;
-	cdt.column_offset = ui_view_left_reserved(view)
-	                  + (view->curr_line%col_count)*col_width;
-
-	draw_cell(get_view_columns(view), &cdt, print_width, print_width);
 
 	refresh_view_win(view);
 	update_stat_window(view, 0);
@@ -1738,14 +1718,38 @@ fview_position_updated(FileView *view)
 		 * ruler. */
 		ui_ruler_update(view, 0);
 
-		checked_wmove(view->win, cdt.current_line,
-				cdt.column_offset + prefix_len + (cfg.extra_padding != 0));
+		position_hardware_cursor(view);
 
 		if(curr_stats.view)
 		{
 			qv_draw(view);
 		}
 	}
+}
+
+/* Moves hardware cursor to the beginning of the name of current entry. */
+static void
+position_hardware_cursor(FileView *view)
+{
+	size_t col_width, col_count;
+	int current_line, column_offset;
+	char buf[view->window_width + 1 + 1];
+
+	size_t prefix_len = 0U;
+	const column_data_t cdt = {
+		.view = view,
+		.entry = get_current_entry(view),
+		.prefix_len = &prefix_len,
+	};
+
+	calculate_table_conf(view, &col_count, &col_width);
+	current_line = view->curr_line/col_count;
+	column_offset = ui_view_left_reserved(view)
+	              + (view->curr_line%col_count)*col_width;
+	format_name(SK_BY_NAME, &cdt, sizeof(buf) - 1U, buf);
+
+	checked_wmove(view->win, current_line,
+			(cfg.extra_padding != 0) + column_offset + prefix_len);
 }
 
 /* Returns non-zero if redraw is needed. */
