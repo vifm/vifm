@@ -31,7 +31,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* abs() */
-#include <string.h> /* strcpy() strlen() */
+#include <string.h> /* memset() strcpy() strlen() */
 
 #include "../cfg/config.h"
 #include "../utils/fs.h"
@@ -76,8 +76,11 @@ typedef struct
 column_data_t;
 
 static void draw_left_column(FileView *view);
+static void draw_right_column(FileView *view);
 static void print_column(FileView *view, entries_t entries, const char path[],
 		int width, int offset);
+static void fill_column(FileView *view, int start_line, int top, int width,
+		int offset);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void calculate_number_width(FileView *view);
 static int count_digits(int num);
@@ -316,6 +319,8 @@ draw_dir_list_only(FileView *view)
 		}
 	}
 
+	draw_right_column(view);
+
 	view->top_line = top;
 	view->curr_line = view->list_pos - view->top_line;
 
@@ -358,6 +363,35 @@ draw_left_column(FileView *view)
 	free_dir_entries(view, &siblings.entries, &siblings.nentries);
 }
 
+/* Draws a column to the right of the main part of the view. */
+static void
+draw_right_column(FileView *view)
+{
+	char path[PATH_MAX + 1];
+	entries_t children;
+	const int padding = (cfg.extra_padding ? 1 : 0);
+	const int offset = ui_view_left_reserved(view) + padding
+	                 + ui_view_available_width(view) + padding
+	                 + 1;
+
+	const int rcol_width = ui_view_right_reserved(view) - padding - 1;
+	if(rcol_width <= 0)
+	{
+		return;
+	}
+
+	get_current_full_path(view, sizeof(path), path);
+	children = flist_list_in(view, path, 0);
+	if(children.nentries < 0)
+	{
+		return;
+	}
+
+	print_column(view, children, path, rcol_width, offset);
+
+	free_dir_entries(view, &children.entries, &children.nentries);
+}
+
 /* Prints column full of entry names. */
 static void
 print_column(FileView *view, entries_t entries, const char path[], int width,
@@ -385,6 +419,36 @@ print_column(FileView *view, entries_t entries, const char path[], int width,
 		};
 
 		draw_cell(columns, &cdt, width, width - 1);
+	}
+
+	fill_column(view, i, top, width, offset);
+}
+
+/* Fills column to the bottom to clear it from previous content. */
+static void
+fill_column(FileView *view, int start_line, int top, int width, int offset)
+{
+	int i;
+
+	char filler[width + (cfg.extra_padding ? 1 : 0) + 1];
+	memset(filler, ' ', sizeof(filler) - 1U);
+	filler[sizeof(filler) - 1U] = '\0';
+
+	for(i = start_line; i - top <= view->window_rows; ++i)
+	{
+		size_t prefix_len = 0U;
+		const column_data_t cdt = {
+			.view = view,
+			.entry = &view->dir_entry[0],
+			.line_pos = i,
+			.line_hi_group = WIN_COLOR,
+			.is_current = 0,
+			.current_line = i - top,
+			.column_offset = offset,
+			.prefix_len = &prefix_len,
+		};
+
+		column_line_print(&cdt, FILL_COLUMN_ID, filler, -1, AT_LEFT, filler);
 	}
 }
 
@@ -1706,6 +1770,8 @@ fview_position_updated(FileView *view)
 		redraw_cell(view, view->top_line, view->curr_line, 1);
 	}
 
+	draw_right_column(view);
+
 	refresh_view_win(view);
 	update_stat_window(view, 0);
 
@@ -1756,6 +1822,8 @@ move_curr_line(FileView *view)
 	int redraw = 0;
 	int pos = view->list_pos;
 	int last;
+	size_t col_width, col_count;
+	columns_t *columns;
 
 	if(pos < 1)
 		pos = 0;
@@ -1790,6 +1858,14 @@ move_curr_line(FileView *view)
 	}
 
 	if(consider_scroll_offset(view))
+	{
+		redraw++;
+	}
+
+	calculate_table_conf(view, &col_count, &col_width);
+	/* Columns might be NULL in tests. */
+	columns = get_view_columns(view);
+	if(columns != NULL && !columns_matches_width(columns, col_width))
 	{
 		redraw++;
 	}

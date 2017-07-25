@@ -1734,13 +1734,21 @@ ui_view_available_width(const FileView *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
 	return ((int)view->window_width + 1) + correction
-	     - ui_view_left_reserved(view);
+	     - ui_view_left_reserved(view) - ui_view_right_reserved(view);
 }
 
 int
 ui_view_left_reserved(const FileView *view)
 {
-	return view->miller_view ? view->window_width/4 : 0;
+	return view->miller_view ? view->window_width/3 : 0;
+}
+
+int
+ui_view_right_reserved(const FileView *view)
+{
+	return view->miller_view && fentry_is_dir(get_current_entry(view))
+	     ? view->window_width/3
+	     : 0;
 }
 
 int

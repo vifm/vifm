@@ -601,6 +601,10 @@ int ui_view_available_width(const FileView *view);
  * width. */
 int ui_view_left_reserved(const FileView *view);
 
+/* Retrieves width reserved for something to the right of file list.  Returns
+ * the width. */
+int ui_view_right_reserved(const FileView *view);
+
 /* Retrieves column number at which quickview content should be displayed.
  * Returns the number. */
 int ui_qv_left(const FileView *view);

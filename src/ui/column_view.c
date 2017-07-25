@@ -80,7 +80,6 @@ static size_t calculate_start_pos(const column_t *col, const char buf[],
 static void fill_gap_pos(const void *data, size_t from, size_t to);
 static size_t get_width_on_screen(const char str[]);
 static void recalculate_if_needed(columns_t *cols, size_t max_width);
-static int recalculation_is_needed(const columns_t *cols, size_t max_width);
 static void recalculate(columns_t *cols, size_t max_width);
 static void update_widths(columns_t *cols, size_t max_width);
 static int update_abs_and_rel_widths(columns_t *cols, size_t *max_width);
@@ -470,17 +469,16 @@ get_width_on_screen(const char str[])
 static void
 recalculate_if_needed(columns_t *cols, size_t max_width)
 {
-	if(recalculation_is_needed(cols, max_width))
+	if(!columns_matches_width(cols, max_width))
 	{
 		recalculate(cols, max_width);
 	}
 }
 
-/* Checks if recalculation is needed, and returns non-zero if so. */
-static int
-recalculation_is_needed(const columns_t *cols, size_t max_width)
+int
+columns_matches_width(const columns_t *cols, size_t max_width)
 {
-	return cols->max_width != max_width;
+	return cols->max_width == max_width;
 }
 
 /* Recalculates column widths and start offsets. */
