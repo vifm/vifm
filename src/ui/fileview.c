@@ -341,14 +341,16 @@ draw_left_column(FileView *view)
 		return;
 	}
 
-	siblings = flist_list_siblings(view, 0);
+	path = strdup(flist_get_dir(view));
+	remove_last_path_component(path);
+
+	siblings = flist_list_in(view, path, 0);
 	if(siblings.nentries < 0)
 	{
+		free(path);
 		return;
 	}
 
-	path = strdup(flist_get_dir(view));
-	remove_last_path_component(path);
 
 	print_column(view, siblings, path, lcol_width, 0);
 

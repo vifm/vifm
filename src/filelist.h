@@ -283,9 +283,9 @@ int flist_load_tree(FileView *view, const char path[]);
 /* Makes to contain tree with the same root as from including copying list of
  * excluded files.  Returns zero on success, otherwise non-zero is returned. */
 int flist_clone_tree(FileView *to, const FileView *from);
-/* Lists siblings of current directory of the view (doesn't necessary include
- * current directory).  Returns the list, which is of length -1 on error. */
-entries_t flist_list_siblings(FileView *view, int only_dirs);
+/* Lists files of specified directory.  Returns the list, which is of length -1
+ * on error. */
+entries_t flist_list_in(FileView *view, const char path[], int only_dirs);
 
 TSTATIC_DEFS(
 	void pick_cd_path(FileView *view, const char base_dir[], const char path[],

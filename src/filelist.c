@@ -2850,7 +2850,22 @@ go_to_sibling_dir(FileView *view, int next, int wrap)
 static entries_t
 list_sibling_dirs(FileView *view)
 {
-	entries_t parent_dirs = flist_list_siblings(view, 1);
+	entries_t parent_dirs = {};
+	char *path;
+
+	if(is_root_dir(flist_get_dir(view)))
+	{
+		parent_dirs.nentries = -1;
+		return parent_dirs;
+	}
+
+	path = strdup(flist_get_dir(view));
+	remove_last_path_component(path);
+
+	parent_dirs = flist_list_in(view, path, 1);
+
+	free(path);
+
 	if(parent_dirs.nentries < 0)
 	{
 		return parent_dirs;
@@ -2870,22 +2885,15 @@ list_sibling_dirs(FileView *view)
 }
 
 entries_t
-flist_list_siblings(FileView *view, int only_dirs)
+flist_list_in(FileView *view, const char path[], int only_dirs)
 {
 	entries_t siblings = {};
-	char *path;
 	int len, i;
 	char **list;
-
-	/* Make list of entries from parent directories which are
-	 * either directories or symbolic links to directories. */
-	path = strdup(flist_get_dir(view));
-	remove_last_path_component(path);
 
 	list = list_all_files(path, &len);
 	if(len < 0)
 	{
-		free(path);
 		siblings.nentries = -1;
 		return siblings;
 	}
@@ -2915,7 +2923,6 @@ flist_list_siblings(FileView *view, int only_dirs)
 
 		free(full_path);
 	}
-	free(path);
 	free_string_array(list, len);
 
 	return siblings;
