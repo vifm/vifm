@@ -351,7 +351,7 @@ draw_left_column(FileView *view)
 	path = strdup(flist_get_dir(view));
 	remove_last_path_component(path);
 
-	siblings = flist_list_in(view, path, 0);
+	siblings = flist_list_in(view, path, 0, 1);
 	if(siblings.nentries < 0)
 	{
 		free(path);
@@ -383,7 +383,7 @@ draw_right_column(FileView *view)
 	}
 
 	get_current_full_path(view, sizeof(path), path);
-	children = flist_list_in(view, path, 0);
+	children = flist_list_in(view, path, 0, 1);
 	if(children.nentries < 0)
 	{
 		return;

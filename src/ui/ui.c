@@ -1746,7 +1746,9 @@ ui_view_left_reserved(const FileView *view)
 int
 ui_view_right_reserved(const FileView *view)
 {
-	return view->miller_view && fentry_is_dir(get_current_entry(view))
+	dir_entry_t *const entry = get_current_entry(view);
+	return view->miller_view
+	    && fentry_is_dir(entry) && !is_parent_dir(entry->name)
 	     ? view->window_width/3
 	     : 0;
 }

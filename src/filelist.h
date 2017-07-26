@@ -285,7 +285,8 @@ int flist_load_tree(FileView *view, const char path[]);
 int flist_clone_tree(FileView *to, const FileView *from);
 /* Lists files of specified directory.  Returns the list, which is of length -1
  * on error. */
-entries_t flist_list_in(FileView *view, const char path[], int only_dirs);
+entries_t flist_list_in(FileView *view, const char path[], int only_dirs,
+		int can_include_parent);
 
 TSTATIC_DEFS(
 	void pick_cd_path(FileView *view, const char base_dir[], const char path[],

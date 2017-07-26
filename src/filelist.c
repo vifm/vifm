@@ -2862,7 +2862,7 @@ list_sibling_dirs(FileView *view)
 	path = strdup(flist_get_dir(view));
 	remove_last_path_component(path);
 
-	parent_dirs = flist_list_in(view, path, 1);
+	parent_dirs = flist_list_in(view, path, 1, 0);
 
 	free(path);
 
@@ -2885,7 +2885,8 @@ list_sibling_dirs(FileView *view)
 }
 
 entries_t
-flist_list_in(FileView *view, const char path[], int only_dirs)
+flist_list_in(FileView *view, const char path[], int only_dirs,
+		int can_include_parent)
 {
 	entries_t siblings = {};
 	int len, i;
@@ -2924,6 +2925,13 @@ flist_list_in(FileView *view, const char path[], int only_dirs)
 		free(full_path);
 	}
 	free_string_array(list, len);
+
+	if(can_include_parent && cfg_parent_dir_is_visible(is_root_dir(path)))
+	{
+		char *const full_path = format_str("%s/..", path);
+		entry_list_add(view, &siblings.entries, &siblings.nentries, full_path);
+		free(full_path);
+	}
 
 	return siblings;
 }
