@@ -418,6 +418,21 @@ print_column(FileView *view, entries_t entries, const char current[],
 		}
 	}
 
+	/* Make sure that current element is visible on the screen. */
+	if(pos < top)
+	{
+		top = pos;
+	}
+	else if(pos > top + view->window_rows)
+	{
+		top = pos - view->window_rows;
+	}
+	/* Ensure that we fill all lines for which we have files. */
+	if(entries.nentries - top < view->window_rows + 1)
+	{
+		top = MAX(0, entries.nentries - (view->window_rows + 1));
+	}
+
 	for(i = top; i < entries.nentries && i - top <= view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
