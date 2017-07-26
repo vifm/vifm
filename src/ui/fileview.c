@@ -78,8 +78,8 @@ column_data_t;
 
 static void draw_left_column(FileView *view);
 static void draw_right_column(FileView *view);
-static void print_column(FileView *view, entries_t entries, const char path[],
-		int width, int offset);
+static void print_column(FileView *view, entries_t entries,
+		const char current[], const char path[], int width, int offset);
 static void fill_column(FileView *view, int start_line, int top, int width,
 		int offset);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
@@ -358,8 +358,7 @@ draw_left_column(FileView *view)
 		return;
 	}
 
-
-	print_column(view, siblings, path, lcol_width, 0);
+	print_column(view, siblings, flist_get_dir(view), path, lcol_width, 0);
 
 	free(path);
 	free_dir_entries(view, &siblings.entries, &siblings.nentries);
@@ -389,22 +388,35 @@ draw_right_column(FileView *view)
 		return;
 	}
 
-	print_column(view, children, path, rcol_width, offset);
+	print_column(view, children, NULL, path, rcol_width, offset);
 
 	free_dir_entries(view, &children.entries, &children.nentries);
 }
 
-/* Prints column full of entry names. */
+/* Prints column full of entry names.  Current is a hint that tells which column
+ * has to be selected (otherwise position from history record is used). */
 static void
-print_column(FileView *view, entries_t entries, const char path[], int width,
-		int offset)
+print_column(FileView *view, entries_t entries, const char current[],
+		const char path[], int width, int offset)
 {
 	int top, pos;
 	columns_t *columns = get_name_column();
 	int i;
 
 	sort_entries(view, entries);
+
 	pos = flist_hist_find(view, entries, path, &top);
+
+	/* Use hint if provided. */
+	if(current != NULL)
+	{
+		dir_entry_t *entry;
+		entry = entry_from_path(view, entries.entries, entries.nentries, current);
+		if(entry != NULL)
+		{
+			pos = entry - entries.entries;
+		}
+	}
 
 	for(i = top; i < entries.nentries && i - top <= view->window_rows; ++i)
 	{
@@ -549,7 +561,7 @@ get_line_color(const FileView *view, const dir_entry_t *entry)
 			}
 			else
 			{
-				char full[PATH_MAX];
+				char full[PATH_MAX + 1];
 				get_full_path_of(entry, sizeof(full), full);
 				if(get_link_target_abs(full, entry->origin, full, sizeof(full)) != 0)
 				{
