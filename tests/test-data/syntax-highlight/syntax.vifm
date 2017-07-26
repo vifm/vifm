@@ -361,10 +361,11 @@ copen
 siblnext
 siblprev
 
-" "hi" should be highlighted as :command and CurrLine/CmpMismatch as highlight
-" groups
+" "hi" should be highlighted as :command and CurrLine/CmpMismatch/AuxWin as
+" highlight groups
 hi CurrLine
 hi CmpMismatch
+hi AuxWin
 
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'

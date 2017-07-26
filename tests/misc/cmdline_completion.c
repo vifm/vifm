@@ -554,7 +554,7 @@ TEST(autocmd_name_completion_is_case_insensitive)
 
 TEST(highlight_is_completed)
 {
-	ASSERT_COMPLETION(L"hi ", L"hi Border");
+	ASSERT_COMPLETION(L"hi ", L"hi AuxWin");
 	ASSERT_COMPLETION(L"hi wi", L"hi WildMenu");
 	ASSERT_COMPLETION(L"hi WildMenu cter", L"hi WildMenu cterm");
 }

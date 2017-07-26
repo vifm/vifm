@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 20, 2017" "vifm 0.9"
+.TH VIFM 1 "July 26, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1960,6 +1960,7 @@ Available style values (some of them can be combined):
 Available group-name values:
  \- Win \- color of all windows (views, dialogs, menus) and default color for \
 their content (e.g. regular files in views)
+ \- AuxWin \- color of auxiliary areas of windows
  \- Border \- color of vertical parts of the border
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
@@ -2117,17 +2118,18 @@ transparency:
   CmdLine
     ErrorMsg
   Win
-    File name specific highlights
-      Directory
-      Link
-      BrokenLink
-      Socket
-      Device
-      Fifo
-      Executable
-        Selected
-          CurrLine
-          OtherLine
+    AuxWin
+      File name specific highlights
+        Directory
+        Link
+        BrokenLink
+        Socket
+        Device
+        Fifo
+        Executable
+          Selected
+            CurrLine
+            OtherLine
   TopLine
     TopLineSel
 
@@ -5640,8 +5642,8 @@ Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine, JobLine, \
 SuggestBox and WildMenu are always determined by the primary color scheme;
 .IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
-Fifo and Win are determined by primary color scheme and a set of local \
-color schemes, which can be empty.
+Fifo, CmpMismatch, Win and AuxWin are determined by primary color scheme and a \
+set of local color schemes, which can be empty.
 .RE
 
 There might be a set of local color schemes because they are structured

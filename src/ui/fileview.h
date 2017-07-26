@@ -170,6 +170,7 @@ TSTATIC_DEFS(
 		                       color).  A pointer to allow changing value in const
 		                       struct.  Should be zero first time, then auto
 		                       reset. */
+		int is_main;        /* Whether this is main file list. */
 	}
 	column_data_t;
 

@@ -72,6 +72,7 @@ typedef struct
 	size_t *prefix_len; /* Data prefix length (should be drawn in neutral color).
 	                     * A pointer to allow changing value in const struct.
 	                     * Should be zero first time, then auto reset. */
+	int is_main;        /* Whether this is main file list. */
 }
 column_data_t;
 
@@ -306,6 +307,7 @@ draw_dir_list_only(FileView *view)
 			.current_line = cell/col_count,
 			.column_offset = lcol_size + (cell%col_count)*col_width,
 			.prefix_len = &prefix_len,
+			.is_main = 1,
 		};
 
 		const size_t print_width = calculate_print_width(view, x, col_width);
@@ -878,6 +880,7 @@ redraw_cell(FileView *view, int top, int cursor, int is_current)
 		.is_current = is_current,
 		.draw_numbers = ui_view_displays_numbers(view),
 		.prefix_len = &prefix_len,
+		.is_main = 1,
 	};
 
 	if(curr_stats.load_stage < 2)
@@ -1247,6 +1250,11 @@ prepare_col_color(const FileView *view, int primary, const column_data_t *cdt)
 	FileView *const other = (view == &lwin) ? &rwin : &lwin;
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
+
+	if(!cdt->is_main)
+	{
+		cs_mix_colors(&col, &cs->color[AUX_WIN_COLOR]);
+	}
 
 	/* File-specific highlight affects only primary field for non-current lines
 	 * and whole line for the current line. */
