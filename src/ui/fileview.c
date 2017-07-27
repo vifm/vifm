@@ -1830,7 +1830,7 @@ position_hardware_cursor(FileView *view)
 {
 	size_t col_width, col_count;
 	int current_line, column_offset;
-	char buf[view->window_width + 1];
+	char buf[view->window_cols + 1];
 
 	size_t prefix_len = 0U;
 	const column_data_t cdt = {

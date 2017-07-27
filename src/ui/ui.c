@@ -280,7 +280,7 @@ ui_char_pressed(wint_t c)
 static void
 correct_size(FileView *view)
 {
-	getmaxyx(view->win, view->window_rows, view->window_width);
+	getmaxyx(view->win, view->window_rows, view->window_cols);
 	view->column_count = calculate_columns_count(view);
 	view->window_cells = view->column_count*view->window_rows;
 }
@@ -1252,9 +1252,9 @@ switch_panes_content(void)
 	lwin.window_rows = rwin.window_rows;
 	rwin.window_rows = t;
 
-	t = lwin.window_width;
-	lwin.window_width = rwin.window_width;
-	rwin.window_width = t;
+	t = lwin.window_cols;
+	lwin.window_cols = rwin.window_cols;
+	rwin.window_cols = t;
 
 	t = lwin.local_cs;
 	lwin.local_cs = rwin.local_cs;
@@ -1731,14 +1731,14 @@ int
 ui_view_available_width(const FileView *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
-	return view->window_width + correction
+	return view->window_cols + correction
 	     - ui_view_left_reserved(view) - ui_view_right_reserved(view);
 }
 
 int
 ui_view_left_reserved(const FileView *view)
 {
-	return is_in_miller_view(view) ? view->window_width/3 : 0;
+	return is_in_miller_view(view) ? view->window_cols/3 : 0;
 }
 
 int
@@ -1747,7 +1747,7 @@ ui_view_right_reserved(const FileView *view)
 	dir_entry_t *const entry = get_current_entry(view);
 	return is_in_miller_view(view)
 	    && fentry_is_dir(entry) && !is_parent_dir(entry->name)
-	     ? view->window_width/3
+	     ? view->window_cols/3
 	     : 0;
 }
 
@@ -1790,7 +1790,7 @@ ui_qv_height(const FileView *view)
 int
 ui_qv_width(const FileView *view)
 {
-	return cfg.extra_padding ? view->window_width - 2 : view->window_width;
+	return cfg.extra_padding ? view->window_cols - 2 : view->window_cols;
 }
 
 const col_scheme_t *

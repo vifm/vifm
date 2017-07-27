@@ -336,8 +336,8 @@ typedef struct
 	int top_line; /* # of the list position that is the top line in window */
 	int list_pos; /* actual position in the file list */
 	int list_rows; /* size of the file list */
-	int window_rows;  /* Number of rows in the window. */
-	int window_width; /* Number of columns in the window. */
+	int window_rows; /* Number of rows in the window. */
+	int window_cols; /* Number of columns in the window. */
 	int filtered;  /* number of files filtered out and not shown in list */
 	int selected_files; /* Number of currently selected files. */
 	int local_cs; /* Whether directory-specific color scheme is in use. */

@@ -2011,7 +2011,7 @@ scroll_line_down(FileView *view)
 		--view->curr_line;
 		draw_dir_list(view);
 	}
-	wresize(view->win, view->window_rows, view->window_width);
+	wresize(view->win, view->window_rows, view->window_cols);
 }
 
 static void
