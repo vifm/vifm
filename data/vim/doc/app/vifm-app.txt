@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Jul 26
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Jul 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1369,8 +1369,8 @@ The builtin commands are:
           ofboth | ofone | groupids | grouppaths | skipempty]...
     compare files in one or two views according the arguments.  The default
     is "bycontents listall ofboth grouppaths".  See |vifm-compare-views| for
-    details.  Tree structure is incompatible with ls-like view, so value of
-    |vifm-'lsview'| option is ignored.
+    details.  Tree structure is incompatible with alternative representations,
+    so values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
 
 :cope[n]                                       *vifm-:copen* *vifm-:cope*
     opens menu with contents of the last displayed menu with navigation to
@@ -2226,8 +2226,9 @@ yet supported) and might be changed in future releases, or get an alias.
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
     structure corresponds to what one would see on visiting the directories
-    manually.  Tree structure is incompatible with ls-like view, so value of
-    |vifm-'lsview'| option is ignored.
+    manually.  Tree structure is incompatible with alternative
+    representations, so values of |vifm-'lsview'| and |vifm-'millerview'|
+    options are ignored.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.
@@ -3106,7 +3107,7 @@ scope: local
 
 When this option is set, directory view will be displayed in multiple
 columns with file names similar to output of `ls -x` command.  See also
-|vifm-ls-view|.
+|vifm-ls-view|.  This option has no effect if |vifm-'millerview'| is on.
 
                                                *vifm-'millerview'*
 millerview
@@ -3115,7 +3116,7 @@ default: false
 scope: local
 
 When this option is set, directory view will be displayed in multiple
-cascading columns.
+cascading columns.  Ignores |vifm-'lsview'|.
 
                                                *vifm-'mintimeoutlen'*
 mintimeoutlen

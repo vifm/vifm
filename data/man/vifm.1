@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 26, 2017" "vifm 0.9"
+.TH VIFM 1 "July 27, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1577,8 +1577,8 @@ equals
  ofboth | ofone | groupids | grouppaths | skipempty]..."
 compare files in one or two views according the arguments.  The default
 is "bycontents listall ofboth grouppaths".  See "Compare views" section below
-for details.  Tree structure is incompatible with ls-like view, so value of
-\'lsview' option is ignored.
+for details.  Tree structure is incompatible with alternative representations,
+so values of 'lsview' and 'millerview' options are ignored.
 .TP
 .BI "                                         :copen"
 .TP
@@ -2649,7 +2649,8 @@ turn pane into tree view with current directory as a root.  The tree view is
 implemented on top of a custom view, but is automatically kept in sync with
 file system state and considers all the filters.  Thus the structure corresponds
 to what one would see on visiting the directories manually.  Tree structure is
-incompatible with ls-like view, so value of 'lsview' option is ignored.
+incompatible with alternative representations, so values of 'lsview' and
+\'millerview' options are ignored.
 .TP
 .BI "                                         :undolist"
 .TP
@@ -3725,7 +3726,8 @@ scope: local
 .br
 When this option is set, directory view will be displayed in multiple columns
 with file names similar to output of `ls \-x` command.  See "ls-like view"
-section below for format description.
+section below for format description.  This option has no effect if 'millerview'
+is on.
 .TP
 .BI 'millerview'
 type: boolean
@@ -3735,7 +3737,7 @@ default: false
 scope: local
 .br
 When this option is set, directory view will be displayed in multiple
-cascading columns.
+cascading columns.  Ignores 'lsview'.
 .TP
 .BI 'mintimeoutlen'
 type: integer

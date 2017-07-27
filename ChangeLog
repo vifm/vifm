@@ -8,6 +8,9 @@
 
 	Added AuxWin highlight group for highlighting auxiliary parts of windows.
 
+	Added 'millerview' option that enables cascading columns interface for the
+	view.  Thanks to sudo-nice.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
