@@ -84,7 +84,7 @@ show_history(FileView *view, HistoryType type, hist_t *hist, const char title[])
 	int i;
 	static menu_data_t m;
 
-	init_menu_data(&m, view, strdup(title), strdup("History disabled or empty"));
+	menus_init_data(&m, view, strdup(title), strdup("History disabled or empty"));
 	m.execute_handler = &execute_history_cb;
 	m.key_handler = &history_khandler;
 	m.extra_data = type;
@@ -94,7 +94,7 @@ show_history(FileView *view, HistoryType type, hist_t *hist, const char title[])
 		m.len = add_to_string_array(&m.items, m.len, 1, hist->items[i]);
 	}
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Callback that is invoked when menu item is selected.  Should return non-zero

@@ -507,6 +507,9 @@ void wprinta(WINDOW *win, const char str[], int line_attrs);
  * on success, and non-zero otherwise. */
 int resize_for_menu_like(void);
 
+/* Performs updates of layout for manu like modes. */
+void ui_setup_for_menu_like(void);
+
 /* Performs real pane redraw in the TUI and maybe some related operations. */
 void refresh_view_win(FileView *view);
 

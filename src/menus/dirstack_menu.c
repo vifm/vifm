@@ -32,7 +32,7 @@ show_dirstack_menu(FileView *view)
 {
 	static menu_data_t m;
 	/* Directory stack always contains at least one item (current directories). */
-	init_menu_data(&m, view, strdup("Directory Stack"), NULL);
+	menus_init_data(&m, view, strdup("Directory Stack"), NULL);
 	m.execute_handler = &execute_dirstack_cb;
 
 	m.items = dir_stack_list();
@@ -40,7 +40,7 @@ show_dirstack_menu(FileView *view)
 	m.len = -1;
 	while(m.items[++m.len] != NULL);
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

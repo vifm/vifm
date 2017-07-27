@@ -51,7 +51,7 @@ show_commands_menu(FileView *view)
 	size_t cmdname_width = CMDNAME_COLUMN_MIN_WIDTH;
 
 	static menu_data_t m;
-	init_menu_data(&m, view, strdup("Command ------ Action"),
+	menus_init_data(&m, view, strdup("Command ------ Action"),
 			strdup("No commands set"));
 	m.execute_handler = &execute_commands_cb;
 	m.key_handler = &commands_khandler;
@@ -81,7 +81,7 @@ show_commands_menu(FileView *view)
 
 	free_string_array(list, m.len*2);
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
@@ -108,7 +108,7 @@ commands_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos]);
 		menu_run_command(cmd_buf);
 
-		remove_current_item(m->state);
+		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"c") == 0)

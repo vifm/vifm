@@ -46,7 +46,7 @@ show_trash_menu(FileView *view)
 	int i;
 
 	static menu_data_t m;
-	init_menu_data(&m, view, strdup("Original paths of files in trash"),
+	menus_init_data(&m, view, strdup("Original paths of files in trash"),
 			strdup("No files in trash"));
 	m.key_handler = &trash_khandler;
 
@@ -61,7 +61,7 @@ show_trash_menu(FileView *view)
 		}
 	}
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
@@ -103,7 +103,7 @@ restore_current(menu_data_t *m)
 		return KHR_UNHANDLED;
 	}
 
-	remove_current_item(m->state);
+	menus_remove_current(m->state);
 	return KHR_REFRESH_WINDOW;
 }
 
@@ -136,7 +136,7 @@ delete_current(menu_data_t *m)
 	}
 
 	ioe_errlst_free(&args.result.errors);
-	remove_current_item(m->state);
+	menus_remove_current(m->state);
 	return KHR_REFRESH_WINDOW;
 }
 

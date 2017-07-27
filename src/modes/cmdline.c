@@ -472,7 +472,7 @@ handle_empty_input(void)
 		}
 		else
 		{
-			(void)search_menu_list("", sub_mode_ptr, 0);
+			(void)menus_search("", sub_mode_ptr, 0);
 		}
 	}
 
@@ -510,8 +510,8 @@ handle_nonempty_input(void)
 			break;
 		case CLS_MENU_FSEARCH:
 		case CLS_MENU_BSEARCH:
-			result = search_menu_list(mbinput, sub_mode_ptr, 0);
-			update_state(result, menu_get_matches(sub_mode_ptr));
+			result = menus_search(mbinput, sub_mode_ptr, 0);
+			update_state(result, menus_search_matched(sub_mode_ptr));
 			break;
 		case CLS_FILTER:
 			set_local_filter(mbinput);
@@ -1336,7 +1336,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
 				curr_stats.need_update = UT_FULL;
-				curr_stats.save_msg = search_menu_list(pattern, sub_mode_ptr, 1);
+				curr_stats.save_msg = menus_search(pattern, sub_mode_ptr, 1);
 				break;
 
 			default:
@@ -1348,7 +1348,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(prev_mode == MENU_MODE)
 		{
-			menu_print_search_msg(sub_mode_ptr);
+			menus_search_print_msg(sub_mode_ptr);
 			curr_stats.save_msg = 1;
 		}
 		else

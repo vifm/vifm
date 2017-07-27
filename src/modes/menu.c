@@ -316,8 +316,8 @@ menu_reenter_mode(menu_data_t *m)
 	assert(vle_mode_is(MENU_MODE) && "Can't reenter if not in menu mode.");
 	assert(m->len > 0 && "Menu cannot be empty.");
 
-	menus_replace_menu(m);
-	redraw_menu(m->state);
+	menus_replace_data(m);
+	menus_full_redraw(m->state);
 	menu = m;
 }
 
@@ -343,7 +343,7 @@ void
 menu_full_redraw(void)
 {
 	was_redraw = 1;
-	redraw_menu(menu->state);
+	menus_full_redraw(menu->state);
 }
 
 static void
@@ -382,7 +382,7 @@ static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int s = get_effective_menu_scroll_offset(menu);
-	menu_current_line_erase(menu->state);
+	menus_erase_current(menu->state);
 	menu->top += DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
 	menu->pos += DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
@@ -471,11 +471,11 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	if(!vle_mode_is(MENU_MODE))
 	{
-		reset_menu_data(saved_menu);
+		menus_reset_data(saved_menu);
 	}
 	else if(menu != saved_menu)
 	{
-		reset_menu_data(saved_menu);
+		menus_reset_data(saved_menu);
 		menu_partial_redraw();
 	}
 
@@ -500,7 +500,7 @@ static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int s = get_effective_menu_scroll_offset(menu);
-	menu_current_line_erase(menu->state);
+	menus_erase_current(menu->state);
 
 	if(cfg.scroll_off > 0 && menu->top + getmaxy(menu_win) - menu->pos < s)
 	{
@@ -544,7 +544,8 @@ static void
 cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	last_search_backward = 0;
-	menu_new_search(menu->state, last_search_backward, def_count(key_info.count));
+	menus_search_reset(menu->state, last_search_backward,
+			def_count(key_info.count));
 	enter_cmdline_mode(CLS_MENU_FSEARCH, "", menu);
 }
 
@@ -558,7 +559,7 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 	line = (key_info.count*menu->len)/100;
-	move_to_menu_pos(line, menu->state);
+	menus_set_pos(menu->state, line);
 	wrefresh(menu_win);
 }
 
@@ -575,7 +576,8 @@ static void
 cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 {
 	last_search_backward = 1;
-	menu_new_search(menu->state, last_search_backward, def_count(key_info.count));
+	menus_search_reset(menu->state, last_search_backward,
+			def_count(key_info.count));
 	enter_cmdline_mode(CLS_MENU_BSEARCH, "", menu);
 }
 
@@ -594,8 +596,8 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 		key_info.count = menu->len;
 	}
 
-	menu_current_line_erase(menu->state);
-	move_to_menu_pos(key_info.count - 1, menu->state);
+	menus_erase_current(menu->state);
+	menus_set_pos(menu->state, key_info.count - 1);
 	wrefresh(menu_win);
 }
 
@@ -611,8 +613,8 @@ cmd_H(key_info_t key_info, keys_info_t *keys_info)
 
 	top = (menu->top == 0) ? 0 : (menu->top + off);
 
-	menu_current_line_erase(menu->state);
-	move_to_menu_pos(top, menu->state);
+	menus_erase_current(menu->state);
+	menus_set_pos(menu->state, top);
 	wrefresh(menu_win);
 }
 
@@ -641,8 +643,8 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 		top -= off;
 	}
 
-	menu_current_line_erase(menu->state);
-	move_to_menu_pos(top - 3, menu->state);
+	menus_erase_current(menu->state);
+	menus_set_pos(menu->state, top - 3);
 	wrefresh(menu_win);
 }
 
@@ -660,8 +662,8 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 		new_pos = menu->top + DIV_ROUND_UP(getmaxy(menu_win) - 3, 2);
 	}
 
-	menu_current_line_erase(menu->state);
-	move_to_menu_pos(MAX(0, new_pos - 1), menu->state);
+	menus_erase_current(menu->state);
+	menus_set_pos(menu->state, MAX(0, new_pos - 1));
 	wrefresh(menu_win);
 }
 
@@ -671,7 +673,7 @@ cmd_N(key_info_t key_info, keys_info_t *keys_info)
 	key_info.count = def_count(key_info.count);
 	while(key_info.count-- > 0)
 	{
-		menus_search(menu->state, !last_search_backward);
+		menus_search_repeat(menu->state, !last_search_backward);
 	}
 }
 
@@ -686,7 +688,7 @@ cmd_b(key_info_t key_info, keys_info_t *keys_info)
 static void
 dump_into_custom_view(int very)
 {
-	if(menu_to_custom_view(menu->state, view, very) != 0)
+	if(menus_to_custom_view(menu->state, view, very) != 0)
 	{
 		show_error_msg("Menu transformation",
 				"No valid paths discovered in menu content");
@@ -750,8 +752,8 @@ pass_combination_to_khandler(const wchar_t keys[])
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
-	menu_current_line_erase(menu->state);
-	move_to_menu_pos(def_count(key_info.count) - 1, menu->state);
+	menus_erase_current(menu->state);
+	menus_set_pos(menu->state, def_count(key_info.count) - 1);
 	wrefresh(menu_win);
 }
 
@@ -760,9 +762,9 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(menu->pos != menu->len - 1)
 	{
-		menu_current_line_erase(menu->state);
+		menus_erase_current(menu->state);
 		menu->pos += def_count(key_info.count);
-		move_to_menu_pos(menu->pos, menu->state);
+		menus_set_pos(menu->state, menu->pos);
 		wrefresh(menu_win);
 	}
 }
@@ -772,9 +774,9 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(menu->pos != 0)
 	{
-		menu_current_line_erase(menu->state);
+		menus_erase_current(menu->state);
 		menu->pos -= def_count(key_info.count);
-		move_to_menu_pos(menu->pos, menu->state);
+		menus_set_pos(menu->state, menu->pos);
 		wrefresh(menu_win);
 	}
 }
@@ -785,7 +787,7 @@ cmd_n(key_info_t key_info, keys_info_t *keys_info)
 	key_info.count = def_count(key_info.count);
 	while(key_info.count-- > 0)
 	{
-		menus_search(menu->state, last_search_backward);
+		menus_search_repeat(menu->state, last_search_backward);
 	}
 }
 
@@ -941,8 +943,8 @@ all_lines_visible(const menu_data_t *const menu)
 void
 menu_partial_redraw(void)
 {
-	draw_menu(menu->state);
-	move_to_menu_pos(menu->pos, menu->state);
+	menus_partial_redraw(menu->state);
+	menus_set_pos(menu->state, menu->pos);
 	wrefresh(menu_win);
 }
 
@@ -951,8 +953,8 @@ goto_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->end != NOT_DEF)
 	{
-		menu_current_line_erase(menu->state);
-		move_to_menu_pos(cmd_info->end, menu->state);
+		menus_erase_current(menu->state);
+		menus_set_pos(menu->state, cmd_info->end);
 		wrefresh(menu_win);
 	}
 	return 0;
@@ -962,7 +964,7 @@ goto_cmd(const cmd_info_t *cmd_info)
 static int
 nohlsearch_cmd(const cmd_info_t *cmd_info)
 {
-	menus_reset_search_highlight(menu->state);
+	menus_search_reset_hilight(menu->state);
 	return 0;
 }
 
@@ -1037,7 +1039,7 @@ leave_menu_mode(int reset_selection)
 		return;
 	}
 
-	reset_menu_data(menu);
+	menus_reset_data(menu);
 
 	if(reset_selection)
 	{

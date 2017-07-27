@@ -43,7 +43,7 @@ show_volumes_menu(FileView *view)
 	char file_buf[MAX_PATH];
 
 	static menu_data_t m;
-	init_menu_data(&m, view, strdup("Mounted Volumes"),
+	menus_init_data(&m, view, strdup("Mounted Volumes"),
 			strdup("No volumes mounted"));
 	m.execute_handler = &execute_volumes_cb;
 
@@ -62,7 +62,7 @@ show_volumes_menu(FileView *view)
 		}
 	}
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

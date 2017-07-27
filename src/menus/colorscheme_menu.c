@@ -37,7 +37,7 @@ int
 show_colorschemes_menu(FileView *view)
 {
 	static menu_data_t m;
-	init_menu_data(&m, view, strdup("Choose the default Color Scheme"),
+	menus_init_data(&m, view, strdup("Choose the default Color Scheme"),
 			strdup("No color schemes found"));
 	m.execute_handler = &execute_colorscheme_cb;
 
@@ -53,7 +53,7 @@ show_colorschemes_menu(FileView *view)
 	m.pos = string_array_pos_case(m.items, m.len, cfg.cs.name);
 #endif
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Sorting function for qsort(). */
