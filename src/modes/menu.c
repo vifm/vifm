@@ -462,7 +462,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	saved_menu = menu;
-	if(menu->execute_handler != NULL && menu->execute_handler(curr_view, menu))
+	if(menu->execute_handler != NULL && menu->execute_handler(view, menu))
 	{
 		vle_mode_set(MENU_MODE, VMT_PRIMARY);
 		menu_redraw();
@@ -1053,7 +1053,7 @@ leave_menu_mode(int reset_selection)
 void
 execute_cmdline_command(const char cmd[])
 {
-	if(exec_command(cmd, curr_view, CIT_COMMAND) < 0)
+	if(exec_command(cmd, view, CIT_COMMAND) < 0)
 	{
 		status_bar_error("An error occurred while trying to execute command");
 	}
