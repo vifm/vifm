@@ -287,6 +287,12 @@ int flist_clone_tree(FileView *to, const FileView *from);
  * on error. */
 entries_t flist_list_in(FileView *view, const char path[], int only_dirs,
 		int can_include_parent);
+/* Updates specified cache of the view.  Returns non-zero if cached file list
+ * has changed, otherwise zero is returned. */
+int flist_update_cache(FileView *view, cached_entries_t *cache,
+		const char path[]);
+/* Frees the cache. */
+void flist_free_cache(FileView *view, cached_entries_t *cache);
 
 TSTATIC_DEFS(
 	void pick_cd_path(FileView *view, const char base_dir[], const char path[],

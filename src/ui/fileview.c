@@ -338,8 +338,8 @@ draw_dir_list_only(FileView *view)
 static void
 draw_left_column(FileView *view)
 {
-	entries_t siblings;
-	char *path;
+	char path[PATH_MAX + 1];
+	const char *const dir = flist_get_dir(view);
 
 	const int lcol_width = ui_view_left_reserved(view)
 	                     - (cfg.extra_padding ? 1 : 0) - 1;
@@ -348,20 +348,14 @@ draw_left_column(FileView *view)
 		return;
 	}
 
-	path = strdup(flist_get_dir(view));
+	copy_str(path, sizeof(path), dir);
 	remove_last_path_component(path);
+	(void)flist_update_cache(view, &view->left_column, path);
 
-	siblings = flist_list_in(view, path, 0, 1);
-	if(siblings.nentries < 0)
+	if(view->left_column.entries.nentries >= 0)
 	{
-		free(path);
-		return;
+		print_column(view, view->left_column.entries, dir, path, lcol_width, 0);
 	}
-
-	print_column(view, siblings, flist_get_dir(view), path, lcol_width, 0);
-
-	free(path);
-	free_dir_entries(view, &siblings.entries, &siblings.nentries);
 }
 
 /* Draws a column to the right of the main part of the view. */
@@ -369,7 +363,6 @@ static void
 draw_right_column(FileView *view)
 {
 	char path[PATH_MAX + 1];
-	entries_t children;
 	const int padding = (cfg.extra_padding ? 1 : 0);
 	const int offset = ui_view_left_reserved(view) + padding
 	                 + ui_view_available_width(view) + padding
@@ -382,15 +375,13 @@ draw_right_column(FileView *view)
 	}
 
 	get_current_full_path(view, sizeof(path), path);
-	children = flist_list_in(view, path, 0, 1);
-	if(children.nentries < 0)
+	(void)flist_update_cache(view, &view->right_column, path);
+
+	if(view->right_column.entries.nentries >= 0)
 	{
-		return;
+		print_column(view, view->right_column.entries, NULL, path, rcol_width,
+				offset);
 	}
-
-	print_column(view, children, NULL, path, rcol_width, offset);
-
-	free_dir_entries(view, &children.entries, &children.nentries);
 }
 
 /* Prints column full of entry names.  Current is a hint that tells which column
@@ -1664,11 +1655,19 @@ fview_set_lsview(FileView *view, int enabled)
 void
 fview_set_millerview(FileView *view, int enabled)
 {
-	if(view->miller_view != enabled)
+	if(view->miller_view == enabled)
 	{
-		view->miller_view = enabled;
-		ui_view_schedule_redraw(view);
+		return;
 	}
+
+	if(!enabled)
+	{
+		flist_free_cache(view, &view->left_column);
+		flist_free_cache(view, &view->right_column);
+	}
+
+	view->miller_view = enabled;
+	ui_view_schedule_redraw(view);
 }
 
 size_t

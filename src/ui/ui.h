@@ -291,6 +291,15 @@ struct local_filter_t
 	size_t poshist_len;
 };
 
+/* Cached file list coupled with a watcher. */
+typedef struct
+{
+	fswatch_t *watch;  /* Watcher for the path. */
+	char *dir;         /* Path to watched directory. */
+	entries_t entries; /* Cached list of entries. */
+}
+cached_entries_t;
+
 typedef struct
 {
 	WINDOW *win;
@@ -304,6 +313,10 @@ typedef struct
 
 	/* Various parameters related to local filter. */
 	struct local_filter_t local_filter;
+
+	/* Caches of file lists for miller mode. */
+	cached_entries_t left_column;
+	cached_entries_t right_column;
 
 	/* Monitor that checks for directory changes. */
 	fswatch_t *watch;

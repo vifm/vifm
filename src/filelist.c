@@ -2554,6 +2554,14 @@ check_if_filelist_has_changed(FileView *view)
 			ui_view_schedule_reload(view);
 		}
 	}
+	else
+	{
+		if(flist_update_cache(view, &view->left_column, view->left_column.dir) ||
+				flist_update_cache(view, &view->right_column, view->right_column.dir))
+		{
+			ui_view_schedule_redraw(view);
+		}
+	}
 }
 
 /* Checks whether tree-view needs a reload (any of subdirectories were changed).
@@ -2585,6 +2593,48 @@ tree_has_changed(const dir_entry_t *entries, size_t nchildren)
 		pos += entry->child_count + 1;
 	}
 	return 0;
+}
+
+int
+flist_update_cache(FileView *view, cached_entries_t *cache, const char path[])
+{
+	int update = 0;
+	int error;
+
+	if(cache->watch == NULL || stroscmp(cache->dir, path) != 0)
+	{
+		fswatch_free(cache->watch);
+
+		cache->watch = fswatch_create(path);
+		if(cache->watch == NULL)
+		{
+			/* This is bad, but there isn't much we can do here and this doesn't feel
+			 * like a reason to block anything else. */
+			return 0;
+		}
+
+		replace_string(&cache->dir, path);
+
+		update = 1;
+	}
+
+	if(update || fswatch_changed(cache->watch, &error) || error)
+	{
+		free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
+		cache->entries = flist_list_in(view, path, 0, 1);
+		return 1;
+	}
+
+	return 0;
+}
+
+void
+flist_free_cache(FileView *view, cached_entries_t *cache)
+{
+	free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
+	update_string(&cache->dir, NULL);
+	fswatch_free(cache->watch);
+	cache->watch = NULL;
 }
 
 int
