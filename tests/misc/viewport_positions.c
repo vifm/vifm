@@ -26,9 +26,8 @@ SETUP()
 
 	view->list_rows = 10;
 	view->column_count = 1;
-	/* window_rows actually contains "number or rows - 1". */
-	view->window_rows = 8 - 1;
-	view->window_cells = view->window_rows + 1;
+	view->window_rows = 8;
+	view->window_cells = view->window_rows;
 }
 
 TEST(top_pos_at_top)

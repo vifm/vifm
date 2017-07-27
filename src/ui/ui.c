@@ -280,13 +280,9 @@ ui_char_pressed(wint_t c)
 static void
 correct_size(FileView *view)
 {
-	int x, y;
-
-	getmaxyx(view->win, y, x);
-	view->window_width = x - 1;
-	view->window_rows = y - 1;
+	getmaxyx(view->win, view->window_rows, view->window_width);
 	view->column_count = calculate_columns_count(view);
-	view->window_cells = view->column_count*y;
+	view->window_cells = view->column_count*view->window_rows;
 }
 
 /* Updates TUI elements sizes and coordinates for single window
@@ -1735,7 +1731,7 @@ int
 ui_view_available_width(const FileView *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
-	return (view->window_width + 1) + correction
+	return view->window_width + correction
 	     - ui_view_left_reserved(view) - ui_view_right_reserved(view);
 }
 
@@ -1788,13 +1784,13 @@ ui_qv_top(const FileView *view)
 int
 ui_qv_height(const FileView *view)
 {
-	return cfg.extra_padding ? view->window_rows - 1 : view->window_rows + 1;
+	return cfg.extra_padding ? view->window_rows - 2 : view->window_rows;
 }
 
 int
 ui_qv_width(const FileView *view)
 {
-	return cfg.extra_padding ? view->window_width - 1 : view->window_width + 1;
+	return cfg.extra_padding ? view->window_width - 2 : view->window_width;
 }
 
 const col_scheme_t *

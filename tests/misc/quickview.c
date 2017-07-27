@@ -24,14 +24,14 @@ SETUP()
 TEST(no_extra_line_with_extra_padding)
 {
 	cfg.extra_padding = 1;
-	lwin.window_rows = 2;
+	lwin.window_rows = 3;
 	check_only_one_line_displayed();
 }
 
 TEST(no_extra_line_without_extra_padding)
 {
 	cfg.extra_padding = 0;
-	lwin.window_rows = 0;
+	lwin.window_rows = 1;
 	check_only_one_line_displayed();
 }
 
