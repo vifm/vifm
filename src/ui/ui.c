@@ -1735,7 +1735,7 @@ int
 ui_view_available_width(const FileView *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
-	return ((int)view->window_width + 1) + correction
+	return (view->window_width + 1) + correction
 	     - ui_view_left_reserved(view) - ui_view_right_reserved(view);
 }
 
