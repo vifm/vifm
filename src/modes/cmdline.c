@@ -453,7 +453,7 @@ input_line_changed(void)
 	}
 	else if(prev_mode == MENU_MODE)
 	{
-		menu_redraw();
+		menu_full_redraw();
 	}
 
 	curs_set(1);
@@ -663,7 +663,7 @@ redraw_cmdline(void)
 {
 	if(prev_mode == MENU_MODE)
 	{
-		menu_redraw();
+		menu_full_redraw();
 	}
 	else
 	{
@@ -755,7 +755,7 @@ save_view_port(void)
 	}
 	else
 	{
-		save_menu_pos();
+		menu_save_pos();
 	}
 }
 
@@ -765,7 +765,7 @@ set_view_port(void)
 {
 	if(prev_mode == MENU_MODE)
 	{
-		load_menu_pos();
+		menu_restore_pos();
 		return;
 	}
 
@@ -809,7 +809,7 @@ leave_cmdline_mode(void)
 		if(prev_mode == MENU_MODE)
 		{
 			wresize(menu_win, getmaxy(stdscr) - 1, getmaxx(stdscr));
-			update_menu();
+			menu_partial_redraw();
 		}
 	}
 
@@ -2471,8 +2471,7 @@ update_cmdline_size(void)
 	else
 	{
 		wresize(menu_win, getmaxy(stdscr) - required_height, getmaxx(stdscr));
-		update_menu();
-		wrefresh(menu_win);
+		menu_partial_redraw();
 	}
 }
 
@@ -2652,7 +2651,7 @@ stop_regular_completion(void)
 	{
 		if(sub_mode == CLS_MENU_COMMAND)
 		{
-			menu_redraw();
+			menu_full_redraw();
 		}
 		else
 		{

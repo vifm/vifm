@@ -67,7 +67,7 @@ commands_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 
 		break_at(m->items[m->pos], ' ');
 		snprintf(cmd_buf, sizeof(cmd_buf), "cunabbrev %s", m->items[m->pos]);
-		execute_cmdline_command(cmd_buf);
+		menu_run_command(cmd_buf);
 
 		remove_current_item(m->state);
 		return KHR_REFRESH_WINDOW;

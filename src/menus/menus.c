@@ -272,7 +272,7 @@ move_to_menu_pos(int pos, menu_state_t *ms)
 	normalize_top(ms);
 
 	redraw = 0;
-	if(pos > get_last_visible_line(m))
+	if(pos > menu_last_line(m))
 	{
 		m->top = pos - (ms->win_rows - 2 - 1);
 		redraw = 1;
@@ -292,9 +292,9 @@ move_to_menu_pos(int pos, menu_state_t *ms)
 			normalize_top(ms);
 			redraw = 1;
 		}
-		if(pos > get_last_visible_line(m) - s)
+		if(pos > menu_last_line(m) - s)
 		{
-			m->top += s - (get_last_visible_line(m) - pos);
+			m->top += s - (menu_last_line(m) - pos);
 			normalize_top(ms);
 			redraw = 1;
 		}
@@ -705,7 +705,7 @@ display_menu(menu_state_t *m, FileView *view)
 	setup_menu();
 	draw_menu(m);
 	move_to_menu_pos(m->d->pos, m);
-	enter_menu_mode(m->d, view);
+	menu_enter_mode(m->d, view);
 	return 0;
 }
 
