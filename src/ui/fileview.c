@@ -822,12 +822,13 @@ get_last_visible_cell(const FileView *view)
 size_t
 get_window_top_pos(const FileView *view)
 {
+	const int column_correction = view->list_pos%view->column_count;
 	if(view->top_line == 0)
 	{
-		return 0;
+		return column_correction;
 	}
 
-	return view->top_line + get_effective_scroll_offset(view);
+	return view->top_line + get_effective_scroll_offset(view) + column_correction;
 }
 
 size_t
@@ -836,7 +837,8 @@ get_window_middle_pos(const FileView *view)
 	const int list_middle = DIV_ROUND_UP(view->list_rows, (2*view->column_count));
 	const int window_middle = DIV_ROUND_UP(view->window_rows - 1, 2);
 	return view->top_line
-	     + MAX(0, MIN(list_middle, window_middle) - 1)*view->column_count;
+	     + MAX(0, MIN(list_middle, window_middle) - 1)*view->column_count
+	     + view->list_pos%view->column_count;
 }
 
 size_t
@@ -845,13 +847,20 @@ get_window_bottom_pos(const FileView *view)
 	if(view->list_rows - 1 <= (int)get_last_visible_cell(view))
 	{
 		const size_t last = view->list_rows - 1;
-		return last - last%view->column_count;
+		const size_t last_row = ROUND_DOWN(last, view->column_count);
+		if(last_row + view->list_pos%view->column_count > last)
+		{
+			return last_row - view->column_count + view->list_pos%view->column_count;
+		}
+		return last_row + view->list_pos%view->column_count;
 	}
 	else
 	{
+		const size_t last = get_last_visible_cell(view);
+		const size_t last_row = ROUND_DOWN(last, view->column_count);
 		const size_t off = get_effective_scroll_offset(view);
-		const size_t column_correction = view->column_count - 1;
-		return get_last_visible_cell(view) - off - column_correction;
+		const size_t column_correction = view->list_pos%view->column_count;
+		return last_row + column_correction - off;
 	}
 }
 

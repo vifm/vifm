@@ -26,6 +26,8 @@
 
 	Disable spell checking of vifm files in Vim except for comments.
 
+	H/M/L keys in ls-like view now account for columns.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 
