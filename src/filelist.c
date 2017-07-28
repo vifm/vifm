@@ -2554,6 +2554,14 @@ check_if_filelist_has_changed(FileView *view)
 			ui_view_schedule_reload(view);
 		}
 	}
+	else
+	{
+		if(flist_update_cache(view, &view->left_column, view->left_column.dir) ||
+				flist_update_cache(view, &view->right_column, view->right_column.dir))
+		{
+			ui_view_schedule_redraw(view);
+		}
+	}
 }
 
 /* Checks whether tree-view needs a reload (any of subdirectories were changed).
@@ -2585,6 +2593,48 @@ tree_has_changed(const dir_entry_t *entries, size_t nchildren)
 		pos += entry->child_count + 1;
 	}
 	return 0;
+}
+
+int
+flist_update_cache(FileView *view, cached_entries_t *cache, const char path[])
+{
+	int update = 0;
+	int error;
+
+	if(cache->watch == NULL || stroscmp(cache->dir, path) != 0)
+	{
+		fswatch_free(cache->watch);
+
+		cache->watch = fswatch_create(path);
+		if(cache->watch == NULL)
+		{
+			/* This is bad, but there isn't much we can do here and this doesn't feel
+			 * like a reason to block anything else. */
+			return 0;
+		}
+
+		replace_string(&cache->dir, path);
+
+		update = 1;
+	}
+
+	if(update || fswatch_changed(cache->watch, &error) || error)
+	{
+		free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
+		cache->entries = flist_list_in(view, path, 0, 1);
+		return 1;
+	}
+
+	return 0;
+}
+
+void
+flist_free_cache(FileView *view, cached_entries_t *cache)
+{
+	free_dir_entries(view, &cache->entries.entries, &cache->entries.nentries);
+	update_string(&cache->dir, NULL);
+	fswatch_free(cache->watch);
+	cache->watch = NULL;
 }
 
 int
@@ -2852,47 +2902,24 @@ list_sibling_dirs(FileView *view)
 {
 	entries_t parent_dirs = {};
 	char *path;
-	int len, i;
-	char **list;
 
-	/* Make list of entries from parent directories which are
-	 * either directories or symbolic links to directories. */
-	path = strdup(flist_get_dir(view));
-	remove_last_path_component(path);
-
-	list = list_all_files(path, &len);
-	if(len < 0)
+	if(is_root_dir(flist_get_dir(view)))
 	{
-		free(path);
 		parent_dirs.nentries = -1;
 		return parent_dirs;
 	}
 
-	for(i = 0; i < len; ++i)
-	{
-		char *full_path;
-		dir_entry_t *entry;
+	path = strdup(flist_get_dir(view));
+	remove_last_path_component(path);
 
-		if(view->hide_dot && list[i][0] == '.')
-		{
-			continue;
-		}
+	parent_dirs = flist_list_in(view, path, 1, 0);
 
-		full_path = format_str("%s/%s", path, list[i]);
-		entry = entry_list_add(view, &parent_dirs.entries, &parent_dirs.nentries,
-				full_path);
-
-		if(!fentry_is_dir(entry) ||
-				!filters_file_is_visible(view, path, list[i], 1, 0))
-		{
-			fentry_free(view, entry);
-			--parent_dirs.nentries;
-		}
-
-		free(full_path);
-	}
 	free(path);
-	free_string_array(list, len);
+
+	if(parent_dirs.nentries < 0)
+	{
+		return parent_dirs;
+	}
 
 	if(entry_from_path(view, parent_dirs.entries, parent_dirs.nentries,
 				flist_get_dir(view)) == NULL)
@@ -2905,6 +2932,58 @@ list_sibling_dirs(FileView *view)
 	}
 
 	return parent_dirs;
+}
+
+entries_t
+flist_list_in(FileView *view, const char path[], int only_dirs,
+		int can_include_parent)
+{
+	entries_t siblings = {};
+	int len, i;
+	char **list;
+
+	list = list_all_files(path, &len);
+	if(len < 0)
+	{
+		siblings.nentries = -1;
+		return siblings;
+	}
+
+	for(i = 0; i < len; ++i)
+	{
+		char *full_path;
+		dir_entry_t *entry;
+		int is_dir;
+
+		if(view->hide_dot && list[i][0] == '.')
+		{
+			continue;
+		}
+
+		full_path = format_str("%s/%s", path, list[i]);
+		entry = entry_list_add(view, &siblings.entries, &siblings.nentries,
+				full_path);
+
+		is_dir = fentry_is_dir(entry);
+		if((only_dirs && !is_dir) ||
+				!filters_file_is_visible(view, path, list[i], is_dir, 0))
+		{
+			fentry_free(view, entry);
+			--siblings.nentries;
+		}
+
+		free(full_path);
+	}
+	free_string_array(list, len);
+
+	if(can_include_parent && cfg_parent_dir_is_visible(is_root_dir(path)))
+	{
+		char *const full_path = format_str("%s/..", path);
+		entry_list_add(view, &siblings.entries, &siblings.nentries, full_path);
+		free(full_path);
+	}
+
+	return siblings;
 }
 
 /* Picks next or previous sibling from the list with optional wrapping.

@@ -54,6 +54,7 @@ enum
 	JOB_LINE_COLOR,     /* Line that displays status of background jobs. */
 	SUGGEST_BOX_COLOR,  /* Style of suggestion box. */
 	MISMATCH_COLOR,     /* File entries that don't match each other in diff. */
+	AUX_WIN_COLOR,      /* Auxiliary part of window. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 

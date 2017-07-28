@@ -103,6 +103,10 @@ void columns_clear(columns_t *cols);
 void columns_format_line(columns_t *cols, const void *data,
 		size_t max_line_width);
 
+/* Checks if recalculation is needed.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int columns_matches_width(const columns_t *cols, size_t max_width);
+
 #endif /* VIFM__UI__COLUMN_VIEW_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 20, 2017" "vifm 0.9"
+.TH VIFM 1 "July 27, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1577,8 +1577,8 @@ equals
  ofboth | ofone | groupids | grouppaths | skipempty]..."
 compare files in one or two views according the arguments.  The default
 is "bycontents listall ofboth grouppaths".  See "Compare views" section below
-for details.  Tree structure is incompatible with ls-like view, so value of
-\'lsview' option is ignored.
+for details.  Tree structure is incompatible with alternative representations,
+so values of 'lsview' and 'millerview' options are ignored.
 .TP
 .BI "                                         :copen"
 .TP
@@ -1960,6 +1960,7 @@ Available style values (some of them can be combined):
 Available group-name values:
  \- Win \- color of all windows (views, dialogs, menus) and default color for \
 their content (e.g. regular files in views)
+ \- AuxWin \- color of auxiliary areas of windows
  \- Border \- color of vertical parts of the border
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
@@ -2117,17 +2118,18 @@ transparency:
   CmdLine
     ErrorMsg
   Win
-    File name specific highlights
-      Directory
-      Link
-      BrokenLink
-      Socket
-      Device
-      Fifo
-      Executable
-        Selected
-          CurrLine
-          OtherLine
+    AuxWin
+      File name specific highlights
+        Directory
+        Link
+        BrokenLink
+        Socket
+        Device
+        Fifo
+        Executable
+          Selected
+            CurrLine
+            OtherLine
   TopLine
     TopLineSel
 
@@ -2647,7 +2649,8 @@ turn pane into tree view with current directory as a root.  The tree view is
 implemented on top of a custom view, but is automatically kept in sync with
 file system state and considers all the filters.  Thus the structure corresponds
 to what one would see on visiting the directories manually.  Tree structure is
-incompatible with ls-like view, so value of 'lsview' option is ignored.
+incompatible with alternative representations, so values of 'lsview' and
+\'millerview' options are ignored.
 .TP
 .BI "                                         :undolist"
 .TP
@@ -3723,7 +3726,18 @@ scope: local
 .br
 When this option is set, directory view will be displayed in multiple columns
 with file names similar to output of `ls \-x` command.  See "ls-like view"
-section below for format description.
+section below for format description.  This option has no effect if 'millerview'
+is on.
+.TP
+.BI 'millerview'
+type: boolean
+.br
+default: false
+.br
+scope: local
+.br
+When this option is set, directory view will be displayed in multiple
+cascading columns.  Ignores 'lsview'.
 .TP
 .BI 'mintimeoutlen'
 type: integer
@@ -5630,8 +5644,8 @@ Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine, JobLine, \
 SuggestBox and WildMenu are always determined by the primary color scheme;
 .IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
-Fifo and Win are determined by primary color scheme and a set of local \
-color schemes, which can be empty.
+Fifo, CmpMismatch, Win and AuxWin are determined by primary color scheme and a \
+set of local color schemes, which can be empty.
 .RE
 
 There might be a set of local color schemes because they are structured

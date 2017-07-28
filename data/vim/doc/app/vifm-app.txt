@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Jul 20
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Jul 27
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -1369,8 +1369,8 @@ The builtin commands are:
           ofboth | ofone | groupids | grouppaths | skipempty]...
     compare files in one or two views according the arguments.  The default
     is "bycontents listall ofboth grouppaths".  See |vifm-compare-views| for
-    details.  Tree structure is incompatible with ls-like view, so value of
-    |vifm-'lsview'| option is ignored.
+    details.  Tree structure is incompatible with alternative representations,
+    so values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
 
 :cope[n]                                       *vifm-:copen* *vifm-:cope*
     opens menu with contents of the last displayed menu with navigation to
@@ -1675,6 +1675,7 @@ Available style values (some of them can be combined):
 Available group-name values:
  - Win - color of all windows (views, dialogs, menus) and default color for
          their content (e.g. regular files in views)
+ - AuxWin - color of auxiliary areas of windows
  - Border - color of vertical parts of the border
  - TopLineSel - top line color of the current pane
  - TopLine - top line color of the other pane
@@ -1832,17 +1833,18 @@ transparency:
   CmdLine
     ErrorMsg
   Win
-    File name specific highlights
-      Directory
-      Link
-      BrokenLink
-      Socket
-      Device
-      Fifo
-      Executable
-        Selected
-          CurrLine
-          OtherLine
+    AuxWin
+      File name specific highlights
+        Directory
+        Link
+        BrokenLink
+        Socket
+        Device
+        Fifo
+        Executable
+          Selected
+            CurrLine
+            OtherLine
   TopLine
     TopLineSel
 
@@ -2224,8 +2226,9 @@ yet supported) and might be changed in future releases, or get an alias.
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
     structure corresponds to what one would see on visiting the directories
-    manually.  Tree structure is incompatible with ls-like view, so value of
-    |vifm-'lsview'| option is ignored.
+    manually.  Tree structure is incompatible with alternative
+    representations, so values of |vifm-'lsview'| and |vifm-'millerview'|
+    options are ignored.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.
@@ -3104,7 +3107,16 @@ scope: local
 
 When this option is set, directory view will be displayed in multiple
 columns with file names similar to output of `ls -x` command.  See also
-|vifm-ls-view|.
+|vifm-ls-view|.  This option has no effect if |vifm-'millerview'| is on.
+
+                                               *vifm-'millerview'*
+millerview
+type: boolean
+default: false
+scope: local
+
+When this option is set, directory view will be displayed in multiple
+cascading columns.  Ignores |vifm-'lsview'|.
 
                                                *vifm-'mintimeoutlen'*
 mintimeoutlen
@@ -4755,8 +4767,8 @@ this way:
    - Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine, JobLine,
      SuggestBox and WildMenu are always determined by the primary color scheme
    - CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device,
-     Executable, Fifo and Win are determined by primary color scheme and a set
-     of local color schemes, which can be empty
+     Executable, Fifo, CmpMismatch, Win and AuxWin are determined by primary
+     color scheme and a set of local color schemes, which can be empty
 
 There might be a set of local color schemes because they are structured
 hierarchically according to file system structure. For example, having the

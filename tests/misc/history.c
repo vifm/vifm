@@ -193,5 +193,72 @@ TEST(history_size_reduction_leaves_correct_number_of_elements)
 	assert_int_equal(2, lwin.history[1].rel_pos);
 }
 
+TEST(find_with_disabled_history)
+{
+	entries_t entries = {};
+	int top, pos;
+
+	cfg_resize_histories(0);
+	pos = flist_hist_find(&lwin, entries, "/bin", &top);
+
+	assert_int_equal(0, top);
+	assert_int_equal(0, pos);
+}
+
+TEST(defaults_are_returned_on_dir_lookup_failure)
+{
+	entries_t entries = {};
+	int top, pos;
+
+	flist_hist_save(&lwin, "/bin", "sh", 0);
+
+	pos = flist_hist_find(&lwin, entries, "/etc", &top);
+
+	assert_int_equal(0, top);
+	assert_int_equal(0, pos);
+}
+
+TEST(defaults_are_is_returned_on_file_lookup_failure)
+{
+	dir_entry_t entry_list[] = { { .name = "a" }, { .name = "b" } };
+	entries_t entries = { entry_list, 2 };
+	int top, pos;
+
+	flist_hist_save(&lwin, "/bin", "x", 0);
+
+	pos = flist_hist_find(&lwin, entries, "/bin", &top);
+
+	assert_int_equal(0, top);
+	assert_int_equal(0, pos);
+}
+
+TEST(history_item_is_found)
+{
+	dir_entry_t entry_list[] = { { .name = "a" }, { .name = "b" } };
+	entries_t entries = { entry_list, 2 };
+	int top, pos;
+
+	flist_hist_save(&lwin, "/bin", "b", 0);
+
+	pos = flist_hist_find(&lwin, entries, "/bin", &top);
+
+	assert_int_equal(1, top);
+	assert_int_equal(1, pos);
+}
+
+TEST(top_value_can_not_be_negative)
+{
+	dir_entry_t entry_list[] = { { .name = "a" }, { .name = "b" } };
+	entries_t entries = { entry_list, 2 };
+	int top, pos;
+
+	flist_hist_save(&lwin, "/bin", "b", 2);
+
+	pos = flist_hist_find(&lwin, entries, "/bin", &top);
+
+	assert_int_equal(0, top);
+	assert_int_equal(1, pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

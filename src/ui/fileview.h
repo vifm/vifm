@@ -58,8 +58,8 @@ void redraw_view_imm(FileView *view);
  * cursor) */
 void redraw_current_view(void);
 
-/* Restores normal appearance of item under the cursor. */
-void erase_current_line_bar(FileView *view);
+/* Adds inactive cursor mark to the view. */
+void put_inactive_mark(FileView *view);
 
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(FileView *view);
@@ -130,6 +130,9 @@ void update_scroll_bind_offset(void);
 /* Enables/disables ls-like style of the view. */
 void fview_set_lsview(FileView *view, int enabled);
 
+/* Enables/disables cascading columns style of the view. */
+void fview_set_millerview(FileView *view, int enabled);
+
 /* Evaluates number of columns in the view.  Returns the number. */
 size_t calculate_columns_count(FileView *view);
 
@@ -153,10 +156,12 @@ TSTATIC_DEFS(
 	/* Packet set of parameters to pass as user data for processing columns. */
 	typedef struct
 	{
-		FileView *view;    /* View on which cell is being drawn. */
-		size_t line_pos;   /* File position in the file list (the view). */
-		int line_hi_group; /* Cached line highlight (avoid per-column calculation). */
-		int is_current;    /* Whether this file is selected with the cursor. */
+		FileView *view;     /* View on which cell is being drawn. */
+		dir_entry_t *entry; /* Entry that is being displayed. */
+		size_t line_pos;    /* File position in the file list (the view). */
+		int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
+		int is_current;     /* Whether this file is selected with the cursor. */
+		int draw_numbers;   /* Whether to draw line numbers. */
 
 		size_t current_line;  /* Line of the cell within the view window. */
 		size_t column_offset; /* Offset in characters of the column. */
@@ -165,6 +170,7 @@ TSTATIC_DEFS(
 		                       color).  A pointer to allow changing value in const
 		                       struct.  Should be zero first time, then auto
 		                       reset. */
+		int is_main;        /* Whether this is main file list. */
 	}
 	column_data_t;
 

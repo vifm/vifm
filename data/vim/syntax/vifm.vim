@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@openmailbox.org>
-" Last Change: July 20, 2017
+" Last Change: July 26, 2017
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -72,6 +72,7 @@ syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
 		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg CmpMismatch
+		\ AuxWin
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
@@ -123,26 +124,26 @@ syntax keyword vifmOption contained aproposprg autochpos caseoptions cdpath cd
 		\ deleteprg dotdirs dotfiles dirsize fastrun fillchars fcs findprg
 		\ followlinks fusehome gdefault grepprg history hi hlsearch hls iec
 		\ ignorecase ic iooptions incsearch is laststatus lines locateprg ls lsview
-		\ mintimeoutlen number nu numberwidth nuw relativenumber rnu rulerformat ruf
-		\ runexec scrollbind scb scrolloff so sort sortgroups sortorder sortnumbers
-		\ shell sh shortmess shm sizefmt slowfs smartcase scs statusline stl
-		\ suggestoptions syscalls tabstop timefmt timeoutlen title tm trash trashdir
-		\ ts tuioptions to undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd
-		\ wildmenu wmnu wildstyle wordchars wrap wrapscan ws
+		\ millerview mintimeoutlen number nu numberwidth nuw relativenumber rnu
+		\ rulerformat ruf runexec scrollbind scb scrolloff so sort sortgroups
+		\ sortorder sortnumbers shell sh shortmess shm sizefmt slowfs smartcase scs
+		\ statusline stl suggestoptions syscalls tabstop timefmt timeoutlen title tm
+		\ trash trashdir ts tuioptions to undolevels ul vicmd viewcolumns vifminfo
+		\ vimhelp vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos nocf nochaselinks nodotfiles
 		\ nofastrun nofollowlinks nohlsearch nohls noiec noignorecase noic
-		\ noincsearch nois nolaststatus nols nolsview nonumber nonu norelativenumber
-		\ nornu noscrollbind noscb norunexec nosmartcase noscs nosortnumbers
-		\ nosyscalls notitle notrash novimhelp nowildmenu nowmnu nowrap nowrapscan
-		\ nows
+		\ noincsearch nois nolaststatus nols nolsview nomillerview nonumber nonu
+		\ norelativenumber nornu noscrollbind noscb norunexec nosmartcase noscs
+		\ nosortnumbers nosyscalls notitle notrash novimhelp nowildmenu nowmnu
+		\ nowrap nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invcf invchaselinks invdotfiles
 		\ invfastrun invfollowlinks invhlsearch invhls inviec invignorecase invic
-		\ invincsearch invis invlaststatus invls invlsview invnumber invnu
-		\ invrelativenumber invrnu invscrollbind invscb invrunexec invsmartcase
+		\ invincsearch invis invlaststatus invls invlsview invmillerview invnumber
+		\ invnu invrelativenumber invrnu invscrollbind invscb invrunexec invsmartcase
 		\ invscs invsortnumbers invsyscalls invtitle invtrash invvimhelp invwildmenu
 		\ invwmnu invwrap invwrapscan invws
 

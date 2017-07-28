@@ -112,6 +112,8 @@ static char * format_view_title(const FileView *view, path_func pf);
 static void print_view_title(const FileView *view, int active_view,
 		char title[]);
 static void fixup_titles_attributes(const FileView *view, int active_view);
+static int is_in_miller_view(const FileView *view);
+static int is_forced_list_mode(const FileView *view);
 static uint64_t get_updated_time(uint64_t prev);
 
 void
@@ -724,7 +726,7 @@ change_window(void)
 
 	if(window_shows_dirlist(other_view))
 	{
-		erase_current_line_bar(other_view);
+		put_inactive_mark(other_view);
 	}
 
 	if(curr_stats.view && !is_dir_list_loaded(curr_view))
@@ -1709,8 +1711,8 @@ int
 ui_view_displays_columns(const FileView *view)
 {
 	return !view->ls_view
-	    || (flist_custom_active(view) &&
-					(view->custom.type == CV_TREE || cv_compare(view->custom.type)));
+	    || is_in_miller_view(view)
+	    || is_forced_list_mode(view);
 }
 
 FileType
@@ -1733,7 +1735,42 @@ int
 ui_view_available_width(const FileView *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
-	return ((int)view->window_width + 1) + correction;
+	return ((int)view->window_width + 1) + correction
+	     - ui_view_left_reserved(view) - ui_view_right_reserved(view);
+}
+
+int
+ui_view_left_reserved(const FileView *view)
+{
+	return is_in_miller_view(view) ? view->window_width/3 : 0;
+}
+
+int
+ui_view_right_reserved(const FileView *view)
+{
+	dir_entry_t *const entry = get_current_entry(view);
+	return is_in_miller_view(view)
+	    && fentry_is_dir(entry) && !is_parent_dir(entry->name)
+	     ? view->window_width/3
+	     : 0;
+}
+
+/* Whether miller columns should be displayed.  Returns non-zero if so,
+ * otherwise zero is returned. */
+static int
+is_in_miller_view(const FileView *view)
+{
+	return view->miller_view
+	    && !flist_custom_active(view);
+}
+
+/* Whether view must display straight single-column file list.  Returns non-zero
+ * if so, otherwise zero is returned. */
+static int
+is_forced_list_mode(const FileView *view)
+{
+	return flist_custom_active(view)
+	    && (view->custom.type == CV_TREE || cv_compare(view->custom.type));
 }
 
 int

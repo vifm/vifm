@@ -226,6 +226,80 @@ typedef struct
 }
 entries_t;
 
+/* Data related to custom filling. */
+struct cv_data_t
+{
+	/* Type of the custom view. */
+	CVType type;
+
+	/* Additional data about CV_DIFF type. */
+	CompareType diff_cmp_type; /* Type of comparison. */
+	int diff_path_group;       /* Whether entries are grouped by paths. */
+
+	/* This is temporary storage for custom list entries used during its
+	 * construction. */
+	dir_entry_t *entries; /* File entries. */
+	int entry_count;      /* Number of file entries. */
+
+	/* Title of the custom view being constructed.  Discarded if finishing
+	 * fails. */
+	char *next_title;
+
+	/* Directory we were in before custom view activation. */
+	char *orig_dir;
+	/* Title for the custom view. */
+	char *title;
+
+	/* Previous sorting value, before unsorted custom view was loaded. */
+	char sort[SK_COUNT];
+
+	/* List of paths that should be ignored (including all nested paths).  Used
+	 * by tree-view. */
+	struct trie_t *excluded_paths;
+
+	/* Names of files in custom view while it's being composed.  Used for
+	 * duplicate elimination during construction of custom list. */
+	struct trie_t *paths_cache;
+};
+
+/* Various parameters related to local filter. */
+struct local_filter_t
+{
+	/* Original list of custom entries saved because otherwise we lose it. */
+	dir_entry_t *entries; /* File entries. */
+	int entry_count;      /* Number of file entries. */
+
+	/* Local filename filter. */
+	filter_t filter;
+	/* Whether interactive filtering in progress. */
+	int in_progress;
+	/* Removed value of local filename filter.  Stored for restore operation. */
+	char *prev;
+	/* Temporary storage for local filename filter, when its overwritten. */
+	char *saved;
+
+	/* Unfiltered file entries. */
+	dir_entry_t *unfiltered;
+	/* Number of unfiltered entries. */
+	size_t unfiltered_count;
+	/* Number of entries filtered in other ways. */
+	size_t prefiltered_count;
+
+	/* List of previous cursor positions in the unfiltered array. */
+	int *poshist;
+	/* Number of elements in the poshist field. */
+	size_t poshist_len;
+};
+
+/* Cached file list coupled with a watcher. */
+typedef struct
+{
+	fswatch_t *watch;  /* Watcher for the path. */
+	char *dir;         /* Path to watched directory. */
+	entries_t entries; /* Cached list of entries. */
+}
+cached_entries_t;
+
 typedef struct
 {
 	WINDOW *win;
@@ -235,41 +309,14 @@ typedef struct
 	char curr_dir[PATH_MAX];
 
 	/* Data related to custom filling. */
-	struct
-	{
-		/* Type of the custom view. */
-		CVType type;
+	struct cv_data_t custom;
 
-		/* Additional data about CV_DIFF type. */
-		CompareType diff_cmp_type; /* Type of comparison. */
-		int diff_path_group;       /* Whether entries are grouped by paths. */
+	/* Various parameters related to local filter. */
+	struct local_filter_t local_filter;
 
-		/* This is temporary storage for custom list entries used during its
-		 * construction. */
-		dir_entry_t *entries; /* File entries. */
-		int entry_count;      /* Number of file entries. */
-
-		/* Title of the custom view being constructed.  Discarded if finishing
-		 * fails. */
-		char *next_title;
-
-		/* Directory we were in before custom view activation. */
-		char *orig_dir;
-		/* Title for the custom view. */
-		char *title;
-
-		/* Previous sorting value, before unsorted custom view was loaded. */
-		char sort[SK_COUNT];
-
-		/* List of paths that should be ignored (including all nested paths).  Used
-		 * by tree-view. */
-		struct trie_t *excluded_paths;
-
-		/* Names of files in custom view while it's being composed.  Used for
-		 * duplicate elimination during construction of custom list. */
-		struct trie_t *paths_cache;
-	}
-	custom;
+	/* Caches of file lists for miller mode. */
+	cached_entries_t left_column;
+	cached_entries_t right_column;
 
 	/* Monitor that checks for directory changes. */
 	fswatch_t *watch;
@@ -318,36 +365,6 @@ typedef struct
 	 * possible.  Not NULL. */
 	char *prev_auto_filter;
 
-	/* Various parameters related to local filter. */
-	struct
-	{
-		/* Original list of custom entries saved because otherwise we lose it. */
-		dir_entry_t *entries; /* File entries. */
-		int entry_count;      /* Number of file entries. */
-
-		/* Local filename filter. */
-		filter_t filter;
-		/* Whether interactive filtering in progress. */
-		int in_progress;
-		/* Removed value of local filename filter.  Stored for restore operation. */
-		char *prev;
-		/* Temporary storage for local filename filter, when its overwritten. */
-		char *saved;
-
-		/* Unfiltered file entries. */
-		dir_entry_t *unfiltered;
-		/* Number of unfiltered entries. */
-		size_t unfiltered_count;
-		/* Number of entries filtered in other ways. */
-		size_t prefiltered_count;
-
-		/* List of previous cursor positions in the unfiltered array. */
-		int *poshist;
-		/* Number of elements in the poshist field. */
-		size_t poshist_len;
-	}
-	local_filter;
-
 	/* List of sorting keys. */
 	char sort[SK_COUNT], sort_g[SK_COUNT];
 	/* Sorting groups (comma-separated list of regular expressions). */
@@ -374,6 +391,9 @@ typedef struct
 	                            * the file list.  Zero if not calculated. */
 	size_t column_count; /* Number of columns in the view, used for list view. */
 	size_t window_cells; /* Max number of files that can be displayed. */
+
+	/* Non-zero if miller columns view is enabled. */
+	int miller_view, miller_view_g;
 
 	/* Whether and how line numbers are displayed. */
 	NumberingType num_type, num_type_g;
@@ -593,6 +613,14 @@ FileType ui_view_entry_target_type(const dir_entry_t *entry);
 /* Gets width of part of the view that is available for file list.  Returns the
  * width. */
 int ui_view_available_width(const FileView *view);
+
+/* Retrieves width reserved for something to the left of file list.  Returns the
+ * width. */
+int ui_view_left_reserved(const FileView *view);
+
+/* Retrieves width reserved for something to the right of file list.  Returns
+ * the width. */
+int ui_view_right_reserved(const FileView *view);
 
 /* Retrieves column number at which quickview content should be displayed.
  * Returns the number. */

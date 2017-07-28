@@ -6,6 +6,11 @@
 	Added retry/ignore/abort prompt for file copying and directory/file/symlink
 	creation when 'syscalls' is on.  Thanks to einhander.
 
+	Added AuxWin highlight group for highlighting auxiliary parts of windows.
+
+	Added 'millerview' option that enables cascading columns interface for the
+	view.  Thanks to sudo-nice.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

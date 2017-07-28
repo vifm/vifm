@@ -1033,6 +1033,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]sortgroups=%s\n", escape_spaces(rwin.sort_groups_g));
 	fprintf(fp, "=[%slsview\n", lwin.ls_view_g ? "" : "no");
 	fprintf(fp, "=]%slsview\n", rwin.ls_view_g ? "" : "no");
+	fprintf(fp, "=[%smillerview\n", lwin.miller_view_g ? "" : "no");
+	fprintf(fp, "=]%smillerview\n", rwin.miller_view_g ? "" : "no");
 	fprintf(fp, "=[%snumber\n", (lwin.num_type_g & NT_SEQ) ? "" : "no");
 	fprintf(fp, "=]%snumber\n", (rwin.num_type_g & NT_SEQ) ? "" : "no");
 	fprintf(fp, "=[numberwidth=%d\n", lwin.num_width_g);
