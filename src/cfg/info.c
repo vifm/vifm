@@ -280,7 +280,7 @@ read_info_file(int reread)
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				const int rel_pos = read_optional_number(fp);
-				get_history(view, reread, line_val, line2, rel_pos);
+				get_history(view, reread, line_val, line2, rel_pos < 0 ? 0 : rel_pos);
 			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
