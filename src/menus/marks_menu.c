@@ -48,7 +48,7 @@ show_marks_menu(FileView *view, const char marks[])
 	size_t max_len;
 
 	static menu_data_t m;
-	init_menu_data(&m, view, strdup("Mark -- Directory -- File"),
+	menus_init_data(&m, view, strdup("Mark -- Directory -- File"),
 			strdup("No marks set"));
 	m.execute_handler = &execute_mark_cb;
 	m.key_handler = &mark_khandler;
@@ -116,7 +116,7 @@ show_marks_menu(FileView *view, const char marks[])
 	}
 	m.len = i;
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
@@ -136,7 +136,7 @@ mark_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 	if(wcscmp(keys, L"dd") == 0)
 	{
 		clear_mark(m->items[m->pos][0]);
-		remove_current_item(m->state);
+		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

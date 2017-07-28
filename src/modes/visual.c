@@ -444,11 +444,9 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 page_scroll(int base, int direction)
 {
-	int new_pos;
-	/* Two lines gap. */
-	int lines = view->window_rows - 1;
-	int offset = lines*view->column_count;
-	new_pos = base + direction*offset;
+	enum { GAP_SIZE = 2 };
+	const int offset = (view->window_rows - GAP_SIZE)*view->column_count;
+	const int new_pos = base + direction*offset;
 	scroll_by_files(view, direction*offset);
 	goto_pos(new_pos);
 }

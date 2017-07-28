@@ -49,7 +49,7 @@ show_jobs_menu(FileView *view)
 	bg_job_t *p;
 	int i;
 
-	init_menu_data(&jobs_m, view, strdup("Pid --- Command"),
+	menus_init_data(&jobs_m, view, strdup("Pid --- Command"),
 			strdup("No jobs currently running"));
 	jobs_m.execute_handler = &execute_jobs_cb;
 	jobs_m.key_handler = &jobs_khandler;
@@ -98,7 +98,7 @@ show_jobs_menu(FileView *view)
 
 	jobs_m.len = i;
 
-	return display_menu(jobs_m.state, view);
+	return menus_enter(jobs_m.state, view);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero
@@ -123,7 +123,7 @@ jobs_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 			return KHR_REFRESH_WINDOW;
 		}
 
-		draw_menu(m->state);
+		menus_partial_redraw(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"e") == 0)
@@ -199,11 +199,11 @@ show_job_errors(FileView *view, menu_data_t *m, bg_job_t *job)
 	{
 		static menu_data_t m;
 
-		init_menu_data(&m, view, format_str("Job errors (%s)", cmd), NULL);
+		menus_init_data(&m, view, format_str("Job errors (%s)", cmd), NULL);
 		m.key_handler = &errs_khandler;
 		m.items = break_into_lines(errors, errors_len, &m.len, 0);
 
-		reenter_menu_mode(&m);
+		menu_reenter_mode(&m);
 	}
 	free(cmd);
 	free(errors);
@@ -216,7 +216,7 @@ errs_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"h") == 0)
 	{
-		reenter_menu_mode(&jobs_m);
+		menu_reenter_mode(&jobs_m);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

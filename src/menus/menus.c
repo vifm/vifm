@@ -111,10 +111,10 @@ menu_state;
 static menu_data_t menu_data_stash;
 
 void
-remove_current_item(menu_state_t *ms)
+menus_remove_current(menu_state_t *ms)
 {
 	menu_data_t *const m = ms->d;
-	menu_current_line_erase(ms);
+	menus_erase_current(ms);
 
 	remove_from_string_array(m->items, m->len, m->pos);
 
@@ -140,23 +140,23 @@ remove_current_item(menu_state_t *ms)
 	}
 
 	--m->len;
-	draw_menu(ms);
+	menus_partial_redraw(ms);
 
-	move_to_menu_pos(m->pos, ms);
+	menus_set_pos(ms, m->pos);
 }
 
 void
-menu_current_line_erase(menu_state_t *m)
+menus_erase_current(menu_state_t *m)
 {
 	draw_menu_item(m, m->d->pos, m->current, 1);
 }
 
 void
-init_menu_data(menu_data_t *m, FileView *view, char title[], char empty_msg[])
+menus_init_data(menu_data_t *m, FileView *view, char title[], char empty_msg[])
 {
 	if(m->initialized)
 	{
-		reset_menu_data(m);
+		menus_reset_data(m);
 	}
 
 	if(menu_state.d != NULL)
@@ -183,7 +183,7 @@ init_menu_data(menu_data_t *m, FileView *view, char title[], char empty_msg[])
 }
 
 void
-reset_menu_data(menu_data_t *m)
+menus_reset_data(menu_data_t *m)
 {
 	if(!m->initialized)
 	{
@@ -197,7 +197,7 @@ reset_menu_data(menu_data_t *m)
 		if(menu_data_stash.initialized)
 		{
 			menu_data_stash.state = NULL;
-			reset_menu_data(&menu_data_stash);
+			menus_reset_data(&menu_data_stash);
 		}
 
 		menu_data_stash = *m;
@@ -246,19 +246,7 @@ reset_menu_state(menu_state_t *ms)
 }
 
 void
-setup_menu(void)
-{
-	scrollok(menu_win, FALSE);
-	curs_set(0);
-	werase(menu_win);
-	werase(status_bar);
-	werase(ruler_win);
-	wrefresh(status_bar);
-	wrefresh(ruler_win);
-}
-
-void
-move_to_menu_pos(int pos, menu_state_t *ms)
+menus_set_pos(menu_state_t *ms, int pos)
 {
 	menu_data_t *const m = ms->d;
 	int redraw;
@@ -272,7 +260,7 @@ move_to_menu_pos(int pos, menu_state_t *ms)
 	normalize_top(ms);
 
 	redraw = 0;
-	if(pos > get_last_visible_line(m))
+	if(pos > menu_last_line(m))
 	{
 		m->top = pos - (ms->win_rows - 2 - 1);
 		redraw = 1;
@@ -292,9 +280,9 @@ move_to_menu_pos(int pos, menu_state_t *ms)
 			normalize_top(ms);
 			redraw = 1;
 		}
-		if(pos > get_last_visible_line(m) - s)
+		if(pos > menu_last_line(m) - s)
 		{
-			m->top += s - (get_last_visible_line(m) - pos);
+			m->top += s - (menu_last_line(m) - pos);
 			normalize_top(ms);
 			redraw = 1;
 		}
@@ -305,7 +293,7 @@ move_to_menu_pos(int pos, menu_state_t *ms)
 
 	if(redraw)
 	{
-		draw_menu(ms);
+		menus_partial_redraw(ms);
 	}
 	else
 	{
@@ -327,7 +315,7 @@ show_position_in_menu(const menu_data_t *m)
 }
 
 void
-redraw_menu(menu_state_t *m)
+menus_full_redraw(menu_state_t *m)
 {
 	if(resize_for_menu_like() != 0)
 	{
@@ -336,14 +324,13 @@ redraw_menu(menu_state_t *m)
 
 	m->win_rows = getmaxy(menu_win);
 
-	draw_menu(m);
-	move_to_menu_pos(m->d->pos, m);
+	menus_partial_redraw(m);
+	menus_set_pos(m, m->d->pos);
 	wrefresh(menu_win);
 }
 
 int
-goto_selected_file(menu_data_t *m, FileView *view, const char spec[],
-		int try_open)
+menus_goto_file(menu_data_t *m, FileView *view, const char spec[], int try_open)
 {
 	char *path_buf;
 	int line_num;
@@ -424,7 +411,7 @@ navigate_to_selected_file(FileView *view, const char path[])
 }
 
 void
-goto_selected_directory(FileView *view, const char path[])
+menus_goto_dir(FileView *view, const char path[])
 {
 	if(!cfg.auto_ch_pos)
 	{
@@ -439,7 +426,7 @@ goto_selected_directory(FileView *view, const char path[])
 }
 
 void
-draw_menu(menu_state_t *m)
+menus_partial_redraw(menu_state_t *m)
 {
 	int i, pos;
 	const int y = getmaxy(menu_win);
@@ -616,26 +603,6 @@ draw_menu_frame(const menu_state_t *m)
 	free(title);
 }
 
-int
-capture_output_to_menu(FileView *view, const char cmd[], int user_sh,
-		menu_state_t *m)
-{
-	if(process_cmd_output("Loading menu", cmd, user_sh, 0, &output_handler,
-				m->d) != 0)
-	{
-		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return 0;
-	}
-
-	if(ui_cancellation_requested())
-	{
-		append_to_string(&m->d->title, "(cancelled)");
-		append_to_string(&m->d->empty_msg, " (cancelled)");
-	}
-
-	return display_menu(m, view);
-}
-
 /* Implements process_cmd_output() callback that loads lines to a menu. */
 static void
 output_handler(const char line[], void *arg)
@@ -691,21 +658,21 @@ expand_tabulation_a(const char line[], size_t tab_stops)
 }
 
 int
-display_menu(menu_state_t *m, FileView *view)
+menus_enter(menu_state_t *m, FileView *view)
 {
 	if(m->d->len < 1)
 	{
 		status_bar_message(m->d->empty_msg);
-		reset_menu_data(m->d);
+		menus_reset_data(m->d);
 		return 1;
 	}
 
 	init_menu_state(m, view);
 
-	setup_menu();
-	draw_menu(m);
-	move_to_menu_pos(m->d->pos, m);
-	enter_menu_mode(m->d, view);
+	ui_setup_for_menu_like();
+	menus_partial_redraw(m);
+	menus_set_pos(m, m->d->pos);
+	menu_enter_mode(m->d, view);
 	return 0;
 }
 
@@ -725,7 +692,7 @@ init_menu_state(menu_state_t *ms, FileView *view)
 }
 
 char *
-prepare_targets(FileView *view)
+menus_get_targets(FileView *view)
 {
 	if(view->selected_files > 0)
 	{
@@ -741,7 +708,7 @@ prepare_targets(FileView *view)
 }
 
 int
-unstash_menu(FileView *view)
+menus_unstash(FileView *view)
 {
 	static menu_data_t menu_data_storage;
 
@@ -751,25 +718,25 @@ unstash_menu(FileView *view)
 		return 1;
 	}
 
-	reset_menu_data(&menu_data_storage);
+	menus_reset_data(&menu_data_storage);
 	menu_data_storage = menu_data_stash;
 	menu_data_stash.initialized = 0;
 	menu_state.d = &menu_data_storage;
 
-	return display_menu(menu_data_storage.state, view);
+	return menus_enter(menu_data_storage.state, view);
 }
 
 KHandlerResponse
-filelist_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+menus_def_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{
-		(void)goto_selected_file(m, curr_view, m->items[m->pos], 0);
+		(void)menus_goto_file(m, curr_view, m->items[m->pos], 0);
 		return KHR_CLOSE_MENU;
 	}
 	else if(wcscmp(keys, L"e") == 0)
 	{
-		(void)goto_selected_file(m, curr_view, m->items[m->pos], 1);
+		(void)menus_goto_file(m, curr_view, m->items[m->pos], 1);
 		return KHR_REFRESH_WINDOW;
 	}
 	else if(wcscmp(keys, L"c") == 0)
@@ -792,7 +759,7 @@ filelist_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 }
 
 int
-menu_to_custom_view(menu_state_t *m, FileView *view, int very)
+menus_to_custom_view(menu_state_t *m, FileView *view, int very)
 {
 	int i;
 	char *current = NULL;
@@ -878,21 +845,34 @@ menu_and_view_are_in_sync(const menu_data_t *m, const FileView *view)
 }
 
 int
-capture_output(FileView *view, const char cmd[], int user_sh, menu_data_t *m,
+menus_capture(FileView *view, const char cmd[], int user_sh, menu_data_t *m,
 		int custom_view, int very_custom_view)
 {
 	if(custom_view || very_custom_view)
 	{
-		reset_menu_data(m);
+		menus_reset_data(m);
 		output_to_custom_flist(view, cmd, very_custom_view, 0);
 		return 0;
 	}
 
-	return capture_output_to_menu(view, cmd, user_sh, m->state);
+	if(process_cmd_output("Loading menu", cmd, user_sh, 0, &output_handler,
+				m) != 0)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return 0;
+	}
+
+	if(ui_cancellation_requested())
+	{
+		append_to_string(&m->title, "(cancelled)");
+		append_to_string(&m->empty_msg, " (cancelled)");
+	}
+
+	return menus_enter(m->state, view);
 }
 
 void
-menus_search(menu_state_t *m, int backward)
+menus_search_repeat(menu_state_t *m, int backward)
 {
 	if(m->regexp == NULL)
 	{
@@ -902,7 +882,7 @@ menus_search(menu_state_t *m, int backward)
 	}
 
 	m->backward_search = backward;
-	(void)search_menu_list(NULL, m->d, 1);
+	(void)menus_search(NULL, m->d, 1);
 	wrefresh(menu_win);
 
 	if(m->matching_entries > 0)
@@ -915,7 +895,7 @@ menus_search(menu_state_t *m, int backward)
 }
 
 int
-search_menu_list(const char pattern[], menu_data_t *m, int print_errors)
+menus_search(const char pattern[], menu_data_t *m, int print_errors)
 {
 	menu_state_t *const ms = m->state;
 	const int do_search = (pattern != NULL || ms->matches == NULL);
@@ -933,11 +913,11 @@ search_menu_list(const char pattern[], menu_data_t *m, int print_errors)
 		ms->search_highlight = 1;
 		if(search_menu(ms, m->pos, print_errors) != 0)
 		{
-			draw_menu(ms);
-			move_to_menu_pos(m->pos, ms);
+			menus_partial_redraw(ms);
+			menus_set_pos(ms, m->pos);
 			return -1;
 		}
-		draw_menu(ms);
+		menus_partial_redraw(ms);
 	}
 
 	for(i = 0; i < ms->search_repeat; ++i)
@@ -1088,28 +1068,28 @@ navigate_to_match(menu_state_t *m, int pos)
 			/* Might need to highlight other items, so redraw whole menu. */
 			m->search_highlight = 1;
 			m->d->pos = pos;
-			draw_menu(m);
+			menus_partial_redraw(m);
 		}
 		else
 		{
-			menu_current_line_erase(m);
-			move_to_menu_pos(pos, m);
+			menus_erase_current(m);
+			menus_set_pos(m, pos);
 		}
-		menu_print_search_msg(m);
+		menus_search_print_msg(m);
 	}
 	else
 	{
-		move_to_menu_pos(m->d->pos, m);
+		menus_set_pos(m, m->d->pos);
 		if(cfg.wrap_scan)
 		{
-			menu_print_search_msg(m);
+			menus_search_print_msg(m);
 		}
 	}
 	return 1;
 }
 
 void
-menu_print_search_msg(const menu_state_t *m)
+menus_search_print_msg(const menu_state_t *m)
 {
 	int cflags;
 	regex_t re;
@@ -1166,20 +1146,20 @@ get_match_index(const menu_state_t *m)
 }
 
 void
-menus_reset_search_highlight(menu_state_t *m)
+menus_search_reset_hilight(menu_state_t *m)
 {
 	m->search_highlight = 0;
-	redraw_menu(m);
+	menus_full_redraw(m);
 }
 
 int
-menu_get_matches(menu_state_t *m)
+menus_search_matched(menu_state_t *m)
 {
 	return m->matching_entries;
 }
 
 void
-menu_new_search(menu_state_t *m, int backward, int new_repeat_count)
+menus_search_reset(menu_state_t *m, int backward, int new_repeat_count)
 {
 	m->search_repeat = new_repeat_count;
 	m->backward_search = backward;
@@ -1187,7 +1167,7 @@ menu_new_search(menu_state_t *m, int backward, int new_repeat_count)
 }
 
 void
-menus_replace_menu(menu_data_t *m)
+menus_replace_data(menu_data_t *m)
 {
 	menu_state.current = 1;
 	menu_state.matching_entries = 0;

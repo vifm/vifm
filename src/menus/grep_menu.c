@@ -56,19 +56,19 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	static menu_data_t m;
 
-	targets = prepare_targets(view);
+	targets = menus_get_targets(view);
 	if(targets == NULL)
 	{
 		show_error_msg("Grep", "Failed to setup target directory.");
 		return 0;
 	}
 
-	init_menu_data(&m, view, format_str("Grep %s", args),
+	menus_init_data(&m, view, format_str("Grep %s", args),
 			format_str("No matches found: %s", args));
 
 	m.stashable = 1;
 	m.execute_handler = &execute_grep_cb;
-	m.key_handler = &filelist_khandler;
+	m.key_handler = &menus_def_khandler;
 
 	macros[M_i].value = invert ? "-v" : "";
 	macros[M_a].value = args;
@@ -86,7 +86,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	free(targets);
 
 	status_bar_message("grep...");
-	save_msg = capture_output(view, cmd, 0, &m, macros[M_u].explicit_use,
+	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,
 			macros[M_U].explicit_use);
 	free(cmd);
 
@@ -98,7 +98,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 static int
 execute_grep_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(m, view, m->items[m->pos], 1);
+	(void)menus_goto_file(m, view, m->items[m->pos], 1);
 	return 1;
 }
 

@@ -280,13 +280,9 @@ ui_char_pressed(wint_t c)
 static void
 correct_size(FileView *view)
 {
-	int x, y;
-
-	getmaxyx(view->win, y, x);
-	view->window_width = x - 1;
-	view->window_rows = y - 1;
+	getmaxyx(view->win, view->window_rows, view->window_cols);
 	view->column_count = calculate_columns_count(view);
-	view->window_cells = view->column_count*y;
+	view->window_cells = view->column_count*view->window_rows;
 }
 
 /* Updates TUI elements sizes and coordinates for single window
@@ -1080,6 +1076,18 @@ resize_for_menu_like(void)
 	return 0;
 }
 
+void
+ui_setup_for_menu_like(void)
+{
+	scrollok(menu_win, FALSE);
+	curs_set(0);
+	werase(menu_win);
+	werase(status_bar);
+	werase(ruler_win);
+	wrefresh(status_bar);
+	wrefresh(ruler_win);
+}
+
 /* Query terminal size from the "device" and pass it to curses library. */
 static void
 update_term_size(void)
@@ -1256,9 +1264,9 @@ switch_panes_content(void)
 	lwin.window_rows = rwin.window_rows;
 	rwin.window_rows = t;
 
-	t = lwin.window_width;
-	lwin.window_width = rwin.window_width;
-	rwin.window_width = t;
+	t = lwin.window_cols;
+	lwin.window_cols = rwin.window_cols;
+	rwin.window_cols = t;
 
 	t = lwin.local_cs;
 	lwin.local_cs = rwin.local_cs;
@@ -1735,14 +1743,14 @@ int
 ui_view_available_width(const FileView *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
-	return ((int)view->window_width + 1) + correction
+	return view->window_cols + correction
 	     - ui_view_left_reserved(view) - ui_view_right_reserved(view);
 }
 
 int
 ui_view_left_reserved(const FileView *view)
 {
-	return is_in_miller_view(view) ? view->window_width/3 : 0;
+	return is_in_miller_view(view) ? view->window_cols/3 : 0;
 }
 
 int
@@ -1751,7 +1759,7 @@ ui_view_right_reserved(const FileView *view)
 	dir_entry_t *const entry = get_current_entry(view);
 	return is_in_miller_view(view)
 	    && fentry_is_dir(entry) && !is_parent_dir(entry->name)
-	     ? view->window_width/3
+	     ? view->window_cols/3
 	     : 0;
 }
 
@@ -1788,13 +1796,13 @@ ui_qv_top(const FileView *view)
 int
 ui_qv_height(const FileView *view)
 {
-	return cfg.extra_padding ? view->window_rows - 1 : view->window_rows + 1;
+	return cfg.extra_padding ? view->window_rows - 2 : view->window_rows;
 }
 
 int
 ui_qv_width(const FileView *view)
 {
-	return cfg.extra_padding ? view->window_width - 1 : view->window_width + 1;
+	return cfg.extra_padding ? view->window_cols - 2 : view->window_cols;
 }
 
 const col_scheme_t *

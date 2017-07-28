@@ -69,7 +69,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	}
 	else
 	{
-		targets = prepare_targets(view);
+		targets = menus_get_targets(view);
 		if(targets == NULL)
 		{
 			show_error_msg("Find", "Failed to setup target directory.");
@@ -92,12 +92,12 @@ show_find_menu(FileView *view, int with_path, const char args[])
 		}
 	}
 
-	init_menu_data(&m, view, format_str("Find %s", args),
+	menus_init_data(&m, view, format_str("Find %s", args),
 			strdup("No files found"));
 
 	m.stashable = 1;
 	m.execute_handler = &execute_find_cb;
-	m.key_handler = &filelist_khandler;
+	m.key_handler = &menus_def_khandler;
 
 	cmd = expand_custom_macros(cfg.find_prg, ARRAY_LEN(macros), macros);
 
@@ -105,7 +105,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	free(custom_args);
 
 	status_bar_message("find...");
-	save_msg = capture_output(view, cmd, 0, &m, macros[M_u].explicit_use,
+	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,
 			macros[M_U].explicit_use);
 	free(cmd);
 
@@ -117,7 +117,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 static int
 execute_find_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(m, view, m->items[m->pos], 0);
+	(void)menus_goto_file(m, view, m->items[m->pos], 0);
 	return 0;
 }
 

@@ -101,8 +101,8 @@ TEST(sync_syncs_filelist)
 
 TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 {
-	lwin.window_rows = 1;
-	rwin.window_rows = 1;
+	lwin.window_rows = 2;
+	rwin.window_rows = 2;
 
 	opt_handlers_setup();
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));

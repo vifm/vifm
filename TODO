@@ -185,7 +185,6 @@ Code improvements:
     Debian-based systems.
   * Reduce number of magic numbers. (partially done)
   * Add function to count size of NULL-terminated array.
-  * Think about window_rows and window_width members of FileView.
   * Intermediate language for scripting. (partially done)
   * Create separate utilities for engine/ part to make them self-contained.
   * Fix code duplication related to composing of undo messages.

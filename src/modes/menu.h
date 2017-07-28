@@ -25,27 +25,35 @@
 #include "cmdline.h"
 
 /* Initializes menu mode. */
-void init_menu_mode(void);
+void menu_init_mode(void);
 
-void enter_menu_mode(menu_data_t *m, FileView *active_view);
+/* Enters menu mode. */
+void menu_enter_mode(menu_data_t *m, FileView *active_view);
 
 /* Replaces menu of the menu mode. */
-void reenter_menu_mode(menu_data_t *m);
+void menu_reenter_mode(menu_data_t *m);
 
+/* Performs pre main loop actions for the menu mode, which is assumed to be
+ * activated. */
 void menu_pre(void);
 
-/* Performs post-actions (at the end of input processing loop) for menus. */
+/* Performs post-actions (at the end of input processing loop) for the menu
+ * mode. */
 void menu_post(void);
 
-/* Redraws menu. */
-void menu_redraw(void);
+/* Redraws menu mode. */
+void menu_full_redraw(void);
 
-/* Redraws and refreshes menu window. */
-void update_menu(void);
+/* Redraws only the main part of menu (window with elements) assuming that size
+ * and other elements are handled elsewhere. */
+void menu_partial_redraw(void);
 
-void save_menu_pos(void);
+/* Saves information about position into temporary storage (can't store more
+ * than one state). */
+void menu_save_pos(void);
 
-void load_menu_pos(void);
+/* Restores previously saved position information. */
+void menu_restore_pos(void);
 
 /* Leaves menu and starts command-line mode.  external flag shows whether
  * cmd should be prepended with ":!".  To be used from keyboard handlers, which
@@ -54,12 +62,12 @@ void menu_morph_into_cmdline(CmdLineSubmode submode, const char input[],
 		int external);
 
 /* Allows running regular command-line mode commands from menu mode. */
-void execute_cmdline_command(const char cmd[]);
+void menu_run_command(const char cmd[]);
 
 /* Returns index of last visible line in the menu.  Value returned may be
  * greater than or equal to number of lines in the menu, which should be
  * treated correctly. */
-int get_last_visible_line(const menu_data_t *m);
+int menu_last_line(const menu_data_t *m);
 
 #endif /* VIFM__MODES__MENU_H__ */
 

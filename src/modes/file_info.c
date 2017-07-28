@@ -98,7 +98,7 @@ enter_file_info_mode(FileView *v)
 
 	vle_mode_set(FILE_INFO_MODE, VMT_PRIMARY);
 	view = v;
-	setup_menu();
+	ui_setup_for_menu_like();
 	redraw_file_info_dialog();
 
 	was_redraw = 0;

@@ -51,18 +51,18 @@ show_locate_menu(FileView *view, const char args[])
 
 	static menu_data_t m;
 	margs = (args[0] == '-') ? strdup(args) : shell_like_escape(args, 0);
-	init_menu_data(&m, view, format_str("Locate %s", margs),
+	menus_init_data(&m, view, format_str("Locate %s", margs),
 			strdup("No files found"));
 	free(margs);
 
 	m.stashable = 1;
 	m.execute_handler = &execute_locate_cb;
-	m.key_handler = &filelist_khandler;
+	m.key_handler = &menus_def_khandler;
 
 	cmd = expand_custom_macros(cfg.locate_prg, ARRAY_LEN(macros), macros);
 
 	status_bar_message("locate...");
-	save_msg = capture_output(view, cmd, 0, &m, macros[M_u].explicit_use,
+	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,
 			macros[M_U].explicit_use);
 	free(cmd);
 
@@ -74,7 +74,7 @@ show_locate_menu(FileView *view, const char args[])
 static int
 execute_locate_cb(FileView *view, menu_data_t *m)
 {
-	(void)goto_selected_file(m, view, m->items[m->pos], 0);
+	(void)menus_goto_file(m, view, m->items[m->pos], 0);
 	return 0;
 }
 

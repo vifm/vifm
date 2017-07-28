@@ -43,7 +43,7 @@ show_trashes_menu(FileView *view, int calc_size)
 	int i;
 
 	static menu_data_t m;
-	init_menu_data(&m, view,
+	menus_init_data(&m, view,
 			format_str("%sNon-empty trash directories", calc_size ? "[  size] " : ""),
 			strdup("No non-empty trash directories found"));
 
@@ -62,7 +62,7 @@ show_trashes_menu(FileView *view, int calc_size)
 
 	free_string_array(trashes, ntrashes);
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Formats single menu item.  Returns pointer to newly allocated string. */
@@ -96,7 +96,7 @@ execute_trashes_cb(FileView *view, menu_data_t *m)
 {
 	const char *const item = m->items[m->pos];
 	const char *const trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
-	goto_selected_directory(view, trash_dir);
+	menus_goto_dir(view, trash_dir);
 	return 0;
 }
 
@@ -110,7 +110,7 @@ trashes_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 		const char *const item = m->items[m->pos];
 		const char *trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
 		trash_empty(trash_dir);
-		remove_current_item(m->state);
+		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

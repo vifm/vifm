@@ -51,14 +51,14 @@ show_apropos_menu(FileView *view, const char args[])
 	};
 
 	static menu_data_t m;
-	init_menu_data(&m, view, format_str("Apropos %s", args),
+	menus_init_data(&m, view, format_str("Apropos %s", args),
 			format_str("No matches for \'%s\'", args));
 	m.execute_handler = &execute_apropos_cb;
 
 	status_bar_message("apropos...");
 
 	cmd = expand_custom_macros(cfg.apropos_prg, ARRAY_LEN(macros), macros);
-	save_msg = capture_output_to_menu(view, cmd, 0, m.state);
+	save_msg = menus_capture(view, cmd, 0, &m, 0, 0);
 	free(cmd);
 	return save_msg;
 }

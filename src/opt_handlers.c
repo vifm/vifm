@@ -2004,14 +2004,14 @@ mintimeoutlen_handler(OPT_OP op, optval_t val)
 static void
 scroll_line_down(FileView *view)
 {
-	view->window_rows--;
-	if(view->list_pos == view->top_line + view->window_rows + 1)
+	--view->window_rows;
+	if(view->list_pos == view->top_line + view->window_rows)
 	{
-		view->top_line++;
-		view->curr_line--;
+		++view->top_line;
+		--view->curr_line;
 		draw_dir_list(view);
 	}
-	wresize(view->win, view->window_rows + 1, view->window_width + 1);
+	wresize(view->win, view->window_rows, view->window_cols);
 }
 
 static void

@@ -266,9 +266,9 @@ draw_dir_list_only(FileView *view)
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	if(top + view->window_rows > view->list_rows)
+	if(top + view->window_rows >= view->list_rows)
 	{
-		top = view->list_rows - view->window_rows;
+		top = view->list_rows - (view->window_rows - 1);
 	}
 	if(top < 0)
 	{
@@ -414,17 +414,17 @@ print_column(FileView *view, entries_t entries, const char current[],
 	{
 		top = pos;
 	}
-	else if(pos > top + view->window_rows)
+	else if(pos >= top + view->window_rows)
 	{
-		top = pos - view->window_rows;
+		top = pos - (view->window_rows - 1);
 	}
 	/* Ensure that we fill all lines for which we have files. */
-	if(entries.nentries - top < view->window_rows + 1)
+	if(entries.nentries - top < view->window_rows)
 	{
-		top = MAX(0, entries.nentries - (view->window_rows + 1));
+		top = MAX(0, entries.nentries - view->window_rows);
 	}
 
-	for(i = top; i < entries.nentries && i - top <= view->window_rows; ++i)
+	for(i = top; i < entries.nentries && i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
 		const column_data_t cdt = {
@@ -454,7 +454,7 @@ fill_column(FileView *view, int start_line, int top, int width, int offset)
 	memset(filler, ' ', sizeof(filler) - 1U);
 	filler[sizeof(filler) - 1U] = '\0';
 
-	for(i = start_line; i - top <= view->window_rows; ++i)
+	for(i = start_line; i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
 		const column_data_t cdt = {
@@ -490,7 +490,7 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 	}
 
 	view->column_count = *count;
-	view->window_cells = *count*(view->window_rows + 1);
+	view->window_cells = *count*view->window_rows;
 }
 
 /* Calculates real number of characters that should be allocated in view for
@@ -822,21 +822,23 @@ get_last_visible_cell(const FileView *view)
 size_t
 get_window_top_pos(const FileView *view)
 {
+	const int column_correction = view->list_pos%view->column_count;
 	if(view->top_line == 0)
 	{
-		return 0;
+		return column_correction;
 	}
 
-	return view->top_line + get_effective_scroll_offset(view);
+	return view->top_line + get_effective_scroll_offset(view) + column_correction;
 }
 
 size_t
 get_window_middle_pos(const FileView *view)
 {
 	const int list_middle = DIV_ROUND_UP(view->list_rows, (2*view->column_count));
-	const int window_middle = DIV_ROUND_UP(view->window_rows, 2);
+	const int window_middle = DIV_ROUND_UP(view->window_rows - 1, 2);
 	return view->top_line
-	     + MAX(0, MIN(list_middle, window_middle) - 1)*view->column_count;
+	     + MAX(0, MIN(list_middle, window_middle) - 1)*view->column_count
+	     + view->list_pos%view->column_count;
 }
 
 size_t
@@ -845,13 +847,20 @@ get_window_bottom_pos(const FileView *view)
 	if(view->list_rows - 1 <= (int)get_last_visible_cell(view))
 	{
 		const size_t last = view->list_rows - 1;
-		return last - last%view->column_count;
+		const size_t last_row = ROUND_DOWN(last, view->column_count);
+		if(last_row + view->list_pos%view->column_count > last)
+		{
+			return last_row - view->column_count + view->list_pos%view->column_count;
+		}
+		return last_row + view->list_pos%view->column_count;
 	}
 	else
 	{
+		const size_t last = get_last_visible_cell(view);
+		const size_t last_row = ROUND_DOWN(last, view->column_count);
 		const size_t off = get_effective_scroll_offset(view);
-		const size_t column_correction = view->column_count - 1;
-		return get_last_visible_cell(view) - off - column_correction;
+		const size_t column_correction = view->list_pos%view->column_count;
+		return last_row + column_correction - off;
 	}
 }
 
@@ -1043,7 +1052,7 @@ consider_scroll_offset(FileView *view)
 static size_t
 get_effective_scroll_offset(const FileView *view)
 {
-	int val = MIN(DIV_ROUND_UP(view->window_rows, 2), MAX(cfg.scroll_off, 0));
+	int val = MIN(DIV_ROUND_UP(view->window_rows - 1, 2), MAX(cfg.scroll_off, 0));
 	return val*view->column_count;
 }
 
@@ -1830,7 +1839,7 @@ position_hardware_cursor(FileView *view)
 {
 	size_t col_width, col_count;
 	int current_line, column_offset;
-	char buf[view->window_width + 1 + 1];
+	char buf[view->window_cols + 1];
 
 	size_t prefix_len = 0U;
 	const column_data_t cdt = {

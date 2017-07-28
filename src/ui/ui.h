@@ -336,8 +336,8 @@ typedef struct
 	int top_line; /* # of the list position that is the top line in window */
 	int list_pos; /* actual position in the file list */
 	int list_rows; /* size of the file list */
-	int window_rows; /* number of rows shown in window */
-	unsigned int window_width;
+	int window_rows; /* Number of rows in the window. */
+	int window_cols; /* Number of columns in the window. */
 	int filtered;  /* number of files filtered out and not shown in list */
 	int selected_files; /* Number of currently selected files. */
 	int local_cs; /* Whether directory-specific color scheme is in use. */
@@ -506,6 +506,9 @@ void wprinta(WINDOW *win, const char str[], int line_attrs);
 /* Performs resizing of some of TUI elements for menu like modes.  Returns zero
  * on success, and non-zero otherwise. */
 int resize_for_menu_like(void);
+
+/* Performs updates of layout for manu like modes. */
+void ui_setup_for_menu_like(void);
 
 /* Performs real pane redraw in the TUI and maybe some related operations. */
 void refresh_view_win(FileView *view);

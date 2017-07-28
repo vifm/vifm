@@ -33,13 +33,13 @@ show_vifm_menu(FileView *view)
 	static menu_data_t m;
 	int len;
 	/* Version information menu always contains at least one item. */
-	init_menu_data(&m, view, strdup("Vifm Information"), NULL);
+	menus_init_data(&m, view, strdup("Vifm Information"), NULL);
 
 	len = fill_version_info(NULL);
 	m.items = reallocarray(NULL, len, sizeof(char *));
 	m.len = fill_version_info(m.items);
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

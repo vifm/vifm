@@ -1772,7 +1772,7 @@ compare_cmd(const cmd_info_t *cmd_info)
 static int
 copen_cmd(const cmd_info_t *cmd_info)
 {
-	return unstash_menu(curr_view) != 0;
+	return menus_unstash(curr_view) != 0;
 }
 
 /* Parses comparison properties.  Default values for arguments should be set

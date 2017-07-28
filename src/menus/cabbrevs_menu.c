@@ -42,7 +42,7 @@ show_cabbrevs_menu(FileView *view)
 	int no_remap;
 
 	static menu_data_t m;
-	init_menu_data(&m, view, strdup("Abbreviation -- N -- Replacement"),
+	menus_init_data(&m, view, strdup("Abbreviation -- N -- Replacement"),
 			strdup("No abbreviation set"));
 	m.key_handler = &commands_khandler;
 
@@ -53,7 +53,7 @@ show_cabbrevs_menu(FileView *view)
 		m.len = put_into_string_array(&m.items, m.len, descr);
 	}
 
-	return display_menu(m.state, view);
+	return menus_enter(m.state, view);
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
@@ -67,9 +67,9 @@ commands_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 
 		break_at(m->items[m->pos], ' ');
 		snprintf(cmd_buf, sizeof(cmd_buf), "cunabbrev %s", m->items[m->pos]);
-		execute_cmdline_command(cmd_buf);
+		menu_run_command(cmd_buf);
 
-		remove_current_item(m->state);
+		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

@@ -549,8 +549,8 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 page_scroll(int base, int direction)
 {
-	/* Two lines gap. */
-	int offset = (curr_view->window_rows - 1)*curr_view->column_count;
+	enum { GAP_SIZE = 2 };
+	int offset = (curr_view->window_rows - GAP_SIZE)*curr_view->column_count;
 	curr_view->list_pos = base + direction*offset;
 	scroll_by_files(curr_view, direction*offset);
 	redraw_current_view();
