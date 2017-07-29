@@ -278,8 +278,8 @@ EXTRA_DIST = \
 						 compat/wcwidth.c \
 						 compat/wcwidth.h \
 						 Makefile.win \
+						 lcov.css \
 						 lcovrc \
-						 gcov.css \
 						 ../data/graphics/vifm-old.ico \
 						 ../data/graphics/vifm-old.png \
 						 ../data/graphics/vifm.ico \
@@ -309,7 +309,7 @@ coverage: check
 	     '/usr/*'
 	genhtml --output-directory $(abs_builddir)/cov-report/ \
 	     $(abs_builddir)/lcov.info --config-file $(abs_srcdir)/lcovrc \
-	     --show-details --css-file $(abs_srcdir)/gcov.css
+	     --show-details --css-file $(abs_srcdir)/lcov.css
 
 CLEANFILES = runtests lcov-all.info lcov.info $(vifm_OBJECTS:.o=.gcno) \
                                               $(vifm_OBJECTS:.o=.gcda)
