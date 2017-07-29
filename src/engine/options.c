@@ -1395,9 +1395,10 @@ complete_options(const char args[], const char **start, OPT_SCOPE scope)
 	free(last_opt);
 }
 
-/* Extracts next option from option list.  Returns NULL on error and option
- * string on success.  On reaching trailing comment, empty string is returned.
- * *argsp is advanced according to parsing. */
+/* Extracts next option from option list.  On error either returns NULL or sets
+ * *argsp to NULL, which allows different handling.  On success returns option
+ * string.  On reaching trailing comment, empty string is returned.  *argsp is
+ * advanced according to parsing. */
 static char *
 extract_option(const char **argsp, int replace)
 {
@@ -1450,7 +1451,9 @@ extract_option(const char **argsp, int replace)
 				}
 				if(*args != '\0' && !isspace(*args))
 				{
-					opt_len -= args - p - 1U;
+					/* Eat the last character which will be restored on the next step. */
+					--opt_len;
+					/* Append the rest of the string and signal about an error. */
 					if(strappend(&opt, &opt_len, p) != 0)
 					{
 						goto error;

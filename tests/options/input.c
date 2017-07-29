@@ -102,5 +102,10 @@ TEST(very_long_option_name_does_not_cause_crash)
 			"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx!", OPT_GLOBAL));
 }
 
+TEST(weird_input)
+{
+	assert_failure(set_options("opt        !opt", OPT_GLOBAL));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
