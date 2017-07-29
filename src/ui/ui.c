@@ -102,6 +102,7 @@ static void update_view(FileView *view);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void update_statusbar_layout(void);
+static int are_statusbar_widgets_visible(void);
 static int get_ruler_width(FileView *view);
 static char * expand_ruler_macros(FileView *view, const char format[]);
 static void switch_panes_content(void);
@@ -119,11 +120,9 @@ static uint64_t get_updated_time(uint64_t prev);
 void
 ui_ruler_update(FileView *view, int lazy_redraw)
 {
-	const int ruler_is_visible = !vle_mode_is(CMDLINE_MODE)
-	                          && !is_status_bar_multiline();
 	char *expanded;
 
-	if(!ruler_is_visible)
+	if(!are_statusbar_widgets_visible())
 	{
 		/* Do nothing, especially don't update layout because it might be a custom
 		 * layout at the moment. */
@@ -205,7 +204,7 @@ setup_ncurses_interface(void)
 }
 
 /* Initializes all WINDOW variables by calling newwin() to create ncurses
- * windows. */
+ * windows and configures hardware cursor. */
 static void
 create_windows(void)
 {
@@ -239,6 +238,29 @@ create_windows(void)
 	status_bar = newwin(1, 1, 0, 0);
 	ruler_win = newwin(1, 1, 0, 0);
 	input_win = newwin(1, 1, 0, 0);
+
+	leaveok(menu_win, FALSE);
+	leaveok(sort_win, FALSE);
+	leaveok(change_win, FALSE);
+	leaveok(error_win, FALSE);
+	leaveok(lwin.win, FALSE);
+	leaveok(rwin.win, FALSE);
+	leaveok(status_bar, FALSE);
+
+	leaveok(lborder, TRUE);
+	leaveok(lwin.title, TRUE);
+	leaveok(mborder, TRUE);
+	leaveok(ltop_line1, TRUE);
+	leaveok(ltop_line2, TRUE);
+	leaveok(top_line, TRUE);
+	leaveok(rtop_line1, TRUE);
+	leaveok(rtop_line2, TRUE);
+	leaveok(rwin.title, TRUE);
+	leaveok(rborder, TRUE);
+	leaveok(stat_win, TRUE);
+	leaveok(job_bar, TRUE);
+	leaveok(ruler_win, TRUE);
+	leaveok(input_win, TRUE);
 }
 
 void
@@ -1125,6 +1147,13 @@ update_statusbar_layout(void)
 	int ruler_width;
 	int fields_pos;
 
+	if(!are_statusbar_widgets_visible())
+	{
+		/* We might be in command-line mode in which case we shouldn't change the
+		 * layout in any way. */
+		return;
+	}
+
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	ruler_width = get_ruler_width(curr_view);
@@ -1140,6 +1169,14 @@ update_statusbar_layout(void)
 	wresize(input_win, 1, INPUT_WIN_WIDTH);
 	mvwin(input_win, screen_y - 1, fields_pos);
 	wnoutrefresh(input_win);
+}
+
+/* Checks whether ruler and input bar are visible.  Returns non-zero if so, zero
+ * is returned otherwise. */
+static int
+are_statusbar_widgets_visible(void)
+{
+	return !vle_mode_is(CMDLINE_MODE) && !is_status_bar_multiline();
 }
 
 /* Gets "recommended" width for the ruler.  Returns the width. */
