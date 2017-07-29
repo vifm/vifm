@@ -60,6 +60,9 @@
 #define VAR_NAME_LENGTH_MAX 1024
 #define CMD_LINE_LENGTH_MAX 4096
 
+/* Maximum number of characters in option's name. */
+const size_t OPTION_NAME_MAX = 64;
+
 /* Supported types of tokens. */
 typedef enum
 {

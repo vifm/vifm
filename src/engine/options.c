@@ -31,8 +31,6 @@
 #include "completion.h"
 #include "text_buffer.h"
 
-const size_t OPTION_NAME_MAX = 64;
-
 #define LOWER_CHARS "abcdefghijklmnopqrstuvwxyz"
 const char OPT_NAME_FIRST_CHAR[] = LOWER_CHARS;
 const char OPT_NAME_CHARS[] = LOWER_CHARS;
@@ -381,19 +379,20 @@ static int
 process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 		int *print)
 {
-	char optname[OPTION_NAME_MAX + 1];
 	int err;
 	const char *suffix;
 	opt_t *opt;
+	char *optname;
 
 	*print = 0;
 
 	suffix = skip_alphas(arg);
 
-	copy_str(optname, suffix - arg + 1, arg);
+	optname = format_str("%.*s", (int)(suffix - arg), arg);
 
 	if(strcmp(optname, "all") == 0)
 	{
+		free(optname);
 		return handle_all_pseudo(arg, suffix, real_scope, print);
 	}
 
@@ -403,6 +402,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 		/* Silently return on attempts to set global-only option with :setlocal. */
 		if(scope == OPT_LOCAL && get_option(optname, OPT_GLOBAL) != NULL)
 		{
+			free(optname);
 			return 0;
 		}
 
@@ -414,6 +414,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 		{
 			vle_tb_append_linef(vle_err, "%s: %s", "Unknown option", optname);
 		}
+		free(optname);
 		return 1;
 	}
 
@@ -445,6 +446,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 		if(*(suffix + 1) != '\0')
 		{
 			vle_tb_append_linef(vle_err, "%s: %s", "Trailing characters", arg);
+			free(optname);
 			return 1;
 		}
 		if(*suffix == '!')
@@ -482,6 +484,7 @@ process_option(const char arg[], OPT_SCOPE real_scope, OPT_SCOPE scope,
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid argument", arg);
 	}
+	free(optname);
 	return err;
 }
 
