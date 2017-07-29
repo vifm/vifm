@@ -97,7 +97,7 @@ typedef struct
 	int last_char;
 	int save_msg; /* zero - don't save, 2 - save after resize, other - save */
 	int use_register;
-	int use_input_bar;
+	int use_input_bar;     /* Whether input bar should be updated. */
 	int curr_register;
 	int register_saved;
 	int number_of_windows;
