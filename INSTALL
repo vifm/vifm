@@ -50,6 +50,8 @@ when building with Cygwin):
            - debug-friendly optimizations
            - treating compilation warnings as errors
 
+      --[disable]/enable-werror - pass -Werror flag to compiler.
+
       --[disable]/enable-coverage - enables code coverage generation.
 
       --disable/[enable]-build-timestamp - disables embedding compilation date

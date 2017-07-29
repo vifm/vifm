@@ -746,6 +746,7 @@ enable_extended_keys
 enable_desktop_files
 enable_remote_cmds
 enable_developer
+enable_werror
 enable_coverage
 enable_build_timestamp
 with_sanitize
@@ -1393,6 +1394,7 @@ Optional Features:
   --enable-remote-cmds    enable remote command sending. [default=enabled]
   --enable-developer      enables features of interest to developers
                           [default=disabled]
+  --enable-werror         pass -Werror flag to compiler [default=disabled]
   --enable-coverage       enables coverage information generation
                           [default=disabled]
   --disable-build-timestamp
@@ -9519,6 +9521,14 @@ else
 fi
 
 
+# Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror; werror=$enableval
+else
+  werror=no
+fi
+
+
 # Check whether --enable-coverage was given.
 if test "${enable_coverage+set}" = set; then :
   enableval=$enable_coverage; coverage=$enableval
@@ -9711,6 +9721,11 @@ fi
 if test "$developer" = "yes"; then
     CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
     TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
+fi
+
+if test "$werror" = "yes"; then
+    CFLAGS="$CFLAGS -Werror"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror"
 fi
 
 if test "$coverage" = "yes"; then

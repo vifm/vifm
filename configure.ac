@@ -655,6 +655,14 @@ AC_ARG_ENABLE(developer,
     [developer=$enableval],
     [developer=no])
 
+AC_ARG_ENABLE(werror,
+    AS_HELP_STRING(
+        [--enable-werror],
+        [pass -Werror flag to compiler
+         @<:@default=disabled@:>@     ]),
+    [werror=$enableval],
+    [werror=no])
+
 AC_ARG_ENABLE(coverage,
     AS_HELP_STRING(
         [--enable-coverage],
@@ -725,6 +733,11 @@ fi
 if test "$developer" = "yes"; then
     CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
     TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
+fi
+
+if test "$werror" = "yes"; then
+    CFLAGS="$CFLAGS -Werror"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror"
 fi
 
 if test "$coverage" = "yes"; then
