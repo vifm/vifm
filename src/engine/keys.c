@@ -926,6 +926,12 @@ static key_chunk_t *
 find_user_keys(const wchar_t *keys, int mode)
 {
 	key_chunk_t *curr = &user_cmds_root[mode];
+
+	if(*keys == L'\0')
+	{
+		return NULL;
+	}
+
 	while(*keys != L'\0')
 	{
 		key_chunk_t *p = curr->child;
