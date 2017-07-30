@@ -503,7 +503,7 @@ dispatch_selector(const wchar_t keys[], keys_info_t *keys_info,
 
 	inc_counter(keys_info, keys - keys_start);
 
-	/* execute_keys_general_wrapper() treats empty input as an error. */
+	/* execute_keys_general() treats empty input as an error. */
 	if(keys[0] == L'\0')
 	{
 		return 0;
