@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stdlib.h> /* free() */
+#include <string.h> /* memset() */
 
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
@@ -43,6 +44,19 @@ TEST(spaces_ok)
 TEST(dot_ok)
 {
 	ASSERT_OK("\"a . c\"", "a . c");
+}
+
+TEST(very_long_string)
+{
+	var_t res_var = var_false();
+
+	char string[8192];
+	string[0] = '\"';
+	memset(string + 1, '0', sizeof(string) - 2U);
+	string[sizeof(string) - 1U] = '\0';
+
+	assert_int_equal(PE_INTERNAL, parse(string, &res_var));
+	var_free(res_var);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
