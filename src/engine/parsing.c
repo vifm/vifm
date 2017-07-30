@@ -520,6 +520,8 @@ static var_t
 eval_concat(int nops, expr_t ops[])
 {
 	var_t result = var_error();
+	char res[CMD_LINE_LENGTH_MAX];
+	size_t res_len = 0U;
 	int i;
 
 	assert(nops > 0 && "Must be at least one argument.");
@@ -529,8 +531,6 @@ eval_concat(int nops, expr_t ops[])
 		return var_clone(ops[0].value);
 	}
 
-	char res[CMD_LINE_LENGTH_MAX];
-	size_t res_len = 0U;
 	res[0] = '\0';
 
 	for(i = 0; i < nops; ++i)
@@ -624,8 +624,7 @@ parse_or_expr(const char **in)
 	if(last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
-		result.op_type = OP_NONE;
-		result.value = var_false();
+		return null_expr;
 	}
 
 	return result;
@@ -664,8 +663,7 @@ parse_and_expr(const char **in)
 	if(last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
-		result.op_type = OP_NONE;
-		result.value = var_false();
+		return null_expr;
 	}
 
 	return result;
@@ -767,7 +765,7 @@ parse_concat_expr(const char **in)
 	if(last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
-		result = null_expr;
+		return null_expr;
 	}
 
 	return result;
