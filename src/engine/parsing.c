@@ -861,11 +861,16 @@ parse_number(const char **in)
 	var_val_t var_val = { };
 
 	char buffer[CMD_LINE_LENGTH_MAX];
+	size_t len = 0U;
 	buffer[0] = '\0';
 
 	do
 	{
-		strcatch(buffer, last_token.c);
+		if(sstrappendch(buffer, &len, sizeof(buffer), last_token.c) != 0)
+		{
+			last_error = PE_INTERNAL;
+			return var_false();
+		}
 		get_next(in);
 	}
 	while(last_token.type == DIGIT);

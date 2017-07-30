@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stdlib.h> /* free() */
+#include <string.h> /* memset() */
 
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
@@ -75,6 +76,18 @@ TEST(string_is_converted_for_signs)
 	ASSERT_OK("-'--1'", "0");
 	ASSERT_OK("+'10'", "10");
 	ASSERT_OK("+'-100'", "-100");
+}
+
+TEST(extremely_long_number)
+{
+	var_t res_var = var_false();
+
+	char zeroes[8192];
+	memset(zeroes, '0', sizeof(zeroes) - 1U);
+	zeroes[sizeof(zeroes) - 1U] = '\0';
+
+	assert_int_equal(PE_INTERNAL, parse(zeroes, &res_var));
+	var_free(res_var);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

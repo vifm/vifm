@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stdlib.h>
+#include <string.h> /* memset() */
 
 #include "../../src/engine/variables.h"
 
@@ -123,6 +124,15 @@ TEST(let_alnum_and_underscore_ok)
 TEST(let_wrong_symbols_fail)
 {
 	assert_true(let_variables("$.|a = 'VAL'") != 0);
+}
+
+TEST(too_long_input)
+{
+	char zeroes[8192];
+	memset(zeroes, '0', sizeof(zeroes) - 1U);
+	zeroes[sizeof(zeroes) - 1U] = '\0';
+
+	assert_true(let_variables(zeroes) != 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
