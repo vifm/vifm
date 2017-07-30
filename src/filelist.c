@@ -2601,6 +2601,11 @@ flist_update_cache(FileView *view, cached_entries_t *cache, const char path[])
 	int update = 0;
 	int error;
 
+	if(path == NULL)
+	{
+		return 0;
+	}
+
 	if(cache->watch == NULL || stroscmp(cache->dir, path) != 0)
 	{
 		fswatch_free(cache->watch);
