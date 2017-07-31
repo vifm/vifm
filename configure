@@ -746,6 +746,7 @@ enable_extended_keys
 enable_desktop_files
 enable_remote_cmds
 enable_developer
+enable_werror
 enable_coverage
 enable_build_timestamp
 with_sanitize
@@ -1393,6 +1394,7 @@ Optional Features:
   --enable-remote-cmds    enable remote command sending. [default=enabled]
   --enable-developer      enables features of interest to developers
                           [default=disabled]
+  --enable-werror         pass -Werror flag to compiler [default=disabled]
   --enable-coverage       enables coverage information generation
                           [default=disabled]
   --disable-build-timestamp
@@ -6234,12 +6236,12 @@ $as_echo_n "checking host... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $host" >&5
 $as_echo "$host" >&6; }
 case "$host_os" in
-	macos* | darwin*)
-		OSX_HOST=1
-		;;
-	*)
-		OSX_HOST=
-		;;
+    macos* | darwin*)
+        OSX_HOST=1
+        ;;
+    *)
+        OSX_HOST=
+        ;;
 esac
 
 CFLAGS="$CFLAGS -fsigned-char"
@@ -6690,7 +6692,7 @@ else
 fi
 
 if test -n "$HAVE_MNTENT_H" ; then
-	ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
+    ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
 if test "x$ac_cv_func_endmntent" = xyes; then :
 
 else
@@ -6857,7 +6859,7 @@ else
 fi
 
 if test -n "$HAVE_MNTENT_H" ; then
-	ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
+    ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
 if test "x$ac_cv_func_getmntent" = xyes; then :
 
 else
@@ -7160,7 +7162,7 @@ else
 fi
 
 if test -n "$HAVE_MNTENT_H" ; then
-	ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
+    ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
 if test "x$ac_cv_func_setmntent" = xyes; then :
 
 else
@@ -8627,12 +8629,12 @@ vifm_cv_curses=/usr
 # Check whether --with-curses was given.
 if test "${with_curses+set}" = set; then :
   withval=$with_curses; if test $withval != yes; then
-		vifm_cv_curses=$withval
-	fi
-	if test x$vifm_cv_curses != x/usr; then
-		LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
-		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/${curses_lib_name}"
-	fi
+        vifm_cv_curses=$withval
+    fi
+    if test x$vifm_cv_curses != x/usr; then
+        LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
+        CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/${curses_lib_name}"
+    fi
 fi
 
 
@@ -8677,11 +8679,11 @@ eval ac_res=\$$as_ac_Lib
 $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
   LIBS="$LIBS -l${curses_lib_name}"
-	if test x$vifm_cv_curses = x/usr -a -d /usr/include/${curses_lib_name}; then
-		CPPFLAGS="$CPPFLAGS -I/usr/include/${curses_lib_name}"
-	fi
-	ncurses_found=yes
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing curs_set" >&5
+    if test x$vifm_cv_curses = x/usr -a -d /usr/include/${curses_lib_name}; then
+        CPPFLAGS="$CPPFLAGS -I/usr/include/${curses_lib_name}"
+    fi
+    ncurses_found=yes
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing curs_set" >&5
 $as_echo_n "checking for library containing curs_set... " >&6; }
 if ${ac_cv_search_curs_set+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -8742,7 +8744,7 @@ fi
 fi
 
 if test -n "$OSX_HOST" -a "x$ncurses_found" != "xyes"; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -lncurses" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -lncurses" >&5
 $as_echo_n "checking for initscr in -lncurses... " >&6; }
 if ${ac_cv_lib_ncurses_initscr+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -8780,19 +8782,19 @@ fi
 $as_echo "$ac_cv_lib_ncurses_initscr" >&6; }
 if test "x$ac_cv_lib_ncurses_initscr" = xyes; then :
   LIBS="$LIBS -lncurses"
-		if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
-			CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
-		fi
-		ncurses_found=yes
+        if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
+            CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+        fi
+        ncurses_found=yes
 fi
 
 fi
 if test "x$ncurses_found" != "xyes"; then
-	if test -z "$OSX_HOST"; then
-		as_fn_error $? "libncursesw not found" "$LINENO" 5
-	else
-		as_fn_error $? "libncursesw and libncurses not found" "$LINENO" 5
-	fi
+    if test -z "$OSX_HOST"; then
+        as_fn_error $? "libncursesw not found" "$LINENO" 5
+    else
+        as_fn_error $? "libncursesw and libncurses not found" "$LINENO" 5
+    fi
 fi
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
@@ -9134,7 +9136,7 @@ fi
 
 
 if test "$use_inotify" = "yes"; then
-	ac_fn_c_check_decl "$LINENO" "IN_NONBLOCK" "ac_cv_have_decl_IN_NONBLOCK" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_NONBLOCK" "ac_cv_have_decl_IN_NONBLOCK" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_NONBLOCK" = xyes; then :
 
@@ -9142,7 +9144,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_CLOEXEC" "ac_cv_have_decl_IN_CLOEXEC" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_CLOEXEC" "ac_cv_have_decl_IN_CLOEXEC" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_CLOEXEC" = xyes; then :
 
@@ -9150,7 +9152,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_ATTRIB" "ac_cv_have_decl_IN_ATTRIB" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_ATTRIB" "ac_cv_have_decl_IN_ATTRIB" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_ATTRIB" = xyes; then :
 
@@ -9158,7 +9160,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_MODIFY" "ac_cv_have_decl_IN_MODIFY" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_MODIFY" "ac_cv_have_decl_IN_MODIFY" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_MODIFY" = xyes; then :
 
@@ -9166,7 +9168,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_CREATE" "ac_cv_have_decl_IN_CREATE" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_CREATE" "ac_cv_have_decl_IN_CREATE" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_CREATE" = xyes; then :
 
@@ -9174,7 +9176,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_DELETE" "ac_cv_have_decl_IN_DELETE" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_DELETE" "ac_cv_have_decl_IN_DELETE" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_DELETE" = xyes; then :
 
@@ -9182,7 +9184,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_MOVED_FROM" "ac_cv_have_decl_IN_MOVED_FROM" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_MOVED_FROM" "ac_cv_have_decl_IN_MOVED_FROM" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_MOVED_FROM" = xyes; then :
 
@@ -9190,7 +9192,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_MOVED_TO" "ac_cv_have_decl_IN_MOVED_TO" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_MOVED_TO" "ac_cv_have_decl_IN_MOVED_TO" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_MOVED_TO" = xyes; then :
 
@@ -9198,7 +9200,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_EXCL_UNLINK" "ac_cv_have_decl_IN_EXCL_UNLINK" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_EXCL_UNLINK" "ac_cv_have_decl_IN_EXCL_UNLINK" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_EXCL_UNLINK" = xyes; then :
 
@@ -9206,7 +9208,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_CLOSE_WRITE" "ac_cv_have_decl_IN_CLOSE_WRITE" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_CLOSE_WRITE" "ac_cv_have_decl_IN_CLOSE_WRITE" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_CLOSE_WRITE" = xyes; then :
 
@@ -9214,7 +9216,7 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_decl "$LINENO" "IN_Q_OVERFLOW" "ac_cv_have_decl_IN_Q_OVERFLOW" "#include <sys/inotify.h>
+    ac_fn_c_check_decl "$LINENO" "IN_Q_OVERFLOW" "ac_cv_have_decl_IN_Q_OVERFLOW" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_have_decl_IN_Q_OVERFLOW" = xyes; then :
 
@@ -9222,21 +9224,21 @@ else
   use_inotify=no
 fi
 
-	ac_fn_c_check_func "$LINENO" "inotify_init1" "ac_cv_func_inotify_init1"
+    ac_fn_c_check_func "$LINENO" "inotify_init1" "ac_cv_func_inotify_init1"
 if test "x$ac_cv_func_inotify_init1" = xyes; then :
 
 else
   use_inotify=no
 fi
 
-	ac_fn_c_check_func "$LINENO" "inotify_add_watch" "ac_cv_func_inotify_add_watch"
+    ac_fn_c_check_func "$LINENO" "inotify_add_watch" "ac_cv_func_inotify_add_watch"
 if test "x$ac_cv_func_inotify_add_watch" = xyes; then :
 
 else
   use_inotify=no
 fi
 
-	ac_fn_c_check_type "$LINENO" "struct inotify_event" "ac_cv_type_struct_inotify_event" "#include <sys/inotify.h>
+    ac_fn_c_check_type "$LINENO" "struct inotify_event" "ac_cv_type_struct_inotify_event" "#include <sys/inotify.h>
 "
 if test "x$ac_cv_type_struct_inotify_event" = xyes; then :
 
@@ -9245,11 +9247,11 @@ else
 fi
 
 
-	if test "$use_inotify" = "yes"; then
+    if test "$use_inotify" = "yes"; then
 
 $as_echo "#define HAVE_INOTIFY 1" >>confdefs.h
 
-	fi
+    fi
 fi
 
 
@@ -9262,16 +9264,16 @@ if test "x$major" != "x" -a "x$minor" != "x" ; then
 
 $as_echo "#define GNU_TOOLCHAIN 1" >>confdefs.h
 
-	if test $major -ge 7 -a $minor -ge 1; then
+    if test $major -ge 7 -a $minor -ge 1; then
 
 $as_echo "#define SUPPORT_NO_CLOBBER 1" >>confdefs.h
 
-	fi
-	if test $major -ge 7 -a $minor -ge 6; then
+    fi
+    if test $major -ge 7 -a $minor -ge 6; then
 
 $as_echo "#define SUPPORT_REFLINK_AUTO 1" >>confdefs.h
 
-	fi
+    fi
 fi
 
 
@@ -9313,11 +9315,11 @@ fi
 
 
 if test "$use_gtk" = "yes"; then
-	if test "x$(which pkg-config)" != "x"; then
-		if pkg-config --exists glib-2.0 gtk+-2.0; then
-			CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-			LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
-			ac_fn_c_check_header_compile "$LINENO" "gio/gio.h" "ac_cv_header_gio_gio_h" "#include <gio/gio.h>
+    if test "x$(which pkg-config)" != "x"; then
+        if pkg-config --exists glib-2.0 gtk+-2.0; then
+            CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+            LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+            ac_fn_c_check_header_compile "$LINENO" "gio/gio.h" "ac_cv_header_gio_gio_h" "#include <gio/gio.h>
 "
 if test "x$ac_cv_header_gio_gio_h" = xyes; then :
 
@@ -9326,7 +9328,7 @@ else
 fi
 
 
-			ac_fn_c_check_header_compile "$LINENO" "glib.h" "ac_cv_header_glib_h" "#include <glib.h>
+            ac_fn_c_check_header_compile "$LINENO" "glib.h" "ac_cv_header_glib_h" "#include <glib.h>
 "
 if test "x$ac_cv_header_glib_h" = xyes; then :
 
@@ -9335,7 +9337,7 @@ else
 fi
 
 
-			ac_fn_c_check_header_compile "$LINENO" "gtk/gtk.h" "ac_cv_header_gtk_gtk_h" "#include <gtk/gtk.h>
+            ac_fn_c_check_header_compile "$LINENO" "gtk/gtk.h" "ac_cv_header_gtk_gtk_h" "#include <gtk/gtk.h>
 "
 if test "x$ac_cv_header_gtk_gtk_h" = xyes; then :
 
@@ -9344,35 +9346,35 @@ else
 fi
 
 
-			ac_fn_c_check_func "$LINENO" "gtk_init_check" "ac_cv_func_gtk_init_check"
+            ac_fn_c_check_func "$LINENO" "gtk_init_check" "ac_cv_func_gtk_init_check"
 if test "x$ac_cv_func_gtk_init_check" = xyes; then :
 
 else
   as_fn_error $? "gtk_init_check() function not found." "$LINENO" 5
 fi
 
-			ac_fn_c_check_func "$LINENO" "g_file_info_get_content_type" "ac_cv_func_g_file_info_get_content_type"
+            ac_fn_c_check_func "$LINENO" "g_file_info_get_content_type" "ac_cv_func_g_file_info_get_content_type"
 if test "x$ac_cv_func_g_file_info_get_content_type" = xyes; then :
 
 else
   as_fn_error $? "g_file_info_get_content_type() function not found." "$LINENO" 5
 fi
 
-			ac_fn_c_check_func "$LINENO" "g_file_new_for_path" "ac_cv_func_g_file_new_for_path"
+            ac_fn_c_check_func "$LINENO" "g_file_new_for_path" "ac_cv_func_g_file_new_for_path"
 if test "x$ac_cv_func_g_file_new_for_path" = xyes; then :
 
 else
   as_fn_error $? "g_file_new_for_path() function not found." "$LINENO" 5
 fi
 
-			ac_fn_c_check_func "$LINENO" "g_file_query_info" "ac_cv_func_g_file_query_info"
+            ac_fn_c_check_func "$LINENO" "g_file_query_info" "ac_cv_func_g_file_query_info"
 if test "x$ac_cv_func_g_file_query_info" = xyes; then :
 
 else
   as_fn_error $? "g_file_query_info() function not found." "$LINENO" 5
 fi
 
-			ac_fn_c_check_func "$LINENO" "g_object_unref" "ac_cv_func_g_object_unref"
+            ac_fn_c_check_func "$LINENO" "g_object_unref" "ac_cv_func_g_object_unref"
 if test "x$ac_cv_func_g_object_unref" = xyes; then :
 
 else
@@ -9382,18 +9384,18 @@ fi
 
 $as_echo "#define HAVE_LIBGTK 1" >>confdefs.h
 
-		else
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.\"" >&5
+        else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.\"" >&5
 $as_echo "$as_me: WARNING: \"Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.\"" >&2;}
-		fi
-	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find pkg-config.  No GTK+ support.\"" >&5
+        fi
+    else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Could not find pkg-config.  No GTK+ support.\"" >&5
 $as_echo "$as_me: WARNING: \"Could not find pkg-config.  No GTK+ support.\"" >&2;}
-	fi
+    fi
 fi
 
 if test "$use_libmagic" = "yes"; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for magic_open in -lmagic" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for magic_open in -lmagic" >&5
 $as_echo_n "checking for magic_open in -lmagic... " >&6; }
 if ${ac_cv_lib_magic_magic_open+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -9431,35 +9433,35 @@ fi
 $as_echo "$ac_cv_lib_magic_magic_open" >&6; }
 if test "x$ac_cv_lib_magic_magic_open" = xyes; then :
   LIBS="$LIBS -lmagic"
-		 ac_fn_c_check_func "$LINENO" "magic_close" "ac_cv_func_magic_close"
+         ac_fn_c_check_func "$LINENO" "magic_close" "ac_cv_func_magic_close"
 if test "x$ac_cv_func_magic_close" = xyes; then :
 
 else
   as_fn_error $? "magic_close() function not found." "$LINENO" 5
 fi
 
-		 ac_fn_c_check_func "$LINENO" "magic_file" "ac_cv_func_magic_file"
+         ac_fn_c_check_func "$LINENO" "magic_file" "ac_cv_func_magic_file"
 if test "x$ac_cv_func_magic_file" = xyes; then :
 
 else
   as_fn_error $? "magic_file() function not found." "$LINENO" 5
 fi
 
-		 ac_fn_c_check_func "$LINENO" "magic_load" "ac_cv_func_magic_load"
+         ac_fn_c_check_func "$LINENO" "magic_load" "ac_cv_func_magic_load"
 if test "x$ac_cv_func_magic_load" = xyes; then :
 
 else
   as_fn_error $? "magic_load() function not found." "$LINENO" 5
 fi
 
-		 ac_fn_c_check_func "$LINENO" "magic_open" "ac_cv_func_magic_open"
+         ac_fn_c_check_func "$LINENO" "magic_open" "ac_cv_func_magic_open"
 if test "x$ac_cv_func_magic_open" = xyes; then :
 
 else
   as_fn_error $? "magic_open() function not found." "$LINENO" 5
 fi
 
-		 ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+         ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
 if test "x$ac_cv_header_magic_h" = xyes; then :
 
 else
@@ -9467,7 +9469,7 @@ else
 fi
 
 
-		 ac_fn_c_check_decl "$LINENO" "MAGIC_MIME_TYPE" "ac_cv_have_decl_MAGIC_MIME_TYPE" "#include <magic.h>
+         ac_fn_c_check_decl "$LINENO" "MAGIC_MIME_TYPE" "ac_cv_have_decl_MAGIC_MIME_TYPE" "#include <magic.h>
 "
 if test "x$ac_cv_have_decl_MAGIC_MIME_TYPE" = xyes; then :
   ac_have_decl=1
@@ -9519,6 +9521,14 @@ else
 fi
 
 
+# Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror; werror=$enableval
+else
+  werror=no
+fi
+
+
 # Check whether --enable-coverage was given.
 if test "${enable_coverage+set}" = set; then :
   enableval=$enable_coverage; coverage=$enableval
@@ -9561,8 +9571,8 @@ $as_echo "#define ENABLE_REMOTE_CMDS 1" >>confdefs.h
 fi
 
 if test "$use_dyn_libX11" = "yes"; then
-	ORIG_LIBS="$LIBS"
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
+    ORIG_LIBS="$LIBS"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
 $as_echo_n "checking for dlopen in -ldl... " >&6; }
 if ${ac_cv_lib_dl_dlopen+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -9600,15 +9610,15 @@ fi
 $as_echo "$ac_cv_lib_dl_dlopen" >&6; }
 if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
 
-				 use_dyn_libX11=yes
-				 LIBS="$LIBS -ldl"
+                 use_dyn_libX11=yes
+                 LIBS="$LIBS -ldl"
 
 else
   use_dyn_libX11=no
 fi
 
 
-	ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
+    ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
 if test "x$ac_cv_header_dlfcn_h" = xyes; then :
 
 else
@@ -9616,14 +9626,14 @@ else
 fi
 
 
-	ac_fn_c_check_func "$LINENO" "dlsym" "ac_cv_func_dlsym"
+    ac_fn_c_check_func "$LINENO" "dlsym" "ac_cv_func_dlsym"
 if test "x$ac_cv_func_dlsym" = xyes; then :
 
 else
   use_dyn_libX11=no
 fi
 
-	ac_fn_c_check_func "$LINENO" "dlclose" "ac_cv_func_dlclose"
+    ac_fn_c_check_func "$LINENO" "dlclose" "ac_cv_func_dlclose"
 if test "x$ac_cv_func_dlclose" = xyes; then :
 
 else
@@ -9631,15 +9641,15 @@ else
 fi
 
 
-	if test "$use_dyn_libX11" != "yes"; then
-		LIBS="$ORIG_LIBS"
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"libdl seems to don't work as expected.  No dynamic X11.\"" >&5
+    if test "$use_dyn_libX11" != "yes"; then
+        LIBS="$ORIG_LIBS"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"libdl seems to don't work as expected.  No dynamic X11.\"" >&5
 $as_echo "$as_me: WARNING: \"libdl seems to don't work as expected.  No dynamic X11.\"" >&2;}
-	fi
+    fi
 fi
 
 if test "$use_libX11" = "yes"; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for XOpenDisplay in -lX11" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XOpenDisplay in -lX11" >&5
 $as_echo_n "checking for XOpenDisplay in -lX11... " >&6; }
 if ${ac_cv_lib_X11_XOpenDisplay+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -9677,7 +9687,7 @@ fi
 $as_echo "$ac_cv_lib_X11_XOpenDisplay" >&6; }
 if test "x$ac_cv_lib_X11_XOpenDisplay" = xyes; then :
 
-		ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
+        ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xlib_h" = xyes; then :
 
 else
@@ -9685,7 +9695,7 @@ else
 fi
 
 
-		ac_fn_c_check_header_mongrel "$LINENO" "X11/Xutil.h" "ac_cv_header_X11_Xutil_h" "$ac_includes_default"
+        ac_fn_c_check_header_mongrel "$LINENO" "X11/Xutil.h" "ac_cv_header_X11_Xutil_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xutil_h" = xyes; then :
 
 else
@@ -9696,26 +9706,31 @@ fi
 
 $as_echo "#define HAVE_X11 1" >>confdefs.h
 
-		if test "$use_dyn_libX11" = "yes"; then
+        if test "$use_dyn_libX11" = "yes"; then
 
 $as_echo "#define DYN_X11 1" >>confdefs.h
 
-		else
-			LIBS="$LIBS -lX11"
-		fi
+        else
+            LIBS="$LIBS -lX11"
+        fi
 
 fi
 
 fi
 
 if test "$developer" = "yes"; then
-	CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
-	TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
+    CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
+fi
+
+if test "$werror" = "yes"; then
+    CFLAGS="$CFLAGS -Werror"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror"
 fi
 
 if test "$coverage" = "yes"; then
-	CFLAGS="$CFLAGS --coverage"
-	LDFLAGS="$LDFLAGS --coverage"
+    CFLAGS="$CFLAGS --coverage"
+    LDFLAGS="$LDFLAGS --coverage"
 fi
 
 if test "$build_timestamp" = "yes"; then

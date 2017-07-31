@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include <stdlib.h> /* free() */
+#include <string.h> /* memset() */
 
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
@@ -75,6 +76,32 @@ TEST(and_or_ignored_inside_strings)
 TEST(strings_are_converted_to_integers)
 {
 	ASSERT_OK("'a' && 'b' && 'c'", "0");
+}
+
+TEST(and_handles_errors_correctly)
+{
+	var_t res_var = var_false();
+
+	char expr[8192];
+	memset(expr, '3', sizeof(expr) - 2U);
+	expr[sizeof(expr) - 1U] = '\0';
+	strncpy(expr, "1&&1==", sizeof("1&&1==") - 1U);
+
+	assert_int_equal(PE_INTERNAL, parse(expr, &res_var));
+	var_free(res_var);
+}
+
+TEST(or_handles_errors_correctly)
+{
+	var_t res_var = var_false();
+
+	char expr[8192];
+	memset(expr, '3', sizeof(expr) - 2U);
+	expr[sizeof(expr) - 1U] = '\0';
+	strncpy(expr, "1||1==", sizeof("1||1==") - 1U);
+
+	assert_int_equal(PE_INTERNAL, parse(expr, &res_var));
+	var_free(res_var);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -32,12 +32,12 @@ AC_MSG_CHECKING([host])
 AC_MSG_RESULT([$host])
 dnl Define $OSX_HOST variable for OS X
 case "$host_os" in
-	macos* | darwin*)
-		OSX_HOST=1
-		;;
-	*)
-		OSX_HOST=
-		;;
+    macos* | darwin*)
+        OSX_HOST=1
+        ;;
+    *)
+        OSX_HOST=
+        ;;
 esac
 
 dnl code relies on `char` being `signed char`
@@ -134,7 +134,7 @@ AC_CHECK_FUNC([closedir], [], [AC_MSG_ERROR([closedir() function not found.])])
 AC_CHECK_FUNC([dup], [], [AC_MSG_ERROR([dup() function not found.])])
 AC_CHECK_FUNC([dup2], [], [AC_MSG_ERROR([dup2() function not found.])])
 if test -n "$HAVE_MNTENT_H" ; then
-	AC_CHECK_FUNC([endmntent], [], [AC_MSG_ERROR([endmntent() function not found.])])
+    AC_CHECK_FUNC([endmntent], [], [AC_MSG_ERROR([endmntent() function not found.])])
 fi
 AC_CHECK_FUNC([execve], [], [AC_MSG_ERROR([execve() function not found.])])
 AC_CHECK_FUNC([execvp], [], [AC_MSG_ERROR([execvp() function not found.])])
@@ -159,7 +159,7 @@ AC_CHECK_FUNC([getgrgid], [], [AC_MSG_ERROR([getgrgid() function not found.])])
 AC_CHECK_FUNC([getgrgid_r], [], [AC_MSG_ERROR([getgrgid_r() function not found.])])
 AC_CHECK_FUNC([getgrnam], [], [AC_MSG_ERROR([getgrnam() function not found.])])
 if test -n "$HAVE_MNTENT_H" ; then
-	AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
+    AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
 fi
 AC_CHECK_FUNC([getpid], [], [AC_MSG_ERROR([getpid() function not found.])])
 AC_CHECK_FUNC([getppid], [], [AC_MSG_ERROR([getppid() function not found.])])
@@ -204,7 +204,7 @@ AC_CHECK_FUNC([setenv], [], [AC_MSG_ERROR([setenv() function not found.])])
 AC_CHECK_FUNC([setgrent], [], [AC_MSG_ERROR([setgrent() function not found.])])
 AC_CHECK_FUNC([setlocale], [], [AC_MSG_ERROR([setlocale() function not found.])])
 if test -n "$HAVE_MNTENT_H" ; then
-	AC_CHECK_FUNC([setmntent], [], [AC_MSG_ERROR([setmntent() function not found.])])
+    AC_CHECK_FUNC([setmntent], [], [AC_MSG_ERROR([setmntent() function not found.])])
 fi
 AC_CHECK_FUNC([setpgid], [], [AC_MSG_ERROR([setpgid() function not found.])])
 AC_CHECK_FUNC([setpwent], [], [AC_MSG_ERROR([setpwent() function not found.])])
@@ -414,48 +414,48 @@ AC_CHECK_DECL([PTHREAD_MUTEX_INITIALIZER], [], [AC_MSG_ERROR([PTHREAD_MUTEX_INIT
 dnl Name of curses library file.
 curses_lib_name=ncursesw
 AC_ARG_WITH(curses-name,
-	[  --with-curses-name=NAME name of curses library file @<:@default=ncursesw@:>@],
-	[curses_lib_name=$withval])
+    [  --with-curses-name=NAME name of curses library file @<:@default=ncursesw@:>@],
+    [curses_lib_name=$withval])
 
 dnl AC_CHECK_LIB(XCurses, initscr)
 vifm_cv_curses=/usr
 AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],
-	[if test $withval != yes; then
-		vifm_cv_curses=$withval
-	fi
-	if test x$vifm_cv_curses != x/usr; then
-		LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
-		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/${curses_lib_name}"
-	fi])
+    [if test $withval != yes; then
+        vifm_cv_curses=$withval
+    fi
+    if test x$vifm_cv_curses != x/usr; then
+        LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
+        CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/${curses_lib_name}"
+    fi])
 
 dnl Try to find ncurses library.
 ncurses_found=no
 dnl Firstly check for lib${curses_lib_name}.
 AC_CHECK_LIB(${curses_lib_name}, initscr,
-	[LIBS="$LIBS -l${curses_lib_name}"
-	if test x$vifm_cv_curses = x/usr -a -d /usr/include/${curses_lib_name}; then
-		CPPFLAGS="$CPPFLAGS -I/usr/include/${curses_lib_name}"
-	fi
-	ncurses_found=yes]
-	AC_SEARCH_LIBS([curs_set], [tinfo],,
-		AC_MSG_ERROR(could not find a library providing curs_set)))
+    [LIBS="$LIBS -l${curses_lib_name}"
+    if test x$vifm_cv_curses = x/usr -a -d /usr/include/${curses_lib_name}; then
+        CPPFLAGS="$CPPFLAGS -I/usr/include/${curses_lib_name}"
+    fi
+    ncurses_found=yes]
+    AC_SEARCH_LIBS([curs_set], [tinfo],,
+        AC_MSG_ERROR(could not find a library providing curs_set)))
 dnl If libncursesw is not found on OS X, check for libncurses.  On OS X it has
 dnl support of wide characters.
 if test -n "$OSX_HOST" -a "x$ncurses_found" != "xyes"; then
-	AC_CHECK_LIB(ncurses, initscr,
-		[LIBS="$LIBS -lncurses"
-		if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
-			CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
-		fi
-		ncurses_found=yes])
+    AC_CHECK_LIB(ncurses, initscr,
+        [LIBS="$LIBS -lncurses"
+        if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
+            CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+        fi
+        ncurses_found=yes])
 fi
 dnl Quit with appropriate error message if ncurses library wasn't found.
 if test "x$ncurses_found" != "xyes"; then
-	if test -z "$OSX_HOST"; then
-		AC_MSG_ERROR([libncursesw not found])
-	else
-		AC_MSG_ERROR([libncursesw and libncurses not found])
-	fi
+    if test -z "$OSX_HOST"; then
+        AC_MSG_ERROR([libncursesw not found])
+    else
+        AC_MSG_ERROR([libncursesw and libncurses not found])
+    fi
 fi
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
@@ -514,24 +514,24 @@ dnl ----------------------------------------------------------------------------
 AC_CHECK_HEADER([sys/inotify.h], [use_inotify=yes], [use_inotify=no])
 
 if test "$use_inotify" = "yes"; then
-	AC_CHECK_DECL([IN_NONBLOCK], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_CLOEXEC], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_ATTRIB], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_MODIFY], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_CREATE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_DELETE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_MOVED_FROM], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_MOVED_TO], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_EXCL_UNLINK], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_CLOSE_WRITE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_DECL([IN_Q_OVERFLOW], [], [use_inotify=no], [[#include <sys/inotify.h>]])
-	AC_CHECK_FUNC([inotify_init1], [], [use_inotify=no])
-	AC_CHECK_FUNC([inotify_add_watch], [], [use_inotify=no])
-	AC_CHECK_TYPE([struct inotify_event], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_NONBLOCK], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_CLOEXEC], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_ATTRIB], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_MODIFY], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_CREATE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_DELETE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_MOVED_FROM], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_MOVED_TO], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_EXCL_UNLINK], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_CLOSE_WRITE], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_DECL([IN_Q_OVERFLOW], [], [use_inotify=no], [[#include <sys/inotify.h>]])
+    AC_CHECK_FUNC([inotify_init1], [], [use_inotify=no])
+    AC_CHECK_FUNC([inotify_add_watch], [], [use_inotify=no])
+    AC_CHECK_TYPE([struct inotify_event], [], [use_inotify=no], [[#include <sys/inotify.h>]])
 
-	if test "$use_inotify" = "yes"; then
-		AC_DEFINE([HAVE_INOTIFY], [1], [inotify is available])
-	fi
+    if test "$use_inotify" = "yes"; then
+        AC_DEFINE([HAVE_INOTIFY], [1], [inotify is available])
+    fi
 fi
 
 dnl ----------------------------------------------------------------------------
@@ -544,13 +544,13 @@ major="${version%.*}"
 minor="${version#*.}"
 
 if test "x$major" != "x" -a "x$minor" != "x" ; then
-	AC_DEFINE([GNU_TOOLCHAIN], [1], [GNU toolchain is installed])
-	if test $major -ge 7 -a $minor -ge 1; then
-		AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
-	fi
-	if test $major -ge 7 -a $minor -ge 6; then
-		AC_DEFINE([SUPPORT_REFLINK_AUTO], [1], [--reflink=auto option is available for cp])
-	fi
+    AC_DEFINE([GNU_TOOLCHAIN], [1], [GNU toolchain is installed])
+    if test $major -ge 7 -a $minor -ge 1; then
+        AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
+    fi
+    if test $major -ge 7 -a $minor -ge 6; then
+        AC_DEFINE([SUPPORT_REFLINK_AUTO], [1], [--reflink=auto option is available for cp])
+    fi
 fi
 
 dnl ----------------------------------------------------------------------------
@@ -558,65 +558,65 @@ dnl checks for external libraries
 dnl ----------------------------------------------------------------------------
 
 AC_ARG_WITH(gtk,
-	AS_HELP_STRING([--with-gtk],
-		[use GTK+ to determine mimetypes if available @<:@default=yes@:>@]),
-	[use_gtk=$withval],
-	[use_gtk=yes])
+    AS_HELP_STRING([--with-gtk],
+        [use GTK+ to determine mimetypes if available @<:@default=yes@:>@]),
+    [use_gtk=$withval],
+    [use_gtk=yes])
 
 AC_ARG_WITH(libmagic,
-	AS_HELP_STRING([--with-libmagic],
-		[use libmagic to determine mimetypes if available @<:@default=yes@:>@]),
-	[use_libmagic=$withval],
-	[use_libmagic=yes])
+    AS_HELP_STRING([--with-libmagic],
+        [use libmagic to determine mimetypes if available @<:@default=yes@:>@]),
+    [use_libmagic=$withval],
+    [use_libmagic=yes])
 
 AC_ARG_WITH(X11,
-	AS_HELP_STRING([--with-X11],
-		[use libX11 to determine terminal emulator title  @<:@default=yes@:>@]),
-	[use_libX11=$withval],
-	[use_libX11=yes])
+    AS_HELP_STRING([--with-X11],
+        [use libX11 to determine terminal emulator title  @<:@default=yes@:>@]),
+    [use_libX11=$withval],
+    [use_libX11=yes])
 
 AC_ARG_WITH(dyn-X11,
-	AS_HELP_STRING([--with-dyn-X11],
-		[load libX11 dynamically @<:@default=yes@:>@]),
-	[use_dyn_libX11=$withval],
-	[use_dyn_libX11=yes])
+    AS_HELP_STRING([--with-dyn-X11],
+        [load libX11 dynamically @<:@default=yes@:>@]),
+    [use_dyn_libX11=$withval],
+    [use_dyn_libX11=yes])
 
 dnl ----------------------------------------------------------------------------
 dnl checks for mimetype detection
 dnl ----------------------------------------------------------------------------
 
 if test "$use_gtk" = "yes"; then
-	if test "x$(which pkg-config)" != "x"; then
-		if pkg-config --exists glib-2.0 gtk+-2.0; then
-			CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-			LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
-			AC_CHECK_HEADER([gio/gio.h], [], [AC_MSG_ERROR([gio/gio.h header not found.])], [[#include <gio/gio.h>]])
-			AC_CHECK_HEADER([glib.h], [], [AC_MSG_ERROR([glib.h header not found.])], [[#include <glib.h>]])
-			AC_CHECK_HEADER([gtk/gtk.h], [], [AC_MSG_ERROR([gtk/gtk.h header not found.])], [[#include <gtk/gtk.h>]])
-			AC_CHECK_FUNC([gtk_init_check], [], [AC_MSG_ERROR([gtk_init_check() function not found.])])
-			AC_CHECK_FUNC([g_file_info_get_content_type], [], [AC_MSG_ERROR([g_file_info_get_content_type() function not found.])])
-			AC_CHECK_FUNC([g_file_new_for_path], [], [AC_MSG_ERROR([g_file_new_for_path() function not found.])])
-			AC_CHECK_FUNC([g_file_query_info], [], [AC_MSG_ERROR([g_file_query_info() function not found.])])
-			AC_CHECK_FUNC([g_object_unref], [], [AC_MSG_ERROR([g_object_unref() function not found.])])
-			AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
-		else
-			AC_MSG_WARN("Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.")
-		fi
-	else
-		AC_MSG_WARN("Could not find pkg-config.  No GTK+ support.")
-	fi
+    if test "x$(which pkg-config)" != "x"; then
+        if pkg-config --exists glib-2.0 gtk+-2.0; then
+            CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+            LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+            AC_CHECK_HEADER([gio/gio.h], [], [AC_MSG_ERROR([gio/gio.h header not found.])], [[#include <gio/gio.h>]])
+            AC_CHECK_HEADER([glib.h], [], [AC_MSG_ERROR([glib.h header not found.])], [[#include <glib.h>]])
+            AC_CHECK_HEADER([gtk/gtk.h], [], [AC_MSG_ERROR([gtk/gtk.h header not found.])], [[#include <gtk/gtk.h>]])
+            AC_CHECK_FUNC([gtk_init_check], [], [AC_MSG_ERROR([gtk_init_check() function not found.])])
+            AC_CHECK_FUNC([g_file_info_get_content_type], [], [AC_MSG_ERROR([g_file_info_get_content_type() function not found.])])
+            AC_CHECK_FUNC([g_file_new_for_path], [], [AC_MSG_ERROR([g_file_new_for_path() function not found.])])
+            AC_CHECK_FUNC([g_file_query_info], [], [AC_MSG_ERROR([g_file_query_info() function not found.])])
+            AC_CHECK_FUNC([g_object_unref], [], [AC_MSG_ERROR([g_object_unref() function not found.])])
+            AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+        else
+            AC_MSG_WARN("Could not find glib-2.0 gtk+-2.0 via pkg-config.  No GTK+ support.")
+        fi
+    else
+        AC_MSG_WARN("Could not find pkg-config.  No GTK+ support.")
+    fi
 fi
 
 if test "$use_libmagic" = "yes"; then
-	AC_CHECK_LIB(magic, magic_open,
-		[LIBS="$LIBS -lmagic"
-		 AC_CHECK_FUNC([magic_close], [], [AC_MSG_ERROR([magic_close() function not found.])])
-		 AC_CHECK_FUNC([magic_file], [], [AC_MSG_ERROR([magic_file() function not found.])])
-		 AC_CHECK_FUNC([magic_load], [], [AC_MSG_ERROR([magic_load() function not found.])])
-		 AC_CHECK_FUNC([magic_open], [], [AC_MSG_ERROR([magic_open() function not found.])])
-		 AC_CHECK_HEADER([magic.h], [], [AC_MSG_ERROR([magic.h header not found.])])
-		 AC_CHECK_DECLS([MAGIC_MIME_TYPE], [], [], [[#include <magic.h>]])
-		 AC_DEFINE([HAVE_LIBMAGIC], [1], [Define to 1 if you have the `magic' library (-lmagic).])])
+    AC_CHECK_LIB(magic, magic_open,
+        [LIBS="$LIBS -lmagic"
+         AC_CHECK_FUNC([magic_close], [], [AC_MSG_ERROR([magic_close() function not found.])])
+         AC_CHECK_FUNC([magic_file], [], [AC_MSG_ERROR([magic_file() function not found.])])
+         AC_CHECK_FUNC([magic_load], [], [AC_MSG_ERROR([magic_load() function not found.])])
+         AC_CHECK_FUNC([magic_open], [], [AC_MSG_ERROR([magic_open() function not found.])])
+         AC_CHECK_HEADER([magic.h], [], [AC_MSG_ERROR([magic.h header not found.])])
+         AC_CHECK_DECLS([MAGIC_MIME_TYPE], [], [], [[#include <magic.h>]])
+         AC_DEFINE([HAVE_LIBMAGIC], [1], [Define to 1 if you have the `magic' library (-lmagic).])])
 fi
 
 dnl ----------------------------------------------------------------------------
@@ -624,117 +624,130 @@ dnl handle options
 dnl ----------------------------------------------------------------------------
 
 AC_ARG_ENABLE(extended_keys,
-	AS_HELP_STRING(
-		[--disable-extended-keys],
-		[disable extended keys (like arrows, home etc.). Without it will be no
-		 delay after pressing escape @<:@default=enabled@:>@     ]),
-	[extended_keys=$enableval],
-	[extended_keys=yes])
+    AS_HELP_STRING(
+        [--disable-extended-keys],
+        [disable extended keys (like arrows, home etc.). Without it will be no
+         delay after pressing escape @<:@default=enabled@:>@     ]),
+    [extended_keys=$enableval],
+    [extended_keys=yes])
 
 AC_ARG_ENABLE(desktop_files,
-	AS_HELP_STRING(
-		[--disable-desktop-files],
-		[disable parsing of *.desktop files found on your system to get a list
-		 of programs associated with filetypes @<:@default=enabled@:>@     ]),
-	[desktop_files=$enableval],
-	[desktop_files=yes])
+    AS_HELP_STRING(
+        [--disable-desktop-files],
+        [disable parsing of *.desktop files found on your system to get a list
+         of programs associated with filetypes @<:@default=enabled@:>@     ]),
+    [desktop_files=$enableval],
+    [desktop_files=yes])
 
 AC_ARG_ENABLE(remote_cmds,
-	AS_HELP_STRING(
-		[--enable-remote-cmds],
-		[enable remote command sending.
-		 @<:@default=enabled@:>@     ]),
-	[remote_cmds=$enableval],
-	[remote_cmds=yes])
+    AS_HELP_STRING(
+        [--enable-remote-cmds],
+        [enable remote command sending.
+         @<:@default=enabled@:>@     ]),
+    [remote_cmds=$enableval],
+    [remote_cmds=yes])
 
 AC_ARG_ENABLE(developer,
-	AS_HELP_STRING(
-		[--enable-developer],
-		[enables features of interest to developers
-		 @<:@default=disabled@:>@     ]),
-	[developer=$enableval],
-	[developer=no])
+    AS_HELP_STRING(
+        [--enable-developer],
+        [enables features of interest to developers
+         @<:@default=disabled@:>@     ]),
+    [developer=$enableval],
+    [developer=no])
+
+AC_ARG_ENABLE(werror,
+    AS_HELP_STRING(
+        [--enable-werror],
+        [pass -Werror flag to compiler
+         @<:@default=disabled@:>@     ]),
+    [werror=$enableval],
+    [werror=no])
 
 AC_ARG_ENABLE(coverage,
-	AS_HELP_STRING(
-		[--enable-coverage],
-		[enables coverage information generation
-		 @<:@default=disabled@:>@     ]),
-	[coverage=$enableval],
-	[coverage=no])
+    AS_HELP_STRING(
+        [--enable-coverage],
+        [enables coverage information generation
+         @<:@default=disabled@:>@     ]),
+    [coverage=$enableval],
+    [coverage=no])
 
 AC_ARG_ENABLE(build-timestamp,
-	AS_HELP_STRING(
-		[--disable-build-timestamp],
-		[disables embedding build-timestamp information into executable
-		 @<:@default=enabled@:>@     ]),
-	[build_timestamp=$enableval],
-	[build_timestamp=yes])
+    AS_HELP_STRING(
+        [--disable-build-timestamp],
+        [disables embedding build-timestamp information into executable
+         @<:@default=enabled@:>@     ]),
+    [build_timestamp=$enableval],
+    [build_timestamp=yes])
 
 AC_ARG_WITH(sanitize,
-	AS_HELP_STRING(
-			[--with-sanitize=basic|thread|leak],
-			[enables sanitizers, "basic" means address and undefined sanitizers
-			 @<:@default=@:>@     ]),
-	[sanitize=$withval])
+    AS_HELP_STRING(
+            [--with-sanitize=basic|thread|leak],
+            [enables sanitizers, "basic" means address and undefined sanitizers
+             @<:@default=@:>@     ]),
+    [sanitize=$withval])
 
 if test "$extended_keys" = "yes"; then
-	AC_DEFINE([ENABLE_EXTENDED_KEYS], [1], [enables extended keys (arrows etc.)])
+    AC_DEFINE([ENABLE_EXTENDED_KEYS], [1], [enables extended keys (arrows etc.)])
 fi
 
 if test "$desktop_files" = "yes"; then
-	AC_DEFINE([ENABLE_DESKTOP_FILES], [1], [parsing of .desktop files])
+    AC_DEFINE([ENABLE_DESKTOP_FILES], [1], [parsing of .desktop files])
 fi
 
 if test "$remote_cmds" = "yes"; then
-	AC_DEFINE([ENABLE_REMOTE_CMDS], [1], [executing commands remotely])
+    AC_DEFINE([ENABLE_REMOTE_CMDS], [1], [executing commands remotely])
 fi
 
 if test "$use_dyn_libX11" = "yes"; then
-	ORIG_LIBS="$LIBS"
-	AC_CHECK_LIB(dl, dlopen,
-				 [
-				 use_dyn_libX11=yes
-				 LIBS="$LIBS -ldl"
-				 ], [use_dyn_libX11=no])
+    ORIG_LIBS="$LIBS"
+    AC_CHECK_LIB(dl, dlopen,
+                 [
+                 use_dyn_libX11=yes
+                 LIBS="$LIBS -ldl"
+                 ], [use_dyn_libX11=no])
 
-	AC_CHECK_HEADER([dlfcn.h], [], [use_dyn_libX11=no])
-	AC_CHECK_FUNC([dlsym], [], [use_dyn_libX11=no])
-	AC_CHECK_FUNC([dlclose], [], [use_dyn_libX11=no])
+    AC_CHECK_HEADER([dlfcn.h], [], [use_dyn_libX11=no])
+    AC_CHECK_FUNC([dlsym], [], [use_dyn_libX11=no])
+    AC_CHECK_FUNC([dlclose], [], [use_dyn_libX11=no])
 
-	if test "$use_dyn_libX11" != "yes"; then
-		LIBS="$ORIG_LIBS"
-		AC_MSG_WARN(["libdl seems to don't work as expected.  No dynamic X11."])
-	fi
+    if test "$use_dyn_libX11" != "yes"; then
+        LIBS="$ORIG_LIBS"
+        AC_MSG_WARN(["libdl seems to don't work as expected.  No dynamic X11."])
+    fi
 fi
 
 if test "$use_libX11" = "yes"; then
-	AC_CHECK_LIB(X11, XOpenDisplay,
-		[
-		AC_CHECK_HEADER([X11/Xlib.h], [], [AC_MSG_ERROR([X11/Xlib.h header not found.])])
-		AC_CHECK_HEADER([X11/Xutil.h], [], [AC_MSG_ERROR([X11/Xutil.h header not found.])])
-		AC_DEFINE([HAVE_X11], [1], [use X11 to determine terminal emulator title])
-		if test "$use_dyn_libX11" = "yes"; then
-			AC_DEFINE([DYN_X11], [1], [load libX11 dynamically])
-		else
-			LIBS="$LIBS -lX11"
-		fi
-		])
+    AC_CHECK_LIB(X11, XOpenDisplay,
+        [
+        AC_CHECK_HEADER([X11/Xlib.h], [], [AC_MSG_ERROR([X11/Xlib.h header not found.])])
+        AC_CHECK_HEADER([X11/Xutil.h], [], [AC_MSG_ERROR([X11/Xutil.h header not found.])])
+        AC_DEFINE([HAVE_X11], [1], [use X11 to determine terminal emulator title])
+        if test "$use_dyn_libX11" = "yes"; then
+            AC_DEFINE([DYN_X11], [1], [load libX11 dynamically])
+        else
+            LIBS="$LIBS -lX11"
+        fi
+        ])
 fi
 
 if test "$developer" = "yes"; then
-	CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
-	TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
+    CFLAGS="$CFLAGS -g -O0 -Werror -Werror=sign-compare -Wno-unused-parameter"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror -Werror=sign-compare -Wno-unused-parameter"
+fi
+
+if test "$werror" = "yes"; then
+    CFLAGS="$CFLAGS -Werror"
+    TESTS_CFLAGS="$TESTS_CFLAGS -Werror"
 fi
 
 if test "$coverage" = "yes"; then
-	CFLAGS="$CFLAGS --coverage"
-	LDFLAGS="$LDFLAGS --coverage"
+    CFLAGS="$CFLAGS --coverage"
+    LDFLAGS="$LDFLAGS --coverage"
 fi
 
 if test "$build_timestamp" = "yes"; then
-	AC_DEFINE([WITH_BUILD_TIMESTAMP], [1],
-			  [Define to 1 to embed compilation date into executable.])
+    AC_DEFINE([WITH_BUILD_TIMESTAMP], [1],
+              [Define to 1 to embed compilation date into executable.])
 fi
 
 dnl Handle sanitizers options

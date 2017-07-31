@@ -60,6 +60,9 @@
 #define VAR_NAME_LENGTH_MAX 1024
 #define CMD_LINE_LENGTH_MAX 4096
 
+/* Maximum number of characters in option's name. */
+const size_t OPTION_NAME_MAX = 64;
+
 /* Supported types of tokens. */
 typedef enum
 {
@@ -112,6 +115,15 @@ typedef struct expr_t
 }
 expr_t;
 
+/* Metadata container for static buffer. */
+typedef struct
+{
+	char *data;        /* Pointer to the buffer. */
+	size_t len;        /* Current size of the buffer. */
+	const size_t size; /* Capacity of the buffer. */
+}
+sbuffer;
+
 static int eval_expr(expr_t *expr);
 static int eval_or_op(int nops, expr_t ops[], var_t *result);
 static int eval_and_op(int nops, expr_t ops[], var_t *result);
@@ -130,9 +142,9 @@ static expr_t parse_term(const char **in);
 static expr_t parse_signed_number(const char **in);
 static var_t parse_number(const char **in);
 static var_t parse_singly_quoted_string(const char **in);
-static int parse_singly_quoted_char(const char **in, char buffer[]);
+static int parse_singly_quoted_char(const char **in, sbuffer *sbuf);
 static var_t parse_doubly_quoted_string(const char **in);
-static int parse_doubly_quoted_char(const char **in, char buffer[]);
+static int parse_doubly_quoted_char(const char **in, sbuffer *sbuf);
 static var_t eval_envvar(const char **in);
 static var_t eval_builtinvar(const char **in);
 static var_t eval_opt(const char **in);
@@ -508,6 +520,8 @@ static var_t
 eval_concat(int nops, expr_t ops[])
 {
 	var_t result = var_error();
+	char res[CMD_LINE_LENGTH_MAX];
+	size_t res_len = 0U;
 	int i;
 
 	assert(nops > 0 && "Must be at least one argument.");
@@ -517,8 +531,6 @@ eval_concat(int nops, expr_t ops[])
 		return var_clone(ops[0].value);
 	}
 
-	char res[CMD_LINE_LENGTH_MAX];
-	size_t res_len = 0U;
 	res[0] = '\0';
 
 	for(i = 0; i < nops; ++i)
@@ -612,8 +624,7 @@ parse_or_expr(const char **in)
 	if(last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
-		result.op_type = OP_NONE;
-		result.value = var_false();
+		return null_expr;
 	}
 
 	return result;
@@ -652,8 +663,7 @@ parse_and_expr(const char **in)
 	if(last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
-		result.op_type = OP_NONE;
-		result.value = var_false();
+		return null_expr;
 	}
 
 	return result;
@@ -755,7 +765,7 @@ parse_concat_expr(const char **in)
 	if(last_error == PE_INTERNAL)
 	{
 		free_expr(&result);
-		result = null_expr;
+		return null_expr;
 	}
 
 	return result;
@@ -858,11 +868,16 @@ parse_number(const char **in)
 	var_val_t var_val = { };
 
 	char buffer[CMD_LINE_LENGTH_MAX];
+	size_t len = 0U;
 	buffer[0] = '\0';
 
 	do
 	{
-		strcatch(buffer, last_token.c);
+		if(sstrappendch(buffer, &len, sizeof(buffer), last_token.c) != 0)
+		{
+			last_error = PE_INTERNAL;
+			return var_false();
+		}
 		get_next(in);
 	}
 	while(last_token.type == DIGIT);
@@ -876,8 +891,14 @@ static var_t
 parse_singly_quoted_string(const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX];
+	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
-	while(parse_singly_quoted_char(in, buffer));
+	while(parse_singly_quoted_char(in, &sbuf));
+
+	if(last_error != PE_NO_ERROR)
+	{
+		return var_false();
+	}
 
 	if(last_token.type == SQ)
 	{
@@ -893,7 +914,7 @@ parse_singly_quoted_string(const char **in)
 /* sqchar
  * Returns non-zero if there are more characters in the string. */
 static int
-parse_singly_quoted_char(const char **in, char buffer[])
+parse_singly_quoted_char(const char **in, sbuffer *sbuf)
 {
 	int double_sq;
 	int sq_char;
@@ -905,7 +926,11 @@ parse_singly_quoted_char(const char **in, char buffer[])
 		return 0;
 	}
 
-	strcat(buffer, last_token.str);
+	if(sstrappend(sbuf->data, &sbuf->len, sbuf->size, last_token.str) != 0)
+	{
+		last_error = PE_INTERNAL;
+		return 0;
+	}
 	get_next(in);
 
 	if(double_sq)
@@ -920,8 +945,14 @@ static var_t
 parse_doubly_quoted_string(const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX];
+	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
-	while(parse_doubly_quoted_char(in, buffer));
+	while(parse_doubly_quoted_char(in, &sbuf));
+
+	if(last_error != PE_NO_ERROR)
+	{
+		return var_false();
+	}
 
 	if(last_token.type == DQ)
 	{
@@ -939,7 +970,7 @@ parse_doubly_quoted_string(const char **in)
 /* dqchar
  * Returns non-zero if there are more characters in the string. */
 int
-parse_doubly_quoted_char(const char **in, char buffer[])
+parse_doubly_quoted_char(const char **in, sbuffer *sbuf)
 {
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
@@ -960,12 +991,12 @@ parse_doubly_quoted_char(const char **in, char buffer[])
 	/* e0 */	"\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef"
 	/* f0 */	"\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
 
-	int dq_char;
+	int ok;
 
-	dq_char = last_token.type != DQ && last_token.type != END;
-
-	if(!dq_char)
+	if(last_token.type == DQ || last_token.type == END)
+	{
 		return 0;
+	}
 
 	if(last_token.c == '\\')
 	{
@@ -975,15 +1006,22 @@ parse_doubly_quoted_char(const char **in, char buffer[])
 			last_error = PE_INVALID_EXPRESSION;
 			return 0;
 		}
-		strcatch(buffer, table[(int)last_token.c]);
+		ok = sstrappendch(sbuf->data, &sbuf->len, sbuf->size,
+				table[(int)last_token.c]);
 	}
 	else
 	{
-		strcat(buffer, last_token.str);
+		ok = sstrappend(sbuf->data, &sbuf->len, sbuf->size, last_token.str);
+	}
+
+	if(ok != 0)
+	{
+		last_error = PE_INTERNAL;
+		return 0;
 	}
 
 	get_next(in);
-	return dq_char;
+	return 1;
 }
 
 /* envvar ::= '$' envvarname */

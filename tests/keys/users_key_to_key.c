@@ -18,6 +18,13 @@ SETUP()
 	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, 0);
 }
 
+TEST(user_key_sequence_cannot_be_empty_even)
+{
+	assert_false(vle_keys_user_exists(L"", NORMAL_MODE));
+	vle_keys_reset();
+	assert_false(vle_keys_user_exists(L"", NORMAL_MODE));
+}
+
 TEST(user_key_chain)
 {
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"ha2")));

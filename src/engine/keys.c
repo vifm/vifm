@@ -503,7 +503,7 @@ dispatch_selector(const wchar_t keys[], keys_info_t *keys_info,
 
 	inc_counter(keys_info, keys - keys_start);
 
-	/* execute_keys_general_wrapper() treats empty input as an error. */
+	/* execute_keys_general() treats empty input as an error. */
 	if(keys[0] == L'\0')
 	{
 		return 0;
@@ -926,6 +926,12 @@ static key_chunk_t *
 find_user_keys(const wchar_t *keys, int mode)
 {
 	key_chunk_t *curr = &user_cmds_root[mode];
+
+	if(*keys == L'\0')
+	{
+		return NULL;
+	}
+
 	while(*keys != L'\0')
 	{
 		key_chunk_t *p = curr->child;

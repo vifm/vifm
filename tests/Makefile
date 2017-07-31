@@ -26,6 +26,7 @@
 #
 # make DEBUG=1 ...        -- builds debug version
 # make DEBUG=gdb ...      -- builds debug version and loads suite into gdb
+# make DEBUG=rr ...       -- builds debug version and loads suite into rr
 # make DEBUG=valgrind ... -- builds debug version and run it under valgrind (see
 #                            valgrind-report file after a run)
 #
@@ -172,6 +173,9 @@ ifdef DEBUG
 
     ifeq ($(DEBUG),gdb)
         TEST_RUN_PREFIX := gdb -q --args
+    endif
+    ifeq ($(DEBUG),rr)
+        TEST_RUN_PREFIX := rr record
     endif
     ifeq ($(DEBUG),valgrind)
         TEST_RUN_PREFIX := valgrind --track-origins=yes --leak-check=full \

@@ -35,6 +35,9 @@
 	`--disable-extended-keys`.  Thanks to Bearcat M. Şándor (a.k.a.
 	bearcatsandor).
 
+	Fixed crashes discovered via fuzzing, most of which require rather
+	unusual kind of input.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

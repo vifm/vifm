@@ -422,7 +422,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{{K(KEY_END)},               {{&cmd_G},       .descr = "go to the last item"}},
 	{{K(KEY_BTAB)},              {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #else
-	{WK_ESC L"[Z",            {{&cmd_shift_tab}, .descr = "switch to view pane"}},
+	{WK_ESC L"[Z",               {{&cmd_shift_tab}, .descr = "switch to view pane"}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 

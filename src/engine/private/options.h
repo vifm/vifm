@@ -23,9 +23,6 @@
 
 #include "../options.h"
 
-/* Maximum number of characters in option's name. */
-extern const size_t OPTION_NAME_MAX;
-
 /* List of valid first characters in the name of an environment variable. */
 extern const char OPT_NAME_FIRST_CHAR[];
 
