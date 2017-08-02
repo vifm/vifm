@@ -376,8 +376,8 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 			new_name = get_last_path_component(dst[i]);
 
 			/* For regular views rename file in internal structures for correct
-				* positioning of cursor after reloading.  For custom views rename to
-				* prevent files from disappearing. */
+			 * positioning of cursor after reloading.  For custom views rename to
+			 * prevent files from disappearing. */
 			fentry_rename(view, entry, new_name);
 
 			if(flist_custom_active(view))
