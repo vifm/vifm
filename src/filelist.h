@@ -145,8 +145,9 @@ const char * flist_get_dir(const FileView *view);
 /* Selects entry that corresponds to the path as the current one. */
 void flist_goto_by_path(FileView *view, const char path[]);
 /* Loads filelist for the view, but doesn't redraw the view.  The reload
- * parameter should be set in case of view refresh operation. */
-void populate_dir_list(FileView *view, int reload);
+ * parameter should be set in case of view refresh operation.  Returns non-zero
+ * on error, otherwise zero is returned. */
+int populate_dir_list(FileView *view, int reload);
 /* Loads file list for the view and redraws the view.  The reload parameter
  * should be set in case of view refresh operation. */
 void load_dir_list(FileView *view, int reload);
