@@ -1183,6 +1183,10 @@ reset_local_options(FileView *view)
 	val.int_val = view->ls_view_g;
 	set_option("lsview", val, OPT_LOCAL);
 
+	fview_set_millerview(view, view->miller_view_g);
+	val.int_val = view->miller_view_g;
+	set_option("millerview", val, OPT_LOCAL);
+
 	view->num_type = view->num_type_g;
 	val.bool_val = view->num_type_g & NT_SEQ;
 	set_option("number", val, OPT_LOCAL);
