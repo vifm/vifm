@@ -242,5 +242,20 @@ TEST(selection_is_marked)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(filelist_reloading_corrects_current_position)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(3, lwin.list_rows);
+	lwin.list_pos = 2;
+	assert_success(replace_matcher(&lwin.manual_filter, "/.*/"));
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(0, lwin.list_pos);
+	assert_int_equal(1, lwin.list_rows);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -1473,10 +1473,15 @@ entry_calc_nitems(const dir_entry_t *entry)
 	return ret;
 }
 
-void
+int
 populate_dir_list(FileView *view, int reload)
 {
-	(void)populate_dir_list_internal(view, reload);
+	const int result = populate_dir_list_internal(view, reload);
+	if(view->list_pos > view->list_rows - 1)
+	{
+		view->list_pos = view->list_rows - 1;
+	}
+	return result;
 }
 
 void
@@ -1492,7 +1497,7 @@ load_dir_list(FileView *view, int reload)
 static void
 load_dir_list_internal(FileView *view, int reload, int draw_only)
 {
-	if(populate_dir_list_internal(view, reload) != 0)
+	if(populate_dir_list(view, reload) != 0)
 	{
 		return;
 	}
