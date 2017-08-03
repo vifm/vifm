@@ -3809,7 +3809,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 			local_filter_apply(other_view, curr_view->local_filter.filter.raw);
 		}
 
-		populate_dir_list(other_view, 0);
+		(void)populate_dir_list(other_view, 0);
 	}
 
 	if(sync_cursor_pos)

@@ -665,7 +665,7 @@ ensure_file_is_selected(FileView *view, const char name[])
 			name_filters_remove(view);
 
 			/* name_filters_remove() postpones reloading of list files. */
-			populate_dir_list(view, 1);
+			(void)populate_dir_list(view, 1);
 
 			file_pos = find_file_pos_in_list(view, nm);
 		}
