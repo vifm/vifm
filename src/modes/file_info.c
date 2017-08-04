@@ -56,13 +56,13 @@
 
 static void leave_file_info_mode(void);
 static int print_item(const char label[], const char path[], int curr_y);
-static int show_file_type(FileView *view, int curr_y);
-static int show_mime_type(FileView *view, int curr_y);
+static int show_file_type(view_t *view, int curr_y);
+static int show_mime_type(view_t *view, int curr_y);
 static void format_time(time_t t, char buf[], size_t buf_size);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
-static FileView *view;
+static view_t *view;
 static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
@@ -88,7 +88,7 @@ init_file_info_mode(void)
 }
 
 void
-enter_file_info_mode(FileView *v)
+enter_file_info_mode(view_t *v)
 {
 	if(fentry_is_fake(get_current_entry(v)))
 	{
@@ -240,7 +240,7 @@ print_item(const char label[], const char path[], int curr_y)
 
 /* Returns increment for curr_y. */
 static int
-show_file_type(FileView *view, int curr_y)
+show_file_type(view_t *view, int curr_y)
 {
 	const dir_entry_t *curr;
 	int x;
@@ -365,7 +365,7 @@ show_file_type(FileView *view, int curr_y)
 
 /* Returns increment for curr_y. */
 static int
-show_mime_type(FileView *view, int curr_y)
+show_mime_type(view_t *view, int curr_y)
 {
 	char full_path[PATH_MAX];
 	const char *mimetype = NULL;

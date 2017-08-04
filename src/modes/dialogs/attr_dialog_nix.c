@@ -58,9 +58,9 @@ static int get_selection_size(int first_file_index);
 static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
-TSTATIC void set_perm_string(FileView *view, const int perms[13],
+TSTATIC void set_perm_string(view_t *view, const int perms[13],
 		const int origin_perms[13], int adv_perms[3]);
-static void chmod_file_in_list(FileView *view, int pos, const char *mode,
+static void chmod_file_in_list(view_t *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs);
 static void file_chmod(char *path, const char *mode, const char *inv_mode,
 		int recurse_dirs);
@@ -72,7 +72,7 @@ static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
 static void dec_curr(void);
 
-static FileView *view;
+static view_t *view;
 static int top, bottom;
 static int curr;
 static int permnum;
@@ -122,7 +122,7 @@ init_attr_dialog_mode(void)
 }
 
 void
-enter_attr_mode(FileView *active_view)
+enter_attr_mode(view_t *active_view)
 {
 	mode_t fmode = 0;
 	mode_t diff;
@@ -403,7 +403,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 }
 
 TSTATIC void
-set_perm_string(FileView *view, const int perms[13], const int origin_perms[13],
+set_perm_string(view_t *view, const int perms[13], const int origin_perms[13],
 		int adv_perms[3])
 {
 	int i = 0;
@@ -465,7 +465,7 @@ set_perm_string(FileView *view, const int perms[13], const int origin_perms[13],
 }
 
 void
-files_chmod(FileView *view, const char mode[], int recurse_dirs)
+files_chmod(view_t *view, const char mode[], int recurse_dirs)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	dir_entry_t *entry;
@@ -504,7 +504,7 @@ files_chmod(FileView *view, const char mode[], int recurse_dirs)
 }
 
 static void
-chmod_file_in_list(FileView *view, int pos, const char *mode,
+chmod_file_in_list(view_t *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs)
 {
 	char path_buf[PATH_MAX];

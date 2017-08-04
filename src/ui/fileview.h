@@ -31,96 +31,96 @@
 void fview_init(void);
 
 /* Initializes view once before. */
-void fview_view_init(FileView *view);
+void fview_view_init(view_t *view);
 
 /* Resets view state partially. */
-void fview_view_reset(FileView *view);
+void fview_view_reset(view_t *view);
 
 /* Resets view state with regard to color schemes. */
-void fview_view_cs_reset(FileView *view);
+void fview_view_cs_reset(view_t *view);
 
 /* Appearance related functions. */
 
 /* Redraws directory list and puts inactive mark for the other view. */
-void draw_dir_list(FileView *view);
+void draw_dir_list(view_t *view);
 
 /* Redraws directory list without putting inactive mark if view == other. */
-void draw_dir_list_only(FileView *view);
+void draw_dir_list_only(view_t *view);
 
 /* Updates view (maybe postponed) on the screen (redraws file list and
  * cursor). */
-void redraw_view(FileView *view);
+void redraw_view(view_t *view);
 
 /* Updates view immediately on the screen (redraws file list and cursor). */
-void redraw_view_imm(FileView *view);
+void redraw_view_imm(view_t *view);
 
 /* Updates current view (maybe postponed) on the screen (redraws file list and
  * cursor) */
 void redraw_current_view(void);
 
 /* Adds inactive cursor mark to the view. */
-void put_inactive_mark(FileView *view);
+void put_inactive_mark(view_t *view);
 
 /* Redraws cursor of the view on the screen. */
-void fview_cursor_redraw(FileView *view);
+void fview_cursor_redraw(view_t *view);
 
 /* Viewport related functions. */
 
 /* Checks whether if all files are visible, so no scrolling is needed.  Returns
  * non-zero if so, and zero otherwise. */
-int all_files_visible(const FileView *view);
+int all_files_visible(const view_t *view);
 
 /* Gets file position of last visible cell in the view.  Value returned may be
  * greater than or equal to the number of files in the view and thus should be
  * treated correctly.  Returns the index. */
-size_t get_last_visible_cell(const FileView *view);
+size_t get_last_visible_cell(const view_t *view);
 
 /* Calculates position in list of files that corresponds to window top, which is
  * adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_top_pos(const FileView *view);
+size_t get_window_top_pos(const view_t *view);
 
 /* Calculates position in list of files that corresponds to window middle, which
  * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_middle_pos(const FileView *view);
+size_t get_window_middle_pos(const view_t *view);
 
 /* Calculates position in list of files that corresponds to window bottom, which
  * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_bottom_pos(const FileView *view);
+size_t get_window_bottom_pos(const view_t *view);
 
 /* Scrolling related functions. */
 
 /* Checks if view can be scrolled up (there are more files).  Returns non-zero
  * if so, and zero otherwise. */
-int can_scroll_up(const FileView *view);
+int can_scroll_up(const view_t *view);
 
 /* Checks if view can be scrolled down (there are more files).  Returns non-zero
  * if so, and zero otherwise. */
-int can_scroll_down(const FileView *view);
+int can_scroll_down(const view_t *view);
 
 /* Scrolls view up at least by specified number of files.  Updates both top and
  * cursor positions. */
-void scroll_up(FileView *view, size_t by);
+void scroll_up(view_t *view, size_t by);
 
 /* Scrolls view down at least by specified number of files.  Updates both top
  * and cursor positions. */
-void scroll_down(FileView *view, size_t by);
+void scroll_down(view_t *view, size_t by);
 
 /* Calculates list position corrected for scrolling down.  Returns adjusted
  * position. */
-int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
+int get_corrected_list_pos_down(const view_t *view, size_t pos_delta);
 
 /* Calculates list position corrected for scrolling up.  Returns adjusted
  * position. */
-int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
+int get_corrected_list_pos_up(const view_t *view, size_t pos_delta);
 
 /* Updates current and top line of a view according to 'scrolloff' option value.
  * Returns non-zero if redraw is needed. */
-int consider_scroll_offset(FileView *view);
+int consider_scroll_offset(view_t *view);
 
 /* Scrolls view down or up at least by specified number of files.  Updates both
  * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
  * functions. */
-void scroll_by_files(FileView *view, ssize_t by);
+void scroll_by_files(view_t *view, ssize_t by);
 
 /* Recalculates difference of two panes scroll positions. */
 void update_scroll_bind_offset(void);
@@ -128,35 +128,35 @@ void update_scroll_bind_offset(void);
 /* Layout related functions. */
 
 /* Enables/disables ls-like style of the view. */
-void fview_set_lsview(FileView *view, int enabled);
+void fview_set_lsview(view_t *view, int enabled);
 
 /* Enables/disables cascading columns style of the view. */
-void fview_set_millerview(FileView *view, int enabled);
+void fview_set_millerview(view_t *view, int enabled);
 
 /* Evaluates number of columns in the view.  Returns the number. */
-size_t calculate_columns_count(FileView *view);
+size_t calculate_columns_count(view_t *view);
 
 /* Callback-like function which triggers some view-specific updates after
  * directory of the view changes. */
-void fview_dir_updated(FileView *view);
+void fview_dir_updated(view_t *view);
 
 /* Callback-like function which triggers some view-specific updates after list
  * of files changes. */
-void fview_list_updated(FileView *view);
+void fview_list_updated(view_t *view);
 
 /* Callback-like function which triggers some view-specific updates after cursor
  * position in the list changed. */
-void fview_position_updated(FileView *view);
+void fview_position_updated(view_t *view);
 
 /* Callback-like function which triggers some view-specific updates after view
  * sorting changed. */
-void fview_sorting_updated(FileView *view);
+void fview_sorting_updated(view_t *view);
 
 TSTATIC_DEFS(
 	/* Packet set of parameters to pass as user data for processing columns. */
 	typedef struct
 	{
-		FileView *view;     /* View on which cell is being drawn. */
+		view_t *view;       /* View on which cell is being drawn. */
 		dir_entry_t *entry; /* Entry that is being displayed. */
 		size_t line_pos;    /* File position in the file list (the view). */
 		int line_hi_group;  /* Line highlight (to avoid per-column calculation). */

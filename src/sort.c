@@ -69,7 +69,7 @@ static int compare_group(const char f[], const char s[], regex_t *regex);
 static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
 
 /* View which is being sorted. */
-static FileView* view;
+static view_t* view;
 /* Picked sort array of the view. */
 static const char *view_sort;
 /* Picked sort groups setting of the view. */
@@ -84,7 +84,7 @@ static SortingKey sort_type;
 static void *sort_data;
 
 void
-sort_view(FileView *v)
+sort_view(view_t *v)
 {
 	dir_entry_t *unsorted_list;
 
@@ -168,7 +168,7 @@ sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 }
 
 void
-sort_entries(FileView *v, entries_t entries)
+sort_entries(view_t *v, entries_t entries)
 {
 	if(v->sort_g[0] > SK_LAST)
 	{

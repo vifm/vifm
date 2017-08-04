@@ -14,7 +14,7 @@
 
 #include "utils.h"
 
-static void add_some_files_to_view(FileView *view);
+static void add_some_files_to_view(view_t *view);
 
 static char cwd[PATH_MAX];
 
@@ -381,7 +381,7 @@ TEST(symlinks_are_not_resolved_in_cwd, IF(not_windows))
 }
 
 static void
-add_some_files_to_view(FileView *view)
+add_some_files_to_view(view_t *view)
 {
 	view->list_rows = 3;
 	view->list_pos = 0;

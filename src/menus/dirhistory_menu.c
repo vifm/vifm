@@ -31,11 +31,11 @@
 #include "../filelist.h"
 #include "menus.h"
 
-static int execute_dirhistory_cb(FileView *view, menu_data_t *m);
-TSTATIC strlist_t list_dir_history(FileView *view, int *pos);
+static int execute_dirhistory_cb(view_t *view, menu_data_t *m);
+TSTATIC strlist_t list_dir_history(view_t *view, int *pos);
 
 int
-show_history_menu(FileView *view)
+show_history_menu(view_t *view)
 {
 	strlist_t list;
 
@@ -55,7 +55,7 @@ show_history_menu(FileView *view)
 /* Lists directory history of the view.  Puts current position into *pos.
  * Returns the list. */
 TSTATIC strlist_t
-list_dir_history(FileView *view, int *pos)
+list_dir_history(view_t *view, int *pos)
 {
 	int i;
 	int need_cleanup = 0;
@@ -143,7 +143,7 @@ list_dir_history(FileView *view, int *pos)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_dirhistory_cb(FileView *view, menu_data_t *m)
+execute_dirhistory_cb(view_t *view, menu_data_t *m)
 {
 	menus_goto_dir(view, m->items[m->pos]);
 	return 0;

@@ -24,13 +24,13 @@
 #include "../utils/test_helpers.h"
 
 /* Won't mount same file twice */
-void fuse_try_mount(FileView *view, const char program[]);
+void fuse_try_mount(view_t *view, const char program[]);
 
 /* Unmounts all FUSE mounded filesystems. */
 void fuse_unmount_all(void);
 
 /* Returns non-zero on successful leaving mount point directory. */
-int fuse_try_updir_from_a_mount(const char path[], FileView *view);
+int fuse_try_updir_from_a_mount(const char path[], view_t *view);
 
 /* Checks whether given path is mount point of some previous FUSE mount
  * operation.  Returns non-zero if so, and zero otherwise. */
@@ -45,7 +45,7 @@ const char * fuse_get_mount_file(const char path[]);
  *   -1 error occurred.
  *   0  not mount point.
  *   1  left FUSE mount directory. */
-int fuse_try_unmount(FileView *view);
+int fuse_try_unmount(view_t *view);
 
 /* Returns non-zero in case string is a FUSE mount string. */
 int fuse_is_mount_string(const char string[]);

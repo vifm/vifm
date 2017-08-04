@@ -82,7 +82,7 @@ void setup_user_mark(const char mark, const char directory[], const char file[],
 void set_spec_mark(const char mark, const char directory[], const char file[]);
 
 /* Handles all kinds of marks.  Returns new value for save_msg flag. */
-int goto_mark(FileView *view, char mark);
+int goto_mark(view_t *view, char mark);
 
 /* Clears a mark by its name. */
 void clear_mark(const int m);
@@ -92,7 +92,7 @@ void clear_all_marks(void);
 
 /* Looks up file specified by the mark m in the view.  Returns the position if
  * found, otherwise -1 is returned. */
-int check_mark_directory(FileView *view, char m);
+int check_mark_directory(view_t *view, char m);
 
 /* Fills array of booleans (active_marks) each of which shows whether specified
  * mark index is active.  active_marks should be an array of at least NUM_MARKS

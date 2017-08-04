@@ -29,14 +29,14 @@
 #include "../status.h"
 #include "menus.h"
 
-static int execute_bmarks_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse bmarks_khandler(FileView *view, menu_data_t *m,
+static int execute_bmarks_cb(view_t *view, menu_data_t *m);
+static KHandlerResponse bmarks_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 static void bmarks_cb(const char path[], const char tags[], time_t timestamp,
 		void *arg);
 
 int
-show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match)
+show_bmarks_menu(view_t *view, const char tags[], int go_on_single_match)
 {
 	static menu_data_t m;
 	menus_init_data(&m, view, strdup("Bookmarks"), strdup("No bookmarks found"));
@@ -87,7 +87,7 @@ bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_bmarks_cb(FileView *view, menu_data_t *m)
+execute_bmarks_cb(view_t *view, menu_data_t *m)
 {
 	(void)menus_goto_file(m, view, m->data[m->pos], 0);
 	return 0;
@@ -96,7 +96,7 @@ execute_bmarks_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-bmarks_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+bmarks_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{

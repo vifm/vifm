@@ -103,7 +103,7 @@ static void init_tuioptions(optval_t *val);
 static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
-static void load_sort_option_inner(FileView *view, char sort_keys[]);
+static void load_sort_option_inner(view_t *view, char sort_keys[]);
 static void aproposprg_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void caseoptions_handler(OPT_OP op, optval_t val);
@@ -140,7 +140,7 @@ static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
 static void locateprg_handler(OPT_OP op, optval_t val);
 static void mintimeoutlen_handler(OPT_OP op, optval_t val);
-static void scroll_line_down(FileView *view);
+static void scroll_line_down(view_t *view);
 static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
 static void scrollbind_handler(OPT_OP op, optval_t val);
@@ -164,29 +164,29 @@ static void number_global(OPT_OP op, optval_t val);
 static void number_local(OPT_OP op, optval_t val);
 static void numberwidth_global(OPT_OP op, optval_t val);
 static void numberwidth_local(OPT_OP op, optval_t val);
-static void set_numberwidth(FileView *view, int *num_width, int width);
+static void set_numberwidth(view_t *view, int *num_width, int width);
 static void relativenumber_global(OPT_OP op, optval_t val);
 static void relativenumber_local(OPT_OP op, optval_t val);
-static void update_num_type(FileView *view, NumberingType *num_type,
+static void update_num_type(view_t *view, NumberingType *num_type,
 		NumberingType type, int enable);
 static void sort_global(OPT_OP op, optval_t val);
 static void sort_local(OPT_OP op, optval_t val);
-static void set_sort(FileView *view, char sort_keys[], char order[]);
+static void set_sort(view_t *view, char sort_keys[], char order[]);
 static void sortgroups_global(OPT_OP op, optval_t val);
 static void sortgroups_local(OPT_OP op, optval_t val);
-static void set_sortgroups(FileView *view, char **opt, char value[]);
-static void sorting_changed(FileView *view, int defer_slow);
+static void set_sortgroups(view_t *view, char **opt, char value[]);
+static void sorting_changed(view_t *view, int defer_slow);
 static void sortorder_global(OPT_OP op, optval_t val);
 static void sortorder_local(OPT_OP op, optval_t val);
-static void set_sortorder(FileView *view, int ascending, char sort_keys[]);
+static void set_sortorder(view_t *view, int ascending, char sort_keys[]);
 static void viewcolumns_global(OPT_OP op, optval_t val);
 static void viewcolumns_local(OPT_OP op, optval_t val);
-static void set_viewcolumns(FileView *view, const char view_columns[]);
-static void set_view_columns_option(FileView *view, const char value[],
+static void set_viewcolumns(view_t *view, const char view_columns[]);
+static void set_view_columns_option(view_t *view, const char value[],
 		int update_ui);
 static void add_column(columns_t *columns, column_info_t column_info);
 static int map_name(const char name[], void *arg);
-static void resort_view(FileView * view);
+static void resort_view(view_t * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void suggestoptions_handler(OPT_OP op, optval_t val);
 static int read_int(const char line[], int *i);
@@ -821,7 +821,7 @@ uni_handler(const char name[], optval_t val, OPT_SCOPE scope)
 	{
 		if(strcmp(options[i].name, name) == 0)
 		{
-			FileView *const tmp_view = curr_view;
+			view_t *const tmp_view = curr_view;
 			curr_view = other_view;
 
 			/* Make sure option value remains valid even if updated in the handler.
@@ -1168,7 +1168,7 @@ add_options(void)
 }
 
 void
-reset_local_options(FileView *view)
+reset_local_options(view_t *view)
 {
 	optval_t val;
 
@@ -1208,7 +1208,7 @@ reset_local_options(FileView *view)
 }
 
 void
-load_view_options(FileView *view)
+load_view_options(view_t *view)
 {
 	optval_t val;
 
@@ -1256,7 +1256,7 @@ load_view_options(FileView *view)
 }
 
 void
-clone_local_options(const FileView *from, FileView *to, int defer_slow)
+clone_local_options(const view_t *from, view_t *to, int defer_slow)
 {
 	const char *sort;
 
@@ -1290,7 +1290,7 @@ clone_local_options(const FileView *from, FileView *to, int defer_slow)
 }
 
 void
-load_sort_option(FileView *view)
+load_sort_option(view_t *view)
 {
 	load_sort_option_inner(view, view->sort);
 	load_sort_option_inner(view, view->sort_g);
@@ -1307,7 +1307,7 @@ load_sort_option(FileView *view)
 
 /* Loads sorting related options ("sort" and "sortorder"). */
 static void
-load_sort_option_inner(FileView *view, char sort_keys[])
+load_sort_option_inner(view_t *view, char sort_keys[])
 {
 	/* This approximate maximum length also includes "+" or "-" sign and a
 	 * comma (",") between items. */
@@ -2006,7 +2006,7 @@ mintimeoutlen_handler(OPT_OP op, optval_t val)
 }
 
 static void
-scroll_line_down(FileView *view)
+scroll_line_down(view_t *view)
 {
 	--view->window_rows;
 	if(view->list_pos == view->top_line + view->window_rows)
@@ -2268,7 +2268,7 @@ numberwidth_local(OPT_OP op, optval_t val)
 
 /* Sets number width for the view. */
 static void
-set_numberwidth(FileView *view, int *num_width, int width)
+set_numberwidth(view_t *view, int *num_width, int width)
 {
 	*num_width = width;
 
@@ -2295,7 +2295,7 @@ relativenumber_local(OPT_OP op, optval_t val)
 /* Handles toggling of boolean number related option and updates current view if
  * needed. */
 static void
-update_num_type(FileView *view, NumberingType *num_type, NumberingType type,
+update_num_type(view_t *view, NumberingType *num_type, NumberingType type,
 		int enable)
 {
 	const NumberingType old_num_type = *num_type;
@@ -2334,7 +2334,7 @@ sort_local(OPT_OP op, optval_t val)
 
 /* Sets sorting value for the view. */
 static void
-set_sort(FileView *view, char sort_keys[], char order[])
+set_sort(view_t *view, char sort_keys[], char order[])
 {
 	char *part = order, *state = NULL;
 	int key_count = 0;
@@ -2413,7 +2413,7 @@ sortgroups_local(OPT_OP op, optval_t val)
 /* Sets sort_groups fields (*opt) of the view to the value handling malformed
  * values correctly. */
 static void
-set_sortgroups(FileView *view, char **opt, char value[])
+set_sortgroups(view_t *view, char **opt, char value[])
 {
 	OPT_SCOPE scope = (opt == &view->sort_groups) ? OPT_LOCAL : OPT_GLOBAL;
 	int failure = 0;
@@ -2463,7 +2463,7 @@ set_sortgroups(FileView *view, char **opt, char value[])
 
 /* Reacts on changes of view sorting. */
 static void
-sorting_changed(FileView *view, int defer_slow)
+sorting_changed(view_t *view, int defer_slow)
 {
 	/* Reset search results, which might be outdated after resorting. */
 	view->matches = 0;
@@ -2492,7 +2492,7 @@ sortorder_local(OPT_OP op, optval_t val)
 
 /* Updates sorting order for the view. */
 static void
-set_sortorder(FileView *view, int ascending, char sort_keys[])
+set_sortorder(view_t *view, int ascending, char sort_keys[])
 {
 	if((ascending ? +1 : -1)*sort_keys[0] < 0)
 	{
@@ -2522,14 +2522,14 @@ viewcolumns_local(OPT_OP op, optval_t val)
 
 /* Setups view columns for the view. */
 static void
-set_viewcolumns(FileView *view, const char view_columns[])
+set_viewcolumns(view_t *view, const char view_columns[])
 {
 	const int update_columns_ui = ui_view_displays_columns(view);
 	set_view_columns_option(view, view_columns, update_columns_ui);
 }
 
 void
-load_dot_filter_option(const FileView *view)
+load_dot_filter_option(const view_t *view)
 {
 	const optval_t val = { .bool_val = !view->hide_dot };
 	set_option("dotfiles", val, OPT_GLOBAL);
@@ -2537,7 +2537,7 @@ load_dot_filter_option(const FileView *view)
 }
 
 void
-load_view_columns_option(FileView *view, const char value[])
+load_view_columns_option(view_t *view, const char value[])
 {
 	set_view_columns_option(view, value, 1);
 }
@@ -2546,7 +2546,7 @@ load_view_columns_option(FileView *view, const char value[])
  * Doesn't change actual value of the option, which is important for setting
  * sorting order via sort dialog. */
 static void
-set_view_columns_option(FileView *view, const char value[], int update_ui)
+set_view_columns_option(view_t *view, const char value[], int update_ui)
 {
 	const char *new_value = (value[0] == '\0') ? DEFAULT_VIEW_COLUMNS : value;
 	columns_t *columns = update_ui ? view->columns : NULL;
@@ -2607,7 +2607,7 @@ map_name(const char name[], void *arg)
 	/* Handle secondary key (designated by {}). */
 	if(*name == '\0')
 	{
-		const FileView *const view = arg;
+		const view_t *const view = arg;
 		const char *const sort = ui_view_sort_list_get(view, view->sort);
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
@@ -2628,7 +2628,7 @@ load_geometry(void)
 }
 
 static void
-resort_view(FileView * view)
+resort_view(view_t * view)
 {
 	resort_dir_list(1, view);
 	ui_view_schedule_redraw(curr_view);

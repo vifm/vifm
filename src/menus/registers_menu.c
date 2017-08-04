@@ -26,7 +26,7 @@
 #include "menus.h"
 
 int
-show_register_menu(FileView *view, const char registers[])
+show_register_menu(view_t *view, const char registers[])
 {
 	static menu_data_t m;
 	menus_init_data(&m, view, strdup("Registers"), strdup("Registers are empty"));

@@ -24,14 +24,14 @@
 #include "../utils/test_helpers.h"
 
 /* Returns non-zero if status bar message should be saved. */
-int show_history_menu(FileView *view);
+int show_history_menu(view_t *view);
 
 #ifdef TEST
 #include "../utils/string_array.h"
 #endif
 
 TSTATIC_DEFS(
-	strlist_t list_dir_history(FileView *view, int *pos);
+	strlist_t list_dir_history(view_t *view, int *pos);
 )
 
 #endif /* VIFM__MENUS__DIRHISTORY_MENU_H__ */

@@ -29,12 +29,12 @@
 #include "filelist.h"
 #include "flist_pos.h"
 
-static void navigate_to_history_pos(FileView *view, int pos);
-static int find_in_hist(const FileView *view, const FileView *source, int *pos,
+static void navigate_to_history_pos(view_t *view, int pos);
+static int find_in_hist(const view_t *view, const view_t *source, int *pos,
 		int *rel_pos);
 
 void
-flist_hist_go_back(FileView *view)
+flist_hist_go_back(view_t *view)
 {
 	/* When in custom view, we don't want to skip top history item. */
 	int pos = flist_custom_active(view)
@@ -59,7 +59,7 @@ flist_hist_go_back(FileView *view)
 }
 
 void
-flist_hist_go_forward(FileView *view)
+flist_hist_go_forward(view_t *view)
 {
 	int pos = view->history_pos + 1;
 
@@ -83,7 +83,7 @@ flist_hist_go_forward(FileView *view)
 /* Changes current directory of the view to one of previously visited
  * locations. */
 static void
-navigate_to_history_pos(FileView *view, int pos)
+navigate_to_history_pos(view_t *view, int pos)
 {
 	curr_stats.drop_new_dir_hist = 1;
 	if(change_directory(view, view->history[pos].dir) < 0)
@@ -100,8 +100,7 @@ navigate_to_history_pos(FileView *view, int pos)
 }
 
 void
-flist_hist_save(FileView *view, const char path[], const char file[],
-		int rel_pos)
+flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 {
 	int x;
 
@@ -166,7 +165,7 @@ flist_hist_save(FileView *view, const char path[], const char file[],
 }
 
 int
-flist_hist_contains(FileView *view, const char path[])
+flist_hist_contains(view_t *view, const char path[])
 {
 	int i;
 
@@ -190,7 +189,7 @@ flist_hist_contains(FileView *view, const char path[])
 }
 
 void
-flist_hist_clear(FileView *view)
+flist_hist_clear(view_t *view)
 {
 	int i;
 	for(i = 0; i <= view->history_pos && i < view->history_num; ++i)
@@ -200,7 +199,7 @@ flist_hist_clear(FileView *view)
 }
 
 void
-flist_hist_lookup(FileView *view, const FileView *source)
+flist_hist_lookup(view_t *view, const view_t *source)
 {
 	int pos = 0;
 	int rel_pos = -1;
@@ -242,7 +241,7 @@ flist_hist_lookup(FileView *view, const FileView *source)
 }
 
 int
-flist_hist_find(const FileView *view, entries_t entries, const char dir[],
+flist_hist_find(const view_t *view, entries_t entries, const char dir[],
 		int *top)
 {
 	int pos;
@@ -299,8 +298,7 @@ flist_hist_find(const FileView *view, entries_t entries, const char dir[],
  * *pos and *rel_pos are set, but might be negative if they aren't valid when
  * applied to existing list of files. */
 static int
-find_in_hist(const FileView *view, const FileView *source, int *pos,
-		int *rel_pos)
+find_in_hist(const view_t *view, const view_t *source, int *pos, int *rel_pos)
 {
 	int i = source->history_pos;
 	if(stroscmp(source->history[i].dir, view->curr_dir) == 0 &&

@@ -47,7 +47,7 @@ static const wchar_t *prefix;
 static size_t prefix_len;
 
 int
-show_map_menu(FileView *view, const char mode_str[], int mode,
+show_map_menu(view_t *view, const char mode_str[], int mode,
 		const wchar_t start[])
 {
 	const int dialogs = mode == SORT_MODE || mode == ATTR_MODE

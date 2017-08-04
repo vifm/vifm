@@ -44,7 +44,7 @@ static void set_mark(const char m, const char directory[], const char file[],
 		time_t timestamp, int force);
 static int is_mark_points_to(const mark_t *mark, const char directory[],
 		const char file[]);
-static int navigate_to_mark(FileView *view, const char m);
+static int navigate_to_mark(view_t *view, const char m);
 TSTATIC mark_t * get_mark_by_name(const char mark);
 static mark_t * find_mark(const int index);
 static int is_mark_valid(const mark_t *mark);
@@ -255,7 +255,7 @@ is_mark_points_to(const mark_t *mark, const char directory[], const char file[])
 }
 
 int
-check_mark_directory(FileView *view, char m)
+check_mark_directory(view_t *view, char m)
 {
 	int custom;
 	const mark_t *const mark = get_mark_by_name(m);
@@ -292,7 +292,7 @@ check_mark_directory(FileView *view, char m)
 }
 
 int
-goto_mark(FileView *view, char mark)
+goto_mark(view_t *view, char mark)
 {
 	switch(mark)
 	{
@@ -312,7 +312,7 @@ goto_mark(FileView *view, char mark)
 /* Navigates the view to given mark if it's valid.  Returns new value for
  * save_msg flag. */
 static int
-navigate_to_mark(FileView *view, char m)
+navigate_to_mark(view_t *view, char m)
 {
 	const mark_t *const mark = get_mark_by_name(m);
 

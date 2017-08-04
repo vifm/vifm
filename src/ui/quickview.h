@@ -37,7 +37,7 @@ int qv_can_show(void);
 
 /* Draws current file of the view in other view.  Does nothing if drawing
  * doesn't make sense (e.g. only one pane is visible). */
-void qv_draw(FileView *view);
+void qv_draw(view_t *view);
 
 /* Toggles state of the quick view. */
 void qv_toggle(void);
@@ -50,7 +50,7 @@ void qv_hide(void);
 FILE * qv_execute_viewer(const char viewer[]);
 
 /* Performs view clearing with the given command. */
-void qv_cleanup(FileView *view, const char cmd[]);
+void qv_cleanup(view_t *view, const char cmd[]);
 
 /* Gets viewer command for a file considering its type (directory vs. file).
  * Returns NULL if no suitable viewer available, otherwise returns pointer to

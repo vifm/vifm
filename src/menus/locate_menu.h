@@ -23,7 +23,7 @@
 #include "../ui/ui.h"
 
 /* Returns non-zero if status bar message should be saved. */
-int show_locate_menu(FileView *view, const char args[]);
+int show_locate_menu(view_t *view, const char args[]);
 
 #endif /* VIFM__MENUS__LOCATE_MENU_H__ */
 

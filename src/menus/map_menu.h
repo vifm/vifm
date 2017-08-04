@@ -26,7 +26,7 @@
 
 /* Displays menu of mappings that have specified prefix.  Returns non-zero if
  * status bar message should be saved. */
-int show_map_menu(FileView *view, const char mode_str[], int mode,
+int show_map_menu(view_t *view, const char mode_str[], int mode,
 		const wchar_t start[]);
 
 #endif /* VIFM__MENUS__MAP_MENU_H__ */

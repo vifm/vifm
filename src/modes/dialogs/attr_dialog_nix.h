@@ -26,16 +26,16 @@
 /* Initializes attributes dialog mode. */
 void init_attr_dialog_mode(void);
 
-void enter_attr_mode(FileView *active_view);
+void enter_attr_mode(view_t *active_view);
 
 void redraw_attr_dialog(void);
 
 /* Changes permissions of selected (or just current) files of the view possibly
  * recurring in directories. */
-void files_chmod(FileView *view, const char mode[], int recurse_dirs);
+void files_chmod(view_t *view, const char mode[], int recurse_dirs);
 
 TSTATIC_DEFS(
-	void set_perm_string(FileView *view, const int perms[13],
+	void set_perm_string(view_t *view, const int perms[13],
 			const int origin_perms[13], int adv_perms[3]);
 )
 

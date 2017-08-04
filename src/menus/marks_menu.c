@@ -36,12 +36,12 @@
 #include "../marks.h"
 #include "menus.h"
 
-static int execute_mark_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse mark_khandler(FileView *view, menu_data_t *m,
+static int execute_mark_cb(view_t *view, menu_data_t *m);
+static KHandlerResponse mark_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 
 int
-show_marks_menu(FileView *view, const char marks[])
+show_marks_menu(view_t *view, const char marks[])
 {
 	int active_marks[NUM_MARKS];
 	int i;
@@ -122,7 +122,7 @@ show_marks_menu(FileView *view, const char marks[])
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_mark_cb(FileView *view, menu_data_t *m)
+execute_mark_cb(view_t *view, menu_data_t *m)
 {
 	goto_mark(view, m->items[m->pos][0]);
 	return 0;
@@ -131,7 +131,7 @@ execute_mark_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-mark_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+mark_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{

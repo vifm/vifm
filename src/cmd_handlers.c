@@ -171,11 +171,11 @@ static int filextype_cmd(const cmd_info_t *cmd_info);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int add_assoc(const cmd_info_t *cmd_info, int viewer, int for_x);
 static int filter_cmd(const cmd_info_t *cmd_info);
-static int update_filter(FileView *view, const cmd_info_t *cmd_info);
-static void display_filters_info(const FileView *view);
+static int update_filter(view_t *view, const cmd_info_t *cmd_info);
+static void display_filters_info(const view_t *view);
 static char * get_filter_info(const char name[], const filter_t *filter);
 static char * get_matcher_info(const char name[], const matcher_t *matcher);
-static int set_view_filter(FileView *view, const char filter[],
+static int set_view_filter(view_t *view, const char filter[],
 		const char fallback[], int invert);
 static int get_filter_inversion_state(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
@@ -262,7 +262,7 @@ static void sync_location(const char path[], int cv, int sync_cursor_pos,
 static void sync_local_opts(int defer_slow);
 static void sync_filters(void);
 static int touch_cmd(const cmd_info_t *cmd_info);
-static int get_at(const FileView *view, const cmd_info_t *cmd_info);
+static int get_at(const view_t *view, const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int trashes_cmd(const cmd_info_t *cmd_info);
 static int tree_cmd(const cmd_info_t *cmd_info);
@@ -286,7 +286,7 @@ static int do_unmap(const char *keys, int mode);
 static int wincmd_cmd(const cmd_info_t *cmd_info);
 static int windo_cmd(const cmd_info_t *cmd_info);
 static int winrun_cmd(const cmd_info_t *cmd_info);
-static int winrun(FileView *view, const char cmd[]);
+static int winrun(view_t *view, const char cmd[]);
 static int write_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static int wq_cmd(const cmd_info_t *cmd_info);
@@ -1022,8 +1022,8 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 static void
 aucmd_action_handler(const char action[], void *arg)
 {
-	FileView *view = arg;
-	FileView *tmp_curr, *tmp_other;
+	view_t *view = arg;
+	view_t *tmp_curr, *tmp_other;
 
 	ui_view_pick(view, &tmp_curr, &tmp_other);
 	(void)exec_commands(action, view, CIT_COMMAND);
@@ -2143,7 +2143,7 @@ filter_cmd(const cmd_info_t *cmd_info)
 
 /* Updates filters of the view. */
 static int
-update_filter(FileView *view, const cmd_info_t *cmd_info)
+update_filter(view_t *view, const cmd_info_t *cmd_info)
 {
 	const char *fallback = cfg_get_last_search_pattern();
 
@@ -2166,7 +2166,7 @@ update_filter(FileView *view, const cmd_info_t *cmd_info)
 
 /* Displays state of all filters on the status bar. */
 static void
-display_filters_info(const FileView *view)
+display_filters_info(const view_t *view)
 {
 	char *const localf = get_filter_info("Local", &view->local_filter.filter);
 	char *const manualf = get_matcher_info("Name", view->manual_filter);
@@ -2228,7 +2228,7 @@ get_filter_inversion_state(const cmd_info_t *cmd_info)
  * On empty pattern fallback is used.  Returns non-zero if message on the
  * statusbar should be saved, otherwise zero is returned. */
 static int
-set_view_filter(FileView *view, const char filter[], const char fallback[],
+set_view_filter(view_t *view, const char filter[], const char fallback[],
 		int invert)
 {
 	char *error;
@@ -3874,7 +3874,7 @@ touch_cmd(const cmd_info_t *cmd_info)
 
 /* Gets destination position based range.  Returns the position. */
 static int
-get_at(const FileView *view, const cmd_info_t *cmd_info)
+get_at(const view_t *view, const cmd_info_t *cmd_info)
 {
 	return (cmd_info->end == NOT_DEF) ? view->list_pos : cmd_info->end;
 }
@@ -4238,11 +4238,11 @@ winrun_cmd(const cmd_info_t *cmd_info)
 
 /* Executes cmd command-line command for a specific view. */
 static int
-winrun(FileView *view, const char cmd[])
+winrun(view_t *view, const char cmd[])
 {
 	const int prev_global_local_settings = curr_stats.global_local_settings;
 	int result;
-	FileView *tmp_curr, *tmp_other;
+	view_t *tmp_curr, *tmp_other;
 
 	ui_view_pick(view, &tmp_curr, &tmp_other);
 

@@ -27,7 +27,7 @@
 void init_normal_mode(void);
 
 /* Change file attributes (permissions or properties). */
-void normal_cmd_cp(FileView *view, key_info_t key_info);
+void normal_cmd_cp(view_t *view, key_info_t key_info);
 
 void normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info);
 
@@ -52,7 +52,7 @@ void normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
  * modules.  Returns new value for status bar message flag, but when
  * print_errors isn't requested can return -1 to indicate issues with the
  * pattern. */
-int find_npattern(FileView *view, const char pattern[], int backward,
+int find_npattern(view_t *view, const char pattern[], int backward,
 		int print_errors);
 
 #endif /* VIFM__MODES__NORMAL_H__ */

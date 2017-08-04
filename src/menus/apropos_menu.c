@@ -37,12 +37,12 @@
 #include "../status.h"
 #include "menus.h"
 
-static int execute_apropos_cb(FileView *view, menu_data_t *m);
+static int execute_apropos_cb(view_t *view, menu_data_t *m);
 TSTATIC int parse_apropos_line(const char line[], char section[],
 		size_t section_len, char topic[], size_t topic_len);
 
 int
-show_apropos_menu(FileView *view, const char args[])
+show_apropos_menu(view_t *view, const char args[])
 {
 	char *cmd;
 	int save_msg;
@@ -66,7 +66,7 @@ show_apropos_menu(FileView *view, const char args[])
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_apropos_cb(FileView *view, menu_data_t *m)
+execute_apropos_cb(view_t *view, menu_data_t *m)
 {
 	char section[64], topic[64];
 	char command[256];

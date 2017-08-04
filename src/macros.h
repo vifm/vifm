@@ -88,7 +88,7 @@ const char * macros_to_str(MacroFlags flags);
 #endif
 
 TSTATIC_DEFS(
-	char * append_selected_files(FileView *view, char expanded[],
+	char * append_selected_files(view_t *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
 )
 

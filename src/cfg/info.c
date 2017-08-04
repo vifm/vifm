@@ -62,18 +62,18 @@
 #include "hist.h"
 #include "info_chars.h"
 
-static void get_sort_info(FileView *view, const char line[]);
+static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
 static void ensure_history_not_full(hist_t *hist);
-static void get_history(FileView *view, int reread, const char dir[],
+static void get_history(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
-static void set_manual_filter(FileView *view, const char value[]);
-static void set_view_property(FileView *view, char type, const char value[]);
+static void set_manual_filter(view_t *view, const char value[]);
+static void set_view_property(view_t *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[], int merge);
-static void process_hist_entry(FileView *view, const char dir[],
+static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
 static void write_options(FILE *const fp);
@@ -89,7 +89,7 @@ static void write_bmarks(FILE *const fp, char *bmarks[], const int timestamps[],
 static void write_bmark(const char path[], const char tags[], time_t timestamp,
 		void *arg);
 static void write_tui_state(FILE *const fp);
-static void write_view_history(FILE *fp, FileView *view, const char str[],
+static void write_view_history(FILE *fp, view_t *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
@@ -101,7 +101,7 @@ static void write_general_state(FILE *const fp);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
-static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
+static void put_sort_info(FILE *fp, char leading_char, const view_t *view);
 static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
@@ -137,7 +137,7 @@ read_info_file(int reread)
 		{
 			if(line_val[0] == '[' || line_val[0] == ']')
 			{
-				FileView *v = curr_view;
+				view_t *v = curr_view;
 				curr_view = (line_val[0] == '[') ? &lwin : &rwin;
 				process_set_args(line_val + 1, 1, 1);
 				curr_view = v;
@@ -268,7 +268,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
-			FileView *const view = (type == LINE_TYPE_LWIN_HIST) ? &lwin : &rwin;
+			view_t *const view = (type == LINE_TYPE_LWIN_HIST) ? &lwin : &rwin;
 			if(line_val[0] == '\0')
 			{
 				if(!reread && view->history_num > 0)
@@ -355,7 +355,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
 		{
-			FileView *view = (type == LINE_TYPE_LWIN_SPECIFIC) ? &lwin : &rwin;
+			view_t *view = (type == LINE_TYPE_LWIN_SPECIFIC) ? &lwin : &rwin;
 			set_view_property(view, line_val[0], line_val + 1);
 		}
 	}
@@ -371,7 +371,7 @@ read_info_file(int reread)
 
 /* Parses sort description line of the view and initialized its sort field. */
 static void
-get_sort_info(FileView *view, const char line[])
+get_sort_info(view_t *view, const char line[])
 {
 	char *const sort = curr_stats.restart_in_progress
 	                 ? ui_view_sort_list_get(view, view->sort)
@@ -426,7 +426,7 @@ ensure_history_not_full(hist_t *hist)
 
 /* Loads single history entry from vifminfo into the view. */
 static void
-get_history(FileView *view, int reread, const char dir[], const char file[],
+get_history(view_t *view, int reread, const char dir[], const char file[],
 		int rel_pos)
 {
 	const int list_rows = view->list_rows;
@@ -449,7 +449,7 @@ get_history(FileView *view, int reread, const char dir[], const char file[],
 
 /* Sets manual filter of the view and its previous state to given value. */
 static void
-set_manual_filter(FileView *view, const char value[])
+set_manual_filter(view_t *view, const char value[])
 {
 	char *error;
 	matcher_t *matcher;
@@ -473,7 +473,7 @@ set_manual_filter(FileView *view, const char value[])
 
 /* Sets view property specified by the type to the value. */
 static void
-set_view_property(FileView *view, char type, const char value[])
+set_view_property(view_t *view, char type, const char value[])
 {
 	if(type == PROP_TYPE_DOTFILES)
 	{
@@ -927,7 +927,7 @@ update_info_file(const char filename[], int merge)
 
 /* Handles single directory history entry, possibly skipping merging it in. */
 static void
-process_hist_entry(FileView *view, const char dir[], const char file[], int pos,
+process_hist_entry(view_t *view, const char dir[], const char file[], int pos,
 		char ***lh, int *nlh, int **lhp, size_t *nlhp)
 {
 	if(view->history_pos + *nlh/2 == cfg.history_len - 1 ||
@@ -1311,7 +1311,7 @@ write_tui_state(FILE *const fp)
 
 /* Stores history of the view to the file. */
 static void
-write_view_history(FILE *fp, FileView *view, const char str[], char mark,
+write_view_history(FILE *fp, view_t *view, const char str[], char mark,
 		int prev_count, char *prev[], int pos[])
 {
 	int i;
@@ -1487,7 +1487,7 @@ escape_spaces(const char str[])
 /* Writes sort description line of the view to the fp file prepending the
  * leading_char to it. */
 static void
-put_sort_info(FILE *fp, char leading_char, const FileView *view)
+put_sort_info(FILE *fp, char leading_char, const view_t *view)
 {
 	int i = -1;
 	const char *const sort = ui_view_sort_list_get(view, view->sort_g);

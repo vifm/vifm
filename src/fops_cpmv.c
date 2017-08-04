@@ -42,12 +42,12 @@
 static int cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops,
 		int force);
-static int cpmv_prepare(FileView *view, char ***list, int *nlines,
+static int cpmv_prepare(view_t *view, char ***list, int *nlines,
 		CopyMoveLikeOp op, int force, char undo_msg[], size_t undo_msg_len,
 		char dst_path[], size_t dst_path_len, int *from_file);
 static int is_copy_list_ok(const char dst[], int count, char *list[],
 		int force);
-static int check_for_clashes(FileView *view, CopyMoveLikeOp op,
+static int check_for_clashes(view_t *view, CopyMoveLikeOp op,
 		const char dst_path[], char *list[], char *marked[], int nlines);
 static const char * cmlo_to_str(CopyMoveLikeOp op);
 static void cpmv_files_in_bg(bg_op_t *bg_op, void *arg);
@@ -57,8 +57,7 @@ static int cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op,
 		int bg, int cancellable, ops_t *ops, int force);
 
 int
-fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
-		int force)
+fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 {
 	int err;
 	int nmarked_files;
@@ -187,7 +186,7 @@ fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
 }
 
 void
-fops_replace(FileView *view, const char dst[], int force)
+fops_replace(view_t *view, const char dst[], int force)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	dir_entry_t *entry;
@@ -220,7 +219,7 @@ fops_replace(FileView *view, const char dst[], int force)
 
 	if(path_exists(dst, NODEREF) && force)
 	{
-		FileView *const other = (view == curr_view) ? other_view : curr_view;
+		view_t *const other = (view == curr_view) ? other_view : curr_view;
 		(void)fops_delete_current(other, 1, 1);
 	}
 
@@ -260,7 +259,7 @@ cp_file(const char src_dir[], const char dst_dir[], const char src[],
 }
 
 int
-fops_cpmv_bg(FileView *view, char *list[], int nlines, int move, int force)
+fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int force)
 {
 	int err;
 	size_t i;
@@ -322,11 +321,11 @@ fops_cpmv_bg(FileView *view, char *list[], int nlines, int move, int force)
  * message.  Returns zero on success, otherwise positive number for status bar
  * message and negative number for other errors. */
 static int
-cpmv_prepare(FileView *view, char ***list, int *nlines, CopyMoveLikeOp op,
+cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		int force, char undo_msg[], size_t undo_msg_len, char dst_path[],
 		size_t dst_path_len, int *from_file)
 {
-	FileView *const other = (view == curr_view) ? other_view : curr_view;
+	view_t *const other = (view == curr_view) ? other_view : curr_view;
 
 	char **marked;
 	size_t nmarked;
@@ -459,7 +458,7 @@ is_copy_list_ok(const char dst[], int count, char *list[], int force)
  * tree clashes (child move over parent or vice versa).  Returns zero if
  * everything is fine, otherwise non-zero is returned. */
 static int
-check_for_clashes(FileView *view, CopyMoveLikeOp op, const char dst_path[],
+check_for_clashes(view_t *view, CopyMoveLikeOp op, const char dst_path[],
 		char *list[], char *marked[], int nlines)
 {
 	dir_entry_t *entry = NULL;

@@ -99,8 +99,8 @@ static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
-static void remote_cd(FileView *view, const char path[], int handle);
-static void check_path_for_file(FileView *view, const char path[], int handle);
+static void remote_cd(view_t *view, const char path[], int handle);
+static void check_path_for_file(view_t *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
 		const char rwin_path[]);
 static void load_scheme(void);
@@ -446,7 +446,7 @@ parse_received_arguments(char *argv[])
 }
 
 static void
-remote_cd(FileView *view, const char path[], int handle)
+remote_cd(view_t *view, const char path[], int handle)
 {
 	char buf[PATH_MAX];
 
@@ -475,7 +475,7 @@ remote_cd(FileView *view, const char path[], int handle)
 /* Navigates to/opens (handles) file specified by the path (and file only, no
  * directories). */
 static void
-check_path_for_file(FileView *view, const char path[], int handle)
+check_path_for_file(view_t *view, const char path[], int handle)
 {
 	if(path[0] == '\0' || is_dir(path) || (handle && strcmp(path, "-") == 0))
 	{
@@ -522,7 +522,7 @@ load_scheme(void)
 void
 vifm_restart(void)
 {
-	FileView *tmp_view;
+	view_t *tmp_view;
 
 	curr_stats.restart_in_progress = 1;
 
@@ -662,7 +662,7 @@ vifm_try_leave(int write_info, int cquit, int force)
 }
 
 void _gnuc_noreturn
-vifm_choose_files(const FileView *view, int nfiles, char *files[])
+vifm_choose_files(const view_t *view, int nfiles, char *files[])
 {
 	int exit_code;
 

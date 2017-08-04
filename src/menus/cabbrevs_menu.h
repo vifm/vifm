@@ -25,7 +25,7 @@
 
 /* Displays list of command-line mode abbreviations.  Returns non-zero if status
  * bar message should be saved. */
-int show_cabbrevs_menu(FileView *view);
+int show_cabbrevs_menu(view_t *view);
 
 /* Describes an abbreviation for printing it out.  The offset parameter
  * specifies additional left-side displacement.  Returns newly allocated

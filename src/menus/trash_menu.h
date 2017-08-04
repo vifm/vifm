@@ -22,7 +22,7 @@
 #include "../ui/ui.h"
 
 /* Returns non-zero if status bar message should be saved. */
-int show_trash_menu(FileView *view);
+int show_trash_menu(view_t *view);
 
 #endif /* VIFM__MENUS__TRASH_MENU_H__ */
 

@@ -24,7 +24,7 @@
 /* Initializes attributes dialog mode. */
 void init_attr_dialog_mode(void);
 
-void enter_attr_mode(FileView *active_view);
+void enter_attr_mode(view_t *active_view);
 
 void redraw_attr_dialog(void);
 

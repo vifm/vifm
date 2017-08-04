@@ -154,7 +154,7 @@ qv_toggle(void)
 }
 
 void
-qv_draw(FileView *view)
+qv_draw(view_t *view)
 {
 	const dir_entry_t *curr;
 
@@ -661,7 +661,7 @@ expand_viewer_command(const char viewer[])
 	if(strchr(viewer, '%') == NULL)
 	{
 		char *escaped;
-		FileView *view = curr_stats.preview_hint;
+		view_t *view = curr_stats.preview_hint;
 		if(view == NULL)
 		{
 			view = curr_view;
@@ -679,9 +679,9 @@ expand_viewer_command(const char viewer[])
 }
 
 void
-qv_cleanup(FileView *view, const char cmd[])
+qv_cleanup(view_t *view, const char cmd[])
 {
-	FileView *const curr = curr_view;
+	view_t *const curr = curr_view;
 	FILE *fp;
 
 	if(cmd == NULL)

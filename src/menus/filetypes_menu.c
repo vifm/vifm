@@ -44,15 +44,15 @@
 static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
 static const char * form_filetype_data_entry(assoc_record_t prog);
-static int execute_filetype_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse filetypes_khandler(FileView *view, menu_data_t *m,
+static int execute_filetype_cb(view_t *view, menu_data_t *m);
+static KHandlerResponse filetypes_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 static void fill_menu_from_records(menu_data_t *m,
 		const assoc_records_t *records);
 static int max_desc_len(const assoc_records_t *records);
 
 int
-show_file_menu(FileView *view, int background)
+show_file_menu(view_t *view, int background)
 {
 	static menu_data_t m;
 
@@ -148,7 +148,7 @@ form_filetype_data_entry(assoc_record_t prog)
 /* Callback that is invoked when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_filetype_cb(FileView *view, menu_data_t *m)
+execute_filetype_cb(view_t *view, menu_data_t *m)
 {
 	if(get_current_entry(view)->type == FT_DIR && m->pos == 0)
 	{
@@ -172,7 +172,7 @@ execute_filetype_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-filetypes_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+filetypes_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"c") == 0)
 	{
@@ -187,7 +187,7 @@ filetypes_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 }
 
 int
-show_fileprograms_menu(FileView *view, const char fname[])
+show_fileprograms_menu(view_t *view, const char fname[])
 {
 	static menu_data_t m;
 
@@ -204,7 +204,7 @@ show_fileprograms_menu(FileView *view, const char fname[])
 }
 
 int
-show_fileviewers_menu(FileView *view, const char fname[])
+show_fileviewers_menu(view_t *view, const char fname[])
 {
 	static menu_data_t m;
 

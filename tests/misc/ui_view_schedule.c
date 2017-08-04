@@ -2,7 +2,7 @@
 
 #include "../../src/ui/ui.h"
 
-static FileView *const view = &lwin;
+static view_t *const view = &lwin;
 
 SETUP()
 {

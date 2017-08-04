@@ -37,25 +37,25 @@
 #include "opt_handlers.h"
 
 static void reset_filter(filter_t *filter);
-static int is_newly_filtered(FileView *view, const dir_entry_t *entry,
+static int is_newly_filtered(view_t *view, const dir_entry_t *entry,
 		void *arg);
 static void replace_matcher(matcher_t **matcher, const char expr[]);
-static int get_unfiltered_pos(const FileView *const view, int pos);
-static int load_unfiltered_list(FileView *const view);
-static int list_is_incomplete(FileView *const view);
-static void store_local_filter_position(FileView *const view, int pos);
-static int update_filtering_lists(FileView *view, int add, int clear);
+static int get_unfiltered_pos(const view_t *const view, int pos);
+static int load_unfiltered_list(view_t *const view);
+static int list_is_incomplete(view_t *const view);
+static void store_local_filter_position(view_t *const view, int pos);
+static int update_filtering_lists(view_t *view, int add, int clear);
 static void reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered);
-static void ensure_filtered_list_not_empty(FileView *view,
+static void ensure_filtered_list_not_empty(view_t *view,
 		dir_entry_t *parent_entry);
-static int extract_previously_selected_pos(FileView *const view);
-static void clear_local_filter_hist_after(FileView *const view, int pos);
-static int find_nearest_neighour(const FileView *const view);
-static void local_filter_finish(FileView *view);
+static int extract_previously_selected_pos(view_t *const view);
+static void clear_local_filter_hist_after(view_t *const view, int pos);
+static int find_nearest_neighour(const view_t *const view);
+static void local_filter_finish(view_t *view);
 static void append_slash(const char name[], char buf[], size_t buf_size);
 
 void
-filters_view_reset(FileView *view)
+filters_view_reset(view_t *view)
 {
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 	view->prev_invert = view->invert;
@@ -88,7 +88,7 @@ reset_filter(filter_t *filter)
 }
 
 void
-dot_filter_set(FileView *view, int visible)
+dot_filter_set(view_t *view, int visible)
 {
 	view->hide_dot_g = view->hide_dot = !visible;
 	ui_view_schedule_reload(view);
@@ -98,7 +98,7 @@ dot_filter_set(FileView *view, int visible)
 	}
 	if(curr_stats.global_local_settings)
 	{
-		FileView *other = (view == curr_view) ? other_view : curr_view;
+		view_t *other = (view == curr_view) ? other_view : curr_view;
 		other->hide_dot_g = other->hide_dot = !visible;
 		ui_view_schedule_reload(other);
 		if(other == curr_view)
@@ -109,7 +109,7 @@ dot_filter_set(FileView *view, int visible)
 }
 
 void
-dot_filter_toggle(FileView *view)
+dot_filter_toggle(view_t *view)
 {
 	view->hide_dot_g = view->hide_dot = !view->hide_dot;
 	ui_view_schedule_reload(view);
@@ -119,7 +119,7 @@ dot_filter_toggle(FileView *view)
 	}
 	if(curr_stats.global_local_settings)
 	{
-		FileView *other = (view == curr_view) ? other_view : curr_view;
+		view_t *other = (view == curr_view) ? other_view : curr_view;
 		other->hide_dot_g = other->hide_dot = !other->hide_dot;
 		ui_view_schedule_reload(other);
 		if(other == curr_view)
@@ -130,7 +130,7 @@ dot_filter_toggle(FileView *view)
 }
 
 void
-name_filters_add_selection(FileView *view)
+name_filters_add_selection(view_t *view)
 {
 	dir_entry_t *entry;
 	filter_t filter;
@@ -194,7 +194,7 @@ name_filters_add_selection(FileView *view)
 /* zap_entries() filter to filter-out files that match filter passed in the
  * arg. */
 static int
-is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
+is_newly_filtered(view_t *view, const dir_entry_t *entry, void *arg)
 {
 	filter_t *const filter = arg;
 
@@ -212,7 +212,7 @@ is_newly_filtered(FileView *view, const dir_entry_t *entry, void *arg)
 }
 
 void
-name_filters_remove(FileView *view)
+name_filters_remove(view_t *view)
 {
 	if(name_filters_empty(view))
 	{
@@ -231,14 +231,14 @@ name_filters_remove(FileView *view)
 }
 
 int
-name_filters_empty(FileView *view)
+name_filters_empty(view_t *view)
 {
 	return matcher_is_empty(view->manual_filter)
 	    && filter_is_empty(&view->auto_filter);
 }
 
 void
-name_filters_drop(FileView *view)
+name_filters_drop(view_t *view)
 {
 	filter_clear(&view->auto_filter);
 	replace_matcher(&view->manual_filter, "");
@@ -246,7 +246,7 @@ name_filters_drop(FileView *view)
 }
 
 void
-name_filters_restore(FileView *view)
+name_filters_restore(view_t *view)
 {
 	if(view->prev_manual_filter[0] == '\0' && view->prev_auto_filter[0] == '\0')
 	{
@@ -273,7 +273,7 @@ replace_matcher(matcher_t **matcher, const char expr[])
 }
 
 void
-filters_invert(FileView *view)
+filters_invert(view_t *view)
 {
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
@@ -281,7 +281,7 @@ filters_invert(FileView *view)
 }
 
 int
-filters_file_is_visible(FileView *view, const char dir[], const char name[],
+filters_file_is_visible(view_t *view, const char dir[], const char name[],
 		int is_dir, int apply_local_filter)
 {
 	/* FIXME: some very long file names won't be matched against some regexps. */
@@ -324,13 +324,13 @@ filters_file_is_visible(FileView *view, const char dir[], const char name[],
 }
 
 void
-filters_dir_updated(FileView *view)
+filters_dir_updated(view_t *view)
 {
 	filter_clear(&view->local_filter.filter);
 }
 
 void
-filters_drop_temporaries(FileView *view, dir_entry_t entries[])
+filters_drop_temporaries(view_t *view, dir_entry_t entries[])
 {
 	/* This is basically a simplified version of update_filtering_lists().  Not
 	 * sure if it's worth merging them. */
@@ -369,7 +369,7 @@ filters_drop_temporaries(FileView *view, dir_entry_t entries[])
 }
 
 int
-local_filter_set(FileView *view, const char filter[])
+local_filter_set(view_t *view, const char filter[])
 {
 	int result;
 	const int current_file_pos = view->local_filter.in_progress
@@ -394,7 +394,7 @@ local_filter_set(FileView *view, const char filter[])
 /* Gets position of an item in dir_entry list at position pos in the unfiltered
  * list.  Returns index on success, otherwise -1 is returned. */
 static int
-get_unfiltered_pos(const FileView *const view, int pos)
+get_unfiltered_pos(const view_t *const view, int pos)
 {
 	const int count = (int)view->local_filter.unfiltered_count;
 	const char *const filename = view->dir_entry[pos].name;
@@ -413,7 +413,7 @@ get_unfiltered_pos(const FileView *const view, int pos)
 /* Loads full list of files into unfiltered list of the view.  Returns position
  * of file under cursor in the unfiltered list. */
 static int
-load_unfiltered_list(FileView *const view)
+load_unfiltered_list(view_t *const view)
 {
 	int current_file_pos = view->list_pos;
 
@@ -461,7 +461,7 @@ load_unfiltered_list(FileView *const view)
 /* Checks whether list of files is incomplete.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
-list_is_incomplete(FileView *const view)
+list_is_incomplete(view_t *const view)
 {
 	int i;
 
@@ -493,7 +493,7 @@ list_is_incomplete(FileView *const view)
 
 /* Adds local filter position (in unfiltered list) to position history. */
 static void
-store_local_filter_position(FileView *const view, int pos)
+store_local_filter_position(view_t *const view, int pos)
 {
 	size_t *const len = &view->local_filter.poshist_len;
 	int *arr = reallocarray(view->local_filter.poshist, *len + 1, sizeof(int));
@@ -511,7 +511,7 @@ store_local_filter_position(FileView *const view, int pos)
  * cleared in unfiltered list.  Returns zero unless addition is performed in
  * which case can return non-zero when all files got filtered out. */
 static int
-update_filtering_lists(FileView *view, int add, int clear)
+update_filtering_lists(view_t *view, int add, int clear)
 {
 	/* filters_drop_temporaries() is a similar function. */
 
@@ -646,7 +646,7 @@ reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered)
 /* Use parent_entry to make filtered list not empty, or create such entry (if
  * parent_entry is NULL) and put it to original list. */
 static void
-ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
+ensure_filtered_list_not_empty(view_t *view, dir_entry_t *parent_entry)
 {
 	if(view->list_rows != 0U)
 	{
@@ -672,7 +672,7 @@ ensure_filtered_list_not_empty(FileView *view, dir_entry_t *parent_entry)
 }
 
 void
-local_filter_update_view(FileView *view, int rel_pos)
+local_filter_update_view(view_t *view, int rel_pos)
 {
 	int pos = extract_previously_selected_pos(view);
 
@@ -697,7 +697,7 @@ local_filter_update_view(FileView *view, int rel_pos)
 /* Finds one of previously selected files and updates list of visited files
  * if needed.  Returns file position in current list of files or -1. */
 static int
-extract_previously_selected_pos(FileView *const view)
+extract_previously_selected_pos(view_t *const view)
 {
 	size_t i;
 	for(i = 0; i < view->local_filter.poshist_len; i++)
@@ -717,7 +717,7 @@ extract_previously_selected_pos(FileView *const view)
 
 /* Clears all positions after the pos. */
 static void
-clear_local_filter_hist_after(FileView *const view, int pos)
+clear_local_filter_hist_after(view_t *const view, int pos)
 {
 	view->local_filter.poshist_len -= view->local_filter.poshist_len - (pos + 1);
 }
@@ -725,7 +725,7 @@ clear_local_filter_hist_after(FileView *const view, int pos)
 /* Find nearest filtered neighbour.  Returns index of nearest unfiltered
  * neighbour of the entry initially pointed to by cursor. */
 static int
-find_nearest_neighour(const FileView *const view)
+find_nearest_neighour(const view_t *const view)
 {
 	const int count = view->local_filter.unfiltered_count;
 
@@ -749,7 +749,7 @@ find_nearest_neighour(const FileView *const view)
 }
 
 void
-local_filter_accept(FileView *view)
+local_filter_accept(view_t *view)
 {
 	if(!view->local_filter.in_progress)
 	{
@@ -768,7 +768,7 @@ local_filter_accept(FileView *view)
 }
 
 void
-local_filter_apply(FileView *view, const char filter[])
+local_filter_apply(view_t *view, const char filter[])
 {
 	if(view->local_filter.in_progress)
 	{
@@ -789,7 +789,7 @@ local_filter_apply(FileView *view, const char filter[])
 }
 
 void
-local_filter_cancel(FileView *view)
+local_filter_cancel(view_t *view)
 {
 	if(!view->local_filter.in_progress)
 	{
@@ -808,7 +808,7 @@ local_filter_cancel(FileView *view)
 
 /* Finishes filtering process and frees associated resources. */
 static void
-local_filter_finish(FileView *view)
+local_filter_finish(view_t *view)
 {
 	dynarray_free(view->local_filter.unfiltered);
 	free(view->local_filter.saved);
@@ -820,7 +820,7 @@ local_filter_finish(FileView *view)
 }
 
 void
-local_filter_remove(FileView *view)
+local_filter_remove(view_t *view)
 {
 	(void)replace_string(&view->local_filter.prev, view->local_filter.filter.raw);
 	filter_clear(&view->local_filter.filter);
@@ -828,14 +828,14 @@ local_filter_remove(FileView *view)
 }
 
 void
-local_filter_restore(FileView *view)
+local_filter_restore(view_t *view)
 {
 	(void)filter_set(&view->local_filter.filter, view->local_filter.prev);
 	(void)replace_string(&view->local_filter.prev, "");
 }
 
 int
-local_filter_matches(FileView *view, const dir_entry_t *entry)
+local_filter_matches(view_t *view, const dir_entry_t *entry)
 {
 	/* FIXME: some very long file names won't be matched against some regexps. */
 	char name_with_slash[NAME_MAX + 1 + 1];

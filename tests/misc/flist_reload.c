@@ -13,7 +13,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
-static FileView *const view = &lwin;
+static view_t *const view = &lwin;
 
 SETUP()
 {

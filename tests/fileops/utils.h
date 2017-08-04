@@ -6,10 +6,10 @@
 #include "../../src/ui/ui.h"
 
 /* Initializes view with safe defaults. */
-void view_setup(FileView *view);
+void view_setup(view_t *view);
 
 /* Frees resources of the view. */
-void view_teardown(FileView *view);
+void view_teardown(view_t *view);
 
 /* Creates empty file at specified path. */
 void create_empty_file(const char path[]);

@@ -6,7 +6,7 @@
 
 static void ensure_all_visible(int odd);
 
-static FileView *const view = &lwin;
+static view_t *const view = &lwin;
 
 /*          file0
  * 0 row----file1---- <= top

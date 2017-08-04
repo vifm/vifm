@@ -56,7 +56,7 @@ dir_size_args_t;
 
 static int delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash,
 		int nested);
-static const char * get_top_dir(const FileView *view);
+static const char * get_top_dir(const view_t *view);
 static void delete_files_in_bg(bg_op_t *bg_op, void *arg);
 static void delete_file_in_bg(ops_t *ops, const char path[], int use_trash);
 static int prepare_register(int reg);
@@ -67,13 +67,13 @@ TSTATIC const char * gen_clone_name(const char dir[], const char normal_name[]);
 static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 static void get_group_file_list(char *list[], int count, char buf[]);
-static void go_to_first_file(FileView *view, char *names[], int count);
-static void update_dir_entry_size(const FileView *view, int index, int force);
+static void go_to_first_file(view_t *view, char *names[], int count);
+static void update_dir_entry_size(const view_t *view, int index, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(bg_op_t *bg_op, void *arg);
 static void dir_size(bg_op_t *bg_op, char path[], int force);
 static int bg_cancellation_hook(void *arg);
-static void redraw_after_path_change(FileView *view, const char path[]);
+static void redraw_after_path_change(view_t *view, const char path[]);
 #ifndef _WIN32
 static void change_owner_cb(const char new_owner[]);
 static int complete_owner(const char str[], void *arg);
@@ -82,7 +82,7 @@ static int complete_group(const char str[], void *arg);
 #endif
 
 int
-fops_delete(FileView *view, int reg, int use_trash)
+fops_delete(view_t *view, int reg, int use_trash)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	int i;
@@ -160,7 +160,7 @@ fops_delete(FileView *view, int reg, int use_trash)
 }
 
 int
-fops_delete_current(FileView *view, int use_trash, int nested)
+fops_delete_current(view_t *view, int use_trash, int nested)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	dir_entry_t *entry;
@@ -276,7 +276,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 }
 
 int
-fops_delete_bg(FileView *view, int use_trash)
+fops_delete_bg(view_t *view, int use_trash)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	bg_args_t *args;
@@ -371,7 +371,7 @@ fops_delete_bg(FileView *view, int use_trash)
 /* Retrieves root directory of file system sub-tree (for regular or tree views).
  * Returns the path or NULL (for custom views). */
 static const char *
-get_top_dir(const FileView *view)
+get_top_dir(const view_t *view)
 {
 	if(flist_custom_active(view) && view->custom.type != CV_TREE)
 	{
@@ -437,7 +437,7 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 }
 
 int
-fops_yank(FileView *view, int reg)
+fops_yank(view_t *view, int reg)
 {
 	int nyanked_files;
 	dir_entry_t *entry;
@@ -483,7 +483,7 @@ prepare_register(int reg)
 }
 
 int
-fops_retarget(FileView *view)
+fops_retarget(view_t *view)
 {
 	char full_path[PATH_MAX];
 	char linkto[PATH_MAX];
@@ -579,7 +579,7 @@ complete_filename(const char str[], void *arg)
 }
 
 int
-fops_clone(FileView *view, char *list[], int nlines, int force, int copies)
+fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 {
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
@@ -817,7 +817,7 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 }
 
 int
-fops_mkdirs(FileView *view, int at, char **names, int count, int create_parent)
+fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
@@ -899,7 +899,7 @@ fops_mkdirs(FileView *view, int at, char **names, int count, int create_parent)
 }
 
 int
-fops_mkfiles(FileView *view, int at, char *names[], int count)
+fops_mkfiles(view_t *view, int at, char *names[], int count)
 {
 	int i;
 	int n;
@@ -988,7 +988,7 @@ get_group_file_list(char *list[], int count, char buf[])
 /* Sets view cursor to point at first file found found in supplied list of file
  * names. */
 static void
-go_to_first_file(FileView *view, char *names[], int count)
+go_to_first_file(view_t *view, char *names[], int count)
 {
 	int i;
 
@@ -1006,7 +1006,7 @@ go_to_first_file(FileView *view, char *names[], int count)
 }
 
 int
-fops_restore(FileView *view)
+fops_restore(view_t *view)
 {
 	int m, n;
 	dir_entry_t *entry;
@@ -1048,7 +1048,7 @@ fops_restore(FileView *view)
 }
 
 void
-fops_size_bg(const FileView *view, int force)
+fops_size_bg(const view_t *view, int force)
 {
 	int i;
 
@@ -1071,7 +1071,7 @@ fops_size_bg(const FileView *view, int force)
 
 /* Initiates background size calculation for view entry. */
 static void
-update_dir_entry_size(const FileView *view, int index, int force)
+update_dir_entry_size(const view_t *view, int index, int force)
 {
 	char full_path[PATH_MAX];
 	const dir_entry_t *const entry = &view->dir_entry[index];
@@ -1155,7 +1155,7 @@ bg_cancellation_hook(void *arg)
 
 /* Schedules view redraw in case path change might have affected it. */
 static void
-redraw_after_path_change(FileView *view, const char path[])
+redraw_after_path_change(view_t *view, const char path[])
 {
 	if(path_starts_with(view->curr_dir, path) ||
 			flist_custom_active(view))
@@ -1172,7 +1172,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 /* Integer to pointer conversion. */
 #define V(e) (void *)(long)(e)
 
-	FileView *const view = curr_view;
+	view_t *const view = curr_view;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	ops_t *ops;
 	dir_entry_t *entry;

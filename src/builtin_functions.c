@@ -186,7 +186,7 @@ get_fnum(const char position[])
 static var_t
 getpanetype_builtin(const call_info_t *call_info)
 {
-	FileView *const view = curr_view;
+	view_t *const view = curr_view;
 	var_val_t var_val = { .string = "UNKNOWN" };
 
 	if(flist_custom_active(view))

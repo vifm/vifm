@@ -25,10 +25,10 @@ void undo_setup(void);
 void undo_teardown(void);
 
 /* Initializes view with safe defaults. */
-void view_setup(FileView *view);
+void view_setup(view_t *view);
 
 /* Frees resources of the view. */
-void view_teardown(FileView *view);
+void view_teardown(view_t *view);
 
 /* Creates file at the path. */
 void create_file(const char path[]);

@@ -65,11 +65,9 @@ static int get_selection_size(int first_file_index);
 static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
-static void set_attrs(FileView *view, const int *attrs,
-		const int *origin_attrs);
-static void files_attrib(FileView *view, DWORD add, DWORD sub,
-		int recurse_dirs);
-static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
+static void set_attrs(view_t *view, const int *attrs, const int *origin_attrs);
+static void files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs);
+static void attrib_file_in_list(view_t *view, int pos, DWORD add, DWORD sub,
 		int recurse_dirs);
 static void file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
@@ -85,7 +83,7 @@ static void draw_curr(void);
 /* properties dialog width */
 static const int WIDTH = 29;
 
-static FileView *view;
+static view_t *view;
 static int top, bottom;
 static int curr;
 static int attr_num;
@@ -154,7 +152,7 @@ init_attr_dialog_mode(void)
 
 /* enters properties change mode */
 void
-enter_attr_mode(FileView *active_view)
+enter_attr_mode(view_t *active_view)
 {
 	if(curr_stats.load_stage < 2)
 		return;
@@ -378,7 +376,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 /* sets file properties according to users input. forms attribute change mask */
 static void
-set_attrs(FileView *view, const int *attrs, const int *origin_attrs)
+set_attrs(view_t *view, const int *attrs, const int *origin_attrs)
 {
 	int i;
 	DWORD add_mask = 0;
@@ -404,7 +402,7 @@ set_attrs(FileView *view, const int *attrs, const int *origin_attrs)
 
 /* Changes attributes of files in the view. */
 static void
-files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
+files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
 	dir_entry_t *entry;
@@ -441,7 +439,7 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 }
 
 /* Changes properties of a single file. */
-static void attrib_file_in_list(FileView *view, int pos, DWORD add, DWORD sub,
+static void attrib_file_in_list(view_t *view, int pos, DWORD add, DWORD sub,
 		int recurse_dirs)
 {
 	char path_buf[PATH_MAX];

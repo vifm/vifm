@@ -51,15 +51,15 @@ RenameAction;
 static void rename_file_cb(const char new_name[]);
 static int complete_filename_only(const char str[], void *arg);
 static char ** add_files_to_list(const char path[], char *files[], int *len);
-static int perform_renaming(FileView *view, char *files[], char is_dup[],
-		int len, char *dst[]);
+static int perform_renaming(view_t *view, char *files[], char is_dup[], int len,
+		char *dst[]);
 TSTATIC const char * incdec_name(const char fname[], int k);
 static int count_digits(int number);
 static const char * substitute_tr(const char name[], const char pattern[],
 		const char sub[]);
 static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
-static int rename_marked(FileView *view, const char desc[], const char lhs[],
+static int rename_marked(view_t *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
 static const char * gsubstitute_regexp(regex_t *re, const char src[],
 		const char sub[], regmatch_t matches[]);
@@ -70,7 +70,7 @@ static const char * substitute_regexp(const char src[], const char sub[],
 static char rename_file_ext[NAME_MAX + 1];
 
 void
-fops_rename_current(FileView *view, int name_only)
+fops_rename_current(view_t *view, int name_only)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
 	char filename[strlen(curr->name) + 1];
@@ -164,7 +164,7 @@ complete_filename_only(const char str[], void *arg)
 }
 
 int
-fops_rename(FileView *view, char *list[], int nlines, int recursive)
+fops_rename(view_t *view, char *list[], int nlines, int recursive)
 {
 	char **files;
 	int nfiles;
@@ -288,7 +288,7 @@ add_files_to_list(const char path[], char *files[], int *len)
  * marks elements that are in both lists.  Lengths of all lists must be equal to
  * len.  Returns number of renamed files. */
 static int
-perform_renaming(FileView *view, char *files[], char is_dup[], int len,
+perform_renaming(view_t *view, char *files[], char is_dup[], int len,
 		char *dst[])
 {
 	char undo_msg[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
@@ -399,7 +399,7 @@ perform_renaming(FileView *view, char *files[], char is_dup[], int len,
 }
 
 int
-fops_incdec(FileView *view, int k)
+fops_incdec(view_t *view, int k)
 {
 	size_t names_len = 0;
 	char **names = NULL;
@@ -587,7 +587,7 @@ count_digits(int number)
 }
 
 int
-fops_case(FileView *view, int to_upper)
+fops_case(view_t *view, int to_upper)
 {
 	char **dest;
 	int ndest;
@@ -657,7 +657,7 @@ fops_case(FileView *view, int to_upper)
 }
 
 int
-fops_subst(FileView *view, const char pattern[], const char sub[], int ic,
+fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 		int glob)
 {
 	regex_t re;
@@ -753,7 +753,7 @@ fops_subst(FileView *view, const char pattern[], const char sub[], int ic,
 }
 
 int
-fops_tr(FileView *view, const char from[], const char to[])
+fops_tr(view_t *view, const char from[], const char to[])
 {
 	char **dest;
 	int ndest;
@@ -872,7 +872,7 @@ check_rename(const char old_fname[], const char new_fname[], char **dest,
  * rhs can be NULL to omit their printing (both at the same time).  Returns new
  * value for save_msg flag. */
 static int
-rename_marked(FileView *view, const char desc[], const char lhs[],
+rename_marked(view_t *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest)
 {
 	int i;

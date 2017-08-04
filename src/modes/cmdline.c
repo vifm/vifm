@@ -187,7 +187,7 @@ static void cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xa(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xc(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info);
-static void paste_short_path(FileView *view);
+static void paste_short_path(view_t *view);
 static void cmd_ctrl_xd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxd(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xe(key_info_t key_info, keys_info_t *keys_info);
@@ -195,7 +195,7 @@ static void cmd_ctrl_xxe(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xm(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xr(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info);
-static void paste_short_path_root(FileView *view);
+static void paste_short_path_root(view_t *view);
 static void cmd_ctrl_xt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xxt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_xequals(key_info_t key_info, keys_info_t *keys_info);
@@ -1756,7 +1756,7 @@ cmd_ctrl_xxc(key_info_t key_info, keys_info_t *keys_info)
 /* Pastes short path of the current entry of the view into current cursor
  * position. */
 static void
-paste_short_path(FileView *view)
+paste_short_path(view_t *view)
 {
 	if(flist_custom_active(view))
 	{
@@ -1829,7 +1829,7 @@ cmd_ctrl_xxr(key_info_t key_info, keys_info_t *keys_info)
 /* Pastes short root of the current entry of the view into current cursor
  * position. */
 static void
-paste_short_path_root(FileView *view)
+paste_short_path_root(view_t *view)
 {
 	char short_path[PATH_MAX];
 	get_short_path_of(view, get_current_entry(view), 0, 0, sizeof(short_path),

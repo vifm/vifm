@@ -23,7 +23,7 @@
 #include "../ui/ui.h"
 
 /* Returns non-zero if status bar message should be saved. */
-int show_dirstack_menu(FileView *view);
+int show_dirstack_menu(view_t *view);
 
 #endif /* VIFM__MENUS__DIRSTACK_MENU_H__ */
 

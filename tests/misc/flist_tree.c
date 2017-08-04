@@ -24,13 +24,13 @@
 
 #include "utils.h"
 
-static int load_tree(FileView *view, const char path[]);
+static int load_tree(view_t *view, const char path[]);
 static void verify_tree_node(column_data_t *cdt, int idx,
 		const char expected[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
-static int remove_selected(FileView *view, const dir_entry_t *entry, void *arg);
-static void validate_tree(const FileView *view);
+static int remove_selected(view_t *view, const dir_entry_t *entry, void *arg);
+static void validate_tree(const view_t *view);
 static void validate_parents(const dir_entry_t *entries, int nchildren);
 
 static char cwd[PATH_MAX + 1];
@@ -793,7 +793,7 @@ TEST(cursor_is_set_on_previous_file)
 }
 
 static int
-load_tree(FileView *view, const char path[])
+load_tree(view_t *view, const char path[])
 {
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), path, "", cwd);
 	return flist_load_tree(&lwin, lwin.curr_dir);
@@ -817,13 +817,13 @@ column_line_print(const void *data, int column_id, const char buf[],
 }
 
 static int
-remove_selected(FileView *view, const dir_entry_t *entry, void *arg)
+remove_selected(view_t *view, const dir_entry_t *entry, void *arg)
 {
 	return !entry->selected;
 }
 
 static void
-validate_tree(const FileView *view)
+validate_tree(const view_t *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)

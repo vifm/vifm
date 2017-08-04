@@ -28,7 +28,7 @@
 void menu_init_mode(void);
 
 /* Enters menu mode. */
-void menu_enter_mode(menu_data_t *m, FileView *active_view);
+void menu_enter_mode(menu_data_t *m, view_t *active_view);
 
 /* Replaces menu of the menu mode. */
 void menu_reenter_mode(menu_data_t *m);

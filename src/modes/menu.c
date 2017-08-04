@@ -112,7 +112,7 @@ static int quit_cmd(const cmd_info_t *cmd_info);
 static int write_cmd(const cmd_info_t *cmd_info);
 static void leave_menu_mode(int reset_selection);
 
-static FileView *view;
+static view_t *view;
 static menu_data_t *menu;
 static int last_search_backward;
 static int was_redraw;
@@ -290,7 +290,7 @@ key_handler(wchar_t key)
 }
 
 void
-menu_enter_mode(menu_data_t *m, FileView *active_view)
+menu_enter_mode(menu_data_t *m, view_t *active_view)
 {
 	if(curr_stats.load_stage < 2)
 	{

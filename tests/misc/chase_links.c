@@ -20,8 +20,8 @@
 
 #include "utils.h"
 
-static void init_view(FileView *view);
-static void free_view(FileView *view);
+static void init_view(view_t *view);
+static void free_view(view_t *view);
 
 SETUP()
 {
@@ -52,7 +52,7 @@ TEARDOWN()
 }
 
 static void
-init_view(FileView *view)
+init_view(view_t *view)
 {
 	char *error;
 
@@ -69,7 +69,7 @@ init_view(FileView *view)
 }
 
 static void
-free_view(FileView *view)
+free_view(view_t *view)
 {
 	int i;
 

@@ -24,7 +24,7 @@
 #include "menus.h"
 
 /* Returns non-zero if status bar message should be saved. */
-int show_volumes_menu(FileView *view);
+int show_volumes_menu(view_t *view);
 
 #endif /* VIFM__MENUS__VOLUMES_MENU_H__ */
 

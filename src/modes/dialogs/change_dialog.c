@@ -53,7 +53,7 @@ static void goto_line(int line);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
-static FileView *view;
+static view_t *view;
 static int top, bottom, step, curr, col;
 
 static keys_add_info_t builtin_cmds[] = {
@@ -95,7 +95,7 @@ init_change_dialog_mode(void)
 }
 
 void
-enter_change_mode(FileView *active_view)
+enter_change_mode(view_t *active_view)
 {
 	if(curr_stats.load_stage < 2)
 		return;

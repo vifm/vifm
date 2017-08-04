@@ -25,7 +25,7 @@
 /* Initializes sort dialog mode. */
 void init_sort_dialog_mode(void);
 
-void enter_sort_mode(FileView *active_view);
+void enter_sort_mode(view_t *active_view);
 
 void redraw_sort_dialog(void);
 

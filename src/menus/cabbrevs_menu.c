@@ -31,11 +31,11 @@
 #include "../bracket_notation.h"
 #include "menus.h"
 
-static KHandlerResponse commands_khandler(FileView *view, menu_data_t *m,
+static KHandlerResponse commands_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 
 int
-show_cabbrevs_menu(FileView *view)
+show_cabbrevs_menu(view_t *view)
 {
 	void *state;
 	const wchar_t *lhs, *rhs;
@@ -59,7 +59,7 @@ show_cabbrevs_menu(FileView *view)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-commands_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+commands_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0) /* Remove element. */
 	{

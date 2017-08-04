@@ -57,16 +57,16 @@ static char filter_single(int *quoted, char c, char data);
 static char * expand_macros_i(const char command[], const char args[],
 		MacroFlags *flags, int for_shell, macro_filter_func filter);
 static void set_flags(MacroFlags *flags, MacroFlags value);
-TSTATIC char * append_selected_files(FileView *view, char expanded[],
+TSTATIC char * append_selected_files(view_t *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
-static char * append_entry(FileView *view, char expanded[], PathType type,
+static char * append_entry(view_t *view, char expanded[], PathType type,
 		dir_entry_t *entry, int quotes, const char mod[], int for_shell);
-static char * expand_directory_path(FileView *view, char *expanded, int quotes,
+static char * expand_directory_path(view_t *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
 static char * expand_register(const char curr_dir[], char expanded[],
 		int quotes, const char mod[], int key, int *well_formed, int for_shell);
 static char * expand_preview(char expanded[], int key, int *well_formed);
-static FileView * get_preview_view(FileView *view);
+static view_t * get_preview_view(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
@@ -355,7 +355,7 @@ set_flags(MacroFlags *flags, MacroFlags value)
 }
 
 TSTATIC char *
-append_selected_files(FileView *view, char expanded[], int under_cursor,
+append_selected_files(view_t *view, char expanded[], int under_cursor,
 		int quotes, const char mod[], int for_shell)
 {
 	const PathType type = (view == other_view)
@@ -403,7 +403,7 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 /* Appends path to the entry to the expanded string.  Returns new value of
  * expanded string. */
 static char *
-append_entry(FileView *view, char expanded[], PathType type, dir_entry_t *entry,
+append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
 		int quotes, const char mod[], int for_shell)
 {
 	char path[PATH_MAX];
@@ -434,8 +434,8 @@ append_entry(FileView *view, char expanded[], PathType type, dir_entry_t *entry,
 }
 
 static char *
-expand_directory_path(FileView *view, char *expanded, int quotes,
-		const char *mod, int for_shell)
+expand_directory_path(view_t *view, char *expanded, int quotes, const char *mod,
+		int for_shell)
 {
 	const char *const modified = apply_mods(flist_get_dir(view), "/", mod, for_shell);
 	char *const result = append_path_to_expanded(expanded, quotes, modified);
@@ -499,7 +499,7 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 static char *
 expand_preview(char expanded[], int key, int *well_formed)
 {
-	FileView *view;
+	view_t *view;
 	char num_str[32];
 	int h, w, x, y;
 	int param;
@@ -538,10 +538,10 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 /* Applies heuristics to determine which view is going to be used for preview.
  * Returns the view. */
-static FileView *
-get_preview_view(FileView *view)
+static view_t *
+get_preview_view(view_t *view)
 {
-	FileView *const other = (view == curr_view) ? other_view : curr_view;
+	view_t *const other = (view == curr_view) ? other_view : curr_view;
 
 	if(curr_stats.preview_hint != NULL)
 	{

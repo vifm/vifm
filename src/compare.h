@@ -38,12 +38,11 @@ int compare_two_panes(CompareType ct, ListType lt, int group_paths,
 
 /* Replaces single pane with information derived from its files.  Returns
  * non-zero if status bar message should be preserved. */
-int compare_one_pane(FileView *view, CompareType ct, ListType lt,
-		int skip_empty);
+int compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty);
 
 /* Moves current file from one view to the other.  Returns non-zero if status
  * bar message should be preserved. */
-int compare_move(FileView *from, FileView *to);
+int compare_move(view_t *from, view_t *to);
 
 #endif /* VIFM__DIFF_H__ */
 

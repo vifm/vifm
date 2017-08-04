@@ -32,10 +32,10 @@
 #include "../running.h"
 #include "menus.h"
 
-static int execute_locate_cb(FileView *view, menu_data_t *m);
+static int execute_locate_cb(view_t *view, menu_data_t *m);
 
 int
-show_locate_menu(FileView *view, const char args[])
+show_locate_menu(view_t *view, const char args[])
 {
 	enum { M_a, M_u, M_U, };
 
@@ -72,7 +72,7 @@ show_locate_menu(FileView *view, const char args[])
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_locate_cb(FileView *view, menu_data_t *m)
+execute_locate_cb(view_t *view, menu_data_t *m)
 {
 	(void)menus_goto_file(m, view, m->items[m->pos], 0);
 	return 0;

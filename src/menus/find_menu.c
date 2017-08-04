@@ -38,10 +38,10 @@
 #define DEFAULT_PREDICATE "-name"
 #endif
 
-static int execute_find_cb(FileView *view, menu_data_t *m);
+static int execute_find_cb(view_t *view, menu_data_t *m);
 
 int
-show_find_menu(FileView *view, int with_path, const char args[])
+show_find_menu(view_t *view, int with_path, const char args[])
 {
 	enum { M_s, M_a, M_A, M_u, M_U, };
 
@@ -115,7 +115,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_find_cb(FileView *view, menu_data_t *m)
+execute_find_cb(view_t *view, menu_data_t *m)
 {
 	(void)menus_goto_file(m, view, m->items[m->pos], 0);
 	return 0;

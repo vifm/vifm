@@ -25,7 +25,7 @@
 /* Initializes file information dialog mode. */
 void init_file_info_mode(void);
 
-void enter_file_info_mode(FileView *view);
+void enter_file_info_mode(view_t *view);
 
 void redraw_file_info_dialog(void);
 

@@ -50,7 +50,7 @@
 TSTATIC char * format_edit_selection_cmd(int *bg);
 static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
 TSTATIC void trim_right(char text[]);
-static void dump_filenames(const FileView *view, FILE *fp, int nfiles,
+static void dump_filenames(const view_t *view, FILE *fp, int nfiles,
 		char *files[]);
 
 int
@@ -229,7 +229,7 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 }
 
 int
-vim_write_file_list(const FileView *view, int nfiles, char *files[])
+vim_write_file_list(const view_t *view, int nfiles, char *files[])
 {
 	FILE *fp;
 	const char *const files_out = curr_stats.chosen_files_out;
@@ -263,7 +263,7 @@ vim_write_file_list(const FileView *view, int nfiles, char *files[])
  * is selected, if current file is not selected it's the only one that is
  * stored. */
 static void
-dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
+dump_filenames(const view_t *view, FILE *fp, int nfiles, char *files[])
 {
 	/* Break delimiter in it's first character and the rest to be able to insert
 	 * null character via "%c%s" format string. */
@@ -275,7 +275,7 @@ dump_filenames(const FileView *view, FILE *fp, int nfiles, char *files[])
 	if(nfiles == 0)
 	{
 		dir_entry_t *entry = NULL;
-		while(iter_active_area((FileView *)view, &entry))
+		while(iter_active_area((view_t *)view, &entry))
 		{
 			const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
 			fprintf(fp, "%s%s%s%c%s", entry->origin, sep, entry->name, delim_c,
@@ -356,7 +356,7 @@ vim_write_dir(const char path[])
 }
 
 int
-vim_run_choose_cmd(const FileView *view)
+vim_run_choose_cmd(const view_t *view)
 {
 	char *expanded_cmd;
 

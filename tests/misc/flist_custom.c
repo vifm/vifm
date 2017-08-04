@@ -34,7 +34,7 @@
 
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
-static void setup_custom_view(FileView *view, int very);
+static void setup_custom_view(view_t *view, int very);
 static int filenames_can_include_newline(void);
 
 static char cwd[PATH_MAX + 1];
@@ -787,7 +787,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 }
 
 static void
-setup_custom_view(FileView *view, int very)
+setup_custom_view(view_t *view, int very)
 {
 	assert_false(flist_custom_active(view));
 	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s/..", test_data);

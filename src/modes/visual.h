@@ -48,7 +48,7 @@ void update_visual_mode(void);
  * modules.  Returns new value for status bar message flag, but when
  * print_errors isn't requested can return -1 to indicate issues with the
  * pattern. */
-int find_vpattern(FileView *view, const char pattern[], int backward,
+int find_vpattern(view_t *view, const char pattern[], int backward,
 		int print_errors);
 
 /* Formats concise description of current visual mode state.  Returns pointer

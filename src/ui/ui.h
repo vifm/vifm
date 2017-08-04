@@ -417,12 +417,12 @@ typedef struct
 
 	int on_slow_fs; /* Whether current directory has access penalties. */
 }
-FileView;
+view_t;
 
-FileView lwin;
-FileView rwin;
-FileView *other_view;
-FileView *curr_view;
+extern view_t lwin;
+extern view_t rwin;
+view_t *other_view;
+view_t *curr_view;
 
 WINDOW *status_bar;
 WINDOW *stat_win;
@@ -440,7 +440,7 @@ WINDOW *mborder;
 WINDOW *rborder;
 
 /* Updates the ruler with information from the view (possibly lazily). */
-void ui_ruler_update(FileView *view, int lazy_redraw);
+void ui_ruler_update(view_t *view, int lazy_redraw);
 
 /* Sets text to be displayed on the ruler.  Real window update is postponed for
  * efficiency reasons. */
@@ -511,21 +511,21 @@ int resize_for_menu_like(void);
 void ui_setup_for_menu_like(void);
 
 /* Performs real pane redraw in the TUI and maybe some related operations. */
-void refresh_view_win(FileView *view);
+void refresh_view_win(view_t *view);
 
 /* Layouts the view in correct corner with correct relative position
  * (horizontally/vertically, left-top/right-bottom). */
-void move_window(FileView *view, int horizontally, int first);
+void move_window(view_t *view, int horizontally, int first);
 
 /* Swaps current and other views. */
 void switch_panes(void);
 
 /* Setups view to the the curr_view.  Saving previous state in supplied
  * buffers.  Use ui_view_unpick() to revert the effect. */
-void ui_view_pick(FileView *view, FileView **old_curr, FileView **old_other);
+void ui_view_pick(view_t *view, view_t **old_curr, view_t **old_other);
 
 /* Restores what has been done by ui_view_pick(). */
-void ui_view_unpick(FileView *view, FileView *old_curr, FileView *old_other);
+void ui_view_unpick(view_t *view, view_t *old_curr, view_t *old_other);
 
 /* Switches to other pane, ignoring state of the preview and entering view mode
  * in case the other pane has explore mode active. */
@@ -542,7 +542,7 @@ void only(void);
 void move_splitter(int by, int fact);
 
 /* Sets size of the view to specified value. */
-void ui_view_resize(FileView *view, int to);
+void ui_view_resize(view_t *view, int to);
 
 /* File name formatter which takes 'classify' option into account and applies
  * type dependent name decorations. */
@@ -561,13 +561,13 @@ void checked_wmove(WINDOW *win, int y, int x);
 void ui_display_too_small_term_msg(void);
 
 /* Notifies TUI module about updated window of the view. */
-void ui_view_win_changed(FileView *view);
+void ui_view_win_changed(view_t *view);
 
 /* Resets selection of the view and reloads it preserving cursor position. */
-void ui_view_reset_selection_and_reload(FileView *view);
+void ui_view_reset_selection_and_reload(view_t *view);
 
 /* Resets search highlighting of the view and schedules reload. */
-void ui_view_reset_search_highlight(FileView *view);
+void ui_view_reset_search_highlight(view_t *view);
 
 /* Reloads visible lists of files preserving current position of cursor. */
 void ui_views_reload_visible_filelists(void);
@@ -579,7 +579,7 @@ void ui_views_reload_filelists(void);
 void ui_views_update_titles(void);
 
 /* Updates title of the view. */
-void ui_view_title_update(FileView *view);
+void ui_view_title_update(view_t *view);
 
 /* Looks for the given key in sort option.  Returns non-zero when found,
  * otherwise zero is returned. */
@@ -587,27 +587,27 @@ int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
 
 /* Ensures that list of sorting keys is sensible (i.e. contains either "name" or
  * "iname" for views, except for unsorted custom view). */
-void ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[]);
+void ui_view_sort_list_ensure_well_formed(view_t *view, char sort_keys[]);
 
 /* Picks sort array for the view taking custom view into account.  sort should
  * point to sorting array preferred by default.  Returns pointer to the
  * array. */
-char * ui_view_sort_list_get(const FileView *view, const char sort[]);
+char * ui_view_sort_list_get(const view_t *view, const char sort[]);
 
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
-int ui_view_displays_numbers(const FileView *view);
+int ui_view_displays_numbers(const view_t *view);
 
 /* Checks whether view is visible on the screen.  Returns non-zero if so,
  * otherwise zero is returned. */
-int ui_view_is_visible(const FileView *view);
+int ui_view_is_visible(const view_t *view);
 
 /* Clears directory history of the view. */
-void ui_view_clear_history(FileView *view);
+void ui_view_clear_history(view_t *view);
 
 /* Checks whether view displays column view.  Returns non-zero if so, otherwise
  * zero is returned. */
-int ui_view_displays_columns(const FileView *view);
+int ui_view_displays_columns(const view_t *view);
 
 /* Gets real type of file view entry.  Returns type of entry, resolving symbolic
  * link if needed. */
@@ -615,66 +615,66 @@ FileType ui_view_entry_target_type(const dir_entry_t *entry);
 
 /* Gets width of part of the view that is available for file list.  Returns the
  * width. */
-int ui_view_available_width(const FileView *view);
+int ui_view_available_width(const view_t *view);
 
 /* Retrieves width reserved for something to the left of file list.  Returns the
  * width. */
-int ui_view_left_reserved(const FileView *view);
+int ui_view_left_reserved(const view_t *view);
 
 /* Retrieves width reserved for something to the right of file list.  Returns
  * the width. */
-int ui_view_right_reserved(const FileView *view);
+int ui_view_right_reserved(const view_t *view);
 
 /* Retrieves column number at which quickview content should be displayed.
  * Returns the number. */
-int ui_qv_left(const FileView *view);
+int ui_qv_left(const view_t *view);
 
 /* Retrieves line number at which quickview content should be displayed.
  * Returns the number. */
-int ui_qv_top(const FileView *view);
+int ui_qv_top(const view_t *view);
 
 /* Retrieves height of quickview area.  Returns the height. */
-int ui_qv_height(const FileView *view);
+int ui_qv_height(const view_t *view);
 
 /* Retrieves width of quickview area.  Returns the width. */
-int ui_qv_width(const FileView *view);
+int ui_qv_width(const view_t *view);
 
 /* Gets color scheme that corresponds to the view.  Returns pointer to the color
  * scheme. */
-const col_scheme_t * ui_view_get_cs(const FileView *view);
+const col_scheme_t * ui_view_get_cs(const view_t *view);
 
 /* Erases view window by filling it with the background color. */
-void ui_view_erase(FileView *view);
+void ui_view_erase(view_t *view);
 
 /* Same as erase, but ensures that view is updated in all its size on the
  * screen (e.g. to clear anything put there by other programs as well). */
-void ui_view_wipe(FileView *view);
+void ui_view_wipe(view_t *view);
 
 /* Checks whether custom view type of specified view is unsorted.  It doesn't
  * need the view to be custom, checks just the type.  Returns non-zero if so,
  * otherwise zero is returned. */
-int ui_view_unsorted(const FileView *view);
+int ui_view_unsorted(const view_t *view);
 
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual
  * update. */
-void ui_view_schedule_redraw(FileView *view);
+void ui_view_schedule_redraw(view_t *view);
 
 /* Schedules reload of the view for the future.  Doesn't perform any actual
  * work. */
-void ui_view_schedule_reload(FileView *view);
+void ui_view_schedule_reload(view_t *view);
 
 /* Schedules full reload of the view for the future.  Doesn't perform any actual
  * work. */
-void ui_view_schedule_full_reload(FileView *view);
+void ui_view_schedule_full_reload(view_t *view);
 
 /* Clears previously scheduled redraw request of the view, if any. */
-void ui_view_redrawn(FileView *view);
+void ui_view_redrawn(view_t *view);
 
 /* Checks for scheduled update and marks it as fulfilled.  Returns kind of
  * scheduled event. */
-UiUpdateEvent ui_view_query_scheduled_event(FileView *view);
+UiUpdateEvent ui_view_query_scheduled_event(view_t *view);
 
 #endif /* VIFM__UI__UI_H__ */
 
