@@ -169,8 +169,10 @@ typedef struct
 }
 history_t;
 
+/* Enable forward declaration of dir_entry_t. */
+typedef struct dir_entry_t dir_entry_t;
 /* Description of a single directory entry. */
-typedef struct dir_entry_t
+struct dir_entry_t
 {
 	char *name;       /* File name. */
 	char *origin;     /* Location where this file comes from.  Points to
@@ -215,8 +217,7 @@ typedef struct dir_entry_t
 	unsigned int marked : 1;       /* Whether file should be processed. */
 	unsigned int temporary : 1;    /* Whether this is temporary node. */
 	unsigned int dir_link : 1;     /* Whether this is symlink to a directory. */
-}
-dir_entry_t;
+};
 
 /* List of entries bundled with its size. */
 typedef struct
@@ -300,7 +301,10 @@ typedef struct
 }
 cached_entries_t;
 
-typedef struct
+/* Enable forward declaration of view_t. */
+typedef struct view_t view_t;
+/* State of a pane. */
+struct view_t
 {
 	WINDOW *win;
 	WINDOW *title;
@@ -416,8 +420,7 @@ typedef struct
 	uint64_t last_reload; /* Time of last [full] reload. */
 
 	int on_slow_fs; /* Whether current directory has access penalties. */
-}
-view_t;
+};
 
 extern view_t lwin;
 extern view_t rwin;

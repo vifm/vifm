@@ -20,15 +20,16 @@
 #ifndef VIFM__MODES__MENU_H__
 #define VIFM__MODES__MENU_H__
 
-#include "../ui/ui.h"
 #include "../menus/menus.h"
 #include "cmdline.h"
+
+struct view_t;
 
 /* Initializes menu mode. */
 void menu_init_mode(void);
 
 /* Enters menu mode. */
-void menu_enter_mode(menu_data_t *m, view_t *active_view);
+void menu_enter_mode(menu_data_t *m, struct view_t *active_view);
 
 /* Replaces menu of the menu mode. */
 void menu_reenter_mode(menu_data_t *m);

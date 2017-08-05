@@ -20,7 +20,6 @@
 #ifndef VIFM__MODES__DIALOGS__MSG_DIALOG_H__
 #define VIFM__MODES__DIALOGS__MSG_DIALOG_H__
 
-#include "../../ui/ui.h"
 #include "../../utils/macros.h"
 
 #include <stdio.h> /* FILE */
