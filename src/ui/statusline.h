@@ -19,6 +19,10 @@
 #ifndef VIFM__UI__STATUSLINE_H__
 #define VIFM__UI__STATUSLINE_H__
 
+#include <curses.h> /* WINDOW */
+
+#include <stddef.h> /* size_t */
+
 #include "ui.h"
 
 #include "../utils/test_helpers.h"

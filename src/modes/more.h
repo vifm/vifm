@@ -19,8 +19,6 @@
 #ifndef VIFM__MODES__MORE_H__
 #define VIFM__MODES__MORE_H__
 
-#include "../ui/ui.h"
-
 /* Initializes more mode. */
 void modmore_init(void);
 

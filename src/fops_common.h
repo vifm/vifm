@@ -22,6 +22,7 @@
 
 #include <stdint.h> /* uint64_t */
 
+#include "compat/fs_limits.h"
 #include "ui/ui.h"
 #include "background.h"
 #include "ops.h"

@@ -20,6 +20,8 @@
 #ifndef VIFM__UI__FILEVIEW_H__
 #define VIFM__UI__FILEVIEW_H__
 
+#include <unistd.h> /* ssize_t */
+
 #include <stddef.h> /* size_t */
 
 #include "../utils/test_helpers.h"

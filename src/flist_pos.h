@@ -23,6 +23,8 @@
 /* This unit provides functions related to positioning/scrolling in file
  * lists. */
 
+#include <unistd.h> /* ssize_t */
+
 #include <stddef.h> /* size_t */
 
 #include "ui/ui.h"
