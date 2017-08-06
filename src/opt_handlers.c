@@ -90,6 +90,7 @@ static void init_timefmt(optval_t *val);
 static void init_trashdir(optval_t *val);
 static void init_dotfiles(optval_t *val);
 static void init_lsview(optval_t *val);
+static void init_milleroptions(optval_t *val);
 static void init_millerview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_sizefmt(optval_t *val);
@@ -158,6 +159,10 @@ static void dotfiles_global(OPT_OP op, optval_t val);
 static void dotfiles_local(OPT_OP op, optval_t val);
 static void lsview_global(OPT_OP op, optval_t val);
 static void lsview_local(OPT_OP op, optval_t val);
+static void milleroptions_global(OPT_OP op, optval_t val);
+static void milleroptions_local(OPT_OP op, optval_t val);
+static void set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope);
+static void fill_milleroptions(optval_t *val, int ratios[3]);
 static void millerview_global(OPT_OP op, optval_t val);
 static void millerview_local(OPT_OP op, optval_t val);
 static void number_global(OPT_OP op, optval_t val);
@@ -322,6 +327,13 @@ static const char *dirsize_enum[][2] = {
 /* Possible keys of 'fillchars' option. */
 static const char *fillchars_enum[][2] = {
 	{ "vborder:", "filler of vertical borders" },
+};
+
+/* Possible keys of 'milleroptions' option. */
+static const char *milleroptions_enum[][2] = {
+	{ "lsize:", "proportion of space given to the left column" },
+	{ "csize:", "proportion of space given to the center column" },
+	{ "rsize:", "proportion of space given to the right column" },
 };
 
 /* Possible keys of 'sizefmt' option. */
@@ -740,6 +752,11 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &lsview_global, &lsview_local,
 	  { .init = &init_lsview },
 	},
+	{ "milleroptions", "", "settings for miller view",
+	  OPT_STRLIST, ARRAY_LEN(milleroptions_enum), milleroptions_enum,
+		&milleroptions_global, &milleroptions_local,
+	  { .init = &init_milleroptions },
+	},
 	{ "millerview", "", "display cascading lists",
 	  OPT_BOOL, 0, NULL, &millerview_global, &millerview_local,
 	  { .init = &init_millerview },
@@ -993,6 +1010,13 @@ init_lsview(optval_t *val)
 	val->bool_val = curr_view->ls_view_g;
 }
 
+/* Initializes 'milleroptions' option from global value. */
+static void
+init_milleroptions(optval_t *val)
+{
+	fill_milleroptions(val, curr_view->miller_ratios_g);
+}
+
 /* Initializes 'millerview' option from global value. */
 static void
 init_millerview(optval_t *val)
@@ -1183,6 +1207,11 @@ reset_local_options(view_t *view)
 	val.int_val = view->ls_view_g;
 	set_option("lsview", val, OPT_LOCAL);
 
+	memcpy(view->miller_ratios, view->miller_ratios_g,
+			sizeof(view->miller_ratios));
+	fill_milleroptions(&val, view->miller_ratios_g);
+	set_option("milleroptions", val, OPT_LOCAL);
+
 	fview_set_millerview(view, view->miller_view_g);
 	val.int_val = view->miller_view_g;
 	set_option("millerview", val, OPT_LOCAL);
@@ -1234,6 +1263,11 @@ load_view_options(view_t *view)
 	val.bool_val = view->ls_view_g;
 	set_option("lsview", val, OPT_GLOBAL);
 
+	fill_milleroptions(&val, view->miller_ratios);
+	set_option("milleroptions", val, OPT_LOCAL);
+	fill_milleroptions(&val, view->miller_ratios_g);
+	set_option("milleroptions", val, OPT_GLOBAL);
+
 	val.bool_val = view->miller_view;
 	set_option("millerview", val, OPT_LOCAL);
 	val.bool_val = view->miller_view_g;
@@ -1284,6 +1318,10 @@ clone_local_options(const view_t *from, view_t *to, int defer_slow)
 
 	to->ls_view_g = from->ls_view_g;
 	fview_set_lsview(to, from->ls_view);
+
+	memcpy(to->miller_ratios_g, from->miller_ratios_g,
+			sizeof(to->miller_ratios_g));
+	memcpy(to->miller_ratios, from->miller_ratios, sizeof(to->miller_ratios));
 
 	to->miller_view_g = from->miller_view_g;
 	fview_set_millerview(to, from->miller_view);
@@ -2222,6 +2260,103 @@ static void
 lsview_local(OPT_OP op, optval_t val)
 {
 	fview_set_lsview(curr_view, val.bool_val);
+}
+
+/* Handles update of miller columns settings as a global option. */
+static void
+milleroptions_global(OPT_OP op, optval_t val)
+{
+	set_milleroptions(curr_view->miller_ratios_g, val, OPT_GLOBAL);
+}
+
+/* Handles update of miller columns settings as a local option. */
+static void
+milleroptions_local(OPT_OP op, optval_t val)
+{
+	set_milleroptions(curr_view->miller_ratios, val, OPT_LOCAL);
+}
+
+/* Handles update of miller columns settings. */
+static void
+set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope)
+{
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	int lsize = 0, csize = 1, rsize = 0;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(starts_with_lit(part, "lsize:"))
+		{
+			const char *const num = after_first(part, ':');
+			if(!read_int(num, &lsize))
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"lsize\" value: %s",
+						num);
+				break;
+			}
+		}
+		else if(starts_with_lit(part, "csize:"))
+		{
+			const char *const num = after_first(part, ':');
+			if(!read_int(num, &csize))
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"csize\" value: %s",
+						num);
+				break;
+			}
+			if(csize < 1)
+			{
+				vle_tb_append_linef(vle_err, "\"csize\" can't be less than 1, got: %s",
+						num);
+				break;
+			}
+		}
+		else if(starts_with_lit(part, "rsize:"))
+		{
+			const char *const num = after_first(part, ':');
+			if(!read_int(num, &rsize))
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"rsize\" value: %s",
+						num);
+				break;
+			}
+		}
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err, "Unknown key for 'milleroptions' option: %s",
+					part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		ratios[0] = MAX(0, MIN(100, lsize));
+		ratios[1] = MAX(0, MIN(100, csize));
+		ratios[2] = MAX(0, MIN(100, rsize));
+
+		if(ratios == curr_view->miller_ratios)
+		{
+			ui_view_schedule_redraw(curr_view);
+		}
+	}
+
+	fill_milleroptions(&val, ratios);
+	set_option("milleroptions", val, scope);
+}
+
+/* Loads value of milleroptions as a string. */
+static void
+fill_milleroptions(optval_t *val, int ratios[3])
+{
+	static char buf[64];
+	snprintf(buf, sizeof(buf), "lsize:%d,csize:%d,rsize:%d", ratios[0], ratios[1],
+			ratios[2]);
+	val->str_val = buf;
 }
 
 /* Handles switch that controls cascading lists view in global option. */

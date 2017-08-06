@@ -1786,16 +1786,21 @@ ui_view_available_width(const view_t *view)
 int
 ui_view_left_reserved(const view_t *view)
 {
-	return is_in_miller_view(view) ? view->window_cols/3 : 0;
+	const int total = view->miller_ratios[0] + view->miller_ratios[1]
+	                + view->miller_ratios[2];
+	return is_in_miller_view(view)
+	     ? (view->window_cols*view->miller_ratios[0])/total : 0;
 }
 
 int
 ui_view_right_reserved(const view_t *view)
 {
 	dir_entry_t *const entry = get_current_entry(view);
+	const int total = view->miller_ratios[0] + view->miller_ratios[1]
+	                + view->miller_ratios[2];
 	return is_in_miller_view(view)
 	    && fentry_is_dir(entry) && !is_parent_dir(entry->name)
-	     ? view->window_cols/3
+	     ? (view->window_cols*view->miller_ratios[2])/total
 	     : 0;
 }
 

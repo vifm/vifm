@@ -318,6 +318,10 @@ struct view_t
 	/* Various parameters related to local filter. */
 	struct local_filter_t local_filter;
 
+	/* Non-zero if miller columns view is enabled. */
+	int miller_view, miller_view_g;
+	/* Proportions of columns. */
+	int miller_ratios[3], miller_ratios_g[3];
 	/* Caches of file lists for miller mode. */
 	cached_entries_t left_column;
 	cached_entries_t right_column;
@@ -395,9 +399,6 @@ struct view_t
 	                            * the file list.  Zero if not calculated. */
 	size_t column_count; /* Number of columns in the view, used for list view. */
 	size_t window_cells; /* Max number of files that can be displayed. */
-
-	/* Non-zero if miller columns view is enabled. */
-	int miller_view, miller_view_g;
 
 	/* Whether and how line numbers are displayed. */
 	NumberingType num_type, num_type_g;

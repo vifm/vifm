@@ -215,6 +215,9 @@ fview_view_reset(view_t *view)
 	view->column_count = 1;
 
 	view->miller_view_g = view->miller_view = 0;
+	view->miller_ratios[0] = view->miller_ratios_g[0] = 1;
+	view->miller_ratios[1] = view->miller_ratios_g[1] = 1;
+	view->miller_ratios[2] = view->miller_ratios_g[2] = 1;
 
 	view->num_type_g = view->num_type = NT_NONE;
 	view->num_width_g = view->num_width = 4;
