@@ -38,23 +38,23 @@
 #include "filtering.h"
 #include "types.h"
 
-static void correct_list_pos_down(FileView *view, size_t pos_delta);
-static void correct_list_pos_up(FileView *view, size_t pos_delta);
-static void move_cursor_out_of_scope(FileView *view, entry_predicate pred);
+static void correct_list_pos_down(view_t *view, size_t pos_delta);
+static void correct_list_pos_up(view_t *view, size_t pos_delta);
+static void move_cursor_out_of_scope(view_t *view, entry_predicate pred);
 static const char * get_last_ext(const char name[]);
 static int is_mismatched_entry(const dir_entry_t *entry);
-static int find_next(const FileView *view, entry_predicate pred);
-static int find_prev(const FileView *view, entry_predicate pred);
+static int find_next(const view_t *view, entry_predicate pred);
+static int find_prev(const view_t *view, entry_predicate pred);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 
 int
-find_file_pos_in_list(const FileView *const view, const char file[])
+find_file_pos_in_list(const view_t *const view, const char file[])
 {
 	return flist_find_entry(view, file, NULL);
 }
 
 int
-flist_find_entry(const FileView *view, const char file[], const char dir[])
+flist_find_entry(const view_t *view, const char file[], const char dir[])
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
@@ -73,7 +73,7 @@ flist_find_entry(const FileView *view, const char file[], const char dir[])
 }
 
 void
-correct_list_pos(FileView *view, ssize_t pos_delta)
+correct_list_pos(view_t *view, ssize_t pos_delta)
 {
 	if(pos_delta > 0)
 	{
@@ -86,7 +86,7 @@ correct_list_pos(FileView *view, ssize_t pos_delta)
 }
 
 int
-correct_list_pos_on_scroll_down(FileView *view, size_t lines_count)
+correct_list_pos_on_scroll_down(view_t *view, size_t lines_count)
 {
 	if(!all_files_visible(view))
 	{
@@ -97,7 +97,7 @@ correct_list_pos_on_scroll_down(FileView *view, size_t lines_count)
 }
 
 int
-correct_list_pos_on_scroll_up(FileView *view, size_t lines_count)
+correct_list_pos_on_scroll_up(view_t *view, size_t lines_count)
 {
 	if(!all_files_visible(view))
 	{
@@ -109,20 +109,20 @@ correct_list_pos_on_scroll_up(FileView *view, size_t lines_count)
 
 /* Tries to move cursor forward by pos_delta positions. */
 static void
-correct_list_pos_down(FileView *view, size_t pos_delta)
+correct_list_pos_down(view_t *view, size_t pos_delta)
 {
 	view->list_pos = get_corrected_list_pos_down(view, pos_delta);
 }
 
 /* Tries to move cursor backwards by pos_delta positions. */
 static void
-correct_list_pos_up(FileView *view, size_t pos_delta)
+correct_list_pos_up(view_t *view, size_t pos_delta)
 {
 	view->list_pos = get_corrected_list_pos_up(view, pos_delta);
 }
 
 void
-flist_set_pos(FileView *view, int pos)
+flist_set_pos(view_t *view, int pos)
 {
 	if(pos < 1)
 	{
@@ -136,7 +136,7 @@ flist_set_pos(FileView *view, int pos)
 
 	if(pos != -1)
 	{
-		FileView *const other = (view == curr_view) ? other_view : curr_view;
+		view_t *const other = (view == curr_view) ? other_view : curr_view;
 
 		view->list_pos = pos;
 		fview_position_updated(view);
@@ -150,7 +150,7 @@ flist_set_pos(FileView *view, int pos)
 }
 
 void
-flist_ensure_pos_is_valid(FileView *view)
+flist_ensure_pos_is_valid(view_t *view)
 {
 	if(view->list_pos >= view->list_rows)
 	{
@@ -159,7 +159,7 @@ flist_ensure_pos_is_valid(FileView *view)
 }
 
 void
-move_cursor_out_of(FileView *view, FileListScope scope)
+move_cursor_out_of(view_t *view, FileListScope scope)
 {
 	/* XXX: this functionality might be unnecessary now that we have directory
 	 *      merging. */
@@ -178,7 +178,7 @@ move_cursor_out_of(FileView *view, FileListScope scope)
 /* Ensures that cursor is moved outside of entries that satisfy the predicate if
  * that's possible. */
 static void
-move_cursor_out_of_scope(FileView *view, entry_predicate pred)
+move_cursor_out_of_scope(view_t *view, entry_predicate pred)
 {
 	/* TODO: if we reach bottom of the list and predicate holds try scanning to
 	 * the top. */
@@ -191,45 +191,45 @@ move_cursor_out_of_scope(FileView *view, entry_predicate pred)
 }
 
 int
-at_first_line(const FileView *view)
+at_first_line(const view_t *view)
 {
 	return view->list_pos/view->column_count == 0;
 }
 
 int
-at_last_line(const FileView *view)
+at_last_line(const view_t *view)
 {
 	const size_t col_count = view->column_count;
 	return view->list_pos/col_count == (view->list_rows - 1)/col_count;
 }
 
 int
-at_first_column(const FileView *view)
+at_first_column(const view_t *view)
 {
 	return view->list_pos%view->column_count == 0;
 }
 
 int
-at_last_column(const FileView *view)
+at_last_column(const view_t *view)
 {
 	return view->list_pos%view->column_count == view->column_count - 1;
 }
 
 void
-go_to_start_of_line(FileView *view)
+go_to_start_of_line(view_t *view)
 {
 	view->list_pos = get_start_of_line(view);
 }
 
 int
-get_start_of_line(const FileView *view)
+get_start_of_line(const view_t *view)
 {
 	const int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
 	return ROUND_DOWN(pos, view->column_count);
 }
 
 int
-get_end_of_line(const FileView *view)
+get_end_of_line(const view_t *view)
 {
 	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
 	pos += (view->column_count - 1) - pos%view->column_count;
@@ -237,7 +237,7 @@ get_end_of_line(const FileView *view)
 }
 
 int
-flist_find_group(const FileView *view, int next)
+flist_find_group(const view_t *view, int next)
 {
 	/* TODO: refactor/simplify this function (flist_find_group()). */
 
@@ -432,7 +432,7 @@ get_last_ext(const char name[])
 }
 
 int
-flist_find_dir_group(const FileView *view, int next)
+flist_find_dir_group(const view_t *view, int next)
 {
 	const int correction = next ? -1 : 0;
 	const int lb = correction;
@@ -456,14 +456,14 @@ flist_find_dir_group(const FileView *view, int next)
 }
 
 int
-flist_first_sibling(const FileView *view)
+flist_first_sibling(const view_t *view)
 {
 	const int parent = view->list_pos - view->dir_entry[view->list_pos].child_pos;
 	return (parent == view->list_pos ? 0 : parent + 1);
 }
 
 int
-flist_last_sibling(const FileView *view)
+flist_last_sibling(const view_t *view)
 {
 	int pos = view->list_pos - view->dir_entry[view->list_pos].child_pos;
 	if(pos == view->list_pos)
@@ -490,7 +490,7 @@ flist_last_sibling(const FileView *view)
 }
 
 int
-flist_next_dir_sibling(const FileView *view)
+flist_next_dir_sibling(const view_t *view)
 {
 	int pos = view->list_pos;
 	const int parent = view->dir_entry[pos].child_pos == 0
@@ -514,7 +514,7 @@ flist_next_dir_sibling(const FileView *view)
 }
 
 int
-flist_prev_dir_sibling(const FileView *view)
+flist_prev_dir_sibling(const view_t *view)
 {
 	int pos = view->list_pos;
 	/* Determine original parent (-1 for top-most entry). */
@@ -545,31 +545,31 @@ flist_prev_dir_sibling(const FileView *view)
 }
 
 int
-flist_next_dir(const FileView *view)
+flist_next_dir(const view_t *view)
 {
 	return find_next(view, &fentry_is_dir);
 }
 
 int
-flist_prev_dir(const FileView *view)
+flist_prev_dir(const view_t *view)
 {
 	return find_prev(view, &fentry_is_dir);
 }
 
 int
-flist_next_selected(const FileView *view)
+flist_next_selected(const view_t *view)
 {
 	return find_next(view, &is_entry_selected);
 }
 
 int
-flist_prev_selected(const FileView *view)
+flist_prev_selected(const view_t *view)
 {
 	return find_prev(view, &is_entry_selected);
 }
 
 int
-flist_next_mismatch(const FileView *view)
+flist_next_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
 	     ? find_next(view, &is_mismatched_entry)
@@ -577,7 +577,7 @@ flist_next_mismatch(const FileView *view)
 }
 
 int
-flist_prev_mismatch(const FileView *view)
+flist_prev_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
 	     ? find_prev(view, &is_mismatched_entry)
@@ -592,7 +592,7 @@ is_mismatched_entry(const dir_entry_t *entry)
 	/* To avoid passing view pointer here, we exploit the fact that entry_to_pos()
 	 * checks whether it's argument belongs to the given view. */
 	int pos = entry_to_pos(&lwin, entry);
-	FileView *other = &rwin;
+	view_t *other = &rwin;
 	if(pos == -1)
 	{
 		pos = entry_to_pos(&rwin, entry);
@@ -605,7 +605,7 @@ is_mismatched_entry(const dir_entry_t *entry)
 /* Finds position of the next entry matching the predicate.  Returns new
  * position which isn't changed if no next directory is found. */
 static int
-find_next(const FileView *view, entry_predicate pred)
+find_next(const view_t *view, entry_predicate pred)
 {
 	int pos = view->list_pos;
 	while(++pos < view->list_rows)
@@ -621,7 +621,7 @@ find_next(const FileView *view, entry_predicate pred)
 /* Finds position of the previous entry matching the predicate.  Returns new
  * position which isn't changed if no previous directory is found. */
 static int
-find_prev(const FileView *view, entry_predicate pred)
+find_prev(const view_t *view, entry_predicate pred)
 {
 	int pos = view->list_pos;
 	while(--pos >= 0)
@@ -635,7 +635,7 @@ find_prev(const FileView *view, entry_predicate pred)
 }
 
 int
-ensure_file_is_selected(FileView *view, const char name[])
+ensure_file_is_selected(view_t *view, const char name[])
 {
 	int file_pos;
 	char nm[NAME_MAX + 1];
@@ -665,7 +665,7 @@ ensure_file_is_selected(FileView *view, const char name[])
 			name_filters_remove(view);
 
 			/* name_filters_remove() postpones reloading of list files. */
-			populate_dir_list(view, 1);
+			(void)populate_dir_list(view, 1);
 
 			file_pos = find_file_pos_in_list(view, nm);
 		}
@@ -688,7 +688,7 @@ file_can_be_displayed(const char directory[], const char filename[])
 }
 
 int
-flist_find_by_ch(const FileView *view, int ch, int backward, int wrap)
+flist_find_by_ch(const view_t *view, int ch, int backward, int wrap)
 {
 	int x;
 	const int upcase = (cfg.case_override & CO_GOTO_FILE)

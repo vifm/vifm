@@ -31,11 +31,9 @@ void update_input_buf(void);
 
 int is_input_buf_empty(void);
 
-#ifdef TEST
-#include "ui/ui.h"
-#endif
 TSTATIC_DEFS(
-	int process_scheduled_updates_of_view(FileView *view);
+	struct view_t;
+	int process_scheduled_updates_of_view(view_t *view);
 )
 
 #endif /* VIFM__EVENT_LOOP_H__ */

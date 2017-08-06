@@ -22,49 +22,51 @@
 
 #include <sys/types.h> /* gid_t uid_t */
 
-#include "ui/ui.h"
 #include "utils/test_helpers.h"
+
+struct view_t;
 
 /* Removes marked files (optionally into trash directory) of the view to
  * specified register.  Returns new value for save_msg flag. */
-int fops_delete(FileView *view, int reg, int use_trash);
+int fops_delete(struct view_t *view, int reg, int use_trash);
 
 /* Removes current entry of the view.  Non-zero nested flag means that this is
  * not a standalone operation and is surrounded by other file operations.
  * Returns new value for save_msg flag. */
-int fops_delete_current(FileView *view, int use_trash, int nested);
+int fops_delete_current(struct view_t *view, int use_trash, int nested);
 
 /* Removes marked files (optionally into trash directory) of the view to
  * specified register.  Returns new value for save_msg flag. */
-int fops_delete_bg(FileView *view, int use_trash);
+int fops_delete_bg(struct view_t *view, int use_trash);
 
 /* Yanks marked files of the view into register specified by its name via reg
  * parameter.  Returns new value for save_msg. */
-int fops_yank(FileView *view, int reg);
+int fops_yank(struct view_t *view, int reg);
 
 /* Changes link target interactively.  Returns new value for save_msg. */
-int fops_retarget(FileView *view);
+int fops_retarget(struct view_t *view);
 
 /* Clones marked files in the view.  Returns new value for save_msg flag. */
-int fops_clone(FileView *view, char *list[], int nlines, int force, int copies);
+int fops_clone(struct view_t *view, char *list[], int nlines, int force,
+		int copies);
 
 /* Creates directories, possibly including intermediate ones.  Can modify
  * strings in the names array.  at specifies index of entry to be used to obtain
  * destination path, -1 means current position.  Returns new value for save_msg
  * flag. */
-int fops_mkdirs(FileView *view, int at, char *names[], int count,
+int fops_mkdirs(struct view_t *view, int at, char *names[], int count,
 		int create_parent);
 
 /* Creates files.  at specifies index of entry to be used to obtain destination
  * path, -1 means current position.  Returns new value for save_msg flag. */
-int fops_mkfiles(FileView *view, int at, char *names[], int count);
+int fops_mkfiles(struct view_t *view, int at, char *names[], int count);
 
 /* Returns new value for save_msg flag. */
-int fops_restore(FileView *view);
+int fops_restore(struct view_t *view);
 
 /* Initiates background calculation of directory sizes.  Forcing disables using
  * previously cached values. */
-void fops_size_bg(const FileView *view, int force);
+void fops_size_bg(const struct view_t *view, int force);
 
 #ifndef _WIN32
 

@@ -20,18 +20,18 @@
 #ifndef VIFM__MENUS__HISTORY_MENU_H__
 #define VIFM__MENUS__HISTORY_MENU_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Returns non-zero if status bar message should be saved. */
-int show_cmdhistory_menu(FileView *view);
+int show_cmdhistory_menu(struct view_t *view);
 /* Returns non-zero if status bar message should be saved. */
-int show_fsearchhistory_menu(FileView *view);
+int show_fsearchhistory_menu(struct view_t *view);
 /* Returns non-zero if status bar message should be saved. */
-int show_bsearchhistory_menu(FileView *view);
+int show_bsearchhistory_menu(struct view_t *view);
 /* Returns non-zero if status bar message should be saved. */
-int show_prompthistory_menu(FileView *view);
+int show_prompthistory_menu(struct view_t *view);
 /* Returns non-zero if status bar message should be saved. */
-int show_filterhistory_menu(FileView *view);
+int show_filterhistory_menu(struct view_t *view);
 
 #endif /* VIFM__MENUS__HISTORY_MENU_H__ */
 

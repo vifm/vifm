@@ -564,7 +564,7 @@ is_file_name_changed(const char old[], const char new[])
 }
 
 char **
-fops_grab_marked_files(FileView *view, size_t *nmarked)
+fops_grab_marked_files(view_t *view, size_t *nmarked)
 {
 	char **marked = NULL;
 	dir_entry_t *entry = NULL;
@@ -597,7 +597,7 @@ fops_is_dir_entry(const char full_path[], const struct dirent *dentry)
 }
 
 void
-fops_fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
+fops_fixup_entry_after_rename(view_t *view, dir_entry_t *entry,
 		const char new_fname[])
 {
 	if(entry_to_pos(view, entry) == view->list_pos || flist_custom_active(view))
@@ -607,7 +607,7 @@ fops_fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
 }
 
 int
-fops_enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
+fops_enqueue_marked_files(ops_t *ops, view_t *view, const char dst_hint[],
 		int to_trash)
 {
 	int nmarked_files = 0;
@@ -685,7 +685,7 @@ fops_get_dst_name(const char src_path[], int from_trash)
 }
 
 int
-fops_can_read_selected_files(FileView *view)
+fops_can_read_selected_files(view_t *view)
 {
 	dir_entry_t *entry;
 
@@ -715,7 +715,7 @@ fops_can_read_selected_files(FileView *view)
 }
 
 int
-fops_check_dir_path(const FileView *view, const char path[], char buf[],
+fops_check_dir_path(const view_t *view, const char path[], char buf[],
 		size_t buf_len)
 {
 	if(path[0] == '/' || path[0] == '~')
@@ -912,7 +912,7 @@ fops_free_bg_args(bg_args_t *args)
 }
 
 void
-fops_prepare_for_bg_task(FileView *view, bg_args_t *args)
+fops_prepare_for_bg_task(view_t *view, bg_args_t *args)
 {
 	dir_entry_t *entry;
 
@@ -930,7 +930,7 @@ fops_prepare_for_bg_task(FileView *view, bg_args_t *args)
 }
 
 void
-fops_append_marked_files(FileView *view, char buf[], char **fnames)
+fops_append_marked_files(view_t *view, char buf[], char **fnames)
 {
 	const int custom_fnames = (fnames != NULL);
 	size_t len = strlen(buf);
@@ -970,7 +970,7 @@ fops_get_cancellation_suffix(void)
 }
 
 int
-fops_view_can_be_changed(const FileView *view)
+fops_view_can_be_changed(const view_t *view)
 {
 	/* TODO: maybe add check whether directory of specific entry is writable for
 	 *       custom views. */
@@ -979,7 +979,7 @@ fops_view_can_be_changed(const FileView *view)
 }
 
 int
-fops_view_can_be_extended(const FileView *view, int at)
+fops_view_can_be_extended(const view_t *view, int at)
 {
 	if(flist_custom_active(view) && view->custom.type != CV_TREE)
 	{
@@ -992,7 +992,7 @@ fops_view_can_be_extended(const FileView *view, int at)
 }
 
 const char *
-fops_get_dst_dir(const FileView *view, int at)
+fops_get_dst_dir(const view_t *view, int at)
 {
 	if(flist_custom_active(view) && view->custom.type == CV_TREE)
 	{

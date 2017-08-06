@@ -33,6 +33,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "ipc.h"
+#include "status.h"
 #include "version.h"
 
 static void list_servers(void);

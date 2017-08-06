@@ -19,20 +19,20 @@
 #ifndef VIFM__MODES__VIEW_H__
 #define VIFM__MODES__VIEW_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Initializes view mode. */
 void view_init_mode(void);
 
 /* Enters view mode when possible.  View is the expected output area. */
-void view_enter_mode(FileView *view, int explore);
+void view_enter_mode(struct view_t *view, int explore);
 
 /* Leaves view mode. */
 void view_leave_mode(void);
 
 /* Quits view from explore mode.  Assumes the view is not an active one.
  * Automatically redraws view. */
-void view_quit_explore_mode(FileView *view);
+void view_quit_explore_mode(struct view_t *view);
 
 /* Activates the mode if current pane is in explore mode. */
 void view_try_activate_mode(void);
@@ -69,7 +69,7 @@ void view_check_for_updates(void);
 
 /* Creates detached view in the view using output of passed command as a
  * source, but doesn't enter the view mode. */
-void view_detached_make(FileView *view, const char cmd[]);
+void view_detached_make(struct view_t *view, const char cmd[]);
 
 /* Tries to draw an detached view mode and updates internal state if needed.
  * Returns non-zero on success, otherwise zero is returned. */

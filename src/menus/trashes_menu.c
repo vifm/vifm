@@ -31,12 +31,12 @@
 #include "menus.h"
 
 static char * format_item(const char trash_dir[], int calc_size);
-static int execute_trashes_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse trashes_khandler(FileView *view, menu_data_t *m,
+static int execute_trashes_cb(view_t *view, menu_data_t *m);
+static KHandlerResponse trashes_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 
 int
-show_trashes_menu(FileView *view, int calc_size)
+show_trashes_menu(view_t *view, int calc_size)
 {
 	char **trashes;
 	int ntrashes;
@@ -92,7 +92,7 @@ format_item(const char trash_dir[], int calc_size)
 /* Callback that is called when menu item is selected.  Return non-zero to stay
  * in menu mode and zero otherwise. */
 static int
-execute_trashes_cb(FileView *view, menu_data_t *m)
+execute_trashes_cb(view_t *view, menu_data_t *m)
 {
 	const char *const item = m->items[m->pos];
 	const char *const trash_dir = m->extra_data ? strchr(item, ']') + 2 : item;
@@ -103,7 +103,7 @@ execute_trashes_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-trashes_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+trashes_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{

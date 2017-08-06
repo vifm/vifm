@@ -18,7 +18,7 @@
 #include "../../src/filelist.h"
 
 void
-view_setup(FileView *view)
+view_setup(view_t *view)
 {
 	char *error;
 
@@ -34,7 +34,7 @@ view_setup(FileView *view)
 }
 
 void
-view_teardown(FileView *view)
+view_teardown(view_t *view)
 {
 	int i;
 

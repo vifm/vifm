@@ -38,20 +38,19 @@
 #include "flist_pos.h"
 #include "running.h"
 
-static void save_selection(FileView *view);
-static void free_saved_selection(FileView *view);
-static void select_unselect_entry(FileView *view, dir_entry_t *entry,
-		int select);
+static void save_selection(view_t *view);
+static void free_saved_selection(view_t *view);
+static void select_unselect_entry(view_t *view, dir_entry_t *entry, int select);
 
 void
-flist_sel_stash(FileView *view)
+flist_sel_stash(view_t *view)
 {
 	save_selection(view);
 	flist_sel_drop(view);
 }
 
 void
-flist_sel_drop(FileView *view)
+flist_sel_drop(view_t *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
@@ -62,7 +61,7 @@ flist_sel_drop(FileView *view)
 }
 
 void
-flist_sel_view_reloaded(FileView *view, int location_changed)
+flist_sel_view_reloaded(view_t *view, int location_changed)
 {
 	if(location_changed)
 	{
@@ -78,7 +77,7 @@ flist_sel_view_reloaded(FileView *view, int location_changed)
 /* Collects currently selected files in view->saved_selection array.  Use
  * free_saved_selection() to clean up memory allocated by this function. */
 static void
-save_selection(FileView *view)
+save_selection(view_t *view)
 {
 	int i;
 	dir_entry_t *entry;
@@ -119,7 +118,7 @@ save_selection(FileView *view)
 
 /* Frees list of previously selected files. */
 static void
-free_saved_selection(FileView *view)
+free_saved_selection(view_t *view)
 {
 	free_string_array(view->saved_selection, view->nsaved_selection);
 	view->nsaved_selection = 0;
@@ -127,7 +126,7 @@ free_saved_selection(FileView *view)
 }
 
 void
-flist_sel_invert(FileView *view)
+flist_sel_invert(view_t *view)
 {
 	int i;
 	view->selected_files = 0;
@@ -143,7 +142,7 @@ flist_sel_invert(FileView *view)
 }
 
 void
-flist_sel_stash_if_nonempty(FileView *view)
+flist_sel_stash_if_nonempty(view_t *view)
 {
 	if(view->selected_files != 0)
 	{
@@ -153,7 +152,7 @@ flist_sel_stash_if_nonempty(FileView *view)
 }
 
 void
-flist_sel_restore(FileView *view, reg_t *reg)
+flist_sel_restore(view_t *view, reg_t *reg)
 {
 	int i;
 	trie_t *const selection_trie = trie_create();
@@ -204,7 +203,7 @@ flist_sel_restore(FileView *view, reg_t *reg)
 }
 
 void
-flist_sel_recount(FileView *view)
+flist_sel_recount(view_t *view)
 {
 	int i;
 
@@ -216,7 +215,7 @@ flist_sel_recount(FileView *view)
 }
 
 void
-flist_sel_by_range(FileView *view, int begin, int end, int select)
+flist_sel_by_range(view_t *view, int begin, int end, int select)
 {
 	select = (select != 0);
 
@@ -238,7 +237,7 @@ flist_sel_by_range(FileView *view, int begin, int end, int select)
 
 /* Selects or unselects the entry. */
 static void
-select_unselect_entry(FileView *view, dir_entry_t *entry, int select)
+select_unselect_entry(view_t *view, dir_entry_t *entry, int select)
 {
 	if(fentry_is_valid(entry) && (entry->selected != 0) != select)
 	{
@@ -248,7 +247,7 @@ select_unselect_entry(FileView *view, dir_entry_t *entry, int select)
 }
 
 int
-flist_sel_by_filter(FileView *view, const char cmd[], int erase_old, int select)
+flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 {
 	trie_t *selection_trie;
 	char **files;
@@ -316,7 +315,7 @@ flist_sel_by_filter(FileView *view, const char cmd[], int erase_old, int select)
 }
 
 int
-flist_sel_by_pattern(FileView *view, const char pattern[], int erase_old,
+flist_sel_by_pattern(view_t *view, const char pattern[], int erase_old,
 		int select)
 {
 	int i;
@@ -365,7 +364,7 @@ flist_sel_by_pattern(FileView *view, const char pattern[], int erase_old,
 }
 
 void
-flist_sel_count(FileView *view, int at, int count)
+flist_sel_count(view_t *view, int at, int count)
 {
 	/* Use current position if none given. */
 	if(at < 0)
@@ -387,7 +386,7 @@ flist_sel_count(FileView *view, int at, int count)
 }
 
 int
-flist_sel_range(FileView *view, int begin, int end, int select_current)
+flist_sel_range(view_t *view, int begin, int end, int select_current)
 {
 	/* Both starting and ending range positions are given. */
 	if(begin > -1)

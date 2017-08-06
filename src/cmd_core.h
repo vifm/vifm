@@ -22,7 +22,6 @@
 
 #include <stddef.h> /* size_t */
 
-#include "ui/ui.h"
 #include "utils/macros.h"
 #include "utils/test_helpers.h"
 #include "status.h"
@@ -54,19 +53,21 @@ typedef enum
 }
 CmdLineLocation;
 
+struct view_t;
+
 void init_commands(void);
 
 /* Executes one or more commands separated by a bar.  Returns zero on success if
  * no message should be saved in the status bar, positive value to save message
  * on successful execution and negative value in case of error with error
  * message. */
-int exec_commands(const char cmd[], FileView *view, CmdInputType type);
+int exec_commands(const char cmd[], struct view_t *view, CmdInputType type);
 
 /* Executes command of specified kind.  Returns zero on success if no message
  * should be saved in the status bar, positive value to save message on
  * successful execution and negative value in case of error with error
  * message. */
-int exec_command(const char cmd[], FileView *view, CmdInputType type);
+int exec_command(const char cmd[], struct view_t *view, CmdInputType type);
 
 /* Should precede new command execution scope (e.g. before start of sourced
  * script). */

@@ -19,8 +19,6 @@
 #ifndef VIFM__OPT_HANDLERS_H__
 #define VIFM__OPT_HANDLERS_H__
 
-#include "ui/ui.h"
-
 enum
 {
 	VIFMINFO_OPTIONS   = 1 << 0,
@@ -41,18 +39,21 @@ enum
 	VIFMINFO_FHISTORY  = 1 << 15,
 };
 
+struct view_t;
+
 void init_option_handlers(void);
 
 /* Resets local options so that they use values of global options. */
-void reset_local_options(FileView *view);
+void reset_local_options(struct view_t *view);
 
 /* Loads view-specific settings into corresponding options. */
-void load_view_options(FileView *view);
+void load_view_options(struct view_t *view);
 
 /* Clones all local options of *from into *to.  The defer_slow flag might be
  * used to postpone updates related to options, which will either be applied
  * from the outside or should be skipped. */
-void clone_local_options(const FileView *from, FileView *to, int defer_slow);
+void clone_local_options(const struct view_t *from, struct view_t *to,
+		int defer_slow);
 
 /* Handles various kinds of :set command displaying output/errors.  At least one
  * of global and local must be set on call.  Returns negative number on error,
@@ -61,15 +62,15 @@ void clone_local_options(const FileView *from, FileView *to, int defer_slow);
 int process_set_args(const char args[], int global, int local);
 
 /* Loads current sorting of the view into an option. */
-void load_sort_option(FileView *view);
+void load_sort_option(struct view_t *view);
 
 /* Loads current value of dot filter into an option. */
-void load_dot_filter_option(const FileView *view);
+void load_dot_filter_option(const struct view_t *view);
 
 /* Updates view columns value as if 'viewcolumns' option has been changed.
  * Doesn't change actual value of the option, which is important for setting
  * sorting order via sort dialog. */
-void load_view_columns_option(FileView *view, const char value[]);
+void load_view_columns_option(struct view_t *view, const char value[]);
 
 /* Updates geometry related options. */
 void load_geometry(void);

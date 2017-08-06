@@ -48,14 +48,14 @@
 #include "undo.h"
 
 static void put_files_in_bg(bg_op_t *bg_op, void *arg);
-static int initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
+static int initiate_put_files(view_t *view, int at, CopyMoveLikeOp op,
 		const char descr[], int reg_name);
 static void reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
 		const char dst_dir[]);
 static OPS cmlo_to_op(CopyMoveLikeOp op);
 static int path_depth_sort(const void *one, const void *two);
 static int is_dir_clash(const char src_path[], const char dst_dir[]);
-static int put_files_i(FileView *view, int start);
+static int put_files_i(view_t *view, int start);
 static int put_next(int force);
 TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static int handle_clashing(int move, const char src[], const char dst[]);
@@ -72,7 +72,7 @@ static struct
 {
 	reg_t *reg;        /* Register used for the operation. */
 	int *file_order;   /* Defines custom ordering of files in register. */
-	FileView *view;    /* View in which operation takes place. */
+	view_t *view;      /* View in which operation takes place. */
 	CopyMoveLikeOp op; /* Type of current operation. */
 	int index;         /* Index of the next file of the register to process. */
 	int processed;     /* Number of successfully processed files. */
@@ -89,7 +89,7 @@ static struct
 put_confirm;
 
 int
-fops_put(FileView *view, int at, int reg_name, int move)
+fops_put(view_t *view, int at, int reg_name, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 	const char *const descr = move ? "Putting" : "putting";
@@ -97,7 +97,7 @@ fops_put(FileView *view, int at, int reg_name, int move)
 }
 
 int
-fops_put_bg(FileView *view, int at, int reg_name, int move)
+fops_put_bg(view_t *view, int at, int reg_name, int move)
 {
 	char task_desc[COMMAND_GROUP_INFO_LEN];
 	size_t task_desc_len;
@@ -247,7 +247,7 @@ put_files_in_bg(bg_op_t *bg_op, void *arg)
 }
 
 int
-fops_put_links(FileView *view, int reg_name, int relative)
+fops_put_links(view_t *view, int reg_name, int relative)
 {
 	const CopyMoveLikeOp op = relative ? CMLO_LINK_REL : CMLO_LINK_ABS;
 	return initiate_put_files(view, -1, op, "Symlinking", reg_name);
@@ -256,8 +256,8 @@ fops_put_links(FileView *view, int reg_name, int relative)
 /* Performs preparations necessary for putting files/links.  Returns new value
  * for save_msg flag. */
 static int
-initiate_put_files(FileView *view, int at, CopyMoveLikeOp op,
-		const char descr[], int reg_name)
+initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
+		int reg_name)
 {
 	reg_t *reg;
 	int i;
@@ -408,7 +408,7 @@ is_dir_clash(const char src_path[], const char dst_dir[])
 
 /* Returns new value for save_msg flag. */
 static int
-put_files_i(FileView *view, int start)
+put_files_i(view_t *view, int start)
 {
 	if(start)
 	{

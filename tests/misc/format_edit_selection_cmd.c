@@ -10,7 +10,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
-static void teardown_view(FileView *view);
+static void teardown_view(view_t *view);
 
 static void
 setup_lwin(void)
@@ -85,7 +85,7 @@ TEARDOWN()
 }
 
 static void
-teardown_view(FileView *view)
+teardown_view(view_t *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)

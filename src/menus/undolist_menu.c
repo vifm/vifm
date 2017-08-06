@@ -29,7 +29,7 @@
 #include "menus.h"
 
 int
-show_undolist_menu(FileView *view, int with_details)
+show_undolist_menu(view_t *view, int with_details)
 {
 	char **p;
 

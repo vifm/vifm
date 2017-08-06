@@ -19,11 +19,11 @@
 #ifndef VIFM__UI__PRIVATE__STATUSLINE_H__
 #define VIFM__UI__PRIVATE__STATUSLINE_H__
 
-#include "../ui.h"
+struct view_t;
 
 /* Expands possibly limited set of view macros.  Returns newly allocated string,
  * which should be freed by the caller. */
-char * expand_view_macros(FileView *view, const char format[],
+char * expand_view_macros(struct view_t *view, const char format[],
 		const char macros[]);
 
 #endif /* VIFM__UI__PRIVATE__STATUSLINE_H__ */

@@ -32,10 +32,10 @@
 #include "../macros.h"
 #include "menus.h"
 
-static int execute_grep_cb(FileView *view, menu_data_t *m);
+static int execute_grep_cb(view_t *view, menu_data_t *m);
 
 int
-show_grep_menu(FileView *view, const char args[], int invert)
+show_grep_menu(view_t *view, const char args[], int invert)
 {
 	enum { M_i, M_a, M_s, M_A, M_u, M_U, };
 
@@ -96,7 +96,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_grep_cb(FileView *view, menu_data_t *m)
+execute_grep_cb(view_t *view, menu_data_t *m)
 {
 	(void)menus_goto_file(m, view, m->items[m->pos], 1);
 	return 1;

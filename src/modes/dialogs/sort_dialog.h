@@ -20,12 +20,12 @@
 #ifndef VIFM__MODES__DIALOGS__SORT_DIALOG_H__
 #define VIFM__MODES__DIALOGS__SORT_DIALOG_H__
 
-#include "../../ui/ui.h"
+struct view_t;
 
 /* Initializes sort dialog mode. */
 void init_sort_dialog_mode(void);
 
-void enter_sort_mode(FileView *active_view);
+void enter_sort_mode(struct view_t *active_view);
 
 void redraw_sort_dialog(void);
 

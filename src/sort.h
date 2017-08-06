@@ -24,10 +24,10 @@
 #include "utils/test_helpers.h"
 
 /* Sorts entries of the view according to its sorting configuration. */
-void sort_view(FileView *view);
+void sort_view(view_t *view);
 
 /* Sorts specified entries using global settings of the view. */
-void sort_entries(FileView *view, entries_t entries);
+void sort_entries(view_t *view, entries_t entries);
 
 /* Maps primary sort key to second column type.  Returns secondary key that
  * corresponds to the primary one. */

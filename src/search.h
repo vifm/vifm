@@ -20,7 +20,7 @@
 #ifndef VIFM__SEARCH_H__
 #define VIFM__SEARCH_H__
 
-#include "ui/ui.h"
+struct view_t;
 
 /* Search and navigation functions. */
 
@@ -31,27 +31,27 @@
  * print_*_msg() functions.  Returns non-zero when a message was printed (or
  * would have been printed with print_errors set) to a user, otherwise zero is
  * returned.  Returned value is negative for incorrect pattern. */
-int find_pattern(FileView *view, const char pattern[], int backward, int move,
-		int *const found, int print_errors);
+int find_pattern(struct view_t *view, const char pattern[], int backward,
+		int move, int *const found, int print_errors);
 
 /* Looks for a search match in specified direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was
  * found, otherwise zero is returned. */
-int goto_search_match(FileView *view, int backward);
+int goto_search_match(struct view_t *view, int backward);
 
 /* Auxiliary functions. */
 
 /* Prints results or error message about search operation to the user. */
-void print_search_msg(const FileView *view, int backward);
+void print_search_msg(const struct view_t *view, int backward);
 
 /* Prints error message about failed search to the user. */
-void print_search_fail_msg(const FileView *view, int backward);
+void print_search_fail_msg(const struct view_t *view, int backward);
 
 /* Resets information about last search match. */
-void reset_search_results(FileView *view);
+void reset_search_results(struct view_t *view);
 
 /* Prints the search messages for the n or N commands. */
-void print_search_next_msg(const FileView *view, int backward);
+void print_search_next_msg(const struct view_t *view, int backward);
 
 #endif /* VIFM__SEARCH_H__ */
 

@@ -119,7 +119,7 @@ TSTATIC int line_pos(const char begin[], const char end[], char sep,
 		int rquoting);
 static CmdArgsType get_cmd_args_type(const char cmd[]);
 static char * skip_to_cmd_name(const char cmd[]);
-static int repeat_command(FileView *view, CmdInputType type);
+static int repeat_command(view_t *view, CmdInputType type);
 static int is_at_scope_bottom(const int_stack_t *scope_stack);
 TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 
@@ -436,7 +436,7 @@ pattern_expand_hook(const char pattern[])
 
 /* Returns negative value in case of error */
 static int
-execute_command(FileView *view, const char command[], int menu)
+execute_command(view_t *view, const char command[], int menu)
 {
 	int id;
 	int result;
@@ -730,7 +730,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 }
 
 int
-exec_commands(const char cmdline[], FileView *view, CmdInputType type)
+exec_commands(const char cmdline[], view_t *view, CmdInputType type)
 {
 	int save_msg = 0;
 	char **cmds = break_cmdline(cmdline, type == CIT_MENU_COMMAND);
@@ -1020,7 +1020,7 @@ skip_to_cmd_name(const char cmd[])
 }
 
 int
-exec_command(const char cmd[], FileView *view, CmdInputType type)
+exec_command(const char cmd[], view_t *view, CmdInputType type)
 {
 	int menu;
 	int backward;
@@ -1071,7 +1071,7 @@ exec_command(const char cmd[], FileView *view, CmdInputType type)
  * message should be saved in the status bar, > 0 to save message on successful
  * execution and < 0 in case of error with error message. */
 static int
-repeat_command(FileView *view, CmdInputType type)
+repeat_command(view_t *view, CmdInputType type)
 {
 	int backward = 0;
 	switch(type)

@@ -59,7 +59,7 @@
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
-	FileView *view;     /* View on which cell is being drawn. */
+	view_t *view;     /* View on which cell is being drawn. */
 	dir_entry_t *entry; /* Entry that is being displayed. */
 	size_t line_pos;    /* File position in the file list (the view). */
 	int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
@@ -76,39 +76,39 @@ typedef struct
 }
 column_data_t;
 
-static void draw_left_column(FileView *view);
-static void draw_right_column(FileView *view);
-static void print_column(FileView *view, entries_t entries,
-		const char current[], const char path[], int width, int offset);
-static void fill_column(FileView *view, int start_line, int top, int width,
+static void draw_left_column(view_t *view);
+static void draw_right_column(view_t *view);
+static void print_column(view_t *view, entries_t entries, const char current[],
+		const char path[], int width, int offset);
+static void fill_column(view_t *view, int start_line, int top, int width,
 		int offset);
-static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
-static void calculate_number_width(FileView *view);
+static void calculate_table_conf(view_t *view, size_t *count, size_t *width);
+static void calculate_number_width(view_t *view);
 static int count_digits(int num);
-static int calculate_top_position(FileView *view, int top);
-static int get_line_color(const FileView *view, const dir_entry_t *entry);
-static size_t calculate_print_width(const FileView *view, int i,
+static int calculate_top_position(view_t *view, int top);
+static int get_line_color(const view_t *view, const dir_entry_t *entry);
+static size_t calculate_print_width(const view_t *view, int i,
 		size_t max_width);
 static void draw_cell(columns_t *columns, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
-static columns_t * get_view_columns(const FileView *view);
+static columns_t * get_view_columns(const view_t *view);
 static columns_t * get_name_column(void);
-static void consider_scroll_bind(FileView *view);
-static int prepare_inactive_color(FileView *view, dir_entry_t *entry,
+static void consider_scroll_bind(view_t *view);
+static int prepare_inactive_color(view_t *view, dir_entry_t *entry,
 		int line_color);
-static void redraw_cell(FileView *view, int top, int cursor, int is_current);
-static size_t get_effective_scroll_offset(const FileView *view);
+static void redraw_cell(view_t *view, int top, int cursor, int is_current);
+static size_t get_effective_scroll_offset(const view_t *view);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static void draw_line_number(const column_data_t *cdt, int column);
-static void highlight_search(FileView *view, dir_entry_t *entry,
+static void highlight_search(view_t *view, dir_entry_t *entry,
 		const char full_column[], char buf[], size_t buf_len, AlignType align,
 		int line, int col, int line_attrs);
-static int prepare_col_color(const FileView *view, int primary,
+static int prepare_col_color(const view_t *view, int primary,
 		const column_data_t *cdt);
-static void mix_in_file_hi(const FileView *view, dir_entry_t *entry,
-		int type_hi, col_attr_t *col);
-static void mix_in_file_name_hi(const FileView *view, dir_entry_t *entry,
+static void mix_in_file_hi(const view_t *view, dir_entry_t *entry, int type_hi,
+		col_attr_t *col);
+static void mix_in_file_name_hi(const view_t *view, dir_entry_t *entry,
 		col_attr_t *col);
 TSTATIC void format_name(int id, const void *data, size_t buf_len, char buf[]);
 static void format_size(int id, const void *data, size_t buf_len, char buf[]);
@@ -131,13 +131,13 @@ static void format_nlinks(int id, const void *data, size_t buf_len, char buf[]);
 static void format_inode(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void format_id(int id, const void *data, size_t buf_len, char buf[]);
-static size_t calculate_column_width(FileView *view);
-static size_t get_max_filename_width(const FileView *view);
-static size_t get_filename_width(const FileView *view, int i);
+static size_t calculate_column_width(view_t *view);
+static size_t get_max_filename_width(const view_t *view);
+static size_t get_filename_width(const view_t *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
-static void position_hardware_cursor(FileView *view);
-static int move_curr_line(FileView *view);
-static void reset_view_columns(FileView *view);
+static void position_hardware_cursor(view_t *view);
+static int move_curr_line(view_t *view);
+static void reset_view_columns(view_t *view);
 
 void
 fview_init(void)
@@ -189,7 +189,7 @@ fview_init(void)
 }
 
 void
-fview_view_init(FileView *view)
+fview_view_init(view_t *view)
 {
 	view->curr_line = 0;
 	view->top_line = 0;
@@ -207,7 +207,7 @@ fview_view_init(FileView *view)
 }
 
 void
-fview_view_reset(FileView *view)
+fview_view_reset(view_t *view)
 {
 	view->ls_view_g = view->ls_view = 0;
 	/* Invalidate maximum file name widths cache. */
@@ -227,7 +227,7 @@ fview_view_reset(FileView *view)
 }
 
 void
-fview_view_cs_reset(FileView *view)
+fview_view_cs_reset(view_t *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
@@ -237,7 +237,7 @@ fview_view_cs_reset(FileView *view)
 }
 
 void
-draw_dir_list(FileView *view)
+draw_dir_list(view_t *view)
 {
 	draw_dir_list_only(view);
 
@@ -248,7 +248,7 @@ draw_dir_list(FileView *view)
 }
 
 void
-draw_dir_list_only(FileView *view)
+draw_dir_list_only(view_t *view)
 {
 	int x;
 	int lcol_size;
@@ -336,7 +336,7 @@ draw_dir_list_only(FileView *view)
 
 /* Draws a column to the left of the main part of the view. */
 static void
-draw_left_column(FileView *view)
+draw_left_column(view_t *view)
 {
 	char path[PATH_MAX + 1];
 	const char *const dir = flist_get_dir(view);
@@ -360,7 +360,7 @@ draw_left_column(FileView *view)
 
 /* Draws a column to the right of the main part of the view. */
 static void
-draw_right_column(FileView *view)
+draw_right_column(view_t *view)
 {
 	char path[PATH_MAX + 1];
 	const int padding = (cfg.extra_padding ? 1 : 0);
@@ -387,7 +387,7 @@ draw_right_column(FileView *view)
 /* Prints column full of entry names.  Current is a hint that tells which column
  * has to be selected (otherwise position from history record is used). */
 static void
-print_column(FileView *view, entries_t entries, const char current[],
+print_column(view_t *view, entries_t entries, const char current[],
 		const char path[], int width, int offset)
 {
 	int top, pos;
@@ -446,7 +446,7 @@ print_column(FileView *view, entries_t entries, const char current[],
 
 /* Fills column to the bottom to clear it from previous content. */
 static void
-fill_column(FileView *view, int start_line, int top, int width, int offset)
+fill_column(view_t *view, int start_line, int top, int width, int offset)
 {
 	int i;
 
@@ -474,7 +474,7 @@ fill_column(FileView *view, int start_line, int top, int width, int offset)
 
 /* Calculates number of columns and maximum width of column in a view. */
 static void
-calculate_table_conf(FileView *view, size_t *count, size_t *width)
+calculate_table_conf(view_t *view, size_t *count, size_t *width)
 {
 	calculate_number_width(view);
 
@@ -496,7 +496,7 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 /* Calculates real number of characters that should be allocated in view for
  * numbers column. */
 static void
-calculate_number_width(FileView *view)
+calculate_number_width(view_t *view)
 {
 	if(ui_view_displays_numbers(view))
 	{
@@ -530,7 +530,7 @@ count_digits(int num)
  * much of the directory as possible.  Can modify view->curr_line.  Returns
  * new top. */
 static int
-calculate_top_position(FileView *view, int top)
+calculate_top_position(view_t *view, int top)
 {
 	int result = MIN(MAX(top, 0), view->list_rows - 1);
 	result = ROUND_DOWN(result, view->column_count);
@@ -552,7 +552,7 @@ calculate_top_position(FileView *view, int top)
 
 /* Calculates highlight group for the entry.  Returns highlight group number. */
 static int
-get_line_color(const FileView *view, const dir_entry_t *entry)
+get_line_color(const view_t *view, const dir_entry_t *entry)
 {
 	switch(entry->type)
 	{
@@ -600,7 +600,7 @@ get_line_color(const FileView *view, const dir_entry_t *entry)
 
 /* Calculates width of the column using entry and maximum width. */
 static size_t
-calculate_print_width(const FileView *view, int i, size_t max_width)
+calculate_print_width(const view_t *view, int i, size_t max_width)
 {
 	if(!ui_view_displays_columns(view))
 	{
@@ -632,7 +632,7 @@ draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
 /* Retrieves active view columns handle of the view considering 'lsview' option
  * status.  Returns the handle. */
 static columns_t *
-get_view_columns(const FileView *view)
+get_view_columns(const view_t *view)
 {
 	/* Note that columns_t performs some caching, so we might want to keep one
 	 * handle per view rather than sharing one. */
@@ -690,11 +690,11 @@ get_name_column(void)
 /* Corrects top of the other view to synchronize it with the current view if
  * 'scrollbind' option is set or view is in the compare mode. */
 static void
-consider_scroll_bind(FileView *view)
+consider_scroll_bind(view_t *view)
 {
 	if(cfg.scroll_bind || view->custom.type == CV_DIFF)
 	{
-		FileView *const other = (view == &lwin) ? &rwin : &lwin;
+		view_t *const other = (view == &lwin) ? &rwin : &lwin;
 		const int bind_off = cfg.scroll_bind ? curr_stats.scroll_bind_off : 0;
 		other->top_line = view->top_line/view->column_count;
 		if(view == &lwin)
@@ -728,7 +728,7 @@ consider_scroll_bind(FileView *view)
 }
 
 void
-redraw_view(FileView *view)
+redraw_view(view_t *view)
 {
 	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
 	{
@@ -737,7 +737,7 @@ redraw_view(FileView *view)
 }
 
 void
-redraw_view_imm(FileView *view)
+redraw_view_imm(view_t *view)
 {
 	if(window_shows_dirlist(view))
 	{
@@ -760,7 +760,7 @@ redraw_current_view(void)
 }
 
 void
-fview_cursor_redraw(FileView *view)
+fview_cursor_redraw(view_t *view)
 {
 	if(view == curr_view)
 	{
@@ -779,7 +779,7 @@ fview_cursor_redraw(FileView *view)
 }
 
 void
-put_inactive_mark(FileView *view)
+put_inactive_mark(view_t *view)
 {
 	size_t col_width;
 	size_t col_count;
@@ -808,19 +808,19 @@ put_inactive_mark(FileView *view)
 }
 
 int
-all_files_visible(const FileView *view)
+all_files_visible(const view_t *view)
 {
 	return view->list_rows <= (int)view->window_cells;
 }
 
 size_t
-get_last_visible_cell(const FileView *view)
+get_last_visible_cell(const view_t *view)
 {
 	return view->top_line + view->window_cells - 1;
 }
 
 size_t
-get_window_top_pos(const FileView *view)
+get_window_top_pos(const view_t *view)
 {
 	const int column_correction = view->list_pos%view->column_count;
 	if(view->top_line == 0)
@@ -832,7 +832,7 @@ get_window_top_pos(const FileView *view)
 }
 
 size_t
-get_window_middle_pos(const FileView *view)
+get_window_middle_pos(const view_t *view)
 {
 	const int list_middle = DIV_ROUND_UP(view->list_rows, (2*view->column_count));
 	const int window_middle = DIV_ROUND_UP(view->window_rows - 1, 2);
@@ -842,7 +842,7 @@ get_window_middle_pos(const FileView *view)
 }
 
 size_t
-get_window_bottom_pos(const FileView *view)
+get_window_bottom_pos(const view_t *view)
 {
 	if(view->list_rows - 1 <= (int)get_last_visible_cell(view))
 	{
@@ -867,7 +867,7 @@ get_window_bottom_pos(const FileView *view)
 /* Calculate color attributes for cursor line of inactive pane.  Returns
  * attributes that can be used for drawing on a window. */
 static int
-prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
+prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 {
 	const col_scheme_t *cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
@@ -892,7 +892,7 @@ prepare_inactive_color(FileView *view, dir_entry_t *entry, int line_color)
  * on passed in positions instead of view state to be independent from changes
  * in the view. */
 static void
-redraw_cell(FileView *view, int top, int cursor, int is_current)
+redraw_cell(view_t *view, int top, int cursor, int is_current)
 {
 	const int pos = top + cursor;
 	size_t col_width;
@@ -956,19 +956,19 @@ redraw_cell(FileView *view, int top, int cursor, int is_current)
 }
 
 int
-can_scroll_up(const FileView *view)
+can_scroll_up(const view_t *view)
 {
 	return view->top_line > 0;
 }
 
 int
-can_scroll_down(const FileView *view)
+can_scroll_down(const view_t *view)
 {
 	return (int)get_last_visible_cell(view) < view->list_rows - 1;
 }
 
 void
-scroll_up(FileView *view, size_t by)
+scroll_up(view_t *view, size_t by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
 	view->top_line -= view->column_count*DIV_ROUND_UP(by, view->column_count);
@@ -982,7 +982,7 @@ scroll_up(FileView *view, size_t by)
 }
 
 void
-scroll_down(FileView *view, size_t by)
+scroll_down(view_t *view, size_t by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
 	view->top_line += view->column_count*DIV_ROUND_UP(by, view->column_count);
@@ -992,7 +992,7 @@ scroll_down(FileView *view, size_t by)
 }
 
 int
-get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
+get_corrected_list_pos_down(const view_t *view, size_t pos_delta)
 {
 	const int scroll_offset = get_effective_scroll_offset(view);
 	if(view->list_pos <=
@@ -1006,7 +1006,7 @@ get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
 }
 
 int
-get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
+get_corrected_list_pos_up(const view_t *view, size_t pos_delta)
 {
 	const int scroll_offset = get_effective_scroll_offset(view);
 	const int last = get_last_visible_cell(view);
@@ -1021,7 +1021,7 @@ get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 }
 
 int
-consider_scroll_offset(FileView *view)
+consider_scroll_offset(view_t *view)
 {
 	int need_redraw = 0;
 	int pos = view->list_pos;
@@ -1050,14 +1050,14 @@ consider_scroll_offset(FileView *view)
 
 /* Returns scroll offset value for the view taking view height into account. */
 static size_t
-get_effective_scroll_offset(const FileView *view)
+get_effective_scroll_offset(const view_t *view)
 {
 	int val = MIN(DIV_ROUND_UP(view->window_rows - 1, 2), MAX(cfg.scroll_off, 0));
 	return val*view->column_count;
 }
 
 void
-scroll_by_files(FileView *view, ssize_t by)
+scroll_by_files(view_t *view, ssize_t by)
 {
 	if(by > 0)
 	{
@@ -1088,7 +1088,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 	int reserved_width;
 
 	const column_data_t *const cdt = data;
-	FileView *view = cdt->view;
+	view_t *view = cdt->view;
 	dir_entry_t *entry = cdt->entry;
 
 	const int numbers_visible = (offset == 0 && cdt->draw_numbers);
@@ -1168,7 +1168,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 static void
 draw_line_number(const column_data_t *cdt, int column)
 {
-	FileView *const view = cdt->view;
+	view_t *const view = cdt->view;
 	const size_t i = cdt->line_pos;
 
 	const int mixed = (cdt->is_current && view->num_type == NT_MIX);
@@ -1187,7 +1187,7 @@ draw_line_number(const column_data_t *cdt, int column)
 /* Highlights search match for the entry (assumed to be a search hit).  Modifies
  * the buf argument in process. */
 static void
-highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
+highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
 		char buf[], size_t buf_len, AlignType align, int line, int col,
 		int line_attrs)
 {
@@ -1272,9 +1272,9 @@ highlight_search(FileView *view, dir_entry_t *entry, const char full_column[],
 /* Calculate color attributes for a view column.  Returns attributes that can be
  * used for drawing on a window. */
 static int
-prepare_col_color(const FileView *view, int primary, const column_data_t *cdt)
+prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 {
-	FileView *const other = (view == &lwin) ? &rwin : &lwin;
+	view_t *const other = (view == &lwin) ? &rwin : &lwin;
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
 
@@ -1320,7 +1320,7 @@ prepare_col_color(const FileView *view, int primary, const column_data_t *cdt)
 
 /* Applies file name and file type specific highlights for the entry. */
 static void
-mix_in_file_hi(const FileView *view, dir_entry_t *entry, int type_hi,
+mix_in_file_hi(const view_t *view, dir_entry_t *entry, int type_hi,
 		col_attr_t *col)
 {
 	if(fentry_is_fake(entry))
@@ -1342,7 +1342,7 @@ mix_in_file_hi(const FileView *view, dir_entry_t *entry, int type_hi,
 
 /* Applies file name specific highlight for the entry. */
 static void
-mix_in_file_name_hi(const FileView *view, dir_entry_t *entry, col_attr_t *col)
+mix_in_file_name_hi(const view_t *view, dir_entry_t *entry, col_attr_t *col)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	char *const typed_fname = get_typed_entry_fpath(entry);
@@ -1362,7 +1362,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 	dir_entry_t *child, *parent;
 
 	const column_data_t *cdt = data;
-	FileView *view = cdt->view;
+	view_t *view = cdt->view;
 
 	if(!flist_custom_active(view))
 	{
@@ -1418,7 +1418,7 @@ static void
 format_primary_group(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
-	const FileView *view = cdt->view;
+	const view_t *view = cdt->view;
 	regmatch_t match = get_group_match(&view->primary_group, cdt->entry->name);
 
 	copy_str(buf, MIN(buf_len + 1U, match.rm_eo - match.rm_so + 1U),
@@ -1431,7 +1431,7 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 {
 	char str[64];
 	const column_data_t *cdt = data;
-	const FileView *view = cdt->view;
+	const view_t *view = cdt->view;
 	uint64_t size = DCACHE_UNKNOWN;
 
 	if(fentry_is_dir(cdt->entry))
@@ -1467,7 +1467,7 @@ static void
 format_nitems(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
-	const FileView *view = cdt->view;
+	const view_t *view = cdt->view;
 	uint64_t nitems;
 
 	if(!fentry_is_dir(cdt->entry))
@@ -1652,7 +1652,7 @@ format_id(int id, const void *data, size_t buf_len, char buf[])
 }
 
 void
-fview_set_lsview(FileView *view, int enabled)
+fview_set_lsview(view_t *view, int enabled)
 {
 	if(view->ls_view != enabled)
 	{
@@ -1662,7 +1662,7 @@ fview_set_lsview(FileView *view, int enabled)
 }
 
 void
-fview_set_millerview(FileView *view, int enabled)
+fview_set_millerview(view_t *view, int enabled)
 {
 	if(view->miller_view == enabled)
 	{
@@ -1680,7 +1680,7 @@ fview_set_millerview(FileView *view, int enabled)
 }
 
 size_t
-calculate_columns_count(FileView *view)
+calculate_columns_count(view_t *view)
 {
 	if(!ui_view_displays_columns(view))
 	{
@@ -1692,7 +1692,7 @@ calculate_columns_count(FileView *view)
 
 /* Returns width of one column in the view. */
 static size_t
-calculate_column_width(FileView *view)
+calculate_column_width(view_t *view)
 {
 	const int column_gap = (cfg.extra_padding ? 2 : 1);
 	if(view->max_filename_width == 0)
@@ -1704,13 +1704,13 @@ calculate_column_width(FileView *view)
 }
 
 void
-fview_dir_updated(FileView *view)
+fview_dir_updated(view_t *view)
 {
 	view->local_cs = cs_load_local(view == &lwin, view->curr_dir);
 }
 
 void
-fview_list_updated(FileView *view)
+fview_list_updated(view_t *view)
 {
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;
@@ -1719,7 +1719,7 @@ fview_list_updated(FileView *view)
 /* Finds maximum filename width (length in character positions on the screen)
  * among all entries of the view.  Returns the width. */
 static size_t
-get_max_filename_width(const FileView *view)
+get_max_filename_width(const view_t *view)
 {
 	size_t max_len = 0UL;
 	int i;
@@ -1737,7 +1737,7 @@ get_max_filename_width(const FileView *view)
 /* Gets filename width (length in character positions on the screen) of ith
  * entry of the view.  Returns the width. */
 static size_t
-get_filename_width(const FileView *view, int i)
+get_filename_width(const view_t *view, int i)
 {
 	const dir_entry_t *const entry = &view->dir_entry[i];
 	size_t name_len;
@@ -1766,7 +1766,7 @@ get_filetype_decoration_width(const dir_entry_t *entry)
 }
 
 void
-fview_position_updated(FileView *view)
+fview_position_updated(view_t *view)
 {
 	const int old_top = view->top_line;
 	const int old_curr = view->curr_line;
@@ -1835,7 +1835,7 @@ fview_position_updated(FileView *view)
 
 /* Moves hardware cursor to the beginning of the name of current entry. */
 static void
-position_hardware_cursor(FileView *view)
+position_hardware_cursor(view_t *view)
 {
 	size_t col_width, col_count;
 	int current_line, column_offset;
@@ -1860,7 +1860,7 @@ position_hardware_cursor(FileView *view)
 
 /* Returns non-zero if redraw is needed. */
 static int
-move_curr_line(FileView *view)
+move_curr_line(view_t *view)
 {
 	int redraw = 0;
 	int pos = view->list_pos;
@@ -1917,14 +1917,14 @@ move_curr_line(FileView *view)
 }
 
 void
-fview_sorting_updated(FileView *view)
+fview_sorting_updated(view_t *view)
 {
 	reset_view_columns(view);
 }
 
 /* Reinitializes view columns. */
 static void
-reset_view_columns(FileView *view)
+reset_view_columns(view_t *view)
 {
 	if(!ui_view_displays_columns(view) ||
 			(curr_stats.restart_in_progress && flist_custom_active(view) &&

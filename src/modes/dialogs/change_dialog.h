@@ -20,12 +20,12 @@
 #ifndef VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__
 #define VIFM__MODES__DIALOGS__CHANGE_DIALOG_H__
 
-#include "../../ui/ui.h"
+struct view_t;
 
 /* Initializes change dialog mode. */
 void init_change_dialog_mode(void);
 
-void enter_change_mode(FileView *active_view);
+void enter_change_mode(struct view_t *active_view);
 
 void redraw_change_dialog(void);
 

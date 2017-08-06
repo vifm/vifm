@@ -34,14 +34,14 @@
 #include "../undo.h"
 #include "menus.h"
 
-static KHandlerResponse trash_khandler(FileView *view, menu_data_t *m,
+static KHandlerResponse trash_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 static KHandlerResponse restore_current(menu_data_t *m);
 static KHandlerResponse delete_current(menu_data_t *m);
 static int ui_cancellation_hook(void *arg);
 
 int
-show_trash_menu(FileView *view)
+show_trash_menu(view_t *view)
 {
 	int i;
 
@@ -67,7 +67,7 @@ show_trash_menu(FileView *view)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-trash_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+trash_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"r") == 0)
 	{

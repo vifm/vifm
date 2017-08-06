@@ -19,12 +19,12 @@
 #ifndef VIFM__MODES__DIALOGS__ATTR_DIALOG_WIN_H__
 #define VIFM__MODES__DIALOGS__ATTR_DIALOG_WIN_H__
 
-#include "../../ui/ui.h"
+struct view_t;
 
 /* Initializes attributes dialog mode. */
 void init_attr_dialog_mode(void);
 
-void enter_attr_mode(FileView *active_view);
+void enter_attr_mode(struct view_t *active_view);
 
 void redraw_attr_dialog(void);
 

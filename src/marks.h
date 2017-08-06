@@ -23,7 +23,6 @@
 #include <stddef.h> /* wchar_t */
 #include <time.h> /* time_t */
 
-#include "ui/ui.h"
 #include "utils/test_helpers.h"
 
 #define NUM_REGULAR_MARKS 61
@@ -32,6 +31,8 @@
 
 /* Special file name value for "directory marks". */
 #define NO_MARK_FILE ".."
+
+struct view_t;
 
 /* Callback for suggest_marks() function invoked per active mark. */
 typedef void (*mark_suggest_cb)(const wchar_t text[], const wchar_t value[],
@@ -82,7 +83,7 @@ void setup_user_mark(const char mark, const char directory[], const char file[],
 void set_spec_mark(const char mark, const char directory[], const char file[]);
 
 /* Handles all kinds of marks.  Returns new value for save_msg flag. */
-int goto_mark(FileView *view, char mark);
+int goto_mark(struct view_t *view, char mark);
 
 /* Clears a mark by its name. */
 void clear_mark(const int m);
@@ -92,7 +93,7 @@ void clear_all_marks(void);
 
 /* Looks up file specified by the mark m in the view.  Returns the position if
  * found, otherwise -1 is returned. */
-int check_mark_directory(FileView *view, char m);
+int check_mark_directory(struct view_t *view, char m);
 
 /* Fills array of booleans (active_marks) each of which shows whether specified
  * mark index is active.  active_marks should be an array of at least NUM_MARKS

@@ -12,7 +12,7 @@
 
 #include "utils.h"
 
-static void setup_single_entry(FileView *view, const char name[]);
+static void setup_single_entry(view_t *view, const char name[]);
 static uint64_t wait_for_size(const char path[]);
 
 SETUP()
@@ -48,7 +48,7 @@ TEST(parent_dir_entry_triggers_calculation_of_current_dir)
 }
 
 static void
-setup_single_entry(FileView *view, const char name[])
+setup_single_entry(view_t *view, const char name[])
 {
 	view->user_selection = 1;
 	view->list_rows = 1;

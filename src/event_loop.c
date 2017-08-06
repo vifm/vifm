@@ -58,10 +58,10 @@
 static int ensure_term_is_ready(void);
 static int get_char_async_loop(WINDOW *win, wint_t *c, int timeout);
 static void process_scheduled_updates(void);
-TSTATIC int process_scheduled_updates_of_view(FileView *view);
+TSTATIC int process_scheduled_updates_of_view(view_t *view);
 static void update_hardware_cursor(void);
 static int should_check_views_for_changes(void);
-static void check_view_for_changes(FileView *view);
+static void check_view_for_changes(view_t *view);
 static void reset_input_buf(wchar_t curr_input_buf[],
 		size_t *curr_input_buf_pos);
 static void display_suggestion_box(const wchar_t input[]);
@@ -432,7 +432,7 @@ process_scheduled_updates(void)
 /* Performs postponed updates for the view, if any.  Returns non-zero if
  * something was indeed updated, and zero otherwise. */
 TSTATIC int
-process_scheduled_updates_of_view(FileView *view)
+process_scheduled_updates_of_view(view_t *view)
 {
 	if(!window_shows_dirlist(view))
 	{
@@ -509,7 +509,7 @@ should_check_views_for_changes(void)
 
 /* Updates view in case directory it displays was changed externally. */
 static void
-check_view_for_changes(FileView *view)
+check_view_for_changes(view_t *view)
 {
 	if(window_shows_dirlist(view))
 	{

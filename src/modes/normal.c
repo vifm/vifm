@@ -114,7 +114,7 @@ static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info);
 static int is_left_or_top(void);
-static FileView * pick_view(void);
+static view_t * pick_view(void);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
@@ -206,7 +206,7 @@ static void cmd_q_equals(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
-static int calc_pick_files_end_pos(const FileView *view, int count);
+static int calc_pick_files_end_pos(const view_t *view, int count);
 static void cmd_y_selector(key_info_t key_info, keys_info_t *keys_info);
 static void yank(key_info_t key_info, keys_info_t *keys_info);
 static void free_list_of_file_indexes(keys_info_t *keys_info);
@@ -234,7 +234,7 @@ static void cmd_rb_z(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_curly_bracket(key_info_t key_info,
 		keys_info_t *keys_info);
-static void pick_files(FileView *view, int end, keys_info_t *keys_info);
+static void pick_files(view_t *view, int end, keys_info_t *keys_info);
 static void selector_S(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
 static void selector_s(key_info_t key_info, keys_info_t *keys_info);
@@ -875,7 +875,7 @@ is_left_or_top(void)
 }
 
 /* Picks view to operate on for Ctrl-W set of shortcuts.  Returns the view. */
-static FileView *
+static view_t *
 pick_view(void)
 {
 	if(vle_mode_is(VIEW_MODE))
@@ -1414,7 +1414,7 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 }
 
 void
-normal_cmd_cp(FileView *view, key_info_t key_info)
+normal_cmd_cp(view_t *view, key_info_t key_info)
 {
 #ifndef _WIN32
 	char mode[32];
@@ -1890,7 +1890,7 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 /* Calculates end position for pick_files(...) function using cursor position
  * and count of a command.  Considers possible integer overflow. */
 static int
-calc_pick_files_end_pos(const FileView *view, int count)
+calc_pick_files_end_pos(const view_t *view, int count)
 {
 	/* Way of comparing values makes difference!  This way it will work even when
 	 * count equals to INT_MAX.  Don't change it! */
@@ -2150,7 +2150,7 @@ normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-pick_files(FileView *view, int end, keys_info_t *keys_info)
+pick_files(view_t *view, int end, keys_info_t *keys_info)
 {
 	int delta, i, x;
 
@@ -2261,7 +2261,7 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 int
-find_npattern(FileView *view, const char pattern[], int backward,
+find_npattern(view_t *view, const char pattern[], int backward,
 		int print_errors)
 {
 	const int nrepeats = search_repeat - 1;

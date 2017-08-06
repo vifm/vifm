@@ -20,11 +20,11 @@
 #ifndef VIFM__MENUS__MARKS_MENU_H__
 #define VIFM__MENUS__MARKS_MENU_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Displays subset of marks in a menu.  Returns non-zero if status bar message
  * should be saved. */
-int show_marks_menu(FileView *view, const char marks[]);
+int show_marks_menu(struct view_t *view, const char marks[]);
 
 #endif /* VIFM__MENUS__MARKS_MENU_H__ */
 

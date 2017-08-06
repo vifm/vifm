@@ -19,15 +19,19 @@
 #ifndef VIFM__UI__STATUSLINE_H__
 #define VIFM__UI__STATUSLINE_H__
 
-#include "ui.h"
+#include <curses.h> /* WINDOW */
+
+#include <stddef.h> /* size_t */
 
 #include "../utils/test_helpers.h"
+
+struct view_t;
 
 /* Status line managing.  Job bar is considered as a continuation of status bar,
  * but its visibility is controlled separately. */
 
 /* Redraw contents of stat line (possibly lazily). */
-void update_stat_window(FileView *view, int lazy_redraw);
+void update_stat_window(struct view_t *view, int lazy_redraw);
 
 /* Puts status line where it's suppose to be according to other elements (also
  * moves job bar).  If displaying status line is disabled, force flag can help
@@ -66,7 +70,7 @@ void ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
 		size_t max_width);
 
 TSTATIC_DEFS(
-	char * expand_status_line_macros(FileView *view, const char format[]);
+	char * expand_status_line_macros(struct view_t *view, const char format[]);
 )
 
 #endif /* VIFM__UI__STATUSLINE_H__ */

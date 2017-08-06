@@ -84,9 +84,9 @@ typedef enum
 }
 FileHandleLink;
 
-static void handle_file(FileView *view, FileHandleExec exec,
+static void handle_file(view_t *view, FileHandleExec exec,
 		FileHandleLink follow);
-static int is_runnable(const FileView *const view, const char full_path[],
+static int is_runnable(const view_t *const view, const char full_path[],
 		int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
@@ -95,18 +95,18 @@ static int is_dir_entry(const char full_path[], int type);
 static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
 #endif
-static int selection_is_consistent(FileView *view);
+static int selection_is_consistent(view_t *view);
 static void execute_file(const char full_path[], int elevate);
-static void run_selection(FileView *view, int dont_execute);
-static void run_with_defaults(FileView *view);
-static void run_selection_separately(FileView *view, int dont_execute);
-static int is_multi_run_compat(FileView *view, const char prog_cmd[]);
+static void run_selection(view_t *view, int dont_execute);
+static void run_with_defaults(view_t *view);
+static void run_selection_separately(view_t *view, int dont_execute);
+static int is_multi_run_compat(view_t *view, const char prog_cmd[]);
 static void run_explicit_prog(const char prog_spec[], int pause, int force_bg);
-static void run_implicit_prog(FileView *view, const char prog_spec[],
-		int pause, int force_bg);
-static void view_current_file(const FileView *view);
-static void follow_link(FileView *view, int follow_dirs);
-static int cd_to_parent_dir(FileView *view);
+static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
+		int force_bg);
+static void view_current_file(const view_t *view);
+static void follow_link(view_t *view, int follow_dirs);
+static int cd_to_parent_dir(view_t *view);
 static void extract_last_path_component(const char path[], char buf[]);
 static void setup_shellout_env(void);
 static void cleanup_shellout_env(void);
@@ -117,12 +117,12 @@ static char * gen_term_multiplexer_title_arg(const char cmd[]);
 static char * gen_normal_cmd(const char cmd[], int pause);
 static char * gen_term_multiplexer_run_cmd(void);
 static void set_pwd_in_screen(const char path[]);
-static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
+static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 		const char start[], int background);
 static void output_to_statusbar(const char cmd[]);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
-static void run_in_split(const FileView *view, const char cmd[]);
+static void run_in_split(const view_t *view, const char cmd[]);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
 
@@ -131,13 +131,13 @@ static void line_handler(const char line[], void *arg);
 static const char *const FUSE_FILE_ENVVAR = "VIFM_FUSE_FILE";
 
 void
-open_file(FileView *view, FileHandleExec exec)
+open_file(view_t *view, FileHandleExec exec)
 {
 	handle_file(view, exec, FHL_NO_FOLLOW);
 }
 
 void
-follow_file(FileView *view)
+follow_file(view_t *view)
 {
 	if(flist_custom_active(view))
 	{
@@ -159,7 +159,7 @@ follow_file(FileView *view)
 }
 
 static void
-handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
+handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX];
 	int executable;
@@ -208,7 +208,7 @@ handle_file(FileView *view, FileHandleExec exec, FileHandleLink follow)
 /* Returns non-zero if file can be executed or it's link to a directory (it can
  * be entered), otherwise zero is returned. */
 static int
-is_runnable(const FileView *const view, const char full_path[], int type,
+is_runnable(const view_t *const view, const char full_path[], int type,
 		int force_follow)
 {
 	int runnable = !cfg.follow_links && type == FT_LINK &&
@@ -337,7 +337,7 @@ run_win_executable_as_evaluated(const char full_path[])
 /* Returns non-zero if selection doesn't mix files and directories, otherwise
  * zero is returned. */
 static int
-selection_is_consistent(FileView *view)
+selection_is_consistent(view_t *view)
 {
 	int files = 0, dirs = 0;
 	dir_entry_t *entry;
@@ -386,7 +386,7 @@ execute_file(const char full_path[], int elevate)
 /* Tries to run selection displaying error message on file type
  * inconsistency. */
 static void
-run_selection(FileView *view, int dont_execute)
+run_selection(view_t *view, int dont_execute)
 {
 	/* TODO: refactor this function run_selection() */
 
@@ -482,7 +482,7 @@ run_selection(FileView *view, int dont_execute)
 /* Runs current file entry of the view in a generic way (entering directories
  * and opening files in editors). */
 static void
-run_with_defaults(FileView *view)
+run_with_defaults(view_t *view)
 {
 	if(get_current_entry(view)->type == FT_DIR)
 	{
@@ -500,7 +500,7 @@ run_with_defaults(FileView *view)
 
 /* Runs each of selected file entries of the view individually. */
 static void
-run_selection_separately(FileView *view, int dont_execute)
+run_selection_separately(view_t *view, int dont_execute)
 {
 	dir_entry_t *entry;
 
@@ -527,7 +527,7 @@ run_selection_separately(FileView *view, int dont_execute)
  * set of selected files.  Returns non-zero if so, otherwise zero is
  * returned. */
 static int
-is_multi_run_compat(FileView *view, const char prog_cmd[])
+is_multi_run_compat(view_t *view, const char prog_cmd[])
 {
 	size_t len;
 	if(prog_cmd == NULL)
@@ -546,7 +546,7 @@ is_multi_run_compat(FileView *view, const char prog_cmd[])
 }
 
 void
-run_using_prog(FileView *view, const char prog_spec[], int dont_execute,
+run_using_prog(view_t *view, const char prog_spec[], int dont_execute,
 		int force_bg)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
@@ -621,8 +621,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 /* Executes current file of the view by program specification that does not
  * include any macros (hence file name is appended implicitly. */
 static void
-run_implicit_prog(FileView *view, const char prog_spec[], int pause,
-		int force_bg)
+run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 {
 	int bg;
 	char cmd[NAME_MAX + 1 + NAME_MAX + 1];
@@ -658,7 +657,7 @@ run_implicit_prog(FileView *view, const char prog_spec[], int pause,
 
 /* Opens file under the cursor in the viewer. */
 static void
-view_current_file(const FileView *view)
+view_current_file(const view_t *view)
 {
 	char full_path[PATH_MAX];
 	get_current_full_path(view, sizeof(full_path), full_path);
@@ -669,7 +668,7 @@ view_current_file(const FileView *view)
  * navigate to directory where target is located pointing cursor on
  * it (the follow_dirs flag controls behaviour). */
 static void
-follow_link(FileView *view, int follow_dirs)
+follow_link(view_t *view, int follow_dirs)
 {
 	char *dir, *file;
 	char full_path[PATH_MAX];
@@ -724,7 +723,7 @@ follow_link(FileView *view, int follow_dirs)
 }
 
 void
-open_dir(FileView *view)
+open_dir(view_t *view)
 {
 	char full_path[PATH_MAX];
 	const char *filename;
@@ -746,7 +745,7 @@ open_dir(FileView *view)
 }
 
 void
-cd_updir(FileView *view, int levels)
+cd_updir(view_t *view, int levels)
 {
 	/* Do not save intermediate directories in directory history. */
 	curr_stats.drop_new_dir_hist = 1;
@@ -766,7 +765,7 @@ cd_updir(FileView *view, int levels)
 /* Goes one directory up from current location.  Returns zero unless it won't
  * make sense to continue going up (like on error or reaching root). */
 static int
-cd_to_parent_dir(FileView *view)
+cd_to_parent_dir(view_t *view)
 {
 	char dir_name[strlen(view->curr_dir) + 1];
 	int ret;
@@ -1120,7 +1119,7 @@ set_pwd_in_screen(const char path[])
 }
 
 int
-run_with_filetype(FileView *view, const char beginning[], int background)
+run_with_filetype(view_t *view, const char beginning[], int background)
 {
 	dir_entry_t *const curr = get_current_entry(view);
 	assoc_records_t ft, magic;
@@ -1149,7 +1148,7 @@ run_with_filetype(FileView *view, const char beginning[], int background)
 
 /* Returns non-zero on successful running. */
 static int
-try_run_with_filetype(FileView *view, const assoc_records_t assocs,
+try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 		const char start[], int background)
 {
 	const size_t len = strlen(start);
@@ -1317,7 +1316,7 @@ output_to_nowhere(const char cmd[])
 /* Runs the cmd in a split window of terminal multiplexer.  Runs shell, if cmd
  * is NULL. */
 static void
-run_in_split(const FileView *view, const char cmd[])
+run_in_split(const view_t *view, const char cmd[])
 {
 	char *const escaped_cmd = (cmd == NULL)
 	                        ? strdup(cfg.shell)
@@ -1358,7 +1357,7 @@ run_in_split(const FileView *view, const char cmd[])
 }
 
 int
-output_to_custom_flist(FileView *view, const char cmd[], int very,
+output_to_custom_flist(view_t *view, const char cmd[], int very,
 		int interactive)
 {
 	char *title;
@@ -1393,7 +1392,7 @@ output_to_custom_flist(FileView *view, const char cmd[], int very,
 static void
 path_handler(const char line[], void *arg)
 {
-	FileView *view = arg;
+	view_t *view = arg;
 	flist_custom_add_spec(view, line);
 }
 

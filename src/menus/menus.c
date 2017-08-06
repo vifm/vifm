@@ -66,7 +66,7 @@
 static void reset_menu_state(menu_state_t *ms);
 static void show_position_in_menu(const menu_data_t *m);
 static void open_selected_file(const char path[], int line_num);
-static void navigate_to_selected_file(FileView *view, const char path[]);
+static void navigate_to_selected_file(view_t *view, const char path[]);
 static void draw_menu_item(menu_state_t *ms, int pos, int line, int clear);
 static void draw_search_match(char str[], int start, int end, int line,
 		int width, int attrs);
@@ -75,11 +75,10 @@ static void draw_menu_frame(const menu_state_t *m);
 static void output_handler(const char line[], void *arg);
 static void append_to_string(char **str, const char suffix[]);
 static char * expand_tabulation_a(const char line[], size_t tab_stops);
-static void init_menu_state(menu_state_t *ms, FileView *view);
+static void init_menu_state(menu_state_t *ms, view_t *view);
 static const char * get_relative_path_base(const menu_data_t *m,
-		const FileView *view);
-static int menu_and_view_are_in_sync(const menu_data_t *m,
-		const FileView *view);
+		const view_t *view);
+static int menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view);
 static int search_menu(menu_state_t *ms, int start_pos, int print_errors);
 static int search_menu_forwards(menu_state_t *m, int start_pos);
 static int search_menu_backwards(menu_state_t *m, int start_pos);
@@ -103,7 +102,7 @@ struct menu_state_t
 	/* Number of times to repeat search. */
 	int search_repeat;
 	/* View associated with the menu (e.g. to navigate to a file in it). */
-	FileView *view;
+	view_t *view;
 }
 menu_state;
 
@@ -152,7 +151,7 @@ menus_erase_current(menu_state_t *m)
 }
 
 void
-menus_init_data(menu_data_t *m, FileView *view, char title[], char empty_msg[])
+menus_init_data(menu_data_t *m, view_t *view, char title[], char empty_msg[])
 {
 	if(m->initialized)
 	{
@@ -330,7 +329,7 @@ menus_full_redraw(menu_state_t *m)
 }
 
 int
-menus_goto_file(menu_data_t *m, FileView *view, const char spec[], int try_open)
+menus_goto_file(menu_data_t *m, view_t *view, const char spec[], int try_open)
 {
 	char *path_buf;
 	int line_num;
@@ -378,7 +377,7 @@ open_selected_file(const char path[], int line_num)
 
 /* Navigates the view to a given dir/file combination specified by the path. */
 static void
-navigate_to_selected_file(FileView *view, const char path[])
+navigate_to_selected_file(view_t *view, const char path[])
 {
 	char name[NAME_MAX + 1];
 	char *dir = strdup(path);
@@ -411,7 +410,7 @@ navigate_to_selected_file(FileView *view, const char path[])
 }
 
 void
-menus_goto_dir(FileView *view, const char path[])
+menus_goto_dir(view_t *view, const char path[])
 {
 	if(!cfg.auto_ch_pos)
 	{
@@ -658,7 +657,7 @@ expand_tabulation_a(const char line[], size_t tab_stops)
 }
 
 int
-menus_enter(menu_state_t *m, FileView *view)
+menus_enter(menu_state_t *m, view_t *view)
 {
 	if(m->d->len < 1)
 	{
@@ -678,7 +677,7 @@ menus_enter(menu_state_t *m, FileView *view)
 
 /* Initializes menu state structure with default/initial value. */
 static void
-init_menu_state(menu_state_t *ms, FileView *view)
+init_menu_state(menu_state_t *ms, view_t *view)
 {
 	ms->current = 1;
 	ms->win_rows = getmaxy(menu_win);
@@ -692,7 +691,7 @@ init_menu_state(menu_state_t *ms, FileView *view)
 }
 
 char *
-menus_get_targets(FileView *view)
+menus_get_targets(view_t *view)
 {
 	if(view->selected_files > 0)
 	{
@@ -708,7 +707,7 @@ menus_get_targets(FileView *view)
 }
 
 int
-menus_unstash(FileView *view)
+menus_unstash(view_t *view)
 {
 	static menu_data_t menu_data_storage;
 
@@ -727,7 +726,7 @@ menus_unstash(FileView *view)
 }
 
 KHandlerResponse
-menus_def_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+menus_def_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"gf") == 0)
 	{
@@ -759,7 +758,7 @@ menus_def_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
 }
 
 int
-menus_to_custom_view(menu_state_t *m, FileView *view, int very)
+menus_to_custom_view(menu_state_t *m, view_t *view, int very)
 {
 	int i;
 	char *current = NULL;
@@ -826,7 +825,7 @@ menus_to_custom_view(menu_state_t *m, FileView *view, int very)
  * path.  The purpose is to omit "././" or "..././..." in paths shown to a
  * user. */
 static const char *
-get_relative_path_base(const menu_data_t *m, const FileView *view)
+get_relative_path_base(const menu_data_t *m, const view_t *view)
 {
 	if(menu_and_view_are_in_sync(m, view))
 	{
@@ -838,14 +837,14 @@ get_relative_path_base(const menu_data_t *m, const FileView *view)
 /* Checks whether menu working directory and current directory of the view are
  * in sync.  Returns non-zero if so, otherwise zero is returned. */
 static int
-menu_and_view_are_in_sync(const menu_data_t *m, const FileView *view)
+menu_and_view_are_in_sync(const menu_data_t *m, const view_t *view)
 {
 	/* NULL check is for tests. */
 	return (view == NULL || paths_are_same(m->cwd, flist_get_dir(view)));
 }
 
 int
-menus_capture(FileView *view, const char cmd[], int user_sh, menu_data_t *m,
+menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 		int custom_view, int very_custom_view)
 {
 	if(custom_view || very_custom_view)

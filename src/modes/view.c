@@ -98,7 +98,7 @@ typedef struct
 	int search_repeat;        /* Saved count prefix of search commands. */
 
 	/* The rest of the state. */
-	FileView *view; /* File view association with the view. */
+	view_t *view;   /* File view association with the view. */
 	char *filename; /* Full path to the file being viewed. */
 	char *viewer;   /* When non-NULL, specifies custom preview command (no
 	                   implicit %c). */
@@ -118,7 +118,7 @@ enum
 };
 
 static int try_resurrect_detached(const char full_path[], int explore);
-static void try_redraw_explore_view(const FileView *const view, int vi_index);
+static void try_redraw_explore_view(const view_t *const view, int vi_index);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
 static void free_view_info(view_info_t *vi);
@@ -134,7 +134,7 @@ static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
-static FileView * get_active_view(void);
+static view_t * get_active_view(void);
 static void cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
@@ -184,8 +184,7 @@ static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z(key_info_t key_info, keys_info_t *keys_info);
 static void update_with_win(key_info_t *const key_info);
 static int is_trying_the_same_file(void);
-static int get_file_to_explore(const FileView *view, char buf[],
-		size_t buf_len);
+static int get_file_to_explore(const view_t *view, char buf[], size_t buf_len);
 static int forward_if_changed(view_info_t *vi);
 static int scroll_to_bottom(view_info_t *vi);
 static void reload_view(view_info_t *vi, int silent);
@@ -311,7 +310,7 @@ view_init_mode(void)
 }
 
 void
-view_enter_mode(FileView *view, int explore)
+view_enter_mode(view_t *view, int explore)
 {
 	char full_path[PATH_MAX];
 
@@ -356,7 +355,7 @@ view_enter_mode(FileView *view, int explore)
 }
 
 void
-view_detached_make(FileView *view, const char cmd[])
+view_detached_make(view_t *view, const char cmd[])
 {
 	char full_path[PATH_MAX];
 
@@ -467,7 +466,7 @@ view_redraw(void)
 /* Redraws view in explore mode if view is really in explore mode and is visible
  * on the screen. */
 static void
-try_redraw_explore_view(const FileView *const view, int vi_index)
+try_redraw_explore_view(const view_t *const view, int vi_index)
 {
 	if(view->explore_mode && ui_view_is_visible(view))
 	{
@@ -502,7 +501,7 @@ view_leave_mode(void)
 }
 
 void
-view_quit_explore_mode(FileView *view)
+view_quit_explore_mode(view_t *view)
 {
 	assert(!vle_mode_is(VIEW_MODE) && "Unexpected mode.");
 	if(!view->explore_mode)
@@ -744,7 +743,7 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 
 /* Gets pointer to the currently active view from the view point of the
  * view-mode.  Returns that pointer. */
-static FileView *
+static view_t *
 get_active_view(void)
 {
 	return curr_stats.view ? other_view : curr_view;
@@ -863,7 +862,7 @@ is_right_or_bottom(void)
 static int
 is_top_or_left(void)
 {
-	const FileView *const top_or_left = curr_view->explore_mode ? &lwin : &rwin;
+	const view_t *const top_or_left = curr_view->explore_mode ? &lwin : &rwin;
 	return curr_view == top_or_left;
 }
 
@@ -1101,7 +1100,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	{
 		const char *const v = (vi->viewer != NULL) ? vi->viewer : viewer;
 		const int graphics = is_graphics_viewer(v);
-		FileView *const curr = curr_view;
+		view_t *const curr = curr_view;
 		curr_view = curr_stats.view ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
 		curr_stats.preview_hint = vi->view;
@@ -1560,7 +1559,7 @@ is_trying_the_same_file(void)
 /* Gets full path to the file that will be explored (the current file of the
  * view).  Returns non-zero if file cannot be explored. */
 static int
-get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
+get_file_to_explore(const view_t *view, char buf[], size_t buf_len)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
 	if(fentry_is_fake(curr))

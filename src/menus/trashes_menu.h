@@ -19,12 +19,12 @@
 #ifndef VIFM__MENUS__TRASHES_MENU_H__
 #define VIFM__MENUS__TRASHES_MENU_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Displays menu containing list of non-empty trash directories known to vifm,
  * optionally calculating size of each beforehand.  Returns non-zero if status
  * bar message should be saved. */
-int show_trashes_menu(FileView *view, int calc_size);
+int show_trashes_menu(struct view_t *view, int calc_size);
 
 #endif /* VIFM__MENUS__TRASHES_MENU_H__ */
 

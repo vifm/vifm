@@ -25,11 +25,11 @@
 
 /* Changes current directory of the view to next location backward in
  * history, if available. */
-void flist_hist_go_back(FileView *view);
+void flist_hist_go_back(view_t *view);
 
 /* Changes current directory of the view to next location forward in history, if
  * available. */
-void flist_hist_go_forward(FileView *view);
+void flist_hist_go_forward(view_t *view);
 
 /* Adds new entry to directory history of the view or updates an existing entry.
  * If path is NULL, current path is used.  If file is NULL current file is used.
@@ -37,23 +37,23 @@ void flist_hist_go_forward(FileView *view);
  * is negative, it's computed for current file.  Empty file name signifies
  * visiting directory, which shouldn't reset name of previously active file in
  * it. */
-void flist_hist_save(FileView *view, const char path[], const char file[],
+void flist_hist_save(view_t *view, const char path[], const char file[],
 		int rel_pos);
 
 /* Checks whether given path to directory is in view history.  Returns non-zero
  * if so, otherwise zero is returned. */
-int flist_hist_contains(FileView *view, const char path[]);
+int flist_hist_contains(view_t *view, const char path[]);
 
 /* Empties history of the view. */
-void flist_hist_clear(FileView *view);
+void flist_hist_clear(view_t *view);
 
 /* Looks up history in the source to update cursor position in the view. */
-void flist_hist_lookup(FileView *view, const FileView *source);
+void flist_hist_lookup(view_t *view, const view_t *source);
 
 /* Finds top and item positions for specified directory path.  Uses history from
  * view and elements of entries.  Sets *top and returns position.  Both values
  * are defaulted to zero for the case when search fails. */
-int flist_hist_find(const FileView *view, entries_t entries, const char dir[],
+int flist_hist_find(const view_t *view, entries_t entries, const char dir[],
 		int *top);
 
 #endif /* VIFM__FLIST_HIST_H__ */

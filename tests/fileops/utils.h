@@ -3,13 +3,13 @@
 
 #include <stddef.h> /* size_t */
 
-#include "../../src/ui/ui.h"
+struct view_t;
 
 /* Initializes view with safe defaults. */
-void view_setup(FileView *view);
+void view_setup(struct view_t *view);
 
 /* Frees resources of the view. */
-void view_teardown(FileView *view);
+void view_teardown(struct view_t *view);
 
 /* Creates empty file at specified path. */
 void create_empty_file(const char path[]);

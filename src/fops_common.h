@@ -22,9 +22,12 @@
 
 #include <stdint.h> /* uint64_t */
 
-#include "ui/ui.h"
+#include "compat/fs_limits.h"
 #include "background.h"
 #include "ops.h"
+
+struct dir_entry_t;
+struct view_t;
 
 /* Path roles for fops_is_dir_writable() function. */
 typedef enum
@@ -91,7 +94,7 @@ void fops_init(line_prompt_func line_func, options_prompt_func options_func);
 
 /* Whether set of view files can be altered (renamed, deleted, but not added).
  * Returns non-zero if so, otherwise zero is returned. */
-int fops_view_can_be_changed(const FileView *view);
+int fops_view_can_be_changed(const struct view_t *view);
 
 /* Checks if name list is consistent.  Returns non-zero is so, otherwise zero is
  * returned. */
@@ -109,7 +112,7 @@ int fops_check_file_rename(const char dir[], const char old[], const char new[],
 
 /* Makes list of marked filenames.  *nmarked is always set (0 for empty list).
  * Returns pointer to the list, NULL for empty list. */
-char ** fops_grab_marked_files(FileView *view, size_t *nmarked);
+char ** fops_grab_marked_files(struct view_t *view, size_t *nmarked);
 
 /* Uses dentry to check file type and falls back to lstat() if dentry contains
  * unknown type. */
@@ -117,13 +120,13 @@ int fops_is_dir_entry(const char full_path[], const struct dirent* dentry);
 
 /* Updates renamed entry name when it makes sense.  This is basically to allow
  * correct cursor positioning on view reload or correct custom view update. */
-void fops_fixup_entry_after_rename(FileView *view, dir_entry_t *entry,
-		const char new_fname[]);
+void fops_fixup_entry_after_rename(struct view_t *view,
+		struct dir_entry_t *entry, const char new_fname[]);
 
 /* Adds marked files to the ops.  Considers UI cancellation.  dst_hint can be
  * NULL.  Returns number of files enqueued. */
-int fops_enqueue_marked_files(ops_t *ops, FileView *view, const char dst_hint[],
-		int to_trash);
+int fops_enqueue_marked_files(ops_t *ops, struct view_t *view,
+		const char dst_hint[], int to_trash);
 
 /* Allocates opt_t structure and configures it as needed.  Returns pointer to
  * newly allocated structure, which should be freed by free_ops(). */
@@ -139,13 +142,13 @@ const char * fops_get_dst_name(const char src_path[], int from_trash);
 
 /* Checks that all selected files can be read.  Returns non-zero if so,
  * otherwise zero is returned. */
-int fops_can_read_selected_files(FileView *view);
+int fops_can_read_selected_files(struct view_t *view);
 
 /* Checks path argument and resolves target directory either to the argument or
  * current directory of the view.  Returns non-zero if value of the path was
  * used, otherwise zero is returned. */
-int fops_check_dir_path(const FileView *view, const char path[], char buf[],
-		size_t buf_len);
+int fops_check_dir_path(const struct view_t *view, const char path[],
+		char buf[], size_t buf_len);
 
 /* Prompts user with a file containing lines from orig array of length count and
  * returns modified list of strings of length *nlines or NULL on error or
@@ -178,11 +181,11 @@ int fops_mv_file_f(const char src[], const char dst[], OPS op, int bg,
 void fops_free_bg_args(bg_args_t *args);
 
 /* Fills basic fields of the args structure. */
-void fops_prepare_for_bg_task(FileView *view, bg_args_t *args);
+void fops_prepare_for_bg_task(struct view_t *view, bg_args_t *args);
 
 /* Fills undo message buffer with names of marked files.  buf should be at least
  * COMMAND_GROUP_INFO_LEN characters length.  fnames can be NULL. */
-void fops_append_marked_files(FileView *view, char buf[], char **fnames);
+void fops_append_marked_files(struct view_t *view, char buf[], char **fnames);
 
 /* Appends file name to undo message buffer.  buf should be at least
  * COMMAND_GROUP_INFO_LEN characters length. */
@@ -195,12 +198,12 @@ const char * fops_get_cancellation_suffix(void);
 /* Whether set of view files can be extended via addition of new elements.  at
  * parameter is the same as for fops_get_dst_dir().  Returns non-zero if so,
  * otherwise zero is returned. */
-int fops_view_can_be_extended(const FileView *view, int at);
+int fops_view_can_be_extended(const struct view_t *view, int at);
 
 /* Retrieves current target directory of file system sub-tree.  Root for regular
  * and regular custom views and origin of either active (when at < 0) or
  * specified by its index entry for tree views.  Returns the path. */
-const char * fops_get_dst_dir(const FileView *view, int at);
+const char * fops_get_dst_dir(const struct view_t *view, int at);
 
 /* This is a wrapper for is_dir_writable() function, which adds message
  * dialogs.  Returns non-zero if directory can be changed, otherwise zero is

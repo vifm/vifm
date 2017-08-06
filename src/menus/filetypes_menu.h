@@ -20,19 +20,19 @@
 #ifndef VIFM__MENUS__FILETYPES_MENU_H__
 #define VIFM__MENUS__FILETYPES_MENU_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Displays file handler picking menu.  Returns non-zero if status bar message
  * should be saved. */
-int show_file_menu(FileView *view, int background);
+int show_file_menu(struct view_t *view, int background);
 
 /* Displays menu with list of programs registered for specified file name.
  * Returns non-zero if status bar message should be saved. */
-int show_fileprograms_menu(FileView *view, const char fname[]);
+int show_fileprograms_menu(struct view_t *view, const char fname[]);
 
 /* Displays menu with list of viewers registered for specified file name.
  * Returns non-zero if status bar message should be saved. */
-int show_fileviewers_menu(FileView *view, const char fname[]);
+int show_fileviewers_menu(struct view_t *view, const char fname[]);
 
 #endif /* VIFM__MENUS__FILETYPES_MENU_H__ */
 

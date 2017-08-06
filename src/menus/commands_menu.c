@@ -39,12 +39,12 @@
 /* Minimal length of command name column. */
 #define CMDNAME_COLUMN_MIN_WIDTH 10
 
-static int execute_commands_cb(FileView *view, menu_data_t *m);
-static KHandlerResponse commands_khandler(FileView *view, menu_data_t *m,
+static int execute_commands_cb(view_t *view, menu_data_t *m);
+static KHandlerResponse commands_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 
 int
-show_commands_menu(FileView *view)
+show_commands_menu(view_t *view)
 {
 	char **list;
 	int i;
@@ -87,7 +87,7 @@ show_commands_menu(FileView *view)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_commands_cb(FileView *view, menu_data_t *m)
+execute_commands_cb(view_t *view, menu_data_t *m)
 {
 	break_at(m->items[m->pos], ' ');
 	exec_command(m->items[m->pos], view, CIT_COMMAND);
@@ -97,7 +97,7 @@ execute_commands_cb(FileView *view, menu_data_t *m)
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
  * actions and what should be done next. */
 static KHandlerResponse
-commands_khandler(FileView *view, menu_data_t *m, const wchar_t keys[])
+commands_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{

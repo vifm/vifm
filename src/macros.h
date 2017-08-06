@@ -22,7 +22,6 @@
 
 #include <stddef.h> /* size_t */
 
-#include "ui/ui.h"
 #include "utils/test_helpers.h"
 
 /* Macros that affect running of commands and processing their output. */
@@ -88,7 +87,8 @@ const char * macros_to_str(MacroFlags flags);
 #endif
 
 TSTATIC_DEFS(
-	char * append_selected_files(FileView *view, char expanded[],
+	struct view_t;
+	char * append_selected_files(struct view_t *view, char expanded[],
 		int under_cursor, int quotes, const char mod[], int for_shell);
 )
 

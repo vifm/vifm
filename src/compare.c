@@ -66,14 +66,13 @@ compare_record_t;
 
 static void make_unique_lists(entries_t curr, entries_t other);
 static void leave_only_dups(entries_t *curr, entries_t *other);
-static int is_not_duplicate(FileView *view, const dir_entry_t *entry,
-		void *arg);
+static int is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg);
 static void fill_side_by_side(entries_t curr, entries_t other, int group_paths);
 static int id_sorter(const void *first, const void *second);
-static void put_or_free(FileView *view, dir_entry_t *entry, int id, int take);
-static entries_t make_diff_list(trie_t *trie, FileView *view, int *next_id,
+static void put_or_free(view_t *view, dir_entry_t *entry, int id, int take);
+static entries_t make_diff_list(trie_t *trie, view_t *view, int *next_id,
 		CompareType ct, int skip_empty, int dups_only);
-static void list_view_entries(const FileView *view, strlist_t *list);
+static void list_view_entries(const view_t *view, strlist_t *list);
 static void append_valid_nodes(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 static void list_files_recursively(const char path[], int skip_dot_files,
@@ -279,7 +278,7 @@ leave_only_dups(entries_t *curr, entries_t *other)
 /* zap_entries() filter to filter-out files marked for removal.  Returns
  * non-zero if entry is to be kept and zero otherwise. */
 static int
-is_not_duplicate(FileView *view, const dir_entry_t *entry, void *arg)
+is_not_duplicate(view_t *view, const dir_entry_t *entry, void *arg)
 {
 	return entry->id != -1;
 }
@@ -366,10 +365,10 @@ fill_side_by_side(entries_t curr, entries_t other, int group_paths)
 }
 
 int
-compare_one_pane(FileView *view, CompareType ct, ListType lt, int skip_empty)
+compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 {
 	int i, dup_id;
-	FileView *other = (view == curr_view) ? other_view : curr_view;
+	view_t *other = (view == curr_view) ? other_view : curr_view;
 	const char *const title = (lt == LT_ALL)  ? "compare"
 	                        : (lt == LT_DUPS) ? "dups" : "nondups";
 
@@ -469,7 +468,7 @@ id_sorter(const void *first, const void *second)
 /* Either puts the entry into the view or frees it (depends on the take
  * argument). */
 static void
-put_or_free(FileView *view, dir_entry_t *entry, int id, int take)
+put_or_free(view_t *view, dir_entry_t *entry, int id, int take)
 {
 	if(take)
 	{
@@ -486,7 +485,7 @@ put_or_free(FileView *view, dir_entry_t *entry, int id, int take)
  * identical files.  With non-zero dups_only, new files aren't added to the
  * trie. */
 static entries_t
-make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
+make_diff_list(trie_t *trie, view_t *view, int *next_id, CompareType ct,
 		int skip_empty, int dups_only)
 {
 	int i;
@@ -570,7 +569,7 @@ make_diff_list(trie_t *trie, FileView *view, int *next_id, CompareType ct,
 /* Fills the list with entries of the view in hierarchical order (pre-order tree
  * traversal). */
 static void
-list_view_entries(const FileView *view, strlist_t *list)
+list_view_entries(const view_t *view, strlist_t *list)
 {
 	int i;
 
@@ -862,7 +861,7 @@ free_compare_records(void *ptr)
 }
 
 int
-compare_move(FileView *from, FileView *to)
+compare_move(view_t *from, view_t *to)
 {
 	char from_path[PATH_MAX], to_path[PATH_MAX];
 	char *from_fingerprint, *to_fingerprint;

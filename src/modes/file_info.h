@@ -20,12 +20,12 @@
 #ifndef VIFM__MODES__FILE_INFO_H__
 #define VIFM__MODES__FILE_INFO_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Initializes file information dialog mode. */
 void init_file_info_mode(void);
 
-void enter_file_info_mode(FileView *view);
+void enter_file_info_mode(struct view_t *view);
 
 void redraw_file_info_dialog(void);
 

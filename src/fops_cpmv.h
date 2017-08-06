@@ -20,7 +20,7 @@
 #ifndef VIFM__FOPS_CPMV_H__
 #define VIFM__FOPS_CPMV_H__
 
-#include "ui/ui.h"
+struct view_t;
 
 /* Type of copy/move-like operation. */
 typedef enum
@@ -34,16 +34,17 @@ CopyMoveLikeOp;
 
 /* Performs copy/moves-like operation on marked files.  Returns new value for
  * save_msg flag. */
-int fops_cpmv(FileView *view, char *list[], int nlines, CopyMoveLikeOp op,
+int fops_cpmv(struct view_t *view, char *list[], int nlines, CopyMoveLikeOp op,
 		int force);
 
 /* Replaces file specified by dst with a copy of the current file of the
  * view. */
-void fops_replace(FileView *view, const char dst[], int force);
+void fops_replace(struct view_t *view, const char dst[], int force);
 
 /* Copies or moves marked files to the other view in background.  Returns new
  * value for save_msg flag. */
-int fops_cpmv_bg(FileView *view, char *list[], int nlines, int move, int force);
+int fops_cpmv_bg(struct view_t *view, char *list[], int nlines, int move,
+		int force);
 
 #endif /* VIFM__FOPS_CPMV_H__ */
 

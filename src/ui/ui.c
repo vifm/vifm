@@ -82,13 +82,13 @@ static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
-/* Mutexes for views, located out of FileView so that they are never moved nor
+/* Mutexes for views, located out of view_t so that they are never moved nor
  * copied, which would yield undefined behaviour. */
 static pthread_mutex_t lwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t rwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-FileView lwin = { .timestamps_mutex = &lwin_timestamps_mutex };
-FileView rwin = { .timestamps_mutex = &rwin_timestamps_mutex };
+view_t lwin = { .timestamps_mutex = &lwin_timestamps_mutex };
+view_t rwin = { .timestamps_mutex = &rwin_timestamps_mutex };
 
 static void create_windows(void);
 static void update_geometry(void);
@@ -97,28 +97,27 @@ static void clear_border(WINDOW *border);
 static int middle_border_is_visible(void);
 static void update_views(int reload);
 static void reload_lists(void);
-static void reload_list(FileView *view);
-static void update_view(FileView *view);
+static void reload_list(view_t *view);
+static void update_view(view_t *view);
 static void update_window_lazy(WINDOW *win);
 static void update_term_size(void);
 static void update_statusbar_layout(void);
 static int are_statusbar_widgets_visible(void);
-static int get_ruler_width(FileView *view);
-static char * expand_ruler_macros(FileView *view, const char format[]);
+static int get_ruler_width(view_t *view);
+static char * expand_ruler_macros(view_t *view, const char format[]);
 static void switch_panes_content(void);
-static void update_origins(FileView *view, const char *old_main_origin);
+static void update_origins(view_t *view, const char *old_main_origin);
 static void set_splitter(int pos);
 static char * path_identity(const char path[]);
-static char * format_view_title(const FileView *view, path_func pf);
-static void print_view_title(const FileView *view, int active_view,
-		char title[]);
-static void fixup_titles_attributes(const FileView *view, int active_view);
-static int is_in_miller_view(const FileView *view);
-static int is_forced_list_mode(const FileView *view);
+static char * format_view_title(const view_t *view, path_func pf);
+static void print_view_title(const view_t *view, int active_view, char title[]);
+static void fixup_titles_attributes(const view_t *view, int active_view);
+static int is_in_miller_view(const view_t *view);
+static int is_forced_list_mode(const view_t *view);
 static uint64_t get_updated_time(uint64_t prev);
 
 void
-ui_ruler_update(FileView *view, int lazy_redraw)
+ui_ruler_update(view_t *view, int lazy_redraw)
 {
 	char *expanded;
 
@@ -300,7 +299,7 @@ ui_char_pressed(wint_t c)
 }
 
 static void
-correct_size(FileView *view)
+correct_size(view_t *view)
 {
 	getmaxyx(view->win, view->window_rows, view->window_cols);
 	view->column_count = calculate_columns_count(view);
@@ -310,7 +309,7 @@ correct_size(FileView *view)
 /* Updates TUI elements sizes and coordinates for single window
  * configuration. */
 static void
-only_layout(FileView *view, int screen_x)
+only_layout(view_t *view, int screen_x)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
@@ -726,7 +725,7 @@ reload_lists(void)
 
 /* reloads view on window_reload() call */
 static void
-reload_list(FileView *view)
+reload_list(view_t *view)
 {
 	if(curr_stats.load_stage >= 3)
 		load_saving_pos(view, 1);
@@ -773,7 +772,7 @@ change_window(void)
 void
 swap_view_roles(void)
 {
-	FileView *const tmp = curr_view;
+	view_t *const tmp = curr_view;
 	curr_view = other_view;
 	other_view = tmp;
 }
@@ -856,7 +855,7 @@ touch_all_windows(void)
 
 /* Updates all parts of file view. */
 static void
-update_view(FileView *view)
+update_view(view_t *view)
 {
 	update_window_lazy(view->title);
 
@@ -1181,7 +1180,7 @@ are_statusbar_widgets_visible(void)
 
 /* Gets "recommended" width for the ruler.  Returns the width. */
 static int
-get_ruler_width(FileView *view)
+get_ruler_width(view_t *view)
 {
 	char *expanded;
 	int len;
@@ -1204,13 +1203,13 @@ get_ruler_width(FileView *view)
  * string.  Returns newly allocated string, which should be freed by the caller,
  * or NULL if there is not enough memory. */
 static char *
-expand_ruler_macros(FileView *view, const char format[])
+expand_ruler_macros(view_t *view, const char format[])
 {
 	return expand_view_macros(view, format, "-lLS%[]");
 }
 
 void
-refresh_view_win(FileView *view)
+refresh_view_win(view_t *view)
 {
 	if(curr_stats.restart_in_progress)
 	{
@@ -1228,10 +1227,10 @@ refresh_view_win(FileView *view)
 }
 
 void
-move_window(FileView *view, int horizontally, int first)
+move_window(view_t *view, int horizontally, int first)
 {
 	const SPLIT split_type = horizontally ? HSPLIT : VSPLIT;
-	const FileView *const desired_view = first ? &lwin : &rwin;
+	const view_t *const desired_view = first ? &lwin : &rwin;
 	split_view(split_type);
 	if(view != desired_view)
 	{
@@ -1250,7 +1249,7 @@ switch_panes(void)
 }
 
 void
-ui_view_pick(FileView *view, FileView **old_curr, FileView **old_other)
+ui_view_pick(view_t *view, view_t **old_curr, view_t **old_other)
 {
 	*old_curr = curr_view;
 	*old_other = other_view;
@@ -1264,7 +1263,7 @@ ui_view_pick(FileView *view, FileView **old_curr, FileView **old_other)
 }
 
 void
-ui_view_unpick(FileView *view, FileView *old_curr, FileView *old_other)
+ui_view_unpick(view_t *view, view_t *old_curr, view_t *old_other)
 {
 	if(curr_view != view)
 	{
@@ -1284,7 +1283,7 @@ ui_view_unpick(FileView *view, FileView *old_curr, FileView *old_other)
 static void
 switch_panes_content(void)
 {
-	FileView tmp_view;
+	view_t tmp_view;
 	WINDOW* tmp;
 	int t;
 
@@ -1325,7 +1324,7 @@ switch_panes_content(void)
 
 /* Updates pointers to main (default) origins in file list entries. */
 static void
-update_origins(FileView *view, const char *old_main_origin)
+update_origins(view_t *view, const char *old_main_origin)
 {
 	char *const new_origin = &view->curr_dir[0];
 	int i;
@@ -1395,7 +1394,7 @@ move_splitter(int by, int fact)
 }
 
 void
-ui_view_resize(FileView *view, int to)
+ui_view_resize(view_t *view, int to)
 {
 	int pos;
 
@@ -1507,20 +1506,20 @@ ui_display_too_small_term_msg(void)
 }
 
 void
-ui_view_win_changed(FileView *view)
+ui_view_win_changed(view_t *view)
 {
 	wnoutrefresh(view->win);
 }
 
 void
-ui_view_reset_selection_and_reload(FileView *view)
+ui_view_reset_selection_and_reload(view_t *view)
 {
 	flist_sel_stash(view);
 	load_saving_pos(view, 1);
 }
 
 void
-ui_view_reset_search_highlight(FileView *view)
+ui_view_reset_search_highlight(view_t *view)
 {
 	if(view->matches != 0)
 	{
@@ -1557,11 +1556,11 @@ ui_views_update_titles(void)
 }
 
 void
-ui_view_title_update(FileView *view)
+ui_view_title_update(view_t *view)
 {
 	char *title;
 	const int gen_view = vle_mode_is(VIEW_MODE) && !curr_view->explore_mode;
-	FileView *selected = gen_view ? other_view : curr_view;
+	view_t *selected = gen_view ? other_view : curr_view;
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -1594,7 +1593,7 @@ path_identity(const char path[])
  * Returns newly allocated string, which should be freed by the caller, or NULL
  * if there is not enough memory. */
 static char *
-format_view_title(const FileView *view, path_func pf)
+format_view_title(const view_t *view, path_func pf)
 {
 	if(view->explore_mode)
 	{
@@ -1625,7 +1624,7 @@ format_view_title(const FileView *view, path_func pf)
 /* Prints view title (which can be changed for printing).  Takes care of setting
  * correct attributes. */
 static void
-print_view_title(const FileView *view, int active_view, char title[])
+print_view_title(const view_t *view, int active_view, char title[])
 {
 	const size_t title_width = getmaxx(view->title);
 	if(title_width == (size_t)-1)
@@ -1648,7 +1647,7 @@ print_view_title(const FileView *view, int active_view, char title[])
 
 /* Updates attributes for view titles and top line. */
 static void
-fixup_titles_attributes(const FileView *view, int active_view)
+fixup_titles_attributes(const view_t *view, int active_view)
 {
 	if(active_view)
 	{
@@ -1693,7 +1692,7 @@ ui_view_sort_list_contains(const char sort[SK_COUNT], char key)
 }
 
 void
-ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
+ui_view_sort_list_ensure_well_formed(view_t *view, char sort_keys[])
 {
 	int found_name_key = 0;
 	int i = -1;
@@ -1725,7 +1724,7 @@ ui_view_sort_list_ensure_well_formed(FileView *view, char sort_keys[])
 }
 
 char *
-ui_view_sort_list_get(const FileView *view, const char sort[])
+ui_view_sort_list_get(const view_t *view, const char sort[])
 {
 	return (flist_custom_active(view) && ui_view_unsorted(view))
 	     ? (char *)view->custom.sort
@@ -1733,19 +1732,19 @@ ui_view_sort_list_get(const FileView *view, const char sort[])
 }
 
 int
-ui_view_displays_numbers(const FileView *view)
+ui_view_displays_numbers(const view_t *view)
 {
 	return view->num_type != NT_NONE && ui_view_displays_columns(view);
 }
 
 int
-ui_view_is_visible(const FileView *view)
+ui_view_is_visible(const view_t *view)
 {
 	return curr_stats.number_of_windows == 2 || curr_view == view;
 }
 
 void
-ui_view_clear_history(FileView *view)
+ui_view_clear_history(view_t *view)
 {
 	cfg_free_history_items(view->history, view->history_num);
 	view->history_num = 0;
@@ -1753,7 +1752,7 @@ ui_view_clear_history(FileView *view)
 }
 
 int
-ui_view_displays_columns(const FileView *view)
+ui_view_displays_columns(const view_t *view)
 {
 	return !view->ls_view
 	    || is_in_miller_view(view)
@@ -1777,7 +1776,7 @@ ui_view_entry_target_type(const dir_entry_t *entry)
 }
 
 int
-ui_view_available_width(const FileView *view)
+ui_view_available_width(const view_t *view)
 {
 	const int correction = cfg.extra_padding ? -2 : 0;
 	return view->window_cols + correction
@@ -1785,13 +1784,13 @@ ui_view_available_width(const FileView *view)
 }
 
 int
-ui_view_left_reserved(const FileView *view)
+ui_view_left_reserved(const view_t *view)
 {
 	return is_in_miller_view(view) ? view->window_cols/3 : 0;
 }
 
 int
-ui_view_right_reserved(const FileView *view)
+ui_view_right_reserved(const view_t *view)
 {
 	dir_entry_t *const entry = get_current_entry(view);
 	return is_in_miller_view(view)
@@ -1803,7 +1802,7 @@ ui_view_right_reserved(const FileView *view)
 /* Whether miller columns should be displayed.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
-is_in_miller_view(const FileView *view)
+is_in_miller_view(const view_t *view)
 {
 	return view->miller_view
 	    && !flist_custom_active(view);
@@ -1812,44 +1811,44 @@ is_in_miller_view(const FileView *view)
 /* Whether view must display straight single-column file list.  Returns non-zero
  * if so, otherwise zero is returned. */
 static int
-is_forced_list_mode(const FileView *view)
+is_forced_list_mode(const view_t *view)
 {
 	return flist_custom_active(view)
 	    && (view->custom.type == CV_TREE || cv_compare(view->custom.type));
 }
 
 int
-ui_qv_left(const FileView *view)
+ui_qv_left(const view_t *view)
 {
 	return cfg.extra_padding ? 1 : 0;
 }
 
 int
-ui_qv_top(const FileView *view)
+ui_qv_top(const view_t *view)
 {
 	return cfg.extra_padding ? 1 : 0;
 }
 
 int
-ui_qv_height(const FileView *view)
+ui_qv_height(const view_t *view)
 {
 	return cfg.extra_padding ? view->window_rows - 2 : view->window_rows;
 }
 
 int
-ui_qv_width(const FileView *view)
+ui_qv_width(const view_t *view)
 {
 	return cfg.extra_padding ? view->window_cols - 2 : view->window_cols;
 }
 
 const col_scheme_t *
-ui_view_get_cs(const FileView *view)
+ui_view_get_cs(const view_t *view)
 {
 	return view->local_cs ? &view->cs : &cfg.cs;
 }
 
 void
-ui_view_erase(FileView *view)
+ui_view_erase(view_t *view)
 {
 	const col_scheme_t *cs = ui_view_get_cs(view);
 	const int bg = COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr;
@@ -1858,7 +1857,7 @@ ui_view_erase(FileView *view)
 }
 
 void
-ui_view_wipe(FileView *view)
+ui_view_wipe(view_t *view)
 {
 	int i;
 	int height;
@@ -1883,13 +1882,13 @@ ui_view_wipe(FileView *view)
 }
 
 int
-ui_view_unsorted(const FileView *view)
+ui_view_unsorted(const view_t *view)
 {
 	return cv_unsorted(view->custom.type);
 }
 
 void
-ui_view_schedule_redraw(FileView *view)
+ui_view_schedule_redraw(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);
 	view->postponed_redraw = get_updated_time(view->postponed_redraw);
@@ -1897,7 +1896,7 @@ ui_view_schedule_redraw(FileView *view)
 }
 
 void
-ui_view_schedule_reload(FileView *view)
+ui_view_schedule_reload(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);
 	view->postponed_reload = get_updated_time(view->postponed_reload);
@@ -1905,7 +1904,7 @@ ui_view_schedule_reload(FileView *view)
 }
 
 void
-ui_view_schedule_full_reload(FileView *view)
+ui_view_schedule_full_reload(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);
 	view->postponed_full_reload = get_updated_time(view->postponed_full_reload);
@@ -1932,7 +1931,7 @@ get_updated_time(uint64_t prev)
 }
 
 UiUpdateEvent
-ui_view_query_scheduled_event(FileView *view)
+ui_view_query_scheduled_event(view_t *view)
 {
 	UiUpdateEvent event;
 

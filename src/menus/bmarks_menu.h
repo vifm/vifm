@@ -20,11 +20,12 @@
 #ifndef VIFM__MENUS__BMARKS_MENU_H__
 #define VIFM__MENUS__BMARKS_MENU_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Displays bookmarks.  Returns non-zero if status bar message should be
  * saved. */
-int show_bmarks_menu(FileView *view, const char tags[], int go_on_single_match);
+int show_bmarks_menu(struct view_t *view, const char tags[],
+		int go_on_single_match);
 
 #endif /* VIFM__MENUS__BMARKS_MENU_H__ */
 

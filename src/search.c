@@ -37,11 +37,11 @@
 #include "filelist.h"
 #include "flist_sel.h"
 
-static int find_and_goto_match(FileView *view, int start, int backward);
-static void print_result(const FileView *const view, int found, int backward);
+static int find_and_goto_match(view_t *view, int start, int backward);
+static void print_result(const view_t *const view, int found, int backward);
 
 int
-goto_search_match(FileView *view, int backward)
+goto_search_match(view_t *view, int backward)
 {
 	const int wrap_start = backward ? view->list_rows : -1;
 	if(!find_and_goto_match(view, view->list_pos, backward))
@@ -65,7 +65,7 @@ goto_search_match(FileView *view, int backward)
  * searched range.  Returns non-zero if something was found, otherwise zero is
  * returned. */
 static int
-find_and_goto_match(FileView *view, int start, int backward)
+find_and_goto_match(view_t *view, int start, int backward)
 {
 	int i;
 	int begin, end, step;
@@ -100,14 +100,14 @@ find_and_goto_match(FileView *view, int start, int backward)
 }
 
 int
-find_pattern(FileView *view, const char pattern[], int backward, int move,
+find_pattern(view_t *view, const char pattern[], int backward, int move,
 		int *const found, int print_errors)
 {
 	int cflags;
 	int nmatches = 0;
 	regex_t re;
 	int err;
-	FileView *other;
+	view_t *other;
 
 	if(move && cfg.hl_search)
 	{
@@ -217,7 +217,7 @@ find_pattern(FileView *view, const char pattern[], int backward, int move,
 /* Prints success or error message, determined by the found argument, about
  * search results to a user. */
 static void
-print_result(const FileView *const view, int found, int backward)
+print_result(const view_t *const view, int found, int backward)
 {
 	if(found)
 	{
@@ -230,7 +230,7 @@ print_result(const FileView *const view, int found, int backward)
 }
 
 void
-print_search_msg(const FileView *view, int backward)
+print_search_msg(const view_t *view, int backward)
 {
 	if(view->matches == 0)
 	{
@@ -245,7 +245,7 @@ print_search_msg(const FileView *view, int backward)
 }
 
 void
-print_search_next_msg(const FileView *view, int backward)
+print_search_next_msg(const view_t *view, int backward)
 {
 	const int match_number = get_current_entry(view)->search_match;
 	const char search_type = backward ? '?' : '/';
@@ -254,7 +254,7 @@ print_search_next_msg(const FileView *view, int backward)
 }
 
 void
-print_search_fail_msg(const FileView *view, int backward)
+print_search_fail_msg(const view_t *view, int backward)
 {
 	const char *const regexp = cfg_get_last_search_pattern();
 
@@ -296,7 +296,7 @@ print_search_fail_msg(const FileView *view, int backward)
 }
 
 void
-reset_search_results(FileView *view)
+reset_search_results(view_t *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)

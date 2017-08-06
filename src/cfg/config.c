@@ -104,9 +104,9 @@ static void add_default_marks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
 static void disable_history(void);
-static void free_view_history(FileView *view);
+static void free_view_history(view_t *view);
 static void decrease_history(size_t new_len, size_t removed_count);
-static void reduce_view_history(FileView *view, int size);
+static void reduce_view_history(view_t *view, int size);
 static void reallocate_history(size_t new_len);
 static void zero_new_history_items(size_t old_len, size_t delta);
 static void save_into_history(const char item[], hist_t *hist, int len);
@@ -870,7 +870,7 @@ disable_history(void)
 
 /* Clears and frees directory history of the view. */
 static void
-free_view_history(FileView *view)
+free_view_history(view_t *view)
 {
 	cfg_free_history_items(view->history, view->history_num);
 	free(view->history);
@@ -897,7 +897,7 @@ decrease_history(size_t new_len, size_t removed_count)
 
 /* Moves items of directory history when size of history becomes smaller. */
 static void
-reduce_view_history(FileView *view, int size)
+reduce_view_history(view_t *view, int size)
 {
 	const int delta = MIN(view->history_num - size, view->history_pos);
 	if(delta <= 0)

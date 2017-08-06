@@ -28,7 +28,7 @@
 #include "menus.h"
 
 int
-show_vifm_menu(FileView *view)
+show_vifm_menu(view_t *view)
 {
 	static menu_data_t m;
 	int len;

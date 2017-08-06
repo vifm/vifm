@@ -25,10 +25,10 @@
 #include "../dir_stack.h"
 #include "menus.h"
 
-static int execute_dirstack_cb(FileView *view, menu_data_t *m);
+static int execute_dirstack_cb(view_t *view, menu_data_t *m);
 
 int
-show_dirstack_menu(FileView *view)
+show_dirstack_menu(view_t *view)
 {
 	static menu_data_t m;
 	/* Directory stack always contains at least one item (current directories). */
@@ -46,7 +46,7 @@ show_dirstack_menu(FileView *view)
 /* Callback that is called when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
-execute_dirstack_cb(FileView *view, menu_data_t *m)
+execute_dirstack_cb(view_t *view, menu_data_t *m)
 {
 	if(m->items[m->pos][0] != '-')
 	{

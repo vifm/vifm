@@ -20,36 +20,37 @@
 #ifndef VIFM__FOPS_RENAME_H__
 #define VIFM__FOPS_RENAME_H__
 
-#include "ui/ui.h"
 #include "utils/test_helpers.h"
 
+struct view_t;
+
 /* Renames single file under the cursor. */
-void fops_rename_current(FileView *view, int name_only);
+void fops_rename_current(struct view_t *view, int name_only);
 
 /* Renames marked files using names given in the list of length nlines (or
  * filled in by the user, when the list is empty).  Recursively traverses
  * directories in selection when recursive flag is not zero.  Recursive
  * traversal is incompatible with list of names.  Returns new value for
  * save_msg flag. */
-int fops_rename(FileView *view, char *list[], int nlines, int recursive);
+int fops_rename(struct view_t *view, char *list[], int nlines, int recursive);
 
 /* Increments/decrements first number in names of marked files of the view k
  * times.  Returns new value for save_msg flag. */
-int fops_incdec(FileView *view, int k);
+int fops_incdec(struct view_t *view, int k);
 
 /* Changes case of all letters in names of marked files of the view.  Returns
  * new value for save_msg flag. */
-int fops_case(FileView *view, int to_upper);
+int fops_case(struct view_t *view, int to_upper);
 
 /* Replaces matches of regular expression in names of files of the view.
  * Returns new value for save_msg flag. */
-int fops_subst(FileView *view, const char pattern[], const char sub[], int ic,
-		int glob);
+int fops_subst(struct view_t *view, const char pattern[], const char sub[],
+		int ic, int glob);
 
 /* Replaces letters in names of marked files of the view according to the
  * mapping: from[i] -> to[i] (must have the same length).  Returns new value for
  * save_msg flag. */
-int fops_tr(FileView *view, const char from[], const char to[]);
+int fops_tr(struct view_t *view, const char from[], const char to[]);
 
 /* Returns pointer to a statically allocated buffer. */
 const char * fops_name_subst(const char name[], const char pattern[],

@@ -22,7 +22,7 @@
 
 #include <stddef.h> /* wchar_t */
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Result of handling key sequence by menu-specific shortcut handler. */
 typedef enum
@@ -58,12 +58,12 @@ typedef struct menu_data_t
 
 	/* Menu-specific shortcut handler, can be NULL.  Returns code that specifies
 	 * both taken actions and what should be done next. */
-	KHandlerResponse (*key_handler)(FileView *view, struct menu_data_t *m,
+	KHandlerResponse (*key_handler)(struct view_t *view, struct menu_data_t *m,
 			const wchar_t keys[]);
 
 	/* Callback that is called when menu item is selected.  Should return non-zero
 	 * to stay in menu mode. */
-	int (*execute_handler)(FileView *view, struct menu_data_t *m);
+	int (*execute_handler)(struct view_t *view, struct menu_data_t *m);
 
 	/* Text displayed by menus_enter() function in case menu is empty, it can be
 	 * NULL if this cannot happen. */
@@ -89,7 +89,7 @@ menu_data_t;
 /* Fills fields of menu_data_t structure with some safe values.  empty_msg is
  * text displayed by menus_enter() function in case menu is empty, it can be
  * NULL if this cannot happen and will be freed by menus_reset_data(). */
-void menus_init_data(menu_data_t *m, FileView *view, char title[],
+void menus_init_data(menu_data_t *m, struct view_t *view, char title[],
 		char empty_msg[]);
 
 /* Changes active menu data. */
@@ -102,20 +102,20 @@ void menus_reset_data(menu_data_t *m);
 
 /* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
  * status bar message should be saved. */
-int menus_enter(menu_state_t *m, FileView *view);
+int menus_enter(menu_state_t *m, struct view_t *view);
 
 /* Restore previously saved menu.  Returns non-zero if status bar message should
  * be saved. */
-int menus_unstash(FileView *view);
+int menus_unstash(struct view_t *view);
 
 /* Moves menu items into custom view.  Returns zero on success, otherwise
  * non-zero is returned. */
-int menus_to_custom_view(menu_state_t *m, FileView *view, int very);
+int menus_to_custom_view(menu_state_t *m, struct view_t *view, int very);
 
 /* Either makes a menu or custom view out of command output.  Returns non-zero
  * if status bar message should be saved. */
-int menus_capture(FileView *view, const char cmd[], int user_sh, menu_data_t *m,
-		int custom_view, int very_custom_view);
+int menus_capture(struct view_t *view, const char cmd[], int user_sh,
+		menu_data_t *m, int custom_view, int very_custom_view);
 
 /* Menu drawing. */
 
@@ -140,11 +140,11 @@ void menus_remove_current(menu_state_t *ms);
  * followed by a line number when try_open is not zero.  Returns zero on
  * successful parsing and performed try to handle the file otherwise non-zero is
  * returned. */
-int menus_goto_file(menu_data_t *m, FileView *view, const char spec[],
+int menus_goto_file(menu_data_t *m, struct view_t *view, const char spec[],
 		int try_open);
 
 /* Navigates to directory from a menu. */
-void menus_goto_dir(FileView *view, const char path[]);
+void menus_goto_dir(struct view_t *view, const char path[]);
 
 /* Menu search. */
 
@@ -176,12 +176,12 @@ int menus_search_matched(menu_state_t *m);
  * changes working directory to use relative paths.  On success returns newly
  * allocated string, which should be freed by the caller, otherwise NULL is
  * returned. */
-char * menus_get_targets(FileView *view);
+char * menus_get_targets(struct view_t *view);
 
 /* Predefined key handler for processing keys on elements of file lists.
  * Returns code that specifies both taken actions and what should be done
  * next. */
-KHandlerResponse menus_def_khandler(FileView *view, menu_data_t *m,
+KHandlerResponse menus_def_khandler(struct view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 
 #endif /* VIFM__MENUS__MENUS_H__ */

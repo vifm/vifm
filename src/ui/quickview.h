@@ -24,7 +24,9 @@
 #include <stdio.h> /* FILE */
 
 #include "../utils/test_helpers.h"
-#include "ui.h"
+
+struct dir_entry_t;
+struct view_t;
 
 /* Enables quick view (just enables, no drawing) if possible.  Returns zero on
  * success, otherwise non-zero is returned and error message is printed on the
@@ -37,7 +39,7 @@ int qv_can_show(void);
 
 /* Draws current file of the view in other view.  Does nothing if drawing
  * doesn't make sense (e.g. only one pane is visible). */
-void qv_draw(FileView *view);
+void qv_draw(struct view_t *view);
 
 /* Toggles state of the quick view. */
 void qv_toggle(void);
@@ -50,7 +52,7 @@ void qv_hide(void);
 FILE * qv_execute_viewer(const char viewer[]);
 
 /* Performs view clearing with the given command. */
-void qv_cleanup(FileView *view, const char cmd[]);
+void qv_cleanup(struct view_t *view, const char cmd[]);
 
 /* Gets viewer command for a file considering its type (directory vs. file).
  * Returns NULL if no suitable viewer available, otherwise returns pointer to
@@ -63,7 +65,7 @@ FILE * qv_view_dir(const char path[]);
 
 /* Decides on path that should be explored when cursor points to the given
  * entry. */
-void qv_get_path_to_explore(const dir_entry_t *entry, char buf[],
+void qv_get_path_to_explore(const struct dir_entry_t *entry, char buf[],
 		size_t buf_len);
 
 TSTATIC_DEFS(

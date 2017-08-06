@@ -38,7 +38,7 @@
 #include "../wk.h"
 #include "msg_dialog.h"
 
-static FileView *view;
+static view_t *view;
 static int top, bottom, curr, col;
 static int descending;
 
@@ -185,7 +185,7 @@ init_sort_dialog_mode(void)
 }
 
 void
-enter_sort_mode(FileView *active_view)
+enter_sort_mode(view_t *active_view)
 {
 	if(curr_stats.load_stage < 2)
 	{

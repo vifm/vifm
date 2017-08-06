@@ -62,7 +62,7 @@ typedef struct fuse_mount_t
 }
 fuse_mount_t;
 
-static int fuse_mount(FileView *view, char file_full_path[], const char param[],
+static int fuse_mount(view_t *view, char file_full_path[], const char param[],
 		const char program[], char mount_point[]);
 static int get_last_mount_point_id(const fuse_mount_t *mounts);
 static void register_mount(fuse_mount_t **mounts, const char file_full_path[],
@@ -73,13 +73,13 @@ TSTATIC void format_mount_command(const char mount_point[],
 static fuse_mount_t * get_mount_by_source(const char source[]);
 static fuse_mount_t * get_mount_by_mount_point(const char dir[]);
 static fuse_mount_t * get_mount_by_path(const char path[]);
-static void updir_from_mount(FileView *view, fuse_mount_t *runner);
+static void updir_from_mount(view_t *view, fuse_mount_t *runner);
 
 /* List of active mounts. */
 static fuse_mount_t *fuse_mounts;
 
 void
-fuse_try_mount(FileView *view, const char program[])
+fuse_try_mount(view_t *view, const char program[])
 {
 	/* TODO: refactor this function fuse_try_mount() */
 
@@ -163,7 +163,7 @@ get_mount_by_source(const char source[])
 /* mount_point should be an array of at least PATH_MAX characters
  * Returns non-zero on error. */
 static int
-fuse_mount(FileView *view, char file_full_path[], const char param[],
+fuse_mount(view_t *view, char file_full_path[], const char param[],
 		const char program[], char mount_point[])
 {
 	/* TODO: refactor this function fuse_mount(). */
@@ -450,7 +450,7 @@ fuse_unmount_all(void)
 }
 
 int
-fuse_try_updir_from_a_mount(const char path[], FileView *view)
+fuse_try_updir_from_a_mount(const char path[], view_t *view)
 {
 	fuse_mount_t *const mount = get_mount_by_mount_point(path);
 	if(mount == NULL)
@@ -518,7 +518,7 @@ get_mount_by_path(const char path[])
 }
 
 int
-fuse_try_unmount(FileView *view)
+fuse_try_unmount(view_t *view)
 {
 	char buf[14 + PATH_MAX + 1];
 	fuse_mount_t *runner, *trailer;
@@ -588,7 +588,7 @@ fuse_try_unmount(FileView *view)
 }
 
 static void
-updir_from_mount(FileView *view, fuse_mount_t *runner)
+updir_from_mount(view_t *view, fuse_mount_t *runner)
 {
 	char *file;
 	int pos;

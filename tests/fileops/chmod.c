@@ -15,8 +15,8 @@
 #ifndef _WIN32
 
 static void set_file_perms(const int perms[13]);
-static void alloc_file_list(FileView *view, const char filename[]);
-static void free_file_list(FileView *view);
+static void alloc_file_list(view_t *view, const char filename[]);
+static void free_file_list(view_t *view);
 static mode_t perms_to_mode(const int perms[13]);
 static mode_t get_perms(const char path[]);
 static int not_osx(void);
@@ -152,7 +152,7 @@ TEST(set_executable_bit_via_X_flag)
 }
 
 static void
-alloc_file_list(FileView *view, const char filename[])
+alloc_file_list(view_t *view, const char filename[])
 {
 	view->list_rows = 1;
 	view->list_pos = 0;
@@ -163,7 +163,7 @@ alloc_file_list(FileView *view, const char filename[])
 }
 
 static void
-free_file_list(FileView *view)
+free_file_list(view_t *view)
 {
 	int i;
 

@@ -20,10 +20,10 @@
 #ifndef VIFM__MENUS__FIND_MENU_H__
 #define VIFM__MENUS__FIND_MENU_H__
 
-#include "../ui/ui.h"
+struct view_t;
 
 /* Returns non-zero if status bar message should be saved. */
-int show_find_menu(FileView *view, int with_path, const char args[]);
+int show_find_menu(struct view_t *view, int with_path, const char args[]);
 
 #endif /* VIFM__MENUS__FIND_MENU_H__ */
 
