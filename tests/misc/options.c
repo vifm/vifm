@@ -623,5 +623,15 @@ TEST(values_in_sizefmt_are_deduplicated)
 			vle_tb_get_data(vle_err));
 }
 
+TEST(millerview)
+{
+	assert_success(exec_commands("se millerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("se invmillerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setl millerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setl invmillerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setg millerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setg invmillerview", &lwin, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
