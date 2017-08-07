@@ -84,7 +84,8 @@ static void print_column(view_t *view, entries_t entries, const char current[],
 static void fill_column(view_t *view, int start_line, int top, int width,
 		int offset);
 static void calculate_table_conf(view_t *view, size_t *count, size_t *width);
-static void calculate_number_width(view_t *view);
+static int calculate_number_width(const view_t *view, int list_length,
+		int width);
 static int count_digits(int num);
 static int calculate_top_position(view_t *view, int top);
 static int get_line_color(const view_t *view, const dir_entry_t *entry);
@@ -487,7 +488,8 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 static void
 calculate_table_conf(view_t *view, size_t *count, size_t *width)
 {
-	calculate_number_width(view);
+	view->real_num_width = calculate_number_width(view, view->list_rows,
+			ui_view_available_width(view));
 
 	if(ui_view_displays_columns(view))
 	{
@@ -505,21 +507,18 @@ calculate_table_conf(view_t *view, size_t *count, size_t *width)
 }
 
 /* Calculates real number of characters that should be allocated in view for
- * numbers column. */
-static void
-calculate_number_width(view_t *view)
+ * numbers column.  Returns the number. */
+static int
+calculate_number_width(const view_t *view, int list_length, int width)
 {
 	if(ui_view_displays_numbers(view))
 	{
-		const int digit_count = count_digits(view->list_rows);
+		const int digit_count = count_digits(list_length);
 		const int min = view->num_width;
-		const int max = ui_view_available_width(view);
-		view->real_num_width = MIN(MAX(1 + digit_count, min), max);
+		return MIN(MAX(1 + digit_count, min), width);
 	}
-	else
-	{
-		view->real_num_width = 0;
-	}
+
+	return 0;
 }
 
 /* Counts number of digits in a number assuming that zero takes on digit.
