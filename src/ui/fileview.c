@@ -65,7 +65,7 @@ typedef struct
 	int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
 	int is_current;     /* Whether this file is selected with the cursor. */
 	int total_width;    /* Total width available for drawing. */
-	int draw_numbers;   /* Whether to draw line numbers. */
+	int number_width;   /* Whether to draw line numbers. */
 
 	size_t current_line;  /* Line of the cell within the view window. */
 	size_t column_offset; /* Offset in characters of the column. */
@@ -262,7 +262,7 @@ draw_dir_list_only(view_t *view)
 	size_t col_count;
 	int coll_pad;
 	int top = view->top_line;
-	int total_width, draw_numbers;
+	int total_width;
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -298,7 +298,6 @@ draw_dir_list_only(view_t *view)
 	cell = 0U;
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	total_width = ui_view_available_width(view);
-	draw_numbers = ui_view_displays_numbers(view);
 	lcol_size = ui_view_left_reserved(view);
 	for(x = top; x < view->list_rows; ++x)
 	{
@@ -310,7 +309,7 @@ draw_dir_list_only(view_t *view)
 			.line_hi_group = get_line_color(view, &view->dir_entry[x]),
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
 			.total_width = total_width,
-			.draw_numbers = draw_numbers,
+			.number_width = view->real_num_width,
 			.current_line = cell/col_count,
 			.column_offset = lcol_size + (cell%col_count)*col_width,
 			.prefix_len = &prefix_len,
@@ -916,7 +915,7 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 		.line_pos = pos,
 		.is_current = is_current,
 		.total_width = ui_view_available_width(view),
-		.draw_numbers = ui_view_displays_numbers(view),
+		.number_width = view->real_num_width,
 		.prefix_len = &prefix_len,
 		.is_main = 1,
 	};
@@ -1102,7 +1101,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 	view_t *view = cdt->view;
 	dir_entry_t *entry = cdt->entry;
 
-	const int numbers_visible = (offset == 0 && cdt->draw_numbers);
+	const int numbers_visible = (offset == 0 && cdt->number_width > 0);
 	const int padding = (cfg.extra_padding != 0);
 
 	const int primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
@@ -1124,14 +1123,12 @@ column_line_print(const void *data, int column_id, const char buf[],
 		}
 	}
 
-	prefix_len = padding
-	            + (cdt->draw_numbers ? view->real_num_width : 0)
-	            + extra_prefix;
+	prefix_len = padding + cdt->number_width + extra_prefix;
 	final_offset = prefix_len + cdt->column_offset + offset;
 
 	if(numbers_visible)
 	{
-		const int column = final_offset - extra_prefix - view->real_num_width;
+		const int column = final_offset - extra_prefix - cdt->number_width;
 		draw_line_number(cdt, column);
 	}
 
@@ -1187,8 +1184,8 @@ draw_line_number(const column_data_t *cdt, int column)
 	              ? abs((int)i - view->list_pos)
 	              : (int)i + 1;
 
-	char num_str[view->real_num_width + 1];
-	snprintf(num_str, sizeof(num_str), format, view->real_num_width - 1, num);
+	char num_str[cdt->number_width + 1];
+	snprintf(num_str, sizeof(num_str), format, cdt->number_width - 1, num);
 
 	checked_wmove(view->win, cdt->current_line, column);
 	wprinta(view->win, num_str, prepare_col_color(view, 0, cdt));

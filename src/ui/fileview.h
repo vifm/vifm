@@ -165,7 +165,7 @@ TSTATIC_DEFS(
 		int line_hi_group;   /* Line highlight (to avoid per-column calculation). */
 		int is_current;      /* Whether this file is selected with the cursor. */
 		int total_width;     /* Total width available for drawing. */
-		int draw_numbers;    /* Whether to draw line numbers. */
+		int number_width;    /* Width of line number column (0 when disabled). */
 
 		size_t current_line;  /* Line of the cell within the view window. */
 		size_t column_offset; /* Offset in characters of the column. */
