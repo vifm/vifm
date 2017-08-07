@@ -161,9 +161,9 @@ TSTATIC_DEFS(
 	{
 		struct view_t *view; /* View on which cell is being drawn. */
 		dir_entry_t *entry;  /* Entry that is being displayed. */
-		size_t line_pos;     /* File position in the file list (the view). */
+		int line_pos;        /* File position in the file list (the view). */
 		int line_hi_group;   /* Line highlight (to avoid per-column calculation). */
-		int is_current;      /* Whether this file is selected with the cursor. */
+		int current_pos;     /* Position of entry selected with the cursor. */
 		int total_width;     /* Total width available for drawing. */
 		int number_width;    /* Width of line number column (0 when disabled). */
 

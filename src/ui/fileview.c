@@ -61,9 +61,9 @@ typedef struct
 {
 	view_t *view;       /* View on which cell is being drawn. */
 	dir_entry_t *entry; /* Entry that is being displayed. */
-	size_t line_pos;    /* File position in the file list (the view). */
+	int line_pos;       /* File position in the file list (the view). */
 	int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
-	int is_current;     /* Whether this file is selected with the cursor. */
+	int current_pos;    /* Position of entry selected with the cursor. */
 	int total_width;    /* Total width available for drawing. */
 	int number_width;   /* Whether to draw line numbers. */
 
@@ -307,7 +307,7 @@ draw_dir_list_only(view_t *view)
 			.entry = &view->dir_entry[x],
 			.line_pos = x,
 			.line_hi_group = get_line_color(view, &view->dir_entry[x]),
-			.is_current = (view == curr_view) ? x == view->list_pos : 0,
+			.current_pos = (view == curr_view) ? view->list_pos : -1,
 			.total_width = total_width,
 			.number_width = view->real_num_width,
 			.current_line = cell/col_count,
@@ -440,7 +440,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 			.entry = &entries.entries[i],
 			.line_pos = i,
 			.line_hi_group = get_line_color(view, &entries.entries[i]),
-			.is_current = (i == pos),
+			.current_pos = pos,
 			.total_width = width,
 			.current_line = i - top,
 			.column_offset = offset,
@@ -472,7 +472,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.line_pos = i,
 			.line_hi_group = WIN_COLOR,
 			.total_width = width,
-			.is_current = 0,
+			.current_pos = -1,
 			.current_line = i - top,
 			.column_offset = offset,
 			.prefix_len = &prefix_len,
@@ -913,7 +913,7 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 		.view = view,
 		.entry = &view->dir_entry[pos],
 		.line_pos = pos,
-		.is_current = is_current,
+		.current_pos = is_current ? view->list_pos : -1,
 		.total_width = ui_view_available_width(view),
 		.number_width = view->real_num_width,
 		.prefix_len = &prefix_len,
@@ -1176,13 +1176,13 @@ static void
 draw_line_number(const column_data_t *cdt, int column)
 {
 	view_t *const view = cdt->view;
-	const size_t i = cdt->line_pos;
 
-	const int mixed = (cdt->is_current && view->num_type == NT_MIX);
+	const int mixed = cdt->line_pos == cdt->current_pos
+	               && view->num_type == NT_MIX;
 	const char *const format = mixed ? "%-*d " : "%*d ";
 	const int num = (view->num_type & NT_REL) && !mixed
-	              ? abs((int)i - view->list_pos)
-	              : (int)i + 1;
+	              ? abs(cdt->line_pos - cdt->current_pos)
+	              : cdt->line_pos + 1;
 
 	char num_str[cdt->number_width + 1];
 	snprintf(num_str, sizeof(num_str), format, cdt->number_width - 1, num);
@@ -1292,7 +1292,7 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 
 	/* File-specific highlight affects only primary field for non-current lines
 	 * and whole line for the current line. */
-	if(primary || cdt->is_current)
+	if(primary || cdt->line_pos == cdt->current_pos)
 	{
 		mix_in_file_hi(view, cdt->entry, cdt->line_hi_group, &col);
 	}
@@ -1310,7 +1310,7 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 		cs_mix_colors(&col, &cs->color[SELECTED_COLOR]);
 	}
 
-	if(cdt->is_current)
+	if(cdt->line_pos == cdt->current_pos)
 	{
 		if(view == curr_view)
 		{
