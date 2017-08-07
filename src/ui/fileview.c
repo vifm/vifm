@@ -473,7 +473,8 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.prefix_len = &prefix_len,
 		};
 
-		column_line_print(&cdt, FILL_COLUMN_ID, filler, -1, AT_LEFT, filler);
+		column_line_print(&cdt, FILL_COLUMN_ID, filler, cfg.extra_padding ? -1 : 0,
+				AT_LEFT, filler);
 	}
 }
 
