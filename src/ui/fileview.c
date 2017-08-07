@@ -59,11 +59,12 @@
 /* Packet set of parameters to pass as user data for processing columns. */
 typedef struct
 {
-	view_t *view;     /* View on which cell is being drawn. */
+	view_t *view;       /* View on which cell is being drawn. */
 	dir_entry_t *entry; /* Entry that is being displayed. */
 	size_t line_pos;    /* File position in the file list (the view). */
 	int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
 	int is_current;     /* Whether this file is selected with the cursor. */
+	int total_width;    /* Total width available for drawing. */
 	int draw_numbers;   /* Whether to draw line numbers. */
 
 	size_t current_line;  /* Line of the cell within the view window. */
@@ -260,7 +261,7 @@ draw_dir_list_only(view_t *view)
 	size_t col_count;
 	int coll_pad;
 	int top = view->top_line;
-	int draw_numbers;
+	int total_width, draw_numbers;
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -295,6 +296,7 @@ draw_dir_list_only(view_t *view)
 
 	cell = 0U;
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
+	total_width = ui_view_available_width(view);
 	draw_numbers = ui_view_displays_numbers(view);
 	lcol_size = ui_view_left_reserved(view);
 	for(x = top; x < view->list_rows; ++x)
@@ -306,6 +308,7 @@ draw_dir_list_only(view_t *view)
 			.line_pos = x,
 			.line_hi_group = get_line_color(view, &view->dir_entry[x]),
 			.is_current = (view == curr_view) ? x == view->list_pos : 0,
+			.total_width = total_width,
 			.draw_numbers = draw_numbers,
 			.current_line = cell/col_count,
 			.column_offset = lcol_size + (cell%col_count)*col_width,
@@ -438,6 +441,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 			.line_pos = i,
 			.line_hi_group = get_line_color(view, &entries.entries[i]),
 			.is_current = (i == pos),
+			.total_width = width,
 			.current_line = i - top,
 			.column_offset = offset,
 			.prefix_len = &prefix_len,
@@ -467,6 +471,7 @@ fill_column(view_t *view, int start_line, int top, int width, int offset)
 			.entry = &view->dir_entry[0],
 			.line_pos = i,
 			.line_hi_group = WIN_COLOR,
+			.total_width = width,
 			.is_current = 0,
 			.current_line = i - top,
 			.column_offset = offset,
@@ -911,6 +916,7 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 		.entry = &view->dir_entry[pos],
 		.line_pos = pos,
 		.is_current = is_current,
+		.total_width = ui_view_available_width(view),
 		.draw_numbers = ui_view_displays_numbers(view),
 		.prefix_len = &prefix_len,
 		.is_main = 1,
@@ -1154,8 +1160,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 		strcpy(print_buf, buf);
 	}
 	reserved_width = cfg.extra_padding ? (column_id != FILL_COLUMN_ID) : 0;
-	width_left = padding + ui_view_available_width(view)
-	           - reserved_width - offset;
+	width_left = padding + cdt->total_width - reserved_width - offset;
 	trim_pos = utf8_nstrsnlen(buf, width_left);
 	if(trim_pos < sizeof(print_buf))
 	{
