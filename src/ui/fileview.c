@@ -80,7 +80,7 @@ column_data_t;
 static void draw_left_column(view_t *view);
 static void draw_right_column(view_t *view);
 static void print_column(view_t *view, entries_t entries, const char current[],
-		const char path[], int width, int offset);
+		const char path[], int width, int offset, int number_width);
 static void fill_column(view_t *view, int start_line, int top, int width,
 		int offset);
 static void calculate_table_conf(view_t *view, size_t *count, size_t *width);
@@ -347,8 +347,9 @@ draw_left_column(view_t *view)
 	char path[PATH_MAX + 1];
 	const char *const dir = flist_get_dir(view);
 
-	const int lcol_width = ui_view_left_reserved(view)
-	                     - (cfg.extra_padding ? 1 : 0) - 1;
+	int number_width = 0;
+	int lcol_width = ui_view_left_reserved(view)
+	               - (cfg.extra_padding ? 1 : 0) - 1;
 	if(lcol_width <= 0)
 	{
 		flist_free_cache(view, &view->left_column);
@@ -359,9 +360,14 @@ draw_left_column(view_t *view)
 	remove_last_path_component(path);
 	(void)flist_update_cache(view, &view->left_column, path);
 
+	number_width = calculate_number_width(view,
+			view->left_column.entries.nentries, lcol_width);
+	lcol_width -= number_width;
+
 	if(view->left_column.entries.nentries >= 0)
 	{
-		print_column(view, view->left_column.entries, dir, path, lcol_width, 0);
+		print_column(view, view->left_column.entries, dir, path, lcol_width, 0,
+				number_width);
 	}
 }
 
@@ -388,7 +394,7 @@ draw_right_column(view_t *view)
 	if(view->right_column.entries.nentries >= 0)
 	{
 		print_column(view, view->right_column.entries, NULL, path, rcol_width,
-				offset);
+				offset, 0);
 	}
 }
 
@@ -396,7 +402,7 @@ draw_right_column(view_t *view)
  * has to be selected (otherwise position from history record is used). */
 static void
 print_column(view_t *view, entries_t entries, const char current[],
-		const char path[], int width, int offset)
+		const char path[], int width, int offset, int number_width)
 {
 	int top, pos;
 	columns_t *columns = get_name_column();
@@ -441,7 +447,8 @@ print_column(view_t *view, entries_t entries, const char current[],
 			.line_pos = i,
 			.line_hi_group = get_line_color(view, &entries.entries[i]),
 			.current_pos = pos,
-			.total_width = width,
+			.total_width = number_width + width,
+			.number_width = number_width,
 			.current_line = i - top,
 			.column_offset = offset,
 			.prefix_len = &prefix_len,
@@ -450,7 +457,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 		draw_cell(columns, &cdt, width, width - 1);
 	}
 
-	fill_column(view, i, top, width, offset);
+	fill_column(view, i, top, number_width + width, offset);
 }
 
 /* Fills column to the bottom to clear it from previous content. */
