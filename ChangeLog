@@ -11,6 +11,8 @@
 	Added 'millerview' option that enables cascading columns interface for the
 	view.  Thanks to sudo-nice.
 
+	Added 'milleroptions' option that configures miller view.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
