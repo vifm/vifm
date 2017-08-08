@@ -70,6 +70,14 @@ TEST(sibl_navigate_correctly)
 	assert_success(exec_commands("siblprev", &lwin, CIT_COMMAND));
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "read", cwd);
 	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_success(exec_commands("2siblnext", &lwin, CIT_COMMAND));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "scripts", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_success(exec_commands("3siblprev", &lwin, CIT_COMMAND));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "quotes-in-names", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
 }
 
 TEST(sibl_does_not_wrap_by_default)

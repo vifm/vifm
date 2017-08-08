@@ -74,6 +74,7 @@ const char *tags[] = {
 	"vifm-'locateprg'",
 	"vifm-'ls'",
 	"vifm-'lsview'",
+	"vifm-'milleroptions'",
 	"vifm-'millerview'",
 	"vifm-'mintimeoutlen'",
 	"vifm-'nu'",

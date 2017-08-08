@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 27, 2017" "vifm 0.9"
+.TH VIFM 1 "August 010, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2510,10 +2510,10 @@ environment it uses $SHELL if it's defined, otherwise 'shell' value is used.
 .TP
 .BI "                                         :siblnext"
 .TP
-.BI :siblnext[!]
+.BI :[count]siblnext[!]
 
-change directory to next sibling directory of current path using value of
-global sort option of current pane.  "!" enables wrapping.
+change directory to [count]th next sibling directory after current path using
+value of global sort option of current pane.  "!" enables wrapping.
 
 For example, say, you're at /boot and root listing starts like this:
 
@@ -2527,7 +2527,7 @@ Issuing :siblnext will navigate to /dev.
 .TP
 .BI "                                         :siblprev"
 .TP
-.BI :siblprev[!]
+.BI :[count]siblprev[!]
 same as :siblnext, but in the opposite direction.
 .TP
 .BI "                                         :sort"
@@ -3728,6 +3728,33 @@ When this option is set, directory view will be displayed in multiple columns
 with file names similar to output of `ls \-x` command.  See "ls-like view"
 section below for format description.  This option has no effect if 'millerview'
 is on.
+
+.TP
+.BI 'milleroptions'
+type: string list
+.br
+default: "lsize:1,csize:1,rsize:1"
+.br
+scope: local
+.br
+
+Configures miller view.
+
+  item          default  used for
+  lsize:num     0        left column
+  csize:num     1        center column (can't be disabled)
+  rsize:num     0        right column
+
+*size specifies ratios of columns.  Each ratio is in the range from
+0 to 100 and values are adjusted to fit the limits.  Zero disables a
+column, but central (main) column can't be disabled.
+
+Example of two-column mode which is useful in combination with :view command:
+.EX
+
+  set milleroptions=lsize:1,csize:2
+.EE
+
 .TP
 .BI 'millerview'
 type: boolean

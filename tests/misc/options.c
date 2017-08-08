@@ -623,5 +623,48 @@ TEST(values_in_sizefmt_are_deduplicated)
 			vle_tb_get_data(vle_err));
 }
 
+TEST(millerview)
+{
+	assert_success(exec_commands("se millerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("se invmillerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setl millerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setl invmillerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setg millerview", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setg invmillerview", &lwin, CIT_COMMAND));
+}
+
+TEST(milleroptions_handles_wrong_input)
+{
+	assert_failure(exec_commands("se milleroptions=msi:1", &lwin, CIT_COMMAND));
+
+	assert_failure(exec_commands("se milleroptions=lsize:a", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("se milleroptions=csize:a", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("se milleroptions=rsize:a", &lwin, CIT_COMMAND));
+
+	assert_failure(exec_commands("se milleroptions=csize:0", &lwin, CIT_COMMAND));
+}
+
+TEST(milleroptions_accepts_correct_input)
+{
+	assert_success(exec_commands("set milleroptions=csize:33,rsize:12", &lwin,
+				CIT_COMMAND));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("milleroptions?", OPT_GLOBAL));
+	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12",
+			vle_tb_get_data(vle_err));
+}
+
+TEST(milleroptions_normalizes_input)
+{
+	assert_success(exec_commands("set milleroptions=lsize:-10,csize:133", &lwin,
+				CIT_COMMAND));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("milleroptions?", OPT_GLOBAL));
+	assert_string_equal("  milleroptions=lsize:0,csize:100,rsize:0",
+			vle_tb_get_data(vle_err));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

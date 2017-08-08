@@ -526,7 +526,7 @@ execute_command(view_t *view, const char command[], int menu)
 			status_bar_error("No ? is allowed");
 			break;
 		case CMDS_ERR_INVALID_RANGE:
-			/* message dialog is enough */
+			status_bar_error("Invalid range");
 			break;
 		case CMDS_ERR_NO_SUCH_UDF:
 			status_bar_error("No such user defined command");

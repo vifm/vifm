@@ -703,11 +703,11 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &shell_cmd,       .min_args = 0,   .max_args = 0, },
 	{ .name = "siblnext",          .abbr = NULL,    .id = -1,
 	  .descr = "navigate to next sibling directory",
-	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .flags = HAS_RANGE | HAS_EMARK | HAS_COMMENT,
 	  .handler = &siblnext_cmd,    .min_args = 0,   .max_args = 0, },
 	{ .name = "siblprev",          .abbr = NULL,    .id = -1,
 	  .descr = "navigate to previous sibling directory",
-	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .flags = HAS_RANGE | HAS_EMARK | HAS_COMMENT,
 	  .handler = &siblprev_cmd,    .min_args = 0,   .max_args = 0, },
 	{ .name = "sort",              .abbr = "sor",   .id = -1,
 	  .descr = "display sorting dialog",
@@ -3523,18 +3523,20 @@ shell_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* Navigates to next sibling directory. */
+/* Navigates to [count]th next sibling directory. */
 static int
 siblnext_cmd(const cmd_info_t *cmd_info)
 {
-	return (go_to_sibling_dir(curr_view, 1, cmd_info->emark) != 0);
+	const int count = (cmd_info->count == NOT_DEF ? 1 : cmd_info->count);
+	return (go_to_sibling_dir(curr_view, count, cmd_info->emark) != 0);
 }
 
-/* Navigates to previous sibling directory. */
+/* Navigates to [count]th previous sibling directory. */
 static int
 siblprev_cmd(const cmd_info_t *cmd_info)
 {
-	return (go_to_sibling_dir(curr_view, 0, cmd_info->emark) != 0);
+	const int count = (cmd_info->count == NOT_DEF ? 1 : cmd_info->count);
+	return (go_to_sibling_dir(curr_view, -count, cmd_info->emark) != 0);
 }
 
 static int

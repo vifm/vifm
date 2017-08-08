@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Jul 27
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 8
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2133,9 +2133,9 @@ yet supported) and might be changed in future releases, or get an alias.
     environment it uses $SHELL if it's defined, otherwise |vifm-'shell'|
     value is used.
 
-:siblnext[!]                                   *vifm-:siblnext*
-    change directory to next sibling directory of current path using value of
-    global sort option of current pane.  "!" enables wrapping.
+:[count]siblnext[!]                                   *vifm-:siblnext*
+    change directory to [count]th next sibling directory of current path
+    using value of global sort option of current pane.  "!" enables wrapping.
 
     For example, say, you're at `/boot` and root listing starts like this: >
      bin/
@@ -2144,7 +2144,7 @@ yet supported) and might be changed in future releases, or get an alias.
      ...
 <    Issuing :siblnext will navigate to `/dev`.
 
-:siblprev[!]                                   *vifm-:siblprev*
+:[count]siblprev[!]                                   *vifm-:siblprev*
     same as :siblnext, but in the opposite direction.
 
 :sor[t]                                        *vifm-:sort* *vifm-:sor*
@@ -3109,6 +3109,27 @@ When this option is set, directory view will be displayed in multiple
 columns with file names similar to output of `ls -x` command.  See also
 |vifm-ls-view|.  This option has no effect if |vifm-'millerview'| is on.
 
+                                               *vifm-'milleroptions'*
+milleroptions
+type: string list
+default: "lsize:1,csize:1,rsize:1"
+scope: local
+
+Configures miller view.
+
+    item          default     used for ~
+    lsize:num     0           left column
+    csize:num     1           center column (can't be disabled)
+    rsize:num     0           right column
+
+*size specifies ratios of columns.  Each ratio is in the range from
+0 to 100 and values are adjusted to fit the limits.  Zero disables a
+column, but central (main) column can't be disabled.
+
+Example of two-column mode which is useful in combination with
+|vifm-:view| command: >
+ set milleroptions=lsize:1,csize:2
+<
                                                *vifm-'millerview'*
 millerview
 type: boolean
