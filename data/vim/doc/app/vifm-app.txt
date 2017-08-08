@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 7
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 8
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2133,9 +2133,9 @@ yet supported) and might be changed in future releases, or get an alias.
     environment it uses $SHELL if it's defined, otherwise |vifm-'shell'|
     value is used.
 
-:siblnext[!]                                   *vifm-:siblnext*
-    change directory to next sibling directory of current path using value of
-    global sort option of current pane.  "!" enables wrapping.
+:[count]siblnext[!]                                   *vifm-:siblnext*
+    change directory to [count]th next sibling directory of current path
+    using value of global sort option of current pane.  "!" enables wrapping.
 
     For example, say, you're at `/boot` and root listing starts like this: >
      bin/
@@ -2144,7 +2144,7 @@ yet supported) and might be changed in future releases, or get an alias.
      ...
 <    Issuing :siblnext will navigate to `/dev`.
 
-:siblprev[!]                                   *vifm-:siblprev*
+:[count]siblprev[!]                                   *vifm-:siblprev*
     same as :siblnext, but in the opposite direction.
 
 :sor[t]                                        *vifm-:sort* *vifm-:sor*

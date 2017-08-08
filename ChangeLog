@@ -24,11 +24,13 @@
 	Better detection of write errors on file copying.  The error was reported,
 	but it wasn't treated as a hard error specific case related to caching.
 
-	Make :siblnext and :siblprev commands respect dot and name filters.
+	Made :siblnext and :siblprev commands respect dot and name filters.
 
-	Disable spell checking of vifm files in Vim except for comments.
+	Disabled spell checking of vifm files in Vim except for comments.
 
 	H/M/L keys in ls-like view now account for columns.
+
+	Made :siblnext and :siblprev accept [count] range.  Thanks to filterfalse.
 
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.

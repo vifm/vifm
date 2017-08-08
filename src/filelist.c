@@ -144,8 +144,8 @@ TSTATIC void pick_cd_path(view_t *view, const char base_dir[],
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
 static entries_t list_sibling_dirs(view_t *view);
-static dir_entry_t * pick_sibling(view_t *view, entries_t parent_dirs, int next,
-		int wrap, int *wrapped);
+static dir_entry_t * pick_sibling(view_t *view, entries_t parent_dirs,
+		int offset, int wrap, int *wrapped);
 static int iter_entries(view_t *view, dir_entry_t **entry,
 		entry_predicate pred);
 static void clear_marking(view_t *view);
@@ -2866,7 +2866,7 @@ find_dir_in_cdpath(const char base_dir[], const char dst[], char buf[],
 }
 
 int
-go_to_sibling_dir(view_t *view, int next, int wrap)
+go_to_sibling_dir(view_t *view, int offset, int wrap)
 {
 	entries_t parent_dirs;
 	dir_entry_t *entry;
@@ -2886,7 +2886,7 @@ go_to_sibling_dir(view_t *view, int next, int wrap)
 
 	sort_entries(view, parent_dirs);
 
-	entry = pick_sibling(view, parent_dirs, next, wrap, &save_msg);
+	entry = pick_sibling(view, parent_dirs, offset, wrap, &save_msg);
 	if(entry != NULL)
 	{
 		char full_path[PATH_MAX];
@@ -2996,7 +2996,7 @@ flist_list_in(view_t *view, const char path[], int only_dirs,
  * *wrapped is set to non-zero if wrapping happened.  Returns pointer to picked
  * sibling or NULL on error or if can't pick. */
 static dir_entry_t *
-pick_sibling(view_t *view, entries_t parent_dirs, int next, int wrap,
+pick_sibling(view_t *view, entries_t parent_dirs, int offset, int wrap,
 		int *wrapped)
 {
 	dir_entry_t *entry;
@@ -3012,33 +3012,39 @@ pick_sibling(view_t *view, entries_t parent_dirs, int next, int wrap,
 	}
 
 	*wrapped = 0;
-
 	i = entry - parent_dirs.entries;
-	if(next && i < parent_dirs.nentries - 1)
+
+	while(offset != 0)
 	{
-		++entry;
-	}
-	else if(!next && i > 0)
-	{
-		--entry;
-	}
-	else if(wrap)
-	{
-		if(next)
+		if(offset > 0 && i < parent_dirs.nentries - 1)
 		{
-			entry = &parent_dirs.entries[0];
-			status_bar_error("Hit BOTTOM, continuing at TOP");
+			++i;
+		}
+		else if(offset < 0 && i > 0)
+		{
+			--i;
+		}
+		else if(wrap)
+		{
+			if(offset > 0)
+			{
+				i = 0;
+				status_bar_error("Hit BOTTOM, continuing at TOP");
+			}
+			else
+			{
+				i = parent_dirs.nentries - 1;
+				status_bar_error("Hit TOP, continuing at BOTTOM");
+			}
+			*wrapped = 1;
 		}
 		else
 		{
-			entry = &parent_dirs.entries[parent_dirs.nentries - 1];
-			status_bar_error("Hit TOP, continuing at BOTTOM");
+			return NULL;
 		}
-		*wrapped = 1;
-	}
-	else
-	{
-		entry = NULL;
+
+		entry = &parent_dirs.entries[i];
+		offset = (offset > 0 ? offset - 1 : offset + 1);
 	}
 
 	return entry;
