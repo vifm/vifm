@@ -381,6 +381,12 @@ set milleroptions
 
 " TODO
 
+" ranges in front of commands
+33delete
+
+" variables
+echo v:servername
+
 " ":echo" should be highlighted as :commands
 " should any of these (&something) be highlighted specially?
 echo &sort
