@@ -1678,13 +1678,11 @@ fview_set_lsview(view_t *view, int enabled)
 void
 fview_set_millerview(view_t *view, int enabled)
 {
-	if(view->miller_view == enabled)
+	if(view->miller_view != enabled)
 	{
-		return;
+		view->miller_view = enabled;
+		ui_view_schedule_redraw(view);
 	}
-
-	view->miller_view = enabled;
-	ui_view_schedule_redraw(view);
 }
 
 size_t
