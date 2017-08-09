@@ -93,7 +93,7 @@ int pane_in_dir(const view_t *view, const char path[]);
 /* Navigates to next/previous sibling directory (does nothing for root or custom
  * view) with optional wrapping.  Returns non-zero if statusbar message should
  * be preserved. */
-int go_to_sibling_dir(view_t *view, int next, int wrap);
+int go_to_sibling_dir(view_t *view, int offset, int wrap);
 
 /* Typed (with trailing slash for directories) file name function. */
 
