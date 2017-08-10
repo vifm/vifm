@@ -32,6 +32,7 @@
 static void navigate_to_history_pos(view_t *view, int pos);
 static int find_in_hist(const view_t *view, const view_t *source, int *pos,
 		int *rel_pos);
+static history_t *find_hist_entry(const view_t *view, const char dir[]);
 
 void
 flist_hist_go_back(view_t *view)
@@ -245,49 +246,30 @@ flist_hist_find(const view_t *view, entries_t entries, const char dir[],
 		int *top)
 {
 	int pos;
-	history_t *const history = view->history;
-	int i = view->history_pos;
 
-	if(cfg.history_len <= 0)
+	const history_t *const hist_entry = find_hist_entry(view, dir);
+	if(hist_entry == NULL)
 	{
 		*top = 0;
 		return 0;
 	}
 
-	if(stroscmp(history[i].dir, dir) == 0 && history[i].file[0] == '\0')
+	for(pos = 0; pos < entries.nentries; ++pos)
 	{
-		--i;
-	}
-
-	for(; i >= 0 && history[i].dir[0] != '\0'; --i)
-	{
-		if(stroscmp(history[i].dir, dir) == 0)
+		if(stroscmp(entries.entries[pos].name, hist_entry->file) == 0)
 		{
 			break;
 		}
 	}
-
-	pos = 0;
-	*top = 0;
-	if(i >= 0 && history[i].dir[0] != '\0')
+	if(pos >= entries.nentries)
 	{
-		for(pos = 0; pos < entries.nentries; ++pos)
-		{
-			if(stroscmp(entries.entries[pos].name, history[i].file) == 0)
-			{
-				break;
-			}
-		}
-		if(pos >= entries.nentries)
-		{
-			pos = 0;
-		}
+		pos = 0;
+	}
 
-		*top = pos - MIN(entries.nentries, history[i].rel_pos);
-		if(*top < 0)
-		{
-			*top = 0;
-		}
+	*top = pos - MIN(entries.nentries, hist_entry->rel_pos);
+	if(*top < 0)
+	{
+		*top = 0;
 	}
 
 	return pos;
@@ -300,26 +282,11 @@ flist_hist_find(const view_t *view, entries_t entries, const char dir[],
 static int
 find_in_hist(const view_t *view, const view_t *source, int *pos, int *rel_pos)
 {
-	int i = source->history_pos;
-	if(stroscmp(source->history[i].dir, view->curr_dir) == 0 &&
-			source->history[i].file[0] == '\0')
-
+	const history_t *const hist_entry = find_hist_entry(source, view->curr_dir);
+	if(hist_entry != NULL)
 	{
-		--i;
-	}
-
-	for(; i >= 0 && source->history[i].dir[0] != '\0'; --i)
-	{
-		if(stroscmp(source->history[i].dir, view->curr_dir) == 0)
-		{
-			break;
-		}
-	}
-
-	if(i >= 0 && source->history[i].dir[0] != '\0')
-	{
-		*pos = find_file_pos_in_list(view, source->history[i].file);
-		*rel_pos = source->history[i].rel_pos;
+		*pos = find_file_pos_in_list(view, hist_entry->file);
+		*rel_pos = hist_entry->rel_pos;
 		return 1;
 	}
 
@@ -337,6 +304,35 @@ find_in_hist(const view_t *view, const view_t *source, int *pos, int *rel_pos)
 	}
 
 	return 0;
+}
+
+/* Finds entry in view history by directory path.  Returns pointer to the entry
+ * or NULL. */
+static history_t *
+find_hist_entry(const view_t *view, const char dir[])
+{
+	history_t *const history = view->history;
+	int i = view->history_pos;
+
+	if(cfg.history_len <= 0)
+	{
+		return NULL;
+	}
+
+	if(stroscmp(history[i].dir, dir) == 0 && history[i].file[0] == '\0')
+	{
+		--i;
+	}
+
+	for(; i >= 0 && history[i].dir[0] != '\0'; --i)
+	{
+		if(stroscmp(history[i].dir, dir) == 0)
+		{
+			return &history[i];
+		}
+	}
+
+	return NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
