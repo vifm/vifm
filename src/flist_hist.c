@@ -306,6 +306,18 @@ find_in_hist(const view_t *view, const view_t *source, int *pos, int *rel_pos)
 	return 0;
 }
 
+void
+flist_hist_update(view_t *view, const char dir[], const char file[],
+		int rel_pos)
+{
+	history_t *const hist_entry = find_hist_entry(view, dir);
+	if(hist_entry != NULL)
+	{
+		(void)replace_string(&hist_entry->file, file);
+		hist_entry->rel_pos = rel_pos;
+	}
+}
+
 /* Finds entry in view history by directory path.  Returns pointer to the entry
  * or NULL. */
 static history_t *

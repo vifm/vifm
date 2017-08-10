@@ -438,6 +438,13 @@ print_column(view_t *view, entries_t entries, const char current[],
 		top = MAX(0, entries.nentries - view->window_rows);
 	}
 
+	if(current != NULL)
+	{
+		/* We will display cursor on this entry and want history to be aware of
+		 * it. */
+		flist_hist_update(view, path, get_last_path_component(current), pos - top);
+	}
+
 	for(i = top; i < entries.nentries && i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;

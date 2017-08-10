@@ -260,5 +260,20 @@ TEST(top_value_can_not_be_negative)
 	assert_int_equal(1, pos);
 }
 
+TEST(hist_update_performs_update_but_does_not_move_entry)
+{
+	flist_hist_save(&lwin, "/bin", "a", 2);
+	flist_hist_save(&lwin, "/etc", "b", 4);
+
+	flist_hist_update(&lwin, "/bin", "g", 8);
+
+	assert_string_equal("/bin", lwin.history[1].dir);
+	assert_string_equal("g", lwin.history[1].file);
+	assert_int_equal(8, lwin.history[1].rel_pos);
+	assert_string_equal("/etc", lwin.history[2].dir);
+	assert_string_equal("b", lwin.history[2].file);
+	assert_int_equal(4, lwin.history[2].rel_pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
