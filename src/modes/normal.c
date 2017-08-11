@@ -227,6 +227,10 @@ static void cmd_lb_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_d(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_r(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_r(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_lb_R(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_rb_R(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_rb_s(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_lb_z(key_info_t key_info, keys_info_t *keys_info);
@@ -398,6 +402,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_RB WK_c,       {{&cmd_rb_c}, .descr = "go to next mismatch"}},
 	{WK_LB WK_d,       {{&cmd_lb_d}, .descr = "go to previous dir"}},
 	{WK_RB WK_d,       {{&cmd_rb_d}, .descr = "go to next dir"}},
+	{WK_LB WK_r,       {{&cmd_lb_r}, .descr = "navigate to previous sibling dir"}},
+	{WK_RB WK_r,       {{&cmd_rb_r}, .descr = "navigate to next sibling dir"}},
+	{WK_LB WK_R,       {{&cmd_lb_R}, .descr = "navigate to previous sibling dir (wrap)"}},
+	{WK_RB WK_R,       {{&cmd_rb_R}, .descr = "navigate to next sibling dir (wrap)"}},
 	{WK_LB WK_s,       {{&cmd_lb_s}, .descr = "go to previous selected entry"}},
 	{WK_RB WK_s,       {{&cmd_rb_s}, .descr = "go to next selected entry"}},
 	{WK_LB WK_z,       {{&cmd_lb_z}, .descr = "go to first sibling"}},
@@ -2077,6 +2085,38 @@ static void
 cmd_rb_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	pick_or_move(keys_info, flist_next_dir(curr_view));
+}
+
+/* Navigates to previous sibling directory. */
+static void
+cmd_lb_r(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = (go_to_sibling_dir(curr_view,
+				-def_count(key_info.count), 0) != 0);
+}
+
+/* Navigate to next sibling directory. */
+static void
+cmd_rb_r(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = (go_to_sibling_dir(curr_view,
+				def_count(key_info.count), 0) != 0);
+}
+
+/* Navigates to previous sibling directory with wrapping. */
+static void
+cmd_lb_R(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = (go_to_sibling_dir(curr_view,
+				-def_count(key_info.count), 1) != 0);
+}
+
+/* Navigate to next sibling directory with wrapping. */
+static void
+cmd_rb_R(key_info_t key_info, keys_info_t *keys_info)
+{
+	curr_stats.save_msg = (go_to_sibling_dir(curr_view,
+				def_count(key_info.count), 1) != 0);
 }
 
 /* Go to or pick files until and including previous selected entry or do

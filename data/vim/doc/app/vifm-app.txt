@@ -613,6 +613,12 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
     go to next directory entry or do nothing.
 
 
+[r  same as |vifm-:siblprev|.                    *vifm-[r*
+]r  same as |vifm-:siblnext|.                    *vifm-]r*
+[R  same as |vifm-:siblprev|!.                   *vifm-[R*
+]R  same as |vifm-:siblnext|!.                   *vifm-]R*
+
+
 [s                                             *vifm-[s*
     go to previous selected entry or do nothing.
 

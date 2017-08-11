@@ -299,7 +299,7 @@ static int parse_bg_mark(char cmd[]);
 
 const cmd_add_t cmds_list[] = {
 	{ .name = "",                  .abbr = NULL,    .id = COM_GOTO,
-	  .descr = "navigate to specific line",
+	  .descr = "put cursor at specific line",
 	  .flags = HAS_RANGE | HAS_COMMENT,
 	  .handler = &goto_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "!",                 .abbr = NULL,    .id = COM_EXECUTE,
