@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 8
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 11
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -613,6 +613,12 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
     go to next directory entry or do nothing.
 
 
+[r  same as |vifm-:siblprev|.                    *vifm-[r*
+]r  same as |vifm-:siblnext|.                    *vifm-]r*
+[R  same as |vifm-:siblprev|!.                   *vifm-[R*
+]R  same as |vifm-:siblnext|!.                   *vifm-]R*
+
+
 [s                                             *vifm-[s*
     go to previous selected entry or do nothing.
 
@@ -620,11 +626,8 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
     go to next selected entry or do nothing.
 
 
-[z                                             *vifm-[z*
-    go to first sibling of current entry.
-
-]z                                             *vifm-]z*
-    go to last sibling of current entry.
+[z  go to first sibling of current entry.      *vifm-[z*
+]z  go to last sibling of current entry.       *vifm-]z*
 
 
 zj                                             *vifm-zj*

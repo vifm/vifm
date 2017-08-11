@@ -404,8 +404,9 @@ static void
 print_column(view_t *view, entries_t entries, const char current[],
 		const char path[], int width, int offset, int number_width)
 {
+	columns_t *const columns = get_name_column();
+	const int scroll_offset = get_effective_scroll_offset(view);
 	int top, pos;
-	columns_t *columns = get_name_column();
 	int i;
 
 	sort_entries(view, entries);
@@ -424,18 +425,30 @@ print_column(view_t *view, entries_t entries, const char current[],
 	}
 
 	/* Make sure that current element is visible on the screen. */
-	if(pos < top)
+	if(pos < top + scroll_offset)
 	{
-		top = pos;
+		top = pos - scroll_offset;
 	}
-	else if(pos >= top + view->window_rows)
+	else if(pos >= top + view->window_rows - scroll_offset)
 	{
-		top = pos - (view->window_rows - 1);
+		top = pos - (view->window_rows - scroll_offset - 1);
 	}
-	/* Ensure that we fill all lines for which we have files. */
+	/* Ensure that top position is correct and we fill all lines for which we have
+	 * files. */
+	if(top < 0)
+	{
+		top = 0;
+	}
 	if(entries.nentries - top < view->window_rows)
 	{
 		top = MAX(0, entries.nentries - view->window_rows);
+	}
+
+	if(current != NULL)
+	{
+		/* We will display cursor on this entry and want history to be aware of
+		 * it. */
+		flist_hist_update(view, path, get_last_path_component(current), pos - top);
 	}
 
 	for(i = top; i < entries.nentries && i - top < view->window_rows; ++i)
@@ -1678,13 +1691,11 @@ fview_set_lsview(view_t *view, int enabled)
 void
 fview_set_millerview(view_t *view, int enabled)
 {
-	if(view->miller_view == enabled)
+	if(view->miller_view != enabled)
 	{
-		return;
+		view->miller_view = enabled;
+		ui_view_schedule_redraw(view);
 	}
-
-	view->miller_view = enabled;
-	ui_view_schedule_redraw(view);
 }
 
 size_t

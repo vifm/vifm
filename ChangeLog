@@ -13,6 +13,9 @@
 
 	Added 'milleroptions' option that configures miller view.
 
+	Added [r/]r/[R/]R normal mode shortcuts that map to :siblprev and :siblnext
+	with and without wrapping correspondingly.  Thanks to filterfalse.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

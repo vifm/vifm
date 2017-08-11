@@ -56,6 +56,11 @@ void flist_hist_lookup(view_t *view, const view_t *source);
 int flist_hist_find(const view_t *view, entries_t entries, const char dir[],
 		int *top);
 
+/* Updates existing history entry for the path with new data or does nothing if
+ * directory path is absent from history. */
+void flist_hist_update(view_t *view, const char dir[], const char file[],
+		int rel_pos);
+
 #endif /* VIFM__FLIST_HIST_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
