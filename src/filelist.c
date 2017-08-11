@@ -3000,7 +3000,7 @@ pick_sibling(view_t *view, entries_t parent_dirs, int offset, int wrap,
 		int *wrapped)
 {
 	dir_entry_t *entry;
-	int i;
+	int i, initial;
 
 	/* Find parent entry. */
 	entry = entry_from_path(view, parent_dirs.entries, parent_dirs.nentries,
@@ -3012,7 +3012,8 @@ pick_sibling(view_t *view, entries_t parent_dirs, int offset, int wrap,
 	}
 
 	*wrapped = 0;
-	i = entry - parent_dirs.entries;
+	initial = entry - parent_dirs.entries;
+	i = initial;
 
 	while(offset != 0)
 	{
@@ -3040,7 +3041,7 @@ pick_sibling(view_t *view, entries_t parent_dirs, int offset, int wrap,
 		}
 		else
 		{
-			return NULL;
+			return (i == initial ? NULL : entry);
 		}
 
 		entry = &parent_dirs.entries[i];
