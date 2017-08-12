@@ -470,7 +470,7 @@ list_is_incomplete(view_t *const view)
 		return 1;
 	}
 
-	if(flist_custom_active(view) && view->custom.type != CV_TREE)
+	if(flist_custom_active(view) && !cv_tree(view->custom.type))
 	{
 		return 0;
 	}
@@ -779,7 +779,7 @@ local_filter_apply(view_t *view, const char filter[])
 	(void)filter_set(&view->local_filter.filter, filter);
 	cfg_save_filter_history(view->local_filter.filter.raw);
 
-	if(flist_custom_active(view) && view->custom.type != CV_TREE &&
+	if(flist_custom_active(view) && !cv_tree(view->custom.type) &&
 			view->local_filter.entry_count == 0)
 	{
 		/* Save unfiltered (by local filter) list for further use. */

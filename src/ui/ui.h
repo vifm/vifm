@@ -468,6 +468,10 @@ int cv_unsorted(CVType type);
  * Returns non-zero if so, otherwise zero is returned. */
 int cv_compare(CVType type);
 
+/* Checks whether custom view of specified type is a tree view.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int cv_tree(CVType type);
+
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
 void update_screen(UpdateType update_kind);

@@ -981,7 +981,7 @@ fops_view_can_be_changed(const view_t *view)
 int
 fops_view_can_be_extended(const view_t *view, int at)
 {
-	if(flist_custom_active(view) && view->custom.type != CV_TREE)
+	if(flist_custom_active(view) && !cv_tree(view->custom.type))
 	{
 		show_error_msg("Operation error",
 				"Custom view can't handle this operation.");
@@ -994,7 +994,7 @@ fops_view_can_be_extended(const view_t *view, int at)
 const char *
 fops_get_dst_dir(const view_t *view, int at)
 {
-	if(flist_custom_active(view) && view->custom.type == CV_TREE)
+	if(flist_custom_active(view) && cv_tree(view->custom.type))
 	{
 		if(at < 0)
 		{

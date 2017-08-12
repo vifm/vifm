@@ -1084,7 +1084,7 @@ flist_custom_exclude(view_t *view, int selection_only)
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		(void)trie_put(excluded, full_path);
 
-		if(view->custom.type == CV_TREE)
+		if(cv_tree(view->custom.type))
 		{
 			(void)trie_put(view->custom.excluded_paths, full_path);
 		}
@@ -1212,7 +1212,7 @@ flist_custom_clone(view_t *to, const view_t *from)
 	dir_entry_t *dst, *src;
 	int nentries;
 	int i, j;
-	const int from_tree = (from->custom.type == CV_TREE);
+	const int from_tree = cv_tree(from->custom.type);
 
 	assert(flist_custom_active(from) && to->custom.paths_cache == NULL &&
 			"Wrong state of destination view.");
@@ -1242,7 +1242,7 @@ flist_custom_clone(view_t *to, const view_t *from)
 	j = 0;
 	for(i = 0; i < nentries; ++i)
 	{
-		if(to->custom.type != CV_TREE && src[i].child_pos != 0 &&
+		if(!cv_tree(to->custom.type) && src[i].child_pos != 0 &&
 				is_parent_dir(src[i].name))
 		{
 			continue;
@@ -1285,8 +1285,7 @@ flist_custom_uncompress_tree(view_t *view)
 {
 	unsigned int i;
 
-	assert(view->custom.type == CV_TREE &&
-			"This function is for tree-view only!");
+	assert(cv_tree(view->custom.type) && "This function is for tree-view only!");
 
 	dir_entry_t *entries = view->dir_entry;
 	size_t nentries = view->list_rows;
@@ -1393,7 +1392,7 @@ flist_goto_by_path(view_t *view, const char path[])
 		return;
 	}
 
-	if(flist_custom_active(view) && view->custom.type == CV_TREE &&
+	if(flist_custom_active(view) && cv_tree(view->custom.type) &&
 			strcmp(name, "..") == 0)
 	{
 		int pos;
@@ -2508,7 +2507,7 @@ check_if_filelist_has_changed(view_t *view)
 	const char *const curr_dir = flist_get_dir(view);
 
 	if(view->on_slow_fs ||
-			(flist_custom_active(view) && view->custom.type != CV_TREE) ||
+			(flist_custom_active(view) && !cv_tree(view->custom.type)) ||
 			is_unc_root(curr_dir))
 	{
 		return;
@@ -2548,7 +2547,7 @@ check_if_filelist_has_changed(view_t *view)
 	{
 		ui_view_schedule_reload(view);
 	}
-	else if(flist_custom_active(view) && view->custom.type == CV_TREE)
+	else if(flist_custom_active(view) && cv_tree(view->custom.type))
 	{
 		if(tree_has_changed(view->dir_entry, view->list_rows))
 		{

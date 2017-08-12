@@ -373,7 +373,7 @@ fops_delete_bg(view_t *view, int use_trash)
 static const char *
 get_top_dir(const view_t *view)
 {
-	if(flist_custom_active(view) && view->custom.type != CV_TREE)
+	if(flist_custom_active(view) && !cv_tree(view->custom.type))
 	{
 		return NULL;
 	}

@@ -99,7 +99,7 @@ sort_view(view_t *v)
 	view_sort_groups = v->sort_groups;
 	custom_view = flist_custom_active(v);
 
-	if(!custom_view || v->custom.type != CV_TREE)
+	if(!custom_view || !cv_tree(v->custom.type))
 	{
 		/* Tree sorting works fine for flat list, but requires a bit more
 		 * resources, so skip it. */
