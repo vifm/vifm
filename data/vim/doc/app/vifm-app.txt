@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 11
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 13
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -2229,9 +2229,10 @@ yet supported) and might be changed in future releases, or get an alias.
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
     structure corresponds to what one would see on visiting the directories
-    manually.  Tree structure is incompatible with alternative
-    representations, so values of |vifm-'lsview'| and |vifm-'millerview'|
-    options are ignored.
+    manually.  As a special case for trees built out of custom view
+    file-system tracking isn't performed.  Tree structure is incompatible
+    with alternative representations, so values of |vifm-'lsview'| and
+    |vifm-'millerview'| options are ignored.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.

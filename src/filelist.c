@@ -154,6 +154,9 @@ static int flist_load_tree_internal(view_t *view, const char path[],
 		int reload);
 static int make_tree(view_t *view, const char path[], int reload,
 		trie_t *excluded_paths);
+static void tree_from_cv(view_t *view);
+static void form_tree(const char name[], int valid, const void *parent_data,
+		void *data, void *arg);
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
 static int file_is_visible(view_t *view, const char name[], int is_dir,
@@ -3525,14 +3528,27 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 {
 	char canonic_path[PATH_MAX];
 	int nfiltered;
+	CVType type;
+	const int from_custom = flist_custom_active(view)
+	                     && ONE_OF(view->custom.type, CV_REGULAR, CV_VERY);
 
-	flist_custom_start(view, "tree");
+	flist_custom_start(view, from_custom ? "custom tree" : "tree");
 
 	show_progress("Building tree...", 0);
 
 	ui_cancellation_reset();
 	ui_cancellation_enable();
-	nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
+	if(from_custom)
+	{
+		nfiltered = 0;
+		tree_from_cv(view);
+		type = CV_CUSTOM_TREE;
+	}
+	else
+	{
+		nfiltered = add_files_recursively(view, path, excluded_paths, -1, 0);
+		type = CV_TREE;
+	}
 	ui_cancellation_disable();
 
 	ui_sb_quick_msg_clear();
@@ -3551,7 +3567,7 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 	to_canonic_path(path, flist_get_dir(view), canonic_path,
 			sizeof(canonic_path));
 
-	if(flist_custom_finish_internal(view, CV_TREE, reload, canonic_path, 1) != 0)
+	if(flist_custom_finish_internal(view, type, reload, canonic_path, 1) != 0)
 	{
 		return 1;
 	}
@@ -3560,6 +3576,131 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 	replace_string(&view->custom.orig_dir, canonic_path);
 
 	return 0;
+}
+
+/* Turns custom list into custom tree. */
+static void
+tree_from_cv(view_t *view)
+{
+	int i;
+
+	dir_entry_t *entries = view->dir_entry;
+	int nentries = view->list_rows;
+
+	fsdata_t *const tree = fsdata_create(0, 0);
+
+	view->dir_entry = NULL;
+	view->list_rows = 0;
+
+	for(i = 0U; i < nentries; ++i)
+	{
+		if(!is_parent_dir(entries[i].name))
+		{
+			char full_path[PATH_MAX + 1];
+			void *data = &entries[i];
+			get_full_path_of(&entries[i], sizeof(full_path), full_path);
+			fsdata_set(tree, full_path, &data, sizeof(data));
+
+			/* Mark entries that came from original list. */
+			entries[i].tag = 1;
+		}
+	}
+
+	fsdata_traverse(tree, &form_tree, view);
+
+	fsdata_free(tree);
+	dynarray_free(entries);
+
+	entries = view->custom.entries;
+
+	/* Traverse root children and drop extra tops of their subtrees. */
+	for(i = 0; i < view->custom.entry_count - 1; i += entries[i].child_count + 1)
+	{
+		int j = i;
+		while(j < view->custom.entry_count - 1 && entries[j].child_count > 0 &&
+				(entries[j].child_count == entries[j + 1].child_count + 1 ||
+				 entries[j].name[0] == '\0') && entries[j].tag != 1)
+		{
+			fentry_free(view, &entries[j++]);
+		}
+
+		view->custom.entry_count -= j - i;
+		memmove(&entries[i], &entries[j],
+				sizeof(*entries)*(view->custom.entry_count - i));
+		view->custom.entries[i].child_pos = 0;
+	}
+}
+
+/* fsdata_traverse() callback that flattens the tree into array of entries. */
+static void
+form_tree(const char name[], int valid, const void *parent_data, void *data,
+		void *arg)
+{
+	/* Initially data associated with existing entries points to original entries.
+	 * Once that entry is copied, the data is replaced with its index in the new
+	 * list. */
+
+	view_t *view = arg;
+
+	dir_entry_t *dir_entry = alloc_dir_entry(&view->custom.entries,
+			view->custom.entry_count);
+	++view->custom.entry_count;
+
+	if(valid)
+	{
+		*dir_entry = **(dir_entry_t **)data;
+		dir_entry->child_count = 0;
+	}
+	else
+	{
+		char full_path[PATH_MAX + 1];
+
+		if(parent_data == NULL)
+		{
+			char *const typed_path = format_str("%s/", name);
+			if(is_root_dir(typed_path))
+			{
+				/* Entry for a root is added temporarily (this happens only on Windows)
+				 * as a storage of path prefix and is removed afterwards in
+				 * tree_from_cv(). */
+				init_dir_entry(view, dir_entry, "");
+				dir_entry->origin = strdup(name);
+			}
+			else
+			{
+				init_dir_entry(view, dir_entry, name);
+				dir_entry->origin = strdup("/");
+			}
+			free(typed_path);
+		}
+		else
+		{
+			char parent_path[PATH_MAX + 1];
+			const intptr_t *parent_idx = parent_data;
+			init_dir_entry(view, dir_entry, name);
+			get_full_path_of(&view->custom.entries[*parent_idx], sizeof(parent_path),
+					parent_path);
+			dir_entry->origin = strdup(parent_path);
+		}
+
+		get_full_path_of(dir_entry, sizeof(full_path), full_path);
+		fill_dir_entry_by_path(dir_entry, full_path);
+	}
+
+	*(intptr_t *)data = dir_entry - view->custom.entries;
+
+	if(parent_data != NULL)
+	{
+		const intptr_t *const parent_idx = parent_data;
+		dir_entry->child_pos = (dir_entry - view->custom.entries) - *parent_idx;
+
+		do
+		{
+			dir_entry -= dir_entry->child_pos;
+			++dir_entry->child_count;
+		}
+		while(dir_entry->child_pos != 0);
+	}
 }
 
 /* Adds custom view entries corresponding to file system tree.  parent_pos is

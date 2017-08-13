@@ -34,11 +34,12 @@ static void validate_tree(const view_t *view);
 static void validate_parents(const dir_entry_t *entries, int nchildren);
 static void load_view(view_t *view);
 
-static char cwd[PATH_MAX + 1];
+static char cwd[PATH_MAX + 1], test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
 }
 
 SETUP()
@@ -783,11 +784,39 @@ TEST(cursor_is_set_on_previous_file)
 	assert_int_equal(8, lwin.list_pos);
 }
 
+TEST(tree_out_of_cv_with_single_element)
+{
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(load_tree(&lwin, TEST_DATA_PATH));
+	assert_int_equal(1, lwin.list_rows);
+}
+
+TEST(tree_out_of_cv_with_two_elements)
+{
+	char path[PATH_MAX];
+
+	flist_custom_start(&lwin, "test");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "read/dos-eof");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(load_tree(&lwin, TEST_DATA_PATH));
+	assert_int_equal(5, lwin.list_rows);
+}
+
 static int
 load_tree(view_t *view, const char path[])
 {
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), path, "", cwd);
-	return flist_load_tree(&lwin, lwin.curr_dir);
+	char abs_path[PATH_MAX + 1];
+	make_abs_path(abs_path, sizeof(abs_path), path, "", cwd);
+	return flist_load_tree(view, abs_path);
 }
 
 static void

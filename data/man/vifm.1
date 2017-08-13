@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 11, 2017" "vifm 0.9"
+.TH VIFM 1 "August 13, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2660,9 +2660,10 @@ same as :trashes, but also displays size of each trash directory.
 turn pane into tree view with current directory as a root.  The tree view is
 implemented on top of a custom view, but is automatically kept in sync with
 file system state and considers all the filters.  Thus the structure corresponds
-to what one would see on visiting the directories manually.  Tree structure is
-incompatible with alternative representations, so values of 'lsview' and
-\'millerview' options are ignored.
+to what one would see on visiting the directories manually.  As a special case
+for trees built out of custom view file-system tracking isn't performed.  Tree
+structure is incompatible with alternative representations, so values of
+\'lsview' and 'millerview' options are ignored.
 .TP
 .BI "                                         :undolist"
 .TP
