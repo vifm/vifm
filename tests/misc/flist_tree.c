@@ -32,6 +32,7 @@ static void column_line_print(const void *data, int column_id, const char buf[],
 static int remove_selected(view_t *view, const dir_entry_t *entry, void *arg);
 static void validate_tree(const view_t *view);
 static void validate_parents(const dir_entry_t *entries, int nchildren);
+static void load_view(view_t *view);
 
 static char cwd[PATH_MAX + 1];
 
@@ -165,9 +166,7 @@ TEST(leafs_are_suppressed_by_local_filtering)
 	validate_tree(&lwin);
 
 	/* ".." shouldn't appear after reload. */
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(5, lwin.list_rows);
 	validate_tree(&lwin);
 }
@@ -187,9 +186,7 @@ TEST(leafs_are_not_matched_by_local_filtering)
 	validate_tree(&lwin);
 
 	/* ".." shouldn't appear after reload. */
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(1, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -212,9 +209,7 @@ TEST(leafs_are_returned_if_local_filter_is_emptied)
 
 	/* Reload file list to make sure that its state is "clear" (leafs aren't
 	 * loaded in this case). */
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 
 	/* ".." should appear after filter is emptied. */
 	assert_int_equal(0, local_filter_set(&lwin, ""));
@@ -235,9 +230,7 @@ TEST(reloading_does_not_count_as_location_change)
 	validate_tree(&lwin);
 
 	(void)filter_set(&lwin.local_filter.filter, "dir");
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(5, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -768,9 +761,7 @@ TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 
 	lwin.list_pos = 3;
 	create_file(SANDBOX_PATH "/dir/subdir/subsubdir/file");
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(4, lwin.list_pos);
 
 	assert_success(remove(SANDBOX_PATH "/dir/file"));
@@ -861,6 +852,14 @@ validate_parents(const dir_entry_t *entries, int nchildren)
 		validate_parents(&entries[i] + 1, entries[i].child_count);
 		i += entries[i].child_count + 1;
 	}
+}
+
+static void
+load_view(view_t *view)
+{
+	curr_stats.load_stage = 2;
+	load_saving_pos(view, 1);
+	curr_stats.load_stage = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
