@@ -2549,7 +2549,9 @@ check_if_filelist_has_changed(view_t *view)
 	}
 	else if(flist_custom_active(view) && cv_tree(view->custom.type))
 	{
-		if(tree_has_changed(view->dir_entry, view->list_rows))
+		/* Custom trees don't track file-system changes. */
+		if(view->custom.type == CV_TREE &&
+				tree_has_changed(view->dir_entry, view->list_rows))
 		{
 			ui_view_schedule_reload(view);
 		}

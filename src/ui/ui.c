@@ -573,7 +573,7 @@ cv_compare(CVType type)
 int
 cv_tree(CVType type)
 {
-	return type == CV_TREE;
+	return type == CV_TREE || type == CV_CUSTOM_TREE;
 }
 
 void
