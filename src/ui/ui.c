@@ -570,6 +570,12 @@ cv_compare(CVType type)
 	return type == CV_COMPARE || type == CV_DIFF;
 }
 
+int
+cv_tree(CVType type)
+{
+	return type == CV_TREE || type == CV_CUSTOM_TREE;
+}
+
 void
 update_screen(UpdateType update_kind)
 {
@@ -1819,7 +1825,7 @@ static int
 is_forced_list_mode(const view_t *view)
 {
 	return flist_custom_active(view)
-	    && (view->custom.type == CV_TREE || cv_compare(view->custom.type));
+	    && (cv_tree(view->custom.type) || cv_compare(view->custom.type));
 }
 
 int

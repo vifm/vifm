@@ -35,6 +35,8 @@
 
 	Made :siblnext and :siblprev accept [count] range.  Thanks to filterfalse.
 
+	Made :tree pick up list of files from custom view.  Thanks to filterfalse.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 

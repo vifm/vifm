@@ -1398,7 +1398,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 		return;
 	}
 
-	if(!ui_view_displays_columns(view) || view->custom.type != CV_TREE)
+	if(!ui_view_displays_columns(view) || !cv_tree(view->custom.type))
 	{
 		/* File name possibly with path prefix. */
 		get_short_path_of(view, cdt->entry, 1, 0, buf_len + 1U, buf);

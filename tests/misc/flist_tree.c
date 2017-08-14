@@ -32,12 +32,14 @@ static void column_line_print(const void *data, int column_id, const char buf[],
 static int remove_selected(view_t *view, const dir_entry_t *entry, void *arg);
 static void validate_tree(const view_t *view);
 static void validate_parents(const dir_entry_t *entries, int nchildren);
+static void load_view(view_t *view);
 
-static char cwd[PATH_MAX + 1];
+static char cwd[PATH_MAX + 1], test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
 }
 
 SETUP()
@@ -165,9 +167,7 @@ TEST(leafs_are_suppressed_by_local_filtering)
 	validate_tree(&lwin);
 
 	/* ".." shouldn't appear after reload. */
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(5, lwin.list_rows);
 	validate_tree(&lwin);
 }
@@ -187,9 +187,7 @@ TEST(leafs_are_not_matched_by_local_filtering)
 	validate_tree(&lwin);
 
 	/* ".." shouldn't appear after reload. */
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(1, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -212,9 +210,7 @@ TEST(leafs_are_returned_if_local_filter_is_emptied)
 
 	/* Reload file list to make sure that its state is "clear" (leafs aren't
 	 * loaded in this case). */
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 
 	/* ".." should appear after filter is emptied. */
 	assert_int_equal(0, local_filter_set(&lwin, ""));
@@ -235,9 +231,7 @@ TEST(reloading_does_not_count_as_location_change)
 	validate_tree(&lwin);
 
 	(void)filter_set(&lwin.local_filter.filter, "dir");
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(5, lwin.list_rows);
 	validate_tree(&lwin);
 
@@ -768,9 +762,7 @@ TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 
 	lwin.list_pos = 3;
 	create_file(SANDBOX_PATH "/dir/subdir/subsubdir/file");
-	curr_stats.load_stage = 2;
-	load_saving_pos(&lwin, 1);
-	curr_stats.load_stage = 0;
+	load_view(&lwin);
 	assert_int_equal(4, lwin.list_pos);
 
 	assert_success(remove(SANDBOX_PATH "/dir/file"));
@@ -792,11 +784,39 @@ TEST(cursor_is_set_on_previous_file)
 	assert_int_equal(8, lwin.list_pos);
 }
 
+TEST(tree_out_of_cv_with_single_element)
+{
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(load_tree(&lwin, TEST_DATA_PATH));
+	assert_int_equal(1, lwin.list_rows);
+}
+
+TEST(tree_out_of_cv_with_two_elements)
+{
+	char path[PATH_MAX];
+
+	flist_custom_start(&lwin, "test");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "read/dos-eof");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(load_tree(&lwin, TEST_DATA_PATH));
+	assert_int_equal(5, lwin.list_rows);
+}
+
 static int
 load_tree(view_t *view, const char path[])
 {
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), path, "", cwd);
-	return flist_load_tree(&lwin, lwin.curr_dir);
+	char abs_path[PATH_MAX + 1];
+	make_abs_path(abs_path, sizeof(abs_path), path, "", cwd);
+	return flist_load_tree(view, abs_path);
 }
 
 static void
@@ -861,6 +881,14 @@ validate_parents(const dir_entry_t *entries, int nchildren)
 		validate_parents(&entries[i] + 1, entries[i].child_count);
 		i += entries[i].child_count + 1;
 	}
+}
+
+static void
+load_view(view_t *view)
+{
+	curr_stats.load_stage = 2;
+	load_saving_pos(view, 1);
+	curr_stats.load_stage = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

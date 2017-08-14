@@ -3689,7 +3689,7 @@ sync_selectively(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	if(curr_view->custom.type != CV_TREE)
+	if(!cv_tree(curr_view->custom.type))
 	{
 		tree = 0;
 	}

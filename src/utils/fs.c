@@ -843,7 +843,7 @@ get_cwd(char buf[], size_t size)
 char *
 save_cwd(void)
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 	if(os_getcwd(cwd, sizeof(cwd)) != cwd)
 	{
 		return NULL;

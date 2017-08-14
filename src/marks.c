@@ -267,7 +267,7 @@ check_mark_directory(view_t *view, char m)
 
 	custom = flist_custom_active(view);
 
-	if(custom && view->custom.type == CV_TREE && strcmp(mark->file, "..") == 0)
+	if(custom && cv_tree(view->custom.type) && strcmp(mark->file, "..") == 0)
 	{
 		return flist_find_entry(view, mark->file, mark->directory);
 	}

@@ -134,11 +134,12 @@ NumberingType;
 /* Variants of custom view. */
 typedef enum
 {
-	CV_REGULAR, /* Sorted list of files. */
-	CV_VERY,    /* No initial sorting of file list is enforced. */
-	CV_TREE,    /* Files of a file system sub-tree. */
-	CV_COMPARE, /* Directory comparison pane. */
-	CV_DIFF,    /* One of two directory comparison panes. */
+	CV_REGULAR,     /* Sorted list of files. */
+	CV_VERY,        /* No initial sorting of file list is enforced. */
+	CV_TREE,        /* Files of a file system sub-tree. */
+	CV_CUSTOM_TREE, /* Selected files of a file system sub-tree. */
+	CV_COMPARE,     /* Directory comparison pane. */
+	CV_DIFF,        /* One of two directory comparison panes. */
 }
 CVType;
 
@@ -467,6 +468,10 @@ int cv_unsorted(CVType type);
 /* Checks whether custom view of specified type is a compare or diff view.
  * Returns non-zero if so, otherwise zero is returned. */
 int cv_compare(CVType type);
+
+/* Checks whether custom view of specified type is a tree view.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int cv_tree(CVType type);
 
 /* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
