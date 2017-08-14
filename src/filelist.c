@@ -718,7 +718,7 @@ flist_custom_start(view_t *view, const char title[])
 dir_entry_t *
 flist_custom_add(view_t *view, const char path[])
 {
-	char canonic_path[PATH_MAX];
+	char canonic_path[PATH_MAX + 1];
 	to_canonic_path(path, flist_get_dir(view), canonic_path,
 			sizeof(canonic_path));
 
@@ -735,7 +735,7 @@ flist_custom_add(view_t *view, const char path[])
 dir_entry_t *
 flist_custom_put(view_t *view, dir_entry_t *entry)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	dir_entry_t *dir_entry;
 	size_t list_size = view->custom.entry_count;
 
