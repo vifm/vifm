@@ -142,6 +142,10 @@ void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
  * tmp directory. */
 const char * get_tmpdir(void);
 
+/* Concatenates two paths while making sure to not add extra slash between
+ * them. */
+void build_path(char buf[], size_t buf_len, const char p1[], const char p2[]);
+
 #ifdef _WIN32
 
 int is_unc_path(const char *path);

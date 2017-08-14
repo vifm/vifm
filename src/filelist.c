@@ -3187,8 +3187,7 @@ get_full_path_at(const view_t *view, int pos, size_t buf_len, char buf[])
 void
 get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
-	snprintf(buf, buf_len, "%s%s%s", entry->origin,
-			ends_with_slash(entry->origin) ? "" : "/", entry->name);
+	build_path(buf, buf_len, entry->origin, entry->name);
 }
 
 void
@@ -3234,9 +3233,7 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 
 	if(!path_starts_with(path, root_path))
 	{
-		char full_path[PATH_MAX];
-		snprintf(full_path, sizeof(full_path), "%s/%s", path, name);
-		copy_str(buf, buf_len, full_path);
+		build_path(buf, buf_len, path, name);
 		free(free_this);
 		return;
 	}

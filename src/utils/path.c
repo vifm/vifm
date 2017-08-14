@@ -776,6 +776,12 @@ get_tmpdir(void)
 			(const char *)NULL);
 }
 
+void
+build_path(char buf[], size_t buf_len, const char p1[], const char p2[])
+{
+	snprintf(buf, buf_len, "%s%s%s", p1, ends_with_slash(p1) ? "" : "/", p2);
+}
+
 #ifdef _WIN32
 
 int

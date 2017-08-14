@@ -773,8 +773,7 @@ make_real_path(const char path[], char buf[], size_t buf_len)
 		}
 	}
 
-	snprintf(buf, buf_len, "%s%s%s", real_dir,
-			ends_with_slash(real_dir) ? "" : "/", get_last_path_component(path));
+	build_path(buf, buf_len, real_dir, get_last_path_component(path));
 }
 
 /* Calls client traverser for each trash directory specification defined by

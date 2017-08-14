@@ -307,9 +307,8 @@ parse_path(const char dir[], const char path[], char buf[])
 #endif
 	else
 	{
-		char new_path[PATH_MAX];
-		snprintf(new_path, sizeof(new_path), "%s%s%s", dir,
-				ends_with_slash(dir) ? "" : "/", path);
+		char new_path[PATH_MAX + 1];
+		build_path(new_path, sizeof(new_path), dir, path);
 		canonicalize_path(new_path, buf, PATH_MAX);
 	}
 	if(!is_root_dir(buf))
