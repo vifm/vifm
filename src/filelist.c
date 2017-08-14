@@ -3197,7 +3197,7 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 	char name[NAME_MAX + 1];
 	const char *path = entry->origin;
 
-	char *free_this = NULL;
+	char parent_path[PATH_MAX + 1];
 	const char *root_path = flist_get_dir(view);
 
 	if(fentry_is_fake(entry))
@@ -3209,9 +3209,9 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 	if(drop_prefix && entry->child_pos != 0)
 	{
 		/* Replace root to force obtaining of file name only. */
-		const dir_entry_t *const parent = entry - entry->child_pos;
-		free_this = format_str("%s/%s", parent->origin, parent->name);
-		root_path = free_this;
+		const dir_entry_t *const parent_entry = entry - entry->child_pos;
+		get_full_path_of(parent_entry, sizeof(parent_path), parent_path);
+		root_path = parent_path;
 	}
 
 	if(format)
@@ -3227,14 +3227,12 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 	if(is_parent_dir(entry->name))
 	{
 		copy_str(buf, buf_len, name);
-		free(free_this);
 		return;
 	}
 
 	if(!path_starts_with(path, root_path))
 	{
 		build_path(buf, buf_len, path, name);
-		free(free_this);
 		return;
 	}
 
@@ -3250,8 +3248,6 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 	{
 		snprintf(buf, buf_len, "%s/%s", path, name);
 	}
-
-	free(free_this);
 }
 
 void
