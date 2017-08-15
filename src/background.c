@@ -683,7 +683,7 @@ static pid_t
 background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
-	wchar_t *args[4];
+	const wchar_t *args[4];
 	char cwd[PATH_MAX];
 	int code;
 	wchar_t *final_wide_cmd;
@@ -725,7 +725,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	 *      'shell' is "bash".  Windows version of bash seems to process some
 	 *      strings in unicode as ASCII.  Using narrow version on the other hand
 	 *      will break use of non-ASCII paths on English version of Windows... */
-	code = _wspawnvp(P_NOWAIT, args[0], (const wchar_t **)args);
+	code = _wspawnvp(P_NOWAIT, args[0], args);
 
 	free(wide_sh);
 	free(final_wide_cmd);
