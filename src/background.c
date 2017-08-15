@@ -687,7 +687,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	char *cwd;
 	int code;
 	wchar_t *final_wide_cmd;
-	wchar_t *wide_sh = NULL;
+	wchar_t *wide_sh;
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
 		return (pid_t)-1;
