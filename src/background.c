@@ -684,7 +684,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
 	const wchar_t *args[4];
-	char cwd[PATH_MAX];
+	char *cwd;
 	int code;
 	wchar_t *final_wide_cmd;
 	wchar_t *wide_sh = NULL;
@@ -694,13 +694,10 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	if(_dup2(err_pipe[1], _fileno(stderr)) != 0)
 		return (pid_t)-1;
 
-	cwd[0] = '\0';
-	if(get_cwd(cwd, sizeof(cwd)) != NULL)
+	cwd = save_cwd();
+	if(cwd != NULL && is_unc_path(cwd))
 	{
-		if(is_unc_path(cwd))
-		{
-			(void)chdir(get_tmpdir());
-		}
+		(void)chdir(get_tmpdir());
 	}
 
 	final_wide_cmd = to_wide(cmd);
@@ -730,10 +727,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	free(wide_sh);
 	free(final_wide_cmd);
 
-	if(is_unc_path(cwd))
-	{
-		(void)chdir(cwd);
-	}
+	restore_cwd(cwd);
 
 	if(code == 0)
 	{
