@@ -191,7 +191,8 @@ int count_dir_items(const char path[]);
 char * get_cwd(char buf[], size_t size);
 
 /* Remembers current working directory.  If path can't be obtained, does
- * nothing.  Result should be passed to restore_cwd(), no checks are needed. */
+ * nothing.  Result should be passed to restore_cwd(), no checks are needed (but
+ * NULL indicates that we failed to get CWD). */
 char * save_cwd(void);
 
 /* Restores previously remembered working directory via save_cwd().  If nothing

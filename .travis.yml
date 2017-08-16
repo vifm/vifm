@@ -32,9 +32,9 @@ cache:
 
 script:
  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then
-     pip install --user cpp-coveralls pyOpenSSL cryptography idna certifi &&
      scripts/fix-timestamps fast && (
        if [ "$CC" = gcc ]; then
+         pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1 &&
          ./configure --enable-coverage;
        else
          ./configure;

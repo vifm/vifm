@@ -683,31 +683,31 @@ static pid_t
 background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		int out_pipe[2], int err_pipe[2])
 {
-	wchar_t *args[4];
-	char cwd[PATH_MAX];
+	const wchar_t *args[4];
+	char *cwd;
 	int code;
 	wchar_t *final_wide_cmd;
 	wchar_t *wide_sh = NULL;
+	const int use_cmd = (!user_sh || curr_stats.shell_type == ST_CMD);
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
 		return (pid_t)-1;
 	if(_dup2(err_pipe[1], _fileno(stderr)) != 0)
 		return (pid_t)-1;
 
-	cwd[0] = '\0';
-	if(get_cwd(cwd, sizeof(cwd)) != NULL)
+	/* At least cmd.exe is incapable of handling UNC paths. */
+	cwd = save_cwd();
+	if(cwd != NULL && is_unc_path(cwd))
 	{
-		if(is_unc_path(cwd))
-		{
-			(void)chdir(get_tmpdir());
-		}
+		(void)chdir(get_tmpdir());
 	}
 
-	final_wide_cmd = to_wide(cmd);
+	wide_sh = to_wide(use_cmd ? "cmd" : cfg.shell);
 
-	wide_sh = to_wide(user_sh ? cfg.shell : "cmd");
-	if(!user_sh || curr_stats.shell_type == ST_CMD)
+	if(use_cmd)
 	{
+		final_wide_cmd = to_wide(cmd);
+
 		args[0] = wide_sh;
 		args[1] = L"/C";
 		args[2] = final_wide_cmd;
@@ -715,25 +715,23 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	}
 	else
 	{
-		args[0] = wide_sh;
-		args[1] = L"-c";
-		args[2] = final_wide_cmd;
-		args[3] = NULL;
+		/* Nobody cares that there is an array of arguments, all arguments just get
+		 * concatenated anyway...  Therefore we need to take care of escaping stuff
+		 * ourselves. */
+		char *const modified_cmd = win_make_sh_cmd(cmd);
+		final_wide_cmd = to_wide(modified_cmd);
+		free(modified_cmd);
+
+		args[0] = final_wide_cmd;
+		args[1] = NULL;
 	}
 
-	/* XXX: using unicode version of spawn breaks commands like `:!echo hi%S` when
-	 *      'shell' is "bash".  Windows version of bash seems to process some
-	 *      strings in unicode as ASCII.  Using narrow version on the other hand
-	 *      will break use of non-ASCII paths on English version of Windows... */
-	code = _wspawnvp(P_NOWAIT, args[0], (const wchar_t **)args);
+	code = _wspawnvp(P_NOWAIT, wide_sh, args);
 
 	free(wide_sh);
 	free(final_wide_cmd);
 
-	if(is_unc_path(cwd))
-	{
-		(void)chdir(cwd);
-	}
+	restore_cwd(cwd);
 
 	if(code == 0)
 	{

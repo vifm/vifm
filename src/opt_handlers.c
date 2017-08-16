@@ -1572,7 +1572,7 @@ str_to_classify(const char str[], char type_decs[FT_COUNT][2][9])
 	saveptr = NULL;
 	for(token = str_copy; (token = split_and_get_dc(token, &saveptr));)
 	{
-		FileType type;
+		FileType type = FT_UNK;
 		const char *expr = NULL;
 		const char *suffix = pick_out_decoration(token, &type, &expr);
 
