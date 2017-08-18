@@ -3,6 +3,8 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/utils/path.h"
 
+#include "utils.h"
+
 #ifndef _WIN32
 #define ABS_PREFIX
 #else
@@ -155,8 +157,7 @@ TEST(treat_many_dots_right)
 #endif
 }
 
-#ifdef _WIN32
-TEST(allow_unc)
+TEST(allow_unc, IF(windows))
 {
 	char buf[PATH_MAX];
 
@@ -175,7 +176,6 @@ TEST(allow_unc)
 	canonicalize_path("//server/resource/../", buf, sizeof(buf));
 	assert_string_equal("//server/", buf);
 }
-#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
