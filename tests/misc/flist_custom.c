@@ -516,6 +516,34 @@ TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 	}
 }
 
+TEST(current_directory_can_be_added_via_dot)
+{
+	assert_success(chdir(SANDBOX_PATH));
+	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
+
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+#else
+	replace_string(&cfg.shell, "cmd");
+#endif
+	stats_update_shell_type(cfg.shell);
+
+	assert_success(output_to_custom_flist(&lwin, "echo ../misc", 0, 0));
+
+	stats_update_shell_type("/bin/sh");
+	update_string(&cfg.shell, NULL);
+
+	assert_true(flist_custom_active(&lwin));
+	assert_int_equal(1, lwin.list_rows);
+	if(lwin.list_rows > 0)
+	{
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(&lwin.dir_entry[0], sizeof(full_path), full_path);
+
+		assert_string_equal(flist_get_dir(&lwin), full_path);
+	}
+}
+
 TEST(can_set_very_cv_twice_in_a_row)
 {
 	fview_init();
