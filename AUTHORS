@@ -108,3 +108,6 @@ Dennis Hamester fixed interaction with emacsclient due to reopening terminal as
 Svyatoslav Mishyn (a.k.a. juef) aligned options in conflict resolution dialog.
 
 oo- added shortcuts to dialogs.
+
+Dmitry Frank (a.k.a. dimonomid) fixed displaying size when 'statusline' is
+empty.
