@@ -4672,3 +4672,11 @@
 		The bookmarks code was rewritten.
 
 		The automatic updating of the file lists was rewritten.
+
+	Added :histnext/:histprev commands, which are analogous to <c-i>/<c-o>. The
+	main use case of that is to work around the common pain point of <tab> and
+	<c-i> being the same ASCII character: one could alter the terminal emulator
+	settings to emit, for example, the `F1` keycode when Ctrl+I is pressed, then
+	`:map <f1> :histnext<cr>` in vifm, add "t" flag to the 'cpoptions', and thus
+	have both <c-i> and <tab> working as expected.  Patch by Dmitry Frank
+	(a.k.a. dimonomid).

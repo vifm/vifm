@@ -200,6 +200,8 @@ static int try_parse_color_name_value(const char str[], int fg,
 static int parse_color_name_value(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
+static int histnext_cmd(const cmd_info_t *cmd_info);
+static int histprev_cmd(const cmd_info_t *cmd_info);
 static int if_cmd(const cmd_info_t *cmd_info);
 static int eval_if_condition(const cmd_info_t *cmd_info);
 static int invert_cmd(const cmd_info_t *cmd_info);
@@ -522,6 +524,14 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display/use history items",
 	  .flags = HAS_QUOTED_ARGS | HAS_COMMENT,
 	  .handler = &history_cmd,     .min_args = 0,   .max_args = 1, },
+	{ .name = "histnext",             .abbr = NULL,   .id = -1,
+	  .descr = "go forward through directory history (like <c-i> if cpoptions contains \"t\")",
+	  .flags = 0,
+	  .handler = &histnext_cmd,     .min_args = 0,   .max_args = 0, },
+	{ .name = "histprev",             .abbr = NULL,   .id = -1,
+	  .descr = "go backward through directory history (like <c-o>)",
+	  .flags = 0,
+	  .handler = &histprev_cmd,     .min_args = 0,   .max_args = 0, },
 	/* engine/parsing unit handles comments to resolve parsing ambiguity. */
 	{ .name = "if",                .abbr = NULL,    .id = COM_IF_STMT,
 	  .descr = "start conditional statement",
@@ -2778,6 +2788,20 @@ history_cmd(const cmd_info_t *cmd_info)
 		return show_history_menu(curr_view) != 0;
 	else
 		return CMDS_ERR_TRAILING_CHARS;
+}
+
+static int
+histnext_cmd(const cmd_info_t *cmd_info)
+{
+	flist_hist_go_forward(curr_view);
+	return 0;
+}
+
+static int
+histprev_cmd(const cmd_info_t *cmd_info)
+{
+	flist_hist_go_back(curr_view);
+	return 0;
 }
 
 /* This command starts conditional block. */

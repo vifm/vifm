@@ -2179,6 +2179,20 @@ i[nput]   or @ show prompt history (e.g. on one file renaming).
 .br
 fi[lter]  or = show filter history (see description of the "=" normal mode command).
 .TP
+.BI "                                         :histnext"
+.TP
+.BI :histnext
+same as <c-i>. The main use case for that command is to work around the common
+pain point of <tab> and <c-i> being the same ASCII character: one could alter
+the terminal emulator settings to emit, for example, the `F1` keycode when
+Ctrl+I is pressed, then ':map <f1> :histnext<cr>' in vifm, add "t" flag to the
+cpoptions, and thus have both <c-i> and <tab> working as expected.
+.TP
+.BI "                                         :histprev"
+.TP
+.BI :histprev
+same as <c-o>.
+.TP
 .BI "                                         :if"
 .TP
 .BI ":if {expr1}"
@@ -3466,7 +3480,9 @@ opposite;
 otherwise they operate on current file only;
 .br
  \- t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
-pane, otherwise <tab> and <c-i> go forward in the view history.
+pane, otherwise <tab> and <c-i> go forward in the view history. It's possible
+to make both <tab> and <c-i> to work as expected by setting up the terminal to
+emit a custom sequence when <c-i> is pressed; see :histnext for details.
 .TP
 .BI 'cvoptions'
 type: set
