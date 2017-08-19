@@ -126,12 +126,24 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	int cur_x;
 	size_t print_width;
 	char *filename;
+	uint64_t size = DCACHE_UNKNOWN;
 
 	if(curr == NULL || fentry_is_fake(curr))
 	{
 		werase(stat_win);
 		refresh_window(stat_win, lazy_redraw);
 		return;
+	}
+
+	if(fentry_is_dir(curr))
+	{
+		uint64_t nitems;
+		dcache_get_of(curr, &size, &nitems);
+	}
+
+	if(size == DCACHE_UNKNOWN)
+	{
+		size = curr->size;
 	}
 
 	x = getmaxx(stdscr);
@@ -142,7 +154,7 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
-	friendly_size_notation(curr->size, sizeof(size_buf), size_buf);
+	friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
