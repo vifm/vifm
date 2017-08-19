@@ -100,6 +100,12 @@ TEST(complex_tests)
 	canonicalize_path(ABS_PREFIX "//a//./b/./../////./c///.././/", buf,
 			sizeof(buf));
 	assert_string_equal(ABS_PREFIX "/a/", buf);
+
+	canonicalize_path("./../", buf, sizeof(buf));
+	assert_string_equal("../", buf);
+
+	canonicalize_path("./../dir", buf, sizeof(buf));
+	assert_string_equal("../dir/", buf);
 }
 
 TEST(treat_many_dots_right)

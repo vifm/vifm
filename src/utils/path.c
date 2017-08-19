@@ -44,7 +44,7 @@
 #include "str.h"
 #include "utils.h"
 
-static int skip_dotdir_if_any(const char *path[], int fully);
+static int skip_dotdir_if_any(const char *path[], int has_parent);
 static char * try_replace_tilde(const char path[]);
 static char * find_ext_dot(const char path[]);
 
@@ -132,7 +132,7 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 		const int prev_dir_present = (q != buf - 1 && *q == '/');
 		if(skip_dotdir_if_any(&p, prev_dir_present))
 		{
-			/* skip_dotdir_if_any() function did all job for us. */
+			/* skip_dotdir_if_any() function did all the job for us. */
 		}
 		else if(prev_dir_present &&
 				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
@@ -192,38 +192,43 @@ canonicalize_path(const char directory[], char buf[], size_t buf_size)
 }
 
 /* Checks whether *path begins with current directory component ('./') and moves
- * *path to the last character of such component (to slash if present) if fully
- * is non-zero, otherwise to the previous of the last character. When fully is
- * zero the function normalizes '\.\.\.+/?' on Windows to '\./?'. Returns
- * non-zero if a path component was fully skipped. */
+ * *path to the last character of such component (to slash if present) or to the
+ * previous of the last character depending on has_parent and following
+ * contents of the path.  When has_parent is zero the function normalizes
+ * '\.\.\.+/?' prefix on Windows to '\./?'.  Returns non-zero if a path
+ * component was fully skipped. */
 static int
-skip_dotdir_if_any(const char *path[], int fully)
+skip_dotdir_if_any(const char *path[], int has_parent)
 {
-	size_t dot_count = 0;
+	const char *tail;
+
+	size_t dot_count = 0U;
 	while((*path)[dot_count] == '.')
 	{
-		dot_count++;
+		++dot_count;
 	}
-	if((dot_count == 1
-#ifdef _WIN32
-				|| dot_count > 2
+
+#ifndef _WIN32
+	if(dot_count != 1U)
+#else
+	if(dot_count == 0U || dot_count == 2U)
 #endif
-				) &&
-			strchr("/", (*path)[dot_count]) != NULL)
 	{
-		if(!fully)
+		return 0;
+	}
+
+	tail = &(*path)[dot_count];
+	if(tail[0] == '/' || tail[0] == '\0')
+	{
+		const int cut_off = (has_parent || (tail[0] == '/' && tail[1] == '.'));
+		if(!cut_off)
 		{
-			dot_count--;
+			--dot_count;
 		}
-		if((*path)[dot_count] == '\0')
-		{
-			*path += dot_count - 1;
-		}
-		else
-		{
-			*path += dot_count;
-		}
-		return fully;
+
+		/* Possibly step back one character to do not fall out of the string. */
+		*path += dot_count - ((*path)[dot_count] == '\0' ? 1 : 0);
+		return cut_off;
 	}
 	return 0;
 }
