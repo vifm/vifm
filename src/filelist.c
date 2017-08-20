@@ -3147,8 +3147,6 @@ is_entry_marked(const dir_entry_t *entry)
 	return entry->marked;
 }
 
-/* Same as iter_selected_entries() function, but when selection is absent
- * current file is processed. */
 int
 iter_selection_or_current(view_t *view, dir_entry_t **entry)
 {
