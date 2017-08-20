@@ -259,7 +259,7 @@ TEST(filelist_reloading_corrects_current_position)
 	assert_int_equal(1, lwin.list_rows);
 }
 
-TEST(get_file_size_by_entry_returns_file_size_for_files)
+TEST(fentry_get_size_returns_file_size_for_files)
 {
 	char origin[] = "/";
 	const dir_entry_t entry = {
@@ -269,12 +269,12 @@ TEST(get_file_size_by_entry_returns_file_size_for_files)
 	update_string(&cfg.shell, "");
 	assert_success(init_status(&cfg));
 
-	assert_ulong_equal(entry.size, get_file_size_by_entry(&entry));
+	assert_ulong_equal(entry.size, fentry_get_size(&entry));
 
 	update_string(&cfg.shell, NULL);
 }
 
-TEST(get_file_size_by_entry_returns_file_size_if_nothing_cached)
+TEST(fentry_get_size_returns_file_size_if_nothing_cached)
 {
 	char origin[] = "/";
 	const dir_entry_t entry = {
@@ -284,7 +284,7 @@ TEST(get_file_size_by_entry_returns_file_size_if_nothing_cached)
 	update_string(&cfg.shell, "");
 	assert_success(init_status(&cfg));
 
-	assert_ulong_equal(entry.size, get_file_size_by_entry(&entry));
+	assert_ulong_equal(entry.size, fentry_get_size(&entry));
 
 	update_string(&cfg.shell, NULL);
 }
