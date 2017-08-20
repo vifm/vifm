@@ -305,23 +305,19 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 			case 'E':
 				{
 					uint64_t size = 0U;
-					if(view->selected_files > 0)
+
+					typedef int (*iter_f)(view_t *view, dir_entry_t **entry);
+					/* No current element for visual mode, since it can contain truly
+					 * empty selection when cursor is on ../ directory. */
+					iter_f iter = vle_mode_is(VISUAL_MODE) ? &iter_selected_entries
+					                                       : &iter_selection_or_current;
+
+					dir_entry_t *entry = NULL;
+					while(iter(view, &entry))
 					{
-						int i;
-						for(i = 0; i < view->list_rows; i++)
-						{
-							if(view->dir_entry[i].selected)
-							{
-								size += get_file_size_by_entry(&view->dir_entry[i]);
-							}
-						}
+						size += get_file_size_by_entry(entry);
 					}
-					/* Make exception for VISUAL_MODE, since it can contain empty
-					 * selection when cursor is on ../ directory. */
-					else if(!vle_mode_is(VISUAL_MODE))
-					{
-						size = get_file_size_by_entry(curr);
-					}
+
 					friendly_size_notation(size, sizeof(buf), buf);
 				}
 				break;
