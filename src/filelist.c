@@ -3076,9 +3076,8 @@ set_view_path(view_t *view, const char path[])
 }
 
 uint64_t
-get_file_size_by_entry(const view_t *view, size_t pos)
+get_file_size_by_entry(const dir_entry_t *entry)
 {
-	const dir_entry_t *const entry = &view->dir_entry[pos];
 	uint64_t size = DCACHE_UNKNOWN;
 
 	if(fentry_is_dir(entry))

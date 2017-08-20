@@ -142,7 +142,7 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
-	friendly_size_notation(get_file_size_by_entry(view, view->list_pos), sizeof(size_buf), size_buf);
+	friendly_size_notation(get_file_size_by_entry(curr), sizeof(size_buf), size_buf);
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
@@ -300,11 +300,11 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				get_gid_string(curr, 0, sizeof(buf), buf);
 				break;
 			case 's':
-				friendly_size_notation(get_file_size_by_entry(view, view->list_pos), sizeof(buf), buf);
+				friendly_size_notation(get_file_size_by_entry(curr), sizeof(buf), buf);
 				break;
 			case 'E':
 				{
-					uint64_t size = 0;
+					uint64_t size = 0U;
 					if(view->selected_files > 0)
 					{
 						int i;
@@ -312,7 +312,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 						{
 							if(view->dir_entry[i].selected)
 							{
-								size += get_file_size_by_entry(view, i);
+								size += get_file_size_by_entry(&view->dir_entry[i]);
 							}
 						}
 					}
@@ -320,7 +320,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					 * selection when cursor is on ../ directory. */
 					else if(!vle_mode_is(VISUAL_MODE))
 					{
-						size = get_file_size_by_entry(view, view->list_pos);
+						size = get_file_size_by_entry(curr);
 					}
 					friendly_size_notation(size, sizeof(buf), buf);
 				}
