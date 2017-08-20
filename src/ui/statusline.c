@@ -126,24 +126,12 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	int cur_x;
 	size_t print_width;
 	char *filename;
-	uint64_t size = DCACHE_UNKNOWN;
 
 	if(curr == NULL || fentry_is_fake(curr))
 	{
 		werase(stat_win);
 		refresh_window(stat_win, lazy_redraw);
 		return;
-	}
-
-	if(fentry_is_dir(curr))
-	{
-		uint64_t nitems;
-		dcache_get_of(curr, &size, &nitems);
-	}
-
-	if(size == DCACHE_UNKNOWN)
-	{
-		size = curr->size;
 	}
 
 	x = getmaxx(stdscr);
@@ -154,7 +142,7 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
-	friendly_size_notation(size, sizeof(size_buf), size_buf);
+	friendly_size_notation(fentry_get_size(curr), sizeof(size_buf), size_buf);
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
@@ -312,28 +300,24 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				get_gid_string(curr, 0, sizeof(buf), buf);
 				break;
 			case 's':
-				friendly_size_notation(curr->size, sizeof(buf), buf);
+				friendly_size_notation(fentry_get_size(curr), sizeof(buf), buf);
 				break;
 			case 'E':
 				{
-					uint64_t size = 0;
-					if(view->selected_files > 0)
+					uint64_t size = 0U;
+
+					typedef int (*iter_f)(view_t *view, dir_entry_t **entry);
+					/* No current element for visual mode, since it can contain truly
+					 * empty selection when cursor is on ../ directory. */
+					iter_f iter = vle_mode_is(VISUAL_MODE) ? &iter_selected_entries
+					                                       : &iter_selection_or_current;
+
+					dir_entry_t *entry = NULL;
+					while(iter(view, &entry))
 					{
-						int i;
-						for(i = 0; i < view->list_rows; i++)
-						{
-							if(view->dir_entry[i].selected)
-							{
-								size += get_file_size_by_entry(view, i);
-							}
-						}
+						size += fentry_get_size(entry);
 					}
-					/* Make exception for VISUAL_MODE, since it can contain empty
-					 * selection when cursor is on ../ directory. */
-					else if(!vle_mode_is(VISUAL_MODE))
-					{
-						size = get_file_size_by_entry(view, view->list_pos);
-					}
+
 					friendly_size_notation(size, sizeof(buf), buf);
 				}
 				break;

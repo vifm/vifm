@@ -53,8 +53,8 @@
 	Fixed ".." not being preserved in path loaded into custom view.  Thanks to
 	filterfalse.
 
-	Fixed directory size in statusline for empty 'statusline'.  Patch by Dmitry
-	Frank (a.k.a. dimonomid).
+	Fixed directory size in statusline.  Patch by Dmitry Frank (a.k.a.
+	dimonomid).
 
 0.9-beta to 0.9
 

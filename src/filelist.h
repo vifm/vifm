@@ -173,8 +173,9 @@ int is_dir_list_loaded(view_t *view);
 int view_needs_cd(const view_t *view, const char path[]);
 /* Sets view's current directory from path value. */
 void set_view_path(view_t *view, const char path[]);
-/* Returns possible cached or calculated value of file size. */
-uint64_t get_file_size_by_entry(const view_t *view, size_t pos);
+/* Retrieves size of the entry, possibly using cached or calculated value.
+ * Returns the size. */
+uint64_t fentry_get_size(const dir_entry_t *entry);
 /* Loads pointer to the next selected entry in file list of the view.  *entry
  * should be NULL for the first call and result of previous call otherwise.
  * Returns zero when there is no more entries to supply, otherwise non-zero is
