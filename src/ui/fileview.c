@@ -310,8 +310,8 @@ draw_dir_list_only(view_t *view)
 			.current_pos = (view == curr_view) ? view->list_pos : -1,
 			.total_width = total_width,
 			.number_width = view->real_num_width,
-			.current_line = cell/col_count,
-			.column_offset = lcol_size + (cell%col_count)*col_width,
+			.current_line = fpos_get_line(view, cell),
+			.column_offset = lcol_size + fpos_get_col(view, cell)*col_width,
 			.prefix_len = &prefix_len,
 			.is_main = 1,
 		};
@@ -810,8 +810,7 @@ fview_cursor_redraw(view_t *view)
 void
 put_inactive_mark(view_t *view)
 {
-	size_t col_width;
-	size_t col_count;
+	size_t col_width, col_count;
 	int line_attrs;
 	int line, column;
 
@@ -827,9 +826,9 @@ put_inactive_mark(view_t *view)
 	line_attrs = prepare_inactive_color(view, get_current_entry(view),
 			get_line_color(view, get_current_entry(view)));
 
-	line = view->curr_line/col_count;
+	line = fpos_get_line(view, view->curr_line);
 	column = view->real_num_width + ui_view_left_reserved(view)
-	       + (view->curr_line%col_count)*col_width;
+	       + fpos_get_col(view, view->curr_line)*col_width;
 	checked_wmove(view->win, line, column);
 
 	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
@@ -924,8 +923,7 @@ static void
 redraw_cell(view_t *view, int top, int cursor, int is_current)
 {
 	const int pos = top + cursor;
-	size_t col_width;
-	size_t col_count;
+	size_t col_width, col_count;
 	size_t print_width;
 
 	size_t prefix_len = 0U;
@@ -960,9 +958,9 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	cdt.current_line = cursor/col_count;
+	cdt.current_line = fpos_get_line(view, cursor);
 	cdt.column_offset = ui_view_left_reserved(view)
-	                  + (cursor%col_count)*col_width;
+	                  + fpos_get_col(view, cursor)*col_width;
 
 	print_width = calculate_print_width(view, pos, col_width);
 

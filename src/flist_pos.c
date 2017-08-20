@@ -191,6 +191,18 @@ move_cursor_out_of_scope(view_t *view, entry_predicate pred)
 }
 
 int
+fpos_get_col(const view_t *view, int pos)
+{
+	return pos%view->column_count;
+}
+
+int
+fpos_get_line(const view_t *view, int pos)
+{
+	return pos/view->column_count;
+}
+
+int
 at_first_line(const view_t *view)
 {
 	return view->list_pos/view->column_count == 0;

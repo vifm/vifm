@@ -69,6 +69,14 @@ void flist_ensure_pos_is_valid(struct view_t *view);
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(struct view_t *view, FileListScope scope);
 
+/* Retrieves column number (base zero) of the specified position (cell number
+ * base zero).  Returns the number. */
+int fpos_get_col(const struct view_t *view, int pos);
+
+/* Retrieves line number (base zero) of the specified position (cell number base
+ * zero).  Returns the number. */
+int fpos_get_line(const struct view_t *view, int pos);
+
 /* Checks whether cursor is on the first line.  Returns non-zero if so,
  * otherwise zero is returned. */
 int at_first_line(const struct view_t *view);
