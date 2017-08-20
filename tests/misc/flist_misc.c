@@ -6,9 +6,11 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/str.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_pos.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -255,6 +257,36 @@ TEST(filelist_reloading_corrects_current_position)
 
 	assert_int_equal(0, lwin.list_pos);
 	assert_int_equal(1, lwin.list_rows);
+}
+
+TEST(get_file_size_by_entry_returns_file_size_for_files)
+{
+	char origin[] = "/";
+	const dir_entry_t entry = {
+		.name = "f", .origin = origin, .size = 123U, .type = FT_REG
+	};
+
+	update_string(&cfg.shell, "");
+	assert_success(init_status(&cfg));
+
+	assert_ulong_equal(entry.size, get_file_size_by_entry(&entry));
+
+	update_string(&cfg.shell, NULL);
+}
+
+TEST(get_file_size_by_entry_returns_file_size_if_nothing_cached)
+{
+	char origin[] = "/";
+	const dir_entry_t entry = {
+		.name = "f", .origin = origin, .size = 123U, .type = FT_DIR
+	};
+
+	update_string(&cfg.shell, "");
+	assert_success(init_status(&cfg));
+
+	assert_ulong_equal(entry.size, get_file_size_by_entry(&entry));
+
+	update_string(&cfg.shell, NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
