@@ -570,7 +570,7 @@ calculate_top_position(view_t *view, int top)
 	}
 	else if(view->list_rows - top < (int)view->window_cells)
 	{
-		if(view->window_cells - (view->list_rows - top) >= view->column_count)
+		if((int)view->window_cells - (view->list_rows - top) >= view->column_count)
 		{
 			result = view->list_rows - view->window_cells + (view->column_count - 1);
 			result = ROUND_DOWN(result, view->column_count);
@@ -1027,8 +1027,8 @@ get_corrected_list_pos_down(const view_t *view, size_t pos_delta)
 	if(view->list_pos <=
 			view->top_line + scroll_offset + (MAX((int)pos_delta, 1) - 1))
 	{
-		const size_t column_correction = view->list_pos%view->column_count;
-		const size_t offset = scroll_offset + pos_delta + column_correction;
+		const int column_correction = view->list_pos%view->column_count;
+		const int offset = scroll_offset + pos_delta + column_correction;
 		return view->top_line + offset;
 	}
 	return view->list_pos;
@@ -1041,9 +1041,9 @@ get_corrected_list_pos_up(const view_t *view, size_t pos_delta)
 	const int last = get_last_visible_cell(view);
 	if(view->list_pos >= last - scroll_offset - (MAX((int)pos_delta, 1) - 1))
 	{
-		const size_t column_correction = (view->column_count - 1) -
-				view->list_pos%view->column_count;
-		const size_t offset = scroll_offset + pos_delta + column_correction;
+		const int column_correction = (view->column_count - 1)
+		                            - view->list_pos%view->column_count;
+		const int offset = scroll_offset + pos_delta + column_correction;
 		return last - offset;
 	}
 	return view->list_pos;

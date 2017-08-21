@@ -219,7 +219,7 @@ fpos_can_move_right(const view_t *view)
 int
 fpos_can_move_up(const view_t *view)
 {
-	return (view->list_pos >= (int)view->column_count);
+	return (view->list_pos >= view->column_count);
 }
 
 int

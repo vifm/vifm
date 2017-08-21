@@ -398,7 +398,7 @@ struct view_t
 	size_t max_filename_width; /* Maximum filename width (length in character
 	                            * positions on the screen) among all entries of
 	                            * the file list.  Zero if not calculated. */
-	size_t column_count; /* Number of columns in the view, used for list view. */
+	int column_count;    /* Number of columns in the view, used for list view. */
 	size_t window_cells; /* Max number of files that can be displayed. */
 
 	/* Whether and how line numbers are displayed. */
