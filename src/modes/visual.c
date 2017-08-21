@@ -407,12 +407,10 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_down(view))
 	{
-		size_t new_pos;
-		size_t offset = view->window_cells/2;
-		offset = ROUND_DOWN(offset, view->column_count);
-		new_pos = get_corrected_list_pos_down(view, offset);
+		const int offset = ROUND_DOWN(view->window_cells/2, view->column_count);
+		int new_pos = get_corrected_list_pos_down(view, offset);
 		new_pos = MAX(new_pos, view->list_pos + offset);
-		new_pos = MIN(new_pos, (size_t)view->list_rows);
+		new_pos = MIN(new_pos, view->list_rows);
 		new_pos = ROUND_DOWN(new_pos, view->column_count);
 		view->top_line += new_pos - view->list_pos;
 		goto_pos(new_pos);
@@ -483,11 +481,9 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(view))
 	{
-		int new_pos;
-		size_t offset = view->window_cells/2;
-		offset = ROUND_DOWN(offset, view->column_count);
-		new_pos = get_corrected_list_pos_up(view, offset);
-		new_pos = MIN(new_pos, view->list_pos - (int)offset);
+		const int offset = ROUND_DOWN(view->window_cells/2, view->column_count);
+		int new_pos = get_corrected_list_pos_up(view, offset);
+		new_pos = MIN(new_pos, view->list_pos - offset);
 		new_pos = MAX(new_pos, 0);
 		new_pos = ROUND_DOWN(new_pos, view->column_count);
 		view->top_line += new_pos - view->list_pos;
