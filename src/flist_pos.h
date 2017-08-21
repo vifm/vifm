@@ -77,13 +77,13 @@ int fpos_get_col(const struct view_t *view, int pos);
  * zero).  Returns the number. */
 int fpos_get_line(const struct view_t *view, int pos);
 
-/* Checks whether cursor is on the first line.  Returns non-zero if so,
- * otherwise zero is returned. */
-int at_first_line(const struct view_t *view);
+/* Checks whether it's possible to move cursor from current position up.
+ * Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_up(const struct view_t *view);
 
-/* Checks whether cursor is on the last line.  Returns non-zero if so, otherwise
- * zero is returned. */
-int at_last_line(const struct view_t *view);
+/* Checks whether it's possible to move cursor from current position down.
+ * Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_down(const struct view_t *view);
 
 /* Checks whether cursor is on the first column.  Returns non-zero if so,
  * otherwise zero is returned. */

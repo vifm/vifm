@@ -405,7 +405,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_line(view))
+	if(fpos_can_move_down(view))
 	{
 		size_t new_pos;
 		size_t offset = view->window_cells/2;
@@ -481,7 +481,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_line(view))
+	if(fpos_can_move_up(view))
 	{
 		int new_pos;
 		size_t offset = view->window_cells/2;
@@ -912,7 +912,7 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(ui_view_displays_columns(view) || !at_last_line(view))
+	if(fpos_can_move_down(view))
 	{
 		go_to_next(key_info, keys_info, 1, view->column_count);
 	}
@@ -921,7 +921,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(ui_view_displays_columns(view) || !at_first_line(view))
+	if(fpos_can_move_up(view))
 	{
 		go_to_prev(key_info, keys_info, 1, view->column_count);
 	}

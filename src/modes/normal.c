@@ -526,7 +526,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_line(curr_view))
+	if(fpos_can_move_down(curr_view))
 	{
 		scroll_view(curr_view->window_cells/2);
 	}
@@ -717,7 +717,7 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_line(curr_view))
+	if(fpos_can_move_up(curr_view))
 	{
 		scroll_view(-(ssize_t)curr_view->window_cells/2);
 	}
@@ -1614,7 +1614,7 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_line(curr_view))
+	if(fpos_can_move_down(curr_view))
 	{
 		go_to_next(key_info, keys_info, curr_view->column_count);
 	}
@@ -1624,7 +1624,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_line(curr_view))
+	if(fpos_can_move_up(curr_view))
 	{
 		go_to_prev(key_info, keys_info, curr_view->column_count);
 	}
