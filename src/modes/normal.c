@@ -1583,7 +1583,10 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 
 	if(!ui_view_displays_columns(curr_view))
 	{
-		go_to_prev(key_info, keys_info, 1);
+		if(fpos_can_move_left(curr_view))
+		{
+			go_to_prev(key_info, keys_info, 1);
+		}
 		return;
 	}
 

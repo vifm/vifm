@@ -205,6 +205,18 @@ fpos_get_line(const view_t *view, int pos)
 }
 
 int
+fpos_can_move_left(const view_t *view)
+{
+	return (view->list_pos > 0);
+}
+
+int
+fpos_can_move_right(const view_t *view)
+{
+	return (view->list_pos < view->list_rows - 1);
+}
+
+int
 fpos_can_move_up(const view_t *view)
 {
 	return (view->list_pos >= (int)view->column_count);

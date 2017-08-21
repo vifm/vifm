@@ -886,9 +886,14 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!ui_view_displays_columns(view))
 	{
-		go_to_prev(key_info, keys_info, 1, 1);
+		if(fpos_can_move_left(view))
+		{
+			go_to_prev(key_info, keys_info, 1, 1);
+		}
+		return;
 	}
-	else if(get_current_entry(view)->child_pos != 0)
+
+	if(get_current_entry(view)->child_pos != 0)
 	{
 		const dir_entry_t *entry = get_current_entry(view);
 		key_info.count = def_count(key_info.count);
@@ -944,7 +949,7 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 	{
 		cmd_gl(key_info, keys_info);
 	}
-	else
+	else if(fpos_can_move_right(view))
 	{
 		go_to_next(key_info, keys_info, 1, 1);
 	}

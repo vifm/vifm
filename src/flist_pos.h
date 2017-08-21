@@ -77,6 +77,14 @@ int fpos_get_col(const struct view_t *view, int pos);
  * zero).  Returns the number. */
 int fpos_get_line(const struct view_t *view, int pos);
 
+/* Checks whether it's possible to move cursor from current position to the
+ * left.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_left(const struct view_t *view);
+
+/* Checks whether it's possible to move cursor from current position to the
+ * right.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_right(const struct view_t *view);
+
 /* Checks whether it's possible to move cursor from current position up.
  * Returns non-zero if so, otherwise zero is returned. */
 int fpos_can_move_up(const struct view_t *view);
