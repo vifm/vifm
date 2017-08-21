@@ -134,6 +134,7 @@ static void format_inode(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void format_id(int id, const void *data, size_t buf_len, char buf[]);
 static size_t calculate_column_width(view_t *view);
+static size_t calculate_columns_count(struct view_t *view);
 static size_t get_max_filename_width(const view_t *view);
 static size_t get_filename_width(const view_t *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
@@ -1696,17 +1697,6 @@ fview_set_millerview(view_t *view, int enabled)
 	}
 }
 
-size_t
-calculate_columns_count(view_t *view)
-{
-	if(!ui_view_displays_columns(view))
-	{
-		const size_t column_width = calculate_column_width(view);
-		return ui_view_available_width(view)/column_width;
-	}
-	return 1U;
-}
-
 /* Returns width of one column in the view. */
 static size_t
 calculate_column_width(view_t *view)
@@ -1721,6 +1711,13 @@ calculate_column_width(view_t *view)
 }
 
 void
+fview_update_geometry(view_t *view)
+{
+	view->column_count = calculate_columns_count(view);
+	view->window_cells = view->column_count*view->window_rows;
+}
+
+void
 fview_dir_updated(view_t *view)
 {
 	view->local_cs = cs_load_local(view == &lwin, view->curr_dir);
@@ -1731,6 +1728,18 @@ fview_list_updated(view_t *view)
 {
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;
+}
+
+/* Evaluates number of columns in the view.  Returns the number. */
+static size_t
+calculate_columns_count(view_t *view)
+{
+	if(!ui_view_displays_columns(view))
+	{
+		const size_t column_width = calculate_column_width(view);
+		return ui_view_available_width(view)/column_width;
+	}
+	return 1U;
 }
 
 /* Finds maximum filename width (length in character positions on the screen)

@@ -136,8 +136,10 @@ void fview_set_lsview(struct view_t *view, int enabled);
 /* Enables/disables cascading columns style of the view. */
 void fview_set_millerview(struct view_t *view, int enabled);
 
-/* Evaluates number of columns in the view.  Returns the number. */
-size_t calculate_columns_count(struct view_t *view);
+/* Requests update of view geometry properties (stuff that depends on
+ * dimensions; there is also an implicit dependency on file list, because grid
+ * is defined by longest file name). */
+void fview_update_geometry(struct view_t *view);
 
 /* Callback-like function which triggers some view-specific updates after
  * directory of the view changes. */
