@@ -41,7 +41,9 @@
 static void correct_list_pos_down(view_t *view, size_t pos_delta);
 static void correct_list_pos_up(view_t *view, size_t pos_delta);
 static void move_cursor_out_of_scope(view_t *view, entry_predicate pred);
+static int get_curr_col(const view_t *view);
 static int get_curr_line(const view_t *view);
+static int get_max_col(const view_t *view);
 static int get_max_line(const view_t *view);
 static const char * get_last_ext(const char name[]);
 static int is_mismatched_entry(const dir_entry_t *entry);
@@ -231,13 +233,20 @@ fpos_can_move_down(const view_t *view)
 int
 at_first_column(const view_t *view)
 {
-	return view->list_pos%view->column_count == 0;
+	return (get_curr_col(view) == 0);
 }
 
 int
 at_last_column(const view_t *view)
 {
-	return view->list_pos%view->column_count == view->column_count - 1;
+	return get_curr_col(view) == get_max_col(view);
+}
+
+/* Retrieves column number of cursor.  Returns the number. */
+static int
+get_curr_col(const view_t *view)
+{
+	return fpos_get_col(view, view->list_pos);
 }
 
 /* Retrieves line number of cursor.  Returns the number. */
@@ -245,6 +254,13 @@ static int
 get_curr_line(const view_t *view)
 {
 	return fpos_get_line(view, view->list_pos);
+}
+
+/* Retrieves maximum column number.  Returns the number. */
+static int
+get_max_col(const view_t *view)
+{
+	return (view->column_count - 1);
 }
 
 /* Retrieves maximum line number.  Returns the number. */
@@ -270,9 +286,8 @@ get_start_of_line(const view_t *view)
 int
 get_end_of_line(const view_t *view)
 {
-	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
-	pos += (view->column_count - 1) - pos%view->column_count;
-	return MIN(pos, view->list_rows - 1);
+	return MIN(view->list_rows - 1,
+	           get_start_of_line(view) + view->column_count - 1);
 }
 
 int
