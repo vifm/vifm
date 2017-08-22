@@ -285,6 +285,18 @@ get_end_of_line(const view_t *view)
 }
 
 int
+fpos_get_hor_step(const struct view_t *view)
+{
+	return 1;
+}
+
+int
+fpos_get_ver_step(const struct view_t *view)
+{
+	return view->column_count;
+}
+
+int
 flist_find_group(const view_t *view, int next)
 {
 	/* TODO: refactor/simplify this function (flist_find_group()). */

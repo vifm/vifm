@@ -1587,7 +1587,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(fpos_can_move_left(curr_view))
 		{
-			go_to_prev(key_info, keys_info, 1);
+			go_to_prev(key_info, keys_info, fpos_get_hor_step(curr_view));
 		}
 		return;
 	}
@@ -1621,7 +1621,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_down(curr_view))
 	{
-		go_to_next(key_info, keys_info, curr_view->column_count);
+		go_to_next(key_info, keys_info, fpos_get_ver_step(curr_view));
 	}
 }
 
@@ -1631,7 +1631,7 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(curr_view))
 	{
-		go_to_prev(key_info, keys_info, curr_view->column_count);
+		go_to_prev(key_info, keys_info, fpos_get_ver_step(curr_view));
 	}
 }
 
@@ -1650,9 +1650,9 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 	{
 		cmd_return(key_info, keys_info);
 	}
-	else
+	else if(fpos_can_move_right(curr_view))
 	{
-		go_to_next(key_info, keys_info, 1);
+		go_to_next(key_info, keys_info, fpos_get_hor_step(curr_view));
 	}
 }
 

@@ -109,6 +109,14 @@ int get_start_of_line(const struct view_t *view);
  * position. */
 int get_end_of_line(const struct view_t *view);
 
+/* Retrieves step in files that's used to move within a line.  Retrieves the
+ * step. */
+int fpos_get_hor_step(const struct view_t *view);
+
+/* Retrieves step in files that's used to move within a column.  Retrieves the
+ * step. */
+int fpos_get_ver_step(const struct view_t *view);
+
 /* Finds position of the next/previous group defined by primary sorting key.
  * Returns determined position (might point to the last/first entry in corner
  * cases). */
