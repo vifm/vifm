@@ -411,7 +411,6 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 		int new_pos = get_corrected_list_pos_down(view, offset);
 		new_pos = MAX(new_pos, view->list_pos + offset);
 		new_pos = MIN(new_pos, view->list_rows);
-		new_pos = ROUND_DOWN(new_pos, view->column_count);
 		view->top_line += new_pos - view->list_pos;
 		goto_pos(new_pos);
 	}
@@ -444,7 +443,9 @@ page_scroll(int base, int direction)
 {
 	enum { GAP_SIZE = 2 };
 	const int offset = (view->window_rows - GAP_SIZE)*view->column_count;
-	const int new_pos = base + direction*offset;
+	int new_pos = base + direction*offset
+	            + view->list_pos%view->column_count - base%view->column_count;
+	new_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
 	scroll_by_files(view, direction*offset);
 	goto_pos(new_pos);
 }
@@ -485,7 +486,6 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 		int new_pos = get_corrected_list_pos_up(view, offset);
 		new_pos = MIN(new_pos, view->list_pos - offset);
 		new_pos = MAX(new_pos, 0);
-		new_pos = ROUND_DOWN(new_pos, view->column_count);
 		view->top_line += new_pos - view->list_pos;
 		goto_pos(new_pos);
 	}

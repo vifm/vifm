@@ -101,9 +101,6 @@ int at_first_column(const struct view_t *view);
  * otherwise zero is returned. */
 int at_last_column(const struct view_t *view);
 
-/* Moves cursor to the first file in a row. */
-void go_to_start_of_line(struct view_t *view);
-
 /* Calculates position of the first file in current line.  Returns the
  * position. */
 int get_start_of_line(const struct view_t *view);

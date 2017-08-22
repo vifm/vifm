@@ -552,14 +552,17 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
-/* Scrolls pane by one view in both directions. The direction should be 1 or
+/* Scrolls pane by one view in both directions.  The direction should be 1 or
  * -1. */
 static void
 page_scroll(int base, int direction)
 {
 	enum { GAP_SIZE = 2 };
+	int old_pos = curr_view->list_pos;
 	int offset = (curr_view->window_rows - GAP_SIZE)*curr_view->column_count;
-	curr_view->list_pos = base + direction*offset;
+	int new_pos = base + direction*offset
+	            + old_pos%curr_view->column_count - base%curr_view->column_count;
+	curr_view->list_pos = MAX(0, MIN(curr_view->list_rows - 1, new_pos));
 	scroll_by_files(curr_view, direction*offset);
 	redraw_current_view();
 }
@@ -730,7 +733,6 @@ scroll_view(ssize_t offset)
 	offset = ROUND_DOWN(offset, curr_view->column_count);
 	curr_view->list_pos += offset;
 	correct_list_pos(curr_view, offset);
-	go_to_start_of_line(curr_view);
 	scroll_by_files(curr_view, offset);
 	redraw_current_view();
 }

@@ -270,12 +270,6 @@ get_max_line(const view_t *view)
 	return (view->list_rows - 1)/view->column_count;
 }
 
-void
-go_to_start_of_line(view_t *view)
-{
-	view->list_pos = get_start_of_line(view);
-}
-
 int
 get_start_of_line(const view_t *view)
 {
