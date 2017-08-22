@@ -527,7 +527,7 @@ static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
-	check_marking(curr_view, 0, NULL);
+	check_marking(view, 0, NULL);
 	save_msg = fops_clone(view, NULL, 0, 0, def_count(key_info.count));
 	accept_and_leave(save_msg);
 }
@@ -748,7 +748,7 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 {
-	fops_size_bg(curr_view, 1);
+	fops_size_bg(view, 1);
 	accept_and_leave(0);
 }
 
@@ -756,7 +756,7 @@ cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
-	fops_size_bg(curr_view, 0);
+	fops_size_bg(view, 0);
 	accept_and_leave(0);
 }
 
@@ -899,7 +899,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 		}
 		key_info.count = 1;
 		go_to_prev(key_info, keys_info, 1,
-				view->list_pos - entry_to_pos(curr_view, entry));
+				view->list_pos - entry_to_pos(view, entry));
 	}
 }
 
@@ -1173,7 +1173,7 @@ update_marks(view_t *view)
 static void
 cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 {
-	flist_custom_exclude(curr_view, key_info.count == 1);
+	flist_custom_exclude(view, key_info.count == 1);
 	accept_and_leave(0);
 }
 
