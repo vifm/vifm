@@ -246,6 +246,30 @@ TEST(bottom__accounts_for_columns)
 	assert_int_equal(15, get_window_bottom_pos(view));
 }
 
+/*          file0    file1
+ * 0 row----file2----file3-----
+ * 1 row  | file4  | file5  |
+ * 2 row  | file6  | file7  |   <= top + offset
+ * 3 row  | file8  | file9  |   <= middle for column 1
+ * 4 row  | file10 | file11 |   <= middle for column 2
+ * 5 row  | file12 | file13 |
+ * 6 row----file14------------- <= bottom
+ */
+
+TEST(middle_is_specific_to_a_column)
+{
+	view->top_line = 2;
+	view->list_rows = 15;
+	view->column_count = 2;
+	view->window_cells = view->column_count*view->window_rows;
+
+	view->list_pos = 12;
+	assert_int_equal(8, get_window_middle_pos(view));
+
+	view->list_pos = 7;
+	assert_int_equal(7, get_window_middle_pos(view));
+}
+
 static void
 ensure_all_visible(int odd)
 {

@@ -96,6 +96,8 @@ static void draw_cell(columns_t *columns, const column_data_t *cdt,
 static columns_t * get_view_columns(const view_t *view);
 static columns_t * get_name_column(void);
 static void consider_scroll_bind(view_t *view);
+static int get_column_top_pos(const view_t *view);
+static int get_column_bottom_pos(const view_t *view);
 static int prepare_inactive_color(view_t *view, dir_entry_t *entry,
 		int line_color);
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
@@ -851,46 +853,45 @@ get_last_visible_cell(const view_t *view)
 size_t
 get_window_top_pos(const view_t *view)
 {
-	const int column_correction = view->list_pos%view->column_count;
-	if(view->top_line == 0)
-	{
-		return column_correction;
-	}
-
-	return view->top_line + get_effective_scroll_offset(view) + column_correction;
+	return get_column_top_pos(view)
+	     + (can_scroll_up(view) ? get_effective_scroll_offset(view) : 0);
 }
 
 size_t
 get_window_middle_pos(const view_t *view)
 {
-	const int list_middle = DIV_ROUND_UP(view->list_rows, (2*view->column_count));
-	const int window_middle = DIV_ROUND_UP(view->window_rows - 1, 2);
-	return view->top_line
-	     + MAX(0, MIN(list_middle, window_middle) - 1)*view->column_count
-	     + view->list_pos%view->column_count;
+	const int top_pos = get_column_top_pos(view);
+	const int bottom_pos = get_column_bottom_pos(view);
+	const int v = view->column_count;
+	return top_pos + (DIV_ROUND_UP(bottom_pos - top_pos, v)/2)*v;
 }
 
 size_t
 get_window_bottom_pos(const view_t *view)
 {
-	if(view->list_rows - 1 <= (int)get_last_visible_cell(view))
-	{
-		const size_t last = view->list_rows - 1;
-		const size_t last_row = ROUND_DOWN(last, view->column_count);
-		if(last_row + view->list_pos%view->column_count > last)
-		{
-			return last_row - view->column_count + view->list_pos%view->column_count;
-		}
-		return last_row + view->list_pos%view->column_count;
-	}
-	else
-	{
-		const size_t last = get_last_visible_cell(view);
-		const size_t last_row = ROUND_DOWN(last, view->column_count);
-		const size_t off = get_effective_scroll_offset(view);
-		const size_t column_correction = view->list_pos%view->column_count;
-		return last_row + column_correction - off;
-	}
+	return get_column_bottom_pos(view)
+	     - (can_scroll_down(view) ? get_effective_scroll_offset(view) : 0);
+}
+
+/* Retrieves position of a file at the top of visible part of current column.
+ * Returns the position. */
+static int
+get_column_top_pos(const view_t *view)
+{
+	const int column_correction = view->list_pos%view->column_count;
+	return view->top_line + column_correction;
+}
+
+/* Retrieves position of a file at the bottom of visible part of current column.
+ * Returns the position. */
+static int
+get_column_bottom_pos(const view_t *view)
+{
+	const int last_top_pos =
+		ROUND_DOWN(MIN((int)get_last_visible_cell(view), view->list_rows - 1),
+				view->column_count);
+	const int pos = last_top_pos + view->list_pos%view->column_count;
+	return (pos < view->list_rows ? pos : pos - view->column_count);
 }
 
 /* Calculate color attributes for cursor line of inactive pane.  Returns
