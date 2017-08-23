@@ -5,6 +5,7 @@
 #include "../../src/ui/ui.h"
 
 static void ensure_all_visible(int odd);
+static void setup_grid(int column_count, int list_rows);
 
 static view_t *const view = &lwin;
 
@@ -24,10 +25,9 @@ SETUP()
 {
 	cfg.scroll_off = 2;
 
-	view->list_rows = 10;
-	view->column_count = 1;
 	view->window_rows = 8;
-	view->window_cells = view->window_rows;
+
+	setup_grid(1, 10);
 }
 
 TEST(top_pos_at_top)
@@ -154,9 +154,7 @@ TEST(bottom_pos_at_all_even)
 TEST(top_accounts_for_columns)
 {
 	view->top_line = 0;
-	view->list_rows = 17;
-	view->column_count = 2;
-	view->window_cells = view->column_count*view->window_rows;
+	setup_grid(2, 17);
 
 	view->list_pos = 6;
 	assert_int_equal(0, get_window_top_pos(view));
@@ -168,9 +166,7 @@ TEST(top_accounts_for_columns)
 TEST(middle_accounts_for_columns)
 {
 	view->top_line = 0;
-	view->list_rows = 17;
-	view->column_count = 2;
-	view->window_cells = view->column_count*view->window_rows;
+	setup_grid(2, 17);
 
 	view->list_pos = 2;
 	assert_int_equal(6, get_window_middle_pos(view));
@@ -182,9 +178,7 @@ TEST(middle_accounts_for_columns)
 TEST(bottom_with_offset_accounts_for_columns)
 {
 	view->top_line = 0;
-	view->list_rows = 17;
-	view->column_count = 2;
-	view->window_cells = view->column_count*view->window_rows;
+	setup_grid(2, 17);
 
 	view->list_pos = 8;
 	assert_int_equal(10, get_window_bottom_pos(view));
@@ -207,9 +201,7 @@ TEST(bottom_with_offset_accounts_for_columns)
 TEST(top_with_offset_accounts_for_columns)
 {
 	view->top_line = 2;
-	view->list_rows = 17;
-	view->column_count = 2;
-	view->window_cells = view->column_count*view->window_rows;
+	setup_grid(2, 17);
 
 	view->list_pos = 14;
 	assert_int_equal(6, get_window_top_pos(view));
@@ -221,9 +213,7 @@ TEST(top_with_offset_accounts_for_columns)
 TEST(middle_with_offset_accounts_for_columns)
 {
 	view->top_line = 2;
-	view->list_rows = 17;
-	view->column_count = 2;
-	view->window_cells = view->column_count*view->window_rows;
+	setup_grid(2, 17);
 
 	view->list_pos = 14;
 	assert_int_equal(8, get_window_middle_pos(view));
@@ -235,9 +225,7 @@ TEST(middle_with_offset_accounts_for_columns)
 TEST(bottom__accounts_for_columns)
 {
 	view->top_line = 2;
-	view->list_rows = 17;
-	view->column_count = 2;
-	view->window_cells = view->column_count*view->window_rows;
+	setup_grid(2, 17);
 
 	view->list_pos = 8;
 	assert_int_equal(16, get_window_bottom_pos(view));
@@ -259,9 +247,7 @@ TEST(bottom__accounts_for_columns)
 TEST(middle_is_specific_to_a_column)
 {
 	view->top_line = 2;
-	view->list_rows = 15;
-	view->column_count = 2;
-	view->window_cells = view->column_count*view->window_rows;
+	setup_grid(2, 15);
 
 	view->list_pos = 12;
 	assert_int_equal(8, get_window_middle_pos(view));
@@ -276,6 +262,14 @@ ensure_all_visible(int odd)
 	view->top_line = 0;
 	view->list_rows = odd ? 5 : 4;
 	assert_true(all_files_visible(view));
+}
+
+static void
+setup_grid(int column_count, int list_rows)
+{
+	view->list_rows = list_rows;
+	view->column_count = column_count;
+	view->window_cells = column_count*view->window_rows;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
