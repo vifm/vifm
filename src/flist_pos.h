@@ -117,6 +117,14 @@ int fpos_get_hor_step(const struct view_t *view);
  * step. */
 int fpos_get_ver_step(const struct view_t *view);
 
+/* Checks whether there are more elements to show above what can be seen
+ * currently.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_has_hidden_top(const struct view_t *view);
+
+/* Checks whether there are more elements to show below what can be seen
+ * currently.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_has_hidden_bottom(const struct view_t *view);
+
 /* Finds position of the next/previous group defined by primary sorting key.
  * Returns determined position (might point to the last/first entry in corner
  * cases). */

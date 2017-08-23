@@ -419,7 +419,7 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_down(view))
+	if(fpos_has_hidden_top(view))
 	{
 		int new_pos = get_corrected_list_pos_down(view, view->column_count);
 		scroll_down(view, view->column_count);
@@ -513,7 +513,7 @@ call_incdec(int count)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_up(view))
+	if(fpos_has_hidden_top(view))
 	{
 		int new_pos = get_corrected_list_pos_up(view, view->column_count);
 		scroll_up(view, view->column_count);
