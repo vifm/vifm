@@ -526,7 +526,8 @@ calculate_table_conf(view_t *view, size_t *count, size_t *width)
 	}
 
 	view->column_count = *count;
-	view->run_size = view->column_count;
+	view->run_size = fview_is_transposed(view) ? view->window_rows
+	                                           : view->column_count;
 	view->window_cells = *count*view->window_rows;
 }
 
@@ -864,7 +865,7 @@ get_window_middle_pos(const view_t *view)
 {
 	const int top_pos = get_column_top_pos(view);
 	const int bottom_pos = get_column_bottom_pos(view);
-	const int v = view->run_size;
+	const int v = (fview_is_transposed(view) ? 1 : view->run_size);
 	return top_pos + (DIV_ROUND_UP(bottom_pos - top_pos, v)/2)*v;
 }
 
@@ -880,7 +881,9 @@ get_window_bottom_pos(const view_t *view)
 static int
 get_column_top_pos(const view_t *view)
 {
-	const int column_correction = view->list_pos%view->run_size;
+	const int column_correction = fview_is_transposed(view)
+	  ? ROUND_DOWN(view->list_pos - view->top_line, view->run_size)
+	  : view->list_pos%view->run_size;
 	return view->top_line + column_correction;
 }
 
@@ -889,11 +892,20 @@ get_column_top_pos(const view_t *view)
 static int
 get_column_bottom_pos(const view_t *view)
 {
-	const int last_top_pos =
-		ROUND_DOWN(MIN((int)get_last_visible_cell(view), view->list_rows - 1),
-				view->run_size);
-	const int pos = last_top_pos + view->list_pos%view->run_size;
-	return (pos < view->list_rows ? pos : pos - view->run_size);
+	if(fview_is_transposed(view))
+	{
+		const int top_pos = get_column_top_pos(view);
+		const int last = view->list_rows - 1;
+		return MIN(top_pos + view->window_rows - 1, last);
+	}
+	else
+	{
+		const int last_top_pos =
+			ROUND_DOWN(MIN((int)get_last_visible_cell(view), view->list_rows - 1),
+					view->run_size);
+		const int pos = last_top_pos + view->list_pos%view->run_size;
+		return (pos < view->list_rows ? pos : pos - view->run_size);
+	}
 }
 
 /* Calculate color attributes for cursor line of inactive pane.  Returns
@@ -1084,7 +1096,15 @@ consider_scroll_offset(view_t *view)
 static size_t
 get_effective_scroll_offset(const view_t *view)
 {
-	int val = MIN(DIV_ROUND_UP(view->window_rows - 1, 2), MAX(cfg.scroll_off, 0));
+	int val;
+
+	if(fview_is_transposed(view))
+	{
+		/* Scroll offset doesn't make much sense for transposed table. */
+		return 0;
+	}
+
+	val = MIN(DIV_ROUND_UP(view->window_rows - 1, 2), MAX(cfg.scroll_off, 0));
 	return val*view->column_count;
 }
 
@@ -1690,6 +1710,12 @@ fview_set_lsview(view_t *view, int enabled)
 	}
 }
 
+int
+fview_is_transposed(const view_t *view)
+{
+	return 0;
+}
+
 void
 fview_set_millerview(view_t *view, int enabled)
 {
@@ -1717,7 +1743,8 @@ void
 fview_update_geometry(view_t *view)
 {
 	view->column_count = calculate_columns_count(view);
-	view->run_size = view->column_count;
+	view->run_size = fview_is_transposed(view) ? view->window_rows
+	                                           : view->column_count;
 	view->window_cells = view->column_count*view->window_rows;
 }
 

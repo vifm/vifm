@@ -441,10 +441,12 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 page_scroll(int base, int direction)
 {
-	enum { GAP_SIZE = 2 };
-	const int offset = (view->window_rows - GAP_SIZE)*view->column_count;
+	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
+	int offset = fview_is_transposed(view)
+	           ? (view->column_count - VER_GAP_SIZE)*view->window_rows
+	           : (view->window_rows - HOR_GAP_SIZE)*view->column_count;
 	int new_pos = base + direction*offset
-	            + view->list_pos%view->column_count - base%view->column_count;
+	            + view->list_pos%view->run_size - base%view->run_size;
 	new_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
 	scroll_by_files(view, direction*offset);
 	goto_pos(new_pos);

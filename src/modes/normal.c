@@ -558,9 +558,11 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 page_scroll(int base, int direction)
 {
-	enum { GAP_SIZE = 2 };
+	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
 	int old_pos = curr_view->list_pos;
-	int offset = (curr_view->window_rows - GAP_SIZE)*curr_view->column_count;
+	int offset = fview_is_transposed(curr_view)
+	           ? (curr_view->column_count - VER_GAP_SIZE)*curr_view->window_rows
+	           : (curr_view->window_rows - HOR_GAP_SIZE)*curr_view->column_count;
 	int new_pos = base + direction*offset
 	            + old_pos%curr_view->run_size - base%curr_view->run_size;
 	curr_view->list_pos = MAX(0, MIN(curr_view->list_rows - 1, new_pos));

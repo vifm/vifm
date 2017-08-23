@@ -133,6 +133,9 @@ void update_scroll_bind_offset(void);
 /* Enables/disables ls-like style of the view. */
 void fview_set_lsview(struct view_t *view, int enabled);
 
+/* Checks whether view displays grid that's filled by column. */
+int fview_is_transposed(const struct view_t *view);
+
 /* Enables/disables cascading columns style of the view. */
 void fview_set_millerview(struct view_t *view, int enabled);
 
