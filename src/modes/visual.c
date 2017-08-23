@@ -551,11 +551,11 @@ cmd_F(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
-	int new_pos;
 	if(key_info.count == NO_COUNT_GIVEN)
+	{
 		key_info.count = view->list_rows;
-	new_pos = ROUND_DOWN(key_info.count - 1, view->column_count);
-	goto_pos(new_pos);
+	}
+	goto_pos(key_info.count - 1);
 }
 
 /* Move to the first line of window, selecting as we go. */

@@ -37,7 +37,7 @@
 
 	Made :tree pick up list of files from custom view.  Thanks to filterfalse.
 
-	Do not go to start of line on Ctrl-U/Ctrl-D/Ctrl-F/Ctrl-B in ls-like view.
+	Do not go to start of line on Ctrl-U/Ctrl-D/Ctrl-F/Ctrl-B/G in ls-like view.
 
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
