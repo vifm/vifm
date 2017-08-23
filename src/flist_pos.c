@@ -94,7 +94,7 @@ correct_list_pos_on_scroll_down(view_t *view, size_t lines_count)
 {
 	if(!all_files_visible(view))
 	{
-		correct_list_pos_down(view, lines_count*view->column_count);
+		correct_list_pos_down(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -105,7 +105,7 @@ correct_list_pos_on_scroll_up(view_t *view, size_t lines_count)
 {
 	if(!all_files_visible(view))
 	{
-		correct_list_pos_up(view, lines_count*view->column_count);
+		correct_list_pos_up(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -197,13 +197,13 @@ move_cursor_out_of_scope(view_t *view, entry_predicate pred)
 int
 fpos_get_col(const view_t *view, int pos)
 {
-	return pos%view->column_count;
+	return pos%view->run_size;
 }
 
 int
 fpos_get_line(const view_t *view, int pos)
 {
-	return pos/view->column_count;
+	return pos/view->run_size;
 }
 
 int
@@ -221,7 +221,7 @@ fpos_can_move_right(const view_t *view)
 int
 fpos_can_move_up(const view_t *view)
 {
-	return (view->list_pos >= view->column_count);
+	return (view->list_pos >= view->run_size);
 }
 
 int
@@ -260,28 +260,27 @@ get_curr_line(const view_t *view)
 static int
 get_max_col(const view_t *view)
 {
-	return (view->column_count - 1);
+	return (view->run_size - 1);
 }
 
 /* Retrieves maximum line number.  Returns the number. */
 static int
 get_max_line(const view_t *view)
 {
-	return (view->list_rows - 1)/view->column_count;
+	return (view->list_rows - 1)/view->run_size;
 }
 
 int
 get_start_of_line(const view_t *view)
 {
 	const int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
-	return ROUND_DOWN(pos, view->column_count);
+	return ROUND_DOWN(pos, view->run_size);
 }
 
 int
 get_end_of_line(const view_t *view)
 {
-	return MIN(view->list_rows - 1,
-	           get_start_of_line(view) + view->column_count - 1);
+	return MIN(view->list_rows - 1, get_start_of_line(view) + view->run_size - 1);
 }
 
 int
@@ -293,7 +292,7 @@ fpos_get_hor_step(const struct view_t *view)
 int
 fpos_get_ver_step(const struct view_t *view)
 {
-	return view->column_count;
+	return view->run_size;
 }
 
 int

@@ -218,6 +218,7 @@ fview_view_reset(view_t *view)
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;;
 	view->column_count = 1;
+	view->run_size = 1;
 
 	view->miller_view_g = view->miller_view = 0;
 	view->miller_ratios[0] = view->miller_ratios_g[0] = 1;
@@ -525,6 +526,7 @@ calculate_table_conf(view_t *view, size_t *count, size_t *width)
 	}
 
 	view->column_count = *count;
+	view->run_size = view->column_count;
 	view->window_cells = *count*view->window_rows;
 }
 
@@ -565,17 +567,17 @@ static int
 calculate_top_position(view_t *view, int top)
 {
 	int result = MIN(MAX(top, 0), view->list_rows - 1);
-	result = ROUND_DOWN(result, view->column_count);
+	result = ROUND_DOWN(result, view->run_size);
 	if((int)view->window_cells >= view->list_rows)
 	{
 		result = 0;
 	}
 	else if(view->list_rows - top < (int)view->window_cells)
 	{
-		if((int)view->window_cells - (view->list_rows - top) >= view->column_count)
+		if((int)view->window_cells - (view->list_rows - top) >= view->run_size)
 		{
-			result = view->list_rows - view->window_cells + (view->column_count - 1);
-			result = ROUND_DOWN(result, view->column_count);
+			result = view->list_rows - view->window_cells + (view->run_size - 1);
+			result = ROUND_DOWN(result, view->run_size);
 			view->curr_line++;
 		}
 	}
@@ -862,7 +864,7 @@ get_window_middle_pos(const view_t *view)
 {
 	const int top_pos = get_column_top_pos(view);
 	const int bottom_pos = get_column_bottom_pos(view);
-	const int v = view->column_count;
+	const int v = view->run_size;
 	return top_pos + (DIV_ROUND_UP(bottom_pos - top_pos, v)/2)*v;
 }
 
@@ -878,7 +880,7 @@ get_window_bottom_pos(const view_t *view)
 static int
 get_column_top_pos(const view_t *view)
 {
-	const int column_correction = view->list_pos%view->column_count;
+	const int column_correction = view->list_pos%view->run_size;
 	return view->top_line + column_correction;
 }
 
@@ -889,9 +891,9 @@ get_column_bottom_pos(const view_t *view)
 {
 	const int last_top_pos =
 		ROUND_DOWN(MIN((int)get_last_visible_cell(view), view->list_rows - 1),
-				view->column_count);
-	const int pos = last_top_pos + view->list_pos%view->column_count;
-	return (pos < view->list_rows ? pos : pos - view->column_count);
+				view->run_size);
+	const int pos = last_top_pos + view->list_pos%view->run_size;
+	return (pos < view->list_rows ? pos : pos - view->run_size);
 }
 
 /* Calculate color attributes for cursor line of inactive pane.  Returns
@@ -1001,7 +1003,7 @@ void
 scroll_up(view_t *view, size_t by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
-	view->top_line -= view->column_count*DIV_ROUND_UP(by, view->column_count);
+	view->top_line -= view->run_size*DIV_ROUND_UP(by, view->run_size);
 	if(view->top_line < 0)
 	{
 		view->top_line = 0;
@@ -1015,7 +1017,7 @@ void
 scroll_down(view_t *view, size_t by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
-	view->top_line += view->column_count*DIV_ROUND_UP(by, view->column_count);
+	view->top_line += view->run_size*DIV_ROUND_UP(by, view->run_size);
 	view->top_line = calculate_top_position(view, view->top_line);
 
 	view->curr_line = view->list_pos - view->top_line;
@@ -1715,6 +1717,7 @@ void
 fview_update_geometry(view_t *view)
 {
 	view->column_count = calculate_columns_count(view);
+	view->run_size = view->column_count;
 	view->window_cells = view->column_count*view->window_rows;
 }
 

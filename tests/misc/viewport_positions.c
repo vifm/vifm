@@ -269,6 +269,7 @@ setup_grid(int column_count, int list_rows)
 {
 	view->list_rows = list_rows;
 	view->column_count = column_count;
+	view->run_size = column_count;
 	view->window_cells = column_count*view->window_rows;
 }
 

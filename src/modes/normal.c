@@ -562,7 +562,7 @@ page_scroll(int base, int direction)
 	int old_pos = curr_view->list_pos;
 	int offset = (curr_view->window_rows - GAP_SIZE)*curr_view->column_count;
 	int new_pos = base + direction*offset
-	            + old_pos%curr_view->column_count - base%curr_view->column_count;
+	            + old_pos%curr_view->run_size - base%curr_view->run_size;
 	curr_view->list_pos = MAX(0, MIN(curr_view->list_rows - 1, new_pos));
 	scroll_by_files(curr_view, direction*offset);
 	redraw_current_view();
@@ -731,7 +731,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 static void
 scroll_view(ssize_t offset)
 {
-	offset = ROUND_DOWN(offset, curr_view->column_count);
+	offset = ROUND_DOWN(offset, curr_view->run_size);
 	curr_view->list_pos += offset;
 	correct_list_pos(curr_view, offset);
 	scroll_by_files(curr_view, offset);

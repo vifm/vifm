@@ -399,6 +399,9 @@ struct view_t
 	                            * positions on the screen) among all entries of
 	                            * the file list.  Zero if not calculated. */
 	int column_count;    /* Number of columns in the view, used for list view. */
+	int run_size;        /* Length of run in leading direction (neighbourhood),
+	                      * number of elements in a stride.  Greater than 1 in
+	                      * ls-like/grid view. */
 	size_t window_cells; /* Max number of files that can be displayed. */
 
 	/* Whether and how line numbers are displayed. */
