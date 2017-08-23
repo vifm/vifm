@@ -791,9 +791,7 @@ cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	goto_pos(key_info.count - 1);
+	goto_pos(def_count(key_info.count) - 1);
 }
 
 static void

@@ -1054,10 +1054,7 @@ cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	pick_or_move(keys_info, key_info.count - 1);
+	pick_or_move(keys_info, def_count(key_info.count) - 1);
 }
 
 /* Goes to parent directory regardless of ls-like state. */
