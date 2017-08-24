@@ -6,6 +6,7 @@
 
 static void ensure_all_visible(int odd);
 static void setup_grid(int column_count, int list_rows);
+static void setup_transposed_grid(int column_count, int list_rows);
 
 static view_t *const view = &lwin;
 
@@ -222,7 +223,7 @@ TEST(middle_with_offset_accounts_for_columns)
 	assert_int_equal(9, get_window_middle_pos(view));
 }
 
-TEST(bottom__accounts_for_columns)
+TEST(bottom_accounts_for_columns)
 {
 	view->top_line = 2;
 	setup_grid(2, 17);
@@ -256,6 +257,52 @@ TEST(middle_is_specific_to_a_column)
 	assert_int_equal(7, get_window_middle_pos(view));
 }
 
+/* 0 row----file0----file8----- <= top
+ * 1 row  | file1  | file9  |
+ * 2 row  | file2  | file10 |   <= middle for column 2
+ * 3 row  | file3  | file11 |   <= middle for column 1
+ * 4 row  | file4  | file12 |
+ * 5 row  | file5  | file13 |   <= bottom for column 1
+ * 6 row  | file6  |        |
+ * 7 row----file7-------------- <= bottom for column 2
+ */
+
+TEST(top_with_accounts_for_transposed_columns)
+{
+	view->top_line = 0;
+	setup_transposed_grid(2, 14);
+
+	view->list_pos = 10;
+	assert_int_equal(8, get_window_top_pos(view));
+
+	view->list_pos = 1;
+	assert_int_equal(0, get_window_top_pos(view));
+}
+
+TEST(middle_is_specific_to_a_transposed_column)
+{
+	view->top_line = 0;
+	setup_transposed_grid(2, 14);
+
+	view->list_pos = 1;
+	assert_int_equal(3, get_window_middle_pos(view));
+
+	view->list_pos = 12;
+	assert_int_equal(10, get_window_middle_pos(view));
+}
+
+TEST(bottom_accounts_for_transposed_columns)
+{
+	view->top_line = 0;
+	setup_transposed_grid(2, 14);
+
+	view->list_pos = 8;
+	assert_int_equal(13, get_window_bottom_pos(view));
+
+	view->list_pos = 5;
+	assert_int_equal(7, get_window_bottom_pos(view));
+}
+
 static void
 ensure_all_visible(int odd)
 {
@@ -267,9 +314,21 @@ ensure_all_visible(int odd)
 static void
 setup_grid(int column_count, int list_rows)
 {
+	view->ls_transposed = 0;
 	view->list_rows = list_rows;
 	view->column_count = column_count;
 	view->run_size = column_count;
+	view->window_cells = column_count*view->window_rows;
+}
+
+static void
+setup_transposed_grid(int column_count, int list_rows)
+{
+	view->ls_view = 1;
+	view->ls_transposed = 1;
+	view->list_rows = list_rows;
+	view->column_count = column_count;
+	view->run_size = view->window_rows;
 	view->window_cells = column_count*view->window_rows;
 }
 
