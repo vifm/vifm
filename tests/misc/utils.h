@@ -53,6 +53,15 @@ struct matcher_t;
  * succeed, but it's not guaranteed. */
 int replace_matcher(struct matcher_t **matcher, const char expr[]);
 
+struct view_t;
+
+/* Setups a grid of specified dimentions for the view. */
+void setup_grid(struct view_t *view, int column_count, int list_rows, int init);
+
+/* Setups transposed grid of specified dimentions for the view. */
+void setup_transposed_grid(struct view_t *view, int column_count, int list_rows,
+		int init);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
