@@ -61,6 +61,9 @@
 	Fixed directory size in statusline.  Patch by Dmitry Frank (a.k.a.
 	dimonomid).
 
+	Fixed extra width of inactive cursor in ls-like view when 'classify'
+	contains Unicode characters.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

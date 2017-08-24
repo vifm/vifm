@@ -1826,7 +1826,7 @@ get_filetype_decoration_width(const dir_entry_t *entry)
 {
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
-	return strlen(prefix) + strlen(suffix);
+	return utf8_strsw(prefix) + utf8_strsw(suffix);
 }
 
 void
