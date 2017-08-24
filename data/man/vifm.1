@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 13, 2017" "vifm 0.9"
+.TH VIFM 1 "August 24, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3729,6 +3729,21 @@ the value of this option.
 
 Optional %u or %U macro could be used (if both specified %U is chosen) to force
 redirection to custom or unsorted custom view respectively.
+
+.TP
+.BI 'lsoptions'
+type: string list
+.br
+default: ""
+.br
+scope: local
+.br
+
+Configures ls-like view.
+
+  item          used for
+  transposed    filling view grid by columns rather than by lines
+
 .TP
 .BI 'lsview'
 type: boolean
@@ -3741,7 +3756,6 @@ When this option is set, directory view will be displayed in multiple columns
 with file names similar to output of `ls \-x` command.  See "ls-like view"
 section below for format description.  This option has no effect if 'millerview'
 is on.
-
 .TP
 .BI 'milleroptions'
 type: string list
@@ -5523,8 +5537,11 @@ View looks close to output of `ls \-x` command, so files are listed left to
 right in rows.
 
 In this mode file manipulation commands (e.g. d) don't work line-wise like they
-do in Vim, since such operations would be uncommon for file manipulating
+do in Vim, since such operations would be uncommon for file manipulation
 tasks.  Thus, for example, dd will remove only current file.
+
+By default the view is filled by lines, 'lsoptions' can be used to get filling
+by columns.
 
 Note that tree-view and compare view inhibit ls-like view.
 .\" ---------------------------------------------------------------------------

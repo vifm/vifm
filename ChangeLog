@@ -16,6 +16,9 @@
 	Added [r/]r/[R/]R normal mode shortcuts that map to :siblprev and :siblnext
 	with and without wrapping correspondingly.  Thanks to filterfalse.
 
+	Added 'lsoptions' option that allows to get transposed grid in ls-like
+	view.  Thanks to Dmitry Frank (a.k.a. dimonomid).
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

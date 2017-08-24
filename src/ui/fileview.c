@@ -215,6 +215,7 @@ void
 fview_view_reset(view_t *view)
 {
 	view->ls_view_g = view->ls_view = 0;
+	view->ls_transposed_g = view->ls_transposed = 0;
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;;
 	view->column_count = 1;
@@ -1713,7 +1714,7 @@ fview_set_lsview(view_t *view, int enabled)
 int
 fview_is_transposed(const view_t *view)
 {
-	return 0;
+	return (!ui_view_displays_columns(view) && view->ls_transposed);
 }
 
 void

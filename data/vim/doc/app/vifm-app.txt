@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 13
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 24
 
  Email for bugs and suggestions: <xaizek@openmailbox.org>
 
@@ -3103,6 +3103,17 @@ implicitly added after a space to the value of this option.
 Optional %u or %U macro could be used (if both specified %U is chosen) to
 force redirection to custom or unsorted custom view respectively.
 
+                                               *vifm-'lsoptions'*
+lsoptions
+type: string list
+default: ""
+scope: local
+
+Configures ls-like view.
+
+    item          used for ~
+    transposed    filling view grid by columns rather than by lines
+
                                                *vifm-'lsview'*
 lsview
 type: boolean
@@ -4683,8 +4694,11 @@ View looks close to output of `ls -x` command, so files are listed left to
 right in rows.
 
 In this mode file manipulation commands (e.g. |vifm-d|) don't work line-wise like
-they do in Vim, since such operations would be uncommon for file manipulating
+they do in Vim, since such operations would be uncommon for file manipulation
 tasks.  Thus, for example, |vifm-dd| will remove only current file.
+
+By default the view is filled by lines, |vifm-'lsoptions'| can be used to get
+filling by columns.
 
 Note that tree-view and compare view inhibit ls-like view.
 

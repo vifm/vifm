@@ -394,7 +394,8 @@ struct view_t
 	char *view_columns, *view_columns_g;
 
 	/* ls-like view related fields. */
-	int ls_view, ls_view_g;    /* Non-zero if ls-like view is enabled. */
+	int ls_view, ls_view_g;             /* Non-zero if ls-like view is enabled. */
+	int ls_transposed, ls_transposed_g; /* Non-zero for transposed ls-view. */
 	size_t max_filename_width; /* Maximum filename width (length in character
 	                            * positions on the screen) among all entries of
 	                            * the file list.  Zero if not calculated. */

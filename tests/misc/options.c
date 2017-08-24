@@ -37,11 +37,9 @@ SETUP()
 	ui_view_sort_list_ensure_well_formed(&lwin, lwin.sort);
 	lwin.columns = columns_create();
 	lwin.view_columns = strdup("");
-	lwin.num_width_g = 4;
-	lwin.num_width = 4;
-	lwin.ls_view = 0;
-	lwin.hide_dot = 1;
-	lwin.hide_dot_g = 1;
+	lwin.num_width_g = lwin.num_width = 4;
+	lwin.ls_view_g = lwin.ls_view = 0;
+	lwin.hide_dot_g = lwin.hide_dot = 1;
 	update_string(&lwin.sort_groups, "");
 	update_string(&lwin.sort_groups_g, "");
 
@@ -52,11 +50,9 @@ SETUP()
 	ui_view_sort_list_ensure_well_formed(&rwin, rwin.sort);
 	rwin.columns = columns_create();
 	rwin.view_columns = strdup("");
-	rwin.num_width_g = 4;
-	rwin.num_width = 4;
-	rwin.ls_view = 0;
-	rwin.hide_dot_g = 1;
-	rwin.hide_dot = 1;
+	rwin.num_width_g = rwin.num_width = 4;
+	rwin.ls_view_g = rwin.ls_view = 0;
+	rwin.hide_dot_g = rwin.hide_dot = 1;
 
 	/* Name+size matches default column view setting ("-{name},{}"). */
 	columns_add_column_desc(SK_BY_NAME, &format_none);
@@ -664,6 +660,34 @@ TEST(milleroptions_normalizes_input)
 	assert_success(set_options("milleroptions?", OPT_GLOBAL));
 	assert_string_equal("  milleroptions=lsize:0,csize:100,rsize:0",
 			vle_tb_get_data(vle_err));
+}
+
+TEST(lsoptions_handles_wrong_input)
+{
+	assert_failure(exec_commands("se lsoptions=transposed:yes", &lwin,
+				CIT_COMMAND));
+	assert_failure(exec_commands("se lsoptions=transpose", &lwin,
+				CIT_COMMAND));
+}
+
+TEST(lsoptions_accepts_correct_input)
+{
+	assert_success(exec_commands("set lsview lsoptions=transposed", &lwin,
+				CIT_COMMAND));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("lsoptions?", OPT_GLOBAL));
+	assert_string_equal("  lsoptions=transposed", vle_tb_get_data(vle_err));
+}
+
+TEST(lsoptions_normalizes_input)
+{
+	assert_success(exec_commands("set lsoptions=transposed,transposed", &lwin,
+				CIT_COMMAND));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("lsoptions?", OPT_GLOBAL));
+	assert_string_equal("  lsoptions=transposed", vle_tb_get_data(vle_err));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
