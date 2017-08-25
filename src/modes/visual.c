@@ -392,7 +392,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(view))
 	{
-		page_scroll(get_last_visible_cell(view), -1);
+		page_scroll(fpos_get_last_visible_cell(view), -1);
 	}
 }
 
@@ -564,24 +564,21 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_top_pos(view);
-	goto_pos(new_pos);
+	goto_pos(fpos_get_top_pos(view));
 }
 
 /* Move to the last line of window, selecting as we go. */
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_bottom_pos(view);
-	goto_pos(new_pos);
+	goto_pos(fpos_get_bottom_pos(view));
 }
 
 /* Move to middle line of the window, selecting from start position to there. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_middle_pos(view);
-	goto_pos(new_pos);
+	goto_pos(fpos_get_middle_pos(view));
 }
 
 static void

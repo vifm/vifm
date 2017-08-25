@@ -67,29 +67,6 @@ void put_inactive_mark(struct view_t *view);
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(struct view_t *view);
 
-/* Viewport related functions. */
-
-/* Checks whether if all files are visible, so no scrolling is needed.  Returns
- * non-zero if so, and zero otherwise. */
-int all_files_visible(const struct view_t *view);
-
-/* Gets file position of last visible cell in the view.  Value returned may be
- * greater than or equal to the number of files in the view and thus should be
- * treated correctly.  Returns the index. */
-size_t get_last_visible_cell(const struct view_t *view);
-
-/* Calculates position in list of files that corresponds to window top, which is
- * adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_top_pos(const struct view_t *view);
-
-/* Calculates position in list of files that corresponds to window middle, which
- * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_middle_pos(const struct view_t *view);
-
-/* Calculates position in list of files that corresponds to window bottom, which
- * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_bottom_pos(const struct view_t *view);
-
 /* Scrolling related functions. */
 
 /* Checks if view can be scrolled up (there are more files).  Returns non-zero

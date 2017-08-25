@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
-#include "../../src/ui/fileview.h"
+#include "../../src/flist_pos.h"
 #include "../../src/ui/ui.h"
 
 #include "utils.h"
@@ -34,55 +34,55 @@ SETUP()
 TEST(top_pos_at_top)
 {
 	view->top_line = 0;
-	assert_int_equal(0, get_window_top_pos(view));
+	assert_int_equal(0, fpos_get_top_pos(view));
 }
 
 TEST(middle_pos_at_top)
 {
 	view->top_line = 0;
-	assert_int_equal(3, get_window_middle_pos(view));
+	assert_int_equal(3, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_pos_at_top)
 {
 	view->top_line = 0;
-	assert_int_equal(5, get_window_bottom_pos(view));
+	assert_int_equal(5, fpos_get_bottom_pos(view));
 }
 
 TEST(top_pos_at_middle)
 {
 	view->top_line = 1;
-	assert_int_equal(3, get_window_top_pos(view));
+	assert_int_equal(3, fpos_get_top_pos(view));
 }
 
 TEST(middle_pos_at_middle)
 {
 	view->top_line = 1;
-	assert_int_equal(4, get_window_middle_pos(view));
+	assert_int_equal(4, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_pos_at_middle)
 {
 	view->top_line = 1;
-	assert_int_equal(6, get_window_bottom_pos(view));
+	assert_int_equal(6, fpos_get_bottom_pos(view));
 }
 
 TEST(top_pos_at_bottom)
 {
 	view->top_line = 2;
-	assert_int_equal(4, get_window_top_pos(view));
+	assert_int_equal(4, fpos_get_top_pos(view));
 }
 
 TEST(middle_pos_at_bottom)
 {
 	view->top_line = 2;
-	assert_int_equal(5, get_window_middle_pos(view));
+	assert_int_equal(5, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_pos_at_bottom)
 {
 	view->top_line = 2;
-	assert_int_equal(9, get_window_bottom_pos(view));
+	assert_int_equal(9, fpos_get_bottom_pos(view));
 }
 
 /* 0 row----file0---- <= top [ + offset ]
@@ -98,19 +98,19 @@ TEST(bottom_pos_at_bottom)
 TEST(top_pos_at_all_odd)
 {
 	ensure_all_visible(1);
-	assert_int_equal(0, get_window_top_pos(view));
+	assert_int_equal(0, fpos_get_top_pos(view));
 }
 
 TEST(middle_pos_at_all_odd)
 {
 	ensure_all_visible(1);
-	assert_int_equal(2, get_window_middle_pos(view));
+	assert_int_equal(2, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_pos_at_all_odd)
 {
 	ensure_all_visible(1);
-	assert_int_equal(4, get_window_bottom_pos(view));
+	assert_int_equal(4, fpos_get_bottom_pos(view));
 }
 
 /* 0 row----file0---- <= top [ + offset ]
@@ -126,19 +126,19 @@ TEST(bottom_pos_at_all_odd)
 TEST(top_pos_at_all_even)
 {
 	ensure_all_visible(0);
-	assert_int_equal(0, get_window_top_pos(view));
+	assert_int_equal(0, fpos_get_top_pos(view));
 }
 
 TEST(middle_pos_at_all_even)
 {
 	ensure_all_visible(0);
-	assert_int_equal(1, get_window_middle_pos(view));
+	assert_int_equal(1, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_pos_at_all_even)
 {
 	ensure_all_visible(0);
-	assert_int_equal(3, get_window_bottom_pos(view));
+	assert_int_equal(3, fpos_get_bottom_pos(view));
 }
 
 /* 0 row----file0----file1----- <= top
@@ -158,10 +158,10 @@ TEST(top_accounts_for_columns)
 	setup_grid(view, 2, 17, 0);
 
 	view->list_pos = 6;
-	assert_int_equal(0, get_window_top_pos(view));
+	assert_int_equal(0, fpos_get_top_pos(view));
 
 	view->list_pos = 3;
-	assert_int_equal(1, get_window_top_pos(view));
+	assert_int_equal(1, fpos_get_top_pos(view));
 }
 
 TEST(middle_accounts_for_columns)
@@ -170,10 +170,10 @@ TEST(middle_accounts_for_columns)
 	setup_grid(view, 2, 17, 0);
 
 	view->list_pos = 2;
-	assert_int_equal(6, get_window_middle_pos(view));
+	assert_int_equal(6, fpos_get_middle_pos(view));
 
 	view->list_pos = 11;
-	assert_int_equal(7, get_window_middle_pos(view));
+	assert_int_equal(7, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_with_offset_accounts_for_columns)
@@ -182,10 +182,10 @@ TEST(bottom_with_offset_accounts_for_columns)
 	setup_grid(view, 2, 17, 0);
 
 	view->list_pos = 8;
-	assert_int_equal(10, get_window_bottom_pos(view));
+	assert_int_equal(10, fpos_get_bottom_pos(view));
 
 	view->list_pos = 11;
-	assert_int_equal(11, get_window_bottom_pos(view));
+	assert_int_equal(11, fpos_get_bottom_pos(view));
 }
 
 /*          file0    file1
@@ -205,10 +205,10 @@ TEST(top_with_offset_accounts_for_columns)
 	setup_grid(view, 2, 17, 0);
 
 	view->list_pos = 14;
-	assert_int_equal(6, get_window_top_pos(view));
+	assert_int_equal(6, fpos_get_top_pos(view));
 
 	view->list_pos = 3;
-	assert_int_equal(7, get_window_top_pos(view));
+	assert_int_equal(7, fpos_get_top_pos(view));
 }
 
 TEST(middle_with_offset_accounts_for_columns)
@@ -217,10 +217,10 @@ TEST(middle_with_offset_accounts_for_columns)
 	setup_grid(view, 2, 17, 0);
 
 	view->list_pos = 14;
-	assert_int_equal(8, get_window_middle_pos(view));
+	assert_int_equal(8, fpos_get_middle_pos(view));
 
 	view->list_pos = 3;
-	assert_int_equal(9, get_window_middle_pos(view));
+	assert_int_equal(9, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_accounts_for_columns)
@@ -229,10 +229,10 @@ TEST(bottom_accounts_for_columns)
 	setup_grid(view, 2, 17, 0);
 
 	view->list_pos = 8;
-	assert_int_equal(16, get_window_bottom_pos(view));
+	assert_int_equal(16, fpos_get_bottom_pos(view));
 
 	view->list_pos = 5;
-	assert_int_equal(15, get_window_bottom_pos(view));
+	assert_int_equal(15, fpos_get_bottom_pos(view));
 }
 
 /*          file0    file1
@@ -251,10 +251,10 @@ TEST(middle_is_specific_to_a_column)
 	setup_grid(view, 2, 15, 0);
 
 	view->list_pos = 12;
-	assert_int_equal(8, get_window_middle_pos(view));
+	assert_int_equal(8, fpos_get_middle_pos(view));
 
 	view->list_pos = 7;
-	assert_int_equal(7, get_window_middle_pos(view));
+	assert_int_equal(7, fpos_get_middle_pos(view));
 }
 
 /* 0 row----file0----file8----- <= top
@@ -273,10 +273,10 @@ TEST(top_with_accounts_for_transposed_columns)
 	setup_transposed_grid(view, 2, 14, 0);
 
 	view->list_pos = 10;
-	assert_int_equal(8, get_window_top_pos(view));
+	assert_int_equal(8, fpos_get_top_pos(view));
 
 	view->list_pos = 1;
-	assert_int_equal(0, get_window_top_pos(view));
+	assert_int_equal(0, fpos_get_top_pos(view));
 }
 
 TEST(middle_is_specific_to_a_transposed_column)
@@ -285,10 +285,10 @@ TEST(middle_is_specific_to_a_transposed_column)
 	setup_transposed_grid(view, 2, 14, 0);
 
 	view->list_pos = 1;
-	assert_int_equal(3, get_window_middle_pos(view));
+	assert_int_equal(3, fpos_get_middle_pos(view));
 
 	view->list_pos = 12;
-	assert_int_equal(10, get_window_middle_pos(view));
+	assert_int_equal(10, fpos_get_middle_pos(view));
 }
 
 TEST(bottom_accounts_for_transposed_columns)
@@ -297,10 +297,10 @@ TEST(bottom_accounts_for_transposed_columns)
 	setup_transposed_grid(view, 2, 14, 0);
 
 	view->list_pos = 8;
-	assert_int_equal(13, get_window_bottom_pos(view));
+	assert_int_equal(13, fpos_get_bottom_pos(view));
 
 	view->list_pos = 5;
-	assert_int_equal(7, get_window_bottom_pos(view));
+	assert_int_equal(7, fpos_get_bottom_pos(view));
 }
 
 static void
@@ -308,7 +308,7 @@ ensure_all_visible(int odd)
 {
 	view->top_line = 0;
 	view->list_rows = odd ? 5 : 4;
-	assert_true(all_files_visible(view));
+	assert_true(fpos_are_all_files_visible(view));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

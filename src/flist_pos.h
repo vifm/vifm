@@ -125,6 +125,31 @@ int fpos_has_hidden_top(const struct view_t *view);
  * currently.  Returns non-zero if so, otherwise zero is returned. */
 int fpos_has_hidden_bottom(const struct view_t *view);
 
+/* Calculates position in list of files that corresponds to window top, which is
+ * adjusted according to 'scrolloff' option.  Returns the position. */
+size_t fpos_get_top_pos(const struct view_t *view);
+
+/* Calculates position in list of files that corresponds to window middle, which
+ * is adjusted according to 'scrolloff' option.  Returns the position. */
+size_t fpos_get_middle_pos(const struct view_t *view);
+
+/* Calculates position in list of files that corresponds to window bottom, which
+ * is adjusted according to 'scrolloff' option.  Returns the position. */
+size_t fpos_get_bottom_pos(const struct view_t *view);
+
+/* Retrieves scroll offset value for the view taking view height into account.
+ * Returns the effective scroll offset. */
+size_t fpos_get_offset(const struct view_t *view);
+
+/* Checks whether if all files are visible, so no scrolling is needed.  Returns
+ * non-zero if so, and zero otherwise. */
+int fpos_are_all_files_visible(const struct view_t *view);
+
+/* Gets file position of last visible cell in the view.  Value returned may be
+ * greater than or equal to the number of files in the view and thus should be
+ * treated correctly.  Returns the index. */
+size_t fpos_get_last_visible_cell(const struct view_t *view);
+
 /* Finds position of the next/previous group defined by primary sorting key.
  * Returns determined position (might point to the last/first entry in corner
  * cases). */

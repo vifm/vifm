@@ -509,7 +509,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
-		page_scroll(get_last_visible_cell(curr_view), -1);
+		page_scroll(fpos_get_last_visible_cell(curr_view), -1);
 	}
 }
 
@@ -1162,24 +1162,21 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_top_pos(curr_view);
-	pick_or_move(keys_info, new_pos);
+	pick_or_move(keys_info, fpos_get_top_pos(curr_view));
 }
 
 /* Go to the last file in window. */
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_bottom_pos(curr_view);
-	pick_or_move(keys_info, new_pos);
+	pick_or_move(keys_info, fpos_get_bottom_pos(curr_view));
 }
 
 /* Go to middle line of window. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_middle_pos(curr_view);
-	pick_or_move(keys_info, new_pos);
+	pick_or_move(keys_info, fpos_get_middle_pos(curr_view));
 }
 
 /* Picks files or moves cursor depending whether key was pressed as a selector
@@ -1994,7 +1991,7 @@ normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
-		int bottom = get_window_bottom_pos(curr_view);
+		const int bottom = fpos_get_bottom_pos(curr_view);
 		scroll_up(curr_view, bottom - curr_view->list_pos);
 		redraw_current_view();
 	}
@@ -2176,7 +2173,7 @@ normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_down(curr_view))
 	{
-		int top = get_window_top_pos(curr_view);
+		const int top = fpos_get_top_pos(curr_view);
 		scroll_down(curr_view, curr_view->list_pos - top);
 		redraw_current_view();
 	}
@@ -2186,9 +2183,9 @@ normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 void
 normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!all_files_visible(curr_view))
+	if(!fpos_are_all_files_visible(curr_view))
 	{
-		int middle = get_window_middle_pos(curr_view);
+		const int middle = fpos_get_middle_pos(curr_view);
 		scroll_by_files(curr_view, curr_view->list_pos - middle);
 		redraw_current_view();
 	}
