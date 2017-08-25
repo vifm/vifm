@@ -302,8 +302,7 @@ static void
 correct_size(view_t *view)
 {
 	getmaxyx(view->win, view->window_rows, view->window_cols);
-	view->column_count = calculate_columns_count(view);
-	view->window_cells = view->column_count*view->window_rows;
+	fview_update_geometry(view);
 }
 
 /* Updates TUI elements sizes and coordinates for single window

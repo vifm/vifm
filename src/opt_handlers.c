@@ -89,6 +89,7 @@ static const char * to_endpoint(int i, char buffer[]);
 static void init_timefmt(optval_t *val);
 static void init_trashdir(optval_t *val);
 static void init_dotfiles(optval_t *val);
+static void init_lsoptions(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_milleroptions(optval_t *val);
 static void init_millerview(optval_t *val);
@@ -157,6 +158,10 @@ static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void dotfiles_global(OPT_OP op, optval_t val);
 static void dotfiles_local(OPT_OP op, optval_t val);
+static void lsoptions_global(OPT_OP op, optval_t val);
+static void lsoptions_local(OPT_OP op, optval_t val);
+static void set_lsoptions(int *transposed, optval_t val, OPT_SCOPE scope);
+static void fill_lsoptions(optval_t *val, int transposed);
 static void lsview_global(OPT_OP op, optval_t val);
 static void lsview_local(OPT_OP op, optval_t val);
 static void milleroptions_global(OPT_OP op, optval_t val);
@@ -285,6 +290,11 @@ static const char *dotdirs_vals[][2] = {
 	{ "nonrootparent", "show .. in non-root directories" },
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
+
+/* Possible keys of 'lsoptions' option. */
+static const char *lsoptions_enum[][2] = {
+	{ "transposed", "fill grid by column instead of by line" },
+};
 
 /* Possible values of 'suggestoptions'. */
 static const char *suggestoptions_vals[][2] = {
@@ -748,7 +758,12 @@ options[] = {
 	  OPT_BOOL, 0, NULL, &dotfiles_global, &dotfiles_local,
 	  { .init = &init_dotfiles },
 	},
-	{ "lsview", "", "display items in a table",
+	{ "lsoptions", "", "settings for ls-like view",
+	  OPT_STRLIST, ARRAY_LEN(lsoptions_enum), lsoptions_enum,
+		&lsoptions_global, &lsoptions_local,
+	  { .init = &init_lsoptions },
+	},
+	{ "lsview", "", "display items in a grid",
 	  OPT_BOOL, 0, NULL, &lsview_global, &lsview_local,
 	  { .init = &init_lsview },
 	},
@@ -1003,6 +1018,13 @@ init_dotfiles(optval_t *val)
 	val->bool_val = !curr_view->hide_dot_g;
 }
 
+/* Initializes 'lsoptions' option from global value. */
+static void
+init_lsoptions(optval_t *val)
+{
+	fill_lsoptions(val, curr_view->ls_transposed_g);
+}
+
 /* Initializes 'lsview' option from global value. */
 static void
 init_lsview(optval_t *val)
@@ -1203,6 +1225,10 @@ reset_local_options(view_t *view)
 	val.int_val = !view->hide_dot_g;
 	set_option("dotfiles", val, OPT_LOCAL);
 
+	view->ls_transposed = view->ls_transposed_g;
+	fill_lsoptions(&val, view->ls_transposed_g);
+	set_option("lsoptions", val, OPT_LOCAL);
+
 	fview_set_lsview(view, view->ls_view_g);
 	val.int_val = view->ls_view_g;
 	set_option("lsview", val, OPT_LOCAL);
@@ -1257,6 +1283,11 @@ load_view_options(view_t *view)
 	set_option("dotfiles", val, OPT_LOCAL);
 	val.bool_val = !view->hide_dot_g;
 	set_option("dotfiles", val, OPT_GLOBAL);
+
+	fill_lsoptions(&val, view->ls_transposed);
+	set_option("lsoptions", val, OPT_LOCAL);
+	fill_lsoptions(&val, view->ls_transposed_g);
+	set_option("lsoptions", val, OPT_GLOBAL);
 
 	val.bool_val = view->ls_view;
 	set_option("lsview", val, OPT_LOCAL);
@@ -1315,6 +1346,8 @@ clone_local_options(const view_t *from, view_t *to, int defer_slow)
 	memcpy(to->sort, sort, sizeof(to->sort));
 	memcpy(to->sort_g, from->sort_g, sizeof(to->sort_g));
 	sorting_changed(to, defer_slow);
+
+	to->ls_transposed_g = from->ls_transposed_g;
 
 	to->ls_view_g = from->ls_view_g;
 	fview_set_lsview(to, from->ls_view);
@@ -2246,6 +2279,69 @@ dotfiles_local(OPT_OP op, optval_t val)
 {
 	curr_view->hide_dot = !val.bool_val;
 	ui_view_schedule_reload(curr_view);
+}
+
+/* Handles update of ls settings as a global option. */
+static void
+lsoptions_global(OPT_OP op, optval_t val)
+{
+	set_lsoptions(&curr_view->ls_transposed_g, val, OPT_GLOBAL);
+}
+
+/* Handles update of ls settings as a local option. */
+static void
+lsoptions_local(OPT_OP op, optval_t val)
+{
+	set_lsoptions(&curr_view->ls_transposed, val, OPT_LOCAL);
+}
+
+/* Handles update of ls-view settings. */
+static void
+set_lsoptions(int *transposed, optval_t val, OPT_SCOPE scope)
+{
+	char *new_val = strdup(val.str_val);
+	char *part = new_val, *state = NULL;
+
+	int transpose = 0;
+
+	while((part = split_and_get(part, ',', &state)) != NULL)
+	{
+		if(strcmp(part, "transposed") == 0)
+		{
+			transpose = 1;
+		}
+		else
+		{
+			break_at(part, ':');
+			vle_tb_append_linef(vle_err, "Unknown key for 'lsoptions' option: %s",
+					part);
+			break;
+		}
+	}
+	free(new_val);
+
+	if(part == NULL)
+	{
+		*transposed = transpose;
+
+		if(!ui_view_displays_columns(curr_view) &&
+				transposed == &curr_view->ls_transposed)
+		{
+			ui_view_schedule_redraw(curr_view);
+		}
+	}
+
+	fill_lsoptions(&val, *transposed);
+	set_option("lsoptions", val, scope);
+}
+
+/* Loads value of lsoptions as a string. */
+static void
+fill_lsoptions(optval_t *val, int transposed)
+{
+	static char buf[64];
+	snprintf(buf, sizeof(buf), "%s", transposed ? "transposed" : 0);
+	val->str_val = buf;
 }
 
 /* Handles switch that controls column vs. ls-like view in global option. */

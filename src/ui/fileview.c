@@ -99,7 +99,6 @@ static void consider_scroll_bind(view_t *view);
 static int prepare_inactive_color(view_t *view, dir_entry_t *entry,
 		int line_color);
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
-static size_t get_effective_scroll_offset(const view_t *view);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static void draw_line_number(const column_data_t *cdt, int column);
@@ -134,6 +133,7 @@ static void format_inode(int id, const void *data, size_t buf_len, char buf[]);
 #endif
 static void format_id(int id, const void *data, size_t buf_len, char buf[]);
 static size_t calculate_column_width(view_t *view);
+static size_t calculate_columns_count(struct view_t *view);
 static size_t get_max_filename_width(const view_t *view);
 static size_t get_filename_width(const view_t *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
@@ -212,9 +212,11 @@ void
 fview_view_reset(view_t *view)
 {
 	view->ls_view_g = view->ls_view = 0;
+	view->ls_transposed_g = view->ls_transposed = 0;
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;;
 	view->column_count = 1;
+	view->run_size = 1;
 
 	view->miller_view_g = view->miller_view = 0;
 	view->miller_ratios[0] = view->miller_ratios_g[0] = 1;
@@ -310,8 +312,8 @@ draw_dir_list_only(view_t *view)
 			.current_pos = (view == curr_view) ? view->list_pos : -1,
 			.total_width = total_width,
 			.number_width = view->real_num_width,
-			.current_line = cell/col_count,
-			.column_offset = lcol_size + (cell%col_count)*col_width,
+			.current_line = fpos_get_line(view, cell),
+			.column_offset = lcol_size + fpos_get_col(view, cell)*col_width,
 			.prefix_len = &prefix_len,
 			.is_main = 1,
 		};
@@ -405,7 +407,7 @@ print_column(view_t *view, entries_t entries, const char current[],
 		const char path[], int width, int offset, int number_width)
 {
 	columns_t *const columns = get_name_column();
-	const int scroll_offset = get_effective_scroll_offset(view);
+	const int scroll_offset = fpos_get_offset(view);
 	int top, pos;
 	int i;
 
@@ -522,6 +524,8 @@ calculate_table_conf(view_t *view, size_t *count, size_t *width)
 	}
 
 	view->column_count = *count;
+	view->run_size = fview_is_transposed(view) ? view->window_rows
+	                                           : view->column_count;
 	view->window_cells = *count*view->window_rows;
 }
 
@@ -562,17 +566,17 @@ static int
 calculate_top_position(view_t *view, int top)
 {
 	int result = MIN(MAX(top, 0), view->list_rows - 1);
-	result = ROUND_DOWN(result, view->column_count);
+	result = ROUND_DOWN(result, view->run_size);
 	if((int)view->window_cells >= view->list_rows)
 	{
 		result = 0;
 	}
 	else if(view->list_rows - top < (int)view->window_cells)
 	{
-		if(view->window_cells - (view->list_rows - top) >= view->column_count)
+		if((int)view->window_cells - (view->list_rows - top) >= view->run_size)
 		{
-			result = view->list_rows - view->window_cells + (view->column_count - 1);
-			result = ROUND_DOWN(result, view->column_count);
+			result = view->list_rows - view->window_cells + (view->run_size - 1);
+			result = ROUND_DOWN(result, view->run_size);
 			view->curr_line++;
 		}
 	}
@@ -810,11 +814,16 @@ fview_cursor_redraw(view_t *view)
 void
 put_inactive_mark(view_t *view)
 {
-	size_t col_width;
-	size_t col_count;
+	size_t col_width, col_count;
 	int line_attrs;
 	int line, column;
 
+	if(!ui_view_displays_columns(view))
+	{
+		/* Inactive cell in ls-like view usually takes less space than an active
+		 * one.  Need to clear the cell before drawing over it. */
+		redraw_cell(view, view->top_line, view->curr_line, 0);
+	}
 	redraw_cell(view, view->top_line, view->curr_line, 1);
 
 	if(!cfg.extra_padding)
@@ -827,70 +836,13 @@ put_inactive_mark(view_t *view)
 	line_attrs = prepare_inactive_color(view, get_current_entry(view),
 			get_line_color(view, get_current_entry(view)));
 
-	line = view->curr_line/col_count;
+	line = fpos_get_line(view, view->curr_line);
 	column = view->real_num_width + ui_view_left_reserved(view)
-	       + (view->curr_line%col_count)*col_width;
+	       + fpos_get_col(view, view->curr_line)*col_width;
 	checked_wmove(view->win, line, column);
 
 	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
 	ui_view_win_changed(view);
-}
-
-int
-all_files_visible(const view_t *view)
-{
-	return view->list_rows <= (int)view->window_cells;
-}
-
-size_t
-get_last_visible_cell(const view_t *view)
-{
-	return view->top_line + view->window_cells - 1;
-}
-
-size_t
-get_window_top_pos(const view_t *view)
-{
-	const int column_correction = view->list_pos%view->column_count;
-	if(view->top_line == 0)
-	{
-		return column_correction;
-	}
-
-	return view->top_line + get_effective_scroll_offset(view) + column_correction;
-}
-
-size_t
-get_window_middle_pos(const view_t *view)
-{
-	const int list_middle = DIV_ROUND_UP(view->list_rows, (2*view->column_count));
-	const int window_middle = DIV_ROUND_UP(view->window_rows - 1, 2);
-	return view->top_line
-	     + MAX(0, MIN(list_middle, window_middle) - 1)*view->column_count
-	     + view->list_pos%view->column_count;
-}
-
-size_t
-get_window_bottom_pos(const view_t *view)
-{
-	if(view->list_rows - 1 <= (int)get_last_visible_cell(view))
-	{
-		const size_t last = view->list_rows - 1;
-		const size_t last_row = ROUND_DOWN(last, view->column_count);
-		if(last_row + view->list_pos%view->column_count > last)
-		{
-			return last_row - view->column_count + view->list_pos%view->column_count;
-		}
-		return last_row + view->list_pos%view->column_count;
-	}
-	else
-	{
-		const size_t last = get_last_visible_cell(view);
-		const size_t last_row = ROUND_DOWN(last, view->column_count);
-		const size_t off = get_effective_scroll_offset(view);
-		const size_t column_correction = view->list_pos%view->column_count;
-		return last_row + column_correction - off;
-	}
 }
 
 /* Calculate color attributes for cursor line of inactive pane.  Returns
@@ -924,8 +876,7 @@ static void
 redraw_cell(view_t *view, int top, int cursor, int is_current)
 {
 	const int pos = top + cursor;
-	size_t col_width;
-	size_t col_count;
+	size_t col_width, col_count;
 	size_t print_width;
 
 	size_t prefix_len = 0U;
@@ -960,9 +911,9 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	cdt.current_line = cursor/col_count;
+	cdt.current_line = fpos_get_line(view, cursor);
 	cdt.column_offset = ui_view_left_reserved(view)
-	                  + (cursor%col_count)*col_width;
+	                  + fpos_get_col(view, cursor)*col_width;
 
 	print_width = calculate_print_width(view, pos, col_width);
 
@@ -994,14 +945,14 @@ can_scroll_up(const view_t *view)
 int
 can_scroll_down(const view_t *view)
 {
-	return (int)get_last_visible_cell(view) < view->list_rows - 1;
+	return (int)fpos_get_last_visible_cell(view) < view->list_rows - 1;
 }
 
 void
 scroll_up(view_t *view, size_t by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
-	view->top_line -= view->column_count*DIV_ROUND_UP(by, view->column_count);
+	view->top_line -= view->run_size*DIV_ROUND_UP(by, view->run_size);
 	if(view->top_line < 0)
 	{
 		view->top_line = 0;
@@ -1015,7 +966,7 @@ void
 scroll_down(view_t *view, size_t by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
-	view->top_line += view->column_count*DIV_ROUND_UP(by, view->column_count);
+	view->top_line += view->run_size*DIV_ROUND_UP(by, view->run_size);
 	view->top_line = calculate_top_position(view, view->top_line);
 
 	view->curr_line = view->list_pos - view->top_line;
@@ -1024,12 +975,12 @@ scroll_down(view_t *view, size_t by)
 int
 get_corrected_list_pos_down(const view_t *view, size_t pos_delta)
 {
-	const int scroll_offset = get_effective_scroll_offset(view);
+	const int scroll_offset = fpos_get_offset(view);
 	if(view->list_pos <=
 			view->top_line + scroll_offset + (MAX((int)pos_delta, 1) - 1))
 	{
-		const size_t column_correction = view->list_pos%view->column_count;
-		const size_t offset = scroll_offset + pos_delta + column_correction;
+		const int column_correction = view->list_pos%view->column_count;
+		const int offset = scroll_offset + pos_delta + column_correction;
 		return view->top_line + offset;
 	}
 	return view->list_pos;
@@ -1038,13 +989,13 @@ get_corrected_list_pos_down(const view_t *view, size_t pos_delta)
 int
 get_corrected_list_pos_up(const view_t *view, size_t pos_delta)
 {
-	const int scroll_offset = get_effective_scroll_offset(view);
-	const int last = get_last_visible_cell(view);
+	const int scroll_offset = fpos_get_offset(view);
+	const int last = fpos_get_last_visible_cell(view);
 	if(view->list_pos >= last - scroll_offset - (MAX((int)pos_delta, 1) - 1))
 	{
-		const size_t column_correction = (view->column_count - 1) -
-				view->list_pos%view->column_count;
-		const size_t offset = scroll_offset + pos_delta + column_correction;
+		const int column_correction = (view->column_count - 1)
+		                            - view->list_pos%view->column_count;
+		const int offset = scroll_offset + pos_delta + column_correction;
 		return last - offset;
 	}
 	return view->list_pos;
@@ -1057,7 +1008,7 @@ consider_scroll_offset(view_t *view)
 	int pos = view->list_pos;
 	if(cfg.scroll_off > 0)
 	{
-		const int s = (int)get_effective_scroll_offset(view);
+		const int s = (int)fpos_get_offset(view);
 		/* Check scroll offset at the top. */
 		if(can_scroll_up(view) && pos - view->top_line < s)
 		{
@@ -1067,7 +1018,7 @@ consider_scroll_offset(view_t *view)
 		/* Check scroll offset at the bottom. */
 		if(can_scroll_down(view))
 		{
-			const int last = (int)get_last_visible_cell(view);
+			const int last = (int)fpos_get_last_visible_cell(view);
 			if(pos > last - s)
 			{
 				scroll_down(view, s + (pos - last));
@@ -1076,14 +1027,6 @@ consider_scroll_offset(view_t *view)
 		}
 	}
 	return need_redraw;
-}
-
-/* Returns scroll offset value for the view taking view height into account. */
-static size_t
-get_effective_scroll_offset(const view_t *view)
-{
-	int val = MIN(DIV_ROUND_UP(view->window_rows - 1, 2), MAX(cfg.scroll_off, 0));
-	return val*view->column_count;
 }
 
 void
@@ -1688,6 +1631,12 @@ fview_set_lsview(view_t *view, int enabled)
 	}
 }
 
+int
+fview_is_transposed(const view_t *view)
+{
+	return (!ui_view_displays_columns(view) && view->ls_transposed);
+}
+
 void
 fview_set_millerview(view_t *view, int enabled)
 {
@@ -1696,17 +1645,6 @@ fview_set_millerview(view_t *view, int enabled)
 		view->miller_view = enabled;
 		ui_view_schedule_redraw(view);
 	}
-}
-
-size_t
-calculate_columns_count(view_t *view)
-{
-	if(!ui_view_displays_columns(view))
-	{
-		const size_t column_width = calculate_column_width(view);
-		return ui_view_available_width(view)/column_width;
-	}
-	return 1U;
 }
 
 /* Returns width of one column in the view. */
@@ -1723,6 +1661,15 @@ calculate_column_width(view_t *view)
 }
 
 void
+fview_update_geometry(view_t *view)
+{
+	view->column_count = calculate_columns_count(view);
+	view->run_size = fview_is_transposed(view) ? view->window_rows
+	                                           : view->column_count;
+	view->window_cells = view->column_count*view->window_rows;
+}
+
+void
 fview_dir_updated(view_t *view)
 {
 	view->local_cs = cs_load_local(view == &lwin, view->curr_dir);
@@ -1733,6 +1680,18 @@ fview_list_updated(view_t *view)
 {
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;
+}
+
+/* Evaluates number of columns in the view.  Returns the number. */
+static size_t
+calculate_columns_count(view_t *view)
+{
+	if(!ui_view_displays_columns(view))
+	{
+		const size_t column_width = calculate_column_width(view);
+		return ui_view_available_width(view)/column_width;
+	}
+	return 1U;
 }
 
 /* Finds maximum filename width (length in character positions on the screen)
@@ -1781,7 +1740,7 @@ get_filetype_decoration_width(const dir_entry_t *entry)
 {
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
-	return strlen(prefix) + strlen(suffix);
+	return utf8_strsw(prefix) + utf8_strsw(suffix);
 }
 
 void
@@ -1903,7 +1862,7 @@ move_curr_line(view_t *view)
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
-	last = (int)get_last_visible_cell(view);
+	last = (int)fpos_get_last_visible_cell(view);
 	if(view->top_line <= pos && pos <= last)
 	{
 		view->curr_line = pos - view->top_line;

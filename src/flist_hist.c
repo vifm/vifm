@@ -228,7 +228,7 @@ flist_hist_lookup(view_t *view, const view_t *source)
 	}
 	else
 	{
-		const int last = (int)get_last_visible_cell(view);
+		const int last = (int)fpos_get_last_visible_cell(view);
 		if(view->list_pos < (int)view->window_cells)
 		{
 			scroll_up(view, view->top_line);

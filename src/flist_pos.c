@@ -41,6 +41,12 @@
 static void correct_list_pos_down(view_t *view, size_t pos_delta);
 static void correct_list_pos_up(view_t *view, size_t pos_delta);
 static void move_cursor_out_of_scope(view_t *view, entry_predicate pred);
+static int get_curr_col(const view_t *view);
+static int get_curr_line(const view_t *view);
+static int get_max_col(const view_t *view);
+static int get_max_line(const view_t *view);
+static int get_column_top_pos(const view_t *view);
+static int get_column_bottom_pos(const view_t *view);
 static const char * get_last_ext(const char name[]);
 static int is_mismatched_entry(const dir_entry_t *entry);
 static int find_next(const view_t *view, entry_predicate pred);
@@ -88,9 +94,9 @@ correct_list_pos(view_t *view, ssize_t pos_delta)
 int
 correct_list_pos_on_scroll_down(view_t *view, size_t lines_count)
 {
-	if(!all_files_visible(view))
+	if(!fpos_are_all_files_visible(view))
 	{
-		correct_list_pos_down(view, lines_count*view->column_count);
+		correct_list_pos_down(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -99,9 +105,9 @@ correct_list_pos_on_scroll_down(view_t *view, size_t lines_count)
 int
 correct_list_pos_on_scroll_up(view_t *view, size_t lines_count)
 {
-	if(!all_files_visible(view))
+	if(!fpos_are_all_files_visible(view))
 	{
-		correct_list_pos_up(view, lines_count*view->column_count);
+		correct_list_pos_up(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -191,49 +197,211 @@ move_cursor_out_of_scope(view_t *view, entry_predicate pred)
 }
 
 int
-at_first_line(const view_t *view)
+fpos_get_col(const view_t *view, int pos)
 {
-	return view->list_pos/view->column_count == 0;
+	return (fview_is_transposed(view) ? pos/view->run_size : pos%view->run_size);
 }
 
 int
-at_last_line(const view_t *view)
+fpos_get_line(const view_t *view, int pos)
 {
-	const size_t col_count = view->column_count;
-	return view->list_pos/col_count == (view->list_rows - 1)/col_count;
+	return (fview_is_transposed(view) ? pos%view->run_size : pos/view->run_size);
+}
+
+int
+fpos_can_move_left(const view_t *view)
+{
+	return fview_is_transposed(view) ? view->list_pos >= view->run_size
+	                                 : view->list_pos > 0;
+}
+
+int
+fpos_can_move_right(const view_t *view)
+{
+	return fview_is_transposed(view) ? !at_last_column(view)
+	                                 : view->list_pos < view->list_rows - 1;
+}
+
+int
+fpos_can_move_up(const view_t *view)
+{
+	return fview_is_transposed(view) ? view->list_pos > 0
+	                                 : view->list_pos >= view->run_size;
+}
+
+int
+fpos_can_move_down(const view_t *view)
+{
+	return fview_is_transposed(view) ? view->list_pos < view->list_rows - 1
+	                                 : get_curr_line(view) < get_max_line(view);
 }
 
 int
 at_first_column(const view_t *view)
 {
-	return view->list_pos%view->column_count == 0;
+	return (get_curr_col(view) == 0);
 }
 
 int
 at_last_column(const view_t *view)
 {
-	return view->list_pos%view->column_count == view->column_count - 1;
+	return get_curr_col(view) == get_max_col(view);
 }
 
-void
-go_to_start_of_line(view_t *view)
+/* Retrieves column number of cursor.  Returns the number. */
+static int
+get_curr_col(const view_t *view)
 {
-	view->list_pos = get_start_of_line(view);
+	return fpos_get_col(view, view->list_pos);
+}
+
+/* Retrieves line number of cursor.  Returns the number. */
+static int
+get_curr_line(const view_t *view)
+{
+	return fpos_get_line(view, view->list_pos);
+}
+
+/* Retrieves maximum column number.  Returns the number. */
+static int
+get_max_col(const view_t *view)
+{
+	return fview_is_transposed(view) ? (view->list_rows - 1)/view->run_size
+	                                 : (view->run_size - 1);
+}
+
+/* Retrieves maximum line number.  Returns the number. */
+static int
+get_max_line(const view_t *view)
+{
+	return fview_is_transposed(view) ? (view->run_size - 1)
+	                                 : (view->list_rows - 1)/view->run_size;
 }
 
 int
 get_start_of_line(const view_t *view)
 {
-	const int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
-	return ROUND_DOWN(pos, view->column_count);
+	return fview_is_transposed(view) ? view->list_pos%view->run_size
+	                                 : ROUND_DOWN(view->list_pos, view->run_size);
 }
 
 int
 get_end_of_line(const view_t *view)
 {
-	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
-	pos += (view->column_count - 1) - pos%view->column_count;
-	return MIN(pos, view->list_rows - 1);
+	if(fview_is_transposed(view))
+	{
+		const int last_top_pos = ROUND_DOWN(view->list_rows - 1, view->run_size);
+		const int pos = last_top_pos + view->list_pos%view->run_size;
+		return (pos < view->list_rows ? pos : pos - view->run_size);
+	}
+
+	return MIN(view->list_rows - 1, get_start_of_line(view) + view->run_size - 1);
+}
+
+int
+fpos_get_hor_step(const struct view_t *view)
+{
+	return (fview_is_transposed(view) ? view->run_size : 1);
+}
+
+int
+fpos_get_ver_step(const struct view_t *view)
+{
+	return (fview_is_transposed(view) ? 1 : view->run_size);
+}
+
+int
+fpos_has_hidden_top(const view_t *view)
+{
+	return (fview_is_transposed(view) ? 0 : can_scroll_up(view));
+}
+
+int
+fpos_has_hidden_bottom(const view_t *view)
+{
+	return (fview_is_transposed(view) ? 0 : can_scroll_down(view));
+}
+
+size_t
+fpos_get_top_pos(const view_t *view)
+{
+	return get_column_top_pos(view)
+	     + (can_scroll_up(view) ? fpos_get_offset(view) : 0);
+}
+
+size_t
+fpos_get_middle_pos(const view_t *view)
+{
+	const int top_pos = get_column_top_pos(view);
+	const int bottom_pos = get_column_bottom_pos(view);
+	const int v = (fview_is_transposed(view) ? 1 : view->run_size);
+	return top_pos + (DIV_ROUND_UP(bottom_pos - top_pos, v)/2)*v;
+}
+
+size_t
+fpos_get_bottom_pos(const view_t *view)
+{
+	return get_column_bottom_pos(view)
+	     - (can_scroll_down(view) ? fpos_get_offset(view) : 0);
+}
+
+size_t
+fpos_get_offset(const view_t *view)
+{
+	int val;
+
+	if(fview_is_transposed(view))
+	{
+		/* Scroll offset doesn't make much sense for transposed table. */
+		return 0;
+	}
+
+	val = MIN(DIV_ROUND_UP(view->window_rows - 1, 2), MAX(cfg.scroll_off, 0));
+	return val*view->column_count;
+}
+
+int
+fpos_are_all_files_visible(const view_t *view)
+{
+	return view->list_rows <= (int)view->window_cells;
+}
+
+size_t
+fpos_get_last_visible_cell(const view_t *view)
+{
+	return view->top_line + view->window_cells - 1;
+}
+
+/* Retrieves position of a file at the top of visible part of current column.
+ * Returns the position. */
+static int
+get_column_top_pos(const view_t *view)
+{
+	const int column_correction = fview_is_transposed(view)
+	  ? ROUND_DOWN(view->list_pos - view->top_line, view->run_size)
+	  : view->list_pos%view->run_size;
+	return view->top_line + column_correction;
+}
+
+/* Retrieves position of a file at the bottom of visible part of current column.
+ * Returns the position. */
+static int
+get_column_bottom_pos(const view_t *view)
+{
+	if(fview_is_transposed(view))
+	{
+		const int top_pos = get_column_top_pos(view);
+		const int last = view->list_rows - 1;
+		return MIN(top_pos + view->window_rows - 1, last);
+	}
+	else
+	{
+		const int last_top_pos =
+			ROUND_DOWN(MIN((int)fpos_get_last_visible_cell(view),
+						view->list_rows - 1), view->run_size);
+		const int pos = last_top_pos + view->list_pos%view->run_size;
+		return (pos < view->list_rows ? pos : pos - view->run_size);
+	}
 }
 
 int

@@ -69,13 +69,29 @@ void flist_ensure_pos_is_valid(struct view_t *view);
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(struct view_t *view, FileListScope scope);
 
-/* Checks whether cursor is on the first line.  Returns non-zero if so,
- * otherwise zero is returned. */
-int at_first_line(const struct view_t *view);
+/* Retrieves column number (base zero) of the specified position (cell number
+ * base zero).  Returns the number. */
+int fpos_get_col(const struct view_t *view, int pos);
 
-/* Checks whether cursor is on the last line.  Returns non-zero if so, otherwise
- * zero is returned. */
-int at_last_line(const struct view_t *view);
+/* Retrieves line number (base zero) of the specified position (cell number base
+ * zero).  Returns the number. */
+int fpos_get_line(const struct view_t *view, int pos);
+
+/* Checks whether it's possible to move cursor from current position to the
+ * left.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_left(const struct view_t *view);
+
+/* Checks whether it's possible to move cursor from current position to the
+ * right.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_right(const struct view_t *view);
+
+/* Checks whether it's possible to move cursor from current position up.
+ * Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_up(const struct view_t *view);
+
+/* Checks whether it's possible to move cursor from current position down.
+ * Returns non-zero if so, otherwise zero is returned. */
+int fpos_can_move_down(const struct view_t *view);
 
 /* Checks whether cursor is on the first column.  Returns non-zero if so,
  * otherwise zero is returned. */
@@ -85,9 +101,6 @@ int at_first_column(const struct view_t *view);
  * otherwise zero is returned. */
 int at_last_column(const struct view_t *view);
 
-/* Moves cursor to the first file in a row. */
-void go_to_start_of_line(struct view_t *view);
-
 /* Calculates position of the first file in current line.  Returns the
  * position. */
 int get_start_of_line(const struct view_t *view);
@@ -95,6 +108,47 @@ int get_start_of_line(const struct view_t *view);
 /* Calculates position of the last file in current line.  Returns the
  * position. */
 int get_end_of_line(const struct view_t *view);
+
+/* Retrieves step in files that's used to move within a line.  Retrieves the
+ * step. */
+int fpos_get_hor_step(const struct view_t *view);
+
+/* Retrieves step in files that's used to move within a column.  Retrieves the
+ * step. */
+int fpos_get_ver_step(const struct view_t *view);
+
+/* Checks whether there are more elements to show above what can be seen
+ * currently.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_has_hidden_top(const struct view_t *view);
+
+/* Checks whether there are more elements to show below what can be seen
+ * currently.  Returns non-zero if so, otherwise zero is returned. */
+int fpos_has_hidden_bottom(const struct view_t *view);
+
+/* Calculates position in list of files that corresponds to window top, which is
+ * adjusted according to 'scrolloff' option.  Returns the position. */
+size_t fpos_get_top_pos(const struct view_t *view);
+
+/* Calculates position in list of files that corresponds to window middle, which
+ * is adjusted according to 'scrolloff' option.  Returns the position. */
+size_t fpos_get_middle_pos(const struct view_t *view);
+
+/* Calculates position in list of files that corresponds to window bottom, which
+ * is adjusted according to 'scrolloff' option.  Returns the position. */
+size_t fpos_get_bottom_pos(const struct view_t *view);
+
+/* Retrieves scroll offset value for the view taking view height into account.
+ * Returns the effective scroll offset. */
+size_t fpos_get_offset(const struct view_t *view);
+
+/* Checks whether if all files are visible, so no scrolling is needed.  Returns
+ * non-zero if so, and zero otherwise. */
+int fpos_are_all_files_visible(const struct view_t *view);
+
+/* Gets file position of last visible cell in the view.  Value returned may be
+ * greater than or equal to the number of files in the view and thus should be
+ * treated correctly.  Returns the index. */
+size_t fpos_get_last_visible_cell(const struct view_t *view);
 
 /* Finds position of the next/previous group defined by primary sorting key.
  * Returns determined position (might point to the last/first entry in corner

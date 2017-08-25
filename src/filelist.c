@@ -1591,7 +1591,7 @@ populate_dir_list_internal(view_t *view, int reload)
 		ui_sb_clear();
 	}
 
-	view->column_count = calculate_columns_count(view);
+	fview_update_geometry(view);
 
 	/* If reloading the same directory don't jump to history position.  Stay at
 	 * the current line. */

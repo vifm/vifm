@@ -67,29 +67,6 @@ void put_inactive_mark(struct view_t *view);
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(struct view_t *view);
 
-/* Viewport related functions. */
-
-/* Checks whether if all files are visible, so no scrolling is needed.  Returns
- * non-zero if so, and zero otherwise. */
-int all_files_visible(const struct view_t *view);
-
-/* Gets file position of last visible cell in the view.  Value returned may be
- * greater than or equal to the number of files in the view and thus should be
- * treated correctly.  Returns the index. */
-size_t get_last_visible_cell(const struct view_t *view);
-
-/* Calculates position in list of files that corresponds to window top, which is
- * adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_top_pos(const struct view_t *view);
-
-/* Calculates position in list of files that corresponds to window middle, which
- * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_middle_pos(const struct view_t *view);
-
-/* Calculates position in list of files that corresponds to window bottom, which
- * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t get_window_bottom_pos(const struct view_t *view);
-
 /* Scrolling related functions. */
 
 /* Checks if view can be scrolled up (there are more files).  Returns non-zero
@@ -133,11 +110,16 @@ void update_scroll_bind_offset(void);
 /* Enables/disables ls-like style of the view. */
 void fview_set_lsview(struct view_t *view, int enabled);
 
+/* Checks whether view displays grid that's filled by column. */
+int fview_is_transposed(const struct view_t *view);
+
 /* Enables/disables cascading columns style of the view. */
 void fview_set_millerview(struct view_t *view, int enabled);
 
-/* Evaluates number of columns in the view.  Returns the number. */
-size_t calculate_columns_count(struct view_t *view);
+/* Requests update of view geometry properties (stuff that depends on
+ * dimensions; there is also an implicit dependency on file list, because grid
+ * is defined by longest file name). */
+void fview_update_geometry(struct view_t *view);
 
 /* Callback-like function which triggers some view-specific updates after
  * directory of the view changes. */

@@ -509,7 +509,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
-		page_scroll(get_last_visible_cell(curr_view), -1);
+		page_scroll(fpos_get_last_visible_cell(curr_view), -1);
 	}
 }
 
@@ -526,7 +526,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_line(curr_view))
+	if(fpos_can_move_down(curr_view))
 	{
 		scroll_view(curr_view->window_cells/2);
 	}
@@ -536,7 +536,8 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(correct_list_pos_on_scroll_down(curr_view, 1))
+	if(fpos_has_hidden_bottom(curr_view) &&
+			correct_list_pos_on_scroll_down(curr_view, 1))
 	{
 		scroll_down(curr_view, 1);
 		redraw_current_view();
@@ -552,14 +553,19 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
-/* Scrolls pane by one view in both directions. The direction should be 1 or
+/* Scrolls pane by one view in both directions.  The direction should be 1 or
  * -1. */
 static void
 page_scroll(int base, int direction)
 {
-	enum { GAP_SIZE = 2 };
-	int offset = (curr_view->window_rows - GAP_SIZE)*curr_view->column_count;
-	curr_view->list_pos = base + direction*offset;
+	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
+	int old_pos = curr_view->list_pos;
+	int offset = fview_is_transposed(curr_view)
+	           ? (curr_view->column_count - VER_GAP_SIZE)*curr_view->window_rows
+	           : (curr_view->window_rows - HOR_GAP_SIZE)*curr_view->column_count;
+	int new_pos = base + direction*offset
+	            + old_pos%curr_view->run_size - base%curr_view->run_size;
+	curr_view->list_pos = MAX(0, MIN(curr_view->list_rows - 1, new_pos));
 	scroll_by_files(curr_view, direction*offset);
 	redraw_current_view();
 }
@@ -717,7 +723,7 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_line(curr_view))
+	if(fpos_can_move_up(curr_view))
 	{
 		scroll_view(-(ssize_t)curr_view->window_cells/2);
 	}
@@ -727,10 +733,9 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 static void
 scroll_view(ssize_t offset)
 {
-	offset = ROUND_DOWN(offset, curr_view->column_count);
+	offset = ROUND_DOWN(offset, curr_view->run_size);
 	curr_view->list_pos += offset;
 	correct_list_pos(curr_view, offset);
-	go_to_start_of_line(curr_view);
 	scroll_by_files(curr_view, offset);
 	redraw_current_view();
 }
@@ -925,7 +930,8 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(correct_list_pos_on_scroll_up(curr_view, 1))
+	if(fpos_has_hidden_top(curr_view) &&
+			correct_list_pos_on_scroll_up(curr_view, 1))
 	{
 		scroll_up(curr_view, 1);
 		redraw_current_view();
@@ -1019,12 +1025,11 @@ find_goto(int ch, int count, int backward, keys_info_t *keys_info)
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
-	int new_pos;
 	if(key_info.count == NO_COUNT_GIVEN)
+	{
 		key_info.count = curr_view->list_rows;
-
-	new_pos = ROUND_DOWN(key_info.count - 1, curr_view->column_count);
-	pick_or_move(keys_info, new_pos);
+	}
+	pick_or_move(keys_info, key_info.count - 1);
 }
 
 /* Calculate size of selected directories ignoring cached sizes. */
@@ -1053,10 +1058,7 @@ cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	pick_or_move(keys_info, key_info.count - 1);
+	pick_or_move(keys_info, def_count(key_info.count) - 1);
 }
 
 /* Goes to parent directory regardless of ls-like state. */
@@ -1160,24 +1162,21 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_top_pos(curr_view);
-	pick_or_move(keys_info, new_pos);
+	pick_or_move(keys_info, fpos_get_top_pos(curr_view));
 }
 
 /* Go to the last file in window. */
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_bottom_pos(curr_view);
-	pick_or_move(keys_info, new_pos);
+	pick_or_move(keys_info, fpos_get_bottom_pos(curr_view));
 }
 
 /* Go to middle line of window. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_middle_pos(curr_view);
-	pick_or_move(keys_info, new_pos);
+	pick_or_move(keys_info, fpos_get_middle_pos(curr_view));
 }
 
 /* Picks files or moves cursor depending whether key was pressed as a selector
@@ -1583,7 +1582,10 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 
 	if(!ui_view_displays_columns(curr_view))
 	{
-		go_to_prev(key_info, keys_info, 1);
+		if(fpos_can_move_left(curr_view))
+		{
+			go_to_prev(key_info, keys_info, fpos_get_hor_step(curr_view));
+		}
 		return;
 	}
 
@@ -1614,9 +1616,9 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_line(curr_view))
+	if(fpos_can_move_down(curr_view))
 	{
-		go_to_next(key_info, keys_info, curr_view->column_count);
+		go_to_next(key_info, keys_info, fpos_get_ver_step(curr_view));
 	}
 }
 
@@ -1624,9 +1626,9 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_line(curr_view))
+	if(fpos_can_move_up(curr_view))
 	{
-		go_to_prev(key_info, keys_info, curr_view->column_count);
+		go_to_prev(key_info, keys_info, fpos_get_ver_step(curr_view));
 	}
 }
 
@@ -1645,9 +1647,9 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 	{
 		cmd_return(key_info, keys_info);
 	}
-	else
+	else if(fpos_can_move_right(curr_view))
 	{
-		go_to_next(key_info, keys_info, 1);
+		go_to_next(key_info, keys_info, fpos_get_hor_step(curr_view));
 	}
 }
 
@@ -1989,7 +1991,7 @@ normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
-		int bottom = get_window_bottom_pos(curr_view);
+		const int bottom = fpos_get_bottom_pos(curr_view);
 		scroll_up(curr_view, bottom - curr_view->list_pos);
 		redraw_current_view();
 	}
@@ -2171,7 +2173,7 @@ normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_down(curr_view))
 	{
-		int top = get_window_top_pos(curr_view);
+		const int top = fpos_get_top_pos(curr_view);
 		scroll_down(curr_view, curr_view->list_pos - top);
 		redraw_current_view();
 	}
@@ -2181,9 +2183,9 @@ normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 void
 normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!all_files_visible(curr_view))
+	if(!fpos_are_all_files_visible(curr_view))
 	{
-		int middle = get_window_middle_pos(curr_view);
+		const int middle = fpos_get_middle_pos(curr_view);
 		scroll_by_files(curr_view, curr_view->list_pos - middle);
 		redraw_current_view();
 	}

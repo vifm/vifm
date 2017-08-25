@@ -16,6 +16,9 @@
 	Added [r/]r/[R/]R normal mode shortcuts that map to :siblprev and :siblnext
 	with and without wrapping correspondingly.  Thanks to filterfalse.
 
+	Added 'lsoptions' option that allows to get transposed grid in ls-like
+	view.  Thanks to Dmitry Frank (a.k.a. dimonomid).
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
@@ -37,6 +40,8 @@
 
 	Made :tree pick up list of files from custom view.  Thanks to filterfalse.
 
+	Do not go to start of line on Ctrl-U/Ctrl-D/Ctrl-F/Ctrl-B/G in ls-like view.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 
@@ -55,6 +60,9 @@
 
 	Fixed directory size in statusline.  Patch by Dmitry Frank (a.k.a.
 	dimonomid).
+
+	Fixed extra width of inactive cursor in ls-like view when 'classify'
+	contains Unicode characters.
 
 0.9-beta to 0.9
 

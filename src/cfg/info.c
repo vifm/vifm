@@ -1031,6 +1031,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns_g));
 	fprintf(fp, "=[sortgroups=%s\n", escape_spaces(lwin.sort_groups_g));
 	fprintf(fp, "=]sortgroups=%s\n", escape_spaces(rwin.sort_groups_g));
+	fprintf(fp, "=[lsoptions=%s\n", lwin.ls_transposed_g ? "transposed" : "");
+	fprintf(fp, "=]lsoptions=%s\n", rwin.ls_transposed_g ? "transposed" : "");
 	fprintf(fp, "=[%slsview\n", lwin.ls_view_g ? "" : "no");
 	fprintf(fp, "=]%slsview\n", rwin.ls_view_g ? "" : "no");
 	fprintf(fp, "=[milleroptions=lsize:%d,csize:%d,rsize:%d\n",

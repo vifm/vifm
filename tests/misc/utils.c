@@ -6,7 +6,7 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fread() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memset() strcpy() */
+#include <string.h> /* memset() strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
@@ -24,6 +24,7 @@
 
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
+static void init_list(view_t *view);
 
 void
 opt_handlers_setup(void)
@@ -250,6 +251,54 @@ replace_matcher(matcher_t **matcher, const char expr[])
 	free(error);
 
 	return (*matcher == NULL);
+}
+
+void
+setup_grid(view_t *view, int column_count, int list_rows, int init)
+{
+	view->ls_view = 1;
+	view->ls_transposed = 0;
+	view->list_rows = list_rows;
+	view->column_count = column_count;
+	view->run_size = column_count;
+	view->window_cells = column_count*view->window_rows;
+
+	if(init)
+	{
+		init_list(view);
+	}
+}
+
+void
+setup_transposed_grid(view_t *view, int column_count, int list_rows, int init)
+{
+	view->ls_view = 1;
+	view->ls_transposed = 1;
+	view->list_rows = list_rows;
+	view->column_count = column_count;
+	view->run_size = view->window_rows;
+	view->window_cells = column_count*view->window_rows;
+
+	if(init)
+	{
+		init_list(view);
+	}
+}
+
+static void
+init_list(view_t *view)
+{
+	int i;
+
+	view->dir_entry = dynarray_cextend(NULL,
+			view->list_rows*sizeof(*view->dir_entry));
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].name = strdup("");
+		view->dir_entry[i].type = FT_REG;
+		view->dir_entry[i].origin = view->curr_dir;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

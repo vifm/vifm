@@ -392,7 +392,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(view))
 	{
-		page_scroll(get_last_visible_cell(view), -1);
+		page_scroll(fpos_get_last_visible_cell(view), -1);
 	}
 }
 
@@ -405,15 +405,12 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_line(view))
+	if(fpos_can_move_down(view))
 	{
-		size_t new_pos;
-		size_t offset = view->window_cells/2;
-		offset = ROUND_DOWN(offset, view->column_count);
-		new_pos = get_corrected_list_pos_down(view, offset);
+		const int offset = ROUND_DOWN(view->window_cells/2, view->column_count);
+		int new_pos = get_corrected_list_pos_down(view, offset);
 		new_pos = MAX(new_pos, view->list_pos + offset);
-		new_pos = MIN(new_pos, (size_t)view->list_rows);
-		new_pos = ROUND_DOWN(new_pos, view->column_count);
+		new_pos = MIN(new_pos, view->list_rows);
 		view->top_line += new_pos - view->list_pos;
 		goto_pos(new_pos);
 	}
@@ -422,7 +419,7 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_down(view))
+	if(fpos_has_hidden_top(view))
 	{
 		int new_pos = get_corrected_list_pos_down(view, view->column_count);
 		scroll_down(view, view->column_count);
@@ -444,9 +441,13 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 page_scroll(int base, int direction)
 {
-	enum { GAP_SIZE = 2 };
-	const int offset = (view->window_rows - GAP_SIZE)*view->column_count;
-	const int new_pos = base + direction*offset;
+	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
+	int offset = fview_is_transposed(view)
+	           ? (view->column_count - VER_GAP_SIZE)*view->window_rows
+	           : (view->window_rows - HOR_GAP_SIZE)*view->column_count;
+	int new_pos = base + direction*offset
+	            + view->list_pos%view->run_size - base%view->run_size;
+	new_pos = MAX(0, MIN(view->list_rows - 1, new_pos));
 	scroll_by_files(view, direction*offset);
 	goto_pos(new_pos);
 }
@@ -481,15 +482,12 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_line(view))
+	if(fpos_can_move_up(view))
 	{
-		int new_pos;
-		size_t offset = view->window_cells/2;
-		offset = ROUND_DOWN(offset, view->column_count);
-		new_pos = get_corrected_list_pos_up(view, offset);
-		new_pos = MIN(new_pos, view->list_pos - (int)offset);
+		const int offset = ROUND_DOWN(view->window_cells/2, view->column_count);
+		int new_pos = get_corrected_list_pos_up(view, offset);
+		new_pos = MIN(new_pos, view->list_pos - offset);
 		new_pos = MAX(new_pos, 0);
-		new_pos = ROUND_DOWN(new_pos, view->column_count);
 		view->top_line += new_pos - view->list_pos;
 		goto_pos(new_pos);
 	}
@@ -517,7 +515,7 @@ call_incdec(int count)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(can_scroll_up(view))
+	if(fpos_has_hidden_top(view))
 	{
 		int new_pos = get_corrected_list_pos_up(view, view->column_count);
 		scroll_up(view, view->column_count);
@@ -531,7 +529,7 @@ static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
-	check_marking(curr_view, 0, NULL);
+	check_marking(view, 0, NULL);
 	save_msg = fops_clone(view, NULL, 0, 0, def_count(key_info.count));
 	accept_and_leave(save_msg);
 }
@@ -555,35 +553,32 @@ cmd_F(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
-	int new_pos;
 	if(key_info.count == NO_COUNT_GIVEN)
+	{
 		key_info.count = view->list_rows;
-	new_pos = ROUND_DOWN(key_info.count - 1, view->column_count);
-	goto_pos(new_pos);
+	}
+	goto_pos(key_info.count - 1);
 }
 
 /* Move to the first line of window, selecting as we go. */
 static void
 cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_top_pos(view);
-	goto_pos(new_pos);
+	goto_pos(fpos_get_top_pos(view));
 }
 
 /* Move to the last line of window, selecting as we go. */
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_bottom_pos(view);
-	goto_pos(new_pos);
+	goto_pos(fpos_get_bottom_pos(view));
 }
 
 /* Move to middle line of the window, selecting from start position to there. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t new_pos = get_window_middle_pos(view);
-	goto_pos(new_pos);
+	goto_pos(fpos_get_middle_pos(view));
 }
 
 static void
@@ -752,7 +747,7 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 {
-	fops_size_bg(curr_view, 1);
+	fops_size_bg(view, 1);
 	accept_and_leave(0);
 }
 
@@ -760,7 +755,7 @@ cmd_gA(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ga(key_info_t key_info, keys_info_t *keys_info)
 {
-	fops_size_bg(curr_view, 0);
+	fops_size_bg(view, 0);
 	accept_and_leave(0);
 }
 
@@ -795,9 +790,7 @@ cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	goto_pos(key_info.count - 1);
+	goto_pos(def_count(key_info.count) - 1);
 }
 
 static void
@@ -886,9 +879,14 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!ui_view_displays_columns(view))
 	{
-		go_to_prev(key_info, keys_info, 1, 1);
+		if(fpos_can_move_left(view))
+		{
+			go_to_prev(key_info, keys_info, 1, fpos_get_hor_step(view));
+		}
+		return;
 	}
-	else if(get_current_entry(view)->child_pos != 0)
+
+	if(get_current_entry(view)->child_pos != 0)
 	{
 		const dir_entry_t *entry = get_current_entry(view);
 		key_info.count = def_count(key_info.count);
@@ -898,7 +896,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 		}
 		key_info.count = 1;
 		go_to_prev(key_info, keys_info, 1,
-				view->list_pos - entry_to_pos(curr_view, entry));
+				view->list_pos - entry_to_pos(view, entry));
 	}
 }
 
@@ -912,18 +910,18 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(ui_view_displays_columns(view) || !at_last_line(view))
+	if(fpos_can_move_down(view))
 	{
-		go_to_next(key_info, keys_info, 1, view->column_count);
+		go_to_next(key_info, keys_info, 1, fpos_get_ver_step(view));
 	}
 }
 
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(ui_view_displays_columns(view) || !at_first_line(view))
+	if(fpos_can_move_up(view))
 	{
-		go_to_prev(key_info, keys_info, 1, view->column_count);
+		go_to_prev(key_info, keys_info, 1, fpos_get_ver_step(view));
 	}
 }
 
@@ -944,9 +942,9 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 	{
 		cmd_gl(key_info, keys_info);
 	}
-	else
+	else if(fpos_can_move_right(view))
 	{
-		go_to_next(key_info, keys_info, 1, 1);
+		go_to_next(key_info, keys_info, 1, fpos_get_hor_step(view));
 	}
 }
 
@@ -1172,7 +1170,7 @@ update_marks(view_t *view)
 static void
 cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 {
-	flist_custom_exclude(curr_view, key_info.count == 1);
+	flist_custom_exclude(view, key_info.count == 1);
 	accept_and_leave(0);
 }
 
