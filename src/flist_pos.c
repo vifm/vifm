@@ -363,7 +363,7 @@ fpos_get_offset(const view_t *view)
 int
 fpos_are_all_files_visible(const view_t *view)
 {
-	return view->list_rows <= (int)view->window_cells;
+	return view->list_rows <= view->window_cells;
 }
 
 int

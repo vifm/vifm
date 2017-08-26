@@ -725,7 +725,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(curr_view))
 	{
-		scroll_view(-(ssize_t)curr_view->window_cells/2);
+		scroll_view(-curr_view->window_cells/2);
 	}
 }
 

@@ -259,7 +259,7 @@ draw_dir_list_only(view_t *view)
 {
 	int x;
 	int lcol_size;
-	size_t cell;
+	int cell;
 	size_t col_width;
 	size_t col_count;
 	int coll_pad;
@@ -297,7 +297,7 @@ draw_dir_list_only(view_t *view)
 
 	draw_left_column(view);
 
-	cell = 0U;
+	cell = 0;
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	total_width = ui_view_available_width(view);
 	lcol_size = ui_view_left_reserved(view);
@@ -567,13 +567,13 @@ calculate_top_position(view_t *view, int top)
 {
 	int result = MIN(MAX(top, 0), view->list_rows - 1);
 	result = ROUND_DOWN(result, view->run_size);
-	if((int)view->window_cells >= view->list_rows)
+	if(view->window_cells >= view->list_rows)
 	{
 		result = 0;
 	}
-	else if(view->list_rows - top < (int)view->window_cells)
+	else if(view->list_rows - top < view->window_cells)
 	{
-		if((int)view->window_cells - (view->list_rows - top) >= view->run_size)
+		if(view->window_cells - (view->list_rows - top) >= view->run_size)
 		{
 			result = view->list_rows - view->window_cells + (view->run_size - 1);
 			result = ROUND_DOWN(result, view->run_size);
