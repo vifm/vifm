@@ -43,9 +43,7 @@ int find_file_pos_in_list(const struct view_t *const view, const char file[]);
 int flist_find_entry(const struct view_t *view, const char file[],
 		const char dir[]);
 
-/* Tries to move cursor by pos_delta lines.  A wrapper for
- * correct_list_pos_on_scroll_up() and correct_list_pos_on_scroll_down()
- * functions. */
+/* Tries to move cursor by pos_delta lines. */
 void correct_list_pos(struct view_t *view, int pos_delta);
 
 /* Tries to move cursor down by given number of lines.  Returns non-zero if
