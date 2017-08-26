@@ -945,11 +945,11 @@ can_scroll_up(const view_t *view)
 int
 can_scroll_down(const view_t *view)
 {
-	return (int)fpos_get_last_visible_cell(view) < view->list_rows - 1;
+	return fpos_get_last_visible_cell(view) < view->list_rows - 1;
 }
 
 void
-scroll_up(view_t *view, size_t by)
+scroll_up(view_t *view, int by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
 	view->top_line -= view->run_size*DIV_ROUND_UP(by, view->run_size);
@@ -963,7 +963,7 @@ scroll_up(view_t *view, size_t by)
 }
 
 void
-scroll_down(view_t *view, size_t by)
+scroll_down(view_t *view, int by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
 	view->top_line += view->run_size*DIV_ROUND_UP(by, view->run_size);
@@ -973,11 +973,10 @@ scroll_down(view_t *view, size_t by)
 }
 
 int
-get_corrected_list_pos_down(const view_t *view, size_t pos_delta)
+get_corrected_list_pos_down(const view_t *view, int pos_delta)
 {
 	const int scroll_offset = fpos_get_offset(view);
-	if(view->list_pos <=
-			view->top_line + scroll_offset + (MAX((int)pos_delta, 1) - 1))
+	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
 	{
 		const int column_correction = view->list_pos%view->column_count;
 		const int offset = scroll_offset + pos_delta + column_correction;
@@ -987,11 +986,11 @@ get_corrected_list_pos_down(const view_t *view, size_t pos_delta)
 }
 
 int
-get_corrected_list_pos_up(const view_t *view, size_t pos_delta)
+get_corrected_list_pos_up(const view_t *view, int pos_delta)
 {
 	const int scroll_offset = fpos_get_offset(view);
 	const int last = fpos_get_last_visible_cell(view);
-	if(view->list_pos >= last - scroll_offset - (MAX((int)pos_delta, 1) - 1))
+	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
 	{
 		const int column_correction = (view->column_count - 1)
 		                            - view->list_pos%view->column_count;
@@ -1008,7 +1007,7 @@ consider_scroll_offset(view_t *view)
 	int pos = view->list_pos;
 	if(cfg.scroll_off > 0)
 	{
-		const int s = (int)fpos_get_offset(view);
+		const int s = fpos_get_offset(view);
 		/* Check scroll offset at the top. */
 		if(can_scroll_up(view) && pos - view->top_line < s)
 		{
@@ -1018,7 +1017,7 @@ consider_scroll_offset(view_t *view)
 		/* Check scroll offset at the bottom. */
 		if(can_scroll_down(view))
 		{
-			const int last = (int)fpos_get_last_visible_cell(view);
+			const int last = fpos_get_last_visible_cell(view);
 			if(pos > last - s)
 			{
 				scroll_down(view, s + (pos - last));
@@ -1030,7 +1029,7 @@ consider_scroll_offset(view_t *view)
 }
 
 void
-scroll_by_files(view_t *view, ssize_t by)
+scroll_by_files(view_t *view, int by)
 {
 	if(by > 0)
 	{
@@ -1862,7 +1861,7 @@ move_curr_line(view_t *view)
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
-	last = (int)fpos_get_last_visible_cell(view);
+	last = fpos_get_last_visible_cell(view);
 	if(view->top_line <= pos && pos <= last)
 	{
 		view->curr_line = pos - view->top_line;

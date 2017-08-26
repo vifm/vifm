@@ -96,7 +96,7 @@ static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
-static void scroll_view(ssize_t offset);
+static void scroll_view(int offset);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
@@ -731,7 +731,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 
 /* Scrolls view by specified number of files. */
 static void
-scroll_view(ssize_t offset)
+scroll_view(int offset)
 {
 	offset = ROUND_DOWN(offset, curr_view->run_size);
 	curr_view->list_pos += offset;

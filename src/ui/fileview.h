@@ -20,10 +20,6 @@
 #ifndef VIFM__UI__FILEVIEW_H__
 #define VIFM__UI__FILEVIEW_H__
 
-#include <unistd.h> /* ssize_t */
-
-#include <stddef.h> /* size_t */
-
 #include "../utils/test_helpers.h"
 
 struct view_t;
@@ -79,19 +75,19 @@ int can_scroll_down(const struct view_t *view);
 
 /* Scrolls view up at least by specified number of files.  Updates both top and
  * cursor positions. */
-void scroll_up(struct view_t *view, size_t by);
+void scroll_up(struct view_t *view, int by);
 
 /* Scrolls view down at least by specified number of files.  Updates both top
  * and cursor positions. */
-void scroll_down(struct view_t *view, size_t by);
+void scroll_down(struct view_t *view, int by);
 
 /* Calculates list position corrected for scrolling down.  Returns adjusted
  * position. */
-int get_corrected_list_pos_down(const struct view_t *view, size_t pos_delta);
+int get_corrected_list_pos_down(const struct view_t *view, int pos_delta);
 
 /* Calculates list position corrected for scrolling up.  Returns adjusted
  * position. */
-int get_corrected_list_pos_up(const struct view_t *view, size_t pos_delta);
+int get_corrected_list_pos_up(const struct view_t *view, int pos_delta);
 
 /* Updates current and top line of a view according to 'scrolloff' option value.
  * Returns non-zero if redraw is needed. */
@@ -100,7 +96,7 @@ int consider_scroll_offset(struct view_t *view);
 /* Scrolls view down or up at least by specified number of files.  Updates both
  * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
  * functions. */
-void scroll_by_files(struct view_t *view, ssize_t by);
+void scroll_by_files(struct view_t *view, int by);
 
 /* Recalculates difference of two panes scroll positions. */
 void update_scroll_bind_offset(void);
@@ -136,6 +132,10 @@ void fview_position_updated(struct view_t *view);
 /* Callback-like function which triggers some view-specific updates after view
  * sorting changed. */
 void fview_sorting_updated(struct view_t *view);
+
+#ifdef TEST
+#include <stddef.h> /* size_t */
+#endif
 
 TSTATIC_DEFS(
 	/* Packet set of parameters to pass as user data for processing columns. */
