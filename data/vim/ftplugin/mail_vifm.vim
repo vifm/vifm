@@ -1,5 +1,5 @@
 " Mail file type extension to pick files for attachments via vifm
-" Maintainer:  xaizek <xaizek@openmailbox.org>
+" Maintainer:  xaizek <xaizek@posteo.net>
 " Last Change: January 23, 2016
 
 " Insert attachment picked via vifm after 'Subject' header

@@ -1,6 +1,6 @@
 *vifm-plugin.txt*    For Vifm version 0.9  Last change: 2017 Jun 18
 
- Email for bugs and suggestions: <xaizek@openmailbox.org>
+ Email for bugs and suggestions: <xaizek@posteo.net>
 
 Using the vifm.vim plugin~
 

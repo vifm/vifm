@@ -62,7 +62,7 @@ the main mode (that is Normal mode) and reading some sections on basic usage on
 GNU General Public License, version 2 or later.
 
 [q2a]: https://q2a.vifm.info/
-[email]: mailto:xaizek@openmailbox.org
+[email]: mailto:xaizek@posteo.net
 [list]: https://lists.sourceforge.net/lists/listinfo/vifm-announce
 [vim-plugin]: https://github.com/vifm/vifm.vim
 [neovim-plugin]: https://github.com/vifm/neovim-vifm
