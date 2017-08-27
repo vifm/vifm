@@ -1,5 +1,5 @@
 " common functions for vifm command-line editing buffer filetype plugins
-" Maintainer:  xaizek <xaizek@openmailbox.org>
+" Maintainer:  xaizek <xaizek@posteo.net>
 " Last Change: August 18, 2013
 
 " Prepare buffer

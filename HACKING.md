@@ -15,7 +15,7 @@ Changes can be sent as a pull request on [github][github] or as a patch via
 Some information on development is available at [wiki][wiki].
 
 [github]: https://github.com/vifm/vifm/pulls
-[email]: mailto:xaizek@openmailbox.org
+[email]: mailto:xaizek@posteo.net
 [wiki]: https://wiki.vifm.info/index.php?title=Development#Code_repositories
 
 ## Tests ##

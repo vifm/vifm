@@ -1,5 +1,5 @@
 " Filetype plugin for vifm rename buffer
-" Maintainer:  xaizek <xaizek@openmailbox.org>
+" Maintainer:  xaizek <xaizek@posteo.net>
 " Last Change: October 05, 2014
 
 if exists("b:did_ftplugin")

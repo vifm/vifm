@@ -38,8 +38,8 @@
 #include "filtering.h"
 #include "types.h"
 
-static void correct_list_pos_down(view_t *view, size_t pos_delta);
-static void correct_list_pos_up(view_t *view, size_t pos_delta);
+static void correct_list_pos_down(view_t *view, int pos_delta);
+static void correct_list_pos_up(view_t *view, int pos_delta);
 static void move_cursor_out_of_scope(view_t *view, entry_predicate pred);
 static int get_curr_col(const view_t *view);
 static int get_curr_line(const view_t *view);
@@ -79,7 +79,7 @@ flist_find_entry(const view_t *view, const char file[], const char dir[])
 }
 
 void
-correct_list_pos(view_t *view, ssize_t pos_delta)
+correct_list_pos(view_t *view, int pos_delta)
 {
 	if(pos_delta > 0)
 	{
@@ -92,7 +92,7 @@ correct_list_pos(view_t *view, ssize_t pos_delta)
 }
 
 int
-correct_list_pos_on_scroll_down(view_t *view, size_t lines_count)
+correct_list_pos_on_scroll_down(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
@@ -103,7 +103,7 @@ correct_list_pos_on_scroll_down(view_t *view, size_t lines_count)
 }
 
 int
-correct_list_pos_on_scroll_up(view_t *view, size_t lines_count)
+correct_list_pos_on_scroll_up(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
@@ -115,14 +115,14 @@ correct_list_pos_on_scroll_up(view_t *view, size_t lines_count)
 
 /* Tries to move cursor forward by pos_delta positions. */
 static void
-correct_list_pos_down(view_t *view, size_t pos_delta)
+correct_list_pos_down(view_t *view, int pos_delta)
 {
 	view->list_pos = get_corrected_list_pos_down(view, pos_delta);
 }
 
 /* Tries to move cursor backwards by pos_delta positions. */
 static void
-correct_list_pos_up(view_t *view, size_t pos_delta)
+correct_list_pos_up(view_t *view, int pos_delta)
 {
 	view->list_pos = get_corrected_list_pos_up(view, pos_delta);
 }
@@ -322,14 +322,14 @@ fpos_has_hidden_bottom(const view_t *view)
 	return (fview_is_transposed(view) ? 0 : can_scroll_down(view));
 }
 
-size_t
+int
 fpos_get_top_pos(const view_t *view)
 {
 	return get_column_top_pos(view)
 	     + (can_scroll_up(view) ? fpos_get_offset(view) : 0);
 }
 
-size_t
+int
 fpos_get_middle_pos(const view_t *view)
 {
 	const int top_pos = get_column_top_pos(view);
@@ -338,14 +338,14 @@ fpos_get_middle_pos(const view_t *view)
 	return top_pos + (DIV_ROUND_UP(bottom_pos - top_pos, v)/2)*v;
 }
 
-size_t
+int
 fpos_get_bottom_pos(const view_t *view)
 {
 	return get_column_bottom_pos(view)
 	     - (can_scroll_down(view) ? fpos_get_offset(view) : 0);
 }
 
-size_t
+int
 fpos_get_offset(const view_t *view)
 {
 	int val;
@@ -363,10 +363,10 @@ fpos_get_offset(const view_t *view)
 int
 fpos_are_all_files_visible(const view_t *view)
 {
-	return view->list_rows <= (int)view->window_cells;
+	return view->list_rows <= view->window_cells;
 }
 
-size_t
+int
 fpos_get_last_visible_cell(const view_t *view)
 {
 	return view->top_line + view->window_cells - 1;
@@ -397,8 +397,8 @@ get_column_bottom_pos(const view_t *view)
 	else
 	{
 		const int last_top_pos =
-			ROUND_DOWN(MIN((int)fpos_get_last_visible_cell(view),
-						view->list_rows - 1), view->run_size);
+			ROUND_DOWN(MIN(fpos_get_last_visible_cell(view), view->list_rows - 1),
+					view->run_size);
 		const int pos = last_top_pos + view->list_pos%view->run_size;
 		return (pos < view->list_rows ? pos : pos - view->run_size);
 	}

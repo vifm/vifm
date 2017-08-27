@@ -4,7 +4,7 @@
  * Copyright (c) 2001
  *      David Rufino <daverufino@btinternet.com>
  * Copyright (c) 2013
- *      xaizek <xaizek@openmailbox.org>
+ *      xaizek <xaizek@posteo.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

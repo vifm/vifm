@@ -22,7 +22,7 @@ addons:
       name: vifm/vifm
       version: 0.9+
       description: "TUI file manager with vi like key bindings."
-    notification_email: xaizek@openmailbox.org
+    notification_email: xaizek@posteo.net
     build_command_prepend: scripts/fix-timestamps fast && ./configure
     build_command: make -j 3
     branch_pattern: coverity-scan
@@ -52,4 +52,4 @@ after_success:
 notifications:
   email:
     recipients:
-      - xaizek@openmailbox.org
+      - xaizek@posteo.net

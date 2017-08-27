@@ -23,10 +23,6 @@
 /* This unit provides functions related to positioning/scrolling in file
  * lists. */
 
-#include <unistd.h> /* ssize_t */
-
-#include <stddef.h> /* size_t */
-
 struct view_t;
 
 /* Type of contiguous area within list of files. */
@@ -47,18 +43,16 @@ int find_file_pos_in_list(const struct view_t *const view, const char file[]);
 int flist_find_entry(const struct view_t *view, const char file[],
 		const char dir[]);
 
-/* Tries to move cursor by pos_delta lines.  A wrapper for
- * correct_list_pos_on_scroll_up() and correct_list_pos_on_scroll_down()
- * functions. */
-void correct_list_pos(struct view_t *view, ssize_t pos_delta);
+/* Tries to move cursor by pos_delta lines. */
+void correct_list_pos(struct view_t *view, int pos_delta);
 
 /* Tries to move cursor down by given number of lines.  Returns non-zero if
  * something was updated. */
-int correct_list_pos_on_scroll_down(struct view_t *view, size_t lines_count);
+int correct_list_pos_on_scroll_down(struct view_t *view, int lines_count);
 
 /* Tries to move cursor up by given number of lines.  Returns non-zero if
  * something was updated. */
-int correct_list_pos_on_scroll_up(struct view_t *view, size_t lines_count);
+int correct_list_pos_on_scroll_up(struct view_t *view, int lines_count);
 
 /* Moves cursor to specified position. */
 void flist_set_pos(struct view_t *view, int pos);
@@ -127,19 +121,19 @@ int fpos_has_hidden_bottom(const struct view_t *view);
 
 /* Calculates position in list of files that corresponds to window top, which is
  * adjusted according to 'scrolloff' option.  Returns the position. */
-size_t fpos_get_top_pos(const struct view_t *view);
+int fpos_get_top_pos(const struct view_t *view);
 
 /* Calculates position in list of files that corresponds to window middle, which
  * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t fpos_get_middle_pos(const struct view_t *view);
+int fpos_get_middle_pos(const struct view_t *view);
 
 /* Calculates position in list of files that corresponds to window bottom, which
  * is adjusted according to 'scrolloff' option.  Returns the position. */
-size_t fpos_get_bottom_pos(const struct view_t *view);
+int fpos_get_bottom_pos(const struct view_t *view);
 
 /* Retrieves scroll offset value for the view taking view height into account.
  * Returns the effective scroll offset. */
-size_t fpos_get_offset(const struct view_t *view);
+int fpos_get_offset(const struct view_t *view);
 
 /* Checks whether if all files are visible, so no scrolling is needed.  Returns
  * non-zero if so, and zero otherwise. */
@@ -148,7 +142,7 @@ int fpos_are_all_files_visible(const struct view_t *view);
 /* Gets file position of last visible cell in the view.  Value returned may be
  * greater than or equal to the number of files in the view and thus should be
  * treated correctly.  Returns the index. */
-size_t fpos_get_last_visible_cell(const struct view_t *view);
+int fpos_get_last_visible_cell(const struct view_t *view);
 
 /* Finds position of the next/previous group defined by primary sorting key.
  * Returns determined position (might point to the last/first entry in corner

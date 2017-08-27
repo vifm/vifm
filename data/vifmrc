@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 28 June, 2017)
+" Sample configuration file for vifm (last updated: 26 August, 2017)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -309,12 +309,12 @@ filetype *.iso
 " SshMount
 filetype *.ssh
        \ {Mount with sshfs}
-       \ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR,
+       \ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
 
 " FtpMount
 filetype *.ftp
        \ {Mount with curlftpfs}
-       \ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR,
+       \ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
 
 " Fuse7z and 7z archives
 filetype *.7z

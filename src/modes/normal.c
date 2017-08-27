@@ -96,7 +96,7 @@ static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
-static void scroll_view(ssize_t offset);
+static void scroll_view(int offset);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
@@ -725,13 +725,13 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(curr_view))
 	{
-		scroll_view(-(ssize_t)curr_view->window_cells/2);
+		scroll_view(-curr_view->window_cells/2);
 	}
 }
 
 /* Scrolls view by specified number of files. */
 static void
-scroll_view(ssize_t offset)
+scroll_view(int offset)
 {
 	offset = ROUND_DOWN(offset, curr_view->run_size);
 	curr_view->list_pos += offset;
@@ -2097,7 +2097,7 @@ cmd_lb_r(key_info_t key_info, keys_info_t *keys_info)
 				-def_count(key_info.count), 0) != 0);
 }
 
-/* Navigate to next sibling directory. */
+/* Navigates to next sibling directory. */
 static void
 cmd_rb_r(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -2113,7 +2113,7 @@ cmd_lb_R(key_info_t key_info, keys_info_t *keys_info)
 				-def_count(key_info.count), 1) != 0);
 }
 
-/* Navigate to next sibling directory with wrapping. */
+/* Navigates to next sibling directory with wrapping. */
 static void
 cmd_rb_R(key_info_t key_info, keys_info_t *keys_info)
 {

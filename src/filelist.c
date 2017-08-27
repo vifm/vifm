@@ -2618,8 +2618,9 @@ flist_update_cache(view_t *view, cached_entries_t *cache, const char path[])
 		cache->watch = fswatch_create(path);
 		if(cache->watch == NULL)
 		{
-			/* This is bad, but there isn't much we can do here and this doesn't feel
-			 * like a reason to block anything else. */
+			/* Reset the cache on failure to create a watcher to do not accidentally
+			 * provide incorrect data. */
+			flist_free_cache(view, cache);
 			return 0;
 		}
 

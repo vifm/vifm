@@ -3,7 +3,7 @@
 " Maintainer: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
 
-" Maintainer: xaizek <xaizek@openmailbox.org>
+" Maintainer: xaizek <xaizek@posteo.net>
 " Last Change: 2017 May 30
 
 " vifm and vifm.vim can be found at https://vifm.info/

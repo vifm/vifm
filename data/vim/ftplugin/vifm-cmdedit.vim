@@ -1,5 +1,5 @@
 " vifm command-line editing buffer filetype plugin
-" Maintainer:  xaizek <xaizek@openmailbox.org>
+" Maintainer:  xaizek <xaizek@posteo.net>
 " Last Change: August 18, 2013
 
 if exists("b:did_ftplugin")
