@@ -2097,7 +2097,7 @@ cmd_lb_r(key_info_t key_info, keys_info_t *keys_info)
 				-def_count(key_info.count), 0) != 0);
 }
 
-/* Navigate to next sibling directory. */
+/* Navigates to next sibling directory. */
 static void
 cmd_rb_r(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -2113,7 +2113,7 @@ cmd_lb_R(key_info_t key_info, keys_info_t *keys_info)
 				-def_count(key_info.count), 1) != 0);
 }
 
-/* Navigate to next sibling directory with wrapping. */
+/* Navigates to next sibling directory with wrapping. */
 static void
 cmd_rb_R(key_info_t key_info, keys_info_t *keys_info)
 {
