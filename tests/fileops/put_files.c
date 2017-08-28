@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* stat */
-#include <unistd.h> /* stat() rmdir() unlink() */
+#include <unistd.h> /* stat() rmdir() symlink() unlink() */
 
 #include <string.h> /* strcpy() */
 
@@ -377,6 +377,37 @@ TEST(change_mind)
 	assert_success(remove(SANDBOX_PATH "/dir/dir/file1"));
 	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(broken_link_does_not_stop_putting, IF(not_windows))
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_dir(SANDBOX_PATH "/dir2");
+	create_empty_dir(SANDBOX_PATH "/dst");
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("dir2", SANDBOX_PATH "/dir1"));
+#endif
+
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "dir1", saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "dir2", saved_cwd);
+	assert_success(regs_append('a', path));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH "/dst", "",
+			saved_cwd);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/dir1"));
+	assert_success(rmdir(SANDBOX_PATH "/dir2"));
+
+	assert_success(unlink(SANDBOX_PATH "/dst/dir1"));
+	assert_success(rmdir(SANDBOX_PATH "/dst/dir2"));
+
+	assert_success(rmdir(SANDBOX_PATH "/dst"));
 }
 
 static void

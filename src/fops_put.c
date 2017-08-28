@@ -671,7 +671,7 @@ put_next(int force)
 		size_t len;
 
 		/* For some reason "mv" sometimes returns 0 on cancellation. */
-		if(!path_exists(dst_buf, DEREF))
+		if(!path_exists(dst_buf, NODEREF))
 		{
 			return -1;
 		}
