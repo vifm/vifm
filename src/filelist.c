@@ -3224,7 +3224,7 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 		copy_str(name, sizeof(name), entry->name);
 	}
 
-	if(is_parent_dir(entry->name))
+	if(is_parent_dir(entry->name) || is_root_dir(entry->name))
 	{
 		copy_str(buf, buf_len, name);
 		return;
