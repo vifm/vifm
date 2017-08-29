@@ -738,6 +738,19 @@ TEST(cursor_is_positioned_close_to_disappeared_file)
 	assert_success(unlink("5"));
 }
 
+TEST(last_directory_is_correctly_recorded_in_cv)
+{
+	char old_path[PATH_MAX + 1];
+
+	setup_custom_view(&lwin, 0);
+	strcpy(old_path, flist_get_dir(&lwin));
+
+	assert_success(change_directory(&lwin, test_data));
+	navigate_back(&lwin);
+
+	assert_true(paths_are_same(lwin.curr_dir, old_path));
+}
+
 static void
 column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[])
