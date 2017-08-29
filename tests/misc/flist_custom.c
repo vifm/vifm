@@ -126,29 +126,6 @@ TEST(custom_view_replaces_custom_view_fine)
 	assert_true(flist_custom_active(&lwin));
 }
 
-TEST(reload_considers_local_filter)
-{
-	filters_view_reset(&lwin);
-
-	assert_false(flist_custom_active(&lwin));
-
-	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
-
-	local_filter_apply(&lwin, "b");
-
-	load_dir_list(&lwin, 1);
-
-	assert_int_equal(1, lwin.list_rows);
-	assert_string_equal("b", lwin.dir_entry[0].name);
-
-	matcher_free(lwin.manual_filter);
-	lwin.manual_filter = NULL;
-	filter_dispose(&lwin.auto_filter);
-}
-
 TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 {
 	char test_file[PATH_MAX];
@@ -202,27 +179,6 @@ TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 	assert_true(fentry_is_dir(&lwin.dir_entry[0]));
 
 	assert_success(remove("dir-link"));
-}
-
-TEST(locally_filtered_files_are_not_lost_on_reload)
-{
-	filters_view_reset(&lwin);
-
-	assert_false(flist_custom_active(&lwin));
-
-	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
-
-	local_filter_apply(&lwin, "b");
-
-	load_dir_list(&lwin, 1);
-	assert_int_equal(1, lwin.filtered);
-
-	matcher_free(lwin.manual_filter);
-	lwin.manual_filter = NULL;
-	filter_dispose(&lwin.auto_filter);
 }
 
 TEST(register_macros_are_expanded_relatively_to_orig_dir)
@@ -634,30 +590,6 @@ TEST(cv_flist_title_is_preserved_on_next_cv_load_failure)
 	assert_false(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
 	assert_string_equal("test", lwin.custom.title);
-}
-
-TEST(applying_local_filter_saves_custom_list)
-{
-	filters_view_reset(&lwin);
-
-	assert_false(flist_custom_active(&lwin));
-
-	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
-
-	local_filter_apply(&lwin, "b");
-	load_dir_list(&lwin, 1);
-	assert_int_equal(1, lwin.list_rows);
-
-	local_filter_remove(&lwin);
-	load_dir_list(&lwin, 1);
-	assert_int_equal(2, lwin.list_rows);
-
-	matcher_free(lwin.manual_filter);
-	lwin.manual_filter = NULL;
-	filter_dispose(&lwin.auto_filter);
 }
 
 TEST(excluded_entries_do_not_return)
