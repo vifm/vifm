@@ -646,7 +646,7 @@ TEST(excluding_entries_does_not_affect_local_filter_list)
 	filter_dispose(&lwin.auto_filter);
 }
 
-TEST(failed_loadin_of_cv_does_not_override_saved_list)
+TEST(failed_loading_of_cv_does_not_override_saved_list)
 {
 	filters_view_reset(&lwin);
 
