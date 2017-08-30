@@ -64,6 +64,15 @@
 	Fixed extra width of inactive cursor in ls-like view when 'classify'
 	contains Unicode characters.
 
+	Fixed stopping of put operation after copying symbolic link that's broken
+	on destination.  Thanks to filterfalse.
+
+	Fixed formatting of root directory in custom view, it displayed too many
+	slashes.  Thanks to filterfalse.
+
+	Fixed not recording last visited directory on leaving custom view.  Thanks
+	to filterfalse.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

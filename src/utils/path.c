@@ -80,9 +80,16 @@ path_starts_with(const char path[], const char prefix[])
 {
 	size_t len = strlen(prefix);
 
-	if(len > 0 && prefix[len - 1] == '/')
+	/* Special case for "/", because it doesn't fit general pattern (slash
+	 * shouldn't be stripped or we get empty prefix). */
+	if(prefix[0] == '/' && prefix[1] == '\0')
 	{
-		len--;
+		return (path[0] == '/');
+	}
+
+	if(len > 0U && prefix[len - 1] == '/')
+	{
+		--len;
 	}
 
 	return strnoscmp(path, prefix, len) == 0

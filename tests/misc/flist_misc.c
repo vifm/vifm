@@ -289,5 +289,31 @@ TEST(fentry_get_size_returns_file_size_if_nothing_cached)
 	update_string(&cfg.shell, NULL);
 }
 
+TEST(root_path_does_not_get_more_than_one_slash, IF(not_windows))
+{
+	const char type_decs_slash[FT_COUNT][2][9] = {
+		[FT_DIR][DECORATION_SUFFIX][0] = '/',
+	};
+	const char type_decs_brackets[FT_COUNT][2][9] = {
+		[FT_DIR][DECORATION_PREFIX][0] = '[',
+		[FT_DIR][DECORATION_SUFFIX][0] = ']',
+	};
+
+	char name[NAME_MAX + 1];
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "/");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	get_short_path_of(&lwin, &lwin.dir_entry[0], 1, 1, sizeof(name), name);
+	assert_string_equal("/", name);
+
+	memcpy(&cfg.type_decs, &type_decs_slash, sizeof(cfg.type_decs));
+
+	get_short_path_of(&lwin, &lwin.dir_entry[0], 1, 1, sizeof(name), name);
+	assert_string_equal("/", name);
+
+	memcpy(&cfg.type_decs, &type_decs_brackets, sizeof(cfg.type_decs));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

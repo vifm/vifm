@@ -1431,7 +1431,9 @@ format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[])
 {
 	const char *prefix, *suffix;
 	ui_get_decors(entry, &prefix, &suffix);
-	snprintf(buf, buf_len, "%s%s%s", prefix, entry->name, suffix);
+	snprintf(buf, buf_len, "%s%s%s", prefix,
+			(is_root_dir(entry->name) && suffix[0] == '/') ? "" : entry->name,
+			suffix);
 }
 
 void

@@ -492,12 +492,6 @@ change_directory(view_t *view, const char directory[])
 
 	location_changed = (stroscmp(dir_dup, flist_get_dir(view)) != 0);
 
-	if(location_changed)
-	{
-		copy_str(view->last_dir, sizeof(view->last_dir), view->curr_dir);
-		view->on_slow_fs = is_on_slow_fs(view->curr_dir, cfg.slow_fs_list);
-	}
-
 	/* Check if we're exiting from a FUSE mounted top level directory and the
 	 * other pane isn't in it or any of it subdirectories.
 	 * If so, unmount & let FUSE serialize */
@@ -584,6 +578,12 @@ change_directory(view_t *view, const char directory[])
 	/* Need to use dir_dup instead of calling get_cwd() to avoid resolving
 	 * symbolic links in path. */
 	env_set("PWD", dir_dup);
+
+	if(location_changed)
+	{
+		copy_str(view->last_dir, sizeof(view->last_dir), flist_get_dir(view));
+		view->on_slow_fs = is_on_slow_fs(dir_dup, cfg.slow_fs_list);
+	}
 
 	copy_str(view->curr_dir, sizeof(view->curr_dir), dir_dup);
 
@@ -3224,7 +3224,7 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 		copy_str(name, sizeof(name), entry->name);
 	}
 
-	if(is_parent_dir(entry->name))
+	if(is_parent_dir(entry->name) || is_root_dir(entry->name))
 	{
 		copy_str(buf, buf_len, name);
 		return;
