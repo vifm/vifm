@@ -2,6 +2,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/color_scheme.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
@@ -108,6 +109,17 @@ TEST(negation)
 	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 	assert_string_equal("!/^\\./i",
 			matchers_get_expr(cfg.cs.file_hi[0].matchers));
+}
+
+TEST(highlighting_is_printed_back_correctly)
+{
+	const char *const COMMANDS = "highlight {*.jpg} ctermfg=red";
+	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+
+	status_bar_message("");
+	assert_failure(exec_commands("highlight {*.jpg}", &lwin, CIT_COMMAND));
+	assert_string_equal("{*.jpg}    cterm=none ctermfg=red     ctermbg=default",
+			get_last_message());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
