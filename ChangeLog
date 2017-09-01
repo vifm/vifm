@@ -42,6 +42,9 @@
 
 	Do not go to start of line on Ctrl-U/Ctrl-D/Ctrl-F/Ctrl-B/G in ls-like view.
 
+	Documented more details about 'vicmd' and 'vixcmd' options.  Thanks to
+	Sebastian Cyprych.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 

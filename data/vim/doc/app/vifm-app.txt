@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 24
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 01
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3582,6 +3582,15 @@ default: "vim"
 The actual command used to start vi.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
 
+Background flag is ignored in certain context where vifm waits for the editor
+to finish.  Such contexts include any command that spawns editor to change
+list of file names or a command, with |vifm-:rename| being one example.
+`-f` is also appended to prevent forking in such cases, so the command needs
+to handle the flag.
+
+Additionally `+{num}` and `+'call cursor()'` arguments are used to position
+cursor when location is known.
+
                                                *vifm-'viewcolumns'*
 viewcolumns
 type: string
@@ -3601,8 +3610,7 @@ vixcmd
 type: string
 default: value of |vifm-'vicmd'|
 
-The command used to start vi when in X.  Ampersand sign at the end (regardless
-whether it's preceded by space or not) means backgrounding of command.
+Same as 'vicmd', but takes precedence over it when running in X.
 
                                                *vifm-'vifminfo'*
 vifminfo

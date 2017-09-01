@@ -18,8 +18,6 @@ Basic things:
   * Command to create multiple copies of selected file
 
 Documentation:
-  * Document non-forking requirement for 'vicmd' on :rename and alike
-    commands.
   * State the need of *nix tools on Windows more explicitly.
   * Describe 'shell', $SHELL and `:shell` relationships.
   * Document single and double quotes treating in the command-line mode.
