@@ -135,9 +135,9 @@ void cs_color_to_str(int color, size_t buf_len, char str_buf[]);
  * *mixup are transfered onto *base. */
 void cs_mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
-/* Registers pattern-highlight pair for active color scheme.  Returns new value
- * for curr_stats.save_msg. */
-int cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi);
+/* Registers pattern-highlight pair for active color scheme.  Reports memory
+ * error to the user. */
+void cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi);
 
 /* Gets filename-specific highlight.  hi_hint can't be NULL and should be equal
  * to -1 initially.  Returns NULL if nothing is found, otherwise returns pointer

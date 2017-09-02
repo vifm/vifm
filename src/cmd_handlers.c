@@ -2416,7 +2416,7 @@ highlight_file(const cmd_info_t *cmd_info)
 	}
 
 	result = parse_and_apply_highlight(cmd_info, &color);
-	result += cs_add_file_hi(matchers, &color);
+	cs_add_file_hi(matchers, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
 	curr_stats.need_update = UT_REDRAW;

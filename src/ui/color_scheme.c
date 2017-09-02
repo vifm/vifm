@@ -1007,7 +1007,7 @@ cs_mix_colors(col_attr_t *base, const col_attr_t *mixup)
 	}
 }
 
-int
+void
 cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi)
 {
 	void *p;
@@ -1018,7 +1018,7 @@ cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi)
 	if(p == NULL)
 	{
 		show_error_msg("Color Scheme File Highlight", "Not enough memory");
-		return 1;
+		return;
 	}
 	cs->file_hi = p;
 
@@ -1028,8 +1028,6 @@ cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi)
 	file_hi->hi = *hi;
 
 	++cs->file_hi_count;
-
-	return 0;
 }
 
 const col_attr_t *
