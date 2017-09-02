@@ -134,6 +134,19 @@ TEST(existing_records_are_updated)
 	assert_int_equal(COLOR_BLUE, cfg.cs.file_hi[0].hi.fg);
 }
 
+TEST(all_records_can_be_removed)
+{
+	const char *const COMMANDS1 = "highlight {*.jpg} ctermfg=red";
+	const char *const COMMANDS2 = "highlight {*.avi} cterm=bold";
+	const char *const COMMANDS3 = "highlight clear";
+
+	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_success(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_int_equal(2, cfg.cs.file_hi_count);
+	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cfg.cs.file_hi_count);
+}
+
 TEST(records_can_be_removed)
 {
 	const char *const COMMANDS1 = "highlight {*.jpg} ctermfg=red";
