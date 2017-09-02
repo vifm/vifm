@@ -184,6 +184,7 @@ static int finish_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
+static int highlight_clear(const cmd_info_t *cmd_info);
 static int highlight_file(const cmd_info_t *cmd_info);
 static void display_file_highlights(const matchers_t *matchers);
 static int highlight_group(const cmd_info_t *cmd_info);
@@ -2367,16 +2368,9 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	if(cmd_info->argc == 1 && strcasecmp(cmd_info->argv[0], "clear") == 0)
+	if(strcasecmp(cmd_info->argv[0], "clear") == 0)
 	{
-		cs_reset(curr_stats.cs);
-		fview_view_cs_reset(&lwin);
-		fview_view_cs_reset(&rwin);
-
-		/* Request full update instead of redraw to force recalculation of mixed
-		 * colors like cursor line, which otherwise are not updated. */
-		curr_stats.need_update = UT_FULL;
-		return 0;
+		return highlight_clear(cmd_info);
 	}
 
 	if(matchers_is_expr(cmd_info->argv[0]))
@@ -2385,6 +2379,26 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	}
 
 	return highlight_group(cmd_info);
+}
+
+/* Handles clear form of :highlight command.  Returns value to be returned by
+ * command handler. */
+static int
+highlight_clear(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->argc != 1)
+	{
+		return CMDS_ERR_TRAILING_CHARS;
+	}
+
+	cs_reset(curr_stats.cs);
+	fview_view_cs_reset(&lwin);
+	fview_view_cs_reset(&rwin);
+
+	/* Request full update instead of redraw to force recalculation of mixed
+	 * colors like cursor line, which otherwise are not updated. */
+	curr_stats.need_update = UT_FULL;
+	return 0;
 }
 
 /* Handles highlight-file form of :highlight command.  Returns value to be
