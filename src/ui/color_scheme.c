@@ -1014,6 +1014,20 @@ cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi)
 	file_hi_t *file_hi;
 	col_scheme_t *const cs = curr_stats.cs;
 
+	/* Try to find existing record that exactly matches the expression and update
+	 * the record. */
+	int i;
+	const char *expr = matchers_get_expr(matchers);
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		if(strcmp(matchers_get_expr(cs->file_hi[i].matchers), expr) == 0)
+		{
+			matchers_free(matchers);
+			cs->file_hi[i].hi = *hi;
+			return;
+		}
+	}
+
 	p = reallocarray(cs->file_hi, cs->file_hi_count + 1, sizeof(*cs->file_hi));
 	if(p == NULL)
 	{

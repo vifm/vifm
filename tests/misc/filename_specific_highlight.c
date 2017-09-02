@@ -122,5 +122,17 @@ TEST(highlighting_is_printed_back_correctly)
 			get_last_message());
 }
 
+TEST(existing_records_are_updated)
+{
+	const char *const COMMANDS1 = "highlight {*.jpg} ctermfg=red";
+	const char *const COMMANDS2 = "highlight {*.jpg} ctermfg=blue";
+
+	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_success(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.cs.file_hi_count);
+
+	assert_int_equal(COLOR_BLUE, cfg.cs.file_hi[0].hi.fg);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
