@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 01
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 02
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1654,7 +1654,7 @@ The builtin commands are:
 
                                                *vifm-:highlight* *vifm-:hi*
 :hi[ghlight]
-    display information about all highlight groups in the current directory.
+    display information about all highlight groups active at the moment.
 :hi[ghlight] clear
     reset all highlighting to builtin defaults.
 :hi[ghlight] group-name | {pat1,pat2,...} | /regexp/
@@ -1662,7 +1662,7 @@ The builtin commands are:
     scheme used in the active view.
 :hi[ghlight] ( group-name | {pat1,pat2,...} | /regexp/[iI] )
              cterm=style | ctermfg=color | ctermbg=color
-    sets style (cterm), foreground (ctermfg) or/and background (ctermbg)
+    set style (cterm), foreground (ctermfg) or/and background (ctermbg)
     parameters of highlight group or file name pattern for color scheme
     used in the active view.
 
