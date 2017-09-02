@@ -1017,6 +1017,7 @@ cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi)
 	p = reallocarray(cs->file_hi, cs->file_hi_count + 1, sizeof(*cs->file_hi));
 	if(p == NULL)
 	{
+		matchers_free(matchers);
 		show_error_msg("Color Scheme File Highlight", "Not enough memory");
 		return;
 	}
