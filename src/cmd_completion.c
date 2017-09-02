@@ -63,6 +63,7 @@
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
+#include "utils/matchers.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -84,7 +85,7 @@ static void complete_invert(const char str[]);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
-static void complete_highlight_groups(const char *str);
+static void complete_highlight_groups(const char str[], int file_hi_only);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char str[]);
 static void complete_winrun(const char str[]);
@@ -179,10 +180,22 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		complete_filetype(args);
 	else if(id == COM_HIGHLIGHT)
 	{
-		if(earg_num(argc, args) <= 1)
-			complete_highlight_groups(args);
+		const int arg_num = earg_num(argc, args);
+		if(arg_num <= 1)
+		{
+			complete_highlight_groups(args, 0);
+		}
+		else if(starts_with_lit(args, "clear "))
+		{
+			if(arg_num == 2)
+			{
+				complete_highlight_groups(arg, 1);
+			}
+		}
 		else
+		{
 			start += complete_highlight_arg(arg);
+		}
 	}
 	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE ||
 			id == COM_SOURCE || id == COM_EDIT) && dollar != NULL && dollar > slash)
@@ -612,21 +625,37 @@ complete_progs(const char *str, assoc_records_t records)
 
 /* Completes highlight groups and subcommand "clear" for :highlight command. */
 static void
-complete_highlight_groups(const char *str)
+complete_highlight_groups(const char str[], int file_hi_only)
 {
 	int i;
 	const size_t len = strlen(str);
-	for(i = 0; i < MAXNUM_COLOR; ++i)
+
+	col_scheme_t *const cs = curr_stats.cs;
+	for(i = 0; i < cs->file_hi_count; ++i)
 	{
-		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
+		const char *const expr = matchers_get_expr(cs->file_hi[i].matchers);
+		if(strncasecmp(str, expr, len) == 0)
 		{
-			vle_compl_add_match(HI_GROUPS[i], HI_GROUPS_DESCR[i]);
+			vle_compl_add_match(expr, "");
 		}
 	}
-	if(strncmp(str, "clear", len) == 0)
+
+	if(!file_hi_only)
 	{
-		vle_compl_add_match("clear", "restore default colors");
+		for(i = 0; i < MAXNUM_COLOR; ++i)
+		{
+			if(strncasecmp(str, HI_GROUPS[i], len) == 0)
+			{
+				vle_compl_add_match(HI_GROUPS[i], HI_GROUPS_DESCR[i]);
+			}
+		}
+
+		if(strncmp(str, "clear", len) == 0)
+		{
+			vle_compl_add_match("clear", "clear color rules");
+		}
 	}
+
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);
 }

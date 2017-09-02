@@ -132,18 +132,22 @@ void cs_write(void);
 void cs_color_to_str(int color, size_t buf_len, char str_buf[]);
 
 /* Mixes colors of *mixup into the base color.  Non-transparent properties of
- * *mixup are transfered onto *base. */
+ * *mixup are transferred onto *base. */
 void cs_mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
-/* Registers pattern-highlight pair for active color scheme.  Returns new value
- * for curr_stats.save_msg. */
-int cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi);
+/* Registers pattern-highlight pair for active color scheme.  Reports memory
+ * error to the user. */
+void cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi);
 
 /* Gets filename-specific highlight.  hi_hint can't be NULL and should be equal
  * to -1 initially.  Returns NULL if nothing is found, otherwise returns pointer
  * to one of color scheme's highlights. */
 const col_attr_t * cs_get_file_hi(const col_scheme_t *cs, const char fname[],
 		int *hi_hint);
+
+/* Removes filename-specific highlight by its pattern.  Returns non-zero on
+ * successful removal and zero if pattern wasn't found. */
+int cs_del_file_hi(const char matchers_expr[]);
 
 /* Checks that color is non-empty (i.e. has at least one property set).  Returns
  * non-zero if so, otherwise zero is returned. */

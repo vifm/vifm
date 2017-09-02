@@ -19,6 +19,12 @@
 	Added 'lsoptions' option that allows to get transposed grid in ls-like
 	view.  Thanks to Dmitry Frank (a.k.a. dimonomid).
 
+	Added ability to remove filename-specific highlighting rules with
+	`:highlight clear {pattern}`.  Thanks to aleksejrs.
+
+	Added completion of filename-specific highlight groups for :highlight
+	command.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
@@ -41,6 +47,12 @@
 	Made :tree pick up list of files from custom view.  Thanks to filterfalse.
 
 	Do not go to start of line on Ctrl-U/Ctrl-D/Ctrl-F/Ctrl-B/G in ls-like view.
+
+	Documented more details about 'vicmd' and 'vixcmd' options.  Thanks to
+	Sebastian Cyprych.
+
+	Made :highlight update file-specific group on exact match of the pattern
+	instead of appending new rule.  Thanks to aleksejrs.
 
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
@@ -72,6 +84,9 @@
 
 	Fixed not recording last visited directory on leaving custom view.  Thanks
 	to filterfalse.
+
+	Fixed displaying of wild menu popup when statusbar is more than single
+	line in height.
 
 0.9-beta to 0.9
 

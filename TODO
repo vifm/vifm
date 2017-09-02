@@ -18,14 +18,10 @@ Basic things:
   * Command to create multiple copies of selected file
 
 Documentation:
-  * Document non-forking requirement for 'vicmd' on :rename and alike
-    commands.
   * State the need of *nix tools on Windows more explicitly.
-  * Describe 'shell', $SHELL and `:shell` relationships.
   * Document single and double quotes treating in the command-line mode.
   * Divide docs into several files (as it's quite big now).
   * Document name conflict resolution options.
-  * Generally better documentation. (partially done)
   * Add separate section on bookmarks.
 
 Vi(m) specific features:
@@ -35,7 +31,6 @@ Vi(m) specific features:
   * Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
   * Add support of n flag for :substitute command.
   * :let mapleader and <leader> support.
-  * A way to unset a filename-highlight.
   * Ctrl-W F key.
   * Add support of [count] for Ctrl-E/Ctrl-Y/H/M/L.
   * nrformats option as in Vim.

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Aug 24
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 02
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1654,15 +1654,18 @@ The builtin commands are:
 
                                                *vifm-:highlight* *vifm-:hi*
 :hi[ghlight]
-    display information about all highlight groups in the current directory.
+    display information about all highlight groups active at the moment.
 :hi[ghlight] clear
-    reset all highlighting to builtin defaults.
+    reset all highlighting to builtin defaults and removed all
+    filename-specific rules.
+:hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )
+    removes specified rule.
 :hi[ghlight] group-name | {pat1,pat2,...} | /regexp/
     display information on given highlight group or file name pattern of color
     scheme used in the active view.
 :hi[ghlight] ( group-name | {pat1,pat2,...} | /regexp/[iI] )
              cterm=style | ctermfg=color | ctermbg=color
-    sets style (cterm), foreground (ctermfg) or/and background (ctermbg)
+    set style (cterm), foreground (ctermfg) or/and background (ctermbg)
     parameters of highlight group or file name pattern for color scheme
     used in the active view.
 
@@ -3582,6 +3585,15 @@ default: "vim"
 The actual command used to start vi.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
 
+Background flag is ignored in certain context where vifm waits for the editor
+to finish.  Such contexts include any command that spawns editor to change
+list of file names or a command, with |vifm-:rename| being one example.
+`-f` is also appended to prevent forking in such cases, so the command needs
+to handle the flag.
+
+Additionally `+{num}` and `+'call cursor()'` arguments are used to position
+cursor when location is known.
+
                                                *vifm-'viewcolumns'*
 viewcolumns
 type: string
@@ -3601,8 +3613,7 @@ vixcmd
 type: string
 default: value of |vifm-'vicmd'|
 
-The command used to start vi when in X.  Ampersand sign at the end (regardless
-whether it's preceded by space or not) means backgrounding of command.
+Same as 'vicmd', but takes precedence over it when running in X.
 
                                                *vifm-'vifminfo'*
 vifminfo

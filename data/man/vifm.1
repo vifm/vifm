@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 24, 2017" "vifm 0.9"
+.TH VIFM 1 "September 02, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1946,17 +1946,21 @@ on vifm (tab completion works).  This form of the command doesn't work when
 .BI "                                         :highlight"
 .TP
 .BI :hi[ghlight]
-will show information about all highlight groups in the current directory.
+display information about all highlight groups active at the moment.
 .TP
 .BI ":hi[ghlight] clear"
-will reset all highlighting to builtin defaults.
+reset all highlighting to builtin defaults and removed all filename-specific
+rules.
+.TP
+.BI ":hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )"
+removes specified rule.
 .TP
 .BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/ )"
-will show information on given highlight group or file name pattern of color
+display information on given highlight group or file name pattern of color
 scheme used in the active view.
 .TP
 .BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/[iI] ) cterm=style | ctermfg=color | ctermbg=color"
-sets style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
+set style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
 of highlight group or file name pattern for color scheme used in the active
 view.
 .LP
@@ -4295,6 +4299,15 @@ default: "vim"
 .br
 The actual command used to start vi.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
+
+Background flag is ignored in certain context where vifm waits for the editor
+to finish.  Such contexts include any command that spawns editor to change
+list of file names or a command, with :rename being one example.
+`\-f` is also appended to prevent forking in such cases, so the command needs
+to handle the flag.
+
+Additionally `+{num}` and `+'call cursor()'` arguments are used to position
+cursor when location is known.
 .TP
 .BI 'viewcolumns'
 type: string
@@ -4319,8 +4332,7 @@ type: string
 .br
 default: value of 'vicmd'
 .br
-The command used to start vi when in X.  Ampersand sign at the end (regardless
-whether it's preceded by space or not) means backgrounding of command.
+Same as 'vicmd', but takes precedence over it when running in X.
 .TP
 .BI 'vifminfo'
 type: set
