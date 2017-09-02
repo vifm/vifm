@@ -557,6 +557,9 @@ TEST(highlight_is_completed)
 	ASSERT_COMPLETION(L"hi ", L"hi AuxWin");
 	ASSERT_COMPLETION(L"hi wi", L"hi WildMenu");
 	ASSERT_COMPLETION(L"hi WildMenu cter", L"hi WildMenu cterm");
+
+	assert_success(exec_commands("hi {*.jpg} cterm=none", &lwin, CIT_COMMAND));
+	ASSERT_COMPLETION(L"hi clear ", L"hi clear {*.jpg}");
 }
 
 TEST(case_override_of_paths)
