@@ -528,7 +528,7 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_down(curr_view))
 	{
-		scroll_view(curr_view->window_cells/2);
+		scroll_view(MAX(curr_view->window_cells/2, curr_view->run_size));
 	}
 }
 
@@ -561,8 +561,8 @@ page_scroll(int base, int direction)
 	enum { HOR_GAP_SIZE = 2, VER_GAP_SIZE = 1 };
 	int old_pos = curr_view->list_pos;
 	int offset = fview_is_transposed(curr_view)
-	           ? (curr_view->column_count - VER_GAP_SIZE)*curr_view->window_rows
-	           : (curr_view->window_rows - HOR_GAP_SIZE)*curr_view->column_count;
+	    ? (MAX(1, curr_view->column_count - VER_GAP_SIZE))*curr_view->window_rows
+	    : (curr_view->window_rows - HOR_GAP_SIZE)*curr_view->column_count;
 	int new_pos = base + direction*offset
 	            + old_pos%curr_view->run_size - base%curr_view->run_size;
 	curr_view->list_pos = MAX(0, MIN(curr_view->list_rows - 1, new_pos));
@@ -725,7 +725,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(curr_view))
 	{
-		scroll_view(-curr_view->window_cells/2);
+		scroll_view(-MAX(curr_view->window_cells/2, curr_view->run_size));
 	}
 }
 
