@@ -19,6 +19,9 @@
 	Added 'lsoptions' option that allows to get transposed grid in ls-like
 	view.  Thanks to Dmitry Frank (a.k.a. dimonomid).
 
+	Added ability to remove filename-specific highlighting rules with
+	`:highlight clear {pattern}`.  Thanks to aleksejrs.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

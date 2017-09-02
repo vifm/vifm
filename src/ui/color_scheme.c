@@ -1070,6 +1070,26 @@ cs_get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 }
 
 int
+cs_del_file_hi(const char matchers_expr[])
+{
+	col_scheme_t *const cs = curr_stats.cs;
+
+	int i;
+	for(i = 0; i < cs->file_hi_count; ++i)
+	{
+		if(strcmp(matchers_get_expr(cs->file_hi[i].matchers), matchers_expr) == 0)
+		{
+			memmove(&cs->file_hi[i], &cs->file_hi[i + 1],
+					sizeof(*cs->file_hi)*((cs->file_hi_count - 1) - i));
+			--cs->file_hi_count;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int
 cs_is_color_set(const col_attr_t *color)
 {
 	return color->fg != -1 || color->bg != -1 || color->attr != -1;

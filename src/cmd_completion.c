@@ -625,7 +625,7 @@ complete_highlight_groups(const char *str)
 	}
 	if(strncmp(str, "clear", len) == 0)
 	{
-		vle_compl_add_match("clear", "restore default colors");
+		vle_compl_add_match("clear", "clear color rules");
 	}
 	vle_compl_finish_group();
 	vle_compl_add_last_match(str);

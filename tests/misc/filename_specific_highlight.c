@@ -134,5 +134,19 @@ TEST(existing_records_are_updated)
 	assert_int_equal(COLOR_BLUE, cfg.cs.file_hi[0].hi.fg);
 }
 
+TEST(records_can_be_removed)
+{
+	const char *const COMMANDS1 = "highlight {*.jpg} ctermfg=red";
+	const char *const COMMANDS2 = "highlight clear {*.avi}";
+	const char *const COMMANDS3 = "highlight clear {*.jpg}";
+
+	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.cs.file_hi_count);
+	assert_failure(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.cs.file_hi_count);
+	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cfg.cs.file_hi_count);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

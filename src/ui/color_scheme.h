@@ -145,6 +145,10 @@ void cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi);
 const col_attr_t * cs_get_file_hi(const col_scheme_t *cs, const char fname[],
 		int *hi_hint);
 
+/* Removes filename-specific highlight by its pattern.  Returns non-zero on
+ * successful removal and zero if pattern wasn't found. */
+int cs_del_file_hi(const char matchers_expr[]);
+
 /* Checks that color is non-empty (i.e. has at least one property set).  Returns
  * non-zero if so, otherwise zero is returned. */
 int cs_is_color_set(const col_attr_t *color);

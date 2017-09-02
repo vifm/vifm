@@ -1656,7 +1656,10 @@ The builtin commands are:
 :hi[ghlight]
     display information about all highlight groups active at the moment.
 :hi[ghlight] clear
-    reset all highlighting to builtin defaults.
+    reset all highlighting to builtin defaults and removed all
+    filename-specific rules.
+:hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )
+    removes specified rule.
 :hi[ghlight] group-name | {pat1,pat2,...} | /regexp/
     display information on given highlight group or file name pattern of color
     scheme used in the active view.

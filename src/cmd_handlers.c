@@ -2386,19 +2386,30 @@ highlight_cmd(const cmd_info_t *cmd_info)
 static int
 highlight_clear(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->argc != 1)
+	if(cmd_info->argc == 2)
 	{
-		return CMDS_ERR_TRAILING_CHARS;
+		if(!cs_del_file_hi(cmd_info->argv[1]))
+		{
+			status_bar_errorf("No such group: %s", cmd_info->argv[1]);
+			return 1;
+		}
+
+		return 0;
 	}
 
-	cs_reset(curr_stats.cs);
-	fview_view_cs_reset(&lwin);
-	fview_view_cs_reset(&rwin);
+	if(cmd_info->argc == 1)
+	{
+		cs_reset(curr_stats.cs);
+		fview_view_cs_reset(&lwin);
+		fview_view_cs_reset(&rwin);
 
-	/* Request full update instead of redraw to force recalculation of mixed
-	 * colors like cursor line, which otherwise are not updated. */
-	curr_stats.need_update = UT_FULL;
-	return 0;
+		/* Request full update instead of redraw to force recalculation of mixed
+		 * colors like cursor line, which otherwise are not updated. */
+		curr_stats.need_update = UT_FULL;
+		return 0;
+	}
+
+	return CMDS_ERR_TRAILING_CHARS;
 }
 
 /* Handles highlight-file form of :highlight command.  Returns value to be

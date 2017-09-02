@@ -1949,7 +1949,11 @@ on vifm (tab completion works).  This form of the command doesn't work when
 display information about all highlight groups active at the moment.
 .TP
 .BI ":hi[ghlight] clear"
-reset all highlighting to builtin defaults.
+reset all highlighting to builtin defaults and removed all filename-specific
+rules.
+.TP
+.BI ":hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )"
+removes specified rule.
 .TP
 .BI ":hi[ghlight] ( group\-name | {pat1,pat2,...} | /regexp/ )"
 display information on given highlight group or file name pattern of color
