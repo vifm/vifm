@@ -1,6 +1,18 @@
 #include <stic.h>
 
+#include <stdlib.h> /* free() */
+
+#include "../../src/background.h"
 #include "../../src/utils/string_array.h"
+
+TEST(non_existing_file)
+{
+	int nlines;
+	char **lines = read_file_of_lines(TEST_DATA_PATH "/read/wrong-path", &nlines);
+	assert_non_null(lines);
+	assert_int_equal(0, nlines);
+	free(lines);
+}
 
 TEST(dos_line_endings)
 {

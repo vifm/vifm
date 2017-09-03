@@ -168,7 +168,6 @@ Questionable things:
   * Accept regexps as second argument of :colo command.
 
 Code improvements:
-  * Write more tests for get_lines functions in string_array.c
   * Write more tests. (partially done)
   * Replace calls like `snprintf(foo, sizeof(foo), "%s", line)` with
     copy_str(). (partially done)
