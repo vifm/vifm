@@ -70,6 +70,7 @@ typedef struct
 
 static int stic_screen_width = 70;
 static int sea_tests_run = 0;
+static int sea_tests_skipped = 0;
 static int sea_tests_failed = 0;
 static int sea_checks_passed = 0;
 static int sea_checks_failed = 0;
@@ -123,6 +124,11 @@ static void stic_header_printer(const char s[], int length, char f)
 void stic_suite_setup( void )
 {
 	if(stic_suite_setup_func != 0) stic_suite_setup_func();
+}
+
+void stic_skip_test(const char fixture[], const char test[])
+{
+	sea_tests_skipped++;
 }
 
 int stic_positive_predicate( void )
@@ -520,7 +526,8 @@ int run_tests(stic_void_void tests)
 	unsigned long end;
 	unsigned long start = GetTickCount();
 	char version[40];
-	char s[40];
+	char s[100];
+	char time[40];
 	tests();
 	end = GetTickCount();
 
@@ -536,7 +543,6 @@ int run_tests(stic_void_void tests)
 	stic_header_printer(version, stic_screen_width, '=');
 	printf("\n");
 	if (sea_checks_failed > 0) {
-		char s[100];
 		snprintf(s, sizeof(s), "%d CHECK%s IN %d TEST%s FAILED",
 				 sea_checks_failed, sea_checks_failed == 1 ? "" : "S",
 				 sea_tests_failed, sea_tests_failed == 1 ? "" : "S");
@@ -544,26 +550,30 @@ int run_tests(stic_void_void tests)
 	}
 	else
 	{
-		char s[100];
 		snprintf(s, sizeof(s), "ALL TESTS PASSED");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
-	sprintf(s,"%d check%s in %d test%s",
-			sea_checks_passed + sea_checks_failed,
-			sea_checks_passed + sea_checks_failed == 1 ? "" : "s",
-			sea_tests_run, sea_tests_run == 1 ? "" : "s");
+
+	memset(s, '-', strlen(s));
 	stic_header_printer(s, stic_screen_width, ' ');
 
 	if (end - start == 0)
 	{
-		sprintf(s,"run in < 1 ms");
+		sprintf(time,"< 1 ms");
 	}
 	else
 	{
-		sprintf(s,"run in %lu ms",end - start);
+		sprintf(time,"%lu ms",end - start);
 	}
 
+	sprintf(s,"%d check%s :: %d run test%s :: %d skipped test%s :: %s",
+			sea_checks_passed + sea_checks_failed,
+			sea_checks_passed + sea_checks_failed == 1 ? "" : "s",
+			sea_tests_run, sea_tests_run == 1 ? "" : "s",
+			sea_tests_skipped, sea_tests_skipped == 1 ? "" : "s",
+			time);
 	stic_header_printer(s, stic_screen_width, ' ');
+
 	printf("\n");
 	stic_header_printer("", stic_screen_width, '=');
 
