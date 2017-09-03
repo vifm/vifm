@@ -515,8 +515,14 @@ int run_tests(stic_void_void tests)
 	tests();
 	end = GetTickCount();
 
+	if(stic_suite_name == NULL)
+	{
+		stic_suite_name = "";
+	}
+
 	if(stic_is_display_only() || stic_machine_readable) return 1;
-	sprintf(version, "STIC v%s", STIC_VERSION);
+	sprintf(version, "STIC v%s%s%s", STIC_VERSION,
+			(stic_suite_name[0] == '\0' ? "" : " :: "), stic_suite_name);
 	printf("\n\n");
 	stic_header_printer(version, stic_screen_width, '=');
 	printf("\n");
@@ -528,16 +534,8 @@ int run_tests(stic_void_void tests)
 	}
 	else
 	{
-		extern const char *stic_suite_name;
 		char s[100];
-
-		if(stic_suite_name == NULL || stic_suite_name[0] == '\0')
-		{
-			stic_suite_name = "";
-		}
-
-		snprintf(s, sizeof(s), "ALL%s%s TESTS PASSED",
-				 (stic_suite_name[0] != '\0') ? " " : "", stic_suite_name);
+		snprintf(s, sizeof(s), "ALL TESTS PASSED");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	sprintf(s,"%d test%s run", sea_tests_run, sea_tests_run == 1 ? "" : "s");
