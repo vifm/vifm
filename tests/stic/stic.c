@@ -70,8 +70,8 @@ typedef struct
 
 static int stic_screen_width = 70;
 static int sea_tests_run = 0;
-static int sea_tests_passed = 0;
-static int sea_tests_failed = 0;
+static int sea_checks_passed = 0;
+static int sea_checks_failed = 0;
 static int stic_display_only = 0;
 static int stic_verbose = 0;
 static int stic_random_failures = 0;
@@ -172,13 +172,13 @@ static const char * test_file_name(const char path[])
 }
 
 static int stic_fixture_tests_run;
-static int stic_fixture_tests_failed;
-static int stic_fixture_tests_passed;
+static int stic_fixture_checks_failed;
+static int stic_fixture_checks_passed;
 
 static int test_had_output(void)
 {
-	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
-	const int npassed = sea_tests_passed - stic_fixture_tests_passed;
+	const int nfailed = sea_checks_failed - stic_fixture_checks_failed;
+	const int npassed = sea_checks_passed - stic_fixture_checks_passed;
 	return (nfailed != 0 || (npassed != 0 && stic_verbose));
 }
 
@@ -221,7 +221,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			       "       %s\n",
 			       file, line, function, reason );
 		}
-		sea_tests_failed++;
+		sea_checks_failed++;
 		last_test = stic_current_test;
 	}
 	else
@@ -244,7 +244,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			}
 			last_test = stic_current_test;
 		}
-		sea_tests_passed++;
+		sea_checks_passed++;
 	}
 }
 
@@ -417,8 +417,8 @@ void stic_test_fixture_start(const char filepath[])
 {
 	stic_current_fixture_path = filepath;
 	stic_current_fixture = test_file_name(filepath);
-	stic_fixture_tests_failed = sea_tests_failed;
-	stic_fixture_tests_passed = sea_tests_passed;
+	stic_fixture_checks_failed = sea_checks_failed;
+	stic_fixture_checks_passed = sea_checks_passed;
 	stic_fixture_tests_run = sea_tests_run;
 	stic_fixture_teardown = 0;
 	stic_fixture_setup = 0;
@@ -433,7 +433,7 @@ void stic_test_fixture_end()
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
 	const int nrun = sea_tests_run - stic_fixture_tests_run;
-	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
+	const int nfailed = sea_checks_failed - stic_fixture_checks_failed;
 
 	if (stic_silent)
 	{
@@ -526,10 +526,10 @@ int run_tests(stic_void_void tests)
 	printf("\n\n");
 	stic_header_printer(version, stic_screen_width, '=');
 	printf("\n");
-	if (sea_tests_failed > 0) {
+	if (sea_checks_failed > 0) {
 		char s[100];
-		snprintf(s, sizeof(s), "Failed %d check%s", sea_tests_failed,
-				sea_tests_failed == 1 ? "" : "s");
+		snprintf(s, sizeof(s), "Failed %d check%s", sea_checks_failed,
+				sea_checks_failed == 1 ? "" : "s");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	else
@@ -554,7 +554,7 @@ int run_tests(stic_void_void tests)
 	printf("\n");
 	stic_header_printer("", stic_screen_width, '=');
 
-	return sea_tests_failed == 0;
+	return sea_checks_failed == 0;
 }
 
 void stic_show_help( void )
