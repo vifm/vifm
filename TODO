@@ -71,7 +71,6 @@ Possible things to add:
   * Position macros for user defined commands (%1, %2, ..., %9).
   * Improve sorting (iext; choosing multiple sorting keys in dialog).
     (partially done)
-  * Consider escaping of tilde in paths.
   * Wrapping of lines in the menus.
   * Something like :g/.../com and :v/.../com in Vim.
   * Don't reread config files on :restart for --no-configs session.
@@ -87,7 +86,6 @@ Possible things to add:
   * Add "|" command to menu to process list with external tool.
   * "Blow directory" command to replace directory with its content.
   * Emacs like Dired or Helm incremental search and complete
-  * Some key to (un)select all files with extension of current file.
   * $_ env var and Alt-T combination as in bash shell.
   * Templates for :touch.
   * Reverse searching
@@ -130,14 +128,12 @@ Questionable things:
   * Remove items from :history command menu?
   * Maybe use @path syntax to load custom views.
   * Add + and - commands to undo by commands, not command groups.
-  * :edit, etc. in the menus.
   * Modify marks on rename operations.
   * Remove delay on file overwrite.
   * Make :undolist more interactive.
   * Add GUI interface one day.
   * Use custom title for fuse mounts
   * Option to trigger completion on slash in command-line.
-  * Add file selector based on file extensions.
   * :edit - select the file after exiting editor?
   * Ability to enter a mount with multiple vifm instances without
     reunpacking/reconnecting.
@@ -197,6 +193,5 @@ Code improvements:
   * Show "An error occurred" message on fail to build menus.
   * Consider not using {} initializer.
   * Use timeout command to set time limit for tests on CI.
-  * Note skipped tests in the tests output.
   * Pass var by pointer to var_free and cleanup the structure.
   * Logging levels.
