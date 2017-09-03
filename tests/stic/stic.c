@@ -523,7 +523,7 @@ int run_tests(stic_void_void tests)
 	if(stic_is_display_only() || stic_machine_readable) return 1;
 	sprintf(version, "STIC v%s%s%s", STIC_VERSION,
 			(stic_suite_name[0] == '\0' ? "" : " :: "), stic_suite_name);
-	printf("\n\n");
+	printf("\n");
 	stic_header_printer(version, stic_screen_width, '=');
 	printf("\n");
 	if (sea_checks_failed > 0) {
