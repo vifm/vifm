@@ -70,6 +70,7 @@ typedef struct
 
 static int stic_screen_width = 70;
 static int sea_tests_run = 0;
+static int sea_tests_failed = 0;
 static int sea_checks_passed = 0;
 static int sea_checks_failed = 0;
 static int stic_display_only = 0;
@@ -185,6 +186,7 @@ static int test_had_output(void)
 void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
 	static stic_void_void last_test;
+	static stic_void_void last_failed_test;
 
 	const char *test_name = (stic_current_test == last_test) ? "" : stic_current_test_name;
 
@@ -222,6 +224,13 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			       file, line, function, reason );
 		}
 		sea_checks_failed++;
+
+		if (last_failed_test != stic_current_test)
+		{
+			++sea_tests_failed;
+		}
+		last_failed_test = stic_current_test;
+
 		last_test = stic_current_test;
 	}
 	else
@@ -528,8 +537,9 @@ int run_tests(stic_void_void tests)
 	printf("\n");
 	if (sea_checks_failed > 0) {
 		char s[100];
-		snprintf(s, sizeof(s), "Failed %d check%s", sea_checks_failed,
-				sea_checks_failed == 1 ? "" : "s");
+		snprintf(s, sizeof(s), "%d CHECK%s IN %d TEST%s FAILED",
+				 sea_checks_failed, sea_checks_failed == 1 ? "" : "S",
+				 sea_tests_failed, sea_tests_failed == 1 ? "" : "S");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	else
@@ -538,16 +548,19 @@ int run_tests(stic_void_void tests)
 		snprintf(s, sizeof(s), "ALL TESTS PASSED");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
-	sprintf(s,"%d test%s run", sea_tests_run, sea_tests_run == 1 ? "" : "s");
+	sprintf(s,"%d check%s in %d test%s",
+			sea_checks_passed + sea_checks_failed,
+			sea_checks_passed + sea_checks_failed == 1 ? "" : "s",
+			sea_tests_run, sea_tests_run == 1 ? "" : "s");
 	stic_header_printer(s, stic_screen_width, ' ');
 
 	if (end - start == 0)
 	{
-		sprintf(s,"in < 1 ms");
+		sprintf(s,"run in < 1 ms");
 	}
 	else
 	{
-		sprintf(s,"in %lu ms",end - start);
+		sprintf(s,"run in %lu ms",end - start);
 	}
 
 	stic_header_printer(s, stic_screen_width, ' ');
