@@ -50,7 +50,7 @@ int stic_is_string_equal_i(const char* s1, const char* s2)
 #endif
 
 #ifdef STIC_INTERNAL_TESTS
-static int sea_test_last_passed = 0;
+static int stic_test_last_passed = 0;
 #endif
 
 typedef enum
@@ -69,9 +69,11 @@ typedef struct
 } stic_testrunner_t;
 
 static int stic_screen_width = 70;
-static int sea_tests_run = 0;
-static int sea_tests_passed = 0;
-static int sea_tests_failed = 0;
+static int stic_tests_run = 0;
+static int stic_tests_skipped = 0;
+static int stic_tests_failed = 0;
+static int stic_checks_passed = 0;
+static int stic_checks_failed = 0;
 static int stic_display_only = 0;
 static int stic_verbose = 0;
 static int stic_random_failures = 0;
@@ -124,6 +126,11 @@ void stic_suite_setup( void )
 	if(stic_suite_setup_func != 0) stic_suite_setup_func();
 }
 
+void stic_skip_test(const char fixture[], const char test[])
+{
+	stic_tests_skipped++;
+}
+
 int stic_positive_predicate( void )
 {
     return 1;
@@ -172,19 +179,20 @@ static const char * test_file_name(const char path[])
 }
 
 static int stic_fixture_tests_run;
-static int stic_fixture_tests_failed;
-static int stic_fixture_tests_passed;
+static int stic_fixture_checks_failed;
+static int stic_fixture_checks_passed;
 
 static int test_had_output(void)
 {
-	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
-	const int npassed = sea_tests_passed - stic_fixture_tests_passed;
+	const int nfailed = stic_checks_failed - stic_fixture_checks_failed;
+	const int npassed = stic_checks_passed - stic_fixture_checks_passed;
 	return (nfailed != 0 || (npassed != 0 && stic_verbose));
 }
 
 void stic_simple_test_result_log(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
 	static stic_void_void last_test;
+	static stic_void_void last_failed_test;
 
 	const char *test_name = (stic_current_test == last_test) ? "" : stic_current_test_name;
 
@@ -221,7 +229,14 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			       "       %s\n",
 			       file, line, function, reason );
 		}
-		sea_tests_failed++;
+		stic_checks_failed++;
+
+		if (last_failed_test != stic_current_test)
+		{
+			++stic_tests_failed;
+		}
+		last_failed_test = stic_current_test;
+
 		last_test = stic_current_test;
 	}
 	else
@@ -244,7 +259,7 @@ void stic_simple_test_result_log(int passed, char* reason, const char* function,
 			}
 			last_test = stic_current_test;
 		}
-		sea_tests_passed++;
+		stic_checks_passed++;
 	}
 }
 
@@ -410,16 +425,16 @@ void stic_assert_string_doesnt_contain(const char* expected, const char* actual,
 
 void stic_run_test(const char fixture[], const char test[])
 {
-	sea_tests_run++;
+	stic_tests_run++;
 }
 
 void stic_test_fixture_start(const char filepath[])
 {
 	stic_current_fixture_path = filepath;
 	stic_current_fixture = test_file_name(filepath);
-	stic_fixture_tests_failed = sea_tests_failed;
-	stic_fixture_tests_passed = sea_tests_passed;
-	stic_fixture_tests_run = sea_tests_run;
+	stic_fixture_checks_failed = stic_checks_failed;
+	stic_fixture_checks_passed = stic_checks_passed;
+	stic_fixture_tests_run = stic_tests_run;
 	stic_fixture_teardown = 0;
 	stic_fixture_setup = 0;
 
@@ -432,8 +447,8 @@ void stic_test_fixture_start(const char filepath[])
 void stic_test_fixture_end()
 {
 	char s[STIC_PRINT_BUFFER_SIZE];
-	const int nrun = sea_tests_run - stic_fixture_tests_run;
-	const int nfailed = sea_tests_failed - stic_fixture_tests_failed;
+	const int nrun = stic_tests_run - stic_fixture_tests_run;
+	const int nfailed = stic_checks_failed - stic_fixture_checks_failed;
 
 	if (stic_silent)
 	{
@@ -511,52 +526,58 @@ int run_tests(stic_void_void tests)
 	unsigned long end;
 	unsigned long start = GetTickCount();
 	char version[40];
-	char s[40];
+	char s[100];
+	char time[40];
 	tests();
 	end = GetTickCount();
 
+	if(stic_suite_name == NULL)
+	{
+		stic_suite_name = "";
+	}
+
 	if(stic_is_display_only() || stic_machine_readable) return 1;
-	sprintf(version, "STIC v%s", STIC_VERSION);
-	printf("\n\n");
+	sprintf(version, "stic v%s%s%s", STIC_VERSION,
+			(stic_suite_name[0] == '\0' ? "" : " :: "), stic_suite_name);
+	printf("\n");
 	stic_header_printer(version, stic_screen_width, '=');
 	printf("\n");
-	if (sea_tests_failed > 0) {
-		char s[100];
-		snprintf(s, sizeof(s), "Failed %d check%s", sea_tests_failed,
-				sea_tests_failed == 1 ? "" : "s");
+	if (stic_checks_failed > 0) {
+		snprintf(s, sizeof(s), "%d CHECK%s IN %d TEST%s FAILED",
+				 stic_checks_failed, stic_checks_failed == 1 ? "" : "S",
+				 stic_tests_failed, stic_tests_failed == 1 ? "" : "S");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
 	else
 	{
-		extern const char *stic_suite_name;
-		char s[100];
-
-		if(stic_suite_name == NULL || stic_suite_name[0] == '\0')
-		{
-			stic_suite_name = "";
-		}
-
-		snprintf(s, sizeof(s), "ALL%s%s TESTS PASSED",
-				 (stic_suite_name[0] != '\0') ? " " : "", stic_suite_name);
+		snprintf(s, sizeof(s), "ALL TESTS PASSED");
 		stic_header_printer(s, stic_screen_width, ' ');
 	}
-	sprintf(s,"%d test%s run", sea_tests_run, sea_tests_run == 1 ? "" : "s");
+
+	memset(s, '-', strlen(s));
 	stic_header_printer(s, stic_screen_width, ' ');
 
 	if (end - start == 0)
 	{
-		sprintf(s,"in < 1 ms");
+		sprintf(time,"< 1 ms");
 	}
 	else
 	{
-		sprintf(s,"in %lu ms",end - start);
+		sprintf(time,"%lu ms",end - start);
 	}
 
+	sprintf(s,"%d check%s :: %d run test%s :: %d skipped test%s :: %s",
+			stic_checks_passed + stic_checks_failed,
+			stic_checks_passed + stic_checks_failed == 1 ? "" : "s",
+			stic_tests_run, stic_tests_run == 1 ? "" : "s",
+			stic_tests_skipped, stic_tests_skipped == 1 ? "" : "s",
+			time);
 	stic_header_printer(s, stic_screen_width, ' ');
+
 	printf("\n");
 	stic_header_printer("", stic_screen_width, '=');
 
-	return sea_tests_failed == 0;
+	return stic_checks_failed == 0;
 }
 
 void stic_show_help( void )
@@ -662,17 +683,17 @@ int stic_testrunner(int argc, char** argv, stic_void_void tests, stic_void_void 
 
 void stic_simple_test_result_nolog(int passed, char* reason, const char* function, const char file[], unsigned int line)
 {
-	sea_test_last_passed = passed;
+	stic_test_last_passed = passed;
 }
 
 void stic_assert_last_passed()
 {
-	assert_int_equal(1, sea_test_last_passed);
+	assert_int_equal(1, stic_test_last_passed);
 }
 
 void stic_assert_last_failed()
 {
-	assert_int_equal(0, sea_test_last_passed);
+	assert_int_equal(0, stic_test_last_passed);
 }
 
 void stic_disable_logging()

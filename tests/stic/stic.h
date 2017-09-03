@@ -46,6 +46,7 @@ void stic_assert_string_doesnt_contain(const char* expected, const char* actual,
 int  stic_should_run(const char fixture[], const char test[]);
 void stic_before_run( char* fixture, char* test);
 void stic_run_test(const char fixture[], const char test[]);
+void stic_skip_test(const char fixture[], const char test[]);
 void stic_setup( void );
 void stic_teardown( void );
 void stic_suite_teardown( void );
@@ -321,7 +322,11 @@ static void stic_fixture(void)
     {
         struct stic_test_data *td = *test_data[i];
         if(td == NULL) continue;
-        if(td->p != NULL && !td->p()) continue;
+        if(td->p != NULL && !td->p())
+        {
+            stic_skip_test(fixture_name, td->n);
+            continue;
+        }
         if(!stic_should_run(fixture_name, td->n)) continue;
 
         stic_current_test_name = td->n;
