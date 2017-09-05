@@ -1900,6 +1900,16 @@ ui_view_unsorted(const view_t *view)
 }
 
 void
+ui_shutdown(void)
+{
+	if(curr_stats.load_stage > 0 && !isendwin())
+	{
+		def_prog_mode();
+		endwin();
+	}
+}
+
+void
 ui_view_schedule_redraw(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);

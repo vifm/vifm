@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 02, 2017" "vifm 0.9"
+.TH VIFM 1 "September 05, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4816,6 +4816,8 @@ layoutis({type})    Integer       Checks whether layout is of type {type}.
 paneisat({loc})     Integer       Checks whether current pane is at {loc}.
 .br
 system({command})   String        Executes shell command and returns its output.
+.br
+term({command})     String        Like system(), but for interactive commands.
 
 .BI chooseopt({opt})
 
@@ -4940,11 +4942,28 @@ Runs the command in shell and returns its output (joined standard output and
 standard error streams).  All trailing newline characters are stripped to
 allow easy appending to command output.  Ctrl-C should interrupt the command.
 
+Use this function to consume output of external commands that don't require
+user interaction and term() for interactive commands that make use of terminal
+and are capable of handling stream redirection.
+
 Usage example:
 
 .EX
   " command to enter .git/ directory of git-repository (when ran inside one)
   command! cdgit :execute 'cd' system('git rev-parse \-\-git-dir')
+.EE
+
+.BI term({command})
+
+Same as system() function, but user interface is shutdown during the execution
+of the command, which makes sure that external interactive applications won't
+affect the way terminal is used by vifm.
+
+Usage example:
+
+.EX
+  " command to change directory by picking it via fzf
+  command! fzfcd :execute 'cd' "'".term('find \-type d | fzf 2> /dev/tty')."'"
 .EE
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs

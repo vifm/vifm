@@ -668,6 +668,10 @@ void ui_view_wipe(view_t *view);
  * otherwise zero is returned. */
 int ui_view_unsorted(const view_t *view);
 
+/* Shuts down UI making it possible to use terminal (either after vifm is closed
+ * or when terminal might be used by another application that vifm runs). */
+void ui_shutdown(void);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

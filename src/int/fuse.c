@@ -19,7 +19,7 @@
 
 #include "fuse.h"
 
-#include <curses.h> /* werase() def_prog_mode() */
+#include <curses.h> /* werase() */
 
 #include <sys/stat.h> /* S_IRWXU */
 #include <unistd.h> /* rmdir() unlink() */
@@ -219,8 +219,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 
 	if(foreground)
 	{
-		def_prog_mode();
-		endwin();
+		ui_shutdown();
 	}
 
 	generate_tmp_file_name("vifm.errors", errors_file, sizeof(errors_file));

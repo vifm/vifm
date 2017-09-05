@@ -97,6 +97,11 @@ TEST(system_catches_stdout_and_err)
 #endif
 }
 
+TEST(term_catches_stdout)
+{
+	ASSERT_OK("term('echo a')", "a");
+}
+
 TEST(layoutis_is_correct_for_single_pane)
 {
 	curr_stats.number_of_windows = 1;

@@ -182,8 +182,7 @@ event_loop(const int *quit)
 
 			if(c == WC_C_z)
 			{
-				def_prog_mode();
-				endwin();
+				ui_shutdown();
 				stop_process();
 				continue;
 			}

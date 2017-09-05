@@ -19,7 +19,7 @@
 
 #include "running.h"
 
-#include <curses.h> /* FALSE curs_set() endwin() */
+#include <curses.h> /* FALSE curs_set() */
 
 #include <sys/stat.h> /* stat */
 #ifndef _WIN32
@@ -827,7 +827,7 @@ shellout(const char command[], ShellPause pause, int use_term_multiplexer)
 
 	if(curr_stats.load_stage != 0)
 	{
-		endwin();
+		ui_shutdown();
 	}
 	ec = vifm_system(cmd);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
@@ -1369,7 +1369,7 @@ output_to_custom_flist(view_t *view, const char cmd[], int very,
 
 	if(interactive && curr_stats.load_stage != 0)
 	{
-		endwin();
+		ui_shutdown();
 	}
 
 	setup_shellout_env();

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 02
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 05
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3993,6 +3993,7 @@ has({property})     Integer       Checks whether instance has {property}.
 layoutis({type})    Integer       Checks whether layout is of type {type}.
 paneisat({loc})     Integer       Checks whether current pane is at {loc}.
 system({command})   String        Executes shell command and returns its output.
+term({command})     String        Like system(), but for interactive commands.
 
 
 chooseopt({opt})                               *vifm-chooseopt()*
@@ -4111,9 +4112,23 @@ Runs the command in shell and returns its output (joined standard output and
 standard error streams).  All trailing newline characters are stripped to
 allow easy appending to command output.  CTRL-C should interrupt the command.
 
+Use this function to consume output of external commands that don't require
+user interaction and term() for interactive commands that can make use of
+terminal and are capable of handling stream redirection.
+
 Usage example: >
   " command to enter .git/ directory of git-repository (when ran inside one)
   command! cdgit :execute 'cd' system('git rev-parse --git-dir')
+
+term({command})                                *vifm-term()*
+
+Same as system() function, but user interface is shutdown during the execution
+of the command, which makes sure that external interactive applications won't
+affect the way terminal is used by vifm.
+
+Usage example: >
+  " command to change directory by picking it via fzf
+  command! fzfcd :execute 'cd' "'".term('find -type d | fzf 2> /dev/tty')."'"
 
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
