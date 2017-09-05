@@ -381,6 +381,9 @@ set millerview nomillerview invmillerview
 set milleroptions
 set lsoptions
 
+" "term" should be highlighted as a function()
+echo term('cmd')
+
 " TODO
 
 " ranges in front of commands

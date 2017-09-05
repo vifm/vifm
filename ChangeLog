@@ -25,6 +25,10 @@
 	Added completion of filename-specific highlight groups for :highlight
 	command.
 
+	Added term() builtin function, which differs from system() only by its
+	ability to run interactive applications without confusing vifm's
+	interactions with the terminal.  Thanks to Dmitry Frank (a.k.a. dimonomid).
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

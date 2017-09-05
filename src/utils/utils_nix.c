@@ -259,10 +259,10 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 		_Exit(EXIT_FAILURE);
 	}
 
-	if(dup2(nullfd, STDIN_FILENO) == -1)
-	{
-		_Exit(EXIT_FAILURE);
-	}
+	/* if(dup2(nullfd, STDIN_FILENO) == -1) */
+	/* { */
+	/* 	_Exit(EXIT_FAILURE); */
+	/* } */
 	if(err_only && dup2(nullfd, STDOUT_FILENO) == -1)
 	{
 		_Exit(EXIT_FAILURE);
