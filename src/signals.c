@@ -34,6 +34,7 @@
 #include "int/fuse.h"
 #include "int/term_title.h"
 #include "ui/cancellation.h"
+#include "ui/ui.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 
@@ -158,7 +159,7 @@ shutdown_nicely(int sig, const char descr[])
 {
   LOG_FUNC_ENTER;
 
-	endwin();
+	ui_shutdown();
 	term_title_update(NULL);
 	fuse_unmount_all();
 	write_info_file();

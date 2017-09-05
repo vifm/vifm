@@ -656,7 +656,7 @@ vifm_try_leave(int write_info, int cquit, int force)
 	erase();
 	refresh();
 #endif
-	endwin();
+	ui_shutdown();
 
 	vifm_leave(EXIT_SUCCESS, cquit);
 }
@@ -668,7 +668,7 @@ vifm_choose_files(const view_t *view, int nfiles, char *files[])
 
 	/* As curses can do something with terminal on shutting down, disable it
 	 * before writing anything to the screen. */
-	endwin();
+	ui_shutdown();
 
 	exit_code = EXIT_SUCCESS;
 	if(vim_write_file_list(view, nfiles, files) != 0)
@@ -705,7 +705,7 @@ vifm_leave(int exit_code, int cquit)
 void _gnuc_noreturn
 vifm_finish(const char message[])
 {
-	endwin();
+	ui_shutdown();
 
 	/* Update vifminfo only if we were able to startup, otherwise we can end up
 	 * writing from some intermediate half-initialized state.  One particular
