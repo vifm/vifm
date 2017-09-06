@@ -227,7 +227,7 @@ name_filters_remove(view_t *view)
 	name_filters_drop(view);
 	view->invert = cfg.filter_inverted_by_default ? 1 : 0;
 
-	ui_view_schedule_full_reload(view);
+	ui_view_schedule_reload(view);
 }
 
 int

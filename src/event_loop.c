@@ -453,14 +453,10 @@ process_scheduled_updates_of_view(view_t *view)
 				ui_ruler_update(view, 1);
 			}
 			return 1;
-		case UUE_FULL_RELOAD:
-			load_saving_pos(view, 0);
-			return 1;
-
-		default:
-			assert(0 && "Unexpected type of scheduled UI event.");
-			return 0;
 	}
+
+	assert(0 && "Unexpected type of scheduled UI event.");
+	return 0;
 }
 
 /* Updates hardware cursor to be on currently active area of the interface,

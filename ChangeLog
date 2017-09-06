@@ -92,6 +92,8 @@
 	Fixed displaying of wild menu popup when statusbar is more than single
 	line in height.
 
+	Fixed weird view scrolling after zO (hard to notice) and Ctrl-A/X.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

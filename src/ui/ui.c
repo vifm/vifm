@@ -1925,14 +1925,6 @@ ui_view_schedule_reload(view_t *view)
 	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
-void
-ui_view_schedule_full_reload(view_t *view)
-{
-	pthread_mutex_lock(view->timestamps_mutex);
-	view->postponed_full_reload = get_updated_time(view->postponed_full_reload);
-	pthread_mutex_unlock(view->timestamps_mutex);
-}
-
 /* Gets updated timestamp ensuring that it differs from the previous value.
  * Returns the timestamp. */
 static uint64_t
@@ -1959,11 +1951,7 @@ ui_view_query_scheduled_event(view_t *view)
 
 	pthread_mutex_lock(view->timestamps_mutex);
 
-	if(view->postponed_full_reload != view->last_reload)
-	{
-		event = UUE_FULL_RELOAD;
-	}
-	else if(view->postponed_reload != view->last_reload)
+	if(view->postponed_reload != view->last_reload)
 	{
 		event = UUE_RELOAD;
 	}
@@ -1978,7 +1966,6 @@ ui_view_query_scheduled_event(view_t *view)
 
 	view->last_redraw = view->postponed_redraw;
 	view->last_reload = view->postponed_reload;
-	view->postponed_full_reload = view->postponed_reload;
 
 	pthread_mutex_unlock(view->timestamps_mutex);
 
