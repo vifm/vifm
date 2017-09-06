@@ -734,10 +734,23 @@ static void
 scroll_view(int offset)
 {
 	offset = ROUND_DOWN(offset, curr_view->run_size);
+
 	curr_view->list_pos += offset;
+	if(curr_view->list_pos < 0)
+	{
+		curr_view->list_pos += curr_view->column_count*
+			DIV_ROUND_UP(-curr_view->list_pos, curr_view->column_count);
+	}
+	else if(curr_view->list_pos >= curr_view->list_rows)
+	{
+		curr_view->list_pos -= curr_view->column_count*
+			DIV_ROUND_UP(curr_view->list_pos - (curr_view->list_rows - 1),
+					curr_view->column_count);
+	}
+
 	correct_list_pos(curr_view, offset);
 	scroll_by_files(curr_view, offset);
-	redraw_current_view();
+	ui_view_schedule_redraw(curr_view);
 }
 
 /* Go to bottom-right window. */

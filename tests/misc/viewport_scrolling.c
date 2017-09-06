@@ -181,5 +181,56 @@ TEST(scrolling_in_tls_visual)
 	leave_visual_mode(0, 1, 0);
 }
 
+/* 0 row----file0----file1-----
+ * 1 row  | file2  | file3  |
+ * 2 row  | file4  | file5  |
+ * 3 row  | file6  | file7  |
+ * 4 row----file8-------------
+ */
+
+TEST(scrolling_beyond_edges_normal)
+{
+	view->window_rows = 5;
+	setup_grid(view, 2, 9, 1);
+
+	/* Beyond top. */
+	view->top_line = 0;
+	view->list_pos = 3;
+	(void)vle_keys_exec_timed_out(WK_C_u);
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(1, view->list_pos);
+
+	/* Beyond bottom. */
+	view->top_line = 0;
+	view->list_pos = 5;
+	(void)vle_keys_exec_timed_out(WK_C_d);
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(7, view->list_pos);
+}
+
+TEST(scrolling_beyond_edges_visual)
+{
+	view->window_rows = 5;
+	setup_grid(view, 2, 9, 1);
+
+	enter_visual_mode(VS_NORMAL);
+
+	/* Beyond top. */
+	view->top_line = 0;
+	view->list_pos = 3;
+	(void)vle_keys_exec_timed_out(WK_C_u);
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(1, view->list_pos);
+
+	/* Beyond bottom. */
+	view->top_line = 0;
+	view->list_pos = 5;
+	(void)vle_keys_exec_timed_out(WK_C_d);
+	assert_int_equal(0, view->top_line);
+	assert_int_equal(7, view->list_pos);
+
+	leave_visual_mode(0, 1, 0);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

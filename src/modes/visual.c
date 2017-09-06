@@ -411,8 +411,12 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 				view->column_count);
 		int new_pos = get_corrected_list_pos_down(view, offset);
 		new_pos = MAX(new_pos, view->list_pos + offset);
-		new_pos = MIN(new_pos, view->list_rows);
-		view->top_line += new_pos - view->list_pos;
+		if(new_pos >= view->list_rows)
+		{
+			new_pos -= view->column_count*
+				DIV_ROUND_UP(new_pos - (view->list_rows - 1), view->column_count);
+		}
+		scroll_by_files(view, new_pos - view->list_pos);
 		goto_pos(new_pos);
 	}
 }
@@ -489,8 +493,11 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 				view->column_count);
 		int new_pos = get_corrected_list_pos_up(view, offset);
 		new_pos = MIN(new_pos, view->list_pos - offset);
-		new_pos = MAX(new_pos, 0);
-		view->top_line += new_pos - view->list_pos;
+		if(new_pos < 0)
+		{
+			new_pos += view->column_count*DIV_ROUND_UP(-new_pos, view->column_count);
+		}
+		scroll_by_files(view, new_pos - view->list_pos);
 		goto_pos(new_pos);
 	}
 }
