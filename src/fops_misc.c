@@ -992,7 +992,7 @@ go_to_first_file(view_t *view, char *names[], int count)
 {
 	int i;
 
-	load_saving_pos(view, 1);
+	load_saving_pos(view);
 
 	for(i = 0; i < view->list_rows; ++i)
 	{

@@ -733,7 +733,7 @@ static void
 reload_list(view_t *view)
 {
 	if(curr_stats.load_stage >= 3)
-		load_saving_pos(view, 1);
+		load_saving_pos(view);
 	else
 		load_dir_list(view,
 				!(cfg.vifm_info&VIFMINFO_SAVEDIRS) || view->list_pos != 0);
@@ -1522,7 +1522,7 @@ void
 ui_view_reset_selection_and_reload(view_t *view)
 {
 	flist_sel_stash(view);
-	load_saving_pos(view, 1);
+	load_saving_pos(view);
 }
 
 void
@@ -1540,7 +1540,7 @@ ui_views_reload_visible_filelists(void)
 {
 	if(curr_stats.view)
 	{
-		load_saving_pos(curr_view, 1);
+		load_saving_pos(curr_view);
 	}
 	else
 	{
@@ -1551,8 +1551,8 @@ ui_views_reload_visible_filelists(void)
 void
 ui_views_reload_filelists(void)
 {
-	load_saving_pos(curr_view, 1);
-	load_saving_pos(other_view, 1);
+	load_saving_pos(curr_view);
+	load_saving_pos(other_view);
 }
 
 void

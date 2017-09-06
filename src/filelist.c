@@ -2672,9 +2672,9 @@ cd_is_possible(const char *path)
 }
 
 void
-load_saving_pos(view_t *view, int reload)
+load_saving_pos(view_t *view)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	if(curr_stats.load_stage < 2)
 		return;
@@ -2689,7 +2689,7 @@ load_saving_pos(view_t *view, int reload)
 
 	get_current_full_path(view, sizeof(full_path), full_path);
 
-	load_dir_list_internal(view, reload, 1);
+	load_dir_list_internal(view, 1, 1);
 
 	flist_goto_by_path(view, full_path);
 
