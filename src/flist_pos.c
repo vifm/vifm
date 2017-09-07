@@ -38,8 +38,6 @@
 #include "filtering.h"
 #include "types.h"
 
-static void correct_list_pos_down(view_t *view, int pos_delta);
-static void correct_list_pos_up(view_t *view, int pos_delta);
 static void move_cursor_out_of_scope(view_t *view, entry_predicate pred);
 static int get_curr_col(const view_t *view);
 static int get_curr_line(const view_t *view);
@@ -78,25 +76,13 @@ flist_find_entry(const view_t *view, const char file[], const char dir[])
 	return -1;
 }
 
-void
-correct_list_pos(view_t *view, int pos_delta)
-{
-	if(pos_delta > 0)
-	{
-		correct_list_pos_down(view, pos_delta);
-	}
-	else if(pos_delta < 0)
-	{
-		correct_list_pos_up(view, -pos_delta);
-	}
-}
-
 int
 correct_list_pos_on_scroll_down(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
-		correct_list_pos_down(view, lines_count*view->run_size);
+		view->list_pos =
+			get_corrected_list_pos_down(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
@@ -107,24 +93,11 @@ correct_list_pos_on_scroll_up(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
-		correct_list_pos_up(view, lines_count*view->run_size);
+		view->list_pos =
+			get_corrected_list_pos_up(view, lines_count*view->run_size);
 		return 1;
 	}
 	return 0;
-}
-
-/* Tries to move cursor forward by pos_delta positions. */
-static void
-correct_list_pos_down(view_t *view, int pos_delta)
-{
-	view->list_pos = get_corrected_list_pos_down(view, pos_delta);
-}
-
-/* Tries to move cursor backwards by pos_delta positions. */
-static void
-correct_list_pos_up(view_t *view, int pos_delta)
-{
-	view->list_pos = get_corrected_list_pos_up(view, pos_delta);
 }
 
 void
@@ -370,6 +343,40 @@ int
 fpos_get_last_visible_cell(const view_t *view)
 {
 	return view->top_line + view->window_cells - 1;
+}
+
+int
+fpos_half_scroll(view_t *view, int down)
+{
+	int new_pos;
+
+	int offset = MAX(view->window_cells/2, view->run_size);
+	offset = ROUND_DOWN(offset, curr_view->run_size);
+
+	if(down)
+	{
+		new_pos = get_corrected_list_pos_down(view, offset);
+		new_pos = MAX(new_pos, view->list_pos + offset);
+
+		if(new_pos >= view->list_rows)
+		{
+			new_pos -= view->column_count*
+				DIV_ROUND_UP(new_pos - (view->list_rows - 1), view->column_count);
+		}
+	}
+	else
+	{
+		new_pos = get_corrected_list_pos_up(view, offset);
+		new_pos = MIN(new_pos, view->list_pos - offset);
+
+		if(new_pos < 0)
+		{
+			new_pos += view->column_count*DIV_ROUND_UP(-new_pos, view->column_count);
+		}
+	}
+
+	scroll_by_files(view, new_pos - view->list_pos);
+	return new_pos;
 }
 
 /* Retrieves position of a file at the top of visible part of current column.
