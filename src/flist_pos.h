@@ -43,9 +43,6 @@ int find_file_pos_in_list(const struct view_t *const view, const char file[]);
 int flist_find_entry(const struct view_t *view, const char file[],
 		const char dir[]);
 
-/* Tries to move cursor by pos_delta lines. */
-void correct_list_pos(struct view_t *view, int pos_delta);
-
 /* Tries to move cursor down by given number of lines.  Returns non-zero if
  * something was updated. */
 int correct_list_pos_on_scroll_down(struct view_t *view, int lines_count);
@@ -143,6 +140,11 @@ int fpos_are_all_files_visible(const struct view_t *view);
  * greater than or equal to the number of files in the view and thus should be
  * treated correctly.  Returns the index. */
 int fpos_get_last_visible_cell(const struct view_t *view);
+
+/* Scrolls view by a half-page.  Updates top line, but not list position to make
+ * it possible to process files in the range from old to new position.  Returns
+ * new list position. */
+int fpos_half_scroll(struct view_t *view, int down);
 
 /* Finds position of the next/previous group defined by primary sorting key.
  * Returns determined position (might point to the last/first entry in corner

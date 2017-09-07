@@ -96,7 +96,6 @@ static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
-static void scroll_view(int offset);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
@@ -528,7 +527,8 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_down(curr_view))
 	{
-		scroll_view(MAX(curr_view->window_cells/2, curr_view->run_size));
+		curr_view->list_pos = fpos_half_scroll(curr_view, 1);
+		ui_view_schedule_redraw(curr_view);
 	}
 }
 
@@ -725,19 +725,9 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(curr_view))
 	{
-		scroll_view(-MAX(curr_view->window_cells/2, curr_view->run_size));
+		curr_view->list_pos = fpos_half_scroll(curr_view, 0);
+		ui_view_schedule_redraw(curr_view);
 	}
-}
-
-/* Scrolls view by specified number of files. */
-static void
-scroll_view(int offset)
-{
-	offset = ROUND_DOWN(offset, curr_view->run_size);
-	curr_view->list_pos += offset;
-	correct_list_pos(curr_view, offset);
-	scroll_by_files(curr_view, offset);
-	redraw_current_view();
 }
 
 /* Go to bottom-right window. */

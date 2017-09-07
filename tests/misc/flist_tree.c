@@ -887,7 +887,7 @@ static void
 load_view(view_t *view)
 {
 	curr_stats.load_stage = 2;
-	load_saving_pos(view, 1);
+	load_saving_pos(view);
 	curr_stats.load_stage = 0;
 }
 

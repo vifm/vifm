@@ -407,13 +407,7 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_down(view))
 	{
-		const int offset = ROUND_DOWN(MAX(view->window_cells/2, view->run_size),
-				view->column_count);
-		int new_pos = get_corrected_list_pos_down(view, offset);
-		new_pos = MAX(new_pos, view->list_pos + offset);
-		new_pos = MIN(new_pos, view->list_rows);
-		view->top_line += new_pos - view->list_pos;
-		goto_pos(new_pos);
+		goto_pos(fpos_half_scroll(view, 1));
 	}
 }
 
@@ -485,13 +479,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(view))
 	{
-		const int offset = ROUND_DOWN(MAX(view->window_cells/2, view->run_size),
-				view->column_count);
-		int new_pos = get_corrected_list_pos_up(view, offset);
-		new_pos = MIN(new_pos, view->list_pos - offset);
-		new_pos = MAX(new_pos, 0);
-		view->top_line += new_pos - view->list_pos;
-		goto_pos(new_pos);
+		goto_pos(fpos_half_scroll(view, 0));
 	}
 }
 

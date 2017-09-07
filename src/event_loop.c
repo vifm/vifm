@@ -447,20 +447,16 @@ process_scheduled_updates_of_view(view_t *view)
 			redraw_view_imm(view);
 			return 1;
 		case UUE_RELOAD:
-			load_saving_pos(view, 1);
+			load_saving_pos(view);
 			if(view == curr_view && !is_status_bar_multiline())
 			{
 				ui_ruler_update(view, 1);
 			}
 			return 1;
-		case UUE_FULL_RELOAD:
-			load_saving_pos(view, 0);
-			return 1;
-
-		default:
-			assert(0 && "Unexpected type of scheduled UI event.");
-			return 0;
 	}
+
+	assert(0 && "Unexpected type of scheduled UI event.");
+	return 0;
 }
 
 /* Updates hardware cursor to be on currently active area of the interface,

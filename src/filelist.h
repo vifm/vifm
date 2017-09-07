@@ -155,7 +155,8 @@ void load_dir_list(view_t *view, int reload);
  * along with its relative position in the list.  msg parameter controls whether
  * to show "Sorting..." statusbar message. */
 void resort_dir_list(int msg, view_t *view);
-void load_saving_pos(view_t *view, int reload);
+/* Reloads file list while preserving cursor position if possible. */
+void load_saving_pos(view_t *view);
 char * get_current_file_name(view_t *view);
 /* Gets current entry of the view.  Returns the entry or NULL if view doesn't
  * contain any. */

@@ -146,7 +146,7 @@ TEST(sync_syncs_trees)
 	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
 	assert_true(flist_custom_active(other_view));
 	curr_stats.load_stage = 2;
-	load_saving_pos(other_view, 1);
+	load_saving_pos(other_view);
 	curr_stats.load_stage = 0;
 
 	assert_int_equal(curr_view->list_rows, other_view->list_rows);
@@ -247,7 +247,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 
 	assert_true(flist_custom_active(other_view));
 	curr_stats.load_stage = 2;
-	load_saving_pos(other_view, 1);
+	load_saving_pos(other_view);
 	curr_stats.load_stage = 0;
 
 	assert_int_equal(4, other_view->list_rows);
