@@ -82,6 +82,7 @@ const char *tags[] = {
 	"vifm-'number'",
 	"vifm-'numberwidth'",
 	"vifm-'nuw'",
+	"vifm-'previewprg'",
 	"vifm-'relativenumber'",
 	"vifm-'rnu'",
 	"vifm-'ruf'",

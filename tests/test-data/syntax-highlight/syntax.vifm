@@ -374,17 +374,22 @@ hi AuxWin
 " "*millerview" should be highlighted as 'option'
 " "milleroptions" should be highlighted as 'option'
 " "lsoptions" should be highlighted as 'option'
+" "previewprg" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
 set millerview nomillerview invmillerview
 set milleroptions
 set lsoptions
+set previewprg
 
 " "term" should be highlighted as a function()
 echo term('cmd')
 
 " TODO
+
+" "vifm" should NOT be highlighted as a command
+autocmd DirEnter ~/repos/vifm/**/* setl previewprg='git log --color -- %c 2>&1'
 
 " ranges in front of commands
 33delete

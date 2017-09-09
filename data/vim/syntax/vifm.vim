@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: September 05, 2017
+" Last Change: September 09, 2017
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -125,11 +125,11 @@ syntax keyword vifmOption contained aproposprg autochpos caseoptions cdpath cd
 		\ followlinks fusehome gdefault grepprg history hi hlsearch hls iec
 		\ ignorecase ic iooptions incsearch is laststatus lines locateprg ls
 		\ lsoptions lsview milleroptions millerview mintimeoutlen number nu
-		\ numberwidth nuw relativenumber rnu rulerformat ruf runexec scrollbind scb
-		\ scrolloff so sort sortgroups sortorder sortnumbers shell sh shortmess shm
-		\ sizefmt slowfs smartcase scs statusline stl suggestoptions syscalls
-		\ tabstop timefmt timeoutlen title tm trash trashdir ts tuioptions to
-		\ undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu
+		\ numberwidth nuw previewprg relativenumber rnu rulerformat ruf runexec
+		\ scrollbind scb scrolloff so sort sortgroups sortorder sortnumbers shell sh
+		\ shortmess shm sizefmt slowfs smartcase scs statusline stl suggestoptions
+		\ syscalls tabstop timefmt timeoutlen title tm trash trashdir ts tuioptions
+		\ to undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu
 		\ wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 05
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 09
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3186,6 +3186,19 @@ scope: local
 
 Minimal number of characters for line number field.
 
+                                               *vifm-'previewprg'*
+previewprg
+type: string
+default: ""
+scope: local
+
+External command to be used instead of preview programs configured via
+|vifm-:fileviewer| command.
+
+Example: >
+    " always show git log in preview of files inside some repository
+    au DirEnter '~/git-repo/**/*' setl previewprg='git log --color -- %c 2>&1'
+<
                                                *vifm-'relativenumber'*
                                                *vifm-'rnu'*
 relativenumber rnu

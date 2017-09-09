@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 05, 2017" "vifm 0.9"
+.TH VIFM 1 "September 09, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3826,6 +3826,24 @@ default: 4
 scope: local
 .br
 Minimal number of characters for line number field.
+.TP
+.BI "'previewprg'"
+type: string
+.br
+default: ""
+.br
+scope: local
+.br
+
+External command to be used instead of preview programs configured via
+:fileviewer command.
+
+Example:
+
+.EX
+  " always show git log in preview of files inside some repository
+  au DirEnter '~/git\-repo/**/*' setl previewprg='git log \-\-color \-\- %c 2>&1'
+.EE
 .TP
 .BI "'relativenumber' 'rnu'"
 type: boolean
