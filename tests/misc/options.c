@@ -690,5 +690,17 @@ TEST(lsoptions_normalizes_input)
 	assert_string_equal("  lsoptions=transposed", vle_tb_get_data(vle_err));
 }
 
+TEST(previewprg_updates_state_of_view)
+{
+	assert_success(exec_commands("setg previewprg=gcmd", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("setl previewprg=lcmd", &lwin, CIT_COMMAND));
+
+	vle_tb_clear(vle_err);
+	assert_success(set_options("previewprg?", OPT_GLOBAL));
+	assert_success(set_options("previewprg?", OPT_LOCAL));
+	assert_string_equal("  previewprg=gcmd\n  previewprg=lcmd",
+			vle_tb_get_data(vle_err));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -29,6 +29,9 @@
 	ability to run interactive applications without confusing vifm's
 	interactions with the terminal.  Thanks to Dmitry Frank (a.k.a. dimonomid).
 
+	Added 'previewprg' option, which can be used to override :fileviewer
+	commands either temporarily or permanently.  Thanks to svenn71.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

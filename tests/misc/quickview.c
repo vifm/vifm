@@ -53,6 +53,25 @@ TEST(preview_can_match_agains_full_paths)
 	ft_reset(0);
 }
 
+TEST(preview_prg_overrules_fileviewer)
+{
+	char *error;
+	matchers_t *ms;
+
+	ft_init(NULL);
+
+	assert_non_null(ms = matchers_alloc("file", 0, 1, "", &error));
+	assert_null(error);
+
+	ft_set_viewers(ms, "the-viewer");
+
+	assert_string_equal("the-viewer", qv_get_viewer("file"));
+	update_string(&curr_view->preview_prg, "override");
+	assert_string_equal("override", qv_get_viewer("file"));
+
+	ft_reset(0);
+}
+
 TEST(preview_enabled_if_possible)
 {
 	assert_success(qv_ensure_is_shown());

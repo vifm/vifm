@@ -1051,6 +1051,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=]%srelativenumber\n", (rwin.num_type_g & NT_REL) ? "" : "no");
 	fprintf(fp, "=[%sdotfiles\n", lwin.hide_dot_g ? "" : "no");
 	fprintf(fp, "=]%sdotfiles\n", rwin.hide_dot_g ? "" : "no");
+	fprintf(fp, "=[previewprg=%s\n", escape_spaces(lwin.preview_prg_g));
+	fprintf(fp, "=]previewprg=%s\n", escape_spaces(rwin.preview_prg_g));
 
 	fprintf(fp, "%s", "=confirm=");
 	if(cfg.confirm & CONFIRM_DELETE)

@@ -705,12 +705,20 @@ qv_cleanup(view_t *view, const char cmd[])
 const char *
 qv_get_viewer(const char path[])
 {
-	char *const typed_fname = is_dir(path)
-	                        ? format_str("%s/", path)
-	                        : strdup(path);
-	const char *const viewer = ft_get_viewer(typed_fname);
-	free(typed_fname);
-	return viewer;
+	if(is_null_or_empty(curr_view->preview_prg))
+	{
+		char *const typed_fname = is_dir(path)
+		                        ? format_str("%s/", path)
+		                        : strdup(path);
+		const char *const viewer = ft_get_viewer(typed_fname);
+		free(typed_fname);
+		return viewer;
+	}
+	else
+	{
+		/* 'previewprg' option has priority over :fileviewer command. */
+		return curr_view->preview_prg;
+	}
 }
 
 void

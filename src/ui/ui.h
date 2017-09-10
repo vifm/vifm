@@ -392,6 +392,9 @@ struct view_t
 	/* Format string that specifies view columns. */
 	char *view_columns, *view_columns_g;
 
+	/* Preview command to use instead of programs configured via :fileviewer. */
+	char *preview_prg, *preview_prg_g;
+
 	/* ls-like view related fields. */
 	int ls_view, ls_view_g;             /* Non-zero if ls-like view is enabled. */
 	int ls_transposed, ls_transposed_g; /* Non-zero for transposed ls-view. */
