@@ -657,6 +657,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
+	set_count_vars(key_info.count);
 	enter_cmdline_mode(CLS_COMMAND, "", NULL);
 }
 

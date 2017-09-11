@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 09, 2017" "vifm 0.9"
+.TH VIFM 1 "September 11, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4795,8 +4795,20 @@ builtin variable
 .br
 v:var                 builtin variable
 
-Information exposed by vifm for use in scripting.  Only v:servername at the
-moment.
+Information exposed by vifm for use in scripting.
+
+.B "v:count"
+.br
+  count passed to : command, 0 by default.  Can be used in mappings to pass
+  count to a different command.
+.br
+.B "v:count1"
+.br
+  same as v:count, but 1 by default.
+.br
+.B "v:servername"
+.br
+  See below.
 
 function call
 .br

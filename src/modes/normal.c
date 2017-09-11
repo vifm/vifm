@@ -41,6 +41,7 @@
 #include "../compat/reallocarray.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
+#include "../engine/variables.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
 #include "../ui/fileview.h"
@@ -603,6 +604,8 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 	{
 		strcpy(prefix, ".!");
 	}
+
+	set_count_vars(key_info.count);
 	enter_cmdline_mode(CLS_COMMAND, prefix, NULL);
 }
 
@@ -1328,7 +1331,28 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	{
 		snprintf(prefix, ARRAY_LEN(prefix), ".,.+%d", key_info.count - 1);
 	}
+
+	set_count_vars(key_info.count);
 	enter_cmdline_mode(CLS_COMMAND, prefix, NULL);
+}
+
+void
+set_count_vars(int count)
+{
+	/* TODO: move this to a better place someday, nowhere to place right now. */
+
+	var_val_t value;
+	var_t var;
+
+	value.integer = (count == NO_COUNT_GIVEN ? 0 : count);
+	var = var_new(VTYPE_INT, value);
+	setvar("v:count", var);
+	var_free(var);
+
+	value.integer = (count == NO_COUNT_GIVEN ? 1 : count);
+	var = var_new(VTYPE_INT, value);
+	setvar("v:count1", var);
+	var_free(var);
 }
 
 /* Continues navigation to word which starts with specified character in initial
