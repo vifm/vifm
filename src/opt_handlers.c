@@ -2358,7 +2358,7 @@ static void
 fill_lsoptions(optval_t *val, int transposed)
 {
 	static char buf[64];
-	snprintf(buf, sizeof(buf), "%s", transposed ? "transposed" : 0);
+	snprintf(buf, sizeof(buf), "%s", transposed ? "transposed" : "");
 	val->str_val = buf;
 }
 
