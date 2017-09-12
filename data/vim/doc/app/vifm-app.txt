@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 09
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3978,8 +3978,18 @@ builtin variable                               *vifm-expr-variable*
 --------------------
 v:var                 builtin variable
 
-Information exposed by vifm for use in scripting.  Only |vifm-v:servername| at
-the moment.
+Information exposed by vifm for use in scripting.
+
+                                               *vifm-v:count*
+v:count                                        *vifm-count-variable*
+    count passed to : command.  Can be used in mappings to pass count
+    to a different command.
+
+                                               *vifm-v:count1*
+v:count1                                       *vifm-count1-variable*
+    same as v:count, but 1 by default.
+
+See also |vifm-v:servername|.
 
 function call                                  *vifm-expr-function*
 -------------

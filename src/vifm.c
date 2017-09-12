@@ -53,6 +53,7 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/cmdline.h"
 #include "modes/modes.h"
+#include "modes/normal.h"
 #include "modes/view.h"
 #include "ui/cancellation.h"
 #include "ui/color_manager.h"
@@ -289,6 +290,9 @@ vifm_main(int argc, char *argv[])
 	load_view_options(curr_view);
 
 	curr_stats.load_stage = 1;
+
+	/* Make v:count exist during processing configuration. */
+	set_count_vars(0);
 
 	if(!vifm_args.no_configs)
 	{

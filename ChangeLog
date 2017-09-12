@@ -32,6 +32,9 @@
 	Added 'previewprg' option, which can be used to override :fileviewer
 	commands either temporarily or permanently.  Thanks to svenn71.
 
+	Added v:count and v:count1 builtin variables.  They are assigned to count
+	passed to : command.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

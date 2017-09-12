@@ -192,5 +192,4 @@ Code improvements:
   * Show "An error occurred" message on fail to build menus.
   * Consider not using {} initializer.
   * Use timeout command to set time limit for tests on CI.
-  * Pass var by pointer to var_free and cleanup the structure.
   * Logging levels.
