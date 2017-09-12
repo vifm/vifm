@@ -892,7 +892,7 @@ filename_completion_in_dir(const char *path, const char *str,
 	char buf[PATH_MAX + 1];
 	if(is_root_dir(str))
 	{
-		snprintf(buf, sizeof(buf), "%s", str);
+		copy_str(buf, sizeof(buf), str);
 	}
 	else
 	{
@@ -961,11 +961,11 @@ filename_completion(const char str[], CompletionType type,
 	{
 		char buf[PATH_MAX];
 		if(!is_unc_root(dirname))
-			snprintf(buf,
-					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 1, "%s",
+			copy_str(buf,
+					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 1,
 					curr_view->curr_dir);
 		else
-			snprintf(buf, sizeof(buf), "%s", dirname);
+			copy_str(buf, sizeof(buf), dirname);
 
 		complete_with_shared(buf, filename);
 		free(filename);
@@ -976,11 +976,11 @@ filename_completion(const char str[], CompletionType type,
 	{
 		char buf[PATH_MAX];
 		if(is_path_absolute(dirname) && !is_unc_root(curr_view->curr_dir))
-			snprintf(buf,
-					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 2, "%s",
+			copy_str(buf,
+					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 2,
 					curr_view->curr_dir);
 		else
-			snprintf(buf, sizeof(buf), "%s", curr_view->curr_dir);
+			copy_str(buf, sizeof(buf), curr_view->curr_dir);
 		strcat(buf, dirname);
 		chosp(buf);
 		(void)replace_string(&dirname, buf);

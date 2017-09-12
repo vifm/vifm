@@ -924,7 +924,7 @@ is_on_fat_volume(const char *path)
 	if(is_unc_path(path))
 	{
 		int i = 4, j = 0;
-		snprintf(buf, sizeof(buf), "%s", path);
+		copy_str(buf, sizeof(buf), path);
 		while(i > 0 && buf[j] != '\0')
 			if(buf[j++] == '/')
 				i--;

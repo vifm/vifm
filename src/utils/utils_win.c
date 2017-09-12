@@ -355,7 +355,7 @@ is_win_executable(const char name[])
 	char name_buf[NAME_MAX + 1];
 	char ext_buf[16];
 
-	snprintf(name_buf, sizeof(name_buf), "%s", name);
+	copy_str(name_buf, sizeof(name_buf), name);
 	strtoupper(name_buf);
 
 	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);

@@ -806,7 +806,7 @@ static void
 extract_last_path_component(const char path[], char buf[])
 {
 	const char *const last = get_last_path_component(path);
-	snprintf(buf, until_first(last, '/') - last + 1, "%s", last);
+	copy_str(buf, until_first(last, '/') - last + 1, last);
 }
 
 int

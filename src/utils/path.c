@@ -505,7 +505,7 @@ try_replace_tilde(const char path[])
 	}
 	else
 	{
-		snprintf(name, p - (path + 1) + 1, "%s", path + 1);
+		copy_str(name, p - (path + 1) + 1, path + 1);
 		p++;
 	}
 

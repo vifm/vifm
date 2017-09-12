@@ -141,7 +141,7 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));
-	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
+	copy_str(name_buf, MIN(sizeof(name_buf), print_width + 1), filename);
 	friendly_size_notation(fentry_get_size(curr), sizeof(size_buf), size_buf);
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
@@ -152,7 +152,7 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 #ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf), curr->mode);
 #else
-	snprintf(perm_buf, sizeof(perm_buf), "%s", attr_str_long(curr->attrs));
+	copy_str(perm_buf, sizeof(perm_buf), attr_str_long(curr->attrs));
 #endif
 
 	werase(stat_win);

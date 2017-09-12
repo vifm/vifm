@@ -607,7 +607,7 @@ break_in_two(char str[], size_t max)
 	size = MAX(size, max);
 	result = malloc(size*4 + 2);
 
-	snprintf(result, break_point - str + 1, "%s", str);
+	copy_str(result, break_point - str + 1, str);
 
 	if(len > max)
 	{
@@ -615,7 +615,7 @@ break_in_two(char str[], size_t max)
 		break_point = str + utf8_strsnlen(str, MAX(l, 0));
 	}
 
-	snprintf(result, break_point - str + 1, "%s", str);
+	copy_str(result, break_point - str + 1, str);
 	i = break_point - str;
 	while(max > len)
 	{
@@ -659,7 +659,7 @@ extract_part(const char str[], char separator, char part_buf[])
 	if(str[0] != '\0')
 	{
 		end = until_first(str, separator);
-		snprintf(part_buf, end - str + 1, "%s", str);
+		copy_str(part_buf, end - str + 1, str);
 		if(*end != '\0')
 		{
 			end++;

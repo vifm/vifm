@@ -240,7 +240,7 @@ prompt_error_msg(const char title[], const char message[])
 	char portion[1024];
 	do
 	{
-		snprintf(portion, sizeof(portion), "%s", message);
+		copy_str(portion, sizeof(portion), message);
 		message += strlen(portion);
 		if(prompt_error_msg_internal(title, portion, 1))
 		{

@@ -274,8 +274,8 @@ get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 	}
 
 	(void)XSetErrorHandlerWrapper(old_handler);
-	snprintf(buf, buf_len, "%s", text_prop.value);
-	XFreeWrapper((void *)text_prop.value);
+	copy_str(buf, buf_len, (char *)text_prop.value);
+	XFreeWrapper(text_prop.value);
 }
 
 /* callback function for reporting X errors, should return 0 on success */

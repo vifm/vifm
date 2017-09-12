@@ -2736,7 +2736,7 @@ get_attrs(const char *text)
 		const char *const p = until_first(text, ',');
 		char buf[64];
 
-		snprintf(buf, p - text + 1, "%s", text);
+		copy_str(buf, p - text + 1, text);
 		if(strcasecmp(buf, "bold") == 0)
 			result |= A_BOLD;
 		else if(strcasecmp(buf, "underline") == 0)
