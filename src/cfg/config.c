@@ -276,7 +276,7 @@ try_userprofile_envvar_for_home(void)
 	const char *userprofile = env_get("USERPROFILE");
 	if(userprofile == NULL || !is_dir(userprofile))
 		return 0;
-	snprintf(home, sizeof(home), "%s", userprofile);
+	copy_str(home, sizeof(home), userprofile);
 	to_forward_slash(home);
 	env_set(HOME_EV, home);
 	return 1;

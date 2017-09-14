@@ -169,8 +169,6 @@ Questionable things:
 
 Code improvements:
   * Write more tests. (partially done)
-  * Replace calls like `snprintf(foo, sizeof(foo), "%s", line)` with
-    copy_str(). (partially done)
   * Consider mentioning libncursesw5-dev in configuration error for
     Debian-based systems.
   * Reduce number of magic numbers. (partially done)

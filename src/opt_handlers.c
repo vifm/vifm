@@ -1163,7 +1163,7 @@ init_wordchars(optval_t *val)
 
 			if(r == l)
 			{
-				snprintf(range, sizeof(range), "%s", to_endpoint(l, left));
+				copy_str(range, sizeof(range), to_endpoint(l, left));
 			}
 			else
 			{
@@ -2358,7 +2358,7 @@ static void
 fill_lsoptions(optval_t *val, int transposed)
 {
 	static char buf[64];
-	snprintf(buf, sizeof(buf), "%s", transposed ? "transposed" : 0);
+	copy_str(buf, sizeof(buf), transposed ? "transposed" : "");
 	val->str_val = buf;
 }
 

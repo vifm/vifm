@@ -131,7 +131,7 @@ form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 	}
 	else
 	{
-		snprintf(result, sizeof(result), "%s", prog.command);
+		copy_str(result, sizeof(result), prog.command);
 	}
 	return result;
 }

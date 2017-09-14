@@ -112,16 +112,16 @@ process_file(const char *path, const char *file_mime_type,
 
 		if(starts_with(buf, EXEC_KEY))
 		{
-			snprintf(exec, sizeof(exec), "%s", buf + (ARRAY_LEN(EXEC_KEY) - 1));
+			copy_str(exec, sizeof(exec), buf + (ARRAY_LEN(EXEC_KEY) - 1));
 		}
 		else if(starts_with(buf, MIMETYPE_KEY))
 		{
-			snprintf(mime_type, sizeof(mime_type), "%s",
+			copy_str(mime_type, sizeof(mime_type),
 					buf + (ARRAY_LEN(MIMETYPE_KEY) - 1));
 		}
 		else if(starts_with(buf, NAME_KEY))
 		{
-			snprintf(name, sizeof(name), "%s", buf + (ARRAY_LEN(NAME_KEY) - 1));
+			copy_str(name, sizeof(name), buf + (ARRAY_LEN(NAME_KEY) - 1));
 		}
 	}
 

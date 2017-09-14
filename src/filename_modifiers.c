@@ -92,7 +92,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
 	char path_buf[PATH_MAX];
 	static char buf[PATH_MAX];
 
-	snprintf(path_buf, sizeof(path_buf), "%s", path);
+	copy_str(path_buf, sizeof(path_buf), path);
 #ifdef _WIN32
 	to_forward_slash(path_buf);
 #endif
@@ -143,11 +143,11 @@ apply_p_mod(const char *path, const char *parent, char *buf, size_t buf_len)
 	size_t len;
 	if(is_path_absolute(path))
 	{
-		snprintf(buf, buf_len, "%s", path);
+		copy_str(buf, buf_len, path);
 		return 0;
 	}
 
-	snprintf(buf, buf_len, "%s", parent);
+	copy_str(buf, buf_len, parent);
 	chosp(buf);
 	len = strlen(buf);
 	snprintf(buf + len, buf_len - len, "/%s", path);
@@ -161,7 +161,7 @@ apply_tilde_mod(const char *path, char *buf, size_t buf_len)
 	size_t home_len = strlen(cfg.home_dir);
 	if(strnoscmp(path, cfg.home_dir, home_len - 1) != 0)
 	{
-		snprintf(buf, buf_len, "%s", path);
+		copy_str(buf, buf_len, path);
 		return 0;
 	}
 
@@ -192,7 +192,7 @@ apply_h_mod(const char *path, char *buf, size_t buf_len)
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s", path);
+		copy_str(buf, buf_len, path);
 		if(!is_root_dir(path))
 		{
 			buf[p - path + 1] = '\0';
@@ -215,7 +215,7 @@ apply_u_mod(const char *path, char *buf, size_t buf_len)
 		GetComputerNameA(buf + 2, &size);
 		return 0;
 	}
-	snprintf(buf, buf_len, "%s", path);
+	copy_str(buf, buf_len, path);
 	break_at(buf + 2, '/');
 	return 0;
 }
@@ -226,7 +226,7 @@ static int
 apply_t_mod(const char *path, char *buf, size_t buf_len)
 {
 	char *p = strrchr(path, '/');
-	snprintf(buf, buf_len, "%s", (p == NULL) ? path : (p + 1));
+	copy_str(buf, buf_len, (p == NULL) ? path : (p + 1));
 	return 0;
 }
 
@@ -268,14 +268,14 @@ apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
 	const char *t, *p = find_nth_chr(mod, c, 3);
 	if(p == NULL)
 	{
-		snprintf(buf, buf_len, "%s", path);
+		copy_str(buf, buf_len, path);
 		return 0;
 	}
 	t = find_nth_chr(mod, c, 2);
-	snprintf(pattern, t - (mod + 3) + 1, "%s", mod + 3);
-	snprintf(sub, p - (t + 1) + 1, "%s", t + 1);
+	copy_str(pattern, t - (mod + 3) + 1, mod + 3);
+	copy_str(sub, p - (t + 1) + 1, t + 1);
 	global = (mod[0] == 'g');
-	snprintf(buf, buf_len, "%s", fops_name_subst(path, pattern, sub, global));
+	copy_str(buf, buf_len, fops_name_subst(path, pattern, sub, global));
 	return (p + 1) - start - 2;
 }
 
