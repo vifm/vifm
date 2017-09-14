@@ -201,7 +201,7 @@ refresh_window(WINDOW *win, int lazily)
 TSTATIC char *
 expand_status_line_macros(view_t *view, const char format[])
 {
-	return expand_view_macros(view, format, "tTfaAugsEdD-lLSz%[]");
+	return expand_view_macros(view, format, "tTfaAugsEdD-xlLSz%[]");
 }
 
 /* Expands possibly limited set of view macros.  Returns newly allocated string,
@@ -328,6 +328,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				}
 				break;
 			case '-':
+			case 'x':
 				skip = expand_num(buf, sizeof(buf), view->filtered);
 				break;
 			case 'l':

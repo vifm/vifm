@@ -1210,7 +1210,7 @@ get_ruler_width(view_t *view)
 static char *
 expand_ruler_macros(view_t *view, const char format[])
 {
-	return expand_view_macros(view, format, "-lLS%[]");
+	return expand_view_macros(view, format, "-xlLS%[]");
 }
 
 void

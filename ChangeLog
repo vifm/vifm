@@ -35,6 +35,10 @@
 	Added v:count and v:count1 builtin variables.  They are assigned to count
 	passed to : command.
 
+	Added %x macro to 'rulerformat' (and thus to 'statusline') as new name for
+	%-, which conflicts with alignment specification and requires explicit
+	width specifier (%0-).  Thanks to Marcos Cruz.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
