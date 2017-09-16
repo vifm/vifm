@@ -266,7 +266,6 @@ draw_dir_list_only(view_t *view)
 	size_t col_width;
 	size_t col_count;
 	int coll_pad;
-	int top = view->top_line;
 	int total_width;
 
 	if(curr_stats.load_stage < 2)
@@ -275,15 +274,6 @@ draw_dir_list_only(view_t *view)
 	}
 
 	calculate_table_conf(view, &col_count, &col_width);
-
-	if(top + view->window_rows >= view->list_rows)
-	{
-		top = view->list_rows - (view->window_rows - 1);
-	}
-	if(top < 0)
-	{
-		top = 0;
-	}
 
 	ui_view_title_update(view);
 
@@ -294,7 +284,7 @@ draw_dir_list_only(view_t *view)
 		--view->curr_line;
 	}
 
-	top = calculate_top_position(view, top);
+	view->top_line = calculate_top_position(view, view->top_line);
 
 	ui_view_erase(view);
 
@@ -304,7 +294,7 @@ draw_dir_list_only(view_t *view)
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	total_width = ui_view_available_width(view);
 	lcol_size = ui_view_left_reserved(view);
-	for(x = top; x < view->list_rows; ++x)
+	for(x = view->top_line; x < view->list_rows; ++x)
 	{
 		size_t prefix_len = 0U;
 		const column_data_t cdt = {
@@ -334,7 +324,6 @@ draw_dir_list_only(view_t *view)
 
 	draw_right_column(view);
 
-	view->top_line = top;
 	view->curr_line = view->list_pos - view->top_line;
 
 	if(view == curr_view)
