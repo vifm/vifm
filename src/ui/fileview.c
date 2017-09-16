@@ -93,8 +93,8 @@ static size_t calculate_print_width(const view_t *view, int i,
 		size_t max_width);
 static void draw_cell(columns_t *columns, const column_data_t *cdt,
 		size_t col_width, size_t print_width);
-static columns_t * get_view_columns(const view_t *view);
-static columns_t * get_name_column(void);
+static columns_t * get_view_columns(const view_t *view, int truncated);
+static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
 static int prepare_inactive_color(view_t *view, dir_entry_t *entry,
 		int line_color);
@@ -263,10 +263,10 @@ draw_dir_list_only(view_t *view)
 	int x;
 	int lcol_size;
 	int cell;
-	size_t col_width;
-	size_t col_count;
+	size_t col_width, col_count;
 	int coll_pad;
 	int total_width;
+	int visible_cells;
 
 	if(curr_stats.load_stage < 2)
 	{
@@ -290,10 +290,19 @@ draw_dir_list_only(view_t *view)
 
 	draw_left_column(view);
 
-	cell = 0;
 	coll_pad = (!ui_view_displays_columns(view) && cfg.extra_padding) ? 1 : 0;
 	total_width = ui_view_available_width(view);
 	lcol_size = ui_view_left_reserved(view);
+
+	visible_cells = view->window_cells;
+	if(fview_is_transposed(view) &&
+			view->column_count*(int)col_width < total_width)
+	{
+		/* Add extra visual column to display more context. */
+		visible_cells += view->window_rows;
+	}
+
+	cell = 0;
 	for(x = view->top_line; x < view->list_rows; ++x)
 	{
 		size_t prefix_len = 0U;
@@ -313,10 +322,11 @@ draw_dir_list_only(view_t *view)
 
 		const size_t print_width = calculate_print_width(view, x, col_width);
 
-		draw_cell(get_view_columns(view), &cdt, col_width - coll_pad, print_width);
+		draw_cell(get_view_columns(view, cell >= view->window_cells), &cdt,
+				col_width - coll_pad, print_width);
 
 		++cell;
-		if(cell >= view->window_cells)
+		if(cell >= visible_cells)
 		{
 			break;
 		}
@@ -398,7 +408,7 @@ static void
 print_column(view_t *view, entries_t entries, const char current[],
 		const char path[], int width, int offset, int number_width)
 {
-	columns_t *const columns = get_name_column();
+	columns_t *const columns = get_name_column(0);
 	const int scroll_offset = fpos_get_offset(view);
 	int top, pos;
 	int i;
@@ -641,14 +651,19 @@ static void
 draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
 		size_t print_width)
 {
+	size_t width_left = cdt->is_main
+	                  ? ui_view_available_width(cdt->view) - cdt->column_offset -
+	                    ui_view_left_reserved(cdt->view)
+	                  : col_width + 1U;
+
 	if(cfg.extra_padding)
 	{
 		column_line_print(cdt, FILL_COLUMN_ID, " ", -1, AT_LEFT, " ");
 	}
 
-	columns_format_line(columns, cdt, col_width);
+	columns_format_line(columns, cdt, MIN(col_width, width_left));
 
-	if(cfg.extra_padding)
+	if(cfg.extra_padding && width_left > col_width)
 	{
 		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width, AT_LEFT, " ");
 	}
@@ -657,7 +672,7 @@ draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
 /* Retrieves active view columns handle of the view considering 'lsview' option
  * status.  Returns the handle. */
 static columns_t *
-get_view_columns(const view_t *view)
+get_view_columns(const view_t *view, int truncated)
 {
 	/* Note that columns_t performs some caching, so we might want to keep one
 	 * handle per view rather than sharing one. */
@@ -675,7 +690,7 @@ get_view_columns(const view_t *view)
 
 	if(!ui_view_displays_columns(view))
 	{
-		return get_name_column();
+		return get_name_column(truncated);
 	}
 
 	if(cv_compare(view->custom.type))
@@ -695,21 +710,34 @@ get_view_columns(const view_t *view)
 /* Retrieves columns view handle consisting of a single name column.  Returns
  * the handle. */
 static columns_t *
-get_name_column(void)
+get_name_column(int truncated)
 {
-	static const column_info_t name_column = {
+	static const column_info_t name_column_ell = {
 		.column_id = SK_BY_NAME, .full_width = 0UL, .text_width = 0UL,
 		.align = AT_LEFT,        .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
 	};
-	static columns_t *columns;
+	static columns_t *columns_ell;
 
-	if(columns == NULL)
+	if(truncated)
 	{
-		columns = columns_create();
-		columns_add_column(columns, name_column);
+		static columns_t *columns_trunc;
+		if(columns_trunc == NULL)
+		{
+			column_info_t name_column_trunc = name_column_ell;
+			name_column_trunc.cropping = CT_TRUNCATE;
+
+			columns_trunc = columns_create();
+			columns_add_column(columns_trunc, name_column_trunc);
+		}
+		return columns_trunc;
 	}
 
-	return columns;
+	if(columns_ell == NULL)
+	{
+		columns_ell = columns_create();
+		columns_add_column(columns_ell, name_column_ell);
+	}
+	return columns_ell;
 }
 
 /* Corrects top of the other view to synchronize it with the current view if
@@ -925,7 +953,7 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 		}
 	}
 
-	draw_cell(get_view_columns(view), &cdt, col_width, print_width);
+	draw_cell(get_view_columns(view, 0), &cdt, col_width, print_width);
 }
 
 int
@@ -1876,7 +1904,7 @@ move_curr_line(view_t *view)
 
 	calculate_table_conf(view, &col_count, &col_width);
 	/* Columns might be NULL in tests. */
-	columns = get_view_columns(view);
+	columns = get_view_columns(view, 0);
 	if(columns != NULL && !columns_matches_width(columns, col_width))
 	{
 		redraw++;
