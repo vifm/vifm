@@ -85,4 +85,4 @@ GNU General Public License, version 2 or later.
 [FF]: http://ci.vifm.info/badges/svg/master
 [F]: http://ci.vifm.info/
 [UU]: http://cov.vifm.info/badges/svg/master
-[U]: http://cov.vifm.info/
+[U]: http://cov.vifm.info/branches/master

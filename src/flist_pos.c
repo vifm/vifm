@@ -184,15 +184,13 @@ fpos_get_line(const view_t *view, int pos)
 int
 fpos_can_move_left(const view_t *view)
 {
-	return fview_is_transposed(view) ? view->list_pos >= view->run_size
-	                                 : view->list_pos > 0;
+	return (view->list_pos > 0);
 }
 
 int
 fpos_can_move_right(const view_t *view)
 {
-	return fview_is_transposed(view) ? !at_last_column(view)
-	                                 : view->list_pos < view->list_rows - 1;
+	return (view->list_pos < view->list_rows - 1);
 }
 
 int
