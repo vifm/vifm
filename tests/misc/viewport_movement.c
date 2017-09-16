@@ -126,16 +126,19 @@ TEST(hjkl_in_tls_normal)
 	view->list_pos = 3;
 
 	(void)vle_keys_exec_timed_out(WK_h);
-	assert_int_equal(3, view->list_pos);
+	assert_int_equal(0, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_j);
-	assert_int_equal(4, view->list_pos);
+	assert_int_equal(1, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_l);
-	assert_int_equal(12, view->list_pos);
+	assert_int_equal(9, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_k);
-	assert_int_equal(11, view->list_pos);
+	assert_int_equal(8, view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_l);
+	assert_int_equal(15, view->list_pos);
 }
 
 TEST(hjkl_in_tls_visual)
@@ -146,16 +149,19 @@ TEST(hjkl_in_tls_visual)
 	enter_visual_mode(VS_NORMAL);
 
 	(void)vle_keys_exec_timed_out(WK_h);
-	assert_int_equal(3, view->list_pos);
+	assert_int_equal(0, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_j);
-	assert_int_equal(4, view->list_pos);
+	assert_int_equal(1, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_l);
-	assert_int_equal(12, view->list_pos);
+	assert_int_equal(9, view->list_pos);
 
 	(void)vle_keys_exec_timed_out(WK_k);
-	assert_int_equal(11, view->list_pos);
+	assert_int_equal(8, view->list_pos);
+
+	(void)vle_keys_exec_timed_out(WK_l);
+	assert_int_equal(15, view->list_pos);
 
 	leave_visual_mode(0, 1, 0);
 }
