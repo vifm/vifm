@@ -524,13 +524,13 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display/use history items",
 	  .flags = HAS_QUOTED_ARGS | HAS_COMMENT,
 	  .handler = &history_cmd,     .min_args = 0,   .max_args = 1, },
-	{ .name = "histnext",             .abbr = NULL,   .id = -1,
-	  .descr = "go forward through directory history (like <c-i> if cpoptions contains \"t\")",
-	  .flags = 0,
+	{ .name = "histnext",           .abbr = NULL,   .id = -1,
+	  .descr = "go forward through directory history",
+	  .flags = HAS_COMMENT,
 	  .handler = &histnext_cmd,     .min_args = 0,   .max_args = 0, },
-	{ .name = "histprev",             .abbr = NULL,   .id = -1,
-	  .descr = "go backward through directory history (like <c-o>)",
-	  .flags = 0,
+	{ .name = "histprev",           .abbr = NULL,   .id = -1,
+	  .descr = "go backward through directory history",
+	  .flags = HAS_COMMENT,
 	  .handler = &histprev_cmd,     .min_args = 0,   .max_args = 0, },
 	/* engine/parsing unit handles comments to resolve parsing ambiguity. */
 	{ .name = "if",                .abbr = NULL,    .id = COM_IF_STMT,
@@ -2790,6 +2790,7 @@ history_cmd(const cmd_info_t *cmd_info)
 		return CMDS_ERR_TRAILING_CHARS;
 }
 
+/* Goes forward though directory history. */
 static int
 histnext_cmd(const cmd_info_t *cmd_info)
 {
@@ -2797,6 +2798,7 @@ histnext_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Goes backward though directory history. */
 static int
 histprev_cmd(const cmd_info_t *cmd_info)
 {
