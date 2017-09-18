@@ -39,6 +39,9 @@
 	%-, which conflicts with alignment specification and requires explicit
 	width specifier (%0-).  Thanks to Marcos Cruz.
 
+	Added :histnext/:histprev commands, which are analogous to <c-i>/<c-o>.
+	Patch by Dmitry Frank (a.k.a. dimonomid).
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

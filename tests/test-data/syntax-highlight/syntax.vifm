@@ -360,6 +360,8 @@ cope
 copen
 siblnext
 siblprev
+histnext
+histprev
 
 " "hi" should be highlighted as :command and CurrLine/CmpMismatch/AuxWin as
 " highlight groups
