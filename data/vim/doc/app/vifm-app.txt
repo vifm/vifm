@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 14
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1862,6 +1862,14 @@ regular expressions (//).  At most one of them is applied per file entry, namely
 the first that matches file name, hence order of :highlight commands might be
 important in certain cases.
 
+:histnext                                      *vifm-:histnext*
+    same as <c-i>.  The main use case for this command is to work around the
+    common pain point of <tab> and <c-i> being the same ASCII character: one
+    could alter the terminal emulator settings to emit, for example, the `F1`
+    keycode when Ctrl-I is pressed, then `:noremap <f1> :histnext<cr>` in vifm,
+    add "t" flag to the |vifm-'cpoptions'|, and thus have both <c-i> and <tab>
+    working as expected.
+
                                                *vifm-:history* *vifm-:his*
 :his[tory]
     display directory history.
@@ -1874,6 +1882,9 @@ important in certain cases.
       b[search] or ?  show search history and search backward on l key.
       i[nput]   or @  show prompt history (e.g. on one file renaming).
       fi[lter]  or =  show filter history (see |vifm-=|).
+
+:histprev                                      *vifm-:histprev*
+    same as <c-o>.
 
 :if {expr1}                                    *vifm-:if*
     start conditional block.  Commands are executed until next matching
@@ -2852,7 +2863,10 @@ s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act o
     selection, otherwise they operate on current file only;
                                                *vifm-cpo-t*
 t - when included, <tab> (thus <c-i>) behave as <space> and switch active
-    pane, otherwise <c-i> goes forward in the view history.
+    pane, otherwise <c-i> goes forward in the view history.  It's possible to
+    make both <tab> and <c-i> to work as expected by setting up the terminal
+    to emit a custom sequence when <c-i> is pressed; see :histnext for
+    details.
 
                                                *vifm-'cvoptions'*
 cvoptions

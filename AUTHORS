@@ -109,4 +109,5 @@ Svyatoslav Mishyn (a.k.a. juef) aligned options in conflict resolution dialog.
 
 oo- added shortcuts to dialogs.
 
-Dmitry Frank (a.k.a. dimonomid) fixed displaying size in statusline.
+Dmitry Frank (a.k.a. dimonomid) fixed displaying size in statusline and
+implemented :histnext/:histprev commands.
