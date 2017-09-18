@@ -21,6 +21,7 @@
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
+#include "../../src/flist_hist.h"
 #include "../../src/ops.h"
 #include "../../src/registers.h"
 #include "../../src/undo.h"
@@ -654,6 +655,25 @@ TEST(map_commands_count_arguments_correctly)
 	assert_success(exec_commands("vunmap \\", &lwin, CIT_COMMAND));
 
 	vle_keys_reset();
+}
+
+TEST(hist_next_and_prev)
+{
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(10);
+	cfg_resize_histories(0);
+	cfg_resize_histories(10);
+
+	flist_hist_save(&lwin, sandbox, ".", 0);
+	flist_hist_save(&lwin, test_data, ".", 0);
+
+	assert_success(exec_commands("histprev", &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, sandbox));
+	assert_success(exec_commands("histnext", &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, test_data));
+
+	cfg_resize_histories(0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
