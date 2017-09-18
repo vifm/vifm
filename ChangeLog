@@ -71,6 +71,9 @@
 	Made :highlight update file-specific group on exact match of the pattern
 	instead of appending new rule.  Thanks to aleksejrs.
 
+	Extend width of the cursor in ls-like view to the width of the cell.
+	Thanks to Dmitry Frank (a.k.a. dimonomid).
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 
