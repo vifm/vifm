@@ -1,0 +1,1 @@
+autocmd DirEnter ~/downloads,~/downloads/torrents setlocal sort=-mtime,dir
