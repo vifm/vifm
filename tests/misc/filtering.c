@@ -410,5 +410,35 @@ TEST(filename_filter_can_match_full_paths)
 	assert_visible(lwin, "a.png", 1);
 }
 
+TEST(custom_tree_can_restore_files_after_local_filter)
+{
+	char test_data[PATH_MAX + 1];
+	char path[PATH_MAX + 1];
+
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "compare");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "read");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "rename");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "tree");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(flist_load_tree(&lwin, test_data));
+	assert_int_equal(5, lwin.list_rows);
+
+	assert_int_equal(0, local_filter_set(&lwin, "t"));
+	local_filter_accept(&lwin);
+	assert_int_equal(2, lwin.list_rows);
+
+	assert_int_equal(0, local_filter_set(&lwin, ""));
+	local_filter_accept(&lwin);
+	assert_int_equal(5, lwin.list_rows);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

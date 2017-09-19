@@ -917,20 +917,11 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 	cdt->prefix_len = &prefix_len;
 	cdt->is_main = 1;
 
-	if(!ui_view_displays_columns(cdt->view))
+	if(cfg.extra_padding && !ui_view_displays_columns(cdt->view))
 	{
-		if(cdt->line_pos == cdt->current_pos)
-		{
-			/* When this function is used to draw cursor position in ls-like view,
-			 * only name width should be updated. */
-			col_width = print_width;
-		}
-		else if(cfg.extra_padding)
-		{
-			/* Padding in ls-like view adds additional empty single character between
-			 * columns, on which we shouldn't draw anything here. */
-			--col_width;
-		}
+		/* Padding in ls-like view adds additional empty single character between
+		 * columns, on which we shouldn't draw anything here. */
+		--col_width;
 	}
 
 	draw_cell(get_view_columns(cdt->view, cell >= cdt->view->window_cells), cdt,

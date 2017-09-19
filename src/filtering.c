@@ -470,12 +470,12 @@ list_is_incomplete(view_t *const view)
 		return 1;
 	}
 
-	if(flist_custom_active(view) && !cv_tree(view->custom.type))
+	if(flist_custom_active(view) && view->custom.type != CV_TREE)
 	{
 		return 0;
 	}
 
-	/* Check if there is any directories without leaf nodes.  They aren't counted
+	/* Check if there are any directories without leaf nodes.  They aren't counted
 	 * as filtered out, so need to check separately (or start counting them in
 	 * some way). */
 	for(i = 0; i < view->list_rows; ++i)

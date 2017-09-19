@@ -71,7 +71,7 @@ suites += ioeta ionotif iop ior
 # ui
 suites += colmgr column_view viewcolumns_parser
 # everything else
-suites += bmarks env escape fileops filetype filter misc undo utils
+suites += bmarks env escape fileops filetype filter fuzz misc undo utils
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/
@@ -304,7 +304,9 @@ endif
 
 build: $$($1.bin)
 
+ifneq ($1,fuzz)
 check: $1
+endif
 
 endef
 

@@ -1,0 +1,11 @@
+command! togglesort
+         \ :if &sort == '-size,+name'
+         \ |    set sort=+mtime
+         \ |    echo 'Sorted by modification date'
+         \ |elseif &sort == '+name'
+         \ |    set sort=-size
+         \ |    echo 'Sorted by size'
+         \ |else
+         \ |    set sort=+name
+         \ |    echo 'Sorted by name'
+         \ |endif
