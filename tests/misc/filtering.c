@@ -465,7 +465,7 @@ TEST(custom_tree_can_restore_files_after_local_filter_non_interactive)
 
 	local_filter_apply(&lwin, "t");
 	load_dir_list(&lwin, 1);
-	assert_int_equal(1, lwin.list_rows);
+	assert_int_equal(2, lwin.list_rows);
 
 	local_filter_apply(&lwin, "");
 	load_dir_list(&lwin, 1);
