@@ -1218,6 +1218,7 @@ flist_custom_clone(view_t *to, const view_t *from)
 	int nentries;
 	int i, j;
 	const int from_tree = cv_tree(from->custom.type);
+	const int to_tree = (from->custom.type == CV_CUSTOM_TREE);
 
 	assert(flist_custom_active(from) && to->custom.paths_cache == NULL &&
 			"Wrong state of destination view.");
@@ -1226,9 +1227,9 @@ flist_custom_clone(view_t *to, const view_t *from)
 	to->curr_dir[0] = '\0';
 
 	replace_string(&to->custom.title,
-			from_tree ? "from tree" : from->custom.title);
+			(from_tree && !to_tree) ? "from tree" : from->custom.title);
 	to->custom.type = (ui_view_unsorted(from) || from_tree)
-	                ? CV_VERY
+	                ? (to_tree ? CV_CUSTOM_TREE : CV_VERY)
 	                : CV_REGULAR;
 
 	if(custom_list_is_incomplete(from))
@@ -1264,10 +1265,13 @@ flist_custom_clone(view_t *to, const view_t *from)
 			dst[j].origin = strdup(dst[j].origin);
 		}
 
-		/* As destination pane won't be a tree, erase tree-specific data, because
-		 * some tree-specific code is driven directly by these fields. */
-		dst[j].child_count = 0;
-		dst[j].child_pos = 0;
+		if(!to_tree)
+		{
+			/* As destination pane won't be a tree, erase tree-specific data, because
+			 * some tree-specific code is driven directly by these fields. */
+			dst[j].child_count = 0;
+			dst[j].child_pos = 0;
+		}
 
 		++j;
 	}
@@ -1691,6 +1695,12 @@ populate_custom_view(view_t *view, int reload)
 					view->local_filter.entries, view->local_filter.entry_count);
 
 			(void)set_position_by_path(view, selected_path);
+		}
+		else if(view->local_filter.entry_count == 0)
+		{
+			/* Save unfiltered (by local filter) list for further use. */
+			replace_dir_entries(view, &view->local_filter.entries,
+					&view->local_filter.entry_count, view->dir_entry, view->list_rows);
 		}
 
 		(void)zap_entries(view, view->dir_entry, &view->list_rows,
@@ -3505,9 +3515,16 @@ set_position_by_path(view_t *view, const char path[])
 int
 flist_clone_tree(view_t *to, const view_t *from)
 {
-	if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths) != 0)
+	if(from->custom.type == CV_CUSTOM_TREE)
 	{
-		return 1;
+		flist_custom_clone(to, from);
+	}
+	else
+	{
+		if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths) != 0)
+		{
+			return 1;
+		}
 	}
 
 	trie_free(to->custom.excluded_paths);
