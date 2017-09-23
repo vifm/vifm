@@ -106,8 +106,6 @@ static void mark_group(view_t *view, view_t *other, int idx);
 static int got_excluded(view_t *view, const dir_entry_t *entry, void *arg);
 static int exclude_temporary_entries(view_t *view);
 static int is_temporary(view_t *view, const dir_entry_t *entry, void *arg);
-static void uncompress_traverser(const char name[], int valid,
-		const void *parent_data, void *data, void *arg);
 static void load_dir_list_internal(view_t *view, int reload, int draw_only);
 static int populate_dir_list_internal(view_t *view, int reload);
 static int populate_custom_view(view_t *view, int reload);
@@ -155,7 +153,7 @@ static int flist_load_tree_internal(view_t *view, const char path[],
 static int make_tree(view_t *view, const char path[], int reload,
 		trie_t *excluded_paths);
 static void tree_from_cv(view_t *view);
-static void form_tree(const char name[], int valid, const void *parent_data,
+static void complete_tree(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
 static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 		int extra);
@@ -1312,84 +1310,12 @@ flist_custom_uncompress_tree(view_t *view)
 		fsdata_set(tree, full_path, &data, sizeof(data));
 	}
 
-	fsdata_traverse(tree, &uncompress_traverser, view);
+	fsdata_traverse(tree, &complete_tree, view);
 
 	fsdata_free(tree);
 	dynarray_free(entries);
 
 	drop_tops(view, view->dir_entry, &view->list_rows, 0);
-}
-
-/* fsdata_traverse() callback that flattens the tree into array of entries. */
-static void
-uncompress_traverser(const char name[], int valid, const void *parent_data,
-		void *data, void *arg)
-{
-	/* Initially data associated with existing entries point to original entries.
-	 * Once that entry is copied, the data is replaced with its index in the new
-	 * list. */
-
-	view_t *view = arg;
-
-	dir_entry_t *dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
-	++view->list_rows;
-
-	if(valid)
-	{
-		*dir_entry = **(dir_entry_t **)data;
-		dir_entry->child_count = 0;
-	}
-	else
-	{
-		char full_path[PATH_MAX + 1];
-
-		if(parent_data == NULL)
-		{
-			char *const typed_path = format_str("%s/", name);
-			if(is_root_dir(typed_path))
-			{
-				/* Entry for a root is added temporarily (this happens only on Windows)
-				 * as a storage of path prefix and is removed afterwards in
-				 * drop_tops(). */
-				init_dir_entry(view, dir_entry, "");
-				dir_entry->origin = strdup(name);
-			}
-			else
-			{
-				init_dir_entry(view, dir_entry, name);
-				dir_entry->origin = strdup("/");
-			}
-			free(typed_path);
-		}
-		else
-		{
-			char parent_path[PATH_MAX];
-			const intptr_t *parent_idx = parent_data;
-			init_dir_entry(view, dir_entry, name);
-			get_full_path_at(view, *parent_idx, sizeof(parent_path), parent_path);
-			dir_entry->origin = strdup(parent_path);
-		}
-
-		get_full_path_of(dir_entry, sizeof(full_path), full_path);
-		fill_dir_entry_by_path(dir_entry, full_path);
-
-		dir_entry->temporary = 1;
-	}
-
-	*(intptr_t *)data = dir_entry - view->dir_entry;
-
-	if(parent_data != NULL)
-	{
-		const intptr_t *const parent_idx = parent_data;
-		dir_entry->child_pos = (dir_entry - view->dir_entry) - *parent_idx;
-
-		do
-		{
-			dir_entry -= dir_entry->child_pos;
-			++dir_entry->child_count;
-		}
-		while(dir_entry->child_pos != 0);
-	}
 }
 
 const char *
@@ -3637,7 +3563,7 @@ tree_from_cv(view_t *view)
 		}
 	}
 
-	fsdata_traverse(tree, &form_tree, view);
+	fsdata_traverse(tree, &complete_tree, view);
 
 	fsdata_free(tree);
 	dynarray_free(entries);
@@ -3647,18 +3573,21 @@ tree_from_cv(view_t *view)
 
 /* fsdata_traverse() callback that flattens the tree into array of entries. */
 static void
-form_tree(const char name[], int valid, const void *parent_data, void *data,
+complete_tree(const char name[], int valid, const void *parent_data, void *data,
 		void *arg)
 {
 	/* Initially data associated with existing entries points to original entries.
 	 * Once that entry is copied, the data is replaced with its index in the new
 	 * list. */
 
-	view_t *view = arg;
+	view_t *const view = arg;
+	const int in_place = cv_tree(view->custom.type);
 
-	dir_entry_t *dir_entry = alloc_dir_entry(&view->custom.entries,
-			view->custom.entry_count);
-	++view->custom.entry_count;
+	dir_entry_t **entries = (in_place ? &view->dir_entry : &view->custom.entries);
+	int *nentries = (in_place ? &view->list_rows : &view->custom.entry_count);
+
+	dir_entry_t *dir_entry = alloc_dir_entry(entries, *nentries);
+	++*nentries;
 
 	if(valid)
 	{
@@ -3692,21 +3621,23 @@ form_tree(const char name[], int valid, const void *parent_data, void *data,
 			char parent_path[PATH_MAX + 1];
 			const intptr_t *parent_idx = parent_data;
 			init_dir_entry(view, dir_entry, name);
-			get_full_path_of(&view->custom.entries[*parent_idx], sizeof(parent_path),
+			get_full_path_of(&(*entries)[*parent_idx], sizeof(parent_path),
 					parent_path);
 			dir_entry->origin = strdup(parent_path);
 		}
 
 		get_full_path_of(dir_entry, sizeof(full_path), full_path);
 		fill_dir_entry_by_path(dir_entry, full_path);
+
+		dir_entry->temporary = in_place;
 	}
 
-	*(intptr_t *)data = dir_entry - view->custom.entries;
+	*(intptr_t *)data = dir_entry - *entries;
 
 	if(parent_data != NULL)
 	{
 		const intptr_t *const parent_idx = parent_data;
-		dir_entry->child_pos = (dir_entry - view->custom.entries) - *parent_idx;
+		dir_entry->child_pos = (dir_entry - *entries) - *parent_idx;
 
 		do
 		{
