@@ -495,7 +495,7 @@ fops_incdec(view_t *view, int k)
 			err = 1;
 			break;
 		}
-		fops_fixup_entry_after_rename(view, entry, new_fname);
+		fentry_rename(view, entry, new_fname);
 		++nrenames;
 		++nrenamed;
 	}
@@ -902,7 +902,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 		if(fops_mv_file(entry->name, entry->origin, new_fname, entry->origin,
 					OP_MOVE, 1, NULL) == 0)
 		{
-			fops_fixup_entry_after_rename(view, entry, new_fname);
+			fentry_rename(view, entry, new_fname);
 			++nrenamed;
 		}
 	}

@@ -710,7 +710,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		/* Don't update cursor position if more than one file is cloned. */
 		if(nmarked == 1U)
 		{
-			fops_fixup_entry_after_rename(view, entry, clone_name);
+			fentry_rename(view, entry, clone_name);
 		}
 		ops_advance(ops, err == 0);
 

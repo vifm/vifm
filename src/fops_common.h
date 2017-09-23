@@ -118,11 +118,6 @@ char ** fops_grab_marked_files(struct view_t *view, size_t *nmarked);
  * unknown type. */
 int fops_is_dir_entry(const char full_path[], const struct dirent* dentry);
 
-/* Updates renamed entry name when it makes sense.  This is basically to allow
- * correct cursor positioning on view reload or correct custom view update. */
-void fops_fixup_entry_after_rename(struct view_t *view,
-		struct dir_entry_t *entry, const char new_fname[]);
-
 /* Adds marked files to the ops.  Considers UI cancellation.  dst_hint can be
  * NULL.  Returns number of files enqueued. */
 int fops_enqueue_marked_files(ops_t *ops, struct view_t *view,

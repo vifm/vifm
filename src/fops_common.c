@@ -596,13 +596,6 @@ fops_is_dir_entry(const char full_path[], const struct dirent *dentry)
 #endif
 }
 
-void
-fops_fixup_entry_after_rename(view_t *view, dir_entry_t *entry,
-		const char new_fname[])
-{
-	fentry_rename(view, entry, new_fname);
-}
-
 int
 fops_enqueue_marked_files(ops_t *ops, view_t *view, const char dst_hint[],
 		int to_trash)
