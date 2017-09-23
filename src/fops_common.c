@@ -600,10 +600,7 @@ void
 fops_fixup_entry_after_rename(view_t *view, dir_entry_t *entry,
 		const char new_fname[])
 {
-	if(entry_to_pos(view, entry) == view->list_pos || flist_custom_active(view))
-	{
-		fentry_rename(view, entry, new_fname);
-	}
+	fentry_rename(view, entry, new_fname);
 }
 
 int

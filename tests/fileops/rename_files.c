@@ -109,6 +109,35 @@ TEST(interdependent_rename)
 	assert_success(unlink(SANDBOX_PATH "/file3"));
 }
 
+TEST(incdec)
+{
+	create_empty_file(SANDBOX_PATH "/file1");
+	create_empty_file(SANDBOX_PATH "/file2");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	lwin.list_pos = 0;
+	(void)fops_incdec(&lwin, 1);
+	/* Make sure reloading doesn't fail with an assert of duplicated file name. */
+	populate_dir_list(&lwin, 1);
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	lwin.list_pos = 1;
+	(void)fops_incdec(&lwin, 1);
+	/* Make sure reloading doesn't fail with an assert of duplicated file name. */
+	populate_dir_list(&lwin, 1);
+
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/file3"));
+	assert_success(unlink(SANDBOX_PATH "/file4"));
+}
+
 TEST(rename_to_broken_symlink_name, IF(not_windows))
 {
 	/* symlink() is not available on Windows, but the rest of the code is fine. */

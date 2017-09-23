@@ -3356,12 +3356,15 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
 
+	/* Update origins of entries which include the one we're renaming. */
 	if(flist_custom_active(view) && fentry_is_dir(entry))
 	{
 		int i;
 		char *const root = format_str("%s/%s", entry->origin, old_name);
 		const size_t root_len = strlen(root);
 
+		/* TODO: this doesn't handle circular renames like a/ -> b/, needs more
+		 *       bookkeeping. */
 		for(i = 0; i < view->list_rows; ++i)
 		{
 			dir_entry_t *const e = &view->dir_entry[i];

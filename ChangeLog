@@ -110,6 +110,9 @@
 
 	Fixed weird view scrolling after zO (hard to notice) and Ctrl-A/X.
 
+	Fixed assertion failure on renaming files with Ctrl-A/Ctrl-X when cursor
+	is positioned on certain file from the range.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
