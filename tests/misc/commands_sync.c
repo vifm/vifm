@@ -301,5 +301,46 @@ TEST(incorrect_parameter_causes_error)
 	assert_failure(exec_commands("sync! nosuchthing", curr_view, CIT_COMMAND));
 }
 
+TEST(sync_syncs_custom_trees)
+{
+	char test_data[PATH_MAX + 1];
+	char path[PATH_MAX + 1];
+
+	columns_set_line_print_func(&column_line_print);
+	other_view->columns = columns_create();
+
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", saved_cwd);
+
+	flist_custom_start(curr_view, "test");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "compare");
+	flist_custom_add(curr_view, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "read");
+	flist_custom_add(curr_view, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "rename");
+	flist_custom_add(curr_view, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "tree");
+	flist_custom_add(curr_view, path);
+	assert_true(flist_custom_finish(curr_view, CV_REGULAR, 0) == 0);
+
+	assert_success(flist_load_tree(curr_view, test_data));
+
+	curr_view->dir_entry[0].selected = 1;
+	curr_view->selected_files = 1;
+	flist_custom_exclude(curr_view, 1);
+
+	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
+	assert_true(flist_custom_active(other_view));
+	curr_stats.load_stage = 2;
+	load_saving_pos(other_view);
+	curr_stats.load_stage = 0;
+
+	assert_int_equal(CV_CUSTOM_TREE, other_view->custom.type);
+	assert_int_equal(curr_view->list_rows, other_view->list_rows);
+
+	columns_free(other_view->columns);
+	other_view->columns = NULL;
+	columns_set_line_print_func(NULL);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

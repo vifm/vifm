@@ -106,8 +106,6 @@ static void mark_group(view_t *view, view_t *other, int idx);
 static int got_excluded(view_t *view, const dir_entry_t *entry, void *arg);
 static int exclude_temporary_entries(view_t *view);
 static int is_temporary(view_t *view, const dir_entry_t *entry, void *arg);
-static void uncompress_traverser(const char name[], int valid,
-		const void *parent_data, void *data, void *arg);
 static void load_dir_list_internal(view_t *view, int reload, int draw_only);
 static int populate_dir_list_internal(view_t *view, int reload);
 static int populate_custom_view(view_t *view, int reload);
@@ -155,8 +153,10 @@ static int flist_load_tree_internal(view_t *view, const char path[],
 static int make_tree(view_t *view, const char path[], int reload,
 		trie_t *excluded_paths);
 static void tree_from_cv(view_t *view);
-static void form_tree(const char name[], int valid, const void *parent_data,
+static void complete_tree(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
+static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
+		int extra);
 static int add_files_recursively(view_t *view, const char path[],
 		trie_t *excluded_paths, int parent_pos, int no_direct_parent);
 static int file_is_visible(view_t *view, const char name[], int is_dir,
@@ -1216,6 +1216,7 @@ flist_custom_clone(view_t *to, const view_t *from)
 	int nentries;
 	int i, j;
 	const int from_tree = cv_tree(from->custom.type);
+	const int to_tree = (from->custom.type == CV_CUSTOM_TREE);
 
 	assert(flist_custom_active(from) && to->custom.paths_cache == NULL &&
 			"Wrong state of destination view.");
@@ -1224,9 +1225,9 @@ flist_custom_clone(view_t *to, const view_t *from)
 	to->curr_dir[0] = '\0';
 
 	replace_string(&to->custom.title,
-			from_tree ? "from tree" : from->custom.title);
+			(from_tree && !to_tree) ? "from tree" : from->custom.title);
 	to->custom.type = (ui_view_unsorted(from) || from_tree)
-	                ? CV_VERY
+	                ? (to_tree ? CV_CUSTOM_TREE : CV_VERY)
 	                : CV_REGULAR;
 
 	if(custom_list_is_incomplete(from))
@@ -1262,10 +1263,13 @@ flist_custom_clone(view_t *to, const view_t *from)
 			dst[j].origin = strdup(dst[j].origin);
 		}
 
-		/* As destination pane won't be a tree, erase tree-specific data, because
-		 * some tree-specific code is driven directly by these fields. */
-		dst[j].child_count = 0;
-		dst[j].child_pos = 0;
+		if(!to_tree)
+		{
+			/* As destination pane won't be a tree, erase tree-specific data, because
+			 * some tree-specific code is driven directly by these fields. */
+			dst[j].child_count = 0;
+			dst[j].child_pos = 0;
+		}
 
 		++j;
 	}
@@ -1293,7 +1297,6 @@ flist_custom_uncompress_tree(view_t *view)
 	dir_entry_t *entries = view->dir_entry;
 	size_t nentries = view->list_rows;
 
-	const size_t path_prefix_len = strlen(flist_get_dir(view));
 	fsdata_t *const tree = fsdata_create(0, 0);
 
 	view->dir_entry = NULL;
@@ -1304,71 +1307,15 @@ flist_custom_uncompress_tree(view_t *view)
 		char full_path[PATH_MAX];
 		void *data = &entries[i];
 		get_full_path_of(&entries[i], sizeof(full_path), full_path);
-		fsdata_set(tree, full_path + path_prefix_len, &data, sizeof(data));
+		fsdata_set(tree, full_path, &data, sizeof(data));
 	}
 
-	fsdata_traverse(tree, &uncompress_traverser, view);
+	fsdata_traverse(tree, &complete_tree, view);
 
 	fsdata_free(tree);
 	dynarray_free(entries);
-}
 
-/* fsdata_traverse() callback that flattens the tree into array of entries. */
-static void
-uncompress_traverser(const char name[], int valid, const void *parent_data,
-		void *data, void *arg)
-{
-	/* Initially data associated with existing entries point to original entries.
-	 * Once that entry is copied, the data is replaced with its index in the new
-	 * list. */
-
-	view_t *view = arg;
-
-	dir_entry_t *dir_entry = alloc_dir_entry(&view->dir_entry, view->list_rows);
-	++view->list_rows;
-
-	if(valid)
-	{
-		*dir_entry = **(dir_entry_t **)data;
-		dir_entry->child_count = 0;
-	}
-	else
-	{
-		char full_path[PATH_MAX];
-
-		init_dir_entry(view, dir_entry, name);
-		if(parent_data == NULL)
-		{
-			dir_entry->origin = strdup(flist_get_dir(view));
-		}
-		else
-		{
-			char parent_path[PATH_MAX];
-			const intptr_t *parent_idx = parent_data;
-			get_full_path_at(view, *parent_idx, sizeof(parent_path), parent_path);
-			dir_entry->origin = strdup(parent_path);
-		}
-
-		get_full_path_of(dir_entry, sizeof(full_path), full_path);
-		fill_dir_entry_by_path(dir_entry, full_path);
-
-		dir_entry->temporary = 1;
-	}
-
-	*(intptr_t *)data = dir_entry - view->dir_entry;
-
-	if(parent_data != NULL)
-	{
-		const intptr_t *const parent_idx = parent_data;
-		dir_entry->child_pos = (dir_entry - view->dir_entry) - *parent_idx;
-
-		do
-		{
-			dir_entry -= dir_entry->child_pos;
-			++dir_entry->child_count;
-		}
-		while(dir_entry->child_pos != 0);
-	}
+	drop_tops(view, view->dir_entry, &view->list_rows, 0);
 }
 
 const char *
@@ -1674,6 +1621,12 @@ populate_custom_view(view_t *view, int reload)
 					view->local_filter.entries, view->local_filter.entry_count);
 
 			(void)set_position_by_path(view, selected_path);
+		}
+		else if(view->local_filter.entry_count == 0)
+		{
+			/* Save unfiltered (by local filter) list for further use. */
+			replace_dir_entries(view, &view->local_filter.entries,
+					&view->local_filter.entry_count, view->dir_entry, view->list_rows);
 		}
 
 		(void)zap_entries(view, view->dir_entry, &view->list_rows,
@@ -3403,12 +3356,15 @@ fentry_rename(view_t *view, dir_entry_t *entry, const char to[])
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
 
+	/* Update origins of entries which include the one we're renaming. */
 	if(flist_custom_active(view) && fentry_is_dir(entry))
 	{
 		int i;
 		char *const root = format_str("%s/%s", entry->origin, old_name);
 		const size_t root_len = strlen(root);
 
+		/* TODO: this doesn't handle circular renames like a/ -> b/, needs more
+		 *       bookkeeping. */
 		for(i = 0; i < view->list_rows; ++i)
 		{
 			dir_entry_t *const e = &view->dir_entry[i];
@@ -3488,9 +3444,16 @@ set_position_by_path(view_t *view, const char path[])
 int
 flist_clone_tree(view_t *to, const view_t *from)
 {
-	if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths) != 0)
+	if(from->custom.type == CV_CUSTOM_TREE)
 	{
-		return 1;
+		flist_custom_clone(to, from);
+	}
+	else
+	{
+		if(make_tree(to, flist_get_dir(from), 0, from->custom.excluded_paths) != 0)
+		{
+			return 1;
+		}
 	}
 
 	trie_free(to->custom.excluded_paths);
@@ -3603,45 +3566,31 @@ tree_from_cv(view_t *view)
 		}
 	}
 
-	fsdata_traverse(tree, &form_tree, view);
+	fsdata_traverse(tree, &complete_tree, view);
 
 	fsdata_free(tree);
 	dynarray_free(entries);
 
-	entries = view->custom.entries;
-
-	/* Traverse root children and drop extra tops of their subtrees. */
-	for(i = 0; i < view->custom.entry_count - 1; i += entries[i].child_count + 1)
-	{
-		int j = i;
-		while(j < view->custom.entry_count - 1 && entries[j].child_count > 0 &&
-				(entries[j].child_count == entries[j + 1].child_count + 1 ||
-				 entries[j].name[0] == '\0') && entries[j].tag != 1)
-		{
-			fentry_free(view, &entries[j++]);
-		}
-
-		view->custom.entry_count -= j - i;
-		memmove(&entries[i], &entries[j],
-				sizeof(*entries)*(view->custom.entry_count - i));
-		view->custom.entries[i].child_pos = 0;
-	}
+	drop_tops(view, view->custom.entries, &view->custom.entry_count, 1);
 }
 
 /* fsdata_traverse() callback that flattens the tree into array of entries. */
 static void
-form_tree(const char name[], int valid, const void *parent_data, void *data,
+complete_tree(const char name[], int valid, const void *parent_data, void *data,
 		void *arg)
 {
 	/* Initially data associated with existing entries points to original entries.
 	 * Once that entry is copied, the data is replaced with its index in the new
 	 * list. */
 
-	view_t *view = arg;
+	view_t *const view = arg;
+	const int in_place = cv_tree(view->custom.type);
 
-	dir_entry_t *dir_entry = alloc_dir_entry(&view->custom.entries,
-			view->custom.entry_count);
-	++view->custom.entry_count;
+	dir_entry_t **entries = (in_place ? &view->dir_entry : &view->custom.entries);
+	int *nentries = (in_place ? &view->list_rows : &view->custom.entry_count);
+
+	dir_entry_t *dir_entry = alloc_dir_entry(entries, *nentries);
+	++*nentries;
 
 	if(valid)
 	{
@@ -3659,7 +3608,7 @@ form_tree(const char name[], int valid, const void *parent_data, void *data,
 			{
 				/* Entry for a root is added temporarily (this happens only on Windows)
 				 * as a storage of path prefix and is removed afterwards in
-				 * tree_from_cv(). */
+				 * drop_tops(). */
 				init_dir_entry(view, dir_entry, "");
 				dir_entry->origin = strdup(name);
 			}
@@ -3675,21 +3624,23 @@ form_tree(const char name[], int valid, const void *parent_data, void *data,
 			char parent_path[PATH_MAX + 1];
 			const intptr_t *parent_idx = parent_data;
 			init_dir_entry(view, dir_entry, name);
-			get_full_path_of(&view->custom.entries[*parent_idx], sizeof(parent_path),
+			get_full_path_of(&(*entries)[*parent_idx], sizeof(parent_path),
 					parent_path);
 			dir_entry->origin = strdup(parent_path);
 		}
 
 		get_full_path_of(dir_entry, sizeof(full_path), full_path);
 		fill_dir_entry_by_path(dir_entry, full_path);
+
+		dir_entry->temporary = in_place;
 	}
 
-	*(intptr_t *)data = dir_entry - view->custom.entries;
+	*(intptr_t *)data = dir_entry - *entries;
 
 	if(parent_data != NULL)
 	{
 		const intptr_t *const parent_idx = parent_data;
-		dir_entry->child_pos = (dir_entry - view->custom.entries) - *parent_idx;
+		dir_entry->child_pos = (dir_entry - *entries) - *parent_idx;
 
 		do
 		{
@@ -3697,6 +3648,28 @@ form_tree(const char name[], int valid, const void *parent_data, void *data,
 			++dir_entry->child_count;
 		}
 		while(dir_entry->child_pos != 0);
+	}
+}
+
+/* Traverses root children and drops fake root nodes and optionally extra tops
+ * of subtrees. */
+static void
+drop_tops(view_t *view, dir_entry_t *entries, int *nentries, int extra)
+{
+	int i;
+	for(i = 0; i < *nentries - 1; i += entries[i].child_count + 1)
+	{
+		int j = i;
+		while(j < *nentries - 1 && entries[j].child_count > 0 &&
+				((extra && entries[j].child_count == entries[j + 1].child_count + 1) ||
+				 entries[j].name[0] == '\0') && entries[j].tag != 1)
+		{
+			fentry_free(view, &entries[j++]);
+		}
+
+		*nentries -= j - i;
+		memmove(&entries[i], &entries[j], sizeof(*entries)*(*nentries - i));
+		entries[i].child_pos = 0;
 	}
 }
 

@@ -641,7 +641,7 @@ draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
 
 	columns_format_line(columns, cdt, MIN(col_width, width_left));
 
-	if(cfg.extra_padding && width_left > col_width)
+	if(cfg.extra_padding && width_left >= col_width)
 	{
 		column_line_print(cdt, FILL_COLUMN_ID, " ", print_width, AT_LEFT, " ");
 	}

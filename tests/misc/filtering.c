@@ -38,7 +38,8 @@ SETUP_ONCE()
 
 SETUP()
 {
-	cfg.slow_fs_list = strdup("");
+	update_string(&cfg.fuse_home, "no");
+	update_string(&cfg.slow_fs_list, "");
 
 	cfg.filter_inverted_by_default = 1;
 
@@ -121,6 +122,7 @@ SETUP()
 TEARDOWN()
 {
 	update_string(&cfg.slow_fs_list, NULL);
+	update_string(&cfg.fuse_home, NULL);
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
@@ -410,7 +412,7 @@ TEST(filename_filter_can_match_full_paths)
 	assert_visible(lwin, "a.png", 1);
 }
 
-TEST(custom_tree_can_restore_files_after_local_filter)
+TEST(custom_tree_can_restore_files_after_local_filter_interactive)
 {
 	char test_data[PATH_MAX + 1];
 	char path[PATH_MAX + 1];
@@ -437,6 +439,36 @@ TEST(custom_tree_can_restore_files_after_local_filter)
 
 	assert_int_equal(0, local_filter_set(&lwin, ""));
 	local_filter_accept(&lwin);
+	assert_int_equal(5, lwin.list_rows);
+}
+
+TEST(custom_tree_can_restore_files_after_local_filter_non_interactive)
+{
+	char test_data[PATH_MAX + 1];
+	char path[PATH_MAX + 1];
+
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "compare");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "read");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "rename");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "tree");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(flist_load_tree(&lwin, test_data));
+	assert_int_equal(5, lwin.list_rows);
+
+	local_filter_apply(&lwin, "t");
+	load_dir_list(&lwin, 1);
+	assert_int_equal(2, lwin.list_rows);
+
+	local_filter_apply(&lwin, "");
+	load_dir_list(&lwin, 1);
 	assert_int_equal(5, lwin.list_rows);
 }
 
