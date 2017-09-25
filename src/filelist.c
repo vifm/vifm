@@ -1296,6 +1296,7 @@ flist_custom_uncompress_tree(view_t *view)
 
 	dir_entry_t *entries = view->dir_entry;
 	size_t nentries = view->list_rows;
+	int restore_parent = 0;
 
 	fsdata_t *const tree = fsdata_create(0, 0);
 
@@ -1304,8 +1305,16 @@ flist_custom_uncompress_tree(view_t *view)
 
 	for(i = 0U; i < nentries; ++i)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		void *data = &entries[i];
+
+		if(entries[i].child_pos == 0 && is_parent_dir(entries[i].name))
+		{
+			fentry_free(view, &entries[i]);
+			restore_parent = 1;
+			continue;
+		}
+
 		get_full_path_of(&entries[i], sizeof(full_path), full_path);
 		fsdata_set(tree, full_path, &data, sizeof(data));
 	}
@@ -1316,6 +1325,11 @@ flist_custom_uncompress_tree(view_t *view)
 	dynarray_free(entries);
 
 	drop_tops(view, view->dir_entry, &view->list_rows, 0);
+
+	if(restore_parent)
+	{
+		add_parent_dir(view);
+	}
 }
 
 const char *
@@ -3563,6 +3577,10 @@ tree_from_cv(view_t *view)
 
 			/* Mark entries that came from original list. */
 			entries[i].tag = 1;
+		}
+		else
+		{
+			fentry_free(view, &entries[i]);
 		}
 	}
 
