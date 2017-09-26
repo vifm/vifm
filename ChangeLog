@@ -74,6 +74,9 @@
 	Extend width of the cursor in ls-like view to the width of the cell.
 	Thanks to Dmitry Frank (a.k.a. dimonomid).
 
+	Don't trigger DirEnter event with previous directory on startup when list
+	of files is specified on stdin.  Thanks to filterfalse.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 

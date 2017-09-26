@@ -145,6 +145,9 @@ view_setup(view_t *view)
 
 	view->custom.entry_count = 0;
 	view->custom.entries = NULL;
+
+	view->local_filter.entry_count = 0;
+	view->local_filter.entries = NULL;
 }
 
 void
@@ -163,6 +166,12 @@ view_teardown(view_t *view)
 		fentry_free(view, &view->custom.entries[i]);
 	}
 	dynarray_free(view->custom.entries);
+
+	for(i = 0; i < view->local_filter.entry_count; ++i)
+	{
+		fentry_free(view, &view->local_filter.entries[i]);
+	}
+	dynarray_free(view->local_filter.entries);
 
 	filter_dispose(&view->local_filter.filter);
 	filter_dispose(&view->auto_filter);

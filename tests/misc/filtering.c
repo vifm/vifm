@@ -17,6 +17,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
+#include "../../src/sort.h"
 #include "../../src/status.h"
 
 #include "utils.h"
@@ -470,6 +471,36 @@ TEST(custom_tree_can_restore_files_after_local_filter_non_interactive)
 	local_filter_apply(&lwin, "");
 	load_dir_list(&lwin, 1);
 	assert_int_equal(5, lwin.list_rows);
+}
+
+TEST(sorting_tree_preserves_parent_dot_dir)
+{
+	char test_data[PATH_MAX + 1];
+	char path[PATH_MAX + 1];
+
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	snprintf(path, sizeof(path), "%s/%s", test_data, "compare");
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/%s", test_data, "read");
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_success(flist_load_tree(&lwin, test_data));
+	assert_int_equal(4, lwin.list_rows);
+
+	local_filter_apply(&lwin, "/");
+	load_dir_list(&lwin, 1);
+	assert_int_equal(4, lwin.list_rows);
+
+	assert_string_equal("..", lwin.dir_entry[0].name);
+	sort_view(&lwin);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+
+	cfg.dot_dirs = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
