@@ -80,6 +80,9 @@
 	Improved performance of mime-type detection when using libmagic (now might
 	be about seven times faster by avoiding reinitialization of the library).
 
+	Don't force file list reload after `:!` and rely on change detection.
+	This should result in somewhat better performance.  Thanks to opennota.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 
