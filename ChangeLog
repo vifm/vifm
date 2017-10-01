@@ -77,6 +77,9 @@
 	Don't trigger DirEnter event with previous directory on startup when list
 	of files is specified on stdin.  Thanks to filterfalse.
 
+	Improved performance of mime-type detection when using libmagic (now might
+	be about seven times faster by avoiding reinitialization of the library).
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 
