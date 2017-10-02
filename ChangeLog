@@ -83,6 +83,9 @@
 	Don't force file list reload after `:!` and rely on change detection.
 	This should result in somewhat better performance.  Thanks to opennota.
 
+	Duplicate status bar error in dialog that reports sourcing error.  Will
+	need to get rid of errors on status bar later.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 

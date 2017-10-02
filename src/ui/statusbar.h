@@ -45,9 +45,9 @@ void status_bar_errorf(const char message[], ...) _gnuc_printf(1, 2);
 
 int is_status_bar_multiline(void);
 
-TSTATIC_DEFS(
-	const char * get_last_message(void);
-)
+/* Retrieves last message put on the status bar.  Use status_bar_message("") to
+ * clear it. */
+const char * ui_sb_last(void);
 
 #endif /* VIFM__UI__STATUSBAR_H__ */
 
