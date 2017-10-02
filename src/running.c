@@ -845,16 +845,22 @@ shellout(const char command[], ShellPause pause, int use_term_multiplexer)
 
 	free(cmd);
 
-	/* Force views update. */
-	ui_view_schedule_reload(&lwin);
-	ui_view_schedule_reload(&rwin);
+	/* Force updates of views that don't have associated watchers. */
+	if(flist_custom_active(&lwin) && lwin.custom.type != CV_TREE)
+	{
+		ui_view_schedule_reload(&lwin);
+	}
+	if(flist_custom_active(&rwin) && rwin.custom.type != CV_TREE)
+	{
+		ui_view_schedule_reload(&rwin);
+	}
 
 	recover_after_shellout();
 
 	if(!curr_stats.skip_shellout_redraw)
 	{
 		/* Redraw to handle resizing of terminal that we could have missed. */
-		curr_stats.need_update = UT_FULL;
+		curr_stats.need_update = UT_REDRAW;
 	}
 
 	if(curr_stats.load_stage != 0)

@@ -113,7 +113,7 @@ static int entry_exists(view_t *view, const dir_entry_t *entry, void *arg);
 static void zap_compare_view(view_t *view, view_t *other, zap_filter filter,
 		void *arg);
 static int find_separator(view_t *view, int idx);
-static int update_dir_watcher(view_t *view);
+static void update_dir_watcher(view_t *view);
 static int custom_list_is_incomplete(const view_t *view);
 static int is_dead_or_filtered(view_t *view, const dir_entry_t *entry,
 		void *arg);
@@ -1513,6 +1513,14 @@ populate_dir_list_internal(view_t *view, int reload)
 		return 1;
 	}
 
+	/* If directory didn't change. */
+	if(view->watch != NULL && stroscmp(view->watched_dir, view->curr_dir) == 0)
+	{
+		int failed;
+		/* Drain all events that happened before this point. */
+		(void)fswatch_changed(view->watch, &failed);
+	}
+
 	if(is_unc_root(view->curr_dir))
 	{
 #ifdef _WIN32
@@ -1575,11 +1583,12 @@ populate_dir_list_internal(view_t *view, int reload)
 
 	fview_list_updated(view);
 
-	if(update_dir_watcher(view) != 0 && !is_unc_root(view->curr_dir))
-	{
-		LOG_SERROR_MSG(errno, "Can't get directory mtime \"%s\"", view->curr_dir);
-		return 1;
-	}
+	/* Because we reset directory watcher if directory didn't change before
+	 * loading file list, it's possible that we did load everything, but one more
+	 * update will happen anyway afterwards.  We shouldn't drain change event
+	 * here, because it makes it possible to skip an update (when directory was
+	 * changed while we were reading from it). */
+	update_dir_watcher(view);
 
 	return 0;
 }
@@ -1751,32 +1760,24 @@ find_separator(view_t *view, int idx)
 	return -1;
 }
 
-/* Updates directory watcher of the view.  Returns zero on success, otherwise
- * non-zero is returned. */
-static int
+/* Updates directory watcher of the view. */
+static void
 update_dir_watcher(view_t *view)
 {
-	int error;
 	const char *const curr_dir = flist_get_dir(view);
 
 	if(view->watch == NULL || stroscmp(view->watched_dir, curr_dir) != 0)
 	{
 		fswatch_free(view->watch);
-
 		view->watch = fswatch_create(curr_dir);
-		if(view->watch == NULL)
+
+		/* Failure to create a watch is bad, but there isn't much we can do here and
+		 * this doesn't feel like a reason to block anything else. */
+		if(view->watch != NULL)
 		{
-			/* This is bad, but there isn't much we can do here and this doesn't feel
-			 * like a reason to block anything else. */
-			return 0;
+			copy_str(view->watched_dir, sizeof(view->watched_dir), curr_dir);
 		}
-
-		copy_str(view->watched_dir, sizeof(view->watched_dir), curr_dir);
 	}
-
-	(void)fswatch_changed(view->watch, &error);
-
-	return error;
 }
 
 /* Checks whether currently loaded custom list of files is missing some files
@@ -2487,7 +2488,7 @@ check_if_filelist_has_changed(view_t *view)
 	{
 		/* If watch is not initialized, try to do this, but don't fail on error. */
 
-		(void)update_dir_watcher(view);
+		update_dir_watcher(view);
 		failed = 0;
 		changed = (view->watch != NULL);
 	}

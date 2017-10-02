@@ -125,25 +125,37 @@ static int
 get_magic_mimetype(const char filename[], char buf[], size_t buf_sz)
 {
 #ifdef HAVE_LIBMAGIC
-	magic_t magic;
+	static magic_t magic;
 	const char *descr;
 
+	if(magic == NULL)
+	{
 #if HAVE_DECL_MAGIC_MIME_TYPE
-	magic = magic_open(MAGIC_MIME_TYPE);
+		magic = magic_open(MAGIC_MIME_TYPE);
 #else
-	magic = magic_open(MAGIC_MIME);
+		magic = magic_open(MAGIC_MIME);
 #endif
+
+		if(magic == NULL)
+		{
+			return -1;
+		}
+
+		if(magic_load(magic, NULL) != 0)
+		{
+			magic_close(magic);
+			magic = NULL;
+			return -1;
+		}
+	}
 	if(magic == NULL)
 	{
 		return -1;
 	}
 
-	magic_load(magic, NULL);
-
 	descr = magic_file(magic, filename);
 	if(descr == NULL)
 	{
-		magic_close(magic);
 		return -1;
 	}
 
@@ -152,7 +164,6 @@ get_magic_mimetype(const char filename[], char buf[], size_t buf_sz)
 	break_atr(buf, ';');
 #endif
 
-	magic_close(magic);
 	return 0;
 #else /* #ifdef HAVE_LIBMAGIC */
 	return -1;

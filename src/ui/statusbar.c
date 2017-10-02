@@ -295,7 +295,7 @@ is_status_bar_multiline(void)
 }
 
 const char *
-get_last_message(void)
+ui_sb_last(void)
 {
 	return last_message;
 }

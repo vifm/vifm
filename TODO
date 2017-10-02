@@ -5,10 +5,8 @@ Basic things:
   * Backgrounding of commands with job control (pause/resume/kill). (partially
     done)
   * Display parsing errors in dialog that indicate the error, don't rely on
-    status bar.
+    status bar. (partially done)
   * Remove trash option, since we have two commands for deletion.
-  * Abort/retry/ignore kind of actions for i/o for 'syscalls'. (partially
-    done)
   * Filtering in menus.
   * Process shell pause request for running in %s.
   * Responsive TUI during blocking operations.

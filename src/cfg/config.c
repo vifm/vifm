@@ -45,6 +45,7 @@
 #include "../int/term_title.h"
 #include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
+#include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/env.h"
 #include "../utils/file_streams.h"
@@ -756,6 +757,10 @@ source_file_internal(FILE *fp, const char filename[])
 			else
 				break;
 		}
+
+		/* Clear statusbar message. */
+		status_bar_message("");
+
 		if(exec_commands(line, curr_view, CIT_COMMAND) < 0)
 		{
 			show_sourcing_error(filename, line_num);
@@ -778,6 +783,8 @@ source_file_internal(FILE *fp, const char filename[])
 
 	free(next_line);
 
+	/* Clear statusbar message. */
+	status_bar_message("");
 	if(commands_scope_finish() != 0)
 	{
 		show_sourcing_error(filename, line_num);
@@ -791,11 +798,22 @@ source_file_internal(FILE *fp, const char filename[])
 static void
 show_sourcing_error(const char filename[], int line_num)
 {
+	const char *const last_msg = ui_sb_last();
+
 	curr_stats.save_msg = 1;
 
 	/* User choice is saved by prompt_error_msgf internally. */
-	(void)prompt_error_msgf("File Sourcing Error", "Error in %s at line %d",
-			filename, line_num);
+	if(is_null_or_empty(last_msg))
+	{
+		(void)prompt_error_msgf("File Sourcing Error", "Error in %s at line %d",
+				filename, line_num);
+	}
+	else
+	{
+		/* The space is needed because empty lines are automatically removed. */
+		(void)prompt_error_msgf("File Sourcing Error", "Error in %s at line %d:\n"
+				" \n%s", filename, line_num, last_msg);
+	}
 
 	curr_stats.save_msg = 0;
 }

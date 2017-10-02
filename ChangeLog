@@ -77,6 +77,15 @@
 	Don't trigger DirEnter event with previous directory on startup when list
 	of files is specified on stdin.  Thanks to filterfalse.
 
+	Improved performance of mime-type detection when using libmagic (now might
+	be about seven times faster by avoiding reinitialization of the library).
+
+	Don't force file list reload after `:!` and rely on change detection.
+	This should result in somewhat better performance.  Thanks to opennota.
+
+	Duplicate status bar error in dialog that reports sourcing error.  Will
+	need to get rid of errors on status bar later.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 
@@ -115,6 +124,9 @@
 
 	Fixed assertion failure on renaming files with Ctrl-A/Ctrl-X when cursor
 	is positioned on certain file from the range.
+
+	Fixed a "race" with file system when we could load outdated file list and
+	thus miss some file system updates.
 
 0.9-beta to 0.9
 

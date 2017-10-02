@@ -43,7 +43,7 @@ TEST(filter_prints_empty_filters_correctly)
 
 	status_bar_message("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
+	assert_string_equal(expected, ui_sb_last());
 }
 
 TEST(filter_prints_non_empty_filters)
@@ -58,7 +58,7 @@ TEST(filter_prints_non_empty_filters)
 
 	status_bar_message("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
+	assert_string_equal(expected, ui_sb_last());
 }
 
 TEST(filter_with_empty_value_reuses_last_search)
@@ -74,7 +74,7 @@ TEST(filter_with_empty_value_reuses_last_search)
 	assert_success(exec_commands("filter //I", &lwin, CIT_COMMAND));
 	status_bar_message("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
+	assert_string_equal(expected, ui_sb_last());
 }
 
 TEST(filter_accepts_pipe_without_escaping)
@@ -94,7 +94,7 @@ TEST(filter_prints_whole_manual_filter_expression)
 
 	status_bar_message("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
+	assert_string_equal(expected, ui_sb_last());
 }
 
 TEST(filter_without_args_resets_manual_filter)
@@ -109,7 +109,7 @@ TEST(filter_without_args_resets_manual_filter)
 
 	status_bar_message("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
+	assert_string_equal(expected, ui_sb_last());
 }
 
 TEST(filter_reset_is_not_affected_by_search_history)
@@ -127,7 +127,7 @@ TEST(filter_reset_is_not_affected_by_search_history)
 
 	status_bar_message("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
-	assert_string_equal(expected, get_last_message());
+	assert_string_equal(expected, ui_sb_last());
 }
 
 TEST(filter_can_affect_both_views)

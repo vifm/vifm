@@ -119,7 +119,7 @@ TEST(highlighting_is_printed_back_correctly)
 	status_bar_message("");
 	assert_failure(exec_commands("highlight {*.jpg}", &lwin, CIT_COMMAND));
 	assert_string_equal("{*.jpg}    cterm=none ctermfg=red     ctermbg=default",
-			get_last_message());
+			ui_sb_last());
 }
 
 TEST(existing_records_are_updated)
