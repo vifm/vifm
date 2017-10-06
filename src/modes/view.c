@@ -746,7 +746,7 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 static view_t *
 get_active_view(void)
 {
-	return curr_stats.view ? other_view : curr_view;
+	return (curr_stats.preview.on ? other_view : curr_view);
 }
 
 void
@@ -884,7 +884,7 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	ui_views_update_titles();
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		qv_draw(curr_view);
 	}
@@ -897,7 +897,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 	vi->detached = 1;
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	switch_panes();
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		change_window();
 	}
@@ -1101,7 +1101,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		const char *const v = (vi->viewer != NULL) ? vi->viewer : viewer;
 		const int graphics = is_graphics_viewer(v);
 		view_t *const curr = curr_view;
-		curr_view = curr_stats.view ? curr_view
+		curr_view = curr_stats.preview.on ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
 		curr_stats.preview_hint = vi->view;
 

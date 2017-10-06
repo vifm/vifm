@@ -1795,7 +1795,7 @@ fview_position_updated(view_t *view)
 
 		position_hardware_cursor(view);
 
-		if(curr_stats.view)
+		if(curr_stats.preview.on)
 		{
 			qv_draw(view);
 		}

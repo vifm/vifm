@@ -717,7 +717,7 @@ reload_lists(void)
 	if(curr_stats.number_of_windows == 2)
 	{
 		ui_view_title_update(other_view);
-		if(curr_stats.view)
+		if(curr_stats.preview.on)
 		{
 			qv_draw(curr_view);
 		}
@@ -751,7 +751,7 @@ change_window(void)
 		put_inactive_mark(other_view);
 	}
 
-	if(curr_stats.view && !is_dir_list_loaded(curr_view))
+	if(curr_stats.preview.on && !is_dir_list_loaded(curr_view))
 	{
 		/* This view hasn't been loaded since startup yet, do it now. */
 		navigate_to(curr_view, curr_view->curr_dir);
@@ -866,7 +866,7 @@ update_view(view_t *view)
 
 	/* If view displays graphics, we don't want to update it or the image will be
 	 * lost. */
-	if(!view->explore_mode && !(curr_stats.view && view == other_view))
+	if(!view->explore_mode && !(curr_stats.preview.on && view == other_view))
 	{
 		update_window_lazy(view->win);
 	}
@@ -965,7 +965,7 @@ redraw_lists(void)
 	redraw_current_view();
 	if(curr_stats.number_of_windows == 2)
 	{
-		if(curr_stats.view)
+		if(curr_stats.preview.on)
 		{
 			qv_draw(curr_view);
 			refresh_view_win(other_view);
@@ -1538,7 +1538,7 @@ ui_view_reset_search_highlight(view_t *view)
 void
 ui_views_reload_visible_filelists(void)
 {
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		load_saving_pos(curr_view);
 	}
@@ -1608,7 +1608,7 @@ format_view_title(const view_t *view, path_func pf)
 		get_current_full_path(view, sizeof(full_path), full_path);
 		return strdup(pf(full_path));
 	}
-	else if(curr_stats.view && view == other_view)
+	else if(curr_stats.preview.on && view == other_view)
 	{
 		const char *const viewer = view_detached_get_viewer();
 		if(viewer != NULL)

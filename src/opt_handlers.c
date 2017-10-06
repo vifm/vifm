@@ -3315,7 +3315,7 @@ wrap_handler(OPT_OP op, optval_t val)
 static void
 text_option_changed(void)
 {
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		qv_draw(curr_view);
 	}

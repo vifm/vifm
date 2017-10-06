@@ -77,7 +77,7 @@ TEST(preview_enabled_if_possible)
 	assert_success(qv_ensure_is_shown());
 	assert_success(qv_ensure_is_shown());
 
-	curr_stats.view = 0;
+	curr_stats.preview.on = 0;
 	other_view->explore_mode = 1;
 	assert_failure(qv_ensure_is_shown());
 	other_view->explore_mode = 0;
@@ -87,7 +87,7 @@ TEST(preview_is_closed_on_request)
 {
 	assert_success(qv_ensure_is_shown());
 	qv_hide();
-	assert_false(curr_stats.view);
+	assert_false(curr_stats.preview.on);
 }
 
 TEST(macros_are_expanded_for_viewer)

@@ -2687,7 +2687,7 @@ window_shows_dirlist(const view_t *const view)
 		return 0;
 	}
 
-	if(view == other_view && curr_stats.view)
+	if(view == other_view && curr_stats.preview.on)
 	{
 		return 0;
 	}

@@ -4071,11 +4071,11 @@ unselect_cmd(const cmd_info_t *cmd_info)
 static int
 view_cmd(const cmd_info_t *cmd_info)
 {
-	if((!curr_stats.view || cmd_info->emark) && !qv_can_show())
+	if((!curr_stats.preview.on || cmd_info->emark) && !qv_can_show())
 	{
 		return 1;
 	}
-	if(curr_stats.view && cmd_info->emark)
+	if(curr_stats.preview.on && cmd_info->emark)
 	{
 		return 0;
 	}
