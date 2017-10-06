@@ -103,7 +103,7 @@ typedef struct
 	char *viewer;   /* When non-NULL, specifies custom preview command (no
 	                   implicit %c). */
 	int detached;   /* Whether view mode was detached. */
-	int graphics;   /* Whether viewer presumably displays graphics. */
+	int graphical;  /* Whether viewer presumably displays graphics. */
 	int wrap;       /* Whether lines are wrapped. */
 }
 view_info_t;
@@ -627,7 +627,7 @@ draw(void)
 	const int searched = (vi->last_search_backward != -1);
 	esc_state state;
 
-	if(vi->graphics)
+	if(vi->graphical)
 	{
 		const char *cmd = qv_get_viewer(vi->filename);
 		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
@@ -1099,13 +1099,13 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	else
 	{
 		const char *const v = (vi->viewer != NULL) ? vi->viewer : viewer;
-		const int graphics = is_graphics_viewer(v);
+		const int graphical = is_graphical_viewer(v);
 		view_t *const curr = curr_view;
 		curr_view = curr_stats.preview.on ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
 		curr_stats.preview_hint = vi->view;
 
-		if(graphics)
+		if(graphical)
 		{
 			/* Wait a bit to let terminal emulator do actual refresh (at least some
 			 * of them need this). */
@@ -1131,9 +1131,9 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			return 3;
 		}
 
-		if(graphics)
+		if(graphical)
 		{
-			vi->graphics = 1;
+			vi->graphical = 1;
 		}
 
 		ui_cancellation_reset();

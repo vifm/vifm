@@ -222,7 +222,7 @@ view_entry(const dir_entry_t *entry)
 static void
 view_file(const char path[])
 {
-	int graphics = 0;
+	int graphical = 0;
 	const char *viewer;
 	const char *clear_cmd;
 	FILE *fp;
@@ -253,10 +253,10 @@ view_file(const char path[])
 	}
 	else
 	{
-		graphics = is_graphics_viewer(viewer);
+		graphical = is_graphical_viewer(viewer);
 		/* If graphics will be displayed, clear the window and wait a bit to let
 		 * terminal emulator do actual refresh (at least some of them need this). */
-		if(graphics)
+		if(graphical)
 		{
 			qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 			usleep(50000);
@@ -274,11 +274,11 @@ view_file(const char path[])
 
 	/* We want to wipe the view if it was displaying graphics, but won't anymore.
 	 * Do this only if we didn't already cleared the window. */
-	if(!graphics)
+	if(!graphical)
 	{
 		cleanup_for_text();
 	}
-	curr_stats.preview.graphical = graphics;
+	curr_stats.preview.graphical = graphical;
 
 	clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);

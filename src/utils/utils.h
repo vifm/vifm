@@ -149,7 +149,7 @@ int def_count(int count);
 
 /* Guesses whether given viewer command is going to display graphics.  Returns
  * non-zero if it's likely, otherwise zero is returned. */
-int is_graphics_viewer(const char viewer[]);
+int is_graphical_viewer(const char viewer[]);
 
 /* Extracts path and line number from the spec (default line number is 1).
  * Returns path in as newly allocated string and sets *line_num to line number,

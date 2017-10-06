@@ -708,7 +708,7 @@ is_line_spec(const char str[])
 }
 
 int
-is_graphics_viewer(const char viewer[])
+is_graphical_viewer(const char viewer[])
 {
 	/* %pw and %ph can be useful for text output, but %px and %py are useful
 	 * for graphics and basically must have both. */
