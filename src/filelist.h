@@ -133,7 +133,7 @@ void flist_custom_set(view_t *view, const char title[], const char path[],
  * enables excluding files that share ids with selected items. */
 void flist_custom_exclude(view_t *view, int selection_only);
 /* Clones list of files from from view to to view. */
-void flist_custom_clone(view_t *to, const view_t *from);
+void flist_custom_clone(view_t *to, const view_t *from, int as_tree);
 /* Adds missing parent directories to the tree.  Such entries are marked as
  * "temporary", which can be used to remove them later. */
 void flist_custom_uncompress_tree(view_t *view);

@@ -306,6 +306,10 @@ TEST(sync_syncs_custom_trees)
 	char test_data[PATH_MAX + 1];
 	char path[PATH_MAX + 1];
 
+	opt_handlers_setup();
+
+	columns_add_column_desc(SK_BY_NAME, &format_none);
+	columns_add_column_desc(SK_BY_SIZE, &format_none);
 	columns_set_line_print_func(&column_line_print);
 	other_view->columns = columns_create();
 
@@ -328,6 +332,8 @@ TEST(sync_syncs_custom_trees)
 	curr_view->selected_files = 1;
 	flist_custom_exclude(curr_view, 1);
 
+	/* As custom trees. */
+
 	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
 	assert_true(flist_custom_active(other_view));
 	curr_stats.load_stage = 2;
@@ -337,9 +343,17 @@ TEST(sync_syncs_custom_trees)
 	assert_int_equal(CV_CUSTOM_TREE, other_view->custom.type);
 	assert_int_equal(curr_view->list_rows, other_view->list_rows);
 
+	/* As custom views. */
+
+	assert_success(exec_commands("sync! filelist", curr_view, CIT_COMMAND));
+	assert_true(flist_custom_active(other_view));
+	assert_int_equal(CV_VERY, other_view->custom.type);
+
 	columns_free(other_view->columns);
 	other_view->columns = NULL;
 	columns_set_line_print_func(NULL);
+
+	opt_handlers_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1210,13 +1210,12 @@ is_temporary(view_t *view, const dir_entry_t *entry, void *arg)
 }
 
 void
-flist_custom_clone(view_t *to, const view_t *from)
+flist_custom_clone(view_t *to, const view_t *from, int as_tree)
 {
 	dir_entry_t *dst, *src;
 	int nentries;
 	int i, j;
 	const int from_tree = cv_tree(from->custom.type);
-	const int to_tree = (from->custom.type == CV_CUSTOM_TREE);
 
 	assert(flist_custom_active(from) && to->custom.paths_cache == NULL &&
 			"Wrong state of destination view.");
@@ -1225,9 +1224,9 @@ flist_custom_clone(view_t *to, const view_t *from)
 	to->curr_dir[0] = '\0';
 
 	replace_string(&to->custom.title,
-			(from_tree && !to_tree) ? "from tree" : from->custom.title);
+			(from_tree && !as_tree) ? "from tree" : from->custom.title);
 	to->custom.type = (ui_view_unsorted(from) || from_tree)
-	                ? (to_tree ? CV_CUSTOM_TREE : CV_VERY)
+	                ? (as_tree ? CV_CUSTOM_TREE : CV_VERY)
 	                : CV_REGULAR;
 
 	if(custom_list_is_incomplete(from))
@@ -1263,7 +1262,7 @@ flist_custom_clone(view_t *to, const view_t *from)
 			dst[j].origin = strdup(dst[j].origin);
 		}
 
-		if(!to_tree)
+		if(!as_tree)
 		{
 			/* As destination pane won't be a tree, erase tree-specific data, because
 			 * some tree-specific code is driven directly by these fields. */
@@ -3461,7 +3460,8 @@ flist_clone_tree(view_t *to, const view_t *from)
 {
 	if(from->custom.type == CV_CUSTOM_TREE)
 	{
-		flist_custom_clone(to, from);
+		const int as_tree = (from->custom.type == CV_CUSTOM_TREE);
+		flist_custom_clone(to, from, as_tree);
 	}
 	else
 	{

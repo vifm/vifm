@@ -3843,7 +3843,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 	}
 	else if(cv)
 	{
-		flist_custom_clone(other_view, curr_view);
+		flist_custom_clone(other_view, curr_view, 0);
 		if(sync_filters)
 		{
 			local_filter_apply(other_view, curr_view->local_filter.filter.raw);
