@@ -630,8 +630,8 @@ draw_cell(columns_t *columns, const column_data_t *cdt, size_t col_width,
 		size_t print_width)
 {
 	size_t width_left = cdt->is_main
-	                  ? ui_view_available_width(cdt->view) - cdt->column_offset -
-	                    ui_view_left_reserved(cdt->view)
+	                  ? ui_view_available_width(cdt->view) - (cdt->column_offset -
+	                    ui_view_left_reserved(cdt->view))
 	                  : col_width + 1U;
 
 	if(cfg.extra_padding)
@@ -1795,7 +1795,7 @@ fview_position_updated(view_t *view)
 
 		position_hardware_cursor(view);
 
-		if(curr_stats.view)
+		if(curr_stats.preview.on)
 		{
 			qv_draw(view);
 		}

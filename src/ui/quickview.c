@@ -98,11 +98,11 @@ static char * expand_viewer_command(const char viewer[]);
 int
 qv_ensure_is_shown(void)
 {
-	if(!curr_stats.view && !qv_can_show())
+	if(!curr_stats.preview.on && !qv_can_show())
 	{
 		return 1;
 	}
-	curr_stats.view = 1;
+	curr_stats.preview.on = 1;
 	return 0;
 }
 
@@ -125,30 +125,30 @@ qv_can_show(void)
 void
 qv_toggle(void)
 {
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
-		curr_stats.view = 0;
+		curr_stats.preview.on = 0;
 
 		if(ui_view_is_visible(other_view))
 		{
 			/* Force cleaning possible leftovers of graphics, otherwise curses
 			 * internal structures don't know that those parts need to be redrawn on
 			 * the screen. */
-			if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview)
+			if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
 			{
-				qv_cleanup(other_view, curr_stats.preview_cleanup);
+				qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 			}
 
 			draw_dir_list(other_view);
 			refresh_view_win(other_view);
 		}
 
-		update_string(&curr_stats.preview_cleanup, NULL);
-		curr_stats.graphics_preview = 0;
+		update_string(&curr_stats.preview.cleanup_cmd, NULL);
+		curr_stats.preview.graphical = 0;
 	}
 	else
 	{
-		curr_stats.view = 1;
+		curr_stats.preview.on = 1;
 		qv_draw(curr_view);
 	}
 }
@@ -222,7 +222,7 @@ view_entry(const dir_entry_t *entry)
 static void
 view_file(const char path[])
 {
-	int graphics = 0;
+	int graphical = 0;
 	const char *viewer;
 	const char *clear_cmd;
 	FILE *fp;
@@ -253,12 +253,12 @@ view_file(const char path[])
 	}
 	else
 	{
-		graphics = is_graphics_viewer(viewer);
+		graphical = is_graphical_viewer(viewer);
 		/* If graphics will be displayed, clear the window and wait a bit to let
 		 * terminal emulator do actual refresh (at least some of them need this). */
-		if(graphics)
+		if(graphical)
 		{
-			qv_cleanup(other_view, curr_stats.preview_cleanup);
+			qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 			usleep(50000);
 		}
 		fp = qv_execute_viewer(viewer);
@@ -274,14 +274,14 @@ view_file(const char path[])
 
 	/* We want to wipe the view if it was displaying graphics, but won't anymore.
 	 * Do this only if we didn't already cleared the window. */
-	if(!graphics)
+	if(!graphical)
 	{
 		cleanup_for_text();
 	}
-	curr_stats.graphics_preview = graphics;
+	curr_stats.preview.graphical = graphical;
 
 	clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
-	update_string(&curr_stats.preview_cleanup, clear_cmd);
+	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
 	wattrset(other_view->win, 0);
 	view_stream(fp, cfg.wrap_quick_view);
@@ -614,18 +614,18 @@ write_message(const char msg[])
 static void
 cleanup_for_text(void)
 {
-	if(curr_stats.preview_cleanup != NULL || curr_stats.graphics_preview)
+	if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
 	{
-		qv_cleanup(other_view, curr_stats.preview_cleanup);
+		qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 	}
-	update_string(&curr_stats.preview_cleanup, NULL);
-	curr_stats.graphics_preview = 0;
+	update_string(&curr_stats.preview.cleanup_cmd, NULL);
+	curr_stats.preview.graphical = 0;
 }
 
 void
 qv_hide(void)
 {
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		qv_toggle();
 	}
@@ -691,9 +691,9 @@ qv_cleanup(view_t *view, const char cmd[])
 	}
 
 	curr_view = view;
-	curr_stats.clear_preview = 1;
+	curr_stats.preview.clearing = 1;
 	fp = qv_execute_viewer(cmd);
-	curr_stats.clear_preview = 0;
+	curr_stats.preview.clearing = 0;
 	curr_view = curr;
 
 	while(fgetc(fp) != EOF);

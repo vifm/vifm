@@ -91,6 +91,16 @@ typedef enum
 }
 ShellType;
 
+/* Current preview (quickview) parameters. */
+typedef struct
+{
+	char *cleanup_cmd;          /* Cleanup command. */
+	unsigned int on : 1;        /* Whether preview mode is active. */
+	unsigned int graphical : 1; /* Whether current preview displays graphics. */
+	unsigned int clearing : 1;  /* Whether in process of clearing preview. */
+}
+preview_t;
+
 typedef struct
 {
 	UpdateType need_update;
@@ -104,10 +114,7 @@ typedef struct
 	int drop_new_dir_hist; /* Skip recording of new directory history. */
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
-	int view;              /* Whether preview mode is active. */
-	int graphics_preview;  /* Whether current preview displays graphics. */
-	char *preview_cleanup; /* Cleanup command for preview. */
-	int clear_preview;     /* Whether we're in process of clearing preview. */
+	preview_t preview; /* State of preview (quickview). */
 
 	/* Describes terminal state with regard to its dimensions. */
 	TermState term_state;

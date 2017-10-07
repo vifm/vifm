@@ -124,10 +124,10 @@ load_def_values(status_t *stats, config_t *config)
 	stats->cs = &config->cs;
 	strcpy(stats->color_scheme, "");
 
-	stats->view = 0;
-	stats->graphics_preview = 0;
-	update_string(&stats->preview_cleanup, NULL);
-	stats->clear_preview = 0;
+	stats->preview.on = 0;
+	stats->preview.graphical = 0;
+	update_string(&stats->preview.cleanup_cmd, NULL);
+	stats->preview.clearing = 0;
 
 	stats->msg_head = 0;
 	stats->msg_tail = 0;

@@ -897,7 +897,7 @@ static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
 	switch_panes();
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		change_window();
 		(void)try_switch_into_view_mode();
@@ -958,7 +958,7 @@ go_to_other_window(void)
 static int
 try_switch_into_view_mode(void)
 {
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		view_enter_mode(other_view, 0);
 		return 1;
@@ -1569,7 +1569,7 @@ cmd_dp(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		status_bar_error("Another type of file viewing is activated");
 		curr_stats.save_msg = 1;

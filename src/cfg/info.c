@@ -240,7 +240,7 @@ read_info_file(int reread)
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
 			const int i = atoi(line_val);
-			curr_stats.view = (i == 1);
+			curr_stats.preview.on = (i == 1);
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
@@ -1310,7 +1310,7 @@ write_tui_state(FILE *const fp)
 {
 	fputs("\n# TUI:\n", fp);
 	fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
-	fprintf(fp, "q%d\n", curr_stats.view);
+	fprintf(fp, "q%d\n", curr_stats.preview.on);
 	fprintf(fp, "v%d\n", curr_stats.number_of_windows);
 	fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
 	fprintf(fp, "m%d\n", curr_stats.splitter_pos);

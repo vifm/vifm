@@ -503,7 +503,7 @@ expand_preview(char expanded[], int key, int *well_formed)
 	char num_str[32];
 	int h, w, x, y;
 	int param;
-	const int with_margin = (curr_stats.clear_preview == 0) && cfg.extra_padding;
+	const int with_margin = !curr_stats.preview.clearing && cfg.extra_padding;
 
 	if(!char_is_one_of("hwxy", key))
 	{
@@ -548,7 +548,7 @@ get_preview_view(view_t *view)
 		return curr_stats.preview_hint;
 	}
 
-	if(curr_stats.view || (!view->explore_mode && other->explore_mode))
+	if(curr_stats.preview.on || (!view->explore_mode && other->explore_mode))
 	{
 		return other;
 	}

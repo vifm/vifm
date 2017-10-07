@@ -103,7 +103,7 @@ typedef struct
 	char *viewer;   /* When non-NULL, specifies custom preview command (no
 	                   implicit %c). */
 	int detached;   /* Whether view mode was detached. */
-	int graphics;   /* Whether viewer presumably displays graphics. */
+	int graphical;  /* Whether viewer presumably displays graphics. */
 	int wrap;       /* Whether lines are wrapped. */
 }
 view_info_t;
@@ -627,7 +627,7 @@ draw(void)
 	const int searched = (vi->last_search_backward != -1);
 	esc_state state;
 
-	if(vi->graphics)
+	if(vi->graphical)
 	{
 		const char *cmd = qv_get_viewer(vi->filename);
 		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
@@ -746,7 +746,7 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 static view_t *
 get_active_view(void)
 {
-	return curr_stats.view ? other_view : curr_view;
+	return (curr_stats.preview.on ? other_view : curr_view);
 }
 
 void
@@ -884,7 +884,7 @@ cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	ui_views_update_titles();
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		qv_draw(curr_view);
 	}
@@ -897,7 +897,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 	vi->detached = 1;
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	switch_panes();
-	if(curr_stats.view)
+	if(curr_stats.preview.on)
 	{
 		change_window();
 	}
@@ -1099,13 +1099,13 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	else
 	{
 		const char *const v = (vi->viewer != NULL) ? vi->viewer : viewer;
-		const int graphics = is_graphics_viewer(v);
+		const int graphical = is_graphical_viewer(v);
 		view_t *const curr = curr_view;
-		curr_view = curr_stats.view ? curr_view
+		curr_view = curr_stats.preview.on ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
 		curr_stats.preview_hint = vi->view;
 
-		if(graphics)
+		if(graphical)
 		{
 			/* Wait a bit to let terminal emulator do actual refresh (at least some
 			 * of them need this). */
@@ -1131,9 +1131,9 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			return 3;
 		}
 
-		if(graphics)
+		if(graphical)
 		{
-			vi->graphics = 1;
+			vi->graphical = 1;
 		}
 
 		ui_cancellation_reset();

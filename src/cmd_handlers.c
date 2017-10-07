@@ -3843,7 +3843,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 	}
 	else if(cv)
 	{
-		flist_custom_clone(other_view, curr_view);
+		flist_custom_clone(other_view, curr_view, 0);
 		if(sync_filters)
 		{
 			local_filter_apply(other_view, curr_view->local_filter.filter.raw);
@@ -4071,11 +4071,11 @@ unselect_cmd(const cmd_info_t *cmd_info)
 static int
 view_cmd(const cmd_info_t *cmd_info)
 {
-	if((!curr_stats.view || cmd_info->emark) && !qv_can_show())
+	if((!curr_stats.preview.on || cmd_info->emark) && !qv_can_show())
 	{
 		return 1;
 	}
-	if(curr_stats.view && cmd_info->emark)
+	if(curr_stats.preview.on && cmd_info->emark)
 	{
 		return 0;
 	}

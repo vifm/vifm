@@ -466,7 +466,7 @@ remote_cd(view_t *view, const char path[], int handle)
 		view_leave_mode();
 	}
 
-	if(curr_stats.view && (handle || view == other_view))
+	if(curr_stats.preview.on && (handle || view == other_view))
 	{
 		qv_toggle();
 	}
