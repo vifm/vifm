@@ -1487,6 +1487,15 @@ populate_dir_list_internal(view_t *view, int reload)
 {
 	view->filtered = 0;
 
+	/* List reload usually implies that something related to file list has
+	 * changed, like an option.  Reset cached lists to make sure they are up to
+	 * date with main column. */
+	if(reload)
+	{
+		flist_free_cache(view, &view->left_column);
+		flist_free_cache(view, &view->right_column);
+	}
+
 	if(flist_custom_active(view))
 	{
 		return populate_custom_view(view, reload);
