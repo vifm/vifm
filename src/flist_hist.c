@@ -326,7 +326,7 @@ find_hist_entry(const view_t *view, const char dir[])
 	history_t *const history = view->history;
 	int i = view->history_pos;
 
-	if(cfg.history_len <= 0)
+	if(view->history_num <= 0)
 	{
 		return NULL;
 	}
