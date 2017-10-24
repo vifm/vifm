@@ -1427,9 +1427,17 @@ set_splitter(int pos)
 }
 
 void
-format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[])
+format_entry_name(const dir_entry_t *entry, NameFormat fmt, size_t buf_len,
+		char buf[])
 {
 	const char *prefix, *suffix;
+
+	if(fmt == NF_NONE)
+	{
+		copy_str(buf, buf_len, entry->name);
+		return;
+	}
+
 	ui_get_decors(entry, &prefix, &suffix);
 	snprintf(buf, buf_len, "%s%s%s", prefix,
 			(is_root_dir(entry->name) && suffix[0] == '/') ? "" : entry->name,

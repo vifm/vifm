@@ -161,6 +161,14 @@ typedef enum
 }
 UiUpdateEvent;
 
+/* Defines the way entry name should be formatted. */
+typedef enum
+{
+	NF_NONE, /* No formatting at all. */
+	NF_FULL  /* Decorate the whole name. */
+}
+NameFormat;
+
 typedef struct
 {
 	int rel_pos;
@@ -559,8 +567,9 @@ void move_splitter(int by, int fact);
 void ui_view_resize(view_t *view, int to);
 
 /* File name formatter which takes 'classify' option into account and applies
- * type dependent name decorations. */
-void format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[]);
+ * type dependent name decorations if requested. */
+void format_entry_name(const dir_entry_t *entry, NameFormat fmt, size_t buf_len,
+		char buf[]);
 
 /* Retrieves decorations for file entry.  Sets *prefix and *suffix to strings
  * stored in global configuration. */

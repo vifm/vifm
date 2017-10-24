@@ -1328,7 +1328,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 	if(!flist_custom_active(view))
 	{
 		/* Just file name. */
-		format_entry_name(cdt->entry, buf_len + 1, buf);
+		format_entry_name(cdt->entry, NF_FULL, buf_len + 1, buf);
 		return;
 	}
 
