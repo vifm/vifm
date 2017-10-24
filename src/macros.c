@@ -406,7 +406,7 @@ static char *
 append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
 		int quotes, const char mod[], int for_shell)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	const char *modified;
 
 	switch(type)
