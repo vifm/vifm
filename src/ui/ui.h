@@ -117,8 +117,15 @@ enum
 	/* Special value to use for unset options. */
 	SK_NONE = SK_LAST + 1,
 
-	/* Id ordering.  Defined here to do not add it to sorting keys. */
-	SK_BY_ID = SK_NONE + 1
+	/* Defined here to do not add it to sorting keys. */
+	/* Id ordering. */
+	SK_BY_ID = SK_NONE + 1,
+	/* Displaying root of file name only. */
+	SK_BY_ROOT,
+
+	/* Total number of SK_*, including those missing from sorting keys and other
+	 * counts. */
+	SK_TOTAL
 };
 
 /* Type of file numbering. */
@@ -165,6 +172,7 @@ UiUpdateEvent;
 typedef enum
 {
 	NF_NONE, /* No formatting at all. */
+	NF_ROOT, /* Exclude extension and decorate the rest. */
 	NF_FULL  /* Decorate the whole name. */
 }
 NameFormat;

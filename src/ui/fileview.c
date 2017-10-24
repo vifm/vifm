@@ -190,6 +190,7 @@ fview_init(void)
 		columns_add_column_desc(sort_to_func[i].key, sort_to_func[i].func);
 	}
 	columns_add_column_desc(SK_BY_ID, &format_id);
+	columns_add_column_desc(SK_BY_ROOT, &format_name);
 }
 
 void
@@ -1058,7 +1059,9 @@ column_line_print(const void *data, int column_id, const char buf[],
 	const int numbers_visible = (offset == 0 && cdt->number_width > 0);
 	const int padding = (cfg.extra_padding != 0);
 
-	const int primary = (column_id == SK_BY_NAME || column_id == SK_BY_INAME);
+	const int primary = column_id == SK_BY_NAME
+	                 || column_id == SK_BY_INAME
+	                 || column_id == SK_BY_ROOT;
 	const int line_attrs = prepare_col_color(view, primary, cdt);
 
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
@@ -1319,6 +1322,8 @@ mix_in_file_name_hi(const view_t *view, dir_entry_t *entry, col_attr_t *col)
 TSTATIC void
 format_name(int id, const void *data, size_t buf_len, char buf[])
 {
+	const NameFormat fmt = (id == SK_BY_ROOT ? NF_ROOT : NF_FULL);
+
 	size_t len, i;
 	dir_entry_t *child, *parent;
 
@@ -1328,14 +1333,14 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 	if(!flist_custom_active(view))
 	{
 		/* Just file name. */
-		format_entry_name(cdt->entry, NF_FULL, buf_len + 1, buf);
+		format_entry_name(cdt->entry, fmt, buf_len + 1, buf);
 		return;
 	}
 
 	if(!ui_view_displays_columns(view) || !cv_tree(view->custom.type))
 	{
 		/* File name possibly with path prefix. */
-		get_short_path_of(view, cdt->entry, NF_FULL, 0, buf_len + 1U, buf);
+		get_short_path_of(view, cdt->entry, fmt, 0, buf_len + 1U, buf);
 		return;
 	}
 
@@ -1369,8 +1374,7 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 		buf[len - 1U - i] = t;
 	}
 
-	get_short_path_of(view, cdt->entry, NF_FULL, 1, buf_len + 1U - len,
-			buf + len);
+	get_short_path_of(view, cdt->entry, fmt, 1, buf_len + 1U - len, buf + len);
 	*cdt->prefix_len = len;
 }
 

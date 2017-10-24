@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 18, 2017" "vifm 0.9"
+.TH VIFM 1 "October 24, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4351,10 +4351,10 @@ default: ""
 .br
 scope: local
 .br
-Format string containing list of columns in the view.  When this option is empty
-view columns to show are chosen automatically using sorting keys (see 'sort') as
-a base.  Value of this option is ignored if 'lsview' is set.  See "Column view"
-section below for format description.
+Format string containing list of columns in the view.  When this option is
+empty, view columns to show are chosen automatically using sorting keys
+(see 'sort') as a base.  Value of this option is ignored if 'lsview' is set.
+See "Column view" section below for format description.
 
 An example of setting the options for both panes (note :windo command):
 .EX
@@ -5703,7 +5703,7 @@ there is not enough space to display them.
 .LP
 .B Column name
 
-This is just a sort key surrounded with curly braces, e.g.
+This is just a sort key surrounded with curly braces or {root}, e.g.
 
 .EX
   {name},{ext},{mtime}
@@ -5711,6 +5711,12 @@ This is just a sort key surrounded with curly braces, e.g.
 
 {name} and {iname} keys are the same and present both for consistency with
 \(aqsort\(aq option.
+
+Following keys don't have corresponding sorting keys:
+.RS 2
+.IP \- 2
+{root} \- display name without extension (as a complement for {ext})
+.RE
 
 Empty curly braces ({}) are replaced with the default secondary column for
 primary sort key. So after the next command view will be displayed almost as
