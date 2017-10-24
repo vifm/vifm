@@ -3167,7 +3167,7 @@ get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[])
 }
 
 void
-get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
+get_short_path_of(const view_t *view, const dir_entry_t *entry, NameFormat fmt,
 		int drop_prefix, size_t buf_len, char buf[])
 {
 	char name[NAME_MAX + 1];
@@ -3190,7 +3190,7 @@ get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
 		root_path = parent_path;
 	}
 
-	format_entry_name(entry, format ? NF_FULL : NF_NONE, sizeof(name), name);
+	format_entry_name(entry, fmt, sizeof(name), name);
 
 	if(is_parent_dir(entry->name) || is_root_dir(entry->name))
 	{

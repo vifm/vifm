@@ -1761,8 +1761,8 @@ paste_short_path(view_t *view)
 	if(flist_custom_active(view))
 	{
 		char short_path[PATH_MAX + 1];
-		get_short_path_of(view, get_current_entry(view), 0, 0, sizeof(short_path),
-				short_path);
+		get_short_path_of(view, get_current_entry(view), NF_NONE, 0,
+				sizeof(short_path), short_path);
 		paste_str(short_path, 1);
 		return;
 	}
@@ -1832,8 +1832,8 @@ static void
 paste_short_path_root(view_t *view)
 {
 	char short_path[PATH_MAX + 1];
-	get_short_path_of(view, get_current_entry(view), 0, 0, sizeof(short_path),
-			short_path);
+	get_short_path_of(view, get_current_entry(view), NF_NONE, 0,
+			sizeof(short_path), short_path);
 	paste_name_part(short_path, 1);
 }
 

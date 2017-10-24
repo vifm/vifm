@@ -284,7 +284,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				}
 				break;
 			case 'f':
-				get_short_path_of(view, curr, 1, 0, sizeof(buf), buf);
+				get_short_path_of(view, curr, NF_FULL, 0, sizeof(buf), buf);
 				break;
 			case 'A':
 #ifndef _WIN32

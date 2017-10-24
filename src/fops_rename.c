@@ -189,7 +189,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	while(iter_marked_entries(view, &entry))
 	{
 		char path[PATH_MAX + 1];
-		get_short_path_of(view, entry, 0, 0, sizeof(path), path);
+		get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
 
 		if(recursive)
 		{
