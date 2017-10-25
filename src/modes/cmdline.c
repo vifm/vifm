@@ -456,6 +456,9 @@ input_line_changed(void)
 		menu_full_redraw();
 	}
 
+	/* Hardware cursor is moved on the screen only on refresh, so refresh status
+	 * bar to force cursor moving there before it becomes visible again. */
+	wrefresh(status_bar);
 	curs_set(1);
 }
 

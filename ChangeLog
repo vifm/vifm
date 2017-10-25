@@ -131,6 +131,8 @@
 	Fixed a "race" with file system when we could load outdated file list and
 	thus miss some file system updates.
 
+	Fixed hardware cursor blinking in view for interactive queries.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
