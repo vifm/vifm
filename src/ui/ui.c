@@ -1427,13 +1427,32 @@ set_splitter(int pos)
 }
 
 void
-format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[])
+format_entry_name(const dir_entry_t *entry, NameFormat fmt, size_t buf_len,
+		char buf[])
 {
 	const char *prefix, *suffix;
+	char tmp_buf[strlen(entry->name) + 1];
+	const char *name = entry->name;
+
+	if(fmt == NF_NONE)
+	{
+		copy_str(buf, buf_len, entry->name);
+		return;
+	}
+
+	if(fmt == NF_ROOT)
+	{
+		int root_len;
+		const char *ext_pos;
+
+		copy_str(tmp_buf, sizeof(tmp_buf), entry->name);
+		split_ext(tmp_buf, &root_len, &ext_pos);
+		name = tmp_buf;
+	}
+
 	ui_get_decors(entry, &prefix, &suffix);
 	snprintf(buf, buf_len, "%s%s%s", prefix,
-			(is_root_dir(entry->name) && suffix[0] == '/') ? "" : entry->name,
-			suffix);
+			(is_root_dir(entry->name) && suffix[0] == '/') ? "" : name, suffix);
 }
 
 void

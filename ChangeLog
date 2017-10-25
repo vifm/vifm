@@ -42,6 +42,9 @@
 	Added :histnext/:histprev commands, which are analogous to <c-i>/<c-o>.
 	Patch by Dmitry Frank (a.k.a. dimonomid).
 
+	Added {root} key to 'viewcolumns' option (complements {ext}).  Thanks to
+	Oleg Gordienko (a.k.a. gordio).
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

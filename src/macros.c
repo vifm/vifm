@@ -406,7 +406,7 @@ static char *
 append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
 		int quotes, const char mod[], int for_shell)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	const char *modified;
 
 	switch(type)
@@ -415,7 +415,7 @@ append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
 			copy_str(path, sizeof(path), entry->name);
 			break;
 		case PT_REL:
-			get_short_path_of(view, entry, 0, 0, sizeof(path), path);
+			get_short_path_of(view, entry, NF_NONE, 0, sizeof(path), path);
 			break;
 		case PT_FULL:
 			get_full_path_of(entry, sizeof(path), path);

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Sep 18
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Oct 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3626,8 +3626,8 @@ type: string
 default: ""
 scope: local
 
-Format string containing list of columns in the view. When this option is
-empty view columns to show are chosen automatically using sorting keys
+Format string containing list of columns in the view.  When this option is
+empty, view columns to show are chosen automatically using sorting keys
 (see |vifm-'sort'|) as a base.  Value of this option is ignored if
 |vifm-'lsview'| is set.  See |vifm-column-view| for format description.
 An example of setting the options for both panes (note |vifm-:windo|
@@ -4825,11 +4825,14 @@ there is not enough space to display them.
 
 Column name~
 
-This is just a sort key surrounded with curly braces, e.g. >
+This is just a sort key surrounded with curly braces or {root}, e.g. >
     {name},{ext},{mtime}
 <
 {name} and {iname} keys are the same and present both for consistency with
 |vifm-'sort'| option.
+
+Following keys don't have corresponding sorting keys:
+ - {root} - display name without extension (as a complement for {ext})
 
 Empty curly braces ({}) are replaced with the default secondary column for
 primary sort key. So after the next command views will be displayed almost as

@@ -205,10 +205,9 @@ void get_full_path_at(const view_t *view, int pos, size_t buf_len, char buf[]);
 void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
 /* Fills the buffer with short path of specified file list entry.  The
  * shortening occurs for files under original directory of custom views.
- * Non-zero format enables file type specific decoration.  Non-zero drop_prefix
- * requests omitting file prefix for trees. */
-void get_short_path_of(const view_t *view, const dir_entry_t *entry, int format,
-		int drop_prefix, size_t buf_len, char buf[]);
+ * Non-zero drop_prefix requests omitting file prefix for trees. */
+void get_short_path_of(const view_t *view, const dir_entry_t *entry,
+		NameFormat fmt, int drop_prefix, size_t buf_len, char buf[]);
 /* Ensures that either entries at specified positions, selected entries or file
  * under cursor is marked. */
 void check_marking(view_t *view, int count, const int indexes[]);

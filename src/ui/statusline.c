@@ -270,7 +270,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 						buf);
 				break;
 			case 't':
-				format_entry_name(curr, sizeof(buf), buf);
+				format_entry_name(curr, NF_FULL, sizeof(buf), buf);
 				break;
 			case 'T':
 				if(curr->type == FT_LINK)
@@ -284,7 +284,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				}
 				break;
 			case 'f':
-				get_short_path_of(view, curr, 1, 0, sizeof(buf), buf);
+				get_short_path_of(view, curr, NF_FULL, 0, sizeof(buf), buf);
 				break;
 			case 'A':
 #ifndef _WIN32

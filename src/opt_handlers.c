@@ -242,6 +242,7 @@ static const char *sort_enum[] = {
 	[SK_BY_NITEMS]        = "nitems",
 	[SK_BY_GROUPS]        = "groups",
 	[SK_BY_TARGET]        = "target",
+	[SK_BY_ROOT]          = "root",
 #ifndef _WIN32
 	[SK_BY_GROUP_ID]      = "gid",
 	[SK_BY_GROUP_NAME]    = "gname",
@@ -252,8 +253,11 @@ static const char *sort_enum[] = {
 	[SK_BY_NLINKS]        = "nlinks",
 	[SK_BY_INODE]         = "inode",
 #endif
+
+	[SK_NONE]             = "",
+	[SK_BY_ID]            = "",
 };
-ARRAY_GUARD(sort_enum, 1 + SK_COUNT);
+ARRAY_GUARD(sort_enum, SK_TOTAL);
 
 /* Possible values of 'caseoptions'. */
 static const char *caseoptions_vals[][2] = {

@@ -589,11 +589,11 @@ compare_targets(const dir_entry_t *f, const dir_entry_t *s)
 static int
 compare_entry_names(const dir_entry_t *a, const dir_entry_t *b, int ignore_case)
 {
-	char a_short_path[PATH_MAX];
-	char b_short_path[PATH_MAX];
+	char a_short_path[PATH_MAX + 1];
+	char b_short_path[PATH_MAX + 1];
 
-	get_short_path_of(view, a, 0, 0, sizeof(a_short_path), a_short_path);
-	get_short_path_of(view, b, 0, 0, sizeof(b_short_path), b_short_path);
+	get_short_path_of(view, a, NF_NONE, 0, sizeof(a_short_path), a_short_path);
+	get_short_path_of(view, b, NF_NONE, 0, sizeof(b_short_path), b_short_path);
 
 	return compare_full_file_names(a_short_path, b_short_path, ignore_case);
 }

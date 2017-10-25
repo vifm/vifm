@@ -117,8 +117,15 @@ enum
 	/* Special value to use for unset options. */
 	SK_NONE = SK_LAST + 1,
 
-	/* Id ordering.  Defined here to do not add it to sorting keys. */
-	SK_BY_ID = SK_NONE + 1
+	/* Defined here to do not add it to sorting keys. */
+	/* Id ordering. */
+	SK_BY_ID = SK_NONE + 1,
+	/* Displaying root of file name only. */
+	SK_BY_ROOT,
+
+	/* Total number of SK_*, including those missing from sorting keys and other
+	 * counts. */
+	SK_TOTAL
 };
 
 /* Type of file numbering. */
@@ -160,6 +167,15 @@ typedef enum
 	UUE_RELOAD, /* View reload with saving selection and cursor. */
 }
 UiUpdateEvent;
+
+/* Defines the way entry name should be formatted. */
+typedef enum
+{
+	NF_NONE, /* No formatting at all. */
+	NF_ROOT, /* Exclude extension and decorate the rest. */
+	NF_FULL  /* Decorate the whole name. */
+}
+NameFormat;
 
 typedef struct
 {
@@ -559,8 +575,9 @@ void move_splitter(int by, int fact);
 void ui_view_resize(view_t *view, int to);
 
 /* File name formatter which takes 'classify' option into account and applies
- * type dependent name decorations. */
-void format_entry_name(const dir_entry_t *entry, size_t buf_len, char buf[]);
+ * type dependent name decorations if requested. */
+void format_entry_name(const dir_entry_t *entry, NameFormat fmt, size_t buf_len,
+		char buf[]);
 
 /* Retrieves decorations for file entry.  Sets *prefix and *suffix to strings
  * stored in global configuration. */
