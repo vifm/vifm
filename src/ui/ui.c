@@ -1181,7 +1181,7 @@ update_statusbar_layout(void)
 static int
 are_statusbar_widgets_visible(void)
 {
-	return !vle_mode_is(CMDLINE_MODE) && !is_status_bar_multiline();
+	return !is_status_bar_multiline() && !ui_sb_locked();
 }
 
 /* Gets "recommended" width for the ruler.  Returns the width. */

@@ -49,6 +49,19 @@ int is_status_bar_multiline(void);
  * clear it. */
 const char * ui_sb_last(void);
 
+/* Status bar locking. */
+
+/* Locks status bar from using status_bar window, so that it can safely be used
+ * for purposes other than printing messages. */
+void ui_sb_lock(void);
+
+/* Unlocks previously locked status bar. */
+void ui_sb_unlock(void);
+
+/* Checks whether status bar is currently locked.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int ui_sb_locked(void);
+
 #endif /* VIFM__UI__STATUSBAR_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

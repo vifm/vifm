@@ -702,6 +702,8 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 
+	ui_sb_lock();
+
 	input_stat.line = vifm_wcsdup(cmd);
 	input_stat.initial_line = vifm_wcsdup(input_stat.line);
 	input_stat.index = wcslen(cmd);
@@ -828,6 +830,7 @@ leave_cmdline_mode(void)
 		curs_set(0);
 	}
 	curr_stats.save_msg = 0;
+	ui_sb_unlock();
 	ui_sb_clear();
 
 	if(vle_mode_is(CMDLINE_MODE))

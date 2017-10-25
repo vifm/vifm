@@ -26,7 +26,6 @@
 #include <string.h> /* strchr() strcmp() strcpy() strdup() strncpy() */
 
 #include "../cfg/config.h"
-#include "../engine/mode.h"
 #include "../modes/modes.h"
 #include "../modes/more.h"
 #include "../utils/macros.h"
@@ -45,9 +44,12 @@ static void truncate_with_ellipsis(const char msg[], size_t width,
 /* Message displayed on multi-line or too long status bar message. */
 static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
 
-/* Last message that was printed on the statusbar. */
+/* Last message that was printed on the status bar. */
 static char *last_message;
+/* Whether status bar takes up more than single line on a screen. */
 static int multiline_status_bar;
+/* Whether status bar is currently in a locked state. */
+static int is_locked;
 
 void
 ui_sb_clear(void)
@@ -189,7 +191,7 @@ status_bar_message_i(const char msg[], int error)
 		return;
 	}
 
-	if(msg == NULL || vle_mode_is(CMDLINE_MODE))
+	if(msg == NULL || is_locked)
 	{
 		return;
 	}
@@ -298,6 +300,26 @@ const char *
 ui_sb_last(void)
 {
 	return last_message;
+}
+
+void
+ui_sb_lock(void)
+{
+	assert(!is_locked && "Can't lock status bar that's already locked.");
+	is_locked = 1;
+}
+
+void
+ui_sb_unlock(void)
+{
+	assert(is_locked && "Can't unlock status bar that's not locked.");
+	is_locked = 0;
+}
+
+int
+ui_sb_locked(void)
+{
+	return is_locked;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
