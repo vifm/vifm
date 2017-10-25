@@ -108,6 +108,7 @@ static char * expand_ruler_macros(view_t *view, const char format[]);
 static void switch_panes_content(void);
 static void update_origins(view_t *view, const char *old_main_origin);
 static void set_splitter(int pos);
+static void refresh_bottom_lines(void);
 static char * path_identity(const char path[]);
 static char * format_view_title(const view_t *view, path_func pf);
 static void print_view_title(const view_t *view, int active_view, char title[]);
@@ -1222,13 +1223,7 @@ refresh_view_win(view_t *view)
 	}
 
 	wrefresh(view->win);
-	/* Use getmaxy(...) instead of multiline_status_bar to handle command line
-	 * mode, which doesn't use this module to show multiline messages. */
-	if(cfg.display_statusline && getmaxy(status_bar) > 1)
-	{
-		touchwin(stat_win);
-		wrefresh(stat_win);
-	}
+	refresh_bottom_lines();
 }
 
 void
@@ -1535,6 +1530,23 @@ void
 ui_view_win_changed(view_t *view)
 {
 	wnoutrefresh(view->win);
+	refresh_bottom_lines();
+}
+
+/* Makes sure that statusline and statusbar are drawn over view window after
+ * view refresh. */
+static void
+refresh_bottom_lines(void)
+{
+	/* Use getmaxy(...) instead of multiline_status_bar to handle command line
+	 * mode, which doesn't use this module to show multiline messages. */
+	if(cfg.display_statusline && getmaxy(status_bar) > 1)
+	{
+		touchwin(stat_win);
+		wnoutrefresh(stat_win);
+		touchwin(status_bar);
+		wnoutrefresh(status_bar);
+	}
 }
 
 void
