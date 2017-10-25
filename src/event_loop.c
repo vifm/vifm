@@ -444,7 +444,7 @@ process_scheduled_updates_of_view(view_t *view)
 			/* Nothing to do. */
 			return 0;
 		case UUE_REDRAW:
-			redraw_view_imm(view);
+			redraw_view(view);
 			return 1;
 		case UUE_RELOAD:
 			load_saving_pos(view);

@@ -50,9 +50,6 @@ void draw_dir_list_only(struct view_t *view);
  * cursor). */
 void redraw_view(struct view_t *view);
 
-/* Updates view immediately on the screen (redraws file list and cursor). */
-void redraw_view_imm(struct view_t *view);
-
 /* Updates current view (maybe postponed) on the screen (redraws file list and
  * cursor) */
 void redraw_current_view(void);

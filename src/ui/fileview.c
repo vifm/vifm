@@ -762,26 +762,24 @@ consider_scroll_bind(view_t *view)
 void
 redraw_view(view_t *view)
 {
-	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
+	if(curr_stats.need_update != UT_NONE || curr_stats.restart_in_progress)
 	{
-		redraw_view_imm(view);
+		return;
 	}
-}
 
-void
-redraw_view_imm(view_t *view)
-{
-	if(window_shows_dirlist(view))
+	if(!window_shows_dirlist(view))
 	{
-		draw_dir_list(view);
-		if(view == curr_view)
-		{
-			fview_cursor_redraw(view);
-		}
-		else
-		{
-			put_inactive_mark(view);
-		}
+		return;
+	}
+
+	draw_dir_list(view);
+	if(view == curr_view)
+	{
+		fview_cursor_redraw(view);
+	}
+	else
+	{
+		put_inactive_mark(view);
 	}
 }
 
