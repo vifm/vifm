@@ -589,7 +589,7 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 {
 	wchar_t *wcmd;
 	const wchar_t *wprompt;
-	complete_cmd_func complete_func;
+	complete_cmd_func complete_func = NULL;
 
 	if(cl_sub_mode == CLS_FILTER && curr_view->custom.type == CV_DIFF)
 	{
@@ -611,6 +611,7 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
 		wprompt = L":";
+		complete_func = &complete_cmd;
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -630,7 +631,6 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 		wprompt = L"E";
 	}
 
-	complete_func = (sub_mode == CLS_FILTER) ? NULL : complete_cmd;
 	prepare_cmdline_mode(wprompt, wcmd, complete_func);
 	free(wcmd);
 }

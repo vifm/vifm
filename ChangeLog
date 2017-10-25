@@ -133,6 +133,9 @@
 
 	Fixed hardware cursor blinking in view for interactive queries.
 
+	Fixed handling Tab and Shift-Tab on search prompt as if they are command
+	prompts.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
