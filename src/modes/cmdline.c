@@ -456,6 +456,9 @@ input_line_changed(void)
 		menu_full_redraw();
 	}
 
+	/* Hardware cursor is moved on the screen only on refresh, so refresh status
+	 * bar to force cursor moving there before it becomes visible again. */
+	wrefresh(status_bar);
 	curs_set(1);
 }
 
@@ -586,7 +589,7 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 {
 	wchar_t *wcmd;
 	const wchar_t *wprompt;
-	complete_cmd_func complete_func;
+	complete_cmd_func complete_func = NULL;
 
 	if(cl_sub_mode == CLS_FILTER && curr_view->custom.type == CV_DIFF)
 	{
@@ -608,6 +611,7 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
 		wprompt = L":";
+		complete_func = &complete_cmd;
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -627,7 +631,6 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 		wprompt = L"E";
 	}
 
-	complete_func = (sub_mode == CLS_FILTER) ? NULL : complete_cmd;
 	prepare_cmdline_mode(wprompt, wcmd, complete_func);
 	free(wcmd);
 }
@@ -698,6 +701,8 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	line_width = getmaxx(stdscr);
 	prev_mode = vle_mode_get();
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
+
+	ui_sb_lock();
 
 	input_stat.line = vifm_wcsdup(cmd);
 	input_stat.initial_line = vifm_wcsdup(input_stat.line);
@@ -825,6 +830,7 @@ leave_cmdline_mode(void)
 		curs_set(0);
 	}
 	curr_stats.save_msg = 0;
+	ui_sb_unlock();
 	ui_sb_clear();
 
 	if(vle_mode_is(CMDLINE_MODE))

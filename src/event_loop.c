@@ -444,14 +444,10 @@ process_scheduled_updates_of_view(view_t *view)
 			/* Nothing to do. */
 			return 0;
 		case UUE_REDRAW:
-			redraw_view_imm(view);
+			redraw_view(view);
 			return 1;
 		case UUE_RELOAD:
 			load_saving_pos(view);
-			if(view == curr_view && !is_status_bar_multiline())
-			{
-				ui_ruler_update(view, 1);
-			}
 			return 1;
 	}
 
