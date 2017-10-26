@@ -215,7 +215,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	format_mount_command(mount_point, file_full_path, param, program, sizeof(buf),
 			buf, &foreground);
 
-	status_bar_message("FUSE mounting selected file, please stand by..");
+	ui_sb_msg("FUSE mounting selected file, please stand by..");
 
 	if(foreground)
 	{
@@ -268,7 +268,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 
 		if(cancelled)
 		{
-			status_bar_message("FUSE mount cancelled");
+			ui_sb_msg("FUSE mount cancelled");
 			curr_stats.save_msg = 1;
 		}
 		else
@@ -288,7 +288,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 		return -1;
 	}
 	unlink(errors_file);
-	status_bar_message("FUSE mount success");
+	ui_sb_msg("FUSE mount success");
 
 	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id);
 
@@ -557,7 +557,7 @@ fuse_try_unmount(view_t *view)
 		return -1;
 	}
 
-	status_bar_message("FUSE unmounting selected file, please stand by..");
+	ui_sb_msg("FUSE unmounting selected file, please stand by..");
 	status = bg_and_wait_for_status(buf, &no_cancellation, NULL);
 	ui_sb_clear();
 	/* check child status */

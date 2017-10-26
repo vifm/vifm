@@ -321,7 +321,7 @@ ensure_term_is_ready(void)
 		wtimeout(status_bar, cfg.timeout_len);
 
 		curr_stats.save_msg = 0;
-		status_bar_message("");
+		ui_sb_msg("");
 	}
 
 	return 1;

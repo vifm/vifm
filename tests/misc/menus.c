@@ -213,12 +213,12 @@ TEST(empty_mappings_menu_is_not_displayed)
 {
 	init_modes();
 
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(show_map_menu(&lwin, "normal", NORMAL_MODE, L"nonsense"));
 	assert_string_equal("No mappings found", ui_sb_last());
 
 	vle_keys_user_add(L"this", L"that", NORMAL_MODE, 0);
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(show_map_menu(&lwin, "normal", NORMAL_MODE, L"nonsense"));
 	assert_string_equal("No mappings found", ui_sb_last());
 

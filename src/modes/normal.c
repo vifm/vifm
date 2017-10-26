@@ -680,14 +680,14 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.confirmed = 0;
 	ui_cancellation_reset();
 
-	status_bar_message("Redoing...");
+	ui_sb_msg("Redoing...");
 
 	ret = redo_group();
 
 	if(ret == 0)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Redone one group");
+		ui_sb_msg("Redone one group");
 	}
 	else if(ret == -2)
 	{
@@ -696,7 +696,7 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == -1)
 	{
-		status_bar_message("Nothing to redo");
+		ui_sb_msg("Nothing to redo");
 	}
 	else if(ret == -3)
 	{
@@ -708,12 +708,12 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == -6)
 	{
-		status_bar_message("Group redo skipped by user");
+		ui_sb_msg("Group redo skipped by user");
 	}
 	else if(ret == -7)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Redoing was cancelled");
+		ui_sb_msg("Redoing was cancelled");
 	}
 	else if(ret == 1)
 	{
@@ -1847,14 +1847,14 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.confirmed = 0;
 	ui_cancellation_reset();
 
-	status_bar_message("Undoing...");
+	ui_sb_msg("Undoing...");
 
 	ret = undo_group();
 
 	if(ret == 0)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Undone one group");
+		ui_sb_msg("Undone one group");
 	}
 	else if(ret == -2)
 	{
@@ -1863,7 +1863,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == -1)
 	{
-		status_bar_message("Nothing to undo");
+		ui_sb_msg("Nothing to undo");
 	}
 	else if(ret == -3)
 	{
@@ -1879,12 +1879,12 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == -6)
 	{
-		status_bar_message("Group undo skipped by user");
+		ui_sb_msg("Group undo skipped by user");
 	}
 	else if(ret == -7)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Undoing was cancelled");
+		ui_sb_msg("Undoing was cancelled");
 	}
 	else if(ret == 1)
 	{

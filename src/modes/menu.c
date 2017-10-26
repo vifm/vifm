@@ -336,7 +336,7 @@ menu_post(void)
 		menu_full_redraw();
 		curr_stats.need_update = UT_NONE;
 	}
-	status_bar_message(curr_stats.save_msg ? NULL : "");
+	ui_sb_msg(curr_stats.save_msg ? NULL : "");
 }
 
 void

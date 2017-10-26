@@ -37,7 +37,7 @@
 #include "ui.h"
 
 static void vstatus_bar_messagef(int error, const char format[], va_list ap);
-static void status_bar_message_i(const char message[], int error);
+static void status_bar_message(const char message[], int error);
 static void truncate_with_ellipsis(const char msg[], size_t width,
 		char buffer[]);
 
@@ -102,7 +102,7 @@ ui_sb_quick_msg_clear(void)
 {
 	if(curr_stats.save_msg || is_status_bar_multiline())
 	{
-		status_bar_message(NULL);
+		ui_sb_msg(NULL);
 	}
 	else
 	{
@@ -111,9 +111,9 @@ ui_sb_quick_msg_clear(void)
 }
 
 void
-status_bar_message(const char message[])
+ui_sb_msg(const char message[])
 {
-	status_bar_message_i(message, 0);
+	status_bar_message(message, 0);
 }
 
 void
@@ -131,7 +131,7 @@ status_bar_messagef(const char format[], ...)
 void
 status_bar_error(const char message[])
 {
-	status_bar_message_i(message, 1);
+	status_bar_message(message, 1);
 }
 
 void
@@ -152,13 +152,13 @@ vstatus_bar_messagef(int error, const char format[], va_list ap)
 	char buf[1024];
 
 	vsnprintf(buf, sizeof(buf), format, ap);
-	status_bar_message_i(buf, error);
+	status_bar_message(buf, error);
 }
 
 static void
-status_bar_message_i(const char msg[], int error)
+status_bar_message(const char msg[], int error)
 {
-	/* TODO: Refactor this function status_bar_message_i() */
+	/* TODO: Refactor this function status_bar_message() */
 
 	static int err;
 

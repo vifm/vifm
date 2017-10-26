@@ -215,7 +215,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		if(nfiles == 0 ||
 				(list = fops_edit_list(nfiles, files, &nlines, 0)) == NULL)
 		{
-			status_bar_message("0 files renamed");
+			ui_sb_msg("0 files renamed");
 		}
 		else
 		{

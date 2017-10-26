@@ -55,7 +55,7 @@ show_apropos_menu(view_t *view, const char args[])
 			format_str("No matches for \'%s\'", args));
 	m.execute_handler = &execute_apropos_cb;
 
-	status_bar_message("apropos...");
+	ui_sb_msg("apropos...");
 
 	cmd = expand_custom_macros(cfg.apropos_prg, ARRAY_LEN(macros), macros);
 	save_msg = menus_capture(view, cmd, 0, &m, 0, 0);

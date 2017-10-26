@@ -41,7 +41,7 @@ TEST(filter_prints_empty_filters_correctly)
 	                       "Name               \n"
 	                       "Auto               ";
 
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
@@ -56,7 +56,7 @@ TEST(filter_prints_non_empty_filters)
 	assert_success(exec_commands("filter abc", &lwin, CIT_COMMAND));
 	local_filter_apply(&lwin, "local");
 
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
@@ -72,7 +72,7 @@ TEST(filter_with_empty_value_reuses_last_search)
 	cfg_save_search_history("pattern");
 
 	assert_success(exec_commands("filter //I", &lwin, CIT_COMMAND));
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
@@ -92,7 +92,7 @@ TEST(filter_prints_whole_manual_filter_expression)
 
 	assert_success(exec_commands("filter /abc/i", &lwin, CIT_COMMAND));
 
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
@@ -107,7 +107,7 @@ TEST(filter_without_args_resets_manual_filter)
 	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));
 
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }
@@ -125,7 +125,7 @@ TEST(filter_reset_is_not_affected_by_search_history)
 	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));
 
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
 	assert_string_equal(expected, ui_sb_last());
 }

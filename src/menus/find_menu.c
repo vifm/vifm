@@ -104,7 +104,7 @@ show_find_menu(view_t *view, int with_path, const char args[])
 	free(targets);
 	free(custom_args);
 
-	status_bar_message("find...");
+	ui_sb_msg("find...");
 	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,
 			macros[M_U].explicit_use);
 	free(cmd);

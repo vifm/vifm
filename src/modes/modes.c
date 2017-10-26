@@ -166,7 +166,7 @@ modes_post(void)
 
 	if(curr_stats.save_msg)
 	{
-		status_bar_message(NULL);
+		ui_sb_msg(NULL);
 	}
 
 	if(!vle_mode_is(FILE_INFO_MODE) && curr_view->list_rows > 0)
@@ -259,7 +259,7 @@ modes_redraw(void)
 
 	if(curr_stats.save_msg)
 	{
-		status_bar_message(NULL);
+		ui_sb_msg(NULL);
 	}
 
 	if(vle_mode_is(SORT_MODE))

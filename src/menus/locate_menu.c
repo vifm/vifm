@@ -61,7 +61,7 @@ show_locate_menu(view_t *view, const char args[])
 
 	cmd = expand_custom_macros(cfg.locate_prg, ARRAY_LEN(macros), macros);
 
-	status_bar_message("locate...");
+	ui_sb_msg("locate...");
 	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,
 			macros[M_U].explicit_use);
 	free(cmd);

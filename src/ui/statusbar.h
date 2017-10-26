@@ -35,7 +35,7 @@ void ui_sb_quick_msgf(const char format[], ...) _gnuc_printf(1, 2);
 void ui_sb_quick_msg_clear(void);
 
 /* Repeats last message if message is NULL. */
-void status_bar_message(const char message[]);
+void ui_sb_msg(const char message[]);
 
 void status_bar_messagef(const char format[], ...) _gnuc_printf(1, 2);
 
@@ -45,8 +45,8 @@ void status_bar_errorf(const char message[], ...) _gnuc_printf(1, 2);
 
 int is_status_bar_multiline(void);
 
-/* Retrieves last message put on the status bar.  Use status_bar_message("") to
- * clear it. */
+/* Retrieves last message put on the status bar.  Use ui_sb_msg("") to clear
+ * it. */
 const char * ui_sb_last(void);
 
 /* Status bar locking. */

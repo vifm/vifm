@@ -661,7 +661,7 @@ menus_enter(menu_state_t *m, view_t *view)
 {
 	if(m->d->len < 1)
 	{
-		status_bar_message(m->d->empty_msg);
+		ui_sb_msg(m->d->empty_msg);
 		menus_reset_data(m->d);
 		return 1;
 	}
@@ -713,7 +713,7 @@ menus_unstash(view_t *view)
 
 	if(!menu_data_stash.initialized)
 	{
-		status_bar_message("No saved menu to display");
+		ui_sb_msg("No saved menu to display");
 		return 1;
 	}
 

@@ -875,7 +875,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 			const char *const last_cmd = curr_stats.last_cmdline_command;
 			if(last_cmd == NULL)
 			{
-				status_bar_message("No previous command-line command");
+				ui_sb_msg("No previous command-line command");
 				return 1;
 			}
 			return exec_commands(last_cmd, curr_view, CIT_COMMAND) != 0;
@@ -1012,7 +1012,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 	{
 		vle_textbuf *const msg = vle_tb_create();
 		vle_aucmd_list(event, patterns, &aucmd_list_cb, msg);
-		status_bar_message(vle_tb_get_data(msg));
+		ui_sb_msg(vle_tb_get_data(msg));
 		vle_tb_free(msg);
 		return 1;
 	}
@@ -1195,7 +1195,7 @@ list_abbrevs(const char prefix[])
 	state = NULL;
 	if(!vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
 	{
-		status_bar_message("No abbreviation found");
+		ui_sb_msg("No abbreviation found");
 		return 1;
 	}
 
@@ -1220,11 +1220,11 @@ list_abbrevs(const char prefix[])
 
 	if(seen_match)
 	{
-		status_bar_message(vle_tb_get_data(msg));
+		ui_sb_msg(vle_tb_get_data(msg));
 	}
 	else
 	{
-		status_bar_message("No abbreviation found");
+		ui_sb_msg("No abbreviation found");
 	}
 	vle_tb_free(msg);
 
@@ -1474,7 +1474,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
-		status_bar_message(cfg.cs.name);
+		ui_sb_msg(cfg.cs.name);
 		return 1;
 	}
 
@@ -1560,11 +1560,11 @@ command_cmd(const cmd_info_t *cmd_info)
 	desc = list_udf_content(cmd_info->argv[0]);
 	if(desc == NULL)
 	{
-		status_bar_message("No user-defined commands found");
+		ui_sb_msg("No user-defined commands found");
 		return 1;
 	}
 
-	status_bar_message(desc);
+	ui_sb_msg(desc);
 	free(desc);
 	return 1;
 }
@@ -1877,7 +1877,7 @@ static int
 echo_cmd(const cmd_info_t *cmd_info)
 {
 	char *const eval_result = try_eval_arglist(cmd_info);
-	status_bar_message(eval_result);
+	ui_sb_msg(eval_result);
 	free(eval_result);
 	return 1;
 }
@@ -2374,7 +2374,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
-		status_bar_message(get_all_highlights());
+		ui_sb_msg(get_all_highlights());
 		return 1;
 	}
 
@@ -2482,8 +2482,7 @@ display_file_highlights(const matchers_t *matchers)
 		return;
 	}
 
-	status_bar_message(get_file_hi_str(cs->file_hi[i].matchers,
-				&cs->file_hi[i].hi));
+	ui_sb_msg(get_file_hi_str(cs->file_hi[i].matchers, &cs->file_hi[i].hi));
 }
 
 /* Handles highlight-group form of :highlight command.  Returns value to be
@@ -2506,7 +2505,7 @@ highlight_group(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 1)
 	{
-		status_bar_message(get_group_str(group_id, color));
+		ui_sb_msg(get_group_str(group_id, color));
 		return 1;
 	}
 
@@ -2878,7 +2877,7 @@ print_inversion_state(char state_type)
 	}
 	else if(state_type == 's')
 	{
-		status_bar_message("Selection does not have inversion state");
+		ui_sb_msg("Selection does not have inversion state");
 	}
 	else if(state_type == 'o')
 	{
@@ -2934,7 +2933,7 @@ let_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(*vle_tb_get_data(vle_err) != '\0')
 	{
-		status_bar_message(vle_tb_get_data(vle_err));
+		ui_sb_msg(vle_tb_get_data(vle_err));
 	}
 	update_path_env(0);
 	return 0;
@@ -2963,7 +2962,7 @@ ls_cmd(const cmd_info_t *cmd_info)
 	switch(curr_stats.term_multiplexer)
 	{
 		case TM_NONE:
-			status_bar_message("No terminal multiplexer is in use");
+			ui_sb_msg("No terminal multiplexer is in use");
 			return 1;
 		case TM_SCREEN:
 			(void)vifm_system("screen -X eval windowlist");
@@ -2981,7 +2980,7 @@ ls_cmd(const cmd_info_t *cmd_info)
 
 		default:
 			assert(0 && "Unknown active terminal multiplexer value");
-			status_bar_message("Unknown terminal multiplexer is in use");
+			ui_sb_msg("Unknown terminal multiplexer is in use");
 			return 1;
 	}
 }
@@ -3126,7 +3125,7 @@ messages_cmd(const cmd_info_t *cmd_info)
 
 	curr_stats.save_msg_in_list = 0;
 	curr_stats.allow_sb_msg_truncation = 0;
-	status_bar_message(lines);
+	ui_sb_msg(lines);
 	curr_stats.allow_sb_msg_truncation = 1;
 	curr_stats.save_msg_in_list = 1;
 
@@ -3290,7 +3289,7 @@ popd_cmd(const cmd_info_t *cmd_info)
 {
 	if(dir_stack_pop() != 0)
 	{
-		status_bar_message("Directory stack empty");
+		ui_sb_msg("Directory stack empty");
 		return 1;
 	}
 	return 0;
@@ -3345,7 +3344,7 @@ put_cmd(const cmd_info_t *cmd_info)
 static int
 pwd_cmd(const cmd_info_t *cmd_info)
 {
-	status_bar_message(flist_get_dir(curr_view));
+	ui_sb_msg(flist_get_dir(curr_view));
 	return 1;
 }
 
@@ -3475,13 +3474,13 @@ screen_cmd(const cmd_info_t *cmd_info)
 			}
 			else
 			{
-				status_bar_message("Integration with terminal multiplexers is enabled "
-						"but inactive");
+				ui_sb_msg("Integration with terminal multiplexers is enabled but "
+						"inactive");
 			}
 		}
 		else
 		{
-			status_bar_message("Integration with terminal multiplexers is disabled");
+			ui_sb_msg("Integration with terminal multiplexers is disabled");
 		}
 		return 1;
 	}

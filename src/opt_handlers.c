@@ -1478,7 +1478,7 @@ process_set_args(const char args[], int global, int local)
 	}
 	else if(text_buffer[0] != '\0')
 	{
-		status_bar_message(text_buffer);
+		ui_sb_msg(text_buffer);
 	}
 
 	return error ? -1 : (text_buffer[0] != '\0');

@@ -759,7 +759,7 @@ source_file_internal(FILE *fp, const char filename[])
 		}
 
 		/* Clear statusbar message. */
-		status_bar_message("");
+		ui_sb_msg("");
 
 		if(exec_commands(line, curr_view, CIT_COMMAND) < 0)
 		{
@@ -784,7 +784,7 @@ source_file_internal(FILE *fp, const char filename[])
 	free(next_line);
 
 	/* Clear statusbar message. */
-	status_bar_message("");
+	ui_sb_msg("");
 	if(commands_scope_finish() != 0)
 	{
 		show_sourcing_error(filename, line_num);

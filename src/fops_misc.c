@@ -304,7 +304,7 @@ fops_delete_bg(view_t *view, int use_trash)
 	if(args->sel_list_len == 0)
 	{
 		fops_free_bg_args(args);
-		status_bar_message("Nothing to delete");
+		ui_sb_msg("Nothing to delete");
 		return 1;
 	}
 
