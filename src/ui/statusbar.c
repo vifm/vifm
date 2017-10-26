@@ -117,7 +117,7 @@ ui_sb_msg(const char message[])
 }
 
 void
-status_bar_messagef(const char format[], ...)
+ui_sb_msgf(const char format[], ...)
 {
 	va_list ap;
 

@@ -426,7 +426,7 @@ view_pre(void)
 	if(curr_stats.save_msg == 0)
 	{
 		const char *const suffix = vi->auto_forward ? "(auto forwarding)" : "";
-		status_bar_messagef("-- VIEW -- %s", suffix);
+		ui_sb_msgf("-- VIEW -- %s", suffix);
 		curr_stats.save_msg = 2;
 	}
 }

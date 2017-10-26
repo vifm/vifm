@@ -230,8 +230,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 		if(renamed >= 0)
 		{
-			status_bar_messagef("%d file%s renamed", renamed,
-					(renamed == 1) ? "" : "s");
+			ui_sb_msgf("%d file%s renamed", renamed, (renamed == 1) ? "" : "s");
 		}
 	}
 
@@ -523,8 +522,7 @@ fops_incdec(view_t *view, int k)
 	}
 	else if(err == 0)
 	{
-		status_bar_messagef("%d file%s renamed", nrenamed,
-				(nrenamed == 1) ? "" : "s");
+		ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 	}
 
 	return 1;
@@ -908,8 +906,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 	}
 
 	cmd_group_end();
-	status_bar_messagef("%d file%s renamed", nrenamed,
-			(nrenamed == 1) ? "" : "s");
+	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 
 	return 1;
 }

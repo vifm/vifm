@@ -360,12 +360,12 @@ print_selected_msg(void)
 {
 	if(vle_mode_is(VISUAL_MODE))
 	{
-		status_bar_messagef("-- %s -- ", describe_visual_mode());
+		ui_sb_msgf("-- %s -- ", describe_visual_mode());
 		update_vmode_input();
 	}
 	else
 	{
-		status_bar_messagef("%d %s selected", curr_view->selected_files,
+		ui_sb_msgf("%d %s selected", curr_view->selected_files,
 				curr_view->selected_files == 1 ? "file" : "files");
 	}
 	curr_stats.save_msg = 2;

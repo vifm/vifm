@@ -886,8 +886,8 @@ menus_search_repeat(menu_state_t *m, int backward)
 
 	if(m->matching_entries > 0)
 	{
-		status_bar_messagef("(%d of %d) %c%s", get_match_index(m),
-				m->matching_entries, backward ? '?' : '/', m->regexp);
+		ui_sb_msgf("(%d of %d) %c%s", get_match_index(m), m->matching_entries,
+				backward ? '?' : '/', m->regexp);
 	}
 
 	curr_stats.save_msg = 1;
@@ -1115,7 +1115,7 @@ menus_search_print_msg(const menu_state_t *m)
 
 	if(m->matching_entries > 0)
 	{
-		status_bar_messagef("%d of %d %s", get_match_index(m), m->matching_entries,
+		ui_sb_msgf("%d of %d %s", get_match_index(m), m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
 	}
 	else

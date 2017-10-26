@@ -458,7 +458,7 @@ put_files_i(view_t *view, int start)
 		}
 		else if(put_result < 0)
 		{
-			status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+			ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
 					(put_confirm.processed == 1) ? "" : "s",
 					fops_get_cancellation_suffix());
 			return 1;
@@ -468,7 +468,7 @@ put_files_i(view_t *view, int start)
 
 	regs_pack(put_confirm.reg->name);
 
-	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+	ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
 			(put_confirm.processed == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	ui_view_schedule_reload(put_confirm.view);

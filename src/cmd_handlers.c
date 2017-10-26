@@ -2184,8 +2184,7 @@ display_filters_info(const view_t *view)
 	char *const manualf = get_matcher_info("Name", view->manual_filter);
 	char *const autof = get_filter_info("Auto", &view->auto_filter);
 
-	status_bar_messagef("Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf,
-			autof);
+	ui_sb_msgf("Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf, autof);
 
 	free(localf);
 	free(manualf);
@@ -2872,8 +2871,7 @@ print_inversion_state(char state_type)
 {
 	if(state_type == 'f')
 	{
-		status_bar_messagef("Filter is %sinverted",
-				curr_view->invert ? "" : "not ");
+		ui_sb_msgf("Filter is %sinverted", curr_view->invert ? "" : "not ");
 	}
 	else if(state_type == 's')
 	{
@@ -2881,7 +2879,7 @@ print_inversion_state(char state_type)
 	}
 	else if(state_type == 'o')
 	{
-		status_bar_messagef("Primary key is sorted in %s order",
+		ui_sb_msgf("Primary key is sorted in %s order",
 				(curr_view->sort[0] > 0) ? "ascending" : "descending");
 	}
 	else
@@ -3469,7 +3467,7 @@ screen_cmd(const cmd_info_t *cmd_info)
 		{
 			if(curr_stats.term_multiplexer != TM_NONE)
 			{
-				status_bar_messagef("Integration with %s is active",
+				ui_sb_msgf("Integration with %s is active",
 						(curr_stats.term_multiplexer == TM_SCREEN) ? "GNU screen" : "tmux");
 			}
 			else

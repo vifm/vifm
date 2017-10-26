@@ -37,7 +37,7 @@ void ui_sb_quick_msg_clear(void);
 /* Repeats last message if message is NULL. */
 void ui_sb_msg(const char message[]);
 
-void status_bar_messagef(const char format[], ...) _gnuc_printf(1, 2);
+void ui_sb_msgf(const char format[], ...) _gnuc_printf(1, 2);
 
 void status_bar_error(const char message[]);
 
