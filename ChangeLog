@@ -136,6 +136,8 @@
 	Fixed handling Tab and Shift-Tab on search prompt as if they are command
 	prompts.
 
+	Fixed horrible flickering of multiline statusbar for interactive queries.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

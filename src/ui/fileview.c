@@ -321,6 +321,8 @@ draw_dir_list_only(view_t *view)
 	}
 
 	ui_view_win_changed(view);
+
+	ui_view_redrawn(view);
 }
 
 /* Draws a column to the left of the main part of the view. */

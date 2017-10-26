@@ -1975,6 +1975,14 @@ get_updated_time(uint64_t prev)
 	return new;
 }
 
+void
+ui_view_redrawn(view_t *view)
+{
+	pthread_mutex_lock(view->timestamps_mutex);
+	view->last_redraw = view->postponed_redraw;
+	pthread_mutex_unlock(view->timestamps_mutex);
+}
+
 UiUpdateEvent
 ui_view_query_scheduled_event(view_t *view)
 {
