@@ -1152,28 +1152,27 @@ update_statusbar_layout(void)
 	int ruler_width;
 	int fields_pos;
 
-	if(!are_statusbar_widgets_visible())
-	{
-		/* We might be in command-line mode in which case we shouldn't change the
-		 * layout in any way. */
-		return;
-	}
-
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	ruler_width = get_ruler_width(curr_view);
 	fields_pos = screen_x - (INPUT_WIN_WIDTH + ruler_width);
 
-	wresize(status_bar, 1, fields_pos);
-	mvwin(status_bar, screen_y - 1, 0);
-
 	wresize(ruler_win, 1, ruler_width);
 	mvwin(ruler_win, screen_y - 1, fields_pos + INPUT_WIN_WIDTH);
-	wnoutrefresh(ruler_win);
 
 	wresize(input_win, 1, INPUT_WIN_WIDTH);
 	mvwin(input_win, screen_y - 1, fields_pos);
-	wnoutrefresh(input_win);
+
+	/* We might be in command-line mode in which case we shouldn't change visible
+	 * parts of the layout. */
+	if(are_statusbar_widgets_visible())
+	{
+		wresize(status_bar, 1, fields_pos);
+		mvwin(status_bar, screen_y - 1, 0);
+
+		wnoutrefresh(ruler_win);
+		wnoutrefresh(input_win);
+	}
 }
 
 /* Checks whether ruler and input bar are visible.  Returns non-zero if so, zero
