@@ -448,10 +448,6 @@ process_scheduled_updates_of_view(view_t *view)
 			return 1;
 		case UUE_RELOAD:
 			load_saving_pos(view);
-			if(view == curr_view && !is_status_bar_multiline())
-			{
-				ui_ruler_update(view, 1);
-			}
 			return 1;
 	}
 
