@@ -1776,7 +1776,7 @@ fview_position_updated(view_t *view)
 	draw_right_column(view);
 
 	refresh_view_win(view);
-	update_stat_window(view, 0);
+	ui_stat_update(view, 0);
 
 	if(view == curr_view)
 	{

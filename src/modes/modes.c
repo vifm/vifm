@@ -173,7 +173,7 @@ modes_post(void)
 	{
 		if(!is_status_bar_multiline())
 		{
-			update_stat_window(curr_view, 0);
+			ui_stat_update(curr_view, 0);
 			ui_ruler_update(curr_view, 1);
 		}
 	}
