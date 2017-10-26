@@ -111,12 +111,12 @@ qv_can_show(void)
 {
 	if(curr_stats.number_of_windows == 1)
 	{
-		status_bar_error("Cannot view files in one window mode");
+		ui_sb_err("Cannot view files in one window mode");
 		return 0;
 	}
 	if(other_view->explore_mode)
 	{
-		status_bar_error("Other view is already used for file viewing");
+		ui_sb_err("Other view is already used for file viewing");
 		return 0;
 	}
 	return 1;

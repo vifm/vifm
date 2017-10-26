@@ -960,7 +960,7 @@ extedit_prompt(const char input[], int cursor_col)
 	{
 		cfg_save_prompt_history(input);
 
-		status_bar_error("Error querying data from external source.");
+		ui_sb_err("Error querying data from external source.");
 		curr_stats.save_msg = 1;
 	}
 

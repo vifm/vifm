@@ -123,7 +123,7 @@ rename_file_cb(const char new_name[])
 
 	if(contains_slash(new_name))
 	{
-		status_bar_error("Name can not contain slash");
+		ui_sb_err("Name can not contain slash");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -175,7 +175,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	/* Allow list of names in tests. */
 	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
 	{
-		status_bar_error("Recursive rename doesn't accept list of new names");
+		ui_sb_err("Recursive rename doesn't accept list of new names");
 		return 1;
 	}
 	if(!fops_view_can_be_changed(view))
@@ -518,7 +518,7 @@ fops_incdec(view_t *view, int k)
 
 	if(err > 0)
 	{
-		status_bar_error("Rename error");
+		ui_sb_err("Rename error");
 	}
 	else if(err == 0)
 	{

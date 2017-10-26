@@ -952,7 +952,7 @@ apropos_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_error("Nothing to repeat");
+		ui_sb_err("Nothing to repeat");
 		return 1;
 	}
 
@@ -1023,7 +1023,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 
 	if(vle_aucmd_on_execute(event, patterns, action, &aucmd_action_handler) != 0)
 	{
-		status_bar_error("Failed to register autocommand");
+		ui_sb_err("Failed to register autocommand");
 		return 1;
 	}
 
@@ -1064,7 +1064,7 @@ bmark_cmd(const cmd_info_t *cmd_info)
 	const int err = (tags == NULL || bmarks_set(path, tags) != 0);
 	if(err && tags != NULL)
 	{
-		status_bar_error("Failed to add bookmark");
+		ui_sb_err("Failed to add bookmark");
 	}
 	free(path);
 	free(tags);
@@ -1107,7 +1107,7 @@ make_tags_list(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark && cmd_info->argc == 1)
 	{
-		status_bar_error("Too few arguments");
+		ui_sb_err("Too few arguments");
 		return NULL;
 	}
 
@@ -1260,7 +1260,7 @@ add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
 
 	if(result != 0)
 	{
-		status_bar_error("Failed to register abbreviation");
+		ui_sb_err("Failed to register abbreviation");
 	}
 
 	return result;
@@ -1447,7 +1447,7 @@ clone_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_error("No arguments are allowed if you use \"?\"");
+			ui_sb_err("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
 		return fops_clone(curr_view, NULL, -1, 0, 1) != 0;
@@ -1594,7 +1594,7 @@ cunabbrev_cmd(const cmd_info_t *cmd_info)
 	free(wargs);
 	if(result != 0)
 	{
-		status_bar_error("No such abbreviation");
+		ui_sb_err("No such abbreviation");
 	}
 	return 0;
 }
@@ -1646,7 +1646,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		}
 		else
 		{
-			status_bar_error("No arguments are allowed if you use \"!\"");
+			ui_sb_err("No arguments are allowed if you use \"!\"");
 			return 1;
 		}
 	}
@@ -1951,7 +1951,7 @@ else_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmds_scoped_else() != 0)
 	{
-		status_bar_error("Misplaced :else");
+		ui_sb_err("Misplaced :else");
 		return CMDS_ERR_CUSTOM;
 	}
 	return 0;
@@ -1970,7 +1970,7 @@ elseif_cmd(const cmd_info_t *cmd_info)
 
 	if(cmds_scoped_elseif(x) != 0)
 	{
-		status_bar_error("Misplaced :elseif");
+		ui_sb_err("Misplaced :elseif");
 		return CMDS_ERR_CUSTOM;
 	}
 
@@ -1991,7 +1991,7 @@ endif_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmds_scoped_endif() != 0)
 	{
-		status_bar_error(":endif without :if");
+		ui_sb_err(":endif without :if");
 		return CMDS_ERR_CUSTOM;
 	}
 	return 0;
@@ -2031,7 +2031,7 @@ try_eval_arglist(const cmd_info_t *cmd_info)
 	if(eval_result == NULL)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression", error_pos);
-		status_bar_error(vle_tb_get_data(vle_err));
+		ui_sb_err(vle_tb_get_data(vle_err));
 	}
 
 	return eval_result;
@@ -2049,8 +2049,7 @@ file_cmd(const cmd_info_t *cmd_info)
 
 	if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
 	{
-		status_bar_error(
-				"Can't find associated program with requested beginning");
+		ui_sb_err("Can't find associated program with requested beginning");
 		return 1;
 	}
 
@@ -2102,7 +2101,7 @@ add_assoc(const cmd_info_t *cmd_info, int viewer, int for_x)
 	matchers = matchers_list(cmd_info->argv[0], &nmatchers);
 	if(matchers == NULL)
 	{
-		status_bar_error("Not enough memory.");
+		ui_sb_err("Not enough memory.");
 		return 1;
 	}
 
@@ -2278,7 +2277,7 @@ find_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_error("Nothing to repeat");
+		ui_sb_err("Nothing to repeat");
 		return 1;
 	}
 
@@ -2290,7 +2289,7 @@ finish_cmd(const cmd_info_t *cmd_info)
 {
 	if(curr_stats.sourcing_state != SOURCING_PROCESSING)
 	{
-		status_bar_error(":finish used outside of a sourced file");
+		ui_sb_err(":finish used outside of a sourced file");
 		return 1;
 	}
 
@@ -2312,7 +2311,7 @@ grep_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_error("Nothing to repeat");
+		ui_sb_err("Nothing to repeat");
 		return 1;
 	}
 
@@ -2339,7 +2338,7 @@ help_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc != 0)
 		{
-			status_bar_error("No arguments are allowed when 'vimhelp' option is off");
+			ui_sb_err("No arguments are allowed when 'vimhelp' option is off");
 			return 1;
 		}
 
@@ -2832,7 +2831,7 @@ eval_if_condition(const cmd_info_t *cmd_info)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
 				cmd_info->args);
-		status_bar_error(vle_tb_get_data(vle_err));
+		ui_sb_err(vle_tb_get_data(vle_err));
 		return -1;
 	}
 
@@ -2926,7 +2925,7 @@ let_cmd(const cmd_info_t *cmd_info)
 	vle_tb_clear(vle_err);
 	if(let_variables(cmd_info->args) != 0)
 	{
-		status_bar_error(vle_tb_get_data(vle_err));
+		ui_sb_err(vle_tb_get_data(vle_err));
 		return 1;
 	}
 	else if(*vle_tb_get_data(vle_err) != '\0')
@@ -2947,7 +2946,7 @@ locate_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_error("Nothing to repeat");
+		ui_sb_err("Nothing to repeat");
 		return 1;
 	}
 	return show_locate_menu(curr_view, last_args) != 0;
@@ -3029,7 +3028,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 	if(!is_path_absolute(expanded_path))
 	{
 		free(expanded_path);
-		status_bar_error("Expected full path to the directory");
+		ui_sb_err("Expected full path to the directory");
 		return 1;
 	}
 
@@ -3172,7 +3171,7 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_error("No arguments are allowed if you use \"?\"");
+			ui_sb_err("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
 
@@ -3300,7 +3299,7 @@ pushd_cmd(const cmd_info_t *cmd_info)
 	{
 		if(dir_stack_swap() != 0)
 		{
-			status_bar_error("No other directories");
+			ui_sb_err("No other directories");
 			return 1;
 		}
 		return 0;
@@ -3447,7 +3446,7 @@ link_cmd(const cmd_info_t *cmd_info, int absolute)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_error("No arguments are allowed if you use \"?\"");
+			ui_sb_err("No arguments are allowed if you use \"?\"");
 			return 1;
 		}
 		return fops_cpmv(curr_view, NULL, -1, op, 0) != 0;
@@ -3517,7 +3516,7 @@ select_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->begin != NOT_DEF)
 	{
-		status_bar_error("Either range or argument should be supplied.");
+		ui_sb_err("Either range or argument should be supplied.");
 		error = 1;
 	}
 	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
@@ -3684,7 +3683,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 
 	if(is_null_or_empty(last_pattern))
 	{
-		status_bar_error("No previous pattern");
+		ui_sb_err("No previous pattern");
 		return 1;
 	}
 
@@ -3938,7 +3937,7 @@ tr_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argv[0][0] == '\0' || cmd_info->argv[1][0] == '\0')
 	{
-		status_bar_error("Empty argument");
+		ui_sb_err("Empty argument");
 		return 1;
 	}
 
@@ -3947,7 +3946,7 @@ tr_cmd(const cmd_info_t *cmd_info)
 	strcpy(buf, cmd_info->argv[1]);
 	if(pl < sl)
 	{
-		status_bar_error("Second argument cannot be longer");
+		ui_sb_err("Second argument cannot be longer");
 		return 1;
 	}
 	else if(pl > sl)
@@ -3992,7 +3991,7 @@ unlet_cmd(const cmd_info_t *cmd_info)
 	vle_tb_clear(vle_err);
 	if(unlet_variables(cmd_info->args) != 0 && !cmd_info->emark)
 	{
-		status_bar_error(vle_tb_get_data(vle_err));
+		ui_sb_err(vle_tb_get_data(vle_err));
 		return 1;
 	}
 	return 0;
@@ -4011,12 +4010,12 @@ unmap_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(!vle_keys_user_exists(subst, NORMAL_MODE))
 	{
-		status_bar_error("No such mapping in normal mode");
+		ui_sb_err("No such mapping in normal mode");
 		result = -1;
 	}
 	else if(!vle_keys_user_exists(subst, VISUAL_MODE))
 	{
-		status_bar_error("No such mapping in visual mode");
+		ui_sb_err("No such mapping in visual mode");
 		result = -2;
 	}
 	else
@@ -4028,7 +4027,7 @@ unmap_cmd(const cmd_info_t *cmd_info)
 
 	if(result > 0)
 	{
-		status_bar_error("Error while unmapping keys");
+		ui_sb_err("Error while unmapping keys");
 	}
 	return result != 0;
 }
@@ -4049,7 +4048,7 @@ unselect_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->begin != NOT_DEF)
 	{
-		status_bar_error("Either range or argument should be supplied.");
+		ui_sb_err("Either range or argument should be supplied.");
 		error = 1;
 	}
 	else if(cmd_info->args[0] == '!' && !char_is_one_of("/{", cmd_info->args[1]))
@@ -4154,7 +4153,7 @@ do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 {
 	if(cmd_info->emark && cmd_info->argc != 0)
 	{
-		status_bar_error("No arguments are allowed if you use \"!\"");
+		ui_sb_err("No arguments are allowed if you use \"!\"");
 		return 1;
 	}
 
@@ -4194,7 +4193,7 @@ do_unmap(const char keys[], int mode)
 
 	if(result != 0)
 	{
-		status_bar_error("No such mapping");
+		ui_sb_err("No such mapping");
 		return 1;
 	}
 	return 0;
@@ -4436,7 +4435,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 		if(commands_scope_finish() != 0)
 		{
-			status_bar_error("Unmatched if-else-endif");
+			ui_sb_err("Unmatched if-else-endif");
 			return 1;
 		}
 

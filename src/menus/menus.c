@@ -875,7 +875,7 @@ menus_search_repeat(menu_state_t *m, int backward)
 {
 	if(m->regexp == NULL)
 	{
-		status_bar_error("No search pattern set");
+		ui_sb_err("No search pattern set");
 		curr_stats.save_msg = 1;
 		return;
 	}

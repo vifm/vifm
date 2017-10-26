@@ -692,7 +692,7 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	else if(ret == -2)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_error("Redone one group with errors");
+		ui_sb_err("Redone one group with errors");
 	}
 	else if(ret == -1)
 	{
@@ -700,11 +700,11 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == -3)
 	{
-		status_bar_error("Can't redo group, it was skipped");
+		ui_sb_err("Can't redo group, it was skipped");
 	}
 	else if(ret == -4)
 	{
-		status_bar_error("Can't redo what wasn't undone");
+		ui_sb_err("Can't redo what wasn't undone");
 	}
 	else if(ret == -6)
 	{
@@ -717,7 +717,7 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == 1)
 	{
-		status_bar_error("Redo operation was skipped due to previous errors");
+		ui_sb_err("Redo operation was skipped due to previous errors");
 	}
 	curr_stats.save_msg = 1;
 }
@@ -1087,7 +1087,7 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 	reg = regs_find(tolower(key_info.reg));
 	if(reg == NULL || reg->nfiles < 1)
 	{
-		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
+		ui_sb_err(reg == NULL ? "No such register" : "Register is empty");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1571,7 +1571,7 @@ cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_stats.preview.on)
 	{
-		status_bar_error("Another type of file viewing is activated");
+		ui_sb_err("Another type of file viewing is activated");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1859,7 +1859,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	else if(ret == -2)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_error("Undone one group with errors");
+		ui_sb_err("Undone one group with errors");
 	}
 	else if(ret == -1)
 	{
@@ -1867,15 +1867,15 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == -3)
 	{
-		status_bar_error("Can't undo group, it was skipped");
+		ui_sb_err("Can't undo group, it was skipped");
 	}
 	else if(ret == -4)
 	{
-		status_bar_error("Can't undo what wasn't redone");
+		ui_sb_err("Can't undo what wasn't redone");
 	}
 	else if(ret == -5)
 	{
-		status_bar_error("Operation cannot be undone");
+		ui_sb_err("Operation cannot be undone");
 	}
 	else if(ret == -6)
 	{
@@ -1888,7 +1888,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(ret == 1)
 	{
-		status_bar_error("Undo operation was skipped due to previous errors");
+		ui_sb_err("Undo operation was skipped due to previous errors");
 	}
 	curr_stats.save_msg = 1;
 }

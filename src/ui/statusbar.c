@@ -129,7 +129,7 @@ ui_sb_msgf(const char format[], ...)
 }
 
 void
-status_bar_error(const char message[])
+ui_sb_err(const char message[])
 {
 	status_bar_message(message, 1);
 }

@@ -1433,7 +1433,7 @@ get_part(const char line[], int offset, size_t max_len, char part[])
 static void
 display_error(const char error_msg[])
 {
-	status_bar_error(error_msg);
+	ui_sb_err(error_msg);
 	curr_stats.save_msg = 1;
 }
 

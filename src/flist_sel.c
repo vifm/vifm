@@ -259,7 +259,7 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	if(run_cmd_for_output(expanded_cmd, &files, &nfiles) != 0)
 	{
 		free(expanded_cmd);
-		status_bar_error("Failed to start/read output of external command");
+		ui_sb_err("Failed to start/read output of external command");
 		return 1;
 	}
 	free(expanded_cmd);

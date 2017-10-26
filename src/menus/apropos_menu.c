@@ -107,7 +107,7 @@ parse_apropos_line(const char line[], char section[], size_t section_len,
 	sec_l = strchr(line, '(');
 	if(sec_l == NULL)
 	{
-		status_bar_error("Failed to find section number.");
+		ui_sb_err("Failed to find section number.");
 		return 1;
 	}
 
@@ -115,7 +115,7 @@ parse_apropos_line(const char line[], char section[], size_t section_len,
 	sec_r = sec_l + 1 + strcspn(sec_l + 1, " \t()");
 	if(sec_r == sec_l + 1 || *sec_r != ')')
 	{
-		status_bar_error("Wrong section number format.");
+		ui_sb_err("Wrong section number format.");
 		return 1;
 	}
 
@@ -125,7 +125,7 @@ parse_apropos_line(const char line[], char section[], size_t section_len,
 	if(section_len == 0 || section_len - 1 < (size_t)(sec_r - (sec_l + 1)) ||
 			topic_len == 0 || topic_len - 1 < (size_t)(sep - line))
 	{
-		status_bar_error("Internal buffer is too small.");
+		ui_sb_err("Internal buffer is too small.");
 		return 1;
 	}
 

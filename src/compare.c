@@ -873,7 +873,7 @@ compare_move(view_t *from, view_t *to)
 
 	if(from->custom.type != CV_DIFF || !from->custom.diff_path_group)
 	{
-		status_bar_error("Not in diff mode with path grouping");
+		ui_sb_err("Not in diff mode with path grouping");
 		return 1;
 	}
 

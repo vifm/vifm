@@ -1057,7 +1057,7 @@ menu_run_command(const char cmd[])
 {
 	if(exec_command(cmd, view, CIT_COMMAND) < 0)
 	{
-		status_bar_error("An error occurred while trying to execute command");
+		ui_sb_err("An error occurred while trying to execute command");
 	}
 	init_cmds(0, &cmds_conf);
 }

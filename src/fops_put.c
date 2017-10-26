@@ -116,7 +116,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
-		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
+		ui_sb_err(reg == NULL ? "No such register" : "Register is empty");
 		return 1;
 	}
 
@@ -271,7 +271,7 @@ initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
-		status_bar_error("Register is empty");
+		ui_sb_err("Register is empty");
 		return 1;
 	}
 

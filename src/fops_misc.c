@@ -502,12 +502,12 @@ fops_retarget(view_t *view)
 
 	if(fentry_is_fake(entry))
 	{
-		status_bar_error("Entry doesn't correspond to a file");
+		ui_sb_err("Entry doesn't correspond to a file");
 		return 1;
 	}
 	if(entry->type != FT_LINK)
 	{
-		status_bar_error("File is not a symbolic link");
+		ui_sb_err("File is not a symbolic link");
 		return 1;
 	}
 

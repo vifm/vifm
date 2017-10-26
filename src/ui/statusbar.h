@@ -39,7 +39,7 @@ void ui_sb_msg(const char message[]);
 
 void ui_sb_msgf(const char format[], ...) _gnuc_printf(1, 2);
 
-void status_bar_error(const char message[]);
+void ui_sb_err(const char message[]);
 
 void status_bar_errorf(const char message[], ...) _gnuc_printf(1, 2);
 
