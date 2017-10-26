@@ -171,7 +171,7 @@ modes_post(void)
 
 	if(!vle_mode_is(FILE_INFO_MODE) && curr_view->list_rows > 0)
 	{
-		if(!is_status_bar_multiline())
+		if(!ui_sb_multiline())
 		{
 			ui_stat_update(curr_view, 0);
 			ui_ruler_update(curr_view, 1);

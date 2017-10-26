@@ -100,7 +100,7 @@ ui_sb_quick_msgf(const char format[], ...)
 void
 ui_sb_quick_msg_clear(void)
 {
-	if(curr_stats.save_msg || is_status_bar_multiline())
+	if(curr_stats.save_msg || ui_sb_multiline())
 	{
 		ui_sb_msg(NULL);
 	}
@@ -291,7 +291,7 @@ truncate_with_ellipsis(const char msg[], size_t width, char buffer[])
 }
 
 int
-is_status_bar_multiline(void)
+ui_sb_multiline(void)
 {
 	return multiline_status_bar;
 }

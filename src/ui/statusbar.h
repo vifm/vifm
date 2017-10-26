@@ -43,7 +43,7 @@ void ui_sb_err(const char message[]);
 
 void ui_sb_errf(const char message[], ...) _gnuc_printf(1, 2);
 
-int is_status_bar_multiline(void);
+int ui_sb_multiline(void);
 
 /* Retrieves last message put on the status bar.  Use ui_sb_msg("") to clear
  * it. */
