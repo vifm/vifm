@@ -740,7 +740,7 @@ is_clone_list_ok(int count, char *list[])
 	{
 		if(path_exists(list[i], NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", list[i]);
+			ui_sb_errf("File \"%s\" already exists", list[i]);
 			return 0;
 		}
 	}
@@ -838,19 +838,19 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 
 		if(is_in_string_array(names, i, names[i]))
 		{
-			status_bar_errorf("Name \"%s\" duplicates", names[i]);
+			ui_sb_errf("Name \"%s\" duplicates", names[i]);
 			return 1;
 		}
 		if(names[i][0] == '\0')
 		{
-			status_bar_errorf("Name #%d is empty", i + 1);
+			ui_sb_errf("Name #%d is empty", i + 1);
 			return 1;
 		}
 
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 		if(path_exists(full, NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", names[i]);
+			ui_sb_errf("File \"%s\" already exists", names[i]);
 			return 1;
 		}
 	}
@@ -918,19 +918,19 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 
 		if(is_in_string_array(names, i, names[i]))
 		{
-			status_bar_errorf("Name \"%s\" duplicates", names[i]);
+			ui_sb_errf("Name \"%s\" duplicates", names[i]);
 			return 1;
 		}
 		if(names[i][0] == '\0')
 		{
-			status_bar_errorf("Name #%d is empty", i + 1);
+			ui_sb_errf("Name #%d is empty", i + 1);
 			return 1;
 		}
 
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 		if(path_exists(full, NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", names[i]);
+			ui_sb_errf("File \"%s\" already exists", names[i]);
 			return 1;
 		}
 	}
@@ -1250,7 +1250,7 @@ change_owner_cb(const char new_owner[])
 
 	if(get_uid(new_owner, &uid) != 0)
 	{
-		status_bar_errorf("Invalid user name: \"%s\"", new_owner);
+		ui_sb_errf("Invalid user name: \"%s\"", new_owner);
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1291,7 +1291,7 @@ change_group_cb(const char new_group[])
 
 	if(get_gid(new_group, &gid) != 0)
 	{
-		status_bar_errorf("Invalid group name: \"%s\"", new_group);
+		ui_sb_errf("Invalid group name: \"%s\"", new_group);
 		curr_stats.save_msg = 1;
 		return;
 	}

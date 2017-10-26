@@ -997,7 +997,7 @@ autocmd_cmd(const cmd_info_t *cmd_info)
 		static char *events[] = { "DirEnter" };
 		if(!is_in_string_array_case(events, ARRAY_LEN(events), event))
 		{
-			status_bar_errorf("No such event: %s", event);
+			ui_sb_errf("No such event: %s", event);
 			return 1;
 		}
 	}
@@ -1115,7 +1115,7 @@ make_tags_list(const cmd_info_t *cmd_info)
 	{
 		if(strpbrk(cmd_info->argv[i], ", \t") != NULL)
 		{
-			status_bar_errorf("Tags can't include comma or whitespace: %s",
+			ui_sb_errf("Tags can't include comma or whitespace: %s",
 					cmd_info->argv[i]);
 			return NULL;
 		}
@@ -1366,7 +1366,7 @@ chmod_cmd(const cmd_info_t *cmd_info)
 	if((err = regcomp(&re, "^([ugoa]*([-+=]([rwxXst]*|[ugo]))+)|([0-7]{3,4})$",
 			REG_EXTENDED)) != 0)
 	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return 1;
 	}
@@ -1382,7 +1382,7 @@ chmod_cmd(const cmd_info_t *cmd_info)
 
 	if(i < cmd_info->argc)
 	{
-		status_bar_errorf("Invalid argument: %s", cmd_info->argv[i]);
+		ui_sb_errf("Invalid argument: %s", cmd_info->argv[i]);
 		return 1;
 	}
 
@@ -1423,12 +1423,12 @@ chown_cmd(const cmd_info_t *cmd_info)
 
 	if(u && get_uid(user, &uid) != 0)
 	{
-		status_bar_errorf("Invalid user name: \"%s\"", user);
+		ui_sb_errf("Invalid user name: \"%s\"", user);
 		return 1;
 	}
 	if(g && get_gid(group, &gid) != 0)
 	{
-		status_bar_errorf("Invalid group name: \"%s\"", group);
+		ui_sb_errf("Invalid group name: \"%s\"", group);
 		return 1;
 	}
 
@@ -1486,7 +1486,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 
 	if(!cs_exists(cmd_info->argv[0]))
 	{
-		status_bar_errorf("Cannot find colorscheme %s" , cmd_info->argv[0]);
+		ui_sb_errf("Cannot find colorscheme %s" , cmd_info->argv[0]);
 		return 1;
 	}
 
@@ -1498,8 +1498,8 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		{
 			if(curr_stats.load_stage < 3)
 			{
-				status_bar_errorf("The path in :colorscheme command cannot be "
-						"relative in startup scripts (%s)", directory);
+				ui_sb_errf("The path in :colorscheme command cannot be relative in "
+						"startup scripts (%s)", directory);
 				free(directory);
 				return 1;
 			}
@@ -1515,7 +1515,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 
 		if(!is_dir(directory))
 		{
-			status_bar_errorf("%s isn't a directory", directory);
+			ui_sb_errf("%s isn't a directory", directory);
 			free(directory);
 			return 1;
 		}
@@ -1811,7 +1811,7 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 		else if(strcmp(property, "skipempty") == 0)  *skip_empty = 1;
 		else
 		{
-			status_bar_errorf("Unknown comparison property: %s", property);
+			ui_sb_errf("Unknown comparison property: %s", property);
 			return 1;
 		}
 	}
@@ -2111,7 +2111,7 @@ add_assoc(const cmd_info_t *cmd_info, int viewer, int for_x)
 		matchers_t *const ms = matchers_alloc(matchers[i], 0, 1, "", &error);
 		if(ms == NULL)
 		{
-			status_bar_errorf("Wrong pattern (%s): %s", matchers[i], error);
+			ui_sb_errf("Wrong pattern (%s): %s", matchers[i], error);
 			free(error);
 			free_string_array(matchers, nmatchers);
 			return 1;
@@ -2246,7 +2246,7 @@ set_view_filter(view_t *view, const char filter[], const char fallback[],
 			0, fallback, &error);
 	if(matcher == NULL)
 	{
-		status_bar_errorf("Name filter not set: %s", error);
+		ui_sb_errf("Name filter not set: %s", error);
 		free(error);
 		return 1;
 	}
@@ -2398,7 +2398,7 @@ highlight_clear(const cmd_info_t *cmd_info)
 	{
 		if(!cs_del_file_hi(cmd_info->argv[1]))
 		{
-			status_bar_errorf("No such group: %s", cmd_info->argv[1]);
+			ui_sb_errf("No such group: %s", cmd_info->argv[1]);
 			return 1;
 		}
 
@@ -2436,7 +2436,7 @@ highlight_file(const cmd_info_t *cmd_info)
 	matchers = matchers_alloc(pattern, 0, 1, "", &error);
 	if(matchers == NULL)
 	{
-		status_bar_errorf("Pattern error: %s", error);
+		ui_sb_errf("Pattern error: %s", error);
 		free(error);
 		return CMDS_ERR_CUSTOM;
 	}
@@ -2475,8 +2475,7 @@ display_file_highlights(const matchers_t *matchers)
 
 	if(i >= cs->file_hi_count)
 	{
-		status_bar_errorf("Highlight group not found: %s",
-				matchers_get_expr(matchers));
+		ui_sb_errf("Highlight group not found: %s", matchers_get_expr(matchers));
 		return;
 	}
 
@@ -2495,7 +2494,7 @@ highlight_group(const cmd_info_t *cmd_info)
 	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR, cmd_info->argv[0]);
 	if(group_id < 0)
 	{
-		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
+		ui_sb_errf("Highlight group not found: %s", cmd_info->argv[0]);
 		return 1;
 	}
 
@@ -2608,12 +2607,12 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 
 		if(equal == NULL)
 		{
-			status_bar_errorf("Missing equal sign in \"%s\"", arg);
+			ui_sb_errf("Missing equal sign in \"%s\"", arg);
 			return 1;
 		}
 		if(equal[1] == '\0')
 		{
-			status_bar_errorf("Missing argument: %s", arg);
+			ui_sb_errf("Missing argument: %s", arg);
 			return 1;
 		}
 
@@ -2638,7 +2637,7 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 			int attrs;
 			if((attrs = get_attrs(equal + 1)) == -1)
 			{
-				status_bar_errorf("Illegal argument: %s", equal + 1);
+				ui_sb_errf("Illegal argument: %s", equal + 1);
 				return 1;
 			}
 			color->attr = attrs;
@@ -2650,7 +2649,7 @@ parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 		}
 		else
 		{
-			status_bar_errorf("Illegal argument: %s", arg);
+			ui_sb_errf("Illegal argument: %s", arg);
 			return 1;
 		}
 	}
@@ -2668,7 +2667,7 @@ try_parse_color_name_value(const char str[], int fg, col_attr_t *color)
 
 	if(col_num < -1)
 	{
-		status_bar_errorf("Color name or number not recognized: %s", str);
+		ui_sb_errf("Color name or number not recognized: %s", str);
 		if(cs->state == CSS_LOADING)
 		{
 			cs->state = CSS_BROKEN;
@@ -3010,7 +3009,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 	{
 		if(!is_mark_empty(mark))
 		{
-			status_bar_errorf("Mark isn't empty: %c", mark);
+			ui_sb_errf("Mark isn't empty: %c", mark);
 			return 1;
 		}
 	}
@@ -3600,17 +3599,17 @@ source_cmd(const cmd_info_t *cmd_info)
 	char *path = expand_tilde(cmd_info->argv[0]);
 	if(!path_exists(path, DEREF))
 	{
-		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);
+		ui_sb_errf("File doesn't exist: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
 	if(os_access(path, R_OK) != 0)
 	{
-		status_bar_errorf("File isn't readable: %s", cmd_info->argv[0]);
+		ui_sb_errf("File isn't readable: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
 	if(cfg_source_file(path) != 0)
 	{
-		status_bar_errorf("Error sourcing file: %s", cmd_info->argv[0]);
+		ui_sb_errf("Error sourcing file: %s", cmd_info->argv[0]);
 		ret = 1;
 	}
 	free(path);
@@ -3806,7 +3805,7 @@ parse_sync_properties(const cmd_info_t *cmd_info, int *location,
 		}
 		else
 		{
-			status_bar_errorf("Unknown selective sync property: %s", property);
+			ui_sb_errf("Unknown selective sync property: %s", property);
 			return 1;
 		}
 	}

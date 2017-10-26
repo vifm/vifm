@@ -682,7 +682,7 @@ view_find_pattern(const char pattern[], int backward)
 	vi->last_search_backward = -1;
 	if((err = regcomp(&vi->re, pattern, get_regexp_cflags(pattern))) != 0)
 	{
-		status_bar_errorf("Invalid pattern: %s", get_regexp_error(err, &vi->re));
+		ui_sb_errf("Invalid pattern: %s", get_regexp_error(err, &vi->re));
 		regfree(&vi->re);
 		draw();
 		return 1;

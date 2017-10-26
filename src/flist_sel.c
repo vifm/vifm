@@ -324,7 +324,7 @@ flist_sel_by_pattern(view_t *view, const char pattern[], int erase_old,
 			cfg_get_last_search_pattern(), &error);
 	if(ms == NULL)
 	{
-		status_bar_errorf("Pattern error: %s", error);
+		ui_sb_errf("Pattern error: %s", error);
 		free(error);
 		return 1;
 	}

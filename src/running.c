@@ -1175,7 +1175,7 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 {
 	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
 	{
-		status_bar_errorf("\"%s\" macro can't be combined with \" &\"",
+		ui_sb_errf("\"%s\" macro can't be combined with \" &\"",
 				macros_to_str(flags));
 		*save_msg = 1;
 		return -1;
@@ -1205,7 +1205,7 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 
 			if(error)
 			{
-				status_bar_errorf("Failed to start in bg: %s", cmd);
+				ui_sb_errf("Failed to start in bg: %s", cmd);
 				*save_msg = 1;
 			}
 		}

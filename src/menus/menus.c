@@ -963,7 +963,7 @@ search_menu(menu_state_t *ms, int start_pos, int print_errors)
 	{
 		if(print_errors)
 		{
-			status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+			ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		}
 		regfree(&re);
 		return -1;
@@ -1012,7 +1012,7 @@ search_menu_forwards(menu_state_t *m, int start_pos)
 
 	if(!cfg.wrap_scan && match_down <= -1)
 	{
-		status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+		ui_sb_errf("Search hit BOTTOM without match for: %s", m->regexp);
 		return 1;
 	}
 
@@ -1047,7 +1047,7 @@ search_menu_backwards(menu_state_t *m, int start_pos)
 
 	if(!cfg.wrap_scan && match_up <= -1)
 	{
-		status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+		ui_sb_errf("Search hit TOP without match for: %s", m->regexp);
 		return 1;
 	}
 
@@ -1105,8 +1105,7 @@ menus_search_print_msg(const menu_state_t *m)
 
 	if(err != 0)
 	{
-		status_bar_errorf("Regexp (%s) error: %s", m->regexp,
-				get_regexp_error(err, &re));
+		ui_sb_errf("Regexp (%s) error: %s", m->regexp, get_regexp_error(err, &re));
 		regfree(&re);
 		return;
 	}
@@ -1120,7 +1119,7 @@ menus_search_print_msg(const menu_state_t *m)
 	}
 	else
 	{
-		status_bar_errorf("No matches for: %s", m->regexp);
+		ui_sb_errf("No matches for: %s", m->regexp);
 	}
 }
 

@@ -1454,7 +1454,7 @@ normal_cmd_cp(view_t *view, key_info_t key_info)
 		 * position (when called from visual mode). */
 		redraw_view(view);
 
-		status_bar_errorf("Incorrect file mode: %s", mode);
+		ui_sb_errf("Incorrect file mode: %s", mode);
 		curr_stats.save_msg = 1;
 		return;
 	}

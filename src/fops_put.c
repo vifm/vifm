@@ -158,7 +158,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 		{
 			if(stroscmp(get_last_path_component(args->list[j]), dst_name) == 0)
 			{
-				status_bar_errorf("Two destination files have name \"%s\"", dst_name);
+				ui_sb_errf("Two destination files have name \"%s\"", dst_name);
 				fops_free_bg_args(args);
 				return 1;
 			}
@@ -169,7 +169,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 
 		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", dst);
+			ui_sb_errf("File \"%s\" already exists", dst);
 			fops_free_bg_args(args);
 			return 1;
 		}

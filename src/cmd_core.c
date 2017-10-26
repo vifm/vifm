@@ -151,11 +151,11 @@ swap_range(void)
 static int
 resolve_mark(char mark)
 {
-	int result;
-
-	result = check_mark_directory(curr_view, mark);
+	const int result = check_mark_directory(curr_view, mark);
 	if(result < 0)
-		status_bar_errorf("Trying to use an invalid mark: '%c", mark);
+	{
+		ui_sb_errf("Trying to use an invalid mark: '%c", mark);
+	}
 	return result;
 }
 

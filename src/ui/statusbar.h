@@ -41,7 +41,7 @@ void ui_sb_msgf(const char format[], ...) _gnuc_printf(1, 2);
 
 void ui_sb_err(const char message[]);
 
-void status_bar_errorf(const char message[], ...) _gnuc_printf(1, 2);
+void ui_sb_errf(const char message[], ...) _gnuc_printf(1, 2);
 
 int is_status_bar_multiline(void);
 

@@ -626,13 +626,13 @@ fops_case(view_t *view, int to_upper)
 
 		if(is_in_string_array(dest, ndest, new_fname))
 		{
-			status_bar_errorf("Name \"%s\" duplicates", new_fname);
+			ui_sb_errf("Name \"%s\" duplicates", new_fname);
 			err = 1;
 			break;
 		}
 		if(path_exists(new_fname, NODEREF) && !is_case_change(new_fname, old_fname))
 		{
-			status_bar_errorf("File \"%s\" already exists", new_fname);
+			ui_sb_errf("File \"%s\" already exists", new_fname);
 			err = 1;
 			break;
 		}
@@ -685,7 +685,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 
 	if((err = regcomp(&re, pattern, cflags)) != 0)
 	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return 1;
 	}
@@ -844,22 +844,22 @@ check_rename(const char old_fname[], const char new_fname[], char **dest,
 
 	if(is_in_string_array(dest, ndest, new_fname))
 	{
-		status_bar_errorf("Name \"%s\" duplicates", new_fname);
+		ui_sb_errf("Name \"%s\" duplicates", new_fname);
 		return RA_FAIL;
 	}
 	if(new_fname[0] == '\0')
 	{
-		status_bar_errorf("Destination name of \"%s\" is empty", old_fname);
+		ui_sb_errf("Destination name of \"%s\" is empty", old_fname);
 		return RA_FAIL;
 	}
 	if(contains_slash(new_fname))
 	{
-		status_bar_errorf("Destination name \"%s\" contains slash", new_fname);
+		ui_sb_errf("Destination name \"%s\" contains slash", new_fname);
 		return RA_FAIL;
 	}
 	if(path_exists(new_fname, NODEREF))
 	{
-		status_bar_errorf("File \"%s\" already exists", new_fname);
+		ui_sb_errf("File \"%s\" already exists", new_fname);
 		return RA_FAIL;
 	}
 

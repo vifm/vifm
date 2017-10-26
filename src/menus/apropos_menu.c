@@ -87,7 +87,7 @@ execute_apropos_cb(view_t *view, menu_data_t *m)
 
 	if(exit_code != 0)
 	{
-		status_bar_errorf("man view command failed with code: %d", exit_code);
+		ui_sb_errf("man view command failed with code: %d", exit_code);
 		curr_stats.save_msg = 1;
 	}
 

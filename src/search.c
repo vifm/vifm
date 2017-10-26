@@ -173,7 +173,7 @@ find_pattern(view_t *view, const char pattern[], int backward, int move,
 	{
 		if(print_errors)
 		{
-			status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+			ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		}
 		regfree(&re);
 		return -1;
@@ -273,8 +273,7 @@ print_search_fail_msg(const view_t *view, int backward)
 
 	if(err != 0)
 	{
-		status_bar_errorf("Regexp (%s) error: %s", regexp,
-				get_regexp_error(err, &re));
+		ui_sb_errf("Regexp (%s) error: %s", regexp, get_regexp_error(err, &re));
 		regfree(&re);
 		return;
 	}
@@ -283,15 +282,15 @@ print_search_fail_msg(const view_t *view, int backward)
 
 	if(cfg.wrap_scan)
 	{
-		status_bar_errorf("No matching files for: %s", regexp);
+		ui_sb_errf("No matching files for: %s", regexp);
 	}
 	else if(backward)
 	{
-		status_bar_errorf("Search hit TOP without match for: %s", regexp);
+		ui_sb_errf("Search hit TOP without match for: %s", regexp);
 	}
 	else
 	{
-		status_bar_errorf("Search hit BOTTOM without match for: %s", regexp);
+		ui_sb_errf("Search hit BOTTOM without match for: %s", regexp);
 	}
 }
 

@@ -135,7 +135,7 @@ ui_sb_err(const char message[])
 }
 
 void
-status_bar_errorf(const char message[], ...)
+ui_sb_errf(const char message[], ...)
 {
 	va_list ap;
 

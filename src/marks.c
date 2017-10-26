@@ -200,7 +200,7 @@ setup_user_mark(const char mark, const char directory[], const char file[],
 	}
 	else
 	{
-		status_bar_errorf("Only user's marks can be loaded, but got: %c", mark);
+		ui_sb_errf("Only user's marks can be loaded, but got: %c", mark);
 	}
 }
 
