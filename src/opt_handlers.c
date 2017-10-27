@@ -1474,11 +1474,11 @@ process_set_args(const char args[], int global, int local)
 	{
 		vle_tb_append_line(vle_err, "Invalid argument for :set command");
 		/* We just modified text buffer and can't use text_buffer variable. */
-		status_bar_error(vle_tb_get_data(vle_err));
+		ui_sb_err(vle_tb_get_data(vle_err));
 	}
 	else if(text_buffer[0] != '\0')
 	{
-		status_bar_message(text_buffer);
+		ui_sb_msg(text_buffer);
 	}
 
 	return error ? -1 : (text_buffer[0] != '\0');

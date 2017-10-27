@@ -182,7 +182,7 @@ set_user_mark(const char mark, const char directory[], const char file[])
 {
 	if(!is_user_mark(mark))
 	{
-		status_bar_message("Invalid mark name");
+		ui_sb_msg("Invalid mark name");
 		return 1;
 	}
 
@@ -200,7 +200,7 @@ setup_user_mark(const char mark, const char directory[], const char file[],
 	}
 	else
 	{
-		status_bar_errorf("Only user's marks can be loaded, but got: %c", mark);
+		ui_sb_errf("Only user's marks can be loaded, but got: %c", mark);
 	}
 }
 
@@ -324,15 +324,15 @@ navigate_to_mark(view_t *view, char m)
 
 	if(!char_is_one_of(valid_marks, m))
 	{
-		status_bar_message("Invalid mark name");
+		ui_sb_msg("Invalid mark name");
 	}
 	else if(is_empty(mark))
 	{
-		status_bar_message("Mark is not set");
+		ui_sb_msg("Mark is not set");
 	}
 	else
 	{
-		status_bar_message("Mark is invalid");
+		ui_sb_msg("Mark is invalid");
 	}
 
 	fview_cursor_redraw(view);

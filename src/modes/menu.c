@@ -336,7 +336,7 @@ menu_post(void)
 		menu_full_redraw();
 		curr_stats.need_update = UT_NONE;
 	}
-	status_bar_message(curr_stats.save_msg ? NULL : "");
+	ui_sb_msg(curr_stats.save_msg ? NULL : "");
 }
 
 void
@@ -1057,7 +1057,7 @@ menu_run_command(const char cmd[])
 {
 	if(exec_command(cmd, view, CIT_COMMAND) < 0)
 	{
-		status_bar_error("An error occurred while trying to execute command");
+		ui_sb_err("An error occurred while trying to execute command");
 	}
 	init_cmds(0, &cmds_conf);
 }

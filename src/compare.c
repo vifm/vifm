@@ -112,7 +112,7 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 	{
 		free_dir_entries(curr_view, &curr.entries, &curr.nentries);
 		free_dir_entries(other_view, &other.entries, &other.nentries);
-		status_bar_message("Comparison has been cancelled");
+		ui_sb_msg("Comparison has been cancelled");
 		return 1;
 	}
 
@@ -390,7 +390,7 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 	if(ui_cancellation_requested())
 	{
 		free_dir_entries(view, &curr.entries, &curr.nentries);
-		status_bar_message("Comparison has been cancelled");
+		ui_sb_msg("Comparison has been cancelled");
 		return 1;
 	}
 
@@ -873,7 +873,7 @@ compare_move(view_t *from, view_t *to)
 
 	if(from->custom.type != CV_DIFF || !from->custom.diff_path_group)
 	{
-		status_bar_error("Not in diff mode with path grouping");
+		ui_sb_err("Not in diff mode with path grouping");
 		return 1;
 	}
 

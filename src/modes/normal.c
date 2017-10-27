@@ -680,44 +680,44 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.confirmed = 0;
 	ui_cancellation_reset();
 
-	status_bar_message("Redoing...");
+	ui_sb_msg("Redoing...");
 
 	ret = redo_group();
 
 	if(ret == 0)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Redone one group");
+		ui_sb_msg("Redone one group");
 	}
 	else if(ret == -2)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_error("Redone one group with errors");
+		ui_sb_err("Redone one group with errors");
 	}
 	else if(ret == -1)
 	{
-		status_bar_message("Nothing to redo");
+		ui_sb_msg("Nothing to redo");
 	}
 	else if(ret == -3)
 	{
-		status_bar_error("Can't redo group, it was skipped");
+		ui_sb_err("Can't redo group, it was skipped");
 	}
 	else if(ret == -4)
 	{
-		status_bar_error("Can't redo what wasn't undone");
+		ui_sb_err("Can't redo what wasn't undone");
 	}
 	else if(ret == -6)
 	{
-		status_bar_message("Group redo skipped by user");
+		ui_sb_msg("Group redo skipped by user");
 	}
 	else if(ret == -7)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Redoing was cancelled");
+		ui_sb_msg("Redoing was cancelled");
 	}
 	else if(ret == 1)
 	{
-		status_bar_error("Redo operation was skipped due to previous errors");
+		ui_sb_err("Redo operation was skipped due to previous errors");
 	}
 	curr_stats.save_msg = 1;
 }
@@ -1087,7 +1087,7 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 	reg = regs_find(tolower(key_info.reg));
 	if(reg == NULL || reg->nfiles < 1)
 	{
-		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
+		ui_sb_err(reg == NULL ? "No such register" : "Register is empty");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1454,7 +1454,7 @@ normal_cmd_cp(view_t *view, key_info_t key_info)
 		 * position (when called from visual mode). */
 		redraw_view(view);
 
-		status_bar_errorf("Incorrect file mode: %s", mode);
+		ui_sb_errf("Incorrect file mode: %s", mode);
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1571,7 +1571,7 @@ cmd_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_stats.preview.on)
 	{
-		status_bar_error("Another type of file viewing is activated");
+		ui_sb_err("Another type of file viewing is activated");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1847,48 +1847,48 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.confirmed = 0;
 	ui_cancellation_reset();
 
-	status_bar_message("Undoing...");
+	ui_sb_msg("Undoing...");
 
 	ret = undo_group();
 
 	if(ret == 0)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Undone one group");
+		ui_sb_msg("Undone one group");
 	}
 	else if(ret == -2)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_error("Undone one group with errors");
+		ui_sb_err("Undone one group with errors");
 	}
 	else if(ret == -1)
 	{
-		status_bar_message("Nothing to undo");
+		ui_sb_msg("Nothing to undo");
 	}
 	else if(ret == -3)
 	{
-		status_bar_error("Can't undo group, it was skipped");
+		ui_sb_err("Can't undo group, it was skipped");
 	}
 	else if(ret == -4)
 	{
-		status_bar_error("Can't undo what wasn't redone");
+		ui_sb_err("Can't undo what wasn't redone");
 	}
 	else if(ret == -5)
 	{
-		status_bar_error("Operation cannot be undone");
+		ui_sb_err("Operation cannot be undone");
 	}
 	else if(ret == -6)
 	{
-		status_bar_message("Group undo skipped by user");
+		ui_sb_msg("Group undo skipped by user");
 	}
 	else if(ret == -7)
 	{
 		ui_views_reload_visible_filelists();
-		status_bar_message("Undoing was cancelled");
+		ui_sb_msg("Undoing was cancelled");
 	}
 	else if(ret == 1)
 	{
-		status_bar_error("Undo operation was skipped due to previous errors");
+		ui_sb_err("Undo operation was skipped due to previous errors");
 	}
 	curr_stats.save_msg = 1;
 }

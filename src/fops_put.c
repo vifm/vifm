@@ -116,7 +116,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
-		status_bar_error(reg == NULL ? "No such register" : "Register is empty");
+		ui_sb_err(reg == NULL ? "No such register" : "Register is empty");
 		return 1;
 	}
 
@@ -158,7 +158,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 		{
 			if(stroscmp(get_last_path_component(args->list[j]), dst_name) == 0)
 			{
-				status_bar_errorf("Two destination files have name \"%s\"", dst_name);
+				ui_sb_errf("Two destination files have name \"%s\"", dst_name);
 				fops_free_bg_args(args);
 				return 1;
 			}
@@ -169,7 +169,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 
 		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", dst);
+			ui_sb_errf("File \"%s\" already exists", dst);
 			fops_free_bg_args(args);
 			return 1;
 		}
@@ -271,7 +271,7 @@ initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
-		status_bar_error("Register is empty");
+		ui_sb_err("Register is empty");
 		return 1;
 	}
 
@@ -458,7 +458,7 @@ put_files_i(view_t *view, int start)
 		}
 		else if(put_result < 0)
 		{
-			status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+			ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
 					(put_confirm.processed == 1) ? "" : "s",
 					fops_get_cancellation_suffix());
 			return 1;
@@ -468,7 +468,7 @@ put_files_i(view_t *view, int start)
 
 	regs_pack(put_confirm.reg->name);
 
-	status_bar_messagef("%d file%s inserted%s", put_confirm.processed,
+	ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
 			(put_confirm.processed == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	ui_view_schedule_reload(put_confirm.view);

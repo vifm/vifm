@@ -85,7 +85,7 @@ show_grep_menu(view_t *view, const char args[], int invert)
 	free(escaped_args);
 	free(targets);
 
-	status_bar_message("grep...");
+	ui_sb_msg("grep...");
 	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,
 			macros[M_U].explicit_use);
 	free(cmd);

@@ -661,7 +661,7 @@ menus_enter(menu_state_t *m, view_t *view)
 {
 	if(m->d->len < 1)
 	{
-		status_bar_message(m->d->empty_msg);
+		ui_sb_msg(m->d->empty_msg);
 		menus_reset_data(m->d);
 		return 1;
 	}
@@ -713,7 +713,7 @@ menus_unstash(view_t *view)
 
 	if(!menu_data_stash.initialized)
 	{
-		status_bar_message("No saved menu to display");
+		ui_sb_msg("No saved menu to display");
 		return 1;
 	}
 
@@ -875,7 +875,7 @@ menus_search_repeat(menu_state_t *m, int backward)
 {
 	if(m->regexp == NULL)
 	{
-		status_bar_error("No search pattern set");
+		ui_sb_err("No search pattern set");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -886,8 +886,8 @@ menus_search_repeat(menu_state_t *m, int backward)
 
 	if(m->matching_entries > 0)
 	{
-		status_bar_messagef("(%d of %d) %c%s", get_match_index(m),
-				m->matching_entries, backward ? '?' : '/', m->regexp);
+		ui_sb_msgf("(%d of %d) %c%s", get_match_index(m), m->matching_entries,
+				backward ? '?' : '/', m->regexp);
 	}
 
 	curr_stats.save_msg = 1;
@@ -963,7 +963,7 @@ search_menu(menu_state_t *ms, int start_pos, int print_errors)
 	{
 		if(print_errors)
 		{
-			status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+			ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		}
 		regfree(&re);
 		return -1;
@@ -1012,7 +1012,7 @@ search_menu_forwards(menu_state_t *m, int start_pos)
 
 	if(!cfg.wrap_scan && match_down <= -1)
 	{
-		status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+		ui_sb_errf("Search hit BOTTOM without match for: %s", m->regexp);
 		return 1;
 	}
 
@@ -1047,7 +1047,7 @@ search_menu_backwards(menu_state_t *m, int start_pos)
 
 	if(!cfg.wrap_scan && match_up <= -1)
 	{
-		status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+		ui_sb_errf("Search hit TOP without match for: %s", m->regexp);
 		return 1;
 	}
 
@@ -1105,8 +1105,7 @@ menus_search_print_msg(const menu_state_t *m)
 
 	if(err != 0)
 	{
-		status_bar_errorf("Regexp (%s) error: %s", m->regexp,
-				get_regexp_error(err, &re));
+		ui_sb_errf("Regexp (%s) error: %s", m->regexp, get_regexp_error(err, &re));
 		regfree(&re);
 		return;
 	}
@@ -1115,12 +1114,12 @@ menus_search_print_msg(const menu_state_t *m)
 
 	if(m->matching_entries > 0)
 	{
-		status_bar_messagef("%d of %d %s", get_match_index(m), m->matching_entries,
+		ui_sb_msgf("%d of %d %s", get_match_index(m), m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
 	}
 	else
 	{
-		status_bar_errorf("No matches for: %s", m->regexp);
+		ui_sb_errf("No matches for: %s", m->regexp);
 	}
 }
 

@@ -151,7 +151,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 	ui_view_reset_selection_and_reload(view);
 	ui_view_schedule_reload(view == curr_view ? other_view : curr_view);
 
-	status_bar_messagef("%d %s %celeted%s", ops->succeeded,
+	ui_sb_msgf("%d %s %celeted%s", ops->succeeded,
 			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
 			fops_get_cancellation_suffix());
 
@@ -201,7 +201,7 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 		ui_views_reload_filelists();
 	}
 
-	status_bar_messagef("%d %s %celeted%s", ops->succeeded,
+	ui_sb_msgf("%d %s %celeted%s", ops->succeeded,
 			(ops->succeeded == 1) ? "file" : "files", use_trash ? 'd' : 'D',
 			fops_get_cancellation_suffix());
 
@@ -304,7 +304,7 @@ fops_delete_bg(view_t *view, int use_trash)
 	if(args->sel_list_len == 0)
 	{
 		fops_free_bg_args(args);
-		status_bar_message("Nothing to delete");
+		ui_sb_msg("Nothing to delete");
 		return 1;
 	}
 
@@ -459,7 +459,7 @@ fops_yank(view_t *view, int reg)
 
 	regs_update_unnamed(reg);
 
-	status_bar_messagef("%d file%s yanked", nyanked_files,
+	ui_sb_msgf("%d file%s yanked", nyanked_files,
 			(nyanked_files == 1) ? "" : "s");
 
 	return 1;
@@ -502,12 +502,12 @@ fops_retarget(view_t *view)
 
 	if(fentry_is_fake(entry))
 	{
-		status_bar_error("Entry doesn't correspond to a file");
+		ui_sb_err("Entry doesn't correspond to a file");
 		return 1;
 	}
 	if(entry->type != FT_LINK)
 	{
-		status_bar_error("File is not a symbolic link");
+		ui_sb_err("File is not a symbolic link");
 		return 1;
 	}
 
@@ -724,7 +724,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 		free_string_array(list, nlines);
 	}
 
-	status_bar_messagef("%d file%s cloned%s", ops->succeeded,
+	ui_sb_msgf("%d file%s cloned%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
@@ -740,7 +740,7 @@ is_clone_list_ok(int count, char *list[])
 	{
 		if(path_exists(list[i], NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", list[i]);
+			ui_sb_errf("File \"%s\" already exists", list[i]);
 			return 0;
 		}
 	}
@@ -838,19 +838,19 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 
 		if(is_in_string_array(names, i, names[i]))
 		{
-			status_bar_errorf("Name \"%s\" duplicates", names[i]);
+			ui_sb_errf("Name \"%s\" duplicates", names[i]);
 			return 1;
 		}
 		if(names[i][0] == '\0')
 		{
-			status_bar_errorf("Name #%d is empty", i + 1);
+			ui_sb_errf("Name #%d is empty", i + 1);
 			return 1;
 		}
 
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 		if(path_exists(full, NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", names[i]);
+			ui_sb_errf("File \"%s\" already exists", names[i]);
 			return 1;
 		}
 	}
@@ -893,7 +893,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 		go_to_first_file(view, names, count);
 	}
 
-	status_bar_messagef("%d director%s created%s", n, (n == 1) ? "y" : "ies",
+	ui_sb_msgf("%d director%s created%s", n, (n == 1) ? "y" : "ies",
 			fops_get_cancellation_suffix());
 	return 1;
 }
@@ -918,19 +918,19 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 
 		if(is_in_string_array(names, i, names[i]))
 		{
-			status_bar_errorf("Name \"%s\" duplicates", names[i]);
+			ui_sb_errf("Name \"%s\" duplicates", names[i]);
 			return 1;
 		}
 		if(names[i][0] == '\0')
 		{
-			status_bar_errorf("Name #%d is empty", i + 1);
+			ui_sb_errf("Name #%d is empty", i + 1);
 			return 1;
 		}
 
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 		if(path_exists(full, NODEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", names[i]);
+			ui_sb_errf("File \"%s\" already exists", names[i]);
 			return 1;
 		}
 	}
@@ -962,7 +962,7 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 		go_to_first_file(view, names, count);
 	}
 
-	status_bar_messagef("%d file%s created%s", n, (n == 1) ? "" : "s",
+	ui_sb_msgf("%d file%s created%s", n, (n == 1) ? "" : "s",
 			fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
@@ -1042,8 +1042,7 @@ fops_restore(view_t *view)
 
 	ui_view_schedule_reload(view);
 
-	status_bar_messagef("Restored %d of %d%s", m, n,
-			fops_get_cancellation_suffix());
+	ui_sb_msgf("Restored %d of %d%s", m, n, fops_get_cancellation_suffix());
 	return 1;
 }
 
@@ -1218,7 +1217,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 	}
 	cmd_group_end();
 
-	status_bar_messagef("%d file%s fully processed%s", ops->succeeded,
+	ui_sb_msgf("%d file%s fully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 	fops_free_ops(ops);
 
@@ -1251,7 +1250,7 @@ change_owner_cb(const char new_owner[])
 
 	if(get_uid(new_owner, &uid) != 0)
 	{
-		status_bar_errorf("Invalid user name: \"%s\"", new_owner);
+		ui_sb_errf("Invalid user name: \"%s\"", new_owner);
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1292,7 +1291,7 @@ change_group_cb(const char new_group[])
 
 	if(get_gid(new_group, &gid) != 0)
 	{
-		status_bar_errorf("Invalid group name: \"%s\"", new_group);
+		ui_sb_errf("Invalid group name: \"%s\"", new_group);
 		curr_stats.save_msg = 1;
 		return;
 	}

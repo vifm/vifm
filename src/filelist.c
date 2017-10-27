@@ -3011,12 +3011,12 @@ pick_sibling(view_t *view, entries_t parent_dirs, int offset, int wrap,
 			if(offset > 0)
 			{
 				i = 0;
-				status_bar_error("Hit BOTTOM, continuing at TOP");
+				ui_sb_err("Hit BOTTOM, continuing at TOP");
 			}
 			else
 			{
 				i = parent_dirs.nentries - 1;
-				status_bar_error("Hit TOP, continuing at BOTTOM");
+				ui_sb_err("Hit TOP, continuing at BOTTOM");
 			}
 			*wrapped = 1;
 		}

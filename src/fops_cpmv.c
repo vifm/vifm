@@ -177,7 +177,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		free_string_array(list, nlines);
 	}
 
-	status_bar_messagef("%d file%s successfully processed%s", ops->succeeded,
+	ui_sb_msgf("%d file%s successfully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
@@ -393,7 +393,7 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 		{
 			if(is_in_string_array(marked, i, marked[i]))
 			{
-				status_bar_errorf("Source name \"%s\" duplicates", marked[i]);
+				ui_sb_errf("Source name \"%s\" duplicates", marked[i]);
 				curr_stats.save_msg = 1;
 				error = 1;
 			}
@@ -447,7 +447,7 @@ is_copy_list_ok(const char dst[], int count, char *list[], int force)
 	{
 		if(path_exists_at(dst, list[i], DEREF))
 		{
-			status_bar_errorf("File \"%s\" already exists", list[i]);
+			ui_sb_errf("File \"%s\" already exists", list[i]);
 			return 0;
 		}
 	}
@@ -476,7 +476,7 @@ check_for_clashes(view_t *view, CopyMoveLikeOp op, const char dst_path[],
 
 		if(ONE_OF(op, CMLO_MOVE, CMLO_COPY) && is_in_subtree(dst_full, src_full))
 		{
-			status_bar_errorf("Can't move/copy parent inside itself: %s",
+			ui_sb_errf("Can't move/copy parent inside itself: %s",
 					replace_home_part(src_full));
 			curr_stats.save_msg = 1;
 			return 1;
@@ -484,7 +484,7 @@ check_for_clashes(view_t *view, CopyMoveLikeOp op, const char dst_path[],
 
 		if(is_in_subtree(src_full, dst_full))
 		{
-			status_bar_errorf("Operation would result in loss contents of %s",
+			ui_sb_errf("Operation would result in loss contents of %s",
 					replace_home_part(src_full));
 			curr_stats.save_msg = 1;
 			return 1;

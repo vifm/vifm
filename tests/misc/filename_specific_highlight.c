@@ -116,7 +116,7 @@ TEST(highlighting_is_printed_back_correctly)
 	const char *const COMMANDS = "highlight {*.jpg} ctermfg=red";
 	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
 
-	status_bar_message("");
+	ui_sb_msg("");
 	assert_failure(exec_commands("highlight {*.jpg}", &lwin, CIT_COMMAND));
 	assert_string_equal("{*.jpg}    cterm=none ctermfg=red     ctermbg=default",
 			ui_sb_last());

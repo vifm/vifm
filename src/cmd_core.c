@@ -151,11 +151,11 @@ swap_range(void)
 static int
 resolve_mark(char mark)
 {
-	int result;
-
-	result = check_mark_directory(curr_view, mark);
+	const int result = check_mark_directory(curr_view, mark);
 	if(result < 0)
-		status_bar_errorf("Trying to use an invalid mark: '%c", mark);
+	{
+		ui_sb_errf("Trying to use an invalid mark: '%c", mark);
+	}
 	return result;
 }
 
@@ -493,58 +493,58 @@ execute_command(view_t *view, const char command[], int menu)
 	switch(result)
 	{
 		case CMDS_ERR_LOOP:
-			status_bar_error("Loop in commands");
+			ui_sb_err("Loop in commands");
 			break;
 		case CMDS_ERR_NO_MEM:
-			status_bar_error("Unable to allocate enough memory");
+			ui_sb_err("Unable to allocate enough memory");
 			break;
 		case CMDS_ERR_TOO_FEW_ARGS:
-			status_bar_error("Too few arguments");
+			ui_sb_err("Too few arguments");
 			break;
 		case CMDS_ERR_TRAILING_CHARS:
-			status_bar_error("Trailing characters");
+			ui_sb_err("Trailing characters");
 			break;
 		case CMDS_ERR_INCORRECT_NAME:
-			status_bar_error("Incorrect command name");
+			ui_sb_err("Incorrect command name");
 			break;
 		case CMDS_ERR_NEED_BANG:
-			status_bar_error("Add bang to force");
+			ui_sb_err("Add bang to force");
 			break;
 		case CMDS_ERR_NO_BUILTIN_REDEFINE:
-			status_bar_error("Can't redefine builtin command");
+			ui_sb_err("Can't redefine builtin command");
 			break;
 		case CMDS_ERR_INVALID_CMD:
-			status_bar_error("Invalid command name");
+			ui_sb_err("Invalid command name");
 			break;
 		case CMDS_ERR_NO_BANG_ALLOWED:
-			status_bar_error("No ! is allowed");
+			ui_sb_err("No ! is allowed");
 			break;
 		case CMDS_ERR_NO_RANGE_ALLOWED:
-			status_bar_error("No range is allowed");
+			ui_sb_err("No range is allowed");
 			break;
 		case CMDS_ERR_NO_QMARK_ALLOWED:
-			status_bar_error("No ? is allowed");
+			ui_sb_err("No ? is allowed");
 			break;
 		case CMDS_ERR_INVALID_RANGE:
-			status_bar_error("Invalid range");
+			ui_sb_err("Invalid range");
 			break;
 		case CMDS_ERR_NO_SUCH_UDF:
-			status_bar_error("No such user defined command");
+			ui_sb_err("No such user defined command");
 			break;
 		case CMDS_ERR_UDF_IS_AMBIGUOUS:
-			status_bar_error("Ambiguous use of user-defined command");
+			ui_sb_err("Ambiguous use of user-defined command");
 			break;
 		case CMDS_ERR_ZERO_COUNT:
-			status_bar_error("Zero count");
+			ui_sb_err("Zero count");
 			break;
 		case CMDS_ERR_INVALID_ARG:
-			status_bar_error("Invalid argument");
+			ui_sb_err("Invalid argument");
 			break;
 		case CMDS_ERR_CUSTOM:
 			/* error message is posted by command handler */
 			break;
 		default:
-			status_bar_error("Unknown error");
+			ui_sb_err("Unknown error");
 			break;
 	}
 
@@ -1112,7 +1112,7 @@ commands_scope_finish(void)
 {
 	if(!is_at_scope_bottom(&if_levels))
 	{
-		status_bar_error("Missing :endif");
+		ui_sb_err("Missing :endif");
 		int_stack_pop_seq(&if_levels, IF_SCOPE_GUARD);
 		return 1;
 	}

@@ -259,7 +259,7 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	if(run_cmd_for_output(expanded_cmd, &files, &nfiles) != 0)
 	{
 		free(expanded_cmd);
-		status_bar_error("Failed to start/read output of external command");
+		ui_sb_err("Failed to start/read output of external command");
 		return 1;
 	}
 	free(expanded_cmd);
@@ -324,7 +324,7 @@ flist_sel_by_pattern(view_t *view, const char pattern[], int erase_old,
 			cfg_get_last_search_pattern(), &error);
 	if(ms == NULL)
 	{
-		status_bar_errorf("Pattern error: %s", error);
+		ui_sb_errf("Pattern error: %s", error);
 		free(error);
 		return 1;
 	}

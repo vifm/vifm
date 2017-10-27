@@ -166,14 +166,14 @@ modes_post(void)
 
 	if(curr_stats.save_msg)
 	{
-		status_bar_message(NULL);
+		ui_sb_msg(NULL);
 	}
 
 	if(!vle_mode_is(FILE_INFO_MODE) && curr_view->list_rows > 0)
 	{
-		if(!is_status_bar_multiline())
+		if(!ui_sb_multiline())
 		{
-			update_stat_window(curr_view, 0);
+			ui_stat_update(curr_view, 0);
 			ui_ruler_update(curr_view, 1);
 		}
 	}
@@ -259,7 +259,7 @@ modes_redraw(void)
 
 	if(curr_stats.save_msg)
 	{
-		status_bar_message(NULL);
+		ui_sb_msg(NULL);
 	}
 
 	if(vle_mode_is(SORT_MODE))
@@ -360,12 +360,12 @@ print_selected_msg(void)
 {
 	if(vle_mode_is(VISUAL_MODE))
 	{
-		status_bar_messagef("-- %s -- ", describe_visual_mode());
+		ui_sb_msgf("-- %s -- ", describe_visual_mode());
 		update_vmode_input();
 	}
 	else
 	{
-		status_bar_messagef("%d %s selected", curr_view->selected_files,
+		ui_sb_msgf("%d %s selected", curr_view->selected_files,
 				curr_view->selected_files == 1 ? "file" : "files");
 	}
 	curr_stats.save_msg = 2;

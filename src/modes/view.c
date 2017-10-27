@@ -426,7 +426,7 @@ view_pre(void)
 	if(curr_stats.save_msg == 0)
 	{
 		const char *const suffix = vi->auto_forward ? "(auto forwarding)" : "";
-		status_bar_messagef("-- VIEW -- %s", suffix);
+		ui_sb_msgf("-- VIEW -- %s", suffix);
 		curr_stats.save_msg = 2;
 	}
 }
@@ -682,7 +682,7 @@ view_find_pattern(const char pattern[], int backward)
 	vi->last_search_backward = -1;
 	if((err = regcomp(&vi->re, pattern, get_regexp_cflags(pattern))) != 0)
 	{
-		status_bar_errorf("Invalid pattern: %s", get_regexp_error(err, &vi->re));
+		ui_sb_errf("Invalid pattern: %s", get_regexp_error(err, &vi->re));
 		regfree(&vi->re);
 		draw();
 		return 1;
@@ -1433,7 +1433,7 @@ get_part(const char line[], int offset, size_t max_len, char part[])
 static void
 display_error(const char error_msg[])
 {
-	status_bar_error(error_msg);
+	ui_sb_err(error_msg);
 	curr_stats.save_msg = 1;
 }
 

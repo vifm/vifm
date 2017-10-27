@@ -276,7 +276,7 @@ event_loop(const int *quit)
 		reset_input_buf(input_buf, &input_buf_pos);
 		clear_input_bar();
 
-		if(is_status_bar_multiline())
+		if(ui_sb_multiline())
 		{
 			wait_for_enter = 1;
 			update_all_windows();
@@ -321,7 +321,7 @@ ensure_term_is_ready(void)
 		wtimeout(status_bar, cfg.timeout_len);
 
 		curr_stats.save_msg = 0;
-		status_bar_message("");
+		ui_sb_msg("");
 	}
 
 	return 1;
@@ -460,7 +460,7 @@ process_scheduled_updates_of_view(view_t *view)
 static void
 update_hardware_cursor(void)
 {
-	if(is_status_bar_multiline())
+	if(ui_sb_multiline())
 	{
 		checked_wmove(status_bar, 0, 0);
 		wrefresh(status_bar);
@@ -493,7 +493,7 @@ update_hardware_cursor(void)
 static int
 should_check_views_for_changes(void)
 {
-	return !is_status_bar_multiline()
+	return !ui_sb_multiline()
 	    && !is_in_menu_like_mode()
 	    && NONE(vle_mode_is, CMDLINE_MODE, MSG_MODE);
 }

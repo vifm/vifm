@@ -55,7 +55,7 @@ show_apropos_menu(view_t *view, const char args[])
 			format_str("No matches for \'%s\'", args));
 	m.execute_handler = &execute_apropos_cb;
 
-	status_bar_message("apropos...");
+	ui_sb_msg("apropos...");
 
 	cmd = expand_custom_macros(cfg.apropos_prg, ARRAY_LEN(macros), macros);
 	save_msg = menus_capture(view, cmd, 0, &m, 0, 0);
@@ -87,7 +87,7 @@ execute_apropos_cb(view_t *view, menu_data_t *m)
 
 	if(exit_code != 0)
 	{
-		status_bar_errorf("man view command failed with code: %d", exit_code);
+		ui_sb_errf("man view command failed with code: %d", exit_code);
 		curr_stats.save_msg = 1;
 	}
 
@@ -107,7 +107,7 @@ parse_apropos_line(const char line[], char section[], size_t section_len,
 	sec_l = strchr(line, '(');
 	if(sec_l == NULL)
 	{
-		status_bar_error("Failed to find section number.");
+		ui_sb_err("Failed to find section number.");
 		return 1;
 	}
 
@@ -115,7 +115,7 @@ parse_apropos_line(const char line[], char section[], size_t section_len,
 	sec_r = sec_l + 1 + strcspn(sec_l + 1, " \t()");
 	if(sec_r == sec_l + 1 || *sec_r != ')')
 	{
-		status_bar_error("Wrong section number format.");
+		ui_sb_err("Wrong section number format.");
 		return 1;
 	}
 
@@ -125,7 +125,7 @@ parse_apropos_line(const char line[], char section[], size_t section_len,
 	if(section_len == 0 || section_len - 1 < (size_t)(sec_r - (sec_l + 1)) ||
 			topic_len == 0 || topic_len - 1 < (size_t)(sep - line))
 	{
-		status_bar_error("Internal buffer is too small.");
+		ui_sb_err("Internal buffer is too small.");
 		return 1;
 	}
 

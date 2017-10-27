@@ -98,7 +98,7 @@ restore_current(menu_data_t *m)
 	if(err != 0)
 	{
 		const char *const orig_path = m->items[m->pos];
-		status_bar_errorf("Failed to restore %s", orig_path);
+		ui_sb_errf("Failed to restore %s", orig_path);
 		curr_stats.save_msg = 1;
 		return KHR_UNHANDLED;
 	}

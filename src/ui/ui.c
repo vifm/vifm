@@ -620,9 +620,9 @@ update_screen(UpdateType update_kind)
 		redraw_msg_dialog(0);
 	}
 
-	update_stat_window(curr_view, 0);
+	ui_stat_update(curr_view, 0);
 
-	if(!is_status_bar_multiline())
+	if(!ui_sb_multiline())
 	{
 		if(curr_view->selected_files)
 		{
@@ -645,7 +645,7 @@ update_screen(UpdateType update_kind)
 
 	if(curr_stats.save_msg == 0)
 	{
-		status_bar_message("");
+		ui_sb_msg("");
 	}
 
 	if(vle_mode_is(VIEW_MODE) ||
@@ -1180,7 +1180,7 @@ update_statusbar_layout(void)
 static int
 are_statusbar_widgets_visible(void)
 {
-	return !is_status_bar_multiline() && !ui_sb_locked();
+	return !ui_sb_multiline() && !ui_sb_locked();
 }
 
 /* Gets "recommended" width for the ruler.  Returns the width. */

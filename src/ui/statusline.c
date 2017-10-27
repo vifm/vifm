@@ -72,7 +72,7 @@ static int job_bar_changed;
 static pthread_spinlock_t job_bar_changed_lock;
 
 void
-update_stat_window(view_t *view, int lazy_redraw)
+ui_stat_update(view_t *view, int lazy_redraw)
 {
 	int x;
 	char *buf;

@@ -437,14 +437,14 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 
 	if(nlines < count)
 	{
-		status_bar_errorf("Not enough file names (%d/%d)", nlines, count);
+		ui_sb_errf("Not enough file names (%d/%d)", nlines, count);
 		curr_stats.save_msg = 1;
 		return 0;
 	}
 
 	if(nlines > count)
 	{
-		status_bar_errorf("Too many file names (%d/%d)", nlines, count);
+		ui_sb_errf("Too many file names (%d/%d)", nlines, count);
 		curr_stats.save_msg = 1;
 		return 0;
 	}
@@ -463,9 +463,9 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 						strnoscmp(files[i], list[i], list_s - list[i]) != 0)
 				{
 					if(file_s == NULL)
-						status_bar_errorf("Name \"%s\" contains slash", list[i]);
+						ui_sb_errf("Name \"%s\" contains slash", list[i]);
 					else
-						status_bar_errorf("Won't move \"%s\" file", files[i]);
+						ui_sb_errf("Won't move \"%s\" file", files[i]);
 					curr_stats.save_msg = 1;
 					return 0;
 				}
@@ -474,7 +474,7 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 
 		if(list[i][0] != '\0' && is_in_string_array(list, i, list[i]))
 		{
-			status_bar_errorf("Name \"%s\" duplicates", list[i]);
+			ui_sb_errf("Name \"%s\" duplicates", list[i]);
 			curr_stats.save_msg = 1;
 			return 0;
 		}
@@ -533,7 +533,7 @@ fops_check_file_rename(const char dir[], const char old[], const char new[],
 		switch(signal_type)
 		{
 			case ST_STATUS_BAR:
-				status_bar_errorf("File \"%s\" already exists", new);
+				ui_sb_errf("File \"%s\" already exists", new);
 				curr_stats.save_msg = 1;
 				break;
 			case ST_DIALOG:

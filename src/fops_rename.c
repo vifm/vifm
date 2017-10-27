@@ -123,7 +123,7 @@ rename_file_cb(const char new_name[])
 
 	if(contains_slash(new_name))
 	{
-		status_bar_error("Name can not contain slash");
+		ui_sb_err("Name can not contain slash");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -175,7 +175,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 	/* Allow list of names in tests. */
 	if(curr_stats.load_stage != 0 && recursive && nlines != 0)
 	{
-		status_bar_error("Recursive rename doesn't accept list of new names");
+		ui_sb_err("Recursive rename doesn't accept list of new names");
 		return 1;
 	}
 	if(!fops_view_can_be_changed(view))
@@ -215,7 +215,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		if(nfiles == 0 ||
 				(list = fops_edit_list(nfiles, files, &nlines, 0)) == NULL)
 		{
-			status_bar_message("0 files renamed");
+			ui_sb_msg("0 files renamed");
 		}
 		else
 		{
@@ -230,8 +230,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		const int renamed = perform_renaming(view, files, is_dup, nfiles, list);
 		if(renamed >= 0)
 		{
-			status_bar_messagef("%d file%s renamed", renamed,
-					(renamed == 1) ? "" : "s");
+			ui_sb_msgf("%d file%s renamed", renamed, (renamed == 1) ? "" : "s");
 		}
 	}
 
@@ -519,12 +518,11 @@ fops_incdec(view_t *view, int k)
 
 	if(err > 0)
 	{
-		status_bar_error("Rename error");
+		ui_sb_err("Rename error");
 	}
 	else if(err == 0)
 	{
-		status_bar_messagef("%d file%s renamed", nrenamed,
-				(nrenamed == 1) ? "" : "s");
+		ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 	}
 
 	return 1;
@@ -628,13 +626,13 @@ fops_case(view_t *view, int to_upper)
 
 		if(is_in_string_array(dest, ndest, new_fname))
 		{
-			status_bar_errorf("Name \"%s\" duplicates", new_fname);
+			ui_sb_errf("Name \"%s\" duplicates", new_fname);
 			err = 1;
 			break;
 		}
 		if(path_exists(new_fname, NODEREF) && !is_case_change(new_fname, old_fname))
 		{
-			status_bar_errorf("File \"%s\" already exists", new_fname);
+			ui_sb_errf("File \"%s\" already exists", new_fname);
 			err = 1;
 			break;
 		}
@@ -687,7 +685,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 
 	if((err = regcomp(&re, pattern, cflags)) != 0)
 	{
-		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		ui_sb_errf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return 1;
 	}
@@ -846,22 +844,22 @@ check_rename(const char old_fname[], const char new_fname[], char **dest,
 
 	if(is_in_string_array(dest, ndest, new_fname))
 	{
-		status_bar_errorf("Name \"%s\" duplicates", new_fname);
+		ui_sb_errf("Name \"%s\" duplicates", new_fname);
 		return RA_FAIL;
 	}
 	if(new_fname[0] == '\0')
 	{
-		status_bar_errorf("Destination name of \"%s\" is empty", old_fname);
+		ui_sb_errf("Destination name of \"%s\" is empty", old_fname);
 		return RA_FAIL;
 	}
 	if(contains_slash(new_fname))
 	{
-		status_bar_errorf("Destination name \"%s\" contains slash", new_fname);
+		ui_sb_errf("Destination name \"%s\" contains slash", new_fname);
 		return RA_FAIL;
 	}
 	if(path_exists(new_fname, NODEREF))
 	{
-		status_bar_errorf("File \"%s\" already exists", new_fname);
+		ui_sb_errf("File \"%s\" already exists", new_fname);
 		return RA_FAIL;
 	}
 
@@ -908,8 +906,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 	}
 
 	cmd_group_end();
-	status_bar_messagef("%d file%s renamed", nrenamed,
-			(nrenamed == 1) ? "" : "s");
+	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 
 	return 1;
 }

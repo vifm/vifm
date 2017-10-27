@@ -849,7 +849,7 @@ fast_run_complete(const char cmd[])
 
 		if(result == NULL)
 		{
-			status_bar_error("Command beginning is ambiguous");
+			ui_sb_err("Command beginning is ambiguous");
 		}
 	}
 	else

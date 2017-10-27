@@ -31,7 +31,7 @@ struct view_t;
  * but its visibility is controlled separately. */
 
 /* Redraw contents of stat line (possibly lazily). */
-void update_stat_window(struct view_t *view, int lazy_redraw);
+void ui_stat_update(struct view_t *view, int lazy_redraw);
 
 /* Puts status line where it's suppose to be according to other elements (also
  * moves job bar).  If displaying status line is disabled, force flag can help
