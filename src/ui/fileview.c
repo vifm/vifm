@@ -1436,7 +1436,7 @@ format_nitems(int id, const void *data, size_t buf_len, char buf[])
 		return;
 	}
 
-	nitems = entry_get_nitems(cdt->view, cdt->entry);
+	nitems = fentry_get_nitems(cdt->view, cdt->entry);
 	snprintf(buf, buf_len + 1, " %d", (int)nitems);
 }
 

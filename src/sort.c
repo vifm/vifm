@@ -501,11 +501,11 @@ static int
 compare_item_count(const dir_entry_t *f, int fdir, const dir_entry_t *s,
 		int sdir)
 {
-	/* We don't want to call entry_get_nitems() for files as sorting huge lists
+	/* We don't want to call fentry_get_nitems() for files as sorting huge lists
 	 * of files can call this function a lot of times, thus even small extra
 	 * performance overhead is not desirable. */
-	const uint64_t fsize = fdir ? entry_get_nitems(view, f) : 0U;
-	const uint64_t ssize = sdir ? entry_get_nitems(view, s) : 0U;
+	const uint64_t fsize = fdir ? fentry_get_nitems(view, f) : 0U;
+	const uint64_t ssize = sdir ? fentry_get_nitems(view, s) : 0U;
 	return (fsize > ssize) ? 1 : (fsize < ssize) ? -1 : 0;
 }
 

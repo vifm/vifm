@@ -237,7 +237,7 @@ dir_entry_t * entry_from_path(view_t *view, dir_entry_t *entries, int count,
 		const char path[]);
 /* Retrieves number of items in a directory specified by the entry.  Returns the
  * number, which is zero for files. */
-uint64_t entry_get_nitems(const view_t *view, const dir_entry_t *entry);
+uint64_t fentry_get_nitems(const view_t *view, const dir_entry_t *entry);
 /* Calculates number of items at path specified by the entry.  No check for file
  * type is performed.  Returns the number, which is zero for files. */
 uint64_t entry_calc_nitems(const dir_entry_t *entry);

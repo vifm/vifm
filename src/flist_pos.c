@@ -517,7 +517,7 @@ flist_find_group(const view_t *view, int next)
 					return pos;
 				break;
 			case SK_BY_NITEMS:
-				if(entry_get_nitems(view, nentry) != entry_get_nitems(view, pentry))
+				if(fentry_get_nitems(view, nentry) != fentry_get_nitems(view, pentry))
 					return pos;
 				break;
 			case SK_BY_TIME_ACCESSED:

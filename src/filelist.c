@@ -1406,7 +1406,7 @@ entry_from_path(view_t *view, dir_entry_t *entries, int count,
 }
 
 uint64_t
-entry_get_nitems(const view_t *view, const dir_entry_t *entry)
+fentry_get_nitems(const view_t *view, const dir_entry_t *entry)
 {
 	uint64_t nitems;
 	dcache_get_of(entry, NULL, &nitems);
