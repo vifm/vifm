@@ -767,6 +767,9 @@ redraw_view(view_t *view)
 	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress &&
 			window_shows_dirlist(view))
 	{
+		/* Make sure cursor is visible and relevant part of the view is displayed. */
+		(void)move_curr_line(view);
+		/* And then redraw the view unconditionally as requested. */
 		draw_dir_list(view);
 	}
 }
