@@ -273,6 +273,7 @@ replace_matcher(matcher_t **matcher, const char expr[])
 void
 setup_grid(view_t *view, int column_count, int list_rows, int init)
 {
+	view->window_cols = column_count;
 	view->ls_view = 1;
 	view->ls_transposed = 0;
 	view->list_rows = list_rows;
@@ -289,6 +290,7 @@ setup_grid(view_t *view, int column_count, int list_rows, int init)
 void
 setup_transposed_grid(view_t *view, int column_count, int list_rows, int init)
 {
+	view->window_cols = column_count;
 	view->ls_view = 1;
 	view->ls_transposed = 1;
 	view->list_rows = list_rows;

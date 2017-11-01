@@ -4,9 +4,12 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 
 #include "utils.h"
+
+static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 
 static view_t *const view = &lwin;
 
@@ -16,6 +19,14 @@ SETUP()
 
 	view_setup(view);
 	view->window_rows = 8;
+
+	columns_add_column_desc(SK_BY_NAME, &format_none);
+}
+
+static void
+format_none(int id, const void *data, size_t buf_len, char buf[])
+{
+	buf[0] = '\0';
 }
 
 TEARDOWN()
@@ -23,6 +34,8 @@ TEARDOWN()
 	view_teardown(view);
 
 	vle_keys_reset();
+
+	columns_clear_column_descs();
 }
 
 /* 0 row----file0----file1-----
