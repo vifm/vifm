@@ -138,6 +138,8 @@
 
 	Fixed horrible flickering of multiline statusbar for interactive queries.
 
+	Fixed :normal command resetting selection.  Thanks to filterfalse.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

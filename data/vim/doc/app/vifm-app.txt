@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Oct 24
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 01
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1095,8 +1095,9 @@ This means the complete command is nohlsearch, and the short one is noh.
                                                *vifm-commands-and-selection*
 Most of command-line commands completely reset selection in the current view.
 However, there are several exceptions:
- - ":invert s" most likely leaves some files selected;
- - :if and :else commands doesn't affect selection on successful execution.
+ - `:invert s` most likely leaves some files selected;
+ - :normal command (when it doesn't leave command-line mode);
+ - :if and :else commands don't affect selection on successful execution.
 
                                                *vifm-:bar*
 '|' can be used to separate commands, so you can give multiple commands in one

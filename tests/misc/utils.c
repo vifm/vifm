@@ -160,18 +160,22 @@ view_teardown(view_t *view)
 		fentry_free(view, &view->dir_entry[i]);
 	}
 	dynarray_free(view->dir_entry);
+	view->dir_entry = NULL;
+	view->list_rows = 0;
 
 	for(i = 0; i < view->custom.entry_count; ++i)
 	{
 		fentry_free(view, &view->custom.entries[i]);
 	}
 	dynarray_free(view->custom.entries);
+	view->custom.entries = NULL;
 
 	for(i = 0; i < view->local_filter.entry_count; ++i)
 	{
 		fentry_free(view, &view->local_filter.entries[i]);
 	}
 	dynarray_free(view->local_filter.entries);
+	view->local_filter.entries = NULL;
 
 	filter_dispose(&view->local_filter.filter);
 	filter_dispose(&view->auto_filter);
