@@ -372,7 +372,7 @@ dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 void
 dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 	dcache_get(full_path, size, nitems, entry->mtime);
 }
