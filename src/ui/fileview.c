@@ -1392,16 +1392,11 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 	if(fentry_is_dir(cdt->entry))
 	{
 		uint64_t nitems;
-		dcache_get_of(cdt->entry, &size, &nitems);
+		fentry_get_dir_info(view, cdt->entry, &size, &nitems);
 
 		if(size == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS &&
-				!view->on_slow_fs)
+				nitems != DCACHE_UNKNOWN)
 		{
-			if(nitems == DCACHE_UNKNOWN)
-			{
-				nitems = entry_calc_nitems(cdt->entry);
-			}
-
 			snprintf(buf, buf_len + 1, " %d", (int)nitems);
 			return;
 		}

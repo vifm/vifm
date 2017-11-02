@@ -106,6 +106,7 @@ static void mark_group(view_t *view, view_t *other, int idx);
 static int got_excluded(view_t *view, const dir_entry_t *entry, void *arg);
 static int exclude_temporary_entries(view_t *view);
 static int is_temporary(view_t *view, const dir_entry_t *entry, void *arg);
+static uint64_t entry_calc_nitems(const dir_entry_t *entry);
 static void load_dir_list_internal(view_t *view, int reload, int draw_only);
 static int populate_dir_list_internal(view_t *view, int reload);
 static int populate_custom_view(view_t *view, int reload);
@@ -1419,11 +1420,25 @@ fentry_get_nitems(const view_t *view, const dir_entry_t *entry)
 	return nitems;
 }
 
-uint64_t
+void
+fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
+		uint64_t *size, uint64_t *nitems)
+{
+	dcache_get_of(entry, size, nitems);
+
+	if(*nitems == DCACHE_UNKNOWN && !view->on_slow_fs)
+	{
+		*nitems = entry_calc_nitems(entry);
+	}
+}
+
+/* Calculates number of items at path specified by the entry.  No check for file
+ * type is performed.  Returns the number, which is zero for files. */
+static uint64_t
 entry_calc_nitems(const dir_entry_t *entry)
 {
 	uint64_t ret;
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
 	ret = count_dir_items(full_path);
