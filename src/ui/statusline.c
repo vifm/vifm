@@ -142,7 +142,8 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));
 	copy_str(name_buf, MIN(sizeof(name_buf), print_width + 1), filename);
-	friendly_size_notation(fentry_get_size(curr), sizeof(size_buf), size_buf);
+	friendly_size_notation(fentry_get_size(view, curr), sizeof(size_buf),
+			size_buf);
 
 	get_uid_string(curr, 0, sizeof(id_buf), id_buf);
 	if(id_buf[0] != '\0')
@@ -300,7 +301,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 				get_gid_string(curr, 0, sizeof(buf), buf);
 				break;
 			case 's':
-				friendly_size_notation(fentry_get_size(curr), sizeof(buf), buf);
+				friendly_size_notation(fentry_get_size(view, curr), sizeof(buf), buf);
 				break;
 			case 'E':
 				{
@@ -315,7 +316,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					dir_entry_t *entry = NULL;
 					while(iter(view, &entry))
 					{
-						size += fentry_get_size(entry);
+						size += fentry_get_size(view, entry);
 					}
 
 					friendly_size_notation(size, sizeof(buf), buf);

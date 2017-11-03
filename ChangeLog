@@ -89,6 +89,10 @@
 	Duplicate status bar error in dialog that reports sourcing error.  Will
 	need to get rid of errors on status bar later.
 
+	Instead of invalidating directory size previously calculated via ga/gA on
+	detecting changes in the directory recalculate its size and propagate
+	update through its parents.  Thanks to filterfalse.
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 

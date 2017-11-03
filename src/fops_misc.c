@@ -1095,7 +1095,7 @@ update_dir_entry_size(const view_t *view, int index, int force)
 static void
 start_dir_size_calc(const char path[], int force)
 {
-	char task_desc[PATH_MAX];
+	char task_desc[PATH_MAX + 1];
 	dir_size_args_t *args;
 
 	args = malloc(sizeof(*args));

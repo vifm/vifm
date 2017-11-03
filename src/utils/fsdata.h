@@ -33,6 +33,9 @@ typedef struct fsdata_t fsdata_t;
 typedef void (*fsdata_traverser_func)(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 
+/* Type of callback for fsdata_map_parents(). */
+typedef void (*fsdata_visit_func)(void *data, void *arg);
+
 /* prefix mode causes queries to return nearest match when exact match is not
  * available.  Non-zero resolve_paths enables path resolution, which also
  * forbids use of nonexistent files.  Returns NULL on error. */
@@ -50,9 +53,10 @@ int fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len);
  * success and non-zero on error. */
 int fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len);
 
-/* Invalidates all nodes from the root to the specified node if it exists.
- * Returns zero on success or non-zero if path wasn't found. */
-int fsdata_invalidate(fsdata_t *fsd, const char path[]);
+/* Invokes visitor once per valid parent node of specified path.  Returns zero
+ * on success or non-zero if path wasn't found. */
+int fsdata_map_parents(fsdata_t *fsd, const char path[],
+		fsdata_visit_func visitor, void *arg);
 
 /* Calls the callback for each node. */
 void fsdata_traverse(fsdata_t *fsd, fsdata_traverser_func traverser, void *arg);

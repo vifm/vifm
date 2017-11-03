@@ -490,8 +490,8 @@ sort_dir_list(const void *one, const void *two)
 static int
 compare_file_sizes(const dir_entry_t *f, const dir_entry_t *s)
 {
-	const uint64_t fsize = fentry_get_size(f);
-	const uint64_t ssize = fentry_get_size(s);
+	const uint64_t fsize = fentry_get_size(view, f);
+	const uint64_t ssize = fentry_get_size(view, s);
 	return (fsize < ssize) ? -1 : (fsize > ssize);
 }
 

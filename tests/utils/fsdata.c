@@ -13,6 +13,7 @@
 #define ROOT "C:/"
 #endif
 
+static void visitor(void *data, void *arg);
 static void traverser(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
 
@@ -161,19 +162,41 @@ TEST(intermediate_value_is_returned_if_end_value_is_not_found)
 	fsdata_free(fsd);
 }
 
-TEST(path_is_invalidated_in_fsdata)
+TEST(parents_are_mapped_in_fsdata_on_match)
 {
-	void *ptr = NULL;
+	char ch = '5';
 	fsdata_t *const fsd = fsdata_create(0, 1);
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 
-	assert_success(fsdata_set(fsd, SANDBOX_PATH, &ptr, sizeof(ptr)));
-	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", &ptr, sizeof(ptr)));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH, &ch, sizeof(ch)));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", &ch, sizeof(ch)));
 
-	assert_success(fsdata_invalidate(fsd, SANDBOX_PATH "/dir"));
+	assert_success(fsdata_map_parents(fsd, SANDBOX_PATH "/dir", visitor, NULL));
 
-	assert_failure(fsdata_get(fsd, SANDBOX_PATH, &ptr, sizeof(ptr)));
-	assert_failure(fsdata_get(fsd, SANDBOX_PATH "/dir", &ptr, sizeof(ptr)));
+	assert_success(fsdata_get(fsd, SANDBOX_PATH, &ch, sizeof(ch)));
+	assert_int_equal('6', ch);
+	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &ch, sizeof(ch)));
+	assert_int_equal('5', ch);
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+	fsdata_free(fsd);
+}
+
+TEST(parents_are_unchanged_in_fsdata_on_mismatch)
+{
+	char ch = '5';
+	fsdata_t *const fsd = fsdata_create(0, 1);
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+
+	assert_success(fsdata_set(fsd, SANDBOX_PATH, &ch, sizeof(ch)));
+	assert_success(fsdata_set(fsd, SANDBOX_PATH "/dir", &ch, sizeof(ch)));
+
+	assert_failure(fsdata_map_parents(fsd, SANDBOX_PATH "/wrong", visitor, NULL));
+
+	assert_success(fsdata_get(fsd, SANDBOX_PATH, &ch, sizeof(ch)));
+	assert_int_equal('5', ch);
+	assert_success(fsdata_get(fsd, SANDBOX_PATH "/dir", &ch, sizeof(ch)));
+	assert_int_equal('5', ch);
 
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 	fsdata_free(fsd);
@@ -188,7 +211,7 @@ TEST(root_can_carry_data)
 	assert_success(fsdata_set(fsd, ROOT, big_data, sizeof(big_data)));
 
 	/* This can try to use overwriten pointers. */
-	assert_success(fsdata_invalidate(fsd, ROOT));
+	assert_success(fsdata_map_parents(fsd, ROOT, visitor, NULL));
 
 	fsdata_free(fsd);
 }
@@ -204,7 +227,7 @@ TEST(data_size_can_change)
 	assert_success(fsdata_set(fsd, ROOT, big_data, sizeof(big_data)));
 
 	/* This can try to use overwriten pointers. */
-	assert_success(fsdata_invalidate(fsd, ROOT));
+	assert_success(fsdata_map_parents(fsd, ROOT, visitor, NULL));
 
 	fsdata_free(fsd);
 }
@@ -231,6 +254,13 @@ TEST(tree_can_be_traversed)
 	assert_int_equal(3, nnodes);
 
 	fsdata_free(fsd);
+}
+
+static void
+visitor(void *data, void *arg)
+{
+	char *d = data;
+	d[0] = '6';
 }
 
 static void

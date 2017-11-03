@@ -63,11 +63,5 @@ fsddata_get(fsddata_t *fsdd, const char path[], void **data)
 	return fsdata_get((fsdata_t *)fsdd, path, data, sizeof(*data));
 }
 
-int
-fsddata_invalidate(fsddata_t *fsdd, const char path[])
-{
-	return fsdata_invalidate((fsdata_t *)fsdd, path);
-}
-
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

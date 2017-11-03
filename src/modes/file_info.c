@@ -144,7 +144,7 @@ redraw_file_info_dialog(void)
 
 	curr = get_current_entry(view);
 
-	size = fentry_get_size(curr);
+	size = fentry_get_size(view, curr);
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 	curr_y = 2;
