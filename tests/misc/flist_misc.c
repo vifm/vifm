@@ -13,7 +13,7 @@
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_pos.h"
-#include "../../src/fops_common.h"
+#include "../../src/fops_misc.h"
 #include "../../src/status.h"
 
 #include "utils.h"

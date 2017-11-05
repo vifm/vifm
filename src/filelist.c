@@ -72,7 +72,7 @@
 #include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
-#include "fops_common.h"
+#include "fops_misc.h"
 #include "macros.h"
 #include "opt_handlers.h"
 #include "registers.h"
