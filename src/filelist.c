@@ -1690,7 +1690,7 @@ populate_custom_view(view_t *view, int reload)
 	{
 		if(custom_list_is_incomplete(view))
 		{
-			char selected_path[PATH_MAX];
+			char selected_path[PATH_MAX + 1];
 			get_current_full_path(view, sizeof(selected_path), selected_path);
 
 			/* Replacing list of entries invalidates cursor position, so we remember

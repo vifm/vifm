@@ -1020,28 +1020,23 @@ fops_is_dir_writable(DirRole dir_role, const char path[])
 
 uint64_t
 fops_dir_size(const char path[], int force_update,
-		const struct cancellation_t *cancellation)
+		const cancellation_t *cancellation)
 {
-	DIR* dir;
-	struct dirent* dentry;
-	const char* slash = "";
+	struct dirent *dentry;
+	const char *slash;
 	uint64_t size;
 
-	dir = os_opendir(path);
+	DIR *dir = os_opendir(path);
 	if(dir == NULL)
 	{
 		return 0U;
 	}
 
-	if(!ends_with_slash(path))
-	{
-		slash = "/";
-	}
-
-	size = 0;
+	slash = (ends_with_slash(path) ? "" : "/");
+	size = 0U;
 	while((dentry = os_readdir(dir)) != NULL)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		if(is_builtin_dir(dentry->d_name))
 		{
