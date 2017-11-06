@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 24, 2017" "vifm 0.9"
+.TH VIFM 1 "November 01, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1239,9 +1239,11 @@ Most of command-line commands completely reset selection in the current view.
 However, there are several exceptions:
 .RS 2
 .IP \- 2
-":invert s" most likely leaves some files selected;
+`:invert s` most likely leaves some files selected;
 .IP \- 2
-:if and :else commands doesn't affect selection on successful execution.
+:normal command (when it doesn't leave command-line mode);
+.IP \- 2
+:if and :else commands don't affect selection on successful execution.
 .RE
 
 \(aq|\(aq can be used to separate commands, so you can give multiple commands in one

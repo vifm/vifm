@@ -1095,7 +1095,7 @@ update_dir_entry_size(const view_t *view, int index, int force)
 static void
 start_dir_size_calc(const char path[], int force)
 {
-	char task_desc[PATH_MAX];
+	char task_desc[PATH_MAX + 1];
 	dir_size_args_t *args;
 
 	args = malloc(sizeof(*args));
@@ -1161,6 +1161,61 @@ redraw_after_path_change(view_t *view, const char path[])
 	{
 		ui_view_schedule_redraw(view);
 	}
+}
+
+uint64_t
+fops_dir_size(const char path[], int force_update,
+		const cancellation_t *cancellation)
+{
+	struct dirent *dentry;
+	const char *slash;
+	uint64_t size;
+
+	DIR *dir = os_opendir(path);
+	if(dir == NULL)
+	{
+		return 0U;
+	}
+
+	slash = (ends_with_slash(path) ? "" : "/");
+	size = 0U;
+	while((dentry = os_readdir(dir)) != NULL)
+	{
+		char full_path[PATH_MAX + 1];
+
+		if(is_builtin_dir(dentry->d_name))
+		{
+			continue;
+		}
+
+		snprintf(full_path, sizeof(full_path), "%s%s%s", path, slash,
+				dentry->d_name);
+		if(fops_is_dir_entry(full_path, dentry))
+		{
+			uint64_t dir_size;
+			dcache_get_at(full_path, &dir_size, NULL);
+			if(dir_size == DCACHE_UNKNOWN || force_update)
+			{
+				dir_size = fops_dir_size(full_path, force_update, cancellation);
+			}
+			size += dir_size;
+		}
+		else
+		{
+			size += get_file_size(full_path);
+		}
+
+		if(cancellation_requested(cancellation))
+		{
+			os_closedir(dir);
+			return 0U;
+		}
+	}
+
+	os_closedir(dir);
+
+	(void)dcache_set_at(path, size, DCACHE_UNKNOWN);
+	return size;
 }
 
 #ifndef _WIN32

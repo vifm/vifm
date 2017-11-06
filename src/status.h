@@ -91,6 +91,15 @@ typedef enum
 }
 ShellType;
 
+/* Type of output variables of dcache_get_of(), which represent state of cache
+ * entries. */
+typedef struct
+{
+	uint64_t value; /* Cached value or DCACHE_UNKNOWN. */
+	int is_valid;   /* Whether value is up-to-date. */
+}
+dcache_result_t;
+
 /* Current preview (quickview) parameters. */
 typedef struct
 {
@@ -242,11 +251,12 @@ void stats_save_msg(const char msg[]);
  * unknown values variables are set to DCACHE_UNKNOWN. */
 void dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems);
 
-/* Retrieves information about the entry.  size and/or nitems can be NULL.  On
- * unknown values variables are set to DCACHE_UNKNOWN.  Values older than entry
- * modification date are considered unknown. */
-void dcache_get_of(const struct dir_entry_t *entry, uint64_t *size,
-		uint64_t *nitems);
+/* Retrieves information about the entry checking whether it's outdated. */
+void dcache_get_of(const struct dir_entry_t *entry, dcache_result_t *size,
+		dcache_result_t *nitems);
+
+/* Updates cached sizes of parents by specified amount. */
+void dcache_update_parent_sizes(const char path[], uint64_t by);
 
 /* Updates information about the path.  Returns zero on success, otherwise
  * non-zero is returned. */

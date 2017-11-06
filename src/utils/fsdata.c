@@ -61,8 +61,8 @@ static void nodes_free(node_t *node, fsd_cleanup_func cleanup);
 static node_t * get_or_create_node(node_t *root, const char path[],
 		size_t data_size, node_t **last, node_t **link);
 static node_t * make_node(const char name[], size_t name_len, size_t data_size);
-static int invalidate_path(node_t *root, const char path[],
-		fsd_cleanup_func cleanup);
+static int map_parents(node_t *root, const char path[],
+		fsdata_visit_func visitor, void *arg);
 static int resolve_path(const fsdata_t *fsd, const char path[],
 		char real_path[]);
 static void traverse_node(node_t *node, const node_t *parent,
@@ -301,15 +301,16 @@ make_node(const char name[], size_t name_len, size_t data_size)
 }
 
 int
-fsdata_invalidate(fsdata_t *fsd, const char path[])
+fsdata_map_parents(fsdata_t *fsd, const char path[], fsdata_visit_func visitor,
+		void *arg)
 {
-	char real_path[PATH_MAX];
+	char real_path[PATH_MAX + 1];
 	if(resolve_path(fsd, path, real_path) != 0)
 	{
 		return 1;
 	}
 
-	return invalidate_path(fsd->root, real_path, fsd->cleanup);
+	return map_parents(fsd->root, real_path, visitor, arg);
 }
 
 /* Performs optional path resolution (configured at tree creation).  real_path
@@ -326,10 +327,11 @@ resolve_path(const fsdata_t *fsd, const char path[], char real_path[])
 	return 0;
 }
 
-/* Invalidates nodes on the path if end item is found.  Returns zero on
- * successful invalidation otherwise non-zero is returned. */
+/* Invokes visitor once per valid parent node of specified path.  Returns zero
+ * on success or non-zero if path wasn't found. */
 static int
-invalidate_path(node_t *root, const char path[], fsd_cleanup_func cleanup)
+map_parents(node_t *root, const char path[], fsdata_visit_func visitor,
+		void *arg)
 {
 	const char *end;
 	size_t name_len;
@@ -338,7 +340,7 @@ invalidate_path(node_t *root, const char path[], fsd_cleanup_func cleanup)
 	path = skip_char(path, '/');
 	if(*path == '\0')
 	{
-		goto invalidate;
+		return 0;
 	}
 
 	end = until_first(path, '/');
@@ -350,10 +352,15 @@ invalidate_path(node_t *root, const char path[], fsd_cleanup_func cleanup)
 		const int cmp = strnoscmp(path, curr->name, name_len);
 		if(cmp == 0 && curr->name_len == name_len)
 		{
-			if(invalidate_path(curr, end, cleanup) == 0)
+			if(map_parents(curr, end, visitor, arg) == 0)
 			{
-				goto invalidate;
+				if(root->valid)
+				{
+					visitor(&root->data, arg);
+				}
+				return 0;
 			}
+			break;
 		}
 		else if(cmp < 0)
 		{
@@ -363,14 +370,6 @@ invalidate_path(node_t *root, const char path[], fsd_cleanup_func cleanup)
 	}
 
 	return 1;
-
-invalidate:
-	if(root->valid)
-	{
-		cleanup(&root->data);
-	}
-	root->valid = 0;
-	return 0;
 }
 
 void

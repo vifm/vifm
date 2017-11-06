@@ -3246,7 +3246,7 @@ map_or_remap(const cmd_info_t *cmd_info, int no_remap)
 static int
 normal_cmd(const cmd_info_t *cmd_info)
 {
-	wchar_t *wide = to_wide(cmd_info->args);
+	wchar_t *const wide = to_wide(cmd_info->args);
 
 	if(cmd_info->emark)
 	{
@@ -3264,6 +3264,7 @@ normal_cmd(const cmd_info_t *cmd_info)
 	}
 
 	free(wide);
+	cmds_preserve_selection();
 	return 0;
 }
 

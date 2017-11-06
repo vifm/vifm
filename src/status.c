@@ -65,8 +65,7 @@ static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
-static void dcache_get(const char path[], uint64_t *size, uint64_t *nitems,
-		time_t ts);
+static void size_updater(void *data, void *arg);
 
 status_t curr_stats;
 
@@ -366,43 +365,18 @@ stats_save_msg(const char msg[])
 void
 dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 {
-	dcache_get(path, size, nitems, 0);
-}
-
-void
-dcache_get_of(const dir_entry_t *entry, uint64_t *size, uint64_t *nitems)
-{
-	char full_path[PATH_MAX];
-	get_full_path_of(entry, sizeof(full_path), full_path);
-	dcache_get(full_path, size, nitems, entry->mtime);
-}
-
-/* Retrieves information about the path if data is newer than ts (0 requests to
- * skip the check).  size and/or nitems can be NULL.  On unknown values
- * variables are set to DCACHE_UNKNOWN. */
-static void
-dcache_get(const char path[], uint64_t *size, uint64_t *nitems, time_t ts)
-{
 	/* Initialization to make condition false by default. */
-	dcache_data_t size_data = { .timestamp = ts };
-	dcache_data_t nitems_data;
+	dcache_data_t size_data, nitems_data;
 
 	pthread_mutex_lock(&dcache_size_mutex);
-	if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) != 0 ||
-			(ts != 0 && ts > size_data.timestamp))
+	if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) != 0)
 	{
 		size_data.value = DCACHE_UNKNOWN;
-
-		if(ts != 0 && ts > size_data.timestamp)
-		{
-			fsdata_invalidate(dcache_size, path);
-		}
 	}
 	pthread_mutex_unlock(&dcache_size_mutex);
 
 	pthread_mutex_lock(&dcache_nitems_mutex);
-	if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) != 0 ||
-			(ts != 0 && ts > nitems_data.timestamp))
+	if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) != 0)
 	{
 		nitems_data.value = DCACHE_UNKNOWN;
 	}
@@ -416,6 +390,57 @@ dcache_get(const char path[], uint64_t *size, uint64_t *nitems, time_t ts)
 	{
 		*nitems = nitems_data.value;
 	}
+}
+
+void
+dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
+		dcache_result_t *nitems)
+{
+	dcache_data_t size_data, nitems_data;
+
+	char full_path[PATH_MAX + 1];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	size->value = DCACHE_UNKNOWN;
+	size->is_valid = 0;
+
+	nitems->value = DCACHE_UNKNOWN;
+	nitems->is_valid = 0;
+
+	pthread_mutex_lock(&dcache_size_mutex);
+	if(fsdata_get(dcache_size, full_path, &size_data, sizeof(size_data)) == 0)
+	{
+		size->value = size_data.value;
+		size->is_valid = (entry->mtime <= size_data.timestamp);
+	}
+	pthread_mutex_unlock(&dcache_size_mutex);
+
+	pthread_mutex_lock(&dcache_nitems_mutex);
+	if(fsdata_get(dcache_nitems, full_path, &nitems_data,
+				sizeof(nitems_data)) == 0)
+	{
+		nitems->value = nitems_data.value;
+		nitems->is_valid = (entry->mtime <= nitems_data.timestamp);
+	}
+	pthread_mutex_unlock(&dcache_nitems_mutex);
+}
+
+void
+dcache_update_parent_sizes(const char path[], uint64_t by)
+{
+	pthread_mutex_lock(&dcache_size_mutex);
+	(void)fsdata_map_parents(dcache_size, path, &size_updater, &by);
+	pthread_mutex_unlock(&dcache_size_mutex);
+}
+
+/* Updates cached value by a fixed amount. */
+static void
+size_updater(void *data, void *arg)
+{
+	const uint64_t *const by = arg;
+	dcache_data_t *const what = data;
+
+	what->value += *by;
 }
 
 int

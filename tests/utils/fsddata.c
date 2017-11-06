@@ -42,25 +42,5 @@ TEST(pointer_to_the_same_memory_is_returned)
 	fsddata_free(fsdd);
 }
 
-TEST(path_is_invalidated_in_fsddata)
-{
-	void *ptr;
-	fsddata_t *const fsdd = fsddata_create(0);
-	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
-
-	assert_success(fsddata_set(fsdd, SANDBOX_PATH, strdup("str1")));
-	assert_success(fsddata_set(fsdd, SANDBOX_PATH "/dir", strdup("str2")));
-
-	/* Node invalidation should free the string (absence of leaks should be
-	 * checked by external tools). */
-	assert_success(fsddata_invalidate(fsdd, SANDBOX_PATH "/dir"));
-
-	assert_failure(fsddata_get(fsdd, SANDBOX_PATH, &ptr));
-	assert_failure(fsddata_get(fsdd, SANDBOX_PATH "/dir", &ptr));
-
-	assert_success(rmdir(SANDBOX_PATH "/dir"));
-	fsddata_free(fsdd);
-}
-
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

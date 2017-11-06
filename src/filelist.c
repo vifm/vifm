@@ -72,6 +72,7 @@
 #include "flist_hist.h"
 #include "flist_pos.h"
 #include "flist_sel.h"
+#include "fops_misc.h"
 #include "macros.h"
 #include "opt_handlers.h"
 #include "registers.h"
@@ -106,6 +107,8 @@ static void mark_group(view_t *view, view_t *other, int idx);
 static int got_excluded(view_t *view, const dir_entry_t *entry, void *arg);
 static int exclude_temporary_entries(view_t *view);
 static int is_temporary(view_t *view, const dir_entry_t *entry, void *arg);
+static uint64_t recalc_entry_size(const dir_entry_t *entry, uint64_t old_size);
+static uint64_t entry_calc_nitems(const dir_entry_t *entry);
 static void load_dir_list_internal(view_t *view, int reload, int draw_only);
 static int populate_dir_list_internal(view_t *view, int reload);
 static int populate_custom_view(view_t *view, int reload);
@@ -1406,24 +1409,68 @@ entry_from_path(view_t *view, dir_entry_t *entries, int count,
 }
 
 uint64_t
-entry_get_nitems(const view_t *view, const dir_entry_t *entry)
+fentry_get_nitems(const view_t *view, const dir_entry_t *entry)
 {
 	uint64_t nitems;
-	dcache_get_of(entry, NULL, &nitems);
-
-	if(nitems == DCACHE_UNKNOWN && !view->on_slow_fs)
-	{
-		nitems = entry_calc_nitems(entry);
-	}
-
+	fentry_get_dir_info(view, entry, NULL, &nitems);
 	return nitems;
 }
 
-uint64_t
+void
+fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
+		uint64_t *size, uint64_t *nitems)
+{
+	const int is_slow_fs = view->on_slow_fs;
+	dcache_result_t size_res, nitems_res;
+
+	assert((size != NULL || nitems != NULL) &&
+			"At least one of out parameters has to be non-NULL.");
+
+	dcache_get_of(entry, &size_res, &nitems_res);
+
+	if(size != NULL)
+	{
+		*size = size_res.value;
+		if(size_res.value != DCACHE_UNKNOWN && !size_res.is_valid && !is_slow_fs)
+		{
+			*size = recalc_entry_size(entry, size_res.value);
+		}
+	}
+
+	if(nitems != NULL)
+	{
+		if(nitems_res.value == DCACHE_UNKNOWN && !is_slow_fs)
+		{
+			nitems_res.value = entry_calc_nitems(entry);
+		}
+
+		*nitems = (nitems_res.value == DCACHE_UNKNOWN ? 0 : nitems_res.value);
+	}
+}
+
+/* Updates cached size of a directory also updating its relevant parents.
+ * Returns current size of the directory entry. */
+static uint64_t
+recalc_entry_size(const dir_entry_t *entry, uint64_t old_size)
+{
+	uint64_t size;
+
+	char full_path[PATH_MAX + 1];
+	get_full_path_of(entry, sizeof(full_path), full_path);
+
+	size = fops_dir_size(full_path, 0, &ui_cancellation_info);
+	dcache_update_parent_sizes(full_path, size - old_size);
+
+	return size;
+}
+
+/* Calculates number of items at path specified by the entry.  No check for file
+ * type is performed.  Returns the number, which is zero for files. */
+static uint64_t
 entry_calc_nitems(const dir_entry_t *entry)
 {
 	uint64_t ret;
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
 	ret = count_dir_items(full_path);
@@ -1643,7 +1690,7 @@ populate_custom_view(view_t *view, int reload)
 	{
 		if(custom_list_is_incomplete(view))
 		{
-			char selected_path[PATH_MAX];
+			char selected_path[PATH_MAX + 1];
 			get_current_full_path(view, sizeof(selected_path), selected_path);
 
 			/* Replacing list of entries invalidates cursor position, so we remember
@@ -3053,13 +3100,13 @@ set_view_path(view_t *view, const char path[])
 }
 
 uint64_t
-fentry_get_size(const dir_entry_t *entry)
+fentry_get_size(const view_t *view, const dir_entry_t *entry)
 {
 	uint64_t size = DCACHE_UNKNOWN;
 
 	if(fentry_is_dir(entry))
 	{
-		dcache_get_of(entry, &size, NULL);
+		fentry_get_dir_info(view, entry, &size, NULL);
 	}
 
 	return (size == DCACHE_UNKNOWN ? entry->size : size);

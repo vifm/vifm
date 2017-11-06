@@ -176,7 +176,7 @@ int view_needs_cd(const view_t *view, const char path[]);
 void set_view_path(view_t *view, const char path[]);
 /* Retrieves size of the entry, possibly using cached or calculated value.
  * Returns the size. */
-uint64_t fentry_get_size(const dir_entry_t *entry);
+uint64_t fentry_get_size(const view_t *view, const dir_entry_t *entry);
 /* Loads pointer to the next selected entry in file list of the view.  *entry
  * should be NULL for the first call and result of previous call otherwise.
  * Returns zero when there is no more entries to supply, otherwise non-zero is
@@ -237,10 +237,11 @@ dir_entry_t * entry_from_path(view_t *view, dir_entry_t *entries, int count,
 		const char path[]);
 /* Retrieves number of items in a directory specified by the entry.  Returns the
  * number, which is zero for files. */
-uint64_t entry_get_nitems(const view_t *view, const dir_entry_t *entry);
-/* Calculates number of items at path specified by the entry.  No check for file
- * type is performed.  Returns the number, which is zero for files. */
-uint64_t entry_calc_nitems(const dir_entry_t *entry);
+uint64_t fentry_get_nitems(const view_t *view, const dir_entry_t *entry);
+/* Queries information about a directory from dcache.  *size and *nitems might
+ * contain DCACHE_UNKNOWN. */
+void fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
+		uint64_t *size, uint64_t *nitems);
 /* Checks whether entry is selected.  Returns non-zero if so, otherwise zero is
  * returned. */
 int is_entry_selected(const dir_entry_t *entry);

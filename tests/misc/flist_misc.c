@@ -1,15 +1,19 @@
 #include <stic.h>
 
 #include <string.h> /* strcpy() */
+#include <time.h> /* time() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/cancellation.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_pos.h"
+#include "../../src/fops_misc.h"
 #include "../../src/status.h"
 
 #include "utils.h"
@@ -269,7 +273,7 @@ TEST(fentry_get_size_returns_file_size_for_files)
 	update_string(&cfg.shell, "");
 	assert_success(init_status(&cfg));
 
-	assert_ulong_equal(entry.size, fentry_get_size(&entry));
+	assert_ulong_equal(entry.size, fentry_get_size(&lwin, &entry));
 
 	update_string(&cfg.shell, NULL);
 }
@@ -284,7 +288,58 @@ TEST(fentry_get_size_returns_file_size_if_nothing_cached)
 	update_string(&cfg.shell, "");
 	assert_success(init_status(&cfg));
 
-	assert_ulong_equal(entry.size, fentry_get_size(&entry));
+	assert_ulong_equal(entry.size, fentry_get_size(&lwin, &entry));
+
+	update_string(&cfg.shell, NULL);
+}
+
+TEST(fentry_get_recalculates_size)
+{
+	char dir_origin[] = SANDBOX_PATH;
+	dir_entry_t dir = {
+		.name = "dir", .origin = dir_origin, .size = 123U, .type = FT_DIR,
+		.mtime = time(NULL)
+	};
+	char subdir_origin[] = SANDBOX_PATH "/dir";
+	dir_entry_t subdir = {
+		.name = "subdir", .origin = subdir_origin, .size = 123U, .type = FT_DIR,
+		.mtime = time(NULL)
+	};
+
+	update_string(&cfg.shell, "");
+	assert_success(init_status(&cfg));
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir", 0700));
+
+	(void)fops_dir_size(SANDBOX_PATH, 0, &no_cancellation);
+	assert_ulong_equal(0, fentry_get_size(&lwin, &dir));
+	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
+
+	copy_file(TEST_DATA_PATH "/various-sizes/block-size-file",
+			SANDBOX_PATH "/dir/file");
+	dir.mtime += 1000;
+	assert_ulong_equal(8192, fentry_get_size(&lwin, &dir));
+	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
+
+	copy_file(TEST_DATA_PATH "/various-sizes/block-size-file",
+			SANDBOX_PATH "/dir/subdir/file");
+	subdir.mtime += 1000;
+	assert_ulong_equal(8192, fentry_get_size(&lwin, &subdir));
+	assert_ulong_equal(16384, fentry_get_size(&lwin, &dir));
+
+	assert_success(remove(SANDBOX_PATH "/dir/subdir/file"));
+	subdir.mtime += 1000;
+	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
+	assert_ulong_equal(8192, fentry_get_size(&lwin, &dir));
+
+	assert_success(remove(SANDBOX_PATH "/dir/file"));
+	dir.mtime += 1000;
+	assert_ulong_equal(0, fentry_get_size(&lwin, &dir));
+	assert_ulong_equal(0, fentry_get_size(&lwin, &subdir));
+
+	assert_success(rmdir(SANDBOX_PATH "/dir/subdir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 
 	update_string(&cfg.shell, NULL);
 }

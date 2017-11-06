@@ -61,8 +61,7 @@ static int compare_entry_names(const dir_entry_t *a, const dir_entry_t *b,
 static int compare_full_file_names(const char s[], const char t[],
 		int ignore_case);
 static int compare_file_names(const char s[], const char t[], int ignore_case);
-static int compare_file_sizes(const dir_entry_t *f, int fdir,
-		const dir_entry_t *s, int sdir);
+static int compare_file_sizes(const dir_entry_t *f, const dir_entry_t *s);
 static int compare_item_count(const dir_entry_t *f, int fdir,
 		const dir_entry_t *s, int sdir);
 static int compare_group(const char f[], const char s[], regex_t *regex);
@@ -414,7 +413,7 @@ sort_dir_list(const void *one, const void *two)
 			break;
 
 		case SK_BY_SIZE:
-			retval = compare_file_sizes(first, first_is_dir, second, second_is_dir);
+			retval = compare_file_sizes(first, second);
 			break;
 
 		case SK_BY_NITEMS:
@@ -489,32 +488,10 @@ sort_dir_list(const void *one, const void *two)
 
 /* Compares two file sizes.  Returns standard -1, 0, 1 for comparisons. */
 static int
-compare_file_sizes(const dir_entry_t *f, int fdir, const dir_entry_t *s,
-		int sdir)
+compare_file_sizes(const dir_entry_t *f, const dir_entry_t *s)
 {
-	uint64_t fsize = f->size;
-	uint64_t ssize = s->size;
-
-	if(fdir)
-	{
-		uint64_t size;
-		dcache_get_of(f, &size, NULL);
-		if(size != DCACHE_UNKNOWN)
-		{
-			fsize = size;
-		}
-	}
-
-	if(sdir)
-	{
-		uint64_t size;
-		dcache_get_of(s, &size, NULL);
-		if(size != DCACHE_UNKNOWN)
-		{
-			ssize = size;
-		}
-	}
-
+	const uint64_t fsize = fentry_get_size(view, f);
+	const uint64_t ssize = fentry_get_size(view, s);
 	return (fsize < ssize) ? -1 : (fsize > ssize);
 }
 
@@ -524,11 +501,11 @@ static int
 compare_item_count(const dir_entry_t *f, int fdir, const dir_entry_t *s,
 		int sdir)
 {
-	/* We don't want to call entry_get_nitems() for files as sorting huge lists
+	/* We don't want to call fentry_get_nitems() for files as sorting huge lists
 	 * of files can call this function a lot of times, thus even small extra
 	 * performance overhead is not desirable. */
-	const uint64_t fsize = fdir ? entry_get_nitems(view, f) : 0U;
-	const uint64_t ssize = sdir ? entry_get_nitems(view, s) : 0U;
+	const uint64_t fsize = fdir ? fentry_get_nitems(view, f) : 0U;
+	const uint64_t ssize = sdir ? fentry_get_nitems(view, s) : 0U;
 	return (fsize > ssize) ? 1 : (fsize < ssize) ? -1 : 0;
 }
 

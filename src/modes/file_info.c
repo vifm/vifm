@@ -144,17 +144,7 @@ redraw_file_info_dialog(void)
 
 	curr = get_current_entry(view);
 
-	size = DCACHE_UNKNOWN;
-	if(curr->type == FT_DIR)
-	{
-		dcache_get_of(curr, &size, NULL);
-	}
-
-	if(size == DCACHE_UNKNOWN)
-	{
-		size = curr->size;
-	}
-
+	size = fentry_get_size(view, curr);
 	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 	curr_y = 2;

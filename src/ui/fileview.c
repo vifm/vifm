@@ -1392,16 +1392,11 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 	if(fentry_is_dir(cdt->entry))
 	{
 		uint64_t nitems;
-		dcache_get_of(cdt->entry, &size, &nitems);
+		fentry_get_dir_info(view, cdt->entry, &size, &nitems);
 
 		if(size == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS &&
-				!view->on_slow_fs)
+				nitems != DCACHE_UNKNOWN)
 		{
-			if(nitems == DCACHE_UNKNOWN)
-			{
-				nitems = entry_calc_nitems(cdt->entry);
-			}
-
 			snprintf(buf, buf_len + 1, " %d", (int)nitems);
 			return;
 		}
@@ -1422,7 +1417,6 @@ static void
 format_nitems(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
-	const view_t *view = cdt->view;
 	uint64_t nitems;
 
 	if(!fentry_is_dir(cdt->entry))
@@ -1431,19 +1425,13 @@ format_nitems(int id, const void *data, size_t buf_len, char buf[])
 		return;
 	}
 
-	if(view->on_slow_fs)
+	if(cdt->view->on_slow_fs)
 	{
 		copy_str(buf, buf_len + 1, " ?");
 		return;
 	}
 
-	dcache_get_of(cdt->entry, NULL, &nitems);
-
-	if(nitems == DCACHE_UNKNOWN)
-	{
-		nitems = entry_calc_nitems(cdt->entry);
-	}
-
+	nitems = fentry_get_nitems(cdt->view, cdt->entry);
 	snprintf(buf, buf_len + 1, " %d", (int)nitems);
 }
 

@@ -48,10 +48,9 @@ TEST(nitems_does_not_clobber_size)
 	assert_ulong_equal(12, nitems);
 }
 
-TEST(outdated_data_is_not_returned)
+TEST(outdated_data_is_detected)
 {
-	uint64_t size;
-	uint64_t nitems;
+	dcache_result_t size, nitems;
 
 	dir_entry_t entry = { .name = ".", .origin = TEST_DATA_PATH };
 
@@ -60,8 +59,8 @@ TEST(outdated_data_is_not_returned)
 	entry.mtime = time(NULL) + 1;
 
 	dcache_get_of(&entry, &size, &nitems);
-	assert_ulong_equal((unsigned long)DCACHE_UNKNOWN, size);
-	assert_ulong_equal((unsigned long)DCACHE_UNKNOWN, nitems);
+	assert_false(size.is_valid);
+	assert_false(nitems.is_valid);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

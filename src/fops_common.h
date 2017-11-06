@@ -20,8 +20,6 @@
 #ifndef VIFM__FOPS_COMMON_H__
 #define VIFM__FOPS_COMMON_H__
 
-#include <stdint.h> /* uint64_t */
-
 #include "compat/fs_limits.h"
 #include "background.h"
 #include "ops.h"
@@ -204,14 +202,6 @@ const char * fops_get_dst_dir(const struct view_t *view, int at);
  * dialogs.  Returns non-zero if directory can be changed, otherwise zero is
  * returned. */
 int fops_is_dir_writable(DirRole dir_role, const char path[]);
-
-struct cancellation_t;
-
-/* Calculates size of a directory specified by path possibly using cache of
- * known sizes.  Forcing disables using previously cached values.  Returns size
- * of a directory or zero on error. */
-uint64_t fops_dir_size(const char path[], int force,
-		const struct cancellation_t *cancellation);
 
 #endif /* VIFM__FOPS_COMMON_H__ */
 
