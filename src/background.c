@@ -495,11 +495,12 @@ error_thread(void *p)
 
 				if(nread == 0)
 				{
-					/* Reached EOF, cut this job out of our list and allow its
-					 * deletion. */
+					/* Reached EOF, exclude corresponding file descriptor from the set,
+					 * cut the job out of our list and allow its deletion. */
+					FD_CLR(j->fd, &active);
+					*job = j->err_next;
 					pthread_spin_lock(&j->status_lock);
 					j->in_use = 0;
-					*job = j->err_next;
 					pthread_spin_unlock(&j->status_lock);
 					continue;
 				}
