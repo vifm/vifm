@@ -539,6 +539,28 @@ update_job_list(bg_job_t **jobs, fd_set *set)
 	bg_job_t *new_jobs;
 	bg_job_t **job;
 
+	job = jobs;
+	while(*job != NULL)
+	{
+		bg_job_t *const j = *job;
+
+		if(j->drained)
+		{
+			pthread_spin_lock(&j->status_lock);
+			/* If finished, reset in_use mark and drop it from the list. */
+			if(!j->running)
+			{
+				j->in_use = 0;
+				*job = j->err_next;
+				pthread_spin_unlock(&j->status_lock);
+				continue;
+			}
+			pthread_spin_unlock(&j->status_lock);
+		}
+
+		job = &j->err_next;
+	}
+
 	/* Add new tasks to internal list, wait if there are no jobs. */
 	pthread_mutex_lock(&new_err_jobs_lock);
 	while(*jobs == NULL && new_err_jobs == NULL)
@@ -558,9 +580,8 @@ update_job_list(bg_job_t **jobs, fd_set *set)
 		assert(new_job->type == BJT_COMMAND &&
 				"Only external commands should be here.");
 
-		/* Mark a this job as an interesting one to avoid it being killed in the
-		 * next loop even though we haven't yet had a chance to read error
-		 * stream. */
+		/* Mark a this job as an interesting one to avoid it being killed until we
+		 * have a chance to read error stream. */
 		new_job->drained = 0;
 
 		new_job->err_next = *jobs;
@@ -574,20 +595,6 @@ update_job_list(bg_job_t **jobs, fd_set *set)
 	while(*job != NULL)
 	{
 		bg_job_t *const j = *job;
-
-		if(j->drained)
-		{
-			pthread_spin_lock(&j->status_lock);
-			/* If finished, reset in_use mark and drop it from the list. */
-			if(!j->running)
-			{
-				j->in_use = 0;
-				*job = j->err_next;
-				pthread_spin_unlock(&j->status_lock);
-				continue;
-			}
-			pthread_spin_unlock(&j->status_lock);
-		}
 
 		FD_SET(j->fd, set);
 		if(j->fd > max_fd)
