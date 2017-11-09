@@ -114,7 +114,10 @@ static void job_check(bg_job_t *const job);
 static void job_free(bg_job_t *const job);
 #ifndef _WIN32
 static void * error_thread(void *p);
-static int update_job_list(bg_job_t **jobs, fd_set *set);
+static int update_error_jobs(bg_job_t **jobs, fd_set *set);
+static void free_drained_jobs(bg_job_t **jobs);
+static void import_error_jobs(bg_job_t **jobs);
+static int make_ready_list(bg_job_t **jobs, fd_set *set);
 static void report_error_msg(const char title[], const char text[]);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 #endif
@@ -466,7 +469,7 @@ error_thread(void *p)
 	while(1)
 	{
 		fd_set active, ready;
-		const int max_fd = update_job_list(&jobs, &active);
+		const int max_fd = update_error_jobs(&jobs, &active);
 		struct timeval timeout = { .tv_sec = 0, .tv_usec = 250*1000 }, ts = timeout;
 
 		while(select(max_fd + 1, memcpy(&ready, &active, sizeof(active)), NULL,
@@ -531,15 +534,20 @@ error_thread(void *p)
 }
 
 /* Updates *jobs by removing finished tasks and adding new ones.  Initializes
- * *set in the process.  Returns max file descriptor number of the set. */
+ * *set set.  Returns max file descriptor number of the set. */
 static int
-update_job_list(bg_job_t **jobs, fd_set *set)
+update_error_jobs(bg_job_t **jobs, fd_set *set)
 {
-	int max_fd;
-	bg_job_t *new_jobs;
-	bg_job_t **job;
+	free_drained_jobs(jobs);
+	import_error_jobs(jobs);
+	return make_ready_list(jobs, set);
+}
 
-	job = jobs;
+/* Updates *jobs by removing finished tasks. */
+static void
+free_drained_jobs(bg_job_t **jobs)
+{
+	bg_job_t **job = jobs;
 	while(*job != NULL)
 	{
 		bg_job_t *const j = *job;
@@ -560,6 +568,15 @@ update_job_list(bg_job_t **jobs, fd_set *set)
 
 		job = &j->err_next;
 	}
+}
+
+/* Updates *jobs by adding new tasks. */
+static void
+import_error_jobs(bg_job_t **jobs)
+{
+	bg_job_t *new_jobs;
+
+	free_drained_jobs(jobs);
 
 	/* Add new tasks to internal list, wait if there are no jobs. */
 	pthread_mutex_lock(&new_err_jobs_lock);
@@ -587,11 +604,17 @@ update_job_list(bg_job_t **jobs, fd_set *set)
 		new_job->err_next = *jobs;
 		*jobs = new_job;
 	}
+}
+
+/* Initializes *set set.  Returns max file descriptor number of the set. */
+static int
+make_ready_list(bg_job_t **jobs, fd_set *set)
+{
+	int max_fd = 0;
+	bg_job_t **job = jobs;
 
 	FD_ZERO(set);
 
-	max_fd = 0;
-	job = jobs;
 	while(*job != NULL)
 	{
 		bg_job_t *const j = *job;
