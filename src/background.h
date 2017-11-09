@@ -92,6 +92,9 @@ typedef struct bg_job_t
 #endif
 
 	struct bg_job_t *next;     /* Link to the next element in bg_jobs list. */
+
+	/* Used by error thread for BJT_COMMAND jobs. */
+	int drained;               /* Whether error stream of no interest anymore. */
 	struct bg_job_t *err_next; /* Link to the next element in error read list. */
 }
 bg_job_t;

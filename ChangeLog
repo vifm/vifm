@@ -147,6 +147,9 @@
 	Fixed consuming 100% of CPU on certain pattern of running background
 	processes.  Thanks to petRUShka.
 
+	Fixed losing error message from a short-lived background processes when
+	long-lived one is present.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.

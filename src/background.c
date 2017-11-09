@@ -490,6 +490,7 @@ error_thread(void *p)
 				if(nread < 0)
 				{
 					need_update_list = 1;
+					j->drained = 1;
 					goto next_job;
 				}
 
@@ -557,6 +558,11 @@ update_job_list(bg_job_t **jobs, fd_set *set)
 		assert(new_job->type == BJT_COMMAND &&
 				"Only external commands should be here.");
 
+		/* Mark a this job as an interesting one to avoid it being killed in the
+		 * next loop even though we haven't yet had a chance to read error
+		 * stream. */
+		new_job->drained = 0;
+
 		new_job->err_next = *jobs;
 		*jobs = new_job;
 	}
@@ -569,16 +575,19 @@ update_job_list(bg_job_t **jobs, fd_set *set)
 	{
 		bg_job_t *const j = *job;
 
-		pthread_spin_lock(&j->status_lock);
-		/* If finished, reset in_use mark and drop it from the list. */
-		if(!j->running)
+		if(j->drained)
 		{
-			j->in_use = 0;
-			*job = j->err_next;
+			pthread_spin_lock(&j->status_lock);
+			/* If finished, reset in_use mark and drop it from the list. */
+			if(!j->running)
+			{
+				j->in_use = 0;
+				*job = j->err_next;
+				pthread_spin_unlock(&j->status_lock);
+				continue;
+			}
 			pthread_spin_unlock(&j->status_lock);
-			continue;
 		}
-		pthread_spin_unlock(&j->status_lock);
 
 		FD_SET(j->fd, set);
 		if(j->fd > max_fd)
