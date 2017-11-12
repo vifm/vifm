@@ -24,7 +24,7 @@
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* remove() snprintf() */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strchr() strcmp() strdup() strlen() strspn() */
 
@@ -93,7 +93,7 @@ static int validate_spec(const char spec[]);
 static int create_trash_dir(const char trash_dir[], int user_specific);
 static int try_create_trash_dir(const char trash_dir[], int user_specific);
 static void empty_trash_dirs(void);
-static void empty_trash_dir(const char trash_dir[]);
+static void empty_trash_dir(const char trash_dir[], int can_delete);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
 static void remove_trash_entries(const char trash_dir[]);
 static trashes_list get_list_of_trashes(int allow_empty);
@@ -265,7 +265,7 @@ empty_trash_dirs(void)
 	int i;
 	for(i = 0; i < list.ntrashes; ++i)
 	{
-		empty_trash_dir(list.trashes[i]);
+		empty_trash_dir(list.trashes[i], list.can_delete[i] == '1');
 	}
 
 	free_string_array(list.trashes, list.ntrashes);
@@ -276,7 +276,7 @@ void
 trash_empty(const char trash_dir[])
 {
 	regs_remove_trashed_files(trash_dir);
-	empty_trash_dir(trash_dir);
+	empty_trash_dir(trash_dir, 0);
 	un_clear_cmds_with_trash(trash_dir);
 	remove_trash_entries(trash_dir);
 }
@@ -284,12 +284,16 @@ trash_empty(const char trash_dir[])
 /* Removes all files inside given trash directory (even those that this instance
  * of vifm is not aware of). */
 static void
-empty_trash_dir(const char trash_dir[])
+empty_trash_dir(const char trash_dir[], int can_delete)
 {
+	/* XXX: should we rename directory and delete files from it to exclude
+	 *      possibility of deleting newly added files? */
+
 	char *const task_desc = format_str("Empty trash: %s", trash_dir);
 	char *const op_desc = format_str("Emptying %s", replace_home_part(trash_dir));
 
-	char *const trash_dir_copy = strdup(trash_dir);
+	/* Yes, this isn't pretty.  It's a simple way to bundle string and bool. */
+	char *trash_dir_copy = format_str("%c%s", can_delete ? '1' : '0', trash_dir);
 
 	if(bg_execute(task_desc, op_desc, BG_UNDEFINED_TOTAL, 1, &empty_trash_in_bg,
 			trash_dir_copy) != 0)
@@ -306,11 +310,15 @@ empty_trash_dir(const char trash_dir[])
 static void
 empty_trash_in_bg(bg_op_t *bg_op, void *arg)
 {
-	char *const trash_dir = arg;
+	char *const trash_info = arg;
 
-	remove_dir_content(trash_dir);
+	remove_dir_content(trash_info + 1);
+	if(trash_info[0] == '1')
+	{
+		(void)remove(trash_info + 1);
+	}
 
-	free(trash_dir);
+	free(trash_info);
 }
 
 /* Removes entries that belong to specified trash directory.  Removes all if

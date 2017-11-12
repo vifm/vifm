@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 01
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 13
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1457,8 +1457,9 @@ The builtin commands are:
 
 :empty                                         *vifm-:empty*
     permanently remove files from all existing non-empty trash directories (see
-    |vifm-trash|).  Also remove all operations from undolist that have no
-    sense after :empty and remove all records about files located inside
+    |vifm-trash|).  Trash directories which are specified via %r and/or %u also
+    get deleted completely.  Also remove all operations from undolist that have
+    no sense after :empty and remove all records about files located inside
     directories from all registers.  Removal is performed as background task
     with undetermined amount of work and can be checked via |vifm-:jobs| menu.
 
