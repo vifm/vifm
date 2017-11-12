@@ -619,7 +619,7 @@ pick_trash_dir_traverser(const char base_path[], const char trash_dir[],
 }
 
 /* Checks whether the spec refers to a rooted trash directory.  Returns non-zero
- * if so, otherwise non-zero is returned. */
+ * if so, otherwise zero is returned. */
 static int
 is_rooted_trash_dir(const char spec[])
 {
