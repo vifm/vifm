@@ -74,8 +74,9 @@ typedef int (*traverser)(const char base_path[], const char trash_dir[],
 /* List of trash directories. */
 typedef struct
 {
-	char **trashes; /* List of trashes. */
-	int ntrashes;   /* Number of elements in trashes array. */
+	char **trashes;   /* List of trashes. */
+	char *can_delete; /* Whether can delete some trash on empty ('1'/'0'). */
+	int ntrashes;     /* Number of elements in trashes array. */
 }
 trashes_list;
 
@@ -98,6 +99,8 @@ static void remove_trash_entries(const char trash_dir[]);
 static trashes_list get_list_of_trashes(int allow_empty);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[], int allow_empty);
+static void add_trash_to_list(trashes_list *list, const char path[],
+		int can_delete);
 static void remove_from_trash(const char trash_name[]);
 static void free_entry(const trash_entry_t *entry);
 static int pick_trash_dir_traverser(const char base_path[],
@@ -266,6 +269,7 @@ empty_trash_dirs(void)
 	}
 
 	free_string_array(list.trashes, list.ntrashes);
+	free(list.can_delete);
 }
 
 void
@@ -399,6 +403,7 @@ char **
 list_trashes(int *ntrashes)
 {
 	trashes_list list = get_list_of_trashes(0);
+	free(list.can_delete);
 	*ntrashes = list.ntrashes;
 	return list.trashes;
 }
@@ -410,6 +415,7 @@ get_list_of_trashes(int allow_empty)
 {
 	trashes_list list = {
 		.trashes = NULL,
+		.can_delete = NULL,
 		.ntrashes = 0,
 	};
 
@@ -429,8 +435,7 @@ get_list_of_trashes(int allow_empty)
 		}
 		else if(is_trash_valid(spec, allow_empty))
 		{
-			list.ntrashes = add_to_string_array(&list.trashes, list.ntrashes, 1,
-					spec);
+			add_trash_to_list(&list, spec, with_uid);
 		}
 		free(spec);
 	}
@@ -450,12 +455,23 @@ get_list_of_trashes_traverser(struct mntent *entry, void *arg)
 	char *const trash_dir = format_root_spec(spec, entry->mnt_dir);
 	if(is_trash_valid(trash_dir, params->allow_empty))
 	{
-		list->ntrashes = add_to_string_array(&list->trashes, list->ntrashes, 1,
-				trash_dir);
+		add_trash_to_list(list, trash_dir, 1);
 	}
 	free(trash_dir);
 
 	return 0;
+}
+
+/* Adds trash to list of trashes. */
+static void
+add_trash_to_list(trashes_list *list, const char path[], int can_delete)
+{
+	size_t len = list->ntrashes;
+	if(strappendch(&list->can_delete, &len, can_delete ? '1' : '0') == 0)
+	{
+		list->ntrashes = add_to_string_array(&list->trashes, list->ntrashes, 1,
+				path);
+	}
 }
 
 /* Checks whether trash directory is valid (at least exists and is writable).
