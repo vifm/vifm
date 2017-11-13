@@ -93,6 +93,9 @@
 	detecting changes in the directory recalculate its size and propagate
 	update through its parents.  Thanks to filterfalse.
 
+	Remove empty directories which are specified in 'trashdir' with %r and/or
+	%u automatically on :empty.  Thanks to Marcin Kurczewski (a.k.a. rr-).
+
 	Fixed positioning cursor in directory :history when inside custom view.
 	Thanks to filterfalse.
 

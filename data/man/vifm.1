@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 01, 2017" "vifm 0.9"
+.TH VIFM 1 "November 13, 2017" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1708,10 +1708,11 @@ and :endif commands.
 .TP
 .BI :empty
 permanently remove files from all existing non-empty trash directories (see
-"Trash directory" section below).  Also remove all operations from undolist that
-have no sense after :empty and remove all records about files located inside
-directories from all registers.  Removal is performed as background task with
-undetermined amount of work and can be checked via :jobs menu.
+"Trash directory" section below).  Trash directories which are specified via %r
+and/or %u also get deleted completely.  Also remove all operations from undolist
+that have no sense after :empty and remove all records about files located
+inside directories from all registers.  Removal is performed as background task
+with undetermined amount of work and can be checked via :jobs menu.
 .TP
 .BI "                                         :endif"
 .TP

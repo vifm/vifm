@@ -24,7 +24,7 @@
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* remove() snprintf() */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strchr() strcmp() strdup() strlen() strspn() */
 
@@ -74,8 +74,9 @@ typedef int (*traverser)(const char base_path[], const char trash_dir[],
 /* List of trash directories. */
 typedef struct
 {
-	char **trashes; /* List of trashes. */
-	int ntrashes;   /* Number of elements in trashes array. */
+	char **trashes;   /* List of trashes. */
+	char *can_delete; /* Whether can delete some trash on empty ('1'/'0'). */
+	int ntrashes;     /* Number of elements in trashes array. */
 }
 trashes_list;
 
@@ -84,6 +85,7 @@ typedef struct
 {
 	trashes_list *list; /* List of valid trash directories. */
 	const char *spec;   /* Trash directory name specification. */
+	int allow_empty;    /* Whether empty directories should be included. */
 }
 get_list_of_trashes_traverser_state;
 
@@ -91,12 +93,14 @@ static int validate_spec(const char spec[]);
 static int create_trash_dir(const char trash_dir[], int user_specific);
 static int try_create_trash_dir(const char trash_dir[], int user_specific);
 static void empty_trash_dirs(void);
-static void empty_trash_dir(const char trash_dir[]);
+static void empty_trash_dir(const char trash_dir[], int can_delete);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
 static void remove_trash_entries(const char trash_dir[]);
-static trashes_list get_list_of_trashes(void);
+static trashes_list get_list_of_trashes(int allow_empty);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
-static int is_trash_valid(const char trash_dir[]);
+static int is_trash_valid(const char trash_dir[], int allow_empty);
+static void add_trash_to_list(trashes_list *list, const char path[],
+		int can_delete);
 static void remove_from_trash(const char trash_name[]);
 static void free_entry(const trash_entry_t *entry);
 static int pick_trash_dir_traverser(const char base_path[],
@@ -257,21 +261,22 @@ trash_empty_all(void)
 static void
 empty_trash_dirs(void)
 {
-	const trashes_list list = get_list_of_trashes();
+	const trashes_list list = get_list_of_trashes(1);
 	int i;
 	for(i = 0; i < list.ntrashes; ++i)
 	{
-		empty_trash_dir(list.trashes[i]);
+		empty_trash_dir(list.trashes[i], list.can_delete[i] == '1');
 	}
 
 	free_string_array(list.trashes, list.ntrashes);
+	free(list.can_delete);
 }
 
 void
 trash_empty(const char trash_dir[])
 {
 	regs_remove_trashed_files(trash_dir);
-	empty_trash_dir(trash_dir);
+	empty_trash_dir(trash_dir, 0);
 	un_clear_cmds_with_trash(trash_dir);
 	remove_trash_entries(trash_dir);
 }
@@ -279,12 +284,16 @@ trash_empty(const char trash_dir[])
 /* Removes all files inside given trash directory (even those that this instance
  * of vifm is not aware of). */
 static void
-empty_trash_dir(const char trash_dir[])
+empty_trash_dir(const char trash_dir[], int can_delete)
 {
+	/* XXX: should we rename directory and delete files from it to exclude
+	 *      possibility of deleting newly added files? */
+
 	char *const task_desc = format_str("Empty trash: %s", trash_dir);
 	char *const op_desc = format_str("Emptying %s", replace_home_part(trash_dir));
 
-	char *const trash_dir_copy = strdup(trash_dir);
+	/* Yes, this isn't pretty.  It's a simple way to bundle string and bool. */
+	char *trash_dir_copy = format_str("%c%s", can_delete ? '1' : '0', trash_dir);
 
 	if(bg_execute(task_desc, op_desc, BG_UNDEFINED_TOTAL, 1, &empty_trash_in_bg,
 			trash_dir_copy) != 0)
@@ -301,11 +310,15 @@ empty_trash_dir(const char trash_dir[])
 static void
 empty_trash_in_bg(bg_op_t *bg_op, void *arg)
 {
-	char *const trash_dir = arg;
+	char *const trash_info = arg;
 
-	remove_dir_content(trash_dir);
+	remove_dir_content(trash_info + 1);
+	if(trash_info[0] == '1')
+	{
+		(void)remove(trash_info + 1);
+	}
 
-	free(trash_dir);
+	free(trash_info);
 }
 
 /* Removes entries that belong to specified trash directory.  Removes all if
@@ -397,18 +410,20 @@ trash_includes(const char original_path[])
 char **
 list_trashes(int *ntrashes)
 {
-	trashes_list list = get_list_of_trashes();
+	trashes_list list = get_list_of_trashes(0);
+	free(list.can_delete);
 	*ntrashes = list.ntrashes;
 	return list.trashes;
 }
 
-/* Lists all non-empty trash directories.  Caller should free array and all its
- * elements using free(). */
+/* Lists trash directories.  Caller should free array and all its elements using
+ * free(). */
 static trashes_list
-get_list_of_trashes(void)
+get_list_of_trashes(int allow_empty)
 {
 	trashes_list list = {
 		.trashes = NULL,
+		.can_delete = NULL,
 		.ntrashes = 0,
 	};
 
@@ -422,13 +437,13 @@ get_list_of_trashes(void)
 			get_list_of_trashes_traverser_state state = {
 				.list = &list,
 				.spec = spec,
+				.allow_empty = allow_empty,
 			};
 			(void)traverse_mount_points(&get_list_of_trashes_traverser, &state);
 		}
-		else if(is_trash_valid(spec))
+		else if(is_trash_valid(spec, allow_empty))
 		{
-			list.ntrashes = add_to_string_array(&list.trashes, list.ntrashes, 1,
-					spec);
+			add_trash_to_list(&list, spec, with_uid);
 		}
 		free(spec);
 	}
@@ -446,22 +461,34 @@ get_list_of_trashes_traverser(struct mntent *entry, void *arg)
 	const char *const spec = params->spec;
 
 	char *const trash_dir = format_root_spec(spec, entry->mnt_dir);
-	if(is_trash_valid(trash_dir))
+	if(is_trash_valid(trash_dir, params->allow_empty))
 	{
-		list->ntrashes = add_to_string_array(&list->trashes, list->ntrashes, 1,
-				trash_dir);
+		add_trash_to_list(list, trash_dir, 1);
 	}
 	free(trash_dir);
 
 	return 0;
 }
 
-/* Checks whether trash directory is valid (e.g. exists, writable and
- * non-empty).  Returns non-zero if so, otherwise zero is returned. */
-static int
-is_trash_valid(const char trash_dir[])
+/* Adds trash to list of trashes. */
+static void
+add_trash_to_list(trashes_list *list, const char path[], int can_delete)
 {
-	return is_dir_writable(trash_dir) && !is_dir_empty(trash_dir);
+	size_t len = list->ntrashes;
+	if(strappendch(&list->can_delete, &len, can_delete ? '1' : '0') == 0)
+	{
+		list->ntrashes = add_to_string_array(&list->trashes, list->ntrashes, 1,
+				path);
+	}
+}
+
+/* Checks whether trash directory is valid (at least exists and is writable).
+ * Returns non-zero if so, otherwise zero is returned. */
+static int
+is_trash_valid(const char trash_dir[], int allow_empty)
+{
+	return is_dir_writable(trash_dir)
+	    && (allow_empty || !is_dir_empty(trash_dir));
 }
 
 int
@@ -616,7 +643,7 @@ pick_trash_dir_traverser(const char base_path[], const char trash_dir[],
 }
 
 /* Checks whether the spec refers to a rooted trash directory.  Returns non-zero
- * if so, otherwise non-zero is returned. */
+ * if so, otherwise zero is returned. */
 static int
 is_rooted_trash_dir(const char spec[])
 {
