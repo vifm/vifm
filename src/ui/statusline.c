@@ -703,7 +703,7 @@ format_job_bar(void)
 		                   ? (max_width - width_used)
 		                   : (max_width/nbar_jobs);
 
-		const char *ellipsis = left_ellipsis(descrs[i], width - 2U - reserved);
+		char *const ellipsis = left_ellipsis(descrs[i], width - 2U - reserved);
 
 		if(progress == -1)
 		{
@@ -713,6 +713,8 @@ format_job_bar(void)
 		{
 			snprintf(item_text, sizeof(item_text), "[%s %3d%%]", ellipsis, progress);
 		}
+
+		free(ellipsis);
 
 		(void)sstrappend(bar_text, &text_width, sizeof(bar_text), item_text);
 
@@ -760,21 +762,18 @@ ui_stat_draw_popup_line(WINDOW *win, const char item[], const char descr[],
 
 	if(text_width >= win_width)
 	{
-		char *const line = strdup(item);
-		right_ellipsis(line, win_width);
+		char *const line = right_ellipsis(item, win_width);
 		wprint(win, line);
 		free(line);
 		return;
 	}
 
-	left = strdup(item);
-	right_ellipsis(left, win_width - 3);
+	left = right_ellipsis(item, win_width - 3);
 
 	item_width = align_columns ? max_width : utf8_strsw(left);
 	width_left = win_width - 2 - MAX(item_width, utf8_strsw(left));
 
-	right = strdup(descr);
-	right_ellipsis(right, width_left);
+	right = right_ellipsis(descr, width_left);
 
 	line = format_str(fmt, (int)item_width, left, (int)width_left, right);
 	free(left);

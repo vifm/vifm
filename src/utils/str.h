@@ -180,15 +180,13 @@ void stralign(char str[], size_t width, char pad, int left_align);
 
 /* Ensures that str is of width (in character positions) less than or equal to
  * max_width and is right aligned putting ellipsis on the left side if needed.
- * Changes the string in place.  Returns the str unless max_width is zero in
- * which case NULL is returned. */
-char * left_ellipsis(char str[], size_t max_width);
+ * Returns newly allocated modified string. */
+char * left_ellipsis(const char str[], size_t max_width);
 
 /* Ensures that str is of width (in character positions) less than or equal to
  * max_width and is left aligned putting ellipsis on the right side if needed.
- * Changes the string in place.  Returns the str unless max_width is zero in
- * which case NULL is returned. */
-char * right_ellipsis(char str[], size_t max_width);
+ * Returns newly allocated modified string. */
+char * right_ellipsis(const char str[], size_t max_width);
 
 /* "Breaks" single line it two parts (before and after "%=" separator), and
  * re-formats it filling specified width by putting "left part", padded centre

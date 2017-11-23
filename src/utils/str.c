@@ -526,70 +526,61 @@ stralign(char str[], size_t width, char pad, int left_align)
 }
 
 char *
-left_ellipsis(char str[], size_t max_width)
+left_ellipsis(const char str[], size_t max_width)
 {
 	size_t width;
-	size_t len;
-	const char *tail;
 
 	if(max_width == 0U)
 	{
-		return NULL;
+		/* No room to print anything. */
+		return strdup("");
 	}
 
 	width = utf8_strsw(str);
 	if(width <= max_width)
 	{
-		return str;
+		/* No need to change the string. */
+		return strdup(str);
 	}
 
-	len = strlen(str);
 	if(max_width <= 3U)
 	{
-		copy_str(str, len + 1U, "...");
-		str[max_width] = '\0';
-		return str;
+		return format_str("%.*s", (int)max_width, "...");
 	}
 
-	tail = str;
 	while(width > max_width - 3U)
 	{
-		width -= utf8_chrsw(tail);
-		tail += utf8_chrw(tail);
+		width -= utf8_chrsw(str);
+		str += utf8_chrw(str);
 	}
-	strcpy(str, "...");
-	memmove(str + 3U, tail, len - (tail - str) + 1U);
 
-	return str;
+	return format_str("...%s", str);
 }
 
 char *
-right_ellipsis(char str[], size_t max_width)
+right_ellipsis(const char str[], size_t max_width)
 {
 	size_t width;
-	size_t prefix;
 
 	if(max_width == 0U)
 	{
-		return NULL;
+		/* No room to print anything. */
+		return strdup("");
 	}
 
 	width = utf8_strsw(str);
 	if(width <= max_width)
 	{
-		return str;
+		/* No need to change the string. */
+		return strdup(str);
 	}
 
 	if(max_width <= 3U)
 	{
-		copy_str(str, strlen(str) + 1U, "...");
-		str[max_width] = '\0';
-		return str;
+		return format_str("%.*s", (int)max_width, "...");
 	}
 
-	prefix = utf8_nstrsnlen(str, max_width - 3U);
-	strcpy(&str[prefix], "...");
-	return str;
+	return format_str("%.*s...", (int)utf8_nstrsnlen(str, max_width - 3U), str);
 }
 
 char *

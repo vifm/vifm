@@ -1,12 +1,13 @@
 #include <stic.h>
 
 #include <locale.h> /* LC_ALL setlocale() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
 
-typedef char * (*func)(char str[], size_t max_width);
+typedef char * (*func)(const char str[], size_t max_width);
 
 static void test_ellipsis(const char src[], const char dst[], size_t width,
 		func f);
@@ -21,21 +22,9 @@ SETUP_ONCE()
 	}
 }
 
-TEST(left_align_ellipsis_zero_width)
-{
-	char str[21];
-	size_t i;
-
-	memset(str, -1, sizeof(str));
-	assert_null(left_ellipsis(&str[7], 0U));
-	for(i = 0U; i < sizeof(str); ++i)
-	{
-		assert_int_equal(-1, str[i]);
-	}
-}
-
 TEST(left_align_ellipsis)
 {
+	test_ellipsis("abc", "", 0U, &left_ellipsis);
 	test_ellipsis("abc", ".", 1U, &left_ellipsis);
 	test_ellipsis("abc", "..", 2U, &left_ellipsis);
 	test_ellipsis("abc", "abc", 3U, &left_ellipsis);
@@ -59,21 +48,9 @@ TEST(left_align_ellipsis_wide, IF(locale_works))
 	test_ellipsis("师从刀", "师从刀", 6U, &left_ellipsis);
 }
 
-TEST(right_align_ellipsis_zero_width)
-{
-	char str[21];
-	size_t i;
-
-	memset(str, -1, sizeof(str));
-	assert_null(right_ellipsis(&str[7], 0U));
-	for(i = 0U; i < sizeof(str); ++i)
-	{
-		assert_int_equal(-1, str[i]);
-	}
-}
-
 TEST(right_align_ellipsis)
 {
+	test_ellipsis("abc", "", 0U, &right_ellipsis);
 	test_ellipsis("abc", ".", 1U, &right_ellipsis);
 	test_ellipsis("abc", "..", 2U, &right_ellipsis);
 	test_ellipsis("abc", "abc", 3U, &right_ellipsis);
@@ -100,25 +77,9 @@ TEST(right_align_ellipsis_wide, IF(locale_works))
 static void
 test_ellipsis(const char src[], const char dst[], size_t width, func f)
 {
-	char str[21];
-	size_t i;
-
-	memset(str, -1, sizeof(str));
-	strcpy(&str[7], src);
-	assert_string_equal(&str[7], f(&str[7], width));
-
-	for(i = 0U; i < 7U; ++i)
-	{
-		assert_int_equal(-1, str[i]);
-	}
-
-	assert_string_equal(dst, &str[7]);
-
-	i = 7U + strlen(src) + 1U;
-	for(; i < sizeof(str); ++i)
-	{
-		assert_int_equal(-1, str[i]);
-	}
+	char *const ellipsis = f(src, width);
+	assert_string_equal(dst, ellipsis);
+	free(ellipsis);
 }
 
 static int
