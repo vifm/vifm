@@ -26,6 +26,7 @@ void init_attr_dialog_mode(void);
 
 void enter_attr_mode(struct view_t *active_view);
 
+/* Redraws properties change dialog. */
 void redraw_attr_dialog(void);
 
 #endif /* VIFM__MODES__DIALOGS__ATTR_DIALOG_WIN_H__ */

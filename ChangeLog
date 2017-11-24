@@ -153,6 +153,9 @@
 	Fixed losing error message from a short-lived background processes when
 	long-lived one is present.
 
+	Fixed centering title of attributes change dialog (cp normal mode command)
+	for non-ascii file names.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
