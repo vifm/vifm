@@ -7,7 +7,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
 
-typedef char * (*func)(const char str[], size_t max_width);
+typedef char * (*func)(const char str[], size_t max_width, const char ell[]);
 
 static void test_ellipsis(const char src[], const char dst[], size_t width,
 		func f);
@@ -77,7 +77,7 @@ TEST(right_align_ellipsis_wide, IF(locale_works))
 static void
 test_ellipsis(const char src[], const char dst[], size_t width, func f)
 {
-	char *const ellipsis = f(src, width);
+	char *const ellipsis = f(src, width, "...");
 	assert_string_equal(dst, ellipsis);
 	free(ellipsis);
 }

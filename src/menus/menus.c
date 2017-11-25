@@ -489,7 +489,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	/* Truncate the item to fit the screen if needed. */
 	if(utf8_strsw(item_tail) > (size_t)(width - 2))
 	{
-		char *const ellipsed = right_ellipsis(item_tail, width - 2);
+		char *ellipsed = right_ellipsis(item_tail, width - 2, curr_stats.ellipsis);
 		free(item_tail);
 		item_tail = ellipsed;
 	}
@@ -578,7 +578,7 @@ draw_menu_frame(const menu_state_t *m)
 	                         : replace_home_part(m->d->cwd);
 	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
 	char *const title = format_str("%s%s%s", m->d->title, at, suffix);
-	char *const ellipsed = right_ellipsis(title, title_len);
+	char *const ellipsed = right_ellipsis(title, title_len, curr_stats.ellipsis);
 	free(title);
 
 	box(menu_win, 0, 0);

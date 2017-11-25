@@ -103,7 +103,7 @@ show_marks_menu(view_t *view, const char marks[])
 		}
 
 		display_path = right_ellipsis(replace_home_part(mark->directory),
-				max_len - 3);
+				max_len - 3, curr_stats.ellipsis);
 		overhead = utf8_strso(display_path);
 		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(mn),
 				(int)(max_len + overhead), display_path, file, suffix);

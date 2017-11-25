@@ -300,7 +300,7 @@ get_title(int max_width)
 	}
 
 	ellipsed = right_ellipsis(view->dir_entry[first_file_index].name,
-			max_width - 2);
+			max_width - 2, curr_stats.ellipsis);
 	title = format_str(" %s ", ellipsed);
 	free(ellipsed);
 	return title;

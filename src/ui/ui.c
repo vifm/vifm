@@ -1674,8 +1674,9 @@ print_view_title(const view_t *view, int active_view, char title[])
 	fixup_titles_attributes(view, active_view);
 	werase(view->title);
 
-	ellipsis = active_view ? left_ellipsis(title, title_width)
-	                       : right_ellipsis(title, title_width);
+	ellipsis = active_view
+	         ? left_ellipsis(title, title_width, curr_stats.ellipsis)
+	         : right_ellipsis(title, title_width, curr_stats.ellipsis);
 
 	wprint(view->title, ellipsis);
 	free(ellipsis);
