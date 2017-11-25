@@ -274,17 +274,17 @@ status_bar_message(const char msg[], int error)
 	doupdate();
 }
 
-/* Truncate the msg to the width by placing ellipsis in the middle and put the
- * result to the buffer. */
+/* Truncates the msg to the width by placing ellipsis in the middle and writes
+ * result into the buffer. */
 static void
 truncate_with_ellipsis(const char msg[], size_t width, char buffer[])
 {
-	const size_t screen_len = utf8_strsw(msg);
+	const size_t screen_width = utf8_strsw(msg);
 	const size_t ell_width = utf8_strsw(curr_stats.ellipsis);
-	const size_t screen_left_len = (width - ell_width)/2;
-	const size_t screen_right_len = (width - ell_width) - screen_left_len;
-	const size_t left = utf8_nstrsnlen(msg, screen_left_len);
-	const size_t right = utf8_nstrsnlen(msg, screen_len - screen_right_len);
+	const size_t screen_left_width = (width - ell_width)/2;
+	const size_t screen_right_width = (width - ell_width) - screen_left_width;
+	const size_t left = utf8_nstrsnlen(msg, screen_left_width);
+	const size_t right = utf8_nstrsnlen(msg, screen_width - screen_right_width);
 	strncpy(buffer, msg, left);
 	strcpy(buffer + left, curr_stats.ellipsis);
 	strcat(buffer + left, msg + right);
