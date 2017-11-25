@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 13
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3595,6 +3595,8 @@ p - when included:
                                                *vifm-to-s*
 s - when included, left and right borders (side borders, hence "s" character)
 are visible.
+                                               *vifm-to-u*
+u - use Unicode characters in the TUI (Unicode ellipsis instead of "...").
 
                                                *vifm-'undolevels'* *vifm-'ul'*
 undolevels ul
