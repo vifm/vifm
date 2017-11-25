@@ -42,6 +42,7 @@ static int transform_ascii_str(const char str[], int (*f)(int), char buf[],
 static int transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len);
 TSTATIC void squash_double_commas(char str[]);
+static char * ellipsis(const char str[], size_t max_width, int right);
 
 void
 chomp(char str[])
@@ -528,37 +529,20 @@ stralign(char str[], size_t width, char pad, int left_align)
 char *
 left_ellipsis(const char str[], size_t max_width)
 {
-	size_t width;
-
-	if(max_width == 0U)
-	{
-		/* No room to print anything. */
-		return strdup("");
-	}
-
-	width = utf8_strsw(str);
-	if(width <= max_width)
-	{
-		/* No need to change the string. */
-		return strdup(str);
-	}
-
-	if(max_width <= 3U)
-	{
-		return format_str("%.*s", (int)max_width, "...");
-	}
-
-	while(width > max_width - 3U)
-	{
-		width -= utf8_chrsw(str);
-		str += utf8_chrw(str);
-	}
-
-	return format_str("...%s", str);
+	return ellipsis(str, max_width, 0);
 }
 
 char *
 right_ellipsis(const char str[], size_t max_width)
+{
+	return ellipsis(str, max_width, 1);
+}
+
+/* Ensures that str is of width (in character positions) less than or equal to
+ * max_width and is aligned appropriately putting ellipsis on one of the ends if
+ * needed.  Returns newly allocated modified string. */
+static char *
+ellipsis(const char str[], size_t max_width, int right)
 {
 	size_t width;
 
@@ -580,7 +564,18 @@ right_ellipsis(const char str[], size_t max_width)
 		return format_str("%.*s", (int)max_width, "...");
 	}
 
-	return format_str("%.*s...", (int)utf8_nstrsnlen(str, max_width - 3U), str);
+	if(right)
+	{
+		return format_str("%.*s...", (int)utf8_nstrsnlen(str, max_width - 3U), str);
+	}
+
+	while(width > max_width - 3U)
+	{
+		width -= utf8_chrsw(str);
+		str += utf8_chrw(str);
+	}
+
+	return format_str("...%s", str);
 }
 
 char *
