@@ -3162,6 +3162,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	}
 
 	curr_stats.ellipsis = (cfg.use_unicode_characters ? "…" : "...");
+	columns_set_ellipsis(curr_stats.ellipsis);
 
 	curr_stats.need_update = UT_REDRAW;
 }

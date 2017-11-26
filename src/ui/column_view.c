@@ -29,9 +29,6 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 
-/* Maximum number of ellipsis dots. */
-#define MAX_ELLIPSIS_DOT_COUNT 3U
-
 /* Character used to fill gaps in lines. */
 #define GAP_FILL_CHAR ' '
 
@@ -92,11 +89,19 @@ static size_t col_desc_count;
 static column_desc_t *col_descs;
 /* Column print function. */
 static column_line_print_func print_func;
+/* String to be used in place of ellipsis. */
+static const char *ellipsis = "...";
 
 void
 columns_set_line_print_func(column_line_print_func func)
 {
 	print_func = func;
+}
+
+void
+columns_set_ellipsis(const char ell[])
+{
+	ellipsis = ell;
 }
 
 int
@@ -326,7 +331,7 @@ decorate_output(const column_t *col, char buf[], size_t buf_len,
 	const size_t max_col_width = calculate_max_width(col, len, max_line_width);
 	const int too_long = len > max_col_width;
 	AlignType result;
-	const char *const ell = (col->info.cropping == CT_ELLIPSIS ? "..." : "");
+	const char *const ell = (col->info.cropping == CT_ELLIPSIS ? ellipsis : "");
 	char *ellipsed;
 
 	if(!too_long)

@@ -15,6 +15,7 @@ DEFINE_SUITE();
 
 SETUP()
 {
+	columns_set_ellipsis("...");
 	columns_set_line_print_func(column_line_print);
 	assert_int_equal(0, columns_add_column_desc(COL1_ID, column1_func));
 	assert_int_equal(0, columns_add_column_desc(COL2_ID, column2_func));
