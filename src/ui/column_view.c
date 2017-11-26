@@ -71,8 +71,7 @@ static void init_new_column(column_t *col, column_info_t info);
 static void mark_for_recalculation(columns_t *cols);
 static column_func get_column_func(int column_id);
 static AlignType decorate_output(const column_t *col, char buf[],
-		size_t max_line_width);
-static void add_ellipsis(AlignType align, char buf[]);
+		size_t buf_len, size_t max_line_width);
 static size_t calculate_max_width(const column_t *col, size_t len,
 		size_t max_line_width);
 static size_t calculate_start_pos(const column_t *col, const char buf[],
@@ -281,7 +280,8 @@ columns_format_line(columns_t *cols, const void *data, size_t max_line_width)
 
 		col->func(col->info.column_id, data, sizeof(col_buffer), col_buffer);
 		strcpy(full_column, col_buffer);
-		align = decorate_output(col, col_buffer, max_line_width);
+		align = decorate_output(col, col_buffer, sizeof(col_buffer),
+				max_line_width);
 		cur_col_start = calculate_start_pos(col, col_buffer, align);
 
 		/* Ensure that we are not trying to draw current column in the middle of a
@@ -319,12 +319,15 @@ columns_format_line(columns_t *cols, const void *data, size_t max_line_width)
 /* Adds decorations like ellipsis to the output.  Returns actual align type used
  * for the column (might not match col->info.align). */
 static AlignType
-decorate_output(const column_t *col, char buf[], size_t max_line_width)
+decorate_output(const column_t *col, char buf[], size_t buf_len,
+		size_t max_line_width)
 {
 	const size_t len = get_width_on_screen(buf);
 	const size_t max_col_width = calculate_max_width(col, len, max_line_width);
 	const int too_long = len > max_col_width;
 	AlignType result;
+	const char *const ell = (col->info.cropping == CT_ELLIPSIS ? "..." : "");
+	char *ellipsed;
 
 	if(!too_long)
 	{
@@ -334,69 +337,19 @@ decorate_output(const column_t *col, char buf[], size_t max_line_width)
 	if(col->info.align == AT_LEFT ||
 			(col->info.align == AT_DYN && len <= max_col_width))
 	{
-		const size_t truncate_pos = utf8_strsnlen(buf, max_col_width);
-		buf[truncate_pos] = '\0';
+		ellipsed = right_ellipsis(buf, max_col_width, ell);
 		result = AT_LEFT;
 	}
 	else
 	{
-		int extra_spaces;
-
-		const size_t truncate_pos = utf8_strsnlen(buf, len - max_col_width);
-		const char *new_beginning = buf + truncate_pos;
-
-		extra_spaces = 0;
-		while(get_width_on_screen(new_beginning) > max_col_width)
-		{
-			++extra_spaces;
-			new_beginning += utf8_chrw(new_beginning);
-		}
-
-		memmove(buf + extra_spaces, new_beginning, strlen(new_beginning) + 1);
-		if(extra_spaces != 0)
-		{
-			memset(buf, ' ', extra_spaces);
-		}
-
-		assert(get_width_on_screen(buf) == max_col_width && "Column isn't filled.");
+		ellipsed = left_ellipsis(buf, max_col_width, ell);
 		result = AT_RIGHT;
 	}
 
-	if(col->info.cropping == CT_ELLIPSIS)
-	{
-		add_ellipsis(result, buf);
-	}
+	copy_str(buf, buf_len, ellipsed);
+	free(ellipsed);
 
 	return result;
-}
-
-/* Adds ellipsis to the string in buf not changing enlarging its length (at most
- * three first or last characters are replaced). */
-static void
-add_ellipsis(AlignType align, char buf[])
-{
-	const size_t len = get_width_on_screen(buf);
-	const size_t dot_count = MIN(len, MAX_ELLIPSIS_DOT_COUNT);
-	if(align == AT_LEFT)
-	{
-		const size_t width_limit = len - dot_count;
-		const size_t pos = utf8_strsnlen(buf, width_limit);
-		memset(buf + pos, '.', dot_count);
-		buf[pos + dot_count] = '\0';
-	}
-	else
-	{
-		const char *new_beginning = buf;
-		size_t skipped = 0;
-		while(skipped < dot_count)
-		{
-			skipped += utf8_chrsw(new_beginning);
-			new_beginning += utf8_chrw(new_beginning);
-		}
-
-		memmove(buf + dot_count, new_beginning, strlen(new_beginning) + 1);
-		memset(buf, '.', dot_count);
-	}
 }
 
 /* Calculates maximum width for outputting content of the col. */
