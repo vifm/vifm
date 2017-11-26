@@ -1663,6 +1663,8 @@ format_view_title(const view_t *view, path_func pf)
 static void
 print_view_title(const view_t *view, int active_view, char title[])
 {
+	char *ellipsis;
+
 	const size_t title_width = getmaxx(view->title);
 	if(title_width == (size_t)-1)
 	{
@@ -1672,14 +1674,12 @@ print_view_title(const view_t *view, int active_view, char title[])
 	fixup_titles_attributes(view, active_view);
 	werase(view->title);
 
-	if(active_view)
-	{
-		wprint(view->title, left_ellipsis(title, title_width));
-	}
-	else
-	{
-		wprint(view->title, right_ellipsis(title, title_width));
-	}
+	ellipsis = active_view
+	         ? left_ellipsis(title, title_width, curr_stats.ellipsis)
+	         : right_ellipsis(title, title_width, curr_stats.ellipsis);
+
+	wprint(view->title, ellipsis);
+	free(ellipsis);
 }
 
 /* Updates attributes for view titles and top line. */

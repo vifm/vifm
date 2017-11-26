@@ -45,6 +45,10 @@
 	Added {root} key to 'viewcolumns' option (complements {ext}).  Thanks to
 	Oleg Gordienko (a.k.a. gordio).
 
+	Added "u" flag to the 'tuioptions' option.  It enables use of Unicode
+	characters in the TUI (Unicode ellipsis instead of "...").  Thanks to Oleg
+	Gordienko (a.k.a. gordio).
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
@@ -152,6 +156,9 @@
 
 	Fixed losing error message from a short-lived background processes when
 	long-lived one is present.
+
+	Fixed centering title of attributes change dialog (cp normal mode command)
+	for non-ascii file names.
 
 0.9-beta to 0.9
 

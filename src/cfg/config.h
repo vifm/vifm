@@ -232,6 +232,9 @@ typedef struct config_t
 	 * affected). */
 	int side_borders_visible;
 
+	/* Whether employing Unicode characters in the interface is allowed. */
+	int use_unicode_characters;
+
 	/* Whether statusline is visible. */
 	int display_statusline;
 

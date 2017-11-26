@@ -79,6 +79,10 @@ column_info_t;
 /* Registers column print function. */
 void columns_set_line_print_func(column_line_print_func func);
 
+/* Sets string to be used in place of ellipsis.  The argument is used directly,
+ * no copy is made. */
+void columns_set_ellipsis(const char ell[]);
+
 /* Registers column func by its unique column_id.
  * Returns zero on success and non-zero otherwise. */
 int columns_add_column_desc(int column_id, column_func func);

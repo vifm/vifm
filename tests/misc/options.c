@@ -711,5 +711,23 @@ TEST(previewprg_updates_state_of_view)
 			vle_tb_get_data(vle_err));
 }
 
+TEST(tuioptions)
+{
+	assert_success(set_options("tuioptions=", OPT_GLOBAL));
+	assert_false(cfg.extra_padding);
+	assert_false(cfg.side_borders_visible);
+	assert_false(cfg.use_unicode_characters);
+
+	assert_success(set_options("tuioptions=pu", OPT_GLOBAL));
+	assert_true(cfg.extra_padding);
+	assert_false(cfg.side_borders_visible);
+	assert_true(cfg.use_unicode_characters);
+
+	assert_success(set_options("tuioptions+=s", OPT_GLOBAL));
+	assert_true(cfg.extra_padding);
+	assert_true(cfg.side_borders_visible);
+	assert_true(cfg.use_unicode_characters);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

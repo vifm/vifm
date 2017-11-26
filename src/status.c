@@ -152,6 +152,8 @@ load_def_values(status_t *stats, config_t *config)
 	stats->initial_lines = INT_MIN;
 	stats->initial_columns = INT_MIN;
 
+	stats->ellipsis = "...";
+
 	stats->shell_type = ST_NORMAL;
 
 	stats->fuse_umount_cmd = "";

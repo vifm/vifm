@@ -486,27 +486,21 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 		wprintw(menu_win, "%*s", width, "");
 	}
 
-	/* Draw visible part of item. */
-	checked_wmove(menu_win, line, 2);
+	/* Truncate the item to fit the screen if needed. */
 	if(utf8_strsw(item_tail) > (size_t)(width - 2))
 	{
-		void *p;
-		const size_t len = utf8_nstrsnlen(item_tail, width - 3 - 2 + 1);
-		memset(item_tail + len, ' ', strlen(item_tail) - len);
-		p = realloc(item_tail, len + 4);
-		if(p != NULL)
-		{
-			item_tail = p;
-			strcpy(item_tail + len - 1, "...");
-		}
-		wprint(menu_win, item_tail);
+		char *ellipsed = right_ellipsis(item_tail, width - 2, curr_stats.ellipsis);
+		free(item_tail);
+		item_tail = ellipsed;
 	}
 	else
 	{
 		const size_t len = utf8_nstrsnlen(item_tail, width - 2 + 1);
 		item_tail[len] = '\0';
-		wprint(menu_win, item_tail);
 	}
+
+	checked_wmove(menu_win, line, 2);
+	wprint(menu_win, item_tail);
 
 	wattroff(menu_win, attrs);
 
@@ -584,22 +578,18 @@ draw_menu_frame(const menu_state_t *m)
 	                         : replace_home_part(m->d->cwd);
 	const char *const at = (suffix[0] == '\0' ? "" : " @ ");
 	char *const title = format_str("%s%s%s", m->d->title, at, suffix);
-
-	if(utf8_strsw(title) > title_len)
-	{
-		const size_t len = utf8_nstrsnlen(title, title_len - 3);
-		strcpy(title + len, "...");
-	}
+	char *const ellipsed = right_ellipsis(title, title_len, curr_stats.ellipsis);
+	free(title);
 
 	box(menu_win, 0, 0);
 	wattron(menu_win, A_BOLD);
 	checked_wmove(menu_win, 0, 3);
 	wprint(menu_win, " ");
-	wprint(menu_win, title);
+	wprint(menu_win, ellipsed);
 	wprint(menu_win, " ");
 	wattroff(menu_win, A_BOLD);
 
-	free(title);
+	free(ellipsed);
 }
 
 /* Implements process_cmd_output() callback that loads lines to a menu. */

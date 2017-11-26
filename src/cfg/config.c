@@ -185,6 +185,7 @@ cfg_init(void)
 
 	cfg.extra_padding = 1;
 	cfg.side_borders_visible = 1;
+	cfg.use_unicode_characters = 0;
 	cfg.display_statusline = 1;
 
 	cfg.border_filler = strdup(" ");

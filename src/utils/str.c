@@ -42,6 +42,8 @@ static int transform_ascii_str(const char str[], int (*f)(int), char buf[],
 static int transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 		size_t buf_len);
 TSTATIC void squash_double_commas(char str[]);
+static char * ellipsis(const char str[], size_t max_width, const char ell[],
+		int right);
 
 void
 chomp(char str[])
@@ -526,70 +528,59 @@ stralign(char str[], size_t width, char pad, int left_align)
 }
 
 char *
-left_ellipsis(char str[], size_t max_width)
+left_ellipsis(const char str[], size_t max_width, const char ell[])
 {
-	size_t width;
-	size_t len;
-	const char *tail;
-
-	if(max_width == 0U)
-	{
-		return NULL;
-	}
-
-	width = utf8_strsw(str);
-	if(width <= max_width)
-	{
-		return str;
-	}
-
-	len = strlen(str);
-	if(max_width <= 3U)
-	{
-		copy_str(str, len + 1U, "...");
-		str[max_width] = '\0';
-		return str;
-	}
-
-	tail = str;
-	while(width > max_width - 3U)
-	{
-		width -= utf8_chrsw(tail);
-		tail += utf8_chrw(tail);
-	}
-	strcpy(str, "...");
-	memmove(str + 3U, tail, len - (tail - str) + 1U);
-
-	return str;
+	return ellipsis(str, max_width, ell, 0);
 }
 
 char *
-right_ellipsis(char str[], size_t max_width)
+right_ellipsis(const char str[], size_t max_width, const char ell[])
 {
-	size_t width;
-	size_t prefix;
+	return ellipsis(str, max_width, ell, 1);
+}
+
+/* Ensures that str is of width (in character positions) less than or equal to
+ * max_width and is aligned appropriately putting ellipsis on one of the ends if
+ * needed.  Returns newly allocated modified string. */
+static char *
+ellipsis(const char str[], size_t max_width, const char ell[], int right)
+{
+	size_t ell_width, width;
 
 	if(max_width == 0U)
 	{
-		return NULL;
+		/* No room to print anything. */
+		return strdup("");
 	}
 
 	width = utf8_strsw(str);
 	if(width <= max_width)
 	{
-		return str;
+		/* No need to change the string. */
+		return strdup(str);
 	}
 
-	if(max_width <= 3U)
+	ell_width = utf8_strsw(ell);
+	if(max_width <= ell_width)
 	{
-		copy_str(str, strlen(str) + 1U, "...");
-		str[max_width] = '\0';
-		return str;
+		/* Insert as many characters as we can. */
+		const int prefix = (int)utf8_nstrsnlen(ell, max_width);
+		return format_str("%.*s", prefix, ell);
 	}
 
-	prefix = utf8_nstrsnlen(str, max_width - 3U);
-	strcpy(&str[prefix], "...");
-	return str;
+	if(right)
+	{
+		const int prefix = utf8_nstrsnlen(str, max_width - ell_width);
+		return format_str("%.*s%s", prefix, str, ell);
+	}
+
+	while(width > max_width - ell_width)
+	{
+		width -= utf8_chrsw(str);
+		str += utf8_chrw(str);
+	}
+
+	return format_str("%s%s", ell, str);
 }
 
 char *

@@ -31,6 +31,7 @@
 #include "../utils/fs.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../marks.h"
@@ -70,8 +71,8 @@ show_marks_menu(view_t *view, const char marks[])
 	i = 0;
 	while(i < m.len)
 	{
-		char item_buf[PATH_MAX];
-		char *with_tilde;
+		char item_buf[PATH_MAX + 1];
+		char *display_path;
 		int overhead;
 		const mark_t *mark;
 		const char *file;
@@ -79,13 +80,6 @@ show_marks_menu(view_t *view, const char marks[])
 		const int mn = active_marks[i];
 
 		mark = get_mark(mn);
-
-		with_tilde = replace_home_part(mark->directory);
-		if(utf8_strsw(with_tilde) > max_len - 3)
-		{
-			size_t width = utf8_nstrsnlen(with_tilde, max_len - 6);
-			strcpy(with_tilde + width, "...");
-		}
 
 		if(!is_valid_mark(mn))
 		{
@@ -97,7 +91,7 @@ show_marks_menu(view_t *view, const char marks[])
 		}
 		else
 		{
-			char path[PATH_MAX];
+			char path[PATH_MAX + 1];
 
 			file = mark->file;
 
@@ -108,9 +102,12 @@ show_marks_menu(view_t *view, const char marks[])
 			}
 		}
 
-		overhead = utf8_strso(with_tilde);
+		display_path = right_ellipsis(replace_home_part(mark->directory),
+				max_len - 3, curr_stats.ellipsis);
+		overhead = utf8_strso(display_path);
 		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(mn),
-				(int)(max_len + overhead), with_tilde, file, suffix);
+				(int)(max_len + overhead), display_path, file, suffix);
+		free(display_path);
 
 		i = add_to_string_array(&m.items, i, 1, item_buf);
 	}

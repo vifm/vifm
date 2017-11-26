@@ -41,7 +41,9 @@
 #include "../../utils/fs.h"
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
+#include "../../utils/str.h"
 #include "../../utils/test_helpers.h"
+#include "../../utils/utf8.h"
 #include "../../filelist.h"
 #include "../../flist_sel.h"
 #include "../../ops.h"
@@ -51,7 +53,7 @@
 #include "../wk.h"
 #include "msg_dialog.h"
 
-static const char * get_title(void);
+static char * get_title(int max_width);
 static int is_one_file_selected(int first_file_index);
 static int get_first_file_index(void);
 static int get_selection_size(int first_file_index);
@@ -211,10 +213,8 @@ enter_attr_mode(view_t *active_view)
 void
 redraw_attr_dialog(void)
 {
-	const char *title;
+	char *title;
 	int x, y;
-	size_t title_len;
-	int need_ellipsis;
 
 	werase(change_win);
 	if(file_is_dir)
@@ -277,47 +277,32 @@ redraw_attr_dialog(void)
 	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);
 	box(change_win, 0, 0);
 
-	x = getmaxx(change_win);
-	title = get_title();
-	title_len = strlen(title);
-	need_ellipsis = (title_len > (size_t)x - 2);
-
-	if(need_ellipsis)
-	{
-		x -= 3;
-		title_len = x;
-	}
-	mvwaddnstr(change_win, 0, (getmaxx(change_win) - title_len)/2, title, x - 2);
-	if(need_ellipsis)
-	{
-		waddstr(change_win, "...");
-	}
+	title = get_title(getmaxx(change_win) - 2);
+	mvwaddstr(change_win, 0, (getmaxx(change_win) - utf8_strsw(title))/2, title);
+	free(title);
 
 	checked_wmove(change_win, curr, col);
 	curs_set(1);
 	wrefresh(change_win);
 }
 
-/* Gets title of the permissions dialog.  Returns pointer to a temporary string
- * of file name in the view or to a statically allocated string. */
-static const char *
-get_title(void)
+/* Composes title for the dialog.  Returns pointer to a newly allocated
+ * string. */
+static char *
+get_title(int max_width)
 {
-	static char title[NAME_MAX + 1];
-
+	char *ellipsed, *title;
 	const int first_file_index = get_first_file_index();
 
-	if(is_one_file_selected(first_file_index))
+	if(!is_one_file_selected(first_file_index))
 	{
-		snprintf(title, sizeof(title), " %s ",
-				view->dir_entry[first_file_index].name);
-	}
-	else
-	{
-		snprintf(title, sizeof(title), " %d files ",
-				get_selection_size(first_file_index));
+		return format_str(" %d files ", get_selection_size(first_file_index));
 	}
 
+	ellipsed = right_ellipsis(view->dir_entry[first_file_index].name,
+			max_width - 2, curr_stats.ellipsis);
+	title = format_str(" %s ", ellipsed);
+	free(ellipsed);
 	return title;
 }
 

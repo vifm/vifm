@@ -154,6 +154,22 @@ TEST(add_ellipsis_ok, IF(locale_works))
 	assert_string_equal(expected, print_buffer);
 }
 
+TEST(wide_ellipsis_work, IF(locale_works))
+{
+	static column_info_t column_infos[2] = {
+		{ .column_id = COL1_ID, .full_width = 10UL,    .text_width = 10UL,
+		  .align = AT_LEFT,     .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS, },
+		{ .column_id = COL2_ID, .full_width = 10UL,    .text_width = 10UL,
+		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS, },
+	};
+	static const char expected[] = "师从螺丝… …зжёедгв推";
+
+	columns_set_ellipsis("…");
+	perform_test(column_infos, 2, MAX_WIDTH);
+
+	assert_string_equal(expected, print_buffer);
+}
+
 TEST(filling, IF(locale_works))
 {
 	static column_info_t column_infos[1] = {

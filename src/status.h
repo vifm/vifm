@@ -170,6 +170,8 @@ typedef struct
 	int initial_lines;   /* Initial terminal height in lines. */
 	int initial_columns; /* Initial terminal width in characters. */
 
+	const char *ellipsis; /* String representation of ellipsis. */
+
 	ShellType shell_type; /* Specifies type of shell. */
 
 	const char *fuse_umount_cmd; /* Command to use for fuse unmounting. */

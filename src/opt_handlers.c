@@ -323,15 +323,16 @@ static const char *iooptions_vals[][2] = {
 /* Possible flags of 'shortmess' and their count. */
 static const char *shortmess_vals[][2] = {
 	{ "Tp", "all shortmess values" },
-	{ "T", "shorten too long status bar messages" },
-	{ "p", "substitute home path with ~ in view title" },
+	{ "T",  "shorten too long status bar messages" },
+	{ "p",  "substitute home path with ~ in view title" },
 };
 
 /* Possible flags of 'tuioptions' and their count. */
 static const char *tuioptions_vals[][2] = {
-	{ "ps", "all tuioptions values" },
-	{ "p",  "use padding in views and preview" },
-	{ "s",  "display side borders" },
+	{ "psu", "all tuioptions values" },
+	{ "p",   "use padding in views and preview" },
+	{ "s",   "display side borders" },
+	{ "u",   "use Unicode characters in the TUI" },
 };
 
 /* Possible values of 'dirsize' option. */
@@ -1119,9 +1120,10 @@ static void
 init_tuioptions(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s%s",
+	snprintf(buf, sizeof(buf), "%s%s%s",
 			cfg.extra_padding ? "p" : "",
-			cfg.side_borders_visible ? "s" : "");
+			cfg.side_borders_visible ? "s" : "",
+			cfg.use_unicode_characters ? "u" : "");
 	val->str_val = buf;
 }
 
@@ -3134,6 +3136,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	/* Turn all flags off. */
 	cfg.extra_padding = 0;
 	cfg.side_borders_visible = 0;
+	cfg.use_unicode_characters = 0;
 
 	/* And set the ones present in the value. */
 	p = val.str_val;
@@ -3147,6 +3150,9 @@ tuioptions_handler(OPT_OP op, optval_t val)
 			case 's':
 				cfg.side_borders_visible = 1;
 				break;
+			case 'u':
+				cfg.use_unicode_characters = 1;
+				break;
 
 			default:
 				assert(0 && "Unhandled tuioptions flag.");
@@ -3154,6 +3160,9 @@ tuioptions_handler(OPT_OP op, optval_t val)
 		}
 		++p;
 	}
+
+	curr_stats.ellipsis = (cfg.use_unicode_characters ? "…" : "...");
+	columns_set_ellipsis(curr_stats.ellipsis);
 
 	curr_stats.need_update = UT_REDRAW;
 }
