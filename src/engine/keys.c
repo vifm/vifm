@@ -1258,7 +1258,7 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 	}
 }
 
-/* Visit every child of the tree and calls cb with param on it. */
+/* Visits every child of the tree and calls cb with param on it. */
 static void
 traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 		traverse_func cb, void *param)
