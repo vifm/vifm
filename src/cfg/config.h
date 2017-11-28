@@ -69,7 +69,8 @@ typedef enum
 	SF_KEYS              = 1 << 5, /* Include keys suggestions in results. */
 	SF_MARKS             = 1 << 6, /* Include marks suggestions in results. */
 	SF_REGISTERS         = 1 << 7, /* Include registers suggestions in results. */
-	NUM_SUGGESTION_FLAGS =      8  /* Number of flags. */
+	SF_FOLDSUBKEYS       = 1 << 8, /* Fold multiple keys with common prefix. */
+	NUM_SUGGESTION_FLAGS =      9  /* Number of flags. */
 }
 SuggestionFlags;
 

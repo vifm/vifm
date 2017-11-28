@@ -304,14 +304,15 @@ static const char *lsoptions_enum[][2] = {
 
 /* Possible values of 'suggestoptions'. */
 static const char *suggestoptions_vals[][2] = {
-	{ "normal",    "display in normal mode" },
-	{ "visual",    "display in visual mode" },
-	{ "view",      "display in view mode" },
-	{ "otherpane", "use other pane for suggestions, if available" },
-	{ "delay",     "display suggestions after a short delay" },
-	{ "keys",      "include keys suggestions in results" },
-	{ "marks",     "include marks suggestions in results" },
-	{ "registers", "include registers suggestions in results" },
+	{ "normal",      "display in normal mode" },
+	{ "visual",      "display in visual mode" },
+	{ "view",        "display in view mode" },
+	{ "otherpane",   "use other pane for suggestions, if available" },
+	{ "delay",       "display suggestions after a short delay" },
+	{ "keys",        "include keys suggestions in results" },
+	{ "foldsubkeys", "fold multiple keys with common prefix" },
+	{ "marks",       "include marks suggestions in results" },
+	{ "registers",   "include registers suggestions in results" },
 };
 ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 
@@ -2923,12 +2924,13 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
-		if(strcmp(part, "normal") == 0)         new_value |= SF_NORMAL;
-		else if(strcmp(part, "visual") == 0)    new_value |= SF_VISUAL;
-		else if(strcmp(part, "view") == 0)      new_value |= SF_VIEW;
-		else if(strcmp(part, "otherpane") == 0) new_value |= SF_OTHERPANE;
-		else if(strcmp(part, "keys") == 0)      new_value |= SF_KEYS;
-		else if(strcmp(part, "marks") == 0)     new_value |= SF_MARKS;
+		if(strcmp(part, "normal") == 0)           new_value |= SF_NORMAL;
+		else if(strcmp(part, "visual") == 0)      new_value |= SF_VISUAL;
+		else if(strcmp(part, "view") == 0)        new_value |= SF_VIEW;
+		else if(strcmp(part, "otherpane") == 0)   new_value |= SF_OTHERPANE;
+		else if(strcmp(part, "keys") == 0)        new_value |= SF_KEYS;
+		else if(strcmp(part, "marks") == 0)       new_value |= SF_MARKS;
+		else if(strcmp(part, "foldsubkeys") == 0) new_value |= SF_FOLDSUBKEYS;
 		else if(starts_with_lit(part, "delay:"))
 		{
 			const char *const num = after_first(part, ':');
@@ -3012,6 +3014,10 @@ reset_suggestoptions(void)
 	if(cfg.sug.flags & SF_OTHERPANE) vle_tb_appendf(descr, "%s", "otherpane,");
 	if(cfg.sug.flags & SF_KEYS)      vle_tb_appendf(descr, "%s", "keys,");
 	if(cfg.sug.flags & SF_MARKS)     vle_tb_appendf(descr, "%s", "marks,");
+	if(cfg.sug.flags & SF_FOLDSUBKEYS)
+	{
+		vle_tb_appendf(descr, "%s", "foldsubkeys,");
+	}
 	if(cfg.sug.flags & SF_DELAY)
 	{
 		if(cfg.sug.delay == 500)

@@ -49,6 +49,10 @@
 	characters in the TUI (Unicode ellipsis instead of "...").  Thanks to Oleg
 	Gordienko (a.k.a. gordio).
 
+	Added "foldsubkeys" value to the 'suggestoptions' option.  It folds
+	multiple suggestions with common prefix into one entry.  Thanks to
+	AndreaHasani.
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 
