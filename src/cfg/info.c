@@ -1087,6 +1087,8 @@ write_options(FILE *const fp)
 		fprintf(fp, "%s", "otherpane,");
 	if(cfg.sug.flags & SF_KEYS)
 		fprintf(fp, "%s", "keys,");
+	if(cfg.sug.flags & SF_FOLDSUBKEYS)
+		fprintf(fp, "%s", "foldsubkeys,");
 	if(cfg.sug.flags & SF_MARKS)
 		fprintf(fp, "%s", "marks,");
 	if(cfg.sug.flags & SF_DELAY)

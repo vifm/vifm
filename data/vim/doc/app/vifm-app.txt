@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 25
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 28
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3499,6 +3499,7 @@ values are available:
                      multiple keys), num specifies the delay in ms (500 by
                      default), |vifm-'timeoutlen'| at most;
  - keys            - include shortcuts (commands and selectors);
+ - foldsubkeys     - fold multiple keys with common prefix;
  - marks           - include marks;
  - registers[:num] - include registers, at most num files (5 by default).
 

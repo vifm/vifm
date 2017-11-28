@@ -25,39 +25,53 @@ SETUP()
 	descr = NULL;
 }
 
-TEST(all_keys_are_listed_no_selectors)
+TEST(all_keys_are_listed_no_selectors_no_folding)
 {
-	vle_keys_suggest(L"", &process_suggestion, 0);
+	vle_keys_suggest(L"", &process_suggestion, 0, 0);
 	assert_int_equal(22, nsuggestions);
 }
 
-TEST(user_keys_with_prefix_are_listed)
+TEST(all_keys_are_listed_no_selectors_folding)
 {
-	vle_keys_suggest(L"h", &process_suggestion, 0);
+	vle_keys_suggest(L"", &process_suggestion, 0, 1);
+	assert_int_equal(16, nsuggestions);
+}
+
+TEST(user_keys_with_prefix_are_listed_no_folding)
+{
+	vle_keys_suggest(L"h", &process_suggestion, 0, 0);
+	assert_int_equal(4, nsuggestions);
+}
+
+TEST(user_keys_with_prefix_are_listed_folding)
+{
+	vle_keys_user_add(L"ha3", L"a", NORMAL_MODE, 0);
+
+	vle_keys_suggest(L"h", &process_suggestion, 0, 1);
 	assert_int_equal(4, nsuggestions);
 }
 
 TEST(builtin_keys_with_prefix_are_listed)
 {
-	vle_keys_suggest(L"g", &process_suggestion, 0);
+	vle_keys_suggest(L"g", &process_suggestion, 0, 0);
 	assert_int_equal(3, nsuggestions);
 }
 
 TEST(selectors_are_completed_from_beginning)
 {
-	vle_keys_suggest(L"d", &process_suggestion, 0);
+	vle_keys_suggest(L"d", &process_suggestion, 0, 0);
 	assert_int_equal(7, nsuggestions);
 }
 
 TEST(selectors_are_completed_with_prefix)
 {
-	vle_keys_suggest(L"dg", &process_suggestion, 0);
+	vle_keys_suggest(L"dg", &process_suggestion, 0, 0);
 	assert_int_equal(1, nsuggestions);
 }
 
 TEST(descr_of_user_defined_keys_is_rhs)
 {
-	vle_keys_suggest(L"ha", &process_suggestion, 0);
+	vle_keys_suggest(L"ha", &process_suggestion, 0, 0);
 	assert_int_equal(1, nsuggestions);
 	assert_int_equal(0, wcscmp(rhs, L"ho"));
 	assert_string_equal("", descr);
@@ -65,16 +79,16 @@ TEST(descr_of_user_defined_keys_is_rhs)
 
 TEST(custom_suggestions)
 {
-	vle_keys_suggest(L"m", &process_suggestion, 0);
+	vle_keys_suggest(L"m", &process_suggestion, 0, 0);
 	assert_int_equal(2, nsuggestions);
 }
 
 TEST(only_custom_suggestions)
 {
-	vle_keys_suggest(L"", &process_suggestion, 1);
+	vle_keys_suggest(L"", &process_suggestion, 1, 0);
 	assert_int_equal(0, nsuggestions);
 
-	vle_keys_suggest(L"m", &process_suggestion, 1);
+	vle_keys_suggest(L"m", &process_suggestion, 1, 0);
 	assert_int_equal(2, nsuggestions);
 }
 

@@ -312,10 +312,10 @@ TEST(suggestoptions_all_values)
 	cfg.sug.delay = 0;
 
 	assert_success(exec_commands("set suggestoptions=normal,visual,view,otherpane"
-				",delay,keys,marks,registers", &lwin, CIT_COMMAND));
+				",delay,keys,marks,registers,foldsubkeys", &lwin, CIT_COMMAND));
 
 	assert_int_equal(SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
-			SF_KEYS | SF_MARKS | SF_REGISTERS, cfg.sug.flags);
+			SF_KEYS | SF_MARKS | SF_REGISTERS | SF_FOLDSUBKEYS, cfg.sug.flags);
 	assert_int_equal(5, cfg.sug.maxregfiles);
 	assert_int_equal(500, cfg.sug.delay);
 }
@@ -352,7 +352,7 @@ TEST(suggestoptions_empty_value)
 TEST(suggestoptions_registers_number)
 {
 	cfg.sug.flags = SF_NORMAL | SF_VISUAL | SF_VIEW | SF_OTHERPANE | SF_DELAY |
-					SF_KEYS | SF_MARKS | SF_REGISTERS;
+					SF_KEYS | SF_MARKS | SF_REGISTERS | SF_FOLDSUBKEYS;
 	cfg.sug.maxregfiles = 4;
 
 	assert_failure(exec_commands("set suggestoptions=registers:-4", &lwin,

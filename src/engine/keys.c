@@ -128,7 +128,10 @@ static int execute_mapping_handler(const key_conf_t *const info,
 static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
 static void post_execute_mapping_handler(const keys_info_t *const keys_info);
 static void keys_suggest(const key_chunk_t *root, const wchar_t keys[],
-		const wchar_t prefix[], vle_keys_list_cb cb, int custom_only);
+		const wchar_t prefix[], vle_keys_list_cb cb, int custom_only,
+		int fold_subkeys);
+static void suggest_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		vle_keys_list_cb cb, int fold_subkeys);
 static void traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 		traverse_func cb, void *param);
 static void suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
@@ -1152,19 +1155,21 @@ post_execute_mapping_handler(const keys_info_t *const keys_info)
 }
 
 void
-vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb, int custom_only)
+vle_keys_suggest(const wchar_t keys[], vle_keys_list_cb cb, int custom_only,
+		int fold_subkeys)
 {
 	keys_suggest(&user_cmds_root[vle_mode_get()], keys, L"key: ", cb,
-			custom_only);
+			custom_only, fold_subkeys);
 	keys_suggest(&builtin_cmds_root[vle_mode_get()], keys, L"key: ", cb,
-			custom_only);
+			custom_only, fold_subkeys);
 }
 
 /* Looks up possible continuations of keys for the given root and calls cb on
  * them. */
 static void
 keys_suggest(const key_chunk_t *root, const wchar_t keys[],
-		const wchar_t prefix[], vle_keys_list_cb cb, int custom_only)
+		const wchar_t prefix[], vle_keys_list_cb cb, int custom_only,
+		int fold_subkeys)
 {
 	const key_chunk_t *curr = root;
 
@@ -1231,12 +1236,7 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 
 	if(!custom_only && *keys == L'\0')
 	{
-		/* Suggest all children. */
-		const key_chunk_t *child;
-		for(child = curr->child; child != NULL; child = child->next)
-		{
-			traverse_children(child, prefix, &suggest_chunk, cb);
-		}
+		suggest_children(curr, prefix, cb, fold_subkeys);
 	}
 
 	if(curr->type == BUILTIN_WAIT_POINT)
@@ -1245,7 +1245,7 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 		{
 			/* Suggest selectors. */
 			keys_suggest(&selectors_root[vle_mode_get()], keys, L"sel: ", cb,
-					custom_only);
+					custom_only, fold_subkeys);
 		}
 		else if(curr->conf.followed == FOLLOWED_BY_MULTIKEY)
 		{
@@ -1258,7 +1258,36 @@ keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 	}
 }
 
-/* Visit every child of the tree and calls cb with param on it. */
+/* Suggests children of the specified chunk. */
+static void
+suggest_children(const key_chunk_t *chunk, const wchar_t prefix[],
+		vle_keys_list_cb cb, int fold_subkeys)
+{
+	const key_chunk_t *child;
+
+	const size_t prefix_len = wcslen(prefix);
+	wchar_t item[prefix_len + 1U + 1U];
+	wcscpy(item, prefix);
+	item[prefix_len + 1U] = L'\0';
+
+	for(child = chunk->child; child != NULL; child = child->next)
+	{
+		if(!fold_subkeys || child->children_count <= 1)
+		{
+			traverse_children(child, prefix, &suggest_chunk, cb);
+		}
+		else
+		{
+			char msg[64];
+			snprintf(msg, sizeof(msg), "{ %d mappings folded }",
+					(int)child->children_count);
+			item[prefix_len] = child->key;
+			cb(item, L"", msg);
+		}
+	}
+}
+
+/* Visits every child of the tree and calls cb with param on it. */
 static void
 traverse_children(const key_chunk_t *chunk, const wchar_t prefix[],
 		traverse_func cb, void *param)
