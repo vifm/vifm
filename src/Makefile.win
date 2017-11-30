@@ -37,7 +37,7 @@ LDFLAGS := -pthread
 DIRS := ./ compat/ cfg/ engine/ int/ io/ io/private/ menus/ modes/
 DIRS += modes/dialogs/ ui/ utils/
 
-cfg := config.c hist.c info.c
+cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
 compat := curses.c dtype.c getopt.c getopt1.c os.c pthread.c reallocarray.c
@@ -75,9 +75,9 @@ ui += fileview.c statusbar.c statusline.c quickview.c ui.c
 ui := $(addprefix ui/, $(ui))
 
 utilities := cancellation.c dynarray.c env.c file_streams.c filemon.c filter.c \
-             fs.c fsdata.c fsddata.c fswatch_win.c globs.c int_stack.c log.c \
-             matcher.c matchers.c path.c regexp.c str.c string_array.c trie.c \
-             utf8.c utils.c utils_win.c
+             fs.c fsdata.c fsddata.c fswatch_win.c globs.c hist.c int_stack.c \
+             log.c matcher.c matchers.c path.c regexp.c str.c string_array.c \
+             trie.c utf8.c utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \

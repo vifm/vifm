@@ -38,7 +38,6 @@
 #include <wchar.h> /* wcslen() wcsncmp() */
 
 #include "cfg/config.h"
-#include "cfg/hist.h"
 #include "cfg/info.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
@@ -72,6 +71,7 @@
 #include "utils/env.h"
 #include "utils/filter.h"
 #include "utils/fs.h"
+#include "utils/hist.h"
 #include "utils/log.h"
 #include "utils/matcher.h"
 #include "utils/matchers.h"

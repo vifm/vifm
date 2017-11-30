@@ -22,10 +22,10 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
-#include "../cfg/hist.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../utils/string_array.h"
 #include "../cmd_core.h"
 #include "menus.h"

@@ -31,7 +31,6 @@
 #include <wctype.h> /* iswprint() */
 
 #include "../cfg/config.h"
-#include "../cfg/hist.h"
 #include "../compat/curses.h"
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
@@ -48,6 +47,7 @@
 #include "../ui/statusbar.h"
 #include "../ui/statusline.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../utils/macros.h"
 #include "../utils/matcher.h"
 #include "../utils/path.h"

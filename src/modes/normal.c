@@ -35,7 +35,6 @@
 #include <wchar.h> /* wcscpy() */
 
 #include "../cfg/config.h"
-#include "../cfg/hist.h"
 #include "../compat/curses.h"
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
@@ -48,6 +47,7 @@
 #include "../ui/quickview.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"

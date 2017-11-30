@@ -25,8 +25,8 @@
 #include "../compat/fs_limits.h"
 #include "../ui/color_scheme.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../types.h"
-#include "hist.h"
 
 /* Name of help file in plain text format. */
 #define VIFM_HELP "vifm-help.txt"

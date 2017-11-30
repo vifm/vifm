@@ -3,8 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <wchar.h> /* wcsdup() */
 
-#include "../../src/cfg/hist.h"
 #include "../../src/modes/cmdline.h"
+#include "../../src/utils/hist.h"
 
 static line_stats_t stats;
 

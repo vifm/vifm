@@ -34,7 +34,6 @@
 #include <string.h> /* strcmp() strcpy() strlen() */
 
 #include "cfg/config.h"
-#include "cfg/hist.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/autocmds.h"
@@ -58,6 +57,7 @@
 #include "utils/file_streams.h"
 #include "utils/filter.h"
 #include "utils/fs.h"
+#include "utils/hist.h"
 #include "utils/int_stack.h"
 #include "utils/path.h"
 #include "utils/str.h"

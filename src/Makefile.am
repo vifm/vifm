@@ -86,7 +86,6 @@ dist_docs_DATA = $(docsfile)
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
-	cfg/hist.c cfg/hist.h \
 	cfg/info.c cfg/info.h \
 	cfg/info_chars.h \
 	\
@@ -198,6 +197,7 @@ vifm_SOURCES = \
 	utils/fsddata.c utils/fsddata.h \
 	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \
+	utils/hist.c utils/hist.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \

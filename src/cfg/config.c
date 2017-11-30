@@ -51,6 +51,7 @@
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
+#include "../utils/hist.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/path.h"
@@ -63,7 +64,6 @@
 #include "../status.h"
 #include "../types.h"
 #include "../vifm.h"
-#include "hist.h"
 
 /* Maximum supported by the implementation length of line in vifmrc file. */
 #define MAX_VIFMRC_LINE_LEN 4*1024

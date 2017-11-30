@@ -38,6 +38,7 @@
 #include "../utils/filemon.h"
 #include "../utils/filter.h"
 #include "../utils/fs.h"
+#include "../utils/hist.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../utils/matcher.h"
@@ -59,7 +60,6 @@
 #include "../status.h"
 #include "../trash.h"
 #include "config.h"
-#include "hist.h"
 #include "info_chars.h"
 
 static void get_sort_info(view_t *view, const char line[]);

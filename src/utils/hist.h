@@ -16,8 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef VIFM__CFG__HISTORY_H__
-#define VIFM__CFG__HISTORY_H__
+#ifndef VIFM__UTILS__HIST_H__
+#define VIFM__UTILS__HIST_H__
+
+/* Generic implementation of history represented as list of strings. */
 
 #include <stddef.h> /* size_t */
 
@@ -58,7 +60,7 @@ int hist_contains(const hist_t *hist, const char item[]);
  * when item is added/moved or rejected, on failure non-zero is returned. */
 int hist_add(hist_t *hist, const char item[], size_t size);
 
-#endif /* VIFM__CFG__HISTORY_H__ */
+#endif /* VIFM__UTILS__HIST_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -26,7 +26,6 @@
 #include <string.h>
 
 #include "../cfg/config.h"
-#include "../cfg/hist.h"
 #include "../compat/curses.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
@@ -34,6 +33,7 @@
 #include "../ui/fileview.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
