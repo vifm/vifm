@@ -32,7 +32,7 @@
 static void navigate_to_history_pos(view_t *view, int pos);
 static int find_in_hist(const view_t *view, const view_t *source, int *pos,
 		int *rel_pos);
-static history_t *find_hist_entry(const view_t *view, const char dir[]);
+static history_t * find_hist_entry(const view_t *view, const char dir[]);
 
 void
 flist_hist_go_back(view_t *view)
