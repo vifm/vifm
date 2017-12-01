@@ -41,7 +41,6 @@
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
-#include "../compat/reallocarray.h"
 #include "../int/term_title.h"
 #include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -103,11 +102,6 @@ static void copy_rc_file(void);
 static void add_default_marks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
-static void free_view_history(view_t *view);
-static void decrease_history(size_t new_size, size_t removed_count);
-static void reduce_view_history(view_t *view, int new_size);
-static void reallocate_history(size_t new_size);
-static void zero_new_history_items(size_t old_size, size_t delta);
 
 void
 cfg_init(void)
@@ -835,101 +829,18 @@ void
 cfg_resize_histories(int new_size)
 {
 	const int old_size = MAX(cfg.history_len, 0);
-	const int delta = new_size - old_size;
 
 	hists_resize(new_size);
-
-	if(new_size <= 0)
-	{
-		free_view_history(&lwin);
-		free_view_history(&rwin);
-
-		cfg.history_len = 0;
-		return;
-	}
-
-	if(delta < 0)
-	{
-		decrease_history(new_size, -delta);
-	}
-
-	reallocate_history(new_size);
-
-	if(delta > 0)
-	{
-		zero_new_history_items(old_size, delta);
-	}
+	flist_hist_resize(&lwin, new_size);
+	flist_hist_resize(&rwin, new_size);
 
 	cfg.history_len = new_size;
 
-	if(old_size == 0)
+	if(old_size == 0 && new_size > 0)
 	{
 		flist_hist_save(&lwin, NULL, NULL, -1);
 		flist_hist_save(&rwin, NULL, NULL, -1);
 	}
-}
-
-/* Clears and frees directory history of the view. */
-static void
-free_view_history(view_t *view)
-{
-	cfg_free_history_items(view->history, view->history_num);
-	free(view->history);
-	view->history = NULL;
-
-	view->history_num = 0;
-	view->history_pos = 0;
-}
-
-/* Reduces amount of memory taken by the history.  The new_size specifies new
- * size of the history, while removed_count parameter designates number of
- * removed elements. */
-static void
-decrease_history(size_t new_size, size_t removed_count)
-{
-	reduce_view_history(&lwin, (int)new_size);
-	reduce_view_history(&rwin, (int)new_size);
-}
-
-/* Moves items of directory history when size of history becomes smaller. */
-static void
-reduce_view_history(view_t *view, int new_size)
-{
-	const int delta = MIN(view->history_num - new_size, view->history_pos);
-	if(delta <= 0)
-	{
-		return;
-	}
-
-	cfg_free_history_items(view->history, MIN(new_size, delta));
-	memmove(view->history, view->history + delta,
-			sizeof(history_t)*(view->history_num - delta));
-
-	if(view->history_num > new_size)
-	{
-		view->history_num = new_size;
-	}
-	view->history_pos -= delta;
-}
-
-/* Reallocates memory taken by history elements.  The new_size specifies new
- * size of the history. */
-static void
-reallocate_history(size_t new_size)
-{
-	lwin.history = reallocarray(lwin.history, new_size, sizeof(history_t));
-	rwin.history = reallocarray(rwin.history, new_size, sizeof(history_t));
-}
-
-/* Zeroes new elements of the history.  The old_size specifies old history size,
- * while delta parameter designates number of new elements. */
-static void
-zero_new_history_items(size_t old_size, size_t delta)
-{
-	const size_t hist_item_len = sizeof(history_t)*delta;
-
-	memset(lwin.history + old_size, 0, hist_item_len);
-	memset(rwin.history + old_size, 0, hist_item_len);
 }
 
 int

@@ -31,6 +31,9 @@ void flist_hist_go_back(view_t *view);
  * available. */
 void flist_hist_go_forward(view_t *view);
 
+/* Changes size of the history.  Zero or negative value disables it. */
+void flist_hist_resize(view_t *view, int new_size);
+
 /* Adds new entry to directory history of the view or updates an existing entry.
  * If path is NULL, current path is used.  If file is NULL current file is used.
  * rel_pos specifies position of file relative to top of the view.  If rel_pos
