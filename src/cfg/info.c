@@ -285,19 +285,23 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			append_to_history(&cfg.cmd_hist, cfg_save_command_history, line_val);
+			append_to_history(&curr_stats.cmd_hist, cfg_save_command_history,
+					line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			append_to_history(&cfg.search_hist, cfg_save_search_history, line_val);
+			append_to_history(&curr_stats.search_hist, cfg_save_search_history,
+					line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			append_to_history(&cfg.prompt_hist, cfg_save_prompt_history, line_val);
+			append_to_history(&curr_stats.prompt_hist, cfg_save_prompt_history,
+					line_val);
 		}
 		else if(type == LINE_TYPE_FILTER_HIST)
 		{
-			append_to_history(&cfg.filter_hist, cfg_save_filter_history, line_val);
+			append_to_history(&curr_stats.filter_hist, cfg_save_filter_history,
+					line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
@@ -751,28 +755,28 @@ update_info_file(const char filename[], int merge)
 			}
 			else if(type == LINE_TYPE_CMDLINE_HIST)
 			{
-				if(!hist_contains(&cfg.cmd_hist, line_val))
+				if(!hist_contains(&curr_stats.cmd_hist, line_val))
 				{
 					ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
 				}
 			}
 			else if(type == LINE_TYPE_SEARCH_HIST)
 			{
-				if(!hist_contains(&cfg.search_hist, line_val))
+				if(!hist_contains(&curr_stats.search_hist, line_val))
 				{
 					nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
 				}
 			}
 			else if(type == LINE_TYPE_PROMPT_HIST)
 			{
-				if(!hist_contains(&cfg.prompt_hist, line_val))
+				if(!hist_contains(&curr_stats.prompt_hist, line_val))
 				{
 					nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
 				}
 			}
 			else if(type == LINE_TYPE_FILTER_HIST)
 			{
-				if(!hist_contains(&cfg.filter_hist, line_val))
+				if(!hist_contains(&curr_stats.filter_hist, line_val))
 				{
 					nfilter = add_to_string_array(&filter, nfilter, 1, line_val);
 				}
@@ -855,25 +859,26 @@ update_info_file(const char filename[], int merge)
 		if(cfg.vifm_info & VIFMINFO_CHISTORY)
 		{
 			write_history(fp, "Command line", LINE_TYPE_CMDLINE_HIST,
-					MIN(ncmdh, cfg.history_len - cfg.cmd_hist.pos), cmdh, &cfg.cmd_hist);
+					MIN(ncmdh, cfg.history_len - curr_stats.cmd_hist.pos), cmdh,
+					&curr_stats.cmd_hist);
 		}
 
 		if(cfg.vifm_info & VIFMINFO_SHISTORY)
 		{
 			write_history(fp, "Search", LINE_TYPE_SEARCH_HIST, nsrch, srch,
-					&cfg.search_hist);
+					&curr_stats.search_hist);
 		}
 
 		if(cfg.vifm_info & VIFMINFO_PHISTORY)
 		{
 			write_history(fp, "Prompt", LINE_TYPE_PROMPT_HIST, nprompt, prompt,
-					&cfg.prompt_hist);
+					&curr_stats.prompt_hist);
 		}
 
 		if(cfg.vifm_info & VIFMINFO_FHISTORY)
 		{
 			write_history(fp, "Local filter", LINE_TYPE_FILTER_HIST, nfilter, filter,
-					&cfg.filter_hist);
+					&curr_stats.filter_hist);
 		}
 
 		if(cfg.vifm_info & VIFMINFO_REGISTERS)

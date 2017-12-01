@@ -1700,7 +1700,7 @@ search(key_info_t key_info, int backward)
 
 	int found;
 
-	if(hist_is_empty(&cfg.search_hist))
+	if(hist_is_empty(&curr_stats.search_hist))
 	{
 		return;
 	}

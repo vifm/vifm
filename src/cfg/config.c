@@ -117,11 +117,6 @@ cfg_init(void)
 {
 	cfg.history_len = 15;
 
-	(void)hist_init(&cfg.cmd_hist, cfg.history_len);
-	(void)hist_init(&cfg.search_hist, cfg.history_len);
-	(void)hist_init(&cfg.prompt_hist, cfg.history_len);
-	(void)hist_init(&cfg.filter_hist, cfg.history_len);
-
 	cfg.auto_execute = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
 	cfg.wrap_quick_view = 1;
@@ -879,10 +874,10 @@ disable_history(void)
 	free_view_history(&lwin);
 	free_view_history(&rwin);
 
-	(void)hist_reset(&cfg.search_hist, cfg.history_len);
-	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
-	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
-	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
+	(void)hist_reset(&curr_stats.search_hist, cfg.history_len);
+	(void)hist_reset(&curr_stats.cmd_hist, cfg.history_len);
+	(void)hist_reset(&curr_stats.prompt_hist, cfg.history_len);
+	(void)hist_reset(&curr_stats.filter_hist, cfg.history_len);
 
 	cfg.history_len = 0;
 }
@@ -908,10 +903,10 @@ decrease_history(size_t new_len, size_t removed_count)
 	reduce_view_history(&lwin, (int)new_len);
 	reduce_view_history(&rwin, (int)new_len);
 
-	hist_trunc(&cfg.search_hist, new_len, removed_count);
-	hist_trunc(&cfg.cmd_hist, new_len, removed_count);
-	hist_trunc(&cfg.prompt_hist, new_len, removed_count);
-	hist_trunc(&cfg.filter_hist, new_len, removed_count);
+	hist_trunc(&curr_stats.search_hist, new_len, removed_count);
+	hist_trunc(&curr_stats.cmd_hist, new_len, removed_count);
+	hist_trunc(&curr_stats.prompt_hist, new_len, removed_count);
+	hist_trunc(&curr_stats.filter_hist, new_len, removed_count);
 }
 
 /* Moves items of directory history when size of history becomes smaller. */
@@ -943,14 +938,14 @@ reallocate_history(size_t new_len)
 	lwin.history = reallocarray(lwin.history, new_len, sizeof(history_t));
 	rwin.history = reallocarray(rwin.history, new_len, sizeof(history_t));
 
-	cfg.cmd_hist.items = reallocarray(cfg.cmd_hist.items, new_len,
+	curr_stats.cmd_hist.items = reallocarray(curr_stats.cmd_hist.items, new_len,
 			sizeof(char *));
-	cfg.search_hist.items = reallocarray(cfg.search_hist.items, new_len,
-			sizeof(char *));
-	cfg.prompt_hist.items = reallocarray(cfg.prompt_hist.items, new_len,
-			sizeof(char *));
-	cfg.filter_hist.items = reallocarray(cfg.filter_hist.items, new_len,
-			sizeof(char *));
+	curr_stats.search_hist.items = reallocarray(curr_stats.search_hist.items,
+			new_len, sizeof(char *));
+	curr_stats.prompt_hist.items = reallocarray(curr_stats.prompt_hist.items,
+			new_len, sizeof(char *));
+	curr_stats.filter_hist.items = reallocarray(curr_stats.filter_hist.items,
+			new_len, sizeof(char *));
 }
 
 /* Zeroes new elements of the history.  The old_len specifies old history size,
@@ -964,10 +959,10 @@ zero_new_history_items(size_t old_len, size_t delta)
 	memset(lwin.history + old_len, 0, hist_item_len);
 	memset(rwin.history + old_len, 0, hist_item_len);
 
-	memset(cfg.cmd_hist.items + old_len, 0, str_item_len);
-	memset(cfg.search_hist.items + old_len, 0, str_item_len);
-	memset(cfg.prompt_hist.items + old_len, 0, str_item_len);
-	memset(cfg.filter_hist.items + old_len, 0, str_item_len);
+	memset(curr_stats.cmd_hist.items + old_len, 0, str_item_len);
+	memset(curr_stats.search_hist.items + old_len, 0, str_item_len);
+	memset(curr_stats.prompt_hist.items + old_len, 0, str_item_len);
+	memset(curr_stats.filter_hist.items + old_len, 0, str_item_len);
 }
 
 int
@@ -1016,26 +1011,26 @@ cfg_save_command_history(const char command[])
 	if(is_history_command(command))
 	{
 		update_last_cmdline_command(command);
-		save_into_history(command, &cfg.cmd_hist, cfg.history_len);
+		save_into_history(command, &curr_stats.cmd_hist, cfg.history_len);
 	}
 }
 
 void
 cfg_save_search_history(const char pattern[])
 {
-	save_into_history(pattern, &cfg.search_hist, cfg.history_len);
+	save_into_history(pattern, &curr_stats.search_hist, cfg.history_len);
 }
 
 void
 cfg_save_prompt_history(const char input[])
 {
-	save_into_history(input, &cfg.prompt_hist, cfg.history_len);
+	save_into_history(input, &curr_stats.prompt_hist, cfg.history_len);
 }
 
 void
 cfg_save_filter_history(const char input[])
 {
-	save_into_history(input, &cfg.filter_hist, cfg.history_len);
+	save_into_history(input, &curr_stats.filter_hist, cfg.history_len);
 }
 
 /* Adaptor for the hist_add() function, which handles signed history length. */
@@ -1051,7 +1046,9 @@ save_into_history(const char item[], hist_t *hist, int len)
 const char *
 cfg_get_last_search_pattern(void)
 {
-	return hist_is_empty(&cfg.search_hist) ? "" : cfg.search_hist.items[0];
+	return hist_is_empty(&curr_stats.search_hist)
+	     ? ""
+	     : curr_stats.search_hist.items[0];
 }
 
 void

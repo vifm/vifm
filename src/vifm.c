@@ -541,20 +541,16 @@ vifm_restart(void)
 	/* Autocommands. */
 	vle_aucmd_remove(NULL, NULL);
 
+	/* Session status.  Must be reset _before_ options, because options take some
+	 * of values from status. */
+	(void)reset_status(&cfg);
+
 	/* Directory histories. */
 	ui_view_clear_history(&lwin);
 	ui_view_clear_history(&rwin);
 
-	/* All kinds of history. */
-	(void)hist_reset(&cfg.search_hist, cfg.history_len);
-	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
-	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
-	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
+	/* All other kinds of histories (reset_status() frees the data). */
 	cfg.history_len = 0;
-
-	/* Session status.  Must be reset _before_ options, because options take some
-	 * of values from status. */
-	(void)reset_status(&cfg);
 
 	/* Options of current pane. */
 	reset_options_to_default();

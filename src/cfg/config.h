@@ -25,7 +25,6 @@
 #include "../compat/fs_limits.h"
 #include "../ui/color_scheme.h"
 #include "../ui/ui.h"
-#include "../utils/hist.h"
 #include "../types.h"
 
 /* Name of help file in plain text format. */
@@ -141,15 +140,6 @@ typedef struct config_t
 	char *time_format;
 	/* This one should be set using cfg_set_fuse_home() function. */
 	char *fuse_home;
-
-	/* History of command-line commands. */
-	hist_t cmd_hist;
-	/* History of search patterns. */
-	hist_t search_hist;
-	/* History of prompt input. */
-	hist_t prompt_hist;
-	/* History of local filter patterns. */
-	hist_t filter_hist;
 
 	col_scheme_t cs;
 

@@ -2021,7 +2021,7 @@ cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 
 	stop_regular_completion();
 
-	if(hist_is_empty(&cfg.cmd_hist))
+	if(hist_is_empty(&curr_stats.cmd_hist))
 	{
 		return;
 	}
@@ -2071,9 +2071,10 @@ next_dot_completion(void)
 	char *last;
 	wchar_t *wide;
 
-	if(input_stat.dot_pos <= cfg.cmd_hist.pos)
+	if(input_stat.dot_pos <= curr_stats.cmd_hist.pos)
 	{
-		last = get_last_argument(cfg.cmd_hist.items[input_stat.dot_pos++], 1, &len);
+		last = get_last_argument(curr_stats.cmd_hist.items[input_stat.dot_pos++], 1,
+				&len);
 	}
 	else
 	{
@@ -2366,19 +2367,19 @@ pick_hist(void)
 {
 	if(sub_mode == CLS_COMMAND)
 	{
-		return &cfg.cmd_hist;
+		return &curr_stats.cmd_hist;
 	}
 	if(input_stat.search_mode)
 	{
-		return &cfg.search_hist;
+		return &curr_stats.search_hist;
 	}
 	if(sub_mode == CLS_PROMPT)
 	{
-		return &cfg.prompt_hist;
+		return &curr_stats.prompt_hist;
 	}
 	if(sub_mode == CLS_FILTER)
 	{
-		return &cfg.filter_hist;
+		return &curr_stats.filter_hist;
 	}
 	return NULL;
 }

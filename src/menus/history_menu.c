@@ -50,31 +50,36 @@ static KHandlerResponse history_khandler(view_t *view, menu_data_t *m,
 int
 show_cmdhistory_menu(view_t *view)
 {
-	return show_history(view, CMDHISTORY, &cfg.cmd_hist, "Command Line History");
+	return show_history(view, CMDHISTORY, &curr_stats.cmd_hist,
+			"Command Line History");
 }
 
 int
 show_fsearchhistory_menu(view_t *view)
 {
-	return show_history(view, FSEARCHHISTORY, &cfg.search_hist, "Search History");
+	return show_history(view, FSEARCHHISTORY, &curr_stats.search_hist,
+			"Search History");
 }
 
 int
 show_bsearchhistory_menu(view_t *view)
 {
-	return show_history(view, BSEARCHHISTORY, &cfg.search_hist, "Search History");
+	return show_history(view, BSEARCHHISTORY, &curr_stats.search_hist,
+			"Search History");
 }
 
 int
 show_prompthistory_menu(view_t *view)
 {
-	return show_history(view, PROMPTHISTORY, &cfg.prompt_hist, "Prompt History");
+	return show_history(view, PROMPTHISTORY, &curr_stats.prompt_hist,
+			"Prompt History");
 }
 
 int
 show_filterhistory_menu(view_t *view)
 {
-	return show_history(view, FILTERHISTORY, &cfg.filter_hist, "Filter History");
+	return show_history(view, FILTERHISTORY, &curr_stats.filter_hist,
+			"Filter History");
 }
 
 /* Returns non-zero if status bar message should be saved. */

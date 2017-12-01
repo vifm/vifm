@@ -94,6 +94,11 @@ init_status(config_t *config)
 	curr_stats.exec_env_type = get_exec_env_type();
 	stats_update_shell_type(config->shell);
 
+	(void)hist_init(&curr_stats.cmd_hist, config->history_len);
+	(void)hist_init(&curr_stats.search_hist, config->history_len);
+	(void)hist_init(&curr_stats.prompt_hist, config->history_len);
+	(void)hist_init(&curr_stats.filter_hist, config->history_len);
+
 	return reset_status(config);
 }
 

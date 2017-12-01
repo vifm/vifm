@@ -267,14 +267,14 @@ history_by_type(CmdInputType type)
 	switch(type)
 	{
 		case CIT_COMMAND:
-			return &cfg.cmd_hist;
+			return &curr_stats.cmd_hist;
 		case CIT_PROMPT_INPUT:
-			return &cfg.prompt_hist;
+			return &curr_stats.prompt_hist;
 		case CIT_FILTER_PATTERN:
-			return &cfg.filter_hist;
+			return &curr_stats.filter_hist;
 
 		default:
-			return &cfg.search_hist;
+			return &curr_stats.search_hist;
 	}
 }
 

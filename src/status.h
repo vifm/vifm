@@ -25,6 +25,7 @@
 
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
+#include "utils/hist.h"
 
 /* Special value foe dcache fields meaning that it wasn't set. */
 #define DCACHE_UNKNOWN ((uint64_t)-1)
@@ -187,6 +188,11 @@ typedef struct
 	void *preview_hint; /* Hint on which view is used for preview. */
 
 	int global_local_settings; /* Set local settings globally. */
+
+	hist_t cmd_hist;    /* History of command-line commands. */
+	hist_t search_hist; /* History of search patterns. */
+	hist_t prompt_hist; /* History of prompt input. */
+	hist_t filter_hist; /* History of local filter patterns. */
 
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
