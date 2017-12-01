@@ -541,16 +541,12 @@ vifm_restart(void)
 	/* Autocommands. */
 	vle_aucmd_remove(NULL, NULL);
 
+	/* All kinds of histories. */
+	cfg_resize_histories(0);
+
 	/* Session status.  Must be reset _before_ options, because options take some
 	 * of values from status. */
 	(void)reset_status(&cfg);
-
-	/* Directory histories. */
-	ui_view_clear_history(&lwin);
-	ui_view_clear_history(&rwin);
-
-	/* All other kinds of histories (reset_status() frees the data). */
-	cfg.history_len = 0;
 
 	/* Options of current pane. */
 	reset_options_to_default();

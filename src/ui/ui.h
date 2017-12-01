@@ -633,9 +633,6 @@ int ui_view_displays_numbers(const view_t *view);
  * otherwise zero is returned. */
 int ui_view_is_visible(const view_t *view);
 
-/* Clears directory history of the view. */
-void ui_view_clear_history(view_t *view);
-
 /* Checks whether view displays column view.  Returns non-zero if so, otherwise
  * zero is returned. */
 int ui_view_displays_columns(const view_t *view);

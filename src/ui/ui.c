@@ -1780,14 +1780,6 @@ ui_view_is_visible(const view_t *view)
 	return curr_stats.number_of_windows == 2 || curr_view == view;
 }
 
-void
-ui_view_clear_history(view_t *view)
-{
-	cfg_free_history_items(view->history, view->history_num);
-	view->history_num = 0;
-	view->history_pos = 0;
-}
-
 int
 ui_view_displays_columns(const view_t *view)
 {
