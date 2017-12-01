@@ -255,6 +255,10 @@ void stats_save_msg(const char msg[]);
 
 /* Managing histories. */
 
+/* Changes size of histories stored in status_t.  Zero or negative value
+ * disables them. */
+void hists_resize(int new_size);
+
 /* Saves command to command history. */
 void hists_commands_save(const char command[]);
 

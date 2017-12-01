@@ -35,6 +35,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/pthread.h"
+#include "compat/reallocarray.h"
 #include "ui/colors.h"
 #include "ui/ui.h"
 #include "utils/env.h"
@@ -369,6 +370,49 @@ stats_save_msg(const char msg[])
 		curr_stats.msg_head = (curr_stats.msg_head + 1)%ARRAY_LEN(curr_stats.msgs);
 	}
 	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
+}
+
+void
+hists_resize(int new_size)
+{
+	const int old_size = MAX(cfg.history_len, 0);
+	const int delta = new_size - old_size;
+
+	if(new_size <= 0)
+	{
+		hist_reset(&curr_stats.search_hist, old_size);
+		hist_reset(&curr_stats.cmd_hist, old_size);
+		hist_reset(&curr_stats.prompt_hist, old_size);
+		hist_reset(&curr_stats.filter_hist, old_size);
+		return;
+	}
+
+	if(delta < 0)
+	{
+		hist_trunc(&curr_stats.search_hist, new_size, -delta);
+		hist_trunc(&curr_stats.cmd_hist, new_size, -delta);
+		hist_trunc(&curr_stats.prompt_hist, new_size, -delta);
+		hist_trunc(&curr_stats.filter_hist, new_size, -delta);
+	}
+
+	curr_stats.cmd_hist.items = reallocarray(curr_stats.cmd_hist.items, new_size,
+			sizeof(char *));
+	curr_stats.search_hist.items = reallocarray(curr_stats.search_hist.items,
+			new_size, sizeof(char *));
+	curr_stats.prompt_hist.items = reallocarray(curr_stats.prompt_hist.items,
+			new_size, sizeof(char *));
+	curr_stats.filter_hist.items = reallocarray(curr_stats.filter_hist.items,
+			new_size, sizeof(char *));
+
+	if(delta > 0)
+	{
+		const size_t str_item_len = sizeof(char *)*delta;
+
+		memset(curr_stats.cmd_hist.items + old_size, 0, str_item_len);
+		memset(curr_stats.search_hist.items + old_size, 0, str_item_len);
+		memset(curr_stats.prompt_hist.items + old_size, 0, str_item_len);
+		memset(curr_stats.filter_hist.items + old_size, 0, str_item_len);
+	}
 }
 
 void

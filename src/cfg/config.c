@@ -51,7 +51,6 @@
 #include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
-#include "../utils/hist.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/path.h"
@@ -104,12 +103,11 @@ static void copy_rc_file(void);
 static void add_default_marks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
-static void disable_history(void);
 static void free_view_history(view_t *view);
-static void decrease_history(size_t new_len, size_t removed_count);
-static void reduce_view_history(view_t *view, int size);
-static void reallocate_history(size_t new_len);
-static void zero_new_history_items(size_t old_len, size_t delta);
+static void decrease_history(size_t new_size, size_t removed_count);
+static void reduce_view_history(view_t *view, int new_size);
+static void reallocate_history(size_t new_size);
+static void zero_new_history_items(size_t old_size, size_t delta);
 
 void
 cfg_init(void)
@@ -834,51 +832,41 @@ cfg_get_vicmd(int *bg)
 }
 
 void
-cfg_resize_histories(int new_len)
+cfg_resize_histories(int new_size)
 {
-	const int old_len = MAX(cfg.history_len, 0);
-	const int delta = new_len - old_len;
+	const int old_size = MAX(cfg.history_len, 0);
+	const int delta = new_size - old_size;
 
-	if(new_len <= 0)
+	hists_resize(new_size);
+
+	if(new_size <= 0)
 	{
-		disable_history();
+		free_view_history(&lwin);
+		free_view_history(&rwin);
+
+		cfg.history_len = 0;
 		return;
 	}
 
 	if(delta < 0)
 	{
-		decrease_history(new_len, -delta);
+		decrease_history(new_size, -delta);
 	}
 
-	reallocate_history(new_len);
+	reallocate_history(new_size);
 
 	if(delta > 0)
 	{
-		zero_new_history_items(old_len, delta);
+		zero_new_history_items(old_size, delta);
 	}
 
-	cfg.history_len = new_len;
+	cfg.history_len = new_size;
 
-	if(old_len == 0)
+	if(old_size == 0)
 	{
 		flist_hist_save(&lwin, NULL, NULL, -1);
 		flist_hist_save(&rwin, NULL, NULL, -1);
 	}
-}
-
-/* Completely disables all histories and clears all of them. */
-static void
-disable_history(void)
-{
-	free_view_history(&lwin);
-	free_view_history(&rwin);
-
-	(void)hist_reset(&curr_stats.search_hist, cfg.history_len);
-	(void)hist_reset(&curr_stats.cmd_hist, cfg.history_len);
-	(void)hist_reset(&curr_stats.prompt_hist, cfg.history_len);
-	(void)hist_reset(&curr_stats.filter_hist, cfg.history_len);
-
-	cfg.history_len = 0;
 }
 
 /* Clears and frees directory history of the view. */
@@ -893,75 +881,55 @@ free_view_history(view_t *view)
 	view->history_pos = 0;
 }
 
-/* Reduces amount of memory taken by the history.  The new_len specifies new
+/* Reduces amount of memory taken by the history.  The new_size specifies new
  * size of the history, while removed_count parameter designates number of
  * removed elements. */
 static void
-decrease_history(size_t new_len, size_t removed_count)
+decrease_history(size_t new_size, size_t removed_count)
 {
-	reduce_view_history(&lwin, (int)new_len);
-	reduce_view_history(&rwin, (int)new_len);
-
-	hist_trunc(&curr_stats.search_hist, new_len, removed_count);
-	hist_trunc(&curr_stats.cmd_hist, new_len, removed_count);
-	hist_trunc(&curr_stats.prompt_hist, new_len, removed_count);
-	hist_trunc(&curr_stats.filter_hist, new_len, removed_count);
+	reduce_view_history(&lwin, (int)new_size);
+	reduce_view_history(&rwin, (int)new_size);
 }
 
 /* Moves items of directory history when size of history becomes smaller. */
 static void
-reduce_view_history(view_t *view, int size)
+reduce_view_history(view_t *view, int new_size)
 {
-	const int delta = MIN(view->history_num - size, view->history_pos);
+	const int delta = MIN(view->history_num - new_size, view->history_pos);
 	if(delta <= 0)
 	{
 		return;
 	}
 
-	cfg_free_history_items(view->history, MIN(size, delta));
+	cfg_free_history_items(view->history, MIN(new_size, delta));
 	memmove(view->history, view->history + delta,
 			sizeof(history_t)*(view->history_num - delta));
 
-	if(view->history_num > size)
+	if(view->history_num > new_size)
 	{
-		view->history_num = size;
+		view->history_num = new_size;
 	}
 	view->history_pos -= delta;
 }
 
-/* Reallocates memory taken by history elements.  The new_len specifies new
+/* Reallocates memory taken by history elements.  The new_size specifies new
  * size of the history. */
 static void
-reallocate_history(size_t new_len)
+reallocate_history(size_t new_size)
 {
-	lwin.history = reallocarray(lwin.history, new_len, sizeof(history_t));
-	rwin.history = reallocarray(rwin.history, new_len, sizeof(history_t));
-
-	curr_stats.cmd_hist.items = reallocarray(curr_stats.cmd_hist.items, new_len,
-			sizeof(char *));
-	curr_stats.search_hist.items = reallocarray(curr_stats.search_hist.items,
-			new_len, sizeof(char *));
-	curr_stats.prompt_hist.items = reallocarray(curr_stats.prompt_hist.items,
-			new_len, sizeof(char *));
-	curr_stats.filter_hist.items = reallocarray(curr_stats.filter_hist.items,
-			new_len, sizeof(char *));
+	lwin.history = reallocarray(lwin.history, new_size, sizeof(history_t));
+	rwin.history = reallocarray(rwin.history, new_size, sizeof(history_t));
 }
 
-/* Zeroes new elements of the history.  The old_len specifies old history size,
+/* Zeroes new elements of the history.  The old_size specifies old history size,
  * while delta parameter designates number of new elements. */
 static void
-zero_new_history_items(size_t old_len, size_t delta)
+zero_new_history_items(size_t old_size, size_t delta)
 {
 	const size_t hist_item_len = sizeof(history_t)*delta;
-	const size_t str_item_len = sizeof(char *)*delta;
 
-	memset(lwin.history + old_len, 0, hist_item_len);
-	memset(rwin.history + old_len, 0, hist_item_len);
-
-	memset(curr_stats.cmd_hist.items + old_len, 0, str_item_len);
-	memset(curr_stats.search_hist.items + old_len, 0, str_item_len);
-	memset(curr_stats.prompt_hist.items + old_len, 0, str_item_len);
-	memset(curr_stats.filter_hist.items + old_len, 0, str_item_len);
+	memset(lwin.history + old_size, 0, hist_item_len);
+	memset(rwin.history + old_size, 0, hist_item_len);
 }
 
 int
