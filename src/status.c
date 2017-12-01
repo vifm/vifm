@@ -102,6 +102,8 @@ init_status(config_t *config)
 	(void)hist_init(&curr_stats.prompt_hist, config->history_len);
 	(void)hist_init(&curr_stats.filter_hist, config->history_len);
 
+	hists_resize(config->history_len);
+
 	return reset_status(config);
 }
 
@@ -177,6 +179,8 @@ load_def_values(status_t *stats, config_t *config)
 	stats->preview_hint = NULL;
 
 	stats->global_local_settings = 0;
+
+	stats->history_size = 0;
 
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
@@ -375,7 +379,7 @@ stats_save_msg(const char msg[])
 void
 hists_resize(int new_size)
 {
-	const int old_size = MAX(cfg.history_len, 0);
+	const int old_size = curr_stats.history_size;
 	const int delta = new_size - old_size;
 
 	if(new_size <= 0)
@@ -384,8 +388,11 @@ hists_resize(int new_size)
 		hist_reset(&curr_stats.cmd_hist, old_size);
 		hist_reset(&curr_stats.prompt_hist, old_size);
 		hist_reset(&curr_stats.filter_hist, old_size);
+		curr_stats.history_size = 0;
 		return;
 	}
+
+	curr_stats.history_size = new_size;
 
 	if(delta < 0)
 	{
@@ -421,26 +428,26 @@ hists_commands_save(const char command[])
 	if(is_history_command(command))
 	{
 		update_last_cmdline_command(command);
-		save_into_history(command, &curr_stats.cmd_hist, cfg.history_len);
+		save_into_history(command, &curr_stats.cmd_hist, curr_stats.history_size);
 	}
 }
 
 void
 hists_search_save(const char pattern[])
 {
-	save_into_history(pattern, &curr_stats.search_hist, cfg.history_len);
+	save_into_history(pattern, &curr_stats.search_hist, curr_stats.history_size);
 }
 
 void
 hists_prompt_save(const char input[])
 {
-	save_into_history(input, &curr_stats.prompt_hist, cfg.history_len);
+	save_into_history(input, &curr_stats.prompt_hist, curr_stats.history_size);
 }
 
 void
 hists_filter_save(const char input[])
 {
-	save_into_history(input, &curr_stats.filter_hist, cfg.history_len);
+	save_into_history(input, &curr_stats.filter_hist, curr_stats.history_size);
 }
 
 /* Adaptor for the hist_add() function, which handles signed history length. */

@@ -189,6 +189,7 @@ typedef struct
 
 	int global_local_settings; /* Set local settings globally. */
 
+	int history_size;   /* Number of elements in histories. */
 	hist_t cmd_hist;    /* History of command-line commands. */
 	hist_t search_hist; /* History of search patterns. */
 	hist_t prompt_hist; /* History of prompt input. */
