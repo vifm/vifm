@@ -79,9 +79,9 @@ TEARDOWN()
 static void
 save_to_history(const char str[])
 {
-	cfg_save_command_history(str);
-	cfg_save_search_history(str);
-	cfg_save_prompt_history(str);
+	hists_commands_save(str);
+	hists_search_save(str);
+	hists_prompt_save(str);
 
 	flist_hist_save(&lwin, str, str + 1, 0);
 	flist_hist_save(&rwin, str, str + 1, 0);

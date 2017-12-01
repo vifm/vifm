@@ -110,7 +110,6 @@ static void decrease_history(size_t new_len, size_t removed_count);
 static void reduce_view_history(view_t *view, int size);
 static void reallocate_history(size_t new_len);
 static void zero_new_history_items(size_t old_len, size_t delta);
-static void save_into_history(const char item[], hist_t *hist, int len);
 
 void
 cfg_init(void)
@@ -1003,52 +1002,6 @@ cfg_free_history_items(const history_t history[], size_t len)
 		free(history[i].dir);
 		free(history[i].file);
 	}
-}
-
-void
-cfg_save_command_history(const char command[])
-{
-	if(is_history_command(command))
-	{
-		update_last_cmdline_command(command);
-		save_into_history(command, &curr_stats.cmd_hist, cfg.history_len);
-	}
-}
-
-void
-cfg_save_search_history(const char pattern[])
-{
-	save_into_history(pattern, &curr_stats.search_hist, cfg.history_len);
-}
-
-void
-cfg_save_prompt_history(const char input[])
-{
-	save_into_history(input, &curr_stats.prompt_hist, cfg.history_len);
-}
-
-void
-cfg_save_filter_history(const char input[])
-{
-	save_into_history(input, &curr_stats.filter_hist, cfg.history_len);
-}
-
-/* Adaptor for the hist_add() function, which handles signed history length. */
-static void
-save_into_history(const char item[], hist_t *hist, int len)
-{
-	if(len >= 0)
-	{
-		hist_add(hist, item, len);
-	}
-}
-
-const char *
-cfg_get_last_search_pattern(void)
-{
-	return hist_is_empty(&curr_stats.search_hist)
-	     ? ""
-	     : curr_stats.search_hist.items[0];
 }
 
 void

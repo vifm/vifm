@@ -45,6 +45,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "cmd_completion.h"
+#include "cmd_core.h"
 #include "filelist.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
@@ -65,6 +66,7 @@ static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
+static void save_into_history(const char item[], hist_t *hist, int len);
 static void size_updater(void *data, void *arg);
 
 status_t curr_stats;
@@ -367,6 +369,52 @@ stats_save_msg(const char msg[])
 		curr_stats.msg_head = (curr_stats.msg_head + 1)%ARRAY_LEN(curr_stats.msgs);
 	}
 	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
+}
+
+void
+hists_commands_save(const char command[])
+{
+	if(is_history_command(command))
+	{
+		update_last_cmdline_command(command);
+		save_into_history(command, &curr_stats.cmd_hist, cfg.history_len);
+	}
+}
+
+void
+hists_search_save(const char pattern[])
+{
+	save_into_history(pattern, &curr_stats.search_hist, cfg.history_len);
+}
+
+void
+hists_prompt_save(const char input[])
+{
+	save_into_history(input, &curr_stats.prompt_hist, cfg.history_len);
+}
+
+void
+hists_filter_save(const char input[])
+{
+	save_into_history(input, &curr_stats.filter_hist, cfg.history_len);
+}
+
+/* Adaptor for the hist_add() function, which handles signed history length. */
+static void
+save_into_history(const char item[], hist_t *hist, int len)
+{
+	if(len >= 0)
+	{
+		hist_add(hist, item, len);
+	}
+}
+
+const char *
+hists_search_last(void)
+{
+	return hist_is_empty(&curr_stats.search_hist)
+	     ? ""
+	     : curr_stats.search_hist.items[0];
 }
 
 void

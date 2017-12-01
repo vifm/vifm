@@ -306,22 +306,6 @@ void cfg_set_use_term_multiplexer(int use_term_multiplexer);
 /* Frees memory previously allocated for specified history items. */
 void cfg_free_history_items(const history_t history[], size_t len);
 
-/* Saves command to command history. */
-void cfg_save_command_history(const char command[]);
-
-/* Saves pattern to search history. */
-void cfg_save_search_history(const char pattern[]);
-
-/* Saves input to prompt history. */
-void cfg_save_prompt_history(const char input[]);
-
-/* Saves input to local filter history. */
-void cfg_save_filter_history(const char pattern[]);
-
-/* Gets the most recently used search pattern.  Returns the pattern or empty
- * string if search history is empty. */
-const char * cfg_get_last_search_pattern(void);
-
 /* Sets shell invocation command. */
 void cfg_set_shell(const char shell[]);
 

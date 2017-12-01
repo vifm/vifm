@@ -2156,7 +2156,7 @@ filter_cmd(const cmd_info_t *cmd_info)
 static int
 update_filter(view_t *view, const cmd_info_t *cmd_info)
 {
-	const char *fallback = cfg_get_last_search_pattern();
+	const char *fallback = hists_search_last();
 
 	if(cmd_info->argc == 0)
 	{
@@ -3663,12 +3663,12 @@ substitute_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argv[0][0] == '\0')
 		{
-			(void)replace_string(&last_pattern, cfg_get_last_search_pattern());
+			(void)replace_string(&last_pattern, hists_search_last());
 		}
 		else
 		{
 			(void)replace_string(&last_pattern, cmd_info->argv[0]);
-			cfg_save_search_history(last_pattern);
+			hists_search_save(last_pattern);
 		}
 	}
 

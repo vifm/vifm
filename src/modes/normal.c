@@ -1711,7 +1711,7 @@ search(key_info_t key_info, int backward)
 	found = 0;
 	if(curr_view->matches == 0)
 	{
-		const char *const pattern = cfg_get_last_search_pattern();
+		const char *const pattern = hists_search_last();
 		curr_stats.save_msg = (find_pattern(curr_view, pattern, backward, 1, &found,
 				0) != 0);
 		--key_info.count;

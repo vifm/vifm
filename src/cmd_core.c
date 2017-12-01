@@ -314,11 +314,11 @@ save_extcmd(const char command[], CmdInputType type)
 {
 	if(type == CIT_COMMAND)
 	{
-		cfg_save_command_history(command);
+		hists_commands_save(command);
 	}
 	else
 	{
-		cfg_save_search_history(command);
+		hists_search_save(command);
 	}
 }
 
@@ -1078,11 +1078,11 @@ repeat_command(view_t *view, CmdInputType type)
 	{
 		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_FSEARCH_PATTERN:
-			return find_npattern(view, cfg_get_last_search_pattern(), backward, 1);
+			return find_npattern(view, hists_search_last(), backward, 1);
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:
-			return find_vpattern(view, cfg_get_last_search_pattern(), backward, 1);
+			return find_vpattern(view, hists_search_last(), backward, 1);
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:

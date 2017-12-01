@@ -253,6 +253,24 @@ int stats_file_choose_action_set(void);
 /* Records status bar message. */
 void stats_save_msg(const char msg[]);
 
+/* Managing histories. */
+
+/* Saves command to command history. */
+void hists_commands_save(const char command[]);
+
+/* Saves pattern to search history. */
+void hists_search_save(const char pattern[]);
+
+/* Saves input to prompt history. */
+void hists_prompt_save(const char input[]);
+
+/* Saves input to local filter history. */
+void hists_filter_save(const char pattern[]);
+
+/* Gets the most recently used search pattern.  Returns the pattern or empty
+ * string if search history is empty. */
+const char * hists_search_last(void);
+
 /* Caching of information about directories. */
 
 /* Retrieves information about the path.  size and/or nitems can be NULL.  On

@@ -112,19 +112,19 @@ execute_history_cb(view_t *view, menu_data_t *m)
 	switch((HistoryType)m->extra_data)
 	{
 		case CMDHISTORY:
-			cfg_save_command_history(line);
+			hists_commands_save(line);
 			exec_commands(line, view, CIT_COMMAND);
 			break;
 		case FSEARCHHISTORY:
-			cfg_save_search_history(line);
+			hists_search_save(line);
 			exec_commands(line, view, CIT_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
-			cfg_save_search_history(line);
+			hists_search_save(line);
 			exec_commands(line, view, CIT_BSEARCH_PATTERN);
 			break;
 		case FILTERHISTORY:
-			cfg_save_filter_history(line);
+			hists_filter_save(line);
 			exec_commands(line, view, CIT_FILTER_PATTERN);
 			break;
 		case PROMPTHISTORY:

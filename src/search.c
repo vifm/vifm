@@ -240,7 +240,7 @@ print_search_msg(const view_t *view, int backward)
 	{
 		ui_sb_msgf("%d of %d matching file%s for: %s",
 				get_current_entry(view)->search_match, view->matches,
-				(view->matches == 1) ? "" : "s", cfg_get_last_search_pattern());
+				(view->matches == 1) ? "" : "s", hists_search_last());
 	}
 }
 
@@ -250,13 +250,13 @@ print_search_next_msg(const view_t *view, int backward)
 	const int match_number = get_current_entry(view)->search_match;
 	const char search_type = backward ? '?' : '/';
 	ui_sb_msgf("(%d of %d) %c%s", match_number, view->matches, search_type,
-			cfg_get_last_search_pattern());
+			hists_search_last());
 }
 
 void
 print_search_fail_msg(const view_t *view, int backward)
 {
-	const char *const regexp = cfg_get_last_search_pattern();
+	const char *const regexp = hists_search_last();
 
 	int cflags;
 	regex_t re;

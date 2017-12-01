@@ -979,7 +979,7 @@ search(key_info_t key_info, int backward, int interactive)
 
 	if(view->matches == 0)
 	{
-		const char *const pattern = cfg_get_last_search_pattern();
+		const char *const pattern = hists_search_last();
 		curr_stats.save_msg = find_vpattern(view, pattern, backward, interactive);
 		return;
 	}

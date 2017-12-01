@@ -285,23 +285,19 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			append_to_history(&curr_stats.cmd_hist, cfg_save_command_history,
-					line_val);
+			append_to_history(&curr_stats.cmd_hist, &hists_commands_save, line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			append_to_history(&curr_stats.search_hist, cfg_save_search_history,
-					line_val);
+			append_to_history(&curr_stats.search_hist, &hists_search_save, line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			append_to_history(&curr_stats.prompt_hist, cfg_save_prompt_history,
-					line_val);
+			append_to_history(&curr_stats.prompt_hist, &hists_prompt_save, line_val);
 		}
 		else if(type == LINE_TYPE_FILTER_HIST)
 		{
-			append_to_history(&curr_stats.filter_hist, cfg_save_filter_history,
-					line_val);
+			append_to_history(&curr_stats.filter_hist, &hists_filter_save, line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{

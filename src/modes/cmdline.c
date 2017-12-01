@@ -958,7 +958,7 @@ extedit_prompt(const char input[], int cursor_col)
 	}
 	else
 	{
-		cfg_save_prompt_history(input);
+		hists_prompt_save(input);
 
 		ui_sb_err("Error querying data from external source.");
 		curr_stats.save_msg = 1;
@@ -1322,9 +1322,8 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(!cfg.inc_search || prev_mode == VIEW_MODE || input[0] == '\0')
 	{
-		const char *const pattern = (input[0] == '\0')
-		                          ? cfg_get_last_search_pattern()
-		                          : input;
+		const char *const pattern = (input[0] == '\0') ? hists_search_last()
+		                                               : input;
 
 		switch(sub_mode)
 		{
@@ -1469,7 +1468,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 {
 	if(input_stat.search_mode)
 	{
-		cfg_save_search_history(input);
+		hists_search_save(input);
 	}
 	else if(sub_mode == CLS_COMMAND)
 	{
@@ -1477,12 +1476,12 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 		const int ignore_input = mapped_input || keys_info->recursive;
 		if(!ignore_input)
 		{
-			cfg_save_command_history(input);
+			hists_commands_save(input);
 		}
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		cfg_save_prompt_history(input);
+		hists_prompt_save(input);
 	}
 }
 
@@ -1732,7 +1731,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(cfg_get_last_search_pattern(), 0);
+	paste_str(hists_search_last(), 0);
 }
 
 /* Inserts value of automatic filter of active pane into current cursor
