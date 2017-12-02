@@ -59,7 +59,7 @@ TEST(paths_in_root_do_not_have_extra_slash_on_choosing)
 
 	strcpy(lwin.curr_dir, "/");
 
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
@@ -82,7 +82,7 @@ TEST(abs_paths_are_not_touched_on_choosing)
 
 	strcpy(lwin.curr_dir, "/etc");
 
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
@@ -115,7 +115,7 @@ TEST(selection_can_be_chosen)
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 	lwin.dir_entry[0].selected = 1;
 
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
@@ -151,7 +151,7 @@ TEST(path_are_formed_right_on_choosing_in_cv)
 	flist_custom_add(&lwin, ".");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");

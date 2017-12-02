@@ -14,7 +14,7 @@
 SETUP()
 {
 	update_string(&cfg.shell, "");
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 }
 
 TEARDOWN()

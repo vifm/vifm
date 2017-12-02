@@ -869,7 +869,7 @@ void
 cfg_set_use_term_multiplexer(int use_term_multiplexer)
 {
 	cfg.use_term_multiplexer = use_term_multiplexer;
-	set_using_term_multiplexer(use_term_multiplexer);
+	stats_set_use_multiplexer(use_term_multiplexer);
 }
 
 void

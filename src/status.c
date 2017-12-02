@@ -86,7 +86,7 @@ static fsdata_t *dcache_size;
 static fsdata_t *dcache_nitems;
 
 int
-init_status(config_t *config)
+stats_init(config_t *config)
 {
 	inside_screen = !is_null_or_empty(env_get(SCREEN_ENVVAR));
 	inside_tmux = !is_null_or_empty(env_get(TMUX_ENVVAR));
@@ -104,11 +104,11 @@ init_status(config_t *config)
 
 	hists_resize(config->history_len);
 
-	return reset_status(config);
+	return stats_reset(config);
 }
 
 /* Initializes most fields of the status structure, some are left to be
- * initialized by the reset_status() function. */
+ * initialized by the stats_reset() function. */
 static void
 load_def_values(status_t *stats, config_t *config)
 {
@@ -218,7 +218,7 @@ set_gtk_available(status_t *stats)
 }
 
 int
-reset_status(const config_t *config)
+stats_reset(const config_t *config)
 {
 	set_last_cmdline_command("");
 
@@ -242,13 +242,13 @@ reset_dircache(void)
 }
 
 void
-schedule_redraw(void)
+stats_redraw_schedule(void)
 {
 	pending_redraw = 1;
 }
 
 int
-fetch_redraw_scheduled(void)
+stats_redraw_fetch(void)
 {
 	if(pending_redraw)
 	{
@@ -259,7 +259,7 @@ fetch_redraw_scheduled(void)
 }
 
 void
-set_using_term_multiplexer(int use_term_multiplexer)
+stats_set_use_multiplexer(int use_term_multiplexer)
 {
 	if(!use_term_multiplexer)
 	{
@@ -280,7 +280,7 @@ set_using_term_multiplexer(int use_term_multiplexer)
 }
 
 void
-update_last_cmdline_command(const char cmd[])
+stats_set_last_command(const char cmd[])
 {
 	if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
 	{
@@ -427,7 +427,7 @@ hists_commands_save(const char command[])
 {
 	if(is_history_command(command))
 	{
-		update_last_cmdline_command(command);
+		stats_set_last_command(command);
 		save_into_history(command, &curr_stats.cmd_hist, curr_stats.history_size);
 	}
 }

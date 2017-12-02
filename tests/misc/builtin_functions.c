@@ -235,7 +235,7 @@ TEST(chooseopt_options_are_not_set)
 	args_t args = { };
 	char *argv[] = { "vifm", NULL };
 
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
 	args_process(&args, 0);
@@ -246,7 +246,7 @@ TEST(chooseopt_options_are_not_set)
 	ASSERT_OK("chooseopt('cmd')", "");
 	ASSERT_OK("chooseopt('delimiter')", "\n");
 
-	assert_success(reset_status(&cfg));
+	assert_success(stats_reset(&cfg));
 
 	args_free(&args);
 }
@@ -261,7 +261,7 @@ TEST(chooseopt_options_are_set)
 	                 "--delimiter", "delim",
 	                 NULL };
 
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
 	args_process(&args, 0);
@@ -272,7 +272,7 @@ TEST(chooseopt_options_are_set)
 	ASSERT_OK("chooseopt('cmd')", "cmd");
 	ASSERT_OK("chooseopt('delimiter')", "delim");
 
-	assert_success(reset_status(&cfg));
+	assert_success(stats_reset(&cfg));
 
 	args_free(&args);
 }

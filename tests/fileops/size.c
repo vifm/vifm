@@ -17,14 +17,14 @@ static uint64_t wait_for_size(const char path[]);
 
 SETUP()
 {
-	init_status(&cfg);
+	stats_init(&cfg);
 }
 
 TEARDOWN()
 {
 	view_teardown(&lwin);
 
-	reset_status(&cfg);
+	stats_reset(&cfg);
 }
 
 TEST(directory_size_is_calculated_in_bg)

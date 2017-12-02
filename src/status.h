@@ -203,26 +203,27 @@ status_t;
 
 extern status_t curr_stats;
 
-/* Returns non-zero on error. */
-int init_status(struct config_t *config);
+/* Initializes curr_stats from the configuration.  Returns non-zero on error,
+ * otherwise zero is returned. */
+int stats_init(struct config_t *config);
 
 /* Resets some part of runtime status information to its initial values.
  * Returns non-zero on error. */
-int reset_status(const struct config_t *config);
+int stats_reset(const struct config_t *config);
 
 /* Sets internal flag to schedule postponed redraw operation of the UI. */
-void schedule_redraw(void);
+void stats_redraw_schedule(void);
 
 /* Checks for postponed redraw operations of the UI.  Has side effects.  Returns
  * non-zero if redraw operation was scheduled and resets internal flag. */
-int fetch_redraw_scheduled(void);
+int stats_redraw_fetch(void);
 
 /* Updates curr_stats to reflect whether terminal multiplexers support is
  * enabled. */
-void set_using_term_multiplexer(int use_term_multiplexer);
+void stats_set_use_multiplexer(int use_term_multiplexer);
 
 /* Updates last_cmdline_command field of the status structure. */
-void update_last_cmdline_command(const char cmd[]);
+void stats_set_last_command(const char cmd[]);
 
 /* Updates curr_stats.shell_type field according to passed shell command. */
 void stats_update_shell_type(const char shell_cmd[]);

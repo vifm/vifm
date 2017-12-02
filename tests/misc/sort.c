@@ -317,7 +317,7 @@ TEST(extensions_of_dot_files_are_sorted_correctly)
 TEST(sorting_uses_dcache_for_dirs)
 {
 	view_teardown(&lwin);
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
 	lwin.list_rows = 2;
@@ -353,7 +353,7 @@ TEST(sorting_uses_dcache_for_dirs)
 TEST(nitems_sorting_works)
 {
 	view_teardown(&lwin);
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
 	lwin.list_rows = 3;
@@ -382,7 +382,7 @@ TEST(nitems_sorting_works)
 TEST(groups_sorting_works)
 {
 	view_teardown(&lwin);
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
 	lwin.list_rows = 7;
@@ -437,7 +437,7 @@ TEST(groups_sorting_works)
 TEST(inode_sorting_works)
 {
 	view_teardown(&lwin);
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	strcpy(lwin.curr_dir, TEST_DATA_PATH);
 	lwin.list_rows = 3;
