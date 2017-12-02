@@ -280,28 +280,6 @@ stats_set_use_multiplexer(int use_term_multiplexer)
 }
 
 void
-stats_set_last_command(const char cmd[])
-{
-	if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
-	{
-		set_last_cmdline_command(cmd);
-	}
-}
-
-/* Sets last_cmdline_command field of the status structure. */
-static void
-set_last_cmdline_command(const char cmd[])
-{
-	const int err = replace_string(&curr_stats.last_cmdline_command, cmd);
-	if(err != 0)
-	{
-		LOG_ERROR_MSG("replace_string() failed on duplicating: %s", cmd);
-	}
-	assert(curr_stats.last_cmdline_command != NULL &&
-			"The field was not initialized properly");
-}
-
-void
 stats_update_shell_type(const char shell_cmd[])
 {
 	curr_stats.shell_type = get_shell_type(shell_cmd);
@@ -427,9 +405,25 @@ hists_commands_save(const char command[])
 {
 	if(is_history_command(command))
 	{
-		stats_set_last_command(command);
+		if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
+		{
+			set_last_cmdline_command(command);
+		}
 		save_into_history(command, &curr_stats.cmd_hist, curr_stats.history_size);
 	}
+}
+
+/* Sets last_cmdline_command field of the status structure. */
+static void
+set_last_cmdline_command(const char cmd[])
+{
+	const int err = replace_string(&curr_stats.last_cmdline_command, cmd);
+	if(err != 0)
+	{
+		LOG_ERROR_MSG("replace_string() failed on duplicating: %s", cmd);
+	}
+	assert(curr_stats.last_cmdline_command != NULL &&
+			"The field was not initialized properly");
 }
 
 void

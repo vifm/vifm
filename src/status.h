@@ -222,9 +222,6 @@ int stats_redraw_fetch(void);
  * enabled. */
 void stats_set_use_multiplexer(int use_term_multiplexer);
 
-/* Updates last_cmdline_command field of the status structure. */
-void stats_set_last_command(const char cmd[]);
-
 /* Updates curr_stats.shell_type field according to passed shell command. */
 void stats_update_shell_type(const char shell_cmd[]);
 
