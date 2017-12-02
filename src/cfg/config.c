@@ -873,17 +873,6 @@ cfg_set_use_term_multiplexer(int use_term_multiplexer)
 }
 
 void
-cfg_free_history_items(const history_t history[], size_t len)
-{
-	size_t i;
-	for(i = 0; i < len; i++)
-	{
-		free(history[i].dir);
-		free(history[i].file);
-	}
-}
-
-void
 cfg_set_shell(const char shell[])
 {
 	if(replace_string(&cfg.shell, shell) == 0)

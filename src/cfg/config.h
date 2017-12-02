@@ -24,7 +24,6 @@
 
 #include "../compat/fs_limits.h"
 #include "../ui/color_scheme.h"
-#include "../ui/ui.h"
 #include "../types.h"
 
 /* Name of help file in plain text format. */
@@ -302,9 +301,6 @@ int cfg_set_fuse_home(const char new_value[]);
 
 /* Sets whether support of terminal multiplexers is enabled. */
 void cfg_set_use_term_multiplexer(int use_term_multiplexer);
-
-/* Frees memory previously allocated for specified history items. */
-void cfg_free_history_items(const history_t history[], size_t len);
 
 /* Sets shell invocation command. */
 void cfg_set_shell(const char shell[]);

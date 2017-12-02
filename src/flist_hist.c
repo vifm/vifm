@@ -33,6 +33,7 @@
 static void navigate_to_history_pos(view_t *view, int pos);
 static void free_view_history(view_t *view);
 static void reduce_view_history(view_t *view, int new_size);
+static void free_view_history_items(const history_t history[], size_t len);
 static int find_in_hist(const view_t *view, const view_t *source, int *pos,
 		int *rel_pos);
 static history_t * find_hist_entry(const view_t *view, const char dir[]);
@@ -133,7 +134,7 @@ flist_hist_resize(view_t *view, int new_size)
 static void
 free_view_history(view_t *view)
 {
-	cfg_free_history_items(view->history, view->history_num);
+	free_view_history_items(view->history, view->history_num);
 	free(view->history);
 	view->history = NULL;
 
@@ -151,7 +152,7 @@ reduce_view_history(view_t *view, int new_size)
 		return;
 	}
 
-	cfg_free_history_items(view->history, MIN(new_size, delta));
+	free_view_history_items(view->history, MIN(new_size, delta));
 	memmove(view->history, view->history + delta,
 			sizeof(history_t)*(view->history_num - delta));
 
@@ -205,7 +206,7 @@ flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 		x = view->history_num - 1;
 		while(x > view->history_pos)
 		{
-			cfg_free_history_items(&view->history[x--], 1);
+			free_view_history_items(&view->history[x--], 1);
 		}
 		view->history_num = view->history_pos + 1;
 	}
@@ -213,7 +214,7 @@ flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 
 	if(x == cfg.history_len)
 	{
-		cfg_free_history_items(view->history, 1);
+		free_view_history_items(view->history, 1);
 		memmove(view->history, view->history + 1,
 				sizeof(history_t)*(cfg.history_len - 1));
 
@@ -225,6 +226,18 @@ flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 	view->history[x].rel_pos = rel_pos;
 	++view->history_num;
 	view->history_pos = view->history_num - 1;
+}
+
+/* Frees memory previously allocated for specified history items. */
+static void
+free_view_history_items(const history_t history[], size_t len)
+{
+	size_t i;
+	for(i = 0; i < len; ++i)
+	{
+		free(history[i].dir);
+		free(history[i].file);
+	}
 }
 
 int
