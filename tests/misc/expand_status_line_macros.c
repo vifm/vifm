@@ -5,6 +5,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/statusline.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"

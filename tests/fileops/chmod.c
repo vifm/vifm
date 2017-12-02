@@ -8,6 +8,7 @@
 
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/modes/dialogs/attr_dialog.h"

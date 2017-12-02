@@ -3,6 +3,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/color_scheme.h"
 #include "../../src/ui/statusbar.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"

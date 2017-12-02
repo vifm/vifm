@@ -47,6 +47,7 @@
 #include "../int/fuse.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
+#include "../ui/ui.h"
 #include "../background.h"
 #include "../registers.h"
 #include "../status.h"

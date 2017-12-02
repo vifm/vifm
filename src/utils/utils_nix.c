@@ -54,6 +54,7 @@
 #include "../compat/mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "../ui/ui.h"
 #include "../running.h"
 #include "../status.h"
 #include "cancellation.h"

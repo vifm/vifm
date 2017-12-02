@@ -132,6 +132,8 @@ void fview_sorting_updated(struct view_t *view);
 
 #ifdef TEST
 #include <stddef.h> /* size_t */
+
+#include "ui.h"
 #endif
 
 TSTATIC_DEFS(
