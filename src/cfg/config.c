@@ -41,7 +41,6 @@
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
-#include "../compat/reallocarray.h"
 #include "../int/term_title.h"
 #include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
@@ -63,7 +62,6 @@
 #include "../status.h"
 #include "../types.h"
 #include "../vifm.h"
-#include "hist.h"
 
 /* Maximum supported by the implementation length of line in vifmrc file. */
 #define MAX_VIFMRC_LINE_LEN 4*1024
@@ -104,23 +102,11 @@ static void copy_rc_file(void);
 static void add_default_marks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
-static void disable_history(void);
-static void free_view_history(view_t *view);
-static void decrease_history(size_t new_len, size_t removed_count);
-static void reduce_view_history(view_t *view, int size);
-static void reallocate_history(size_t new_len);
-static void zero_new_history_items(size_t old_len, size_t delta);
-static void save_into_history(const char item[], hist_t *hist, int len);
 
 void
 cfg_init(void)
 {
 	cfg.history_len = 15;
-
-	(void)hist_init(&cfg.cmd_hist, cfg.history_len);
-	(void)hist_init(&cfg.search_hist, cfg.history_len);
-	(void)hist_init(&cfg.prompt_hist, cfg.history_len);
-	(void)hist_init(&cfg.filter_hist, cfg.history_len);
 
 	cfg.auto_execute = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
@@ -840,134 +826,21 @@ cfg_get_vicmd(int *bg)
 }
 
 void
-cfg_resize_histories(int new_len)
+cfg_resize_histories(int new_size)
 {
-	const int old_len = MAX(cfg.history_len, 0);
-	const int delta = new_len - old_len;
+	const int old_size = MAX(cfg.history_len, 0);
 
-	if(new_len <= 0)
-	{
-		disable_history();
-		return;
-	}
+	hists_resize(new_size);
+	flist_hist_resize(&lwin, new_size);
+	flist_hist_resize(&rwin, new_size);
 
-	if(delta < 0)
-	{
-		decrease_history(new_len, -delta);
-	}
+	cfg.history_len = new_size;
 
-	reallocate_history(new_len);
-
-	if(delta > 0)
-	{
-		zero_new_history_items(old_len, delta);
-	}
-
-	cfg.history_len = new_len;
-
-	if(old_len == 0)
+	if(old_size == 0 && new_size > 0)
 	{
 		flist_hist_save(&lwin, NULL, NULL, -1);
 		flist_hist_save(&rwin, NULL, NULL, -1);
 	}
-}
-
-/* Completely disables all histories and clears all of them. */
-static void
-disable_history(void)
-{
-	free_view_history(&lwin);
-	free_view_history(&rwin);
-
-	(void)hist_reset(&cfg.search_hist, cfg.history_len);
-	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
-	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
-	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
-
-	cfg.history_len = 0;
-}
-
-/* Clears and frees directory history of the view. */
-static void
-free_view_history(view_t *view)
-{
-	cfg_free_history_items(view->history, view->history_num);
-	free(view->history);
-	view->history = NULL;
-
-	view->history_num = 0;
-	view->history_pos = 0;
-}
-
-/* Reduces amount of memory taken by the history.  The new_len specifies new
- * size of the history, while removed_count parameter designates number of
- * removed elements. */
-static void
-decrease_history(size_t new_len, size_t removed_count)
-{
-	reduce_view_history(&lwin, (int)new_len);
-	reduce_view_history(&rwin, (int)new_len);
-
-	hist_trunc(&cfg.search_hist, new_len, removed_count);
-	hist_trunc(&cfg.cmd_hist, new_len, removed_count);
-	hist_trunc(&cfg.prompt_hist, new_len, removed_count);
-	hist_trunc(&cfg.filter_hist, new_len, removed_count);
-}
-
-/* Moves items of directory history when size of history becomes smaller. */
-static void
-reduce_view_history(view_t *view, int size)
-{
-	const int delta = MIN(view->history_num - size, view->history_pos);
-	if(delta <= 0)
-	{
-		return;
-	}
-
-	cfg_free_history_items(view->history, MIN(size, delta));
-	memmove(view->history, view->history + delta,
-			sizeof(history_t)*(view->history_num - delta));
-
-	if(view->history_num > size)
-	{
-		view->history_num = size;
-	}
-	view->history_pos -= delta;
-}
-
-/* Reallocates memory taken by history elements.  The new_len specifies new
- * size of the history. */
-static void
-reallocate_history(size_t new_len)
-{
-	lwin.history = reallocarray(lwin.history, new_len, sizeof(history_t));
-	rwin.history = reallocarray(rwin.history, new_len, sizeof(history_t));
-
-	cfg.cmd_hist.items = reallocarray(cfg.cmd_hist.items, new_len,
-			sizeof(char *));
-	cfg.search_hist.items = reallocarray(cfg.search_hist.items, new_len,
-			sizeof(char *));
-	cfg.prompt_hist.items = reallocarray(cfg.prompt_hist.items, new_len,
-			sizeof(char *));
-	cfg.filter_hist.items = reallocarray(cfg.filter_hist.items, new_len,
-			sizeof(char *));
-}
-
-/* Zeroes new elements of the history.  The old_len specifies old history size,
- * while delta parameter designates number of new elements. */
-static void
-zero_new_history_items(size_t old_len, size_t delta)
-{
-	const size_t hist_item_len = sizeof(history_t)*delta;
-	const size_t str_item_len = sizeof(char *)*delta;
-
-	memset(lwin.history + old_len, 0, hist_item_len);
-	memset(rwin.history + old_len, 0, hist_item_len);
-
-	memset(cfg.cmd_hist.items + old_len, 0, str_item_len);
-	memset(cfg.search_hist.items + old_len, 0, str_item_len);
-	memset(cfg.prompt_hist.items + old_len, 0, str_item_len);
-	memset(cfg.filter_hist.items + old_len, 0, str_item_len);
 }
 
 int
@@ -996,62 +869,7 @@ void
 cfg_set_use_term_multiplexer(int use_term_multiplexer)
 {
 	cfg.use_term_multiplexer = use_term_multiplexer;
-	set_using_term_multiplexer(use_term_multiplexer);
-}
-
-void
-cfg_free_history_items(const history_t history[], size_t len)
-{
-	size_t i;
-	for(i = 0; i < len; i++)
-	{
-		free(history[i].dir);
-		free(history[i].file);
-	}
-}
-
-void
-cfg_save_command_history(const char command[])
-{
-	if(is_history_command(command))
-	{
-		update_last_cmdline_command(command);
-		save_into_history(command, &cfg.cmd_hist, cfg.history_len);
-	}
-}
-
-void
-cfg_save_search_history(const char pattern[])
-{
-	save_into_history(pattern, &cfg.search_hist, cfg.history_len);
-}
-
-void
-cfg_save_prompt_history(const char input[])
-{
-	save_into_history(input, &cfg.prompt_hist, cfg.history_len);
-}
-
-void
-cfg_save_filter_history(const char input[])
-{
-	save_into_history(input, &cfg.filter_hist, cfg.history_len);
-}
-
-/* Adaptor for the hist_add() function, which handles signed history length. */
-static void
-save_into_history(const char item[], hist_t *hist, int len)
-{
-	if(len >= 0)
-	{
-		hist_add(hist, item, len);
-	}
-}
-
-const char *
-cfg_get_last_search_pattern(void)
-{
-	return hist_is_empty(&cfg.search_hist) ? "" : cfg.search_hist.items[0];
+	stats_set_use_multiplexer(use_term_multiplexer);
 }
 
 void

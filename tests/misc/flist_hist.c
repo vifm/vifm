@@ -15,9 +15,9 @@
 
 /* This should be a macro to see what test have failed. */
 #define VALIDATE_HISTORY(i, str) \
-	assert_string_equal(str, cfg.cmd_hist.items[i]); \
-	assert_string_equal(str, cfg.search_hist.items[i]); \
-	assert_string_equal(str, cfg.prompt_hist.items[i]); \
+	assert_string_equal(str, curr_stats.cmd_hist.items[i]); \
+	assert_string_equal(str, curr_stats.search_hist.items[i]); \
+	assert_string_equal(str, curr_stats.prompt_hist.items[i]); \
 	\
 	assert_string_equal(str, lwin.history[(i) + 1].dir); \
 	assert_string_equal((str) + 1, lwin.history[(i) + 1].file); \
@@ -79,9 +79,9 @@ TEARDOWN()
 static void
 save_to_history(const char str[])
 {
-	cfg_save_command_history(str);
-	cfg_save_search_history(str);
-	cfg_save_prompt_history(str);
+	hists_commands_save(str);
+	hists_search_save(str);
+	hists_prompt_save(str);
 
 	flist_hist_save(&lwin, str, str + 1, 0);
 	flist_hist_save(&rwin, str, str + 1, 0);

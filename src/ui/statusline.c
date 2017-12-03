@@ -552,7 +552,7 @@ ui_stat_job_bar_add(bg_op_t *bg_op)
 
 	if(ui_stat_job_bar_height() != prev_height)
 	{
-		schedule_redraw();
+		stats_redraw_schedule();
 	}
 }
 
@@ -580,7 +580,7 @@ ui_stat_job_bar_remove(bg_op_t *bg_op)
 	}
 	else if(prev_height != 0)
 	{
-		schedule_redraw();
+		stats_redraw_schedule();
 	}
 }
 

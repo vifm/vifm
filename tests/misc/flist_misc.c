@@ -271,7 +271,7 @@ TEST(fentry_get_size_returns_file_size_for_files)
 	};
 
 	update_string(&cfg.shell, "");
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	assert_ulong_equal(entry.size, fentry_get_size(&lwin, &entry));
 
@@ -286,7 +286,7 @@ TEST(fentry_get_size_returns_file_size_if_nothing_cached)
 	};
 
 	update_string(&cfg.shell, "");
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	assert_ulong_equal(entry.size, fentry_get_size(&lwin, &entry));
 
@@ -307,7 +307,7 @@ TEST(fentry_get_recalculates_size)
 	};
 
 	update_string(&cfg.shell, "");
-	assert_success(init_status(&cfg));
+	assert_success(stats_init(&cfg));
 
 	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
 	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir", 0700));

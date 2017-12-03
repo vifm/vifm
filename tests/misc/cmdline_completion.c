@@ -18,6 +18,7 @@
 #include "../../src/engine/variables.h"
 #include "../../src/int/path_env.h"
 #include "../../src/modes/cmdline.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"

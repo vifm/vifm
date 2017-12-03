@@ -123,35 +123,35 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(vim_doc_dir)" "$(DESTDIR)$(vimdoc_doc_dir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
-	cfg/info.$(OBJEXT) compat/curses.$(OBJEXT) \
-	compat/dtype.$(OBJEXT) compat/getopt.$(OBJEXT) \
-	compat/getopt1.$(OBJEXT) compat/mntent.$(OBJEXT) \
-	compat/os.$(OBJEXT) compat/pthread.$(OBJEXT) \
-	compat/reallocarray.$(OBJEXT) engine/abbrevs.$(OBJEXT) \
-	engine/autocmds.$(OBJEXT) engine/cmds.$(OBJEXT) \
-	engine/completion.$(OBJEXT) engine/functions.$(OBJEXT) \
-	engine/keys.$(OBJEXT) engine/mode.$(OBJEXT) \
-	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
-	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
-	engine/variables.$(OBJEXT) int/desktop.$(OBJEXT) \
-	int/file_magic.$(OBJEXT) int/fuse.$(OBJEXT) \
-	int/path_env.$(OBJEXT) int/term_title.$(OBJEXT) \
-	int/vim.$(OBJEXT) io/ioe.$(OBJEXT) io/ioeta.$(OBJEXT) \
-	io/iop.$(OBJEXT) io/ior.$(OBJEXT) io/private/ioc.$(OBJEXT) \
-	io/private/ioe.$(OBJEXT) io/private/ioeta.$(OBJEXT) \
-	io/private/ionotif.$(OBJEXT) io/private/traverser.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bmarks_menu.$(OBJEXT) \
-	menus/cabbrevs_menu.$(OBJEXT) menus/colorscheme_menu.$(OBJEXT) \
-	menus/commands_menu.$(OBJEXT) menus/dirhistory_menu.$(OBJEXT) \
-	menus/dirstack_menu.$(OBJEXT) menus/filetypes_menu.$(OBJEXT) \
-	menus/find_menu.$(OBJEXT) menus/grep_menu.$(OBJEXT) \
-	menus/history_menu.$(OBJEXT) menus/jobs_menu.$(OBJEXT) \
-	menus/locate_menu.$(OBJEXT) menus/trash_menu.$(OBJEXT) \
-	menus/trashes_menu.$(OBJEXT) menus/map_menu.$(OBJEXT) \
-	menus/marks_menu.$(OBJEXT) menus/menus.$(OBJEXT) \
-	menus/registers_menu.$(OBJEXT) menus/undolist_menu.$(OBJEXT) \
-	menus/users_menu.$(OBJEXT) menus/vifm_menu.$(OBJEXT) \
+am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
+	compat/curses.$(OBJEXT) compat/dtype.$(OBJEXT) \
+	compat/getopt.$(OBJEXT) compat/getopt1.$(OBJEXT) \
+	compat/mntent.$(OBJEXT) compat/os.$(OBJEXT) \
+	compat/pthread.$(OBJEXT) compat/reallocarray.$(OBJEXT) \
+	engine/abbrevs.$(OBJEXT) engine/autocmds.$(OBJEXT) \
+	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
+	engine/functions.$(OBJEXT) engine/keys.$(OBJEXT) \
+	engine/mode.$(OBJEXT) engine/options.$(OBJEXT) \
+	engine/parsing.$(OBJEXT) engine/text_buffer.$(OBJEXT) \
+	engine/var.$(OBJEXT) engine/variables.$(OBJEXT) \
+	int/desktop.$(OBJEXT) int/file_magic.$(OBJEXT) \
+	int/fuse.$(OBJEXT) int/path_env.$(OBJEXT) \
+	int/term_title.$(OBJEXT) int/vim.$(OBJEXT) io/ioe.$(OBJEXT) \
+	io/ioeta.$(OBJEXT) io/iop.$(OBJEXT) io/ior.$(OBJEXT) \
+	io/private/ioc.$(OBJEXT) io/private/ioe.$(OBJEXT) \
+	io/private/ioeta.$(OBJEXT) io/private/ionotif.$(OBJEXT) \
+	io/private/traverser.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bmarks_menu.$(OBJEXT) menus/cabbrevs_menu.$(OBJEXT) \
+	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
+	menus/dirhistory_menu.$(OBJEXT) menus/dirstack_menu.$(OBJEXT) \
+	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
+	menus/grep_menu.$(OBJEXT) menus/history_menu.$(OBJEXT) \
+	menus/jobs_menu.$(OBJEXT) menus/locate_menu.$(OBJEXT) \
+	menus/trash_menu.$(OBJEXT) menus/trashes_menu.$(OBJEXT) \
+	menus/map_menu.$(OBJEXT) menus/marks_menu.$(OBJEXT) \
+	menus/menus.$(OBJEXT) menus/registers_menu.$(OBJEXT) \
+	menus/undolist_menu.$(OBJEXT) menus/users_menu.$(OBJEXT) \
+	menus/vifm_menu.$(OBJEXT) \
 	modes/dialogs/attr_dialog_nix.$(OBJEXT) \
 	modes/dialogs/change_dialog.$(OBJEXT) \
 	modes/dialogs/msg_dialog.$(OBJEXT) \
@@ -169,17 +169,18 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/hist.$(OBJEXT) \
 	utils/filemon.$(OBJEXT) utils/filter.$(OBJEXT) \
 	utils/fs.$(OBJEXT) utils/fsdata.$(OBJEXT) \
 	utils/fsddata.$(OBJEXT) utils/fswatch_nix.$(OBJEXT) \
-	utils/globs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
-	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
-	utils/matchers.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/regexp.$(OBJEXT) utils/str.$(OBJEXT) \
-	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
-	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
-	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
-	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) cmd_completion.$(OBJEXT) \
-	cmd_core.$(OBJEXT) cmd_handlers.$(OBJEXT) compare.$(OBJEXT) \
-	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	utils/globs.$(OBJEXT) utils/hist.$(OBJEXT) \
+	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
+	utils/matcher.$(OBJEXT) utils/matchers.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/regexp.$(OBJEXT) \
+	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
+	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	cmd_completion.$(OBJEXT) cmd_core.$(OBJEXT) \
+	cmd_handlers.$(OBJEXT) compare.$(OBJEXT) dir_stack.$(OBJEXT) \
+	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fops_common.$(OBJEXT) \
 	fops_cpmv.$(OBJEXT) fops_misc.$(OBJEXT) fops_put.$(OBJEXT) \
 	fops_rename.$(OBJEXT) filetype.$(OBJEXT) filtering.$(OBJEXT) \
@@ -644,7 +645,6 @@ dist_docs_DATA = $(docsfile)
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
-	cfg/hist.c cfg/hist.h \
 	cfg/info.c cfg/info.h \
 	cfg/info_chars.h \
 	\
@@ -756,6 +756,7 @@ vifm_SOURCES = \
 	utils/fsddata.c utils/fsddata.h \
 	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \
+	utils/hist.c utils/hist.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
@@ -935,7 +936,6 @@ cfg/$(DEPDIR)/$(am__dirstamp):
 	@: > cfg/$(DEPDIR)/$(am__dirstamp)
 cfg/config.$(OBJEXT): cfg/$(am__dirstamp) \
 	cfg/$(DEPDIR)/$(am__dirstamp)
-cfg/hist.$(OBJEXT): cfg/$(am__dirstamp) cfg/$(DEPDIR)/$(am__dirstamp)
 cfg/info.$(OBJEXT): cfg/$(am__dirstamp) cfg/$(DEPDIR)/$(am__dirstamp)
 compat/$(am__dirstamp):
 	@$(MKDIR_P) compat
@@ -1169,6 +1169,8 @@ utils/fswatch_nix.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/globs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/hist.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/int_stack.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/log.$(OBJEXT): utils/$(am__dirstamp) \
@@ -1293,7 +1295,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/viewcolumns_parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/curses.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@compat/$(DEPDIR)/dtype.Po@am__quote@
@@ -1385,6 +1386,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fsddata.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fswatch_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/globs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matcher.Po@am__quote@

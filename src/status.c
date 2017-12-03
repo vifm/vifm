@@ -35,6 +35,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "compat/pthread.h"
+#include "compat/reallocarray.h"
 #include "ui/colors.h"
 #include "ui/ui.h"
 #include "utils/env.h"
@@ -45,6 +46,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "cmd_completion.h"
+#include "cmd_core.h"
 #include "filelist.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
@@ -65,6 +67,7 @@ static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
+static void save_into_history(const char item[], hist_t *hist, int len);
 static void size_updater(void *data, void *arg);
 
 status_t curr_stats;
@@ -83,7 +86,7 @@ static fsdata_t *dcache_size;
 static fsdata_t *dcache_nitems;
 
 int
-init_status(config_t *config)
+stats_init(config_t *config)
 {
 	inside_screen = !is_null_or_empty(env_get(SCREEN_ENVVAR));
 	inside_tmux = !is_null_or_empty(env_get(TMUX_ENVVAR));
@@ -94,11 +97,18 @@ init_status(config_t *config)
 	curr_stats.exec_env_type = get_exec_env_type();
 	stats_update_shell_type(config->shell);
 
-	return reset_status(config);
+	(void)hist_init(&curr_stats.cmd_hist, config->history_len);
+	(void)hist_init(&curr_stats.search_hist, config->history_len);
+	(void)hist_init(&curr_stats.prompt_hist, config->history_len);
+	(void)hist_init(&curr_stats.filter_hist, config->history_len);
+
+	hists_resize(config->history_len);
+
+	return stats_reset(config);
 }
 
 /* Initializes most fields of the status structure, some are left to be
- * initialized by the reset_status() function. */
+ * initialized by the stats_reset() function. */
 static void
 load_def_values(status_t *stats, config_t *config)
 {
@@ -170,6 +180,8 @@ load_def_values(status_t *stats, config_t *config)
 
 	stats->global_local_settings = 0;
 
+	stats->history_size = 0;
+
 #ifdef HAVE_LIBGTK
 	stats->gtk_available = 0;
 #endif
@@ -206,7 +218,7 @@ set_gtk_available(status_t *stats)
 }
 
 int
-reset_status(const config_t *config)
+stats_reset(const config_t *config)
 {
 	set_last_cmdline_command("");
 
@@ -230,13 +242,13 @@ reset_dircache(void)
 }
 
 void
-schedule_redraw(void)
+stats_redraw_schedule(void)
 {
 	pending_redraw = 1;
 }
 
 int
-fetch_redraw_scheduled(void)
+stats_redraw_fetch(void)
 {
 	if(pending_redraw)
 	{
@@ -247,7 +259,7 @@ fetch_redraw_scheduled(void)
 }
 
 void
-set_using_term_multiplexer(int use_term_multiplexer)
+stats_set_use_multiplexer(int use_term_multiplexer)
 {
 	if(!use_term_multiplexer)
 	{
@@ -265,28 +277,6 @@ set_using_term_multiplexer(int use_term_multiplexer)
 	{
 		curr_stats.term_multiplexer = TM_NONE;
 	}
-}
-
-void
-update_last_cmdline_command(const char cmd[])
-{
-	if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
-	{
-		set_last_cmdline_command(cmd);
-	}
-}
-
-/* Sets last_cmdline_command field of the status structure. */
-static void
-set_last_cmdline_command(const char cmd[])
-{
-	const int err = replace_string(&curr_stats.last_cmdline_command, cmd);
-	if(err != 0)
-	{
-		LOG_ERROR_MSG("replace_string() failed on duplicating: %s", cmd);
-	}
-	assert(curr_stats.last_cmdline_command != NULL &&
-			"The field was not initialized properly");
 }
 
 void
@@ -362,6 +352,114 @@ stats_save_msg(const char msg[])
 		curr_stats.msg_head = (curr_stats.msg_head + 1)%ARRAY_LEN(curr_stats.msgs);
 	}
 	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
+}
+
+void
+hists_resize(int new_size)
+{
+	const int old_size = curr_stats.history_size;
+	const int delta = new_size - old_size;
+
+	if(new_size <= 0)
+	{
+		hist_reset(&curr_stats.search_hist, old_size);
+		hist_reset(&curr_stats.cmd_hist, old_size);
+		hist_reset(&curr_stats.prompt_hist, old_size);
+		hist_reset(&curr_stats.filter_hist, old_size);
+		curr_stats.history_size = 0;
+		return;
+	}
+
+	curr_stats.history_size = new_size;
+
+	if(delta < 0)
+	{
+		hist_trunc(&curr_stats.search_hist, new_size, -delta);
+		hist_trunc(&curr_stats.cmd_hist, new_size, -delta);
+		hist_trunc(&curr_stats.prompt_hist, new_size, -delta);
+		hist_trunc(&curr_stats.filter_hist, new_size, -delta);
+	}
+
+	curr_stats.cmd_hist.items = reallocarray(curr_stats.cmd_hist.items, new_size,
+			sizeof(char *));
+	curr_stats.search_hist.items = reallocarray(curr_stats.search_hist.items,
+			new_size, sizeof(char *));
+	curr_stats.prompt_hist.items = reallocarray(curr_stats.prompt_hist.items,
+			new_size, sizeof(char *));
+	curr_stats.filter_hist.items = reallocarray(curr_stats.filter_hist.items,
+			new_size, sizeof(char *));
+
+	if(delta > 0)
+	{
+		const size_t str_item_len = sizeof(char *)*delta;
+
+		memset(curr_stats.cmd_hist.items + old_size, 0, str_item_len);
+		memset(curr_stats.search_hist.items + old_size, 0, str_item_len);
+		memset(curr_stats.prompt_hist.items + old_size, 0, str_item_len);
+		memset(curr_stats.filter_hist.items + old_size, 0, str_item_len);
+	}
+}
+
+void
+hists_commands_save(const char command[])
+{
+	if(is_history_command(command))
+	{
+		if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
+		{
+			set_last_cmdline_command(command);
+		}
+		save_into_history(command, &curr_stats.cmd_hist, curr_stats.history_size);
+	}
+}
+
+/* Sets last_cmdline_command field of the status structure. */
+static void
+set_last_cmdline_command(const char cmd[])
+{
+	const int err = replace_string(&curr_stats.last_cmdline_command, cmd);
+	if(err != 0)
+	{
+		LOG_ERROR_MSG("replace_string() failed on duplicating: %s", cmd);
+	}
+	assert(curr_stats.last_cmdline_command != NULL &&
+			"The field was not initialized properly");
+}
+
+void
+hists_search_save(const char pattern[])
+{
+	save_into_history(pattern, &curr_stats.search_hist, curr_stats.history_size);
+}
+
+void
+hists_prompt_save(const char input[])
+{
+	save_into_history(input, &curr_stats.prompt_hist, curr_stats.history_size);
+}
+
+void
+hists_filter_save(const char input[])
+{
+	save_into_history(input, &curr_stats.filter_hist, curr_stats.history_size);
+}
+
+/* Adaptor for the hist_add() function, which handles signed history length. */
+static void
+save_into_history(const char item[], hist_t *hist, int len)
+{
+	if(len >= 0)
+	{
+		hist_add(hist, item, len);
+	}
+}
+
+const char *
+hists_search_last(void)
+{
+	return hist_is_empty(&curr_stats.search_hist)
+	     ? ""
+	     : curr_stats.search_hist.items[0];
 }
 
 void

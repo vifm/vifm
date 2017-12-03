@@ -25,6 +25,7 @@
 
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
+#include "utils/hist.h"
 
 /* Special value foe dcache fields meaning that it wasn't set. */
 #define DCACHE_UNKNOWN ((uint64_t)-1)
@@ -188,6 +189,12 @@ typedef struct
 
 	int global_local_settings; /* Set local settings globally. */
 
+	int history_size;   /* Number of elements in histories. */
+	hist_t cmd_hist;    /* History of command-line commands. */
+	hist_t search_hist; /* History of search patterns. */
+	hist_t prompt_hist; /* History of prompt input. */
+	hist_t filter_hist; /* History of local filter patterns. */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
@@ -196,26 +203,24 @@ status_t;
 
 extern status_t curr_stats;
 
-/* Returns non-zero on error. */
-int init_status(struct config_t *config);
+/* Initializes curr_stats from the configuration.  Returns non-zero on error,
+ * otherwise zero is returned. */
+int stats_init(struct config_t *config);
 
 /* Resets some part of runtime status information to its initial values.
  * Returns non-zero on error. */
-int reset_status(const struct config_t *config);
+int stats_reset(const struct config_t *config);
 
 /* Sets internal flag to schedule postponed redraw operation of the UI. */
-void schedule_redraw(void);
+void stats_redraw_schedule(void);
 
 /* Checks for postponed redraw operations of the UI.  Has side effects.  Returns
  * non-zero if redraw operation was scheduled and resets internal flag. */
-int fetch_redraw_scheduled(void);
+int stats_redraw_fetch(void);
 
 /* Updates curr_stats to reflect whether terminal multiplexers support is
  * enabled. */
-void set_using_term_multiplexer(int use_term_multiplexer);
-
-/* Updates last_cmdline_command field of the status structure. */
-void update_last_cmdline_command(const char cmd[]);
+void stats_set_use_multiplexer(int use_term_multiplexer);
 
 /* Updates curr_stats.shell_type field according to passed shell command. */
 void stats_update_shell_type(const char shell_cmd[]);
@@ -246,6 +251,28 @@ int stats_file_choose_action_set(void);
 
 /* Records status bar message. */
 void stats_save_msg(const char msg[]);
+
+/* Managing histories. */
+
+/* Changes size of histories stored in status_t.  Zero or negative value
+ * disables them. */
+void hists_resize(int new_size);
+
+/* Saves command to command history. */
+void hists_commands_save(const char command[]);
+
+/* Saves pattern to search history. */
+void hists_search_save(const char pattern[]);
+
+/* Saves input to prompt history. */
+void hists_prompt_save(const char input[]);
+
+/* Saves input to local filter history. */
+void hists_filter_save(const char pattern[]);
+
+/* Gets the most recently used search pattern.  Returns the pattern or empty
+ * string if search history is empty. */
+const char * hists_search_last(void);
 
 /* Caching of information about directories. */
 

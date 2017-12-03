@@ -21,6 +21,7 @@
 #include <string.h> /* memmove() */
 
 #include "cfg/config.h"
+#include "compat/reallocarray.h"
 #include "ui/fileview.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
@@ -30,9 +31,12 @@
 #include "flist_pos.h"
 
 static void navigate_to_history_pos(view_t *view, int pos);
+static void free_view_history(view_t *view);
+static void reduce_view_history(view_t *view, int new_size);
+static void free_view_history_items(const history_t history[], size_t len);
 static int find_in_hist(const view_t *view, const view_t *source, int *pos,
 		int *rel_pos);
-static history_t *find_hist_entry(const view_t *view, const char dir[]);
+static history_t * find_hist_entry(const view_t *view, const char dir[]);
 
 void
 flist_hist_go_back(view_t *view)
@@ -101,6 +105,65 @@ navigate_to_history_pos(view_t *view, int pos)
 }
 
 void
+flist_hist_resize(view_t *view, int new_size)
+{
+	const int old_size = MAX(cfg.history_len, 0);
+	const int delta = new_size - old_size;
+
+	if(new_size <= 0)
+	{
+		free_view_history(view);
+		return;
+	}
+
+	if(delta < 0)
+	{
+		reduce_view_history(view, new_size);
+	}
+
+	view->history = reallocarray(view->history, new_size, sizeof(history_t));
+
+	if(delta > 0)
+	{
+		const size_t hist_item_len = sizeof(history_t)*delta;
+		memset(view->history + old_size, 0, hist_item_len);
+	}
+}
+
+/* Clears and frees directory history of the view. */
+static void
+free_view_history(view_t *view)
+{
+	free_view_history_items(view->history, view->history_num);
+	free(view->history);
+	view->history = NULL;
+
+	view->history_num = 0;
+	view->history_pos = 0;
+}
+
+/* Moves items of directory history when size of history becomes smaller. */
+static void
+reduce_view_history(view_t *view, int new_size)
+{
+	const int delta = MIN(view->history_num - new_size, view->history_pos);
+	if(delta <= 0)
+	{
+		return;
+	}
+
+	free_view_history_items(view->history, MIN(new_size, delta));
+	memmove(view->history, view->history + delta,
+			sizeof(history_t)*(view->history_num - delta));
+
+	if(view->history_num > new_size)
+	{
+		view->history_num = new_size;
+	}
+	view->history_pos -= delta;
+}
+
+void
 flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 {
 	int x;
@@ -143,7 +206,7 @@ flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 		x = view->history_num - 1;
 		while(x > view->history_pos)
 		{
-			cfg_free_history_items(&view->history[x--], 1);
+			free_view_history_items(&view->history[x--], 1);
 		}
 		view->history_num = view->history_pos + 1;
 	}
@@ -151,7 +214,7 @@ flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 
 	if(x == cfg.history_len)
 	{
-		cfg_free_history_items(view->history, 1);
+		free_view_history_items(view->history, 1);
 		memmove(view->history, view->history + 1,
 				sizeof(history_t)*(cfg.history_len - 1));
 
@@ -163,6 +226,18 @@ flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 	view->history[x].rel_pos = rel_pos;
 	++view->history_num;
 	view->history_pos = view->history_num - 1;
+}
+
+/* Frees memory previously allocated for specified history items. */
+static void
+free_view_history_items(const history_t history[], size_t len)
+{
+	size_t i;
+	for(i = 0; i < len; ++i)
+	{
+		free(history[i].dir);
+		free(history[i].file);
+	}
 }
 
 int

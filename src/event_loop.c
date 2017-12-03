@@ -415,7 +415,7 @@ process_scheduled_updates(void)
 		need_redraw += (process_scheduled_updates_of_view(other_view) != 0);
 	}
 
-	need_redraw += (fetch_redraw_scheduled() != 0);
+	need_redraw += (stats_redraw_fetch() != 0);
 
 	if(need_redraw)
 	{

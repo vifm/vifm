@@ -176,7 +176,6 @@ Code improvements:
   * Fix code duplication related to composing of undo messages.
   * Share common part of tests.
   * Allow limiting input length for command-line prompt submode.
-  * Move all histories from config to status (they are not configs, right?).
   * Get rid of repeatable `menu->win_rows - 3` in menu.c.
   * Separate filelist data from view data (extract into separate structure).
   * Improve logging (print back trace in some cases, increase verbosity).

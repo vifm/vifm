@@ -26,7 +26,6 @@
 #include <string.h>
 
 #include "../cfg/config.h"
-#include "../cfg/hist.h"
 #include "../compat/curses.h"
 #include "../engine/keys.h"
 #include "../engine/mode.h"
@@ -34,6 +33,7 @@
 #include "../ui/fileview.h"
 #include "../ui/statusbar.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -972,14 +972,14 @@ search(key_info_t key_info, int backward, int interactive)
 
 	int found;
 
-	if(hist_is_empty(&cfg.search_hist))
+	if(hist_is_empty(&curr_stats.search_hist))
 	{
 		return;
 	}
 
 	if(view->matches == 0)
 	{
-		const char *const pattern = cfg_get_last_search_pattern();
+		const char *const pattern = hists_search_last();
 		curr_stats.save_msg = find_vpattern(view, pattern, backward, interactive);
 		return;
 	}

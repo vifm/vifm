@@ -4,6 +4,7 @@
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/ui/ui.h"
 #include "../../src/undo.h"
 
 static int exec_func(OPS op, void *data, const char *src, const char *dst);

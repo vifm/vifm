@@ -320,8 +320,8 @@ flist_sel_by_pattern(view_t *view, const char pattern[], int erase_old,
 {
 	int i;
 	char *error;
-	matchers_t *const ms = matchers_alloc(pattern, 0, 1,
-			cfg_get_last_search_pattern(), &error);
+	matchers_t *const ms = matchers_alloc(pattern, 0, 1, hists_search_last(),
+			&error);
 	if(ms == NULL)
 	{
 		ui_sb_errf("Pattern error: %s", error);

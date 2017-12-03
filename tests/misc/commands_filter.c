@@ -69,7 +69,7 @@ TEST(filter_with_empty_value_reuses_last_search)
 	                       "Auto               ";
 
 	cfg_resize_histories(5);
-	cfg_save_search_history("pattern");
+	hists_search_save("pattern");
 
 	assert_success(exec_commands("filter //I", &lwin, CIT_COMMAND));
 	ui_sb_msg("");
@@ -120,7 +120,7 @@ TEST(filter_reset_is_not_affected_by_search_history)
 	                       "Auto               ";
 
 	cfg_resize_histories(5);
-	cfg_save_search_history("pattern");
+	hists_search_save("pattern");
 
 	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));

@@ -34,7 +34,6 @@
 #include <string.h> /* strcmp() strcpy() strlen() */
 
 #include "cfg/config.h"
-#include "cfg/hist.h"
 #include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/autocmds.h"
@@ -58,6 +57,7 @@
 #include "utils/file_streams.h"
 #include "utils/filter.h"
 #include "utils/fs.h"
+#include "utils/hist.h"
 #include "utils/int_stack.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -267,14 +267,14 @@ history_by_type(CmdInputType type)
 	switch(type)
 	{
 		case CIT_COMMAND:
-			return &cfg.cmd_hist;
+			return &curr_stats.cmd_hist;
 		case CIT_PROMPT_INPUT:
-			return &cfg.prompt_hist;
+			return &curr_stats.prompt_hist;
 		case CIT_FILTER_PATTERN:
-			return &cfg.filter_hist;
+			return &curr_stats.filter_hist;
 
 		default:
-			return &cfg.search_hist;
+			return &curr_stats.search_hist;
 	}
 }
 
@@ -314,11 +314,11 @@ save_extcmd(const char command[], CmdInputType type)
 {
 	if(type == CIT_COMMAND)
 	{
-		cfg_save_command_history(command);
+		hists_commands_save(command);
 	}
 	else
 	{
-		cfg_save_search_history(command);
+		hists_search_save(command);
 	}
 }
 
@@ -1078,11 +1078,11 @@ repeat_command(view_t *view, CmdInputType type)
 	{
 		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_FSEARCH_PATTERN:
-			return find_npattern(view, cfg_get_last_search_pattern(), backward, 1);
+			return find_npattern(view, hists_search_last(), backward, 1);
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:
-			return find_vpattern(view, cfg_get_last_search_pattern(), backward, 1);
+			return find_vpattern(view, hists_search_last(), backward, 1);
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:

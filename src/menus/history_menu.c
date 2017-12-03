@@ -22,10 +22,10 @@
 #include <string.h> /* strdup() */
 
 #include "../cfg/config.h"
-#include "../cfg/hist.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../utils/string_array.h"
 #include "../cmd_core.h"
 #include "menus.h"
@@ -50,31 +50,36 @@ static KHandlerResponse history_khandler(view_t *view, menu_data_t *m,
 int
 show_cmdhistory_menu(view_t *view)
 {
-	return show_history(view, CMDHISTORY, &cfg.cmd_hist, "Command Line History");
+	return show_history(view, CMDHISTORY, &curr_stats.cmd_hist,
+			"Command Line History");
 }
 
 int
 show_fsearchhistory_menu(view_t *view)
 {
-	return show_history(view, FSEARCHHISTORY, &cfg.search_hist, "Search History");
+	return show_history(view, FSEARCHHISTORY, &curr_stats.search_hist,
+			"Search History");
 }
 
 int
 show_bsearchhistory_menu(view_t *view)
 {
-	return show_history(view, BSEARCHHISTORY, &cfg.search_hist, "Search History");
+	return show_history(view, BSEARCHHISTORY, &curr_stats.search_hist,
+			"Search History");
 }
 
 int
 show_prompthistory_menu(view_t *view)
 {
-	return show_history(view, PROMPTHISTORY, &cfg.prompt_hist, "Prompt History");
+	return show_history(view, PROMPTHISTORY, &curr_stats.prompt_hist,
+			"Prompt History");
 }
 
 int
 show_filterhistory_menu(view_t *view)
 {
-	return show_history(view, FILTERHISTORY, &cfg.filter_hist, "Filter History");
+	return show_history(view, FILTERHISTORY, &curr_stats.filter_hist,
+			"Filter History");
 }
 
 /* Returns non-zero if status bar message should be saved. */
@@ -107,19 +112,19 @@ execute_history_cb(view_t *view, menu_data_t *m)
 	switch((HistoryType)m->extra_data)
 	{
 		case CMDHISTORY:
-			cfg_save_command_history(line);
+			hists_commands_save(line);
 			exec_commands(line, view, CIT_COMMAND);
 			break;
 		case FSEARCHHISTORY:
-			cfg_save_search_history(line);
+			hists_search_save(line);
 			exec_commands(line, view, CIT_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
-			cfg_save_search_history(line);
+			hists_search_save(line);
 			exec_commands(line, view, CIT_BSEARCH_PATTERN);
 			break;
 		case FILTERHISTORY:
-			cfg_save_filter_history(line);
+			hists_filter_save(line);
 			exec_commands(line, view, CIT_FILTER_PATTERN);
 			break;
 		case PROMPTHISTORY:

@@ -203,7 +203,7 @@ vifm_main(int argc, char *argv[])
 	init_builtin_functions();
 	update_path_env(1);
 
-	if(init_status(&cfg) != 0)
+	if(stats_init(&cfg) != 0)
 	{
 		free_string_array(files, nfiles);
 
@@ -541,20 +541,12 @@ vifm_restart(void)
 	/* Autocommands. */
 	vle_aucmd_remove(NULL, NULL);
 
-	/* Directory histories. */
-	ui_view_clear_history(&lwin);
-	ui_view_clear_history(&rwin);
-
-	/* All kinds of history. */
-	(void)hist_reset(&cfg.search_hist, cfg.history_len);
-	(void)hist_reset(&cfg.cmd_hist, cfg.history_len);
-	(void)hist_reset(&cfg.prompt_hist, cfg.history_len);
-	(void)hist_reset(&cfg.filter_hist, cfg.history_len);
-	cfg.history_len = 0;
+	/* All kinds of histories. */
+	cfg_resize_histories(0);
 
 	/* Session status.  Must be reset _before_ options, because options take some
 	 * of values from status. */
-	(void)reset_status(&cfg);
+	(void)stats_reset(&cfg);
 
 	/* Options of current pane. */
 	reset_options_to_default();

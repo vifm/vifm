@@ -31,7 +31,6 @@
 #include <wctype.h> /* iswprint() */
 
 #include "../cfg/config.h"
-#include "../cfg/hist.h"
 #include "../compat/curses.h"
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
@@ -48,6 +47,7 @@
 #include "../ui/statusbar.h"
 #include "../ui/statusline.h"
 #include "../ui/ui.h"
+#include "../utils/hist.h"
 #include "../utils/macros.h"
 #include "../utils/matcher.h"
 #include "../utils/path.h"
@@ -958,7 +958,7 @@ extedit_prompt(const char input[], int cursor_col)
 	}
 	else
 	{
-		cfg_save_prompt_history(input);
+		hists_prompt_save(input);
 
 		ui_sb_err("Error querying data from external source.");
 		curr_stats.save_msg = 1;
@@ -1322,9 +1322,8 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(!cfg.inc_search || prev_mode == VIEW_MODE || input[0] == '\0')
 	{
-		const char *const pattern = (input[0] == '\0')
-		                          ? cfg_get_last_search_pattern()
-		                          : input;
+		const char *const pattern = (input[0] == '\0') ? hists_search_last()
+		                                               : input;
 
 		switch(sub_mode)
 		{
@@ -1469,7 +1468,7 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 {
 	if(input_stat.search_mode)
 	{
-		cfg_save_search_history(input);
+		hists_search_save(input);
 	}
 	else if(sub_mode == CLS_COMMAND)
 	{
@@ -1477,12 +1476,12 @@ save_input_to_history(const keys_info_t *keys_info, const char input[])
 		const int ignore_input = mapped_input || keys_info->recursive;
 		if(!ignore_input)
 		{
-			cfg_save_command_history(input);
+			hists_commands_save(input);
 		}
 	}
 	else if(sub_mode == CLS_PROMPT)
 	{
-		cfg_save_prompt_history(input);
+		hists_prompt_save(input);
 	}
 }
 
@@ -1732,7 +1731,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_xslash(key_info_t key_info, keys_info_t *keys_info)
 {
-	paste_str(cfg_get_last_search_pattern(), 0);
+	paste_str(hists_search_last(), 0);
 }
 
 /* Inserts value of automatic filter of active pane into current cursor
@@ -2021,7 +2020,7 @@ cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 
 	stop_regular_completion();
 
-	if(hist_is_empty(&cfg.cmd_hist))
+	if(hist_is_empty(&curr_stats.cmd_hist))
 	{
 		return;
 	}
@@ -2071,9 +2070,10 @@ next_dot_completion(void)
 	char *last;
 	wchar_t *wide;
 
-	if(input_stat.dot_pos <= cfg.cmd_hist.pos)
+	if(input_stat.dot_pos <= curr_stats.cmd_hist.pos)
 	{
-		last = get_last_argument(cfg.cmd_hist.items[input_stat.dot_pos++], 1, &len);
+		last = get_last_argument(curr_stats.cmd_hist.items[input_stat.dot_pos++], 1,
+				&len);
 	}
 	else
 	{
@@ -2366,19 +2366,19 @@ pick_hist(void)
 {
 	if(sub_mode == CLS_COMMAND)
 	{
-		return &cfg.cmd_hist;
+		return &curr_stats.cmd_hist;
 	}
 	if(input_stat.search_mode)
 	{
-		return &cfg.search_hist;
+		return &curr_stats.search_hist;
 	}
 	if(sub_mode == CLS_PROMPT)
 	{
-		return &cfg.prompt_hist;
+		return &curr_stats.prompt_hist;
 	}
 	if(sub_mode == CLS_FILTER)
 	{
-		return &cfg.filter_hist;
+		return &curr_stats.filter_hist;
 	}
 	return NULL;
 }

@@ -12,6 +12,7 @@
 #include "../../src/menus/menus.h"
 #include "../../src/modes/modes.h"
 #include "../../src/ui/statusbar.h"
+#include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
 

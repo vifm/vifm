@@ -60,7 +60,7 @@ received_sigwinch(void)
 
 	if(!isendwin())
 	{
-		schedule_redraw();
+		stats_redraw_schedule();
 	}
 	else
 	{
@@ -72,7 +72,7 @@ static void
 received_sigcont(void)
 {
 	reset_prog_mode();
-	schedule_redraw();
+	stats_redraw_schedule();
 }
 
 static void

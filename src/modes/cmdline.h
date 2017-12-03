@@ -68,8 +68,8 @@ void redraw_cmdline(void);
 #ifdef TEST
 #include <stddef.h> /* size_t wchar_t */
 
-#include "../cfg/hist.h"
 #include "../compat/fs_limits.h"
+#include "../utils/hist.h"
 
 typedef enum
 {

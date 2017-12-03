@@ -22,8 +22,8 @@
 #include <stdlib.h> /* calloc() free() */
 #include <string.h> /* memmove() */
 
-#include "../utils/macros.h"
-#include "../utils/string_array.h"
+#include "macros.h"
+#include "string_array.h"
 
 #define NO_POS (-1)
 
