@@ -33,7 +33,7 @@ cache:
 script:
  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then
      scripts/fix-timestamps fast && (
-       if [ "$CC" = gcc ]; then
+       if [ "$CC" = gcc -a "$TRAVIS_OS_NAME" = linux ]; then
          pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1 &&
          ./configure --enable-coverage;
        else
