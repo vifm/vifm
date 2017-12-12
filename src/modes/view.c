@@ -116,7 +116,7 @@ enum
 };
 
 static int try_resurrect_detached(const char full_path[], int explore);
-static void try_redraw_explore_view(const view_t *const view, int vi_index);
+static void try_redraw_explore_view(const view_t *view);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
 static void free_view_info(view_info_t *vi);
@@ -188,7 +188,8 @@ static int scroll_to_bottom(view_info_t *vi);
 static void reload_view(view_info_t *vi, int silent);
 static view_info_t * view_info_alloc(void);
 
-static view_info_t view_info[VI_COUNT];
+/* Points to current (for quick view) or last used (for explore mode)
+ * view_info_t structure. */
 static view_info_t *vi;
 
 static keys_add_info_t builtin_cmds[] = {
@@ -302,9 +303,6 @@ view_init_mode(void)
 	assert(ret_code == 0);
 
 	(void)ret_code;
-
-	init_view_info(&view_info[VI_LWIN]);
-	init_view_info(&view_info[VI_RWIN]);
 }
 
 void
@@ -451,8 +449,8 @@ view_redraw(void)
 {
 	view_info_t *saved_vi = vi;
 
-	try_redraw_explore_view(&lwin, VI_LWIN);
-	try_redraw_explore_view(&rwin, VI_RWIN);
+	try_redraw_explore_view(&lwin);
+	try_redraw_explore_view(&rwin);
 
 	if(!lwin.explore_mode && !rwin.explore_mode)
 	{
@@ -465,11 +463,11 @@ view_redraw(void)
 /* Redraws view in explore mode if view is really in explore mode and is visible
  * on the screen. */
 static void
-try_redraw_explore_view(const view_t *const view, int vi_index)
+try_redraw_explore_view(const view_t *const view)
 {
 	if(view->explore_mode && ui_view_is_visible(view))
 	{
-		vi = &view_info[vi_index];
+		vi = view->vi;
 		redraw();
 	}
 }
@@ -510,7 +508,7 @@ view_quit_explore_mode(view_t *view)
 
 	view->explore_mode = 0;
 
-	reset_view_info(&view_info[(view == &lwin) ? VI_LWIN : VI_RWIN]);
+	reset_view_info(view->vi);
 
 	redraw_view(view);
 	ui_view_title_update(view);
@@ -703,40 +701,24 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_right_or_bottom())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 0, 1);
 }
 
 static void
 cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_top_or_left())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 1, 0);
 }
 
 static void
 cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_right_or_bottom())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 1, 1);
 }
 
 static void
 cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_top_or_left())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 0, 0);
 }
 
@@ -749,27 +731,21 @@ get_active_view(void)
 }
 
 void
-view_switch_panes(void)
+view_panes_swapped(void)
 {
-	view_info_t saved_vi = view_info[VI_LWIN];
-	view_info[VI_LWIN] = view_info[VI_RWIN];
-	view_info[VI_RWIN] = saved_vi;
-
-	if(vi == &view_info[VI_LWIN])
-	{
-		vi = &view_info[VI_RWIN];
-	}
-	else if(vi == &view_info[VI_RWIN])
-	{
-		vi = &view_info[VI_LWIN];
-	}
-	else if(curr_stats.preview.explore != NULL)
+	if(curr_stats.preview.explore != NULL)
 	{
 		curr_stats.preview.explore->view = curr_view;
 	}
 
-	view_info[VI_LWIN].view = &lwin;
-	view_info[VI_RWIN].view = &rwin;
+	if(lwin.vi != NULL)
+	{
+		lwin.vi->view = &lwin;
+	}
+	if(rwin.vi != NULL)
+	{
+		rwin.vi->view = &rwin;
+	}
 }
 
 /* Go to bottom-right window. */
@@ -957,17 +933,14 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 static void
 pick_vi(int explore)
 {
-	if(explore)
+	view_info_t **ptr = (explore ? &curr_view->vi : &curr_stats.preview.explore);
+
+	if(*ptr == NULL)
 	{
-		vi = (&view_info[curr_view == &lwin ? VI_LWIN : VI_RWIN]);
-		return;
+		*ptr = view_info_alloc();
 	}
 
-	if(curr_stats.preview.explore == NULL)
-	{
-		curr_stats.preview.explore = view_info_alloc();
-	}
-	vi = curr_stats.preview.explore;
+	vi = *ptr;
 }
 
 static void
@@ -1604,8 +1577,8 @@ view_check_for_updates(void)
 	int need_redraw = 0;
 
 	need_redraw += forward_if_changed(curr_stats.preview.explore);
-	need_redraw += forward_if_changed(&view_info[VI_LWIN]);
-	need_redraw += forward_if_changed(&view_info[VI_RWIN]);
+	need_redraw += forward_if_changed(lwin.vi);
+	need_redraw += forward_if_changed(rwin.vi);
 
 	if(need_redraw)
 	{

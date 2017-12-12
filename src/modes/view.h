@@ -60,8 +60,8 @@ void view_redraw(void);
  * preserve, otherwise zero is returned. */
 int view_find_pattern(const char pattern[], int backward);
 
-/* Handles switch of panes. */
-void view_switch_panes(void);
+/* Callback-like routine that handles swapping of panes. */
+void view_panes_swapped(void);
 
 /* Checks whether contents of either view should be updated. */
 void view_check_for_updates(void);
