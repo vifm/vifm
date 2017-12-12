@@ -104,10 +104,11 @@ dcache_result_t;
 /* Current preview (quickview) parameters. */
 typedef struct
 {
-	char *cleanup_cmd;          /* Cleanup command. */
-	unsigned int on : 1;        /* Whether preview mode is active. */
-	unsigned int graphical : 1; /* Whether current preview displays graphics. */
-	unsigned int clearing : 1;  /* Whether in process of clearing preview. */
+	char *cleanup_cmd;           /* Cleanup command. */
+	struct view_info_t *explore; /* State of explored quick view. */
+	unsigned int on : 1;         /* Whether preview mode is active. */
+	unsigned int graphical : 1;  /* Whether current preview displays graphics. */
+	unsigned int clearing : 1;   /* Whether in process of clearing preview. */
 }
 preview_t;
 
