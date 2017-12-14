@@ -73,7 +73,7 @@ enum
 };
 
 /* Describes view state and its properties. */
-typedef struct
+struct view_info_t
 {
 	/* Data of the view. */
 	char **lines;     /* List of real lines. */
@@ -105,20 +105,18 @@ typedef struct
 	int detached;   /* Whether view mode was detached. */
 	int graphical;  /* Whether viewer presumably displays graphics. */
 	int wrap;       /* Whether lines are wrapped. */
-}
-view_info_t;
+};
 
 /* View information structure indexes and count. */
 enum
 {
-	VI_QV,    /* Index of view information structure for quickview window. */
 	VI_LWIN,  /* Index of view information structure for left window. */
 	VI_RWIN,  /* Index of view information structure for right window. */
 	VI_COUNT, /* Number of view information structures. */
 };
 
 static int try_resurrect_detached(const char full_path[], int explore);
-static void try_redraw_explore_view(const view_t *const view, int vi_index);
+static void try_redraw_explore_view(const view_t *view);
 static void reset_view_info(view_info_t *vi);
 static void init_view_info(view_info_t *vi);
 static void free_view_info(view_info_t *vi);
@@ -188,9 +186,11 @@ static int get_file_to_explore(const view_t *view, char buf[], size_t buf_len);
 static int forward_if_changed(view_info_t *vi);
 static int scroll_to_bottom(view_info_t *vi);
 static void reload_view(view_info_t *vi, int silent);
+static view_info_t * view_info_alloc(void);
 
-static view_info_t view_info[VI_COUNT];
-static view_info_t *vi = &view_info[VI_QV];
+/* Points to current (for quick view) or last used (for explore mode)
+ * view_info_t structure. */
+static view_info_t *vi;
 
 static keys_add_info_t builtin_cmds[] = {
 	{WK_C_b,           {{&cmd_b},      .descr = "scroll page up"}},
@@ -303,10 +303,6 @@ view_init_mode(void)
 	assert(ret_code == 0);
 
 	(void)ret_code;
-
-	init_view_info(&view_info[VI_QV]);
-	init_view_info(&view_info[VI_LWIN]);
-	init_view_info(&view_info[VI_RWIN]);
 }
 
 void
@@ -388,7 +384,8 @@ view_detached_make(view_t *view, const char cmd[])
 static int
 try_resurrect_detached(const char full_path[], int explore)
 {
-	const int same_file = vi->detached
+	const int same_file = vi != NULL
+	                   && vi->detached
 	                   && vi->view == (explore ? curr_view : other_view)
 	                   && vi->filename != NULL
 	                   && stroscmp(vi->filename, full_path) == 0;
@@ -452,8 +449,8 @@ view_redraw(void)
 {
 	view_info_t *saved_vi = vi;
 
-	try_redraw_explore_view(&lwin, VI_LWIN);
-	try_redraw_explore_view(&rwin, VI_RWIN);
+	try_redraw_explore_view(&lwin);
+	try_redraw_explore_view(&rwin);
 
 	if(!lwin.explore_mode && !rwin.explore_mode)
 	{
@@ -466,11 +463,11 @@ view_redraw(void)
 /* Redraws view in explore mode if view is really in explore mode and is visible
  * on the screen. */
 static void
-try_redraw_explore_view(const view_t *const view, int vi_index)
+try_redraw_explore_view(const view_t *const view)
 {
 	if(view->explore_mode && ui_view_is_visible(view))
 	{
-		vi = &view_info[vi_index];
+		vi = view->vi;
 		redraw();
 	}
 }
@@ -511,7 +508,7 @@ view_quit_explore_mode(view_t *view)
 
 	view->explore_mode = 0;
 
-	reset_view_info(&view_info[(view == &lwin) ? VI_LWIN : VI_RWIN]);
+	reset_view_info(view->vi);
 
 	redraw_view(view);
 	ui_view_title_update(view);
@@ -704,40 +701,24 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_right_or_bottom())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 0, 1);
 }
 
 static void
 cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_top_or_left())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 1, 0);
 }
 
 static void
 cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_right_or_bottom())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 1, 1);
 }
 
 static void
 cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(is_top_or_left())
-	{
-		view_switch_panes();
-	}
 	move_window(get_active_view(), 0, 0);
 }
 
@@ -750,27 +731,21 @@ get_active_view(void)
 }
 
 void
-view_switch_panes(void)
+view_panes_swapped(void)
 {
-	view_info_t saved_vi = view_info[VI_LWIN];
-	view_info[VI_LWIN] = view_info[VI_RWIN];
-	view_info[VI_RWIN] = saved_vi;
-
-	if(vi == &view_info[VI_LWIN])
+	if(curr_stats.preview.explore != NULL)
 	{
-		vi = &view_info[VI_RWIN];
-	}
-	else if(vi == &view_info[VI_RWIN])
-	{
-		vi = &view_info[VI_LWIN];
-	}
-	else
-	{
-		view_info[VI_QV].view = curr_view;
+		curr_stats.preview.explore->view = curr_view;
 	}
 
-	view_info[VI_LWIN].view = &lwin;
-	view_info[VI_RWIN].view = &rwin;
+	if(lwin.vi != NULL)
+	{
+		lwin.vi->view = &lwin;
+	}
+	if(rwin.vi != NULL)
+	{
+		rwin.vi->view = &rwin;
+	}
 }
 
 /* Go to bottom-right window. */
@@ -958,8 +933,14 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 static void
 pick_vi(int explore)
 {
-	const int index = !explore ? VI_QV : (curr_view == &lwin ? VI_LWIN : VI_RWIN);
-	vi = &view_info[index];
+	view_info_t **ptr = (explore ? &curr_view->vi : &curr_stats.preview.explore);
+
+	if(*ptr == NULL)
+	{
+		*ptr = view_info_alloc();
+	}
+
+	vi = *ptr;
 }
 
 static void
@@ -1523,7 +1504,7 @@ set_from_default_win(key_info_t *const key_info)
 int
 view_detached_draw(void)
 {
-	if(!vi->detached)
+	if(vi == NULL || !vi->detached)
 	{
 		return 0;
 	}
@@ -1595,9 +1576,9 @@ view_check_for_updates(void)
 {
 	int need_redraw = 0;
 
-	need_redraw += forward_if_changed(&view_info[VI_QV]);
-	need_redraw += forward_if_changed(&view_info[VI_LWIN]);
-	need_redraw += forward_if_changed(&view_info[VI_RWIN]);
+	need_redraw += forward_if_changed(curr_stats.preview.explore);
+	need_redraw += forward_if_changed(lwin.vi);
+	need_redraw += forward_if_changed(rwin.vi);
 
 	if(need_redraw)
 	{
@@ -1612,7 +1593,7 @@ forward_if_changed(view_info_t *vi)
 {
 	filemon_t mon;
 
-	if(!vi->auto_forward)
+	if(vi == NULL || !vi->auto_forward)
 	{
 		return 0;
 	}
@@ -1677,7 +1658,26 @@ reload_view(view_info_t *vi, int silent)
 const char *
 view_detached_get_viewer(void)
 {
-	return vi->viewer;
+	return (vi == NULL ? NULL : vi->viewer);
+}
+
+/* Allocates and initializes view mode information.  Returns pointer to it. */
+static view_info_t *
+view_info_alloc(void)
+{
+	view_info_t *const vi = malloc(sizeof(*vi));
+	init_view_info(vi);
+	return vi;
+}
+
+void
+view_info_free(view_info_t *vi)
+{
+	if(vi != NULL)
+	{
+		free_view_info(vi);
+		free(vi);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

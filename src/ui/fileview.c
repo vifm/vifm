@@ -1742,6 +1742,7 @@ fview_position_updated(view_t *view)
 		}
 		else
 		{
+			redraw_cell(view, old_top, old_curr, 0);
 			put_inactive_mark(view);
 		}
 		return;

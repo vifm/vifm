@@ -375,7 +375,8 @@ struct view_t
 	 * be applied for selected produced by a range. */
 	int user_selection;
 
-	int explore_mode; /* shows whether this view is used for file exploring */
+	int explore_mode;       /* Whether this view is used for file exploring. */
+	struct view_info_t *vi; /* State of explore view (NULL initially). */
 
 	/* Filter which is controlled by user. */
 	struct matcher_t *manual_filter;

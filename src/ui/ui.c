@@ -1286,11 +1286,6 @@ switch_panes_content(void)
 	WINDOW* tmp;
 	int t;
 
-	if(!vle_mode_is(VIEW_MODE))
-	{
-		view_switch_panes();
-	}
-
 	tmp = lwin.win;
 	lwin.win = rwin.win;
 	rwin.win = tmp;
@@ -1317,6 +1312,8 @@ switch_panes_content(void)
 
 	update_origins(&lwin, &rwin.curr_dir[0]);
 	update_origins(&rwin, &lwin.curr_dir[0]);
+
+	view_panes_swapped();
 
 	curr_stats.need_update = UT_REDRAW;
 }

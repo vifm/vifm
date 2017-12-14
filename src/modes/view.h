@@ -21,6 +21,9 @@
 
 struct view_t;
 
+/* Holds state of a single view mode window. */
+typedef struct view_info_t view_info_t;
+
 /* Initializes view mode. */
 void view_init_mode(void);
 
@@ -57,8 +60,8 @@ void view_redraw(void);
  * preserve, otherwise zero is returned. */
 int view_find_pattern(const char pattern[], int backward);
 
-/* Handles switch of panes. */
-void view_switch_panes(void);
+/* Callback-like routine that handles swapping of panes. */
+void view_panes_swapped(void);
 
 /* Checks whether contents of either view should be updated. */
 void view_check_for_updates(void);
@@ -79,6 +82,9 @@ int view_detached_draw(void);
  * view_detached_make().  Returns pointer to the viewer command or NULL, if
  * there is none. */
 const char * view_detached_get_viewer(void);
+
+/* Frees view info.  The parameter can be NULL. */
+void view_info_free(view_info_t *vi);
 
 #endif /* VIFM__MODES__VIEW_H__ */
 
