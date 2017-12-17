@@ -318,6 +318,7 @@ draw_dir_list_only(view_t *view)
 	if(view == curr_view)
 	{
 		consider_scroll_bind(view);
+		position_hardware_cursor(view);
 	}
 
 	ui_view_win_changed(view);
