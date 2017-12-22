@@ -58,7 +58,6 @@ static void check_expanded_str(const char buf[], int skip, int *nexpansions);
 static pthread_spinlock_t * get_job_bar_changed_lock(void);
 static void init_job_bar_changed_lock(void);
 static int is_job_bar_visible(void);
-static void update_job_bar(void);
 static const char * format_job_bar(void);
 static char ** take_job_descr_snapshot(void);
 
@@ -548,7 +547,7 @@ ui_stat_job_bar_add(bg_op_t *bg_op)
 		return;
 	}
 
-	update_job_bar();
+	ui_stat_job_bar_redraw();
 
 	if(ui_stat_job_bar_height() != prev_height)
 	{
@@ -576,7 +575,7 @@ ui_stat_job_bar_remove(bg_op_t *bg_op)
 
 	if(ui_stat_job_bar_height() != 0)
 	{
-		update_job_bar();
+		ui_stat_job_bar_redraw();
 	}
 	else if(prev_height != 0)
 	{
@@ -595,12 +594,6 @@ ui_stat_job_bar_changed(bg_op_t *bg_op)
 }
 
 void
-ui_stat_job_bar_redraw(void)
-{
-	update_job_bar();
-}
-
-void
 ui_stat_job_bar_check_for_updates(void)
 {
 	static int prev_width;
@@ -615,7 +608,7 @@ ui_stat_job_bar_check_for_updates(void)
 
 	if(job_bar_changed_value || getmaxx(job_bar) != prev_width)
 	{
-		update_job_bar();
+		ui_stat_job_bar_redraw();
 	}
 
 	prev_width = getmaxx(job_bar);
@@ -650,9 +643,8 @@ is_job_bar_visible(void)
 	    && ui_stat_job_bar_height() != 0 && !is_in_menu_like_mode();
 }
 
-/* Fills job bar with up-to-date content. */
-static void
-update_job_bar(void)
+void
+ui_stat_job_bar_redraw(void)
 {
 	if(!is_job_bar_visible())
 	{

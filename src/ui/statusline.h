@@ -56,7 +56,7 @@ void ui_stat_job_bar_remove(struct bg_op_t *bg_op);
 /* Informs about changes of the job. */
 void ui_stat_job_bar_changed(struct bg_op_t *bg_op);
 
-/* Forces redraw of the job bar. */
+/* Fills job bar UI element with up-to-date content. */
 void ui_stat_job_bar_redraw(void);
 
 /* Checks for previously reported changes in background jobs and updates view if
