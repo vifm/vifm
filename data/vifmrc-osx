@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 28 June, 2017)
+" Sample configuration file for vifm on OSX (last updated: 23 December, 2017)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -54,10 +54,6 @@ set novimhelp
 " press return on the file name set this.
 
 set norunexec
-
-" Use KiB, MiB, ... suffixes instead of K, M, ... for size.
-
-set noiec
 
 " Selected color scheme
 
