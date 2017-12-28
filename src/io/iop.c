@@ -539,7 +539,7 @@ iop_cp_internal(io_args_t *const args)
 
 	/* TODO: use sendfile() if platform supports it. */
 
-	if(!cloned)
+	if(!error && !cloned)
 	{
 		while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 		{
