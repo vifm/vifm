@@ -519,8 +519,8 @@ iop_cp_internal(io_args_t *const args)
 		fpos_t pos;
 		/* The following line is required for stupid Windows sometimes.  Why?
 		 * Probably because it's stupid...  Won't harm other systems. */
-		fseek(out, 0, SEEK_END);
-		error = fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0;
+		error |= (fseek(out, 0, SEEK_END) != 0);
+		error |= (fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0);
 
 		orig_out_size = ftell(out);
 
