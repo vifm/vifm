@@ -156,7 +156,7 @@ static int flist_load_tree_internal(view_t *view, const char path[],
 static int make_tree(view_t *view, const char path[], int reload,
 		trie_t *excluded_paths);
 static void tree_from_cv(view_t *view);
-static void complete_tree(const char name[], int valid, const void *parent_data,
+static int complete_tree(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
 static void drop_tops(view_t *view, dir_entry_t *entries, int *nentries,
 		int extra);
@@ -3641,8 +3641,9 @@ tree_from_cv(view_t *view)
 	drop_tops(view, view->custom.entries, &view->custom.entry_count, 1);
 }
 
-/* fsdata_traverse() callback that flattens the tree into array of entries. */
-static void
+/* fsdata_traverse() callback that flattens the tree into array of entries.
+ * Should return non-zero to stop traverser. */
+static int
 complete_tree(const char name[], int valid, const void *parent_data, void *data,
 		void *arg)
 {
@@ -3657,6 +3658,11 @@ complete_tree(const char name[], int valid, const void *parent_data, void *data,
 	int *nentries = (in_place ? &view->list_rows : &view->custom.entry_count);
 
 	dir_entry_t *dir_entry = alloc_dir_entry(entries, *nentries);
+	if(dir_entry == NULL)
+	{
+		return 1;
+	}
+
 	++*nentries;
 
 	if(valid)
@@ -3716,6 +3722,7 @@ complete_tree(const char name[], int valid, const void *parent_data, void *data,
 		}
 		while(dir_entry->child_pos != 0);
 	}
+	return 0;
 }
 
 /* Traverses root children and drops fake root nodes and optionally extra tops

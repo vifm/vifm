@@ -14,7 +14,7 @@
 #endif
 
 static void visitor(void *data, void *arg);
-static void traverser(const char name[], int valid, const void *parent_data,
+static int traverser(const char name[], int valid, const void *parent_data,
 		void *data, void *arg);
 
 static int nnodes;
@@ -256,6 +256,23 @@ TEST(tree_can_be_traversed)
 	fsdata_free(fsd);
 }
 
+TEST(cancellation)
+{
+	int data = 0;
+	fsdata_t *const fsd = fsdata_create(0, 0);
+	assert_success(fsdata_set(fsd, "no/such/path", &data, sizeof(data)));
+
+	nnodes = -1;
+	fsdata_traverse(fsd, &traverser, NULL);
+	assert_int_equal(0, nnodes);
+
+	nnodes = -2;
+	fsdata_traverse(fsd, &traverser, NULL);
+	assert_int_equal(0, nnodes);
+
+	fsdata_free(fsd);
+}
+
 static void
 visitor(void *data, void *arg)
 {
@@ -263,11 +280,11 @@ visitor(void *data, void *arg)
 	d[0] = '6';
 }
 
-static void
+static int
 traverser(const char name[], int valid, const void *parent_data, void *data,
 		void *arg)
 {
-	++nnodes;
+	return (++nnodes == 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
