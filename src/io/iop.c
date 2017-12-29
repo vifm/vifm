@@ -298,7 +298,9 @@ iop_cp_internal(io_args_t *const args)
 	int cloned;
 	struct stat src_st;
 	const char *open_mode = "wb";
-	long orig_out_size = 0l;
+
+	uint64_t orig_out_size = 0U;
+	int correct_out_size = 0;
 
 	ioeta_update(args->estim, src, dst, 0, 0);
 
@@ -522,11 +524,13 @@ iop_cp_internal(io_args_t *const args)
 		error |= (fseek(out, 0, SEEK_END) != 0);
 		error |= (fgetpos(out, &pos) != 0 || fsetpos(in, &pos) != 0);
 
-		orig_out_size = ftell(out);
+		orig_out_size = get_file_size(dst);
+		correct_out_size = (orig_out_size != 0U || ftell(out) == 0);
+		error |= !correct_out_size;
 
 		if(!error)
 		{
-			ioeta_update(args->estim, NULL, NULL, 0, get_file_size(dst));
+			ioeta_update(args->estim, NULL, NULL, 0, orig_out_size);
 		}
 	}
 	else if(args->arg4.fast_file_cloning)
@@ -578,7 +582,7 @@ iop_cp_internal(io_args_t *const args)
 
 	/* Note that we truncate output file even if operation was cancelled by the
 	 * user. */
-	if(crs == IO_CRS_APPEND_TO_FILES && error != 0)
+	if(crs == IO_CRS_APPEND_TO_FILES && error != 0 && correct_out_size)
 	{
 		int error;
 #ifndef _WIN32
