@@ -394,8 +394,10 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 		return 1;
 	}
 
-	if(curr.entries != NULL)
+	if(curr.nentries > 0)
 	{
+		/* When there are no entries, qsort() might be called with a NULL parameter,
+		 * which isn't allowed by the standard. */
 		qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
 	}
 
