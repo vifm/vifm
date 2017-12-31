@@ -3767,8 +3767,8 @@ drop_tops(view_t *view, dir_entry_t *entries, int *nentries, int extra)
 			fentry_free(view, &entries[j++]);
 		}
 
+		memmove(&entries[i], &entries[j], sizeof(*entries)*(*nentries - j));
 		*nentries -= j - i;
-		memmove(&entries[i], &entries[j], sizeof(*entries)*(*nentries - i));
 		entries[i].child_pos = 0;
 	}
 }
