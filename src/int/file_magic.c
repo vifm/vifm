@@ -148,10 +148,6 @@ get_magic_mimetype(const char filename[], char buf[], size_t buf_sz)
 			return -1;
 		}
 	}
-	if(magic == NULL)
-	{
-		return -1;
-	}
 
 	descr = magic_file(magic, filename);
 	if(descr == NULL)
