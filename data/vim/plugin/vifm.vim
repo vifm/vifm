@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2017 May 30
+" Last Change: 2018 January 01
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -116,7 +116,7 @@ function! s:StartVifm(editcmd, ...)
 	else
 		" Work around handicapped neovim...
 		let callback = { 'listf': listf, 'typef' : typef, 'editcmd' : a:editcmd }
-		function! callback.on_exit(id, code)
+		function! callback.on_exit(id, code, event)
 			buffer #
 			silent! bdelete! #
 			call s:HandleRunResults(a:code, self.listf, self.typef, self.editcmd)
