@@ -167,6 +167,8 @@
 	Fixed turning quickview into explore view when preview command doesn't
 	contain macros.  Was broken since 0.8.
 
+	Fixed the plugin in neovim.  Patch by John Shea (a.k.a. coachshea).
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
