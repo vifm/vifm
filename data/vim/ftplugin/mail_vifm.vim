@@ -24,7 +24,7 @@ function! s:AddMailAttacments()
 	else
 		" Work around handicapped neovim...
 		let callback = { 'listf': l:listf }
-		function! callback.on_exit(id, code)
+		function! callback.on_exit(id, code, event)
 			buffer #
 			silent! bdelete! #
 			call s:HandleRunResults(a:code, self.listf)
