@@ -116,8 +116,16 @@ sort_view(view_t *v)
 
 	unsorted_list = v->dir_entry;
 	v->dir_entry = dynarray_extend(NULL, v->list_rows*sizeof(*v->dir_entry));
-
-	sort_tree_slice(&v->dir_entry[0], unsorted_list, v->list_rows, 1);
+	if(v->dir_entry != NULL)
+	{
+		sort_tree_slice(&v->dir_entry[0], unsorted_list, v->list_rows, 1);
+	}
+	else
+	{
+		/* Just do nothing on memory error. */
+		v->dir_entry = unsorted_list;
+		unsorted_list = NULL;
+	}
 
 	if(filter_is_empty(&v->local_filter.filter))
 	{

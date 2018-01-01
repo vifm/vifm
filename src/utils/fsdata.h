@@ -29,8 +29,9 @@
 typedef struct fsdata_t fsdata_t;
 
 /* Type of callback for fsdata_traverse().  Intermediate nodes created
- * indirectly are reported as invalid.  parent_data is NULL for root nodes. */
-typedef void (*fsdata_traverser_func)(const char name[], int valid,
+ * indirectly are reported as invalid.  parent_data is NULL for root nodes.
+ * Should return non-zero to stop traverser. */
+typedef int (*fsdata_traverser_func)(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 
 /* Type of callback for fsdata_map_parents(). */
@@ -58,8 +59,9 @@ int fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len);
 int fsdata_map_parents(fsdata_t *fsd, const char path[],
 		fsdata_visit_func visitor, void *arg);
 
-/* Calls the callback for each node. */
-void fsdata_traverse(fsdata_t *fsd, fsdata_traverser_func traverser, void *arg);
+/* Calls the callback for each node.  Return non-zero if traversing was stopped
+ * prematurely, otherwise zero is returned. */
+int fsdata_traverse(fsdata_t *fsd, fsdata_traverser_func traverser, void *arg);
 
 #endif /* VIFM__UTILS__FSDATA_H__ */
 

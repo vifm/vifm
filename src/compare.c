@@ -73,7 +73,7 @@ static void put_or_free(view_t *view, dir_entry_t *entry, int id, int take);
 static entries_t make_diff_list(trie_t *trie, view_t *view, int *next_id,
 		CompareType ct, int skip_empty, int dups_only);
 static void list_view_entries(const view_t *view, strlist_t *list);
-static void append_valid_nodes(const char name[], int valid,
+static int append_valid_nodes(const char name[], int valid,
 		const void *parent_data, void *data, void *arg);
 static void list_files_recursively(const char path[], int skip_dot_files,
 		strlist_t *list);
@@ -394,8 +394,10 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 		return 1;
 	}
 
-	if(curr.entries != NULL)
+	if(curr.nentries > 0)
 	{
+		/* When there are no entries, qsort() might be called with a NULL parameter,
+		 * which isn't allowed by the standard. */
 		qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
 	}
 
@@ -592,8 +594,8 @@ list_view_entries(const view_t *view, strlist_t *list)
 }
 
 /* fsdata_traverse() callback that collects names of existing files into a
- * list. */
-static void
+ * list.  Should return non-zero to stop traverser. */
+static int
 append_valid_nodes(const char name[], int valid, const void *parent_data,
 		void *data, void *arg)
 {
@@ -607,6 +609,7 @@ append_valid_nodes(const char name[], int valid, const void *parent_data,
 		list->nitems = add_to_string_array(&list->items, list->nitems, 1,
 				full_path);
 	}
+	return 0;
 }
 
 /* Collects files under specified file system tree. */

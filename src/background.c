@@ -576,8 +576,6 @@ import_error_jobs(bg_job_t **jobs)
 {
 	bg_job_t *new_jobs;
 
-	free_drained_jobs(jobs);
-
 	/* Add new tasks to internal list, wait if there are no jobs. */
 	pthread_mutex_lock(&new_err_jobs_lock);
 	while(*jobs == NULL && new_err_jobs == NULL)

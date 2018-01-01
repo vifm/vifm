@@ -65,7 +65,7 @@ static int map_parents(node_t *root, const char path[],
 		fsdata_visit_func visitor, void *arg);
 static int resolve_path(const fsdata_t *fsd, const char path[],
 		char real_path[]);
-static void traverse_node(node_t *node, const node_t *parent,
+static int traverse_node(node_t *node, const node_t *parent,
 		fsdata_traverser_func traverser, void *arg);
 
 fsdata_t *
@@ -372,34 +372,46 @@ map_parents(node_t *root, const char path[], fsdata_visit_func visitor,
 	return 1;
 }
 
-void
+int
 fsdata_traverse(fsdata_t *fsd, fsdata_traverser_func traverser, void *arg)
 {
 	node_t *node;
 
 	if(fsd->root == NULL)
 	{
-		return;
+		return 0;
 	}
 
 	for(node = fsd->root->child; node != NULL; node = node->next)
 	{
-		traverse_node(node, NULL, traverser, arg);
+		if(traverse_node(node, NULL, traverser, arg) != 0)
+		{
+			return 1;
+		}
 	}
+	return 0;
 }
 
-/* fsdata_traverse() helper which works with node_t type. */
-static void
+/* fsdata_traverse() helper which works with node_t type.  Return non-zero if
+ * traversing was stopped prematurely, otherwise zero is returned. */
+static int
 traverse_node(node_t *node, const node_t *parent,
 		fsdata_traverser_func traverser, void *arg)
 {
 	const void *const parent_data = (parent == NULL ? NULL : &parent->data);
-	traverser(node->name, node->valid, parent_data, &node->data, arg);
+	if(traverser(node->name, node->valid, parent_data, &node->data, arg) != 0)
+	{
+		return 1;
+	}
 
 	for(parent = node, node = node->child; node != NULL; node = node->next)
 	{
-		traverse_node(node, parent, traverser, arg);
+		if(traverse_node(node, parent, traverser, arg) != 0)
+		{
+			return 1;
+		}
 	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

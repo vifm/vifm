@@ -660,14 +660,7 @@ expand_viewer_command(const char viewer[])
 	char *result;
 	if(strchr(viewer, '%') == NULL)
 	{
-		char *escaped;
-		view_t *view = curr_stats.preview_hint;
-		if(view == NULL)
-		{
-			view = curr_view;
-		}
-
-		escaped = shell_like_escape(get_current_file_name(view), 0);
+		char *escaped = shell_like_escape(get_current_file_name(curr_view), 0);
 		result = format_str("%s %s", viewer, escaped);
 		free(escaped);
 	}
