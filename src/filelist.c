@@ -1538,6 +1538,8 @@ load_dir_list_internal(view_t *view, int reload, int draw_only)
 static int
 populate_dir_list_internal(view_t *view, int reload)
 {
+	char *saved_cwd;
+
 	view->filtered = 0;
 
 	/* List reload usually implies that something related to file list has
@@ -1567,6 +1569,7 @@ populate_dir_list_internal(view_t *view, int reload)
 		update_all_windows();
 	}
 
+	saved_cwd = save_cwd();
 	/* this is needed for lstat() below */
 	if(vifm_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
 	{
@@ -1636,6 +1639,7 @@ populate_dir_list_internal(view_t *view, int reload)
 	{
 		if(rescue_from_empty_filelist(view))
 		{
+			restore_cwd(saved_cwd);
 			return 0;
 		}
 
@@ -1651,6 +1655,7 @@ populate_dir_list_internal(view_t *view, int reload)
 	 * changed while we were reading from it). */
 	update_dir_watcher(view);
 
+	restore_cwd(saved_cwd);
 	return 0;
 }
 
