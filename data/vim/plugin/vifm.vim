@@ -47,26 +47,7 @@ function! s:StartVifm(editcmd, ...)
 	echohl WarningMsg | echo 'vifm executable wasn''t found' | echohl None
 endfunction
 
-if !exists('g:vifm_exec')
-	let g:vifm_exec = 'vifm'
-endif
-
-if !exists('g:vifm_exec_args')
-	let g:vifm_exec_args = ''
-endif
-
-if !exists('g:vifm_term')
-	if has('win32')
-		if filereadable('C:\Windows\system32\cmd.exe')
-			let g:vifm_term = 'C:\Windows\system32\cmd.exe /C'
-		else
-			" If don't find use the integrate shell it work too
-			let g:vifm_term = ''
-		endif
-	else
-		let g:vifm_term = 'xterm -e'
-	endif
-endif
+call vifm#globals#Init()
 
 function! s:StartVifm(editcmd, ...)
 	if a:0 > 2
