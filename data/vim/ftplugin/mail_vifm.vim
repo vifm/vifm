@@ -6,7 +6,7 @@
 function! s:AddMailAttachments()
 	call vifm#globals#Init()
 
-	" TODO: reduce duplication between this file and plugins/vifm.vim
+	" XXX: similar code is in plugins/vifm.vim, but it's different in details
 	let l:listf = tempname()
 
 	if !has('nvim')
