@@ -3,7 +3,7 @@
 " Last Change: January 02, 2018
 
 " Insert attachment picked via vifm after 'Subject' header
-function! s:AddMailAttacments()
+function! s:AddMailAttachments()
 	call vifm#globals#Init()
 
 	" TODO: reduce duplication between this file and plugins/vifm.vim
@@ -59,6 +59,6 @@ function! s:HandleRunResults(exitcode, listf)
 	call delete(a:listf)
 endfunction
 
-nnoremap <buffer> <silent> <localleader>a :call <sid>AddMailAttacments()<cr>
+nnoremap <buffer> <silent> <localleader>a :call <sid>AddMailAttachments()<cr>
 
 " vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 :
