@@ -35,24 +35,30 @@ ipc_list(int *len)
 	return NULL;
 }
 
-void
+ipc_t *
 ipc_init(const char name[], ipc_callback callback_func)
+{
+	return NULL;
+}
+
+void
+ipc_free(ipc_t *ipc)
 {
 }
 
 const char *
-ipc_get_name(void)
+ipc_get_name(const ipc_t *ipc)
 {
 	return "";
 }
 
 void
-ipc_check(void)
+ipc_check(ipc_t *ipc)
 {
 }
 
 int
-ipc_send(const char whom[], char *data[])
+ipc_send(ipc_t *ipc, const char whom[], char *data[])
 {
 	return 1;
 }
@@ -86,11 +92,10 @@ ipc_send(const char whom[], char *data[])
 #include <fcntl.h>
 #include <unistd.h> /* close() open() select() unlink() */
 
-#include <assert.h> /* assert() */
 #include <errno.h> /* EACCES EEXIST EDQUOT ENOSPC ENXIO errno */
 #include <stddef.h> /* NULL size_t ssize_t */
 #include <stdio.h> /* FILE fclose() fdopen() fread() fwrite() */
-#include <stdlib.h> /* atexit() free() malloc() qsort() snprintf() */
+#include <stdlib.h> /* free() malloc() qsort() snprintf() */
 #include <string.h> /* strcmp() strcpy() strlen() */
 
 #include "utils/fs.h"
@@ -119,16 +124,28 @@ typedef struct
 	char **lst;          /* List of strings. */
 	size_t len;          /* Number of items. */
 	const char *ipc_dir; /* Root of IPC objects. */
+	const ipc_t *ipc;    /* Handle to an IPC instance or NULL. */
 }
 list_data_t;
 
-static void cleanup_at_exit(void);
+/* Storage of data of an instance. */
+struct ipc_t
+{
+	/* Stores callback to report received messages. */
+	ipc_callback callback;
+	/* Path to the pipe used by this instance. */
+	char pipe_path[PATH_MAX + 1];
+	/* Opened file of the pipe. */
+	read_pipe_t pipe_file;
+};
+
 static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
-static char * receive_pkg(void);
+static char * receive_pkg(ipc_t *ipc);
 static read_pipe_t try_use_pipe(const char path[], int *fatal);
-static void handle_pkg(const char pkg[]);
+static void handle_pkg(ipc_t *ipc, const char pkg[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
-static char * get_the_only_target(void);
+static char * get_the_only_target(const ipc_t *ipc);
+static char ** list_servers(const ipc_t *ipc, int *len);
 static int add_to_list(const char name[], const void *data, void *param);
 static const char * get_ipc_dir(void);
 static int sorter(const void *first, const void *second);
@@ -136,94 +153,77 @@ static int sorter(const void *first, const void *second);
 static int pipe_is_in_use(const char path[]);
 #endif
 
-/* Stores callback to report received messages. */
-static ipc_callback callback;
-/* Whether unit was initialized and what's the result (-1 is error, 1 is
- * success). */
-static int initialized;
-/* Path to the pipe used by this instance. */
-static char pipe_path[PATH_MAX];
-/* Opened file of the pipe. */
-static read_pipe_t pipe_file;
-
 int
 ipc_enabled(void)
 {
-	return (initialized > 0);
+	return 1;
 }
 
-void
+ipc_t *
 ipc_init(const char name[], ipc_callback callback_func)
 {
-	assert(!initialized && "Repeated initialization?");
+	ipc_t *const ipc = malloc(sizeof(*ipc));
+	if(ipc == NULL)
+	{
+		return NULL;
+	}
 
-	callback = callback_func;
+	ipc->callback = callback_func;
 
 	if(name == NULL)
 	{
 		name = "vifm";
 	}
 
-	pipe_file = create_pipe(name, pipe_path, sizeof(pipe_path));
-	if(pipe_file == NULL_READ_PIPE)
+	ipc->pipe_file = create_pipe(name, ipc->pipe_path, sizeof(ipc->pipe_path));
+	if(ipc->pipe_file == NULL_READ_PIPE)
 	{
-		initialized = -1;
-		return;
+		free(ipc);
+		return NULL;
 	}
 
-	atexit(&cleanup_at_exit);
-	initialized = 1;
-}
-
-/* Frees resources used by IPC. */
-static void
-cleanup_at_exit(void)
-{
-#ifndef WIN32_PIPE_READ
-	fclose(pipe_file);
-	unlink(pipe_path);
-#else
-	CloseHandle(pipe_file);
-#endif
-}
-
-const char *
-ipc_get_name(void)
-{
-	if(initialized < 0)
-	{
-		return "";
-	}
-
-	return get_last_path_component(pipe_path) + (sizeof(PREFIX) - 1U);
+	return ipc;
 }
 
 void
-ipc_check(void)
+ipc_free(ipc_t *ipc)
 {
-	char *pkg;
-
-	assert(initialized != 0 && "Wrong IPC unit state.");
-	if(initialized < 0)
+	if(ipc == NULL)
 	{
 		return;
 	}
 
-	pkg = receive_pkg();
-	if(pkg == NULL)
-	{
-		return;
-	}
+#ifndef WIN32_PIPE_READ
+	fclose(ipc->pipe_file);
+	unlink(ipc->pipe_path);
+#else
+	CloseHandle(ipc->pipe_file);
+#endif
+	free(ipc);
+}
 
-	handle_pkg(pkg);
-	free(pkg);
+const char *
+ipc_get_name(const ipc_t *ipc)
+{
+	return get_last_path_component(ipc->pipe_path) + (sizeof(PREFIX) - 1U);
+}
+
+void
+ipc_check(ipc_t *ipc)
+{
+	char *const pkg = receive_pkg(ipc);
+	if(pkg != NULL)
+	{
+		handle_pkg(ipc, pkg);
+		free(pkg);
+	}
 }
 
 /* Receives message addressed to this instance.  Returns NULL if there was no
  * message or on failure to read it, otherwise newly allocated string is
  * returned. */
 static char *
-receive_pkg(void)
+receive_pkg(ipc_t *ipc)
 {
 #ifndef WIN32_PIPE_READ
 	uint32_t size;
@@ -234,7 +234,8 @@ receive_pkg(void)
 	int max_fd;
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 10000 };
 
-	if(fread(&size, sizeof(size), 1U, pipe_file) != 1U || size >= 4294967294U)
+	if(fread(&size, sizeof(size), 1U, ipc->pipe_file) != 1U ||
+			size >= 4294967294U)
 	{
 		return NULL;
 	}
@@ -245,14 +246,14 @@ receive_pkg(void)
 		return NULL;
 	}
 
-	max_fd = fileno(pipe_file);
+	max_fd = fileno(ipc->pipe_file);
 	FD_ZERO(&ready);
 	FD_SET(max_fd, &ready);
 
 	p = pkg;
 	while(size != 0U && select(max_fd + 1, &ready, NULL, NULL, &ts) > 0)
 	{
-		const size_t nread = fread(p, 1U, size, pipe_file);
+		const size_t nread = fread(p, 1U, size, ipc->pipe_file);
 		size -= nread;
 		p += nread;
 
@@ -282,7 +283,7 @@ receive_pkg(void)
 	char *p;
 	DWORD nread;
 
-	if(ReadFile(pipe_file, &size, sizeof(size), &nread, NULL) == FALSE ||
+	if(ReadFile(ipc->pipe_file, &size, sizeof(size), &nread, NULL) == FALSE ||
 			size >= 4294967294U)
 	{
 		return NULL;
@@ -301,7 +302,7 @@ receive_pkg(void)
 		 *       inconvenient... */
 		usleep(10000);
 
-		if(ReadFile(pipe_file, p, size, &nread, NULL) == FALSE || nread == 0U)
+		if(ReadFile(ipc->pipe_file, p, size, &nread, NULL) == FALSE || nread == 0U)
 		{
 			break;
 		}
@@ -312,8 +313,8 @@ receive_pkg(void)
 
 	/* Weird requirement for named pipes, need to break and set connection every
 	 * time. */
-	DisconnectNamedPipe(pipe_file);
-	ConnectNamedPipe(pipe_file, NULL);
+	DisconnectNamedPipe(ipc->pipe_file);
+	ConnectNamedPipe(ipc->pipe_file, NULL);
 
 	if(size != 0U)
 	{
@@ -421,7 +422,7 @@ try_use_pipe(const char path[], int *fatal)
 
 /* Parses pkg into array of strings and invokes callback. */
 static void
-handle_pkg(const char pkg[])
+handle_pkg(ipc_t *ipc, const char pkg[])
 {
 	char **array = NULL;
 	size_t len = 0U;
@@ -435,14 +436,14 @@ handle_pkg(const char pkg[])
 
 	if(len != 0U)
 	{
-		callback(array);
+		ipc->callback(array);
 	}
 
 	free_string_array(array, len);
 }
 
 int
-ipc_send(const char whom[], char *data[])
+ipc_send(ipc_t *ipc, const char whom[], char *data[])
 {
 	/* FIXME: this shouldn't have fixed size.  Or maybe it should be PIPE_BUF to
 	 * guarantee atomic operation. */
@@ -450,12 +451,6 @@ ipc_send(const char whom[], char *data[])
 	size_t len;
 	char *name = NULL;
 	int ret;
-
-	assert(initialized != 0 && "Wrong IPC unit state.");
-	if(initialized < 0)
-	{
-		return 1;
-	}
 
 	if(get_cwd(pkg, sizeof(pkg)) == NULL)
 	{
@@ -473,7 +468,7 @@ ipc_send(const char whom[], char *data[])
 
 	if(whom == NULL)
 	{
-		name = get_the_only_target();
+		name = get_the_only_target(ipc);
 		if(name == NULL)
 		{
 			return 1;
@@ -555,11 +550,11 @@ send_pkg(const char whom[], const char what[], size_t len)
 /* Automatically picks target instance to send data to.  Returns newly allocated
  * string or NULL on error (no other instances or memory allocation failure). */
 static char *
-get_the_only_target(void)
+get_the_only_target(const ipc_t *ipc)
 {
 	int len;
 	char *name;
-	char **list = ipc_list(&len);
+	char **list = list_servers(ipc, &len);
 
 	if(len == 0)
 	{
@@ -576,7 +571,16 @@ get_the_only_target(void)
 char **
 ipc_list(int *len)
 {
-	list_data_t data = { .ipc_dir = get_ipc_dir() };
+	return list_servers(NULL, len);
+}
+
+/* Retrieves list with names of servers available for IPC excluding the one
+ * specified by the ipc parameter, which can be NULL.  Returns the list which is
+ * of the *len length. */
+static char **
+list_servers(const ipc_t *ipc, int *len)
+{
+	list_data_t data = { .ipc_dir = get_ipc_dir(), .ipc = ipc };
 
 #ifndef WIN32_PIPE_READ
 	if(enum_dir_content(data.ipc_dir, &add_to_list, &data) != 0)
@@ -623,6 +627,7 @@ static int
 add_to_list(const char name[], const void *data, void *param)
 {
 	list_data_t *const list_data = param;
+	const ipc_t *ipc = list_data->ipc;
 
 	if(!starts_with_lit(name, PREFIX))
 	{
@@ -630,7 +635,8 @@ add_to_list(const char name[], const void *data, void *param)
 	}
 
 	/* Skip ourself. */
-	if(stroscmp(name, get_last_path_component(pipe_path)) == 0)
+	if(ipc != NULL &&
+			stroscmp(name, get_last_path_component(ipc->pipe_path)) == 0)
 	{
 		return 0;
 	}

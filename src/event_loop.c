@@ -361,7 +361,7 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 		{
 			int result;
 
-			ipc_check();
+			ipc_check(curr_stats.ipc);
 			wtimeout(win, delay_slice);
 			timeout -= delay_slice;
 

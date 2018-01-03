@@ -226,10 +226,15 @@ vifm_main(int argc, char *argv[])
 		read_info_file(0);
 	}
 
-	ipc_init(vifm_args.server_name, &parse_received_arguments);
+	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments);
+	if(ipc_enabled() && curr_stats.ipc == NULL)
+	{
+		fputs("Failed to initialize IPC unit", stderr);
+		return -1;
+	}
 	/* Export chosen server name to parsing unit. */
 	{
-		var_val_t value = { .string = (char *)ipc_get_name() };
+		var_val_t value = { .string = (char *)ipc_get_name(curr_stats.ipc) };
 		var_t var = var_new(VTYPE_STRING, value);
 		setvar("v:servername", var);
 		var_free(var);
@@ -723,6 +728,7 @@ vifm_finish(const char message[])
 void _gnuc_noreturn
 vifm_exit(int exit_code)
 {
+	ipc_free(curr_stats.ipc);
 	exit(exit_code);
 }
 

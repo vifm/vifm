@@ -438,7 +438,7 @@ process_non_general_args(args_t *args)
 {
 	if(args->remote_cmds != NULL)
 	{
-		if(ipc_send(args->server_name, args->remote_cmds) != 0)
+		if(ipc_send(curr_stats.ipc, args->server_name, args->remote_cmds) != 0)
 		{
 			fprintf(stderr, "%s\n", "Sending remote commands failed.");
 			quit_on_arg_parsing(EXIT_FAILURE);
