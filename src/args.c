@@ -35,6 +35,7 @@
 #include "ipc.h"
 #include "status.h"
 #include "version.h"
+#include "vifm.h"
 
 static void list_servers(void);
 static void get_path_or_std(const char dir[], const char arg[], char output[]);
@@ -479,7 +480,7 @@ quit_on_arg_parsing(int code)
 {
 	if(curr_stats.load_stage == 0)
 	{
-		exit(code);
+		vifm_exit(code);
 	}
 }
 

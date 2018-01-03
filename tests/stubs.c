@@ -25,5 +25,11 @@ vifm_finish(const view_t *view, int nfiles, char *files[])
 	/* Do nothing. */
 }
 
+void
+vifm_exit(int exit_code)
+{
+	/* Do nothing. */
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

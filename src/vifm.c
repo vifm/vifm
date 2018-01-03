@@ -116,7 +116,7 @@ static args_t vifm_args;
 int
 main(int argc, char *argv[])
 {
-	return vifm_main(argc, argv);
+	vifm_exit(vifm_main(argc, argv));
 }
 
 #else
@@ -142,7 +142,7 @@ main()
 	}
 	utf8_argv[i] = NULL;
 
-	return vifm_main(argc, utf8_argv);
+	vifm_exit(vifm_main(argc, utf8_argv));
 }
 
 #endif
@@ -697,7 +697,7 @@ vifm_leave(int exit_code, int cquit)
 	}
 
 	term_title_update(NULL);
-	exit(exit_code);
+	vifm_exit(exit_code);
 }
 
 void _gnuc_noreturn
@@ -717,7 +717,13 @@ vifm_finish(const char message[])
 
 	fprintf(stderr, "%s\n", message);
 	LOG_ERROR_MSG("Finishing: %s", message);
-	exit(EXIT_FAILURE);
+	vifm_exit(EXIT_FAILURE);
+}
+
+void _gnuc_noreturn
+vifm_exit(int exit_code)
+{
+	exit(exit_code);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
