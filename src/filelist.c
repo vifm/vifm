@@ -1574,6 +1574,7 @@ populate_dir_list_internal(view_t *view, int reload)
 	if(vifm_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
+		restore_cwd(saved_cwd);
 		return 1;
 	}
 
