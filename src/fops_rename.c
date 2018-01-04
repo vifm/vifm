@@ -50,7 +50,8 @@ RenameAction;
 
 static void rename_file_cb(const char new_name[]);
 static int complete_filename_only(const char str[], void *arg);
-static char ** add_files_to_list(const char path[], char *files[], int *len);
+static char ** add_files_to_list(const char base[], const char path[],
+		char *files[], int *len);
 static int perform_renaming(view_t *view, char *files[], char is_dup[], int len,
 		char *dst[]);
 TSTATIC const char * incdec_name(const char fname[], int k);
@@ -193,7 +194,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 
 		if(recursive)
 		{
-			files = add_files_to_list(path, files, &nfiles);
+			files = add_files_to_list(flist_get_dir(view), path, files, &nfiles);
 		}
 		else
 		{
@@ -250,19 +251,22 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 /* Appends files inside of the specified path to the list of the length *len.
  * Returns new list pointer. */
 static char **
-add_files_to_list(const char path[], char *files[], int *len)
+add_files_to_list(const char base[], const char path[], char *files[], int *len)
 {
-	DIR* dir;
-	struct dirent* dentry;
-	const char* slash = "";
+	DIR *dir;
+	struct dirent *dentry;
+	const char *slash = "";
 
-	if(!is_dir(path))
+	char full_path[PATH_MAX + 1];
+	to_canonic_path(path, base, full_path, sizeof(full_path));
+
+	if(!is_dir(full_path))
 	{
 		*len = add_to_string_array(&files, *len, 1, path);
 		return files;
 	}
 
-	dir = os_opendir(path);
+	dir = os_opendir(full_path);
 	if(dir == NULL)
 		return files;
 
@@ -273,9 +277,9 @@ add_files_to_list(const char path[], char *files[], int *len)
 	{
 		if(!is_builtin_dir(dentry->d_name))
 		{
-			char buf[PATH_MAX];
+			char buf[PATH_MAX + 1];
 			snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-			files = add_files_to_list(buf, files, len);
+			files = add_files_to_list(base, buf, files, len);
 		}
 	}
 

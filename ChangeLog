@@ -169,6 +169,9 @@
 
 	Fixed the plugin in neovim.  Patch by John Shea (a.k.a. coachshea).
 
+	Fixed CWD of the process not matching current view after vifm picked up
+	change in file system.  Patch by Daniel Mueller.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
