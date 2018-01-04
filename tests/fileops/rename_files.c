@@ -9,6 +9,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_common.h"
@@ -83,6 +84,36 @@ TEST(renames_files_recursively)
 	assert_success(unlink(SANDBOX_PATH "/dir2/file1"));
 	assert_success(rmdir(SANDBOX_PATH "/dir1"));
 	assert_success(rmdir(SANDBOX_PATH "/dir2"));
+}
+
+TEST(renames_files_recursively_in_cv)
+{
+	char dir[PATH_MAX + 1];
+	char new_name[PATH_MAX + 1];
+	char *names[] = { new_name };
+
+	to_canonic_path("dir", lwin.curr_dir, dir, sizeof(dir));
+	to_canonic_path("dir/file2", lwin.curr_dir, new_name, sizeof(new_name));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "",
+			saved_cwd);
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_file(SANDBOX_PATH "/dir/file1");
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, dir);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+	assert_int_equal(1, lwin.list_rows);
+
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_rename(&lwin, names, 1, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/dir/file2"));
+	assert_success(rmdir(dir));
 }
 
 TEST(interdependent_rename)
