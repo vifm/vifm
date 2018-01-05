@@ -192,6 +192,11 @@ endif
 
 # check and build targets are defined mostly in suite_template
 check: build
+	@if [ "$$(find "$(SANDBOX_PATH)" -mindepth 2 | wc -l)" -ne 0 ]; then \
+	    echo "ERROR: sandbox isn't empty"; \
+	    find $(SANDBOX_PATH) -mindepth 2; \
+	    false; \
+	fi
 
 clean:
 	$(RM) -r $(B)bin/ $(SANDBOX_PATH)/
@@ -245,6 +250,10 @@ else
     TEST_DATA_PATH := test-data
 endif
 
+ifneq ($(shell find "$(SANDBOX_PATH)" -mindepth 2 | wc -l),0)
+    $(shell $(RM) -r $(SANDBOX_PATH))
+endif
+
 
 # suite definition template, takes single argument: name of the suite
 define suite_template
@@ -278,11 +287,10 @@ $(BUILD)$1/filelist: $1/. | $(BUILD)$1
 $(BUILD)$1:
 	$(AT)mkdir -p $$@
 
-ifeq ($(SANDBOX_PATH),sandbox)
 $(SANDBOX_PATH)/$1:
+ifeq ($(SANDBOX_PATH),sandbox)
 	$(AT)mkdir -p $(B)$$@
 else
-$(SANDBOX_PATH)/$1:
 	$(AT)mkdir -p $$@
 endif
 
