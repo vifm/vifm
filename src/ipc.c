@@ -615,7 +615,10 @@ list_servers(const ipc_t *ipc, int *len)
 	}
 #endif
 
-	qsort(data.lst, data.len, sizeof(*data.lst), &sorter);
+	if(data.len != 0)
+	{
+		qsort(data.lst, data.len, sizeof(*data.lst), &sorter);
+	}
 
 	*len = data.len;
 	return data.lst;
