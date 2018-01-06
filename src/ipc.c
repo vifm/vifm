@@ -18,52 +18,7 @@
 
 #include "ipc.h"
 
-#ifndef ENABLE_REMOTE_CMDS
-
-#include <stddef.h> /* NULL */
-
-int
-ipc_enabled(void)
-{
-	return 0;
-}
-
-char **
-ipc_list(int *len)
-{
-	*len = 0;
-	return NULL;
-}
-
-ipc_t *
-ipc_init(const char name[], ipc_callback callback_func)
-{
-	return NULL;
-}
-
-void
-ipc_free(ipc_t *ipc)
-{
-}
-
-const char *
-ipc_get_name(const ipc_t *ipc)
-{
-	return "";
-}
-
-void
-ipc_check(ipc_t *ipc)
-{
-}
-
-int
-ipc_send(ipc_t *ipc, const char whom[], char *data[])
-{
-	return 1;
-}
-
-#else
+#ifdef ENABLE_REMOTE_CMDS
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 /* Named pipes don't work very well on Cygwin neither directly nor indirectly
@@ -704,6 +659,51 @@ pipe_is_in_use(const char path[])
 }
 
 #endif
+
+#else
+
+#include <stddef.h> /* NULL */
+
+int
+ipc_enabled(void)
+{
+	return 0;
+}
+
+char **
+ipc_list(int *len)
+{
+	*len = 0;
+	return NULL;
+}
+
+ipc_t *
+ipc_init(const char name[], ipc_callback callback_func)
+{
+	return NULL;
+}
+
+void
+ipc_free(ipc_t *ipc)
+{
+}
+
+const char *
+ipc_get_name(const ipc_t *ipc)
+{
+	return "";
+}
+
+void
+ipc_check(ipc_t *ipc)
+{
+}
+
+int
+ipc_send(ipc_t *ipc, const char whom[], char *data[])
+{
+	return 1;
+}
 
 #endif
 
