@@ -410,17 +410,11 @@ undo_perform_func(OPS op, void *data, const char src[], const char dst[])
 static void
 parse_received_arguments(char *argv[])
 {
-	int argc = 0;
 	args_t args = {};
-
-	while(argv[argc] != NULL)
-	{
-		argc++;
-	}
 
 	(void)vifm_chdir(argv[0]);
 	opterr = 0;
-	args_parse(&args, argc, argv, argv[0]);
+	args_parse(&args, count_strings(argv), argv, argv[0]);
 	args_process(&args, 0);
 
 	exec_startup_commands(&args);

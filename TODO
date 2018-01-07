@@ -170,7 +170,6 @@ Code improvements:
   * Consider mentioning libncursesw5-dev in configuration error for
     Debian-based systems.
   * Reduce number of magic numbers. (partially done)
-  * Add function to count size of NULL-terminated array.
   * Intermediate language for scripting. (partially done)
   * Create separate utilities for engine/ part to make them self-contained.
   * Fix code duplication related to composing of undo messages.
