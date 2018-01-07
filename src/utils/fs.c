@@ -325,8 +325,6 @@ get_link_target_abs(const char link[], const char cwd[], char buf[],
 int
 get_link_target(const char *link, char *buf, size_t buf_len)
 {
-	LOG_FUNC_ENTER;
-
 #ifndef _WIN32
 	char *filename;
 	ssize_t len;
