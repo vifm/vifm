@@ -62,6 +62,31 @@
 #include "utils/utils.h"
 #include "status.h"
 
+/**
+ * When IPC is enabled, it exchanges packets between instances which are just
+ * arrays of strings.  Each package looks like this:
+ *
+ *     "version:{...}" -\
+ *     "body:{type}"   --\
+ *                        some sort of a header that ends on `body:`
+ *     "string #1"     -\
+ *     "string #2"     --\
+ *     {...}           ---\
+ *     "string #N"     ----\
+ *                          payload (might be prepended by this unit)
+ *     "\0"            -\
+ *                       terminator
+ *
+ * Or in sequential form:
+ *     "version:{...}\0body:{type}\0string #1\0string #2\0{...}string #N\0\0"
+ *
+ * {type} can be "args", in which case body is prepended with CWD
+ * unconditionally.
+ *
+ * On version mismatch or unknown field name, packet is discarded which is
+ * logged.
+ */
+
 /* Prefix for names of all pipes to distinguish them from other pipes. */
 #define PREFIX "vifm-ipc-"
 
@@ -107,6 +132,9 @@ static int sorter(const void *first, const void *second);
 #ifndef WIN32_PIPE_READ
 static int pipe_is_in_use(const char path[]);
 #endif
+
+/* Current version string. */
+static const char IPC_VERSION[] = "version:1";
 
 int
 ipc_enabled(void)
@@ -381,16 +409,46 @@ handle_pkg(ipc_t *ipc, const char pkg[])
 {
 	char **array = NULL;
 	size_t len = 0U;
+	int in_body = 0;
 
 	while(*pkg != '\0')
 	{
-		len = add_to_string_array(&array, len, 1, pkg);
+		if(in_body)
+		{
+			len = add_to_string_array(&array, len, 1, pkg);
+		}
+		else if(starts_with_lit(pkg, "version:"))
+		{
+			if(strcmp(pkg, IPC_VERSION) != 0)
+			{
+				break;
+			}
+		}
+		else if(starts_with_lit(pkg, "body:"))
+		{
+			if(strcmp(pkg, "body:args") != 0)
+			{
+				break;
+			}
+			in_body = 1;
+		}
+		else
+		{
+			break;
+		}
 		pkg += strlen(pkg) + 1;
 	}
-	len = put_into_string_array(&array, len, NULL);
 
-	if(len != 0U)
+	if(*pkg != '\0')
 	{
+		LOG_ERROR_MSG("Discarded remote package due to field: %s", pkg);
+		free_string_array(array, len);
+		return;
+	}
+
+	if(len > 0U)
+	{
+		len = put_into_string_array(&array, len, NULL);
 		ipc->callback(array);
 	}
 
@@ -407,12 +465,16 @@ ipc_send(ipc_t *ipc, const char whom[], char *data[])
 	char *name = NULL;
 	int ret;
 
-	if(get_cwd(pkg, sizeof(pkg)) == NULL)
+	/* Compose "header". */
+	len = copy_str(pkg, sizeof(pkg), IPC_VERSION);
+	len += copy_str(pkg + len, sizeof(pkg) - len, "body:args");
+
+	if(get_cwd(pkg + len, sizeof(pkg) - len) == NULL)
 	{
 		LOG_ERROR_MSG("Can't get working directory");
 		return 1;
 	}
-	len = strlen(pkg) + 1;
+	len += strlen(pkg + len) + 1;
 
 	while(*data != NULL)
 	{
