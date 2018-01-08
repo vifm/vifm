@@ -100,21 +100,21 @@ TEST(message_is_delivered, IF(enabled_and_not_in_wine))
 
 	assert_int_equal(0, nmessages);
 	assert_string_equal(NULL, message);
-	assert_int_equal(1, nmessages2);
+	assert_int_equal(2, nmessages2);
 	assert_string_equal(msg, message2);
 }
 
 static void
 test_ipc_callback(char *args[])
 {
-	++nmessages;
+	nmessages += count_strings(args);
 	update_string(&message, args[1]);
 }
 
 static void
 test_ipc_callback2(char *args[])
 {
-	++nmessages2;
+	nmessages2 += count_strings(args);
 	update_string(&message2, args[1]);
 }
 

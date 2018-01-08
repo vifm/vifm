@@ -120,9 +120,9 @@ struct ipc_t
 };
 
 static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
-static char * receive_pkg(ipc_t *ipc);
+static char * receive_pkg(ipc_t *ipc, int *len);
 static read_pipe_t try_use_pipe(const char path[], int *fatal);
-static void handle_pkg(ipc_t *ipc, const char pkg[]);
+static void handle_pkg(ipc_t *ipc, const char pkg[], const char *end);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(const ipc_t *ipc);
 static char ** list_servers(const ipc_t *ipc, int *len);
@@ -194,10 +194,11 @@ ipc_get_name(const ipc_t *ipc)
 void
 ipc_check(ipc_t *ipc)
 {
-	char *const pkg = receive_pkg(ipc);
+	int len;
+	char *const pkg = receive_pkg(ipc, &len);
 	if(pkg != NULL)
 	{
-		handle_pkg(ipc, pkg);
+		handle_pkg(ipc, pkg, pkg + len);
 		free(pkg);
 	}
 }
@@ -206,7 +207,7 @@ ipc_check(ipc_t *ipc)
  * message or on failure to read it, otherwise newly allocated string is
  * returned. */
 static char *
-receive_pkg(ipc_t *ipc)
+receive_pkg(ipc_t *ipc, int *len)
 {
 #ifndef WIN32_PIPE_READ
 	uint32_t size;
@@ -223,7 +224,7 @@ receive_pkg(ipc_t *ipc)
 		return NULL;
 	}
 
-	pkg = malloc(size + 2U);
+	pkg = malloc(size + 1U);
 	if(pkg == NULL)
 	{
 		return NULL;
@@ -255,9 +256,9 @@ receive_pkg(ipc_t *ipc)
 		return NULL;
 	}
 
-	/* Make sure we have two trailing zeroes. */
-	*p++ = '\0';
+	/* Make sure we have a trailing zero. */
 	*p = '\0';
+	*len = p - pkg;
 
 	return pkg;
 #else
@@ -272,7 +273,7 @@ receive_pkg(ipc_t *ipc)
 		return NULL;
 	}
 
-	pkg = malloc(size + 2U);
+	pkg = malloc(size + 1U);
 	if(pkg == NULL)
 	{
 		return NULL;
@@ -305,9 +306,9 @@ receive_pkg(ipc_t *ipc)
 		return NULL;
 	}
 
-	/* Make sure we have two trailing zeroes. */
-	*p++ = '\0';
+	/* Make sure we have a trailing zero. */
 	*p = '\0';
+	*len = p - pkg;
 
 	return pkg;
 #endif
@@ -405,13 +406,13 @@ try_use_pipe(const char path[], int *fatal)
 
 /* Parses pkg into array of strings and invokes callback. */
 static void
-handle_pkg(ipc_t *ipc, const char pkg[])
+handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 {
 	char **array = NULL;
 	size_t len = 0U;
 	int in_body = 0;
 
-	while(*pkg != '\0')
+	while(pkg != end)
 	{
 		if(in_body)
 		{
@@ -439,16 +440,16 @@ handle_pkg(ipc_t *ipc, const char pkg[])
 		pkg += strlen(pkg) + 1;
 	}
 
-	if(*pkg != '\0')
+	if(pkg != end)
 	{
 		LOG_ERROR_MSG("Discarded remote package due to field: %s", pkg);
 		free_string_array(array, len);
 		return;
 	}
 
-	if(len > 0U)
+	len = put_into_string_array(&array, len, NULL);
+	if(len > 1U)
 	{
-		len = put_into_string_array(&array, len, NULL);
 		ipc->callback(array);
 	}
 
@@ -481,7 +482,6 @@ ipc_send(ipc_t *ipc, const char whom[], char *data[])
 		len += copy_str(pkg + len, sizeof(pkg) - len, *data);
 		++data;
 	}
-	pkg[len++] = '\0';
 
 	if(whom == NULL)
 	{
