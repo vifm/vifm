@@ -25,7 +25,7 @@ typedef struct ipc_t ipc_t;
 /* Type of function that is invoked on IPC receive.  args is NULL terminated
  * array of arguments, args[0] is absolute path at which they should be
  * processed. */
-typedef void (*ipc_callback)(char *args[]);
+typedef void (*ipc_args_cb)(char *args[]);
 
 /* Checks whether IPC is in use.  Returns non-zero if so, otherwise zero is
  * returned. */
@@ -36,8 +36,8 @@ int ipc_enabled(void);
 char ** ipc_list(int *len);
 
 /* Initializes IPC unit state.  name can be NULL, which will use the default
- * one (VIFM).  The callback_func will be called by ipc_check(). */
-ipc_t * ipc_init(const char name[], ipc_callback callback_func);
+ * one (VIFM).  The args_cb will be called by ipc_check(). */
+ipc_t * ipc_init(const char name[], ipc_args_cb args_cb);
 
 /* Frees resources associated with an instance of IPC.  The parameter can be
  * NULL. */

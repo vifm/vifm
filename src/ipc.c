@@ -112,7 +112,7 @@ list_data_t;
 struct ipc_t
 {
 	/* Stores callback to report received messages. */
-	ipc_callback callback;
+	ipc_args_cb args_cb;
 	/* Path to the pipe used by this instance. */
 	char pipe_path[PATH_MAX + 1];
 	/* Opened file of the pipe. */
@@ -143,7 +143,7 @@ ipc_enabled(void)
 }
 
 ipc_t *
-ipc_init(const char name[], ipc_callback callback_func)
+ipc_init(const char name[], ipc_args_cb args_cb)
 {
 	ipc_t *const ipc = malloc(sizeof(*ipc));
 	if(ipc == NULL)
@@ -151,7 +151,7 @@ ipc_init(const char name[], ipc_callback callback_func)
 		return NULL;
 	}
 
-	ipc->callback = callback_func;
+	ipc->args_cb = args_cb;
 
 	if(name == NULL)
 	{
@@ -450,7 +450,7 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 	len = put_into_string_array(&array, len, NULL);
 	if(len > 1U)
 	{
-		ipc->callback(array);
+		ipc->args_cb(array);
 	}
 
 	free_string_array(array, len);
@@ -740,7 +740,7 @@ ipc_list(int *len)
 }
 
 ipc_t *
-ipc_init(const char name[], ipc_callback callback_func)
+ipc_init(const char name[], ipc_args_cb args_cb)
 {
 	return NULL;
 }
