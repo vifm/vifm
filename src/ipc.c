@@ -67,8 +67,9 @@
  * arrays of strings.  Each package looks like this:
  *
  *     "version:{...}" -\
- *     "body:{type}"   --\
- *                        some sort of a header that ends on `body:`
+ *     "from:{name}"   --\
+ *     "body:{type}"   ---\
+ *                         some sort of a header that ends on `body:`
  *     "string #1"     -\
  *     "string #2"     --\
  *     {...}           ---\
@@ -79,6 +80,8 @@
  *
  * Or in sequential form:
  *     "version:{...}\0body:{type}\0string #1\0string #2\0{...}string #N\0\0"
+ *
+ * {name} is a name of another instance.
  *
  * {type} can be "args", in which case body is prepended with CWD
  * unconditionally.
@@ -411,6 +414,7 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 	char **array = NULL;
 	size_t len = 0U;
 	int in_body = 0;
+	const char *from = NULL;
 
 	while(pkg != end)
 	{
@@ -424,6 +428,10 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 			{
 				break;
 			}
+		}
+		else if(starts_with_lit(pkg, "from:"))
+		{
+			from = after_first(pkg, ':');
 		}
 		else if(starts_with_lit(pkg, "body:"))
 		{
@@ -440,9 +448,16 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 		pkg += strlen(pkg) + 1;
 	}
 
-	if(pkg != end)
+	if(pkg != end || from == NULL)
 	{
-		LOG_ERROR_MSG("Discarded remote package due to field: %s", pkg);
+		if(pkg != end)
+		{
+			LOG_ERROR_MSG("Discarded remote package due to field: %s", pkg);
+		}
+		if(from)
+		{
+			LOG_ERROR_MSG("Discarded remote package due to missing from field");
+		}
 		free_string_array(array, len);
 		return;
 	}
@@ -468,6 +483,9 @@ ipc_send(ipc_t *ipc, const char whom[], char *data[])
 
 	/* Compose "header". */
 	len = copy_str(pkg, sizeof(pkg), IPC_VERSION);
+	len += MIN(snprintf(pkg + len, sizeof(pkg) - len, "from:%s",
+				ipc_get_name(ipc)) + 1,
+			(int)(sizeof(pkg) - len));
 	len += copy_str(pkg + len, sizeof(pkg) - len, "body:args");
 
 	if(get_cwd(pkg + len, sizeof(pkg) - len) == NULL)
