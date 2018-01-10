@@ -126,6 +126,8 @@ static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
 static char * receive_pkg(ipc_t *ipc, int *len);
 static read_pipe_t try_use_pipe(const char path[], int *fatal);
 static void handle_pkg(ipc_t *ipc, const char pkg[], const char *end);
+static int format_and_send(ipc_t *ipc, const char whom[], char *data[],
+		const char type[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
 static char * get_the_only_target(const ipc_t *ipc);
 static char ** list_servers(const ipc_t *ipc, int *len);
@@ -138,6 +140,8 @@ static int pipe_is_in_use(const char path[]);
 
 /* Current version string. */
 static const char IPC_VERSION[] = "version:1";
+/* Request to process remote arguments. */
+static const char ARGS_TYPE[] = "args";
 
 int
 ipc_enabled(void)
@@ -474,6 +478,14 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 int
 ipc_send(ipc_t *ipc, const char whom[], char *data[])
 {
+	return format_and_send(ipc, whom, data, ARGS_TYPE);
+}
+
+/* Formats and sends a message of specified type.  The data array should be NULL
+ * terminated.  Returns zero on successful send and non-zero otherwise. */
+static int
+format_and_send(ipc_t *ipc, const char whom[], char *data[], const char type[])
+{
 	/* FIXME: this shouldn't have fixed size.  Or maybe it should be PIPE_BUF to
 	 * guarantee atomic operation. */
 	char pkg[8192];
@@ -486,14 +498,18 @@ ipc_send(ipc_t *ipc, const char whom[], char *data[])
 	len += MIN(snprintf(pkg + len, sizeof(pkg) - len, "from:%s",
 				ipc_get_name(ipc)) + 1,
 			(int)(sizeof(pkg) - len));
-	len += copy_str(pkg + len, sizeof(pkg) - len, "body:args");
+	len += MIN(snprintf(pkg + len, sizeof(pkg) - len, "body:%s", type) + 1,
+			(int)(sizeof(pkg) - len));
 
-	if(get_cwd(pkg + len, sizeof(pkg) - len) == NULL)
+	if(strcmp(type, ARGS_TYPE) == 0)
 	{
-		LOG_ERROR_MSG("Can't get working directory");
-		return 1;
+		if(get_cwd(pkg + len, sizeof(pkg) - len) == NULL)
+		{
+			LOG_ERROR_MSG("Can't get working directory");
+			return 1;
+		}
+		len += strlen(pkg + len) + 1;
 	}
-	len += strlen(pkg + len) + 1;
 
 	while(*data != NULL)
 	{
