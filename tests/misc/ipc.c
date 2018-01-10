@@ -91,9 +91,9 @@ TEST(message_is_delivered, IF(enabled_and_not_in_wine))
 	ipc_t *const ipc2 = ipc_init(NAME, &test_ipc_args2);
 
 	assert_success(ipc_send(ipc1, ipc_get_name(ipc2), data));
-	ipc_check(ipc1);
-	ipc_check(ipc2);
-	ipc_check(ipc2);
+	assert_false(ipc_check(ipc1));
+	assert_true(ipc_check(ipc2));
+	assert_false(ipc_check(ipc2));
 
 	ipc_free(ipc1);
 	ipc_free(ipc2);

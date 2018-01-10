@@ -198,7 +198,7 @@ ipc_get_name(const ipc_t *ipc)
 	return get_last_path_component(ipc->pipe_path) + (sizeof(PREFIX) - 1U);
 }
 
-void
+int
 ipc_check(ipc_t *ipc)
 {
 	int len;
@@ -207,7 +207,9 @@ ipc_check(ipc_t *ipc)
 	{
 		handle_pkg(ipc, pkg, pkg + len);
 		free(pkg);
+		return 1;
 	}
+	return 0;
 }
 
 /* Receives message addressed to this instance.  Returns NULL if there was no
@@ -790,9 +792,10 @@ ipc_get_name(const ipc_t *ipc)
 	return "";
 }
 
-void
+int
 ipc_check(ipc_t *ipc)
 {
+	return 0;
 }
 
 int

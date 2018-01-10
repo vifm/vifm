@@ -46,8 +46,9 @@ void ipc_free(ipc_t *ipc);
 /* Retrieves name of the IPC server.  Returns the name. */
 const char * ipc_get_name(const ipc_t *ipc);
 
-/* Checks for incoming messages.  Calls callback passed to ipc_init(). */
-void ipc_check(ipc_t *ipc);
+/* Checks for incoming messages.  Calls callback passed to ipc_init().  Returns
+ * non-zero if something was received, otherwise zero is returned. */
+int ipc_check(ipc_t *ipc);
 
 /* Sends data to server.  The data array should end with NULL.  Returns zero on
  * successful send and non-zero otherwise. */
