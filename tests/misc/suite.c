@@ -4,6 +4,7 @@
 
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/background.h"
 
 static char *saved_cwd;
 
@@ -23,6 +24,8 @@ SETUP_ONCE()
 	/* Remember original path in global SETUP_ONCE instead of SETUP to make sure
 	 * nothing will change the path before we try to save it. */
 	saved_cwd = save_cwd();
+
+	bg_init();
 }
 
 SETUP()
