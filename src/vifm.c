@@ -40,6 +40,7 @@
 #include "cfg/info.h"
 #include "compat/reallocarray.h"
 #include "engine/autocmds.h"
+#include "engine/parsing.h"
 #include "compat/fs_limits.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
@@ -100,6 +101,7 @@ static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
+static char * eval_received_expression(const char expr[]);
 static void remote_cd(view_t *view, const char path[], int handle);
 static void check_path_for_file(view_t *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
@@ -227,7 +229,7 @@ vifm_main(int argc, char *argv[])
 	}
 
 	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
-			NULL);
+			&eval_received_expression);
 	if(ipc_enabled() && curr_stats.ipc == NULL)
 	{
 		fputs("Failed to initialize IPC unit", stderr);
@@ -447,6 +449,7 @@ parse_received_arguments(char *argv[])
 		change_window();
 	}
 
+	/* XXX: why force clearing of the statusbar? */
 	ui_sb_clear();
 	curr_stats.save_msg = 0;
 }
@@ -508,6 +511,24 @@ need_to_switch_active_pane(const char lwin_path[], const char rwin_path[])
 	return lwin_path[0] != '\0'
 	    && rwin_path[0] == '\0'
 	    && curr_view != &lwin;
+}
+
+/* Evaluates expression from a remote instance.  Returns newly allocated string
+ * with the result or NULL on error. */
+static char *
+eval_received_expression(const char expr[])
+{
+	char *result_str;
+
+	var_t result;
+	if(parse(expr, &result) != PE_NO_ERROR)
+	{
+		return NULL;
+	}
+
+	result_str = var_to_string(result);
+	var_free(result);
+	return result_str;
 }
 
 /* Loads color scheme.  Converts old format to the new one if needed. */

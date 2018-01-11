@@ -19,7 +19,8 @@ _arguments -C -s \
   '--logging=-[log some operational details]::startup log path:_files' \
   '--server-list[list available server names and exit]' \
   '--server-name[name of target or this instance]:server name:->server' \
-  '--remote[passes all arguments that left in command line to active vifm server]' \
+  '--remote[passes all arguments that left in command line to vifm server]' \
+  '--remote-expr[passes expression to vifm server and prints result]' \
   '*'{-c,+-}'[run command on startup]:command: ' \
   {-h,--help}'[show help message and quit]' \
   {-v,--version}'[show version number and quit]' \

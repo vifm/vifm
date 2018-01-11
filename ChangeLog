@@ -53,6 +53,9 @@
 	multiple suggestions with common prefix into one entry.  Thanks to
 	AndreaHasani.
 
+	Added `--remote-expr` command-line option, which gives ability to query
+	state of an instance.  Thanks to Marcin Kurczewski (a.k.a. rr-).
+
 	Changed :filter command to accept pattern (//, ////, {} or {{}}).  Thanks
 	to rbong.
 

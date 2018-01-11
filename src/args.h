@@ -43,6 +43,7 @@ typedef struct
 
 	const char *server_name; /* Name of this/target server. */
 	char **remote_cmds;      /* Arguments to pass to server instance. */
+	char *remote_expr;       /* Expression to evaluate remotely. */
 
 	char lwin_path[PATH_MAX]; /* Chosen path of the left pane. */
 	char rwin_path[PATH_MAX]; /* Chosen path of the right pane. */

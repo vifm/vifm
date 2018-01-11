@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 28, 2017" "vifm 0.9"
+.TH VIFM 1 "January 11, 2018" "vifm 0.9"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -87,6 +87,10 @@ command line.  When there is no server, quits silently.  There is no limit on
 how many arguments can be processed.  One can combine \-\-remote with \-c
 <command> or +<command> to execute commands in already running instance of vifm.
 See also "Client\-Server" section below.
+.TP
+.BI "\-\-remote-expr"
+passes expression to vifm server and prints result.  See also "Client\-Server"
+section below.
 .TP
 .BI "\-c <command> or +<command>"
 Run command-line mode <command> on startup.  Commands in such arguments are
@@ -5882,9 +5886,9 @@ files.
 .\" ---------------------------------------------------------------------------
 .SH Client\-Server
 .\" ---------------------------------------------------------------------------
-vifm supports remote execution of command-line mode commands as well as remote
-changing of directories.  This is possible using \-\-remote command-line
-argument.
+vifm supports remote execution of command-line mode commands, remote changing of
+directories and expression evaluation.  This is possible using \-\-remote
+and \-\-remote\-expr command-line arguments.
 
 To execute a command remotely combine \-\-remote argument with \-c <command> or
 +<command>.  For example:
@@ -5901,6 +5905,13 @@ right after \-\-remote argument, like this:
   vifm \-\-remote /
   vifm \-\-remote ~
   vifm \-\-remote /usr/bin /tmp
+.EE
+
+Evaluating expression remotely might be useful to query information about an
+instance, for example its location:
+
+.EX
+  vifm \-\-remote\-expr 'expand("%d")'
 .EE
 
 If there are several running instances, the target can be specified with

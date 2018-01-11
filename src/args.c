@@ -65,6 +65,7 @@ static struct option long_opts[] = {
 	{ "server-list",  no_argument,       .flag = NULL, .val = 'L' },
 	{ "server-name",  required_argument, .flag = NULL, .val = 'N' },
 	{ "remote",       no_argument,       .flag = NULL, .val = 'r' },
+	{ "remote-expr",  required_argument, .flag = NULL, .val = 'R' },
 #endif
 
 	{ "help",         no_argument,       .flag = NULL, .val = 'h' },
@@ -110,6 +111,9 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 			case 'r': /* --remote <args>... */
 				args->remote_cmds = argv + optind;
 				return;
+			case 'R': /* --remote-expr <expr> */
+				args->remote_expr = optarg;
+				break;
 
 			case 'h': /* -h, --help */
 				/* Only first one of -v and -h should take effect. */
@@ -162,6 +166,7 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 			case '?': /* Parsing error. */
 #ifndef ENABLE_REMOTE_CMDS
 				if(starts_with("--remote", argv[optind - 1]) ||
+						starts_with("--remote-expr", argv[optind - 1]) ||
 						starts_with("--server-list", argv[optind - 1]) ||
 						starts_with("--server-name", argv[optind - 1]))
 				{
@@ -402,7 +407,9 @@ show_help_msg(const char wrong_arg[])
 	puts("  vifm --server-name <name>");
 	puts("    name of target or this instance.\n");
 	puts("  vifm --remote");
-	puts("    passes all arguments that left in command line to active vifm server.\n");
+	puts("    passes all arguments that left in command line to vifm server.\n");
+	puts("  vifm --remote-expr <expr>");
+	puts("    passes expression to vifm server and prints result.\n");
 #endif
 	puts("  vifm -c <command> | +<command>");
 	puts("    run <command> on startup.\n");
@@ -436,6 +443,12 @@ show_version_msg(void)
 static void
 process_non_general_args(args_t *args)
 {
+	if(args->remote_cmds != NULL && args->remote_expr != NULL)
+	{
+		fprintf(stderr, "%s\n", "--remote and --remote-expr can't be combined.");
+		quit_on_arg_parsing(EXIT_FAILURE);
+	}
+
 	if(args->remote_cmds != NULL)
 	{
 		if(ipc_send(curr_stats.ipc, args->server_name, args->remote_cmds) != 0)
@@ -443,6 +456,20 @@ process_non_general_args(args_t *args)
 			fprintf(stderr, "%s\n", "Sending remote commands failed.");
 			quit_on_arg_parsing(EXIT_FAILURE);
 		}
+		quit_on_arg_parsing(EXIT_SUCCESS);
+		return;
+	}
+
+	if(args->remote_expr != NULL)
+	{
+		char *const result = ipc_eval(curr_stats.ipc, args->server_name,
+				args->remote_expr);
+		if(result == NULL)
+		{
+			fprintf(stderr, "%s\n", "Evaluating expression remotely failed.");
+			quit_on_arg_parsing(EXIT_FAILURE);
+		}
+		fprintf(stdout, "%s\n", result);
 		quit_on_arg_parsing(EXIT_SUCCESS);
 		return;
 	}
