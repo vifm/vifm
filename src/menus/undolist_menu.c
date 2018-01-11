@@ -31,17 +31,11 @@
 int
 show_undolist_menu(view_t *view, int with_details)
 {
-	char **p;
-
 	static menu_data_t m;
 	menus_init_data(&m, view, strdup("Undolist"), strdup("Undolist is empty"));
 
 	m.items = undolist(with_details);
-	p = m.items;
-	while(*p++ != NULL)
-	{
-		++m.len;
-	}
+	m.len = count_strings(m.items);
 
 	/* Add additional entry before setting position. */
 	if(m.len > 0)

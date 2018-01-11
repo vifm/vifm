@@ -99,5 +99,39 @@ TEST(select_accepts_dash_if_such_directory_exists)
 	args_free(&args);
 }
 
+TEST(remote_allows_no_arguments)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "a", "--remote", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_string_equal(NULL, args.remote_cmds[0]);
+	args_free(&args);
+}
+
+TEST(remote_takes_all_arguments_to_the_right)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "a", "--remote", "b", "c", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+
+	assert_string_equal("b", args.remote_cmds[0]);
+	assert_string_equal("c", args.remote_cmds[1]);
+	assert_string_equal(NULL, args.remote_cmds[2]);
+
+	args_free(&args);
+}
+
+TEST(remote_expr_is_parsed)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "--remote-expr", "expr", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_string_equal("expr", args.remote_expr);
+	args_free(&args);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

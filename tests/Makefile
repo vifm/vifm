@@ -27,14 +27,14 @@
 # make DEBUG=1 ...        -- builds debug version
 # make DEBUG=gdb ...      -- builds debug version and loads suite into gdb
 # make DEBUG=rr ...       -- builds debug version and loads suite into rr
-# make DEBUG=valgrind ... -- builds debug version and run it under valgrind (see
-#                            valgrind-report file after a run)
+# make DEBUG=valgrind ... -- builds debug version and runs it under valgrind
+#                            (see valgrind-report file after a run)
 #
-# make VERBOSE=1 ... -- print all build commands
+# make VERBOSE=1 ... -- enables verbose printing of commands
 #
-# make TEST_RUN_PREFIX=wine -- run command prefix
+# make TEST_RUN_PREFIX=wine -- sets run command prefix
 #
-# make clean -- removes various built artifacts
+# make clean -- removes various build artifacts
 #
 # "B" variable might be set to build tree root to run tests out of the source
 # tree.
@@ -192,6 +192,11 @@ endif
 
 # check and build targets are defined mostly in suite_template
 check: build
+	@if [ "$$(find "$(SANDBOX_PATH)" -mindepth 2 | wc -l)" -ne 0 ]; then \
+	    echo "ERROR: sandbox isn't empty"; \
+	    find $(SANDBOX_PATH) -mindepth 2; \
+	    false; \
+	fi
 
 clean:
 	$(RM) -r $(B)bin/ $(SANDBOX_PATH)/
@@ -245,6 +250,10 @@ else
     TEST_DATA_PATH := test-data
 endif
 
+ifneq ($(shell find "$(SANDBOX_PATH)" -mindepth 2 | wc -l),0)
+    $(shell $(RM) -r $(SANDBOX_PATH))
+endif
+
 
 # suite definition template, takes single argument: name of the suite
 define suite_template
@@ -278,11 +287,10 @@ $(BUILD)$1/filelist: $1/. | $(BUILD)$1
 $(BUILD)$1:
 	$(AT)mkdir -p $$@
 
-ifeq ($(SANDBOX_PATH),sandbox)
 $(SANDBOX_PATH)/$1:
+ifeq ($(SANDBOX_PATH),sandbox)
 	$(AT)mkdir -p $(B)$$@
 else
-$(SANDBOX_PATH)/$1:
 	$(AT)mkdir -p $$@
 endif
 

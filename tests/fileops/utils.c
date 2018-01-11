@@ -2,7 +2,7 @@
 
 #include <stic.h>
 
-#include <unistd.h> /* access() */
+#include <unistd.h> /* access() usleep() */
 
 #include <stdio.h> /* FILE fclose() fopen() */
 #include <string.h> /* snprintf() strcpy() */

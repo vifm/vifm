@@ -40,6 +40,7 @@
 #include "cfg/info.h"
 #include "compat/reallocarray.h"
 #include "engine/autocmds.h"
+#include "engine/parsing.h"
 #include "compat/fs_limits.h"
 #include "engine/cmds.h"
 #include "engine/keys.h"
@@ -100,6 +101,7 @@ static void move_pair(short int from, short int to);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
+static char * eval_received_expression(const char expr[]);
 static void remote_cd(view_t *view, const char path[], int handle);
 static void check_path_for_file(view_t *view, const char path[], int handle);
 static int need_to_switch_active_pane(const char lwin_path[],
@@ -116,7 +118,7 @@ static args_t vifm_args;
 int
 main(int argc, char *argv[])
 {
-	return vifm_main(argc, argv);
+	vifm_exit(vifm_main(argc, argv));
 }
 
 #else
@@ -142,7 +144,7 @@ main()
 	}
 	utf8_argv[i] = NULL;
 
-	return vifm_main(argc, utf8_argv);
+	vifm_exit(vifm_main(argc, utf8_argv));
 }
 
 #endif
@@ -226,10 +228,16 @@ vifm_main(int argc, char *argv[])
 		read_info_file(0);
 	}
 
-	ipc_init(vifm_args.server_name, &parse_received_arguments);
+	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
+			&eval_received_expression);
+	if(ipc_enabled() && curr_stats.ipc == NULL)
+	{
+		fputs("Failed to initialize IPC unit", stderr);
+		return -1;
+	}
 	/* Export chosen server name to parsing unit. */
 	{
-		var_val_t value = { .string = (char *)ipc_get_name() };
+		var_val_t value = { .string = (char *)ipc_get_name(curr_stats.ipc) };
 		var_t var = var_new(VTYPE_STRING, value);
 		setvar("v:servername", var);
 		var_free(var);
@@ -405,17 +413,11 @@ undo_perform_func(OPS op, void *data, const char src[], const char dst[])
 static void
 parse_received_arguments(char *argv[])
 {
-	int argc = 0;
 	args_t args = {};
-
-	while(argv[argc] != NULL)
-	{
-		argc++;
-	}
 
 	(void)vifm_chdir(argv[0]);
 	opterr = 0;
-	args_parse(&args, argc, argv, argv[0]);
+	args_parse(&args, count_strings(argv), argv, argv[0]);
 	args_process(&args, 0);
 
 	exec_startup_commands(&args);
@@ -447,6 +449,7 @@ parse_received_arguments(char *argv[])
 		change_window();
 	}
 
+	/* XXX: why force clearing of the statusbar? */
 	ui_sb_clear();
 	curr_stats.save_msg = 0;
 }
@@ -508,6 +511,24 @@ need_to_switch_active_pane(const char lwin_path[], const char rwin_path[])
 	return lwin_path[0] != '\0'
 	    && rwin_path[0] == '\0'
 	    && curr_view != &lwin;
+}
+
+/* Evaluates expression from a remote instance.  Returns newly allocated string
+ * with the result or NULL on error. */
+static char *
+eval_received_expression(const char expr[])
+{
+	char *result_str;
+
+	var_t result;
+	if(parse(expr, &result) != PE_NO_ERROR)
+	{
+		return NULL;
+	}
+
+	result_str = var_to_string(result);
+	var_free(result);
+	return result_str;
 }
 
 /* Loads color scheme.  Converts old format to the new one if needed. */
@@ -697,7 +718,7 @@ vifm_leave(int exit_code, int cquit)
 	}
 
 	term_title_update(NULL);
-	exit(exit_code);
+	vifm_exit(exit_code);
 }
 
 void _gnuc_noreturn
@@ -717,7 +738,14 @@ vifm_finish(const char message[])
 
 	fprintf(stderr, "%s\n", message);
 	LOG_ERROR_MSG("Finishing: %s", message);
-	exit(EXIT_FAILURE);
+	vifm_exit(EXIT_FAILURE);
+}
+
+void _gnuc_noreturn
+vifm_exit(int exit_code)
+{
+	ipc_free(curr_stats.ipc);
+	exit(exit_code);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

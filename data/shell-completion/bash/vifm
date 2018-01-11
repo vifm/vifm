@@ -49,7 +49,7 @@ _vifm() {
     if [[ $cur == -* ]]; then
         COMPREPLY=( $( compgen -W '--select -f --choose-files --choose-dir
             --delimiter --on-choose --logging= --server-list --server-name
-            --remote --server-name -c -h --help -v --version --no-configs' \
+            --remote --remote-expr -c -h --help -v --version --no-configs' \
             -- "$cur" ) )
         [[ $COMPREPLY == *= ]] && compopt -o nospace
         return

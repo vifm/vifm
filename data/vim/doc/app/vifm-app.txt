@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2017 Nov 28
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2018 Jan 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -112,6 +112,9 @@ The other command line arguments are:
     There is no limit on how many arguments can be processed.  One can combine
     --remote with -c <command> or +<command> to execute commands in already
     running instance of vifm.  See also |vifm-clientserver|.
+--remote-expr                                  *vifm---remote-expr*
+    passes expression to vifm server and prints result.  See also
+    |vifm-clientserver|.
 -c <command>, +<command>                       *vifm--c* *vifm--+c*
     run command-line mode <command> on startup.  Commands in such arguments
     are executed in the order they appear in command line.  Commands with
@@ -4952,9 +4955,9 @@ files.
 --------------------------------------------------------------------------------
 *vifm-clientserver*
 
-vifm supports remote execution of command-line mode commands as well as remote
-changing of directories.  This is possible using |vifm---remote| command-line
-argument.
+vifm supports remote execution of command-line mode commands, remote changing of
+directories and expression evaluation.  This is possible using |vifm---remote|
+and |vifm---remote-expr| command-line arguments.
 
 To execute a command remotely combine --remote argument with |vifm--c| or
 |vifm--+c|.  For example: >
@@ -4966,6 +4969,10 @@ right after --remote argument, like this: >
     vifm --remote /
     vifm --remote ~
     vifm --remote /usr/bin /tmp
+
+Evaluating expression remotely might be useful to query information about an
+instance, for example its location: >
+    vifm --remote-expr 'expand("%d")'
 
 If there are several running instances, the target can be specified with
 |vifm---server-name| option (otherwise, the first one lexicographically is used): >

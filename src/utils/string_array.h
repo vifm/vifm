@@ -74,6 +74,10 @@ void free_string_array(char *array[], size_t len);
 /* Frees memory of all array items, but not from the array itself. */
 void free_strings(char *array[], size_t len);
 
+/* Counts number of elements of a null terminated array of strings.  Returns the
+ * count. */
+int count_strings(char *array[]);
+
 /* Reads file specified by filepath into an array of strings.  Returns non-NULL
  * on success, otherwise NULL is returned, *nlines is untouched and errno
  * contains error code.  For empty file non-NULL will be returned, but *nlines

@@ -171,6 +171,17 @@ free_strings(char *array[], size_t len)
 	}
 }
 
+int
+count_strings(char *array[])
+{
+	int count = 0;
+	while(*array++ != NULL)
+	{
+		++count;
+	}
+	return count;
+}
+
 char **
 read_file_of_lines(const char filepath[], int *nlines)
 {

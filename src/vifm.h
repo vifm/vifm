@@ -38,6 +38,10 @@ void _gnuc_noreturn vifm_choose_files(const struct view_t *view, int nfiles,
  * and displaying the message. */
 void _gnuc_noreturn vifm_finish(const char message[]);
 
+/* Quits vifm with the specified exit code after performing some clean up.
+ * This function should be used instead of using exit() directly. */
+void _gnuc_noreturn vifm_exit(int exit_code);
+
 #endif /* VIFM__VIFM_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
