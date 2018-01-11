@@ -62,6 +62,9 @@ void setup_grid(struct view_t *view, int column_count, int list_rows, int init);
 void setup_transposed_grid(struct view_t *view, int column_count, int list_rows,
 		int init);
 
+/* Waits termination of all background tasks. */
+void wait_for_bg(void);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

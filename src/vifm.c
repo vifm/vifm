@@ -226,7 +226,8 @@ vifm_main(int argc, char *argv[])
 		read_info_file(0);
 	}
 
-	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments);
+	curr_stats.ipc = ipc_init(vifm_args.server_name, &parse_received_arguments,
+			NULL);
 	if(ipc_enabled() && curr_stats.ipc == NULL)
 	{
 		fputs("Failed to initialize IPC unit", stderr);

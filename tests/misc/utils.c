@@ -1,7 +1,7 @@
 #include "utils.h"
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* access() */
+#include <unistd.h> /* access() usleep() */
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fread() */
@@ -17,6 +17,7 @@
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/background.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
@@ -321,6 +322,21 @@ init_list(view_t *view)
 		view->dir_entry[i].name = strdup("");
 		view->dir_entry[i].type = FT_REG;
 		view->dir_entry[i].origin = view->curr_dir;
+	}
+}
+
+void
+wait_for_bg(void)
+{
+	int counter = 0;
+	while(bg_has_active_jobs())
+	{
+		usleep(5000);
+		if(++counter > 100)
+		{
+			assert_fail("Waiting for too long.");
+			break;
+		}
 	}
 }
 

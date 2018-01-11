@@ -45,7 +45,7 @@
 #include <sys/stat.h> /* mkfifo() stat() */
 #include <dirent.h> /* DIR closedir() opendir() readdir() */
 #include <fcntl.h>
-#include <unistd.h> /* close() open() select() unlink() */
+#include <unistd.h> /* close() open() select() unlink() usleep() */
 
 #include <errno.h> /* EACCES EEXIST EDQUOT ENOSPC ENXIO errno */
 #include <stddef.h> /* NULL size_t ssize_t */
@@ -83,8 +83,13 @@
  *
  * {name} is a name of another instance.
  *
- * {type} can be "args", in which case body is prepended with CWD
- * unconditionally.
+ * {type} can be:
+ *  - "args" to pass list of arguments, in which case body is prepended with CWD
+ *    unconditionally;
+ *  - "eval" to pass an expression for evaluation in a single line;
+ *  - "eval-result" to communicate result of successful evaluation in a single
+ *    line;
+ *  - "eval-error" to communicate failure of evaluation with no strings.
  *
  * On version mismatch or unknown field name, packet is discarded which is
  * logged.
@@ -116,16 +121,23 @@ struct ipc_t
 {
 	/* Stores callback to report received messages. */
 	ipc_args_cb args_cb;
+	/* Stores callback used for evaluation of expressions. */
+	ipc_eval_cb eval_cb;
 	/* Path to the pipe used by this instance. */
 	char pipe_path[PATH_MAX + 1];
 	/* Opened file of the pipe. */
 	read_pipe_t pipe_file;
+	/* Holds result of expression evaluation or NULL on evaluation error. */
+	char *eval_result;
 };
 
 static read_pipe_t create_pipe(const char name[], char path_buf[], size_t len);
 static char * receive_pkg(ipc_t *ipc, int *len);
 static read_pipe_t try_use_pipe(const char path[], int *fatal);
 static void handle_pkg(ipc_t *ipc, const char pkg[], const char *end);
+static void handle_args(ipc_t *ipc, char ***array, int len);
+static void handle_expr(ipc_t *ipc, const char from[], char *array[], int len);
+static void handle_eval_result(ipc_t *ipc, char *array[], int len);
 static int format_and_send(ipc_t *ipc, const char whom[], char *data[],
 		const char type[]);
 static int send_pkg(const char whom[], const char what[], size_t len);
@@ -142,6 +154,12 @@ static int pipe_is_in_use(const char path[]);
 static const char IPC_VERSION[] = "version:1";
 /* Request to process remote arguments. */
 static const char ARGS_TYPE[] = "args";
+/* Request to process remote expression. */
+static const char EVAL_TYPE[] = "eval";
+/* Reply to remote expression with the result after successful evaluation. */
+static const char EVAL_RESULT_TYPE[] = "eval-result";
+/* Reply to remote expression on error. */
+static const char EVAL_ERROR_TYPE[] = "eval-error";
 
 int
 ipc_enabled(void)
@@ -150,7 +168,7 @@ ipc_enabled(void)
 }
 
 ipc_t *
-ipc_init(const char name[], ipc_args_cb args_cb)
+ipc_init(const char name[], ipc_args_cb args_cb, ipc_eval_cb eval_cb)
 {
 	ipc_t *const ipc = malloc(sizeof(*ipc));
 	if(ipc == NULL)
@@ -159,6 +177,7 @@ ipc_init(const char name[], ipc_args_cb args_cb)
 	}
 
 	ipc->args_cb = args_cb;
+	ipc->eval_cb = eval_cb;
 
 	if(name == NULL)
 	{
@@ -420,6 +439,7 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 	char **array = NULL;
 	size_t len = 0U;
 	int in_body = 0;
+	const char *type = NULL;
 	const char *from = NULL;
 
 	while(pkg != end)
@@ -441,10 +461,7 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 		}
 		else if(starts_with_lit(pkg, "body:"))
 		{
-			if(strcmp(pkg, "body:args") != 0)
-			{
-				break;
-			}
+			type = after_first(pkg, ':');
 			in_body = 1;
 		}
 		else
@@ -454,33 +471,124 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 		pkg += strlen(pkg) + 1;
 	}
 
-	if(pkg != end || from == NULL)
+	if(pkg != end)
 	{
-		if(pkg != end)
-		{
-			LOG_ERROR_MSG("Discarded remote package due to field: %s", pkg);
-		}
-		if(from)
-		{
-			LOG_ERROR_MSG("Discarded remote package due to missing from field");
-		}
-		free_string_array(array, len);
-		return;
+		LOG_ERROR_MSG("Discarded remote package due to field: `%s`", pkg);
 	}
-
-	len = put_into_string_array(&array, len, NULL);
-	if(len > 1U)
+	else if(from == NULL)
 	{
-		ipc->args_cb(array);
+		LOG_ERROR_MSG("Discarded remote package due to missing from field");
+	}
+	else if(type == NULL)
+	{
+		LOG_ERROR_MSG("Discarded remote package due to missing body field");
+	}
+	else if(strcmp(type, ARGS_TYPE) == 0)
+	{
+		handle_args(ipc, &array, len);
+	}
+	else if(strcmp(type, EVAL_TYPE) == 0)
+	{
+		handle_expr(ipc, from, array, len);
+	}
+	else if(strcmp(type, EVAL_RESULT_TYPE) == 0)
+	{
+		handle_eval_result(ipc, array, len);
+	}
+	else if(strcmp(type, EVAL_ERROR_TYPE) == 0)
+	{
+		ipc->eval_result = NULL;
+	}
+	else
+	{
+		LOG_ERROR_MSG("Discarded remote package due to unknown type: `%s`", type);
 	}
 
 	free_string_array(array, len);
+}
+
+/* Handles received message with arguments. */
+static void
+handle_args(ipc_t *ipc, char ***array, int len)
+{
+	if(len == 0U)
+	{
+		return;
+	}
+
+	if(put_into_string_array(array, len, NULL) == len + 1)
+	{
+		ipc->args_cb(*array);
+	}
+}
+
+/* Handles received message with expression to evaluate. */
+static void
+handle_expr(ipc_t *ipc, const char from[], char *array[], int len)
+{
+	char *result;
+
+	if(len != 1U)
+	{
+		return;
+	}
+
+	result = ipc->eval_cb(array[0]);
+	if(result == NULL)
+	{
+		char *data[] = { NULL };
+		(void)format_and_send(ipc, from, data, EVAL_ERROR_TYPE);
+	}
+	else
+	{
+		char *data[] = { result, NULL };
+		(void)format_and_send(ipc, from, data, EVAL_RESULT_TYPE);
+		free(result);
+	}
+}
+
+/* Handles answer about successful evaluation of expression. */
+static void
+handle_eval_result(ipc_t *ipc, char *array[], int len)
+{
+	if(len == 1U)
+	{
+		ipc->eval_result = array[0];
+		array[0] = NULL;
+	}
 }
 
 int
 ipc_send(ipc_t *ipc, const char whom[], char *data[])
 {
 	return format_and_send(ipc, whom, data, ARGS_TYPE);
+}
+
+char *
+ipc_eval(ipc_t *ipc, const char whom[], const char expr[])
+{
+	enum { MAX_USEC = 1000000, MAX_REPEATS = 20 };
+	int repeats;
+
+	char *data[] = { (char *)expr, NULL };
+	if(format_and_send(ipc, whom, data, EVAL_TYPE) != 0)
+	{
+		return NULL;
+	}
+
+	/* Using sleep is just easier than doing read with timeout due to differences
+	 * between platforms... */
+	repeats = 0;
+	while(!ipc_check(ipc))
+	{
+		if(++repeats > MAX_REPEATS)
+		{
+			return NULL;
+		}
+		usleep(MAX_USEC/MAX_REPEATS);
+	}
+
+	return ipc->eval_result;
 }
 
 /* Formats and sends a message of specified type.  The data array should be NULL
@@ -776,7 +884,7 @@ ipc_list(int *len)
 }
 
 ipc_t *
-ipc_init(const char name[], ipc_args_cb args_cb)
+ipc_init(const char name[], ipc_args_cb args_cb, ipc_eval_cb eval_cb)
 {
 	return NULL;
 }
@@ -802,6 +910,12 @@ int
 ipc_send(ipc_t *ipc, const char whom[], char *data[])
 {
 	return 1;
+}
+
+char *
+ipc_eval(ipc_t *ipc, const char whom[], const char expr[])
+{
+	return NULL;
 }
 
 #endif

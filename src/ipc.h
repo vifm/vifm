@@ -22,10 +22,15 @@
 /* Opaque handle type for this unit that represents an IPC instance. */
 typedef struct ipc_t ipc_t;
 
-/* Type of function that is invoked on IPC receive.  args is NULL terminated
- * array of arguments, args[0] is absolute path at which they should be
- * processed. */
+/* Type of function that is invoked when arguments are received.  args is a NULL
+ * terminated array of arguments, args[0] is absolute path at which they should
+ * be processed. */
 typedef void (*ipc_args_cb)(char *args[]);
+
+/* Type of function that is invoked when expression is received.  Evaluates
+ * expression from a remote instance.  Should return newly allocated string
+ * with the result or NULL on error. */
+typedef char * (*ipc_eval_cb)(const char expr[]);
 
 /* Checks whether IPC is in use.  Returns non-zero if so, otherwise zero is
  * returned. */
@@ -36,8 +41,8 @@ int ipc_enabled(void);
 char ** ipc_list(int *len);
 
 /* Initializes IPC unit state.  name can be NULL, which will use the default
- * one (VIFM).  The args_cb will be called by ipc_check(). */
-ipc_t * ipc_init(const char name[], ipc_args_cb args_cb);
+ * one (VIFM).  Callbacks will be called on ipc_check(). */
+ipc_t * ipc_init(const char name[], ipc_args_cb args_cb, ipc_eval_cb eval_cb);
 
 /* Frees resources associated with an instance of IPC.  The parameter can be
  * NULL. */
@@ -50,9 +55,14 @@ const char * ipc_get_name(const ipc_t *ipc);
  * non-zero if something was received, otherwise zero is returned. */
 int ipc_check(ipc_t *ipc);
 
-/* Sends data to server.  The data array should end with NULL.  Returns zero on
- * successful send and non-zero otherwise. */
+/* Sends data to server.  If whom argument is NULL, target instance is
+ * automatically determined.  The data array should end with NULL.  Returns zero
+ * on successful send and non-zero otherwise. */
 int ipc_send(ipc_t *ipc, const char whom[], char *data[]);
+
+/* Evaluates expression in a remote instance.  Rules for arguments match those
+ * of ipc_send().  Returns result converted to a string or NULL on error. */
+char * ipc_eval(ipc_t *ipc, const char whom[], const char expr[]);
 
 #endif /* VIFM__IPC_H__ */
 
