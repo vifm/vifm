@@ -762,7 +762,8 @@ gen_clone_name(const char dir[], const char normal_name[])
 	copy_str(result, sizeof(result), normal_name);
 	chosp(result);
 
-	copy_str(extension, sizeof(extension), cut_extension(result));
+	copy_str(extension, sizeof(extension),
+			cut_extension(result[0] == '.' ? &result[1] : result));
 
 	len = strlen(result);
 	i = 1;

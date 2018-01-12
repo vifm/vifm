@@ -175,6 +175,9 @@
 	Fixed CWD of the process not matching current view after vifm picked up
 	change in file system.  Patch by Daniel Mueller.
 
+	Fixed cloning of files like `.name` to produce `.name(1)` instead of
+	`(1).name`.  Thanks to filterfalse.
+
 0.9-beta to 0.9
 
 	Escape $ and ` in %" macros on *nix systems.  Thanks to filterfalse.
