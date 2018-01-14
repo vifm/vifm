@@ -116,7 +116,7 @@ log_serror(const char *file, const char *func, int line, int no)
 		return;
 
 	log_prefix(file, func, line);
-	fprintf(log, "               %s\n", strerror(no));
+	fprintf(log, "               errno: %s\n", strerror(no));
 }
 
 #ifdef _WIN32
