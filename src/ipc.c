@@ -246,6 +246,10 @@ receive_pkg(ipc_t *ipc, int *len)
 	int max_fd;
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 10000 };
 
+	/* At least on OS X pipe might get into EOF state, so reset it.  This will
+	 * also reset any errors, which is fine with us. */
+	clearerr(ipc->pipe_file);
+
 	if(fread(&size, sizeof(size), 1U, ipc->pipe_file) != 1U ||
 			size >= 4294967294U)
 	{
@@ -255,6 +259,7 @@ receive_pkg(ipc_t *ipc, int *len)
 	pkg = malloc(size + 1U);
 	if(pkg == NULL)
 	{
+		LOG_ERROR_MSG("Failed to allocate memory: %lu", (unsigned long)(size + 1));
 		return NULL;
 	}
 
@@ -281,6 +286,8 @@ receive_pkg(ipc_t *ipc, int *len)
 	if(size != 0U)
 	{
 		free(pkg);
+		LOG_ERROR_MSG("Failed to read whole packet, left: %lu",
+				(unsigned long)size);
 		return NULL;
 	}
 
@@ -530,6 +537,7 @@ handle_expr(ipc_t *ipc, const char from[], char *array[], int len)
 
 	if(len != 1U)
 	{
+		LOG_ERROR_MSG("Incorrect number of lines in expr packet: %d", len);
 		return;
 	}
 
@@ -537,12 +545,18 @@ handle_expr(ipc_t *ipc, const char from[], char *array[], int len)
 	if(result == NULL)
 	{
 		char *data[] = { NULL };
-		(void)format_and_send(ipc, from, data, EVAL_ERROR_TYPE);
+		if(format_and_send(ipc, from, data, EVAL_ERROR_TYPE) != 0)
+		{
+			LOG_ERROR_MSG("Failed to report evaluation failure");
+		}
 	}
 	else
 	{
 		char *data[] = { result, NULL };
-		(void)format_and_send(ipc, from, data, EVAL_RESULT_TYPE);
+		if(format_and_send(ipc, from, data, EVAL_RESULT_TYPE) != 0)
+		{
+			LOG_ERROR_MSG("Failed to report evaluation result");
+		}
 		free(result);
 	}
 }
@@ -573,6 +587,7 @@ ipc_eval(ipc_t *ipc, const char whom[], const char expr[])
 	char *data[] = { (char *)expr, NULL };
 	if(format_and_send(ipc, whom, data, EVAL_TYPE) != 0)
 	{
+		LOG_ERROR_MSG("Failed to send expression");
 		return NULL;
 	}
 
@@ -583,6 +598,7 @@ ipc_eval(ipc_t *ipc, const char whom[], const char expr[])
 	{
 		if(++repeats > MAX_REPEATS)
 		{
+			LOG_ERROR_MSG("Timed out on waiting for --remote-expr response");
 			return NULL;
 		}
 		usleep(MAX_USEC/MAX_REPEATS);
@@ -656,15 +672,17 @@ send_pkg(const char whom[], const char what[], size_t len)
 
 	snprintf(path, sizeof(path), "%s/" PREFIX "%s", get_ipc_dir(), whom);
 
-	fd = open(path, O_WRONLY | O_NONBLOCK);
+	fd = open(path, O_WRONLY);
 	if(fd == -1)
 	{
+		LOG_SERROR_MSG(errno, "Failed to open destination pipe");
 		return 1;
 	}
 
 	dst = fdopen(fd, "w");
 	if(dst == NULL)
 	{
+		LOG_SERROR_MSG(errno, "Failed to turn file descriptor into a FILE");
 		close(fd);
 		return 1;
 	}
@@ -673,11 +691,15 @@ send_pkg(const char whom[], const char what[], size_t len)
 	if(fwrite(&size, sizeof(size), 1U, dst) != 1U ||
 			fwrite(what, len, 1U, dst) != 1U)
 	{
-		fclose(dst);
+		LOG_SERROR_MSG(errno, "Failed to write into a pipe");
+		(void)fclose(dst);
 		return 1;
 	}
 
-	fclose(dst);
+	if(fclose(dst) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Failure on close a pipe");
+	}
 	return 0;
 #else
 	char path[PATH_MAX];

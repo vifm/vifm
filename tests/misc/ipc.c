@@ -62,6 +62,15 @@ TEST(name_is_taken_into_account, IF(ipc_enabled))
 	ipc_free(ipc);
 }
 
+TEST(names_do_not_repeat, IF(enabled_and_not_in_wine))
+{
+	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	ipc_t *const ipc2 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	assert_true(strcmp(ipc_get_name(ipc1), ipc_get_name(ipc2)) != 0);
+	ipc_free(ipc1);
+	ipc_free(ipc2);
+}
+
 TEST(instance_is_listed_when_it_exists, IF(enabled_and_not_in_wine))
 {
 	int len;
