@@ -656,7 +656,7 @@ send_pkg(const char whom[], const char what[], size_t len)
 
 	snprintf(path, sizeof(path), "%s/" PREFIX "%s", get_ipc_dir(), whom);
 
-	fd = open(path, O_WRONLY | O_NONBLOCK);
+	fd = open(path, O_WRONLY);
 	if(fd == -1)
 	{
 		return 1;
