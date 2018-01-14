@@ -246,6 +246,10 @@ receive_pkg(ipc_t *ipc, int *len)
 	int max_fd;
 	struct timeval ts = { .tv_sec = 0, .tv_usec = 10000 };
 
+	/* At least on OS X pipe might get into EOF state, so reset it.  This will
+	 * also reset any errors, which is fine with us. */
+	clearerr(ipc->pipe_file);
+
 	if(fread(&size, sizeof(size), 1U, ipc->pipe_file) != 1U ||
 			size >= 4294967294U)
 	{
