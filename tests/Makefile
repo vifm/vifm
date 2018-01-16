@@ -250,7 +250,7 @@ else
     TEST_DATA_PATH := test-data
 endif
 
-ifneq ($(shell find "$(SANDBOX_PATH)" -mindepth 2 | wc -l),0)
+ifneq ($(shell find "$(SANDBOX_PATH)" -mindepth 2 2> /dev/null | wc -l),0)
     $(shell $(RM) -r $(SANDBOX_PATH))
 endif
 
