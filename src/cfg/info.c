@@ -1314,7 +1314,7 @@ write_tui_state(FILE *const fp)
 {
 	fputs("\n# TUI:\n", fp);
 	fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
-	fprintf(fp, "q%d\n", curr_stats.preview.on);
+	fprintf(fp, "q%u\n", curr_stats.preview.on);
 	fprintf(fp, "v%d\n", curr_stats.number_of_windows);
 	fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
 	fprintf(fp, "m%d\n", curr_stats.splitter_pos);

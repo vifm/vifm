@@ -330,7 +330,7 @@ matcher_free(matcher_t *matcher)
 static void
 free_matcher_items(matcher_t *matcher)
 {
-	if(!matcher_is_empty(matcher))
+	if(matcher->raw != NULL && !matcher_is_empty(matcher))
 	{
 		/* Regex is compiled only for non-empty matchers. */
 		regfree(&matcher->regex);
