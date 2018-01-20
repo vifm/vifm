@@ -68,6 +68,9 @@ if [ "$target" = all -o "$target" = update ]; then
     # update version in README.md
     sed -i "/^### \\*\\*vifm\\*\\*/s/, _v[^_]\\+_,/, _v${ver}_,/" README.md
 
+    # update .travis.yml
+    sed -i "/^\\s\\+version: .*/s/: .*/: $ver+/" .travis.yml
+
     # update man pages
     sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/man/*.1
 
