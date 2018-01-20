@@ -129,6 +129,9 @@ for test in bin/*; do
     basename="\${test#*/}"
     name="\${basename%.*}"
     mkdir -p "sandbox/\$name"
+    if [ "\$name" = "fuzz" ]; then
+        continue
+    fi
     if ! \$test -s; then
         exit 1
     fi
@@ -139,6 +142,9 @@ for test in bin/*; do
     basename="\${test#*/}"
     name="\${basename%.*}"
     mkdir -p "sandbox/\$name"
+    if [ "\$name" = "fuzz" ]; then
+        continue
+    fi
     if ! \$test -s; then
         exit 1
     fi
