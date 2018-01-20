@@ -60,9 +60,13 @@ if [ "$target" = all -o "$target" = update ]; then
 
     # update date in README
     sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
-
     # update version in README
     sed -i "/^Version:/s/ .*/ $ver/" README
+
+    # update date in README.md
+    sed -i "/^_This file last /s/on .*/on $(date '+%d %B, %Y')_/" README.md
+    # update version in README.md
+    sed -i "/^### \\*\\*vifm\\*\\*/s/, _v[^_]\\+_,/, _v${ver}_,/" README.md
 
     # update man pages
     sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/man/*.1
