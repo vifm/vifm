@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2018 Jan 18
+*vifm-app.txt*    For Vifm version 0.9  Last change: 2018 Jan 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3512,9 +3512,9 @@ type: boolean
 default: false
 
 When disabled, vifm will rely on external applications to perform file-system
-operations, otherwise system calls are used instead (much faster).  The
-feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The option will be
-eventually removed.  Mostly *nix-like systems are affected.
+operations, otherwise system calls are used instead (much faster and supports
+progress tracking).  The option should eventually be removed.  Mostly
+*nix-like systems are affected.
 
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts
