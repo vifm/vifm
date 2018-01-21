@@ -91,8 +91,9 @@ if [ "$target" = all -o "$target" = commit ]; then
         echo 'Committing error.'
         exit 1
     fi
-    # force mark commit with tag
-    git tag --force --sign "v$ver"
+    # force mark commit with tag taking the last section in the NEWS for message
+    sed -n -e '/^~~~~~~~~~~~~~~~~~/q' -e '/^vifm/,$p' NEWS |
+        git tag --force --file=- --sign "v$ver"
 fi
 
 if [ "$target" = all -o "$target" = archive ]; then
