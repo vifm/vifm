@@ -110,6 +110,7 @@ static void update_origins(view_t *view, const char *old_main_origin);
 static void set_splitter(int pos);
 static void refresh_bottom_lines(void);
 static char * path_identity(const char path[]);
+static int get_tabline_height(void);
 static char * format_view_title(const view_t *view, path_func pf);
 static void print_view_title(const view_t *view, int active_view, char title[]);
 static void fixup_titles_attributes(const view_t *view, int active_view);
@@ -313,13 +314,20 @@ only_layout(view_t *view, int screen_x)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
+	const int y = get_tabline_height();
 
 	wresize(view->title, 1, screen_x - 2);
-	mvwin(view->title, 0, 1);
+	mvwin(view->title, y, 1);
+
+	mvwin(ltop_line1, y, 0);
+	mvwin(ltop_line2, y, 0);
+
+	mvwin(rtop_line1, y, screen_x - 1);
+	mvwin(rtop_line2, y, screen_x - 1);
 
 	wresize(view->win, get_working_area_height(),
 			screen_x + vborder_size_correction);
-	mvwin(view->win, 1, vborder_pos_correction);
+	mvwin(view->win, y + 1, vborder_pos_correction);
 }
 
 /* Updates TUI elements sizes and coordinates for vertical configuration of
@@ -330,6 +338,7 @@ vertical_layout(int screen_x)
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -1 : 0;
 	const int border_height = get_working_area_height();
+	const int y = get_tabline_height();
 
 	int splitter_pos;
 	int splitter_width;
@@ -348,31 +357,31 @@ vertical_layout(int screen_x)
 		curr_stats.splitter_pos = splitter_pos;
 
 	wresize(lwin.title, 1, splitter_pos - 1);
-	mvwin(lwin.title, 0, 1);
+	mvwin(lwin.title, y, 1);
 
 	wresize(lwin.win, border_height, splitter_pos + vborder_size_correction);
-	mvwin(lwin.win, 1, vborder_pos_correction);
+	mvwin(lwin.win, y + 1, vborder_pos_correction);
 
 	wbkgdset(mborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	wresize(mborder, border_height, splitter_width);
-	mvwin(mborder, 1, splitter_pos);
+	mvwin(mborder, y + 1, splitter_pos);
 
-	mvwin(ltop_line1, 0, 0);
-	mvwin(ltop_line2, 0, 0);
+	mvwin(ltop_line1, y, 0);
+	mvwin(ltop_line2, y, 0);
 
 	wresize(top_line, 1, splitter_width);
-	mvwin(top_line, 0, splitter_pos);
+	mvwin(top_line, y, splitter_pos);
 
-	mvwin(rtop_line1, 0, screen_x - 1);
-	mvwin(rtop_line2, 0, screen_x - 1);
+	mvwin(rtop_line1, y, screen_x - 1);
+	mvwin(rtop_line2, y, screen_x - 1);
 
 	wresize(rwin.title, 1, screen_x - (splitter_pos + splitter_width + 1));
-	mvwin(rwin.title, 0, splitter_pos + splitter_width);
+	mvwin(rwin.title, y, splitter_pos + splitter_width);
 
 	wresize(rwin.win, border_height,
 			screen_x - (splitter_pos + splitter_width) + vborder_size_correction);
-	mvwin(rwin.win, 1, splitter_pos + splitter_width);
+	mvwin(rwin.win, y + 1, splitter_pos + splitter_width);
 }
 
 /* Updates TUI elements sizes and coordinates for horizontal configuration of
@@ -382,6 +391,7 @@ horizontal_layout(int screen_x, int screen_y)
 {
 	const int vborder_pos_correction = cfg.side_borders_visible ? 1 : 0;
 	const int vborder_size_correction = cfg.side_borders_visible ? -2 : 0;
+	const int y = get_tabline_height();
 
 	int splitter_pos;
 
@@ -397,15 +407,15 @@ horizontal_layout(int screen_x, int screen_y)
 		curr_stats.splitter_pos = splitter_pos;
 
 	wresize(lwin.title, 1, screen_x - 2);
-	mvwin(lwin.title, 0, 1);
+	mvwin(lwin.title, y, 1);
 
 	wresize(rwin.title, 1, screen_x - 2);
 	mvwin(rwin.title, splitter_pos, 1);
 
-	wresize(lwin.win, splitter_pos - 1, screen_x + vborder_size_correction);
-	mvwin(lwin.win, 1, vborder_pos_correction);
+	wresize(lwin.win, splitter_pos - (y + 1), screen_x + vborder_size_correction);
+	mvwin(lwin.win, y + 1, vborder_pos_correction);
 
-	wresize(rwin.win, get_working_area_height() - splitter_pos,
+	wresize(rwin.win, get_working_area_height() - splitter_pos + y,
 			screen_x + vborder_size_correction);
 	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
 
@@ -414,20 +424,20 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(mborder, 1, screen_x);
 	mvwin(mborder, splitter_pos, 0);
 
-	mvwin(ltop_line1, 0, 0);
+	mvwin(ltop_line1, y, 0);
 	mvwin(ltop_line2, splitter_pos, 0);
 
 	wresize(top_line, 1, 2 - screen_x%2);
-	mvwin(top_line, 0, screen_x/2 - 1 + screen_x%2);
+	mvwin(top_line, y, screen_x/2 - 1 + screen_x%2);
 
-	mvwin(rtop_line1, 0, screen_x - 1);
+	mvwin(rtop_line1, y, screen_x - 1);
 	mvwin(rtop_line2, splitter_pos, screen_x - 1);
 
 	wresize(lborder, screen_y - 1, 1);
-	mvwin(lborder, 0, 0);
+	mvwin(lborder, y, 0);
 
 	wresize(rborder, screen_y - 1, 1);
-	mvwin(rborder, 0, screen_x - 1);
+	mvwin(rborder, y, screen_x - 1);
 }
 
 static void
@@ -491,11 +501,6 @@ resize_all(void)
 	{
 		only_layout(&lwin, screen_x);
 		only_layout(&rwin, screen_x);
-
-		mvwin(ltop_line1, 0, 0);
-		mvwin(ltop_line2, 0, 0);
-		mvwin(rtop_line1, 0, screen_x - 1);
-		mvwin(rtop_line2, 0, screen_x - 1);
 	}
 	else
 	{
@@ -527,7 +532,8 @@ get_working_area_height(void)
 	     - 1                                /* Top line. */
 	     - (cfg.display_statusline ? 1 : 0) /* Status line. */
 	     - ui_stat_job_bar_height()         /* Job bar. */
-	     - 1;                               /* Status bar line. */
+	     - 1                                /* Status bar line. */
+	     - get_tabline_height();            /* Tab line. */
 }
 
 /* Updates internal data structures to reflect actual terminal geometry. */
@@ -1621,6 +1627,14 @@ static char *
 path_identity(const char path[])
 {
 	return (char *)path;
+}
+
+/* Retrieves height of the tab line in lines.  Returns the height. */
+static int
+get_tabline_height(void)
+{
+	/* TODO: implement determining height of the tab line. */
+	return 0;
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.
