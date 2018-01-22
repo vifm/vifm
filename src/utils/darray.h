@@ -32,7 +32,10 @@
  * example:
  *   static int *array;
  *   static DA_INSTANCE(array); */
-#define DA_INSTANCE(da) size_t da##_count__ = 0U
+#define DA_INSTANCE(da) DA_INSTANCE_FIELD(da) = 0U
+
+/* DA_INSTANCE equivalent for structures. */
+#define DA_INSTANCE_FIELD(da) size_t da##_count__
 
 /* Obtains lvalue of array size, its type is size_t. */
 #define DA_SIZE(da) *(&da##_count__)
