@@ -56,8 +56,14 @@ TEST(outdated_data_is_detected)
 
 	dcache_set_at(TEST_DATA_PATH, 10, 11);
 
-	entry.mtime = time(NULL) + 1;
+	/* Entry was updated *while* it was being cached. */
+	entry.mtime = time(NULL);
+	dcache_get_of(&entry, &size, &nitems);
+	assert_false(size.is_valid);
+	assert_false(nitems.is_valid);
 
+	/* Entry was updated *after* it was cached. */
+	entry.mtime = time(NULL) + 1;
 	dcache_get_of(&entry, &size, &nitems);
 	assert_false(size.is_valid);
 	assert_false(nitems.is_valid);

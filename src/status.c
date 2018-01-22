@@ -513,7 +513,9 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 	if(fsdata_get(dcache_size, full_path, &size_data, sizeof(size_data)) == 0)
 	{
 		size->value = size_data.value;
-		size->is_valid = (entry->mtime <= size_data.timestamp);
+		/* We check strictly for less than to handle scenario when multiple changes
+		 * occurred during the same second. */
+		size->is_valid = (entry->mtime < size_data.timestamp);
 	}
 	pthread_mutex_unlock(&dcache_size_mutex);
 
@@ -522,7 +524,9 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 				sizeof(nitems_data)) == 0)
 	{
 		nitems->value = nitems_data.value;
-		nitems->is_valid = (entry->mtime <= nitems_data.timestamp);
+		/* We check strictly for less than to handle scenario when multiple changes
+		 * occurred during the same second. */
+		nitems->is_valid = (entry->mtime < nitems_data.timestamp);
 	}
 	pthread_mutex_unlock(&dcache_nitems_mutex);
 }

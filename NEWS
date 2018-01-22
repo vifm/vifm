@@ -1,3 +1,148 @@
+January 22, 2018
+================
+
+vifm v0.9.1 beta
+----------------
+
+This version adds to the list of ways for viewing files by introducing
+miller columns view and transposed ls-like view (table view).  Other
+developments are related to integration between builtin features as well as
+with external applications.
+
+The beta stage will last about two weeks.  In case any serious bugs are found
+during this period, another beta version might be released.
+
+Main changes:
+ - introduced file view mode known as miller columns or cascading lists;
+ - added ability to transpose ls-like view to make it fill by columns;
+ - more natural behaviour of movement keys in ls-like view;
+ - new `--remote-expr` command-line option can be used to query state of
+   running instances;
+ - extended retry/ignore/abort query to all file operations;
+ - more control over highlight groups via `:highlight` suitable for
+   interactive changes;
+ - mostly eliminated the need for repeating ga/gA commands through automatic
+   size recalculation.
+
+More detailed list of changes.
+
+File operations:
+ - added retry/ignore/abort prompt for file copying and directory/file/symlink
+   creation when 'syscalls' is on (thanks to einhander);
+ - better detection of write errors on file copying.  The error was reported,
+   but it wasn't treated as a hard error in a specific case related to caching.
+
+Command-line mode:
+ - added :histnext/:histprev commands, which are analogous to Ctrl-I/Ctrl-O
+   (patch by Dmitry Frank, a.k.a. dimonomid);
+ - added ability to remove filename-specific highlighting rules with
+   `:highlight clear {pattern}` (thanks to aleksejrs);
+ - changed :filter command to accept pattern (//, ////, {} or {{}}) (thanks to
+   rbong);
+ - made :siblnext and :siblprev commands respect dot and name filters;
+ - made :siblnext and :siblprev accept [count] range (thanks to filterfalse);
+ - made :tree pick up list of files from custom view (thanks to filterfalse);
+ - made :highlight update file-specific group on exact match of the pattern
+   instead of appending new rule (thanks to aleksejrs);
+ - remove empty directories which are specified in 'trashdir' with %r and/or %u
+   automatically on :empty (thanks to Marcin Kurczewski, a.k.a. rr-).
+
+:set command and options:
+ - added "inode" sorting key, which sorts entries by inode number (thanks to
+   eco0414);
+ - added 'millerview' option that enables cascading columns interface for the
+   view (thanks to sudo-nice);
+ - added 'milleroptions' option that configures miller view;
+ - added 'lsoptions' option that allows to get transposed grid in ls-like view
+   (thanks to Dmitry Frank, a.k.a. dimonomid);
+ - added 'previewprg' option, which can be used to override :fileviewer commands
+   either temporarily or permanently (thanks to svenn71);
+ - added {root} key to 'viewcolumns' option (complements {ext}) (thanks to Oleg
+   Gordienko, a.k.a. gordio);
+ - added "u" flag to the 'tuioptions' option.  It enables use of Unicode
+   characters in the TUI (Unicode ellipsis instead of "...") (thanks to Oleg
+   Gordienko, a.k.a. gordio);
+ - added "foldsubkeys" value to the 'suggestoptions' option.  It folds multiple
+   suggestions with common prefix into one entry (thanks to AndreaHasani).
+
+Normal and visual modes:
+ - added [r/]r/[R/]R normal mode shortcuts that map to :siblprev and :siblnext
+   with and without wrapping correspondingly (thanks to filterfalse);
+ - do not go to start of line on Ctrl-U/Ctrl-D/Ctrl-F/Ctrl-B/G in ls-like view;
+ - H/M/L keys in ls-like view now account for columns;
+ - instead of invalidating directory size previously calculated via ga/gA on
+   detecting changes in the directory recalculate its size and propagate update
+   through its parents (thanks to filterfalse).
+
+Macros:
+ - added %x macro to 'rulerformat' (and thus to 'statusline') as a new name for
+   %-, which conflicts with alignment specification and requires explicit width
+   specifier (%0-) (thanks to Marcos Cruz).
+
+Scripting:
+ - added term() builtin function, which differs from system() only by its
+   ability to run interactive applications without confusing vifm's interactions
+   with the terminal (thanks to Dmitry Frank, a.k.a. dimonomid);
+ - added v:count and v:count1 builtin variables.  They are assigned to count
+   passed to : command;
+ - don't trigger DirEnter event with previous directory on startup when list of
+   files is specified on stdin (thanks to filterfalse).
+
+Invocation:
+ - added `--remote-expr` command-line option, which gives ability to query state
+   of an instance (thanks to Marcin Kurczewski, a.k.a. rr-).
+
+Completion:
+ - added completion of filename-specific highlight groups for :highlight
+   command.
+
+Color schemes:
+ - added AuxWin highlight group for highlighting auxiliary parts of windows.
+
+TUI (Text User Interface):
+ - extend width of the cursor in ls-like view to the width of the cell (thanks
+   to Dmitry Frank, a.k.a. dimonomid);
+ - indicate preview created with %q with "Command: cmd";
+ - duplicate status bar error in dialog that reports sourcing error.  Will need
+   to get rid of errors on status bar later.
+
+Performance:
+ - improved performance of mime-type detection when using libmagic (now might be
+   about seven times faster by avoiding reinitialization of the library);
+ - don't force file list reload after `:!` and rely on change detection.  This
+   should result in somewhat better performance (thanks to opennota).
+
+Documentation:
+ - documented more details about 'vicmd' and 'vixcmd' options (thanks to
+   Sebastian Cyprych).
+
+Vim-plugin:
+ - disabled spell checking of vifm files in Vim except for comments.
+
+Only on Windows:
+ - fixed running commands with arguments on Windows when 'shell' isn't cmd.exe.
+
+Important fixes:
+ - fixed consuming 100% of CPU on certain pattern of running background
+   processes (thanks to petRUShka);
+ - fixed turning quickview into explore view when preview command doesn't
+   contain macros.  Was broken since 0.8;
+ - fixed the plugin in neovim (patch by John Shea, a.k.a. coachshea);
+ - fixed cloning of files like `.name` to produce `.name(1)` instead of
+   `(1).name` (thanks to filterfalse);
+ - fixed directory size in statusline (patch by Dmitry Frank, a.k.a. dimonomid);
+ - fixed CWD of the process not matching current view after vifm picked up
+   change in file system (patch by Daniel Mueller);
+ - fixed :normal command resetting selection (thanks to filterfalse);
+ - fixed stopping of put operation after copying symbolic link that's broken on
+   destination (thanks to filterfalse);
+ - fixed a "race" with file system when we could load outdated file list and
+   thus miss some file system updates.
+
+See change log for the full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 June 18, 2017
 =============
 

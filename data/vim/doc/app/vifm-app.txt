@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9  Last change: 2018 Jan 11
+*vifm-app.txt*    For Vifm version 0.9.1-beta  Last change: 2018 Jan 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3512,9 +3512,9 @@ type: boolean
 default: false
 
 When disabled, vifm will rely on external applications to perform file-system
-operations, otherwise system calls are used instead (much faster).  The
-feature is {EXPERIMENTAL} and {WORK-IN-PROGRESS}.  The option will be
-eventually removed.  Mostly *nix-like systems are affected.
+operations, otherwise system calls are used instead (much faster and supports
+progress tracking).  The option should eventually be removed.  Mostly
+*nix-like systems are affected.
 
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts
@@ -3793,11 +3793,17 @@ might be mapped to single key code, for example:
  - <tab> and <c-i>;
  - <c-h> and <bs>;
  - etc.
-Most of the time they are defined consistenly and don't cause surprises, but
+Most of the time they are defined consistently and don't cause surprises, but
 <c-h> and <bs> are treated differently in different environments (although they
 match each other all the time), that's why they correspond to different keys
-in vifm.  As a consequence, if you map <c-h> or <bs> be sure to map the other
-one to the same combination so that the mapping will work in all environments.
+in vifm.  As a consequence, if you map <c-h> or <bs> be sure to repeat the
+mapping with the other one so that it works in all environments.
+Alternatively, provide your mapping in one form and add one of the
+following: >
+  " if mappings with <c-h> in the LHS work
+  map <c-h> <bs>
+  " if mappings with <bs> in the LHS work
+  map <bs> <c-h>
 
 vifm removes whitespace characters at the beginning and end of commands.
 That's why you may want to use <space> at the end of rhs in mappings.  For

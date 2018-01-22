@@ -1,4 +1,4 @@
-0.9 to current
+0.9 to 0.9.1-beta
 
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
 	eco0414.
@@ -39,7 +39,7 @@
 	%-, which conflicts with alignment specification and requires explicit
 	width specifier (%0-).  Thanks to Marcos Cruz.
 
-	Added :histnext/:histprev commands, which are analogous to <c-i>/<c-o>.
+	Added :histnext/:histprev commands, which are analogous to Ctrl-I/Ctrl-O.
 	Patch by Dmitry Frank (a.k.a. dimonomid).
 
 	Added {root} key to 'viewcolumns' option (complements {ext}).  Thanks to
@@ -65,7 +65,7 @@
 	Indicate preview created with %q with "Command: cmd".
 
 	Better detection of write errors on file copying.  The error was reported,
-	but it wasn't treated as a hard error specific case related to caching.
+	but it wasn't treated as a hard error in a specific case related to caching.
 
 	Made :siblnext and :siblprev commands respect dot and name filters.
 

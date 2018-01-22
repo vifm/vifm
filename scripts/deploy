@@ -60,9 +60,20 @@ if [ "$target" = all -o "$target" = update ]; then
 
     # update date in README
     sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
-
     # update version in README
     sed -i "/^Version:/s/ .*/ $ver/" README
+    # update year in README
+    sed -i "/^2001 - /s/-.*/$(date '+- %Y')/" README
+
+    # update date in README.md
+    sed -i "/^_This file last /s/on .*/on $(date '+%d %B, %Y')_/" README.md
+    # update version in README.md
+    sed -i "/^### \\*\\*vifm\\*\\*/s/, _v[^_]\\+_,/, _v${ver}_,/" README.md
+    # update year in README.md
+    sed -i "/^### \\*\\*vifm\\*\\*/s/ [0-9]\\+_/$(date '+ %Y_')/" README.md
+
+    # update .travis.yml
+    sed -i "/^\\s\\+version: .*/s/: .*/: $ver+/" .travis.yml
 
     # update man pages
     sed -i "1s/\"[^\"]\\+\" \"[^\"]\\+\"\$/\"$(date '+%B %d, %Y')\" \"vifm $ver\"/" data/man/*.1
@@ -80,8 +91,9 @@ if [ "$target" = all -o "$target" = commit ]; then
         echo 'Committing error.'
         exit 1
     fi
-    # force mark commit with tag
-    git tag --force --sign "v$ver"
+    # force mark commit with tag taking the last section in the NEWS for message
+    sed -n -e '/^~~~~~~~~~~~~~~~~~/q' -e '/^vifm/,$p' NEWS |
+        git tag --force --file=- --sign "v$ver"
 fi
 
 if [ "$target" = all -o "$target" = archive ]; then

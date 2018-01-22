@@ -2,22 +2,22 @@
 |------------|------------|------------|------------|------------|------------|
 |[![][TT]][T]|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|[![][SS]][S]|
 
-### **vifm** - vi[m] like file manager, _v0.9_, _2001 – 2017_
+### **vifm** - vi[m] like file manager, _v0.9.1-beta_, _2001 – 2018_
 
-_This file last updated on 22 July, 2017_
+_This file last updated on 22 January, 2018_
 
 ## Brief Description ##
 
-Vifm is a two panel ncurses based vi[m] like file manager. If you use vi,
-vifm gives you complete keyboard control over your files without having
-to learn a new set of commands. It goes not just about vi[m] like
-keybindings, but also about modes, options, registers, commands and other
-things you might already like in vi[m].
+Vifm is a curses based vi[m] like file manager extended with some useful
+ideas from mutt.  If you use vi[m], vifm gives you complete keyboard control
+over your files without having to learn a new set of commands.  It goes not
+just about vi[m] like keybindings, but also about modes, options, registers,
+commands and other things you might already like in vi[m].
 
-Just like vi vifm tries to adhere to the Unix philosophy. So instead of
-working solutions user is provided with a set of means for customization
-of vifm. Though builtin functionality should be enough for most of use
-cases.
+Just like vi[m], vifm tries to adhere to the Unix philosophy.  So instead of
+working solutions which are set in stone user is provided with a set of
+means for customization of vifm to one's likings.  Though builtin
+functionality should be enough for most of use cases.
 
 ## Resources and Contacts ##
 
