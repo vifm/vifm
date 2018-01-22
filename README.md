@@ -2,7 +2,7 @@
 |------------|------------|------------|------------|------------|------------|
 |[![][TT]][T]|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|[![][SS]][S]|
 
-### **vifm** - vi[m] like file manager, _v0.9_, _2001 – 2018_
+### **vifm** - vi[m] like file manager, _v0.9.1-beta_, _2001 – 2018_
 
 _This file last updated on 22 January, 2018_
 

@@ -1,4 +1,4 @@
-0.9 to current
+0.9 to 0.9.1-beta
 
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
 	eco0414.
