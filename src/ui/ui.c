@@ -1028,6 +1028,11 @@ update_attributes(void)
 	wattrset(ltop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(ltop_line2);
 
+	wbkgdset(tab_line, COLOR_PAIR(cfg.cs.pair[TAB_LINE_COLOR]) |
+			(cfg.cs.color[TAB_LINE_COLOR].attr & A_REVERSE));
+	wattrset(tab_line, cfg.cs.color[TAB_LINE_COLOR].attr & ~A_REVERSE);
+	werase(tab_line);
+
 	wbkgdset(top_line, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);

@@ -363,11 +363,11 @@ siblprev
 histnext
 histprev
 
-" "hi" should be highlighted as :command and CurrLine/CmpMismatch/AuxWin as
-" highlight groups
+" "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
 hi CmpMismatch
 hi AuxWin
+hi TabLine
 
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'

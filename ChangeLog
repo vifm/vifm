@@ -4,6 +4,8 @@
 	e.g. '%{&sort}' evaluates to the value of the sort option.  Patch by Dmitry
 	Frank (a.k.a. dimonomid).
 
+	Added TabLine highlight group for highlighting tab line.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

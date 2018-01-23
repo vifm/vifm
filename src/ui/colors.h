@@ -55,6 +55,7 @@ enum
 	SUGGEST_BOX_COLOR,  /* Style of suggestion box. */
 	MISMATCH_COLOR,     /* File entries that don't match each other in diff. */
 	AUX_WIN_COLOR,      /* Auxiliary part of window. */
+	TAB_LINE_COLOR,     /* Tab line. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 
