@@ -461,6 +461,7 @@ WINDOW *sort_win;
 WINDOW *change_win;
 WINDOW *error_win;
 WINDOW *top_line;
+WINDOW *tab_line;
 
 WINDOW *lborder;
 WINDOW *mborder;

@@ -225,6 +225,7 @@ create_windows(void)
 	ltop_line2 = newwin(1, 1, 0, 0);
 
 	top_line = newwin(1, 1, 0, 0);
+	tab_line = newwin(1, 1, 0, 0);
 
 	rtop_line1 = newwin(1, 1, 0, 0);
 	rtop_line2 = newwin(1, 1, 0, 0);
@@ -254,6 +255,7 @@ create_windows(void)
 	leaveok(ltop_line1, TRUE);
 	leaveok(ltop_line2, TRUE);
 	leaveok(top_line, TRUE);
+	leaveok(tab_line, TRUE);
 	leaveok(rtop_line1, TRUE);
 	leaveok(rtop_line2, TRUE);
 	leaveok(rwin.title, TRUE);
@@ -325,6 +327,9 @@ only_layout(view_t *view, int screen_x)
 	mvwin(rtop_line1, y, screen_x - 1);
 	mvwin(rtop_line2, y, screen_x - 1);
 
+	wresize(tab_line, 1, screen_x);
+	mvwin(tab_line, 0, 0);
+
 	wresize(view->win, get_working_area_height(),
 			screen_x + vborder_size_correction);
 	mvwin(view->win, y + 1, vborder_pos_correction);
@@ -369,6 +374,9 @@ vertical_layout(int screen_x)
 
 	mvwin(ltop_line1, y, 0);
 	mvwin(ltop_line2, y, 0);
+
+	wresize(tab_line, 1, screen_x);
+	mvwin(tab_line, 0, 0);
 
 	wresize(top_line, 1, splitter_width);
 	mvwin(top_line, y, splitter_pos);
@@ -426,6 +434,9 @@ horizontal_layout(int screen_x, int screen_y)
 
 	mvwin(ltop_line1, y, 0);
 	mvwin(ltop_line2, splitter_pos, 0);
+
+	wresize(tab_line, 1, screen_x);
+	mvwin(tab_line, 0, 0);
 
 	wresize(top_line, 1, 2 - screen_x%2);
 	mvwin(top_line, y, screen_x/2 - 1 + screen_x%2);
@@ -813,6 +824,8 @@ touch_all_windows(void)
 
 	if(!in_menu)
 	{
+		update_window_lazy(tab_line);
+
 		if(curr_stats.number_of_windows == 1)
 		{
 			/* In one window view. */
