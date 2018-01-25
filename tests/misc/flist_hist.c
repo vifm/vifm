@@ -36,6 +36,7 @@ SETUP()
 
 	lwin.list_rows = 1;
 	lwin.list_pos = 0;
+	lwin.top_line = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("lfile0");
@@ -46,6 +47,7 @@ SETUP()
 
 	rwin.list_rows = 1;
 	rwin.list_pos = 0;
+	rwin.top_line = 0;
 	rwin.dir_entry = dynarray_cextend(NULL,
 			rwin.list_rows*sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
@@ -273,6 +275,52 @@ TEST(hist_update_performs_update_but_does_not_move_entry)
 	assert_string_equal("/etc", lwin.history[2].dir);
 	assert_string_equal("b", lwin.history[2].file);
 	assert_int_equal(4, lwin.history[2].rel_pos);
+}
+
+TEST(history_without_suffix_is_cloned)
+{
+	assert_int_equal(1, lwin.history_num);
+	flist_hist_save(&lwin, "/dir1", "file1", 1);
+	flist_hist_save(&lwin, "/dir2", "file2", 2);
+
+	flist_hist_clone(&rwin, &lwin);
+
+	assert_int_equal(2, rwin.history_pos);
+	assert_int_equal(3, rwin.history_num);
+
+	assert_string_equal("/lwin", rwin.history[0].dir);
+	assert_string_equal("lfile0", rwin.history[0].file);
+	assert_int_equal(0, rwin.history[0].rel_pos);
+	assert_string_equal("/dir1", rwin.history[1].dir);
+	assert_string_equal("file1", rwin.history[1].file);
+	assert_int_equal(1, rwin.history[1].rel_pos);
+	assert_string_equal("/dir2", rwin.history[2].dir);
+	assert_string_equal("file2", rwin.history[2].file);
+	assert_int_equal(2, rwin.history[2].rel_pos);
+}
+
+TEST(history_with_suffix_is_cloned)
+{
+	assert_int_equal(1, lwin.history_num);
+	flist_hist_save(&lwin, "/dir1", "file1", 1);
+	flist_hist_save(&lwin, "/dir2", "file2", 2);
+
+	lwin.history_pos = 1;
+
+	flist_hist_clone(&rwin, &lwin);
+
+	assert_int_equal(1, rwin.history_pos);
+	assert_int_equal(3, rwin.history_num);
+
+	assert_string_equal("/lwin", rwin.history[0].dir);
+	assert_string_equal("lfile0", rwin.history[0].file);
+	assert_int_equal(0, rwin.history[0].rel_pos);
+	assert_string_equal("/dir1", rwin.history[1].dir);
+	assert_string_equal("file1", rwin.history[1].file);
+	assert_int_equal(1, rwin.history[1].rel_pos);
+	assert_string_equal("/dir2", rwin.history[2].dir);
+	assert_string_equal("file2", rwin.history[2].file);
+	assert_int_equal(2, rwin.history[2].rel_pos);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
