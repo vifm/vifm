@@ -561,14 +561,14 @@ change_directory(view_t *view, const char directory[])
 
 	if(cfg.chase_links)
 	{
-		char real_path[PATH_MAX];
+		char real_path[PATH_MAX + 1];
 		if(os_realpath(dir_dup, real_path) == real_path)
 		{
 			/* Do this on success only, if realpath() fails, just go with the original
 			 * path. */
 			canonicalize_path(real_path, dir_dup, sizeof(dir_dup));
 #ifdef _WIN32
-			to_forward_slash(real_path);
+			to_forward_slash(dir_dup);
 #endif
 		}
 	}
