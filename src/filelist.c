@@ -47,7 +47,9 @@
 #include "int/fuse.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
+#include "modes/view.h"
 #include "ui/cancellation.h"
+#include "ui/column_view.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
@@ -220,6 +222,95 @@ init_flist(view_t *view)
 	view->dir_entry[0].name_dec_num = -1;
 	view->dir_entry[0].origin = &view->curr_dir[0];
 	view->list_rows = 1;
+}
+
+void
+flist_free_view(view_t *view)
+{
+	/* For the application, we don't need to zero out fields after freeing them,
+	 * but doing so allows reusing this function in tests. */
+
+	int i;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		fentry_free(view, &view->dir_entry[i]);
+	}
+	dynarray_free(view->dir_entry);
+	view->dir_entry = NULL;
+	view->list_rows = 0;
+
+	for(i = 0; i < view->custom.entry_count; ++i)
+	{
+		fentry_free(view, &view->custom.entries[i]);
+	}
+	dynarray_free(view->custom.entries);
+	view->custom.entries = NULL;
+	view->custom.entry_count = 0;
+
+	update_string(&view->custom.next_title, NULL);
+	update_string(&view->custom.orig_dir, NULL);
+	update_string(&view->custom.title, NULL);
+	trie_free(view->custom.excluded_paths);
+	trie_free(view->custom.paths_cache);
+	view->custom.excluded_paths = NULL;
+	view->custom.paths_cache = NULL;
+
+	for(i = 0; i < view->local_filter.entry_count; ++i)
+	{
+		fentry_free(view, &view->local_filter.entries[i]);
+	}
+	dynarray_free(view->local_filter.entries);
+	view->local_filter.entries = NULL;
+	view->local_filter.entry_count = 0;
+
+	/* Two pointer fields below don't contain valid data that needs to be freed,
+	 * zeroing them for tests and to at least mention them to signal that they
+	 * weren't forgotten. */
+	view->local_filter.unfiltered = NULL;
+	view->local_filter.saved = NULL;
+	view->local_filter.unfiltered_count = 0;
+
+	update_string(&view->local_filter.prev, NULL);
+	free(view->local_filter.poshist);
+	view->local_filter.poshist = NULL;
+
+	filter_dispose(&view->local_filter.filter);
+	filter_dispose(&view->auto_filter);
+	matcher_free(view->manual_filter);
+	view->manual_filter = NULL;
+	update_string(&view->prev_manual_filter, NULL);
+	update_string(&view->prev_auto_filter, NULL);
+
+	view->custom.type = CV_REGULAR;
+
+	fswatch_free(view->watch);
+	view->watch = NULL;
+
+	flist_free_cache(view, &view->left_column);
+	flist_free_cache(view, &view->right_column);
+
+	free_string_array(view->saved_selection, view->nsaved_selection);
+	view->nsaved_selection = 0;
+	view->saved_selection = NULL;
+
+	flist_hist_resize(view, 0);
+
+	cs_reset(&view->cs);
+
+	columns_free(view->columns);
+	view->columns = NULL;
+
+	update_string(&view->view_columns, NULL);
+	update_string(&view->view_columns_g, NULL);
+	update_string(&view->sort_groups, NULL);
+	update_string(&view->sort_groups_g, NULL);
+	update_string(&view->preview_prg, NULL);
+	update_string(&view->preview_prg_g, NULL);
+
+	view_info_free(view->vi);
+
+	regfree(&view->primary_group);
 }
 
 void

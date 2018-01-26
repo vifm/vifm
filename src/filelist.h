@@ -40,6 +40,9 @@ typedef int (*entry_predicate)(const dir_entry_t *entry);
 
 /* Prepares views for the first time. */
 void init_filelists(void);
+/* Frees all resources allocated by the view and prepares it for future
+ * reuse. */
+void flist_free_view(view_t *view);
 /* Reinitializes views. */
 void reset_views(void);
 /* Loads view file list for the first time. */

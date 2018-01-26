@@ -36,21 +36,7 @@ view_setup(view_t *view)
 void
 view_teardown(view_t *view)
 {
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		fentry_free(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-
-	filter_dispose(&view->local_filter.filter);
-	matcher_free(view->manual_filter);
-	view->manual_filter = NULL;
-	filter_dispose(&view->auto_filter);
-
-	fswatch_free(view->watch);
-	view->watch = NULL;
+	flist_free_view(view);
 }
 
 void
