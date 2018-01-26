@@ -61,6 +61,7 @@
 #include "ui/color_scheme.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/log.h"
@@ -195,6 +196,7 @@ vifm_main(int argc, char *argv[])
 	}
 
 	init_filelists();
+	tabs_init();
 	regs_init();
 	cfg_discover_paths();
 	reinit_logger(cfg.log_file);

@@ -267,6 +267,8 @@ typedef struct config_t
 		int ieci_prefixes; /* When base is 1024, whether to say KiB instead of K. */
 	}
 	sizefmt;
+
+	int pane_tabs; /* Whether tabs are local to panes. */
 }
 config_t;
 

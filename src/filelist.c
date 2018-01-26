@@ -83,7 +83,6 @@
 #include "status.h"
 #include "types.h"
 
-static void init_view(view_t *view);
 static void init_flist(view_t *view);
 static void reset_view(view_t *view);
 static void init_view_history(view_t *view);
@@ -177,16 +176,15 @@ init_filelists(void)
 {
 	fview_init();
 
-	init_view(&rwin);
-	init_view(&lwin);
+	flist_init_view(&rwin);
+	flist_init_view(&lwin);
 
 	curr_view = &lwin;
 	other_view = &rwin;
 }
 
-/* Loads initial display values into view structure. */
-static void
-init_view(view_t *view)
+void
+flist_init_view(view_t *view)
 {
 	init_flist(view);
 	fview_view_init(view);
@@ -2574,7 +2572,7 @@ fentry_free(const view_t *view, dir_entry_t *entry)
 	free(entry->name);
 	entry->name = NULL;
 
-	if(entry->origin != &view->curr_dir[0])
+	if(entry->origin != &lwin.curr_dir[0] && entry->origin != &rwin.curr_dir[0])
 	{
 		free(entry->origin);
 		entry->origin = NULL;
