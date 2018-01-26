@@ -106,7 +106,6 @@ static int are_statusbar_widgets_visible(void);
 static int get_ruler_width(view_t *view);
 static char * expand_ruler_macros(view_t *view, const char format[]);
 static void switch_panes_content(void);
-static void update_origins(view_t *view, const char *old_main_origin);
 static void set_splitter(int pos);
 static void refresh_bottom_lines(void);
 static char * path_identity(const char path[]);
@@ -1334,28 +1333,12 @@ switch_panes_content(void)
 	lwin = rwin;
 	rwin = tmp_view;
 
-	update_origins(&lwin, &rwin.curr_dir[0]);
-	update_origins(&rwin, &lwin.curr_dir[0]);
+	flist_update_origins(&lwin, &rwin.curr_dir[0], &lwin.curr_dir[0]);
+	flist_update_origins(&rwin, &lwin.curr_dir[0], &rwin.curr_dir[0]);
 
 	view_panes_swapped();
 
 	curr_stats.need_update = UT_REDRAW;
-}
-
-/* Updates pointers to main (default) origins in file list entries. */
-static void
-update_origins(view_t *view, const char *old_main_origin)
-{
-	char *const new_origin = &view->curr_dir[0];
-	int i;
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		dir_entry_t *const entry = &view->dir_entry[i];
-		if(entry->origin == old_main_origin)
-		{
-			entry->origin = new_origin;
-		}
-	}
 }
 
 void

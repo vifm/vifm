@@ -2780,6 +2780,20 @@ flist_free_cache(view_t *view, cached_entries_t *cache)
 	cache->watch = NULL;
 }
 
+void
+flist_update_origins(view_t *view, const char from[], char to[])
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		if(entry->origin == from)
+		{
+			entry->origin = to;
+		}
+	}
+}
+
 int
 cd_is_possible(const char *path)
 {
