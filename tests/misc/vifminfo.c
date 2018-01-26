@@ -22,10 +22,14 @@ SETUP()
 {
 	view_setup(&lwin);
 	view_setup(&rwin);
+
+	cfg_resize_histories(10);
 }
 
 TEARDOWN()
 {
+	cfg_resize_histories(0);
+
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 }
@@ -133,6 +137,8 @@ TEST(file_with_newline_and_dash_in_history_does_not_cause_abort)
 	fputs("10\n", f);
 	fclose(f);
 
+	cfg_resize_histories(1);
+
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
@@ -153,11 +159,11 @@ TEST(optional_number_should_not_be_preceded_by_a_whitespace)
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
-	assert_int_equal(2, lwin.history_pos);
+	assert_int_equal(1, lwin.history_pos);
 	/* First entry is correct. */
-	assert_int_equal(11, lwin.history[1].rel_pos);
+	assert_int_equal(11, lwin.history[0].rel_pos);
 	/* Second entry is not read in full. */
-	assert_int_equal(0, lwin.history[2].rel_pos);
+	assert_int_equal(0, lwin.history[1].rel_pos);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }
