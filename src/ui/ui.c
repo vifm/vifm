@@ -1620,7 +1620,7 @@ ui_view_title_update(view_t *view)
 	const int gen_view = vle_mode_is(VIEW_MODE) && !curr_view->explore_mode;
 	view_t *selected = gen_view ? other_view : curr_view;
 
-	if(curr_stats.load_stage < 2)
+	if(curr_stats.load_stage < 2 || !ui_view_is_visible(view))
 	{
 		return;
 	}
