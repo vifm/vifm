@@ -53,6 +53,7 @@
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/env.h"
@@ -586,13 +587,12 @@ change_directory(view_t *view, const char directory[])
 
 	location_changed = (stroscmp(dir_dup, flist_get_dir(view)) != 0);
 
-	/* Check if we're exiting from a FUSE mounted top level directory and the
-	 * other pane isn't in it or any of it subdirectories.
-	 * If so, unmount & let FUSE serialize */
+	/* Check if we're exiting from a FUSE mounted top level directory. */
 	if(is_parent_dir(directory) && fuse_is_mount_point(view->curr_dir))
 	{
-		view_t *other = (view == curr_view) ? other_view : curr_view;
-		if(!path_starts_with(other->curr_dir, view->curr_dir))
+		/* No other pane in any tab should be inside subtree that might be
+		 * unmounted. */
+		if(tabs_visitor_count(view->curr_dir) == 1)
 		{
 			const int r = fuse_try_unmount(view);
 			if(r != 0)

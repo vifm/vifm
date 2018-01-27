@@ -80,7 +80,8 @@ static void free_pane_tabs(pane_tabs_t *ptabs);
 static void free_pane_tab(pane_tab_t *ptab);
 static void free_preview(preview_t *preview);
 static pane_tabs_t * get_pane_tabs(const view_t *view);
-static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[]);
+static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
+		const view_t *view);
 
 /* List of global tabs. */
 static global_tab_t *gtabs;
@@ -555,27 +556,34 @@ int
 tabs_visitor_count(const char path[])
 {
 	int count = 0;
-	size_t i = 0U;
-	for(i = 0U; i < DA_SIZE(gtabs); ++i)
+	int i;
+	for(i = 0; i < (int)DA_SIZE(gtabs); ++i)
 	{
 		global_tab_t *const gtab = &gtabs[i];
-		count += count_pane_visitors(&gtab->left, path);
-		count += count_pane_visitors(&gtab->right, path);
+		view_t *const lview = (i == current_tab ? &lwin : NULL);
+		view_t *const rview = (i == current_tab ? &rwin : NULL);
+		count += count_pane_visitors(&gtab->left, path, lview);
+		count += count_pane_visitors(&gtab->right, path, rview);
 	}
 	return count;
 }
 
 /* Counts number of pane tabs from the collection that are inside specified
- * path.  Returns the count. */
+ * path.  When view parameter isn't NULL, it's a possible replacement view to
+ * use instead of the stored one.  Returns the count. */
 static int
-count_pane_visitors(const pane_tabs_t *ptabs, const char path[])
+count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
+		const view_t *view)
 {
 	int count = 0;
-	size_t i = 0U;
-	for(i = 0U; i < DA_SIZE(ptabs->tabs); ++i)
+	int i;
+	for(i = 0; i < (int)DA_SIZE(ptabs->tabs); ++i)
 	{
-		pane_tab_t *const ptab = &ptabs->tabs[i];
-		if(path_starts_with(ptab->view.curr_dir, path))
+		const pane_tab_t *const ptab = &ptabs->tabs[i];
+		const view_t *const v = (view != NULL && i == ptabs->current)
+		                      ? view
+		                      : &ptab->view;
+		if(path_starts_with(v->curr_dir, path))
 		{
 			++count;
 		}
