@@ -168,5 +168,30 @@ TEST(optional_number_should_not_be_preceded_by_a_whitespace)
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 }
 
+TEST(history_is_automatically_extended)
+{
+	FILE *const f = fopen(SANDBOX_PATH "/vifminfo", "w");
+	fputs("d/path1\n\tfile1\n", f);
+	fputs("d/path2\n\tfile2\n", f);
+	fputs("d/path1\n\tfile1\n", f);
+	fputs("d/path2\n\tfile2\n", f);
+	fputs("d/path1\n\tfile1\n", f);
+	fputs("d/path2\n\tfile2\n", f);
+	fputs("d/path1\n\tfile1\n", f);
+	fputs("d/path2\n\tfile2\n", f);
+	fputs("d/path1\n\tfile1\n", f);
+	fputs("d/path2\n\tfile2\n", f);
+	fputs("d/path1\n\tfile1\n", f);
+	fputs("d/path2\n\tfile2\n", f);
+	fclose(f);
+
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+	read_info_file(1);
+
+	assert_int_equal(12, lwin.history_num);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
