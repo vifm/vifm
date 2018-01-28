@@ -687,10 +687,12 @@ fops_can_read_selected_files(view_t *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char full_path[PATH_MAX];
-
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
-		if(os_access(full_path, R_OK) == 0)
+
+		/* We can copy links even when they are broken, so it's OK to don't check
+		 * them (otherwise access() fails for broken links). */
+		if(entry->type == FT_LINK || os_access(full_path, R_OK) == 0)
 		{
 			continue;
 		}
