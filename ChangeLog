@@ -6,6 +6,9 @@
 	Fixed C key not checking readability of a single unselected file, like
 	:clone does.
 
+	Fixed possible crash on `:highlight clear {pattern}` and highlights not
+	being updated.
+
 0.9 to 0.9.1-beta
 
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
