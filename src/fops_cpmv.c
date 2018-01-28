@@ -338,7 +338,7 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 			return -1;
 		}
 	}
-	else if(op == CMLO_COPY && !fops_can_read_selected_files(view))
+	else if(op == CMLO_COPY && !fops_can_read_marked_files(view))
 	{
 		return -1;
 	}

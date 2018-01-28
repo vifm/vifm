@@ -3,6 +3,9 @@
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
 	and p keys copy them.
 
+	Fixed C key not checking readability of a single unselected file, like
+	:clone does.
+
 0.9 to 0.9.1-beta
 
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to

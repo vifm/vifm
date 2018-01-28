@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() unlink() */
 
 #include <stddef.h> /* NULL */
@@ -309,6 +310,21 @@ TEST(child_overwrite_is_prevented_on_file_move)
 TEST(parent_overwrite_is_prevented_on_file_move)
 {
 	check_directory_clash(0, CMLO_MOVE);
+}
+
+TEST(copying_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
+{
+	create_empty_file("can-read");
+	create_empty_file("can-not-read");
+	assert_success(chmod("can-not-read", 0000));
+	populate_dir_list(&lwin, 0);
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	assert_int_equal(0, fops_cpmv(&lwin, NULL, 0, CMLO_COPY, 0));
+
+	assert_success(unlink("can-read"));
+	assert_success(unlink("can-not-read"));
 }
 
 static void

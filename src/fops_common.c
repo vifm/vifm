@@ -675,7 +675,7 @@ fops_get_dst_name(const char src_path[], int from_trash)
 }
 
 int
-fops_can_read_selected_files(view_t *view)
+fops_can_read_marked_files(view_t *view)
 {
 	dir_entry_t *entry;
 
@@ -685,7 +685,7 @@ fops_can_read_selected_files(view_t *view)
 	}
 
 	entry = NULL;
-	while(iter_selected_entries(view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);

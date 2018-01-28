@@ -594,7 +594,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 	ops_t *ops;
 	const char *const curr_dir = flist_get_dir(view);
 
-	if(!fops_can_read_selected_files(view))
+	if(!fops_can_read_marked_files(view))
 	{
 		return 0;
 	}

@@ -133,9 +133,9 @@ void fops_progress_msg(const char text[], int ready, int total);
  * name. */
 const char * fops_get_dst_name(const char src_path[], int from_trash);
 
-/* Checks that all selected files can be read.  Returns non-zero if so,
- * otherwise zero is returned. */
-int fops_can_read_selected_files(struct view_t *view);
+/* Checks that all marked files can be read.  Returns non-zero if so, otherwise
+ * zero is returned. */
+int fops_can_read_marked_files(struct view_t *view);
 
 /* Checks path argument and resolves target directory either to the argument or
  * current directory of the view.  Returns non-zero if value of the path was
