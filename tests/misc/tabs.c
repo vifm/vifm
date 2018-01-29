@@ -12,11 +12,6 @@
 
 static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 
-SETUP_ONCE()
-{
-	tabs_init();
-}
-
 SETUP()
 {
 	view_setup(&lwin);

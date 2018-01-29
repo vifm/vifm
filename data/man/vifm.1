@@ -4243,6 +4243,15 @@ operations, otherwise system calls are used instead (much faster and supports
 progress tracking).  The option should eventually be removed.  Mostly *nix-like
 systems are affected.
 .TP
+.BI 'tabscope'
+type: enumeration
+.br
+default: global
+.br
+Picks style of tabs, which defines what a single tab contains.  Possible values:
+ - global - tab describes complete UI of two views and how they are arranged
+ - pane   - tab is located "inside" a pane and manages it and quick view
+.TP
 .BI "'tabstop' 'ts'"
 type: integer
 .br

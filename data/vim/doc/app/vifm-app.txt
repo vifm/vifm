@@ -3519,6 +3519,16 @@ operations, otherwise system calls are used instead (much faster and supports
 progress tracking).  The option should eventually be removed.  Mostly
 *nix-like systems are affected.
 
+                                               *vifm-'tabscope'*
+tabscope
+type: enumeration
+default: global
+
+Picks style of tabs, which defines what a single tab contains.  Possible
+values:
+ - global - tab describes complete UI of two views and how they are arranged
+ - pane   - tab is located "inside" a pane and manages it and quick view
+
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts
 type: integer

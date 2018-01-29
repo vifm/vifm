@@ -729,5 +729,14 @@ TEST(tuioptions)
 	assert_true(cfg.use_unicode_characters);
 }
 
+TEST(setting_tabscope_works)
+{
+	assert_success(exec_commands("set tabscope=pane", &lwin, CIT_COMMAND));
+	assert_true(cfg.pane_tabs);
+
+	assert_success(exec_commands("set tabscope=global", &lwin, CIT_COMMAND));
+	assert_false(cfg.pane_tabs);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
