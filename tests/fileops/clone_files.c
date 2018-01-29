@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() symlink() unlink() */
 
 #include "../../src/cfg/config.h"
@@ -152,6 +153,21 @@ TEST(cloning_of_broken_symlink, IF(not_windows))
 	assert_success(unlink("broken-link(1)"));
 
 	assert_success(unlink("broken-link"));
+}
+
+TEST(cloning_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
+{
+	create_empty_file("can-read");
+	create_empty_file("can-not-read");
+	assert_success(chmod("can-not-read", 0000));
+	populate_dir_list(&lwin, 0);
+
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+	assert_int_equal(0, fops_clone(&lwin, NULL, 0, 0, 1));
+
+	assert_success(unlink("can-read"));
+	assert_success(unlink("can-not-read"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
