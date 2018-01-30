@@ -14,6 +14,8 @@
 
 	Added :tabname command that updates name of the current tab.
 
+	Added :tabc[lose] command that closes current tab unless it's the last one.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

@@ -112,5 +112,18 @@ TEST(tab_name_is_reset)
 	assert_string_equal(NULL, tab_info.name);
 }
 
+TEST(tab_is_not_closed)
+{
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tabclose", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+}
+
+TEST(last_tab_is_not_closed)
+{
+	assert_success(exec_commands("tabclose", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

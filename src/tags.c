@@ -333,6 +333,8 @@ const char *tags[] = {
 	"vifm-:split",
 	"vifm-:substitute",
 	"vifm-:sync",
+	"vifm-:tabc",
+	"vifm-:tabclose",
 	"vifm-:tabname",
 	"vifm-:tabnew",
 	"vifm-:touch",

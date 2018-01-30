@@ -364,6 +364,11 @@ histnext
 histprev
 tabnew
 tabname
+tabc
+tabcl
+tabclo
+tabclos
+tabclose
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine

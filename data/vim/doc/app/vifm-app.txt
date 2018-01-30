@@ -2227,6 +2227,9 @@ yet supported) and might be changed in future releases, or get an alias.
      - tree - tree structure for tree view (implies "location");
      - all - all of the above.
 
+:tabclose                                      *vifm-:tabclose* *vifm-:tabc*
+    close current tab, unless it's the only one open at current scope.
+
 :tabname [name]                                *vifm-:tabname*
     set, update or reset (when no argument is provided) name of the current
     tab.
