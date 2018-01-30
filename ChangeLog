@@ -12,6 +12,8 @@
 	Added :tabnew command that creates a new tab.  Thanks to Cosmin
 	Popescu (a.k.a. cosminadrianpopescu).
 
+	Added :tabname command that updates name of the current tab.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

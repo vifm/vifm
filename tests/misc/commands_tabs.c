@@ -91,5 +91,26 @@ TEST(newtab_fails_in_diff_mode_for_tab_panes)
 	assert_success(remove(SANDBOX_PATH "/empty"));
 }
 
+TEST(tab_name_is_set)
+{
+	tab_info_t tab_info;
+
+	assert_success(exec_commands("tabname new-name", &lwin, CIT_COMMAND));
+
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_string_equal("new-name", tab_info.name);
+}
+
+TEST(tab_name_is_reset)
+{
+	tab_info_t tab_info;
+
+	assert_success(exec_commands("tabname new-name", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tabname", &lwin, CIT_COMMAND));
+
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_string_equal(NULL, tab_info.name);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

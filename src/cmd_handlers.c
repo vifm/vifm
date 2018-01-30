@@ -266,6 +266,7 @@ static void sync_location(const char path[], int cv, int sync_cursor_pos,
 		int sync_filters, int tree);
 static void sync_local_opts(int defer_slow);
 static void sync_filters(void);
+static int tabname_cmd(const cmd_info_t *cmd_info);
 static int tabnew_cmd(const cmd_info_t *cmd_info);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int get_at(const view_t *view, const cmd_info_t *cmd_info);
@@ -743,6 +744,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "synchronize properties of views",
 	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD,
 	  .handler = &sync_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "tabname",           .abbr = NULL,    .id = -1,
+	  .descr = "set name of current tab",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabname_cmd,     .min_args = 0,   .max_args = 1, },
 	{ .name = "tabnew",            .abbr = NULL,    .id = -1,
 	  .descr = "make new tab and switch to it",
 	  .flags = HAS_COMMENT,
@@ -3923,6 +3928,15 @@ sync_filters(void)
 	other_view->manual_filter = matcher_clone(curr_view->manual_filter);
 	(void)filter_assign(&other_view->auto_filter, &curr_view->auto_filter);
 	ui_view_schedule_reload(other_view);
+}
+
+/* Sets, changes or resets name of current tab. */
+static int
+tabname_cmd(const cmd_info_t *cmd_info)
+{
+	tabs_rename(curr_view, cmd_info->argc == 0 ? NULL : cmd_info->argv[0]);
+	ui_views_update_titles();
+	return 0;
 }
 
 /* Creates a new tab.  Takes optional name of the new tab. */

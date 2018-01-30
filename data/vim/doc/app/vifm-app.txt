@@ -2227,6 +2227,10 @@ yet supported) and might be changed in future releases, or get an alias.
      - tree - tree structure for tree view (implies "location");
      - all - all of the above.
 
+:tabname [name]                                *vifm-:tabname*
+    set, update or reset (when no argument is provided) name of the current
+    tab.
+
 :tabnew [name]                                 *vifm-:tabnew*
     create new tab.  Accepts optional name for the new tab.
 
