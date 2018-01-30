@@ -2227,6 +2227,9 @@ yet supported) and might be changed in future releases, or get an alias.
      - tree - tree structure for tree view (implies "location");
      - all - all of the above.
 
+:tabnew [name]                                 *vifm-:tabnew*
+    create new tab.  Accepts optional name for the new tab.
+
 :[line]touch file...                           *vifm-:touch*
     create files at specified paths.  Aborts on errors.  Doesn't update time
     of existing files.  The [line] can be used to pick node in a tree-view.

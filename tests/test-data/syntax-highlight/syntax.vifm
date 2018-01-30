@@ -362,6 +362,7 @@ siblnext
 siblprev
 histnext
 histprev
+tabnew
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine

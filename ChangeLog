@@ -9,6 +9,9 @@
 	Added 'tabscope' option that controls style of tabs.  Thanks to Cosmin
 	Popescu (a.k.a. cosminadrianpopescu).
 
+	Added :tabnew command that creates a new tab.  Thanks to Cosmin
+	Popescu (a.k.a. cosminadrianpopescu).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

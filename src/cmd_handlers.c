@@ -67,6 +67,7 @@
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/filter.h"
@@ -265,6 +266,7 @@ static void sync_location(const char path[], int cv, int sync_cursor_pos,
 		int sync_filters, int tree);
 static void sync_local_opts(int defer_slow);
 static void sync_filters(void);
+static int tabnew_cmd(const cmd_info_t *cmd_info);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int get_at(const view_t *view, const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
@@ -741,6 +743,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "synchronize properties of views",
 	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD,
 	  .handler = &sync_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "tabnew",            .abbr = NULL,    .id = -1,
+	  .descr = "make new tab and switch to it",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabnew_cmd,      .min_args = 0,   .max_args = 1, },
 	{ .name = "touch",             .abbr = NULL,    .id = COM_TOUCH,
 	  .descr = "create files",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
@@ -3917,6 +3923,23 @@ sync_filters(void)
 	other_view->manual_filter = matcher_clone(curr_view->manual_filter);
 	(void)filter_assign(&other_view->auto_filter, &curr_view->auto_filter);
 	ui_view_schedule_reload(other_view);
+}
+
+/* Creates a new tab.  Takes optional name of the new tab. */
+static int
+tabnew_cmd(const cmd_info_t *cmd_info)
+{
+	if(cfg.pane_tabs && curr_view->custom.type == CV_DIFF)
+	{
+		ui_sb_err("Switching tab of single pane would drop comparison");
+		return 1;
+	}
+	if(tabs_new(cmd_info->argc > 0 ? cmd_info->argv[0] : NULL) != 0)
+	{
+		ui_sb_err("Failed to open a new tab");
+		return 1;
+	}
+	return 0;
 }
 
 /* Creates files. */
