@@ -1207,16 +1207,19 @@ cmd_V(key_info_t key_info, keys_info_t *keys_info)
 	enter_visual_mode(VS_NORMAL);
 }
 
+/* Possibly exits the application without saving vifminfo file or closes a
+ * tab. */
 static void
 cmd_ZQ(key_info_t key_info, keys_info_t *keys_info)
 {
-	vifm_try_leave(0, 0, 0);
+	ui_quit(0, 0);
 }
 
+/* Possibly exits the application saving vifminfo file or closes a tab. */
 static void
 cmd_ZZ(key_info_t key_info, keys_info_t *keys_info)
 {
-	vifm_try_leave(1, 0, 0);
+	ui_quit(1, 0);
 }
 
 /* Goto mark. */

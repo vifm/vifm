@@ -4,6 +4,9 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
@@ -22,6 +25,8 @@ SETUP()
 	view_setup(&rwin);
 	setup_grid(&rwin, 1, 1, 1);
 	other_view = &rwin;
+
+	init_modes();
 
 	opt_handlers_setup();
 
@@ -45,6 +50,8 @@ TEARDOWN()
 	tabs_only(&rwin);
 	cfg.pane_tabs = 0;
 	tabs_only(&lwin);
+
+	vle_keys_reset();
 
 	opt_handlers_teardown();
 
@@ -112,7 +119,7 @@ TEST(tab_name_is_reset)
 	assert_string_equal(NULL, tab_info.name);
 }
 
-TEST(tab_is_not_closed)
+TEST(tab_is_closed)
 {
 	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("tabclose", &lwin, CIT_COMMAND));
@@ -122,6 +129,25 @@ TEST(tab_is_not_closed)
 TEST(last_tab_is_not_closed)
 {
 	assert_success(exec_commands("tabclose", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+}
+
+TEST(quit_commands_close_tabs)
+{
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("quit", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("wq", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec_timed_out(WK_Z WK_Z);
+	assert_int_equal(1, tabs_count(&lwin));
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	(void)vle_keys_exec_timed_out(WK_Z WK_Q);
 	assert_int_equal(1, tabs_count(&lwin));
 }
 

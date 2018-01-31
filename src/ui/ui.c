@@ -73,6 +73,7 @@
 #include "quickview.h"
 #include "statusbar.h"
 #include "statusline.h"
+#include "tabs.h"
 
 /* Type of path transformation function for format_view_title(). */
 typedef char * (*path_func)(const char[]);
@@ -572,6 +573,19 @@ update_geometry(void)
 	}
 
 	load_geometry();
+}
+
+void
+ui_quit(int write_info, int force)
+{
+	if(tabs_quit_on_close())
+	{
+		vifm_try_leave(write_info, 0, force);
+	}
+	else
+	{
+		tabs_close();
+	}
 }
 
 int

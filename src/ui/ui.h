@@ -484,6 +484,11 @@ int ui_char_pressed(wint_t c);
 
 int setup_ncurses_interface(void);
 
+/* Closes current tab if it's not the last one, closes whole application
+ * otherwise.  Might also fail if background tasks are present and user chooses
+ * not to stop them. */
+void ui_quit(int write_info, int force);
+
 /* Checks whether custom view of specified type is unsorted.  Returns non-zero
  * if so, otherwise zero is returned. */
 int cv_unsorted(CVType type);

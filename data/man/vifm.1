@@ -2382,7 +2382,8 @@ show the present working directory.
 .BI "                                         :quit"
 .TP
 .BI :q[uit][!]
-exit vifm (add ! to skip saving changes and checking for active backgrounded
+if there is more than one tab, close the current one, otherwise exit
+vifm (add ! to skip saving changes and checking for active backgrounded
 commands).
 .TP
 .BI "                                         :redraw"
@@ -2806,7 +2807,7 @@ same as :quit, but ! only disables check of backgrounded commands.
 .BI "                                         :xit"
 .TP
 .BI ":x[it][!]"
-will exit Vifm (add ! if you don't want to save changes).
+same as :quit.
 .TP
 .BI "                                         :yank"
 .TP

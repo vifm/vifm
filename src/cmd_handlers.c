@@ -658,7 +658,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &qnoremap_cmd,    .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "quit",              .abbr = "q",     .id = -1,
-	  .descr = "exit the application",
+	  .descr = "close a tab or exit the application",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "qunmap",            .abbr = "qun",   .id = -1,
@@ -841,7 +841,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_COMMENT,
 	  .handler = &write_cmd,       .min_args = 0,   .max_args = 0, },
 	{ .name = "wq",                .abbr = NULL,    .id = -1,
-	  .descr = "exit the application",
+	  .descr = "close a tab or exit the application",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &wq_cmd,          .min_args = 0,   .max_args = 0, },
 	{ .name = "xit",               .abbr = "x",     .id = -1,
@@ -4369,19 +4369,20 @@ write_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* Possibly exits vifm normally with or without saving state to vifminfo
- * file. */
+/* Possibly exits vifm normally with or without saving state to vifminfo file or
+ * closes a tab. */
 static int
 quit_cmd(const cmd_info_t *cmd_info)
 {
-	vifm_try_leave(!cmd_info->emark, 0, cmd_info->emark);
+	ui_quit(!cmd_info->emark, cmd_info->emark);
 	return 0;
 }
 
+/* Possibly exits the application saving vifminfo file or closes a tab. */
 static int
 wq_cmd(const cmd_info_t *cmd_info)
 {
-	vifm_try_leave(1, 0, cmd_info->emark);
+	ui_quit(1, cmd_info->emark);
 	return 0;
 }
 

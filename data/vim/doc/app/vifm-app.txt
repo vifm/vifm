@@ -2024,8 +2024,9 @@ order using the '.' operator.  Any whitespace is ignored.
     display the present working directory.
 
 :q[uit][!]                                     *vifm-:quit* *vifm-:q*
-    exit vifm (add ! to skip saving changes and checking for active
-    backgrounded commands).
+    if there is more than one tab, close the current one, otherwise exit
+    vifm (add ! to skip saving changes and checking for active backgrounded
+    commands).
 
 :redr[aw]                                      *vifm-:redraw* *vifm-:redr*
     redraw the screen immediately.
@@ -2335,7 +2336,7 @@ yet supported) and might be changed in future releases, or get an alias.
     while vifminfo is always written.
 
 :x[it][!]                                      *vifm-:xit* *vifm-:x*
-    exit vifm (add "!" if you don't want to save current state).
+    same as |vifm-:quit|.
 
 :[range]y[ank] [reg] [count]                   *vifm-:yank* *vifm-:y*
     yank files to the reg register.

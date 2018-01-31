@@ -16,6 +16,9 @@
 
 	Added :tabc[lose] command that closes current tab unless it's the last one.
 
+	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
+	closing the application.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
