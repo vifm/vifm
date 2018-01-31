@@ -2379,6 +2379,12 @@ are performed beforehand.
 .BI :pw[d]
 show the present working directory.
 .TP
+.BI "                                         :qall"
+.TP
+.BI :qa[ll][!]
+exit vifm (add ! to skip saving changes and checking for active backgrounded
+commands).
+.TP
 .BI "                                         :quit"
 .TP
 .BI :q[uit][!]
@@ -2803,6 +2809,15 @@ write vifminfo file.
 .TP
 .BI :wq[!]
 same as :quit, but ! only disables check of backgrounded commands.
+.BI "                                         :wqall"
+.TP
+.BI :wqa[ll][!]
+same as :qall, but ! only disables check of backgrounded commands.
+.TP
+.BI "                                         :xall"
+.TP
+.BI ":xa[ll][!]"
+same as :qall.
 .TP
 .BI "                                         :xit"
 .TP

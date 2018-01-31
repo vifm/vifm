@@ -151,5 +151,26 @@ TEST(quit_commands_close_tabs)
 	assert_int_equal(1, tabs_count(&lwin));
 }
 
+TEST(quit_all_commands_ignore_tabs)
+{
+	extern int vifm_tests_exited;
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+
+	vifm_tests_exited = 0;
+	assert_success(exec_commands("qall", &lwin, CIT_COMMAND));
+	assert_true(vifm_tests_exited);
+
+	vifm_tests_exited = 0;
+	assert_success(exec_commands("wqall", &lwin, CIT_COMMAND));
+	assert_true(vifm_tests_exited);
+
+	vifm_tests_exited = 0;
+	assert_success(exec_commands("xall", &lwin, CIT_COMMAND));
+	assert_true(vifm_tests_exited);
+
+	assert_int_equal(2, tabs_count(&lwin));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

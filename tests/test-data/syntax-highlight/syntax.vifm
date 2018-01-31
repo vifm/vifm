@@ -369,6 +369,15 @@ tabcl
 tabclo
 tabclos
 tabclose
+qa
+qal
+qall
+wqa
+wqal
+wqall
+xa
+xal
+xall
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine

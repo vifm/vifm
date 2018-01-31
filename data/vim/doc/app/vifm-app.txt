@@ -2023,6 +2023,10 @@ order using the '.' operator.  Any whitespace is ignored.
 :pw[d]                                         *vifm-:pwd* *vifm-:pw*
     display the present working directory.
 
+:qa[ll]!                                       *vifm-:qall* *vifm-:qa*
+    exit vifm (add ! to skip saving changes and checking for active
+    backgrounded commands).
+
 :q[uit][!]                                     *vifm-:quit* *vifm-:q*
     if there is more than one tab, close the current one, otherwise exit
     vifm (add ! to skip saving changes and checking for active backgrounded
@@ -2332,8 +2336,15 @@ yet supported) and might be changed in future releases, or get an alias.
     write current state to vifminfo file.
 
 :wq[!]                                         *vifm-:wq*
-    same as :quit, but "!" disables only check of backgrounded commands,
-    while vifminfo is always written.
+    same as |vifm-:quit|, but "!" disables only check of backgrounded
+    commands, while vifminfo is always written.
+
+:wqa[ll][!]                                    *vifm-:wqall* *vifm-:wqa*
+    same as |vifm-:qall|, but ! only disables check of backgrounded
+    commands.
+
+:xa[ll][!]                                     *vifm-:xall* *vifm-:xa*
+    same as |vifm-:qall|.
 
 :x[it][!]                                      *vifm-:xit* *vifm-:x*
     same as |vifm-:quit|.

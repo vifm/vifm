@@ -296,8 +296,10 @@ static int windo_cmd(const cmd_info_t *cmd_info);
 static int winrun_cmd(const cmd_info_t *cmd_info);
 static int winrun(view_t *view, const char cmd[]);
 static int write_cmd(const cmd_info_t *cmd_info);
+static int qall_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static int wq_cmd(const cmd_info_t *cmd_info);
+static int wqall_cmd(const cmd_info_t *cmd_info);
 static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int get_reg(const char arg[], int *reg);
@@ -649,6 +651,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display current location",
 	  .flags = HAS_COMMENT,
 	  .handler = &pwd_cmd,         .min_args = 0,   .max_args = 0, },
+	{ .name = "qall",              .abbr = "qa",    .id = -1,
+	  .descr = "close all tabs and exit the application",
+	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .handler = &qall_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "qmap",              .abbr = "qm",    .id = COM_QMAP,
 	  .descr = "map keys in preview mode",
 	  .flags = HAS_RAW_ARGS,
@@ -844,6 +850,14 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "close a tab or exit the application",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &wq_cmd,          .min_args = 0,   .max_args = 0, },
+	{ .name = "wqall",             .abbr = "wqa",   .id = -1,
+	  .descr = "exit the application",
+	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .handler = &wqall_cmd,       .min_args = 0,   .max_args = 0, },
+	{ .name = "xall",              .abbr = "xa",    .id = -1,
+	  .descr = "exit the application",
+	  .flags = HAS_COMMENT,
+	  .handler = &qall_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "xit",               .abbr = "x",     .id = -1,
 	  .descr = "exit the application",
 	  .flags = HAS_COMMENT,
@@ -4369,6 +4383,15 @@ write_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Possibly exits vifm normally with or without saving state to vifminfo
+ * file. */
+static int
+qall_cmd(const cmd_info_t *cmd_info)
+{
+	vifm_try_leave(!cmd_info->emark, 0, cmd_info->emark);
+	return 0;
+}
+
 /* Possibly exits vifm normally with or without saving state to vifminfo file or
  * closes a tab. */
 static int
@@ -4383,6 +4406,14 @@ static int
 wq_cmd(const cmd_info_t *cmd_info)
 {
 	ui_quit(1, cmd_info->emark);
+	return 0;
+}
+
+/* Possibly exits the application saving vifminfo file. */
+static int
+wqall_cmd(const cmd_info_t *cmd_info)
+{
+	vifm_try_leave(1, 0, cmd_info->emark);
 	return 0;
 }
 
