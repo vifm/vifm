@@ -172,5 +172,24 @@ TEST(quit_all_commands_ignore_tabs)
 	assert_int_equal(2, tabs_count(&lwin));
 }
 
+TEST(tabs_are_switched)
+{
+	tab_info_t tab_info;
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+
+	(void)vle_keys_exec_timed_out(WK_g WK_t);
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_true(tab_info.view == &lwin);
+
+	(void)vle_keys_exec_timed_out(WK_g WK_T);
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_true(tab_info.view == &lwin);
+
+	(void)vle_keys_exec_timed_out(L"1" WK_g WK_t);
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_true(tab_info.view == &lwin);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

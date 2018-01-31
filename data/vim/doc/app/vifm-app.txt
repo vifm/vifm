@@ -191,6 +191,14 @@ $                                              *vifm-$*
 
 Space - switch file lists.                     *vifm-Space*
 
+                                               *vifm-gt*
+gt    - switch to the next tab (wrapping around).
+{n}gt - switch to the tab number {n}.
+
+                                               *vifm-gT*
+gT    - switch to the previous tab (wrapping around).
+{n}gT - switch to {n}-th previous tab (wrapping around).
+
 Movement with Count~
 
 Most movement commands also accept a count, 12j would move down 12 files.

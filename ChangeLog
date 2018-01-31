@@ -19,6 +19,9 @@
 	Added :qa[ll], :wqa[ll] and :xa[ll] commands that always try to exit vifm no
 	matter how many tabs are open.
 
+	Added gt and gT normal mode shortcuts that switch between tabs in both
+	directions.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

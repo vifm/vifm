@@ -46,6 +46,7 @@
 #include "../ui/fileview.h"
 #include "../ui/quickview.h"
 #include "../ui/statusbar.h"
+#include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../utils/hist.h"
 #include "../utils/macros.h"
@@ -178,6 +179,8 @@ static void cmd_gh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gr(key_info_t key_info, keys_info_t *keys_info);
 #endif
 static void cmd_gs(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gt(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gT(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gUgg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
@@ -355,6 +358,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_g WK_k,        {{&cmd_k},  .descr = "go to item above"}},
 	{WK_g WK_l,        {{&cmd_return}, .descr = "open current item(s)"}},
 	{WK_g WK_s,        {{&cmd_gs}, .descr = "restore/make selection"}},
+	{WK_g WK_t,        {{&cmd_gt}, .descr = "next or n-th tab"}},
+	{WK_g WK_T,        {{&cmd_gT}, .descr = "n-th previous tab"}},
 	{WK_g WK_U,        {{&cmd_gU}, FOLLOWED_BY_SELECTOR, .descr = "convert to uppercase"}},
 	{WK_g WK_u,        {{&cmd_gu}, FOLLOWED_BY_SELECTOR, .descr = "convert to lowercase"}},
 	{WK_g WK_U WK_U,      {{&cmd_gU}, .descr = "convert to uppercase"}},
@@ -1093,6 +1098,27 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	flist_sel_restore(curr_view, reg);
+}
+
+/* Switches either to the next tab or to tab specified by its number [count]. */
+static void
+cmd_gt(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+	{
+		tabs_next(1);
+	}
+	else
+	{
+		tabs_goto(key_info.count - 1);
+	}
+}
+
+/* Switches to [count]-th previous tab ([count] is 1 by default). */
+static void
+cmd_gT(key_info_t key_info, keys_info_t *keys_info)
+{
+	tabs_previous(def_count(key_info.count));
 }
 
 /* Handles gU<selector>, gUgU and gUU normal mode commands, which convert file
