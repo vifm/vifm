@@ -82,6 +82,7 @@ static void free_preview(preview_t *preview);
 static pane_tabs_t * get_pane_tabs(const view_t *view);
 static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		const view_t *view);
+static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view);
 
 /* List of global tabs. */
 static global_tab_t *gtabs;
@@ -589,6 +590,40 @@ count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		}
 	}
 	return count;
+}
+
+void
+tabs_switch_panes(void)
+{
+	if(cfg.pane_tabs)
+	{
+		const pane_tabs_t tmp = gtabs[current_tab].left;
+		gtabs[current_tab].left = gtabs[current_tab].right;
+		gtabs[current_tab].right = tmp;
+
+		normalize_pane_tabs(&gtabs[current_tab].left, &lwin);
+		normalize_pane_tabs(&gtabs[current_tab].right, &rwin);
+	}
+}
+
+/* Fixes data fields of views after they got moved from one pane to another. The
+ * view parameter indicates destination pane. */
+static void
+normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view)
+{
+	view_t tmp = *view;
+	view_t *const other = (view == &rwin ? &lwin : &rwin);
+	int i;
+	for(i = 0; i < (int)DA_SIZE(ptabs->tabs); ++i)
+	{
+		if(i != ptabs->current)
+		{
+			view_t *const v = &ptabs->tabs[i].view;
+			ui_swap_view_data(v, &tmp);
+			*v = tmp;
+			flist_update_origins(v, &other->curr_dir[0], &view->curr_dir[0]);
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

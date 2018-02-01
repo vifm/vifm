@@ -80,5 +80,21 @@ TEST(invisible_panes_are_accounted_for_on_counting_visitors_with_pane_tabs)
 	assert_int_equal(0, tabs_visitor_count("/c"));
 }
 
+TEST(pane_tabs_are_swapped_on_switch)
+{
+	strcpy(lwin.curr_dir, "/l");
+	strcpy(rwin.curr_dir, "/r");
+	cfg.pane_tabs = 1;
+	tabs_new(NULL);
+	tabs_new(NULL);
+	curr_view = &rwin;
+	other_view = &lwin;
+
+	tabs_switch_panes();
+
+	assert_int_equal(1, tabs_count(&lwin));
+	assert_int_equal(3, tabs_count(&rwin));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

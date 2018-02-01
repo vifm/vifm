@@ -20,6 +20,9 @@ SETUP()
 	view_setup(view);
 	view->window_rows = 8;
 
+	curr_view = &lwin;
+	other_view = &rwin;
+
 	columns_add_column_desc(SK_BY_NAME, &format_none);
 }
 

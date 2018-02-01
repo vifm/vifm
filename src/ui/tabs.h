@@ -70,6 +70,9 @@ void tabs_only(struct view_t *view);
 /* Counts how many tabs are in subtree defined by the path. */
 int tabs_visitor_count(const char path[]);
 
+/* Swaps pane tabs and does nothing for global tabs. */
+void tabs_switch_panes(void);
+
 #endif /* VIFM__UI__TABS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

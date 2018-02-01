@@ -1277,6 +1277,7 @@ move_window(view_t *view, int horizontally, int first)
 		 * right/bottom). */
 		switch_panes_content();
 		go_to_other_pane();
+		tabs_switch_panes();
 	}
 }
 
@@ -1322,33 +1323,7 @@ ui_view_unpick(view_t *view, view_t *old_curr, view_t *old_other)
 static void
 switch_panes_content(void)
 {
-	view_t tmp_view;
-	WINDOW* tmp;
-	int t;
-
-	tmp = lwin.win;
-	lwin.win = rwin.win;
-	rwin.win = tmp;
-
-	t = lwin.window_rows;
-	lwin.window_rows = rwin.window_rows;
-	rwin.window_rows = t;
-
-	t = lwin.window_cols;
-	lwin.window_cols = rwin.window_cols;
-	rwin.window_cols = t;
-
-	t = lwin.local_cs;
-	lwin.local_cs = rwin.local_cs;
-	rwin.local_cs = t;
-
-	tmp = lwin.title;
-	lwin.title = rwin.title;
-	rwin.title = tmp;
-
-	tmp_view = lwin;
-	lwin = rwin;
-	rwin = tmp_view;
+	ui_swap_view_data(&lwin, &rwin);
 
 	flist_update_origins(&lwin, &rwin.curr_dir[0], &lwin.curr_dir[0]);
 	flist_update_origins(&rwin, &lwin.curr_dir[0], &rwin.curr_dir[0]);
@@ -1356,6 +1331,38 @@ switch_panes_content(void)
 	view_panes_swapped();
 
 	curr_stats.need_update = UT_REDRAW;
+}
+
+void
+ui_swap_view_data(view_t *left, view_t *right)
+{
+	view_t tmp_view;
+	WINDOW *tmp;
+	int t;
+
+	tmp = left->win;
+	left->win = right->win;
+	right->win = tmp;
+
+	t = left->window_rows;
+	left->window_rows = right->window_rows;
+	right->window_rows = t;
+
+	t = left->window_cols;
+	left->window_cols = right->window_cols;
+	right->window_cols = t;
+
+	t = left->local_cs;
+	left->local_cs = right->local_cs;
+	right->local_cs = t;
+
+	tmp = left->title;
+	left->title = right->title;
+	right->title = tmp;
+
+	tmp_view = *left;
+	*left = *right;
+	*right = tmp_view;
 }
 
 void
