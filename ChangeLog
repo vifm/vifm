@@ -24,6 +24,9 @@
 
 	Added 'showtabline' option that controls visibility of tab line.
 
+	Added TabLineSel highlight group for highlighting tip of the selected tab
+	on the tab line.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

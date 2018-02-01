@@ -1998,6 +1998,7 @@ their content (e.g. regular files in views)
  \- AuxWin \- color of auxiliary areas of windows
  \- Border \- color of vertical parts of the border
  \- TabLine \- tab line color
+ \- TabLineSel \- color of the tip of selected tab
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
  \- CmdLine \- the command line/status bar color
@@ -2169,6 +2170,7 @@ transparency:
   TopLine
     TopLineSel
   TabLine
+    TabLineSel
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.
@@ -5869,8 +5871,9 @@ Look of different parts of the TUI (Text User Interface) is determined in \
 this way:
 .RS 2
 .IP \- 2
-Border, TabLine, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine, JobLine, \
-SuggestBox and WildMenu are always determined by the primary color scheme;
+Border, TabLine, TabLineSel, TopLineSel, TopLine, CmdLine, ErrorMsg, \
+StatusLine, JobLine, SuggestBox and WildMenu are always determined by the \
+primary color scheme;
 .IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
 Fifo, CmpMismatch, Win and AuxWin are determined by primary color scheme and a \

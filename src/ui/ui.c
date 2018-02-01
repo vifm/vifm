@@ -1731,6 +1731,10 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 		int width_needed;
 
 		col_attr_t col = base_col;
+		if(tab_info.view == view)
+		{
+			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
+		}
 
 		title = (tab_info.name == NULL) ? format_view_title(tab_info.view, pf)
 		                                : strdup(tab_info.name);

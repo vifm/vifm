@@ -384,6 +384,7 @@ hi CurrLine
 hi CmpMismatch
 hi AuxWin
 hi TabLine
+hi TabLineSel
 
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'

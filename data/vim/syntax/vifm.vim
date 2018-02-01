@@ -73,7 +73,7 @@ syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
 		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg CmpMismatch
-		\ AuxWin TabLine
+		\ AuxWin TabLine TabLineSel
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
