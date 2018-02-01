@@ -1666,15 +1666,23 @@ static int
 view_shows_tabline(const view_t *view)
 {
 	return cfg.pane_tabs
-	    && !(curr_stats.preview.on && view == other_view);
+	    && !(curr_stats.preview.on && view == other_view)
+	    && cfg.show_tab_line != STL_NEVER
+	    && !(cfg.show_tab_line == STL_MULTIPLE && tabs_count(view) == 1);
 }
 
 /* Retrieves height of the tab line in lines.  Returns the height. */
 static int
 get_tabline_height(void)
 {
-	/* TODO: implement determining height of the tab line. */
-	return 0;
+	if(cfg.pane_tabs || cfg.show_tab_line == STL_NEVER)
+	{
+		return 0;
+	}
+
+	return (cfg.show_tab_line == STL_MULTIPLE && tabs_count(curr_view) == 1)
+	     ? 0
+	     : 1;
 }
 
 /* Prints title of the tab on specified curses window. */

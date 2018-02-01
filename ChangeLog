@@ -22,6 +22,8 @@
 	Added gt and gT normal mode shortcuts that switch between tabs in both
 	directions.
 
+	Added 'showtabline' option that controls visibility of tab line.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

@@ -738,5 +738,23 @@ TEST(setting_tabscope_works)
 	assert_false(cfg.pane_tabs);
 }
 
+TEST(setting_showtabline_works)
+{
+	assert_success(exec_commands("set showtabline=0", &lwin, CIT_COMMAND));
+	assert_int_equal(STL_NEVER, cfg.show_tab_line);
+	assert_success(exec_commands("set showtabline=never", &lwin, CIT_COMMAND));
+	assert_int_equal(STL_NEVER, cfg.show_tab_line);
+
+	assert_success(exec_commands("set showtabline=1", &lwin, CIT_COMMAND));
+	assert_int_equal(STL_MULTIPLE, cfg.show_tab_line);
+	assert_success(exec_commands("set showtabline=multiple", &lwin, CIT_COMMAND));
+	assert_int_equal(STL_MULTIPLE, cfg.show_tab_line);
+
+	assert_success(exec_commands("set showtabline=2", &lwin, CIT_COMMAND));
+	assert_int_equal(STL_ALWAYS, cfg.show_tab_line);
+	assert_success(exec_commands("set showtabline=always", &lwin, CIT_COMMAND));
+	assert_int_equal(STL_ALWAYS, cfg.show_tab_line);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

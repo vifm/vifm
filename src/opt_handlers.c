@@ -150,6 +150,7 @@ static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
 static void shell_handler(OPT_OP op, optval_t val);
 static void shortmess_handler(OPT_OP op, optval_t val);
+static void showtabline_handler(OPT_OP op, optval_t val);
 static void sizefmt_handler(OPT_OP op, optval_t val);
 static optval_t make_sizefmt_value(void);
 #ifndef _WIN32
@@ -328,6 +329,16 @@ static const char *shortmess_vals[][2] = {
 	{ "Tp", "all shortmess values" },
 	{ "T",  "shorten too long status bar messages" },
 	{ "p",  "substitute home path with ~ in view title" },
+};
+
+/* Possible values of 'showtabline'. */
+static const char *showtabline_vals[][2] = {
+	{ "never",    "tab line is never displayed" },
+	{ "multiple", "tab line is visible when there are at least two tabs" },
+	{ "always",   "tab line is displayed always" },
+	{ "0",        "tab line is never displayed" },
+	{ "1",        "tab line is visible when there are at least two tabs" },
+	{ "2",        "tab line is displayed always" },
 };
 
 /* Possible values of 'tabscope'. */
@@ -666,6 +677,11 @@ options[] = {
 	  OPT_CHARSET, ARRAY_LEN(shortmess_vals), shortmess_vals, &shortmess_handler,
 		NULL,
 	  { .init = &init_shortmess },
+	},
+	{ "showtabline", "stal", "when to display tab line",
+	  OPT_ENUM, ARRAY_LEN(showtabline_vals), showtabline_vals,
+		&showtabline_handler, NULL,
+	  { .ref.enum_item = &cfg.show_tab_line },
 	},
 	{ "sizefmt", "", "human-friendly size format",
 	  OPT_STRLIST, ARRAY_LEN(sizefmt_enum), sizefmt_enum, &sizefmt_handler, NULL,
@@ -2194,6 +2210,15 @@ shortmess_handler(OPT_OP op, optval_t val)
 	}
 
 	ui_views_update_titles();
+}
+
+/* Handles changes of 'showtabline' option that controls visibility of tab
+ * line. */
+static void
+showtabline_handler(OPT_OP op, optval_t val)
+{
+	cfg.show_tab_line = (val.enum_item > 2 ? val.enum_item - 3 : val.enum_item);
+	stats_redraw_schedule();
 }
 
 /* Handles changes of 'sizefmt' option by parsing string value and updating
