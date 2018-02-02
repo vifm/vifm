@@ -114,6 +114,9 @@ static int view_shows_tabline(const view_t *view);
 static int get_tabline_height(void);
 static void print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col,
 		path_func pf);
+static void compute_avg_width(int *avg_width, int *spare_width, int max_width,
+		view_t *view, path_func pf);
+static char * make_tab_title(const tab_info_t *tab_info, path_func pf);
 static char * format_view_title(const view_t *view, path_func pf);
 static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
@@ -1701,8 +1704,7 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 
 	const int max_width = getmaxx(win);
 	int width_used = 0;
-	int avg_width = 0;
-	int spare_width = 0;
+	int avg_width, spare_width;
 
 	wbkgdset(win, COLOR_PAIR(colmgr_get_pair(base_col.fg, base_col.bg)) |
 			(base_col.attr & A_REVERSE));
@@ -1711,41 +1713,20 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	werase(win);
 	checked_wmove(win, 0, 0);
 
-	for(i = 0; tabs_get(view, i, &tab_info); ++i)
-	{
-		if(tab_info.view == view)
-		{
-			char *const title = (tab_info.name == NULL)
-			                  ? format_view_title(tab_info.view, pf)
-			                  : strdup(tab_info.name);
-			if(tabs_count(view) != 1)
-			{
-				const int extra_width = snprintf(title, 0U, "[%d:]", i + 1);
-				int left = MAX(max_width - (int)utf8_strsw(title) - extra_width, 0);
-			  avg_width = left/(tabs_count(view) - 1);
-				spare_width = left%(tabs_count(view) - 1);
-			}
-			free(title);
-			break;
-		}
-	}
+	compute_avg_width(&avg_width, &spare_width, max_width, view, pf);
 
 	for(i = 0; tabs_get(view, i, &tab_info); ++i)
 	{
-		char *title;
+		char *title = make_tab_title(&tab_info, pf);
+		const int width_needed = utf8_strsw(title);
 		const int extra_width = snprintf(NULL, 0U, "[%d:]", i + 1);
 		int width = max_width;
-		int width_needed;
 
 		col_attr_t col = base_col;
 		if(tab_info.view == view)
 		{
 			cs_mix_colors(&col, &cfg.cs.color[TAB_LINE_SEL_COLOR]);
 		}
-
-		title = (tab_info.name == NULL) ? format_view_title(tab_info.view, pf)
-		                                : strdup(tab_info.name);
-		width_needed = utf8_strsw(title);
 
 		if(tab_info.view != view)
 		{
@@ -1763,7 +1744,8 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 				--spare_width;
 			}
 
-			ellipsed = left_ellipsis(title, width - extra_width, curr_stats.ellipsis);
+			ellipsed = left_ellipsis(title, MAX(0, width - extra_width),
+					curr_stats.ellipsis);
 			free(title);
 			title = ellipsed;
 		}
@@ -1772,7 +1754,10 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 				(col.attr & A_REVERSE));
 		wattrset(win, col.attr & ~A_REVERSE);
 
-		wprintw(win, "[%d:%s]", i + 1, title);
+		if(width > extra_width)
+		{
+			wprintw(win, "[%d:%s]", i + 1, title);
+		}
 
 		/* Here result of `utf8_strsw(title)` might be different from one computed
 		 * above. */
@@ -1782,6 +1767,72 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	}
 
 	wnoutrefresh(win);
+}
+
+/* Computes average width of tab tips as well as number of spare character
+ * positions. */
+static void
+compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
+		path_func pf)
+{
+	int left = max_width;
+	int widths[tabs_count(view)];
+	int i;
+	tab_info_t tab_info;
+
+	*avg_width = 0;
+	*spare_width = 0;
+
+	for(i = 0; tabs_get(view, i, &tab_info); ++i)
+	{
+		char *const title = make_tab_title(&tab_info, pf);
+		widths[i] = utf8_strsw(title) + snprintf(title, 0U, "[%d:]", i + 1);
+		free(title);
+
+		if(tab_info.view == view)
+		{
+			left = MAX(max_width - widths[i], 0);
+			*avg_width = left/(tabs_count(view) - 1);
+			*spare_width = left%(tabs_count(view) - 1);
+		}
+	}
+
+	int new_avg_width = *avg_width;
+	do
+	{
+		int well_used_width = 0;
+		int truncated_count = 0;
+		*avg_width = new_avg_width;
+		for(i = 0; tabs_get(view, i, &tab_info); ++i)
+		{
+			if(tab_info.view != view)
+			{
+				if(widths[i] <= *avg_width)
+				{
+					well_used_width += widths[i];
+				}
+				else
+				{
+					++truncated_count;
+				}
+			}
+		}
+		if(truncated_count == 0)
+		{
+			break;
+		}
+		new_avg_width = (left - well_used_width)/truncated_count;
+		*spare_width = (left - well_used_width)%truncated_count;
+	}
+	while(new_avg_width != *avg_width);
+}
+
+/* Gets title of the tab.  Returns newly allocated string. */
+static char *
+make_tab_title(const tab_info_t *tab_info, path_func pf)
+{
+	return (tab_info->name == NULL) ? format_view_title(tab_info->view, pf)
+	                                : strdup(tab_info->name);
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.
