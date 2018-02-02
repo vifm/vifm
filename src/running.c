@@ -741,6 +741,11 @@ open_dir(view_t *view)
 	if(cd_is_possible(full_path))
 	{
 		navigate_to(view, full_path);
+
+		/* When opening a directory (effectively by hitting Enter on it), the
+		 * cursor should be placed on top regardless of the position we might have
+		 * in history */
+		view->list_pos = 0;
 	}
 }
 
