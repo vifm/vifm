@@ -1,5 +1,10 @@
 0.9.1-beta to current
 
+	Fixed opening a directory for which the saved cursor position is not at
+	the top: regardless of the cursor position we might have in the history,
+	when user hits Enter on a directory, the cursor should be placed on top.
+	Patch by Dmitry Frank (a.k.a. dimonomid).
+
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
 	and p keys copy them.
 
