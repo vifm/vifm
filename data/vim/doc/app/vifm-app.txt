@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1-beta  Last change: 2018 Jan 22
+*vifm-app.txt*    For Vifm version 0.9.1-beta  Last change: 2018 Feb 03
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2763,7 +2763,7 @@ When disabled vifm will set cursor to the first line in the view after :cd and
 :pushd commands instead of saved cursor position.  Disabling this will also
 make vifm clear information about cursor position in the view history on :cd
 and :pushd commands (and on startup if 'autochpos' is disabled in the vifmrc).
-l key in the ":history ." and ":trashes" menus is treated like :cd command.
+l key in the ":history ." and ":trashes" menus are treated like :cd command.
 This option also affects marks so that navigating to a mark doesn't restore
 cursor position.
 
