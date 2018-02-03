@@ -125,6 +125,10 @@ if [ "$target" = all -o "$target" = archive ]; then
             echo "ERROR: Building project failed."
             exit 3
         fi
+        if ! RELEASE=1 make -C src/ -f Makefile.win check; then
+            echo "ERROR: Testing project failed."
+            exit 4
+        fi
 
         set -e
 
