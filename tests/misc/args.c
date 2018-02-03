@@ -13,6 +13,8 @@
 
 #include "utils.h"
 
+static int with_remote_cmds(void);
+
 static char *saved_cwd;
 
 SETUP()
@@ -99,7 +101,7 @@ TEST(select_accepts_dash_if_such_directory_exists)
 	args_free(&args);
 }
 
-TEST(remote_allows_no_arguments)
+TEST(remote_allows_no_arguments, IF(with_remote_cmds))
 {
 	args_t args = { };
 	char *argv[] = { "vifm", "a", "--remote", NULL };
@@ -109,7 +111,7 @@ TEST(remote_allows_no_arguments)
 	args_free(&args);
 }
 
-TEST(remote_takes_all_arguments_to_the_right)
+TEST(remote_takes_all_arguments_to_the_right, IF(with_remote_cmds))
 {
 	args_t args = { };
 	char *argv[] = { "vifm", "a", "--remote", "b", "c", NULL };
@@ -123,7 +125,7 @@ TEST(remote_takes_all_arguments_to_the_right)
 	args_free(&args);
 }
 
-TEST(remote_expr_is_parsed)
+TEST(remote_expr_is_parsed, IF(with_remote_cmds))
 {
 	args_t args = { };
 	char *argv[] = { "vifm", "--remote-expr", "expr", NULL };
@@ -131,6 +133,16 @@ TEST(remote_expr_is_parsed)
 	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
 	assert_string_equal("expr", args.remote_expr);
 	args_free(&args);
+}
+
+static int
+with_remote_cmds(void)
+{
+#ifdef ENABLE_REMOTE_CMDS
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
