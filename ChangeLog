@@ -9,6 +9,10 @@
 	Fixed possible crash on `:highlight clear {pattern}` and highlights not
 	being updated.
 
+	Added support for arbitrary expressions in 'statusline': '%{...}'.
+	e.g. '%{&sort}' evaluates to the value of the sort option. Patch by Dmitry
+	Frank (a.k.a. dimonomid).
+
 0.9 to 0.9.1-beta
 
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to

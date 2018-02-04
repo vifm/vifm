@@ -3466,6 +3466,7 @@ are supported:
     %D - path of the other pane for single-pane layout
     %a - amount of free space available at current partition
     %z - short tips/tricks/hints that chosen randomly after one minute period
+    `%{<expr>}` - evaluate arbitrary vifm expression `<expr>`, e.g. `&sort`
     all |vifm-'rulerformat'| macros
 Percent sign can be followed by optional minimum field width.  Add '-' before
 minimum field width if you want field to be right aligned.
@@ -3484,7 +3485,7 @@ is on):
     Z - sparse file
 
 Example: >
- set statusline="  %t%= %A %10u:%-7g %15s %20d "
+ set statusline="  %t%= %A %10u:%-7g %15s %20d %{&sort} "
 <
                                                *vifm-'suggestoptions'*
 suggestoptions
