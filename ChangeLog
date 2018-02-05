@@ -1,4 +1,4 @@
-0.9.1-beta to current
+0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
 	and p keys copy them.

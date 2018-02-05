@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Variables:
+#  * VIFM_DATE_OVERRIDE -- date to use instead of "now"
+
 if [ "$#" -lt "1" -o "$#" -gt "2" ]; then
     echo "Usage: $0 version [all|update|commit|archive]"
     exit 1
@@ -12,6 +15,14 @@ target="all"
 if [ $# -eq 2 ]; then
     target="$2"
 fi
+
+function date() {
+    if [ -z "$VIFM_DATE_OVERRIDE" ]; then
+        command date "$@"
+    else
+        command date --date="$VIFM_DATE_OVERRIDE" "$@"
+    fi
+}
 
 # this check is for me, since I'm always use vifm.exe from the repository
 if [ "$OS" = Windows_NT ]; then
@@ -113,6 +124,10 @@ if [ "$target" = all -o "$target" = archive ]; then
         if ! RELEASE=1 make -C src/ -f Makefile.win; then
             echo "ERROR: Building project failed."
             exit 3
+        fi
+        if ! RELEASE=1 make -C src/ -f Makefile.win check; then
+            echo "ERROR: Testing project failed."
+            exit 4
         fi
 
         set -e
