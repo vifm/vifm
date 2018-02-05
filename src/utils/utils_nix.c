@@ -1044,7 +1044,7 @@ get_free_space(const char at[])
 		return 0;
 	}
 
-	return (uint64_t)st.f_bsize*st.f_bfree;
+	return (uint64_t)st.f_bsize*st.f_bavail;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
