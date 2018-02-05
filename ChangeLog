@@ -1,3 +1,9 @@
+0.9.1 to current
+
+	Added support for arbitrary expressions in 'statusline': '%{...}'.
+	e.g. '%{&sort}' evaluates to the value of the sort option.  Patch by Dmitry
+	Frank (a.k.a. dimonomid).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
@@ -10,7 +16,7 @@
 	being updated.
 
 	Fixed reported free space on *nix. (make it consistent with what 'df'
-	reports). Patch by Dmitry Frank (a.k.a. dimonomid).
+	reports).  Patch by Dmitry Frank (a.k.a. dimonomid).
 
 0.9 to 0.9.1-beta
 

@@ -4174,6 +4174,8 @@ since it cannot be selected
 .IP \- 2
 %z - short tips/tricks/hints that chosen randomly after one minute period
 .IP \- 2
+%{<expr>} - evaluate arbitrary vifm expression '<expr>', e.g. '&sort'
+.IP \- 2
 all 'rulerformat' macros
 .RE
 
@@ -4183,7 +4185,7 @@ minimum field width if you want field to be right aligned.
 Example:
 
 .EX
-  set statusline="  %t%= %A %10u:%\-7g %15s %20d "
+  set statusline="  %t%= %A %10u:%\-7g %15s %20d %{&sort} "
 .EE
 
 On Windows file properties include the following flags (upper case means flag is

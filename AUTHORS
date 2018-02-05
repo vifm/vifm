@@ -109,8 +109,7 @@ Svyatoslav Mishyn (a.k.a. juef) aligned options in conflict resolution dialog.
 
 oo- added shortcuts to dialogs.
 
-Dmitry Frank (a.k.a. dimonomid) fixed displaying size in statusline and
-implemented :histnext/:histprev commands.
+Dmitry Frank (a.k.a. dimonomid) provided multiple patches.
 
 John Shea (a.k.a. coachshea) provided fix for the plugin related to neovim.
 

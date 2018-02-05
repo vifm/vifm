@@ -33,6 +33,8 @@
 #include "../compat/pthread.h"
 #include "../compat/reallocarray.h"
 #include "../engine/mode.h"
+#include "../engine/parsing.h"
+#include "../engine/var.h"
 #include "../modes/modes.h"
 #include "../utils/fs.h"
 #include "../utils/log.h"
@@ -201,7 +203,7 @@ refresh_window(WINDOW *win, int lazily)
 TSTATIC char *
 expand_status_line_macros(view_t *view, const char format[])
 {
-	return expand_view_macros(view, format, "tTfaAugsEdD-xlLSz%[]");
+	return expand_view_macros(view, format, "tTfaAugsEdD-xlLSz%[]{");
 }
 
 /* Expands possibly limited set of view macros.  Returns newly allocated string,
@@ -372,6 +374,53 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 
 				LOG_INFO_MSG("Unmatched %%]");
 				ok = 0;
+				break;
+			case '{':
+				{
+					/* Try to find matching closing bracket
+					 * TODO: implement the way to escape it, so that the expr may contain
+					 * closing brackets */
+					const char *e = strchr(*format, '}');
+					char *expr = NULL, *resstr = NULL;
+					var_t res = var_false();
+					ParsingErrors parsing_error;
+
+					/* If there's no matching closing bracket, just add the opening one
+					 * literally */
+					if(e == NULL)
+					{
+						ok = 0;
+						break;
+					}
+
+					/* Create a NULL-terminated copy of the given expr.
+					 * TODO: we could temporarily use buf for that, to avoid extra
+					 * allocation, but explicitly named variable reads better. */
+					expr = calloc(e - (*format) + 1 /* NUL-term */, 1);
+					memcpy(expr, *format, e - (*format));
+
+					/* Try to parse expr, and convert the res to string if succeed. */
+					parsing_error = parse(expr, &res);
+					if(parsing_error == PE_NO_ERROR)
+					{
+						resstr = var_to_string(res);
+					}
+
+					if(resstr != NULL)
+					{
+						copy_str(buf, sizeof(buf), resstr);
+					}
+					else
+					{
+						copy_str(buf, sizeof(buf), "<Invalid expr>");
+					}
+
+					var_free(res);
+					free(resstr);
+					free(expr);
+
+					*format = e + 1 /* closing bracket */;
+				}
 				break;
 
 			default:

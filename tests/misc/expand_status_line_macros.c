@@ -183,7 +183,7 @@ TEST(percent_macro_expanded)
 
 TEST(wrong_macros_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -198,7 +198,7 @@ TEST(wrong_macros_ignored)
 
 TEST(wrong_macros_with_width_field_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -244,6 +244,27 @@ TEST(ignore_mismatched_opening_bracket)
 TEST(ignore_mismatched_closing_bracket)
 {
 	ASSERT_EXPANDED_TO("%]", "%]");
+}
+
+TEST(valid_expr)
+{
+	char *v = getenv("HOME");
+	if(v == NULL)
+	{
+		v = "";
+	}
+	ASSERT_EXPANDED_TO("%{$HOME}", v);
+}
+
+TEST(invalid_expr)
+{
+	ASSERT_EXPANDED_TO("%{foobar}", "<Invalid expr>");
+}
+
+TEST(ignore_mismatched_opening_curly_bracket)
+{
+	ASSERT_EXPANDED_TO("<%{>", "<%{>");
+	ASSERT_EXPANDED_TO("<%{abcdef>", "<%{abcdef>");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
