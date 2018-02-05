@@ -415,6 +415,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 						copy_str(buf, sizeof(buf), "<Invalid expr>");
 					}
 
+					var_free(res);
 					free(resstr);
 					free(expr);
 
