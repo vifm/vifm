@@ -9,6 +9,9 @@
 	Fixed possible crash on `:highlight clear {pattern}` and highlights not
 	being updated.
 
+	Fixed reported free space on *nix. (make it consistent with what 'df'
+	reports). Patch by Dmitry Frank (a.k.a. dimonomid).
+
 0.9 to 0.9.1-beta
 
 	Added "inode" sorting key, which sorts entries by inode number.  Thanks to
