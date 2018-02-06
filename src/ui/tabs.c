@@ -62,6 +62,7 @@ typedef struct
 	int active_pane;   /* 0 -- left, 1 -- right. */
 	int only_mode;     /* Whether in single-pane mode. */
 	SPLIT split;       /* State of window split. */
+	int splitter_pos;  /* Splitter position. */
 	preview_t preview; /* Information about state of the quickview. */
 	char *name;        /* Name of the tab.  Might be NULL. */
 }
@@ -316,6 +317,7 @@ tabs_goto_global(int idx)
 	}
 	curr_stats.number_of_windows = (gtabs[idx].only_mode ? 1 : 2);
 	curr_stats.split = gtabs[idx].split;
+	curr_stats.splitter_pos = gtabs[idx].splitter_pos;
 	assign_preview(&curr_stats.preview, &gtabs[idx].preview);
 
 	current_tab = idx;
@@ -335,6 +337,7 @@ capture_global_state(global_tab_t *gtab)
 	gtab->active_pane = (curr_view == &rwin);
 	gtab->only_mode = (curr_stats.number_of_windows == 1);
 	gtab->split = curr_stats.split;
+	gtab->splitter_pos = curr_stats.splitter_pos;
 	assign_preview(&gtab->preview, &curr_stats.preview);
 }
 
