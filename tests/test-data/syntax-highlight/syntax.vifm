@@ -362,12 +362,29 @@ siblnext
 siblprev
 histnext
 histprev
+tabnew
+tabname
+tabc
+tabcl
+tabclo
+tabclos
+tabclose
+qa
+qal
+qall
+wqa
+wqal
+wqall
+xa
+xal
+xall
 
-" "hi" should be highlighted as :command and CurrLine/CmpMismatch/AuxWin as
-" highlight groups
+" "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
 hi CmpMismatch
 hi AuxWin
+hi TabLine
+hi TabLineSel
 
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'
@@ -377,6 +394,8 @@ hi AuxWin
 " "milleroptions" should be highlighted as 'option'
 " "lsoptions" should be highlighted as 'option'
 " "previewprg" should be highlighted as 'option'
+" "tabscope" should be highlighted as 'option'
+" "showtabline" and "stal" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -384,6 +403,8 @@ set millerview nomillerview invmillerview
 set milleroptions
 set lsoptions
 set previewprg
+set tabscope
+set showtabline stal
 
 " "term" should be highlighted as a function()
 echo term('cmd')

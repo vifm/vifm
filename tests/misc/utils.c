@@ -13,7 +13,6 @@
 #include "../../src/engine/options.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
-#include "../../src/utils/fswatch.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
@@ -133,6 +132,7 @@ view_setup(view_t *view)
 	view->hide_dot_g = 0;
 	view->invert = 1;
 	view->selected_files = 0;
+	view->ls_view = 0;
 
 	assert_success(filter_init(&view->local_filter.filter, 1));
 	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
@@ -154,39 +154,7 @@ view_setup(view_t *view)
 void
 view_teardown(view_t *view)
 {
-	int i;
-
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		fentry_free(view, &view->dir_entry[i]);
-	}
-	dynarray_free(view->dir_entry);
-	view->dir_entry = NULL;
-	view->list_rows = 0;
-
-	for(i = 0; i < view->custom.entry_count; ++i)
-	{
-		fentry_free(view, &view->custom.entries[i]);
-	}
-	dynarray_free(view->custom.entries);
-	view->custom.entries = NULL;
-
-	for(i = 0; i < view->local_filter.entry_count; ++i)
-	{
-		fentry_free(view, &view->local_filter.entries[i]);
-	}
-	dynarray_free(view->local_filter.entries);
-	view->local_filter.entries = NULL;
-
-	filter_dispose(&view->local_filter.filter);
-	filter_dispose(&view->auto_filter);
-	matcher_free(view->manual_filter);
-	view->manual_filter = NULL;
-
-	view->custom.type = CV_REGULAR;
-
-	fswatch_free(view->watch);
-	view->watch = NULL;
+	flist_free_view(view);
 }
 
 void

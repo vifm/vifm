@@ -40,6 +40,11 @@ typedef int (*entry_predicate)(const dir_entry_t *entry);
 
 /* Prepares views for the first time. */
 void init_filelists(void);
+/* Loads initial display values into view structure. */
+void flist_init_view(view_t *view);
+/* Frees all resources allocated by the view and prepares it for future
+ * reuse. */
+void flist_free_view(view_t *view);
 /* Reinitializes views. */
 void reset_views(void);
 /* Loads view file list for the first time. */
@@ -296,6 +301,8 @@ int flist_update_cache(view_t *view, cached_entries_t *cache,
 		const char path[]);
 /* Frees the cache. */
 void flist_free_cache(view_t *view, cached_entries_t *cache);
+/* Updates pointers to main (default) origins in file list entries. */
+void flist_update_origins(view_t *view, const char from[], char to[]);
 
 TSTATIC_DEFS(
 	void pick_cd_path(view_t *view, const char base_dir[], const char path[],

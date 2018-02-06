@@ -184,6 +184,18 @@ move cursor to the last column.  See 'lsview' option description.
 .TP
 .BI Space
 switch file lists.
+.TP
+.BI gt
+switch to the next tab (wrapping around).
+.TP
+.BI {n}gt
+switch to the tab number {n} (wrapping around).
+.TP
+.BI gT
+switch to the previous tab (wrapping around).
+.TP
+.BI {n}gT
+switch to {n}-th previous tab.
 .\" ---------------------------------------------------------------------------
 .SH Movement with Count
 .\" ---------------------------------------------------------------------------
@@ -1985,6 +1997,8 @@ Available group-name values:
 their content (e.g. regular files in views)
  \- AuxWin \- color of auxiliary areas of windows
  \- Border \- color of vertical parts of the border
+ \- TabLine \- tab line color
+ \- TabLineSel \- color of the tip of selected tab
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
  \- CmdLine \- the command line/status bar color
@@ -2155,6 +2169,8 @@ transparency:
             OtherLine
   TopLine
     TopLineSel
+  TabLine
+    TabLineSel
 
 "none" means default terminal color for highlight groups at the first level of
 the hierarchy and transparency for all others.
@@ -2377,10 +2393,17 @@ are performed beforehand.
 .BI :pw[d]
 show the present working directory.
 .TP
+.BI "                                         :qall"
+.TP
+.BI :qa[ll][!]
+exit vifm (add ! to skip saving changes and checking for active backgrounded
+commands).
+.TP
 .BI "                                         :quit"
 .TP
 .BI :q[uit][!]
-exit vifm (add ! to skip saving changes and checking for active backgrounded
+if there is more than one tab, close the current one, otherwise exit
+vifm (add ! to skip saving changes and checking for active backgrounded
 commands).
 .TP
 .BI "                                         :redraw"
@@ -2655,11 +2678,26 @@ all \- all of the above.
 .RE
 .RE
 .TP
+.BI "                                         :tabclose"
+.TP
+.BI ":tabclose"
+close current tab, unless it's the only one open at current scope.
+.TP
+.BI "                                         :tabname"
+.TP
+.BI ":tabname [name]"
+set, update or reset (when no argument is provided) name of the current tab.
+.TP
+.BI "                                         :tabnew"
+.TP
+.BI ":tabnew [name]"
+create new tab.  Accepts optional name for the new tab.
+.TP
 .BI "                                         :touch"
 .TP
 .BI ":[line]touch file..."
-create files at specified paths.  Aborts on errors.  Doesn't update time of existing
-files.  The [line] can be used to pick node in a tree-view.  Macros are
+create files at specified paths.  Aborts on errors.  Doesn't update time of
+existing files.  The [line] can be used to pick node in a tree-view.  Macros are
 expanded.
 .TP
 .BI "                                         :tr"
@@ -2785,11 +2823,20 @@ write vifminfo file.
 .TP
 .BI :wq[!]
 same as :quit, but ! only disables check of backgrounded commands.
+.BI "                                         :wqall"
+.TP
+.BI :wqa[ll][!]
+same as :qall, but ! only disables check of backgrounded commands.
+.TP
+.BI "                                         :xall"
+.TP
+.BI ":xa[ll][!]"
+same as :qall.
 .TP
 .BI "                                         :xit"
 .TP
 .BI ":x[it][!]"
-will exit Vifm (add ! if you don't want to save changes).
+same as :quit.
 .TP
 .BI "                                         :yank"
 .TP
@@ -3970,11 +4017,25 @@ default: "p"
 Contains a sequence of single-character flags.  Each flag enables shortening
 of some message displayed by vifm in the TUI.  Flags:
 .br
-T \- truncate status-bar messages in the middle if they are too long to fit on \
-the command line.  "..." will appear in the middle.
+ - T \- truncate status-bar messages in the middle if they are too long to fit \
+on the command line.  "..." will appear in the middle.
 .br
-p \- use tilde shortening in view titles.
+ - p \- use tilde shortening in view titles.
 
+.TP
+.BI "'showtabline' 'stal'"
+type: enumeration
+.br
+default: multiple
+.br
+Specifies when tab line should be displayed.  Possible values:
+ - never    - never display tab line
+ - multiple - show tab line only when there are at least two tabs
+ - always   - display tab line always
+
+Alternatively 0, 1 and 2 Vim-like values  are also accepted and correspond to
+"never", "multiple" and "always" respectively.
+.TP
 .TP
 .BI 'sizefmt'
 type: string list
@@ -4240,6 +4301,15 @@ When disabled, vifm will rely on external applications to perform file-system
 operations, otherwise system calls are used instead (much faster and supports
 progress tracking).  The option should eventually be removed.  Mostly *nix-like
 systems are affected.
+.TP
+.BI 'tabscope'
+type: enumeration
+.br
+default: global
+.br
+Picks style of tabs, which defines what a single tab contains.  Possible values:
+ - global - tab describes complete UI of two views and how they are arranged
+ - pane   - tab is located "inside" a pane and manages it and quick view
 .TP
 .BI "'tabstop' 'ts'"
 type: integer
@@ -5801,8 +5871,9 @@ Look of different parts of the TUI (Text User Interface) is determined in \
 this way:
 .RS 2
 .IP \- 2
-Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine, JobLine, \
-SuggestBox and WildMenu are always determined by the primary color scheme;
+Border, TabLine, TabLineSel, TopLineSel, TopLine, CmdLine, ErrorMsg, \
+StatusLine, JobLine, SuggestBox and WildMenu are always determined by the \
+primary color scheme;
 .IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
 Fifo, CmpMismatch, Win and AuxWin are determined by primary color scheme and a \

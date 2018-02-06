@@ -183,6 +183,7 @@ vifm_SOURCES = \
 	ui/quickview.c ui/quickview.h \
 	ui/statusbar.c ui/statusbar.h \
 	ui/statusline.c ui/statusline.h \
+	ui/tabs.c ui/tabs.h \
 	ui/ui.c ui/ui.h \
 	\
 	utils/cancellation.c utils/cancellation.h \

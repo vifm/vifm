@@ -461,6 +461,7 @@ WINDOW *sort_win;
 WINDOW *change_win;
 WINDOW *error_win;
 WINDOW *top_line;
+WINDOW *tab_line;
 
 WINDOW *lborder;
 WINDOW *mborder;
@@ -482,6 +483,11 @@ void ui_update_term_state(void);
 int ui_char_pressed(wint_t c);
 
 int setup_ncurses_interface(void);
+
+/* Closes current tab if it's not the last one, closes whole application
+ * otherwise.  Might also fail if background tasks are present and user chooses
+ * not to stop them. */
+void ui_quit(int write_info, int force);
 
 /* Checks whether custom view of specified type is unsorted.  Returns non-zero
  * if so, otherwise zero is returned. */
@@ -538,7 +544,7 @@ void wprinta(WINDOW *win, const char str[], int line_attrs);
  * on success, and non-zero otherwise. */
 int resize_for_menu_like(void);
 
-/* Performs updates of layout for manu like modes. */
+/* Performs updates of layout for menu like modes. */
 void ui_setup_for_menu_like(void);
 
 /* Performs real pane redraw in the TUI and maybe some related operations. */
@@ -551,8 +557,12 @@ void move_window(view_t *view, int horizontally, int first);
 /* Swaps current and other views. */
 void switch_panes(void);
 
-/* Setups view to the the curr_view.  Saving previous state in supplied
- * buffers.  Use ui_view_unpick() to revert the effect. */
+/* Swaps data fields of two panes.  Doesn't correct origins of directory
+ * entries. */
+void ui_swap_view_data(view_t *left, view_t *right);
+
+/* Setups view to the the curr_view.  Saving previous state in supplied buffers.
+ * Use ui_view_unpick() to revert the effect. */
 void ui_view_pick(view_t *view, view_t **old_curr, view_t **old_other);
 
 /* Restores what has been done by ui_view_pick(). */

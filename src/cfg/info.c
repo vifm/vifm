@@ -1007,6 +1007,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
 	fprintf(fp, "=shortmess=%s\n",
 			escape_spaces(get_option_value("shortmess", OPT_GLOBAL)));
+	fprintf(fp, "=showtabline=%s\n",
+			escape_spaces(get_option_value("showtabline", OPT_GLOBAL)));
 	fprintf(fp, "=sizefmt=%s\n",
 			escape_spaces(get_option_value("sizefmt", OPT_GLOBAL)));
 #ifndef _WIN32
@@ -1015,6 +1017,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 	fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
 	fprintf(fp, "=statusline=%s\n", escape_spaces(cfg.status_line));
+	fprintf(fp, "=tabscope=%s\n",
+			escape_spaces(get_option_value("tabscope", OPT_GLOBAL)));
 	fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
 	fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
 	fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);

@@ -47,10 +47,13 @@
 #include "int/fuse.h"
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
+#include "modes/view.h"
 #include "ui/cancellation.h"
+#include "ui/column_view.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/env.h"
@@ -81,7 +84,6 @@
 #include "status.h"
 #include "types.h"
 
-static void init_view(view_t *view);
 static void init_flist(view_t *view);
 static void reset_view(view_t *view);
 static void init_view_history(view_t *view);
@@ -175,16 +177,15 @@ init_filelists(void)
 {
 	fview_init();
 
-	init_view(&rwin);
-	init_view(&lwin);
+	flist_init_view(&rwin);
+	flist_init_view(&lwin);
 
 	curr_view = &lwin;
 	other_view = &rwin;
 }
 
-/* Loads initial display values into view structure. */
-static void
-init_view(view_t *view)
+void
+flist_init_view(view_t *view)
 {
 	init_flist(view);
 	fview_view_init(view);
@@ -220,6 +221,95 @@ init_flist(view_t *view)
 	view->dir_entry[0].name_dec_num = -1;
 	view->dir_entry[0].origin = &view->curr_dir[0];
 	view->list_rows = 1;
+}
+
+void
+flist_free_view(view_t *view)
+{
+	/* For the application, we don't need to zero out fields after freeing them,
+	 * but doing so allows reusing this function in tests. */
+
+	int i;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		fentry_free(view, &view->dir_entry[i]);
+	}
+	dynarray_free(view->dir_entry);
+	view->dir_entry = NULL;
+	view->list_rows = 0;
+
+	for(i = 0; i < view->custom.entry_count; ++i)
+	{
+		fentry_free(view, &view->custom.entries[i]);
+	}
+	dynarray_free(view->custom.entries);
+	view->custom.entries = NULL;
+	view->custom.entry_count = 0;
+
+	update_string(&view->custom.next_title, NULL);
+	update_string(&view->custom.orig_dir, NULL);
+	update_string(&view->custom.title, NULL);
+	trie_free(view->custom.excluded_paths);
+	trie_free(view->custom.paths_cache);
+	view->custom.excluded_paths = NULL;
+	view->custom.paths_cache = NULL;
+
+	for(i = 0; i < view->local_filter.entry_count; ++i)
+	{
+		fentry_free(view, &view->local_filter.entries[i]);
+	}
+	dynarray_free(view->local_filter.entries);
+	view->local_filter.entries = NULL;
+	view->local_filter.entry_count = 0;
+
+	/* Two pointer fields below don't contain valid data that needs to be freed,
+	 * zeroing them for tests and to at least mention them to signal that they
+	 * weren't forgotten. */
+	view->local_filter.unfiltered = NULL;
+	view->local_filter.saved = NULL;
+	view->local_filter.unfiltered_count = 0;
+
+	update_string(&view->local_filter.prev, NULL);
+	free(view->local_filter.poshist);
+	view->local_filter.poshist = NULL;
+
+	filter_dispose(&view->local_filter.filter);
+	filter_dispose(&view->auto_filter);
+	matcher_free(view->manual_filter);
+	view->manual_filter = NULL;
+	update_string(&view->prev_manual_filter, NULL);
+	update_string(&view->prev_auto_filter, NULL);
+
+	view->custom.type = CV_REGULAR;
+
+	fswatch_free(view->watch);
+	view->watch = NULL;
+
+	flist_free_cache(view, &view->left_column);
+	flist_free_cache(view, &view->right_column);
+
+	free_string_array(view->saved_selection, view->nsaved_selection);
+	view->nsaved_selection = 0;
+	view->saved_selection = NULL;
+
+	flist_hist_resize(view, 0);
+
+	cs_reset(&view->cs);
+
+	columns_free(view->columns);
+	view->columns = NULL;
+
+	update_string(&view->view_columns, NULL);
+	update_string(&view->view_columns_g, NULL);
+	update_string(&view->sort_groups, NULL);
+	update_string(&view->sort_groups_g, NULL);
+	update_string(&view->preview_prg, NULL);
+	update_string(&view->preview_prg_g, NULL);
+
+	view_info_free(view->vi);
+
+	regfree(&view->primary_group);
 }
 
 void
@@ -472,14 +562,14 @@ change_directory(view_t *view, const char directory[])
 
 	if(cfg.chase_links)
 	{
-		char real_path[PATH_MAX];
+		char real_path[PATH_MAX + 1];
 		if(os_realpath(dir_dup, real_path) == real_path)
 		{
 			/* Do this on success only, if realpath() fails, just go with the original
 			 * path. */
 			canonicalize_path(real_path, dir_dup, sizeof(dir_dup));
 #ifdef _WIN32
-			to_forward_slash(real_path);
+			to_forward_slash(dir_dup);
 #endif
 		}
 	}
@@ -497,13 +587,12 @@ change_directory(view_t *view, const char directory[])
 
 	location_changed = (stroscmp(dir_dup, flist_get_dir(view)) != 0);
 
-	/* Check if we're exiting from a FUSE mounted top level directory and the
-	 * other pane isn't in it or any of it subdirectories.
-	 * If so, unmount & let FUSE serialize */
+	/* Check if we're exiting from a FUSE mounted top level directory. */
 	if(is_parent_dir(directory) && fuse_is_mount_point(view->curr_dir))
 	{
-		view_t *other = (view == curr_view) ? other_view : curr_view;
-		if(!path_starts_with(other->curr_dir, view->curr_dir))
+		/* No other pane in any tab should be inside subtree that might be
+		 * unmounted. */
+		if(tabs_visitor_count(view->curr_dir) == 1)
 		{
 			const int r = fuse_try_unmount(view);
 			if(r != 0)
@@ -2483,7 +2572,7 @@ fentry_free(const view_t *view, dir_entry_t *entry)
 	free(entry->name);
 	entry->name = NULL;
 
-	if(entry->origin != &view->curr_dir[0])
+	if(entry->origin != &lwin.curr_dir[0] && entry->origin != &rwin.curr_dir[0])
 	{
 		free(entry->origin);
 		entry->origin = NULL;
@@ -2687,6 +2776,20 @@ flist_free_cache(view_t *view, cached_entries_t *cache)
 	update_string(&cache->dir, NULL);
 	fswatch_free(cache->watch);
 	cache->watch = NULL;
+}
+
+void
+flist_update_origins(view_t *view, const char from[], char to[])
+{
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		dir_entry_t *const entry = &view->dir_entry[i];
+		if(entry->origin == from)
+		{
+			entry->origin = to;
+		}
+	}
 }
 
 int

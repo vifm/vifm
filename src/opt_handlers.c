@@ -38,6 +38,7 @@
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/darray.h"
 #include "utils/log.h"
@@ -149,6 +150,7 @@ static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
 static void shell_handler(OPT_OP op, optval_t val);
 static void shortmess_handler(OPT_OP op, optval_t val);
+static void showtabline_handler(OPT_OP op, optval_t val);
 static void sizefmt_handler(OPT_OP op, optval_t val);
 static optval_t make_sizefmt_value(void);
 #ifndef _WIN32
@@ -204,6 +206,7 @@ static void suggestoptions_handler(OPT_OP op, optval_t val);
 static int read_int(const char line[], int *i);
 static void reset_suggestoptions(void);
 static void syscalls_handler(OPT_OP op, optval_t val);
+static void tabscope_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
@@ -326,6 +329,22 @@ static const char *shortmess_vals[][2] = {
 	{ "Tp", "all shortmess values" },
 	{ "T",  "shorten too long status bar messages" },
 	{ "p",  "substitute home path with ~ in view title" },
+};
+
+/* Possible values of 'showtabline'. */
+static const char *showtabline_vals[][2] = {
+	{ "never",    "tab line is never displayed" },
+	{ "multiple", "tab line is visible when there are at least two tabs" },
+	{ "always",   "tab line is displayed always" },
+	{ "0",        "tab line is never displayed" },
+	{ "1",        "tab line is visible when there are at least two tabs" },
+	{ "2",        "tab line is displayed always" },
+};
+
+/* Possible values of 'tabscope'. */
+static const char *tabscope_vals[][2] = {
+	{ "global", "single tab contains panes and their layout" },
+	{ "pane",   "tab contains state of just one pane" },
 };
 
 /* Possible flags of 'tuioptions' and their count. */
@@ -659,6 +678,11 @@ options[] = {
 		NULL,
 	  { .init = &init_shortmess },
 	},
+	{ "showtabline", "stal", "when to display tab line",
+	  OPT_ENUM, ARRAY_LEN(showtabline_vals), showtabline_vals,
+		&showtabline_handler, NULL,
+	  { .ref.enum_item = &cfg.show_tab_line },
+	},
 	{ "sizefmt", "", "human-friendly size format",
 	  OPT_STRLIST, ARRAY_LEN(sizefmt_enum), sizefmt_enum, &sizefmt_handler, NULL,
 	  { .init = &init_sizefmt },
@@ -689,6 +713,10 @@ options[] = {
 	{ "syscalls", "", "use system calls for file operations",
 	  OPT_BOOL, 0, NULL, &syscalls_handler, NULL,
 	  { .ref.bool_val = &cfg.use_system_calls },
+	},
+	{ "tabscope", "", "level at which tabs operate",
+	  OPT_ENUM, ARRAY_LEN(tabscope_vals), tabscope_vals, &tabscope_handler, NULL,
+	  { .ref.bool_val = &cfg.pane_tabs },
 	},
 	{ "tabstop", "ts", "widths of one tabulation",
 	  OPT_INT, 0, NULL, &tabstop_handler, NULL,
@@ -2184,6 +2212,15 @@ shortmess_handler(OPT_OP op, optval_t val)
 	ui_views_update_titles();
 }
 
+/* Handles changes of 'showtabline' option that controls visibility of tab
+ * line. */
+static void
+showtabline_handler(OPT_OP op, optval_t val)
+{
+	cfg.show_tab_line = (val.enum_item > 2 ? val.enum_item - 3 : val.enum_item);
+	stats_redraw_schedule();
+}
+
 /* Handles changes of 'sizefmt' option by parsing string value and updating
  * configuration values. */
 static void
@@ -3054,6 +3091,18 @@ static void
 syscalls_handler(OPT_OP op, optval_t val)
 {
 	cfg.use_system_calls = val.bool_val;
+}
+
+/* Sets scope of a single tab. */
+static void
+tabscope_handler(OPT_OP op, optval_t val)
+{
+	/* Erase tabs on current scope before switching it. */
+	tabs_only(curr_view);
+	tabs_rename(curr_view, NULL);
+
+	cfg.pane_tabs = val.bool_val;
+	curr_stats.need_update = UT_REDRAW;
 }
 
 static void

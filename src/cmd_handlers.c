@@ -67,6 +67,7 @@
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/env.h"
 #include "utils/filter.h"
@@ -265,6 +266,9 @@ static void sync_location(const char path[], int cv, int sync_cursor_pos,
 		int sync_filters, int tree);
 static void sync_local_opts(int defer_slow);
 static void sync_filters(void);
+static int tabclose_cmd(const cmd_info_t *cmd_info);
+static int tabname_cmd(const cmd_info_t *cmd_info);
+static int tabnew_cmd(const cmd_info_t *cmd_info);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int get_at(const view_t *view, const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
@@ -292,8 +296,10 @@ static int windo_cmd(const cmd_info_t *cmd_info);
 static int winrun_cmd(const cmd_info_t *cmd_info);
 static int winrun(view_t *view, const char cmd[]);
 static int write_cmd(const cmd_info_t *cmd_info);
+static int qall_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static int wq_cmd(const cmd_info_t *cmd_info);
+static int wqall_cmd(const cmd_info_t *cmd_info);
 static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int get_reg(const char arg[], int *reg);
@@ -645,6 +651,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display current location",
 	  .flags = HAS_COMMENT,
 	  .handler = &pwd_cmd,         .min_args = 0,   .max_args = 0, },
+	{ .name = "qall",              .abbr = "qa",    .id = -1,
+	  .descr = "close all tabs and exit the application",
+	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .handler = &qall_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "qmap",              .abbr = "qm",    .id = COM_QMAP,
 	  .descr = "map keys in preview mode",
 	  .flags = HAS_RAW_ARGS,
@@ -654,7 +664,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &qnoremap_cmd,    .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "quit",              .abbr = "q",     .id = -1,
-	  .descr = "exit the application",
+	  .descr = "close a tab or exit the application",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "qunmap",            .abbr = "qun",   .id = -1,
@@ -741,6 +751,18 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "synchronize properties of views",
 	  .flags = HAS_EMARK | HAS_COMMENT | HAS_MACROS_FOR_CMD,
 	  .handler = &sync_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "tabclose",          .abbr = "tabc",  .id = -1,
+	  .descr = "close current tab unless it's the only one",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabclose_cmd,    .min_args = 0,   .max_args = 0, },
+	{ .name = "tabname",           .abbr = NULL,    .id = -1,
+	  .descr = "set name of current tab",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabname_cmd,     .min_args = 0,   .max_args = 1, },
+	{ .name = "tabnew",            .abbr = NULL,    .id = -1,
+	  .descr = "make new tab and switch to it",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabnew_cmd,      .min_args = 0,   .max_args = 1, },
 	{ .name = "touch",             .abbr = NULL,    .id = COM_TOUCH,
 	  .descr = "create files",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
@@ -825,9 +847,17 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_COMMENT,
 	  .handler = &write_cmd,       .min_args = 0,   .max_args = 0, },
 	{ .name = "wq",                .abbr = NULL,    .id = -1,
-	  .descr = "exit the application",
+	  .descr = "close a tab or exit the application",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &wq_cmd,          .min_args = 0,   .max_args = 0, },
+	{ .name = "wqall",             .abbr = "wqa",   .id = -1,
+	  .descr = "exit the application",
+	  .flags = HAS_EMARK | HAS_COMMENT,
+	  .handler = &wqall_cmd,       .min_args = 0,   .max_args = 0, },
+	{ .name = "xall",              .abbr = "xa",    .id = -1,
+	  .descr = "exit the application",
+	  .flags = HAS_COMMENT,
+	  .handler = &qall_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "xit",               .abbr = "x",     .id = -1,
 	  .descr = "exit the application",
 	  .flags = HAS_COMMENT,
@@ -3919,6 +3949,40 @@ sync_filters(void)
 	ui_view_schedule_reload(other_view);
 }
 
+/* Closes current tab unless it's the last one. */
+static int
+tabclose_cmd(const cmd_info_t *cmd_info)
+{
+	tabs_close();
+	return 0;
+}
+
+/* Sets, changes or resets name of current tab. */
+static int
+tabname_cmd(const cmd_info_t *cmd_info)
+{
+	tabs_rename(curr_view, cmd_info->argc == 0 ? NULL : cmd_info->argv[0]);
+	ui_views_update_titles();
+	return 0;
+}
+
+/* Creates a new tab.  Takes optional name of the new tab. */
+static int
+tabnew_cmd(const cmd_info_t *cmd_info)
+{
+	if(cfg.pane_tabs && curr_view->custom.type == CV_DIFF)
+	{
+		ui_sb_err("Switching tab of single pane would drop comparison");
+		return 1;
+	}
+	if(tabs_new(cmd_info->argc > 0 ? cmd_info->argv[0] : NULL) != 0)
+	{
+		ui_sb_err("Failed to open a new tab");
+		return 1;
+	}
+	return 0;
+}
+
 /* Creates files. */
 static int
 touch_cmd(const cmd_info_t *cmd_info)
@@ -4322,14 +4386,32 @@ write_cmd(const cmd_info_t *cmd_info)
 /* Possibly exits vifm normally with or without saving state to vifminfo
  * file. */
 static int
-quit_cmd(const cmd_info_t *cmd_info)
+qall_cmd(const cmd_info_t *cmd_info)
 {
 	vifm_try_leave(!cmd_info->emark, 0, cmd_info->emark);
 	return 0;
 }
 
+/* Possibly exits vifm normally with or without saving state to vifminfo file or
+ * closes a tab. */
+static int
+quit_cmd(const cmd_info_t *cmd_info)
+{
+	ui_quit(!cmd_info->emark, cmd_info->emark);
+	return 0;
+}
+
+/* Possibly exits the application saving vifminfo file or closes a tab. */
 static int
 wq_cmd(const cmd_info_t *cmd_info)
+{
+	ui_quit(1, cmd_info->emark);
+	return 0;
+}
+
+/* Possibly exits the application saving vifminfo file. */
+static int
+wqall_cmd(const cmd_info_t *cmd_info)
 {
 	vifm_try_leave(1, 0, cmd_info->emark);
 	return 0;

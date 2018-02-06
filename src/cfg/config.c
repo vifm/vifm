@@ -211,6 +211,9 @@ cfg_init(void)
 	cfg.sizefmt.base = 1024;
 	cfg.sizefmt.precision = 0;
 	cfg.sizefmt.ieci_prefixes = 0;
+
+	cfg.pane_tabs = 0;
+	cfg.show_tab_line = STL_MULTIPLE;
 }
 
 void

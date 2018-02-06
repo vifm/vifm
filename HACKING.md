@@ -25,7 +25,7 @@ Tests are available and can be run with `make check` in the root, `src/` or
 specific tests in several different modes, see comment inside the `Makefile`
 there for instructions.
 
-## Package content ##
+## Package contents ##
 
     .
     |
@@ -163,6 +163,7 @@ there for instructions.
     |  |  |-- quickview.c - implementation of quick view
     |  |  |-- statusbar.c - managing status bar
     |  |  |-- statusline.c - status line formatting
+    |  |  |-- tabs.c - implementation of tabs
     |  |  `-- ui.c - ui initialization and other ui related functions
     |  |
     |  |-- utils/ - miscellaneous utility functions and data types

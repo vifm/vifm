@@ -64,6 +64,10 @@ int flist_hist_find(const view_t *view, entries_t entries, const char dir[],
 void flist_hist_update(view_t *view, const char dir[], const char file[],
 		int rel_pos);
 
+/* Clones history of one view into another view (after clearing history of the
+ * destination). */
+void flist_hist_clone(view_t *dst, const view_t *src);
+
 #endif /* VIFM__FLIST_HIST_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

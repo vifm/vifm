@@ -25,6 +25,7 @@
 #include "ui/fileview.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "filelist.h"
@@ -420,6 +421,25 @@ find_hist_entry(const view_t *view, const char dir[])
 	}
 
 	return NULL;
+}
+
+void
+flist_hist_clone(view_t *dst, const view_t *src)
+{
+	int i;
+
+	free_view_history_items(dst->history, dst->history_num);
+	dst->history_pos = 0;
+	dst->history_num = 0;
+
+	for(i = 0; i < src->history_num; ++i)
+	{
+		const history_t *const hist_entry = &src->history[i];
+		flist_hist_save(dst, hist_entry->dir, hist_entry->file,
+				hist_entry->rel_pos);
+	}
+
+	dst->history_pos = MIN(src->history_pos, dst->history_num - 1);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

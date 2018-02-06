@@ -1504,6 +1504,8 @@ set_from_default_win(key_info_t *const key_info)
 int
 view_detached_draw(void)
 {
+	pick_vi(0);
+
 	if(vi == NULL || !vi->detached)
 	{
 		return 0;

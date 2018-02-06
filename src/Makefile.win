@@ -71,7 +71,7 @@ modes := $(dialogs) cmdline.c file_info.c menu.c modes.c more.c normal.c \
 modes := $(addprefix modes/, $(modes))
 
 ui := cancellation.c color_manager.c color_scheme.c column_view.c escape.c
-ui += fileview.c statusbar.c statusline.c quickview.c ui.c
+ui += fileview.c statusbar.c statusline.c tabs.c quickview.c ui.c
 ui := $(addprefix ui/, $(ui))
 
 utilities := cancellation.c dynarray.c env.c file_streams.c filemon.c filter.c \

@@ -1,6 +1,8 @@
 #include "../src/ui/ui.h"
 #include "../src/utils/macros.h"
 
+int vifm_tests_exited;
+
 void
 vifm_restart(void)
 {
@@ -10,7 +12,7 @@ vifm_restart(void)
 void
 vifm_try_leave(int write_info, int cquit, int force)
 {
-	/* Do nothing. */
+	vifm_tests_exited = 1;
 }
 
 void

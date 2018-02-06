@@ -191,6 +191,14 @@ $                                              *vifm-$*
 
 Space - switch file lists.                     *vifm-Space*
 
+                                               *vifm-gt*
+gt    - switch to the next tab (wrapping around).
+{n}gt - switch to the tab number {n}.
+
+                                               *vifm-gT*
+gT    - switch to the previous tab (wrapping around).
+{n}gT - switch to {n}-th previous tab (wrapping around).
+
 Movement with Count~
 
 Most movement commands also accept a count, 12j would move down 12 files.
@@ -1688,6 +1696,8 @@ Available group-name values:
          their content (e.g. regular files in views)
  - AuxWin - color of auxiliary areas of windows
  - Border - color of vertical parts of the border
+ - TabLine - tab line color
+ - TabLineSel - color of the tip of selected tab
  - TopLineSel - top line color of the current pane
  - TopLine - top line color of the other pane
  - CmdLine - the command line/status bar color
@@ -1858,6 +1868,8 @@ transparency:
             OtherLine
   TopLine
     TopLineSel
+  TabLine
+    TabLineSel
 
 "none" means default terminal color for highlight groups at the first level
 of the hierarchy and transparency for all others.
@@ -2021,9 +2033,14 @@ order using the '.' operator.  Any whitespace is ignored.
 :pw[d]                                         *vifm-:pwd* *vifm-:pw*
     display the present working directory.
 
-:q[uit][!]                                     *vifm-:quit* *vifm-:q*
+:qa[ll]!                                       *vifm-:qall* *vifm-:qa*
     exit vifm (add ! to skip saving changes and checking for active
     backgrounded commands).
+
+:q[uit][!]                                     *vifm-:quit* *vifm-:q*
+    if there is more than one tab, close the current one, otherwise exit
+    vifm (add ! to skip saving changes and checking for active backgrounded
+    commands).
 
 :redr[aw]                                      *vifm-:redraw* *vifm-:redr*
     redraw the screen immediately.
@@ -2225,6 +2242,16 @@ yet supported) and might be changed in future releases, or get an alias.
      - tree - tree structure for tree view (implies "location");
      - all - all of the above.
 
+:tabclose                                      *vifm-:tabclose* *vifm-:tabc*
+    close current tab, unless it's the only one open at current scope.
+
+:tabname [name]                                *vifm-:tabname*
+    set, update or reset (when no argument is provided) name of the current
+    tab.
+
+:tabnew [name]                                 *vifm-:tabnew*
+    create new tab.  Accepts optional name for the new tab.
+
 :[line]touch file...                           *vifm-:touch*
     create files at specified paths.  Aborts on errors.  Doesn't update time
     of existing files.  The [line] can be used to pick node in a tree-view.
@@ -2319,11 +2346,18 @@ yet supported) and might be changed in future releases, or get an alias.
     write current state to vifminfo file.
 
 :wq[!]                                         *vifm-:wq*
-    same as :quit, but "!" disables only check of backgrounded commands,
-    while vifminfo is always written.
+    same as |vifm-:quit|, but "!" disables only check of backgrounded
+    commands, while vifminfo is always written.
+
+:wqa[ll][!]                                    *vifm-:wqall* *vifm-:wqa*
+    same as |vifm-:qall|, but ! only disables check of backgrounded
+    commands.
+
+:xa[ll][!]                                     *vifm-:xall* *vifm-:xa*
+    same as |vifm-:qall|.
 
 :x[it][!]                                      *vifm-:xit* *vifm-:x*
-    exit vifm (add "!" if you don't want to save current state).
+    same as |vifm-:quit|.
 
 :[range]y[ank] [reg] [count]                   *vifm-:yank* *vifm-:y*
     yank files to the reg register.
@@ -3307,6 +3341,20 @@ of some message displayed by vifm in the TUI.  Flags:
       the command line.  "..." will appear in the middle.
   p - use tilde shortening in view titles.
 
+                                               *vifm-'showtabline'*
+                                               *vifm-'stal'*
+showtabline stal
+type: enumeration
+default: multiple
+
+Specifies when tab line should be displayed.  Possible values:
+ - never    - never display tab line
+ - multiple - show tab line only when there are at least two tabs
+ - always   - display tab line always
+
+Alternatively 0, 1 and 2 Vim-like values  are also accepted and correspond to
+"never", "multiple" and "always" respectively.
+
                                                 *vifm-'sizefmt'*
 sizefmt
 type: string list
@@ -3516,6 +3564,16 @@ When disabled, vifm will rely on external applications to perform file-system
 operations, otherwise system calls are used instead (much faster and supports
 progress tracking).  The option should eventually be removed.  Mostly
 *nix-like systems are affected.
+
+                                               *vifm-'tabscope'*
+tabscope
+type: enumeration
+default: global
+
+Picks style of tabs, which defines what a single tab contains.  Possible
+values:
+ - global - tab describes complete UI of two views and how they are arranged
+ - pane   - tab is located "inside" a pane and manages it and quick view
 
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts
@@ -4883,8 +4941,9 @@ Both types are set using |vifm-:colorscheme| command, but of different forms:
 
 Look of different parts of the TUI (Text User Interface) is determined in
 this way:
-   - Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine, JobLine,
-     SuggestBox and WildMenu are always determined by the primary color scheme
+   - Border, TabLine, TabLineSel, TopLineSel, TopLine, CmdLine, ErrorMsg,
+     StatusLine, JobLine, SuggestBox and WildMenu are always determined by
+     the primary color scheme
    - CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device,
      Executable, Fifo, CmpMismatch, Win and AuxWin are determined by primary
      color scheme and a set of local color schemes, which can be empty

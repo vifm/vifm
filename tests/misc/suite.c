@@ -2,6 +2,7 @@
 
 #include <string.h> /* strcpy() */
 
+#include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/background.h"
@@ -26,6 +27,8 @@ SETUP_ONCE()
 	saved_cwd = save_cwd();
 
 	bg_init();
+
+	tabs_init();
 }
 
 SETUP()

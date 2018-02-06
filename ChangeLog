@@ -4,6 +4,32 @@
 	e.g. '%{&sort}' evaluates to the value of the sort option.  Patch by Dmitry
 	Frank (a.k.a. dimonomid).
 
+	Added TabLine highlight group for highlighting tab line.
+
+	Added 'tabscope' option that controls style of tabs.  Thanks to Cosmin
+	Popescu (a.k.a. cosminadrianpopescu).
+
+	Added :tabnew command that creates a new tab.  Thanks to Cosmin
+	Popescu (a.k.a. cosminadrianpopescu).
+
+	Added :tabname command that updates name of the current tab.
+
+	Added :tabc[lose] command that closes current tab unless it's the last one.
+
+	Added :qa[ll], :wqa[ll] and :xa[ll] commands that always try to exit vifm no
+	matter how many tabs are open.
+
+	Added gt and gT normal mode shortcuts that switch between tabs in both
+	directions.
+
+	Added 'showtabline' option that controls visibility of tab line.
+
+	Added TabLineSel highlight group for highlighting tip of the selected tab
+	on the tab line.
+
+	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
+	closing the application.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

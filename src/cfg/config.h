@@ -80,6 +80,14 @@ typedef enum
 }
 ViewDirSize;
 
+/* Possible values of cfg.show_tab_line. */
+enum
+{
+	STL_NEVER,    /* Tab line should never be displayed. */
+	STL_MULTIPLE, /* Display tab line only if there are at least two tabs. */
+	STL_ALWAYS,   /* Display tab line always. */
+};
+
 /* Indexes for cfg.type_decs. */
 enum
 {
@@ -267,6 +275,10 @@ typedef struct config_t
 		int ieci_prefixes; /* When base is 1024, whether to say KiB instead of K. */
 	}
 	sizefmt;
+
+	/* Settings related to tabs. */
+	int pane_tabs;     /* Whether tabs are local to panes. */
+	int show_tab_line; /* When tab line should be displayed. */
 }
 config_t;
 

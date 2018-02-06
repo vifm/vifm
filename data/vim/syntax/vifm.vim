@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: September 18, 2017
+" Last Change: February 1, 2018
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -18,9 +18,10 @@ syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
 		\ delm[arks] di[splay] dirs e[dit] el[se] empty en[dif] exi[t] file fin[d]
 		\ fini[sh] gr[ep] h[elp] histnext his[tory] histprev jobs locate ls lstrash
 		\ marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t] pw[d]
-		\ q[uit] redr[aw] reg[isters] rename restart restore rlink screen sh[ell]
-		\ siblnext siblprev sor[t] sp[lit] s[ubstitute] touch tr trashes tree sync
-		\ undol[ist] ve[rsion] vie[w] vifm vs[plit] winc[md] w[rite] wq x[it] y[ank]
+		\ qa[ll] q[uit] redr[aw] reg[isters] rename restart restore rlink screen
+		\ sh[ell] siblnext siblprev sor[t] sp[lit] s[ubstitute] tabc[lose] tabname
+		\ tabnew touch tr trashes tree sync undol[ist] ve[rsion] vie[w] vifm
+		\ vs[plit] winc[md] w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
 		\ nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else
@@ -72,7 +73,7 @@ syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
 		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg CmpMismatch
-		\ AuxWin
+		\ AuxWin TabLine TabLineSel
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
@@ -127,10 +128,10 @@ syntax keyword vifmOption contained aproposprg autochpos caseoptions cdpath cd
 		\ lsoptions lsview milleroptions millerview mintimeoutlen number nu
 		\ numberwidth nuw previewprg relativenumber rnu rulerformat ruf runexec
 		\ scrollbind scb scrolloff so sort sortgroups sortorder sortnumbers shell sh
-		\ shortmess shm sizefmt slowfs smartcase scs statusline stl suggestoptions
-		\ syscalls tabstop timefmt timeoutlen title tm trash trashdir ts tuioptions
-		\ to undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu
-		\ wildstyle wordchars wrap wrapscan ws
+		\ shortmess shm showtabline stal sizefmt slowfs smartcase scs statusline stl
+		\ suggestoptions syscalls tabscope tabstop timefmt timeoutlen title tm trash
+		\ trashdir ts tuioptions to undolevels ul vicmd viewcolumns vifminfo vimhelp
+		\ vixcmd wildmenu wmnu wildstyle wordchars wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos nocf nochaselinks nodotfiles
