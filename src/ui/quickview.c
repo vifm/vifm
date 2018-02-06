@@ -159,8 +159,14 @@ qv_draw(view_t *view)
 	const dir_entry_t *curr;
 
 	if(curr_stats.load_stage < 2 || curr_stats.number_of_windows == 1 ||
-	   vle_mode_is(VIEW_MODE) || view_detached_draw())
+	   vle_mode_is(VIEW_MODE))
 	{
+		return;
+	}
+
+	if(view_detached_draw())
+	{
+		/* View mode handled the drawing. */
 		return;
 	}
 

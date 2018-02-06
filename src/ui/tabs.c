@@ -112,7 +112,7 @@ tabs_new(const char name[])
 			return 1;
 		}
 
-		assign_preview(&ptab->preview, &curr_stats.preview);
+		ptab->preview.on = curr_stats.preview.on;
 		tabs_goto(ptab - ptabs->tabs);
 		return 0;
 	}
