@@ -1897,6 +1897,12 @@ fixup_titles_attributes(const view_t *view, int active_view)
 {
 	col_attr_t col = cfg.cs.color[TOP_LINE_COLOR];
 
+	if(view->title == NULL)
+	{
+		/* Workaround for tests. */
+		return col;
+	}
+
 	if(active_view)
 	{
 		cs_mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
