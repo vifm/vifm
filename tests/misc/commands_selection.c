@@ -40,10 +40,14 @@ SETUP()
 	stats_update_shell_type(cfg.shell);
 
 	init_commands();
+
+	cfg_resize_histories(10);
 }
 
 TEARDOWN()
 {
+	cfg_resize_histories(0);
+
 	stats_update_shell_type("/bin/sh");
 	update_string(&cfg.shell, NULL);
 
