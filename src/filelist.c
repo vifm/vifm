@@ -556,9 +556,7 @@ change_directory(view_t *view, const char directory[])
 		canonicalize_path(newdir, dir_dup, sizeof(dir_dup));
 	}
 
-#ifdef _WIN32
-	to_forward_slash(dir_dup);
-#endif
+	system_to_internal_slashes(dir_dup);
 
 	if(cfg.chase_links)
 	{
@@ -568,9 +566,7 @@ change_directory(view_t *view, const char directory[])
 			/* Do this on success only, if realpath() fails, just go with the original
 			 * path. */
 			canonicalize_path(real_path, dir_dup, sizeof(dir_dup));
-#ifdef _WIN32
-			to_forward_slash(dir_dup);
-#endif
+			system_to_internal_slashes(dir_dup);
 		}
 	}
 

@@ -399,7 +399,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 		strncpy(buf, t, buf_len);
 	buf[buf_len - 1] = '\0';
 	free(t);
-	to_forward_slash(buf);
+	system_to_internal_slashes(buf);
 	return 0;
 #endif
 }

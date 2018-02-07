@@ -93,9 +93,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
 	static char buf[PATH_MAX];
 
 	copy_str(path_buf, sizeof(path_buf), path);
-#ifdef _WIN32
-	to_forward_slash(path_buf);
-#endif
+	system_to_internal_slashes(path_buf);
 
 	*mod_len = 2;
 	if(starts_with_lit(mod, ":p"))

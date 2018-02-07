@@ -268,7 +268,7 @@ try_userprofile_envvar_for_home(void)
 	if(userprofile == NULL || !is_dir(userprofile))
 		return 0;
 	copy_str(home, sizeof(home), userprofile);
-	to_forward_slash(home);
+	system_to_internal_slashes(home);
 	env_set(HOME_EV, home);
 	return 1;
 #endif
@@ -293,7 +293,7 @@ try_homepath_envvar_for_home(void)
 		return 0;
 
 	snprintf(home, sizeof(home), "%s%s", homedrive, homepath);
-	to_forward_slash(home);
+	system_to_internal_slashes(home);
 	env_set(HOME_EV, home);
 	return 1;
 #endif
@@ -391,7 +391,7 @@ try_appdata_for_conf(void)
 	if(appdata == NULL || !is_dir(appdata))
 		return 0;
 	snprintf(vifm, sizeof(vifm), "%s/Vifm", appdata);
-	to_forward_slash(vifm);
+	system_to_internal_slashes(vifm);
 	env_set(VIFM_EV, vifm);
 	return 1;
 #endif
@@ -853,7 +853,7 @@ cfg_set_fuse_home(const char new_value[])
 #ifdef _WIN32
 	char with_forward_slashes[strlen(new_value) + 1];
 	strcpy(with_forward_slashes, new_value);
-	to_forward_slash(with_forward_slashes);
+	system_to_internal_slashes(with_forward_slashes);
 	new_value = with_forward_slashes;
 #endif
 	canonicalize_path(new_value, canonicalized, sizeof(canonicalized));
