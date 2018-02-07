@@ -1,9 +1,12 @@
 #include <stic.h>
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() */
 
 #include "../../src/engine/functions.h"
+#include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
+#include "../../src/utils/env.h"
 #include "../../src/cmd_core.h"
 
 static var_t echo_builtin(const call_info_t *call_info);
@@ -12,6 +15,8 @@ SETUP_ONCE()
 {
 	static const function_t echo_function = { "a", "descr", 1, &echo_builtin };
 	assert_success(function_register(&echo_function));
+
+	init_parser(&env_get);
 }
 
 static var_t
