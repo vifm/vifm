@@ -1789,7 +1789,7 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 		widths[i] = utf8_strsw(title) + snprintf(title, 0U, "[%d:]", i + 1);
 		free(title);
 
-		if(tab_info.view == view)
+		if(tab_info.view == view && tabs_count(view) != 1)
 		{
 			left = MAX(max_width - widths[i], 0);
 			*avg_width = left/(tabs_count(view) - 1);
