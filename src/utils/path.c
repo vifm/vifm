@@ -807,7 +807,7 @@ system_to_internal_slashes(char path[])
 }
 
 void
-to_back_slash(char path[])
+internal_to_system_slashes(char path[])
 {
 	replace_char(path, '/', '\\');
 }

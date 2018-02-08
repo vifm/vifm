@@ -148,8 +148,8 @@ add_to_path(const char *path)
 	sprintf(new_path, "%s:%s", path, old_path);
 #else
 	sprintf(new_path, "%s;%s", path, old_path);
-	to_back_slash(new_path);
 #endif
+	internal_to_system_slashes(new_path);
 	env_set("PATH", new_path);
 
 	free(new_path);

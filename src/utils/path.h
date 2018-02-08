@@ -154,12 +154,15 @@ int is_unc_path(const char *path);
  * internally. */
 void system_to_internal_slashes(char path[]);
 
-void to_back_slash(char path[]);
+/* Replaces forward slashes used internally with slashes that are used by the
+ * system. */
+void internal_to_system_slashes(char path[]);
 
 #else
 
 #define is_unc_path(path) (0)
 #define system_to_internal_slashes(path) ((void)0)
+#define internal_to_system_slashes(path) ((void)0)
 
 #endif
 
