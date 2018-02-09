@@ -164,6 +164,10 @@ qv_draw(view_t *view)
 		return;
 	}
 
+	/* Viewers might use relative path, so try to make sure that we're at correct
+	 * location. */
+	(void)vifm_chdir(flist_get_dir(view));
+
 	if(view_detached_draw())
 	{
 		/* View mode handled the drawing. */

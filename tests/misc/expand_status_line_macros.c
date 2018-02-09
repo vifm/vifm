@@ -4,9 +4,11 @@
 #include <string.h> /* strchr() strcmp() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/parsing.h"
 #include "../../src/ui/statusline.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
 
@@ -29,6 +31,11 @@
 		free(expanded); \
 	} \
 	while(0)
+
+SETUP_ONCE()
+{
+	init_parser(&env_get);
+}
 
 SETUP()
 {
@@ -248,12 +255,7 @@ TEST(ignore_mismatched_closing_bracket)
 
 TEST(valid_expr)
 {
-	char *v = getenv("HOME");
-	if(v == NULL)
-	{
-		v = "";
-	}
-	ASSERT_EXPANDED_TO("%{$HOME}", v);
+	ASSERT_EXPANDED_TO("%{'a'.'b'}", "ab");
 }
 
 TEST(invalid_expr)

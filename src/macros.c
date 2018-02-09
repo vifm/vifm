@@ -390,12 +390,10 @@ append_selected_files(view_t *view, char expanded[], int under_cursor,
 		}
 	}
 
-#ifdef _WIN32
 	if(for_shell && curr_stats.shell_type == ST_CMD)
 	{
-		to_back_slash(expanded + old_len);
+		internal_to_system_slashes(expanded + old_len);
 	}
-#endif
 
 	return expanded;
 }
@@ -437,15 +435,13 @@ static char *
 expand_directory_path(view_t *view, char *expanded, int quotes, const char *mod,
 		int for_shell)
 {
-	const char *const modified = apply_mods(flist_get_dir(view), "/", mod, for_shell);
+	const char *modified = apply_mods(flist_get_dir(view), "/", mod, for_shell);
 	char *const result = append_path_to_expanded(expanded, quotes, modified);
 
-#ifdef _WIN32
 	if(for_shell && curr_stats.shell_type == ST_CMD)
 	{
-		to_back_slash(result);
+		internal_to_system_slashes(result);
 	}
-#endif
 
 	return result;
 }
@@ -482,12 +478,10 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 		}
 	}
 
-#ifdef _WIN32
 	if(for_shell && curr_stats.shell_type == ST_CMD)
 	{
-		to_back_slash(expanded);
+		internal_to_system_slashes(expanded);
 	}
-#endif
 
 	return expanded;
 }

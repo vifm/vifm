@@ -150,13 +150,19 @@ void build_path(char buf[], size_t buf_len, const char p1[], const char p2[]);
 
 int is_unc_path(const char *path);
 
-void to_forward_slash(char path[]);
+/* Replaces slashes that are used by the system with forward slashes used
+ * internally. */
+void system_to_internal_slashes(char path[]);
 
-void to_back_slash(char path[]);
+/* Replaces forward slashes used internally with slashes that are used by the
+ * system. */
+void internal_to_system_slashes(char path[]);
 
 #else
 
 #define is_unc_path(path) (0)
+#define system_to_internal_slashes(path) ((void)0)
+#define internal_to_system_slashes(path) ((void)0)
 
 #endif
 

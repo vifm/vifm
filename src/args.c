@@ -298,9 +298,7 @@ static void
 parse_path(const char dir[], const char path[], char buf[])
 {
 	strcpy(buf, path);
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
+	system_to_internal_slashes(buf);
 	if(is_path_absolute(buf) || strcmp(path, "-") == 0)
 	{
 		copy_str(buf, PATH_MAX, path);
@@ -322,9 +320,7 @@ parse_path(const char dir[], const char path[], char buf[])
 		chosp(buf);
 	}
 
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
+	system_to_internal_slashes(buf);
 }
 
 void

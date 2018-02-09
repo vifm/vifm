@@ -72,14 +72,12 @@ apply_mods(const char path[], const char parent[], const char mod[],
 		napplied++;
 	}
 
-#ifdef _WIN32
 	/* This is needed to run something like explorer.exe, which isn't smart enough
 	 * to understand forward slashes. */
 	if(for_shell && curr_stats.shell_type != ST_CMD && napplied == 0)
 	{
-		to_back_slash(buf);
+		internal_to_system_slashes(buf);
 	}
-#endif
 
 	return buf;
 }
@@ -93,9 +91,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
 	static char buf[PATH_MAX];
 
 	copy_str(path_buf, sizeof(path_buf), path);
-#ifdef _WIN32
-	to_forward_slash(path_buf);
-#endif
+	system_to_internal_slashes(path_buf);
 
 	*mod_len = 2;
 	if(starts_with_lit(mod, ":p"))
@@ -121,17 +117,15 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
 	else
 		return NULL;
 
-#ifdef _WIN32
 	/* This is needed to run something like explorer.exe, which isn't smart enough
 	 * to understand forward slashes. */
 	if(for_shell && curr_stats.shell_type != ST_CMD)
 	{
 		if(!starts_with_lit(mod, ":s") && !starts_with_lit(mod, ":gs"))
 		{
-			to_back_slash(buf);
+			internal_to_system_slashes(buf);
 		}
 	}
-#endif
 
 	return buf;
 }

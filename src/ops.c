@@ -326,7 +326,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 #else
 		char cmd[PATH_MAX*2 + 1];
 		snprintf(cmd, sizeof(cmd), "%s \"%s\"", delete_prg, src);
-		to_back_slash(cmd);
+		internal_to_system_slashes(cmd);
 
 		return os_system(cmd);
 #endif
@@ -357,7 +357,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 			int err;
 
 			copy_str(path, sizeof(path), src);
-			to_back_slash(path);
+			internal_to_system_slashes(path);
 
 			wchar_t *utf16_path = utf8_to_utf16(path);
 
@@ -478,7 +478,7 @@ op_cp(ops_t *ops, void *data, const char src[], const char dst[],
 		{
 			char cmd[6 + PATH_MAX*2 + 1];
 			snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" ", src, dst);
-			to_back_slash(cmd);
+			internal_to_system_slashes(cmd);
 
 			if(is_vista_and_above())
 				strcat(cmd, "/B ");

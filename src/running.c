@@ -376,7 +376,7 @@ execute_file(const char full_path[], int elevate)
 #else
 	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
 
-	to_back_slash(dquoted_full_path);
+	internal_to_system_slashes(dquoted_full_path);
 	run_win_executable(dquoted_full_path, elevate);
 
 	free(dquoted_full_path);

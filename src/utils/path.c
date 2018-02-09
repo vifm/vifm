@@ -775,9 +775,7 @@ void
 generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len)
 {
 	snprintf(buf, buf_len, "%s/%s", get_tmpdir(), prefix);
-#ifdef _WIN32
-	to_forward_slash(buf);
-#endif
+	system_to_internal_slashes(buf);
 	copy_str(buf, buf_len, make_name_unique(buf));
 }
 
@@ -803,13 +801,13 @@ is_unc_path(const char path[])
 }
 
 void
-to_forward_slash(char path[])
+system_to_internal_slashes(char path[])
 {
 	replace_char(path, '\\', '/');
 }
 
 void
-to_back_slash(char path[])
+internal_to_system_slashes(char path[])
 {
 	replace_char(path, '/', '\\');
 }

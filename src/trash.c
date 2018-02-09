@@ -617,9 +617,7 @@ pick_trash_dir(const char base_path[])
 	if(os_realpath(base_path, real_path) == real_path)
 	{
 		/* If realpath() fails, just go with the original path. */
-#ifdef _WIN32
-		to_forward_slash(real_path);
-#endif
+		system_to_internal_slashes(real_path);
 		base_path = real_path;
 	}
 

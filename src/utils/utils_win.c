@@ -498,7 +498,7 @@ get_exe_dir(char dir_buf[], size_t dir_buf_len)
 		return 1;
 	}
 
-	to_forward_slash(dir_buf);
+	system_to_internal_slashes(dir_buf);
 	break_atr(dir_buf, '/');
 	return 0;
 }
@@ -844,7 +844,7 @@ get_root_path(const char path[])
 	slash = until_first(after_first(path + 2, '/'), '/');
 	root = format_str("%.*s\\", (int)(slash - path), path);
 
-	to_forward_slash(root);
+	system_to_internal_slashes(root);
 	return root;
 }
 

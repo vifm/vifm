@@ -140,6 +140,7 @@ tabs_new_global(const char name[])
 	}
 	update_string(&new_tab.name, name);
 	capture_global_state(&new_tab);
+	new_tab.preview.on = curr_stats.preview.on;
 
 	DA_COMMIT(gtabs);
 
@@ -308,6 +309,7 @@ tabs_goto_global(int idx)
 	gtabs[current_tab].left.tabs[gtabs[current_tab].left.current].view = lwin;
 	gtabs[current_tab].right.tabs[gtabs[current_tab].right.current].view = rwin;
 	capture_global_state(&gtabs[current_tab]);
+	assign_preview(&gtabs[current_tab].preview, &curr_stats.preview);
 
 	lwin = gtabs[idx].left.tabs[gtabs[idx].left.current].view;
 	rwin = gtabs[idx].right.tabs[gtabs[idx].right.current].view;
@@ -338,7 +340,6 @@ capture_global_state(global_tab_t *gtab)
 	gtab->only_mode = (curr_stats.number_of_windows == 1);
 	gtab->split = curr_stats.split;
 	gtab->splitter_pos = curr_stats.splitter_pos;
-	assign_preview(&gtab->preview, &curr_stats.preview);
 }
 
 /* Assigns one instance of preview_t to another managing dynamic resources on
