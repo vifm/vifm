@@ -30,6 +30,9 @@
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
+	Fixed preview command not being run with correct working directory on
+	startup (e.g., when preview was on in vifminfo).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
