@@ -311,7 +311,7 @@ TEST(nested_directory_change_detection)
 
 	/* Use presumably older timestamp for directory to be changed (we need one
 	 * second difference). */
-	assert_success(os_lstat(TEST_DATA_PATH, &st1));
+	assert_success(os_stat(TEST_DATA_PATH, &st1));
 	clone_timestamps(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st1);
 
 	assert_success(os_lstat(SANDBOX_PATH "/nested-dir", &st2));
