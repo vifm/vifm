@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 05
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1641,6 +1641,11 @@ The builtin commands are:
     stop script sourcing.  Can only be used in a vifm script file.  This is a
     quick way to skip processing of the rest of the file without even parsing
     it.
+
+:go[to] path                                   *vifm-:goto* *vifm-:go*
+    change directory if necessary and put specified path under the cursor.
+    The path should be existing non-root path.  Macros and environment
+    variables are expanded.
 
                                                *vifm-:grep* *vifm-:gr*
 :[range]gr[ep][!] pattern

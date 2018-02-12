@@ -182,6 +182,7 @@ static int set_view_filter(view_t *view, const char filter[],
 static int get_filter_inversion_state(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
 static int finish_cmd(const cmd_info_t *cmd_info);
+static int goto_path_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
@@ -514,6 +515,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "stop script processing",
 	  .flags = HAS_COMMENT,
 	  .handler = &finish_cmd,      .min_args = 0,   .max_args = 0, },
+	{ .name = "goto",              .abbr = "go",    .id = COM_GOTO_PATH,
+	  .descr = "navigate to specified file/directory",
+	  .flags = HAS_ENVVARS | HAS_COMMENT | HAS_MACROS_FOR_CMD | HAS_QUOTED_ARGS,
+	  .handler = &goto_path_cmd,   .min_args = 1,   .max_args = 1, },
 	{ .name = "grep",              .abbr = "gr",    .id = COM_GREP,
 	  .descr = "query grep results",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_SELECTION_SCOPE,
@@ -2324,6 +2329,37 @@ finish_cmd(const cmd_info_t *cmd_info)
 	}
 
 	curr_stats.sourcing_state = SOURCING_FINISHING;
+	return 0;
+}
+
+/* Changes view to have specified file/directory under the cursor. */
+static int
+goto_path_cmd(const cmd_info_t *cmd_info)
+{
+	char abs_path[PATH_MAX + 1];
+	char *fname;
+
+	char *const expanded = expand_tilde(cmd_info->argv[0]);
+	to_canonic_path(expanded, flist_get_dir(curr_view), abs_path,
+			sizeof(abs_path));
+	free(expanded);
+
+	if(is_root_dir(abs_path))
+	{
+		ui_sb_errf("Can't navigate to root directory: %s", abs_path);
+		return 1;
+	}
+
+	if(!path_exists(abs_path, NODEREF))
+	{
+		ui_sb_errf("Path doesn't exist: %s", abs_path);
+		return 1;
+	}
+
+	fname = strdup(get_last_path_component(abs_path));
+	remove_last_path_component(abs_path);
+	navigate_to_file(curr_view, abs_path, fname, 0);
+	free(fname);
 	return 0;
 }
 

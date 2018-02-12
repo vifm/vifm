@@ -198,7 +198,8 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		}
 	}
 	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE ||
-			id == COM_SOURCE || id == COM_EDIT) && dollar != NULL && dollar > slash)
+			id == COM_SOURCE || id == COM_EDIT || id == COM_GOTO_PATH) &&
+			dollar != NULL && dollar > slash)
 	{
 		start = dollar + 1;
 		complete_envvar(start);

@@ -712,5 +712,22 @@ TEST(normal_command_does_not_reset_selection)
 	vle_keys_reset();
 }
 
+TEST(goto_command)
+{
+	char cmd[PATH_MAX*2];
+
+	assert_failure(exec_commands("goto /", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("goto /no-such-path", &lwin, CIT_COMMAND));
+
+	snprintf(cmd, sizeof(cmd), "goto %s/compare", test_data);
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, test_data));
+	assert_string_equal("compare", get_current_file_name(&lwin));
+
+	assert_success(exec_commands("goto tree", &lwin, CIT_COMMAND));
+	assert_true(paths_are_same(lwin.curr_dir, test_data));
+	assert_string_equal("tree", get_current_file_name(&lwin));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

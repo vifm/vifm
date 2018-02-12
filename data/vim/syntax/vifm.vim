@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: February 1, 2018
+" Last Change: February 12, 2018
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -16,11 +16,11 @@ set cpo-=C
 syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
 		\ chmod chown clone compare cope[n] co[py] cq[uit] d[elete] delbmarks
 		\ delm[arks] di[splay] dirs e[dit] el[se] empty en[dif] exi[t] file fin[d]
-		\ fini[sh] gr[ep] h[elp] histnext his[tory] histprev jobs locate ls lstrash
-		\ marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t] pw[d]
-		\ qa[ll] q[uit] redr[aw] reg[isters] rename restart restore rlink screen
-		\ sh[ell] siblnext siblprev sor[t] sp[lit] s[ubstitute] tabc[lose] tabname
-		\ tabnew touch tr trashes tree sync undol[ist] ve[rsion] vie[w] vifm
+		\ fini[sh] go[to] gr[ep] h[elp] histnext his[tory] histprev jobs locate ls
+		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t]
+		\ pw[d] qa[ll] q[uit] redr[aw] reg[isters] rename restart restore rlink
+		\ screen sh[ell] siblnext siblprev sor[t] sp[lit] s[ubstitute] tabc[lose]
+		\ tabname tabnew touch tr trashes tree sync undol[ist] ve[rsion] vie[w] vifm
 		\ vs[plit] winc[md] w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
 		\ nextgroup=vifmArgs
 

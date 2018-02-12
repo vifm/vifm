@@ -27,6 +27,9 @@
 	Added TabLineSel highlight group for highlighting tip of the selected tab
 	on the tab line.
 
+	Added :goto command that navigates to specified file/directory.  Thanks to
+	mateusz28 and Dmitry Frank (a.k.a. dimonomid).
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

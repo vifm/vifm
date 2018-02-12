@@ -378,6 +378,9 @@ wqall
 xa
 xal
 xall
+go
+got
+goto
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
