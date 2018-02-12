@@ -196,7 +196,7 @@ int flist_next_mismatch(const struct view_t *view);
  * isn't changed if no previous such entry is found. */
 int flist_prev_mismatch(const struct view_t *view);
 
-/* Remove dot and regexp filters if it's needed to make file visible.  Returns
+/* Removes dot and regexp filters if it's needed to make file visible.  Returns
  * non-zero if file was found. */
 int ensure_file_is_selected(struct view_t *view, const char name[]);
 
