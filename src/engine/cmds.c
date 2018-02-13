@@ -38,48 +38,6 @@
 #define MAX_CMD_NAME_LEN 256
 #define INVALID_MARK -4096
 
-typedef enum
-{
-	BUILTIN_ABBR,
-	BUILTIN_CMD,
-	USER_CMD,
-}
-CMD_TYPE;
-
-typedef struct cmd_t
-{
-	char *name;
-	const char *descr; /* Brief description of the command. */
-	int id;
-	CMD_TYPE type;
-	int passed;
-
-	cmd_handler handler; /* Handler for builtin commands. */
-	char *cmd;           /* Command-line for user-defined commands. */
-
-	int min_args, max_args;
-
-	unsigned int range : 1;            /* Handles ranges. */
-	unsigned int cust_sep : 1;         /* Custom separator of arguments. */
-	unsigned int emark : 1;            /* Supports emark flag. */
-	unsigned int envvars : 1;          /* Expand environment variables. */
-	unsigned int select : 1;           /* Select files in a range. */
-	unsigned int bg : 1;               /* Bg (can have " &" at the end). */
-	unsigned int noescaping : 1;       /* Don't process \-escaping in unquoted
-	                                      args. */
-	unsigned int regexp : 1;           /* Process /.../-arguments. */
-	unsigned int quote : 1;            /* Process '- and "-quoted args. */
-	unsigned int comment : 1;          /* Trailing comment is allowed. */
-	unsigned int qmark : 1;            /* No args after qmark. */
-	unsigned int args_after_qmark : 1; /* Args after qmark are allowed. */
-	unsigned int macros_for_cmd : 1;   /* Expand macros w/o special escaping. */
-	unsigned int macros_for_shell : 1; /* Expand macros with shell escaping. */
-	unsigned int : 0;                  /* Padding. */
-
-	struct cmd_t *next;
-}
-cmd_t;
-
 typedef struct
 {
 	cmd_t head;
