@@ -286,7 +286,7 @@ TEST(classify_does_not_stop_on_empty_prefix)
 
 	const char *prefix, *suffix;
 
-	assert_success(exec_commands("set classify=:dir:/,:link:@,:fifo:|", &lwin,
+	assert_success(exec_commands("set classify=:dir:/,:link:@,:fifo:\\|", &lwin,
 				CIT_COMMAND));
 
 	entry.type = FT_DIR;

@@ -39,6 +39,9 @@
 	Fixed completion for commands that follow "|" when they are preceded by
 	commands with complicated syntax like :substitute.
 
+	Fixed "|" not preceded with space being ignored as command separator for
+	some commands.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
