@@ -974,8 +974,7 @@ find_last_command(const char cmds[])
 			q += (p[1] == '|') ? 1 : 2;
 			p += 2;
 		}
-		else if(*p == '\0' || (*p == '|' &&
-				line_pos(cmds, q, ' ', starts_with_lit(cmds, "fil")) == 0))
+		else if(*p == '\0' || (*p == '|' && is_out_of_arg(cmds, q)))
 		{
 			if(*p != '\0')
 			{

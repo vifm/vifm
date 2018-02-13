@@ -36,6 +36,9 @@
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
+	Fixed completion for commands that follow "|" when they are preceded by
+	commands with complicated syntax like :substitute.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
