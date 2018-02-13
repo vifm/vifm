@@ -221,8 +221,9 @@ int get_cmd_id(const char cmd[]);
  * NULL if command is unknown or command-line is invalid. */
 const char * get_cmd_args(const char cmd[]);
 
-/* Returns command id */
-int get_cmd_info(const char cmd[], cmd_info_t *info);
+/* Breaks down passed command into its constituent parts.  Returns pointer to
+ * command's description or NULL on error. */
+const cmd_t * get_cmd_info(const char cmd[], cmd_info_t *info);
 
 /* Returns offset in cmd, where completion elements should be pasted. */
 int complete_cmd(const char cmd[], void *arg);

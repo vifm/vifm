@@ -885,9 +885,10 @@ get_cmdline_location(const char cmd[], const char pos[])
 	int regex_quoting;
 
 	cmd_info_t info;
-	const int cmd_id = get_cmd_info(cmd, &info);
+	const cmd_t *const c = get_cmd_info(cmd, &info);
+	const int id = (c == NULL ? -1 : c->id);
 
-	switch(cmd_id)
+	switch(id)
 	{
 		case COM_FILTER:
 			separator = ' ';

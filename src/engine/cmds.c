@@ -401,7 +401,8 @@ int
 get_cmd_id(const char cmd[])
 {
 	cmd_info_t info;
-	return get_cmd_info(cmd, &info);
+	const cmd_t *const c = get_cmd_info(cmd, &info);
+	return (c == NULL ? -1 : c->id);
 }
 
 const char *
@@ -432,29 +433,32 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->usr2 = 0;
 }
 
-/* Returns command id */
-int
+const cmd_t *
 get_cmd_info(const char cmd[], cmd_info_t *info)
 {
 	cmd_info_t cmd_info;
-	char cmd_name[MAX_CMD_NAME_LEN];
+	char cmd_name[MAX_CMD_NAME_LEN + 1];
 	cmd_t *c;
 
 	init_cmd_info(&cmd_info);
 
 	cmd = parse_range(cmd, &cmd_info);
 	if(cmd == NULL)
-		return CMDS_ERR_INVALID_CMD;
+	{
+		return NULL;
+	}
 
 	cmd = get_cmd_name(cmd, cmd_name, sizeof(cmd_name));
 	c = find_cmd(cmd_name);
 	if(c == NULL)
-		return -1;
+	{
+		return NULL;
+	}
 
 	cmd_info.raw_args = (char *)parse_tail(c, cmd, &cmd_info);
 
 	*info = cmd_info;
-	return c->id;
+	return c;
 }
 
 int
