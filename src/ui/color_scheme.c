@@ -1085,6 +1085,7 @@ cs_del_file_hi(const char matchers_expr[])
 	{
 		if(strcmp(matchers_get_expr(cs->file_hi[i].matchers), matchers_expr) == 0)
 		{
+			matchers_free(cs->file_hi[i].matchers);
 			memmove(&cs->file_hi[i], &cs->file_hi[i + 1],
 					sizeof(*cs->file_hi)*((cs->file_hi_count - 1) - i));
 			--cs->file_hi_count;
