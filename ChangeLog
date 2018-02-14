@@ -47,6 +47,9 @@
 	Fixed file-specific highlighting being added even when :highlight command
 	contains syntax error.
 
+	Fixed highlight group being partially updated by :highlight command with
+	incorrect syntax.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

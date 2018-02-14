@@ -2567,6 +2567,7 @@ highlight_group(const cmd_info_t *cmd_info)
 {
 	int result;
 	int group_id;
+	col_attr_t tmp_color;
 	col_attr_t *color;
 
 	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR, cmd_info->argv[0]);
@@ -2584,8 +2585,14 @@ highlight_group(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	result = parse_file_highlight(cmd_info, color);
+	tmp_color = *color;
+	result = parse_file_highlight(cmd_info, &tmp_color);
+	if(result != 0)
+	{
+		return result;
+	}
 
+	*color = tmp_color;
 	curr_stats.cs->pair[group_id] = colmgr_get_pair(color->fg, color->bg);
 
 	/* Other highlight commands might have finished successfully, so update TUI.

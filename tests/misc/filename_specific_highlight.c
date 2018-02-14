@@ -22,6 +22,32 @@ SETUP()
 	curr_stats.cs = &cfg.cs;
 }
 
+/* Generic groups. */
+
+TEST(color_is_set)
+{
+	const char *const COMMANDS = "hi Win ctermfg=red ctermbg=red cterm=bold";
+
+	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
+	curr_stats.cs->color[WIN_COLOR].bg = COLOR_BLUE;
+	curr_stats.cs->color[WIN_COLOR].attr = 0;
+	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].fg);
+	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].bg);
+	assert_int_equal(A_BOLD, curr_stats.cs->color[WIN_COLOR].attr);
+}
+
+TEST(original_color_is_unchanged_on_parsing_error)
+{
+	const char *const COMMANDS = "highlight Win ctermfg=red ctersmbg=red";
+
+	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(COLOR_BLUE, curr_stats.cs->color[WIN_COLOR].fg);
+}
+
+/* File-specific highlight. */
+
 TEST(empty_curly_braces)
 {
 	const char *const COMMANDS = "highlight {} ctermfg=red";
