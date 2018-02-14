@@ -44,6 +44,9 @@
 
 	Fixed memory leak on `:highlight clear {file-specific-group}`.
 
+	Fixed file-specific highlighting being added even when :highlight command
+	contains syntax error.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

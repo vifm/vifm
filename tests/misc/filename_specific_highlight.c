@@ -162,5 +162,12 @@ TEST(records_can_be_removed)
 	assert_int_equal(0, cfg.cs.file_hi_count);
 }
 
+TEST(incorrect_highlight_groups_are_not_added)
+{
+	const char *const COMMANDS = "highlight {*.jpg} ctersmfg=red";
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cfg.cs.file_hi_count);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

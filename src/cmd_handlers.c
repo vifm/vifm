@@ -2521,6 +2521,12 @@ highlight_file(const cmd_info_t *cmd_info)
 	}
 
 	result = parse_file_highlight(cmd_info, &color);
+	if(result != 0)
+	{
+		matchers_free(matchers);
+		return result;
+	}
+
 	cs_add_file_hi(matchers, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
@@ -2664,8 +2670,8 @@ get_hi_str(const char title[], const col_attr_t *col)
 	return buf;
 }
 
-/* Parses arguments of :highlight command.  Returns non-zero in case something
- * was output to the status bar, otherwise zero is returned. */
+/* Parses arguments of :highlight command.  Returns non-zero in case of error
+ * and prints a message on the status bar, on success zero is returned. */
 static int
 parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 {
