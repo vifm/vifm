@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 05, 2018" "vifm 0.9.1"
+.TH VIFM 1 "February 12, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1934,6 +1934,13 @@ repeat last :find command.
 .BI :fini[sh]
 stop sourcing a script. Can only be used in a vifm script file. This is a quick
 way to skip the rest of the file.
+.TP
+.BI "                                         :goto"
+.TP
+.BI :go[to]
+change directory if necessary and put specified path under the cursor.
+The path should be existing non-root path.  Macros and environment
+variables are expanded.
 .TP
 .BI "                                         :grep"
 .TP

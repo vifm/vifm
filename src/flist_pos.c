@@ -848,7 +848,7 @@ ensure_file_is_selected(view_t *view, const char name[])
 	return file_pos >= 0;
 }
 
-/* Checks if file specified can be displayed. Used to filter some files, that
+/* Checks if file specified can be displayed.  Used to filter some files, that
  * are hidden intentionally.  Returns non-zero if file can be made visible. */
 static int
 file_can_be_displayed(const char directory[], const char filename[])

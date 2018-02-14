@@ -27,11 +27,20 @@
 	Added TabLineSel highlight group for highlighting tip of the selected tab
 	on the tab line.
 
+	Added :goto command that navigates to specified file/directory.  Thanks to
+	mateusz28 and Dmitry Frank (a.k.a. dimonomid).
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
+
+	Fixed completion for commands that follow "|" when they are preceded by
+	commands with complicated syntax like :substitute.
+
+	Fixed "|" not preceded with space being ignored as command separator for
+	some commands.
 
 0.9.1-beta to 0.9.1
 

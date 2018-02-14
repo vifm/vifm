@@ -27,6 +27,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <errno.h> /* errno */
+#include <limits.h> /* INT_MAX */
 #include <signal.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
@@ -116,7 +117,7 @@ static int cmd_should_be_processed(int cmd_id);
 TSTATIC char ** break_cmdline(const char cmdline[], int for_menu);
 static int is_out_of_arg(const char cmd[], const char pos[]);
 TSTATIC int line_pos(const char begin[], const char end[], char sep,
-		int rquoting);
+		int rquoting, int max_args);
 static CmdArgsType get_cmd_args_type(const char cmd[]);
 static char * skip_to_cmd_name(const char cmd[]);
 static int repeat_command(view_t *view, CmdInputType type);
@@ -607,11 +608,13 @@ cmd_should_be_processed(int cmd_id)
  *  - 4, if inside double quoted argument;
  *  - 5, if inside regexp quoted argument. */
 TSTATIC int
-line_pos(const char begin[], const char end[], char sep, int rquoting)
+line_pos(const char begin[], const char end[], char sep, int rquoting,
+		int max_args)
 {
 	int state;
 	int count;
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
+	int args_left = max_args;
 
 	const char *args = get_cmd_args(begin);
 	if(args >= end)
@@ -643,7 +646,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 				else if(*begin == '&' && begin == end - 1)
 					state = BEGIN;
 				else if(*begin != sep)
-					state = NO_QUOTING;
+					state = rquoting ? R_QUOTING : NO_QUOTING;
 				break;
 			case NO_QUOTING:
 				if(*begin == sep)
@@ -683,9 +686,12 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 				}
 				break;
 			case R_QUOTING:
-				if(*begin == '/')
+				if(*begin == '/' || (sep == ' ' && *begin == ' '))
 				{
-					state = BEGIN;
+					if(--args_left == 0)
+					{
+						state = BEGIN;
+					}
 				}
 				else if(*begin == '\\')
 				{
@@ -716,7 +722,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting)
 		{
 			case S_QUOTING: return 3;
 			case D_QUOTING: return 4;
-			case R_QUOTING: return 5;
+			case R_QUOTING: return (max_args <= 1 || args_left > 1 ? 5 : 2);
 
 			default:
 				assert(0 && "Unexpected state.");
@@ -868,11 +874,18 @@ is_out_of_arg(const char cmd[], const char pos[])
 {
 	const CmdLineLocation location = get_cmdline_location(cmd, pos);
 
-	if(location == CLL_NO_QUOTING && get_cmd_args_type(cmd) == CAT_EXPR &&
-			pos != cmd && *pos == '|' && pos[-1] != '|' && pos[1] != '|')
+	if(location == CLL_NO_QUOTING)
 	{
-		/* For "*[^|]|[^|]*" report that we're out of argument. */
-		return 1;
+		if(get_cmd_args_type(cmd) == CAT_REGULAR)
+		{
+			return 1;
+		}
+		if(get_cmd_args_type(cmd) == CAT_EXPR &&
+				pos != cmd && *pos == '|' && pos[-1] != '|' && pos[1] != '|')
+		{
+			/* For "*[^|]|[^|]*" report that we're out of argument. */
+			return 1;
+		}
 	}
 
 	return location == CLL_OUT_OF_ARG;
@@ -885,10 +898,15 @@ get_cmdline_location(const char cmd[], const char pos[])
 	int regex_quoting;
 
 	cmd_info_t info;
-	const int cmd_id = get_cmd_info(cmd, &info);
+	const cmd_t *const c = get_cmd_info(cmd, &info);
+	const int id = (c == NULL ? -1 : c->id);
+	const int max_args = (c == NULL)
+	                   ? -1
+	                   : (c->max_args == NOT_DEF ? INT_MAX : c->max_args);
 
-	switch(cmd_id)
+	switch(id)
 	{
+		case COM_HIGHLIGHT:
 		case COM_FILTER:
 			separator = ' ';
 			regex_quoting = 1;
@@ -905,7 +923,7 @@ get_cmdline_location(const char cmd[], const char pos[])
 			break;
 	}
 
-	switch(line_pos(cmd, pos, separator, regex_quoting))
+	switch(line_pos(cmd, pos, separator, regex_quoting, max_args))
 	{
 		case 0: return CLL_OUT_OF_ARG;
 		case 1: /* Fall through. */
@@ -974,8 +992,7 @@ find_last_command(const char cmds[])
 			q += (p[1] == '|') ? 1 : 2;
 			p += 2;
 		}
-		else if(*p == '\0' || (*p == '|' &&
-				line_pos(cmds, q, ' ', starts_with_lit(cmds, "fil")) == 0))
+		else if(*p == '\0' || (*p == '|' && is_out_of_arg(cmds, q)))
 		{
 			if(*p != '\0')
 			{

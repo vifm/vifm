@@ -67,6 +67,15 @@ enum
 	NOT_DEF = -8192,
 };
 
+/* Command type. */
+typedef enum
+{
+	BUILTIN_ABBR, /* Abbreviated version of a builtin command (like `:com`). */
+	BUILTIN_CMD,  /* Builtin command. */
+	USER_CMD,     /* User-defined command. */
+}
+CMD_TYPE;
+
 /* Detailed information resulted from command parsing, which is passed to
  * command handler (cmd_handler). */
 typedef struct cmd_info_t
@@ -89,7 +98,45 @@ typedef struct cmd_info_t
 }
 cmd_info_t;
 
+/* Type of command handler.  Shouldn't return negative numbers unless it's one
+ * of CMDS_ERR_* constants.  Either way the return value will be the return
+ * value of execute_cmd() function. */
 typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
+
+/* Description of a command or an abbreviation. */
+typedef struct cmd_t
+{
+	char *name;        /* Name of the command. */
+	const char *descr; /* Brief description of the command. */
+	int id;            /* Numeric identifier, positive, USER_CMD_ID or -1. */
+	CMD_TYPE type;     /* Type of command described by this structure. */
+	int passed;        /* Number of times this command was recursively called. */
+
+	cmd_handler handler; /* Handler for builtin commands. */
+	char *cmd;           /* Command-line for user-defined commands. */
+
+	int min_args, max_args; /* Min and max number of arguments, can be NOT_DEF. */
+
+	unsigned int range : 1;            /* Handles ranges. */
+	unsigned int cust_sep : 1;         /* Custom separator of arguments. */
+	unsigned int emark : 1;            /* Supports emark flag. */
+	unsigned int envvars : 1;          /* Expand environment variables. */
+	unsigned int select : 1;           /* Select files in a range. */
+	unsigned int bg : 1;               /* Bg (can have " &" at the end). */
+	unsigned int noescaping : 1;       /* Don't process \-escaping in unquoted
+	                                      args. */
+	unsigned int regexp : 1;           /* Process /.../-arguments. */
+	unsigned int quote : 1;            /* Process '- and "-quoted args. */
+	unsigned int comment : 1;          /* Trailing comment is allowed. */
+	unsigned int qmark : 1;            /* No args after qmark. */
+	unsigned int args_after_qmark : 1; /* Args after qmark are allowed. */
+	unsigned int macros_for_cmd : 1;   /* Expand macros w/o special escaping. */
+	unsigned int macros_for_shell : 1; /* Expand macros with shell escaping. */
+	unsigned int : 0;                  /* Padding. */
+
+	struct cmd_t *next; /* Pointer to the next structure or NULL. */
+}
+cmd_t;
 
 /* Possible flags for cmd_add_t::flags field. */
 enum
@@ -174,8 +221,9 @@ int get_cmd_id(const char cmd[]);
  * NULL if command is unknown or command-line is invalid. */
 const char * get_cmd_args(const char cmd[]);
 
-/* Returns command id */
-int get_cmd_info(const char cmd[], cmd_info_t *info);
+/* Breaks down passed command into its constituent parts.  Returns pointer to
+ * command's description or NULL on error. */
+const cmd_t * get_cmd_info(const char cmd[], cmd_info_t *info);
 
 /* Returns offset in cmd, where completion elements should be pasted. */
 int complete_cmd(const char cmd[], void *arg);
