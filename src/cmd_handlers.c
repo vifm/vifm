@@ -2503,7 +2503,7 @@ highlight_file(const cmd_info_t *cmd_info)
 	matchers_t *matchers;
 	char *error;
 
-	(void)extract_part(cmd_info->args, ' ', pattern);
+	(void)extract_part(cmd_info->args, " ", pattern);
 
 	matchers = matchers_alloc(pattern, 0, 1, "", &error);
 	if(matchers == NULL)
