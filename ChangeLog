@@ -33,6 +33,9 @@
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
+	More explicit documentation about leaving custom views.  Thanks to
+	Desperados.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 12
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -160,7 +160,8 @@ gg - move to the first line of the file list.  *vifm-gg*
 G  - move to the last line in the file list.   *vifm-G*
 
 gh                                             *vifm-gh*
-    go up one directory.
+    go up one directory regardless of view representation (regular,
+    ls-like).  Also can be used to leave custom views including tree view.
 gl or Enter                                    *vifm-gl* *vifm-Enter*
     enter directory or launch a file.
 
@@ -2276,14 +2277,19 @@ yet supported) and might be changed in future releases, or get an alias.
     same as :trashes, but also displays size of each trash directory.
 
 :tree                                          *vifm-:tree*
-    turn pane into tree view with current directory as a root.  The tree
+    turn pane into tree view with current directory as its root.  The tree
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
     structure corresponds to what one would see on visiting the directories
     manually.  As a special case for trees built out of custom view
-    file-system tracking isn't performed.  Tree structure is incompatible
-    with alternative representations, so values of |vifm-'lsview'| and
-    |vifm-'millerview'| options are ignored.
+    file-system tracking isn't performed.
+
+    To leave tree view go up from its root or use |vifm-gh| at any level of
+    the tree.  Any command that changes directory will also do, in
+    particular, `:cd ..`
+
+    Tree structure is incompatible with alternative representations, so
+    values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.

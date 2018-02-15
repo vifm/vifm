@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 12, 2018" "vifm 0.9.1"
+.TH VIFM 1 "February 15, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -147,7 +147,8 @@ move to the first line of the file list.
 move to the last line in the file list.
 .TP
 .BI gh
-go up one directory.
+go up one directory regardless of view representation (regular, ls-like).  Also
+can be used to leave custom views including tree view.
 .TP
 .BI "gl or Enter"
 enter directory or launch a file.
@@ -2727,12 +2728,16 @@ same as :trashes, but also displays size of each trash directory.
 .BI "                                         :tree"
 .TP
 .BI :tree
-turn pane into tree view with current directory as a root.  The tree view is
+turn pane into tree view with current directory as its root.  The tree view is
 implemented on top of a custom view, but is automatically kept in sync with
 file system state and considers all the filters.  Thus the structure corresponds
 to what one would see on visiting the directories manually.  As a special case
-for trees built out of custom view file-system tracking isn't performed.  Tree
-structure is incompatible with alternative representations, so values of
+for trees built out of custom view file-system tracking isn't performed.
+
+To leave tree view go up from its root or use gh at any level of the tree.  Any
+command that changes directory will also do, in particular, `:cd ..`.
+
+Tree structure is incompatible with alternative representations, so values of
 \'lsview' and 'millerview' options are ignored.
 .TP
 .BI "                                         :undolist"
