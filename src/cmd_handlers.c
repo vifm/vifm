@@ -2503,7 +2503,7 @@ highlight_file(const cmd_info_t *cmd_info)
 	matchers_t *matchers;
 	char *error;
 
-	(void)extract_part(cmd_info->args, ' ', pattern);
+	(void)extract_part(cmd_info->args, " \t", pattern);
 
 	matchers = matchers_alloc(pattern, 0, 1, "", &error);
 	if(matchers == NULL)
@@ -2521,6 +2521,12 @@ highlight_file(const cmd_info_t *cmd_info)
 	}
 
 	result = parse_file_highlight(cmd_info, &color);
+	if(result != 0)
+	{
+		matchers_free(matchers);
+		return result;
+	}
+
 	cs_add_file_hi(matchers, &color);
 
 	/* Redraw is enough to update filename specific highlights. */
@@ -2561,6 +2567,7 @@ highlight_group(const cmd_info_t *cmd_info)
 {
 	int result;
 	int group_id;
+	col_attr_t tmp_color;
 	col_attr_t *color;
 
 	group_id = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR, cmd_info->argv[0]);
@@ -2578,8 +2585,14 @@ highlight_group(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	result = parse_file_highlight(cmd_info, color);
+	tmp_color = *color;
+	result = parse_file_highlight(cmd_info, &tmp_color);
+	if(result != 0)
+	{
+		return result;
+	}
 
+	*color = tmp_color;
 	curr_stats.cs->pair[group_id] = colmgr_get_pair(color->fg, color->bg);
 
 	/* Other highlight commands might have finished successfully, so update TUI.
@@ -2664,8 +2677,8 @@ get_hi_str(const char title[], const col_attr_t *col)
 	return buf;
 }
 
-/* Parses arguments of :highlight command.  Returns non-zero in case something
- * was output to the status bar, otherwise zero is returned. */
+/* Parses arguments of :highlight command.  Returns non-zero in case of error
+ * and prints a message on the status bar, on success zero is returned. */
 static int
 parse_file_highlight(const cmd_info_t *cmd_info, col_attr_t *color)
 {

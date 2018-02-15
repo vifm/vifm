@@ -22,6 +22,32 @@ SETUP()
 	curr_stats.cs = &cfg.cs;
 }
 
+/* Generic groups. */
+
+TEST(color_is_set)
+{
+	const char *const COMMANDS = "hi Win ctermfg=red ctermbg=red cterm=bold";
+
+	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
+	curr_stats.cs->color[WIN_COLOR].bg = COLOR_BLUE;
+	curr_stats.cs->color[WIN_COLOR].attr = 0;
+	assert_success(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].fg);
+	assert_int_equal(COLOR_RED, curr_stats.cs->color[WIN_COLOR].bg);
+	assert_int_equal(A_BOLD, curr_stats.cs->color[WIN_COLOR].attr);
+}
+
+TEST(original_color_is_unchanged_on_parsing_error)
+{
+	const char *const COMMANDS = "highlight Win ctermfg=red ctersmbg=red";
+
+	curr_stats.cs->color[WIN_COLOR].fg = COLOR_BLUE;
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(COLOR_BLUE, curr_stats.cs->color[WIN_COLOR].fg);
+}
+
+/* File-specific highlight. */
+
 TEST(empty_curly_braces)
 {
 	const char *const COMMANDS = "highlight {} ctermfg=red";
@@ -160,6 +186,43 @@ TEST(records_can_be_removed)
 	assert_int_equal(1, cfg.cs.file_hi_count);
 	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
 	assert_int_equal(0, cfg.cs.file_hi_count);
+}
+
+TEST(incorrect_highlight_groups_are_not_added)
+{
+	const char *const COMMANDS = "highlight {*.jpg} ctersmfg=red";
+	assert_failure(exec_commands(COMMANDS, &lwin, CIT_COMMAND));
+	assert_int_equal(0, cfg.cs.file_hi_count);
+}
+
+TEST(tabs_are_allowed)
+{
+	const char *const COMMANDS1 = "highlight\t{*.jpg} ctermfg=red\tctermbg=blue";
+	const char *const COMMANDS2 = "highlight {*.avi}\tctermfg=red";
+	const char *const COMMANDS3 = "highlight\t{*.mp3}\tctermfg=red";
+
+	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.cs.file_hi_count);
+	assert_success(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_int_equal(2, cfg.cs.file_hi_count);
+	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
+	assert_int_equal(3, cfg.cs.file_hi_count);
+
+	if(cfg.cs.file_hi_count > 0)
+	{
+		assert_string_equal("{*.jpg}",
+				matchers_get_expr(cfg.cs.file_hi[0].matchers));
+	}
+	if(cfg.cs.file_hi_count > 1)
+	{
+		assert_string_equal("{*.avi}",
+				matchers_get_expr(cfg.cs.file_hi[1].matchers));
+	}
+	if(cfg.cs.file_hi_count > 2)
+	{
+		assert_string_equal("{*.mp3}",
+				matchers_get_expr(cfg.cs.file_hi[2].matchers));
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

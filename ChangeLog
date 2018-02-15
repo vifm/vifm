@@ -33,6 +33,9 @@
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
+	More explicit documentation about leaving custom views.  Thanks to
+	Desperados.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
@@ -41,6 +44,17 @@
 
 	Fixed "|" not preceded with space being ignored as command separator for
 	some commands.
+
+	Fixed memory leak on `:highlight clear {file-specific-group}`.
+
+	Fixed file-specific highlighting being added even when :highlight command
+	contains syntax error.
+
+	Fixed highlight group being partially updated by :highlight command with
+	incorrect syntax.
+
+	Fixed parsing of :highlight command when tabulation is used to separate
+	arguments.  Thanks to Robert Pergl (a.k.a. perglr).
 
 0.9.1-beta to 0.9.1
 

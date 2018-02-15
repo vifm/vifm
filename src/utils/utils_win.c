@@ -359,7 +359,7 @@ is_win_executable(const char name[])
 	strtoupper(name_buf);
 
 	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
-	while((p = extract_part(p, ';', ext_buf)) != NULL)
+	while((p = extract_part(p, ";", ext_buf)) != NULL)
 	{
 		strtoupper(ext_buf);
 		if(ends_with(name_buf, ext_buf))
@@ -480,7 +480,7 @@ executable_exists(const char path[])
 	pos = strlen(path_buf);
 
 	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
-	while((p = extract_part(p, ';', path_buf + pos)) != NULL)
+	while((p = extract_part(p, ";", path_buf + pos)) != NULL)
 	{
 		if(path_exists(path_buf, DEREF) && !is_dir(path_buf))
 		{

@@ -27,7 +27,7 @@
 #include <stdlib.h> /* free() malloc() mbstowcs() memmove() memset() realloc()
                        strtol() wcstombs() */
 #include <string.h> /* strdup() strncmp() strlen() strcmp() strchr() strrchr()
-                       strncpy() */
+                       strncpy() strcspn() strspn() */
 #include <wchar.h> /* wint_t vswprintf() */
 #include <wctype.h> /* iswprint() iswupper() towlower() towupper() */
 
@@ -643,17 +643,17 @@ vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...)
 }
 
 const char *
-extract_part(const char str[], char separator, char part_buf[])
+extract_part(const char str[], const char separators[], char part_buf[])
 {
 	const char *end = NULL;
-	str = skip_char(str, separator);
+	str += strspn(str, separators);
 	if(str[0] != '\0')
 	{
-		end = until_first(str, separator);
+		end = str + strcspn(str, separators);
 		copy_str(part_buf, end - str + 1, str);
 		if(*end != '\0')
 		{
-			end++;
+			++end;
 		}
 	}
 	return end;

@@ -198,9 +198,10 @@ char * break_in_two(char str[], size_t max);
  * platforms transparently in other parts of the program. */
 int vifm_swprintf(wchar_t str[], size_t len, const wchar_t format[], ...);
 
-/* Extracts next non-empty part of string with separators.  Returns pointer to
- * the beginning of the next part or NULL at the end of a string. */
-const char * extract_part(const char str[], char separator, char part_buf[]);
+/* Extracts non-empty part of the string with separators.  Returns pointer to
+ * the beginning of the next part or NULL at the end of the string. */
+const char * extract_part(const char str[], const char separators[],
+		char part_buf[]);
 
 /* Skips all leading characters of the str which are equal to the c. */
 char * skip_char(const char str[], char c);
