@@ -53,6 +53,9 @@
 	Fixed highlight group being partially updated by :highlight command with
 	incorrect syntax.
 
+	Fixed parsing of :highlight command when tabulation is used to separate
+	arguments.  Thanks to Robert Pergl (a.k.a. perglr).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

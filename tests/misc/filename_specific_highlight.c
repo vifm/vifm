@@ -195,5 +195,35 @@ TEST(incorrect_highlight_groups_are_not_added)
 	assert_int_equal(0, cfg.cs.file_hi_count);
 }
 
+TEST(tabs_are_allowed)
+{
+	const char *const COMMANDS1 = "highlight\t{*.jpg} ctermfg=red\tctermbg=blue";
+	const char *const COMMANDS2 = "highlight {*.avi}\tctermfg=red";
+	const char *const COMMANDS3 = "highlight\t{*.mp3}\tctermfg=red";
+
+	assert_success(exec_commands(COMMANDS1, &lwin, CIT_COMMAND));
+	assert_int_equal(1, cfg.cs.file_hi_count);
+	assert_success(exec_commands(COMMANDS2, &lwin, CIT_COMMAND));
+	assert_int_equal(2, cfg.cs.file_hi_count);
+	assert_success(exec_commands(COMMANDS3, &lwin, CIT_COMMAND));
+	assert_int_equal(3, cfg.cs.file_hi_count);
+
+	if(cfg.cs.file_hi_count > 0)
+	{
+		assert_string_equal("{*.jpg}",
+				matchers_get_expr(cfg.cs.file_hi[0].matchers));
+	}
+	if(cfg.cs.file_hi_count > 1)
+	{
+		assert_string_equal("{*.avi}",
+				matchers_get_expr(cfg.cs.file_hi[1].matchers));
+	}
+	if(cfg.cs.file_hi_count > 2)
+	{
+		assert_string_equal("{*.mp3}",
+				matchers_get_expr(cfg.cs.file_hi[2].matchers));
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
