@@ -782,10 +782,13 @@ local_filter_apply(view_t *view, const char filter[])
 	if(flist_custom_active(view) && view->custom.type != CV_TREE &&
 			view->local_filter.entry_count == 0)
 	{
-		/* Save unfiltered (by local filter) list for further use. */
+		/* Save unfiltered (by local filter) list for further use so it can be
+		 * restored on changing local filter. */
 		replace_dir_entries(view, &view->local_filter.entries,
 				&view->local_filter.entry_count, view->dir_entry, view->list_rows);
 	}
+
+	ui_view_schedule_reload(view);
 }
 
 void

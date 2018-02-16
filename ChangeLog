@@ -56,6 +56,12 @@
 	Fixed parsing of :highlight command when tabulation is used to separate
 	arguments.  Thanks to Robert Pergl (a.k.a. perglr).
 
+	Fixed number of elements in a directory ("nitems") not being updated.
+	Thanks to filterfalse.
+
+	Fixed local filter not being applied to the view after q=.  Thanks to
+	filterfalse.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

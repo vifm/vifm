@@ -1530,7 +1530,7 @@ fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
 
 	if(nitems != NULL)
 	{
-		if(nitems_res.value == DCACHE_UNKNOWN && !is_slow_fs)
+		if(!nitems_res.is_valid && !is_slow_fs)
 		{
 			nitems_res.value = entry_calc_nitems(entry);
 		}

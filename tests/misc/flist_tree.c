@@ -774,7 +774,7 @@ TEST(leafs_are_treated_correctly_on_reloading_saving_pos)
 
 TEST(cursor_is_set_on_previous_file)
 {
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH , "tree",
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "tree",
 			cwd);
 	load_dir_list(&lwin, 1);
 	assert_int_equal(3, lwin.list_rows);

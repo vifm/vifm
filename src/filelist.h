@@ -243,8 +243,8 @@ dir_entry_t * entry_from_path(view_t *view, dir_entry_t *entries, int count,
 /* Retrieves number of items in a directory specified by the entry.  Returns the
  * number, which is zero for files. */
 uint64_t fentry_get_nitems(const view_t *view, const dir_entry_t *entry);
-/* Queries information about a directory from dcache.  *size and *nitems might
- * contain DCACHE_UNKNOWN. */
+/* Queries information about a directory from dcache.  *size might be set to
+ * DCACHE_UNKNOWN. */
 void fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
 		uint64_t *size, uint64_t *nitems);
 /* Checks whether entry is selected.  Returns non-zero if so, otherwise zero is

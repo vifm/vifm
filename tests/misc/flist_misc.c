@@ -344,6 +344,42 @@ TEST(fentry_get_recalculates_size)
 	update_string(&cfg.shell, NULL);
 }
 
+TEST(fentry_get_nitems_calculates_number_of_items)
+{
+	char origin[] = TEST_DATA_PATH;
+	const dir_entry_t entry = {
+		.name = "existing-files", .origin = origin, .type = FT_DIR
+	};
+
+	update_string(&cfg.shell, "");
+	assert_success(stats_init(&cfg));
+
+	assert_ulong_equal(3, fentry_get_nitems(&lwin, &entry));
+
+	update_string(&cfg.shell, NULL);
+}
+
+TEST(fentry_get_nitems_recalculates_number_of_items)
+{
+	char origin[] = SANDBOX_PATH;
+	dir_entry_t entry = {
+		.name = ".", .origin = origin, .type = FT_DIR
+	};
+
+	update_string(&cfg.shell, "");
+	assert_success(stats_init(&cfg));
+
+	assert_ulong_equal(0, fentry_get_nitems(&lwin, &entry));
+
+	create_file(SANDBOX_PATH "/a");
+	entry.mtime = time(NULL) + 10;
+	assert_ulong_equal(1, fentry_get_nitems(&lwin, &entry));
+
+	update_string(&cfg.shell, NULL);
+
+	assert_success(remove(SANDBOX_PATH "/a"));
+}
+
 TEST(root_path_does_not_get_more_than_one_slash, IF(not_windows))
 {
 	const char type_decs_slash[FT_COUNT][2][9] = {

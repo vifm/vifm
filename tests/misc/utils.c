@@ -133,6 +133,8 @@ view_setup(view_t *view)
 	view->invert = 1;
 	view->selected_files = 0;
 	view->ls_view = 0;
+	view->window_rows = 0;
+	view->run_size = 1;
 
 	assert_success(filter_init(&view->local_filter.filter, 1));
 	assert_non_null(view->manual_filter = matcher_alloc("", 0, 0, "", &error));
