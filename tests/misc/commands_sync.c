@@ -37,6 +37,9 @@ SETUP()
 	view_setup(&lwin);
 	view_setup(&rwin);
 
+	lwin.window_rows = 1;
+	rwin.window_rows = 1;
+
 	saved_cwd = save_cwd();
 }
 
