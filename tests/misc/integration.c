@@ -1,16 +1,35 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
+#include <unistd.h> /* chdir() */
+
 #include <stdio.h> /* fclose() fmemopen() remove() */
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/engine/keys.h"
 #include "../../src/int/vim.h"
+#include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/str.h"
+#include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
 
 #include "utils.h"
+
+SETUP()
+{
+	update_string(&cfg.shell, "");
+	assert_success(stats_init(&cfg));
+}
+
+TEARDOWN()
+{
+	update_string(&cfg.shell, NULL);
+}
 
 /* Because of fmemopen(). */
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -59,8 +78,6 @@ TEST(paths_in_root_do_not_have_extra_slash_on_choosing)
 
 	strcpy(lwin.curr_dir, "/");
 
-	assert_success(stats_init(&cfg));
-
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
 
@@ -81,8 +98,6 @@ TEST(abs_paths_are_not_touched_on_choosing)
 	char out_spec[] = "-";
 
 	strcpy(lwin.curr_dir, "/etc");
-
-	assert_success(stats_init(&cfg));
 
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
@@ -114,8 +129,6 @@ TEST(selection_can_be_chosen)
 	flist_custom_add(&lwin, "bin");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 	lwin.dir_entry[0].selected = 1;
-
-	assert_success(stats_init(&cfg));
 
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
@@ -151,8 +164,6 @@ TEST(path_are_formed_right_on_choosing_in_cv)
 	flist_custom_add(&lwin, ".");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	assert_success(stats_init(&cfg));
-
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
 
@@ -178,6 +189,58 @@ TEST(writing_directory_does_not_happen_with_empty_or_null_spec)
 
 	curr_stats.chosen_dir_out = NULL;
 	vim_write_dir("/some/path");
+}
+
+TEST(externally_edited_local_filter_is_applied, IF(not_windows))
+{
+	FILE *fp;
+	char path[PATH_MAX + 1];
+
+	char *const saved_cwd = save_cwd();
+	assert_success(chdir(SANDBOX_PATH));
+
+	curr_view = &lwin;
+	view_setup(&lwin);
+
+	init_modes();
+	opt_handlers_setup();
+
+	update_string(&cfg.shell, "/bin/sh");
+	stats_update_shell_type(cfg.shell);
+
+	fp = fopen("./script", "w");
+	fputs("#!/bin/sh\n", fp);
+	fputs("echo read > $3\n", fp);
+	fclose(fp);
+	assert_success(chmod("script", 0777));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, ".",
+			saved_cwd);
+	load_dir_list(&lwin, 0);
+
+	curr_stats.exec_env_type = EET_EMULATOR;
+	make_abs_path(path, sizeof(path), SANDBOX_PATH, "script", saved_cwd);
+	update_string(&cfg.vi_command, path);
+
+	curr_stats.load_stage = 2;
+	(void)process_scheduled_updates_of_view(&lwin);
+	curr_stats.load_stage = 0;
+	assert_true(lwin.list_rows > 1);
+	(void)vle_keys_exec_timed_out(L"q=");
+	curr_stats.load_stage = 2;
+	(void)process_scheduled_updates_of_view(&lwin);
+	curr_stats.load_stage = 0;
+	assert_int_equal(1, lwin.list_rows);
+
+	update_string(&cfg.vi_command, NULL);
+	update_string(&cfg.shell, NULL);
+	assert_success(unlink(path));
+
+	vle_keys_reset();
+	opt_handlers_teardown();
+	view_teardown(&lwin);
+
+	restore_cwd(saved_cwd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
