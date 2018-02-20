@@ -41,7 +41,8 @@ typedef struct
 	const char *delimiter;           /* Delimiter for list of picked files. */
 	const char *on_choose;           /* Action to perform on chosen files. */
 
-	const char *server_name; /* Name of this/target server. */
+	const char *server_name; /* Name of this server. */
+	const char *target_name; /* Name of target server. */
 	char **remote_cmds;      /* Arguments to pass to server instance. */
 	char *remote_expr;       /* Expression to evaluate remotely. */
 

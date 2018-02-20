@@ -135,6 +135,17 @@ TEST(remote_expr_is_parsed, IF(with_remote_cmds))
 	args_free(&args);
 }
 
+TEST(server_name_becomes_target_name, IF(with_remote_cmds))
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "--server-name", "name", "--remote", "path", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_string_equal(NULL, args.server_name);
+	assert_string_equal("name", args.target_name);
+	args_free(&args);
+}
+
 static int
 with_remote_cmds(void)
 {
