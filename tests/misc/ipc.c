@@ -17,6 +17,7 @@
 
 static void test_ipc_args(char *args[]);
 static void test_ipc_args2(char *args[]);
+static void recursive_ipc_args(char *args[]);
 static char * test_ipc_eval(const char expr[]);
 static char * test_ipc_eval_error(const char expr[]);
 static void other_instance(bg_op_t *bg_op, void *arg);
@@ -27,6 +28,7 @@ static int nmessages;
 static char *message;
 static int nmessages2;
 static char *message2;
+static ipc_t *recursive_ipc;
 
 TEARDOWN()
 {
@@ -173,6 +175,25 @@ TEST(eval_error_is_handled, IF(enabled_and_not_in_wine))
 	free(result);
 }
 
+TEST(checking_ipc_from_ipc_handler_is_noop, IF(enabled_and_not_in_wine))
+{
+	char msg[] = "test message";
+	char *data[] = { msg, NULL };
+
+	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
+	ipc_t *const ipc2 = ipc_init(NAME, &recursive_ipc_args, &test_ipc_eval);
+
+	recursive_ipc = ipc2;
+
+	assert_success(ipc_send(ipc1, ipc_get_name(ipc2), data));
+	assert_success(ipc_send(ipc1, ipc_get_name(ipc2), data));
+	assert_true(ipc_check(ipc2));
+	assert_true(ipc_check(ipc2));
+
+	ipc_free(ipc1);
+	ipc_free(ipc2);
+}
+
 static void
 test_ipc_args(char *args[])
 {
@@ -185,6 +206,12 @@ test_ipc_args2(char *args[])
 {
 	nmessages2 += count_strings(args);
 	update_string(&message2, args[1]);
+}
+
+static void
+recursive_ipc_args(char *args[])
+{
+	assert_false(ipc_check(recursive_ipc));
 }
 
 static char *
