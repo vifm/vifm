@@ -62,6 +62,12 @@
 	Fixed local filter not being applied to the view after q=.  Thanks to
 	filterfalse.
 
+	Fixed hang of a remote instance after receiving at least two consecutive
+	packages that cause an error message to be displayed.  Thanks to
+	filterfalse.
+
+	Fixed absence of error on doing `--remote` to a server that doesn't exist.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

@@ -123,6 +123,8 @@ struct ipc_t
 	ipc_args_cb args_cb;
 	/* Stores callback used for evaluation of expressions. */
 	ipc_eval_cb eval_cb;
+	/* Whether this IPC instance should ignore check requests from outside. */
+	int locked;
 	/* Path to the pipe used by this instance. */
 	char pipe_path[PATH_MAX + 1];
 	/* Opened file of the pipe. */
@@ -178,6 +180,7 @@ ipc_init(const char name[], ipc_args_cb args_cb, ipc_eval_cb eval_cb)
 
 	ipc->args_cb = args_cb;
 	ipc->eval_cb = eval_cb;
+	ipc->locked = 0;
 
 	if(name == NULL)
 	{
@@ -221,7 +224,14 @@ int
 ipc_check(ipc_t *ipc)
 {
 	int len;
-	char *const pkg = receive_pkg(ipc, &len);
+	char *pkg;
+
+	if(ipc->locked)
+	{
+		return 0;
+	}
+
+	pkg = receive_pkg(ipc, &len);
 	if(pkg != NULL)
 	{
 		handle_pkg(ipc, pkg, pkg + len);
@@ -525,7 +535,9 @@ handle_args(ipc_t *ipc, char ***array, int len)
 
 	if(put_into_string_array(array, len, NULL) == len + 1)
 	{
+		ipc->locked = 1;
 		ipc->args_cb(*array);
+		ipc->locked = 0;
 	}
 }
 
@@ -541,7 +553,9 @@ handle_expr(ipc_t *ipc, const char from[], char *array[], int len)
 		return;
 	}
 
+	ipc->locked = 1;
 	result = ipc->eval_cb(array[0]);
+	ipc->locked = 0;
 	if(result == NULL)
 	{
 		char *data[] = { NULL };

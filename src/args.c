@@ -78,10 +78,12 @@ static struct option long_opts[] = {
 void
 args_parse(args_t *args, int argc, char *argv[], const char dir[])
 {
+	int done = 0;
+
 	/* Request getopt() reinitialization. */
 	optind = 0;
 
-	while(1)
+	while(!done)
 	{
 		switch(getopt_long(argc, argv, "-c:fhv", long_opts, NULL))
 		{
@@ -110,7 +112,8 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 			case 'r': /* --remote <args>... */
 				args->remote_cmds = argv + optind;
-				return;
+				done = 1;
+				break;
 			case 'R': /* --remote-expr <expr> */
 				args->remote_expr = optarg;
 				break;
@@ -179,8 +182,15 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 
 			case -1: /* No more arguments. */
-				return;
+				done = 1;
+				break;
 		}
+	}
+
+	if(args->remote_cmds != NULL || args->remote_expr != NULL)
+	{
+		args->target_name = args->server_name;
+		args->server_name = NULL;
 	}
 }
 
@@ -443,11 +453,12 @@ process_non_general_args(args_t *args)
 	{
 		fprintf(stderr, "%s\n", "--remote and --remote-expr can't be combined.");
 		quit_on_arg_parsing(EXIT_FAILURE);
+		return;
 	}
 
 	if(args->remote_cmds != NULL)
 	{
-		if(ipc_send(curr_stats.ipc, args->server_name, args->remote_cmds) != 0)
+		if(ipc_send(curr_stats.ipc, args->target_name, args->remote_cmds) != 0)
 		{
 			fprintf(stderr, "%s\n", "Sending remote commands failed.");
 			quit_on_arg_parsing(EXIT_FAILURE);
@@ -458,7 +469,7 @@ process_non_general_args(args_t *args)
 
 	if(args->remote_expr != NULL)
 	{
-		char *const result = ipc_eval(curr_stats.ipc, args->server_name,
+		char *const result = ipc_eval(curr_stats.ipc, args->target_name,
 				args->remote_expr);
 		if(result == NULL)
 		{
