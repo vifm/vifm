@@ -137,6 +137,7 @@ static expr_t parse_or_expr(const char **in);
 static expr_t parse_and_expr(const char **in);
 static expr_t parse_comp_expr(const char **in);
 static int is_comparison_operator(TOKENS_TYPE type);
+static expr_t parse_factor(const char **in);
 static expr_t parse_concat_expr(const char **in);
 static expr_t parse_term(const char **in);
 static expr_t parse_signed_number(const char **in);
@@ -669,7 +670,7 @@ parse_and_expr(const char **in)
 	return result;
 }
 
-/* comp_expr ::= concat_expr | concat_expr op concat_expr
+/* comp_expr ::= factor | factor op factor
  * op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
 static expr_t
 parse_comp_expr(const char **in)
@@ -678,7 +679,7 @@ parse_comp_expr(const char **in)
 	expr_t rhs;
 	expr_t result = { .op_type = OP_CALL };
 
-	lhs = parse_concat_expr(in);
+	lhs = parse_factor(in);
 	if(last_error != PE_NO_ERROR || !is_comparison_operator(last_token.type))
 	{
 		return lhs;
@@ -694,7 +695,7 @@ parse_comp_expr(const char **in)
 	}
 
 	get_next(in);
-	rhs = parse_concat_expr(in);
+	rhs = parse_factor(in);
 	if(add_expr_op(&result, &rhs) != 0)
 	{
 		free_expr(&result);
@@ -719,6 +720,13 @@ is_comparison_operator(TOKENS_TYPE type)
 	return type == EQ || type == NE
 	    || type == LT || type == LE
 	    || type == GE || type == GT;
+}
+
+/* factor ::= concat_expr */
+static expr_t
+parse_factor(const char **in)
+{
+	return parse_concat_expr(in);
 }
 
 /* concat_expr ::= term { '.' term } */
