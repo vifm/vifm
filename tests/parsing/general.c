@@ -68,5 +68,10 @@ TEST(expression_and_comment)
 	ASSERT_FAIL(" 4 || \"", PE_INVALID_EXPRESSION);
 }
 
+TEST(priority_of_operators)
+{
+	ASSERT_OK("1.'0' + 1 > 10 && 1 + 2 != 0 || +0 == -3 + 2 && 0", "1");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
