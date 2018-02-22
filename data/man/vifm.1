@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 15, 2018" "vifm 0.9.1"
+.TH VIFM 1 "February 22, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4681,13 +4681,16 @@ expr3      expr4 == expr4          equal
            expr4 <  expr4          smaller than
            expr4 <= expr4          smaller than or equal
 
-expr4      expr5 . expr5 ..        string concatenation
+expr4      expr5 + expr5 ..        number addition
+           expr5 - expr5 ..        number subtraction
 
-expr5      \- expr5                 unary minus
-           + expr5                 unary plus
-           ! expr5                 logical NOT
+expr5      expr6 . expr6 ..        string concatenation
 
-expr6      number                  number constant
+expr6      \- expr6                 unary minus
+           + expr6                 unary plus
+           ! expr6                 logical NOT
+
+expr7      number                  number constant
            "string"                string constant, \\ is special
            'string'                string constant, ' is doubled
            &option                 option value
@@ -4764,7 +4767,21 @@ expr4
 .br
 -----
 .br
-expr5 . expr5 ..     string concatenation
+expr5 + expr5 ..     number addition
+expr5 - expr5 ..     number subtraction
+
+Examples:
+
+.EX
+  1 + 3 - 3          == 1
+  1 + '2'            == 3
+.EE
+
+expr5
+.br
+-----
+.br
+expr6 . expr6 ..     string concatenation
 
 Examples:
 
@@ -4773,16 +4790,16 @@ Examples:
   'aaa' . '' . 'c'    == 'aaac'
 .EE
 
-expr5
+expr6
 .br
 -----
 .br
 
-\- expr5              unary minus
+\- expr6              unary minus
 .br
-+ expr5              unary plus
++ expr6              unary plus
 .br
-! expr5              logical NOT
+! expr6              logical NOT
 
 For '\-' the sign of the number is changed.
 .br
@@ -4804,7 +4821,7 @@ These operations can be repeated and mixed.  Examples:
    !!9                == 1
 .EE
 
-expr6
+expr7
 .br
 -----
 .br

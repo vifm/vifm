@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 15
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3899,13 +3899,16 @@ Expression syntax summary, from least to most significant:
            expr4 <  expr4          smaller than
            expr4 <= expr4          smaller than or equal
 
-|vifm-expr4| expr5 . expr5 ..        string concatenation
+|vifm-expr4| expr5 + expr5 ..        number addition
+           expr5 - expr5 ..        number subtraction
 
-|vifm-expr5| - expr5                 unary minus
-           + expr5                 unary plus
-           ! expr5                 logical NOT
+|vifm-expr5| expr6 . expr6 ..        string concatenation
 
-|vifm-expr6| number                  number constant
+|vifm-expr6| - expr6                 unary minus
+           + expr6                 unary plus
+           ! expr6                 logical NOT
+
+|vifm-expr7| number                  number constant
            "string"                string constant, backslash is special
            'string'                string constant, ' is doubled
            &option                 option value
@@ -3967,19 +3970,29 @@ Examples: >
 
 expr4                                          *vifm-expr4*
 -----
-expr5 . expr5 ..     string concatenation      *vifm-expr-.*
+expr5 + expr5 ..     number addition           *vifm-expr-+*
+expr5 - expr5 ..     number subtraction        *vifm-expr--*
+
+Examples: >
+  1 + 3 - 3          == 1
+  1 + '2'            == 3
+<
+
+expr5                                          *vifm-expr5*
+-----
+expr6 . expr6 ..     string concatenation      *vifm-expr-.*
 
 Examples: >
   'a' . 'b'          == 'ab'
   'aaa' . '' . 'c'   == 'aaac'
 <
 
-expr5                                          *vifm-expr5*
+expr6                                          *vifm-expr6*
 -----
 
-- expr5              unary minus               *vifm-expr-unary--*
-+ expr5              unary plus                *vifm-expr-unary-+*
-! expr5              logical NOT               *vifm-expr-unary-!*
+- expr6              unary minus               *vifm-expr-unary--*
++ expr6              unary plus                *vifm-expr-unary-+*
+! expr6              logical NOT               *vifm-expr-unary-!*
 
 For '-' the sign of the number is changed.
 For '+' the number is unchanged.
@@ -3997,7 +4010,7 @@ These operations can be repeated and mixed.  Examples: >
    !!9               == 1
 <
 
-expr6                                          *vifm-expr6*
+expr7                                          *vifm-expr7*
 -----
 
 number               number constant           *vifm-expr-number*
