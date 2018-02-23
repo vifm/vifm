@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 22
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3888,23 +3888,29 @@ Supported expressions is a subset of what VimL provides.
 
 Expression syntax summary, from least to most significant:
 
-|vifm-expr1| expr2 || expr2 ..      logical OR
+|vifm-expr1| expr2
+           expr2 || expr2 ..       logical OR
 
-|vifm-expr2| expr3 && expr3 ..      logical AND
+|vifm-expr2| expr3
+           expr3 && expr3 ..       logical AND
 
-|vifm-expr3| expr4 == expr4          equal
+|vifm-expr3| expr4
+           expr4 == expr4          equal
            expr4 != expr4          not equal
            expr4 >  expr4          greater than
            expr4 >= expr4          greater than or equal
            expr4 <  expr4          smaller than
            expr4 <= expr4          smaller than or equal
 
-|vifm-expr4| expr5 + expr5 ..        number addition
+|vifm-expr4| expr5
+           expr5 + expr5 ..        number addition
            expr5 - expr5 ..        number subtraction
 
-|vifm-expr5| expr6 . expr6 ..        string concatenation
+|vifm-expr5| expr6
+           expr6 . expr6 ..        string concatenation
 
-|vifm-expr6| - expr6                 unary minus
+|vifm-expr6| expr7
+           - expr6                 unary minus
            + expr6                 unary plus
            ! expr6                 logical NOT
 

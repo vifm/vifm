@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 22, 2018" "vifm 0.9.1"
+.TH VIFM 1 "February 23, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4670,23 +4670,29 @@ Supported expressions is a subset of what VimL provides.
 
 Expression syntax summary, from least to most significant:
 
-expr1      expr2 || expr2 ..       logical OR
+expr1      expr2
+           expr2 || expr2 ..       logical OR
 
-expr2      expr3 && expr3 ..       logical AND
+expr2      expr3
+           expr3 && expr3 ..       logical AND
 
-expr3      expr4 == expr4          equal
+expr3      expr4
+           expr4 == expr4          equal
            expr4 != expr4          not equal
            expr4 >  expr4          greater than
            expr4 >= expr4          greater than or equal
            expr4 <  expr4          smaller than
            expr4 <= expr4          smaller than or equal
 
-expr4      expr5 + expr5 ..        number addition
+expr4      expr5
+           expr5 + expr5 ..        number addition
            expr5 - expr5 ..        number subtraction
 
-expr5      expr6 . expr6 ..        string concatenation
+expr5      expr6
+           expr6 . expr6 ..        string concatenation
 
-expr6      \- expr6                 unary minus
+expr6      expr7
+           \- expr6                 unary minus
            + expr6                 unary plus
            ! expr6                 logical NOT
 
