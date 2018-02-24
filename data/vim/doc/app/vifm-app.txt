@@ -530,9 +530,9 @@ DD and D<selector>                             *vifm-D* *vifm-DD*
     like dd and d<selector>, but omitting |vifm-trash|
     directory (even when |vifm-'trash'| option is set).
 
-yy or Y                                       *vifm-yy* *vifm-Y*
+yy or Y                                        *vifm-yy* *vifm-Y*
     yank selected files.
-y<selector>                                   *vifm-y*
+y<selector>                                    *vifm-y*
     yank files specified by motion/selector.
 
 p                                              *vifm-p*
@@ -4117,7 +4117,6 @@ Examples: >
   "'" . filetype('.') . "'"
   filetype('.') == 'reg'
 <
-
 --------------------------------------------------------------------------------
 *vifm-functions*
 
