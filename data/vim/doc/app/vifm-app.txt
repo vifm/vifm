@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 23
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -19,16 +19,16 @@
 |vifm-mappings|           Special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
 |vifm-functions|          List of builtin functions with description.
-|vifm-startup|            Determining of environment variables on startup.
-|vifm-configure|          Configuration of vifm.
 |vifm-menus-and-dialogs|  Keys and commands for menus and dialogs.
 |vifm-custom-views|       Differences between regular and custom views.
 |vifm-compare-views|      Kinds, properties and differences of compare views.
+|vifm-startup|            Determining of environment variables on startup.
+|vifm-configure|          Configuration of vifm.
+|vifm-fuse|               Using automated FUSE mounts.
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            Some details about ls-like view.
 |vifm-column-view|        Column view configuration details.
 |vifm-color-schemes|      Details on using color schemes in vifm.
-|vifm-fuse|               Using automated FUSE mounts.
 |vifm-trash|              Details about trash directory in vifm.
 |vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
