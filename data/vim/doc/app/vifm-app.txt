@@ -3926,7 +3926,7 @@ Expression syntax summary, from least to most significant:
 
 expr1                                          *vifm-expr1*
 -----
-expr2 || expr1
+expr2 || expr2
 
 Arguments are converted to numbers before evaluation.
 
@@ -3938,7 +3938,7 @@ evaluated from left to right until result of whole expression is determined
 
 expr2                                          *vifm-expr2*
 -----
-expr3 && expr2
+expr3 && expr3
 
 Arguments are converted to numbers before evaluation.
 
