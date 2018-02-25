@@ -137,6 +137,7 @@ static expr_t parse_or_expr(const char **in);
 static expr_t parse_and_expr(const char **in);
 static expr_t parse_comp_expr(const char **in);
 static int is_comparison_operator(TOKENS_TYPE type);
+static expr_t parse_factor(const char **in);
 static expr_t parse_concat_expr(const char **in);
 static expr_t parse_term(const char **in);
 static expr_t parse_signed_number(const char **in);
@@ -439,13 +440,23 @@ eval_call_op(const char name[], int nops, expr_t ops[], var_t *result)
 	}
 	else if(strcmp(name, "-") == 0 || strcmp(name, "+") == 0)
 	{
-		assert(nops == 1 && "Must be single argument.");
-		var_val_t val = { .integer = var_to_integer(ops[0].value) };
-		if(name[0] == '-')
+		if(nops == 1)
 		{
-			val.integer = -val.integer;
+			var_val_t val = { .integer = var_to_integer(ops[0].value) };
+			if(name[0] == '-')
+			{
+				val.integer = -val.integer;
+			}
+			*result = var_new(VTYPE_INT, val);
 		}
-		*result = var_new(VTYPE_INT, val);
+		else
+		{
+			assert(nops == 2 && "Must be two arguments.");
+			const int a = var_to_integer(ops[0].value);
+			const int b = var_to_integer(ops[1].value);
+			var_val_t val = { .integer = (name[0] == '-' ? a - b : a + b) };
+			*result = var_new(VTYPE_INT, val);
+		}
 	}
 	else
 	{
@@ -669,7 +680,7 @@ parse_and_expr(const char **in)
 	return result;
 }
 
-/* comp_expr ::= concat_expr | concat_expr op concat_expr
+/* comp_expr ::= factor | factor op factor
  * op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' */
 static expr_t
 parse_comp_expr(const char **in)
@@ -678,7 +689,7 @@ parse_comp_expr(const char **in)
 	expr_t rhs;
 	expr_t result = { .op_type = OP_CALL };
 
-	lhs = parse_concat_expr(in);
+	lhs = parse_factor(in);
 	if(last_error != PE_NO_ERROR || !is_comparison_operator(last_token.type))
 	{
 		return lhs;
@@ -694,7 +705,7 @@ parse_comp_expr(const char **in)
 	}
 
 	get_next(in);
-	rhs = parse_concat_expr(in);
+	rhs = parse_factor(in);
 	if(add_expr_op(&result, &rhs) != 0)
 	{
 		free_expr(&result);
@@ -719,6 +730,55 @@ is_comparison_operator(TOKENS_TYPE type)
 	return type == EQ || type == NE
 	    || type == LT || type == LE
 	    || type == GE || type == GT;
+}
+
+/* factor ::= concat_expr { op concat_expr }
+ * op ::= '+' | '-' */
+static expr_t
+parse_factor(const char **in)
+{
+	expr_t result = parse_concat_expr(in);
+
+	while(last_error == PE_NO_ERROR &&
+			(last_token.type == PLUS || last_token.type == MINUS))
+	{
+		expr_t intermediate = { .op_type = OP_CALL };
+		expr_t next;
+
+		intermediate.func = strdup(last_token.str);
+		if(add_expr_op(&intermediate, &result) != 0 || intermediate.func == NULL)
+		{
+			last_error = PE_INTERNAL;
+			free_expr(&intermediate);
+			return null_expr;
+		}
+
+		get_next(in);
+		next = parse_concat_expr(in);
+		if(last_error != PE_NO_ERROR)
+		{
+			free_expr(&next);
+			free_expr(&intermediate);
+			return null_expr;
+		}
+
+		if(add_expr_op(&intermediate, &next) != 0)
+		{
+			last_error = PE_INTERNAL;
+			free_expr(&intermediate);
+			return null_expr;
+		}
+
+		result = intermediate;
+	}
+
+	if(last_error == PE_INTERNAL)
+	{
+		free_expr(&result);
+		return null_expr;
+	}
+
+	return result;
 }
 
 /* concat_expr ::= term { '.' term } */

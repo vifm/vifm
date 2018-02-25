@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 15
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 24
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -19,16 +19,16 @@
 |vifm-mappings|           Special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
 |vifm-functions|          List of builtin functions with description.
-|vifm-startup|            Determining of environment variables on startup.
-|vifm-configure|          Configuration of vifm.
 |vifm-menus-and-dialogs|  Keys and commands for menus and dialogs.
 |vifm-custom-views|       Differences between regular and custom views.
 |vifm-compare-views|      Kinds, properties and differences of compare views.
+|vifm-startup|            Determining of environment variables on startup.
+|vifm-configure|          Configuration of vifm.
+|vifm-fuse|               Using automated FUSE mounts.
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            Some details about ls-like view.
 |vifm-column-view|        Column view configuration details.
 |vifm-color-schemes|      Details on using color schemes in vifm.
-|vifm-fuse|               Using automated FUSE mounts.
 |vifm-trash|              Details about trash directory in vifm.
 |vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
@@ -530,9 +530,9 @@ DD and D<selector>                             *vifm-D* *vifm-DD*
     like dd and d<selector>, but omitting |vifm-trash|
     directory (even when |vifm-'trash'| option is set).
 
-yy or Y                                       *vifm-yy* *vifm-Y*
+yy or Y                                        *vifm-yy* *vifm-Y*
     yank selected files.
-y<selector>                                   *vifm-y*
+y<selector>                                    *vifm-y*
     yank files specified by motion/selector.
 
 p                                              *vifm-p*
@@ -3888,24 +3888,33 @@ Supported expressions is a subset of what VimL provides.
 
 Expression syntax summary, from least to most significant:
 
-|vifm-expr1| expr2 || expr2 ..      logical OR
+|vifm-expr1| expr2
+           expr2 || expr2 ..       logical OR
 
-|vifm-expr2| expr3 && expr3 ..      logical AND
+|vifm-expr2| expr3
+           expr3 && expr3 ..       logical AND
 
-|vifm-expr3| expr4 == expr4          equal
+|vifm-expr3| expr4
+           expr4 == expr4          equal
            expr4 != expr4          not equal
            expr4 >  expr4          greater than
            expr4 >= expr4          greater than or equal
            expr4 <  expr4          smaller than
            expr4 <= expr4          smaller than or equal
 
-|vifm-expr4| expr5 . expr5 ..        string concatenation
+|vifm-expr4| expr5
+           expr5 + expr5 ..        number addition
+           expr5 - expr5 ..        number subtraction
 
-|vifm-expr5| - expr5                 unary minus
-           + expr5                 unary plus
-           ! expr5                 logical NOT
+|vifm-expr5| expr6
+           expr6 . expr6 ..        string concatenation
 
-|vifm-expr6| number                  number constant
+|vifm-expr6| expr7
+           - expr6                 unary minus
+           + expr6                 unary plus
+           ! expr6                 logical NOT
+
+|vifm-expr7| number                  number constant
            "string"                string constant, backslash is special
            'string'                string constant, ' is doubled
            &option                 option value
@@ -3917,7 +3926,7 @@ Expression syntax summary, from least to most significant:
 
 expr1                                          *vifm-expr1*
 -----
-expr2 || expr1
+expr2 || expr2
 
 Arguments are converted to numbers before evaluation.
 
@@ -3929,7 +3938,7 @@ evaluated from left to right until result of whole expression is determined
 
 expr2                                          *vifm-expr2*
 -----
-expr3 && expr2
+expr3 && expr3
 
 Arguments are converted to numbers before evaluation.
 
@@ -3967,19 +3976,29 @@ Examples: >
 
 expr4                                          *vifm-expr4*
 -----
-expr5 . expr5 ..     string concatenation      *vifm-expr-.*
+expr5 + expr5 ..     number addition           *vifm-expr-+*
+expr5 - expr5 ..     number subtraction        *vifm-expr--*
+
+Examples: >
+  1 + 3 - 3          == 1
+  1 + '2'            == 3
+<
+
+expr5                                          *vifm-expr5*
+-----
+expr6 . expr6 ..     string concatenation      *vifm-expr-.*
 
 Examples: >
   'a' . 'b'          == 'ab'
   'aaa' . '' . 'c'   == 'aaac'
 <
 
-expr5                                          *vifm-expr5*
+expr6                                          *vifm-expr6*
 -----
 
-- expr5              unary minus               *vifm-expr-unary--*
-+ expr5              unary plus                *vifm-expr-unary-+*
-! expr5              logical NOT               *vifm-expr-unary-!*
+- expr6              unary minus               *vifm-expr-unary--*
++ expr6              unary plus                *vifm-expr-unary-+*
+! expr6              logical NOT               *vifm-expr-unary-!*
 
 For '-' the sign of the number is changed.
 For '+' the number is unchanged.
@@ -3997,7 +4016,7 @@ These operations can be repeated and mixed.  Examples: >
    !!9               == 1
 <
 
-expr6                                          *vifm-expr6*
+expr7                                          *vifm-expr7*
 -----
 
 number               number constant           *vifm-expr-number*
@@ -4098,7 +4117,6 @@ Examples: >
   "'" . filetype('.') . "'"
   filetype('.') == 'reg'
 <
-
 --------------------------------------------------------------------------------
 *vifm-functions*
 

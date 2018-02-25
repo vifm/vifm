@@ -22,6 +22,7 @@ static char * test_ipc_eval(const char expr[]);
 static char * test_ipc_eval_error(const char expr[]);
 static void other_instance(bg_op_t *bg_op, void *arg);
 static int enabled_and_not_in_wine(void);
+static int enabled_and_not_windows(void);
 
 static const char NAME[] = "vifm-test";
 static int nmessages;
@@ -175,7 +176,7 @@ TEST(eval_error_is_handled, IF(enabled_and_not_in_wine))
 	free(result);
 }
 
-TEST(checking_ipc_from_ipc_handler_is_noop, IF(enabled_and_not_in_wine))
+TEST(checking_ipc_from_ipc_handler_is_noop, IF(enabled_and_not_windows))
 {
 	char msg[] = "test message";
 	char *data[] = { msg, NULL };
@@ -256,6 +257,16 @@ enabled_and_not_in_wine(void)
 
 	/* Apparently, WINE doesn't implement some things related to named pipes. */
 	return (ipc_enabled() && GetProcAddress(dll, "wine_get_version") == NULL);
+#endif
+}
+
+static int
+enabled_and_not_windows(void)
+{
+#ifndef _WIN32
+	return ipc_enabled();
+#else
+	return 0;
 #endif
 }
 
