@@ -1292,9 +1292,9 @@ sug_sel_quote(vle_keys_list_cb cb)
 static void
 cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_column(curr_view) || keys_info->selector)
+	if(!fpos_at_last_col(curr_view) || keys_info->selector)
 	{
-		pick_or_move(keys_info, get_end_of_line(curr_view));
+		pick_or_move(keys_info, fpos_line_end(curr_view));
 	}
 }
 
@@ -1342,9 +1342,9 @@ cmd_dot(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zero(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_column(curr_view) || keys_info->selector)
+	if(!fpos_at_first_col(curr_view) || keys_info->selector)
 	{
-		pick_or_move(keys_info, get_start_of_line(curr_view));
+		pick_or_move(keys_info, fpos_line_start(curr_view));
 	}
 }
 

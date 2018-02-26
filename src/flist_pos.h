@@ -59,7 +59,7 @@ void fpos_set_pos(struct view_t *view, int pos);
 void fpos_ensure_valid_pos(struct view_t *view);
 
 /* Ensures that cursor is moved outside of entries of certain type. */
-void move_cursor_out_of(struct view_t *view, FileListScope scope);
+void fpos_move_out_of(struct view_t *view, FileListScope scope);
 
 /* Retrieves column number (base zero) of the specified position (cell number
  * base zero).  Returns the number. */
@@ -87,19 +87,19 @@ int fpos_can_move_down(const struct view_t *view);
 
 /* Checks whether cursor is on the first column.  Returns non-zero if so,
  * otherwise zero is returned. */
-int at_first_column(const struct view_t *view);
+int fpos_at_first_col(const struct view_t *view);
 
 /* Checks whether cursor is on the last column.  Returns non-zero if so,
  * otherwise zero is returned. */
-int at_last_column(const struct view_t *view);
+int fpos_at_last_col(const struct view_t *view);
 
 /* Calculates position of the first file in current line.  Returns the
  * position. */
-int get_start_of_line(const struct view_t *view);
+int fpos_line_start(const struct view_t *view);
 
 /* Calculates position of the last file in current line.  Returns the
  * position. */
-int get_end_of_line(const struct view_t *view);
+int fpos_line_end(const struct view_t *view);
 
 /* Retrieves step in files that's used to move within a line.  Retrieves the
  * step. */
@@ -197,9 +197,10 @@ int flist_next_mismatch(const struct view_t *view);
  * isn't changed if no previous such entry is found. */
 int flist_prev_mismatch(const struct view_t *view);
 
-/* Removes dot and regexp filters if it's needed to make file visible.  Returns
- * non-zero if file was found. */
-int ensure_file_is_selected(struct view_t *view, const char name[]);
+/* Tries to position cursor at file with specified name.  Removes dot and regexp
+ * filters if it's needed to make file visible.  Does nothing for an empty name.
+ * Returns non-zero if file was eventually found. */
+int fpos_ensure_selected(struct view_t *view, const char name[]);
 
 /* Finds next/previous file which starts with the given character.  Returns
  * -1 if nothing was found, otherwise new position.  When wrapping, can also

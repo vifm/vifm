@@ -478,7 +478,7 @@ navigate_to_file(view_t *view, const char dir[], const char file[],
 
 	if(paths_are_equal(view->curr_dir, dir))
 	{
-		(void)ensure_file_is_selected(view, file);
+		(void)fpos_ensure_selected(view, file);
 	}
 }
 

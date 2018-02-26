@@ -611,9 +611,9 @@ sug_quote(vle_keys_list_cb cb)
 static void
 cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_column(view))
+	if(!fpos_at_last_col(view))
 	{
-		goto_pos(get_end_of_line(view));
+		goto_pos(fpos_line_end(view));
 	}
 }
 
@@ -646,9 +646,9 @@ cmd_comma(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zero(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_column(view))
+	if(!fpos_at_first_col(view))
 	{
-		goto_pos(get_start_of_line(view));
+		goto_pos(fpos_line_start(view));
 	}
 }
 

@@ -399,7 +399,7 @@ navigate_to_selected_file(view_t *view, const char path[])
 
 		load_dir_list(view, 0);
 
-		(void)ensure_file_is_selected(view, name);
+		(void)fpos_ensure_selected(view, name);
 	}
 	else
 	{

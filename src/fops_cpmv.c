@@ -425,7 +425,7 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(op == CMLO_MOVE)
 	{
-		move_cursor_out_of(view, FLS_SELECTION);
+		fpos_move_out_of(view, FLS_SELECTION);
 	}
 
 	return 0;

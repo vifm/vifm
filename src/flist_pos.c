@@ -143,7 +143,7 @@ fpos_ensure_valid_pos(view_t *view)
 }
 
 void
-move_cursor_out_of(view_t *view, FileListScope scope)
+fpos_move_out_of(view_t *view, FileListScope scope)
 {
 	/* XXX: this functionality might be unnecessary now that we have directory
 	 *      merging. */
@@ -213,15 +213,15 @@ fpos_can_move_down(const view_t *view)
 }
 
 int
-at_first_column(const view_t *view)
+fpos_at_first_col(const view_t *view)
 {
 	return (get_curr_col(view) == 0);
 }
 
 int
-at_last_column(const view_t *view)
+fpos_at_last_col(const view_t *view)
 {
-	return get_curr_col(view) == get_max_col(view);
+	return (get_curr_col(view) == get_max_col(view));
 }
 
 /* Retrieves column number of cursor.  Returns the number. */
@@ -255,14 +255,14 @@ get_max_line(const view_t *view)
 }
 
 int
-get_start_of_line(const view_t *view)
+fpos_line_start(const view_t *view)
 {
 	return fview_is_transposed(view) ? view->list_pos%view->run_size
 	                                 : ROUND_DOWN(view->list_pos, view->run_size);
 }
 
 int
-get_end_of_line(const view_t *view)
+fpos_line_end(const view_t *view)
 {
 	if(fview_is_transposed(view))
 	{
@@ -271,7 +271,7 @@ get_end_of_line(const view_t *view)
 		return (pos < view->list_rows ? pos : pos - view->run_size);
 	}
 
-	return MIN(view->list_rows - 1, get_start_of_line(view) + view->run_size - 1);
+	return MIN(view->list_rows - 1, fpos_line_start(view) + view->run_size - 1);
 }
 
 int
@@ -813,7 +813,7 @@ find_prev(const view_t *view, entry_predicate pred)
 }
 
 int
-ensure_file_is_selected(view_t *view, const char name[])
+fpos_ensure_selected(view_t *view, const char name[])
 {
 	int file_pos;
 	char nm[NAME_MAX + 1];
