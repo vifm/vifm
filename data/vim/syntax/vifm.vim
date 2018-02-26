@@ -20,8 +20,8 @@ syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
 		\ lstrash marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pu[t]
 		\ pw[d] qa[ll] q[uit] redr[aw] reg[isters] rename restart restore rlink
 		\ screen sh[ell] siblnext siblprev sor[t] sp[lit] s[ubstitute] tabc[lose]
-		\ tabname tabnew touch tr trashes tree sync undol[ist] ve[rsion] vie[w] vifm
-		\ vs[plit] winc[md] w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
+		\ tabm[ove] tabname tabnew touch tr trashes tree sync undol[ist] ve[rsion]
+		\ vie[w] vifm vs[plit] winc[md] w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
 		\ nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else

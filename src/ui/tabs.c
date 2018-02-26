@@ -563,6 +563,38 @@ get_pane_tabs(const view_t *view)
 	return (view == &lwin ? &gtab->left : &gtab->right);
 }
 
+void
+tabs_move(view_t *view, int where_to)
+{
+	int future = MAX(0, MIN(tabs_count(view) - 1, where_to));
+	const int current = tabs_current(view);
+	const int from = (current <= future ? current + 1 : future);
+	const int to = (current <= future ? current : future + 1);
+
+	/* Second check is for the case when the value was already truncated by MIN()
+	 * above. */
+	if(current < future && where_to < tabs_count(view))
+	{
+		--future;
+	}
+
+	if(cfg.pane_tabs)
+	{
+		pane_tab_t *const ptabs = get_pane_tabs(view)->tabs;
+		const pane_tab_t ptab = ptabs[current];
+		memmove(ptabs + to, ptabs + from, sizeof(*ptabs)*abs(future - current));
+		ptabs[future] = ptab;
+		get_pane_tabs(view)->current = future;
+	}
+	else
+	{
+		const global_tab_t gtab = gtabs[current];
+		memmove(gtabs + to, gtabs + from, sizeof(*gtabs)*abs(future - current));
+		gtabs[future] = gtab;
+		current_tab = future;
+	}
+}
+
 int
 tabs_visitor_count(const char path[])
 {

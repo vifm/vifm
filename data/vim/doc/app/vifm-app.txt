@@ -2248,8 +2248,13 @@ yet supported) and might be changed in future releases, or get an alias.
      - tree - tree structure for tree view (implies "location");
      - all - all of the above.
 
-:tabclose                                      *vifm-:tabclose* *vifm-:tabc*
+:tabc[lose]                                    *vifm-:tabclose* *vifm-:tabc*
     close current tab, unless it's the only one open at current scope.
+
+:tabm[ove] [N]                                 *vifm-:tabmove* *vifm-:tabm*
+    without the argument, current tab becomes the last tab.  With the
+    argument current tab is moved after tab with the specified number.
+    Argument of `0` moves tab to the first position.
 
 :tabname [name]                                *vifm-:tabname*
     set, update or reset (when no argument is provided) name of the current

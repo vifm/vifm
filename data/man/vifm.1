@@ -2688,8 +2688,15 @@ all \- all of the above.
 .TP
 .BI "                                         :tabclose"
 .TP
-.BI ":tabclose"
+.BI ":tabc[lose]"
 close current tab, unless it's the only one open at current scope.
+.TP
+.BI "                                         :tabmove"
+.TP
+.BI ":tabm[ove] [N]"
+without the argument, current tab becomes the last tab.  With the
+argument current tab is moved after tab with the specified number.
+Argument of `0` moves tab to the first position.
 .TP
 .BI "                                         :tabname"
 .TP

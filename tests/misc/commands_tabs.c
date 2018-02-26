@@ -191,5 +191,38 @@ TEST(tabs_are_switched)
 	assert_true(tab_info.view == &lwin);
 }
 
+TEST(tabs_are_moved)
+{
+	for (cfg.pane_tabs = 0; cfg.pane_tabs < 2; ++cfg.pane_tabs)
+	{
+		assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+		assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+
+		assert_int_equal(2, tabs_current(&lwin));
+
+		assert_success(exec_commands("tabmove 0", &lwin, CIT_COMMAND));
+		assert_int_equal(0, tabs_current(&lwin));
+		assert_success(exec_commands("tabmove 1", &lwin, CIT_COMMAND));
+		assert_int_equal(0, tabs_current(&lwin));
+
+		assert_success(exec_commands("tabmove 2", &lwin, CIT_COMMAND));
+		assert_int_equal(1, tabs_current(&lwin));
+		assert_success(exec_commands("tabmove 2", &lwin, CIT_COMMAND));
+		assert_int_equal(1, tabs_current(&lwin));
+
+		assert_success(exec_commands("tabmove 3", &lwin, CIT_COMMAND));
+		assert_int_equal(2, tabs_current(&lwin));
+		assert_success(exec_commands("tabmove 3", &lwin, CIT_COMMAND));
+		assert_int_equal(2, tabs_current(&lwin));
+
+		assert_success(exec_commands("tabmove 1", &lwin, CIT_COMMAND));
+		assert_int_equal(1, tabs_current(&lwin));
+		assert_success(exec_commands("tabmove", &lwin, CIT_COMMAND));
+		assert_int_equal(2, tabs_current(&lwin));
+
+		tabs_only(&lwin);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

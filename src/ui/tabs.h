@@ -70,6 +70,11 @@ int tabs_count(const struct view_t *view);
 /* Closes all tabs except for the current one. */
 void tabs_only(struct view_t *view);
 
+/* Moves current tab to a different position.  Zero position signifies "before
+ * first tab" and non-zero position means "after Nth tab".  Position is
+ * normalized to be in allowed bounds. */
+void tabs_move(struct view_t *view, int where_to);
+
 /* Counts how many tabs are in subtree defined by the path. */
 int tabs_visitor_count(const char path[]);
 

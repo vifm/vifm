@@ -341,6 +341,8 @@ const char *tags[] = {
 	"vifm-:sync",
 	"vifm-:tabc",
 	"vifm-:tabclose",
+	"vifm-:tabm",
+	"vifm-:tabmove",
 	"vifm-:tabname",
 	"vifm-:tabnew",
 	"vifm-:touch",
