@@ -12,7 +12,7 @@ static int called;
 
 SETUP_ONCE()
 {
-	static const function_t function_a = { "a", "descr", 0, &dummy };
+	static const function_t function_a = { "a", "descr", {0,0}, &dummy };
 
 	assert_success(function_register(&function_a));
 }

@@ -13,7 +13,9 @@ static var_t echo_builtin(const call_info_t *call_info);
 
 SETUP_ONCE()
 {
-	static const function_t echo_function = { "a", "descr", 1, &echo_builtin };
+	static const function_t echo_function = {
+		"a", "descr", {1,1}, &echo_builtin
+	};
 	assert_success(function_register(&echo_function));
 
 	init_parser(&env_get);

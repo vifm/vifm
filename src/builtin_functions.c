@@ -50,17 +50,17 @@ static var_t system_builtin(const call_info_t *call_info);
 static var_t term_builtin(const call_info_t *call_info);
 
 static const function_t functions[] = {
-	/* Name          Description                 Argc  Handler  */
-	{ "chooseopt",   "query choose options",       1, &chooseopt_builtin },
-	{ "executable",  "check for executable file",  1, &executable_builtin },
-	{ "expand",      "expand macros in a string",  1, &expand_builtin },
-	{ "filetype",    "retrieve type of a file",    1, &filetype_builtin },
-	{ "getpanetype", "retrieve type of file list", 0, &getpanetype_builtin},
-	{ "has",         "check for specific ability", 1, &has_builtin },
-	{ "layoutis",    "query current layout",       1, &layoutis_builtin },
-	{ "paneisat",    "query pane location",        1, &paneisat_builtin },
-	{ "system",      "execute external command",   1, &system_builtin },
-	{ "term",        "run interactive command",    1, &term_builtin },
+	/* Name          Description                    Args   Handler  */
+	{ "chooseopt",   "query choose options",       {1,1}, &chooseopt_builtin },
+	{ "executable",  "check for executable file",  {1,1}, &executable_builtin },
+	{ "expand",      "expand macros in a string",  {1,1}, &expand_builtin },
+	{ "filetype",    "retrieve type of a file",    {1,1}, &filetype_builtin },
+	{ "getpanetype", "retrieve type of file list", {0,0}, &getpanetype_builtin},
+	{ "has",         "check for specific ability", {1,1}, &has_builtin },
+	{ "layoutis",    "query current layout",       {1,1}, &layoutis_builtin },
+	{ "paneisat",    "query pane location",        {1,1}, &paneisat_builtin },
+	{ "system",      "execute external command",   {1,1}, &system_builtin },
+	{ "term",        "run interactive command",    {1,1}, &term_builtin },
 };
 
 void

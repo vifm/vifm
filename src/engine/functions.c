@@ -57,12 +57,17 @@ function_registered(const char func_name[])
 	return find_function(func_name) != NULL;
 }
 
-/* Adds function to the list of functions.  Returns non-zero if there was not
- * enough memory for that. */
+/* Adds function to the list of functions.  Returns non-zero on error. */
 static int
 add_function(const function_t *func_info)
 {
 	function_t *ptr;
+
+	if(func_info->args.min > func_info->args.max)
+	{
+		return 1;
+	}
+
 	ptr = reallocarray(functions, function_count + 1, sizeof(function_t));
 	if(ptr == NULL)
 	{
@@ -83,13 +88,13 @@ function_call(const char func_name[], const call_info_t *call_info)
 		vle_tb_append_linef(vle_err, "%s: %s", "Unknown function", func_name);
 		return var_error();
 	}
-	if(call_info->argc < function->arg_count)
+	if(call_info->argc < function->args.min)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Not enough arguments for function",
 				func_name);
 		return var_error();
 	}
-	if(call_info->argc > function->arg_count)
+	if(call_info->argc > function->args.max)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Too many arguments for function",
 				func_name);

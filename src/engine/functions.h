@@ -34,12 +34,20 @@ call_info_t;
 /* A function prototype for builtin function implementation. */
 typedef var_t (*function_ptr_t)(const call_info_t *call_info);
 
+/* How many arguments a function accepts. */
+typedef struct
+{
+	size_t min; /* Minimum number of arguments. */
+	size_t max; /* Maximum number of arguments. */
+}
+func_args_t;
+
 /* Function description. */
 typedef struct
 {
 	const char *name;   /* Name of a function. */
 	const char *descr;  /* Brief description. */
-	size_t arg_count;   /* Required number of arguments. */
+	func_args_t args;   /* Range on number of arguments. */
 	function_ptr_t ptr; /* Pointer to function implementation. */
 }
 function_t;
