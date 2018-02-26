@@ -54,11 +54,11 @@ static int file_can_be_displayed(const char directory[], const char filename[]);
 int
 fpos_find_by_name(const view_t *view, const char name[])
 {
-	return flist_find_entry(view, name, NULL);
+	return fpos_find_entry(view, name, NULL);
 }
 
 int
-flist_find_entry(const view_t *view, const char file[], const char dir[])
+fpos_find_entry(const view_t *view, const char name[], const char dir[])
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
@@ -68,7 +68,7 @@ flist_find_entry(const view_t *view, const char file[], const char dir[])
 			continue;
 		}
 
-		if(stroscmp(view->dir_entry[i].name, file) == 0)
+		if(stroscmp(view->dir_entry[i].name, name) == 0)
 		{
 			return i;
 		}

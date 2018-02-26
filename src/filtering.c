@@ -704,7 +704,7 @@ extract_previously_selected_pos(view_t *const view)
 	{
 		const int unfiltered_pos = view->local_filter.poshist[i];
 		const dir_entry_t *entry = &view->local_filter.unfiltered[unfiltered_pos];
-		const int filtered_pos = flist_find_entry(view, entry->name, entry->origin);
+		const int filtered_pos = fpos_find_entry(view, entry->name, entry->origin);
 
 		if(filtered_pos >= 0)
 		{

@@ -269,7 +269,7 @@ check_mark_directory(view_t *view, char m)
 
 	if(custom && cv_tree(view->custom.type) && strcmp(mark->file, "..") == 0)
 	{
-		return flist_find_entry(view, mark->file, mark->directory);
+		return fpos_find_entry(view, mark->file, mark->directory);
 	}
 
 	if(custom)

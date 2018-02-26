@@ -1456,7 +1456,7 @@ flist_goto_by_path(view_t *view, const char path[])
 		char dir_only[PATH_MAX];
 
 		snprintf(dir_only, sizeof(dir_only), "%.*s", (int)(name - path), path);
-		pos = flist_find_entry(view, name, dir_only);
+		pos = fpos_find_entry(view, name, dir_only);
 		if(pos != -1)
 		{
 			view->list_pos = pos;
