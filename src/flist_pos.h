@@ -33,9 +33,9 @@ typedef enum
 }
 FileListScope;
 
-/* Finds index of the file within list of currently visible files of the view.
- * Returns file entry index or -1 if file wasn't found. */
-int find_file_pos_in_list(const struct view_t *const view, const char file[]);
+/* Finds index of the file within list of currently visible files of the view by
+ * its name.  Returns file entry index or -1 if file wasn't found. */
+int fpos_find_by_name(const struct view_t *view, const char name[]);
 
 /* Finds index of the file within list of currently visible files of the view.
  * Always matches file name and can optionally match directory if dir is not

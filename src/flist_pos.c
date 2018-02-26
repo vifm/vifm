@@ -52,9 +52,9 @@ static int find_prev(const view_t *view, entry_predicate pred);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 
 int
-find_file_pos_in_list(const view_t *const view, const char file[])
+fpos_find_by_name(const view_t *view, const char name[])
 {
-	return flist_find_entry(view, file, NULL);
+	return flist_find_entry(view, name, NULL);
 }
 
 int
@@ -824,13 +824,13 @@ ensure_file_is_selected(view_t *view, const char name[])
 	copy_str(nm, sizeof(nm), name);
 	chosp(nm);
 
-	file_pos = find_file_pos_in_list(view, nm);
+	file_pos = fpos_find_by_name(view, nm);
 	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, nm))
 	{
 		if(nm[0] == '.')
 		{
 			dot_filter_set(view, 1);
-			file_pos = find_file_pos_in_list(view, nm);
+			file_pos = fpos_find_by_name(view, nm);
 		}
 
 		if(file_pos < 0)
@@ -840,7 +840,7 @@ ensure_file_is_selected(view_t *view, const char name[])
 			/* name_filters_remove() postpones reloading of list files. */
 			(void)populate_dir_list(view, 1);
 
-			file_pos = find_file_pos_in_list(view, nm);
+			file_pos = fpos_find_by_name(view, nm);
 		}
 	}
 

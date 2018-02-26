@@ -157,7 +157,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 					ops);
 			if(err != 0)
 			{
-				view->list_pos = find_file_pos_in_list(view, entry->name);
+				view->list_pos = fpos_find_by_name(view, entry->name);
 			}
 		}
 		else

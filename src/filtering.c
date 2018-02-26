@@ -733,9 +733,9 @@ find_nearest_neighour(const view_t *const view)
 	{
 		const int unfiltered_orig_pos = view->local_filter.poshist[0U];
 		int i;
-		for(i = unfiltered_orig_pos; i < count; i++)
+		for(i = unfiltered_orig_pos; i < count; ++i)
 		{
-			const int filtered_pos = find_file_pos_in_list(view,
+			const int filtered_pos = fpos_find_by_name(view,
 					view->local_filter.unfiltered[i].name);
 			if(filtered_pos >= 0)
 			{
