@@ -277,5 +277,14 @@ TEST(chooseopt_options_are_set)
 	args_free(&args);
 }
 
+TEST(tabpagenr)
+{
+	ASSERT_OK("tabpagenr()", "1");
+	ASSERT_OK("tabpagenr('$')", "1");
+
+	ASSERT_FAIL("tabpagenr(1)", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("tabpagenr('a')", PE_INVALID_EXPRESSION);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

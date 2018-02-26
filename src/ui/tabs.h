@@ -61,6 +61,9 @@ void tabs_previous(int n);
  * Returns non-zero on success, otherwise zero is returned. */
 int tabs_get(struct view_t *view, int idx, tab_info_t *tab_info);
 
+/* Retrieves index of the current tab.  Returns the index. */
+int tabs_current(const struct view_t *view);
+
 /* Retrieves number of tabs.  Returns the count. */
 int tabs_count(const struct view_t *view);
 

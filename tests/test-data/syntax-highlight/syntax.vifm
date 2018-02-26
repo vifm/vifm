@@ -412,6 +412,9 @@ set showtabline stal
 " "term" should be highlighted as a function()
 echo term('cmd')
 
+" "tabpagenr" should be highlighted as a function()
+echo tabpagenr('$')
+
 " TODO
 
 " "vifm" should NOT be highlighted as a command

@@ -741,6 +741,7 @@ const char *tags[] = {
 	"vifm-startup",
 	"vifm-system()",
 	"vifm-t",
+	"vifm-tabpagenr()",
 	"vifm-term()",
 	"vifm-to-p",
 	"vifm-to-s",

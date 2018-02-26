@@ -26,8 +26,10 @@
 #include <string.h> /* strcmp() strdup() strpbrk() */
 
 #include "engine/functions.h"
+#include "engine/text_buffer.h"
 #include "engine/var.h"
 #include "ui/cancellation.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/macros.h"
 #include "utils/path.h"
@@ -47,6 +49,7 @@ static var_t has_builtin(const call_info_t *call_info);
 static var_t layoutis_builtin(const call_info_t *call_info);
 static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
+static var_t tabpagenr_builtin(const call_info_t *call_info);
 static var_t term_builtin(const call_info_t *call_info);
 
 static const function_t functions[] = {
@@ -60,6 +63,7 @@ static const function_t functions[] = {
 	{ "layoutis",    "query current layout",       {1,1}, &layoutis_builtin },
 	{ "paneisat",    "query pane location",        {1,1}, &paneisat_builtin },
 	{ "system",      "execute external command",   {1,1}, &system_builtin },
+	{ "tabpagenr",   "number of current/last tab", {0,1}, &tabpagenr_builtin },
 	{ "term",        "run interactive command",    {1,1}, &term_builtin },
 };
 
@@ -348,6 +352,32 @@ system_builtin(const call_info_t *call_info)
 	result = var_new(VTYPE_STRING, var_val);
 	free(var_val.string);
 	return result;
+}
+
+/* Retrieves number of current or last tab page.  Returns integer value with the
+ * number base one. */
+static var_t
+tabpagenr_builtin(const call_info_t *call_info)
+{
+	var_val_t value;
+	int first = 1;
+
+	if(call_info->argc != 0)
+	{
+		char *const type = var_to_string(call_info->argv[0]);
+		if(strcmp(type, "$") != 0)
+		{
+			vle_tb_append_linef(vle_err, "Invalid argument (expected \"$\"): %s",
+					type);
+			free(type);
+			return var_error();
+		}
+		free(type);
+		first = 0;
+	}
+
+	value.integer = (first ? tabs_current(curr_view) + 1: tabs_count(curr_view));
+	return var_new(VTYPE_INT, value);
 }
 
 /* Runs interactive command in shell and returns its output (joined standard

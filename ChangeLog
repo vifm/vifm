@@ -32,6 +32,9 @@
 
 	Added addition and subtraction operations to the parser.
 
+	Added tabpagenr() function that retrieves number of current or last tab
+	page.  Thanks to filterfalse.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

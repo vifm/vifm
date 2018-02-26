@@ -512,6 +512,12 @@ tabs_get(view_t *view, int idx, tab_info_t *tab_info)
 }
 
 int
+tabs_current(const view_t *view)
+{
+	return (cfg.pane_tabs ? get_pane_tabs(view)->current : current_tab);
+}
+
+int
 tabs_count(const view_t *view)
 {
 	if(cfg.pane_tabs)
