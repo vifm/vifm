@@ -44,12 +44,12 @@ int fpos_find_entry(const struct view_t *view, const char name[],
 		const char dir[]);
 
 /* Tries to move cursor down by given number of lines.  Returns non-zero if
- * something was updated. */
-int correct_list_pos_on_scroll_down(struct view_t *view, int lines_count);
+ * position was updated. */
+int fpos_scroll_down(struct view_t *view, int lines_count);
 
 /* Tries to move cursor up by given number of lines.  Returns non-zero if
- * something was updated. */
-int correct_list_pos_on_scroll_up(struct view_t *view, int lines_count);
+ * position was updated. */
+int fpos_scroll_up(struct view_t *view, int lines_count);
 
 /* Moves cursor to specified position. */
 void flist_set_pos(struct view_t *view, int pos);

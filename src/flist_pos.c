@@ -77,7 +77,7 @@ fpos_find_entry(const view_t *view, const char name[], const char dir[])
 }
 
 int
-correct_list_pos_on_scroll_down(view_t *view, int lines_count)
+fpos_scroll_down(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
@@ -89,7 +89,7 @@ correct_list_pos_on_scroll_down(view_t *view, int lines_count)
 }
 
 int
-correct_list_pos_on_scroll_up(view_t *view, int lines_count)
+fpos_scroll_up(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
