@@ -381,6 +381,10 @@ xall
 go
 got
 goto
+tabm
+tabmo
+tabmov
+tabmove
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
@@ -411,6 +415,9 @@ set showtabline stal
 
 " "term" should be highlighted as a function()
 echo term('cmd')
+
+" "tabpagenr" should be highlighted as a function()
+echo tabpagenr('$')
 
 " TODO
 

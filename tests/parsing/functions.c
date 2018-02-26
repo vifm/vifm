@@ -12,13 +12,15 @@ static var_t dummy(const call_info_t *call_info);
 
 SETUP_ONCE()
 {
-	static const function_t function_a = { "a", "adescr", 1, &dummy };
-	static const function_t function_b = { "b", "bdescr", 2, &dummy };
-	static const function_t function_c = { "c", "cdescr", 0, &dummy };
+	static const function_t function_a = { "a", "adescr", {1,1}, &dummy };
+	static const function_t function_b = { "b", "bdescr", {2,2}, &dummy };
+	static const function_t function_c = { "c", "cdescr", {0,0}, &dummy };
+	static const function_t function_d = { "d", "ddescr", {1,3}, &dummy };
 
 	assert_success(function_register(&function_a));
 	assert_success(function_register(&function_b));
 	assert_success(function_register(&function_c));
+	assert_success(function_register(&function_d));
 }
 
 TEARDOWN_ONCE()
@@ -31,6 +33,12 @@ dummy(const call_info_t *call_info)
 {
 	static const var_val_t var_val = { .string = "" };
 	return var_new(VTYPE_STRING, var_val);
+}
+
+TEST(function_with_wrong_signature_is_not_added)
+{
+	static const function_t function = { "d", "ddescr", {3,2}, &dummy };
+	assert_failure(function_register(&function));
 }
 
 TEST(wrong_number_of_arguments_fail)
@@ -88,6 +96,17 @@ TEST(and_as_arg_ok)
 TEST(no_args_ok)
 {
 	ASSERT_OK("c()", "");
+}
+
+TEST(range_of_args)
+{
+	ASSERT_FAIL("d()", PE_INVALID_EXPRESSION);
+
+	ASSERT_OK("d(1)", "");
+	ASSERT_OK("d(1, 2)", "");
+	ASSERT_OK("d(1, 2, 3)", "");
+
+	ASSERT_FAIL("d(1, 2, 3, 4)", PE_INVALID_EXPRESSION);
 }
 
 TEST(no_function_name_fail)

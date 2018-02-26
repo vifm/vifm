@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 23, 2018" "vifm 0.9.1"
+.TH VIFM 1 "February 26, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2688,8 +2688,15 @@ all \- all of the above.
 .TP
 .BI "                                         :tabclose"
 .TP
-.BI ":tabclose"
+.BI ":tabc[lose]"
 close current tab, unless it's the only one open at current scope.
+.TP
+.BI "                                         :tabmove"
+.TP
+.BI ":tabm[ove] [N]"
+without the argument, current tab becomes the last tab.  With the
+argument current tab is moved after tab with the specified number.
+Argument of `0` moves tab to the first position.
 .TP
 .BI "                                         :tabname"
 .TP
@@ -4989,6 +4996,8 @@ paneisat({loc})     Integer       Checks whether current pane is at {loc}.
 .br
 system({command})   String        Executes shell command and returns its output.
 .br
+tabpagenr([{arg}])  Integer       Returns number of current or last tab.
+.br
 term({command})     String        Like system(), but for interactive commands.
 
 .BI chooseopt({opt})
@@ -5124,6 +5133,13 @@ Usage example:
   " command to enter .git/ directory of git-repository (when ran inside one)
   command! cdgit :execute 'cd' system('git rev-parse \-\-git-dir')
 .EE
+
+.BI tabpagenr([{arg}])
+
+When called without arguments returns number of current tab page base one.
+
+When called with "$" as an argument returns number of the last tab page base
+one, which is the same as number of tabs.
 
 .BI term({command})
 
