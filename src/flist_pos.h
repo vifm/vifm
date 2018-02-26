@@ -51,8 +51,9 @@ int fpos_scroll_down(struct view_t *view, int lines_count);
  * position was updated. */
 int fpos_scroll_up(struct view_t *view, int lines_count);
 
-/* Moves cursor to specified position. */
-void flist_set_pos(struct view_t *view, int pos);
+/* Moves cursor to specified position.  Normalizes it if needed, invokes fview
+ * update function and can synchronize cursor position in the other view. */
+void fpos_set_pos(struct view_t *view, int pos);
 
 /* Ensures that position in the list doesn't exceed its bounds. */
 void flist_ensure_pos_is_valid(struct view_t *view);

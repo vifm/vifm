@@ -100,7 +100,7 @@ navigate_to_history_pos(view_t *view, int pos)
 	curr_stats.drop_new_dir_hist = 0;
 
 	load_dir_list(view, 0);
-	flist_set_pos(view, fpos_find_by_name(view, view->history[pos].file));
+	fpos_set_pos(view, fpos_find_by_name(view, view->history[pos].file));
 
 	view->history_pos = pos;
 }

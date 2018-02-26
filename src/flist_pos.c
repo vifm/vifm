@@ -101,7 +101,7 @@ fpos_scroll_up(view_t *view, int lines_count)
 }
 
 void
-flist_set_pos(view_t *view, int pos)
+fpos_set_pos(view_t *view, int pos)
 {
 	if(pos < 1)
 	{
@@ -123,7 +123,7 @@ flist_set_pos(view_t *view, int pos)
 		/* Synchronize cursor with the other pane. */
 		if(view->custom.type == CV_DIFF && other->list_pos != pos)
 		{
-			flist_set_pos(other, pos);
+			fpos_set_pos(other, pos);
 		}
 	}
 }
@@ -844,7 +844,7 @@ ensure_file_is_selected(view_t *view, const char name[])
 		}
 	}
 
-	flist_set_pos(view, (file_pos < 0) ? 0 : file_pos);
+	fpos_set_pos(view, (file_pos < 0) ? 0 : file_pos);
 	return file_pos >= 0;
 }
 

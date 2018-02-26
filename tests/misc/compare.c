@@ -551,11 +551,11 @@ TEST(cursor_moves_in_both_views_synchronously)
 	assert_int_equal(0, lwin.list_pos);
 	assert_int_equal(lwin.list_pos, rwin.list_pos);
 
-	flist_set_pos(&lwin, 2);
+	fpos_set_pos(&lwin, 2);
 	assert_int_equal(2, lwin.list_pos);
 	assert_int_equal(lwin.list_pos, rwin.list_pos);
 
-	flist_set_pos(&rwin, 3);
+	fpos_set_pos(&rwin, 3);
 	assert_int_equal(3, rwin.list_pos);
 	assert_int_equal(lwin.list_pos, rwin.list_pos);
 }
@@ -570,8 +570,8 @@ TEST(two_independent_compare_views_are_not_bound)
 	assert_int_equal(0, lwin.list_pos);
 	assert_int_equal(lwin.list_pos, rwin.list_pos);
 
-	flist_set_pos(&lwin, 2);
-	flist_set_pos(&rwin, 3);
+	fpos_set_pos(&lwin, 2);
+	fpos_set_pos(&rwin, 3);
 	assert_int_equal(2, lwin.list_pos);
 	assert_int_equal(3, rwin.list_pos);
 

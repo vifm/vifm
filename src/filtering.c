@@ -277,7 +277,7 @@ filters_invert(view_t *view)
 {
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
-	flist_set_pos(view, 0);
+	fpos_set_pos(view, 0);
 }
 
 int

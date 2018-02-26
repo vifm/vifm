@@ -3512,7 +3512,7 @@ flist_custom_end(view_t *view, int very)
 		return;
 	}
 
-	flist_set_pos(view, 0);
+	fpos_set_pos(view, 0);
 }
 
 void

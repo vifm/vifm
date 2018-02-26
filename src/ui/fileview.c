@@ -788,7 +788,7 @@ fview_cursor_redraw(view_t *view)
 	{
 		/* Call file list function, which will also ensure that current position in
 		 * list is correct. */
-		flist_set_pos(view, view->list_pos);
+		fpos_set_pos(view, view->list_pos);
 	}
 	else
 	{
