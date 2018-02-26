@@ -996,13 +996,13 @@ find_goto(int ch, int count, int backward, keys_info_t *keys_info)
 	int pos;
 	int old_pos = curr_view->list_pos;
 
-	pos = flist_find_by_ch(curr_view, ch, backward, !keys_info->selector);
+	pos = fpos_find_by_ch(curr_view, ch, backward, !keys_info->selector);
 	if(pos < 0 || pos == curr_view->list_pos)
 		return;
 	while(--count > 0)
 	{
 		curr_view->list_pos = pos;
-		pos = flist_find_by_ch(curr_view, ch, backward, !keys_info->selector);
+		pos = fpos_find_by_ch(curr_view, ch, backward, !keys_info->selector);
 	}
 
 	if(keys_info->selector)
@@ -2071,7 +2071,7 @@ cmd_zr(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_left_paren(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_find_group(curr_view, 0));
+	pick_or_move(keys_info, fpos_find_group(curr_view, 0));
 }
 
 /* Moves cursor to the beginning of the next group of files defined by the
@@ -2079,7 +2079,7 @@ cmd_left_paren(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_find_group(curr_view, 1));
+	pick_or_move(keys_info, fpos_find_group(curr_view, 1));
 }
 
 /* Go to or pick files until and including previous sibling directory entry or
@@ -2087,7 +2087,7 @@ cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_z_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_prev_dir_sibling(curr_view));
+	pick_or_move(keys_info, fpos_prev_dir_sibling(curr_view));
 }
 
 /* Go to or pick files until and including next sibling directory entry or do
@@ -2095,7 +2095,7 @@ cmd_z_k(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_z_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_next_dir_sibling(curr_view));
+	pick_or_move(keys_info, fpos_next_dir_sibling(curr_view));
 }
 
 /* Go to or pick files until and including previous mismatched entry or do
@@ -2103,7 +2103,7 @@ cmd_z_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_lb_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_prev_mismatch(curr_view));
+	pick_or_move(keys_info, fpos_prev_mismatch(curr_view));
 }
 
 /* Go to or pick files until and including next mismatched entry or do
@@ -2111,7 +2111,7 @@ cmd_lb_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_rb_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_next_mismatch(curr_view));
+	pick_or_move(keys_info, fpos_next_mismatch(curr_view));
 }
 
 /* Go to or pick files until and including previous directory entry or do
@@ -2119,7 +2119,7 @@ cmd_rb_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_lb_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_prev_dir(curr_view));
+	pick_or_move(keys_info, fpos_prev_dir(curr_view));
 }
 
 /* Go to or pick files until and including next directory entry or do
@@ -2127,7 +2127,7 @@ cmd_lb_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_rb_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_next_dir(curr_view));
+	pick_or_move(keys_info, fpos_next_dir(curr_view));
 }
 
 /* Navigates to previous sibling directory. */
@@ -2167,14 +2167,14 @@ cmd_rb_R(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_lb_s(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_prev_selected(curr_view));
+	pick_or_move(keys_info, fpos_prev_selected(curr_view));
 }
 
 /* Go to or pick files until and including next selected entry or do nothing. */
 static void
 cmd_rb_s(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_next_selected(curr_view));
+	pick_or_move(keys_info, fpos_next_selected(curr_view));
 }
 
 /* Go to or pick files until and including first sibling of the current
@@ -2182,14 +2182,14 @@ cmd_rb_s(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_lb_z(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_first_sibling(curr_view));
+	pick_or_move(keys_info, fpos_first_sibling(curr_view));
 }
 
 /* Go to or pick files until and including last sibling of the current entry. */
 static void
 cmd_rb_z(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_last_sibling(curr_view));
+	pick_or_move(keys_info, fpos_last_sibling(curr_view));
 }
 
 /* Moves cursor to the beginning of the previous group of files defined by them
@@ -2197,7 +2197,7 @@ cmd_rb_z(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_find_dir_group(curr_view, 0));
+	pick_or_move(keys_info, fpos_find_dir_group(curr_view, 0));
 }
 
 /* Moves cursor to the beginning of the next group of files defined by them
@@ -2205,7 +2205,7 @@ cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 {
-	pick_or_move(keys_info, flist_find_dir_group(curr_view, 1));
+	pick_or_move(keys_info, fpos_find_dir_group(curr_view, 1));
 }
 
 /* Redraw with file in top of list. */

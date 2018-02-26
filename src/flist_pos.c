@@ -415,9 +415,9 @@ get_column_bottom_pos(const view_t *view)
 }
 
 int
-flist_find_group(const view_t *view, int next)
+fpos_find_group(const view_t *view, int next)
 {
-	/* TODO: refactor/simplify this function (flist_find_group()). */
+	/* TODO: refactor/simplify this function (fpos_find_group()). */
 
 	const int correction = next ? -1 : 0;
 	const int lb = correction;
@@ -610,7 +610,7 @@ get_last_ext(const char name[])
 }
 
 int
-flist_find_dir_group(const view_t *view, int next)
+fpos_find_dir_group(const view_t *view, int next)
 {
 	const int correction = next ? -1 : 0;
 	const int lb = correction;
@@ -634,14 +634,14 @@ flist_find_dir_group(const view_t *view, int next)
 }
 
 int
-flist_first_sibling(const view_t *view)
+fpos_first_sibling(const view_t *view)
 {
 	const int parent = view->list_pos - view->dir_entry[view->list_pos].child_pos;
 	return (parent == view->list_pos ? 0 : parent + 1);
 }
 
 int
-flist_last_sibling(const view_t *view)
+fpos_last_sibling(const view_t *view)
 {
 	int pos = view->list_pos - view->dir_entry[view->list_pos].child_pos;
 	if(pos == view->list_pos)
@@ -668,7 +668,7 @@ flist_last_sibling(const view_t *view)
 }
 
 int
-flist_next_dir_sibling(const view_t *view)
+fpos_next_dir_sibling(const view_t *view)
 {
 	int pos = view->list_pos;
 	const int parent = view->dir_entry[pos].child_pos == 0
@@ -692,7 +692,7 @@ flist_next_dir_sibling(const view_t *view)
 }
 
 int
-flist_prev_dir_sibling(const view_t *view)
+fpos_prev_dir_sibling(const view_t *view)
 {
 	int pos = view->list_pos;
 	/* Determine original parent (-1 for top-most entry). */
@@ -723,31 +723,31 @@ flist_prev_dir_sibling(const view_t *view)
 }
 
 int
-flist_next_dir(const view_t *view)
+fpos_next_dir(const view_t *view)
 {
 	return find_next(view, &fentry_is_dir);
 }
 
 int
-flist_prev_dir(const view_t *view)
+fpos_prev_dir(const view_t *view)
 {
 	return find_prev(view, &fentry_is_dir);
 }
 
 int
-flist_next_selected(const view_t *view)
+fpos_next_selected(const view_t *view)
 {
 	return find_next(view, &is_entry_selected);
 }
 
 int
-flist_prev_selected(const view_t *view)
+fpos_prev_selected(const view_t *view)
 {
 	return find_prev(view, &is_entry_selected);
 }
 
 int
-flist_next_mismatch(const view_t *view)
+fpos_next_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
 	     ? find_next(view, &is_mismatched_entry)
@@ -755,7 +755,7 @@ flist_next_mismatch(const view_t *view)
 }
 
 int
-flist_prev_mismatch(const view_t *view)
+fpos_prev_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
 	     ? find_prev(view, &is_mismatched_entry)
@@ -866,7 +866,7 @@ file_can_be_displayed(const char directory[], const char filename[])
 }
 
 int
-flist_find_by_ch(const view_t *view, int ch, int backward, int wrap)
+fpos_find_by_ch(const view_t *view, int ch, int backward, int wrap)
 {
 	int x;
 	const int upcase = (cfg.case_override & CO_GOTO_FILE)
