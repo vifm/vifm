@@ -187,7 +187,7 @@ name_filters_add_selection(view_t *view)
 
 	filter_dispose(&filter);
 
-	flist_ensure_pos_is_valid(view);
+	fpos_ensure_valid_pos(view);
 	ui_view_schedule_redraw(view);
 }
 

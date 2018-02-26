@@ -1104,7 +1104,7 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 	sort_dir_list(0, view);
 
 	ui_view_schedule_redraw(view);
-	flist_ensure_pos_is_valid(view);
+	fpos_ensure_valid_pos(view);
 
 	return 0;
 }
@@ -1283,7 +1283,7 @@ exclude_temporary_entries(view_t *view)
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
 			&is_temporary, NULL, 1, 1);
 
-	flist_ensure_pos_is_valid(view);
+	fpos_ensure_valid_pos(view);
 	ui_view_schedule_redraw(view);
 
 	flist_sel_recount(view);

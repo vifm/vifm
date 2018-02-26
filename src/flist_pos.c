@@ -129,8 +129,13 @@ fpos_set_pos(view_t *view, int pos)
 }
 
 void
-flist_ensure_pos_is_valid(view_t *view)
+fpos_ensure_valid_pos(view_t *view)
 {
+	if(view->list_pos < 0)
+	{
+		view->list_pos = 0;
+	}
+
 	if(view->list_pos >= view->list_rows)
 	{
 		view->list_pos = view->list_rows - 1;

@@ -56,7 +56,7 @@ int fpos_scroll_up(struct view_t *view, int lines_count);
 void fpos_set_pos(struct view_t *view, int pos);
 
 /* Ensures that position in the list doesn't exceed its bounds. */
-void flist_ensure_pos_is_valid(struct view_t *view);
+void fpos_ensure_valid_pos(struct view_t *view);
 
 /* Ensures that cursor is moved outside of entries of certain type. */
 void move_cursor_out_of(struct view_t *view, FileListScope scope);
