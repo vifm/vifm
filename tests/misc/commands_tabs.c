@@ -220,6 +220,16 @@ TEST(tabs_are_moved)
 		assert_success(exec_commands("tabmove", &lwin, CIT_COMMAND));
 		assert_int_equal(2, tabs_current(&lwin));
 
+		assert_success(exec_commands("tabmove 0", &lwin, CIT_COMMAND));
+		assert_int_equal(0, tabs_current(&lwin));
+		assert_success(exec_commands("tabmove $", &lwin, CIT_COMMAND));
+		assert_int_equal(2, tabs_current(&lwin));
+
+		assert_success(exec_commands("tabmove 0", &lwin, CIT_COMMAND));
+		assert_int_equal(0, tabs_current(&lwin));
+		assert_failure(exec_commands("tabmove wrong", &lwin, CIT_COMMAND));
+		assert_int_equal(0, tabs_current(&lwin));
+
 		tabs_only(&lwin);
 	}
 }
