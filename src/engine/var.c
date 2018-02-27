@@ -24,6 +24,8 @@
 
 #include "../utils/str.h"
 
+static var_t var_new(VarType type, const var_val_t value);
+
 var_t
 var_true(void)
 {
@@ -54,7 +56,7 @@ var_from_int(int int_val)
 var_t
 var_from_str(const char str_val[])
 {
-	const var_val_t value = { .const_string = str_val };
+	const var_val_t value = { .string = (char *)str_val };
 	return var_new(VTYPE_STRING, value);
 }
 
@@ -66,6 +68,13 @@ var_error(void)
 }
 
 var_t
+var_clone(var_t var)
+{
+	return var_new(var.type, var.value);
+}
+
+/* Constructs variable in convenient way. */
+static var_t
 var_new(VarType type, const var_val_t value)
 {
 	var_t new_var = { type, value };
@@ -74,12 +83,6 @@ var_new(VarType type, const var_val_t value)
 		new_var.value.string = strdup(value.string);
 	}
 	return new_var;
-}
-
-var_t
-var_clone(var_t var)
-{
-	return var_new(var.type, var.value);
 }
 
 char *

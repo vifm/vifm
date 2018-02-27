@@ -35,8 +35,6 @@ typedef union
 {
 	char *string; /* String value for VTYPE_STRING, should be copied to use it. */
 	int integer;  /* VTYPE_INT value. */
-
-	const char *const_string; /* Convenience field handy to create variables. */
 }
 var_val_t;
 
@@ -67,9 +65,6 @@ var_t var_from_str(const char str_val[]);
 
 /* Returns variable, which signals about failed operation. */
 var_t var_error(void);
-
-/* Constructs variable in convenient way. */
-var_t var_new(VarType type, const var_val_t value);
 
 /* Convenience function that clones a variable. */
 var_t var_clone(var_t var);
