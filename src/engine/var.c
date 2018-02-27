@@ -45,6 +45,13 @@ var_from_bool(int bool_val)
 }
 
 var_t
+var_from_int(int int_val)
+{
+	const var_val_t value = { .integer = int_val };
+	return var_new(VTYPE_INT, value);
+}
+
+var_t
 var_error(void)
 {
 	static const var_t fail_var = { VTYPE_ERROR };

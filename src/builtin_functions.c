@@ -359,7 +359,6 @@ system_builtin(const call_info_t *call_info)
 static var_t
 tabpagenr_builtin(const call_info_t *call_info)
 {
-	var_val_t value;
 	int first = 1;
 
 	if(call_info->argc != 0)
@@ -376,8 +375,8 @@ tabpagenr_builtin(const call_info_t *call_info)
 		first = 0;
 	}
 
-	value.integer = (first ? tabs_current(curr_view) + 1: tabs_count(curr_view));
-	return var_new(VTYPE_INT, value);
+	return var_from_int(first ? tabs_current(curr_view) + 1
+	                          : tabs_count(curr_view));
 }
 
 /* Runs interactive command in shell and returns its output (joined standard

@@ -442,20 +442,15 @@ eval_call_op(const char name[], int nops, expr_t ops[], var_t *result)
 	{
 		if(nops == 1)
 		{
-			var_val_t val = { .integer = var_to_integer(ops[0].value) };
-			if(name[0] == '-')
-			{
-				val.integer = -val.integer;
-			}
-			*result = var_new(VTYPE_INT, val);
+			const int val = var_to_integer(ops[0].value);
+			*result = var_from_int(name[0] == '-' ? -val : val);
 		}
 		else
 		{
 			assert(nops == 2 && "Must be two arguments.");
 			const int a = var_to_integer(ops[0].value);
 			const int b = var_to_integer(ops[1].value);
-			var_val_t val = { .integer = (name[0] == '-' ? a - b : a + b) };
-			*result = var_new(VTYPE_INT, val);
+			*result = var_from_int(name[0] == '-' ? a - b : a + b);
 		}
 	}
 	else
@@ -925,8 +920,6 @@ parse_signed_number(const char **in)
 static var_t
 parse_number(const char **in)
 {
-	var_val_t var_val = { };
-
 	char buffer[CMD_LINE_LENGTH_MAX];
 	size_t len = 0U;
 	buffer[0] = '\0';
@@ -942,8 +935,7 @@ parse_number(const char **in)
 	}
 	while(last_token.type == DIGIT);
 
-	var_val.integer = str_to_int(buffer);
-	return var_new(VTYPE_INT, var_val);
+	return var_from_int(str_to_int(buffer));
 }
 
 /* sqstr ::= ''' sqchar { sqchar } ''' */
@@ -1177,12 +1169,10 @@ eval_opt(const char **in)
 			return var_new(VTYPE_STRING, var_val);
 
 		case OPT_BOOL:
-			var_val.integer = option->val.bool_val;
-			return var_new(VTYPE_INT, var_val);
+			return var_from_bool(option->val.bool_val);
 
 		case OPT_INT:
-			var_val.integer = option->val.int_val;
-			return var_new(VTYPE_INT, var_val);
+			return var_from_int(option->val.int_val);
 
 		case OPT_ENUM:
 		case OPT_SET:

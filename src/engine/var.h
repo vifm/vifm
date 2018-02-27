@@ -57,6 +57,10 @@ var_t var_false(void);
 /* Gets boolean variable for the boolean value.  Returns the variable. */
 var_t var_from_bool(int bool_val);
 
+/* Makes integer variable initialized with given integer.  Returns the
+ * variable. */
+var_t var_from_int(int int_val);
+
 /* Returns variable, which signals about failed operation. */
 var_t var_error(void);
 
