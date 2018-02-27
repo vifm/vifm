@@ -478,7 +478,7 @@ navigate_to_file(view_t *view, const char dir[], const char file[],
 
 	if(paths_are_equal(view->curr_dir, dir))
 	{
-		(void)ensure_file_is_selected(view, file);
+		(void)fpos_ensure_selected(view, file);
 	}
 }
 
@@ -1104,7 +1104,7 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 	sort_dir_list(0, view);
 
 	ui_view_schedule_redraw(view);
-	flist_ensure_pos_is_valid(view);
+	fpos_ensure_valid_pos(view);
 
 	return 0;
 }
@@ -1283,7 +1283,7 @@ exclude_temporary_entries(view_t *view)
 	(void)zap_entries(view, view->custom.entries, &view->custom.entry_count,
 			&is_temporary, NULL, 1, 1);
 
-	flist_ensure_pos_is_valid(view);
+	fpos_ensure_valid_pos(view);
 	ui_view_schedule_redraw(view);
 
 	flist_sel_recount(view);
@@ -1456,7 +1456,7 @@ flist_goto_by_path(view_t *view, const char path[])
 		char dir_only[PATH_MAX];
 
 		snprintf(dir_only, sizeof(dir_only), "%.*s", (int)(name - path), path);
-		pos = flist_find_entry(view, name, dir_only);
+		pos = fpos_find_entry(view, name, dir_only);
 		if(pos != -1)
 		{
 			view->list_pos = pos;
@@ -3512,7 +3512,7 @@ flist_custom_end(view_t *view, int very)
 		return;
 	}
 
-	flist_set_pos(view, 0);
+	fpos_set_pos(view, 0);
 }
 
 void

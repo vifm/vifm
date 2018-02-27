@@ -712,10 +712,10 @@ follow_link(view_t *view, int follow_dirs)
 
 	if(file != NULL)
 	{
-		const int pos = find_file_pos_in_list(view, file);
+		const int pos = fpos_find_by_name(view, file);
 		if(pos >= 0)
 		{
-			flist_set_pos(view, pos);
+			fpos_set_pos(view, pos);
 		}
 	}
 
@@ -795,7 +795,7 @@ cd_to_parent_dir(view_t *view)
 	if(ret == 0)
 	{
 		load_dir_list(view, 0);
-		flist_set_pos(view, find_file_pos_in_list(view, dir_name));
+		fpos_set_pos(view, fpos_find_by_name(view, dir_name));
 	}
 	return 0;
 }

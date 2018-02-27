@@ -880,7 +880,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 		if(!input_stat.search_mode)
 		{
 			leave_visual_mode(curr_stats.save_msg, 1, 1);
-			flist_set_pos(curr_view, check_mark_directory(curr_view, '<'));
+			fpos_set_pos(curr_view, check_mark_directory(curr_view, '<'));
 		}
 	}
 	if(sub_mode == CLS_COMMAND)

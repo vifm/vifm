@@ -33,32 +33,33 @@ typedef enum
 }
 FileListScope;
 
-/* Finds index of the file within list of currently visible files of the view.
- * Returns file entry index or -1 if file wasn't found. */
-int find_file_pos_in_list(const struct view_t *const view, const char file[]);
+/* Finds index of the file within list of currently visible files of the view by
+ * its name.  Returns file entry index or -1 if file wasn't found. */
+int fpos_find_by_name(const struct view_t *view, const char name[]);
 
 /* Finds index of the file within list of currently visible files of the view.
  * Always matches file name and can optionally match directory if dir is not
  * NULL.  Returns file entry index or -1 if file wasn't found. */
-int flist_find_entry(const struct view_t *view, const char file[],
+int fpos_find_entry(const struct view_t *view, const char name[],
 		const char dir[]);
 
 /* Tries to move cursor down by given number of lines.  Returns non-zero if
- * something was updated. */
-int correct_list_pos_on_scroll_down(struct view_t *view, int lines_count);
+ * position was updated. */
+int fpos_scroll_down(struct view_t *view, int lines_count);
 
 /* Tries to move cursor up by given number of lines.  Returns non-zero if
- * something was updated. */
-int correct_list_pos_on_scroll_up(struct view_t *view, int lines_count);
+ * position was updated. */
+int fpos_scroll_up(struct view_t *view, int lines_count);
 
-/* Moves cursor to specified position. */
-void flist_set_pos(struct view_t *view, int pos);
+/* Moves cursor to specified position.  Normalizes it if needed, invokes fview
+ * update function and can synchronize cursor position in the other view. */
+void fpos_set_pos(struct view_t *view, int pos);
 
 /* Ensures that position in the list doesn't exceed its bounds. */
-void flist_ensure_pos_is_valid(struct view_t *view);
+void fpos_ensure_valid_pos(struct view_t *view);
 
 /* Ensures that cursor is moved outside of entries of certain type. */
-void move_cursor_out_of(struct view_t *view, FileListScope scope);
+void fpos_move_out_of(struct view_t *view, FileListScope scope);
 
 /* Retrieves column number (base zero) of the specified position (cell number
  * base zero).  Returns the number. */
@@ -86,19 +87,19 @@ int fpos_can_move_down(const struct view_t *view);
 
 /* Checks whether cursor is on the first column.  Returns non-zero if so,
  * otherwise zero is returned. */
-int at_first_column(const struct view_t *view);
+int fpos_at_first_col(const struct view_t *view);
 
 /* Checks whether cursor is on the last column.  Returns non-zero if so,
  * otherwise zero is returned. */
-int at_last_column(const struct view_t *view);
+int fpos_at_last_col(const struct view_t *view);
 
 /* Calculates position of the first file in current line.  Returns the
  * position. */
-int get_start_of_line(const struct view_t *view);
+int fpos_line_start(const struct view_t *view);
 
 /* Calculates position of the last file in current line.  Returns the
  * position. */
-int get_end_of_line(const struct view_t *view);
+int fpos_line_end(const struct view_t *view);
 
 /* Retrieves step in files that's used to move within a line.  Retrieves the
  * step. */
@@ -149,62 +150,63 @@ int fpos_half_scroll(struct view_t *view, int down);
 /* Finds position of the next/previous group defined by primary sorting key.
  * Returns determined position (might point to the last/first entry in corner
  * cases). */
-int flist_find_group(const struct view_t *view, int next);
+int fpos_find_group(const struct view_t *view, int next);
 
 /* Finds position of the next/previous group defined by entries being files or
  * directories.  Returns determined position (might point to the last/first
  * entry in corner cases). */
-int flist_find_dir_group(const struct view_t *view, int next);
+int fpos_find_dir_group(const struct view_t *view, int next);
 
 /* Finds position of the first child of the parent of the current node.  Returns
  * new position which isn't changed if already at first child. */
-int flist_first_sibling(const struct view_t *view);
+int fpos_first_sibling(const struct view_t *view);
 
 /* Finds position of the last child of the parent of the current node.  Returns
  * new position which isn't changed if already at last child. */
-int flist_last_sibling(const struct view_t *view);
+int fpos_last_sibling(const struct view_t *view);
 
 /* Finds position of the next sibling directory entry.  Returns new position
  * which isn't changed if nothing was found. */
-int flist_next_dir_sibling(const struct view_t *view);
+int fpos_next_dir_sibling(const struct view_t *view);
 
 /* Finds position of the previous sibling directory entry.  Returns new position
  * which isn't changed if nothing was found. */
-int flist_prev_dir_sibling(const struct view_t *view);
+int fpos_prev_dir_sibling(const struct view_t *view);
 
 /* Finds position of the next directory entry.  Returns new position which isn't
  * changed if no next directory is found. */
-int flist_next_dir(const struct view_t *view);
+int fpos_next_dir(const struct view_t *view);
 
 /* Finds position of the previous directory entry.  Returns new position which
  * isn't changed if no previous directory is found. */
-int flist_prev_dir(const struct view_t *view);
+int fpos_prev_dir(const struct view_t *view);
 
 /* Finds position of the next selected entry.  Returns new position which isn't
  * changed if no next selected entry is found. */
-int flist_next_selected(const struct view_t *view);
+int fpos_next_selected(const struct view_t *view);
 
 /* Finds position of the previous selected entry.  Returns new position which
  * isn't changed if no previous selected entry is found. */
-int flist_prev_selected(const struct view_t *view);
+int fpos_prev_selected(const struct view_t *view);
 
 /* Finds position of the next mismatched entry.  Returns new position which
  * isn't changed if no next such entry is found. */
-int flist_next_mismatch(const struct view_t *view);
+int fpos_next_mismatch(const struct view_t *view);
 
 /* Finds position of the previous mismatched entry.  Returns new position which
  * isn't changed if no previous such entry is found. */
-int flist_prev_mismatch(const struct view_t *view);
+int fpos_prev_mismatch(const struct view_t *view);
 
-/* Removes dot and regexp filters if it's needed to make file visible.  Returns
- * non-zero if file was found. */
-int ensure_file_is_selected(struct view_t *view, const char name[]);
+/* Tries to position cursor at file with specified name.  Removes dot and regexp
+ * filters if it's needed to make file visible.  Does nothing for an empty name.
+ * Returns non-zero if file was eventually found. */
+int fpos_ensure_selected(struct view_t *view, const char name[]);
 
 /* Finds next/previous file which starts with the given character.  Returns
  * -1 if nothing was found, otherwise new position.  When wrapping, can also
  * return current position to signify that there is nowhere to move (no check
  * whether it matches is performed). */
-int flist_find_by_ch(const struct view_t *view, int ch, int backward, int wrap);
+int fpos_find_by_ch(const struct view_t *view, int ch, int backward, int wrap);
 
 #endif /* VIFM__FLIST_POS_H__ */
 

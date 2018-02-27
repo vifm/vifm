@@ -52,13 +52,13 @@ static int find_prev(const view_t *view, entry_predicate pred);
 static int file_can_be_displayed(const char directory[], const char filename[]);
 
 int
-find_file_pos_in_list(const view_t *const view, const char file[])
+fpos_find_by_name(const view_t *view, const char name[])
 {
-	return flist_find_entry(view, file, NULL);
+	return fpos_find_entry(view, name, NULL);
 }
 
 int
-flist_find_entry(const view_t *view, const char file[], const char dir[])
+fpos_find_entry(const view_t *view, const char name[], const char dir[])
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
@@ -68,7 +68,7 @@ flist_find_entry(const view_t *view, const char file[], const char dir[])
 			continue;
 		}
 
-		if(stroscmp(view->dir_entry[i].name, file) == 0)
+		if(stroscmp(view->dir_entry[i].name, name) == 0)
 		{
 			return i;
 		}
@@ -77,7 +77,7 @@ flist_find_entry(const view_t *view, const char file[], const char dir[])
 }
 
 int
-correct_list_pos_on_scroll_down(view_t *view, int lines_count)
+fpos_scroll_down(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
@@ -89,7 +89,7 @@ correct_list_pos_on_scroll_down(view_t *view, int lines_count)
 }
 
 int
-correct_list_pos_on_scroll_up(view_t *view, int lines_count)
+fpos_scroll_up(view_t *view, int lines_count)
 {
 	if(!fpos_are_all_files_visible(view))
 	{
@@ -101,7 +101,7 @@ correct_list_pos_on_scroll_up(view_t *view, int lines_count)
 }
 
 void
-flist_set_pos(view_t *view, int pos)
+fpos_set_pos(view_t *view, int pos)
 {
 	if(pos < 1)
 	{
@@ -123,14 +123,19 @@ flist_set_pos(view_t *view, int pos)
 		/* Synchronize cursor with the other pane. */
 		if(view->custom.type == CV_DIFF && other->list_pos != pos)
 		{
-			flist_set_pos(other, pos);
+			fpos_set_pos(other, pos);
 		}
 	}
 }
 
 void
-flist_ensure_pos_is_valid(view_t *view)
+fpos_ensure_valid_pos(view_t *view)
 {
+	if(view->list_pos < 0)
+	{
+		view->list_pos = 0;
+	}
+
 	if(view->list_pos >= view->list_rows)
 	{
 		view->list_pos = view->list_rows - 1;
@@ -138,7 +143,7 @@ flist_ensure_pos_is_valid(view_t *view)
 }
 
 void
-move_cursor_out_of(view_t *view, FileListScope scope)
+fpos_move_out_of(view_t *view, FileListScope scope)
 {
 	/* XXX: this functionality might be unnecessary now that we have directory
 	 *      merging. */
@@ -208,15 +213,15 @@ fpos_can_move_down(const view_t *view)
 }
 
 int
-at_first_column(const view_t *view)
+fpos_at_first_col(const view_t *view)
 {
 	return (get_curr_col(view) == 0);
 }
 
 int
-at_last_column(const view_t *view)
+fpos_at_last_col(const view_t *view)
 {
-	return get_curr_col(view) == get_max_col(view);
+	return (get_curr_col(view) == get_max_col(view));
 }
 
 /* Retrieves column number of cursor.  Returns the number. */
@@ -250,14 +255,14 @@ get_max_line(const view_t *view)
 }
 
 int
-get_start_of_line(const view_t *view)
+fpos_line_start(const view_t *view)
 {
 	return fview_is_transposed(view) ? view->list_pos%view->run_size
 	                                 : ROUND_DOWN(view->list_pos, view->run_size);
 }
 
 int
-get_end_of_line(const view_t *view)
+fpos_line_end(const view_t *view)
 {
 	if(fview_is_transposed(view))
 	{
@@ -266,7 +271,7 @@ get_end_of_line(const view_t *view)
 		return (pos < view->list_rows ? pos : pos - view->run_size);
 	}
 
-	return MIN(view->list_rows - 1, get_start_of_line(view) + view->run_size - 1);
+	return MIN(view->list_rows - 1, fpos_line_start(view) + view->run_size - 1);
 }
 
 int
@@ -410,9 +415,9 @@ get_column_bottom_pos(const view_t *view)
 }
 
 int
-flist_find_group(const view_t *view, int next)
+fpos_find_group(const view_t *view, int next)
 {
-	/* TODO: refactor/simplify this function (flist_find_group()). */
+	/* TODO: refactor/simplify this function (fpos_find_group()). */
 
 	const int correction = next ? -1 : 0;
 	const int lb = correction;
@@ -605,7 +610,7 @@ get_last_ext(const char name[])
 }
 
 int
-flist_find_dir_group(const view_t *view, int next)
+fpos_find_dir_group(const view_t *view, int next)
 {
 	const int correction = next ? -1 : 0;
 	const int lb = correction;
@@ -629,14 +634,14 @@ flist_find_dir_group(const view_t *view, int next)
 }
 
 int
-flist_first_sibling(const view_t *view)
+fpos_first_sibling(const view_t *view)
 {
 	const int parent = view->list_pos - view->dir_entry[view->list_pos].child_pos;
 	return (parent == view->list_pos ? 0 : parent + 1);
 }
 
 int
-flist_last_sibling(const view_t *view)
+fpos_last_sibling(const view_t *view)
 {
 	int pos = view->list_pos - view->dir_entry[view->list_pos].child_pos;
 	if(pos == view->list_pos)
@@ -663,7 +668,7 @@ flist_last_sibling(const view_t *view)
 }
 
 int
-flist_next_dir_sibling(const view_t *view)
+fpos_next_dir_sibling(const view_t *view)
 {
 	int pos = view->list_pos;
 	const int parent = view->dir_entry[pos].child_pos == 0
@@ -687,7 +692,7 @@ flist_next_dir_sibling(const view_t *view)
 }
 
 int
-flist_prev_dir_sibling(const view_t *view)
+fpos_prev_dir_sibling(const view_t *view)
 {
 	int pos = view->list_pos;
 	/* Determine original parent (-1 for top-most entry). */
@@ -718,31 +723,31 @@ flist_prev_dir_sibling(const view_t *view)
 }
 
 int
-flist_next_dir(const view_t *view)
+fpos_next_dir(const view_t *view)
 {
 	return find_next(view, &fentry_is_dir);
 }
 
 int
-flist_prev_dir(const view_t *view)
+fpos_prev_dir(const view_t *view)
 {
 	return find_prev(view, &fentry_is_dir);
 }
 
 int
-flist_next_selected(const view_t *view)
+fpos_next_selected(const view_t *view)
 {
 	return find_next(view, &is_entry_selected);
 }
 
 int
-flist_prev_selected(const view_t *view)
+fpos_prev_selected(const view_t *view)
 {
 	return find_prev(view, &is_entry_selected);
 }
 
 int
-flist_next_mismatch(const view_t *view)
+fpos_next_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
 	     ? find_next(view, &is_mismatched_entry)
@@ -750,7 +755,7 @@ flist_next_mismatch(const view_t *view)
 }
 
 int
-flist_prev_mismatch(const view_t *view)
+fpos_prev_mismatch(const view_t *view)
 {
 	return (view->custom.type == CV_DIFF)
 	     ? find_prev(view, &is_mismatched_entry)
@@ -808,7 +813,7 @@ find_prev(const view_t *view, entry_predicate pred)
 }
 
 int
-ensure_file_is_selected(view_t *view, const char name[])
+fpos_ensure_selected(view_t *view, const char name[])
 {
 	int file_pos;
 	char nm[NAME_MAX + 1];
@@ -824,13 +829,13 @@ ensure_file_is_selected(view_t *view, const char name[])
 	copy_str(nm, sizeof(nm), name);
 	chosp(nm);
 
-	file_pos = find_file_pos_in_list(view, nm);
+	file_pos = fpos_find_by_name(view, nm);
 	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, nm))
 	{
 		if(nm[0] == '.')
 		{
 			dot_filter_set(view, 1);
-			file_pos = find_file_pos_in_list(view, nm);
+			file_pos = fpos_find_by_name(view, nm);
 		}
 
 		if(file_pos < 0)
@@ -840,11 +845,11 @@ ensure_file_is_selected(view_t *view, const char name[])
 			/* name_filters_remove() postpones reloading of list files. */
 			(void)populate_dir_list(view, 1);
 
-			file_pos = find_file_pos_in_list(view, nm);
+			file_pos = fpos_find_by_name(view, nm);
 		}
 	}
 
-	flist_set_pos(view, (file_pos < 0) ? 0 : file_pos);
+	fpos_set_pos(view, (file_pos < 0) ? 0 : file_pos);
 	return file_pos >= 0;
 }
 
@@ -861,7 +866,7 @@ file_can_be_displayed(const char directory[], const char filename[])
 }
 
 int
-flist_find_by_ch(const view_t *view, int ch, int backward, int wrap)
+fpos_find_by_ch(const view_t *view, int ch, int backward, int wrap)
 {
 	int x;
 	const int upcase = (cfg.case_override & CO_GOTO_FILE)

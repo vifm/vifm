@@ -100,7 +100,7 @@ navigate_to_history_pos(view_t *view, int pos)
 	curr_stats.drop_new_dir_hist = 0;
 
 	load_dir_list(view, 0);
-	flist_set_pos(view, find_file_pos_in_list(view, view->history[pos].file));
+	fpos_set_pos(view, fpos_find_by_name(view, view->history[pos].file));
 
 	view->history_pos = pos;
 }
@@ -361,7 +361,7 @@ find_in_hist(const view_t *view, const view_t *source, int *pos, int *rel_pos)
 	const history_t *const hist_entry = find_hist_entry(source, view->curr_dir);
 	if(hist_entry != NULL)
 	{
-		*pos = find_file_pos_in_list(view, hist_entry->file);
+		*pos = fpos_find_by_name(view, hist_entry->file);
 		*rel_pos = hist_entry->rel_pos;
 		return 1;
 	}
@@ -374,7 +374,7 @@ find_in_hist(const view_t *view, const view_t *source, int *pos, int *rel_pos)
 		 * `cd ..` or equivalent. */
 
 		const char *const dir_name = view->last_dir + strlen(view->curr_dir) + 1U;
-		*pos = find_file_pos_in_list(view, dir_name);
+		*pos = fpos_find_by_name(view, dir_name);
 		*rel_pos = -1;
 		return 1;
 	}

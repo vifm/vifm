@@ -611,9 +611,9 @@ sug_quote(vle_keys_list_cb cb)
 static void
 cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_column(view))
+	if(!fpos_at_last_col(view))
 	{
-		goto_pos(get_end_of_line(view));
+		goto_pos(fpos_line_end(view));
 	}
 }
 
@@ -646,9 +646,9 @@ cmd_comma(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zero(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_column(view))
+	if(!fpos_at_first_col(view))
 	{
-		goto_pos(get_start_of_line(view));
+		goto_pos(fpos_line_start(view));
 	}
 }
 
@@ -1177,7 +1177,7 @@ cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_left_paren(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_find_group(view, 0));
+	goto_pos(fpos_find_group(view, 0));
 }
 
 /* Moves cursor to the beginning of the next group of files defined by the
@@ -1185,77 +1185,77 @@ cmd_left_paren(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_find_group(view, 1));
+	goto_pos(fpos_find_group(view, 1));
 }
 
 /* Go to previous sibling directory entry or do nothing. */
 static void
 cmd_z_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_prev_dir_sibling(view));
+	goto_pos(fpos_prev_dir_sibling(view));
 }
 
 /* Go to next sibling directory entry or do nothing. */
 static void
 cmd_z_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_next_dir_sibling(view));
+	goto_pos(fpos_next_dir_sibling(view));
 }
 
 /* Go to previous mismatched entry or do nothing. */
 static void
 cmd_lb_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_prev_mismatch(view));
+	goto_pos(fpos_prev_mismatch(view));
 }
 
 /* Go to next mismatched entry or do nothing. */
 static void
 cmd_rb_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_next_mismatch(view));
+	goto_pos(fpos_next_mismatch(view));
 }
 
 /* Go to previous directory entry or do nothing. */
 static void
 cmd_lb_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_prev_dir(view));
+	goto_pos(fpos_prev_dir(view));
 }
 
 /* Go to next directory entry or do nothing. */
 static void
 cmd_rb_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_next_dir(view));
+	goto_pos(fpos_next_dir(view));
 }
 
 /* Go to previous selected entry or do nothing. */
 static void
 cmd_lb_s(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_prev_selected(view));
+	goto_pos(fpos_prev_selected(view));
 }
 
 /* Go to next selected entry or do nothing. */
 static void
 cmd_rb_s(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_next_selected(view));
+	goto_pos(fpos_next_selected(view));
 }
 
 /* Go to first sibling of the current entry. */
 static void
 cmd_lb_z(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_first_sibling(view));
+	goto_pos(fpos_first_sibling(view));
 }
 
 /* Go to last sibling of the current entry. */
 static void
 cmd_rb_z(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_last_sibling(view));
+	goto_pos(fpos_last_sibling(view));
 }
 
 /* Moves cursor to the beginning of the previous group of files defined by them
@@ -1263,7 +1263,7 @@ cmd_rb_z(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_find_dir_group(view, 0));
+	goto_pos(fpos_find_dir_group(view, 0));
 }
 
 /* Moves cursor to the beginning of the next group of files defined by them
@@ -1271,14 +1271,14 @@ cmd_left_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 {
-	goto_pos(flist_find_dir_group(view, 1));
+	goto_pos(fpos_find_dir_group(view, 1));
 }
 
 /* Navigates to next/previous file which starts with given character. */
 static void
 find_goto(int ch, int count, int backward)
 {
-	int pos = flist_find_by_ch(view, ch, backward, 1);
+	int pos = fpos_find_by_ch(view, ch, backward, 1);
 	if(pos < 0 || pos == view->list_pos)
 	{
 		return;
@@ -1287,7 +1287,7 @@ find_goto(int ch, int count, int backward)
 	while(count-- > 0)
 	{
 		goto_pos(pos);
-		pos = flist_find_by_ch(view, ch, backward, 1);
+		pos = fpos_find_by_ch(view, ch, backward, 1);
 	}
 }
 

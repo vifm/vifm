@@ -187,7 +187,7 @@ name_filters_add_selection(view_t *view)
 
 	filter_dispose(&filter);
 
-	flist_ensure_pos_is_valid(view);
+	fpos_ensure_valid_pos(view);
 	ui_view_schedule_redraw(view);
 }
 
@@ -277,7 +277,7 @@ filters_invert(view_t *view)
 {
 	view->invert = !view->invert;
 	load_dir_list(view, 1);
-	flist_set_pos(view, 0);
+	fpos_set_pos(view, 0);
 }
 
 int
@@ -704,7 +704,7 @@ extract_previously_selected_pos(view_t *const view)
 	{
 		const int unfiltered_pos = view->local_filter.poshist[i];
 		const dir_entry_t *entry = &view->local_filter.unfiltered[unfiltered_pos];
-		const int filtered_pos = flist_find_entry(view, entry->name, entry->origin);
+		const int filtered_pos = fpos_find_entry(view, entry->name, entry->origin);
 
 		if(filtered_pos >= 0)
 		{
@@ -733,9 +733,9 @@ find_nearest_neighour(const view_t *const view)
 	{
 		const int unfiltered_orig_pos = view->local_filter.poshist[0U];
 		int i;
-		for(i = unfiltered_orig_pos; i < count; i++)
+		for(i = unfiltered_orig_pos; i < count; ++i)
 		{
-			const int filtered_pos = find_file_pos_in_list(view,
+			const int filtered_pos = fpos_find_by_name(view,
 					view->local_filter.unfiltered[i].name);
 			if(filtered_pos >= 0)
 			{

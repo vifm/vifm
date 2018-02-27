@@ -745,11 +745,11 @@ consider_scroll_bind(view_t *view)
 
 		if(can_scroll_up(other))
 		{
-			(void)correct_list_pos_on_scroll_down(other, 0);
+			(void)fpos_scroll_down(other, 0);
 		}
 		if(can_scroll_down(other))
 		{
-			(void)correct_list_pos_on_scroll_up(other, 0);
+			(void)fpos_scroll_up(other, 0);
 		}
 
 		other->curr_line = other->list_pos - other->top_line;
@@ -788,7 +788,7 @@ fview_cursor_redraw(view_t *view)
 	{
 		/* Call file list function, which will also ensure that current position in
 		 * list is correct. */
-		flist_set_pos(view, view->list_pos);
+		fpos_set_pos(view, view->list_pos);
 	}
 	else
 	{

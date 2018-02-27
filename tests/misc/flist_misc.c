@@ -53,9 +53,9 @@ TEST(compare_view_defines_id_grouping)
 	assert_int_equal(3, lwin.list_rows);
 
 	assert_int_equal(0, lwin.list_pos);
-	assert_int_equal(1, lwin.list_pos = flist_find_group(&lwin, 1));
-	assert_int_equal(2, lwin.list_pos = flist_find_group(&lwin, 1));
-	assert_int_equal(1, lwin.list_pos = flist_find_group(&lwin, 0));
+	assert_int_equal(1, lwin.list_pos = fpos_find_group(&lwin, 1));
+	assert_int_equal(2, lwin.list_pos = fpos_find_group(&lwin, 1));
+	assert_int_equal(1, lwin.list_pos = fpos_find_group(&lwin, 0));
 }
 
 TEST(goto_file_nagivates_to_files)
@@ -66,14 +66,14 @@ TEST(goto_file_nagivates_to_files)
 
 	cfg.ignore_case = 1;
 
-	assert_int_equal(-1, flist_find_by_ch(&lwin, 'a', 0, 0));
-	assert_int_equal(-1, flist_find_by_ch(&lwin, 'A', 1, 0));
-	assert_int_equal(0, flist_find_by_ch(&lwin, 'A', 0, 1));
-	assert_int_equal(0, flist_find_by_ch(&lwin, 'a', 1, 1));
-	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 0, 0));
-	assert_int_equal(-1, flist_find_by_ch(&lwin, 'B', 1, 0));
-	assert_int_equal(1, flist_find_by_ch(&lwin, 'B', 0, 1));
-	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 1, 1));
+	assert_int_equal(-1, fpos_find_by_ch(&lwin, 'a', 0, 0));
+	assert_int_equal(-1, fpos_find_by_ch(&lwin, 'A', 1, 0));
+	assert_int_equal(0, fpos_find_by_ch(&lwin, 'A', 0, 1));
+	assert_int_equal(0, fpos_find_by_ch(&lwin, 'a', 1, 1));
+	assert_int_equal(1, fpos_find_by_ch(&lwin, 'b', 0, 0));
+	assert_int_equal(-1, fpos_find_by_ch(&lwin, 'B', 1, 0));
+	assert_int_equal(1, fpos_find_by_ch(&lwin, 'B', 0, 1));
+	assert_int_equal(1, fpos_find_by_ch(&lwin, 'b', 1, 1));
 }
 
 TEST(goto_file_nagivates_to_files_with_case_override)
@@ -86,14 +86,14 @@ TEST(goto_file_nagivates_to_files_with_case_override)
 	cfg.case_override = CO_GOTO_FILE;
 	cfg.case_ignore = 0;
 
-	assert_int_equal(-1, flist_find_by_ch(&lwin, 'a', 0, 0));
-	assert_int_equal(-1, flist_find_by_ch(&lwin, 'A', 1, 0));
-	assert_int_equal(0, flist_find_by_ch(&lwin, 'A', 0, 1));
-	assert_int_equal(0, flist_find_by_ch(&lwin, 'a', 1, 1));
-	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 0, 0));
-	assert_int_equal(-1, flist_find_by_ch(&lwin, 'B', 1, 0));
-	assert_int_equal(0, flist_find_by_ch(&lwin, 'B', 0, 1));
-	assert_int_equal(1, flist_find_by_ch(&lwin, 'b', 1, 1));
+	assert_int_equal(-1, fpos_find_by_ch(&lwin, 'a', 0, 0));
+	assert_int_equal(-1, fpos_find_by_ch(&lwin, 'A', 1, 0));
+	assert_int_equal(0, fpos_find_by_ch(&lwin, 'A', 0, 1));
+	assert_int_equal(0, fpos_find_by_ch(&lwin, 'a', 1, 1));
+	assert_int_equal(1, fpos_find_by_ch(&lwin, 'b', 0, 0));
+	assert_int_equal(-1, fpos_find_by_ch(&lwin, 'B', 1, 0));
+	assert_int_equal(0, fpos_find_by_ch(&lwin, 'B', 0, 1));
+	assert_int_equal(1, fpos_find_by_ch(&lwin, 'b', 1, 1));
 
 	cfg.case_override = 0;
 }
@@ -106,13 +106,13 @@ TEST(find_directory)
 
 	assert_int_equal(2, lwin.list_rows);
 
-	assert_int_equal(0, flist_next_dir(&lwin));
-	assert_int_equal(0, flist_prev_dir(&lwin));
+	assert_int_equal(0, fpos_next_dir(&lwin));
+	assert_int_equal(0, fpos_prev_dir(&lwin));
 
 	lwin.list_pos = 1;
 
-	assert_int_equal(1, flist_next_dir(&lwin));
-	assert_int_equal(0, flist_prev_dir(&lwin));
+	assert_int_equal(1, fpos_next_dir(&lwin));
+	assert_int_equal(0, fpos_prev_dir(&lwin));
 }
 
 TEST(find_selected)
@@ -126,13 +126,13 @@ TEST(find_selected)
 	lwin.dir_entry[2].selected = 1;
 	lwin.selected_files = 2;
 
-	assert_int_equal(2, flist_next_selected(&lwin));
-	assert_int_equal(0, flist_prev_selected(&lwin));
+	assert_int_equal(2, fpos_next_selected(&lwin));
+	assert_int_equal(0, fpos_prev_selected(&lwin));
 
 	lwin.list_pos = 1;
 
-	assert_int_equal(2, flist_next_selected(&lwin));
-	assert_int_equal(0, flist_prev_selected(&lwin));
+	assert_int_equal(2, fpos_next_selected(&lwin));
+	assert_int_equal(0, fpos_prev_selected(&lwin));
 }
 
 TEST(find_first_and_last_siblings)
@@ -142,17 +142,17 @@ TEST(find_first_and_last_siblings)
 	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
 	assert_int_equal(12, lwin.list_rows);
 
-	assert_int_equal(0, flist_first_sibling(&lwin));
-	assert_int_equal(11, flist_last_sibling(&lwin));
+	assert_int_equal(0, fpos_first_sibling(&lwin));
+	assert_int_equal(11, fpos_last_sibling(&lwin));
 
 	lwin.list_pos = 8;
 
-	assert_int_equal(0, flist_first_sibling(&lwin));
-	assert_int_equal(11, flist_last_sibling(&lwin));
+	assert_int_equal(0, fpos_first_sibling(&lwin));
+	assert_int_equal(11, fpos_last_sibling(&lwin));
 
 	lwin.list_pos = 11;
-	assert_int_equal(0, flist_first_sibling(&lwin));
-	assert_int_equal(11, flist_last_sibling(&lwin));
+	assert_int_equal(0, fpos_first_sibling(&lwin));
+	assert_int_equal(11, fpos_last_sibling(&lwin));
 }
 
 TEST(find_next_and_prev_dir_sibling)
@@ -162,18 +162,18 @@ TEST(find_next_and_prev_dir_sibling)
 	assert_success(flist_load_tree(&lwin, lwin.curr_dir));
 	assert_int_equal(12, lwin.list_rows);
 
-	assert_int_equal(0, flist_prev_dir_sibling(&lwin));
-	assert_int_equal(8, flist_next_dir_sibling(&lwin));
+	assert_int_equal(0, fpos_prev_dir_sibling(&lwin));
+	assert_int_equal(8, fpos_next_dir_sibling(&lwin));
 
 	lwin.list_pos = 8;
 
-	assert_int_equal(0, flist_prev_dir_sibling(&lwin));
-	assert_int_equal(8, flist_next_dir_sibling(&lwin));
+	assert_int_equal(0, fpos_prev_dir_sibling(&lwin));
+	assert_int_equal(8, fpos_next_dir_sibling(&lwin));
 
 	lwin.list_pos = 11;
 
-	assert_int_equal(8, flist_prev_dir_sibling(&lwin));
-	assert_int_equal(11, flist_next_dir_sibling(&lwin));
+	assert_int_equal(8, fpos_prev_dir_sibling(&lwin));
+	assert_int_equal(11, fpos_next_dir_sibling(&lwin));
 }
 
 TEST(find_next_and_prev_mismatches)
@@ -192,18 +192,18 @@ TEST(find_next_and_prev_mismatches)
 
 	lwin.list_pos = 0;
 
-	assert_int_equal(0, flist_prev_mismatch(&lwin));
-	assert_int_equal(2, flist_next_mismatch(&lwin));
+	assert_int_equal(0, fpos_prev_mismatch(&lwin));
+	assert_int_equal(2, fpos_next_mismatch(&lwin));
 
 	lwin.list_pos = 2;
 
-	assert_int_equal(2, flist_prev_mismatch(&lwin));
-	assert_int_equal(2, flist_next_mismatch(&lwin));
+	assert_int_equal(2, fpos_prev_mismatch(&lwin));
+	assert_int_equal(2, fpos_next_mismatch(&lwin));
 
 	lwin.list_pos = 3;
 
-	assert_int_equal(2, flist_prev_mismatch(&lwin));
-	assert_int_equal(3, flist_next_mismatch(&lwin));
+	assert_int_equal(2, fpos_prev_mismatch(&lwin));
+	assert_int_equal(3, fpos_next_mismatch(&lwin));
 
 	view_teardown(&rwin);
 }

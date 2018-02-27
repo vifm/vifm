@@ -494,7 +494,7 @@ check_path_for_file(view_t *view, const char path[], int handle)
 	}
 
 	load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
-	if(ensure_file_is_selected(view, after_last(path, '/')))
+	if(fpos_ensure_selected(view, after_last(path, '/')))
 	{
 		if(handle)
 		{
