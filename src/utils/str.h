@@ -256,10 +256,14 @@ size_t copy_str(char dst[], size_t dst_len, const char src[]);
 size_t copy_substr(char dst[], size_t dst_len, const char src[],
 		char terminator);
 
-/* Converts string into integer handling underflow and overflow.  Returns
- * converted number, which is INT_MIN/INT_MAX in case of underflow/overflow
- * happened. */
+/* Converts string into integer handling underflow and overflow.  The string is
+ * assumed to consist of numbers.  Returns converted number, which is
+ * INT_MIN/INT_MAX in case of underflow/overflow happened. */
 int str_to_int(const char str[]);
+
+/* Converts line to a number.  Handles overflow/underflow by saturating
+ * resulting value.  Returns non-zero on success and zero otherwise. */
+int read_int(const char line[], int *i);
 
 /* Replaces all occurrences of the from non-nul character in the str to the to
  * character. */

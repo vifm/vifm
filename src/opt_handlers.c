@@ -203,7 +203,6 @@ static int map_name(const char name[], void *arg);
 static void resort_view(view_t * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void suggestoptions_handler(OPT_OP op, optval_t val);
-static int read_int(const char line[], int *i);
 static void reset_suggestoptions(void);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabscope_handler(OPT_OP op, optval_t val);
@@ -3023,19 +3022,6 @@ suggestoptions_handler(OPT_OP op, optval_t val)
 	{
 		reset_suggestoptions();
 	}
-}
-
-/* Converts line to a number.  Handles overflow/underflow by saturating
- * resulting value.  Returns non-zero on success and zero otherwise. */
-static int
-read_int(const char line[], int *i)
-{
-	char *endptr;
-	const long l = strtol(line, &endptr, 10);
-
-	*i = (l > INT_MAX) ? INT_MAX : ((l < INT_MIN) ? INT_MIN : l);
-
-	return *line != '\0' && *endptr == '\0';
 }
 
 /* Sets value of 'suggestoptions' based on current configuration values. */

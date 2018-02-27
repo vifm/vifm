@@ -866,6 +866,17 @@ str_to_int(const char str[])
 	     : ((number == LONG_MIN) ? INT_MIN : number);
 }
 
+int
+read_int(const char line[], int *i)
+{
+	char *endptr;
+	const long l = strtol(line, &endptr, 10);
+
+	*i = (l > INT_MAX) ? INT_MAX : ((l < INT_MIN) ? INT_MIN : l);
+
+	return *line != '\0' && *endptr == '\0';
+}
+
 void
 replace_char(char str[], char from, char to)
 {
