@@ -35,8 +35,6 @@ typedef union
 {
 	char *string; /* String value for VTYPE_STRING, should be copied to use it. */
 	int integer;  /* VTYPE_INT value. */
-
-	const char *const_string; /* Convenience field handy to create variables. */
 }
 var_val_t;
 
@@ -57,26 +55,31 @@ var_t var_false(void);
 /* Gets boolean variable for the boolean value.  Returns the variable. */
 var_t var_from_bool(int bool_val);
 
+/* Makes integer variable initialized with given integer.  Returns the
+ * variable. */
+var_t var_from_int(int int_val);
+
+/* Makes string variable initialized with given string.  Returns the
+ * variable. */
+var_t var_from_str(const char str_val[]);
+
 /* Returns variable, which signals about failed operation. */
 var_t var_error(void);
-
-/* Constructs variable in convenient way. */
-var_t var_new(VarType type, const var_val_t value);
 
 /* Convenience function that clones a variable. */
 var_t var_clone(var_t var);
 
 /* Converts variable to a string.  Returns new string, which should be freed by
  * the caller. */
-char * var_to_string(const var_t var);
+char * var_to_str(const var_t var);
 
 /* Converts variable to an integer.  Returns integer value, parsing of a string
  * is performed to get integer value. */
-int var_to_integer(const var_t var);
+int var_to_int(const var_t var);
 
 /* Converts variable to a boolean.  Returns non-zero if value is evaluated to
  * true. */
-int var_to_boolean(const var_t var);
+int var_to_bool(const var_t var);
 
 /* Frees resources allocated for the var if any. */
 void var_free(const var_t var);

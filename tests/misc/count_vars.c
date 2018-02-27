@@ -36,12 +36,12 @@ TEST(count_vars_are_set_to_defaults_normal)
 
 	var = getvar("v:count");
 	assert_int_equal(VTYPE_INT, var.type);
-	assert_int_equal(0, var_to_integer(var));
+	assert_int_equal(0, var_to_int(var));
 	var_free(var);
 
 	var = getvar("v:count1");
 	assert_int_equal(VTYPE_INT, var.type);
-	assert_int_equal(1, var_to_integer(var));
+	assert_int_equal(1, var_to_int(var));
 	var_free(var);
 
 	(void)vle_keys_exec_timed_out(WK_ESC);
@@ -55,12 +55,12 @@ TEST(count_vars_are_set_to_passed_value_normal)
 
 	var = getvar("v:count");
 	assert_int_equal(VTYPE_INT, var.type);
-	assert_int_equal(3, var_to_integer(var));
+	assert_int_equal(3, var_to_int(var));
 	var_free(var);
 
 	var = getvar("v:count1");
 	assert_int_equal(VTYPE_INT, var.type);
-	assert_int_equal(3, var_to_integer(var));
+	assert_int_equal(3, var_to_int(var));
 	var_free(var);
 
 	(void)vle_keys_exec_timed_out(WK_ESC);
@@ -81,12 +81,12 @@ TEST(count_vars_are_set_to_passed_value_visual)
 
 	var = getvar("v:count");
 	assert_int_equal(VTYPE_INT, var.type);
-	assert_int_equal(1, var_to_integer(var));
+	assert_int_equal(1, var_to_int(var));
 	var_free(var);
 
 	var = getvar("v:count1");
 	assert_int_equal(VTYPE_INT, var.type);
-	assert_int_equal(1, var_to_integer(var));
+	assert_int_equal(1, var_to_int(var));
 	var_free(var);
 
 	(void)vle_keys_exec_timed_out(WK_ESC);

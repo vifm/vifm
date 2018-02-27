@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 26
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2252,9 +2252,10 @@ yet supported) and might be changed in future releases, or get an alias.
     close current tab, unless it's the only one open at current scope.
 
 :tabm[ove] [N]                                 *vifm-:tabmove* *vifm-:tabm*
-    without the argument, current tab becomes the last tab.  With the
-    argument current tab is moved after tab with the specified number.
-    Argument of `0` moves tab to the first position.
+    without the argument or with `$` as the argument, current tab becomes
+    the last tab.  With the argument, current tab is moved after the tab
+    with the specified number.  Argument of `0` moves current tab to the
+    first position.
 
 :tabname [name]                                *vifm-:tabname*
     set, update or reset (when no argument is provided) name of the current

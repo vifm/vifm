@@ -24,6 +24,8 @@
 
 #include "../utils/str.h"
 
+static var_t var_new(VarType type, const var_val_t value);
+
 var_t
 var_true(void)
 {
@@ -45,6 +47,20 @@ var_from_bool(int bool_val)
 }
 
 var_t
+var_from_int(int int_val)
+{
+	const var_val_t value = { .integer = int_val };
+	return var_new(VTYPE_INT, value);
+}
+
+var_t
+var_from_str(const char str_val[])
+{
+	const var_val_t value = { .string = (char *)str_val };
+	return var_new(VTYPE_STRING, value);
+}
+
+var_t
 var_error(void)
 {
 	static const var_t fail_var = { VTYPE_ERROR };
@@ -52,6 +68,13 @@ var_error(void)
 }
 
 var_t
+var_clone(var_t var)
+{
+	return var_new(var.type, var.value);
+}
+
+/* Constructs variable in convenient way. */
+static var_t
 var_new(VarType type, const var_val_t value)
 {
 	var_t new_var = { type, value };
@@ -62,14 +85,8 @@ var_new(VarType type, const var_val_t value)
 	return new_var;
 }
 
-var_t
-var_clone(var_t var)
-{
-	return var_new(var.type, var.value);
-}
-
 char *
-var_to_string(const var_t var)
+var_to_str(const var_t var)
 {
 	switch(var.type)
 	{
@@ -85,7 +102,7 @@ var_to_string(const var_t var)
 }
 
 int
-var_to_integer(const var_t var)
+var_to_int(const var_t var)
 {
 	switch(var.type)
 	{
@@ -101,7 +118,7 @@ var_to_integer(const var_t var)
 }
 
 int
-var_to_boolean(const var_t var)
+var_to_bool(const var_t var)
 {
 	switch(var.type)
 	{

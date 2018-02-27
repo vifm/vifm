@@ -1229,12 +1229,12 @@ eval_arglist(const char args[], const char **stop_ptr)
 		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
 		{
 			result = get_parsing_result();
-			tmp_result = free_this = var_to_string(result);
+			tmp_result = free_this = var_to_str(result);
 			args = get_last_parsed_char();
 		}
 		else if(parsing_error == PE_NO_ERROR)
 		{
-			tmp_result = free_this = var_to_string(result);
+			tmp_result = free_this = var_to_str(result);
 			args = get_last_position();
 		}
 

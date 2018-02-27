@@ -403,7 +403,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					parsing_error = parse(expr, &res);
 					if(parsing_error == PE_NO_ERROR)
 					{
-						resstr = var_to_string(res);
+						resstr = var_to_str(res);
 					}
 
 					if(resstr != NULL)

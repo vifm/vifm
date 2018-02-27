@@ -1368,16 +1368,13 @@ set_count_vars(int count)
 {
 	/* TODO: move this to a better place someday, nowhere to place right now. */
 
-	var_val_t value;
 	var_t var;
 
-	value.integer = (count == NO_COUNT_GIVEN ? 0 : count);
-	var = var_new(VTYPE_INT, value);
+	var = var_from_int(count == NO_COUNT_GIVEN ? 0 : count);
 	setvar("v:count", var);
 	var_free(var);
 
-	value.integer = (count == NO_COUNT_GIVEN ? 1 : count);
-	var = var_new(VTYPE_INT, value);
+	var = var_from_int(count == NO_COUNT_GIVEN ? 1 : count);
 	setvar("v:count1", var);
 	var_free(var);
 }

@@ -2924,7 +2924,7 @@ eval_if_condition(const cmd_info_t *cmd_info)
 		return -1;
 	}
 
-	result = var_to_boolean(condition);
+	result = var_to_bool(condition);
 	var_free(condition);
 	return result;
 }
@@ -4015,8 +4015,17 @@ tabclose_cmd(const cmd_info_t *cmd_info)
 static int
 tabmove_cmd(const cmd_info_t *cmd_info)
 {
-	const int where_to = cmd_info->argc == 0 ? tabs_count(curr_view)
-	                                         : str_to_int(cmd_info->argv[0]);
+	int where_to;
+
+	if(cmd_info->argc == 0 || strcmp(cmd_info->argv[0], "$") == 0)
+	{
+		where_to = tabs_count(curr_view);
+	}
+	else if(!read_int(cmd_info->argv[0], &where_to))
+	{
+		return CMDS_ERR_INVALID_ARG;
+	}
+
 	tabs_move(curr_view, where_to);
 	ui_views_update_titles();
 	return 0;

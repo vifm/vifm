@@ -274,7 +274,7 @@ let_variables(const char cmd[])
 		return -1;
 	}
 
-	str_val = var_to_string(res_var);
+	str_val = var_to_str(res_var);
 
 	error = perform_op(name, type, op, str_val);
 
@@ -815,7 +815,7 @@ complete_builtinvars(const char var[], const char **start)
 	{
 		if(strncmp(builtin_vars[i].name, var, len) == 0)
 		{
-			char *const str_val = var_to_string(builtin_vars[i].val);
+			char *const str_val = var_to_str(builtin_vars[i].val);
 			vle_compl_add_match(builtin_vars[i].name, str_val);
 			free(str_val);
 		}
