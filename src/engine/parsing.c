@@ -525,8 +525,7 @@ compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
 static var_t
 eval_concat(int nops, expr_t ops[])
 {
-	var_t result = var_error();
-	char res[CMD_LINE_LENGTH_MAX];
+	char res[CMD_LINE_LENGTH_MAX + 1];
 	size_t res_len = 0U;
 	int i;
 
@@ -553,13 +552,7 @@ eval_concat(int nops, expr_t ops[])
 		free(str_val);
 	}
 
-	if(last_error == PE_NO_ERROR)
-	{
-		const var_val_t var_val = { .string = res };
-		result = var_new(VTYPE_STRING, var_val);
-	}
-
-	return result;
+	return (last_error == PE_NO_ERROR ? var_from_str(res) : var_error());
 }
 
 /* Appends operand to an expression.  Returns zero on success, otherwise
@@ -942,7 +935,7 @@ parse_number(const char **in)
 static var_t
 parse_singly_quoted_string(const char **in)
 {
-	char buffer[CMD_LINE_LENGTH_MAX];
+	char buffer[CMD_LINE_LENGTH_MAX + 1];
 	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
 	while(parse_singly_quoted_char(in, &sbuf));
@@ -954,9 +947,8 @@ parse_singly_quoted_string(const char **in)
 
 	if(last_token.type == SQ)
 	{
-		const var_val_t var_val = { .string = buffer };
 		get_next(in);
-		return var_new(VTYPE_STRING, var_val);
+		return var_from_str(buffer);
 	}
 
 	last_error = PE_MISSING_QUOTE;
@@ -1008,9 +1000,8 @@ parse_doubly_quoted_string(const char **in)
 
 	if(last_token.type == DQ)
 	{
-		const var_val_t var_val = { .string = buffer };
 		get_next(in);
-		return var_new(VTYPE_STRING, var_val);
+		return var_from_str(buffer);
 	}
 
 	last_error = (last_token.type == END)
@@ -1080,9 +1071,7 @@ parse_doubly_quoted_char(const char **in, sbuffer *sbuf)
 static var_t
 eval_envvar(const char **in)
 {
-	var_val_t var_val;
-
-	char name[VAR_NAME_LENGTH_MAX];
+	char name[VAR_NAME_LENGTH_MAX + 1];
 	if(!parse_sequence(in, ENV_VAR_NAME_FIRST_CHAR, ENV_VAR_NAME_CHARS,
 		sizeof(name), name))
 	{
@@ -1090,8 +1079,7 @@ eval_envvar(const char **in)
 		return var_false();
 	}
 
-	var_val.const_string = getenv_fu(name);
-	return var_new(VTYPE_STRING, var_val);
+	return var_from_str(getenv_fu(name));
 }
 
 /* builtinvar ::= 'v:' varname */
@@ -1099,7 +1087,7 @@ static var_t
 eval_builtinvar(const char **in)
 {
 	var_t var_value;
-	char name[VAR_NAME_LENGTH_MAX];
+	char name[VAR_NAME_LENGTH_MAX + 1];
 	strcpy(name, "v:");
 
 	if(last_token.c != 'v' || **in != ':')
@@ -1135,7 +1123,6 @@ eval_opt(const char **in)
 {
 	OPT_SCOPE scope = OPT_ANY;
 	const opt_t *option;
-	var_val_t var_val;
 
 	char name[OPTION_NAME_MAX + 1];
 
@@ -1165,8 +1152,7 @@ eval_opt(const char **in)
 		case OPT_STR:
 		case OPT_STRLIST:
 		case OPT_CHARSET:
-			var_val.string = option->val.str_val;
-			return var_new(VTYPE_STRING, var_val);
+			return var_from_str(option->val.str_val);
 
 		case OPT_BOOL:
 			return var_from_bool(option->val.bool_val);
@@ -1176,8 +1162,7 @@ eval_opt(const char **in)
 
 		case OPT_ENUM:
 		case OPT_SET:
-			var_val.const_string = get_value(option);
-			return var_new(VTYPE_STRING, var_val);
+			return var_from_str(get_value(option));
 
 		default:
 			assert(0 && "Unexpected option type");

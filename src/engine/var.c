@@ -52,6 +52,13 @@ var_from_int(int int_val)
 }
 
 var_t
+var_from_str(const char str_val[])
+{
+	const var_val_t value = { .const_string = str_val };
+	return var_new(VTYPE_STRING, value);
+}
+
+var_t
 var_error(void)
 {
 	static const var_t fail_var = { VTYPE_ERROR };

@@ -61,6 +61,10 @@ var_t var_from_bool(int bool_val);
  * variable. */
 var_t var_from_int(int int_val);
 
+/* Makes string variable initialized with given string.  Returns the
+ * variable. */
+var_t var_from_str(const char str_val[]);
+
 /* Returns variable, which signals about failed operation. */
 var_t var_error(void);
 
