@@ -87,7 +87,7 @@ chooseopt_builtin(const call_info_t *call_info)
 	const char *result = NULL;
 	char *type;
 
-	type = var_to_string(call_info->argv[0]);
+	type = var_to_str(call_info->argv[0]);
 	if(strcmp(type, "files") == 0)
 	{
 		result = curr_stats.chosen_files_out;
@@ -118,7 +118,7 @@ executable_builtin(const call_info_t *call_info)
 	int exists;
 	char *str_val;
 
-	str_val = var_to_string(call_info->argv[0]);
+	str_val = var_to_str(call_info->argv[0]);
 
 	if(strpbrk(str_val, PATH_SEPARATORS) != NULL)
 	{
@@ -143,7 +143,7 @@ expand_builtin(const call_info_t *call_info)
 	char *str_val;
 	char *env_expanded_str_val;
 
-	str_val = var_to_string(call_info->argv[0]);
+	str_val = var_to_str(call_info->argv[0]);
 	env_expanded_str_val = expand_envvars(str_val, 0);
 	result_str = expand_macros(env_expanded_str_val, NULL, NULL, 0);
 	free(env_expanded_str_val);
@@ -159,7 +159,7 @@ expand_builtin(const call_info_t *call_info)
 static var_t
 filetype_builtin(const call_info_t *call_info)
 {
-	char *str_val = var_to_string(call_info->argv[0]);
+	char *str_val = var_to_str(call_info->argv[0]);
 	const int fnum = get_fnum(str_val);
 	const char *result_str = "";
 	free(str_val);
@@ -219,7 +219,7 @@ layoutis_builtin(const call_info_t *call_info)
 	char *type;
 	int result;
 
-	type = var_to_string(call_info->argv[0]);
+	type = var_to_str(call_info->argv[0]);
 	if(strcmp(type, "only") == 0)
 	{
 		result = (curr_stats.number_of_windows == 1);
@@ -252,7 +252,7 @@ has_builtin(const call_info_t *call_info)
 {
 	var_t result;
 
-	char *const str_val = var_to_string(call_info->argv[0]);
+	char *const str_val = var_to_str(call_info->argv[0]);
 
 	if(strcmp(str_val, "unix") == 0)
 	{
@@ -284,7 +284,7 @@ paneisat_builtin(const call_info_t *call_info)
 	const int vsplit = (curr_stats.split == VSPLIT);
 	const int first = (curr_view == &lwin);
 
-	loc = var_to_string(call_info->argv[0]);
+	loc = var_to_str(call_info->argv[0]);
 	if(strcmp(loc, "top") == 0)
 	{
 		result = (only || vsplit || first);
@@ -322,7 +322,7 @@ system_builtin(const call_info_t *call_info)
 	size_t cmd_out_len;
 	char *result_str;
 
-	cmd = var_to_string(call_info->argv[0]);
+	cmd = var_to_str(call_info->argv[0]);
 	cmd_stream = read_cmd_output(cmd);
 	free(cmd);
 
@@ -357,7 +357,7 @@ tabpagenr_builtin(const call_info_t *call_info)
 
 	if(call_info->argc != 0)
 	{
-		char *const type = var_to_string(call_info->argv[0]);
+		char *const type = var_to_str(call_info->argv[0]);
 		if(strcmp(type, "$") != 0)
 		{
 			vle_tb_append_linef(vle_err, "Invalid argument (expected \"$\"): %s",

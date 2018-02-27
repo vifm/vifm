@@ -71,15 +71,15 @@ var_t var_clone(var_t var);
 
 /* Converts variable to a string.  Returns new string, which should be freed by
  * the caller. */
-char * var_to_string(const var_t var);
+char * var_to_str(const var_t var);
 
 /* Converts variable to an integer.  Returns integer value, parsing of a string
  * is performed to get integer value. */
-int var_to_integer(const var_t var);
+int var_to_int(const var_t var);
 
 /* Converts variable to a boolean.  Returns non-zero if value is evaluated to
  * true. */
-int var_to_boolean(const var_t var);
+int var_to_bool(const var_t var);
 
 /* Frees resources allocated for the var if any. */
 void var_free(const var_t var);

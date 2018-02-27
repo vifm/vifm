@@ -2924,7 +2924,7 @@ eval_if_condition(const cmd_info_t *cmd_info)
 		return -1;
 	}
 
-	result = var_to_boolean(condition);
+	result = var_to_bool(condition);
 	var_free(condition);
 	return result;
 }

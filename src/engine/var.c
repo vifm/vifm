@@ -86,7 +86,7 @@ var_new(VarType type, const var_val_t value)
 }
 
 char *
-var_to_string(const var_t var)
+var_to_str(const var_t var)
 {
 	switch(var.type)
 	{
@@ -102,7 +102,7 @@ var_to_string(const var_t var)
 }
 
 int
-var_to_integer(const var_t var)
+var_to_int(const var_t var)
 {
 	switch(var.type)
 	{
@@ -118,7 +118,7 @@ var_to_integer(const var_t var)
 }
 
 int
-var_to_boolean(const var_t var)
+var_to_bool(const var_t var)
 {
 	switch(var.type)
 	{

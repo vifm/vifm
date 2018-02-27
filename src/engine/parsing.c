@@ -327,7 +327,7 @@ eval_or_op(int nops, expr_t ops[], var_t *result)
 
 	/* Conversion to integer so that strings are converted into numbers instead of
 	 * checked to be empty. */
-	val = var_to_integer(ops[0].value);
+	val = var_to_int(ops[0].value);
 
 	for(i = 1; i < nops && !val; ++i)
 	{
@@ -335,7 +335,7 @@ eval_or_op(int nops, expr_t ops[], var_t *result)
 		{
 			return 1;
 		}
-		val |= var_to_integer(ops[i].value);
+		val |= var_to_int(ops[i].value);
 	}
 
 	*result = var_from_bool(val);
@@ -369,7 +369,7 @@ eval_and_op(int nops, expr_t ops[], var_t *result)
 
 	/* Conversion to integer so that strings are converted into numbers instead of
 	 * checked to be empty. */
-	val = var_to_integer(ops[0].value);
+	val = var_to_int(ops[0].value);
 
 	for(i = 1; i < nops && val; ++i)
 	{
@@ -377,7 +377,7 @@ eval_and_op(int nops, expr_t ops[], var_t *result)
 		{
 			return 1;
 		}
-		val &= var_to_integer(ops[i].value);
+		val &= var_to_int(ops[i].value);
 	}
 
 	*result = var_from_bool(val);
@@ -436,20 +436,20 @@ eval_call_op(const char name[], int nops, expr_t ops[], var_t *result)
 	else if(strcmp(name, "!") == 0)
 	{
 		assert(nops == 1 && "Must be single argument.");
-		*result = var_from_bool(!var_to_integer(ops[0].value));
+		*result = var_from_bool(!var_to_int(ops[0].value));
 	}
 	else if(strcmp(name, "-") == 0 || strcmp(name, "+") == 0)
 	{
 		if(nops == 1)
 		{
-			const int val = var_to_integer(ops[0].value);
+			const int val = var_to_int(ops[0].value);
 			*result = var_from_int(name[0] == '-' ? -val : val);
 		}
 		else
 		{
 			assert(nops == 2 && "Must be two arguments.");
-			const int a = var_to_integer(ops[0].value);
-			const int b = var_to_integer(ops[1].value);
+			const int a = var_to_int(ops[0].value);
+			const int b = var_to_int(ops[1].value);
 			*result = var_from_int(name[0] == '-' ? a - b : a + b);
 		}
 	}
@@ -502,8 +502,8 @@ compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
 	}
 	else
 	{
-		const int lhs_int = var_to_integer(lhs);
-		const int rhs_int = var_to_integer(rhs);
+		const int lhs_int = var_to_int(lhs);
+		const int rhs_int = var_to_int(rhs);
 		switch(operation)
 		{
 			case EQ: return lhs_int == rhs_int;
@@ -540,7 +540,7 @@ eval_concat(int nops, expr_t ops[])
 
 	for(i = 0; i < nops; ++i)
 	{
-		char *const str_val = var_to_string(ops[i].value);
+		char *const str_val = var_to_str(ops[i].value);
 		if(str_val == NULL)
 		{
 			last_error = PE_INTERNAL;

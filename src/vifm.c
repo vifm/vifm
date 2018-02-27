@@ -527,7 +527,7 @@ eval_received_expression(const char expr[])
 		return NULL;
 	}
 
-	result_str = var_to_string(result);
+	result_str = var_to_str(result);
 	var_free(result);
 	return result_str;
 }
