@@ -1,5 +1,4 @@
-This file is part of MXE.
-See index.html for further information.
+Ignore underline attribute on Windows.
 
 diff --git a/win32/pdcscrn.c b/win32/pdcscrn.c
 index b48ddaa..da84cde 100644
