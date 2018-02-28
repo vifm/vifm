@@ -281,8 +281,6 @@ EXTRA_DIST = \
 						 Makefile.win \
 						 lcov.css \
 						 lcovrc \
-						 ../data/graphics/vifm-old.ico \
-						 ../data/graphics/vifm-old.png \
 						 ../data/graphics/vifm.ico \
 						 ../data/graphics/vifm.svg
 
