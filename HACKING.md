@@ -34,7 +34,7 @@ there for instructions.
     |-- data/ - documentation, sample vifmrc, icons
     |  |
     |  |-- colors/ - sample color schemes
-    |  |-- graphics/ - icons
+    |  |-- graphics/ - icons and screenshots
     |  |-- man/ - manual pages
     |  |-- shell-completion/ - scripts implementing shell completion
     |  `-- vim/ - plugin for Vim

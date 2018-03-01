@@ -561,11 +561,6 @@ update_geometry(void)
 
 	update_term_size();
 
-#ifdef _WIN32
-	/* This resizes vifm to window size. */
-	resize_term(0, 0);
-#endif
-
 	getmaxyx(stdscr, screen_y, screen_x);
 	cfg.lines = screen_y;
 	cfg.columns = screen_x;
@@ -1181,6 +1176,12 @@ update_term_size(void)
 	if(is_term_resized(ws.ws_row, ws.ws_col))
 	{
 		resizeterm(ws.ws_row, ws.ws_col);
+	}
+#elif defined(__PDCURSES__)
+	if(is_termresized())
+	{
+		/* This resizes vifm to window size. */
+		resize_term(0, 0);
 	}
 #endif
 }

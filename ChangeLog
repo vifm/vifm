@@ -75,6 +75,9 @@
 
 	Fixed absence of error on doing `--remote` to a server that doesn't exist.
 
+	Fixed flickering on Windows.  Thanks to Alexandre Viau and
+	randomizedthinking.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
