@@ -572,7 +572,11 @@ page_scroll(int base, int direction)
 	            + old_pos%curr_view->run_size - base%curr_view->run_size;
 	curr_view->list_pos = MAX(0, MIN(curr_view->list_rows - 1, new_pos));
 	scroll_by_files(curr_view, direction*offset);
-	redraw_current_view();
+
+	/* Updating list_pos ourselves doesn't take into account
+	 * synchronization/updates of the other view, so trigger them. */
+	ui_view_schedule_redraw(curr_view);
+	fpos_set_pos(curr_view, curr_view->list_pos);
 }
 
 static void
