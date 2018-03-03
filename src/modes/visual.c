@@ -1425,9 +1425,12 @@ revert_selection(int pos)
 	}
 }
 
+/* Updates elements of the screen after visual-mode specific elements were
+ * changed. */
 static void
 update(void)
 {
+	fpos_set_pos(view, view->list_pos);
 	redraw_view(view);
 	ui_ruler_update(view, 1);
 }

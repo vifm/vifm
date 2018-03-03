@@ -78,6 +78,13 @@
 	Fixed flickering on Windows.  Thanks to Alexandre Viau and
 	randomizedthinking.
 
+	Fixed other view sometimes not being updated on scrolling via Ctrl-F/B keys
+	in cases like compare view or when quickview is on.  Thanks to Alexandre
+	Viau.
+
+	Fixed other view not being updated in visual mode in cases like compare view
+	or when quickview is on.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
