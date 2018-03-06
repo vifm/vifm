@@ -212,8 +212,9 @@ typedef struct config_t
 	char *delete_prg;  /* File removal application. */
 
 	/* Message shortening controlled by 'shortmess'. */
-	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
-	int shorten_title_paths;  /* Use tilde shortening in view titles. */
+	int trunc_normal_sb_msgs;  /* Truncate normal status bar msgs if needed. */
+	int shorten_title_paths;   /* Use tilde shortening in view titles. */
+	int short_term_mux_titles; /* Use only file name for titles of screen/tmux. */
 
 	/* Comma-separated list of file system types which are slow to respond. */
 	char *slow_fs_list;

@@ -1029,6 +1029,10 @@ gen_term_multiplexer_title_arg(const char cmd[])
 	if(visubcmd != NULL)
 	{
 		title = skip_whitespace(visubcmd + strlen(vicmd) + 1);
+		if(cfg.short_term_mux_titles)
+		{
+			title = get_last_path_component(title);
+		}
 	}
 	else
 	{

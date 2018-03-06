@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Feb 27
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3354,6 +3354,8 @@ default: "p"
 
 Contains a sequence of single-character flags.  Each flag enables shortening
 of some message displayed by vifm in the TUI.  Flags:
+  M - shorten titles in windows of terminal multiplexers created by vifm
+      down to file name instead of using full path.
   T - truncate status-bar messages in the middle if they are too long to fit on
       the command line.  "..." will appear in the middle.
   p - use tilde shortening in view titles.
