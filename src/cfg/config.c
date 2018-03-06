@@ -163,6 +163,7 @@ cfg_init(void)
 
 	cfg.trunc_normal_sb_msgs = 0;
 	cfg.shorten_title_paths = 1;
+	cfg.short_term_mux_titles = 0;
 
 	cfg.slow_fs_list = strdup("");
 

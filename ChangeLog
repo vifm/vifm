@@ -37,6 +37,10 @@
 
 	Added :tabm[ove] command that moves tabs.  Thanks to filterfalse.
 
+	Added "M" flag to 'shortmess' option to control shortening of titles in
+	windows of terminal multiplexers created by vifm down to file name instead
+	of using full path.  Thanks to mateusz28.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

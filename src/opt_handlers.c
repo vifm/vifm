@@ -325,9 +325,10 @@ static const char *iooptions_vals[][2] = {
 
 /* Possible flags of 'shortmess' and their count. */
 static const char *shortmess_vals[][2] = {
-	{ "Tp", "all shortmess values" },
-	{ "T",  "shorten too long status bar messages" },
-	{ "p",  "substitute home path with ~ in view title" },
+	{ "MTp", "all shortmess values" },
+	{ "M",   "use only file name for title in terminal multiplexers" },
+	{ "T",   "shorten too long status bar messages" },
+	{ "p",   "substitute home path with ~ in view title" },
 };
 
 /* Possible values of 'showtabline'. */
@@ -1090,8 +1091,8 @@ static void
 init_shortmess(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s%s", cfg.trunc_normal_sb_msgs ? "T" : "",
-			cfg.shorten_title_paths ? "p" : "");
+	snprintf(buf, sizeof(buf), "%s%s%s", cfg.short_term_mux_titles ? "M" : "",
+			cfg.trunc_normal_sb_msgs ? "T" : "", cfg.shorten_title_paths ? "p" : "");
 	val->str_val = buf;
 }
 
@@ -2193,11 +2194,16 @@ shortmess_handler(OPT_OP op, optval_t val)
 
 	cfg.trunc_normal_sb_msgs = 0;
 	cfg.shorten_title_paths = 0;
+	cfg.short_term_mux_titles = 0;
 
 	p = val.str_val;
 	while(*p != '\0')
 	{
-		if(*p == 'T')
+		if(*p == 'M')
+		{
+			cfg.short_term_mux_titles = 1;
+		}
+		else if(*p == 'T')
 		{
 			cfg.trunc_normal_sb_msgs = 1;
 		}

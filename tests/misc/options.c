@@ -756,5 +756,22 @@ TEST(setting_showtabline_works)
 	assert_int_equal(STL_ALWAYS, cfg.show_tab_line);
 }
 
+TEST(shortmess)
+{
+	cfg.trunc_normal_sb_msgs = 0;
+	cfg.shorten_title_paths = 0;
+	cfg.short_term_mux_titles = 0;
+
+	assert_success(exec_commands("set shortmess=Mp", &lwin, CIT_COMMAND));
+	assert_true(cfg.short_term_mux_titles);
+	assert_false(cfg.trunc_normal_sb_msgs);
+	assert_true(cfg.shorten_title_paths);
+
+	assert_success(exec_commands("set shortmess=T", &lwin, CIT_COMMAND));
+	assert_false(cfg.short_term_mux_titles);
+	assert_true(cfg.trunc_normal_sb_msgs);
+	assert_false(cfg.shorten_title_paths);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
