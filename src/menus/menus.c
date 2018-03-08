@@ -863,7 +863,7 @@ menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 void
 menus_search_repeat(menu_state_t *m, int backward)
 {
-	if(m->regexp == NULL)
+	if(is_null_or_empty(m->regexp))
 	{
 		ui_sb_err("No search pattern set");
 		curr_stats.save_msg = 1;

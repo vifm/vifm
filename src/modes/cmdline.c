@@ -466,17 +466,14 @@ input_line_changed(void)
 static void
 handle_empty_input(void)
 {
-	if(cfg.hl_search)
+	/* Clear selection/highlight. */
+	if(prev_mode == MENU_MODE)
 	{
-		/* Clear selection. */
-		if(prev_mode != MENU_MODE)
-		{
-			flist_sel_stash(curr_view);
-		}
-		else
-		{
-			(void)menus_search("", sub_mode_ptr, 0);
-		}
+		(void)menus_search("", sub_mode_ptr, 0);
+	}
+	else if(cfg.hl_search)
+	{
+		flist_sel_stash(curr_view);
 	}
 
 	if(prev_mode != MENU_MODE)
