@@ -318,7 +318,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = src
-EXTRA_DIST = FAQ BUGS patches pkgs tests
+EXTRA_DIST = COPYING.3party FAQ BUGS patches pkgs tests
 all: all-recursive
 
 .SUFFIXES:

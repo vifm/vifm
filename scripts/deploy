@@ -147,7 +147,7 @@ if [ "$target" = all -o "$target" = archive ]; then
         rmdir "$dir/data/vim/doc/plugin"
         mkdir "$dir/data/vim-doc"
         mv "$dir/data/vim/doc/app" "$dir/data/vim-doc/doc"
-        pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL NEWS README THANKS TODO'
+        pkgfiles='AUTHORS BUGS ChangeLog COPYING COPYING.3party FAQ INSTALL NEWS README THANKS TODO'
         for i in $pkgfiles; do
             dest="$dir/$i.txt"
             cp "$i" "$dest"

@@ -2,7 +2,7 @@
 
 SUBDIRS = src
 
-EXTRA_DIST = FAQ BUGS patches pkgs tests
+EXTRA_DIST = COPYING.3party FAQ BUGS patches pkgs tests
 dist-hook:
 	make -C "$(distdir)/tests" clean
 
