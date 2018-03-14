@@ -4,8 +4,6 @@ STRIP = $(CROSS)strip
 
 # function to get absolute path to parent directory of a path
 getparentdir = $(abspath $(dir $1))
-# function to get last but one element of the list
-last_but_one = $(word $(words $(wordlist 2, $(words $1), $1)), $1)
 # determine location of this Makefile
 src_dir := $(call getparentdir, $(lastword $(MAKEFILE_LIST)))
 
