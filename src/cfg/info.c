@@ -812,12 +812,12 @@ update_info_file(const char filename[], int merge)
 		fprintf(fp, "# You can edit this file by hand, but it's recommended not to "
 				"do that.\n");
 
-		if(cfg.vifm_info & VIFMINFO_OPTIONS)
+		if(cfg.vifm_info & VINFO_OPTIONS)
 		{
 			write_options(fp);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_FILETYPES)
+		if(cfg.vifm_info & VINFO_FILETYPES)
 		{
 			write_assocs(fp, "Filetypes", LINE_TYPE_FILETYPE, &filetypes, nft, ft);
 			write_assocs(fp, "X Filetypes", LINE_TYPE_XFILETYPE, &xfiletypes, nfx,
@@ -826,75 +826,75 @@ update_info_file(const char filename[], int merge)
 					fv);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_COMMANDS)
+		if(cfg.vifm_info & VINFO_COMMANDS)
 		{
 			write_commands(fp, cmds_list, cmds, ncmds);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_MARKS)
+		if(cfg.vifm_info & VINFO_MARKS)
 		{
 			write_marks(fp, non_conflicting_marks, marks, bt, nmarks);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+		if(cfg.vifm_info & VINFO_BOOKMARKS)
 		{
 			write_bmarks(fp, bmarks, bmt, nbmarks);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_TUI)
+		if(cfg.vifm_info & VINFO_TUI)
 		{
 			write_tui_state(fp);
 		}
 
-		if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
+		if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 		{
 			write_view_history(fp, &lwin, "Left", LINE_TYPE_LWIN_HIST, nlh, lh, lhp);
 			write_view_history(fp, &rwin, "Right", LINE_TYPE_RWIN_HIST, nrh, rh, rhp);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_CHISTORY)
+		if(cfg.vifm_info & VINFO_CHISTORY)
 		{
 			write_history(fp, "Command line", LINE_TYPE_CMDLINE_HIST,
 					MIN(ncmdh, cfg.history_len - curr_stats.cmd_hist.pos), cmdh,
 					&curr_stats.cmd_hist);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_SHISTORY)
+		if(cfg.vifm_info & VINFO_SHISTORY)
 		{
 			write_history(fp, "Search", LINE_TYPE_SEARCH_HIST, nsrch, srch,
 					&curr_stats.search_hist);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_PHISTORY)
+		if(cfg.vifm_info & VINFO_PHISTORY)
 		{
 			write_history(fp, "Prompt", LINE_TYPE_PROMPT_HIST, nprompt, prompt,
 					&curr_stats.prompt_hist);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_FHISTORY)
+		if(cfg.vifm_info & VINFO_FHISTORY)
 		{
 			write_history(fp, "Local filter", LINE_TYPE_FILTER_HIST, nfilter, filter,
 					&curr_stats.filter_hist);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_REGISTERS)
+		if(cfg.vifm_info & VINFO_REGISTERS)
 		{
 			write_registers(fp, regs, nregs);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
+		if(cfg.vifm_info & VINFO_DIRSTACK)
 		{
 			write_dir_stack(fp, dir_stack, ndir_stack);
 		}
 
 		write_trash(fp, trash, ntrash);
 
-		if(cfg.vifm_info & VIFMINFO_STATE)
+		if(cfg.vifm_info & VINFO_STATE)
 		{
 			write_general_state(fp);
 		}
 
-		if(cfg.vifm_info & VIFMINFO_CS)
+		if(cfg.vifm_info & VINFO_CS)
 		{
 			fputs("\n# Color scheme:\n", fp);
 			fprintf(fp, "c%s\n", cfg.cs.name);
@@ -1131,33 +1131,33 @@ write_options(FILE *const fp)
 	fprintf(fp, "=classify=%s\n", escape_spaces(str == NULL ? "" : str));
 
 	fprintf(fp, "=vifminfo=options");
-	if(cfg.vifm_info & VIFMINFO_FILETYPES)
+	if(cfg.vifm_info & VINFO_FILETYPES)
 		fprintf(fp, ",filetypes");
-	if(cfg.vifm_info & VIFMINFO_COMMANDS)
+	if(cfg.vifm_info & VINFO_COMMANDS)
 		fprintf(fp, ",commands");
-	if(cfg.vifm_info & VIFMINFO_MARKS)
+	if(cfg.vifm_info & VINFO_MARKS)
 		fprintf(fp, ",bookmarks");
-	if(cfg.vifm_info & VIFMINFO_TUI)
+	if(cfg.vifm_info & VINFO_TUI)
 		fprintf(fp, ",tui");
-	if(cfg.vifm_info & VIFMINFO_DHISTORY)
+	if(cfg.vifm_info & VINFO_DHISTORY)
 		fprintf(fp, ",dhistory");
-	if(cfg.vifm_info & VIFMINFO_STATE)
+	if(cfg.vifm_info & VINFO_STATE)
 		fprintf(fp, ",state");
-	if(cfg.vifm_info & VIFMINFO_CS)
+	if(cfg.vifm_info & VINFO_CS)
 		fprintf(fp, ",cs");
-	if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+	if(cfg.vifm_info & VINFO_SAVEDIRS)
 		fprintf(fp, ",savedirs");
-	if(cfg.vifm_info & VIFMINFO_CHISTORY)
+	if(cfg.vifm_info & VINFO_CHISTORY)
 		fprintf(fp, ",chistory");
-	if(cfg.vifm_info & VIFMINFO_SHISTORY)
+	if(cfg.vifm_info & VINFO_SHISTORY)
 		fprintf(fp, ",shistory");
-	if(cfg.vifm_info & VIFMINFO_PHISTORY)
+	if(cfg.vifm_info & VINFO_PHISTORY)
 		fprintf(fp, ",phistory");
-	if(cfg.vifm_info & VIFMINFO_FHISTORY)
+	if(cfg.vifm_info & VINFO_FHISTORY)
 		fprintf(fp, ",fhistory");
-	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
+	if(cfg.vifm_info & VINFO_DIRSTACK)
 		fprintf(fp, ",dirstack");
-	if(cfg.vifm_info & VIFMINFO_REGISTERS)
+	if(cfg.vifm_info & VINFO_REGISTERS)
 		fprintf(fp, ",registers");
 	fprintf(fp, "\n");
 
@@ -1344,7 +1344,7 @@ write_view_history(FILE *fp, view_t *view, const char str[], char mark,
 		fprintf(fp, "%c%s\n\t%s\n%d\n", mark, view->history[i].dir,
 				view->history[i].file, view->history[i].rel_pos);
 	}
-	if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+	if(cfg.vifm_info & VINFO_SAVEDIRS)
 	{
 		fprintf(fp, "%c\n", mark);
 	}

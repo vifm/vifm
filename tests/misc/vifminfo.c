@@ -65,7 +65,7 @@ TEST(filetypes_are_deduplicated)
 	matchers_t *ms;
 
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
-	cfg.vifm_info = VIFMINFO_FILETYPES;
+	cfg.vifm_info = VINFO_FILETYPES;
 	init_commands();
 
 	/* Add a filetype. */
