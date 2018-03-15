@@ -294,8 +294,10 @@ static const char *confirm_vals[][2] = {
 
 /* Possible values of 'dotdirs'. */
 static const char *dotdirs_vals[][2] = {
-	{ "rootparent",    "show .. in FS root" },
-	{ "nonrootparent", "show .. in non-root directories" },
+	[BIT(DD_ROOT_PARENT)]    = { "rootparent",
+	                             "show .. in FS root" },
+	[BIT(DD_NONROOT_PARENT)] = { "nonrootparent",
+	                             "show .. in non-root directories" },
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
@@ -306,15 +308,21 @@ static const char *lsoptions_enum[][2] = {
 
 /* Possible values of 'suggestoptions'. */
 static const char *suggestoptions_vals[][2] = {
-	{ "normal",      "display in normal mode" },
-	{ "visual",      "display in visual mode" },
-	{ "view",        "display in view mode" },
-	{ "otherpane",   "use other pane for suggestions, if available" },
-	{ "delay",       "display suggestions after a short delay" },
-	{ "keys",        "include keys suggestions in results" },
-	{ "foldsubkeys", "fold multiple keys with common prefix" },
-	{ "marks",       "include marks suggestions in results" },
-	{ "registers",   "include registers suggestions in results" },
+	[BIT(SF_NORMAL)]      = { "normal",      "display in normal mode" },
+	[BIT(SF_VISUAL)]      = { "visual",      "display in visual mode" },
+	[BIT(SF_VIEW)]        = { "view",        "display in view mode" },
+	[BIT(SF_OTHERPANE)]   = { "otherpane",
+	                          "use other pane for suggestions, if available" },
+	[BIT(SF_DELAY)]       = { "delay",
+	                          "display suggestions after a short delay" },
+	[BIT(SF_KEYS)]        = { "keys",
+	                          "include keys suggestions in results" },
+	[BIT(SF_MARKS)]       = { "foldsubkeys",
+	                          "fold multiple keys with common prefix" },
+	[BIT(SF_REGISTERS)]   = { "marks",
+	                          "include marks suggestions in results" },
+	[BIT(SF_FOLDSUBKEYS)] = { "registers",
+	                          "include registers suggestions in results" },
 };
 ARRAY_GUARD(suggestoptions_vals, NUM_SUGGESTION_FLAGS);
 
@@ -483,23 +491,24 @@ static const char *sortorder_enum[][2] = {
 
 /* Possible values of 'vifminfo' option. */
 static const char *vifminfo_set[][2] = {
-	{ "options",   "values of options" },
-	{ "filetypes", "file associations" },
-	{ "commands",  "user-defined :commands" },
-	{ "bookmarks", "marks (e.g. 'a)" },
-	{ "bmarks",    "bookmarks" },
-	{ "tui",       "state of TUI" },
-	{ "dhistory",  "directory history" },
-	{ "state",     "filters and terminal multiplexer" },
-	{ "cs",        "current colorscheme" },
-	{ "savedirs",  "restore last visited directory" },
-	{ "chistory",  "cmdline history" },
-	{ "shistory",  "search history" },
-	{ "dirstack",  "directory stack" },
-	{ "registers", "contents of registers" },
-	{ "phistory",  "prompt history" },
-	{ "fhistory",  "local filter history" },
+	[BIT(VINFO_OPTIONS)]   = { "options",   "values of options" },
+	[BIT(VINFO_FILETYPES)] = { "filetypes", "file associations" },
+	[BIT(VINFO_COMMANDS)]  = { "commands",  "user-defined :commands" },
+	[BIT(VINFO_MARKS)]     = { "bookmarks", "marks (e.g. 'a)" },
+	[BIT(VINFO_BOOKMARKS)] = { "bmarks",    "bookmarks" },
+	[BIT(VINFO_TUI)]       = { "tui",       "state of TUI" },
+	[BIT(VINFO_DHISTORY)]  = { "dhistory",  "directory history" },
+	[BIT(VINFO_STATE)]     = { "state",     "filters and terminal multiplexer" },
+	[BIT(VINFO_CS)]        = { "cs",        "current colorscheme" },
+	[BIT(VINFO_SAVEDIRS)]  = { "savedirs",  "restore last visited directory" },
+	[BIT(VINFO_CHISTORY)]  = { "chistory",  "cmdline history" },
+	[BIT(VINFO_SHISTORY)]  = { "shistory",  "search history" },
+	[BIT(VINFO_DIRSTACK)]  = { "dirstack",  "directory stack" },
+	[BIT(VINFO_REGISTERS)] = { "registers", "contents of registers" },
+	[BIT(VINFO_PHISTORY)]  = { "phistory",  "prompt history" },
+	[BIT(VINFO_FHISTORY)]  = { "fhistory",  "local filter history" },
 };
+ARRAY_GUARD(vifminfo_set, NUM_VINFO);
 
 /* Possible values of 'wildstyle'. */
 static const char *wildstyle_vals[][2] = {

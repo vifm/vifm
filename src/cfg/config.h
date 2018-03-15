@@ -129,6 +129,7 @@ enum
 	VINFO_REGISTERS = 1 << 13, /* Contents of registers. */
 	VINFO_PHISTORY  = 1 << 14, /* Prompt history. */
 	VINFO_FHISTORY  = 1 << 15, /* Filter history. */
+	NUM_VINFO       = 16,      /* Number of VINFO_* constants. */
 };
 
 /* File decoration description. */
