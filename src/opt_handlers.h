@@ -19,26 +19,6 @@
 #ifndef VIFM__OPT_HANDLERS_H__
 #define VIFM__OPT_HANDLERS_H__
 
-enum
-{
-	VIFMINFO_OPTIONS   = 1 << 0,
-	VIFMINFO_FILETYPES = 1 << 1,
-	VIFMINFO_COMMANDS  = 1 << 2,
-	VIFMINFO_MARKS     = 1 << 3,
-	VIFMINFO_BOOKMARKS = 1 << 4,
-	VIFMINFO_TUI       = 1 << 5,
-	VIFMINFO_DHISTORY  = 1 << 6,
-	VIFMINFO_STATE     = 1 << 7,
-	VIFMINFO_CS        = 1 << 8,
-	VIFMINFO_SAVEDIRS  = 1 << 9,
-	VIFMINFO_CHISTORY  = 1 << 10,
-	VIFMINFO_SHISTORY  = 1 << 11,
-	VIFMINFO_DIRSTACK  = 1 << 12,
-	VIFMINFO_REGISTERS = 1 << 13,
-	VIFMINFO_PHISTORY  = 1 << 14,
-	VIFMINFO_FHISTORY  = 1 << 15,
-};
-
 struct view_t;
 
 void init_option_handlers(void);
