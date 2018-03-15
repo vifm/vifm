@@ -119,16 +119,16 @@ enum
 	VINFO_MARKS     = 1 << 3,  /* Vim-like marks. */
 	VINFO_BOOKMARKS = 1 << 4,  /* Named bookmarks. */
 	VINFO_TUI       = 1 << 5,  /* TUI state. */
-	VINFO_DHISTORY  = 1 << 6,  /* Directory history. */
-	VINFO_STATE     = 1 << 7,  /* State of filters and multiplexer support. */
-	VINFO_CS        = 1 << 8,  /* Active color scheme. */
-	VINFO_SAVEDIRS  = 1 << 9,  /* Restore last used directories on startup. */
-	VINFO_CHISTORY  = 1 << 10, /* Command-line history. */
-	VINFO_SHISTORY  = 1 << 11, /* Search history. */
-	VINFO_DIRSTACK  = 1 << 12, /* Directory stack. */
-	VINFO_REGISTERS = 1 << 13, /* Contents of registers. */
-	VINFO_PHISTORY  = 1 << 14, /* Prompt history. */
-	VINFO_FHISTORY  = 1 << 15, /* Filter history. */
+	VINFO_STATE     = 1 << 6,  /* State of filters and multiplexer support. */
+	VINFO_CS        = 1 << 7,  /* Active color scheme. */
+	VINFO_REGISTERS = 1 << 8,  /* Contents of registers. */
+	VINFO_CHISTORY  = 1 << 9,  /* Command-line history. */
+	VINFO_DHISTORY  = 1 << 10, /* Directory history. */
+	VINFO_DIRSTACK  = 1 << 11, /* Directory stack. */
+	VINFO_FHISTORY  = 1 << 12, /* Filter history. */
+	VINFO_PHISTORY  = 1 << 13, /* Prompt history. */
+	VINFO_SHISTORY  = 1 << 14, /* Search history. */
+	VINFO_SAVEDIRS  = 1 << 15, /* Restore last used directories on startup. */
 	NUM_VINFO       = 16,      /* Number of VINFO_* constants. */
 };
 
