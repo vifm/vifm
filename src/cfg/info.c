@@ -975,10 +975,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=cdpath=%s\n", cfg.cd_path);
 	fprintf(fp, "=%schaselinks\n", cfg.chase_links ? "" : "no");
 	fprintf(fp, "=columns=%d\n", cfg.columns);
-	fprintf(fp, "=cpoptions=%s%s%s\n",
-			cfg.filter_inverted_by_default ? "f" : "",
-			cfg.selection_is_primary ? "s" : "",
-			cfg.tab_switches_pane ? "t" : "");
+	fprintf(fp, "=cpoptions=%s\n",
+			escape_spaces(get_option_value("cpoptions", OPT_GLOBAL)));
 	fprintf(fp, "=deleteprg=%s\n", escape_spaces(cfg.delete_prg));
 	fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 	if(strcmp(cfg.border_filler, " ") != 0)
@@ -1023,10 +1021,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
 	fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
 	fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
-	fprintf(fp, "=tuioptions=%s%s%s\n",
-			cfg.extra_padding ? "p" : "",
-			cfg.side_borders_visible ? "s" : "",
-			cfg.use_unicode_characters ? "u" : "");
+	fprintf(fp, "=tuioptions=%s\n",
+			escape_spaces(get_option_value("tuioptions", OPT_GLOBAL)));
 	fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
 	fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),
 			cfg.vi_cmd_bg ? " &" : "");
@@ -1060,106 +1056,24 @@ write_options(FILE *const fp)
 	fprintf(fp, "=[previewprg=%s\n", escape_spaces(lwin.preview_prg_g));
 	fprintf(fp, "=]previewprg=%s\n", escape_spaces(rwin.preview_prg_g));
 
-	fprintf(fp, "%s", "=confirm=");
-	if(cfg.confirm & CONFIRM_DELETE)
-		fprintf(fp, "%s", "delete,");
-	if(cfg.confirm & CONFIRM_PERM_DELETE)
-		fprintf(fp, "%s", "permdelete,");
-	fprintf(fp, "\n");
-
-	fprintf(fp, "%s", "=dotdirs=");
-	if(cfg.dot_dirs & DD_ROOT_PARENT)
-		fprintf(fp, "%s", "rootparent,");
-	if(cfg.dot_dirs & DD_NONROOT_PARENT)
-		fprintf(fp, "%s", "nonrootparent,");
-	fprintf(fp, "\n");
-
-	fprintf(fp, "%s", "=caseoptions=");
-	if(cfg.case_override & CO_PATH_COMPL)
-		fprintf(fp, "%c", (cfg.case_ignore & CO_PATH_COMPL) ? 'p' : 'P');
-	if(cfg.case_override & CO_GOTO_FILE)
-		fprintf(fp, "%c", (cfg.case_ignore & CO_GOTO_FILE) ? 'g' : 'G');
-	fprintf(fp, "\n");
-
-	fprintf(fp, "%s", "=suggestoptions=");
-	if(cfg.sug.flags & SF_NORMAL)
-		fprintf(fp, "%s", "normal,");
-	if(cfg.sug.flags & SF_VISUAL)
-		fprintf(fp, "%s", "visual,");
-	if(cfg.sug.flags & SF_VIEW)
-		fprintf(fp, "%s", "view,");
-	if(cfg.sug.flags & SF_OTHERPANE)
-		fprintf(fp, "%s", "otherpane,");
-	if(cfg.sug.flags & SF_KEYS)
-		fprintf(fp, "%s", "keys,");
-	if(cfg.sug.flags & SF_FOLDSUBKEYS)
-		fprintf(fp, "%s", "foldsubkeys,");
-	if(cfg.sug.flags & SF_MARKS)
-		fprintf(fp, "%s", "marks,");
-	if(cfg.sug.flags & SF_DELAY)
-	{
-		if(cfg.sug.delay == 500)
-		{
-			fprintf(fp, "%s", "delay,");
-		}
-		else
-		{
-			fprintf(fp, "delay:%d,", cfg.sug.delay);
-		}
-	}
-	if(cfg.sug.flags & SF_REGISTERS)
-	{
-		if(cfg.sug.maxregfiles == 5)
-		{
-			fprintf(fp, "%s", "registers,");
-		}
-		else
-		{
-			fprintf(fp, "registers:%d,", cfg.sug.maxregfiles);
-		}
-	}
-	fprintf(fp, "\n");
-
-	fprintf(fp, "%s", "=iooptions=");
-	if(cfg.fast_file_cloning)
-		fprintf(fp, "%s", "fastfilecloning,");
-	fprintf(fp, "\n");
+	fprintf(fp, "=confirm=%s\n",
+			escape_spaces(get_option_value("confirm", OPT_GLOBAL)));
+	fprintf(fp, "=dotdirs=%s\n",
+			escape_spaces(get_option_value("dotdirs", OPT_GLOBAL)));
+	fprintf(fp, "=caseoptions=%s\n",
+			escape_spaces(get_option_value("caseoptions", OPT_GLOBAL)));
+	fprintf(fp, "=suggestoptions=%s\n",
+			escape_spaces(get_option_value("suggestoptions", OPT_GLOBAL)));
+	fprintf(fp, "=iooptions=%s\n",
+			escape_spaces(get_option_value("iooptions", OPT_GLOBAL)));
 
 	fprintf(fp, "=dirsize=%s", cfg.view_dir_size == VDS_SIZE ? "size" : "nitems");
 
 	str = classify_to_str();
 	fprintf(fp, "=classify=%s\n", escape_spaces(str == NULL ? "" : str));
 
-	fprintf(fp, "=vifminfo=options");
-	if(cfg.vifm_info & VINFO_FILETYPES)
-		fprintf(fp, ",filetypes");
-	if(cfg.vifm_info & VINFO_COMMANDS)
-		fprintf(fp, ",commands");
-	if(cfg.vifm_info & VINFO_MARKS)
-		fprintf(fp, ",bookmarks");
-	if(cfg.vifm_info & VINFO_TUI)
-		fprintf(fp, ",tui");
-	if(cfg.vifm_info & VINFO_DHISTORY)
-		fprintf(fp, ",dhistory");
-	if(cfg.vifm_info & VINFO_STATE)
-		fprintf(fp, ",state");
-	if(cfg.vifm_info & VINFO_CS)
-		fprintf(fp, ",cs");
-	if(cfg.vifm_info & VINFO_SAVEDIRS)
-		fprintf(fp, ",savedirs");
-	if(cfg.vifm_info & VINFO_CHISTORY)
-		fprintf(fp, ",chistory");
-	if(cfg.vifm_info & VINFO_SHISTORY)
-		fprintf(fp, ",shistory");
-	if(cfg.vifm_info & VINFO_PHISTORY)
-		fprintf(fp, ",phistory");
-	if(cfg.vifm_info & VINFO_FHISTORY)
-		fprintf(fp, ",fhistory");
-	if(cfg.vifm_info & VINFO_DIRSTACK)
-		fprintf(fp, ",dirstack");
-	if(cfg.vifm_info & VINFO_REGISTERS)
-		fprintf(fp, ",registers");
-	fprintf(fp, "\n");
+	fprintf(fp, "=vifminfo=%s\n",
+			escape_spaces(get_option_value("vifminfo", OPT_GLOBAL)));
 
 	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
 	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
