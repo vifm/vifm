@@ -51,6 +51,9 @@
 	on, this is now independent from "savedirs" in 'vifminfo' option.  Thanks
 	to filterfalse.
 
+	Use historical cursor position on navigating to a mark that doesn't specify
+	a file by default when 'autochpos' is on.  Thanks to filterfalse.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

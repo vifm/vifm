@@ -24,6 +24,7 @@
 #include <string.h> /* strdup() */
 #include <time.h> /* time_t time() */
 
+#include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "modes/wk.h"
 #include "ui/fileview.h"
@@ -318,7 +319,15 @@ navigate_to_mark(view_t *view, char m)
 
 	if(is_mark_valid(mark))
 	{
-		navigate_to_file(view, mark->directory, mark->file, 1);
+		if(!cfg_ch_pos_on(CHPOS_DIRMARK) || flist_custom_active(view) ||
+				!is_parent_dir(mark->file))
+		{
+			navigate_to_file(view, mark->directory, mark->file, 1);
+		}
+		else
+		{
+			navigate_to(view, mark->directory);
+		}
 		return 0;
 	}
 
