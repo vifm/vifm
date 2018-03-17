@@ -765,10 +765,16 @@ reload_lists(void)
 static void
 reload_list(view_t *view)
 {
-	if(curr_stats.load_stage >= 3)
-		load_saving_pos(view);
-	else
-		load_dir_list(view, !(cfg.vifm_info&VINFO_SAVEDIRS) || view->list_pos != 0);
+	if(curr_stats.load_stage < 3)
+	{
+		const int keep_position = cfg_ch_pos_on(CHPOS_STARTUP)
+		                        ? 0
+		                        : !is_dir_list_loaded(view);
+		load_dir_list(view, keep_position);
+		return;
+	}
+
+	load_saving_pos(view);
 }
 
 void

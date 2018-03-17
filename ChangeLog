@@ -47,6 +47,10 @@
 	More explicit documentation about leaving custom views.  Thanks to
 	Desperados.
 
+	Use historical cursor position upon startup by default when 'autochpos' is
+	on, this is now independent from "savedirs" in 'vifminfo' option.  Thanks
+	to filterfalse.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
