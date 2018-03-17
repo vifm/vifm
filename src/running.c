@@ -725,12 +725,9 @@ follow_link(view_t *view, int follow_dirs)
 void
 open_dir(view_t *view)
 {
-	char full_path[PATH_MAX];
-	const char *filename;
+	char full_path[PATH_MAX + 1];
 
-	filename = get_current_file_name(view);
-
-	if(is_parent_dir(filename))
+	if(is_parent_dir(get_current_file_name(view)))
 	{
 		cd_updir(view, 1);
 		return;

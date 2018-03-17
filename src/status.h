@@ -132,7 +132,10 @@ typedef struct
 
 	int last_search_backward;
 
-	int ch_pos; /* for :cd, :pushd and 'letter */
+	/* Flag which controls use of historical cursor positions.  On by default, but
+	 * gets temporarily disabled on certain operations possibly depending on value
+	 * of options. */
+	int ch_pos;
 
 	int confirmed;
 
