@@ -760,7 +760,8 @@ reload_lists(void)
 	}
 }
 
-/* reloads view on window_reload() call */
+/* Reloads view handling special case of loading it for the first time during
+ * startup. */
 static void
 reload_list(view_t *view)
 {
