@@ -137,7 +137,8 @@ typedef enum
 {
 	CHPOS_STARTUP = 1 << 0, /* On loading views during startup. */
 	CHPOS_DIRMARK = 1 << 1, /* On navigating to a mark targeting directory. */
-	NUM_CHPOS     = 2       /* Number of CHPOS_* constants. */
+	CHPOS_ENTER   = 1 << 2, /* On entering a directory by picking it. */
+	NUM_CHPOS     = 3       /* Number of CHPOS_* constants. */
 }
 ChposWhen;
 

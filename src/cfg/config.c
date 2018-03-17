@@ -216,7 +216,7 @@ cfg_init(void)
 	cfg.show_tab_line = STL_MULTIPLE;
 
 	cfg.auto_ch_pos = 1;
-	cfg.ch_pos_on = CHPOS_STARTUP | CHPOS_DIRMARK;
+	cfg.ch_pos_on = CHPOS_STARTUP | CHPOS_DIRMARK | CHPOS_ENTER;
 }
 
 void

@@ -737,7 +737,9 @@ open_dir(view_t *view)
 
 	if(cd_is_possible(full_path))
 	{
+		curr_stats.ch_pos = (cfg_ch_pos_on(CHPOS_ENTER) ? 1 : 0);
 		navigate_to(view, full_path);
+		curr_stats.ch_pos = 1;
 	}
 }
 
