@@ -133,7 +133,7 @@ cfg_init(void)
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
-	cfg.vifm_info = VIFMINFO_MARKS | VIFMINFO_BOOKMARKS;
+	cfg.vifm_info = VINFO_MARKS | VINFO_BOOKMARKS;
 	cfg.auto_ch_pos = 1;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;

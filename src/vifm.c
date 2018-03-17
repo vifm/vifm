@@ -492,7 +492,7 @@ check_path_for_file(view_t *view, const char path[], int handle)
 		return;
 	}
 
-	load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
+	load_dir_list(view, 1);
 	if(fpos_ensure_selected(view, after_last(path, '/')))
 	{
 		if(handle)

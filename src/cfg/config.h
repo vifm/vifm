@@ -110,6 +110,28 @@ enum
 	CVO_LOCALFILTER = 4, /* Reset local filter on entering/leaving [v]cv. */
 };
 
+/* Which elements of runtime state should be stored in vifminfo. */
+enum
+{
+	VINFO_OPTIONS   = 1 << 0,  /* 'options'. */
+	VINFO_FILETYPES = 1 << 1,  /* File associations and viewers. */
+	VINFO_COMMANDS  = 1 << 2,  /* User-defined :commands. */
+	VINFO_MARKS     = 1 << 3,  /* Vim-like marks. */
+	VINFO_BOOKMARKS = 1 << 4,  /* Named bookmarks. */
+	VINFO_TUI       = 1 << 5,  /* TUI state. */
+	VINFO_STATE     = 1 << 6,  /* State of filters and multiplexer support. */
+	VINFO_CS        = 1 << 7,  /* Active color scheme. */
+	VINFO_REGISTERS = 1 << 8,  /* Contents of registers. */
+	VINFO_CHISTORY  = 1 << 9,  /* Command-line history. */
+	VINFO_DHISTORY  = 1 << 10, /* Directory history. */
+	VINFO_DIRSTACK  = 1 << 11, /* Directory stack. */
+	VINFO_FHISTORY  = 1 << 12, /* Filter history. */
+	VINFO_PHISTORY  = 1 << 13, /* Prompt history. */
+	VINFO_SHISTORY  = 1 << 14, /* Search history. */
+	VINFO_SAVEDIRS  = 1 << 15, /* Restore last used directories on startup. */
+	NUM_VINFO       = 16,      /* Number of VINFO_* constants. */
+};
+
 /* File decoration description. */
 typedef struct
 {

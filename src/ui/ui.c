@@ -767,8 +767,7 @@ reload_list(view_t *view)
 	if(curr_stats.load_stage >= 3)
 		load_saving_pos(view);
 	else
-		load_dir_list(view,
-				!(cfg.vifm_info&VIFMINFO_SAVEDIRS) || view->list_pos != 0);
+		load_dir_list(view, !(cfg.vifm_info&VINFO_SAVEDIRS) || view->list_pos != 0);
 }
 
 void
