@@ -2818,6 +2818,9 @@ l key in the ":history ." and ":trashes" menus are treated like :cd command.
 This option also affects marks so that navigating to a mark doesn't restore
 cursor position.
 
+When this option is enabled, more fine grained control over cursor position
+is available via |vifm-'histcursor'| option.
+
                                                *vifm-'caseoptions'*
 caseoptions
 type: charset
@@ -3099,6 +3102,21 @@ or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 >
     set grepprg='ag --line-numbers %i %a %s'
 <
+                                               *vifm-'histcursor'*
+histcursor
+type: set
+default: startup,dirmark,direnter
+
+Defines situations when cursor should be moved according to directory
+history:
+ - startup  - on loading file lists during startup
+ - dirmark  - after navigating to a mark that doesn't specify file
+ - direnter - on opening directory from a file list
+
+This option has no effect when |vifm-'autochpos'| is disabled.
+
+Note that the list is not exhaustive and there are other situations when
+cursor is positioned automatically.
                                                *vifm-'history'* *vifm-'hi'*
 history hi
 type: integer

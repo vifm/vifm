@@ -773,5 +773,17 @@ TEST(shortmess)
 	assert_false(cfg.shorten_title_paths);
 }
 
+TEST(histcursor)
+{
+	cfg.ch_pos_on = 0;
+
+	assert_success(exec_commands("set histcursor=startup", &lwin, CIT_COMMAND));
+	assert_int_equal(CHPOS_STARTUP, cfg.ch_pos_on);
+
+	assert_success(exec_commands("set histcursor=direnter,dirmark", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(CHPOS_ENTER | CHPOS_DIRMARK, cfg.ch_pos_on);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
