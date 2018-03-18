@@ -41,11 +41,22 @@
 	windows of terminal multiplexers created by vifm down to file name instead
 	of using full path.  Thanks to mateusz28.
 
+	Added 'histcursor' option that gives partial control over when cursor is
+	positioned in accordance with record of directory history.  Thanks to
+	filterfalse and Dmitry Frank (a.k.a. dimonomid).
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
 	More explicit documentation about leaving custom views.  Thanks to
 	Desperados.
+
+	Use historical cursor position upon startup by default when 'autochpos' is
+	on, this is now independent from "savedirs" in 'vifminfo' option.  Thanks
+	to filterfalse.
+
+	Use historical cursor position on navigating to a mark that doesn't specify
+	a file by default when 'autochpos' is on.  Thanks to filterfalse.
 
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).

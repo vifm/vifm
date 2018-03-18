@@ -988,6 +988,8 @@ write_options(FILE *const fp)
 	fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
 	fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
 	fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
+	fprintf(fp, "=histcursor=%s\n",
+			escape_spaces(get_option_value("histcursor", OPT_GLOBAL)));
 	fprintf(fp, "=history=%d\n", cfg.history_len);
 	fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
 	fprintf(fp, "=%siec\n", cfg.sizefmt.ieci_prefixes ? "" : "no");

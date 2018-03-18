@@ -133,6 +133,7 @@ static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
 static void gdefault_handler(OPT_OP op, optval_t val);
 static void grepprg_handler(OPT_OP op, optval_t val);
+static void histcursor_handler(OPT_OP op, optval_t val);
 static void history_handler(OPT_OP op, optval_t val);
 static void hlsearch_handler(OPT_OP op, optval_t val);
 static void iec_handler(OPT_OP op, optval_t val);
@@ -300,6 +301,14 @@ static const char *dotdirs_vals[][2] = {
 	                             "show .. in non-root directories" },
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
+
+/* Possible values of 'histcursor'. */
+static const char *histcursor_vals[][2] = {
+	[BIT(CHPOS_STARTUP)] = { "startup",  "initial view loading on startup" },
+	[BIT(CHPOS_DIRMARK)] = { "dirmark",  "after navigating to a mark w/o file" },
+	[BIT(CHPOS_ENTER)] =   { "direnter", "after picking directory in file list" },
+};
+ARRAY_GUARD(histcursor_vals, NUM_CHPOS);
 
 /* Possible keys of 'lsoptions' option. */
 static const char *lsoptions_enum[][2] = {
@@ -620,6 +629,11 @@ options[] = {
 	{ "grepprg", "", ":grep invocation format",
 	  OPT_STR, 0, NULL, &grepprg_handler, NULL,
 	  { .ref.str_val = &cfg.grep_prg },
+	},
+	{ "histcursor", "", "when to use historical cursor position",
+	  OPT_SET, ARRAY_LEN(histcursor_vals), histcursor_vals,
+		&histcursor_handler, NULL,
+	  { .ref.set_items = &cfg.ch_pos_on },
 	},
 	{ "history", "hi", "length of all histories",
 	  OPT_INT, 0, NULL, &history_handler, NULL,
@@ -2019,6 +2033,13 @@ static void
 grepprg_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.grep_prg, val.str_val);
+}
+
+/* Handles changes of 'histcursor'.  Updates related configuration value. */
+static void
+histcursor_handler(OPT_OP op, optval_t val)
+{
+	cfg.ch_pos_on = val.set_items;
 }
 
 static void

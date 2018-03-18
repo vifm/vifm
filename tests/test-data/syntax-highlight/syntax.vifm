@@ -403,6 +403,7 @@ hi TabLineSel
 " "previewprg" should be highlighted as 'option'
 " "tabscope" should be highlighted as 'option'
 " "showtabline" and "stal" should be highlighted as 'option'
+" "histcursor" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -412,6 +413,7 @@ set lsoptions
 set previewprg
 set tabscope
 set showtabline stal
+set histcursor
 
 " "term" should be highlighted as a function()
 echo term('cmd')

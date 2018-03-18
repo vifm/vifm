@@ -725,12 +725,9 @@ follow_link(view_t *view, int follow_dirs)
 void
 open_dir(view_t *view)
 {
-	char full_path[PATH_MAX];
-	const char *filename;
+	char full_path[PATH_MAX + 1];
 
-	filename = get_current_file_name(view);
-
-	if(is_parent_dir(filename))
+	if(is_parent_dir(get_current_file_name(view)))
 	{
 		cd_updir(view, 1);
 		return;
@@ -740,7 +737,9 @@ open_dir(view_t *view)
 
 	if(cd_is_possible(full_path))
 	{
+		curr_stats.ch_pos = (cfg_ch_pos_on(CHPOS_ENTER) ? 1 : 0);
 		navigate_to(view, full_path);
+		curr_stats.ch_pos = 1;
 	}
 }
 

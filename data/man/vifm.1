@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 6, 2018" "vifm 0.9.1"
+.TH VIFM 1 "March 18, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3445,6 +3445,9 @@ and :pushd commands (and on startup if 'autochpos' is disabled in the vifmrc).
 l key in the ":history ." and ":trashes" menus are treated like :cd command.
 This option also affects marks so that navigating to a mark doesn't restore
 cursor position.
+
+When this option is enabled, more fine grained control over cursor position is
+available via 'histcursor' option.
 .TP
 .BI "'columns' 'co'"
 type: integer
@@ -3737,16 +3740,32 @@ See 'findprg' option for description of difference between %a and %A.
 Example of setup to use ack (http://beyondgrep.com/) instead of grep:
 .EX
 
-  set grepprg=ack\\ \-H\\ \-r\\ %i\\ %a\\ %s
+  set grepprg='ack \-H \-r %i %a %s'
 
 .EE
 or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 .EX
 
-  set grepprg=ag\\ \-\-line-numbers\\ %i\\ %a\\ %s
+  set grepprg='ag \-\-line-numbers %i %a %s'
 
 .EE
 
+.TP
+.BI 'histcursor'
+type: set
+.br
+default: startup,dirmark,direnter
+.br
+Defines situations when cursor should be moved according to directory
+history:
+ \- startup  \- on loading file lists during startup
+ \- dirmark  \- after navigating to a mark that doesn't specify file
+ \- direnter \- on opening directory from a file list
+
+This option has no effect when 'autochpos' is disabled.
+
+Note that the list is not exhaustive and there are other situations when cursor
+is positioned automatically.
 .TP
 .BI "'history' 'hi'"
 type: integer

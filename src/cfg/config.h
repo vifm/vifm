@@ -132,6 +132,16 @@ enum
 	NUM_VINFO       = 16,      /* Number of VINFO_* constants. */
 };
 
+/* When cursor position should be adjusted according to directory history. */
+typedef enum
+{
+	CHPOS_STARTUP = 1 << 0, /* On loading views during startup. */
+	CHPOS_DIRMARK = 1 << 1, /* On navigating to a mark targeting directory. */
+	CHPOS_ENTER   = 1 << 2, /* On entering a directory by picking it. */
+	NUM_CHPOS     = 3       /* Number of CHPOS_* constants. */
+}
+ChposWhen;
+
 /* File decoration description. */
 typedef struct
 {
@@ -201,7 +211,6 @@ typedef struct config_t
 	int smart_case;
 	int hl_search;
 	int vifm_info;
-	int auto_ch_pos;
 	char *shell;
 	int scroll_off;
 	int gdefault;
@@ -302,6 +311,10 @@ typedef struct config_t
 	/* Settings related to tabs. */
 	int pane_tabs;     /* Whether tabs are local to panes. */
 	int show_tab_line; /* When tab line should be displayed. */
+
+	/* Control over automatic cursor positioning. */
+	int auto_ch_pos; /* Weird option that drops positions from histories. */
+	int ch_pos_on;   /* List of cases when historical cursor position is used. */
 }
 config_t;
 
@@ -353,6 +366,10 @@ int cfg_parent_dir_is_visible(int in_root);
  * according to current configuration.  Returns non-zero if so, otherwise zero
  * is returned. */
 int cfg_confirm_delete(int to_trash);
+
+/* Checks whether cursor should be automatically positioned in specified case.
+ * Returns non-zero if so, otherwise zero is returned. */
+int cfg_ch_pos_on(ChposWhen when);
 
 #endif /* VIFM__CFG__CONFIG_H__ */
 
