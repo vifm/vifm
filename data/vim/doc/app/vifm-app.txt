@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 6
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3093,11 +3093,11 @@ See |vifm-'findprg'| for description of difference between %a and %A.
 
 Example of setup to use ack (http://beyondgrep.com/) instead of grep:
 >
-    set grepprg=ack\ -H\ -r\ %i\ %a\ %s
+    set grepprg='ack -H -r %i %a %s'
 <
 or The Silver Searcher (https://github.com/ggreer/the_silver_searcher):
 >
-    set grepprg=ag\ --line-numbers\ %i\ %a\ %s
+    set grepprg='ag --line-numbers %i %a %s'
 <
                                                *vifm-'history'* *vifm-'hi'*
 history hi
