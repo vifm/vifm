@@ -158,7 +158,7 @@ vifm_main(int argc, char *argv[])
 
 	static const int quit = 0;
 
-	char dir[PATH_MAX];
+	char dir[PATH_MAX + 1];
 	char **files = NULL;
 	int nfiles = 0;
 	int lwin_cv, rwin_cv;
@@ -458,7 +458,7 @@ parse_received_arguments(char *argv[])
 static void
 remote_cd(view_t *view, const char path[], int handle)
 {
-	char buf[PATH_MAX];
+	char buf[PATH_MAX + 1];
 
 	if(view->explore_mode)
 	{

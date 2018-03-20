@@ -292,8 +292,8 @@ TEST(file_permissions_are_preserved, IF(not_windows))
 /* Creating symbolic links on Windows requires administrator rights. */
 TEST(file_symlink_copy_is_symlink, IF(not_windows))
 {
-	char old_target[PATH_MAX];
-	char new_target[PATH_MAX];
+	char old_target[PATH_MAX + 1];
+	char new_target[PATH_MAX + 1];
 
 	{
 		io_args_t args = {

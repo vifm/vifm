@@ -15,11 +15,11 @@
 #define DEFAULT_LINENUM 1
 
 static char *saved_cwd;
-static char test_data[PATH_MAX];
+static char test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	if(is_path_absolute(TEST_DATA_PATH))
@@ -123,7 +123,7 @@ TEST(tilde_path_is_expanded)
 
 TEST(absolute_path_with_linenum)
 {
-	char spec[PATH_MAX];
+	char spec[PATH_MAX + 1];
 
 	int line_num;
 	char *path;
@@ -194,7 +194,7 @@ TEST(empty_path_linenum_no_trailing_colon)
 
 TEST(absolute_path_linenum_no_trailing_colon)
 {
-	char spec[PATH_MAX];
+	char spec[PATH_MAX + 1];
 
 	int line_num;
 	char *path;

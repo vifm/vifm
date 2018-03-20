@@ -423,7 +423,7 @@ load_unfiltered_list(view_t *const view)
 
 	if(list_is_incomplete(view))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		dir_entry_t *entry;
 
 		get_current_full_path(view, sizeof(full_path), full_path);

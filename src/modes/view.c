@@ -308,7 +308,7 @@ view_init_mode(void)
 void
 view_enter_mode(view_t *view, int explore)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{
@@ -353,7 +353,7 @@ view_enter_mode(view_t *view, int explore)
 void
 view_detached_make(view_t *view, const char cmd[])
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{
@@ -1454,7 +1454,7 @@ update_with_half_win(key_info_t *const key_info)
 static void
 cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	get_current_full_path(curr_view, sizeof(path), path);
 	(void)vim_view_file(path, vi->line + ui_qv_height(vi->view)/2, -1, 1);
 	/* In some cases two redraw operations are needed, otherwise TUI is not fully
@@ -1524,7 +1524,7 @@ view_detached_draw(void)
 static int
 is_trying_the_same_file(void)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{

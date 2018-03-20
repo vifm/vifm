@@ -679,7 +679,7 @@ static int
 send_pkg(const char whom[], const char what[], size_t len)
 {
 #ifndef WIN32_PIPE_READ
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	int fd;
 	FILE *dst;
 	uint32_t size;
@@ -716,7 +716,7 @@ send_pkg(const char whom[], const char what[], size_t len)
 	}
 	return 0;
 #else
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	HANDLE h;
 	uint32_t size;
 	DWORD nwritten;
@@ -787,7 +787,7 @@ list_servers(const ipc_t *ipc, int *len)
 	}
 #else
 	{
-		char find_pat[PATH_MAX];
+		char find_pat[PATH_MAX + 1];
 		HANDLE hfind;
 		WIN32_FIND_DATAA ffd;
 
@@ -844,7 +844,7 @@ add_to_list(const char name[], const void *data, void *param)
 	/* On Windows it's guaranteed to be a valid pipe. */
 #ifndef WIN32_PIPE_READ
 	{
-		char path[PATH_MAX];
+		char path[PATH_MAX + 1];
 		struct stat statbuf;
 		snprintf(path, sizeof(path), "%s/%s", list_data->ipc_dir, name);
 		if(stat(path, &statbuf) != 0 || !S_ISFIFO(statbuf.st_mode) ||

@@ -362,7 +362,7 @@ perform_renaming(view_t *view, char *files[], char is_dup[], int len,
 		if(fops_mv_file(files[i], curr_dir, dst[i], curr_dir,
 				is_dup[i] ? OP_MOVETMP1 : OP_MOVE, 1, NULL) == 0)
 		{
-			char path[PATH_MAX];
+			char path[PATH_MAX + 1];
 			dir_entry_t *entry;
 			const char *const old_name = is_dup[i] ? orig_names[i] : files[i];
 			const char *new_name;
@@ -420,7 +420,7 @@ fops_incdec(view_t *view, int k)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		if(strpbrk(entry->name, "0123456789") == NULL)
 		{
@@ -440,7 +440,7 @@ fops_incdec(view_t *view, int k)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
-		char new_path[PATH_MAX];
+		char new_path[PATH_MAX + 1];
 		const char *const new_fname = incdec_name(entry->name, k);
 
 		snprintf(new_path, sizeof(new_path), "%s/%s", entry->origin, new_fname);
@@ -919,7 +919,7 @@ const char *
 fops_name_subst(const char name[], const char pattern[], const char sub[],
 		int glob)
 {
-	static char buf[PATH_MAX];
+	static char buf[PATH_MAX + 1];
 	regex_t re;
 	regmatch_t matches[10];
 	const char *dst;

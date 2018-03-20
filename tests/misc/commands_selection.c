@@ -16,7 +16,7 @@
 
 static void add_some_files_to_view(view_t *view);
 
-static char cwd[PATH_MAX];
+static char cwd[PATH_MAX + 1];
 
 SETUP_ONCE()
 {

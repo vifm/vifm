@@ -944,7 +944,7 @@ filename_completion(const char str[], CompletionType type,
 
 	if(!skip_canonicalization)
 	{
-		char canonic_path[PATH_MAX];
+		char canonic_path[PATH_MAX + 1];
 		to_canonic_path(dirname, flist_get_dir(curr_view), canonic_path,
 				sizeof(canonic_path));
 		if(replace_string(&dirname, canonic_path) != 0)
@@ -960,7 +960,7 @@ filename_completion(const char str[], CompletionType type,
 			(stroscmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
 			(stroscmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
 	{
-		char buf[PATH_MAX];
+		char buf[PATH_MAX + 1];
 		if(!is_unc_root(dirname))
 			copy_str(buf,
 					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 1,
@@ -975,7 +975,7 @@ filename_completion(const char str[], CompletionType type,
 	}
 	if(is_unc_path(curr_view->curr_dir))
 	{
-		char buf[PATH_MAX];
+		char buf[PATH_MAX + 1];
 		if(is_path_absolute(dirname) && !is_unc_root(curr_view->curr_dir))
 			copy_str(buf,
 					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 2,
@@ -1187,7 +1187,7 @@ file_matches(const char fname[], const char prefix[], size_t prefix_len)
 int
 external_command_exists(const char cmd[])
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	if(get_cmd_path(cmd, sizeof(path), path) == 0)
 	{

@@ -426,7 +426,7 @@ files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 static void attrib_file_in_list(view_t *view, int pos, DWORD add, DWORD sub,
 		int recurse_dirs)
 {
-	char path_buf[PATH_MAX];
+	char path_buf[PATH_MAX + 1];
 
 	get_full_path_at(view, pos, sizeof(path_buf), path_buf);
 	file_attrib(path_buf, add, sub, recurse_dirs);

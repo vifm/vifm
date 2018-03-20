@@ -1448,7 +1448,7 @@ static void
 format_target(int id, const void *data, size_t buf_len, char buf[])
 {
 	const column_data_t *cdt = data;
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	buf[0] = '\0';
 

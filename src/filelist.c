@@ -488,7 +488,7 @@ static int
 navigate_to_file_in_custom_view(view_t *view, const char dir[],
 		const char file[])
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	snprintf(full_path, sizeof(full_path), "%s/%s", dir, file);
 
@@ -526,7 +526,7 @@ change_directory(view_t *view, const char directory[])
 {
 	/* TODO: refactor this big function change_directory(). */
 
-	char dir_dup[PATH_MAX];
+	char dir_dup[PATH_MAX + 1];
 	const int was_in_custom_view = flist_custom_active(view);
 	int location_changed;
 
@@ -541,7 +541,7 @@ change_directory(view_t *view, const char directory[])
 	}
 	else
 	{
-		char newdir[PATH_MAX];
+		char newdir[PATH_MAX + 1];
 		const char *const dir = flist_get_dir(view);
 #ifdef _WIN32
 		if(directory[0] == '/')
@@ -781,7 +781,7 @@ char *
 get_typed_entry_fpath(const dir_entry_t *entry)
 {
 	const char *type_suffix;
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	type_suffix = fentry_is_dir(entry) ? "/" : "";
 
@@ -1170,7 +1170,7 @@ flist_custom_exclude(view_t *view, int selection_only)
 	excluded = trie_create();
 	while(iter_selection_or_current(view, &entry))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		entry->temporary = 1;
 
@@ -1266,7 +1266,7 @@ got_excluded(view_t *view, const dir_entry_t *entry, void *arg)
 	trie_t *const excluded = arg;
 	int excluded_entry;
 
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
 	excluded_entry = (trie_get(excluded, full_path, &data) == 0);
@@ -1440,7 +1440,7 @@ flist_get_dir(const view_t *view)
 void
 flist_goto_by_path(view_t *view, const char path[])
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	const char *const name = get_last_path_component(path);
 
 	get_current_full_path(view, sizeof(full_path), full_path);
@@ -1453,7 +1453,7 @@ flist_goto_by_path(view_t *view, const char path[])
 			strcmp(name, "..") == 0)
 	{
 		int pos;
-		char dir_only[PATH_MAX];
+		char dir_only[PATH_MAX + 1];
 
 		snprintf(dir_only, sizeof(dir_only), "%.*s", (int)(name - path), path);
 		pos = fpos_find_entry(view, name, dir_only);
@@ -1471,7 +1471,7 @@ dir_entry_t *
 entry_from_path(view_t *view, dir_entry_t *entries, int count,
 		const char path[])
 {
-	char canonic_path[PATH_MAX];
+	char canonic_path[PATH_MAX + 1];
 	const char *fname;
 	int i;
 
@@ -1481,7 +1481,7 @@ entry_from_path(view_t *view, dir_entry_t *entries, int count,
 	fname = get_last_path_component(canonic_path);
 	for(i = 0; i < count; ++i)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		dir_entry_t *const entry = &entries[i];
 
 		if(stroscmp(entry->name, fname) != 0)
@@ -1980,7 +1980,7 @@ update_entries_data(view_t *view)
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		dir_entry_t *const entry = &view->dir_entry[i];
 
 		/* Fake entries do not map onto files in file system. */
@@ -2079,7 +2079,7 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 		parent = i - entry->child_pos - (i - j);
 		if(remove_subtrees && parent == j - 1 && entries[parent].child_count == 0)
 		{
-			char full_path[PATH_MAX];
+			char full_path[PATH_MAX + 1];
 			char *path;
 
 			int pos = i + (entry->child_count + 1);
@@ -2263,7 +2263,7 @@ add_file_entry_to_view(const char name[], const void *data, void *param)
 void
 resort_dir_list(int msg, view_t *view)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	const int top_delta = view->list_pos - view->top_line;
 	if(view->list_pos < view->list_rows)
 	{
@@ -2347,7 +2347,7 @@ add_to_trie(trie_t *trie, view_t *view, dir_entry_t *entry)
 
 	if(flist_custom_active(view))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		error = trie_set(trie, full_path, entry);
 	}
@@ -2370,7 +2370,7 @@ is_in_trie(trie_t *trie, view_t *view, dir_entry_t *entry, void **data)
 
 	if(flist_custom_active(view))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		error = trie_get(trie, full_path, data);
 	}
@@ -2706,7 +2706,7 @@ tree_has_changed(const dir_entry_t *entries, size_t nchildren)
 		const dir_entry_t *const entry = &entries[pos];
 		if(entry->type == FT_DIR && !is_parent_dir(entry->name))
 		{
-			char full_path[PATH_MAX];
+			char full_path[PATH_MAX + 1];
 			struct stat s;
 
 			get_full_path_of(entry, sizeof(full_path), full_path);
@@ -2901,8 +2901,8 @@ pane_in_dir(const view_t *view, const char path[])
 int
 cd(view_t *view, const char base_dir[], const char path[])
 {
-	char dir[PATH_MAX];
-	char canonic_dir[PATH_MAX];
+	char dir[PATH_MAX + 1];
+	char canonic_dir[PATH_MAX + 1];
 	int updir;
 
 	pick_cd_path(view, base_dir, path, &updir, dir, sizeof(dir));
@@ -3034,7 +3034,7 @@ go_to_sibling_dir(view_t *view, int offset, int wrap)
 	entry = pick_sibling(view, parent_dirs, offset, wrap, &save_msg);
 	if(entry != NULL)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		if(change_directory(view, full_path) >= 0)
 		{
@@ -3587,7 +3587,7 @@ fentry_is_dir(const dir_entry_t *entry)
 int
 flist_load_tree(view_t *view, const char path[])
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(full_path), full_path);
 
 	if(flist_load_tree_internal(view, path, 0) != 0)
@@ -3666,7 +3666,7 @@ flist_load_tree_internal(view_t *view, const char path[], int reload)
 static int
 make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 {
-	char canonic_path[PATH_MAX];
+	char canonic_path[PATH_MAX + 1];
 	int nfiltered;
 	CVType type;
 	const int from_custom = flist_custom_active(view)

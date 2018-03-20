@@ -1502,7 +1502,7 @@ ui_get_decors(const dir_entry_t *entry, const char **prefix,
 		((dir_entry_t *)entry)->name_dec_num = 0;
 		if(cfg.name_dec_count != 0)
 		{
-			char full_path[PATH_MAX];
+			char full_path[PATH_MAX + 1];
 			int i;
 
 			get_full_path_of(entry, sizeof(full_path) - 1U, full_path);
@@ -1850,7 +1850,7 @@ format_view_title(const view_t *view, path_func pf)
 {
 	if(view->explore_mode)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_current_full_path(view, sizeof(full_path), full_path);
 		return strdup(pf(full_path));
 	}

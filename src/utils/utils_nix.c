@@ -412,7 +412,7 @@ refers_to_slower_fs(const char from[], const char to[])
 int
 is_on_slow_fs(const char full_path[], const char slowfs_specs[])
 {
-	char fs_name[PATH_MAX];
+	char fs_name[PATH_MAX + 1];
 	get_mount_point_traverser_state state = {
 		.type = MI_FS_TYPE,
 		.path = full_path,

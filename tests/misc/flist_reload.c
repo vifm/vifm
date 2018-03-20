@@ -17,7 +17,7 @@ static view_t *const view = &lwin;
 
 SETUP()
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 	char *error;
 
 	assert_success(chdir(SANDBOX_PATH));

@@ -161,7 +161,7 @@ follow_file(view_t *view)
 static void
 handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	int executable;
 	int runnable;
 	const dir_entry_t *const curr = get_current_entry(view);
@@ -350,7 +350,7 @@ selection_is_consistent(view_t *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char full[PATH_MAX];
+		char full[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full), full);
 		if(is_dir_entry(full, entry->type))
 		{
@@ -659,7 +659,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 static void
 view_current_file(const view_t *view)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(full_path), full_path);
 	(void)vim_view_file(full_path, -1, -1, 1);
 }
@@ -671,7 +671,7 @@ static void
 follow_link(view_t *view, int follow_dirs)
 {
 	char *dir, *file;
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	char linkto[PATH_MAX + NAME_MAX];
 	const dir_entry_t *const curr = get_current_entry(curr_view);
 

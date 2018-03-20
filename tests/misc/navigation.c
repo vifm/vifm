@@ -20,7 +20,7 @@ static void free_view(view_t *view);
 
 SETUP()
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 
 	curr_view = &lwin;
 	other_view = &rwin;

@@ -128,7 +128,7 @@ TEST(custom_view_replaces_custom_view_fine)
 
 TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 {
-	char test_file[PATH_MAX];
+	char test_file[PATH_MAX + 1];
 
 	assert_non_null(os_realpath(TEST_DATA_PATH "/existing-files/a", test_file));
 
@@ -156,7 +156,7 @@ TEST(reload_does_not_remove_broken_symlinks, IF(not_windows))
 
 TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 {
-	char test_dir[PATH_MAX];
+	char test_dir[PATH_MAX + 1];
 
 	assert_non_null(os_realpath(TEST_DATA_PATH "/existing-files", test_dir));
 
@@ -184,7 +184,7 @@ TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 TEST(register_macros_are_expanded_relatively_to_orig_dir)
 {
 	char *expanded;
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	setup_custom_view(&lwin, 0);
 
@@ -203,7 +203,7 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 TEST(dir_macros_are_expanded_to_orig_dir)
 {
 	char *expanded;
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	snprintf(path, sizeof(path), "%s/existing-files", test_data);
 
@@ -322,7 +322,7 @@ TEST(unsorted_view_remains_one_on_vifminfo_reread_on_restart)
 
 TEST(location_is_saved_on_entering_custom_view)
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 	char *saved_cwd;
 
 	cfg_resize_histories(10);
@@ -362,7 +362,7 @@ TEST(location_is_saved_on_entering_custom_view)
 
 TEST(parent_link_has_correct_origin_field)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	/* This directory entry is added separately and thus can stray from the
 	 * others. */
@@ -524,7 +524,7 @@ TEST(can_set_very_cv_twice_in_a_row)
 
 TEST(renaming_dir_in_cv_adjust_its_children_entries)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/..", test_data);
 	flist_custom_start(&lwin, "test");

@@ -36,18 +36,18 @@ typedef struct
 	int no_configs;  /* Skip reading configuration files. */
 	int file_picker; /* Use predefined $VIFM/vimfiles for list of files. */
 
-	char chosen_files_out[PATH_MAX]; /* Output for file picking. */
-	char chosen_dir_out[PATH_MAX];   /* Output for directory picking. */
-	const char *delimiter;           /* Delimiter for list of picked files. */
-	const char *on_choose;           /* Action to perform on chosen files. */
+	char chosen_files_out[PATH_MAX + 1]; /* Output for file picking. */
+	char chosen_dir_out[PATH_MAX + 1];   /* Output for directory picking. */
+	const char *delimiter;               /* Delimiter for list of picked files. */
+	const char *on_choose;               /* Action to perform on chosen files. */
 
 	const char *server_name; /* Name of this server. */
 	const char *target_name; /* Name of target server. */
 	char **remote_cmds;      /* Arguments to pass to server instance. */
 	char *remote_expr;       /* Expression to evaluate remotely. */
 
-	char lwin_path[PATH_MAX]; /* Chosen path of the left pane. */
-	char rwin_path[PATH_MAX]; /* Chosen path of the right pane. */
+	char lwin_path[PATH_MAX + 1]; /* Chosen path of the left pane. */
+	char rwin_path[PATH_MAX + 1]; /* Chosen path of the right pane. */
 
 	int lwin_handle; /* Whether to open file in the left pane (else select). */
 	int rwin_handle; /* Whether to open file in the right pane (else select). */

@@ -54,7 +54,7 @@ SETUP()
 	}
 	else
 	{
-		char cwd[PATH_MAX];
+		char cwd[PATH_MAX + 1];
 		assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s/existing-files", cwd,

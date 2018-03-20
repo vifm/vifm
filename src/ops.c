@@ -353,7 +353,7 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 #else
 		if(is_dir(src))
 		{
-			char path[PATH_MAX];
+			char path[PATH_MAX + 1];
 			int err;
 
 			copy_str(path, sizeof(path), src);
@@ -1054,7 +1054,7 @@ static char *
 pretty_dir_path(const char path[])
 {
 	char dir_only[strlen(path) + 1];
-	char canonic[PATH_MAX];
+	char canonic[PATH_MAX + 1];
 
 	copy_str(dir_only, sizeof(dir_only), path);
 	remove_last_path_component(dir_only);

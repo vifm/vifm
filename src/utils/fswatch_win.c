@@ -117,7 +117,7 @@ fswatch_changed(fswatch_t *w, int *error)
 static int
 get_dir_mtime(const wchar_t dir_path[], FILETIME *ft)
 {
-	wchar_t selfref_path[PATH_MAX];
+	wchar_t selfref_path[PATH_MAX + 1];
 	HANDLE hfile;
 	int error;
 

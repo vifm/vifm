@@ -326,7 +326,7 @@ struct view_t
 	WINDOW *title;
 
 	/* Directory we're currently in. */
-	char curr_dir[PATH_MAX];
+	char curr_dir[PATH_MAX + 1];
 
 	/* Data related to custom filling. */
 	struct cv_data_t custom;
@@ -344,9 +344,9 @@ struct view_t
 
 	/* Monitor that checks for directory changes. */
 	fswatch_t *watch;
-	char watched_dir[PATH_MAX];
+	char watched_dir[PATH_MAX + 1];
 
-	char last_dir[PATH_MAX];
+	char last_dir[PATH_MAX + 1];
 
 	/* Number of files that match current search pattern. */
 	int matches;

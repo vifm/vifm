@@ -70,7 +70,7 @@ TEST(sync_syncs_local_filter)
 
 TEST(sync_syncs_filelist)
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 
 	lwin.window_rows = 1;
 	rwin.window_rows = 1;
@@ -130,7 +130,7 @@ TEST(sync_removes_leafs_and_tree_data_on_converting_tree_to_cv)
 
 TEST(sync_syncs_trees)
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 
 	columns_set_line_print_func(&column_line_print);
 	other_view->columns = columns_create();
@@ -227,7 +227,7 @@ format_none(int id, const void *data, size_t buf_len, char buf[])
 
 TEST(tree_syncing_applies_properties_of_destination_view)
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 
 	columns_set_line_print_func(&column_line_print);
 	other_view->columns = columns_create();

@@ -786,7 +786,7 @@ TEST(cursor_is_set_on_previous_file)
 
 TEST(tree_out_of_cv_with_single_element)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, path);
@@ -798,7 +798,7 @@ TEST(tree_out_of_cv_with_single_element)
 
 TEST(tree_out_of_cv_with_two_elements)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	flist_custom_start(&lwin, "test");
 	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");

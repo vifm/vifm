@@ -115,7 +115,7 @@ show_file_menu(view_t *view, int background)
 static const char *
 form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 {
-	static char result[PATH_MAX];
+	static char result[PATH_MAX + 1];
 	if(descr_width > 0)
 	{
 		char format[16];
@@ -140,7 +140,7 @@ form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 static const char *
 form_filetype_data_entry(assoc_record_t prog)
 {
-	static char result[PATH_MAX];
+	static char result[PATH_MAX + 1];
 	snprintf(result, sizeof(result), "%s|%s", prog.description, prog.command);
 	return result;
 }

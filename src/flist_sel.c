@@ -101,7 +101,7 @@ save_selection(view_t *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		view->saved_selection[i] = strdup(full_path);
@@ -178,7 +178,7 @@ flist_sel_restore(view_t *view, reg_t *reg)
 
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		void *ignored_data;
 		dir_entry_t *const entry = &view->dir_entry[i];
 
@@ -280,7 +280,7 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	selection_trie = trie_create();
 	for(i = 0; i < nfiles; ++i)
 	{
-		char canonic_path[PATH_MAX];
+		char canonic_path[PATH_MAX + 1];
 		to_canonic_path(files[i], flist_get_dir(view), canonic_path,
 				sizeof(canonic_path));
 		(void)trie_put(selection_trie, canonic_path);
@@ -291,7 +291,7 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	select = (select != 0);
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		void *ignored_data;
 		dir_entry_t *const entry = &view->dir_entry[i];
 
@@ -339,7 +339,7 @@ flist_sel_by_pattern(view_t *view, const char pattern[], int erase_old,
 
 	for(i = 0; i < view->list_rows; ++i)
 	{
-		char file_path[PATH_MAX];
+		char file_path[PATH_MAX + 1];
 		dir_entry_t *const entry = &view->dir_entry[i];
 
 		if((entry->selected != 0) == select)

@@ -16,13 +16,13 @@
 
 #include "utils.h"
 
-static char sandbox[PATH_MAX];
-static char test_data[PATH_MAX];
-static char cmd[PATH_MAX];
+static char sandbox[PATH_MAX + 1];
+static char test_data[PATH_MAX + 1];
+static char cmd[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	if(is_path_absolute(SANDBOX_PATH))
@@ -194,7 +194,7 @@ TEST(error_on_wrong_event_name)
 
 TEST(envvars_are_expanded)
 {
-	char cmd[PATH_MAX];
+	char cmd[PATH_MAX + 1];
 
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
@@ -316,7 +316,7 @@ TEST(direnter_ist_triggered_on_leaving_custom_view_to_different_path)
 /* Windows has various limitations on characters used in file names. */
 TEST(tilde_is_expanded_after_negation, IF(not_windows))
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	snprintf(path, sizeof(path), "%s/~", sandbox);
 
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));

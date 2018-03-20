@@ -65,7 +65,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	dir_entry_t *entry;
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	int from_file;
 	ops_t *ops;
 
@@ -120,9 +120,9 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		/* Must be at this level as dst might point into this buffer. */
-		char src_full[PATH_MAX];
+		char src_full[PATH_MAX + 1];
 
-		char dst_full[PATH_MAX];
+		char dst_full[PATH_MAX + 1];
 		const char *dst = custom_fnames ? list[i] : entry->name;
 		int err, from_trash;
 
@@ -190,8 +190,8 @@ fops_replace(view_t *view, const char dst[], int force)
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	dir_entry_t *entry;
-	char dst_dir[PATH_MAX];
-	char src_full[PATH_MAX];
+	char dst_dir[PATH_MAX + 1];
+	char src_full[PATH_MAX + 1];
 	const char *const fname = get_last_path_component(dst);
 	ops_t *ops;
 	void *cp = (void *)(size_t)1;
@@ -250,7 +250,7 @@ static int
 cp_file(const char src_dir[], const char dst_dir[], const char src[],
 		const char dst[], CopyMoveLikeOp op, int cancellable, ops_t *ops, int force)
 {
-	char full_src[PATH_MAX], full_dst[PATH_MAX];
+	char full_src[PATH_MAX + 1], full_dst[PATH_MAX + 1];
 
 	to_canonic_path(src, src_dir, full_src, sizeof(full_src));
 	to_canonic_path(dst, dst_dir, full_dst, sizeof(full_dst));
@@ -465,7 +465,7 @@ check_for_clashes(view_t *view, CopyMoveLikeOp op, const char dst_path[],
 	int i = 0;
 	while(iter_marked_entries(view, &entry))
 	{
-		char src_full[PATH_MAX], dst_full[PATH_MAX];
+		char src_full[PATH_MAX + 1], dst_full[PATH_MAX + 1];
 		const char *const dst_name = (nlines > 0) ? list[i] : marked[i];
 		++i;
 
@@ -554,7 +554,7 @@ static void
 cpmv_file_in_bg(ops_t *ops, const char src[], const char dst[], int move,
 		int force, int from_trash, const char dst_dir[])
 {
-	char dst_full[PATH_MAX];
+	char dst_full[PATH_MAX + 1];
 	snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
 	if(force && path_exists(dst_full, DEREF) && !from_trash)
 	{
@@ -577,7 +577,7 @@ static int
 cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 		int cancellable, ops_t *ops, int force)
 {
-	char rel_path[PATH_MAX];
+	char rel_path[PATH_MAX + 1];
 
 	int file_op;
 	int result;
@@ -597,7 +597,7 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 
 		if(op == CMLO_LINK_REL)
 		{
-			char dst_dir[PATH_MAX];
+			char dst_dir[PATH_MAX + 1];
 
 			copy_str(dst_dir, sizeof(dst_dir), dst);
 			remove_last_path_component(dst_dir);

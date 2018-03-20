@@ -79,7 +79,7 @@ TEST(make_relative_link, IF(not_windows))
 {
 	char link_name[] = "link";
 	char *list[] = { &link_name[0] };
-	char link_value[PATH_MAX];
+	char link_value[PATH_MAX + 1];
 
 	strcpy(lwin.curr_dir, "/fake/absolute/path");
 
@@ -98,7 +98,7 @@ TEST(make_absolute_link, IF(not_windows))
 {
 	char link_name[] = "link";
 	char *list[] = { &link_name[0] };
-	char link_value[PATH_MAX];
+	char link_value[PATH_MAX + 1];
 
 	strcpy(lwin.curr_dir, "/fake/absolute/path");
 

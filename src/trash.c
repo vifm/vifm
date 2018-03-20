@@ -501,8 +501,8 @@ int
 restore_from_trash(const char trash_name[])
 {
 	int i;
-	char full[PATH_MAX];
-	char path[PATH_MAX];
+	char full[PATH_MAX + 1];
+	char path[PATH_MAX + 1];
 
 	for(i = 0; i < nentries; ++i)
 	{
@@ -584,7 +584,7 @@ char *
 gen_trash_name(const char base_path[], const char name[])
 {
 	struct stat st;
-	char buf[PATH_MAX];
+	char buf[PATH_MAX + 1];
 	int i;
 	char *const trash_dir = pick_trash_dir(base_path);
 
@@ -609,7 +609,7 @@ gen_trash_name(const char base_path[], const char name[])
 char *
 pick_trash_dir(const char base_path[])
 {
-	char real_path[PATH_MAX];
+	char real_path[PATH_MAX + 1];
 	char *trash_dir = NULL;
 
 	/* We want all links resolved to do not mistakenly attribute removed files to
@@ -864,7 +864,7 @@ expand_uid(const char spec[], int *expanded)
 static char *
 get_rooted_trash_dir(const char base_path[], const char spec[])
 {
-	char full[PATH_MAX];
+	char full[PATH_MAX + 1];
 	if(get_mount_point(base_path, sizeof(full), full) == 0)
 	{
 		return format_root_spec(spec, full);

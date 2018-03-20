@@ -10,11 +10,11 @@
 
 static int using_inotify(void);
 
-static char sandbox[PATH_MAX];
+static char sandbox[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	if(is_path_absolute(SANDBOX_PATH))

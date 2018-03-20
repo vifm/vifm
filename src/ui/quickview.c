@@ -190,7 +190,7 @@ qv_draw(view_t *view)
 static void
 view_entry(const dir_entry_t *entry)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	qv_get_path_to_explore(entry, path, sizeof(path));
 
 	switch(entry->type)
@@ -372,7 +372,7 @@ print_dir_tree(tree_print_state_t *s, const char path[], int last)
 	reached_limit = 0;
 	for(i = 0; i < len && !reached_limit && !ui_cancellation_requested(); ++i)
 	{
-		char link_target[PATH_MAX];
+		char link_target[PATH_MAX + 1];
 		const int last_entry = (i == len - 1);
 		char *const full_path = format_str("%s/%s", path, lst[i]);
 

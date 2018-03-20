@@ -395,9 +395,9 @@ TEST(bang_exec_completion)
 
 TEST(bang_abs_path_completion)
 {
-	wchar_t input[PATH_MAX];
-	wchar_t cmd[PATH_MAX];
-	char cwd[PATH_MAX];
+	wchar_t input[PATH_MAX + 1];
+	wchar_t cmd[PATH_MAX + 1];
+	char cwd[PATH_MAX + 1];
 	wchar_t *wcwd;
 
 	restore_cwd(saved_cwd);

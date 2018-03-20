@@ -581,7 +581,7 @@ list_view_entries(const view_t *view, strlist_t *list)
 	{
 		if(!fentry_is_dir(&view->dir_entry[i]))
 		{
-			char full_path[PATH_MAX];
+			char full_path[PATH_MAX + 1];
 			void *data = &view->dir_entry[i];
 			get_full_path_of(&view->dir_entry[i], sizeof(full_path), full_path);
 			fsdata_set(tree, full_path, &data, sizeof(data));
@@ -604,7 +604,7 @@ append_valid_nodes(const char name[], int valid, const void *parent_data,
 
 	if(valid)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		list->nitems = add_to_string_array(&list->items, list->nitems, 1,
 				full_path);
@@ -866,7 +866,7 @@ free_compare_records(void *ptr)
 int
 compare_move(view_t *from, view_t *to)
 {
-	char from_path[PATH_MAX], to_path[PATH_MAX];
+	char from_path[PATH_MAX + 1], to_path[PATH_MAX + 1];
 	char *from_fingerprint, *to_fingerprint;
 
 	const CompareType ct = from->custom.diff_cmp_type;
@@ -902,8 +902,8 @@ compare_move(view_t *from, view_t *to)
 
 	if(fentry_is_fake(other))
 	{
-		char to_path[PATH_MAX];
-		char canonical[PATH_MAX];
+		char to_path[PATH_MAX + 1];
+		char canonical[PATH_MAX + 1];
 		snprintf(to_path, sizeof(to_path), "%s/%s/%s", flist_get_dir(to),
 				curr->origin + strlen(flist_get_dir(from)), curr->name);
 		canonicalize_path(to_path, canonical, sizeof(canonical));

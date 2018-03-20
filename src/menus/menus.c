@@ -789,7 +789,7 @@ menus_to_custom_view(menu_state_t *m, view_t *view, int very)
 	 * to use file above cursor position. */
 	if(current == NULL && view->custom.entry_count != 0)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(&view->custom.entries[view->custom.entry_count - 1],
 				sizeof(full_path), full_path);
 

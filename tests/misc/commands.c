@@ -230,7 +230,7 @@ TEST(cd_in_root_works)
 
 TEST(double_cd_uses_same_base_for_rel_paths)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	assert_success(chdir(test_data));
 
@@ -260,7 +260,7 @@ TEST(envvars_of_commands_come_from_variables_unit)
 
 TEST(cpmv_does_not_crash_on_wrong_list_access)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	snprintf(path, sizeof(path), "%s/existing-files", test_data);
 
 	assert_success(chdir(path));
@@ -335,7 +335,7 @@ TEST(user_command_is_executed_in_separated_scope)
 
 TEST(tr_extends_second_field)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	assert_success(chdir(sandbox));
 
@@ -435,7 +435,7 @@ TEST(wincmd_can_switch_views)
 
 TEST(yank_works_with_ranges)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	reg_t *reg;
 
 	regs_init();

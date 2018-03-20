@@ -69,7 +69,7 @@ show_trashes_menu(view_t *view, int calc_size)
 static char *
 format_item(const char trash_dir[], int calc_size)
 {
-	char msg[PATH_MAX];
+	char msg[PATH_MAX + 1];
 	uint64_t size;
 	char size_str[64];
 

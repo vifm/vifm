@@ -376,7 +376,7 @@ path_depth_sort(const void *one, const void *two)
 	const char *s = put_confirm.reg->files[*(const int *)one];
 	const char *t = put_confirm.reg->files[*(const int *)two];
 
-	char s_real[PATH_MAX], t_real[PATH_MAX];
+	char s_real[PATH_MAX + 1], t_real[PATH_MAX + 1];
 
 	if(os_realpath(s, s_real) != s_real)
 	{
@@ -397,7 +397,7 @@ path_depth_sort(const void *one, const void *two)
 static int
 is_dir_clash(const char src_path[], const char dst_dir[])
 {
-	char dst_path[PATH_MAX];
+	char dst_path[PATH_MAX + 1];
 
 	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
 			fops_get_dst_name(src_path, is_under_trash(src_path)));
@@ -487,7 +487,7 @@ put_next(int force)
 	const char *dst_name;
 	const char *const dst_dir = put_confirm.dst_dir;
 	struct stat src_st;
-	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
+	char src_buf[PATH_MAX + 1], dst_buf[PATH_MAX + 1];
 	int from_trash;
 	int op;
 	int move;
@@ -618,7 +618,7 @@ put_next(int force)
 	 * move operation itself. */
 	if(move && merge)
 	{
-		char dst_path[PATH_MAX];
+		char dst_path[PATH_MAX + 1];
 
 		success = 1;
 
@@ -737,8 +737,8 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 
 	while((d = os_readdir(dir)) != NULL)
 	{
-		char src_path[PATH_MAX];
-		char dst_path[PATH_MAX];
+		char src_path[PATH_MAX + 1];
+		char dst_path[PATH_MAX + 1];
 
 		if(is_builtin_dir(d->d_name))
 		{
@@ -814,7 +814,7 @@ handle_clashing(int move, const char src[], const char dst[])
 	if(*vle_tb_get_data(lost) != '\0')
 	{
 		int i;
-		char msg[PATH_MAX];
+		char msg[PATH_MAX + 1];
 		response_variant responses[] = {
 			{ .key = 'y', .descr = "[y]es " },
 			{ .key = 'n', .descr = " [n]o\n" },

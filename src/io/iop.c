@@ -356,7 +356,7 @@ iop_cp_internal(io_args_t *const args)
 	 * should go before directory check as is_dir() resolves symbolic links. */
 	if(is_symlink(src))
 	{
-		char link_target[PATH_MAX];
+		char link_target[PATH_MAX + 1];
 		int error;
 
 		io_args_t ln_args = {
