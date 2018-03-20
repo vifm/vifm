@@ -31,8 +31,8 @@
 #include "file_streams.h"
 
 static char * read_whole_file(const char filepath[], size_t *read);
-static char * read_seekable_stream(FILE *const fp, size_t *read);
-static size_t get_remaining_stream_size(FILE *const fp);
+static char * read_seekable_stream(FILE *fp, size_t *read);
+static size_t get_remaining_stream_size(FILE *fp);
 static char ** text_to_lines(char text[], size_t text_len, int *nlines,
 		int null_sep);
 
@@ -295,7 +295,7 @@ read_nonseekable_stream(FILE *fp, size_t *read, progress_cb cb, const void *arg)
  * length *read to be freed by caller on success, otherwise NULL is returned and
  * *read is set to 0UL. */
 static char *
-read_seekable_stream(FILE *const fp, size_t *read)
+read_seekable_stream(FILE *fp, size_t *read)
 {
 	char *content;
 	size_t len;
@@ -327,7 +327,7 @@ read_seekable_stream(FILE *const fp, size_t *read)
 /* Calculates remaining size of the stream.  Assumes that the fp stream supports
  * seek operation.  Returns the size. */
 static size_t
-get_remaining_stream_size(FILE *const fp)
+get_remaining_stream_size(FILE *fp)
 {
 	size_t remaining_size;
 	const long pos = ftell(fp);

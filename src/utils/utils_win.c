@@ -155,7 +155,7 @@ wcwidth(wchar_t c)
 }
 
 int
-win_exec_cmd(char cmd[], int *const returned_exit_code)
+win_exec_cmd(char cmd[], int *returned_exit_code)
 {
 	wchar_t *utf16_cmd;
 	BOOL ret;

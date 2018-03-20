@@ -48,7 +48,7 @@ int wcwidth(wchar_t c);
  * that contain spaces to be enclosed in double quotes.  On internal error
  * returns last error code and sets *returned_exit_code to zero, otherwise sets
  * *returned_exit_code to non-zero and returns exit code of a process. */
-int win_exec_cmd(char cmd[], int *const returned_exit_code);
+int win_exec_cmd(char cmd[], int *returned_exit_code);
 
 /* Turns command into the one suitable to be run by a shell.  Returns the
  * string. */

@@ -101,11 +101,11 @@ typedef struct
 }
 progress_data_t;
 
-static void io_progress_changed(const io_progress_t *const state);
-static int calc_io_progress(const io_progress_t *const state, int *skip);
-static void io_progress_fg(const io_progress_t *const state, int progress);
-static void io_progress_fg_sb(const io_progress_t *const state, int progress);
-static void io_progress_bg(const io_progress_t *const state, int progress);
+static void io_progress_changed(const io_progress_t *state);
+static int calc_io_progress(const io_progress_t *state, int *skip);
+static void io_progress_fg(const io_progress_t *state, int progress);
+static void io_progress_fg_sb(const io_progress_t *state, int progress);
+static void io_progress_bg(const io_progress_t *state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
@@ -126,7 +126,7 @@ fops_init(line_prompt_func line_func, options_prompt_func options_func)
 
 /* I/O operation update callback. */
 static void
-io_progress_changed(const io_progress_t *const state)
+io_progress_changed(const io_progress_t *state)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -189,7 +189,7 @@ io_progress_changed(const io_progress_t *const state)
  * value to indicate that progress change is irrelevant.  Returns progress in
  * the range [-1; 100], where -1 means "unknown". */
 static int
-calc_io_progress(const io_progress_t *const state, int *skip)
+calc_io_progress(const io_progress_t *state, int *skip)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -227,7 +227,7 @@ calc_io_progress(const io_progress_t *const state, int *skip)
 
 /* Takes care of progress for foreground operations. */
 static void
-io_progress_fg(const io_progress_t *const state, int progress)
+io_progress_fg(const io_progress_t *state, int progress)
 {
 	char current_size_str[64];
 	char total_size_str[64];
@@ -322,7 +322,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 
 /* Takes care of progress for foreground operations displayed on status line. */
 static void
-io_progress_fg_sb(const io_progress_t *const state, int progress)
+io_progress_fg_sb(const io_progress_t *state, int progress)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -380,7 +380,7 @@ io_progress_fg_sb(const io_progress_t *const state, int progress)
 
 /* Takes care of progress for background operations. */
 static void
-io_progress_bg(const io_progress_t *const state, int progress)
+io_progress_bg(const io_progress_t *state, int progress)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;

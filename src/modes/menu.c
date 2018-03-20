@@ -71,7 +71,7 @@ static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
 static int can_scroll_menu_down(const menu_data_t *menu);
-static void change_menu_top(menu_data_t *const menu, int delta);
+static void change_menu_top(menu_data_t *menu, int delta);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void update_ui_on_leaving(void);
@@ -105,7 +105,7 @@ static void cmd_zh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zz(key_info_t key_info, keys_info_t *keys_info);
-static int all_lines_visible(const menu_data_t *const menu);
+static int all_lines_visible(const menu_data_t *menu);
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
@@ -436,7 +436,7 @@ can_scroll_menu_down(const menu_data_t *menu)
 
 /* Moves top line of the menu ensuring that its value is correct. */
 static void
-change_menu_top(menu_data_t *const menu, int delta)
+change_menu_top(menu_data_t *menu, int delta)
 {
 	menu->top =
 		MAX(MIN(menu->top + delta, menu->len - (getmaxy(menu_win) - 2)), 0);
@@ -935,7 +935,7 @@ cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 
 /* Returns non-zero if all menu lines are visible, so no scrolling is needed. */
 static int
-all_lines_visible(const menu_data_t *const menu)
+all_lines_visible(const menu_data_t *menu)
 {
 	return menu->len <= getmaxy(menu_win) - 2;
 }

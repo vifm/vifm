@@ -86,8 +86,8 @@ FileHandleLink;
 
 static void handle_file(view_t *view, FileHandleExec exec,
 		FileHandleLink follow);
-static int is_runnable(const view_t *const view, const char full_path[],
-		int type, int force_follow);
+static int is_runnable(const view_t *view, const char full_path[], int type,
+		int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
 static int is_dir_entry(const char full_path[], int type);
@@ -208,7 +208,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 /* Returns non-zero if file can be executed or it's link to a directory (it can
  * be entered), otherwise zero is returned. */
 static int
-is_runnable(const view_t *const view, const char full_path[], int type,
+is_runnable(const view_t *view, const char full_path[], int type,
 		int force_follow)
 {
 	int runnable = !cfg.follow_links && type == FT_LINK &&

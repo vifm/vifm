@@ -56,7 +56,7 @@ void load_initial_directory(view_t *view, const char dir[]);
 void invert_sorting_order(view_t *view);
 /* Returns non-zero in case view is visible and shows list of files at the
  * moment. */
-int window_shows_dirlist(const view_t *const view);
+int window_shows_dirlist(const view_t *view);
 void change_sort_type(view_t *view, char type, char descending);
 
 /* Directory traversing functions. */
@@ -226,7 +226,7 @@ int mark_selected(view_t *view);
 int mark_selection_or_current(view_t *view);
 /* Counts number of marked files that can be processed (thus excluding parent
  * directory, which is "..").  Returns the count. */
-int flist_count_marked(view_t *const view);
+int flist_count_marked(view_t *view);
 /* Removes dead entries (those that refer to non-existing files) or those that
  * do not match local filter from the view.  remove_subtrees flag controls
  * whether child nodes should be removed as well.  Returns number of erased

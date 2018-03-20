@@ -32,7 +32,7 @@ struct view_t;
  * would have been printed with print_errors set) to a user, otherwise zero is
  * returned.  Returned value is negative for incorrect pattern. */
 int find_pattern(struct view_t *view, const char pattern[], int backward,
-		int move, int *const found, int print_errors);
+		int move, int *found, int print_errors);
 
 /* Looks for a search match in specified direction from current cursor position
  * taking search wrapping into account.  Returns non-zero if something was

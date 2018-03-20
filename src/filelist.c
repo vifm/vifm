@@ -2842,7 +2842,7 @@ load_saving_pos(view_t *view)
 }
 
 int
-window_shows_dirlist(const view_t *const view)
+window_shows_dirlist(const view_t *view)
 {
 	if(curr_stats.number_of_windows == 1 && view == other_view)
 	{
@@ -3454,7 +3454,7 @@ clear_marking(view_t *view)
 }
 
 int
-flist_count_marked(view_t *const view)
+flist_count_marked(view_t *view)
 {
 	int i;
 	int count = 0;

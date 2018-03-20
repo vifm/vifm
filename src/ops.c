@@ -118,8 +118,8 @@ static int op_mkdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_rmdir(ops_t *ops, void *data, const char *src, const char *dst);
 static int op_mkfile(ops_t *ops, void *data, const char *src, const char *dst);
 static int ops_uses_syscalls(const ops_t *ops);
-static int exec_io_op(ops_t *ops, int (*func)(io_args_t *const),
-		io_args_t *const args, int cancellable);
+static int exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
+		int cancellable);
 static int confirm_overwrite(io_args_t *args, const char src[],
 		const char dst[]);
 static char * pretty_dir_path(const char path[]);
@@ -932,7 +932,7 @@ ops_uses_syscalls(const ops_t *ops)
 /* Executes i/o operation with some predefined pre/post actions.  Returns exit
  * code of i/o operation. */
 static int
-exec_io_op(ops_t *ops, int (*func)(io_args_t *const), io_args_t *const args,
+exec_io_op(ops_t *ops, int (*func)(io_args_t *), io_args_t *args,
 		int cancellable)
 {
 	int result;

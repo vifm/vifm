@@ -40,7 +40,7 @@ typedef struct
 io_progress_t;
 
 /* Estimations change callback prototype. */
-typedef void (*ionotif_progress_changed)(const io_progress_t *const progress);
+typedef void (*ionotif_progress_changed)(const io_progress_t *progress);
 
 /* Registers callback invoked when estimations are changed.  The handle can be
  * NULL to disable notifications. */

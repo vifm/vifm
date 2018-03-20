@@ -110,8 +110,8 @@ typedef struct
 }
 background_task_args;
 
-static void job_check(bg_job_t *const job);
-static void job_free(bg_job_t *const job);
+static void job_check(bg_job_t *job);
+static void job_free(bg_job_t *job);
 #ifndef _WIN32
 static void * error_thread(void *p);
 static int update_error_jobs(bg_job_t **jobs, fd_set *set);
@@ -245,7 +245,7 @@ bg_check(void)
 /* Checks status of the job.  Processes error stream or checks whether process
  * is still running. */
 static void
-job_check(bg_job_t *const job)
+job_check(bg_job_t *job)
 {
 #ifndef _WIN32
 	char *new_errors;
@@ -282,7 +282,7 @@ job_check(bg_job_t *const job)
 /* Frees resources allocated by the job as well as the bg_job_t structure
  * itself.  The job can be NULL. */
 static void
-job_free(bg_job_t *const job)
+job_free(bg_job_t *job)
 {
 	if(job == NULL)
 	{
