@@ -343,7 +343,7 @@ is_unc_root(const char *path)
 }
 
 char *
-shell_like_escape(const char string[], int internal)
+shell_like_escape(const char string[], int type)
 {
 	size_t len;
 	size_t i;
@@ -364,7 +364,7 @@ shell_like_escape(const char string[], int internal)
 		switch(*string)
 		{
 			case '%':
-				if(internal)
+				if(type == 1)
 				{
 					*dup++ = '%';
 				}
@@ -398,7 +398,7 @@ shell_like_escape(const char string[], int internal)
 				break;
 
 			case '\n':
-				if(internal)
+				if(type != 0)
 				{
 					break;
 				}

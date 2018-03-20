@@ -102,6 +102,9 @@
 
 	Fixed search highlight in menu not being reset after clearing the pattern.
 
+	Fixed doubling of "%" on expanding environment variables in arguments of
+	:commands.  Thanks to filterfalse.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

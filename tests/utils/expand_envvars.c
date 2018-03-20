@@ -6,8 +6,8 @@
 #include "../../src/utils/utils.h"
 
 #define VAR_A               "VAR_A"
-#define VAR_A_VAL           "VAR_ _VAL"
-#define VAR_A_ESCAPED_VAL   "VAR_\\ _VAL"
+#define VAR_A_VAL           "VA%R_ _VAL"
+#define VAR_A_ESCAPED_VAL   "VA%R_\\ _VAL"
 #define VAR_B               "VAR_B"
 #define VAR_B_VAL           "VAR_B_VAL"
 
