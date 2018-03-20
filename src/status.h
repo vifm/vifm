@@ -143,7 +143,7 @@ typedef struct
 	int skip_shellout_redraw;
 
 	col_scheme_t *cs;
-	char color_scheme[NAME_MAX];
+	char color_scheme[NAME_MAX + 1];
 
 	int msg_head, msg_tail;
 	char *msgs[51];

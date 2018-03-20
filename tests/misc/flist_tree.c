@@ -662,7 +662,7 @@ TEST(filtering_does_not_hide_parent_refs)
 
 TEST(short_paths_consider_tree_structure)
 {
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 
 	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
 
@@ -822,7 +822,7 @@ load_tree(view_t *view, const char path[])
 static void
 verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 {
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 	cdt->entry = &cdt->view->dir_entry[idx];
 	cdt->line_pos = idx;
 	format_name(-1, cdt, sizeof(name), name);
