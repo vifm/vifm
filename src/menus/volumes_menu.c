@@ -24,6 +24,7 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() */
 
+#include "../compat/fs_limits.h"
 #include "../modes/menu.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
@@ -39,8 +40,8 @@ int
 show_volumes_menu(view_t *view)
 {
 	char c;
-	char vol_name[MAX_PATH];
-	char file_buf[MAX_PATH];
+	char vol_name[PATH_MAX + 1];
+	char file_buf[PATH_MAX + 1];
 
 	static menu_data_t m;
 	menus_init_data(&m, view, strdup("Mounted Volumes"),
@@ -55,7 +56,7 @@ show_volumes_menu(view_t *view)
 			if(GetVolumeInformationA(drive, vol_name, sizeof(vol_name), NULL, NULL,
 					NULL, file_buf, sizeof(file_buf)))
 			{
-				char item_buf[MAX_PATH + 5];
+				char item_buf[PATH_MAX + 5];
 				snprintf(item_buf, sizeof(item_buf), "%s  %s ", drive, vol_name);
 				m.len = add_to_string_array(&m.items, m.len, 1, item_buf);
 			}
