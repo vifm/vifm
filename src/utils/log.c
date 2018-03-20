@@ -166,7 +166,7 @@ log_time(void)
 void
 log_cwd(void)
 {
-	char buf[PATH_MAX];
+	char buf[PATH_MAX + 1];
 
 	if(verbosity <= 0 || log == NULL)
 		return;

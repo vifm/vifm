@@ -53,7 +53,7 @@ static VisitResult cp_mv_visitor(const char full_path[], VisitAction action,
 		void *param, int cp);
 
 int
-ior_rm(io_args_t *const args)
+ior_rm(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 	return traverse(path, &rm_visitor, args);
@@ -114,7 +114,7 @@ rm_visitor(const char full_path[], VisitAction action, void *param)
 }
 
 int
-ior_cp(io_args_t *const args)
+ior_cp(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
@@ -162,7 +162,7 @@ cp_visitor(const char full_path[], VisitAction action, void *param)
 }
 
 int
-ior_mv(io_args_t *const args)
+ior_mv(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;

@@ -26,27 +26,27 @@
 /* All functions return zero on success and non-zero on error. */
 
 /* Removes file/directory recursively.  Expects path in arg1. */
-int ior_rm(io_args_t *const args);
+int ior_rm(io_args_t *args);
 
 /* Copies file/directory recursively.  Expects path in arg1 and overwrite in
  * arg3. */
-int ior_cp(io_args_t *const args);
+int ior_cp(io_args_t *args);
 
 /* Moves/renames file/directory recursively.  Expects src in arg1, dst in arg2
  * and overwrite in arg3. */
-int ior_mv(io_args_t *const args);
+int ior_mv(io_args_t *args);
 
 /* Change owner of file/directory recursively.  Expects path in arg1 and uid in
  * arg3. */
-int ior_chown(io_args_t *const args);
+int ior_chown(io_args_t *args);
 
 /* Change group of file/directory recursively.  Expects path in arg1 and gid in
  * arg3. */
-int ior_chgrp(io_args_t *const args);
+int ior_chgrp(io_args_t *args);
 
 /* Change permissions of file/directory recursively.  Expects path in arg1 and
  * mode in arg3. */
-int ior_chmod(io_args_t *const args);
+int ior_chmod(io_args_t *args);
 
 #endif /* VIFM__IO__IOR_H__ */
 

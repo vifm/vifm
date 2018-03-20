@@ -243,7 +243,7 @@ skip_dotdir_if_any(const char *path[], int has_parent)
 const char *
 make_rel_path(const char path[], const char base[])
 {
-	static char buf[PATH_MAX];
+	static char buf[PATH_MAX + 1];
 
 	const char *p = path, *b = base;
 	int i;
@@ -343,7 +343,7 @@ is_unc_root(const char *path)
 }
 
 char *
-shell_like_escape(const char string[], int internal)
+shell_like_escape(const char string[], int type)
 {
 	size_t len;
 	size_t i;
@@ -364,7 +364,7 @@ shell_like_escape(const char string[], int internal)
 		switch(*string)
 		{
 			case '%':
-				if(internal)
+				if(type == 1)
 				{
 					*dup++ = '%';
 				}
@@ -398,7 +398,7 @@ shell_like_escape(const char string[], int internal)
 				break;
 
 			case '\n':
-				if(internal)
+				if(type != 0)
 				{
 					break;
 				}
@@ -434,7 +434,7 @@ replace_home_part(const char path[])
 char *
 replace_home_part_strict(const char path[])
 {
-	static char buf[PATH_MAX];
+	static char buf[PATH_MAX + 1];
 	size_t len;
 
 	len = strlen(cfg.home_dir) - 1;
@@ -612,7 +612,7 @@ to_canonic_path(const char path[], const char base[], char buf[],
 {
 	if(!is_path_absolute(path))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		/* Assert is not level above to keep "." in curr_dir in tests, but this
 		 * should be possible to change. */
 		assert(is_path_absolute(base) && "Base path has to be absolute.");
@@ -754,7 +754,7 @@ find_cmd_in_path(const char cmd[], size_t path_len, char path[])
 	paths = get_paths(&paths_count);
 	for(i = 0; i < paths_count; i++)
 	{
-		char tmp_path[PATH_MAX];
+		char tmp_path[PATH_MAX + 1];
 		snprintf(tmp_path, sizeof(tmp_path), "%s/%s", paths[i], cmd);
 
 		/* Need to check for executable, not just a file, as this additionally

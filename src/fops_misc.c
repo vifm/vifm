@@ -214,7 +214,7 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 static int
 delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	int result;
 
 	get_full_path_of(entry, sizeof(full_path), full_path);
@@ -448,7 +448,7 @@ fops_yank(view_t *view, int reg)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
 		if(regs_append(reg, full_path) == 0)
@@ -485,8 +485,8 @@ prepare_register(int reg)
 int
 fops_retarget(view_t *view)
 {
-	char full_path[PATH_MAX];
-	char linkto[PATH_MAX];
+	char full_path[PATH_MAX + 1];
+	char linkto[PATH_MAX + 1];
 	const dir_entry_t *const entry = get_current_entry(view);
 
 	if(!symlinks_available())
@@ -528,8 +528,8 @@ static void
 change_link_cb(const char new_target[])
 {
 	char undo_msg[COMMAND_GROUP_INFO_LEN];
-	char full_path[PATH_MAX];
-	char linkto[PATH_MAX];
+	char full_path[PATH_MAX + 1];
+	char linkto[PATH_MAX + 1];
 	const char *fname;
 	ops_t *ops;
 	const char *const curr_dir = flist_get_dir(curr_view);
@@ -583,7 +583,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 {
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
-	char dst_path[PATH_MAX];
+	char dst_path[PATH_MAX + 1];
 	char **marked;
 	size_t nmarked;
 	int custom_fnames;
@@ -794,8 +794,8 @@ static int
 clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 		ops_t *ops)
 {
-	char full_path[PATH_MAX];
-	char clone_name[PATH_MAX];
+	char full_path[PATH_MAX + 1];
+	char clone_name[PATH_MAX + 1];
 
 	to_canonic_path(clone, path, clone_name, sizeof(clone_name));
 	if(path_exists(clone_name, DEREF))
@@ -835,7 +835,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 
 	for(i = 0; i < count; ++i)
 	{
-		char full[PATH_MAX];
+		char full[PATH_MAX + 1];
 
 		if(is_in_string_array(names, i, names[i]))
 		{
@@ -865,7 +865,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 	n = 0;
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
-		char full[PATH_MAX];
+		char full[PATH_MAX + 1];
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 
 		if(perform_operation(OP_MKDIR, NULL, cp, full, NULL) == 0)
@@ -915,7 +915,7 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 
 	for(i = 0; i < count; ++i)
 	{
-		char full[PATH_MAX];
+		char full[PATH_MAX + 1];
 
 		if(is_in_string_array(names, i, names[i]))
 		{
@@ -947,7 +947,7 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 	n = 0;
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
-		char full[PATH_MAX];
+		char full[PATH_MAX + 1];
 		to_canonic_path(names[i], dst_dir, full, sizeof(full));
 
 		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
@@ -1031,7 +1031,7 @@ fops_restore(view_t *view)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
 		if(is_trash_directory(entry->origin) && restore_from_trash(full_path) == 0)
@@ -1073,7 +1073,7 @@ fops_size_bg(const view_t *view, int force)
 static void
 update_dir_entry_size(const view_t *view, int index, int force)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	const dir_entry_t *const entry = &view->dir_entry[index];
 
 	if(fentry_is_fake(entry))
@@ -1248,7 +1248,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		int full_success = (u != 0) + (g != 0);
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
 		if(u && perform_operation(OP_CHOWN, ops, V(uid), full_path, NULL) == 0)

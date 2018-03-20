@@ -8,14 +8,14 @@
 
 TEST(emarks_are_skipped)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	assert_success(get_cmd_path("!!/prog", sizeof(path), path));
 	assert_string_equal("/prog", path);
 }
 
 TEST(tilde_is_expanded)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	copy_str(cfg.home_dir, sizeof(cfg.home_dir), "tilde_is_expanded/");
 	assert_success(get_cmd_path("~/prog", sizeof(path), path));
 	assert_string_equal("tilde_is_expanded/prog", path);
@@ -23,7 +23,7 @@ TEST(tilde_is_expanded)
 
 TEST(envvars_are_expanded)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	let_variables("$TEST_ENVVAR = 'envvars_are_expanded'");
 	assert_success(get_cmd_path("$TEST_ENVVAR/prog", sizeof(path), path));
 	assert_string_equal("envvars_are_expanded/prog", path);

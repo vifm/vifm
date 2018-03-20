@@ -220,7 +220,7 @@ print_item(const char label[], const char path[], int curr_y)
 	}
 	else
 	{
-		char path_buf[PATH_MAX];
+		char path_buf[PATH_MAX + 1];
 		copy_str(path_buf, MIN(sizeof(path_buf), print_len + 1), path);
 		wprint(menu_win, path_buf);
 	}
@@ -242,7 +242,7 @@ show_file_type(view_t *view, int curr_y)
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
 	if(curr->type == FT_LINK)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		char linkto[PATH_MAX + NAME_MAX];
 
 		get_current_full_path(view, sizeof(full_path), full_path);
@@ -268,7 +268,7 @@ show_file_type(view_t *view, int curr_y)
 	else if(curr->type == FT_EXEC || curr->type == FT_REG)
 	{
 #ifdef HAVE_FILE_PROG
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		FILE *pipe;
 		char command[1024];
 		char buf[NAME_MAX + 1];
@@ -319,7 +319,7 @@ show_file_type(view_t *view, int curr_y)
 
 #if defined(major) && defined(minor)
 		{
-			char full_path[PATH_MAX];
+			char full_path[PATH_MAX + 1];
 			struct stat st;
 			get_current_full_path(view, sizeof(full_path), full_path);
 			if(os_stat(full_path, &st) == 0)
@@ -357,7 +357,7 @@ show_file_type(view_t *view, int curr_y)
 static int
 show_mime_type(view_t *view, int curr_y)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	const char *mimetype = NULL;
 
 	get_current_full_path(view, sizeof(full_path), full_path);

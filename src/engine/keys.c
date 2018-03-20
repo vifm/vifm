@@ -121,12 +121,12 @@ static int add_list_of_keys(key_chunk_t *root, keys_add_info_t cmds[],
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static void list_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
 		void *arg);
-static void inc_counter(const keys_info_t *const keys_info, const size_t by);
+static void inc_counter(const keys_info_t *keys_info, size_t by);
 static int is_recursive(void);
-static int execute_mapping_handler(const key_conf_t *const info,
-		key_info_t key_info, keys_info_t *const keys_info);
-static void pre_execute_mapping_handler(const keys_info_t *const keys_info);
-static void post_execute_mapping_handler(const keys_info_t *const keys_info);
+static int execute_mapping_handler(const key_conf_t *info,
+		key_info_t key_info, keys_info_t *keys_info);
+static void pre_execute_mapping_handler(const keys_info_t *keys_info);
+static void post_execute_mapping_handler(const keys_info_t *keys_info);
 static void keys_suggest(const key_chunk_t *root, const wchar_t keys[],
 		const wchar_t prefix[], vle_keys_list_cb cb, int custom_only,
 		int fold_subkeys);
@@ -1099,7 +1099,7 @@ vle_keys_counter(void)
 /* Increments counter if we are at the first level of key parsing recursion and
  * the key sequence isn't mapped. */
 static void
-inc_counter(const keys_info_t *const keys_info, const size_t by)
+inc_counter(const keys_info_t *keys_info, size_t by)
 {
 	assert(enters_counter > 0);
 
@@ -1125,8 +1125,8 @@ vle_keys_inside_mapping(void)
 /* Executes handler for a mapping, if any.  Error or success code is
  * returned. */
 static int
-execute_mapping_handler(const key_conf_t *const info, key_info_t key_info,
-		keys_info_t *const keys_info)
+execute_mapping_handler(const key_conf_t *info, key_info_t key_info,
+		keys_info_t *keys_info)
 {
 	if(info->data.handler != NULL)
 	{
@@ -1140,7 +1140,7 @@ execute_mapping_handler(const key_conf_t *const info, key_info_t key_info,
 
 /* Pre-execution of a mapping handler callback. */
 static void
-pre_execute_mapping_handler(const keys_info_t *const keys_info)
+pre_execute_mapping_handler(const keys_info_t *keys_info)
 {
 	inside_mapping += keys_info->mapped != 0;
 	assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");
@@ -1148,7 +1148,7 @@ pre_execute_mapping_handler(const keys_info_t *const keys_info)
 
 /* Post-execution of a mapping handler callback. */
 static void
-post_execute_mapping_handler(const keys_info_t *const keys_info)
+post_execute_mapping_handler(const keys_info_t *keys_info)
 {
 	inside_mapping -= keys_info->mapped != 0;
 	assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");

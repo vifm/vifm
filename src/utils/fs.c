@@ -169,7 +169,7 @@ path_exists_at(const char path[], const char filename[], int deref)
 static int
 path_exists_internal(const char path[], const char filename[], int deref)
 {
-	char full[PATH_MAX];
+	char full[PATH_MAX + 1];
 	if(path == NULL)
 	{
 		copy_str(full, sizeof(full), filename);
@@ -197,8 +197,8 @@ path_exists_internal(const char path[], const char filename[], int deref)
 int
 paths_are_same(const char s[], const char t[])
 {
-	char s_real[PATH_MAX];
-	char t_real[PATH_MAX];
+	char s_real[PATH_MAX + 1];
+	char t_real[PATH_MAX + 1];
 
 	if(os_realpath(s, s_real) != s_real || os_realpath(t, t_real) != t_real)
 	{
@@ -214,7 +214,7 @@ is_symlink(const char path[])
 	struct stat st;
 	return os_lstat(path, &st) == 0 && S_ISLNK(st.st_mode);
 #else
-	char filename[PATH_MAX];
+	char filename[PATH_MAX + 1];
 	DWORD attr;
 	wchar_t *utf16_filename;
 	HANDLE hfind;
@@ -257,7 +257,7 @@ is_symlink(const char path[])
 SymLinkType
 get_symlink_type(const char path[])
 {
-	char cwd[PATH_MAX];
+	char cwd[PATH_MAX + 1];
 	char linkto[PATH_MAX + NAME_MAX];
 	int saved_errno;
 	char *filename_copy;
@@ -305,7 +305,7 @@ int
 get_link_target_abs(const char link[], const char cwd[], char buf[],
 		size_t buf_len)
 {
-	char link_target[PATH_MAX];
+	char link_target[PATH_MAX + 1];
 	if(get_link_target(link, link_target, sizeof(link_target)) != 0)
 	{
 		return 1;
@@ -349,7 +349,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 	buf[len] = '\0';
 	return 0;
 #else
-	char filename[PATH_MAX];
+	char filename[PATH_MAX + 1];
 	DWORD attr;
 	wchar_t *utf16_filename;
 	HANDLE hfile;
@@ -527,7 +527,7 @@ list_regular_files(const char path[], char *list[], int *len)
 
 	while((d = os_readdir(dir)) != NULL)
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
 
 		if(is_regular_file(full_path))
@@ -694,9 +694,9 @@ is_dirent_targets_dir(const char full_path[], const struct dirent *d)
 int
 is_in_subtree(const char path[], const char root[])
 {
-	char path_copy[PATH_MAX];
-	char path_real[PATH_MAX];
-	char root_real[PATH_MAX];
+	char path_copy[PATH_MAX + 1];
+	char path_real[PATH_MAX + 1];
+	char root_real[PATH_MAX + 1];
 
 	copy_str(path_copy, sizeof(path_copy), path);
 	remove_last_path_component(path_copy);
@@ -772,7 +772,7 @@ enum_dir_content(const char path[], dir_content_client_func client, void *param)
 
 	return 0;
 #else
-	char find_pat[PATH_MAX];
+	char find_pat[PATH_MAX + 1];
 	wchar_t *utf16_path;
 	HANDLE hfind;
 	WIN32_FIND_DATAW ffd;

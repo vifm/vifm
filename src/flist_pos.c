@@ -489,8 +489,8 @@ fpos_find_group(const view_t *view, int next)
 				if(nentry->type == FT_LINK)
 				{
 					/* Both entries are symbolic links. */
-					char full_path[PATH_MAX];
-					char nlink[PATH_MAX], plink[PATH_MAX];
+					char full_path[PATH_MAX + 1];
+					char nlink[PATH_MAX + 1], plink[PATH_MAX + 1];
 
 					get_full_path_of(nentry, sizeof(full_path), full_path);
 					if(get_link_target(full_path, nlink, sizeof(nlink)) != 0)

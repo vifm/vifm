@@ -539,8 +539,8 @@ compare_group(const char f[], const char s[], regex_t *regex)
 static int
 compare_targets(const dir_entry_t *f, const dir_entry_t *s)
 {
-	char full_path[PATH_MAX];
-	char nlink[PATH_MAX], plink[PATH_MAX];
+	char full_path[PATH_MAX + 1];
+	char nlink[PATH_MAX + 1], plink[PATH_MAX + 1];
 
 	if((f->type == FT_LINK) != (s->type == FT_LINK))
 	{

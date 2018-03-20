@@ -69,7 +69,7 @@ vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
 	free(escaped_args);
 	free(escaped_rtp);
 #else
-	char exe_dir[PATH_MAX];
+	char exe_dir[PATH_MAX + 1];
 	char *escaped_rtp;
 
 	(void)get_exe_dir(exe_dir, sizeof(exe_dir));
@@ -141,7 +141,7 @@ format_edit_selection_cmd(int *bg)
 int
 vim_view_file(const char filename[], int line, int column, int allow_forking)
 {
-	char vicmd[PATH_MAX];
+	char vicmd[PATH_MAX + 1];
 	char cmd[PATH_MAX + 5];
 	/* Use `-f` and not `--nofork` here to make it for with nvim (and possibly
 	 * other flavours of vi). */

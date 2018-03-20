@@ -149,7 +149,7 @@ show_progress_cb(const void *descr)
 int
 vifm_chdir(const char path[])
 {
-	char curr_path[PATH_MAX];
+	char curr_path[PATH_MAX + 1];
 	if(get_cwd(curr_path, sizeof(curr_path)) == curr_path)
 	{
 		if(stroscmp(curr_path, path) == 0)
@@ -196,7 +196,7 @@ expand_envvars(const char str[], int escape_vals)
 				char *escaped_var_value = NULL;
 				if(escape_vals)
 				{
-					escaped_var_value = shell_like_escape(var_value, 1);
+					escaped_var_value = shell_like_escape(var_value, 2);
 					var_value = escaped_var_value;
 				}
 
@@ -341,7 +341,7 @@ enclose_in_dquotes(const char str[])
 const char *
 make_name_unique(const char filename[])
 {
-	static char unique[PATH_MAX];
+	static char unique[PATH_MAX + 1];
 	size_t len;
 	int i;
 
@@ -621,7 +621,7 @@ parse_file_spec(const char spec[], int *line_num, const char cwd[])
 	char *path_buf;
 	const char *colon;
 	const size_t bufs_len = strlen(cwd) + 1U + strlen(spec) + 1U + 1U;
-	char canonicalized[PATH_MAX];
+	char canonicalized[PATH_MAX + 1];
 
 	path_buf = malloc(bufs_len);
 	if(path_buf == NULL)

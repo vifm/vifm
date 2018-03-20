@@ -177,7 +177,7 @@ os_realpath(const char path[], char resolved_path[])
 	if(!is_path_absolute(resolved))
 	{
 		/* Try to compose absolute path. */
-		char cwd[PATH_MAX];
+		char cwd[PATH_MAX + 1];
 		if(get_cwd(cwd, sizeof(cwd)) == cwd)
 		{
 			snprintf(resolved_path, PATH_MAX, "%s/%s", cwd, resolved);
@@ -196,7 +196,7 @@ os_realpath(const char path[], char resolved_path[])
 static char *
 resolve_mount_points(const char path[])
 {
-	char resolved_path[PATH_MAX];
+	char resolved_path[PATH_MAX + 1];
 
 	DWORD attr;
 	wchar_t *utf16_path;

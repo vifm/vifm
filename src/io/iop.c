@@ -57,13 +57,13 @@
 #define BLOCK_SIZE 32*1024
 
 /* Type of io function used by retry_wrapper(). */
-typedef int (*iop_func)(io_args_t *const args);
+typedef int (*iop_func)(io_args_t *args);
 
-static int iop_mkfile_internal(io_args_t *const args);
-static int iop_mkdir_internal(io_args_t *const args);
-static int iop_rmfile_internal(io_args_t *const args);
-static int iop_rmdir_internal(io_args_t *const args);
-static int iop_cp_internal(io_args_t *const args);
+static int iop_mkfile_internal(io_args_t *args);
+static int iop_mkdir_internal(io_args_t *args);
+static int iop_rmfile_internal(io_args_t *args);
+static int iop_rmdir_internal(io_args_t *args);
+static int iop_cp_internal(io_args_t *args);
 static int clone_file(int dst_fd, int src_fd);
 #ifdef _WIN32
 static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
@@ -71,18 +71,18 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 		LARGE_INTEGER stream_transfered, DWORD stream_num, DWORD reason,
 		HANDLE src_file, HANDLE dst_file, LPVOID param);
 #endif
-static int iop_ln_internal(io_args_t *const args);
-static int retry_wrapper(iop_func func, io_args_t *const args);
+static int iop_ln_internal(io_args_t *args);
+static int retry_wrapper(iop_func func, io_args_t *args);
 
 int
-iop_mkfile(io_args_t *const args)
+iop_mkfile(io_args_t *args)
 {
 	return retry_wrapper(&iop_mkfile_internal, args);
 }
 
 /* Implementation of iop_mkfile(). */
 static int
-iop_mkfile_internal(io_args_t *const args)
+iop_mkfile_internal(io_args_t *args)
 {
 	FILE *f;
 	const char *const path = args->arg1.path;
@@ -113,14 +113,14 @@ iop_mkfile_internal(io_args_t *const args)
 }
 
 int
-iop_mkdir(io_args_t *const args)
+iop_mkdir(io_args_t *args)
 {
 	return retry_wrapper(&iop_mkdir_internal, args);
 }
 
 /* Implementation of iop_mkdir(). */
 static int
-iop_mkdir_internal(io_args_t *const args)
+iop_mkdir_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 	const int create_parent = args->arg2.process_parents;
@@ -179,14 +179,14 @@ iop_mkdir_internal(io_args_t *const args)
 }
 
 int
-iop_rmfile(io_args_t *const args)
+iop_rmfile(io_args_t *args)
 {
 	return retry_wrapper(&iop_rmfile_internal, args);
 }
 
 /* Implementation of iop_rmfile(). */
 static int
-iop_rmfile_internal(io_args_t *const args)
+iop_rmfile_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 
@@ -231,14 +231,14 @@ iop_rmfile_internal(io_args_t *const args)
 }
 
 int
-iop_rmdir(io_args_t *const args)
+iop_rmdir(io_args_t *args)
 {
 	return retry_wrapper(&iop_rmdir_internal, args);
 }
 
 /* Implementation of iop_rmdir(). */
 static int
-iop_rmdir_internal(io_args_t *const args)
+iop_rmdir_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 
@@ -275,14 +275,14 @@ iop_rmdir_internal(io_args_t *const args)
 }
 
 int
-iop_cp(io_args_t *const args)
+iop_cp(io_args_t *args)
 {
 	return retry_wrapper(&iop_cp_internal, args);
 }
 
 /* Implementation of iop_cp(). */
 static int
-iop_cp_internal(io_args_t *const args)
+iop_cp_internal(io_args_t *args)
 {
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
@@ -356,7 +356,7 @@ iop_cp_internal(io_args_t *const args)
 	 * should go before directory check as is_dir() resolves symbolic links. */
 	if(is_symlink(src))
 	{
-		char link_target[PATH_MAX];
+		char link_target[PATH_MAX + 1];
 		int error;
 
 		io_args_t ln_args = {
@@ -677,23 +677,23 @@ static DWORD CALLBACK win_progress_cb(LARGE_INTEGER total,
 #endif
 
 /* TODO: implement iop_chown(). */
-int iop_chown(io_args_t *const args);
+int iop_chown(io_args_t *args);
 
 /* TODO: implement iop_chgrp(). */
-int iop_chgrp(io_args_t *const args);
+int iop_chgrp(io_args_t *args);
 
 /* TODO: implement iop_chmod(). */
-int iop_chmod(io_args_t *const args);
+int iop_chmod(io_args_t *args);
 
 int
-iop_ln(io_args_t *const args)
+iop_ln(io_args_t *args)
 {
 	return retry_wrapper(&iop_ln_internal, args);
 }
 
 /* Implementation of iop_ln(). */
 static int
-iop_ln_internal(io_args_t *const args)
+iop_ln_internal(io_args_t *args)
 {
 	const char *const path = args->arg1.path;
 	const char *const target = args->arg2.target;
@@ -786,7 +786,7 @@ iop_ln_internal(io_args_t *const args)
 /* Implements detecting errors and querying user to decide whether to abort,
  * retry or ignore.  Returns zero on success and non-zero on error. */
 static int
-retry_wrapper(iop_func func, io_args_t *const args)
+retry_wrapper(iop_func func, io_args_t *args)
 {
 	int result;
 	ioeta_estim_t estim = {};

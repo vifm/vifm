@@ -55,7 +55,7 @@ const char *
 apply_mods(const char path[], const char parent[], const char mod[],
 		int for_shell)
 {
-	static char buf[PATH_MAX];
+	static char buf[PATH_MAX + 1];
 	int napplied = 0;
 
 	copy_str(buf, sizeof(buf), path);
@@ -87,8 +87,8 @@ static const char *
 apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
 		int for_shell)
 {
-	char path_buf[PATH_MAX];
-	static char buf[PATH_MAX];
+	char path_buf[PATH_MAX + 1];
+	static char buf[PATH_MAX + 1];
 
 	copy_str(path_buf, sizeof(path_buf), path);
 	system_to_internal_slashes(path_buf);

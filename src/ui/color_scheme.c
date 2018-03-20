@@ -530,7 +530,7 @@ list_cs_files(int *len)
 int
 cs_exists(const char name[])
 {
-	char cs_path[PATH_MAX];
+	char cs_path[PATH_MAX + 1];
 	get_cs_path(name, cs_path, sizeof(cs_path));
 	return is_regular_file(cs_path);
 }
@@ -851,7 +851,7 @@ cs_load_local(int left, const char dir[])
 static int
 source_cs(const char name[])
 {
-	char cs_path[PATH_MAX];
+	char cs_path[PATH_MAX + 1];
 	get_cs_path(name, cs_path, sizeof(cs_path));
 	return cfg_source_file(cs_path);
 }
@@ -891,7 +891,7 @@ get_global_colors_dir(void)
 #ifndef _WIN32
 	return GLOBAL_COLORS_DIR;
 #else
-	static char dir_path[PATH_MAX];
+	static char dir_path[PATH_MAX + 1];
 	if(dir_path[0] == '\0')
 	{
 		snprintf(dir_path, sizeof(dir_path), "%s/colors", get_installed_data_dir());

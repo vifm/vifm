@@ -71,33 +71,33 @@ static void get_history(view_t *view, int reread, const char dir[],
 static void set_manual_filter(view_t *view, const char value[]);
 static void set_view_property(view_t *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
-static int copy_file_internal(FILE *const src, FILE *const dst);
+static int copy_file_internal(FILE *src, FILE *dst);
 static void update_info_file(const char filename[], int merge);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
-static void write_options(FILE *const fp);
+static void write_options(FILE *fp);
 static void write_assocs(FILE *fp, const char str[], char mark,
 		assoc_list_t *assocs, int prev_count, char *prev[]);
 static void write_doubling_commas(FILE *fp, const char str[]);
-static void write_commands(FILE *const fp, char *cmds_list[], char *cmds[],
+static void write_commands(FILE *fp, char *cmds_list[], char *cmds[],
 		int ncmds);
-static void write_marks(FILE *const fp, const char non_conflicting_marks[],
+static void write_marks(FILE *fp, const char non_conflicting_marks[],
 		char *marks[], const int timestamps[], int nmarks);
-static void write_bmarks(FILE *const fp, char *bmarks[], const int timestamps[],
+static void write_bmarks(FILE *fp, char *bmarks[], const int timestamps[],
 		int nbmarks);
 static void write_bmark(const char path[], const char tags[], time_t timestamp,
 		void *arg);
-static void write_tui_state(FILE *const fp);
+static void write_tui_state(FILE *fp);
 static void write_view_history(FILE *fp, view_t *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
-static void write_registers(FILE *const fp, char *regs[], int nregs);
-static void write_dir_stack(FILE *const fp, char *old_dir_stack[],
+static void write_registers(FILE *fp, char *regs[], int nregs);
+static void write_dir_stack(FILE *fp, char *old_dir_stack[],
 		int nold_dir_stack);
-static void write_trash(FILE *const fp, char *trash[], int ntrash);
-static void write_general_state(FILE *const fp);
+static void write_trash(FILE *fp, char *trash[], int ntrash);
+static void write_general_state(FILE *fp);
 static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
@@ -551,7 +551,7 @@ copy_file(const char src[], const char dst[])
 /* Internal sub-function of the copy_file() function.  Returns zero on
  * success. */
 static int
-copy_file_internal(FILE *const src, FILE *const dst)
+copy_file_internal(FILE *src, FILE *dst)
 {
 	char buffer[4*1024];
 	size_t nread;
@@ -965,7 +965,7 @@ convert_old_trash_path(const char trash_path[])
 
 /* Writes current values of all options into vifminfo file. */
 static void
-write_options(FILE *const fp)
+write_options(FILE *fp)
 {
 	const char *str;
 
@@ -1149,7 +1149,7 @@ write_doubling_commas(FILE *fp, const char str[])
  * terminated list of commands existing in current session, cmds is a list of
  * length ncmds with unseen commands read from vifminfo. */
 static void
-write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
+write_commands(FILE *fp, char *cmds_list[], char *cmds[], int ncmds)
 {
 	int i;
 
@@ -1167,7 +1167,7 @@ write_commands(FILE *const fp, char *cmds_list[], char *cmds[], int ncmds)
 /* Writes marks to vifminfo file.  marks is a list of length nmarks marks read
  * from vifminfo. */
 static void
-write_marks(FILE *const fp, const char non_conflicting_marks[],
+write_marks(FILE *fp, const char non_conflicting_marks[],
 		char *marks[], const int timestamps[], int nmarks)
 {
 	int active_marks[NUM_MARKS];
@@ -1201,7 +1201,7 @@ write_marks(FILE *const fp, const char non_conflicting_marks[],
 /* Writes bookmarks to vifminfo file.  bmarks is a list of length nbmarks marks
  * read from vifminfo. */
 static void
-write_bmarks(FILE *const fp, char *bmarks[], const int timestamps[],
+write_bmarks(FILE *fp, char *bmarks[], const int timestamps[],
 		int nbmarks)
 {
 	int i;
@@ -1230,7 +1230,7 @@ write_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
 
 /* Writes state of the TUI to vifminfo file. */
 static void
-write_tui_state(FILE *const fp)
+write_tui_state(FILE *fp)
 {
 	fputs("\n# TUI:\n", fp);
 	fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
@@ -1286,7 +1286,7 @@ write_history(FILE *fp, const char str[], char mark, int prev_count,
 /* Writes registers to vifminfo file.  regs is a list of length nregs registers
  * read from vifminfo. */
 static void
-write_registers(FILE *const fp, char *regs[], int nregs)
+write_registers(FILE *fp, char *regs[], int nregs)
 {
 	int i;
 
@@ -1315,7 +1315,7 @@ write_registers(FILE *const fp, char *regs[], int nregs)
 /* Writes directory stack to vifminfo file.  old_dir_stack is a list of length
  * nold_dir_stack entries (4 lines per entry) read from vifminfo. */
 static void
-write_dir_stack(FILE *const fp, char *old_dir_stack[], int nold_dir_stack)
+write_dir_stack(FILE *fp, char *old_dir_stack[], int nold_dir_stack)
 {
 	fputs("\n# Directory stack (oldest to newest):\n", fp);
 	if(dir_stack_changed())
@@ -1342,7 +1342,7 @@ write_dir_stack(FILE *const fp, char *old_dir_stack[], int nold_dir_stack)
 /* Writes trash entries to vifminfo file.  trash is a list of length ntrash
  * entries read from vifminfo. */
 static void
-write_trash(FILE *const fp, char *trash[], int ntrash)
+write_trash(FILE *fp, char *trash[], int ntrash)
 {
 	int i;
 	fputs("\n# Trash content:\n", fp);
@@ -1358,7 +1358,7 @@ write_trash(FILE *const fp, char *trash[], int ntrash)
 
 /* Writes general state to vifminfo file. */
 static void
-write_general_state(FILE *const fp)
+write_general_state(FILE *fp)
 {
 	fputs("\n# State:\n", fp);
 	fprintf(fp, "f%s\n", matcher_get_expr(lwin.manual_filter));

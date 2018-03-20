@@ -40,17 +40,17 @@ static void reset_filter(filter_t *filter);
 static int is_newly_filtered(view_t *view, const dir_entry_t *entry,
 		void *arg);
 static void replace_matcher(matcher_t **matcher, const char expr[]);
-static int get_unfiltered_pos(const view_t *const view, int pos);
-static int load_unfiltered_list(view_t *const view);
-static int list_is_incomplete(view_t *const view);
-static void store_local_filter_position(view_t *const view, int pos);
+static int get_unfiltered_pos(const view_t *view, int pos);
+static int load_unfiltered_list(view_t *view);
+static int list_is_incomplete(view_t *view);
+static void store_local_filter_position(view_t *view, int pos);
 static int update_filtering_lists(view_t *view, int add, int clear);
 static void reparent_tree_node(dir_entry_t *original, dir_entry_t *filtered);
 static void ensure_filtered_list_not_empty(view_t *view,
 		dir_entry_t *parent_entry);
-static int extract_previously_selected_pos(view_t *const view);
-static void clear_local_filter_hist_after(view_t *const view, int pos);
-static int find_nearest_neighour(const view_t *const view);
+static int extract_previously_selected_pos(view_t *view);
+static void clear_local_filter_hist_after(view_t *view, int pos);
+static int find_nearest_neighour(const view_t *view);
 static void local_filter_finish(view_t *view);
 static void append_slash(const char name[], char buf[], size_t buf_size);
 
@@ -394,7 +394,7 @@ local_filter_set(view_t *view, const char filter[])
 /* Gets position of an item in dir_entry list at position pos in the unfiltered
  * list.  Returns index on success, otherwise -1 is returned. */
 static int
-get_unfiltered_pos(const view_t *const view, int pos)
+get_unfiltered_pos(const view_t *view, int pos)
 {
 	const int count = (int)view->local_filter.unfiltered_count;
 	const char *const filename = view->dir_entry[pos].name;
@@ -413,7 +413,7 @@ get_unfiltered_pos(const view_t *const view, int pos)
 /* Loads full list of files into unfiltered list of the view.  Returns position
  * of file under cursor in the unfiltered list. */
 static int
-load_unfiltered_list(view_t *const view)
+load_unfiltered_list(view_t *view)
 {
 	int current_file_pos = view->list_pos;
 
@@ -423,7 +423,7 @@ load_unfiltered_list(view_t *const view)
 
 	if(list_is_incomplete(view))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 		dir_entry_t *entry;
 
 		get_current_full_path(view, sizeof(full_path), full_path);
@@ -461,7 +461,7 @@ load_unfiltered_list(view_t *const view)
 /* Checks whether list of files is incomplete.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int
-list_is_incomplete(view_t *const view)
+list_is_incomplete(view_t *view)
 {
 	int i;
 
@@ -493,7 +493,7 @@ list_is_incomplete(view_t *const view)
 
 /* Adds local filter position (in unfiltered list) to position history. */
 static void
-store_local_filter_position(view_t *const view, int pos)
+store_local_filter_position(view_t *view, int pos)
 {
 	size_t *const len = &view->local_filter.poshist_len;
 	int *arr = reallocarray(view->local_filter.poshist, *len + 1, sizeof(int));
@@ -697,7 +697,7 @@ local_filter_update_view(view_t *view, int rel_pos)
 /* Finds one of previously selected files and updates list of visited files
  * if needed.  Returns file position in current list of files or -1. */
 static int
-extract_previously_selected_pos(view_t *const view)
+extract_previously_selected_pos(view_t *view)
 {
 	size_t i;
 	for(i = 0; i < view->local_filter.poshist_len; i++)
@@ -717,7 +717,7 @@ extract_previously_selected_pos(view_t *const view)
 
 /* Clears all positions after the pos. */
 static void
-clear_local_filter_hist_after(view_t *const view, int pos)
+clear_local_filter_hist_after(view_t *view, int pos)
 {
 	view->local_filter.poshist_len -= view->local_filter.poshist_len - (pos + 1);
 }
@@ -725,7 +725,7 @@ clear_local_filter_hist_after(view_t *const view, int pos)
 /* Find nearest filtered neighbour.  Returns index of nearest unfiltered
  * neighbour of the entry initially pointed to by cursor. */
 static int
-find_nearest_neighour(const view_t *const view)
+find_nearest_neighour(const view_t *view)
 {
 	const int count = view->local_filter.unfiltered_count;
 

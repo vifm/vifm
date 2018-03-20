@@ -32,8 +32,8 @@ TEST(create_by_absolute_path)
 {
 	if(!is_path_absolute(NESTED_DIR_NAME))
 	{
-		char cwd[PATH_MAX];
-		char full_path[PATH_MAX];
+		char cwd[PATH_MAX + 1];
+		char full_path[PATH_MAX + 1];
 
 		get_cwd(cwd, sizeof(cwd));
 		snprintf(full_path, sizeof(full_path), "%s/%s", cwd, NESTED_DIR_NAME);

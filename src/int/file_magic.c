@@ -54,7 +54,7 @@ static void parse_app_dir(const char directory[], const char mime_type[],
 assoc_records_t
 get_magic_handlers(const char file[])
 {
-	char real_path[PATH_MAX];
+	char real_path[PATH_MAX + 1];
 	char *const symlink_base = strdup(file);
 
 	if(!is_root_dir(symlink_base))

@@ -86,8 +86,8 @@ FileHandleLink;
 
 static void handle_file(view_t *view, FileHandleExec exec,
 		FileHandleLink follow);
-static int is_runnable(const view_t *const view, const char full_path[],
-		int type, int force_follow);
+static int is_runnable(const view_t *view, const char full_path[], int type,
+		int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
 static int is_dir_entry(const char full_path[], int type);
@@ -161,7 +161,7 @@ follow_file(view_t *view)
 static void
 handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	int executable;
 	int runnable;
 	const dir_entry_t *const curr = get_current_entry(view);
@@ -208,7 +208,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 /* Returns non-zero if file can be executed or it's link to a directory (it can
  * be entered), otherwise zero is returned. */
 static int
-is_runnable(const view_t *const view, const char full_path[], int type,
+is_runnable(const view_t *view, const char full_path[], int type,
 		int force_follow)
 {
 	int runnable = !cfg.follow_links && type == FT_LINK &&
@@ -350,7 +350,7 @@ selection_is_consistent(view_t *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char full[PATH_MAX];
+		char full[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full), full);
 		if(is_dir_entry(full, entry->type))
 		{
@@ -659,7 +659,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 static void
 view_current_file(const view_t *view)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(full_path), full_path);
 	(void)vim_view_file(full_path, -1, -1, 1);
 }
@@ -671,7 +671,7 @@ static void
 follow_link(view_t *view, int follow_dirs)
 {
 	char *dir, *file;
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 	char linkto[PATH_MAX + NAME_MAX];
 	const dir_entry_t *const curr = get_current_entry(curr_view);
 

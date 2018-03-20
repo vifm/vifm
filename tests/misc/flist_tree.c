@@ -662,7 +662,7 @@ TEST(filtering_does_not_hide_parent_refs)
 
 TEST(short_paths_consider_tree_structure)
 {
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 
 	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
 
@@ -786,7 +786,7 @@ TEST(cursor_is_set_on_previous_file)
 
 TEST(tree_out_of_cv_with_single_element)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, path);
@@ -798,7 +798,7 @@ TEST(tree_out_of_cv_with_single_element)
 
 TEST(tree_out_of_cv_with_two_elements)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	flist_custom_start(&lwin, "test");
 	snprintf(path, sizeof(path), "%s/%s", test_data, "existing-files/a");
@@ -822,7 +822,7 @@ load_tree(view_t *view, const char path[])
 static void
 verify_tree_node(column_data_t *cdt, int idx, const char expected[])
 {
-	char name[NAME_MAX];
+	char name[NAME_MAX + 1];
 	cdt->entry = &cdt->view->dir_entry[idx];
 	cdt->line_pos = idx;
 	format_name(-1, cdt, sizeof(name), name);

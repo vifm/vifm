@@ -16,7 +16,7 @@
 TEST(absolute_path_dominates)
 {
 	int updir;
-	char dir[PATH_MAX];
+	char dir[PATH_MAX + 1];
 
 	pick_cd_path(&lwin, "something", PREFIX "/abs/path", &updir, dir,
 			sizeof(dir));
@@ -28,7 +28,7 @@ TEST(absolute_path_dominates)
 TEST(dash_chooses_previous_location)
 {
 	int updir;
-	char dir[PATH_MAX];
+	char dir[PATH_MAX + 1];
 
 	strcpy(lwin.last_dir, "--last--");
 	strcpy(lwin.curr_dir, "--cur--");
@@ -42,7 +42,7 @@ TEST(dash_chooses_previous_location)
 TEST(null_or_empty_chooses_home)
 {
 	int updir;
-	char dir[PATH_MAX];
+	char dir[PATH_MAX + 1];
 
 	strcpy(cfg.home_dir, "--home--");
 	strcpy(lwin.curr_dir, "--cur--");
@@ -59,7 +59,7 @@ TEST(null_or_empty_chooses_home)
 TEST(double_in_current_view_dot_just_sets_updir)
 {
 	int updir;
-	char dir[PATH_MAX];
+	char dir[PATH_MAX + 1];
 
 	dir[0] = '\0';
 
@@ -71,7 +71,7 @@ TEST(double_in_current_view_dot_just_sets_updir)
 TEST(double_in_other_view_changes_dir)
 {
 	int updir;
-	char dir[PATH_MAX];
+	char dir[PATH_MAX + 1];
 
 	dir[0] = '\0';
 

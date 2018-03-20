@@ -98,7 +98,7 @@ static char * skip_alphas(const char str[]);
 static void complete_option_name(const char buf[], int bool_only, int pseudo,
 		OPT_SCOPE scope);
 static int option_matches(const opt_t *opt, OPT_SCOPE scope);
-static const char * get_opt_full_name(opt_t *const opt);
+static const char * get_opt_full_name(opt_t *opt);
 static int complete_option_value(const opt_t *opt, const char beginning[]);
 static int complete_list_value(const opt_t *opt, const char beginning[]);
 static int complete_char_value(const opt_t *opt, const char beginning[]);
@@ -1579,7 +1579,7 @@ option_matches(const opt_t *opt, OPT_SCOPE scope)
 
 /* Gets full name of the option.  Returns pointer to the name. */
 static const char *
-get_opt_full_name(opt_t *const opt)
+get_opt_full_name(opt_t *opt)
 {
 	return (opt->full == NULL) ? opt->name : opt->full;
 }

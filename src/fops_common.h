@@ -48,19 +48,19 @@ SignalType;
  * background. */
 typedef struct
 {
-	char **list;         /* User supplied list of new file names. */
-	int nlines;          /* Number of user supplied file names (list size). */
-	int move;            /* Whether this is a move operation. */
-	int force;           /* Whether destination files should be removed. */
-	char **sel_list;     /* Full paths of files to be processed. */
-	size_t sel_list_len; /* Number of files to process (sel_list size). */
-	char path[PATH_MAX]; /* Path at which processing should take place. */
-	int from_file;       /* Whether list was read from a file. */
-	int use_trash;       /* Whether either source or destination is trash
-	                        directory. */
-	char *is_in_trash;   /* Flags indicating whether i-th file is in trash.  Can
-	                        be NULL when unused. */
-	ops_t *ops;          /* Pointer to pre-allocated operation description. */
+	char **list;             /* User supplied list of new file names. */
+	int nlines;              /* Number of user supplied file names (list size). */
+	int move;                /* Whether this is a move operation. */
+	int force;               /* Whether destination files should be removed. */
+	char **sel_list;         /* Full paths of files to be processed. */
+	size_t sel_list_len;     /* Number of files to process (sel_list size). */
+	char path[PATH_MAX + 1]; /* Path at which processing should take place. */
+	int from_file;           /* Whether list was read from a file. */
+	int use_trash;           /* Whether either source or destination is trash
+	                            directory. */
+	char *is_in_trash;       /* Flags indicating whether i-th file is in trash.
+	                            Can be NULL when unused. */
+	ops_t *ops;              /* Pointer to pre-allocated operation description. */
 }
 bg_args_t;
 

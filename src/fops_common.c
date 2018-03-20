@@ -101,11 +101,11 @@ typedef struct
 }
 progress_data_t;
 
-static void io_progress_changed(const io_progress_t *const state);
-static int calc_io_progress(const io_progress_t *const state, int *skip);
-static void io_progress_fg(const io_progress_t *const state, int progress);
-static void io_progress_fg_sb(const io_progress_t *const state, int progress);
-static void io_progress_bg(const io_progress_t *const state, int progress);
+static void io_progress_changed(const io_progress_t *state);
+static int calc_io_progress(const io_progress_t *state, int *skip);
+static void io_progress_fg(const io_progress_t *state, int progress);
+static void io_progress_fg_sb(const io_progress_t *state, int progress);
+static void io_progress_bg(const io_progress_t *state, int progress);
 static char * format_file_progress(const ioeta_estim_t *estim, int precision);
 static void format_pretty_path(const char base_dir[], const char path[],
 		char pretty[], size_t pretty_size);
@@ -126,7 +126,7 @@ fops_init(line_prompt_func line_func, options_prompt_func options_func)
 
 /* I/O operation update callback. */
 static void
-io_progress_changed(const io_progress_t *const state)
+io_progress_changed(const io_progress_t *state)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -189,7 +189,7 @@ io_progress_changed(const io_progress_t *const state)
  * value to indicate that progress change is irrelevant.  Returns progress in
  * the range [-1; 100], where -1 means "unknown". */
 static int
-calc_io_progress(const io_progress_t *const state, int *skip)
+calc_io_progress(const io_progress_t *state, int *skip)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -227,11 +227,11 @@ calc_io_progress(const io_progress_t *const state, int *skip)
 
 /* Takes care of progress for foreground operations. */
 static void
-io_progress_fg(const io_progress_t *const state, int progress)
+io_progress_fg(const io_progress_t *state, int progress)
 {
 	char current_size_str[64];
 	char total_size_str[64];
-	char src_path[PATH_MAX];
+	char src_path[PATH_MAX + 1];
 	const char *title, *ctrl_msg;
 	const char *target_name;
 	char *as_part;
@@ -258,7 +258,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 	ctrl_msg = "Press Ctrl-C to cancel";
 	if(state->stage == IO_PS_ESTIMATING)
 	{
-		char pretty_path[PATH_MAX];
+		char pretty_path[PATH_MAX + 1];
 		format_pretty_path(ops->base_dir, estim->item, pretty_path,
 				sizeof(pretty_path));
 		draw_msgf(title, ctrl_msg, pdata->width,
@@ -322,7 +322,7 @@ io_progress_fg(const io_progress_t *const state, int progress)
 
 /* Takes care of progress for foreground operations displayed on status line. */
 static void
-io_progress_fg_sb(const io_progress_t *const state, int progress)
+io_progress_fg_sb(const io_progress_t *state, int progress)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -330,7 +330,7 @@ io_progress_fg_sb(const io_progress_t *const state, int progress)
 
 	char current_size_str[64];
 	char total_size_str[64];
-	char pretty_path[PATH_MAX];
+	char pretty_path[PATH_MAX + 1];
 	char *suffix;
 
 	(void)friendly_size_notation(estim->total_bytes, sizeof(total_size_str),
@@ -380,7 +380,7 @@ io_progress_fg_sb(const io_progress_t *const state, int progress)
 
 /* Takes care of progress for background operations. */
 static void
-io_progress_bg(const io_progress_t *const state, int progress)
+io_progress_bg(const io_progress_t *state, int progress)
 {
 	const ioeta_estim_t *const estim = state->estim;
 	progress_data_t *const pdata = estim->param;
@@ -607,7 +607,7 @@ fops_enqueue_marked_files(ops_t *ops, view_t *view, const char dst_hint[],
 
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
@@ -733,7 +733,7 @@ fops_check_dir_path(const view_t *view, const char path[], char buf[],
 char **
 fops_edit_list(size_t count, char *orig[], int *nlines, int load_always)
 {
-	char rename_file[PATH_MAX];
+	char rename_file[PATH_MAX + 1];
 	char **list = NULL;
 	mode_t saved_umask;
 
@@ -864,7 +864,7 @@ int
 fops_mv_file(const char src[], const char src_dir[], const char dst[],
 		const char dst_dir[], OPS op, int cancellable, ops_t *ops)
 {
-	char full_src[PATH_MAX], full_dst[PATH_MAX];
+	char full_src[PATH_MAX + 1], full_dst[PATH_MAX + 1];
 
 	to_canonic_path(src, src_dir, full_src, sizeof(full_src));
 	to_canonic_path(dst, dst_dir, full_dst, sizeof(full_dst));
@@ -911,7 +911,7 @@ fops_prepare_for_bg_task(view_t *view, bg_args_t *args)
 	entry = NULL;
 	while(iter_marked_entries(view, &entry))
 	{
-		char full_path[PATH_MAX];
+		char full_path[PATH_MAX + 1];
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		args->sel_list_len = add_to_string_array(&args->sel_list,

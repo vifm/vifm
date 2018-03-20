@@ -98,7 +98,7 @@ static int
 add_aucmd(const char event[], const char pattern[], int negated,
 		const char action[], vle_aucmd_handler handler)
 {
-	char canonic_path[PATH_MAX];
+	char canonic_path[PATH_MAX + 1];
 	aucmd_info_t *autocmd;
 	char *regexp;
 
@@ -152,7 +152,7 @@ void
 vle_aucmd_execute(const char event[], const char path[], void *arg)
 {
 	size_t i;
-	char canonic_path[PATH_MAX];
+	char canonic_path[PATH_MAX + 1];
 
 	canonicalize_path(path, canonic_path, sizeof(canonic_path));
 	if(!is_root_dir(canonic_path))
@@ -277,7 +277,7 @@ get_patterns(const char patterns[], int *len)
 		while((pat = split_and_get_dc(pat, &state)) != NULL)
 		{
 			const int negated = (*pat == '!');
-			char canonic_path[PATH_MAX];
+			char canonic_path[PATH_MAX + 1];
 			char *path = &canonic_path[1];
 
 			char *const expanded_pat = expand_hook(negated ? (pat + 1) : pat);

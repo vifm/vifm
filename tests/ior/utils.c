@@ -15,7 +15,7 @@
 void
 create_non_empty_dir(const char dir[], const char file[])
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	create_empty_dir(dir);
 
@@ -26,7 +26,7 @@ create_non_empty_dir(const char dir[], const char file[])
 void
 create_empty_nested_dir(const char dir[], const char nested_dir[])
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	create_empty_dir(dir);
 
@@ -38,7 +38,7 @@ void
 create_non_empty_nested_dir(const char root_dir[], const char nested_dir[],
 		const char file[])
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	create_empty_dir(root_dir);
 

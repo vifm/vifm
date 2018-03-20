@@ -200,7 +200,7 @@ get_and_execute_command(const char line[], size_t line_pos, CmdInputType type)
 char *
 get_ext_command(const char beginning[], size_t line_pos, CmdInputType type)
 {
-	char cmd_file[PATH_MAX];
+	char cmd_file[PATH_MAX + 1];
 	char *cmd = NULL;
 
 	generate_tmp_file_name("vifm.cmdline", cmd_file, sizeof(cmd_file));

@@ -374,7 +374,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	if(!changed)
 	{
@@ -492,7 +492,7 @@ static void
 chmod_file_in_list(view_t *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs)
 {
-	char path_buf[PATH_MAX];
+	char path_buf[PATH_MAX + 1];
 
 	get_full_path_at(view, pos, sizeof(path_buf), path_buf);
 	file_chmod(path_buf, mode, inv_mode, recurse_dirs);

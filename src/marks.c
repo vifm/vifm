@@ -276,7 +276,7 @@ check_mark_directory(view_t *view, char m)
 	if(custom)
 	{
 		dir_entry_t *entry;
-		char path[PATH_MAX];
+		char path[PATH_MAX + 1];
 		snprintf(path, sizeof(path), "%s/%s", mark->directory, mark->file);
 		entry = entry_from_path(view, view->dir_entry, view->list_rows, path);
 		if(entry != NULL)
@@ -441,7 +441,7 @@ suggest_marks(mark_suggest_cb cb, int local_only)
 
 		if(is_valid_mark(m) && !is_parent_dir(mark->file))
 		{
-			char path[PATH_MAX];
+			char path[PATH_MAX + 1];
 			file = mark->file;
 			snprintf(path, sizeof(path), "%s/%s", mark->directory, file);
 			if(is_dir(path))

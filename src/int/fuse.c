@@ -54,11 +54,11 @@
 /* Description of existing FUSE mounts. */
 typedef struct fuse_mount_t
 {
-	char source_file_path[PATH_MAX]; /* Full path to source file. */
-	char source_file_dir[PATH_MAX];  /* Full path to directory of source file. */
-	char mount_point[PATH_MAX];      /* Full path to mount point. */
-	int mount_point_id;              /* Identifier of mounts for unique dirs. */
-	struct fuse_mount_t *next;       /* Pointer to the next mount in chain. */
+	char source_file_path[PATH_MAX + 1]; /* Full path to source file. */
+	char source_file_dir[PATH_MAX + 1];  /* Full path to dir of source file. */
+	char mount_point[PATH_MAX + 1];      /* Full path to mount point. */
+	int mount_point_id;                  /* ID of mounts for unique dirs. */
+	struct fuse_mount_t *next;           /* Pointer to the next mount in chain. */
 }
 fuse_mount_t;
 
@@ -84,8 +84,8 @@ fuse_try_mount(view_t *view, const char program[])
 	/* TODO: refactor this function fuse_try_mount() */
 
 	fuse_mount_t *runner;
-	char file_full_path[PATH_MAX];
-	char mount_point[PATH_MAX];
+	char file_full_path[PATH_MAX + 1];
+	char mount_point[PATH_MAX + 1];
 
 	if(make_path(cfg.fuse_home, S_IRWXU) != 0)
 	{
@@ -105,7 +105,7 @@ fuse_try_mount(view_t *view, const char program[])
 	}
 	else
 	{
-		char param[PATH_MAX];
+		char param[PATH_MAX + 1];
 		param[0] = '\0';
 
 		/* New file to be mounted. */
@@ -172,7 +172,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	int mount_point_id;
 	char buf[2*PATH_MAX];
 	int foreground;
-	char errors_file[PATH_MAX];
+	char errors_file[PATH_MAX + 1];
 	int status;
 	int cancelled;
 

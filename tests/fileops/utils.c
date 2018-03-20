@@ -78,7 +78,7 @@ set_to_sandbox_path(char buf[], size_t buf_len)
 	}
 	else
 	{
-		char cwd[PATH_MAX];
+		char cwd[PATH_MAX + 1];
 		assert_non_null(get_cwd(cwd, sizeof(cwd)));
 		snprintf(buf, buf_len, "%s/%s", cwd, SANDBOX_PATH);
 	}

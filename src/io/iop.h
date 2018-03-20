@@ -26,37 +26,37 @@
 /* All functions return zero on success and non-zero on error. */
 
 /* Creates file.  Expects path in arg1.  Fails if one already exists. */
-int iop_mkfile(io_args_t *const args);
+int iop_mkfile(io_args_t *args);
 
 /* Creates directory or hierarchical directory structure (if parent is true).
  * Expects path in arg1, process_parents in arg2 and mode in arg3.  When
  * process_parents is false, fails if destination already exists. */
-int iop_mkdir(io_args_t *const args);
+int iop_mkdir(io_args_t *args);
 
 /* Deletes file.  Expects path in arg1. */
-int iop_rmfile(io_args_t *const args);
+int iop_rmfile(io_args_t *args);
 
 /* Delete empty directory.  Expects path in arg1.  Fails if directory is not
  * empty. */
-int iop_rmdir(io_args_t *const args);
+int iop_rmdir(io_args_t *args);
 
 /* Copies file.  Expects source in arg1, destination in arg2 and crs in arg3. */
-int iop_cp(io_args_t *const args);
+int iop_cp(io_args_t *args);
 
 /* Change owner of file/directory.  Expects path in arg1 and uid in arg3. */
-int iop_chown(io_args_t *const args);
+int iop_chown(io_args_t *args);
 
 /* Change group of file/directory.  Expects path in arg1 and gid in arg3. */
-int iop_chgrp(io_args_t *const args);
+int iop_chgrp(io_args_t *args);
 
 /* Change permissions of file/directory.  Expects path in arg1 and mode in
  * arg3. */
-int iop_chmod(io_args_t *const args);
+int iop_chmod(io_args_t *args);
 
 /* Create symbolic link or change its target.  Expects path in arg1, target in
  * arg2 and crs in arg3.  Fails to overwrite if path exists and not a symbolic
  * link. */
-int iop_ln(io_args_t *const args);
+int iop_ln(io_args_t *args);
 
 #endif /* VIFM__IO__IOP_H__ */
 

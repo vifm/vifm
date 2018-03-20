@@ -129,7 +129,7 @@ TEST(chase_links_causes_link_to_be_resolved, IF(not_windows))
 
 TEST(chase_links_is_not_affected_by_chdir, IF(not_windows))
 {
-	char pwd[PATH_MAX];
+	char pwd[PATH_MAX + 1];
 
 	assert_success(os_mkdir("dir", 0700));
 

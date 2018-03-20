@@ -160,12 +160,12 @@ static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
 static int load_view_data(view_info_t *vi, const char action[],
 		const char file_to_view[], int silent);
 static int get_view_data(view_info_t *vi, const char file_to_view[]);
-static void replace_vi(view_info_t *const orig, view_info_t *const new);
+static void replace_vi(view_info_t *orig, view_info_t *new);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
-static void check_and_set_from_default_win(key_info_t *const key_info);
-static void set_from_default_win(key_info_t *const key_info);
+static void check_and_set_from_default_win(key_info_t *key_info);
+static void set_from_default_win(key_info_t *key_info);
 static void cmd_g(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -176,11 +176,11 @@ static void find_previous(int vline_offset);
 static void find_next(void);
 static void cmd_q(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
-static void update_with_half_win(key_info_t *const key_info);
+static void update_with_half_win(key_info_t *key_info);
 static void cmd_v(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z(key_info_t key_info, keys_info_t *keys_info);
-static void update_with_win(key_info_t *const key_info);
+static void update_with_win(key_info_t *key_info);
 static int is_trying_the_same_file(void);
 static int get_file_to_explore(const view_t *view, char buf[], size_t buf_len);
 static int forward_if_changed(view_info_t *vi);
@@ -308,7 +308,7 @@ view_init_mode(void)
 void
 view_enter_mode(view_t *view, int explore)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{
@@ -353,7 +353,7 @@ view_enter_mode(view_t *view, int explore)
 void
 view_detached_make(view_t *view, const char cmd[])
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{
@@ -463,7 +463,7 @@ view_redraw(void)
 /* Redraws view in explore mode if view is really in explore mode and is visible
  * on the screen. */
 static void
-try_redraw_explore_view(const view_t *const view)
+try_redraw_explore_view(const view_t *view)
 {
 	if(view->explore_mode && ui_view_is_visible(view))
 	{
@@ -1136,7 +1136,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 /* Replaces view_info_t structure with another one preserving as much as
  * possible. */
 static void
-replace_vi(view_info_t *const orig, view_info_t *const new)
+replace_vi(view_info_t *orig, view_info_t *new)
 {
 	new->filename = orig->filename;
 	orig->filename = NULL;
@@ -1186,7 +1186,7 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 
 /* Sets key count from scroll window size when count is not specified. */
 static void
-check_and_set_from_default_win(key_info_t *const key_info)
+check_and_set_from_default_win(key_info_t *key_info)
 {
 	if(key_info->count == NO_COUNT_GIVEN)
 	{
@@ -1434,7 +1434,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 /* Sets key count from half window size when count is not specified, otherwise
  * specified count is stored as new size of the half window size. */
 static void
-update_with_half_win(key_info_t *const key_info)
+update_with_half_win(key_info_t *key_info)
 {
 	if(key_info->count == NO_COUNT_GIVEN)
 	{
@@ -1454,7 +1454,7 @@ update_with_half_win(key_info_t *const key_info)
 static void
 cmd_v(key_info_t key_info, keys_info_t *keys_info)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	get_current_full_path(curr_view, sizeof(path), path);
 	(void)vim_view_file(path, vi->line + ui_qv_height(vi->view)/2, -1, 1);
 	/* In some cases two redraw operations are needed, otherwise TUI is not fully
@@ -1480,7 +1480,7 @@ cmd_z(key_info_t key_info, keys_info_t *keys_info)
 /* Sets key count from scroll window size when count is not specified, otherwise
  * specified count is stored as new size of the scroll window. */
 static void
-update_with_win(key_info_t *const key_info)
+update_with_win(key_info_t *key_info)
 {
 	if(key_info->count == NO_COUNT_GIVEN)
 	{
@@ -1494,7 +1494,7 @@ update_with_win(key_info_t *const key_info)
 
 /* Sets key count from scroll window size. */
 static void
-set_from_default_win(key_info_t *const key_info)
+set_from_default_win(key_info_t *key_info)
 {
 	key_info->count = (vi->win_size > 0)
 		? vi->win_size
@@ -1524,7 +1524,7 @@ view_detached_draw(void)
 static int
 is_trying_the_same_file(void)
 {
-	char full_path[PATH_MAX];
+	char full_path[PATH_MAX + 1];
 
 	if(get_file_to_explore(curr_view, full_path, sizeof(full_path)) != 0)
 	{

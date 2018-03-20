@@ -135,7 +135,7 @@ TEST(quick_view_picks_entry)
 	char origin[] = "/path";
 	char name[] = "name";
 	dir_entry_t entry = { .origin = origin, .name = name, .type = FT_REG };
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	qv_get_path_to_explore(&entry, path, sizeof(path));
 	assert_string_equal("/path/name", path);
@@ -146,7 +146,7 @@ TEST(quick_view_picks_current_directory)
 	char origin[] = "/path";
 	char name[] = "..";
 	dir_entry_t entry = { .origin = origin, .name = name, .type = FT_DIR };
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	qv_get_path_to_explore(&entry, path, sizeof(path));
 	assert_string_equal("/path", path);

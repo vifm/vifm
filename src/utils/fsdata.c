@@ -132,7 +132,7 @@ int
 fsdata_set(fsdata_t *fsd, const char path[], const void *data, size_t len)
 {
 	node_t *node;
-	char real_path[PATH_MAX];
+	char real_path[PATH_MAX + 1];
 
 	if(resolve_path(fsd, path, real_path) != 0)
 	{
@@ -171,7 +171,7 @@ fsdata_get(fsdata_t *fsd, const char path[], void *data, size_t len)
 	node_t *last = NULL;
 	node_t *node;
 	const void *src;
-	char real_path[PATH_MAX];
+	char real_path[PATH_MAX + 1];
 
 	if(fsd->root == NULL)
 	{

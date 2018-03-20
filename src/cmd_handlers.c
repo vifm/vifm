@@ -1336,7 +1336,7 @@ cd_cmd(const cmd_info_t *cmd_info)
 			if(!is_path_absolute(cmd_info->argv[0]) && cmd_info->argv[0][0] != '~' &&
 					strcmp(cmd_info->argv[0], "-") != 0)
 			{
-				char dir[PATH_MAX];
+				char dir[PATH_MAX + 1];
 				snprintf(dir, sizeof(dir), "%s/%s", curr_dir, cmd_info->argv[0]);
 				result += cd(other_view, other_dir, dir);
 			}
@@ -1356,7 +1356,7 @@ cd_cmd(const cmd_info_t *cmd_info)
 		result = cd(curr_view, curr_dir, cmd_info->argv[0]);
 		if(!is_path_absolute(cmd_info->argv[1]) && cmd_info->argv[1][0] != '~')
 		{
-			char dir[PATH_MAX];
+			char dir[PATH_MAX + 1];
 			snprintf(dir, sizeof(dir), "%s/%s", curr_dir, cmd_info->argv[1]);
 			result += cd(other_view, other_dir, dir);
 		}
@@ -1532,7 +1532,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 2)
 	{
-		char path_buf[PATH_MAX];
+		char path_buf[PATH_MAX + 1];
 		char *directory = expand_tilde(cmd_info->argv[1]);
 		if(!is_path_absolute(directory))
 		{
@@ -1940,7 +1940,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 
 	if(!curr_view->selected_files || !get_current_entry(curr_view)->selected)
 	{
-		char file_to_view[PATH_MAX];
+		char file_to_view[PATH_MAX + 1];
 
 		if(stats_file_choose_action_set())
 		{
@@ -2397,7 +2397,7 @@ grep_cmd(const cmd_info_t *cmd_info)
 static int
 help_cmd(const cmd_info_t *cmd_info)
 {
-	char cmd[PATH_MAX];
+	char cmd[PATH_MAX + 1];
 	int bg;
 
 	if(cfg.use_vim_help)
@@ -3799,7 +3799,7 @@ sync_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc > 0)
 	{
-		char dst_path[PATH_MAX];
+		char dst_path[PATH_MAX + 1];
 		to_canonic_path(cmd_info->argv[0], flist_get_dir(curr_view), dst_path,
 				sizeof(dst_path));
 		sync_location(dst_path, 0, cmd_info->emark, 0, 0);
@@ -3959,7 +3959,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 		}
 		else
 		{
-			char curr_file_path[PATH_MAX];
+			char curr_file_path[PATH_MAX + 1];
 
 			const int offset = (curr_view->list_pos - curr_view->top_line);
 			const int shift = (offset*other_view->window_rows)/curr_view->window_rows;

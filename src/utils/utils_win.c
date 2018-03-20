@@ -155,7 +155,7 @@ wcwidth(wchar_t c)
 }
 
 int
-win_exec_cmd(char cmd[], int *const returned_exit_code)
+win_exec_cmd(char cmd[], int *returned_exit_code)
 {
 	wchar_t *utf16_cmd;
 	BOOL ret;
@@ -258,7 +258,7 @@ static int
 should_wait_for_program(const char cmd[])
 {
 	char name[NAME_MAX + 1];
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 
 	(void)extract_cmd_name(cmd, 0, sizeof(name), name);
 
@@ -697,10 +697,10 @@ read_cmd_output(const char cmd[])
 const char *
 get_installed_data_dir(void)
 {
-	static char data_dir[PATH_MAX];
+	static char data_dir[PATH_MAX + 1];
 	if(data_dir[0] == '\0')
 	{
-		char exe_dir[PATH_MAX];
+		char exe_dir[PATH_MAX + 1];
 		(void)get_exe_dir(exe_dir, sizeof(exe_dir));
 		snprintf(data_dir, sizeof(data_dir), "%s/data", exe_dir);
 	}
@@ -735,8 +735,8 @@ read_cmd_output_internal(const char cmd[], int out_pipe[2])
 FILE *
 win_tmpfile()
 {
-	char dir[PATH_MAX];
-	char file[PATH_MAX];
+	char dir[PATH_MAX + 1];
+	char file[PATH_MAX + 1];
 	HANDLE h;
 	int fd;
 	FILE *f;

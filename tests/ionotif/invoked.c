@@ -9,7 +9,7 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 
-static void progress_changed(const io_progress_t *const progress);
+static void progress_changed(const io_progress_t *progress);
 
 static int invoked_eta;
 static int invoked_progress;
@@ -35,7 +35,7 @@ TEARDOWN()
 }
 
 static void
-progress_changed(const io_progress_t *const progress)
+progress_changed(const io_progress_t *progress)
 {
 	switch(progress->stage)
 	{
