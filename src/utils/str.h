@@ -125,6 +125,9 @@ int stroscmp(const char *s, const char *t);
 /* Compares part of strings in OS dependent way. */
 int strnoscmp(const char *s, const char *t, size_t n);
 
+/* Wraps stroscmp() for use with qsort(). */
+int strossorter(const void *s, const void *t);
+
 /* Returns pointer to first character after last occurrence of c in str or
  * str. */
 char * after_last(const char *str, char c);
