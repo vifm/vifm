@@ -30,7 +30,6 @@
 #include "../utils/string_array.h"
 #include "menus.h"
 
-static int sorter(const void *first, const void *second);
 static int execute_colorscheme_cb(view_t *view, menu_data_t *m);
 
 int
@@ -43,7 +42,7 @@ show_colorschemes_menu(view_t *view)
 
 	m.items = cs_list(&m.len);
 
-	qsort(m.items, m.len, sizeof(*m.items), &sorter);
+	qsort(m.items, m.len, sizeof(*m.items), &strossorter);
 
 	/* It's safe to set m.pos to negative value, since menus.c handles this
 	 * correctly. */
@@ -54,15 +53,6 @@ show_colorschemes_menu(view_t *view)
 #endif
 
 	return menus_enter(m.state, view);
-}
-
-/* Sorting function for qsort(). */
-static int
-sorter(const void *first, const void *second)
-{
-	const char *stra = *(const char **)first;
-	const char *strb = *(const char **)second;
-	return stroscmp(stra, strb);
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

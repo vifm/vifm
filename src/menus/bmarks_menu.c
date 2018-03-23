@@ -52,6 +52,11 @@ show_bmarks_menu(view_t *view, const char tags[], int go_on_single_match)
 		bmarks_find(tags, &bmarks_cb, &m);
 	}
 
+	if(m.len > 0)
+	{
+		qsort(m.items, m.len, sizeof(*m.items), &strossorter);
+	}
+
 	if(go_on_single_match && m.len == 1)
 	{
 		(void)menus_goto_file(&m, view, m.items[m.pos], 0);

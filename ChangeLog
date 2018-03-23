@@ -58,6 +58,8 @@
 	Use historical cursor position on navigating to a mark that doesn't specify
 	a file by default when 'autochpos' is on.  Thanks to filterfalse.
 
+	Sort entries of :bmarks menu.  Thanks to anonymous at Vifm Q2A site.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
@@ -104,6 +106,10 @@
 
 	Fixed doubling of "%" on expanding environment variables in arguments of
 	:commands.  Thanks to filterfalse.
+
+	Fixed canonicalization of paths that include entries that end with
+	multiple dots.  `/dir../..` was not turned into `/` since 0.8.2.  Thanks
+	to aleksejrs.
 
 0.9.1-beta to 0.9.1
 
