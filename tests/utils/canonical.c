@@ -22,6 +22,23 @@ TEST(basic)
 	assert_string_equal(ABS_PREFIX "/", buf);
 }
 
+TEST(trailing_dots_in_filename)
+{
+	char buf[PATH_MAX + 1];
+
+	canonicalize_path("/tmp/test../", buf, sizeof(buf));
+	assert_string_equal("/tmp/test../", buf);
+
+	canonicalize_path("/tmp/test../..", buf, sizeof(buf));
+	assert_string_equal("/tmp/", buf);
+
+	canonicalize_path("/tmp/test.../", buf, sizeof(buf));
+	assert_string_equal("/tmp/test.../", buf);
+
+	canonicalize_path("/tmp/test.../..", buf, sizeof(buf));
+	assert_string_equal("/tmp/", buf);
+}
+
 TEST(root_updir)
 {
 	char buf[PATH_MAX + 1];

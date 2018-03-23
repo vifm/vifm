@@ -107,6 +107,10 @@
 	Fixed doubling of "%" on expanding environment variables in arguments of
 	:commands.  Thanks to filterfalse.
 
+	Fixed canonicalization of paths that include entries that end with
+	multiple dots.  `/dir../..` was not turned into `/` since 0.8.2.  Thanks
+	to aleksejrs.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
