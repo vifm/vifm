@@ -111,6 +111,9 @@
 	multiple dots.  `/dir../..` was not turned into `/` since 0.8.2.  Thanks
 	to aleksejrs.
 
+	Fixed part of dialog messages being still visible in quickview after dialog
+	was closed.  Thanks to Alexandre Viau.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

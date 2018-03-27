@@ -297,9 +297,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 	if(curr_stats.load_stage < 2)
 		skip_until_started = (result == R_CANCEL);
 
-	modes_update();
-	if(curr_stats.need_update != UT_NONE)
-		modes_redraw();
+	update_screen(UT_REDRAW);
 
 	return result == R_CANCEL;
 }
@@ -332,14 +330,7 @@ prompt_msg_internal(const char title[], const char message[],
 
 	enter(variants == NULL ? MASK(R_YES, R_NO) : 0);
 
-	touchwin(stdscr);
-
-	update_all_windows();
-
-	if(curr_stats.need_update != UT_NONE)
-	{
-		update_screen(UT_FULL);
-	}
+	update_screen(UT_REDRAW);
 }
 
 /* Enters the mode, which won't be left until one of expected results specified
