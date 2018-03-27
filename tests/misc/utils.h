@@ -12,6 +12,12 @@
 
 struct view_t;
 
+/* Prepares configuration for use in tests. */
+void conf_setup(void);
+
+/* Cleans up configuration. */
+void conf_teardown(void);
+
 /* Prepares option handler for use in tests. */
 void opt_handlers_setup(void);
 
