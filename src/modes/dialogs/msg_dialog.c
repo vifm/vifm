@@ -91,14 +91,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_y,   {{&cmd_y},      .descr = "confirm the query"}},
 };
 
-/* Mode that was active before the dialog. */
-static vle_mode_t prev_mode;
 /* Main loop quit flag. */
 static int quit;
 /* Dialog result. */
 static Result result;
-/* Previous value of curr_stats.use_input_bar. */
-static int prev_use_input_bar;
 /* Bit mask of R_* kinds of results that are allowed. */
 static int accept_mask;
 /* Type of active dialog message. */
@@ -204,11 +200,7 @@ handle_response(Result r)
 static void
 leave(Result r)
 {
-	curr_stats.use_input_bar = prev_use_input_bar;
 	result = r;
-
-	vle_mode_set(prev_mode, VMT_SECONDARY);
-
 	quit = 1;
 }
 
@@ -355,15 +347,18 @@ prompt_msg_internal(const char title[], const char message[],
 static void
 enter(int result_mask)
 {
-	accept_mask = result_mask;
-	prev_use_input_bar = curr_stats.use_input_bar;
-	curr_stats.use_input_bar = 0;
+	const int prev_use_input_bar = curr_stats.use_input_bar;
+	const vle_mode_t prev_mode = vle_mode_get();
 
-	prev_mode = vle_mode_get();
+	accept_mask = result_mask;
+	curr_stats.use_input_bar = 0;
 	vle_mode_set(MSG_MODE, VMT_SECONDARY);
 
 	quit = 0;
 	event_loop(&quit);
+
+	vle_mode_set(prev_mode, VMT_SECONDARY);
+	curr_stats.use_input_bar = prev_use_input_bar;
 }
 
 /* Draws error message on the screen or redraws the last message when both
