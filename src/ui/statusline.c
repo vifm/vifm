@@ -203,6 +203,13 @@ refresh_window(WINDOW *win, int lazily)
 TSTATIC char *
 expand_status_line_macros(view_t *view, const char format[])
 {
+	const dir_entry_t *const curr = get_current_entry(view);
+	if(curr == NULL || fentry_is_fake(curr))
+	{
+		/* Fake entries don't have valid information. */
+		return strdup("");
+	}
+
 	return expand_view_macros(view, format, "tTfaAugsEdD-xlLSz%[]{");
 }
 
@@ -228,7 +235,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 	char c;
 	int nexpansions = 0;
 
-	if(curr == NULL || fentry_is_fake(curr))
+	if(curr == NULL)
 	{
 		return result;
 	}

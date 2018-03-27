@@ -114,6 +114,9 @@
 	Fixed part of dialog messages being still visible in quickview after dialog
 	was closed.  Thanks to Alexandre Viau.
 
+	Fixed ruler not being displayed when cursor is on a fake entry in :compare
+	view.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

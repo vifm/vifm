@@ -16,6 +16,7 @@ static view_t *const view = &lwin;
 SETUP()
 {
 	init_modes();
+	conf_setup();
 
 	view_setup(view);
 	view->window_rows = 8;
@@ -34,6 +35,8 @@ format_none(int id, const void *data, size_t buf_len, char buf[])
 
 TEARDOWN()
 {
+	conf_teardown();
+
 	view_teardown(view);
 
 	vle_keys_reset();
