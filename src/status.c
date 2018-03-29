@@ -357,6 +357,12 @@ stats_save_msg(const char msg[])
 }
 
 void
+stats_set_quickview(int on)
+{
+	curr_stats.preview.on = on;
+}
+
+void
 hists_resize(int new_size)
 {
 	const int old_size = curr_stats.history_size;

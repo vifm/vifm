@@ -285,6 +285,7 @@ tabs_goto_pane(int idx)
 	assign_preview(&curr_stats.preview, &ptabs->tabs[idx].preview);
 	ptabs->current = idx;
 
+	stats_set_quickview(curr_stats.preview.on);
 	ui_view_schedule_redraw(curr_view);
 
 	load_view_options(curr_view);
@@ -324,6 +325,7 @@ tabs_goto_global(int idx)
 
 	current_tab = idx;
 
+	stats_set_quickview(curr_stats.preview.on);
 	ui_view_schedule_redraw(&lwin);
 	ui_view_schedule_redraw(&rwin);
 

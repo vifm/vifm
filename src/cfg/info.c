@@ -240,7 +240,7 @@ read_info_file(int reread)
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
 			const int i = atoi(line_val);
-			curr_stats.preview.on = (i == 1);
+			stats_set_quickview(i == 1);
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
