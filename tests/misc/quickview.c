@@ -13,12 +13,21 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/filetype.h"
 
+#include "utils.h"
+
 static void check_only_one_line_displayed(void);
 
 SETUP()
 {
 	curr_view = &lwin;
 	other_view = &rwin;
+
+	opt_handlers_setup();
+}
+
+TEARDOWN()
+{
+	opt_handlers_teardown();
 }
 
 TEST(no_extra_line_with_extra_padding)

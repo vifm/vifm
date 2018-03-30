@@ -102,7 +102,7 @@ qv_ensure_is_shown(void)
 	{
 		return 1;
 	}
-	curr_stats.preview.on = 1;
+	stats_set_quickview(1);
 	return 0;
 }
 
@@ -127,7 +127,7 @@ qv_toggle(void)
 {
 	if(curr_stats.preview.on)
 	{
-		curr_stats.preview.on = 0;
+		stats_set_quickview(0);
 
 		if(ui_view_is_visible(other_view))
 		{
@@ -148,7 +148,7 @@ qv_toggle(void)
 	}
 	else
 	{
-		curr_stats.preview.on = 1;
+		stats_set_quickview(1);
 		qv_draw(curr_view);
 	}
 }

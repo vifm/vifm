@@ -45,6 +45,9 @@
 	positioned in accordance with record of directory history.  Thanks to
 	filterfalse and Dmitry Frank (a.k.a. dimonomid).
 
+	Added 'quickview' option that controls visibility of quick view (:view).
+	Thanks to anonymous at Vifm Q2A site.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
@@ -113,6 +116,9 @@
 
 	Fixed part of dialog messages being still visible in quickview after dialog
 	was closed.  Thanks to Alexandre Viau.
+
+	Fixed ruler not being displayed when cursor is on a fake entry in :compare
+	view.
 
 0.9.1-beta to 0.9.1
 

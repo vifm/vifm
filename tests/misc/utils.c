@@ -27,6 +27,44 @@ static int op_avail(OPS op);
 static void init_list(view_t *view);
 
 void
+conf_setup(void)
+{
+	update_string(&cfg.slow_fs_list, "");
+	update_string(&cfg.apropos_prg, "");
+	update_string(&cfg.cd_path, "");
+	update_string(&cfg.find_prg, "");
+	update_string(&cfg.fuse_home, "");
+	update_string(&cfg.time_format, "+");
+	update_string(&cfg.vi_command, "");
+	update_string(&cfg.vi_x_command, "");
+	update_string(&cfg.ruler_format, "");
+	update_string(&cfg.status_line, "");
+	update_string(&cfg.grep_prg, "");
+	update_string(&cfg.locate_prg, "");
+	update_string(&cfg.border_filler, "");
+	update_string(&cfg.shell, "");
+}
+
+void
+conf_teardown(void)
+{
+	update_string(&cfg.slow_fs_list, NULL);
+	update_string(&cfg.apropos_prg, NULL);
+	update_string(&cfg.cd_path, NULL);
+	update_string(&cfg.find_prg, NULL);
+	update_string(&cfg.fuse_home, NULL);
+	update_string(&cfg.time_format, NULL);
+	update_string(&cfg.vi_command, NULL);
+	update_string(&cfg.vi_x_command, NULL);
+	update_string(&cfg.ruler_format, NULL);
+	update_string(&cfg.status_line, NULL);
+	update_string(&cfg.grep_prg, NULL);
+	update_string(&cfg.locate_prg, NULL);
+	update_string(&cfg.border_filler, NULL);
+	update_string(&cfg.shell, NULL);
+}
+
+void
 opt_handlers_setup(void)
 {
 	update_string(&lwin.view_columns, "");
@@ -42,20 +80,7 @@ opt_handlers_setup(void)
 	update_string(&rwin.preview_prg, "");
 	update_string(&rwin.preview_prg_g, "");
 
-	update_string(&cfg.slow_fs_list, "");
-	update_string(&cfg.apropos_prg, "");
-	update_string(&cfg.cd_path, "");
-	update_string(&cfg.find_prg, "");
-	update_string(&cfg.fuse_home, "");
-	update_string(&cfg.time_format, "+");
-	update_string(&cfg.vi_command, "");
-	update_string(&cfg.vi_x_command, "");
-	update_string(&cfg.ruler_format, "");
-	update_string(&cfg.status_line, "");
-	update_string(&cfg.grep_prg, "");
-	update_string(&cfg.locate_prg, "");
-	update_string(&cfg.border_filler, "");
-	update_string(&cfg.shell, "");
+	conf_setup();
 
 	init_option_handlers();
 }
@@ -65,20 +90,7 @@ opt_handlers_teardown(void)
 {
 	clear_options();
 
-	update_string(&cfg.slow_fs_list, NULL);
-	update_string(&cfg.apropos_prg, NULL);
-	update_string(&cfg.cd_path, NULL);
-	update_string(&cfg.find_prg, NULL);
-	update_string(&cfg.fuse_home, NULL);
-	update_string(&cfg.time_format, NULL);
-	update_string(&cfg.vi_command, NULL);
-	update_string(&cfg.vi_x_command, NULL);
-	update_string(&cfg.ruler_format, NULL);
-	update_string(&cfg.status_line, NULL);
-	update_string(&cfg.grep_prg, NULL);
-	update_string(&cfg.locate_prg, NULL);
-	update_string(&cfg.border_filler, NULL);
-	update_string(&cfg.shell, NULL);
+	conf_teardown();
 
 	update_string(&lwin.view_columns, NULL);
 	update_string(&lwin.view_columns_g, NULL);

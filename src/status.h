@@ -106,7 +106,8 @@ typedef struct
 {
 	char *cleanup_cmd;           /* Cleanup command. */
 	struct view_info_t *explore; /* State of explored quick view. */
-	unsigned int on : 1;         /* Whether preview mode is active. */
+	unsigned int on : 1;         /* Whether preview mode is active.  Use
+	                                stats_set_quickview() to change the value. */
 	unsigned int graphical : 1;  /* Whether current preview displays graphics. */
 	unsigned int clearing : 1;   /* Whether in process of clearing preview. */
 }
@@ -257,6 +258,10 @@ int stats_file_choose_action_set(void);
 
 /* Records status bar message. */
 void stats_save_msg(const char msg[]);
+
+/* Updates curr_stats.preview.on field and performs necessary updates in other
+ * parts of the application. */
+void stats_set_quickview(int on);
 
 /* Managing histories. */
 

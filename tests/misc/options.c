@@ -785,5 +785,13 @@ TEST(histcursor)
 	assert_int_equal(CHPOS_ENTER | CHPOS_DIRMARK, cfg.ch_pos_on);
 }
 
+TEST(quickview)
+{
+	assert_success(exec_commands("set quickview", &lwin, CIT_COMMAND));
+	assert_true(curr_stats.preview.on);
+	assert_success(exec_commands("set invquickview", &lwin, CIT_COMMAND));
+	assert_false(curr_stats.preview.on);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

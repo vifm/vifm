@@ -48,6 +48,7 @@
 #include "cmd_completion.h"
 #include "cmd_core.h"
 #include "filelist.h"
+#include "opt_handlers.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
  * identify the host. */
@@ -354,6 +355,13 @@ stats_save_msg(const char msg[])
 		curr_stats.msg_head = (curr_stats.msg_head + 1)%ARRAY_LEN(curr_stats.msgs);
 	}
 	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
+}
+
+void
+stats_set_quickview(int on)
+{
+	curr_stats.preview.on = on;
+	load_quickview_option();
 }
 
 void

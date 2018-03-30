@@ -240,7 +240,7 @@ read_info_file(int reread)
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
 			const int i = atoi(line_val);
-			curr_stats.preview.on = (i == 1);
+			stats_set_quickview(i == 1);
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
@@ -1000,6 +1000,7 @@ write_options(FILE *fp)
 	fprintf(fp, "=lines=%d\n", cfg.lines);
 	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
 	fprintf(fp, "=mintimeoutlen=%d\n", cfg.min_timeout_len);
+	fprintf(fp, "=%squickview\n", curr_stats.preview.on ? "" : "no");
 	fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
 	fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
 	fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
