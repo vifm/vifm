@@ -45,6 +45,9 @@
 	positioned in accordance with record of directory history.  Thanks to
 	filterfalse and Dmitry Frank (a.k.a. dimonomid).
 
+	Added 'quickview' option that controls visibility of quick view (:view).
+	Thanks to anonymous at Vifm Q2A site.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

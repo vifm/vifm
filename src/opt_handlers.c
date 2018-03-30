@@ -94,6 +94,7 @@ static void init_lsoptions(optval_t *val);
 static void init_lsview(optval_t *val);
 static void init_milleroptions(optval_t *val);
 static void init_millerview(optval_t *val);
+static void init_quickview(optval_t *val);
 static void init_shortmess(optval_t *val);
 static void init_sizefmt(optval_t *val);
 static void init_iooptions(optval_t *val);
@@ -145,6 +146,7 @@ static void lines_handler(OPT_OP op, optval_t val);
 static void locateprg_handler(OPT_OP op, optval_t val);
 static void mintimeoutlen_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(view_t *view);
+static void quickview_handler(OPT_OP op, optval_t val);
 static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
 static void scrollbind_handler(OPT_OP op, optval_t val);
@@ -676,6 +678,10 @@ options[] = {
 	  OPT_INT, 0, NULL, &mintimeoutlen_handler, NULL,
 	  { .ref.int_val = &cfg.min_timeout_len },
 	},
+	{ "quickview", "", "whether quick view is active",
+	  OPT_BOOL, 0, NULL, &quickview_handler, NULL,
+	  { .init = &init_quickview },
+	},
 	{ "rulerformat", "ruf", "format of the ruler",
 	  OPT_STR, 0, NULL, &rulerformat_handler, NULL,
 	  { .ref.str_val = &cfg.ruler_format },
@@ -1107,6 +1113,13 @@ static void
 init_millerview(optval_t *val)
 {
 	val->bool_val = curr_view->miller_view_g;
+}
+
+/* Initializes 'quickview' option from global state. */
+static void
+init_quickview(optval_t *val)
+{
+	val->bool_val = curr_stats.preview.on;
 }
 
 /* Initializes 'shortmess' from current configuration state. */
@@ -2172,6 +2185,14 @@ scroll_line_down(view_t *view)
 	wresize(view->win, view->window_rows, view->window_cols);
 }
 
+/* Handles switch that controls visibility of quick view. */
+static void
+quickview_handler(OPT_OP op, optval_t val)
+{
+	curr_stats.preview.on = val.bool_val;
+	stats_redraw_schedule();
+}
+
 static void
 rulerformat_handler(OPT_OP op, optval_t val)
 {
@@ -2958,6 +2979,14 @@ map_name(const char name[], void *arg)
 	pos = string_array_pos((char **)&sort_enum[1], ARRAY_LEN(sort_enum) - 1,
 			name);
 	return (pos >= 0) ? (pos + 1) : -1;
+}
+
+void
+load_quickview_option(void)
+{
+	optval_t val;
+	val.bool_val = curr_stats.preview.on;
+	set_option("quickview", val, OPT_GLOBAL);
 }
 
 void

@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 18, 2018" "vifm 0.9.1"
+.TH VIFM 1 "March 30, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2789,7 +2789,7 @@ same as :version.
 .BI "                                         :view"
 .TP
 .BI :vie[w]
-toggle on and off the quick file view.
+toggle on and off the quick file view.  See also 'quickview' option.
 .TP
 .BI :vie[w]!
 turn on quick file view if it's off.
@@ -3954,6 +3954,13 @@ Example:
   " always show git log in preview of files inside some repository
   au DirEnter '~/git\-repo/**/*' setl previewprg='git log \-\-color \-\- %c 2>&1'
 .EE
+.TP
+.BI 'quickview'
+type: boolean
+.br
+default: false
+.br
+Whether quick view (:view) is currently active or not.
 .TP
 .BI "'relativenumber' 'rnu'"
 type: boolean

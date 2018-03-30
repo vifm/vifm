@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 18
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2326,7 +2326,7 @@ yet supported) and might be changed in future releases, or get an alias.
 
                                                *vifm-:view* *vifm-:vie*
 :vie[w]
-    toggle quick file view.
+    toggle quick file view.  See also |vifm-'quickview'| option.
 :vie[w]!
     turn on quick file view if it's off.
 
@@ -3287,6 +3287,13 @@ Example: >
     " always show git log in preview of files inside some repository
     au DirEnter '~/git-repo/**/*' setl previewprg='git log --color -- %c 2>&1'
 <
+                                               *vifm-'quickview'*
+quickview
+type: boolean
+default: false
+
+Whether quick view (|vifm-:view|) is currently active or not.
+
                                                *vifm-'relativenumber'*
                                                *vifm-'rnu'*
 relativenumber rnu

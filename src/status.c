@@ -48,6 +48,7 @@
 #include "cmd_completion.h"
 #include "cmd_core.h"
 #include "filelist.h"
+#include "opt_handlers.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
  * identify the host. */
@@ -360,6 +361,7 @@ void
 stats_set_quickview(int on)
 {
 	curr_stats.preview.on = on;
+	load_quickview_option();
 }
 
 void
