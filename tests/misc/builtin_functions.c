@@ -286,5 +286,15 @@ TEST(tabpagenr)
 	ASSERT_FAIL("tabpagenr('a')", PE_INVALID_EXPRESSION);
 }
 
+TEST(fnameescape)
+{
+	ASSERT_FAIL("fnameescape()", PE_INVALID_EXPRESSION);
+
+	ASSERT_OK("fnameescape(' ')", "\\ ");
+	ASSERT_OK("fnameescape('%')", "%%");
+	ASSERT_OK("fnameescape(\"'\")", "\\'");
+	ASSERT_OK("fnameescape('\"')", "\\\"");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
