@@ -423,6 +423,9 @@ echo term('cmd')
 " "tabpagenr" should be highlighted as a function()
 echo tabpagenr('$')
 
+" "fnameescape" should be highlighted as a function()
+echo fnameescape('path name')
+
 " TODO
 
 " "vifm" should NOT be highlighted as a command

@@ -44,6 +44,7 @@ static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
+static var_t fnameescape_builtin(const call_info_t *call_info);
 static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
 static var_t layoutis_builtin(const call_info_t *call_info);
@@ -58,6 +59,7 @@ static const function_t functions[] = {
 	{ "executable",  "check for executable file",  {1,1}, &executable_builtin },
 	{ "expand",      "expand macros in a string",  {1,1}, &expand_builtin },
 	{ "filetype",    "retrieve type of a file",    {1,1}, &filetype_builtin },
+	{ "fnameescape", "escapes string for a :cmd",  {1,1}, &fnameescape_builtin },
 	{ "getpanetype", "retrieve type of file list", {0,0}, &getpanetype_builtin},
 	{ "has",         "check for specific ability", {1,1}, &has_builtin },
 	{ "layoutis",    "query current layout",       {1,1}, &layoutis_builtin },
@@ -181,6 +183,21 @@ get_fnum(const char position[])
 		return curr_view->list_pos;
 	}
 	return -1;
+}
+
+/* Escapes argument to make it suitable for use as an argument in :commands. */
+static var_t
+fnameescape_builtin(const call_info_t *call_info)
+{
+	var_t result;
+
+	char *const str_val = var_to_str(call_info->argv[0]);
+	char *const escaped = shell_like_escape(str_val, 1);
+	free(str_val);
+
+	result = var_from_str(escaped);
+	free(escaped);
+	return result;
 }
 
 /* Retrieves type of current pane as a string. */

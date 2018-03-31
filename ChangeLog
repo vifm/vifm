@@ -48,6 +48,9 @@
 	Added 'quickview' option that controls visibility of quick view (:view).
 	Thanks to anonymous at Vifm Q2A site.
 
+	Added fnameescape() builtin function, which can be used to escape paths on
+	construction of :commands.  Thanks to filterfalse.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

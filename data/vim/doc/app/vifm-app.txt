@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 30
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 31
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4159,6 +4159,7 @@ chooseopt({opt})    String        Queries choose parameters passed on startup.
 executable({expr})  Integer       Checks whether {expr} command available.
 expand({expr})      String        Expands special keywords in {expr}.
 filetype({fnum})    String        Returns file type from position.
+fnameescape({expr}) String        Escapes {expr} for use in a :command.
 getpanetype()       String        Returns type of current pane.
 has({property})     Integer       Checks whether instance has {property}.
 layoutis({type})    Integer       Checks whether layout is of type {type}.
@@ -4224,6 +4225,15 @@ The result is a string, which represents file type and is one of the list:
 
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
+
+fnameescape({expr})                            *vifm-fnameescape()*
+
+Escapes parameter to make it suitable for use as an argument of a :command.
+List of escaped characters includes %, which is doubled.
+
+Usage example: >
+  " navigate to most recently modified file in current directory
+  execute 'goto' fnameescape(system('ls -t | head -1'))
 
 getpanetype()                                  *vifm-getpanetype()*
 

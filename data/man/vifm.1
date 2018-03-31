@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 30, 2018" "vifm 0.9.1"
+.TH VIFM 1 "March 31, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5016,6 +5016,8 @@ expand({expr})      String        Expands special keywords in {expr}.
 .br
 filetype({fnum})    String        Returns file type from position.
 .br
+fnameescape({expr}) String        Escapes {expr} for use in a :command.
+.br
 getpanetype()       String        Returns type of current pane.
 .br
 has({property})     Integer       Checks whether instance has {property}.
@@ -5091,6 +5093,18 @@ The result is a string, which represents file type and is one of the list:
 
 Parameter {fnum} can have following values:
     \- '.' to get type of file under the cursor in the active pane
+
+.BI fnameescape({expr})
+
+Escapes parameter to make it suitable for use as an argument of a :command.
+List of escaped characters includes %, which is doubled.
+
+Usage example:
+
+.EX
+  " navigate to most recently modified file in current directory
+  execute 'goto' fnameescape(system('ls \-t | head \-1'))
+.EE
 
 .BI getpanetype()
 
