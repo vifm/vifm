@@ -72,8 +72,6 @@
 #include "visual.h"
 #include "wk.h"
 
-#ifndef TEST
-
 /* History search mode. */
 typedef enum
 {
@@ -121,8 +119,6 @@ typedef struct
 	PromptState state;        /* Prompt state with regard to current input. */
 }
 line_stats_t;
-
-#endif
 
 static int prev_mode;
 static CmdLineSubmode sub_mode;
