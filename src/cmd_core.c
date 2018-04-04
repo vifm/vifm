@@ -1202,6 +1202,12 @@ cmds_scoped_endif(void)
 	return 0;
 }
 
+int
+cmds_scoped_empty(void)
+{
+	return int_stack_is_empty(&if_levels);
+}
+
 /* Checks that bottom of block scope is reached.  Returns non-zero if so,
  * otherwise zero is returned. */
 static int

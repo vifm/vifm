@@ -66,6 +66,9 @@
 
 	Sort entries of :bmarks menu.  Thanks to anonymous at Vifm Q2A site.
 
+	Drop unfinished if-else statements on leaving command-line mode.  Thanks
+	to Marcin Kurczewski (a.k.a. rr-).
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
