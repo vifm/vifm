@@ -138,8 +138,12 @@ int cmds_scoped_elseif(int cond);
 int cmds_scoped_else(void);
 
 /* Terminates if-else-endif statement.  Returns non-zero if endif wasn't
- * expected at this point, otherwise zero is returned.  */
+ * expected at this point, otherwise zero is returned. */
 int cmds_scoped_endif(void);
+
+/* Checks whether there are any scope or scoped command registered at the
+ * moment.  Returns non-zero if so, otherwise zero is returned. */
+int cmds_scoped_empty(void);
 
 #ifdef TEST
 #include "engine/cmds.h"
