@@ -89,7 +89,7 @@ get_mount_point_traverser_state;
 
 static int get_mount_info_traverser(struct mntent *entry, void *arg);
 static void free_mnt_entries(struct mntent *entries, unsigned int nentries);
-struct mntent * read_mnt_entries(unsigned int *nentries);
+static struct mntent * read_mnt_entries(unsigned int *nentries);
 static int clone_mnt_entry(struct mntent *lhs, const struct mntent *rhs);
 static void free_mnt_entry(struct mntent *entry);
 static int starts_with_list_item(const char str[], const char list[]);
@@ -540,7 +540,7 @@ free_mnt_entries(struct mntent *entries, unsigned int nentries)
 
 /* Reads in array of mount entries.  Always sets *nentries.  Returns the array,
  * which might be NULL if empty.  On memory allocation error, skips entries. */
-struct mntent *
+static struct mntent *
 read_mnt_entries(unsigned int *nentries)
 {
 	FILE *f;
