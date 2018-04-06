@@ -492,12 +492,6 @@ is_trash_valid(const char trash_dir[], int allow_empty)
 }
 
 int
-exists_in_trash(const char trash_name[])
-{
-	return path_exists(trash_name, NODEREF);
-}
-
-int
 restore_from_trash(const char trash_name[])
 {
 	int i;
