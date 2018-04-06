@@ -648,10 +648,6 @@ int ui_view_is_visible(const view_t *view);
  * zero is returned. */
 int ui_view_displays_columns(const view_t *view);
 
-/* Gets real type of file view entry.  Returns type of entry, resolving symbolic
- * link if needed. */
-FileType ui_view_entry_target_type(const dir_entry_t *entry);
-
 /* Gets width of part of the view that is available for file list.  Returns the
  * width. */
 int ui_view_available_width(const view_t *view);
