@@ -60,10 +60,6 @@ int trash_includes(const char original_path[]);
  * NULL and sets *ntrashes to zero. */
 char ** list_trashes(int *ntrashes);
 
-/* Checks whether file with given name exists in the trash directory.  Returns
- * non-zero if so, otherwise zero is returned. */
-int exists_in_trash(const char trash_name[]);
-
 /* Restores a file specified by its trash_name (from trash_list array).  Returns
  * zero on success, otherwise non-zero is returned. */
 int restore_from_trash(const char trash_name[]);

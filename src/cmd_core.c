@@ -301,7 +301,12 @@ execute_extcmd(const char command[], CmdInputType type)
 {
 	if(type == CIT_COMMAND)
 	{
+		commands_scope_start();
 		curr_stats.save_msg = exec_commands(command, curr_view, type);
+		if(commands_scope_finish() != 0)
+		{
+			curr_stats.save_msg = 1;
+		}
 	}
 	else
 	{

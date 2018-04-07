@@ -44,6 +44,8 @@ static int transform_wide_str(const char str[], wint_t (*f)(wint_t), char buf[],
 TSTATIC void squash_double_commas(char str[]);
 static char * ellipsis(const char str[], size_t max_width, const char ell[],
 		int right);
+static size_t copy_substr(char dst[], size_t dst_len, const char src[],
+		char terminator);
 
 void
 chomp(char str[])
@@ -839,7 +841,12 @@ copy_str(char dst[], size_t dst_len, const char src[])
 	return (dst == src) ? 0U : copy_substr(dst, dst_len, src, '\0');
 }
 
-size_t
+/* Copies characters from the string pointed to by src and terminated by the
+ * terminator to piece of memory of size dst_len pointed to by dst.  Ensures
+ * that copied string ends with null character.  Does nothing for zero
+ * dst_len.  Returns number of characters written, including terminating null
+ * character. */
+static size_t
 copy_substr(char dst[], size_t dst_len, const char src[], char terminator)
 {
 	char *past_end;

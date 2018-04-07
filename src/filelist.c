@@ -148,6 +148,8 @@ TSTATIC void pick_cd_path(view_t *view, const char base_dir[],
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
 static entries_t list_sibling_dirs(view_t *view);
+static entries_t flist_list_in(view_t *view, const char path[], int only_dirs,
+		int can_include_parent);
 static dir_entry_t * pick_sibling(view_t *view, entries_t parent_dirs,
 		int offset, int wrap, int *wrapped);
 static int iter_entries(view_t *view, dir_entry_t **entry,
@@ -3085,7 +3087,9 @@ list_sibling_dirs(view_t *view)
 	return parent_dirs;
 }
 
-entries_t
+/* Lists files of specified directory.  Returns the list, which is of length -1
+ * on error. */
+static entries_t
 flist_list_in(view_t *view, const char path[], int only_dirs,
 		int can_include_parent)
 {

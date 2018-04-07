@@ -291,10 +291,6 @@ int flist_load_tree(view_t *view, const char path[]);
 /* Makes to contain tree with the same root as from including copying list of
  * excluded files.  Returns zero on success, otherwise non-zero is returned. */
 int flist_clone_tree(view_t *to, const view_t *from);
-/* Lists files of specified directory.  Returns the list, which is of length -1
- * on error. */
-entries_t flist_list_in(view_t *view, const char path[], int only_dirs,
-		int can_include_parent);
 /* Updates specified cache of the view.  If the path is NULL, then nothing is
  * done.  Returns non-zero if cached file list has changed, otherwise zero is
  * returned. */

@@ -108,6 +108,7 @@ static int get_ruler_width(view_t *view);
 static char * expand_ruler_macros(view_t *view, const char format[]);
 static void switch_panes_content(void);
 static void set_splitter(int pos);
+static FileType ui_view_entry_target_type(const dir_entry_t *entry);
 static void refresh_bottom_lines(void);
 static char * path_identity(const char path[]);
 static int view_shows_tabline(const view_t *view);
@@ -1540,6 +1541,24 @@ ui_get_decors(const dir_entry_t *entry, const char **prefix,
 	}
 }
 
+/* Gets real type of file view entry.  Returns type of entry, resolving symbolic
+ * link if needed. */
+static FileType
+ui_view_entry_target_type(const dir_entry_t *entry)
+{
+	if(entry->type == FT_LINK)
+	{
+		char *const full_path = format_str("%s/%s", entry->origin, entry->name);
+		const FileType type = (get_symlink_type(full_path) != SLT_UNKNOWN)
+		                    ? FT_DIR
+		                    : FT_LINK;
+		free(full_path);
+		return type;
+	}
+
+	return entry->type;
+}
+
 void
 checked_wmove(WINDOW *win, int y, int x)
 {
@@ -2010,22 +2029,6 @@ ui_view_displays_columns(const view_t *view)
 	return !view->ls_view
 	    || is_in_miller_view(view)
 	    || is_forced_list_mode(view);
-}
-
-FileType
-ui_view_entry_target_type(const dir_entry_t *entry)
-{
-	if(entry->type == FT_LINK)
-	{
-		char *const full_path = format_str("%s/%s", entry->origin, entry->name);
-		const FileType type = (get_symlink_type(full_path) != SLT_UNKNOWN)
-		                    ? FT_DIR
-		                    : FT_LINK;
-		free(full_path);
-		return type;
-	}
-
-	return entry->type;
 }
 
 int
