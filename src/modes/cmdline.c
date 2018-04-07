@@ -1302,7 +1302,10 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = exec_commands(real_start, curr_view, cmd_type);
 		if(sub_mode == CLS_COMMAND)
 		{
-			curr_stats.save_msg = (commands_scope_finish() != 0);
+			if(commands_scope_finish() != 0)
+			{
+				curr_stats.save_msg = 1;
+			}
 		}
 	}
 	else if(sub_mode == CLS_PROMPT)
