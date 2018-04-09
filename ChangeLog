@@ -126,6 +126,9 @@
 	Fixed ruler not being displayed when cursor is on a fake entry in :compare
 	view.
 
+	Fixed crash due to linking to wrong version of libtinfo.  Thanks to Ruslan
+	Osmanov (a.k.a. rosmanov) and Chema Alonso Josa (a.k.a. nimiux).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

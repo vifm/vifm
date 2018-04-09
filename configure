@@ -8707,7 +8707,7 @@ return curs_set ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' tinfo; do
+for ac_lib in '' tinfow; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
