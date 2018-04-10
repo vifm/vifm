@@ -21,6 +21,7 @@
 #define VIFM__REGISTERS_H__
 
 #include <stddef.h> /* wchar_t */
+#include "utils/test_helpers.h" /* TSTATIC_DEFS-macro */
 
 /* Name of the default register. */
 #define DEFAULT_REG_NAME '"'
@@ -87,6 +88,16 @@ void regs_update_unnamed(int reg_name);
 
 /* Lists active registers. */
 void regs_suggest(regs_suggest_cb cb, int max_entries_per_reg);
+
+void regs_sync_enable(char* shared_memory_name);
+void regs_sync_disable();
+void regs_sync_to_shared_memory();
+void regs_sync_from_shared_memory();
+
+TSTATIC_DEFS(
+	void regs_sync_debug_print_memory();
+	void regs_sync_enable_test_mode();
+)
 
 #endif /* VIFM__REGISTERS_H__ */
 

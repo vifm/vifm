@@ -113,6 +113,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 		return 0;
 	}
 
+	regs_sync_from_shared_memory();
 	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{
@@ -268,6 +269,7 @@ initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 		return 0;
 	}
 
+	regs_sync_from_shared_memory();
 	reg = regs_find(tolower(reg_name));
 	if(reg == NULL || reg->nfiles < 1)
 	{

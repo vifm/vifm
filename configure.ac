@@ -768,7 +768,7 @@ fi
 dnl The flags should be available separately for fetching on building tests.
 AC_SUBST([SANITIZERS_CFLAGS])
 CFLAGS="$CFLAGS $SANITIZERS_CFLAGS"
-LDFLAGS="$LDFLAGS $SANITIZERS_CFLAGS"
+LDFLAGS="$LDFLAGS -lrt $SANITIZERS_CFLAGS"
 
 dnl Include config.h in all translation units implicitly
 CFLAGS="$CFLAGS -include ../build-aux/config.h"
