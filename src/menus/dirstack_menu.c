@@ -22,6 +22,7 @@
 #include <string.h> /* strdup() */
 
 #include "../ui/ui.h"
+#include "../utils/string_array.h"
 #include "../dir_stack.h"
 #include "menus.h"
 
@@ -36,9 +37,7 @@ show_dirstack_menu(view_t *view)
 	m.execute_handler = &execute_dirstack_cb;
 
 	m.items = dir_stack_list();
-
-	m.len = -1;
-	while(m.items[++m.len] != NULL);
+	m.len = count_strings(m.items);
 
 	return menus_enter(m.state, view);
 }

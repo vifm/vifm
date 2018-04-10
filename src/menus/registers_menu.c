@@ -22,6 +22,7 @@
 #include <string.h> /* strdup() */
 
 #include "../ui/ui.h"
+#include "../utils/string_array.h"
 #include "../registers.h"
 #include "menus.h"
 
@@ -33,10 +34,7 @@ show_register_menu(view_t *view, const char registers[])
 	menus_init_data(&m, view, strdup("Registers"), strdup("Registers are empty"));
 
 	m.items = regs_list(registers);
-	while(m.items[m.len] != NULL)
-	{
-		++m.len;
-	}
+	m.len = count_strings(m.items);
 
 	return menus_enter(m.state, view);
 }
