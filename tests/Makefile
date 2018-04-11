@@ -295,11 +295,11 @@ else
 	$(AT)mkdir -p $$@
 endif
 
-$1: $$($1.bin)
+$1: $$($1.bin) build
 ifeq ($B,)
-	@$(TEST_RUN_PREFIX) $$^ -s $(TEST_RUN_POST)
+	@$(TEST_RUN_PREFIX) $$< -s $(TEST_RUN_POST)
 else
-	@cd $B && $(TEST_RUN_PREFIX) $$^ -s $(TEST_RUN_POST)
+	@cd $B && $(TEST_RUN_PREFIX) $$< -s $(TEST_RUN_POST)
 endif
 
 # this runs separate fixtures, targets are of the form dir.name
