@@ -132,6 +132,7 @@ override CFLAGS := $(CFLAGS) -MMD -pipe -Wall -Wno-char-subscripts \
 override LDFLAGS := $(LDFLAGS)
 ifeq (,$(findstring clang,$(CC)))
     # clang is inconvenient with regard to this flag, don't do coverage with it
+    override CFLAGS += --coverage
     override LDFLAGS += --coverage
 endif
 ifdef unix_env

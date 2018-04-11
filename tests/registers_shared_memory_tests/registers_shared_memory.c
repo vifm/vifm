@@ -103,9 +103,10 @@ static void spawn_regcmd(size_t number)
 		dup2(outpipefd[0], STDIN_FILENO);
 		dup2(inpipefd[1], STDOUT_FILENO);
 		dup2(inpipefd[1], STDERR_FILENO);
-#ifdef __linux__
-		prctl(PR_SET_PDEATHSIG, SIGTERM);
-#endif
+		close(outpipefd[0]);
+		close(outpipefd[1]);
+		close(inpipefd[0]);
+		close(inpipefd[1]);
 		if(getenv("DEBUG") == NULL)
 			execl("./bin/registers_shared_memory_application",
 				"registers_shared_memory_application",
