@@ -4,9 +4,17 @@
 #include <errno.h>
 #include <signal.h>     /* SIGTERM */
 #include <unistd.h>
-#include <sys/prctl.h>
 #include <sys/mman.h>   /* shm_unlink */
 #include <stic.h>
+
+#ifdef __linux__
+/*
+ * This allows the child process to terminate when the parent dies. Not a
+ * necessary but desirable feature (sys/prctl.h is not available on Mac,
+ * however).
+ */
+#include <sys/prctl.h>
+#endif
 
 static void spawn_regcmd(size_t number);
 static void send_query(size_t instance, char* query);
@@ -95,7 +103,9 @@ static void spawn_regcmd(size_t number)
 		dup2(outpipefd[0], STDIN_FILENO);
 		dup2(inpipefd[1], STDOUT_FILENO);
 		dup2(inpipefd[1], STDERR_FILENO);
+#ifdef __linux__
 		prctl(PR_SET_PDEATHSIG, SIGTERM);
+#endif
 		execl("./bin/registers_shared_memory_application",
 			"registers_shared_memory_application", (char*)0);
 		perror("Exec failed");
