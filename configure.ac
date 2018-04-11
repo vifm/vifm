@@ -384,6 +384,9 @@ dnl Use math library if present (standard doesn't require it to be separated
 dnl from libc)
 AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"])
 
+dnl Enable POSIX shared memory
+AC_CHECK_LIB(rt, shm_open, [LIBS="$LIBS -lrt"])
+
 dnl Use pthread library
 AX_CHECK_COMPILE_FLAG([-pthread], [
     TESTS_CFLAGS="$CFLAGS -pthread"
@@ -768,7 +771,7 @@ fi
 dnl The flags should be available separately for fetching on building tests.
 AC_SUBST([SANITIZERS_CFLAGS])
 CFLAGS="$CFLAGS $SANITIZERS_CFLAGS"
-LDFLAGS="$LDFLAGS -lrt $SANITIZERS_CFLAGS"
+LDFLAGS="$LDFLAGS $SANITIZERS_CFLAGS"
 
 dnl Include config.h in all translation units implicitly
 CFLAGS="$CFLAGS -include ../build-aux/config.h"
