@@ -7,15 +7,6 @@
 #include <sys/mman.h>   /* shm_unlink */
 #include <stic.h>
 
-#ifdef __linux__
-/*
- * This allows the child process to terminate when the parent dies. Not a
- * necessary but desirable feature (sys/prctl.h is not available on Mac,
- * however).
- */
-#include <sys/prctl.h>
-#endif
-
 static void spawn_regcmd(size_t number);
 static void send_query(size_t instance, char* query);
 static void receive_ack(size_t instance);
