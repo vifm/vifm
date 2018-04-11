@@ -106,8 +106,14 @@ static void spawn_regcmd(size_t number)
 #ifdef __linux__
 		prctl(PR_SET_PDEATHSIG, SIGTERM);
 #endif
-		execl("./bin/registers_shared_memory_application",
-			"registers_shared_memory_application", (char*)0);
+		if(getenv("DEBUG") == NULL)
+			execl("./bin/registers_shared_memory_application",
+				"registers_shared_memory_application",
+				(char*)0);
+		else
+			execl("./bin/debug/registers_shared_memory_application",
+				"registers_shared_memory_application",
+				(char*)0);
 		perror("Exec failed");
 		exit(1);
 		return;
