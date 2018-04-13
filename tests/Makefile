@@ -72,6 +72,7 @@ suites += ioeta ionotif iop ior
 suites += colmgr column_view viewcolumns_parser
 # everything else
 suites += bmarks env escape fileops filetype filter fuzz misc undo utils
+suites += registers_shared_memory_application registers_shared_memory_tests
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/
@@ -131,6 +132,7 @@ override CFLAGS := $(CFLAGS) -MMD -pipe -Wall -Wno-char-subscripts \
 override LDFLAGS := $(LDFLAGS)
 ifeq (,$(findstring clang,$(CC)))
     # clang is inconvenient with regard to this flag, don't do coverage with it
+    override CFLAGS += --coverage
     override LDFLAGS += --coverage
 endif
 ifdef unix_env
@@ -294,11 +296,11 @@ else
 	$(AT)mkdir -p $$@
 endif
 
-$1: $$($1.bin)
+$1: $$($1.bin) build
 ifeq ($B,)
-	@$(TEST_RUN_PREFIX) $$^ -s $(TEST_RUN_POST)
+	@$(TEST_RUN_PREFIX) $$< -s $(TEST_RUN_POST)
 else
-	@cd $B && $(TEST_RUN_PREFIX) $$^ -s $(TEST_RUN_POST)
+	@cd $B && $(TEST_RUN_PREFIX) $$< -s $(TEST_RUN_POST)
 endif
 
 # this runs separate fixtures, targets are of the form dir.name

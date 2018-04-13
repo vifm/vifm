@@ -50,6 +50,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "flist_hist.h"
+#include "registers.h"
 #include "search.h"
 #include "sort.h"
 #include "status.h"
@@ -207,6 +208,7 @@ static void resort_view(view_t * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void suggestoptions_handler(OPT_OP op, optval_t val);
 static void reset_suggestoptions(void);
+static void syncregs_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabscope_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
@@ -870,6 +872,9 @@ options[] = {
 	  &sortorder_local,
 	  { .init = &init_sortorder },
 	},
+	{ "syncregs", "", "shared memory to synchronize register contents with",
+		OPT_STR, 0, NULL, &syncregs_handler, NULL,
+		{ .ref.str_val = &empty } },
 	{ "viewcolumns", "", "specification of view columns",
 	  OPT_STRLIST, 0, NULL, &viewcolumns_global, &viewcolumns_local,
 	  { .ref.str_val = &empty },
@@ -3133,6 +3138,19 @@ reset_suggestoptions(void)
 	set_option("suggestoptions", val, OPT_GLOBAL);
 
 	vle_tb_free(descr);
+}
+
+static void
+syncregs_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.syncregs, val.str_val);
+	if(cfg.syncregs[0] == 0) {
+		/* option disabled -> disable functionality */
+		regs_sync_disable();
+	} else {
+		/* option enabled -> enable functionality */
+		regs_sync_enable(cfg.syncregs);
+	}
 }
 
 /* Makes vifm prefer to perform file-system operations with external

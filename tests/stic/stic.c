@@ -537,7 +537,7 @@ int run_tests(stic_void_void tests)
 	}
 
 	if(stic_is_display_only() || stic_machine_readable) return 1;
-	sprintf(version, "stic v%s%s%s", STIC_VERSION,
+	snprintf(version, sizeof(version), "stic v%s%s%s", STIC_VERSION,
 			(stic_suite_name[0] == '\0' ? "" : " :: "), stic_suite_name);
 	printf("\n");
 	stic_header_printer(version, stic_screen_width, '=');
