@@ -20,6 +20,7 @@
 #include "registers.h"
 
 #include <stddef.h>   /* NULL size_t */
+#include <stdarg.h>   /* va_... to declare printf-like function */
 #include <stdio.h>    /* snprintf() */
 #include <string.h>
 #include <stdlib.h>   /* free */
@@ -93,7 +94,6 @@ struct shared_registers {
 
 #define SHARED_ALL_METADATA_SIZE (sizeof(struct shared_registers))
 
-#define SHARED_ERROR_TITLE "Error in Shared Memory Register Synchronization"
 /* Maximum length the shared memory name will take. */
 #define SHARED_USE_NAME_MAX 4096
 
@@ -110,7 +110,9 @@ static struct shared_registers* shmem = NULL;
 static char* shmem_raw = NULL;
 static int shm_fd = -1;
 static unsigned my_write_counter = 0;
+static char debug_print_to_stdout = 0;
 
+static void regs_sync_error(const char format[], ...);
 static void regs_sync_shm_close();
 static void regs_sync_shm_unlink(char* name);
 static void regs_sync_shm_unmap();
@@ -436,14 +438,14 @@ regs_sync_enable(char* shared_memory_name)
 	 */
 
 	if(error_other) {
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to open/create shared memory "
-			"object: %s", strerror(errno));
+		regs_sync_error("Failed to open/create shared memory object: %s",
+			strerror(errno));
 		return;
 	}
 
 	/* initialization routine part 1 */
 	if(!error_excl_already_exists && ftruncate(shm_fd, shared_initial) == -1) {
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to resize shared memory "
+		regs_sync_error("Failed to resize shared memory "
 			"(during initialization): %s", strerror(errno));
 		regs_sync_shm_close();
 		regs_sync_shm_unlink(shared_memory_name);
@@ -455,8 +457,8 @@ regs_sync_enable(char* shared_memory_name)
 		PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
 	if(shmem_raw == MAP_FAILED) {
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to mmap into shared "
-			"memory area: %s", strerror(errno));
+		regs_sync_error("Failed to mmap into shared memory area: %s",
+			strerror(errno));
 		regs_sync_shm_close();
 		if(!error_excl_already_exists)
 			regs_sync_shm_unlink(shared_memory_name);
@@ -480,8 +482,7 @@ regs_sync_enable(char* shared_memory_name)
 					PTHREAD_PROCESS_SHARED) != 0) ||
 				(pthread_mutex_init(&shmem->shared_mutex,
 					&shmem->mutex_attributes) != 0)) {
-			show_error_msgf(SHARED_ERROR_TITLE, "Failed to initialize mutex: %s",
-				strerror(errno));
+			regs_sync_error("Failed to initialize mutex: %s", strerror(errno));
 			regs_sync_shm_unmap();
 			regs_sync_shm_close();
 			regs_sync_shm_unlink(shared_memory_name);
@@ -504,27 +505,40 @@ regs_sync_enable(char* shared_memory_name)
 }
 
 static void
+regs_sync_error(const char format[], ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	if(debug_print_to_stdout) {
+		printf("error,");
+		vprintf(format, ap);
+		putchar('\n');
+	} else{
+		show_error_msgf("Error in Shared Memory Register "
+			"Synchronization", format, ap);
+	}
+	va_end(ap);
+}
+
+static void
 regs_sync_shm_close()
 {
 	if(close(shm_fd))
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to close shared memory: %s",
-			strerror(errno));
+		regs_sync_error("Failed to close shared memory: %s", strerror(errno));
 }
 
 static void
 regs_sync_shm_unlink(char* name)
 {
 	if(shm_unlink(name))
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to close shared memory: %s",
-			strerror(errno));
+		regs_sync_error("Failed to close shared memory: %s", strerror(errno));
 }
 
 static void
 regs_sync_shm_unmap()
 {
 	if(munmap(shmem_raw, shared_mmap_bytes))
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to unmap shared memory: %s",
-			strerror(errno));
+		regs_sync_error("Failed to unmap shared memory: %s", strerror(errno));
 }
 
 void
@@ -624,8 +638,7 @@ regs_sync_enter_critical_section()
 		return 0;
 
 	if(pthread_mutex_lock(&shmem->shared_mutex)) {
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to lock mutex: %s",
-			strerror(errno));
+		regs_sync_error("Failed to lock mutex: %s", strerror(errno));
 		return 0;
 	}
 
@@ -677,8 +690,7 @@ regs_sync_resize_allocation(size_t newsz)
 	/* returns 1 on success, 0 on failure (performs cleanup for failure case) */
 	if(newsz > shared_mmap_bytes || ftruncate(shm_fd, newsz)) {
 		/* shared memory ends here */
-		show_error_msgf(SHARED_ERROR_TITLE, "Shared memory size exceeded: %s",
-			strerror(errno));
+		regs_sync_error("Shared memory size exceeded: %s", strerror(errno));
 		regs_sync_disable();
 		return 0;
 	}
@@ -691,8 +703,7 @@ static void
 regs_sync_leave_critical_section()
 {
 	if(pthread_mutex_unlock(&shmem->shared_mutex))
-		show_error_msgf(SHARED_ERROR_TITLE, "Failed to unlock mutex: %s",
-			strerror(errno));
+		regs_sync_error("Failed to unlock mutex: %s", strerror(errno));
 }
 
 void
@@ -788,8 +799,9 @@ void regs_sync_debug_print_memory()
 
 void regs_sync_enable_test_mode()
 {
-	shared_mmap_bytes = 1024 * 32;
-	shared_initial    = 1024 * 4;  /* still larger than metadata size */
+	debug_print_to_stdout = 1;
+	shared_mmap_bytes     = 1024 * 32;
+	shared_initial        = 1024 * 4;  /* still larger than metadata size */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
