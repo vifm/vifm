@@ -800,9 +800,8 @@ void regs_sync_debug_print_memory()
 void regs_sync_enable_test_mode()
 {
 	debug_print_to_stdout = 1;
-	/* TODO DEBUG ONLY: MAKE VALUES ARE NOW EQUAL TO ENABLE FINDING OUT ABOUT OSX BEHAVIOUR OF MMAP AND EINVAL... */
 	shared_mmap_bytes     = 1024 * 32;
-	shared_initial        = 1024 * 32;
+	shared_initial        = 1024 * 4;  /* still larger than metadata size */
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
