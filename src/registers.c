@@ -97,13 +97,57 @@ struct shared_registers {
 /* Maximum length the shared memory name will take. */
 #define SHARED_USE_NAME_MAX 4096
 
-/* During VIFM runtime these values should never be modified. They are
- * not constant only to allow enalbing a test mode with smaller values to
+/*
+ * The following defines two sizes
+ *
+ * shared_mmap_bytes  The number of bytes to map with mmap()
+ * shared_initial     The number of bytes to map initially
+ *                    which must be greater than SHARRED_ALL_METADATA_SIZE
+ *                    (which is smaller than 2 KiB on amd64 Linux)
+ *
+ * During VIFM runtime these values should never be modified. They are
+ * not constant here only to allow enalbing a test mode with smaller values to
  * test corner cases.
  */
+#ifdef __linux__
+/*
+ * On Linux a mmap call can map more bytes than the size of the underlying
+ * object. Thus the area mapped can be 128 MiB (very large) and the memory
+ * actually used can start very small at 128 KiB and be resized by
+ * an `ftruncate` on the file descriptor.
+ */
 static size_t shared_mmap_bytes = 1024 * 1024 * 128; /* 128 MiB ~ infinity */
-/* start with 128 KiB (assumption: struct shared_registers is smaller) */
-static size_t shared_initial = 1024 * 128;
+static size_t shared_initial    = 1024 * 128;        /* 128 KiB ~ small    */
+#else
+/*
+ * POSIX does not require mmap to be able to map beyond a file size. It is
+ * even more unspecific in that
+ *
+ *	``The mmap() function may fail if:
+ *  [EINVAL]
+ *	    The addr argument (if MAP_FIXED was specified) or off is not a
+ *	    multiple of the page size as returned by sysconf(), or is considered
+ *	    invalid by the implementation.''
+ *	(from The Open Group Base Specifications Issue 7 IEEE Std 1003.1,
+ *	2013 Edition page for `mmap`)
+ *
+ * i.e. any value considered ``invalid by the implementation'' may fail.
+ *
+ * By means of experimentation (see
+ * https://travis-ci.org/vifm/vifm/builds/366274721 and
+ * https://github.com/vifm/vifm/pull/280#issuecomment-381245032), it was found
+ * out that for OSX (at least on the CI), `mmap` on a larger area than the
+ * size given to `ftruncate` fails with EINVAL.
+ *
+ * As it is safer to generally not rely on the (probably) Linux-specific
+ * possibility to map beyond the shared memory object's current size, the mapped
+ * and actual size are defined to be equal for all non-Linux systems.
+ *
+ * For a balance between register capacity and memory waste, 16 MiB was chosen.
+ */
+static size_t shared_mmap_bytes = 1024 * 1024 * 16; /* 16 MiB ~ enough? */
+static size_t shared_initial    = 1024 * 1024 * 16;
+#endif
 
 static struct shared_registers* shmem = NULL;
 /* pointer to the shared memory as an unstructured blob of bytes */
@@ -800,8 +844,16 @@ void regs_sync_debug_print_memory()
 void regs_sync_enable_test_mode()
 {
 	debug_print_to_stdout = 1;
+#ifdef __linux__
 	shared_mmap_bytes     = 1024 * 32;
 	shared_initial        = 1024 * 4;  /* still larger than metadata size */
+#else
+	/* Note that many of the tests test resizing and are thus implicitly
+	 * useless on non-Linux platforms. See the variable definitions for why
+	 * other Unix-like OS are treated differently from Linux here. */
+	shared_mmap_bytes     = 1024 * 32;
+	shared_initial        = 1024 * 32;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
