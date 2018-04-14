@@ -40,6 +40,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
+#include "flist_pos.h"
 #include "fops_common.h"
 #include "fops_cpmv.h"
 #include "ops.h"
@@ -85,6 +86,7 @@ static struct
 	ops_t *ops;        /* Currently running operation. */
 	char *dst_name;    /* Name of destination file. */
 	char *dst_dir;     /* Destination path. */
+	strlist_t put;     /* List of files that were successfully put. */
 }
 put_confirm;
 
@@ -341,6 +343,7 @@ reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
 	free(put_confirm.dst_name);
 	free(put_confirm.dst_dir);
 	free(put_confirm.file_order);
+	free_string_array(put_confirm.put.items, put_confirm.put.nitems);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
@@ -465,12 +468,32 @@ put_files_i(view_t *view, int start)
 		++put_confirm.index;
 	}
 
+	if(put_confirm.processed == 1)
+	{
+		populate_dir_list(view, 1);
+		ui_view_schedule_redraw(view);
+
+		int i;
+		for(i = 0; i < put_confirm.put.nitems; ++i)
+		{
+			dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
+					view->list_rows, put_confirm.put.items[i]);
+			if(entry != NULL)
+			{
+				fpos_set_pos(view, entry_to_pos(view, entry));
+				break;
+			}
+		}
+	}
+	else
+	{
+		ui_view_schedule_reload(view);
+	}
+
 	regs_pack(put_confirm.reg->name);
 
 	ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
 			(put_confirm.processed == 1) ? "" : "s", fops_get_cancellation_suffix());
-
-	ui_view_schedule_reload(put_confirm.view);
 
 	return 1;
 }
@@ -703,6 +726,11 @@ put_next(int force)
 					&put_confirm.reg->files[put_confirm.file_order[put_confirm.index]],
 					NULL);
 		}
+
+		char dst_path[PATH_MAX + 1];
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dst_name);
+		put_confirm.put.nitems = add_to_string_array(&put_confirm.put.items,
+				put_confirm.put.nitems, 1, dst_path);
 	}
 
 	return 0;

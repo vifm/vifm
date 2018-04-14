@@ -48,14 +48,18 @@ SETUP()
 
 	regs_init();
 
+	view_setup(&lwin);
+	lwin.sort[0] = SK_BY_NAME;
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);
+	curr_view = NULL;
 
 	rename_cb = NULL;
 }
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
 	regs_reset();
 	restore_cwd(saved_cwd);
 }
@@ -211,8 +215,6 @@ TEST(put_files_copies_files_according_to_tree_structure)
 {
 	char path[PATH_MAX + 1];
 
-	view_setup(&lwin);
-
 	create_empty_dir(SANDBOX_PATH "/dir");
 
 	flist_load_tree(&lwin, lwin.curr_dir);
@@ -249,8 +251,6 @@ TEST(put_files_copies_files_according_to_tree_structure)
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
-
-	view_teardown(&lwin);
 }
 
 TEST(overwrite_request_accounts_for_target_file_rename)
@@ -469,6 +469,28 @@ double_clash_with_put(int move)
 	assert_success(remove(SANDBOX_PATH "/dir/dir/file2"));
 	assert_success(remove(SANDBOX_PATH "/dir/file1"));
 	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(putting_single_file_moves_cursor_to_that_file)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+	assert_success(unlink(SANDBOX_PATH "/a"));
+
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
