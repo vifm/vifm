@@ -86,7 +86,7 @@ static void regcmd_get()
 {
 	int reg_name = regcmd_get_reg_name();
 	reg_t* cnt = regs_find(reg_name);
-	size_t i;
+	int i;
 	if(cnt == NULL) {
 		printf("error,Regsiter name incorrect: %d (%c)\n",
 				reg_name, (char)reg_name);

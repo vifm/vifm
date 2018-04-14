@@ -615,7 +615,7 @@ regs_sync_to_shared_memory_critical()
 	size_t new_register_sizes[NUM_REGISTERS];
 
 	size_t i;
-	size_t j;
+	int j;
 
 	for(i = 0; i < NUM_REGISTERS; ++i) {
 		new_register_sizes[i] = 0;
@@ -714,7 +714,7 @@ regs_sync_store_register_contents_critical(size_t current_offset, size_t reg_id)
 static size_t
 regs_sync_store_register_contents_in_place(size_t current_offset, size_t reg_id)
 {
-	size_t i;
+	int i;
 	shmem->register_metadata[reg_id].write_counter = my_write_counter;
 	shmem->register_metadata[reg_id].num_entries   = registers[reg_id].nfiles;
 	shmem->register_metadata[reg_id].offset        = current_offset;
@@ -757,7 +757,7 @@ regs_sync_from_shared_memory()
 		return;
 
 	size_t i;
-	size_t j;
+	int j;
 
 	if(shmem->write_counter != my_write_counter) {
 		/* Other instance canged the register contents, let's check
@@ -800,7 +800,7 @@ static void regs_sync_debug_print_area(size_t offset, size_t length)
 void regs_sync_debug_print_memory()
 {
 	size_t i;
-	size_t j;
+	int j;
 
 	printf("-- BEGIN VIFM shared memory synchronization DUMP --\n");
 	printf("| local\n");
