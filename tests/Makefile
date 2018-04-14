@@ -72,7 +72,7 @@ suites += ioeta ionotif iop ior
 suites += colmgr column_view viewcolumns_parser
 # everything else
 suites += bmarks env escape fileops filetype filter fuzz misc undo utils
-suites += registers_shared_memory_application registers_shared_memory_tests
+suites += registers_shared_memory_application
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/

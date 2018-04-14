@@ -40,8 +40,6 @@ static int fd_instance_receive_from[NUM_INSTANCES];
 
 static char pat4kib[4096 + 8];
 
-DEFINE_SUITE();
-
 /* All of the tests need to run in exactly the order given for correct
  * results. */
 
