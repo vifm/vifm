@@ -329,7 +329,6 @@ static void sync_disable(size_t instance)
 	close(fd_instance_receive_from[instance]);
 }
 
-/* TEARDOWN_ONCE() TODO z WHY DOES IT MAKE A DIFFERENCE */
 TEST(teardown_once)
 {
 	sync_disable(2);
