@@ -97,13 +97,9 @@ static void spawn_regcmd(size_t number)
 		close(inpipefd[0]);
 		close(inpipefd[1]);
 		if(getenv("DEBUG") == NULL)
-			execl("./bin/registers_shared_memory_application",
-				"registers_shared_memory_application",
-				(char*)0);
+			execl("./bin/regs_shmem_app", "regs_shmem_app", (char*)0);
 		else
-			execl("./bin/debug/registers_shared_memory_application",
-				"registers_shared_memory_application",
-				(char*)0);
+			execl("./bin/debug/regs_shmem_app", "regs_shmem_app", (char*)0);
 		perror("Exec failed");
 		exit(1);
 		return;
