@@ -130,11 +130,6 @@ override CFLAGS := $(CFLAGS) -MMD -pipe -Wall -Wno-char-subscripts \
                    -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
 override LDFLAGS := $(LDFLAGS)
-ifeq (,$(findstring clang,$(CC)))
-    # clang is inconvenient with regard to this flag, don't do coverage with it
-    override CFLAGS += --coverage
-    override LDFLAGS += --coverage
-endif
 ifdef unix_env
     MF := $(abspath $(B)../src/Makefile)
     ifneq ($(wildcard $(MF)),)
@@ -164,6 +159,14 @@ ifdef win_env
 endif
 ifeq (,$(findstring -lpthread,$(LDFLAGS)))
     override LDFLAGS += -pthread
+endif
+ifneq (,$(findstring --coverage, $(LDFLAGS)))
+    ifeq (,$(findstring clang,$(CC)))
+        # clang is inconvenient with regard to this flag, don't do coverage with
+        # it
+        override CFLAGS += --coverage
+        override LDFLAGS += --coverage
+    endif
 endif
 
 ifdef DEBUG
