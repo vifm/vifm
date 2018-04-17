@@ -1,20 +1,25 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <signal.h>     /* SIGTERM */
-#include <unistd.h>
 #include <stic.h>
+
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <errno.h> /* errno */
+#include <signal.h> /* SIGTERM */
+#include <stdio.h> /* fclose() fdopen() fgets() fprintf() fputs() */
+#include <stdlib.h> /* exit() */
+#include <string.h> /* strerror() */
 
 #include "../../src/utils/gmux.h"
 #include "../../src/utils/shmem.h"
+#include "../../src/utils/utils.h"
+
+#include "utils.h"
 
 static void spawn_regcmd(size_t number);
 static void send_query(size_t instance, char* query);
 static void receive_ack(size_t instance);
 static void check_is_initial(size_t instance, char* reglist);
 static void receive_answer(size_t instance, char* lnbuf);
-static int read_safely(int fd, char* buf, size_t sz);
 static void sync_to_from(size_t instance);
 static void sync_from(size_t instance);
 static void check_register_contents(size_t instance, char register_name,
@@ -22,6 +27,7 @@ static void check_register_contents(size_t instance, char register_name,
 static void test_pat(char* result, size_t patsz, char register_name,
 	size_t pat_id_every, char p0, char p1);
 static void sync_disable(size_t instance);
+static pid_t popen2(const char cmd[], FILE **in, FILE **out);
 
 #define LINE_SIZE 32768
 #define NUM_INSTANCES 3
@@ -36,9 +42,8 @@ static void sync_disable(size_t instance);
 #define TEST_EXPECT_FOR_E "e,4,longerthanbeforee,le1,le2,le3,"
 #define TEST_EXPECT_FOR_G "g,1,G,"
 
-static int pid_instance[NUM_INSTANCES];
-static int fd_instance_write_to[NUM_INSTANCES];
-static int fd_instance_receive_from[NUM_INSTANCES];
+static FILE *instance_stdin[NUM_INSTANCES];
+static FILE *instance_stdout[NUM_INSTANCES];
 
 static char pat4kib[4096 + 8];
 
@@ -59,11 +64,9 @@ SETUP_ONCE()
 	/* initial register values */
 	char* curletr = TEST_REGISTERS;
 	for(; *curletr != 0; curletr++) {
-		dprintf(fd_instance_write_to[0],
-			"set,%c,initial%c,i%c1,i%c2,i%c3\n",
+		fprintf(instance_stdin[0], "set,%c,initial%c,i%c1,i%c2,i%c3\n",
 			*curletr, *curletr, *curletr, *curletr, *curletr);
-		dprintf(fd_instance_write_to[1],
-			"set,%c,lossval%c,l%c1,l%c2,l%c3\n",
+		fprintf(instance_stdin[1], "set,%c,lossval%c,l%c1,l%c2,l%c3\n",
 			*curletr, *curletr, *curletr, *curletr, *curletr);
 	}
 
@@ -74,58 +77,29 @@ SETUP_ONCE()
 	receive_ack(1);
 }
 
-/* https://stackoverflow.com/questions/6171552 */
 static void spawn_regcmd(size_t number)
 {
-	int inpipefd[2];
-	int outpipefd[2];
-	if(pipe(inpipefd) || pipe(outpipefd)) {
-		perror("Failed to establish pipe file descriptors");
+	const int debug = (getenv("DEBUG") != NULL);
+	const char *cmd = debug ? "bin" SL "debug" SL "regs_shmem_app"
+	                        : "bin" SL "regs_shmem_app";
+
+	if(popen2(cmd, &instance_stdin[number],
+				&instance_stdout[number]) == (pid_t)-1)
+	{
+		perror("Failed to call fork");
 		exit(1);
 	}
 
-	int pid = fork();
-	switch(pid) {
-	case -1:
-		perror("Failed to call fork");
-		exit(1);
-		return;
-	case 0:
-		/* in child */
-		dup2(outpipefd[0], STDIN_FILENO);
-		dup2(inpipefd[1], STDOUT_FILENO);
-		dup2(inpipefd[1], STDERR_FILENO);
-		close(outpipefd[0]);
-		close(outpipefd[1]);
-		close(inpipefd[0]);
-		close(inpipefd[1]);
-		if(getenv("DEBUG") == NULL)
-			execl("./bin/regs_shmem_app", "regs_shmem_app", (char*)0);
-		else
-			execl("./bin/debug/regs_shmem_app", "regs_shmem_app", (char*)0);
-		perror("Exec failed");
-		exit(1);
-		return;
-	default:
-		/* in parent process */
-		pid_instance[number] = pid;
-		/* close unused file descriptors */
-		close(outpipefd[0]);
-		close(inpipefd[1]);
-		/* save useful file descriptors */
-		fd_instance_write_to[number]     = outpipefd[1];
-		fd_instance_receive_from[number] = inpipefd[0];
-		return;
-	}
+	setvbuf(instance_stdin[number], NULL, _IONBF, 0);
 }
 
 static void send_query(size_t instance, char* query)
 {
-	if(write(fd_instance_write_to[instance], query, strlen(query)) == -1) {
-		fprintf(stderr, "Failed to write query to FD %d "
+	if(fputs(query, instance_stdin[instance]) == EOF)
+	{
+		fprintf(stderr, "Failed to write query to FD %p "
 			"(instance %d): %s; query was %s",
-			fd_instance_write_to[instance],
-			(int)instance, strerror(errno), query);
+			instance_stdin[instance], (int)instance, strerror(errno), query);
 		exit(1);
 	}
 }
@@ -159,30 +133,14 @@ static void check_is_initial(size_t instance, char* reglist)
 
 static void receive_answer(size_t instance, char* lnbuf)
 {
-	int fd = fd_instance_receive_from[instance];
-	int num = 0;
-
-	/* Read until answer ends which is when we encounter EOL */
-	do {
-		num += read_safely(fd, lnbuf + num, LINE_SIZE - num);
-	} while(lnbuf[num - 1] != '\n');
-
-	lnbuf[num - 1] = 0; /* terminate string by replacing \n with 0 */
-}
-
-static int read_safely(int fd, char* buf, size_t sz)
-{
-	int rv = read(fd, buf, sz);
-	switch(rv) {
-	case -1:
-		perror("Error reading from child");
+	if(fgets(lnbuf, LINE_SIZE, instance_stdout[instance]) == NULL)
+	{
+		printf("Child (instance %d) unexpectedly sent eof\n", (int)instance);
 		exit(1);
-	case 0:
-		printf("Child unexpectedly sent eof (fd %d)\n", fd);
-		exit(1);
-	default:
-		return rv;
 	}
+
+	/* Replace \n with 0. */
+	lnbuf[strlen(lnbuf) - 1] = 0;
 }
 
 TEST(make_sure_instance_0_does_not_lose_data)
@@ -324,11 +282,178 @@ static void sync_disable(size_t instance)
 {
 	send_query(instance, "sync_disable\n");
 	receive_ack(instance);
-	close(fd_instance_write_to[instance]);
-	close(fd_instance_receive_from[instance]);
+	fclose(instance_stdin[instance]);
+	fclose(instance_stdout[instance]);
 }
 
 TEST(teardown_once)
 {
 	sync_disable(2);
 }
+
+#ifndef _WIN32
+
+static pid_t
+popen2(const char cmd[], FILE **in, FILE **out)
+{
+	pid_t pid;
+	int in_pipe[2];
+	int out_pipe[2];
+
+	if(pipe(out_pipe) != 0)
+	{
+		return (pid_t)-1;
+	}
+
+	if(pipe(in_pipe) != 0)
+	{
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		return (pid_t)-1;
+	}
+
+	if((pid = fork()) == -1)
+	{
+		close(in_pipe[0]);
+		close(in_pipe[1]);
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		return (pid_t)-1;
+	}
+
+	if(pid == 0)
+	{
+		close(in_pipe[1]);
+		close(out_pipe[0]);
+		if(dup2(in_pipe[0], STDIN_FILENO) == -1)
+		{
+			_Exit(EXIT_FAILURE);
+		}
+		if(dup2(out_pipe[1], STDOUT_FILENO) == -1)
+		{
+			_Exit(EXIT_FAILURE);
+		}
+		if(dup2(out_pipe[1], STDERR_FILENO) == -1)
+		{
+			_Exit(EXIT_FAILURE);
+		}
+
+		close(in_pipe[0]);
+		close(out_pipe[1]);
+
+		execvp("/bin/sh", make_execv_array("/bin/sh", (char *)cmd));
+		_Exit(127);
+	}
+
+	close(in_pipe[0]);
+	close(out_pipe[1]);
+	*in = fdopen(in_pipe[1], "w");
+	if(*in == NULL)
+	{
+		close(in_pipe[1]);
+		kill(pid, SIGTERM);
+		return (pid_t)-1;
+	}
+	*out = fdopen(out_pipe[0], "r");
+	if(*out == NULL)
+	{
+		fclose(*in);
+		close(out_pipe[1]);
+		kill(pid, SIGTERM);
+		return (pid_t)-1;
+	}
+
+	return pid;
+}
+
+#else
+
+/* Runs command in a background and redirects its stdout and stderr streams to
+ * file streams which are set.  Returns (pid_t)0 or (pid_t)-1 on error. */
+static pid_t
+popen2_int(const char cmd[], FILE **in, FILE **out,
+		int in_pipe[2], int out_pipe[2])
+{
+	const char *args[4];
+	int code;
+
+	if(_dup2(in_pipe[0], _fileno(stdin)) != 0)
+		return (pid_t)-1;
+	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
+		return (pid_t)-1;
+	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
+		return (pid_t)-1;
+
+	args[0] = "cmd";
+	args[1] = "/C";
+	args[2] = cmd;
+	args[3] = NULL;
+
+	code = _spawnvp(P_NOWAIT, "cmd", args);
+
+	if(code == 0)
+	{
+		return (pid_t)-1;
+	}
+
+	if((*in = _fdopen(in_pipe[1], "w")) == NULL)
+		return (pid_t)-1;
+	if((*out = _fdopen(out_pipe[0], "r")) == NULL)
+	{
+		fclose(*in);
+		return (pid_t)-1;
+	}
+
+	return 0;
+}
+
+static pid_t
+popen2(const char cmd[], FILE **in, FILE **out)
+{
+	int in_fd, in_pipe[2];
+	int out_fd, out_pipe[2];
+	int err_fd;
+	pid_t pid;
+
+	if(_pipe(in_pipe, 32*1024, O_NOINHERIT) != 0)
+	{
+		return (pid_t)-1;
+	}
+
+	if(_pipe(out_pipe, 32*1024, O_NOINHERIT) != 0)
+	{
+		close(in_pipe[0]);
+		close(in_pipe[1]);
+		return (pid_t)-1;
+	}
+
+	in_fd = dup(_fileno(stdin));
+	out_fd = dup(_fileno(stdout));
+	err_fd = dup(_fileno(stderr));
+
+	pid = popen2_int(cmd, in, out, in_pipe, out_pipe);
+
+	_close(in_pipe[0]);
+	_close(out_pipe[1]);
+
+	_dup2(in_fd, _fileno(stdin));
+	_dup2(out_fd, _fileno(stdout));
+	_dup2(err_fd, _fileno(stderr));
+
+	_close(in_fd);
+	_close(out_fd);
+	_close(err_fd);
+
+	if(pid == (pid_t)-1)
+	{
+		_close(in_pipe[1]);
+		_close(out_pipe[0]);
+	}
+
+	return pid;
+}
+
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 filetype=c : */
