@@ -75,15 +75,21 @@ struct register_metadata {
 	size_t length_available;
 };
 
-struct shared_registers {
-	/*
-	 * size backed by shared memory file including metadata
-	 * ranges between shared_initial and shared_mmap_bytes
-	 */
+/* Describes shared state. */
+struct shared_registers
+{
+	/* Whether data is in consistent state.  Probably not bulletproof, but still
+	 * an attempt to avoid using broken data. */
+	int data_is_consistent;
+
+	/* Size backed by shared memory file including metadata ranges between
+	 * shared_initial and shared_mmap_bytes. */
 	size_t size_backed;
 
-	unsigned write_counter;
-	size_t length_area_used; /* excluding metadata */
+	/* Generation of the data. */
+	unsigned int write_counter;
+	/* Excludes metadata. */
+	size_t length_area_used;
 
 	/* BLACKHOLE, DEFAULT, a-z */
 	struct register_metadata register_metadata[NUM_REGISTERS];
@@ -472,6 +478,7 @@ regs_sync_enable(char* shared_memory_name)
 	if(shmem_created_by_us(shmem_obj))
 	{
 		my_write_counter = shmem->write_counter;
+		shmem->data_is_consistent = 0;
 		shmem->size_backed = shared_initial;
 
 		if(!regs_sync_to_shared_memory_critical())
@@ -528,6 +535,7 @@ regs_sync_to_shared_memory_critical()
 {
 	/* returns 1 on success, 0 on failure (cleans up as needed on fail) */
 
+	shmem->data_is_consistent = 0;
 	my_write_counter = ++shmem->write_counter;
 
 	/* determine memory requirements for state to be synchronized */
@@ -668,7 +676,8 @@ regs_sync_resize_allocation(size_t newsz)
 static void
 regs_sync_leave_critical_section()
 {
-	if(gmux_unlock(shmem_gmux))
+	shmem->data_is_consistent = 1;
+	if(gmux_unlock(shmem_gmux) != 0)
 	{
 		regs_sync_error("Failed to unlock mutex.");
 	}
@@ -683,7 +692,7 @@ regs_sync_from_shared_memory()
 	size_t i;
 	int j;
 
-	if(shmem->write_counter != my_write_counter) {
+	if(shmem->write_counter != my_write_counter && shmem->data_is_consistent) {
 		/* Other instance canged the register contents, let's check
 		 * the details. */
 		for(i = 0; i < NUM_REGISTERS; ++i) {
