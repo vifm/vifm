@@ -20,14 +20,12 @@
 #include "registers.h"
 
 #include <stddef.h>   /* NULL size_t */
-#include <stdarg.h>   /* va_... to declare printf-like function */
 #include <stdio.h>    /* snprintf() */
 #include <string.h>
 #include <stdlib.h>   /* free */
-#include <errno.h>    /* EEXIST etc. */
 
-#include <unistd.h>   /* ftruncate */
 #include <fcntl.h>    /* O_RDWR, O_EXCL, O_CREAT, ... */
+#include <unistd.h>   /* ftruncate */
 
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h" /* show_error_msgf */
@@ -162,7 +160,7 @@ static char* shmem_raw = NULL;
 static unsigned my_write_counter = 0;
 static char debug_print_to_stdout = 0;
 
-static void regs_sync_error(const char format[], ...);
+static void regs_sync_error(const char msg[]);
 static char regs_sync_to_shared_memory_critical();
 static char regs_sync_enter_critical_section();
 static void regs_sync_rewrite_critical();
@@ -495,19 +493,16 @@ regs_sync_enable(char* shared_memory_name)
 }
 
 static void
-regs_sync_error(const char format[], ...)
+regs_sync_error(const char msg[])
 {
-	va_list ap;
-	va_start(ap, format);
-	if(debug_print_to_stdout) {
-		printf("error,");
-		vprintf(format, ap);
-		putchar('\n');
-	} else{
-		show_error_msgf("Error in Shared Memory Register "
-			"Synchronization", format, ap);
+	if(debug_print_to_stdout)
+	{
+		printf("error,%s\n", msg);
 	}
-	va_end(ap);
+	else
+	{
+		show_error_msg("Error in Shared Memory Register Synchronization", msg);
+	}
 }
 
 void
@@ -607,13 +602,15 @@ regs_sync_to_shared_memory_critical()
 static char
 regs_sync_enter_critical_section()
 {
-	/* return 0 to cancel further processing */
 	if(shmem == NULL)
+	{
+		/* Return 0 to cancel further processing. */
 		return 0;
+	}
 
 	if(gmux_lock(shmem_gmux) != 0)
 	{
-		regs_sync_error("Failed to lock mutex: %s", strerror(errno));
+		regs_sync_error("Failed to lock mutex.");
 		return 0;
 	}
 
@@ -665,12 +662,11 @@ regs_sync_resize_allocation(size_t newsz)
 	/* returns 1 on success, 0 on failure (performs cleanup for failure case) */
 	if(!shmem_resize(shmem_obj, newsz))
 	{
-		/* shared memory ends here */
-		regs_sync_error("Shared memory size exceeded: %s", strerror(errno));
+		/* Shared memory ends here. */
+		regs_sync_error("Shared memory size exceeded.");
 		regs_sync_disable();
 		return 0;
 	}
-	/* else: truncate successful */
 	shmem->size_backed = newsz;
 	return 1;
 }
