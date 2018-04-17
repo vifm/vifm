@@ -5,7 +5,7 @@
 
 #include <errno.h> /* errno */
 #include <signal.h> /* SIGTERM */
-#include <stdio.h> /* fclose() fdopen() fgets() fprintf() fputs() */
+#include <stdio.h> /* fclose() fdopen() fgets() fprintf() fputs() snprintf() */
 #include <stdlib.h> /* exit() */
 #include <string.h> /* strerror() */
 
@@ -15,18 +15,18 @@
 
 #include "utils.h"
 
-static void spawn_regcmd(size_t number);
-static void send_query(size_t instance, char* query);
-static void receive_ack(size_t instance);
-static void check_is_initial(size_t instance, char* reglist);
-static void receive_answer(size_t instance, char* lnbuf);
-static void sync_to_from(size_t instance);
-static void sync_from(size_t instance);
-static void check_register_contents(size_t instance, char register_name,
-	char* expected_content);
-static void test_pat(char* result, size_t patsz, char register_name,
-	size_t pat_id_every, char p0, char p1);
-static void sync_disable(size_t instance);
+static void spawn_regcmd(int number);
+static void send_query(int instance, const char query[]);
+static void receive_ack(int instance);
+static void check_is_initial(int instance, const char reglist[]);
+static void receive_answer(int instance, char lnbuf[]);
+static void sync_to_from(int instance);
+static void sync_from(int instance);
+static void check_register_contents(int instance, char register_name,
+		const char expected_content[]);
+static void test_pat(char result[], size_t patsz, char register_name,
+		size_t pat_id_every, char p0, char p1);
+static void sync_disable(int instance);
 static pid_t popen2(const char cmd[], FILE **in, FILE **out);
 
 #define LINE_SIZE 32768
@@ -57,13 +57,14 @@ SETUP_ONCE()
 	gmux_destroy(gmux_create("regs-test-shmem"));
 	shmem_destroy(shmem_create("regs-test-shmem", 10, 10));
 
-	/* spawn processes */
+	/* Spawn processes. */
 	spawn_regcmd(0);
 	spawn_regcmd(1);
 
-	/* initial register values */
-	char* curletr = TEST_REGISTERS;
-	for(; *curletr != 0; curletr++) {
+	/* Initial register values. */
+	const char *curletr;
+	for(curletr = TEST_REGISTERS; *curletr != '\0'; ++curletr)
+	{
 		fprintf(instance_stdin[0], "set,%c,initial%c,i%c1,i%c2,i%c3\n",
 			*curletr, *curletr, *curletr, *curletr, *curletr);
 		fprintf(instance_stdin[1], "set,%c,lossval%c,l%c1,l%c2,l%c3\n",
@@ -77,7 +78,8 @@ SETUP_ONCE()
 	receive_ack(1);
 }
 
-static void spawn_regcmd(size_t number)
+static void
+spawn_regcmd(int number)
 {
 	const int debug = (getenv("DEBUG") != NULL);
 	const char *cmd = debug ? "bin" SL "debug" SL "regs_shmem_app"
@@ -93,54 +95,60 @@ static void spawn_regcmd(size_t number)
 	setvbuf(instance_stdin[number], NULL, _IONBF, 0);
 }
 
-static void send_query(size_t instance, char* query)
+static void
+send_query(int instance, const char query[])
 {
 	if(fputs(query, instance_stdin[instance]) == EOF)
 	{
 		fprintf(stderr, "Failed to write query to FD %p "
 			"(instance %d): %s; query was %s",
-			instance_stdin[instance], (int)instance, strerror(errno), query);
+			instance_stdin[instance], instance, strerror(errno), query);
 		exit(1);
 	}
 }
 
-static void receive_ack(size_t instance)
+static void
+receive_ack(int instance)
 {
 	char bakval;
 	char lnbuf[LINE_SIZE];
 	receive_answer(instance, lnbuf);
 	bakval = lnbuf[3];
-	lnbuf[3] = 0; /* cut off ,... after ack */
-	if(strcmp(lnbuf, "ack") != 0) {
+	/* Cut off ,... after ack */
+	lnbuf[3] = '\0';
+	if(strcmp(lnbuf, "ack") != 0)
+	{
 		lnbuf[3] = bakval;
 		fprintf(stderr, "Error: Did not receive ACK but the following "
-			"response from instance %d: %s\n",
-			(int)instance, lnbuf);
+			"response from instance %d: %s\n", instance, lnbuf);
 		exit(1);
 	}
 }
 
-static void check_is_initial(size_t instance, char* reglist)
+static void
+check_is_initial(int instance, const char reglist[])
 {
-	char cmp[26];
-	char* curletr = reglist;
-	for(; *curletr != 0; curletr++) {
+	const char *curletr;
+	for(curletr = reglist; *curletr != '\0'; ++curletr)
+	{
+		char cmp[26];
 		snprintf(cmp, sizeof(cmp), "%c,4,initial%c,i%c1,i%c2,i%c3,",
 			*curletr, *curletr, *curletr, *curletr, *curletr);
 		check_register_contents(instance, *curletr, cmp);
 	}
 }
 
-static void receive_answer(size_t instance, char* lnbuf)
+static void
+receive_answer(int instance, char lnbuf[])
 {
 	if(fgets(lnbuf, LINE_SIZE, instance_stdout[instance]) == NULL)
 	{
-		printf("Child (instance %d) unexpectedly sent eof\n", (int)instance);
+		printf("Child (instance %d) unexpectedly sent eof\n", instance);
 		exit(1);
 	}
 
-	/* Replace \n with 0. */
-	lnbuf[strlen(lnbuf) - 1] = 0;
+	/* Replace \n with '\0'. */
+	lnbuf[strlen(lnbuf) - 1] = '\0';
 }
 
 TEST(make_sure_instance_0_does_not_lose_data)
@@ -149,7 +157,8 @@ TEST(make_sure_instance_0_does_not_lose_data)
 	check_is_initial(0, TEST_REGISTERS);
 }
 
-static void sync_to_from(size_t instance)
+static void
+sync_to_from(int instance)
 {
 	send_query(instance, "sync_to\n");
 	receive_ack(instance);
@@ -157,7 +166,8 @@ static void sync_to_from(size_t instance)
 	sync_from(!instance);
 }
 
-static void sync_from(size_t instance)
+static void
+sync_from(int instance)
 {
 	send_query(instance, "sync_from\n");
 	receive_ack(instance);
@@ -180,8 +190,9 @@ TEST(chg_update_in_place)
 	check_is_initial(0, TEST_REGISTERS_MINUS_D);
 }
 
-static void check_register_contents(size_t instance, char register_name,
-		char* expected_content)
+static void
+check_register_contents(int instance, char register_name,
+		const char expected_content[])
 {
 	char lnbuf[LINE_SIZE];
 	char query[7];
@@ -198,44 +209,46 @@ TEST(chg_append_to_end)
 	send_query(1, "set,e,longerthanbeforee,le1,le2,le3\n");
 	sync_to_from(1);
 
-	/* ignore D */
+	/* Ignore D. */
 
-	/* check E */
+	/* Check E. */
 	check_register_contents(0, 'e', TEST_EXPECT_FOR_E);
 
-	/* check others */
+	/* Check others. */
 	check_is_initial(0, TEST_REGISTERS_MINUS_DE);
 }
 
 TEST(chg_double_allocation_size_till_fit)
 {
 	test_pat(pat4kib, 4096, 'f', 128, '4', 'f');
-	/* check initial */
+	/* Check initial. */
 	check_is_initial(0, TEST_REGISTERS_MINUS_DEF);
 }
 
-/* result needs to have patsz + 8 entries (set,X, + \n + 0-byte) */
-static void test_pat(char* result, size_t patsz, char register_name,
-	size_t pat_id_every, char p0, char p1)
+/* Result needs to have patsz + 8 entries (set,X, + \n + 0-byte). */
+static void
+test_pat(char result[], size_t patsz, char register_name, size_t pat_id_every,
+		char p0, char p1)
 {
+	/* Prepare pattern. */
 	size_t i;
-
-	/* prepare pattern */
 	char pre[] = "set,X,";
 	strcpy(result, pre);
 	result[4] = register_name;
 	for(i = 0; i < patsz; ++i)
+	{
 		result[sizeof(pre) - 1 + i] = ((i % pat_id_every) == 0)? p0: p1;
+	}
 	strcpy(result + patsz + 6, "\n"); /* add \n and 0 terminator */
 
 	send_query(1, result);
 	sync_to_from(1);
 
-	/* change set,f, to [se]f,1, */
+	/* Change set,f, to [se]f,1, */
 	result[2] = register_name;
 	char constpartcmp[] = ",1,";
 	memcpy(result + 3, constpartcmp, sizeof(constpartcmp) - 1);
-	/* for comparison change \n to , */
+	/* For comparison change \n to , */
 	result[patsz + 6] = ',';
 
 	/* +2 to skip `se` */
@@ -260,14 +273,14 @@ TEST(chg_halve_allocation)
 
 TEST(handover)
 {
-	/* open third instance */
+	/* Open third instance. */
 	spawn_regcmd(2);
 	send_query(2, "sync_enable,test-shmem\n");
 	receive_ack(2);
 
-	/* close previous instances */
+	/* Close previous instances. */
 	sync_disable(0);
-	sync_disable(1),
+	sync_disable(1);
 
 	sync_from(2);
 
@@ -278,7 +291,8 @@ TEST(handover)
 	check_register_contents(2, 'g', TEST_EXPECT_FOR_G);
 }
 
-static void sync_disable(size_t instance)
+static void
+sync_disable(int instance)
 {
 	send_query(instance, "sync_disable\n");
 	receive_ack(instance);
@@ -368,8 +382,8 @@ popen2(const char cmd[], FILE **in, FILE **out)
 
 #else
 
-/* Runs command in a background and redirects its stdout and stderr streams to
- * file streams which are set.  Returns (pid_t)0 or (pid_t)-1 on error. */
+/* Runs command in background and redirects all its streams to file streams
+ * which are set.  Returns (pid_t)0 or (pid_t)-1 on error. */
 static pid_t
 popen2_int(const char cmd[], FILE **in, FILE **out,
 		int in_pipe[2], int out_pipe[2])
