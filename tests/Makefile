@@ -299,7 +299,7 @@ else
 	$(AT)mkdir -p $$@
 endif
 
-$1: $$($1.bin) build
+$1: $$($1.bin)
 ifeq ($B,)
 	@$(TEST_RUN_PREFIX) $$< -s $(TEST_RUN_POST)
 else
@@ -325,6 +325,9 @@ endef
 
 # walk throw list of suites and instantiate template for each one
 $(foreach suite, $(suites), $(eval $(call suite_template,$(suite))))
+
+# extra dependencies between test fixtures
+misc: | $(regs_shmem_app.bin)
 
 # import dependencies calculated by the compiler
 include $(wildcard $(deps) \
