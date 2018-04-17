@@ -123,9 +123,9 @@ static void send_query(size_t instance, char* query)
 {
 	if(write(fd_instance_write_to[instance], query, strlen(query)) == -1) {
 		fprintf(stderr, "Failed to write query to FD %d "
-			"(instance %lu): %s; query was %s",
+			"(instance %d): %s; query was %s",
 			fd_instance_write_to[instance],
-			instance, strerror(errno), query);
+			(int)instance, strerror(errno), query);
 		exit(1);
 	}
 }
@@ -140,8 +140,8 @@ static void receive_ack(size_t instance)
 	if(strcmp(lnbuf, "ack") != 0) {
 		lnbuf[3] = bakval;
 		fprintf(stderr, "Error: Did not receive ACK but the following "
-			"response from instance %lu: %s\n",
-			instance, lnbuf);
+			"response from instance %d: %s\n",
+			(int)instance, lnbuf);
 		exit(1);
 	}
 }

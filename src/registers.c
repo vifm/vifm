@@ -723,33 +723,33 @@ static void regs_sync_debug_print_area(size_t offset, size_t length)
 
 void regs_sync_debug_print_memory()
 {
-	size_t i;
+	int i;
 	int j;
 
 	printf("-- BEGIN VIFM shared memory synchronization DUMP --\n");
 	printf("| local\n");
 	for(i = 0; i < NUM_REGISTERS; ++i) {
-		printf("| | register %2lu name=%c, nfiles=%d, files=\n", i,
+		printf("| | register %2d name=%c, nfiles=%d, files=\n", i,
 			registers[i].name, registers[i].nfiles);
 		for(j = 0; j < registers[i].nfiles; ++j)
 			printf("| | | %s\n", registers[i].files[j]);
 	}
-	printf("| meta shmem=%lx, shmem_raw=%lx, my_write_counter=%u\n",
-		(unsigned long)shmem, (unsigned long)shmem_raw, my_write_counter);
+	printf("| meta shmem=%p, shmem_raw=%p, my_write_counter=%u\n",
+		shmem, shmem_raw, my_write_counter);
 	if(shmem != NULL) {
-		printf("| shmem size_backed=%lu, write_counter=%u, length_area_used=%lu, "
-			"register_metadata=\n", shmem->size_backed, shmem->write_counter,
-			shmem->length_area_used);
+		printf("| shmem size_backed=%d, write_counter=%u, length_area_used=%d, "
+			"register_metadata=\n", (int)shmem->size_backed, shmem->write_counter,
+			(int)shmem->length_area_used);
 		for(i = 0; i < NUM_REGISTERS; ++i) {
 			printf(
-				"| | register %2lu write_counter=%u, num_entries=%lu, "
-					"offset=%lu, length_used=%lu, length_available=%lu\n",
+				"| | register %2d write_counter=%u, num_entries=%d, "
+					"offset=%d, length_used=%d, length_available=%d\n",
 				i,
 				shmem->register_metadata[i].write_counter,
-				shmem->register_metadata[i].num_entries,
-				shmem->register_metadata[i].offset,
-				shmem->register_metadata[i].length_used,
-				shmem->register_metadata[i].length_available
+				(int)shmem->register_metadata[i].num_entries,
+				(int)shmem->register_metadata[i].offset,
+				(int)shmem->register_metadata[i].length_used,
+				(int)shmem->register_metadata[i].length_available
 			);
 			printf("| | | used  =");
 			regs_sync_debug_print_area(shmem->register_metadata[i].offset,
