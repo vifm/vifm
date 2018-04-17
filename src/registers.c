@@ -694,7 +694,7 @@ regs_sync_from_shared_memory()
 		/* Other instance canged the register contents, let's check
 		 * the details. */
 		for(i = 0; i < NUM_REGISTERS; ++i) {
-			if(shmem->register_metadata[i].write_counter > my_write_counter) {
+			if(shmem->register_metadata[i].write_counter != my_write_counter) {
 				for(j = 0; j < registers[i].nfiles; ++j)
 					free(registers[i].files[j]);
 				free(registers[i].files);
