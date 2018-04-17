@@ -525,9 +525,11 @@ regs_sync_disable()
 void
 regs_sync_to_shared_memory()
 {
-	if(regs_sync_enter_critical_section() &&
-			regs_sync_to_shared_memory_critical())
+	if(regs_sync_enter_critical_section())
+	{
+		regs_sync_to_shared_memory_critical();
 		regs_sync_leave_critical_section();
+	}
 }
 
 static char
