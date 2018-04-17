@@ -182,12 +182,16 @@ there for instructions.
     |  |  |-- filemon.c - file monitoring "object"
     |  |  |-- filter.c - small abstraction over filter driven by a regexp
     |  |  |-- globs.c - provides support of glob patterns
+    |  |  |-- gmux_nix.c - implementation of named mutex on *nix
+    |  |  |-- gmux_win.c - implementation of named mutex on Windows
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
     |  |  |-- matcher.c - file path/name matcher (glob/regexp/mime-type)
     |  |  |-- matchers.c - list of matchers (which are ANDed together)
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- regexp.c - regexp related
+    |  |  |-- shmem_nix.c - implementation of named shared memory on *nix
+    |  |  |-- shmem_win.c - implementation of named shared memory on Windows
     |  |  |-- str.c - various string functions
     |  |  |-- string_array.c - functions to work with arrays of strings
     |  |  |-- trie.c - 3-way trie implementation

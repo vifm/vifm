@@ -170,10 +170,11 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	utils/filter.$(OBJEXT) utils/fs.$(OBJEXT) \
 	utils/fsdata.$(OBJEXT) utils/fsddata.$(OBJEXT) \
 	utils/fswatch_nix.$(OBJEXT) utils/globs.$(OBJEXT) \
-	utils/hist.$(OBJEXT) utils/int_stack.$(OBJEXT) \
-	utils/log.$(OBJEXT) utils/matcher.$(OBJEXT) \
-	utils/matchers.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/regexp.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/gmux_nix.$(OBJEXT) utils/hist.$(OBJEXT) \
+	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
+	utils/matcher.$(OBJEXT) utils/matchers.$(OBJEXT) \
+	utils/path.$(OBJEXT) utils/regexp.$(OBJEXT) \
+	utils/shmem_nix.$(OBJEXT) utils/str.$(OBJEXT) \
 	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
 	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
 	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
@@ -757,6 +758,7 @@ vifm_SOURCES = \
 	utils/fsddata.c utils/fsddata.h \
 	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \
+	utils/gmux_nix.c utils/gmux.h \
 	utils/hist.c utils/hist.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
@@ -765,6 +767,7 @@ vifm_SOURCES = \
 	utils/matchers.c utils/matchers.h \
 	utils/path.c utils/path.h \
 	utils/regexp.c utils/regexp.h \
+	utils/shmem_nix.c utils/shmem.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/test_helpers.h \
@@ -829,6 +832,8 @@ EXTRA_DIST = \
 						 vifm.rc \
 						 win_helper.c \
 						 utils/fswatch_win.c \
+						 utils/gmux_win.c \
+						 utils/shmem_win.c \
 						 utils/utils_win.c \
 						 utils/utils_win.h \
 						 utils/windefs.h \
@@ -1169,6 +1174,8 @@ utils/fswatch_nix.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/globs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/gmux_nix.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/hist.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/int_stack.$(OBJEXT): utils/$(am__dirstamp) \
@@ -1182,6 +1189,8 @@ utils/matchers.$(OBJEXT): utils/$(am__dirstamp) \
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/regexp.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
+utils/shmem_nix.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/str.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
@@ -1387,6 +1396,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fsddata.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fswatch_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/globs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/gmux_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/hist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
@@ -1394,6 +1404,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matchers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/regexp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/shmem_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/trie.Po@am__quote@

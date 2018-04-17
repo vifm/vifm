@@ -27,15 +27,15 @@
 #include <errno.h>    /* EEXIST etc. */
 
 #include <unistd.h>   /* ftruncate */
-#include <pthread.h>  /* mutex */
 #include <fcntl.h>    /* O_RDWR, O_EXCL, O_CREAT, ... */
-#include <sys/mman.h> /* mmap, shm_unlink */
 
 #include "compat/reallocarray.h"
 #include "modes/dialogs/msg_dialog.h" /* show_error_msgf */
 #include "utils/fs.h"
+#include "utils/gmux.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/shmem.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
@@ -76,9 +76,6 @@ struct register_metadata {
 };
 
 struct shared_registers {
-	pthread_mutex_t shared_mutex;
-	pthread_mutexattr_t mutex_attributes;
-
 	/*
 	 * size backed by shared memory file including metadata
 	 * ranges between shared_initial and shared_mmap_bytes
@@ -150,16 +147,16 @@ static size_t shared_initial    = 1024 * 1024 * 16;
 #endif
 
 static struct shared_registers* shmem = NULL;
+/* Mutex that protects shared memory of shmem_obj. */
+static gmux_t *shmem_gmux;
+/* Shared memory area object. */
+static shmem_t *shmem_obj;
 /* pointer to the shared memory as an unstructured blob of bytes */
 static char* shmem_raw = NULL;
-static int shm_fd = -1;
 static unsigned my_write_counter = 0;
 static char debug_print_to_stdout = 0;
 
 static void regs_sync_error(const char format[], ...);
-static void regs_sync_shm_close();
-static void regs_sync_shm_unlink(char* name);
-static void regs_sync_shm_unmap();
 static char regs_sync_to_shared_memory_critical();
 static char regs_sync_enter_critical_section();
 static void regs_sync_rewrite_critical();
@@ -426,10 +423,6 @@ regs_suggest(regs_suggest_cb cb, int max_entries_per_reg)
 void
 regs_sync_enable(char* shared_memory_name)
 {
-	char error_other;
-	char error_excl_already_exists;
-	char error_normal_does_not_exist;
-
 	/*
 	 * In order to allow shared memory names to be written without knowing the
 	 * details of the shared memory implementation (e.g. Linux needs a leading
@@ -438,8 +431,7 @@ regs_sync_enable(char* shared_memory_name)
 	 * /vifm-
 	 */
 	char use_name[SHARED_USE_NAME_MAX];
-	strcpy(use_name, "/vifm-");
-	strncpy(use_name + 6, shared_memory_name, SHARED_USE_NAME_MAX - 6);
+	snprintf(use_name, sizeof(use_name), "regs-%s", shared_memory_name);
 
 	/*
 	 * Disable feature if it was active before.
@@ -448,104 +440,51 @@ regs_sync_enable(char* shared_memory_name)
 	 */
 	regs_sync_disable();
 
-	do {
-		/* reset errors */
-		error_other = 0;
-		error_excl_already_exists = 0;
-		error_normal_does_not_exist = 0;
-
-		/* try exclusivie */
-		shm_fd = shm_open(use_name, O_RDWR | O_CREAT | O_EXCL, 0600);
-		if(shm_fd == -1) {
-			/* error exclusive */
-			if((error_excl_already_exists = (errno == EEXIST))) {
-				/* already exists => try to attach to existing */
-				shm_fd = shm_open(use_name, O_RDWR, 0600);
-				if(shm_fd == -1) {
-					/* we first got EEXIST now ENOENT => file deleted in the meantime
-					 * => retry! */
-					error_normal_does_not_exist = (errno == ENOENT);
-					error_other = !error_normal_does_not_exist;
-				} /* else: successfully attached to existing */
-			} else {
-				error_other = 1;
-			}
-		} /* else: no error exclusive / we know we are init! */
-	} while(!error_other && error_excl_already_exists &&
-		error_normal_does_not_exist);
-
-	/*
-	 * Possible cases:
-	 * (1) error_other                => FAIL
-	 * (2) error_excl_already_exists  => OK, just attached normally
-	 * (3) !error_excl_already_exists => OK, responsible for initialization
-	 */
-
-	if(error_other) {
-		regs_sync_error("Failed to open/create shared memory object: %s",
-			strerror(errno));
+	shmem_gmux = gmux_create(use_name);
+	if(shmem_gmux == NULL)
+	{
+		regs_sync_error("Failed to open/create shared mutex object.");
 		return;
 	}
 
-	/* initialization routine part 1 */
-	if(!error_excl_already_exists && ftruncate(shm_fd, shared_initial) == -1) {
-		regs_sync_error("Failed to resize shared memory "
-			"(during initialization): %s", strerror(errno));
-		regs_sync_shm_close();
-		regs_sync_shm_unlink(shared_memory_name);
+	if(gmux_lock(shmem_gmux) != 0)
+	{
+		regs_sync_disable();
+		regs_sync_error("Failed to lock shared mutex object.");
 		return;
 	}
 
-	/* map shared memory */
-	shmem_raw = mmap(NULL, shared_mmap_bytes,
-		PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-
-	if(shmem_raw == MAP_FAILED) {
-		regs_sync_error("Failed to mmap into shared memory area: %s",
-			strerror(errno));
-		regs_sync_shm_close();
-		if(!error_excl_already_exists)
-			regs_sync_shm_unlink(shared_memory_name);
+	shmem_obj = shmem_create(use_name, shared_initial, shared_mmap_bytes);
+	if(shmem_obj == NULL)
+	{
+		/* Disabling will unlock the mutex. */
+		regs_sync_disable();
+		regs_sync_error("Failed to open/create shared memory object.");
 		return;
 	}
+
+	shmem_raw = shmem_get_ptr(shmem_obj);
 
 	/* structured view on the same data */
 	shmem = (struct shared_registers*)shmem_raw;
 
-	/* initialization routine part 2 */
-	if(!error_excl_already_exists) {
-		/*
-		 * Race condition: What if we are initializing and another instance is just
-		 * starting where the mutex does not exist yet? Then the assumption is that
-		 * while it has enabled the shared memory feature and created the mapping,
-		 * it will not immediately access it thereafter such that the running
-		 * initialization has enough time to finish.
-		 */
-		if((pthread_mutexattr_init(&shmem->mutex_attributes) != 0) ||
-				(pthread_mutexattr_setpshared(&shmem->mutex_attributes,
-					PTHREAD_PROCESS_SHARED) != 0) ||
-				(pthread_mutex_init(&shmem->shared_mutex,
-					&shmem->mutex_attributes) != 0)) {
-			regs_sync_error("Failed to initialize mutex: %s", strerror(errno));
-			regs_sync_shm_unmap();
-			regs_sync_shm_close();
-			regs_sync_shm_unlink(shared_memory_name);
-			return;
-		}
-
-		if(!regs_sync_enter_critical_section()) {
-			regs_sync_shm_unmap();
-			regs_sync_shm_close();
-			regs_sync_shm_unlink(shared_memory_name);
-			return;
-		}
-
+	/* Initialization of just created shared memory area. */
+	if(shmem_created_by_us(shmem_obj))
+	{
 		my_write_counter = shmem->write_counter;
 		shmem->size_backed = shared_initial;
 
-		if(regs_sync_to_shared_memory_critical())
-			regs_sync_leave_critical_section();
+		if(!regs_sync_to_shared_memory_critical())
+		{
+			shmem_destroy(shmem_obj);
+			shmem_obj = NULL;
+			regs_sync_disable();
+			regs_sync_error("Failed to initialize shared memory with data.");
+			return;
+		}
 	}
+
+	regs_sync_leave_critical_section();
 }
 
 static void
@@ -564,35 +503,16 @@ regs_sync_error(const char format[], ...)
 	va_end(ap);
 }
 
-static void
-regs_sync_shm_close()
-{
-	if(close(shm_fd))
-		regs_sync_error("Failed to close shared memory: %s", strerror(errno));
-}
-
-static void
-regs_sync_shm_unlink(char* name)
-{
-	if(shm_unlink(name))
-		regs_sync_error("Failed to close shared memory: %s", strerror(errno));
-}
-
-static void
-regs_sync_shm_unmap()
-{
-	if(munmap(shmem_raw, shared_mmap_bytes))
-		regs_sync_error("Failed to unmap shared memory: %s", strerror(errno));
-}
-
 void
 regs_sync_disable()
 {
-	if(shmem != NULL) {
-		regs_sync_shm_unmap();
-		regs_sync_shm_close();
-		shmem = NULL;
-	}
+	gmux_free(shmem_gmux);
+	shmem_gmux = NULL;
+
+	shmem_free(shmem_obj);
+	shmem_obj = NULL;
+
+	shmem = NULL;
 }
 
 void
@@ -681,7 +601,8 @@ regs_sync_enter_critical_section()
 	if(shmem == NULL)
 		return 0;
 
-	if(pthread_mutex_lock(&shmem->shared_mutex)) {
+	if(gmux_lock(shmem_gmux) != 0)
+	{
 		regs_sync_error("Failed to lock mutex: %s", strerror(errno));
 		return 0;
 	}
@@ -732,7 +653,8 @@ static char
 regs_sync_resize_allocation(size_t newsz)
 {
 	/* returns 1 on success, 0 on failure (performs cleanup for failure case) */
-	if(newsz > shared_mmap_bytes || ftruncate(shm_fd, newsz)) {
+	if(!shmem_resize(shmem_obj, newsz))
+	{
 		/* shared memory ends here */
 		regs_sync_error("Shared memory size exceeded: %s", strerror(errno));
 		regs_sync_disable();
@@ -746,8 +668,10 @@ regs_sync_resize_allocation(size_t newsz)
 static void
 regs_sync_leave_critical_section()
 {
-	if(pthread_mutex_unlock(&shmem->shared_mutex))
-		regs_sync_error("Failed to unlock mutex: %s", strerror(errno));
+	if(gmux_unlock(shmem_gmux))
+	{
+		regs_sync_error("Failed to unlock mutex.");
+	}
 }
 
 void
@@ -810,8 +734,8 @@ void regs_sync_debug_print_memory()
 		for(j = 0; j < registers[i].nfiles; ++j)
 			printf("| | | %s\n", registers[i].files[j]);
 	}
-	printf("| meta shmem=%lx, shmem_raw=%lx, shm_fd=%d, my_write_counter=%u\n",
-		(unsigned long)shmem, (unsigned long)shmem_raw, shm_fd, my_write_counter);
+	printf("| meta shmem=%lx, shmem_raw=%lx, my_write_counter=%u\n",
+		(unsigned long)shmem, (unsigned long)shmem_raw, my_write_counter);
 	if(shmem != NULL) {
 		printf("| shmem size_backed=%lu, write_counter=%u, length_area_used=%lu, "
 			"register_metadata=\n", shmem->size_backed, shmem->write_counter,

@@ -4,8 +4,10 @@
 #include <errno.h>
 #include <signal.h>     /* SIGTERM */
 #include <unistd.h>
-#include <sys/mman.h>   /* shm_unlink */
 #include <stic.h>
+
+#include "../../src/utils/gmux.h"
+#include "../../src/utils/shmem.h"
 
 static void spawn_regcmd(size_t number);
 static void send_query(size_t instance, char* query);
@@ -46,8 +48,9 @@ static char pat4kib[4096 + 8];
 /* Tests basic transfer of values from 0 to 1 and spawns processes. */
 SETUP_ONCE()
 {
-	/* make sure nothing retained from previous tests */
-	shm_unlink("/vifm-test-shmem");
+	/* Make sure nothing retained from previous tests. */
+	gmux_destroy(gmux_create("regs-test-shmem"));
+	shmem_destroy(shmem_create("regs-test-shmem", 10, 10));
 
 	/* spawn processes */
 	spawn_regcmd(0);
