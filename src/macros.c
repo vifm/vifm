@@ -159,6 +159,11 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		return strdup(command);
 	}
 
+	if(strstr(command + x, "%r") != NULL)
+	{
+		regs_sync_from_shared_memory();
+	}
+
 	expanded = calloc(cmd_len + 1, sizeof(char));
 	strncat(expanded, command, x);
 	x++;

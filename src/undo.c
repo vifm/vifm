@@ -499,6 +499,7 @@ undo_group(void)
 			return -3;
 	}
 
+	regs_sync_from_shared_memory();
 	current->group->balance--;
 
 	skip = 0;
@@ -523,6 +524,8 @@ undo_group(void)
 	}
 	while(!(cancelled = cancel_func()) && current != &cmds &&
 			current->group == current->next->group);
+
+	regs_sync_to_shared_memory();
 
 	if(cancelled)
 	{
@@ -582,6 +585,7 @@ redo_group(void)
 			return -3;
 	}
 
+	regs_sync_from_shared_memory();
 	current->next->group->balance++;
 
 	skip = 0;
@@ -606,6 +610,8 @@ redo_group(void)
 	}
 	while(!(cancelled = cancel_func()) && current->next != NULL &&
 			current->group == current->next->group);
+
+	regs_sync_to_shared_memory();
 
 	if(cancelled)
 	{

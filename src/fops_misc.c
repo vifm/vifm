@@ -477,6 +477,9 @@ prepare_register(int reg)
 	if(reg >= 'A' && reg <= 'Z')
 	{
 		reg += 'a' - 'A';
+		/* We're going to append to a register and thus need its contents to be up
+		 * to date. */
+		regs_sync_from_shared_memory();
 	}
 	else
 	{
