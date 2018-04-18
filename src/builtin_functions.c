@@ -52,7 +52,7 @@ static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 static var_t tabpagenr_builtin(const call_info_t *call_info);
 static var_t term_builtin(const call_info_t *call_info);
-static var_t execute_cmd(const call_info_t *call_info);
+static var_t execute_cmd(const call_info_t *call_info, int preserve_stdin);
 
 static const function_t functions[] = {
 	/* Name          Description                    Args   Handler  */
@@ -334,7 +334,7 @@ paneisat_builtin(const call_info_t *call_info)
 static var_t
 system_builtin(const call_info_t *call_info)
 {
-	return execute_cmd(call_info);
+	return execute_cmd(call_info, 0);
 }
 
 /* Retrieves number of current or last tab page.  Returns integer value with the
@@ -369,14 +369,14 @@ static var_t
 term_builtin(const call_info_t *call_info)
 {
 	ui_shutdown();
-	return execute_cmd(call_info);
+	return execute_cmd(call_info, 1);
 }
 
 /* Runs interactive command in shell and returns its output (joined standard
  * output and standard error streams).  All trailing newline characters are
  * stripped to allow easy appending to command output.  Returns the output. */
 static var_t
-execute_cmd(const call_info_t *call_info)
+execute_cmd(const call_info_t *call_info, int preserve_stdin)
 {
 	var_t result;
 	char *cmd;
@@ -385,7 +385,7 @@ execute_cmd(const call_info_t *call_info)
 	char *result_str;
 
 	cmd = var_to_str(call_info->argv[0]);
-	cmd_stream = read_cmd_output(cmd);
+	cmd_stream = read_cmd_output(cmd, preserve_stdin);
 	free(cmd);
 
 	ui_cancellation_enable();

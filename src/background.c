@@ -405,7 +405,7 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 	if(pid == 0)
 	{
 		(void)set_sigchld(0);
-		run_from_fork(error_pipe, 1, cmd);
+		run_from_fork(error_pipe, 1, 0, cmd);
 	}
 	else
 	{

@@ -40,8 +40,10 @@ void process_cancel_request(pid_t pid,
 int get_proc_exit_status(pid_t pid);
 
 /* If err_only then use stderr and close stdin and stdout, otherwise both stdout
- * and stderr are redirected to the pipe. */
-void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, char cmd[]);
+ * and stderr are redirected to the pipe.  Non-zero preserve_stdin prevents
+ * stdin from being bound to /dev/null. */
+void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, int preserve_stdin,
+		char cmd[]);
 
 /* Extracts name of the shell to be used with execv*() function.  Returns
  * pointer to statically allocated buffer. */

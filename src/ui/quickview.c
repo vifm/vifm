@@ -656,7 +656,7 @@ qv_execute_viewer(const char viewer[])
 	char *expanded;
 
 	expanded = expand_viewer_command(viewer);
-	fp = read_cmd_output(expanded);
+	fp = read_cmd_output(expanded, 0);
 	free(expanded);
 
 	return fp;

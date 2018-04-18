@@ -132,6 +132,9 @@
 	Fixed crash due to linking to wrong version of libtinfo.  Thanks to Ruslan
 	Osmanov (a.k.a. rosmanov) and Chema Alonso Josa (a.k.a. nimiux).
 
+	Fixed stdin stream wasn't closed for commands run for obtaining their
+	output since previous release (e.g. `!read i%q` would wait for input).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

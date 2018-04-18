@@ -668,7 +668,7 @@ reopen_term_stdin(void)
 }
 
 FILE *
-read_cmd_output(const char cmd[])
+read_cmd_output(const char cmd[], int preserve_stdin)
 {
 	int out_fd, err_fd;
 	int out_pipe[2];

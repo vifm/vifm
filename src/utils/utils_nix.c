@@ -233,10 +233,8 @@ get_proc_exit_status(pid_t pid)
 }
 
 void _gnuc_noreturn
-run_from_fork(int pipe[2], int err_only, char cmd[])
+run_from_fork(int pipe[2], int err_only, int preserve_stdin, char cmd[])
 {
-	int null_fd;
-
 	/* Close read end of the pipe. */
 	(void)close(pipe[0]);
 
@@ -256,20 +254,24 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 		(void)close(pipe[1]);
 	}
 
-	/* Send stdin and maybe stdout to /dev/null */
-	null_fd = open("/dev/null", O_RDWR);
+	const int null_fd = open("/dev/null", O_RDWR);
 	if(null_fd == -1)
 	{
 		_Exit(EXIT_FAILURE);
 	}
 
-	/* if(dup2(null_fd, STDIN_FILENO) == -1) */
-	/* { */
-	/* 	_Exit(EXIT_FAILURE); */
-	/* } */
+	if(!preserve_stdin && dup2(null_fd, STDIN_FILENO) == -1)
+	{
+		_Exit(EXIT_FAILURE);
+	}
 	if(err_only && dup2(null_fd, STDOUT_FILENO) == -1)
 	{
 		_Exit(EXIT_FAILURE);
+	}
+
+	if(null_fd != STDIN_FILENO && null_fd != STDOUT_FILENO)
+	{
+		(void)close(null_fd);
 	}
 
 	execvp(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd));
@@ -964,7 +966,7 @@ open_tty(void)
 }
 
 FILE *
-read_cmd_output(const char cmd[])
+read_cmd_output(const char cmd[], int preserve_stdin)
 {
 	FILE *fp;
 	pid_t pid;
@@ -983,7 +985,7 @@ read_cmd_output(const char cmd[])
 
 	if(pid == 0)
 	{
-		run_from_fork(out_pipe, 0, (char *)cmd);
+		run_from_fork(out_pipe, 0, preserve_stdin, (char *)cmd);
 		return NULL;
 	}
 
