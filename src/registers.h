@@ -22,6 +22,8 @@
 
 #include <stddef.h> /* wchar_t */
 
+#include "utils/test_helpers.h"
+
 /* Name of the default register. */
 #define DEFAULT_REG_NAME '"'
 
@@ -87,6 +89,30 @@ void regs_update_unnamed(int reg_name);
 
 /* Lists active registers. */
 void regs_suggest(regs_suggest_cb cb, int max_entries_per_reg);
+
+/* Management of shared state. */
+
+/* Enables or re-enables sharing of registers' state using given identifier. */
+void regs_sync_enable(const char shared_memory_name[]);
+
+/* Disables sharing of registers' state. */
+void regs_sync_disable(void);
+
+/* Puts contents of registers into shared memory. */
+void regs_sync_to_shared_memory(void);
+
+/* Retrieves contents of registers from shared memory. */
+void regs_sync_from_shared_memory(void);
+
+TSTATIC_DEFS(
+	/* Checks whether register sharing is currently enabled.  Returns non-zero if
+	 * so, otherwise zero is returned. */
+	int regs_sync_enabled(void);
+	/* Dumps debug information about shared memory to stdout. */
+	void regs_sync_debug_print_memory(void);
+	/* Enables test mode of shared memory. */
+	void regs_sync_enable_test_mode(void);
+)
 
 #endif /* VIFM__REGISTERS_H__ */
 

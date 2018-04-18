@@ -198,6 +198,7 @@ vifm_SOURCES = \
 	utils/fsddata.c utils/fsddata.h \
 	utils/fswatch_nix.c utils/fswatch.h \
 	utils/globs.c utils/globs.h \
+	utils/gmux_nix.c utils/gmux.h \
 	utils/hist.c utils/hist.h \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
@@ -206,6 +207,7 @@ vifm_SOURCES = \
 	utils/matchers.c utils/matchers.h \
 	utils/path.c utils/path.h \
 	utils/regexp.c utils/regexp.h \
+	utils/shmem_nix.c utils/shmem.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/test_helpers.h \
@@ -270,6 +272,8 @@ EXTRA_DIST = \
 						 vifm.rc \
 						 win_helper.c \
 						 utils/fswatch_win.c \
+						 utils/gmux_win.c \
+						 utils/shmem_win.c \
 						 utils/utils_win.c \
 						 utils/utils_win.h \
 						 utils/windefs.h \

@@ -559,6 +559,8 @@ display_suggestion_box(const wchar_t input[])
 	if((cfg.sug.flags & SF_REGISTERS) &&
 			input[prefix] == L'"' && input[prefix + 1U] == L'\0')
 	{
+		regs_sync_from_shared_memory();
+
 		/* No vle_compl_finish_group() after this to prevent sorting and
 		 * deduplication. */
 		regs_suggest(&process_suggestion, cfg.sug.maxregfiles);

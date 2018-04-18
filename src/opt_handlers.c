@@ -50,6 +50,7 @@
 #include "utils/utils.h"
 #include "filelist.h"
 #include "flist_hist.h"
+#include "registers.h"
 #include "search.h"
 #include "sort.h"
 #include "status.h"
@@ -207,6 +208,7 @@ static void resort_view(view_t * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void suggestoptions_handler(OPT_OP op, optval_t val);
 static void reset_suggestoptions(void);
+static void syncregs_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
 static void tabscope_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
@@ -739,6 +741,9 @@ options[] = {
 		&suggestoptions_handler, NULL,
 	  { .ref.str_val = &empty },
 	},
+	{ "syncregs", "", "defines group of instances that share registers",
+	  OPT_STR, 0, NULL, &syncregs_handler, NULL,
+	  { .ref.str_val = &empty } },
 	{ "syscalls", "", "use system calls for file operations",
 	  OPT_BOOL, 0, NULL, &syscalls_handler, NULL,
 	  { .ref.bool_val = &cfg.use_system_calls },
@@ -3133,6 +3138,23 @@ reset_suggestoptions(void)
 	set_option("suggestoptions", val, OPT_GLOBAL);
 
 	vle_tb_free(descr);
+}
+
+/* Handles changes of identifier of group of instances that synchronize their
+ * registers. */
+static void
+syncregs_handler(OPT_OP op, optval_t val)
+{
+	if(val.str_val[0] == '\0')
+	{
+		/* Option disabled -> disable functionality. */
+		regs_sync_disable();
+	}
+	else
+	{
+		/* Option enabled -> enable functionality. */
+		regs_sync_enable(val.str_val);
+	}
 }
 
 /* Makes vifm prefer to perform file-system operations with external

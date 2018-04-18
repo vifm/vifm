@@ -1091,6 +1091,7 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 		return;
 	}
 
+	regs_sync_from_shared_memory();
 	reg = regs_find(tolower(key_info.reg));
 	if(reg == NULL || reg->nfiles < 1)
 	{

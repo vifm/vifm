@@ -9,11 +9,7 @@
 #include "../../src/utils/str.h"
 #include "../../src/macros.h"
 
-#ifdef _WIN32
-#define SL "\\\\"
-#else
-#define SL "/"
-#endif
+#include "utils.h"
 
 SETUP()
 {

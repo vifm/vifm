@@ -156,6 +156,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 			fops_get_cancellation_suffix());
 
 	fops_free_ops(ops);
+	regs_sync_to_shared_memory();
 	return 1;
 }
 
@@ -462,6 +463,8 @@ fops_yank(view_t *view, int reg)
 	ui_sb_msgf("%d file%s yanked", nyanked_files,
 			(nyanked_files == 1) ? "" : "s");
 
+	regs_sync_to_shared_memory();
+
 	return 1;
 }
 
@@ -474,6 +477,9 @@ prepare_register(int reg)
 	if(reg >= 'A' && reg <= 'Z')
 	{
 		reg += 'a' - 'A';
+		/* We're going to append to a register and thus need its contents to be up
+		 * to date. */
+		regs_sync_from_shared_memory();
 	}
 	else
 	{

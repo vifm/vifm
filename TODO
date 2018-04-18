@@ -89,7 +89,6 @@ Possible things to add:
   * Reverse searching
   * Add g/ and g? commands (search, but don't select files).
   * Support true-colors for colorschemes.
-  * IPC among all running vifm instances (share settings among instances).
   * Parse escape sequences in menus as in preview.
   * Virtual File System - currently vifm can use FUSE to mount most file
     systems.

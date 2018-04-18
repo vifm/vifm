@@ -10,6 +10,12 @@
 #define EXE_SUFFIXW L""
 #endif
 
+#ifdef _WIN32
+#define SL "\\\\"
+#else
+#define SL "/"
+#endif
+
 struct view_t;
 
 /* Prepares configuration for use in tests. */

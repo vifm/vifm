@@ -258,12 +258,13 @@ struct stic_test_data
     int main(int argc, char *argv[]) \
     { \
         int r; \
-        if(stic_setup_once_func != NULL) \
+        const int file_has_tests = (stic_get_fixture_name() != NULL); \
+        if(!file_has_tests && stic_setup_once_func != NULL) \
         { \
             stic_setup_once_func(); \
         } \
         r = stic_testrunner(argc, argv, stic_suite, stic_setup_func, stic_teardown_func) == 0; \
-        if(stic_teardown_once_func != NULL) \
+        if(!file_has_tests && stic_teardown_once_func != NULL) \
         { \
             stic_teardown_once_func(); \
         } \
@@ -282,25 +283,31 @@ static void (*stic_setup_once_func)(void);
 static void (*stic_teardown_func)(void);
 static void (*stic_teardown_once_func)(void);
 
+static struct stic_test_data *const *const stic_test_data[] = {
+    TEST_DATA_STRUCTS_REF
+};
+
+static const char * stic_get_fixture_name(void)
+{
+    size_t i;
+    for(i = 0U; i < STIC_ARRAY_LEN(stic_test_data); ++i)
+    {
+        if(*stic_test_data[i])
+        {
+            return (*stic_test_data[i])->f;
+        }
+    }
+    return NULL;
+}
+
 static void stic_fixture(void)
 {
     extern const char *stic_current_test_name;
     extern stic_void_void stic_current_test;
 
-    const char *fixture_name = NULL;
     size_t i;
-    static struct stic_test_data *const *const test_data[] = {
-        TEST_DATA_STRUCTS_REF
-    };
 
-    for(i = 0; i < STIC_ARRAY_LEN(test_data); ++i)
-    {
-        if(*test_data[i])
-        {
-            fixture_name = (*test_data[i])->f;
-            break;
-        }
-    }
+    const char *fixture_name = stic_get_fixture_name();
     if(fixture_name == NULL)
     {
         return;
@@ -318,9 +325,9 @@ static void stic_fixture(void)
         stic_setup_once_func();
     }
 
-    for(i = 0; i < STIC_ARRAY_LEN(test_data); ++i)
+    for(i = 0; i < STIC_ARRAY_LEN(stic_test_data); ++i)
     {
-        struct stic_test_data *td = *test_data[i];
+        struct stic_test_data *td = *stic_test_data[i];
         if(td == NULL) continue;
         if(td->p != NULL && !td->p())
         {

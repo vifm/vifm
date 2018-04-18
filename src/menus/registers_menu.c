@@ -29,6 +29,7 @@ int
 show_register_menu(view_t *view, const char registers[])
 {
 	static menu_data_t m;
+	regs_sync_from_shared_memory();
 	menus_init_data(&m, view, strdup("Registers"), strdup("Registers are empty"));
 
 	m.items = regs_list(registers);

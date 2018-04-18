@@ -1018,6 +1018,8 @@ write_options(FILE *fp)
 	fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 	fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
 	fprintf(fp, "=statusline=%s\n", escape_spaces(cfg.status_line));
+	fprintf(fp, "=syncregs=%s\n",
+			escape_spaces(get_option_value("syncregs", OPT_GLOBAL)));
 	fprintf(fp, "=tabscope=%s\n",
 			escape_spaces(get_option_value("tabscope", OPT_GLOBAL)));
 	fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
