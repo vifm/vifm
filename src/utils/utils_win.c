@@ -689,33 +689,24 @@ read_cmd_output(const char cmd[], int preserve_stdin)
 	_dup2(in_fd, _fileno(stdin));
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
+	close(in_fd);
+	close(out_fd);
+	close(err_fd);
 
 	if(result == NULL)
+	{
 		close(out_pipe[0]);
+	}
 	close(out_pipe[1]);
 
 	return result;
 }
 
-const char *
-get_installed_data_dir(void)
-{
-	static char data_dir[PATH_MAX + 1];
-	if(data_dir[0] == '\0')
-	{
-		char exe_dir[PATH_MAX + 1];
-		(void)get_exe_dir(exe_dir, sizeof(exe_dir));
-		snprintf(data_dir, sizeof(data_dir), "%s/data", exe_dir);
-	}
-	return data_dir;
-}
-
+/* Performs redirection and execution of the command.  Returns file descriptor
+ * bound to stdout of the command. */
 static FILE *
 read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 {
-	char *args[4];
-	int retcode;
-
 	if(!preserve_stdin)
 	{
 		HANDLE h = CreateFileA("\\\\.\\NUL", GENERIC_READ, 0, NULL, OPEN_EXISTING,
@@ -751,14 +742,23 @@ read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
 		return NULL;
 	}
 
-	args[0] = "cmd";
-	args[1] = "/C";
-	args[2] = (char *)cmd;
-	args[3] = NULL;
+	const char *args[] = { "cmd", "/C", cmd, NULL };
+	const int retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
 
-	retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
+	return (retcode == 0 ? NULL : _fdopen(out_pipe[0], "r"));
+}
 
-	return (retcode == 0) ? NULL : _fdopen(out_pipe[0], "r");
+const char *
+get_installed_data_dir(void)
+{
+	static char data_dir[PATH_MAX + 1];
+	if(data_dir[0] == '\0')
+	{
+		char exe_dir[PATH_MAX + 1];
+		(void)get_exe_dir(exe_dir, sizeof(exe_dir));
+		snprintf(data_dir, sizeof(data_dir), "%s/data", exe_dir);
+	}
+	return data_dir;
 }
 
 FILE *
