@@ -3881,6 +3881,8 @@ sequences that can be used in place of them.  They are:
 <del> <delete>
     Delete key.  <del> and <delete> mean different codes, but <delete> is
     more common.
+<insert>
+    Insert key.
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_>
     Control + some key (see key conflict description below).
 <a-a>,<a-b>,...,<a-z>
