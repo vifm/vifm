@@ -374,6 +374,7 @@ static key_pair_t key_pairs[] = {
 	{ L"<down>",     { K(KEY_DOWN) }      },
 	{ L"<bs>",       { K(KEY_BACKSPACE) } },
 	{ L"<delete>",   { K(KEY_DC) }        },
+	{ L"<insert>",   { K(KEY_IC) }        },
 	{ L"<pageup>",   { K(KEY_PPAGE) }     },
 	{ L"<pagedown>", { K(KEY_NPAGE) }     },
 	{ L"<f0>",       { K(KEY_F(0)) }      },

@@ -146,6 +146,9 @@ nnoremap gh :cd $HOME<cr>
 " "<home>" as bracket notation
 cnoremap <c-b> <home>
 
+" "<insert>" as bracket notation
+nnoremap <insert> something
+
 " "windo" and "normal" should be highlighted as :command
 " "<cr>" should NOT be highlighted as bracket notation
 windo normal zo<cr>
