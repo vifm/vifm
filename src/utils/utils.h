@@ -238,7 +238,7 @@ int reopen_term_stdin(void);
 
 /* Executes the command via shell and opens its output for reading.  Returns
  * NULL on error, otherwise stream valid for reading is returned. */
-FILE * read_cmd_output(const char cmd[]);
+FILE * read_cmd_output(const char cmd[], int preserve_stdin);
 
 /* Gets path to directory where files bundled with Vifm are stored.  Returns
  * pointer to a statically allocated buffer. */

@@ -52,6 +52,7 @@ static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 static var_t tabpagenr_builtin(const call_info_t *call_info);
 static var_t term_builtin(const call_info_t *call_info);
+static var_t execute_cmd(const call_info_t *call_info, int preserve_stdin);
 
 static const function_t functions[] = {
 	/* Name          Description                    Args   Handler  */
@@ -333,36 +334,7 @@ paneisat_builtin(const call_info_t *call_info)
 static var_t
 system_builtin(const call_info_t *call_info)
 {
-	var_t result;
-	char *cmd;
-	FILE *cmd_stream;
-	size_t cmd_out_len;
-	char *result_str;
-
-	cmd = var_to_str(call_info->argv[0]);
-	cmd_stream = read_cmd_output(cmd);
-	free(cmd);
-
-	ui_cancellation_enable();
-	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
-	ui_cancellation_disable();
-	fclose(cmd_stream);
-
-	if(result_str == NULL)
-	{
-		return var_from_str("");
-	}
-
-	/* Remove trailing new line characters. */
-	while(cmd_out_len != 0U && result_str[cmd_out_len - 1] == '\n')
-	{
-		result_str[cmd_out_len - 1] = '\0';
-		--cmd_out_len;
-	}
-
-	result = var_from_str(result_str);
-	free(result_str);
-	return result;
+	return execute_cmd(call_info, 0);
 }
 
 /* Retrieves number of current or last tab page.  Returns integer value with the
@@ -397,7 +369,45 @@ static var_t
 term_builtin(const call_info_t *call_info)
 {
 	ui_shutdown();
-	return system_builtin(call_info);
+	return execute_cmd(call_info, 1);
+}
+
+/* Runs interactive command in shell and returns its output (joined standard
+ * output and standard error streams).  All trailing newline characters are
+ * stripped to allow easy appending to command output.  Returns the output. */
+static var_t
+execute_cmd(const call_info_t *call_info, int preserve_stdin)
+{
+	var_t result;
+	char *cmd;
+	FILE *cmd_stream;
+	size_t cmd_out_len;
+	char *result_str;
+
+	cmd = var_to_str(call_info->argv[0]);
+	cmd_stream = read_cmd_output(cmd, preserve_stdin);
+	free(cmd);
+
+	ui_cancellation_enable();
+	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
+	ui_cancellation_disable();
+	fclose(cmd_stream);
+
+	if(result_str == NULL)
+	{
+		return var_from_str("");
+	}
+
+	/* Remove trailing new line characters. */
+	while(cmd_out_len != 0U && result_str[cmd_out_len - 1] == '\n')
+	{
+		result_str[cmd_out_len - 1] = '\0';
+		--cmd_out_len;
+	}
+
+	result = var_from_str(result_str);
+	free(result_str);
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

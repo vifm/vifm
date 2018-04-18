@@ -62,7 +62,8 @@ static int should_wait_for_program(const char cmd[]);
 static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
-static FILE * read_cmd_output_internal(const char cmd[], int out_pipe[2]);
+static FILE * read_cmd_output_internal(const char cmd[], int out_pipe[2],
+		int preserve_stdin);
 static char * get_root_path(const char path[]);
 static BOOL CALLBACK close_app_enum(HWND hwnd, LPARAM lParam);
 
@@ -668,9 +669,9 @@ reopen_term_stdin(void)
 }
 
 FILE *
-read_cmd_output(const char cmd[])
+read_cmd_output(const char cmd[], int preserve_stdin)
 {
-	int out_fd, err_fd;
+	int in_fd, out_fd, err_fd;
 	int out_pipe[2];
 	FILE *result;
 
@@ -679,19 +680,72 @@ read_cmd_output(const char cmd[])
 		return NULL;
 	}
 
+	in_fd = dup(_fileno(stdin));
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	result = read_cmd_output_internal(cmd, out_pipe);
+	result = read_cmd_output_internal(cmd, out_pipe, preserve_stdin);
 
+	_dup2(in_fd, _fileno(stdin));
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
+	close(in_fd);
+	close(out_fd);
+	close(err_fd);
 
 	if(result == NULL)
+	{
 		close(out_pipe[0]);
+	}
 	close(out_pipe[1]);
 
 	return result;
+}
+
+/* Performs redirection and execution of the command.  Returns file descriptor
+ * bound to stdout of the command. */
+static FILE *
+read_cmd_output_internal(const char cmd[], int out_pipe[2], int preserve_stdin)
+{
+	if(!preserve_stdin)
+	{
+		HANDLE h = CreateFileA("\\\\.\\NUL", GENERIC_READ, 0, NULL, OPEN_EXISTING,
+				FILE_ATTRIBUTE_NORMAL, NULL);
+		if(h == INVALID_HANDLE_VALUE)
+		{
+			return NULL;
+		}
+
+		const int fd = _open_osfhandle((intptr_t)h, _O_RDWR);
+		if(fd == -1)
+		{
+			CloseHandle(h);
+			return NULL;
+		}
+
+		if(_dup2(fd, _fileno(stdin)) != 0)
+		{
+			return NULL;
+		}
+		if(fd != _fileno(stdin))
+		{
+			close(fd);
+		}
+	}
+
+	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
+	{
+		return NULL;
+	}
+	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
+	{
+		return NULL;
+	}
+
+	const char *args[] = { "cmd", "/C", cmd, NULL };
+	const int retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
+
+	return (retcode == 0 ? NULL : _fdopen(out_pipe[0], "r"));
 }
 
 const char *
@@ -705,31 +759,6 @@ get_installed_data_dir(void)
 		snprintf(data_dir, sizeof(data_dir), "%s/data", exe_dir);
 	}
 	return data_dir;
-}
-
-static FILE *
-read_cmd_output_internal(const char cmd[], int out_pipe[2])
-{
-	char *args[4];
-	int retcode;
-
-	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
-	{
-		return NULL;
-	}
-	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
-	{
-		return NULL;
-	}
-
-	args[0] = "cmd";
-	args[1] = "/C";
-	args[2] = (char *)cmd;
-	args[3] = NULL;
-
-	retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
-
-	return (retcode == 0) ? NULL : _fdopen(out_pipe[0], "r");
 }
 
 FILE *
