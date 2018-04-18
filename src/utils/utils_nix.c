@@ -235,7 +235,7 @@ get_proc_exit_status(pid_t pid)
 void _gnuc_noreturn
 run_from_fork(int pipe[2], int err_only, char cmd[])
 {
-	int nullfd;
+	int null_fd;
 
 	/* Close read end of the pipe. */
 	(void)close(pipe[0]);
@@ -257,17 +257,17 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 	}
 
 	/* Send stdin and maybe stdout to /dev/null */
-	nullfd = open("/dev/null", O_RDWR);
-	if(nullfd == -1)
+	null_fd = open("/dev/null", O_RDWR);
+	if(null_fd == -1)
 	{
 		_Exit(EXIT_FAILURE);
 	}
 
-	/* if(dup2(nullfd, STDIN_FILENO) == -1) */
+	/* if(dup2(null_fd, STDIN_FILENO) == -1) */
 	/* { */
 	/* 	_Exit(EXIT_FAILURE); */
 	/* } */
-	if(err_only && dup2(nullfd, STDOUT_FILENO) == -1)
+	if(err_only && dup2(null_fd, STDOUT_FILENO) == -1)
 	{
 		_Exit(EXIT_FAILURE);
 	}
