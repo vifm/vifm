@@ -134,6 +134,7 @@
 
 	Fixed stdin stream wasn't closed for commands run for obtaining their
 	output since previous release (e.g. `!read i%q` would wait for input).
+	Also close it the same way on Windows too.
 
 0.9.1-beta to 0.9.1
 
