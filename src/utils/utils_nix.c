@@ -250,8 +250,11 @@ run_from_fork(int pipe[2], int err_only, char cmd[])
 		_Exit(EXIT_FAILURE);
 	}
 
-	/* Close write end of the pipe (already duplicated it). */
-	(void)close(pipe[1]);
+	if(pipe[1] != STDERR_FILENO && pipe[1] != STDOUT_FILENO)
+	{
+		/* Close write end of the pipe after it was duplicated. */
+		(void)close(pipe[1]);
+	}
 
 	/* Send stdin and maybe stdout to /dev/null */
 	nullfd = open("/dev/null", O_RDWR);
