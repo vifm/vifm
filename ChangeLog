@@ -51,6 +51,9 @@
 	Added fnameescape() builtin function, which can be used to escape paths on
 	construction of :commands.  Thanks to filterfalse.
 
+	Added 'syncregs' option which defines group of instances that share
+	registers.  Patch by Ma_Sys.ma.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

@@ -14,6 +14,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/opt_handlers.h"
+#include "../../src/registers.h"
 
 #include "utils.h"
 
@@ -791,6 +792,19 @@ TEST(quickview)
 	assert_true(curr_stats.preview.on);
 	assert_success(exec_commands("set invquickview", &lwin, CIT_COMMAND));
 	assert_false(curr_stats.preview.on);
+}
+
+TEST(syncregs)
+{
+	assert_false(regs_sync_enabled());
+	assert_success(exec_commands("set syncregs=test1", &lwin, CIT_COMMAND));
+	assert_true(regs_sync_enabled());
+	assert_success(exec_commands("set syncregs=test2", &lwin, CIT_COMMAND));
+	assert_true(regs_sync_enabled());
+	assert_success(exec_commands("set syncregs=test1", &lwin, CIT_COMMAND));
+	assert_true(regs_sync_enabled());
+	assert_success(exec_commands("set syncregs=", &lwin, CIT_COMMAND));
+	assert_false(regs_sync_enabled());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

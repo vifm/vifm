@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 31, 2018" "vifm 0.9.1"
+.TH VIFM 1 "April 18, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4340,6 +4340,16 @@ specifies the delay in ms (500 by default), 'timeoutlen' at most;
  - foldsubkeys     - fold multiple keys with common prefix;
  - marks           - include marks;
  - registers[:num] - include registers, at most num files (5 by default).
+.TP
+.BI 'syncregs'
+type: string
+.br
+default:
+.br
+Specifies identifier of group of instances that share registers between each
+other.  When several instances of vifm have this option set to identical
+value, they automatically synchronize contents of their registers on
+operations which use them.
 .TP
 .BI 'syscalls'
 type: boolean

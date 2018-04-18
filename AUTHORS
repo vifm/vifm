@@ -115,3 +115,6 @@ John Shea (a.k.a. coachshea) provided fix for the plugin related to neovim.
 
 Daniel Mueller fixed CWD of the process not matching current view after vifm
 picked up change in file system.
+
+Ma_Sys.ma implemented 'syncregs' option which defines group of instances that
+share registers.

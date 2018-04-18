@@ -172,6 +172,7 @@ static size_t regs_sync_store_register_contents_in_place(size_t current_offset,
 	size_t reg_id);
 static int regs_sync_resize_allocation(size_t newsz);
 static void regs_sync_leave_critical_section(void);
+TSTATIC int regs_sync_enabled(void);
 TSTATIC void regs_sync_debug_print_memory(void);
 static void regs_sync_debug_print_area(size_t offset, size_t length);
 TSTATIC void regs_sync_enable_test_mode(void);
@@ -620,7 +621,7 @@ regs_sync_to_shared_memory_critical(void)
 static int
 regs_sync_enter_critical_section(void)
 {
-	if(shmem == NULL)
+	if(!regs_sync_enabled())
 	{
 		/* Return 0 to cancel further processing. */
 		return 0;
@@ -747,6 +748,12 @@ regs_sync_from_shared_memory(void)
 	regs_sync_leave_critical_section();
 }
 
+TSTATIC int
+regs_sync_enabled(void)
+{
+	return (shmem != NULL);
+}
+
 TSTATIC void
 regs_sync_debug_print_memory(void)
 {
@@ -767,7 +774,7 @@ regs_sync_debug_print_memory(void)
 	}
 	printf("| meta shmem=%p, shmem_raw=%p, seen_generation=%u\n",
 		shmem, shmem_raw, seen_generation);
-	if(shmem != NULL)
+	if(regs_sync_enabled())
 	{
 		printf("| shmem size_backed=%d, generation=%u, length_area_used=%d, "
 			"reg_metadata=\n", (int)shmem->size_backed, shmem->generation,

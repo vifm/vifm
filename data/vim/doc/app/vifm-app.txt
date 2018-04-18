@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Mar 31
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Apr 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3598,6 +3598,16 @@ values are available:
  - foldsubkeys     - fold multiple keys with common prefix;
  - marks           - include marks;
  - registers[:num] - include registers, at most num files (5 by default).
+
+                                               *vifm-'syncregs'*
+syncregs
+type: string
+default:
+
+Specifies identifier of group of instances that share registers between each
+other.  When several instances of vifm have this option set to identical
+value, they automatically synchronize contents of their registers on
+operations which use them.
 
                                                *vifm-'syscalls'*
 syscalls

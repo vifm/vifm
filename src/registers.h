@@ -105,7 +105,10 @@ void regs_sync_to_shared_memory(void);
 void regs_sync_from_shared_memory(void);
 
 TSTATIC_DEFS(
-	/* Dumpts debug information about shared memory to stdout. */
+	/* Checks whether register sharing is currently enabled.  Returns non-zero if
+	 * so, otherwise zero is returned. */
+	int regs_sync_enabled(void);
+	/* Dumps debug information about shared memory to stdout. */
 	void regs_sync_debug_print_memory(void);
 	/* Enables test mode of shared memory. */
 	void regs_sync_enable_test_mode(void);

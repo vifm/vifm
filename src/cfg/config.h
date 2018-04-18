@@ -315,8 +315,6 @@ typedef struct config_t
 	/* Control over automatic cursor positioning. */
 	int auto_ch_pos; /* Weird option that drops positions from histories. */
 	int ch_pos_on;   /* List of cases when historical cursor position is used. */
-
-	char* syncregs;
 }
 config_t;
 

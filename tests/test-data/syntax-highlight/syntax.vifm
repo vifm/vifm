@@ -405,6 +405,7 @@ hi TabLineSel
 " "showtabline" and "stal" should be highlighted as 'option'
 " "histcursor" should be highlighted as 'option'
 " "*quickview" should be highlighted as 'option'
+" "syncregs" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -416,6 +417,7 @@ set tabscope
 set showtabline stal
 set histcursor
 set quickview noquickview invquickview
+set syncregs
 
 " "term" should be highlighted as a function()
 echo term('cmd')
