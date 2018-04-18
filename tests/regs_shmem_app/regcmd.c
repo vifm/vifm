@@ -21,12 +21,7 @@ main(int argc, char *argv[])
 
 	if(argc >= 2)
 	{
-		/* not invoked directly during test run phase */
-		if(strcmp(argv[1], "-s") == 0)
-		{
-			return EXIT_SUCCESS;
-		}
-		else if(strcmp(argv[1], "--help") == 0)
+		if(strcmp(argv[1], "--help") == 0)
 		{
 			printf("USAGE %s NAME\n", argv[0]);
 			return EXIT_SUCCESS;

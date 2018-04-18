@@ -71,8 +71,10 @@ suites += ioeta ionotif iop ior
 # ui
 suites += colmgr column_view viewcolumns_parser
 # everything else
-suites += bmarks env escape fileops filetype filter fuzz misc undo utils
-suites += regs_shmem_app
+suites += bmarks env escape fileops filetype filter misc undo utils
+
+# these are built, but not automatically executed
+apps := fuzz regs_shmem_app
 
 # obtain list of sources that are being tested
 vifm_src := ./ cfg/ compat/ engine/ int/ io/ io/private/ modes/dialogs/ menus/
@@ -193,7 +195,7 @@ ifdef DEBUG
     endif
 endif
 
-.PHONY: check build clean $(suites)
+.PHONY: check build clean $(suites) $(apps)
 
 # check and build targets are defined mostly in suite_template
 check: build
@@ -317,14 +319,15 @@ endif
 
 build: $$($1.bin)
 
-ifneq ($1,fuzz)
+# don't add apps to the list of things to run automatically
+ifeq (,$(filter $1,$(apps)))
 check: $1
 endif
 
 endef
 
-# walk throw list of suites and instantiate template for each one
-$(foreach suite, $(suites), $(eval $(call suite_template,$(suite))))
+# walk throw list of suites+apps and instantiate template for each one
+$(foreach suite, $(suites) $(apps), $(eval $(call suite_template,$(suite))))
 
 # extra dependencies between test fixtures
 misc: | $(regs_shmem_app.bin)
