@@ -1001,7 +1001,21 @@ handle_prompt_response(const char fname[], const char caused_by[],
 		put_confirm.merge_all = 1;
 		put_continue(1);
 	}
-	else if(response != NC_C_c)
+	else if(response == NC_C_c)
+	{
+		/* After user cancels at conflict resolution, put the cursor at the last
+		 * file that caused the conflict. */
+		char dst_path[PATH_MAX + 1];
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, fname);
+
+		dir_entry_t *const entry = entry_from_path(put_confirm.view,
+				put_confirm.view->dir_entry, put_confirm.view->list_rows, dst_path);
+		if(entry != NULL)
+		{
+			fpos_set_pos(put_confirm.view, entry_to_pos(put_confirm.view, entry));
+		}
+	}
+	else
 	{
 		prompt_what_to_do(fname, caused_by);
 	}

@@ -494,5 +494,29 @@ TEST(putting_single_file_moves_cursor_to_that_file)
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
+TEST(putting_file_with_conflict_moves_cursor_on_aborting)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_file(SANDBOX_PATH "/a");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	fops_init(&line_prompt, &options_prompt_abort);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+	assert_success(unlink(SANDBOX_PATH "/a"));
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
