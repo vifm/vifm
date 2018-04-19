@@ -468,21 +468,29 @@ put_files_i(view_t *view, int start)
 		++put_confirm.index;
 	}
 
-	if(put_confirm.processed == 1)
+	if(put_confirm.processed != 0)
 	{
 		populate_dir_list(view, 1);
 		ui_view_schedule_redraw(view);
 
 		int i;
+		int new_pos = -1;
 		for(i = 0; i < put_confirm.put.nitems; ++i)
 		{
 			dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
 					view->list_rows, put_confirm.put.items[i]);
 			if(entry != NULL)
 			{
-				fpos_set_pos(view, entry_to_pos(view, entry));
-				break;
+				const int pos = entry_to_pos(view, entry);
+				if(new_pos == -1 || pos < new_pos)
+				{
+					new_pos = pos;
+				}
 			}
+		}
+		if(new_pos != -1)
+		{
+			fpos_set_pos(view, new_pos);
 		}
 	}
 	else

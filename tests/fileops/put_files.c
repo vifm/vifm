@@ -494,6 +494,33 @@ TEST(putting_single_file_moves_cursor_to_that_file)
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
+TEST(putting_multiple_files_moves_cursor_to_the_first_one_in_sorted_order)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/b",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	assert_string_equal("a", get_current_file_name(&lwin));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink(SANDBOX_PATH "/b"));
+
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
 TEST(putting_file_with_conflict_moves_cursor_on_aborting)
 {
 	char path[PATH_MAX + 1];
