@@ -29,6 +29,8 @@ static char options_prompt_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
 static char options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants);
+static char options_prompt_skip_all(const char title[], const char message[],
+		const struct response_variant *variants);
 static char cm_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
 static char cm_no(const char title[], const char message[],
@@ -106,6 +108,13 @@ options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants)
 {
 	return '\x03';
+}
+
+static char
+options_prompt_skip_all(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	return 'S';
 }
 
 static char
@@ -489,8 +498,8 @@ TEST(putting_single_file_moves_cursor_to_that_file)
 	assert_int_equal(1, lwin.list_pos);
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
-	assert_success(unlink(SANDBOX_PATH "/a"));
 
+	assert_success(unlink(SANDBOX_PATH "/a"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
@@ -515,9 +524,9 @@ TEST(putting_multiple_files_moves_cursor_to_the_first_one_in_sorted_order)
 	assert_string_equal("a", get_current_file_name(&lwin));
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
+
 	assert_success(unlink(SANDBOX_PATH "/a"));
 	assert_success(unlink(SANDBOX_PATH "/b"));
-
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
@@ -540,9 +549,64 @@ TEST(putting_file_with_conflict_moves_cursor_on_aborting)
 	assert_int_equal(1, lwin.list_pos);
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
-	assert_success(unlink(SANDBOX_PATH "/a"));
 
+	assert_success(unlink(SANDBOX_PATH "/a"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(putting_files_with_conflict_moves_cursor_to_the_last_conflicting_file)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_file(SANDBOX_PATH "/b");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/b",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	fops_init(&line_prompt, &options_prompt_skip_all);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	assert_string_equal("b", get_current_file_name(&lwin));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(unlink(SANDBOX_PATH "/a"));
+}
+
+TEST(putting_files_with_conflict_moves_cursor_to_the_last_renamed_file)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_file(SANDBOX_PATH "/c");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/c",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	fops_init(&line_prompt, &options_prompt_rename);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	assert_string_equal("b", get_current_file_name(&lwin));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(unlink(SANDBOX_PATH "/c"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

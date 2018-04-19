@@ -74,6 +74,9 @@
 	Drop unfinished if-else statements on leaving command-line mode.  Thanks
 	to Marcin Kurczewski (a.k.a. rr-).
 
+	Move cursor after p and P to one of files that were moved or to a cause of
+	last conflict.  Thanks to filterfalse and ranousse.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
