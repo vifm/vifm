@@ -46,7 +46,7 @@
 	filterfalse and Dmitry Frank (a.k.a. dimonomid).
 
 	Added 'quickview' option that controls visibility of quick view (:view).
-	Thanks to anonymous at Vifm Q2A site.
+	Thanks to Jochen Schweizer (a.k.a. durcheinandr).
 
 	Added fnameescape() builtin function, which can be used to escape paths on
 	construction of :commands.  Thanks to filterfalse.
@@ -60,7 +60,7 @@
 	closing the application.
 
 	More explicit documentation about leaving custom views.  Thanks to
-	Desperados.
+	tagwint.
 
 	Use historical cursor position upon startup by default when 'autochpos' is
 	on, this is now independent from "savedirs" in 'vifminfo' option.  Thanks
