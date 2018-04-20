@@ -29,6 +29,8 @@ static char options_prompt_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
 static char options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants);
+static char options_prompt_skip_all(const char title[], const char message[],
+		const struct response_variant *variants);
 static char cm_overwrite(const char title[], const char message[],
 		const struct response_variant *variants);
 static char cm_no(const char title[], const char message[],
@@ -48,14 +50,18 @@ SETUP()
 
 	regs_init();
 
+	view_setup(&lwin);
+	lwin.sort[0] = SK_BY_NAME;
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);
+	curr_view = NULL;
 
 	rename_cb = NULL;
 }
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
 	regs_reset();
 	restore_cwd(saved_cwd);
 }
@@ -102,6 +108,13 @@ options_prompt_abort(const char title[], const char message[],
 		const struct response_variant *variants)
 {
 	return '\x03';
+}
+
+static char
+options_prompt_skip_all(const char title[], const char message[],
+		const struct response_variant *variants)
+{
+	return 'S';
 }
 
 static char
@@ -211,8 +224,6 @@ TEST(put_files_copies_files_according_to_tree_structure)
 {
 	char path[PATH_MAX + 1];
 
-	view_setup(&lwin);
-
 	create_empty_dir(SANDBOX_PATH "/dir");
 
 	flist_load_tree(&lwin, lwin.curr_dir);
@@ -249,8 +260,6 @@ TEST(put_files_copies_files_according_to_tree_structure)
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
-
-	view_teardown(&lwin);
 }
 
 TEST(overwrite_request_accounts_for_target_file_rename)
@@ -470,6 +479,134 @@ double_clash_with_put(int move)
 	assert_success(remove(SANDBOX_PATH "/dir/file1"));
 	assert_success(rmdir(SANDBOX_PATH "/dir/dir"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(putting_single_file_moves_cursor_to_that_file)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(putting_multiple_files_moves_cursor_to_the_first_one_in_sorted_order)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/b",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	assert_string_equal("a", get_current_file_name(&lwin));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(putting_file_with_conflict_moves_cursor_on_aborting)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_dir(SANDBOX_PATH "/dir");
+	create_empty_file(SANDBOX_PATH "/a");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	fops_init(&line_prompt, &options_prompt_abort);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(putting_files_with_conflict_moves_cursor_to_the_last_conflicting_file)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_file(SANDBOX_PATH "/b");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/b",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	fops_init(&line_prompt, &options_prompt_skip_all);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	assert_string_equal("b", get_current_file_name(&lwin));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(unlink(SANDBOX_PATH "/a"));
+}
+
+TEST(putting_files_with_conflict_moves_cursor_to_the_last_renamed_file)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_file(SANDBOX_PATH "/c");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/c",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	fops_init(&line_prompt, &options_prompt_rename);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	assert_string_equal("b", get_current_file_name(&lwin));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(unlink(SANDBOX_PATH "/c"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

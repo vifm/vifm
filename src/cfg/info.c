@@ -598,7 +598,7 @@ update_info_file(const char filename[], int merge)
 		return;
 
 	cmds_list = list_udf();
-	while(cmds_list[++ncmds_list] != NULL);
+	ncmds_list = count_strings(cmds_list);
 
 	non_conflicting_marks = strdup(valid_marks);
 

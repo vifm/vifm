@@ -88,14 +88,23 @@ void
 make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
 		const char cwd[])
 {
+	char local_buf[buf_len];
+
 	if(is_path_absolute(base))
 	{
-		snprintf(buf, buf_len, "%s%s%s", base, (sub[0] == '\0' ? "" : "/"), sub);
+		snprintf(local_buf, buf_len, "%s%s%s", base, (sub[0] == '\0' ? "" : "/"),
+				sub);
 	}
 	else
 	{
-		snprintf(buf, buf_len, "%s/%s%s%s", cwd, base, (sub[0] == '\0' ? "" : "/"),
-				sub);
+		snprintf(local_buf, buf_len, "%s/%s%s%s", cwd, base,
+				(sub[0] == '\0' ? "" : "/"), sub);
+	}
+
+	canonicalize_path(local_buf, buf, buf_len);
+	if(!ends_with_slash(sub) && !is_root_dir(buf))
+	{
+		chosp(buf);
 	}
 }
 

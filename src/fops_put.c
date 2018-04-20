@@ -40,6 +40,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
+#include "flist_pos.h"
 #include "fops_common.h"
 #include "fops_cpmv.h"
 #include "ops.h"
@@ -70,21 +71,23 @@ static void put_continue(int force);
  * the process. */
 static struct
 {
-	reg_t *reg;        /* Register used for the operation. */
-	int *file_order;   /* Defines custom ordering of files in register. */
-	view_t *view;      /* View in which operation takes place. */
-	CopyMoveLikeOp op; /* Type of current operation. */
-	int index;         /* Index of the next file of the register to process. */
-	int processed;     /* Number of successfully processed files. */
-	int skip_all;      /* Skip all conflicting files/directories. */
-	int overwrite_all; /* Overwrite all future conflicting files/directories. */
-	int append;        /* Whether we're appending ending of a file or not. */
-	int allow_merge;   /* Allow merging of files in directories. */
-	int merge;         /* Merge conflicting directory once. */
-	int merge_all;     /* Merge all conflicting directories. */
-	ops_t *ops;        /* Currently running operation. */
-	char *dst_name;    /* Name of destination file. */
-	char *dst_dir;     /* Destination path. */
+	reg_t *reg;          /* Register used for the operation. */
+	int *file_order;     /* Defines custom ordering of files in register. */
+	view_t *view;        /* View in which operation takes place. */
+	CopyMoveLikeOp op;   /* Type of current operation. */
+	int index;           /* Index of the next file of the register to process. */
+	int processed;       /* Number of successfully processed files. */
+	int skip_all;        /* Skip all conflicting files/directories. */
+	int overwrite_all;   /* Overwrite all future conflicting files/directories. */
+	int append;          /* Whether we're appending ending of a file or not. */
+	int allow_merge;     /* Allow merging of files in directories. */
+	int merge;           /* Merge conflicting directory once. */
+	int merge_all;       /* Merge all conflicting directories. */
+	ops_t *ops;          /* Currently running operation. */
+	char *dst_name;      /* Name of destination file. */
+	char *dst_dir;       /* Destination path. */
+	strlist_t put;       /* List of files that were successfully put. */
+	char *last_conflict; /* Path to the file of the last conflict. */
 }
 put_confirm;
 
@@ -341,6 +344,8 @@ reset_put_confirm(CopyMoveLikeOp main_op, const char descr[],
 	free(put_confirm.dst_name);
 	free(put_confirm.dst_dir);
 	free(put_confirm.file_order);
+	free_string_array(put_confirm.put.items, put_confirm.put.nitems);
+	free(put_confirm.last_conflict);
 
 	memset(&put_confirm, 0, sizeof(put_confirm));
 
@@ -460,20 +465,57 @@ put_files_i(view_t *view, int start)
 		}
 		else if(put_result < 0)
 		{
-			ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
-					(put_confirm.processed == 1) ? "" : "s",
-					fops_get_cancellation_suffix());
-			return 1;
+			break;
 		}
 		++put_confirm.index;
+	}
+
+	if(put_confirm.processed != 0)
+	{
+		populate_dir_list(view, 1);
+		ui_view_schedule_redraw(view);
+
+		if(put_confirm.last_conflict != NULL)
+		{
+			dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
+					view->list_rows, put_confirm.last_conflict);
+			if(entry != NULL)
+			{
+				fpos_set_pos(view, entry_to_pos(view, entry));
+			}
+		}
+		else
+		{
+			int i;
+			int new_pos = -1;
+			for(i = 0; i < put_confirm.put.nitems; ++i)
+			{
+				dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
+						view->list_rows, put_confirm.put.items[i]);
+				if(entry != NULL)
+				{
+					const int pos = entry_to_pos(view, entry);
+					if(new_pos == -1 || pos < new_pos)
+					{
+						new_pos = pos;
+					}
+				}
+			}
+			if(new_pos != -1)
+			{
+				fpos_set_pos(view, new_pos);
+			}
+		}
+	}
+	else
+	{
+		ui_view_schedule_reload(view);
 	}
 
 	regs_pack(put_confirm.reg->name);
 
 	ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
 			(put_confirm.processed == 1) ? "" : "s", fops_get_cancellation_suffix());
-
-	ui_view_schedule_reload(put_confirm.view);
 
 	return 1;
 }
@@ -706,6 +748,11 @@ put_next(int force)
 					&put_confirm.reg->files[put_confirm.file_order[put_confirm.index]],
 					NULL);
 		}
+
+		char dst_path[PATH_MAX + 1];
+		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dst_name);
+		put_confirm.put.nitems = add_to_string_array(&put_confirm.put.items,
+				put_confirm.put.nitems, 1, dst_path);
 	}
 
 	return 0;
@@ -938,6 +985,12 @@ static void
 handle_prompt_response(const char fname[], const char caused_by[],
 		char response)
 {
+	char dst_path[PATH_MAX + 1];
+	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, fname);
+
+	/* Record last conflict to position cursor at it later. */
+	update_string(&put_confirm.last_conflict, dst_path);
+
 	if(response == '\r' || response == 'r')
 	{
 		prompt_dst_name(fname);
@@ -976,7 +1029,18 @@ handle_prompt_response(const char fname[], const char caused_by[],
 		put_confirm.merge_all = 1;
 		put_continue(1);
 	}
-	else if(response != NC_C_c)
+	else if(response == NC_C_c)
+	{
+		/* After user cancels at conflict resolution, put the cursor at the last
+		 * file that caused the conflict. */
+		dir_entry_t *const entry = entry_from_path(put_confirm.view,
+				put_confirm.view->dir_entry, put_confirm.view->list_rows, dst_path);
+		if(entry != NULL)
+		{
+			fpos_set_pos(put_confirm.view, entry_to_pos(put_confirm.view, entry));
+		}
+	}
+	else
 	{
 		prompt_what_to_do(fname, caused_by);
 	}
@@ -1000,6 +1064,11 @@ prompt_dst_name_cb(const char dst_name[])
 	{
 		return;
 	}
+
+	/* Record new destination path. */
+	char dst_path[PATH_MAX + 1];
+	snprintf(dst_path, sizeof(dst_path), "%s/%s", put_confirm.dst_dir, dst_name);
+	update_string(&put_confirm.last_conflict, dst_path);
 
 	if(replace_string(&put_confirm.dst_name, dst_name) != 0)
 	{
