@@ -49,6 +49,7 @@
 #include "macros.h"
 #include "path.h"
 #include "str.h"
+#include "test_helpers.h"
 #include "utf8.h"
 
 #define PE_HDR_SIGNATURE 0x00004550U
@@ -58,7 +59,7 @@
 
 static const char PATHEXT_EXT_DEF[] = ".bat;.exe;.com";
 
-static int should_wait_for_program(const char cmd[]);
+TSTATIC int should_wait_for_program(const char cmd[]);
 static DWORD handle_process(const char cmd[], HANDLE proc, int *got_exit_code);
 static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
@@ -255,13 +256,14 @@ handle_process(const char cmd[], HANDLE proc, int *got_exit_code)
 /* Checks whether execution should be paused until command is finished.  Returns
  * non-zero when such synchronization is required, otherwise zero is
  * returned. */
-static int
+TSTATIC int
 should_wait_for_program(const char cmd[])
 {
 	char name[NAME_MAX + 1];
 	char path[PATH_MAX + 1];
 
 	(void)extract_cmd_name(cmd, 0, sizeof(name), name);
+	system_to_internal_slashes(name);
 
 	if(get_cmd_path(name, sizeof(path), path) == 0)
 	{

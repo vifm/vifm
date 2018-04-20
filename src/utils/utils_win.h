@@ -28,6 +28,7 @@
 #include <wchar.h> /* wchar_t */
 
 #include "macros.h"
+#include "test_helpers.h"
 
 #ifndef WEXITSTATUS
 #define WEXITSTATUS(a) (a)
@@ -81,6 +82,10 @@ int win_cancel_process(DWORD pid, HANDLE hprocess);
 
 /* Converts FILETIME to time_t.  Returns converted time. */
 time_t win_to_unix_time(FILETIME ft);
+
+TSTATIC_DEFS(
+	int should_wait_for_program(const char cmd[]);
+)
 
 #endif /* VIFM__UTILS__UTILS_WIN_H__ */
 
