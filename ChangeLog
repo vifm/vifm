@@ -141,6 +141,10 @@
 	output since previous release (e.g. `!read i%q` would wait for input).
 	Also close it the same way on Windows too.
 
+	Fixed graphical applications on Windows not being detected as such, which
+	caused vifm to wait until they finish running.  Was broken since 0.9.
+	Thanks to r0ck.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
