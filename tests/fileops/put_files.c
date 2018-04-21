@@ -609,5 +609,30 @@ TEST(putting_files_with_conflict_moves_cursor_to_the_last_renamed_file)
 	assert_success(unlink(SANDBOX_PATH "/c"));
 }
 
+TEST(cursor_is_moved_even_if_no_file_was_processed)
+{
+	char path[PATH_MAX + 1];
+
+	create_empty_file(SANDBOX_PATH "/a");
+	create_empty_file(SANDBOX_PATH "/b");
+
+	load_dir_list(&lwin, 0);
+
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/b",
+			saved_cwd);
+	assert_success(regs_append('a', path));
+
+	lwin.list_pos = 0;
+	fops_init(&line_prompt, &options_prompt_skip_all);
+	(void)fops_put(&lwin, -1, 'a', 0);
+	assert_int_equal(1, lwin.list_pos);
+	assert_string_equal("b", get_current_file_name(&lwin));
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(unlink(SANDBOX_PATH "/a"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

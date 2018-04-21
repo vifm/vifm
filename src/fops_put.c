@@ -483,7 +483,7 @@ put_files_i(view_t *view, int start)
 static void
 update_cursor_position(view_t *view)
 {
-	if(put_confirm.processed == 0)
+	if(put_confirm.last_conflict == NULL && put_confirm.put.nitems == 0)
 	{
 		// Apparently, nothing has changed.
 		return;
