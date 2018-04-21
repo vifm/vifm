@@ -77,6 +77,10 @@
 	Move cursor after p and P to one of files that were moved or to a cause of
 	last conflict.  Thanks to filterfalse and ranousse.
 
+	Less strict parsing of output of external command by :[un]select commands.
+	Similar to %u/%U and menus allow <file>[:[<line>:[<col>:]] <description>]
+	format.  Thanks to j-xella.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

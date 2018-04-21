@@ -34,6 +34,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/trie.h"
+#include "utils/utils.h"
 #include "filelist.h"
 #include "flist_pos.h"
 #include "running.h"
@@ -280,10 +281,12 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	selection_trie = trie_create();
 	for(i = 0; i < nfiles; ++i)
 	{
-		char canonic_path[PATH_MAX + 1];
-		to_canonic_path(files[i], flist_get_dir(view), canonic_path,
-				sizeof(canonic_path));
-		(void)trie_put(selection_trie, canonic_path);
+		char *const path = parse_line_for_path(files[i], flist_get_dir(view));
+		if(path != NULL)
+		{
+			(void)trie_put(selection_trie, path);
+			free(path);
+		}
 	}
 	free_string_array(files, nfiles);
 
