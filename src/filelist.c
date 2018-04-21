@@ -3495,11 +3495,7 @@ flist_custom_set(view_t *view, const char title[], const char path[],
 void
 flist_custom_add_spec(view_t *view, const char line[])
 {
-	int line_num;
-	/* Skip empty lines. */
-	char *const path = (skip_whitespace(line)[0] == '\0')
-	                 ? NULL
-	                 : parse_file_spec(line, &line_num, flist_get_dir(view));
+	char *const path = parse_line_for_path(line, flist_get_dir(view));
 	if(path != NULL)
 	{
 		flist_custom_add(view, path);
