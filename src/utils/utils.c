@@ -616,6 +616,16 @@ def_count(int count)
 }
 
 char *
+parse_line_for_path(const char line[], const char cwd[])
+{
+	int line_num;
+	/* Skip empty lines. */
+	return (skip_whitespace(line)[0] == '\0')
+	     ? NULL
+	     : parse_file_spec(line, &line_num, cwd);
+}
+
+char *
 parse_file_spec(const char spec[], int *line_num, const char cwd[])
 {
 	char *path_buf;

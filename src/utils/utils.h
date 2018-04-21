@@ -151,6 +151,11 @@ int def_count(int count);
  * non-zero if it's likely, otherwise zero is returned. */
 int is_graphical_viewer(const char viewer[]);
 
+/* Checks line for path in it.  Ignores empty lines and attempts to parse it as
+ * location line (path followed by a colon and optional line and column
+ * numbers).  Returns canonicalized path as a newly allocated string or NULL. */
+char * parse_line_for_path(const char line[], const char cwd[]);
+
 /* Extracts path and line number from the spec (default line number is 1).
  * Returns path in as newly allocated string and sets *line_num to line number,
  * otherwise NULL is returned. */

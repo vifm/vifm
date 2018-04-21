@@ -16,13 +16,6 @@
 
 static void add_some_files_to_view(view_t *view);
 
-static char cwd[PATH_MAX + 1];
-
-SETUP_ONCE()
-{
-	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-}
-
 SETUP()
 {
 	view_setup(&lwin);
@@ -42,6 +35,14 @@ SETUP()
 	init_commands();
 
 	cfg_resize_histories(10);
+
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+
+	create_file(SANDBOX_PATH "/a.c");
+	create_file(SANDBOX_PATH "/b.cc");
+	create_file(SANDBOX_PATH "/c.c");
 }
 
 TEARDOWN()
@@ -53,6 +54,10 @@ TEARDOWN()
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
+
+	assert_success(unlink(SANDBOX_PATH "/a.c"));
+	assert_success(unlink(SANDBOX_PATH "/b.cc"));
+	assert_success(unlink(SANDBOX_PATH "/c.c"));
 }
 
 TEST(select_fails_for_wrong_pattern)
@@ -258,9 +263,6 @@ TEST(select_and_unselect_use_last_pattern)
 
 TEST(select_and_unselect_accept_external_command)
 {
-	strcpy(lwin.curr_dir, cwd);
-	assert_success(chdir(cwd));
-
 	add_some_files_to_view(&lwin);
 
 	assert_success(exec_commands("select !echo a.c", &lwin, CIT_COMMAND));
@@ -284,9 +286,6 @@ TEST(select_and_unselect_accept_external_command)
 
 TEST(select_expands_macros_in_external_command)
 {
-	strcpy(lwin.curr_dir, cwd);
-	assert_success(chdir(cwd));
-
 	add_some_files_to_view(&lwin);
 
 	assert_success(exec_commands("select !echo %c", &lwin, CIT_COMMAND));
@@ -298,9 +297,6 @@ TEST(select_expands_macros_in_external_command)
 
 TEST(select_and_unselect_consider_trailing_slash)
 {
-	strcpy(lwin.curr_dir, cwd);
-	assert_success(chdir(cwd));
-
 	lwin.list_rows = 4;
 	lwin.list_pos = 0;
 	lwin.dir_entry = dynarray_cextend(NULL,
@@ -382,6 +378,23 @@ TEST(symlinks_are_not_resolved_in_cwd, IF(not_windows))
 	assert_true(lwin.dir_entry[0].selected);
 
 	assert_success(remove(SANDBOX_PATH "/link"));
+}
+
+TEST(select_and_unselect_can_take_location_list_as_input)
+{
+	add_some_files_to_view(&lwin);
+
+	assert_success(exec_commands("select !echo a.c:here", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.selected_files);
+	assert_true(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
+
+	assert_success(exec_commands("unselect !echo a.c:here", &lwin, CIT_COMMAND));
+	assert_int_equal(0, lwin.selected_files);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[1].selected);
+	assert_false(lwin.dir_entry[2].selected);
 }
 
 static void
