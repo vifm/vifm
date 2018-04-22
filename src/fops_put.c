@@ -943,7 +943,7 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		enter         = { .key = '\r', .descr = "" },
 		skip          = { .key = 's', .descr = "[s]kip " },
 		skip_all      = { .key = 'S', .descr = " [S]kip all          \n" },
-		append        = { .key = 'a', .descr = "[a]ppend to the end          \n" },
+		append        = { .key = 'a', .descr = "[a]ppend the tail            \n" },
 		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
 		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
 		merge         = { .key = 'm', .descr = "[m]erge " },
