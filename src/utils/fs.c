@@ -580,9 +580,36 @@ list_sorted_files(const char path[], int *len)
 int
 is_regular_file(const char path[])
 {
+	char resolved_link[PATH_MAX + 1];
+	if(is_symlink(path))
+	{
+		char *const symlink_base = strdup(path);
+
+		if(!is_root_dir(symlink_base))
+		{
+			remove_last_path_component(symlink_base);
+		}
+
+		if(get_link_target_abs(path, symlink_base, resolved_link,
+					sizeof(resolved_link)) != 0)
+		{
+			free(symlink_base);
+			return 0;
+		}
+		free(symlink_base);
+
+		path = resolved_link;
+	}
+
+	return is_regular_file_noderef(path);
+}
+
+int
+is_regular_file_noderef(const char path[])
+{
 #ifndef _WIN32
 	struct stat s;
-	return os_stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
+	return os_lstat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
 #else
 	const DWORD attrs = win_get_file_attrs(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
@@ -870,8 +897,9 @@ is_directory(const char path[], int dereference_links)
 
 #else
 
-/* Obtains attributes of a file.  Skips check for unmounted disks.  Returns the
- * attributes, which is INVALID_FILE_ATTRIBUTES on error. */
+/* Obtains attributes of a file.  Skips check for unmounted disks.  Doesn't
+ * dereference symbolic links.  Returns the attributes, which is
+ * INVALID_FILE_ATTRIBUTES on error. */
 static DWORD
 win_get_file_attrs(const char path[])
 {

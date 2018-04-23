@@ -959,7 +959,8 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	responses[i++] = enter;
 	responses[i++] = skip;
 	responses[i++] = skip_all;
-	if(cfg.use_system_calls && !is_dir(fname) && !is_dir(caused_by))
+	if(cfg.use_system_calls && is_regular_file_noderef(fname) &&
+			is_regular_file_noderef(caused_by))
 	{
 		responses[i++] = append;
 	}
