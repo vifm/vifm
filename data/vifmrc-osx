@@ -400,3 +400,12 @@ nnoremap <f8> :delete<cr>
 " Block particular shortcut
 "
 " nnoremap <left> <nop>
+
+" Export IPC name of current instance as environment variable and use it to
+" communicate with the instance later.
+"
+" It can be used in some shell script that gets run from inside vifm, for
+" example, like this:
+"     vifm --server-name "$VIFM_SERVER_NAME" --remote +"cd '$PWD'"
+"
+" let $VIFM_SERVER_NAME = v:servername
