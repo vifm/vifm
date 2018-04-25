@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 24 April, 2018)
+" Sample configuration file for vifm on OSX (last updated: 25 April, 2018)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -391,11 +391,11 @@ nnoremap <f8> :delete<cr>
 
 " Use ag (the silver searcher) instead of grep
 "
-" set grepprg=ag\ --line-numbers\ %i\ %a\ %s
+" set grepprg='ag --line-numbers %i %a %s'
 
 " Add additional place to look for executables
 "
-" let $PATH=$HOME.'/bin/fuse:'.$PATH
+" let $PATH = $HOME.'/bin/fuse:'.$PATH
 
 " Block particular shortcut
 "
