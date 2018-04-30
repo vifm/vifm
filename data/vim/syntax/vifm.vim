@@ -355,7 +355,7 @@ syntax region vifmLetC
 		\ start='\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$\||'
 		\ keepend
 		\ contains=vifmLetCommand,vifmEnvVar,vifmString,vifmStringInExpr,vifmComment
-		\,vifmInlineComment,vifmNotComment
+		\,vifmInlineComment,vifmNotComment,vifmBuiltinFunction
 syntax region vifmUnlet
 		\ start='^\(\s\|:\)*\<unl\%[et]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
