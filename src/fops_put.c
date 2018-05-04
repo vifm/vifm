@@ -57,6 +57,7 @@ static OPS cmlo_to_op(CopyMoveLikeOp op);
 static int path_depth_sort(const void *one, const void *two);
 static int is_dir_clash(const char src_path[], const char dst_dir[]);
 static int put_files_i(view_t *view, int start);
+static void update_cursor_position(view_t *view);
 static int put_next(int force);
 TSTATIC int merge_dirs(const char src[], const char dst[], ops_t *ops);
 static int handle_clashing(int move, const char src[], const char dst[]);
@@ -470,54 +471,57 @@ put_files_i(view_t *view, int start)
 		++put_confirm.index;
 	}
 
-	if(put_confirm.processed != 0)
-	{
-		populate_dir_list(view, 1);
-		ui_view_schedule_redraw(view);
-
-		if(put_confirm.last_conflict != NULL)
-		{
-			dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
-					view->list_rows, put_confirm.last_conflict);
-			if(entry != NULL)
-			{
-				fpos_set_pos(view, entry_to_pos(view, entry));
-			}
-		}
-		else
-		{
-			int i;
-			int new_pos = -1;
-			for(i = 0; i < put_confirm.put.nitems; ++i)
-			{
-				dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
-						view->list_rows, put_confirm.put.items[i]);
-				if(entry != NULL)
-				{
-					const int pos = entry_to_pos(view, entry);
-					if(new_pos == -1 || pos < new_pos)
-					{
-						new_pos = pos;
-					}
-				}
-			}
-			if(new_pos != -1)
-			{
-				fpos_set_pos(view, new_pos);
-			}
-		}
-	}
-	else
-	{
-		ui_view_schedule_reload(view);
-	}
-
 	regs_pack(put_confirm.reg->name);
-
+	update_cursor_position(view);
 	ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,
 			(put_confirm.processed == 1) ? "" : "s", fops_get_cancellation_suffix());
 
 	return 1;
+}
+
+/* Moves cursor to one of processed or conflicting files, if any. */
+static void
+update_cursor_position(view_t *view)
+{
+	if(put_confirm.last_conflict == NULL && put_confirm.put.nitems == 0)
+	{
+		// Apparently, nothing has changed.
+		return;
+	}
+
+	populate_dir_list(view, 1);
+	ui_view_schedule_redraw(view);
+
+	if(put_confirm.last_conflict != NULL)
+	{
+		dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
+				view->list_rows, put_confirm.last_conflict);
+		if(entry != NULL)
+		{
+			fpos_set_pos(view, entry_to_pos(view, entry));
+		}
+		return;
+	}
+
+	int i;
+	int new_pos = -1;
+	for(i = 0; i < put_confirm.put.nitems; ++i)
+	{
+		dir_entry_t *const entry = entry_from_path(view, view->dir_entry,
+				view->list_rows, put_confirm.put.items[i]);
+		if(entry != NULL)
+		{
+			const int pos = entry_to_pos(view, entry);
+			if(new_pos == -1 || pos < new_pos)
+			{
+				new_pos = pos;
+			}
+		}
+	}
+	if(new_pos != -1)
+	{
+		fpos_set_pos(view, new_pos);
+	}
 }
 
 /* The force argument enables overwriting/replacing/merging.  Returns 0 on
@@ -939,7 +943,7 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		enter         = { .key = '\r', .descr = "" },
 		skip          = { .key = 's', .descr = "[s]kip " },
 		skip_all      = { .key = 'S', .descr = " [S]kip all          \n" },
-		append        = { .key = 'a', .descr = "[a]ppend to the end          \n" },
+		append        = { .key = 'a', .descr = "[a]ppend the tail            \n" },
 		overwrite     = { .key = 'o', .descr = "[o]verwrite " },
 		overwrite_all = { .key = 'O', .descr = " [O]verwrite all\n" },
 		merge         = { .key = 'm', .descr = "[m]erge " },
@@ -955,7 +959,8 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	responses[i++] = enter;
 	responses[i++] = skip;
 	responses[i++] = skip_all;
-	if(cfg.use_system_calls && !is_dir(fname))
+	if(cfg.use_system_calls && is_regular_file_noderef(fname) &&
+			is_regular_file_noderef(caused_by))
 	{
 		responses[i++] = append;
 	}

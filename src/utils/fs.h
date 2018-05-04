@@ -136,6 +136,10 @@ char ** list_sorted_files(const char path[], int *len);
  * regular file. */
 int is_regular_file(const char path[]);
 
+/* Checks whether file path points to a regular file (not a symbolic link or
+ * anything else).  Returns non-zero if so, otherwise zero is returned. */
+int is_regular_file_noderef(const char path[]);
+
 /* Renames file specified by the src argument to the path specified by the dst
  * argument.  Overwrites destination file if it exists.  Returns non-zero on
  * error, otherwise zero is returned. */
