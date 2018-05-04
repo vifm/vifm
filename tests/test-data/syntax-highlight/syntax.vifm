@@ -431,6 +431,14 @@ echo tabpagenr('$')
 " "fnameescape" should be highlighted as a function()
 echo fnameescape('path name')
 
+" "let" should be highlighted as a :command
+" "unlet" should be highlighted as a :command
+" "term" should be highlighted as a function()
+" "$FZF_RES" should be highlighted as an environment variable
+" "'fzf 2>&0'" should be highlighted as a string literal
+command! fzf : let $FZF_RES = term('fzf 2>&0')
+            \| unlet $FZF_RES
+
 " TODO
 
 " "vifm" should NOT be highlighted as a command
