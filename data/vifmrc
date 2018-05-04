@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 21 January, 2018)
+" Sample configuration file for vifm (last updated: 25 April, 2018)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -17,9 +17,10 @@ set vicmd=vim
 
 " This makes vifm perform file operations on its own instead of relying on
 " standard utilities like `cp`.  While using `cp` and alike is a more universal
-" solution, it's also much slower and doesn't support progress measuring.
+" solution, it's also much slower when processing large amounts of files and
+" doesn't support progress measuring.
 
-" set syscalls
+set syscalls
 
 " Trash Directory
 " The default is to move files that are deleted with dd or :d to
@@ -450,12 +451,21 @@ nnoremap <f8> :delete<cr>
 
 " Use ag (the silver searcher) instead of grep
 "
-" set grepprg=ag\ --line-numbers\ %i\ %a\ %s
+" set grepprg='ag --line-numbers %i %a %s'
 
 " Add additional place to look for executables
 "
-" let $PATH=$HOME.'/bin/fuse:'.$PATH
+" let $PATH = $HOME.'/bin/fuse:'.$PATH
 
 " Block particular shortcut
 "
 " nnoremap <left> <nop>
+
+" Export IPC name of current instance as environment variable and use it to
+" communicate with the instance later.
+"
+" It can be used in some shell script that gets run from inside vifm, for
+" example, like this:
+"     vifm --server-name "$VIFM_SERVER_NAME" --remote +"cd '$PWD'"
+"
+" let $VIFM_SERVER_NAME = v:servername
