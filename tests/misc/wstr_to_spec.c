@@ -2,7 +2,6 @@
 
 #include <curses.h> /* KEY_BACKSPACE */
 
-#include <locale.h> /* setlocale() */
 #include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* free() */
 
@@ -11,18 +10,14 @@
 #include "../../src/utils/utils.h"
 #include "../../src/bracket_notation.h"
 
-static int locale_works(void);
+#include "utils.h"
 
 SETUP_ONCE()
 {
-	(void)setlocale(LC_ALL, "");
-	if(!locale_works())
-	{
-		(void)setlocale(LC_ALL, "en_US.utf8");
-	}
+	try_enable_utf8_locale();
 }
 
-TEST(c_h_is_bs_at_start_only, IF(locale_works))
+TEST(c_h_is_bs_at_start_only, IF(utf8_locale))
 {
 	char *spec;
 
@@ -35,7 +30,7 @@ TEST(c_h_is_bs_at_start_only, IF(locale_works))
 	free(spec);
 }
 
-TEST(backspace_is_bs_always, IF(locale_works))
+TEST(backspace_is_bs_always, IF(utf8_locale))
 {
 	{
 		const wchar_t key_seq[] = { K(KEY_BACKSPACE), L'\0' };
@@ -52,7 +47,7 @@ TEST(backspace_is_bs_always, IF(locale_works))
 	}
 }
 
-TEST(functional_keys_do_not_clash_with_characters, IF(locale_works))
+TEST(functional_keys_do_not_clash_with_characters, IF(utf8_locale))
 {
 	{
 		const wchar_t key_seq[] = { L'š', L'\0' };
@@ -69,14 +64,14 @@ TEST(functional_keys_do_not_clash_with_characters, IF(locale_works))
 	}
 }
 
-TEST(non_ascii_chars_are_handled_correctly, IF(locale_works))
+TEST(non_ascii_chars_are_handled_correctly, IF(utf8_locale))
 {
 	char *const spec = wstr_to_spec(L"П");
 	assert_string_equal("П", spec);
 	free(spec);
 }
 
-TEST(more_non_ascii_chars_are_handled_correctly, IF(locale_works))
+TEST(more_non_ascii_chars_are_handled_correctly, IF(utf8_locale))
 {
 	char *spec;
 
@@ -147,12 +142,6 @@ TEST(more_non_ascii_chars_are_handled_correctly, IF(locale_works))
 	spec = wstr_to_spec(L"ю");
 	assert_string_equal("ю", spec);
 	free(spec);
-}
-
-static int
-locale_works(void)
-{
-	return (vifm_wcwidth(L'丝') == 2);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

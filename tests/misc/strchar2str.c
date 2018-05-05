@@ -1,26 +1,21 @@
 #include <stic.h>
 
-#include <locale.h> /* setlocale() */
 #include <string.h>
 
 #include "../../src/cfg/config.h"
 #include "../../src/ui/escape.h"
 #include "../../src/utils/utils.h"
 
-static int locale_works(void);
+#include "utils.h"
 
 SETUP_ONCE()
 {
-	(void)setlocale(LC_ALL, "");
-	if(!locale_works())
-	{
-		(void)setlocale(LC_ALL, "en_US.utf8");
-	}
+	try_enable_utf8_locale();
 
 	cfg.tab_stop = 8;
 }
 
-TEST(chinese_character_width_is_determined_correctly, IF(locale_works))
+TEST(chinese_character_width_is_determined_correctly, IF(utf8_locale))
 {
 	size_t screen_width;
 	const char *const str = strchar2str("师从刀", 0, &screen_width);
@@ -28,7 +23,7 @@ TEST(chinese_character_width_is_determined_correctly, IF(locale_works))
 	assert_int_equal(2, screen_width);
 }
 
-TEST(cyrillic_character_width_is_determined_correctly, IF(locale_works))
+TEST(cyrillic_character_width_is_determined_correctly, IF(utf8_locale))
 {
 	size_t screen_width;
 	const char *const str = strchar2str("йклм", 0, &screen_width);
@@ -101,12 +96,6 @@ TEST(ctrl_chars_are_converted_and_have_proper_width)
 			assert_int_equal(2, screen_width);
 		}
 	}
-}
-
-static int
-locale_works(void)
-{
-	return (vifm_wcwidth(L'丝') == 2);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
