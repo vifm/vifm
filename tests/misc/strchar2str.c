@@ -98,5 +98,21 @@ TEST(ctrl_chars_are_converted_and_have_proper_width)
 	}
 }
 
+TEST(broken_escape_sequences_are_eaten)
+{
+	size_t screen_width;
+	const char *const str = strchar2str("\033[", 0, &screen_width);
+	assert_string_equal("", str);
+	assert_int_equal(0, screen_width);
+}
+
+TEST(backspace_is_eaten)
+{
+	size_t screen_width;
+	const char *const str = strchar2str("\b", 0, &screen_width);
+	assert_string_equal("", str);
+	assert_int_equal(0, screen_width);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

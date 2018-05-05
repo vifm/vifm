@@ -49,7 +49,7 @@ static char * add_highlighted_sym(const char sym[], size_t sym_width,
 		char out[]);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
-static void esc_state_update(esc_state *state, const char str[]);
+TSTATIC void esc_state_update(esc_state *state, const char str[]);
 static void esc_state_process_attr(esc_state *state, int n);
 static void esc_state_set_attr(esc_state *state, int n);
 TSTATIC const char * strchar2str(const char str[], int pos,
@@ -425,7 +425,7 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 
 /* Handles escape sequence.  Applies whole escape sequence specified by the str
  * to the state. */
-static void
+TSTATIC void
 esc_state_update(esc_state *state, const char str[])
 {
 	str++;
@@ -634,6 +634,7 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	}
 	else
 	{
+		/* XXX: is this code completely unreachable? */
 		buf[0] = str[0];
 		buf[1] = '\0';
 		*screen_width = 1;

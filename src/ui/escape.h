@@ -77,6 +77,7 @@ int esc_print_line(const char line[], WINDOW *win, int col, int row,
 void esc_state_init(esc_state *state, const col_attr_t *defaults);
 
 TSTATIC_DEFS(
+	void esc_state_update(esc_state *state, const char str[]);
 	const char * strchar2str(const char str[], int pos, size_t *screen_width);
 )
 
