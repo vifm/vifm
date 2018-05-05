@@ -534,7 +534,7 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 	if(fpos_can_move_down(curr_view))
 	{
 		curr_view->list_pos = fpos_half_scroll(curr_view, 1);
-		ui_view_schedule_redraw(curr_view);
+		redraw_current_view();
 	}
 }
 
@@ -737,7 +737,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	if(fpos_can_move_up(curr_view))
 	{
 		curr_view->list_pos = fpos_half_scroll(curr_view, 0);
-		ui_view_schedule_redraw(curr_view);
+		redraw_current_view();
 	}
 }
 

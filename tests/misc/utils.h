@@ -59,6 +59,14 @@ void copy_file(const char src[], const char dst[]);
  * returned. */
 int not_windows(void);
 
+/* Attempts to switch to UTF-8 capable locale.  Use utf8_locale() to check if
+ * successful. */
+void try_enable_utf8_locale(void);
+
+/* Whether locale is UTF-8.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int utf8_locale(void);
+
 struct matcher_t;
 
 /* Changes *matcher to have the value of the expr.  The operation is assumed to

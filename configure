@@ -8847,6 +8847,14 @@ else
 fi
 
 
+ac_fn_c_check_decl "$LINENO" "A_ITALIC" "ac_cv_have_decl_A_ITALIC" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_A_ITALIC" = xyes; then :
+
+$as_echo "#define HAVE_A_ITALIC_DECL 1" >>confdefs.h
+
+fi
+
 ac_fn_c_check_decl "$LINENO" "COLORS" "ac_cv_have_decl_COLORS" "#include <curses.h>
 "
 if test "x$ac_cv_have_decl_COLORS" = xyes; then :

@@ -18,6 +18,9 @@
 /* alloca.h header is available. */
 #undef HAVE_ALLOCA_H
 
+/* A_ITALIC attribute is available. */
+#undef HAVE_A_ITALIC_DECL
+
 /* Define to 1 if you have the declaration of `MAGIC_MIME_TYPE', and to 0 if
    you don't. */
 #undef HAVE_DECL_MAGIC_MIME_TYPE

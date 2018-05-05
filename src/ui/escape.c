@@ -49,7 +49,7 @@ static char * add_highlighted_sym(const char sym[], size_t sym_width,
 		char out[]);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
-static void esc_state_update(esc_state *state, const char str[]);
+TSTATIC void esc_state_update(esc_state *state, const char str[]);
 static void esc_state_process_attr(esc_state *state, int n);
 static void esc_state_set_attr(esc_state *state, int n);
 TSTATIC const char * strchar2str(const char str[], int pos,
@@ -425,7 +425,7 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 
 /* Handles escape sequence.  Applies whole escape sequence specified by the str
  * to the state. */
-static void
+TSTATIC void
 esc_state_update(esc_state *state, const char str[])
 {
 	str++;
@@ -497,6 +497,13 @@ esc_state_process_attr(esc_state *state, int n)
 static void
 esc_state_set_attr(esc_state *state, int n)
 {
+#ifdef HAVE_A_ITALIC_DECL
+	const int italic_attr = A_ITALIC;
+#else
+	/* If A_ITALIC is missing (it's an extension), use A_REVERSE instead. */
+	const int italic_attr = A_REVERSE;
+#endif
+
 	switch(n)
 	{
 		case 0:
@@ -510,8 +517,8 @@ esc_state_set_attr(esc_state *state, int n)
 		case 2:
 			state->attrs |= A_DIM;
 			break;
-		case 3: case 7:
-			state->attrs |= A_REVERSE;
+		case 3:
+			state->attrs |= italic_attr;
 			break;
 		case 4:
 			state->attrs |= A_UNDERLINE;
@@ -519,8 +526,14 @@ esc_state_set_attr(esc_state *state, int n)
 		case 5: case 6:
 			state->attrs |= A_BLINK;
 			break;
+		case 7:
+			state->attrs |= A_REVERSE;
+			break;
 		case 22:
 			state->attrs &= ~(A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM);
+			break;
+		case 23:
+			state->attrs &= ~italic_attr;
 			break;
 		case 24:
 			state->attrs &= ~A_UNDERLINE;
@@ -621,6 +634,7 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	}
 	else
 	{
+		/* XXX: is this code completely unreachable? */
 		buf[0] = str[0];
 		buf[1] = '\0';
 		*screen_width = 1;

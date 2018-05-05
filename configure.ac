@@ -464,6 +464,7 @@ LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 dnl Check for curses.h header and all its required elements.
 AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])
+AC_CHECK_DECL([A_ITALIC], [AC_DEFINE([HAVE_A_ITALIC_DECL], [1], [A_ITALIC attribute is available.])], [], [[#include <curses.h>]])
 AC_CHECK_DECL([COLORS], [], [AC_MSG_ERROR([COLORS not found in curses.h])], [[#include <curses.h>]])
 AC_CHECK_DECL([COLOR_PAIR], [], [AC_MSG_ERROR([COLOR_PAIR not found in curses.h])], [[#include <curses.h>]])
 AC_CHECK_DECL([TABSIZE], [], [AC_MSG_ERROR([TABSIZE not found in curses.h])], [[#include <curses.h>]])

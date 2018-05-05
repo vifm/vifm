@@ -3,6 +3,7 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* access() usleep() */
 
+#include <locale.h> /* LC_ALL setlocale() */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* FILE fclose() fopen() fread() */
 #include <stdlib.h> /* free() */
@@ -16,6 +17,7 @@
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/utils.h"
 #include "../../src/background.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
@@ -243,6 +245,22 @@ not_windows(void)
 #else
 	return 1;
 #endif
+}
+
+void
+try_enable_utf8_locale(void)
+{
+	(void)setlocale(LC_ALL, "");
+	if(!utf8_locale())
+	{
+		(void)setlocale(LC_ALL, "en_US.utf8");
+	}
+}
+
+int
+utf8_locale(void)
+{
+	return (vifm_wcwidth(L'丝') == 2);
 }
 
 int
