@@ -497,6 +497,13 @@ esc_state_process_attr(esc_state *state, int n)
 static void
 esc_state_set_attr(esc_state *state, int n)
 {
+#ifdef HAVE_A_ITALIC_DECL
+	const int italic_attr = A_ITALIC;
+#else
+	/* If A_ITALIC is missing (it's an extension), use A_REVERSE instead. */
+	const int italic_attr = A_REVERSE;
+#endif
+
 	switch(n)
 	{
 		case 0:
@@ -510,8 +517,8 @@ esc_state_set_attr(esc_state *state, int n)
 		case 2:
 			state->attrs |= A_DIM;
 			break;
-		case 3: case 7:
-			state->attrs |= A_REVERSE;
+		case 3:
+			state->attrs |= italic_attr;
 			break;
 		case 4:
 			state->attrs |= A_UNDERLINE;
@@ -519,8 +526,14 @@ esc_state_set_attr(esc_state *state, int n)
 		case 5: case 6:
 			state->attrs |= A_BLINK;
 			break;
+		case 7:
+			state->attrs |= A_REVERSE;
+			break;
 		case 22:
 			state->attrs &= ~(A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM);
+			break;
+		case 23:
+			state->attrs &= ~italic_attr;
 			break;
 		case 24:
 			state->attrs &= ~A_UNDERLINE;

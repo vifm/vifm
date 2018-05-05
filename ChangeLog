@@ -81,6 +81,10 @@
 	Similar to %u/%U and menus allow <file>[:[<line>:[<col>:]] <description>]
 	format.  Thanks to j-xella.
 
+	Support italics in quickview/view mode when curses implementation provides
+	corresponding extension.  PDCurses doesn't implement it on Windows.
+	Fallback is to use "reversed" attribute.  Thanks to GeorgeHJ.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
