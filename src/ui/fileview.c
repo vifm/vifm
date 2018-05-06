@@ -844,6 +844,15 @@ prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 
 	mix_in_file_hi(view, entry, line_color, &col);
 
+	/* If two files on the same line in side-by-side comparison have different
+	 * ids, that's a mismatch. */
+	view_t *const other = (view == &lwin) ? &rwin : &lwin;
+	if(view->custom.type == CV_DIFF &&
+			other->dir_entry[entry_to_pos(view, entry)].id != entry->id)
+	{
+		cs_mix_colors(&col, &cs->color[MISMATCH_COLOR]);
+	}
+
 	if(entry->selected)
 	{
 		cs_mix_colors(&col, &cs->color[SELECTED_COLOR]);

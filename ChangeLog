@@ -153,6 +153,9 @@
 	caused vifm to wait until they finish running.  Was broken since 0.9.
 	Thanks to r0ck.
 
+	Fixed cursor marker in inactive window not being highlighted according to
+	CmpMismatch highlight group in :compare mode.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
