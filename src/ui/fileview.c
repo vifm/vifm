@@ -109,6 +109,8 @@ static void highlight_search(view_t *view, dir_entry_t *entry,
 		int line, int col, int line_attrs);
 static int prepare_col_color(const view_t *view, int primary,
 		const column_data_t *cdt);
+static void mix_in_common_colors(col_attr_t *col, const view_t *view,
+		dir_entry_t *entry, int line_color);
 static void mix_in_file_hi(const view_t *view, dir_entry_t *entry, int type_hi,
 		col_attr_t *col);
 static void mix_in_file_name_hi(const view_t *view, dir_entry_t *entry,
@@ -842,12 +844,7 @@ prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 	const col_scheme_t *cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
 
-	mix_in_file_hi(view, entry, line_color, &col);
-
-	if(entry->selected)
-	{
-		cs_mix_colors(&col, &cs->color[SELECTED_COLOR]);
-	}
+	mix_in_common_colors(&col, view, entry, line_color);
 
 	if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
 	{
@@ -1228,7 +1225,6 @@ highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
 static int
 prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 {
-	view_t *const other = (view == &lwin) ? &rwin : &lwin;
 	const col_scheme_t *const cs = ui_view_get_cs(view);
 	col_attr_t col = cs->color[WIN_COLOR];
 
@@ -1239,23 +1235,9 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 
 	/* File-specific highlight affects only primary field for non-current lines
 	 * and whole line for the current line. */
-	if(primary || cdt->line_pos == cdt->current_pos)
-	{
-		mix_in_file_hi(view, cdt->entry, cdt->line_hi_group, &col);
-	}
-
-	/* If two files on the same line in side-by-side comparison have different
-	 * ids, that's a mismatch. */
-	if(view->custom.type == CV_DIFF &&
-			other->dir_entry[entry_to_pos(view, cdt->entry)].id != cdt->entry->id)
-	{
-		cs_mix_colors(&col, &cs->color[MISMATCH_COLOR]);
-	}
-
-	if(cdt->entry->selected)
-	{
-		cs_mix_colors(&col, &cs->color[SELECTED_COLOR]);
-	}
+	const int with_line_hi = (primary || cdt->line_pos == cdt->current_pos);
+	const int line_color = with_line_hi ? cdt->line_hi_group : -1;
+	mix_in_common_colors(&col, view, cdt->entry, line_color);
 
 	if(cdt->line_pos == cdt->current_pos)
 	{
@@ -1270,6 +1252,33 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 	}
 
 	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+}
+
+/* Mixes in colors of current entry, mismatch and selection. */
+static void
+mix_in_common_colors(col_attr_t *col, const view_t *view, dir_entry_t *entry,
+		int line_color)
+{
+	if(line_color >= 0)
+	{
+		mix_in_file_hi(view, entry, line_color, col);
+	}
+
+	const col_scheme_t *const cs = ui_view_get_cs(view);
+	view_t *const other = (view == &lwin) ? &rwin : &lwin;
+
+	/* If two files on the same line in side-by-side comparison have different
+	 * ids, that's a mismatch. */
+	if(view->custom.type == CV_DIFF &&
+			other->dir_entry[entry_to_pos(view, entry)].id != entry->id)
+	{
+		cs_mix_colors(col, &cs->color[MISMATCH_COLOR]);
+	}
+
+	if(entry->selected)
+	{
+		cs_mix_colors(col, &cs->color[SELECTED_COLOR]);
+	}
 }
 
 /* Applies file name and file type specific highlights for the entry. */
