@@ -85,6 +85,9 @@
 	corresponding extension.  PDCurses doesn't implement it on Windows.
 	Fallback is to use "reversed" attribute.  Thanks to GeorgeHJ.
 
+	Escape "=" at the beginning of paths (has special meaning in zsh).  Thanks
+	to agguser.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

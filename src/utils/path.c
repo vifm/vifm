@@ -410,6 +410,7 @@ shell_like_escape(const char string[], int type)
 
 			/* Escape the following characters only at the beginning of the line. */
 			case '~':
+			case '=': /* Command-path expansion in zsh. */
 				if(dup == ret)
 					*dup++ = '\\';
 				break;
