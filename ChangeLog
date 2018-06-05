@@ -88,6 +88,8 @@
 	Escape "=" at the beginning of paths (has special meaning in zsh).  Thanks
 	to agguser.
 
+	More accurate error message on handling non directories passed to :cd.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
