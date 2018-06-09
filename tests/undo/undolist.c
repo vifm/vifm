@@ -38,7 +38,7 @@ TEST(detail)
 
 TEST(detail_after_reset)
 {
-	char ** list;
+	char **list;
 
 	reset_undo_list();
 
@@ -59,8 +59,8 @@ TEST(detail_smaller_limit)
 {
 	static int undo_levels = 2;
 
-	char ** list;
-	char ** p;
+	char **list;
+	char **p;
 
 	init_undo_list_for_tests(exec_func, &undo_levels);
 
@@ -85,8 +85,8 @@ TEST(detail_smaller_limit)
 
 TEST(nondetail)
 {
-	char ** list;
-	char ** p;
+	char **list;
+	char **p;
 
 	list = undolist(0);
 
@@ -105,7 +105,7 @@ TEST(nondetail)
 
 TEST(nondetail_after_reset)
 {
-	char ** list;
+	char **list;
 
 	reset_undo_list();
 
@@ -120,8 +120,8 @@ TEST(nondetail_smaller_limit)
 {
 	static int undo_levels = 2;
 
-	char ** list;
-	char ** p;
+	char **list;
+	char **p;
 
 	init_undo_list_for_tests(exec_func, &undo_levels);
 
