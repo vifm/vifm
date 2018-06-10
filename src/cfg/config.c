@@ -109,7 +109,7 @@ cfg_init(void)
 	cfg.history_len = 15;
 
 	cfg.auto_execute = 0;
-	cfg.time_format = strdup(" %m/%d %H:%M");
+	cfg.time_format = strdup("%m/%d %H:%M");
 	cfg.wrap_quick_view = 1;
 	cfg.undo_levels = 100;
 	cfg.sort_numbers = 0;

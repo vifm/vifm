@@ -1076,7 +1076,7 @@ to_endpoint(int i, char buffer[])
 static void
 init_timefmt(optval_t *val)
 {
-	val->str_val = cfg.time_format + 1;
+	val->str_val = cfg.time_format;
 }
 
 static void
@@ -3197,9 +3197,7 @@ static void
 timefmt_handler(OPT_OP op, optval_t val)
 {
 	free(cfg.time_format);
-	cfg.time_format = malloc(1 + strlen(val.str_val) + 1);
-	strcpy(cfg.time_format, " ");
-	strcat(cfg.time_format, val.str_val);
+	cfg.time_format = strdup(val.str_val);
 
 	redraw_lists();
 }

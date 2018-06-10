@@ -3639,7 +3639,7 @@ Number of spaces that a Tab in the file counts for.
                                                *vifm-'timefmt'*
 timefmt
 type: string
-default: " %m/%d %H:%M"
+default: "%m/%d %H:%M"
 
 Format of time in file list.  See man date or man strftime for details.
 

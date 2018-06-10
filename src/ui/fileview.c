@@ -1522,7 +1522,8 @@ format_time(int id, const void *data, size_t buf_len, char buf[])
 
 	if(tm_ptr != NULL)
 	{
-		strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
+		buf[0] = ' ';
+		strftime(buf + 1, buf_len, cfg.time_format, tm_ptr);
 	}
 	else
 	{
