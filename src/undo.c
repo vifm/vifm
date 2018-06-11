@@ -202,12 +202,12 @@ static const char data_is_ptr[] = {
 ARRAY_GUARD(data_is_ptr, OP_COUNT);
 
 /* Operation handler function.  Performs all undo and redo operations. */
-static perform_func do_func;
+static un_perform_func do_func;
 /* External function, which corrects operation availability and influence on
  * operation checks. */
-static op_available_func op_avail_func;
+static un_op_available_func op_avail_func;
 /* External optional callback to abort execution of compound operations. */
-static undo_cancel_requested cancel_func;
+static un_cancel_requested_func cancel_func;
 /* Number of undo levels, which are not groups but operations. */
 static const int *undo_levels;
 
@@ -230,15 +230,15 @@ static void remove_cmd(cmd_t *cmd);
 static int is_undo_group_possible(void);
 static int is_redo_group_possible(void);
 static int is_op_possible(const op_t *op);
-static void change_filename_in_trash(cmd_t *cmd, const char *filename);
+static void change_filename_in_trash(cmd_t *cmd, const char filename[]);
 static void update_entry(const char **e, const char old[], const char new[]);
 static char ** fill_undolist_detail(char **list);
 static const char * get_op_desc(op_t op);
-static char **fill_undolist_nondetail(char **list);
+static char ** fill_undolist_nondetail(char **list);
 
 void
-init_undo_list(perform_func exec_func, op_available_func op_avail,
-		undo_cancel_requested cancel, const int* max_levels)
+un_init(un_perform_func exec_func, un_op_available_func op_avail,
+		un_cancel_requested_func cancel, const int *max_levels)
 {
 	assert(exec_func != NULL);
 
@@ -256,7 +256,7 @@ no_function(void)
 }
 
 void
-reset_undo_list(void)
+un_reset(void)
 {
 	assert(!group_opened);
 
@@ -270,7 +270,7 @@ reset_undo_list(void)
 }
 
 void
-cmd_group_begin(const char *msg)
+un_group_open(const char msg[])
 {
 	assert(!group_opened);
 
@@ -281,7 +281,7 @@ cmd_group_begin(const char *msg)
 }
 
 void
-cmd_group_continue(void)
+un_group_reopen_last(void)
 {
 	assert(!group_opened);
 	assert(next_group != 0);
@@ -291,7 +291,7 @@ cmd_group_continue(void)
 }
 
 char *
-replace_group_msg(const char msg[])
+un_replace_group_msg(const char msg[])
 {
 	char *result;
 
@@ -305,8 +305,8 @@ replace_group_msg(const char msg[])
 }
 
 int
-add_operation(OPS op, void *do_data, void *undo_data, const char *buf1,
-		const char *buf2)
+un_group_add_op(OPS op, void *do_data, void *undo_data, const char buf1[],
+		const char buf2[])
 {
 	int mem_error;
 	cmd_t *cmd;
@@ -452,14 +452,8 @@ remove_cmd(cmd_t *cmd)
 	command_count--;
 }
 
-int
-last_cmd_group_empty(void)
-{
-	return last_group == NULL;
-}
-
 void
-cmd_group_end(void)
+un_group_close(void)
 {
 	assert(group_opened);
 
@@ -471,7 +465,13 @@ cmd_group_end(void)
 }
 
 int
-undo_group(void)
+un_last_group_empty(void)
+{
+	return (last_group == NULL);
+}
+
+int
+un_group_undo(void)
 {
 	int errors, disbalance, cant_undone;
 	int skip;
@@ -560,7 +560,7 @@ is_undo_group_possible(void)
 }
 
 int
-redo_group(void)
+un_group_redo(void)
 {
 	int errors, disbalance;
 	int skip;
@@ -676,7 +676,7 @@ is_op_possible(const op_t *op)
 }
 
 static void
-change_filename_in_trash(cmd_t *cmd, const char *filename)
+change_filename_in_trash(cmd_t *cmd, const char filename[])
 {
 	const char *name_tail;
 	char *new;
@@ -719,7 +719,7 @@ update_entry(const char **e, const char old[], const char new[])
 }
 
 char **
-undolist(int detail)
+un_get_list(int detail)
 {
 	char **list, **p;
 	int group_count;
@@ -896,7 +896,7 @@ fill_undolist_nondetail(char **list)
 }
 
 int
-get_undolist_pos(int detail)
+un_get_list_pos(int detail)
 {
 	cmd_t *cur = cmds.prev;
 	int result_group = 0;

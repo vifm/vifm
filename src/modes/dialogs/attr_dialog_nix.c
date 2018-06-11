@@ -474,7 +474,7 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 		len += strlen(undo_msg + len);
 	}
 
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
@@ -485,7 +485,7 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 				recurse_dirs);
 	}
 
-	cmd_group_end();
+	un_group_close();
 }
 
 static void
@@ -505,7 +505,7 @@ file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
 
 	if(perform_operation(op, NULL, (void *)mode, path, NULL) == 0)
 	{
-		add_operation(op, strdup(mode), strdup(inv_mode), path, "");
+		un_group_add_op(op, strdup(mode), strdup(inv_mode), path, "");
 	}
 }
 

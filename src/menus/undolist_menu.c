@@ -34,7 +34,7 @@ show_undolist_menu(view_t *view, int with_details)
 	static menu_data_t m;
 	menus_init_data(&m, view, strdup("Undolist"), strdup("Undolist is empty"));
 
-	m.items = undolist(with_details);
+	m.items = un_get_list(with_details);
 	m.len = count_strings(m.items);
 
 	/* Add additional entry before setting position. */
@@ -43,7 +43,7 @@ show_undolist_menu(view_t *view, int with_details)
 		m.len = add_to_string_array(&m.items, m.len, 1, "list end");
 	}
 
-	menus_set_pos(m.state, get_undolist_pos(with_details));
+	menus_set_pos(m.state, un_get_list_pos(with_details));
 
 	/* Add current position mark to menu item. */
 	if(m.len > 0)

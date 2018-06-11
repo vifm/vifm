@@ -690,7 +690,7 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 
 	ui_sb_msg("Redoing...");
 
-	ret = redo_group();
+	ret = un_group_redo();
 
 	if(ret == 0)
 	{
@@ -1878,7 +1878,7 @@ cmd_u(key_info_t key_info, keys_info_t *keys_info)
 
 	ui_sb_msg("Undoing...");
 
-	ret = undo_group();
+	ret = un_group_undo();
 
 	if(ret == 0)
 	{

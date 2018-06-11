@@ -115,7 +115,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 	snprintf(undo_msg, sizeof(undo_msg), "%celete in %s: ", use_trash ? 'd' : 'D',
 			replace_home_part(curr_dir));
 	fops_append_marked_files(view, undo_msg, NULL);
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
 			curr_dir);
@@ -146,7 +146,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 
 	regs_update_unnamed(reg);
 
-	cmd_group_end();
+	un_group_close();
 
 	ui_view_reset_selection_and_reload(view);
 	ui_view_schedule_reload(view == curr_view ? other_view : curr_view);
@@ -183,7 +183,7 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 			replace_home_part(curr_dir));
 	if(!nested)
 	{
-		cmd_group_begin(undo_msg);
+		un_group_open(undo_msg);
 	}
 
 	ops = fops_get_ops(OP_REMOVE, use_trash ? "deleting" : "Deleting", curr_dir,
@@ -198,7 +198,7 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 
 	if(!nested)
 	{
-		cmd_group_end();
+		un_group_close();
 		ui_views_reload_filelists();
 	}
 
@@ -230,7 +230,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 		}
 		if(result == 0)
 		{
-			add_operation(OP_REMOVE, NULL, NULL, full_path, "");
+			un_group_add_op(OP_REMOVE, NULL, NULL, full_path, "");
 		}
 	}
 	else if(is_trash_directory(full_path))
@@ -259,7 +259,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 			}
 			if(result == 0)
 			{
-				add_operation(op, NULL, NULL, full_path, dest);
+				un_group_add_op(op, NULL, NULL, full_path, dest);
 				regs_append(reg, dest);
 			}
 			free(dest);
@@ -559,18 +559,18 @@ change_link_cb(const char new_target[])
 	fname = get_last_path_component(full_path);
 	snprintf(undo_msg, sizeof(undo_msg), "cl in %s: on %s from \"%s\" to \"%s\"",
 			replace_home_part(flist_get_dir(curr_view)), fname, linkto, new_target);
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	if(perform_operation(OP_REMOVESL, ops, NULL, full_path, NULL) == 0)
 	{
-		add_operation(OP_REMOVESL, NULL, NULL, full_path, linkto);
+		un_group_add_op(OP_REMOVESL, NULL, NULL, full_path, linkto);
 	}
 	if(perform_operation(OP_SYMLINK2, ops, NULL, new_target, full_path) == 0)
 	{
-		add_operation(OP_SYMLINK2, NULL, NULL, new_target, full_path);
+		un_group_add_op(OP_SYMLINK2, NULL, NULL, new_target, full_path);
 	}
 
-	cmd_group_end();
+	un_group_close();
 
 	fops_free_ops(ops);
 }
@@ -680,7 +680,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 	custom_fnames = (nlines > 0);
 
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 	entry = NULL;
 	i = 0;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
@@ -722,7 +722,7 @@ fops_clone(view_t *view, char *list[], int nlines, int force, int copies)
 
 		++i;
 	}
-	cmd_group_end();
+	un_group_close();
 
 	ui_views_reload_filelists();
 	if(from_file)
@@ -819,7 +819,7 @@ clone_file(const dir_entry_t *entry, const char path[], const char clone[],
 		return 1;
 	}
 
-	add_operation(OP_COPY, NULL, NULL, full_path, clone_name);
+	un_group_add_op(OP_COPY, NULL, NULL, full_path, clone_name);
 	return 0;
 }
 
@@ -867,7 +867,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 	snprintf(buf, sizeof(buf), "mkdir in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
-	cmd_group_begin(buf);
+	un_group_open(buf);
 	n = 0;
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
@@ -876,7 +876,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 
 		if(perform_operation(OP_MKDIR, NULL, cp, full, NULL) == 0)
 		{
-			add_operation(OP_MKDIR, cp, NULL, full, "");
+			un_group_add_op(OP_MKDIR, cp, NULL, full, "");
 			++n;
 		}
 		else if(i == 0)
@@ -886,7 +886,7 @@ fops_mkdirs(view_t *view, int at, char **names, int count, int create_parent)
 			--count;
 		}
 	}
-	cmd_group_end();
+	un_group_close();
 
 	if(count > 0)
 	{
@@ -949,7 +949,7 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 	snprintf(buf, sizeof(buf), "touch in %s: ", replace_home_part(dst_dir));
 
 	get_group_file_list(names, count, buf);
-	cmd_group_begin(buf);
+	un_group_open(buf);
 	n = 0;
 	for(i = 0; i < count && !ui_cancellation_requested(); ++i)
 	{
@@ -958,11 +958,11 @@ fops_mkfiles(view_t *view, int at, char *names[], int count)
 
 		if(perform_operation(OP_MKFILE, ops, NULL, full, NULL) == 0)
 		{
-			add_operation(OP_MKFILE, NULL, NULL, full, "");
+			un_group_add_op(OP_MKFILE, NULL, NULL, full, "");
 			++n;
 		}
 	}
-	cmd_group_end();
+	un_group_close();
 
 	if(n > 0)
 	{
@@ -1029,8 +1029,8 @@ fops_restore(view_t *view)
 
 	ui_cancellation_reset();
 
-	cmd_group_begin("restore: ");
-	cmd_group_end();
+	un_group_open("restore: ");
+	un_group_close();
 
 	m = 0;
 	n = 0;
@@ -1248,7 +1248,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 	(void)fops_enqueue_marked_files(ops, view, NULL, 0);
 
 	fops_append_marked_files(view, undo_msg, NULL);
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	entry = NULL;
 	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
@@ -1259,7 +1259,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 
 		if(u && perform_operation(OP_CHOWN, ops, V(uid), full_path, NULL) == 0)
 		{
-			add_operation(OP_CHOWN, V(uid), V(entry->uid), full_path, "");
+			un_group_add_op(OP_CHOWN, V(uid), V(entry->uid), full_path, "");
 		}
 		else
 		{
@@ -1268,7 +1268,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 
 		if(g && perform_operation(OP_CHGRP, ops, V(gid), full_path, NULL) == 0)
 		{
-			add_operation(OP_CHGRP, V(gid), V(entry->gid), full_path, "");
+			un_group_add_op(OP_CHGRP, V(gid), V(entry->gid), full_path, "");
 		}
 		else
 		{
@@ -1277,7 +1277,7 @@ fops_chown(int u, int g, uid_t uid, gid_t gid)
 
 		ops_advance(ops, full_success == (u != 0) + (g != 0));
 	}
-	cmd_group_end();
+	un_group_close();
 
 	ui_sb_msgf("%d file%s fully processed%s", ops->succeeded,
 			(ops->succeeded == 1) ? "" : "s", fops_get_cancellation_suffix());

@@ -517,9 +517,9 @@ restore_from_trash(const char trash_name[])
 		char *msg, *p;
 		size_t len;
 
-		cmd_group_continue();
+		un_group_reopen_last();
 
-		msg = replace_group_msg(NULL);
+		msg = un_replace_group_msg(NULL);
 		len = strlen(msg);
 		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
 		if(p == NULL)
@@ -529,11 +529,11 @@ restore_from_trash(const char trash_name[])
 
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
 				(msg[len - 2] != ':') ? ", " : "", strchr(trash_name, '_') + 1);
-		replace_group_msg(msg);
+		un_replace_group_msg(msg);
 		free(msg);
 
-		add_operation(OP_MOVE, NULL, NULL, full, path);
-		cmd_group_end();
+		un_group_add_op(OP_MOVE, NULL, NULL, full, path);
+		un_group_close();
 		remove_from_trash(trash_name);
 		return 0;
 	}

@@ -112,7 +112,7 @@ void
 undo_setup(void)
 {
 	static int max_undo_levels = 0;
-	init_undo_list(&exec_func, &op_avail, NULL, &max_undo_levels);
+	un_init(&exec_func, &op_avail, NULL, &max_undo_levels);
 }
 
 static int
@@ -130,7 +130,7 @@ op_avail(OPS op)
 void
 undo_teardown(void)
 {
-	reset_undo_list();
+	un_reset();
 }
 
 void

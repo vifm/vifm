@@ -11,7 +11,7 @@ TEST(detail)
 	char **list;
 	char **p;
 
-	list = undolist(1);
+	list = un_get_list(1);
 
 	assert_false(list == NULL);
 	assert_true(list[11] == NULL);
@@ -38,14 +38,10 @@ TEST(detail)
 
 TEST(detail_after_reset)
 {
-	char **list;
+	un_reset();
 
-	reset_undo_list();
-
-	list = undolist(1);
-
+	char **list = un_get_list(1);
 	assert_true(list[0] == NULL);
-
 	free(list);
 }
 
@@ -64,7 +60,7 @@ TEST(detail_smaller_limit)
 
 	init_undo_list_for_tests(exec_func, &undo_levels);
 
-	list = undolist(1);
+	list = un_get_list(1);
 
 	assert_false(list == NULL);
 	assert_true(list[6] == NULL);
@@ -88,7 +84,7 @@ TEST(nondetail)
 	char **list;
 	char **p;
 
-	list = undolist(0);
+	list = un_get_list(0);
 
 	assert_false(list == NULL);
 	assert_true(list[3] == NULL);
@@ -105,14 +101,10 @@ TEST(nondetail)
 
 TEST(nondetail_after_reset)
 {
-	char **list;
+	un_reset();
 
-	reset_undo_list();
-
-	list = undolist(0);
-
+	char **list = un_get_list(0);
 	assert_true(list[0] == NULL);
-
 	free(list);
 }
 
@@ -125,7 +117,7 @@ TEST(nondetail_smaller_limit)
 
 	init_undo_list_for_tests(exec_func, &undo_levels);
 
-	list = undolist(0);
+	list = un_get_list(0);
 
 	assert_false(list == NULL);
 	assert_true(list[2] == NULL);
@@ -141,20 +133,20 @@ TEST(nondetail_smaller_limit)
 
 TEST(pos)
 {
-	assert_int_equal(0, get_undolist_pos(0));
-	assert_int_equal(0, undo_group());
-	assert_int_equal(1, get_undolist_pos(0));
-	assert_int_equal(0, undo_group());
-	assert_int_equal(2, get_undolist_pos(0));
-	assert_int_equal(0, undo_group());
-	assert_int_equal(3, get_undolist_pos(0));
-	assert_int_equal(-1, undo_group());
-	assert_int_equal(3, get_undolist_pos(0));
-	assert_int_equal(-1, undo_group());
-	assert_int_equal(3, get_undolist_pos(0));
-	assert_int_equal(-1, undo_group());
-	assert_int_equal(3, get_undolist_pos(0));
-	assert_int_equal(-1, undo_group());
+	assert_int_equal(0, un_get_list_pos(0));
+	assert_int_equal(0, un_group_undo());
+	assert_int_equal(1, un_get_list_pos(0));
+	assert_int_equal(0, un_group_undo());
+	assert_int_equal(2, un_get_list_pos(0));
+	assert_int_equal(0, un_group_undo());
+	assert_int_equal(3, un_get_list_pos(0));
+	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(3, un_get_list_pos(0));
+	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(3, un_get_list_pos(0));
+	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(3, un_get_list_pos(0));
+	assert_int_equal(-1, un_group_undo());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

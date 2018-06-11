@@ -294,7 +294,7 @@ vifm_main(int argc, char *argv[])
 	}
 
 	init_modes();
-	init_undo_list(&undo_perform_func, NULL, &ui_cancellation_requested,
+	un_init(&undo_perform_func, NULL, &ui_cancellation_requested,
 			&cfg.undo_levels);
 	load_view_options(curr_view);
 
@@ -583,7 +583,7 @@ vifm_restart(void)
 	ft_reset(curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
 
 	/* Undo list. */
-	reset_undo_list();
+	un_reset();
 
 	/* Directory stack. */
 	dir_stack_clear();

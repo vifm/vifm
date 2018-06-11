@@ -888,7 +888,7 @@ fops_mv_file_f(const char src[], const char dst[], OPS op, int bg,
 	result = perform_operation(op, ops, cancellable ? NULL : (void *)1, src, dst);
 	if(result == 0 && !bg)
 	{
-		add_operation(op, NULL, NULL, src, dst);
+		un_group_add_op(op, NULL, NULL, src, dst);
 	}
 	return result;
 }

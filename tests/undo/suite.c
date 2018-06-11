@@ -20,29 +20,29 @@ SETUP()
 
 	init_undo_list_for_tests(&exec_func, &undo_levels);
 
-	cmd_group_begin("msg1");
-	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg1", "undo_msg1");
+	un_group_open("msg1");
+	ret_code = un_group_add_op(OP_MOVE, NULL, NULL, "do_msg1", "undo_msg1");
 	assert(ret_code == 0);
-	cmd_group_end();
+	un_group_close();
 
-	cmd_group_begin("msg2");
-	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg2_cmd1",
+	un_group_open("msg2");
+	ret_code = un_group_add_op(OP_MOVE, NULL, NULL, "do_msg2_cmd1",
 			"undo_msg2_cmd1");
 	assert(ret_code == 0);
-	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg2_cmd2",
+	ret_code = un_group_add_op(OP_MOVE, NULL, NULL, "do_msg2_cmd2",
 			"undo_msg2_cmd2");
 	assert(ret_code == 0);
-	cmd_group_end();
+	un_group_close();
 
-	cmd_group_begin("msg3");
-	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg3", "undo_msg3");
+	un_group_open("msg3");
+	ret_code = un_group_add_op(OP_MOVE, NULL, NULL, "do_msg3", "undo_msg3");
 	assert(ret_code == 0);
-	cmd_group_end();
+	un_group_close();
 }
 
 TEARDOWN()
 {
-	reset_undo_list();
+	un_reset();
 }
 
 static int
@@ -58,9 +58,9 @@ op_avail(OPS op)
 }
 
 void
-init_undo_list_for_tests(perform_func exec_func, const int *max_levels)
+init_undo_list_for_tests(un_perform_func exec_func, const int *max_levels)
 {
-	init_undo_list(exec_func, &op_avail, NULL, max_levels);
+	un_init(exec_func, &op_avail, NULL, max_levels);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
