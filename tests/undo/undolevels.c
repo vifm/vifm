@@ -23,10 +23,10 @@ TEST(undolevel_change_to_smaller)
 			"undo_msg4"));
 	un_group_close();
 
-	assert_int_equal(0, un_group_undo());
-	assert_int_equal(0, un_group_undo());
-	assert_int_equal(0, un_group_undo());
-	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 }
 
 TEST(zero_undolevel)
@@ -40,7 +40,7 @@ TEST(zero_undolevel)
 			"undo_msg4"));
 	un_group_close();
 
-	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 }
 
 TEST(negative_undolevel)
@@ -54,7 +54,7 @@ TEST(negative_undolevel)
 			"undo_msg4"));
 	un_group_close();
 
-	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 }
 
 TEST(too_many_commands)

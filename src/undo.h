@@ -87,27 +87,11 @@ void un_group_close(void);
  * non-zero if so, otherwise zero is returned. */
 int un_last_group_empty(void);
 
-/* Return value:
- *   0 - on success;
- *  -1 - no operation for undo is available;
- *  -2 - there were errors;
- *  -3 - undoing group is impossible;
- *  -4 - skipped unbalanced operation;
- *  -5 - operation cannot be undone;
- *  -6 - operation skipped by user;
- *  -7 - operation was cancelled;
- *   1 - operation was skipped due to previous errors (no command run). */
+/* Returns UN_ERR_* codes. */
 int un_group_undo(void);
 
-/* Return value:
- *   0 - on success;
- *  -1 - no operation for undo is available;
- *  -2 - there were errors;
- *  -3 - redoing group is impossible;
- *  -4 - skipped unbalanced operation;
- *  -6 - operation skipped by user;
- *  -7 - operation was cancelled;
- *   1 - operation was skipped due to previous errors (no command run). */
+/* Returns UN_ERR_* codes, except for UN_ERR_NOUNDO, it's matched by
+ * UN_ERR_BALANCE on redo. */
 int un_group_redo(void);
 
 /* When detail is not 0 show detailed information for groups.  Last element of

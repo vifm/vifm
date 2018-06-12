@@ -134,19 +134,19 @@ TEST(nondetail_smaller_limit)
 TEST(pos)
 {
 	assert_int_equal(0, un_get_list_pos(0));
-	assert_int_equal(0, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
 	assert_int_equal(1, un_get_list_pos(0));
-	assert_int_equal(0, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
 	assert_int_equal(2, un_get_list_pos(0));
-	assert_int_equal(0, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
 	assert_int_equal(3, un_get_list_pos(0));
-	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 	assert_int_equal(3, un_get_list_pos(0));
-	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 	assert_int_equal(3, un_get_list_pos(0));
-	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 	assert_int_equal(3, un_get_list_pos(0));
-	assert_int_equal(-1, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
