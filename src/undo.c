@@ -473,36 +473,31 @@ un_last_group_empty(void)
 UnErrCode
 un_group_undo(void)
 {
-	int errors, disbalance, cant_undone;
-	int skip;
-	int cancelled;
 	assert(!group_opened);
 
 	if(current == &cmds)
 		return UN_ERR_NONE;
 
-	errors = current->group->error != 0;
-	disbalance = current->group->balance != 0;
-	cant_undone = !current->group->can_undone;
-	if(errors || disbalance || cant_undone || !is_undo_group_possible())
+	int errors = (current->group->error != 0);
+	const int disbalance = (current->group->balance != 0);
+	const int cant_undo = !current->group->can_undone;
+	if(errors || disbalance || cant_undo || !is_undo_group_possible())
 	{
 		do
 			current = current->prev;
 		while(current != &cmds && current->group == current->next->group);
-		if(errors)
-			return UN_ERR_ERRORS;
-		else if(disbalance)
-			return UN_ERR_BALANCE;
-		else if(cant_undone)
-			return UN_ERR_NOUNDO;
-		else
-			return UN_ERR_BROKEN;
+
+		if(errors)     return UN_ERR_ERRORS;
+		if(disbalance) return UN_ERR_BALANCE;
+		if(cant_undo)  return UN_ERR_NOUNDO;
+		return UN_ERR_BROKEN;
 	}
 
 	regs_sync_from_shared_memory();
 	current->group->balance--;
 
-	skip = 0;
+	int skip = 0;
+	int cancelled;
 	do
 	{
 		if(!skip)
@@ -527,18 +522,10 @@ un_group_undo(void)
 
 	regs_sync_to_shared_memory();
 
-	if(cancelled)
-	{
-		return UN_ERR_CANCELLED;
-	}
-	else if(skip)
-	{
-		return UN_ERR_SKIPPED;
-	}
-	else
-	{
-		return (errors ? UN_ERR_FAIL : UN_ERR_SUCCESS);
-	}
+	if(cancelled) return UN_ERR_CANCELLED;
+	if(skip)      return UN_ERR_SKIPPED;
+	if(errors)    return UN_ERR_FAIL;
+	return UN_ERR_SUCCESS;
 }
 
 static int
@@ -562,33 +549,29 @@ is_undo_group_possible(void)
 UnErrCode
 un_group_redo(void)
 {
-	int errors, disbalance;
-	int skip;
-	int cancelled;
 	assert(!group_opened);
 
 	if(current->next == NULL)
 		return UN_ERR_NONE;
 
-	errors = current->next->group->error != 0;
-	disbalance = current->next->group->balance == 0;
+	int errors = (current->next->group->error != 0);
+	const int disbalance = (current->next->group->balance == 0);
 	if(errors || disbalance || !is_redo_group_possible())
 	{
 		do
 			current = current->next;
 		while(current->next != NULL && current->group == current->next->group);
-		if(errors)
-			return UN_ERR_ERRORS;
-		else if(disbalance)
-			return UN_ERR_BALANCE;
-		else
-			return UN_ERR_BROKEN;
+
+		if(errors)     return UN_ERR_ERRORS;
+		if(disbalance) return UN_ERR_BALANCE;
+		return UN_ERR_BROKEN;
 	}
 
 	regs_sync_from_shared_memory();
 	current->next->group->balance++;
 
-	skip = 0;
+	int skip = 0;
+	int cancelled;
 	do
 	{
 		current = current->next;
@@ -613,18 +596,10 @@ un_group_redo(void)
 
 	regs_sync_to_shared_memory();
 
-	if(cancelled)
-	{
-		return UN_ERR_CANCELLED;
-	}
-	else if(skip)
-	{
-		return UN_ERR_SKIPPED;
-	}
-	else
-	{
-		return (errors ? UN_ERR_FAIL : UN_ERR_SUCCESS);
-	}
+	if(cancelled) return UN_ERR_CANCELLED;
+	if(skip)      return UN_ERR_SKIPPED;
+	if(errors)    return UN_ERR_FAIL;
+	return UN_ERR_SUCCESS;
 }
 
 static int
