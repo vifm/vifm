@@ -21,24 +21,27 @@
 
 #include "ops.h"
 
-/* TODO: Use enumeration for errors in un_group_undo() and un_group_redo(). */
-
 enum
 {
 	COMMAND_GROUP_INFO_LEN = 320,
 
 	SKIP_UNDO_REDO_OPERATION = -8192,
-
-	UN_ERR_SUCCESS = 0,    /* Successful undo/redo. */
-	UN_ERR_NONE = -1,      /* No more groups to undo/redo. */
-	UN_ERR_FAIL = -2,      /* Try has failed with an error from perform func. */
-	UN_ERR_BROKEN = -3,    /* FS changes made undoing/redoing group impossible. */
-	UN_ERR_BALANCE = -4,   /* Skipped unbalanced group. */
-	UN_ERR_NOUNDO = -5,    /* Cannot undone (e.g., permanent file deletion). */
-	UN_ERR_SKIPPED = -6,   /* Operation skipped by the user. */
-	UN_ERR_CANCELLED = -7, /* Operation was cancelled by the user. */
-	UN_ERR_ERRORS = 1,     /* Completely skipped due to errors on previous try. */
 };
+
+/* Error statuses for un_group_undo() and un_group_redo(). */
+typedef enum
+{
+	UN_ERR_SUCCESS,   /* Successful undo/redo. */
+	UN_ERR_NONE,      /* No more groups to undo/redo. */
+	UN_ERR_FAIL,      /* Try has failed with an error from perform function. */
+	UN_ERR_BROKEN,    /* FS changes made undoing/redoing group impossible. */
+	UN_ERR_BALANCE,   /* Skipped unbalanced group. */
+	UN_ERR_NOUNDO,    /* Cannot undone (e.g., permanent file deletion). */
+	UN_ERR_SKIPPED,   /* Operation skipped by the user. */
+	UN_ERR_CANCELLED, /* Operation was cancelled by the user. */
+	UN_ERR_ERRORS,    /* Completely skipped due to errors on previous undo/redo. */
+}
+UnErrCode;
 
 /* Operation execution handler.  data is from un_group_add_op() call.  Should
  * return zero on successful execution of operation, can return
@@ -88,11 +91,11 @@ void un_group_close(void);
 int un_last_group_empty(void);
 
 /* Returns UN_ERR_* codes. */
-int un_group_undo(void);
+UnErrCode un_group_undo(void);
 
 /* Returns UN_ERR_* codes, except for UN_ERR_NOUNDO, it's matched by
  * UN_ERR_BALANCE on redo. */
-int un_group_redo(void);
+UnErrCode un_group_redo(void);
 
 /* When detail is not 0 show detailed information for groups.  Last element of
  * list returned is NULL.  Returns NULL on error. */

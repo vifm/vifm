@@ -717,6 +717,9 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 		case UN_ERR_ERRORS:
 			ui_sb_err("Redo operation was skipped due to previous errors");
 			break;
+		case UN_ERR_NOUNDO:
+			assert(0 && "un_group_redo() shouldn't return UN_ERR_NOUNDO!");
+			break;
 	}
 
 	curr_stats.save_msg = 1;

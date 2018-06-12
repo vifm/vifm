@@ -470,7 +470,7 @@ un_last_group_empty(void)
 	return (last_group == NULL);
 }
 
-int
+UnErrCode
 un_group_undo(void)
 {
 	int errors, disbalance, cant_undone;
@@ -559,7 +559,7 @@ is_undo_group_possible(void)
 	return 1;
 }
 
-int
+UnErrCode
 un_group_redo(void)
 {
 	int errors, disbalance;
