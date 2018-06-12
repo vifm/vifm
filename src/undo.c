@@ -479,7 +479,7 @@ un_group_undo(void)
 	assert(!group_opened);
 
 	if(current == &cmds)
-		return -1;
+		return UN_ERR_NONE;
 
 	errors = current->group->error != 0;
 	disbalance = current->group->balance != 0;
@@ -490,13 +490,13 @@ un_group_undo(void)
 			current = current->prev;
 		while(current != &cmds && current->group == current->next->group);
 		if(errors)
-			return 1;
+			return UN_ERR_ERRORS;
 		else if(disbalance)
-			return -4;
+			return UN_ERR_BALANCE;
 		else if(cant_undone)
-			return -5;
+			return UN_ERR_NOUNDO;
 		else
-			return -3;
+			return UN_ERR_BROKEN;
 	}
 
 	regs_sync_from_shared_memory();
@@ -529,15 +529,15 @@ un_group_undo(void)
 
 	if(cancelled)
 	{
-		return -7;
+		return UN_ERR_CANCELLED;
 	}
 	else if(skip)
 	{
-		return -6;
+		return UN_ERR_SKIPPED;
 	}
 	else
 	{
-		return errors ? -2 : 0;
+		return (errors ? UN_ERR_FAIL : UN_ERR_SUCCESS);
 	}
 }
 
@@ -568,7 +568,7 @@ un_group_redo(void)
 	assert(!group_opened);
 
 	if(current->next == NULL)
-		return -1;
+		return UN_ERR_NONE;
 
 	errors = current->next->group->error != 0;
 	disbalance = current->next->group->balance == 0;
@@ -578,11 +578,11 @@ un_group_redo(void)
 			current = current->next;
 		while(current->next != NULL && current->group == current->next->group);
 		if(errors)
-			return 1;
+			return UN_ERR_ERRORS;
 		else if(disbalance)
-			return -4;
+			return UN_ERR_BALANCE;
 		else
-			return -3;
+			return UN_ERR_BROKEN;
 	}
 
 	regs_sync_from_shared_memory();
@@ -615,15 +615,15 @@ un_group_redo(void)
 
 	if(cancelled)
 	{
-		return -7;
+		return UN_ERR_CANCELLED;
 	}
 	else if(skip)
 	{
-		return -6;
+		return UN_ERR_SKIPPED;
 	}
 	else
 	{
-		return errors ? -2 : 0;
+		return (errors ? UN_ERR_FAIL : UN_ERR_SUCCESS);
 	}
 }
 

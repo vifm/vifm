@@ -28,6 +28,16 @@ enum
 	COMMAND_GROUP_INFO_LEN = 320,
 
 	SKIP_UNDO_REDO_OPERATION = -8192,
+
+	UN_ERR_SUCCESS = 0,    /* Successful undo/redo. */
+	UN_ERR_NONE = -1,      /* No more groups to undo/redo. */
+	UN_ERR_FAIL = -2,      /* Try has failed with an error from perform func. */
+	UN_ERR_BROKEN = -3,    /* FS changes made undoing/redoing group impossible. */
+	UN_ERR_BALANCE = -4,   /* Skipped unbalanced group. */
+	UN_ERR_NOUNDO = -5,    /* Cannot undone (e.g., permanent file deletion). */
+	UN_ERR_SKIPPED = -6,   /* Operation skipped by the user. */
+	UN_ERR_CANCELLED = -7, /* Operation was cancelled by the user. */
+	UN_ERR_ERRORS = 1,     /* Completely skipped due to errors on previous try. */
 };
 
 /* Operation execution handler.  data is from un_group_add_op() call.  Should
