@@ -21,18 +21,26 @@
 
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* realloc() */
-#include <string.h> /* strdup() strlen() */
+#include <string.h> /* memmove() strdup() strlen() */
+#include <wchar.h> /* wcscmp() */
 
 #include "../ui/ui.h"
 #include "../utils/string_array.h"
 #include "../undo.h"
 #include "menus.h"
 
+static KHandlerResponse undolist_khandler(view_t *view, menu_data_t *m,
+		const wchar_t keys[]);
+static void set_mark(menu_data_t *m, int pos);
+static void unset_mark(menu_data_t *m, int pos);
+
 int
 show_undolist_menu(view_t *view, int with_details)
 {
 	static menu_data_t m;
 	menus_init_data(&m, view, strdup("Undolist"), strdup("Undolist is empty"));
+	m.key_handler = &undolist_khandler;
+	m.extra_data = with_details;
 
 	m.items = un_get_list(with_details);
 	m.len = count_strings(m.items);
@@ -44,21 +52,59 @@ show_undolist_menu(view_t *view, int with_details)
 	}
 
 	menus_set_pos(m.state, un_get_list_pos(with_details));
-
-	/* Add current position mark to menu item. */
-	if(m.len > 0)
-	{
-		const size_t len = (m.items[m.pos] != NULL) ? strlen(m.items[m.pos]) : 0;
-		char *const new_line = realloc(m.items[m.pos], len + 1U + 1U);
-		if(new_line != NULL)
-		{
-			m.items[m.pos] = new_line;
-			memmove(m.items[m.pos] + 1, m.items[m.pos], len + 1U);
-			m.items[m.pos][0] = '*';
-		}
-	}
+	set_mark(&m, m.pos);
 
 	return menus_enter(m.state, view);
+}
+
+/* Menu-specific shortcut handler.  Returns code that specifies both taken
+ * actions and what should be done next. */
+static KHandlerResponse
+undolist_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
+{
+	if(wcscmp(keys, L"r") == 0)
+	{
+		const int with_details = m->extra_data;
+
+		unset_mark(m, un_get_list_pos(with_details));
+
+		un_set_pos(m->pos, with_details);
+		set_mark(m, un_get_list_pos(with_details));
+
+		menus_partial_redraw(m->state);
+		return KHR_REFRESH_WINDOW;
+	}
+	return KHR_UNHANDLED;
+}
+
+/* Adds current position mark to a menu item. */
+static void
+set_mark(menu_data_t *m, int pos)
+{
+	if(m->len == 0)
+	{
+		return;
+	}
+
+	const size_t len = (m->items[pos] != NULL ? strlen(m->items[pos]) : 0);
+	char *const new_line = realloc(m->items[pos], len + 1U + 1U);
+	if(new_line != NULL)
+	{
+		m->items[pos] = new_line;
+		memmove(m->items[pos] + 1, m->items[pos], len + 1U);
+		m->items[pos][0] = '*';
+	}
+}
+
+/* Removes current position mark from a menu item. */
+static void
+unset_mark(menu_data_t *m, int pos)
+{
+	if(m->len != 0)
+	{
+		const size_t len = (m->items[pos] != NULL ? strlen(m->items[pos]) : 0);
+		memmove(m->items[pos], m->items[pos] + 1, len);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
