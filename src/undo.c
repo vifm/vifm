@@ -211,9 +211,13 @@ static un_cancel_requested_func cancel_func;
 /* Number of undo levels, which are not groups but operations. */
 static const int *undo_levels;
 
+/* List head thanks to which current is never NULL.  cmds.prev points to the
+ * actual head of the list or back to cmds when the list is empty. */
 static cmd_t cmds = {
 	.prev = &cmds,
 };
+/* Points at the current item of the list of operations.  Matches cmds.prev
+ * unless some operations were undone. */
 static cmd_t *current = &cmds;
 
 static int group_opened;

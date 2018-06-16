@@ -39,7 +39,7 @@ typedef enum
 	UN_ERR_NOUNDO,    /* Cannot undone (e.g., permanent file deletion). */
 	UN_ERR_SKIPPED,   /* Operation skipped by the user. */
 	UN_ERR_CANCELLED, /* Operation was cancelled by the user. */
-	UN_ERR_ERRORS,    /* Completely skipped due to errors on previous undo/redo. */
+	UN_ERR_ERRORS,    /* Skipped entirely due to errors on previous undo/redo. */
 }
 UnErrCode;
 
