@@ -292,7 +292,7 @@ key_handler(wchar_t key)
 void
 menu_enter_mode(menu_data_t *m, view_t *active_view)
 {
-	if(curr_stats.load_stage < 2)
+	if(curr_stats.load_stage >= 0 && curr_stats.load_stage < 2)
 	{
 		return;
 	}
