@@ -104,6 +104,10 @@ char ** un_get_list(int detail);
 /* Returns position in the list returned by un_get_list(). */
 int un_get_list_pos(int detail);
 
+/* Changes position in the undo list according to position in the list returned
+ * by un_get_list(). */
+void un_set_pos(int pos, int detail);
+
 /* Removes all commands which files are in specified trash directory.  The
  * special value NULL means "all trash directories". */
 void un_clear_cmds_with_trash(const char trash_dir[]);

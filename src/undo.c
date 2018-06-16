@@ -892,6 +892,32 @@ un_get_list_pos(int detail)
 }
 
 void
+un_set_pos(int pos, int detail)
+{
+	assert(!group_opened);
+
+	cmd_t *cur = cmds.prev;
+	cmd_t *last = cur;
+
+	--pos;
+	while(pos >= 0 && cur != &cmds)
+	{
+		if(cur->group != last->group)
+		{
+			last = cur;
+			--pos;
+		}
+		if(detail)
+		{
+			pos -= 2;
+		}
+		cur = cur->prev;
+	}
+
+	current = (pos == 0 ? cur : last);
+}
+
+void
 un_clear_cmds_with_trash(const char trash_dir[])
 {
 	cmd_t *cur = cmds.prev;

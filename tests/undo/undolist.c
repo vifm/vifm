@@ -131,7 +131,7 @@ TEST(nondetail_smaller_limit)
 	free(list);
 }
 
-TEST(pos)
+TEST(get_pos)
 {
 	assert_int_equal(0, un_get_list_pos(0));
 	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
@@ -147,6 +147,58 @@ TEST(pos)
 	assert_int_equal(UN_ERR_NONE, un_group_undo());
 	assert_int_equal(3, un_get_list_pos(0));
 	assert_int_equal(UN_ERR_NONE, un_group_undo());
+}
+
+TEST(set_pos_no_detail)
+{
+	assert_int_equal(0, un_get_list_pos(0));
+	un_set_pos(3, 0);
+	assert_int_equal(3, un_get_list_pos(0));
+
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
+	assert_int_equal(UN_ERR_BALANCE, un_group_redo());
+	assert_int_equal(2, un_get_list_pos(0));
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(3, un_get_list_pos(0));
+
+	un_set_pos(1, 0);
+	assert_int_equal(1, un_get_list_pos(0));
+
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(2, un_get_list_pos(0));
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(1, un_get_list_pos(0));
+}
+
+TEST(set_pos_detail)
+{
+	un_set_pos(0, 1);
+	assert_int_equal(0, un_get_list_pos(1));
+	un_set_pos(1, 1);
+	assert_int_equal(0, un_get_list_pos(1));
+	un_set_pos(2, 1);
+	assert_int_equal(0, un_get_list_pos(1));
+
+	un_set_pos(3, 1);
+	assert_int_equal(3, un_get_list_pos(1));
+	un_set_pos(4, 1);
+	assert_int_equal(3, un_get_list_pos(1));
+	un_set_pos(5, 1);
+	assert_int_equal(3, un_get_list_pos(1));
+	un_set_pos(6, 1);
+	assert_int_equal(3, un_get_list_pos(1));
+	un_set_pos(7, 1);
+	assert_int_equal(3, un_get_list_pos(1));
+
+	un_set_pos(8, 1);
+	assert_int_equal(8, un_get_list_pos(1));
+	un_set_pos(9, 1);
+	assert_int_equal(8, un_get_list_pos(1));
+	un_set_pos(10, 1);
+	assert_int_equal(8, un_get_list_pos(1));
+
+	un_set_pos(11, 1);
+	assert_int_equal(11, un_get_list_pos(1));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
