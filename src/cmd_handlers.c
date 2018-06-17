@@ -967,9 +967,9 @@ emark_cmd(const cmd_info_t *cmd_info)
 
 	snprintf(buf, sizeof(buf), "in %s: !%s",
 			replace_home_part(flist_get_dir(curr_view)), cmd_info->raw_args);
-	cmd_group_begin(buf);
-	add_operation(OP_USR, strdup(com), NULL, "", "");
-	cmd_group_end();
+	un_group_open(buf);
+	un_group_add_op(OP_USR, strdup(com), NULL, "", "");
+	un_group_close();
 
 	return save_msg;
 }
@@ -4671,9 +4671,9 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	if(external)
 	{
-		cmd_group_continue();
-		add_operation(OP_USR, strdup(expanded_com), NULL, "", "");
-		cmd_group_end();
+		un_group_reopen_last();
+		un_group_add_op(OP_USR, strdup(expanded_com), NULL, "", "");
+		un_group_close();
 	}
 
 	free(expanded_com);

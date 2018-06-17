@@ -410,7 +410,7 @@ files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 		len += strlen(undo_msg + len);
 	}
 
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	entry = NULL;
 	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
@@ -419,7 +419,7 @@ files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 				recurse_dirs);
 	}
 
-	cmd_group_end();
+	un_group_close();
 }
 
 /* Changes properties of a single file. */
@@ -449,7 +449,7 @@ file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 		const size_t wadd = add;
 		if(perform_operation(OP_ADDATTR, NULL, (void *)wadd, path, NULL) == 0)
 		{
-			add_operation(OP_ADDATTR, (void *)wadd, (void *)(~attrs & wadd), path,
+			un_group_add_op(OP_ADDATTR, (void *)wadd, (void *)(~attrs & wadd), path,
 					"");
 		}
 	}
@@ -458,7 +458,7 @@ file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs)
 		const size_t wsub = sub;
 		if(perform_operation(OP_SUBATTR, NULL, (void *)wsub, path, NULL) == 0)
 		{
-			add_operation(OP_SUBATTR, (void *)wsub, (void *)(~attrs & wsub), path,
+			un_group_add_op(OP_SUBATTR, (void *)wsub, (void *)(~attrs & wsub), path,
 					"");
 		}
 	}

@@ -2791,13 +2791,14 @@ flist_update_origins(view_t *view, const char from[], char to[])
 }
 
 int
-cd_is_possible(const char *path)
+cd_is_possible(const char path[])
 {
 	if(!is_valid_dir(path))
 	{
 		LOG_SERROR_MSG(errno, "Can't access \"%s\"", path);
 
-		show_error_msgf("Destination doesn't exist", "\"%s\"", path);
+		show_error_msgf("Destination doesn't exist or isn't a directory", "\"%s\"",
+				path);
 		return 0;
 	}
 	else if(!directory_accessible(path))

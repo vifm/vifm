@@ -21,8 +21,6 @@
 
 #include "ops.h"
 
-/* TODO: Use enumeration for errors in undo_group() and redo_group(). */
-
 enum
 {
 	COMMAND_GROUP_INFO_LEN = 320,
@@ -30,81 +28,85 @@ enum
 	SKIP_UNDO_REDO_OPERATION = -8192,
 };
 
-/* Operation execution handler.  data is from add_operation() call.  Should
+/* Error statuses for un_group_undo() and un_group_redo(). */
+typedef enum
+{
+	UN_ERR_SUCCESS,   /* Successful undo/redo. */
+	UN_ERR_NONE,      /* No more groups to undo/redo. */
+	UN_ERR_FAIL,      /* Try has failed with an error from perform function. */
+	UN_ERR_BROKEN,    /* FS changes made undoing/redoing group impossible. */
+	UN_ERR_BALANCE,   /* Skipped unbalanced group. */
+	UN_ERR_NOUNDO,    /* Cannot undone (e.g., permanent file deletion). */
+	UN_ERR_SKIPPED,   /* Operation skipped by the user. */
+	UN_ERR_CANCELLED, /* Operation was cancelled by the user. */
+	UN_ERR_ERRORS,    /* Skipped entirely due to errors on previous undo/redo. */
+}
+UnErrCode;
+
+/* Operation execution handler.  data is from un_group_add_op() call.  Should
  * return zero on successful execution of operation, can return
  * SKIP_UNDO_REDO_OPERATION. */
-typedef int (*perform_func)(OPS op, void *data, const char src[],
+typedef int (*un_perform_func)(OPS op, void *data, const char src[],
 		const char dst[]);
 
 /* Return value meaning:
  *   0 - available (but undo.c need to check file existence or absence);
  * < 0 - not available;
  * > 0 - available always (no additional checks are performed). */
-typedef int (*op_available_func)(OPS op);
+typedef int (*un_op_available_func)(OPS op);
 
 /* Callback to control execution of sets of operations.  Should return non-zero
  * in case processing should be aborted, otherwise zero is expected. */
-typedef int (*undo_cancel_requested)(void);
+typedef int (*un_cancel_requested_func)(void);
 
-/* Won't call reset_undo_list, so this function could be called multiple
- * times.  exec_func can't be NULL and should return non-zero on error.
- * op_avail and cancel can be NULL. */
-void init_undo_list(perform_func exec_func, op_available_func op_avail,
-		undo_cancel_requested cancel, const int* max_levels);
+/* Won't call un_reset(), so this function could be called multiple times.
+ * exec_func can't be NULL and should return non-zero on error.  op_avail and
+ * cancel can be NULL. */
+void un_init(un_perform_func exec_func, un_op_available_func op_avail,
+		un_cancel_requested_func cancel, const int *max_levels);
 
 /* Frees all allocated memory. */
-void reset_undo_list(void);
+void un_reset(void);
 
-/* Only stores msg pointer, so it should be valid until cmd_group_end is
+/* Only stores msg pointer, so it should be valid until un_group_close() is
  * called. */
-void cmd_group_begin(const char *msg);
+void un_group_open(const char msg[]);
 
 /* Reopens last command group. */
-void cmd_group_continue(void);
+void un_group_reopen_last(void);
 
 /* Replaces group message (makes its own copy of the msg).  If msg equals NULL
  * or no group is currently open, does nothing.  Returns previous value. */
-char * replace_group_msg(const char msg[]);
+char * un_replace_group_msg(const char msg[]);
 
 /* Returns 0 on success. */
-int add_operation(OPS op, void *do_data, void *undo_data, const char *buf1,
-		const char *buf2);
-
-/* Returns non-zero is the last group isn't empty. */
-int last_cmd_group_empty(void);
+int un_group_add_op(OPS op, void *do_data, void *undo_data, const char buf1[],
+		const char buf2[]);
 
 /* Closes current group of commands. */
-void cmd_group_end(void);
+void un_group_close(void);
 
-/* Return value:
- *   0 - on success;
- *  -1 - no operation for undo is available;
- *  -2 - there were errors;
- *  -3 - undoing group is impossible;
- *  -4 - skipped unbalanced operation;
- *  -5 - operation cannot be undone;
- *  -6 - operation skipped by user;
- *  -7 - operation was cancelled;
- *   1 - operation was skipped due to previous errors (no command run). */
-int undo_group(void);
+/* Checks if the last opened group isn't empty (could still be opened).  Returns
+ * non-zero if so, otherwise zero is returned. */
+int un_last_group_empty(void);
 
-/* Return value:
- *   0 - on success;
- *  -1 - no operation for undo is available;
- *  -2 - there were errors;
- *  -3 - redoing group is impossible;
- *  -4 - skipped unbalanced operation;
- *  -6 - operation skipped by user;
- *  -7 - operation was cancelled;
- *   1 - operation was skipped due to previous errors (no command run). */
-int redo_group(void);
+/* Returns UN_ERR_* codes. */
+UnErrCode un_group_undo(void);
+
+/* Returns UN_ERR_* codes, except for UN_ERR_NOUNDO, it's matched by
+ * UN_ERR_BALANCE on redo. */
+UnErrCode un_group_redo(void);
 
 /* When detail is not 0 show detailed information for groups.  Last element of
  * list returned is NULL.  Returns NULL on error. */
-char ** undolist(int detail);
+char ** un_get_list(int detail);
 
-/* Returns position in the list returned by undolist(). */
-int get_undolist_pos(int detail);
+/* Returns position in the list returned by un_get_list(). */
+int un_get_list_pos(int detail);
+
+/* Changes position in the undo list according to position in the list returned
+ * by un_get_list(). */
+void un_set_pos(int pos, int detail);
 
 /* Removes all commands which files are in specified trash directory.  The
  * special value NULL means "all trash directories". */

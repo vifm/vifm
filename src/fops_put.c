@@ -440,8 +440,8 @@ put_files_i(view_t *view, int start)
 
 		snprintf(undo_msg, sizeof(undo_msg), "%s in %s: ", descr,
 				replace_home_part(flist_get_dir(view)));
-		cmd_group_begin(undo_msg);
-		cmd_group_end();
+		un_group_open(undo_msg);
+		un_group_close();
 	}
 
 	if(vifm_chdir(put_confirm.dst_dir) != 0)
@@ -670,7 +670,7 @@ put_next(int force)
 
 		success = 1;
 
-		cmd_group_continue();
+		un_group_reopen_last();
 
 		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dst_name);
 
@@ -679,7 +679,7 @@ put_next(int force)
 			success = 0;
 		}
 
-		cmd_group_end();
+		un_group_close();
 	}
 	else if(safe_operation)
 	{
@@ -724,9 +724,9 @@ put_next(int force)
 			return -1;
 		}
 
-		cmd_group_continue();
+		un_group_reopen_last();
 
-		msg = replace_group_msg(NULL);
+		msg = un_replace_group_msg(NULL);
 		len = strlen(msg);
 		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
 		if(p == NULL)
@@ -736,15 +736,15 @@ put_next(int force)
 
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
 				(msg[len - 2] != ':') ? ", " : "", dst_name);
-		replace_group_msg(msg);
+		un_replace_group_msg(msg);
 		free(msg);
 
 		if(!(move && merge))
 		{
-			add_operation(op, NULL, NULL, src_buf, dst_buf);
+			un_group_add_op(op, NULL, NULL, src_buf, dst_buf);
 		}
 
-		cmd_group_end();
+		un_group_close();
 		++put_confirm.processed;
 		if(move)
 		{
@@ -815,7 +815,7 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 			{
 				break;
 			}
-			add_operation(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
+			un_group_add_op(OP_MOVEF, put_confirm.ops, NULL, src_path, dst_path);
 		}
 	}
 	os_closedir(dir);
@@ -828,7 +828,7 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 	result = perform_operation(OP_RMDIR, put_confirm.ops, NULL, src, NULL);
 	if(result == 0)
 	{
-		add_operation(OP_RMDIR, NULL, NULL, src, "");
+		un_group_add_op(OP_RMDIR, NULL, NULL, src, "");
 	}
 
 	/* Clone file properties as the last step, because modifying directory affects

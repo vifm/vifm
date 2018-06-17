@@ -486,8 +486,8 @@ execute_command(view_t *view, const char command[], int menu)
 		snprintf(undo_msg, sizeof(undo_msg), "in %s: %s",
 				replace_home_part(flist_get_dir(view)), command);
 
-		cmd_group_begin(undo_msg);
-		cmd_group_end();
+		un_group_open(undo_msg);
+		un_group_close();
 	}
 
 	keep_view_selection = 0;

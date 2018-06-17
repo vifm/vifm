@@ -56,6 +56,9 @@
 
 	Added <insert> angle bracket notation.  Thanks to j-xella.
 
+	Added r key to :undolist menu, which resets position in the undo list to
+	group under the cursor.  Thanks to mini-turtle.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
@@ -87,6 +90,10 @@
 
 	Escape "=" at the beginning of paths (has special meaning in zsh).  Thanks
 	to agguser.
+
+	More accurate error message on handling non directories passed to :cd.
+
+	Slightly better formatting in :undolist menu.
 
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).

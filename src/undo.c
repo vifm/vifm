@@ -202,18 +202,22 @@ static const char data_is_ptr[] = {
 ARRAY_GUARD(data_is_ptr, OP_COUNT);
 
 /* Operation handler function.  Performs all undo and redo operations. */
-static perform_func do_func;
+static un_perform_func do_func;
 /* External function, which corrects operation availability and influence on
  * operation checks. */
-static op_available_func op_avail_func;
+static un_op_available_func op_avail_func;
 /* External optional callback to abort execution of compound operations. */
-static undo_cancel_requested cancel_func;
+static un_cancel_requested_func cancel_func;
 /* Number of undo levels, which are not groups but operations. */
 static const int *undo_levels;
 
+/* List head thanks to which current is never NULL.  cmds.prev points to the
+ * actual head of the list or back to cmds when the list is empty. */
 static cmd_t cmds = {
 	.prev = &cmds,
 };
+/* Points at the current item of the list of operations.  Matches cmds.prev
+ * unless some operations were undone. */
 static cmd_t *current = &cmds;
 
 static int group_opened;
@@ -230,15 +234,15 @@ static void remove_cmd(cmd_t *cmd);
 static int is_undo_group_possible(void);
 static int is_redo_group_possible(void);
 static int is_op_possible(const op_t *op);
-static void change_filename_in_trash(cmd_t *cmd, const char *filename);
+static void change_filename_in_trash(cmd_t *cmd, const char filename[]);
 static void update_entry(const char **e, const char old[], const char new[]);
 static char ** fill_undolist_detail(char **list);
 static const char * get_op_desc(op_t op);
-static char **fill_undolist_nondetail(char **list);
+static char ** fill_undolist_nondetail(char **list);
 
 void
-init_undo_list(perform_func exec_func, op_available_func op_avail,
-		undo_cancel_requested cancel, const int* max_levels)
+un_init(un_perform_func exec_func, un_op_available_func op_avail,
+		un_cancel_requested_func cancel, const int *max_levels)
 {
 	assert(exec_func != NULL);
 
@@ -256,7 +260,7 @@ no_function(void)
 }
 
 void
-reset_undo_list(void)
+un_reset(void)
 {
 	assert(!group_opened);
 
@@ -270,7 +274,7 @@ reset_undo_list(void)
 }
 
 void
-cmd_group_begin(const char *msg)
+un_group_open(const char msg[])
 {
 	assert(!group_opened);
 
@@ -281,7 +285,7 @@ cmd_group_begin(const char *msg)
 }
 
 void
-cmd_group_continue(void)
+un_group_reopen_last(void)
 {
 	assert(!group_opened);
 	assert(next_group != 0);
@@ -291,7 +295,7 @@ cmd_group_continue(void)
 }
 
 char *
-replace_group_msg(const char msg[])
+un_replace_group_msg(const char msg[])
 {
 	char *result;
 
@@ -305,8 +309,8 @@ replace_group_msg(const char msg[])
 }
 
 int
-add_operation(OPS op, void *do_data, void *undo_data, const char *buf1,
-		const char *buf2)
+un_group_add_op(OPS op, void *do_data, void *undo_data, const char buf1[],
+		const char buf2[])
 {
 	int mem_error;
 	cmd_t *cmd;
@@ -452,14 +456,8 @@ remove_cmd(cmd_t *cmd)
 	command_count--;
 }
 
-int
-last_cmd_group_empty(void)
-{
-	return last_group == NULL;
-}
-
 void
-cmd_group_end(void)
+un_group_close(void)
 {
 	assert(group_opened);
 
@@ -471,38 +469,39 @@ cmd_group_end(void)
 }
 
 int
-undo_group(void)
+un_last_group_empty(void)
 {
-	int errors, disbalance, cant_undone;
-	int skip;
-	int cancelled;
+	return (last_group == NULL);
+}
+
+UnErrCode
+un_group_undo(void)
+{
 	assert(!group_opened);
 
 	if(current == &cmds)
-		return -1;
+		return UN_ERR_NONE;
 
-	errors = current->group->error != 0;
-	disbalance = current->group->balance != 0;
-	cant_undone = !current->group->can_undone;
-	if(errors || disbalance || cant_undone || !is_undo_group_possible())
+	int errors = (current->group->error != 0);
+	const int disbalance = (current->group->balance != 0);
+	const int cant_undo = !current->group->can_undone;
+	if(errors || disbalance || cant_undo || !is_undo_group_possible())
 	{
 		do
 			current = current->prev;
 		while(current != &cmds && current->group == current->next->group);
-		if(errors)
-			return 1;
-		else if(disbalance)
-			return -4;
-		else if(cant_undone)
-			return -5;
-		else
-			return -3;
+
+		if(errors)     return UN_ERR_ERRORS;
+		if(disbalance) return UN_ERR_BALANCE;
+		if(cant_undo)  return UN_ERR_NOUNDO;
+		return UN_ERR_BROKEN;
 	}
 
 	regs_sync_from_shared_memory();
 	current->group->balance--;
 
-	skip = 0;
+	int skip = 0;
+	int cancelled;
 	do
 	{
 		if(!skip)
@@ -527,18 +526,10 @@ undo_group(void)
 
 	regs_sync_to_shared_memory();
 
-	if(cancelled)
-	{
-		return -7;
-	}
-	else if(skip)
-	{
-		return -6;
-	}
-	else
-	{
-		return errors ? -2 : 0;
-	}
+	if(cancelled) return UN_ERR_CANCELLED;
+	if(skip)      return UN_ERR_SKIPPED;
+	if(errors)    return UN_ERR_FAIL;
+	return UN_ERR_SUCCESS;
 }
 
 static int
@@ -559,36 +550,32 @@ is_undo_group_possible(void)
 	return 1;
 }
 
-int
-redo_group(void)
+UnErrCode
+un_group_redo(void)
 {
-	int errors, disbalance;
-	int skip;
-	int cancelled;
 	assert(!group_opened);
 
 	if(current->next == NULL)
-		return -1;
+		return UN_ERR_NONE;
 
-	errors = current->next->group->error != 0;
-	disbalance = current->next->group->balance == 0;
+	int errors = (current->next->group->error != 0);
+	const int disbalance = (current->next->group->balance == 0);
 	if(errors || disbalance || !is_redo_group_possible())
 	{
 		do
 			current = current->next;
 		while(current->next != NULL && current->group == current->next->group);
-		if(errors)
-			return 1;
-		else if(disbalance)
-			return -4;
-		else
-			return -3;
+
+		if(errors)     return UN_ERR_ERRORS;
+		if(disbalance) return UN_ERR_BALANCE;
+		return UN_ERR_BROKEN;
 	}
 
 	regs_sync_from_shared_memory();
 	current->next->group->balance++;
 
-	skip = 0;
+	int skip = 0;
+	int cancelled;
 	do
 	{
 		current = current->next;
@@ -613,18 +600,10 @@ redo_group(void)
 
 	regs_sync_to_shared_memory();
 
-	if(cancelled)
-	{
-		return -7;
-	}
-	else if(skip)
-	{
-		return -6;
-	}
-	else
-	{
-		return errors ? -2 : 0;
-	}
+	if(cancelled) return UN_ERR_CANCELLED;
+	if(skip)      return UN_ERR_SKIPPED;
+	if(errors)    return UN_ERR_FAIL;
+	return UN_ERR_SUCCESS;
 }
 
 static int
@@ -676,7 +655,7 @@ is_op_possible(const op_t *op)
 }
 
 static void
-change_filename_in_trash(cmd_t *cmd, const char *filename)
+change_filename_in_trash(cmd_t *cmd, const char filename[])
 {
 	const char *name_tail;
 	char *new;
@@ -719,7 +698,7 @@ update_entry(const char **e, const char old[], const char new[])
 }
 
 char **
-undolist(int detail)
+un_get_list(int detail)
 {
 	char **list, **p;
 	int group_count;
@@ -764,7 +743,7 @@ fill_undolist_detail(char **list)
 	cmd = cmds.prev;
 	while(cmd != &cmds && left > 0)
 	{
-		if((*list = strdup(cmd->group->msg)) == NULL)
+		if((*list = format_str(" %s", cmd->group->msg)) == NULL)
 			break;
 
 		list++;
@@ -883,7 +862,7 @@ fill_undolist_nondetail(char **list)
 	cmd = cmds.prev;
 	while(cmd != &cmds && left-- > 0)
 	{
-		if((*list = strdup(cmd->group->msg)) == NULL)
+		if((*list = format_str(" %s", cmd->group->msg)) == NULL)
 			break;
 
 		do
@@ -896,7 +875,7 @@ fill_undolist_nondetail(char **list)
 }
 
 int
-get_undolist_pos(int detail)
+un_get_list_pos(int detail)
 {
 	cmd_t *cur = cmds.prev;
 	int result_group = 0;
@@ -914,6 +893,32 @@ get_undolist_pos(int detail)
 		cur = cur->prev;
 	}
 	return detail ? (result_group + result_cmd) : result_group;
+}
+
+void
+un_set_pos(int pos, int detail)
+{
+	assert(!group_opened);
+
+	cmd_t *cur = cmds.prev;
+	cmd_t *last = cur;
+
+	--pos;
+	while(pos >= 0 && cur != &cmds)
+	{
+		if(cur->group != last->group)
+		{
+			last = cur;
+			--pos;
+		}
+		if(detail)
+		{
+			pos -= 2;
+		}
+		cur = cur->prev;
+	}
+
+	current = (pos == 0 ? cur : last);
 }
 
 void

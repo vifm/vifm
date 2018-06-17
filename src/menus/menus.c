@@ -481,7 +481,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 
 	/* Clear the area. */
 	checked_wmove(menu_win, line, 1);
-	if(curr_stats.load_stage != 0)
+	if(curr_stats.load_stage > 0)
 	{
 		wprintw(menu_win, "%*s", width, "");
 	}

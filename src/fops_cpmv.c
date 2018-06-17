@@ -113,7 +113,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 
 	nmarked_files = fops_enqueue_marked_files(ops, view, path, 0);
 
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 	i = 0;
 	entry = NULL;
 	custom_fnames = (nlines > 0);
@@ -169,7 +169,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 
 		++i;
 	}
-	cmd_group_end();
+	un_group_close();
 
 	ui_views_reload_filelists();
 	if(from_file)
@@ -213,7 +213,7 @@ fops_replace(view_t *view, const char dst[], int force)
 	snprintf(undo_msg, sizeof(undo_msg), "Copying %s to %s",
 			replace_home_part(src_full), dst_dir);
 
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	ui_cancellation_reset();
 
@@ -228,7 +228,7 @@ fops_replace(view_t *view, const char dst[], int force)
 	if(!ui_cancellation_requested() && !is_valid_dir(dst_dir) &&
 			perform_operation(OP_MKDIR, NULL, cp, dst_dir, NULL) == 0)
 	{
-		add_operation(OP_MKDIR, cp, NULL, dst_dir, "");
+		un_group_add_op(OP_MKDIR, cp, NULL, dst_dir, "");
 	}
 
 	if(!ui_cancellation_requested())
@@ -237,7 +237,7 @@ fops_replace(view_t *view, const char dst[], int force)
 				1);
 	}
 
-	cmd_group_end();
+	un_group_close();
 
 	ui_views_reload_filelists();
 
@@ -611,7 +611,7 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 			dst);
 	if(result == 0 && !bg)
 	{
-		add_operation(file_op, NULL, NULL, src, dst);
+		un_group_add_op(file_op, NULL, NULL, src, dst);
 	}
 	return result;
 }

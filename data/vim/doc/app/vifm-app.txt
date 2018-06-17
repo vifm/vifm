@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Apr 18
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jun 16
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4558,6 +4558,10 @@ because their parent shell doesn't have any windows.
 
 e key displays errors of selected job if any were collected.  They are
 displayed in a new menu, but you can get back to jobs menu by pressing h.
+
+Undolist menu~
+
+r - reset undo position to group under the cursor.
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*

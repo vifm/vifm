@@ -82,14 +82,14 @@ TEST(merge_directories)
 		create_empty_dir("second/nested");
 		create_empty_file("second/nested/second-file");
 
-		cmd_group_begin("undo msg");
+		un_group_open("undo msg");
 
 		assert_non_null(ops = ops_alloc(OP_MOVEF, 0, "merge", ".", "."));
 		ops->crp = CRP_OVERWRITE_ALL;
 		assert_success(merge_dirs("first", "second", ops));
 		ops_free(ops);
 
-		cmd_group_end();
+		un_group_close();
 
 		/* Original directory must be deleted. */
 		assert_false(file_exists("first/nested"));
@@ -209,7 +209,7 @@ perform_merge(int op)
 	assert_success(os_stat("first/nested1", &src));
 #endif
 
-	cmd_group_begin("undo msg");
+	un_group_open("undo msg");
 
 	assert_non_null(ops = ops_alloc(op, 0, "merge", ".", "."));
 	ops->crp = CRP_OVERWRITE_ALL;
@@ -233,7 +233,7 @@ perform_merge(int op)
 	}
 	ops_free(ops);
 
-	cmd_group_end();
+	un_group_close();
 
 #ifndef _WIN32
 	{

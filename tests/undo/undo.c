@@ -52,43 +52,43 @@ exec_dummy(OPS op, void *data, const char *src, const char *dst)
 
 TEST(underflow)
 {
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
-	assert_int_equal(-1, undo_group());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 
 	assert_int_equal(4, i);
 }
 
 TEST(redo)
 {
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, redo_group());
-	assert_int_equal(0, redo_group());
-	assert_int_equal(0, redo_group());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
 
 	assert_int_equal(8, i);
 }
 
 TEST(list_truncating)
 {
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, redo_group());
-	assert_int_equal(0, redo_group());
-	assert_int_equal(0, redo_group());
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
 
-	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4",
+	un_group_open("msg4");
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg4",
 			"undo_msg4"));
-	cmd_group_end();
+	un_group_close();
 
-	assert_int_equal(-1, redo_group());
+	assert_int_equal(UN_ERR_NONE, un_group_redo());
 
 	assert_int_equal(11, i);
 }
@@ -97,16 +97,16 @@ TEST(cmd_1undo_1redo)
 {
 	static int undo_levels = 10;
 
-	reset_undo_list();
+	un_reset();
 	init_undo_list_for_tests(&exec_dummy, &undo_levels);
 
-	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_open("msg0");
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
+	un_group_close();
 
-	assert_int_equal(0, undo_group());
-	assert_int_equal(0, redo_group());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
 }
 
 static int
@@ -122,24 +122,24 @@ TEST(failed_operation)
 	static int undo_levels = 10;
 
 	init_undo_list_for_tests(&execute_fail, &undo_levels);
-	reset_undo_list();
+	un_reset();
 
-	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_open("msg0");
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
+	un_group_close();
 
-	cmd_group_begin("msg1");
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg1",
+	un_group_open("msg1");
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg1",
 			"undo_msg1"));
-	cmd_group_end();
+	un_group_close();
 
-	assert_int_equal(0, undo_group());
-	assert_int_equal(-2, undo_group());
-	assert_int_equal(-1, undo_group());
-	assert_int_equal(1, redo_group());
-	assert_int_equal(0, redo_group());
-	assert_int_equal(-1, redo_group());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_FAIL, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
+	assert_int_equal(UN_ERR_ERRORS, un_group_redo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(UN_ERR_NONE, un_group_redo());
 }
 
 TEST(disbalance)
@@ -147,33 +147,33 @@ TEST(disbalance)
 	static int undo_levels = 10;
 
 	init_undo_list_for_tests(&execute_fail, &undo_levels);
-	reset_undo_list();
+	un_reset();
 
-	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation(OP_COPY, NULL, NULL, "do_msg0",
+	un_group_open("msg0");
+	assert_int_equal(0, un_group_add_op(OP_COPY, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
+	un_group_close();
 
-	cmd_group_begin("msg1");
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg1",
+	un_group_open("msg1");
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg1",
 			"undo_msg1"));
-	cmd_group_end();
+	un_group_close();
 
-	assert_int_equal(0, undo_group());
-	assert_int_equal(-3, undo_group());
-	assert_int_equal(-1, undo_group());
-	assert_int_equal(-4, redo_group());
-	assert_int_equal(0, redo_group());
-	assert_int_equal(-1, redo_group());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_BROKEN, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
+	assert_int_equal(UN_ERR_BALANCE, un_group_redo());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_redo());
+	assert_int_equal(UN_ERR_NONE, un_group_redo());
 }
 
 TEST(cannot_be_undone)
 {
-	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation(OP_REMOVE, NULL, NULL, "do_msg0", ""));
-	cmd_group_end();
+	un_group_open("msg0");
+	assert_int_equal(0, un_group_add_op(OP_REMOVE, NULL, NULL, "do_msg0", ""));
+	un_group_close();
 
-	assert_int_equal(-5, undo_group());
+	assert_int_equal(UN_ERR_NOUNDO, un_group_undo());
 }
 
 TEST(removing_of_incomplete_groups)
@@ -183,19 +183,19 @@ TEST(removing_of_incomplete_groups)
 
 	init_undo_list_for_tests(&exec_dummy, &undo_levels);
 
-	cmd_group_begin("msg0");
+	un_group_open("msg0");
 	for(i = 0; i < 10; i++)
-		assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+		assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 				"undo_msg0"));
-	cmd_group_end();
+	un_group_close();
 
-	cmd_group_begin("msg1");
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg1",
+	un_group_open("msg1");
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg1",
 			"undo_msg1"));
-	cmd_group_end();
+	un_group_close();
 
-	assert_int_equal(0, undo_group());
-	assert_int_equal(-1, undo_group());
+	assert_int_equal(UN_ERR_SUCCESS, un_group_undo());
+	assert_int_equal(UN_ERR_NONE, un_group_undo());
 }
 
 static int
@@ -209,13 +209,13 @@ TEST(skipping)
 	static int undo_levels = 10;
 	init_undo_list_for_tests(&exec_skip, &undo_levels);
 
-	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_open("msg0");
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
+	un_group_close();
 
-	assert_int_equal(-6, undo_group());
-	assert_int_equal(-4, redo_group());
+	assert_int_equal(UN_ERR_SKIPPED, un_group_undo());
+	assert_int_equal(UN_ERR_BALANCE, un_group_redo());
 }
 
 TEST(to_many_commands_and_continue)
@@ -223,34 +223,34 @@ TEST(to_many_commands_and_continue)
 	static int undo_levels = 3;
 	init_undo_list_for_tests(&exec_skip, &undo_levels);
 
-	cmd_group_begin("msg0");
-	cmd_group_end();
+	un_group_open("msg0");
+	un_group_close();
 
-	cmd_group_continue();
-	free(replace_group_msg("HI"));
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_reopen_last();
+	free(un_replace_group_msg("HI"));
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
-	cmd_group_continue();
-	free(replace_group_msg("HI"));
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_close();
+	un_group_reopen_last();
+	free(un_replace_group_msg("HI"));
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
-	cmd_group_continue();
-	free(replace_group_msg("HI"));
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_close();
+	un_group_reopen_last();
+	free(un_replace_group_msg("HI"));
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
-	cmd_group_continue();
-	free(replace_group_msg("HI"));
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_close();
+	un_group_reopen_last();
+	free(un_replace_group_msg("HI"));
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
-	cmd_group_continue();
-	free(replace_group_msg("HI"));
-	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
+	un_group_close();
+	un_group_reopen_last();
+	free(un_replace_group_msg("HI"));
+	assert_int_equal(0, un_group_add_op(OP_MOVE, NULL, NULL, "do_msg0",
 			"undo_msg0"));
-	cmd_group_end();
+	un_group_close();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

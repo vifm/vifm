@@ -1151,13 +1151,16 @@ resize_for_menu_like(void)
 void
 ui_setup_for_menu_like(void)
 {
-	scrollok(menu_win, FALSE);
-	curs_set(0);
-	werase(menu_win);
-	werase(status_bar);
-	werase(ruler_win);
-	wrefresh(status_bar);
-	wrefresh(ruler_win);
+	if(curr_stats.load_stage > 0)
+	{
+		scrollok(menu_win, FALSE);
+		curs_set(0);
+		werase(menu_win);
+		werase(status_bar);
+		werase(ruler_win);
+		wrefresh(status_bar);
+		wrefresh(ruler_win);
+	}
 }
 
 /* Query terminal size from the "device" and pass it to curses library. */

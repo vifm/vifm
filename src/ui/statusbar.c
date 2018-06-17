@@ -186,7 +186,7 @@ status_bar_message(const char msg[], int error)
 
 	/* We bail out here instead of right at the top to record the message to make
 	 * it accessible in tests. */
-	if(curr_stats.load_stage == 0)
+	if(curr_stats.load_stage <= 0)
 	{
 		return;
 	}

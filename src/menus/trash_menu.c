@@ -87,8 +87,8 @@ restore_current(menu_data_t *m)
 	char *trash_path;
 	int err;
 
-	cmd_group_begin("restore: ");
-	cmd_group_end();
+	un_group_open("restore: ");
+	un_group_close();
 
 	/* The string is freed in restore_from_trash(), thus must be cloned. */
 	trash_path = strdup(trash_list[m->pos].trash_name);

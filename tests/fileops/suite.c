@@ -8,7 +8,7 @@
 #include "../../src/undo.h"
 
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
-static void init_undo_list_for_tests(perform_func exec_func,
+static void init_undo_list_for_tests(un_perform_func exec_func,
 		const int *max_levels);
 static int op_avail(OPS op);
 
@@ -35,7 +35,7 @@ TEARDOWN()
 	free(cfg.slow_fs_list);
 	free(cfg.delete_prg);
 
-	reset_undo_list();
+	un_reset();
 }
 
 static int
@@ -45,9 +45,9 @@ exec_func(OPS op, void *data, const char *src, const char *dst)
 }
 
 static void
-init_undo_list_for_tests(perform_func exec_func, const int *max_levels)
+init_undo_list_for_tests(un_perform_func exec_func, const int *max_levels)
 {
-	init_undo_list(exec_func, &op_avail, NULL, max_levels);
+	un_init(exec_func, &op_avail, NULL, max_levels);
 }
 
 static int

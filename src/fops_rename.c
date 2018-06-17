@@ -139,9 +139,9 @@ rename_file_cb(const char new_name[])
 
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(forigin), fname, new);
-	cmd_group_begin(buf);
+	un_group_open(buf);
 	mv_res = fops_mv_file(fname, forigin, new, forigin, OP_MOVE, 1, NULL);
-	cmd_group_end();
+	un_group_close();
 	if(mv_res != 0)
 	{
 		show_error_msg("Rename Error", "Rename operation failed");
@@ -317,7 +317,7 @@ perform_renaming(view_t *view, char *files[], char is_dup[], int len,
 		undo_msg_len += strlen(undo_msg + undo_msg_len);
 	}
 
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	/* Stage 1: give files that are in both source and destination lists temporary
 	 *          names. */
@@ -336,10 +336,10 @@ perform_renaming(view_t *view, char *files[], char is_dup[], int len,
 		if(fops_mv_file(files[i], curr_dir, unique_name, curr_dir, OP_MOVETMP2, 1,
 					NULL) != 0)
 		{
-			cmd_group_end();
-			if(!last_cmd_group_empty())
+			un_group_close();
+			if(!un_last_group_empty())
 			{
-				undo_group();
+				un_group_undo();
 			}
 			show_error_msg("Rename", "Failed to perform temporary rename");
 			curr_stats.save_msg = 1;
@@ -395,7 +395,7 @@ perform_renaming(view_t *view, char *files[], char is_dup[], int len,
 		}
 	}
 
-	cmd_group_end();
+	un_group_close();
 
 	free_string_array(orig_names, len);
 	return renamed;
@@ -468,7 +468,7 @@ fops_incdec(view_t *view, int k)
 	nrenamed = 0;
 
 	/* Two-step renaming. */
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	entry = NULL;
 	i = 0;
@@ -503,15 +503,15 @@ fops_incdec(view_t *view, int k)
 		++nrenamed;
 	}
 
-	cmd_group_end();
+	un_group_close();
 
 	free_string_array(tmp_names, tmp_len);
 
 	if(err)
 	{
-		if(err > 0 && !last_cmd_group_empty())
+		if(err > 0 && !un_last_group_empty())
 		{
-			undo_group();
+			un_group_undo();
 		}
 	}
 
@@ -893,7 +893,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 				replace_home_part(flist_get_dir(view)));
 	}
 	fops_append_marked_files(view, undo_msg, NULL);
-	cmd_group_begin(undo_msg);
+	un_group_open(undo_msg);
 
 	nrenamed = 0;
 	i = 0;
@@ -909,7 +909,7 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 		}
 	}
 
-	cmd_group_end();
+	un_group_close();
 	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 
 	return 1;

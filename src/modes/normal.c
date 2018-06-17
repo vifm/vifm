@@ -683,50 +683,45 @@ cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 {
-	int ret;
-
 	curr_stats.confirmed = 0;
 	ui_cancellation_reset();
 
 	ui_sb_msg("Redoing...");
 
-	ret = redo_group();
+	switch(un_group_redo())
+	{
+		case UN_ERR_SUCCESS:
+			ui_views_reload_visible_filelists();
+			ui_sb_msg("Redone one group");
+			break;
+		case UN_ERR_FAIL:
+			ui_views_reload_visible_filelists();
+			ui_sb_err("Redone one group with errors");
+			break;
+		case UN_ERR_NONE:
+			ui_sb_msg("Nothing to redo");
+			break;
+		case UN_ERR_BROKEN:
+			ui_sb_err("Can't redo group, it was skipped");
+			break;
+		case UN_ERR_BALANCE:
+			ui_sb_err("Can't redo what wasn't undone");
+			break;
+		case UN_ERR_SKIPPED:
+			ui_sb_msg("Group redo skipped by user");
+			break;
+		case UN_ERR_CANCELLED:
+			ui_views_reload_visible_filelists();
+			ui_sb_msg("Redoing was cancelled");
+			break;
+		case UN_ERR_ERRORS:
+			ui_sb_err("Redo operation was skipped due to previous errors");
+			break;
+		case UN_ERR_NOUNDO:
+			assert(0 && "un_group_redo() shouldn't return UN_ERR_NOUNDO!");
+			break;
+	}
 
-	if(ret == 0)
-	{
-		ui_views_reload_visible_filelists();
-		ui_sb_msg("Redone one group");
-	}
-	else if(ret == -2)
-	{
-		ui_views_reload_visible_filelists();
-		ui_sb_err("Redone one group with errors");
-	}
-	else if(ret == -1)
-	{
-		ui_sb_msg("Nothing to redo");
-	}
-	else if(ret == -3)
-	{
-		ui_sb_err("Can't redo group, it was skipped");
-	}
-	else if(ret == -4)
-	{
-		ui_sb_err("Can't redo what wasn't undone");
-	}
-	else if(ret == -6)
-	{
-		ui_sb_msg("Group redo skipped by user");
-	}
-	else if(ret == -7)
-	{
-		ui_views_reload_visible_filelists();
-		ui_sb_msg("Redoing was cancelled");
-	}
-	else if(ret == 1)
-	{
-		ui_sb_err("Redo operation was skipped due to previous errors");
-	}
 	curr_stats.save_msg = 1;
 }
 
@@ -1871,54 +1866,45 @@ cmd_t(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	int ret;
-
 	curr_stats.confirmed = 0;
 	ui_cancellation_reset();
 
 	ui_sb_msg("Undoing...");
 
-	ret = undo_group();
+	switch(un_group_undo())
+	{
+		case UN_ERR_SUCCESS:
+			ui_views_reload_visible_filelists();
+			ui_sb_msg("Undone one group");
+			break;
+		case UN_ERR_FAIL:
+			ui_views_reload_visible_filelists();
+			ui_sb_err("Undone one group with errors");
+			break;
+		case UN_ERR_NONE:
+			ui_sb_msg("Nothing to undo");
+			break;
+		case UN_ERR_BROKEN:
+			ui_sb_err("Can't undo group, it was skipped");
+			break;
+		case UN_ERR_BALANCE:
+			ui_sb_err("Can't undo what wasn't redone");
+			break;
+		case UN_ERR_NOUNDO:
+			ui_sb_err("Operation cannot be undone");
+			break;
+		case UN_ERR_SKIPPED:
+			ui_sb_msg("Group undo skipped by user");
+			break;
+		case UN_ERR_CANCELLED:
+			ui_views_reload_visible_filelists();
+			ui_sb_msg("Undoing was cancelled");
+			break;
+		case UN_ERR_ERRORS:
+			ui_sb_err("Undo operation was skipped due to previous errors");
+			break;
+	}
 
-	if(ret == 0)
-	{
-		ui_views_reload_visible_filelists();
-		ui_sb_msg("Undone one group");
-	}
-	else if(ret == -2)
-	{
-		ui_views_reload_visible_filelists();
-		ui_sb_err("Undone one group with errors");
-	}
-	else if(ret == -1)
-	{
-		ui_sb_msg("Nothing to undo");
-	}
-	else if(ret == -3)
-	{
-		ui_sb_err("Can't undo group, it was skipped");
-	}
-	else if(ret == -4)
-	{
-		ui_sb_err("Can't undo what wasn't redone");
-	}
-	else if(ret == -5)
-	{
-		ui_sb_err("Operation cannot be undone");
-	}
-	else if(ret == -6)
-	{
-		ui_sb_msg("Group undo skipped by user");
-	}
-	else if(ret == -7)
-	{
-		ui_views_reload_visible_filelists();
-		ui_sb_msg("Undoing was cancelled");
-	}
-	else if(ret == 1)
-	{
-		ui_sb_err("Undo operation was skipped due to previous errors");
-	}
 	curr_stats.save_msg = 1;
 }
 

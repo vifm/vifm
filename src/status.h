@@ -124,7 +124,7 @@ typedef struct
 	int register_saved;
 	int number_of_windows;
 	int drop_new_dir_hist; /* Skip recording of new directory history. */
-	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
+	int load_stage; /* -1 - test, 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
 	preview_t preview; /* State of preview (quickview). */
 
