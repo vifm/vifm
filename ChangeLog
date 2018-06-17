@@ -93,6 +93,8 @@
 
 	More accurate error message on handling non directories passed to :cd.
 
+	Slightly better formatting in :undolist menu.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

@@ -48,7 +48,7 @@ show_undolist_menu(view_t *view, int with_details)
 	/* Add additional entry before setting position. */
 	if(m.len > 0)
 	{
-		m.len = add_to_string_array(&m.items, m.len, 1, "<<< list end >>>");
+		m.len = add_to_string_array(&m.items, m.len, 1, " <<< list end >>>");
 	}
 
 	menus_set_pos(m.state, un_get_list_pos(with_details));
@@ -81,17 +81,8 @@ undolist_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 static void
 set_mark(menu_data_t *m, int pos)
 {
-	if(m->len == 0)
+	if(m->len != 0 && m->items[pos] != NULL)
 	{
-		return;
-	}
-
-	const size_t len = (m->items[pos] != NULL ? strlen(m->items[pos]) : 0);
-	char *const new_line = realloc(m->items[pos], len + 1U + 1U);
-	if(new_line != NULL)
-	{
-		m->items[pos] = new_line;
-		memmove(m->items[pos] + 1, m->items[pos], len + 1U);
 		m->items[pos][0] = '*';
 	}
 }
@@ -100,10 +91,9 @@ set_mark(menu_data_t *m, int pos)
 static void
 unset_mark(menu_data_t *m, int pos)
 {
-	if(m->len != 0)
+	if(m->len != 0 && m->items[pos] != NULL)
 	{
-		const size_t len = (m->items[pos] != NULL ? strlen(m->items[pos]) : 0);
-		memmove(m->items[pos], m->items[pos] + 1, len);
+		m->items[pos][0] = ' ';
 	}
 }
 

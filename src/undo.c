@@ -743,7 +743,7 @@ fill_undolist_detail(char **list)
 	cmd = cmds.prev;
 	while(cmd != &cmds && left > 0)
 	{
-		if((*list = strdup(cmd->group->msg)) == NULL)
+		if((*list = format_str(" %s", cmd->group->msg)) == NULL)
 			break;
 
 		list++;
@@ -862,7 +862,7 @@ fill_undolist_nondetail(char **list)
 	cmd = cmds.prev;
 	while(cmd != &cmds && left-- > 0)
 	{
-		if((*list = strdup(cmd->group->msg)) == NULL)
+		if((*list = format_str(" %s", cmd->group->msg)) == NULL)
 			break;
 
 		do
