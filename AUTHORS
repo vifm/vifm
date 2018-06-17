@@ -118,3 +118,5 @@ picked up change in file system.
 
 Ma_Sys.ma implemented 'syncregs' option which defines group of instances that
 share registers.
+
+Konst Mayer (a.k.a. cdlscpmv) dropped leading space from value of 'timefmt'.

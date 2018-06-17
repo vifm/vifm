@@ -1023,7 +1023,7 @@ write_options(FILE *fp)
 	fprintf(fp, "=tabscope=%s\n",
 			escape_spaces(get_option_value("tabscope", OPT_GLOBAL)));
 	fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
-	fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
+	fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format));
 	fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
 	fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
 	fprintf(fp, "=tuioptions=%s\n",
