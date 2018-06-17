@@ -88,7 +88,6 @@ static char * double_commas(const char str[]);
 static void init_cpoptions(optval_t *val);
 static void init_dirsize(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
-static void init_timefmt(optval_t *val);
 static void init_trashdir(optval_t *val);
 static void init_dotfiles(optval_t *val);
 static void init_lsoptions(optval_t *val);
@@ -758,7 +757,7 @@ options[] = {
 	},
 	{ "timefmt", "", "time format",
 	  OPT_STR, 0, NULL, &timefmt_handler, NULL,
-	  { .init = &init_timefmt },
+	  { .ref.str_val = &cfg.time_format },
 	},
 	{ "timeoutlen", "tm", "delay on ambiguous key sequence",
 	  OPT_INT, 0, NULL, &timeoutlen_handler, NULL,
@@ -1071,12 +1070,6 @@ to_endpoint(int i, char buffer[])
 {
 	sprintf(buffer, "%d", i);
 	return buffer;
-}
-
-static void
-init_timefmt(optval_t *val)
-{
-	val->str_val = cfg.time_format;
 }
 
 static void
@@ -3193,12 +3186,11 @@ tabstop_handler(OPT_OP op, optval_t val)
 	text_option_changed();
 }
 
+/* Sets format according to which time is displayed. */
 static void
 timefmt_handler(OPT_OP op, optval_t val)
 {
-	free(cfg.time_format);
-	cfg.time_format = strdup(val.str_val);
-
+	replace_string(&cfg.time_format, val.str_val);
 	redraw_lists();
 }
 
