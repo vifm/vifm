@@ -820,7 +820,7 @@ parse_concat_expr(const char **in)
 }
 
 /* term ::= signed_number | number | sqstr | dqstr | envvar | builtinvar |
- *          funccall | opt | logical_not */
+ *          funccall | opt | logical_not | '(' or_expr ')' */
 static expr_t
 parse_term(const char **in)
 {
@@ -854,6 +854,21 @@ parse_term(const char **in)
 		case EMARK:
 			get_next(in);
 			result = parse_logical_not(in);
+			break;
+		case LPAREN:
+			get_next(in);
+			result = parse_or_expr(in);
+			if(last_token.type == RPAREN)
+			{
+				get_next(in);
+			}
+			else
+			{
+				free_expr(&result);
+				result = null_expr;
+				result.value = var_error();
+				last_error = PE_INVALID_EXPRESSION;
+			}
 			break;
 
 		case SYM:

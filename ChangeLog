@@ -59,6 +59,9 @@
 	Added r key to :undolist menu, which resets position in the undo list to
 	group under the cursor.  Thanks to mini-turtle.
 
+	Added grouping via parentheses to expressions.  Thanks to Konst
+	Mayer (a.k.a. cdlscpmv).
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
