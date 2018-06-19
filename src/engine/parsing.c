@@ -826,6 +826,7 @@ static expr_t
 parse_term(const char **in)
 {
 	expr_t result = { .op_type = OP_NONE };
+	const char *old_in = *in - 1;
 
 	switch(last_token.type)
 	{
@@ -869,6 +870,7 @@ parse_term(const char **in)
 				result = null_expr;
 				result.value = var_error();
 				last_error = PE_MISSING_PAREN;
+				last_position = old_in;
 			}
 			break;
 
@@ -952,6 +954,7 @@ static var_t
 parse_singly_quoted_string(const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX + 1];
+	const char *old_in = *in - 2;
 	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
 	while(parse_singly_quoted_char(in, &sbuf));
@@ -968,6 +971,7 @@ parse_singly_quoted_string(const char **in)
 	}
 
 	last_error = PE_MISSING_QUOTE;
+	last_position = old_in;
 	return var_false();
 }
 
@@ -1004,7 +1008,8 @@ parse_singly_quoted_char(const char **in, sbuffer *sbuf)
 static var_t
 parse_doubly_quoted_string(const char **in)
 {
-	char buffer[CMD_LINE_LENGTH_MAX];
+	char buffer[CMD_LINE_LENGTH_MAX + 1];
+	const char *old_in = *in - 2;
 	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
 	while(parse_doubly_quoted_char(in, &sbuf));
@@ -1021,6 +1026,7 @@ parse_doubly_quoted_string(const char **in)
 	}
 
 	last_error = PE_MISSING_QUOTE;
+	last_position = old_in;
 	return var_false();
 }
 
