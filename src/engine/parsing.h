@@ -28,6 +28,7 @@ typedef enum
 	PE_INVALID_EXPRESSION,    /* Wrong expression construct. */
 	PE_INVALID_SUBEXPRESSION, /* Wrong subexpression construct. */
 	PE_MISSING_QUOTE,         /* Missing closing quote. */
+	PE_MISSING_PAREN,         /* Missing closing paren. */
 	PE_INTERNAL,              /* Internal error (e.g. not enough memory). */
 }
 ParsingErrors;

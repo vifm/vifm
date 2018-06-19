@@ -867,7 +867,7 @@ parse_term(const char **in)
 				free_expr(&result);
 				result = null_expr;
 				result.value = var_error();
-				last_error = PE_INVALID_EXPRESSION;
+				last_error = PE_MISSING_PAREN;
 			}
 			break;
 

@@ -418,6 +418,10 @@ report_parsing_error(ParsingErrors error)
 			vle_tb_append_linef(vle_err, "%s: %s",
 					"Invalid :let expression (missing quote)", get_last_position());
 			break;
+		case PE_MISSING_PAREN:
+			vle_tb_append_linef(vle_err, "%s: %s",
+					"Expression is missing closing parenthesis", get_last_position());
+			break;
 		case PE_INTERNAL:
 			vle_tb_append_line(vle_err, "Internal error");
 			break;
