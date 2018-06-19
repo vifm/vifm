@@ -62,6 +62,9 @@ var_t get_parsing_result(void);
 /* Returns non-zero if previously read token was whitespace. */
 int is_prev_token_whitespace(void);
 
+/* Appends error message with details to the error stream. */
+void report_parsing_error(ParsingErrors error);
+
 #endif /* VIFM__ENGINE__PARSING_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

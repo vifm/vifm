@@ -54,6 +54,7 @@
 #include "private/options.h"
 #include "functions.h"
 #include "options.h"
+#include "text_buffer.h"
 #include "var.h"
 #include "variables.h"
 
@@ -1471,6 +1472,36 @@ get_next(const char **in)
 
 	strncpy(last_token.str, start, *in - start);
 	last_token.str[*in - start] = '\0';
+}
+
+void
+report_parsing_error(ParsingErrors error)
+{
+	switch(error)
+	{
+		case PE_NO_ERROR:
+			/* Not an error. */
+			break;
+		case PE_INVALID_EXPRESSION:
+			vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
+					get_last_position());
+			break;
+		case PE_INVALID_SUBEXPRESSION:
+			vle_tb_append_linef(vle_err, "%s: %s", "Invalid subexpression",
+					get_last_position());
+			break;
+		case PE_MISSING_QUOTE:
+			vle_tb_append_linef(vle_err, "%s: %s",
+					"Expression is missing closing quote", get_last_position());
+			break;
+		case PE_MISSING_PAREN:
+			vle_tb_append_linef(vle_err, "%s: %s",
+					"Expression is missing closing parenthesis", get_last_position());
+			break;
+		case PE_INTERNAL:
+			vle_tb_append_line(vle_err, "Internal error");
+			break;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
