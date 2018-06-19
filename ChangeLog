@@ -100,6 +100,9 @@
 
 	Report missing closing quote for ""-strings in expressions.
 
+	Make :echo and :execute report parsing errors in more detail than just
+	"invalid expression".
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
