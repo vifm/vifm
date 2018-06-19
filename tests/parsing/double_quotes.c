@@ -18,6 +18,11 @@ TEST(simple_ok)
 	ASSERT_OK("\"test\"", "test");
 }
 
+TEST(not_closed_error)
+{
+	ASSERT_FAIL("\"test", PE_MISSING_QUOTE);
+}
+
 TEST(concatenation)
 {
 	ASSERT_OK("\"NV\".\"AR\"", "NVAR");

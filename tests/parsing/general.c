@@ -52,10 +52,10 @@ TEST(spaces_and_fail_position_correct)
 
 TEST(nothing_but_comment)
 {
-	ASSERT_FAIL("\"", PE_INVALID_EXPRESSION);
-	ASSERT_FAIL("\" this is a comment", PE_INVALID_EXPRESSION);
-	ASSERT_FAIL("    \"this is a comment", PE_INVALID_EXPRESSION);
-	ASSERT_FAIL("    \"", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL("\"", PE_MISSING_QUOTE);
+	ASSERT_FAIL("\" this is a comment", PE_MISSING_QUOTE);
+	ASSERT_FAIL("    \"this is a comment", PE_MISSING_QUOTE);
+	ASSERT_FAIL("    \"", PE_MISSING_QUOTE);
 }
 
 TEST(expression_and_comment)
@@ -64,8 +64,8 @@ TEST(expression_and_comment)
 	ASSERT_OK("'str'\" this is a comment", "str");
 	ASSERT_OK(" 1 && 0 \"this is a comment", "0");
 
-	ASSERT_FAIL(" +   \"", PE_INVALID_EXPRESSION);
-	ASSERT_FAIL(" 4 || \"", PE_INVALID_EXPRESSION);
+	ASSERT_FAIL(" +   \"", PE_MISSING_QUOTE);
+	ASSERT_FAIL(" 4 || \"", PE_MISSING_QUOTE);
 }
 
 TEST(priority_of_operators)

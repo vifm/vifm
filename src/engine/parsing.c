@@ -1019,9 +1019,7 @@ parse_doubly_quoted_string(const char **in)
 		return var_from_str(buffer);
 	}
 
-	last_error = (last_token.type == END)
-	           ? PE_INVALID_EXPRESSION
-	           : PE_MISSING_QUOTE;
+	last_error = PE_MISSING_QUOTE;
 	return var_false();
 }
 

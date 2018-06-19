@@ -98,6 +98,8 @@
 
 	Slightly better formatting in :undolist menu.
 
+	Report missing closing quote for ""-strings in expressions.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
