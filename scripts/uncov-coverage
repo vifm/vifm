@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# This script uses separate git worktree (created if doesn't exist) to build
+# with with coverage support and collect it using uncov.
+#
+# Doesn't process arguments.
+
+set -e
+
+# path to worktree that measures coverage relative to repository location
+coverage_path=../vifm-coverage
+
+# cd to the root of the repository
+cd "$(readlink -f "$(dirname "$0")")/.."
+
+original_worktree=$(readlink -f .)
+coverage_worktree=$(readlink -f "$coverage_path")
+
+branch="$(basename "$(git symbolic-ref HEAD 2> /dev/null)")"
+if [ -z "$branch" ]; then
+    branch="no-branch"
+fi
+
+git stash save --include-untracked 'temporary stash of uncov-coverage script'
+git stash apply --index
+
+if [ -d "$coverage_worktree" ]; then
+    cd "$coverage_worktree/src"
+else
+    git worktree add --detach "$coverage_worktree"
+    cd "$coverage_worktree"
+    ./configure --enable-coverage CFLAGS=-O0
+    cd src
+fi
+
+git clean --force -d ..
+git checkout --force stash@{0}^
+git stash pop
+
+find -name '*.gcov' -delete
+find -name '*.gcda' -delete
+make check
+find -name '*.o' -exec gcov -p {} + > gcov.out || (cat gcov.out && false)
+
+uncov-gcov --root "$coverage_worktree" \
+           --build-root "$coverage_worktree/src" \
+           --no-gcov \
+           --exclude "$coverage_worktree/tests" \
+           --ref-name "$branch" \
+           --capture-worktree |
+uncov "$original_worktree" new
