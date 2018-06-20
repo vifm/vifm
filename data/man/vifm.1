@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 16, 2018" "vifm 0.9.1"
+.TH VIFM 1 "June 18, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4753,6 +4753,7 @@ expr7      number                  number constant
            $VAR                    environment variable
            v:var                   builtin variable
            function(expr1, ...)    function call
+           (expr1)                 nested expression
 
 ".." indicates that the operations in this level can be concatenated.
 
@@ -5016,6 +5017,16 @@ Examples:
   "'" . filetype('.') . "'"
   filetype('.') == 'reg'
 .EE
+
+expression nesting
+.br
+------------------
+.br
+(expr1)               nested expression
+
+Groups any other expression of arbitrary complexity enforcing order in which
+operators are applied.
+
 .\" ---------------------------------------------------------------------------
 .SH Functions
 .\" ---------------------------------------------------------------------------

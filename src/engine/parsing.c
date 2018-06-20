@@ -54,6 +54,7 @@
 #include "private/options.h"
 #include "functions.h"
 #include "options.h"
+#include "text_buffer.h"
 #include "var.h"
 #include "variables.h"
 
@@ -820,11 +821,12 @@ parse_concat_expr(const char **in)
 }
 
 /* term ::= signed_number | number | sqstr | dqstr | envvar | builtinvar |
- *          funccall | opt | logical_not */
+ *          funccall | opt | logical_not | '(' or_expr ')' */
 static expr_t
 parse_term(const char **in)
 {
 	expr_t result = { .op_type = OP_NONE };
+	const char *old_in = *in - 1;
 
 	switch(last_token.type)
 	{
@@ -854,6 +856,22 @@ parse_term(const char **in)
 		case EMARK:
 			get_next(in);
 			result = parse_logical_not(in);
+			break;
+		case LPAREN:
+			get_next(in);
+			result = parse_or_expr(in);
+			if(last_token.type == RPAREN)
+			{
+				get_next(in);
+			}
+			else
+			{
+				free_expr(&result);
+				result = null_expr;
+				result.value = var_error();
+				last_error = PE_MISSING_PAREN;
+				last_position = old_in;
+			}
 			break;
 
 		case SYM:
@@ -936,6 +954,7 @@ static var_t
 parse_singly_quoted_string(const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX + 1];
+	const char *old_in = *in - 2;
 	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
 	while(parse_singly_quoted_char(in, &sbuf));
@@ -952,6 +971,7 @@ parse_singly_quoted_string(const char **in)
 	}
 
 	last_error = PE_MISSING_QUOTE;
+	last_position = old_in;
 	return var_false();
 }
 
@@ -988,7 +1008,8 @@ parse_singly_quoted_char(const char **in, sbuffer *sbuf)
 static var_t
 parse_doubly_quoted_string(const char **in)
 {
-	char buffer[CMD_LINE_LENGTH_MAX];
+	char buffer[CMD_LINE_LENGTH_MAX + 1];
+	const char *old_in = *in - 2;
 	sbuffer sbuf = { .data = buffer, .size = sizeof(buffer) };
 	buffer[0] = '\0';
 	while(parse_doubly_quoted_char(in, &sbuf));
@@ -1004,9 +1025,8 @@ parse_doubly_quoted_string(const char **in)
 		return var_from_str(buffer);
 	}
 
-	last_error = (last_token.type == END)
-	           ? PE_INVALID_EXPRESSION
-	           : PE_MISSING_QUOTE;
+	last_error = PE_MISSING_QUOTE;
+	last_position = old_in;
 	return var_false();
 }
 
@@ -1458,6 +1478,36 @@ get_next(const char **in)
 
 	strncpy(last_token.str, start, *in - start);
 	last_token.str[*in - start] = '\0';
+}
+
+void
+report_parsing_error(ParsingErrors error)
+{
+	switch(error)
+	{
+		case PE_NO_ERROR:
+			/* Not an error. */
+			break;
+		case PE_INVALID_EXPRESSION:
+			vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
+					get_last_position());
+			break;
+		case PE_INVALID_SUBEXPRESSION:
+			vle_tb_append_linef(vle_err, "%s: %s", "Invalid subexpression",
+					get_last_position());
+			break;
+		case PE_MISSING_QUOTE:
+			vle_tb_append_linef(vle_err, "%s: %s",
+					"Expression is missing closing quote", get_last_position());
+			break;
+		case PE_MISSING_PAREN:
+			vle_tb_append_linef(vle_err, "%s: %s",
+					"Expression is missing closing parenthesis", get_last_position());
+			break;
+		case PE_INTERNAL:
+			vle_tb_append_line(vle_err, "Internal error");
+			break;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

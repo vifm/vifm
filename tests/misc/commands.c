@@ -12,6 +12,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
+#include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
@@ -727,6 +728,33 @@ TEST(goto_command)
 	assert_success(exec_commands("goto tree", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, test_data));
 	assert_string_equal("tree", get_current_file_name(&lwin));
+}
+
+TEST(echo_reports_all_errors)
+{
+	const char *expected;
+
+	expected = "Expression is missing closing quote: \"hi\n"
+	           "Invalid expression: \"hi";
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("echo \"hi", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
+
+	expected = "Expression is missing closing parenthesis: (1\n"
+	           "Invalid expression: (1";
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("echo (1", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
+
+	char zeroes[8192] = "echo ";
+	memset(zeroes + strlen(zeroes), '0', sizeof(zeroes) - (strlen(zeroes) + 1U));
+	zeroes[sizeof(zeroes) - 1U] = '\0';
+
+	ui_sb_msg("");
+	assert_failure(exec_commands(zeroes, &lwin, CIT_COMMAND));
+	assert_true(strchr(ui_sb_last(), '\n') != NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

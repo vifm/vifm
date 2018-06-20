@@ -89,7 +89,6 @@ static int extract_name(const char **in, VariableType *type, size_t buf_len,
 static int extract_op(const char **in, VariableOperation *vo);
 static int parse_name(const char **in, const char first[], const char other[],
 		size_t buf_len, char buf[]);
-static void report_parsing_error(ParsingErrors error);
 static int is_valid_op(const char name[], VariableType vt,
 		VariableOperation vo);
 static int perform_op(const char name[], VariableType vt,
@@ -395,33 +394,6 @@ parse_name(const char **in, const char first[], const char other[],
 	while(--buf_len > 1UL && char_is_one_of(other, **in));
 
 	return 0;
-}
-
-/* Appends error message with details to the error stream. */
-static void
-report_parsing_error(ParsingErrors error)
-{
-	switch(error)
-	{
-		case PE_NO_ERROR:
-			/* Not an error. */
-			break;
-		case PE_INVALID_EXPRESSION:
-			vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
-					get_last_position());
-			break;
-		case PE_INVALID_SUBEXPRESSION:
-			vle_tb_append_linef(vle_err, "%s: %s", "Invalid subexpression",
-					get_last_position());
-			break;
-		case PE_MISSING_QUOTE:
-			vle_tb_append_linef(vle_err, "%s: %s",
-					"Invalid :let expression (missing quote)", get_last_position());
-			break;
-		case PE_INTERNAL:
-			vle_tb_append_line(vle_err, "Internal error");
-			break;
-	}
 }
 
 /* Validates operation on a specific variable type.  Returns non-zero for valid

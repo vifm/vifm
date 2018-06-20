@@ -28,6 +28,7 @@ typedef enum
 	PE_INVALID_EXPRESSION,    /* Wrong expression construct. */
 	PE_INVALID_SUBEXPRESSION, /* Wrong subexpression construct. */
 	PE_MISSING_QUOTE,         /* Missing closing quote. */
+	PE_MISSING_PAREN,         /* Missing closing paren. */
 	PE_INTERNAL,              /* Internal error (e.g. not enough memory). */
 }
 ParsingErrors;
@@ -60,6 +61,9 @@ var_t get_parsing_result(void);
 
 /* Returns non-zero if previously read token was whitespace. */
 int is_prev_token_whitespace(void);
+
+/* Appends error message with details to the error stream. */
+void report_parsing_error(ParsingErrors error);
 
 #endif /* VIFM__ENGINE__PARSING_H__ */
 

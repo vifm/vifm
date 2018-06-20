@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jun 16
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jun 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3966,6 +3966,7 @@ Expression syntax summary, from least to most significant:
            $VAR                    environment variable
            v:var                   builtin variable
            function(expr1, ...)    function call
+           (expr1)                 nested expression
 
 ".." indicates that the operations in this level can be concatenated.
 
@@ -4162,6 +4163,13 @@ Examples: >
   "'" . filetype('.') . "'"
   filetype('.') == 'reg'
 <
+expression nesting                             *vifm-expr-nesting*
+------------------
+(expr1)               nested expression
+
+Groups any other expression of arbitrary complexity enforcing order in which
+operators are applied.
+
 --------------------------------------------------------------------------------
 *vifm-functions*
 

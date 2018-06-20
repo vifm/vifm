@@ -1248,6 +1248,10 @@ eval_arglist(const char args[], const char **stop_ptr)
 			tmp_result = free_this = var_to_str(result);
 			args = get_last_position();
 		}
+		else if(parsing_error != PE_INVALID_EXPRESSION)
+		{
+			report_parsing_error(parsing_error);
+		}
 
 		if(tmp_result == NULL)
 		{
