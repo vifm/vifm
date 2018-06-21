@@ -75,9 +75,6 @@ static pthread_spinlock_t job_bar_changed_lock;
 void
 ui_stat_update(view_t *view, int lazy_redraw)
 {
-	int x;
-	char *buf;
-
 	if(!cfg.display_statusline || view != curr_view)
 	{
 		return;
@@ -97,13 +94,13 @@ ui_stat_update(view_t *view, int lazy_redraw)
 		return;
 	}
 
-	x = getmaxx(stdscr);
-	wresize(stat_win, 1, x);
+	const int width = getmaxx(stdscr);
+	wresize(stat_win, 1, width);
 	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
-	buf = expand_status_line_macros(view, cfg.status_line);
-	buf = break_in_two(buf, getmaxx(stdscr));
+	char *buf = expand_status_line_macros(view, cfg.status_line);
+	buf = break_in_two(buf, width);
 
 	werase(stat_win);
 	checked_wmove(stat_win, 0, 0);
