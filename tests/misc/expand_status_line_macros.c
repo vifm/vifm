@@ -67,18 +67,12 @@ TEARDOWN()
 
 TEST(empty_format)
 {
-	const char *const format = "";
-	char *const expanded = expand_status_line_macros(&lwin, format);
-	assert_string_equal(format, expanded);
-	free(expanded);
+	ASSERT_EXPANDED_TO("", "");
 }
 
 TEST(no_macros)
 {
-	const char *const format = "No formatting here";
-	char *const expanded = expand_status_line_macros(&lwin, format);
-	assert_string_equal(format, expanded);
-	free(expanded);
+	ASSERT_EXPANDED_TO("No formatting here", "No formatting here");
 }
 
 TEST(t_macro_expanded)
