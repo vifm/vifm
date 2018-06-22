@@ -618,6 +618,7 @@ cs_write(void)
 	fprintf(fp, "\" underline\n");
 	fprintf(fp, "\" reverse or inverse\n");
 	fprintf(fp, "\" standout\n");
+	fprintf(fp, "\" italic (on unsupported systems becomes reverse)\n");
 	fprintf(fp, "\" none\n\n");
 
 	fprintf(fp, "\" Vifm supports 256 colors you can use color numbers 0-255\n");
@@ -993,6 +994,10 @@ cs_attrs_to_str(int attrs)
 		strcat(result, "reverse,");
 	if((attrs & A_STANDOUT) == A_STANDOUT)
 		strcat(result, "standout,");
+#ifdef HAVE_A_ITALIC_DECL
+	if((attrs & A_ITALIC) == A_ITALIC)
+		strcat(result, "italic,");
+#endif
 	if(result[0] != '\0')
 		result[strlen(result) - 1] = '\0';
 	return result;

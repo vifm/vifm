@@ -75,8 +75,8 @@ syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg CmpMismatch
 		\ AuxWin TabLine TabLineSel
 		\ User1 User2 User3 User4 User5 User6 User7 User8 User9
-syntax keyword vifmHiStyles contained bold underline reverse inverse standout
-		\ none
+syntax keyword vifmHiStyles contained
+		\ bold underline reverse inverse standout italic none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 		\ white default lightblack lightred lightgreen lightyellow lightblue
 		\ lightmagenta lightcyan lightwhite Grey0 NavyBlue DarkBlue Blue3 Blue3_2

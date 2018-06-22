@@ -22,6 +22,60 @@ SETUP()
 	curr_stats.cs = &cfg.cs;
 }
 
+/* Attributes. */
+
+TEST(wrong_attribute_causes_error)
+{
+	assert_failure(exec_commands("hi Win cterm=bad", &lwin, CIT_COMMAND));
+}
+
+TEST(various_attributes_are_parsed)
+{
+#ifdef HAVE_A_ITALIC_DECL
+	const unsigned int italic_attr = A_ITALIC;
+#else
+	/* If A_ITALIC is missing (it's an extension), use A_REVERSE instead. */
+	const unsigned int italic_attr = A_REVERSE;
+#endif
+
+	curr_stats.cs->color[WIN_COLOR].attr = 0;
+	assert_success(exec_commands("hi Win cterm=bold,italic", &lwin, CIT_COMMAND));
+	assert_int_equal(A_BOLD | italic_attr, curr_stats.cs->color[WIN_COLOR].attr);
+	assert_success(exec_commands("hi Win cterm=underline,reverse", &lwin,
+				CIT_COMMAND));
+	assert_int_equal(A_UNDERLINE | A_REVERSE,
+			curr_stats.cs->color[WIN_COLOR].attr);
+	assert_success(exec_commands("hi Win cterm=standout", &lwin, CIT_COMMAND));
+	assert_int_equal(A_STANDOUT, curr_stats.cs->color[WIN_COLOR].attr);
+}
+
+TEST(attributes_are_printed_back_correctly)
+{
+	assert_success(exec_commands("highlight Win cterm=underline,inverse", &lwin,
+				CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("highlight Win", &lwin, CIT_COMMAND));
+	assert_string_equal(
+			"Win        cterm=underline,reverse ctermfg=white   ctermbg=black  ",
+			ui_sb_last());
+
+	assert_success(exec_commands("highlight Win cterm=italic,standout,bold",
+				&lwin, CIT_COMMAND));
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("highlight Win", &lwin, CIT_COMMAND));
+#ifdef HAVE_A_ITALIC_DECL
+	assert_string_equal(
+			"Win        cterm=bold,standout,italic ctermfg=white   ctermbg=black  ",
+			ui_sb_last());
+#else
+	assert_string_equal(
+			"Win        cterm=bold,reverse,standout ctermfg=white   ctermbg=black  ",
+			ui_sb_last());
+#endif
+}
+
 /* Generic groups. */
 
 TEST(color_is_set)

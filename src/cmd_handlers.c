@@ -2826,6 +2826,13 @@ parse_color_name_value(const char str[], int fg, int *attr)
 static int
 get_attrs(const char *text)
 {
+#ifdef HAVE_A_ITALIC_DECL
+	const int italic_attr = A_ITALIC;
+#else
+	/* If A_ITALIC is missing (it's an extension), use A_REVERSE instead. */
+	const int italic_attr = A_REVERSE;
+#endif
+
 	int result = 0;
 	while(*text != '\0')
 	{
@@ -2843,6 +2850,8 @@ get_attrs(const char *text)
 			result |= A_REVERSE;
 		else if(strcasecmp(buf, "standout") == 0)
 			result |= A_STANDOUT;
+		else if(strcasecmp(buf, "italic") == 0)
+			result |= italic_attr;
 		else if(strcasecmp(buf, "none") == 0)
 			result = 0;
 		else

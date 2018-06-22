@@ -1695,6 +1695,7 @@ Available style values (some of them can be combined):
  - underline
  - reverse or inverse
  - standout
+ - italic (on unsupported systems becomes reverse)
  - none
 
 Available group-name values:

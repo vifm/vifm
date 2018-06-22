@@ -45,6 +45,8 @@ TEST(filextype_accepts_negated_patterns)
 
 	curr_stats.exec_env_type = EET_LINUX_NATIVE;
 	ft_reset(1);
+
+	curr_stats.exec_env_type = EET_EMULATOR_WITH_X;
 }
 
 TEST(fileviewer_accepts_negated_patterns)
