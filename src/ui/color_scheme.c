@@ -72,6 +72,15 @@ char *HI_GROUPS[] = {
 	[AUX_WIN_COLOR]      = "AuxWin",
 	[TAB_LINE_COLOR]     = "TabLine",
 	[TAB_LINE_SEL_COLOR] = "TabLineSel",
+	[USER1_COLOR]        = "User1",
+	[USER2_COLOR]        = "User2",
+	[USER3_COLOR]        = "User3",
+	[USER4_COLOR]        = "User4",
+	[USER5_COLOR]        = "User5",
+	[USER6_COLOR]        = "User6",
+	[USER7_COLOR]        = "User7",
+	[USER8_COLOR]        = "User8",
+	[USER9_COLOR]        = "User9",
 };
 ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR);
 
@@ -100,6 +109,15 @@ const char *HI_GROUPS_DESCR[] = {
 	[AUX_WIN_COLOR]      = "auxiliary part of window",
 	[TAB_LINE_COLOR]     = "tab line",
 	[TAB_LINE_SEL_COLOR] = "tip of selected tab",
+	[USER1_COLOR]        = "user color #1",
+	[USER2_COLOR]        = "user color #2",
+	[USER3_COLOR]        = "user color #3",
+	[USER4_COLOR]        = "user color #4",
+	[USER5_COLOR]        = "user color #5",
+	[USER6_COLOR]        = "user color #6",
+	[USER7_COLOR]        = "user color #7",
+	[USER8_COLOR]        = "user color #8",
+	[USER9_COLOR]        = "user color #9",
 };
 ARRAY_GUARD(HI_GROUPS_DESCR, ARRAY_LEN(HI_GROUPS));
 
@@ -400,6 +418,15 @@ static const col_attr_t default_cs[] = {
 	[AUX_WIN_COLOR]      = { -1,            -1,          -1                      },
 	[TAB_LINE_COLOR]     = { COLOR_WHITE,   COLOR_BLACK, 0                       },
 	[TAB_LINE_SEL_COLOR] = { -1,            -1,          A_BOLD | A_REVERSE      },
+	[USER1_COLOR]        = { -1,            -1,          -1                      },
+	[USER2_COLOR]        = { -1,            -1,          -1                      },
+	[USER3_COLOR]        = { -1,            -1,          -1                      },
+	[USER4_COLOR]        = { -1,            -1,          -1                      },
+	[USER5_COLOR]        = { -1,            -1,          -1                      },
+	[USER6_COLOR]        = { -1,            -1,          -1                      },
+	[USER7_COLOR]        = { -1,            -1,          -1                      },
+	[USER8_COLOR]        = { -1,            -1,          -1                      },
+	[USER9_COLOR]        = { -1,            -1,          -1                      },
 };
 ARRAY_GUARD(default_cs, MAXNUM_COLOR);
 

@@ -57,6 +57,15 @@ enum
 	AUX_WIN_COLOR,      /* Auxiliary part of window. */
 	TAB_LINE_COLOR,     /* Tab line. */
 	TAB_LINE_SEL_COLOR, /* Tip of selected tab. */
+	USER1_COLOR,        /* User color #1. */
+	USER2_COLOR,        /* User color #2. */
+	USER3_COLOR,        /* User color #3. */
+	USER4_COLOR,        /* User color #4. */
+	USER5_COLOR,        /* User color #5. */
+	USER6_COLOR,        /* User color #6. */
+	USER7_COLOR,        /* User color #7. */
+	USER8_COLOR,        /* User color #8. */
+	USER9_COLOR,        /* User color #9. */
 	MAXNUM_COLOR        /* Number of elements of a color scheme. */
 };
 
