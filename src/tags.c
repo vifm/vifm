@@ -1,4 +1,5 @@
 const char *tags[] = {
+	"%=%1",
 	"vifm-!!",
 	"vifm-$",
 	"vifm-$HOME",

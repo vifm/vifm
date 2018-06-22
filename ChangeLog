@@ -62,6 +62,10 @@
 	Added grouping via parentheses to expressions.  Thanks to Konst
 	Mayer (a.k.a. cdlscpmv).
 
+	Added User1..User9 highlight groups and corresponding %[0-9]* 'statusline'
+	macro, which makes it possible to colorize parts of status line
+	differently.  Thanks to GeorgeHJ.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
