@@ -265,6 +265,9 @@ highlight {*.djvu, "not comment
           " \*.xhtml,
           \*.xml} cterm=underline ctermfg=188 ctermbg=default
 
+" "italic" should be highlighted
+highlight Win cterm=italic
+
 " patterns here should NOT be highlighted
 highlight // cterm=bold ctermfg=yellow
 highlight //// cterm=bold ctermfg=yellow
@@ -395,6 +398,15 @@ hi CmpMismatch
 hi AuxWin
 hi TabLine
 hi TabLineSel
+hi User1
+hi User2
+hi User3
+hi User4
+hi User5
+hi User6
+hi User7
+hi User8
+hi User9
 
 " "set" should be highlighted as :command
 " "*dotfiles" should be highlighted as 'option'
@@ -438,6 +450,12 @@ echo fnameescape('path name')
 " "'fzf 2>&0'" should be highlighted as a string literal
 command! fzf : let $FZF_RES = term('fzf 2>&0')
             \| unlet $FZF_RES
+
+" "let" should be highlighted as a :command
+" "%1*" should be highlighted as a string literal
+" '" initial color" should be highlighted as a comment
+let &statusline = "%1*"           " initial color
+:let &statusline = "%1*"          " initial color
 
 " TODO
 

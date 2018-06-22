@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: April 30, 2018
+" Last Change: June 22, 2018
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -74,8 +74,9 @@ syntax keyword vifmHiGroups contained WildMenu Border Win CmdLine CurrLine
 		\ OtherLine Directory Link Socket Device Executable Selected BrokenLink
 		\ TopLine TopLineSel StatusLine JobLine SuggestBox Fifo ErrorMsg CmpMismatch
 		\ AuxWin TabLine TabLineSel
-syntax keyword vifmHiStyles contained bold underline reverse inverse standout
-		\ none
+		\ User1 User2 User3 User4 User5 User6 User7 User8 User9
+syntax keyword vifmHiStyles contained
+		\ bold underline reverse inverse standout italic none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 		\ white default lightblack lightred lightgreen lightyellow lightblue
 		\ lightmagenta lightcyan lightwhite Grey0 NavyBlue DarkBlue Blue3 Blue3_2
@@ -389,7 +390,7 @@ syntax region vifmComment contained contains=@Spell start='^\(\s\|:\)*"' end='$'
 " Comment at the end of a line
 syntax match vifmInlineComment contained contains=@Spell '\s"[^"]*$'
 " This prevents highlighting non-first line of multi-line command
-syntax match vifmNotComment contained '\s"[^"]*\(\(\n\s*\(\\\|"\)\)\@!\|$\)'
+syntax match vifmNotComment contained '\s"[^"]*\(\n\s*\(\\\|"\)\)\@='
 
 " Empty line
 syntax match vifmEmpty /^\s*$/

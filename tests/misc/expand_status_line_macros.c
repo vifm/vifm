@@ -16,7 +16,9 @@
 #define ASSERT_EXPANDED(format) \
 	do \
 	{ \
-		char *const expanded = expand_status_line_macros(&lwin, format); \
+		LineWithAttrs result = expand_status_line_macros(&lwin, format); \
+		free(result.attrs); \
+		char *const expanded = result.line; \
 		assert_false(strcmp(expanded, format) == 0); \
 		free(expanded); \
 	} \
@@ -26,9 +28,25 @@
 #define ASSERT_EXPANDED_TO(format, expected) \
 	do \
 	{ \
-		char *const expanded = expand_status_line_macros(&lwin, format); \
+		LineWithAttrs result = expand_status_line_macros(&lwin, format); \
+		free(result.attrs); \
+		char *const expanded = result.line; \
 		assert_string_equal(expected, expanded); \
 		free(expanded); \
+	} \
+	while(0)
+
+/* Checks that expanded string is equal to expected string and has expected
+ * highlighting. */
+#define ASSERT_EXPANDED_TO_WITH_HI(format, expected, highlighting) \
+	do \
+	{ \
+		LineWithAttrs result = expand_status_line_macros(&lwin, format); \
+		char *const expanded = result.line; \
+		assert_string_equal(expected, expanded); \
+		assert_string_equal(highlighting, result.attrs); \
+		free(expanded); \
+		free(result.attrs); \
 	} \
 	while(0)
 
@@ -67,18 +85,12 @@ TEARDOWN()
 
 TEST(empty_format)
 {
-	const char *const format = "";
-	char *const expanded = expand_status_line_macros(&lwin, format);
-	assert_string_equal(format, expanded);
-	free(expanded);
+	ASSERT_EXPANDED_TO("", "");
 }
 
 TEST(no_macros)
 {
-	const char *const format = "No formatting here";
-	char *const expanded = expand_status_line_macros(&lwin, format);
-	assert_string_equal(format, expanded);
-	free(expanded);
+	ASSERT_EXPANDED_TO("No formatting here", "No formatting here");
 }
 
 TEST(t_macro_expanded)
@@ -190,7 +202,7 @@ TEST(percent_macro_expanded)
 
 TEST(wrong_macros_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{*";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -205,7 +217,7 @@ TEST(wrong_macros_ignored)
 
 TEST(wrong_macros_with_width_field_ignored)
 {
-	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{";
+	static const char STATUS_CHARS[] = "tTfaAugsEdD-xlLS%[]z{*";
 	int i;
 
 	for(i = 1; i <= 255; ++i)
@@ -267,6 +279,60 @@ TEST(ignore_mismatched_opening_curly_bracket)
 {
 	ASSERT_EXPANDED_TO("<%{>", "<%{>");
 	ASSERT_EXPANDED_TO("<%{abcdef>", "<%{abcdef>");
+}
+
+TEST(highlighting_is_set_correctly)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%1*%t%*",
+	                           "file",
+	                           "1   ");
+}
+
+TEST(highlighting_has_equals_macro_preserved)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%9*%t %= %t%7*",
+	                           "file %= file",
+	                           "9    =      ");
+	ASSERT_EXPANDED_TO_WITH_HI("%9*%t%=%t%7*",
+	                           "file%=file",
+	                           "9   =     ");
+	ASSERT_EXPANDED_TO_WITH_HI("%t%9*%=%7*%t",
+	                           "file%=file",
+	                           "    9=7   ");
+	ASSERT_EXPANDED_TO_WITH_HI("%t%9*%=%7*%t%0*",
+	                           "file%=file",
+	                           "    9=7   ");
+	ASSERT_EXPANDED_TO_WITH_HI("%=%1*%t%0*",
+	                           "%=file",
+	                           "= 1   ");
+	ASSERT_EXPANDED_TO_WITH_HI("%t%1*%=%2*%t%0*",
+	                           "file%=file",
+	                           "    1=2   ");
+}
+
+TEST(bad_user_group_remains_in_line)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%10*", "%10*", "    ");
+}
+
+TEST(empty_optional_drops_attrs)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%2*%]%3*",
+	                           "",
+	                           "");
+}
+
+TEST(non_empty_optional_preserves_attrs)
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%t%2*%t%]%3*",
+	                           "filefile",
+	                           "1   2   ");
+	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%2*%t%3*%t%]%4*",
+	                           "filefile",
+	                           "2   3   ");
+	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%2*%t%3*%]%4*",
+	                           "file",
+	                           "2   ");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

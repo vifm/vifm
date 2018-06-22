@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 18, 2018" "vifm 0.9.1"
+.TH VIFM 1 "June 22, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1998,6 +1998,7 @@ Available style values (some of them can be combined):
  \- underline
  \- reverse or inverse
  \- standout
+ \- italic (on unsupported systems becomes reverse)
  \- none
 
 Available group-name values:
@@ -2026,6 +2027,7 @@ their content (e.g. regular files in views)
  \- Executable \- color of executable files
  \- Fifo \- color of fifo pipes
  \- CmpMismatch \- color of mismatched files in side-by-side comparison by path
+ \- User1..User9 \- 9 colors which can be used via %* 'statusline' macro
 
 Available colors:
  \- \-1 or default or none \- default or transparent
@@ -2159,6 +2161,7 @@ transparency:
   SuggestBox
   StatusLine
     WildMenu
+    User1..User9
   Border
   CmdLine
     ErrorMsg
@@ -4286,17 +4289,16 @@ since it cannot be selected
 .IP \- 2
 %{<expr>} - evaluate arbitrary vifm expression '<expr>', e.g. '&sort'
 .IP \- 2
+%* - resets or applies one of User1..User9 highlight groups; reset happens
+when width field is 0 or not specified, one of groups gets picked
+when width field is in the range from 1 to 9
+.IP \- 2
 all 'rulerformat' macros
 .RE
 
 .RS
 Percent sign can be followed by optional minimum field width.  Add '\-' before
 minimum field width if you want field to be right aligned.
-Example:
-
-.EX
-  set statusline="  %t%= %A %10u:%\-7g %15s %20d %{&sort} "
-.EE
 
 On Windows file properties include the following flags (upper case means flag is
 on):
@@ -4321,6 +4323,23 @@ on):
 .br
  Z \- sparse file
 .RE
+
+.RS
+Example without colors:
+
+.EX
+  set statusline="  %t%= %A %10u:%\-7g %15s %20d %{&sort} "
+.EE
+
+Example with colors:
+
+.EX
+ highlight User1 ctermbg=yellow
+ highlight User2 ctermbg=blue ctermfg=white cterm=bold
+ set statusline="%1* %-26t %2*%=%1* %A %2* %7u:%-7g %1* %-5s %2* %d "
+.EE
+.RE
+
 .TP
 .BI 'suggestoptions'
 type: string list
