@@ -100,7 +100,7 @@ ui_stat_update(view_t *view, int lazy_redraw)
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
 	char *buf = expand_status_line_macros(view, cfg.status_line);
-	buf = break_in_two(buf, width);
+	buf = break_in_two(buf, width, "%=");
 
 	werase(stat_win);
 	checked_wmove(stat_win, 0, 0);

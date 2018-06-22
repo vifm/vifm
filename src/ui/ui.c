@@ -140,7 +140,7 @@ ui_ruler_update(view_t *view, int lazy_redraw)
 	update_statusbar_layout();
 
 	expanded = expand_ruler_macros(view, cfg.ruler_format);
-	expanded = break_in_two(expanded, getmaxx(ruler_win));
+	expanded = break_in_two(expanded, getmaxx(ruler_win), "%=");
 
 	ui_ruler_set(expanded);
 	if(!lazy_redraw)

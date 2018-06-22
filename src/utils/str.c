@@ -592,16 +592,17 @@ ellipsis(const char str[], size_t max_width, const char ell[], int right)
 }
 
 char *
-break_in_two(char str[], size_t max)
+break_in_two(char str[], size_t max, const char separator[])
 {
 	int i;
 	size_t len, size;
 	char *result;
-	char *break_point = strstr(str, "%=");
+	char *break_point = strstr(str, separator);
 	if(break_point == NULL)
 		return str;
 
-	len = utf8_strsw(str) - 2;
+	const size_t separator_len = strlen(separator);
+	len = utf8_strsw(str) - separator_len;
 	size = strlen(str);
 	size = MAX(size, max);
 	result = malloc(size*4 + 2);
@@ -624,8 +625,8 @@ break_in_two(char str[], size_t max)
 	result[i] = '\0';
 
 	if(len > max)
-		break_point = strstr(str, "%=");
-	strcat(result, break_point + 2);
+		break_point = strstr(str, separator);
+	strcat(result, break_point + separator_len);
 
 	free(str);
 	return result;
