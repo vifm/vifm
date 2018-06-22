@@ -448,6 +448,12 @@ echo fnameescape('path name')
 command! fzf : let $FZF_RES = term('fzf 2>&0')
             \| unlet $FZF_RES
 
+" "let" should be highlighted as a :command
+" "%1*" should be highlighted as a string literal
+" '" initial color" should be highlighted as a comment
+let &statusline = "%1*"           " initial color
+:let &statusline = "%1*"          " initial color
+
 " TODO
 
 " "vifm" should NOT be highlighted as a command

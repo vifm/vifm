@@ -177,6 +177,9 @@
 	Fixed missing quote in an expression error message not displaying the
 	broken string.
 
+	Fixed syntax highlighting of strings in double quotes and comments in :let
+	statements.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

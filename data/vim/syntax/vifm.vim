@@ -390,7 +390,7 @@ syntax region vifmComment contained contains=@Spell start='^\(\s\|:\)*"' end='$'
 " Comment at the end of a line
 syntax match vifmInlineComment contained contains=@Spell '\s"[^"]*$'
 " This prevents highlighting non-first line of multi-line command
-syntax match vifmNotComment contained '\s"[^"]*\(\(\n\s*\(\\\|"\)\)\@!\|$\)'
+syntax match vifmNotComment contained '\s"[^"]*\(\n\s*\(\\\|"\)\)\@='
 
 " Empty line
 syntax match vifmEmpty /^\s*$/
