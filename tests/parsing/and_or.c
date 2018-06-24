@@ -87,7 +87,7 @@ TEST(and_handles_errors_correctly)
 	expr[sizeof(expr) - 1U] = '\0';
 	strncpy(expr, "1&&1==", sizeof("1&&1==") - 1U);
 
-	assert_int_equal(PE_INTERNAL, parse(expr, &res_var));
+	assert_int_equal(PE_INTERNAL, parse(expr, 0, &res_var));
 	var_free(res_var);
 }
 
@@ -100,7 +100,7 @@ TEST(or_handles_errors_correctly)
 	expr[sizeof(expr) - 1U] = '\0';
 	strncpy(expr, "1||1==", sizeof("1||1==") - 1U);
 
-	assert_int_equal(PE_INTERNAL, parse(expr, &res_var));
+	assert_int_equal(PE_INTERNAL, parse(expr, 0, &res_var));
 	var_free(res_var);
 }
 

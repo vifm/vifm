@@ -253,7 +253,7 @@ let_variables(const char cmd[])
 
 	cmd = skip_whitespace(cmd);
 
-	parsing_error = parse(cmd, &res_var);
+	parsing_error = parse(cmd, 1, &res_var);
 	if(parsing_error != PE_NO_ERROR)
 	{
 		report_parsing_error(parsing_error);

@@ -107,6 +107,7 @@ Ops;
 /* Evaluation context that's passed to all eval_*() functions. */
 typedef struct
 {
+	const int interactive; /* Whether call is being executed by the user. */
 }
 eval_context_t;
 
@@ -209,7 +210,7 @@ get_last_parsed_char(void)
 }
 
 ParsingErrors
-parse(const char input[], var_t *result)
+parse(const char input[], int interactive, var_t *result)
 {
 	expr_t expr_root;
 
@@ -223,7 +224,7 @@ parse(const char input[], var_t *result)
 	expr_root = parse_or_expr(&last_position);
 	last_parsed_char = last_position;
 
-	eval_context_t ctx = {};
+	eval_context_t ctx = { .interactive = interactive };
 
 	if(last_token.type != END)
 	{
@@ -470,7 +471,7 @@ eval_call_op(eval_context_t *ctx, const char name[], int nops, expr_t ops[],
 	{
 		int i;
 		call_info_t call_info;
-		function_call_info_init(&call_info);
+		function_call_info_init(&call_info, ctx->interactive);
 
 		for(i = 0; i < nops; ++i)
 		{

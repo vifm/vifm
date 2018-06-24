@@ -388,10 +388,27 @@ execute_cmd(const call_info_t *call_info, int preserve_stdin)
 	cmd_stream = read_cmd_output(cmd, preserve_stdin);
 	free(cmd);
 
-	ui_cancellation_enable();
+	int cancellation_state = 0;
+	if(call_info->interactive)
+	{
+		ui_cancellation_enable();
+	}
+	else
+	{
+		cancellation_state = ui_cancellation_pause();
+	}
+
 	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
-	ui_cancellation_disable();
 	fclose(cmd_stream);
+
+	if(call_info->interactive)
+	{
+		ui_cancellation_disable();
+	}
+	else
+	{
+		ui_cancellation_resume(cancellation_state);
+	}
 
 	if(result_str == NULL)
 	{

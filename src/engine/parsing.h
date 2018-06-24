@@ -54,7 +54,7 @@ const char * get_last_parsed_char(void);
 /* Performs parsing.  After calling this function get_last_position() will
  * return useful information.  Returns error code and puts result of expression
  * evaluation in the result parameter. */
-ParsingErrors parse(const char input[], var_t *result);
+ParsingErrors parse(const char input[], int interactive, var_t *result);
 
 /* Returns evaluation result, may be used to get value on error. */
 var_t get_parsing_result(void);

@@ -26,8 +26,9 @@
 /* Structure, which describes details about function call. */
 typedef struct
 {
-	size_t argc; /* Number of arguments passed to the function. */
-	var_t *argv; /* Arguments passed to the function. */
+	int interactive; /* Whether call is being executed by the user. */
+	size_t argc;     /* Number of arguments passed to the function. */
+	var_t *argv;     /* Arguments passed to the function. */
 }
 call_info_t;
 
@@ -71,7 +72,7 @@ void function_complete_name(const char str[], const char **start);
 
 
 /* Initializes function call information structure. */
-void function_call_info_init(call_info_t *call_info);
+void function_call_info_init(call_info_t *call_info, int interactive);
 
 /* Adds new argument to call information structure.  The var isn't cloned. */
 void function_call_info_add_arg(call_info_t *call_info, var_t var);

@@ -86,7 +86,7 @@ TEST(extremely_long_number)
 	memset(zeroes, '0', sizeof(zeroes) - 1U);
 	zeroes[sizeof(zeroes) - 1U] = '\0';
 
-	assert_int_equal(PE_INTERNAL, parse(zeroes, &res_var));
+	assert_int_equal(PE_INTERNAL, parse(zeroes, 0, &res_var));
 	var_free(res_var);
 }
 

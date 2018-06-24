@@ -522,7 +522,7 @@ eval_received_expression(const char expr[])
 	char *result_str;
 
 	var_t result;
-	if(parse(expr, &result) != PE_NO_ERROR)
+	if(parse(expr, 1, &result) != PE_NO_ERROR)
 	{
 		return NULL;
 	}
