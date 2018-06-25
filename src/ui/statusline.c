@@ -495,7 +495,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 					memcpy(expr, *format, e - (*format));
 
 					/* Try to parse expr, and convert the res to string if succeed. */
-					parsing_error = parse(expr, &res);
+					parsing_error = parse(expr, 0, &res);
 					if(parsing_error == PE_NO_ERROR)
 					{
 						resstr = var_to_str(res);

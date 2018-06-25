@@ -104,6 +104,13 @@ typedef enum
 }
 Ops;
 
+/* Evaluation context that's passed to all eval_*() functions. */
+typedef struct
+{
+	const int interactive; /* Whether call is being executed by the user. */
+}
+eval_context_t;
+
 /* Defines expression and how to evaluate its value.  Value is stored here after
  * evaluation. */
 typedef struct expr_t
@@ -125,13 +132,15 @@ typedef struct
 }
 sbuffer;
 
-static int eval_expr(expr_t *expr);
-static int eval_or_op(int nops, expr_t ops[], var_t *result);
-static int eval_and_op(int nops, expr_t ops[], var_t *result);
-static int eval_call_op(const char name[], int nops, expr_t ops[],
+static int eval_expr(eval_context_t *ctx, expr_t *expr);
+static int eval_or_op(eval_context_t *ctx, int nops, expr_t ops[],
 		var_t *result);
+static int eval_and_op(eval_context_t *ctx, int nops, expr_t ops[],
+		var_t *result);
+static int eval_call_op(eval_context_t *ctx, const char name[], int nops,
+		expr_t ops[], var_t *result);
 static int compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs);
-static var_t eval_concat(int nops, expr_t ops[]);
+static var_t eval_concat(eval_context_t *ctx, int nops, expr_t ops[]);
 static int add_expr_op(expr_t *expr, const expr_t *arg);
 static void free_expr(const expr_t *expr);
 static expr_t parse_or_expr(const char **in);
@@ -201,7 +210,7 @@ get_last_parsed_char(void)
 }
 
 ParsingErrors
-parse(const char input[], var_t *result)
+parse(const char input[], int interactive, var_t *result)
 {
 	expr_t expr_root;
 
@@ -214,6 +223,8 @@ parse(const char input[], var_t *result)
 	get_next(&last_position);
 	expr_root = parse_or_expr(&last_position);
 	last_parsed_char = last_position;
+
+	eval_context_t ctx = { .interactive = interactive };
 
 	if(last_token.type != END)
 	{
@@ -228,7 +239,7 @@ parse(const char input[], var_t *result)
 				/* This is a comment, just ignore it. */
 				last_position += strlen(last_position);
 			}
-			else if(eval_expr(&expr_root) == 0)
+			else if(eval_expr(&ctx, &expr_root) == 0)
 			{
 				var_free(res_val);
 				res_val = var_clone(expr_root.value);
@@ -239,7 +250,7 @@ parse(const char input[], var_t *result)
 
 	if(last_error == PE_NO_ERROR)
 	{
-		if(eval_expr(&expr_root) == 0)
+		if(eval_expr(&ctx, &expr_root) == 0)
 		{
 			var_free(res_val);
 			res_val = var_clone(expr_root.value);
@@ -275,7 +286,7 @@ is_prev_token_whitespace(void)
 /* Evaluates values of an expression.  Returns zero on success, which means that
  * expr->value is now correct, otherwise non-zero is returned. */
 static int
-eval_expr(expr_t *expr)
+eval_expr(eval_context_t *ctx, expr_t *expr)
 {
 	int result = 1;
 	switch(expr->op_type)
@@ -284,14 +295,15 @@ eval_expr(expr_t *expr)
 			/* Do nothing, value is already available. */
 			return 0;
 		case OP_OR:
-			result = eval_or_op(expr->nops, expr->ops, &expr->value);
+			result = eval_or_op(ctx, expr->nops, expr->ops, &expr->value);
 			break;
 		case OP_AND:
-			result = eval_and_op(expr->nops, expr->ops, &expr->value);
+			result = eval_and_op(ctx, expr->nops, expr->ops, &expr->value);
 			break;
 		case OP_CALL:
 			assert(expr->func != NULL && "Function must have a name.");
-			result = eval_call_op(expr->func, expr->nops, expr->ops, &expr->value);
+			result = eval_call_op(ctx, expr->func, expr->nops, expr->ops,
+					&expr->value);
 			break;
 	}
 	if(result == 0)
@@ -304,7 +316,7 @@ eval_expr(expr_t *expr)
 /* Evaluates logical OR operation.  All operands are evaluated lazily from left
  * to right.  Returns zero on success, otherwise non-zero is returned. */
 static int
-eval_or_op(int nops, expr_t ops[], var_t *result)
+eval_or_op(eval_context_t *ctx, int nops, expr_t ops[], var_t *result)
 {
 	int val;
 	int i;
@@ -315,7 +327,7 @@ eval_or_op(int nops, expr_t ops[], var_t *result)
 		return 0;
 	}
 
-	if(eval_expr(&ops[0]) != 0)
+	if(eval_expr(ctx, &ops[0]) != 0)
 	{
 		return 1;
 	}
@@ -332,7 +344,7 @@ eval_or_op(int nops, expr_t ops[], var_t *result)
 
 	for(i = 1; i < nops && !val; ++i)
 	{
-		if(eval_expr(&ops[i]) != 0)
+		if(eval_expr(ctx, &ops[i]) != 0)
 		{
 			return 1;
 		}
@@ -346,7 +358,7 @@ eval_or_op(int nops, expr_t ops[], var_t *result)
 /* Evaluates logical AND operation.  All operands are evaluated lazily from left
  * to right.  Returns zero on success, otherwise non-zero is returned. */
 static int
-eval_and_op(int nops, expr_t ops[], var_t *result)
+eval_and_op(eval_context_t *ctx, int nops, expr_t ops[], var_t *result)
 {
 	int val;
 	int i;
@@ -357,7 +369,7 @@ eval_and_op(int nops, expr_t ops[], var_t *result)
 		return 0;
 	}
 
-	if(eval_expr(&ops[0]) != 0)
+	if(eval_expr(ctx, &ops[0]) != 0)
 	{
 		return 1;
 	}
@@ -374,7 +386,7 @@ eval_and_op(int nops, expr_t ops[], var_t *result)
 
 	for(i = 1; i < nops && val; ++i)
 	{
-		if(eval_expr(&ops[i]) != 0)
+		if(eval_expr(ctx, &ops[i]) != 0)
 		{
 			return 1;
 		}
@@ -388,13 +400,14 @@ eval_and_op(int nops, expr_t ops[], var_t *result)
 /* Evaluates invocation operation.  All operands are evaluated beforehand.
  * Returns zero on success, otherwise non-zero is returned. */
 static int
-eval_call_op(const char name[], int nops, expr_t ops[], var_t *result)
+eval_call_op(eval_context_t *ctx, const char name[], int nops, expr_t ops[],
+		var_t *result)
 {
 	int i;
 
 	for(i = 0; i < nops; ++i)
 	{
-		if(eval_expr(&ops[i]) != 0)
+		if(eval_expr(ctx, &ops[i]) != 0)
 		{
 			return 1;
 		}
@@ -432,7 +445,7 @@ eval_call_op(const char name[], int nops, expr_t ops[], var_t *result)
 	}
 	else if(strcmp(name, ".") == 0)
 	{
-		*result = eval_concat(nops, ops);
+		*result = eval_concat(ctx, nops, ops);
 	}
 	else if(strcmp(name, "!") == 0)
 	{
@@ -458,7 +471,7 @@ eval_call_op(const char name[], int nops, expr_t ops[], var_t *result)
 	{
 		int i;
 		call_info_t call_info;
-		function_call_info_init(&call_info);
+		function_call_info_init(&call_info, ctx->interactive);
 
 		for(i = 0; i < nops; ++i)
 		{
@@ -524,7 +537,7 @@ compare_variables(TOKENS_TYPE operation, var_t lhs, var_t rhs)
 /* Evaluates concatenation of expressions.  Returns resultant value or variable
  * of type VTYPE_ERROR. */
 static var_t
-eval_concat(int nops, expr_t ops[])
+eval_concat(eval_context_t *ctx, int nops, expr_t ops[])
 {
 	char res[CMD_LINE_LENGTH_MAX + 1];
 	size_t res_len = 0U;

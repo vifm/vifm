@@ -73,7 +73,7 @@ ui_cancellation_enable(void)
 	if(curr_stats.load_stage > 2)
 	{
 		/* Temporary disable raw mode of terminal so that Ctrl-C is handled as
-			* SIGINT signal rather than as regular input character. */
+		 * SIGINT signal rather than as regular input character. */
 		noraw();
 	}
 }

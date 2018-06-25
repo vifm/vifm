@@ -9,7 +9,7 @@
 	{ \
 		char *str_res; \
 		var_t res_var = var_false(); \
-		assert_int_equal(PE_NO_ERROR, parse((str), &res_var)); \
+		assert_int_equal(PE_NO_ERROR, parse((str), 0, &res_var)); \
 		str_res = var_to_str(res_var); \
 		assert_string_equal((result), str_res); \
 		free(str_res); \
@@ -23,7 +23,7 @@
 	{ \
 		int int_res; \
 		var_t res_var = var_false(); \
-		assert_int_equal(PE_NO_ERROR, parse((str), &res_var)); \
+		assert_int_equal(PE_NO_ERROR, parse((str), 0, &res_var)); \
 		int_res = var_to_int(res_var); \
 		assert_int_equal((result), int_res); \
 		var_free(res_var); \
@@ -35,7 +35,7 @@
 	do \
 	{ \
 		var_t res_var = var_false(); \
-		assert_int_equal((error), parse((str), &res_var)); \
+		assert_int_equal((error), parse((str), 0, &res_var)); \
 		var_free(res_var); \
 	} \
 	while(0)

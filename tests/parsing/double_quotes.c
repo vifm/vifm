@@ -60,7 +60,7 @@ TEST(very_long_string)
 	memset(string + 1, '0', sizeof(string) - 2U);
 	string[sizeof(string) - 1U] = '\0';
 
-	assert_int_equal(PE_INTERNAL, parse(string, &res_var));
+	assert_int_equal(PE_INTERNAL, parse(string, 0, &res_var));
 	var_free(res_var);
 }
 

@@ -2925,7 +2925,7 @@ eval_if_condition(const cmd_info_t *cmd_info)
 	int result;
 
 	vle_tb_clear(vle_err);
-	if(parse(cmd_info->args, &condition) != PE_NO_ERROR)
+	if(parse(cmd_info->args, 1, &condition) != PE_NO_ERROR)
 	{
 		vle_tb_append_linef(vle_err, "%s: %s", "Invalid expression",
 				cmd_info->args);

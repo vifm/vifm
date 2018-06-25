@@ -149,9 +149,10 @@ function_complete_name(const char str[], const char **start)
 }
 
 void
-function_call_info_init(call_info_t *call_info)
+function_call_info_init(call_info_t *call_info, int interactive)
 {
 	memset(call_info, 0, sizeof(*call_info));
+	call_info->interactive = interactive;
 }
 
 void

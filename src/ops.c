@@ -25,8 +25,6 @@
 #include "utils/utf8.h"
 #endif
 
-#include <curses.h> /* noraw() raw() */
-
 #include <sys/stat.h> /* gid_t uid_t */
 
 #include <assert.h> /* assert() */
@@ -1119,19 +1117,11 @@ static char
 prompt_user(const io_args_t *args, const char title[], const char msg[],
 		const response_variant variants[])
 {
-	char response;
-
 	/* Active cancellation conflicts with input processing by putting terminal in
 	 * a cooked mode. */
-	if(args->cancellation.hook != NULL)
-	{
-		raw();
-	}
-	response = prompt_msg_custom(title, msg, variants);
-	if(args->cancellation.hook != NULL)
-	{
-		noraw();
-	}
+	const int cancellation_state = ui_cancellation_pause();
+	const char response = prompt_msg_custom(title, msg, variants);
+	ui_cancellation_resume(cancellation_state);
 
 	return response;
 }

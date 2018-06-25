@@ -1236,7 +1236,7 @@ eval_arglist(const char args[], const char **stop_ptr)
 		const char *tmp_result = NULL;
 
 		var_t result = var_false();
-		const ParsingErrors parsing_error = parse(args, &result);
+		const ParsingErrors parsing_error = parse(args, 1, &result);
 		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
 		{
 			result = get_parsing_result();
