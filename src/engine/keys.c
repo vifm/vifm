@@ -869,7 +869,7 @@ vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
 
 	if(curr->type == USER_CMD)
 	{
-		free((void*)curr->conf.data.cmd);
+		free(curr->conf.data.cmd);
 	}
 
 	curr->type = USER_CMD;
