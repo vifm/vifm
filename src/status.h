@@ -66,11 +66,12 @@ typedef enum
 }
 TermMultiplexer;
 
+/* Types of updates that can be performed by update_screen(). */
 typedef enum
 {
-	UT_NONE, /* no update needed */
-	UT_REDRAW, /* screen redraw requested */
-	UT_FULL, /* file lists reload followed by screen redraw requested */
+	UT_NONE,   /* No update needed. */
+	UT_REDRAW, /* Screen redraw requested. */
+	UT_FULL,   /* File lists reload followed by screen redraw requested. */
 }
 UpdateType;
 
@@ -115,7 +116,7 @@ preview_t;
 
 typedef struct
 {
-	UpdateType need_update;
+	UpdateType need_update; /* Postponed way of doing an update. */
 	int last_char;
 	int save_msg; /* zero - don't save, 2 - save after resize, other - save */
 	int use_register;
