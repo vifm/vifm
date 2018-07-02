@@ -5,7 +5,7 @@
 
 SETUP()
 {
-	vle_keys_user_add(L"abcdef", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"abcdef", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
 TEST(abcdef)

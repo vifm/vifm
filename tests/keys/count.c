@@ -12,7 +12,7 @@ extern int last_command_count;
 
 SETUP()
 {
-	vle_keys_user_add(L"abc", L"", NORMAL_MODE, 0);
+	vle_keys_user_add(L"abc", L"", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
 TEST(no_number_get_not_def)

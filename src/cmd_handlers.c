@@ -4268,6 +4268,8 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		return save_msg != 0;
 	}
 
+	int flags = (no_remap ? KEYS_FLAG_NOREMAP : KEYS_FLAG_NONE);
+
 	raw_rhs = vle_cmds_past_arg(cmd_info->args);
 	t = *raw_rhs;
 	*raw_rhs = '\0';
@@ -4275,7 +4277,7 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	rhs = vle_cmds_at_arg(raw_rhs + 1);
 	keys = substitute_specs(cmd_info->args);
 	mapping = substitute_specs(rhs);
-	result = vle_keys_user_add(keys, mapping, mode, no_remap);
+	result = vle_keys_user_add(keys, mapping, mode, flags);
 	free(mapping);
 	free(keys);
 

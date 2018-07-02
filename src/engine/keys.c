@@ -863,7 +863,8 @@ combine_counts(int count_a, int count_b)
 }
 
 int
-vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
+vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
+		int flags)
 {
 	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
 	if(curr == NULL)
@@ -878,7 +879,7 @@ vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
 
 	curr->type = USER_CMD;
 	curr->conf.data.cmd = vifm_wcsdup(rhs);
-	curr->no_remap = no_r;
+	curr->no_remap = ((flags & KEYS_FLAG_NOREMAP) != 0);
 	return 0;
 }
 

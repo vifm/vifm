@@ -18,7 +18,7 @@ SETUP()
 	vle_keys_init(MODES_COUNT, mode_flags);
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 	vle_keys_set_def_handler(CMDLINE_MODE, def_handler);
-	vle_keys_user_add(L"asdf", L"ddd", CMDLINE_MODE, 0);
+	vle_keys_user_add(L"asdf", L"ddd", CMDLINE_MODE, KEYS_FLAG_NONE);
 }
 
 static int

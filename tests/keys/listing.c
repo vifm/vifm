@@ -12,11 +12,11 @@ static int nitems;
 
 SETUP()
 {
-	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, 0);
-	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, 0);
+	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, KEYS_FLAG_NONE);
 
-	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, 0);
-	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, KEYS_FLAG_NONE);
 
 	nitems = 0;
 }
