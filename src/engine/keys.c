@@ -53,11 +53,15 @@ KeyType;
 typedef struct key_chunk_t
 {
 	wchar_t key;
-	int no_remap;
 	size_t children_count;
-	int enters;            /* To prevent stack overflow and manager lifetime. */
-	int deleted;           /* Postpone free() call for proper lazy deletion. */
-	KeyType type;          /* General key type. */
+	/* Number of current uses.  To prevent stack overflow and manager lifetime. */
+	int enters;
+	/* General key type. */
+	KeyType type : 2;
+	/* Whether RHS should be treated as if there are no user mappings. */
+	unsigned int no_remap : 1;
+	/* Postpone free() call for proper lazy deletion. */
+	unsigned int deleted : 1;
 	key_conf_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
