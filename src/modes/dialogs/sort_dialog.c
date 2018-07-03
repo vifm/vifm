@@ -25,7 +25,6 @@
 #include <stdlib.h> /* abs() */
 #include <string.h>
 
-#include "../../cfg/config.h"
 #include "../../compat/curses.h"
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
@@ -201,10 +200,6 @@ enter_sort_mode(view_t *active_view)
 	view = active_view;
 	descending = (view->sort[0] < 0);
 	vle_mode_set(SORT_MODE, VMT_SECONDARY);
-
-	wattroff(view->win, COLOR_PAIR(cfg.cs.pair[CURR_LINE_COLOR]) | A_BOLD);
-	curs_set(0);
-	update_all_windows();
 
 	top = 4;
 	bottom = top + SK_COUNT - 1;
