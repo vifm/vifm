@@ -390,7 +390,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	}
 	else
 	{
-		wrefresh(error_win);
+		ui_refresh_win(error_win);
 	}
 }
 
@@ -456,7 +456,7 @@ draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
 
 	draw_msg(title, msg, ctrl_msg, 0, recommended_width);
 	touch_all_windows();
-	wrefresh(error_win);
+	ui_refresh_win(error_win);
 }
 
 /* Draws possibly centered formatted message with specified title and control

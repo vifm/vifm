@@ -463,7 +463,7 @@ update_hardware_cursor(void)
 	if(ui_sb_multiline())
 	{
 		checked_wmove(status_bar, 0, 0);
-		wrefresh(status_bar);
+		ui_refresh_win(status_bar);
 		return;
 	}
 
@@ -471,18 +471,18 @@ update_hardware_cursor(void)
 	{
 		case MENU_MODE:
 		case FILE_INFO_MODE:
-		case MORE_MODE: wrefresh(menu_win);       break;
+		case MORE_MODE: ui_refresh_win(menu_win);       break;
 		case CHANGE_MODE:
-		case ATTR_MODE: wrefresh(change_win);     break;
-		case MSG_MODE:  wrefresh(error_win);      break;
-		case VIEW_MODE: wrefresh(curr_view->win); break;
-		case SORT_MODE: wrefresh(sort_win);       break;
+		case ATTR_MODE: ui_refresh_win(change_win);     break;
+		case MSG_MODE:  ui_refresh_win(error_win);      break;
+		case VIEW_MODE: ui_refresh_win(curr_view->win); break;
+		case SORT_MODE: ui_refresh_win(sort_win);       break;
 
 		case NORMAL_MODE:
 		case VISUAL_MODE:
 			if(should_check_views_for_changes())
 			{
-				wrefresh(curr_view->win);
+				ui_refresh_win(curr_view->win);
 			}
 			break;
 	}
@@ -515,7 +515,7 @@ update_input_buf(void)
 	{
 		werase(input_win);
 		wprintw(input_win, "%ls", (curr_input_buf == NULL) ? L"" : curr_input_buf);
-		wrefresh(input_win);
+		ui_refresh_win(input_win);
 	}
 }
 
@@ -618,7 +618,7 @@ draw_suggestion_box(void)
 				max_title_width);
 	}
 
-	wrefresh(win);
+	ui_refresh_win(win);
 }
 
 /* Picks window to use for suggestion box and prepares it for displaying data.

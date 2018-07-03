@@ -241,7 +241,7 @@ refresh_window(WINDOW *win, int lazily)
 	}
 	else
 	{
-		wrefresh(stat_win);
+		ui_refresh_win(stat_win);
 	}
 }
 
@@ -694,8 +694,8 @@ ui_stat_refresh(void)
 {
 	ui_stat_job_bar_check_for_updates();
 
-	wrefresh(job_bar);
-	wrefresh(stat_win);
+	ui_refresh_win(job_bar);
+	ui_refresh_win(stat_win);
 }
 
 int

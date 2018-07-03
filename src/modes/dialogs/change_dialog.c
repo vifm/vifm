@@ -144,7 +144,7 @@ redraw_change_dialog(void)
 
 	getmaxyx(stdscr, y, x);
 	mvwin(change_win, (y - getmaxy(change_win))/2, (x - getmaxx(change_win))/2);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void
@@ -216,7 +216,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 		curr = bottom;
 
 	print_at_pos();
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void
@@ -231,7 +231,7 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 		curr = top;
 
 	print_at_pos();
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void
@@ -279,7 +279,7 @@ goto_line(int line)
 	clear_at_pos();
 	curr = line;
 	print_at_pos();
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void

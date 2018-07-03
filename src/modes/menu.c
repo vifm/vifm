@@ -325,7 +325,7 @@ void
 menu_pre(void)
 {
 	touchwin(ruler_win);
-	wrefresh(ruler_win);
+	ui_refresh_win(ruler_win);
 }
 
 void
@@ -560,7 +560,7 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 	}
 	line = (key_info.count*menu->len)/100;
 	menus_set_pos(menu->state, line);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 static void
@@ -598,7 +598,7 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 
 	menus_erase_current(menu->state);
 	menus_set_pos(menu->state, key_info.count - 1);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 static void
@@ -615,7 +615,7 @@ cmd_H(key_info_t key_info, keys_info_t *keys_info)
 
 	menus_erase_current(menu->state);
 	menus_set_pos(menu->state, top);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 static void
@@ -645,7 +645,7 @@ cmd_L(key_info_t key_info, keys_info_t *keys_info)
 
 	menus_erase_current(menu->state);
 	menus_set_pos(menu->state, top - 3);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 /* Moves cursor to the middle of the window. */
@@ -664,7 +664,7 @@ cmd_M(key_info_t key_info, keys_info_t *keys_info)
 
 	menus_erase_current(menu->state);
 	menus_set_pos(menu->state, MAX(0, new_pos - 1));
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 static void
@@ -732,7 +732,7 @@ pass_combination_to_khandler(const wchar_t keys[])
 	switch(handler_response)
 	{
 		case KHR_REFRESH_WINDOW:
-			wrefresh(menu_win);
+			ui_refresh_win(menu_win);
 			return 1;
 		case KHR_CLOSE_MENU:
 			leave_menu_mode(1);
@@ -754,7 +754,7 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
 	menus_erase_current(menu->state);
 	menus_set_pos(menu->state, def_count(key_info.count) - 1);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 static void
@@ -765,7 +765,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 		menus_erase_current(menu->state);
 		menu->pos += def_count(key_info.count);
 		menus_set_pos(menu->state, menu->pos);
-		wrefresh(menu_win);
+		ui_refresh_win(menu_win);
 	}
 }
 
@@ -777,7 +777,7 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 		menus_erase_current(menu->state);
 		menu->pos -= def_count(key_info.count);
 		menus_set_pos(menu->state, menu->pos);
-		wrefresh(menu_win);
+		ui_refresh_win(menu_win);
 	}
 }
 
@@ -945,7 +945,7 @@ menu_partial_redraw(void)
 {
 	menus_partial_redraw(menu->state);
 	menus_set_pos(menu->state, menu->pos);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 static int
@@ -955,7 +955,7 @@ goto_cmd(const cmd_info_t *cmd_info)
 	{
 		menus_erase_current(menu->state);
 		menus_set_pos(menu->state, cmd_info->end);
-		wrefresh(menu_win);
+		ui_refresh_win(menu_win);
 	}
 	return 0;
 }

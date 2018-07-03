@@ -17,6 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+/* Save wrefresh identifier behind the macro before it's poisoned in the
+ * header. */
+#define use_wrefresh wrefresh
+
 #include "ui.h"
 
 #include <curses.h> /* mvwin() wbkgdset() werase() */
@@ -145,7 +149,7 @@ ui_ruler_update(view_t *view, int lazy_redraw)
 	ui_ruler_set(expanded);
 	if(!lazy_redraw)
 	{
-		wrefresh(ruler_win);
+		ui_refresh_win(ruler_win);
 	}
 
 	free(expanded);
@@ -939,7 +943,7 @@ update_input_bar(const wchar_t *str)
 
 	werase(input_win);
 	compat_waddwstr(input_win, str);
-	wrefresh(input_win);
+	ui_refresh_win(input_win);
 }
 
 void
@@ -948,7 +952,7 @@ clear_num_window(void)
 	if(curr_stats.use_input_bar)
 	{
 		werase(input_win);
-		wrefresh(input_win);
+		ui_refresh_win(input_win);
 	}
 }
 
@@ -1092,6 +1096,12 @@ update_attributes(void)
 }
 
 void
+ui_refresh_win(WINDOW *win)
+{
+	use_wrefresh(win);
+}
+
+void
 wprint(WINDOW *win, const char str[])
 {
 #ifndef _WIN32
@@ -1141,9 +1151,9 @@ resize_for_menu_like(void)
 
 	update_statusbar_layout();
 
-	wrefresh(status_bar);
-	wrefresh(ruler_win);
-	wrefresh(input_win);
+	ui_refresh_win(status_bar);
+	ui_refresh_win(ruler_win);
+	ui_refresh_win(input_win);
 
 	return 0;
 }
@@ -1158,8 +1168,8 @@ ui_setup_for_menu_like(void)
 		werase(menu_win);
 		werase(status_bar);
 		werase(ruler_win);
-		wrefresh(status_bar);
-		wrefresh(ruler_win);
+		ui_refresh_win(status_bar);
+		ui_refresh_win(ruler_win);
 	}
 }
 
@@ -1275,7 +1285,7 @@ refresh_view_win(view_t *view)
 		return;
 	}
 
-	wrefresh(view->win);
+	ui_refresh_win(view->win);
 	refresh_bottom_lines();
 }
 
@@ -1575,14 +1585,14 @@ void
 ui_display_too_small_term_msg(void)
 {
 	touchwin(stdscr);
-	wrefresh(stdscr);
+	ui_refresh_win(stdscr);
 
 	mvwin(status_bar, 0, 0);
 	wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
 	werase(status_bar);
 	waddstr(status_bar, "Terminal is too small for vifm");
 	touchwin(status_bar);
-	wrefresh(status_bar);
+	ui_refresh_win(status_bar);
 }
 
 void
@@ -2142,7 +2152,7 @@ ui_view_wipe(view_t *view)
 		mvwaddstr(view->win, i, 0, line_filler);
 	}
 	redrawwin(view->win);
-	wrefresh(view->win);
+	ui_refresh_win(view->win);
 }
 
 int

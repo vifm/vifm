@@ -535,7 +535,7 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 		attrs[attr_num] = !attrs[attr_num];
 	}
 	mvwaddch(change_win, curr, 4, c);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 /* moves cursor down one or more times */
@@ -606,7 +606,7 @@ static void
 draw_curr(void)
 {
 	mvwaddch(change_win, curr, col, '>');
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 	checked_wmove(change_win, curr, col);
 }
 

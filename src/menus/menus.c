@@ -325,7 +325,7 @@ menus_full_redraw(menu_state_t *m)
 
 	menus_partial_redraw(m);
 	menus_set_pos(m, m->d->pos);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 }
 
 int
@@ -872,7 +872,7 @@ menus_search_repeat(menu_state_t *m, int backward)
 
 	m->backward_search = backward;
 	(void)menus_search(NULL, m->d, 1);
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 
 	if(m->matching_entries > 0)
 	{

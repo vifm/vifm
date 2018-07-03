@@ -118,7 +118,7 @@ modes_pre(void)
 	else if(vle_mode_is(CMDLINE_MODE))
 	{
 		touchwin(status_bar);
-		wrefresh(status_bar);
+		ui_refresh_win(status_bar);
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
@@ -131,7 +131,7 @@ modes_pre(void)
 	else if(!curr_stats.save_msg)
 	{
 		ui_sb_clear();
-		wrefresh(status_bar);
+		ui_refresh_win(status_bar);
 	}
 }
 
@@ -379,7 +379,7 @@ update_vmode_input(void)
 		werase(input_win);
 		checked_wmove(input_win, 0, 0);
 		wprintw(input_win, "%d", curr_view->selected_files);
-		wrefresh(input_win);
+		ui_refresh_win(input_win);
 	}
 }
 
