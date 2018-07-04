@@ -46,8 +46,11 @@ enum
 {
 	KEYS_FLAG_NONE = 0,    /* No flags. */
 	KEYS_FLAG_NOREMAP = 1, /* Ignore user mappings in RHS. */
+	KEYS_FLAG_SILENT = 2,  /* Postpone screen update until mapping's end. */
 };
 
+/* Checks passed in value for being among list of error codes this unit can
+ * return. */
 #define IS_KEYS_RET_CODE(c) \
 		({ \
 			const int tmp = (c); \
@@ -93,6 +96,9 @@ typedef void (*vle_keys_list_cb)(const wchar_t lhs[], const wchar_t rhs[],
 		const char descr[]);
 /* User-provided suggestion callback for multikeys. */
 typedef void (*vle_suggest_func)(vle_keys_list_cb cb);
+/* User-provided callback for silencing UI.  Non-zero argument makes UI more
+ * silent, zero argument makes it less silent. */
+typedef void (*vle_silence_func)(int more);
 
 /* Type of callback that handles all keys uncaught by shortcuts.  Should return
  * zero on success and non-zero on error. */
@@ -125,7 +131,8 @@ keys_add_info_t;
 
 /* Initializes the unit.  Assumed that key_mode_flags is an array of at least
  * modes_count items. */
-void vle_keys_init(int modes_count, int *key_mode_flags);
+void vle_keys_init(int modes_count, int *key_mode_flags,
+		vle_silence_func silence);
 
 /* Frees all memory allocated by the unit and returns it to initial state. */
 void vle_keys_reset(void);

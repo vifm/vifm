@@ -111,7 +111,13 @@ fuzz_variables(const char input[])
 static void
 keys_dummy(key_info_t key_info, keys_info_t *keys_info)
 {
+	/* Do nothing. */
+}
 
+static void
+silence(int more)
+{
+	/* Do nothing. */
 }
 
 static int
@@ -166,7 +172,7 @@ fuzz_keys(const char input[])
 
 	wchar_t *winput = to_wide_force(input);
 
-	vle_keys_init(3, mode_flags);
+	vle_keys_init(3, mode_flags, &silence);
 	vle_mode_set(0, VMT_PRIMARY);
 
 	vle_keys_add(normal_cmds, ARRAY_LEN(normal_cmds), 0);
