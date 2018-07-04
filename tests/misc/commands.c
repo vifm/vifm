@@ -12,6 +12,7 @@
 #include "../../src/engine/functions.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -30,6 +31,8 @@
 #include "utils.h"
 
 static int builtin_cmd(const cmd_info_t* cmd_info);
+static void silent_key(key_info_t key_info, keys_info_t *keys_info);
+static void silence_ui(int more);
 
 static const cmd_add_t commands[] = {
 	{ .name = "builtin",       .abbr = NULL,  .id = -1,      .descr = "descr",
@@ -44,6 +47,7 @@ static int called;
 static int bg;
 static char *arg;
 static char *saved_cwd;
+static int silence;
 
 static char cwd[PATH_MAX + 1];
 static char sandbox[PATH_MAX + 1];
@@ -658,6 +662,36 @@ TEST(map_commands_count_arguments_correctly)
 	vle_keys_reset();
 }
 
+TEST(map_parses_args)
+{
+	init_modes();
+
+	static int mode_flags[] = {
+		MF_USES_REGS | MF_USES_COUNT,
+		MF_USES_INPUT,
+		MF_USES_COUNT
+	};
+
+	vle_keys_reset();
+	vle_keys_init(MODES_COUNT, mode_flags, &silence_ui);
+
+	keys_add_info_t keys = { WK_x, { {&silent_key} } };
+	vle_keys_add(&keys, 1U, NORMAL_MODE);
+
+	assert_int_equal(0, silence);
+	assert_success(exec_commands("map a x", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("map <silent>b x", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("map <silent> c x", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("map <silent><silent>d x", &lwin, CIT_COMMAND));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"a")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"1b")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"1c")));
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"1d")));
+	assert_int_equal(0, silence);
+
+	vle_keys_reset();
+}
+
 TEST(hist_next_and_prev)
 {
 	/* Emulate proper history initialization (must happen after view
@@ -755,6 +789,19 @@ TEST(echo_reports_all_errors)
 	ui_sb_msg("");
 	assert_failure(exec_commands(zeroes, &lwin, CIT_COMMAND));
 	assert_true(strchr(ui_sb_last(), '\n') != NULL);
+}
+
+static void
+silent_key(key_info_t key_info, keys_info_t *keys_info)
+{
+	assert_int_equal(key_info.count == NO_COUNT_GIVEN ? 0 : 1, silence);
+}
+
+static void
+silence_ui(int more)
+{
+	silence += (more != 0 ? 1 : -1);
+	assert_true(silence >= 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

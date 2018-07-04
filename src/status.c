@@ -36,6 +36,7 @@
 #include "compat/fs_limits.h"
 #include "compat/pthread.h"
 #include "compat/reallocarray.h"
+#include "modes/modes.h"
 #include "ui/colors.h"
 #include "ui/ui.h"
 #include "utils/env.h"
@@ -180,6 +181,8 @@ load_def_values(status_t *stats, config_t *config)
 	stats->preview_hint = NULL;
 
 	stats->global_local_settings = 0;
+
+	stats->silent_ui = 0;
 
 	stats->history_size = 0;
 
@@ -362,6 +365,21 @@ stats_set_quickview(int on)
 {
 	curr_stats.preview.on = on;
 	load_quickview_option();
+}
+
+void
+stats_silence_ui(int more)
+{
+	if(more)
+	{
+		++curr_stats.silent_ui;
+	}
+	else if(--curr_stats.silent_ui == 0)
+	{
+		modes_redraw();
+	}
+
+	assert(curr_stats.silent_ui >= 0 && "Unbalanced calls to stats_silence_ui()");
 }
 
 void

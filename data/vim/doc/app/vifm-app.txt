@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jul 3
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jul 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -16,7 +16,7 @@
 |vifm-patterns|           Description of file match patterns.
 |vifm-globs|              How globs work in vifm.
 |vifm-set-options|        Available options.
-|vifm-mappings|           Special sequences.
+|vifm-mappings|           Map arguments and special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
 |vifm-functions|          List of builtin functions with description.
 |vifm-menus-and-dialogs|  Keys and commands for menus and dialogs.
@@ -3865,6 +3865,14 @@ Searches wrap around end of the list.
 
 --------------------------------------------------------------------------------
 *vifm-mappings*
+
+Map arguments~
+
+LHS of mappings can be preceded by arguments which take the form of special
+sequences:
+
+<silent>
+    Postpone UI updates until RHS is completely processed.
 
 Special sequences~
 

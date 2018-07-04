@@ -90,7 +90,6 @@ static mode_init_func mode_init_funcs[] = {
 };
 ARRAY_GUARD(mode_init_funcs, MODES_COUNT);
 
-static void silence_ui(int more);
 static void modes_statusbar_update(void);
 static void update_vmode_input(void);
 
@@ -99,18 +98,13 @@ init_modes(void)
 {
 	LOG_FUNC_ENTER;
 
-	vle_keys_init(MODES_COUNT, mode_flags, &silence_ui);
+	vle_keys_init(MODES_COUNT, mode_flags, &stats_silence_ui);
 
 	int i;
 	for(i = 0; i < MODES_COUNT; ++i)
 	{
 		mode_init_funcs[i]();
 	}
-}
-
-static void
-silence_ui(int more)
-{
 }
 
 void

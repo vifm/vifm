@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: June 22, 2018
+" Last Change: July 4, 2018
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -232,7 +232,7 @@ syntax region vifmExecute start='!' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 syntax region vifmMapArgs start='\ze\S\+'
 		\ end='\ze.' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
-		\ nextgroup=vifmMapLhs
+		\ nextgroup=vifmMapArgList
 syntax region vifmCMapArgs start='\S\+'
 		\ end='\n\s*\\' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ contained
@@ -380,6 +380,9 @@ syntax region vifmArgument contained start=+'+ skip=+\\\\\|\\'\|''+  end=+'+
 syntax match vifmEnvVar contained /\$[0-9a-zA-Z_]\+/
 syntax match vifmNumber contained /\d\+/
 
+" Optional map arguments right after command name
+syntax match vifmMapArgList '\(<silent>\s*\)*' contained nextgroup=vifmMapLhs
+
 " Ange-bracket notation
 syntax case ignore
 syntax match vifmNotation '<\(esc\|cr\|space\|del\|nop\|\(s-\)\?tab\|home\|end\|left\|right\|up\|down\|bs\|delete\|insert\|pageup\|pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[a-z]\)>'
@@ -434,6 +437,7 @@ highlight link vifmHiStyles PreProc
 highlight link vifmHiColors Special
 highlight link vifmOption PreProc
 highlight link vifmNotation Special
+highlight link vifmMapArgList Special
 highlight link vifmString String
 highlight link vifmStringInExpr String
 highlight link vifmEnvVar PreProc

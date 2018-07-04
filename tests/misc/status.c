@@ -15,6 +15,19 @@ TEARDOWN()
 	update_string(&cfg.shell, NULL);
 }
 
+TEST(stats_silence_ui_operates_correctly)
+{
+	assert_int_equal(0, curr_stats.silent_ui);
+	stats_silence_ui(1);
+	assert_int_equal(1, curr_stats.silent_ui);
+	stats_silence_ui(1);
+	assert_int_equal(2, curr_stats.silent_ui);
+	stats_silence_ui(0);
+	assert_int_equal(1, curr_stats.silent_ui);
+	stats_silence_ui(0);
+	assert_int_equal(0, curr_stats.silent_ui);
+}
+
 TEST(redraw_flag_resets_on_query)
 {
 	assert_false(stats_redraw_fetch());

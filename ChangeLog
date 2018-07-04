@@ -66,6 +66,10 @@
 	macro, which makes it possible to colorize parts of status line
 	differently.  Thanks to GeorgeHJ.
 
+	Added <silent> :*map argument that postpones UI updates until RHS is
+	completely processed.  Probably not all updates are postponed, to be
+	improved as unhandled cases are discovered.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
