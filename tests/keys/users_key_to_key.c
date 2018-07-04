@@ -11,11 +11,11 @@ extern int last_command_register;
 
 SETUP()
 {
-	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, 0);
-	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, 0);
+	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, KEYS_FLAG_NONE);
 
-	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, 0);
-	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
 TEST(user_key_sequence_cannot_be_empty_even)
@@ -38,7 +38,7 @@ TEST(user_key_chain_wait)
 TEST(count_is_passed_to_the_next_command)
 {
 	last_command_register = 0;
-	vle_keys_user_add(L"J", L"dd", NORMAL_MODE, 0);
+	vle_keys_user_add(L"J", L"dd", NORMAL_MODE, KEYS_FLAG_NONE);
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"\"aJ")));
 	assert_int_equal(last_command_register, 'a');
 }
@@ -47,7 +47,7 @@ TEST(user_keys_are_cleared_on_request)
 {
 	last = 0;
 
-	vle_keys_user_add(L"k", L"j", NORMAL_MODE, 0);
+	vle_keys_user_add(L"k", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"k")));
 	assert_int_equal(2, last);
 
@@ -59,7 +59,7 @@ TEST(user_keys_are_cleared_on_request)
 TEST(user_key_presence_can_be_checked)
 {
 	assert_false(vle_keys_user_exists(L"k", NORMAL_MODE));
-	vle_keys_user_add(L"k", L"j", NORMAL_MODE, 0);
+	vle_keys_user_add(L"k", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
 	assert_true(vle_keys_user_exists(L"k", NORMAL_MODE));
 }
 
@@ -68,7 +68,7 @@ TEST(removing_user_mapping_from_a_mapping_is_fine)
 	keys_add_info_t keys = {WK_x, {{&key_selfremove}}};
 	vle_keys_add(&keys, 1U, NORMAL_MODE);
 
-	vle_keys_user_add(L"a", L"x", NORMAL_MODE, 0);
+	vle_keys_user_add(L"a", L"x", NORMAL_MODE, KEYS_FLAG_NONE);
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"a")));
 }
 

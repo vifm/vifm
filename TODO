@@ -35,7 +35,6 @@ Vi(m) specific features:
   * Add support of ^= in :set command for more option kinds.
   * Better ranges (add support for search patterns).
   * :map without arguments.
-  * Lazy redraw support.
   * Don't move cursor on search failure.
   * Consider adding support for sequences like \<cr>.
   * Completion of first argument for :map commands.

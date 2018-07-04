@@ -6,6 +6,8 @@
 
 #include "builtin_keys.h"
 
+static void silence(int more);
+
 DEFINE_SUITE();
 
 SETUP()
@@ -16,9 +18,15 @@ SETUP()
 		MF_USES_COUNT
 	};
 
-	vle_keys_init(MODES_COUNT, mode_flags);
+	vle_keys_init(MODES_COUNT, mode_flags, &silence);
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	init_builtin_keys();
+}
+
+static void
+silence(int more)
+{
+	/* Do nothing. */
 }
 
 TEARDOWN()

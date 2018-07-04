@@ -199,7 +199,7 @@ redraw_file_info_dialog(void)
 	box(menu_win, 0, 0);
 	checked_wmove(menu_win, 0, 3);
 	wprint(menu_win, " File Information ");
-	wrefresh(menu_win);
+	ui_refresh_win(menu_win);
 	checked_wmove(menu_win, 2, 2);
 
 	was_redraw = 1;

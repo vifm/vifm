@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jun 22
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jul 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -16,7 +16,7 @@
 |vifm-patterns|           Description of file match patterns.
 |vifm-globs|              How globs work in vifm.
 |vifm-set-options|        Available options.
-|vifm-mappings|           Special sequences.
+|vifm-mappings|           Map arguments and special sequences.
 |vifm-expression-syntax|  Syntax of supported expressions.
 |vifm-functions|          List of builtin functions with description.
 |vifm-menus-and-dialogs|  Keys and commands for menus and dialogs.
@@ -3866,6 +3866,16 @@ Searches wrap around end of the list.
 --------------------------------------------------------------------------------
 *vifm-mappings*
 
+Map arguments~
+
+LHS of mappings can be preceded by arguments which take the form of special
+sequences:
+
+<silent>
+    Postpone UI updates until RHS is completely processed.
+
+Special sequences~
+
 Since it's not easy to enter special characters there are several special
 sequences that can be used in place of them.  They are:
 
@@ -3919,6 +3929,7 @@ might be mapped to single key code, for example:
  - <tab> and <c-i>;
  - <c-h> and <bs>;
  - etc.
+
 Most of the time they are defined consistently and don't cause surprises, but
 <c-h> and <bs> are treated differently in different environments (although they
 match each other all the time), that's why they correspond to different keys
@@ -3930,6 +3941,8 @@ following: >
   map <c-h> <bs>
   " if mappings with <bs> in the LHS work
   map <bs> <c-h>
+
+Whitespace~
 
 vifm removes whitespace characters at the beginning and end of commands.
 That's why you may want to use <space> at the end of rhs in mappings.  For

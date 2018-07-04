@@ -53,11 +53,17 @@ KeyType;
 typedef struct key_chunk_t
 {
 	wchar_t key;
-	int no_remap;
 	size_t children_count;
-	int enters;            /* To prevent stack overflow and manager lifetime. */
-	int deleted;           /* Postpone free() call for proper lazy deletion. */
-	KeyType type;          /* General key type. */
+	/* Number of current uses.  To prevent stack overflow and manager lifetime. */
+	int enters;
+	/* General key type. */
+	KeyType type : 2;
+	/* Whether RHS should be treated as if there are no user mappings. */
+	unsigned int no_remap : 1;
+	/* Postpone free() call for proper lazy deletion. */
+	unsigned int deleted : 1;
+	/* Postpone UI updates until RHS is done executing. */
+	unsigned int silent : 1;
 	key_conf_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
@@ -80,6 +86,8 @@ static size_t counter;
 static size_t enters_counter;
 /* Shows whether a mapping handler is being executed at the moment. */
 static int inside_mapping;
+/* User-provided callback for silencing UI. */
+static vle_silence_func silence_ui;
 
 static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
@@ -138,13 +146,15 @@ static void suggest_chunk(const key_chunk_t *chunk, const wchar_t lhs[],
 		void *arg);
 
 void
-vle_keys_init(int modes_count, int *key_mode_flags)
+vle_keys_init(int modes_count, int *key_mode_flags, vle_silence_func silence)
 {
 	assert(key_mode_flags != NULL);
 	assert(modes_count > 0);
+	assert(silence != NULL);
 
 	max_modes = modes_count;
 	mode_flags = key_mode_flags;
+	silence_ui = silence;
 
 	builtin_cmds_root = calloc(modes_count, sizeof(*builtin_cmds_root));
 	assert(builtin_cmds_root != NULL);
@@ -634,6 +644,11 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 	}
 	else
 	{
+		if(curr->silent)
+		{
+			silence_ui(1);
+		}
+
 		int result = has_def_handler() ? 0 : KEYS_UNKNOWN;
 
 		/* Protect chunk from deletion while it's in use. */
@@ -676,6 +691,11 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 		/* Release the chunk, this will free it if deletion was attempted. */
 		leave_chunk(curr);
+
+		if(curr->silent)
+		{
+			silence_ui(0);
+		}
 
 		return result;
 	}
@@ -859,7 +879,8 @@ combine_counts(int count_a, int count_b)
 }
 
 int
-vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
+vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
+		int flags)
 {
 	key_chunk_t *curr = add_keys_inner(&user_cmds_root[mode], lhs);
 	if(curr == NULL)
@@ -869,12 +890,13 @@ vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode, int no_r)
 
 	if(curr->type == USER_CMD)
 	{
-		free((void*)curr->conf.data.cmd);
+		free(curr->conf.data.cmd);
 	}
 
 	curr->type = USER_CMD;
 	curr->conf.data.cmd = vifm_wcsdup(rhs);
-	curr->no_remap = no_r;
+	curr->no_remap = ((flags & KEYS_FLAG_NOREMAP) != 0);
+	curr->silent = ((flags & KEYS_FLAG_SILENT) != 0);
 	return 0;
 }
 
@@ -1029,6 +1051,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->enters = 0;
 			c->deleted = 0;
 			c->no_remap = 1;
+			c->silent = 0;
 			if(prev == NULL)
 				curr->child = c;
 			else

@@ -283,7 +283,7 @@ redraw_attr_dialog(void)
 
 	checked_wmove(change_win, curr, col);
 	curs_set(1);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 /* Composes title for the dialog.  Returns pointer to a newly allocated
@@ -519,7 +519,7 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	checked_wmove(change_win, curr, col);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void
@@ -532,7 +532,7 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	checked_wmove(change_win, curr, col);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void
@@ -602,7 +602,7 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 	mvwaddch(change_win, curr, col, c);
 
 	checked_wmove(change_win, curr, col);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void
@@ -618,7 +618,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	checked_wmove(change_win, curr, col);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void
@@ -634,7 +634,7 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	checked_wmove(change_win, curr, col);
-	wrefresh(change_win);
+	ui_refresh_win(change_win);
 }
 
 static void

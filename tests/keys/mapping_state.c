@@ -14,7 +14,7 @@ static int mapping_states;
 SETUP()
 {
 	vle_keys_set_def_handler(CMDLINE_MODE, &handler);
-	vle_keys_user_add(L"s", L":shell", NORMAL_MODE, 0);
+	vle_keys_user_add(L"s", L":shell", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
 TEARDOWN()

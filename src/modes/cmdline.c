@@ -379,6 +379,14 @@ update_cmdline_text(line_stats_t *stat)
 static void
 draw_cmdline_text(line_stats_t *stat)
 {
+	if(curr_stats.silent_ui)
+	{
+		/* XXX: erasing status_bar causes blinking if <silent> mapping that uses
+		 *      command-line is pressed and held down.  Ideally wouldn't need this
+		 *      retur. */
+		return;
+	}
+
 	int pair = -1;
 	int attr = 0;
 
@@ -406,7 +414,7 @@ draw_cmdline_text(line_stats_t *stat)
 	wattroff(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 
 	update_cursor();
-	wrefresh(status_bar);
+	ui_refresh_win(status_bar);
 }
 
 /* Callback-like function, which is called every time input line is changed. */
@@ -454,7 +462,7 @@ input_line_changed(void)
 
 	/* Hardware cursor is moved on the screen only on refresh, so refresh status
 	 * bar to force cursor moving there before it becomes visible again. */
-	wrefresh(status_bar);
+	ui_refresh_win(status_bar);
 	curs_set(1);
 }
 
@@ -1111,7 +1119,7 @@ draw_wild_menu(int op)
 	}
 	if(op == 0 && len < 2 && i - 1 == pos)
 		last_pos = i;
-	wrefresh(stat_win);
+	ui_refresh_win(stat_win);
 
 	update_cursor();
 }

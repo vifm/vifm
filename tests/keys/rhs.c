@@ -7,7 +7,7 @@ extern int last;
 
 SETUP()
 {
-	vle_keys_user_add(L"abc", L"", NORMAL_MODE, 0);
+	vle_keys_user_add(L"abc", L"", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
 TEST(nop_no_follow_ok)

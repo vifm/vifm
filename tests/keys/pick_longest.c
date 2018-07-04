@@ -5,13 +5,13 @@
 
 SETUP()
 {
-	vle_keys_user_add(L"a", L"z", NORMAL_MODE, 0);
-	vle_keys_user_add(L"ab", L"x", NORMAL_MODE, 0);
-	vle_keys_user_add(L"abc", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"a", L"z", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"ab", L"x", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"abc", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
 
-	vle_keys_user_add(L"q", L"k", NORMAL_MODE, 0);
-	vle_keys_user_add(L"qb", L"k", NORMAL_MODE, 0);
-	vle_keys_user_add(L"qbc", L"k", NORMAL_MODE, 0);
+	vle_keys_user_add(L"q", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"qb", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"qbc", L"k", NORMAL_MODE, KEYS_FLAG_NONE);
 }
 
 TEST(when_previous_unknown)

@@ -25,7 +25,6 @@
 #include <stdlib.h> /* abs() */
 #include <string.h>
 
-#include "../../cfg/config.h"
 #include "../../compat/curses.h"
 #include "../../engine/keys.h"
 #include "../../engine/mode.h"
@@ -202,10 +201,6 @@ enter_sort_mode(view_t *active_view)
 	descending = (view->sort[0] < 0);
 	vle_mode_set(SORT_MODE, VMT_SECONDARY);
 
-	wattroff(view->win, COLOR_PAIR(cfg.cs.pair[CURR_LINE_COLOR]) | A_BOLD);
-	curs_set(0);
-	update_all_windows();
-
 	top = 4;
 	bottom = top + SK_COUNT - 1;
 	curr = top + indexes[abs(view->sort[0])];
@@ -261,7 +256,7 @@ redraw_sort_dialog(void)
 			"Sort dialog and sort options should not diverge");
 	print_at_pos();
 
-	wrefresh(sort_win);
+	ui_refresh_win(sort_win);
 }
 
 static void
@@ -328,7 +323,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 	descending = !descending;
 	clear_at_pos();
 	print_at_pos();
-	wrefresh(sort_win);
+	ui_refresh_win(sort_win);
 }
 
 static void
@@ -343,7 +338,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 		curr = bottom;
 
 	print_at_pos();
-	wrefresh(sort_win);
+	ui_refresh_win(sort_win);
 }
 
 static void
@@ -358,7 +353,7 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 		curr = top;
 
 	print_at_pos();
-	wrefresh(sort_win);
+	ui_refresh_win(sort_win);
 }
 
 static void
@@ -528,7 +523,7 @@ goto_line(int line)
 	clear_at_pos();
 	curr = line;
 	print_at_pos();
-	wrefresh(sort_win);
+	ui_refresh_win(sort_win);
 }
 
 static void

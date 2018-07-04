@@ -15,11 +15,11 @@ static const char *descr;
 
 SETUP()
 {
-	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, 0);
-	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, 0);
+	vle_keys_user_add(L"hi", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"hi2", L"hi", NORMAL_MODE, KEYS_FLAG_NONE);
 
-	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, 0);
-	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ho", L"j", NORMAL_MODE, KEYS_FLAG_NONE);
+	vle_keys_user_add(L"ha2", L"ho", NORMAL_MODE, KEYS_FLAG_NONE);
 
 	nsuggestions = 0;
 	descr = NULL;
@@ -45,7 +45,7 @@ TEST(user_keys_with_prefix_are_listed_no_folding)
 
 TEST(user_keys_with_prefix_are_listed_folding)
 {
-	vle_keys_user_add(L"ha3", L"a", NORMAL_MODE, 0);
+	vle_keys_user_add(L"ha3", L"a", NORMAL_MODE, KEYS_FLAG_NONE);
 
 	vle_keys_suggest(L"h", &process_suggestion, 0, 1);
 	assert_int_equal(4, nsuggestions);

@@ -111,7 +111,13 @@ fuzz_variables(const char input[])
 static void
 keys_dummy(key_info_t key_info, keys_info_t *keys_info)
 {
+	/* Do nothing. */
+}
 
+static void
+silence(int more)
+{
+	/* Do nothing. */
 }
 
 static int
@@ -166,7 +172,7 @@ fuzz_keys(const char input[])
 
 	wchar_t *winput = to_wide_force(input);
 
-	vle_keys_init(3, mode_flags);
+	vle_keys_init(3, mode_flags, &silence);
 	vle_mode_set(0, VMT_PRIMARY);
 
 	vle_keys_add(normal_cmds, ARRAY_LEN(normal_cmds), 0);
@@ -182,7 +188,7 @@ fuzz_keys(const char input[])
 	vle_keys_exec_timed_out(winput);
 	vle_keys_exec_timed_out_no_remap(winput);
 	vle_keys_user_exists(winput, 0);
-	vle_keys_user_add(winput, winput, 0, 1);
+	vle_keys_user_add(winput, winput, 0, KEYS_FLAG_NOREMAP);
 	vle_keys_user_exists(winput, 0);
 	vle_keys_user_remove(winput, 0);
 
@@ -192,7 +198,7 @@ fuzz_keys(const char input[])
 	vle_keys_exec_timed_out(winput);
 	vle_keys_exec_timed_out_no_remap(winput);
 	vle_keys_user_exists(winput, 1);
-	vle_keys_user_add(winput, winput, 1, 1);
+	vle_keys_user_add(winput, winput, 1, KEYS_FLAG_NOREMAP);
 	vle_keys_user_exists(winput, 1);
 	vle_keys_user_remove(winput, 1);
 

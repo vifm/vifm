@@ -533,6 +533,10 @@ void redraw_lists(void);
 /* Forces immediate update of attributes for most of windows. */
 void update_attributes(void);
 
+/* Refreshes the window, should be used instead of wrefresh(). */
+#pragma GCC poison wrefresh
+void ui_refresh_win(WINDOW *win);
+
 /* Prints str in current window position. */
 void wprint(WINDOW *win, const char str[]);
 

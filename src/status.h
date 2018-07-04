@@ -66,11 +66,12 @@ typedef enum
 }
 TermMultiplexer;
 
+/* Types of updates that can be performed by update_screen(). */
 typedef enum
 {
-	UT_NONE, /* no update needed */
-	UT_REDRAW, /* screen redraw requested */
-	UT_FULL, /* file lists reload followed by screen redraw requested */
+	UT_NONE,   /* No update needed. */
+	UT_REDRAW, /* Screen redraw requested. */
+	UT_FULL,   /* File lists reload followed by screen redraw requested. */
 }
 UpdateType;
 
@@ -115,7 +116,7 @@ preview_t;
 
 typedef struct
 {
-	UpdateType need_update;
+	UpdateType need_update; /* Postponed way of doing an update. */
 	int last_char;
 	int save_msg; /* zero - don't save, 2 - save after resize, other - save */
 	int use_register;
@@ -194,6 +195,8 @@ typedef struct
 
 	int global_local_settings; /* Set local settings globally. */
 
+	int silent_ui; /* Whether UI updates should be "paused". */
+
 	int history_size;   /* Number of elements in histories. */
 	hist_t cmd_hist;    /* History of command-line commands. */
 	hist_t search_hist; /* History of search patterns. */
@@ -262,6 +265,10 @@ void stats_save_msg(const char msg[]);
 /* Updates curr_stats.preview.on field and performs necessary updates in other
  * parts of the application. */
 void stats_set_quickview(int on);
+
+/* Non-zero argument makes UI more silent, zero argument makes it less silent.
+ * After calls with non-zero and zero arguments balance out, UI gets updated. */
+void stats_silence_ui(int more);
 
 /* Managing histories. */
 

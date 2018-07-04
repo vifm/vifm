@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 22, 2018" "vifm 0.9.1"
+.TH VIFM 1 "July 4, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4625,6 +4625,17 @@ Searches wrap around end of the list.
 .\" ---------------------------------------------------------------------------
 .SH Mappings
 .\" ---------------------------------------------------------------------------
+.B Map arguments
+
+LHS of mappings can be preceded by arguments which take the form of special
+sequences:
+.TP
+.BI <silent>
+Postpone UI updates until RHS is completely processed.
+.LP
+
+.B Special sequences
+
 Since it's not easy to enter special characters there are several special
 sequences that can be used in place of them.  They are:
 .TP
@@ -4722,6 +4733,8 @@ Alternatively, provide your mapping in one form and add one of the following:
   " if mappings with <bs> in the LHS work
   map <bs> <c-h>
 .EE
+
+.B Whitespace
 
 vifm removes whitespace characters at the beginning and end of commands.
 That's why you may want to use <space> at the end of rhs in mappings.  For
