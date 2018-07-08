@@ -112,6 +112,9 @@
 	Make :echo and :execute report parsing errors in more detail than just
 	"invalid expression".
 
+	Update status line when cursor is moved on typing local filter when
+	'incsearch' is on.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
@@ -188,6 +191,9 @@
 
 	Fixed syntax highlighting of strings in double quotes and comments in :let
 	statements.
+
+	Fixed status line showing information about previously selected file after
+	clearing search pattern when 'incsearch' is on.
 
 0.9.1-beta to 0.9.1
 
