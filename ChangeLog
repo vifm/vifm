@@ -112,6 +112,9 @@
 	Make :echo and :execute report parsing errors in more detail than just
 	"invalid expression".
 
+	Update status line when cursor is moved on typing local filter when
+	'incsearch' is on.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

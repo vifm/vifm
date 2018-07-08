@@ -780,6 +780,11 @@ set_view_port(void)
 		curr_view->top_line = input_stat.old_top;
 		fpos_set_pos(curr_view, input_stat.old_pos);
 	}
+	else if(sub_mode == CLS_FILTER)
+	{
+		/* Filtering itself doesn't update status line. */
+		ui_stat_update(curr_view, 1);
+	}
 
 	if(prev_mode == VISUAL_MODE)
 	{
