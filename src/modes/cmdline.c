@@ -778,7 +778,7 @@ set_view_port(void)
 	if(sub_mode != CLS_FILTER || !is_line_edited())
 	{
 		curr_view->top_line = input_stat.old_top;
-		curr_view->list_pos = input_stat.old_pos;
+		fpos_set_pos(curr_view, input_stat.old_pos);
 	}
 
 	if(prev_mode == VISUAL_MODE)
