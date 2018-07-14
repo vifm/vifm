@@ -19,7 +19,7 @@
 
 #include "colorscheme_menu.h"
 
-#include <stdlib.h> /* free() qsort() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strcmp() */
 
 #include "../compat/fs_limits.h"
@@ -28,6 +28,7 @@
 #include "../ui/ui.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/utils.h"
 #include "menus.h"
 
 static int execute_colorscheme_cb(view_t *view, menu_data_t *m);
@@ -42,7 +43,7 @@ show_colorschemes_menu(view_t *view)
 
 	m.items = cs_list(&m.len);
 
-	qsort(m.items, m.len, sizeof(*m.items), &strossorter);
+	safe_qsort(m.items, m.len, sizeof(*m.items), &strossorter);
 
 	/* It's safe to set m.pos to negative value, since menus.c handles this
 	 * correctly. */

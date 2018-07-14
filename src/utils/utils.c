@@ -35,7 +35,7 @@
 #include <math.h> /* modf() pow() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() malloc() */
+#include <stdlib.h> /* free() malloc() qsort() */
 #include <string.h> /* strdup() strchr() strlen() strpbrk() strtol() */
 #include <wchar.h> /* wcwidth() */
 
@@ -722,6 +722,18 @@ is_graphical_viewer(const char viewer[])
 	/* %pw and %ph can be useful for text output, but %px and %py are useful
 	 * for graphics and basically must have both. */
 	return (strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL);
+}
+
+void
+safe_qsort(void *base, size_t nmemb, size_t size,
+		int (*compar)(const void *, const void *))
+{
+	if(nmemb != 0U)
+	{
+		/* Even when there are no entries, qsort() shouldn't be called with a NULL
+		 * parameter.  It isn't allowed by the standard. */
+		qsort(base, nmemb, size, compar);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

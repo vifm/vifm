@@ -299,16 +299,15 @@ initiate_put_files(view_t *view, int at, CopyMoveLikeOp op, const char descr[],
 	 * and then move all that will clash to the tail of the array. */
 	if(op == CMLO_MOVE || op == CMLO_COPY)
 	{
-		int i, nclashes;
-
-		qsort(put_confirm.file_order, reg->nfiles,
+		safe_qsort(put_confirm.file_order, reg->nfiles,
 				sizeof(put_confirm.file_order[0]), &path_depth_sort);
 
 		/* We basically do partition by "clash" predicate moving all files for which
 		 * it's true to the tail.  Mind that moved files end up in reverse order,
 		 * which is beneficial for us as we can move larger sub-tree and discard
 		 * some of other files. */
-		nclashes = 0;
+		int nclashes = 0;
+		int i;
 		for(i = 0; i < reg->nfiles - nclashes; ++i)
 		{
 			const int id = put_confirm.file_order[i];

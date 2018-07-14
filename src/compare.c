@@ -22,7 +22,7 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* INTPTR_MAX INT64_MAX */
 #include <stdio.h> /* FILE fclose() feof() fopen() fread() */
-#include <stdlib.h> /* free() malloc() qsort() */
+#include <stdlib.h> /* free() malloc() */
 #include <string.h> /* memcmp() */
 
 #include "compat/fs_limits.h"
@@ -40,6 +40,7 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "utils/trie.h"
+#include "utils/utils.h"
 #include "filelist.h"
 #include "fops_cpmv.h"
 #include "fops_misc.h"
@@ -120,8 +121,9 @@ compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 	{
 		/* Sort both lists according to unique file numbers to group identical files
 		 * (sorting is stable, tags are set in make_diff_list()). */
-		qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
-		qsort(other.entries, other.nentries, sizeof(*other.entries), &id_sorter);
+		safe_qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
+		safe_qsort(other.entries, other.nentries, sizeof(*other.entries),
+				&id_sorter);
 	}
 
 	if(lt == LT_UNIQUE)
@@ -394,12 +396,7 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 		return 1;
 	}
 
-	if(curr.nentries > 0)
-	{
-		/* When there are no entries, qsort() might be called with a NULL parameter,
-		 * which isn't allowed by the standard. */
-		qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
-	}
+	safe_qsort(curr.entries, curr.nentries, sizeof(*curr.entries), &id_sorter);
 
 	flist_custom_start(view, title);
 

@@ -151,6 +151,11 @@ int def_count(int count);
  * non-zero if it's likely, otherwise zero is returned. */
 int is_graphical_viewer(const char viewer[]);
 
+/* Wrapper around qsort() that allows base to be NULL when nmemb is 0 by
+ * skipping call to qsort(). */
+void safe_qsort(void *base, size_t nmemb, size_t size,
+		int (*compar)(const void *, const void *));
+
 /* Checks line for path in it.  Ignores empty lines and attempts to parse it as
  * location line (path followed by a colon and optional line and column
  * numbers).  Returns canonicalized path as a newly allocated string or NULL. */

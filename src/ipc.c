@@ -50,7 +50,7 @@
 #include <errno.h> /* EACCES EEXIST EDQUOT ENOSPC ENXIO errno */
 #include <stddef.h> /* NULL size_t ssize_t */
 #include <stdio.h> /* FILE fclose() fdopen() fread() fwrite() */
-#include <stdlib.h> /* free() malloc() qsort() snprintf() */
+#include <stdlib.h> /* free() malloc() snprintf() */
 #include <string.h> /* strcmp() strcpy() strlen() */
 
 #include "utils/fs.h"
@@ -812,10 +812,7 @@ list_servers(const ipc_t *ipc, int *len)
 	}
 #endif
 
-	if(data.len != 0)
-	{
-		qsort(data.lst, data.len, sizeof(*data.lst), &sorter);
-	}
+	safe_qsort(data.lst, data.len, sizeof(*data.lst), &sorter);
 
 	*len = data.len;
 	return data.lst;

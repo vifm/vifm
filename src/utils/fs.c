@@ -37,7 +37,7 @@
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() remove() */
-#include <stdlib.h> /* free() qsort() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() strlen() strncmp() strncpy() */
 
 #include "../compat/dtype.h"
@@ -572,7 +572,8 @@ list_sorted_files(const char path[], int *len)
 	char **const list = list_all_files(path, len);
 	if(*len > 0)
 	{
-		qsort(list, *len, sizeof(*list), &strossorter);
+		/* The check above is needed because *len might be negative. */
+		safe_qsort(list, *len, sizeof(*list), &strossorter);
 	}
 	return list;
 }
