@@ -20,13 +20,13 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* qsort() */
 #include <string.h> /* strdup() */
 
 #include "../compat/reallocarray.h"
 #include "../utils/darray.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
+#include "../utils/utils.h"
 
 static enum
 {
@@ -178,10 +178,7 @@ group_unique_sort(size_t start_index, size_t len)
 
 	assert(state != COMPLETING);
 
-	if(len != 0U)
-	{
-		qsort(group_start, len, sizeof(*group_start), &sorter);
-	}
+	safe_qsort(group_start, len, sizeof(*group_start), &sorter);
 	remove_duplicates(group_start, len);
 	group_begin = DA_SIZE(items);
 }

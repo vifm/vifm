@@ -689,13 +689,13 @@ dispatch_key(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			}
 		}
 
-		/* Release the chunk, this will free it if deletion was attempted. */
-		leave_chunk(curr);
-
 		if(curr->silent)
 		{
 			silence_ui(0);
 		}
+
+		/* Release the chunk, this will free it if deletion was attempted. */
+		leave_chunk(curr);
 
 		return result;
 	}

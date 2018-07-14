@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 4, 2018" "vifm 0.9.1"
+.TH VIFM 1 "July 12, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -693,8 +693,10 @@ vifm uses size, uid, ...
 go to next group.  See ( key description above.
 .TP
 .BI {
-similar to ( key, but always considers whether entry is file or directory and
-thus speeds up navigation to closest previous entry of the opposite type.
+speeds up navigation to closest previous entry of the opposite type by
+moving to the first file backwards when cursor is on a directory and
+to the first directory backwards when cursor is on a file.  This is
+essentially a special case of ( that is locked on "dirs".
 .TP
 .BI }
 same as {, but in forward direction.
@@ -5335,7 +5337,7 @@ menus and dialogs.
 
 .B Apropos menu
 
-Selecting menu item run man on a given topic.  Menu won't be closed
+Selecting menu item runs man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
 
 .B Command-line mode abbreviations menu

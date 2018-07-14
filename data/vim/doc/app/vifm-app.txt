@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jul 4
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jul 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -602,9 +602,10 @@ ZZ - same as |vifm-:quit|.                       *vifm-ZZ*
 
 
 {                                              *vifm-{*
-    similar to ( key, but always considers whether entry is file or
-    directory and thus speeds up navigation to closest previous entry of
-    the opposite type.
+    speeds up navigation to closest previous entry of the opposite type by
+    moving to the first file backwards when cursor is on a directory and
+    to the first directory backwards when cursor is on a file.  This is
+    essentially a special case of ( that is locked on "dirs".
 
 }                                              *vifm-}*
     same as {, but in forward direction.
@@ -4453,7 +4454,7 @@ menus and dialogs.
 
 Apropos menu~
 
-Selecting menu item run man on a given topic.  Menu won't be closed
+Selecting menu item runs man on a given topic.  Menu won't be closed
 automatically to allow view several pages one by one.
 
 Command-line mode abbreviations menu~

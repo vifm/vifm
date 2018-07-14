@@ -23,7 +23,7 @@
 #include <assert.h> /* assert() */
 #include <ctype.h> /* tolower() */
 #include <stddef.h> /* NULL size_t wchar_t */
-#include <stdlib.h> /* free() qsort() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strlen() */
 #include <wchar.h> /* wcscpy() wcslen() */
 #include <wctype.h> /* iswcntrl() */
@@ -33,6 +33,7 @@
 #include "engine/text_buffer.h"
 #include "utils/macros.h"
 #include "utils/str.h"
+#include "utils/utils.h"
 
 /* Bracket notation entry description structure. */
 typedef struct
@@ -501,7 +502,8 @@ init_bracket_notation(void)
 		key_pairs[i].len = wcslen(key_pairs[i].notation);
 	}
 
-	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(key_pairs[0]), notation_sorter);
+	safe_qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(key_pairs[0]),
+			notation_sorter);
 }
 
 /* Sorter function to be called by qsort. */

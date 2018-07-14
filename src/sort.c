@@ -23,7 +23,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
-#include <stdlib.h> /* abs() qsort() */
+#include <stdlib.h> /* abs() */
 #include <string.h> /* strcmp() strrchr() */
 
 #include "cfg/config.h"
@@ -256,23 +256,17 @@ sort_by_groups(dir_entry_t *entries, size_t nentries)
 static void
 sort_by_key(dir_entry_t *entries, size_t nentries, char key, void *data)
 {
-	unsigned int i;
-
-	if(nentries == 0U)
-	{
-		return;
-	}
-
 	sort_descending = (key < 0);
 	sort_type = (SortingKey)abs(key);
 	sort_data = data;
 
+	unsigned int i;
 	for(i = 0U; i < nentries; ++i)
 	{
 		entries[i].tag = i;
 	}
 
-	qsort(entries, nentries, sizeof(*entries), &sort_dir_list);
+	safe_qsort(entries, nentries, sizeof(*entries), &sort_dir_list);
 }
 
 /* Compares file names containing numbers correctly. */

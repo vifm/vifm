@@ -297,7 +297,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 	if(curr_stats.load_stage < 2)
 		skip_until_started = (result == R_CANCEL);
 
-	update_screen(UT_REDRAW);
+	modes_redraw();
 
 	return result == R_CANCEL;
 }
@@ -330,7 +330,7 @@ prompt_msg_internal(const char title[], const char message[],
 
 	enter(variants == NULL ? MASK(R_YES, R_NO) : 0);
 
-	update_screen(UT_REDRAW);
+	modes_redraw();
 }
 
 /* Enters the mode, which won't be left until one of expected results specified

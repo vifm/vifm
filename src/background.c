@@ -78,7 +78,7 @@
  * that has associated external process has the following life cycle:
  *  1. Created by main thread and passed to error thread through new_err_jobs.
  *  2. Either gets marked by signal handler or its stream reaches EOF.
- *  3. It's in_use flag is reset.
+ *  3. Its in_use flag is reset.
  *  4. Main thread frees corresponding entry.
  */
 
