@@ -195,6 +195,10 @@
 	Fixed status line showing information about previously selected file after
 	clearing search pattern when 'incsearch' is on.
 
+	Fixed status bar mode message not being changed from "-- VISUAL --" to
+	"-- VISUAL (append) --" on pressing av in visual mode.  Thanks to Paweł
+	Smolak (a.k.a. psmolak).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
