@@ -20,7 +20,6 @@
 
 static void print_func(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
-static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 
 static int ncols;
 
@@ -56,8 +55,8 @@ SETUP()
 	rwin.hide_dot_g = rwin.hide_dot = 1;
 
 	/* Name+size matches default column view setting ("-{name},{}"). */
-	columns_add_column_desc(SK_BY_NAME, &format_none);
-	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
 	columns_set_line_print_func(&print_func);
 
 	opt_handlers_setup();
@@ -79,7 +78,7 @@ TEARDOWN()
 	rwin.columns = NULL;
 	update_string(&rwin.view_columns, NULL);
 
-	columns_clear_column_descs();
+	columns_teardown();
 }
 
 static void
@@ -87,12 +86,6 @@ print_func(const void *data, int column_id, const char buf[], size_t offset,
 		AlignType align, const char full_column[])
 {
 	ncols += (column_id != FILL_COLUMN_ID);
-}
-
-static void
-format_none(int id, const void *data, size_t buf_len, char buf[])
-{
-	buf[0] = '\0';
 }
 
 TEST(lsview_block_columns_update_on_sort_change)

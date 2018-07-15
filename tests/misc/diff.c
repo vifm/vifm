@@ -17,7 +17,6 @@
 
 #include "utils.h"
 
-static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 static int files_are_identical(const char a[], const char b[]);
@@ -96,8 +95,8 @@ TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
 	lwin.list_pos = 3;
 	(void)compare_move(&lwin, &rwin);
 
-	columns_add_column_desc(SK_BY_NAME, &format_none);
-	columns_add_column_desc(SK_BY_ID, &format_none);
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_ID);
 	columns_set_line_print_func(&column_line_print);
 	lwin.columns = columns_create();
 	rwin.columns = columns_create();
@@ -113,19 +112,13 @@ TEST(moving_to_fake_entry_creates_the_other_file_and_entry_is_updated)
 	lwin.columns = NULL;
 	columns_free(rwin.columns);
 	rwin.columns = NULL;
-	columns_set_line_print_func(NULL);
+	columns_teardown();
 
 	assert_true(lwin.dir_entry[3].id == rwin.dir_entry[3].id);
 	assert_true(lwin.dir_entry[3].size == rwin.dir_entry[3].size);
 	assert_true(lwin.dir_entry[3].mtime == rwin.dir_entry[3].mtime);
 
 	assert_success(remove(SANDBOX_PATH "/same-name-same-content"));
-}
-
-static void
-format_none(int id, const void *data, size_t buf_len, char buf[])
-{
-	buf[0] = '\0';
 }
 
 static void

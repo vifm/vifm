@@ -19,7 +19,6 @@
 
 #include "utils.h"
 
-static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);
 
@@ -156,13 +155,14 @@ TEST(sync_syncs_trees)
 
 	columns_free(other_view->columns);
 	other_view->columns = NULL;
-	columns_set_line_print_func(NULL);
+
+	columns_teardown();
 }
 
 TEST(sync_all_does_not_turn_destination_into_tree)
 {
-	columns_add_column_desc(SK_BY_NAME, &format_none);
-	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
 	columns_set_line_print_func(&column_line_print);
 
 	opt_handlers_setup();
@@ -181,15 +181,14 @@ TEST(sync_all_does_not_turn_destination_into_tree)
 	columns_free(other_view->columns);
 	other_view->columns = NULL;
 	opt_handlers_teardown();
-	columns_set_line_print_func(NULL);
 
-	columns_clear_column_descs();
+	columns_teardown();
 }
 
 TEST(sync_localopts_clones_local_options)
 {
-	columns_add_column_desc(SK_BY_NAME, &format_none);
-	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
 	columns_set_line_print_func(&column_line_print);
 
 	lwin.hide_dot = 1;
@@ -214,15 +213,7 @@ TEST(sync_localopts_clones_local_options)
 	columns_free(other_view->columns);
 	other_view->columns = NULL;
 	opt_handlers_teardown();
-	columns_set_line_print_func(NULL);
-
-	columns_clear_column_descs();
-}
-
-static void
-format_none(int id, const void *data, size_t buf_len, char buf[])
-{
-	buf[0] = '\0';
+	columns_teardown();
 }
 
 TEST(tree_syncing_applies_properties_of_destination_view)
@@ -258,7 +249,8 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 
 	columns_free(other_view->columns);
 	other_view->columns = NULL;
-	columns_set_line_print_func(NULL);
+
+	columns_teardown();
 }
 
 static void
@@ -311,8 +303,8 @@ TEST(sync_syncs_custom_trees)
 
 	opt_handlers_setup();
 
-	columns_add_column_desc(SK_BY_NAME, &format_none);
-	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
 	columns_set_line_print_func(&column_line_print);
 	other_view->columns = columns_create();
 
@@ -354,9 +346,9 @@ TEST(sync_syncs_custom_trees)
 
 	columns_free(other_view->columns);
 	other_view->columns = NULL;
-	columns_set_line_print_func(NULL);
 
 	opt_handlers_teardown();
+	columns_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
