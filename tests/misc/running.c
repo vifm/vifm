@@ -111,7 +111,11 @@ TEST(full_path_regexps_are_handled_for_selection2)
 	snprintf(pattern, sizeof(pattern), "//%s/*//", lwin.curr_dir);
 	ms = matchers_alloc(pattern, 0, 1, "", &error);
 	assert_non_null(ms);
-	ft_set_programs(ms, "echo %c &", 0, 1);
+#ifndef _WIN32
+	ft_set_programs(ms, "echo > /dev/null %c &", 0, 1);
+#else
+	ft_set_programs(ms, "echo > NUL %c &", 0, 1);
+#endif
 
 	open_file(&lwin, FHE_NO_RUN);
 
