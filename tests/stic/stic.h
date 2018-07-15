@@ -308,7 +308,7 @@ static void stic_fixture(void)
     size_t i;
 
     const char *fixture_name = stic_get_fixture_name();
-    if(fixture_name == NULL)
+    if(fixture_name == NULL || !stic_should_run(fixture_name, NULL))
     {
         return;
     }
