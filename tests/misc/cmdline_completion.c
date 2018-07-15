@@ -92,10 +92,15 @@ SETUP()
 	assert_success(chdir(TEST_DATA_PATH "/compare"));
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "compare", saved_cwd);
+
+	curr_stats.cs = &cfg.cs;
 }
 
 TEARDOWN()
 {
+	cs_reset(&cfg.cs);
+	curr_stats.cs = NULL;
+
 	restore_cwd(saved_cwd);
 
 	update_string(&cfg.slow_fs_list, NULL);

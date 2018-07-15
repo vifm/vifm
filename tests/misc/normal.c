@@ -17,6 +17,7 @@ SETUP_ONCE()
 {
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 SETUP()

@@ -200,6 +200,7 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 	assert_success(chdir(SANDBOX_PATH));
 
 	curr_view = &lwin;
+	other_view = &rwin;
 	view_setup(&lwin);
 
 	init_modes();

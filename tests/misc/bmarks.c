@@ -23,6 +23,8 @@ SETUP()
 	strcpy(lwin.curr_dir, "/a/path");
 	path = NULL;
 	tags = NULL;
+
+	curr_view = &lwin;
 }
 
 TEARDOWN()

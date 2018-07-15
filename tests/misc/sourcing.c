@@ -8,6 +8,7 @@ SETUP()
 {
 	init_commands();
 	lwin.selected_files = 0;
+	curr_view = &lwin;
 }
 
 TEST(wrong_command_name_causes_error)

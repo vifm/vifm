@@ -10,6 +10,8 @@
 
 SETUP()
 {
+	curr_view = &lwin;
+
 	init_modes();
 	opt_handlers_setup();
 }

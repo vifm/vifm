@@ -18,6 +18,11 @@
 
 #include "utils.h"
 
+SETUP_ONCE()
+{
+	curr_view = &lwin;
+}
+
 TEST(names_less_than_files)
 {
 	char *src[] = { "a", "b" };

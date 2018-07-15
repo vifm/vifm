@@ -6,6 +6,16 @@
 #include "../../src/utils/str.h"
 #include "../../src/cmd_completion.h"
 
+SETUP()
+{
+	init_variables();
+}
+
+TEARDOWN()
+{
+	clear_variables();
+}
+
 TEST(emarks_are_skipped)
 {
 	char path[PATH_MAX + 1];
