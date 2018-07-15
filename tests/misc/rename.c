@@ -18,6 +18,11 @@
 
 #include "utils.h"
 
+SETUP_ONCE()
+{
+	curr_view = &lwin;
+}
+
 TEST(names_less_than_files)
 {
 	char *src[] = { "a", "b" };
@@ -113,13 +118,14 @@ TEST(file_name_list_can_be_reread)
 
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.vi_command, "echo > /dev/null");
 #else
 	replace_string(&cfg.shell, "cmd");
+	update_string(&cfg.vi_command, "echo > NUL");
 #endif
 	stats_update_shell_type(cfg.shell);
 
 	curr_stats.exec_env_type = EET_EMULATOR;
-	update_string(&cfg.vi_command, "echo ");
 
 	new_list = fops_edit_list(ARRAY_LEN(list), list, &nlines, 1);
 	assert_int_equal(2, nlines);

@@ -11,7 +11,6 @@
 #include "../../src/engine/mode.h"
 #include "../../src/modes/cmdline.h"
 #include "../../src/modes/modes.h"
-#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/filter.h"
 #include "../../src/utils/fs.h"
@@ -24,7 +23,6 @@
 
 #include "utils.h"
 
-static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void basic_panes_check(int expected_len);
 
 static char *saved_cwd;
@@ -39,21 +37,17 @@ SETUP()
 
 	opt_handlers_setup();
 
-	columns_add_column_desc(SK_BY_NAME, &format_none);
-	columns_add_column_desc(SK_BY_SIZE, &format_none);
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
 
 	saved_cwd = save_cwd();
-}
-
-static void
-format_none(int id, const void *data, size_t buf_len, char buf[])
-{
-	buf[0] = '\0';
 }
 
 TEARDOWN()
 {
 	restore_cwd(saved_cwd);
+
+	columns_teardown();
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);

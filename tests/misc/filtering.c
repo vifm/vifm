@@ -261,6 +261,7 @@ TEST(global_local_nature_of_normal_zo)
 	load_view_options(curr_view);
 
 	init_modes();
+	init_commands();
 
 	curr_stats.global_local_settings = 1;
 

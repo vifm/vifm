@@ -4,12 +4,9 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
-#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 
 #include "utils.h"
-
-static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 
 static view_t *const view = &lwin;
 
@@ -24,13 +21,7 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	columns_add_column_desc(SK_BY_NAME, &format_none);
-}
-
-static void
-format_none(int id, const void *data, size_t buf_len, char buf[])
-{
-	buf[0] = '\0';
+	columns_setup_column(SK_BY_NAME);
 }
 
 TEARDOWN()
@@ -41,7 +32,7 @@ TEARDOWN()
 
 	vle_keys_reset();
 
-	columns_clear_column_descs();
+	columns_teardown();
 }
 
 /* 0 row----file0----file1-----

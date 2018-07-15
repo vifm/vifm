@@ -42,6 +42,12 @@ void view_setup(struct view_t *view);
 /* Frees resources of the view. */
 void view_teardown(struct view_t *view);
 
+/* Registers a column with specified id that prints empty string. */
+void columns_setup_column(int id);
+
+/* Unregisters all columns and resets print function. */
+void columns_teardown(void);
+
 /* Creates file at the path. */
 void create_file(const char path[]);
 

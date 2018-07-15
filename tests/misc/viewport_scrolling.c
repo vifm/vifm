@@ -15,9 +15,11 @@ SETUP()
 {
 	init_modes();
 	conf_setup();
+	columns_setup_column(SK_BY_NAME);
 
 	view_setup(view);
 	view->window_rows = 8;
+	curr_view = view;
 
 	cfg.scroll_off = 0;
 }
@@ -25,6 +27,7 @@ SETUP()
 TEARDOWN()
 {
 	conf_teardown();
+	columns_teardown();
 
 	view_teardown(view);
 

@@ -22,6 +22,7 @@ SETUP()
 {
 	view_setup(&lwin);
 	view_setup(&rwin);
+	curr_view = &lwin;
 
 	cfg_resize_histories(10);
 }

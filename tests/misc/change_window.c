@@ -12,6 +12,9 @@
 
 SETUP()
 {
+	curr_view = &lwin;
+	other_view = &rwin;
+
 	opt_handlers_setup();
 }
 
@@ -22,9 +25,6 @@ TEARDOWN()
 
 TEST(change_window_swaps_views)
 {
-	curr_view = &lwin;
-	other_view = &rwin;
-
 	change_window();
 
 	assert_true(curr_view == &rwin);
@@ -37,9 +37,6 @@ TEST(change_window_updates_pwd)
 	char cwd[PATH_MAX + 1];
 
 	char *const saved_cwd = save_cwd();
-
-	curr_view = &lwin;
-	other_view = &rwin;
 
 	assert_success(chdir(SANDBOX_PATH));
 	assert_non_null(get_cwd(expected_cwd, sizeof(expected_cwd)));

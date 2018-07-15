@@ -12,6 +12,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/engine/options.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/matcher.h"
@@ -26,6 +27,7 @@
 
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
+static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void init_list(view_t *view);
 
 void
@@ -171,6 +173,25 @@ void
 view_teardown(view_t *view)
 {
 	flist_free_view(view);
+}
+
+void
+columns_setup_column(int id)
+{
+	columns_add_column_desc(id, &format_none);
+}
+
+static void
+format_none(int id, const void *data, size_t buf_len, char buf[])
+{
+	buf[0] = '\0';
+}
+
+void
+columns_teardown(void)
+{
+	columns_clear_column_descs();
+	columns_set_line_print_func(NULL);
 }
 
 void

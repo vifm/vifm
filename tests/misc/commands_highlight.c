@@ -14,12 +14,20 @@ SETUP_ONCE()
 	cs_reset(&cfg.cs);
 	lwin.list_rows = 0;
 	rwin.list_rows = 0;
+
+	curr_view = &lwin;
 }
 
 SETUP()
 {
 	cs_reset(&cfg.cs);
 	curr_stats.cs = &cfg.cs;
+}
+
+TEARDOWN()
+{
+	cs_reset(&cfg.cs);
+	curr_stats.cs = NULL;
 }
 
 /* Attributes. */

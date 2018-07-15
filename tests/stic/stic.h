@@ -306,9 +306,10 @@ static void stic_fixture(void)
     extern stic_void_void stic_current_test;
 
     size_t i;
+    int has_any_tests = 0;
 
     const char *fixture_name = stic_get_fixture_name();
-    if(fixture_name == NULL)
+    if(fixture_name == NULL || !stic_should_run(fixture_name, NULL))
     {
         return;
     }
@@ -318,23 +319,30 @@ static void stic_fixture(void)
     fixture_setup(stic_setup_func);
     fixture_teardown(stic_teardown_func);
 
-    if(stic_setup_once_func != NULL)
-    {
-        stic_current_test_name = "<setup once>";
-        stic_current_test = stic_setup_once_func;
-        stic_setup_once_func();
-    }
-
     for(i = 0; i < STIC_ARRAY_LEN(stic_test_data); ++i)
     {
         struct stic_test_data *td = *stic_test_data[i];
         if(td == NULL) continue;
+        if(!stic_should_run(fixture_name, td->n)) continue;
+
+        /* Since predicates can rely on setup once, check predicates after
+         * invoking setup once. */
+        if(!has_any_tests)
+        {
+            has_any_tests = 1;
+            if(stic_setup_once_func != NULL)
+            {
+                stic_current_test_name = "<setup once>";
+                stic_current_test = stic_setup_once_func;
+                stic_setup_once_func();
+            }
+        }
+
         if(td->p != NULL && !td->p())
         {
             stic_skip_test(fixture_name, td->n);
             continue;
         }
-        if(!stic_should_run(fixture_name, td->n)) continue;
 
         stic_current_test_name = td->n;
         stic_current_test = td->t;
@@ -346,7 +354,7 @@ static void stic_fixture(void)
         stic_run_test(fixture_name, td->n);
     }
 
-    if(stic_teardown_once_func != NULL)
+    if(has_any_tests && stic_teardown_once_func != NULL)
     {
         stic_current_test_name = "<teardown once>";
         stic_current_test = stic_teardown_once_func;
