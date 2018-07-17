@@ -199,6 +199,9 @@
 	"-- VISUAL (append) --" on pressing av in visual mode.  Thanks to Paweł
 	Smolak (a.k.a. psmolak).
 
+	Fixed memory corruption on clearing user defined :commands from a user
+	defined command.  Thanks to Jose Riha (a.k.a. jose1711).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
