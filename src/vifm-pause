@@ -12,4 +12,9 @@ fi
 stty "$old_tty_settings" 2> /dev/null
 
 echo "Press return ..."
+
+# make sure terminal is in a state suitable for requesting input
+stty icrnl onlcr isig 2> /dev/null
 read dummy
+
+stty "$old_tty_settings" 2> /dev/null
