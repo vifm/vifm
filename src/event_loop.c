@@ -403,12 +403,6 @@ process_scheduled_updates(void)
 
 	ui_stat_job_bar_check_for_updates();
 
-	if(vle_mode_is(CMDLINE_MODE))
-	{
-		/* Redrawing implicitly updates hardware cursor, so temporary disable it. */
-		curs_set(0);
-	}
-
 	if(vle_mode_get_primary() != MENU_MODE)
 	{
 		need_redraw += (process_scheduled_updates_of_view(curr_view) != 0);
@@ -420,11 +414,6 @@ process_scheduled_updates(void)
 	if(need_redraw)
 	{
 		modes_redraw();
-	}
-
-	if(vle_mode_is(CMDLINE_MODE))
-	{
-		curs_set(1);
 	}
 }
 

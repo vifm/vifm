@@ -202,6 +202,9 @@
 	Fixed memory corruption on clearing user defined :commands from a user
 	defined command.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Fixed selection issues in some terminals when in command-line mode.  Thanks
+	to Jose Riha (a.k.a. jose1711).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
