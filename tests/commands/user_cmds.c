@@ -4,7 +4,10 @@
 
 #include "../../src/engine/cmds.h"
 
+#include "suite.h"
+
 static int move_cmd(const cmd_info_t *cmd_info);
+static int usercmd_cmd(const cmd_info_t *cmd_info);
 
 extern cmds_conf_t cmds_conf;
 
@@ -60,6 +63,22 @@ TEST(cant_redefine_builtin_with_suffix)
 {
 	assert_failure(execute_cmd("command move! a"));
 	assert_failure(execute_cmd("command move? a"));
+}
+
+TEST(self_deletion_does_not_have_use_after_free)
+{
+	user_cmd_handler = &usercmd_cmd;
+
+	assert_success(execute_cmd("command suicideone comclear"));
+	assert_success(execute_cmd("command suicidetwo suicideone"));
+	assert_success(execute_cmd("command suicidethree suicidetwo"));
+	assert_success(execute_cmd("suicidethree"));
+}
+
+static int
+usercmd_cmd(const cmd_info_t *cmd_info)
+{
+	return execute_cmd(cmd_info->cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -115,6 +115,12 @@
 	Update status line when cursor is moved on typing local filter when
 	'incsearch' is on.
 
+	Empty input stream before asking user for return on :!! or when :!command
+	ends with an error.
+
+	Correct terminal state before asking user to press return after execution
+	of an external command.  Thanks to Jose Riha (a.k.a. jose1711).
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
@@ -198,6 +204,12 @@
 	Fixed status bar mode message not being changed from "-- VISUAL --" to
 	"-- VISUAL (append) --" on pressing av in visual mode.  Thanks to Paweł
 	Smolak (a.k.a. psmolak).
+
+	Fixed memory corruption on clearing user defined :commands from a user
+	defined command.  Thanks to Jose Riha (a.k.a. jose1711).
+
+	Fixed selection issues in some terminals when in command-line mode.  Thanks
+	to Jose Riha (a.k.a. jose1711).
 
 0.9.1-beta to 0.9.1
 

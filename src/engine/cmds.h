@@ -117,6 +117,7 @@ typedef struct cmd_t
 
 	int min_args, max_args; /* Min and max number of arguments, can be NOT_DEF. */
 
+	unsigned int deleted : 1;          /* Whether this command was deleted. */
 	unsigned int range : 1;            /* Handles ranges. */
 	unsigned int cust_sep : 1;         /* Custom separator of arguments. */
 	unsigned int emark : 1;            /* Supports emark flag. */

@@ -453,6 +453,7 @@ input_line_changed(void)
 
 	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
 	{
+		fpos_set_pos(curr_view, curr_view->list_pos);
 		redraw_current_view();
 	}
 	else if(prev_mode == MENU_MODE)
@@ -778,7 +779,7 @@ set_view_port(void)
 	if(sub_mode != CLS_FILTER || !is_line_edited())
 	{
 		curr_view->top_line = input_stat.old_top;
-		fpos_set_pos(curr_view, input_stat.old_pos);
+		curr_view->list_pos = input_stat.old_pos;
 	}
 	else if(sub_mode == CLS_FILTER)
 	{

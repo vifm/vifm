@@ -1,4 +1,20 @@
 #!/bin/sh
 
+old_tty_settings=$(stty -g 2> /dev/null)
+
+# empty input stream
+if stty -icanon min 0 time 0 2> /dev/null; then
+    while read dummy; do
+        : discard input
+    done
+fi
+
+stty "$old_tty_settings" 2> /dev/null
+
 echo "Press return ..."
+
+# make sure terminal is in a state suitable for requesting input
+stty icrnl onlcr isig 2> /dev/null
 read dummy
+
+stty "$old_tty_settings" 2> /dev/null

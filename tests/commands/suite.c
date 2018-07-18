@@ -8,6 +8,8 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
 
+#include "suite.h"
+
 static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
 static int swap_range(void);
@@ -16,11 +18,13 @@ static char * expand_macros(const char str[], int for_shell, int *usr1,
 		int *usr2);
 static char * expand_envvars(const char *str);
 static int usercmd_cmd(const cmd_info_t *cmd_info);
+static int def_usercmd_cmd(const cmd_info_t *cmd_info);
 static void post(int id);
 static void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 
 cmd_info_t user_cmd_info;
+cmd_handler user_cmd_handler;
 
 cmds_conf_t cmds_conf = {
 	.complete_args = &complete_args,
@@ -62,6 +66,8 @@ SETUP()
 	init_cmds(1, &cmds_conf);
 
 	add_builtin_commands(&command, 1);
+
+	user_cmd_handler = &def_usercmd_cmd;
 }
 
 TEARDOWN()
@@ -116,6 +122,12 @@ expand_envvars(const char *str)
 
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
+{
+	return user_cmd_handler(cmd_info);
+}
+
+static int
+def_usercmd_cmd(const cmd_info_t *cmd_info)
 {
 	user_cmd_info = *cmd_info;
 	return 0;

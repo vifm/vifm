@@ -267,7 +267,7 @@ execute_cmd(const char cmd[])
 	}
 	else
 	{
-		cur->passed++;
+		++cur->passed;
 
 		if(cur->type == USER_CMD)
 		{
@@ -280,7 +280,10 @@ execute_cmd(const char cmd[])
 		}
 
 		cc->post(cur->id);
-		cur->passed--;
+		if(--cur->passed == 0 && cur->deleted)
+		{
+			free(cur);
+		}
 	}
 
 	free(cmd_info.raw_args);
@@ -902,6 +905,7 @@ add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 	new->cmd = NULL;
 	new->min_args = conf->min_args;
 	new->max_args = conf->max_args;
+	new->deleted = 0;
 	init_command_flags(new, conf->flags);
 
 	return 0;
@@ -921,7 +925,14 @@ comclear_cmd(const cmd_info_t *cmd_info)
 
 			free(this->cmd);
 			free(this->name);
-			free(this);
+			if(this->passed == 0)
+			{
+				free(this);
+			}
+			else
+			{
+				this->deleted = 1;
+			}
 		}
 		else
 		{
@@ -1007,6 +1018,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	new->cmd = strdup(args);
 	new->min_args = inner->user_cmd_handler.min_args;
 	new->max_args = inner->user_cmd_handler.max_args;
+	new->deleted = 0;
 	init_command_flags(new, inner->user_cmd_handler.flags);
 
 	++inner->udf_count;
