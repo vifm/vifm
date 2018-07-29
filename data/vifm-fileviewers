@@ -1,0 +1,140 @@
+" Fileviewer assocations for vifm
+"
+" Pdf
+fileviewer *.pdf pdftotext -nopgbrk %c -,pdftohtml -stdout -i %c | lynx -stdin -nostatus -dump
+
+" Postscript
+fileviewer *.ps ps2ascii, pstotext
+
+" DVI
+fileviewer *.dvi dvi2tty
+
+" Audio
+fileviewer *.mp3 mp3info %c; mediainfo %c
+fileviewer *.opus opusinfo %c; mediainfo %c
+fileviewer *.flac soxi %c; mediainfo %c
+fileviewer *.wav,*.m4a,*.wma,*.ape,*.ac3,*.spx,*.3gp mediainfo
+fileviewer *.midi,*.mid file %c; mediainfo %c
+fileviewer *.og[agx] ogginfo %c; mediainfo %c
+
+" Gps track/points
+fileviewer *.gpx gpxinfo
+fileviewer *.gpx.bz2 true && tmpfile=$(mktemp --suffix=.gpx) && bunzip2 -c %c >$tmpfile && gpxinfo $tmpfile && rm $tmpfile
+fileviewer *.gpx.gz true && tmpfile=$(mktemp --suffix=.gpx) && gunzip -c %c >$tmpfile && gpxinfo $tmpfile && rm $tmpfile
+
+" Fonts
+fileviewer *.ttf,*.otf otfinfo --info
+
+" Gettext files
+fileviewer *.mo msgunfmt
+
+" dBase III files
+fileviewer *.dbf dbview
+
+" Json files
+fileviewer *.json,*.geojson jq '.',python -m json.tool
+
+" Doom wad files
+fileviewer *.wad deutex -wadir %c
+
+" .lnk files
+fileviewer *.lnk pylnker,file
+
+" ELF, DTB files
+fileviewer <application/x-executable>,<application/x-pie-executable> readelf -h %c
+fileviewer <application/x-sharedlib> readelf -h %c
+fileviewer *.dtb dtc -I dtb -O dts %c 2>/dev/null
+
+" Game Emulators
+fileviewer *.adf unadf -l
+
+" MSI packages
+fileviewer *.msi msiinfo suminfo %c; msiinfo streams %c; msiinfo tables %c
+
+" CHM files
+fileviewer *.chm true && tmpfile=$(mktemp --suffix=.pdf) && chm2pdf --webpage >/dev/null 2>&1 %c $tmpfile && pdftotext -nopgbrk $tmpfile - && rm $tmpfile
+
+" Video
+fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+          \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+          \*.as[fx]
+          \ ffprobe -hide_banner -pretty %c 2>&1, mediainfo %c
+
+" Ebook
+fileviewer *.pdb txt2pdbdoc -wDd %c
+fileviewer *.epub epub2txt %c
+fileviewer *.mobi,*.azw true && tmpfile=$(mktemp --suffix=.txt) && ebook-convert %c $tmpfile >/dev/null && cat $tmpfile && rm $tmpfile
+fileviewer *.djvu djvused -e print-pure-txt %c
+
+" Jupyter notebook
+fileviewer *.ipynb notedown --from notebook %c --to markdown | pandoc -f markdown -t plain
+
+" Web
+fileviewer *.html,*.htm lynx -dump
+
+" Object
+fileviewer *.o nm %f
+
+" Man page
+fileviewer *.[1-8] man ./%c | col -b
+fileviewer *.[1-9].gz gunzip -c %c | nroff -c -Tlatin1 -mandoc
+
+" Images
+fileviewer *.jpg,*.jpeg convert -identify %c -verbose /dev/null; exiftool %c; img2txt -W %pw %c
+fileviewer *.bmp,*.png,*.gif,*.tga,*.xpm,*.pnm,*.tif convert -identify %c -verbose /dev/null; img2txt -W %pw %c
+fileviewer *.pcx convert -identify %c -verbose /dev/null
+fileviewer *.rw2 convert -identify %c -verbose /dev/null
+
+" Torrent
+fileviewer *.torrent dumptorrent -v %c || ctorrent -x %c
+
+" Zip
+fileviewer *.zip,*.jar,*.war,*.ear,*.oxt,*.apk,*.fzz,*.kmz,*.joz zip -sf %c
+
+" Archives
+fileviewer *.tgz,*.tar.gz tar -tzf %c
+fileviewer *.tar.bz2,*.tbz2 tar -tjf %c
+fileviewer *.tar.txz,*.txz xz --list %c
+fileviewer *.tar tar -tf %c
+fileviewer *.rar unrar v %c
+fileviewer *.7z 7z l %c
+fileviewer *.gz gunzip -c %c
+fileviewer *.bz,*.bz2 bunzip2 -c %c
+fileviewer *.cab cabextract -l %c
+fileviewer *.deb pkg-deb -I %c && echo && dpkg-deb -c %c
+fileviewer *.cpio cpio -itv < %c 2>/dev/null
+fileviewer *.rpm rpm -qivlp --scripts %c
+fileviewer *.a ar -t %c
+fileviewer *.ace unace l %c
+
+" Windows MS event logs
+fileviewer *.evt evtviewer
+
+" Iso images
+fileviewer *.iso isoinfo -l -i %c
+
+" Office files
+" using unoconv may be too slow
+" fileviewer *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.ppt,*.pptx,*.rtf unoconv -h >/dev/null 2>&1 && tmpfile=$(mktemp --suffix=.pdf) && unoconv -o "${tmpfile}" %c 2>/dev/null && pdftotext -nopgbrk $tmpfile - && sleep 3 && rm $tmpfile
+fileviewer *.doc antiword -t %c, catdoc -w %c, word2x -f text %c -, strings %c
+fileviewer *.docx docx2txt.pl %c -,docx2txt %c -
+fileviewer *.rtf rtfreader, unrtf
+fileviewer *.odt,*.ott,*.s[xt]w,*.sxc odt2txt
+fileviewer *.xls xls2csv %c || strings %c
+fileviewer *.xlsx xlsx2csv %c || strings %c
+fileviewer *.ppt ppthtml %c | lynx -stdin -dump,unoconv --stdout %c | pdftotext - -
+
+" Syntax highlighting in preview
+"
+" Explicitly set highlight type for some extensions
+"
+" 256-color terminal
+" fileviewer *.[ch],*.[ch]pp highlight -O xterm256 -s dante --syntax c %c
+" fileviewer Makefile,Makefile.* highlight -O xterm256 -s dante --syntax make %c
+"
+" 16-color terminal
+" fileviewer *.c,*.h highlight -O ansi -s dante %c
+"
+" Or leave it for automatic detection
+"
+" fileviewer *[^/] pygmentize -O style=monokai -f console256 -g

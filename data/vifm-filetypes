@@ -1,0 +1,317 @@
+" ------------------------------------------------------------------------------
+
+" The file type is for the default programs to be used with
+" a file extension.
+" :filetype pattern1,pattern2 defaultprogram,program2
+" :fileviewer pattern1,pattern2 consoleviewer
+" The other programs for the file type can be accessed with the :file command
+" The command macros %f, %F, %d, %F may be used in the commands.
+" The %a macro is ignored.  To use a % you must put %%.
+
+" For automated FUSE mounts, you must register an extension with :file[x]type
+" in one of following formats:
+"
+" :filetype extensions FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
+" %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
+" A sample line might look like this:
+" :filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+"
+" :filetype extensions FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
+" %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
+" A sample line might look like this:
+" :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+" %PARAM value is filled from the first line of file (whole line).
+" Example first line for SshMount filetype: root@127.0.0.1:/
+"
+" You can also add %CLEAR if you want to clear screen before running FUSE
+" program.
+"
+" Example associations are provided below, the logic is as follows:
+" filetype  - prefer a program/utility able to display the file using framebuffer
+" filextype - vi-keys driven programs are preferred
+
+" Pdf
+filextype *.pdf zathura %c %i &, llpp, atril, apvlv %c, xpdf %c, evince %c
+filetype *.pdf fbpdf, fimgs, fbgs
+
+" PostScript
+filextype *.ps,*.eps,*.ps.gz
+        \ {View in zathura}
+        \ zathura %f,
+        \ {View in gv}
+        \ gv %c %i &,
+filetype *.ps,*.eps fimgs, fbgs
+
+" Djvu
+filextype *.djvu
+        \ {View in zathura}
+        \ zathura %f,
+        \ {View in apvlv}
+        \ apvlv %f,
+        \ {View in atril}
+        \ atril %f,
+
+" Office files
+filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.ppt,*.pptx,*.rtf libreoffice %f &
+filetype *.mdb true && tmpfile=$(mktemp -u --suffix=.sqlite3) && java -jar /usr/lib/access-export/access-export.jar %c $tmpfile && sqlcrush -t sqlite $tmpfile && rm $tmpfile
+filetype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.ppt,*.pptx,*.rtf unoconv -h >/dev/null 2>&1 && tmpfile=$(mktemp --suffix=.pdf) && unoconv -o "${tmpfile}" %c && fimgs $tmpfile && rm $tmpfile
+filetype *.odt,*.ott,*.s[xt]w odt2txt %c | less
+filetype *.xlsx xlsx2csv %c | less
+filetype *.doc antiword -t %c | less || catdoc -w %c  | less || word2x -f text %c -  | less || strings %c | less
+filetype *.docx docx2txt %c - | less
+filetype *.tex pdflatex
+
+" Executable Windows/DOS files
+filextype *.exe wine, dosbox -c "mount c %d" -c "c:" -c "%c"
+
+" DVI
+filextype *.dvi xdvi
+filetype *.dvi fimgs, fbgs
+
+" Audio
+filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.3gp
+       \ {Play using ffplay}
+       \ ffplay -hide_banner -nodisp -autoexit %c,
+       \ {Play using MPlayer}
+       \ mplayer %f,
+       \ {Play using vlc}
+       \ vlc %f,
+       \ {Play using mpv}
+       \ mpv %f,
+       \ {Play using omxplayer}
+       \ omxplayer %c
+filetype *.mid,*.midi timidity, wildmidi
+
+" Video
+filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+        \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+        \*.as[fx],*.ra
+        \ {View using ffplay}
+        \ ffplay -fs -hide_banner -autoexit %f,
+        \ {View using Dragon}
+        \ dragon %f:p,
+        \ {View using mplayer}
+        \ mplayer %f,
+
+" Ebook, Comic book archives
+filextype *.mobi,*.pdb ebook-viewer, FBReader
+filextype *.azw ebook-viewer
+filextype *.cbz,*.cbr,*.cbt,*.cb7 zathura, ebook-viewer, comix
+filextype *.epub zathura, FBReader, ebook-viewer
+
+" Gps track/points
+filextype *.gpx,*.gpx.gz gpsprune, gpxsee, routeconverter, gpxviewer
+
+" Arch Linux- specific
+filetype PKGBUILD
+        \ {Generate .SRCINFO} mksrcinfo && echo ".SRCINFO updated"
+filetype *.pkg.tar.xz
+        \ {Install using Pacman} sudo pacman -U %c
+
+" Web
+filextype *.html,*.htm
+        \ {Open with dwb}
+        \ dwb %f %i &,
+        \ {Open with firefox}
+        \ firefox %f &,
+        \ {Open with chromium}
+        \ chromium %f &,
+        \ {Open with uzbl}
+        \ uzbl-browser %f %i &,
+filetype *.html,*.htm w3m, elinks, links, lynx
+
+" Emulation/ROMs
+" <Sega Mega Drive>
+filextype *.bin dgen, gens, retroarch -L /usr/lib/libretro/genesis_plus_gx_libretro.so, retroarch -L /usr/lib/libretro/picodrive_libretro.so
+" <Sega 32X ROM image>
+filextype *.32x dgen, gens, retroarch -L /usr/lib/libretro/genesis_plus_gx_libretro.so, retroarch -L /usr/lib/libretro/picodrive_libretro.so
+" <Sega Mega Drive / Genesis ROM image>
+filextype *.smd dgen, gens, retroarch -L /usr/lib/libretro/genesis_plus_gx_libretro.so, retroarch -L /usr/lib/libretro/picodrive_libretro.so
+" Sega-1000 ROM
+filextype *.sg retroarch -L /usr/lib/libretro/genesis_plus_gx_libretro.so
+" <Sega Game Gear ROM image>
+filextype *.gg retroarch -L /usr/lib/libretro/genesis_plus_gx_libretro.so, retroarch -L /usr/lib/libretro/picodrive_libretro.so
+" Sega Master System
+filextype *.sms retroarch -L /usr/lib/libretro/genesis_plus_gx_libretro.so, retroarch -L /usr/lib/libretro/picodrive_libretro.so
+" PC Engine
+filextype *.pce huexpress
+" <Amiga DOS disk>
+filextype *.adf fs-uae
+" <NES ROM image>
+filextype *.nes fceux
+" <D64 Image>
+filextype *.d64 x64
+" <Game Boy ROM image>
+filextype *.gb,*.gbc mgba, retroarch -L /usr/lib/libretro/mgba_libretro.so
+filetype *.gb termboy
+" <Game Boy Advance ROM image>
+filextype *.gba mgba, retroarch -L /usr/lib/libretro/mgba_libretro.so
+" Atari ST
+filextype *.st hatari, retroarch -L /usr/lib/libretro/hatari_enhanced_libretro.so
+" Atari Lynx
+filextype *.lnx retroarch -L /usr/lib/libretro/handy_libretro.so
+" <Atari ATR image>
+filextype *.atr atari800, retroarch -L /usr/lib/libretro/atari800_libretro.so
+" Super NES
+filextype *.snes,*.smc zsnes, snes9x-gtk, snes9x, retroarch -L /usr/lib/libretro/snes9x_libretro.so
+
+
+" Object
+filetype *.o nm %f | less
+
+" Man page
+filetype *.[1-8],*.[1-8].gz,*.man.gz man -l ./%c
+
+" Images
+filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif
+        \ {View in vimiv}
+        \ vimiv -f %f,
+        \ {View in sxiv}
+        \ sxiv %f,
+        \ {View in gpicview}
+        \ gpicview %c,
+        \ {View in shotwell}
+        \ shotwell,
+filextype *.xcf gimp
+filextype *.svg inkscape, geeqie, display
+filextype *.pcx display
+filetype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif fim %c >/dev/null 2>&1 || fbi %c >/dev/null 2>&1 || feh -FZ %d --start-at %d/%c >/dev/null 2>&1 || fbvis || fbv || { shellpic %c; read; }
+
+" OpenRaster
+filextype *.ora
+        \ {Edit in MyPaint}
+        \ mypaint %f,
+
+" Mindmap
+filextype *.vym
+        \ {Open with VYM}
+        \ vym %f &,
+
+" MD5
+filetype *.md5
+       \ {Check MD5 hash sum}
+       \ md5sum -c %f %S,
+
+" SHA1
+filetype *.sha1
+       \ {Check SHA1 hash sum}
+       \ sha1sum -c %f %S,
+
+" SHA256
+filetype *.sha256
+       \ {Check SHA256 hash sum}
+       \ sha256sum -c %f %S,
+
+" SHA512
+filetype *.sha512
+       \ {Check SHA512 hash sum}
+       \ sha512sum -c %f %S,
+
+" GPG signature
+filetype *.asc
+       \ {Check signature}
+       \ !!gpg --verify %c,
+
+" Torrent
+filetype *.torrent ktorrent %f &
+
+" FuseZipMount
+filetype *.zip,*.jar,*.war,*.ear,*.oxt,*.apkg,*.apk,*.fzz,*.kmz,*.joz,*.cbz,*.pptx
+       \ {Mount with fuse-zip}
+       \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+       \ {View contents}
+       \ zip -sf %c | less,
+       \ {Extract here}
+       \ tar -xf %c,
+
+" ArchiveMount
+filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.7z,*.xz,*.rpm,*.deb,*.cpio,*.cbt,*.cb7
+       \ {Mount with archivemount}
+       \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+
+" Rar2FsMount and rar archives
+filetype *.rar,*.cbr
+       \ {Mount with rar2fs}
+       \ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
+
+" IsoMount
+filetype *.iso,*.bin
+       \ {Mount with fuseiso}
+       \ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
+
+" SshMount
+filetype *.ssh
+       \ {Mount with sshfs}
+       \ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" Adb (Android) mount (anonymous)
+filetype adbfs.adb FUSE_MOUNT2| adbfs %DESTINATION_DIR
+
+" FtpMount
+filetype *.ftp
+       \ {Mount with curlftpfs}
+       \ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" Fuse7z and 7z archives
+filetype *.7z,*.cb7
+       \ {Mount with fuse-7z}
+       \ FUSE_MOUNT|fuse-7z %SOURCE_FILE %DESTINATION_DIR,
+
+" VMDK/VDI images
+filetype *.vmdk,*.vdi,*.vhd
+        \ FUSE_MOUNT|vdfuse -f %SOURCE_FILE %DESTINATION_DIR
+
+" CHM files
+filextype *.chm chmsee
+
+" Make file
+filetype Makefile
+        \ make -f
+
+" Scribus files
+filextype *.sla scribus
+
+" TuDu files
+filetype *.tudu tudu -f %c
+
+" JOSM files
+filextype *.osm,*.osm.* josm
+
+" Subtitles
+filextype *.srt,*.sub subtitlecomposer, subtitleeditor
+
+" Qt projects
+filextype *.pro qtcreator %f &
+
+" Hugin .pto files
+filextype *.pto hugin
+
+" SQLite3 files
+filextype *.sqlite3 sqlitebrowser
+filetype *.sqlite3 sqlcrush -t sqlite -d %c
+
+" KeePass
+filextype *.kdb keepassx
+filetype *.kdbx kdbx-viewer
+
+" Directories
+filextype */
+        \ {View in thunar}
+        \ Thunar %f &,
+filetype */
+        \ {Inspect using ncdu}
+        \ ncdu %f
+
+" Open all other files with default system programs (you can also remove all
+" :file[x]type commands above to ensure they don't interfere with system-wide
+" settings).  By default all unknown files are opened with 'vi[x]cmd'
+" uncommenting one of lines below will result in ignoring 'vi[x]cmd' option
+" for unknown file types.
+" For *nix:
+" filetype * xdg-open
+" For OS X:
+" filetype * open
+" For Windows:
+" filetype * start, explorer
+
+" ------------------------------------------------------------------------------
