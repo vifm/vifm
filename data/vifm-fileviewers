@@ -89,7 +89,7 @@ fileviewer *.rw2 convert -identify %c -verbose /dev/null
 fileviewer *.torrent dumptorrent -v %c || ctorrent -x %c
 
 " Zip
-fileviewer *.zip,*.jar,*.war,*.ear,*.oxt,*.apk,*.fzz,*.kmz,*.joz zip -sf %c
+fileviewer *.zip,*.jar,*.war,*.ear,*.oxt,*.apk,*.fzz,*.kmz,*.joz,*.whl zip -sf %c
 
 " Archives
 fileviewer *.tgz,*.tar.gz tar -tzf %c
