@@ -1402,9 +1402,10 @@ format_size(int id, const void *data, size_t buf_len, char buf[])
 	if(fentry_is_dir(cdt->entry))
 	{
 		uint64_t nitems;
-		fentry_get_dir_info(view, cdt->entry, &size, &nitems);
+		uint64_t *nitems_ptr = (cfg.view_dir_size == VDS_NITEMS ? &nitems : NULL);
+		fentry_get_dir_info(view, cdt->entry, &size, nitems_ptr);
 
-		if(size == DCACHE_UNKNOWN && cfg.view_dir_size == VDS_NITEMS)
+		if(size == DCACHE_UNKNOWN && nitems_ptr != NULL)
 		{
 			snprintf(buf, buf_len + 1, " %d", (int)nitems);
 			return;

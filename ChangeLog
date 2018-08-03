@@ -211,6 +211,9 @@
 	Fixed selection issues in some terminals when in command-line mode.  Thanks
 	to Jose Riha (a.k.a. jose1711).
 
+	Fixed slowed down directory traversal due to listing contents of
+	directories internally.  Thanks to Coco 17dec.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
