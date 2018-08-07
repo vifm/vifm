@@ -220,6 +220,10 @@
 	Fixed assertion failure on parsing lists of expressions with broken
 	syntax.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Fixed parsing state not being properly reinitialized, which could cause
+	unstable parsing outcome for lists of expressions.  Thanks to Jose
+	Riha (a.k.a. jose1711).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
