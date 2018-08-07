@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 12, 2018" "vifm 0.9.1"
+.TH VIFM 1 "August 7, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3108,8 +3108,8 @@ Completely ignore command output.
 
 .TP
 .BI %pc
-Marks end of the main command and beginning of the clear command, which is
-invoked on closing preview of a file.
+Marks end of the main command and beginning of the clear command for graphical
+preview, which is invoked on closing preview of a file.
 .LP
 The following dimensions and coordinates are in characters:
 .TP
@@ -4680,6 +4680,11 @@ Insert key.
 .TP
 .BI "<c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_>"
 Control + some key (see key conflict description below).
+.TP
+.BI "<c-@>"
+only for *nix
+.br
+Control + Space.
 .TP
 .BI "<a-a>,<a-b>,...,<a-z>"
 .BI "<m-a>,<m-b>,...,<m-z>"

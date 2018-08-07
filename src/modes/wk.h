@@ -157,6 +157,9 @@
 #define NC_C_w '\x17'
 #define NC_ESC '\x1b'
 
+/* Custom keys. */
+#define WC_C_SPACE ((wchar_t)((wint_t)0xe000 + 0))
+
 #endif /* VIFM__MODES__WK_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

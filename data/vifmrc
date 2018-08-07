@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 12 July, 2018)
+" Sample configuration file for vifm (last updated: 20 July, 2018)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -328,7 +328,7 @@ fileviewer *.7z 7z l %c
 " Office files
 filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx libreoffice %f &
 fileviewer *.doc catdoc %c
-fileviewer *.docx, docx2txt.pl %f -
+fileviewer *.docx docx2txt.pl %f -
 
 " TuDu files
 filetype *.tudu tudu -f %c

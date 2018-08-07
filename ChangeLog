@@ -70,6 +70,9 @@
 	completely processed.  Probably not all updates are postponed, to be
 	improved as unhandled cases are discovered.
 
+	Added <c-@> angle bracket notation making it possible to map Ctrl-Space
+	key.  Thanks to anonymous at Vifm Q2A site.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
@@ -210,6 +213,16 @@
 
 	Fixed selection issues in some terminals when in command-line mode.  Thanks
 	to Jose Riha (a.k.a. jose1711).
+
+	Fixed slowed down directory traversal due to listing contents of
+	directories internally.  Thanks to Coco 17dec.
+
+	Fixed assertion failure on parsing lists of expressions with broken
+	syntax.  Thanks to Jose Riha (a.k.a. jose1711).
+
+	Fixed parsing state not being properly reinitialized, which could cause
+	unstable parsing outcome for lists of expressions.  Thanks to Jose
+	Riha (a.k.a. jose1711).
 
 0.9.1-beta to 0.9.1
 

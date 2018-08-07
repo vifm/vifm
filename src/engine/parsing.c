@@ -224,6 +224,9 @@ parse(const char input[], int interactive, var_t *result)
 	expr_root = parse_or_expr(&last_position);
 	last_parsed_char = last_position;
 
+	var_free(res_val);
+	res_val = var_error();
+
 	eval_context_t ctx = { .interactive = interactive };
 
 	if(last_token.type != END)
@@ -241,7 +244,6 @@ parse(const char input[], int interactive, var_t *result)
 			}
 			else if(eval_expr(&ctx, &expr_root) == 0)
 			{
-				var_free(res_val);
 				res_val = var_clone(expr_root.value);
 				last_error = PE_INVALID_EXPRESSION;
 			}
@@ -252,7 +254,6 @@ parse(const char input[], int interactive, var_t *result)
 	{
 		if(eval_expr(&ctx, &expr_root) == 0)
 		{
-			var_free(res_val);
 			res_val = var_clone(expr_root.value);
 			*result = var_clone(expr_root.value);
 		}

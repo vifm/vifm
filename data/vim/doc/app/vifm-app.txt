@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Jul 12
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Aug 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2550,8 +2550,9 @@ The command macros may be used in user commands.
   %i        completely ignore command output.
 
                                                                *vifm-%pc*
-  %pc       marks end of the main command and beginning of the clear command,
-            which is invoked on closing preview of a file.
+  %pc       marks end of the main command and beginning of the clear
+            command for graphical preview, which is invoked on closing
+            preview of a file.
 
   The following dimensions and coordinates are in characters:
                                                                *vifm-%px*
@@ -3907,6 +3908,8 @@ sequences that can be used in place of them.  They are:
     Insert key.
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_>
     Control + some key (see key conflict description below).
+<c-@>                                          {only for *nix}
+    Control + Space.
 <a-a>,<a-b>,...,<a-z>
     Alt + some key.
 <m-a>,<m-b>,...,<m-z>

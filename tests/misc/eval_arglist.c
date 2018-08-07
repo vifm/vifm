@@ -27,6 +27,16 @@ echo_builtin(const call_info_t *call_info)
 	return var_clone(call_info->argv[0]);
 }
 
+TEST(broken_syntax)
+{
+	const char *args = "a('foo '; bar";
+	const char *stop_ptr;
+	char *result;
+
+	result = eval_arglist(args, &stop_ptr);
+	assert_string_equal(NULL, result);
+}
+
 TEST(one_arg)
 {
 	const char *args = "'a'";
