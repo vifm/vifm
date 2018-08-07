@@ -384,6 +384,10 @@ get_char_async_loop(WINDOW *win, wint_t *c, int timeout)
 				{
 					*c = K(*c);
 				}
+				else if(*c == L'\0')
+				{
+					*c = WC_C_SPACE;
+				}
 				return result;
 			}
 

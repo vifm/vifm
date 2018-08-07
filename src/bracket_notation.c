@@ -31,6 +31,7 @@
 #include "compat/curses.h"
 #include "compat/reallocarray.h"
 #include "engine/text_buffer.h"
+#include "modes/wk.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/utils.h"
@@ -51,6 +52,7 @@ static const char * wchar_to_spec(const wchar_t c[], size_t *len, int bs);
 /* All notation fields must be written in lower case. */
 static key_pair_t key_pairs[] = {
 	{ L"<esc>",      L"\x1b"              },
+	{ L"<c-@>",      { WC_C_SPACE }       },
 	{ L"<c-a>",      L"\x01"              },
 	{ L"<c-b>",      L"\x02"              },
 	{ L"<c-c>",      L"\x03"              },
@@ -652,6 +654,7 @@ wchar_to_spec(const wchar_t c[], size_t *len, int bs)
 		case K(KEY_BTAB):   strcpy(buf, "<s-tab>");    break;
 		case K(KEY_PPAGE):  strcpy(buf, "<pageup>");   break;
 		case K(KEY_NPAGE):  strcpy(buf, "<pagedown>"); break;
+		case WC_C_SPACE:    strcpy(buf, "<c-@>");      break;
 
 		case L'\b':
 			if(!bs)

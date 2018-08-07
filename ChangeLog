@@ -70,6 +70,9 @@
 	completely processed.  Probably not all updates are postponed, to be
 	improved as unhandled cases are discovered.
 
+	Added <c-@> angle bracket notation making it possible to map Ctrl-Space
+	key.  Thanks to anonymous at Vifm Q2A site.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

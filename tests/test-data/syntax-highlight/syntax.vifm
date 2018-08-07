@@ -36,6 +36,9 @@ map <silent> <silent>,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silEnt> ,b :set viewcolumns="-{name}..,6{}."<cr>
 map ,b :set viewcolumns="-{name}..,6{}."<cr><silent>
 
+" "<c-@>" should be highlighted as angle bracket notation
+nnoremap <c-@> j
+
 " the second and third lines should be highlighted as comments
 " "trash" in the line after comments should NOT be highlighted
 set slowfs=fuse.sshfs
