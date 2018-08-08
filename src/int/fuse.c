@@ -21,13 +21,17 @@
 
 #include <curses.h> /* werase() */
 
+#include <sys/types.h> /* pid_t ssize_t */
 #include <sys/stat.h> /* S_IRWXU */
-#include <unistd.h> /* rmdir() unlink() */
+#ifndef _WIN32
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
+#endif
+#include <unistd.h> /* execve() fork() rmdir() unlink() */
 
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() fclose() */
-#include <stdlib.h> /* EXIT_SUCCESS WIFEXITED free() malloc() */
+#include <stdlib.h> /* EXIT_SUCCESS free() malloc() */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "../cfg/config.h"
@@ -73,6 +77,8 @@ TSTATIC void format_mount_command(const char mount_point[],
 static fuse_mount_t * get_mount_by_source(const char source[]);
 static fuse_mount_t * get_mount_by_mount_point(const char dir[]);
 static fuse_mount_t * get_mount_by_path(const char path[]);
+static int run_fuse_command(char cmd[], const cancellation_t *cancellation,
+		int *cancelled);
 static void updir_from_mount(view_t *view, fuse_mount_t *runner);
 
 /* List of active mounts. */
@@ -230,13 +236,13 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	if(foreground)
 	{
 		cancelled = 0;
-		status = bg_and_wait_for_status(buf, &no_cancellation, NULL);
+		status = run_fuse_command(buf, &no_cancellation, NULL);
 	}
 	else
 	{
 		ui_cancellation_reset();
 		ui_cancellation_enable();
-		status = bg_and_wait_for_status(buf, &ui_cancellation_info, &cancelled);
+		status = run_fuse_command(buf, &ui_cancellation_info, &cancelled);
 		ui_cancellation_disable();
 	}
 
@@ -558,7 +564,7 @@ fuse_try_unmount(view_t *view)
 	}
 
 	ui_sb_msg("FUSE unmounting selected file, please stand by..");
-	status = bg_and_wait_for_status(buf, &no_cancellation, NULL);
+	status = run_fuse_command(buf, &no_cancellation, NULL);
 	ui_sb_clear();
 	/* check child status */
 	if(!WIFEXITED(status) || WEXITSTATUS(status))
@@ -584,6 +590,74 @@ fuse_try_unmount(view_t *view)
 	updir_from_mount(view, runner);
 	free(runner);
 	return 1;
+}
+
+/* Runs command in background not redirecting its streams.  To determine an
+ * error uses exit status only.  cancelled can be NULL when operations is not
+ * cancellable.  Returns status on success, otherwise -1 is returned.  Sets
+ * correct value of *cancelled even on error. */
+static int
+run_fuse_command(char cmd[], const cancellation_t *cancellation,
+		int *cancelled)
+{
+#ifndef _WIN32
+	pid_t pid;
+	int status;
+
+	if(cancellation_possible(cancellation))
+	{
+		*cancelled = 0;
+	}
+
+	if(cmd == NULL)
+	{
+		return 1;
+	}
+
+	(void)set_sigchld(1);
+
+	pid = fork();
+	if(pid == (pid_t)-1)
+	{
+		(void)set_sigchld(0);
+		LOG_SERROR_MSG(errno, "Forking has failed.");
+		return -1;
+	}
+
+	if(pid == (pid_t)0)
+	{
+		extern char **environ;
+
+		(void)set_sigchld(0);
+
+		(void)execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd),
+				environ);
+		_Exit(127);
+	}
+
+	while(waitpid(pid, &status, 0) == -1)
+	{
+		if(errno != EINTR)
+		{
+			LOG_SERROR_MSG(errno, "Failed waiting for process: %" PRINTF_ULL,
+					(unsigned long long)pid);
+			status = -1;
+			break;
+		}
+		process_cancel_request(pid, cancellation);
+	}
+
+	if(cancellation_requested(cancellation))
+	{
+		*cancelled = 1;
+	}
+
+	(void)set_sigchld(0);
+
+	return status;
+#else
+	return -1;
+#endif
 }
 
 static void
