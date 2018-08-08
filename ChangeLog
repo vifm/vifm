@@ -224,6 +224,9 @@
 	unstable parsing outcome for lists of expressions.  Thanks to Jose
 	Riha (a.k.a. jose1711).
 
+	Fixed error messages from put operation being postponed until the next put
+	operation.  Got broken in 0.9.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
