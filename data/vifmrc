@@ -213,7 +213,17 @@ source $VIFM/vifm-fileviewers
 source $VIFM/vifm-filetypes
 " source $VIFM/keymap-mc
 " source $VIFM/keymap-mc-extended
+" source $VIFM/filehighlights-mc-like
+" source $VIFM/prefixes-mc-like
 source $VIFM/commands
+
+" uncomment for mc-like look/behaviour
+" set fillchars=vborder:│
+" set dotfiles
+" set viewcolumns=*{name}..,14{size},19{mtime}
+" set sizefmt=units:si,precision:3
+" windo set timefmt=│%b\ %d\ %Y\ %H:%M│
+
 
 " Export IPC name of current instance as environment variable and use it to
 " communicate with the instance later.
