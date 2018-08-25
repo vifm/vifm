@@ -124,6 +124,9 @@
 	Correct terminal state before asking user to press return after execution
 	of an external command.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Do not reset selection before executing a :command from :commands menu.
+	Thanks to Jose Riha (a.k.a. jose1711).
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
