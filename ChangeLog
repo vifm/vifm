@@ -230,6 +230,8 @@
 	Fixed error messages from put operation being postponed until the next put
 	operation.  Got broken in 0.9.
 
+	Fixed memory leak on d/D normal mode keys if deletion wasn't confirmed.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
