@@ -1,10 +1,13 @@
 #include <stic.h>
 
+#include <unistd.h> /* symlink() */
+
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() remove() */
 #include <string.h> /* strdup() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/variables.h"
@@ -296,6 +299,54 @@ TEST(fnameescape)
 	ASSERT_OK("fnameescape('%')", "%%");
 	ASSERT_OK("fnameescape(\"'\")", "\\'");
 	ASSERT_OK("fnameescape('\"')", "\\\"");
+}
+
+TEST(filetype)
+{
+	opt_handlers_setup();
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	char test_data[PATH_MAX + 1];
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	char path[PATH_MAX + 1];
+	snprintf(path, sizeof(path), "%s/existing-files", test_data);
+	assert_success(symlink(path, SANDBOX_PATH "/dir-link"));
+	snprintf(path, sizeof(path), "%s/existing-files/b", test_data);
+	assert_success(symlink(path, SANDBOX_PATH "/file-link"));
+#endif
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/compare");
+#ifndef _WIN32
+	flist_custom_add(&lwin, SANDBOX_PATH "/dir-link");
+	flist_custom_add(&lwin, SANDBOX_PATH "/file-link");
+#endif
+	assert_true(flist_custom_finish(&lwin, CV_VERY, 0) == 0);
+
+	curr_view = &lwin;
+
+	ASSERT_OK("filetype('')", "");
+	ASSERT_OK("filetype('.')", "reg");
+	lwin.list_pos = 1;
+	ASSERT_OK("filetype('.')", "dir");
+#ifndef _WIN32
+	lwin.list_pos = 2;
+	ASSERT_OK("filetype('.')", "link");
+	lwin.list_pos = 3;
+	ASSERT_OK("filetype('.')", "link");
+#endif
+
+	opt_handlers_teardown();
+
+#ifndef _WIN32
+	assert_success(remove(SANDBOX_PATH "/dir-link"));
+	assert_success(remove(SANDBOX_PATH "/file-link"));
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
