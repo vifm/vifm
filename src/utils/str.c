@@ -26,8 +26,8 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() mbstowcs() memmove() memset() realloc()
                        strtol() wcstombs() */
-#include <string.h> /* strdup() strncmp() strlen() strcmp() strchr() strrchr()
-                       strncpy() strcspn() strspn() */
+#include <string.h> /* memcpy() strdup() strncmp() strlen() strcmp() strchr()
+                       strrchr() strncpy() strcspn() strspn() */
 #include <wchar.h> /* wint_t vswprintf() */
 #include <wctype.h> /* iswprint() iswupper() towlower() towupper() */
 
@@ -465,7 +465,7 @@ strprepend(char **str, size_t *len, const char prefix[])
 	{
 		memmove(new + prefix_len, new, *len + 1);
 	}
-	strncpy(new, prefix, prefix_len);
+	memcpy(new, prefix, prefix_len);
 	*str = new;
 	*len += prefix_len;
 
