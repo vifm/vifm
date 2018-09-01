@@ -73,6 +73,10 @@
 	Added <c-@> angle bracket notation making it possible to map Ctrl-Space
 	key.  Thanks to anonymous at Vifm Q2A site.
 
+	Added second optional parameter to filetype() builtin function that is
+	treated as a boolean and specifies whether symbolic links should be
+	resolved.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
