@@ -349,5 +349,20 @@ TEST(filetype)
 #endif
 }
 
+TEST(has)
+{
+#ifndef _WIN32
+	ASSERT_OK("has('unix')", "1");
+	ASSERT_OK("has('win')", "0");
+#else
+	ASSERT_OK("has('unix')", "0");
+	ASSERT_OK("has('win')", "1");
+#endif
+
+	ASSERT_OK("has('anythingelse')", "0");
+	ASSERT_OK("has('nix')", "0");
+	ASSERT_OK("has('windows')", "0");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
