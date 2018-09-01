@@ -332,20 +332,10 @@ fops_delete_bg(view_t *view, int use_trash)
 		}
 	}
 
-	if(cfg_confirm_delete(use_trash))
+	if(!confirm_deletion(args->sel_list_len, use_trash))
 	{
-		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
-		char perm_del_msg[512];
-
-		snprintf(perm_del_msg, sizeof(perm_del_msg),
-				"Are you sure about removing %ld file%s?",
-				(long)args->sel_list_len, (args->sel_list_len == 1) ? "" : "s");
-
-		if(!prompt_msg(title, perm_del_msg))
-		{
-			fops_free_bg_args(args);
-			return 0;
-		}
+		fops_free_bg_args(args);
+		return 0;
 	}
 
 	fpos_move_out_of(view, FLS_MARKING);
