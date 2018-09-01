@@ -99,6 +99,11 @@ fops_delete(view_t *view, int reg, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
+	if(!confirm_deletion(flist_count_marked(view), use_trash))
+	{
+		return 0;
+	}
+
 	/* This check for the case when we are for sure in the trash. */
 	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
 	{
@@ -332,20 +337,10 @@ fops_delete_bg(view_t *view, int use_trash)
 		}
 	}
 
-	if(cfg_confirm_delete(use_trash))
+	if(!confirm_deletion(args->sel_list_len, use_trash))
 	{
-		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
-		char perm_del_msg[512];
-
-		snprintf(perm_del_msg, sizeof(perm_del_msg),
-				"Are you sure about removing %ld file%s?",
-				(long)args->sel_list_len, (args->sel_list_len == 1) ? "" : "s");
-
-		if(!prompt_msg(title, perm_del_msg))
-		{
-			fops_free_bg_args(args);
-			return 0;
-		}
+		fops_free_bg_args(args);
+		return 0;
 	}
 
 	fpos_move_out_of(view, FLS_MARKING);

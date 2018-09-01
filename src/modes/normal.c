@@ -1563,17 +1563,10 @@ cmd_d_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {
-	int count;
-
 	check_marking(curr_view, keys_info->count, keys_info->indexes);
-	count = flist_count_marked(curr_view);
-
-	if(count != 0 && confirm_deletion(count, use_trash))
-	{
-		curr_stats.save_msg = fops_delete(curr_view, def_reg(key_info.reg),
-				use_trash);
-		free_list_of_file_indexes(keys_info);
-	}
+	curr_stats.save_msg = fops_delete(curr_view, def_reg(key_info.reg),
+			use_trash);
+	free_list_of_file_indexes(keys_info);
 }
 
 /* Applies change from other compare to current one. */

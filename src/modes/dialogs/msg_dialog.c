@@ -623,6 +623,11 @@ determine_width(const char msg[])
 int
 confirm_deletion(int nfiles, int use_trash)
 {
+	if(nfiles == 0)
+	{
+		return 0;
+	}
+
 	curr_stats.confirmed = 0;
 	if(cfg_confirm_delete(use_trash))
 	{
