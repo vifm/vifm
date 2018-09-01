@@ -36,7 +36,7 @@
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() malloc() qsort() */
-#include <string.h> /* strdup() strchr() strlen() strpbrk() strtol() */
+#include <string.h> /* memcpy() strdup() strchr() strlen() strpbrk() strtol() */
 #include <wchar.h> /* wcwidth() */
 
 #include "../cfg/config.h"
@@ -460,7 +460,7 @@ escape_for_squotes(const char string[], size_t offset)
 
 	/* Copy prefix not escaping it. */
 	offset = MIN(len, offset);
-	strncpy(out, string, offset);
+	memcpy(out, string, offset);
 	out += offset;
 	string += offset;
 
@@ -492,7 +492,7 @@ escape_for_dquotes(const char string[], size_t offset)
 
 	/* Copy prefix not escaping it. */
 	offset = MIN(len, offset);
-	strncpy(out, string, offset);
+	memcpy(out, string, offset);
 	out += offset;
 	string += offset;
 

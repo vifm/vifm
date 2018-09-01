@@ -322,7 +322,7 @@ add_highlighted_sym(const char sym[], size_t sym_width, char out[])
 {
 	if(sym[0] != '\033')
 	{
-		strncpy(out, INV_START, sizeof(INV_START) - 1);
+		memcpy(out, INV_START, sizeof(INV_START) - 1);
 		out += sizeof(INV_START) - 1;
 	}
 
@@ -331,7 +331,7 @@ add_highlighted_sym(const char sym[], size_t sym_width, char out[])
 
 	if(sym[0] != '\033')
 	{
-		strncpy(out, INV_END, sizeof(INV_END) - 1);
+		memcpy(out, INV_END, sizeof(INV_END) - 1);
 		out += sizeof(INV_END) - 1;
 	}
 
