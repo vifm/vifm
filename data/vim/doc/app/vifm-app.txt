@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Aug 7
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4201,20 +4201,21 @@ operators are applied.
 --------------------------------------------------------------------------------
 *vifm-functions*
 
-USAGE               RESULT        DESCRIPTION	~
+USAGE                 RESULT      DESCRIPTION	~
 
-chooseopt({opt})    String        Queries choose parameters passed on startup.
-executable({expr})  Integer       Checks whether {expr} command available.
-expand({expr})      String        Expands special keywords in {expr}.
-filetype({fnum})    String        Returns file type from position.
-fnameescape({expr}) String        Escapes {expr} for use in a :command.
-getpanetype()       String        Returns type of current pane.
-has({property})     Integer       Checks whether instance has {property}.
-layoutis({type})    Integer       Checks whether layout is of type {type}.
-paneisat({loc})     Integer       Checks whether current pane is at {loc}.
-system({command})   String        Executes shell command and returns its output.
-tabpagenr([{arg}])  Integer       Returns number of current or last tab.
-term({command})     String        Like system(), but for interactive commands.
+chooseopt({opt})      String      Queries choose parameters passed on startup.
+executable({expr})    Integer     Checks whether {expr} command available.
+expand({expr})        String      Expands special keywords in {expr}.
+filetype({fnum} [, {resolve}])
+                      String      Returns file type from position.
+fnameescape({expr})   String      Escapes {expr} for use in a :command.
+getpanetype()         String      Returns type of current pane.
+has({property})       Integer     Checks whether instance has {property}.
+layoutis({type})      Integer     Checks whether layout is of type {type}.
+paneisat({loc})       Integer     Checks whether current pane is at {loc}.
+system({command})     String      Executes shell command and returns its output.
+tabpagenr([{arg}])    Integer     Returns number of current or last tab.
+term({command})       String      Like system(), but for interactive commands.
 
 
 chooseopt({opt})                               *vifm-chooseopt()*
@@ -4258,7 +4259,7 @@ Examples: >
   :echo expand('$PATH')
 
 
-filetype({fnum})                               *vifm-filetype()*
+filetype({fnum} [, {resolve}])                 *vifm-filetype()*
 
 The result is a string, which represents file type and is one of the list:
     exe    executables
@@ -4271,8 +4272,14 @@ The result is a string, which represents file type and is one of the list:
     sock   *nix domain sockets
     ?      unknown file type (should never appear)
 
+The result can also be an empty string in case of invalid argument.
+
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
+    - numerical value base 1 to get type of file on specified line number
+
+Optional parameter {resolve} is treated as a boolean and specifies whether
+symbolic links should be resolved.
 
 fnameescape({expr})                            *vifm-fnameescape()*
 

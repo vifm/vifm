@@ -25,12 +25,14 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strdup() strpbrk() */
 
+#include "compat/os.h"
 #include "engine/functions.h"
 #include "engine/text_buffer.h"
 #include "engine/var.h"
 #include "ui/cancellation.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
+#include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/string_array.h"
@@ -43,7 +45,8 @@ static var_t chooseopt_builtin(const call_info_t *call_info);
 static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
-static int get_fnum(const char position[]);
+static int get_fnum(var_t fnum);
+static FileType type_of_link_target(const dir_entry_t *entry);
 static var_t fnameescape_builtin(const call_info_t *call_info);
 static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
@@ -59,7 +62,7 @@ static const function_t functions[] = {
 	{ "chooseopt",   "query choose options",       {1,1}, &chooseopt_builtin },
 	{ "executable",  "check for executable file",  {1,1}, &executable_builtin },
 	{ "expand",      "expand macros in a string",  {1,1}, &expand_builtin },
-	{ "filetype",    "retrieve type of a file",    {1,1}, &filetype_builtin },
+	{ "filetype",    "retrieve type of a file",    {1,2}, &filetype_builtin },
 	{ "fnameescape", "escapes string for a :cmd",  {1,1}, &fnameescape_builtin },
 	{ "getpanetype", "retrieve type of file list", {0,0}, &getpanetype_builtin},
 	{ "has",         "check for specific ability", {1,1}, &has_builtin },
@@ -162,28 +165,63 @@ expand_builtin(const call_info_t *call_info)
 static var_t
 filetype_builtin(const call_info_t *call_info)
 {
-	char *str_val = var_to_str(call_info->argv[0]);
-	const int fnum = get_fnum(str_val);
-	const char *result_str = "";
-	free(str_val);
+	const int fnum = get_fnum(call_info->argv[0]);
+	int resolve_links = (call_info->argc > 1 && var_to_bool(call_info->argv[1]));
 
+	const char *result_str = "";
 	if(fnum >= 0)
 	{
-		const FileType type = curr_view->dir_entry[fnum].type;
+		const dir_entry_t *entry = &curr_view->dir_entry[fnum];
+		FileType type = entry->type;
+		if(type == FT_LINK && resolve_links)
+		{
+			type = type_of_link_target(entry);
+		}
 		result_str = get_type_str(type);
 	}
 	return var_from_str(result_str);
 }
 
-/* Returns file type from position or -1 if the position has wrong value. */
+/* Turns {fnum} into file position.  Returns the position or -1 if the argument
+ * is wrong. */
 static int
-get_fnum(const char position[])
+get_fnum(var_t fnum)
 {
-	if(strcmp(position, ".") == 0)
+	char *str_val = var_to_str(fnum);
+
+	int pos = -1;
+	if(strcmp(str_val, ".") == 0)
 	{
-		return curr_view->list_pos;
+		pos = curr_view->list_pos;
 	}
-	return -1;
+	else
+	{
+		int int_val = var_to_int(fnum);
+		if(int_val > 0 && int_val < curr_view->list_rows)
+		{
+			pos = int_val;
+		}
+	}
+
+	free(str_val);
+	return pos;
+}
+
+/* Resoves file type of link target.  The entry parameter is expected to point
+ * at symbolic link.  Returns the type. */
+static FileType
+type_of_link_target(const dir_entry_t *entry)
+{
+	char path[PATH_MAX + 1];
+	struct stat s;
+
+	get_full_path_of(entry, sizeof(path), path);
+	if(get_link_target_abs(path, entry->origin, path, sizeof(path)) != 0 ||
+			os_stat(path, &s) != 0)
+	{
+		return FT_UNK;
+	}
+	return get_type_from_mode(s.st_mode);
 }
 
 /* Escapes argument to make it suitable for use as an argument in :commands. */

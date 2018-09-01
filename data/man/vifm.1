@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 7, 2018" "vifm 0.9.1"
+.TH VIFM 1 "September 1, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5069,31 +5069,32 @@ operators are applied.
 .\" ---------------------------------------------------------------------------
 .SH Functions
 .\" ---------------------------------------------------------------------------
-USAGE               RESULT        DESCRIPTION
+USAGE                 RESULT      DESCRIPTION
 
-chooseopt({opt})    String        Queries choose parameters passed on startup.
+chooseopt({opt})      String      Queries choose parameters passed on startup.
 .br
-executable({expr})  Integer       Checks whether {expr} command available.
+executable({expr})    Integer     Checks whether {expr} command available.
 .br
-expand({expr})      String        Expands special keywords in {expr}.
+expand({expr})        String      Expands special keywords in {expr}.
 .br
-filetype({fnum})    String        Returns file type from position.
+filetype({fnum} [, {resolve}])
+                      String      Returns file type from position.
 .br
-fnameescape({expr}) String        Escapes {expr} for use in a :command.
+fnameescape({expr})   String      Escapes {expr} for use in a :command.
 .br
-getpanetype()       String        Returns type of current pane.
+getpanetype()         String      Returns type of current pane.
 .br
-has({property})     Integer       Checks whether instance has {property}.
+has({property})       Integer     Checks whether instance has {property}.
 .br
-layoutis({type})    Integer       Checks whether layout is of type {type}.
+layoutis({type})      Integer     Checks whether layout is of type {type}.
 .br
-paneisat({loc})     Integer       Checks whether current pane is at {loc}.
+paneisat({loc})       Integer     Checks whether current pane is at {loc}.
 .br
-system({command})   String        Executes shell command and returns its output.
+system({command})     String      Executes shell command and returns its output.
 .br
-tabpagenr([{arg}])  Integer       Returns number of current or last tab.
+tabpagenr([{arg}])    Integer     Returns number of current or last tab.
 .br
-term({command})     String        Like system(), but for interactive commands.
+term({command})       String      Like system(), but for interactive commands.
 
 .BI chooseopt({opt})
 
@@ -5141,7 +5142,7 @@ Examples:
   :echo expand('$PATH')
 .EE
 
-.BI filetype({fnum})
+.BI filetype({fnum} [, {resolve}])
 
 The result is a string, which represents file type and is one of the list:
     exe    executables
@@ -5154,8 +5155,14 @@ The result is a string, which represents file type and is one of the list:
     sock   *nix domain sockets
     ?      unknown file type (should never appear)
 
+The result can also be an empty string in case of invalid argument.
+
 Parameter {fnum} can have following values:
     \- '.' to get type of file under the cursor in the active pane
+    \- numerical value base 1 to get type of file on specified line number
+
+Optional parameter {resolve} is treated as a boolean and specifies whether
+symbolic links should be resolved.
 
 .BI fnameescape({expr})
 
