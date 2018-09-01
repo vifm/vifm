@@ -232,6 +232,9 @@
 
 	Fixed memory leak on d/D normal mode keys if deletion wasn't confirmed.
 
+	Fixed confirmation not being requested on :delete.  Thanks to anonymous at
+	Vifm Q2A site.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

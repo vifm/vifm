@@ -99,6 +99,11 @@ fops_delete(view_t *view, int reg, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
+	if(!confirm_deletion(flist_count_marked(view), use_trash))
+	{
+		return 0;
+	}
+
 	/* This check for the case when we are for sure in the trash. */
 	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
 	{
