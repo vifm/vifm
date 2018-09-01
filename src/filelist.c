@@ -2334,7 +2334,7 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 		view->selected_files += (entry->selected != 0);
 
 		/* Update cursor position in a smart way. */
-		dist = (dir_entry_t*)data - entries - prev_pos;
+		dist = (dir_entry_t *)data - entries - prev_pos;
 		closest_dist = correct_pos(view, i, dist, closest_dist);
 	}
 

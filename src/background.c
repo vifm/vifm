@@ -29,10 +29,10 @@
 #ifndef _WIN32
 #include <sys/select.h> /* FD_* select */
 #include <sys/time.h> /* timeval */
-#include <sys/wait.h> /* WEXITSTATUS() waitpid() */
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
 #endif
 #include <signal.h> /* kill() */
-#include <unistd.h> /* select() */
+#include <unistd.h> /* execve() fork() select() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
@@ -312,72 +312,6 @@ job_free(bg_job_t *job)
 	free(job->new_errors);
 	free(job->errors);
 	free(job);
-}
-
-/* Used for FUSE mounting and unmounting only. */
-int
-bg_and_wait_for_status(char cmd[],
-		const struct cancellation_t *cancellation, int *cancelled)
-{
-#ifndef _WIN32
-	pid_t pid;
-	int status;
-
-	if(cancellation_possible(cancellation))
-	{
-		*cancelled = 0;
-	}
-
-	if(cmd == NULL)
-	{
-		return 1;
-	}
-
-	(void)set_sigchld(1);
-
-	pid = fork();
-	if(pid == (pid_t)-1)
-	{
-		(void)set_sigchld(0);
-		LOG_SERROR_MSG(errno, "Forking has failed.");
-		return -1;
-	}
-
-	if(pid == (pid_t)0)
-	{
-		extern char **environ;
-
-		(void)set_sigchld(0);
-
-		(void)execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd),
-				environ);
-		_Exit(127);
-	}
-
-	while(waitpid(pid, &status, 0) == -1)
-	{
-		if(errno != EINTR)
-		{
-			LOG_SERROR_MSG(errno, "Failed waiting for process: %" PRINTF_ULL,
-					(unsigned long long)pid);
-			status = -1;
-			break;
-		}
-		process_cancel_request(pid, cancellation);
-	}
-
-	if(cancellation_requested(cancellation))
-	{
-		*cancelled = 1;
-	}
-
-	(void)set_sigchld(0);
-
-	return status;
-
-#else
-	return -1;
-#endif
 }
 
 int

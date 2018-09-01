@@ -470,6 +470,11 @@ put_files_i(view_t *view, int start)
 		++put_confirm.index;
 	}
 
+	/* Free ops here when we're done, because as a side-effect it also prints
+	 * error messages. */
+	fops_free_ops(put_confirm.ops);
+	put_confirm.ops = NULL;
+
 	regs_pack(put_confirm.reg->name);
 	update_cursor_position(view);
 	ui_sb_msgf("%d file%s inserted%s", put_confirm.processed,

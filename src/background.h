@@ -114,13 +114,6 @@ int bg_run_external(const char cmd[], int skip_errors);
 
 struct cancellation_t;
 
-/* Runs command in background not redirecting its streams.  To determine an
- * error uses exit status only.  cancelled can be NULL when operations is not
- * cancellable.  Returns status on success, otherwise -1 is returned.  Sets
- * correct value of *cancelled even on error. */
-int bg_and_wait_for_status(char cmd[],
-		const struct cancellation_t *cancellation, int *cancelled);
-
 /* Runs command in background and displays its errors to a user.  To determine
  * an error uses both stderr stream and exit status.  Returns zero on success,
  * otherwise non-zero is returned. */

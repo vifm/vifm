@@ -1594,6 +1594,7 @@ command_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
+		cmds_preserve_selection();
 		return show_commands_menu(curr_view) != 0;
 	}
 
