@@ -43,7 +43,7 @@ static var_t chooseopt_builtin(const call_info_t *call_info);
 static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
-static int get_fnum(const char position[]);
+static int get_fnum(var_t fnum);
 static var_t fnameescape_builtin(const call_info_t *call_info);
 static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
@@ -162,11 +162,9 @@ expand_builtin(const call_info_t *call_info)
 static var_t
 filetype_builtin(const call_info_t *call_info)
 {
-	char *str_val = var_to_str(call_info->argv[0]);
-	const int fnum = get_fnum(str_val);
-	const char *result_str = "";
-	free(str_val);
+	const int fnum = get_fnum(call_info->argv[0]);
 
+	const char *result_str = "";
 	if(fnum >= 0)
 	{
 		const FileType type = curr_view->dir_entry[fnum].type;
@@ -175,15 +173,29 @@ filetype_builtin(const call_info_t *call_info)
 	return var_from_str(result_str);
 }
 
-/* Returns file type from position or -1 if the position has wrong value. */
+/* Turns {fnum} into file position.  Returns the position or -1 if the argument
+ * is wrong. */
 static int
-get_fnum(const char position[])
+get_fnum(var_t fnum)
 {
-	if(strcmp(position, ".") == 0)
+	char *str_val = var_to_str(fnum);
+
+	int pos = -1;
+	if(strcmp(str_val, ".") == 0)
 	{
-		return curr_view->list_pos;
+		pos = curr_view->list_pos;
 	}
-	return -1;
+	else
+	{
+		int int_val = var_to_int(fnum);
+		if(int_val > 0 && int_val < curr_view->list_rows)
+		{
+			pos = int_val;
+		}
+	}
+
+	free(str_val);
+	return pos;
 }
 
 /* Escapes argument to make it suitable for use as an argument in :commands. */

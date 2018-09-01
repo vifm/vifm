@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Aug 7
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4273,6 +4273,7 @@ The result is a string, which represents file type and is one of the list:
 
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
+    - numerical value base 1 to get type of file on specified line number
 
 fnameescape({expr})                            *vifm-fnameescape()*
 

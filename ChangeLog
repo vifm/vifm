@@ -127,6 +127,8 @@
 	Do not reset selection before executing a :command from :commands menu.
 	Thanks to Jose Riha (a.k.a. jose1711).
 
+	Allow passing numerical positions to filetype() function.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

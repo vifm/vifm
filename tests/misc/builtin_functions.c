@@ -331,14 +331,12 @@ TEST(filetype)
 	curr_view = &lwin;
 
 	ASSERT_OK("filetype('')", "");
+	lwin.list_pos = 0;
 	ASSERT_OK("filetype('.')", "reg");
-	lwin.list_pos = 1;
-	ASSERT_OK("filetype('.')", "dir");
+	ASSERT_OK("filetype(1)", "dir");
 #ifndef _WIN32
-	lwin.list_pos = 2;
-	ASSERT_OK("filetype('.')", "link");
-	lwin.list_pos = 3;
-	ASSERT_OK("filetype('.')", "link");
+	ASSERT_OK("filetype('2')", "link");
+	ASSERT_OK("filetype('3')", "link");
 #endif
 
 	opt_handlers_teardown();
