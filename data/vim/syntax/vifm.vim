@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: August 7, 2018
+" Last Change: September 7, 2018
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -381,7 +381,8 @@ syntax match vifmEnvVar contained /\$[0-9a-zA-Z_]\+/
 syntax match vifmNumber contained /\d\+/
 
 " Optional map arguments right after command name
-syntax match vifmMapArgList '\(<silent>\s*\)*' contained nextgroup=vifmMapLhs
+syntax match vifmMapArgList '\(<\(silent\|wait\)>\s*\)*' contained
+		\ nextgroup=vifmMapLhs
 
 " Ange-bracket notation
 syntax case ignore

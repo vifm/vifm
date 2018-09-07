@@ -47,6 +47,8 @@ enum
 	KEYS_FLAG_NONE = 0,    /* No flags. */
 	KEYS_FLAG_NOREMAP = 1, /* Ignore user mappings in RHS. */
 	KEYS_FLAG_SILENT = 2,  /* Postpone screen update until mapping's end. */
+	KEYS_FLAG_WAIT = 4,    /* Do not use short wait to resolve conflict against
+	                          builtin mapping. */
 };
 
 /* Checks passed in value for being among list of error codes this unit can

@@ -28,10 +28,13 @@ nnoremap ,b :set viewcolumns='-{name}..,6{}.'<cr>
 nnoremap ,b :set viewcolumns="-{name}..,6{}."<cr>
 
 " "<silent>" should be highlighted as angle bracket notation
+" "<wait>" should be highlighted as angle bracket notation
 map <silent> ,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silent>,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silent><silent>,b :set viewcolumns="-{name}..,6{}."<cr>
 map <silent> <silent>,b :set viewcolumns="-{name}..,6{}."<cr>
+map <wait><silent>,b :set viewcolumns="-{name}..,6{}."<cr>
+" "<silEnt>" shouldn't be highlighted
 " "<silent>" shouldn't be highlighted
 map <silEnt> ,b :set viewcolumns="-{name}..,6{}."<cr>
 map ,b :set viewcolumns="-{name}..,6{}."<cr><silent>

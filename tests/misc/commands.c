@@ -678,6 +678,7 @@ TEST(map_parses_args)
 	keys_add_info_t keys = { WK_x, { {&silent_key} } };
 	vle_keys_add(&keys, 1U, NORMAL_MODE);
 
+	/* <silent> */
 	assert_int_equal(0, silence);
 	assert_success(exec_commands("map a x", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("map <silent>b x", &lwin, CIT_COMMAND));
@@ -688,6 +689,10 @@ TEST(map_parses_args)
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"1c")));
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"1d")));
 	assert_int_equal(0, silence);
+
+	/* <wait> */
+	assert_success(exec_commands("map <wait>xj j", &lwin, CIT_COMMAND));
+	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"x"));
 
 	vle_keys_reset();
 }

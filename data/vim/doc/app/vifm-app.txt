@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 1
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3700,8 +3700,8 @@ timeoutlen tm
 type: integer
 default: 1000
 
-The time in milliseconds that is waited for a mapped key in case of already
-typed key sequence is ambiguous.  See also |vifm-'mintimeoutlen'|.
+The time in milliseconds that is waited for a mapped key in case when
+already typed key sequence is ambiguous.  See also |vifm-'mintimeoutlen'|.
 
                                                *vifm-'title'*
 title
@@ -3875,6 +3875,15 @@ sequences:
 
 <silent>
     Postpone UI updates until RHS is completely processed.
+<wait>
+    In case of builtin mapping causing conflict for a user-defined mapping
+    (e.g., `t` builtin to a partially typed `ta` user-defined mapping), ignore
+    the builtin mapping and wait for input indefinitely as opposed to
+    default behaviour of triggering the builtin mapping after a delay defined
+    by |vifm-'timeoutlen'|.  Example: >
+        nnoremap <wait> tw :set wrap!<cr>
+        nnoremap <wait> tn :set number!<cr>
+        nnoremap <wait> tr :set relativenumber!<cr>
 
 Special sequences~
 
