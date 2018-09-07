@@ -77,6 +77,10 @@
 	treated as a boolean and specifies whether symbolic links should be
 	resolved.
 
+	Added <wait> :*map argument, which resolves prefix conflicts of
+	user-defined mappings and builtin keys in favour of user-defined mappings.
+	Thanks to Paweł Smolak (a.k.a. psmolak).
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

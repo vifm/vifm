@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 1, 2018" "vifm 0.9.1"
+.TH VIFM 1 "September 7, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4634,6 +4634,19 @@ sequences:
 .TP
 .BI <silent>
 Postpone UI updates until RHS is completely processed.
+.TP
+.BI <wait>
+In case of builtin mapping causing conflict for a user-defined mapping
+(e.g., `t` builtin to a partially typed `ta` user-defined mapping), ignore
+the builtin mapping and wait for input indefinitely as opposed to
+default behaviour of triggering the builtin mapping after a delay defined
+by 'timeoutlen'.  Example:
+
+.EX
+  nnoremap <wait> tw :set wrap!<cr>
+  nnoremap <wait> tn :set number!<cr>
+  nnoremap <wait> tr :set relativenumber!<cr>
+.EE
 .LP
 
 .B Special sequences

@@ -64,6 +64,9 @@ typedef struct key_chunk_t
 	unsigned int deleted : 1;
 	/* Postpone UI updates until RHS is done executing. */
 	unsigned int silent : 1;
+	/* Do not use short wait to resolve conflict against builtin mapping, do long
+	 * wait instead. */
+	unsigned int wait : 1;
 	key_conf_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
@@ -109,6 +112,7 @@ static int contains_chain(key_chunk_t *root, const wchar_t *begin,
 static int execute_next_keys(key_chunk_t *curr, const wchar_t keys[],
 		key_info_t *key_info, keys_info_t *keys_info, int has_duplicate,
 		int no_remap);
+static int needs_waiting(const key_chunk_t *curr);
 static int dispatch_key(key_info_t key_info, keys_info_t *keys_info,
 		key_chunk_t *curr, const wchar_t keys[]);
 static int has_def_handler(void);
@@ -593,9 +597,16 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 
 		if(wait_point)
 		{
-			const int with_input = (mode_flags[vle_mode_get()] & MF_USES_INPUT);
 			if(!keys_info->after_wait)
 			{
+				if(needs_waiting(curr))
+				{
+					/* Wait flag on a user mapping should turn short wait into indefinite
+					 * wait when there is a conflict with builtin mapping, pretending
+					 * that there is no such conflict is enough to get the effect. */
+					has_duplicate = 0;
+				}
+				const int with_input = (mode_flags[vle_mode_get()] & MF_USES_INPUT);
 				return (with_input || has_duplicate) ? KEYS_WAIT_SHORT : KEYS_WAIT;
 			}
 		}
@@ -617,6 +628,27 @@ execute_next_keys(key_chunk_t *curr, const wchar_t keys[], key_info_t *key_info,
 	}
 
 	return dispatch_key(*key_info, keys_info, curr, keys);
+}
+
+/* Checks whether any child of the node has wait flag set.  Returns non-zero if
+ * so, otherwise zero is returned. */
+static int
+needs_waiting(const key_chunk_t *curr)
+{
+	if(curr->wait)
+	{
+		return 1;
+	}
+
+	for(curr = curr->child; curr != NULL; curr = curr->next)
+	{
+		if(needs_waiting(curr))
+		{
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 /* Performs action associated with the key (in curr), if any.  Returns error
@@ -897,6 +929,7 @@ vle_keys_user_add(const wchar_t lhs[], const wchar_t rhs[], int mode,
 	curr->conf.data.cmd = vifm_wcsdup(rhs);
 	curr->no_remap = ((flags & KEYS_FLAG_NOREMAP) != 0);
 	curr->silent = ((flags & KEYS_FLAG_SILENT) != 0);
+	curr->wait = ((flags & KEYS_FLAG_WAIT) != 0);
 	return 0;
 }
 
@@ -1052,6 +1085,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->deleted = 0;
 			c->no_remap = 1;
 			c->silent = 0;
+			c->wait = 0;
 			if(prev == NULL)
 				curr->child = c;
 			else

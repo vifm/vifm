@@ -291,6 +291,7 @@ static int vsplit_cmd(const cmd_info_t *cmd_info);
 static int do_split(const cmd_info_t *cmd_info, SPLIT orientation);
 static int do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		int no_remap);
+static int parse_map_args(const char **args);
 static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int wincmd_cmd(const cmd_info_t *cmd_info);
@@ -4269,13 +4270,9 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		return save_msg != 0;
 	}
 
-	int flags = (no_remap ? KEYS_FLAG_NOREMAP : KEYS_FLAG_NONE);
-	char *args = cmd_info->args;
-	while(starts_with_lit(args, "<silent>"))
-	{
-		flags |= KEYS_FLAG_SILENT;
-		args = skip_whitespace(args + 8);
-	}
+	const char *args = cmd_info->args;
+	const int flags = (no_remap ? KEYS_FLAG_NOREMAP : KEYS_FLAG_NONE)
+	                | parse_map_args(&args);
 
 	raw_rhs = vle_cmds_past_arg(args);
 	t = *raw_rhs;
@@ -4294,6 +4291,32 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		show_error_msg("Mapping Error", "Unable to allocate enough memory");
 
 	return 0;
+}
+
+/* Parses <*> :*map arguments removing them from the line.  Returns flags
+ * collected. */
+static int
+parse_map_args(const char **args)
+{
+	int flags = 0;
+	do
+	{
+		if(skip_prefix(args, "<silent>"))
+		{
+			flags |= KEYS_FLAG_SILENT;
+		}
+		else if(skip_prefix(args, "<wait>"))
+		{
+			flags |= KEYS_FLAG_WAIT;
+		}
+		else
+		{
+			break;
+		}
+		*args = skip_whitespace(*args);
+	}
+	while(1);
+	return flags;
 }
 
 #ifdef _WIN32
