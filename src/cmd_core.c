@@ -913,6 +913,7 @@ get_cmdline_location(const char cmd[], const char pos[])
 	{
 		case COM_HIGHLIGHT:
 		case COM_FILTER:
+		case COM_SELECT:
 			separator = ' ';
 			regex_quoting = 1;
 			break;
