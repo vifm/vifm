@@ -245,6 +245,9 @@
 	Fixed confirmation not being requested on :delete.  Thanks to anonymous at
 	Vifm Q2A site.
 
+	Fixed 'relativenumber' being effectively ignored in inactive pane on
+	UI redraw from active pane.  Thanks to filterfalse.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
