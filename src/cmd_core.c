@@ -619,6 +619,8 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 	int count;
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING } state;
 	int args_left = max_args;
+	/* Actual separator used for rargs or '\0' if unset. */
+	char rsep = '\0';
 
 	const char *args = get_cmd_args(begin);
 	if(args >= end)
@@ -645,12 +647,14 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 					state = S_QUOTING;
 				else if(sep == ' ' && *begin == '"')
 					state = D_QUOTING;
-				else if(sep == ' ' && *begin == '/' && rquoting)
+				else if(rquoting && sep == ' ' && *begin == '/' &&
+						(rsep == '\0' || *begin == rsep))
 					state = R_QUOTING;
 				else if(*begin == '&' && begin == end - 1)
 					state = BEGIN;
 				else if(*begin != sep)
-					state = rquoting ? R_QUOTING : NO_QUOTING;
+					state = rquoting && (rsep == '\0' || *begin == rsep) ? R_QUOTING
+					                                                     : NO_QUOTING;
 				break;
 			case NO_QUOTING:
 				if(*begin == sep)
@@ -690,7 +694,11 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 				}
 				break;
 			case R_QUOTING:
-				if(*begin == '/' || (sep == ' ' && *begin == ' '))
+				if(rsep == '\0')
+				{
+					rsep = *(begin - 1);
+				}
+				if(*begin == rsep || *begin == sep)
 				{
 					if(--args_left == 0)
 					{

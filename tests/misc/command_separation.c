@@ -197,6 +197,16 @@ TEST(empty_command_at_front)
 	free_string_array(cmds);
 }
 
+TEST(custom_separator_is_parsed_correctly)
+{
+	char **cmds = break_cmdline("subs!n//|//m!g", 0);
+
+	assert_string_equal("subs!n//|//m!g", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+
+	free_string_array(cmds);
+}
+
 TEST(bar_inside_rarg_is_not_a_separator)
 {
 	char **cmds = break_cmdline("tr/ ?<>\\\\:*|\"/_", 0);
