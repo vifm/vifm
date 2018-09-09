@@ -257,6 +257,9 @@
 	Fixed bar (`|`) being treated as command separator in /pattern/ passed to
 	:commands using custom separators (e.g., in `:s!//|//!`).
 
+	Fixed bar (`|`) not being treated as command separator in commands which
+	can take /pattern/ arguments.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

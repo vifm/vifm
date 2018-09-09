@@ -605,7 +605,10 @@ cmd_should_be_processed(int cmd_id)
 	return 0;
 }
 
-/* Determines current position in the command line.  Returns:
+/* Determines current position in the command line.  The rquoting parameter when
+ * non-zero specifies number of rquoted arguments by its absolute value, while
+ * negative sign means that last argument doesn't need to be terminated.
+ * Returns:
  *  - 0, if not inside an argument;
  *  - 1, if next character should be skipped (XXX: what does it mean?);
  *  - 2, if inside escaped argument;
@@ -637,6 +640,11 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 		count = 1;
 	}
 
+	if(rquoting < 0)
+	{
+		rquoting = -(rquoting + 1);
+	}
+
 	state = BEGIN;
 	while(begin != end)
 	{
@@ -647,7 +655,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 					state = S_QUOTING;
 				else if(sep == ' ' && *begin == '"')
 					state = D_QUOTING;
-				else if(rquoting && sep == ' ' && *begin == '/' &&
+				else if(rquoting && ((sep == ' ' && *begin == '/') || *begin == sep) &&
 						(rsep == '\0' || *begin == rsep))
 					state = R_QUOTING;
 				else if(*begin == '&' && begin == end - 1)
@@ -700,7 +708,9 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 				}
 				if(*begin == rsep || *begin == sep)
 				{
-					if(--args_left == 0)
+					--args_left;
+					--rquoting;
+					if(args_left == 0 || rquoting == 0)
 					{
 						state = BEGIN;
 					}
@@ -922,12 +932,15 @@ get_cmdline_location(const char cmd[], const char pos[])
 		case COM_FILTER:
 		case COM_SELECT:
 			separator = ' ';
-			regex_quoting = 1;
+			regex_quoting = -2;
 			break;
 		case COM_SUBSTITUTE:
+			separator = info.sep;
+			regex_quoting = -3;
+			break;
 		case COM_TR:
 			separator = info.sep;
-			regex_quoting = 1;
+			regex_quoting = 2;
 			break;
 
 		default:
