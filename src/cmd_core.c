@@ -616,9 +616,8 @@ TSTATIC int
 line_pos(const char begin[], const char end[], char sep, int rquoting,
 		int max_args)
 {
-	int state;
 	int count;
-	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
+	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING } state;
 	int args_left = max_args;
 
 	const char *args = get_cmd_args(begin);
