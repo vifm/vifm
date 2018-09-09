@@ -48,6 +48,18 @@ TEST(pipe)
 	assert_int_equal(0, line_pos(buf, buf, ' ', 1, 1));
 	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 1, 1));
 	assert_int_equal(5, line_pos(buf, buf + 9, ' ', 1, 1));
+
+	buf = "filter /a|b/ |";
+	assert_int_equal(0, line_pos(buf, buf, ' ', 1, 1));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 1, 1));
+	assert_int_equal(0, line_pos(buf, buf + 13, ' ', 1, 1));
+	assert_int_equal(2, line_pos(buf, buf + 14, ' ', 1, 1));
+
+	buf = "select /a|b/ |";
+	assert_int_equal(0, line_pos(buf, buf, ' ', 2, INT_MAX));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' ', 2, INT_MAX));
+	assert_int_equal(0, line_pos(buf, buf + 13, ' ', 2, INT_MAX));
+	assert_int_equal(2, line_pos(buf, buf + 14, ' ', 2, INT_MAX));
 }
 
 TEST(two_commands)
@@ -91,14 +103,26 @@ TEST(custom_separator)
 	/*     00000 0000011111 */
 	/*     01234 5678901234 */
 	buf = "s/a|b\\/c/d|e/g|";
-	assert_int_equal(0, line_pos(buf, buf, '/', 1, 3));
-	assert_int_equal(0, line_pos(buf, buf + 1, '/', 1, 3));
-	assert_int_equal(2, line_pos(buf, buf + 2, '/', 1, 3));
-	assert_int_equal(5, line_pos(buf, buf + 3, '/', 1, 3));
-	assert_int_equal(5, line_pos(buf, buf + 4, '/', 1, 3));
-	assert_int_equal(1, line_pos(buf, buf + 6, '/', 1, 3));
-	assert_int_equal(5, line_pos(buf, buf + 10, '/', 1, 3));
-	assert_int_equal(2, line_pos(buf, buf + 14, '/', 1, 3));
+	assert_int_equal(0, line_pos(buf, buf, '/', -3, 3));
+	assert_int_equal(0, line_pos(buf, buf + 1, '/', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 2, '/', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 3, '/', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 4, '/', -3, 3));
+	assert_int_equal(1, line_pos(buf, buf + 6, '/', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 10, '/', -3, 3));
+	assert_int_equal(2, line_pos(buf, buf + 14, '/', -3, 3));
+
+	/*     00000 0000011111 */
+	/*     01234 5678901234 */
+	buf = "s!a|b\\/c!d|e!g|";
+	assert_int_equal(0, line_pos(buf, buf, '!', -3, 3));
+	assert_int_equal(0, line_pos(buf, buf + 1, '!', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 2, '!', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 3, '!', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 4, '!', -3, 3));
+	assert_int_equal(1, line_pos(buf, buf + 6, '!', -3, 3));
+	assert_int_equal(5, line_pos(buf, buf + 10, '!', -3, 3));
+	assert_int_equal(2, line_pos(buf, buf + 14, '!', -3, 3));
 }
 
 TEST(space_amp_before_bar)
@@ -197,6 +221,16 @@ TEST(empty_command_at_front)
 	free_string_array(cmds);
 }
 
+TEST(custom_separator_is_parsed_correctly)
+{
+	char **cmds = break_cmdline("subs!n//|//m!g", 0);
+
+	assert_string_equal("subs!n//|//m!g", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+
+	free_string_array(cmds);
+}
+
 TEST(bar_inside_rarg_is_not_a_separator)
 {
 	char **cmds = break_cmdline("tr/ ?<>\\\\:*|\"/_", 0);
@@ -204,6 +238,52 @@ TEST(bar_inside_rarg_is_not_a_separator)
 	assert_string_equal("tr/ ?<>\\\\:*|\"/_", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
+	free_string_array(cmds);
+}
+
+TEST(bar_after_rarg_is_a_separator)
+{
+	char **cmds;
+
+	cmds = break_cmdline("select /a|b/ | echo 'hi'", 0);
+	assert_string_equal("select /a|b/ ", cmds[0]);
+	assert_string_equal("echo 'hi'", cmds[1]);
+	assert_string_equal(NULL, cmds[2]);
+	free_string_array(cmds);
+
+	cmds = break_cmdline("filter /a|b/ | echo 'hi'", 0);
+	assert_string_equal("filter /a|b/ ", cmds[0]);
+	assert_string_equal("echo 'hi'", cmds[1]);
+	assert_string_equal(NULL, cmds[2]);
+	free_string_array(cmds);
+
+	cmds = break_cmdline("s/a/b/g| echo 'hi'", 0);
+	assert_string_equal("s/a/b/g", cmds[0]);
+	assert_string_equal("echo 'hi'", cmds[1]);
+	assert_string_equal(NULL, cmds[2]);
+	free_string_array(cmds);
+
+	cmds = break_cmdline("s!a!b!g| echo 'hi'", 0);
+	assert_string_equal("s!a!b!g", cmds[0]);
+	assert_string_equal("echo 'hi'", cmds[1]);
+	assert_string_equal(NULL, cmds[2]);
+	free_string_array(cmds);
+}
+
+TEST(bar_after_cmd_with_opt_rarg_is_a_separator)
+{
+	char **cmds;
+
+	cmds = break_cmdline("select *.c | echo 'hi'", 0);
+	assert_string_equal("select *.c ", cmds[0]);
+	assert_string_equal("echo 'hi'", cmds[1]);
+	assert_string_equal(NULL, cmds[2]);
+	free_string_array(cmds);
+
+	cmds = break_cmdline("filter *.c | echo 'hi'", 0);
+	assert_string_equal("filter *.c ", cmds[0]);
+	assert_string_equal("echo 'hi'", cmds[1]);
+	assert_string_equal(NULL, cmds[2]);
 	free_string_array(cmds);
 }
 

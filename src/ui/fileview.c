@@ -307,7 +307,7 @@ draw_dir_list_only(view_t *view)
 			.view = view,
 			.entry = &view->dir_entry[x],
 			.line_pos = x,
-			.current_pos = (view == curr_view) ? view->list_pos : -1,
+			.current_pos = view->list_pos,
 		};
 
 		compute_and_draw_cell(&cdt, cell, col_width);

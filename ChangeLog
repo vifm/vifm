@@ -245,6 +245,21 @@
 	Fixed confirmation not being requested on :delete.  Thanks to anonymous at
 	Vifm Q2A site.
 
+	Fixed 'relativenumber' being effectively ignored in inactive pane on
+	UI redraw from active pane.  Thanks to filterfalse.
+
+	Fixed bar (`|`) being treated as command separator in /pattern/ passed to
+	:[un]select.  Thanks to filterfalse.
+
+	Fixed abbreviations of :commands with `!` or `?` as custom separator (e.g.
+	`:s!a!b!`) being resolved incorrectly.
+
+	Fixed bar (`|`) being treated as command separator in /pattern/ passed to
+	:commands using custom separators (e.g., in `:s!//|//!`).
+
+	Fixed bar (`|`) not being treated as command separator in commands which
+	can take /pattern/ arguments.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C

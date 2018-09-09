@@ -397,6 +397,12 @@ TEST(select_and_unselect_can_take_location_list_as_input)
 	assert_false(lwin.dir_entry[2].selected);
 }
 
+TEST(pipe_in_pattern_does_not_separate_commands)
+{
+	assert_success(exec_commands("select /first|second/", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("unselect /first|second/", &lwin, CIT_COMMAND));
+}
+
 static void
 add_some_files_to_view(view_t *view)
 {
