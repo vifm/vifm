@@ -106,7 +106,7 @@ run_in_shell_no_cls(char command[])
 void
 recover_after_shellout(void)
 {
-	if(curr_stats.load_stage != 0)
+	if(curr_stats.load_stage > 0)
 	{
 		reset_prog_mode();
 		resize_term(cfg.lines, cfg.columns);
