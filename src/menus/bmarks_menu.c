@@ -25,7 +25,6 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/utils.h"
 #include "../bmarks.h"
 #include "../status.h"
 #include "menus.h"
@@ -53,11 +52,9 @@ show_bmarks_menu(view_t *view, const char tags[], int go_on_single_match)
 		bmarks_find(tags, &bmarks_cb, &m);
 	}
 
-	safe_qsort(m.items, m.len, sizeof(*m.items), &strossorter);
-
 	if(go_on_single_match && m.len == 1)
 	{
-		(void)menus_goto_file(&m, view, m.items[m.pos], 0);
+		(void)menus_goto_file(&m, view, m.data[m.pos], 0);
 		menus_reset_data(&m);
 		return curr_stats.save_msg;
 	}
@@ -85,6 +82,22 @@ bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 
 	(void)add_to_string_array(&m->data, m->len, 1, path);
 	m->len = put_into_string_array(&m->items, m->len, line);
+
+	/* Insertion into sorted array items while simultaneously updating data
+	 * array. */
+	int i = m->len - 1;
+	char *data = m->data[i];
+	while(i > 0 && stroscmp(line, m->items[i - 1]) < 0)
+	{
+		m->items[i] = m->items[i - 1];
+		m->data[i] = m->data[i - 1];
+		--i;
+	}
+	if(i >= 0)
+	{
+		m->items[i] = line;
+		m->data[i] = data;
+	}
 }
 
 /* Callback that is called when menu item is selected.  Should return non-zero

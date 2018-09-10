@@ -169,6 +169,23 @@ TEST(bmgo_navigates_to_single_match)
 	assert_true(paths_are_equal(lwin.curr_dir, test_data));
 }
 
+TEST(sorting_updates_associated_data)
+{
+	assert_success(exec_commands("bmark! /c tagb", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("bmark! /b tagb", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("bmark! /a taga", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("bmarks", &lwin, CIT_COMMAND));
+
+	assert_int_equal(3, menu_get_current()->len);
+	assert_string_equal("/a", menu_get_current()->data[0]);
+	assert_string_equal("/b", menu_get_current()->data[1]);
+	assert_string_equal("/c", menu_get_current()->data[2]);
+	assert_true(starts_with_lit(menu_get_current()->items[0], "/a"));
+	assert_true(starts_with_lit(menu_get_current()->items[1], "/b"));
+	assert_true(starts_with_lit(menu_get_current()->items[2], "/c"));
+	(void)vle_keys_exec(WK_ESC);
+}
+
 static int
 count_bmarks(void)
 {
