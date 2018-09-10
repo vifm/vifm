@@ -548,7 +548,6 @@ major="${version%.*}"
 minor="${version#*.}"
 
 if test "x$major" != "x" -a "x$minor" != "x" ; then
-    AC_DEFINE([GNU_TOOLCHAIN], [1], [GNU toolchain is installed])
     if test $major -ge 7 -a $minor -ge 1; then
         AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
     fi

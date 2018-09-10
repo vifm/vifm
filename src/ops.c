@@ -69,11 +69,7 @@
 #define REFLINK_AUTO ""
 #endif
 
-#ifdef GNU_TOOLCHAIN
-#define PRESERVE_FLAGS "--preserve=mode,timestamps"
-#else
 #define PRESERVE_FLAGS "-p"
-#endif
 
 /* Types of conflict resolution actions to perform. */
 typedef enum
