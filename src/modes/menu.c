@@ -43,6 +43,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../cmd_completion.h"
@@ -1060,6 +1061,13 @@ menu_run_command(const char cmd[])
 		ui_sb_err("An error occurred while trying to execute command");
 	}
 	init_cmds(0, &cmds_conf);
+}
+
+/* Provides access to tests to a local static variable. */
+TSTATIC menu_data_t *
+menu_get_current(void)
+{
+	return menu;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -21,6 +21,7 @@
 #define VIFM__MODES__MENU_H__
 
 #include "../menus/menus.h"
+#include "../utils/test_helpers.h"
 #include "cmdline.h"
 
 struct view_t;
@@ -69,6 +70,10 @@ void menu_run_command(const char cmd[]);
  * greater than or equal to number of lines in the menu, which should be
  * treated correctly. */
 int menu_last_line(const menu_data_t *m);
+
+TSTATIC_DEFS(
+	menu_data_t * menu_get_current(void);
+)
 
 #endif /* VIFM__MODES__MENU_H__ */
 
