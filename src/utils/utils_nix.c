@@ -36,8 +36,8 @@
 #include <grp.h> /* getgrnam() getgrgid_r() */
 #include <pthread.h> /* pthread_sigmask() */
 #include <pwd.h> /* getpwnam() getpwuid_r() */
-#include <unistd.h> /* X_OK dup() dup2() getpid() isatty() pause() sysconf()
-                       ttyname() */
+#include <unistd.h> /* X_OK chown() dup() dup2() getpid() isatty() pause()
+                       sysconf() ttyname() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -1007,9 +1007,9 @@ get_installed_data_dir(void)
 }
 
 void
-clone_timestamps(const char path[], const char from[], const struct stat *st)
+clone_attribs(const char path[], const char from[], const struct stat *st)
 {
-	struct timeval tv[2];
+	chown(path, st->st_uid, st->st_gid);
 
 #if defined(HAVE_STRUCT_STAT_ST_MTIM) && defined(HAVE_FUTIMENS)
 	const int fd = open(path, O_WRONLY);
@@ -1026,6 +1026,7 @@ clone_timestamps(const char path[], const char from[], const struct stat *st)
 	}
 #endif
 
+	struct timeval tv[2];
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
 	tv[0].tv_sec = st->st_atim.tv_sec;
 	tv[0].tv_usec = st->st_atim.tv_nsec/1000;

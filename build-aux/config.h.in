@@ -12,9 +12,6 @@
 /* executing commands remotely */
 #undef ENABLE_REMOTE_CMDS
 
-/* GNU toolchain is installed */
-#undef GNU_TOOLCHAIN
-
 /* alloca.h header is available. */
 #undef HAVE_ALLOCA_H
 

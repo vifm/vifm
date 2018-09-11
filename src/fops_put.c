@@ -837,7 +837,7 @@ merge_dirs(const char src[], const char dst[], ops_t *ops)
 
 	/* Clone file properties as the last step, because modifying directory affects
 	 * timestamps and permissions can affect operations. */
-	clone_timestamps(dst, src, &st);
+	clone_attribs(dst, src, &st);
 	(void)chmod(dst, st.st_mode);
 
 	return result;
