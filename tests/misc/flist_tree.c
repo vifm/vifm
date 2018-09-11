@@ -277,7 +277,7 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 	/* Use presumably older timestamp for directory to be changed (we need one
 	 * second difference). */
 	assert_success(os_lstat(TEST_DATA_PATH, &st));
-	clone_timestamps(SANDBOX_PATH, TEST_DATA_PATH, &st);
+	clone_attribs(SANDBOX_PATH, TEST_DATA_PATH, &st);
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH));
 	assert_int_equal(2, lwin.list_rows);
@@ -312,7 +312,7 @@ TEST(nested_directory_change_detection)
 	/* Use presumably older timestamp for directory to be changed (we need one
 	 * second difference). */
 	assert_success(os_stat(TEST_DATA_PATH, &st1));
-	clone_timestamps(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st1);
+	clone_attribs(SANDBOX_PATH "/nested-dir", TEST_DATA_PATH, &st1);
 
 	assert_success(os_lstat(SANDBOX_PATH "/nested-dir", &st2));
 	/* On WINE time stamps aren't really cloned (even though success is

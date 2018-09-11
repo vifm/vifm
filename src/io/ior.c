@@ -428,7 +428,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 						(void)ioe_errlst_append(&cp_args->result.errors, dst_full_path,
 								errno, "Failed to setup directory permissions");
 					}
-					clone_timestamps(dst_full_path, full_path, &st);
+					clone_attribs(dst_full_path, full_path, &st);
 				}
 				else
 				{

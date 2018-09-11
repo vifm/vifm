@@ -343,7 +343,7 @@ iop_cp_internal(io_args_t *args)
 
 		if(error == 0)
 		{
-			clone_timestamps(dst, src, NULL);
+			clone_attribs(dst, src, NULL);
 		}
 
 		ioeta_update(args->estim, NULL, NULL, 1, 0);
@@ -621,7 +621,7 @@ iop_cp_internal(io_args_t *args)
 
 	if(error == 0)
 	{
-		clone_timestamps(dst, src, &st);
+		clone_attribs(dst, src, &st);
 	}
 
 	ioeta_update(args->estim, NULL, NULL, 1, 0);

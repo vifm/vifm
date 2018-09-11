@@ -806,7 +806,7 @@ win_tmpfile()
 }
 
 void
-clone_timestamps(const char path[], const char from[], const struct stat *st)
+clone_attribs(const char path[], const char from[], const struct stat *st)
 {
 	wchar_t *const utf16_path = utf8_to_utf16(path);
 	wchar_t *const utf16_from = utf8_to_utf16(from);

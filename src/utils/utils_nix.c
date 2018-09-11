@@ -1007,7 +1007,7 @@ get_installed_data_dir(void)
 }
 
 void
-clone_timestamps(const char path[], const char from[], const struct stat *st)
+clone_attribs(const char path[], const char from[], const struct stat *st)
 {
 	struct timeval tv[2];
 
