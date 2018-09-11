@@ -65,6 +65,7 @@ static int get_subsystem(const char filename[]);
 static int get_stream_subsystem(FILE *fp);
 static FILE * read_cmd_output_internal(const char cmd[], int out_pipe[2],
 		int preserve_stdin);
+static int get_set_owner_privilege(void);
 static char * get_root_path(const char path[]);
 static BOOL CALLBACK close_app_enum(HWND hwnd, LPARAM lParam);
 
@@ -811,6 +812,24 @@ clone_attribs(const char path[], const char from[], const struct stat *st)
 	wchar_t *const utf16_path = utf8_to_utf16(path);
 	wchar_t *const utf16_from = utf8_to_utf16(from);
 
+	if(get_set_owner_privilege())
+	{
+		SECURITY_INFORMATION info = GROUP_SECURITY_INFORMATION
+		                          | OWNER_SECURITY_INFORMATION;
+		DWORD size_needed = 0U;
+		(void)GetFileSecurityW(utf16_from, info, NULL, 0, &size_needed);
+		if(size_needed != 0U)
+		{
+			char sec_descr[size_needed];
+			PSECURITY_DESCRIPTOR descr = (void *)&sec_descr;
+			if(GetFileSecurityW(utf16_from, info, descr, size_needed,
+						&size_needed) != FALSE)
+			{
+				SetFileSecurityW(utf16_path, info, descr);
+			}
+		}
+	}
+
 	HANDLE hfrom = CreateFileW(utf16_from, GENERIC_READ,
 			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
 			FILE_ATTRIBUTE_NORMAL, NULL);
@@ -839,6 +858,46 @@ clone_attribs(const char path[], const char from[], const struct stat *st)
 	}
 	free(utf16_from);
 	free(utf16_path);
+}
+
+/* Requests privilege required to set file owner/group.  Returns non-zero if it
+ * was granted and zero otherwise. */
+static int
+get_set_owner_privilege(void)
+{
+	static int granted = -1;
+	if(granted >= 0)
+	{
+		return granted;
+	}
+
+	HANDLE token;
+	if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &token))
+	{
+		return (granted = 0);
+	}
+
+	LUID luid;
+	if(!LookupPrivilegeValue(NULL, "SeRestorePrivilege", &luid))
+	{
+		CloseHandle(token);
+		return (granted = 0);
+	}
+
+	TOKEN_PRIVILEGES tp;
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Luid = luid;
+	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+	if(!AdjustTokenPrivileges(token, FALSE, &tp, sizeof(tp), NULL, NULL))
+	{
+		CloseHandle(token);
+		return (granted = 0);
+	}
+
+	CloseHandle(token);
+	granted = (GetLastError() != ERROR_NOT_ALL_ASSIGNED);
+	return granted;
 }
 
 uint64_t
