@@ -139,6 +139,10 @@
 
 	Try to preserve file owner/group on copying.  Thanks to willemw12.
 
+	Disallow registering user-defined commands with "!" or "?" suffix that
+	won't be called, due to existence of a builtin that accepts custom
+	separators (they have higher priority than user-defined commands).
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

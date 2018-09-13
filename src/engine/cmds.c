@@ -1077,14 +1077,19 @@ get_user_cmd_name(const char cmd[], char buf[], size_t buf_len)
 	return t;
 }
 
+/* Checks that the name is a valid name for a user-defined command. */
 static int
 is_correct_name(const char name[])
 {
+	assert(name[0] != '\0' && "Command name can't be empty");
+
 	if(strcmp(name, "!") == 0)
 		return 0;
-
 	if(strcmp(name, "?") == 0)
 		return 0;
+
+	char cmd_name[MAX_CMD_NAME_LEN + 1];
+	copy_str(cmd_name, sizeof(cmd_name), name);
 
 	while(name[0] != '\0')
 	{
@@ -1097,6 +1102,17 @@ is_correct_name(const char name[])
 		}
 		name++;
 	}
+
+	/* Builtins with custom separator have higher priority.  Disallow registering
+	 * user-defined commands which will never be called. */
+	if(name[-1] == '!' || name[-1] == '?')
+	{
+		cmd_name[strlen(cmd_name) - 1] = '\0';
+	}
+	const cmd_t *const c = find_cmd(cmd_name);
+	if(c != NULL && c->cust_sep && strcmp(c->name, cmd_name) == 0)
+		return 0;
+
 	return 1;
 }
 

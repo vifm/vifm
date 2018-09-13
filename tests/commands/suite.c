@@ -56,7 +56,7 @@ SETUP()
 	cmd_add_t command = {
 	  .name = "<USERCMD>",     .abbr = NULL,  .id = -1,      .descr = "descr",
 	  .flags = HAS_RANGE,
-	  .handler = &usercmd_cmd, .min_args = 0, .max_args = 0,
+	  .handler = &usercmd_cmd, .min_args = 0, .max_args = NOT_DEF,
 	};
 
 	cmds_conf.begin = 10;

@@ -5,10 +5,13 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
 
-static int goto_cmd(const cmd_info_t *cmd_info);
+#include "suite.h"
+
+static int dummy_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int shell_cmd(const cmd_info_t *cmd_info);
 static int substitute_cmd(const cmd_info_t *cmd_info);
+static int usercmd_cmd(const cmd_info_t *cmd_info);
 
 extern cmds_conf_t cmds_conf;
 
@@ -19,7 +22,7 @@ static int substitute_called;
 static const cmd_add_t commands[] = {
 	{ .name = "",             .abbr = NULL,  .id = -1,      .descr = "descr",
 	  .flags = HAS_RANGE,
-	  .handler = &goto_cmd,   .min_args = 0, .max_args = 0, },
+	  .handler = &dummy_cmd,  .min_args = 0, .max_args = 0, },
 	{ .name = "delete",       .abbr = "d",   .id = -1,      .descr = "descr",
 	  .flags = HAS_EMARK | HAS_RANGE,
 	  .handler = &delete_cmd, .min_args = 0, .max_args = 1, },
@@ -29,10 +32,13 @@ static const cmd_add_t commands[] = {
 	{ .name = "substitute",   .abbr = "s",   .id = -1,      .descr = "descr",
 	  .flags = HAS_REGEXP_ARGS | HAS_CUST_SEP,
 	  .handler = &substitute_cmd, .min_args = 0, .max_args = 3, },
+	{ .name = "tr",           .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = HAS_REGEXP_ARGS | HAS_CUST_SEP,
+	  .handler = &dummy_cmd,  .min_args = 2, .max_args = 2, },
 };
 
 static int
-goto_cmd(const cmd_info_t *cmd_info)
+dummy_cmd(const cmd_info_t *cmd_info)
 {
 	return 0;
 }
@@ -68,7 +74,7 @@ TEST(builtin)
 	cmd_add_t command = {
 	  .name = "",           .abbr = NULL,  .id = -1,      .descr = "descr",
 	  .flags = HAS_RANGE,
-	  .handler = &goto_cmd, .min_args = 0, .max_args = 0,
+	  .handler = &dummy_cmd, .min_args = 0, .max_args = 0,
 	};
 
 	assert_true(add_builtin_cmd("!", 0, &command) == 0);
@@ -132,6 +138,19 @@ TEST(udf_bang_abbr)
 	assert_int_equal(0, execute_cmd("UDF?"));
 	assert_int_equal(0, execute_cmd("UD?"));
 	assert_int_equal(0, execute_cmd("U?"));
+
+	/* These will never be called due to :s accepting custom separator. */
+	assert_failure(execute_cmd("command s! a"));
+	assert_failure(execute_cmd("command s? a"));
+
+	user_cmd_handler = &usercmd_cmd;
+
+	substitute_called = 0;
+	assert_success(execute_cmd("command t! s"));
+	assert_success(execute_cmd("tr!1!3!"));
+	assert_false(substitute_called);
+	assert_success(execute_cmd("t!1!3!"));
+	assert_true(substitute_called);
 }
 
 TEST(cust_sep_is_resolved_correctly)
@@ -150,6 +169,12 @@ TEST(cust_sep_is_resolved_correctly)
 	assert_success(execute_cmd("s:a:b:g"));
 	assert_false(shell_called);
 	assert_true(substitute_called);
+}
+
+static int
+usercmd_cmd(const cmd_info_t *cmd_info)
+{
+	return execute_cmd(cmd_info->cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
