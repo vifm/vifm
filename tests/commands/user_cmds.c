@@ -7,6 +7,7 @@
 #include "suite.h"
 
 static int move_cmd(const cmd_info_t *cmd_info);
+static int dummy_cmd(const cmd_info_t *cmd_info);
 static int usercmd_cmd(const cmd_info_t *cmd_info);
 
 extern cmds_conf_t cmds_conf;
@@ -14,6 +15,7 @@ extern cmds_conf_t cmds_conf;
 cmd_info_t user_cmd_info;
 
 static int move_cmd_called;
+static int dummy_cmd_called;
 
 SETUP()
 {
@@ -59,6 +61,26 @@ TEST(does_not_clash_with_builtins)
 	assert_true(move_cmd_called);
 }
 
+TEST(udc_can_add_suffix_to_builtin_cmd)
+{
+	static const cmd_add_t dummy = {
+	  .name = "dummy",       .abbr = NULL,   .id = -1,          .descr = "descr",
+	  .flags = 0,
+	  .handler = &dummy_cmd, .min_args = 0,  .max_args = 0,
+	};
+
+	user_cmd_handler = &usercmd_cmd;
+
+	add_builtin_commands(&dummy, 1);
+
+	assert_success(execute_cmd("command dummy! move"));
+	move_cmd_called = 0;
+	dummy_cmd_called = 0;
+	assert_success(execute_cmd("dummy!"));
+	assert_true(move_cmd_called);
+	assert_false(dummy_cmd_called);
+}
+
 TEST(cant_redefine_builtin_with_suffix)
 {
 	assert_failure(execute_cmd("command move! a"));
@@ -73,6 +95,12 @@ TEST(self_deletion_does_not_have_use_after_free)
 	assert_success(execute_cmd("command suicidetwo suicideone"));
 	assert_success(execute_cmd("command suicidethree suicidetwo"));
 	assert_success(execute_cmd("suicidethree"));
+}
+
+static int
+dummy_cmd(const cmd_info_t *cmd_info)
+{
+	return 0;
 }
 
 static int

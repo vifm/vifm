@@ -712,8 +712,8 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 		{
 			if(cmp == 0)
 			{
-				/* Complete match (there are no duplicates in the list). */
-				if(cur->name[len] == '\0')
+				/* Complete match for a builtin with a custom separator. */
+				if(cur->cust_sep && cur->name[len] == '\0')
 				{
 					strncpy(buf, cur->name, buf_len);
 					break;
@@ -725,13 +725,21 @@ get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 					strncpy(buf, cur->name, buf_len);
 					break;
 				}
+				/* Or builtin abbreviation that supports the mark. */
+				if(cur->type == BUILTIN_ABBR &&
+						((*t == '!' && cur->emark) || (*t == '?' && cur->qmark)))
+				{
+					strncpy(buf, cur->name, buf_len);
+					break;
+				}
 			}
 			cur = cur->next;
 		}
-		/* For builtin commands, the char is not part of the name. */
+
 		if(cur != NULL && cur->type == USER_CMD &&
 				strncmp(cur->name, buf, len) == 0)
 		{
+			/* For user-defined commands, the char is part of the name. */
 			++t;
 		}
 	}
