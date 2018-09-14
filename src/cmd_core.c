@@ -420,7 +420,7 @@ init_commands(void)
 	/* We get here when init_commands() is called the first time. */
 
 	vle_cmds_init(1, &cmds_conf);
-	vle_cmds_add((const cmd_add_t *)&cmds_list, cmds_list_size);
+	vle_cmds_add(cmds_list, cmds_list_size);
 
 	/* Initialize modules used by this one. */
 	init_bracket_notation();
