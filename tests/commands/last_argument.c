@@ -13,7 +13,7 @@ TEST(empty_ok)
 	const char cmd[] = "";
 	size_t len;
 	const char *last;
-	last = get_last_argument(cmd, 0, &len);
+	last = vle_cmds_last_arg(cmd, 0, &len);
 
 	assert_true(last == cmd);
 	assert_int_equal(0, len);
@@ -24,7 +24,7 @@ TEST(one_word_ok)
 	const char cmd[] = "a";
 	size_t len;
 	const char *last;
-	last = get_last_argument(cmd, 0, &len);
+	last = vle_cmds_last_arg(cmd, 0, &len);
 
 	assert_true(last == cmd);
 	assert_int_equal(1, len);
@@ -35,7 +35,7 @@ TEST(two_words_ok)
 	const char cmd[] = "b a";
 	size_t len;
 	const char *last;
-	last = get_last_argument(cmd, 0, &len);
+	last = vle_cmds_last_arg(cmd, 0, &len);
 
 	assert_true(last == cmd + 2);
 	assert_int_equal(1, len);
@@ -46,7 +46,7 @@ TEST(trailing_spaces_ok)
 	const char cmd[] = "a    ";
 	size_t len;
 	const char *last;
-	last = get_last_argument(cmd, 0, &len);
+	last = vle_cmds_last_arg(cmd, 0, &len);
 
 	assert_true(last == cmd);
 	assert_int_equal(1, len);
@@ -57,7 +57,7 @@ TEST(single_quotes_ok)
 	const char cmd[] = "b  'hello'";
 	size_t len;
 	const char *last;
-	last = get_last_argument(cmd, 0, &len);
+	last = vle_cmds_last_arg(cmd, 0, &len);
 
 	assert_true(last == cmd + 3);
 	assert_int_equal(7, len);
@@ -68,7 +68,7 @@ TEST(double_quotes_ok)
 	const char cmd[] = "b \"hi\"";
 	size_t len;
 	const char *last;
-	last = get_last_argument(cmd, 0, &len);
+	last = vle_cmds_last_arg(cmd, 0, &len);
 
 	assert_true(last == cmd + 2);
 	assert_int_equal(4, len);
@@ -79,7 +79,7 @@ TEST(ending_space_ok)
 	const char cmd[] = "b a\\ ";
 	size_t len;
 	const char *last;
-	last = get_last_argument(cmd, 0, &len);
+	last = vle_cmds_last_arg(cmd, 0, &len);
 
 	assert_true(last == cmd + 2);
 	assert_int_equal(3, len);

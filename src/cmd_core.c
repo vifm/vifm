@@ -413,14 +413,14 @@ init_commands(void)
 {
 	if(cmds_conf.inner != NULL)
 	{
-		init_cmds(1, &cmds_conf);
+		vle_cmds_init(1, &cmds_conf);
 		return;
 	}
 
 	/* We get here when init_commands() is called the first time. */
 
-	init_cmds(1, &cmds_conf);
-	add_builtin_commands((const cmd_add_t *)&cmds_list, cmds_list_size);
+	vle_cmds_init(1, &cmds_conf);
+	vle_cmds_add((const cmd_add_t *)&cmds_list, cmds_list_size);
 
 	/* Initialize modules used by this one. */
 	init_bracket_notation();
@@ -466,13 +466,13 @@ execute_command(view_t *view, const char command[], int menu)
 
 	if(!menu)
 	{
-		init_cmds(1, &cmds_conf);
+		vle_cmds_init(1, &cmds_conf);
 		cmds_conf.begin = 0;
 		cmds_conf.current = view->list_pos;
 		cmds_conf.end = view->list_rows - 1;
 	}
 
-	id = get_cmd_id(command);
+	id = vle_cmds_identify(command);
 
 	if(!cmd_should_be_processed(id))
 	{
@@ -491,7 +491,7 @@ execute_command(view_t *view, const char command[], int menu)
 	}
 
 	keep_view_selection = 0;
-	result = execute_cmd(command);
+	result = vle_cmds_run(command);
 
 	if(result >= 0)
 		return result;
@@ -625,7 +625,7 @@ line_pos(const char begin[], const char end[], char sep, int rquoting,
 	/* Actual separator used for rargs or '\0' if unset. */
 	char rsep = '\0';
 
-	const char *args = get_cmd_args(begin);
+	const char *args = vle_cmds_args(begin);
 	if(args >= end)
 	{
 		return 0;
@@ -809,7 +809,7 @@ break_cmdline(const char cmdline[], int for_menu)
 	 * the cmds module of the engine that use context. */
 	if(!for_menu)
 	{
-		init_cmds(1, &cmds_conf);
+		vle_cmds_init(1, &cmds_conf);
 	}
 
 	cmdline = skip_to_cmd_name(cmdline);
@@ -920,7 +920,7 @@ get_cmdline_location(const char cmd[], const char pos[])
 	int regex_quoting;
 
 	cmd_info_t info;
-	const cmd_t *const c = get_cmd_info(cmd, &info);
+	const cmd_t *const c = vle_cmds_parse(cmd, &info);
 	const int id = (c == NULL ? -1 : c->id);
 	const int max_args = (c == NULL)
 	                   ? -1
@@ -969,7 +969,7 @@ get_cmdline_location(const char cmd[], const char pos[])
 static CmdArgsType
 get_cmd_args_type(const char cmd[])
 {
-	const int cmd_id = get_cmd_id(cmd);
+	const int cmd_id = vle_cmds_identify(cmd);
 	switch(cmd_id)
 	{
 		case COMMAND_CMD_ID:

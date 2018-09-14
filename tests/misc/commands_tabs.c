@@ -35,7 +35,7 @@ SETUP()
 
 TEARDOWN()
 {
-	reset_cmds();
+	vle_cmds_reset();
 
 	tabs_only(&lwin);
 	tabs_only(&rwin);

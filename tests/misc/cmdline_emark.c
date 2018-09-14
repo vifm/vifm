@@ -30,7 +30,7 @@ SETUP()
 
 	init_commands();
 
-	add_builtin_commands(commands, ARRAY_LEN(commands));
+	vle_cmds_add(commands, ARRAY_LEN(commands));
 
 	update_string(&cfg.shell, "");
 	assert_success(stats_init(&cfg));
@@ -41,7 +41,7 @@ TEARDOWN()
 	assert_success(stats_reset(&cfg));
 	update_string(&cfg.shell, NULL);
 
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 static int

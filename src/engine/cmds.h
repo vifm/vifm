@@ -100,7 +100,7 @@ cmd_info_t;
 
 /* Type of command handler.  Shouldn't return negative numbers unless it's one
  * of CMDS_ERR_* constants.  Either way the return value will be the return
- * value of execute_cmd() function. */
+ * value of vle_cmds_run() function. */
 typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 
 /* Description of a command or an abbreviation. */
@@ -165,7 +165,7 @@ enum
 	HAS_MACROS_FOR_SHELL = 0x2000, /* Expand macros with shell escaping. */
 };
 
-/* New commands specification for add_builtin_commands(). */
+/* New commands specification for vle_cmds_add(). */
 typedef struct
 {
 	const char *name;        /* Full command name. */
@@ -183,7 +183,7 @@ cmd_add_t;
 
 typedef struct
 {
-	void *inner; /* Should be NULL on first call of init_cmds(). */
+	void *inner; /* Should be NULL on first call of vle_cmds_init(). */
 
 	int begin;   /* The lowest valid number of the range. */
 	int current; /* Current position between [begin; end]. */
@@ -208,42 +208,42 @@ typedef struct
 cmds_conf_t;
 
 /* cmds_conf_t should be filled before calling this function */
-void init_cmds(int udf, cmds_conf_t *cmds_conf);
+void vle_cmds_init(int udf, cmds_conf_t *cmds_conf);
 
-void reset_cmds(void);
+void vle_cmds_reset(void);
 
 /* Returns one of CMDS_ERR_* codes or code returned by command handler. */
-int execute_cmd(const char cmd[]);
+int vle_cmds_run(const char cmd[]);
 
 /* Returns -1 on error and USER_CMD_ID for user defined commands. */
-int get_cmd_id(const char cmd[]);
+int vle_cmds_identify(const char cmd[]);
 
 /* Parses cmd to find beginning of arguments.  Returns pointer within the cmd or
  * NULL if command is unknown or command-line is invalid. */
-const char * get_cmd_args(const char cmd[]);
+const char * vle_cmds_args(const char cmd[]);
 
 /* Breaks down passed command into its constituent parts.  Returns pointer to
  * command's description or NULL on error. */
-const cmd_t * get_cmd_info(const char cmd[], cmd_info_t *info);
+const cmd_t * vle_cmds_parse(const char cmd[], cmd_info_t *info);
 
 /* Returns offset in cmd, where completion elements should be pasted. */
-int complete_cmd(const char cmd[], void *arg);
+int vle_cmds_complete(const char cmd[], void *arg);
 
 /* Registers all commands in the array pointed to by cmds of length at least
  * count. */
-void add_builtin_commands(const cmd_add_t cmds[], int count);
+void vle_cmds_add(const cmd_add_t cmds[], int count);
 
 /* Returns pointer to the first character of the last argument in cmd. */
-char * get_last_argument(const char cmd[], int quotes, size_t *len);
+char * vle_cmds_last_arg(const char cmd[], int quotes, size_t *len);
 
 /* Last element is followed by a NULL */
-char ** list_udf(void);
+char ** vle_cmds_list_udcs(void);
 
 /* Prints a table that includes commands that start with the given prefix into
  * a multiline string (all lines except for the last one has new line
  * character).  Returns the string or NULL if there are no command with that
  * prefix. */
-char * list_udf_content(const char beginning[]);
+char * vle_cmds_print_udcs(const char beginning[]);
 
 /* Skips at most one argument of the string.  Returns pointer to the next
  * character after that argument, if any, otherwise pointer to

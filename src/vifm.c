@@ -558,7 +558,7 @@ vifm_restart(void)
 	vle_keys_user_clear();
 
 	/* User defined commands. */
-	execute_cmd("comclear");
+	vle_cmds_run("comclear");
 
 	/* Autocommands. */
 	vle_aucmd_remove(NULL, NULL);

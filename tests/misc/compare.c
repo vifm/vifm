@@ -533,7 +533,7 @@ TEST(sorting_is_not_changed)
 	init_commands();
 	assert_success(exec_commands("set sort=ext", &lwin, CIT_COMMAND));
 	assert_int_equal(SK_NONE, lwin.sort[0]);
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 TEST(cursor_moves_in_both_views_synchronously)

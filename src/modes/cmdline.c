@@ -613,7 +613,7 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 	if(sub_mode == CLS_COMMAND || sub_mode == CLS_MENU_COMMAND)
 	{
 		wprompt = L":";
-		complete_func = &complete_cmd;
+		complete_func = &vle_cmds_complete;
 	}
 	else if(sub_mode == CLS_FILTER)
 	{
@@ -2090,7 +2090,7 @@ next_dot_completion(void)
 
 	if(input_stat.dot_pos <= curr_stats.cmd_hist.pos)
 	{
-		last = get_last_argument(curr_stats.cmd_hist.items[input_stat.dot_pos++], 1,
+		last = vle_cmds_last_arg(curr_stats.cmd_hist.items[input_stat.dot_pos++], 1,
 				&len);
 	}
 	else

@@ -31,7 +31,7 @@ TEARDOWN()
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 TEST(filter_prints_empty_filters_correctly)

@@ -82,7 +82,7 @@ TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 static int is_separator(char c, char sep);
 
 void
-init_cmds(int udf, cmds_conf_t *conf)
+vle_cmds_init(int udf, cmds_conf_t *conf)
 {
 	static cmd_add_t commands[] = {
 		{
@@ -124,12 +124,12 @@ init_cmds(int udf, cmds_conf_t *conf)
 		inner = conf->inner;
 
 		if(udf)
-			add_builtin_commands(commands, ARRAY_LEN(commands));
+			vle_cmds_add(commands, ARRAY_LEN(commands));
 	}
 }
 
 void
-reset_cmds(void)
+vle_cmds_reset(void)
 {
 	cmd_t *cur = inner->head.next;
 
@@ -150,7 +150,7 @@ reset_cmds(void)
 }
 
 int
-execute_cmd(const char cmd[])
+vle_cmds_run(const char cmd[])
 {
 	cmd_info_t cmd_info;
 	char cmd_name[MAX_CMD_NAME_LEN];
@@ -198,7 +198,7 @@ execute_cmd(const char cmd[])
 
 	/* Set background flag and remove background mark from raw arguments, when
 	 * command supports backgrounding. */
-	last_arg = get_last_argument(cmd_info.raw_args, cur->quote, &last_arg_len);
+	last_arg = vle_cmds_last_arg(cmd_info.raw_args, cur->quote, &last_arg_len);
 	if(cur->bg && *last_arg == '&' && *vle_cmds_at_arg(last_arg + 1) == '\0')
 	{
 		cmd_info.bg = 1;
@@ -404,18 +404,18 @@ parse_tail(cmd_t *cur, const char cmd[], cmd_info_t *cmd_info)
 }
 
 int
-get_cmd_id(const char cmd[])
+vle_cmds_identify(const char cmd[])
 {
 	cmd_info_t info;
-	const cmd_t *const c = get_cmd_info(cmd, &info);
+	const cmd_t *const c = vle_cmds_parse(cmd, &info);
 	return (c == NULL ? -1 : c->id);
 }
 
 const char *
-get_cmd_args(const char cmd[])
+vle_cmds_args(const char cmd[])
 {
 	cmd_info_t info = {};
-	(void)get_cmd_info(cmd, &info);
+	(void)vle_cmds_parse(cmd, &info);
 	return info.raw_args;
 }
 
@@ -440,7 +440,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 }
 
 const cmd_t *
-get_cmd_info(const char cmd[], cmd_info_t *info)
+vle_cmds_parse(const char cmd[], cmd_info_t *info)
 {
 	cmd_info_t cmd_info;
 	char cmd_name[MAX_CMD_NAME_LEN + 1];
@@ -468,7 +468,7 @@ get_cmd_info(const char cmd[], cmd_info_t *info)
 }
 
 int
-complete_cmd(const char cmd[], void *arg)
+vle_cmds_complete(const char cmd[], void *arg)
 {
 	cmd_info_t cmd_info;
 	const char *begin, *cmd_name_pos;
@@ -825,7 +825,7 @@ complete_cmd_name(const char cmd_name[], int user_only)
 }
 
 void
-add_builtin_commands(const cmd_add_t cmds[], int count)
+vle_cmds_add(const cmd_add_t cmds[], int count)
 {
 	int i;
 	for(i = 0; i < count; ++i)
@@ -1162,7 +1162,7 @@ delcommand_cmd(const cmd_info_t *cmd_info)
 }
 
 char *
-get_last_argument(const char cmd[], int quotes, size_t *len)
+vle_cmds_last_arg(const char cmd[], int quotes, size_t *len)
 {
 	int argc;
 	char **argv;
@@ -1386,7 +1386,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 }
 
 char **
-list_udf(void)
+vle_cmds_list_udcs(void)
 {
 	char **p;
 	cmd_t *cur;
@@ -1416,7 +1416,7 @@ list_udf(void)
 }
 
 char *
-list_udf_content(const char beginning[])
+vle_cmds_print_udcs(const char beginning[])
 {
 	size_t len;
 	cmd_t *cur;

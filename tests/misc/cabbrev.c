@@ -26,7 +26,7 @@ SETUP()
 
 TEARDOWN()
 {
-	reset_cmds();
+	vle_cmds_reset();
 	vle_abbr_reset();
 }
 

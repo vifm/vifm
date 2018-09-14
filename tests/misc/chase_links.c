@@ -41,7 +41,7 @@ SETUP()
 
 TEARDOWN()
 {
-	reset_cmds();
+	vle_cmds_reset();
 
 	update_string(&cfg.slow_fs_list, NULL);
 

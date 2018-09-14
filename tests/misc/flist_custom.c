@@ -75,7 +75,7 @@ TEARDOWN()
 
 	view_teardown(&lwin);
 
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 TEST(empty_list_is_not_accepted)

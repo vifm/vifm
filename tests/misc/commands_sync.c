@@ -46,7 +46,7 @@ TEARDOWN()
 {
 	restore_cwd(saved_cwd);
 
-	reset_cmds();
+	vle_cmds_reset();
 
 	free(cfg.slow_fs_list);
 	cfg.slow_fs_list = NULL;

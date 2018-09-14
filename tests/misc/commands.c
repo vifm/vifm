@@ -84,7 +84,7 @@ SETUP()
 
 	init_commands();
 
-	add_builtin_commands(commands, ARRAY_LEN(commands));
+	vle_cmds_add(commands, ARRAY_LEN(commands));
 
 	called = 0;
 
@@ -107,7 +107,7 @@ TEARDOWN()
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 
-	reset_cmds();
+	vle_cmds_reset();
 
 	undo_teardown();
 }

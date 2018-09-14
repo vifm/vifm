@@ -65,9 +65,9 @@ SETUP()
 	cmds_conf.current = 50;
 	cmds_conf.end = 100;
 
-	init_cmds(1, &cmds_conf);
+	vle_cmds_init(1, &cmds_conf);
 
-	add_builtin_commands(&command, 1);
+	vle_cmds_add(&command, 1);
 
 	swap_range = 1;
 	user_cmd_handler = &def_usercmd_cmd;
@@ -75,7 +75,7 @@ SETUP()
 
 TEARDOWN()
 {
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 static int

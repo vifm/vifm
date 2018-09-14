@@ -66,7 +66,7 @@ TEARDOWN()
 {
 	opt_handlers_teardown();
 
-	reset_cmds();
+	vle_cmds_reset();
 
 	columns_free(lwin.columns);
 	lwin.columns = NULL;

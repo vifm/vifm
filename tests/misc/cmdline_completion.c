@@ -70,15 +70,15 @@ SETUP()
 	stats.complete_continue = 0;
 	stats.history_search = 0;
 	stats.line_buf = NULL;
-	stats.complete = &complete_cmd;
+	stats.complete = &vle_cmds_complete;
 
 	curr_view = &lwin;
 
 	init_commands();
 
-	execute_cmd("command bar a");
-	execute_cmd("command baz b");
-	execute_cmd("command foo c");
+	vle_cmds_run("command bar a");
+	vle_cmds_run("command baz b");
+	vle_cmds_run("command foo c");
 
 	init_options(&option_changed, NULL);
 	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
@@ -106,7 +106,7 @@ TEARDOWN()
 	update_string(&cfg.slow_fs_list, NULL);
 
 	free(stats.line);
-	reset_cmds();
+	vle_cmds_reset();
 	clear_options();
 
 	function_reset_all();
@@ -120,7 +120,7 @@ dummy_handler(OPT_OP op, optval_t val)
 TEST(vim_like_completion)
 {
 	vle_compl_reset();
-	assert_int_equal(0, complete_cmd("e", NULL));
+	assert_int_equal(0, vle_cmds_complete("e", NULL));
 	ASSERT_NEXT_MATCH("echo");
 	ASSERT_NEXT_MATCH("edit");
 	ASSERT_NEXT_MATCH("else");
@@ -132,12 +132,12 @@ TEST(vim_like_completion)
 	ASSERT_NEXT_MATCH("e");
 
 	vle_compl_reset();
-	assert_int_equal(0, complete_cmd("vm", NULL));
+	assert_int_equal(0, vle_cmds_complete("vm", NULL));
 	ASSERT_NEXT_MATCH("vmap");
 	ASSERT_NEXT_MATCH("vmap");
 
 	vle_compl_reset();
-	assert_int_equal(0, complete_cmd("j", NULL));
+	assert_int_equal(0, vle_cmds_complete("j", NULL));
 	ASSERT_NEXT_MATCH("jobs");
 	ASSERT_NEXT_MATCH("jobs");
 }
@@ -145,7 +145,7 @@ TEST(vim_like_completion)
 TEST(leave_spaces_at_begin)
 {
 	vle_compl_reset();
-	assert_int_equal(1, complete_cmd(" qui", NULL));
+	assert_int_equal(1, vle_cmds_complete(" qui", NULL));
 	ASSERT_NEXT_MATCH("quit");
 	ASSERT_NEXT_MATCH("quit");
 }
@@ -153,15 +153,15 @@ TEST(leave_spaces_at_begin)
 TEST(only_user)
 {
 	vle_compl_reset();
-	assert_int_equal(8, complete_cmd("command ", NULL));
+	assert_int_equal(8, vle_cmds_complete("command ", NULL));
 	ASSERT_NEXT_MATCH("bar");
 
 	vle_compl_reset();
-	assert_int_equal(9, complete_cmd(" command ", NULL));
+	assert_int_equal(9, vle_cmds_complete(" command ", NULL));
 	ASSERT_NEXT_MATCH("bar");
 
 	vle_compl_reset();
-	assert_int_equal(10, complete_cmd("  command ", NULL));
+	assert_int_equal(10, vle_cmds_complete("  command ", NULL));
 	ASSERT_NEXT_MATCH("bar");
 }
 

@@ -20,7 +20,7 @@ SETUP()
 
 TEARDOWN()
 {
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 TEST(filetype_accepts_negated_patterns)

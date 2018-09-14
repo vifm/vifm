@@ -1599,7 +1599,7 @@ command_cmd(const cmd_info_t *cmd_info)
 		return show_commands_menu(curr_view) != 0;
 	}
 
-	desc = list_udf_content(cmd_info->argv[0]);
+	desc = vle_cmds_print_udcs(cmd_info->argv[0]);
 	if(desc == NULL)
 	{
 		ui_sb_msg("No user-defined commands found");
@@ -4625,7 +4625,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	/* Expand macros in a bound command. */
 	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
-			get_cmd_id(cmd_info->cmd) == COM_EXECUTE);
+			vle_cmds_identify(cmd_info->cmd) == COM_EXECUTE);
 
 	if(expanded_com[0] == ':')
 	{
