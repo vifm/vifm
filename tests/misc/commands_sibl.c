@@ -38,7 +38,7 @@ TEARDOWN()
 {
 	view_teardown(&lwin);
 
-	reset_cmds();
+	vle_cmds_reset();
 
 	opt_handlers_teardown();
 }

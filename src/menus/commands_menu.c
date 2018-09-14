@@ -56,7 +56,7 @@ show_commands_menu(view_t *view)
 	m.execute_handler = &execute_commands_cb;
 	m.key_handler = &commands_khandler;
 
-	list = list_udf();
+	list = vle_cmds_list_udcs();
 
 	m.len = -1;
 	while(list[++m.len] != NULL)

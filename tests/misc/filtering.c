@@ -274,7 +274,7 @@ TEST(global_local_nature_of_normal_zo)
 	curr_stats.global_local_settings = 0;
 
 	vle_keys_reset();
-	reset_cmds();
+	vle_cmds_reset();
 	opt_handlers_teardown();
 }
 

@@ -10,7 +10,7 @@ SETUP()
 
 TEARDOWN()
 {
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 TEST(empty_command)

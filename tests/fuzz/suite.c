@@ -235,13 +235,13 @@ fuzz_commands(const char input[])
 	cmds_conf.current = 50;
 	cmds_conf.end = 100;
 
-	init_cmds(1, &cmds_conf);
+	vle_cmds_init(1, &cmds_conf);
 
-	add_builtin_commands(commands, 3);
+	vle_cmds_add(commands, 3);
 
-	execute_cmd(input);
+	vle_cmds_run(input);
 
-	reset_cmds();
+	vle_cmds_reset();
 
 	return EXIT_SUCCESS;
 }

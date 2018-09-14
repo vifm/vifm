@@ -597,7 +597,7 @@ update_info_file(const char filename[], int merge)
 	if(cfg.vifm_info == 0)
 		return;
 
-	cmds_list = list_udf();
+	cmds_list = vle_cmds_list_udcs();
 	ncmds_list = count_strings(cmds_list);
 
 	non_conflicting_marks = strdup(valid_marks);

@@ -23,37 +23,36 @@
 
 #include "../utils/test_helpers.h"
 
-/* Error codes. */
+/* Error codes returned by vle_cmds_run(). */
 enum
 {
 	/* Error codes are negative integers. */
-	CMDS_ERR_LOOP = -128,
-	CMDS_ERR_NO_MEM,
-	CMDS_ERR_TOO_FEW_ARGS,
-	CMDS_ERR_TRAILING_CHARS,
-	CMDS_ERR_INCORRECT_NAME,
-	CMDS_ERR_NEED_BANG,
-	CMDS_ERR_NO_BUILTIN_REDEFINE,
-	CMDS_ERR_INVALID_CMD,
-	CMDS_ERR_NO_BANG_ALLOWED,
-	CMDS_ERR_NO_RANGE_ALLOWED,
-	CMDS_ERR_NO_QMARK_ALLOWED,
-	CMDS_ERR_INVALID_RANGE,
-	CMDS_ERR_NO_SUCH_UDF,
-	CMDS_ERR_UDF_IS_AMBIGUOUS,
-	CMDS_ERR_ZERO_COUNT,
-	CMDS_ERR_INVALID_ARG,
-	CMDS_ERR_CUSTOM,
+	CMDS_ERR_LOOP = -128,         /* Too deep recursion of commands. */
+	CMDS_ERR_NO_MEM,              /* Not enough memory. */
+	CMDS_ERR_TOO_FEW_ARGS,        /* Not enough arguments. */
+	CMDS_ERR_TRAILING_CHARS,      /* Too many arguments. */
+	CMDS_ERR_INCORRECT_NAME,      /* Bad name for a user-defined command. */
+	CMDS_ERR_NEED_BANG,           /* Need enforcing to succeed. */
+	CMDS_ERR_NO_BUILTIN_REDEFINE, /* Can't shadow builtin command. */
+	CMDS_ERR_INVALID_CMD,         /* Unknown command name. */
+	CMDS_ERR_NO_BANG_ALLOWED,     /* The command doesn't support "!". */
+	CMDS_ERR_NO_RANGE_ALLOWED,    /* The command doesn't take range. */
+	CMDS_ERR_NO_QMARK_ALLOWED,    /* The command doesn't support "?". */
+	CMDS_ERR_INVALID_RANGE,       /* Bad range. */
+	CMDS_ERR_NO_SUCH_UDF,         /* Unknown name of a user-defined command. */
+	CMDS_ERR_UDF_IS_AMBIGUOUS,    /* Calling user-defined command is ambiguous. */
+	CMDS_ERR_INVALID_ARG,         /* Missing closing quote. */
+	CMDS_ERR_CUSTOM,              /* Error defined by the client. */
 };
 
 /* Constants related to command ids. */
 enum
 {
 	/* Builtin commands have negative ids. */
-	USER_CMD_ID = -256,
-	COMCLEAR_CMD_ID,
-	COMMAND_CMD_ID,
-	DELCOMMAND_CMD_ID,
+	USER_CMD_ID = -256, /* <USERCMD> */
+	COMCLEAR_CMD_ID,    /* :comc[lear] */
+	COMMAND_CMD_ID,     /* :com[mand] */
+	DELCOMMAND_CMD_ID,  /* :delc[ommand] */
 
 	/* Commands with ids in range [NO_COMPLETION_BOUNDARY; 0) are not
 	 * completed. */
@@ -100,7 +99,7 @@ cmd_info_t;
 
 /* Type of command handler.  Shouldn't return negative numbers unless it's one
  * of CMDS_ERR_* constants.  Either way the return value will be the return
- * value of execute_cmd() function. */
+ * value of vle_cmds_run() function. */
 typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 
 /* Description of a command or an abbreviation. */
@@ -150,8 +149,8 @@ enum
 	HAS_BG_FLAG          = 0x0020, /* Background (can have " &" at the end). */
 	HAS_COMMENT          = 0x0040, /* Trailing comment is allowed. */
 
-	/* HAS_RAW_ARGS flag can't be combined with the other two, but they can be
-	 * specified at the same time. */
+	/* HAS_RAW_ARGS flag can't be combined with either of the other two, but those
+	 * two can be specified at the same time. */
 	HAS_RAW_ARGS         = 0x0080, /* No special processing of arguments. */
 	HAS_REGEXP_ARGS      = 0x0100, /* Process /.../-arguments. */
 	HAS_QUOTED_ARGS      = 0x0200, /* Process '- and "-quoted args. */
@@ -165,25 +164,26 @@ enum
 	HAS_MACROS_FOR_SHELL = 0x2000, /* Expand macros with shell escaping. */
 };
 
-/* New commands specification for add_builtin_commands(). */
+/* New commands specification for vle_cmds_add(). */
 typedef struct
 {
-	const char *name;        /* Full command name. */
-	const char *abbr;        /* Command prefix (can be NULL). */
-	const char *descr;       /* Brief description (stored as a pointer). */
-	int id;                  /* Command id.  Doesn't need to be unique.  Negative
-	                            value means absence of arg completion.  Use, for
-	                            example, -1 for all commands without
-	                            completion. */
-	cmd_handler handler;     /* Function invoked to run the command. */
-	int min_args, max_args;  /* Minimum and maximum bounds on number of args. */
-	int flags;               /* Set of HAS_* flags. */
+	const char *name;       /* Full command name. */
+	const char *abbr;       /* Command prefix (can be NULL). */
+	const char *descr;      /* Brief description (stored as a pointer). */
+	int id;                 /* Command id.  Doesn't need to be unique.  Negative
+	                           value means absence of arg completion.  Use, for
+	                           example, -1 for all commands without completion. */
+	cmd_handler handler;    /* Function invoked to run the command. */
+	int min_args, max_args; /* Minimum and maximum bounds on number of args. */
+	int flags;              /* Set of HAS_* flags. */
 }
 cmd_add_t;
 
+/* Configuration structure that's passed in from the outside. */
 typedef struct
 {
-	void *inner; /* Should be NULL on first call of init_cmds(). */
+	void *inner; /* Should be NULL on first call of vle_cmds_init().  This is a
+	                pointer to internal data. */
 
 	int begin;   /* The lowest valid number of the range. */
 	int current; /* Current position between [begin; end]. */
@@ -194,52 +194,77 @@ typedef struct
 	int (*complete_args)(int id, const cmd_info_t *cmd_info, int arg_pos,
 			void *arg);
 
+	/* Asks user whether bounds of an inverted range should be swapped.  Should
+	 * return non-zero if so and zero otherwise. */
 	int (*swap_range)(void);
-	int (*resolve_mark)(char mark); /* should return value < 0 on error */
-	/* Should allocate memory. */
-	char *(*expand_macros)(const char str[], int for_shell, int *usr1, int *usr2);
-	/* Should allocate memory. */
-	char *(*expand_envvars)(const char str[]);
-	void (*post)(int id); /* called after successful processing command */
+	/* Resolves name of the mark to a position.  Should return corresponding
+	 * position or value < 0 on error. */
+	int (*resolve_mark)(char mark);
+	/* Expands macros in the passed string.  Should return newly allocated
+	 * memory. */
+	char * (*expand_macros)(const char str[], int for_shell, int *usr1,
+			int *usr2);
+	/* Expands environment variables in the passed string.  Should return newly
+	 * allocated memory. */
+	char * (*expand_envvars)(const char str[]);
+	/* Called after successful processing of a command. */
+	void (*post)(int id);
+	/* Called for commands with HAS_SELECTION_SCOPE flag. */
 	void (*select_range)(int id, const cmd_info_t *cmd_info);
-	/* should return < 0 to do nothing, x to skip command name and x chars */
+	/* Called to determine whether a command at the front should be skipped for
+	 * the purposes of completion.  Should return < 0 to do nothing, x to skip
+	 * command name and x chars. */
 	int (*skip_at_beginning)(int id, const char args[]);
 }
 cmds_conf_t;
 
-/* cmds_conf_t should be filled before calling this function */
-void init_cmds(int udf, cmds_conf_t *cmds_conf);
+/* Initializes previously uninitialized instance of the unit and sets it as the
+ * current one.  The udf argument specifies whether user-defined commands are
+ * allowed.  The structure pointed to by cmds_conf_t should be filled before
+ * calling this function. */
+void vle_cmds_init(int udf, cmds_conf_t *cmds_conf);
 
-void reset_cmds(void);
+/* Resets state of the unit. */
+void vle_cmds_reset(void);
 
-/* Returns one of CMDS_ERR_* codes or code returned by command handler. */
-int execute_cmd(const char cmd[]);
+/* Executes a command.  Returns one of CMDS_ERR_* codes or code returned by the
+ * command handler. */
+int vle_cmds_run(const char cmd[]);
 
-/* Returns -1 on error and USER_CMD_ID for user defined commands. */
-int get_cmd_id(const char cmd[]);
+/* Parses command to fetch command and retrieve id associated with it.  Returns
+ * the id, -1 on error and USER_CMD_ID for all user defined commands. */
+int vle_cmds_identify(const char cmd[]);
 
 /* Parses cmd to find beginning of arguments.  Returns pointer within the cmd or
  * NULL if command is unknown or command-line is invalid. */
-const char * get_cmd_args(const char cmd[]);
+const char * vle_cmds_args(const char cmd[]);
 
 /* Breaks down passed command into its constituent parts.  Returns pointer to
  * command's description or NULL on error. */
-const cmd_t * get_cmd_info(const char cmd[], cmd_info_t *info);
+const cmd_t * vle_cmds_parse(const char cmd[], cmd_info_t *info);
 
-/* Returns offset in cmd, where completion elements should be pasted. */
-int complete_cmd(const char cmd[], void *arg);
+/* Performs completion of the command, either just command name or arguments of
+ * some command.  Returns offset in cmd, where completion elements should be
+ * pasted. */
+int vle_cmds_complete(const char cmd[], void *arg);
 
 /* Registers all commands in the array pointed to by cmds of length at least
  * count. */
-void add_builtin_commands(const cmd_add_t cmds[], int count);
+void vle_cmds_add(const cmd_add_t cmds[], int count);
 
-/* Returns pointer to the first character of the last argument in cmd. */
-char * get_last_argument(const char cmd[], int quotes, size_t *len);
+/* Finds the first character of the last argument in cmd.  Returns pointer to
+ * it. */
+char * vle_cmds_last_arg(const char cmd[], int quotes, size_t *len);
 
-/* Last element is followed by a NULL */
-char ** list_udf(void);
+/* Lists user-defined commands as name-value pairs each in separate item of the
+ * array.  Last pair element is followed by a NULL. */
+char ** vle_cmds_list_udcs(void);
 
-char * list_udf_content(const char beginning[]);
+/* Prints a table that includes commands that start with the given prefix into
+ * a multiline string (all lines except for the last one has new line
+ * character).  Returns the string or NULL if there are no command with that
+ * prefix. */
+char * vle_cmds_print_udcs(const char beginning[]);
 
 /* Skips at most one argument of the string.  Returns pointer to the next
  * character after that argument, if any, otherwise pointer to

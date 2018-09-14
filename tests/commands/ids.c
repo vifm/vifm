@@ -10,28 +10,28 @@ cmd_info_t user_cmd_info;
 
 TEST(builtin)
 {
-	assert_int_equal(COMMAND_CMD_ID, get_cmd_id("com"));
-	assert_int_equal(COMMAND_CMD_ID, get_cmd_id("command"));
+	assert_int_equal(COMMAND_CMD_ID, vle_cmds_identify("com"));
+	assert_int_equal(COMMAND_CMD_ID, vle_cmds_identify("command"));
 
-	assert_int_equal(DELCOMMAND_CMD_ID, get_cmd_id("delc"));
-	assert_int_equal(DELCOMMAND_CMD_ID, get_cmd_id("delcommand"));
+	assert_int_equal(DELCOMMAND_CMD_ID, vle_cmds_identify("delc"));
+	assert_int_equal(DELCOMMAND_CMD_ID, vle_cmds_identify("delcommand"));
 }
 
 TEST(user)
 {
-	assert_int_equal(0, execute_cmd("command udf a"));
+	assert_int_equal(0, vle_cmds_run("command udf a"));
 
-	assert_int_equal(USER_CMD_ID, get_cmd_id("udf"));
+	assert_int_equal(USER_CMD_ID, vle_cmds_identify("udf"));
 }
 
 TEST(invalid)
 {
-	assert_int_equal(-1, get_cmd_id("asdf"));
+	assert_int_equal(-1, vle_cmds_identify("asdf"));
 }
 
 TEST(end_characters)
 {
-	assert_int_equal(COMMAND_CMD_ID, get_cmd_id("com#"));
+	assert_int_equal(COMMAND_CMD_ID, vle_cmds_identify("com#"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

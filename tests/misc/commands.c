@@ -84,7 +84,7 @@ SETUP()
 
 	init_commands();
 
-	add_builtin_commands(commands, ARRAY_LEN(commands));
+	vle_cmds_add(commands, ARRAY_LEN(commands));
 
 	called = 0;
 
@@ -107,7 +107,7 @@ TEARDOWN()
 	view_teardown(&lwin);
 	view_teardown(&rwin);
 
-	reset_cmds();
+	vle_cmds_reset();
 
 	undo_teardown();
 }
@@ -794,6 +794,19 @@ TEST(echo_reports_all_errors)
 	ui_sb_msg("");
 	assert_failure(exec_commands(zeroes, &lwin, CIT_COMMAND));
 	assert_true(strchr(ui_sb_last(), '\n') != NULL);
+}
+
+TEST(zero_count_is_rejected)
+{
+	const char *expected = "Count argument can't be zero";
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("delete a 0", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("yank a 0", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
 }
 
 static void

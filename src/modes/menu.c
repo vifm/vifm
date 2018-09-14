@@ -271,8 +271,8 @@ menu_init_mode(void)
 	/* Double initialization can happen in tests. */
 	if(cmds_conf.inner == NULL)
 	{
-		init_cmds(0, &cmds_conf);
-		add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
+		vle_cmds_init(0, &cmds_conf);
+		vle_cmds_add(commands, ARRAY_LEN(commands));
 	}
 }
 
@@ -308,7 +308,7 @@ menu_enter_mode(menu_data_t *m, view_t *active_view)
 	curr_stats.need_update = UT_FULL;
 	was_redraw = 0;
 
-	init_cmds(0, &cmds_conf);
+	vle_cmds_init(0, &cmds_conf);
 }
 
 void
@@ -1060,7 +1060,7 @@ menu_run_command(const char cmd[])
 	{
 		ui_sb_err("An error occurred while trying to execute command");
 	}
-	init_cmds(0, &cmds_conf);
+	vle_cmds_init(0, &cmds_conf);
 }
 
 /* Provides access to tests to a local static variable. */

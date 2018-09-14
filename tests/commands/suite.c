@@ -12,7 +12,7 @@
 
 static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
-static int swap_range(void);
+static int should_swap_range(void);
 static int resolve_mark(char mark);
 static char * expand_macros(const char str[], int for_shell, int *usr1,
 		int *usr2);
@@ -28,7 +28,7 @@ cmd_handler user_cmd_handler;
 
 cmds_conf_t cmds_conf = {
 	.complete_args = &complete_args,
-	.swap_range = &swap_range,
+	.swap_range = &should_swap_range,
 	.resolve_mark = &resolve_mark,
 	.expand_macros = &expand_macros,
 	.expand_envvars = &expand_envvars,
@@ -36,6 +36,8 @@ cmds_conf_t cmds_conf = {
 	.select_range = &select_range,
 	.skip_at_beginning = &skip_at_beginning,
 };
+
+int swap_range;
 
 DEFINE_SUITE();
 
@@ -56,23 +58,24 @@ SETUP()
 	cmd_add_t command = {
 	  .name = "<USERCMD>",     .abbr = NULL,  .id = -1,      .descr = "descr",
 	  .flags = HAS_RANGE,
-	  .handler = &usercmd_cmd, .min_args = 0, .max_args = 0,
+	  .handler = &usercmd_cmd, .min_args = 0, .max_args = NOT_DEF,
 	};
 
 	cmds_conf.begin = 10;
 	cmds_conf.current = 50;
 	cmds_conf.end = 100;
 
-	init_cmds(1, &cmds_conf);
+	vle_cmds_init(1, &cmds_conf);
 
-	add_builtin_commands(&command, 1);
+	vle_cmds_add(&command, 1);
 
+	swap_range = 1;
 	user_cmd_handler = &def_usercmd_cmd;
 }
 
 TEARDOWN()
 {
-	reset_cmds();
+	vle_cmds_reset();
 }
 
 static int
@@ -95,9 +98,9 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 }
 
 static int
-swap_range(void)
+should_swap_range(void)
 {
-	return 1;
+	return swap_range;
 }
 
 static int

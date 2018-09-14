@@ -42,7 +42,7 @@ TEST(trailing_comments)
 
 	opt_handlers_teardown();
 
-	reset_cmds();
+	vle_cmds_reset();
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);

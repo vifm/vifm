@@ -12,7 +12,7 @@ extern struct cmds_conf cmds_conf;
 
 SETUP()
 {
-	reset_cmds();
+	vle_cmds_reset();
 	init_commands();
 }
 
@@ -21,7 +21,7 @@ TEST(empty_line_completion)
 	char *buf;
 
 	vle_compl_reset();
-	assert_int_equal(0, complete_cmd("", NULL));
+	assert_int_equal(0, vle_cmds_complete("", NULL));
 
 	buf = vle_compl_next();
 	assert_string_equal("!", buf);
@@ -37,7 +37,7 @@ TEST(set)
 	char *buf;
 
 	vle_compl_reset();
-	assert_int_equal(0, complete_cmd("se", NULL));
+	assert_int_equal(0, vle_cmds_complete("se", NULL));
 
 	buf = vle_compl_next();
 	assert_string_equal("select", buf);

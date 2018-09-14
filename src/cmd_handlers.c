@@ -1599,7 +1599,7 @@ command_cmd(const cmd_info_t *cmd_info)
 		return show_commands_menu(curr_view) != 0;
 	}
 
-	desc = list_udf_content(cmd_info->argv[0]);
+	desc = vle_cmds_print_udcs(cmd_info->argv[0]);
 	if(desc == NULL)
 	{
 		ui_sb_msg("No user-defined commands found");
@@ -4572,7 +4572,10 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 
 		count = atoi(cmd_info->argv[1]);
 		if(count == 0)
-			return CMDS_ERR_ZERO_COUNT;
+		{
+			ui_sb_err("Count argument can't be zero");
+			return CMDS_ERR_CUSTOM;
+		}
 		flist_sel_count(curr_view, cmd_info->end, count);
 	}
 	else if(cmd_info->argc == 1)
@@ -4581,7 +4584,10 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 		{
 			int count = atoi(cmd_info->argv[0]);
 			if(count == 0)
-				return CMDS_ERR_ZERO_COUNT;
+			{
+				ui_sb_err("Count argument can't be zero");
+				return CMDS_ERR_CUSTOM;
+			}
 			flist_sel_count(curr_view, cmd_info->end, count);
 		}
 		else
@@ -4625,7 +4631,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	/* Expand macros in a bound command. */
 	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
-			get_cmd_id(cmd_info->cmd) == COM_EXECUTE);
+			vle_cmds_identify(cmd_info->cmd) == COM_EXECUTE);
 
 	if(expanded_com[0] == ':')
 	{
