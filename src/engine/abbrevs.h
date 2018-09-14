@@ -42,7 +42,7 @@ const wchar_t * vle_abbr_expand(const wchar_t str[], int *no_remap);
 /* Removes all registered abbreviations. */
 void vle_abbr_reset(void);
 
-/* Completes set arguments list. */
+/* Completes names of abbreviations. */
 void vle_abbr_complete(const char prefix[]);
 
 /* Enumerates registered abbreviations.  For the first call *state must be set
