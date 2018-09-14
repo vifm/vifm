@@ -4572,7 +4572,10 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 
 		count = atoi(cmd_info->argv[1]);
 		if(count == 0)
-			return CMDS_ERR_ZERO_COUNT;
+		{
+			ui_sb_err("Count argument can't be zero");
+			return CMDS_ERR_CUSTOM;
+		}
 		flist_sel_count(curr_view, cmd_info->end, count);
 	}
 	else if(cmd_info->argc == 1)
@@ -4581,7 +4584,10 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 		{
 			int count = atoi(cmd_info->argv[0]);
 			if(count == 0)
-				return CMDS_ERR_ZERO_COUNT;
+			{
+				ui_sb_err("Count argument can't be zero");
+				return CMDS_ERR_CUSTOM;
+			}
 			flist_sel_count(curr_view, cmd_info->end, count);
 		}
 		else

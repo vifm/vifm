@@ -540,9 +540,6 @@ execute_command(view_t *view, const char command[], int menu)
 		case CMDS_ERR_UDF_IS_AMBIGUOUS:
 			ui_sb_err("Ambiguous use of user-defined command");
 			break;
-		case CMDS_ERR_ZERO_COUNT:
-			ui_sb_err("Zero count");
-			break;
 		case CMDS_ERR_INVALID_ARG:
 			ui_sb_err("Invalid argument");
 			break;

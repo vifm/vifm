@@ -796,6 +796,19 @@ TEST(echo_reports_all_errors)
 	assert_true(strchr(ui_sb_last(), '\n') != NULL);
 }
 
+TEST(zero_count_is_rejected)
+{
+	const char *expected = "Count argument can't be zero";
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("delete a 0", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("yank a 0", &lwin, CIT_COMMAND));
+	assert_string_equal(expected, ui_sb_last());
+}
+
 static void
 silent_key(key_info_t key_info, keys_info_t *keys_info)
 {
