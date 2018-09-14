@@ -93,6 +93,9 @@ TEST(user_add)
 	assert_int_equal(0, execute_cmd("command udf a"));
 
 	assert_int_equal(CMDS_ERR_INCORRECT_NAME, execute_cmd("command ! a"));
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, execute_cmd("command ? a"));
+
+	assert_int_equal(CMDS_ERR_INCORRECT_NAME, execute_cmd("command a# a"));
 
 	assert_int_equal(0, execute_cmd("command udf! a"));
 
@@ -105,6 +108,11 @@ TEST(user_add)
 	assert_int_equal(CMDS_ERR_INCORRECT_NAME, execute_cmd("command u0d1f2 a"));
 
 	assert_int_equal(CMDS_ERR_INCORRECT_NAME, execute_cmd("command 0u0d1f2 a"));
+}
+
+TEST(user_defined_name_cannot_be_empty)
+{
+	assert_failure(execute_cmd("command '' a"));
 }
 
 TEST(user_exec)
@@ -169,6 +177,28 @@ TEST(cust_sep_is_resolved_correctly)
 	assert_success(execute_cmd("s:a:b:g"));
 	assert_false(shell_called);
 	assert_true(substitute_called);
+}
+
+TEST(cant_register_usercmd_twice)
+{
+	cmd_add_t command = {
+	  .name = "<USERCMD>",   .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = HAS_RANGE,
+	  .handler = &dummy_cmd, .min_args = 0, .max_args = 0,
+	};
+
+	assert_failure(add_builtin_cmd("<USERCMD>", 0, &command));
+}
+
+TEST(cant_register_same_builtin_twice)
+{
+	cmd_add_t command = {
+	  .name = "tr",          .abbr = NULL,  .id = -1,      .descr = "descr",
+	  .flags = HAS_RANGE,
+	  .handler = &dummy_cmd, .min_args = 0, .max_args = 0,
+	};
+
+	assert_failure(add_builtin_cmd("tr", 0, &command));
 }
 
 static int

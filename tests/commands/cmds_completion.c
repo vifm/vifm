@@ -216,6 +216,13 @@ TEST(windo_windo_completion)
 	free(completion);
 }
 
+TEST(broken_range_after_prefix_breaks_completion)
+{
+	vle_compl_reset();
+	assert_int_equal(5, complete_cmd("windo #windo ", NULL));
+	assert_int_equal(0, vle_compl_get_count());
+}
+
 TEST(windo_args_completion)
 {
 	char *completion;

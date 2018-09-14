@@ -6,6 +6,8 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/macros.h"
 
+#include "suite.h"
+
 static int dummy_handler(const cmd_info_t* cmd_info);
 static int goto_cmd(const cmd_info_t* cmd_info);
 static int exec_cmd(const cmd_info_t* cmd_info);
@@ -487,6 +489,8 @@ TEST(custom_separator)
 	assert_int_equal(1, cmdi.argc);
 	assert_int_equal(0, execute_cmd("s/some/thing"));
 	assert_int_equal(2, cmdi.argc);
+	assert_int_equal(0, execute_cmd("s/some/thing"));
+	assert_int_equal(2, cmdi.argc);
 	assert_int_equal(0, execute_cmd("s/some/thing/g"));
 	assert_int_equal(3, cmdi.argc);
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("s/some/thing/g/j"));
@@ -760,6 +764,22 @@ TEST(escaping_is_ignored_for_raw_arguments)
 	assert_success(execute_cmd("edia \\ something"));
 	assert_int_equal(2, cmdi.argc);
 	assert_string_equal("\\", arg);
+}
+
+TEST(bad_mark)
+{
+	assert_int_equal(CMDS_ERR_INVALID_RANGE, execute_cmd("'1,'2file"));
+}
+
+TEST(bad_range)
+{
+	assert_int_equal(CMDS_ERR_INVALID_CMD, execute_cmd("#file"));
+}
+
+TEST(inversed_range)
+{
+	swap_range = 0;
+	assert_int_equal(CMDS_ERR_INVALID_RANGE, execute_cmd("20,10file"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

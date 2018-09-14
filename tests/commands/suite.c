@@ -12,7 +12,7 @@
 
 static int complete_args(int id, const cmd_info_t *cmd_info, int arg_pos,
 		void *extra_arg);
-static int swap_range(void);
+static int should_swap_range(void);
 static int resolve_mark(char mark);
 static char * expand_macros(const char str[], int for_shell, int *usr1,
 		int *usr2);
@@ -28,7 +28,7 @@ cmd_handler user_cmd_handler;
 
 cmds_conf_t cmds_conf = {
 	.complete_args = &complete_args,
-	.swap_range = &swap_range,
+	.swap_range = &should_swap_range,
 	.resolve_mark = &resolve_mark,
 	.expand_macros = &expand_macros,
 	.expand_envvars = &expand_envvars,
@@ -36,6 +36,8 @@ cmds_conf_t cmds_conf = {
 	.select_range = &select_range,
 	.skip_at_beginning = &skip_at_beginning,
 };
+
+int swap_range;
 
 DEFINE_SUITE();
 
@@ -67,6 +69,7 @@ SETUP()
 
 	add_builtin_commands(&command, 1);
 
+	swap_range = 1;
 	user_cmd_handler = &def_usercmd_cmd;
 }
 
@@ -95,9 +98,9 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 }
 
 static int
-swap_range(void)
+should_swap_range(void)
 {
-	return 1;
+	return swap_range;
 }
 
 static int
