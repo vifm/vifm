@@ -444,6 +444,8 @@ struct view_t
 	uint64_t last_reload; /* Time of last [full] reload. */
 
 	int on_slow_fs; /* Whether current directory has access penalties. */
+	int has_dups;   /* Whether current directory has duplicated file entries (FS
+	                   issue). */
 };
 
 extern view_t lwin;

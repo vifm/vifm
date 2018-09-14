@@ -133,6 +133,7 @@ static int add_file_entry_to_view(const char name[], const void *data,
 		void *param);
 static void sort_dir_list(int msg, view_t *view);
 static void merge_lists(view_t *view, dir_entry_t *entries, int len);
+TSTATIC void check_file_uniqueness(view_t *view);
 static void add_to_trie(trie_t *trie, view_t *view, dir_entry_t *entry);
 static int is_in_trie(trie_t *trie, view_t *view, dir_entry_t *entry,
 		void **data);
@@ -206,6 +207,7 @@ init_flist(view_t *view)
 	view->history_num = 0;
 	view->history_pos = 0;
 	view->on_slow_fs = 0;
+	view->has_dups = 0;
 
 	view->matches = 0;
 
@@ -1116,6 +1118,8 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 static void
 on_location_change(view_t *view, int force)
 {
+	view->has_dups = 0;
+
 	free_dir_entries(view, &view->local_filter.entries,
 			&view->local_filter.entry_count);
 
@@ -2212,6 +2216,8 @@ start_dir_list_change(view_t *view, dir_entry_t **entries, int *len, int reload)
 static void
 finish_dir_list_change(view_t *view, dir_entry_t *entries, int len)
 {
+	check_file_uniqueness(view);
+
 	if(entries != NULL)
 	{
 		merge_lists(view, entries, len);
@@ -2341,25 +2347,56 @@ merge_lists(view_t *view, dir_entry_t *entries, int len)
 	trie_free(prev_names);
 }
 
-/* Adds view entry into the trie mapping its name to entry structure. */
+/* Checks that entries don't have the same name (for non-cv).  And if there are
+ * duplicates shows a warning to the user (shown each time broken directory is
+ * entered) and drops duplicates. */
+TSTATIC void
+check_file_uniqueness(view_t *view)
+{
+	trie_t *file_names = trie_create();
+
+	int had_dups = view->has_dups;
+
+	int i;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		add_to_trie(file_names, view, &view->dir_entry[i]);
+	}
+
+	trie_free(file_names);
+
+	if(view->has_dups)
+	{
+		(void)exclude_temporary_entries(view);
+		if(!had_dups)
+		{
+			show_error_msg("Broken File System", "Underlying file system seems to "
+					"report duplicated file names.  Only one entry will be shown.");
+		}
+	}
+}
+
+/* Adds view entry into the trie mapping its name to entry structure.
+ * Duplicated entries of a non-custom view are marked as temporary. */
 static void
 add_to_trie(trie_t *trie, view_t *view, dir_entry_t *entry)
 {
-	int error;
-
 	if(flist_custom_active(view))
 	{
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
-		error = trie_set(trie, full_path, entry);
-	}
-	else
-	{
-		error = trie_set(trie, entry->name, entry);
+
+		int error = trie_set(trie, full_path, entry);
+		assert(error == 0 && "Duplicated file names in the list?");
+		(void)error;
+		return;
 	}
 
-	assert(error == 0 && "Duplicated file names in the list?");
-	(void)error;
+	if(trie_set(trie, entry->name, entry) != 0)
+	{
+		entry->temporary = 1;
+		view->has_dups = 1;
+	}
 }
 
 /* Looks up entry in the trie by its name.  Retrieves directory entry stored by
