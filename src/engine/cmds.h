@@ -150,8 +150,8 @@ enum
 	HAS_BG_FLAG          = 0x0020, /* Background (can have " &" at the end). */
 	HAS_COMMENT          = 0x0040, /* Trailing comment is allowed. */
 
-	/* HAS_RAW_ARGS flag can't be combined with the other two, but they can be
-	 * specified at the same time. */
+	/* HAS_RAW_ARGS flag can't be combined with either of the other two, but those
+	 * two can be specified at the same time. */
 	HAS_RAW_ARGS         = 0x0080, /* No special processing of arguments. */
 	HAS_REGEXP_ARGS      = 0x0100, /* Process /.../-arguments. */
 	HAS_QUOTED_ARGS      = 0x0200, /* Process '- and "-quoted args. */
@@ -239,6 +239,10 @@ char * get_last_argument(const char cmd[], int quotes, size_t *len);
 /* Last element is followed by a NULL */
 char ** list_udf(void);
 
+/* Prints a table that includes commands that start with the given prefix into
+ * a multiline string (all lines except for the last one has new line
+ * character).  Returns the string or NULL if there are no command with that
+ * prefix. */
 char * list_udf_content(const char beginning[]);
 
 /* Skips at most one argument of the string.  Returns pointer to the next

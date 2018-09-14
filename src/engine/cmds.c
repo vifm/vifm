@@ -73,7 +73,7 @@ static int command_cmd(const cmd_info_t *cmd_info);
 static void init_command_flags(cmd_t *cmd, int flags);
 static const char * get_user_cmd_name(const char cmd[], char buf[],
 		size_t buf_len);
-static int is_correct_name(const char name[]);
+static int is_valid_udc_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
@@ -86,17 +86,20 @@ init_cmds(int udf, cmds_conf_t *conf)
 {
 	static cmd_add_t commands[] = {
 		{
-			.name = "comclear",   .abbr = "comc", .handler = comclear_cmd,   .id = COMCLEAR_CMD_ID,
+			.name = "comclear",        .abbr = "comc", .handler = comclear_cmd,
+			.id = COMCLEAR_CMD_ID,
 			.descr = "remove all user-defined :commands",
 			.flags = 0,
 			.min_args = 0,             .max_args = 0,
 		}, {
-			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,
+			.name = "command",         .abbr = "com",  .handler = command_cmd,
+			.id = COMMAND_CMD_ID,
 			.descr = "display/define user-defined :command",
 			.flags = HAS_EMARK,
 			.min_args = 0,             .max_args = NOT_DEF,
 		}, {
-			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd, .id = DELCOMMAND_CMD_ID,
+			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd,
+			.id = DELCOMMAND_CMD_ID,
 			.descr = "undefine user-defined :command",
 			.flags = HAS_EMARK,
 			.min_args = 1,             .max_args = 1,
@@ -973,7 +976,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	args = vle_cmds_at_arg(args);
 	if(args[0] == '\0')
 		return CMDS_ERR_TOO_FEW_ARGS;
-	else if(!is_correct_name(cmd_name))
+	else if(!is_valid_udc_name(cmd_name))
 		return CMDS_ERR_INCORRECT_NAME;
 
 	len = strlen(cmd_name);
@@ -1008,7 +1011,7 @@ command_cmd(const cmd_info_t *cmd_info)
 			return CMDS_ERR_NEED_BANG;
 		free(cur->name);
 		free(cur->cmd);
-    new = cur;
+		new = cur;
 	}
 	else
 	{
@@ -1079,7 +1082,7 @@ get_user_cmd_name(const char cmd[], char buf[], size_t buf_len)
 
 /* Checks that the name is a valid name for a user-defined command. */
 static int
-is_correct_name(const char name[])
+is_valid_udc_name(const char name[])
 {
 	assert(name[0] != '\0' && "Command name can't be empty");
 
