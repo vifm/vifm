@@ -302,6 +302,7 @@ void flist_free_cache(view_t *view, cached_entries_t *cache);
 void flist_update_origins(view_t *view, const char from[], char to[]);
 
 TSTATIC_DEFS(
+	void check_file_uniqueness(view_t *view);
 	void pick_cd_path(view_t *view, const char base_dir[], const char path[],
 		int *updir, char buf[], size_t buf_size);
 )

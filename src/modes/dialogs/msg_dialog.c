@@ -410,7 +410,8 @@ get_control_msg(Dialog msg_kind, int global_skip)
 	}
 	else if(global_skip)
 	{
-		return "Press Return to continue or Ctrl-C to skip other error messages";
+		return "Press Return to continue or "
+		       "Ctrl-C to skip its future error messages";
 	}
 
 	return "Press Return to continue";

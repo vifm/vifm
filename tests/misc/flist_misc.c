@@ -8,6 +8,7 @@
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/cancellation.h"
+#include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/compare.h"
@@ -404,6 +405,24 @@ TEST(root_path_does_not_get_more_than_one_slash, IF(not_windows))
 	assert_string_equal("/", name);
 
 	memcpy(&cfg.type_decs, &type_decs_brackets, sizeof(cfg.type_decs));
+}
+
+TEST(duplicated_entries_detected)
+{
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.top_line = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("lfile0");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("lfile0");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	check_file_uniqueness(&lwin);
+
+	assert_int_equal(1, lwin.list_rows);
+	assert_true(lwin.has_dups);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

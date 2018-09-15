@@ -143,6 +143,10 @@
 	won't be called, due to existence of a builtin that accepts custom
 	separators (they have higher priority than user-defined commands).
 
+	Issue a warning if file system lists several files with identical names in
+	the same directory.  It used to be assumed that it can't happen.  Thanks to
+	Jose Riha (a.k.a. jose1711).
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 
