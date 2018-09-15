@@ -147,6 +147,9 @@
 	the same directory.  It used to be assumed that it can't happen.  Thanks to
 	Jose Riha (a.k.a. jose1711).
 
+	Make :cabbrev and :cnoreabbrev always treat bar (`|`) as part of their
+	arguments, just like :*map commands do.  Thanks to filterfalse.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

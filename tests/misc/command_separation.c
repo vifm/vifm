@@ -287,6 +287,21 @@ TEST(bar_after_cmd_with_opt_rarg_is_a_separator)
 	free_string_array(cmds);
 }
 
+TEST(abbr_consumes_bar)
+{
+	char **cmds;
+
+	cmds = break_cmdline("cabbrev a before|after", 0);
+	assert_string_equal("cabbrev a before|after", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+	free_string_array(cmds);
+
+	cmds = break_cmdline("cnoreabbrev a before|after", 0);
+	assert_string_equal("cnoreabbrev a before|after", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+	free_string_array(cmds);
+}
+
 static void
 free_string_array(char *array[])
 {

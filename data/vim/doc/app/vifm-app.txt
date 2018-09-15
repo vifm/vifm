@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 7
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1120,7 +1120,9 @@ These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
     :autocmd
+    :cabbrev
     :cmap
+    :cnoreabbrev
     :cnoremap
     :command
     :dmap
