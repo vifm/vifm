@@ -789,7 +789,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &trashes_cmd,     .min_args = 0,   .max_args = 0, },
 	{ .name = "tree",              .abbr = NULL,    .id = -1,
 	  .descr = "display filesystem as a tree",
-	  .flags = HAS_COMMENT,
+	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &tree_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "undolist",          .abbr = "undol", .id = -1,
 	  .descr = "display list of operations",
@@ -4130,7 +4130,17 @@ trashes_cmd(const cmd_info_t *cmd_info)
 static int
 tree_cmd(const cmd_info_t *cmd_info)
 {
-	(void)flist_load_tree(curr_view, flist_get_dir(curr_view));
+	int in_tree = flist_custom_active(curr_view)
+	           && cv_tree(curr_view->custom.type);
+
+	if(cmd_info->emark && in_tree)
+	{
+		cd_updir(curr_view, 1);
+	}
+	else
+	{
+		(void)flist_load_tree(curr_view, flist_get_dir(curr_view));
+	}
 	return 0;
 }
 

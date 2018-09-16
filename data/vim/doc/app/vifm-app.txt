@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 15
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 16
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2288,7 +2288,8 @@ yet supported) and might be changed in future releases, or get an alias.
 :trashes?
     same as :trashes, but also displays size of each trash directory.
 
-:tree                                          *vifm-:tree*
+                                               *vifm-:tree*
+:tree
     turn pane into tree view with current directory as its root.  The tree
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
@@ -2302,6 +2303,8 @@ yet supported) and might be changed in future releases, or get an alias.
 
     Tree structure is incompatible with alternative representations, so
     values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
+:tree!
+    toggle current view in and out of tree mode.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.

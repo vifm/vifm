@@ -150,6 +150,8 @@
 	Make :cabbrev and :cnoreabbrev always treat bar (`|`) as part of their
 	arguments, just like :*map commands do.  Thanks to filterfalse.
 
+	Make :tree! toggle view in and out of tree mode.  Thanks to gammaray.
+
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).
 

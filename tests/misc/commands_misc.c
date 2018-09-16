@@ -619,6 +619,30 @@ TEST(zero_count_is_rejected)
 	assert_string_equal(expected, ui_sb_last());
 }
 
+TEST(tree_command)
+{
+	strcpy(lwin.curr_dir, sandbox);
+
+	/* :tree enters tree mode. */
+	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+	assert_true(cv_tree(lwin.custom.type));
+
+	/* Repeating :tree leaves view in tree mode. */
+	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+	assert_true(cv_tree(lwin.custom.type));
+
+	/* :tree! can leave tree mode. */
+	assert_success(exec_commands("tree!", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+
+	/* :tree! can enter tree mode. */
+	assert_success(exec_commands("tree!", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+	assert_true(cv_tree(lwin.custom.type));
+}
+
 static void
 silent_key(key_info_t key_info, keys_info_t *keys_info)
 {
