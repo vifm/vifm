@@ -81,6 +81,8 @@
 	user-defined mappings and builtin keys in favour of user-defined mappings.
 	Thanks to Paweł Smolak (a.k.a. psmolak).
 
+	Added :regular command that leaves custom view.  Thanks to gammaray.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

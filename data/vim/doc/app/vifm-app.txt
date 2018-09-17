@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 16
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2063,6 +2063,9 @@ order using the '.' operator.  Any whitespace is ignored.
 :reg[isters] list
     display the contents of the numbered and named registers that are
     mentioned in list (for example "az to display "", "a and "z content).
+
+:regular                                       *vifm-:regular*
+    switch to regular view leaving custom view.
 
                                                *vifm-:rename*
 :[range]rename[!]

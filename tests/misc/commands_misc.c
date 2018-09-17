@@ -643,6 +643,24 @@ TEST(tree_command)
 	assert_true(cv_tree(lwin.custom.type));
 }
 
+TEST(regular_command)
+{
+	strcpy(lwin.curr_dir, sandbox);
+
+	/* :tree enters tree mode. */
+	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+	assert_true(cv_tree(lwin.custom.type));
+
+	/* :regular leaves tree mode. */
+	assert_success(exec_commands("regular", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+
+	/* Repeated :regular does nothing. */
+	assert_success(exec_commands("regular", &lwin, CIT_COMMAND));
+	assert_false(flist_custom_active(&lwin));
+}
+
 static void
 silent_key(key_info_t key_info, keys_info_t *keys_info)
 {

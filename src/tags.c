@@ -318,6 +318,7 @@ const char *tags[] = {
 	"vifm-:redraw",
 	"vifm-:reg",
 	"vifm-:registers",
+	"vifm-:regular",
 	"vifm-:rename",
 	"vifm-:restart",
 	"vifm-:restore",
