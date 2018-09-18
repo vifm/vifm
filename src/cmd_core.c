@@ -972,6 +972,7 @@ get_cmd_args_type(const char cmd[])
 		case COMMAND_CMD_ID:
 		case COM_AUTOCMD:
 		case COM_EXECUTE:
+		case COM_CABBR:
 		case COM_CMAP:
 		case COM_CNOREMAP:
 		case COM_COMMAND:

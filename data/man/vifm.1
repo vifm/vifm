@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 7, 2018" "vifm 0.9.1"
+.TH VIFM 1 "September 17, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1272,7 +1272,9 @@ These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
     :autocmd
+    :cabbrev
     :cmap
+    :cnoreabbrev
     :cnoremap
     :command
     :dmap
@@ -2433,6 +2435,11 @@ display menu with registers content.
 display the contents of the numbered and named registers that are mentioned in
 list (for example "az to display "", "a and "z content).
 .TP
+.BI "                                         :regular"
+.TP
+.BI :regular
+.TP
+switch to regular view leaving custom view.
 .BI "                                         :rename"
 .TP
 .BI :[range]rename[!]
@@ -2752,6 +2759,9 @@ command that changes directory will also do, in particular, `:cd ..`.
 
 Tree structure is incompatible with alternative representations, so values of
 \'lsview' and 'millerview' options are ignored.
+.TP
+.BI :tree!
+toggle current view in and out of tree mode.
 .TP
 .BI "                                         :undolist"
 .TP

@@ -81,6 +81,8 @@
 	user-defined mappings and builtin keys in favour of user-defined mappings.
 	Thanks to Paweł Smolak (a.k.a. psmolak).
 
+	Added :regular command that leaves custom view.  Thanks to gammaray.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 
@@ -146,6 +148,11 @@
 	Issue a warning if file system lists several files with identical names in
 	the same directory.  It used to be assumed that it can't happen.  Thanks to
 	Jose Riha (a.k.a. jose1711).
+
+	Make :cabbrev and :cnoreabbrev always treat bar (`|`) as part of their
+	arguments, just like :*map commands do.  Thanks to filterfalse.
+
+	Make :tree! toggle view in and out of tree mode.  Thanks to gammaray.
 
 	Fixed preview command not being run with correct working directory on
 	startup (e.g., when preview was on in vifminfo).

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 7
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1120,7 +1120,9 @@ These commands see '|' as part of their arguments even when it's escaped:
 
     :[range]!
     :autocmd
+    :cabbrev
     :cmap
+    :cnoreabbrev
     :cnoremap
     :command
     :dmap
@@ -2062,6 +2064,9 @@ order using the '.' operator.  Any whitespace is ignored.
     display the contents of the numbered and named registers that are
     mentioned in list (for example "az to display "", "a and "z content).
 
+:regular                                       *vifm-:regular*
+    switch to regular view leaving custom view.
+
                                                *vifm-:rename*
 :[range]rename[!]
     rename files using vi to edit names. ! means go recursively through
@@ -2286,7 +2291,8 @@ yet supported) and might be changed in future releases, or get an alias.
 :trashes?
     same as :trashes, but also displays size of each trash directory.
 
-:tree                                          *vifm-:tree*
+                                               *vifm-:tree*
+:tree
     turn pane into tree view with current directory as its root.  The tree
     view is implemented on top of a custom view, but is automatically kept in
     sync with file system state and considers all the filters.  Thus the
@@ -2300,6 +2306,8 @@ yet supported) and might be changed in future releases, or get an alias.
 
     Tree structure is incompatible with alternative representations, so
     values of |vifm-'lsview'| and |vifm-'millerview'| options are ignored.
+:tree!
+    toggle current view in and out of tree mode.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.

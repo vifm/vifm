@@ -406,6 +406,8 @@ tabm
 tabmo
 tabmov
 tabmove
+tree
+regular
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine

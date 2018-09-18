@@ -241,6 +241,7 @@ static int qnoremap_cmd(const cmd_info_t *cmd_info);
 static int qunmap_cmd(const cmd_info_t *cmd_info);
 static int redraw_cmd(const cmd_info_t *cmd_info);
 static int registers_cmd(const cmd_info_t *cmd_info);
+static int regular_cmd(const cmd_info_t *cmd_info);
 static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
 static int restore_cmd(const cmd_info_t *cmd_info);
@@ -686,6 +687,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display registers",
 	  .flags = 0,
 	  .handler = &registers_cmd,   .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "regular",           .abbr = NULL,    .id = -1,
+	  .descr = "switch to regular view leaving custom view",
+	  .flags = HAS_COMMENT,
+	  .handler = &regular_cmd,     .min_args = 0,   .max_args = 0, },
 	{ .name = "rename",            .abbr = NULL,    .id = COM_RENAME,
 	  .descr = "rename files",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT
@@ -789,7 +794,7 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &trashes_cmd,     .min_args = 0,   .max_args = 0, },
 	{ .name = "tree",              .abbr = NULL,    .id = -1,
 	  .descr = "display filesystem as a tree",
-	  .flags = HAS_COMMENT,
+	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &tree_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "undolist",          .abbr = "undol", .id = -1,
 	  .descr = "display list of operations",
@@ -3504,6 +3509,17 @@ registers_cmd(const cmd_info_t *cmd_info)
 	return show_register_menu(curr_view, reg_names) != 0;
 }
 
+/* Switches to regular view leaving custom view. */
+static int
+regular_cmd(const cmd_info_t *cmd_info)
+{
+	if(flist_custom_active(curr_view))
+	{
+		cd_updir(curr_view, 1);
+	}
+	return 0;
+}
+
 /* Renames selected files of the current view. */
 static int
 rename_cmd(const cmd_info_t *cmd_info)
@@ -4130,7 +4146,17 @@ trashes_cmd(const cmd_info_t *cmd_info)
 static int
 tree_cmd(const cmd_info_t *cmd_info)
 {
-	(void)flist_load_tree(curr_view, flist_get_dir(curr_view));
+	int in_tree = flist_custom_active(curr_view)
+	           && cv_tree(curr_view->custom.type);
+
+	if(cmd_info->emark && in_tree)
+	{
+		cd_updir(curr_view, 1);
+	}
+	else
+	{
+		(void)flist_load_tree(curr_view, flist_get_dir(curr_view));
+	}
 	return 0;
 }
 

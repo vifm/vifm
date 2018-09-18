@@ -4,9 +4,8 @@
 #include <stdlib.h> /* free() */
 
 #include "../../src/engine/cmds.h"
+#include "../../src/utils/string_array.h"
 #include "../../src/cmd_core.h"
-
-static void free_string_array(char *array[]);
 
 SETUP()
 {
@@ -142,7 +141,7 @@ TEST(whole_line_command_cmdline_is_not_broken)
 	assert_string_equal("!echo hi|less", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(bar_is_skipped_when_not_surrounded_with_spaces)
@@ -153,7 +152,7 @@ TEST(bar_is_skipped_when_not_surrounded_with_spaces)
 	assert_string_equal("endif", cmds[1]);
 	assert_string_equal(NULL, cmds[2]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(bar_escaping_is_preserved_for_whole_line_commands)
@@ -163,7 +162,7 @@ TEST(bar_escaping_is_preserved_for_whole_line_commands)
 	assert_string_equal("!\\|\\||\\|\\|", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(bar_escaping_is_preserved_for_expression_commands)
@@ -173,7 +172,7 @@ TEST(bar_escaping_is_preserved_for_expression_commands)
 	assert_string_equal("echo 1 \\|| 2", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(comments_and_bar)
@@ -187,7 +186,7 @@ TEST(comments_and_bar)
 	assert_string_equal("echo 1 \"comment | echo 2", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(no_space_before_first_arg)
@@ -201,7 +200,7 @@ TEST(no_space_before_first_arg)
 			cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(empty_command_at_front)
@@ -218,7 +217,7 @@ TEST(empty_command_at_front)
 	assert_string_equal("endif", cmds[3]);
 	assert_string_equal(NULL, cmds[4]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(custom_separator_is_parsed_correctly)
@@ -228,7 +227,7 @@ TEST(custom_separator_is_parsed_correctly)
 	assert_string_equal("subs!n//|//m!g", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(bar_inside_rarg_is_not_a_separator)
@@ -238,7 +237,7 @@ TEST(bar_inside_rarg_is_not_a_separator)
 	assert_string_equal("tr/ ?<>\\\\:*|\"/_", cmds[0]);
 	assert_string_equal(NULL, cmds[1]);
 
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(bar_after_rarg_is_a_separator)
@@ -249,25 +248,25 @@ TEST(bar_after_rarg_is_a_separator)
 	assert_string_equal("select /a|b/ ", cmds[0]);
 	assert_string_equal("echo 'hi'", cmds[1]);
 	assert_string_equal(NULL, cmds[2]);
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 
 	cmds = break_cmdline("filter /a|b/ | echo 'hi'", 0);
 	assert_string_equal("filter /a|b/ ", cmds[0]);
 	assert_string_equal("echo 'hi'", cmds[1]);
 	assert_string_equal(NULL, cmds[2]);
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 
 	cmds = break_cmdline("s/a/b/g| echo 'hi'", 0);
 	assert_string_equal("s/a/b/g", cmds[0]);
 	assert_string_equal("echo 'hi'", cmds[1]);
 	assert_string_equal(NULL, cmds[2]);
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 
 	cmds = break_cmdline("s!a!b!g| echo 'hi'", 0);
 	assert_string_equal("s!a!b!g", cmds[0]);
 	assert_string_equal("echo 'hi'", cmds[1]);
 	assert_string_equal(NULL, cmds[2]);
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 TEST(bar_after_cmd_with_opt_rarg_is_a_separator)
@@ -278,24 +277,28 @@ TEST(bar_after_cmd_with_opt_rarg_is_a_separator)
 	assert_string_equal("select *.c ", cmds[0]);
 	assert_string_equal("echo 'hi'", cmds[1]);
 	assert_string_equal(NULL, cmds[2]);
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 
 	cmds = break_cmdline("filter *.c | echo 'hi'", 0);
 	assert_string_equal("filter *.c ", cmds[0]);
 	assert_string_equal("echo 'hi'", cmds[1]);
 	assert_string_equal(NULL, cmds[2]);
-	free_string_array(cmds);
+	free_string_array(cmds, count_strings(cmds));
 }
 
-static void
-free_string_array(char *array[])
+TEST(abbr_consumes_bar)
 {
-	void *free_this = array;
-	while(*array != NULL)
-	{
-		free(*array++);
-	}
-	free(free_this);
+	char **cmds;
+
+	cmds = break_cmdline("cabbrev a before|after", 0);
+	assert_string_equal("cabbrev a before|after", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+	free_string_array(cmds, count_strings(cmds));
+
+	cmds = break_cmdline("cnoreabbrev a before|after", 0);
+	assert_string_equal("cnoreabbrev a before|after", cmds[0]);
+	assert_string_equal(NULL, cmds[1]);
+	free_string_array(cmds, count_strings(cmds));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
