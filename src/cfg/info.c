@@ -999,6 +999,7 @@ write_options(FILE *fp)
 	fprintf(fp, "=%stitle\n", cfg.set_title ? "" : "no");
 	fprintf(fp, "=lines=%d\n", cfg.lines);
 	fprintf(fp, "=locateprg=%s\n", escape_spaces(cfg.locate_prg));
+	fprintf(fp, "=mediaprg=%s\n", escape_spaces(cfg.media_prg));
 	fprintf(fp, "=mintimeoutlen=%d\n", cfg.min_timeout_len);
 	fprintf(fp, "=%squickview\n", curr_stats.preview.on ? "" : "no");
 	fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));

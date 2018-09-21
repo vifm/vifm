@@ -83,6 +83,9 @@
 
 	Added :regular command that leaves custom view.  Thanks to gammaray.
 
+	Added 'mediaprg' option that can be used to specify helper for managing
+	removable media.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

@@ -77,6 +77,7 @@ const char *tags[] = {
 	"vifm-'ls'",
 	"vifm-'lsoptions'",
 	"vifm-'lsview'",
+	"vifm-'mediaprg'",
 	"vifm-'milleroptions'",
 	"vifm-'millerview'",
 	"vifm-'mintimeoutlen'",

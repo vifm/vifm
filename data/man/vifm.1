@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 17, 2018" "vifm 0.9.1"
+.TH VIFM 1 "September 21, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3858,7 +3858,34 @@ the value of this option.
 
 Optional %u or %U macro could be used (if both specified %U is chosen) to force
 redirection to custom or unsorted custom view respectively.
+.TP
+.BI 'mediaprg'
+type: string
+.br
+default: ""
+.br
+{only for *nix}
+.br
+Specifies command to be used to manage media devices.
 
+The command can be passed the following parameters:
+ - list           -- list media
+ - mount {device} -- mount a device
+ - unmount {path} -- unmount given mount point
+
+The output of `list` subcommand is parsed in search of lines that start with
+one of the following prefixes:
+ - device=      - specifies device path (e.g., "/dev/sde")
+ - label=       - specifies optional device label (e.g., "Memory card")
+ - mount-point= - specifies a mount point (can be absent or appear more than
+once)
+
+All other lines are ignored.  Each `device=` starts a new section describing a
+device which should include two other possible prefixes.
+
+`list` subcommand is assumed to always succeed, while error stream and exit
+code of `mount` and `unmount` is taken into account to determine whether
+operation was performed successfully.
 .TP
 .BI 'lsoptions'
 type: string list

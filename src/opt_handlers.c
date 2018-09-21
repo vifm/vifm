@@ -144,6 +144,9 @@ static void iooptions_handler(OPT_OP op, optval_t val);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void lines_handler(OPT_OP op, optval_t val);
 static void locateprg_handler(OPT_OP op, optval_t val);
+#ifndef _WIN32
+static void mediaprg_handler(OPT_OP op, optval_t val);
+#endif
 static void mintimeoutlen_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(view_t *view);
 static void quickview_handler(OPT_OP op, optval_t val);
@@ -675,6 +678,12 @@ options[] = {
 	  OPT_STR, 0, NULL, &locateprg_handler, NULL,
 	  { .ref.str_val = &cfg.locate_prg },
 	},
+#ifndef _WIN32
+	{ "mediaprg", "", "helper for :media menu",
+	  OPT_STR, 0, NULL, &mediaprg_handler, NULL,
+	  { .ref.str_val = &cfg.media_prg },
+	},
+#endif
 	{ "mintimeoutlen", "", "delay between input polls",
 	  OPT_INT, 0, NULL, &mintimeoutlen_handler, NULL,
 	  { .ref.int_val = &cfg.min_timeout_len },
@@ -2148,11 +2157,23 @@ lines_handler(OPT_OP op, optval_t val)
 	set_option("lines", val, OPT_GLOBAL);
 }
 
+/* Handles updates of the 'locateprg' option. */
 static void
 locateprg_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.locate_prg, val.str_val);
 }
+
+#ifndef _WIN32
+
+/* Handles updates of the 'mediaprg' option. */
+static void
+mediaprg_handler(OPT_OP op, optval_t val)
+{
+	(void)replace_string(&cfg.media_prg, val.str_val);
+}
+
+#endif
 
 /* Minimum period on waiting for the input.  Works together with timeoutlen. */
 static void

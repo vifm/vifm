@@ -241,6 +241,7 @@ typedef struct config_t
 	char *grep_prg;    /* grep tool calling pattern. */
 	char *locate_prg;  /* locate tool calling pattern. */
 	char *delete_prg;  /* File removal application. */
+	char *media_prg;   /* Helper for managing media devices. */
 
 	/* Message shortening controlled by 'shortmess'. */
 	int trunc_normal_sb_msgs;  /* Truncate normal status bar msgs if needed. */
