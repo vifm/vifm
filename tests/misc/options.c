@@ -25,34 +25,19 @@ static int ncols;
 
 SETUP()
 {
-	curr_view = &lwin;
-	other_view = &rwin;
-
 	init_commands();
 
-	lwin.dir_entry = NULL;
-	lwin.list_rows = 0;
-	lwin.window_rows = 1;
-	lwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(&lwin, lwin.sort);
+	view_setup(&lwin);
 	lwin.columns = columns_create();
-	lwin.view_columns = strdup("");
 	lwin.num_width_g = lwin.num_width = 4;
-	lwin.ls_view_g = lwin.ls_view = 0;
 	lwin.hide_dot_g = lwin.hide_dot = 1;
-	update_string(&lwin.sort_groups, "");
-	update_string(&lwin.sort_groups_g, "");
+	curr_view = &lwin;
 
-	rwin.dir_entry = NULL;
-	rwin.list_rows = 0;
-	rwin.window_rows = 1;
-	rwin.sort[0] = SK_NONE;
-	ui_view_sort_list_ensure_well_formed(&rwin, rwin.sort);
+	view_setup(&rwin);
 	rwin.columns = columns_create();
-	rwin.view_columns = strdup("");
 	rwin.num_width_g = rwin.num_width = 4;
-	rwin.ls_view_g = rwin.ls_view = 0;
 	rwin.hide_dot_g = rwin.hide_dot = 1;
+	other_view = &rwin;
 
 	/* Name+size matches default column view setting ("-{name},{}"). */
 	columns_setup_column(SK_BY_NAME);
@@ -68,15 +53,13 @@ TEARDOWN()
 
 	vle_cmds_reset();
 
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+
 	columns_free(lwin.columns);
 	lwin.columns = NULL;
-	update_string(&lwin.view_columns, NULL);
-	update_string(&lwin.sort_groups, NULL);
-	update_string(&lwin.sort_groups_g, NULL);
-
 	columns_free(rwin.columns);
 	rwin.columns = NULL;
-	update_string(&rwin.view_columns, NULL);
 
 	columns_teardown();
 }
