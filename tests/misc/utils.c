@@ -151,6 +151,7 @@ view_setup(view_t *view)
 	view->invert = 1;
 	view->selected_files = 0;
 	view->ls_view = 0;
+	view->ls_view_g = 0;
 	view->window_rows = 0;
 	view->run_size = 1;
 
