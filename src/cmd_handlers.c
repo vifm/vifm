@@ -217,6 +217,9 @@ static int lstrash_cmd(const cmd_info_t *cmd_info);
 static int map_cmd(const cmd_info_t *cmd_info);
 static int mark_cmd(const cmd_info_t *cmd_info);
 static int marks_cmd(const cmd_info_t *cmd_info);
+#ifndef _WIN32
+static int media_cmd(const cmd_info_t *cmd_info);
+#endif
 static int messages_cmd(const cmd_info_t *cmd_info);
 static int mkdir_cmd(const cmd_info_t *cmd_info);
 static int mmap_cmd(const cmd_info_t *cmd_info);
@@ -589,6 +592,12 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display marks",
 	  .flags = HAS_COMMENT,
 	  .handler = &marks_cmd,       .min_args = 0,   .max_args = NOT_DEF, },
+#ifndef _WIN32
+	{ .name = "media",             .abbr = NULL,    .id = -1,
+	  .descr = "list and manage media devices",
+	  .flags = HAS_COMMENT,
+	  .handler = &media_cmd,       .min_args = 0,   .max_args = 0, },
+#endif
 	{ .name = "messages",          .abbr = "mes",   .id = -1,
 	  .descr = "display previous status bar messages",
 	  .flags = HAS_COMMENT,
@@ -3194,6 +3203,17 @@ marks_cmd(const cmd_info_t *cmd_info)
 	}
 	return show_marks_menu(curr_view, buf) != 0;
 }
+
+#ifndef _WIN32
+
+/* Shows a menu for managing media. */
+static int
+media_cmd(const cmd_info_t *cmd_info)
+{
+	return (show_media_menu(curr_view) != 0);
+}
+
+#endif
 
 static int
 messages_cmd(const cmd_info_t *cmd_info)

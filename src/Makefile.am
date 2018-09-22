@@ -149,6 +149,7 @@ vifm_SOURCES = \
 	menus/trashes_menu.c menus/trashes_menu.h \
 	menus/map_menu.c menus/map_menu.h \
 	menus/marks_menu.c menus/marks_menu.h \
+	menus/media_menu.c menus/media_menu.h \
 	menus/menus.c menus/menus.h \
 	menus/registers_menu.c menus/registers_menu.h \
 	menus/undolist_menu.c menus/undolist_menu.h \

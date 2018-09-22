@@ -274,6 +274,7 @@ const char *tags[] = {
 	"vifm-:map",
 	"vifm-:mark",
 	"vifm-:marks",
+	"vifm-:media",
 	"vifm-:mes",
 	"vifm-:messages",
 	"vifm-:mkdir",

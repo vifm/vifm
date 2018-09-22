@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 21
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1995,6 +1995,10 @@ order using the '.' operator.  Any whitespace is ignored.
 :marks list ...
     display the contents of the marks that are mentioned in list.
 
+                                               *vifm-:media*
+:media                                         {only for *nix}
+    display media management menu.  See also |vifm-'mediaprg'| option.
+
 :mes[sages]                                    *vifm-:messages* *vifm-:mes*
     display previously given status bar messages (up to 50).
 
@@ -3213,7 +3217,8 @@ mediaprg
 type: string
 default: ""
 
-Specifies command to be used to manage media devices.
+Specifies command to be used to manage media devices.  Used by |vifm-:media|
+command.
 
 The command can be passed the following parameters:
  - list           -- list media
@@ -4649,6 +4654,12 @@ displayed in a new menu, but you can get back to jobs menu by pressing h.
 Undolist menu~
 
 r - reset undo position to group under the cursor.
+
+Media menu~
+
+r - reload the list.
+m - mount/unmount device (cursor should be positioned on lines under device
+    information).
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*
