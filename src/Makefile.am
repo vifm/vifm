@@ -42,6 +42,7 @@ nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
 
 dist_pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifmrc-osx
+dist_pkgdata_SCRIPTS = ../data/vifm-media
 nodist_pkgdata_DATA = ../data/vifm-help.txt
 
 bin_PROGRAMS = vifm
