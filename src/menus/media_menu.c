@@ -72,6 +72,7 @@ static KHandlerResponse media_khandler(struct view_t *view, menu_data_t *m,
 static int reload_list(menu_data_t *m);
 static void output_handler(const char line[], void *arg);
 static void free_info_array(void);
+static void position_cursor(menu_data_t *m);
 
 /* List of media devices. */
 static media_info_t *infos;
@@ -90,6 +91,8 @@ show_media_menu(struct view_t *view)
 	{
 		return 0;
 	}
+
+	position_cursor(&m);
 
 	return menus_enter(m.state, view);
 }
@@ -277,6 +280,23 @@ free_info_array(void)
 	free(infos);
 	infos = NULL;
 	info_count = 0;
+}
+
+/* Puts cursor position to a mount point that corresponds to current path if
+ * possible. */
+static void
+position_cursor(menu_data_t *m)
+{
+	int i;
+	for(i = 0; i < m->len; ++i)
+	{
+		if(m->data[i] != NULL && *m->data[i] == 'u' &&
+				is_in_subtree(m->cwd, m->data[i] + 1, 1))
+		{
+			m->pos = i;
+			break;
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

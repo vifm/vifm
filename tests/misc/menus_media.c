@@ -332,6 +332,24 @@ TEST(mount_directory_is_left_before_unmounting)
 	assert_success(remove("out"));
 }
 
+TEST(mount_matching_current_path_is_picked_by_default)
+{
+	FILE *fp = fopen("script", "w");
+	fprintf(fp, "#!/bin/sh\n"
+	            "echo device=/dev/sdd\n"
+	            "echo mount-point=/bla\n"
+	            "echo device=/dev/sdf\n"
+	            "echo mount-point=%s\n", sandbox);
+	fclose(fp);
+
+	strcpy(lwin.curr_dir, sandbox);
+	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+
+	assert_int_equal(4, menu_get_current()->pos);
+
+	(void)vle_keys_exec(WK_ESC);
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
