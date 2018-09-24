@@ -24,9 +24,11 @@
 #include <wchar.h> /* wcscmp() */
 
 #include "../cfg/config.h"
+#include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
+#include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -125,10 +127,25 @@ media_khandler(struct view_t *view, menu_data_t *m, const wchar_t keys[])
 			return KHR_REFRESH_WINDOW;
 		}
 
-		const char *action = (*data == 'm' ? "mount" : "unmount");
-		const char *description = (*data == 'm' ? "Mounting" : "Unmounting");
+		int mount = (*data == 'm');
+		const char *path = data + 1;
 
-		char *escaped_path = shell_like_escape(data + 1, 0);
+		if(!mount)
+		{
+			/* Try to get out of mount point before trying to unmount it. */
+			char cwd[PATH_MAX + 1];
+			if(get_cwd(cwd, sizeof(cwd)) == cwd && is_in_subtree(cwd, path, 1))
+			{
+				char out_of_mount_path[PATH_MAX + 1];
+				snprintf(out_of_mount_path, sizeof(out_of_mount_path), "%s/..", path);
+				(void)vifm_chdir(out_of_mount_path);
+			}
+		}
+
+		const char *action = (mount ? "mount" : "unmount");
+		const char *description = (mount ? "Mounting" : "Unmounting");
+
+		char *escaped_path = shell_like_escape(path, 0);
 		char *cmd = format_str("%s %s %s", cfg.media_prg, action, escaped_path);
 		if(bg_and_wait_for_errors(cmd, &ui_cancellation_info) == 0)
 		{

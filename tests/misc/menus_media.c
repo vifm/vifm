@@ -6,6 +6,7 @@
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* remove() */
+#include <string.h> /* strcmp() strcpy() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
@@ -276,6 +277,7 @@ TEST(mounting_failure_is_handled)
 	fp = fopen("script", "w");
 	fputs("#!/bin/sh\n"
 	      "echo \"$@\" >> out\n"
+	      "echo Things went bad 1>&2\n"
 	      "exit 10\n", fp);
 	fclose(fp);
 
@@ -289,6 +291,43 @@ TEST(mounting_failure_is_handled)
 	free_string_array(list, nlines);
 
 	(void)vle_keys_exec(WK_ESC);
+
+	assert_success(remove("out"));
+}
+
+TEST(mount_directory_is_left_before_unmounting)
+{
+	FILE *fp = fopen("script", "w");
+	fprintf(fp, "#!/bin/sh\n"
+	            "pwd >> %s/out\n"
+	            "echo device=/dev/sdf\n"
+	            "echo mount-point=%s\n", sandbox, sandbox);
+	fclose(fp);
+
+	free(cfg.media_prg);
+	cfg.media_prg = format_str("%s/script", sandbox);
+
+	strcpy(lwin.curr_dir, sandbox);
+	assert_success(chdir(sandbox));
+	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
+
+	(void)vle_keys_exec(WK_j);
+	(void)vle_keys_exec(WK_m);
+
+	char cwd[PATH_MAX + 1];
+	assert_string_equal(cwd, get_cwd(cwd, sizeof(cwd)));
+	assert_false(paths_are_same(cwd, sandbox));
+
+	(void)vle_keys_exec(WK_ESC);
+	assert_success(chdir(sandbox));
+
+	int nlines;
+	char **list = read_file_of_lines("out", &nlines);
+	assert_int_equal(3, nlines);
+	assert_string_equal(sandbox, list[0]);
+	assert_false(strcmp(sandbox, list[1]) == 0);
+	assert_false(strcmp(sandbox, list[2]) == 0);
+	free_string_array(list, nlines);
 
 	assert_success(remove("out"));
 }
