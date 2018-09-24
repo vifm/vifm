@@ -119,7 +119,7 @@ ior_cp(io_args_t *args)
 	const char *const src = args->arg1.src;
 	const char *const dst = args->arg2.dst;
 
-	if(is_in_subtree(dst, src))
+	if(is_in_subtree(dst, src, 0))
 	{
 		(void)ioe_errlst_append(&args->result.errors, src, IO_ERR_UNKNOWN,
 				"Can't copy parent path into subpath");

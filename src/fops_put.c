@@ -607,7 +607,7 @@ put_next(int force)
 						return 1;
 					}
 
-					if(is_in_subtree(src_buf, dst_buf))
+					if(is_in_subtree(src_buf, dst_buf, 0))
 					{
 						/* Don't delete /a/b before moving /a/b/c to /a/b. */
 						safe_operation = 1;
@@ -857,8 +857,8 @@ handle_clashing(int move, const char src[], const char dst[])
 	{
 		const char *const another_src =
 			put_confirm.reg->files[put_confirm.file_order[i]];
-		const int sub_path = is_in_subtree(another_src, src);
-		if(is_in_subtree(another_src, dst) && !sub_path)
+		const int sub_path = is_in_subtree(another_src, src, 0);
+		if(is_in_subtree(another_src, dst, 0) && !sub_path)
 		{
 			vle_tb_append_line(lost, replace_home_part(another_src));
 		}
@@ -903,8 +903,8 @@ handle_clashing(int move, const char src[], const char dst[])
 		{
 			char **const another_src =
 				&put_confirm.reg->files[put_confirm.file_order[i]];
-			const int sub_path = is_in_subtree(*another_src, src);
-			if(is_in_subtree(*another_src, dst) && !sub_path)
+			const int sub_path = is_in_subtree(*another_src, src, 0);
+			if(is_in_subtree(*another_src, dst, 0) && !sub_path)
 			{
 				update_string(another_src, NULL);
 			}
@@ -923,7 +923,7 @@ handle_clashing(int move, const char src[], const char dst[])
 		{
 			char **const another_src =
 				&put_confirm.reg->files[put_confirm.file_order[i]];
-			if(is_in_subtree(*another_src, src))
+			if(is_in_subtree(*another_src, src, 0))
 			{
 				update_string(another_src, NULL);
 			}

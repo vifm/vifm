@@ -710,20 +710,25 @@ is_dirent_targets_dir(const char full_path[], const struct dirent *d)
 }
 
 int
-is_in_subtree(const char path[], const char root[])
+is_in_subtree(const char path[], const char root[], int include_root)
 {
+	/* This variable must remain on this level because it can be being pointed
+	 * to. */
 	char path_copy[PATH_MAX + 1];
+	if(!include_root)
+	{
+		copy_str(path_copy, sizeof(path_copy), path);
+		remove_last_path_component(path_copy);
+		path = path_copy;
+	}
+
 	char path_real[PATH_MAX + 1];
-	char root_real[PATH_MAX + 1];
-
-	copy_str(path_copy, sizeof(path_copy), path);
-	remove_last_path_component(path_copy);
-
-	if(os_realpath(path_copy, path_real) != path_real)
+	if(os_realpath(path, path_real) != path_real)
 	{
 		return 0;
 	}
 
+	char root_real[PATH_MAX + 1];
 	if(os_realpath(root, root_real) != root_real)
 	{
 		return 0;
