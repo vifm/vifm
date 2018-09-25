@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 17
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 23
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1995,6 +1995,10 @@ order using the '.' operator.  Any whitespace is ignored.
 :marks list ...
     display the contents of the marks that are mentioned in list.
 
+                                               *vifm-:media*
+:media                                         {only for *nix}
+    display media management menu.  See also |vifm-'mediaprg'| option.
+
 :mes[sages]                                    *vifm-:messages* *vifm-:mes*
     display previously given status bar messages (up to 50).
 
@@ -3206,6 +3210,34 @@ implicitly added after a space to the value of this option.
 
 Optional %u or %U macro could be used (if both specified %U is chosen) to
 force redirection to custom or unsorted custom view respectively.
+
+                                               *vifm-'mediaprg'*
+                                               {only for *nix}
+mediaprg
+type: string
+default: path to bundled script that supports udevil and udisks
+
+Specifies command to be used to manage media devices.  Used by |vifm-:media|
+command.
+
+The command can be passed the following parameters:
+ - list           -- list media
+ - mount {device} -- mount a device
+ - unmount {path} -- unmount given mount point
+
+The output of `list` subcommand is parsed in search of lines that start with
+one of the following prefixes:
+ - device=      - specifies device path (e.g., "/dev/sde")
+ - label=       - specifies optional device label (e.g., "Memory card")
+ - mount-point= - specifies a mount point (can be absent or appear more than
+                  once)
+
+All other lines are ignored.  Each `device=` starts a new section
+describing a device which should include two other possible prefixes.
+
+`list` subcommand is assumed to always succeed, while error stream and exit
+code of `mount` and `unmount` is taken into account to determine whether
+operation was performed successfully.
 
                                                *vifm-'lsoptions'*
 lsoptions
@@ -4622,6 +4654,12 @@ displayed in a new menu, but you can get back to jobs menu by pressing h.
 Undolist menu~
 
 r - reset undo position to group under the cursor.
+
+Media menu~
+
+r - reload the list.
+m - mount/unmount device (cursor should be positioned on lines under device
+    information).
 
 --------------------------------------------------------------------------------
 *vifm-custom-views*

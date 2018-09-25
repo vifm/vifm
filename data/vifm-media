@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# This script is meant to support common media managing utilities.
+# Parameters:
+#  - list           -- list media
+#  - mount <device> -- mount a device
+#  - unmount <path> -- unmount given mount point
+
+if type -P devmon udevil >/dev/null 2>/dev/null; then
+    monitor=devmon
+
+    function info() {
+        udevil info "$@"
+    }
+    function mount() {
+        devmon --mount "$1"
+    }
+    function unmount() {
+        devmon --unmount "$1"
+    }
+elif type -P udisks umount >/dev/null 2>/dev/null; then
+    monitor=udisks
+
+    function info() {
+        udisks --show-info "$@"
+    }
+    function mount() {
+        udisks --mount "$1"
+    }
+    function unmount() {
+        umount "$1"
+    }
+else
+    echo "Neither of supported backends found (udevil, udisks)" 1>&2
+    exit 1
+fi
+
+function usage_error() {
+    echo "Usage: vifm-media list | mount <device> | unmount <path>"
+    exit 1
+}
+
+function list() {
+    while read -r dev; do
+        if [ "${dev:0:10}" = /dev/disk/ ]; then
+            continue
+        fi
+
+        local out=$(info "$dev")
+
+        if grep -qe '^\s*removable:\s*0\s*$' <<< "$out"; then
+            continue
+        fi
+
+        if grep -qe '^\s*has media:\s*0\s*$' <<< "$out"; then
+            continue
+        fi
+
+        echo device="$dev"
+
+        local label=$(grep -m1 '^\s*label:.*$' <<< "$out" | sed 's/^[^:]*:\s*//')
+        echo "label=$label"
+
+        local paths=$(grep -m1 '^\s*mount paths:.*$' <<< "$out" | sed 's/^[^:]*:\s*//')
+        IFS=',' paths=( $paths )
+        for path in "${paths[@]}"; do
+            echo "mount-point=$path"
+        done
+
+        echo
+    done <<< "$("$monitor" --enumerate-device-files)"
+}
+
+case "$1" in
+    list)
+        if [ $# -ne 1 ]; then
+            usage_error
+        fi
+        list
+        ;;
+    mount)
+        if [ $# -ne 2 ]; then
+            usage_error
+        fi
+        mount "$2"
+        ;;
+    unmount)
+        if [ $# -ne 2 ]; then
+            usage_error
+        fi
+        unmount "$2"
+        ;;
+
+    *)
+        usage_error
+        ;;
+esac

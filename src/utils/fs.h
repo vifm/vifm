@@ -165,8 +165,10 @@ int entry_is_dir(const char full_path[], const struct dirent* dentry);
 int is_dirent_targets_dir(const char full_path[], const struct dirent *d);
 
 /* Checks that entity pointed to by the path is located under the root
- * directory.  Returns non-zero if so, otherwise zero is returned. */
-int is_in_subtree(const char path[], const char root[]);
+ * directory.  Non-zero include_root parameter makes root being considered to be
+ * part of the subtree that it defines.  Returns non-zero if so, otherwise zero
+ * is returned. */
+int is_in_subtree(const char path[], const char root[], int include_root);
 
 /* Checks whether to paths belong to the same file system.  Returns non-zero if
  * so, otherwise zero is returned. */

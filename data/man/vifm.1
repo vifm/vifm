@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 17, 2018" "vifm 0.9.1"
+.TH VIFM 1 "September 23, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2338,6 +2338,13 @@ create a pop-up menu of marks.
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
 .TP
+.BI "                                         :media"
+.TP
+.BI :media
+only for *nix
+.br
+display media management menu.  See also 'mediaprg' option.
+.TP
 .BI "                                         :messages"
 .TP
 .BI ":mes[sages]"
@@ -3858,7 +3865,34 @@ the value of this option.
 
 Optional %u or %U macro could be used (if both specified %U is chosen) to force
 redirection to custom or unsorted custom view respectively.
+.TP
+.BI 'mediaprg'
+type: string
+.br
+default: path to bundled script that supports udevil and udisks
+.br
+{only for *nix}
+.br
+Specifies command to be used to manage media devices.  Used by :media command.
 
+The command can be passed the following parameters:
+ - list           -- list media
+ - mount {device} -- mount a device
+ - unmount {path} -- unmount given mount point
+
+The output of `list` subcommand is parsed in search of lines that start with
+one of the following prefixes:
+ - device=      - specifies device path (e.g., "/dev/sde")
+ - label=       - specifies optional device label (e.g., "Memory card")
+ - mount-point= - specifies a mount point (can be absent or appear more than
+once)
+
+All other lines are ignored.  Each `device=` starts a new section describing a
+device which should include two other possible prefixes.
+
+`list` subcommand is assumed to always succeed, while error stream and exit
+code of `mount` and `unmount` is taken into account to determine whether
+operation was performed successfully.
 .TP
 .BI 'lsoptions'
 type: string list
@@ -5514,6 +5548,14 @@ displayed in a new menu, but you can get back to jobs menu by pressing h.
 .B Undolist menu
 
 r \- reset undo position to group under the cursor.
+
+.LP
+.B Media menu
+
+r \- reload the list.
+
+m \- mount/unmount device (cursor should be positioned on lines under device
+information).
 
 .\" ---------------------------------------------------------------------------
 .SH Custom views

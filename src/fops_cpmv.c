@@ -474,7 +474,7 @@ check_for_clashes(view_t *view, CopyMoveLikeOp op, const char dst_path[],
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_path, dst_name);
 		chosp(dst_full);
 
-		if(ONE_OF(op, CMLO_MOVE, CMLO_COPY) && is_in_subtree(dst_full, src_full))
+		if(ONE_OF(op, CMLO_MOVE, CMLO_COPY) && is_in_subtree(dst_full, src_full, 0))
 		{
 			ui_sb_errf("Can't move/copy parent inside itself: %s",
 					replace_home_part(src_full));
@@ -482,7 +482,7 @@ check_for_clashes(view_t *view, CopyMoveLikeOp op, const char dst_path[],
 			return 1;
 		}
 
-		if(is_in_subtree(src_full, dst_full))
+		if(is_in_subtree(src_full, dst_full, 0))
 		{
 			ui_sb_errf("Operation would result in loss contents of %s",
 					replace_home_part(src_full));

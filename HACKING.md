@@ -123,6 +123,7 @@ there for instructions.
     |  |  |-- trashes_menu.c - handles :trashes menu
     |  |  |-- map_menu.c - handles :map menu
     |  |  |-- marks_menu.c - handles :marks menu
+    |  |  |-- media.c - handles :media menu
     |  |  |-- menus.c - handles all kinds of menus
     |  |  |-- registers_menu.c - handles :registers menu
     |  |  |-- undolist_menu.c - handles :undolist menu

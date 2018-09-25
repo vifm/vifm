@@ -42,6 +42,7 @@ nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
 
 dist_pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifmrc-osx
+dist_pkgdata_SCRIPTS = ../data/vifm-media
 nodist_pkgdata_DATA = ../data/vifm-help.txt
 
 bin_PROGRAMS = vifm
@@ -149,6 +150,7 @@ vifm_SOURCES = \
 	menus/trashes_menu.c menus/trashes_menu.h \
 	menus/map_menu.c menus/map_menu.h \
 	menus/marks_menu.c menus/marks_menu.h \
+	menus/media_menu.c menus/media_menu.h \
 	menus/menus.c menus/menus.h \
 	menus/registers_menu.c menus/registers_menu.h \
 	menus/undolist_menu.c menus/undolist_menu.h \

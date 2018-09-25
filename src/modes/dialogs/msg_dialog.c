@@ -277,7 +277,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 {
 	static int skip_until_started;
 
-	if(curr_stats.load_stage == 0)
+	if(curr_stats.load_stage <= 0)
 		return 1;
 	if(curr_stats.load_stage < 2 && skip_until_started)
 		return 1;

@@ -83,6 +83,14 @@
 
 	Added :regular command that leaves custom view.  Thanks to gammaray.
 
+	Added :media menu that can list and perform basic operations on removable
+	media (requires helper to be available, see 'mediaprg').  Only for *nix
+	systems.  Thanks to Bruce Hunsaker (a.k.a. hunsakerbn) and others.
+
+	Added 'mediaprg' option that can be used to specify helper for managing
+	removable media.  One such helper with support of udevil and udisks is
+	provided.  Only for *nix systems.
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

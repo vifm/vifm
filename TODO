@@ -91,7 +91,6 @@ Possible things to add:
   * Parse escape sequences in menus as in preview.
   * Virtual File System - currently vifm can use FUSE to mount most file
     systems.
-  * Add removable media managing.
   * Something to control behaviour of menu picks.
   * Like gv but to select just pasted files (gp?).
   * g~<selector> and g?.

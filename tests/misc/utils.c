@@ -45,6 +45,7 @@ conf_setup(void)
 	update_string(&cfg.status_line, "");
 	update_string(&cfg.grep_prg, "");
 	update_string(&cfg.locate_prg, "");
+	update_string(&cfg.media_prg, "");
 	update_string(&cfg.border_filler, "");
 	update_string(&cfg.shell, "");
 }
@@ -64,6 +65,7 @@ conf_teardown(void)
 	update_string(&cfg.status_line, NULL);
 	update_string(&cfg.grep_prg, NULL);
 	update_string(&cfg.locate_prg, NULL);
+	update_string(&cfg.media_prg, NULL);
 	update_string(&cfg.border_filler, NULL);
 	update_string(&cfg.shell, NULL);
 }
@@ -149,6 +151,7 @@ view_setup(view_t *view)
 	view->invert = 1;
 	view->selected_files = 0;
 	view->ls_view = 0;
+	view->ls_view_g = 0;
 	view->window_rows = 0;
 	view->run_size = 1;
 
