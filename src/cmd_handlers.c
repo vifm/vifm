@@ -4198,6 +4198,7 @@ unlet_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Unmaps keys in normal and visual or in command-line mode. */
 static int
 unmap_cmd(const cmd_info_t *cmd_info)
 {
@@ -4303,6 +4304,7 @@ vnoremap_cmd(const cmd_info_t *cmd_info)
 	return do_map(cmd_info, "Visual", VISUAL_MODE, 1) != 0;
 }
 
+/* Maps keys in the specified mode. */
 static int
 do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		int no_remap)

@@ -9,6 +9,8 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
@@ -273,6 +275,7 @@ TEST(put_bg_cmd_is_parsed_correctly)
 TEST(conversion_failure_is_handled)
 {
 	assert_non_null(setlocale(LC_ALL, "C"));
+	init_modes();
 
 	/* Execution of the following commands just shouldn't crash. */
 	(void)exec_commands("nnoremap \xee\x85\x8b", &lwin, CIT_COMMAND);
@@ -280,6 +283,8 @@ TEST(conversion_failure_is_handled)
 	(void)exec_commands("nnoremap tj \xee\x85\x8b", &lwin, CIT_COMMAND);
 	(void)exec_commands("nunmap \xee\x85\x8b", &lwin, CIT_COMMAND);
 	(void)exec_commands("unmap \xee\x85\x8b", &lwin, CIT_COMMAND);
+
+	vle_keys_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
