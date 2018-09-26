@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* F_OK access() chdir() rmdir() symlink() unlink() */
 
+#include <locale.h> /* LC_ALL setlocale() */
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
@@ -267,6 +268,18 @@ TEST(put_bg_cmd_is_parsed_correctly)
 	lwin.curr_dir[0] = '\0';
 
 	assert_success(exec_commands("put \" &", &lwin, CIT_COMMAND));
+}
+
+TEST(conversion_failure_is_handled)
+{
+	assert_non_null(setlocale(LC_ALL, "C"));
+
+	/* Execution of the following commands just shouldn't crash. */
+	(void)exec_commands("nnoremap \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("nnoremap \xee\x85\x8b tj", &lwin, CIT_COMMAND);
+	(void)exec_commands("nnoremap tj \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("nunmap \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("unmap \xee\x85\x8b", &lwin, CIT_COMMAND);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

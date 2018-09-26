@@ -4201,10 +4201,15 @@ unlet_cmd(const cmd_info_t *cmd_info)
 static int
 unmap_cmd(const cmd_info_t *cmd_info)
 {
-	int result;
-	wchar_t *subst;
+	wchar_t *subst = substitute_specs(cmd_info->argv[0]);
+	if(subst == NULL)
+	{
+		show_error_msgf("Unmapping Error", "Failed to convert to wide string: %s",
+				cmd_info->argv[0]);
+		return 0;
+	}
 
-	subst = substitute_specs(cmd_info->argv[0]);
+	int result;
 	if(cmd_info->emark)
 	{
 		result = (vle_keys_user_remove(subst, CMDLINE_MODE) != 0);
@@ -4305,15 +4310,19 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	wchar_t *keys, *mapping;
 	char *raw_rhs, *rhs;
 	char t;
-	int result;
 
 	if(cmd_info->argc <= 1)
 	{
-		int save_msg;
 		keys = substitute_specs(cmd_info->args);
-		save_msg = show_map_menu(curr_view, map_type, mode, keys);
-		free(keys);
-		return save_msg != 0;
+		if(keys != NULL)
+		{
+			int save_msg = show_map_menu(curr_view, map_type, mode, keys);
+			free(keys);
+			return save_msg != 0;
+		}
+		show_error_msgf("Mapping Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
 	}
 
 	const char *args = cmd_info->args;
@@ -4324,16 +4333,25 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	t = *raw_rhs;
 	*raw_rhs = '\0';
 
+	int error = 0;
 	rhs = vle_cmds_at_arg(raw_rhs + 1);
 	keys = substitute_specs(args);
 	mapping = substitute_specs(rhs);
-	result = vle_keys_user_add(keys, mapping, mode, flags);
+	if(keys != NULL && mapping != NULL)
+	{
+		error = vle_keys_user_add(keys, mapping, mode, flags);
+	}
+	else
+	{
+		show_error_msgf("Mapping Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+	}
 	free(mapping);
 	free(keys);
 
 	*raw_rhs = t;
 
-	if(result == -1)
+	if(error)
 		show_error_msg("Mapping Error", "Unable to allocate enough memory");
 
 	return 0;
@@ -4415,11 +4433,15 @@ vunmap_cmd(const cmd_info_t *cmd_info)
 static int
 do_unmap(const char keys[], int mode)
 {
-	int result;
-	wchar_t *subst;
+	wchar_t *subst = substitute_specs(keys);
+	if(subst == NULL)
+	{
+		show_error_msgf("Unmapping Error", "Failed to convert to wide string: %s",
+				keys);
+		return 0;
+	}
 
-	subst = substitute_specs(keys);
-	result = vle_keys_user_remove(subst, mode);
+	int result = vle_keys_user_remove(subst, mode);
 	free(subst);
 
 	if(result != 0)
