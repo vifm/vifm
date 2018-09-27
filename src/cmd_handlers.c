@@ -1239,13 +1239,20 @@ handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
 static int
 list_abbrevs(const char prefix[])
 {
-	wchar_t *wide_prefix;
 	size_t prefix_len;
 	void *state;
 	const wchar_t *lhs, *rhs;
 	int no_remap;
 	vle_textbuf *msg;
 	int seen_match;
+
+	wchar_t *wide_prefix = to_wide(prefix);
+	if(wide_prefix == NULL)
+	{
+		show_error_msgf("Abbrevs Error", "Failed to convert to wide string: %s",
+				prefix);
+		return 0;
+	}
 
 	state = NULL;
 	if(!vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
@@ -1257,7 +1264,6 @@ list_abbrevs(const char prefix[])
 	msg = vle_tb_create();
 	vle_tb_append_line(msg, "Abbreviation -- N -- Replacement");
 
-	wide_prefix = to_wide(prefix);
 	prefix_len = wcslen(wide_prefix);
 
 	seen_match = 0;
@@ -1296,6 +1302,13 @@ add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
 	wchar_t *subst;
 	wchar_t *wargs = to_wide(cmd_info->args);
 	wchar_t *rhs = wargs;
+
+	if(wargs == NULL)
+	{
+		show_error_msgf("Abbrevs Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
+	}
 
 	while(cfg_is_word_wchar(*rhs))
 	{
@@ -1646,6 +1659,13 @@ static int
 cunabbrev_cmd(const cmd_info_t *cmd_info)
 {
 	wchar_t *const wargs = to_wide(cmd_info->args);
+	if(wargs == NULL)
+	{
+		show_error_msgf("Abbrevs Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
+	}
+
 	const int result = vle_abbr_remove(wargs);
 	free(wargs);
 	if(result != 0)
@@ -3373,6 +3393,12 @@ static int
 normal_cmd(const cmd_info_t *cmd_info)
 {
 	wchar_t *const wide = to_wide(cmd_info->args);
+	if(wide == NULL)
+	{
+		show_error_msgf("Command Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
+	}
 
 	if(cmd_info->emark)
 	{
@@ -4473,7 +4499,15 @@ wincmd_cmd(const cmd_info_t *cmd_info)
 
 	count = (cmd_info->count <= 1) ? 1 : cmd_info->count;
 	cmd = format_str("%c%d%s", NC_C_w, count, cmd_info->args);
+
 	wcmd = to_wide(cmd);
+	if(wcmd == NULL)
+	{
+		show_error_msgf("Command Error", "Failed to convert to wide string: %s",
+				cmd);
+		free(cmd);
+		return 0;
+	}
 	free(cmd);
 
 	(void)vle_keys_exec_timed_out(wcmd);

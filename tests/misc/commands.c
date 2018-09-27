@@ -283,6 +283,13 @@ TEST(conversion_failure_is_handled)
 	(void)exec_commands("nnoremap tj \xee\x85\x8b", &lwin, CIT_COMMAND);
 	(void)exec_commands("nunmap \xee\x85\x8b", &lwin, CIT_COMMAND);
 	(void)exec_commands("unmap \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("cabbrev \xee\x85\x8b tj", &lwin, CIT_COMMAND);
+	/* The next command is needed so that there will be something to list. */
+	(void)exec_commands("cabbrev a b", &lwin, CIT_COMMAND);
+	(void)exec_commands("cabbrev \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("cunabbrev \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("normal \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("wincmd \xee", &lwin, CIT_COMMAND);
 
 	vle_keys_reset();
 }
