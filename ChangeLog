@@ -285,6 +285,9 @@
 	Fixed bar (`|`) not being treated as command separator in commands which
 	can take /pattern/ arguments.
 
+	Fixed crash on feeding multi-byte string to :commands that fail to convert
+	it to wide representation.  Thanks to Jose Riha (a.k.a. jose1711).
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
