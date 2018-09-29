@@ -1239,13 +1239,20 @@ handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap)
 static int
 list_abbrevs(const char prefix[])
 {
-	wchar_t *wide_prefix;
 	size_t prefix_len;
 	void *state;
 	const wchar_t *lhs, *rhs;
 	int no_remap;
 	vle_textbuf *msg;
 	int seen_match;
+
+	wchar_t *wide_prefix = to_wide(prefix);
+	if(wide_prefix == NULL)
+	{
+		show_error_msgf("Abbrevs Error", "Failed to convert to wide string: %s",
+				prefix);
+		return 0;
+	}
 
 	state = NULL;
 	if(!vle_abbr_iter(&lhs, &rhs, &no_remap, &state))
@@ -1257,7 +1264,6 @@ list_abbrevs(const char prefix[])
 	msg = vle_tb_create();
 	vle_tb_append_line(msg, "Abbreviation -- N -- Replacement");
 
-	wide_prefix = to_wide(prefix);
 	prefix_len = wcslen(wide_prefix);
 
 	seen_match = 0;
@@ -1296,6 +1302,13 @@ add_cabbrev(const cmd_info_t *cmd_info, int no_remap)
 	wchar_t *subst;
 	wchar_t *wargs = to_wide(cmd_info->args);
 	wchar_t *rhs = wargs;
+
+	if(wargs == NULL)
+	{
+		show_error_msgf("Abbrevs Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
+	}
 
 	while(cfg_is_word_wchar(*rhs))
 	{
@@ -1646,6 +1659,13 @@ static int
 cunabbrev_cmd(const cmd_info_t *cmd_info)
 {
 	wchar_t *const wargs = to_wide(cmd_info->args);
+	if(wargs == NULL)
+	{
+		show_error_msgf("Abbrevs Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
+	}
+
 	const int result = vle_abbr_remove(wargs);
 	free(wargs);
 	if(result != 0)
@@ -3373,6 +3393,12 @@ static int
 normal_cmd(const cmd_info_t *cmd_info)
 {
 	wchar_t *const wide = to_wide(cmd_info->args);
+	if(wide == NULL)
+	{
+		show_error_msgf("Command Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
+	}
 
 	if(cmd_info->emark)
 	{
@@ -4198,13 +4224,19 @@ unlet_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Unmaps keys in normal and visual or in command-line mode. */
 static int
 unmap_cmd(const cmd_info_t *cmd_info)
 {
-	int result;
-	wchar_t *subst;
+	wchar_t *subst = substitute_specs(cmd_info->argv[0]);
+	if(subst == NULL)
+	{
+		show_error_msgf("Unmapping Error", "Failed to convert to wide string: %s",
+				cmd_info->argv[0]);
+		return 0;
+	}
 
-	subst = substitute_specs(cmd_info->argv[0]);
+	int result;
 	if(cmd_info->emark)
 	{
 		result = (vle_keys_user_remove(subst, CMDLINE_MODE) != 0);
@@ -4298,6 +4330,7 @@ vnoremap_cmd(const cmd_info_t *cmd_info)
 	return do_map(cmd_info, "Visual", VISUAL_MODE, 1) != 0;
 }
 
+/* Maps keys in the specified mode. */
 static int
 do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 		int no_remap)
@@ -4305,15 +4338,19 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	wchar_t *keys, *mapping;
 	char *raw_rhs, *rhs;
 	char t;
-	int result;
 
 	if(cmd_info->argc <= 1)
 	{
-		int save_msg;
 		keys = substitute_specs(cmd_info->args);
-		save_msg = show_map_menu(curr_view, map_type, mode, keys);
-		free(keys);
-		return save_msg != 0;
+		if(keys != NULL)
+		{
+			int save_msg = show_map_menu(curr_view, map_type, mode, keys);
+			free(keys);
+			return save_msg != 0;
+		}
+		show_error_msgf("Mapping Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+		return 0;
 	}
 
 	const char *args = cmd_info->args;
@@ -4324,16 +4361,25 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	t = *raw_rhs;
 	*raw_rhs = '\0';
 
+	int error = 0;
 	rhs = vle_cmds_at_arg(raw_rhs + 1);
 	keys = substitute_specs(args);
 	mapping = substitute_specs(rhs);
-	result = vle_keys_user_add(keys, mapping, mode, flags);
+	if(keys != NULL && mapping != NULL)
+	{
+		error = vle_keys_user_add(keys, mapping, mode, flags);
+	}
+	else
+	{
+		show_error_msgf("Mapping Error", "Failed to convert to wide string: %s",
+				cmd_info->args);
+	}
 	free(mapping);
 	free(keys);
 
 	*raw_rhs = t;
 
-	if(result == -1)
+	if(error)
 		show_error_msg("Mapping Error", "Unable to allocate enough memory");
 
 	return 0;
@@ -4415,11 +4461,15 @@ vunmap_cmd(const cmd_info_t *cmd_info)
 static int
 do_unmap(const char keys[], int mode)
 {
-	int result;
-	wchar_t *subst;
+	wchar_t *subst = substitute_specs(keys);
+	if(subst == NULL)
+	{
+		show_error_msgf("Unmapping Error", "Failed to convert to wide string: %s",
+				keys);
+		return 0;
+	}
 
-	subst = substitute_specs(keys);
-	result = vle_keys_user_remove(subst, mode);
+	int result = vle_keys_user_remove(subst, mode);
 	free(subst);
 
 	if(result != 0)
@@ -4449,7 +4499,15 @@ wincmd_cmd(const cmd_info_t *cmd_info)
 
 	count = (cmd_info->count <= 1) ? 1 : cmd_info->count;
 	cmd = format_str("%c%d%s", NC_C_w, count, cmd_info->args);
+
 	wcmd = to_wide(cmd);
+	if(wcmd == NULL)
+	{
+		show_error_msgf("Command Error", "Failed to convert to wide string: %s",
+				cmd);
+		free(cmd);
+		return 0;
+	}
 	free(cmd);
 
 	(void)vle_keys_exec_timed_out(wcmd);

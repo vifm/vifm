@@ -2,12 +2,15 @@
 
 #include <unistd.h> /* F_OK access() chdir() rmdir() symlink() unlink() */
 
+#include <locale.h> /* LC_ALL setlocale() */
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/env.h"
@@ -267,6 +270,28 @@ TEST(put_bg_cmd_is_parsed_correctly)
 	lwin.curr_dir[0] = '\0';
 
 	assert_success(exec_commands("put \" &", &lwin, CIT_COMMAND));
+}
+
+TEST(conversion_failure_is_handled)
+{
+	assert_non_null(setlocale(LC_ALL, "C"));
+	init_modes();
+
+	/* Execution of the following commands just shouldn't crash. */
+	(void)exec_commands("nnoremap \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("nnoremap \xee\x85\x8b tj", &lwin, CIT_COMMAND);
+	(void)exec_commands("nnoremap tj \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("nunmap \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("unmap \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("cabbrev \xee\x85\x8b tj", &lwin, CIT_COMMAND);
+	/* The next command is needed so that there will be something to list. */
+	(void)exec_commands("cabbrev a b", &lwin, CIT_COMMAND);
+	(void)exec_commands("cabbrev \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("cunabbrev \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("normal \xee\x85\x8b", &lwin, CIT_COMMAND);
+	(void)exec_commands("wincmd \xee", &lwin, CIT_COMMAND);
+
+	vle_keys_reset();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
