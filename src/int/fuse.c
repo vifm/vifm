@@ -597,8 +597,7 @@ fuse_try_unmount(view_t *view)
  * cancellable.  Returns status on success, otherwise -1 is returned.  Sets
  * correct value of *cancelled even on error. */
 static int
-run_fuse_command(char cmd[], const cancellation_t *cancellation,
-		int *cancelled)
+run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 {
 #ifndef _WIN32
 	pid_t pid;
