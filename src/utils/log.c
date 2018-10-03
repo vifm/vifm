@@ -30,6 +30,7 @@
 #include "../compat/os.h"
 #include "../status.h"
 #include "str.h"
+#include "utils.h"
 
 static FILE *log;
 static int verbosity;
@@ -97,7 +98,8 @@ log_prefix(const char *file, const char *func, int line)
 		return;
 
 	log_time();
-	fprintf(log, " at %s:%d (%s)\n", file, line, func);
+	fprintf(log, " at %s:%d (%s) in process #%lu\n", file, line, func,
+			(long unsigned int)get_pid());
 }
 
 void
