@@ -163,23 +163,51 @@ TEST(quit_all_commands_ignore_tabs)
 	assert_int_equal(2, tabs_count(&lwin));
 }
 
-TEST(tabs_are_switched)
+TEST(tabs_are_switched_with_shortcuts)
 {
-	tab_info_t tab_info;
-
 	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
 
 	(void)vle_keys_exec_timed_out(WK_g WK_t);
-	assert_true(tabs_get(&lwin, 0, &tab_info));
-	assert_true(tab_info.view == &lwin);
+	assert_int_equal(0, tabs_current(&lwin));
 
 	(void)vle_keys_exec_timed_out(WK_g WK_T);
-	assert_true(tabs_get(&lwin, 1, &tab_info));
-	assert_true(tab_info.view == &lwin);
+	assert_int_equal(1, tabs_current(&lwin));
 
 	(void)vle_keys_exec_timed_out(L"1" WK_g WK_t);
-	assert_true(tabs_get(&lwin, 0, &tab_info));
-	assert_true(tab_info.view == &lwin);
+	assert_int_equal(0, tabs_current(&lwin));
+}
+
+TEST(tabs_are_switched_with_commands)
+{
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+
+	/* Valid arguments. */
+
+	assert_success(exec_commands("tabnext", &lwin, CIT_COMMAND));
+	assert_int_equal(0, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabnext", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabnext 1", &lwin, CIT_COMMAND));
+	assert_int_equal(0, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabnext 1", &lwin, CIT_COMMAND));
+	assert_int_equal(0, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabnext 2", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	/* Invalid arguments. */
+
+	assert_failure(exec_commands("tabnext 1z", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_failure(exec_commands("tabnext -1", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_failure(exec_commands("tabnext 3", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
 }
 
 TEST(tabs_are_moved)

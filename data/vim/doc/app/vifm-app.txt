@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 23
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Oct 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2276,6 +2276,12 @@ yet supported) and might be changed in future releases, or get an alias.
 
 :tabnew [name]                                 *vifm-:tabnew*
     create new tab.  Accepts optional name for the new tab.
+
+                                               *vifm-:tabnext* *vifm-:tabn*
+:tabn[ext]
+    switch to the next tab (wrapping around).
+:tabn[ext] {n}
+    go to the tab number {n}.  Tab numeration starts with 1.
 
 :[line]touch file...                           *vifm-:touch*
     create files at specified paths.  Aborts on errors.  Doesn't update time
