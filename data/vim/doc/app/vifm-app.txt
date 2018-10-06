@@ -2283,6 +2283,13 @@ yet supported) and might be changed in future releases, or get an alias.
 :tabn[ext] {n}
     go to the tab number {n}.  Tab numeration starts with 1.
 
+                                               *vifm-:tabprevious* *vifm-:tabp*
+:tabp[revious]
+    switch to the previous tab (wrapping around).
+:tabp[revious] {n}
+    go to the {n}-th previous tab.  Note that |vifm-:tabnext| handles its
+    argument differently.
+
 :[line]touch file...                           *vifm-:touch*
     create files at specified paths.  Aborts on errors.  Doesn't update time
     of existing files.  The [line] can be used to pick node in a tree-view.

@@ -198,6 +198,21 @@ TEST(tabs_are_switched_with_commands)
 	assert_success(exec_commands("tabnext 2", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_current(&lwin));
 
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabprevious", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabprevious 2", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabprevious 3", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_current(&lwin));
+
+	assert_success(exec_commands("tabprevious 4", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
 	/* Invalid arguments. */
 
 	assert_failure(exec_commands("tabnext 1z", &lwin, CIT_COMMAND));
@@ -206,7 +221,19 @@ TEST(tabs_are_switched_with_commands)
 	assert_failure(exec_commands("tabnext -1", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_current(&lwin));
 
-	assert_failure(exec_commands("tabnext 3", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("tabnext 4", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_failure(exec_commands("tabnext 10", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_failure(exec_commands("tabprevious 0", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_failure(exec_commands("tabprevious -1", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_current(&lwin));
+
+	assert_failure(exec_commands("tabprevious -1", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_current(&lwin));
 }
 

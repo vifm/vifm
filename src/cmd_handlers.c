@@ -276,6 +276,7 @@ static int tabmove_cmd(const cmd_info_t *cmd_info);
 static int tabname_cmd(const cmd_info_t *cmd_info);
 static int tabnew_cmd(const cmd_info_t *cmd_info);
 static int tabnext_cmd(const cmd_info_t *cmd_info);
+static int tabprevious_cmd(const cmd_info_t *cmd_info);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int get_at(const view_t *view, const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
@@ -793,6 +794,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "go to next or n-th tab",
 	  .flags = HAS_COMMENT,
 	  .handler = &tabnext_cmd,     .min_args = 0,   .max_args = 1, },
+	{ .name = "tabprevious",       .abbr = "tabp",  .id = -1,
+	  .descr = "go to previous or n-th previous tab",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabprevious_cmd, .min_args = 0,   .max_args = 1, },
 	{ .name = "touch",             .abbr = NULL,    .id = COM_TOUCH,
 	  .descr = "create files",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
@@ -4153,6 +4158,27 @@ tabnext_cmd(const cmd_info_t *cmd_info)
 	}
 
 	tabs_goto(n - 1);
+	return 0;
+}
+
+/* Switches either to the previous tab or to n-th previous tab, where n is
+ * specified by the only optional parameter. */
+static int
+tabprevious_cmd(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->argc == 0)
+	{
+		tabs_previous(1);
+		return 0;
+	}
+
+	int n;
+	if(!read_int(cmd_info->argv[0], &n) || n <= 0)
+	{
+		return CMDS_ERR_INVALID_ARG;
+	}
+
+	tabs_previous(n);
 	return 0;
 }
 
