@@ -29,7 +29,8 @@
 struct view_t;
 
 /* Removes marked files (optionally into trash directory) of the view to
- * specified register.  Returns new value for save_msg flag. */
+ * specified register.  Returns zero on failure and non-zero otherwise, in which
+ * case status bar message is also printed. */
 int fops_delete(struct view_t *view, int reg, int use_trash);
 
 /* Removes current entry of the view.  Non-zero nested flag means that this is
@@ -37,8 +38,8 @@ int fops_delete(struct view_t *view, int reg, int use_trash);
  * Returns new value for save_msg flag. */
 int fops_delete_current(struct view_t *view, int use_trash, int nested);
 
-/* Removes marked files (optionally into trash directory) of the view to
- * specified register.  Returns new value for save_msg flag. */
+/* Initiates removal of marked files (optionally into trash directory) of the
+ * view to specified register.  Returns new value for save_msg flag. */
 int fops_delete_bg(struct view_t *view, int use_trash);
 
 /* Yanks marked files of the view into register specified by its name via reg
