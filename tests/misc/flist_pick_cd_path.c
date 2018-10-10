@@ -18,7 +18,7 @@ TEST(absolute_path_dominates)
 	int updir;
 	char dir[PATH_MAX + 1];
 
-	pick_cd_path(&lwin, "something", PREFIX "/abs/path", &updir, dir,
+	flist_pick_cd_path(&lwin, "something", PREFIX "/abs/path", &updir, dir,
 			sizeof(dir));
 
 	assert_false(updir);
@@ -33,7 +33,7 @@ TEST(dash_chooses_previous_location)
 	strcpy(lwin.last_dir, "--last--");
 	strcpy(lwin.curr_dir, "--cur--");
 
-	pick_cd_path(&lwin, ".", "-", &updir, dir, sizeof(dir));
+	flist_pick_cd_path(&lwin, ".", "-", &updir, dir, sizeof(dir));
 
 	assert_false(updir);
 	assert_string_equal("--last--", dir);
@@ -47,11 +47,11 @@ TEST(null_or_empty_chooses_home)
 	strcpy(cfg.home_dir, "--home--");
 	strcpy(lwin.curr_dir, "--cur--");
 
-	pick_cd_path(&lwin, ".", "", &updir, dir, sizeof(dir));
+	flist_pick_cd_path(&lwin, ".", "", &updir, dir, sizeof(dir));
 	assert_false(updir);
 	assert_string_equal("--home--", dir);
 
-	pick_cd_path(&lwin, ".", NULL, &updir, dir, sizeof(dir));
+	flist_pick_cd_path(&lwin, ".", NULL, &updir, dir, sizeof(dir));
 	assert_false(updir);
 	assert_string_equal("--home--", dir);
 }
@@ -63,7 +63,7 @@ TEST(double_in_current_view_dot_just_sets_updir)
 
 	dir[0] = '\0';
 
-	pick_cd_path(&lwin, lwin.curr_dir, "..", &updir, dir, sizeof(dir));
+	flist_pick_cd_path(&lwin, lwin.curr_dir, "..", &updir, dir, sizeof(dir));
 	assert_true(updir);
 	assert_string_equal("", dir);
 }
@@ -75,7 +75,7 @@ TEST(double_in_other_view_changes_dir)
 
 	dir[0] = '\0';
 
-	pick_cd_path(&lwin, "some path", "..", &updir, dir, sizeof(dir));
+	flist_pick_cd_path(&lwin, "some path", "..", &updir, dir, sizeof(dir));
 	assert_false(updir);
 	assert_string_equal("some path/..", dir);
 }

@@ -144,8 +144,6 @@ static void add_parent_entry(view_t *view, dir_entry_t **entries, int *count);
 static void init_dir_entry(view_t *view, dir_entry_t *entry, const char name[]);
 static dir_entry_t * alloc_dir_entry(dir_entry_t **list, int list_size);
 static int tree_has_changed(const dir_entry_t *entries, size_t nchildren);
-TSTATIC void pick_cd_path(view_t *view, const char base_dir[],
-		const char path[], int *updir, char buf[], size_t buf_size);
 static void find_dir_in_cdpath(const char base_dir[], const char dst[],
 		char buf[], size_t buf_size);
 static entries_t list_sibling_dirs(view_t *view);
@@ -2945,7 +2943,7 @@ cd(view_t *view, const char base_dir[], const char path[])
 	char canonic_dir[PATH_MAX + 1];
 	int updir;
 
-	pick_cd_path(view, base_dir, path, &updir, dir, sizeof(dir));
+	flist_pick_cd_path(view, base_dir, path, &updir, dir, sizeof(dir));
 	to_canonic_path(dir, base_dir, canonic_dir, sizeof(canonic_dir));
 
 	if(updir)
@@ -2971,11 +2969,9 @@ cd(view_t *view, const char base_dir[], const char path[])
 	return 0;
 }
 
-/* Picks new directory or requested going up one level judging from supplied
- * base directory, desired location and current location of the view. */
-TSTATIC void
-pick_cd_path(view_t *view, const char base_dir[], const char path[], int *updir,
-		char buf[], size_t buf_size)
+void
+flist_pick_cd_path(view_t *view, const char base_dir[], const char path[],
+		int *updir, char buf[], size_t buf_size)
 {
 	char *arg;
 
