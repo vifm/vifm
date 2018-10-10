@@ -52,7 +52,7 @@ TEST(invisible_panes_are_accounted_for_on_counting_visitors_with_global_tabs)
 {
 	strcpy(lwin.curr_dir, "/l");
 	strcpy(rwin.curr_dir, "/r");
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 
 	assert_int_equal(2, tabs_visitor_count("/l"));
 	assert_int_equal(2, tabs_visitor_count("/r"));
@@ -64,7 +64,7 @@ TEST(invisible_panes_are_accounted_for_on_counting_visitors_with_pane_tabs)
 	strcpy(lwin.curr_dir, "/l");
 	strcpy(rwin.curr_dir, "/r");
 	cfg.pane_tabs = 1;
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 
 	assert_int_equal(2, tabs_visitor_count("/l"));
 	assert_int_equal(1, tabs_visitor_count("/r"));
@@ -74,8 +74,8 @@ TEST(invisible_panes_are_accounted_for_on_counting_visitors_with_pane_tabs)
 TEST(pane_tabs_are_swapped_on_switch)
 {
 	cfg.pane_tabs = 1;
-	tabs_new(NULL);
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
 	curr_view = &rwin;
 	other_view = &lwin;
 
@@ -90,8 +90,8 @@ TEST(goto_tab_stays_on_current_pane_tab)
 	tab_info_t tab_info;
 
 	cfg.pane_tabs = 1;
-	tabs_new(NULL);
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_goto(2);
 
@@ -104,8 +104,8 @@ TEST(goto_tab_checks_boundaries_of_pane_tabs)
 	tab_info_t tab_info;
 
 	cfg.pane_tabs = 1;
-	tabs_new(NULL);
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_goto(-1);
 	assert_true(tabs_get(&lwin, 2, &tab_info));
@@ -120,8 +120,8 @@ TEST(goto_tab_stays_on_current_global_tab)
 {
 	tab_info_t tab_info;
 
-	tabs_new(NULL);
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_goto(2);
 
@@ -133,8 +133,8 @@ TEST(goto_tab_checks_boundaries_of_global_tabs)
 {
 	tab_info_t tab_info;
 
-	tabs_new(NULL);
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_goto(-1);
 	assert_true(tabs_get(&lwin, 2, &tab_info));
@@ -147,8 +147,8 @@ TEST(goto_tab_checks_boundaries_of_global_tabs)
 
 TEST(view_roles_are_swapped_on_switching_global_tabs)
 {
-	tabs_new(NULL);
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
 	curr_view = &rwin;
 	other_view = &lwin;
 
@@ -161,7 +161,7 @@ TEST(view_roles_are_swapped_on_switching_global_tabs)
 TEST(pane_tab_is_closed)
 {
 	cfg.pane_tabs = 1;
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_goto(0);
 	tabs_close();
@@ -171,7 +171,7 @@ TEST(pane_tab_is_closed)
 
 TEST(global_tab_is_closed)
 {
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_goto(0);
 	tabs_close();
@@ -184,7 +184,7 @@ TEST(pane_tabs_are_traversed_forward)
 	tab_info_t tab_info;
 
 	cfg.pane_tabs = 1;
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_next(1);
 
@@ -197,7 +197,7 @@ TEST(pane_tabs_are_traversed_back)
 	tab_info_t tab_info;
 
 	cfg.pane_tabs = 1;
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 
 	tabs_previous(1);
 
@@ -222,14 +222,14 @@ TEST(tabs_get_returns_inactive_global_tab)
 {
 	tab_info_t tab_info;
 
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 	assert_true(tabs_get(&lwin, 0, &tab_info));
 	assert_true(tab_info.view != &lwin);
 	assert_true(tab_info.view != &rwin);
 
 	curr_view = &rwin;
 	other_view = &lwin;
-	tabs_new(NULL);
+	tabs_new(NULL, NULL);
 	assert_true(tabs_get(&lwin, 1, &tab_info));
 	assert_true(tab_info.view != &lwin);
 	assert_true(tab_info.view != &rwin);

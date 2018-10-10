@@ -33,9 +33,10 @@ tab_info_t;
 /* Performs initialization of the unit. */
 void tabs_init(void);
 
-/* Creates a new tab and switches to it.  Name can be NULL.  Returns zero on
- * success, otherwise non-zero is returned. */
-int tabs_new(const char name[]);
+/* Creates a new tab and switches to it.  Name can be NULL.  Path specifies
+ * location of active pane and can be NULL.  Returns zero on success, otherwise
+ * non-zero is returned. */
+int tabs_new(const char name[], const char path[]);
 
 /* Sets name of the current tab.  Name can be NULL. */
 void tabs_rename(struct view_t *view, const char name[]);

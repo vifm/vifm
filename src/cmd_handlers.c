@@ -4132,7 +4132,7 @@ tabnew_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Switching tab of single pane would drop comparison");
 		return 1;
 	}
-	if(tabs_new(cmd_info->argc > 0 ? cmd_info->argv[0] : NULL) != 0)
+	if(tabs_new(cmd_info->argc > 0 ? cmd_info->argv[0] : NULL, NULL) != 0)
 	{
 		ui_sb_err("Failed to open a new tab");
 		return 1;
