@@ -786,9 +786,9 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "set name of current tab",
 	  .flags = HAS_COMMENT,
 	  .handler = &tabname_cmd,     .min_args = 0,   .max_args = 1, },
-	{ .name = "tabnew",            .abbr = NULL,    .id = -1,
+	{ .name = "tabnew",            .abbr = NULL,    .id = COM_TABNEW,
 	  .descr = "make new tab and switch to it",
-	  .flags = HAS_COMMENT,
+	  .flags = HAS_QUOTED_ARGS | HAS_ENVVARS | HAS_MACROS_FOR_CMD | HAS_COMMENT,
 	  .handler = &tabnew_cmd,      .min_args = 0,   .max_args = 1, },
 	{ .name = "tabnext",           .abbr = "tabn",  .id = -1,
 	  .descr = "go to next or n-th tab",
@@ -4123,7 +4123,7 @@ tabname_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* Creates a new tab.  Takes optional name of the new tab. */
+/* Creates a new tab.  Takes optional path for the new tab. */
 static int
 tabnew_cmd(const cmd_info_t *cmd_info)
 {
@@ -4132,7 +4132,29 @@ tabnew_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Switching tab of single pane would drop comparison");
 		return 1;
 	}
-	if(tabs_new(cmd_info->argc > 0 ? cmd_info->argv[0] : NULL, NULL) != 0)
+
+	const char *path = NULL;
+	char canonic_dir[PATH_MAX + 1];
+
+	if(cmd_info->argc > 0)
+	{
+		char dir[PATH_MAX + 1];
+		int updir;
+
+		flist_pick_cd_path(curr_view, flist_get_dir(curr_view), cmd_info->argv[0],
+				&updir, dir, sizeof(dir));
+		to_canonic_path(dir, flist_get_dir(curr_view), canonic_dir,
+				sizeof(canonic_dir));
+
+		if(!cd_is_possible(canonic_dir))
+		{
+			return 0;
+		}
+
+		path = canonic_dir;
+	}
+
+	if(tabs_new(NULL, path) != 0)
 	{
 		ui_sb_err("Failed to open a new tab");
 		return 1;

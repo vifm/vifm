@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 5, 2018" "vifm 0.9.1"
+.TH VIFM 1 "October 10, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2725,8 +2725,9 @@ set, update or reset (when no argument is provided) name of the current tab.
 .TP
 .BI "                                         :tabnew"
 .TP
-.BI ":tabnew [name]"
-create new tab.  Accepts optional name for the new tab.
+.BI ":tabnew [path]"
+create new tab.  Accepts optional path for the new tab.  Macros and environment
+variables are expanded.
 .TP
 .BI "                                         :tabnext"
 .TP
