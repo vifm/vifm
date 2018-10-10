@@ -275,6 +275,8 @@ static int tabclose_cmd(const cmd_info_t *cmd_info);
 static int tabmove_cmd(const cmd_info_t *cmd_info);
 static int tabname_cmd(const cmd_info_t *cmd_info);
 static int tabnew_cmd(const cmd_info_t *cmd_info);
+static int tabnext_cmd(const cmd_info_t *cmd_info);
+static int tabprevious_cmd(const cmd_info_t *cmd_info);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int get_at(const view_t *view, const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
@@ -784,10 +786,18 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "set name of current tab",
 	  .flags = HAS_COMMENT,
 	  .handler = &tabname_cmd,     .min_args = 0,   .max_args = 1, },
-	{ .name = "tabnew",            .abbr = NULL,    .id = -1,
+	{ .name = "tabnew",            .abbr = NULL,    .id = COM_TABNEW,
 	  .descr = "make new tab and switch to it",
-	  .flags = HAS_COMMENT,
+	  .flags = HAS_QUOTED_ARGS | HAS_ENVVARS | HAS_MACROS_FOR_CMD | HAS_COMMENT,
 	  .handler = &tabnew_cmd,      .min_args = 0,   .max_args = 1, },
+	{ .name = "tabnext",           .abbr = "tabn",  .id = -1,
+	  .descr = "go to next or n-th tab",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabnext_cmd,     .min_args = 0,   .max_args = 1, },
+	{ .name = "tabprevious",       .abbr = "tabp",  .id = -1,
+	  .descr = "go to previous or n-th previous tab",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabprevious_cmd, .min_args = 0,   .max_args = 1, },
 	{ .name = "touch",             .abbr = NULL,    .id = COM_TOUCH,
 	  .descr = "create files",
 	  .flags = HAS_RANGE | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD,
@@ -4113,7 +4123,7 @@ tabname_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* Creates a new tab.  Takes optional name of the new tab. */
+/* Creates a new tab.  Takes optional path for the new tab. */
 static int
 tabnew_cmd(const cmd_info_t *cmd_info)
 {
@@ -4122,11 +4132,75 @@ tabnew_cmd(const cmd_info_t *cmd_info)
 		ui_sb_err("Switching tab of single pane would drop comparison");
 		return 1;
 	}
-	if(tabs_new(cmd_info->argc > 0 ? cmd_info->argv[0] : NULL) != 0)
+
+	const char *path = NULL;
+	char canonic_dir[PATH_MAX + 1];
+
+	if(cmd_info->argc > 0)
+	{
+		char dir[PATH_MAX + 1];
+		int updir;
+
+		flist_pick_cd_path(curr_view, flist_get_dir(curr_view), cmd_info->argv[0],
+				&updir, dir, sizeof(dir));
+		to_canonic_path(dir, flist_get_dir(curr_view), canonic_dir,
+				sizeof(canonic_dir));
+
+		if(!cd_is_possible(canonic_dir))
+		{
+			return 0;
+		}
+
+		path = canonic_dir;
+	}
+
+	if(tabs_new(NULL, path) != 0)
 	{
 		ui_sb_err("Failed to open a new tab");
 		return 1;
 	}
+	return 0;
+}
+
+/* Switches either to the next tab or to tab specified by its number in the only
+ * optional parameter. */
+static int
+tabnext_cmd(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->argc == 0)
+	{
+		tabs_next(1);
+		return 0;
+	}
+
+	int n;
+	if(!read_int(cmd_info->argv[0], &n) || n <= 0 || n > tabs_count(curr_view))
+	{
+		return CMDS_ERR_INVALID_ARG;
+	}
+
+	tabs_goto(n - 1);
+	return 0;
+}
+
+/* Switches either to the previous tab or to n-th previous tab, where n is
+ * specified by the only optional parameter. */
+static int
+tabprevious_cmd(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->argc == 0)
+	{
+		tabs_previous(1);
+		return 0;
+	}
+
+	int n;
+	if(!read_int(cmd_info->argv[0], &n) || n <= 0)
+	{
+		return CMDS_ERR_INVALID_ARG;
+	}
+
+	tabs_previous(n);
 	return 0;
 }
 

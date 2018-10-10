@@ -68,10 +68,10 @@ typedef struct
 }
 global_tab_t;
 
-static int tabs_new_global(const char name[]);
+static int tabs_new_global(const char name[], const char path[]);
 static pane_tab_t * tabs_new_pane(pane_tabs_t *ptabs, view_t *view,
-		const char name[]);
-static void clone_view(view_t *dst, view_t *src);
+		const char name[], const char path[]);
+static void clone_view(view_t *dst, view_t *src, const char path[]);
 static void tabs_goto_pane(int idx);
 static void tabs_goto_global(int idx);
 static void capture_global_state(global_tab_t *gtab);
@@ -95,18 +95,18 @@ static int current_tab;
 void
 tabs_init(void)
 {
-	const int result = tabs_new_global(NULL);
+	const int result = tabs_new_global(NULL, NULL);
 	assert(result == 0 && "Failed to initialize first tab.");
 	(void)result;
 }
 
 int
-tabs_new(const char name[])
+tabs_new(const char name[], const char path[])
 {
 	if(cfg.pane_tabs)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
-		pane_tab_t *const ptab = tabs_new_pane(ptabs, curr_view, name);
+		pane_tab_t *const ptab = tabs_new_pane(ptabs, curr_view, name, path);
 		if(ptab == NULL)
 		{
 			return 1;
@@ -117,13 +117,14 @@ tabs_new(const char name[])
 		return 0;
 	}
 
-	return tabs_new_global(name);
+	return tabs_new_global(name, path);
 }
 
-/* Creates new global tab with the specified name, which might be NULL.  Returns
- * zero on success, otherwise non-zero is returned. */
+/* Creates new global tab with the specified name, which might be NULL.  Path
+ * specifies location of active pane and can be NULL.  Returns zero on success,
+ * otherwise non-zero is returned. */
 static int
-tabs_new_global(const char name[])
+tabs_new_global(const char name[], const char path[])
 {
 	global_tab_t new_tab = {};
 
@@ -132,8 +133,10 @@ tabs_new_global(const char name[])
 		return 1;
 	}
 
-	if(tabs_new_pane(&new_tab.left, &lwin, NULL) == NULL ||
-			tabs_new_pane(&new_tab.right, &rwin, NULL) == NULL)
+	const char *leftPath = (curr_view == &lwin ? path : NULL);
+	const char *rightPath = (curr_view == &rwin ? path : NULL);
+	if(tabs_new_pane(&new_tab.left, &lwin, NULL, leftPath) == NULL ||
+			tabs_new_pane(&new_tab.right, &rwin, NULL, rightPath) == NULL)
 	{
 		free_global_tab(&new_tab);
 		return 1;
@@ -158,10 +161,12 @@ tabs_new_global(const char name[])
 	return 0;
 }
 
-/* Creates new tab with the specified name, which might be NULL.  Returns newly
- * created tab on success or NULL on error. */
+/* Creates new tab with the specified name, which might be NULL.  Path specifies
+ * location of active pane and can be NULL.  Returns newly created tab on
+ * success or NULL on error. */
 static pane_tab_t *
-tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[])
+tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
+		const char path[])
 {
 	pane_tab_t new_tab = {};
 
@@ -180,7 +185,7 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[])
 		return &ptabs->tabs[0];
 	}
 
-	clone_view(&new_tab.view, view);
+	clone_view(&new_tab.view, view, path);
 	update_string(&new_tab.name, name);
 
 	if(DA_SIZE(ptabs->tabs) == 1U)
@@ -196,12 +201,12 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[])
 	return &ptabs->tabs[ptabs->current + 1];
 }
 
-/* Clones one view into another.  The destination view is assumed to not own any
- * resources. */
+/* Clones one view into another.  Path specifies location of active pane and can
+ * be NULL.  The destination view is assumed to not own any resources. */
 static void
-clone_view(view_t *dst, view_t *src)
+clone_view(view_t *dst, view_t *src, const char path[])
 {
-	strcpy(dst->curr_dir, flist_get_dir(src));
+	strcpy(dst->curr_dir, path == NULL ? flist_get_dir(src) : path);
 	dst->timestamps_mutex = src->timestamps_mutex;
 	dst->win = src->win;
 	dst->title = src->title;

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Sep 23
+*vifm-app.txt*    For Vifm version 0.9.1  Last change: 2018 Oct 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2274,8 +2274,22 @@ yet supported) and might be changed in future releases, or get an alias.
     set, update or reset (when no argument is provided) name of the current
     tab.
 
-:tabnew [name]                                 *vifm-:tabnew*
-    create new tab.  Accepts optional name for the new tab.
+:tabnew [path]                                 *vifm-:tabnew*
+    create new tab.  Accepts optional path for the new tab.  Macros and
+    environment variables are expanded.
+
+                                               *vifm-:tabnext* *vifm-:tabn*
+:tabn[ext]
+    switch to the next tab (wrapping around).
+:tabn[ext] {n}
+    go to the tab number {n}.  Tab numeration starts with 1.
+
+                                               *vifm-:tabprevious* *vifm-:tabp*
+:tabp[revious]
+    switch to the previous tab (wrapping around).
+:tabp[revious] {n}
+    go to the {n}-th previous tab.  Note that |vifm-:tabnext| handles its
+    argument differently.
 
 :[line]touch file...                           *vifm-:touch*
     create files at specified paths.  Aborts on errors.  Doesn't update time

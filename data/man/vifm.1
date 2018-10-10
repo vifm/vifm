@@ -1,4 +1,4 @@
-.TH VIFM 1 "September 23, 2018" "vifm 0.9.1"
+.TH VIFM 1 "October 10, 2018" "vifm 0.9.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2725,8 +2725,26 @@ set, update or reset (when no argument is provided) name of the current tab.
 .TP
 .BI "                                         :tabnew"
 .TP
-.BI ":tabnew [name]"
-create new tab.  Accepts optional name for the new tab.
+.BI ":tabnew [path]"
+create new tab.  Accepts optional path for the new tab.  Macros and environment
+variables are expanded.
+.TP
+.BI "                                         :tabnext"
+.TP
+.BI ":tabn[ext]"
+switch to the next tab (wrapping around).
+.TP
+.BI ":tabn[ext] {n}"
+go to the tab number {n}.  Tab numeration starts with 1.
+.TP
+.BI "                                         :tabprevious"
+.TP
+.BI ":tabp[revious]"
+switch to the previous tab (wrapping around).
+.TP
+.BI ":tabp[revious] {n}"
+go to the {n}-th previous tab.  Note that :tabnext handles its argument
+differently.
 .TP
 .BI "                                         :touch"
 .TP

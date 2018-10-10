@@ -65,6 +65,7 @@ to_html "$dir/../data/vim/syntax/vifm.vim" "$syntax_regression_file" \
 
 if ! git diff --quiet --no-index "$dir/before.vifm.html" "$dir/after.vifm.html"
 then
-    git diff --no-index --word-diff "$dir/before.vifm.html" \
-                                    "$dir/after.vifm.html" || true
+    git diff --no-index --word-diff \
+             --word-diff-regex='<[^>]+>|[^<>[:space:]]+' \
+             "$dir/before.vifm.html" "$dir/after.vifm.html" || true
 fi

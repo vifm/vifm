@@ -1564,8 +1564,8 @@ static void
 call_delete(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {
 	check_marking(curr_view, keys_info->count, keys_info->indexes);
-	curr_stats.save_msg = fops_delete(curr_view, def_reg(key_info.reg),
-			use_trash);
+	curr_stats.save_msg = (fops_delete(curr_view, def_reg(key_info.reg),
+			use_trash) != 0);
 	free_list_of_file_indexes(keys_info);
 }
 

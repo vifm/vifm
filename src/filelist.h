@@ -99,6 +99,10 @@ int pane_in_dir(const view_t *view, const char path[]);
  * view) with optional wrapping.  Returns non-zero if statusbar message should
  * be preserved. */
 int go_to_sibling_dir(view_t *view, int offset, int wrap);
+/* Picks new directory or requested going up one level judging from supplied
+ * base directory, desired location and current location of the view. */
+void flist_pick_cd_path(view_t *view, const char base_dir[], const char path[],
+		int *updir, char buf[], size_t buf_size);
 
 /* Typed (with trailing slash for directories) file name function. */
 
@@ -303,8 +307,6 @@ void flist_update_origins(view_t *view, const char from[], char to[]);
 
 TSTATIC_DEFS(
 	void check_file_uniqueness(view_t *view);
-	void pick_cd_path(view_t *view, const char base_dir[], const char path[],
-		int *updir, char buf[], size_t buf_size);
 )
 
 #endif /* VIFM__FILELIST_H__ */

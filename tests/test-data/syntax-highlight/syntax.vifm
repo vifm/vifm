@@ -409,6 +409,18 @@ tabmove
 tree
 regular
 media
+tabn
+tabne
+tabnex
+tabnext
+tabp
+tabpr
+tabpre
+tabprev
+tabprevi
+tabprevio
+tabpreviou
+tabprevious
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine

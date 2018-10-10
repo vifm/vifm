@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: September 22, 2018
+" Last Change: October 6, 2018
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -20,9 +20,9 @@ syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
 		\ lstrash marks media mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd
 		\ pu[t] pw[d] qa[ll] q[uit] redr[aw] reg[isters] regular rename restart
 		\ restore rlink screen sh[ell] siblnext siblprev sor[t] sp[lit] s[ubstitute]
-		\ tabc[lose] tabm[ove] tabname tabnew touch tr trashes tree sync undol[ist]
-		\ ve[rsion] vie[w] vifm vs[plit] winc[md] w[rite] wq wqa[ll] xa[ll] x[it]
-		\ y[ank]
+		\ tabc[lose] tabm[ove] tabname tabnew tabn[ext] tabp[revious] touch tr
+		\ trashes tree sync undol[ist] ve[rsion] vie[w] vifm vs[plit] winc[md]
+		\ w[rite] wq wqa[ll] xa[ll] x[it] y[ank]
 		\ nextgroup=vifmArgs
 
 " commands that might be prepended to a command without changing everything else

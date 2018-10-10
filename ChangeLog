@@ -91,6 +91,10 @@
 	removable media.  One such helper with support of udevil and udisks is
 	provided.  Only for *nix systems.
 
+	Added :tabn[ext] and :tabp[revious] commands, which work as gt and gT
+	normal mode shortcuts correspondingly.  Thanks to Cosmin Popescu (a.k.a.
+	cosminadrianpopescu).
+
 	:quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
 	closing the application.
 

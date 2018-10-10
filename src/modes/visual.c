@@ -713,10 +713,9 @@ static void
 delete(key_info_t key_info, int use_trash)
 {
 	check_marking(view, 0, NULL);
-	if(confirm_deletion(flist_count_marked(view), use_trash))
+	if(fops_delete(view, def_reg(key_info.reg), use_trash))
 	{
-		const int save_msg = fops_delete(view, def_reg(key_info.reg), use_trash);
-		accept_and_leave(save_msg);
+		accept_and_leave(1);
 	}
 }
 
