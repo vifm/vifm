@@ -461,7 +461,10 @@ traverse_mount_points(mptraverser client, void *arg)
 				.mnt_dir = drive,
 				.mnt_type = "",
 			};
-			client(&entry, arg);
+			if(client(&entry, arg))
+			{
+				break;
+			}
 		}
 	}
 
