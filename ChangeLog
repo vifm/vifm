@@ -1,6 +1,6 @@
 0.9.1 to current
 
-	Added support for arbitrary expressions in 'statusline': '%{...}'.
+	Added support for arbitrary expressions in 'statusline': '%{...}',
 	e.g. '%{&sort}' evaluates to the value of the sort option.  Patch by Dmitry
 	Frank (a.k.a. dimonomid).
 
@@ -226,7 +226,7 @@
 	Fixed crash due to linking to wrong version of libtinfo.  Thanks to Ruslan
 	Osmanov (a.k.a. rosmanov) and Chema Alonso Josa (a.k.a. nimiux).
 
-	Fixed stdin stream wasn't closed for commands run for obtaining their
+	Fixed stdin stream not being closed for commands run for obtaining their
 	output since previous release (e.g. `!read i%q` would wait for input).
 	Also close it the same way on Windows too.
 
