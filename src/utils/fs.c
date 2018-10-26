@@ -654,6 +654,9 @@ remove_dir_content(const char path[])
 			char *const full_path = format_str("%s/%s", path, d->d_name);
 			if(entry_is_dir(full_path, d))
 			{
+				/* Attempt to make sure that we can change the directory we are
+				 * descending into. */
+				(void)os_chmod(full_path, 0777);
 				remove_dir_content(full_path);
 			}
 			(void)remove(full_path);

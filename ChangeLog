@@ -292,6 +292,8 @@
 	Fixed crash on feeding multi-byte string to :commands that fail to convert
 	it to wide representation.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Fixed non-empty read-only directories not being deleted by :empty command.
+
 0.9.1-beta to 0.9.1
 
 	Fixed :clone and :copy refusing to copy broken symbolic links, even though C
