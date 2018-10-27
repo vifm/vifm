@@ -284,5 +284,41 @@ TEST(opening_tab_in_new_location_updates_history)
 	cfg_resize_histories(0);
 }
 
+TEST(opening_tab_in_new_location_fetches_position_from_history)
+{
+	char cwd[PATH_MAX + 1], sandbox[PATH_MAX + 1], test_data[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	strcpy(lwin.curr_dir, sandbox);
+	assert_success(populate_dir_list(&lwin, 0));
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
+	cfg_resize_histories(5);
+	curr_stats.load_stage = 2;
+	curr_stats.ch_pos = 1;
+
+	flist_hist_save(&lwin, test_data, "rename", 0);
+	flist_hist_save(&lwin, sandbox, "..", 0);
+
+	cfg.pane_tabs = 1;
+	tabs_new(NULL, test_data);
+	assert_string_equal("rename", get_current_file_name(&lwin));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_string_equal("..", get_current_file_name(tab_info.view));
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_string_equal("rename", get_current_file_name(tab_info.view));
+
+	curr_stats.ch_pos = 0;
+	curr_stats.load_stage = 0;
+	cfg_resize_histories(0);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
