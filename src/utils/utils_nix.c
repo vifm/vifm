@@ -523,7 +523,10 @@ traverse_mount_points(mptraverser client, void *arg)
 
 	for(i = 0; i < nentries; ++i)
 	{
-		client(&entries[i], arg);
+		if(client(&entries[i], arg))
+		{
+			break;
+		}
 	}
 
 	return 0;

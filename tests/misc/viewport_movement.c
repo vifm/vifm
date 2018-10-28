@@ -1,10 +1,12 @@
 #include <stic.h>
 
+#include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/visual.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -22,6 +24,8 @@ SETUP()
 	other_view = &rwin;
 
 	columns_setup_column(SK_BY_NAME);
+
+	assert_success(stats_init(&cfg));
 }
 
 TEARDOWN()

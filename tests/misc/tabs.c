@@ -5,7 +5,12 @@
 #include "../../src/cfg/config.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
+#include "../../src/filelist.h"
+#include "../../src/flist_hist.h"
+#include "../../src/flist_pos.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -233,6 +238,112 @@ TEST(tabs_get_returns_inactive_global_tab)
 	assert_true(tabs_get(&lwin, 1, &tab_info));
 	assert_true(tab_info.view != &lwin);
 	assert_true(tab_info.view != &rwin);
+}
+
+TEST(opening_tab_in_new_location_updates_history)
+{
+	char cwd[PATH_MAX + 1], sandbox[PATH_MAX + 1], test_data[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	strcpy(lwin.curr_dir, test_data);
+	assert_success(populate_dir_list(&lwin, 0));
+
+	lwin.list_pos = fpos_find_by_name(&lwin, "compare");
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
+	cfg_resize_histories(5);
+	curr_stats.load_stage = 2;
+
+	lwin.list_pos = fpos_find_by_name(&lwin, "rename");
+
+	cfg.pane_tabs = 1;
+	assert_int_equal(0, lwin.history_pos);
+	assert_string_equal(test_data, lwin.history[0].dir);
+	assert_string_equal("compare", lwin.history[0].file);
+	tabs_new(NULL, sandbox);
+	assert_int_equal(1, lwin.history_pos);
+	assert_string_equal(test_data, lwin.history[0].dir);
+	assert_string_equal("rename", lwin.history[0].file);
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_int_equal(0, tab_info.view->history_pos);
+	assert_string_equal(test_data, tab_info.view->history[0].dir);
+	assert_string_equal("compare", tab_info.view->history[0].file);
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_int_equal(1, tab_info.view->history_pos);
+	assert_string_equal(test_data, tab_info.view->history[0].dir);
+	assert_string_equal("rename", tab_info.view->history[0].file);
+
+	curr_stats.load_stage = 0;
+	cfg_resize_histories(0);
+}
+
+TEST(opening_tab_in_new_location_fetches_position_from_history)
+{
+	char cwd[PATH_MAX + 1], sandbox[PATH_MAX + 1], test_data[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	strcpy(lwin.curr_dir, sandbox);
+	assert_success(populate_dir_list(&lwin, 0));
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
+	cfg_resize_histories(5);
+	curr_stats.load_stage = 2;
+
+	cfg.pane_tabs = 1;
+	tabs_new(NULL, test_data);
+	assert_int_equal(1, lwin.history_pos);
+	assert_string_equal(test_data, lwin.history[1].dir);
+
+	curr_stats.load_stage = 0;
+	cfg_resize_histories(0);
+}
+
+TEST(opening_tab_in_new_location_records_new_location_in_history)
+{
+	char cwd[PATH_MAX + 1], sandbox[PATH_MAX + 1], test_data[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	strcpy(lwin.curr_dir, sandbox);
+	assert_success(populate_dir_list(&lwin, 0));
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
+	cfg_resize_histories(5);
+	curr_stats.load_stage = 2;
+	curr_stats.ch_pos = 1;
+
+	flist_hist_save(&lwin, test_data, "rename", 0);
+	flist_hist_save(&lwin, sandbox, "..", 0);
+
+	cfg.pane_tabs = 1;
+	tabs_new(NULL, test_data);
+	assert_string_equal("rename", get_current_file_name(&lwin));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_string_equal("..", get_current_file_name(tab_info.view));
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_string_equal("rename", get_current_file_name(tab_info.view));
+
+	curr_stats.ch_pos = 0;
+	curr_stats.load_stage = 0;
+	cfg_resize_histories(0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

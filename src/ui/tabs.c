@@ -235,9 +235,20 @@ clone_view(view_t *dst, view_t *src, const char path[])
 
 	flist_hist_resize(dst, cfg.history_len);
 	flist_hist_clone(dst, src);
+	if(path != NULL && !flist_custom_active(src))
+	{
+		/* Record location we're leaving. */
+		flist_hist_save(dst, src->curr_dir, get_current_file_name(src),
+				src->list_pos - src->top_line);
+	}
 
-	(void)populate_dir_list(dst, 1);
+	(void)populate_dir_list(dst, path == NULL);
+	/* XXX: do we need to update origins or is this a leftover from before list
+	 *      population was introduced? */
 	flist_update_origins(dst, &dst->curr_dir[0], &src->curr_dir[0]);
+
+	/* Record new location. */
+	flist_hist_save(dst, NULL, NULL, -1);
 }
 
 void
