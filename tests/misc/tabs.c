@@ -2,6 +2,7 @@
 
 #include <string.h> /* strcpy() */
 
+#include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
