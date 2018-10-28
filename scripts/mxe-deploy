@@ -129,7 +129,7 @@ for test in bin/*; do
     basename="\${test#*/}"
     name="\${basename%.*}"
     mkdir -p "sandbox/\$name"
-    if [ "\$name" = "fuzz" ]; then
+    if [ "\$name" = "fuzz" ] || [ "\$name" = "regs_shmem_app" ]; then
         continue
     fi
     if ! \$test -s; then
@@ -142,7 +142,7 @@ for test in bin/*; do
     basename="\${test#*/}"
     name="\${basename%.*}"
     mkdir -p "sandbox/\$name"
-    if [ "\$name" = "fuzz" ]; then
+    if [ "\$name" = "fuzz" ] || [ "\$name" = "regs_shmem_app" ]; then
         continue
     fi
     if ! \$test -s; then

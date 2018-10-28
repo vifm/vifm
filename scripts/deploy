@@ -39,7 +39,7 @@ if [ "$target" = all -o "$target" = update ]; then
     echo "Updating version number..."
 
     # update version in ChangeLog
-    sed -i "1s/current/$ver/" ChangeLog
+    sed -i "1s/current/$ver ($(date '+%Y-%m-%d'))/" ChangeLog
 
     # update version in configure script
     sed -i "/AC_INIT(/s/, [^,]\\+/, $ver/" configure.ac
