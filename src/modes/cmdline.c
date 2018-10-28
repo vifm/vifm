@@ -1920,9 +1920,9 @@ paste_str(const char str[], int allow_escaping)
 		str = escaped;
 	}
 
-	wide = to_wide(str);
+	wide = to_wide_force(str);
 
-	if(insert_str(wide) == 0)
+	if(insert_str((str[0] != '\0' && wide[0] == L'\0') ? L"?" : wide) == 0)
 	{
 		update_cmdline_text(&input_stat);
 	}
