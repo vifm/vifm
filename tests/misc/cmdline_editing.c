@@ -24,12 +24,14 @@ SETUP_ONCE()
 
 SETUP()
 {
-	char *error;
-
 	init_modes();
 	enter_cmdline_mode(CLS_COMMAND, "", NULL);
 
 	curr_view = &lwin;
+	view_setup(&lwin);
+
+	char *error;
+	matcher_free(curr_view->manual_filter);
 	assert_non_null(curr_view->manual_filter =
 			matcher_alloc("{filt}", 0, 0, "", &error));
 
@@ -43,12 +45,9 @@ SETUP()
 
 TEARDOWN()
 {
-	free_dir_entries(&lwin, &lwin.dir_entry, &lwin.list_rows);
+	view_teardown(&lwin);
 
 	(void)vle_keys_exec_timed_out(WK_C_c);
-
-	matcher_free(curr_view->manual_filter);
-	curr_view->manual_filter = NULL;
 
 	vle_keys_reset();
 }
