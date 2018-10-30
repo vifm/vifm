@@ -280,8 +280,8 @@ op_none(ops_t *ops, void *data, const char *src, const char *dst)
 static int
 op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 {
-	if(cfg_confirm_delete(0) && !curr_stats.confirmed &&
-			(ops == NULL || !ops->bg))
+	if((ops == NULL || !ops->bg) && cfg_confirm_delete(0) &&
+			!curr_stats.confirmed)
 	{
 		curr_stats.confirmed = prompt_msg("Permanent deletion",
 				"Are you sure?  If you're undoing a command and want to see file "
