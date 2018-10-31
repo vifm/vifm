@@ -625,7 +625,7 @@ determine_width(const char msg[])
 }
 
 int
-confirm_deletion(int nfiles, int use_trash)
+confirm_deletion(char *files[], int nfiles, int use_trash)
 {
 	if(nfiles == 0)
 	{
@@ -633,21 +633,44 @@ confirm_deletion(int nfiles, int use_trash)
 	}
 
 	curr_stats.confirmed = 0;
-	if(cfg_confirm_delete(use_trash))
+	if(!cfg_confirm_delete(use_trash))
 	{
-		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
-		char *const msg = format_str("Are you sure you want to delete %d file%s?",
-				nfiles, (nfiles == 1) ? "" : "s");
-		const int proceed = prompt_msg(title, msg);
-		free(msg);
-
-		if(!proceed)
-		{
-			return 0;
-		}
-
-		curr_stats.confirmed = 1;
+		return 1;
 	}
+
+	const char *const title = use_trash ? "Deletion" : "Permanent deletion";
+	char *msg;
+
+	/* Trailing space is needed to prevent line dropping. */
+	if(nfiles == 1)
+	{
+		msg = format_str("Are you sure you want to delete \"%s\"?", files[0]);
+	}
+	else
+	{
+		msg = format_str("Are you sure you want to delete %d files?\n ", nfiles);
+
+		size_t msg_len = strlen(msg);
+		int i;
+		for(i = 0; i < nfiles; ++i)
+		{
+			if(strappend(&msg, &msg_len, "\n* ") != 0 ||
+					strappend(&msg, &msg_len, files[i]) != 0)
+			{
+				break;
+			}
+		}
+	}
+
+	prompt_msg_internal(title, msg, NULL, 1);
+	free(msg);
+
+	if(result != R_YES)
+	{
+		return 0;
+	}
+
+	curr_stats.confirmed = 1;
 	return 1;
 }
 

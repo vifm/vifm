@@ -74,7 +74,7 @@ void draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
 
 /* Checks with the user that deletion is permitted.  Returns non-zero if so,
  * otherwise zero is returned. */
-int confirm_deletion(int nfiles, int use_trash);
+int confirm_deletion(char *files[], int nfiles, int use_trash);
 
 /* Reads contents of the file and displays it in series of dialog messages.  ef
  * can be NULL.  Closes ef. */

@@ -283,9 +283,13 @@ op_remove(ops_t *ops, void *data, const char *src, const char *dst)
 	if((ops == NULL || !ops->bg) && cfg_confirm_delete(0) &&
 			!curr_stats.confirmed)
 	{
-		curr_stats.confirmed = prompt_msg("Permanent deletion",
-				"Are you sure?  If you're undoing a command and want to see file "
-				"names, use :undolist! command.");
+		char *msg = format_str("Are you sure?  "
+				"At least the following file is about to be deleted:\n \n%s\n \n"
+				"If you're undoing a command and want to see file names, use "
+				":undolist! command.",
+				replace_home_part(src));
+		curr_stats.confirmed = prompt_msg("Permanent deletion", msg);
+		free(msg);
 		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
 	}
