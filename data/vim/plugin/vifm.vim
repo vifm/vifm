@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2018 January 01
+" Last Change: 2018 October 31
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -105,7 +105,9 @@ function! s:StartVifm(editcmd, ...)
 		enew
 		call termopen(g:vifm_exec . ' ' . g:vifm_exec_args . ' ' . ldir . ' ' . rdir
 		             \. ' ' . pickargsstr, callback)
+		let oldbuf = bufname('%')
 		execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
+		execute bufnr(oldbuf).'bwipeout'
 		startinsert
 	endif
 endfunction
