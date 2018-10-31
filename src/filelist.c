@@ -3491,19 +3491,6 @@ clear_marking(view_t *view)
 	}
 }
 
-int
-flist_count_marked(view_t *view)
-{
-	int i;
-	int count = 0;
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		const dir_entry_t *const entry = &view->dir_entry[i];
-		count += (entry->marked && fentry_is_valid(entry));
-	}
-	return count;
-}
-
 void
 flist_custom_set(view_t *view, const char title[], const char path[],
 		char *lines[], int nlines)

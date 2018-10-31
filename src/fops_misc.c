@@ -99,10 +99,30 @@ fops_delete(view_t *view, int reg, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
-	if(!confirm_deletion(flist_count_marked(view), use_trash))
+	strlist_t marked = {};
+	entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
+		if(!flist_custom_active(view))
+		{
+			char name[NAME_MAX + 1];
+			format_entry_name(entry, NF_FULL, sizeof(name), name);
+			marked.nitems = add_to_string_array(&marked.items, marked.nitems, 1,
+					name);
+			continue;
+		}
+
+		char short_path[PATH_MAX + 1];
+		get_short_path_of(view, entry, NF_FULL, 0, sizeof(short_path), short_path);
+		marked.nitems = add_to_string_array(&marked.items, marked.nitems, 1,
+				short_path);
+	}
+	if(!confirm_deletion(marked.items, marked.nitems, use_trash))
+	{
+		free_string_array(marked.items, marked.nitems);
 		return 0;
 	}
+	free_string_array(marked.items, marked.nitems);
 
 	/* This check for the case when we are for sure in the trash. */
 	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
@@ -337,7 +357,7 @@ fops_delete_bg(view_t *view, int use_trash)
 		}
 	}
 
-	if(!confirm_deletion(args->sel_list_len, use_trash))
+	if(!confirm_deletion(args->sel_list, args->sel_list_len, use_trash))
 	{
 		fops_free_bg_args(args);
 		return 0;

@@ -41,8 +41,10 @@
 /* Kinds of dialogs. */
 typedef enum
 {
-	D_ERROR, /* Error message. */
-	D_QUERY, /* User query. */
+	D_ERROR,              /* Error message. */
+	D_QUERY_WITHOUT_LIST, /* User query with all lines centered. */
+	D_QUERY_WITH_LIST,    /* User query with left aligned list and one line
+	                         centered at the top. */
 }
 Dialog;
 
@@ -70,14 +72,14 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[]);
+		const response_variant variants[], int with_list);
 static void enter(int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip, int lazy);
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
-		const char ctrl_msg[], int centered, int recommended_width);
+		const char ctrl_msg[], int lines_to_center, int recommended_width);
 static size_t measure_sub_lines(const char msg[], size_t *max_len);
 static size_t determine_width(const char msg[]);
 
@@ -305,7 +307,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 int
 prompt_msg(const char title[], const char message[])
 {
-	prompt_msg_internal(title, message, NULL);
+	prompt_msg_internal(title, message, NULL, 0);
 	return result == R_YES;
 }
 
@@ -314,17 +316,17 @@ prompt_msg_custom(const char title[], const char message[],
 		const response_variant variants[])
 {
 	assert(variants[0].key != '\0' && "Variants should have at least one item.");
-	prompt_msg_internal(title, message, variants);
+	prompt_msg_internal(title, message, variants, 0);
 	return custom_result;
 }
 
 /* Common implementation of prompt message.  The variants can be NULL. */
 static void
 prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[])
+		const response_variant variants[], int with_list)
 {
 	responses = variants;
-	msg_kind = D_QUERY;
+	msg_kind = (with_list ? D_QUERY_WITH_LIST : D_QUERY_WITHOUT_LIST);
 
 	redraw_error_msg(title, message, 0, 0);
 
@@ -365,7 +367,8 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	static int ctrl_c;
 
 	const char *ctrl_msg;
-	const int centered = (msg_kind == D_QUERY);
+	const int lines_to_center = msg_kind == D_QUERY_WITHOUT_LIST ? INT_MAX
+	                          : msg_kind == D_QUERY_WITH_LIST ? 1 : 0;
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -382,7 +385,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	}
 
 	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
-	draw_msg(title, message, ctrl_msg, centered, 0);
+	draw_msg(title, message, ctrl_msg, lines_to_center, 0);
 
 	if(lazy)
 	{
@@ -399,7 +402,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char *
 get_control_msg(Dialog msg_kind, int global_skip)
 {
-	if(msg_kind == D_QUERY)
+	if(msg_kind == D_QUERY_WITHOUT_LIST || msg_kind == D_QUERY_WITH_LIST)
 	{
 		if(responses == NULL)
 		{
@@ -460,11 +463,11 @@ draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
 	ui_refresh_win(error_win);
 }
 
-/* Draws possibly centered formatted message with specified title and control
- * message on error_win. */
+/* Draws formatted message with lines_to_center top lines centered with
+ * specified title and control message on error_win. */
 static void
 draw_msg(const char title[], const char msg[], const char ctrl_msg[],
-		int centered, int recommended_width)
+		int lines_to_center, int recommended_width)
 {
 	enum { margin = 1 };
 
@@ -544,7 +547,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			wresize(error_win, h, w);
 			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
-			cx = centered ? (w - utf8_strsw(buf))/2 : (1 + margin);
+			cx = lines_to_center-- > 0 ? (w - utf8_strsw(buf))/2 : (1 + margin);
 			if(cy == first_line_y)
 			{
 				first_line_x = cx;
@@ -622,7 +625,7 @@ determine_width(const char msg[])
 }
 
 int
-confirm_deletion(int nfiles, int use_trash)
+confirm_deletion(char *files[], int nfiles, int use_trash)
 {
 	if(nfiles == 0)
 	{
@@ -630,21 +633,44 @@ confirm_deletion(int nfiles, int use_trash)
 	}
 
 	curr_stats.confirmed = 0;
-	if(cfg_confirm_delete(use_trash))
+	if(!cfg_confirm_delete(use_trash))
 	{
-		const char *const title = use_trash ? "Deletion" : "Permanent deletion";
-		char *const msg = format_str("Are you sure you want to delete %d file%s?",
-				nfiles, (nfiles == 1) ? "" : "s");
-		const int proceed = prompt_msg(title, msg);
-		free(msg);
-
-		if(!proceed)
-		{
-			return 0;
-		}
-
-		curr_stats.confirmed = 1;
+		return 1;
 	}
+
+	const char *const title = use_trash ? "Deletion" : "Permanent deletion";
+	char *msg;
+
+	/* Trailing space is needed to prevent line dropping. */
+	if(nfiles == 1)
+	{
+		msg = format_str("Are you sure you want to delete \"%s\"?", files[0]);
+	}
+	else
+	{
+		msg = format_str("Are you sure you want to delete %d files?\n ", nfiles);
+
+		size_t msg_len = strlen(msg);
+		int i;
+		for(i = 0; i < nfiles; ++i)
+		{
+			if(strappend(&msg, &msg_len, "\n* ") != 0 ||
+					strappend(&msg, &msg_len, files[i]) != 0)
+			{
+				break;
+			}
+		}
+	}
+
+	prompt_msg_internal(title, msg, NULL, 1);
+	free(msg);
+
+	if(result != R_YES)
+	{
+		return 0;
+	}
+
+	curr_stats.confirmed = 1;
 	return 1;
 }
 

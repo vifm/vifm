@@ -228,9 +228,6 @@ int mark_selected(view_t *view);
 /* Same as mark_selected() function, but when selection is absent current file
  * is marked.  Returns number of marked files. */
 int mark_selection_or_current(view_t *view);
-/* Counts number of marked files that can be processed (thus excluding parent
- * directory, which is "..").  Returns the count. */
-int flist_count_marked(view_t *view);
 /* Removes dead entries (those that refer to non-existing files) or those that
  * do not match local filter from the view.  remove_subtrees flag controls
  * whether child nodes should be removed as well.  Returns number of erased
