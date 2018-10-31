@@ -77,7 +77,7 @@ static void redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char * get_control_msg(Dialog msg_kind, int global_skip);
 static const char * get_custom_control_msg(const response_variant responses[]);
 static void draw_msg(const char title[], const char msg[],
-		const char ctrl_msg[], int centered, int recommended_width);
+		const char ctrl_msg[], int lines_to_center, int recommended_width);
 static size_t measure_sub_lines(const char msg[], size_t *max_len);
 static size_t determine_width(const char msg[]);
 
@@ -365,7 +365,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	static int ctrl_c;
 
 	const char *ctrl_msg;
-	const int centered = (msg_kind == D_QUERY);
+	const int lines_to_center = (msg_kind == D_QUERY? INT_MAX : 0);
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -382,7 +382,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	}
 
 	ctrl_msg = get_control_msg(msg_kind, ctrl_c);
-	draw_msg(title, message, ctrl_msg, centered, 0);
+	draw_msg(title, message, ctrl_msg, lines_to_center, 0);
 
 	if(lazy)
 	{
@@ -460,11 +460,11 @@ draw_msgf(const char title[], const char ctrl_msg[], int recommended_width,
 	ui_refresh_win(error_win);
 }
 
-/* Draws possibly centered formatted message with specified title and control
- * message on error_win. */
+/* Draws formatted message with lines_to_center top lines centered with
+ * specified title and control message on error_win. */
 static void
 draw_msg(const char title[], const char msg[], const char ctrl_msg[],
-		int centered, int recommended_width)
+		int lines_to_center, int recommended_width)
 {
 	enum { margin = 1 };
 
@@ -544,7 +544,7 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 			wresize(error_win, h, w);
 			mvwin(error_win, (sh - h)/2, (sw - w)/2);
 
-			cx = centered ? (w - utf8_strsw(buf))/2 : (1 + margin);
+			cx = lines_to_center-- > 0 ? (w - utf8_strsw(buf))/2 : (1 + margin);
 			if(cy == first_line_y)
 			{
 				first_line_x = cx;
