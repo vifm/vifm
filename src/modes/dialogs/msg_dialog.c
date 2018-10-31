@@ -41,8 +41,10 @@
 /* Kinds of dialogs. */
 typedef enum
 {
-	D_ERROR, /* Error message. */
-	D_QUERY, /* User query. */
+	D_ERROR,              /* Error message. */
+	D_QUERY_WITHOUT_LIST, /* User query with all lines centered. */
+	D_QUERY_WITH_LIST,    /* User query with left aligned list and one line
+	                         centered at the top. */
 }
 Dialog;
 
@@ -70,7 +72,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[]);
+		const response_variant variants[], int with_list);
 static void enter(int result_mask);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip, int lazy);
@@ -305,7 +307,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 int
 prompt_msg(const char title[], const char message[])
 {
-	prompt_msg_internal(title, message, NULL);
+	prompt_msg_internal(title, message, NULL, 0);
 	return result == R_YES;
 }
 
@@ -314,17 +316,17 @@ prompt_msg_custom(const char title[], const char message[],
 		const response_variant variants[])
 {
 	assert(variants[0].key != '\0' && "Variants should have at least one item.");
-	prompt_msg_internal(title, message, variants);
+	prompt_msg_internal(title, message, variants, 0);
 	return custom_result;
 }
 
 /* Common implementation of prompt message.  The variants can be NULL. */
 static void
 prompt_msg_internal(const char title[], const char message[],
-		const response_variant variants[])
+		const response_variant variants[], int with_list)
 {
 	responses = variants;
-	msg_kind = D_QUERY;
+	msg_kind = (with_list ? D_QUERY_WITH_LIST : D_QUERY_WITHOUT_LIST);
 
 	redraw_error_msg(title, message, 0, 0);
 
@@ -365,7 +367,8 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	static int ctrl_c;
 
 	const char *ctrl_msg;
-	const int lines_to_center = (msg_kind == D_QUERY? INT_MAX : 0);
+	const int lines_to_center = msg_kind == D_QUERY_WITHOUT_LIST ? INT_MAX
+	                          : msg_kind == D_QUERY_WITH_LIST ? 1 : 0;
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -399,7 +402,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 static const char *
 get_control_msg(Dialog msg_kind, int global_skip)
 {
-	if(msg_kind == D_QUERY)
+	if(msg_kind == D_QUERY_WITHOUT_LIST || msg_kind == D_QUERY_WITH_LIST)
 	{
 		if(responses == NULL)
 		{
