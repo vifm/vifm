@@ -1761,7 +1761,8 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	{
 		char *title = make_tab_title(&tab_info, pf);
 		const int width_needed = utf8_strsw(title);
-		const int extra_width = snprintf(NULL, 0U, "[%d:]", i + 1);
+		char buffer_dummy[1];
+		const int extra_width = snprintf(buffer_dummy, 0U, "[%d:]", i + 1);
 		int width = max_width;
 
 		col_attr_t col = base_col;
