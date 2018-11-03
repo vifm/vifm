@@ -63,6 +63,10 @@ A string variable that specifies arguments for vifm.  Empty by default.
 A string variable that specifies command to run GUI terminal.
 By default it's equal to 'xterm -e'.
 
+                                               *g:vifm_embed_term*
+A boolean variable.  When evaluates to true and it's possible to create a
+terminal buffer, it will be used.  Enabled by default inside GUI version.
+
 Extension for "vifm" filetype~
 
                                                 *vifm-K*
