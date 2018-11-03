@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2018 January 01
+" Last Change: 2018 November 3
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -81,6 +81,27 @@ function! s:StartVifm(editcmd, ...)
 	let pickargsstr = join(pickargs, ' ')
 
 	if !has('nvim')
+		" Use embedded terminal if available.
+		if exists('*term_start') && g:vifm_embed_term
+			let env = { 'TERM' : has('gui_running') ? $TERM :
+			          \          &term =~ 256 ? 'xterm-256color' : &term }
+			let options = { 'term_name' : 'vifm: '.a:editcmd, 'curwin' : 1,
+			              \ 'exit_cb': 'VifmExitCb', 'env' : env }
+			function! VifmExitCb(job, code)
+				let data = b:data
+				buffer #
+				silent! bdelete! #
+				call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
+			endfunction
+			enew
+			let buf = term_start(['/bin/sh', '-c',
+			                     \ g:vifm_exec.' '.g:vifm_exec_args.' '.ldir.' '.rdir
+			                     \.' '.pickargsstr], options)
+			let data = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
+			call setbufvar(buf, 'data', data)
+			return
+		endif
+
 		" Gvim cannot handle ncurses so run vifm in a terminal.
 		if has('gui_running')
 			execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir
@@ -95,8 +116,7 @@ function! s:StartVifm(editcmd, ...)
 
 		call s:HandleRunResults(v:shell_error, listf, typef, a:editcmd)
 	else
-		" Work around handicapped neovim...
-		let callback = { 'listf': listf, 'typef' : typef, 'editcmd' : a:editcmd }
+		let callback = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
 		function! callback.on_exit(id, code, event)
 			buffer #
 			silent! bdelete! #
@@ -105,7 +125,9 @@ function! s:StartVifm(editcmd, ...)
 		enew
 		call termopen(g:vifm_exec . ' ' . g:vifm_exec_args . ' ' . ldir . ' ' . rdir
 		             \. ' ' . pickargsstr, callback)
+		let oldbuf = bufname('%')
 		execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
+		execute bufnr(oldbuf).'bwipeout'
 		startinsert
 	endif
 endfunction

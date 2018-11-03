@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.10-beta  Last change: 2018 Oct 28
+*vifm-plugin.txt*    For Vifm version 0.10-beta  Last change: 2018 Nov 03
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -38,13 +38,7 @@ Their meaning is the same as the meaning of *Vifm, but these commands overrule
 their *Vifm command used to start vifm.  *Vifm basically provide default,
 which can be overwritten right on file open.
 
-                                               *g:vifm_term*
-                                               *g:vifm_exec_args*
-The plugin has only two settings.  It's a string variable named g:vifm_term to
-let user specify command to run GUI terminal.  By default it's equal to
-'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
-by default and specifies path to vifm's executable.  To pass arguments to
-vifm use g:vifm_exec_args, which is empty by default.
+Installing and disabling~
 
 To use the plugin copy the vifm.vim file to either the system wide vim/plugin
 directory or into ~/.vim/plugin.
@@ -55,6 +49,23 @@ directory add >
  let loaded_vifm=1
 
 to your ~/.vimrc file.
+
+Configuration variables~
+
+                                               *g:vifm*
+A string variable.  Equals "vifm" by default and specifies path to vifm's
+executable.
+
+                                               *g:vifm_exec_args*
+A string variable that specifies arguments for vifm.  Empty by default.
+
+                                               *g:vifm_term*
+A string variable that specifies command to run GUI terminal.
+By default it's equal to 'xterm -e'.
+
+                                               *g:vifm_embed_term*
+A boolean variable.  When evaluates to true and it's possible to create a
+terminal buffer, it will be used.  Enabled by default inside GUI version.
 
 Extension for "vifm" filetype~
 

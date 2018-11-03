@@ -2,9 +2,14 @@
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
 
+	Support embedded terminal in the plugin for newer Vim.
+
 	Fixed crash on pasting elements of paths that contain broken UTF-8
 	sequences into command-line using Ctrl-X + key.  Thanks to Jose
 	Riha (a.k.a. jose1711).
+
+	Fixed extra unlisted buffer beeing kept around in neovim on :*Vifm
+	commands.  Thanks to randomizedthinking.
 
 0.9.1 to 0.10-beta (2018-10-28)
 
