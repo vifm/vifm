@@ -11,6 +11,9 @@
 	Fixed extra unlisted buffer beeing kept around in neovim on :*Vifm
 	commands.  Thanks to randomizedthinking.
 
+	Fixed invalid treatment of numerical arguments of filetype().  Thanks to
+	filterfalse.
+
 0.9.1 to 0.10-beta (2018-10-28)
 
 	Added support for arbitrary expressions in 'statusline': '%{...}',

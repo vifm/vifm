@@ -197,9 +197,9 @@ get_fnum(var_t fnum)
 	else
 	{
 		int int_val = var_to_int(fnum);
-		if(int_val > 0 && int_val < curr_view->list_rows)
+		if(int_val > 0 && int_val <= curr_view->list_rows)
 		{
-			pos = int_val;
+			pos = int_val - 1;
 		}
 	}
 

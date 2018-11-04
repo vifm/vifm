@@ -333,12 +333,13 @@ TEST(filetype)
 	ASSERT_OK("filetype('')", "");
 	lwin.list_pos = 0;
 	ASSERT_OK("filetype('.')", "reg");
-	ASSERT_OK("filetype(1)", "dir");
+	ASSERT_OK("filetype(1)", "reg");
+	ASSERT_OK("filetype(2)", "dir");
 #ifndef _WIN32
-	ASSERT_OK("filetype('2')", "link");
 	ASSERT_OK("filetype('3')", "link");
-	ASSERT_OK("filetype('2', 1)", "dir");
-	ASSERT_OK("filetype('3', 1)", "reg");
+	ASSERT_OK("filetype('4')", "link");
+	ASSERT_OK("filetype('3', 1)", "dir");
+	ASSERT_OK("filetype('4', 1)", "reg");
 #endif
 
 	opt_handlers_teardown();
