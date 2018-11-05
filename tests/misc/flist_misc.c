@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
+
 #include <string.h> /* strcpy() */
 #include <time.h> /* time() */
 
@@ -423,6 +425,22 @@ TEST(duplicated_entries_detected)
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_true(lwin.has_dups);
+}
+
+TEST(cache_handles_noexec_dirs, IF(not_windows))
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+	create_file(SANDBOX_PATH "/dir/file");
+	assert_success(chmod(SANDBOX_PATH "/dir", 0666));
+
+	cached_entries_t cache = {};
+	assert_true(flist_update_cache(&lwin, &cache, SANDBOX_PATH "/dir"));
+	assert_int_equal(0, cache.entries.nentries);
+	flist_free_cache(&lwin, &cache);
+
+	assert_success(chmod(SANDBOX_PATH "/dir", 0777));
+	assert_success(remove(SANDBOX_PATH "/dir/file"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -14,6 +14,9 @@
 	Fixed invalid treatment of numerical arguments of filetype().  Thanks to
 	filterfalse.
 
+	Fixed crash on previewing contents of directory without execute right in
+	miller view.  Thanks to filterfalse.
+
 0.9.1 to 0.10-beta (2018-10-28)
 
 	Added support for arbitrary expressions in 'statusline': '%{...}',
