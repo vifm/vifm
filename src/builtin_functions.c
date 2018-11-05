@@ -46,7 +46,7 @@ static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(var_t fnum);
-static FileType type_of_link_target(const dir_entry_t *entry);
+static const char * type_of_link_target(const dir_entry_t *entry);
 static var_t fnameescape_builtin(const call_info_t *call_info);
 static var_t getpanetype_builtin(const call_info_t *call_info);
 static var_t has_builtin(const call_info_t *call_info);
@@ -172,12 +172,14 @@ filetype_builtin(const call_info_t *call_info)
 	if(fnum >= 0)
 	{
 		const dir_entry_t *entry = &curr_view->dir_entry[fnum];
-		FileType type = entry->type;
-		if(type == FT_LINK && resolve_links)
+		if(entry->type == FT_LINK && resolve_links)
 		{
-			type = type_of_link_target(entry);
+			result_str = type_of_link_target(entry);
 		}
-		result_str = get_type_str(type);
+		else
+		{
+			result_str = get_type_str(entry->type);
+		}
 	}
 	return var_from_str(result_str);
 }
@@ -208,8 +210,8 @@ get_fnum(var_t fnum)
 }
 
 /* Resoves file type of link target.  The entry parameter is expected to point
- * at symbolic link.  Returns the type. */
-static FileType
+ * at symbolic link.  Returns the type as a string. */
+static const char *
 type_of_link_target(const dir_entry_t *entry)
 {
 	char path[PATH_MAX + 1];
@@ -219,9 +221,9 @@ type_of_link_target(const dir_entry_t *entry)
 	if(get_link_target_abs(path, entry->origin, path, sizeof(path)) != 0 ||
 			os_stat(path, &s) != 0)
 	{
-		return FT_UNK;
+		return "broken";
 	}
-	return get_type_from_mode(s.st_mode);
+	return get_type_str(get_type_from_mode(s.st_mode));
 }
 
 /* Escapes argument to make it suitable for use as an argument in :commands. */
