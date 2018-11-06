@@ -3140,7 +3140,6 @@ flist_list_in(view_t *view, const char path[], int only_dirs,
 
 	for(i = 0; i < len; ++i)
 	{
-		char *full_path;
 		dir_entry_t *entry;
 		int is_dir;
 
@@ -3149,9 +3148,15 @@ flist_list_in(view_t *view, const char path[], int only_dirs,
 			continue;
 		}
 
-		full_path = format_str("%s/%s", path, list[i]);
+		char *full_path = format_str("%s/%s", path, list[i]);
 		entry = entry_list_add(view, &siblings.entries, &siblings.nentries,
 				full_path);
+		free(full_path);
+
+		if(entry == NULL)
+		{
+			continue;
+		}
 
 		is_dir = fentry_is_dir(entry);
 		if((only_dirs && !is_dir) ||
@@ -3160,8 +3165,6 @@ flist_list_in(view_t *view, const char path[], int only_dirs,
 			fentry_free(view, entry);
 			--siblings.nentries;
 		}
-
-		free(full_path);
 	}
 	free_string_array(list, len);
 

@@ -635,7 +635,7 @@ draw(void)
 		return;
 	}
 
-	esc_state_init(&state, &cs->color[WIN_COLOR]);
+	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);
 
 	ui_view_erase(vi->view);
 

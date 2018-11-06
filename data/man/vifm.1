@@ -1,4 +1,4 @@
-.TH VIFM 1 "October 28, 2018" "vifm 0.10-beta"
+.TH VIFM 1 "November 05, 2018" "vifm 0.10-beta"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5220,15 +5220,16 @@ Examples:
 .BI filetype({fnum} [, {resolve}])
 
 The result is a string, which represents file type and is one of the list:
-    exe    executables
-    reg    regular files
-    link   symbolic links
-    dir    directories
-    char   character devices
-    block  block devices
-    fifo   pipes
-    sock   *nix domain sockets
-    ?      unknown file type (should never appear)
+    exe     executables
+    reg     regular files
+    link    symbolic links
+    broken  broken symbolic links (appears only when resolving)
+    dir     directories
+    char    character devices
+    block   block devices
+    fifo    pipes
+    sock    *nix domain sockets
+    ?       unknown file type (should not normally appear)
 
 The result can also be an empty string in case of invalid argument.
 

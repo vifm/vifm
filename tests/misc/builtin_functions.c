@@ -317,6 +317,8 @@ TEST(filetype)
 	assert_success(symlink(path, SANDBOX_PATH "/dir-link"));
 	snprintf(path, sizeof(path), "%s/existing-files/b", test_data);
 	assert_success(symlink(path, SANDBOX_PATH "/file-link"));
+	snprintf(path, sizeof(path), "%s/no-such-file", test_data);
+	assert_success(symlink(path, SANDBOX_PATH "/broken-link"));
 #endif
 
 	flist_custom_start(&lwin, "test");
@@ -325,6 +327,7 @@ TEST(filetype)
 #ifndef _WIN32
 	flist_custom_add(&lwin, SANDBOX_PATH "/dir-link");
 	flist_custom_add(&lwin, SANDBOX_PATH "/file-link");
+	flist_custom_add(&lwin, SANDBOX_PATH "/broken-link");
 #endif
 	assert_true(flist_custom_finish(&lwin, CV_VERY, 0) == 0);
 
@@ -333,12 +336,14 @@ TEST(filetype)
 	ASSERT_OK("filetype('')", "");
 	lwin.list_pos = 0;
 	ASSERT_OK("filetype('.')", "reg");
-	ASSERT_OK("filetype(1)", "dir");
+	ASSERT_OK("filetype(1)", "reg");
+	ASSERT_OK("filetype(2)", "dir");
 #ifndef _WIN32
-	ASSERT_OK("filetype('2')", "link");
 	ASSERT_OK("filetype('3')", "link");
-	ASSERT_OK("filetype('2', 1)", "dir");
-	ASSERT_OK("filetype('3', 1)", "reg");
+	ASSERT_OK("filetype('4')", "link");
+	ASSERT_OK("filetype('3', 1)", "dir");
+	ASSERT_OK("filetype('4', 1)", "reg");
+	ASSERT_OK("filetype(5, 1)", "broken");
 #endif
 
 	opt_handlers_teardown();
@@ -346,6 +351,7 @@ TEST(filetype)
 #ifndef _WIN32
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
 	assert_success(remove(SANDBOX_PATH "/file-link"));
+	assert_success(remove(SANDBOX_PATH "/broken-link"));
 #endif
 }
 

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10-beta  Last change: 2018 Oct 28
+*vifm-app.txt*    For Vifm version 0.10-beta  Last change: 2018 Nov 05
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4325,15 +4325,16 @@ Examples: >
 filetype({fnum} [, {resolve}])                 *vifm-filetype()*
 
 The result is a string, which represents file type and is one of the list:
-    exe    executables
-    reg    regular files
-    link   symbolic links
-    dir    directories
-    char   character devices
-    block  block devices
-    fifo   pipes
-    sock   *nix domain sockets
-    ?      unknown file type (should never appear)
+    exe     executables
+    reg     regular files
+    link    symbolic links
+    broken  broken symbolic links (appears only when resolving)
+    dir     directories
+    char    character devices
+    block   block devices
+    fifo    pipes
+    sock    *nix domain sockets
+    ?       unknown file type (should not normally appear)
 
 The result can also be an empty string in case of invalid argument.
 

@@ -49,6 +49,7 @@ typedef struct
 	int bg;              /* Current background color. */
 
 	col_attr_t defaults; /* Default values of other fields. */
+	int max_colors;      /* Limit on number of colors. */
 }
 esc_state;
 
@@ -73,8 +74,10 @@ char * esc_highlight_pattern(const char line[], const regex_t *re);
 int esc_print_line(const char line[], WINDOW *win, int col, int row,
 		int max_width, int dry_run, esc_state *state, int *printed);
 
-/* Initializes escape sequence parsing state with values from the defaults. */
-void esc_state_init(esc_state *state, const col_attr_t *defaults);
+/* Initializes escape sequence parsing state with values from the defaults and
+ * limit on number of colors. */
+void esc_state_init(esc_state *state, const col_attr_t *defaults,
+		int max_colors);
 
 TSTATIC_DEFS(
 	void esc_state_update(esc_state *state, const char str[]);

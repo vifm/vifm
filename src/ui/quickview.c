@@ -547,7 +547,7 @@ view_stream(FILE *fp, int wrapped)
 	const char *res;
 	esc_state state;
 
-	esc_state_init(&state, &cs->color[WIN_COLOR]);
+	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);
 
 	skip_bom(fp);
 	res = get_line(fp, line, sizeof(line));
