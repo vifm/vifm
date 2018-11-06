@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <curses.h> /* COLORS */
-
 #include "../../src/cfg/config.h"
 #include "../../src/ui/escape.h"
 #include "../../src/utils/utils.h"
@@ -13,21 +11,19 @@ static esc_state state;
 SETUP()
 {
 	col_attr_t def_color = { .fg = 1, .bg = 2, .attr = 0 };
-	esc_state_init(&state, &def_color);
+	esc_state_init(&state, &def_color, 16);
 }
 
 TEST(color_palette_256_is_supported)
 {
-	int colors = COLORS;
-	COLORS = 256;
+	col_attr_t def_color = { .fg = 1, .bg = 2, .attr = 0 };
+	esc_state_init(&state, &def_color, 256);
 
 	esc_state_update(&state, "\033[38;5;123m");
 	assert_int_equal(123, state.fg);
 
 	esc_state_update(&state, "\033[48;5;213m");
 	assert_int_equal(213, state.bg);
-
-	COLORS = colors;
 }
 
 TEST(resetting_things_work)

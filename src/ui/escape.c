@@ -476,14 +476,14 @@ esc_state_process_attr(esc_state *state, int n)
 			state->mode = (n == 5) ? ESM_WAIT_BG_COLOR : ESM_SHORT;
 			break;
 		case ESM_WAIT_FG_COLOR:
-			if(n < COLORS)
+			if(n < state->max_colors)
 			{
 				state->fg = n;
 			}
 			state->mode = ESM_SHORT;
 			break;
 		case ESM_WAIT_BG_COLOR:
-			if(n < COLORS)
+			if(n < state->max_colors)
 			{
 				state->bg = n;
 			}
@@ -560,13 +560,14 @@ esc_state_set_attr(esc_state *state, int n)
 }
 
 void
-esc_state_init(esc_state *state, const col_attr_t *defaults)
+esc_state_init(esc_state *state, const col_attr_t *defaults, int max_colors)
 {
 	state->mode = ESM_SHORT;
 	state->attrs = defaults->attr;
 	state->fg = defaults->fg;
 	state->bg = defaults->bg;
 	state->defaults = *defaults;
+	state->max_colors = max_colors;
 }
 
 /* Converts the leading character of the str string to a printable string.  Puts
