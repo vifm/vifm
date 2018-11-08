@@ -1409,7 +1409,7 @@ extract_option(const char **argsp, int replace)
 	char *opt = NULL;
 	size_t opt_len = 0U;
 
-	if(*args == '\"' && strchr(args + 1, '"') == NULL)
+	if(*args == '"' && strchr(args + 1, '"') == NULL)
 	{
 		/* This is a comment. */
 		*argsp = args + strlen(args);
