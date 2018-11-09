@@ -12,6 +12,8 @@
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
 
+#include "utils.h"
+
 /* Checks that expanded string isn't equal to format string. */
 #define ASSERT_EXPANDED(format) \
 	do \
@@ -53,6 +55,7 @@
 SETUP_ONCE()
 {
 	init_parser(&env_get);
+	try_enable_utf8_locale();
 }
 
 SETUP()
@@ -333,6 +336,13 @@ TEST(non_empty_optional_preserves_attrs)
 	ASSERT_EXPANDED_TO_WITH_HI("%1*%[%2*%t%3*%]%4*",
 	                           "file",
 	                           "2   ");
+}
+
+TEST(wide_characters_do_not_break_highlighting, IF(utf8_locale))
+{
+	ASSERT_EXPANDED_TO_WITH_HI("%1*螺丝 %= 螺%2*丝",
+	                           "螺丝 %= 螺丝",
+	                           "1    =    2 ");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
