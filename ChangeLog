@@ -20,6 +20,8 @@
 	Fixed crash on previewing contents of directory without execute right in
 	miller view.  Thanks to filterfalse.
 
+	Fixed statusline highlighting being broken by wide characters.
+
 0.9.1 to 0.10-beta (2018-10-28)
 
 	Added support for arbitrary expressions in 'statusline': '%{...}',

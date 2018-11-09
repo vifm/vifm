@@ -120,7 +120,7 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	checked_wmove(stat_win, 0, 0);
 
 	LineWithAttrs result = expand_status_line_macros(view, cfg.status_line);
-	assert(strlen(result.attrs) == utf8_nstrlen(result.line) && "Broken attrs!");
+	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
 	result.line = break_in_two(result.line, width, "%=");
 	result.attrs = break_in_two(result.attrs, width, "=");
 	print_with_attrs(stat_win, result.line, result.attrs, default_attr);
@@ -157,7 +157,7 @@ print_with_attrs(WINDOW *win, const char line[], const char attrs[],
 		wprinta(win, char_buf, attr);
 
 		line += len;
-		++attrs;
+		attrs += utf8_chrsw(char_buf);
 	}
 }
 
@@ -578,7 +578,7 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 static int
 sync_attrs(LineWithAttrs *result, int extra_width)
 {
-	const size_t nchars = utf8_nstrlen(result->line) + extra_width;
+	const size_t nchars = utf8_strsw(result->line) + extra_width;
 	if(result->attrs_len < nchars)
 	{
 		char *const new_attrs = format_str("%s%*s", result->attrs,
