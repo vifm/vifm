@@ -7,6 +7,9 @@
 	Return "broken" from filetype({fnum}, 1) for inaccessible link target.
 	Thanks to filterfalse.
 
+	Avoid unnecessary reloading file list after pressing "=" to enter local
+	filter.
+
 	Fixed crash on pasting elements of paths that contain broken UTF-8
 	sequences into command-line using Ctrl-X + key.  Thanks to Jose
 	Riha (a.k.a. jose1711).
