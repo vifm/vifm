@@ -37,8 +37,7 @@
 #include "opt_handlers.h"
 
 static void reset_filter(filter_t *filter);
-static int is_newly_filtered(view_t *view, const dir_entry_t *entry,
-		void *arg);
+static int is_newly_filtered(view_t *view, const dir_entry_t *entry, void *arg);
 static void replace_matcher(matcher_t **matcher, const char expr[]);
 static int get_unfiltered_pos(const view_t *view, int pos);
 static int load_unfiltered_list(view_t *view);
@@ -463,9 +462,7 @@ load_unfiltered_list(view_t *view)
 static int
 list_is_incomplete(view_t *view)
 {
-	int i;
-
-	if(view->filtered > 0)
+	if(view->filtered > 0 && !filter_is_empty(&view->local_filter.filter))
 	{
 		return 1;
 	}
@@ -478,6 +475,7 @@ list_is_incomplete(view_t *view)
 	/* Check if there are any directories without leaf nodes.  They aren't counted
 	 * as filtered out, so need to check separately (or start counting them in
 	 * some way). */
+	int i;
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		dir_entry_t *const entry = &view->dir_entry[i];
