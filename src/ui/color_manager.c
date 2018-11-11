@@ -41,6 +41,9 @@ static int used_pairs;
 /* Configuration data passed in during initialization. */
 static colmgr_conf_t conf;
 
+/* Flag, which is set after the unit is initialized. */
+static int initialized;
+
 void
 colmgr_init(const colmgr_conf_t *conf_init)
 {
@@ -51,6 +54,7 @@ colmgr_init(const colmgr_conf_t *conf_init)
 	assert(conf_init->move_pair != NULL && "move_pair must be set.");
 
 	conf = *conf_init;
+	initialized = 1;
 
 	colmgr_reset();
 }
@@ -58,6 +62,8 @@ colmgr_init(const colmgr_conf_t *conf_init)
 void
 colmgr_reset(void)
 {
+	assert(initialized && "colmgr_init() must be called before this function!");
+
 	used_pairs = PREALLOCATED_COUNT;
 	avail_pairs = conf.max_color_pairs - used_pairs;
 }
@@ -65,7 +71,7 @@ colmgr_reset(void)
 int
 colmgr_get_pair(int fg, int bg)
 {
-	int p;
+	assert(initialized && "colmgr_init() must be called before this function!");
 
 	if(fg < 0)
 	{
@@ -77,7 +83,7 @@ colmgr_get_pair(int fg, int bg)
 		bg = -1;
 	}
 
-	p = find_pair(fg, bg);
+	int p = find_pair(fg, bg);
 	if(p != -1)
 	{
 		return p;
@@ -128,7 +134,10 @@ allocate_pair(int fg, int bg)
 		}
 	}
 
-	conf.init_pair(used_pairs, fg, bg);
+	if(conf.init_pair(used_pairs, fg, bg) != 0)
+	{
+		return -1;
+	}
 
 	--avail_pairs;
 	return used_pairs++;

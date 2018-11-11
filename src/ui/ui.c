@@ -95,6 +95,8 @@ static pthread_mutex_t rwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
 view_t lwin = { .timestamps_mutex = &lwin_timestamps_mutex };
 view_t rwin = { .timestamps_mutex = &rwin_timestamps_mutex };
 
+static int pair_in_use(short int pair);
+static void move_pair(short int from, short int to);
 static void create_windows(void);
 static void update_geometry(void);
 static int get_working_area_height(void);
@@ -178,17 +180,29 @@ setup_ncurses_interface(void)
 	curs_set(0);
 
 	getmaxyx(stdscr, screen_y, screen_x);
-	/* screen is too small to be useful*/
+	/* Screen is too small to be useful. */
 	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
 	{
 		vifm_finish("Terminal is too small to run vifm.");
 	}
 
 	if(!has_colors())
+	{
 		vifm_finish("Vifm requires a console that can support color.");
+	}
 
 	start_color();
 	use_default_colors();
+
+	const colmgr_conf_t colmgr_conf = {
+		.max_color_pairs = COLOR_PAIRS,
+		.max_colors = COLORS,
+		.init_pair = &init_pair,
+		.pair_content = &pair_content,
+		.pair_in_use = &pair_in_use,
+		.move_pair = &move_pair,
+	};
+	colmgr_init(&colmgr_conf);
 
 	cs_load_defaults();
 
@@ -213,6 +227,47 @@ setup_ncurses_interface(void)
 	update_geometry();
 
 	return 1;
+}
+
+/* Checks whether pair is being used at the moment.  Returns non-zero if so and
+ * zero otherwise. */
+static int
+pair_in_use(short int pair)
+{
+	int i;
+
+	for(i = 0; i < MAXNUM_COLOR; ++i)
+	{
+		if(cfg.cs.pair[i] == pair || lwin.cs.pair[i] == pair ||
+				rwin.cs.pair[i] == pair)
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+/* Substitutes old pair number with the new one. */
+static void
+move_pair(short int from, short int to)
+{
+	int i;
+	for(i = 0; i < MAXNUM_COLOR; ++i)
+	{
+		if(cfg.cs.pair[i] == from)
+		{
+			cfg.cs.pair[i] = to;
+		}
+		if(lwin.cs.pair[i] == from)
+		{
+			lwin.cs.pair[i] = to;
+		}
+		if(rwin.cs.pair[i] == from)
+		{
+			rwin.cs.pair[i] = to;
+		}
+	}
 }
 
 /* Initializes all WINDOW variables by calling newwin() to create ncurses
