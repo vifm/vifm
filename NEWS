@@ -1,3 +1,173 @@
+November 11, 2018
+=================
+
+vifm v0.10
+----------
+
+New version includes long awaited tabs and support for managing media.
+The first one comes in two flavours: tabs either include layout or don't.
+The latter relies on a helper script, whose job is to adapt existing tools to
+make them usable by vifm.
+
+The beta stage will last about two weeks.  In case any serious bugs are found
+during this period, another beta version might be released.
+
+Main changes:
+ - added tabs which either operate on the level of layout or level of
+   individual panes;
+ - added ability to synchronize contents of registers among multiple
+   instances;
+ - added menu for managing media (relies on helper that does the managing);
+ - improved cursor positioning and control over it;
+ - ability to colorize statusline.
+
+More detailed list of changes.
+
+Command-line mode:
+ - added :tabc[lose] command that closes current tab unless it's the last one;
+ - added :tabm[ove] command that moves tabs (thanks to filterfalse);
+ - added :tabname command that updates name of the current tab;
+ - added :tabnew command that creates a new tab (thanks to Cosmin Popescu,
+   a.k.a. cosminadrianpopescu);
+ - added :tabn[ext] and :tabp[revious] commands, which work as gt and gT normal
+   mode shortcuts correspondingly (thanks to Cosmin Popescu, a.k.a.
+   cosminadrianpopescu);
+ - added :qa[ll], :wqa[ll] and :xa[ll] commands that always try to exit vifm no
+   matter how many tabs are open;
+ - added :goto command that navigates to specified file/directory (thanks to
+   mateusz28 and Dmitry Frank, a.k.a. dimonomid);
+ - added :regular command that leaves custom view (thanks to gammaray);
+ - :quit, :wq, :exit, :xit, ZZ and ZQ now try to close current tab before
+   closing the application;
+ - make :echo and :execute report parsing errors in more detail than just
+   "invalid expression";
+ - make :cabbrev and :cnoreabbrev always treat bar (`|`) as part of their
+   arguments, just like :*map commands do (thanks to filterfalse);
+ - make :tree! toggle view in and out of tree mode (thanks to gammaray);
+ - more accurate error message on handling non directories passed to :cd.
+
+:set command and options:
+ - added 'tabscope' option that controls style of tabs (thanks to Cosmin
+   Popescu, a.k.a. cosminadrianpopescu);
+ - added 'showtabline' option that controls visibility of tab line;
+ - added 'histcursor' option that gives partial control over when cursor is
+   positioned in accordance with record of directory history (thanks to
+   filterfalse and Dmitry Frank, a.k.a. dimonomid);
+ - added 'quickview' option that controls visibility of quick view (:view)
+   (thanks to Jochen Schweizer, a.k.a. durcheinandr);
+ - added 'syncregs' option which defines group of instances that share registers
+   (patch by Ma_Sys.ma);
+ - added 'mediaprg' option that can be used to specify helper for managing
+   removable media.  One such helper with support of udevil and udisks is
+   provided.  Only for *nix systems;
+ - added support for arbitrary expressions in 'statusline': '%{...}', e.g.
+   '%{&sort}' evaluates to the value of the sort option (patch by Dmitry Frank,
+   a.k.a. dimonomid);
+ - added "M" flag to 'shortmess' option to control shortening of titles in
+   windows of terminal multiplexers created by vifm down to file name instead of
+   using full path (thanks to mateusz28).
+
+File operations:
+ - try to preserve file owner/group on copying (thanks to willemw12).
+
+Normal and visual modes:
+ - added gt and gT normal mode shortcuts that switch between tabs in both
+   directions.
+
+Key bindings:
+ - added <silent> :*map argument that postpones UI updates until RHS is
+   completely processed.  Probably not all updates are postponed, to be improved
+   as unhandled cases are discovered;
+ - added <wait> :*map argument, which resolves prefix conflicts of user-defined
+   mappings and builtin keys in favour of user-defined mappings (thanks to Paweł
+   Smolak, a.k.a. psmolak).
+
+Angle bracket notation:
+ - added <insert> angle bracket notation (thanks to j-xella);
+ - added <c-@> angle bracket notation making it possible to map Ctrl-Space key
+   (thanks to anonymous at Vifm Q2A site).
+
+File list:
+ - use historical cursor position upon startup by default when 'autochpos' is
+   on, this is now independent from "savedirs" in 'vifminfo' option (thanks to
+   filterfalse);
+ - use historical cursor position on navigating to a mark that doesn't specify a
+   file by default when 'autochpos' is on (thanks to filterfalse);
+ - move cursor after p and P to one of files that were moved or to a cause of
+   last conflict (thanks to filterfalse and ranousse);
+ - issue a warning if file system lists several files with identical names in
+   the same directory.  It used to be assumed that it can't happen (thanks to
+   Jose Riha, a.k.a. jose1711).
+
+File preview:
+ - support italics in quickview/view mode and in :highlight when curses
+   implementation provides corresponding extension.  PDCurses doesn't implement
+   it on Windows.  Fallback is to use "reversed" attribute (thanks to GeorgeHJ).
+
+Integration:
+ - escape "=" at the beginning of paths (has special meaning in zsh) (thanks to
+   agguser).
+
+Menus and dialogs:
+ - added :media menu that can list and perform basic operations on removable
+   media (requires helper to be available, see 'mediaprg').  Only for *nix
+   systems (thanks to Bruce Hunsaker, a.k.a. hunsakerbn and others);
+ - added r key to :undolist menu, which resets position in the undo list to
+   group under the cursor (thanks to mini-turtle);
+ - sort entries of :bmarks menu (thanks to anonymous at Vifm Q2A site);
+ - slightly better formatting in :undolist menu;
+ - do not reset selection before executing a :command from :commands menu
+   (thanks to Jose Riha, a.k.a. jose1711);
+ - less strict parsing of output of external command by :[un]select commands.
+   Similar to %u/%U and menus allow <file>[:[<line>:[<col>:]] <description>]
+   format (thanks to j-xella).
+
+Color schemes:
+ - added TabLine highlight group for highlighting tab line;
+ - added TabLineSel highlight group for highlighting tip of the selected tab on
+   the tab line;
+ - added User1..User9 highlight groups and corresponding %[0-9]* 'statusline'
+   macro, which makes it possible to colorize parts of status line differently
+   (thanks to GeorgeHJ).
+
+TUI (Text User Interface):
+ - display list of files in removal confirmation dialog (thanks to ovk).
+
+Scripting:
+ - added tabpagenr() function that retrieves number of current or last tab page
+   (thanks to filterfalse);
+ - added fnameescape() builtin function, which can be used to escape paths on
+   construction of :commands (thanks to filterfalse);
+ - added second optional parameter to filetype() builtin function that is
+   treated as a boolean and specifies whether symbolic links should be resolved;
+ - added addition and subtraction operations to the parser;
+ - added grouping via parentheses to expressions (thanks to Konst Mayer, a.k.a.
+   cdlscpmv);
+ - allow passing numerical positions to filetype() function.
+
+Documentation:
+ - more explicit documentation about leaving custom views (thanks to tagwint).
+
+Vim-plugin:
+ - support embedded terminal in the plugin for newer Vim.
+
+Only on Windows:
+ - fixed flickering on Windows (thanks to Alexandre Viau and
+   randomizedthinking);
+ - fixed graphical applications on Windows not being detected as such, which
+   caused vifm to wait until they finish running.  Was broken since 0.9 (thanks
+   to r0ck).
+
+Important fixes:
+ - fixed error messages from put operation being postponed until the next put
+   operation.  Got broken in 0.9;
+ - fixed confirmation not being requested on :delete (thanks to anonymous at
+   Vifm Q2A site).
+
+See change log for the full list of changes and by whom they were suggested.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 October 28, 2018
 ================
 

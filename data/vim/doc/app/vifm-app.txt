@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10-beta  Last change: 2018 Nov 05
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 11
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3644,7 +3644,7 @@ Example without colors: >
 Example with colors: >
  highlight User1 ctermbg=yellow
  highlight User2 ctermbg=blue ctermfg=white cterm=bold
- set statusline="%1* %-26t %2*%=%1* %A %2* %7u:%-7g %1* %-5s %2* %d "
+ set statusline="%1* %-26t %2* %= %1* %A %2* %7u:%-7g %1* %-5s %2* %d "
 <
                                                *vifm-'suggestoptions'*
 suggestoptions
