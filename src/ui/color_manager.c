@@ -134,7 +134,10 @@ allocate_pair(int fg, int bg)
 		}
 	}
 
-	conf.init_pair(used_pairs, fg, bg);
+	if(conf.init_pair(used_pairs, fg, bg) != 0)
+	{
+		return -1;
+	}
 
 	--avail_pairs;
 	return used_pairs++;
