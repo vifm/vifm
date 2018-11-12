@@ -2197,7 +2197,7 @@ ui_view_wipe(view_t *view)
 	short int fg, bg;
 	char line_filler[getmaxx(view->win) + 1];
 
-	line_filler[sizeof(line_filler) - 1] = '\0';
+	line_filler[sizeof(line_filler) - 1U] = '\0';
 	height = getmaxy(view->win);
 
 	/* User doesn't need to see fake filling so draw it with the color of
@@ -2205,7 +2205,7 @@ ui_view_wipe(view_t *view)
 	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
 	wattrset(view->win, COLOR_PAIR(colmgr_get_pair(bg, bg)));
 
-	memset(line_filler, '\t', sizeof(line_filler));
+	memset(line_filler, '\t', sizeof(line_filler) - 1U);
 	for(i = 0; i < height; ++i)
 	{
 		mvwaddstr(view->win, i, 0, line_filler);
