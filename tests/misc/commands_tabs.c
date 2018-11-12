@@ -54,7 +54,7 @@ TEARDOWN()
 	columns_teardown();
 }
 
-TEST(tab_without_name_is_created)
+TEST(tab_is_created_without_name)
 {
 	tab_info_t tab_info;
 
@@ -98,6 +98,25 @@ TEST(tab_in_path_is_created)
 	char read_data[PATH_MAX + 1];
 	snprintf(read_data, sizeof(read_data), "%s/read", test_data);
 	assert_true(paths_are_same(lwin.curr_dir, read_data));
+}
+
+TEST(tab_in_parent_is_created)
+{
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	char test_data[PATH_MAX + 1];
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/read", test_data);
+
+	assert_success(exec_commands("tabnew ..", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+
+	assert_true(paths_are_same(lwin.curr_dir, test_data));
 }
 
 TEST(newtab_fails_in_diff_mode_for_tab_panes)

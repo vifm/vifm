@@ -4139,10 +4139,15 @@ tabnew_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc > 0)
 	{
 		char dir[PATH_MAX + 1];
-		int updir;
 
+		int updir;
 		flist_pick_cd_path(curr_view, flist_get_dir(curr_view), cmd_info->argv[0],
 				&updir, dir, sizeof(dir));
+		if(updir)
+		{
+			copy_str(dir, sizeof(dir), "..");
+		}
+
 		to_canonic_path(dir, flist_get_dir(curr_view), canonic_dir,
 				sizeof(canonic_dir));
 
