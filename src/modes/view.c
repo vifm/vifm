@@ -1673,12 +1673,16 @@ view_info_alloc(void)
 }
 
 void
-view_info_free(view_info_t *vi)
+view_info_free(view_info_t *info)
 {
-	if(vi != NULL)
+	if(info != NULL)
 	{
-		free_view_info(vi);
-		free(vi);
+		free_view_info(info);
+		free(info);
+		if(info == vi)
+		{
+			vi = NULL;
+		}
 	}
 }
 

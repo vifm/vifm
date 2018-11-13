@@ -7,12 +7,14 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
+#include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/compare.h"
+#include "../../src/filelist.h"
 
 #include "utils.h"
 
@@ -323,6 +325,60 @@ TEST(tabs_are_moved)
 
 		tabs_only(&lwin);
 	}
+}
+
+TEST(view_mode_is_fine_with_tabs)
+{
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			cwd);
+	populate_dir_list(&lwin, 0);
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_q);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_q);
+
+	assert_success(exec_commands("tabclose", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_q);
+}
+
+TEST(left_view_mode_is_fine_with_tabs)
+{
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			cwd);
+	populate_dir_list(&lwin, 0);
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_C_i);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_SPACE);
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_C_i);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_int_equal(3, tabs_count(&lwin));
+
+	assert_success(exec_commands("q", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+	assert_success(exec_commands("q", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_SPACE);
+	(void)vle_keys_exec_timed_out(WK_q);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
