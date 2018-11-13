@@ -351,7 +351,7 @@ matcher_matches(const matcher_t *matcher, const char path[])
 
 	if(matcher->type == MT_MIME)
 	{
-		path = get_mimetype(path);
+		path = get_mimetype(path, 1);
 		if(path == NULL)
 		{
 			return matcher->negated;

@@ -157,7 +157,7 @@ TEST(pattern_list, IF(has_mime_type_detection))
 	char cmd[1024];
 
 	snprintf(cmd, sizeof(cmd), "<%s>{binary-data}",
-			get_mimetype(TEST_DATA_PATH "/read/binary-data"));
+			get_mimetype(TEST_DATA_PATH "/read/binary-data", 0));
 	set_programs(cmd, "prog", 0, 0);
 
 	assert_string_equal("prog",

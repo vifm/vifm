@@ -54,28 +54,31 @@ static void parse_app_dir(const char directory[], const char mime_type[],
 assoc_records_t
 get_magic_handlers(const char file[])
 {
-	char real_path[PATH_MAX + 1];
-	char *const symlink_base = strdup(file);
-
-	if(!is_root_dir(symlink_base))
-	{
-		remove_last_path_component(symlink_base);
-	}
-
-	if(get_link_target_abs(file, symlink_base, real_path, sizeof(real_path)) != 0)
-	{
-		copy_str(real_path, sizeof(real_path), file);
-	}
-
-	free(symlink_base);
-
-	return get_handlers(get_mimetype(real_path));
+	return get_handlers(get_mimetype(file, 1));
 }
 
 const char *
-get_mimetype(const char file[])
+get_mimetype(const char file[], int resolve_symlinks)
 {
 	static char mimetype[128];
+
+	char target[PATH_MAX + 1];
+	if(resolve_symlinks)
+	{
+		char *const symlink_base = strdup(file);
+
+		if(!is_root_dir(symlink_base))
+		{
+			remove_last_path_component(symlink_base);
+		}
+
+		if(get_link_target_abs(file, symlink_base, target, sizeof(target)) == 0)
+		{
+			file = target;
+		}
+
+		free(symlink_base);
+	}
 
 	if(get_gtk_mimetype(file, mimetype, sizeof(mimetype)) == -1)
 	{

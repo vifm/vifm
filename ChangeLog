@@ -1,5 +1,7 @@
 0.10 to current
 
+	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

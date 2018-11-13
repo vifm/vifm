@@ -77,11 +77,11 @@ TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
 
 	snprintf(cmd, sizeof(cmd),
 			"filetype {two-lines}<text/plain>,<%s>{binary-data} app",
-			get_mimetype(TEST_DATA_PATH "/read/binary-data"));
+			get_mimetype(TEST_DATA_PATH "/read/binary-data", 0));
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 	snprintf(cmd, sizeof(cmd),
 			"fileviewer {two-lines}<text/plain>,<%s>{binary-data} viewer",
-			get_mimetype(TEST_DATA_PATH "/read/binary-data"));
+			get_mimetype(TEST_DATA_PATH "/read/binary-data", 0));
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	ft = ft_get_all_programs(TEST_DATA_PATH "/read/two-lines");
@@ -137,7 +137,7 @@ prog_exists(const char name[])
 static int
 has_mime_type_detection(void)
 {
-	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

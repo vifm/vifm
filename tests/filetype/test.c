@@ -31,7 +31,7 @@ set_viewers(const char pattern[], const char viewers[])
 int
 has_mime_type_detection(void)
 {
-	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

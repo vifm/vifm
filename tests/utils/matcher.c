@@ -1,13 +1,19 @@
 #include <stic.h>
 
+#include <unistd.h> /* symlink() */
+
+#include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 
 #include "../../src/int/file_magic.h"
 #include "../../src/utils/matcher.h"
 
+#include "utils.h"
+
 static void check_glob(matcher_t *m);
 static void check_regexp(matcher_t *m);
 static int has_mime_type_detection(void);
+static int has_mime_type_detection_and_not_windows(void);
 
 TEST(empty_matcher_can_be_created)
 {
@@ -371,6 +377,25 @@ TEST(mime_type_inclusion, IF(has_mime_type_detection))
 	matcher_free(m);
 }
 
+TEST(mime_type_of_link_is_that_of_its_target,
+		IF(has_mime_type_detection_and_not_windows))
+{
+	char *error;
+	matcher_t *m;
+
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(".", "link"));
+#endif
+
+	assert_non_null(m = matcher_alloc("<inode/directory>", 0, 1, "", &error));
+	assert_null(error);
+	assert_true(matcher_matches(m, "link"));
+	matcher_free(m);
+
+	assert_success(remove("link"));
+}
+
 static void
 check_glob(matcher_t *m)
 {
@@ -396,7 +421,13 @@ check_regexp(matcher_t *m)
 static int
 has_mime_type_detection(void)
 {
-	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL;
+}
+
+static int
+has_mime_type_detection_and_not_windows(void)
+{
+	return has_mime_type_detection() && not_windows();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
