@@ -1,3 +1,13 @@
+0.10 to current
+
+	Fixed `:tabnew ..` not working due to use of uninitialized data.
+
+	Fixed access to uninitialized memory on clearing view after graphical
+	preview.
+
+	Fixed possible crashes after certain patterns of using view mode and
+	closing tabs.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

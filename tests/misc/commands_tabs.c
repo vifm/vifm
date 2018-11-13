@@ -7,12 +7,14 @@
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
+#include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/compare.h"
+#include "../../src/filelist.h"
 
 #include "utils.h"
 
@@ -54,7 +56,7 @@ TEARDOWN()
 	columns_teardown();
 }
 
-TEST(tab_without_name_is_created)
+TEST(tab_is_created_without_name)
 {
 	tab_info_t tab_info;
 
@@ -98,6 +100,25 @@ TEST(tab_in_path_is_created)
 	char read_data[PATH_MAX + 1];
 	snprintf(read_data, sizeof(read_data), "%s/read", test_data);
 	assert_true(paths_are_same(lwin.curr_dir, read_data));
+}
+
+TEST(tab_in_parent_is_created)
+{
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	char test_data[PATH_MAX + 1];
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
+
+	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/read", test_data);
+
+	assert_success(exec_commands("tabnew ..", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+
+	assert_true(paths_are_same(lwin.curr_dir, test_data));
 }
 
 TEST(newtab_fails_in_diff_mode_for_tab_panes)
@@ -304,6 +325,60 @@ TEST(tabs_are_moved)
 
 		tabs_only(&lwin);
 	}
+}
+
+TEST(view_mode_is_fine_with_tabs)
+{
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			cwd);
+	populate_dir_list(&lwin, 0);
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_q);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_q);
+
+	assert_success(exec_commands("tabclose", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_q);
+}
+
+TEST(left_view_mode_is_fine_with_tabs)
+{
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "read",
+			cwd);
+	populate_dir_list(&lwin, 0);
+
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_C_i);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_SPACE);
+	(void)vle_keys_exec_timed_out(WK_e);
+	(void)vle_keys_exec_timed_out(WK_C_i);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_int_equal(3, tabs_count(&lwin));
+
+	assert_success(exec_commands("q", &lwin, CIT_COMMAND));
+	assert_int_equal(2, tabs_count(&lwin));
+	assert_success(exec_commands("q", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+
+	(void)vle_keys_exec_timed_out(WK_SPACE);
+	(void)vle_keys_exec_timed_out(WK_q);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

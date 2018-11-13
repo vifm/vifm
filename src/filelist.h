@@ -100,7 +100,8 @@ int pane_in_dir(const view_t *view, const char path[]);
  * be preserved. */
 int go_to_sibling_dir(view_t *view, int offset, int wrap);
 /* Picks new directory or requested going up one level judging from supplied
- * base directory, desired location and current location of the view. */
+ * base directory, desired location and current location of the view.  Buffer is
+ * not filled if *updir gets set. */
 void flist_pick_cd_path(view_t *view, const char base_dir[], const char path[],
 		int *updir, char buf[], size_t buf_size);
 
