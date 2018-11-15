@@ -637,6 +637,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 		}
 
 		sh = user_sh ? get_execv_path(cfg.shell) : "/bin/sh";
+		prepare_for_exec();
 		execvp(sh, make_execv_array(sh, cmd));
 		_Exit(127);
 	}
@@ -826,6 +827,7 @@ bg_run_external(const char cmd[], int skip_errors)
 
 		setpgid(0, 0);
 
+		prepare_for_exec();
 		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command),
 				environ);
 		_Exit(127);

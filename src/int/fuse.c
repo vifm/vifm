@@ -629,6 +629,7 @@ run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 
 		(void)set_sigchld(0);
 
+		prepare_for_exec();
 		(void)execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd),
 				environ);
 		_Exit(127);
