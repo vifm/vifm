@@ -62,6 +62,7 @@
 #include "ui/statusbar.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
+#include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -96,6 +97,7 @@
 #include "undo.h"
 
 static int vifm_main(int argc, char *argv[]);
+static int get_start_cwd(char buf[], size_t buf_len);
 static int undo_perform_func(OPS op, void *data, const char src[],
 		const char dst[]);
 static void parse_received_arguments(char *args[]);
@@ -155,18 +157,16 @@ vifm_main(int argc, char *argv[])
 
 	static const int quit = 0;
 
-	char dir[PATH_MAX + 1];
 	char **files = NULL;
 	int nfiles = 0;
 	int lwin_cv, rwin_cv;
 
-	if(get_cwd(dir, sizeof(dir)) == NULL)
+	char dir[PATH_MAX + 1];
+	if(get_start_cwd(dir, sizeof(dir)) != 0)
 	{
-		perror("getcwd");
 		return -1;
 	}
 
-	(void)vifm_chdir(dir);
 	args_parse(&vifm_args, argc, argv, dir);
 	args_process(&vifm_args, 1);
 
@@ -344,6 +344,28 @@ vifm_main(int argc, char *argv[])
 
 	event_loop(&quit);
 
+	return 0;
+}
+
+/* Loads original working directory of the process attempting to avoid resolving
+ * symbolic links in the path.  Returns zero on success, otherwise non-zero is
+ * returned. */
+static int
+get_start_cwd(char buf[], size_t buf_len)
+{
+	if(get_cwd(buf, buf_len) == NULL)
+	{
+		perror("getcwd");
+		return -1;
+	}
+
+	/* If $PWD points to the same location as CWD, use its value to preserve
+	 * symbolic links in the path. */
+	const char *pwd = env_get("PWD");
+	if(pwd != NULL && paths_are_same(pwd, buf))
+	{
+		copy_str(buf, buf_len, pwd);
+	}
 	return 0;
 }
 

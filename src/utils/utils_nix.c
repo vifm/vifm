@@ -45,7 +45,7 @@
 #include <signal.h> /* SIG* SIG_* sigset_t kill() sigaddset() sigemptyset()
                        sigfillset() signal() sigprocmask() */
 #include <stddef.h> /* NULL size_t */
-#include <stdio.h> /* FILE stderr fdopen() fprintf() snprintf() */
+#include <stdio.h> /* FILE stderr fclose() fdopen() fprintf() snprintf() */
 #include <stdlib.h> /* atoi() free() */
 #include <string.h> /* strchr() strdup() strerror() strlen() strncmp() */
 
@@ -54,6 +54,7 @@
 #include "../compat/mntent.h" /* mntent setmntent() getmntent() endmntent() */
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../running.h"
 #include "../status.h"
@@ -136,6 +137,7 @@ run_in_shell_no_cls(char command[])
 		signal(SIGINT, SIG_DFL);
 		(void)set_sigchld(0);
 
+		prepare_for_exec();
 		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command),
 				environ);
 		_Exit(127);
@@ -274,8 +276,30 @@ run_from_fork(int pipe[2], int err_only, int preserve_stdin, char cmd[])
 		(void)close(null_fd);
 	}
 
+	prepare_for_exec();
 	execvp(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd));
 	_Exit(127);
+}
+
+void
+prepare_for_exec(void)
+{
+	if(curr_stats.original_stdout != NULL)
+	{
+		(void)fclose(curr_stats.original_stdout);
+	}
+
+	/* More generic cleanup functions aren't called here to do not waste time on
+	 * freeing resources which will be replaced by exec(). */
+	tab_info_t tab_info;
+	int i;
+	for(i = 0; tabs_get(curr_view, i, &tab_info); ++i)
+	{
+		view_t *view = tab_info.view;
+		fswatch_free(view->watch);
+		fswatch_free(view->left_column.watch);
+		fswatch_free(view->right_column.watch);
+	}
 }
 
 char *

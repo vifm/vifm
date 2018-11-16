@@ -45,6 +45,11 @@ int get_proc_exit_status(pid_t pid);
 void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, int preserve_stdin,
 		char cmd[]);
 
+/* Frees some resources before exec(), which shouldn't be inherited and remain
+ * allocated in child process or it might make those resources appear busy
+ * (e.g., pipe not being closed, directory being still in use). */
+void prepare_for_exec(void);
+
 /* Extracts name of the shell to be used with execv*() function.  Returns
  * pointer to statically allocated buffer. */
 char * get_execv_path(char shell[]);

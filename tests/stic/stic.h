@@ -12,7 +12,7 @@
 
 /* Global data. */
 
-#define STIC_VERSION "0.5.2"
+#define STIC_VERSION "0.6"
 #define STIC_PROJECT_HOME "https://github.com/xaizek/stic"
 #define STIC_PRINT_BUFFER_SIZE 100000
 

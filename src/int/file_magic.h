@@ -21,9 +21,10 @@
 
 #include "../filetype.h"
 
-/* Retrieves mime type of the file specified by its path.  Returns pointer to a
- * statically allocated buffer. */
-const char * get_mimetype(const char file[]);
+/* Retrieves mime type of the file specified by its path.  The resolve_symlinks
+ * argument controls whether mime-type of the link should be that of its target.
+ * Returns pointer to a statically allocated buffer. */
+const char * get_mimetype(const char file[], int resolve_symlinks);
 
 /* Retrieves system-wide desktop file associations.  Caller shouldn't free
  * anything. */

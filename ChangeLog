@@ -1,5 +1,10 @@
 0.10 to current
 
+	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
+
+	Try to preserve symbolic links in current path when starting vifm by
+	checking value of $PWD.  Thanks to Vigi.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
@@ -7,6 +12,9 @@
 
 	Fixed possible crashes after certain patterns of using view mode and
 	closing tabs.
+
+	Fixed some resources (like output pipe for --choose-files and
+	--choose-dir) being inherited by child processes.  Thanks to Vigi.
 
 0.10-beta to 0.10 (2018-11-11)
 

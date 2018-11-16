@@ -49,7 +49,7 @@ TEST(relatively_large_file_name_does_not_crash,
 				SANDBOX_PATH "/B", path, sizeof(path)));
 
 	assert_success(chdir(SANDBOX_PATH "/B"));
-	assert_non_null(get_mimetype(get_last_path_component(path)));
+	assert_non_null(get_mimetype(get_last_path_component(path), 0));
 
 	restore_cwd(saved_cwd);
 
@@ -66,7 +66,7 @@ check_empty_file(const char fname[])
 	if(f != NULL)
 	{
 		fclose(f);
-		assert_non_null(get_mimetype(fname));
+		assert_non_null(get_mimetype(fname, 0));
 		assert_success(unlink(fname));
 	}
 }
@@ -80,7 +80,7 @@ has_mime_type_detection_and_symlinks(void)
 static int
 has_mime_type_detection(void)
 {
-	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings") != NULL;
+	return get_mimetype(TEST_DATA_PATH "/read/dos-line-endings", 0) != NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

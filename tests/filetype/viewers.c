@@ -98,7 +98,7 @@ TEST(pattern_list, IF(has_mime_type_detection))
 	char cmd[1024];
 
 	snprintf(cmd, sizeof(cmd), "<%s>{binary-data}",
-			get_mimetype(TEST_DATA_PATH "/read/binary-data"));
+			get_mimetype(TEST_DATA_PATH "/read/binary-data", 0));
 	set_viewers(cmd, "prog1");
 
 	ft_init(&prog1_available);
