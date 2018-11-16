@@ -2,6 +2,9 @@
 
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
+	Try to preserve symbolic links in current path when starting vifm by
+	checking value of $PWD.  Thanks to Vigi.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
