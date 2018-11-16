@@ -166,7 +166,6 @@ vifm_main(int argc, char *argv[])
 		return -1;
 	}
 
-	(void)vifm_chdir(dir);
 	args_parse(&vifm_args, argc, argv, dir);
 	args_process(&vifm_args, 1);
 
