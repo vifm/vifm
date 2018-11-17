@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 11, 2018" "vifm 0.10"
+.TH VIFM 1 "November 17, 2018" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2010,8 +2010,8 @@ Available group-name values:
 their content (e.g. regular files in views)
  \- AuxWin \- color of auxiliary areas of windows
  \- Border \- color of vertical parts of the border
- \- TabLine \- tab line color
- \- TabLineSel \- color of the tip of selected tab
+ \- TabLine \- tab line color (for 'tabscope' set to "global")
+ \- TabLineSel \- color of the tip of selected tab (regardless of 'tabscope')
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
  \- CmdLine \- the command line/status bar color
@@ -2184,6 +2184,7 @@ transparency:
             OtherLine
   TopLine
     TopLineSel
+      TabLineSel (for pane tabs)
   TabLine
     TabLineSel
 
