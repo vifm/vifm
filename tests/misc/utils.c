@@ -152,6 +152,8 @@ view_setup(view_t *view)
 	view->selected_files = 0;
 	view->ls_view = 0;
 	view->ls_view_g = 0;
+	view->miller_view = 0;
+	view->miller_view_g = 0;
 	view->window_rows = 0;
 	view->run_size = 1;
 
@@ -304,6 +306,7 @@ setup_grid(view_t *view, int column_count, int list_rows, int init)
 {
 	view->window_cols = column_count;
 	view->ls_view = 1;
+	view->miller_view = 0;
 	view->ls_transposed = 0;
 	view->list_rows = list_rows;
 	view->column_count = column_count;
@@ -321,6 +324,7 @@ setup_transposed_grid(view_t *view, int column_count, int list_rows, int init)
 {
 	view->window_cols = column_count;
 	view->ls_view = 1;
+	view->miller_view = 0;
 	view->ls_transposed = 1;
 	view->list_rows = list_rows;
 	view->column_count = column_count;
