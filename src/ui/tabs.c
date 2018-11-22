@@ -19,7 +19,8 @@
 #include "tabs.h"
 
 #include <assert.h> /* assert() */
-#include <string.h> /* memmove() */
+#include <stdlib.h> /* free() */
+#include <string.h> /* memmove() strdup() */
 
 #include "../cfg/config.h"
 #include "../modes/view.h"
@@ -81,9 +82,13 @@ static void free_pane_tabs(pane_tabs_t *ptabs);
 static void free_pane_tab(pane_tab_t *ptab);
 static void free_preview(preview_t *preview);
 static pane_tabs_t * get_pane_tabs(const view_t *view);
+static int get_global_tab(view_t *view, int idx, tab_info_t *tab_info,
+		int return_active);
 static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		const view_t *view);
 static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view);
+static void reload_views(view_t *side);
+static int enum_tabs(view_t *view, int idx, tab_info_t *tab_info);
 
 /* List of global tabs. */
 static global_tab_t *gtabs;
@@ -504,29 +509,36 @@ tabs_get(view_t *view, int idx, tab_info_t *tab_info)
 		tab_info->last = (idx == n - 1);
 		return 1;
 	}
-	else
+
+	return get_global_tab(view, idx, tab_info, 1);
+}
+
+/* Fills *tab_info for the global tab specified by its index and side (view
+ * parameter) when return_active is zero, otherwise active one is used.  Returns
+ * non-zero on success, otherwise zero is returned. */
+static int
+get_global_tab(view_t *view, int idx, tab_info_t *tab_info, int return_active)
+{
+	const int n = (int)DA_SIZE(gtabs);
+	if(idx < 0 || idx >= n)
 	{
-		global_tab_t *gtab;
-		const int n = (int)DA_SIZE(gtabs);
-		if(idx < 0 || idx >= n)
-		{
-			return 0;
-		}
+		return 0;
+	}
 
-		gtab = &gtabs[idx];
-		tab_info->name = gtab->name;
-		tab_info->last = (idx == n - 1);
+	global_tab_t *gtab = &gtabs[idx];
+	tab_info->name = gtab->name;
+	tab_info->last = (idx == n - 1);
 
-		if(idx == current_tab)
-		{
-			tab_info->view = view;
-			return 1;
-		}
-		tab_info->view = gtab->active_pane
-		               ? &gtab->right.tabs[gtab->right.current].view
-		               : &gtab->left.tabs[gtab->left.current].view;
+	if(idx == current_tab)
+	{
+		tab_info->view = view;
 		return 1;
 	}
+	tab_info->view = (return_active && !gtab->active_pane)
+	              || (!return_active && view == &lwin)
+	               ? &gtab->left.tabs[gtab->left.current].view
+	               : &gtab->right.tabs[gtab->right.current].view;
+	return 1;
 }
 
 int
@@ -684,6 +696,42 @@ normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view)
 			flist_update_origins(v, &other->curr_dir[0], &view->curr_dir[0]);
 		}
 	}
+}
+
+void
+tabs_reload(void)
+{
+	reload_views(&lwin);
+	reload_views(&rwin);
+}
+
+/* Reloads all views in all tabs on one side (left/top or right/bottom). */
+static void
+reload_views(view_t *side)
+{
+	int i;
+	tab_info_t tab_info;
+
+	for(i = 0; enum_tabs(side, i, &tab_info); ++i)
+	{
+		if(tab_info.view != side)
+		{
+			char *path = strdup(flist_get_dir(tab_info.view));
+			flist_free_view(tab_info.view);
+			memset(tab_info.view, 0, sizeof(*tab_info.view));
+			clone_view(tab_info.view, side, path);
+			free(path);
+		}
+	}
+}
+
+/* tabs_get() equivalent that returns left or right pane for global tabs
+ * depending on value of the view parameter. */
+static int
+enum_tabs(view_t *view, int idx, tab_info_t *tab_info)
+{
+	return cfg.pane_tabs ? tabs_get(view, idx, tab_info)
+	                     : get_global_tab(view, idx, tab_info, 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -588,6 +588,11 @@ vifm_restart(void)
 	cs_load_pairs();
 
 	cfg_load();
+
+	/* Reloading of tabs needs to happen after configuration is read so that new
+	 * values from lwin and rwin got propagated. */
+	tabs_reload();
+
 	exec_startup_commands(&vifm_args);
 
 	curr_stats.restart_in_progress = 0;
