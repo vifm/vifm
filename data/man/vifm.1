@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 11, 2018" "vifm 0.10"
+.TH VIFM 1 "November 22, 2018" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2010,8 +2010,8 @@ Available group-name values:
 their content (e.g. regular files in views)
  \- AuxWin \- color of auxiliary areas of windows
  \- Border \- color of vertical parts of the border
- \- TabLine \- tab line color
- \- TabLineSel \- color of the tip of selected tab
+ \- TabLine \- tab line color (for 'tabscope' set to "global")
+ \- TabLineSel \- color of the tip of selected tab (regardless of 'tabscope')
  \- TopLineSel \- top line color of the current pane
  \- TopLine \- top line color of the other pane
  \- CmdLine \- the command line/status bar color
@@ -2184,6 +2184,7 @@ transparency:
             OtherLine
   TopLine
     TopLineSel
+      TabLineSel (for pane tabs)
   TabLine
     TabLineSel
 
@@ -2462,6 +2463,9 @@ free a lot of things (histories, commands, etc.), reread vifminfo and
 vifmrc files and run startup commands passed in the argument list, thus
 losing all unsaved changes (e.g. recent history or keys mapped in current
 session).
+
+While many things get reset, some basic UI state and current locations are
+preserved, including tabs.
 .TP
 .BI "                                         :restore"
 .TP

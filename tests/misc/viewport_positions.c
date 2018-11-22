@@ -1,8 +1,8 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
-#include "../../src/flist_pos.h"
 #include "../../src/ui/ui.h"
+#include "../../src/flist_pos.h"
 
 #include "utils.h"
 

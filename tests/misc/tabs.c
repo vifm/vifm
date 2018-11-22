@@ -347,5 +347,56 @@ TEST(opening_tab_in_new_location_records_new_location_in_history)
 	cfg_resize_histories(0);
 }
 
+TEST(reloading_propagates_values_of_current_views_with_global_tabs)
+{
+	cfg.pane_tabs = 0;
+
+	lwin.miller_view = 1;
+	rwin.miller_view = 0;
+	tabs_new(NULL, NULL);
+	lwin.miller_view = 0;
+	rwin.miller_view = 1;
+
+	tabs_reload();
+
+	tabs_goto(0);
+	assert_false(lwin.miller_view);
+	assert_true(rwin.miller_view);
+
+	tabs_goto(1);
+	assert_false(lwin.miller_view);
+	assert_true(rwin.miller_view);
+}
+
+TEST(reloading_propagates_values_of_current_views_with_pane_tabs)
+{
+	cfg.pane_tabs = 1;
+
+	lwin.miller_view = 1;
+	tabs_new(NULL, NULL);
+	lwin.miller_view = 0;
+
+	curr_view = &rwin;
+	other_view = &lwin;
+
+	rwin.miller_view = 0;
+	tabs_new(NULL, NULL);
+	rwin.miller_view = 1;
+
+	tabs_reload();
+
+	tab_info_t tab_info;
+
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_false(tab_info.view->miller_view);
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_false(tab_info.view->miller_view);
+
+	assert_true(tabs_get(&rwin, 0, &tab_info));
+	assert_true(tab_info.view->miller_view);
+	assert_true(tabs_get(&rwin, 1, &tab_info));
+	assert_true(tab_info.view->miller_view);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

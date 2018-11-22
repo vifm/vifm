@@ -3184,6 +3184,11 @@ syscalls_handler(OPT_OP op, optval_t val)
 static void
 tabscope_handler(OPT_OP op, optval_t val)
 {
+	if(curr_stats.restart_in_progress)
+	{
+		return;
+	}
+
 	/* Erase tabs on current scope before switching it. */
 	tabs_only(curr_view);
 	tabs_rename(curr_view, NULL);

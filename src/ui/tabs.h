@@ -82,6 +82,10 @@ int tabs_visitor_count(const char path[]);
 /* Swaps pane tabs and does nothing for global tabs. */
 void tabs_switch_panes(void);
 
+/* Reloads non-current tabs by copying state of lwin and rwin into corresponding
+ * views, but preserving their current locations. */
+void tabs_reload(void);
+
 #endif /* VIFM__UI__TABS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

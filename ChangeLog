@@ -5,6 +5,11 @@
 	Try to preserve symbolic links in current path when starting vifm by
 	checking value of $PWD.  Thanks to Vigi.
 
+	Better documentation for TabLine and TabLineSel highlighting groups.
+	Thanks to mwgkgk.
+
+	Always preserve tabs on :restart.  Thanks to mwgkgk.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

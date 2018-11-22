@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 11
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1706,8 +1706,9 @@ Available group-name values:
          their content (e.g. regular files in views)
  - AuxWin - color of auxiliary areas of windows
  - Border - color of vertical parts of the border
- - TabLine - tab line color
- - TabLineSel - color of the tip of selected tab
+ - TabLine - tab line color (for |vifm-'tabscope'| set to "global")
+ - TabLineSel - color of the tip of selected tab (regardless of
+                |vifm-'tabscope'|)
  - TopLineSel - top line color of the current pane
  - TopLine - top line color of the other pane
  - CmdLine - the command line/status bar color
@@ -1880,6 +1881,7 @@ transparency:
             OtherLine
   TopLine
     TopLineSel
+      TabLineSel (for pane tabs)
   TabLine
     TabLineSel
 
@@ -2083,6 +2085,9 @@ order using the '.' operator.  Any whitespace is ignored.
     vifmrc files and run startup commands passed in the argument list, thus
     losing all unsaved changes (e.g. recent history or keys mapped in current
     session).
+
+    While many things get reset, some basic UI state and current locations
+    are preserved, including tabs.
 
 :[range]restore                                *vifm-:restore*
     restore file from |vifm-trash| directory, doesn't work outside one of trash
