@@ -4370,7 +4370,7 @@ unselect_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		error = flist_sel_by_pattern(curr_view, cmd_info->args, cmd_info->emark, 0);
+		error = flist_sel_by_pattern(curr_view, cmd_info->args, 0, 0);
 	}
 
 	return (error ? CMDS_ERR_CUSTOM : 0);
