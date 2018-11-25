@@ -10,8 +10,8 @@
 
 	Always preserve tabs on :restart.  Thanks to mwgkgk.
 
-	Clearer documentation/description for :*unmap commands.  Thanks to
-	chelovechishko.
+	Clearer documentation/description for :*unmap commands and
+	'vicmd'/'vixcmd' options.  Thanks to chelovechishko.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 

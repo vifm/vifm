@@ -3801,8 +3801,9 @@ vicmd
 type: string
 default: "vim"
 
-The actual command used to start vi.  Ampersand sign at the end (regardless
-whether it's preceded by space or not) means backgrounding of command.
+Command used to edit files in various contexts.  Ampersand sign at the end
+(regardless whether it's preceded by space or not) means backgrounding of
+command.
 
 Background flag is ignored in certain context where vifm waits for the editor
 to finish.  Such contexts include any command that spawns editor to change
@@ -3832,7 +3833,8 @@ vixcmd
 type: string
 default: value of |vifm-'vicmd'|
 
-Same as 'vicmd', but takes precedence over it when running in X.
+Same as |vifm-'vicmd'|, but takes precedence over it when running inside a
+graphical environment.
 
                                                *vifm-'vifminfo'*
 vifminfo
