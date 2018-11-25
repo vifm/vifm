@@ -10,6 +10,9 @@
 
 	Always preserve tabs on :restart.  Thanks to mwgkgk.
 
+	Clearer documentation/description for :*unmap commands.  Thanks to
+	chelovechishko.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
