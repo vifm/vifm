@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 22
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2488,9 +2488,9 @@ yet supported) and might be changed in future releases, or get an alias.
 
                                                *vifm-:unmap* *vifm-:unm*
 :unm[ap] lhs
-    remove the mapping of lhs from normal and visual modes.
+    remove user mapping of lhs from normal and visual modes.
 :unm[ap]! lhs
-    remove the mapping of lhs from command line mode.
+    remove user mapping of lhs from command line mode.
 
                                                *vifm-:cunmap* *vifm-:cu*
                                                *vifm-:dunmap* *vifm-:du*
@@ -2498,12 +2498,12 @@ yet supported) and might be changed in future releases, or get an alias.
                                                *vifm-:nunmap* *vifm-:nun*
                                                *vifm-:qunmap* *vifm-:qun*
                                                *vifm-:vunmap* *vifm-:vu*
-:cu[nmap] lhs - remove the mapping of lhs from command line mode.
-:du[nmap] lhs - remove the mapping of lhs from dialog modes.
-:mu[nmap] lhs - remove the mapping of lhs from menu mode.
-:nun[map] lhs - remove the mapping of lhs from normal mode.
-:qun[map] lhs - remove the mapping of lhs from view mode.
-:vu[nmap] lhs - remove the mapping of lhs from visual mode.
+:cu[nmap] lhs - remove user mapping of lhs from command line mode.
+:du[nmap] lhs - remove user mapping of lhs from dialog modes.
+:mu[nmap] lhs - remove user mapping of lhs from menu mode.
+:nun[map] lhs - remove user mapping of lhs from normal mode.
+:qun[map] lhs - remove user mapping of lhs from view mode.
+:vu[nmap] lhs - remove user mapping of lhs from visual mode.
 
 Ranges~
                                                                *vifm-ranges*
@@ -3801,8 +3801,9 @@ vicmd
 type: string
 default: "vim"
 
-The actual command used to start vi.  Ampersand sign at the end (regardless
-whether it's preceded by space or not) means backgrounding of command.
+Command used to edit files in various contexts.  Ampersand sign at the end
+(regardless whether it's preceded by space or not) means backgrounding of
+command.
 
 Background flag is ignored in certain context where vifm waits for the editor
 to finish.  Such contexts include any command that spawns editor to change
@@ -3832,7 +3833,8 @@ vixcmd
 type: string
 default: value of |vifm-'vicmd'|
 
-Same as 'vicmd', but takes precedence over it when running in X.
+Same as |vifm-'vicmd'|, but takes precedence over it when running inside a
+graphical environment.
 
                                                *vifm-'vifminfo'*
 vifminfo

@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 20 July, 2018)
+" Sample configuration file for vifm (last updated: 26 November, 2018)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -7,7 +7,7 @@
 
 " ------------------------------------------------------------------------------
 
-" This is the actual command used to start vi.  The default is vim.
+" Command used to edit files in various contexts.  The default is vim.
 " If you would like to use another vi clone such as Elvis or Vile
 " you will need to change this setting.
 
@@ -415,11 +415,25 @@ nnoremap O :!gvim %f<cr>
 " Open file in the background using its default program
 nnoremap gb :file &<cr>l
 
-" Yank current directory path into the clipboard
-nnoremap yd :!echo %d | xclip %i<cr>
-
-" Yank current file path into the clipboard
-nnoremap yf :!echo %c:p | xclip %i<cr>
+" Interaction with system clipboard
+if has('win')
+    " Yank current directory path to Windows clipboard with forward slashes
+    nnoremap yp :!echo %"d:gs!\!/! %i | clip<cr>
+    " Yank path to current file to Windows clipboard with forward slashes
+    nnoremap yf :!echo %"c:gs!\!/! %i | clip<cr>
+elseif executable('xclip')
+    " Yank current directory path into the clipboard
+    nnoremap yd :!echo %d | xclip %i<cr>
+    " Yank current file path into the clipboard
+    nnoremap yf :!echo %c:p | xclip %i<cr>
+elseif executable('xsel')
+    " Yank current directory path into primary and selection clipboards
+    nnoremap yd :!echo -n %d | xsel --input --primary %i &&
+                \ echo -n %d | xsel --clipboard --input %i<cr>
+    " Yank current file path into into primary and selection clipboards
+    nnoremap yf :!echo -n %c:p | xsel --input --primary %i &&
+                \ echo -n %c:p | xsel --clipboard --input %i<cr>
+endif
 
 " Mappings for faster renaming
 nnoremap I cw<c-a>

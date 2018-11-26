@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 22, 2018" "vifm 0.10"
+.TH VIFM 1 "November 25, 2018" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3011,30 +3011,30 @@ map the key sequence lhs to rhs for visual mode, but disallow mapping of rhs.
 .BI "                                         :unmap"
 .TP
 .BI ":unm[ap] lhs"
-remove the mapping of lhs from normal and visual modes.
+remove user mapping of lhs from normal and visual modes.
 .TP
 .BI ":unm[ap]! lhs"
-remove the mapping of lhs from command line mode.
+remove user mapping of lhs from command line mode.
 .TP
 .BI "                           :cunmap :dunmap :munmap :nunmap :qunmap :vunmap"
 .TP
 .BI ":cu[nmap] lhs"
-remove the mapping of lhs from command line mode.
+remove user mapping of lhs from command line mode.
 .TP
 .BI ":du[nmap] lhs"
-remove the mapping of lhs from dialog modes.
+remove user mapping of lhs from dialog modes.
 .TP
 .BI ":mu[nmap] lhs"
-remove the mapping of lhs from menu mode.
+remove user mapping of lhs from menu mode.
 .TP
 .BI ":nun[map] lhs"
-remove the mapping of lhs from normal mode.
+remove user mapping of lhs from normal mode.
 .TP
 .BI ":qun[map] lhs"
-remove the mapping of lhs from view mode.
+remove user mapping of lhs from view mode.
 .TP
 .BI ":vu[nmap] lhs"
-remove the mapping of lhs from visual mode.
+remove user mapping of lhs from visual mode.
 .\" ---------------------------------------------------------------------------
 .SH Ranges
 .\" ---------------------------------------------------------------------------
@@ -4560,8 +4560,9 @@ type: string
 .br
 default: "vim"
 .br
-The actual command used to start vi.  Ampersand sign at the end (regardless
-whether it's preceded by space or not) means backgrounding of command.
+Command used to edit files in various contexts.  Ampersand sign at the end
+(regardless whether it's preceded by space or not) means backgrounding of
+command.
 
 Background flag is ignored in certain context where vifm waits for the editor
 to finish.  Such contexts include any command that spawns editor to change
@@ -4595,7 +4596,8 @@ type: string
 .br
 default: value of 'vicmd'
 .br
-Same as 'vicmd', but takes precedence over it when running in X.
+Same as 'vicmd', but takes precedence over it when running inside a
+graphical environment.
 .TP
 .BI 'vifminfo'
 type: set

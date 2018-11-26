@@ -1,5 +1,8 @@
 0.10 to current
 
+	Added example of using xsel to sample vifmrc file.  Thanks to
+	chelovechishko.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -9,6 +12,9 @@
 	Thanks to mwgkgk.
 
 	Always preserve tabs on :restart.  Thanks to mwgkgk.
+
+	Clearer documentation/description for :*unmap commands and
+	'vicmd'/'vixcmd' options.  Thanks to chelovechishko.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
@@ -533,7 +539,7 @@
 	Fixed the plugin in neovim.  Patch by John Shea (a.k.a. coachshea).
 
 	Fixed CWD of the process not matching current view after vifm picked up
-	change in file system.  Patch by Daniel Mueller.
+	change in file system.  Patch by Daniel Mueller (a.k.a. d-e-s-o).
 
 	Fixed cloning of files like `.name` to produce `.name(1)` instead of
 	`(1).name`.  Thanks to filterfalse.

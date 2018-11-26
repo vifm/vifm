@@ -425,7 +425,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = 0,
 	  .handler = &cunabbrev_cmd,   .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "cunmap",            .abbr = "cu",    .id = -1,
-	  .descr = "unmap keys in cmdline mode",
+	  .descr = "unmap user keys in cmdline mode",
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &cunmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "delete",            .abbr = "d",     .id = -1,
@@ -457,7 +457,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &dnoremap_cmd,    .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "dunmap",            .abbr = NULL,    .id = -1,
-	  .descr = "unmap keys in dialog modes",
+	  .descr = "unmap user keys in dialog modes",
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &dunmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "echo",             .abbr = "ec",     .id = COM_ECHO,
@@ -623,7 +623,7 @@ const cmd_add_t cmds_list[] = {
 	         | HAS_QMARK_NO_ARGS | HAS_SELECTION_SCOPE,
 	  .handler = &move_cmd,        .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "munmap",            .abbr = "mu",    .id = -1,
-	  .descr = "unmap keys in menu mode",
+	  .descr = "unmap user keys in menu mode",
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &munmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "nmap",              .abbr = "nm",    .id = COM_NMAP,
@@ -647,7 +647,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK,
 	  .handler = &normal_cmd,      .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "nunmap",            .abbr = "nun",   .id = -1,
-	  .descr = "unmap keys in normal mode",
+	  .descr = "unmap user keys in normal mode",
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &nunmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "only",              .abbr = "on",    .id = -1,
@@ -687,7 +687,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &quit_cmd,        .min_args = 0,   .max_args = 0, },
 	{ .name = "qunmap",            .abbr = "qun",   .id = -1,
-	  .descr = "unmap keys in preview mode",
+	  .descr = "unmap user keys in preview mode",
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &qunmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "redraw",            .abbr = "redr",  .id = -1,
@@ -824,7 +824,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &unlet_cmd,       .min_args = 1,   .max_args = NOT_DEF, },
 	{ .name = "unmap",             .abbr = "unm",   .id = -1,
-	  .descr = "unmap keys in normal and visual modes",
+	  .descr = "unmap user keys in normal and visual modes",
 	  .flags = HAS_EMARK | HAS_RAW_ARGS,
 	  .handler = &unmap_cmd,       .min_args = 1,   .max_args = 1, },
 	{ .name = "unselect",          .abbr = NULL,    .id = COM_SELECT,
@@ -862,7 +862,7 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &vsplit_cmd,      .min_args = 0,   .max_args = 1, },
 	{ .name = "vunmap",            .abbr = "vu",    .id = -1,
-	  .descr = "unmap keys in visual mode",
+	  .descr = "unmap user keys in visual mode",
 	  .flags = HAS_RAW_ARGS,
 	  .handler = &vunmap_cmd,      .min_args = 1,   .max_args = 1, },
 	{ .name = "wincmd",            .abbr = "winc",  .id = COM_WINCMD,
@@ -4370,7 +4370,7 @@ unselect_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		error = flist_sel_by_pattern(curr_view, cmd_info->args, cmd_info->emark, 0);
+		error = flist_sel_by_pattern(curr_view, cmd_info->args, 0, 0);
 	}
 
 	return (error ? CMDS_ERR_CUSTOM : 0);
