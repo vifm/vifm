@@ -1,0 +1,46 @@
+" :com[mand][!] command_name action
+" The following macros can be used in a command
+" %a is replaced with the user arguments.
+" %c the current file under the cursor.
+" %C the current file under the cursor in the other directory.
+" %f the current selected file, or files.
+" %F the current selected file, or files in the other directory.
+" %b same as %f %F.
+" %d the current directory name.
+" %D the other window directory name.
+" %m run the command in a menu window
+
+command! df df -h %m 2> /dev/null
+command! diff vim -d %f %F
+command! zip zip -r %f.zip %f
+command! run !! ./%f
+command! make !!make %a
+command! mkcd :mkdir %a | cd %a
+command! vgrep vim "+grep %a"
+command! reload :write | restart
+command! tgzcurrdir
+        \ :execute "!!dirname=$(basename %d); ARCHNAME=$(dialog --inputbox 'Archive basename (without .tgz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvzf ${ARCHNAME}.tgz ${dirname}"
+
+command! tbzcurrdir
+        \ :execute "!!dirname=$(basename %d); ARCHNAME=$(dialog --inputbox 'Archive basename (without .tbz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvjf ${ARCHNAME}.tbz ${dirname}"
+
+command! txzcurrdir
+        \ :execute "!!dirname=$(basename %d); ARCHNAME=$(dialog --inputbox 'Archive basename (without .txz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvJf ${ARCHNAME}.txz ${dirname}"
+
+
+" update modification time of all jpeg files inside current directory using EXIF tag
+command! exiftomtime
+        \ :!!exiftool "-FileModifyDate<EXIF:DateTimeOriginal" %d
+
+" resize and reduce quality of tagged pictures using ImageMagick
+command! resizetagged
+        \ :execute "!!OUTDIR=$(mktemp -d -p .); RESQUA='".term('dialog --separator " " --form Reduce_image 9 50 4 X-resolution 1 1 800 1 15 15 8 Quality 2 2 85 2 15 15 8 2>&1 >/dev/tty')."'; echo $RESQUA | read -r RES QUA; for i in %f; do convert $i -resize ${RES} -quality ${QUA} ${OUTDIR}/$i; done"
+
+command! ncdu
+        \ :!ncdu %d
+
+command! mailto
+        \ :execute "!!TMPDIR=/tmp mpack -s 'Attachment (%c) sent from vifm' %c ".term('dialog --inputbox "Email recipient" 7 30 2>&1 >/dev/tty')
+
+command! zipandmailto
+        \ :execute "!!tempfile=$(mktemp -u --suffix=.zip); zip ${tempfile} %f; TMPDIR=/tmp mpack -s 'Multiple files sent from vifm' ${tempfile} ".term('dialog --inputbox "Email recipient" 7 30 2>&1 >/dev/tty')

@@ -1,0 +1,16 @@
+" Coloring of file names based on default mc skin
+
+" archive
+highlight {*.zip,*.rar,*.7z,*.Z,*.ace,*.arc,*.arj,*.ark,*.bz2,*.cab,*.gz,*.lha,*.lz,*.lz4,*.lzh,*.lzma,*.rar,*.rpm,*.tar,*.tbz,*.tbz2,*.tgz,*.tlz,*.txz,*.tzst,*.xz,*.zip,*.zoo,*.zst} cterm=none ctermfg=13 ctermbg=default
+" database
+highlight {*.cdx,*.dat,*.db,*.dbf,*.dbi,*.dbx,*.fox,*.mdb,*.mdn,*.mdx,*.msql,*.mssql,*.pgsql,*.sql,*.ssql} cterm=none ctermfg=9 ctermbg=default
+" doc
+highlight {*.chm,*.css,*.ctl,*.diz,*.doc,*.docm,*.docx,*.dtd,*.htm,*.html,*.letter,*.lsm,*.mail,*.man,*.me,*.msg,*.nroff,*.odp,*.ods,*.odt,*.pdf,*.po,*.ppt,*.pptm,*.pptx,*.ps,*.rtf,*.sgml,*.shtml,*.tex,*.text,*.txt,*.xls,*.xlsm,*.xlsx,*.xml,*.xsd,*.xslt} cterm=none ctermfg=3 ctermbg=default
+" graph
+highlight {*.ai,*.bmp,*.cdr,*.eps,*.gif,*.ico,*.jpeg,*.jpg,*.omf,*.pcx,*.pic,*.png,*.rle,*.svg,*.tif,*.tiff,*.webp,*.wmf,*.xbm,*.xcf,*.xpm} cterm=none ctermfg=14 ctermbg=default
+" media
+highlight {*.3gp,*.aac,*.ac3,*.ape,*.asf,*.avi,*.dts,*.flac,*.flv,*.it,*.m3u,*.m4a,*.med,*.mid,*.midi,*.mkv,*.mod,*.mol,*.mov,*.mp2,*.mp3,*.mp4,*.mpeg,*.mpg,*.mpl,*.ogg,*.ogv,*.s3m,*.umx,*.vob,*.wav,*.webm,*.wma,*.wmv,*.xm} cterm=none ctermfg=green ctermbg=default
+" source
+highlight {*.ada,*.asm,*.awk,*.bash,*.c,*.caml,*.cc,*.cgi,*.cpp,*.cxx,*.diff,*.erl,*.h,*.hh,*.hi,*.hpp,*.hs,*.inc,*.jasm,*.jav,*.java,*.js,*.m4,*.mak,*.mjs,*.ml,*.mli,*.mll,*.mlp,*.mly,*.pas,*.patch,*.php,*.phps,*.pl,*.pm,*.prg,*.py,*.rb,*.sas,*.sh,*.sl,*.st,*.tcl,*.tk,*.xq} cterm=none ctermfg=cyan ctermbg=default
+" temp
+highlight {*.~,*.$$$,*.bak,*.tmp} cterm=none ctermfg=8 ctermbg=default

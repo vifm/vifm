@@ -1,0 +1,9 @@
+" prefixes based on standard mc settings
+
+set classify='@:link:'
+set classify+='*:exe:'
+set classify+='/:dir:'
+set classify+='|:fifo:'
+set classify+='=:sock:'
+set classify+='-:char:'
+set classify+='+:block:'

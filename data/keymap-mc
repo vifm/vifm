@@ -1,0 +1,75 @@
+" Tries to mimic Midnight commander's default keymap
+"
+" Help
+nnoremap <f1> :help<cr>
+" UserMenu
+nnoremap <f2> :command<cr>
+" ViewRaw (View is impossible to emulate easily)
+nnoremap <f3> :!less %f<cr>
+" Edit
+nnoremap <f4> :edit<cr>
+" EditNew
+nnoremap <s-f4> :!vim<cr>
+" Copy
+nnoremap <f5> :copy
+" Move
+nnoremap <f6> :move
+" MoveSingle
+nnoremap <s-f6> :rename<cr>
+" MakeDir
+nnoremap <f7> :mkdir<space>
+" Delete
+nnoremap <f8> :delete<cr>
+" Menu
+nnoremap <f9> :cd ~/.vifm<cr>
+" Quit (wait for confirmation)
+nnoremap <f10> :quit
+" QuitQuiet (no waiting)
+nnoremap <s-f10> :quit<cr>
+
+" HotList
+nnoremap <c-\> :bmarks<cr>
+" Shell
+nnoremap <c-o> :shell<cr>
+" Search
+nnoremap <c-s> /
+nnoremap <a-s> /
+" Mark
+nnoremap  tj
+nnoremap <c-t> tj
+" CdQuick
+nnoremap <a-c> :cd<space>
+" PanelOtherSync
+nnoremap <a-i> :sync<cr>
+" Find
+nnoremap ? :find<space>
+" Swap
+nnoremap <c-u> <c-w>x
+" History
+nnoremap <a-h> :<c-g>
+cnoremap <a-h> :<c-g>
+" HistoryNext
+nnoremap <a-n> :<c-n>
+cnoremap <a-n> :<c-n>
+" HistoryPrev
+nnoremap <a-p> :<c-p>
+cnoremap <a-p> :<c-p>
+" PutCurrentPath
+cnoremap <m-a> <c-x>d
+cnoremap <c-x>p <c-w>d
+" Select
+nnoremap + :select<space>
+" Unselect
+nnoremap - :unselect<space>
+" SelectInvert
+nnoremap * :invert s<cr>
+" CompareDirs
+nnoremap <c-x>d :compare<cr>
+" PanelQuickView
+nnoremap <c-x>q :view<cr>
+" PanelInfo
+nnoremap <c-x>i <c-g>
+" Jobs
+nnoremap <c-x>j :jobs<cr>
+" PutCurrentTagged
+cnoremap <c-x>t %f

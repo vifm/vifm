@@ -1,0 +1,10 @@
+" standard Midnight commander mappings
+source $VIFM/keymap-mc
+" open with.. (command)
+nnoremap <f1> :!!  %c<left><left><left>
+" open with.. (menu)
+nnoremap <s-f2> :file<cr>
+" sort by..
+nnoremap <c-a-n> :set sort=name<cr>
+nnoremap <c-a-t> :set sort=mtime<cr>
+nnoremap <c-a-s> :set sort=size<cr>
