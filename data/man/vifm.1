@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 25, 2018" "vifm 0.10"
+.TH VIFM 1 "November 27, 2018" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -6065,7 +6065,10 @@ This is just a sort key surrounded with curly braces or {root}, e.g.
 Following keys don't have corresponding sorting keys:
 .RS 2
 .IP \- 2
-{root} \- display name without extension (as a complement for {ext})
+{root}     \- display name without extension (as a complement for {ext})
+.IP \- 2
+{fileroot} \- display name without extension for anything except for \
+directories and symbolic links to directories (as a complement for {fileext})
 .RE
 
 Empty curly braces ({}) are replaced with the default secondary column for
