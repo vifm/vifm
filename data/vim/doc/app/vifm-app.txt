@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 25
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 27
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5121,7 +5121,10 @@ This is just a sort key surrounded with curly braces or {root}, e.g. >
 |vifm-'sort'| option.
 
 Following keys don't have corresponding sorting keys:
- - {root} - display name without extension (as a complement for {ext})
+ - {root}     - display name without extension (as a complement for {ext})
+ - {fileroot} - display name without extension for anything except for
+                directories and symbolic links to directories (as a
+                complement for {fileext})
 
 Empty curly braces ({}) are replaced with the default secondary column for
 primary sort key. So after the next command views will be displayed almost as

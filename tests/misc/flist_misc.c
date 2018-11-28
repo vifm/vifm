@@ -2,12 +2,13 @@
 
 #include <sys/stat.h> /* chmod() */
 
-#include <string.h> /* strcpy() */
+#include <string.h> /* memset() strcpy() */
 #include <time.h> /* time() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/cancellation.h"
 #include "../../src/utils/dynarray.h"
@@ -441,6 +442,51 @@ TEST(cache_handles_noexec_dirs, IF(not_windows))
 	assert_success(chmod(SANDBOX_PATH "/dir", 0777));
 	assert_success(remove(SANDBOX_PATH "/dir/file"));
 	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
+TEST(filename_is_formatted_according_to_column_and_filetype)
+{
+	char origin[] = "";
+	dir_entry_t file_entry = {
+		.name = "a.b.c", .type = FT_REG, .origin = origin,
+	};
+	dir_entry_t dir_entry = {
+		.name = "a.b.c", .type = FT_DIR, .origin = origin,
+	};
+
+	column_data_t cdt = { .view = &lwin };
+	char name[16];
+
+	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
+	cfg.type_decs[FT_DIR][DECORATION_SUFFIX][0] = '/';
+
+	cdt.entry = &dir_entry;
+
+	format_name(SK_BY_INAME, &cdt, sizeof(name), name);
+	assert_string_equal("a.b.c/", name);
+
+	format_name(SK_BY_NAME, &cdt, sizeof(name), name);
+	assert_string_equal("a.b.c/", name);
+
+	format_name(SK_BY_FILEROOT, &cdt, sizeof(name), name);
+	assert_string_equal("a.b.c/", name);
+
+	format_name(SK_BY_ROOT, &cdt, sizeof(name), name);
+	assert_string_equal("a.b/", name);
+
+	cdt.entry = &file_entry;
+
+	format_name(SK_BY_INAME, &cdt, sizeof(name), name);
+	assert_string_equal("a.b.c", name);
+
+	format_name(SK_BY_NAME, &cdt, sizeof(name), name);
+	assert_string_equal("a.b.c", name);
+
+	format_name(SK_BY_FILEROOT, &cdt, sizeof(name), name);
+	assert_string_equal("a.b", name);
+
+	format_name(SK_BY_ROOT, &cdt, sizeof(name), name);
+	assert_string_equal("a.b", name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

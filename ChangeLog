@@ -3,6 +3,10 @@
 	Added example of using xsel to sample vifmrc file.  Thanks to
 	chelovechishko.
 
+	Added fileroot view column, which displays full name of directories and
+	symbolic links to directories and only root of name for everything else.
+	Thanks to chelovechishko.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

@@ -252,6 +252,7 @@ static const char *sort_enum[] = {
 	[SK_BY_GROUPS]        = "groups",
 	[SK_BY_TARGET]        = "target",
 	[SK_BY_ROOT]          = "root",
+	[SK_BY_FILEROOT]      = "fileroot",
 #ifndef _WIN32
 	[SK_BY_GROUP_ID]      = "gid",
 	[SK_BY_GROUP_NAME]    = "gname",

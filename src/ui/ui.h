@@ -120,8 +120,11 @@ enum
 	/* Defined here to do not add it to sorting keys. */
 	/* Id ordering. */
 	SK_BY_ID = SK_NONE + 1,
-	/* Displaying root of file name only. */
+	/* Displaying only root of file name. */
 	SK_BY_ROOT,
+	/* Displaying only root of file names for entries that aren't directories or
+	 * symbolic links to directories. */
+	SK_BY_FILEROOT,
 
 	/* Total number of SK_*, including those missing from sorting keys and other
 	 * counts. */

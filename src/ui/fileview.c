@@ -193,6 +193,7 @@ fview_init(void)
 	}
 	columns_add_column_desc(SK_BY_ID, &format_id);
 	columns_add_column_desc(SK_BY_ROOT, &format_name);
+	columns_add_column_desc(SK_BY_FILEROOT, &format_name);
 }
 
 void
@@ -1048,7 +1049,8 @@ column_line_print(const void *data, int column_id, const char buf[],
 
 	const int primary = column_id == SK_BY_NAME
 	                 || column_id == SK_BY_INAME
-	                 || column_id == SK_BY_ROOT;
+	                 || column_id == SK_BY_ROOT
+	                 || column_id == SK_BY_FILEROOT;
 	const int line_attrs = prepare_col_color(view, primary, cdt);
 
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
@@ -1321,13 +1323,17 @@ mix_in_file_name_hi(const view_t *view, dir_entry_t *entry, col_attr_t *col)
 TSTATIC void
 format_name(int id, const void *data, size_t buf_len, char buf[])
 {
-	const NameFormat fmt = (id == SK_BY_ROOT ? NF_ROOT : NF_FULL);
-
 	size_t len, i;
 	dir_entry_t *child, *parent;
 
 	const column_data_t *cdt = data;
 	view_t *view = cdt->view;
+
+	NameFormat fmt = NF_FULL;
+	if(id == SK_BY_ROOT || (id == SK_BY_FILEROOT && !fentry_is_dir(cdt->entry)))
+	{
+		fmt = NF_ROOT;
+	}
 
 	if(!flist_custom_active(view))
 	{
