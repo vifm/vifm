@@ -27,6 +27,9 @@
 	Fixed some resources (like output pipe for --choose-files and
 	--choose-dir) being inherited by child processes.  Thanks to Vigi.
 
+	Fixed CWD of the process not always matching current view right after
+	startup.  Patch by Daniel Mueller.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

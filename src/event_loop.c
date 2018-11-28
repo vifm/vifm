@@ -103,6 +103,10 @@ event_loop(const int *quit)
 	curr_input_buf = &input_buf[0];
 	curr_input_buf_pos = &input_buf_pos;
 
+	/* Make sure to set the working directory once in order to have the
+	 * desired state even before any events are processed. */
+	(void)vifm_chdir(flist_get_dir(curr_view));
+
 	while(!*quit)
 	{
 		wint_t c;
