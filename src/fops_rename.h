@@ -52,10 +52,6 @@ int fops_subst(struct view_t *view, const char pattern[], const char sub[],
  * save_msg flag. */
 int fops_tr(struct view_t *view, const char from[], const char to[]);
 
-/* Returns pointer to a statically allocated buffer. */
-const char * fops_name_subst(const char name[], const char pattern[],
-		const char sub[], int glob);
-
 TSTATIC_DEFS(
 	const char * incdec_name(const char fname[], int k);
 )
