@@ -34,6 +34,8 @@
 	Fixed CWD of the process not always matching current view right after
 	startup.  Patch by Daniel Mueller.
 
+	Fixed global substitution with patterns beginning with a caret again.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

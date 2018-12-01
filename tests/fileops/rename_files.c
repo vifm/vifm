@@ -241,6 +241,20 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	stats_update_shell_type("/bin/sh");
 }
 
+TEST(global_substitution_of_caret_pattern)
+{
+	create_empty_file(SANDBOX_PATH "/001");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_subst(&lwin, "^0", "", 0, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/01"));
+}
+
 /* No tests for custom/tree view, because control doesn't reach necessary checks
  * when new filenames are provided beforehand (only when user edits them). */
 

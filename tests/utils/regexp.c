@@ -6,6 +6,7 @@ TEST(substitute_segfault_bug)
 {
 	/* see #SF3515922 */
 	assert_string_equal("barfoobar", regexp_replace("foobar", "^", "bar", 1));
+	assert_string_equal("01", regexp_replace("001", "^0", "", 1));
 }
 
 TEST(substitute_begin_global)

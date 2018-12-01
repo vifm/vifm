@@ -706,7 +706,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 			continue;
 		}
 
-		if(glob)
+		if(glob && pattern[0] != '^')
 		{
 			new_fname = regexp_gsubst(&re, entry->name, sub, matches);
 		}
