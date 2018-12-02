@@ -145,11 +145,13 @@ regexp_gsubst(regex_t *re, const char src[], const char sub[],
 			matches[i].rm_eo += off;
 		}
 
-		src = regexp_subst(buf, sub, matches, &off);
-		copy_str(buf, sizeof(buf), src);
+		copy_str(buf, sizeof(buf), regexp_subst(buf, sub, matches, &off));
 
 		if(matches[0].rm_eo == matches[0].rm_so)
+		{
+			/* If we found an empty match, repeating will cause infinite loop. */
 			break;
+		}
 	}
 	while(regexec(re, buf + off, 10, matches, 0) == 0);
 
