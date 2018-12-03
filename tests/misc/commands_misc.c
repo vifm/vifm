@@ -119,6 +119,77 @@ TEST(double_cd_uses_same_base_for_rel_paths)
 	assert_true(paths_are_equal(rwin.curr_dir, path));
 }
 
+TEST(cds_does_the_replacement)
+{
+	char path[PATH_MAX + 1];
+	snprintf(path, sizeof(path), "%s/spaces-in-names", test_data);
+	assert_success(chdir(path));
+	strcpy(lwin.curr_dir, path);
+
+	assert_success(exec_commands("cds spaces-in-names rename", &lwin,
+				CIT_COMMAND));
+
+	snprintf(path, sizeof(path), "%s/rename", test_data);
+	assert_string_equal(path, lwin.curr_dir);
+}
+
+TEST(cds_aborts_on_broken_)
+{
+	char dst[PATH_MAX + 1];
+	snprintf(dst, sizeof(dst), "%s/rename", test_data);
+
+	assert_success(chdir(dst));
+
+	strcpy(lwin.curr_dir, dst);
+
+	assert_failure(exec_commands("cds/rename/read/t", &lwin, CIT_COMMAND));
+
+	assert_string_equal(dst, lwin.curr_dir);
+}
+
+TEST(cds_acts_like_substitute)
+{
+	char path[PATH_MAX + 1];
+	snprintf(path, sizeof(path), "%s/spaces-in-names", test_data);
+	assert_success(chdir(path));
+	strcpy(lwin.curr_dir, path);
+
+	assert_success(exec_commands("cds/spaces-IN-[a-z]*/rename/i", &lwin,
+				CIT_COMMAND));
+
+	snprintf(path, sizeof(path), "%s/rename", test_data);
+	assert_string_equal(path, lwin.curr_dir);
+}
+
+TEST(cds_can_change_path_of_both_panes)
+{
+	char path[PATH_MAX + 1];
+	snprintf(path, sizeof(path), "%s/spaces-in-names", test_data);
+	assert_success(chdir(path));
+	strcpy(lwin.curr_dir, path);
+
+	assert_success(exec_commands("cds! spaces-in-names rename", &lwin,
+				CIT_COMMAND));
+
+	snprintf(path, sizeof(path), "%s/rename", test_data);
+	assert_string_equal(path, lwin.curr_dir);
+	assert_string_equal(path, rwin.curr_dir);
+}
+
+TEST(cds_is_noop_when_pattern_not_found)
+{
+	assert_success(chdir(test_data));
+
+	strcpy(lwin.curr_dir, test_data);
+	strcpy(rwin.curr_dir, sandbox);
+
+	assert_failure(exec_commands("cds asdlfkjasdlkfj rename", &lwin,
+				CIT_COMMAND));
+
+	assert_string_equal(test_data, lwin.curr_dir);
+	assert_string_equal(sandbox, rwin.curr_dir);
+}
+
 TEST(cpmv_does_not_crash_on_wrong_list_access)
 {
 	char path[PATH_MAX + 1];

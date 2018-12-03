@@ -7,6 +7,9 @@
 	symbolic links to directories and only root of name for everything else.
 	Thanks to chelovechishko.
 
+	Added :cds command that navigates to path obtained by substitution in
+	current path.  Thanks to j-xella.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

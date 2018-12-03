@@ -29,7 +29,8 @@
 /* Commands without completion, but for which we need to have an id. */
 enum
 {
-	COM_CMAP = NO_COMPLETION_BOUNDARY,
+	COM_CDS = NO_COMPLETION_BOUNDARY,
+	COM_CMAP,
 	COM_CNOREMAP,
 	COM_COMMAND,
 	COM_DMAP,

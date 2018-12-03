@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Nov 27
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1300,6 +1300,21 @@ The builtin commands are:
     invalid.  All forms of the command accept macros.
 :cd! /dir
     same as :cd /dir /dir.
+
+                                               *vifm-:cds*
+:cds[!] pattern string [flags]
+    navigate to path obtained by substituting first match in current path.
+    Arguments can include slashes, but starting first argument with a
+    separator will activate below form of the command.  Specifying "!"
+    changes directory of both panes.
+    Available flags:
+        i - ignore case (the |vifm-'ignorecase'| and |vifm-'smartcase'|
+            options are not used)
+        I - don't ignore case (the |vifm-'ignorecase'| and
+            |vifm-'smartcase'| options are not used)
+:cds[!]/pattern/string/[flags]
+    same as above, but with |vifm-:substitute|-like syntax.  Other punctuation
+    characters can be used as separators.
 
 :c[hange]                                      *vifm-:change* *vifm-:c*
     create a menu window to alter a files properties.

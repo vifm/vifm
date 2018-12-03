@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@posteo.net>
-" Last Change: October 6, 2018
+" Last Change: December 3, 2018
 " Inspired By: Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -13,7 +13,7 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 " General commands
-syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo change
+syntax keyword vifmCommand contained alink apropos bmark bmarks bmgo cds change
 		\ chmod chown clone compare cope[n] co[py] cq[uit] d[elete] delbmarks
 		\ delm[arks] di[splay] dirs e[dit] el[se] empty en[dif] exi[t] file fin[d]
 		\ fini[sh] go[to] gr[ep] h[elp] histnext his[tory] histprev jobs locate ls
