@@ -925,6 +925,7 @@ get_cmdline_location(const char cmd[], const char pos[])
 
 	switch(id)
 	{
+		case COM_CDS:
 		case COM_HIGHLIGHT:
 		case COM_FILTER:
 		case COM_SELECT:

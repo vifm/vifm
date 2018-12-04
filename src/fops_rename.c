@@ -62,10 +62,6 @@ static RenameAction check_rename(const char old_fname[], const char new_fname[],
 		char **dest, int ndest);
 static int rename_marked(view_t *view, const char desc[], const char lhs[],
 		const char rhs[], char **dest);
-static const char * gsubstitute_regexp(regex_t *re, const char src[],
-		const char sub[], regmatch_t matches[]);
-static const char * substitute_regexp(const char src[], const char sub[],
-		const regmatch_t matches[], int *off);
 
 /* Temporary storage for extension of file being renamed in name-only mode. */
 static char rename_file_ext[NAME_MAX + 1];
@@ -710,13 +706,13 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 			continue;
 		}
 
-		if(glob)
+		if(glob && pattern[0] != '^')
 		{
-			new_fname = gsubstitute_regexp(&re, entry->name, sub, matches);
+			new_fname = regexp_gsubst(&re, entry->name, sub, matches);
 		}
 		else
 		{
-			new_fname = substitute_regexp(entry->name, sub, matches, NULL);
+			new_fname = regexp_subst(entry->name, sub, matches, NULL);
 		}
 
 		action = check_rename(entry->name, new_fname, dest, ndest);
@@ -913,114 +909,6 @@ rename_marked(view_t *view, const char desc[], const char lhs[],
 	ui_sb_msgf("%d file%s renamed", nrenamed, (nrenamed == 1) ? "" : "s");
 
 	return 1;
-}
-
-const char *
-fops_name_subst(const char name[], const char pattern[], const char sub[],
-		int glob)
-{
-	static char buf[PATH_MAX + 1];
-	regex_t re;
-	regmatch_t matches[10];
-	const char *dst;
-
-	copy_str(buf, sizeof(buf), name);
-
-	if(regcomp(&re, pattern, REG_EXTENDED) != 0)
-	{
-		regfree(&re);
-		return buf;
-	}
-
-	if(regexec(&re, name, ARRAY_LEN(matches), matches, 0) != 0)
-	{
-		regfree(&re);
-		return buf;
-	}
-
-	if(glob && pattern[0] != '^')
-		dst = gsubstitute_regexp(&re, name, sub, matches);
-	else
-		dst = substitute_regexp(name, sub, matches, NULL);
-	copy_str(buf, sizeof(buf), dst);
-
-	regfree(&re);
-	return buf;
-}
-
-/* Performs substitution of all regexp matches in the string.  Returns pointer
- * to a statically allocated buffer. */
-static const char *
-gsubstitute_regexp(regex_t *re, const char src[], const char sub[],
-		regmatch_t matches[])
-{
-	static char buf[NAME_MAX + 1];
-	int off = 0;
-
-	copy_str(buf, sizeof(buf), src);
-	do
-	{
-		int i;
-		for(i = 0; i < 10; ++i)
-		{
-			matches[i].rm_so += off;
-			matches[i].rm_eo += off;
-		}
-
-		src = substitute_regexp(buf, sub, matches, &off);
-		copy_str(buf, sizeof(buf), src);
-
-		if(matches[0].rm_eo == matches[0].rm_so)
-			break;
-	}
-	while(regexec(re, buf + off, 10, matches, 0) == 0);
-
-	return buf;
-}
-
-/* Performs substitution of single regexp matche in the string.  off can be
- * NULL.  Returns pointer to a statically allocated buffer. */
-static const char *
-substitute_regexp(const char src[], const char sub[],
-		const regmatch_t matches[], int *off)
-{
-	static char buf[NAME_MAX + 1];
-	char *dst = buf;
-	int i;
-
-	for(i = 0; i < matches[0].rm_so; ++i)
-	{
-		*dst++ = src[i];
-	}
-
-	while(*sub != '\0')
-	{
-		if(*sub == '\\')
-		{
-			if(sub[1] == '\0')
-				break;
-			else if(isdigit(sub[1]))
-			{
-				int n = sub[1] - '0';
-				for(i = matches[n].rm_so; i < matches[n].rm_eo; i++)
-					*dst++ = src[i];
-				sub += 2;
-				continue;
-			}
-			else
-				sub++;
-		}
-		*dst++ = *sub++;
-	}
-	if(off != NULL)
-		*off = dst - buf;
-
-	for(i = matches[0].rm_eo; src[i] != '\0'; i++)
-		*dst++ = src[i];
-
-	*dst = '\0';
-
-	return buf;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

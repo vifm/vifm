@@ -241,6 +241,79 @@ TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 	stats_update_shell_type("/bin/sh");
 }
 
+TEST(substitution_works)
+{
+	create_empty_file(SANDBOX_PATH "/001");
+	create_empty_file(SANDBOX_PATH "/002");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[1].marked = 1;
+
+	(void)fops_subst(&lwin, "1", "z", 0, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/00z"));
+	assert_success(unlink(SANDBOX_PATH "/002"));
+}
+
+TEST(substitution_ignores_case)
+{
+	create_empty_file(SANDBOX_PATH "/abc");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_subst(&lwin, "B", "z", 1, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/azc"));
+}
+
+TEST(substitution_respects_case)
+{
+	create_empty_file(SANDBOX_PATH "/Aba");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_subst(&lwin, "a", "z", -1, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/Abz"));
+}
+
+TEST(global_substitution_with_broken_pattern)
+{
+	create_empty_file(SANDBOX_PATH "/001");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_subst(&lwin, "*", "1", 0, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/001"));
+}
+
+TEST(global_substitution_of_caret_pattern)
+{
+	create_empty_file(SANDBOX_PATH "/001");
+
+	populate_dir_list(&lwin, 0);
+	lwin.dir_entry[0].marked = 1;
+
+	(void)fops_subst(&lwin, "^0", "", 0, 1);
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	assert_success(unlink(SANDBOX_PATH "/01"));
+}
+
 /* No tests for custom/tree view, because control doesn't reach necessary checks
  * when new filenames are provided beforehand (only when user edits them). */
 

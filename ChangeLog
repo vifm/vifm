@@ -7,6 +7,9 @@
 	symbolic links to directories and only root of name for everything else.
 	Thanks to chelovechishko.
 
+	Added :cds command that navigates to path obtained by substitution in
+	current path.  Thanks to j-xella.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -33,6 +36,8 @@
 
 	Fixed CWD of the process not always matching current view right after
 	startup.  Patch by Daniel Mueller.
+
+	Fixed global substitution with patterns beginning with a caret again.
 
 0.10-beta to 0.10 (2018-11-11)
 

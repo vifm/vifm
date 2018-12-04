@@ -32,8 +32,8 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* pclose() popen() snprintf() */
 #include <stdlib.h> /* EXIT_SUCCESS atoi() free() realloc() */
-#include <string.h> /* strchr() strcmp() strcasecmp() strcpy() strdup() strlen()
-                       strrchr() */
+#include <string.h> /* strchr() strcmp() strcspn() strcasecmp() strcpy()
+                       strdup() strlen() strrchr() */
 #include <wctype.h> /* iswspace() */
 #include <wchar.h> /* wcslen() wcsncmp() */
 
@@ -129,6 +129,7 @@ static int handle_cabbrevs(const cmd_info_t *cmd_info, int no_remap);
 static int list_abbrevs(const char prefix[]);
 static int add_cabbrev(const cmd_info_t *cmd_info, int no_remap);
 static int cd_cmd(const cmd_info_t *cmd_info);
+static int cds_cmd(const cmd_info_t *cmd_info);
 static int change_cmd(const cmd_info_t *cmd_info);
 static int chmod_cmd(const cmd_info_t *cmd_info);
 #ifndef _WIN32
@@ -363,6 +364,10 @@ const cmd_add_t cmds_list[] = {
 	  .flags = HAS_EMARK | HAS_QUOTED_ARGS | HAS_COMMENT | HAS_MACROS_FOR_CMD
 	         | HAS_ENVVARS,
 	  .handler = &cd_cmd,          .min_args = 0,   .max_args = 2, },
+	{ .name = "cds",               .abbr = NULL,    .id = COM_CDS,
+	  .descr = "navigate to path obtained by substitution in current path",
+	  .flags = HAS_EMARK | HAS_REGEXP_ARGS | HAS_CUST_SEP,
+	  .handler = &cds_cmd,         .min_args = 2,   .max_args = 3, },
 	{ .name = "change",            .abbr = "c",     .id = -1,
 	  .descr = "change file traits",
 	  .flags = HAS_COMMENT,
@@ -1363,8 +1368,10 @@ cd_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 0)
 	{
 		result = cd(curr_view, curr_dir, cfg.home_dir);
-		if(cmd_info->emark)
+		if(result == 0 && cmd_info->emark)
+		{
 			result += cd(other_view, other_dir, cfg.home_dir);
+		}
 	}
 	else if(cmd_info->argc == 1)
 	{
@@ -1412,6 +1419,43 @@ cd_cmd(const cmd_info_t *cmd_info)
 
 	free(curr_dir);
 	free(other_dir);
+
+	return result;
+}
+
+/* Performs substitution on current path and navigates to the result. */
+static int
+cds_cmd(const cmd_info_t *cmd_info)
+{
+	int case_sensitive = !regexp_should_ignore_case(cmd_info->argv[0]);
+	if(cmd_info->argc > 2)
+	{
+		cmd_info->argv[2][strcspn(cmd_info->argv[2], " \t")] = '\0';
+		if(parse_case_flag(cmd_info->argv[2], &case_sensitive) != 0)
+		{
+			ui_sb_errf("Failed to parse flags: %s", cmd_info->argv[2]);
+			return CMDS_ERR_CUSTOM;
+		}
+	}
+
+	const char *const curr_dir = flist_get_dir(curr_view);
+	char *const new_path = strdup(regexp_replace(curr_dir, cmd_info->argv[0],
+				cmd_info->argv[1], 0, !case_sensitive));
+
+	if(strcmp(curr_dir, new_path) == 0)
+	{
+		free(new_path);
+		ui_sb_msgf("No \"%s\" found in CWD", cmd_info->argv[0]);
+		return 1;
+	}
+
+	int result = cd(curr_view, curr_dir, new_path);
+	if(result == 0 && cmd_info->emark)
+	{
+		result += cd(other_view, curr_dir, new_path);
+	}
+
+	free(new_path);
 
 	return result;
 }

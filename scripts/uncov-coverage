@@ -37,15 +37,10 @@ git clean --force -d ..
 git checkout --force stash@{0}^
 git stash pop
 
-find -name '*.gcov' -delete
 find -name '*.gcda' -delete
 make check
-find -name '*.o' -exec gcov -p {} + > gcov.out || (cat gcov.out && false)
 
-uncov-gcov --root "$coverage_worktree" \
-           --build-root "$coverage_worktree/src" \
-           --no-gcov \
-           --exclude "$coverage_worktree/tests" \
-           --ref-name "$branch" \
-           --capture-worktree |
-uncov "$original_worktree" new
+uncov "$original_worktree" new-gcovi --capture-worktree \
+                                     --prefix src \
+                                     --exclude src/utils/xxhash.c \
+                                     "$coverage_worktree/src"

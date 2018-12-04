@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 27, 2018" "vifm 0.10"
+.TH VIFM 1 "December 3, 2018" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1489,6 +1489,26 @@ of the command accept macros.
 .TP
 .BI ":cd! /dir"
 same as :cd /dir /dir.
+.TP
+.BI "                                         :cds"
+.TP
+.BI ":cds[!] pattern string"
+navigate to path obtained by substituting first match in current path.
+Arguments can include slashes, but starting first argument with a
+separator will activate below form of the command.  Specifying "!"
+changes directory of both panes.
+.LP
+Available flags:
+.RS 2
+.IP \- 2
+i \- ignore case (the 'ignorecase' and 'smartcase' options are not used)
+.IP \- 2
+I \- don't ignore case (the 'ignorecase' and 'smartcase' options are not used)
+.RE
+.TP
+.BI ":cds[!]/pattern/string/[flags]"
+same as above, but with :substitute-like syntax.  Other punctuation
+characters can be used as separators.
 .TP
 .BI "                                         :change"
 .TP

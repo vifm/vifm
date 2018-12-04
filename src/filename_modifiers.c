@@ -30,8 +30,8 @@
 #include "compat/fs_limits.h"
 #include "ui/ui.h"
 #include "utils/path.h"
+#include "utils/regexp.h"
 #include "utils/str.h"
-#include "fops_rename.h"
 #include "status.h"
 
 static const char * apply_mod(const char *path, const char *parent,
@@ -269,7 +269,7 @@ apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
 	copy_str(pattern, t - (mod + 3) + 1, mod + 3);
 	copy_str(sub, p - (t + 1) + 1, t + 1);
 	global = (mod[0] == 'g');
-	copy_str(buf, buf_len, fops_name_subst(path, pattern, sub, global));
+	copy_str(buf, buf_len, regexp_replace(path, pattern, sub, global, 0));
 	return (p + 1) - start - 2;
 }
 

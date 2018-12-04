@@ -20,6 +20,8 @@
 
 #include <regex.h> /* regex_t regmatch_t regerror() regexec() */
 
+#include <ctype.h> /* isdigit() */
+
 #include "../cfg/config.h"
 #include "str.h"
 
@@ -91,6 +93,113 @@ get_group_match(const regex_t *re, const char str[])
 	}
 
 	return matches[1];
+}
+
+const char *
+regexp_replace(const char line[], const char pattern[], const char sub[],
+		int glob, int ignore_case)
+{
+	static char buf[PATH_MAX + 1];
+	regex_t re;
+	regmatch_t matches[10];
+	const char *dst;
+
+	copy_str(buf, sizeof(buf), line);
+
+	const int flags = REG_EXTENDED | (ignore_case ? REG_ICASE : 0);
+	if(regcomp(&re, pattern, flags) != 0)
+	{
+		regfree(&re);
+		return buf;
+	}
+
+	if(regexec(&re, line, ARRAY_LEN(matches), matches, 0) != 0)
+	{
+		regfree(&re);
+		return buf;
+	}
+
+	if(glob && pattern[0] != '^')
+		dst = regexp_gsubst(&re, line, sub, matches);
+	else
+		dst = regexp_subst(line, sub, matches, NULL);
+	copy_str(buf, sizeof(buf), dst);
+
+	regfree(&re);
+	return buf;
+}
+
+const char *
+regexp_gsubst(regex_t *re, const char src[], const char sub[],
+		regmatch_t matches[])
+{
+	static char buf[NAME_MAX + 1];
+	int off = 0;
+
+	copy_str(buf, sizeof(buf), src);
+	do
+	{
+		int i;
+		for(i = 0; i < 10; ++i)
+		{
+			matches[i].rm_so += off;
+			matches[i].rm_eo += off;
+		}
+
+		copy_str(buf, sizeof(buf), regexp_subst(buf, sub, matches, &off));
+
+		if(matches[0].rm_eo == matches[0].rm_so)
+		{
+			/* If we found an empty match, repeating will cause infinite loop. */
+			break;
+		}
+	}
+	while(regexec(re, buf + off, 10, matches, 0) == 0);
+
+	return buf;
+}
+
+const char *
+regexp_subst(const char src[], const char sub[], const regmatch_t matches[],
+		int *off)
+{
+	static char buf[NAME_MAX + 1];
+	char *dst = buf;
+	int i;
+
+	for(i = 0; i < matches[0].rm_so; ++i)
+	{
+		*dst++ = src[i];
+	}
+
+	while(*sub != '\0')
+	{
+		if(*sub == '\\')
+		{
+			if(sub[1] == '\0')
+				break;
+			else if(isdigit(sub[1]))
+			{
+				int n = sub[1] - '0';
+				for(i = matches[n].rm_so; i < matches[n].rm_eo; i++)
+					*dst++ = src[i];
+				sub += 2;
+				continue;
+			}
+			else
+				sub++;
+		}
+		*dst++ = *sub++;
+	}
+	if(off != NULL)
+		*off = dst - buf;
+
+	for(i = matches[0].rm_eo; src[i] != '\0'; i++)
+		*dst++ = src[i];
+
+	*dst = '\0';
+
+	return buf;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

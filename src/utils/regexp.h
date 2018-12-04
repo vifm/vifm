@@ -45,6 +45,22 @@ int parse_case_flag(const char flags[], int *case_sensitive);
  * group both start and end fields are set to zero. */
 regmatch_t get_group_match(const regex_t *re, const char str[]);
 
+/* Compiles regular expression and performs substitution in a line.  Returns
+ * pointer to a statically allocated buffer, which on failure contains value of
+ * the line parameter. */
+const char * regexp_replace(const char line[], const char pattern[],
+		const char sub[], int glob, int ignore_case);
+
+/* Performs substitution of all regexp matches in the string.  Returns pointer
+ * to a statically allocated buffer. */
+const char * regexp_gsubst(regex_t *re, const char src[], const char sub[],
+		regmatch_t matches[]);
+
+/* Performs substitution of single regexp matche in the string.  off can be
+ * NULL.  Returns pointer to a statically allocated buffer. */
+const char * regexp_subst(const char src[], const char sub[],
+		const regmatch_t matches[], int *off);
+
 #endif /* VIFM__UTILS__REGEXP_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
