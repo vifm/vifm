@@ -97,7 +97,7 @@ get_group_match(const regex_t *re, const char str[])
 
 const char *
 regexp_replace(const char line[], const char pattern[], const char sub[],
-		int glob)
+		int glob, int ignore_case)
 {
 	static char buf[PATH_MAX + 1];
 	regex_t re;
@@ -106,7 +106,8 @@ regexp_replace(const char line[], const char pattern[], const char sub[],
 
 	copy_str(buf, sizeof(buf), line);
 
-	if(regcomp(&re, pattern, REG_EXTENDED) != 0)
+	const int flags = REG_EXTENDED | (ignore_case ? REG_ICASE : 0);
+	if(regcomp(&re, pattern, flags) != 0)
 	{
 		regfree(&re);
 		return buf;

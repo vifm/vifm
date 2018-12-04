@@ -49,7 +49,7 @@ regmatch_t get_group_match(const regex_t *re, const char str[]);
  * pointer to a statically allocated buffer, which on failure contains value of
  * the line parameter. */
 const char * regexp_replace(const char line[], const char pattern[],
-		const char sub[], int glob);
+		const char sub[], int glob, int ignore_case);
 
 /* Performs substitution of all regexp matches in the string.  Returns pointer
  * to a statically allocated buffer. */
