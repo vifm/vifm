@@ -2,14 +2,18 @@
 
 #include "../../src/utils/regexp.h"
 
+static int not_osx(void);
+
 TEST(bad_regex_leaves_line_unchanged)
 {
 	assert_string_equal("barfoobar",
 			regexp_replace("barfoobar", "*foo", "z", 1, 0));
 }
 
-TEST(no_infinite_loop_on_empty_global_match)
+TEST(no_infinite_loop_on_empty_global_match, IF(not_osx))
 {
+	/* On OS X, regular expressions which can match empty strings don't
+	 * compile. */
 	assert_string_equal("zbarfoobar", regexp_replace("barfoobar", "", "z", 1, 0));
 }
 
@@ -38,6 +42,16 @@ TEST(back_reference_substitution)
 	assert_string_equal("barbaz", regexp_replace("foobaz", "foo", "bar\\", 1, 0));
 
 	assert_string_equal("f0t0tbaz", regexp_replace("foobaz", "o", "0\\t", 1, 0));
+}
+
+static int
+not_osx(void)
+{
+#ifndef __APPLE__
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
