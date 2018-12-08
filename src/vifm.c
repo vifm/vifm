@@ -576,10 +576,7 @@ vifm_restart(void)
 	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&
 			cs_exists(curr_stats.color_scheme))
 	{
-		if(cs_load_primary(curr_stats.color_scheme) != 0)
-		{
-			cs_load_defaults();
-		}
+		cs_load_primary(curr_stats.color_scheme);
 	}
 	else
 	{

@@ -1652,7 +1652,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		const int cs_load_result = cs_load_primary(cmd_info->argv[0]);
+		cs_load_primary(cmd_info->argv[0]);
 
 		if(!lwin.local_cs)
 		{
@@ -1665,7 +1665,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		redraw_lists();
 		update_all_windows();
 
-		return cs_load_result;
+		return 0;
 	}
 }
 
