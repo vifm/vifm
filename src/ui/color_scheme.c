@@ -675,7 +675,7 @@ cs_load_primary(const char name[])
 
 	if(!cs_exists(name))
 	{
-		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
+		show_error_msgf("Color Scheme", "No such color scheme: \"%s\"", name);
 		return;
 	}
 
@@ -687,15 +687,11 @@ cs_load_primary(const char name[])
 	{
 		restore_primary_cs(&prev_cs);
 		show_error_msgf("Color Scheme Sourcing",
-				"An error occurred on loading color scheme: \"%s\"", name);
-		cfg.cs.state = CSS_NORMAL;
+				"An error occurred on sourcing color scheme: \"%s\"", name);
 		return;
 	}
-	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
+
 	check_cs(&cfg.cs);
-
-	update_attributes();
-
 	if(cfg.cs.state == CSS_DEFAULTED)
 	{
 		restore_primary_cs(&prev_cs);
@@ -704,6 +700,9 @@ cs_load_primary(const char name[])
 				name, prev_cs.name);
 		return;
 	}
+
+	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
+	update_attributes();
 
 	free_cs_highlights(&prev_cs);
 	cfg.cs.state = CSS_NORMAL;
