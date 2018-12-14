@@ -143,7 +143,7 @@ static int cquit_cmd(const cmd_info_t *cmd_info);
 static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
 static int assoc_colorscheme(const char name[], const char path[]);
-static void set_colorscheme(const char name[]);
+static void set_colorscheme(char *names[], int count);
 static int command_cmd(const cmd_info_t *cmd_info);
 static int compare_cmd(const cmd_info_t *cmd_info);
 static int copen_cmd(const cmd_info_t *cmd_info);
@@ -405,7 +405,7 @@ const cmd_add_t cmds_list[] = {
 	{ .name = "colorscheme",       .abbr = "colo",  .id = COM_COLORSCHEME,
 	  .descr = "display/select color schemes",
 	  .flags = HAS_QUOTED_ARGS | HAS_COMMENT | HAS_QMARK_NO_ARGS,
-	  .handler = &colorscheme_cmd, .min_args = 0,   .max_args = 2, },
+	  .handler = &colorscheme_cmd, .min_args = 0,   .max_args = NOT_DEF, },
 	{ .name = "command",           .abbr = "com",   .id = COM_COMMAND,
 	  .descr = "display/define :commands",
 	  .flags = HAS_EMARK,
@@ -1610,18 +1610,19 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		return show_colorschemes_menu(curr_view) != 0;
 	}
 
-	if(!cs_exists(cmd_info->argv[0]))
+	const int assoc_form = (cmd_info->argc == 2 && !cs_exists(cmd_info->argv[1]));
+	if((cmd_info->argc == 1 || assoc_form) && !cs_exists(cmd_info->argv[0]))
 	{
 		ui_sb_errf("Cannot find colorscheme %s" , cmd_info->argv[0]);
 		return 1;
 	}
 
-	if(cmd_info->argc == 2)
+	if(assoc_form)
 	{
 		return assoc_colorscheme(cmd_info->argv[0], cmd_info->argv[1]);
 	}
 
-	set_colorscheme(cmd_info->argv[0]);
+	set_colorscheme(cmd_info->argv, cmd_info->argc);
 	return 0;
 }
 
@@ -1669,9 +1670,16 @@ assoc_colorscheme(const char name[], const char path[])
 
 /* Sets primary colorscheme. */
 static void
-set_colorscheme(const char name[])
+set_colorscheme(char *names[], int count)
 {
-	cs_load_primary(name);
+	if(count == 1)
+	{
+		cs_load_primary(names[0]);
+	}
+	else
+	{
+		cs_load_primary_list(names, count);
+	}
 
 	if(!lwin.local_cs)
 	{

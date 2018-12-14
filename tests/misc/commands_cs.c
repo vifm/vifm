@@ -110,5 +110,37 @@ TEST(colorscheme_is_restored_on_sourcing_error)
 	assert_int_equal(3, cfg.cs.color[WIN_COLOR].attr);
 }
 
+TEST(colorscheme_is_restored_on_multiple_loading_failures)
+{
+	strcpy(cfg.cs.name, "test-scheme");
+	cfg.cs.color[WIN_COLOR].fg = 1;
+	cfg.cs.color[WIN_COLOR].bg = 2;
+	cfg.cs.color[WIN_COLOR].attr = 3;
+
+	assert_success(exec_commands("colorscheme bad-cs-name bad-cmd bad-color",
+				&lwin, CIT_COMMAND));
+
+	assert_string_equal("test-scheme", cfg.cs.name);
+	assert_int_equal(1, cfg.cs.color[WIN_COLOR].fg);
+	assert_int_equal(2, cfg.cs.color[WIN_COLOR].bg);
+	assert_int_equal(3, cfg.cs.color[WIN_COLOR].attr);
+}
+
+TEST(first_usable_colorscheme_is_loaded)
+{
+	strcpy(cfg.cs.name, "test-scheme");
+	cfg.cs.color[WIN_COLOR].fg = 1;
+	cfg.cs.color[WIN_COLOR].bg = 2;
+	cfg.cs.color[WIN_COLOR].attr = 3;
+
+	assert_success(exec_commands("colorscheme bad-color good", &lwin,
+				CIT_COMMAND));
+
+	assert_string_equal("good", cfg.cs.name);
+	assert_int_equal(-1, cfg.cs.color[WIN_COLOR].fg);
+	assert_int_equal(-1, cfg.cs.color[WIN_COLOR].bg);
+	assert_int_equal(0, cfg.cs.color[WIN_COLOR].attr);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

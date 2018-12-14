@@ -76,6 +76,10 @@ extern char *XTERM256_COLOR_NAMES[256];
 /* Loads primary color scheme specified by the name. */
 void cs_load_primary(const char name[]);
 
+/* Loads the first color scheme in the order given that exists and is supported
+ * by the terminal.  If none matches, current one remains unchanged. */
+void cs_load_primary_list(char *names[], int count);
+
 /* Loads color pairs of all active color schemes, so the colors are actually
  * visible on the screen. */
 void cs_load_pairs(void);
