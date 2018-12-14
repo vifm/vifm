@@ -142,6 +142,8 @@ static int copy_cmd(const cmd_info_t *cmd_info);
 static int cquit_cmd(const cmd_info_t *cmd_info);
 static int cunabbrev_cmd(const cmd_info_t *cmd_info);
 static int colorscheme_cmd(const cmd_info_t *cmd_info);
+static int assoc_colorscheme(const char name[], const char path[]);
+static void set_colorscheme(const char name[]);
 static int command_cmd(const cmd_info_t *cmd_info);
 static int compare_cmd(const cmd_info_t *cmd_info);
 static int copen_cmd(const cmd_info_t *cmd_info);
@@ -1591,6 +1593,8 @@ cnoremap_cmd(const cmd_info_t *cmd_info)
 	return do_map(cmd_info, "Command Line", CMDLINE_MODE, 1) != 0;
 }
 
+/* Displays colorscheme menu, current colorscheme, associates colorscheme with a
+ * subtree or sets primary colorscheme. */
 static int
 colorscheme_cmd(const cmd_info_t *cmd_info)
 {
@@ -1614,59 +1618,71 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 2)
 	{
-		char path_buf[PATH_MAX + 1];
-		char *directory = expand_tilde(cmd_info->argv[1]);
-		if(!is_path_absolute(directory))
-		{
-			if(curr_stats.load_stage < 3)
-			{
-				ui_sb_errf("The path in :colorscheme command cannot be relative in "
-						"startup scripts (%s)", directory);
-				free(directory);
-				return 1;
-			}
-			else
-			{
-				snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(curr_view),
-						directory);
-				(void)replace_string(&directory, path_buf);
-			}
-		}
-		canonicalize_path(directory, path_buf, sizeof(path_buf));
-		(void)replace_string(&directory, path_buf);
+		return assoc_colorscheme(cmd_info->argv[0], cmd_info->argv[1]);
+	}
 
-		if(!is_dir(directory))
+	set_colorscheme(cmd_info->argv[0]);
+	return 0;
+}
+
+/* Associates colorscheme with a subtree.  Returns value to be returned by
+ * command handler. */
+static int
+assoc_colorscheme(const char name[], const char path[])
+{
+	char path_buf[PATH_MAX + 1];
+	char *directory = expand_tilde(path);
+	if(!is_path_absolute(directory))
+	{
+		if(curr_stats.load_stage < 3)
 		{
-			ui_sb_errf("%s isn't a directory", directory);
+			ui_sb_errf("The path in :colorscheme command cannot be relative in "
+					"startup scripts (%s)", directory);
 			free(directory);
 			return 1;
 		}
-
-		cs_assoc_dir(cmd_info->argv[0], directory);
-		free(directory);
-
-		lwin.local_cs = cs_load_local(1, lwin.curr_dir);
-		rwin.local_cs = cs_load_local(0, rwin.curr_dir);
-		redraw_lists();
-		return 0;
+		else
+		{
+			snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(curr_view),
+					directory);
+			(void)replace_string(&directory, path_buf);
+		}
 	}
-	else
+	canonicalize_path(directory, path_buf, sizeof(path_buf));
+	(void)replace_string(&directory, path_buf);
+
+	if(!is_dir(directory))
 	{
-		cs_load_primary(cmd_info->argv[0]);
-
-		if(!lwin.local_cs)
-		{
-			cs_assign(&lwin.cs, &cfg.cs);
-		}
-		if(!rwin.local_cs)
-		{
-			cs_assign(&rwin.cs, &cfg.cs);
-		}
-		redraw_lists();
-		update_all_windows();
-
-		return 0;
+		ui_sb_errf("%s isn't a directory", directory);
+		free(directory);
+		return 1;
 	}
+
+	cs_assoc_dir(name, directory);
+	free(directory);
+
+	lwin.local_cs = cs_load_local(1, lwin.curr_dir);
+	rwin.local_cs = cs_load_local(0, rwin.curr_dir);
+	redraw_lists();
+	return 0;
+}
+
+/* Sets primary colorscheme. */
+static void
+set_colorscheme(const char name[])
+{
+	cs_load_primary(name);
+
+	if(!lwin.local_cs)
+	{
+		cs_assign(&lwin.cs, &cfg.cs);
+	}
+	if(!rwin.local_cs)
+	{
+		cs_assign(&rwin.cs, &cfg.cs);
+	}
+	redraw_lists();
+	update_all_windows();
 }
 
 static int
