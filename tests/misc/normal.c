@@ -61,7 +61,7 @@ TEST(sibl_navigate_correctly)
 	assert_true(paths_are_same(lwin.curr_dir, path));
 
 	(void)vle_keys_exec_timed_out(L"3" WK_LB WK_r);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "compare", cwd);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "color-schemes", cwd);
 	assert_true(paths_are_same(lwin.curr_dir, path));
 
 	(void)vle_keys_exec_timed_out(WK_LB WK_R);
@@ -69,7 +69,7 @@ TEST(sibl_navigate_correctly)
 	assert_true(paths_are_same(lwin.curr_dir, path));
 
 	(void)vle_keys_exec_timed_out(WK_RB WK_R);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "compare", cwd);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "color-schemes", cwd);
 	assert_true(paths_are_same(lwin.curr_dir, path));
 }
 

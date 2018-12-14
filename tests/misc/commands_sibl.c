@@ -88,11 +88,11 @@ TEST(sibl_does_not_wrap_by_default)
 	assert_success(exec_commands("siblnext", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/various-sizes"));
 
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "compare",
-			cwd);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"color-schemes", cwd);
 
 	assert_success(exec_commands("siblprev", &lwin, CIT_COMMAND));
-	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/compare"));
+	assert_true(paths_are_same(lwin.curr_dir, TEST_DATA_PATH "/color-schemes"));
 }
 
 TEST(sibl_wrap)
@@ -103,7 +103,7 @@ TEST(sibl_wrap)
 			"various-sizes", cwd);
 
 	exec_commands("siblnext!", &lwin, CIT_COMMAND);
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "compare", cwd);
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "color-schemes", cwd);
 	assert_true(paths_are_same(lwin.curr_dir, path));
 
 	exec_commands("siblprev!", &lwin, CIT_COMMAND);
