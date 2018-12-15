@@ -1642,12 +1642,10 @@ assoc_colorscheme(const char name[], const char path[])
 			free(directory);
 			return 1;
 		}
-		else
-		{
-			snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(curr_view),
-					directory);
-			(void)replace_string(&directory, path_buf);
-		}
+
+		snprintf(path_buf, sizeof(path_buf), "%s/%s", flist_get_dir(curr_view),
+				directory);
+		(void)replace_string(&directory, path_buf);
 	}
 	canonicalize_path(directory, path_buf, sizeof(path_buf));
 	(void)replace_string(&directory, path_buf);
