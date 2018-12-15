@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 3
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1364,6 +1364,9 @@ The builtin commands are:
     from command line, but mandatory should be an absolute path when the
     command is executed in scripts loaded at startup (until vifm is
     completely loaded).
+:colo[rscheme] color_scheme_name color_scheme_name...
+    loads the first color scheme in the order given that exists and is supported
+    by the terminal.  If none matches, current one remains unchanged.
 
 :comc[lear]                                    *vifm-:comclear* *vifm-:comc*
     remove all user defined commands.

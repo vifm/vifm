@@ -422,7 +422,7 @@ TEST(find_command, IF(not_windows))
 	assert_int_equal(1, lwin.list_rows);
 
 	assert_success(exec_commands("find -name '*.vifm'", &lwin, CIT_COMMAND));
-	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(7, lwin.list_rows);
 
 	view_teardown(&lwin);
 	view_setup(&lwin);
@@ -430,7 +430,7 @@ TEST(find_command, IF(not_windows))
 	/* Repeat last search. */
 	strcpy(lwin.curr_dir, test_data);
 	assert_success(exec_commands("find", &lwin, CIT_COMMAND));
-	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(7, lwin.list_rows);
 
 	opt_handlers_teardown();
 }

@@ -432,7 +432,7 @@ TEST(tilde_is_completed_after_emark)
 {
 	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
 			saved_cwd);
-	ASSERT_COMPLETION(L"!~/", L"!~/compare/");
+	ASSERT_COMPLETION(L"!~/", L"!~/color-schemes/");
 }
 
 TEST(bmark_tags_are_completed)
@@ -482,12 +482,13 @@ TEST(colorscheme_completion)
 			"scripts", saved_cwd);
 	ASSERT_COMPLETION(L"colorscheme set-", L"colorscheme set-env");
 	ASSERT_COMPLETION(L"colorscheme set-env ../",
-			L"colorscheme set-env ../compare/");
+			L"colorscheme set-env ../color-schemes/");
 	ASSERT_COMPLETION(L"colorscheme ../", L"colorscheme ../");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
-	ASSERT_COMPLETION(L"colorscheme set-env ", L"colorscheme set-env compare/");
+	ASSERT_COMPLETION(L"colorscheme set-env ",
+			L"colorscheme set-env color-schemes/");
 }
 
 TEST(wincmd_completion)
@@ -506,7 +507,7 @@ TEST(grep_completion)
 			TEST_DATA_PATH, "", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	ASSERT_COMPLETION(L"grep -o ", L"grep -o compare/");
+	ASSERT_COMPLETION(L"grep -o ", L"grep -o color-schemes/");
 }
 
 TEST(find_completion)
@@ -525,7 +526,7 @@ TEST(find_completion)
 			TEST_DATA_PATH, "", saved_cwd);
 	assert_success(chdir(curr_view->curr_dir));
 
-	ASSERT_COMPLETION(L"find ", L"find compare/");
+	ASSERT_COMPLETION(L"find ", L"find color-schemes/");
 }
 
 TEST(aucmd_events_are_completed)

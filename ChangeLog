@@ -10,6 +10,10 @@
 	Added :cds command that navigates to path obtained by substitution in
 	current path.  Thanks to j-xella.
 
+	Added one more invocation format of :colorscheme command, which picks the
+	first available color scheme that is supported by the terminal.  Thanks to
+	Jose Riha (a.k.a. jose1711).
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

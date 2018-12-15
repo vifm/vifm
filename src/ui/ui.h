@@ -367,7 +367,6 @@ struct view_t
 	int window_cols; /* Number of columns in the window. */
 	int filtered;  /* number of files filtered out and not shown in list */
 	int selected_files; /* Number of currently selected files. */
-	int local_cs; /* Whether directory-specific color scheme is in use. */
 	dir_entry_t *dir_entry; /* Must be handled via dynarray unit. */
 
 	int nsaved_selection;   /* Number of items in saved_selection. */
@@ -404,7 +403,8 @@ struct view_t
 	int history_pos;    /* Current position in history. */
 	history_t *history; /* Directory history itself. */
 
-	col_scheme_t cs;
+	int local_cs;    /* Whether directory-specific color scheme is in use. */
+	col_scheme_t cs; /* Storage of local (tree-specific) color scheme. */
 
 	/* Handle for column_view unit.  Contains view columns configuration even when
 	 * 'lsview' is on. */

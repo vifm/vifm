@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 3, 2018" "vifm 0.10"
+.TH VIFM 1 "December 15, 2018" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1575,6 +1575,10 @@ associate directory with the color scheme.  The directory argument can be either
 absolute or relative path when :colorscheme command is executed from command
 line, but mandatory should be an absolute path when the command is executed in
 scripts loaded at startup (until vifm is completely loaded).
+.TP
+.BI ":colo[rscheme] color_scheme_name color_scheme_name..."
+loads the first color scheme in the order given that exists and is supported
+by the terminal.  If none matches, current one remains unchanged.
 .TP
 .BI "                                         :comclear"
 .TP

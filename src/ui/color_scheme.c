@@ -668,15 +668,15 @@ cs_color_to_str(int color, size_t buf_len, char str_buf[])
 	}
 }
 
-int
+void
 cs_load_primary(const char name[])
 {
 	col_scheme_t prev_cs = {};
 
 	if(!cs_exists(name))
 	{
-		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
-		return 0;
+		show_error_msgf("Color Scheme", "No such color scheme: \"%s\"", name);
+		return;
 	}
 
 	cs_assign(&prev_cs, &cfg.cs);
@@ -687,27 +687,69 @@ cs_load_primary(const char name[])
 	{
 		restore_primary_cs(&prev_cs);
 		show_error_msgf("Color Scheme Sourcing",
-				"An error occurred on loading color scheme: \"%s\"", name);
-		cfg.cs.state = CSS_NORMAL;
-		return 0;
+				"An error occurred on sourcing color scheme: \"%s\"", name);
+		return;
 	}
-	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
+
 	check_cs(&cfg.cs);
-
-	update_attributes();
-
 	if(cfg.cs.state == CSS_DEFAULTED)
 	{
 		restore_primary_cs(&prev_cs);
 		show_error_msgf("Color Scheme Error",
 				"\"%s\" color scheme is not supported by the terminal, restored \"%s\"",
 				name, prev_cs.name);
-		return 0;
+		return;
 	}
+
+	copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
+	update_attributes();
 
 	free_cs_highlights(&prev_cs);
 	cfg.cs.state = CSS_NORMAL;
-	return 0;
+}
+
+void
+cs_load_primary_list(char *names[], int count)
+{
+	col_scheme_t prev_cs = {};
+	cs_assign(&prev_cs, &cfg.cs);
+
+	while(count-- > 0)
+	{
+		const char *name = *names++;
+
+		cs_assign(&cfg.cs, &prev_cs);
+		curr_stats.cs = &cfg.cs;
+		cfg.cs.state = CSS_LOADING;
+
+		if(!cs_exists(name))
+		{
+			continue;
+		}
+
+		if(source_cs(name) != 0)
+		{
+			show_error_msgf("Color Scheme Sourcing",
+					"An error occurred on sourcing color scheme: \"%s\"", name);
+			continue;
+		}
+
+		check_cs(&cfg.cs);
+		if(cfg.cs.state == CSS_DEFAULTED)
+		{
+			continue;
+		}
+
+		copy_str(cfg.cs.name, sizeof(cfg.cs.name), name);
+		update_attributes();
+
+		free_cs_highlights(&prev_cs);
+		cfg.cs.state = CSS_NORMAL;
+
+		return;
+	}
+
+	restore_primary_cs(&prev_cs);
 }
 
 /* Restore previous state of primary color scheme. */

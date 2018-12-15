@@ -180,7 +180,7 @@ typedef struct config_t
 	/* This one should be set using cfg_set_fuse_home() function. */
 	char *fuse_home;
 
-	col_scheme_t cs;
+	col_scheme_t cs; /* Storage of primary (global) color scheme. */
 
 	int undo_levels;  /* Maximum number of changes that can be undone. */
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
