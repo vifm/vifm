@@ -2522,14 +2522,13 @@ line_completion(line_stats_t *stat)
 
 		free(line_mb);
 		line_mb = to_multibyte(stat->line);
+		stat->line[stat->index] = t;
 		if(line_mb == NULL)
 		{
 			return -1;
 		}
 
 		line_mb_cmd = find_last_command(line_mb);
-
-		stat->line[stat->index] = t;
 
 		vle_compl_reset();
 
