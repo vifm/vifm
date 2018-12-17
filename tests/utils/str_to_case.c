@@ -1,19 +1,12 @@
 #include <stic.h>
 
-#include <locale.h> /* LC_ALL setlocale() */
-
 #include "../../src/utils/str.h"
-#include "../../src/utils/utils.h"
 
-static int locale_works(void);
+#include "utils.h"
 
 SETUP_ONCE()
 {
-	(void)setlocale(LC_ALL, "");
-	if(!locale_works())
-	{
-		(void)setlocale(LC_ALL, "en_US.utf8");
-	}
+	try_enable_utf8_locale();
 }
 
 TEST(str_to_upper_ascii)
@@ -25,7 +18,7 @@ TEST(str_to_upper_ascii)
 	assert_string_equal("ABCDEF", buf);
 }
 
-TEST(str_to_upper_utf, IF(locale_works))
+TEST(str_to_upper_utf, IF(utf8_locale))
 {
 	char str[] = "АбВгДе";
 	char buf[sizeof(str)*4];
@@ -34,7 +27,7 @@ TEST(str_to_upper_utf, IF(locale_works))
 	assert_string_equal("АБВГДЕ", buf);
 }
 
-TEST(str_to_upper_mixed, IF(locale_works))
+TEST(str_to_upper_mixed, IF(utf8_locale))
 {
 	char str[] = "АaбbВcгdДeеf";
 	char buf[sizeof(str)*4];
@@ -52,7 +45,7 @@ TEST(str_to_lower_ascii)
 	assert_string_equal("abcdef", buf);
 }
 
-TEST(str_to_lower_utf, IF(locale_works))
+TEST(str_to_lower_utf, IF(utf8_locale))
 {
 	char str[] = "АбВгДе";
 	char buf[sizeof(str)*4];
@@ -61,7 +54,7 @@ TEST(str_to_lower_utf, IF(locale_works))
 	assert_string_equal("абвгде", buf);
 }
 
-TEST(str_to_lower_mixed, IF(locale_works))
+TEST(str_to_lower_mixed, IF(utf8_locale))
 {
 	char str[] = "АaбbВcгdДeеf";
 	char buf[sizeof(str)*4];
@@ -88,7 +81,7 @@ TEST(str_to_upper_too_short_ascii)
 	assert_string_equal("ABCDE", buf);
 }
 
-TEST(str_to_lower_too_short_utf, IF(locale_works))
+TEST(str_to_lower_too_short_utf, IF(utf8_locale))
 {
 	char str[] = "абвг";
 	char buf[sizeof(str) - 1];
@@ -97,7 +90,7 @@ TEST(str_to_lower_too_short_utf, IF(locale_works))
 	assert_string_equal("абв", buf);
 }
 
-TEST(str_to_upper_too_short_utf, IF(locale_works))
+TEST(str_to_upper_too_short_utf, IF(utf8_locale))
 {
 	char str[] = "абвг";
 	char buf[sizeof(str) - 1];
@@ -106,7 +99,7 @@ TEST(str_to_upper_too_short_utf, IF(locale_works))
 	assert_string_equal("АБВ", buf);
 }
 
-TEST(str_to_lower_too_short_mixed, IF(locale_works))
+TEST(str_to_lower_too_short_mixed, IF(utf8_locale))
 {
 	char str[] = "аaбbвcгd";
 	char buf[sizeof(str) - 1];
@@ -115,19 +108,13 @@ TEST(str_to_lower_too_short_mixed, IF(locale_works))
 	assert_string_equal("аaбbвcг", buf);
 }
 
-TEST(str_to_upper_too_short_mixed, IF(locale_works))
+TEST(str_to_upper_too_short_mixed, IF(utf8_locale))
 {
 	char str[] = "аaбbвcгd";
 	char buf[sizeof(str) - 1];
 
 	assert_failure(str_to_upper(str, buf, sizeof(buf)));
 	assert_string_equal("АAБBВCГ", buf);
-}
-
-static int
-locale_works(void)
-{
-	return (vifm_wcwidth(L'丝') == 2);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

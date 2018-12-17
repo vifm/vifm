@@ -1,11 +1,11 @@
 #include <stic.h>
 
-#include <locale.h> /* LC_ALL setlocale() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
 
 #include "../../src/utils/str.h"
-#include "../../src/utils/utils.h"
+
+#include "utils.h"
 
 typedef char * (*func)(const char str[], size_t max_width, const char ell[]);
 
@@ -13,15 +13,10 @@ static void test_ascii(const char src[], const char dst[], size_t width,
 		func f);
 static void test_unicode(const char src[], const char dst[], size_t width,
 		func f);
-static int locale_works(void);
 
 SETUP_ONCE()
 {
-	(void)setlocale(LC_ALL, "");
-	if(!locale_works())
-	{
-		(void)setlocale(LC_ALL, "en_US.utf8");
-	}
+	try_enable_utf8_locale();
 }
 
 TEST(left_align_ellipsis)
@@ -37,7 +32,7 @@ TEST(left_align_ellipsis)
 	test_ascii("abcde", "...e", 4U, &left_ellipsis);
 }
 
-TEST(left_align_ellipsis_wide, IF(locale_works))
+TEST(left_align_ellipsis_wide, IF(utf8_locale))
 {
 	test_ascii("师", ".", 1U, &left_ellipsis);
 	test_ascii("师", "师", 2U, &left_ellipsis);
@@ -63,7 +58,7 @@ TEST(right_align_ellipsis)
 	test_ascii("abcde", "a...", 4U, &right_ellipsis);
 }
 
-TEST(right_align_ellipsis_wide, IF(locale_works))
+TEST(right_align_ellipsis_wide, IF(utf8_locale))
 {
 	test_ascii("师", ".", 1U, &right_ellipsis);
 	test_ascii("师", "师", 2U, &right_ellipsis);
@@ -76,7 +71,7 @@ TEST(right_align_ellipsis_wide, IF(locale_works))
 	test_ascii("师从刀", "师从刀", 6U, &right_ellipsis);
 }
 
-TEST(left_align_unicode_ellipsis, IF(locale_works))
+TEST(left_align_unicode_ellipsis, IF(utf8_locale))
 {
 	test_unicode("abc", "", 0U, &left_ellipsis);
 	test_unicode("abc", "…", 1U, &left_ellipsis);
@@ -89,7 +84,7 @@ TEST(left_align_unicode_ellipsis, IF(locale_works))
 	test_unicode("abcde", "…cde", 4U, &left_ellipsis);
 }
 
-TEST(left_align_unicode_ellipsis_wide, IF(locale_works))
+TEST(left_align_unicode_ellipsis_wide, IF(utf8_locale))
 {
 	test_unicode("师", "…", 1U, &left_ellipsis);
 	test_unicode("师", "师", 2U, &left_ellipsis);
@@ -115,7 +110,7 @@ TEST(right_align_unicode_ellipsis)
 	test_unicode("abcde", "abc…", 4U, &right_ellipsis);
 }
 
-TEST(right_align_unicode_ellipsis_wide, IF(locale_works))
+TEST(right_align_unicode_ellipsis_wide, IF(utf8_locale))
 {
 	test_unicode("师", "…", 1U, &right_ellipsis);
 	test_unicode("师", "师", 2U, &right_ellipsis);
@@ -142,12 +137,6 @@ test_unicode(const char src[], const char dst[], size_t width, func f)
 	char *const ellipsis = f(src, width, "…");
 	assert_string_equal(dst, ellipsis);
 	free(ellipsis);
-}
-
-static int
-locale_works(void)
-{
-	return (vifm_wcwidth(L'丝') == 2);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
