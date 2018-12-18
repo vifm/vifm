@@ -2426,19 +2426,18 @@ get_required_height(void)
 	return DIV_ROUND_UP(input_stat.prompt_wid + input_stat.len + 1, line_width);
 }
 
-/*
- * p - begin of part that being completed
- * completed - new part of command line
- */
+/* Replaces [ prefix_len : stat->index ) range of stat->line with wide version
+ * of the completed parameter.  Returns zero on success, otherwise non-zero is
+ * returned. */
 static int
-line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
-		const char *completed)
+line_part_complete(line_stats_t *stat, size_t prefix_len,
+		const char completed[])
 {
 	void *t;
 	wchar_t *line_ending;
 	wchar_t *wide_completed;
 
-	const size_t new_len = (p - line_mb) + wide_len(completed) +
+	const size_t new_len = prefix_len + wide_len(completed) +
 		(stat->len - stat->index) + 1;
 
 	line_ending = vifm_wcsdup(stat->line + stat->index);
@@ -2456,7 +2455,7 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 	stat->line = t;
 
 	wide_completed = to_wide(completed);
-	vifm_swprintf(stat->line + (p - line_mb), new_len,
+	vifm_swprintf(stat->line + prefix_len, new_len,
 			L"%" WPRINTF_WSTR L"%" WPRINTF_WSTR, wide_completed, line_ending);
 	free(wide_completed);
 	free(line_ending);
@@ -2503,9 +2502,7 @@ update_cmdline_size(void)
 TSTATIC int
 line_completion(line_stats_t *stat)
 {
-	static int offset;
-	static char *line_mb;
-	static const char *line_mb_cmd;
+	static size_t prefix_len;
 
 	char *completion;
 	int result;
@@ -2520,16 +2517,14 @@ line_completion(line_stats_t *stat)
 		t = stat->line[stat->index];
 		stat->line[stat->index] = L'\0';
 
-		free(line_mb);
-		line_mb = to_multibyte(stat->line);
+		char *const line_mb = to_multibyte(stat->line);
+		stat->line[stat->index] = t;
 		if(line_mb == NULL)
 		{
 			return -1;
 		}
 
-		line_mb_cmd = find_last_command(line_mb);
-
-		stat->line[stat->index] = t;
+		const char *const line_mb_cmd = find_last_command(line_mb);
 
 		vle_compl_reset();
 
@@ -2559,7 +2554,10 @@ line_completion(line_stats_t *stat)
 			}
 		}
 
-		offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
+		const int offset = stat->complete(line_mb_cmd, (void *)compl_func_arg);
+		line_mb[line_mb_cmd + offset - line_mb] = '\0';
+		prefix_len = wide_len(line_mb);
+		free(line_mb);
 
 		vle_compl_set_add_path_hook(NULL);
 	}
@@ -2570,7 +2568,7 @@ line_completion(line_stats_t *stat)
 		return 0;
 
 	completion = vle_compl_next();
-	result = line_part_complete(stat, line_mb, line_mb_cmd + offset, completion);
+	result = line_part_complete(stat, prefix_len, completion);
 	free(completion);
 
 	if(vle_compl_get_count() >= 2)

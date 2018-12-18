@@ -213,7 +213,7 @@ clean:
 # disable implicit rules to prevent compiling main sources here
 .SUFFIXES:
 
-$(vifm_obj) ../src/./tags.c: | $(vifm_bin)
+$(vifm_obj) ../src/./tags.c: $(vifm_src) | $(vifm_bin)
 
 $(vifm_bin): $(vifm_src)
 	$(MAKE) $(make_args) vifm$(exe_suffix)

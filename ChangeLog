@@ -43,6 +43,11 @@
 
 	Fixed global substitution with patterns beginning with a caret again.
 
+	Fixed cursors not being synchronized in compare view when scrolling one of
+	them with Ctrl-U or Ctrl-D.
+
+	Fixed command-line completion with non-latin characters.  Thanks to dikiy.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

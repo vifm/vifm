@@ -196,15 +196,20 @@ surrounded_with(const char str[], char left, char right)
 }
 
 char *
-to_multibyte(const wchar_t *s)
+to_multibyte(const wchar_t s[])
 {
 #ifndef _WIN32
-	size_t len;
-	char *result;
-
-	len = wcstombs(NULL, s, 0) + 1;
-	if((result = malloc(len)) == NULL)
+	const size_t len = wcstombs(NULL, s, 0) + 1;
+	if(len == 0U)
+	{
 		return NULL;
+	}
+
+	char *const result = malloc(len);
+	if(result == NULL)
+	{
+		return NULL;
+	}
 
 	wcstombs(result, s, len);
 	return result;

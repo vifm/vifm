@@ -91,7 +91,9 @@ int ends_with(const char str[], const char suffix[]);
  * when they are equal.  Returns non-zero if so, otherwise zero is returned. */
 int surrounded_with(const char str[], char left, char right);
 
-char * to_multibyte(const wchar_t *s);
+/* Converts wide string into narrow one.  Returns new string which caller should
+ * free or NULL on error. */
+char * to_multibyte(const wchar_t s[]);
 
 /* Converts characters of the string to lower case while they fit in the buffer.
  * Returns zero on success or non-zero if output buffer is too small. */

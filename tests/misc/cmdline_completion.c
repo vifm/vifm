@@ -2,6 +2,7 @@
 
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
+#include <locale.h> /* LC_ALL setlocale() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* fclose() fopen() free() */
 #include <string.h> /* strdup() */
@@ -649,6 +650,27 @@ TEST(symlinks_in_paths_are_not_resolved, IF(not_windows))
 	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
 	assert_success(remove(SANDBOX_PATH "/dir-link"));
+}
+
+TEST(failure_to_turn_into_multibyte_is_handled, IF(not_windows))
+{
+	/* On Windows narrow locale doesn't really matter because UTF-8 is used
+	 * internally by vifm. */
+	prepare_for_line_completion(L"абвгд | set  all");
+	stats.index = 12;
+
+	(void)setlocale(LC_ALL, "C");
+	assert_failure(line_completion(&stats));
+	try_enable_utf8_locale();
+	assert_wstring_equal(L"абвгд | set  all", stats.line);
+}
+
+TEST(non_latin_prefix_does_not_break_completion, IF(utf8_locale))
+{
+	prepare_for_line_completion(L"абвгд | set ");
+
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"абвгд | set all", stats.line);
 }
 
 static int

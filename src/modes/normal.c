@@ -533,8 +533,8 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_down(curr_view))
 	{
-		curr_view->list_pos = fpos_half_scroll(curr_view, 1);
-		redraw_current_view();
+		ui_view_schedule_redraw(curr_view);
+		fpos_set_pos(curr_view, fpos_half_scroll(curr_view, 1));
 	}
 }
 
@@ -731,8 +731,8 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(fpos_can_move_up(curr_view))
 	{
-		curr_view->list_pos = fpos_half_scroll(curr_view, 0);
-		redraw_current_view();
+		ui_view_schedule_redraw(curr_view);
+		fpos_set_pos(curr_view, fpos_half_scroll(curr_view, 0));
 	}
 }
 

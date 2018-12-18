@@ -1,6 +1,5 @@
 #include <stic.h>
 
-#include <locale.h> /* setlocale() */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strlen() */
@@ -8,17 +7,12 @@
 
 #include "../../src/utils/str.h"
 #include "../../src/utils/utf8.h"
-#include "../../src/utils/utils.h"
 
-static int locale_works(void);
+#include "utils.h"
 
 SETUP_ONCE()
 {
-	(void)setlocale(LC_ALL, "");
-	if(!locale_works())
-	{
-		(void)setlocale(LC_ALL, "en_US.utf8");
-	}
+	try_enable_utf8_locale();
 }
 
 TEST(get_real_string_width_full)
@@ -38,7 +32,7 @@ TEST(tabulation_is_counted_correctly)
 	assert_int_equal(10, utf8_strsw_with_tabs(utf8_str, 8));
 }
 
-TEST(get_real_string_width_in_the_middle_a, IF(locale_works))
+TEST(get_real_string_width_in_the_middle_a, IF(utf8_locale))
 {
 #define ENDING "丝刀"
 	const char utf8_str[] = "师螺" ENDING;
@@ -49,7 +43,7 @@ TEST(get_real_string_width_in_the_middle_a, IF(locale_works))
 	assert_int_equal(expected_len, calculated_len);
 }
 
-TEST(get_real_string_width_in_the_middle_b, IF(locale_works))
+TEST(get_real_string_width_in_the_middle_b, IF(utf8_locale))
 {
 #define ENDING "丝刀"
 	const char utf8_str[] = "师从螺" ENDING;
@@ -60,7 +54,7 @@ TEST(get_real_string_width_in_the_middle_b, IF(locale_works))
 	assert_int_equal(expected_len, calculated_len);
 }
 
-TEST(length_is_less_or_equal_to_string_length, IF(locale_works))
+TEST(length_is_less_or_equal_to_string_length, IF(utf8_locale))
 {
 	const char *str = "01 R\366yksopp - You Know I Have To Go (\326z"
 	                  "g\374r \326zkan 5 AM Edit).mp3";
@@ -75,7 +69,7 @@ TEST(length_is_less_or_equal_to_string_length, IF(locale_works))
 
 #ifdef _WIN32
 
-TEST(utf16_roundtrip, IF(locale_works))
+TEST(utf16_roundtrip, IF(utf8_locale))
 {
 	const wchar_t str[] = { 0x79d8, 0 };
 
@@ -86,7 +80,7 @@ TEST(utf16_roundtrip, IF(locale_works))
 	free(utf8);
 }
 
-TEST(first_char, IF(locale_works))
+TEST(first_char, IF(utf8_locale))
 {
 	const wchar_t str[] = { 0x79d8, 0 };
 	char *const utf8 = utf8_from_utf16(str);
@@ -95,12 +89,6 @@ TEST(first_char, IF(locale_works))
 }
 
 #endif
-
-static int
-locale_works(void)
-{
-	return (vifm_wcwidth(L'丝') == 2);
-}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
