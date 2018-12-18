@@ -665,6 +665,14 @@ TEST(failure_to_turn_into_multibyte_is_handled, IF(not_windows))
 	assert_wstring_equal(L"абвгд | set  all", stats.line);
 }
 
+TEST(non_latin_prefix_does_not_break_completion, IF(utf8_locale))
+{
+	prepare_for_line_completion(L"абвгд | set ");
+
+	assert_success(line_completion(&stats));
+	assert_wstring_equal(L"абвгд | set all", stats.line);
+}
+
 static int
 dquotes_allowed_in_paths(void)
 {
