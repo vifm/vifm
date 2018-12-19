@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 15
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1680,7 +1680,7 @@ The builtin commands are:
     same as :grep above, but user defines all grep arguments, which are not
     escaped.  Searches among selected files if any.
 :[range]gr[ep][!]
-    repeats last :grep command.  "!" of this command inverts "!" in repeated
+    repeat last :grep command.  "!" of this command inverts "!" in repeated
     command.
 
                                                *vifm-:help* *vifm-:h*
@@ -1699,7 +1699,7 @@ The builtin commands are:
     reset all highlighting to builtin defaults and removed all
     filename-specific rules.
 :hi[ghlight] clear ( {pat1,pat2,...} | /regexp/ )
-    removes specified rule.
+    remove specified rule.
 :hi[ghlight] group-name | {pat1,pat2,...} | /regexp/
     display information on given highlight group or file name pattern of color
     scheme used in the active view.
