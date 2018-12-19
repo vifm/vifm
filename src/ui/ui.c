@@ -2231,6 +2231,31 @@ ui_shutdown(void)
 }
 
 void
+ui_pause(void)
+{
+	/* Show previous screen state. */
+	ui_shutdown();
+	/* Yet restore program mode to read input without waiting for Enter. */
+	reset_prog_mode();
+	/* Wait for input indefinitely. */
+	wtimeout(status_bar, -1);
+	/* For some reason without touching windows, curses updates screen, which
+	 * isn't what we want here. */
+	touch_all_windows();
+
+	/* Ignore window resize. */
+	wint_t pressed;
+	do
+	{
+		/* Nothing. */
+	}
+	while(compat_wget_wch(status_bar, &pressed) != ERR && pressed == KEY_RESIZE);
+
+	/* Redraw UI to account for all things including graphical preview. */
+	curr_stats.need_update = UT_REDRAW;
+}
+
+void
 ui_view_schedule_redraw(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);

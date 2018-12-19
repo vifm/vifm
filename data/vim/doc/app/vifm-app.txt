@@ -1692,6 +1692,9 @@ The builtin commands are:
     well).  This form of the command doesn't work when |vifm-'vimhelp'| option
     is off.
 
+:hideui                                        *vifm-:hideui*
+    hide interface to show previous commands' output.
+
                                                *vifm-:highlight* *vifm-:hi*
 :hi[ghlight]
     display information about all highlight groups active at the moment.

@@ -14,6 +14,9 @@
 	first available color scheme that is supported by the terminal.  Thanks to
 	Jose Riha (a.k.a. jose1711).
 
+	Added :hideui command that hides interface to show previous commands'
+	output.  Thanks to dikiy.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

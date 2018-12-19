@@ -188,6 +188,7 @@ static int finish_cmd(const cmd_info_t *cmd_info);
 static int goto_path_cmd(const cmd_info_t *cmd_info);
 static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
+static int hideui_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
 static int highlight_clear(const cmd_info_t *cmd_info);
 static int highlight_file(const cmd_info_t *cmd_info);
@@ -542,6 +543,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "display help",
 	  .flags = HAS_QUOTED_ARGS,
 	  .handler = &help_cmd,        .min_args = 0,   .max_args = 1, },
+	{ .name = "hideui",            .abbr = NULL,    .id = -1,
+	  .descr = "hide interface to show previous commands' output",
+	  .flags = HAS_COMMENT,
+	  .handler = &hideui_cmd,      .min_args = 0,   .max_args = 0, },
 	{ .name = "highlight",         .abbr = "hi",    .id = COM_HIGHLIGHT,
 	  .descr = "display/define TUI highlighting",
 	  .flags = HAS_COMMENT,
@@ -2543,6 +2548,14 @@ help_cmd(const cmd_info_t *cmd_info)
 	{
 		display_help(cmd);
 	}
+	return 0;
+}
+
+/* Hides interface to show previous commands' output. */
+static int
+hideui_cmd(const cmd_info_t *cmd_info)
+{
+	ui_pause();
 	return 0;
 }
 
