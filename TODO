@@ -137,7 +137,6 @@ Questionable things:
   * Tree-like view with support of foldings (for each directory). (partially
     done)
   * Consider adding "da" to remove all elements in :bmarks menu.
-  * Add a command to view screen.
   * Command like :run[ &].
   * Add :set to menu mode command-line.
   * Add :mksession command and 'sessionoptions' option.

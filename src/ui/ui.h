@@ -703,6 +703,9 @@ int ui_view_unsorted(const view_t *view);
  * or when terminal might be used by another application that vifm runs). */
 void ui_shutdown(void);
 
+/* Temporarily shuts down UI until a key is pressed. */
+void ui_pause(void);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

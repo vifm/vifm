@@ -257,6 +257,7 @@ const char *tags[] = {
 	"vifm-:h",
 	"vifm-:help",
 	"vifm-:hi",
+	"vifm-:hideui",
 	"vifm-:highlight",
 	"vifm-:his",
 	"vifm-:histnext",
