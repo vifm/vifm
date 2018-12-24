@@ -244,6 +244,8 @@ find_home_dir(void)
 	if(try_home_envvar_for_home()) return;
 	if(try_userprofile_envvar_for_home()) return;
 	if(try_homepath_envvar_for_home()) return;
+
+	vifm_finish("Failed to find user's home directory.");
 }
 
 /* Tries to use HOME environment variable to find home directory.  Returns
