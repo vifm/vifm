@@ -138,11 +138,8 @@ add_dirs_to_path(const char *path)
 static void
 add_to_path(const char *path)
 {
-	const char *old_path;
-	char *new_path;
-
-	old_path = env_get("PATH");
-	new_path = malloc(strlen(path) + 1 + strlen(old_path) + 1);
+	const char *old_path = env_get_def("PATH", "");
+	char *new_path = malloc(strlen(path) + 1 + strlen(old_path) + 1);
 
 #ifndef _WIN32
 	sprintf(new_path, "%s:%s", path, old_path);
@@ -162,7 +159,7 @@ split_path_list(void)
 	const char *path, *p, *q;
 	int i;
 
-	path = env_get("PATH");
+	path = env_get_def("PATH", "");
 
 	if(paths != NULL)
 		free_string_array(paths, paths_count);
@@ -243,7 +240,7 @@ split_path_list(void)
 void
 load_clean_path_env(void)
 {
-	(void)replace_string(&real_path, env_get("PATH"));
+	(void)replace_string(&real_path, env_get_def("PATH", ""));
 	env_set("PATH", clean_path);
 }
 
