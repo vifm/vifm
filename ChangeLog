@@ -54,6 +54,9 @@
 	Fixed crashes when starting vifm with an empty environment (no environment
 	variables set).
 
+	Fixed directory-specific color scheme being turn into primary color
+	scheme on copying from pane with directory-specific cs.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

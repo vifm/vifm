@@ -874,8 +874,10 @@ cs_load_local(int left, const char dir[])
 	char t;
 	int altered;
 
-	if(dir_map == NULL)
+	if(dir_map == NULL || curr_stats.cs != &cfg.cs)
 	{
+		/* Either have nothing to do, or we're already doing it (sourcing a file can
+		 * trigger view redraws). */
 		return 0;
 	}
 
