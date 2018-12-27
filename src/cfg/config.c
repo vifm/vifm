@@ -244,6 +244,8 @@ find_home_dir(void)
 	if(try_home_envvar_for_home()) return;
 	if(try_userprofile_envvar_for_home()) return;
 	if(try_homepath_envvar_for_home()) return;
+
+	vifm_finish("Failed to find user's home directory.");
 }
 
 /* Tries to use HOME environment variable to find home directory.  Returns
@@ -853,17 +855,24 @@ cfg_resize_histories(int new_size)
 int
 cfg_set_fuse_home(const char new_value[])
 {
-	char canonicalized[PATH_MAX + 1];
 #ifdef _WIN32
 	char with_forward_slashes[strlen(new_value) + 1];
 	strcpy(with_forward_slashes, new_value);
 	system_to_internal_slashes(with_forward_slashes);
 	new_value = with_forward_slashes;
 #endif
+
+	char canonicalized[PATH_MAX + 1];
 	canonicalize_path(new_value, canonicalized, sizeof(canonicalized));
 
 	if(!is_path_absolute(new_value))
 	{
+		if(cfg.fuse_home == NULL)
+		{
+			/* Do not leave cfg.fuse_home uninitialized. */
+			cfg.fuse_home = strdup("");
+		}
+
 		show_error_msgf("Error Setting FUSE Home Directory",
 				"The path is not absolute: %s", canonicalized);
 		return 1;
