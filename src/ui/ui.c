@@ -1434,10 +1434,6 @@ ui_swap_view_data(view_t *left, view_t *right)
 	left->window_cols = right->window_cols;
 	right->window_cols = t;
 
-	t = left->local_cs;
-	left->local_cs = right->local_cs;
-	right->local_cs = t;
-
 	tmp = left->title;
 	left->title = right->title;
 	right->title = tmp;
