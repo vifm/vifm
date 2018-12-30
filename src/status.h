@@ -144,7 +144,10 @@ typedef struct
 	/* Whether to skip complete UI redraw after returning from a shellout. */
 	int skip_shellout_redraw;
 
+	/* Color scheme to use for :commands that manipulate colors.  Almost always
+	 * refers to cfg.cs, except for when local color scheme is loaded. */
 	col_scheme_t *cs;
+	/* Name of the color scheme loaded from vifminfo. */
 	char color_scheme[NAME_MAX + 1];
 
 	int msg_head, msg_tail;

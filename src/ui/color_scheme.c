@@ -870,12 +870,10 @@ clone_cs_highlights(const col_scheme_t *from)
 int
 cs_load_local(int left, const char dir[])
 {
-	char *p;
-	char t;
-	int altered;
-
-	if(dir_map == NULL)
+	if(dir_map == NULL || curr_stats.cs != &cfg.cs)
 	{
+		/* Either have nothing to do, or we're already doing it (sourcing a file can
+		 * trigger view redraws). */
 		return 0;
 	}
 
@@ -883,8 +881,10 @@ cs_load_local(int left, const char dir[])
 	cs_assign(curr_stats.cs, &cfg.cs);
 
 	/* TODO: maybe use split_and_get() here as in io/iop:iop_mkdir(). */
-	p = (char *)dir;
-	altered = 0;
+	char *const dir_copy = strdup(dir);
+	char *p = dir_copy;
+	int altered = 0;
+	char t;
 	do
 	{
 		void *name;
@@ -892,16 +892,17 @@ cs_load_local(int left, const char dir[])
 		t = *p;
 		*p = '\0';
 
-		if(fsddata_get(dir_map, dir, &name) == 0 && cs_exists(name))
+		if(fsddata_get(dir_map, dir_copy, &name) == 0 && cs_exists(name))
 		{
 			(void)source_cs(name);
 			altered = 1;
 		}
 
 		*p = t;
-		p = until_first(p + 1, '/');
+		p = (t == '\0' ? NULL : until_first(p + 1, '/'));
 	}
 	while(t != '\0');
+	free(dir_copy);
 
 	curr_stats.cs = &cfg.cs;
 
