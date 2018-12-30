@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 19
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 30
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1367,6 +1367,9 @@ The builtin commands are:
 :colo[rscheme] color_scheme_name color_scheme_name...
     loads the first color scheme in the order given that exists and is supported
     by the terminal.  If none matches, current one remains unchanged.
+    For example: >
+      " use a separate color scheme for panes which are inside FUSE mounts
+      execute 'colorscheme in-fuse' &fusehome
 
 :comc[lear]                                    *vifm-:comclear* *vifm-:comc*
     remove all user defined commands.
