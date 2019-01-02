@@ -3076,6 +3076,7 @@ go_to_sibling_dir(view_t *view, int offset, int wrap)
 		if(change_directory(view, full_path) >= 0)
 		{
 			load_dir_list(view, 0);
+			fview_position_updated(view);
 		}
 	}
 
