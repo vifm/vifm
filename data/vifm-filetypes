@@ -175,7 +175,7 @@ filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif
 filextype *.xcf gimp
 filextype *.svg inkscape, geeqie, display
 filextype *.pcx display
-filetype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif fim %c >/dev/null 2>&1 || fbi %c >/dev/null 2>&1 || feh -FZ %d --start-at %d/%c >/dev/null 2>&1 || fbvis || fbv || { shellpic %c; read; }
+filetype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif fim %c >/dev/null 2>&1 || fbi %c >/dev/null 2>&1 || feh -FZ %d --auto-rotate --start-at %d/%c >/dev/null 2>&1 || fbvis || fbv || { shellpic %c; read; }
 
 " OpenRaster
 filextype *.ora
