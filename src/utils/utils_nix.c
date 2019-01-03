@@ -909,6 +909,7 @@ reopen_term_stdout(void)
 	fp = fdopen(outfd, "w");
 	if(fp == NULL)
 	{
+		close(outfd);
 		fprintf(stderr, "Failed to open original output stream.\n");
 		return NULL;
 	}
