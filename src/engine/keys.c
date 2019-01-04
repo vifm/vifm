@@ -29,15 +29,14 @@
 #include <ctype.h>
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL wchar_t */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h>
 #include <string.h>
 #include <wctype.h> /* iswdigit() */
 #include <wchar.h> /* wcscat() wcslen() */
 
-#include "../compat/reallocarray.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
-#include "../utils/string_array.h"
 #include "mode.h"
 
 /* Type of key chunk. */
