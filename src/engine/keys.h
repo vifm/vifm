@@ -117,7 +117,7 @@ typedef struct
 	FollowedBy followed;        /* What type of key should we wait for. */
 	vle_suggest_func suggest;   /* Suggestion function (can be NULL).  Invoked for
 	                               multikeys. */
-	const char *descr;          /* Brief description of the key. */
+	const char *descr;          /* Brief description of the key (can be NULL). */
 	int nim;                    /* Whether additional count in the middle is
 	                               allowed. */
 	int skip_suggestion;        /* Do not print this among suggestions. */
