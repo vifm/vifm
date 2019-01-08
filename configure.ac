@@ -539,6 +539,38 @@ if test "$use_inotify" = "yes"; then
 fi
 
 dnl ----------------------------------------------------------------------------
+dnl check for extended file attributes
+dnl ----------------------------------------------------------------------------
+
+AC_CHECK_HEADER([sys/xattr.h], [use_xattrs=yes], [use_xattrs=no])
+
+if test "$use_xattrs" = "yes"; then
+    AC_CHECK_FUNC([lgetxattr], [], [use_xattrs=no], [[
+                    #include <sys/types.h>
+                    #include <sys/xattr.h>
+                  ]])
+    AC_CHECK_FUNC([llistxattr], [], [use_xattrs=no], [[
+                    #include <sys/types.h>
+                    #include <sys/xattr.h>
+                  ]])
+    AC_CHECK_FUNC([lsetxattr], [], [use_xattrs=no], [[
+                    #include <sys/types.h>
+                    #include <sys/xattr.h>
+                  ]])
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+    #include <sys/types.h>
+    #include <sys/xattr.h>
+    int main() {
+        return XATTR_CREATE;
+    }
+    ]])], [], [use_xattrs="no"])
+
+    if test "$use_xattrs" = "yes"; then
+        AC_DEFINE([HAVE_XATTRS], [1], [extended file attributes are available])
+    fi
+fi
+
+dnl ----------------------------------------------------------------------------
 dnl check for gnu coreutils version
 dnl ----------------------------------------------------------------------------
 

@@ -30,6 +30,8 @@
 	Clearer documentation/description for :*unmap commands and
 	'vicmd'/'vixcmd' options.  Thanks to chelovechishko.
 
+	Preserve extended attributes on copying files.  Thanks to hutou.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

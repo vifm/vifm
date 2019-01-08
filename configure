@@ -9304,6 +9304,62 @@ $as_echo "#define HAVE_INOTIFY 1" >>confdefs.h
 fi
 
 
+ac_fn_c_check_header_mongrel "$LINENO" "sys/xattr.h" "ac_cv_header_sys_xattr_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_xattr_h" = xyes; then :
+  use_xattrs=yes
+else
+  use_xattrs=no
+fi
+
+
+
+if test "$use_xattrs" = "yes"; then
+    ac_fn_c_check_func "$LINENO" "lgetxattr" "ac_cv_func_lgetxattr"
+if test "x$ac_cv_func_lgetxattr" = xyes; then :
+
+else
+  use_xattrs=no
+fi
+
+    ac_fn_c_check_func "$LINENO" "llistxattr" "ac_cv_func_llistxattr"
+if test "x$ac_cv_func_llistxattr" = xyes; then :
+
+else
+  use_xattrs=no
+fi
+
+    ac_fn_c_check_func "$LINENO" "lsetxattr" "ac_cv_func_lsetxattr"
+if test "x$ac_cv_func_lsetxattr" = xyes; then :
+
+else
+  use_xattrs=no
+fi
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #include <sys/types.h>
+    #include <sys/xattr.h>
+    int main() {
+        return XATTR_CREATE;
+    }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  use_xattrs="no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+    if test "$use_xattrs" = "yes"; then
+
+$as_echo "#define HAVE_XATTRS 1" >>confdefs.h
+
+    fi
+fi
+
+
 version="$(mv --version 2> /dev/null | sed -ne 's/^.*(GNU coreutils) //p')"
 
 major="${version%.*}"

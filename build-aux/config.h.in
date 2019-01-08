@@ -107,6 +107,9 @@
 /* use X11 to determine terminal emulator title */
 #undef HAVE_X11
 
+/* extended file attributes are available */
+#undef HAVE_XATTRS
+
 /* Name of package */
 #undef PACKAGE
 
