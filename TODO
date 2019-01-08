@@ -107,7 +107,7 @@ Possible things to add:
   * Asynchronous quick preview?
   * Possibility to make colorful background per column.
   * Add a key to menu mode to repeat command and update menu.
-  * Consider preserving more on file copy (xattr, ACL, sparse files).
+  * Consider preserving more on file copy (ACL, sparse files).
   * Extract vim plugin part of install to vifm.vim README.
   * File access history.
   * Make :alink, :copy, ... accept globs (e.g. :co *.c).

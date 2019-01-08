@@ -26,11 +26,14 @@
 #include <sys/user.h>
 #endif
 
+#include <sys/types.h> /* gid_t mode_t pid_t uid_t */
+#ifdef HAVE_XATTRS
+#include <sys/xattr.h> /* XATTR_CREATE getxattr() listxattr() setxattr() */
+#endif
 #include <sys/select.h> /* select() FD_SET FD_ZERO */
 #include <sys/stat.h> /* O_* S_* */
 #include <sys/statvfs.h> /* statvfs statvfs() */
 #include <sys/time.h> /* timeval futimens() utimes() */
-#include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* waitpid */
 #include <fcntl.h> /* open() close() */
 #include <grp.h> /* getgrnam() getgrgid_r() */
@@ -41,7 +44,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
-#include <errno.h> /* EINTR errno */
+#include <errno.h> /* EINTR ENOTSUP errno */
 #include <signal.h> /* SIG* SIG_* sigset_t kill() sigaddset() sigemptyset()
                        sigfillset() signal() sigprocmask() */
 #include <stddef.h> /* NULL size_t */
@@ -96,6 +99,9 @@ static void free_mnt_entry(struct mntent *entry);
 static int starts_with_list_item(const char str[], const char list[]);
 static int find_path_prefix_index(const char path[], const char list[]);
 static int open_tty(void);
+static void clone_timestamps(const char path[], const char from[],
+		const struct stat *st);
+static void clone_xattrs(const char path[], const char from[]);
 
 void
 pause_shell(void)
@@ -909,6 +915,7 @@ reopen_term_stdout(void)
 	fp = fdopen(outfd, "w");
 	if(fp == NULL)
 	{
+		close(outfd);
 		fprintf(stderr, "Failed to open original output stream.\n");
 		return NULL;
 	}
@@ -1037,7 +1044,14 @@ void
 clone_attribs(const char path[], const char from[], const struct stat *st)
 {
 	chown(path, st->st_uid, st->st_gid);
+	clone_timestamps(path, from, st);
+	clone_xattrs(path, from);
+}
 
+/* Clones timestamps from file specified by from to file at path. */
+static void
+clone_timestamps(const char path[], const char from[], const struct stat *st)
+{
 #if defined(HAVE_STRUCT_STAT_ST_MTIM) && defined(HAVE_FUTIMENS)
 	const int fd = open(path, O_WRONLY);
 	if(fd != -1)
@@ -1066,6 +1080,58 @@ clone_attribs(const char path[], const char from[], const struct stat *st)
 	tv[1].tv_usec = 0;
 #endif
 	utimes(path, tv);
+}
+
+/* Clones extended attributes from file specified by from to file at path. */
+static void
+clone_xattrs(const char path[], const char from[])
+{
+#ifdef HAVE_XATTRS
+	char empty[1];
+
+	ssize_t list_size = llistxattr(from, empty, 0U);
+	if(list_size < 0)
+	{
+		return;
+	}
+
+	/* Size of VLA should never be zero. */
+	char list[list_size + 1];
+	list_size = llistxattr(from, list, list_size);
+	if(list_size < 0)
+	{
+		return;
+	}
+
+	const char *name = list;
+	while(name - list < list_size)
+	{
+		ssize_t value_size = lgetxattr(from, name, empty, 0U);
+		if(value_size < 0)
+		{
+			break;
+		}
+
+		/* Size of VLA should never be zero. */
+		char value[value_size + 1];
+		value_size = lgetxattr(from, name, value, value_size);
+		if(value_size < 0)
+		{
+			break;
+		}
+
+		if(lsetxattr(path, name, value, value_size, XATTR_CREATE) != 0)
+		{
+			if(errno == ENOTSUP)
+			{
+				/* Mount of the destination doesn't support extended attributes. */
+				break;
+			}
+		}
+
+		name += strlen(name) + 1U;
+	}
+#endif
 }
 
 uint64_t
