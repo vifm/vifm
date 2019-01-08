@@ -96,6 +96,8 @@ static void free_mnt_entry(struct mntent *entry);
 static int starts_with_list_item(const char str[], const char list[]);
 static int find_path_prefix_index(const char path[], const char list[]);
 static int open_tty(void);
+static void clone_timestamps(const char path[], const char from[],
+		const struct stat *st);
 
 void
 pause_shell(void)
@@ -1038,7 +1040,13 @@ void
 clone_attribs(const char path[], const char from[], const struct stat *st)
 {
 	chown(path, st->st_uid, st->st_gid);
+	clone_timestamps(path, from, st);
+}
 
+/* Clones timestamps from file specified by from to file at path. */
+static void
+clone_timestamps(const char path[], const char from[], const struct stat *st)
+{
 #if defined(HAVE_STRUCT_STAT_ST_MTIM) && defined(HAVE_FUTIMENS)
 	const int fd = open(path, O_WRONLY);
 	if(fd != -1)
