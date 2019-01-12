@@ -2,6 +2,7 @@
 
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 
 SETUP()
 {
@@ -49,6 +50,36 @@ TEST(increase_counter_right)
 
 	counter = vle_keys_counter();
 	assert_false(IS_KEYS_RET_CODE(vle_keys_exec_timed_out(L"abc")));
+	assert_int_equal(counter + 3, vle_keys_counter());
+}
+
+TEST(counter_and_count)
+{
+	size_t counter;
+
+	counter = vle_keys_counter();
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"2j"));
+	assert_int_equal(counter, vle_keys_counter());
+
+	counter = vle_keys_counter();
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"2k")));
+	assert_int_equal(counter + 2, vle_keys_counter());
+
+	counter = vle_keys_counter();
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"3" WK_C_w L"2" WK_LT)));
+	assert_int_equal(counter + 4, vle_keys_counter());
+}
+
+TEST(counter_and_register)
+{
+	size_t counter;
+
+	counter = vle_keys_counter();
+	assert_int_equal(KEYS_WAIT_SHORT, vle_keys_exec(L"\"aj"));
+	assert_int_equal(counter, vle_keys_counter());
+
+	counter = vle_keys_counter();
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"\"ak")));
 	assert_int_equal(counter + 3, vle_keys_counter());
 }
 
