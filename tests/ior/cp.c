@@ -8,11 +8,8 @@
 #include "../../src/io/iop.h"
 #include "../../src/io/ior.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/utils.h"
 
 #include "utils.h"
-
-static int not_windows(void);
 
 TEST(file_is_copied)
 {
@@ -597,12 +594,6 @@ TEST(symlink_to_dir_is_symlink_after_copy, IF(not_windows))
 		assert_success(iop_rmfile(&args));
 		assert_int_equal(0, args.result.errors.error_count);
 	}
-}
-
-static int
-not_windows(void)
-{
-	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

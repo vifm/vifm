@@ -5,13 +5,11 @@
 
 #include "../../src/compat/os.h"
 #include "../../src/io/ior.h"
-#include "../../src/utils/utils.h"
 
 #include "utils.h"
 
 static IoErrCbResult handle_errors(struct io_args_t *args,
 		const ioe_err_t *err);
-static int not_windows(void);
 
 static int ignore_count;
 
@@ -54,12 +52,6 @@ handle_errors(struct io_args_t *args, const ioe_err_t *err)
 	}
 
 	return IO_ECR_BREAK;
-}
-
-static int
-not_windows(void)
-{
-	return get_env_type() != ET_WIN;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
