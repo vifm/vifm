@@ -94,6 +94,7 @@ TEARDOWN()
 
 	stats_update_shell_type("/bin/sh");
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
@@ -200,6 +201,13 @@ TEST(bg_mark_without_space_in_udf)
 TEST(shell_invocation_works_in_udf)
 {
 	const char *const cmd = "command! udf echo a > out";
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+	replace_string(&cfg.shell_cmd_flag, "-c");
+#else
+	replace_string(&cfg.shell, "cmd");
+	replace_string(&cfg.shell_cmd_flag, "/C");
+#endif
 
 	assert_success(chdir(SANDBOX_PATH));
 

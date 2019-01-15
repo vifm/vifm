@@ -21,6 +21,7 @@
 #define VIFM__UTILS__UTILS_NIX_H__
 
 #include "macros.h"
+#include "utils.h"
 
 #include <sys/types.h> /* gid_t mode_t pid_t uid_t */
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
@@ -43,7 +44,7 @@ int get_proc_exit_status(pid_t pid);
  * and stderr are redirected to the pipe.  Non-zero preserve_stdin prevents
  * stdin from being bound to /dev/null. */
 void _gnuc_noreturn run_from_fork(int pipe[2], int err_only, int preserve_stdin,
-		char cmd[]);
+		char cmd[], ShellRequester by);
 
 /* Frees some resources before exec(), which shouldn't be inherited and remain
  * allocated in child process or it might make those resources appear busy
@@ -58,7 +59,7 @@ char * get_execv_path(char shell[]);
  * forked process.  Returns newly allocated array with some strings allocated,
  * some as is.  Memory management shouldn't matter at this point, we either
  * successfully replace process image or terminate. */
-char ** make_execv_array(char shell[], char cmd[]);
+char ** make_execv_array(char shell[], char shell_flag[], char cmd[]);
 
 /* Converts the mode to string representation of permissions. */
 void get_perm_string(char buf[], int len, mode_t mode);

@@ -48,6 +48,7 @@ conf_setup(void)
 	update_string(&cfg.media_prg, "");
 	update_string(&cfg.border_filler, "");
 	update_string(&cfg.shell, "");
+	update_string(&cfg.shell_cmd_flag, "");
 }
 
 void

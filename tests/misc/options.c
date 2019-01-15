@@ -28,6 +28,7 @@ SETUP()
 	init_commands();
 
 	view_setup(&lwin);
+
 	lwin.columns = columns_create();
 	lwin.num_width_g = lwin.num_width = 4;
 	lwin.hide_dot_g = lwin.hide_dot = 1;

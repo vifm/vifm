@@ -106,11 +106,11 @@ static void clone_xattrs(const char path[], const char from[]);
 void
 pause_shell(void)
 {
-	run_in_shell_no_cls(PAUSE_CMD);
+	run_in_shell_no_cls(PAUSE_CMD, SHELL_BY_APP);
 }
 
 int
-run_in_shell_no_cls(char command[])
+run_in_shell_no_cls(char command[], ShellRequester by)
 {
 	int pid;
 	int result;
@@ -144,8 +144,9 @@ run_in_shell_no_cls(char command[])
 		(void)set_sigchld(0);
 
 		prepare_for_exec();
-		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command),
-				environ);
+		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
+		execve(get_execv_path(cfg.shell),
+				make_execv_array(cfg.shell, sh_flag, command), environ);
 		_Exit(127);
 	}
 
@@ -241,7 +242,8 @@ get_proc_exit_status(pid_t pid)
 }
 
 void _gnuc_noreturn
-run_from_fork(int pipe[2], int err_only, int preserve_stdin, char cmd[])
+run_from_fork(int pipe[2], int err_only, int preserve_stdin, char cmd[],
+		ShellRequester by)
 {
 	/* Close read end of the pipe. */
 	(void)close(pipe[0]);
@@ -283,7 +285,8 @@ run_from_fork(int pipe[2], int err_only, int preserve_stdin, char cmd[])
 	}
 
 	prepare_for_exec();
-	execvp(get_execv_path(cfg.shell), make_execv_array(cfg.shell, cmd));
+	char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
+	execvp(get_execv_path(cfg.shell), make_execv_array(cfg.shell, sh_flag, cmd));
 	_Exit(127);
 }
 
@@ -317,7 +320,7 @@ get_execv_path(char shell[])
 }
 
 char **
-make_execv_array(char shell[], char cmd[])
+make_execv_array(char shell[], char shell_flag[], char cmd[])
 {
 #ifdef HAVE_MAX_ARG_STRLEN
 #ifndef PAGE_SIZE
@@ -353,7 +356,7 @@ make_execv_array(char shell[], char cmd[])
 		{
 			args[i++] = sh_arg;
 		}
-		args[i++] = "-c";
+		args[i++] = shell_flag;
 		args[i++] = cmd;
 		args[i++] = NULL;
 		return args;
@@ -388,7 +391,7 @@ make_execv_array(char shell[], char cmd[])
 	{
 		args[i++] = sh_arg;
 	}
-	args[i++] = "-c";
+	args[i++] = shell_flag;
 	args[i++] = eval_cmd;
 	args[i++ + npieces] = NULL;
 
@@ -791,7 +794,7 @@ format_help_cmd(char cmd[], size_t cmd_size)
 void
 display_help(const char cmd[])
 {
-	(void)shellout(cmd, PAUSE_ON_ERROR, 1);
+	(void)shellout(cmd, PAUSE_ON_ERROR, 1, SHELL_BY_APP);
 }
 
 void
@@ -1019,7 +1022,7 @@ read_cmd_output(const char cmd[], int preserve_stdin)
 
 	if(pid == 0)
 	{
-		run_from_fork(out_pipe, 0, preserve_stdin, (char *)cmd);
+		run_from_fork(out_pipe, 0, preserve_stdin, (char *)cmd, SHELL_BY_USER);
 		return NULL;
 	}
 

@@ -24,8 +24,10 @@ SETUP()
 {
 #ifndef _WIN32
 	update_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 #else
 	update_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
 #endif
 
 	update_string(&cfg.vi_command, "echo");
@@ -64,11 +66,11 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 	stats_update_shell_type("/bin/sh");
 
+	int i;
 	for(i = 0; i < lwin.list_rows; ++i)
 	{
 		fentry_free(&lwin, &lwin.dir_entry[i]);

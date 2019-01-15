@@ -211,7 +211,10 @@ typedef struct config_t
 	int smart_case;
 	int hl_search;
 	int vifm_info;
-	char *shell;
+
+	char *shell;          /* Shell interpreter command. */
+	char *shell_cmd_flag; /* Argument for the shell to pass command. */
+
 	int scroll_off;
 	int gdefault;
 	int scroll_bind;

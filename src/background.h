@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include "compat/pthread.h"
+#include "utils/utils.h"
 
 /* Special value of total amount of work in bg_job_t structure to indicate
  * undefined total number of countable operations. */
@@ -110,7 +111,7 @@ void bg_init(void);
 
 /* Creates background job running external command.  Returns zero on success,
  * otherwise non-zero is returned. */
-int bg_run_external(const char cmd[], int skip_errors);
+int bg_run_external(const char cmd[], int skip_errors, ShellRequester by);
 
 struct cancellation_t;
 

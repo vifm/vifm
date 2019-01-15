@@ -20,6 +20,7 @@
 #ifndef VIFM__RUNNING_H__
 #define VIFM__RUNNING_H__
 
+#include "utils/utils.h"
 #include "macros.h"
 
 /* Kinds of executable file treatment on file handling. */
@@ -63,7 +64,8 @@ void cd_updir(struct view_t *view, int levels);
 
 /* Executes command in a shell.  Returns zero on success, otherwise non-zero is
  * returned. */
-int shellout(const char command[], ShellPause pause, int use_term_multiplexer);
+int shellout(const char command[], ShellPause pause, int use_term_multiplexer,
+		ShellRequester by);
 
 /* Returns zero on successful running. */
 int run_with_filetype(struct view_t *view, const char beginning[],

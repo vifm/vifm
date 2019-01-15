@@ -111,8 +111,9 @@ static void extract_last_path_component(const char path[], char buf[]);
 static void setup_shellout_env(void);
 static void cleanup_shellout_env(void);
 static char * gen_shell_cmd(const char cmd[], int pause,
-		int use_term_multiplexer);
-static char * gen_term_multiplexer_cmd(const char cmd[], int pause);
+		int use_term_multiplexer, ShellRequester *by);
+static char * gen_term_multiplexer_cmd(const char cmd[], int pause,
+		ShellRequester by);
 static char * gen_term_multiplexer_title_arg(const char cmd[]);
 static char * gen_normal_cmd(const char cmd[], int pause);
 static char * gen_term_multiplexer_run_cmd(void);
@@ -371,7 +372,7 @@ execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
 	char *const escaped = shell_like_escape(full_path, 0);
-	shellout(escaped, PAUSE_ALWAYS, 1);
+	shellout(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
 	free(escaped);
 #else
 	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
@@ -607,12 +608,12 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	else if(bg)
 	{
 		assert(flags != MF_IGNORE && "This case is for run_ext_command()");
-		(void)bg_run_external(cmd, flags == MF_IGNORE);
+		(void)bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER);
 	}
 	else
 	{
 		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-				flags != MF_NO_TERM_MUX);
+				flags != MF_NO_TERM_MUX, SHELL_BY_USER);
 	}
 
 	free(cmd);
@@ -647,11 +648,12 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 
 	if(bg)
 	{
-		(void)bg_run_external(cmd, 0);
+		(void)bg_run_external(cmd, 0, SHELL_BY_USER);
 	}
 	else
 	{
-		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR, 1);
+		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR, 1,
+				SHELL_BY_USER);
 	}
 }
 
@@ -809,7 +811,8 @@ extract_last_path_component(const char path[], char buf[])
 }
 
 int
-shellout(const char command[], ShellPause pause, int use_term_multiplexer)
+shellout(const char command[], ShellPause pause, int use_term_multiplexer,
+		ShellRequester by)
 {
 	char *cmd;
 	int result;
@@ -822,10 +825,11 @@ shellout(const char command[], ShellPause pause, int use_term_multiplexer)
 
 	setup_shellout_env();
 
-	cmd = gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer);
+	cmd = gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer,
+			&by);
 
 	ui_shutdown();
-	ec = vifm_system(cmd);
+	ec = vifm_system(cmd, by);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
 	result = WEXITSTATUS(ec);
@@ -900,7 +904,7 @@ setup_shellout_env(void)
 
 	escaped_path = shell_like_escape(mount_file, 0);
 	cmd = format_str(term_multiplexer_fmt, FUSE_FILE_ENVVAR, escaped_path);
-	(void)vifm_system(cmd);
+	(void)vifm_system(cmd, SHELL_BY_APP);
 	free(cmd);
 	free(escaped_path);
 }
@@ -923,7 +927,7 @@ cleanup_shellout_env(void)
 	}
 
 	cmd = format_str(term_multiplexer_fmt, FUSE_FILE_ENVVAR);
-	(void)vifm_system(cmd);
+	(void)vifm_system(cmd, SHELL_BY_APP);
 	free(cmd);
 }
 
@@ -931,7 +935,8 @@ cleanup_shellout_env(void)
  * parameter opens shell.  Returns a newly allocated string, which should be
  * freed by the caller. */
 static char *
-gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer)
+gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
+		ShellRequester *by)
 {
 	char *shell_cmd = NULL;
 
@@ -939,7 +944,10 @@ gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer)
 	{
 		if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
 		{
-			shell_cmd = gen_term_multiplexer_cmd(cmd, pause);
+			shell_cmd = gen_term_multiplexer_cmd(cmd, pause, *by);
+			/* User shell settings were taken into account in command for
+			 * multiplexer, don't use them to invoke the multiplexer itself. */
+			*by = SHELL_BY_APP;
 		}
 		else
 		{
@@ -962,7 +970,7 @@ gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer)
 /* Composes command to be run using terminal multiplexer.  Returns newly
  * allocated string that should be freed by the caller. */
 static char *
-gen_term_multiplexer_cmd(const char cmd[], int pause)
+gen_term_multiplexer_cmd(const char cmd[], int pause, ShellRequester by)
 {
 	char *title_arg;
 	char *raw_shell_cmd;
@@ -981,9 +989,12 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 	raw_shell_cmd = format_str("%s%s", cmd, pause ? PAUSE_STR : "");
 	escaped_shell_cmd = shell_like_escape(raw_shell_cmd, 0);
 
+	const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
+
 	if(curr_stats.term_multiplexer == TM_TMUX)
 	{
-		char *const arg = format_str("%s -c %s", cfg.shell, escaped_shell_cmd);
+		char *const arg = format_str("%s %s %s", cfg.shell, sh_flag,
+				escaped_shell_cmd);
 		char *const escaped_arg = shell_like_escape(arg, 0);
 
 		shell_cmd = format_str("tmux new-window %s %s", title_arg, escaped_arg);
@@ -995,7 +1006,7 @@ gen_term_multiplexer_cmd(const char cmd[], int pause)
 	{
 		set_pwd_in_screen(flist_get_dir(curr_view));
 
-		shell_cmd = format_str("screen %s %s -c %s", title_arg, cfg.shell,
+		shell_cmd = format_str("screen %s %s %s %s", title_arg, cfg.shell, sh_flag,
 				escaped_shell_cmd);
 	}
 	else
@@ -1118,7 +1129,7 @@ set_pwd_in_screen(const char path[])
 	char *const escaped_dir = shell_like_escape(path, 0);
 	char *const set_pwd = format_str("screen -X setenv PWD %s", escaped_dir);
 
-	(void)vifm_system(set_pwd);
+	(void)vifm_system(set_pwd, SHELL_BY_APP);
 
 	free(set_pwd);
 	free(escaped_dir);
@@ -1200,7 +1211,7 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 			int error;
 
 			setup_shellout_env();
-			error = (bg_run_external(cmd, 1) != 0);
+			error = (bg_run_external(cmd, 1, SHELL_BY_USER) != 0);
 			cleanup_shellout_env();
 
 			if(error)
@@ -1334,7 +1345,7 @@ run_in_split(const view_t *view, const char cmd[])
 	{
 		char cmd[1024];
 		snprintf(cmd, sizeof(cmd), "tmux split-window %s", escaped_cmd);
-		(void)vifm_system(cmd);
+		(void)vifm_system(cmd, SHELL_BY_APP);
 	}
 	else if(curr_stats.term_multiplexer == TM_SCREEN)
 	{
@@ -1346,11 +1357,11 @@ run_in_split(const view_t *view, const char cmd[])
 		snprintf(cmd, sizeof(cmd), "screen -X eval chdir\\ %s 'focus bottom' "
 				"split 'focus bottom'", escaped_dir);
 		free(escaped_dir);
-		(void)vifm_system(cmd);
+		(void)vifm_system(cmd, SHELL_BY_APP);
 
 		snprintf(cmd, sizeof(cmd), "screen -X screen vifm-screen-split %s",
 				escaped_cmd);
-		(void)vifm_system(cmd);
+		(void)vifm_system(cmd, SHELL_BY_APP);
 	}
 	else
 	{

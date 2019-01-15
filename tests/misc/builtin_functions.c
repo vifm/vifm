@@ -26,6 +26,7 @@
 SETUP()
 {
 	update_string(&cfg.shell, "sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 
 	init_builtin_functions();
 	init_parser(NULL);
@@ -41,6 +42,7 @@ TEARDOWN()
 	clear_envvars();
 	function_reset_all();
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 
 	view_teardown(&lwin);
 }

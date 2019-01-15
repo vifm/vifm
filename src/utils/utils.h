@@ -37,6 +37,14 @@ typedef enum
 }
 EnvType;
 
+/* Whether user customizations on how to invoke the shell should be applied. */
+typedef enum
+{
+	SHELL_BY_APP,  /* Shell invocation originated internally. */
+	SHELL_BY_USER, /* Shell invocation is requested by the user. */
+}
+ShellRequester;
+
 /* Forward declaration. */
 struct dir_entry_t;
 
@@ -47,7 +55,7 @@ typedef void (*cmd_output_handler)(const char line[], void *arg);
 
 /* Executes an external command.  Clears the screen up on Windows before running
  * the command.  Returns error code, which is zero on success. */
-int vifm_system(char command[]);
+int vifm_system(char command[], ShellRequester by);
 
 /* Pauses shell.  Assumes that curses interface is off. */
 void pause_shell(void);

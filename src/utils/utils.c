@@ -83,7 +83,7 @@ ARRAY_GUARD(iec_units, ARRAY_LEN(iec_i_units));
 ARRAY_GUARD(si_units, ARRAY_LEN(iec_units));
 
 int
-vifm_system(char command[])
+vifm_system(char command[], ShellRequester by)
 {
 #ifdef _WIN32
 	/* The check is primarily for tests, otherwise screen is reset. */
@@ -93,7 +93,7 @@ vifm_system(char command[])
 	}
 #endif
 	LOG_INFO_MSG("Shell command: %s", command);
-	return run_in_shell_no_cls(command);
+	return run_in_shell_no_cls(command, by);
 }
 
 int

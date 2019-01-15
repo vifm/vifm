@@ -52,6 +52,7 @@ SETUP()
 	assert_success(chdir(sandbox));
 
 	update_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 	stats_update_shell_type(cfg.shell);
 	curr_stats.exec_env_type = EET_EMULATOR;
 

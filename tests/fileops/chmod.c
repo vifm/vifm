@@ -27,6 +27,7 @@ static mode_t mask;
 SETUP_ONCE()
 {
 	replace_string(&cfg.shell, "/bin/sh");
+	replace_string(&cfg.shell_cmd_flag, "-c");
 	stats_update_shell_type(cfg.shell);
 }
 

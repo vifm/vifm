@@ -488,6 +488,7 @@ TEST(socket_is_copied, IF(can_create_sockets))
 
 TEST(append_truncates_destination_files_on_error, IF(not_windows))
 {
+	int status;
 	pid_t pid;
 
 	clone_test_file(TEST_DATA_PATH "/read/two-lines", SANDBOX_PATH "/two-lines");
@@ -512,16 +513,17 @@ TEST(append_truncates_destination_files_on_error, IF(not_windows))
 	}
 	else
 	{
-		int status;
 		assert_false(pid == -1);
 		assert_true(waitpid(pid, &status, 0) == pid);
 		assert_true(WIFEXITED(status));
-		/* Valgrind seems to break something (maybe ignoring the signal) in the test
-		 * on some machines at least, so don't check
-		 * WEXITSTATUS(status) == EXIT_SUCCESS. */
 	}
 
-	assert_int_equal(18, get_file_size(SANDBOX_PATH "/two-lines"));
+	/* Valgrind seems to break something (maybe ignoring the signal) in the
+	 * test on some machines at least. */
+	if(WEXITSTATUS(status) == EXIT_SUCCESS)
+	{
+		assert_int_equal(18, get_file_size(SANDBOX_PATH "/two-lines"));
+	}
 
 	delete_test_file(SANDBOX_PATH "/two-lines");
 }
