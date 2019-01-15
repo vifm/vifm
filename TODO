@@ -147,7 +147,7 @@ Questionable things:
   * Add :increment and :decrement commands.
   * Consider changing "dd" to "d" in menus.
   * Consider caching directory sizes in vifminfo.
-  * Shell alias execution (and completion)
+  * Shell alias execution (and completion) (partially done)
   * Decide whether redefining command shortcuts like :fil should be allowed.
   * Add a flag to 'grepprg' to enable parsing of `ag -H ...` output.
   * Ability to hide command line when not active.

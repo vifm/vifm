@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2018 Dec 30
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jan 31
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3459,6 +3459,15 @@ default: $SHELL or "/bin/sh" or "cmd" (on MS-Windows)
 
 Full path to the shell to use to run external commands.  On *nix a shell
 argument can be supplied.
+
+                                               *vifm-'shellcmdflag'*
+                                               *vifm-'shcf'*
+shellcmdflag shcf
+type: string
+default: "-c" or "/C" (for cmd.exe on MS-Windows)
+
+Command-line option used to pass a command to |vifm-'shell'|.  It's used in
+contexts where command comes from the user.
 
                                                *vifm-'shortmess'* *vifm-'shm'*
 shortmess shm

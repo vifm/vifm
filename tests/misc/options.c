@@ -637,5 +637,13 @@ TEST(mediaprg, IF(not_windows))
 	assert_string_equal("", cfg.media_prg);
 }
 
+TEST(shellcmdflag)
+{
+	assert_success(exec_commands("set shellcmdflag=-ic", &lwin, CIT_COMMAND));
+	assert_string_equal("-ic", cfg.shell_cmd_flag);
+	assert_success(exec_commands("set shcf=-c", &lwin, CIT_COMMAND));
+	assert_string_equal("-c", cfg.shell_cmd_flag);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

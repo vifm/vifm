@@ -467,6 +467,7 @@ set histcursor
 set quickview noquickview invquickview
 set syncregs
 set mediaprg
+set shellflagcmd shcf
 
 " "term" should be highlighted as a function()
 echo term('cmd')

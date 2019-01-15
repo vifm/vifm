@@ -155,6 +155,7 @@ static void runexec_handler(OPT_OP op, optval_t val);
 static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
 static void shell_handler(OPT_OP op, optval_t val);
+static void shellcmdflag_handler(OPT_OP op, optval_t val);
 static void shortmess_handler(OPT_OP op, optval_t val);
 static void showtabline_handler(OPT_OP op, optval_t val);
 static void sizefmt_handler(OPT_OP op, optval_t val);
@@ -712,6 +713,10 @@ options[] = {
 	{ "shell", "sh", "shell to run external commands",
 	  OPT_STR, 0, NULL, &shell_handler, NULL,
 	  { .ref.str_val = &cfg.shell },
+	},
+	{ "shellcmdflag", "shcf", "argument for the shell",
+	  OPT_STR, 0, NULL, &shellcmdflag_handler, NULL,
+	  { .ref.str_val = &cfg.shell_cmd_flag },
 	},
 	{ "shortmess", "shm", "things to shorten in TUI",
 	  OPT_CHARSET, ARRAY_LEN(shortmess_vals), shortmess_vals, &shortmess_handler,
@@ -2250,10 +2255,21 @@ scrolloff_handler(OPT_OP op, optval_t val)
 	}
 }
 
+/* Handles changes of 'shell' option which specifies shell interpreter
+ * command. */
 static void
 shell_handler(OPT_OP op, optval_t val)
 {
 	cfg_set_shell(val.str_val);
+}
+
+/* Handles changes of 'shellcmdflag' option which specifies shell interpreter
+ * command-line option that enables processing of the next argument as a
+ * command. */
+static void
+shellcmdflag_handler(OPT_OP op, optval_t val)
+{
+	replace_string(&cfg.shell_cmd_flag, val.str_val);
 }
 
 /* Handles changes of 'shortmess' option by expanding flags into actual option
