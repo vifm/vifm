@@ -52,8 +52,8 @@ void colmgr_init(const colmgr_conf_t *conf_init);
 void colmgr_reset(void);
 
 /* Gets (might dynamically allocate) color pair number for specified
- * foreground (fg) and background (bg) colors.  Returns the number on success or
- * -1 on allocation failure. */
+ * foreground (fg) and background (bg) colors.  Returns the number.  On failure
+ * falls back to color pair 0. */
 int colmgr_get_pair(int fg, int bg);
 
 #endif /* VIFM__UI__COLOR_MANAGER_H__ */
