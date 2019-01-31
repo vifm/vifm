@@ -168,6 +168,7 @@ ior_mv(io_args_t *args)
 	const char *const dst = args->arg2.dst;
 	const IoCrs crs = args->arg3.crs;
 	const io_confirm confirm = args->confirm;
+	int confirmed = 0;
 
 	if(crs == IO_CRS_FAIL && path_exists(dst, DEREF) && !is_case_change(src, dst))
 	{
@@ -198,6 +199,7 @@ ior_mv(io_args_t *args)
 		{
 			return 0;
 		}
+		confirmed = 1;
 	}
 
 	if(os_rename(src, dst) == 0)
@@ -217,7 +219,9 @@ ior_mv(io_args_t *args)
 		case EACCES:
 #endif
 			{
+				args->confirm = (confirmed ? NULL : confirm);
 				int result = ior_cp(args);
+				args->confirm = confirm;
 				if(result == 0)
 				{
 					io_args_t rm_args = {

@@ -10,11 +10,9 @@
 #include "../../src/io/ior.h"
 #include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
-#include "../../src/utils/utils.h"
 
 #include "utils.h"
 
-static int not_windows(void);
 static int can_rename_changing_case(void);
 
 TEST(file_is_moved)
@@ -349,12 +347,6 @@ TEST(case_change_on_rename, IF(can_rename_changing_case))
 	}
 
 	delete_file(SANDBOX_PATH "/A-file");
-}
-
-static int
-not_windows(void)
-{
-	return get_env_type() != ET_WIN;
 }
 
 static int

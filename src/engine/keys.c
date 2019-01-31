@@ -320,6 +320,7 @@ static int
 dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 		int prev_count)
 {
+	const wchar_t *keys_start = keys;
 	key_info_t key_info;
 	int result;
 
@@ -339,6 +340,13 @@ dispatch_keys(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 	{
 		result = dispatch_keys_at_root(keys, keys_info,
 				&builtin_cmds_root[vle_mode_get()], key_info, no_remap);
+	}
+
+	if(!IS_KEYS_RET_CODE(result))
+	{
+		/* Take characters spent on count and register specification into
+		 * account. */
+		inc_counter(keys_info, keys - keys_start);
 	}
 
 	return result;
