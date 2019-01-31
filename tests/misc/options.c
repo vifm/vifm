@@ -637,6 +637,14 @@ TEST(mediaprg, IF(not_windows))
 	assert_string_equal("", cfg.media_prg);
 }
 
+TEST(shell)
+{
+	assert_success(exec_commands("set shell=/bin/bash", &lwin, CIT_COMMAND));
+	assert_string_equal("/bin/bash", cfg.shell);
+	assert_success(exec_commands("set sh=/bin/sh", &lwin, CIT_COMMAND));
+	assert_string_equal("/bin/sh", cfg.shell);
+}
+
 TEST(shellcmdflag)
 {
 	assert_success(exec_commands("set shellcmdflag=-ic", &lwin, CIT_COMMAND));
