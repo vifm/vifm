@@ -978,7 +978,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->bg)
 	{
-		bg_run_external(com, 0);
+		bg_run_external(com, 0, SHELL_BY_USER);
 	}
 	else
 	{
@@ -991,14 +991,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 			if(buf != NULL)
 			{
 				(void)shellout(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-						use_term_mux);
+						use_term_mux, SHELL_BY_USER);
 				free(buf);
 			}
 		}
 		else
 		{
 			(void)shellout(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					use_term_mux);
+					use_term_mux, SHELL_BY_USER);
 		}
 	}
 
@@ -2542,7 +2542,7 @@ help_cmd(const cmd_info_t *cmd_info)
 
 	if(bg)
 	{
-		bg_run_external(cmd, 0);
+		bg_run_external(cmd, 0, SHELL_BY_APP);
 	}
 	else
 	{
@@ -3185,16 +3185,16 @@ ls_cmd(const cmd_info_t *cmd_info)
 			ui_sb_msg("No terminal multiplexer is in use");
 			return 1;
 		case TM_SCREEN:
-			(void)vifm_system("screen -X eval windowlist");
+			(void)vifm_system("screen -X eval windowlist", SHELL_BY_APP);
 			return 0;
 		case TM_TMUX:
-			if(vifm_system("tmux choose-window") != EXIT_SUCCESS)
+			if(vifm_system("tmux choose-window", SHELL_BY_APP) != EXIT_SUCCESS)
 			{
 				/* Refresh all windows as failed command outputs message, which can't be
 				 * suppressed. */
 				update_all_windows();
 				/* Fall back to worse way of doing the same for tmux versions < 1.8. */
-				(void)vifm_system("tmux command-prompt choose-window");
+				(void)vifm_system("tmux command-prompt choose-window", SHELL_BY_APP);
 			}
 			return 0;
 
@@ -3815,7 +3815,7 @@ shell_cmd(const cmd_info_t *cmd_info)
 
 	/* Run shell with clean PATH environment variable. */
 	load_clean_path_env();
-	shellout(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1);
+	shellout(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1, SHELL_BY_APP);
 	load_real_path_env();
 
 	return 0;
@@ -4948,12 +4948,12 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 		if(*com_beginning != '\0' && bg)
 		{
-			bg_run_external(com_beginning, 0);
+			bg_run_external(com_beginning, 0, SHELL_BY_USER);
 		}
 		else if(strlen(com_beginning) > 0)
 		{
 			shellout(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
-					flags != MF_NO_TERM_MUX);
+					flags != MF_NO_TERM_MUX, SHELL_BY_USER);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -4971,11 +4971,12 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(bg)
 	{
-		bg_run_external(expanded_com, 0);
+		bg_run_external(expanded_com, 0, SHELL_BY_USER);
 	}
 	else
 	{
-		shellout(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX);
+		shellout(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
+				SHELL_BY_USER);
 	}
 
 	if(external)

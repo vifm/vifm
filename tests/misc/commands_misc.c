@@ -59,8 +59,10 @@ SETUP()
 
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 #else
 	replace_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
 #endif
 
 	stats_update_shell_type(cfg.shell);
@@ -81,6 +83,7 @@ TEARDOWN()
 	update_string(&cfg.slow_fs_list, NULL);
 
 	stats_update_shell_type("/bin/sh");
+	update_string(&cfg.shell_cmd_flag, NULL);
 	update_string(&cfg.shell, NULL);
 
 	view_teardown(&lwin);
@@ -405,6 +408,7 @@ TEST(find_command, IF(not_windows))
 	opt_handlers_setup();
 
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 
 	assert_success(chdir(TEST_DATA_PATH));
 	strcpy(lwin.curr_dir, test_data);
@@ -440,6 +444,7 @@ TEST(grep_command, IF(not_windows))
 	opt_handlers_setup();
 
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 
 	assert_success(chdir(TEST_DATA_PATH "/scripts"));
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));

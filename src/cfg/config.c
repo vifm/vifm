@@ -196,6 +196,7 @@ cfg_init(void)
 	cfg.log_file[0] = '\0';
 
 	cfg_set_shell(env_get_def("SHELL", DEFAULT_SHELL_CMD));
+	cfg.shell_cmd_flag = strdup((curr_stats.shell_type == ST_CMD) ? "/C" : "-c");
 
 	memset(&cfg.type_decs, '\0', sizeof(cfg.type_decs));
 	cfg.type_decs[FT_DIR][DECORATION_SUFFIX][0] = '/';

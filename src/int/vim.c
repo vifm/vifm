@@ -222,10 +222,10 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 {
 	if(bg)
 	{
-		return bg_run_external(cmd, 0);
+		return bg_run_external(cmd, 0, SHELL_BY_APP);
 	}
 
-	return shellout(cmd, PAUSE_ON_ERROR, use_term_multiplexer);
+	return shellout(cmd, PAUSE_ON_ERROR, use_term_multiplexer, SHELL_BY_APP);
 }
 
 int
@@ -371,7 +371,7 @@ vim_run_choose_cmd(const view_t *view)
 	}
 
 	expanded_cmd = expand_macros(curr_stats.on_choose, NULL, NULL, 1);
-	if(vifm_system(expanded_cmd) != EXIT_SUCCESS)
+	if(vifm_system(expanded_cmd, SHELL_BY_USER) != EXIT_SUCCESS)
 	{
 		free(expanded_cmd);
 		return 1;

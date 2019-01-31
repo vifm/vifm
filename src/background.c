@@ -339,7 +339,7 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 	if(pid == 0)
 	{
 		(void)set_sigchld(0);
-		run_from_fork(error_pipe, 1, 0, cmd);
+		run_from_fork(error_pipe, 1, 0, cmd, SHELL_BY_APP);
 	}
 	else
 	{
@@ -624,6 +624,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 	if(pid == 0)
 	{
 		char *sh;
+		char *sh_flag;
 
 		close(out_pipe[0]);
 		close(error_pipe[0]);
@@ -637,8 +638,9 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 		}
 
 		sh = user_sh ? get_execv_path(cfg.shell) : "/bin/sh";
+		sh_flag = user_sh ? cfg.shell_cmd_flag : "-c";
 		prepare_for_exec();
-		execvp(sh, make_execv_array(sh, cmd));
+		execvp(sh, make_execv_array(sh, sh_flag, cmd));
 		_Exit(127);
 	}
 
@@ -661,6 +663,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	int code;
 	wchar_t *final_wide_cmd;
 	wchar_t *wide_sh = NULL;
+	wchar_t *wide_sh_flag;
 	const int use_cmd = (!user_sh || curr_stats.shell_type == ST_CMD);
 
 	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
@@ -676,13 +679,14 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 	}
 
 	wide_sh = to_wide(use_cmd ? "cmd" : cfg.shell);
+	wide_sh_flag = to_wide(user_sh ? cfg.shell_cmd_flag : "/C");
 
 	if(use_cmd)
 	{
 		final_wide_cmd = to_wide(cmd);
 
 		args[0] = wide_sh;
-		args[1] = L"/C";
+		args[1] = wide_sh_flag;
 		args[2] = final_wide_cmd;
 		args[3] = NULL;
 	}
@@ -691,7 +695,8 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 		/* Nobody cares that there is an array of arguments, all arguments just get
 		 * concatenated anyway...  Therefore we need to take care of escaping stuff
 		 * ourselves. */
-		char *const modified_cmd = win_make_sh_cmd(cmd);
+		char *const modified_cmd = win_make_sh_cmd(cmd,
+				user_sh ? SHELL_BY_USER : SHELL_BY_APP);
 		final_wide_cmd = to_wide(modified_cmd);
 		free(modified_cmd);
 
@@ -701,6 +706,7 @@ background_and_capture_internal(char cmd[], int user_sh, FILE **out, FILE **err,
 
 	code = _wspawnvp(P_NOWAIT, wide_sh, args);
 
+	free(wide_sh_flag);
 	free(wide_sh);
 	free(final_wide_cmd);
 
@@ -766,7 +772,7 @@ bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 #endif
 
 int
-bg_run_external(const char cmd[], int skip_errors)
+bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 {
 	bg_job_t *job = NULL;
 #ifndef _WIN32
@@ -828,8 +834,9 @@ bg_run_external(const char cmd[], int skip_errors)
 		setpgid(0, 0);
 
 		prepare_for_exec();
-		execve(get_execv_path(cfg.shell), make_execv_array(cfg.shell, command),
-				environ);
+		char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
+		execve(get_execv_path(cfg.shell),
+				make_execv_array(cfg.shell, sh_flag, command), environ);
 		_Exit(127);
 	}
 	else
@@ -860,7 +867,7 @@ bg_run_external(const char cmd[], int skip_errors)
 		return -1;
 	}
 
-	sh_cmd = win_make_sh_cmd(command);
+	sh_cmd = win_make_sh_cmd(command, by);
 	free(command);
 
 	wide_cmd = to_wide(sh_cmd);

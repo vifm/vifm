@@ -355,7 +355,7 @@ popen2(const char cmd[], FILE **in, FILE **out)
 		close(in_pipe[0]);
 		close(out_pipe[1]);
 
-		execvp("/bin/sh", make_execv_array("/bin/sh", (char *)cmd));
+		execvp("/bin/sh", make_execv_array("/bin/sh", "-c", (char *)cmd));
 		_Exit(127);
 	}
 

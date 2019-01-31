@@ -454,6 +454,7 @@ TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 	assert_success(chdir(SANDBOX_PATH));
 
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 	stats_update_shell_type(cfg.shell);
 
 	create_file("a\nb");
@@ -463,6 +464,7 @@ TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 	assert_success(unlink("list"));
 
 	stats_update_shell_type("/bin/sh");
+	update_string(&cfg.shell_cmd_flag, NULL);
 	update_string(&cfg.shell, NULL);
 
 	assert_int_equal(1, lwin.list_rows);
@@ -479,8 +481,10 @@ TEST(current_directory_can_be_added_via_dot)
 
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 #else
 	replace_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
 #endif
 	stats_update_shell_type(cfg.shell);
 
@@ -488,6 +492,7 @@ TEST(current_directory_can_be_added_via_dot)
 
 	stats_update_shell_type("/bin/sh");
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 
 	assert_true(flist_custom_active(&lwin));
 	assert_int_equal(1, lwin.list_rows);

@@ -1,4 +1,4 @@
-.TH VIFM 1 "December 30, 2018" "vifm 0.10"
+.TH VIFM 1 "January 31, 2019" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4159,6 +4159,14 @@ default: $SHELL or "/bin/sh" or "cmd" (on MS-Windows)
 .br
 Full path to the shell to use to run external commands.  On *nix a shell
 argument can be supplied.
+.TP
+.BI "'shellcmdflag' 'shcf'"
+type: string
+.br
+default: "\-c" or "/C" (for cmd.exe on MS-Windows)
+.br
+Command-line option used to pass a command to 'shell'.  It's used in contexts
+where command comes from the user.
 .TP
 .BI "'shortmess' 'shm'"
 type: charset

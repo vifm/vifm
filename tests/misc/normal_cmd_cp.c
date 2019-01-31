@@ -52,6 +52,7 @@ TEST(file_mode_is_changed, IF(not_windows))
 	lwin.list_pos = 0;
 
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 	stats_update_shell_type("/bin/sh");
 
 	undo_setup();
@@ -68,6 +69,7 @@ TEST(file_mode_is_changed, IF(not_windows))
 	undo_teardown();
 
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

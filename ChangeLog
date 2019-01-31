@@ -17,6 +17,11 @@
 	Added :hideui command that hides interface to show previous commands'
 	output.  Thanks to dikiy.
 
+	Added 'shellcmdflag' option that allows customizing how shell is invoked.
+	Enables running it in interactive mode, which can make shell aliases and
+	functions work.  Thanks to Ink (a.k.a. inknoir), John Shea (a.k.a.
+	coachshea) and randomizedthinking.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

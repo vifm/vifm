@@ -10,10 +10,12 @@ DEFINE_SUITE();
 SETUP()
 {
 	cfg.shell = strdup("/bin/bash");
+	cfg.shell_cmd_flag = strdup("-c");
 }
 
 TEARDOWN()
 {
+	free(cfg.shell_cmd_flag);
 	free(cfg.shell);
 }
 

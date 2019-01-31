@@ -19,9 +19,11 @@
 #ifndef VIFM__UTILS__UTILS_INT_H__
 #define VIFM__UTILS__UTILS_INT_H__
 
+#include "utils.h"
+
 /* Executes an external command in shell without clearing up the screen.
  * Returns error code, which is zero on success. */
-int run_in_shell_no_cls(char command[]);
+int run_in_shell_no_cls(char command[], ShellRequester by);
 
 #endif /* VIFM__UTILS__UTILS_INT_H__ */
 

@@ -107,8 +107,10 @@ TEST(macros_are_expanded_for_viewer)
 
 #ifndef _WIN32
 	update_string(&cfg.shell, "sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 #else
 	update_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
 #endif
 
 	strcpy(curr_view->curr_dir, "echo");
@@ -122,6 +124,7 @@ TEST(macros_are_expanded_for_viewer)
 	free(text);
 	fclose(fp);
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 }
 
 TEST(when_preview_can_be_shown)

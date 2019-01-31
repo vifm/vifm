@@ -63,8 +63,10 @@ TEST(merge_directories)
 {
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
+	replace_string(&cfg.shell_cmd_flag, "-c");
 #else
 	replace_string(&cfg.shell, "cmd");
+	replace_string(&cfg.shell_cmd_flag, "/C");
 #endif
 
 	stats_update_shell_type(cfg.shell);

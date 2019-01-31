@@ -28,6 +28,7 @@ SETUP()
 	init_commands();
 
 	view_setup(&lwin);
+
 	lwin.columns = columns_create();
 	lwin.num_width_g = lwin.num_width = 4;
 	lwin.hide_dot_g = lwin.hide_dot = 1;
@@ -634,6 +635,22 @@ TEST(mediaprg, IF(not_windows))
 	assert_string_equal("prg", cfg.media_prg);
 	assert_success(exec_commands("set mediaprg=", &lwin, CIT_COMMAND));
 	assert_string_equal("", cfg.media_prg);
+}
+
+TEST(shell)
+{
+	assert_success(exec_commands("set shell=/bin/bash", &lwin, CIT_COMMAND));
+	assert_string_equal("/bin/bash", cfg.shell);
+	assert_success(exec_commands("set sh=/bin/sh", &lwin, CIT_COMMAND));
+	assert_string_equal("/bin/sh", cfg.shell);
+}
+
+TEST(shellcmdflag)
+{
+	assert_success(exec_commands("set shellcmdflag=-ic", &lwin, CIT_COMMAND));
+	assert_string_equal("-ic", cfg.shell_cmd_flag);
+	assert_success(exec_commands("set shcf=-c", &lwin, CIT_COMMAND));
+	assert_string_equal("-c", cfg.shell_cmd_flag);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

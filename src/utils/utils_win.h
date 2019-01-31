@@ -53,7 +53,7 @@ int win_exec_cmd(char cmd[], int *returned_exit_code);
 
 /* Turns command into the one suitable to be run by a shell.  Returns the
  * string. */
-char * win_make_sh_cmd(const char cmd[]);
+char * win_make_sh_cmd(const char cmd[], ShellRequester by);
 
 int is_win_executable(const char name[]);
 

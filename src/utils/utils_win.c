@@ -74,19 +74,19 @@ pause_shell(void)
 {
 	if(curr_stats.shell_type == ST_CMD)
 	{
-		run_in_shell_no_cls("pause");
+		run_in_shell_no_cls("pause", SHELL_BY_APP);
 	}
 	else
 	{
-		run_in_shell_no_cls(PAUSE_CMD);
+		run_in_shell_no_cls(PAUSE_CMD, SHELL_BY_APP);
 	}
 }
 
 int
-run_in_shell_no_cls(char command[])
+run_in_shell_no_cls(char command[], ShellRequester by)
 {
 	int ret;
-	char *const sh_cmd = win_make_sh_cmd(command);
+	char *const sh_cmd = win_make_sh_cmd(command, by);
 
 	/* XXX: why do we use different functions for different cases? */
 	if(curr_stats.shell_type == ST_CMD)
@@ -193,7 +193,7 @@ win_exec_cmd(char cmd[], int *returned_exit_code)
 }
 
 char *
-win_make_sh_cmd(const char cmd[])
+win_make_sh_cmd(const char cmd[], ShellRequester by)
 {
 	char buf[strlen(cfg.shell) + 5 + strlen(cmd)*4 + 1 + 1];
 
@@ -201,17 +201,16 @@ win_make_sh_cmd(const char cmd[])
 	{
 		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
 		 * special characters work at the same time. */
-		const char *const fmt = (cmd[0] == '"') ? "%s /C \"%s\"" : "%s /C %s";
-		snprintf(buf, sizeof(buf), fmt, cfg.shell, cmd);
+		const char *const fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
+		const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
+		snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
 	}
 	else
 	{
-		char *p;
+		const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
+		snprintf(buf, sizeof(buf), "%s %s '", cfg.shell, sh_flag);
 
-		strcpy(buf, cfg.shell);
-		strcat(buf, " -c '");
-
-		p = buf + strlen(buf);
+		char *p = buf + strlen(buf);
 		while(*cmd != '\0')
 		{
 			if(*cmd == '\\')

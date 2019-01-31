@@ -14,6 +14,7 @@
 SETUP()
 {
 	update_string(&cfg.shell, "sh");
+	update_string(&cfg.shell_cmd_flag , "-c");
 
 	/* lwin */
 	strcpy(lwin.curr_dir, "/lwin");
@@ -72,6 +73,7 @@ TEARDOWN()
 	int i;
 
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 
 	for(i = 0; i < lwin.list_rows; i++)
 		free(lwin.dir_entry[i].name);
