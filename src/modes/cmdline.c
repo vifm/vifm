@@ -383,7 +383,7 @@ draw_cmdline_text(line_stats_t *stat)
 	{
 		/* XXX: erasing status_bar causes blinking if <silent> mapping that uses
 		 *      command-line is pressed and held down.  Ideally wouldn't need this
-		 *      retur. */
+		 *      return. */
 		return;
 	}
 
@@ -402,16 +402,13 @@ draw_cmdline_text(line_stats_t *stat)
 	}
 	attr ^= cfg.cs.color[pair].attr;
 
-	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[pair]) | attr);
+	(void)wattr_set(status_bar, attr, cfg.cs.pair[pair], NULL);
 	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
-	wattroff(status_bar, COLOR_PAIR(cfg.cs.pair[pair]) | attr);
 
-	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-
-	wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
+	(void)wattr_set(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr,
+			cfg.cs.pair[CMD_LINE_COLOR], NULL);
 	compat_mvwaddwstr(status_bar, stat->prompt_wid/line_width,
 			stat->prompt_wid%line_width, stat->line);
-	wattroff(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 
 	update_cursor();
 	ui_refresh_win(status_bar);
@@ -811,7 +808,6 @@ static void
 leave_cmdline_mode(void)
 {
 	const int multiline_status_bar = (getmaxy(status_bar) > 1);
-	int attr;
 
 	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 	if(multiline_status_bar)
@@ -849,9 +845,6 @@ leave_cmdline_mode(void)
 	{
 		ui_ruler_update(curr_view, 1);
 	}
-
-	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-	wattroff(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
 
 	if(prev_mode != MENU_MODE && prev_mode != VIEW_MODE)
 	{
@@ -1180,15 +1173,14 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 		{
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-
-			wbkgdset(stat_win,
-					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+			(void)wattr_set(stat_win, col.attr, colmgr_get_pair(col.fg, col.bg),
+					NULL);
 		}
 		wprint(stat_win, items[i].text);
 		if(i == *pos)
 		{
-			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
-					cfg.cs.color[STATUS_LINE_COLOR].attr);
+			(void)wattr_set(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr,
+					cfg.cs.pair[STATUS_LINE_COLOR], NULL);
 			*pos = -*pos;
 		}
 	}
@@ -1233,9 +1225,8 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 		{
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-
-			wbkgdset(stat_win,
-					COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+			(void)wattr_set(stat_win, col.attr, colmgr_get_pair(col.fg, col.bg),
+					NULL);
 		}
 
 		checked_wmove(stat_win, j, 0);
@@ -1244,8 +1235,8 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 
 		if(i == *pos)
 		{
-			wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
-					cfg.cs.color[STATUS_LINE_COLOR].attr);
+			(void)wattr_set(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr,
+					cfg.cs.pair[STATUS_LINE_COLOR], NULL);
 			*pos = -*pos;
 		}
 	}
