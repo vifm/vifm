@@ -187,8 +187,11 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
-	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
-			cfg.cs.color[STATUS_LINE_COLOR].attr);
+
+	cchar_t bg;
+	setcchar(&bg, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
+			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
+	wbkgrndset(stat_win, &bg);
 
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));

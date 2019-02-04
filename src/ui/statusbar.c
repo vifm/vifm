@@ -245,12 +245,12 @@ status_bar_message(const char msg[], int error)
 	{
 		col_attr_t col = cfg.cs.color[CMD_LINE_COLOR];
 		cs_mix_colors(&col, &cfg.cs.color[ERROR_MSG_COLOR]);
-		wattron(status_bar, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+		(void)wattr_set(status_bar, col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
 	}
 	else
 	{
-		int attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-		wattron(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]) | attr);
+		(void)wattr_set(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr,
+				cfg.cs.pair[CMD_LINE_COLOR], NULL);
 	}
 	werase(status_bar);
 
