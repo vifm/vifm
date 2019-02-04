@@ -414,7 +414,8 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 	if(str[0] == '\033')
 	{
 		esc_state_update(state, str);
-		wattr_set(win, state->attrs, colmgr_get_pair(state->fg, state->bg), NULL);
+		(void)wattr_set(win, state->attrs, colmgr_get_pair(state->fg, state->bg),
+				NULL);
 	}
 	else
 	{
