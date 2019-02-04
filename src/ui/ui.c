@@ -1178,11 +1178,16 @@ wprint(WINDOW *win, const char str[])
 }
 
 void
-wprinta(WINDOW *win, const char str[], int line_attrs)
+wprinta(WINDOW *win, const char str[], const cchar_t *line_attrs,
+		int attrs_xors)
 {
-	wattron(win, line_attrs);
+	attr_t attrs;
+	short color_pair;
+	wchar_t wch[getcchar(line_attrs, NULL, &attrs, &color_pair, NULL)];
+	getcchar(line_attrs, wch, &attrs, &color_pair, NULL);
+
+	(void)wattr_set(win, attrs ^ attrs_xors, color_pair, NULL);
 	wprint(win, str);
-	wattroff(win, line_attrs);
 	wnoutrefresh(win);
 }
 

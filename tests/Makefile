@@ -150,7 +150,7 @@ ifdef unix_env
     export UBSAN_OPTIONS := halt_on_error=1
 endif
 ifdef win_env
-    override CFLAGS += -pthread
+    override CFLAGS += -pthread -DPDC_WIDE
     override LDFLAGS += \
         $(shell sed -n '/LIBS :=/{s/^[^=]\+=//p;q}' ../src/Makefile.win)
     # this part is in conditional of ../src/Makefile.win
