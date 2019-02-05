@@ -23,7 +23,7 @@
 
 #include "ui.h"
 
-#include <curses.h> /* mvwin() wbkgdset() werase() */
+#include <curses.h> /* mvwin() werase() */
 
 #ifndef _WIN32
 #include <sys/ioctl.h>

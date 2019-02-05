@@ -19,7 +19,7 @@
 #include "statusline.h"
 #include "private/statusline.h"
 
-#include <curses.h> /* mvwin() wbkgdset() werase() */
+#include <curses.h> /* mvwin() werase() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */

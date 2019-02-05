@@ -8863,14 +8863,6 @@ else
   as_fn_error $? "COLORS not found in curses.h" "$LINENO" 5
 fi
 
-ac_fn_c_check_decl "$LINENO" "COLOR_PAIR" "ac_cv_have_decl_COLOR_PAIR" "#include <curses.h>
-"
-if test "x$ac_cv_have_decl_COLOR_PAIR" = xyes; then :
-
-else
-  as_fn_error $? "COLOR_PAIR not found in curses.h" "$LINENO" 5
-fi
-
 ac_fn_c_check_decl "$LINENO" "TABSIZE" "ac_cv_have_decl_TABSIZE" "#include <curses.h>
 "
 if test "x$ac_cv_have_decl_TABSIZE" = xyes; then :
@@ -8912,6 +8904,13 @@ if test "x$ac_cv_func_flushinp" = xyes; then :
 
 else
   as_fn_error $? "flushinp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getcchar" "ac_cv_func_getcchar"
+if test "x$ac_cv_func_getcchar" = xyes; then :
+
+else
+  as_fn_error $? "getcchar() function not found." "$LINENO" 5
 fi
 
 ac_fn_c_check_func "$LINENO" "has_colors" "ac_cv_func_has_colors"
@@ -9026,6 +9025,13 @@ $as_echo "#define HAVE_SET_ESCDELAY_FUNC 1" >>confdefs.h
 
 fi
 
+ac_fn_c_check_func "$LINENO" "setcchar" "ac_cv_func_setcchar"
+if test "x$ac_cv_func_setcchar" = xyes; then :
+
+else
+  as_fn_error $? "setcchar() function not found." "$LINENO" 5
+fi
+
 ac_fn_c_check_func "$LINENO" "start_color" "ac_cv_func_start_color"
 if test "x$ac_cv_func_start_color" = xyes; then :
 
@@ -9061,25 +9067,18 @@ else
   as_fn_error $? "waddnwstr() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "wattr_off" "ac_cv_func_wattr_off"
-if test "x$ac_cv_func_wattr_off" = xyes; then :
+ac_fn_c_check_func "$LINENO" "wattr_set" "ac_cv_func_wattr_set"
+if test "x$ac_cv_func_wattr_set" = xyes; then :
 
 else
-  as_fn_error $? "wattr_off() function not found." "$LINENO" 5
+  as_fn_error $? "wattr_set() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "wattr_on" "ac_cv_func_wattr_on"
-if test "x$ac_cv_func_wattr_on" = xyes; then :
+ac_fn_c_check_func "$LINENO" "wbkgrndset" "ac_cv_func_wbkgrndset"
+if test "x$ac_cv_func_wbkgrndset" = xyes; then :
 
 else
-  as_fn_error $? "wattr_on() function not found." "$LINENO" 5
-fi
-
-ac_fn_c_check_func "$LINENO" "wbkgdset" "ac_cv_func_wbkgdset"
-if test "x$ac_cv_func_wbkgdset" = xyes; then :
-
-else
-  as_fn_error $? "wbkgdset() function not found." "$LINENO" 5
+  as_fn_error $? "wbkgrndset() function not found." "$LINENO" 5
 fi
 
 ac_fn_c_check_func "$LINENO" "wborder" "ac_cv_func_wborder"

@@ -18,7 +18,7 @@
 
 #include "statusbar.h"
 
-#include <curses.h> /* mvwin() wbkgdset() werase() */
+#include <curses.h> /* mvwin() werase() */
 
 #include <assert.h> /* assert() */
 #include <stdarg.h> /* va_list va_start() va_end() */
