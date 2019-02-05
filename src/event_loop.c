@@ -642,7 +642,9 @@ prepare_suggestion_box(int *height)
 		win = stat_win;
 	}
 
-	wbkgdset(win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr);
+	cchar_t bg;
+	setcchar(&bg, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+	wbkgrndset(win, &bg);
 	werase(win);
 
 	return win;

@@ -19,7 +19,7 @@
 #include "statusline.h"
 #include "private/statusline.h"
 
-#include <curses.h> /* mvwin() wbkgdset() werase() */
+#include <curses.h> /* mvwin() werase() */
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
@@ -62,7 +62,7 @@ typedef struct
 LineWithAttrs;
 
 static void print_with_attrs(WINDOW *win, const char line[], const char attrs[],
-		int default_attr);
+		const cchar_t *default_attr);
 static void update_stat_window_old(view_t *view, int lazy_redraw);
 static void refresh_window(WINDOW *win, int lazily);
 TSTATIC LineWithAttrs expand_status_line_macros(view_t *view,
@@ -111,11 +111,13 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	}
 
 	const int width = getmaxx(stdscr);
-	const int default_attr = COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR])
-	                       | cfg.cs.color[STATUS_LINE_COLOR].attr;
+
+	cchar_t default_attr;
+	setcchar(&default_attr, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
+			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
 
 	wresize(stat_win, 1, width);
-	wbkgdset(stat_win, default_attr);
+	wbkgrndset(stat_win, &default_attr);
 	werase(stat_win);
 	checked_wmove(stat_win, 0, 0);
 
@@ -123,7 +125,7 @@ ui_stat_update(view_t *view, int lazy_redraw)
 	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
 	result.line = break_in_two(result.line, width, "%=");
 	result.attrs = break_in_two(result.attrs, width, "=");
-	print_with_attrs(stat_win, result.line, result.attrs, default_attr);
+	print_with_attrs(stat_win, result.line, result.attrs, &default_attr);
 	free(result.line);
 	free(result.attrs);
 
@@ -134,27 +136,27 @@ ui_stat_update(view_t *view, int lazy_redraw)
  * specify 0-9 color groups for every character in line. */
 static void
 print_with_attrs(WINDOW *win, const char line[], const char attrs[],
-		int default_attr)
+		const cchar_t *default_attr)
 {
-	int attr = default_attr;
+	cchar_t attr = *default_attr;
 	while(*line != '\0')
 	{
 		if(*attrs == '0')
 		{
-			attr = default_attr;
+			attr = *default_attr;
 		}
 		else if(*attrs != ' ')
 		{
 			const int color = (USER1_COLOR + (*attrs - '1'));
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
 			cs_mix_colors(&col, &cfg.cs.color[color]);
-			attr = COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+			setcchar(&attr, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
 		}
 
 		const size_t len = utf8_chrw(line);
 		char char_buf[len + 1];
 		copy_str(char_buf, sizeof(char_buf), line);
-		wprinta(win, char_buf, attr);
+		wprinta(win, char_buf, &attr, 0);
 
 		line += len;
 		attrs += utf8_chrsw(char_buf);
@@ -185,8 +187,11 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
-	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) |
-			cfg.cs.color[STATUS_LINE_COLOR].attr);
+
+	cchar_t bg;
+	setcchar(&bg, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
+			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
+	wbkgrndset(stat_win, &bg);
 
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));

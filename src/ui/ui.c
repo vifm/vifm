@@ -23,7 +23,7 @@
 
 #include "ui.h"
 
-#include <curses.h> /* mvwin() wbkgdset() werase() */
+#include <curses.h> /* mvwin() werase() */
 
 #ifndef _WIN32
 #include <sys/ioctl.h>
@@ -433,8 +433,10 @@ vertical_layout(int screen_x)
 	wresize(lwin.win, border_height, splitter_pos + vborder_size_correction);
 	mvwin(lwin.win, y + 1, vborder_pos_correction);
 
-	wbkgdset(mborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
-			cfg.cs.color[BORDER_COLOR].attr);
+	cchar_t mborder_bg;
+	setcchar(&mborder_bg, L" ", cfg.cs.color[BORDER_COLOR].attr,
+			cfg.cs.pair[BORDER_COLOR], NULL);
+	wbkgrndset(mborder, &mborder_bg);
 	wresize(mborder, border_height, splitter_width);
 	mvwin(mborder, y + 1, splitter_pos);
 
@@ -493,8 +495,10 @@ horizontal_layout(int screen_x, int screen_y)
 			screen_x + vborder_size_correction);
 	mvwin(rwin.win, splitter_pos + 1, vborder_pos_correction);
 
-	wbkgdset(mborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
-			cfg.cs.color[BORDER_COLOR].attr);
+	cchar_t mborder_bg;
+	setcchar(&mborder_bg, L" ", cfg.cs.color[BORDER_COLOR].attr,
+			cfg.cs.pair[BORDER_COLOR], NULL);
+	wbkgrndset(mborder, &mborder_bg);
 	wresize(mborder, 1, screen_x);
 	mvwin(mborder, splitter_pos, 0);
 
@@ -557,13 +561,15 @@ resize_all(void)
 
 	border_height = get_working_area_height();
 
-	wbkgdset(lborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
-			cfg.cs.color[BORDER_COLOR].attr);
+	cchar_t border_bg;
+	setcchar(&border_bg, L" ", cfg.cs.color[BORDER_COLOR].attr,
+			cfg.cs.pair[BORDER_COLOR], NULL);
+
+	wbkgrndset(lborder, &border_bg);
 	wresize(lborder, border_height, 1);
 	mvwin(lborder, 1, 0);
 
-	wbkgdset(rborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) |
-			cfg.cs.color[BORDER_COLOR].attr);
+	wbkgrndset(rborder, &border_bg);
 	wresize(rborder, border_height, 1);
 	mvwin(rborder, 1, screen_x - 1);
 
@@ -1082,72 +1088,72 @@ redraw_lists(void)
 void
 update_attributes(void)
 {
-	int attr;
-
 	if(curr_stats.load_stage < 2)
 		return;
 
-	attr = cfg.cs.color[BORDER_COLOR].attr;
+	cchar_t border_bg;
+	setcchar(&border_bg, L" ", cfg.cs.color[BORDER_COLOR].attr,
+			cfg.cs.pair[BORDER_COLOR], NULL);
+
 	if(cfg.side_borders_visible)
 	{
-		wbkgdset(lborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) | attr);
+		wbkgrndset(lborder, &border_bg);
 		werase(lborder);
-		wbkgdset(rborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) | attr);
+		wbkgrndset(rborder, &border_bg);
 		werase(rborder);
 	}
-	wbkgdset(mborder, COLOR_PAIR(cfg.cs.pair[BORDER_COLOR]) | attr);
+	wbkgrndset(mborder, &border_bg);
 	werase(mborder);
 
-	wbkgdset(ltop_line1, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(ltop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	cchar_t top_line_bg;
+	setcchar(&top_line_bg, L" ", cfg.cs.color[TOP_LINE_COLOR].attr,
+			cfg.cs.pair[TOP_LINE_COLOR], NULL);
+
+	wbkgrndset(ltop_line1, &top_line_bg);
 	werase(ltop_line1);
 
-	wbkgdset(ltop_line2, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(ltop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	wbkgrndset(ltop_line2, &top_line_bg);
 	werase(ltop_line2);
 
-	wbkgdset(tab_line, COLOR_PAIR(cfg.cs.pair[TAB_LINE_COLOR]) |
-			(cfg.cs.color[TAB_LINE_COLOR].attr & A_REVERSE));
-	wattrset(tab_line, cfg.cs.color[TAB_LINE_COLOR].attr & ~A_REVERSE);
-	werase(tab_line);
-
-	wbkgdset(top_line, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	wbkgrndset(top_line, &top_line_bg);
 	werase(top_line);
 
-	wbkgdset(rtop_line1, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(rtop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	wbkgrndset(rtop_line1, &top_line_bg);
 	werase(rtop_line1);
 
-	wbkgdset(rtop_line2, COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR]) |
-			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(rtop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	wbkgrndset(rtop_line2, &top_line_bg);
 	werase(rtop_line2);
 
-	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
-	wbkgdset(stat_win, COLOR_PAIR(cfg.cs.pair[STATUS_LINE_COLOR]) | attr);
+	cchar_t tab_line_bg;
+	setcchar(&tab_line_bg, L" ", cfg.cs.color[TAB_LINE_COLOR].attr,
+			cfg.cs.pair[TAB_LINE_COLOR], NULL);
+	wbkgrndset(tab_line, &tab_line_bg);
+	werase(tab_line);
 
-	attr = cfg.cs.color[JOB_LINE_COLOR].attr;
-	wbkgdset(job_bar, COLOR_PAIR(cfg.cs.pair[JOB_LINE_COLOR]) | attr);
+	cchar_t status_line_bg;
+	setcchar(&status_line_bg, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
+			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
+	wbkgrndset(stat_win, &status_line_bg);
 
-	attr = cfg.cs.color[WIN_COLOR].attr;
-	wbkgdset(menu_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
-	wbkgdset(sort_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
-	wbkgdset(change_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
-	wbkgdset(error_win, COLOR_PAIR(cfg.cs.pair[WIN_COLOR]) | attr);
+	cchar_t job_bar_bg;
+	setcchar(&job_bar_bg, L" ", cfg.cs.color[JOB_LINE_COLOR].attr,
+			cfg.cs.pair[JOB_LINE_COLOR], NULL);
+	wbkgrndset(job_bar, &job_bar_bg);
 
-	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(status_bar, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
+	cchar_t win_bg;
+	setcchar(&win_bg, L" ", cfg.cs.color[WIN_COLOR].attr, cfg.cs.pair[WIN_COLOR],
+			NULL);
+	wbkgrndset(menu_win, &win_bg);
+	wbkgrndset(sort_win, &win_bg);
+	wbkgrndset(change_win, &win_bg);
+	wbkgrndset(error_win, &win_bg);
 
-	wattrset(ruler_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(ruler_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
-
-	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
-	wbkgdset(input_win, COLOR_PAIR(cfg.cs.pair[CMD_LINE_COLOR]));
+	cchar_t cmd_line_bg;
+	setcchar(&cmd_line_bg, L" ", cfg.cs.color[CMD_LINE_COLOR].attr,
+			cfg.cs.pair[CMD_LINE_COLOR], NULL);
+	wbkgrndset(status_bar, &cmd_line_bg);
+	wbkgrndset(ruler_win, &cmd_line_bg);
+	wbkgrndset(input_win, &cmd_line_bg);
 }
 
 void
@@ -1178,11 +1184,16 @@ wprint(WINDOW *win, const char str[])
 }
 
 void
-wprinta(WINDOW *win, const char str[], int line_attrs)
+wprinta(WINDOW *win, const char str[], const cchar_t *line_attrs,
+		int attrs_xors)
 {
-	wattron(win, line_attrs);
+	attr_t attrs;
+	short color_pair;
+	wchar_t wch[getcchar(line_attrs, NULL, &attrs, &color_pair, NULL)];
+	getcchar(line_attrs, wch, &attrs, &color_pair, NULL);
+
+	(void)wattr_set(win, attrs ^ attrs_xors, color_pair, NULL);
 	wprint(win, str);
-	wattroff(win, line_attrs);
 	wnoutrefresh(win);
 }
 
@@ -1799,10 +1810,10 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	int width_used = 0;
 	int avg_width, spare_width;
 
-	wbkgdset(win, COLOR_PAIR(colmgr_get_pair(base_col.fg, base_col.bg)) |
-			(base_col.attr & A_REVERSE));
-	wattrset(win, base_col.attr & ~A_REVERSE);
-
+	cchar_t bg;
+	setcchar(&bg, L" ", base_col.attr, colmgr_get_pair(base_col.fg, base_col.bg),
+			NULL);
+	wbkgrndset(win, &bg);
 	werase(win);
 	checked_wmove(win, 0, 0);
 
@@ -1844,9 +1855,7 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 			title = ellipsed;
 		}
 
-		wbkgdset(win, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) |
-				(col.attr & A_REVERSE));
-		wattrset(win, col.attr & ~A_REVERSE);
+		(void)wattr_set(win, col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
 
 		if(width > extra_width)
 		{
@@ -2001,19 +2010,17 @@ fixup_titles_attributes(const view_t *view, int active_view)
 	{
 		cs_mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
 
-		wbkgdset(view->title, COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) |
-				(col.attr & A_REVERSE));
-		wattrset(view->title, col.attr & ~A_REVERSE);
+		cchar_t bg;
+		setcchar(&bg, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+		wbkgrndset(view->title, &bg);
 	}
 	else
 	{
-		const int bg_attr = COLOR_PAIR(cfg.cs.pair[TOP_LINE_COLOR])
-		                  | (col.attr & A_REVERSE);
+		cchar_t bg;
+		setcchar(&bg, L" ", col.attr, cfg.cs.pair[TOP_LINE_COLOR], NULL);
 
-		wbkgdset(view->title, bg_attr);
-		wattrset(view->title, col.attr & ~A_REVERSE);
-		wbkgdset(top_line, bg_attr);
-		wattrset(top_line, col.attr & ~A_REVERSE);
+		wbkgrndset(view->title, &bg);
+		wbkgrndset(top_line, &bg);
 		werase(top_line);
 	}
 
@@ -2180,8 +2187,9 @@ void
 ui_view_erase(view_t *view)
 {
 	const col_scheme_t *cs = ui_view_get_cs(view);
-	const int bg = COLOR_PAIR(cs->pair[WIN_COLOR]) | cs->color[WIN_COLOR].attr;
-	wbkgdset(view->win, bg);
+	cchar_t bg;
+	setcchar(&bg, L" ", cs->color[WIN_COLOR].attr, cs->pair[WIN_COLOR], NULL);
+	wbkgrndset(view->win, &bg);
 	werase(view->win);
 }
 
@@ -2199,7 +2207,7 @@ ui_view_wipe(view_t *view)
 	/* User doesn't need to see fake filling so draw it with the color of
 	 * background. */
 	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
-	wattrset(view->win, COLOR_PAIR(colmgr_get_pair(bg, bg)));
+	(void)wattr_set(view->win, 0, colmgr_get_pair(bg, bg), NULL);
 
 	memset(line_filler, '\t', sizeof(line_filler) - 1U);
 	for(i = 0; i < height; ++i)

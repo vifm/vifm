@@ -96,7 +96,7 @@ static void draw_cell(columns_t *columns, const column_data_t *cdt,
 static columns_t * get_view_columns(const view_t *view, int truncated);
 static columns_t * get_name_column(int truncated);
 static void consider_scroll_bind(view_t *view);
-static int prepare_inactive_color(view_t *view, dir_entry_t *entry,
+static cchar_t prepare_inactive_color(view_t *view, dir_entry_t *entry,
 		int line_color);
 static void redraw_cell(view_t *view, int top, int cursor, int is_current);
 static void compute_and_draw_cell(column_data_t *cdt, int cell,
@@ -106,8 +106,8 @@ static void column_line_print(const void *data, int column_id, const char buf[],
 static void draw_line_number(const column_data_t *cdt, int column);
 static void highlight_search(view_t *view, dir_entry_t *entry,
 		const char full_column[], char buf[], size_t buf_len, AlignType align,
-		int line, int col, int line_attrs);
-static int prepare_col_color(const view_t *view, int primary,
+		int line, int col, const cchar_t *line_attrs);
+static cchar_t prepare_col_color(const view_t *view, int primary,
 		const column_data_t *cdt);
 static void mix_in_common_colors(col_attr_t *col, const view_t *view,
 		dir_entry_t *entry, int line_color);
@@ -807,7 +807,6 @@ void
 put_inactive_mark(view_t *view)
 {
 	size_t col_width, col_count;
-	int line_attrs;
 	int line, column;
 
 	if(!ui_view_displays_columns(view))
@@ -825,7 +824,7 @@ put_inactive_mark(view_t *view)
 
 	calculate_table_conf(view, &col_count, &col_width);
 
-	line_attrs = prepare_inactive_color(view, get_current_entry(view),
+	cchar_t line_attrs = prepare_inactive_color(view, get_current_entry(view),
 			get_line_color(view, get_current_entry(view)));
 
 	line = fpos_get_line(view, view->curr_line);
@@ -833,13 +832,13 @@ put_inactive_mark(view_t *view)
 	       + fpos_get_col(view, view->curr_line)*col_width;
 	checked_wmove(view->win, line, column);
 
-	wprinta(view->win, INACTIVE_CURSOR_MARK, line_attrs);
+	wprinta(view->win, INACTIVE_CURSOR_MARK, &line_attrs, 0);
 	ui_view_win_changed(view);
 }
 
 /* Calculate color attributes for cursor line of inactive pane.  Returns
  * attributes that can be used for drawing on a window. */
-static int
+static cchar_t
 prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 {
 	const col_scheme_t *cs = ui_view_get_cs(view);
@@ -852,7 +851,9 @@ prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 		cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 	}
 
-	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+	cchar_t cch;
+	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+	return cch;
 }
 
 /* Redraws single directory list entry.  is_current defines whether element
@@ -1051,7 +1052,7 @@ column_line_print(const void *data, int column_id, const char buf[],
 	                 || column_id == SK_BY_INAME
 	                 || column_id == SK_BY_ROOT
 	                 || column_id == SK_BY_FILEROOT;
-	const int line_attrs = prepare_col_color(view, primary, cdt);
+	const cchar_t line_attrs = prepare_col_color(view, primary, cdt);
 
 	size_t extra_prefix = primary ? *cdt->prefix_len : 0U;
 
@@ -1087,7 +1088,8 @@ column_line_print(const void *data, int column_id, const char buf[],
 		full_column += extra_prefix;
 
 		checked_wmove(view->win, cdt->current_line, final_offset - extra_prefix);
-		wprinta(view->win, print_buf, prepare_col_color(view, 0, cdt));
+		cchar_t cch = prepare_col_color(view, 0, cdt);
+		wprinta(view->win, print_buf, &cch, 0);
 	}
 
 	checked_wmove(view->win, cdt->current_line, final_offset);
@@ -1108,12 +1110,12 @@ column_line_print(const void *data, int column_id, const char buf[],
 	{
 		print_buf[trim_pos] = '\0';
 	}
-	wprinta(view->win, print_buf, line_attrs);
+	wprinta(view->win, print_buf, &line_attrs, 0);
 
 	if(primary && view->matches != 0 && entry->search_match)
 	{
 		highlight_search(view, entry, full_column, print_buf, trim_pos, align,
-				cdt->current_line, final_offset, line_attrs);
+				cdt->current_line, final_offset, &line_attrs);
 	}
 }
 
@@ -1134,7 +1136,8 @@ draw_line_number(const column_data_t *cdt, int column)
 	snprintf(num_str, sizeof(num_str), format, cdt->number_width - 1, num);
 
 	checked_wmove(view->win, cdt->current_line, column);
-	wprinta(view->win, num_str, prepare_col_color(view, 0, cdt));
+	cchar_t cch = prepare_col_color(view, 0, cdt);
+	wprinta(view->win, num_str, &cch, 0);
 }
 
 /* Highlights search match for the entry (assumed to be a search hit).  Modifies
@@ -1142,7 +1145,7 @@ draw_line_number(const column_data_t *cdt, int column)
 static void
 highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
 		char buf[], size_t buf_len, AlignType align, int line, int col,
-		int line_attrs)
+		const cchar_t *line_attrs)
 {
 	size_t name_offset, lo, ro;
 	const char *fname;
@@ -1179,7 +1182,7 @@ highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
 		copy_str(mark, mark_len + 1, ">>>");
 
 		checked_wmove(view->win, line, col + offset);
-		wprinta(view->win, mark, line_attrs ^ A_REVERSE);
+		wprinta(view->win, mark, line_attrs, A_REVERSE);
 	}
 	else if(align == AT_RIGHT && lo < (short int)strlen(full_column) - buf_len)
 	{
@@ -1190,7 +1193,7 @@ highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
 		copy_str(mark, mark_len + 1, "<<<");
 
 		checked_wmove(view->win, line, col);
-		wprinta(view->win, mark, line_attrs ^ A_REVERSE);
+		wprinta(view->win, mark, line_attrs, A_REVERSE);
 	}
 	else
 	{
@@ -1218,13 +1221,13 @@ highlight_search(view_t *view, dir_entry_t *entry, const char full_column[],
 
 		checked_wmove(view->win, line, col + match_start);
 		buf[ro] = '\0';
-		wprinta(view->win, buf + lo, line_attrs ^ (A_REVERSE | A_UNDERLINE));
+		wprinta(view->win, buf + lo, line_attrs, (A_REVERSE | A_UNDERLINE));
 	}
 }
 
 /* Calculate color attributes for a view column.  Returns attributes that can be
  * used for drawing on a window. */
-static int
+static cchar_t
 prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
@@ -1253,7 +1256,9 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 		}
 	}
 
-	return COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+	cchar_t cch;
+	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+	return cch;
 }
 
 /* Mixes in colors of current entry, mismatch and selection. */

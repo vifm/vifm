@@ -74,6 +74,10 @@
 
 	Fixed file move confirmation being shown twice in some cases.
 
+	Fixed vifm not making use of large number of color pairs when they are
+	available.  Thanks to Jose Riha (a.k.a. jose1711) and Hans Petter
+	Jansson (a.k.a. hpjansson).
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

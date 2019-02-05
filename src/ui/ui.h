@@ -545,9 +545,10 @@ void ui_refresh_win(WINDOW *win);
 /* Prints str in current window position. */
 void wprint(WINDOW *win, const char str[]);
 
-/* Prints str in current window position with specified line attributes, which
- * set during print operation only. */
-void wprinta(WINDOW *win, const char str[], int line_attrs);
+/* Prints str in current window position with specified line attributes.  Value
+ * of attrs_xors is xored with attributes of line_attrs. */
+void wprinta(WINDOW *win, const char str[], const cchar_t *line_attrs,
+		int attrs_xors);
 
 /* Performs resizing of some of TUI elements for menu like modes.  Returns zero
  * on success, and non-zero otherwise. */

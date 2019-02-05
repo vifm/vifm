@@ -69,7 +69,7 @@ static void open_selected_file(const char path[], int line_num);
 static void navigate_to_selected_file(view_t *view, const char path[]);
 static void draw_menu_item(menu_state_t *ms, int pos, int line, int clear);
 static void draw_search_match(char str[], int start, int end, int line,
-		int width, int attrs);
+		int width, const cchar_t *attrs);
 static void normalize_top(menu_state_t *m);
 static void draw_menu_frame(const menu_state_t *m);
 static void output_handler(const char line[], void *arg);
@@ -453,7 +453,6 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	const int width = (curr_stats.load_stage == 0) ? 100 : getmaxx(menu_win) - 2;
 
 	/* Calculate color for the line. */
-	int attrs;
 	col_attr_t col = cfg.cs.color[WIN_COLOR];
 	if(cfg.hl_search && ms->search_highlight &&
 			ms->matches != NULL && ms->matches[pos][0] >= 0)
@@ -464,7 +463,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	{
 		cs_mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
 	}
-	attrs = COLOR_PAIR(colmgr_get_pair(col.fg, col.bg)) | col.attr;
+	int color_pair = colmgr_get_pair(col.fg, col.bg);
 
 	/* Calculate offset of m->hor_pos's character in item text. */
 	off = 0;
@@ -477,7 +476,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	item_tail = strdup(m->items[pos] + off);
 	replace_char(item_tail, '\t', ' ');
 
-	wattron(menu_win, attrs);
+	(void)wattr_set(menu_win, col.attr, color_pair, NULL);
 
 	/* Clear the area. */
 	checked_wmove(menu_win, line, 1);
@@ -502,12 +501,12 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	checked_wmove(menu_win, line, 2);
 	wprint(menu_win, item_tail);
 
-	wattroff(menu_win, attrs);
-
 	if(ms->search_highlight && ms->matches != NULL && ms->matches[pos][0] >= 0)
 	{
+		cchar_t cch;
+		setcchar(&cch, L" ", col.attr, color_pair, NULL);
 		draw_search_match(item_tail, ms->matches[pos][0] - m->hor_pos,
-				ms->matches[pos][1] - m->hor_pos, line, width, attrs);
+				ms->matches[pos][1] - m->hor_pos, line, width, &cch);
 	}
 
 	free(item_tail);
@@ -516,7 +515,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 /* Draws search match highlight on the element. */
 static void
 draw_search_match(char str[], int start, int end, int line, int width,
-		int attrs)
+		const cchar_t *attrs)
 {
 	const int len = strlen(str);
 
@@ -525,14 +524,14 @@ draw_search_match(char str[], int start, int end, int line, int width,
 		/* Match is completely at the left. */
 
 		checked_wmove(menu_win, line, 2);
-		wprinta(menu_win, "<<<", attrs ^ A_REVERSE);
+		wprinta(menu_win, "<<<", attrs, A_REVERSE);
 	}
 	else if(start >= len)
 	{
 		/* Match is completely at the right. */
 
 		checked_wmove(menu_win, line, width - 3);
-		wprinta(menu_win, ">>>", attrs ^ A_REVERSE);
+		wprinta(menu_win, ">>>", attrs, A_REVERSE);
 	}
 	else
 	{
@@ -557,7 +556,7 @@ draw_search_match(char str[], int start, int end, int line, int width,
 		str[start] = c;
 
 		checked_wmove(menu_win, line, 2 + match_start);
-		wprinta(menu_win, str + start, attrs ^ (A_REVERSE | A_UNDERLINE));
+		wprinta(menu_win, str + start, attrs, A_REVERSE | A_UNDERLINE);
 	}
 }
 
