@@ -35,7 +35,6 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
-#include "color_manager.h"
 #include "ui.h"
 
 static char * add_pattern_highlights(const char line[], size_t len,
@@ -414,8 +413,8 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 	if(str[0] == '\033')
 	{
 		esc_state_update(state, str);
-		(void)wattr_set(win, state->attrs, colmgr_get_pair(state->fg, state->bg),
-				NULL);
+		col_attr_t col = { .fg = state->fg, .bg = state->bg, .attr = state->attrs };
+		ui_set_attr(win, &col, -1);
 	}
 	else
 	{

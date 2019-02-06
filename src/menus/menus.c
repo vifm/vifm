@@ -476,7 +476,7 @@ draw_menu_item(menu_state_t *ms, int pos, int line, int clear)
 	item_tail = strdup(m->items[pos] + off);
 	replace_char(item_tail, '\t', ' ');
 
-	(void)wattr_set(menu_win, col.attr, color_pair, NULL);
+	ui_set_attr(menu_win, &col, color_pair);
 
 	/* Clear the area. */
 	checked_wmove(menu_win, line, 1);

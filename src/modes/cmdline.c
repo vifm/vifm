@@ -40,7 +40,6 @@
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../ui/color_manager.h"
 #include "../ui/color_scheme.h"
 #include "../ui/colors.h"
 #include "../ui/fileview.h"
@@ -388,7 +387,7 @@ draw_cmdline_text(line_stats_t *stat)
 	}
 
 	int pair = -1;
-	int attr = 0;
+	col_attr_t prompt_col = {};
 
 	werase(status_bar);
 
@@ -397,16 +396,16 @@ draw_cmdline_text(line_stats_t *stat)
 		case PS_NORMAL:        pair = CMD_LINE_COLOR; break;
 		case PS_WRONG_PATTERN: pair = ERROR_MSG_COLOR; break;
 		case PS_NO_MATCH:      pair = CMD_LINE_COLOR;
-		                       attr = A_REVERSE;
+		                       prompt_col.attr = A_REVERSE;
 		                       break;
 	}
-	attr ^= cfg.cs.color[pair].attr;
+	prompt_col.attr ^= cfg.cs.color[pair].attr;
 
-	(void)wattr_set(status_bar, attr, cfg.cs.pair[pair], NULL);
+	ui_set_attr(status_bar, &prompt_col, cfg.cs.pair[pair]);
 	compat_mvwaddwstr(status_bar, 0, 0, stat->prompt);
 
-	(void)wattr_set(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr,
-			cfg.cs.pair[CMD_LINE_COLOR], NULL);
+	ui_set_attr(status_bar, &cfg.cs.color[CMD_LINE_COLOR],
+			cfg.cs.pair[CMD_LINE_COLOR]);
 	compat_mvwaddwstr(status_bar, stat->prompt_wid/line_width,
 			stat->prompt_wid%line_width, stat->line);
 
@@ -1173,14 +1172,13 @@ draw_wild_bar(int *last_pos, int *pos, int *len)
 		{
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-			(void)wattr_set(stat_win, col.attr, colmgr_get_pair(col.fg, col.bg),
-					NULL);
+			ui_set_attr(stat_win, &col, -1);
 		}
 		wprint(stat_win, items[i].text);
 		if(i == *pos)
 		{
-			(void)wattr_set(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr,
-					cfg.cs.pair[STATUS_LINE_COLOR], NULL);
+			ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
+					cfg.cs.pair[STATUS_LINE_COLOR]);
 			*pos = -*pos;
 		}
 	}
@@ -1225,8 +1223,7 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 		{
 			col_attr_t col = cfg.cs.color[STATUS_LINE_COLOR];
 			cs_mix_colors(&col, &cfg.cs.color[WILD_MENU_COLOR]);
-			(void)wattr_set(stat_win, col.attr, colmgr_get_pair(col.fg, col.bg),
-					NULL);
+			ui_set_attr(stat_win, &col, -1);
 		}
 
 		checked_wmove(stat_win, j, 0);
@@ -1235,8 +1232,8 @@ draw_wild_popup(int *last_pos, int *pos, int *len)
 
 		if(i == *pos)
 		{
-			(void)wattr_set(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr,
-					cfg.cs.pair[STATUS_LINE_COLOR], NULL);
+			ui_set_attr(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
+					cfg.cs.pair[STATUS_LINE_COLOR]);
 			*pos = -*pos;
 		}
 	}
