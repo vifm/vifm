@@ -240,8 +240,8 @@ draw_all(const char text[])
 	wprint(menu_win, text);
 
 	/* Draw status line. */
-	(void)wattr_set(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr,
-			cfg.cs.pair[CMD_LINE_COLOR], NULL);
+	ui_set_attr(status_bar, &cfg.cs.color[CMD_LINE_COLOR],
+			cfg.cs.pair[CMD_LINE_COLOR]);
 	checked_wmove(status_bar, 0, 0);
 	mvwprintw(status_bar, 0, 0, "-- More -- %d-%d/%d", curr_vline + 1,
 			MIN(nvlines, curr_vline + viewport_height), nvlines);

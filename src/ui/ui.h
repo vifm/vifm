@@ -38,6 +38,7 @@
 #include "../status.h"
 #include "../types.h"
 #include "color_scheme.h"
+#include "colors.h"
 
 #define SORT_WIN_WIDTH 32
 
@@ -706,6 +707,16 @@ void ui_shutdown(void);
 
 /* Temporarily shuts down UI until a key is pressed. */
 void ui_pause(void);
+
+/* Sets background color of the window.  Allocates pair if passed in pair number
+ * is negative.  When pair is passed in, only attribute part of the col
+ * parameter is used. */
+void ui_set_bg(WINDOW *win, const col_attr_t *col, int pair);
+
+/* Sets current color of the window.  Allocates pair if passed in pair number is
+ * negative.  When pair is passed in, only attribute part of the col parameter
+ * is used. */
+void ui_set_attr(WINDOW *win, const col_attr_t *col, int pair);
 
 /* View update scheduling. */
 

@@ -3,9 +3,22 @@
 #include "../../src/cfg/config.h"
 #include "../../src/utils/cancellation.h"
 #include "../../src/utils/str.h"
+#include "../../src/ui/ui.h"
 #include "../../src/background.h"
 
 #include "utils.h"
+
+SETUP()
+{
+	/* curr_view shouldn't be NULL, because of iteration over tabs before doing
+	 * exec(). */
+	curr_view = &lwin;
+}
+
+TEARDOWN()
+{
+	curr_view = NULL;
+}
 
 TEST(background_redirects_streams_properly, IF(not_windows))
 {

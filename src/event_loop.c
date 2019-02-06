@@ -37,7 +37,6 @@
 #include "modes/dialogs/msg_dialog.h"
 #include "modes/modes.h"
 #include "modes/wk.h"
-#include "ui/color_manager.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
@@ -642,9 +641,7 @@ prepare_suggestion_box(int *height)
 		win = stat_win;
 	}
 
-	cchar_t bg;
-	setcchar(&bg, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
-	wbkgrndset(win, &bg);
+	ui_set_bg(win, &col, -1);
 	werase(win);
 
 	return win;

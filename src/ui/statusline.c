@@ -112,14 +112,15 @@ ui_stat_update(view_t *view, int lazy_redraw)
 
 	const int width = getmaxx(stdscr);
 
+	wresize(stat_win, 1, width);
+	ui_set_bg(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
+			cfg.cs.pair[STATUS_LINE_COLOR]);
+	werase(stat_win);
+	checked_wmove(stat_win, 0, 0);
+
 	cchar_t default_attr;
 	setcchar(&default_attr, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
 			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
-
-	wresize(stat_win, 1, width);
-	wbkgrndset(stat_win, &default_attr);
-	werase(stat_win);
-	checked_wmove(stat_win, 0, 0);
 
 	LineWithAttrs result = expand_status_line_macros(view, cfg.status_line);
 	assert(strlen(result.attrs) == utf8_strsw(result.line) && "Broken attrs!");
@@ -188,10 +189,8 @@ update_stat_window_old(view_t *view, int lazy_redraw)
 	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
 
-	cchar_t bg;
-	setcchar(&bg, L" ", cfg.cs.color[STATUS_LINE_COLOR].attr,
-			cfg.cs.pair[STATUS_LINE_COLOR], NULL);
-	wbkgrndset(stat_win, &bg);
+	ui_set_bg(stat_win, &cfg.cs.color[STATUS_LINE_COLOR],
+			cfg.cs.pair[STATUS_LINE_COLOR]);
 
 	filename = get_current_file_name(view);
 	print_width = utf8_strsnlen(filename, 20 + MAX(0, x - 83));

@@ -32,7 +32,6 @@
 #include "../utils/str.h"
 #include "../utils/utf8.h"
 #include "../status.h"
-#include "color_manager.h"
 #include "statusline.h"
 #include "ui.h"
 
@@ -245,12 +244,12 @@ status_bar_message(const char msg[], int error)
 	{
 		col_attr_t col = cfg.cs.color[CMD_LINE_COLOR];
 		cs_mix_colors(&col, &cfg.cs.color[ERROR_MSG_COLOR]);
-		(void)wattr_set(status_bar, col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
+		ui_set_attr(status_bar, &col, -1);
 	}
 	else
 	{
-		(void)wattr_set(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr,
-				cfg.cs.pair[CMD_LINE_COLOR], NULL);
+		ui_set_attr(status_bar, &cfg.cs.color[CMD_LINE_COLOR],
+				cfg.cs.pair[CMD_LINE_COLOR]);
 	}
 	werase(status_bar);
 
