@@ -335,7 +335,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			filename_completion(arg, CT_ALL, 0);
 		}
 		else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
-				id == COM_MKDIR)
+				id == COM_MKDIR || id == COM_TABNEW)
 		{
 			filename_completion(arg, CT_DIRONLY, 0);
 		}
