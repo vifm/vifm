@@ -80,6 +80,9 @@
 
 	Fixed completion of :tabnew listing files instead of only directories.
 
+	Fixed postponed view redrawing or reloading being skipped sometimes on
+	multiple simultaneous requests.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
