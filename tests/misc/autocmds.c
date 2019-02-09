@@ -297,7 +297,32 @@ TEST(direnter_is_not_triggered_on_leaving_custom_view_to_original_path)
 	assert_string_equal("x", env_get("a"));
 }
 
-TEST(direnter_ist_triggered_on_leaving_custom_view_to_different_path)
+TEST(direnter_can_be_triggered_on_entering_custom_view_to_different_path)
+{
+	cfg.cvoptions = CVO_AUTOCMDS;
+
+	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s' let $a = 1", sandbox);
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+
+	assert_true(change_directory(curr_view, sandbox) >= 0);
+
+	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
+	assert_string_equal("x", env_get("a"));
+
+	char path[PATH_MAX + 1];
+	flist_custom_start(&lwin, "test");
+	snprintf(path, sizeof(path), "%s/existing-files/a", test_data);
+	flist_custom_add(&lwin, path);
+	snprintf(path, sizeof(path), "%s/existing-files/b", test_data);
+	flist_custom_add(&lwin, path);
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	assert_string_equal("1", env_get("a"));
+
+	cfg.cvoptions = 0;
+}
+
+TEST(direnter_is_triggered_on_leaving_custom_view_to_different_path)
 {
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 

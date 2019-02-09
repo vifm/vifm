@@ -1133,7 +1133,7 @@ on_location_change(view_t *view, int force)
 	}
 	if(force || (cfg.cvoptions & CVO_AUTOCMDS))
 	{
-		vle_aucmd_execute("DirEnter", view->curr_dir, view);
+		vle_aucmd_execute("DirEnter", flist_get_dir(view), view);
 	}
 }
 

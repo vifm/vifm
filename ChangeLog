@@ -83,6 +83,9 @@
 	Fixed postponed view redrawing or reloading being skipped sometimes on
 	multiple simultaneous requests.
 
+	Fixed DirEnter autocommand not being called on entering a custom view
+	even with 'cvoptions' containing "autocmds".
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
