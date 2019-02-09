@@ -25,23 +25,8 @@ SETUP_ONCE()
 	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
-	if(is_path_absolute(SANDBOX_PATH))
-	{
-		snprintf(sandbox, sizeof(sandbox), "%s", SANDBOX_PATH);
-	}
-	else
-	{
-		snprintf(sandbox, sizeof(sandbox), "%s/%s", cwd, SANDBOX_PATH);
-	}
-
-	if(is_path_absolute(TEST_DATA_PATH))
-	{
-		snprintf(test_data, sizeof(test_data), "%s", TEST_DATA_PATH);
-	}
-	else
-	{
-		snprintf(test_data, sizeof(test_data), "%s/%s", cwd, TEST_DATA_PATH);
-	}
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+	make_abs_path(test_data, sizeof(test_data), TEST_DATA_PATH, "", cwd);
 }
 
 SETUP()
