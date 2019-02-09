@@ -442,7 +442,7 @@ struct view_t
 	uint64_t postponed_reload;         /* Time of last reload request. */
 	pthread_mutex_t *timestamps_mutex; /* Protects access to above variables.
 	                                      This is a pointer, because mutexes
-	                                      shouldn't be copied*/
+	                                      shouldn't be copied. */
 
 	uint64_t last_redraw; /* Time of last redraw. */
 	uint64_t last_reload; /* Time of last [full] reload. */
