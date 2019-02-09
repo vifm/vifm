@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jan 31
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Feb 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1207,7 +1207,7 @@ The builtin commands are:
                                                *vifm-:autocmd* *vifm-:au*
 :au[tocmd] {event} {pat} {cmd}
     register autocommand for the {event}, which can be:
-      - DirEnter - performed on entering a directory
+      - DirEnter - triggered after directory is changed
     Event name is case insensitive.
 
     {pat} is a comma-separated list of modified globs patterns, which can

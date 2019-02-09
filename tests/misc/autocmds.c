@@ -16,6 +16,8 @@
 
 #include "utils.h"
 
+static int change_view_directory(view_t *view, const char path[]);
+
 static char sandbox[PATH_MAX + 1];
 static char test_data[PATH_MAX + 1];
 static char cmd[PATH_MAX + 1];
@@ -71,7 +73,7 @@ TEST(addition_match)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
@@ -84,7 +86,7 @@ TEST(autocmd_is_whole_line_command)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("2", env_get("a"));
 }
 
@@ -96,7 +98,7 @@ TEST(addition_no_match)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, test_data) >= 0);
+	assert_true(change_view_directory(curr_view, test_data) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -110,7 +112,7 @@ TEST(remove_exact_match)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -123,7 +125,7 @@ TEST(remove_event_match)
 	assert_success(exec_commands("autocmd! DirEnter", &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -137,7 +139,7 @@ TEST(remove_path_match)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -150,7 +152,7 @@ TEST(remove_all)
 	assert_success(exec_commands("autocmd!", &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -167,7 +169,7 @@ TEST(extra_slash_is_fine)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
@@ -189,7 +191,7 @@ TEST(envvars_are_expanded)
 				CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
@@ -201,9 +203,9 @@ TEST(pattern_negation)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, test_data) >= 0);
+	assert_true(change_view_directory(curr_view, test_data) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
@@ -215,9 +217,9 @@ TEST(tail_pattern)
 				CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, test_data) >= 0);
+	assert_true(change_view_directory(curr_view, test_data) >= 0);
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, "existing-files") >= 0);
+	assert_true(change_view_directory(curr_view, "existing-files") >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
@@ -229,7 +231,7 @@ TEST(multiple_patterns_addition)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
@@ -244,8 +246,8 @@ TEST(multiple_patterns_removal)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
-	assert_true(change_directory(curr_view, test_data) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, test_data) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -262,7 +264,7 @@ TEST(multiple_patterns_correct_expansion)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -270,7 +272,7 @@ TEST(direnter_is_not_triggered_on_leaving_custom_view_to_original_path)
 {
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	replace_string(&curr_view->custom.orig_dir, curr_view->curr_dir);
 	curr_view->curr_dir[0] = '\0';
 
@@ -278,7 +280,7 @@ TEST(direnter_is_not_triggered_on_leaving_custom_view_to_original_path)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	assert_string_equal("x", env_get("a"));
 }
 
@@ -289,7 +291,7 @@ TEST(direnter_can_be_triggered_on_entering_custom_view_to_different_path)
 	snprintf(cmd, sizeof(cmd), "auto DirEnter '%s' let $a = 1", sandbox);
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 	assert_string_equal("x", env_get("a"));
@@ -311,7 +313,7 @@ TEST(direnter_is_triggered_on_leaving_custom_view_to_different_path)
 {
 	assert_success(exec_commands("let $a = 'x'", &lwin, CIT_COMMAND));
 
-	assert_true(change_directory(curr_view, sandbox) >= 0);
+	assert_true(change_view_directory(curr_view, sandbox) >= 0);
 	replace_string(&curr_view->custom.orig_dir, curr_view->curr_dir);
 	curr_view->curr_dir[0] = '\0';
 
@@ -319,7 +321,7 @@ TEST(direnter_is_triggered_on_leaving_custom_view_to_different_path)
 	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, test_data) >= 0);
+	assert_true(change_view_directory(curr_view, test_data) >= 0);
 	assert_string_equal("1", env_get("a"));
 }
 
@@ -337,10 +339,21 @@ TEST(tilde_is_expanded_after_negation, IF(not_windows))
 				CIT_COMMAND));
 
 	assert_string_equal("x", env_get("a"));
-	assert_true(change_directory(curr_view, path) >= 0);
+	assert_true(change_view_directory(curr_view, path) >= 0);
 	assert_string_equal("1", env_get("a"));
 
 	assert_success(rmdir(path));
+}
+
+static int
+change_view_directory(view_t *view, const char path[])
+{
+	const int ret = change_directory(view, path);
+	if(ret >= 0)
+	{
+		assert_success(populate_dir_list(view, 0));
+	}
+	return ret;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

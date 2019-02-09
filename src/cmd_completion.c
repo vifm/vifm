@@ -247,7 +247,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		if(earg_num(argc, args) <= 1)
 		{
 			static const char *events[][2] = {
-				{ "DirEnter", "occurs on directory change" },
+				{ "DirEnter", "occurs after directory is changed" },
 			};
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}

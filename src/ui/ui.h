@@ -450,6 +450,8 @@ struct view_t
 	int on_slow_fs; /* Whether current directory has access penalties. */
 	int has_dups;   /* Whether current directory has duplicated file entries (FS
 	                   issue). */
+
+	int location_changed; /* Whether location was recently changed. */
 };
 
 extern view_t lwin;
