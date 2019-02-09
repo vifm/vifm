@@ -470,7 +470,7 @@ void stic_test_fixture_end()
 		printf("\n");
 	}
 
-	sprintf(s, "%d run  %d failed", nrun, nfailed);
+	sprintf(s, "%d tests run  %d checks failed", nrun, nfailed);
 
 	stic_header_printer(s, stic_screen_width, ' ');
 	printf("\n");
