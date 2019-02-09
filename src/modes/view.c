@@ -632,7 +632,10 @@ draw(void)
 
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
-		return;
+
+		/* Proceed and draw output of the previewer instead of returning, even
+		 * though it's graphical.  This way it's possible to use an external
+		 * previewer that handles both textual and graphical previews. */
 	}
 
 	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);

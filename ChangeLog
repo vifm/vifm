@@ -86,6 +86,9 @@
 	Fixed DirEnter autocommand not being called on entering a custom view
 	even with 'cvoptions' containing "autocmds".
 
+	Fixed textual output of graphical previewers not being displayed in view
+	mode.  Thanks to agguser.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
