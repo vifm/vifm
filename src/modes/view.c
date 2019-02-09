@@ -475,6 +475,13 @@ try_redraw_explore_view(const view_t *view)
 void
 view_leave_mode(void)
 {
+	if(vi->graphical && vi->view->explore_mode)
+	{
+		const char *cmd = qv_get_viewer(vi->filename);
+		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
+		qv_cleanup(vi->view, cmd);
+	}
+
 	reset_view_info(vi);
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);

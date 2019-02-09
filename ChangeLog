@@ -89,6 +89,8 @@
 	Fixed textual output of graphical previewers not being displayed in view
 	mode.  Thanks to agguser.
 
+	Fixed graphics leftovers after leaving explore mode.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
