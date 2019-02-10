@@ -442,7 +442,7 @@ struct view_t
 	uint64_t postponed_reload;         /* Time of last reload request. */
 	pthread_mutex_t *timestamps_mutex; /* Protects access to above variables.
 	                                      This is a pointer, because mutexes
-	                                      shouldn't be copied*/
+	                                      shouldn't be copied. */
 
 	uint64_t last_redraw; /* Time of last redraw. */
 	uint64_t last_reload; /* Time of last [full] reload. */
@@ -450,6 +450,8 @@ struct view_t
 	int on_slow_fs; /* Whether current directory has access penalties. */
 	int has_dups;   /* Whether current directory has duplicated file entries (FS
 	                   issue). */
+
+	int location_changed; /* Whether location was recently changed. */
 };
 
 extern view_t lwin;

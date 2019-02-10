@@ -711,6 +711,10 @@ change_directory(view_t *view, const char directory[])
 	{
 		on_location_change(view, location_changed);
 	}
+	if(location_changed)
+	{
+		view->location_changed = 1;
+	}
 	return 0;
 }
 
@@ -1102,6 +1106,10 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 	if(!reload)
 	{
 		on_location_change(view, 0);
+		if(cfg.cvoptions & CVO_AUTOCMDS)
+		{
+			vle_aucmd_execute("DirEnter", flist_get_dir(view), view);
+		}
 	}
 
 	sort_dir_list(0, view);
@@ -1130,10 +1138,6 @@ on_location_change(view_t *view, int force)
 	if(curr_stats.load_stage > 0 && (force || (cfg.cvoptions & CVO_LOCALOPTS)))
 	{
 		reset_local_options(view);
-	}
-	if(force || (cfg.cvoptions & CVO_AUTOCMDS))
-	{
-		vle_aucmd_execute("DirEnter", view->curr_dir, view);
 	}
 }
 
@@ -1745,6 +1749,12 @@ populate_dir_list_internal(view_t *view, int reload)
 	 * here, because it makes it possible to skip an update (when directory was
 	 * changed while we were reading from it). */
 	update_dir_watcher(view);
+
+	if(view->location_changed)
+	{
+		view->location_changed = 0;
+		vle_aucmd_execute("DirEnter", view->curr_dir, view);
+	}
 
 	restore_cwd(saved_cwd);
 	return 0;

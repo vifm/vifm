@@ -50,5 +50,20 @@ TEST(reload_resets_redraw)
 	assert_true(ui_view_query_scheduled_event(view) == UUE_RELOAD);
 }
 
+TEST(multiple_requests_do_not_cancel_each_other)
+{
+	int i;
+	for(i = 0; i < 10; ++i)
+	{
+		ui_view_schedule_redraw(view);
+		ui_view_schedule_redraw(view);
+		assert_true(ui_view_query_scheduled_event(view) == UUE_REDRAW);
+
+		ui_view_schedule_reload(view);
+		ui_view_schedule_reload(view);
+		assert_true(ui_view_query_scheduled_event(view) == UUE_RELOAD);
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

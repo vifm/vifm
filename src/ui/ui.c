@@ -2285,23 +2285,17 @@ ui_view_schedule_reload(view_t *view)
 	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
-/* Gets updated timestamp ensuring that it differs from the previous value.
- * Returns the timestamp. */
+/* Gets updated timestamp ensuring that it's always greater than the previous
+ * value.  Returns the timestamp. */
 static uint64_t
 get_updated_time(uint64_t prev)
 {
+	/* XXX: why use time if simple counter should do? */
 	struct timeval tv = {0};
-	uint64_t new;
-
 	(void)gettimeofday(&tv, NULL);
 
-	new = tv.tv_sec*1000000ULL + tv.tv_usec;
-	if(new == prev)
-	{
-		++new;
-	}
-
-	return new;
+	uint64_t new = tv.tv_sec*1000000ULL + tv.tv_usec;
+	return (new <= prev ? prev + 1 : new);
 }
 
 void

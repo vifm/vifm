@@ -475,6 +475,13 @@ try_redraw_explore_view(const view_t *view)
 void
 view_leave_mode(void)
 {
+	if(vi->graphical && vi->view->explore_mode)
+	{
+		const char *cmd = qv_get_viewer(vi->filename);
+		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
+		qv_cleanup(vi->view, cmd);
+	}
+
 	reset_view_info(vi);
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
@@ -632,7 +639,10 @@ draw(void)
 
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
-		return;
+
+		/* Proceed and draw output of the previewer instead of returning, even
+		 * though it's graphical.  This way it's possible to use an external
+		 * previewer that handles both textual and graphical previews. */
 	}
 
 	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);

@@ -336,6 +336,17 @@ TEST(dirs_are_completed_with_trailing_slash)
 	ASSERT_NEXT_MATCH("read/");
 }
 
+TEST(tabnew_has_directory_only_completion)
+{
+	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
+			TEST_DATA_PATH, "tree/dir1", saved_cwd);
+	assert_success(chdir(curr_view->curr_dir));
+
+	ASSERT_COMPLETION(L"tabnew ", L"tabnew dir2/");
+	ASSERT_NEXT_MATCH("dir2/");
+	ASSERT_NEXT_MATCH("dir2/");
+}
+
 TEST(function_name_completion)
 {
 	ASSERT_COMPLETION(L"echo e", L"echo executable(");

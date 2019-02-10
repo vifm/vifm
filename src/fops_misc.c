@@ -1178,8 +1178,7 @@ bg_cancellation_hook(void *arg)
 static void
 redraw_after_path_change(view_t *view, const char path[])
 {
-	if(path_starts_with(view->curr_dir, path) ||
-			flist_custom_active(view))
+	if(path_starts_with(view->curr_dir, path) || flist_custom_active(view))
 	{
 		ui_view_schedule_redraw(view);
 	}

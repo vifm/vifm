@@ -78,6 +78,22 @@
 	available.  Thanks to Jose Riha (a.k.a. jose1711) and Hans Petter
 	Jansson (a.k.a. hpjansson).
 
+	Fixed completion of :tabnew listing files instead of only directories.
+
+	Fixed postponed view redrawing or reloading being skipped sometimes on
+	multiple simultaneous requests.
+
+	Fixed DirEnter autocommand not being called on entering a custom view
+	even with 'cvoptions' containing "autocmds".
+
+	Fixed textual output of graphical previewers not being displayed in view
+	mode.  Thanks to agguser.
+
+	Fixed graphics leftovers after leaving explore mode.
+
+	Fixed DirEnter autocommand being called with view being in a mixed state
+	of old and new location.  Thanks to Kendrick Taylor (a.k.a. sixcircuit).
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

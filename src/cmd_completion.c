@@ -247,7 +247,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		if(earg_num(argc, args) <= 1)
 		{
 			static const char *events[][2] = {
-				{ "DirEnter", "occurs on directory change" },
+				{ "DirEnter", "occurs after directory is changed" },
 			};
 			complete_from_string_list(args, events, ARRAY_LEN(events), 1);
 		}
@@ -335,7 +335,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			filename_completion(arg, CT_ALL, 0);
 		}
 		else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
-				id == COM_MKDIR)
+				id == COM_MKDIR || id == COM_TABNEW)
 		{
 			filename_completion(arg, CT_DIRONLY, 0);
 		}
