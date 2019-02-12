@@ -1913,8 +1913,19 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 static char *
 make_tab_title(const tab_info_t *tab_info, path_func pf)
 {
-	return (tab_info->name == NULL) ? format_view_title(tab_info->view, pf)
-	                                : strdup(tab_info->name);
+	if(tab_info->name != NULL)
+	{
+		return strdup(tab_info->name);
+	}
+
+	if(cfg.tail_tab_line_paths)
+	{
+		/* We can just do the replacement, because shortening home part doesn't make
+		 * sense for a single path entry. */
+		pf = &get_last_path_component;
+	}
+
+	return format_view_title(tab_info->view, pf);
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.

@@ -247,6 +247,7 @@ typedef struct config_t
 	char *media_prg;   /* Helper for managing media devices. */
 
 	/* Message shortening controlled by 'shortmess'. */
+	int tail_tab_line_paths;   /* Display only last directory in tab line. */
 	int trunc_normal_sb_msgs;  /* Truncate normal status bar msgs if needed. */
 	int shorten_title_paths;   /* Use tilde shortening in view titles. */
 	int short_term_mux_titles; /* Use only file name for titles of screen/tmux. */

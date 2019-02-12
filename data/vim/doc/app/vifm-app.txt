@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Feb 10
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Feb 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3476,6 +3476,7 @@ default: "p"
 
 Contains a sequence of single-character flags.  Each flag enables shortening
 of some message displayed by vifm in the TUI.  Flags:
+  L - display only last directory in tab line instead of full path.
   M - shorten titles in windows of terminal multiplexers created by vifm
       down to file name instead of using full path.
   T - truncate status-bar messages in the middle if they are too long to fit on

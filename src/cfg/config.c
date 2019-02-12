@@ -161,6 +161,7 @@ cfg_init(void)
 	cfg.delete_prg = strdup("");
 	cfg.media_prg = format_str("%s/vifm-media", get_installed_data_dir());
 
+	cfg.tail_tab_line_paths = 0;
 	cfg.trunc_normal_sb_msgs = 0;
 	cfg.shorten_title_paths = 1;
 	cfg.short_term_mux_titles = 0;
