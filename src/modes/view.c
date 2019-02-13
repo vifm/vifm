@@ -1110,7 +1110,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		else
 		{
 			/* Don't add implicit %c to a command with %e macro. */
-			char *const cmd = expand_macros(vi->viewer, NULL, NULL, 1);
+			char *const cmd = ma_expand(vi->viewer, NULL, NULL, 1);
 			fp = read_cmd_output(cmd, 0);
 			free(cmd);
 		}

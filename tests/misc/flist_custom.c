@@ -183,7 +183,6 @@ TEST(symlinks_to_dirs_are_recognized_as_dirs, IF(not_windows))
 
 TEST(register_macros_are_expanded_relatively_to_orig_dir)
 {
-	char *expanded;
 	char path[PATH_MAX + 1];
 
 	setup_custom_view(&lwin, 0);
@@ -192,7 +191,7 @@ TEST(register_macros_are_expanded_relatively_to_orig_dir)
 
 	assert_success(chdir(TEST_DATA_PATH "/existing-files"));
 	assert_success(regs_append('r', "b"));
-	expanded = expand_macros("%rr:p", NULL, NULL, 0);
+	char *expanded = ma_expand("%rr:p", NULL, NULL, 0);
 	snprintf(path, sizeof(path), "%s/existing-files/b", test_data);
 	assert_string_equal(path, expanded);
 	free(expanded);
@@ -209,11 +208,11 @@ TEST(dir_macros_are_expanded_to_orig_dir)
 
 	setup_custom_view(&lwin, 0);
 
-	expanded = expand_macros("%d", NULL, NULL, 0);
+	expanded = ma_expand("%d", NULL, NULL, 0);
 	assert_string_equal(path, expanded);
 	free(expanded);
 
-	expanded = expand_macros("%D", NULL, NULL, 0);
+	expanded = ma_expand("%D", NULL, NULL, 0);
 	assert_string_equal(path, expanded);
 	free(expanded);
 }

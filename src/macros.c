@@ -74,7 +74,7 @@ static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
 
 char *
-expand_macros(const char command[], const char args[], MacroFlags *flags,
+ma_expand(const char command[], const char args[], MacroFlags *flags,
 		int for_shell)
 {
 	return expand_macros_i(command, args, flags, for_shell, &filter_all);
@@ -136,7 +136,7 @@ static char *
 expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		int for_shell, macro_filter_func filter)
 {
-	/* TODO: refactor this function expand_macros() */
+	/* TODO: refactor this function expand_macros_i() */
 	/* FIXME: repetitive len = strlen(expanded) could be optimized. */
 
 	static const char MACROS_WITH_QUOTING[] = "cCfFbdDr";
@@ -618,8 +618,7 @@ ma_get_clear_cmd(const char cmd[])
 }
 
 char *
-expand_custom_macros(const char pattern[], size_t nmacros,
-		custom_macro_t macros[])
+ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[])
 {
 	char *expanded = strdup("");
 	size_t len = 0;
@@ -698,7 +697,7 @@ add_missing_macros(char expanded[], size_t len, size_t nmacros,
 }
 
 const char *
-macros_to_str(MacroFlags flags)
+ma_flags_to_str(MacroFlags flags)
 {
 	switch(flags)
 	{

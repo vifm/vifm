@@ -132,7 +132,7 @@ TSTATIC char *
 format_edit_selection_cmd(int *bg)
 {
 	const char *const fmt = (get_env_type() == ET_WIN) ? "%\"f" : "%f";
-	char *const files = expand_macros(fmt, NULL, NULL, 1);
+	char *const files = ma_expand(fmt, NULL, NULL, 1);
 	char *const cmd = format_str("%s %s", cfg_get_vicmd(bg), files);
 	free(files);
 	return cmd;
@@ -370,7 +370,7 @@ vim_run_choose_cmd(const view_t *view)
 		flist_sel_drop(curr_view);
 	}
 
-	expanded_cmd = expand_macros(curr_stats.on_choose, NULL, NULL, 1);
+	expanded_cmd = ma_expand(curr_stats.on_choose, NULL, NULL, 1);
 	if(vifm_system(expanded_cmd, SHELL_BY_USER) != EXIT_SUCCESS)
 	{
 		free(expanded_cmd);

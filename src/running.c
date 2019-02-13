@@ -592,7 +592,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	int bg;
 	MacroFlags flags;
 	int save_msg;
-	char *const cmd = expand_macros(prog_spec, NULL, &flags, 1);
+	char *const cmd = ma_expand(prog_spec, NULL, &flags, 1);
 
 	bg = cut_suffix(cmd, " &");
 	bg = !pause && (bg || force_bg);
@@ -642,7 +642,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 		name_macro = (view == curr_view) ? "%c" : "%C";
 	}
 
-	file_name = expand_macros(name_macro, NULL, NULL, 1);
+	file_name = ma_expand(name_macro, NULL, NULL, 1);
 	snprintf(cmd, sizeof(cmd), "%s %s", spec, file_name);
 	free(file_name);
 
@@ -1187,7 +1187,7 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
 	{
 		ui_sb_errf("\"%s\" macro can't be combined with \" &\"",
-				macros_to_str(flags));
+				ma_flags_to_str(flags));
 		*save_msg = 1;
 		return -1;
 	}

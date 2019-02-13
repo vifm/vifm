@@ -48,7 +48,7 @@ typedef enum
 }
 MacroFlags;
 
-/* Description of a macro for the expand_custom_macros() function. */
+/* Description of a macro for the ma_expand_custom() function. */
 typedef struct
 {
 	char letter;       /* Macro identifier in the pattern. */
@@ -62,10 +62,10 @@ custom_macro_t;
 /* args and flags parameters can equal NULL.  The string returned needs to be
  * freed in the calling function.  After executing flags is one of MF_*
  * values. */
-char * expand_macros(const char command[], const char args[], MacroFlags *flags,
+char * ma_expand(const char command[], const char args[], MacroFlags *flags,
 		int for_shell);
 
-/* Like expand_macros(), but expands only single element macros and aims for
+/* Like ma_expand(), but expands only single element macros and aims for
  * single string, so escaping is disabled. */
 char * ma_expand_single(const char command[]);
 
@@ -75,12 +75,12 @@ const char * ma_get_clear_cmd(const char cmd[]);
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
  * macros specification. */
-char * expand_custom_macros(const char pattern[], size_t nmacros,
+char * ma_expand_custom(const char pattern[], size_t nmacros,
 		custom_macro_t macros[]);
 
 /* Maps flag to corresponding string representation of the macro using %-syntax.
  * Returns the string representation. */
-const char * macros_to_str(MacroFlags flags);
+const char * ma_flags_to_str(MacroFlags flags);
 
 #ifdef TEST
 #include "engine/cmds.h"

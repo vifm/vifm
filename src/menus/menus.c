@@ -686,7 +686,7 @@ menus_get_targets(view_t *view)
 {
 	if(view->selected_files > 0)
 	{
-		return expand_macros("%f", NULL, NULL, 1);
+		return ma_expand("%f", NULL, NULL, 1);
 	}
 
 	if(!flist_custom_active(view))

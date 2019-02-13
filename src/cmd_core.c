@@ -168,7 +168,7 @@ cmds_expand_macros(const char str[], int for_shell, int *usr1, int *usr2)
 	char *result;
 	MacroFlags flags = MF_NONE;
 
-	result = expand_macros(str, NULL, &flags, for_shell);
+	result = ma_expand(str, NULL, &flags, for_shell);
 
 	*usr1 = flags;
 
