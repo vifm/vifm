@@ -61,45 +61,45 @@ SETUP()
 	static int option_changed;
 	optval_t val;
 
-	init_options(&option_changed, NULL);
+	vle_opts_init(&option_changed, NULL);
 
 	val.str_val = "";
 	cpoptions[0] = '\0';
-	add_option("cpoptions", "cpo", "descr", OPT_CHARSET, OPT_GLOBAL,
+	vle_opts_add("cpoptions", "cpo", "descr", OPT_CHARSET, OPT_GLOBAL,
 			ARRAY_LEN(cpoptions_vals), cpoptions_vals, cpoptions_handler, val);
 
 	val.str_val = "";
-	add_option("cdpath", "cd", "descr", OPT_STRLIST, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("cdpath", "cd", "descr", OPT_STRLIST, OPT_GLOBAL, 0, NULL,
 			cdpath_handler, val);
 
 	val.bool_val = fastrun = 0;
-	add_option("fastrun", "fr", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("fastrun", "fr", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
 			fastrun_handler, val);
 
 	value = val.str_val = "fusehome-default";
-	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			fusehome_handler, val);
 
 	val.enum_item = 1;
-	add_option("sort", "so", "descr", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
-			sort_enum, &dummy_handler, val);
+	vle_opts_add("sort", "so", "descr", OPT_ENUM, OPT_GLOBAL,
+			ARRAY_LEN(sort_enum), sort_enum, &dummy_handler, val);
 
 	val.bool_val = 1;
-	add_option("sortorder", "", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("sortorder", "", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
 			&dummy_handler, val);
 
 	val.int_val = tabstop = 8;
-	add_option("tabstop", "ts", "descr", OPT_INT, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("tabstop", "ts", "descr", OPT_INT, OPT_GLOBAL, 0, NULL,
 			&tabstop_handler, val);
 
 	val.set_items = vifminfo = 0;
-	add_option("vifminfo", "", "descr", OPT_SET, OPT_GLOBAL,
+	vle_opts_add("vifminfo", "", "descr", OPT_SET, OPT_GLOBAL,
 			ARRAY_LEN(vifminfo_set), vifminfo_set, &vifminfo_handler, val);
 }
 
 TEARDOWN()
 {
-	clear_options();
+	vle_opts_reset();
 }
 
 static void

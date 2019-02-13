@@ -902,7 +902,7 @@ void
 init_option_handlers(void)
 {
 	static int opt_changed;
-	init_options(&opt_changed, &uni_handler);
+	vle_opts_init(&opt_changed, &uni_handler);
 	load_options_defaults();
 	add_options();
 }
@@ -1296,12 +1296,12 @@ add_options(void)
 	{
 		struct opt_data_t *const opt = &options[i];
 
-		add_option(opt->name, opt->abbr, opt->descr, opt->type, OPT_GLOBAL,
+		vle_opts_add(opt->name, opt->abbr, opt->descr, opt->type, OPT_GLOBAL,
 				opt->val_count, opt->vals, opt->global_handler, opt->val);
 
 		if(opt->local_handler != NULL)
 		{
-			add_option(opt->name, opt->abbr, opt->descr, opt->type, OPT_LOCAL,
+			vle_opts_add(opt->name, opt->abbr, opt->descr, opt->type, OPT_LOCAL,
 					opt->val_count, opt->vals, opt->local_handler, opt->val);
 		}
 	}
@@ -1317,47 +1317,47 @@ reset_local_options(view_t *view)
 
 	view->hide_dot = view->hide_dot_g;
 	val.int_val = !view->hide_dot_g;
-	set_option("dotfiles", val, OPT_LOCAL);
+	vle_opts_assign("dotfiles", val, OPT_LOCAL);
 
 	view->ls_transposed = view->ls_transposed_g;
 	fill_lsoptions(&val, view->ls_transposed_g);
-	set_option("lsoptions", val, OPT_LOCAL);
+	vle_opts_assign("lsoptions", val, OPT_LOCAL);
 
 	fview_set_lsview(view, view->ls_view_g);
 	val.int_val = view->ls_view_g;
-	set_option("lsview", val, OPT_LOCAL);
+	vle_opts_assign("lsview", val, OPT_LOCAL);
 
 	memcpy(view->miller_ratios, view->miller_ratios_g,
 			sizeof(view->miller_ratios));
 	fill_milleroptions(&val, view->miller_ratios_g);
-	set_option("milleroptions", val, OPT_LOCAL);
+	vle_opts_assign("milleroptions", val, OPT_LOCAL);
 
 	fview_set_millerview(view, view->miller_view_g);
 	val.int_val = view->miller_view_g;
-	set_option("millerview", val, OPT_LOCAL);
+	vle_opts_assign("millerview", val, OPT_LOCAL);
 
 	view->num_type = view->num_type_g;
 	val.bool_val = view->num_type_g & NT_SEQ;
-	set_option("number", val, OPT_LOCAL);
+	vle_opts_assign("number", val, OPT_LOCAL);
 	val.bool_val = view->num_type_g & NT_REL;
-	set_option("relativenumber", val, OPT_LOCAL);
+	vle_opts_assign("relativenumber", val, OPT_LOCAL);
 
 	view->num_width = view->num_width_g;
 	val.int_val = view->num_width_g;
-	set_option("numberwidth", val, OPT_LOCAL);
+	vle_opts_assign("numberwidth", val, OPT_LOCAL);
 
 	replace_string(&view->view_columns, view->view_columns_g);
 	set_viewcolumns(view, view->view_columns);
 	val.str_val = view->view_columns;
-	set_option("viewcolumns", val, OPT_LOCAL);
+	vle_opts_assign("viewcolumns", val, OPT_LOCAL);
 
 	replace_string(&view->sort_groups, view->sort_groups_g);
 	val.str_val = view->sort_groups;
-	set_option("sortgroups", val, OPT_LOCAL);
+	vle_opts_assign("sortgroups", val, OPT_LOCAL);
 
 	replace_string(&view->preview_prg, view->preview_prg_g);
 	val.str_val = view->preview_prg;
-	set_option("previewprg", val, OPT_LOCAL);
+	vle_opts_assign("previewprg", val, OPT_LOCAL);
 }
 
 void
@@ -1368,59 +1368,59 @@ load_view_options(view_t *view)
 	load_sort_option(view);
 
 	val.str_val = view->view_columns;
-	set_option("viewcolumns", val, OPT_LOCAL);
+	vle_opts_assign("viewcolumns", val, OPT_LOCAL);
 	val.str_val = view->view_columns_g;
-	set_option("viewcolumns", val, OPT_GLOBAL);
+	vle_opts_assign("viewcolumns", val, OPT_GLOBAL);
 
 	val.str_val = view->sort_groups;
-	set_option("sortgroups", val, OPT_LOCAL);
+	vle_opts_assign("sortgroups", val, OPT_LOCAL);
 	val.str_val = view->sort_groups_g;
-	set_option("sortgroups", val, OPT_GLOBAL);
+	vle_opts_assign("sortgroups", val, OPT_GLOBAL);
 
 	val.bool_val = !view->hide_dot;
-	set_option("dotfiles", val, OPT_LOCAL);
+	vle_opts_assign("dotfiles", val, OPT_LOCAL);
 	val.bool_val = !view->hide_dot_g;
-	set_option("dotfiles", val, OPT_GLOBAL);
+	vle_opts_assign("dotfiles", val, OPT_GLOBAL);
 
 	fill_lsoptions(&val, view->ls_transposed);
-	set_option("lsoptions", val, OPT_LOCAL);
+	vle_opts_assign("lsoptions", val, OPT_LOCAL);
 	fill_lsoptions(&val, view->ls_transposed_g);
-	set_option("lsoptions", val, OPT_GLOBAL);
+	vle_opts_assign("lsoptions", val, OPT_GLOBAL);
 
 	val.bool_val = view->ls_view;
-	set_option("lsview", val, OPT_LOCAL);
+	vle_opts_assign("lsview", val, OPT_LOCAL);
 	val.bool_val = view->ls_view_g;
-	set_option("lsview", val, OPT_GLOBAL);
+	vle_opts_assign("lsview", val, OPT_GLOBAL);
 
 	fill_milleroptions(&val, view->miller_ratios);
-	set_option("milleroptions", val, OPT_LOCAL);
+	vle_opts_assign("milleroptions", val, OPT_LOCAL);
 	fill_milleroptions(&val, view->miller_ratios_g);
-	set_option("milleroptions", val, OPT_GLOBAL);
+	vle_opts_assign("milleroptions", val, OPT_GLOBAL);
 
 	val.bool_val = view->miller_view;
-	set_option("millerview", val, OPT_LOCAL);
+	vle_opts_assign("millerview", val, OPT_LOCAL);
 	val.bool_val = view->miller_view_g;
-	set_option("millerview", val, OPT_GLOBAL);
+	vle_opts_assign("millerview", val, OPT_GLOBAL);
 
 	val.bool_val = view->num_type & NT_SEQ;
-	set_option("number", val, OPT_LOCAL);
+	vle_opts_assign("number", val, OPT_LOCAL);
 	val.bool_val = view->num_type_g & NT_SEQ;
-	set_option("number", val, OPT_GLOBAL);
+	vle_opts_assign("number", val, OPT_GLOBAL);
 
 	val.int_val = view->num_width;
-	set_option("numberwidth", val, OPT_LOCAL);
+	vle_opts_assign("numberwidth", val, OPT_LOCAL);
 	val.int_val = view->num_width_g;
-	set_option("numberwidth", val, OPT_GLOBAL);
+	vle_opts_assign("numberwidth", val, OPT_GLOBAL);
 
 	val.bool_val = view->num_type & NT_REL;
-	set_option("relativenumber", val, OPT_LOCAL);
+	vle_opts_assign("relativenumber", val, OPT_LOCAL);
 	val.bool_val = view->num_type_g & NT_REL;
-	set_option("relativenumber", val, OPT_GLOBAL);
+	vle_opts_assign("relativenumber", val, OPT_GLOBAL);
 
 	val.str_val = view->preview_prg;
-	set_option("previewprg", val, OPT_LOCAL);
+	vle_opts_assign("previewprg", val, OPT_LOCAL);
 	val.str_val = view->preview_prg_g;
-	set_option("previewprg", val, OPT_GLOBAL);
+	vle_opts_assign("previewprg", val, OPT_GLOBAL);
 }
 
 void
@@ -1500,7 +1500,7 @@ load_sort_option_inner(view_t *view, char sort_keys[])
 	if(sort_keys == view->custom.sort)
 	{
 		val.str_val = "";
-		set_option("sort", val, OPT_LOCAL);
+		vle_opts_assign("sort", val, OPT_LOCAL);
 		return;
 	}
 
@@ -1523,10 +1523,10 @@ load_sort_option_inner(view_t *view, char sort_keys[])
 	}
 
 	val.str_val = opt_val;
-	set_option("sort", val, scope);
+	vle_opts_assign("sort", val, scope);
 
 	val.enum_item = (sort_keys[0] < 0);
-	set_option("sortorder", val, scope);
+	vle_opts_assign("sortorder", val, scope);
 }
 
 int
@@ -1540,7 +1540,7 @@ process_set_args(const char args[], int global, int local)
 
 	vle_tb_clear(vle_err);
 
-	/* Call of set_options() can change error. */
+	/* Call of vle_opts_set() can change error. */
 	error = 0;
 	if(local && global)
 	{
@@ -1550,7 +1550,7 @@ process_set_args(const char args[], int global, int local)
 	{
 		scope = local ? OPT_LOCAL : OPT_GLOBAL;
 	}
-	set_options_error = (set_options(args, scope) != 0);
+	set_options_error = (vle_opts_set(args, scope) != 0);
 	error |= set_options_error;
 	text_buffer = vle_tb_get_data(vle_err);
 
@@ -1628,7 +1628,7 @@ caseoptions_handler(OPT_OP op, optval_t val)
 	}
 	val.str_val = valid_val;
 
-	set_option("caseoptions", val, OPT_GLOBAL);
+	vle_opts_assign("caseoptions", val, OPT_GLOBAL);
 }
 
 /* Specifies directories to check on cding by relative path. */
@@ -1684,7 +1684,7 @@ classify_handler(OPT_OP op, optval_t val)
 	}
 
 	init_classify(&val);
-	set_option("classify", val, OPT_GLOBAL);
+	vle_opts_assign("classify", val, OPT_GLOBAL);
 }
 
 /* Fills the decorations array with parsed classification values from the str.
@@ -1882,7 +1882,7 @@ columns_handler(OPT_OP op, optval_t val)
 
 	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.columns;
-	set_option("columns", val, OPT_GLOBAL);
+	vle_opts_assign("columns", val, OPT_GLOBAL);
 }
 
 static void
@@ -2024,7 +2024,7 @@ load_fillchars(void)
 		snprintf(value, sizeof(value), "vborder:%s", cfg.border_filler);
 	}
 
-	set_option("fillchars", val, OPT_GLOBAL);
+	vle_opts_assign("fillchars", val, OPT_GLOBAL);
 }
 
 static void
@@ -2048,7 +2048,7 @@ fusehome_handler(OPT_OP op, optval_t val)
 	{
 		/* Reset the 'fusehome' options to its previous value. */
 		val.str_val = cfg.fuse_home;
-		set_option("fusehome", val, OPT_GLOBAL);
+		vle_opts_assign("fusehome", val, OPT_GLOBAL);
 	}
 	free(expanded_path);
 }
@@ -2164,7 +2164,7 @@ lines_handler(OPT_OP op, optval_t val)
 
 	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.lines;
-	set_option("lines", val, OPT_GLOBAL);
+	vle_opts_assign("lines", val, OPT_GLOBAL);
 }
 
 /* Handles updates of the 'locateprg' option. */
@@ -2194,7 +2194,7 @@ mintimeoutlen_handler(OPT_OP op, optval_t val)
 		vle_tb_append_linef(vle_err, "Argument must be > 0: %d", val.int_val);
 		error = 1;
 		val.int_val = 1;
-		set_option("mintimeoutlen", val, OPT_GLOBAL);
+		vle_opts_assign("mintimeoutlen", val, OPT_GLOBAL);
 		return;
 	}
 
@@ -2248,7 +2248,7 @@ scrolloff_handler(OPT_OP op, optval_t val)
 	{
 		vle_tb_append_linef(vle_err, "Invalid scroll size: %d", val.int_val);
 		error = 1;
-		reset_option_to_default("scrolloff", OPT_GLOBAL);
+		vle_opts_restore_default("scrolloff", OPT_GLOBAL);
 		return;
 	}
 
@@ -2373,7 +2373,7 @@ sizefmt_handler(OPT_OP op, optval_t val)
 
 	/* In case of error, restore previous value, otherwise reload it anyway to
 	 * remove any duplicates. */
-	set_option("sizefmt", make_sizefmt_value(), OPT_GLOBAL);
+	vle_opts_assign("sizefmt", make_sizefmt_value(), OPT_GLOBAL);
 }
 
 /* Makes string value describing 'sizefmt' from current configuration state.
@@ -2484,7 +2484,7 @@ set_lsoptions(int *transposed, optval_t val, OPT_SCOPE scope)
 	}
 
 	fill_lsoptions(&val, *transposed);
-	set_option("lsoptions", val, scope);
+	vle_opts_assign("lsoptions", val, scope);
 }
 
 /* Loads value of lsoptions as a string. */
@@ -2594,7 +2594,7 @@ set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope)
 	}
 
 	fill_milleroptions(&val, ratios);
-	set_option("milleroptions", val, scope);
+	vle_opts_assign("milleroptions", val, scope);
 }
 
 /* Loads value of milleroptions as a string. */
@@ -2842,7 +2842,7 @@ set_sortgroups(view_t *view, char **opt, char value[])
 
 		free(first);
 		error = 1;
-		set_option("viewcolumns", val, scope);
+		vle_opts_assign("viewcolumns", val, scope);
 		return;
 	}
 
@@ -2930,8 +2930,8 @@ void
 load_dot_filter_option(const view_t *view)
 {
 	const optval_t val = { .bool_val = !view->hide_dot };
-	set_option("dotfiles", val, OPT_GLOBAL);
-	set_option("dotfiles", val, OPT_LOCAL);
+	vle_opts_assign("dotfiles", val, OPT_GLOBAL);
+	vle_opts_assign("dotfiles", val, OPT_LOCAL);
 }
 
 void
@@ -2970,7 +2970,7 @@ set_view_columns_option(view_t *view, const char value[], int update_ui)
 		}
 
 		val.str_val = view->view_columns;
-		set_option("viewcolumns", val, OPT_LOCAL);
+		vle_opts_assign("viewcolumns", val, OPT_LOCAL);
 	}
 	else
 	{
@@ -3020,7 +3020,7 @@ load_quickview_option(void)
 {
 	optval_t val;
 	val.bool_val = curr_stats.preview.on;
-	set_option("quickview", val, OPT_GLOBAL);
+	vle_opts_assign("quickview", val, OPT_GLOBAL);
 }
 
 void
@@ -3028,9 +3028,9 @@ load_geometry(void)
 {
 	optval_t val;
 	val.int_val = cfg.columns;
-	set_option("columns", val, OPT_GLOBAL);
+	vle_opts_assign("columns", val, OPT_GLOBAL);
 	val.int_val = cfg.lines;
-	set_option("lines", val, OPT_GLOBAL);
+	vle_opts_assign("lines", val, OPT_GLOBAL);
 }
 
 static void
@@ -3164,7 +3164,7 @@ reset_suggestoptions(void)
 	}
 
 	val.str_val = (char *)vle_tb_get_data(descr);
-	set_option("suggestoptions", val, OPT_GLOBAL);
+	vle_opts_assign("suggestoptions", val, OPT_GLOBAL);
 
 	vle_tb_free(descr);
 }
@@ -3219,7 +3219,7 @@ tabstop_handler(OPT_OP op, optval_t val)
 	{
 		vle_tb_append_linef(vle_err, "Argument must be positive: %d", val.int_val);
 		error = 1;
-		reset_option_to_default("tabstop", OPT_GLOBAL);
+		vle_opts_restore_default("tabstop", OPT_GLOBAL);
 		return;
 	}
 
@@ -3245,7 +3245,7 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 		vle_tb_append_linef(vle_err, "Argument must be >= 0: %d", val.int_val);
 		error = 1;
 		val.int_val = 0;
-		set_option("timeoutlen", val, OPT_GLOBAL);
+		vle_opts_assign("timeoutlen", val, OPT_GLOBAL);
 		return;
 	}
 
@@ -3281,7 +3281,7 @@ trashdir_handler(OPT_OP op, optval_t val)
 	{
 		/* Reset the 'trashdir' option to its previous value. */
 		val.str_val = cfg.trash_dir;
-		set_option("trashdir", val, OPT_GLOBAL);
+		vle_opts_assign("trashdir", val, OPT_GLOBAL);
 	}
 	free(expanded_path);
 }

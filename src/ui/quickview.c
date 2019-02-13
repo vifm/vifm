@@ -19,7 +19,7 @@
 
 #include "quickview.h"
 
-#include <curses.h> /* mvwaddstr() wattrset() */
+#include <curses.h> /* mvwaddstr() */
 #include <unistd.h> /* usleep() */
 
 #include <limits.h> /* INT_MAX */
@@ -293,7 +293,7 @@ view_file(const char path[])
 	clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	wattrset(other_view->win, 0);
+	ui_drop_attr(other_view->win);
 	view_stream(fp, cfg.wrap_quick_view);
 	fclose(fp);
 
@@ -615,7 +615,7 @@ static void
 write_message(const char msg[])
 {
 	cleanup_for_text();
-	wattrset(other_view->win, 0);
+	ui_drop_attr(other_view->win);
 	mvwaddstr(other_view->win, ui_qv_top(other_view), ui_qv_left(other_view),
 			msg);
 }

@@ -10,7 +10,7 @@ TEST(reset_of_str_option_not_differ_no_callback)
 	int res;
 
 	fusehome_handler_calls = 0;
-	res = set_options("fusehome&", OPT_GLOBAL);
+	res = vle_opts_set("fusehome&", OPT_GLOBAL);
 	assert_int_equal(0, res);
 	assert_int_equal(0, fusehome_handler_calls);
 }
@@ -19,12 +19,12 @@ TEST(reset_of_str_option_differ_callback)
 {
 	int res;
 
-	res = set_options("fusehome='abc'", OPT_GLOBAL);
+	res = vle_opts_set("fusehome='abc'", OPT_GLOBAL);
 	assert_int_equal(0, res);
 	assert_string_equal("abc", value);
 
 	fusehome_handler_calls = 0;
-	res = set_options("fusehome&", OPT_GLOBAL);
+	res = vle_opts_set("fusehome&", OPT_GLOBAL);
 	assert_int_equal(0, res);
 	assert_int_equal(1, fusehome_handler_calls);
 	assert_string_equal("fusehome-default", value);

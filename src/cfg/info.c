@@ -976,7 +976,7 @@ write_options(FILE *fp)
 	fprintf(fp, "=%schaselinks\n", cfg.chase_links ? "" : "no");
 	fprintf(fp, "=columns=%d\n", cfg.columns);
 	fprintf(fp, "=cpoptions=%s\n",
-			escape_spaces(get_option_value("cpoptions", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("cpoptions", OPT_GLOBAL)));
 	fprintf(fp, "=deleteprg=%s\n", escape_spaces(cfg.delete_prg));
 	fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 	if(strcmp(cfg.border_filler, " ") != 0)
@@ -989,7 +989,7 @@ write_options(FILE *fp)
 	fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
 	fprintf(fp, "=grepprg=%s\n", escape_spaces(cfg.grep_prg));
 	fprintf(fp, "=histcursor=%s\n",
-			escape_spaces(get_option_value("histcursor", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("histcursor", OPT_GLOBAL)));
 	fprintf(fp, "=history=%d\n", cfg.history_len);
 	fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
 	fprintf(fp, "=%siec\n", cfg.sizefmt.ieci_prefixes ? "" : "no");
@@ -1009,11 +1009,11 @@ write_options(FILE *fp)
 	fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
 	fprintf(fp, "=shellcmdflag=%s\n", escape_spaces(cfg.shell_cmd_flag));
 	fprintf(fp, "=shortmess=%s\n",
-			escape_spaces(get_option_value("shortmess", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("shortmess", OPT_GLOBAL)));
 	fprintf(fp, "=showtabline=%s\n",
-			escape_spaces(get_option_value("showtabline", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("showtabline", OPT_GLOBAL)));
 	fprintf(fp, "=sizefmt=%s\n",
-			escape_spaces(get_option_value("sizefmt", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("sizefmt", OPT_GLOBAL)));
 #ifndef _WIN32
 	fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif
@@ -1021,15 +1021,15 @@ write_options(FILE *fp)
 	fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
 	fprintf(fp, "=statusline=%s\n", escape_spaces(cfg.status_line));
 	fprintf(fp, "=syncregs=%s\n",
-			escape_spaces(get_option_value("syncregs", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("syncregs", OPT_GLOBAL)));
 	fprintf(fp, "=tabscope=%s\n",
-			escape_spaces(get_option_value("tabscope", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("tabscope", OPT_GLOBAL)));
 	fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
 	fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format));
 	fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
 	fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
 	fprintf(fp, "=tuioptions=%s\n",
-			escape_spaces(get_option_value("tuioptions", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("tuioptions", OPT_GLOBAL)));
 	fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
 	fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),
 			cfg.vi_cmd_bg ? " &" : "");
@@ -1064,15 +1064,15 @@ write_options(FILE *fp)
 	fprintf(fp, "=]previewprg=%s\n", escape_spaces(rwin.preview_prg_g));
 
 	fprintf(fp, "=confirm=%s\n",
-			escape_spaces(get_option_value("confirm", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("confirm", OPT_GLOBAL)));
 	fprintf(fp, "=dotdirs=%s\n",
-			escape_spaces(get_option_value("dotdirs", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("dotdirs", OPT_GLOBAL)));
 	fprintf(fp, "=caseoptions=%s\n",
-			escape_spaces(get_option_value("caseoptions", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("caseoptions", OPT_GLOBAL)));
 	fprintf(fp, "=suggestoptions=%s\n",
-			escape_spaces(get_option_value("suggestoptions", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("suggestoptions", OPT_GLOBAL)));
 	fprintf(fp, "=iooptions=%s\n",
-			escape_spaces(get_option_value("iooptions", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("iooptions", OPT_GLOBAL)));
 
 	fprintf(fp, "=dirsize=%s", cfg.view_dir_size == VDS_SIZE ? "size" : "nitems");
 
@@ -1080,13 +1080,13 @@ write_options(FILE *fp)
 	fprintf(fp, "=classify=%s\n", escape_spaces(str == NULL ? "" : str));
 
 	fprintf(fp, "=vifminfo=%s\n",
-			escape_spaces(get_option_value("vifminfo", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("vifminfo", OPT_GLOBAL)));
 
 	fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
 	fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
 	fprintf(fp, "=wildstyle=%s\n", cfg.wild_popup ? "popup" : "bar");
 	fprintf(fp, "=wordchars=%s\n",
-			escape_spaces(get_option_value("wordchars", OPT_GLOBAL)));
+			escape_spaces(vle_opts_get("wordchars", OPT_GLOBAL)));
 	fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
 }
 

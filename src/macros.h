@@ -82,10 +82,6 @@ char * ma_expand_custom(const char pattern[], size_t nmacros,
  * Returns the string representation. */
 const char * ma_flags_to_str(MacroFlags flags);
 
-#ifdef TEST
-#include "engine/cmds.h"
-#endif
-
 TSTATIC_DEFS(
 	struct view_t;
 	char * append_selected_files(struct view_t *view, char expanded[],

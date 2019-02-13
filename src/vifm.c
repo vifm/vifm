@@ -537,12 +537,12 @@ vifm_restart(void)
 	(void)stats_reset(&cfg);
 
 	/* Options of current pane. */
-	reset_options_to_default();
+	vle_opts_restore_defaults();
 	/* Options of other pane. */
 	tmp_view = curr_view;
 	curr_view = other_view;
 	load_view_options(other_view);
-	reset_options_to_default();
+	vle_opts_restore_defaults();
 	curr_view = tmp_view;
 
 	/* File types and viewers. */

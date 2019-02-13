@@ -720,6 +720,9 @@ void ui_set_bg(WINDOW *win, const col_attr_t *col, int pair);
  * is used. */
 void ui_set_attr(WINDOW *win, const col_attr_t *col, int pair);
 
+/* Clears attribute of the window. */
+void ui_drop_attr(WINDOW *win);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

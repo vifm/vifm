@@ -98,7 +98,7 @@ TEST(recovering_from_wrong_viewcolumns_value_works)
 	columns_format_line(curr_view->columns, NULL, 100);
 	assert_int_equal(2, ncols);
 
-	assert_string_equal("", get_option_value("viewcolumns", OPT_LOCAL));
+	assert_string_equal("", vle_opts_get("viewcolumns", OPT_LOCAL));
 }
 
 TEST(set_local_sets_local_value)
@@ -234,11 +234,11 @@ TEST(dotfiles)
 
 	vle_tb_clear(vle_err);
 	load_view_options(&lwin);
-	assert_success(set_options("dotfiles?", OPT_GLOBAL));
-	assert_success(set_options("dotfiles?", OPT_LOCAL));
+	assert_success(vle_opts_set("dotfiles?", OPT_GLOBAL));
+	assert_success(vle_opts_set("dotfiles?", OPT_LOCAL));
 	load_view_options(&rwin);
-	assert_success(set_options("dotfiles?", OPT_GLOBAL));
-	assert_success(set_options("dotfiles?", OPT_LOCAL));
+	assert_success(vle_opts_set("dotfiles?", OPT_GLOBAL));
+	assert_success(vle_opts_set("dotfiles?", OPT_LOCAL));
 	assert_string_equal("nodotfiles\nnodotfiles\nnodotfiles\nnodotfiles",
 			vle_tb_get_data(vle_err));
 
@@ -247,7 +247,7 @@ TEST(dotfiles)
 	assert_success(exec_commands("setlocal dotfiles", &rwin, CIT_COMMAND));
 	reset_local_options(&rwin);
 	vle_tb_clear(vle_err);
-	assert_success(set_options("dotfiles?", OPT_LOCAL));
+	assert_success(vle_opts_set("dotfiles?", OPT_LOCAL));
 	assert_string_equal("nodotfiles", vle_tb_get_data(vle_err));
 }
 
@@ -286,7 +286,7 @@ TEST(global_local_updates_regular_options_only_once)
 TEST(caseoptions_are_normalized)
 {
 	assert_success(exec_commands("set caseoptions=pPGg", &lwin, CIT_COMMAND));
-	assert_string_equal("Pg", get_option_value("caseoptions", OPT_GLOBAL));
+	assert_string_equal("Pg", vle_opts_get("caseoptions", OPT_GLOBAL));
 	assert_int_equal(CO_GOTO_FILE | CO_PATH_COMPL, cfg.case_override);
 	assert_int_equal(CO_GOTO_FILE, cfg.case_ignore);
 
@@ -392,7 +392,7 @@ TEST(values_in_fillchars_are_deduplicated)
 	update_string(&cfg.border_filler, NULL);
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("fillchars?", OPT_GLOBAL));
+	assert_success(vle_opts_set("fillchars?", OPT_GLOBAL));
 	assert_string_equal("  fillchars=vborder:b", vle_tb_get_data(vle_err));
 
 	update_string(&cfg.border_filler, NULL);
@@ -437,7 +437,7 @@ TEST(values_in_sizefmt_are_deduplicated)
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("sizefmt?", OPT_GLOBAL));
+	assert_success(vle_opts_set("sizefmt?", OPT_GLOBAL));
 	assert_string_equal("  sizefmt=units:iec,precision:10",
 			vle_tb_get_data(vle_err));
 }
@@ -469,7 +469,7 @@ TEST(milleroptions_accepts_correct_input)
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("milleroptions?", OPT_GLOBAL));
+	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
 	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12",
 			vle_tb_get_data(vle_err));
 }
@@ -480,7 +480,7 @@ TEST(milleroptions_normalizes_input)
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("milleroptions?", OPT_GLOBAL));
+	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
 	assert_string_equal("  milleroptions=lsize:0,csize:100,rsize:0",
 			vle_tb_get_data(vle_err));
 }
@@ -490,7 +490,7 @@ TEST(lsoptions_empty_input)
 	assert_success(exec_commands("set lsoptions=", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("lsoptions?", OPT_GLOBAL));
+	assert_success(vle_opts_set("lsoptions?", OPT_GLOBAL));
 	assert_string_equal("  lsoptions=", vle_tb_get_data(vle_err));
 }
 
@@ -508,7 +508,7 @@ TEST(lsoptions_accepts_correct_input)
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("lsoptions?", OPT_GLOBAL));
+	assert_success(vle_opts_set("lsoptions?", OPT_GLOBAL));
 	assert_string_equal("  lsoptions=transposed", vle_tb_get_data(vle_err));
 }
 
@@ -518,7 +518,7 @@ TEST(lsoptions_normalizes_input)
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("lsoptions?", OPT_GLOBAL));
+	assert_success(vle_opts_set("lsoptions?", OPT_GLOBAL));
 	assert_string_equal("  lsoptions=transposed", vle_tb_get_data(vle_err));
 }
 
@@ -528,25 +528,25 @@ TEST(previewprg_updates_state_of_view)
 	assert_success(exec_commands("setl previewprg=lcmd", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
-	assert_success(set_options("previewprg?", OPT_GLOBAL));
-	assert_success(set_options("previewprg?", OPT_LOCAL));
+	assert_success(vle_opts_set("previewprg?", OPT_GLOBAL));
+	assert_success(vle_opts_set("previewprg?", OPT_LOCAL));
 	assert_string_equal("  previewprg=gcmd\n  previewprg=lcmd",
 			vle_tb_get_data(vle_err));
 }
 
 TEST(tuioptions)
 {
-	assert_success(set_options("tuioptions=", OPT_GLOBAL));
+	assert_success(vle_opts_set("tuioptions=", OPT_GLOBAL));
 	assert_false(cfg.extra_padding);
 	assert_false(cfg.side_borders_visible);
 	assert_false(cfg.use_unicode_characters);
 
-	assert_success(set_options("tuioptions=pu", OPT_GLOBAL));
+	assert_success(vle_opts_set("tuioptions=pu", OPT_GLOBAL));
 	assert_true(cfg.extra_padding);
 	assert_false(cfg.side_borders_visible);
 	assert_true(cfg.use_unicode_characters);
 
-	assert_success(set_options("tuioptions+=s", OPT_GLOBAL));
+	assert_success(vle_opts_set("tuioptions+=s", OPT_GLOBAL));
 	assert_true(cfg.extra_padding);
 	assert_true(cfg.side_borders_visible);
 	assert_true(cfg.use_unicode_characters);
