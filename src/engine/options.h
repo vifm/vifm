@@ -77,39 +77,39 @@ typedef void (*opt_uni_handler)(const char name[], optval_t val,
 /* Initializes option module.  opts_changed_flag will be set to true after at
  * least one option will change its value using set_options(...) function.
  * universal_handler can be NULL. */
-void init_options(int *opts_changed_flag, opt_uni_handler universal_handler);
+void vle_opts_init(int *opts_changed_flag, opt_uni_handler universal_handler);
 
 /* Resets an option to its default value. */
-void reset_option_to_default(const char name[], OPT_SCOPE scope);
+void vle_opts_restore_default(const char name[], OPT_SCOPE scope);
 
 /* Resets all options to their default values. */
-void reset_options_to_default(void);
+void vle_opts_restore_defaults(void);
 
 /* Removes all options. */
-void clear_options(void);
+void vle_opts_reset(void);
 
 /* Adds an option.  The scope can't be OPT_ANY here. */
-void add_option(const char name[], const char abbr[], const char descr[],
+void vle_opts_add(const char name[], const char abbr[], const char descr[],
 		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[][2],
 		opt_handler handler, optval_t def);
 
 /* Sets option value without calling its change handler.  Asserts for correct
  * option name. */
-void set_option(const char name[], optval_t val, OPT_SCOPE scope);
+void vle_opts_assign(const char name[], optval_t val, OPT_SCOPE scope);
 
 /* Processes :set command arguments.  Returns non-zero on error. */
-int set_options(const char args[], OPT_SCOPE scope);
+int vle_opts_set(const char args[], OPT_SCOPE scope);
 
 /* Converts option value to string representation.  Returns pointer to a
  * statically allocated buffer.  Asserts for correct option name or returns NULL
  * on it.  For boolean options empty string is returned. */
-const char * get_option_value(const char name[], OPT_SCOPE scope);
+const char * vle_opts_get(const char name[], OPT_SCOPE scope);
 
 /* Completes set arguments list. */
-void complete_options(const char args[], const char **start, OPT_SCOPE scope);
+void vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope);
 
 /* Completes names of real options (no pseudo options like "all"). */
-void complete_real_option_names(const char beginning[], OPT_SCOPE scope);
+void vle_opts_complete_real(const char beginning[], OPT_SCOPE scope);
 
 #endif /* VIFM__ENGINE__OPTIONS_H__ */
 

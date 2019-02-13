@@ -81,13 +81,13 @@ SETUP()
 	vle_cmds_run("command baz b");
 	vle_cmds_run("command foo c");
 
-	init_options(&option_changed, NULL);
-	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+	vle_opts_init(&option_changed, NULL);
+	vle_opts_add("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			&dummy_handler, def);
-	add_option("path", "pt", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("path", "pt", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			&dummy_handler, def);
-	add_option("path", "pt", "descr", OPT_STR, OPT_LOCAL, 0, NULL, &dummy_handler,
-			def);
+	vle_opts_add("path", "pt", "descr", OPT_STR, OPT_LOCAL, 0, NULL,
+			&dummy_handler, def);
 
 	saved_cwd = save_cwd();
 	assert_success(chdir(TEST_DATA_PATH "/compare"));
@@ -108,7 +108,7 @@ TEARDOWN()
 
 	free(stats.line);
 	vle_cmds_reset();
-	clear_options();
+	vle_opts_reset();
 
 	function_reset_all();
 }

@@ -20,18 +20,18 @@ SETUP()
 	static int option_changed;
 	optval_t def = { .str_val = "/tmp" };
 
-	init_options(&option_changed, NULL);
+	vle_opts_init(&option_changed, NULL);
 
 	def.str_val = "/tmp";
-	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			&fusehome_handler, def);
 
 	def.int_val = 0;
-	add_option("number", "nu", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("number", "nu", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
 			&number_handler, def);
-	add_option("numberwidth", "nuw", "descr", OPT_INT, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("numberwidth", "nuw", "descr", OPT_INT, OPT_GLOBAL, 0, NULL,
 			&numberwidth_global, def);
-	add_option("numberwidth", "nuw", "descr", OPT_INT, OPT_LOCAL, 0, NULL,
+	vle_opts_add("numberwidth", "nuw", "descr", OPT_INT, OPT_LOCAL, 0, NULL,
 			&numberwidth_local, def);
 
 	fuse_home = NULL;
@@ -41,7 +41,7 @@ SETUP()
 
 TEARDOWN()
 {
-	clear_options();
+	vle_opts_reset();
 }
 
 static void

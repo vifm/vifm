@@ -95,7 +95,7 @@ opt_handlers_setup(void)
 void
 opt_handlers_teardown(void)
 {
-	clear_options();
+	vle_opts_reset();
 
 	conf_teardown();
 

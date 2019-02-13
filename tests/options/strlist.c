@@ -6,19 +6,19 @@ extern const char *value;
 
 SETUP()
 {
-	assert_success(set_options("cdpath=/path", OPT_GLOBAL));
+	assert_success(vle_opts_set("cdpath=/path", OPT_GLOBAL));
 	assert_string_equal("/path", value);
 }
 
 TEST(string_list_add)
 {
-	assert_success(set_options("cdpath+=/path/1", OPT_GLOBAL));
+	assert_success(vle_opts_set("cdpath+=/path/1", OPT_GLOBAL));
 	assert_string_equal("/path,/path/1", value);
 }
 
 TEST(string_list_remove)
 {
-	assert_success(set_options("cdpath-=/path", OPT_GLOBAL));
+	assert_success(vle_opts_set("cdpath-=/path", OPT_GLOBAL));
 	assert_string_equal("", value);
 }
 

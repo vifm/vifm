@@ -7,9 +7,9 @@ extern const char *value;
 TEST(string_append)
 {
 	optval_t val = { .str_val = "/home/tmp" };
-	set_option("fusehome", val, OPT_GLOBAL);
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
 
-	assert_success(set_options("fusehome+=/tmp", OPT_GLOBAL));
+	assert_success(vle_opts_set("fusehome+=/tmp", OPT_GLOBAL));
 	assert_string_equal("/home/tmp/tmp", value);
 }
 

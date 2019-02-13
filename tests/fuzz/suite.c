@@ -80,17 +80,17 @@ fuzz_options(const char input[])
 {
 	static int option_changed;
 
-    const char *start;
+	const char *start;
 
-	init_options(&option_changed, NULL);
+	vle_opts_init(&option_changed, NULL);
 
-	set_options(input, OPT_ANY);
-	complete_options(input, &start, OPT_GLOBAL);
+	vle_opts_set(input, OPT_ANY);
+	vle_opts_complete(input, &start, OPT_GLOBAL);
 
 	load_options();
 
-	set_options(input, OPT_ANY);
-	complete_options(input, &start, OPT_GLOBAL);
+	vle_opts_set(input, OPT_ANY);
+	vle_opts_complete(input, &start, OPT_GLOBAL);
 
 	return EXIT_SUCCESS;
 }
@@ -285,23 +285,23 @@ load_options(void)
 	};
 
 	val.str_val = "";
-	add_option("cdpath", "cd", "descr", OPT_STRLIST, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("cdpath", "cd", "descr", OPT_STRLIST, OPT_GLOBAL, 0, NULL,
 			dummy_handler, val);
 
 	val.bool_val = 0;
-	add_option("fastrun", "fr", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("fastrun", "fr", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
 			dummy_handler, val);
 
 	val.str_val = "fusehome-default";
-	add_option("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("fusehome", "fh", "descr", OPT_STR, OPT_GLOBAL, 0, NULL,
 			dummy_handler, val);
 
 	val.enum_item = 1;
-	add_option("sort", "so", "descr", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
+	vle_opts_add("sort", "so", "descr", OPT_ENUM, OPT_GLOBAL, ARRAY_LEN(sort_enum),
 			sort_enum, &dummy_handler, val);
 
 	val.bool_val = 1;
-	add_option("sortorder", "", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
+	vle_opts_add("sortorder", "", "descr", OPT_BOOL, OPT_GLOBAL, 0, NULL,
 			&dummy_handler, val);
 }
 

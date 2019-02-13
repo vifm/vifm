@@ -116,7 +116,7 @@ static opt_t *options;
 static size_t option_count;
 
 void
-init_options(int *opts_changed_flag, opt_uni_handler universal_handler)
+vle_opts_init(int *opts_changed_flag, opt_uni_handler universal_handler)
 {
 	assert(opts_changed_flag != NULL);
 
@@ -134,7 +134,7 @@ do_nothing_handler(const char name[], optval_t val, OPT_SCOPE scope)
 }
 
 void
-reset_option_to_default(const char name[], OPT_SCOPE scope)
+vle_opts_restore_default(const char name[], OPT_SCOPE scope)
 {
 	opt_t *opt = find_option(name, scope);
 	if(opt != NULL)
@@ -144,7 +144,7 @@ reset_option_to_default(const char name[], OPT_SCOPE scope)
 }
 
 void
-reset_options_to_default(void)
+vle_opts_restore_defaults(void)
 {
 	reset_options(OPT_ANY);
 }
@@ -163,7 +163,7 @@ reset_options(OPT_SCOPE scope)
 }
 
 void
-clear_options(void)
+vle_opts_reset(void)
 {
 	size_t i;
 	for(i = 0U; i < option_count; ++i)
@@ -185,7 +185,7 @@ clear_options(void)
 }
 
 void
-add_option(const char name[], const char abbr[], const char descr[],
+vle_opts_add(const char name[], const char abbr[], const char descr[],
 		OPT_TYPE type, OPT_SCOPE scope, int val_count, const char *vals[][2],
 		opt_handler handler, optval_t def)
 {
@@ -291,7 +291,7 @@ add_option_inner(const char name[], const char descr[], OPT_TYPE type,
 }
 
 void
-set_option(const char name[], optval_t val, OPT_SCOPE scope)
+vle_opts_assign(const char name[], optval_t val, OPT_SCOPE scope)
 {
 	opt_t *opt = find_option(name, scope);
 	assert(opt != NULL && "Wrong option name.");
@@ -307,7 +307,7 @@ set_option(const char name[], optval_t val, OPT_SCOPE scope)
 }
 
 int
-set_options(const char args[], OPT_SCOPE scope)
+vle_opts_set(const char args[], OPT_SCOPE scope)
 {
 	int errors = 0;
 
@@ -1234,7 +1234,7 @@ set_print(const opt_t *opt)
 }
 
 const char *
-get_option_value(const char name[], OPT_SCOPE scope)
+vle_opts_get(const char name[], OPT_SCOPE scope)
 {
 	opt_t *opt = find_option(name, scope);
 	assert(opt != NULL && "Wrong option name.");
@@ -1290,7 +1290,7 @@ get_value(const opt_t *opt)
 }
 
 void
-complete_options(const char args[], const char **start, OPT_SCOPE scope)
+vle_opts_complete(const char args[], const char **start, OPT_SCOPE scope)
 {
 	int bool_only;
 	int is_value_completion;
@@ -1526,7 +1526,7 @@ skip_alphas(const char str[])
 }
 
 void
-complete_real_option_names(const char beginning[], OPT_SCOPE scope)
+vle_opts_complete_real(const char beginning[], OPT_SCOPE scope)
 {
 	complete_option_name(beginning, 0, 0, scope);
 	vle_compl_finish_group();

@@ -11,13 +11,13 @@ TEST(space_at_the_end)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("fusehome=a\\ b\\ ", &start, OPT_GLOBAL);
+	vle_opts_complete("fusehome=a\\ b\\ ", &start, OPT_GLOBAL);
 	completed = vle_compl_next();
 	assert_string_equal("a\\ b\\ ", completed);
 	free(completed);
 
 	vle_compl_reset();
-	complete_options("fusehome=a\\ b ", &start, OPT_GLOBAL);
+	vle_opts_complete("fusehome=a\\ b ", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("all", completed);
@@ -42,7 +42,7 @@ TEST(one_choice_opt)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("fuse", &start, OPT_GLOBAL);
+	vle_opts_complete("fuse", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("fusehome", completed);
@@ -64,7 +64,7 @@ TEST(one_choice_val)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options(buf, &start, OPT_GLOBAL);
+	vle_opts_complete(buf, &start, OPT_GLOBAL);
 	assert_true(start == buf + 5);
 
 	completed = vle_compl_next();
@@ -86,7 +86,7 @@ TEST(invalid_input)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("fast ?f", &start, OPT_GLOBAL);
+	vle_opts_complete("fast ?f", &start, OPT_GLOBAL);
 	completed = vle_compl_next();
 	assert_string_equal("fast ?f", completed);
 	free(completed);
@@ -98,7 +98,7 @@ TEST(skip_abbreviations)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("", &start, OPT_GLOBAL);
+	vle_opts_complete("", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("all", completed);
@@ -147,7 +147,7 @@ TEST(expand_abbreviations)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("fr", &start, OPT_GLOBAL);
+	vle_opts_complete("fr", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("fastrun", completed);
@@ -165,7 +165,7 @@ TEST(after_eq_value_completion)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options(buf, &start, OPT_GLOBAL);
+	vle_opts_complete(buf, &start, OPT_GLOBAL);
 	assert_true(start == buf + 9);
 
 	completed = vle_compl_next();
@@ -184,7 +184,7 @@ TEST(after_meq_value_completion)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options(buf, &start, OPT_GLOBAL);
+	vle_opts_complete(buf, &start, OPT_GLOBAL);
 	assert_true(start == buf + 10);
 
 	completed = vle_compl_next();
@@ -203,7 +203,7 @@ TEST(after_peq_value_completion)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options(buf, &start, OPT_GLOBAL);
+	vle_opts_complete(buf, &start, OPT_GLOBAL);
 	assert_true(start == buf + 10);
 
 	completed = vle_compl_next();
@@ -222,7 +222,7 @@ TEST(set_values_completion)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options(buf, &start, OPT_GLOBAL);
+	vle_opts_complete(buf, &start, OPT_GLOBAL);
 	assert_true(start == buf + 13);
 
 	completed = vle_compl_next();
@@ -244,13 +244,13 @@ TEST(colon)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("fusehome:a\\ b\\ ", &start, OPT_GLOBAL);
+	vle_opts_complete("fusehome:a\\ b\\ ", &start, OPT_GLOBAL);
 	completed = vle_compl_next();
 	assert_string_equal("a\\ b\\ ", completed);
 	free(completed);
 
 	vle_compl_reset();
-	complete_options("fusehome:a\\ b ", &start, OPT_GLOBAL);
+	vle_opts_complete("fusehome:a\\ b ", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("all", completed);
@@ -275,7 +275,7 @@ TEST(umbiguous_beginning)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("sort", &start, OPT_GLOBAL);
+	vle_opts_complete("sort", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("sort", completed);
@@ -292,7 +292,7 @@ TEST(matching_short_full)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("so", &start, OPT_GLOBAL);
+	vle_opts_complete("so", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("sort", completed);
@@ -313,10 +313,10 @@ TEST(after_equal_sign_completion_ok)
 	char *completed;
 
 	optval_t val = { .str_val = "/home/tmp" };
-	set_option("fusehome", val, OPT_GLOBAL);
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
 
 	vle_compl_reset();
-	complete_options("fusehome=", &start, OPT_GLOBAL);
+	vle_opts_complete("fusehome=", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("/home/tmp", completed);
@@ -329,10 +329,10 @@ TEST(after_equal_sign_completion_spaces_ok)
 	char *completed;
 
 	optval_t val = { .str_val = "/home directory/tmp" };
-	set_option("fusehome", val, OPT_GLOBAL);
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
 
 	vle_compl_reset();
-	complete_options("fusehome=", &start, OPT_GLOBAL);
+	vle_opts_complete("fusehome=", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("/home\\ directory/tmp", completed);
@@ -345,10 +345,10 @@ TEST(after_fake_equal_sign_completion_fail)
 	char *completed;
 
 	optval_t val = { .str_val = "/home/tmp" };
-	set_option("fusehome", val, OPT_GLOBAL);
+	vle_opts_assign("fusehome", val, OPT_GLOBAL);
 
 	vle_compl_reset();
-	complete_options("fusehome=a=", &start, OPT_GLOBAL);
+	vle_opts_complete("fusehome=a=", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("a=", completed);
@@ -361,10 +361,10 @@ TEST(after_equal_sign_and_comma_completion_fail)
 	char *completed;
 
 	optval_t val = { .str_val = "/home/tmp" };
-	set_option("cdpath", val, OPT_GLOBAL);
+	vle_opts_assign("cdpath", val, OPT_GLOBAL);
 
 	vle_compl_reset();
-	complete_options("cdpath=a,", &start, OPT_GLOBAL);
+	vle_opts_complete("cdpath=a,", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("a,", completed);
@@ -377,7 +377,7 @@ TEST(all_completion_ok)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("all=", &start, OPT_GLOBAL);
+	vle_opts_complete("all=", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("", completed);
@@ -391,7 +391,7 @@ TEST(completion_of_second_option)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options(str, &start, OPT_GLOBAL);
+	vle_opts_complete(str, &start, OPT_GLOBAL);
 	assert_string_equal(str + 6, start);
 
 	completed = vle_compl_next();
@@ -409,7 +409,7 @@ TEST(charset_completion_skips_entered_elements)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("cpo=a", &start, OPT_GLOBAL);
+	vle_opts_complete("cpo=a", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("b", completed);
@@ -434,7 +434,7 @@ TEST(charset_hat_completion_works)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("cpo^=a", &start, OPT_GLOBAL);
+	vle_opts_complete("cpo^=a", &start, OPT_GLOBAL);
 
 	completed = vle_compl_next();
 	assert_string_equal("b", completed);
@@ -459,7 +459,7 @@ TEST(no_no_or_inv_completion_for_all_pseudo_option)
 	char *completed;
 
 	vle_compl_reset();
-	complete_options("noa", &start, OPT_GLOBAL);
+	vle_opts_complete("noa", &start, OPT_GLOBAL);
 	assert_string_equal("a", start);
 
 	completed = vle_compl_next();
@@ -471,7 +471,7 @@ TEST(no_no_or_inv_completion_for_all_pseudo_option)
 	free(completed);
 
 	vle_compl_reset();
-	complete_options("inva", &start, OPT_GLOBAL);
+	vle_opts_complete("inva", &start, OPT_GLOBAL);
 	assert_string_equal("a", start);
 
 	completed = vle_compl_next();

@@ -125,7 +125,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 
 	if(id == COM_SET || id == COM_SETLOCAL)
 	{
-		complete_options(args, &start, (id == COM_SET) ? OPT_GLOBAL : OPT_LOCAL);
+		vle_opts_complete(args, &start, (id == COM_SET) ? OPT_GLOBAL : OPT_LOCAL);
 	}
 	else if(id == COM_CABBR)
 	{
@@ -149,7 +149,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 				start += 2;
 			}
 
-			complete_real_option_names(start, scope);
+			vle_opts_complete_real(start, scope);
 		}
 		else if(dollar == NULL && !starts_with_lit(arg, "v:"))
 		{
