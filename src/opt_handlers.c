@@ -2281,31 +2281,20 @@ shellcmdflag_handler(OPT_OP op, optval_t val)
 static void
 shortmess_handler(OPT_OP op, optval_t val)
 {
-	const char *p;
-
 	cfg.tail_tab_line_paths = 0;
 	cfg.trunc_normal_sb_msgs = 0;
 	cfg.shorten_title_paths = 0;
 	cfg.short_term_mux_titles = 0;
 
-	p = val.str_val;
+	const char *p = val.str_val;
 	while(*p != '\0')
 	{
-		if(*p == 'L')
+		switch(*p)
 		{
-			cfg.tail_tab_line_paths = 1;
-		}
-		else if(*p == 'M')
-		{
-			cfg.short_term_mux_titles = 1;
-		}
-		else if(*p == 'T')
-		{
-			cfg.trunc_normal_sb_msgs = 1;
-		}
-		else if(*p == 'p')
-		{
-			cfg.shorten_title_paths = 1;
+			case 'L': cfg.tail_tab_line_paths = 1; break;
+			case 'M': cfg.short_term_mux_titles = 1; break;
+			case 'T': cfg.trunc_normal_sb_msgs = 1; break;
+			case 'p': cfg.shorten_title_paths = 1; break;
 		}
 		++p;
 	}
