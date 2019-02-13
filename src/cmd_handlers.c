@@ -4892,7 +4892,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int handled;
 
 	/* Expand macros in a bound command. */
-	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
+	expanded_com = ma_expand(cmd_info->cmd, cmd_info->args, &flags,
 			vle_cmds_identify(cmd_info->cmd) == COM_EXECUTE);
 
 	if(expanded_com[0] == ':')

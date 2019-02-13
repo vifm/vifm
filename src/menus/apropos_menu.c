@@ -57,7 +57,7 @@ show_apropos_menu(view_t *view, const char args[])
 
 	ui_sb_msg("apropos...");
 
-	cmd = expand_custom_macros(cfg.apropos_prg, ARRAY_LEN(macros), macros);
+	cmd = ma_expand_custom(cfg.apropos_prg, ARRAY_LEN(macros), macros);
 	save_msg = menus_capture(view, cmd, 0, &m, 0, 0);
 	free(cmd);
 	return save_msg;

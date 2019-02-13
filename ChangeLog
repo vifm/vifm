@@ -22,6 +22,9 @@
 	functions work.  Thanks to Ink (a.k.a. inknoir), John Shea (a.k.a.
 	coachshea) and randomizedthinking.
 
+	Added "L" flag to 'shortmess' option to display only last directory in tab
+	line instead of full path.  Thanks to chelovechishko.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

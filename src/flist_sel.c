@@ -255,7 +255,7 @@ flist_sel_by_filter(view_t *view, const char cmd[], int erase_old, int select)
 	int nfiles;
 	int i;
 
-	char *const expanded_cmd = expand_macros(cmd, NULL, NULL, 1);
+	char *const expanded_cmd = ma_expand(cmd, NULL, NULL, 1);
 
 	if(run_cmd_for_output(expanded_cmd, &files, &nfiles) != 0)
 	{

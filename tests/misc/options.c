@@ -581,16 +581,19 @@ TEST(setting_showtabline_works)
 
 TEST(shortmess)
 {
+	cfg.tail_tab_line_paths = 0;
 	cfg.trunc_normal_sb_msgs = 0;
 	cfg.shorten_title_paths = 0;
 	cfg.short_term_mux_titles = 0;
 
 	assert_success(exec_commands("set shortmess=Mp", &lwin, CIT_COMMAND));
+	assert_false(cfg.tail_tab_line_paths);
 	assert_true(cfg.short_term_mux_titles);
 	assert_false(cfg.trunc_normal_sb_msgs);
 	assert_true(cfg.shorten_title_paths);
 
-	assert_success(exec_commands("set shortmess=T", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("set shortmess=TL", &lwin, CIT_COMMAND));
+	assert_true(cfg.tail_tab_line_paths);
 	assert_false(cfg.short_term_mux_titles);
 	assert_true(cfg.trunc_normal_sb_msgs);
 	assert_false(cfg.shorten_title_paths);

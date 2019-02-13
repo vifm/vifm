@@ -648,6 +648,7 @@ draw(void)
 	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);
 
 	ui_view_erase(vi->view);
+	wattrset(vi->view->win, 0);
 
 	for(vl = 0, l = vi->line; l < max_l && vl < height; ++l)
 	{
@@ -1109,7 +1110,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		else
 		{
 			/* Don't add implicit %c to a command with %e macro. */
-			char *const cmd = expand_macros(vi->viewer, NULL, NULL, 1);
+			char *const cmd = ma_expand(vi->viewer, NULL, NULL, 1);
 			fp = read_cmd_output(cmd, 0);
 			free(cmd);
 		}

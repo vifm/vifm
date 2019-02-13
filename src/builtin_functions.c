@@ -151,7 +151,7 @@ expand_builtin(const call_info_t *call_info)
 
 	str_val = var_to_str(call_info->argv[0]);
 	env_expanded_str_val = expand_envvars(str_val, 0);
-	result_str = expand_macros(env_expanded_str_val, NULL, NULL, 0);
+	result_str = ma_expand(env_expanded_str_val, NULL, NULL, 0);
 	free(env_expanded_str_val);
 	free(str_val);
 
