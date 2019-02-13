@@ -648,7 +648,7 @@ draw(void)
 	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);
 
 	ui_view_erase(vi->view);
-	wattrset(vi->view->win, 0);
+	ui_drop_attr(vi->view->win);
 
 	for(vl = 0, l = vi->line; l < max_l && vl < height; ++l)
 	{

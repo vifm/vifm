@@ -265,7 +265,7 @@ status_bar_message(const char msg[], int error)
 		wprintw(status_bar, "%s", PRESS_ENTER_MSG);
 	}
 
-	wattrset(status_bar, 0);
+	ui_drop_attr(status_bar);
 
 	update_all_windows();
 	/* This is needed because update_all_windows() doesn't call doupdate() if

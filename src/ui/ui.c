@@ -2281,6 +2281,15 @@ ui_set_attr(WINDOW *win, const col_attr_t *col, int pair)
 }
 
 void
+ui_drop_attr(WINDOW *win)
+{
+	if(curr_stats.load_stage >= 1)
+	{
+		wattrset(win, 0);
+	}
+}
+
+void
 ui_view_schedule_redraw(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);
