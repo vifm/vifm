@@ -1,0 +1,17 @@
+Mark KEY_RESIZE as a key code on Windows
+
+Sixth patch added terminal resize detection on Win32, but it
+didn't set this flag.
+
+diff --git a/win32/pdckbd.c b/win32/pdckbd.c
+index f4ca7c2..805e1aa 100644
+--- a/win32/pdckbd.c
++++ b/win32/pdckbd.c
+@@ -644,6 +644,7 @@ int PDC_get_key(void)
+                 if (!SP->resized)
+                 {
+                     SP->resized = TRUE;
++                    SP->key_code = TRUE;
+                     return KEY_RESIZE;
+                 }
+             }

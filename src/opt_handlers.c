@@ -18,7 +18,7 @@
 
 #include "opt_handlers.h"
 
-#include <curses.h> /* stdscr wnoutrefresh() */
+#include <curses.h> /* stdscr */
 #include <regex.h> /* regex_t regcomp() regexec() regfree() */
 
 #include <assert.h> /* assert() */
