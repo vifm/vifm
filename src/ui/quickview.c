@@ -563,7 +563,7 @@ view_stream(FILE *fp, int wrapped)
 		}
 
 		offset = esc_print_line(line, other_view->win, left, y, max_width, 0,
-				&state, &printed);
+				!wrapped, &state, &printed);
 		y += !wrapped || (!line_continued || printed);
 		line_continued = line[len - 1] != '\n';
 

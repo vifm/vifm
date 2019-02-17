@@ -100,6 +100,9 @@
 	Fixed issues (could lead to crash) on resizing on Windows.  Thanks to Tim
 	Schaeffer (a.k.a. Numeromancer).
 
+	Fixed wrapped lines in quickview/view mode sometimes loosing their
+	colorization.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
