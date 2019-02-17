@@ -38,9 +38,6 @@ char * read_line(FILE *fp, char buffer[]);
  * success, otherwise NULL is returned. */
 char * get_line(FILE *fp, char buf[], size_t bufsz);
 
-/* Skips file stream content until and including eol character. */
-void skip_until_eol(FILE *fp);
-
 /* Skips file stream content until after BOM, if any.  Recovers only the last
  * read character. */
 void skip_bom(FILE *fp);

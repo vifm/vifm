@@ -69,7 +69,8 @@ void qv_get_path_to_explore(const struct dir_entry_t *entry, char buf[],
 		size_t buf_len);
 
 TSTATIC_DEFS(
-	void view_stream(FILE *fp, int wrapped);
+	struct strlist_t;
+	struct strlist_t read_lines(FILE *fp, int max_lines);
 )
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */
