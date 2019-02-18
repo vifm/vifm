@@ -25,6 +25,9 @@
 	Added "L" flag to 'shortmess' option to display only last directory in tab
 	line instead of full path.  Thanks to chelovechishko.
 
+	Added caching to quickview for a single file to avoid fileviewer being
+	called more than needed.  Thanks to agguser.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

@@ -37,6 +37,7 @@
 #include "../modes/modes.h"
 #include "../modes/view.h"
 #include "../utils/file_streams.h"
+#include "../utils/filemon.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -61,6 +62,15 @@
 /* Maximum number of lines used for preview. */
 enum { MAX_PREVIEW_LINES = 256 };
 
+/* Cached information about a single file's preview. */
+typedef struct
+{
+	char *path;        /* Full path to the file. */
+	filemon_t filemon; /* Timestamp for the file. */
+	strlist_t lines;   /* Top MAX_PREVIEW_LINES of preview contents. */
+}
+quickview_cache_t;
+
 /* State of directory tree print functions. */
 typedef struct
 {
@@ -75,6 +85,8 @@ tree_print_state_t;
 
 static void view_entry(const dir_entry_t *entry);
 static void view_file(const char path[]);
+static int is_cache_valid(const char path[], int graphical);
+static void fill_cache(FILE *fp, const char path[]);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
@@ -93,6 +105,9 @@ static void draw_lines(const strlist_t *lines, int wrapped);
 static void write_message(const char msg[]);
 static void cleanup_for_text(void);
 static char * expand_viewer_command(const char viewer[]);
+
+/* Cached preview data for a single file entry. */
+static quickview_cache_t qv_cache;
 
 int
 qv_ensure_is_shown(void)
@@ -231,13 +246,17 @@ view_entry(const dir_entry_t *entry)
 static void
 view_file(const char path[])
 {
-	int graphical = 0;
-	const char *viewer;
-	const char *clear_cmd;
+	const char *viewer = qv_get_viewer(path);
+	int graphical = (!is_null_or_empty(viewer) && is_graphical_viewer(viewer));
+
+	if(is_cache_valid(path, graphical))
+	{
+		ui_drop_attr(other_view->win);
+		draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
+		return;
+	}
+
 	FILE *fp;
-
-	viewer = qv_get_viewer(path);
-
 	if(viewer == NULL && is_dir(path))
 	{
 		ui_cancellation_reset();
@@ -262,7 +281,6 @@ view_file(const char path[])
 	}
 	else
 	{
-		graphical = is_graphical_viewer(viewer);
 		/* If graphics will be displayed, clear the window and wait a bit to let
 		 * terminal emulator do actual refresh (at least some of them need this). */
 		if(graphical)
@@ -289,18 +307,44 @@ view_file(const char path[])
 	}
 	curr_stats.preview.graphical = graphical;
 
-	clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
+	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	ui_drop_attr(other_view->win);
-
-	strlist_t lines = read_lines(fp, MAX_PREVIEW_LINES);
-	draw_lines(&lines, cfg.wrap_quick_view);
-	free_string_array(lines.items, lines.nitems);
+	fill_cache(fp, path);
 
 	fclose(fp);
 
 	ui_cancellation_disable();
+
+	ui_drop_attr(other_view->win);
+	draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
+}
+
+/* Checks whether data in qv_cache is up to date with the file on disk.  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+is_cache_valid(const char path[], int graphical)
+{
+	filemon_t filemon;
+	return !graphical
+	    && filemon_from_file(path, &filemon) == 0
+	    && qv_cache.path != NULL && paths_are_equal(qv_cache.path, path)
+	    && filemon_equal(&qv_cache.filemon, &filemon);
+}
+
+/* Fills qv_cache data with file's contents. */
+static void
+fill_cache(FILE *fp, const char path[])
+{
+	/* File monitor must always be initialized, because it's used below. */
+	filemon_t filemon = {};
+	(void)filemon_from_file(path, &filemon);
+	filemon_assign(&qv_cache.filemon, &filemon);
+
+	replace_string(&qv_cache.path, path);
+
+	free_string_array(qv_cache.lines.items, qv_cache.lines.nitems);
+	qv_cache.lines = read_lines(fp, MAX_PREVIEW_LINES);
 }
 
 /* Reads at most max_lines from the stream ignoring BOM.  Returns the lines
