@@ -2141,25 +2141,41 @@ is_forced_list_mode(const view_t *view)
 int
 ui_qv_left(const view_t *view)
 {
-	return cfg.extra_padding ? 1 : 0;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? 1 : 0;
 }
 
 int
 ui_qv_top(const view_t *view)
 {
-	return cfg.extra_padding ? 1 : 0;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? 1 : 0;
 }
 
 int
 ui_qv_height(const view_t *view)
 {
-	return cfg.extra_padding ? view->window_rows - 2 : view->window_rows;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? view->window_rows - 2 : view->window_rows;
 }
 
 int
 ui_qv_width(const view_t *view)
 {
-	return cfg.extra_padding ? view->window_cols - 2 : view->window_cols;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? view->window_cols - 2 : view->window_cols;
+}
+
+int
+ui_qv_x(const view_t *view)
+{
+	return getbegx(view->win) + ui_qv_left(view);
+}
+
+int
+ui_qv_y(const view_t *view)
+{
+	return getbegy(view->win) + ui_qv_top(view);
 }
 
 const col_scheme_t *

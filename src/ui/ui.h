@@ -687,6 +687,12 @@ int ui_qv_height(const view_t *view);
 /* Retrieves width of quickview area.  Returns the width. */
 int ui_qv_width(const view_t *view);
 
+/* Retrieves absolute column number of quickview area.  Returns the number. */
+int ui_qv_x(const view_t *view);
+
+/* Retrieves absolute line number of quickview area.  Returns the number. */
+int ui_qv_y(const view_t *view);
+
 /* Gets color scheme that corresponds to the view.  Returns pointer to the color
  * scheme. */
 const col_scheme_t * ui_view_get_cs(const view_t *view);
