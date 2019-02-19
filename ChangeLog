@@ -43,6 +43,9 @@
 
 	Preserve extended attributes on copying files.  Thanks to hutou.
 
+	Improved <silent> to do not forcefully update screen after the mapping if
+	no screen updates were skipped.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

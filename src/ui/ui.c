@@ -1137,7 +1137,7 @@ update_attributes(void)
 void
 ui_refresh_win(WINDOW *win)
 {
-	if(!curr_stats.silent_ui)
+	if(!stats_silenced_ui())
 	{
 		use_wrefresh(win);
 	}
@@ -1719,7 +1719,7 @@ ui_view_title_update(view_t *view)
 		return;
 	}
 
-	if(view == selected && cfg.set_title && !curr_stats.silent_ui)
+	if(view == selected && cfg.set_title && !stats_silenced_ui())
 	{
 		char *const term_title = format_view_title(view, pf);
 		term_title_update(term_title);

@@ -378,7 +378,7 @@ update_cmdline_text(line_stats_t *stat)
 static void
 draw_cmdline_text(line_stats_t *stat)
 {
-	if(curr_stats.silent_ui)
+	if(stats_silenced_ui())
 	{
 		/* XXX: erasing status_bar causes blinking if <silent> mapping that uses
 		 *      command-line is pressed and held down.  Ideally wouldn't need this
