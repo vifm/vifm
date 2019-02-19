@@ -46,6 +46,8 @@
 	Improved <silent> to do not forcefully update screen after the mapping if
 	no screen updates were skipped.
 
+	Try to avoid superfluous screen updates related to cursor position.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

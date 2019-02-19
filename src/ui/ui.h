@@ -363,6 +363,7 @@ struct view_t
 	int curr_line; /* current line # of the window  */
 	int top_line; /* # of the list position that is the top line in window */
 	int list_pos; /* actual position in the file list */
+	int last_seen_pos; /* Last position that was displayed on the screen. */
 	int list_rows; /* size of the file list */
 	int window_rows; /* Number of rows in the window. */
 	int window_cols; /* Number of columns in the window. */

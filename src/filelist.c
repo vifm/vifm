@@ -202,6 +202,7 @@ static void
 init_flist(view_t *view)
 {
 	view->list_pos = 0;
+	view->last_seen_pos = -1;
 	view->history_num = 0;
 	view->history_pos = 0;
 	view->on_slow_fs = 0;
