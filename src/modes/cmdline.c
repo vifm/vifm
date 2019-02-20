@@ -45,6 +45,7 @@
 #include "../ui/fileview.h"
 #include "../ui/statusbar.h"
 #include "../ui/statusline.h"
+#include "../ui/quickview.h"
 #include "../ui/ui.h"
 #include "../utils/hist.h"
 #include "../utils/macros.h"
@@ -450,6 +451,7 @@ input_line_changed(void)
 	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
 	{
 		fpos_set_pos(curr_view, curr_view->list_pos);
+		qv_ui_updated();
 		redraw_current_view();
 	}
 	else if(prev_mode == MENU_MODE)

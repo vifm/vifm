@@ -697,6 +697,7 @@ update_screen(UpdateType update_kind)
 	}
 
 	curr_stats.need_update = UT_NONE;
+	qv_ui_updated();
 
 	update_views(update_kind == UT_FULL);
 	/* Redraw message dialog over updated panes.  It's not very nice to do it

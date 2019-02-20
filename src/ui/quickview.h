@@ -68,6 +68,9 @@ FILE * qv_view_dir(const char path[]);
 void qv_get_path_to_explore(const struct dir_entry_t *entry, char buf[],
 		size_t buf_len);
 
+/* Informs this unit that it's data was probably erased from the screen. */
+void qv_ui_updated(void);
+
 TSTATIC_DEFS(
 	struct strlist_t;
 	struct strlist_t read_lines(FILE *fp, int max_lines);

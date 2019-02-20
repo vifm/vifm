@@ -68,6 +68,8 @@ typedef struct
 	char *path;        /* Full path to the file. */
 	filemon_t filemon; /* Timestamp for the file. */
 	strlist_t lines;   /* Top MAX_PREVIEW_LINES of preview contents. */
+	int x, y, w, h;    /* Last seen preview area parameters (important for
+	                      graphical preview). */
 }
 quickview_cache_t;
 
@@ -159,6 +161,7 @@ qv_toggle(void)
 
 		update_string(&curr_stats.preview.cleanup_cmd, NULL);
 		curr_stats.preview.graphical = 0;
+		qv_ui_updated();
 	}
 	else
 	{
@@ -326,10 +329,23 @@ static int
 is_cache_valid(const char path[], int graphical)
 {
 	filemon_t filemon;
-	return !graphical
-	    && filemon_from_file(path, &filemon) == 0
-	    && qv_cache.path != NULL && paths_are_equal(qv_cache.path, path)
-	    && filemon_equal(&qv_cache.filemon, &filemon);
+	if(filemon_from_file(path, &filemon) == 0 && qv_cache.path != NULL &&
+			paths_are_equal(qv_cache.path, path) &&
+			filemon_equal(&qv_cache.filemon, &filemon))
+	{
+		if(!graphical)
+		{
+			return 1;
+		}
+
+		return graphical
+		    && qv_cache.h == ui_qv_height(other_view)
+		    && qv_cache.w == ui_qv_width(other_view)
+		    && qv_cache.x == ui_qv_x(other_view)
+		    && qv_cache.y == ui_qv_y(other_view);
+	}
+
+	return 0;
 }
 
 /* Fills qv_cache data with file's contents. */
@@ -345,6 +361,11 @@ fill_cache(FILE *fp, const char path[])
 
 	free_string_array(qv_cache.lines.items, qv_cache.lines.nitems);
 	qv_cache.lines = read_lines(fp, MAX_PREVIEW_LINES);
+
+	qv_cache.h = ui_qv_height(other_view);
+	qv_cache.w = ui_qv_width(other_view);
+	qv_cache.x = ui_qv_x(other_view);
+	qv_cache.y = ui_qv_y(other_view);
 }
 
 /* Reads at most max_lines from the stream ignoring BOM.  Returns the lines
@@ -772,6 +793,14 @@ qv_get_path_to_explore(const dir_entry_t *entry, char buf[], size_t buf_len)
 	}
 
 	get_full_path_of(entry, buf_len, buf);
+}
+
+void
+qv_ui_updated(void)
+{
+	/* Invalidate graphical cache. */
+	qv_cache.h = 0;
+	qv_cache.w = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
