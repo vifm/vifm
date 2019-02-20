@@ -19,13 +19,13 @@ command! mkcd :mkdir %a | cd %a
 command! vgrep vim "+grep %a"
 command! reload :write | restart
 command! tgzcurrdir
-        \ :execute "!!dirname=$(basename %d); ARCHNAME=$(dialog --inputbox 'Archive basename (without .tgz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvzf ${ARCHNAME}.tgz ${dirname}"
+        \ :execute "!!dirname=$(basename \"%d\"); ARCHNAME=$(dialog --inputbox 'Archive basename (without .tgz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvzf ${ARCHNAME}.tgz ${dirname}"
 
 command! tbzcurrdir
-        \ :execute "!!dirname=$(basename %d); ARCHNAME=$(dialog --inputbox 'Archive basename (without .tbz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvjf ${ARCHNAME}.tbz ${dirname}"
+        \ :execute "!!dirname=$(basename \"%d\"); ARCHNAME=$(dialog --inputbox 'Archive basename (without .tbz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvjf ${ARCHNAME}.tbz ${dirname}"
 
 command! txzcurrdir
-        \ :execute "!!dirname=$(basename %d); ARCHNAME=$(dialog --inputbox 'Archive basename (without .txz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvJf ${ARCHNAME}.txz ${dirname}"
+        \ :execute "!!dirname=$(basename \"%d\"); ARCHNAME=$(dialog --inputbox 'Archive basename (without .txz)' 7 40 ${dirname} 2>&1 >/dev/tty); cd ..; tar cvJf ${ARCHNAME}.txz ${dirname}"
 
 
 " update modification time of all jpeg files inside current directory using EXIF tag
