@@ -87,6 +87,11 @@ static fsdata_t *dcache_size;
 /* Cache for directory item count. */
 static fsdata_t *dcache_nitems;
 
+/* Whether UI updates should be "paused" (a counter, not a flag). */
+static int silent_ui;
+/* Whether silencing UI led to skipping of screen updates. */
+static int silence_skipped_updates;
+
 int
 stats_init(config_t *config)
 {
@@ -181,8 +186,6 @@ load_def_values(status_t *stats, config_t *config)
 	stats->preview_hint = NULL;
 
 	stats->global_local_settings = 0;
-
-	stats->silent_ui = 0;
 
 	stats->history_size = 0;
 
@@ -372,14 +375,30 @@ stats_silence_ui(int more)
 {
 	if(more)
 	{
-		++curr_stats.silent_ui;
+		++silent_ui;
 	}
-	else if(--curr_stats.silent_ui == 0)
+	else if(--silent_ui == 0)
 	{
-		modes_redraw();
+		if(silence_skipped_updates)
+		{
+			silence_skipped_updates = 0;
+			pending_redraw = 0;
+			modes_redraw();
+		}
 	}
 
-	assert(curr_stats.silent_ui >= 0 && "Unbalanced calls to stats_silence_ui()");
+	assert(silent_ui >= 0 && "Unbalanced calls to stats_silence_ui()");
+}
+
+int
+stats_silenced_ui(void)
+{
+	if(silent_ui)
+	{
+		silence_skipped_updates = 1;
+		return 1;
+	}
+	return 0;
 }
 
 void

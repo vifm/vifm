@@ -662,7 +662,7 @@ draw(void)
 			const int vis = l != vi->line
 			             || vl + processed >= vi->linev - vi->widths[vi->line][0];
 			offset += esc_print_line(p + offset, vi->view->win, ui_qv_left(vi->view),
-					ui_qv_top(vi->view) + vl, width, !vis, &state, &printed);
+					ui_qv_top(vi->view) + vl, width, !vis, !vi->wrap, &state, &printed);
 			vl += vis;
 			++processed;
 		}

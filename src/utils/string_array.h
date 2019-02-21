@@ -24,7 +24,7 @@
 
 /* Convenience structure (not used here directly, but is related
  * functionally). */
-typedef struct
+typedef struct strlist_t
 {
 	int nitems;   /* Number of items in the list. */
 	char **items; /* The list itself. */

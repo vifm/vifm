@@ -498,11 +498,8 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 static char *
 expand_preview(char expanded[], int key, int *well_formed)
 {
-	view_t *view;
 	char num_str[32];
-	int h, w, x, y;
 	int param;
-	const int with_margin = !curr_stats.preview.clearing && cfg.extra_padding;
 
 	if(!char_is_one_of("hwxy", key))
 	{
@@ -512,17 +509,14 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 	*well_formed = 1;
 
-	view = get_preview_view(curr_view);
-
-	getbegyx(view->win, y, x);
-	getmaxyx(view->win, h, w);
+	view_t *view = get_preview_view(curr_view);
 
 	switch(key)
 	{
-		case 'h': param = h - 2*with_margin; break;
-		case 'w': param = w - 2*with_margin; break;
-		case 'x': param = x + 1*with_margin; break;
-		case 'y': param = y + 1*with_margin; break;
+		case 'h': param = ui_qv_height(view); break;
+		case 'w': param = ui_qv_width(view); break;
+		case 'x': param = ui_qv_x(view); break;
+		case 'y': param = ui_qv_y(view); break;
 
 		default:
 			assert(0 && "Unhandled preview property type");

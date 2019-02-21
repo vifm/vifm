@@ -15,8 +15,6 @@
 
 #include "utils.h"
 
-static void check_only_one_line_displayed(void);
-
 SETUP()
 {
 	curr_view = &lwin;
@@ -34,14 +32,14 @@ TEST(no_extra_line_with_extra_padding)
 {
 	cfg.extra_padding = 1;
 	lwin.window_rows = 3;
-	check_only_one_line_displayed();
+	assert_int_equal(1, ui_qv_height(&lwin));
 }
 
 TEST(no_extra_line_without_extra_padding)
 {
 	cfg.extra_padding = 0;
 	lwin.window_rows = 1;
-	check_only_one_line_displayed();
+	assert_int_equal(1, ui_qv_height(&lwin));
 }
 
 TEST(preview_can_match_agains_full_paths)
@@ -182,21 +180,22 @@ TEST(quick_view_picks_parent_directory_if_there_is_a_match)
 	ft_reset(0);
 }
 
-static void
-check_only_one_line_displayed(void)
+TEST(can_read_only_specified_number_of_lines)
 {
+	FILE *fp = fopen(TEST_DATA_PATH "/read/dos-line-endings", "r");
+
 	char line[128];
-	FILE *fp;
 
-	fp = fopen(TEST_DATA_PATH "/read/two-lines", "r");
-
-	other_view = &lwin;
-
-	view_stream(fp, 0);
-
-	line[0] = '\0';
 	assert_non_null(get_line(fp, line, sizeof(line)));
-	assert_string_equal("2nd line\n", line);
+	assert_string_equal("first line\n", line);
+
+	strlist_t lines = read_lines(fp, 1);
+	assert_int_equal(1, lines.nitems);
+	assert_string_equal("second line", lines.items[0]);
+	free_string_array(lines.items, lines.nitems);
+
+	assert_non_null(get_line(fp, line, sizeof(line)));
+	assert_string_equal("third line\n", line);
 
 	fclose(fp);
 }

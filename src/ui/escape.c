@@ -339,9 +339,8 @@ add_highlighted_sym(const char sym[], size_t sym_width, char out[])
 
 int
 esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
-		int dry_run, esc_state *state, int *printed)
+		int dry_run, int truncated, esc_state *state, int *printed)
 {
-	int offset;
 	const char *curr = line;
 	size_t pos = 0U;
 	checked_wmove(win, row, col);
@@ -379,19 +378,21 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 		}
 	}
 	*printed = pos;
-	offset = curr - line;
 
-	/* Always process all escape sequences of the line in order to preserve all
-	 * elements of highlighting even when lines are not fully drawn. */
-	curr--;
-	while((curr = strchr(curr + 1, '\033')) != NULL)
+	if(truncated)
 	{
-		size_t screen_width;
-		const char *const char_str = strchar2str(curr, 0, &screen_width);
-		print_char_esc(win, char_str, state);
+		/* Process remaining escape sequences of the line in order to preserve all
+		 * elements of highlighting even when lines are not fully drawn. */
+		const char *tail = curr - 1;
+		while((tail = strchr(tail + 1, '\033')) != NULL)
+		{
+			size_t screen_width;
+			const char *const char_str = strchar2str(tail, 0, &screen_width);
+			print_char_esc(win, char_str, state);
+		}
 	}
 
-	return offset;
+	return curr - line;
 }
 
 /* Returns number of characters at the beginning of the str which form one

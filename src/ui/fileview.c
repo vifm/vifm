@@ -1772,10 +1772,12 @@ fview_position_updated(view_t *view)
 
 	redraw = move_curr_line(view);
 
-	if(curr_stats.load_stage < 2)
+	if(curr_stats.load_stage < 2 || view->list_pos == view->last_seen_pos)
 	{
 		return;
 	}
+
+	view->last_seen_pos = view->list_pos;
 
 	if(redraw)
 	{

@@ -27,7 +27,7 @@
 #include <stdio.h> /* FILE SEEK_SET fclose() fdopen() feof() fseek()
                       tmpfile() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memmove() strcat() strlen() strncat() */
+#include <string.h> /* strcat() strlen() strncat() */
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
@@ -37,6 +37,7 @@
 #include "../modes/modes.h"
 #include "../modes/view.h"
 #include "../utils/file_streams.h"
+#include "../utils/filemon.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -58,8 +59,19 @@
 #include "statusbar.h"
 #include "ui.h"
 
-/* Size of buffer holding preview line (in characters). */
-#define PREVIEW_LINE_BUF_LEN 4096
+/* Maximum number of lines used for preview. */
+enum { MAX_PREVIEW_LINES = 256 };
+
+/* Cached information about a single file's preview. */
+typedef struct
+{
+	char *path;        /* Full path to the file. */
+	filemon_t filemon; /* Timestamp for the file. */
+	strlist_t lines;   /* Top MAX_PREVIEW_LINES of preview contents. */
+	int x, y, w, h;    /* Last seen preview area parameters (important for
+	                      graphical preview). */
+}
+quickview_cache_t;
 
 /* State of directory tree print functions. */
 typedef struct
@@ -75,6 +87,9 @@ tree_print_state_t;
 
 static void view_entry(const dir_entry_t *entry);
 static void view_file(const char path[]);
+static int is_cache_valid(const char path[], int graphical);
+static void fill_cache(FILE *fp, const char path[]);
+TSTATIC strlist_t read_lines(FILE *fp, int max_lines);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
 static int enter_dir(tree_print_state_t *s, const char path[], int last);
@@ -88,12 +103,13 @@ static void set_prefix_char(tree_print_state_t *s, char c);
 static void print_tree_entry(tree_print_state_t *s, const char path[],
 		int end_line);
 static void print_entry_prefix(tree_print_state_t *s);
-TSTATIC void view_stream(FILE *fp, int wrapped);
-static int shift_line(char line[], size_t len, size_t offset);
-static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
+static void draw_lines(const strlist_t *lines, int wrapped);
 static void write_message(const char msg[]);
 static void cleanup_for_text(void);
 static char * expand_viewer_command(const char viewer[]);
+
+/* Cached preview data for a single file entry. */
+static quickview_cache_t qv_cache;
 
 int
 qv_ensure_is_shown(void)
@@ -125,32 +141,32 @@ qv_can_show(void)
 void
 qv_toggle(void)
 {
-	if(curr_stats.preview.on)
-	{
-		stats_set_quickview(0);
-
-		if(ui_view_is_visible(other_view))
-		{
-			/* Force cleaning possible leftovers of graphics, otherwise curses
-			 * internal structures don't know that those parts need to be redrawn on
-			 * the screen. */
-			if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
-			{
-				qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
-			}
-
-			draw_dir_list(other_view);
-			refresh_view_win(other_view);
-		}
-
-		update_string(&curr_stats.preview.cleanup_cmd, NULL);
-		curr_stats.preview.graphical = 0;
-	}
-	else
+	if(!curr_stats.preview.on)
 	{
 		stats_set_quickview(1);
-		qv_draw(curr_view);
+		stats_redraw_schedule();
+		return;
 	}
+
+	stats_set_quickview(0);
+
+	if(ui_view_is_visible(other_view))
+	{
+		/* Force cleaning possible leftovers of graphics, otherwise curses internal
+		 * structures don't know that those parts need to be redrawn on the
+		 * screen. */
+		if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
+		{
+			qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
+		}
+
+		draw_dir_list(other_view);
+		refresh_view_win(other_view);
+	}
+
+	update_string(&curr_stats.preview.cleanup_cmd, NULL);
+	curr_stats.preview.graphical = 0;
+	qv_ui_updated();
 }
 
 void
@@ -232,13 +248,17 @@ view_entry(const dir_entry_t *entry)
 static void
 view_file(const char path[])
 {
-	int graphical = 0;
-	const char *viewer;
-	const char *clear_cmd;
+	const char *viewer = qv_get_viewer(path);
+	int graphical = (!is_null_or_empty(viewer) && is_graphical_viewer(viewer));
+
+	if(is_cache_valid(path, graphical))
+	{
+		ui_drop_attr(other_view->win);
+		draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
+		return;
+	}
+
 	FILE *fp;
-
-	viewer = qv_get_viewer(path);
-
 	if(viewer == NULL && is_dir(path))
 	{
 		ui_cancellation_reset();
@@ -263,7 +283,6 @@ view_file(const char path[])
 	}
 	else
 	{
-		graphical = is_graphical_viewer(viewer);
 		/* If graphics will be displayed, clear the window and wait a bit to let
 		 * terminal emulator do actual refresh (at least some of them need this). */
 		if(graphical)
@@ -290,14 +309,85 @@ view_file(const char path[])
 	}
 	curr_stats.preview.graphical = graphical;
 
-	clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
+	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	ui_drop_attr(other_view->win);
-	view_stream(fp, cfg.wrap_quick_view);
+	fill_cache(fp, path);
+
 	fclose(fp);
 
 	ui_cancellation_disable();
+
+	ui_drop_attr(other_view->win);
+	draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
+}
+
+/* Checks whether data in qv_cache is up to date with the file on disk.  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+is_cache_valid(const char path[], int graphical)
+{
+	filemon_t filemon;
+	if(filemon_from_file(path, &filemon) == 0 && qv_cache.path != NULL &&
+			paths_are_equal(qv_cache.path, path) &&
+			filemon_equal(&qv_cache.filemon, &filemon))
+	{
+		if(!graphical)
+		{
+			return 1;
+		}
+
+		return graphical
+		    && qv_cache.h == ui_qv_height(other_view)
+		    && qv_cache.w == ui_qv_width(other_view)
+		    && qv_cache.x == ui_qv_x(other_view)
+		    && qv_cache.y == ui_qv_y(other_view);
+	}
+
+	return 0;
+}
+
+/* Fills qv_cache data with file's contents. */
+static void
+fill_cache(FILE *fp, const char path[])
+{
+	/* File monitor must always be initialized, because it's used below. */
+	filemon_t filemon = {};
+	(void)filemon_from_file(path, &filemon);
+	filemon_assign(&qv_cache.filemon, &filemon);
+
+	replace_string(&qv_cache.path, path);
+
+	free_string_array(qv_cache.lines.items, qv_cache.lines.nitems);
+	qv_cache.lines = read_lines(fp, MAX_PREVIEW_LINES);
+
+	qv_cache.h = ui_qv_height(other_view);
+	qv_cache.w = ui_qv_width(other_view);
+	qv_cache.x = ui_qv_x(other_view);
+	qv_cache.y = ui_qv_y(other_view);
+}
+
+/* Reads at most max_lines from the stream ignoring BOM.  Returns the lines
+ * read. */
+TSTATIC strlist_t
+read_lines(FILE *fp, int max_lines)
+{
+	strlist_t lines = {};
+	skip_bom(fp);
+
+	char *next_line;
+	while(lines.nitems < max_lines && (next_line = read_line(fp, NULL)) != NULL)
+	{
+		const int old_len = lines.nitems;
+		lines.nitems = put_into_string_array(&lines.items, lines.nitems, next_line);
+		if(lines.nitems == old_len)
+		{
+			free(next_line);
+			break;
+		}
+	}
+
+	return lines;
 }
 
 FILE *
@@ -529,11 +619,10 @@ print_entry_prefix(tree_print_state_t *s)
 	}
 }
 
-/* Displays contents read from the fp in the other pane starting from the second
- * line and second column.  The wrapped parameter determines whether lines
- * should be wrapped. */
-TSTATIC void
-view_stream(FILE *fp, int wrapped)
+/* Displays lines in the other pane.  The wrapped parameter determines whether
+ * lines should be wrapped. */
+static void
+draw_lines(const strlist_t *lines, int wrapped)
 {
 	const size_t left = ui_qv_left(other_view);
 	const size_t top = ui_qv_top(other_view);
@@ -541,72 +630,31 @@ view_stream(FILE *fp, int wrapped)
 	const size_t max_height = ui_qv_height(other_view);
 
 	const col_scheme_t *cs = ui_view_get_cs(other_view);
-	char line[PREVIEW_LINE_BUF_LEN];
 	int line_continued = 0;
 	size_t y = top;
-	const char *res;
-	esc_state state;
 
+	esc_state state;
 	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);
 
-	skip_bom(fp);
-	res = get_line(fp, line, sizeof(line));
-
-	while(res != NULL && y < top + max_height)
+	int next_line = 0;
+	const char *input_line = (next_line == lines->nitems)
+	                       ? NULL
+	                       : lines->items[next_line++];
+	while(input_line != NULL && y < top + max_height)
 	{
-		int offset;
 		int printed;
-		const size_t len = add_to_line(fp, max_width, line, sizeof(line));
-		if(!wrapped && line[len - 1] != '\n')
-		{
-			skip_until_eol(fp);
-		}
+		input_line += esc_print_line(input_line, other_view->win, left, y,
+				max_width, 0, !wrapped, &state, &printed);
 
-		offset = esc_print_line(line, other_view->win, left, y, max_width, 0,
-				&state, &printed);
 		y += !wrapped || (!line_continued || printed);
-		line_continued = line[len - 1] != '\n';
+		line_continued = (*input_line != '\0');
 
-		if(y < top + max_height && (!wrapped || shift_line(line, len, offset)))
+		if(y < top + max_height && (!wrapped || !line_continued))
 		{
-			res = get_line(fp, line, sizeof(line));
+			input_line = (next_line == lines->nitems) ? NULL
+			                                          : lines->items[next_line++];
 		}
 	}
-}
-
-/* Shifts characters in the line of length len, so that characters at the offset
- * position are moved to the beginning of the line.  Returns non-zero if new
- * buffer should be treated as empty. */
-static int
-shift_line(char line[], size_t len, size_t offset)
-{
-	const size_t shift_width = len - offset;
-	if(shift_width != 0)
-	{
-		memmove(line, line + offset, shift_width + 1);
-		return (shift_width == 1 && line[0] == '\n');
-	}
-	return 1;
-}
-
-/* Tries to add more characters from the fp file, but not exceed length of the
- * line buffer (the len parameter) and maximum number of printable character
- * positions (the max parameter).  Returns new length of the line buffer. */
-static size_t
-add_to_line(FILE *fp, size_t max, char line[], size_t len)
-{
-	size_t n_len = utf8_nstrlen(line) - esc_str_overhead(line);
-	size_t curr_len = strlen(line);
-	while(n_len < max && line[curr_len - 1] != '\n' && !feof(fp))
-	{
-		if(get_line(fp, line + curr_len, len - curr_len) == NULL)
-		{
-			break;
-		}
-		n_len = utf8_nstrlen(line) - esc_str_overhead(line);
-		curr_len = strlen(line);
-	}
-	return curr_len;
 }
 
 /* Writes single line message of error or information kind instead of real
@@ -744,6 +792,14 @@ qv_get_path_to_explore(const dir_entry_t *entry, char buf[], size_t buf_len)
 	}
 
 	get_full_path_of(entry, buf_len, buf);
+}
+
+void
+qv_ui_updated(void)
+{
+	/* Invalidate graphical cache. */
+	qv_cache.h = 0;
+	qv_cache.w = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

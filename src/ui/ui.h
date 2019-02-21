@@ -363,6 +363,7 @@ struct view_t
 	int curr_line; /* current line # of the window  */
 	int top_line; /* # of the list position that is the top line in window */
 	int list_pos; /* actual position in the file list */
+	int last_seen_pos; /* Last position that was displayed on the screen. */
 	int list_rows; /* size of the file list */
 	int window_rows; /* Number of rows in the window. */
 	int window_cols; /* Number of columns in the window. */
@@ -686,6 +687,12 @@ int ui_qv_height(const view_t *view);
 
 /* Retrieves width of quickview area.  Returns the width. */
 int ui_qv_width(const view_t *view);
+
+/* Retrieves absolute column number of quickview area.  Returns the number. */
+int ui_qv_x(const view_t *view);
+
+/* Retrieves absolute line number of quickview area.  Returns the number. */
+int ui_qv_y(const view_t *view);
 
 /* Gets color scheme that corresponds to the view.  Returns pointer to the color
  * scheme. */

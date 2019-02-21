@@ -25,6 +25,9 @@
 	Added "L" flag to 'shortmess' option to display only last directory in tab
 	line instead of full path.  Thanks to chelovechishko.
 
+	Added caching to quickview for a single file to avoid fileviewer being
+	called more than needed.  Thanks to agguser.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -39,6 +42,11 @@
 	'vicmd'/'vixcmd' options.  Thanks to chelovechishko.
 
 	Preserve extended attributes on copying files.  Thanks to hutou.
+
+	Improved <silent> to do not forcefully update screen after the mapping if
+	no screen updates were skipped.
+
+	Try to avoid superfluous screen updates related to cursor position.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
@@ -99,6 +107,9 @@
 
 	Fixed issues (could lead to crash) on resizing on Windows.  Thanks to Tim
 	Schaeffer (a.k.a. Numeromancer).
+
+	Fixed wrapped lines in quickview/view mode sometimes loosing their
+	colorization.
 
 0.10-beta to 0.10 (2018-11-11)
 

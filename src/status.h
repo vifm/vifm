@@ -198,8 +198,6 @@ typedef struct
 
 	int global_local_settings; /* Set local settings globally. */
 
-	int silent_ui; /* Whether UI updates should be "paused". */
-
 	int history_size;   /* Number of elements in histories. */
 	hist_t cmd_hist;    /* History of command-line commands. */
 	hist_t search_hist; /* History of search patterns. */
@@ -269,9 +267,14 @@ void stats_save_msg(const char msg[]);
  * parts of the application. */
 void stats_set_quickview(int on);
 
+/* UI silencing. */
+
 /* Non-zero argument makes UI more silent, zero argument makes it less silent.
  * After calls with non-zero and zero arguments balance out, UI gets updated. */
 void stats_silence_ui(int more);
+
+/* Checks whether UI is currently silenced. */
+int stats_silenced_ui(void);
 
 /* Managing histories. */
 

@@ -697,6 +697,7 @@ update_screen(UpdateType update_kind)
 	}
 
 	curr_stats.need_update = UT_NONE;
+	qv_ui_updated();
 
 	update_views(update_kind == UT_FULL);
 	/* Redraw message dialog over updated panes.  It's not very nice to do it
@@ -1137,7 +1138,7 @@ update_attributes(void)
 void
 ui_refresh_win(WINDOW *win)
 {
-	if(!curr_stats.silent_ui)
+	if(!stats_silenced_ui())
 	{
 		use_wrefresh(win);
 	}
@@ -1719,7 +1720,7 @@ ui_view_title_update(view_t *view)
 		return;
 	}
 
-	if(view == selected && cfg.set_title && !curr_stats.silent_ui)
+	if(view == selected && cfg.set_title && !stats_silenced_ui())
 	{
 		char *const term_title = format_view_title(view, pf);
 		term_title_update(term_title);
@@ -2141,25 +2142,41 @@ is_forced_list_mode(const view_t *view)
 int
 ui_qv_left(const view_t *view)
 {
-	return cfg.extra_padding ? 1 : 0;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? 1 : 0;
 }
 
 int
 ui_qv_top(const view_t *view)
 {
-	return cfg.extra_padding ? 1 : 0;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? 1 : 0;
 }
 
 int
 ui_qv_height(const view_t *view)
 {
-	return cfg.extra_padding ? view->window_rows - 2 : view->window_rows;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? view->window_rows - 2 : view->window_rows;
 }
 
 int
 ui_qv_width(const view_t *view)
 {
-	return cfg.extra_padding ? view->window_cols - 2 : view->window_cols;
+	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
+	return with_margin ? view->window_cols - 2 : view->window_cols;
+}
+
+int
+ui_qv_x(const view_t *view)
+{
+	return getbegx(view->win) + ui_qv_left(view);
+}
+
+int
+ui_qv_y(const view_t *view)
+{
+	return getbegy(view->win) + ui_qv_top(view);
 }
 
 const col_scheme_t *
