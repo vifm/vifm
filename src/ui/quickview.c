@@ -141,33 +141,32 @@ qv_can_show(void)
 void
 qv_toggle(void)
 {
-	if(curr_stats.preview.on)
-	{
-		stats_set_quickview(0);
-
-		if(ui_view_is_visible(other_view))
-		{
-			/* Force cleaning possible leftovers of graphics, otherwise curses
-			 * internal structures don't know that those parts need to be redrawn on
-			 * the screen. */
-			if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
-			{
-				qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
-			}
-
-			draw_dir_list(other_view);
-			refresh_view_win(other_view);
-		}
-
-		update_string(&curr_stats.preview.cleanup_cmd, NULL);
-		curr_stats.preview.graphical = 0;
-		qv_ui_updated();
-	}
-	else
+	if(!curr_stats.preview.on)
 	{
 		stats_set_quickview(1);
-		qv_draw(curr_view);
+		stats_redraw_schedule();
+		return;
 	}
+
+	stats_set_quickview(0);
+
+	if(ui_view_is_visible(other_view))
+	{
+		/* Force cleaning possible leftovers of graphics, otherwise curses internal
+		 * structures don't know that those parts need to be redrawn on the
+		 * screen. */
+		if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
+		{
+			qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
+		}
+
+		draw_dir_list(other_view);
+		refresh_view_win(other_view);
+	}
+
+	update_string(&curr_stats.preview.cleanup_cmd, NULL);
+	curr_stats.preview.graphical = 0;
+	qv_ui_updated();
 }
 
 void
