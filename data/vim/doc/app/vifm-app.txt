@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Feb 12
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Feb 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2762,11 +2762,13 @@ There are six possible ways to write a single pattern:
  5. [!]<comma-separated-mime-type-globs>
  6. undecorated-pattern
 
-Flags of regular expressions mean the following:
-  - "i" makes filter case insensitive;
-  - "I" makes filter case sensitive.
-They can be repeated multiple times, but the later one takes precedence (e.g.
-"iiiI" is equivalent to "I" and "IiIi" is the same as "i").
+First five forms can include leading exclamation mark that negates pattern
+matching.
+
+The last form is implicitly refers to one of the others.  |vifm-:highlight|
+does not accept undecorated form, while |vifm-:filetype|, |vifm-:filextype|,
+|vifm-:fileviewer|, |vifm-:select|, |vifm-:unselect| and |vifm-'classify'|
+treat it as list of name globs.
 
 To combine several patterns (AND them), make sure you're using one of the
 first five forms and write patterns one after another, like this: >
@@ -2779,19 +2781,23 @@ comma-separated list of patterns instead of a single pattern, thus effectively
 handling OR operation on them: >
  <text/plain>{*.vifm},<application/pdf>{*.pdf}
 
-Five first forms can include leading exclamation mark that negates pattern
-matching.
-
-The last form is implicitly refers to one of the others.  |vifm-:highlight|
-does not accept undecorated form, while |vifm-:filetype|, |vifm-:filextype|,
-|vifm-:fileviewer|, |vifm-:select|, |vifm-:unselect| and |vifm-'classify'|
-treat it as list of name globs.
+Patterns with regular expressions~
 
 Regular expression patterns are case insensitive by default, see description
 of commands, which might override default behaviour.
 
+Flags of regular expressions mean the following:
+  - "i" makes filter case insensitive;
+  - "I" makes filter case sensitive.
+They can be repeated multiple times, but the later one takes precedence (e.g.
+"iiiI" is equivalent to "I" and "IiIi" is the same as "i").
+
+Patterns with globs~
+
 |vifm-globs| section provides short overview of globs and some important points
 that one needs to know about them.
+
+Patterns with mime-types~
 
 Mime type matching is essentially globs matching applied to mime type of a file
 instead of its name/path.  Note: mime types aren't detected on Windows.
