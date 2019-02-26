@@ -48,6 +48,8 @@
 
 	Try to avoid superfluous screen updates related to cursor position.
 
+	Improve documentation of patterns and globs.  Thanks to afsheenb.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
