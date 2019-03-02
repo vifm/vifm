@@ -171,6 +171,13 @@ ifneq (,$(findstring --coverage, $(LDFLAGS)))
         override LDFLAGS += --coverage
     endif
 endif
+# don't precompile header with clang (on OS X gcc is likely to be a symlink to
+# clang) because it handles macros in a different way
+ifeq (,$(findstring clang,$(CC)))
+    ifneq (Darwin,$(shell uname -s))
+        GCH_DEP := $(B)stic/stic.h.gch
+    endif
+endif
 
 ifdef DEBUG
     override CFLAGS += -g -O0
@@ -225,13 +232,7 @@ $(BUILD)stic.o: stic/stic.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(B)stic/stic.h.gch: stic/stic.h | $(B)stic
-# don't precompile header with clang (on OS X gcc is likely to be a symlink to
-# clang) because it handles macros in a different way
-ifeq (,$(findstring clang,$(CC)))
-ifneq (Darwin,$(shell uname -s))
 	$(CC) -c -o $@ $(CFLAGS) $<
-endif
-endif
 
 $(B)stic $(B)bin/$(BINSUBDIR):
 	$(AT)mkdir -p $@
@@ -278,7 +279,7 @@ $$($1.bin): $$($1.obj) $(BUILD)stic.o $(vifm_obj) \
           | $(vifm_bin) $(B)bin/$(BINSUBDIR)
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
-$(BUILD)$1/%.o: $1/%.c $(B)stic/stic.h.gch $(BUILD)$1/filelist \
+$(BUILD)$1/%.o: $1/%.c $(GCH_DEP) $(BUILD)$1/filelist \
               | $(BUILD)$1 $(SANDBOX_PATH)/$1
 	$$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
 	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
