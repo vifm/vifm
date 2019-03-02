@@ -23,7 +23,7 @@ addons:
       version: 0.10+
       description: "TUI file manager with vi like key bindings."
     notification_email: xaizek@posteo.net
-    build_command_prepend: scripts/fix-timestamps fast && ./configure
+    build_command_prepend: scripts/fix-timestamps fast && ./configure --disable-dependency-tracking
     build_command: make -j 3
     branch_pattern: coverity-scan
 
@@ -35,9 +35,9 @@ script:
      scripts/fix-timestamps fast && (
        if [ "$CC" = gcc -a "$TRAVIS_OS_NAME" = linux ]; then
          pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1 &&
-         ./configure --enable-coverage;
+         ./configure --disable-dependency-tracking --enable-coverage;
        else
-         ./configure;
+         ./configure --disable-dependency-tracking;
        fi
      ) &&
      make -j4 &&
