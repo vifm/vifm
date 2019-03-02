@@ -1,13 +1,19 @@
 language: c
 sudo: false
 
-os:
-  - linux
-  - osx
-
-compiler:
- - gcc
- - clang
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+    - os: linux
+      compiler: clang
+    # gcc is just a link to clang on OS X so no need to run it without
+    # sanitizers
+    - os: osx
+      compiler: gcc
+      env: CONFIGURE_EXTRA=--with-sanitize=basic
+    - os: osx
+      compiler: clang
 
 env:
   global:
@@ -37,7 +43,7 @@ script:
          pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1 &&
          ./configure --disable-dependency-tracking --enable-coverage;
        else
-         ./configure --disable-dependency-tracking;
+         ./configure --disable-dependency-tracking $CONFIGURE_EXTRA;
        fi
      ) &&
      make -j4 &&
