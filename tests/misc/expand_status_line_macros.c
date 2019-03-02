@@ -71,6 +71,10 @@ SETUP()
 
 	curr_view = &lwin;
 	other_view = &rwin;
+
+	cfg.sizefmt.ieci_prefixes = 0;
+	cfg.sizefmt.base = 1024;
+	cfg.sizefmt.precision = 0;
 }
 
 TEARDOWN()

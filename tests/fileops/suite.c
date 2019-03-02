@@ -30,6 +30,10 @@ SETUP_ONCE()
 		.move_pair = &move_pair_stub,
 	};
 	colmgr_init(&colmgr_conf);
+
+	cfg.sizefmt.ieci_prefixes = 0;
+	cfg.sizefmt.base = 1024;
+	cfg.sizefmt.precision = 0;
 }
 
 SETUP()
