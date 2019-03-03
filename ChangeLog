@@ -119,6 +119,10 @@
 	Fixed occasional test failures due to use of uninitialized curses.  Thanks
 	to Diogo Lemos (a.k.a. dmlemos).
 
+	Fixed losing files on failed move operation.  Source files were deleted
+	assuming they were copied successfully, even when errors regarding some of
+	them were ignored by the user.  Thanks to zsugabubus.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
