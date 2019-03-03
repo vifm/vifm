@@ -169,7 +169,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 			}
 		}
 
-		dst = format_str("%s/%s", args->path, dst_name);
+		dst = join_paths(args->path, dst_name);
 		args->nlines = put_into_string_array(&args->list, args->nlines, dst);
 
 		if(!paths_are_equal(src, dst) && path_exists(dst, NODEREF))

@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod()  */
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* rmdir() */
 
 #include "../../src/compat/os.h"

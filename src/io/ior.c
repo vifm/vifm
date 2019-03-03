@@ -365,7 +365,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	rel_part = full_path + strlen(cp_args->arg1.src);
 	dst_full_path = (rel_part[0] == '\0')
 	              ? cp_args->arg2.dst
-	              : (free_me = format_str("%s/%s", cp_args->arg2.dst, rel_part));
+	              : (free_me = join_paths(cp_args->arg2.dst, rel_part));
 
 	switch(action)
 	{
