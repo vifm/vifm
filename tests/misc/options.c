@@ -400,6 +400,9 @@ TEST(values_in_fillchars_are_deduplicated)
 
 TEST(sizefmt_is_set_on_correct_input)
 {
+	assert_success(exec_commands("set sizefmt=units:si,precision:1", &lwin,
+				CIT_COMMAND));
+
 	cfg.sizefmt.base = -1;
 	cfg.sizefmt.precision = -1;
 

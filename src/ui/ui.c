@@ -345,6 +345,11 @@ ui_update_term_state(void)
 int
 ui_char_pressed(wint_t c)
 {
+	if(curr_stats.load_stage < 2)
+	{
+		return 0;
+	}
+
 	wint_t pressed = L'\0';
 	const int cancellation_state = ui_cancellation_pause();
 
