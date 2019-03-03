@@ -50,6 +50,9 @@
 
 	Improve documentation of patterns and globs.  Thanks to afsheenb.
 
+	Don't throw away errors that were ignored by the user, display them at the
+	end of operation.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
