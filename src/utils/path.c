@@ -516,7 +516,7 @@ try_replace_tilde(const char path[])
 	}
 
 	chosp(pw->pw_dir);
-	result = format_str("%s/%s", pw->pw_dir, p);
+	result = join_paths(pw->pw_dir, p);
 
 	return result;
 #else
@@ -791,6 +791,14 @@ void
 build_path(char buf[], size_t buf_len, const char p1[], const char p2[])
 {
 	snprintf(buf, buf_len, "%s%s%s", p1, ends_with_slash(p1) ? "" : "/", p2);
+}
+
+char *
+join_paths(const char p1[], const char p2[])
+{
+	const char *slash = (ends_with_slash(p1) ? "" : "/");
+	p2 = skip_char(p2, '/');
+	return format_str("%s%s%s", p1, slash, p2);
 }
 
 #ifdef _WIN32

@@ -146,6 +146,10 @@ const char * get_tmpdir(void);
  * them. */
 void build_path(char buf[], size_t buf_len, const char p1[], const char p2[]);
 
+/* Concatenates two paths while making sure to not add extra slash between
+ * them.  Returns newly allocated string. */
+char * join_paths(const char p1[], const char p2[]);
+
 #ifdef _WIN32
 
 int is_unc_path(const char *path);

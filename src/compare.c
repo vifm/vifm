@@ -633,7 +633,7 @@ list_files_recursively(const char path[], int skip_dot_files, strlist_t *list)
 			continue;
 		}
 
-		full_path = format_str("%s/%s", path, lst[i]);
+		full_path = join_paths(path, lst[i]);
 		if(is_dir(full_path))
 		{
 			if(!is_symlink(full_path))

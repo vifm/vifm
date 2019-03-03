@@ -50,6 +50,9 @@
 
 	Improve documentation of patterns and globs.  Thanks to afsheenb.
 
+	Don't throw away errors that were ignored by the user, display them at the
+	end of operation.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
@@ -115,6 +118,10 @@
 
 	Fixed occasional test failures due to use of uninitialized curses.  Thanks
 	to Diogo Lemos (a.k.a. dmlemos).
+
+	Fixed losing files on failed move operation.  Source files were deleted
+	assuming they were copied successfully, even when errors regarding some of
+	them were ignored by the user.  Thanks to zsugabubus.
 
 0.10-beta to 0.10 (2018-11-11)
 

@@ -1,6 +1,6 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod()  */
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* rmdir() */
 
 #include "../../src/compat/os.h"
@@ -16,7 +16,7 @@ static IoErrCbResult handle_errors(struct io_args_t *args,
 static const io_cancellation_t no_cancellation;
 static int retry_count;
 
-TEST(file_copy_errors_are_detected_and_ignored, IF(not_windows))
+TEST(file_copy_errors_are_detected_and_preserved, IF(not_windows))
 {
 	io_args_t args = {
 		.arg1.src = SANDBOX_PATH "/file",
@@ -31,7 +31,7 @@ TEST(file_copy_errors_are_detected_and_ignored, IF(not_windows))
 
 	retry_count = -1;
 	assert_success(iop_cp(&args));
-	assert_int_equal(0, args.result.errors.error_count);
+	assert_int_equal(1, args.result.errors.error_count);
 	ioe_errlst_free(&args.result.errors);
 
 	assert_int_equal(-2, retry_count);

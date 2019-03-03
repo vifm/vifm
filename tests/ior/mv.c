@@ -13,6 +13,8 @@
 
 #include "utils.h"
 
+static IoErrCbResult ignore_errors(struct io_args_t *args,
+		const ioe_err_t *err);
 static int can_rename_changing_case(void);
 
 TEST(file_is_moved)
@@ -347,6 +349,34 @@ TEST(case_change_on_rename, IF(can_rename_changing_case))
 	}
 
 	delete_file(SANDBOX_PATH "/A-file");
+}
+
+TEST(error_on_move_preserves_source_file, IF(not_windows))
+{
+	io_args_t args = {
+		.arg1.src = SANDBOX_PATH "/file",
+		.arg2.dst = SANDBOX_PATH "/ro/file",
+
+		.result.errors = IOE_ERRLST_INIT,
+		.result.errors_cb = &ignore_errors,
+	};
+
+	create_empty_file(SANDBOX_PATH "/file");
+	create_empty_dir(SANDBOX_PATH "/ro");
+	assert_success(chmod(SANDBOX_PATH "/ro", 0500));
+
+	assert_success(ior_mv(&args));
+	assert_int_equal(1, args.result.errors.error_count);
+	ioe_errlst_free(&args.result.errors);
+
+	delete_file(SANDBOX_PATH "/file");
+	delete_dir(SANDBOX_PATH "/ro");
+}
+
+static IoErrCbResult
+ignore_errors(struct io_args_t *args, const ioe_err_t *err)
+{
+	return IO_ECR_IGNORE;
 }
 
 static int

@@ -222,7 +222,10 @@ ior_mv(io_args_t *args)
 				args->confirm = (confirmed ? NULL : confirm);
 				int result = ior_cp(args);
 				args->confirm = confirm;
-				if(result == 0)
+				/* When result is zero, there still might be errors if they were
+				 * ignored by the user.  Do not delete source in this case, some files
+				 * might be missing at the destination. */
+				if(result == 0 && args->result.errors.error_count == 0)
 				{
 					io_args_t rm_args = {
 						.arg1.path = src,
@@ -362,7 +365,7 @@ cp_mv_visitor(const char full_path[], VisitAction action, void *param, int cp)
 	rel_part = full_path + strlen(cp_args->arg1.src);
 	dst_full_path = (rel_part[0] == '\0')
 	              ? cp_args->arg2.dst
-	              : (free_me = format_str("%s/%s", cp_args->arg2.dst, rel_part));
+	              : (free_me = join_paths(cp_args->arg2.dst, rel_part));
 
 	switch(action)
 	{

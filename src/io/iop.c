@@ -827,8 +827,6 @@ retry_wrapper(iop_func func, io_args_t *args)
 
 			case IO_ECR_IGNORE:
 				result = 0;
-				ioe_errlst_free(&args->result.errors);
-				args->result.errors = empty_errlist;
 				if(args->estim != NULL)
 				{
 					/* When we ignore a file, in order to make progress look nice pretend
@@ -836,6 +834,7 @@ retry_wrapper(iop_func func, io_args_t *args)
 					ioeta_update(args->estim, args->estim->item, args->estim->target, 1,
 							args->estim->total_file_bytes - args->estim->current_file_byte);
 				}
+				ioe_errlst_splice(&orig_errlist, &args->result.errors);
 				break;
 
 			case IO_ECR_BREAK:

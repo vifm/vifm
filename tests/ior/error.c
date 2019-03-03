@@ -1,7 +1,9 @@
 #include <stic.h>
 
-#include <sys/stat.h> /* chmod()  */
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* rmdir() */
+
+#include <string.h> /* strstr() */
 
 #include "../../src/compat/os.h"
 #include "../../src/io/ior.h"
@@ -40,6 +42,38 @@ TEST(file_removal_error_is_reported_and_logged_once, IF(not_windows))
 	assert_success(chmod(SANDBOX_PATH "/dir", 0700));
 	delete_file(SANDBOX_PATH "/dir/file");
 	rmdir(SANDBOX_PATH "/dir");
+}
+
+TEST(path_in_errors_has_no_double_slashes, IF(not_windows))
+{
+	io_args_t args = {
+		.arg1.src = SANDBOX_PATH "/dir",
+		.arg2.dst = SANDBOX_PATH "/dir2",
+		.arg3.crs = IO_CRS_REPLACE_FILES,
+
+		.result.errors = IOE_ERRLST_INIT,
+		.result.errors_cb = &handle_errors,
+	};
+
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0700));
+	create_empty_file(SANDBOX_PATH "/dir/afile");
+	create_empty_file(SANDBOX_PATH "/dir/file");
+	assert_success(chmod(SANDBOX_PATH "/dir/file", 0000));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir2", 0000));
+
+	ignore_count = 3;
+
+	assert_success(ior_cp(&args));
+	assert_int_equal(1, ignore_count);
+	assert_int_equal(2, args.result.errors.error_count);
+	assert_string_equal(NULL, strstr(args.result.errors.errors[0].path, "//"));
+	assert_string_equal(NULL, strstr(args.result.errors.errors[1].path, "//"));
+	ioe_errlst_free(&args.result.errors);
+
+	delete_file(SANDBOX_PATH "/dir/afile");
+	delete_file(SANDBOX_PATH "/dir/file");
+	delete_dir(SANDBOX_PATH "/dir");
+	delete_dir(SANDBOX_PATH "/dir2");
 }
 
 static IoErrCbResult
