@@ -156,8 +156,7 @@ rename_file_cb(const char new_name[])
 static int
 complete_filename_only(const char str[], void *arg)
 {
-	filename_completion(str, CT_FILE_WOE, 0);
-	return 0;
+	return filename_completion(str, CT_FILE_WOE, 0);
 }
 
 int
