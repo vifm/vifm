@@ -440,6 +440,20 @@ TEST(bang_abs_path_completion)
 	free(wcwd);
 }
 
+TEST(standalone_tilde_is_expanded)
+{
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
+			saved_cwd);
+
+	char *expected = format_str("cd %s", cfg.home_dir);
+	wchar_t *wexpected = to_wide(expected);
+
+	ASSERT_COMPLETION(L"cd ~", wexpected);
+
+	free(wexpected);
+	free(expected);
+}
+
 TEST(tilde_is_completed_after_emark)
 {
 	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
