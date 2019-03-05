@@ -637,7 +637,7 @@ fops_get_ops(OPS main_op, const char descr[], const char base_dir[],
 	ops_t *const ops = ops_alloc(main_op, 0, descr, base_dir, target_dir);
 	if(ops->use_system_calls)
 	{
-		progress_data_t *const pdata = alloc_progress_data(0, ops);
+		progress_data_t *const pdata = alloc_progress_data(ops->bg, ops);
 		const io_cancellation_t cancellation = { .hook = &ui_cancellation_hook };
 		ops->estim = ioeta_alloc(pdata, cancellation);
 	}
@@ -810,7 +810,7 @@ fops_get_bg_ops(OPS main_op, const char descr[], const char dir[])
 	ops_t *const ops = ops_alloc(main_op, 1, descr, dir, dir);
 	if(ops->use_system_calls)
 	{
-		progress_data_t *const pdata = alloc_progress_data(1, NULL);
+		progress_data_t *const pdata = alloc_progress_data(ops->bg, NULL);
 		const io_cancellation_t no_cancellation = {};
 		ops->estim = ioeta_alloc(pdata, no_cancellation);
 	}
