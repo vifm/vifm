@@ -385,6 +385,16 @@ ui_char_pressed(wint_t c)
 	return pressed == c;
 }
 
+void
+ui_drain_input(void)
+{
+	wint_t c;
+	while(compat_wget_wch(no_delay_window, &c) != ERR)
+	{
+		/* Discard input. */
+	}
+}
+
 static void
 correct_size(view_t *view)
 {

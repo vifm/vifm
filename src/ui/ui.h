@@ -491,6 +491,9 @@ void ui_update_term_state(void);
 /* Checks whether given character was pressed, ignores any other characters. */
 int ui_char_pressed(wint_t c);
 
+/* Reads buffered input until it's empty. */
+void ui_drain_input(void);
+
 int setup_ncurses_interface(void);
 
 /* Closes current tab if it's not the last one, closes whole application

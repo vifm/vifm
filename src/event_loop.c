@@ -315,13 +315,9 @@ ensure_term_is_ready(void)
 
 	if(curr_stats.term_state == TS_BACK_TO_NORMAL)
 	{
-		wint_t c;
-
-		wtimeout(status_bar, 0);
-		while(compat_wget_wch(status_bar, &c) != ERR);
+		ui_drain_input();
 		curr_stats.term_state = TS_NORMAL;
 		modes_redraw();
-		wtimeout(status_bar, cfg.timeout_len);
 
 		curr_stats.save_msg = 0;
 		ui_sb_msg("");
