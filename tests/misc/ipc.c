@@ -130,7 +130,7 @@ TEST(expr_is_evaluated, IF(enabled_and_not_in_wine))
 	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
 	ipc_t *const ipc2 = ipc_init(NAME, &test_ipc_args2, &test_ipc_eval);
 
-	assert_success(bg_execute("", "", 0, 1, &other_instance, ipc2));
+	assert_success(bg_execute("", "", 0, 1, &other_instance, ipc2, NULL));
 
 	result = ipc_eval(ipc1, ipc_get_name(ipc2), expr);
 	assert_false(ipc_check(ipc1));
@@ -157,7 +157,7 @@ TEST(eval_error_is_handled, IF(enabled_and_not_in_wine))
 	ipc_t *const ipc1 = ipc_init(NAME, &test_ipc_args, &test_ipc_eval);
 	ipc_t *const ipc2 = ipc_init(NAME, &test_ipc_args2, &test_ipc_eval_error);
 
-	assert_success(bg_execute("", "", 0, 1, &other_instance, ipc2));
+	assert_success(bg_execute("", "", 0, 1, &other_instance, ipc2, NULL));
 
 	result = ipc_eval(ipc1, ipc_get_name(ipc2), expr);
 	assert_false(ipc_check(ipc1));
