@@ -845,9 +845,7 @@ fops_free_ops(ops_t *ops)
 
 	if(ops->use_system_calls)
 	{
-		progress_data_t *const pdata = ops->estim->param;
-
-		if(!pdata->bg && ops->errors != NULL)
+		if(!ops->bg && ops->errors != NULL)
 		{
 			char *const title = format_str("Encountered errors on %s",
 					ops_describe(ops));
