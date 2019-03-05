@@ -915,18 +915,29 @@ filename_completion(const char str[], CompletionType type,
 {
 	/* TODO refactor filename_completion(...) function */
 	DIR *dir;
-	char *dirname;
 	char *filename;
 	char *temp;
 	char *cwd;
 
+	char *dirname = expand_tilde(str);
+
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
-		vle_compl_put_path_match(expand_tilde(str));
-		return 0;
+		if(dirname[0] != '~')
+		{
+			/* expand_tilde() did expand the ~user, just return it as it's a complete
+			 * match. */
+			vle_compl_put_path_match(dirname);
+			return 0;
+		}
+
+#ifndef _WIN32
+		free(dirname);
+		complete_user_name(str + 1);
+		return 1;
+#endif
 	}
 
-	dirname = expand_tilde(str);
 	filename = strdup(dirname);
 
 	temp = cmds_expand_envvars(dirname);

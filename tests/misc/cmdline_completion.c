@@ -5,7 +5,7 @@
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* fclose() fopen() free() */
-#include <string.h> /* strdup() */
+#include <string.h> /* strdup() strstr() */
 #include <wchar.h> /* wcsdup() */
 
 #include "../../src/compat/fs_limits.h"
@@ -459,6 +459,15 @@ TEST(tilde_is_completed_after_emark)
 	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
 			saved_cwd);
 	ASSERT_COMPLETION(L"!~/", L"!~/color-schemes/");
+}
+
+TEST(user_name_is_completed_after_tilde, IF(not_windows))
+{
+	prepare_for_line_completion(L"cd ~roo");
+	assert_success(line_completion(&stats));
+	char *narrow = to_multibyte(stats.line);
+	assert_string_equal(NULL, strstr(narrow, "\\~"));
+	free(narrow);
 }
 
 TEST(bmark_tags_are_completed)
