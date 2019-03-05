@@ -5,7 +5,7 @@
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* fclose() fopen() free() */
-#include <string.h> /* strdup() */
+#include <string.h> /* strdup() strstr() */
 #include <wchar.h> /* wcsdup() */
 
 #include "../../src/compat/fs_limits.h"
@@ -440,11 +440,34 @@ TEST(bang_abs_path_completion)
 	free(wcwd);
 }
 
+TEST(standalone_tilde_is_expanded)
+{
+	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
+			saved_cwd);
+
+	char *expected = format_str("cd %s", cfg.home_dir);
+	wchar_t *wexpected = to_wide(expected);
+
+	ASSERT_COMPLETION(L"cd ~", wexpected);
+
+	free(wexpected);
+	free(expected);
+}
+
 TEST(tilde_is_completed_after_emark)
 {
 	make_abs_path(cfg.home_dir, sizeof(cfg.home_dir), TEST_DATA_PATH, "/",
 			saved_cwd);
 	ASSERT_COMPLETION(L"!~/", L"!~/color-schemes/");
+}
+
+TEST(user_name_is_completed_after_tilde, IF(not_windows))
+{
+	prepare_for_line_completion(L"cd ~roo");
+	assert_success(line_completion(&stats));
+	char *narrow = to_multibyte(stats.line);
+	assert_string_equal(NULL, strstr(narrow, "\\~"));
+	free(narrow);
 }
 
 TEST(bmark_tags_are_completed)

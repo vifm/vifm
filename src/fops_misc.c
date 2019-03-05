@@ -595,8 +595,7 @@ static int
 complete_filename(const char str[], void *arg)
 {
 	const char *name_begin = after_last(str, '/');
-	filename_completion(str, CT_ALL_WOE, 0);
-	return name_begin - str;
+	return name_begin - str + filename_completion(str, CT_ALL_WOE, 0);
 }
 
 int

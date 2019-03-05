@@ -92,7 +92,7 @@ static void complete_winrun(const char str[]);
 static void complete_from_string_list(const char str[], const char *items[][2],
 		size_t item_count, int ignore_case);
 static void complete_command_name(const char beginning[]);
-static void filename_completion_in_dir(const char *path, const char *str,
+static int filename_completion_in_dir(const char path[], const char str[],
 		CompletionType type);
 static void filename_completion_internal(DIR *dir, const char dir_path[],
 		const char filename[], CompletionType type);
@@ -327,39 +327,40 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 		{
 			if(arg_num == 1)
 			{
-				filename_completion(arg, CT_DIRONLY, 0);
+				start += filename_completion(arg, CT_DIRONLY, 0);
 			}
 		}
 		else if(id == COM_BMARKS || id == COM_DELBMARKS)
 		{
-			filename_completion(arg, CT_ALL, 0);
+			start += filename_completion(arg, CT_ALL, 0);
 		}
 		else if(id == COM_CD || id == COM_SYNC || id == COM_PUSHD ||
 				id == COM_MKDIR || id == COM_TABNEW)
 		{
-			filename_completion(arg, CT_DIRONLY, 0);
+			start += filename_completion(arg, CT_DIRONLY, 0);
 		}
 		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
 				id == COM_RLINK)
 		{
-			filename_completion_in_dir(other_view->curr_dir, arg, CT_ALL);
+			start += filename_completion_in_dir(other_view->curr_dir, arg, CT_ALL);
 		}
 		else if(id == COM_SPLIT || id == COM_VSPLIT)
 		{
-			filename_completion_in_dir(flist_get_dir(curr_view), arg, CT_DIRONLY);
+			start += filename_completion_in_dir(flist_get_dir(curr_view), arg,
+					CT_DIRONLY);
 		}
 		else if(id == COM_GREP)
 		{
 			if(earg_num(argc, args) > 1 && args[0] == '-')
 			{
-				filename_completion(arg, CT_DIRONLY, 1);
+				start += filename_completion(arg, CT_DIRONLY, 1);
 			}
 		}
 		else if(id == COM_FIND)
 		{
 			if(earg_num(argc, args) <= 1)
 			{
-				filename_completion(arg, CT_DIRONLY, 1);
+				start += filename_completion(arg, CT_DIRONLY, 1);
 			}
 		}
 		else if(id == COM_EXECUTE)
@@ -367,20 +368,20 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 			if(earg_num(argc, args) <= 1)
 			{
 				if(*arg == '.' || *arg == '~' || is_path_absolute(arg))
-					filename_completion(arg, CT_DIREXEC, 0);
+					start += filename_completion(arg, CT_DIREXEC, 0);
 				else
 					complete_command_name(arg);
 			}
 			else
-				filename_completion(arg, CT_ALL, 0);
+				start += filename_completion(arg, CT_ALL, 0);
 		}
 		else if(id == COM_TOUCH || id == COM_RENAME)
 		{
-			filename_completion(arg, CT_ALL_WOS, 0);
+			start += filename_completion(arg, CT_ALL_WOS, 0);
 		}
 		else
 		{
-			filename_completion(arg, CT_ALL, 0);
+			start += filename_completion(arg, CT_ALL, 0);
 		}
 
 		free(free_me);
@@ -887,8 +888,10 @@ complete_command_name(const char beginning[])
 	restore_cwd(cwd);
 }
 
-static void
-filename_completion_in_dir(const char *path, const char *str,
+/* Does filename completion outside current working directory.  Returns
+ * completion start offset. */
+static int
+filename_completion_in_dir(const char path[], const char str[],
 		CompletionType type)
 {
 	char buf[PATH_MAX + 1];
@@ -900,30 +903,41 @@ filename_completion_in_dir(const char *path, const char *str,
 	{
 		snprintf(buf, sizeof(buf), "%s/%s", path, str);
 	}
-	filename_completion(buf, type, 0);
+	return filename_completion(buf, type, 0);
 }
 
 /*
  * type: CT_*
  */
-void
+int
 filename_completion(const char str[], CompletionType type,
 		int skip_canonicalization)
 {
 	/* TODO refactor filename_completion(...) function */
 	DIR *dir;
-	char *dirname;
 	char *filename;
 	char *temp;
 	char *cwd;
 
+	char *dirname = expand_tilde(str);
+
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
-		vle_compl_put_path_match(expand_tilde(str));
-		return;
+		if(dirname[0] != '~')
+		{
+			/* expand_tilde() did expand the ~user, just return it as it's a complete
+			 * match. */
+			vle_compl_put_path_match(dirname);
+			return 0;
+		}
+
+#ifndef _WIN32
+		free(dirname);
+		complete_user_name(str + 1);
+		return 1;
+#endif
 	}
 
-	dirname = expand_tilde(str);
 	filename = strdup(dirname);
 
 	temp = cmds_expand_envvars(dirname);
@@ -940,7 +954,7 @@ filename_completion(const char str[], CompletionType type,
 	{
 		free(filename);
 		free(dirname);
-		return;
+		return 0;
 	}
 
 	if(!skip_canonicalization)
@@ -952,7 +966,7 @@ filename_completion(const char str[], CompletionType type,
 		{
 			free(filename);
 			free(dirname);
-			return;
+			return 0;
 		}
 	}
 
@@ -972,7 +986,7 @@ filename_completion(const char str[], CompletionType type,
 		complete_with_shared(buf, filename);
 		free(filename);
 		free(dirname);
-		return;
+		return 0;
 	}
 	if(is_unc_path(curr_view->curr_dir))
 	{
@@ -1012,6 +1026,7 @@ filename_completion(const char str[], CompletionType type,
 	}
 
 	restore_cwd(cwd);
+	return 0;
 }
 
 /* The file completion core of filename_completion(). */
