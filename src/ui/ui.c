@@ -367,13 +367,7 @@ ui_char_pressed(wint_t c)
 	const int cancellation_state = ui_cancellation_pause();
 
 	/* Query single character in non-blocking mode. */
-	if(compat_wget_wch(no_delay_window, &pressed) != ERR)
-	{
-		if(pressed != c && pressed != NC_C_c)
-		{
-			compat_unget_wch(pressed);
-		}
-	}
+	(void)compat_wget_wch(no_delay_window, &pressed);
 
 	ui_cancellation_resume(cancellation_state);
 

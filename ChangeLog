@@ -56,6 +56,10 @@
 	Complete user name in paths after initial tilde (e.g., `:cd ~r<tab>` =>
 	`:cd ~root`).
 
+	Consume input during foreground file operations.  Otherwise it remains
+	buffered and is processed after the operation is over, which might not be
+	the intent of the user.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

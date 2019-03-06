@@ -35,12 +35,6 @@ compat_wget_wch(WINDOW *w, wint_t *wc)
 }
 
 int
-compat_unget_wch(wint_t wc)
-{
-	return ungetch(wc);
-}
-
-int
 compat_waddwstr(WINDOW *w, const wchar_t wstr[])
 {
 	char *const str = to_multibyte(wstr);
