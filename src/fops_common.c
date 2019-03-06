@@ -843,6 +843,11 @@ fops_free_ops(ops_t *ops)
 		return;
 	}
 
+	if(!ops->bg)
+	{
+		ui_drain_input();
+	}
+
 	if(ops->use_system_calls)
 	{
 		if(!ops->bg && ops->errors != NULL)
