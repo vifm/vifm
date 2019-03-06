@@ -488,8 +488,8 @@ void ui_ruler_set(const char val[]);
  * term_state in status structure. */
 void ui_update_term_state(void);
 
-/* Checks whether given character was pressed, drops any other character from
- * the input stream. */
+/* Checks whether given character was pressed discarding any other characters
+ * from the input stream. */
 int ui_char_pressed(wint_t c);
 
 /* Reads buffered input until it's empty. */

@@ -363,20 +363,32 @@ ui_char_pressed(wint_t c)
 		return 0;
 	}
 
-	wint_t pressed = L'\0';
 	const int cancellation_state = ui_cancellation_pause();
+	wint_t pressed;
 
-	/* Query single character in non-blocking mode. */
-	(void)compat_wget_wch(no_delay_window, &pressed);
+	while(1)
+	{
+		pressed = L'\0';
+		/* Query single character in non-blocking mode. */
+		if(compat_wget_wch(no_delay_window, &pressed) == ERR)
+		{
+			break;
+		}
+
+		if(c != NC_C_c && pressed == NC_C_c)
+		{
+			ui_cancellation_request();
+		}
+
+		if(pressed == c)
+		{
+			break;
+		}
+	}
 
 	ui_cancellation_resume(cancellation_state);
 
-	if(c != NC_C_c && pressed == NC_C_c)
-	{
-		ui_cancellation_request();
-	}
-
-	return pressed == c;
+	return (pressed == c);
 }
 
 void
