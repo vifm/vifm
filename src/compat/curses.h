@@ -38,15 +38,12 @@
 #ifndef __OpenBSD__
 
 #define compat_wget_wch wget_wch
-#define compat_unget_wch unget_wch
 #define compat_waddwstr waddwstr
 #define compat_mvwaddwstr mvwaddwstr
 
 #else
 
 int compat_wget_wch(WINDOW *w, wint_t *wc);
-
-int compat_unget_wch(wint_t wc);
 
 int compat_waddwstr(WINDOW *w, const wchar_t wstr[]);
 

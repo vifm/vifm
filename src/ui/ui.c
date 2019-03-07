@@ -82,6 +82,13 @@
 /* Type of path transformation function for format_view_title(). */
 typedef char * (*path_func)(const char[]);
 
+/* Window configured to do not wait for input.  Never appears on the screen,
+ * sometimes used for reading input. */
+static WINDOW *no_delay_window;
+/* Window configured to wait for input indefinitely.  Never appears on the
+ * screen, sometimes used for reading input. */
+static WINDOW *inf_delay_window;
+
 static WINDOW *ltop_line1;
 static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
@@ -275,6 +282,12 @@ move_pair(short int from, short int to)
 static void
 create_windows(void)
 {
+	no_delay_window = newwin(1, 1, 0, 0);
+	wtimeout(no_delay_window, 0);
+
+	inf_delay_window = newwin(1, 1, 0, 0);
+	wtimeout(inf_delay_window, -1);
+
 	menu_win = newwin(1, 1, 0, 0);
 	sort_win = newwin(1, 1, 0, 0);
 	change_win = newwin(1, 1, 0, 0);
@@ -350,27 +363,42 @@ ui_char_pressed(wint_t c)
 		return 0;
 	}
 
-	wint_t pressed = L'\0';
 	const int cancellation_state = ui_cancellation_pause();
+	wint_t pressed;
 
-	/* Query single character in non-blocking mode. */
-	wtimeout(status_bar, 0);
-	if(compat_wget_wch(status_bar, &pressed) != ERR)
+	while(1)
 	{
-		if(pressed != c && pressed != NC_C_c)
+		pressed = L'\0';
+		/* Query single character in non-blocking mode. */
+		if(compat_wget_wch(no_delay_window, &pressed) == ERR)
 		{
-			compat_unget_wch(pressed);
+			break;
+		}
+
+		if(c != NC_C_c && pressed == NC_C_c)
+		{
+			ui_cancellation_request();
+		}
+
+		if(pressed == c)
+		{
+			break;
 		}
 	}
 
 	ui_cancellation_resume(cancellation_state);
 
-	if(c != NC_C_c && pressed == NC_C_c)
-	{
-		ui_cancellation_request();
-	}
+	return (pressed == c);
+}
 
-	return pressed == c;
+void
+ui_drain_input(void)
+{
+	wint_t c;
+	while(compat_wget_wch(no_delay_window, &c) != ERR)
+	{
+		/* Discard input. */
+	}
 }
 
 static void
@@ -2247,8 +2275,6 @@ ui_pause(void)
 	ui_shutdown();
 	/* Yet restore program mode to read input without waiting for Enter. */
 	reset_prog_mode();
-	/* Wait for input indefinitely. */
-	wtimeout(status_bar, -1);
 	/* For some reason without touching windows, curses updates screen, which
 	 * isn't what we want here. */
 	touch_all_windows();
@@ -2259,7 +2285,8 @@ ui_pause(void)
 	{
 		/* Nothing. */
 	}
-	while(compat_wget_wch(status_bar, &pressed) != ERR && pressed == KEY_RESIZE);
+	while(compat_wget_wch(inf_delay_window, &pressed) != ERR &&
+			pressed == KEY_RESIZE);
 
 	/* Redraw UI to account for all things including graphical preview. */
 	curr_stats.need_update = UT_REDRAW;
