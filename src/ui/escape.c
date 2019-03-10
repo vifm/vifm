@@ -338,12 +338,17 @@ add_highlighted_sym(const char sym[], size_t sym_width, char out[])
 }
 
 int
-esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
-		int dry_run, int truncated, esc_state *state, int *printed)
+esc_print_line(const char line[], WINDOW *win, int column, int row,
+		int max_width, int dry_run, int truncated, esc_state *state, int *printed)
 {
 	const char *curr = line;
 	size_t pos = 0U;
-	checked_wmove(win, row, col);
+	checked_wmove(win, row, column);
+
+	/* Attributes are set at the beginning of each line and after state change. */
+	col_attr_t col = { .fg = state->fg, .bg = state->bg, .attr = state->attrs };
+	ui_set_attr(win, &col, -1);
+
 	while(pos <= (size_t)max_width && *curr != '\0')
 	{
 		size_t screen_width;

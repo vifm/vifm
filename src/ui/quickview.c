@@ -253,7 +253,6 @@ view_file(const char path[])
 
 	if(is_cache_valid(path, graphical))
 	{
-		ui_drop_attr(other_view->win);
 		draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
 		return;
 	}
@@ -318,7 +317,6 @@ view_file(const char path[])
 
 	ui_cancellation_disable();
 
-	ui_drop_attr(other_view->win);
 	draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
 }
 
