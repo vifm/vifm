@@ -1246,7 +1246,7 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 
 	if(cdt->line_pos == cdt->current_pos)
 	{
-		if(view == curr_view)
+		if(view == curr_view || !cdt->is_main)
 		{
 			cs_mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
 		}
