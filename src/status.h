@@ -194,7 +194,7 @@ typedef struct
 
 	char *on_choose; /* Command to execute on picking files. */
 
-	void *preview_hint; /* Hint on which view is used for preview. */
+	const void *preview_hint; /* Hint on which view is used for preview. */
 
 	int global_local_settings; /* Set local settings globally. */
 

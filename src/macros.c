@@ -66,7 +66,7 @@ static char * expand_directory_path(view_t *view, char *expanded, int quotes,
 static char * expand_register(const char curr_dir[], char expanded[],
 		int quotes, const char mod[], int key, int *well_formed, int for_shell);
 static char * expand_preview(char expanded[], int key, int *well_formed);
-static view_t * get_preview_view(view_t *view);
+static const view_t * get_preview_view(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
@@ -509,7 +509,7 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 	*well_formed = 1;
 
-	view_t *view = get_preview_view(curr_view);
+	const view_t *view = get_preview_view(curr_view);
 
 	switch(key)
 	{
@@ -531,7 +531,7 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 /* Applies heuristics to determine which view is going to be used for preview.
  * Returns the view. */
-static view_t *
+static const view_t *
 get_preview_view(view_t *view)
 {
 	view_t *const other = (view == curr_view) ? other_view : curr_view;
