@@ -34,7 +34,6 @@
 #include "engine/options.h"
 #include "engine/text_buffer.h"
 #include "int/term_title.h"
-#include "modes/view.h"
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
@@ -3487,14 +3486,7 @@ wrap_handler(OPT_OP op, optval_t val)
 static void
 text_option_changed(void)
 {
-	if(curr_stats.preview.on)
-	{
-		qv_draw(curr_view);
-	}
-	else if(other_view->explore_mode)
-	{
-		view_redraw();
-	}
+	stats_redraw_schedule();
 }
 
 static void
