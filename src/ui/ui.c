@@ -2275,9 +2275,9 @@ ui_pause(void)
 	ui_shutdown();
 	/* Yet restore program mode to read input without waiting for Enter. */
 	reset_prog_mode();
-	/* For some reason without touching windows, curses updates screen, which
-	 * isn't what we want here. */
-	touch_all_windows();
+	/* Refresh the window, because otherwise curses redraws the screen on call to
+	 * `compat_wget_wch()` (why does it do this?). */
+	wnoutrefresh(inf_delay_window);
 
 	/* Ignore window resize. */
 	wint_t pressed;
