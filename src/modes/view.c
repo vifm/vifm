@@ -1095,7 +1095,16 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		view_t *const curr = curr_view;
 		curr_view = curr_stats.preview.on ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
-		curr_stats.preview_hint = vi->view;
+
+		const preview_area_t parea = {
+			.source = vi->view,
+			.view = vi->view,
+			.x = ui_qv_left(vi->view),
+			.y = ui_qv_top(vi->view),
+			.w = ui_qv_width(vi->view),
+			.h = ui_qv_height(vi->view),
+		};
+		curr_stats.preview_hint = &parea;
 
 		if(graphical)
 		{

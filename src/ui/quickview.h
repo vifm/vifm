@@ -28,6 +28,18 @@
 struct dir_entry_t;
 struct view_t;
 
+/* Description of area used for preview. */
+typedef struct
+{
+	struct view_t *source; /* View which does the preview. */
+	struct view_t *view;   /* View which displays the preview. */
+	int x;                 /* Relative x coordinate of the top-left corner. */
+	int y;                 /* Relative y coordinate of the top-left corner. */
+	int w;                 /* Width of the area. */
+	int h;                 /* Height of the area. */
+}
+preview_area_t;
+
 /* Enables quick view (just enables, no drawing) if possible.  Returns zero on
  * success, otherwise non-zero is returned and error message is printed on the
  * statusbar.*/
