@@ -1789,9 +1789,8 @@ fview_position_updated(view_t *view)
 	{
 		redraw_cell(view, old_top, old_curr, 0);
 		redraw_cell(view, view->top_line, view->curr_line, 1);
+		draw_right_column(view);
 	}
-
-	draw_right_column(view);
 
 	refresh_view_win(view);
 	ui_stat_update(view, 0);
