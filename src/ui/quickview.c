@@ -70,6 +70,7 @@ typedef struct
 	strlist_t lines;   /* Top MAX_PREVIEW_LINES of preview contents. */
 	int x, y, w, h;    /* Last seen preview area parameters (important for
 	                      graphical preview). */
+	int graphics_lost; /* Whether graphics was invalidated on the screen. */
 }
 quickview_cache_t;
 
@@ -338,6 +339,7 @@ is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical)
 		}
 
 		return graphical
+		    && !cache->graphics_lost
 		    && cache->h == ui_qv_height(other_view)
 		    && cache->w == ui_qv_width(other_view)
 		    && cache->x == ui_qv_x(other_view)
@@ -365,6 +367,7 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[])
 	cache->w = ui_qv_width(other_view);
 	cache->x = ui_qv_x(other_view);
 	cache->y = ui_qv_y(other_view);
+	cache->graphics_lost = 0;
 }
 
 /* Reads at most max_lines from the stream ignoring BOM.  Returns the lines
@@ -798,8 +801,7 @@ void
 qv_ui_updated(void)
 {
 	/* Invalidate graphical cache. */
-	qv_cache.h = 0;
-	qv_cache.w = 0;
+	qv_cache.graphics_lost = 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
