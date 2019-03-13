@@ -85,10 +85,12 @@ typedef struct
 }
 tree_print_state_t;
 
-static void view_entry(const dir_entry_t *entry);
-static void view_file(const char path[]);
-static int is_cache_valid(const char path[], int graphical);
-static void fill_cache(FILE *fp, const char path[]);
+static void view_entry(const dir_entry_t *entry, quickview_cache_t *cache);
+static void view_file(const char path[], quickview_cache_t *cache);
+static int is_cache_valid(const quickview_cache_t *cache, const char path[],
+		int graphical);
+static void fill_cache(quickview_cache_t *cache, FILE *fp,
+		const char path[]);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
@@ -195,7 +197,7 @@ qv_draw(view_t *view)
 	curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
 	{
-		view_entry(curr);
+		view_entry(curr, &qv_cache);
 	}
 
 	refresh_view_win(other_view);
@@ -204,7 +206,7 @@ qv_draw(view_t *view)
 
 /* Draws preview of the entry in the other view. */
 static void
-view_entry(const dir_entry_t *entry)
+view_entry(const dir_entry_t *entry, quickview_cache_t *cache)
 {
 	char path[PATH_MAX + 1];
 	qv_get_path_to_explore(entry, path, sizeof(path));
@@ -238,7 +240,7 @@ view_entry(const dir_entry_t *entry)
 			/* break is omitted intentionally. */
 		case FT_UNK:
 		default:
-			view_file(path);
+			view_file(path, cache);
 			break;
 	}
 }
@@ -246,14 +248,14 @@ view_entry(const dir_entry_t *entry)
 /* Displays contents of file or output of its viewer in the other pane
  * starting from the second line and second column. */
 static void
-view_file(const char path[])
+view_file(const char path[], quickview_cache_t *cache)
 {
 	const char *viewer = qv_get_viewer(path);
 	int graphical = (!is_null_or_empty(viewer) && is_graphical_viewer(viewer));
 
-	if(is_cache_valid(path, graphical))
+	if(is_cache_valid(cache, path, graphical))
 	{
-		draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
+		draw_lines(&cache->lines, cfg.wrap_quick_view);
 		return;
 	}
 
@@ -311,24 +313,24 @@ view_file(const char path[])
 	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	fill_cache(fp, path);
+	fill_cache(cache, fp, path);
 
 	fclose(fp);
 
 	ui_cancellation_disable();
 
-	draw_lines(&qv_cache.lines, cfg.wrap_quick_view);
+	draw_lines(&cache->lines, cfg.wrap_quick_view);
 }
 
-/* Checks whether data in qv_cache is up to date with the file on disk.  Returns
- * non-zero if so, otherwise zero is returned. */
+/* Checks whether data in the cache is up to date with the file on disk.
+ * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_cache_valid(const char path[], int graphical)
+is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical)
 {
 	filemon_t filemon;
-	if(filemon_from_file(path, &filemon) == 0 && qv_cache.path != NULL &&
-			paths_are_equal(qv_cache.path, path) &&
-			filemon_equal(&qv_cache.filemon, &filemon))
+	if(filemon_from_file(path, &filemon) == 0 && cache->path != NULL &&
+			paths_are_equal(cache->path, path) &&
+			filemon_equal(&cache->filemon, &filemon))
 	{
 		if(!graphical)
 		{
@@ -336,33 +338,33 @@ is_cache_valid(const char path[], int graphical)
 		}
 
 		return graphical
-		    && qv_cache.h == ui_qv_height(other_view)
-		    && qv_cache.w == ui_qv_width(other_view)
-		    && qv_cache.x == ui_qv_x(other_view)
-		    && qv_cache.y == ui_qv_y(other_view);
+		    && cache->h == ui_qv_height(other_view)
+		    && cache->w == ui_qv_width(other_view)
+		    && cache->x == ui_qv_x(other_view)
+		    && cache->y == ui_qv_y(other_view);
 	}
 
 	return 0;
 }
 
-/* Fills qv_cache data with file's contents. */
+/* Fills the cache data with file's contents. */
 static void
-fill_cache(FILE *fp, const char path[])
+fill_cache(quickview_cache_t *cache, FILE *fp, const char path[])
 {
 	/* File monitor must always be initialized, because it's used below. */
 	filemon_t filemon = {};
 	(void)filemon_from_file(path, &filemon);
-	filemon_assign(&qv_cache.filemon, &filemon);
+	filemon_assign(&cache->filemon, &filemon);
 
-	replace_string(&qv_cache.path, path);
+	replace_string(&cache->path, path);
 
-	free_string_array(qv_cache.lines.items, qv_cache.lines.nitems);
-	qv_cache.lines = read_lines(fp, MAX_PREVIEW_LINES);
+	free_string_array(cache->lines.items, cache->lines.nitems);
+	cache->lines = read_lines(fp, MAX_PREVIEW_LINES);
 
-	qv_cache.h = ui_qv_height(other_view);
-	qv_cache.w = ui_qv_width(other_view);
-	qv_cache.x = ui_qv_x(other_view);
-	qv_cache.y = ui_qv_y(other_view);
+	cache->h = ui_qv_height(other_view);
+	cache->w = ui_qv_width(other_view);
+	cache->x = ui_qv_x(other_view);
+	cache->y = ui_qv_y(other_view);
 }
 
 /* Reads at most max_lines from the stream ignoring BOM.  Returns the lines
