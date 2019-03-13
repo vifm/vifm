@@ -694,22 +694,12 @@ int ui_qv_height(const view_t *view);
 /* Retrieves width of quickview area.  Returns the width. */
 int ui_qv_width(const view_t *view);
 
-/* Retrieves absolute column number of quickview area.  Returns the number. */
-int ui_qv_x(const view_t *view);
-
-/* Retrieves absolute line number of quickview area.  Returns the number. */
-int ui_qv_y(const view_t *view);
-
 /* Gets color scheme that corresponds to the view.  Returns pointer to the color
  * scheme. */
 const col_scheme_t * ui_view_get_cs(const view_t *view);
 
 /* Erases view window by filling it with the background color. */
 void ui_view_erase(view_t *view);
-
-/* Same as erase, but ensures that view is updated in all its size on the
- * screen (e.g. to clear anything put there by other programs as well). */
-void ui_view_wipe(view_t *view);
 
 /* Checks whether custom view type of specified view is unsorted.  It doesn't
  * need the view to be custom, checks just the type.  Returns non-zero if so,

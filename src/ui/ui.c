@@ -2201,18 +2201,6 @@ ui_qv_width(const view_t *view)
 	return with_margin ? view->window_cols - 2 : view->window_cols;
 }
 
-int
-ui_qv_x(const view_t *view)
-{
-	return getbegx(view->win) + ui_qv_left(view);
-}
-
-int
-ui_qv_y(const view_t *view)
-{
-	return getbegy(view->win) + ui_qv_top(view);
-}
-
 const col_scheme_t *
 ui_view_get_cs(const view_t *view)
 {
@@ -2225,32 +2213,6 @@ ui_view_erase(view_t *view)
 	const col_scheme_t *cs = ui_view_get_cs(view);
 	ui_set_bg(view->win, &cs->color[WIN_COLOR], cs->pair[WIN_COLOR]);
 	werase(view->win);
-}
-
-void
-ui_view_wipe(view_t *view)
-{
-	int i;
-	int height;
-	short int fg, bg;
-	char line_filler[getmaxx(view->win) + 1];
-
-	line_filler[sizeof(line_filler) - 1U] = '\0';
-	height = getmaxy(view->win);
-
-	/* User doesn't need to see fake filling so draw it with the color of
-	 * background. */
-	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
-	col_attr_t col = { .fg = fg, .bg = bg };
-	ui_set_attr(view->win, &col, -1);
-
-	memset(line_filler, '\t', sizeof(line_filler) - 1U);
-	for(i = 0; i < height; ++i)
-	{
-		mvwaddstr(view->win, i, 0, line_filler);
-	}
-	redrawwin(view->win);
-	ui_refresh_win(view->win);
 }
 
 int

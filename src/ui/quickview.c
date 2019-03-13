@@ -68,8 +68,9 @@ typedef struct
 	char *path;        /* Full path to the file. */
 	filemon_t filemon; /* Timestamp for the file. */
 	strlist_t lines;   /* Top MAX_PREVIEW_LINES of preview contents. */
-	int x, y, w, h;    /* Last seen preview area parameters (important for
-	                      graphical preview). */
+	preview_area_t pa; /* Where preview is being drawn. */
+	int beg_x;         /* Original x coordinate of host window. */
+	int beg_y;         /* Original y coordinate of host window. */
 	int graphics_lost; /* Whether graphics was invalidated on the screen. */
 }
 quickview_cache_t;
@@ -86,12 +87,14 @@ typedef struct
 }
 tree_print_state_t;
 
-static void view_entry(const dir_entry_t *entry, quickview_cache_t *cache);
-static void view_file(const char path[], quickview_cache_t *cache);
+static void view_entry(const dir_entry_t *entry, const preview_area_t *parea,
+		quickview_cache_t *cache);
+static void view_file(const char path[], const preview_area_t *parea,
+		quickview_cache_t *cache);
 static int is_cache_valid(const quickview_cache_t *cache, const char path[],
-		int graphical);
-static void fill_cache(quickview_cache_t *cache, FILE *fp,
-		const char path[]);
+		int graphical, const preview_area_t *parea);
+static void fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
+		const preview_area_t *parea);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
@@ -106,10 +109,13 @@ static void set_prefix_char(tree_print_state_t *s, char c);
 static void print_tree_entry(tree_print_state_t *s, const char path[],
 		int end_line);
 static void print_entry_prefix(tree_print_state_t *s);
-static void draw_lines(const strlist_t *lines, int wrapped);
-static void write_message(const char msg[]);
-static void cleanup_for_text(void);
+static void draw_lines(const strlist_t *lines, int wrapped,
+		const preview_area_t *parea);
+static void write_message(const char msg[], const preview_area_t *parea);
+static void cleanup_for_text(const preview_area_t *parea);
 static char * expand_viewer_command(const char viewer[]);
+static void cleanup_area(const preview_area_t *parea, const char cmd[]);
+static void wipe_area(const preview_area_t *parea);
 
 /* Cached preview data for a single file entry. */
 static quickview_cache_t qv_cache;
@@ -198,7 +204,16 @@ qv_draw(view_t *view)
 	curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
 	{
-		view_entry(curr, &qv_cache);
+		const preview_area_t parea = {
+			.source = view,
+			.view = other_view,
+			.def_col = ui_view_get_cs(other_view)->color[WIN_COLOR],
+			.x = ui_qv_left(other_view),
+			.y = ui_qv_top(other_view),
+			.w = ui_qv_width(other_view),
+			.h = ui_qv_height(other_view),
+		};
+		view_entry(curr, &parea, &qv_cache);
 	}
 
 	refresh_view_win(other_view);
@@ -207,7 +222,8 @@ qv_draw(view_t *view)
 
 /* Draws preview of the entry in the other view. */
 static void
-view_entry(const dir_entry_t *entry, quickview_cache_t *cache)
+view_entry(const dir_entry_t *entry, const preview_area_t *parea,
+		quickview_cache_t *cache)
 {
 	char path[PATH_MAX + 1];
 	qv_get_path_to_explore(entry, path, sizeof(path));
@@ -215,23 +231,23 @@ view_entry(const dir_entry_t *entry, quickview_cache_t *cache)
 	switch(entry->type)
 	{
 		case FT_CHAR_DEV:
-			write_message("File is a Character Device");
+			write_message("File is a Character Device", parea);
 			break;
 		case FT_BLOCK_DEV:
-			write_message("File is a Block Device");
+			write_message("File is a Block Device", parea);
 			break;
 #ifndef _WIN32
 		case FT_SOCK:
-			write_message("File is a Socket");
+			write_message("File is a Socket", parea);
 			break;
 #endif
 		case FT_FIFO:
-			write_message("File is a Named Pipe");
+			write_message("File is a Named Pipe", parea);
 			break;
 		case FT_LINK:
 			if(get_link_target_abs(path, entry->origin, path, sizeof(path)) != 0)
 			{
-				write_message("Cannot resolve Link");
+				write_message("Cannot resolve Link", parea);
 				break;
 			}
 			if(!ends_with_slash(path) && is_dir(path))
@@ -241,7 +257,7 @@ view_entry(const dir_entry_t *entry, quickview_cache_t *cache)
 			/* break is omitted intentionally. */
 		case FT_UNK:
 		default:
-			view_file(path, cache);
+			view_file(path, parea, cache);
 			break;
 	}
 }
@@ -249,14 +265,17 @@ view_entry(const dir_entry_t *entry, quickview_cache_t *cache)
 /* Displays contents of file or output of its viewer in the other pane
  * starting from the second line and second column. */
 static void
-view_file(const char path[], quickview_cache_t *cache)
+view_file(const char path[], const preview_area_t *parea,
+		quickview_cache_t *cache)
 {
 	const char *viewer = qv_get_viewer(path);
 	int graphical = (!is_null_or_empty(viewer) && is_graphical_viewer(viewer));
 
-	if(is_cache_valid(cache, path, graphical))
+	if(is_cache_valid(cache, path, graphical, parea))
 	{
-		draw_lines(&cache->lines, cfg.wrap_quick_view);
+		/* Update area as we might draw preview at a different location. */
+		cache->pa = *parea;
+		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa);
 		return;
 	}
 
@@ -270,7 +289,7 @@ view_file(const char path[], quickview_cache_t *cache)
 
 		if(fp == NULL)
 		{
-			write_message("Failed to view directory");
+			write_message("Failed to view directory", parea);
 			return;
 		}
 	}
@@ -279,7 +298,7 @@ view_file(const char path[], quickview_cache_t *cache)
 		fp = os_fopen(path, "rb");
 		if(fp == NULL)
 		{
-			write_message("Cannot open file");
+			write_message("Cannot open file", parea);
 			return;
 		}
 	}
@@ -289,13 +308,20 @@ view_file(const char path[], quickview_cache_t *cache)
 		 * terminal emulator do actual refresh (at least some of them need this). */
 		if(graphical)
 		{
-			qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
+			cleanup_area(parea, curr_stats.preview.cleanup_cmd);
 			usleep(50000);
 		}
+
+		view_t *const curr = curr_view;
+		curr_view = parea->source;
+		curr_stats.preview_hint = parea;
 		fp = qv_execute_viewer(viewer);
+		curr_stats.preview_hint = NULL;
+		curr_view = curr;
+
 		if(fp == NULL)
 		{
-			write_message("Cannot read viewer output");
+			write_message("Cannot read viewer output", parea);
 			return;
 		}
 	}
@@ -307,26 +333,27 @@ view_file(const char path[], quickview_cache_t *cache)
 	 * Do this only if we didn't already cleared the window. */
 	if(!graphical)
 	{
-		cleanup_for_text();
+		cleanup_for_text(parea);
 	}
 	curr_stats.preview.graphical = graphical;
 
 	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	fill_cache(cache, fp, path);
+	fill_cache(cache, fp, path, parea);
 
 	fclose(fp);
 
 	ui_cancellation_disable();
 
-	draw_lines(&cache->lines, cfg.wrap_quick_view);
+	draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa);
 }
 
 /* Checks whether data in the cache is up to date with the file on disk.
  * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical)
+is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical,
+		const preview_area_t *parea)
 {
 	filemon_t filemon;
 	if(filemon_from_file(path, &filemon) == 0 && cache->path != NULL &&
@@ -340,10 +367,10 @@ is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical)
 
 		return graphical
 		    && !cache->graphics_lost
-		    && cache->h == ui_qv_height(other_view)
-		    && cache->w == ui_qv_width(other_view)
-		    && cache->x == ui_qv_x(other_view)
-		    && cache->y == ui_qv_y(other_view);
+		    && cache->pa.h == parea->h
+		    && cache->pa.w == parea->w
+		    && cache->beg_x + cache->pa.x == getbegx(parea->view->win) + parea->x
+		    && cache->beg_y + cache->pa.y == getbegy(parea->view->win) + parea->y;
 	}
 
 	return 0;
@@ -351,7 +378,8 @@ is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical)
 
 /* Fills the cache data with file's contents. */
 static void
-fill_cache(quickview_cache_t *cache, FILE *fp, const char path[])
+fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
+		const preview_area_t *parea)
 {
 	/* File monitor must always be initialized, because it's used below. */
 	filemon_t filemon = {};
@@ -363,10 +391,9 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[])
 	free_string_array(cache->lines.items, cache->lines.nitems);
 	cache->lines = read_lines(fp, MAX_PREVIEW_LINES);
 
-	cache->h = ui_qv_height(other_view);
-	cache->w = ui_qv_width(other_view);
-	cache->x = ui_qv_x(other_view);
-	cache->y = ui_qv_y(other_view);
+	cache->pa = *parea;
+	cache->beg_x = getbegx(parea->view->win);
+	cache->beg_y = getbegy(parea->view->win);
 	cache->graphics_lost = 0;
 }
 
@@ -625,19 +652,18 @@ print_entry_prefix(tree_print_state_t *s)
 /* Displays lines in the other pane.  The wrapped parameter determines whether
  * lines should be wrapped. */
 static void
-draw_lines(const strlist_t *lines, int wrapped)
+draw_lines(const strlist_t *lines, int wrapped, const preview_area_t *parea)
 {
-	const size_t left = ui_qv_left(other_view);
-	const size_t top = ui_qv_top(other_view);
-	const size_t max_width = ui_qv_width(other_view);
-	const size_t max_height = ui_qv_height(other_view);
+	const size_t left = parea->x;
+	const size_t top = parea->y;
+	const size_t max_width = parea->w;
+	const size_t max_height = parea->h;
 
-	const col_scheme_t *cs = ui_view_get_cs(other_view);
 	int line_continued = 0;
 	size_t y = top;
 
 	esc_state state;
-	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);
+	esc_state_init(&state, &parea->def_col, COLORS);
 
 	int next_line = 0;
 	const char *input_line = (next_line == lines->nitems)
@@ -646,7 +672,7 @@ draw_lines(const strlist_t *lines, int wrapped)
 	while(input_line != NULL && y < top + max_height)
 	{
 		int printed;
-		input_line += esc_print_line(input_line, other_view->win, left, y,
+		input_line += esc_print_line(input_line, parea->view->win, left, y,
 				max_width, 0, !wrapped, &state, &printed);
 
 		y += !wrapped || (!line_continued || printed);
@@ -663,21 +689,22 @@ draw_lines(const strlist_t *lines, int wrapped)
 /* Writes single line message of error or information kind instead of real
  * preview. */
 static void
-write_message(const char msg[])
+write_message(const char msg[], const preview_area_t *parea)
 {
-	cleanup_for_text();
-	ui_drop_attr(other_view->win);
-	mvwaddstr(other_view->win, ui_qv_top(other_view), ui_qv_left(other_view),
-			msg);
+	cleanup_for_text(parea);
+
+	char *items[] = { (char *)msg };
+	const strlist_t lines = { .items = items, .nitems = 1 };
+	draw_lines(&lines, 1, parea);
 }
 
-/* Ensures that view is ready to display regular text. */
+/* Ensures that area is ready to display regular text. */
 static void
-cleanup_for_text(void)
+cleanup_for_text(const preview_area_t *parea)
 {
 	if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
 	{
-		qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
+		cleanup_area(parea, curr_stats.preview.cleanup_cmd);
 	}
 	update_string(&curr_stats.preview.cleanup_cmd, NULL);
 	curr_stats.preview.graphical = 0;
@@ -735,25 +762,68 @@ expand_viewer_command(const char viewer[])
 void
 qv_cleanup(view_t *view, const char cmd[])
 {
-	view_t *const curr = curr_view;
-	FILE *fp;
+	const preview_area_t parea = {
+		.source = view,
+		.view = view,
+		.def_col = ui_view_get_cs(view)->color[WIN_COLOR],
+		.x = 0,
+		.y = 0,
+		.w = view->window_cols,
+		.h = view->window_rows,
+	};
+	cleanup_area(&parea, cmd);
+}
 
+/* Erases area using external command if available. */
+static void
+cleanup_area(const preview_area_t *parea, const char cmd[])
+{
 	if(cmd == NULL)
 	{
-		ui_view_wipe(view);
+		wipe_area(parea);
 		return;
 	}
 
-	curr_view = view;
+	view_t *const curr = curr_view;
+	curr_view = parea->view;
+
 	curr_stats.preview.clearing = 1;
-	fp = qv_execute_viewer(cmd);
+	curr_stats.preview_hint = parea;
+	FILE *fp = qv_execute_viewer(cmd);
+	curr_stats.preview_hint = NULL;
 	curr_stats.preview.clearing = 0;
+
 	curr_view = curr;
 
 	while(fgetc(fp) != EOF);
 	fclose(fp);
 
-	ui_view_wipe(view);
+	wipe_area(parea);
+}
+
+/* Ensures that area of a view is updated on the screen (e.g. to clear anything
+ * put there by other programs as well). */
+static void
+wipe_area(const preview_area_t *parea)
+{
+	/* User doesn't need to see fake filling so draw it with the color of
+	 * background. */
+	col_attr_t col = { .fg = parea->def_col.fg, .bg = parea->def_col.bg };
+	ui_set_attr(parea->view->win, &col, -1);
+
+	char filler[parea->w + 1];
+	memset(filler, ' ', sizeof(filler) - 1U);
+	filler[sizeof(filler) - 1U] = '\0';
+
+	int line;
+	for(line = parea->y; line < parea->y + parea->h; ++line)
+	{
+		mvwaddstr(parea->view->win, line, parea->x, filler);
+	}
+	redrawwin(parea->view->win);
+	ui_refresh_win(parea->view->win);
+
+	ui_set_attr(parea->view->win, &parea->def_col, -1);
 }
 
 const char *
