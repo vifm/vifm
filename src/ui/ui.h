@@ -453,6 +453,8 @@ struct view_t
 	                   issue). */
 
 	int location_changed; /* Whether location was recently changed. */
+
+	int displays_graphics; /* Whether window of the view contains graphics. */
 };
 
 extern view_t lwin;

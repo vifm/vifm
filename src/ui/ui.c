@@ -996,7 +996,8 @@ update_view(view_t *view)
 
 	/* If view displays graphics, we don't want to update it or the image will be
 	 * lost. */
-	if(!view->explore_mode && !(curr_stats.preview.on && view == other_view))
+	if(!view->explore_mode && !view->displays_graphics &&
+			!(curr_stats.preview.on && view == other_view))
 	{
 		update_window_lazy(view->win);
 	}

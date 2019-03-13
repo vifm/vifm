@@ -364,7 +364,8 @@ draw_left_column(view_t *view)
 static void
 draw_right_column(view_t *view)
 {
-	char path[PATH_MAX + 1];
+	view->displays_graphics = 0;
+
 	const int padding = (cfg.extra_padding ? 1 : 0);
 	const int offset = ui_view_left_reserved(view) + padding
 	                 + ui_view_available_width(view) + padding
@@ -377,6 +378,7 @@ draw_right_column(view_t *view)
 		return;
 	}
 
+	char path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(path), path);
 	(void)flist_update_cache(view, &view->right_column, path);
 
