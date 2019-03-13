@@ -71,6 +71,7 @@ typedef struct
 	preview_area_t pa; /* Where preview is being drawn. */
 	int beg_x;         /* Original x coordinate of host window. */
 	int beg_y;         /* Original y coordinate of host window. */
+	int graphical;     /* Whether preview displays graphics. */
 	int graphics_lost; /* Whether graphics was invalidated on the screen. */
 }
 quickview_cache_t;
@@ -92,9 +93,9 @@ static void view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 static void view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache);
 static int is_cache_valid(const quickview_cache_t *cache, const char path[],
-		int graphical, const preview_area_t *parea);
-static void fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
 		const preview_area_t *parea);
+static void fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
+		int graphical, const preview_area_t *parea);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
@@ -268,16 +269,16 @@ static void
 view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache)
 {
-	const char *viewer = qv_get_viewer(path);
-	int graphical = (!is_null_or_empty(viewer) && is_graphical_viewer(viewer));
-
-	if(is_cache_valid(cache, path, graphical, parea))
+	if(is_cache_valid(cache, path, parea))
 	{
 		/* Update area as we might draw preview at a different location. */
 		cache->pa = *parea;
 		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa);
 		return;
 	}
+
+	const char *viewer = qv_get_viewer(path);
+	int graphical = 0;
 
 	FILE *fp;
 	if(viewer == NULL && is_dir(path))
@@ -304,6 +305,8 @@ view_file(const char path[], const preview_area_t *parea,
 	}
 	else
 	{
+		graphical = is_graphical_viewer(viewer);
+
 		/* If graphics will be displayed, clear the window and wait a bit to let
 		 * terminal emulator do actual refresh (at least some of them need this). */
 		if(graphical)
@@ -340,7 +343,7 @@ view_file(const char path[], const preview_area_t *parea,
 	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	fill_cache(cache, fp, path, parea);
+	fill_cache(cache, fp, path, graphical, parea);
 
 	fclose(fp);
 
@@ -352,7 +355,7 @@ view_file(const char path[], const preview_area_t *parea,
 /* Checks whether data in the cache is up to date with the file on disk.
  * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical,
+is_cache_valid(const quickview_cache_t *cache, const char path[],
 		const preview_area_t *parea)
 {
 	filemon_t filemon;
@@ -360,13 +363,12 @@ is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical,
 			paths_are_equal(cache->path, path) &&
 			filemon_equal(&cache->filemon, &filemon))
 	{
-		if(!graphical)
+		if(!cache->graphical)
 		{
 			return 1;
 		}
 
-		return graphical
-		    && !cache->graphics_lost
+		return !cache->graphics_lost
 		    && cache->pa.h == parea->h
 		    && cache->pa.w == parea->w
 		    && cache->beg_x + cache->pa.x == getbegx(parea->view->win) + parea->x
@@ -378,7 +380,7 @@ is_cache_valid(const quickview_cache_t *cache, const char path[], int graphical,
 
 /* Fills the cache data with file's contents. */
 static void
-fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
+fill_cache(quickview_cache_t *cache, FILE *fp, const char path[], int graphical,
 		const preview_area_t *parea)
 {
 	/* File monitor must always be initialized, because it's used below. */
@@ -394,6 +396,7 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
 	cache->pa = *parea;
 	cache->beg_x = getbegx(parea->view->win);
 	cache->beg_y = getbegy(parea->view->win);
+	cache->graphical = graphical;
 	cache->graphics_lost = 0;
 }
 
