@@ -342,6 +342,8 @@ struct view_t
 	int miller_view, miller_view_g;
 	/* Proportions of columns. */
 	int miller_ratios[3], miller_ratios_g[3];
+	/* Whether right column should also preview files. */
+	int miller_preview_files, miller_preview_files_g;
 	/* Caches of file lists for miller mode. */
 	cached_entries_t left_column;
 	cached_entries_t right_column;
@@ -453,6 +455,8 @@ struct view_t
 	                   issue). */
 
 	int location_changed; /* Whether location was recently changed. */
+
+	int displays_graphics; /* Whether window of the view contains graphics. */
 };
 
 extern view_t lwin;
@@ -692,22 +696,12 @@ int ui_qv_height(const view_t *view);
 /* Retrieves width of quickview area.  Returns the width. */
 int ui_qv_width(const view_t *view);
 
-/* Retrieves absolute column number of quickview area.  Returns the number. */
-int ui_qv_x(const view_t *view);
-
-/* Retrieves absolute line number of quickview area.  Returns the number. */
-int ui_qv_y(const view_t *view);
-
 /* Gets color scheme that corresponds to the view.  Returns pointer to the color
  * scheme. */
 const col_scheme_t * ui_view_get_cs(const view_t *view);
 
 /* Erases view window by filling it with the background color. */
 void ui_view_erase(view_t *view);
-
-/* Same as erase, but ensures that view is updated in all its size on the
- * screen (e.g. to clear anything put there by other programs as well). */
-void ui_view_wipe(view_t *view);
 
 /* Checks whether custom view type of specified view is unsorted.  It doesn't
  * need the view to be custom, checks just the type.  Returns non-zero if so,

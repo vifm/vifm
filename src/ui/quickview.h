@@ -24,9 +24,23 @@
 #include <stdio.h> /* FILE */
 
 #include "../utils/test_helpers.h"
+#include "colors.h"
 
 struct dir_entry_t;
 struct view_t;
+
+/* Description of area used for preview. */
+typedef struct
+{
+	struct view_t *source; /* View which does the preview. */
+	struct view_t *view;   /* View which displays the preview. */
+	col_attr_t def_col;    /* Default color of the area. */
+	int x;                 /* Relative x coordinate of the top-left corner. */
+	int y;                 /* Relative y coordinate of the top-left corner. */
+	int w;                 /* Width of the area. */
+	int h;                 /* Height of the area. */
+}
+preview_area_t;
 
 /* Enables quick view (just enables, no drawing) if possible.  Returns zero on
  * success, otherwise non-zero is returned and error message is printed on the
@@ -41,6 +55,9 @@ int qv_can_show(void);
  * doesn't make sense (e.g. only one pane is visible). */
 void qv_draw(struct view_t *view);
 
+/* Draws file entry on an area. */
+void qv_draw_on(const struct dir_entry_t *entry, const preview_area_t *parea);
+
 /* Toggles state of the quick view. */
 void qv_toggle(void);
 
@@ -51,7 +68,8 @@ void qv_hide(void);
  * viewer. */
 FILE * qv_execute_viewer(const char viewer[]);
 
-/* Performs view clearing with the given command. */
+/* Performs view clearing with the given command, which can be NULL in which
+ * case only internal clearing is done. */
 void qv_cleanup(struct view_t *view, const char cmd[]);
 
 /* Gets viewer command for a file considering its type (directory vs. file).

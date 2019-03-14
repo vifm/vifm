@@ -338,12 +338,17 @@ add_highlighted_sym(const char sym[], size_t sym_width, char out[])
 }
 
 int
-esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
-		int dry_run, int truncated, esc_state *state, int *printed)
+esc_print_line(const char line[], WINDOW *win, int column, int row,
+		int max_width, int dry_run, int truncated, esc_state *state, int *printed)
 {
 	const char *curr = line;
 	size_t pos = 0U;
-	checked_wmove(win, row, col);
+	checked_wmove(win, row, column);
+
+	/* Attributes are set at the beginning of each line and after state change. */
+	col_attr_t col = { .fg = state->fg, .bg = state->bg, .attr = state->attrs };
+	ui_set_attr(win, &col, -1);
+
 	while(pos <= (size_t)max_width && *curr != '\0')
 	{
 		size_t screen_width;
@@ -353,7 +358,18 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 		{
 			if(!dry_run || screen_width == 0)
 			{
+				/* Compute real screen width by how much cursor was moved.  Sometimes
+				 * character width differs from what it should be. */
+				int old_x = getcurx(win);
+
 				print_char_esc(win, char_str, state);
+
+				int new_x = getcurx(win);
+				if(new_x < old_x)
+				{
+					new_x += getmaxx(win);
+				}
+				pos += (new_x - old_x) - screen_width;
 			}
 
 			if(*curr == '\b')

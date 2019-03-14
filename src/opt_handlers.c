@@ -34,7 +34,6 @@
 #include "engine/options.h"
 #include "engine/text_buffer.h"
 #include "int/term_title.h"
-#include "modes/view.h"
 #include "ui/fileview.h"
 #include "ui/quickview.h"
 #include "ui/statusbar.h"
@@ -175,8 +174,9 @@ static void lsview_global(OPT_OP op, optval_t val);
 static void lsview_local(OPT_OP op, optval_t val);
 static void milleroptions_global(OPT_OP op, optval_t val);
 static void milleroptions_local(OPT_OP op, optval_t val);
-static void set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope);
-static void fill_milleroptions(optval_t *val, int ratios[3]);
+static void set_milleroptions(int ratios[3], int *preview_files, optval_t val,
+		OPT_SCOPE scope);
+static void fill_milleroptions(optval_t *val, int ratios[3], int preview_files);
 static void millerview_global(OPT_OP op, optval_t val);
 static void millerview_local(OPT_OP op, optval_t val);
 static void number_global(OPT_OP op, optval_t val);
@@ -394,9 +394,10 @@ static const char *fillchars_enum[][2] = {
 
 /* Possible keys of 'milleroptions' option. */
 static const char *milleroptions_enum[][2] = {
-	{ "lsize:", "proportion of space given to the left column" },
-	{ "csize:", "proportion of space given to the center column" },
-	{ "rsize:", "proportion of space given to the right column" },
+	{ "lsize:",    "proportion of space given to the left column" },
+	{ "csize:",    "proportion of space given to the center column" },
+	{ "rsize:",    "proportion of space given to the right column" },
+	{ "rpreview:", "what should right pane preview: dirs or all" },
 };
 
 /* Possible keys of 'sizefmt' option. */
@@ -1119,7 +1120,8 @@ init_lsview(optval_t *val)
 static void
 init_milleroptions(optval_t *val)
 {
-	fill_milleroptions(val, curr_view->miller_ratios_g);
+	fill_milleroptions(val, curr_view->miller_ratios_g,
+			curr_view->miller_preview_files_g);
 }
 
 /* Initializes 'millerview' option from global value. */
@@ -1329,7 +1331,7 @@ reset_local_options(view_t *view)
 
 	memcpy(view->miller_ratios, view->miller_ratios_g,
 			sizeof(view->miller_ratios));
-	fill_milleroptions(&val, view->miller_ratios_g);
+	fill_milleroptions(&val, view->miller_ratios_g, view->miller_preview_files_g);
 	vle_opts_assign("milleroptions", val, OPT_LOCAL);
 
 	fview_set_millerview(view, view->miller_view_g);
@@ -1392,9 +1394,9 @@ load_view_options(view_t *view)
 	val.bool_val = view->ls_view_g;
 	vle_opts_assign("lsview", val, OPT_GLOBAL);
 
-	fill_milleroptions(&val, view->miller_ratios);
+	fill_milleroptions(&val, view->miller_ratios, view->miller_preview_files);
 	vle_opts_assign("milleroptions", val, OPT_LOCAL);
-	fill_milleroptions(&val, view->miller_ratios_g);
+	fill_milleroptions(&val, view->miller_ratios_g, view->miller_preview_files_g);
 	vle_opts_assign("milleroptions", val, OPT_GLOBAL);
 
 	val.bool_val = view->miller_view;
@@ -2514,24 +2516,28 @@ lsview_local(OPT_OP op, optval_t val)
 static void
 milleroptions_global(OPT_OP op, optval_t val)
 {
-	set_milleroptions(curr_view->miller_ratios_g, val, OPT_GLOBAL);
+	set_milleroptions(curr_view->miller_ratios_g,
+			&curr_view->miller_preview_files_g, val, OPT_GLOBAL);
 }
 
 /* Handles update of miller columns settings as a local option. */
 static void
 milleroptions_local(OPT_OP op, optval_t val)
 {
-	set_milleroptions(curr_view->miller_ratios, val, OPT_LOCAL);
+	set_milleroptions(curr_view->miller_ratios, &curr_view->miller_preview_files,
+			val, OPT_LOCAL);
 }
 
 /* Handles update of miller columns settings. */
 static void
-set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope)
+set_milleroptions(int ratios[3], int *preview_files, optval_t val,
+		OPT_SCOPE scope)
 {
 	char *new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
 	int lsize = 0, csize = 1, rsize = 0;
+	int preview_all = 0;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -2571,6 +2577,24 @@ set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope)
 				break;
 			}
 		}
+		else if(starts_with_lit(part, "rpreview:"))
+		{
+			const char *const str = after_first(part, ':');
+			if(strcmp(str, "all") == 0)
+			{
+				preview_all = 1;
+			}
+			else if(strcmp(str, "dirs") == 0)
+			{
+				preview_all = 0;
+			}
+			else
+			{
+				vle_tb_append_linef(vle_err, "Failed to parse \"rpreview\" value: %s",
+						str);
+				break;
+			}
+		}
 		else
 		{
 			break_at(part, ':');
@@ -2586,6 +2610,7 @@ set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope)
 		ratios[0] = MAX(0, MIN(100, lsize));
 		ratios[1] = MAX(0, MIN(100, csize));
 		ratios[2] = MAX(0, MIN(100, rsize));
+		*preview_files = preview_all;
 
 		if(ratios == curr_view->miller_ratios)
 		{
@@ -2593,17 +2618,18 @@ set_milleroptions(int ratios[3], optval_t val, OPT_SCOPE scope)
 		}
 	}
 
-	fill_milleroptions(&val, ratios);
+	fill_milleroptions(&val, ratios, preview_all);
 	vle_opts_assign("milleroptions", val, scope);
 }
 
 /* Loads value of milleroptions as a string. */
 static void
-fill_milleroptions(optval_t *val, int ratios[3])
+fill_milleroptions(optval_t *val, int ratios[3], int preview_files)
 {
 	static char buf[64];
-	snprintf(buf, sizeof(buf), "lsize:%d,csize:%d,rsize:%d", ratios[0], ratios[1],
-			ratios[2]);
+	snprintf(buf, sizeof(buf), "lsize:%d,csize:%d,rsize:%d,rpreview:%s",
+			ratios[0], ratios[1], ratios[2],
+			(preview_files ? "all" : "dirs"));
 	val->str_val = buf;
 }
 
@@ -3487,14 +3513,7 @@ wrap_handler(OPT_OP op, optval_t val)
 static void
 text_option_changed(void)
 {
-	if(curr_stats.preview.on)
-	{
-		qv_draw(curr_view);
-	}
-	else if(other_view->explore_mode)
-	{
-		view_redraw();
-	}
+	stats_redraw_schedule();
 }
 
 static void

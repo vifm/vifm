@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 22, 2019" "vifm 0.10"
+.TH VIFM 1 "March 14, 2019" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4003,7 +4003,7 @@ is on.
 .BI 'milleroptions'
 type: string list
 .br
-default: "lsize:1,csize:1,rsize:1"
+default: "lsize:1,csize:1,rsize:1,rpreview:dirs"
 .br
 scope: local
 .br
@@ -4014,10 +4014,15 @@ Configures miller view.
   lsize:num     0        left column
   csize:num     1        center column (can't be disabled)
   rsize:num     0        right column
+  rpreview:str  dirs     right column
 
 *size specifies ratios of columns.  Each ratio is in the range from
 0 to 100 and values are adjusted to fit the limits.  Zero disables a
 column, but central (main) column can't be disabled.
+
+rpreview specifies what file-system objects should be previewed in the right
+column and can take two values: dirs (only directories) or all.  Both options
+don't include parent directory ("..").
 
 Example of two-column mode which is useful in combination with :view command:
 .EX

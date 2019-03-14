@@ -66,13 +66,13 @@ size_t esc_str_overhead(const char str[]);
  * that should be freed by the caller or NULL on error. */
 char * esc_highlight_pattern(const char line[], const regex_t *re);
 
-/* Prints at most whole line to a window with col and row initial offsets while
- * honoring maximum character positions specified by the max_width parameter.
- * Sets *printed to number of screen characters actually printed, it's set to
- * zero otherwise.  The truncated parameter specifies whether printed part is
- * the final part of the line that's being printed.  Returns offset in the line
- * at which line processing was stopped. */
-int esc_print_line(const char line[], WINDOW *win, int col, int row,
+/* Prints at most whole line to a window with column and row initial offsets
+ * while honoring maximum character positions specified by the max_width
+ * parameter.  Sets *printed to number of screen characters actually printed,
+ * it's set to zero otherwise.  The truncated parameter specifies whether
+ * printed part is the final part of the line that's being printed.  Returns
+ * offset in the line at which line processing was stopped. */
+int esc_print_line(const char line[], WINDOW *win, int column, int row,
 		int max_width, int dry_run, int truncated, esc_state *state, int *printed);
 
 /* Initializes escape sequence parsing state with values from the defaults and

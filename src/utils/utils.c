@@ -426,6 +426,17 @@ unquote(char quoted[])
 int
 vifm_wcwidth(wchar_t wc)
 {
+	/* Try to handle this range specially as curses might output things like
+	 * M-{. */
+	if((size_t)wc >= 0x80 && (size_t)wc < 0x100)
+	{
+		const char *name = keyname(wc);
+		if(name != NULL)
+		{
+			return strlen(name);
+		}
+	}
+
 	const int width = wcwidth(wc);
 	if(width == -1)
 	{

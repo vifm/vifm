@@ -797,7 +797,9 @@ get_first_wchar(const char str[])
 {
 #ifndef _WIN32
 	wchar_t wc[2] = {};
-	return (mbstowcs(wc, str, ARRAY_LEN(wc)) >= 1) ? wc[0] : str[0];
+	return (mbstowcs(wc, str, ARRAY_LEN(wc)) == (size_t)-1)
+	     ? (unsigned char)str[0]
+	     : wc[0];
 #else
 	return utf8_first_char(str);
 #endif

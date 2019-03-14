@@ -996,7 +996,8 @@ update_view(view_t *view)
 
 	/* If view displays graphics, we don't want to update it or the image will be
 	 * lost. */
-	if(!view->explore_mode && !(curr_stats.preview.on && view == other_view))
+	if(!view->explore_mode && !view->displays_graphics &&
+			!(curr_stats.preview.on && view == other_view))
 	{
 		update_window_lazy(view->win);
 	}
@@ -2149,7 +2150,8 @@ ui_view_right_reserved(const view_t *view)
 	const int total = view->miller_ratios[0] + view->miller_ratios[1]
 	                + view->miller_ratios[2];
 	return is_in_miller_view(view)
-	    && fentry_is_dir(entry) && !is_parent_dir(entry->name)
+	    && !is_parent_dir(entry->name)
+	    && (fentry_is_dir(entry) || view->miller_preview_files)
 	     ? (view->window_cols*view->miller_ratios[2])/total
 	     : 0;
 }
@@ -2200,18 +2202,6 @@ ui_qv_width(const view_t *view)
 	return with_margin ? view->window_cols - 2 : view->window_cols;
 }
 
-int
-ui_qv_x(const view_t *view)
-{
-	return getbegx(view->win) + ui_qv_left(view);
-}
-
-int
-ui_qv_y(const view_t *view)
-{
-	return getbegy(view->win) + ui_qv_top(view);
-}
-
 const col_scheme_t *
 ui_view_get_cs(const view_t *view)
 {
@@ -2224,32 +2214,6 @@ ui_view_erase(view_t *view)
 	const col_scheme_t *cs = ui_view_get_cs(view);
 	ui_set_bg(view->win, &cs->color[WIN_COLOR], cs->pair[WIN_COLOR]);
 	werase(view->win);
-}
-
-void
-ui_view_wipe(view_t *view)
-{
-	int i;
-	int height;
-	short int fg, bg;
-	char line_filler[getmaxx(view->win) + 1];
-
-	line_filler[sizeof(line_filler) - 1U] = '\0';
-	height = getmaxy(view->win);
-
-	/* User doesn't need to see fake filling so draw it with the color of
-	 * background. */
-	(void)pair_content(PAIR_NUMBER(getbkgd(view->win)), &fg, &bg);
-	col_attr_t col = { .fg = fg, .bg = bg };
-	ui_set_attr(view->win, &col, -1);
-
-	memset(line_filler, '\t', sizeof(line_filler) - 1U);
-	for(i = 0; i < height; ++i)
-	{
-		mvwaddstr(view->win, i, 0, line_filler);
-	}
-	redrawwin(view->win);
-	ui_refresh_win(view->win);
 }
 
 int
@@ -2275,9 +2239,9 @@ ui_pause(void)
 	ui_shutdown();
 	/* Yet restore program mode to read input without waiting for Enter. */
 	reset_prog_mode();
-	/* For some reason without touching windows, curses updates screen, which
-	 * isn't what we want here. */
-	touch_all_windows();
+	/* Refresh the window, because otherwise curses redraws the screen on call to
+	 * `compat_wget_wch()` (why does it do this?). */
+	wnoutrefresh(inf_delay_window);
 
 	/* Ignore window resize. */
 	wint_t pressed;

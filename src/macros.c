@@ -29,6 +29,7 @@
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
 #include "modes/dialogs/msg_dialog.h"
+#include "ui/quickview.h"
 #include "ui/ui.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -66,7 +67,7 @@ static char * expand_directory_path(view_t *view, char *expanded, int quotes,
 static char * expand_register(const char curr_dir[], char expanded[],
 		int quotes, const char mod[], int key, int *well_formed, int for_shell);
 static char * expand_preview(char expanded[], int key, int *well_formed);
-static view_t * get_preview_view(view_t *view);
+static preview_area_t get_preview_area(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
@@ -498,25 +499,25 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 static char *
 expand_preview(char expanded[], int key, int *well_formed)
 {
-	char num_str[32];
-	int param;
-
-	if(!char_is_one_of("hwxy", key))
+	*well_formed = char_is_one_of("hwxy", key);
+	if(!*well_formed)
 	{
 		*well_formed = 0;
 		return expanded;
 	}
 
-	*well_formed = 1;
+	const preview_area_t parea = get_preview_area(curr_view);
 
-	view_t *view = get_preview_view(curr_view);
+	int x, y;
+	getbegyx(parea.view->win, y, x);
 
+	int param;
 	switch(key)
 	{
-		case 'h': param = ui_qv_height(view); break;
-		case 'w': param = ui_qv_width(view); break;
-		case 'x': param = ui_qv_x(view); break;
-		case 'y': param = ui_qv_y(view); break;
+		case 'h': param = parea.h; break;
+		case 'w': param = parea.w; break;
+		case 'x': param = x + parea.x; break;
+		case 'y': param = y + parea.y; break;
 
 		default:
 			assert(0 && "Unhandled preview property type");
@@ -524,31 +525,39 @@ expand_preview(char expanded[], int key, int *well_formed)
 			break;
 	}
 
+	char num_str[32];
 	snprintf(num_str, sizeof(num_str), "%d", param);
 
 	return append_to_expanded(expanded, num_str);
 }
 
-/* Applies heuristics to determine which view is going to be used for preview.
- * Returns the view. */
-static view_t *
-get_preview_view(view_t *view)
+/* Applies heuristics to determine area that is going to be used for preview.
+ * Returns the area. */
+static preview_area_t
+get_preview_area(view_t *view)
 {
 	view_t *const other = (view == curr_view) ? other_view : curr_view;
 
 	if(curr_stats.preview_hint != NULL)
 	{
-		return curr_stats.preview_hint;
+		return *(const preview_area_t *)curr_stats.preview_hint;
 	}
 
+	view_t *source = view;
 	if(curr_stats.preview.on || (!view->explore_mode && other->explore_mode))
 	{
-		return other;
+		view = other;
 	}
-	else
-	{
-		return view;
-	}
+
+	const preview_area_t parea = {
+		.source = source,
+		.view = view,
+		.x = ui_qv_left(view),
+		.y = ui_qv_top(view),
+		.w = ui_qv_width(view),
+		.h = ui_qv_height(view),
+	};
+	return parea;
 }
 
 /* Appends the path to the expanded string with either proper escaping or

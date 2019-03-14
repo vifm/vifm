@@ -228,9 +228,10 @@ fview_view_reset(view_t *view)
 	view->run_size = 1;
 
 	view->miller_view_g = view->miller_view = 0;
-	view->miller_ratios[0] = view->miller_ratios_g[0] = 1;
-	view->miller_ratios[1] = view->miller_ratios_g[1] = 1;
-	view->miller_ratios[2] = view->miller_ratios_g[2] = 1;
+	view->miller_ratios_g[0] = view->miller_ratios[0] = 1;
+	view->miller_ratios_g[1] = view->miller_ratios[1] = 1;
+	view->miller_ratios_g[2] = view->miller_ratios[2] = 1;
+	view->miller_preview_files_g = view->miller_preview_files = 0;
 
 	view->num_type_g = view->num_type = NT_NONE;
 	view->num_width_g = view->num_width = 4;
@@ -364,7 +365,8 @@ draw_left_column(view_t *view)
 static void
 draw_right_column(view_t *view)
 {
-	char path[PATH_MAX + 1];
+	view->displays_graphics = 0;
+
 	const int padding = (cfg.extra_padding ? 1 : 0);
 	const int offset = ui_view_left_reserved(view) + padding
 	                 + ui_view_available_width(view) + padding
@@ -377,6 +379,27 @@ draw_right_column(view_t *view)
 		return;
 	}
 
+	dir_entry_t *const entry = get_current_entry(view);
+	if(view->miller_preview_files && !fentry_is_dir(entry))
+	{
+		const col_scheme_t *const cs = ui_view_get_cs(view);
+		col_attr_t def_col = cs->color[WIN_COLOR];
+		cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
+
+		const preview_area_t parea = {
+			.source = view,
+			.view = view,
+			.def_col = def_col,
+			.x = offset,
+			.y = 0,
+			.w = ui_view_right_reserved(view) - 1,
+			.h = view->window_rows,
+		};
+		qv_draw_on(entry, &parea);
+		return;
+	}
+
+	char path[PATH_MAX + 1];
 	get_current_full_path(view, sizeof(path), path);
 	(void)flist_update_cache(view, &view->right_column, path);
 
@@ -1246,7 +1269,7 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 
 	if(cdt->line_pos == cdt->current_pos)
 	{
-		if(view == curr_view)
+		if(view == curr_view || !cdt->is_main)
 		{
 			cs_mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
 		}
@@ -1771,7 +1794,8 @@ fview_position_updated(view_t *view)
 
 	redraw = move_curr_line(view);
 
-	if(curr_stats.load_stage < 2 || view->list_pos == view->last_seen_pos)
+	if(curr_stats.load_stage < 2 ||
+			(!redraw && view->list_pos == view->last_seen_pos))
 	{
 		return;
 	}
@@ -1786,9 +1810,8 @@ fview_position_updated(view_t *view)
 	{
 		redraw_cell(view, old_top, old_curr, 0);
 		redraw_cell(view, view->top_line, view->curr_line, 1);
+		draw_right_column(view);
 	}
-
-	draw_right_column(view);
 
 	refresh_view_win(view);
 	ui_stat_update(view, 0);

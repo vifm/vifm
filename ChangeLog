@@ -28,6 +28,9 @@
 	Added caching to quickview for a single file to avoid fileviewer being
 	called more than needed.  Thanks to agguser.
 
+	Added "rpreview:" key to 'milleroptions' option that allows enabling
+	preview of files.  Thanks to Svadkos and Tom Jansen.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -62,6 +65,8 @@
 
 	Drop leading space implicitly added to time columns in views.  Thanks
 	to laggardkernel.
+
+	Try to determine widths of printed character more accurately.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
