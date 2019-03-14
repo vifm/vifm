@@ -358,7 +358,18 @@ esc_print_line(const char line[], WINDOW *win, int column, int row,
 		{
 			if(!dry_run || screen_width == 0)
 			{
+				/* Compute real screen width by how much cursor was moved.  Sometimes
+				 * character width differs from what it should be. */
+				int old_x = getcurx(win);
+
 				print_char_esc(win, char_str, state);
+
+				int new_x = getcurx(win);
+				if(new_x < old_x)
+				{
+					new_x += getmaxx(win);
+				}
+				pos += (new_x - old_x) - screen_width;
 			}
 
 			if(*curr == '\b')

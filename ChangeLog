@@ -66,6 +66,8 @@
 	Drop leading space implicitly added to time columns in views.  Thanks
 	to laggardkernel.
 
+	Try to determine widths of printed character more accurately.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
