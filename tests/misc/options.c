@@ -464,27 +464,30 @@ TEST(milleroptions_handles_wrong_input)
 	assert_failure(exec_commands("se milleroptions=rsize:a", &lwin, CIT_COMMAND));
 
 	assert_failure(exec_commands("se milleroptions=csize:0", &lwin, CIT_COMMAND));
+
+	assert_failure(exec_commands("se milleroptions=rpreview:files", &lwin,
+				CIT_COMMAND));
 }
 
 TEST(milleroptions_accepts_correct_input)
 {
-	assert_success(exec_commands("set milleroptions=csize:33,rsize:12", &lwin,
-				CIT_COMMAND));
+	assert_success(exec_commands("set milleroptions=csize:33,rsize:12,"
+				"rpreview:all", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
-	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12",
+	assert_string_equal("  milleroptions=lsize:0,csize:33,rsize:12,rpreview:all",
 			vle_tb_get_data(vle_err));
 }
 
 TEST(milleroptions_normalizes_input)
 {
-	assert_success(exec_commands("set milleroptions=lsize:-10,csize:133", &lwin,
-				CIT_COMMAND));
+	assert_success(exec_commands("set milleroptions=lsize:-10,csize:133,"
+				"rpreview:dirs", &lwin, CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("milleroptions?", OPT_GLOBAL));
-	assert_string_equal("  milleroptions=lsize:0,csize:100,rsize:0",
+	assert_string_equal("  milleroptions=lsize:0,csize:100,rsize:0,rpreview:dirs",
 			vle_tb_get_data(vle_err));
 }
 

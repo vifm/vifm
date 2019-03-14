@@ -55,6 +55,9 @@ int qv_can_show(void);
  * doesn't make sense (e.g. only one pane is visible). */
 void qv_draw(struct view_t *view);
 
+/* Draws file entry on an area. */
+void qv_draw_on(const struct dir_entry_t *entry, const preview_area_t *parea);
+
 /* Toggles state of the quick view. */
 void qv_toggle(void);
 

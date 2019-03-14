@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Feb 22
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Mar 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3326,7 +3326,7 @@ columns with file names similar to output of `ls -x` command.  See also
                                                *vifm-'milleroptions'*
 milleroptions
 type: string list
-default: "lsize:1,csize:1,rsize:1"
+default: "lsize:1,csize:1,rsize:1,rpreview:dirs"
 scope: local
 
 Configures miller view.
@@ -3335,10 +3335,15 @@ Configures miller view.
     lsize:num     0           left column
     csize:num     1           center column (can't be disabled)
     rsize:num     0           right column
+    rpreview:str  dirs        right column
 
 *size specifies ratios of columns.  Each ratio is in the range from
 0 to 100 and values are adjusted to fit the limits.  Zero disables a
 column, but central (main) column can't be disabled.
+
+rpreview specifies what file-system objects should be previewed in the right
+column and can take two values: dirs (only directories) or all.  Both options
+don't include parent directory ("..").
 
 Example of two-column mode which is useful in combination with
 |vifm-:view| command: >

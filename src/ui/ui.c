@@ -2150,7 +2150,8 @@ ui_view_right_reserved(const view_t *view)
 	const int total = view->miller_ratios[0] + view->miller_ratios[1]
 	                + view->miller_ratios[2];
 	return is_in_miller_view(view)
-	    && fentry_is_dir(entry) && !is_parent_dir(entry->name)
+	    && !is_parent_dir(entry->name)
+	    && (fentry_is_dir(entry) || view->miller_preview_files)
 	     ? (view->window_cols*view->miller_ratios[2])/total
 	     : 0;
 }

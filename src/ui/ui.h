@@ -342,6 +342,8 @@ struct view_t
 	int miller_view, miller_view_g;
 	/* Proportions of columns. */
 	int miller_ratios[3], miller_ratios_g[3];
+	/* Whether right column should also preview files. */
+	int miller_preview_files, miller_preview_files_g;
 	/* Caches of file lists for miller mode. */
 	cached_entries_t left_column;
 	cached_entries_t right_column;

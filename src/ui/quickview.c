@@ -221,6 +221,34 @@ qv_draw(view_t *view)
 	ui_view_title_update(other_view);
 }
 
+void
+qv_draw_on(const dir_entry_t *entry, const preview_area_t *parea)
+{
+	static quickview_cache_t lwin_cache, rwin_cache;
+
+	char filler[parea->w + 1];
+	memset(filler, ' ', sizeof(filler) - 1U);
+	filler[sizeof(filler) - 1U] = '\0';
+
+	ui_set_attr(parea->view->win, &parea->def_col, -1);
+
+	int line;
+	for(line = parea->y; line < parea->y + parea->h; ++line)
+	{
+		mvwaddstr(parea->view->win, line, parea->x, filler);
+	}
+
+	quickview_cache_t *cache = (parea->view == &lwin ? &lwin_cache : &rwin_cache);
+
+	view_entry(entry, parea, cache);
+
+	parea->view->displays_graphics = cache->graphical;
+
+	/* Unconditionally invalidate graphics cache, since we don't keep track of its
+	 * validity in any way. */
+	cache->graphics_lost = 1;
+}
+
 /* Draws preview of the entry in the other view. */
 static void
 view_entry(const dir_entry_t *entry, const preview_area_t *parea,

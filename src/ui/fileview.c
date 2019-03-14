@@ -228,9 +228,10 @@ fview_view_reset(view_t *view)
 	view->run_size = 1;
 
 	view->miller_view_g = view->miller_view = 0;
-	view->miller_ratios[0] = view->miller_ratios_g[0] = 1;
-	view->miller_ratios[1] = view->miller_ratios_g[1] = 1;
-	view->miller_ratios[2] = view->miller_ratios_g[2] = 1;
+	view->miller_ratios_g[0] = view->miller_ratios[0] = 1;
+	view->miller_ratios_g[1] = view->miller_ratios[1] = 1;
+	view->miller_ratios_g[2] = view->miller_ratios[2] = 1;
+	view->miller_preview_files_g = view->miller_preview_files = 0;
 
 	view->num_type_g = view->num_type = NT_NONE;
 	view->num_width_g = view->num_width = 4;
@@ -375,6 +376,26 @@ draw_right_column(view_t *view)
 	if(rcol_width <= 0)
 	{
 		flist_free_cache(view, &view->right_column);
+		return;
+	}
+
+	dir_entry_t *const entry = get_current_entry(view);
+	if(view->miller_preview_files && !fentry_is_dir(entry))
+	{
+		const col_scheme_t *const cs = ui_view_get_cs(view);
+		col_attr_t def_col = cs->color[WIN_COLOR];
+		cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
+
+		const preview_area_t parea = {
+			.source = view,
+			.view = view,
+			.def_col = def_col,
+			.x = offset,
+			.y = 0,
+			.w = ui_view_right_reserved(view) - 1,
+			.h = view->window_rows,
+		};
+		qv_draw_on(entry, &parea);
 		return;
 	}
 
