@@ -142,6 +142,9 @@
 	operated on contain symlinks.  Resolve to real paths before computing
 	relative path.  Thanks to zsugabubus.
 
+	Fixed highlighting of the first file entry being used to fill empty part
+	of miller columns.  Thanks to Konst Mayer (a.k.a. cdlscpmv).
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
