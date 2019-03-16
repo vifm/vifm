@@ -38,6 +38,7 @@
 
 #include "../cfg/config.h"
 #include "../compat/fs_limits.h"
+#include "../compat/os.h"
 #include "../int/path_env.h"
 #include "env.h"
 #include "fs.h"
@@ -245,10 +246,6 @@ make_rel_path(const char path[], const char base[])
 {
 	static char buf[PATH_MAX + 1];
 
-	const char *p = path, *b = base;
-	int i;
-	int nslashes;
-
 #ifdef _WIN32
 	if(path[1] == ':' && base[1] == ':' && path[0] != base[0])
 	{
@@ -256,6 +253,22 @@ make_rel_path(const char path[], const char base[])
 		return buf;
 	}
 #endif
+
+	/* Attempt to resolve all symbolic links in paths, this should give both the
+	 * shortest and valid relative path. */
+	char path_real[PATH_MAX + 1], base_real[PATH_MAX + 1];
+	if(os_realpath(path, path_real) == path_real)
+	{
+		path = path_real;
+	}
+	if(os_realpath(base, base_real) == base_real)
+	{
+		base = base_real;
+	}
+
+	const char *p = path, *b = base;
+	int i;
+	int nslashes;
 
 	while(p[0] != '\0' && p[1] != '\0' && b[0] != '\0' && b[1] != '\0')
 	{

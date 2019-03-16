@@ -1,5 +1,10 @@
 #include <stic.h>
 
+#include <unistd.h> /* symlink() unlink() */
+
+#include <stdio.h> /* fclose() fopen() */
+
+#include "../../src/utils/str.h"
 #include "../../src/utils/path.h"
 
 #include "utils.h"
@@ -86,6 +91,25 @@ TEST(windows_specific, IF(windows))
 
 	buf = make_rel_path("c:/home/user1/", "d:/home/user1/dir1");
 	assert_string_equal("c:/home/user1/", buf);
+}
+
+TEST(relative_links_are_built_for_real_paths, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink(".", SANDBOX_PATH "/a"));
+	assert_success(symlink(".", SANDBOX_PATH "/b"));
+#endif
+
+	fclose(fopen(SANDBOX_PATH "/target", "w"));
+
+	const char *rel_path = make_rel_path(SANDBOX_PATH "/a/a/a/target",
+			SANDBOX_PATH "/a/a/a/b/b/b");
+	assert_string_equal("target", rel_path);
+
+	assert_success(unlink(SANDBOX_PATH "/a"));
+	assert_success(unlink(SANDBOX_PATH "/b"));
+	assert_success(unlink(SANDBOX_PATH "/target"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
