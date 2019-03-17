@@ -261,7 +261,7 @@ draw_dir_list(view_t *view)
 
 	if(view != curr_view)
 	{
-		put_inactive_mark(view);
+		fview_draw_inactive_cursor(view);
 	}
 }
 
@@ -828,12 +828,12 @@ fview_cursor_redraw(view_t *view)
 		{
 			draw_dir_list(view);
 		}
-		put_inactive_mark(view);
+		fview_draw_inactive_cursor(view);
 	}
 }
 
 void
-put_inactive_mark(view_t *view)
+fview_draw_inactive_cursor(view_t *view)
 {
 	size_t col_width, col_count;
 	int line, column;
@@ -1801,7 +1801,7 @@ fview_position_updated(view_t *view)
 		else
 		{
 			redraw_cell(view, old_top, old_curr, 0);
-			put_inactive_mark(view);
+			fview_draw_inactive_cursor(view);
 		}
 		return;
 	}

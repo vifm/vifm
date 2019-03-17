@@ -876,7 +876,7 @@ change_window(void)
 
 	if(window_shows_dirlist(other_view))
 	{
-		put_inactive_mark(other_view);
+		fview_draw_inactive_cursor(other_view);
 	}
 
 	if(curr_stats.preview.on && !is_dir_list_loaded(curr_view))
