@@ -838,6 +838,10 @@ put_inactive_mark(view_t *view)
 	size_t col_width, col_count;
 	int line, column;
 
+	/* Reset last seen position on drawing inactive cursor or an active one won't
+	 * be drawn next time. */
+	view->last_seen_pos = -1;
+
 	if(!ui_view_displays_columns(view))
 	{
 		/* Inactive cell in ls-like view usually takes less space than an active
@@ -1789,6 +1793,7 @@ fview_position_updated(view_t *view)
 
 	if(view == other_view)
 	{
+		view->last_seen_pos = -1;
 		if(move_curr_line(view))
 		{
 			draw_dir_list(view);

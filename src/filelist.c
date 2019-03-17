@@ -32,6 +32,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
+#include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL size_t */
 #include <stdint.h> /* intptr_t uint64_t */
 #include <stdio.h> /* snprintf() */
