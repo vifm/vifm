@@ -210,7 +210,6 @@ struct dir_entry_t
 	time_t mtime;     /* Modification time. */
 	time_t atime;     /* Access time. */
 	time_t ctime;     /* Creation time. */
-	FileType type;    /* File type. */
 	int nlinks;       /* Number of hard links to the entry. */
 
 	int id;           /* File uniqueness identifier on comparison. */
@@ -232,6 +231,7 @@ struct dir_entry_t
 	short int match_left;  /* Starting position of search match. */
 	short int match_right; /* Ending position of search match. */
 
+	FileType type : 4;             /* File type. */
 	unsigned int selected : 1;     /* Whether file is selected. */
 	unsigned int was_selected : 1; /* Previous selection state for Visual mode. */
 	unsigned int marked : 1;       /* Whether file should be processed. */

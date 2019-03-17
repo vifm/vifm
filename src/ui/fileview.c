@@ -61,7 +61,8 @@ typedef struct
 {
 	view_t *view;       /* View on which cell is being drawn. */
 	dir_entry_t *entry; /* Entry that is being displayed. */
-	int line_pos;       /* File position in the file list (the view). */
+	int line_pos;       /* File position in the file list (the view).  Can be -1
+	                     * for filler (entry should still be supplied though). */
 	int line_hi_group;  /* Line highlight (to avoid per-column calculation). */
 	int current_pos;    /* Position of entry selected with the cursor. */
 	int total_width;    /* Total width available for drawing. */
@@ -260,7 +261,7 @@ draw_dir_list(view_t *view)
 
 	if(view != curr_view)
 	{
-		put_inactive_mark(view);
+		fview_draw_inactive_cursor(view);
 	}
 }
 
@@ -489,20 +490,25 @@ print_column(view_t *view, entries_t entries, const char current[],
 static void
 fill_column(view_t *view, int start_line, int top, int width, int offset)
 {
-	int i;
-
 	char filler[width + (cfg.extra_padding ? 1 : 0) + 1];
 	memset(filler, ' ', sizeof(filler) - 1U);
 	filler[sizeof(filler) - 1U] = '\0';
 
+	char a_space[] = " ";
+	dir_entry_t non_entry = {
+		.name = a_space,
+		.origin = a_space,
+		.type = FT_UNK,
+	};
+
+	int i;
 	for(i = start_line; i - top < view->window_rows; ++i)
 	{
 		size_t prefix_len = 0U;
 		const column_data_t cdt = {
 			.view = view,
-			.entry = &view->dir_entry[0],
-			.line_pos = i,
-			.line_hi_group = WIN_COLOR,
+			.entry = &non_entry,
+			.line_pos = -1,
 			.total_width = width,
 			.current_pos = -1,
 			.current_line = i - top,
@@ -822,15 +828,19 @@ fview_cursor_redraw(view_t *view)
 		{
 			draw_dir_list(view);
 		}
-		put_inactive_mark(view);
+		fview_draw_inactive_cursor(view);
 	}
 }
 
 void
-put_inactive_mark(view_t *view)
+fview_draw_inactive_cursor(view_t *view)
 {
 	size_t col_width, col_count;
 	int line, column;
+
+	/* Reset last seen position on drawing inactive cursor or an active one won't
+	 * be drawn next time. */
+	view->last_seen_pos = -1;
 
 	if(!ui_view_displays_columns(view))
 	{
@@ -1261,21 +1271,24 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 		cs_mix_colors(&col, &cs->color[AUX_WIN_COLOR]);
 	}
 
-	/* File-specific highlight affects only primary field for non-current lines
-	 * and whole line for the current line. */
-	const int with_line_hi = (primary || cdt->line_pos == cdt->current_pos);
-	const int line_color = with_line_hi ? cdt->line_hi_group : -1;
-	mix_in_common_colors(&col, view, cdt->entry, line_color);
-
-	if(cdt->line_pos == cdt->current_pos)
+	if(cdt->line_pos != -1)
 	{
-		if(view == curr_view || !cdt->is_main)
+		/* File-specific highlight affects only primary field for non-current lines
+		 * and whole line for the current line. */
+		const int with_line_hi = (primary || cdt->line_pos == cdt->current_pos);
+		const int line_color = with_line_hi ? cdt->line_hi_group : -1;
+		mix_in_common_colors(&col, view, cdt->entry, line_color);
+
+		if(cdt->line_pos == cdt->current_pos)
 		{
-			cs_mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
-		}
-		else if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
-		{
-			cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
+			if(view == curr_view || !cdt->is_main)
+			{
+				cs_mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
+			}
+			else if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
+			{
+				cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
+			}
 		}
 	}
 
@@ -1780,6 +1793,7 @@ fview_position_updated(view_t *view)
 
 	if(view == other_view)
 	{
+		view->last_seen_pos = -1;
 		if(move_curr_line(view))
 		{
 			draw_dir_list(view);
@@ -1787,7 +1801,7 @@ fview_position_updated(view_t *view)
 		else
 		{
 			redraw_cell(view, old_top, old_curr, 0);
-			put_inactive_mark(view);
+			fview_draw_inactive_cursor(view);
 		}
 		return;
 	}

@@ -54,8 +54,8 @@ void redraw_view(struct view_t *view);
  * cursor) */
 void redraw_current_view(void);
 
-/* Adds inactive cursor mark to the view. */
-void put_inactive_mark(struct view_t *view);
+/* Draws inactive cursor on the view. */
+void fview_draw_inactive_cursor(struct view_t *view);
 
 /* Redraws cursor of the view on the screen. */
 void fview_cursor_redraw(struct view_t *view);
