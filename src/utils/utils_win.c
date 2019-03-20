@@ -650,14 +650,14 @@ reopen_term_stdin(void)
 	HANDLE handle_in;
 	SECURITY_ATTRIBUTES sec_attr;
 
-	/* Share this file handle with child processes so that could use standard
-	 * output. */
+	/* Share this file handle with child processes so that they could use standard
+	 * it too. */
 	sec_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sec_attr.bInheritHandle = TRUE;
 	sec_attr.lpSecurityDescriptor = NULL;
 
 	handle_in = CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE,
-			FILE_SHARE_READ | FILE_SHARE_WRITE, &sec_attr, 0, 0, 0);
+			FILE_SHARE_READ | FILE_SHARE_WRITE, &sec_attr, OPEN_EXISTING, 0, 0);
 	if(handle_in == INVALID_HANDLE_VALUE)
 	{
 		fprintf(stderr, "Failed to open CONIN$.");
