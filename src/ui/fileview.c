@@ -1710,6 +1710,8 @@ fview_list_updated(view_t *view)
 {
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;
+	/* Even if position will remain the same, we might need to redraw it. */
+	view->last_seen_pos = -1;
 }
 
 /* Evaluates number of columns in the view.  Returns the number. */

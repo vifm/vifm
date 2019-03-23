@@ -795,6 +795,8 @@ cd_to_parent_dir(view_t *view)
 
 	if(ret == 0)
 	{
+		/* XXX: we put cursor at one position and then move it.  Ideally it would
+		 *      be set where it should be right away. */
 		load_dir_list(view, 0);
 		fpos_set_pos(view, fpos_find_by_name(view, dir_name));
 	}

@@ -1727,6 +1727,7 @@ populate_dir_list_internal(view_t *view, int reload)
 	 * the current line. */
 	if(!reload)
 	{
+		/* XXX: why cursor is positioned in code that loads the list? */
 		flist_hist_lookup(view, view);
 	}
 
