@@ -954,26 +954,32 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 		merge_all     = { .key = 'M', .descr = " [M]erge all        \n" },
 		escape        = { .key = NC_C_c, .descr = "\nEsc or Ctrl-C to cancel" };
 
-	char msg[PATH_MAX*3];
 	char response;
 	response_variant responses[11] = {};
 	size_t i = 0;
+
+	char dst_buf[PATH_MAX + 1];
+	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.dst_dir, fname);
+	const int same_file = paths_are_equal(dst_buf, caused_by);
 
 	responses[i++] = rename;
 	responses[i++] = enter;
 	responses[i++] = skip;
 	responses[i++] = skip_all;
-	if(cfg.use_system_calls && is_regular_file_noderef(fname) &&
-			is_regular_file_noderef(caused_by))
+	if(!same_file)
 	{
-		responses[i++] = append;
-	}
-	responses[i++] = overwrite;
-	responses[i++] = overwrite_all;
-	if(put_confirm.allow_merge)
-	{
-		responses[i++] = merge;
-		responses[i++] = merge_all;
+		if(cfg.use_system_calls && is_regular_file_noderef(fname) &&
+				is_regular_file_noderef(caused_by))
+		{
+			responses[i++] = append;
+		}
+		responses[i++] = overwrite;
+		responses[i++] = overwrite_all;
+		if(put_confirm.allow_merge)
+		{
+			responses[i++] = merge;
+			responses[i++] = merge_all;
+		}
 	}
 
 	responses[i++] = escape;
@@ -982,9 +988,19 @@ prompt_what_to_do(const char fname[], const char caused_by[])
 	/* Screen needs to be restored after displaying progress dialog. */
 	modes_update();
 
-	snprintf(msg, sizeof(msg),
-			"Name conflict for %s.  Caused by:\n%s\nWhat to do?", fname,
-			replace_home_part(caused_by));
+	char msg[PATH_MAX*3];
+	if(same_file)
+	{
+		snprintf(msg, sizeof(msg),
+				"Same file is both source and destination:\n%s\nWhat to do?",
+				replace_home_part(caused_by));
+	}
+	else
+	{
+		snprintf(msg, sizeof(msg),
+				"Name conflict for %s.  Caused by:\n%s\nWhat to do?", fname,
+				replace_home_part(caused_by));
+	}
 	response = fops_options_prompt("File Conflict", msg, responses);
 	handle_prompt_response(fname, caused_by, response);
 }
