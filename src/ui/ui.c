@@ -107,6 +107,7 @@ static void move_pair(short int from, short int to);
 static void create_windows(void);
 static void update_geometry(void);
 static int get_working_area_height(void);
+static void resize_all(void);
 static void clear_border(WINDOW *border);
 static int middle_border_is_visible(void);
 static void update_views(int reload);
@@ -231,7 +232,7 @@ setup_ncurses_interface(void)
 #endif
 #endif
 
-	update_geometry();
+	resize_all();
 
 	return 1;
 }
@@ -548,87 +549,6 @@ horizontal_layout(int screen_x, int screen_y)
 	mvwin(rborder, y, screen_x - 1);
 }
 
-static void
-resize_all(void)
-{
-	static float prev_x = -1.f, prev_y = -1.f;
-
-	int screen_x, screen_y;
-	int border_height;
-
-	update_geometry();
-	getmaxyx(stdscr, screen_y, screen_x);
-
-	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
-
-	if(stats_update_term_state(screen_x, screen_y) != TS_NORMAL)
-	{
-		return;
-	}
-
-	if(prev_x < 0)
-	{
-		prev_x = screen_x;
-		prev_y = screen_y;
-	}
-
-	if(curr_stats.splitter_pos >= 0)
-	{
-		if(curr_stats.split == HSPLIT)
-			curr_stats.splitter_pos *= screen_y/prev_y;
-		else
-			curr_stats.splitter_pos *= screen_x/prev_x;
-	}
-
-	prev_x = screen_x;
-	prev_y = screen_y;
-
-	wresize(stdscr, screen_y, screen_x);
-	wresize(menu_win, screen_y - 1, screen_x);
-
-	border_height = get_working_area_height();
-
-	ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-	wresize(lborder, border_height, 1);
-	mvwin(lborder, 1, 0);
-
-	ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-	wresize(rborder, border_height, 1);
-	mvwin(rborder, 1, screen_x - 1);
-
-	/* These need a resize at least after terminal size was zero or they grow and
-	 * produce bad looking effect. */
-	wresize(ltop_line1, 1, 1);
-	wresize(ltop_line2, 1, 1);
-	wresize(rtop_line1, 1, 1);
-	wresize(rtop_line2, 1, 1);
-
-	if(curr_stats.number_of_windows == 1)
-	{
-		only_layout(&lwin, screen_x);
-		only_layout(&rwin, screen_x);
-	}
-	else
-	{
-		if(curr_stats.split == HSPLIT)
-			horizontal_layout(screen_x, screen_y);
-		else
-			vertical_layout(screen_x);
-	}
-
-	correct_size(&lwin);
-	correct_size(&rwin);
-
-	wresize(stat_win, 1, screen_x);
-	(void)ui_stat_reposition(1, 0);
-
-	wresize(job_bar, 1, screen_x);
-
-	update_statusbar_layout();
-
-	curs_set(0);
-}
-
 /* Calculates height available for main area that contains file lists.  Returns
  * the height. */
 static int
@@ -786,6 +706,90 @@ update_screen(UpdateType update_kind)
 	ui_stat_job_bar_redraw();
 
 	curr_stats.need_update = UT_NONE;
+}
+
+/* Resizes all windows according to current screen size and TUI
+ * configuration. */
+static void
+resize_all(void)
+{
+	static float prev_x = -1.f, prev_y = -1.f;
+
+	int screen_x, screen_y;
+	int border_height;
+
+	update_geometry();
+	getmaxyx(stdscr, screen_y, screen_x);
+
+	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
+
+	if(stats_update_term_state(screen_x, screen_y) != TS_NORMAL)
+	{
+		return;
+	}
+
+	if(prev_x < 0)
+	{
+		prev_x = screen_x;
+		prev_y = screen_y;
+	}
+
+	if(curr_stats.splitter_pos >= 0)
+	{
+		if(curr_stats.split == HSPLIT)
+			curr_stats.splitter_pos *= screen_y/prev_y;
+		else
+			curr_stats.splitter_pos *= screen_x/prev_x;
+	}
+
+	prev_x = screen_x;
+	prev_y = screen_y;
+
+	wresize(stdscr, screen_y, screen_x);
+	wresize(menu_win, screen_y - 1, screen_x);
+
+	border_height = get_working_area_height();
+
+	/* TODO: ideally we shouldn't set any colors here (why do we do it?). */
+	ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
+	wresize(lborder, border_height, 1);
+	mvwin(lborder, 1, 0);
+
+	ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
+	wresize(rborder, border_height, 1);
+	mvwin(rborder, 1, screen_x - 1);
+
+	/* These need a resize at least after terminal size was zero or they grow and
+	 * produce bad looking effect. */
+	wresize(ltop_line1, 1, 1);
+	wresize(ltop_line2, 1, 1);
+	wresize(rtop_line1, 1, 1);
+	wresize(rtop_line2, 1, 1);
+
+	if(curr_stats.number_of_windows == 1)
+	{
+		only_layout(&lwin, screen_x);
+		only_layout(&rwin, screen_x);
+	}
+	else
+	{
+		if(curr_stats.split == HSPLIT)
+			horizontal_layout(screen_x, screen_y);
+		else
+			vertical_layout(screen_x);
+	}
+
+	correct_size(&lwin);
+	correct_size(&rwin);
+
+	wresize(stat_win, 1, screen_x);
+	(void)ui_stat_reposition(1, 0);
+
+	wresize(job_bar, 1, screen_x);
+
+	update_statusbar_layout();
+
+	curs_set(0);
 }
 
 /* Clears border, possibly by filling it with a pattern (depends on

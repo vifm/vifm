@@ -218,7 +218,7 @@ update_file_stats(fswatch_t *w, const struct inotify_event *e, time_t now)
 	}
 
 	/* Treat events happened in the next second as a sequence. */
-	stats->count = (now - stats->last_update <= 1U) ? (stats->count + 1) : 1;
+	stats->count = (now - stats->last_update <= 1) ? (stats->count + 1) : 1;
 
 	/* Files that cause relatively long sequence of events are banned for a
 	 * while.  Don't ban the directory itself, we don't want to miss changes of

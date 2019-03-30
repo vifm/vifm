@@ -251,7 +251,7 @@ int
 vle_abbr_iter(const wchar_t **lhs, const wchar_t **rhs, int *no_remap,
 		void **param)
 {
-	size_t i = (*param == NULL) ? 0U : ((abbrev_t *)*param - abbrevs + 1);
+	size_t i = (*param == NULL) ? 0 : ((abbrev_t *)*param - abbrevs + 1);
 	abbrev_t *abbrev;
 
 	if(i >= abbrev_count)
