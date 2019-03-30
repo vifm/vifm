@@ -157,7 +157,7 @@ ctrl_handler(DWORD dwCtrlType)
 static void _gnuc_noreturn
 shutdown_nicely(int sig, const char descr[])
 {
-  LOG_FUNC_ENTER;
+	LOG_FUNC_ENTER;
 
 	ui_shutdown();
 	term_title_update(NULL);
