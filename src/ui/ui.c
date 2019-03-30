@@ -232,7 +232,7 @@ setup_ncurses_interface(void)
 #endif
 #endif
 
-	update_geometry();
+	resize_all();
 
 	return 1;
 }

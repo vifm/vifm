@@ -152,6 +152,9 @@
 	Fixed reading file list from standard input (`dir /b /s | vifm -`) on
 	Windows 10.  Thanks to dancread.
 
+	Fixed crash on startup on trying to show a menu in vifmrc (didn't show up
+	in most setups).  Thanks to Christian Fillion (a.k.a. cfillion).
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
