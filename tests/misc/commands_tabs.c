@@ -123,17 +123,13 @@ TEST(tab_in_parent_is_created)
 
 TEST(newtab_fails_in_diff_mode_for_tab_panes)
 {
-	create_file(SANDBOX_PATH "/empty");
-
-	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare/a");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare/b");
 
 	cfg.pane_tabs = 1;
 	(void)compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
 	assert_failure(exec_commands("tabnew", &lwin, CIT_COMMAND));
 	assert_int_equal(1, tabs_count(&lwin));
-
-	assert_success(remove(SANDBOX_PATH "/empty"));
 }
 
 TEST(tab_name_is_set)
