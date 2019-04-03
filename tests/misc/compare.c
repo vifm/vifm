@@ -782,6 +782,16 @@ TEST(directories_are_not_added_from_custom_views)
 	assert_string_equal("", rwin.dir_entry[0].name);
 }
 
+TEST(the_same_directories_are_not_compared)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare");
+
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
+	assert_false(flist_custom_active(&lwin));
+	assert_false(flist_custom_active(&rwin));
+}
+
 static void
 basic_panes_check(int expected_len)
 {
