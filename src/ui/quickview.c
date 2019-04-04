@@ -66,6 +66,7 @@ enum { MAX_PREVIEW_LINES = 256 };
 typedef struct
 {
 	char *path;        /* Full path to the file. */
+	char *viewer;      /* Viewer of the file. */
 	filemon_t filemon; /* Timestamp for the file. */
 	strlist_t lines;   /* Top MAX_PREVIEW_LINES of preview contents. */
 	preview_area_t pa; /* Where preview is being drawn. */
@@ -93,9 +94,9 @@ static void view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 static void view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache);
 static int is_cache_valid(const quickview_cache_t *cache, const char path[],
-		const preview_area_t *parea);
+		const char viewer[], const preview_area_t *parea);
 static void fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
-		int graphical, const preview_area_t *parea);
+		const char viewer[], int graphical, const preview_area_t *parea);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
@@ -297,7 +298,9 @@ static void
 view_file(const char path[], const preview_area_t *parea,
 		quickview_cache_t *cache)
 {
-	if(is_cache_valid(cache, path, parea))
+	const char *viewer = qv_get_viewer(path);
+
+	if(is_cache_valid(cache, path, viewer, parea))
 	{
 		/* Update area as we might draw preview at a different location. */
 		cache->pa = *parea;
@@ -305,7 +308,6 @@ view_file(const char path[], const preview_area_t *parea,
 		return;
 	}
 
-	const char *viewer = qv_get_viewer(path);
 	int graphical = 0;
 
 	FILE *fp;
@@ -371,7 +373,7 @@ view_file(const char path[], const preview_area_t *parea,
 	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	fill_cache(cache, fp, path, graphical, parea);
+	fill_cache(cache, fp, path, viewer, graphical, parea);
 
 	fclose(fp);
 
@@ -384,10 +386,15 @@ view_file(const char path[], const preview_area_t *parea,
  * Returns non-zero if so, otherwise zero is returned. */
 static int
 is_cache_valid(const quickview_cache_t *cache, const char path[],
-		const preview_area_t *parea)
+		const char viewer[], const preview_area_t *parea)
 {
+	int same_viewer = (cache->viewer == NULL && viewer == NULL)
+	               || (cache->viewer != NULL && viewer != NULL &&
+	                   strcmp(cache->viewer, viewer) == 0);
+
 	filemon_t filemon;
-	if(filemon_from_file(path, &filemon) == 0 && cache->path != NULL &&
+	if(same_viewer &&
+			filemon_from_file(path, &filemon) == 0 && cache->path != NULL &&
 			paths_are_equal(cache->path, path) &&
 			filemon_equal(&cache->filemon, &filemon))
 	{
@@ -408,8 +415,8 @@ is_cache_valid(const quickview_cache_t *cache, const char path[],
 
 /* Fills the cache data with file's contents. */
 static void
-fill_cache(quickview_cache_t *cache, FILE *fp, const char path[], int graphical,
-		const preview_area_t *parea)
+fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
+		const char viewer[], int graphical, const preview_area_t *parea)
 {
 	/* File monitor must always be initialized, because it's used below. */
 	filemon_t filemon = {};
@@ -417,6 +424,7 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[], int graphical,
 	filemon_assign(&cache->filemon, &filemon);
 
 	replace_string(&cache->path, path);
+	replace_string(&cache->viewer, viewer);
 
 	free_string_array(cache->lines.items, cache->lines.nitems);
 	cache->lines = read_lines(fp, MAX_PREVIEW_LINES);

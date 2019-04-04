@@ -267,17 +267,26 @@ TEST(empty_root_directories_abort_single_comparison)
 
 TEST(empty_root_directories_abort_dual_comparison)
 {
-	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
+	assert_success(os_mkdir(SANDBOX_PATH "/a", 0777));
+	assert_success(os_mkdir(SANDBOX_PATH "/b", 0777));
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
+	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
 
 	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
 	assert_false(flist_custom_active(&lwin));
+
+	assert_success(rmdir(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/b"));
 }
 
 TEST(empty_unique_cv_are_created)
 {
-	strcpy(lwin.curr_dir, SANDBOX_PATH);
-	strcpy(rwin.curr_dir, SANDBOX_PATH);
+	assert_success(os_mkdir(SANDBOX_PATH "/a", 0777));
+	assert_success(os_mkdir(SANDBOX_PATH "/b", 0777));
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/a");
+	strcpy(rwin.curr_dir, SANDBOX_PATH "/b");
 
 	compare_two_panes(CT_CONTENTS, LT_UNIQUE, 0, 0);
 	assert_true(flist_custom_active(&lwin));
@@ -288,6 +297,9 @@ TEST(empty_unique_cv_are_created)
 
 	assert_string_equal("..", lwin.dir_entry[0].name);
 	assert_string_equal("..", rwin.dir_entry[0].name);
+
+	assert_success(rmdir(SANDBOX_PATH "/a"));
+	assert_success(rmdir(SANDBOX_PATH "/b"));
 }
 
 TEST(listing_wrong_path_does_nothing)
@@ -700,9 +712,10 @@ TEST(compare_considers_dot_filter)
 	lwin.hide_dot = 1;
 	rwin.hide_dot = 1;
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/tree");
-	strcpy(rwin.curr_dir, TEST_DATA_PATH "/tree");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/tree/dir5");
 	compare_two_panes(CT_CONTENTS, LT_ALL, 1, 0);
-	basic_panes_check(5);
+	assert_int_equal(5, lwin.list_rows);
+	assert_int_equal(5, rwin.list_rows);
 }
 
 TEST(empty_failes_are_skipped_if_requested)
@@ -767,6 +780,16 @@ TEST(directories_are_not_added_from_custom_views)
 
 	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
 	assert_string_equal("", rwin.dir_entry[0].name);
+}
+
+TEST(the_same_directories_are_not_compared)
+{
+	strcpy(lwin.curr_dir, TEST_DATA_PATH "/compare");
+	strcpy(rwin.curr_dir, TEST_DATA_PATH "/compare");
+
+	compare_two_panes(CT_CONTENTS, LT_ALL, 0, 0);
+	assert_false(flist_custom_active(&lwin));
+	assert_false(flist_custom_active(&rwin));
 }
 
 static void

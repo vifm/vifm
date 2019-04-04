@@ -92,6 +92,15 @@ static void free_compare_records(void *ptr);
 int
 compare_two_panes(CompareType ct, ListType lt, int group_paths, int skip_empty)
 {
+	/* We don't compare lists of files, so skip the check if at least one of the
+	 * views is a custom one. */
+	if(!flist_custom_active(&lwin) && !flist_custom_active(&rwin) &&
+			paths_are_same(flist_get_dir(&lwin), flist_get_dir(&rwin)))
+	{
+		ui_sb_err("Both views are at the same location");
+		return 1;
+	}
+
 	int next_id = 1;
 	entries_t curr, other;
 
