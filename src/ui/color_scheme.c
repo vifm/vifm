@@ -23,6 +23,7 @@
 #include <regex.h> /* regcomp() regexec() */
 
 #include <assert.h> /* assert() */
+#include <limits.h> /* INT_MAX */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
@@ -1129,8 +1130,10 @@ cs_add_file_hi(struct matchers_t *matchers, const col_attr_t *hi)
 const col_attr_t *
 cs_get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 {
-	int i;
-
+	if(*hi_hint == INT_MAX)
+	{
+		return NULL;
+	}
 	if(*hi_hint != -1)
 	{
 		assert(*hi_hint >= 0 && "Wrong index.");
@@ -1138,6 +1141,7 @@ cs_get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 		return &cs->file_hi[*hi_hint].hi;
 	}
 
+	int i;
 	for(i = 0; i < cs->file_hi_count; ++i)
 	{
 		const file_hi_t *const file_hi = &cs->file_hi[i];
@@ -1147,6 +1151,8 @@ cs_get_file_hi(const col_scheme_t *cs, const char fname[], int *hi_hint)
 			return &file_hi->hi;
 		}
 	}
+
+	*hi_hint = INT_MAX;
 	return NULL;
 }
 

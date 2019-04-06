@@ -129,7 +129,7 @@ Options:
 # Imports initial data from file/stdin.
 # * $dircolors - path to the file or undef for stdin.
 # Returns (\%patcol, \%typecol), where
-# * %patcol  - ".*\.ext"              => "attrlist"
+# * %patcol  - "suffix"               => "attrlist"
 # * %typecol - "Vifm highlight group" => "attrlist".
 sub import_from_file
 {
@@ -147,12 +147,12 @@ sub import_from_file
         chomp $line;
 
         if ($line =~ /^\.(\S+)\s+(\S+)/) {
-            my $pat = '.*\.'.$1;
+            my $pat = lc '\.'.$1;
             my $attrs = $2;
 
             &add_to_attrmap(\%patcol, $pat, $attrs);
         } elsif ($line =~ /^\*(\S+)\s+(\S+)/) {
-            my $pat = '.*'.$1;
+            my $pat = lc $1;
             my $attrs = $2;
 
             &add_to_attrmap(\%patcol, $pat, $attrs);
@@ -174,7 +174,7 @@ sub import_from_file
 # Imports initial data from an environment variable.
 # * $env - name of environment variable to use.
 # Returns (\%patcol, \%typecol), where
-# * %patcol  - ".*\.ext"              => "attrlist"
+# * %patcol  - "suffix"               => "attrlist"
 # * %typecol - "Vifm highlight group" => "attrlist"
 sub import_from_env
 {
@@ -191,10 +191,10 @@ sub import_from_env
             my $group = $SHORT_GROUPS{$name};
             $typecol{$group} = $attrs;
         } elsif ($name =~ /^\*\.(\S+)/) {
-            my $pat = '.*\.'.$1;
+            my $pat = lc '\.'.$1;
             &add_to_attrmap(\%patcol, $pat, $attrs);
         } elsif ($name =~ /^\*(\S+)/) {
-            my $pat = '.*'.$1;
+            my $pat = lc $1;
             &add_to_attrmap(\%patcol, $pat, $attrs);
         }
     }
@@ -202,7 +202,7 @@ sub import_from_env
     return (\%patcol, \%typecol);
 }
 
-# Adds extension pattern entry to a dictionary ("*.ext" => "attrlist").
+# Adds extension pattern entry to a dictionary ("suffix" => "attrlist").
 # * $extcol - the dictionary.
 # * $ext - the pattern.
 # * $attrs - list of attributes.
@@ -221,13 +221,24 @@ sub add_to_attrmap
 }
 
 # Join extensions that have same attributes into single record.
-# * $attrmap - ".*\.ext" => "attrlist".
+# * $attrmap - "suffix" => "attrlist".
 # Returns %inverted, where
-# * %inverted - "attrlist" => "*.ext,..." or "*ext,...".
+# * %inverted - "attrlist" => "suffix,...".
 sub invert_attrmap
 {
     my $attrmap = shift;
     my %attrmap = %$attrmap;
+
+    my %dotonly = ();
+    foreach my $ext (keys %attrmap) {
+        my $color = $attrmap{$ext};
+        if (!exists($dotonly{$color})) {
+            $dotonly{$color} = 1;
+        }
+        if ($ext !~ /^\\\..*$/) {
+            $dotonly{$color} = 0;
+        }
+    }
 
     my %inverted = ();
     foreach my $ext (sort keys %attrmap) {
@@ -235,7 +246,19 @@ sub invert_attrmap
         if (exists($inverted{$color})) {
             $inverted{$color} .= $readable ? "|\n          \\" : '|';
         }
-        $inverted{$color} .= $ext.'$';
+        if ($dotonly{$color}) {
+            $inverted{$color} .= substr $ext, 2;
+        } else {
+            $inverted{$color} .= $ext;
+        }
+    }
+
+    foreach my $color (keys %inverted) {
+        if ($dotonly{$color}) {
+            $inverted{$color} = "^.*\\\.($inverted{$color})\$";
+        } else {
+            $inverted{$color} = "^.*($inverted{$color})\$";
+        }
     }
 
     return %inverted;
@@ -257,7 +280,7 @@ sub print_typecol
 }
 
 # Formats and prints to stdout file name specific highlighting commands.
-# * \%attrmap - "attrlist" => "*.ext" or "*ext".
+# * \%attrmap - "attrlist" => "suffix".
 sub print_attrmap
 {
     my $attrmap = shift;
