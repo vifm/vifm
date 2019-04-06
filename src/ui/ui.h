@@ -218,7 +218,8 @@ struct dir_entry_t
 	                     e.g. by sorting comparer to perform stable sort or item
 	                     mapping during tree filtering. */
 
-	int hi_num;       /* File highlighting parameters cache (initially -1). */
+	int hi_num;       /* File highlighting parameters cache.  Initially -1.
+	                     INT_MAX signifies absence of a match. */
 	int name_dec_num; /* File decoration parameters cache (initially -1).  The
 	                     value is shifted by one, 0 means type decoration. */
 

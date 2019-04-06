@@ -78,6 +78,9 @@
 	Generate faster regular expressions by vifm-convert-dircolors.  Thanks to
 	Gomme Bidule.
 
+	Remember when file doesn't match any file-specific highlighting groups for
+	better performance.  Thanks to Gomme Bidule.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
