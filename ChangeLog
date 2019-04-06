@@ -75,6 +75,9 @@
 	Refuse to compare directory against itself via :compare command.  Thanks
 	to Jose Riha (a.k.a. jose1711)
 
+	Generate faster regular expressions by vifm-convert-dircolors.  Thanks to
+	Gomme Bidule.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
