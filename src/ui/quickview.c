@@ -424,7 +424,7 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
 	filemon_assign(&cache->filemon, &filemon);
 
 	replace_string(&cache->path, path);
-	replace_string(&cache->viewer, viewer);
+	update_string(&cache->viewer, viewer);
 
 	free_string_array(cache->lines.items, cache->lines.nitems);
 	cache->lines = read_lines(fp, MAX_PREVIEW_LINES);
