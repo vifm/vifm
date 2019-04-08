@@ -81,6 +81,12 @@
 	Remember when file doesn't match any file-specific highlighting groups for
 	better performance.  Thanks to Gomme Bidule.
 
+	Renamed filename filter to "permanent filter" consisting of
+	"explicit" (ex-manual) and "implicit" (ex-automatic) parts.  Thanks to
+	Sitaram Chamarty.
+
+	Improved documentation on filters.  Thanks to Sitaram Chamarty.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

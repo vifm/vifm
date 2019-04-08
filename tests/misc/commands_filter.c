@@ -36,10 +36,10 @@ TEARDOWN()
 
 TEST(filter_prints_empty_filters_correctly)
 {
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name               \n"
-	                       "Auto               ";
+	const char *expected = "  Filter -- Flags -- Value\n"
+	                       "Local                \n"
+	                       "Explicit             \n"
+	                       "Implicit             ";
 
 	ui_sb_msg("");
 	assert_failure(exec_commands("filter?", &lwin, CIT_COMMAND));
@@ -48,10 +48,10 @@ TEST(filter_prints_empty_filters_correctly)
 
 TEST(filter_prints_non_empty_filters)
 {
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local     I        local\n"
-	                       "Name      ---->    abc\n"
-	                       "Auto               ";
+	const char *expected = "  Filter -- Flags -- Value\n"
+	                       "Local       I        local\n"
+	                       "Explicit    ---->    abc\n"
+	                       "Implicit             ";
 
 	assert_success(exec_commands("filter abc", &lwin, CIT_COMMAND));
 	local_filter_apply(&lwin, "local");
@@ -63,10 +63,10 @@ TEST(filter_prints_non_empty_filters)
 
 TEST(filter_with_empty_value_reuses_last_search)
 {
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name      ---->    /pattern/I\n"
-	                       "Auto               ";
+	const char *expected = "  Filter -- Flags -- Value\n"
+	                       "Local                \n"
+	                       "Explicit    ---->    /pattern/I\n"
+	                       "Implicit             ";
 
 	cfg_resize_histories(5);
 	hists_search_save("pattern");
@@ -85,10 +85,10 @@ TEST(filter_accepts_pipe_without_escaping)
 
 TEST(filter_prints_whole_manual_filter_expression)
 {
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name      ---->    /abc/i\n"
-	                       "Auto               ";
+	const char *expected = "  Filter -- Flags -- Value\n"
+	                       "Local                \n"
+	                       "Explicit    ---->    /abc/i\n"
+	                       "Implicit             ";
 
 	assert_success(exec_commands("filter /abc/i", &lwin, CIT_COMMAND));
 
@@ -99,10 +99,10 @@ TEST(filter_prints_whole_manual_filter_expression)
 
 TEST(filter_without_args_resets_manual_filter)
 {
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name               \n"
-	                       "Auto               ";
+	const char *expected = "  Filter -- Flags -- Value\n"
+	                       "Local                \n"
+	                       "Explicit             \n"
+	                       "Implicit             ";
 
 	assert_success(exec_commands("filter this", &lwin, CIT_COMMAND));
 	assert_success(exec_commands("filter", &lwin, CIT_COMMAND));
@@ -114,10 +114,10 @@ TEST(filter_without_args_resets_manual_filter)
 
 TEST(filter_reset_is_not_affected_by_search_history)
 {
-	const char *expected = "Filter -- Flags -- Value\n"
-	                       "Local              \n"
-	                       "Name               \n"
-	                       "Auto               ";
+	const char *expected = "  Filter -- Flags -- Value\n"
+	                       "Local                \n"
+	                       "Explicit             \n"
+	                       "Implicit             ";
 
 	cfg_resize_histories(5);
 	hists_search_save("pattern");
