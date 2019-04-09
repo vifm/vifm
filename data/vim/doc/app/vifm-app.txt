@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Apr 8
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Apr 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2189,7 +2189,7 @@ yet supported) and might be changed in future releases, or get an alias.
      - for boolean options - nooption, invoption and option!
      - for integer options - option=x, option+=x and option-=x
      - for string options - option=x and option+=x
-     - for string list options - option=x, option+=x and option-=x
+     - for string list options - option=x, option+=x, option-=x and option^=x
      - for enumeration options - option=x, option+=x and option-=x
      - for set options - option=x, option+=x and option-=x
      - for charset options - option=x, option+=x, option-=x and option^=x

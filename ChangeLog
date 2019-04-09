@@ -31,6 +31,8 @@
 	Added "rpreview:" key to 'milleroptions' option that allows enabling
 	preview of files.  Thanks to Svadkos and Tom Jansen.
 
+	Added ^= operation for string list options.  Thanks to SearyBlue.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

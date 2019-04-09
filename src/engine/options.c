@@ -946,22 +946,33 @@ set_remove(opt_t *opt, const char value[])
 	return 0;
 }
 
-/* Toggles value(s) from the option (^= operator).  Returns non-zero on
- * success. */
+/* Toggles value(s) from the option (^= operator).  Returns zero on success. */
 static int
 set_hat(opt_t *opt, const char value[])
 {
-	if(opt->type != OPT_CHARSET)
+	if(opt->type != OPT_STRLIST && opt->type != OPT_CHARSET)
 	{
 		return -1;
 	}
 
-	if(charset_toggle_all(opt, value))
+	if(opt->type == OPT_CHARSET)
 	{
+		if(charset_toggle_all(opt, value))
+		{
+			notify_option_update(opt, OP_MODIFIED, opt->val);
+		}
+	}
+	else
+	{
+		if(!str_remove(opt->val.str_val, value))
+		{
+			/* Nothing was removed, so add it. */
+			opt->val.str_val = str_add(opt->val.str_val, value);
+		}
 		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
-	uni_handler(opt->name, opt->val, opt->scope);
 
+	uni_handler(opt->name, opt->val, opt->scope);
 	return 0;
 }
 

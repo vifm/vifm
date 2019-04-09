@@ -4,6 +4,7 @@
 
 extern char cpoptions[10];
 extern int cpoptions_handler_calls;
+extern const char *value;
 
 TEST(hat_with_charset_addition)
 {
@@ -27,13 +28,28 @@ TEST(hat_with_charset_removal)
 	assert_string_equal("a", cpoptions);
 }
 
+TEST(hat_with_strlist_addition)
+{
+	assert_success(vle_opts_set("cdpath^=/some/path", OPT_GLOBAL));
+	assert_string_equal("/some/path", value);
+	assert_success(vle_opts_set("cdpath^=/some/new-path", OPT_GLOBAL));
+	assert_string_equal("/some/path,/some/new-path", value);
+}
+
+TEST(hat_with_strlist_removal)
+{
+	assert_success(vle_opts_set("cdpath=/some/path", OPT_GLOBAL));
+	assert_string_equal("/some/path", value);
+	assert_success(vle_opts_set("cdpath^=/some/path", OPT_GLOBAL));
+	assert_string_equal("", value);
+}
+
 TEST(hat_with_not_charset_error)
 {
 	/* TODO: to be implemented for some of option types. */
 
 	cpoptions[0] = '\0';
 
-	assert_failure(vle_opts_set("cdpath^=/some/path", OPT_GLOBAL));
 	assert_failure(vle_opts_set("fastrun^=a", OPT_GLOBAL));
 	assert_failure(vle_opts_set("fusehome^=/new/path", OPT_GLOBAL));
 	assert_failure(vle_opts_set("sort^=gid", OPT_GLOBAL));
