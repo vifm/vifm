@@ -1144,22 +1144,17 @@ replace_if_changed(char **current, const char new[])
 	return (replace_string(current, new) == 0) ? 1 : 0;
 }
 
-/* And an element to string list.  Reallocates the memory of old and returns
+/* Add an element to string list.  Reallocates the memory of old and returns
  * its new address or NULL if there isn't enough memory. */
 static char *
 str_add(char *old, const char *value)
 {
-	size_t len;
-	char *new;
-
-	len = 0;
-	if(old != NULL)
-		len = strlen(old);
-	new = realloc(old, len + 1 + strlen(value) + 1);
+	const size_t old_len = (old == NULL ? 0 : strlen(old));
+	char *new = realloc(old, old_len + 1 + strlen(value) + 1);
 	if(new == NULL)
 		return old;
 
-	if(old == NULL)
+	if(old_len == 0)
 		strcpy(new, "");
 	else
 		strcat(new, ",");
