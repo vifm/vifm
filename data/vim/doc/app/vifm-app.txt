@@ -2191,7 +2191,7 @@ yet supported) and might be changed in future releases, or get an alias.
      - for string options - option=x and option+=x
      - for string list options - option=x, option+=x, option-=x and option^=x
      - for enumeration options - option=x, option+=x and option-=x
-     - for set options - option=x, option+=x and option-=x
+     - for set options - option=x, option+=x, option\-=x and option^=x
      - for charset options - option=x, option+=x, option-=x and option^=x
     the meaning:
      - option - turn option on (for boolean) or print its value (for all

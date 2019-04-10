@@ -43,9 +43,10 @@ const char OPT_NAME_CHARS[] = LOWER_CHARS;
 /* List of operations on options of set type for the set_op(...) function. */
 typedef enum
 {
-	SO_SET, /* Set value of the option. */
-	SO_ADD, /* Add item(s) to a set. */
+	SO_SET,    /* Set value of the option. */
+	SO_ADD,    /* Add item(s) to a set. */
 	SO_REMOVE, /* Remove item(s) from a set. */
+	SO_TOGGLE, /* Toggle item(s) in a set. */
 }
 SetOp;
 
@@ -950,12 +951,20 @@ set_remove(opt_t *opt, const char value[])
 static int
 set_hat(opt_t *opt, const char value[])
 {
-	if(opt->type != OPT_STRLIST && opt->type != OPT_CHARSET)
+	if(opt->type != OPT_STRLIST && opt->type != OPT_SET &&
+			opt->type != OPT_CHARSET)
 	{
 		return -1;
 	}
 
-	if(opt->type == OPT_CHARSET)
+	if(opt->type == OPT_SET)
+	{
+		if(set_op(opt, value, SO_TOGGLE))
+		{
+			notify_option_update(opt, OP_MODIFIED, opt->val);
+		}
+	}
+	else if(opt->type == OPT_CHARSET)
 	{
 		if(charset_toggle_all(opt, value))
 		{
@@ -1007,7 +1016,8 @@ set_op(opt_t *opt, const char value[], SetOp op)
 
 		if(i != -1)
 		{
-			if(op == SO_SET || op == SO_ADD)
+			if(op == SO_SET || op == SO_ADD ||
+					(op == SO_TOGGLE && (old_val & (1 << i)) == 0))
 				new_val |= 1 << i;
 			else
 				new_val &= ~(1 << i);
