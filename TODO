@@ -31,7 +31,6 @@ Vi(m) specific features:
   * Ctrl-W F key.
   * Add support of [count] for Ctrl-E/Ctrl-Y/H/M/L.
   * nrformats option as in Vim.
-  * Add support of ^= in :set command for more option kinds.
   * Better ranges (add support for search patterns).
   * :map without arguments.
   * Don't move cursor on search failure.

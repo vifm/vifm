@@ -31,6 +31,10 @@
 	Added "rpreview:" key to 'milleroptions' option that allows enabling
 	preview of files.  Thanks to Svadkos and Tom Jansen.
 
+	Added ^= operation for string list options.  Thanks to SearyBlue.
+
+	Added ^= operation for options of set kind.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -80,6 +84,14 @@
 
 	Remember when file doesn't match any file-specific highlighting groups for
 	better performance.  Thanks to Gomme Bidule.
+
+	Renamed filename filter to "permanent filter" consisting of
+	"explicit" (ex-manual) and "implicit" (ex-automatic) parts.  Thanks to
+	Sitaram Chamarty.
+
+	Improved documentation on filters.  Thanks to Sitaram Chamarty.
+
+	Do not add leading comma to string list options on `set opt+=item`.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 

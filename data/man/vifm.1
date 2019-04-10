@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 14, 2019" "vifm 0.10"
+.TH VIFM 1 "April 10, 2019" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -416,28 +416,42 @@ alone and they don't wrap when they are used as selectors.
 There are three basic file filters:
 .RS 2
 .IP \- 2
-dot files filter (excluding "." and ".." special directories, whose appearance
-is controlled by the 'dotdirs' option);
+dot files filter (does not affect "." and ".." special directories, whose
+appearance is controlled by the 'dotdirs' option), see 'dotfiles' option;
 .IP \- 2
-manual filter for file names;
+permanent filter;
 .IP \- 2
-automatic filter for file names;
-.IP \- 2
-local filter for file names (see description of the "=" normal mode command).
+local filter (see description of the "=" normal mode command).
 .RE
 
-Performing operations on manual filter for file names automatically does the
-same on automatic one.  The file name filter is separated mainly for
-convenience purpose and to get more deterministic behaviour.
+Permanent filter essentially allows defining a group of files names which are
+not desirable to be seen by default, like temporary or backup files, which
+might be created alongside normal ones.  Just like you don't usually need to
+see hidden dot files (files starting with a dot).  Local filter on the other
+hand is for temporary immediate filtering of file list at hand, to get rid of
+uninterested files in the view or to make it possible to use % range in a
+:command.
 
-The basic vim folding key bindings are used for filtering files.
+For the purposes of more deterministic editing permanent filter is split
+into two parts:
+.RS 2
+.IP \- 2
+one edited explicitly via :filter command;
+.IP \- 2
+another one which is edited implicitly via zf shortcut.
+.RE
+
+Files are tested against both parts and a match counts if at least one
+of the parts matched.
+
 .TP
 Each file list has its own copy of each filter.
 .TP
 Filtered files are not checked in / search or :commands.
 .TP
-Files and directories are filtered separately.  For this a slash is appended \
-to a directory name before testing whether it matches the filter.  Examples:
+Files and directories are filtered separately.  This is done by appending \
+a slash to a directory name before testing whether it matches the filter. \
+Examples:
 
 .EX
 .LP
@@ -445,13 +459,16 @@ to a directory name before testing whether it matches the filter.  Examples:
   :filter /^.*\\.files\\/$/
 
   " filter files which names end with '.d'
-  :filter /^.*\\.d$/
+  :filter {*.d}
 
   " filter files and directories which names end with '.o'
   :filter /^.*\\.o\\/?$/
 .EE
 
 Note: vifm uses extended regular expressions.
+
+The basic vim folding key bindings are used for managing filters.
+
 .TP
 .BI za
 toggle visibility of dot files.
@@ -463,19 +480,19 @@ show dot files.
 hide dot files.
 .TP
 .BI zf
-add selected files to file name filter.
+add selected files to permanent filter.
 .TP
 .BI zO
-show files hidden by file name filter.
-.TP
-.BI zM
-restore all filters.
+reset permanent filter.
 .TP
 .BI zR
-remove all filters.
+save and reset all filters.
 .TP
 .BI zr
-remove local filter.
+clear local filter.
+.TP
+.BI zM
+restore all filters (undoes last zR).
 .TP
 .BI zd
 exclude selection or current file from a custom view.  Does nothing for regular
@@ -1143,10 +1160,10 @@ the last component of path to the current directory of the inactive pane.
 
 .TP
 .BI "Ctrl-X a"
-value of automatic filter of the active pane.
+value of implicit permanent filter (old name "automatic") of the active pane.
 .TP
 .BI "Ctrl-X m"
-value of manual filter of the active pane.
+value of explicit permanent filter (old name "manual") of the active pane.
 .TP
 .BI "Ctrl-X ="
 value of local filter of the active pane.
@@ -2582,9 +2599,9 @@ You can use following syntax:
  \- for boolean options \- nooption, invoption and option!
  \- for integer options \- option=x, option+=x and option\-=x
  \- for string options \- option=x and option+=x
- \- for string list options \- option=x, option+=x and option\-=x
+ \- for string list options \- option=x, option+=x, option\-=x and option^=x
  \- for enumeration options \- option=x, option+=x and option\-=x
- \- for set options \- option=x, option+=x and option\-=x
+ \- for set options \- option=x, option+=x, option\-=x and option^=x
  \- for charset options \- option=x, option+=x, option\-=x and option^=x
 
 the meaning:

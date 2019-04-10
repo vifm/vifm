@@ -2337,10 +2337,10 @@ static void
 display_filters_info(const view_t *view)
 {
 	char *const localf = get_filter_info("Local", &view->local_filter.filter);
-	char *const manualf = get_matcher_info("Name", view->manual_filter);
-	char *const autof = get_filter_info("Auto", &view->auto_filter);
+	char *const manualf = get_matcher_info("Explicit", view->manual_filter);
+	char *const autof = get_filter_info("Implicit", &view->auto_filter);
 
-	ui_sb_msgf("Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf, autof);
+	ui_sb_msgf("  Filter -- Flags -- Value\n%s\n%s\n%s", localf, manualf, autof);
 
 	free(localf);
 	free(manualf);
@@ -2364,7 +2364,7 @@ get_filter_info(const char name[], const filter_t *filter)
 		flags_str = (filter->cflags & REG_ICASE) ? "i" : "I";
 	}
 
-	return format_str("%-6s    %-5s    %s", name, flags_str, filter->raw);
+	return format_str("%-8s    %-5s    %s", name, flags_str, filter->raw);
 }
 
 /* Composes description string for given matcher.  Returns NULL on out of
@@ -2375,7 +2375,7 @@ get_matcher_info(const char name[], const matcher_t *matcher)
 {
 	const char *const flags = matcher_is_empty(matcher) ? "" : "---->";
 	const char *const value = matcher_get_expr(matcher);
-	return format_str("%-6s    %-5s    %s", name, flags, value);
+	return format_str("%-8s    %-5s    %s", name, flags, value);
 }
 
 /* Returns value for filter inversion basing on current configuration and

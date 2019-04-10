@@ -43,9 +43,10 @@ const char OPT_NAME_CHARS[] = LOWER_CHARS;
 /* List of operations on options of set type for the set_op(...) function. */
 typedef enum
 {
-	SO_SET, /* Set value of the option. */
-	SO_ADD, /* Add item(s) to a set. */
+	SO_SET,    /* Set value of the option. */
+	SO_ADD,    /* Add item(s) to a set. */
 	SO_REMOVE, /* Remove item(s) from a set. */
+	SO_TOGGLE, /* Toggle item(s) in a set. */
 }
 SetOp;
 
@@ -946,22 +947,41 @@ set_remove(opt_t *opt, const char value[])
 	return 0;
 }
 
-/* Toggles value(s) from the option (^= operator).  Returns non-zero on
- * success. */
+/* Toggles value(s) from the option (^= operator).  Returns zero on success. */
 static int
 set_hat(opt_t *opt, const char value[])
 {
-	if(opt->type != OPT_CHARSET)
+	if(opt->type != OPT_STRLIST && opt->type != OPT_SET &&
+			opt->type != OPT_CHARSET)
 	{
 		return -1;
 	}
 
-	if(charset_toggle_all(opt, value))
+	if(opt->type == OPT_SET)
 	{
+		if(set_op(opt, value, SO_TOGGLE))
+		{
+			notify_option_update(opt, OP_MODIFIED, opt->val);
+		}
+	}
+	else if(opt->type == OPT_CHARSET)
+	{
+		if(charset_toggle_all(opt, value))
+		{
+			notify_option_update(opt, OP_MODIFIED, opt->val);
+		}
+	}
+	else
+	{
+		if(!str_remove(opt->val.str_val, value))
+		{
+			/* Nothing was removed, so add it. */
+			opt->val.str_val = str_add(opt->val.str_val, value);
+		}
 		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
-	uni_handler(opt->name, opt->val, opt->scope);
 
+	uni_handler(opt->name, opt->val, opt->scope);
 	return 0;
 }
 
@@ -996,7 +1016,8 @@ set_op(opt_t *opt, const char value[], SetOp op)
 
 		if(i != -1)
 		{
-			if(op == SO_SET || op == SO_ADD)
+			if(op == SO_SET || op == SO_ADD ||
+					(op == SO_TOGGLE && (old_val & (1 << i)) == 0))
 				new_val |= 1 << i;
 			else
 				new_val &= ~(1 << i);
@@ -1144,22 +1165,17 @@ replace_if_changed(char **current, const char new[])
 	return (replace_string(current, new) == 0) ? 1 : 0;
 }
 
-/* And an element to string list.  Reallocates the memory of old and returns
+/* Add an element to string list.  Reallocates the memory of old and returns
  * its new address or NULL if there isn't enough memory. */
 static char *
 str_add(char *old, const char *value)
 {
-	size_t len;
-	char *new;
-
-	len = 0;
-	if(old != NULL)
-		len = strlen(old);
-	new = realloc(old, len + 1 + strlen(value) + 1);
+	const size_t old_len = (old == NULL ? 0 : strlen(old));
+	char *new = realloc(old, old_len + 1 + strlen(value) + 1);
 	if(new == NULL)
 		return old;
 
-	if(old == NULL)
+	if(old_len == 0)
 		strcpy(new, "");
 	else
 		strcat(new, ",");
