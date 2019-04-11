@@ -38,6 +38,7 @@
 #include "modes/modes.h"
 #include "modes/wk.h"
 #include "ui/fileview.h"
+#include "ui/quickview.h"
 #include "ui/statusbar.h"
 #include "ui/statusline.h"
 #include "ui/ui.h"
@@ -635,6 +636,13 @@ prepare_suggestion_box(int *height)
 		wresize(stat_win, *height, getmaxx(stdscr));
 		ui_stat_reposition(getmaxy(status_bar), 1);
 		win = stat_win;
+	}
+
+	/* Clear preview before displaying suggestion for the first tiem for specific
+	 * input if active preview needs special cleanup. */
+	if(!suggestions_are_visible && curr_stats.preview.cleanup_cmd != NULL)
+	{
+		qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 	}
 
 	ui_set_bg(win, &col, -1);
