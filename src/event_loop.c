@@ -488,7 +488,8 @@ should_check_views_for_changes(void)
 {
 	return !ui_sb_multiline()
 	    && !is_in_menu_like_mode()
-	    && NONE(vle_mode_is, CMDLINE_MODE, MSG_MODE);
+	    && NONE(vle_mode_is, CMDLINE_MODE, MSG_MODE)
+	    && !suggestions_are_visible;
 }
 
 /* Updates view in case directory it displays was changed externally. */

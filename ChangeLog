@@ -95,6 +95,9 @@
 
 	Clear preview before displaying suggestions.  Thanks to ks1c.
 
+	Do not check for view changes while suggestions are visible.  It can mess
+	up TUI, especially in combination with preview.  Thanks to ks1c.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
