@@ -598,6 +598,17 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	const size_t char_width = utf8_chrw(str);
 	if(char_width != 1 || (unsigned char)str[0] >= (unsigned char)' ')
 	{
+		if(char_width == 1 && (size_t)str[0] >= 0x80 && (size_t)str[0] < 0x100)
+		{
+			const char *name = keyname((unsigned char)str[0]);
+			if(name != NULL)
+			{
+				strcpy(buf, name);
+				*screen_width = strlen(name);
+				return buf;
+			}
+		}
+
 		memcpy(buf, str, char_width);
 		buf[char_width] = '\0';
 		*screen_width = vifm_wcwidth(get_first_wchar(str));
