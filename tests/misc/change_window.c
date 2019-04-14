@@ -15,11 +15,17 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
+	view_setup(&lwin);
+	view_setup(&rwin);
+
 	opt_handlers_setup();
 }
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+
 	opt_handlers_teardown();
 }
 

@@ -816,20 +816,29 @@ redraw_current_view(void)
 void
 fview_cursor_redraw(view_t *view)
 {
-	if(view == curr_view)
-	{
-		/* Call file list function, which will also ensure that current position in
-		 * list is correct. */
-		fpos_set_pos(view, view->list_pos);
-	}
-	else
+	if(view != curr_view)
 	{
 		if(move_curr_line(view))
 		{
 			draw_dir_list(view);
 		}
 		fview_draw_inactive_cursor(view);
+		return;
 	}
+
+	if(move_curr_line(view))
+	{
+		draw_dir_list(view);
+		return;
+	}
+
+	if(!ui_view_displays_columns(view))
+	{
+		/* Inactive cell in ls-like view usually takes less space than an active
+		 * one.  Need to clear the cell before drawing over it. */
+		redraw_cell(view, view->top_line, view->curr_line, 0);
+	}
+	redraw_cell(view, view->top_line, view->curr_line, 1);
 }
 
 void
