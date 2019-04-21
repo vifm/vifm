@@ -304,6 +304,18 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 	assoc_list->count++;
 }
 
+ViewerKind
+ft_viewer_kind(const char viewer[])
+{
+	/* %pw and %ph can be useful for text output, but %px and %py are useful
+	 * for graphics only and basically must be used both at the same time. */
+	if(strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL)
+	{
+		return VK_GRAPHICAL;
+	}
+	return VK_TEXTUAL;
+}
+
 void
 ft_reset(int in_x)
 {

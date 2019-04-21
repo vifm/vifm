@@ -32,6 +32,14 @@ typedef enum
 }
 AssocRecordType;
 
+/* Type of viewers. */
+typedef enum
+{
+	VK_TEXTUAL,   /* Regular text preview. */
+	VK_GRAPHICAL, /* Graphics by external means. */
+}
+ViewerKind;
+
 typedef struct
 {
 	char *command;
@@ -112,6 +120,9 @@ assoc_records_t ft_get_all_viewers(const char file[]);
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated viewers. */
 void ft_set_viewers(struct matchers_t *matchers, const char viewers[]);
+
+/* Guesses kind of viewer from the invocation command.  Returns the kind. */
+ViewerKind ft_viewer_kind(const char viewer[]);
 
 /* Records managing. */
 
