@@ -24,19 +24,19 @@
 
 struct matchers_t;
 
-/* Type of file association by it's source. */
+/* Type of file association by its source. */
 typedef enum
 {
 	ART_BUILTIN, /* Builtin type of association, set automatically by vifm. */
 	ART_CUSTOM,  /* Custom type of association, which is set by user. */
 }
-assoc_record_type_t;
+AssocRecordType;
 
 typedef struct
 {
 	char *command;
 	char *description;
-	assoc_record_type_t type;
+	AssocRecordType type;
 }
 assoc_record_t;
 

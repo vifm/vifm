@@ -68,7 +68,7 @@ const assoc_record_t NONE_PSEUDO_PROG = {
 static assoc_list_t active_filetypes;
 
 /* Used to set type of new association records */
-static assoc_record_type_t new_records_type = ART_CUSTOM;
+static AssocRecordType new_records_type = ART_CUSTOM;
 
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
