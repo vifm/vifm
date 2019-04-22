@@ -100,6 +100,20 @@ TEARDOWN()
 	dynarray_free(rwin.dir_entry);
 }
 
+TEST(literal_percent)
+{
+	char *expanded = ma_expand("echo log %%", "", NULL, 0);
+	assert_string_equal("echo log %", expanded);
+	free(expanded);
+}
+
+TEST(argument_expansion)
+{
+	char *expanded = ma_expand("echo %a", "this is arg", NULL, 0);
+	assert_string_equal("echo this is arg", expanded);
+	free(expanded);
+}
+
 TEST(b_both_have_selection)
 {
 	char *expanded;
@@ -206,16 +220,73 @@ TEST(forward_slashes_on_win_for_non_shell)
 	free(expanded);
 }
 
-TEST(m)
+TEST(good_flag_macros)
 {
 	MacroFlags flags;
+	char *expanded;
 
-	rwin.list_pos = 6;
-	curr_view = &rwin;
-	other_view = &lwin;
-	char *expanded = ma_expand("%M echo log", "", &flags, 0);
+	expanded = ma_expand("%i echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_IGNORE, flags);
+	free(expanded);
+
+	expanded = ma_expand("%Iu echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_CUSTOMVIEW_IOUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%IU echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_VERYCUSTOMVIEW_IOUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%m echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_MENU_OUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%M echo log", "", &flags, 0);
 	assert_string_equal(" echo log", expanded);
 	assert_int_equal(MF_MENU_NAV_OUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%n echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_NO_TERM_MUX, flags);
+	free(expanded);
+
+	expanded = ma_expand("%q echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_PREVIEW_OUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%s echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_SPLIT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%S echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_STATUSBAR_OUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%u echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_CUSTOMVIEW_OUTPUT, flags);
+	free(expanded);
+
+	expanded = ma_expand("%U echo log", "", &flags, 0);
+	assert_string_equal(" echo log", expanded);
+	assert_int_equal(MF_VERYCUSTOMVIEW_OUTPUT, flags);
+	free(expanded);
+}
+
+TEST(bad_flag_macros)
+{
+	MacroFlags flags;
+	char *expanded = ma_expand("%IX echo log", "", &flags, 0);
+	assert_string_equal("X echo log", expanded);
+	assert_int_equal(MF_NONE, flags);
 	free(expanded);
 }
 
@@ -528,6 +599,24 @@ TEST(preview_clear_cmd_is_extracted)
 TEST(preview_clear_cmd_is_optional)
 {
 	assert_string_equal(NULL, ma_get_clear_cmd("draw %pw %ph"));
+}
+
+TEST(flags_to_str)
+{
+	assert_string_equal("", ma_flags_to_str(MF_NONE));
+
+	assert_string_equal("%m", ma_flags_to_str(MF_MENU_OUTPUT));
+	assert_string_equal("%M", ma_flags_to_str(MF_MENU_NAV_OUTPUT));
+	assert_string_equal("%S", ma_flags_to_str(MF_STATUSBAR_OUTPUT));
+	assert_string_equal("%q", ma_flags_to_str(MF_PREVIEW_OUTPUT));
+	assert_string_equal("%u", ma_flags_to_str(MF_CUSTOMVIEW_OUTPUT));
+	assert_string_equal("%U", ma_flags_to_str(MF_VERYCUSTOMVIEW_OUTPUT));
+	assert_string_equal("%Iu", ma_flags_to_str(MF_CUSTOMVIEW_IOUTPUT));
+	assert_string_equal("%IU", ma_flags_to_str(MF_VERYCUSTOMVIEW_IOUTPUT));
+
+	assert_string_equal("%s", ma_flags_to_str(MF_SPLIT));
+	assert_string_equal("%i", ma_flags_to_str(MF_IGNORE));
+	assert_string_equal("%n", ma_flags_to_str(MF_NO_TERM_MUX));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
