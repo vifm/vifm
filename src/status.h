@@ -110,7 +110,7 @@ typedef struct
 	struct view_info_t *explore; /* State of explored quick view. */
 	unsigned int on : 1;         /* Whether preview mode is active.  Use
 	                                stats_set_quickview() to change the value. */
-	ViewerKind kind : 1;         /* Kind of the preview. */
+	ViewerKind kind : 2;         /* Kind of the preview. */
 	unsigned int clearing : 1;   /* Whether in process of clearing preview. */
 }
 preview_t;

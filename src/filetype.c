@@ -313,7 +313,8 @@ ft_viewer_kind(const char viewer[])
 	{
 		return VK_GRAPHICAL;
 	}
-	return VK_TEXTUAL;
+	/* Pass-through marker (for sixel graphics and something similar). */
+	return (strstr(viewer, "%pd") != NULL ? VK_PASS_THROUGH : VK_TEXTUAL);
 }
 
 void

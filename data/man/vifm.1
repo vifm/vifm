@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 10, 2019" "vifm 0.10"
+.TH VIFM 1 "April 22, 2019" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3198,8 +3198,14 @@ Completely ignore command output.
 
 .TP
 .BI %pc
-Marks end of the main command and beginning of the clear command for graphical
-preview, which is invoked on closing preview of a file.
+Marks the end of the main command and the beginning of the clear command for
+graphical preview, which is invoked on closing preview of a file.
+.TP
+.BI %pd
+Marks a preview command as one that directly communicates with the terminal.
+Beware that this is for things like sixel which are self-contained sequences
+that depend only on current cursor position, using this with anything else is
+likely to mangle terminal state.
 .LP
 The following dimensions and coordinates are in characters:
 .TP

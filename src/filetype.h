@@ -35,8 +35,9 @@ AssocRecordType;
 /* Type of viewers. */
 typedef enum
 {
-	VK_TEXTUAL,   /* Regular text preview. */
-	VK_GRAPHICAL, /* Graphics by external means. */
+	VK_TEXTUAL,      /* Regular text preview. */
+	VK_GRAPHICAL,    /* Graphics by external means. */
+	VK_PASS_THROUGH, /* Graphics by directly influencing terminal state. */
 }
 ViewerKind;
 

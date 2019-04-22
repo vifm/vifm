@@ -729,6 +729,12 @@ void ui_set_attr(WINDOW *win, const col_attr_t *col, int pair);
 /* Clears attribute of the window. */
 void ui_drop_attr(WINDOW *win);
 
+struct strlist_t;
+
+/* Outputs lines into terminal circumventing curses.  Positions cursor at the
+ * specified point on the window beforehand. */
+void ui_pass_through(const struct strlist_t *lines, WINDOW *win, int x, int y);
+
 /* View update scheduling. */
 
 /* Schedules redraw of the view for the future.  Doesn't perform any actual

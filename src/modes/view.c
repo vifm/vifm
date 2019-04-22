@@ -640,6 +640,14 @@ draw(void)
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
 
+		if(vi->kind == VK_PASS_THROUGH)
+		{
+			strlist_t list = { .nitems = vi->nlines, .items = vi->lines };
+			ui_pass_through(&list, vi->view->win, ui_qv_left(vi->view),
+					ui_qv_top(vi->view));
+			return;
+		}
+
 		/* Proceed and draw output of the previewer instead of returning, even
 		 * though it's graphical.  This way it's possible to use an external
 		 * previewer that handles both textual and graphical previews. */

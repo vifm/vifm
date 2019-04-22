@@ -287,6 +287,12 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 				{
 					return expanded;
 				}
+				/* Just skip %pd. */
+				if(key == 'd')
+				{
+					++x;
+					break;
+				}
 
 				expanded = expand_preview(expanded, key, &well_formed);
 				len = strlen(expanded);

@@ -601,6 +601,13 @@ TEST(preview_clear_cmd_is_optional)
 	assert_string_equal(NULL, ma_get_clear_cmd("draw %pw %ph"));
 }
 
+TEST(preview_direct_is_expanded_to_nothing)
+{
+	char *expanded = ma_expand("draw %pd arg", "", NULL, 0);
+	assert_string_equal("draw  arg", expanded);
+	free(expanded);
+}
+
 TEST(flags_to_str)
 {
 	assert_string_equal("", ma_flags_to_str(MF_NONE));

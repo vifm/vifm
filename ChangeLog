@@ -35,6 +35,10 @@
 
 	Added ^= operation for options of set kind.
 
+	Added %pd macro that makes preview output directly affect terminal
+	circumventing curses, which could be used to display sixel images.  Thanks
+	to Tom Jansen.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

@@ -112,7 +112,7 @@ static void print_tree_entry(tree_print_state_t *s, const char path[],
 		int end_line);
 static void print_entry_prefix(tree_print_state_t *s);
 static void draw_lines(const strlist_t *lines, int wrapped,
-		const preview_area_t *parea);
+		const preview_area_t *parea, ViewerKind kind);
 static void write_message(const char msg[], const preview_area_t *parea);
 static void cleanup_for_text(const preview_area_t *parea);
 static char * expand_viewer_command(const char viewer[]);
@@ -305,7 +305,7 @@ view_file(const char path[], const preview_area_t *parea,
 	{
 		/* Update area as we might draw preview at a different location. */
 		cache->pa = *parea;
-		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa);
+		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 		return;
 	}
 
@@ -380,7 +380,7 @@ view_file(const char path[], const preview_area_t *parea,
 
 	ui_cancellation_disable();
 
-	draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa);
+	draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 }
 
 /* Checks whether data in the cache is up to date with the file on disk.
@@ -692,8 +692,15 @@ print_entry_prefix(tree_print_state_t *s)
 /* Displays lines in the other pane.  The wrapped parameter determines whether
  * lines should be wrapped. */
 static void
-draw_lines(const strlist_t *lines, int wrapped, const preview_area_t *parea)
+draw_lines(const strlist_t *lines, int wrapped, const preview_area_t *parea,
+		ViewerKind kind)
 {
+	if(kind == VK_PASS_THROUGH)
+	{
+		ui_pass_through(lines, parea->view->win, parea->x, parea->y);
+		return;
+	}
+
 	const size_t left = parea->x;
 	const size_t top = parea->y;
 	const size_t max_width = parea->w;
@@ -735,7 +742,7 @@ write_message(const char msg[], const preview_area_t *parea)
 
 	char *items[] = { (char *)msg };
 	const strlist_t lines = { .items = items, .nitems = 1 };
-	draw_lines(&lines, 1, parea);
+	draw_lines(&lines, 1, parea, VK_TEXTUAL);
 }
 
 /* Ensures that area is ready to display regular text. */
