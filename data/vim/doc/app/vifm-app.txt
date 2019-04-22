@@ -2713,8 +2713,8 @@ Copy and move operation can take a lot of time to proceed.  That's why vifm
 supports backgrounding of this two operations.  To run :copy, :move or :delete
 command in the background just add " &" at the end of a command.
 
-For each background operation a new thread is created.  Currently job cannot
-be stopped or paused.
+For each background operation a new thread is created.  Job cancellation can
+be requested in the |vifm-:jobs| menu via dd shortcut.
 
 You can see if command is still running in the :jobs menu.  Backgrounded
 commands have progress instead of process id at the line beginning.

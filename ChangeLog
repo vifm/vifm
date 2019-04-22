@@ -185,6 +185,9 @@
 	Fixed crash on startup on trying to show a menu in vifmrc (didn't show up
 	in most setups).  Thanks to Christian Fillion (a.k.a. cfillion).
 
+	Fixed documentation incorrectly stating that background operations can't
+	be cancelled.  Thanks to Jose Riha (a.k.a. jose1711).
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
