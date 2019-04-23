@@ -641,7 +641,8 @@ prepare_suggestion_box(int *height)
 
 	/* Clear preview before displaying suggestion for the first time for specific
 	 * input if active preview needs special cleanup. */
-	if(!suggestions_are_visible && curr_stats.preview.cleanup_cmd != NULL)
+	if(!suggestions_are_visible && curr_stats.preview.on &&
+			curr_stats.preview.cleanup_cmd != NULL)
 	{
 		qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 	}
