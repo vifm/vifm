@@ -26,6 +26,7 @@
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
 #include "utils/hist.h"
+#include "filetype.h"
 
 /* Special value foe dcache fields meaning that it wasn't set. */
 #define DCACHE_UNKNOWN ((uint64_t)-1)
@@ -109,7 +110,7 @@ typedef struct
 	struct view_info_t *explore; /* State of explored quick view. */
 	unsigned int on : 1;         /* Whether preview mode is active.  Use
 	                                stats_set_quickview() to change the value. */
-	unsigned int graphical : 1;  /* Whether current preview displays graphics. */
+	ViewerKind kind : 2;         /* Kind of the preview. */
 	unsigned int clearing : 1;   /* Whether in process of clearing preview. */
 }
 preview_t;

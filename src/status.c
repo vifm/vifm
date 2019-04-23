@@ -49,6 +49,7 @@
 #include "cmd_completion.h"
 #include "cmd_core.h"
 #include "filelist.h"
+#include "filetype.h"
 #include "opt_handlers.h"
 
 /* Environment variables by which application hosted by terminal multiplexer can
@@ -141,7 +142,7 @@ load_def_values(status_t *stats, config_t *config)
 	strcpy(stats->color_scheme, "");
 
 	stats->preview.on = 0;
-	stats->preview.graphical = 0;
+	stats->preview.kind = VK_TEXTUAL;
 	update_string(&stats->preview.cleanup_cmd, NULL);
 	stats->preview.clearing = 0;
 

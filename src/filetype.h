@@ -24,19 +24,28 @@
 
 struct matchers_t;
 
-/* Type of file association by it's source. */
+/* Type of file association by its source. */
 typedef enum
 {
 	ART_BUILTIN, /* Builtin type of association, set automatically by vifm. */
 	ART_CUSTOM,  /* Custom type of association, which is set by user. */
 }
-assoc_record_type_t;
+AssocRecordType;
+
+/* Type of viewers. */
+typedef enum
+{
+	VK_TEXTUAL,      /* Regular text preview. */
+	VK_GRAPHICAL,    /* Graphics by external means. */
+	VK_PASS_THROUGH, /* Graphics by directly influencing terminal state. */
+}
+ViewerKind;
 
 typedef struct
 {
 	char *command;
 	char *description;
-	assoc_record_type_t type;
+	AssocRecordType type;
 }
 assoc_record_t;
 
@@ -112,6 +121,9 @@ assoc_records_t ft_get_all_viewers(const char file[]);
 /* Associates list of comma separated patterns with each item in the list of
  * comma separated viewers. */
 void ft_set_viewers(struct matchers_t *matchers, const char viewers[]);
+
+/* Guesses kind of viewer from the invocation command.  Returns the kind. */
+ViewerKind ft_viewer_kind(const char viewer[]);
 
 /* Records managing. */
 

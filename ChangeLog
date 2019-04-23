@@ -35,6 +35,10 @@
 
 	Added ^= operation for options of set kind.
 
+	Added %pd macro that makes preview output directly affect terminal
+	circumventing curses, which could be used to display sixel images.  Thanks
+	to Tom Jansen.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -97,6 +101,8 @@
 
 	Do not check for view changes while suggestions are visible.  It can mess
 	up TUI, especially in combination with preview.  Thanks to ks1c.
+
+	Do not complain about empty output of a graphics previewer for view mode.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
@@ -180,6 +186,9 @@
 
 	Fixed crash on startup on trying to show a menu in vifmrc (didn't show up
 	in most setups).  Thanks to Christian Fillion (a.k.a. cfillion).
+
+	Fixed documentation incorrectly stating that background operations can't
+	be cancelled.  Thanks to Jose Riha (a.k.a. jose1711).
 
 0.10-beta to 0.10 (2018-11-11)
 

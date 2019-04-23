@@ -156,10 +156,6 @@ int def_reg(int reg);
  * count. */
 int def_count(int count);
 
-/* Guesses whether given viewer command is going to display graphics.  Returns
- * non-zero if it's likely, otherwise zero is returned. */
-int is_graphical_viewer(const char viewer[]);
-
 /* Wrapper around qsort() that allows base to be NULL when nmemb is 0 by
  * skipping call to qsort(). */
 void safe_qsort(void *base, size_t nmemb, size_t size,

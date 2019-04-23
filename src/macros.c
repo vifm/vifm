@@ -287,6 +287,12 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 				{
 					return expanded;
 				}
+				/* Just skip %pd. */
+				if(key == 'd')
+				{
+					++x;
+					break;
+				}
 
 				expanded = expand_preview(expanded, key, &well_formed);
 				len = strlen(expanded);
@@ -508,16 +514,13 @@ expand_preview(char expanded[], int key, int *well_formed)
 
 	const preview_area_t parea = get_preview_area(curr_view);
 
-	int x, y;
-	getbegyx(parea.view->win, y, x);
-
 	int param;
 	switch(key)
 	{
 		case 'h': param = parea.h; break;
 		case 'w': param = parea.w; break;
-		case 'x': param = x + parea.x; break;
-		case 'y': param = y + parea.y; break;
+		case 'x': param = getbegx(parea.view->win) + parea.x; break;
+		case 'y': param = getbegy(parea.view->win) + parea.y; break;
 
 		default:
 			assert(0 && "Unhandled preview property type");

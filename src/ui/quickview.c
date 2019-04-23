@@ -72,7 +72,7 @@ typedef struct
 	preview_area_t pa; /* Where preview is being drawn. */
 	int beg_x;         /* Original x coordinate of host window. */
 	int beg_y;         /* Original y coordinate of host window. */
-	int graphical;     /* Whether preview displays graphics. */
+	ViewerKind kind;   /* Kind of preview. */
 	int graphics_lost; /* Whether graphics was invalidated on the screen. */
 }
 quickview_cache_t;
@@ -96,7 +96,7 @@ static void view_file(const char path[], const preview_area_t *parea,
 static int is_cache_valid(const quickview_cache_t *cache, const char path[],
 		const char viewer[], const preview_area_t *parea);
 static void fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
-		const char viewer[], int graphical, const preview_area_t *parea);
+		const char viewer[], ViewerKind kind, const preview_area_t *parea);
 TSTATIC strlist_t read_lines(FILE *fp, int max_lines);
 static FILE * view_dir(const char path[], int max_lines);
 static int print_dir_tree(tree_print_state_t *s, const char path[], int last);
@@ -112,7 +112,7 @@ static void print_tree_entry(tree_print_state_t *s, const char path[],
 		int end_line);
 static void print_entry_prefix(tree_print_state_t *s);
 static void draw_lines(const strlist_t *lines, int wrapped,
-		const preview_area_t *parea);
+		const preview_area_t *parea, ViewerKind kind);
 static void write_message(const char msg[], const preview_area_t *parea);
 static void cleanup_for_text(const preview_area_t *parea);
 static char * expand_viewer_command(const char viewer[]);
@@ -166,7 +166,8 @@ qv_toggle(void)
 		/* Force cleaning possible leftovers of graphics, otherwise curses internal
 		 * structures don't know that those parts need to be redrawn on the
 		 * screen. */
-		if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
+		if(curr_stats.preview.cleanup_cmd != NULL ||
+				curr_stats.preview.kind != VK_TEXTUAL)
 		{
 			qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
 		}
@@ -176,7 +177,7 @@ qv_toggle(void)
 	}
 
 	update_string(&curr_stats.preview.cleanup_cmd, NULL);
-	curr_stats.preview.graphical = 0;
+	curr_stats.preview.kind = VK_TEXTUAL;
 	qv_ui_updated();
 }
 
@@ -243,7 +244,7 @@ qv_draw_on(const dir_entry_t *entry, const preview_area_t *parea)
 
 	view_entry(entry, parea, cache);
 
-	parea->view->displays_graphics = cache->graphical;
+	parea->view->displays_graphics = (cache->kind != VK_TEXTUAL);
 
 	/* Unconditionally invalidate graphics cache, since we don't keep track of its
 	 * validity in any way. */
@@ -304,11 +305,11 @@ view_file(const char path[], const preview_area_t *parea,
 	{
 		/* Update area as we might draw preview at a different location. */
 		cache->pa = *parea;
-		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa);
+		draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 		return;
 	}
 
-	int graphical = 0;
+	ViewerKind kind = VK_TEXTUAL;
 
 	FILE *fp;
 	if(viewer == NULL && is_dir(path))
@@ -335,11 +336,11 @@ view_file(const char path[], const preview_area_t *parea,
 	}
 	else
 	{
-		graphical = is_graphical_viewer(viewer);
+		kind = ft_viewer_kind(viewer);
 
 		/* If graphics will be displayed, clear the window and wait a bit to let
 		 * terminal emulator do actual refresh (at least some of them need this). */
-		if(graphical)
+		if(kind != VK_TEXTUAL)
 		{
 			cleanup_area(parea, curr_stats.preview.cleanup_cmd);
 			usleep(50000);
@@ -364,22 +365,22 @@ view_file(const char path[], const preview_area_t *parea,
 
 	/* We want to wipe the view if it was displaying graphics, but won't anymore.
 	 * Do this only if we didn't already cleared the window. */
-	if(!graphical)
+	if(kind == VK_TEXTUAL)
 	{
 		cleanup_for_text(parea);
 	}
-	curr_stats.preview.graphical = graphical;
+	curr_stats.preview.kind = kind;
 
 	const char *clear_cmd = (viewer != NULL) ? ma_get_clear_cmd(viewer) : NULL;
 	update_string(&curr_stats.preview.cleanup_cmd, clear_cmd);
 
-	fill_cache(cache, fp, path, viewer, graphical, parea);
+	fill_cache(cache, fp, path, viewer, kind, parea);
 
 	fclose(fp);
 
 	ui_cancellation_disable();
 
-	draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa);
+	draw_lines(&cache->lines, cfg.wrap_quick_view, &cache->pa, cache->kind);
 }
 
 /* Checks whether data in the cache is up to date with the file on disk.
@@ -398,7 +399,7 @@ is_cache_valid(const quickview_cache_t *cache, const char path[],
 			paths_are_equal(cache->path, path) &&
 			filemon_equal(&cache->filemon, &filemon))
 	{
-		if(!cache->graphical)
+		if(cache->kind == VK_TEXTUAL)
 		{
 			return 1;
 		}
@@ -416,7 +417,7 @@ is_cache_valid(const quickview_cache_t *cache, const char path[],
 /* Fills the cache data with file's contents. */
 static void
 fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
-		const char viewer[], int graphical, const preview_area_t *parea)
+		const char viewer[], ViewerKind kind, const preview_area_t *parea)
 {
 	/* File monitor must always be initialized, because it's used below. */
 	filemon_t filemon = {};
@@ -432,7 +433,7 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
 	cache->pa = *parea;
 	cache->beg_x = getbegx(parea->view->win);
 	cache->beg_y = getbegy(parea->view->win);
-	cache->graphical = graphical;
+	cache->kind = kind;
 	cache->graphics_lost = 0;
 }
 
@@ -691,8 +692,15 @@ print_entry_prefix(tree_print_state_t *s)
 /* Displays lines in the other pane.  The wrapped parameter determines whether
  * lines should be wrapped. */
 static void
-draw_lines(const strlist_t *lines, int wrapped, const preview_area_t *parea)
+draw_lines(const strlist_t *lines, int wrapped, const preview_area_t *parea,
+		ViewerKind kind)
 {
+	if(kind == VK_PASS_THROUGH)
+	{
+		ui_pass_through(lines, parea->view->win, parea->x, parea->y);
+		return;
+	}
+
 	const size_t left = parea->x;
 	const size_t top = parea->y;
 	const size_t max_width = parea->w;
@@ -734,19 +742,20 @@ write_message(const char msg[], const preview_area_t *parea)
 
 	char *items[] = { (char *)msg };
 	const strlist_t lines = { .items = items, .nitems = 1 };
-	draw_lines(&lines, 1, parea);
+	draw_lines(&lines, 1, parea, VK_TEXTUAL);
 }
 
 /* Ensures that area is ready to display regular text. */
 static void
 cleanup_for_text(const preview_area_t *parea)
 {
-	if(curr_stats.preview.cleanup_cmd != NULL || curr_stats.preview.graphical)
+	if(curr_stats.preview.cleanup_cmd != NULL ||
+			curr_stats.preview.kind != VK_TEXTUAL)
 	{
 		cleanup_area(parea, curr_stats.preview.cleanup_cmd);
 	}
 	update_string(&curr_stats.preview.cleanup_cmd, NULL);
-	curr_stats.preview.graphical = 0;
+	curr_stats.preview.kind = VK_TEXTUAL;
 }
 
 void

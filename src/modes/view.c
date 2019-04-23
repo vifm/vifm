@@ -98,13 +98,13 @@ struct view_info_t
 	int search_repeat;        /* Saved count prefix of search commands. */
 
 	/* The rest of the state. */
-	view_t *view;   /* File view association with the view. */
-	char *filename; /* Full path to the file being viewed. */
-	char *viewer;   /* When non-NULL, specifies custom preview command (no
-	                   implicit %c). */
-	int detached;   /* Whether view mode was detached. */
-	int graphical;  /* Whether viewer presumably displays graphics. */
-	int wrap;       /* Whether lines are wrapped. */
+	view_t *view;    /* File view association with the view. */
+	char *filename;  /* Full path to the file being viewed. */
+	char *viewer;    /* When non-NULL, specifies custom preview command (no
+	                    implicit %c). */
+	int detached;    /* Whether view mode was detached. */
+	ViewerKind kind; /* Kind of preview. */
+	int wrap;        /* Whether lines are wrapped. */
 };
 
 /* View information structure indexes and count. */
@@ -475,7 +475,7 @@ try_redraw_explore_view(const view_t *view)
 void
 view_leave_mode(void)
 {
-	if(vi->graphical && vi->view->explore_mode)
+	if(vi->kind != VK_TEXTUAL && vi->view->explore_mode)
 	{
 		const char *cmd = qv_get_viewer(vi->filename);
 		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
@@ -631,7 +631,7 @@ draw(void)
 	const int searched = (vi->last_search_backward != -1);
 	esc_state state;
 
-	if(vi->graphical)
+	if(vi->kind != VK_TEXTUAL)
 	{
 		const char *cmd = qv_get_viewer(vi->filename);
 		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
@@ -639,6 +639,14 @@ draw(void)
 
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
+
+		if(vi->kind == VK_PASS_THROUGH)
+		{
+			strlist_t list = { .nitems = vi->nlines, .items = vi->lines };
+			ui_pass_through(&list, vi->view->win, ui_qv_left(vi->view),
+					ui_qv_top(vi->view));
+			return;
+		}
 
 		/* Proceed and draw output of the previewer instead of returning, even
 		 * though it's graphical.  This way it's possible to use an external
@@ -1046,14 +1054,17 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
 			return 1;
 	}
 
-	vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
-	if(vi->widths == NULL)
+	if(vi->nlines != 0)
 	{
-		free_string_array(vi->lines, vi->nlines);
-		vi->lines = NULL;
-		vi->nlines = 0;
-		show_error_msg(action, "Not enough memory");
-		return 1;
+		vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
+		if(vi->widths == NULL)
+		{
+			free_string_array(vi->lines, vi->nlines);
+			vi->lines = NULL;
+			vi->nlines = 0;
+			show_error_msg(action, "Not enough memory");
+			return 1;
+		}
 	}
 
 	return 0;
@@ -1091,7 +1102,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	else
 	{
 		const char *const v = (vi->viewer != NULL) ? vi->viewer : viewer;
-		const int graphical = is_graphical_viewer(v);
+		const ViewerKind kind = ft_viewer_kind(v);
 		view_t *const curr = curr_view;
 		curr_view = curr_stats.preview.on ? curr_view
 		          : (vi->view != NULL) ? vi->view : curr_view;
@@ -1106,7 +1117,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 		};
 		curr_stats.preview_hint = &parea;
 
-		if(graphical)
+		if(kind != VK_TEXTUAL)
 		{
 			/* Wait a bit to let terminal emulator do actual refresh (at least some
 			 * of them need this). */
@@ -1132,10 +1143,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 			return 3;
 		}
 
-		if(graphical)
-		{
-			vi->graphical = 1;
-		}
+		vi->kind = kind;
 
 		ui_cancellation_reset();
 		ui_cancellation_enable();
@@ -1145,6 +1153,12 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 
 	fclose(fp);
 
+	if(vi->kind != VK_TEXTUAL && vi->nlines == 0)
+	{
+		/* Exploring absent output gives error, add an empty line to allow empty
+		 * output for graphical previewers. */
+		vi->nlines = add_to_string_array(&vi->lines, vi->nlines, 1, "");
+	}
 	if(vi->lines == NULL || vi->nlines == 0)
 	{
 		return 4;

@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 10, 2019" "vifm 0.10"
+.TH VIFM 1 "April 22, 2019" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3198,8 +3198,14 @@ Completely ignore command output.
 
 .TP
 .BI %pc
-Marks end of the main command and beginning of the clear command for graphical
-preview, which is invoked on closing preview of a file.
+Marks the end of the main command and the beginning of the clear command for
+graphical preview, which is invoked on closing preview of a file.
+.TP
+.BI %pd
+Marks a preview command as one that directly communicates with the terminal.
+Beware that this is for things like sixel which are self-contained sequences
+that depend only on current cursor position, using this with anything else is
+likely to mangle terminal state.
 .LP
 The following dimensions and coordinates are in characters:
 .TP
@@ -3305,8 +3311,8 @@ Copy and move operation can take a lot of time to proceed.  That's why vifm
 supports backgrounding of this two operations.  To run :copy, :move or :delete
 command in the background just add " &" at the end of a command.
 
-For each background operation a new thread is created.  Currently job cannot be
-stopped or paused.
+For each background operation a new thread is created.  Job cancellation can
+be requested in the :jobs menu via dd shortcut.
 
 You can see if command is still running in the :jobs menu.  Backgrounded
 commands have progress instead of process id at the line beginning.

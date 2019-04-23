@@ -60,6 +60,7 @@
 #include "../utils/matchers.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../event_loop.h"
@@ -2304,6 +2305,26 @@ ui_drop_attr(WINDOW *win)
 	{
 		wattrset(win, 0);
 	}
+}
+
+void
+ui_pass_through(const strlist_t *lines, WINDOW *win, int x, int y)
+{
+	/* Position hardware cursor on the screen. */
+	checked_wmove(win, y, x);
+	use_wrefresh(win);
+
+	int i;
+	for(i = 0; i < lines->nitems; ++i)
+	{
+		puts(lines->items[i]);
+	}
+
+	/* Make curses synchronize its idea about where cursor is with the terminal
+	 * state. */
+	touchwin(status_bar);
+	checked_wmove(status_bar, 0, 0);
+	use_wrefresh(status_bar);
 }
 
 void

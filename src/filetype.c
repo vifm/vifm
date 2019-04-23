@@ -68,7 +68,7 @@ const assoc_record_t NONE_PSEUDO_PROG = {
 static assoc_list_t active_filetypes;
 
 /* Used to set type of new association records */
-static assoc_record_type_t new_records_type = ART_CUSTOM;
+static AssocRecordType new_records_type = ART_CUSTOM;
 
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
@@ -302,6 +302,19 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 	assoc_list->list = p;
 	assoc_list->list[assoc_list->count] = assoc;
 	assoc_list->count++;
+}
+
+ViewerKind
+ft_viewer_kind(const char viewer[])
+{
+	/* %pw and %ph can be useful for text output, but %px and %py are useful
+	 * for graphics only and basically must be used both at the same time. */
+	if(strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL)
+	{
+		return VK_GRAPHICAL;
+	}
+	/* Pass-through marker (for sixel graphics and something similar). */
+	return (strstr(viewer, "%pd") != NULL ? VK_PASS_THROUGH : VK_TEXTUAL);
 }
 
 void

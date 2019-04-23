@@ -716,14 +716,6 @@ is_line_spec(const char str[])
 	return (endptr != str && errno == 0 && *endptr == ':');
 }
 
-int
-is_graphical_viewer(const char viewer[])
-{
-	/* %pw and %ph can be useful for text output, but %px and %py are useful
-	 * for graphics and basically must have both. */
-	return (strstr(viewer, "%px") != NULL && strstr(viewer, "%py") != NULL);
-}
-
 void
 safe_qsort(void *base, size_t nmemb, size_t size,
 		int (*compar)(const void *, const void *))
