@@ -1054,14 +1054,17 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
 			return 1;
 	}
 
-	vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
-	if(vi->widths == NULL)
+	if(vi->nlines != 0)
 	{
-		free_string_array(vi->lines, vi->nlines);
-		vi->lines = NULL;
-		vi->nlines = 0;
-		show_error_msg(action, "Not enough memory");
-		return 1;
+		vi->widths = reallocarray(NULL, vi->nlines, sizeof(*vi->widths));
+		if(vi->widths == NULL)
+		{
+			free_string_array(vi->lines, vi->nlines);
+			vi->lines = NULL;
+			vi->nlines = 0;
+			show_error_msg(action, "Not enough memory");
+			return 1;
+		}
 	}
 
 	return 0;
@@ -1150,6 +1153,12 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 
 	fclose(fp);
 
+	if(vi->kind != VK_TEXTUAL && vi->nlines == 0)
+	{
+		/* Exploring absent output gives error, add an empty line to allow empty
+		 * output for graphical previewers. */
+		vi->nlines = add_to_string_array(&vi->lines, vi->nlines, 1, "");
+	}
 	if(vi->lines == NULL || vi->nlines == 0)
 	{
 		return 4;
