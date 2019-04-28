@@ -290,6 +290,12 @@ create_windows(void)
 	inf_delay_window = newwin(1, 1, 0, 0);
 	wtimeout(inf_delay_window, -1);
 
+	/* These refreshes prevent curses from drawing these windows on first read
+	 * from them.  It seems that this way they get updated early and this keeps
+	 * them from being drawn again. */
+	wnoutrefresh(no_delay_window);
+	wnoutrefresh(inf_delay_window);
+
 	menu_win = newwin(1, 1, 0, 0);
 	sort_win = newwin(1, 1, 0, 0);
 	change_win = newwin(1, 1, 0, 0);
