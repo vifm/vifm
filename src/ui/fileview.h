@@ -27,16 +27,16 @@ struct view_t;
 /* Initialization/termination functions. */
 
 /* Initializes file view unit. */
-void fview_init(void);
+void fview_setup(void);
 
 /* Initializes view once before. */
-void fview_view_init(struct view_t *view);
+void fview_init(struct view_t *view);
 
 /* Resets view state partially. */
-void fview_view_reset(struct view_t *view);
+void fview_reset(struct view_t *view);
 
 /* Resets view state with regard to color schemes. */
-void fview_view_cs_reset(struct view_t *view);
+void fview_reset_cs(struct view_t *view);
 
 /* Appearance related functions. */
 

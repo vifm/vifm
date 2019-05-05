@@ -147,7 +147,7 @@ static int move_curr_line(view_t *view);
 static void reset_view_columns(view_t *view);
 
 void
-fview_init(void)
+fview_setup(void)
 {
 	static const struct {
 		SortingKey key;
@@ -198,7 +198,7 @@ fview_init(void)
 }
 
 void
-fview_view_init(view_t *view)
+fview_init(view_t *view)
 {
 	view->curr_line = 0;
 	view->top_line = 0;
@@ -219,7 +219,7 @@ fview_view_init(view_t *view)
 }
 
 void
-fview_view_reset(view_t *view)
+fview_reset(view_t *view)
 {
 	view->ls_view_g = view->ls_view = 0;
 	view->ls_transposed_g = view->ls_transposed = 0;
@@ -245,7 +245,7 @@ fview_view_reset(view_t *view)
 }
 
 void
-fview_view_cs_reset(view_t *view)
+fview_reset_cs(view_t *view)
 {
 	int i;
 	for(i = 0; i < view->list_rows; ++i)
