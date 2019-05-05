@@ -2213,6 +2213,19 @@ ui_qv_width(const view_t *view)
 	return with_margin ? view->window_cols - 2 : view->window_cols;
 }
 
+void
+ui_invalidate_cs(const col_scheme_t *cs)
+{
+	if(ui_view_get_cs(&lwin) == cs)
+	{
+		fview_reset_cs(&lwin);
+	}
+	if(ui_view_get_cs(&rwin) == cs)
+	{
+		fview_reset_cs(&rwin);
+	}
+}
+
 const col_scheme_t *
 ui_view_get_cs(const view_t *view)
 {
