@@ -9,12 +9,14 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/view.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/color_scheme.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -375,6 +377,50 @@ TEST(left_view_mode_is_fine_with_tabs)
 
 	(void)vle_keys_exec_timed_out(WK_SPACE);
 	(void)vle_keys_exec_timed_out(WK_q);
+}
+
+TEST(hidden_tabs_are_updated_on_cs_invalidation)
+{
+	char cwd[PATH_MAX + 1], sandbox[PATH_MAX + 1], cs[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
+	make_abs_path(cs, sizeof(cs), TEST_DATA_PATH, "color-schemes", cwd);
+
+	strcpy(lwin.curr_dir, cs);
+	assert_success(populate_dir_list(&lwin, 0));
+	strcpy(rwin.curr_dir, cs);
+	assert_success(populate_dir_list(&rwin, 0));
+
+	curr_stats.cs = &cfg.cs;
+
+	assert_success(exec_commands("highlight {*.vifm} cterm=bold", &lwin,
+				CIT_COMMAND));
+	assert_non_null(cs_get_file_hi(curr_stats.cs, "some.vifm",
+				&lwin.dir_entry[0].hi_num));
+	assert_non_null(cs_get_file_hi(curr_stats.cs, "some.vifm",
+				&rwin.dir_entry[0].hi_num));
+	assert_int_equal(0, lwin.dir_entry[0].hi_num);
+	assert_int_equal(0, rwin.dir_entry[0].hi_num);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+
+	tab_info_t tab_info;
+
+	assert_true(tabs_get(&lwin, 0, &tab_info));
+	assert_int_equal(0, tab_info.view->dir_entry[0].hi_num);
+	assert_int_equal(0, lwin.dir_entry[0].hi_num);
+	assert_true(tabs_get(&rwin, 0, &tab_info));
+	assert_int_equal(0, tab_info.view->dir_entry[0].hi_num);
+	assert_int_equal(0, rwin.dir_entry[0].hi_num);
+
+	assert_success(exec_commands("highlight clear", &lwin, CIT_COMMAND));
+
+	assert_true(tabs_enum(&lwin, 0, &tab_info));
+	assert_int_equal(-1, tab_info.view->dir_entry[0].hi_num);
+	assert_int_equal(-1, lwin.dir_entry[0].hi_num);
+	assert_true(tabs_enum(&rwin, 0, &tab_info));
+	assert_int_equal(-1, tab_info.view->dir_entry[0].hi_num);
+	assert_int_equal(-1, rwin.dir_entry[0].hi_num);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

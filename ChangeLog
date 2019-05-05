@@ -194,6 +194,9 @@
 	being used often, this caused highlighting to go awry.  Thanks to
 	dancread.
 
+	Fixed assertion failure on removing items from file-specific highlighting
+	with some tabs that use it being hidden.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.

@@ -2216,13 +2216,23 @@ ui_qv_width(const view_t *view)
 void
 ui_invalidate_cs(const col_scheme_t *cs)
 {
-	if(ui_view_get_cs(&lwin) == cs)
+	int i;
+	tab_info_t tab_info;
+
+	for(i = 0; tabs_enum(curr_view, i, &tab_info); ++i)
 	{
-		fview_reset_cs(&lwin);
+		if(ui_view_get_cs(tab_info.view) == cs)
+		{
+			fview_reset_cs(tab_info.view);
+		}
 	}
-	if(ui_view_get_cs(&rwin) == cs)
+
+	for(i = 0; tabs_enum(other_view, i, &tab_info); ++i)
 	{
-		fview_reset_cs(&rwin);
+		if(ui_view_get_cs(tab_info.view) == cs)
+		{
+			fview_reset_cs(tab_info.view);
+		}
 	}
 }
 
