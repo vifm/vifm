@@ -55,7 +55,7 @@ int int_stack_push(int_stack_t *stack, int val);
  * one element */
 void int_stack_pop(int_stack_t *stack);
 
-/* Removes element from the top of the stack until first occurrence of the
+/* Removes elements from the top of the stack until first occurrence of the
  * seq_guard value and that occurrence.  The stack may be empty. */
 void int_stack_pop_seq(int_stack_t *stack, int seq_guard);
 

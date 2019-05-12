@@ -2451,6 +2451,7 @@ finish_cmd(const cmd_info_t *cmd_info)
 	}
 
 	curr_stats.sourcing_state = SOURCING_FINISHING;
+	commands_scope_escape();
 	return 0;
 }
 

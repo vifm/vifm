@@ -311,5 +311,16 @@ TEST(misplaced_endif_causes_hard_error)
 	assert_true(exec_commands("endif", &lwin, CIT_COMMAND) < 0);
 }
 
+TEST(finish_inside_if_statement_causes_no_missing_endif_error)
+{
+	const char *const CMDS =
+		" | if 1 == 1"
+		" |     source "TEST_DATA_PATH"/scripts/finish-inside-if.vifm"
+		" |     source "TEST_DATA_PATH"/scripts/finish-inside-ifs.vifm"
+		" | endif";
+
+	assert_int_equal(0, exec_commands(CMDS, &lwin, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

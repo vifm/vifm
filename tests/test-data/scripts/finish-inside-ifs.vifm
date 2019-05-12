@@ -1,0 +1,7 @@
+if 0 == 0
+    if 1 == 1
+        if 2 == 2
+            finish
+        endif
+    endif
+endif
