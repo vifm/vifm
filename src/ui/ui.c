@@ -723,7 +723,6 @@ resize_all(void)
 	static float prev_x = -1.f, prev_y = -1.f;
 
 	int screen_x, screen_y;
-	int border_height;
 
 	update_geometry();
 	getmaxyx(stdscr, screen_y, screen_x);
@@ -755,16 +754,17 @@ resize_all(void)
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
 
-	border_height = get_working_area_height();
+	int border_height = get_working_area_height();
+	int border_y = 1 + get_tabline_height();
 
 	/* TODO: ideally we shouldn't set any colors here (why do we do it?). */
 	ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(lborder, border_height, 1);
-	mvwin(lborder, 1, 0);
+	mvwin(lborder, border_y, 0);
 
 	ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
 	wresize(rborder, border_height, 1);
-	mvwin(rborder, 1, screen_x - 1);
+	mvwin(rborder, border_y, screen_x - 1);
 
 	/* These need a resize at least after terminal size was zero or they grow and
 	 * produce bad looking effect. */

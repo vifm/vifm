@@ -199,6 +199,9 @@
 
 	Fixed :finish inside :if statements causing a warning on sourcing files.
 
+	Fixed last character of borders in vertical layout not being drawn when
+	global tab line is visible.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
