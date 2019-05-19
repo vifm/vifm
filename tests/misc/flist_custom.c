@@ -380,7 +380,7 @@ TEST(custom_view_does_not_reset_local_state)
 	int very;
 
 	opt_handlers_setup();
-	fview_init();
+	fview_setup();
 
 	columns_set_line_print_func(&column_line_print);
 
@@ -506,7 +506,7 @@ TEST(current_directory_can_be_added_via_dot)
 
 TEST(can_set_very_cv_twice_in_a_row)
 {
-	fview_init();
+	fview_setup();
 	opt_handlers_setup();
 
 	lwin.columns = columns_create();

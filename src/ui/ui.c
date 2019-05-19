@@ -290,6 +290,12 @@ create_windows(void)
 	inf_delay_window = newwin(1, 1, 0, 0);
 	wtimeout(inf_delay_window, -1);
 
+	/* These refreshes prevent curses from drawing these windows on first read
+	 * from them.  It seems that this way they get updated early and this keeps
+	 * them from being drawn again. */
+	wnoutrefresh(no_delay_window);
+	wnoutrefresh(inf_delay_window);
+
 	menu_win = newwin(1, 1, 0, 0);
 	sort_win = newwin(1, 1, 0, 0);
 	change_win = newwin(1, 1, 0, 0);
@@ -714,51 +720,50 @@ update_screen(UpdateType update_kind)
 static void
 resize_all(void)
 {
-	static float prev_x = -1.f, prev_y = -1.f;
-
-	int screen_x, screen_y;
-	int border_height;
+	static float prev_w = -1.f, prev_h = -1.f;
 
 	update_geometry();
-	getmaxyx(stdscr, screen_y, screen_x);
 
-	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
+	int screen_w, screen_h;
+	getmaxyx(stdscr, screen_h, screen_w);
+	LOG_INFO_MSG("screen_h = %d; screen_w = %d", screen_h, screen_w);
 
-	if(stats_update_term_state(screen_x, screen_y) != TS_NORMAL)
+	if(stats_update_term_state(screen_w, screen_h) != TS_NORMAL)
 	{
 		return;
 	}
 
-	if(prev_x < 0)
+	if(prev_w < 0)
 	{
-		prev_x = screen_x;
-		prev_y = screen_y;
+		prev_w = screen_w;
+		prev_h = screen_h;
 	}
 
 	if(curr_stats.splitter_pos >= 0)
 	{
 		if(curr_stats.split == HSPLIT)
-			curr_stats.splitter_pos *= screen_y/prev_y;
+			curr_stats.splitter_pos *= screen_h/prev_h;
 		else
-			curr_stats.splitter_pos *= screen_x/prev_x;
+			curr_stats.splitter_pos *= screen_w/prev_w;
 	}
 
-	prev_x = screen_x;
-	prev_y = screen_y;
+	prev_w = screen_w;
+	prev_h = screen_h;
 
-	wresize(stdscr, screen_y, screen_x);
-	wresize(menu_win, screen_y - 1, screen_x);
+	wresize(stdscr, screen_h, screen_w);
+	wresize(menu_win, screen_h - 1, screen_w);
 
-	border_height = get_working_area_height();
+	int border_h = get_working_area_height();
+	int border_y = 1 + get_tabline_height();
 
 	/* TODO: ideally we shouldn't set any colors here (why do we do it?). */
 	ui_set_bg(lborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-	wresize(lborder, border_height, 1);
-	mvwin(lborder, 1, 0);
+	wresize(lborder, border_h, 1);
+	mvwin(lborder, border_y, 0);
 
 	ui_set_bg(rborder, &cfg.cs.color[BORDER_COLOR], cfg.cs.pair[BORDER_COLOR]);
-	wresize(rborder, border_height, 1);
-	mvwin(rborder, 1, screen_x - 1);
+	wresize(rborder, border_h, 1);
+	mvwin(rborder, border_y, screen_w - 1);
 
 	/* These need a resize at least after terminal size was zero or they grow and
 	 * produce bad looking effect. */
@@ -769,24 +774,24 @@ resize_all(void)
 
 	if(curr_stats.number_of_windows == 1)
 	{
-		only_layout(&lwin, screen_x);
-		only_layout(&rwin, screen_x);
+		only_layout(&lwin, screen_w);
+		only_layout(&rwin, screen_w);
 	}
 	else
 	{
 		if(curr_stats.split == HSPLIT)
-			horizontal_layout(screen_x, screen_y);
+			horizontal_layout(screen_w, screen_h);
 		else
-			vertical_layout(screen_x);
+			vertical_layout(screen_w);
 	}
 
 	correct_size(&lwin);
 	correct_size(&rwin);
 
-	wresize(stat_win, 1, screen_x);
+	wresize(stat_win, 1, screen_w);
 	(void)ui_stat_reposition(1, 0);
 
-	wresize(job_bar, 1, screen_x);
+	wresize(job_bar, 1, screen_w);
 
 	update_statusbar_layout();
 
@@ -1829,10 +1834,7 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	int width_used = 0;
 	int avg_width, spare_width;
 
-	cchar_t bg;
-	setcchar(&bg, L" ", base_col.attr, colmgr_get_pair(base_col.fg, base_col.bg),
-			NULL);
-	wbkgrndset(win, &bg);
+	ui_set_bg(win, &base_col, -1);
 	werase(win);
 	checked_wmove(win, 0, 0);
 
@@ -2041,10 +2043,13 @@ fixup_titles_attributes(const view_t *view, int active_view)
 		cs_mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
 
 		ui_set_bg(view->title, &col, -1);
+		ui_set_attr(view->title, &col, -1);
 	}
 	else
 	{
 		ui_set_bg(view->title, &col, cfg.cs.pair[TOP_LINE_COLOR]);
+		ui_set_attr(view->title, &col, cfg.cs.pair[TOP_LINE_COLOR]);
+
 		ui_set_bg(top_line, &col, cfg.cs.pair[TOP_LINE_COLOR]);
 		werase(top_line);
 	}
@@ -2205,6 +2210,29 @@ ui_qv_width(const view_t *view)
 {
 	const int with_margin = (!curr_stats.preview.clearing && cfg.extra_padding);
 	return with_margin ? view->window_cols - 2 : view->window_cols;
+}
+
+void
+ui_invalidate_cs(const col_scheme_t *cs)
+{
+	int i;
+	tab_info_t tab_info;
+
+	for(i = 0; tabs_enum(curr_view, i, &tab_info); ++i)
+	{
+		if(ui_view_get_cs(tab_info.view) == cs)
+		{
+			fview_reset_cs(tab_info.view);
+		}
+	}
+
+	for(i = 0; tabs_enum(other_view, i, &tab_info); ++i)
+	{
+		if(ui_view_get_cs(tab_info.view) == cs)
+		{
+			fview_reset_cs(tab_info.view);
+		}
+	}
 }
 
 const col_scheme_t *

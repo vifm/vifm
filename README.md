@@ -1,8 +1,8 @@
-| travis-ci  |  appveyor  | fragile-ci | coveralls  |   uncov    |  coverity  |
-|------------|------------|------------|------------|------------|------------|
-|[![][TT]][T]|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|[![][SS]][S]|
+| travis-ci  |  appveyor  | fragile-ci | coveralls  |   uncov    |
+|------------|------------|------------|------------|------------|
+|[![][TT]][T]|[![][AA]][A]|[![][FF]][F]|[![][CC]][C]|[![][UU]][U]|
 
-### **vifm** - vi[m] like file manager, _v0.10_, _2001 – 2018_
+### **vifm** - vi[m] like file manager, _v0.10_, _2001 – 2019_
 
 _This file last updated on 11 November, 2018_
 
@@ -80,8 +80,6 @@ GNU General Public License, version 2 or later.
 [A]: https://ci.appveyor.com/project/xaizek/vifm/branch/master
 [CC]: https://coveralls.io/repos/github/vifm/vifm/badge.svg?branch=master
 [C]: https://coveralls.io/github/vifm/vifm?branch=master
-[SS]: https://scan.coverity.com/projects/699/badge.svg
-[S]: https://scan.coverity.com/projects/vifm-vifm
 [FF]: http://ci.vifm.info/badges/svg/master
 [F]: http://ci.vifm.info/
 [UU]: http://cov.vifm.info/badges/svg/master

@@ -177,7 +177,7 @@ static int init_parent_entry(view_t *view, dir_entry_t *entry,
 void
 init_filelists(void)
 {
-	fview_init();
+	fview_setup();
 
 	flist_init_view(&rwin);
 	flist_init_view(&lwin);
@@ -190,7 +190,7 @@ void
 flist_init_view(view_t *view)
 {
 	init_flist(view);
-	fview_view_init(view);
+	fview_init(view);
 
 	reset_view(view);
 
@@ -329,7 +329,7 @@ reset_views(void)
 static void
 reset_view(view_t *view)
 {
-	fview_view_reset(view);
+	fview_reset(view);
 	filters_view_reset(view);
 
 	view->hide_dot_g = view->hide_dot = 1;

@@ -88,7 +88,6 @@ static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		const view_t *view);
 static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view);
 static void reload_views(view_t *side);
-static int enum_tabs(view_t *view, int idx, tab_info_t *tab_info);
 
 /* List of global tabs. */
 static global_tab_t *gtabs;
@@ -712,7 +711,7 @@ reload_views(view_t *side)
 	int i;
 	tab_info_t tab_info;
 
-	for(i = 0; enum_tabs(side, i, &tab_info); ++i)
+	for(i = 0; tabs_enum(side, i, &tab_info); ++i)
 	{
 		if(tab_info.view != side)
 		{
@@ -725,10 +724,8 @@ reload_views(view_t *side)
 	}
 }
 
-/* tabs_get() equivalent that returns left or right pane for global tabs
- * depending on value of the view parameter. */
-static int
-enum_tabs(view_t *view, int idx, tab_info_t *tab_info)
+int
+tabs_enum(view_t *view, int idx, tab_info_t *tab_info)
 {
 	return cfg.pane_tabs ? tabs_get(view, idx, tab_info)
 	                     : get_global_tab(view, idx, tab_info, 0);

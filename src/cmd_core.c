@@ -1149,6 +1149,15 @@ commands_scope_start(void)
 	(void)int_stack_push(&if_levels, IF_SCOPE_GUARD);
 }
 
+void
+commands_scope_escape(void)
+{
+	while(!is_at_scope_bottom(&if_levels))
+	{
+		int_stack_pop(&if_levels);
+	}
+}
+
 int
 commands_scope_finish(void)
 {

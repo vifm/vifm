@@ -398,5 +398,16 @@ TEST(reloading_propagates_values_of_current_views_with_pane_tabs)
 	assert_true(tab_info.view->miller_view);
 }
 
+TEST(tabs_enum_ignores_active_pane_for_global_tabs)
+{
+	tabs_new(NULL, NULL);
+
+	tab_info_t ltab_info, rtab_info;
+	assert_true(tabs_enum(&lwin, 0, &ltab_info));
+	assert_true(tabs_enum(&rwin, 0, &rtab_info));
+
+	assert_true(ltab_info.view != rtab_info.view);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -44,6 +44,9 @@ static colmgr_conf_t conf;
 /* Flag, which is set after the unit is initialized. */
 static int initialized;
 
+/* Default foreground and background colors. */
+static short def_fg, def_bg;
+
 void
 colmgr_init(const colmgr_conf_t *conf_init)
 {
@@ -57,6 +60,14 @@ colmgr_init(const colmgr_conf_t *conf_init)
 	initialized = 1;
 
 	colmgr_reset();
+
+	/* Query default colors as implementation might not return -1 via
+	 * pair_content(), which will confuse this unit. */
+	if(conf.pair_content(0, &def_fg, &def_bg) != 0)
+	{
+		def_fg = -1;
+		def_bg = -1;
+	}
 }
 
 void
@@ -98,8 +109,16 @@ colmgr_get_pair(int fg, int bg)
 static int
 find_pair(int fg, int bg)
 {
-	int i;
+	if(fg < 0)
+	{
+		fg = def_fg;
+	}
+	if(bg < 0)
+	{
+		bg = def_bg;
+	}
 
+	int i;
 	for(i = PREALLOCATED_COUNT; i < used_pairs; ++i)
 	{
 		if(color_pair_matches(i, fg, bg))

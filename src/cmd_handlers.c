@@ -2451,6 +2451,7 @@ finish_cmd(const cmd_info_t *cmd_info)
 	}
 
 	curr_stats.sourcing_state = SOURCING_FINISHING;
+	commands_scope_escape();
 	return 0;
 }
 
@@ -2598,8 +2599,7 @@ highlight_clear(const cmd_info_t *cmd_info)
 			return 1;
 		}
 
-		fview_view_cs_reset(&lwin);
-		fview_view_cs_reset(&rwin);
+		ui_invalidate_cs(curr_stats.cs);
 
 		/* Redraw to update filename specific highlights. */
 		curr_stats.need_update = UT_REDRAW;
@@ -2610,8 +2610,7 @@ highlight_clear(const cmd_info_t *cmd_info)
 	if(cmd_info->argc == 1)
 	{
 		cs_reset(curr_stats.cs);
-		fview_view_cs_reset(&lwin);
-		fview_view_cs_reset(&rwin);
+		ui_invalidate_cs(curr_stats.cs);
 
 		/* Request full update instead of redraw to force recalculation of mixed
 		 * colors like cursor line, which otherwise are not updated. */

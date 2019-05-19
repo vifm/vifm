@@ -697,6 +697,9 @@ int ui_qv_height(const view_t *view);
 /* Retrieves width of quickview area.  Returns the width. */
 int ui_qv_width(const view_t *view);
 
+/* Invalidates views-specific knowledge about given color scheme. */
+void ui_invalidate_cs(const col_scheme_t *cs);
+
 /* Gets color scheme that corresponds to the view.  Returns pointer to the color
  * scheme. */
 const col_scheme_t * ui_view_get_cs(const view_t *view);
