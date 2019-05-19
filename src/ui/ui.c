@@ -2043,10 +2043,13 @@ fixup_titles_attributes(const view_t *view, int active_view)
 		cs_mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
 
 		ui_set_bg(view->title, &col, -1);
+		ui_set_attr(view->title, &col, -1);
 	}
 	else
 	{
 		ui_set_bg(view->title, &col, cfg.cs.pair[TOP_LINE_COLOR]);
+		ui_set_attr(view->title, &col, cfg.cs.pair[TOP_LINE_COLOR]);
+
 		ui_set_bg(top_line, &col, cfg.cs.pair[TOP_LINE_COLOR]);
 		werase(top_line);
 	}
