@@ -1834,10 +1834,7 @@ print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col, path_func pf)
 	int width_used = 0;
 	int avg_width, spare_width;
 
-	cchar_t bg;
-	setcchar(&bg, L" ", base_col.attr, colmgr_get_pair(base_col.fg, base_col.bg),
-			NULL);
-	wbkgrndset(win, &bg);
+	ui_set_bg(win, &base_col, -1);
 	werase(win);
 	checked_wmove(win, 0, 0);
 
