@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 31 March, 2019)
+" Sample configuration file for vifm on OSX (last updated: 24 May, 2019)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -231,7 +231,7 @@ fileviewer *.[1-8] man ./%c | col -b
 filetype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,
        \ open -a Preview.app,
 fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
-         \ convert -identify %f -verbose /dev/null
+         \ identify %f
 
 " MD5
 filetype *.md5
