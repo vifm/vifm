@@ -10,6 +10,8 @@ Commands:
 
                                                *vifm-:EditVifm*
   :EditVifm   select a file or files to open in the current buffer.
+                                               *vifm-:Vifm*
+  :Vifm       alias for :EditVifm.
                                                *vifm-:SplitVifm*
   :SplitVifm  split buffer and select a file or files to open.
                                                *vifm-:VsplitVifm*

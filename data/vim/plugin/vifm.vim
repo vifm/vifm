@@ -37,6 +37,7 @@ endtry
 
 let s:tab_drop_cmd = (s:has_drop ? 'tablast | tab drop' : 'tabedit')
 
+command! -bar -nargs=* -complete=dir Vifm :call s:StartVifm('edit', <f-args>)
 command! -bar -nargs=* -complete=dir EditVifm :call s:StartVifm('edit', <f-args>)
 command! -bar -nargs=* -complete=dir VsplitVifm :call s:StartVifm('vsplit', <f-args>)
 command! -bar -nargs=* -complete=dir SplitVifm :call s:StartVifm('split', <f-args>)
