@@ -37,20 +37,26 @@ endtry
 
 let s:tab_drop_cmd = (s:has_drop ? 'tablast | tab drop' : 'tabedit')
 
-command! -bar -nargs=* -complete=dir Vifm :call s:StartVifm('edit', <f-args>)
-command! -bar -nargs=* -complete=dir EditVifm :call s:StartVifm('edit', <f-args>)
-command! -bar -nargs=* -complete=dir VsplitVifm :call s:StartVifm('vsplit', <f-args>)
-command! -bar -nargs=* -complete=dir SplitVifm :call s:StartVifm('split', <f-args>)
-command! -bar -nargs=* -complete=dir DiffVifm :call s:StartVifm('vert diffsplit', <f-args>)
-command! -bar -nargs=* -complete=dir TabVifm :call s:StartVifm(s:tab_drop_cmd, <f-args>)
+command! -bar -nargs=* -count -complete=dir Vifm
+			\ :call s:StartVifm('<mods>', <count>, 'edit', <f-args>)
+command! -bar -nargs=* -count -complete=dir EditVifm
+			\ :call s:StartVifm('<mods>', <count>, 'edit', <f-args>)
+command! -bar -nargs=* -count -complete=dir VsplitVifm
+			\ :call s:StartVifm('<mods>', <count>, 'vsplit', <f-args>)
+command! -bar -nargs=* -count -complete=dir SplitVifm
+			\ :call s:StartVifm('<mods>', <count>, 'split', <f-args>)
+command! -bar -nargs=* -count -complete=dir DiffVifm
+			\ :call s:StartVifm('<mods>', <count>, 'vert diffsplit', <f-args>)
+command! -bar -nargs=* -count -complete=dir TabVifm
+			\ :call s:StartVifm('<mods>', <count>, s:tab_drop_cmd, <f-args>)
 
-function! s:StartVifm(editcmd, ...)
+function! s:StartVifm(mods, count, editcmd, ...)
 	echohl WarningMsg | echo 'vifm executable wasn''t found' | echohl None
 endfunction
 
 call vifm#globals#Init()
 
-function! s:StartVifm(editcmd, ...)
+function! s:StartVifm(mods, count, editcmd, ...)
 	if a:0 > 2
 		echohl WarningMsg | echo 'Too many arguments' | echohl None
 		return
@@ -94,8 +100,8 @@ function! s:StartVifm(editcmd, ...)
 				silent! bdelete! #
 				call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
 			endfunction
-			if get(g:, 'vifm_embed_split')
-				new
+			if get(g:, 'vifm_embed_split', 0)
+				exec a:mods . ' ' . (a:count ? a:count : '') . 'new'
 			else
 				enew
 			endif
