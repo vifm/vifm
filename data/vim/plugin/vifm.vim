@@ -87,32 +87,53 @@ function! s:StartVifm(mods, count, editcmd, ...)
 	call map(pickargs, 'shellescape(v:val, 1)')
 	let pickargsstr = join(pickargs, ' ')
 
-	if !has('nvim')
-		" Use embedded terminal if available.
-		if exists('*term_start') && g:vifm_embed_term
+	" Use embedded terminal if available.
+	if has('nvim') || exists('*term_start') && g:vifm_embed_term
+		if !has('nvim')
 			let env = { 'TERM' : has('gui_running') ? $TERM :
 			          \          &term =~ 256 ? 'xterm-256color' : &term }
 			let options = { 'term_name' : 'vifm: '.a:editcmd, 'curwin' : 1,
 			              \ 'exit_cb': 'VifmExitCb', 'env' : env }
+
 			function! VifmExitCb(job, code)
 				let data = b:data
 				buffer #
 				silent! bdelete! #
 				call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
 			endfunction
-			if get(g:, 'vifm_embed_split', 0)
-				exec a:mods . ' ' . (a:count ? a:count : '') . 'new'
-			else
-				enew
-			endif
-			let buf = term_start(['/bin/sh', '-c',
-			                     \ g:vifm_exec.' '.g:vifm_exec_args.' '.ldir.' '.rdir
-			                     \.' '.pickargsstr], options)
-			let data = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
-			call setbufvar(buf, 'data', data)
-			return
+		else
+			let callback = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
+
+			function! callback.on_exit(id, code, event)
+				bdelete!
+				call s:HandleRunResults(a:code, self.listf, self.typef, self.editcmd)
+			endfunction
 		endif
 
+		if get(g:, 'vifm_embed_split', 0)
+			exec a:mods . ' ' . (a:count ? a:count : '') . 'new'
+		else
+			enew
+		endif
+
+		let termcmd = g:vifm_exec.' '.g:vifm_exec_args.' '.ldir.' '.rdir.' '.pickargsstr
+
+		if !has('nvim')
+			let buf = term_start(['/bin/sh', '-c', termcmd], options)
+
+			let data = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
+			call setbufvar(buf, 'data', data)
+		else
+			call termopen(termcmd, callback)
+
+			let oldbuf = bufname('%')
+			execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
+			execute bufnr(oldbuf).'bwipeout'
+			startinsert
+		endif
+
+		return
+	else
 		" Gvim cannot handle ncurses so run vifm in a terminal.
 		if has('gui_running')
 			execute 'silent !' g:vifm_term g:vifm_exec g:vifm_exec_args ldir rdir
@@ -126,20 +147,6 @@ function! s:StartVifm(mods, count, editcmd, ...)
 		redraw!
 
 		call s:HandleRunResults(v:shell_error, listf, typef, a:editcmd)
-	else
-		let callback = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
-		function! callback.on_exit(id, code, event)
-			buffer #
-			silent! bdelete! #
-			call s:HandleRunResults(a:code, self.listf, self.typef, self.editcmd)
-		endfunction
-		enew
-		call termopen(g:vifm_exec . ' ' . g:vifm_exec_args . ' ' . ldir . ' ' . rdir
-		             \. ' ' . pickargsstr, callback)
-		let oldbuf = bufname('%')
-		execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
-		execute bufnr(oldbuf).'bwipeout'
-		startinsert
 	endif
 endfunction
 
