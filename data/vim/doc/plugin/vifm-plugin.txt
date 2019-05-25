@@ -69,6 +69,10 @@ By default it's equal to 'xterm -e'.
 A boolean variable.  When evaluates to true and it's possible to create a
 terminal buffer, it will be used.  Enabled by default inside GUI version.
 
+                                               *g:vifm_embed_split*
+A boolean variable.  When evaluates to true and Vifm is embedded in a
+terminal, it will be run inside a new split.  False by default.
+
 Extension for "vifm" filetype~
 
                                                 *vifm-K*

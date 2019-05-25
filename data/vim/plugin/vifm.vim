@@ -94,7 +94,11 @@ function! s:StartVifm(editcmd, ...)
 				silent! bdelete! #
 				call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
 			endfunction
-			enew
+			if get(g:, 'vifm_embed_split')
+				new
+			else
+				enew
+			endif
 			let buf = term_start(['/bin/sh', '-c',
 			                     \ g:vifm_exec.' '.g:vifm_exec_args.' '.ldir.' '.rdir
 			                     \.' '.pickargsstr], options)
