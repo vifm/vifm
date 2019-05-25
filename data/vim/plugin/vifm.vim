@@ -89,6 +89,17 @@ function! s:StartVifm(mods, count, editcmd, ...)
 
 	" Use embedded terminal if available.
 	if has('nvim') || exists('*term_start') && g:vifm_embed_term
+		let [cwdf, cwdjob] = s:StartCwdJob()
+
+		if cwdf != ''
+			let cwdargs = '-c "autocmd DirEnter * !pwd >> ' . shellescape(cwdf) . '"'
+		else
+			let cwdargs = ''
+		endif
+
+		let data = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd,
+					\ 'cwdjob' : cwdjob }
+
 		if !has('nvim')
 			let env = { 'TERM' : has('gui_running') ? $TERM :
 			          \          &term =~ 256 ? 'xterm-256color' : &term }
@@ -99,13 +110,17 @@ function! s:StartVifm(mods, count, editcmd, ...)
 				let data = b:data
 				buffer #
 				silent! bdelete! #
+				if has('job') && type(data.cwdjob) == v:t_job
+					call job_stop(data.cwdjob)
+				endif
 				call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
 			endfunction
 		else
-			let callback = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
-
-			function! callback.on_exit(id, code, event)
+			function! data.on_exit(id, code, event)
 				bdelete!
+				if self.cwdjob != 0
+					call jobstop(self.cwdjob)
+				endif
 				call s:HandleRunResults(a:code, self.listf, self.typef, self.editcmd)
 			endfunction
 		endif
@@ -116,15 +131,15 @@ function! s:StartVifm(mods, count, editcmd, ...)
 			enew
 		endif
 
-		let termcmd = g:vifm_exec.' '.g:vifm_exec_args.' '.ldir.' '.rdir.' '.pickargsstr
+		let termcmd = g:vifm_exec.' '.g:vifm_exec_args.' '.cwdargs.' '.ldir.' '
+					\ .rdir.' '.pickargsstr
 
 		if !has('nvim')
 			let buf = term_start(['/bin/sh', '-c', termcmd], options)
 
-			let data = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd }
 			call setbufvar(buf, 'data', data)
 		else
-			call termopen(termcmd, callback)
+			call termopen(termcmd, data)
 
 			let oldbuf = bufname('%')
 			execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
@@ -148,6 +163,45 @@ function! s:StartVifm(mods, count, editcmd, ...)
 
 		call s:HandleRunResults(v:shell_error, listf, typef, a:editcmd)
 	endif
+endfunction
+
+function! s:StartCwdJob()
+	if get(g:, 'vifm_embed_cwd', 1) && (has('job') || has('nvim'))
+		let cwdf = tempname()
+		silent! exec '!mkfifo '. cwdf
+
+		let cwdcmd = ['/bin/sh', '-c',
+					\ 'while true; do cat ' . shellescape(cwdf) . '; done']
+
+		if !has('nvim')
+			let cwdopts = { 'out_cb': 'VifmCwdCb' }
+
+			function! VifmCwdCb(channel, data)
+				call s:HandleCwdOut(a:data)
+			endfunction
+
+			let cwdjob = job_start(cwdcmd, cwdopts)
+		else
+			let cwdopts = {}
+
+			let g:a = []
+			function! cwdopts.on_stdout(id, data, event)
+				if a:data[0] ==# ''
+					return
+				endif
+				call s:HandleCwdOut(a:data[0])
+			endfunction
+
+			let cwdjob = jobstart(cwdcmd, cwdopts)
+		endif
+
+		return [cwdf, cwdjob]
+	endif
+	return ['', 0]
+endfunction
+
+function! s:HandleCwdOut(data)
+	exec 'cd ' . fnameescape(a:data)
 endfunction
 
 function! s:HandleRunResults(exitcode, listf, typef, editcmd)
