@@ -184,7 +184,6 @@ function! s:StartCwdJob()
 		else
 			let cwdopts = {}
 
-			let g:a = []
 			function! cwdopts.on_stdout(id, data, event)
 				if a:data[0] ==# ''
 					return
