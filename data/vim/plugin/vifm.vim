@@ -352,4 +352,21 @@ endfunction
 
 " }}}1
 
+if get(g:, 'vifm_replace_netrw')
+	function! s:HandleBufEnter(fname)
+		if a:fname !=# '' && isdirectory(a:fname)
+			bdelete!
+			let embed_split = get(g:, 'vifm_embed_split', 0)
+			let g:vifm_embed_split = 0
+			exec get(g:, 'vifm_replace_netrw_cmd', 'Vifm') . ' ' . a:fname
+			let g:vifm_embed_split = embed_split
+		endif
+	endfunction
+
+	let g:loaded_netrwPlugin = 'disable'
+	augroup neovimvifm
+		au BufEnter * silent call s:HandleBufEnter(expand('<amatch>'))
+	augroup END
+endif
+
 " vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
