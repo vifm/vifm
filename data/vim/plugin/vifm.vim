@@ -166,7 +166,7 @@ function! s:StartVifm(mods, count, editcmd, ...)
 endfunction
 
 function! s:StartCwdJob()
-	if get(g:, 'vifm_embed_cwd', 1) && (has('job') || has('nvim'))
+	if get(g:, 'vifm_embed_cwd', 0) && (has('job') || has('nvim'))
 		let cwdf = tempname()
 		silent! exec '!mkfifo '. cwdf
 
