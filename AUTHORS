@@ -120,3 +120,6 @@ Ma_Sys.ma implemented 'syncregs' option which defines group of instances that
 share registers.
 
 Konst Mayer (a.k.a. cdlscpmv) dropped leading space from value of 'timefmt'.
+
+rbong authored a number of changes that extend functionality of the Vim plugin
+originally as a separate plugin for neovim, later merged into the main one.

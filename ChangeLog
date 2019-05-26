@@ -39,6 +39,20 @@
 	circumventing curses, which could be used to display sixel images.  Thanks
 	to Tom Jansen.
 
+	Added :Vifm command to the plugin as an alias for :EditVifm.  Patch by
+	rbong.
+
+	Added optional splitting of the embedded terminal in the
+	plugin (g:vifm_embed_split).  Has support for Vim's <mods> and <count>.
+	Patch by rbong.
+
+	Added option to the plugin to synchronize working directory of the
+	embedded instance of vifm with the Vim host (g:vifm_embed_cwd).  Patch by
+	rbong.
+
+	Added ability to the plugin to replace netrw with
+	vifm (g:vifm_replace_netrw and g:vifm_replace_netrw_cmd).  Patch by rbong.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
