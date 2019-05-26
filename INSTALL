@@ -101,7 +101,7 @@ On Windows you need:
 
     The following libraries installed from dev-packages for Mingw (they
     should include DLL's):
-     - Pdcurses for Mingw (with applied patches under patches/pdcurses/)
+     - Pdcurses for Mingw (with applied patches under patches/pdcurses*/)
      - Regex for Mingw
      - pthreads for Windows
 
@@ -109,7 +109,7 @@ Cross-compiling for Windows using MXE (http://mxe.cc/):
 
     Required MXE packages:
      - gcc
-     - pdcurses (put patches from patches/pdcurses/ to src/ directory of MXE)
+     - pdcurses (put patches from patches/pdcurses*/ to src/ directory of MXE)
      - libgnurx
      - pthreads
 

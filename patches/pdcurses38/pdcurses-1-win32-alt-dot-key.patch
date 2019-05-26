@@ -1,0 +1,34 @@
+This patch has been published at:
+https://sourceforge.net/p/pdcurses/discussion/95730/thread/75b9a1ea/
+
+Add support for Alt-. shortcut on Win32.
+
+diff --git a/curses.h b/curses.h
+index c7f3e22..80d2935 100644
+--- a/curses.h
++++ b/curses.h
+@@ -848,9 +848,10 @@ indicator.
+ #define KEY_RESIZE    0x222  /* Window resize */
+ #define KEY_SUP       0x223  /* Shifted up arrow */
+ #define KEY_SDOWN     0x224  /* Shifted down arrow */
++#define ALT_PERIOD    0x225  /* alt-period */
+ 
+ #define KEY_MIN       KEY_BREAK      /* Minimum curses key value */
+-#define KEY_MAX       KEY_SDOWN      /* Maximum curses key */
++#define KEY_MAX       ALT_PERIOD     /* Maximum curses key */
+ 
+ #define KEY_F(n)      (KEY_F0 + (n))
+ 
+diff --git a/wincon/pdckbd.c b/wincon/pdckbd.c
+index 9d1e4da..267db83 100644
+--- a/wincon/pdckbd.c
++++ b/wincon/pdckbd.c
+@@ -197,7 +197,7 @@ static KPTAB kptab[] =
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
++   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, ALT_PERIOD, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},

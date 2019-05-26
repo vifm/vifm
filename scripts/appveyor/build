@@ -1,5 +1,5 @@
 #!/bin/bash
 
 make -C src/ -f Makefile.win -j3 \
-    'CFLAGS=-I PDCurses-3.4/ -I mingw-libgnurx-2.5.1' \
-    'LDFLAGS=-L PDCurses-3.4/win32 -L mingw-libgnurx-2.5.1'
+    'CFLAGS=-I PDCurses-3.8/ -I mingw-libgnurx-2.5.1' \
+    'LDFLAGS=-L PDCurses-3.8/wincon -L mingw-libgnurx-2.5.1'

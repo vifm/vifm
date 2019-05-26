@@ -15,7 +15,7 @@ environment:
 
 cache:
     - src/mingw-libgnurx-2.5.1
-    - src/PDCurses-3.4
+    - src/PDCurses-3.8
 
 before_build:
     - bash scripts/appveyor/build-deps

@@ -1,0 +1,17 @@
+Make is_termresized() work on Windows
+
+diff --git a/pdcurses/initscr.c b/pdcurses/initscr.c
+index efa5cc6..ac98bf6 100644
+--- a/pdcurses/initscr.c
++++ b/pdcurses/initscr.c
+@@ -342,7 +342,9 @@ bool is_termresized(void)
+ {
+     PDC_LOG(("is_termresized() - called\n"));
+ 
+-    return SP->resized;
++    return SP->resized
++        || SP->lines != PDC_get_rows()
++        || SP->cols != PDC_get_columns();
+ }
+ 
+ const char *curses_version(void)

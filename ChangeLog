@@ -104,6 +104,11 @@
 
 	Do not complain about empty output of a graphics previewer for view mode.
 
+	Upgraded to PDCurses 3.8 (was 3.4) for Windows.  This allows using 256
+	colors inside ConEmu.  Note that ConEmu has issues processing 256 colors
+	on the last line of the screen, so avoid using them for status line.
+	Thanks to dancread.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
