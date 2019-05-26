@@ -1,26 +1,28 @@
 #!/bin/bash
 
+set -e
+
 cd src/
 
 # download and build pdcurses with patches
-if [ ! -d PDCurses-3.4/ ]; then
+if [ ! -d PDCurses-3.8/ ]; then
 
-wget 'https://downloads.sourceforge.net/project/pdcurses/pdcurses/3.4/PDCurses-3.4.tar.gz'
-tar vxf PDCurses-3.4.tar.gz
+wget 'https://github.com/wmcbrine/PDCurses/archive/3.8.tar.gz'
+tar vxf 3.8.tar.gz
 
-ls ../patches/pdcurses/* | sort |
+ls ../patches/pdcurses38/* | sort |
 while read patch; do
-    (cd PDCurses-3.4/; patch -p1 < "../$patch");
+    (cd PDCurses-3.8/; patch -p1 < "../$patch");
 done
 
-make -C PDCurses-3.4/win32/ -f gccwin32.mak WIDE=Y
-mv PDCurses-3.4/win32/pdcurses.a PDCurses-3.4/win32/libpdcurses.a
+make -C PDCurses-3.8/wincon/ WIDE=Y UTF8=Y
+mv PDCurses-3.8/wincon/pdcurses.a PDCurses-3.8/wincon/libpdcurses.a
 
 patch --verbose -p1 << EOF
---- a/PDCurses-3.4/curses.h	Sun Aug 21 16:21:16 2016
-+++ b/PDCurses-3.4/curses.h	Sun Aug 21 16:22:45 2016
-@@ -150,6 +150,9 @@
- #define PDC_MOUSE_WHEEL_DOWN    0x0040
+--- a/PDCurses-3.8/curses.h
++++ b/PDCurses-3.8/curses.h
+@@ -180,6 +180,9 @@ typedef struct
+ #define PDC_MOUSE_WHEEL_RIGHT   0x0100
  
  #define A_BUTTON_CHANGED        (Mouse_status.changes & 7)
 +#ifdef MOUSE_MOVED
