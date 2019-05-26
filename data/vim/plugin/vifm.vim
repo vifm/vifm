@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2018 November 3
+" Last Change: 2019 May 26
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -144,7 +144,8 @@ function! s:StartVifm(mods, count, editcmd, ...)
 			let oldbuf = bufname('%')
 			execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
 			execute bufnr(oldbuf).'bwipeout'
-			startinsert
+			" Use execute to not break highlighting.
+			execute 'startinsert'
 		endif
 
 		return
