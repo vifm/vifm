@@ -111,7 +111,7 @@ function! s:StartVifm(mods, count, editcmd, ...)
 				buffer #
 				silent! bdelete! #
 				if data.split
-					close
+					silent! close
 				endif
 				if has('job') && type(data.cwdjob) == v:t_job
 					call job_stop(data.cwdjob)
@@ -127,7 +127,7 @@ function! s:StartVifm(mods, count, editcmd, ...)
 				endif
 				silent! bdelete! #
 				if self.split
-					close
+					silent! close
 				endif
 				if self.cwdjob != 0
 					call jobstop(self.cwdjob)
