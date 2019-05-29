@@ -98,7 +98,7 @@ function! s:StartVifm(mods, count, editcmd, ...)
 		endif
 
 		let data = { 'listf' : listf, 'typef' : typef, 'editcmd' : a:editcmd,
-					\ 'cwdjob' : cwdjob }
+					\ 'cwdjob' : cwdjob, 'split': get(g:, 'vifm_embed_split', 0) }
 
 		if !has('nvim')
 			let env = { 'TERM' : has('gui_running') ? $TERM :
@@ -110,6 +110,9 @@ function! s:StartVifm(mods, count, editcmd, ...)
 				let data = b:data
 				buffer #
 				silent! bdelete! #
+				if data.split
+					close
+				endif
 				if has('job') && type(data.cwdjob) == v:t_job
 					call job_stop(data.cwdjob)
 				endif
@@ -117,7 +120,15 @@ function! s:StartVifm(mods, count, editcmd, ...)
 			endfunction
 		else
 			function! data.on_exit(id, code, event)
-				bdelete!
+				if bufnr('%') == bufnr('#') && !self.split
+					enew
+				else
+					buffer #
+				endif
+				silent! bdelete! #
+				if self.split
+					close
+				endif
 				if self.cwdjob != 0
 					call jobstop(self.cwdjob)
 				endif
@@ -125,7 +136,7 @@ function! s:StartVifm(mods, count, editcmd, ...)
 			endfunction
 		endif
 
-		if get(g:, 'vifm_embed_split', 0)
+		if data.split
 			exec a:mods . ' ' . (a:count ? a:count : '') . 'new'
 		else
 			enew
@@ -135,7 +146,7 @@ function! s:StartVifm(mods, count, editcmd, ...)
 					\ .rdir.' '.pickargsstr
 
 		if !has('nvim')
-			let buf = term_start(['/bin/sh', '-c', termcmd], options)
+			keepalt let buf = term_start(['/bin/sh', '-c', termcmd], options)
 
 			call setbufvar(buf, 'data', data)
 		else
@@ -355,7 +366,8 @@ endfunction
 if get(g:, 'vifm_replace_netrw')
 	function! s:HandleBufEnter(fname)
 		if a:fname !=# '' && isdirectory(a:fname)
-			bdelete!
+			buffer #
+			silent! bdelete! #
 			let embed_split = get(g:, 'vifm_embed_split', 0)
 			let g:vifm_embed_split = 0
 			exec get(g:, 'vifm_replace_netrw_cmd', 'Vifm') . ' ' . a:fname
