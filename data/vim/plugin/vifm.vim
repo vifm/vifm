@@ -1,5 +1,3 @@
-" Vim plugin for running vifm from vim.
-
 " Maintainer: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
 
@@ -108,7 +106,11 @@ function! s:StartVifm(mods, count, editcmd, ...)
 
 			function! VifmExitCb(job, code)
 				let data = b:data
-				buffer #
+				if bufnr('%') == bufnr('#') && !data.split
+					enew
+				else
+					buffer #
+				endif
 				silent! bdelete! #
 				if data.split
 					silent! close
