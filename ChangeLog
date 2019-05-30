@@ -221,6 +221,9 @@
 	Fixed last character of borders in vertical layout not being drawn when
 	global tab line is visible.
 
+	Fixed retrying file overwrite on :copy! not overwriting a file after reason
+	why it can't be deleted is gone.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
