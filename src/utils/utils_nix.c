@@ -302,14 +302,14 @@ prepare_for_exec(void)
 	 * freeing resources which will be replaced by exec(). */
 	tab_info_t tab_info;
 	int i;
-	for(i = 0; tabs_enum(curr_view, i, &tab_info); ++i)
+	for(i = 0; tabs_enum(&lwin, i, &tab_info); ++i)
 	{
 		view_t *view = tab_info.view;
 		fswatch_free(view->watch);
 		fswatch_free(view->left_column.watch);
 		fswatch_free(view->right_column.watch);
 	}
-	for(i = 0; tabs_enum(other_view, i, &tab_info); ++i)
+	for(i = 0; tabs_enum(&rwin, i, &tab_info); ++i)
 	{
 		view_t *view = tab_info.view;
 		fswatch_free(view->watch);
