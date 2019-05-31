@@ -577,16 +577,13 @@ static int
 cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 		int cancellable, ops_t *ops, int force)
 {
-	char rel_path[PATH_MAX + 1];
-
-	int file_op;
-	int result;
-
 	if(strcmp(src, dst) == 0)
 	{
 		return 0;
 	}
 
+	OPS file_op;
+	char rel_path[PATH_MAX + 1];
 	if(op == CMLO_COPY)
 	{
 		file_op = force ? OP_COPYF : OP_COPY;
@@ -607,8 +604,8 @@ cp_file_f(const char src[], const char dst[], CopyMoveLikeOp op, int bg,
 		}
 	}
 
-	result = perform_operation(file_op, ops, cancellable ? NULL : (void *)1, src,
-			dst);
+	int result = perform_operation(file_op, ops, cancellable ? NULL : (void *)1,
+			src, dst);
 	if(result == 0 && !bg)
 	{
 		un_group_add_op(file_op, NULL, NULL, src, dst);
