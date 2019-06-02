@@ -428,6 +428,7 @@ hideui
 hi CurrLine
 hi CmpMismatch
 hi AuxWin
+hi OtherWin
 hi TabLine
 hi TabLineSel
 hi User1

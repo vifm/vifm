@@ -707,6 +707,9 @@ const col_scheme_t * ui_view_get_cs(const view_t *view);
 /* Erases view window by filling it with the background color. */
 void ui_view_erase(view_t *view);
 
+/* Figures out base color for the pane.  Returns the color. */
+col_attr_t ui_get_win_color(const view_t *view, const col_scheme_t *cs);
+
 /* Checks whether custom view type of specified view is unsorted.  It doesn't
  * need the view to be custom, checks just the type.  Returns non-zero if so,
  * otherwise zero is returned. */
