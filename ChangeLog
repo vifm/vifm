@@ -224,6 +224,9 @@
 	Fixed retrying file overwrite on :copy! not overwriting a file after reason
 	why it can't be deleted is gone.
 
+	Fixed outdated comment about 'vimhelp' in sample vifmrc file.  Thanks to
+	Tiago.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
