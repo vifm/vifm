@@ -887,11 +887,7 @@ prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 	col_attr_t col = cs->color[WIN_COLOR];
 
 	mix_in_common_colors(&col, view, entry, line_color);
-
-	if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
-	{
-		cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
-	}
+	cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 
 	cchar_t cch;
 	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
@@ -1290,14 +1286,9 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 
 		if(cdt->line_pos == cdt->current_pos)
 		{
-			if(view == curr_view || !cdt->is_main)
-			{
-				cs_mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
-			}
-			else if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
-			{
-				cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
-			}
+			int color = (view == curr_view || !cdt->is_main) ? CURR_LINE_COLOR
+			                                                 : OTHER_LINE_COLOR;
+			cs_mix_colors(&col, &cs->color[color]);
 		}
 	}
 
