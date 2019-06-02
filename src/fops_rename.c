@@ -98,8 +98,8 @@ fops_rename_current(view_t *view, int name_only)
 	}
 
 	flist_sel_stash(view);
-	fops_line_prompt("New name: ", filename, &rename_file_cb,
-			&complete_filename_only, 1);
+	fops_line_prompt(name_only ? "New name root: " : "New full name: ", filename,
+			&rename_file_cb, &complete_filename_only, 1);
 }
 
 /* Callback for processing file rename query. */

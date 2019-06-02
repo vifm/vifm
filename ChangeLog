@@ -128,6 +128,9 @@
 
 	Enable 'vimhelp' in sample vifmrc file by default.
 
+	Changed file rename prompt to indicate whether full name or only its
+	root is being changed.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
