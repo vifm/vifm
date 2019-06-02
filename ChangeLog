@@ -123,6 +123,8 @@
 	on the last line of the screen, so avoid using them for status line.
 	Thanks to dancread.
 
+	Enable 'vimhelp' in sample vifmrc file by default.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
