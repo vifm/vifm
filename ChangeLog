@@ -134,6 +134,9 @@
 	Changed file rename prompt to indicate whether full name or only its
 	root is being changed.
 
+	Removed empty line from :file and similar menus for case when vifm was
+	configured with --disable-desktop-files flag (second time).
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

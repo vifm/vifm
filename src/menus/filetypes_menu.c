@@ -90,13 +90,16 @@ show_file_menu(view_t *view, int background)
 				form_filetype_menu_entry(ft.list[i], max_len));
 	}
 
-	/* Add empty line separator if there is at least one other item. */
+#ifdef ENABLE_DESKTOP_FILES
+	/* Add empty line separator if there is at least one other item of either
+	 * kind. */
 	if(ft.count > 0 || magic.count > 0)
 	{
 		(void)add_to_string_array(&m.data, m.len, 1,
 				form_filetype_data_entry(NONE_PSEUDO_PROG));
 		m.len = add_to_string_array(&m.items, m.len, 1, "");
 	}
+#endif
 
 	ft_assoc_records_free(&ft);
 
