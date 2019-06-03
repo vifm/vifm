@@ -53,6 +53,12 @@
 	Added ability to the plugin to replace netrw with
 	vifm (g:vifm_replace_netrw and g:vifm_replace_netrw_cmd).  Patch by rbong.
 
+	Added OtherWin highlight group for highlighting inactive pane.  Thanks to
+	John Fred Fadrigalan (a.k.a. cevhyruz).
+
+	Added indication of entry's availability to :file, :file[x]type and
+	:fileviewer menus.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -122,6 +128,14 @@
 	colors inside ConEmu.  Note that ConEmu has issues processing 256 colors
 	on the last line of the screen, so avoid using them for status line.
 	Thanks to dancread.
+
+	Enable 'vimhelp' in sample vifmrc file by default.
+
+	Changed file rename prompt to indicate whether full name or only its
+	root is being changed.
+
+	Removed empty line from :file and similar menus for case when vifm was
+	configured with --disable-desktop-files flag (second time).
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
@@ -220,6 +234,12 @@
 
 	Fixed last character of borders in vertical layout not being drawn when
 	global tab line is visible.
+
+	Fixed retrying file overwrite on :copy! not overwriting a file after reason
+	why it can't be deleted is gone.
+
+	Fixed outdated comment about 'vimhelp' in sample vifmrc file.  Thanks to
+	Tiago.
 
 0.10-beta to 0.10 (2018-11-11)
 

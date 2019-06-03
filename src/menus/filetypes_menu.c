@@ -90,13 +90,16 @@ show_file_menu(view_t *view, int background)
 				form_filetype_menu_entry(ft.list[i], max_len));
 	}
 
-	/* Add empty line separator if there is at least one other item. */
+#ifdef ENABLE_DESKTOP_FILES
+	/* Add empty line separator if there is at least one other item of either
+	 * kind. */
 	if(ft.count > 0 || magic.count > 0)
 	{
 		(void)add_to_string_array(&m.data, m.len, 1,
 				form_filetype_data_entry(NONE_PSEUDO_PROG));
 		m.len = add_to_string_array(&m.items, m.len, 1, "");
 	}
+#endif
 
 	ft_assoc_records_free(&ft);
 
@@ -116,23 +119,28 @@ static const char *
 form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 {
 	static char result[PATH_MAX + 1];
+
+	int found = ft_exists(prog.command);
+	const char *found_msg = (found ? "[present] " : "          ");
+
+	char descr[64];
+	descr[0] = '\0';
+
 	if(descr_width > 0)
 	{
 		char format[16];
 		if(prog.description[0] == '\0')
 		{
-			snprintf(format, sizeof(format), " %%-%ds  %%s", descr_width);
+			snprintf(format, sizeof(format), "%%-%ds  ", descr_width);
 		}
 		else
 		{
-			snprintf(format, sizeof(format), "[%%-%ds] %%s", descr_width);
+			snprintf(format, sizeof(format), "[%%-%ds] ", descr_width);
 		}
-		snprintf(result, sizeof(result), format, prog.description, prog.command);
+		snprintf(descr, sizeof(descr), format, prog.description);
 	}
-	else
-	{
-		copy_str(result, sizeof(result), prog.command);
-	}
+
+	snprintf(result, sizeof(result), "%s%s%s", found_msg, descr, prog.command);
 	return result;
 }
 

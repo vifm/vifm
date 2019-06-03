@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm (last updated: 24 May, 2019)
+" Sample configuration file for vifm (last updated: 2 June, 2019)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -52,10 +52,10 @@ set sortnumbers
 
 set undolevels=100
 
-" If you installed the vim.txt help file set vimhelp.
-" If would rather use a plain text help file set novimhelp.
+" Use Vim's format of help file (has highlighting and "hyperlinks").
+" If you would rather use a plain text help file set novimhelp.
 
-set novimhelp
+set vimhelp
 
 " If you would like to run an executable file when you
 " press return on the file name set this.

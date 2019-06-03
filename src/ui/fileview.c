@@ -384,7 +384,7 @@ draw_right_column(view_t *view)
 	if(view->miller_preview_files && !fentry_is_dir(entry))
 	{
 		const col_scheme_t *const cs = ui_view_get_cs(view);
-		col_attr_t def_col = cs->color[WIN_COLOR];
+		col_attr_t def_col = ui_get_win_color(view, cs);
 		cs_mix_colors(&def_col, &cs->color[AUX_WIN_COLOR]);
 
 		const preview_area_t parea = {
@@ -884,14 +884,10 @@ static cchar_t
 prepare_inactive_color(view_t *view, dir_entry_t *entry, int line_color)
 {
 	const col_scheme_t *cs = ui_view_get_cs(view);
-	col_attr_t col = cs->color[WIN_COLOR];
+	col_attr_t col = ui_get_win_color(view, cs);
 
 	mix_in_common_colors(&col, view, entry, line_color);
-
-	if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
-	{
-		cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
-	}
+	cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
 
 	cchar_t cch;
 	setcchar(&cch, L" ", col.attr, colmgr_get_pair(col.fg, col.bg), NULL);
@@ -1273,7 +1269,7 @@ static cchar_t
 prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 {
 	const col_scheme_t *const cs = ui_view_get_cs(view);
-	col_attr_t col = cs->color[WIN_COLOR];
+	col_attr_t col = ui_get_win_color(view, cs);
 
 	if(!cdt->is_main)
 	{
@@ -1290,14 +1286,9 @@ prepare_col_color(const view_t *view, int primary, const column_data_t *cdt)
 
 		if(cdt->line_pos == cdt->current_pos)
 		{
-			if(view == curr_view || !cdt->is_main)
-			{
-				cs_mix_colors(&col, &cs->color[CURR_LINE_COLOR]);
-			}
-			else if(cs_is_color_set(&cs->color[OTHER_LINE_COLOR]))
-			{
-				cs_mix_colors(&col, &cs->color[OTHER_LINE_COLOR]);
-			}
+			int color = (view == curr_view || !cdt->is_main) ? CURR_LINE_COLOR
+			                                                 : OTHER_LINE_COLOR;
+			cs_mix_colors(&col, &cs->color[color]);
 		}
 	}
 

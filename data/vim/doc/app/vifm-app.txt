@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Apr 22
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1743,6 +1743,7 @@ Available group-name values:
  - Win - color of all windows (views, dialogs, menus) and default color for
          their content (e.g. regular files in views)
  - AuxWin - color of auxiliary areas of windows
+ - OtherWin - color of inactive pane
  - Border - color of vertical parts of the border
  - TabLine - tab line color (for |vifm-'tabscope'| set to "global")
  - TabLineSel - color of the tip of selected tab (regardless of
@@ -1905,18 +1906,19 @@ transparency:
   CmdLine
     ErrorMsg
   Win
-    AuxWin
-      File name specific highlights
-        Directory
-        Link
-        BrokenLink
-        Socket
-        Device
-        Fifo
-        Executable
-          Selected
-            CurrLine
-            OtherLine
+    OtherWin
+      AuxWin
+        File name specific highlights
+          Directory
+          Link
+          BrokenLink
+          Socket
+          Device
+          Fifo
+          Executable
+            Selected
+              CurrLine
+              OtherLine
   TopLine
     TopLineSel
       TabLineSel (for pane tabs)
@@ -5244,8 +5246,9 @@ this way:
      StatusLine, JobLine, SuggestBox and WildMenu are always determined by
      the primary color scheme
    - CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device,
-     Executable, Fifo, CmpMismatch, Win and AuxWin are determined by primary
-     color scheme and a set of local color schemes, which can be empty
+     Executable, Fifo, CmpMismatch, Win, AuxWin and OtherWin are determined
+     by primary color scheme and a set of local color schemes, which can be
+     empty
 
 There might be a set of local color schemes because they are structured
 hierarchically according to file system structure. For example, having the

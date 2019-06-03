@@ -886,7 +886,15 @@ change_window(void)
 
 	if(window_shows_dirlist(other_view))
 	{
-		fview_draw_inactive_cursor(other_view);
+		const col_scheme_t *cs = ui_view_get_cs(other_view);
+		if(cs_is_color_set(&cs->color[OTHER_WIN_COLOR]))
+		{
+			draw_dir_list(other_view);
+		}
+		else
+		{
+			fview_draw_inactive_cursor(other_view);
+		}
 	}
 
 	if(curr_stats.preview.on && !is_dir_list_loaded(curr_view))
@@ -2245,8 +2253,20 @@ void
 ui_view_erase(view_t *view)
 {
 	const col_scheme_t *cs = ui_view_get_cs(view);
-	ui_set_bg(view->win, &cs->color[WIN_COLOR], cs->pair[WIN_COLOR]);
+	col_attr_t col = ui_get_win_color(view, cs);
+	ui_set_bg(view->win, &col, -1);
 	werase(view->win);
+}
+
+col_attr_t
+ui_get_win_color(const view_t *view, const col_scheme_t *cs)
+{
+	col_attr_t col = cs->color[WIN_COLOR];
+	if(view == other_view && window_shows_dirlist(view))
+	{
+		cs_mix_colors(&col, &cs->color[OTHER_WIN_COLOR]);
+	}
+	return col;
 }
 
 int
