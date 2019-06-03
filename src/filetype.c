@@ -79,6 +79,19 @@ ft_init(external_command_exists_t ece_func)
 	external_command_exists_func = ece_func;
 }
 
+int
+ft_exists(const char cmd[])
+{
+	if(external_command_exists_func == NULL)
+	{
+		return 1;
+	}
+
+	char cmd_name[NAME_MAX + 1];
+	(void)extract_cmd_name(cmd, 0, sizeof(cmd_name), cmd_name);
+	return external_command_exists_func(cmd_name);
+}
+
 const char *
 ft_get_program(const char file[])
 {
@@ -128,12 +141,7 @@ find_existing_cmd_record(const assoc_records_t *records)
 	int i;
 	for(i = 0; i < records->count; ++i)
 	{
-		char cmd_name[NAME_MAX + 1];
-		(void)extract_cmd_name(records->list[i].command, 0, sizeof(cmd_name),
-				cmd_name);
-
-		if(external_command_exists_func == NULL ||
-				external_command_exists_func(cmd_name))
+		if(ft_exists(records->list[i].command))
 		{
 			return records->list[i];
 		}

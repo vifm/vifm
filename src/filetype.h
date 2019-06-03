@@ -73,8 +73,9 @@ typedef struct
 }
 assoc_list_t;
 
-/* Prototype for external command existence check function. */
-typedef int (*external_command_exists_t)(const char *name);
+/* Prototype for external function that checks existence of a command by its
+ * name.  Should return non-zero if it exists and zero otherwise. */
+typedef int (*external_command_exists_t)(const char name[]);
 
 const assoc_record_t NONE_PSEUDO_PROG;
 
@@ -87,6 +88,10 @@ assoc_list_t fileviewers;
 /* Configures external functions for filetype unit.  If ece_func is NULL or this
  * function is not called, the module acts like all commands exist. */
 void ft_init(external_command_exists_t ece_func);
+
+/* Checks whether command exists from the point of view of this unit.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int ft_exists(const char cmd[]);
 
 /* Resets associations set by :filetype, :filextype and :fileviewer commands.
  * Also registers default file associations. */
