@@ -116,23 +116,28 @@ static const char *
 form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 {
 	static char result[PATH_MAX + 1];
+
+	int found = ft_exists(prog.command);
+	const char *found_msg = (found ? "[present] " : "          ");
+
+	char descr[64];
+	descr[0] = '\0';
+
 	if(descr_width > 0)
 	{
 		char format[16];
 		if(prog.description[0] == '\0')
 		{
-			snprintf(format, sizeof(format), " %%-%ds  %%s", descr_width);
+			snprintf(format, sizeof(format), "%%-%ds  ", descr_width);
 		}
 		else
 		{
-			snprintf(format, sizeof(format), "[%%-%ds] %%s", descr_width);
+			snprintf(format, sizeof(format), "[%%-%ds] ", descr_width);
 		}
-		snprintf(result, sizeof(result), format, prog.description, prog.command);
+		snprintf(descr, sizeof(descr), format, prog.description);
 	}
-	else
-	{
-		copy_str(result, sizeof(result), prog.command);
-	}
+
+	snprintf(result, sizeof(result), "%s%s%s", found_msg, descr, prog.command);
 	return result;
 }
 

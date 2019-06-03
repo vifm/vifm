@@ -56,6 +56,9 @@
 	Added OtherWin highlight group for highlighting inactive pane.  Thanks to
 	John Fred Fadrigalan (a.k.a. cevhyruz).
 
+	Added indication of entry's availability to :file, :file[x]type and
+	:fileviewer menus.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
