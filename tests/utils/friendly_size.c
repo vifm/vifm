@@ -1,6 +1,7 @@
 #include <stic.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/utils/str.h"
 #include "../../src/utils/utils.h"
 
 SETUP()
@@ -116,12 +117,12 @@ TEST(huge_precision)
 	friendly_size_notation(231093, sizeof(buf), buf);
 	assert_string_equal("225.6767578125 K", buf);
 
-	/* Compiler optimizes operations somewhat differently. */
-#ifndef _WIN32
+	/* Compiler optimizes operations somewhat differently, so don't expect an
+	 * exact match. */
 	cfg.sizefmt.precision = 25;
 	friendly_size_notation(231093, sizeof(buf), buf);
-	assert_string_equal("225.6767578125 K", buf);
-#endif
+	assert_true(starts_with_lit(buf, "225.676757812"));
+	assert_true(ends_with(buf, " K"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
