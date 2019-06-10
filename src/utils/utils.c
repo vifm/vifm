@@ -257,8 +257,8 @@ friendly_size_notation(uint64_t num, int str_size, char str[])
 	}
 	else
 	{
-		snprintf(str, str_size, "%.0f.%0*" PRINTF_ULL " %s", d, fraction_width, fraction,
-				units[u]);
+		snprintf(str, str_size, "%.0f.%0*" PRINTF_ULL " %s", d, fraction_width,
+				fraction, units[u]);
 	}
 
 	return u > 0U;
@@ -277,7 +277,8 @@ get_size_suffixes(void)
  * *fraction_width.  Returns new value for the size (truncated and/or
  * rounded). */
 static double
-split_size_double(double size, unsigned long long *ifraction, int *fraction_width)
+split_size_double(double size, unsigned long long *ifraction,
+		int *fraction_width)
 {
 	double ten_power, dfraction, integer;
 
