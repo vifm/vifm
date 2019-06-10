@@ -6,35 +6,6 @@
 #  - mount <device> -- mount a device
 #  - unmount <path> -- unmount given mount point
 
-if type -P devmon udevil >/dev/null 2>/dev/null; then
-    monitor=devmon
-
-    function info() {
-        udevil info "$@"
-    }
-    function mount() {
-        devmon --mount "$1"
-    }
-    function unmount() {
-        devmon --unmount "$1"
-    }
-elif type -P udisks umount >/dev/null 2>/dev/null; then
-    monitor=udisks
-
-    function info() {
-        udisks --show-info "$@"
-    }
-    function mount() {
-        udisks --mount "$1"
-    }
-    function unmount() {
-        umount "$1"
-    }
-else
-    echo "Neither of supported backends found (udevil, udisks)" 1>&2
-    exit 1
-fi
-
 function usage_error() {
     echo "Usage: vifm-media list | mount <device> | unmount <path>"
     exit 1
@@ -70,6 +41,35 @@ function list() {
         echo
     done <<< "$("$monitor" --enumerate-device-files)"
 }
+
+if type -P devmon udevil >/dev/null 2>/dev/null; then
+    monitor=devmon
+
+    function info() {
+        udevil info "$@"
+    }
+    function mount() {
+        devmon --mount "$1"
+    }
+    function unmount() {
+        devmon --unmount "$1"
+    }
+elif type -P udisks umount >/dev/null 2>/dev/null; then
+    monitor=udisks
+
+    function info() {
+        udisks --show-info "$@"
+    }
+    function mount() {
+        udisks --mount "$1"
+    }
+    function unmount() {
+        umount "$1"
+    }
+else
+    echo "Neither of supported backends found (udevil, udisks)" 1>&2
+    exit 1
+fi
 
 case "$1" in
     list)
