@@ -142,6 +142,9 @@
 	Removed empty line from :file and similar menus for case when vifm was
 	configured with --disable-desktop-files flag (second time).
 
+	Print "Mounting..."/"Unmounting..." message during the corresponding
+	process in the :media menu.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
