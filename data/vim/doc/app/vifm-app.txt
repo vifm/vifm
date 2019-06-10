@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 3
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3301,7 +3301,8 @@ force redirection to custom or unsorted custom view respectively.
                                                {only for *nix}
 mediaprg
 type: string
-default: path to bundled script that supports udevil and udisks
+default: path to bundled script that supports udevil, udisks and udisks2
+         (using udisks2 requires python with dbus module installed)
 
 Specifies command to be used to manage media devices.  Used by |vifm-:media|
 command.
