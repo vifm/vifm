@@ -59,6 +59,11 @@
 	Added indication of entry's availability to :file, :file[x]type and
 	:fileviewer menus.
 
+	Added udisks2 backend to vifm-media script (bundled script for managing
+	media).  Requires python and dbus module for it to be installed (because
+	udisks2 and dbus are too shitty to be used on command-line).  Thanks to
+	Tykin.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -136,6 +141,9 @@
 
 	Removed empty line from :file and similar menus for case when vifm was
 	configured with --disable-desktop-files flag (second time).
+
+	Print "Mounting..."/"Unmounting..." message during the corresponding
+	process in the :media menu.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 

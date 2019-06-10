@@ -6,35 +6,6 @@
 #  - mount <device> -- mount a device
 #  - unmount <path> -- unmount given mount point
 
-if type -P devmon udevil >/dev/null 2>/dev/null; then
-    monitor=devmon
-
-    function info() {
-        udevil info "$@"
-    }
-    function mount() {
-        devmon --mount "$1"
-    }
-    function unmount() {
-        devmon --unmount "$1"
-    }
-elif type -P udisks umount >/dev/null 2>/dev/null; then
-    monitor=udisks
-
-    function info() {
-        udisks --show-info "$@"
-    }
-    function mount() {
-        udisks --mount "$1"
-    }
-    function unmount() {
-        umount "$1"
-    }
-else
-    echo "Neither of supported backends found (udevil, udisks)" 1>&2
-    exit 1
-fi
-
 function usage_error() {
     echo "Usage: vifm-media list | mount <device> | unmount <path>"
     exit 1
@@ -70,6 +41,114 @@ function list() {
         echo
     done <<< "$("$monitor" --enumerate-device-files)"
 }
+
+if type -P devmon udevil >/dev/null 2>/dev/null; then
+    monitor=devmon
+
+    function info() {
+        udevil info "$@"
+    }
+    function mount() {
+        devmon --mount "$1"
+    }
+    function unmount() {
+        devmon --unmount "$1"
+    }
+elif type -P udisks umount >/dev/null 2>/dev/null; then
+    monitor=udisks
+
+    function info() {
+        udisks --show-info "$@"
+    }
+    function mount() {
+        udisks --mount "$1"
+    }
+    function unmount() {
+        umount "$1"
+    }
+elif type -P udisksctl >/dev/null 2>/dev/null &&
+     python -c 'import dbus' 2>/dev/null; then
+    function udisks2() {
+        python - "$@" <<EOF
+import dbus
+import sys
+
+def decode(array):
+    return bytearray(array).replace(b'\x00', b'').decode('utf-8')
+
+def devs():
+    bus = dbus.SystemBus()
+    ud_manager_obj = bus.get_object('org.freedesktop.UDisks2',
+                                    '/org/freedesktop/UDisks2')
+    om = dbus.Interface(ud_manager_obj, 'org.freedesktop.DBus.ObjectManager')
+    for v in om.GetManagedObjects().itervalues():
+        drive_info = v.get('org.freedesktop.UDisks2.Block', {})
+        usage = drive_info.get('IdUsage')
+        hint = drive_info.get('HintSystem')
+        ro = drive_info.get('ReadOnly')
+        if usage == "filesystem" and not hint and not ro:
+            device = drive_info.get('Device')
+            if device is not None:
+                device = decode(device)
+                fs = v.get('org.freedesktop.UDisks2.Filesystem', {})
+                yield (device, drive_info.get('IdLabel'), fs)
+
+def list_usb():
+    for (device, label, fs) in devs():
+        print 'device=%s' % device
+        print 'label=%s' % label
+        for point in fs.get('MountPoints', {}):
+            point = decode(point)
+            print "mount-point=%s" % point
+
+def path_to_dev(path):
+    import os
+    path = os.path.normpath(path)
+    for (device, label, fs) in devs():
+        for point in fs.get('MountPoints', {}):
+            point = os.path.normpath(decode(point))
+            if point == path:
+                return device
+    return None
+
+def mount(device):
+    bus = dbus.SystemBus()
+    obj = bus.get_object('org.freedesktop.UDisks2',
+                         '/org/freedesktop/UDisks2/block_devices%s'%device[4:])
+    print obj.Mount({}, dbus_interface='org.freedesktop.UDisks2.Filesystem')
+
+def unmount(path):
+    device = path_to_dev(path)
+    if device is None:
+        sys.exit(1)
+
+    bus = dbus.SystemBus()
+    obj = bus.get_object('org.freedesktop.UDisks2',
+                         '/org/freedesktop/UDisks2/block_devices%s'%device[4:])
+    obj.Unmount({}, dbus_interface='org.freedesktop.UDisks2.Filesystem')
+
+if len(sys.argv) < 2 or sys.argv[1] == 'list':
+    list_usb()
+elif len(sys.argv) == 3 and sys.argv[1] == 'mount':
+    mount(sys.argv[2])
+elif len(sys.argv) == 3 and sys.argv[1] == 'unmount':
+    unmount(sys.argv[2])
+EOF
+    }
+    function list() {
+        udisks2 list
+    }
+    function mount() {
+        udisks2 mount "$1"
+    }
+    function unmount() {
+        udisks2 unmount "$1"
+    }
+else
+    echo "Neither of the supported backends were found" \
+         "(udevil, udisks, udisks2)" 1>&2
+    exit 1
+fi
 
 case "$1" in
     list)

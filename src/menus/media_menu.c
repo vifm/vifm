@@ -28,6 +28,7 @@
 #include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/cancellation.h"
+#include "../ui/statusbar.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -148,6 +149,8 @@ media_khandler(struct view_t *view, menu_data_t *m, const wchar_t keys[])
 		const char *action = (mount ? "mount" : "unmount");
 		const char *description = (mount ? "Mounting" : "Unmounting");
 
+		ui_sb_msgf("%s %s...", description, path);
+
 		char *escaped_path = shell_like_escape(path, 0);
 		char *cmd = format_str("%s %s %s", cfg.media_prg, action, escaped_path);
 		if(bg_and_wait_for_errors(cmd, &ui_cancellation_info) == 0)
@@ -160,6 +163,8 @@ media_khandler(struct view_t *view, menu_data_t *m, const wchar_t keys[])
 		}
 		free(escaped_path);
 		free(cmd);
+
+		ui_sb_clear();
 
 		menus_partial_redraw(m->state);
 		return KHR_REFRESH_WINDOW;
