@@ -885,7 +885,19 @@ static void
 redraw_cell(view_t *view, int top, int cursor, int is_current)
 {
 	const int pos = top + cursor;
+	if(pos < 0 || pos >= view->list_rows)
+	{
+		/* The entire list is going to be redrawn so just return. */
+		return;
+	}
+
+	if(curr_stats.load_stage < 2 || cursor < 0)
+	{
+		return;
+	}
+
 	size_t col_width, col_count;
+	calculate_table_conf(view, &col_count, &col_width);
 
 	column_data_t cdt = {
 		.view = view,
@@ -893,19 +905,6 @@ redraw_cell(view_t *view, int top, int cursor, int is_current)
 		.line_pos = pos,
 		.current_pos = is_current ? view->list_pos : -1,
 	};
-
-	if(curr_stats.load_stage < 2 || cursor < 0)
-	{
-		return;
-	}
-
-	if(pos < 0 || pos >= view->list_rows)
-	{
-		/* The entire list is going to be redrawn so just return. */
-		return;
-	}
-
-	calculate_table_conf(view, &col_count, &col_width);
 	compute_and_draw_cell(&cdt, cursor, col_width);
 }
 
