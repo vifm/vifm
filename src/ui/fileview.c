@@ -142,6 +142,7 @@ static size_t calculate_columns_count(struct view_t *view);
 static size_t get_max_filename_width(const view_t *view);
 static size_t get_filename_width(const view_t *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
+static int cache_cursor_pos(view_t *view);
 static void invalidate_cursor_pos_cache(view_t *view);
 static void position_hardware_cursor(view_t *view);
 static int move_curr_line(view_t *view);
@@ -817,29 +818,10 @@ redraw_current_view(void)
 void
 fview_cursor_redraw(view_t *view)
 {
-	if(view != curr_view)
-	{
-		if(move_curr_line(view))
-		{
-			draw_dir_list(view);
-		}
-		fview_draw_inactive_cursor(view);
-		return;
-	}
-
-	if(move_curr_line(view))
-	{
-		draw_dir_list(view);
-		return;
-	}
-
-	if(!ui_view_displays_columns(view))
-	{
-		/* Inactive cell in ls-like view usually takes less space than an active
-		 * one.  Need to clear the cell before drawing over it. */
-		redraw_cell(view, view->top_line, view->curr_line, 0);
-	}
-	redraw_cell(view, view->top_line, view->curr_line, 1);
+	// fview_cursor_redraw() is also called in situations when file list has
+	// changed, so just let fview_position_updated() deal with it.  With a cache
+	// of last position, it should be fine.
+	fview_position_updated(view);
 }
 
 void
@@ -1782,8 +1764,6 @@ fview_position_updated(view_t *view)
 	const int old_top = view->top_line;
 	const int old_curr = view->curr_line;
 
-	int redraw;
-
 	if(view->curr_line > view->list_rows - 1)
 	{
 		view->curr_line = view->list_rows - 1;
@@ -1809,15 +1789,17 @@ fview_position_updated(view_t *view)
 		return;
 	}
 
-	redraw = move_curr_line(view);
-
-	if(curr_stats.load_stage < 2 ||
-			(!redraw && view->list_pos == view->last_seen_pos))
+	if(curr_stats.load_stage < 2)
 	{
 		return;
 	}
 
-	view->last_seen_pos = view->list_pos;
+	int redraw = move_curr_line(view);
+	int up_to_date = cache_cursor_pos(view);
+	if(!redraw && up_to_date)
+	{
+		return;
+	}
 
 	if(redraw)
 	{
@@ -1846,6 +1828,28 @@ fview_position_updated(view_t *view)
 			qv_draw(view);
 		}
 	}
+}
+
+/* Compares current cursor position against previously cached one and updates
+ * the cache if necessary.  Returns non-zero if cache is up to date, otherwise
+ * zero is returned. */
+static int
+cache_cursor_pos(view_t *view)
+{
+	char path[PATH_MAX + 1];
+	get_current_full_path(view, sizeof(path), path);
+
+	if(view->list_pos == view->last_seen_pos &&
+		 view->curr_line == view->last_curr_line &&
+		 strcmp(view->last_curr_file, path) == 0)
+	{
+		return 1;
+	}
+
+	view->last_seen_pos = view->list_pos;
+	view->last_curr_line = view->curr_line;
+	replace_string(&view->last_curr_file, path);
+	return 0;
 }
 
 /* Invalidates cache of current cursor position for the specified view. */

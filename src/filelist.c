@@ -293,6 +293,8 @@ flist_free_view(view_t *view)
 	flist_free_cache(view, &view->left_column);
 	flist_free_cache(view, &view->right_column);
 
+	update_string(&view->last_curr_file, NULL);
+
 	free_string_array(view->saved_selection, view->nsaved_selection);
 	view->nsaved_selection = 0;
 	view->saved_selection = NULL;
