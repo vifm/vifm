@@ -142,6 +142,7 @@ static size_t calculate_columns_count(struct view_t *view);
 static size_t get_max_filename_width(const view_t *view);
 static size_t get_filename_width(const view_t *view, int i);
 static size_t get_filetype_decoration_width(const dir_entry_t *entry);
+static void invalidate_cursor_pos_cache(view_t *view);
 static void position_hardware_cursor(view_t *view);
 static int move_curr_line(view_t *view);
 static void reset_view_columns(view_t *view);
@@ -849,7 +850,7 @@ fview_draw_inactive_cursor(view_t *view)
 
 	/* Reset last seen position on drawing inactive cursor or an active one won't
 	 * be drawn next time. */
-	view->last_seen_pos = -1;
+	invalidate_cursor_pos_cache(view);
 
 	if(!ui_view_displays_columns(view))
 	{
@@ -1711,7 +1712,7 @@ fview_list_updated(view_t *view)
 	/* Invalidate maximum file name widths cache. */
 	view->max_filename_width = 0;
 	/* Even if position will remain the same, we might need to redraw it. */
-	view->last_seen_pos = -1;
+	invalidate_cursor_pos_cache(view);
 }
 
 /* Evaluates number of columns in the view.  Returns the number. */
@@ -1795,7 +1796,7 @@ fview_position_updated(view_t *view)
 
 	if(view == other_view)
 	{
-		view->last_seen_pos = -1;
+		invalidate_cursor_pos_cache(view);
 		if(move_curr_line(view))
 		{
 			draw_dir_list(view);
@@ -1845,6 +1846,13 @@ fview_position_updated(view_t *view)
 			qv_draw(view);
 		}
 	}
+}
+
+/* Invalidates cache of current cursor position for the specified view. */
+static void
+invalidate_cursor_pos_cache(view_t *view)
+{
+	view->last_seen_pos = -1;
 }
 
 /* Moves hardware cursor to the beginning of the name of current entry. */
