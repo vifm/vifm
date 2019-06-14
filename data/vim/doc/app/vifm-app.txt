@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 10
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5089,6 +5089,10 @@ commands likely won't work without them.
 
 %CLEAR is obsolete name of %FOREGROUND, which is still supported, but might be
 removed in future.  Its use is discouraged.
+
+Unlike macros elsewhere, these are recognized only if they appear at the end
+of a command or are followed by a space.  There is no way to escape % either.
+These are historical limitations, which might be addressed in the future.
 
 The mounted FUSE file systems will be automatically unmounted in two cases:
    - when vifm quits (with |vifm-ZZ|, |vifm-:q|, etc. or when killed by signal);

@@ -145,6 +145,8 @@
 	Print "Mounting..."/"Unmounting..." message during the corresponding
 	process in the :media menu.
 
+	Document more details about expansion of FUSE macros.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
