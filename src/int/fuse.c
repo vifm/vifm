@@ -442,10 +442,7 @@ fuse_unmount_all(void)
 		free(escaped_filename);
 
 		(void)vifm_system(buf, SHELL_BY_APP);
-		if(path_exists(runner->mount_point, DEREF))
-		{
-			rmdir(runner->mount_point);
-		}
+		(void)rmdir(runner->mount_point);
 
 		runner = runner->next;
 	}
@@ -576,11 +573,10 @@ fuse_try_unmount(view_t *view)
 		return -1;
 	}
 
-	/* remove the directory we created for the mount */
-	if(path_exists(runner->mount_point, DEREF))
-		rmdir(runner->mount_point);
+	/* Remove the directory we created for the mount. */
+	(void)rmdir(runner->mount_point);
 
-	/* remove mount point from fuse_mount_t */
+	/* Remove mount point from fuse_mount_t. */
 	sniffer = runner->next;
 	if(trailer)
 		trailer->next = sniffer ? sniffer : NULL;
