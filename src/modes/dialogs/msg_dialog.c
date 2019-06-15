@@ -22,6 +22,7 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
+#include <limits.h> /* CHAR_MAX CHAR_MIN */
 #include <stdarg.h> /* va_list va_start() va_end() vsnprintf() */
 #include <stddef.h> /* NULL */
 #include <string.h> /* strchr() strlen() */
@@ -125,10 +126,15 @@ init_msg_dialog_mode(void)
 static int
 def_handler(wchar_t key)
 {
+	if(key < CHAR_MIN || key > CHAR_MAX)
+	{
+		return 0;
+	}
+
 	const response_variant *response = responses;
 	while(response != NULL && response->key != '\0')
 	{
-		if(response->key == key)
+		if(response->key == (char)key)
 		{
 			custom_result = key;
 			leave(R_CUSTOM);

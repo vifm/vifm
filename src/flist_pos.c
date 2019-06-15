@@ -909,7 +909,7 @@ fpos_find_by_ch(const view_t *view, int ch, int backward, int wrap)
 			wchar_t wc = get_first_wchar(view->dir_entry[x].name);
 			if(upcase)
 				wc = towupper(wc);
-			if(wc == ch)
+			if(wc == (wchar_t)ch)
 				break;
 		}
 		else
