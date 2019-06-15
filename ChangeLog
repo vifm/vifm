@@ -251,6 +251,9 @@
 	Fixed outdated comment about 'vimhelp' in sample vifmrc file.  Thanks to
 	Tiago.
 
+	Fixed statusbar clearing messages when inside directories with
+	directory-specific color scheme.
+
 0.10-beta to 0.10 (2018-11-11)
 
 	Display list of files in removal confirmation dialog.  Thanks to ovk.
