@@ -147,6 +147,8 @@
 
 	Document more details about expansion of FUSE macros.
 
+	Properly remove FUSE mount points if they are symbolic links.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

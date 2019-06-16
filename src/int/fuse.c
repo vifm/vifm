@@ -28,7 +28,7 @@
 #endif
 #include <unistd.h> /* execve() fork() rmdir() unlink() */
 
-#include <errno.h> /* errno */
+#include <errno.h> /* errno ENOTDIR */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() fclose() */
 #include <stdlib.h> /* EXIT_SUCCESS free() malloc() */
@@ -79,6 +79,7 @@ static fuse_mount_t * get_mount_by_mount_point(const char dir[]);
 static fuse_mount_t * get_mount_by_path(const char path[]);
 static int run_fuse_command(char cmd[], const cancellation_t *cancellation,
 		int *cancelled);
+static void kill_mount_point(const char mount_point[]);
 static void updir_from_mount(view_t *view, fuse_mount_t *runner);
 
 /* List of active mounts. */
@@ -141,8 +142,8 @@ fuse_try_mount(view_t *view, const char program[])
 				curr_stats.save_msg = 1;
 				return;
 			}
-
 		}
+
 		if(fuse_mount(view, file_full_path, param, program, mount_point) != 0)
 		{
 			return;
@@ -288,7 +289,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 		}
 
 		/* Remove the directory we created for the mount. */
-		(void)rmdir(mount_point);
+		kill_mount_point(mount_point);
 
 		(void)vifm_chdir(flist_get_dir(view));
 		return -1;
@@ -442,8 +443,8 @@ fuse_unmount_all(void)
 		free(escaped_filename);
 
 		(void)vifm_system(buf, SHELL_BY_APP);
-		(void)rmdir(runner->mount_point);
 
+		kill_mount_point(runner->mount_point);
 		runner = runner->next;
 	}
 
@@ -574,7 +575,7 @@ fuse_try_unmount(view_t *view)
 	}
 
 	/* Remove the directory we created for the mount. */
-	(void)rmdir(runner->mount_point);
+	kill_mount_point(runner->mount_point);
 
 	/* Remove mount point from fuse_mount_t. */
 	sniffer = runner->next;
@@ -654,6 +655,23 @@ run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 #else
 	return -1;
 #endif
+}
+
+/* Deletes mount point by its path. */
+static void
+kill_mount_point(const char mount_point[])
+{
+	if(rmdir(mount_point) != 0 && errno == ENOTDIR)
+	{
+		/* unlink() will fail if there is a trailing slash. */
+		char no_slash[strlen(mount_point) + 1];
+		strcpy(no_slash, mount_point);
+		chosp(no_slash);
+
+		/* FUSE mounter might replace directory with a symbolic link, account for
+		 * this possibility. */
+		(void)unlink(no_slash);
+	}
 }
 
 static void
