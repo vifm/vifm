@@ -62,6 +62,7 @@ typedef struct fuse_mount_t
 	char source_file_dir[PATH_MAX + 1];  /* Full path to dir of source file. */
 	char mount_point[PATH_MAX + 1];      /* Full path to mount point. */
 	int mount_point_id;                  /* ID of mounts for unique dirs. */
+	int needs_unmounting;                /* Whether unmount call is required. */
 	struct fuse_mount_t *next;           /* Pointer to the next mount in chain. */
 }
 fuse_mount_t;
@@ -70,7 +71,7 @@ static int fuse_mount(view_t *view, char file_full_path[], const char param[],
 		const char program[], char mount_point[]);
 static int get_last_mount_point_id(const fuse_mount_t *mounts);
 static void register_mount(fuse_mount_t **mounts, const char file_full_path[],
-		const char mount_point[], int id);
+		const char mount_point[], int id, int needs_unmounting);
 TSTATIC void format_mount_command(const char mount_point[],
 		const char file_name[], const char param[], const char format[],
 		size_t buf_size, char buf[], int *foreground);
@@ -297,7 +298,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	unlink(errors_file);
 	ui_sb_msg("FUSE mount success");
 
-	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id);
+	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id, 1);
 
 	return 0;
 }
@@ -315,7 +316,7 @@ get_last_mount_point_id(const fuse_mount_t *mounts)
 /* Adds new entry to the list of *mounts. */
 static void
 register_mount(fuse_mount_t **mounts, const char file_full_path[],
-		const char mount_point[], int id)
+		const char mount_point[], int id, int needs_unmounting)
 {
 	fuse_mount_t *fuse_mount = malloc(sizeof(*fuse_mount));
 
@@ -330,6 +331,7 @@ register_mount(fuse_mount_t **mounts, const char file_full_path[],
 			sizeof(fuse_mount->mount_point));
 
 	fuse_mount->mount_point_id = id;
+	fuse_mount->needs_unmounting = needs_unmounting;
 
 	fuse_mount->next = *mounts;
 	*mounts = fuse_mount;
@@ -434,15 +436,16 @@ fuse_unmount_all(void)
 	runner = fuse_mounts;
 	while(runner != NULL)
 	{
-		char buf[14 + PATH_MAX + 1];
-		char *escaped_filename;
+		if(runner->needs_unmounting)
+		{
+			char *escaped_filename = shell_like_escape(runner->mount_point, 0);
+			char buf[14 + PATH_MAX + 1];
+			snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
+					escaped_filename);
+			free(escaped_filename);
 
-		escaped_filename = shell_like_escape(runner->mount_point, 0);
-		snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
-				escaped_filename);
-		free(escaped_filename);
-
-		(void)vifm_system(buf, SHELL_BY_APP);
+			(void)vifm_system(buf, SHELL_BY_APP);
+		}
 
 		kill_mount_point(runner->mount_point);
 		runner = runner->next;
@@ -542,31 +545,37 @@ fuse_try_unmount(view_t *view)
 	}
 
 	/* We are exiting a top level dir. */
-	char *escaped_mount_point = shell_like_escape(runner->mount_point, 0);
-	char buf[14 + PATH_MAX + 1];
-	snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
-			escaped_mount_point);
-	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
-	free(escaped_mount_point);
 
-	/* Have to chdir to parent temporarily, so that this DIR can be unmounted. */
-	if(vifm_chdir(cfg.fuse_home) != 0)
+	if(runner->needs_unmounting)
 	{
-		show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
-		return -1;
-	}
+		char *escaped_mount_point = shell_like_escape(runner->mount_point, 0);
 
-	ui_sb_msg("FUSE unmounting selected file, please stand by..");
-	int status = run_fuse_command(buf, &no_cancellation, NULL);
-	ui_sb_clear();
-	/* Check child status. */
-	if(!WIFEXITED(status) || WEXITSTATUS(status))
-	{
-		werase(status_bar);
-		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
-				runner->source_file_path);
-		(void)vifm_chdir(flist_get_dir(view));
-		return -1;
+		char buf[14 + PATH_MAX + 1];
+		snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
+				escaped_mount_point);
+		LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
+		free(escaped_mount_point);
+
+		/* Have to chdir to parent temporarily, so that this DIR can be
+		 * unmounted. */
+		if(vifm_chdir(cfg.fuse_home) != 0)
+		{
+			show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
+			return -1;
+		}
+
+		ui_sb_msg("FUSE unmounting selected file, please stand by..");
+		int status = run_fuse_command(buf, &no_cancellation, NULL);
+		ui_sb_clear();
+		/* Check child status. */
+		if(!WIFEXITED(status) || WEXITSTATUS(status))
+		{
+			werase(status_bar);
+			show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
+					runner->source_file_path);
+			(void)vifm_chdir(flist_get_dir(view));
+			return -1;
+		}
 	}
 
 	/* Remove the directory we created for the mount. */
