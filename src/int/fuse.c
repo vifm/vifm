@@ -523,14 +523,8 @@ get_mount_by_path(const char path[])
 int
 fuse_try_unmount(view_t *view)
 {
-	char buf[14 + PATH_MAX + 1];
-	fuse_mount_t *runner, *trailer;
-	int status;
-	fuse_mount_t *sniffer;
-	char *escaped_mount_point;
-
-	runner = fuse_mounts;
-	trailer = NULL;
+	fuse_mount_t *runner = fuse_mounts;
+	fuse_mount_t *trailer = NULL;
 	while(runner)
 	{
 		if(paths_are_equal(runner->mount_point, view->curr_dir))
@@ -548,7 +542,8 @@ fuse_try_unmount(view_t *view)
 	}
 
 	/* We are exiting a top level dir. */
-	escaped_mount_point = shell_like_escape(runner->mount_point, 0);
+	char *escaped_mount_point = shell_like_escape(runner->mount_point, 0);
+	char buf[14 + PATH_MAX + 1];
 	snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
 			escaped_mount_point);
 	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
@@ -562,9 +557,9 @@ fuse_try_unmount(view_t *view)
 	}
 
 	ui_sb_msg("FUSE unmounting selected file, please stand by..");
-	status = run_fuse_command(buf, &no_cancellation, NULL);
+	int status = run_fuse_command(buf, &no_cancellation, NULL);
 	ui_sb_clear();
-	/* check child status */
+	/* Check child status. */
 	if(!WIFEXITED(status) || WEXITSTATUS(status))
 	{
 		werase(status_bar);
@@ -578,7 +573,7 @@ fuse_try_unmount(view_t *view)
 	kill_mount_point(runner->mount_point);
 
 	/* Remove mount point from fuse_mount_t. */
-	sniffer = runner->next;
+	fuse_mount_t *sniffer = runner->next;
 	if(trailer)
 		trailer->next = sniffer ? sniffer : NULL;
 	else
