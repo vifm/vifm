@@ -64,6 +64,10 @@
 	udisks2 and dbus are too shitty to be used on command-line).  Thanks to
 	Tykin.
 
+	Added FUSE_MOUNT3 filetype format, which is equivalent to FUSE_MOUNT, but
+	doesn't perform unmounting.  Helpful to use something like avfs.  Thanks
+	to Jose Riha (a.k.a. jose1711).
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

@@ -5045,7 +5045,7 @@ and for this reason the following rules apply during lookup:
 vifm has a builtin support of automated FUSE file system mounts.  It is
 implemented using file associations mechanism.  To enable automated mounts, one
 needs to use a specially formatted program line in |vifm-:filetype| or
-|vifm-:filextype| commands.  Currently two formats are supported:
+|vifm-:filextype| commands.  Currently three formats are supported:
 
 1) FUSE_MOUNT                                  *vifm-FUSE_MOUNT*
    This format should be used in case when all information needed for mounting
@@ -5073,6 +5073,24 @@ needs to use a specially formatted program line in |vifm-:filetype| or
    Example file content: >
        root@127.0.0.1:/
 <
+
+3) FUSE_MOUNT3                                 *vifm-FUSE_MOUNT3*
+   This format is equivalent to |vifm-FUSE_MOUNT|, but omits unmounting.  It
+   is useful for cases, when unmounting isn't needed, like when using AVFS.
+
+   Example |vifm-:filetype| command: >
+       :filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.deb
+            \ {Mount with avfs}
+            \ FUSE_MOUNT3|mount-avfs %DESTINATION_DIR %SOURCE_FILE
+<
+   Example `mount-avfs` helper script: >
+       #!/bin/sh
+
+       dest=$1
+       file=$2
+
+       rmdir "$dest"
+       ln -s "$HOME/.avfs$file#/" "$dest"
 
 All % macros are expanded by vifm at runtime and have the following meaning:
    - %SOURCE_FILE is replaced by full path to selected file;

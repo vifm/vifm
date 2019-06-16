@@ -80,6 +80,17 @@ TEST(fusemount2_part_removed)
 	assert_string_equal("%PARAM %DESTINATION_DIR", args);
 }
 
+TEST(fusemount3_part_removed)
+{
+	const char cmd[] = "FUSE_MOUNT3|mount-avfs %DESTINATION_DIR %SOURCE_FILE";
+	char command[NAME_MAX + 1];
+	const char *args;
+
+	args = extract_cmd_name(cmd, 0, sizeof(command), command);
+	assert_string_equal("mount-avfs", command);
+	assert_string_equal("%DESTINATION_DIR %SOURCE_FILE", args);
+}
+
 #ifdef _WIN32
 
 TEST(quoted_command_raw_ok)

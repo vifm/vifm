@@ -298,7 +298,8 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	unlink(errors_file);
 	ui_sb_msg("FUSE mount success");
 
-	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id, 1);
+	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id,
+			!starts_with(program, "FUSE_MOUNT3|"));
 
 	return 0;
 }
@@ -340,8 +341,8 @@ register_mount(fuse_mount_t **mounts, const char file_full_path[],
 /* Builds the mount command based on the file type program.
  * Accepted formats are:
  *   FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR [%FOREGROUND]
- * and
  *   FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR [%FOREGROUND]
+ *   FUSE_MOUNT3|some_mount_command %SOURCE_FILE %DESTINATION_DIR [%FOREGROUND]
  * %CLEAR is an obsolete name of %FOREGROUND.
  * Always sets value of *foreground. */
 TSTATIC void
@@ -698,8 +699,9 @@ updir_from_mount(view_t *view, fuse_mount_t *runner)
 int
 fuse_is_mount_string(const char string[])
 {
-	return starts_with(string, "FUSE_MOUNT|") ||
-		starts_with(string, "FUSE_MOUNT2|");
+	return starts_with(string, "FUSE_MOUNT|")
+	    || starts_with(string, "FUSE_MOUNT2|")
+	    || starts_with(string, "FUSE_MOUNT3|");
 }
 
 void
@@ -713,6 +715,10 @@ fuse_strip_mount_metadata(char string[])
 	else if(starts_with(string, "FUSE_MOUNT2|"))
 	{
 		prefix_len = ARRAY_LEN("FUSE_MOUNT2|") - 1;
+	}
+	else if(starts_with(string, "FUSE_MOUNT3|"))
+	{
+		prefix_len = ARRAY_LEN("FUSE_MOUNT3|") - 1;
 	}
 	else
 	{

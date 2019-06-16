@@ -5969,7 +5969,7 @@ being truncated).
 vifm has a builtin support of automated FUSE file system mounts.  It is \
 implemented using file associations mechanism.  To enable automated mounts, \
 one needs to use a specially formatted program line in filetype or \
-filextype commands.  Currently two formats are supported:
+filextype commands.  Currently three formats are supported:
 
 1) FUSE_MOUNT
 This format should be used in case when all information needed for mounting \
@@ -6003,6 +6003,31 @@ Example file content:
 
 .EX
   root@127.0.0.1:/
+.EE
+
+3) FUSE_MOUNT3
+
+This format is equivalent to FUSE_MOUNT, but omits unmounting.  It \
+is useful for cases, when unmounting isn't needed, like when using AVFS.
+
+Example :filetype command:
+
+.EX
+  :filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.deb
+       \\ {Mount with avfs}
+       \\ FUSE_MOUNT3|mount-avfs %DESTINATION_DIR %SOURCE_FILE
+.EE
+
+Example `mount-avfs` helper script:
+
+.EX
+  #!/bin/sh
+
+  dest=$1
+  file=$2
+
+  rmdir "$dest"
+  ln \-s "$HOME/.avfs$file#/" "$dest"
 .EE
 
 All % macros are expanded by vifm at runtime and have the following meaning:
