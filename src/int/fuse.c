@@ -117,7 +117,7 @@ fuse_try_mount(view_t *view, const char program[])
 		param[0] = '\0';
 
 		/* New file to be mounted. */
-		if(starts_with(program, "FUSE_MOUNT2"))
+		if(starts_with(program, "FUSE_MOUNT2|"))
 		{
 			FILE *f;
 			if((f = os_fopen(file_full_path, "r")) == NULL)
