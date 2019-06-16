@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 14
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 16
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5068,7 +5068,7 @@ needs to use a specially formatted program line in |vifm-:filetype| or
        FUSE_MOUNT2|mounter %PARAM %DESTINATION_DIR [%FOREGROUND]
 
    Example |vifm-:filetype| command: >
-       :filetype FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+       :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
 <
    Example file content: >
        root@127.0.0.1:/
