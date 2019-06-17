@@ -64,6 +64,10 @@
 	udisks2 and dbus are too shitty to be used on command-line).  Thanks to
 	Tykin.
 
+	Added FUSE_MOUNT3 filetype format, which is equivalent to FUSE_MOUNT, but
+	doesn't perform unmounting.  Helpful to use something like avfs.  Thanks
+	to Jose Riha (a.k.a. jose1711).
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -144,6 +148,10 @@
 
 	Print "Mounting..."/"Unmounting..." message during the corresponding
 	process in the :media menu.
+
+	Document more details about expansion of FUSE macros.
+
+	Properly remove FUSE mount points if they are symbolic links.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
@@ -248,6 +256,9 @@
 
 	Fixed outdated comment about 'vimhelp' in sample vifmrc file.  Thanks to
 	Tiago.
+
+	Fixed statusbar clearing messages when inside directories with
+	directory-specific color scheme.
 
 0.10-beta to 0.10 (2018-11-11)
 

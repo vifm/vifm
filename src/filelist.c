@@ -1733,7 +1733,10 @@ populate_dir_list_internal(view_t *view, int reload)
 		flist_hist_lookup(view, view);
 	}
 
-	fview_dir_updated(view);
+	if(view->location_changed)
+	{
+		fview_dir_updated(view);
+	}
 
 	if(view->list_rows < 1)
 	{

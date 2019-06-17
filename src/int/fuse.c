@@ -28,7 +28,7 @@
 #endif
 #include <unistd.h> /* execve() fork() rmdir() unlink() */
 
-#include <errno.h> /* errno */
+#include <errno.h> /* errno ENOTDIR */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() fclose() */
 #include <stdlib.h> /* EXIT_SUCCESS free() malloc() */
@@ -62,6 +62,7 @@ typedef struct fuse_mount_t
 	char source_file_dir[PATH_MAX + 1];  /* Full path to dir of source file. */
 	char mount_point[PATH_MAX + 1];      /* Full path to mount point. */
 	int mount_point_id;                  /* ID of mounts for unique dirs. */
+	int needs_unmounting;                /* Whether unmount call is required. */
 	struct fuse_mount_t *next;           /* Pointer to the next mount in chain. */
 }
 fuse_mount_t;
@@ -70,7 +71,7 @@ static int fuse_mount(view_t *view, char file_full_path[], const char param[],
 		const char program[], char mount_point[]);
 static int get_last_mount_point_id(const fuse_mount_t *mounts);
 static void register_mount(fuse_mount_t **mounts, const char file_full_path[],
-		const char mount_point[], int id);
+		const char mount_point[], int id, int needs_unmounting);
 TSTATIC void format_mount_command(const char mount_point[],
 		const char file_name[], const char param[], const char format[],
 		size_t buf_size, char buf[], int *foreground);
@@ -79,6 +80,7 @@ static fuse_mount_t * get_mount_by_mount_point(const char dir[]);
 static fuse_mount_t * get_mount_by_path(const char path[]);
 static int run_fuse_command(char cmd[], const cancellation_t *cancellation,
 		int *cancelled);
+static void kill_mount_point(const char mount_point[]);
 static void updir_from_mount(view_t *view, fuse_mount_t *runner);
 
 /* List of active mounts. */
@@ -115,7 +117,7 @@ fuse_try_mount(view_t *view, const char program[])
 		param[0] = '\0';
 
 		/* New file to be mounted. */
-		if(starts_with(program, "FUSE_MOUNT2"))
+		if(starts_with(program, "FUSE_MOUNT2|"))
 		{
 			FILE *f;
 			if((f = os_fopen(file_full_path, "r")) == NULL)
@@ -141,8 +143,8 @@ fuse_try_mount(view_t *view, const char program[])
 				curr_stats.save_msg = 1;
 				return;
 			}
-
 		}
+
 		if(fuse_mount(view, file_full_path, param, program, mount_point) != 0)
 		{
 			return;
@@ -288,7 +290,7 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 		}
 
 		/* Remove the directory we created for the mount. */
-		(void)rmdir(mount_point);
+		kill_mount_point(mount_point);
 
 		(void)vifm_chdir(flist_get_dir(view));
 		return -1;
@@ -296,7 +298,8 @@ fuse_mount(view_t *view, char file_full_path[], const char param[],
 	unlink(errors_file);
 	ui_sb_msg("FUSE mount success");
 
-	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id);
+	register_mount(&fuse_mounts, file_full_path, mount_point, mount_point_id,
+			!starts_with(program, "FUSE_MOUNT3|"));
 
 	return 0;
 }
@@ -314,7 +317,7 @@ get_last_mount_point_id(const fuse_mount_t *mounts)
 /* Adds new entry to the list of *mounts. */
 static void
 register_mount(fuse_mount_t **mounts, const char file_full_path[],
-		const char mount_point[], int id)
+		const char mount_point[], int id, int needs_unmounting)
 {
 	fuse_mount_t *fuse_mount = malloc(sizeof(*fuse_mount));
 
@@ -329,6 +332,7 @@ register_mount(fuse_mount_t **mounts, const char file_full_path[],
 			sizeof(fuse_mount->mount_point));
 
 	fuse_mount->mount_point_id = id;
+	fuse_mount->needs_unmounting = needs_unmounting;
 
 	fuse_mount->next = *mounts;
 	*mounts = fuse_mount;
@@ -337,8 +341,8 @@ register_mount(fuse_mount_t **mounts, const char file_full_path[],
 /* Builds the mount command based on the file type program.
  * Accepted formats are:
  *   FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR [%FOREGROUND]
- * and
  *   FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR [%FOREGROUND]
+ *   FUSE_MOUNT3|some_mount_command %SOURCE_FILE %DESTINATION_DIR [%FOREGROUND]
  * %CLEAR is an obsolete name of %FOREGROUND.
  * Always sets value of *foreground. */
 TSTATIC void
@@ -418,8 +422,6 @@ format_mount_command(const char mount_point[], const char file_name[],
 void
 fuse_unmount_all(void)
 {
-	fuse_mount_t *runner;
-
 	if(fuse_mounts == NULL)
 	{
 		return;
@@ -430,24 +432,27 @@ fuse_unmount_all(void)
 		return;
 	}
 
-	runner = fuse_mounts;
+	fuse_mount_t *runner = fuse_mounts;
+	fuse_mounts = NULL;
+
 	while(runner != NULL)
 	{
-		char buf[14 + PATH_MAX + 1];
-		char *escaped_filename;
-
-		escaped_filename = shell_like_escape(runner->mount_point, 0);
-		snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
-				escaped_filename);
-		free(escaped_filename);
-
-		(void)vifm_system(buf, SHELL_BY_APP);
-		if(path_exists(runner->mount_point, DEREF))
+		if(runner->needs_unmounting)
 		{
-			rmdir(runner->mount_point);
+			char *escaped_filename = shell_like_escape(runner->mount_point, 0);
+			char buf[14 + PATH_MAX + 1];
+			snprintf(buf, sizeof(buf), "%s %s", curr_stats.fuse_umount_cmd,
+					escaped_filename);
+			free(escaped_filename);
+
+			(void)vifm_system(buf, SHELL_BY_APP);
 		}
 
-		runner = runner->next;
+		kill_mount_point(runner->mount_point);
+
+		fuse_mount_t *next = runner->next;
+		free(runner);
+		runner = next;
 	}
 
 	leave_invalid_dir(&lwin);
@@ -525,14 +530,8 @@ get_mount_by_path(const char path[])
 int
 fuse_try_unmount(view_t *view)
 {
-	char buf[14 + PATH_MAX + 1];
-	fuse_mount_t *runner, *trailer;
-	int status;
-	fuse_mount_t *sniffer;
-	char *escaped_mount_point;
-
-	runner = fuse_mounts;
-	trailer = NULL;
+	fuse_mount_t *runner = fuse_mounts;
+	fuse_mount_t *trailer = NULL;
 	while(runner)
 	{
 		if(paths_are_equal(runner->mount_point, view->curr_dir))
@@ -550,38 +549,44 @@ fuse_try_unmount(view_t *view)
 	}
 
 	/* We are exiting a top level dir. */
-	escaped_mount_point = shell_like_escape(runner->mount_point, 0);
-	snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
-			escaped_mount_point);
-	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
-	free(escaped_mount_point);
 
-	/* Have to chdir to parent temporarily, so that this DIR can be unmounted. */
-	if(vifm_chdir(cfg.fuse_home) != 0)
+	if(runner->needs_unmounting)
 	{
-		show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
-		return -1;
+		char *escaped_mount_point = shell_like_escape(runner->mount_point, 0);
+
+		char buf[14 + PATH_MAX + 1];
+		snprintf(buf, sizeof(buf), "%s %s 2> /dev/null", curr_stats.fuse_umount_cmd,
+				escaped_mount_point);
+		LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
+		free(escaped_mount_point);
+
+		/* Have to chdir to parent temporarily, so that this DIR can be
+		 * unmounted. */
+		if(vifm_chdir(cfg.fuse_home) != 0)
+		{
+			show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
+			return -1;
+		}
+
+		ui_sb_msg("FUSE unmounting selected file, please stand by..");
+		int status = run_fuse_command(buf, &no_cancellation, NULL);
+		ui_sb_clear();
+		/* Check child status. */
+		if(!WIFEXITED(status) || WEXITSTATUS(status))
+		{
+			werase(status_bar);
+			show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
+					runner->source_file_path);
+			(void)vifm_chdir(flist_get_dir(view));
+			return -1;
+		}
 	}
 
-	ui_sb_msg("FUSE unmounting selected file, please stand by..");
-	status = run_fuse_command(buf, &no_cancellation, NULL);
-	ui_sb_clear();
-	/* check child status */
-	if(!WIFEXITED(status) || WEXITSTATUS(status))
-	{
-		werase(status_bar);
-		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
-				runner->source_file_path);
-		(void)vifm_chdir(flist_get_dir(view));
-		return -1;
-	}
+	/* Remove the directory we created for the mount. */
+	kill_mount_point(runner->mount_point);
 
-	/* remove the directory we created for the mount */
-	if(path_exists(runner->mount_point, DEREF))
-		rmdir(runner->mount_point);
-
-	/* remove mount point from fuse_mount_t */
-	sniffer = runner->next;
+	/* Remove mount point from fuse_mount_t. */
+	fuse_mount_t *sniffer = runner->next;
 	if(trailer)
 		trailer->next = sniffer ? sniffer : NULL;
 	else
@@ -660,6 +665,23 @@ run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 #endif
 }
 
+/* Deletes mount point by its path. */
+static void
+kill_mount_point(const char mount_point[])
+{
+	if(rmdir(mount_point) != 0 && errno == ENOTDIR)
+	{
+		/* unlink() will fail if there is a trailing slash. */
+		char no_slash[strlen(mount_point) + 1];
+		strcpy(no_slash, mount_point);
+		chosp(no_slash);
+
+		/* FUSE mounter might replace directory with a symbolic link, account for
+		 * this possibility. */
+		(void)unlink(no_slash);
+	}
+}
+
 static void
 updir_from_mount(view_t *view, fuse_mount_t *runner)
 {
@@ -680,8 +702,9 @@ updir_from_mount(view_t *view, fuse_mount_t *runner)
 int
 fuse_is_mount_string(const char string[])
 {
-	return starts_with(string, "FUSE_MOUNT|") ||
-		starts_with(string, "FUSE_MOUNT2|");
+	return starts_with(string, "FUSE_MOUNT|")
+	    || starts_with(string, "FUSE_MOUNT2|")
+	    || starts_with(string, "FUSE_MOUNT3|");
 }
 
 void
@@ -695,6 +718,10 @@ fuse_strip_mount_metadata(char string[])
 	else if(starts_with(string, "FUSE_MOUNT2|"))
 	{
 		prefix_len = ARRAY_LEN("FUSE_MOUNT2|") - 1;
+	}
+	else if(starts_with(string, "FUSE_MOUNT3|"))
+	{
+		prefix_len = ARRAY_LEN("FUSE_MOUNT3|") - 1;
 	}
 	else
 	{

@@ -451,6 +451,7 @@ const char *tags[] = {
 	"vifm-F",
 	"vifm-FUSE_MOUNT",
 	"vifm-FUSE_MOUNT2",
+	"vifm-FUSE_MOUNT3",
 	"vifm-G",
 	"vifm-H",
 	"vifm-L",
