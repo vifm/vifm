@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 16
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -5045,7 +5045,8 @@ and for this reason the following rules apply during lookup:
 vifm has a builtin support of automated FUSE file system mounts.  It is
 implemented using file associations mechanism.  To enable automated mounts, one
 needs to use a specially formatted program line in |vifm-:filetype| or
-|vifm-:filextype| commands.  Currently three formats are supported:
+|vifm-:filextype| commands.  These use special macros, which differ from
+macros in commands unrelated to FUSE.  Currently three formats are supported:
 
 1) FUSE_MOUNT                                  *vifm-FUSE_MOUNT*
    This format should be used in case when all information needed for mounting
