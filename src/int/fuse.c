@@ -422,8 +422,6 @@ format_mount_command(const char mount_point[], const char file_name[],
 void
 fuse_unmount_all(void)
 {
-	fuse_mount_t *runner;
-
 	if(fuse_mounts == NULL)
 	{
 		return;
@@ -434,7 +432,9 @@ fuse_unmount_all(void)
 		return;
 	}
 
-	runner = fuse_mounts;
+	fuse_mount_t *runner = fuse_mounts;
+	fuse_mounts = NULL;
+
 	while(runner != NULL)
 	{
 		if(runner->needs_unmounting)
@@ -449,7 +449,10 @@ fuse_unmount_all(void)
 		}
 
 		kill_mount_point(runner->mount_point);
-		runner = runner->next;
+
+		fuse_mount_t *next = runner->next;
+		free(runner);
+		runner = next;
 	}
 
 	leave_invalid_dir(&lwin);
