@@ -55,7 +55,7 @@ static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 static var_t tabpagenr_builtin(const call_info_t *call_info);
 static var_t term_builtin(const call_info_t *call_info);
-static var_t execute_cmd(const call_info_t *call_info, int preserve_stdin);
+static var_t execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin);
 
 static const function_t functions[] = {
 	/* Name          Description                    Args   Handler  */
@@ -368,13 +368,13 @@ paneisat_builtin(const call_info_t *call_info)
 	return var_from_bool(result);
 }
 
-/* Runs the command in shell and returns its output (joined standard output and
- * standard error streams).  All trailing newline characters are stripped to
+/* Runs the command in a shell and returns its output (joined standard output
+ * and standard error streams).  All trailing newline characters are stripped to
  * allow easy appending to command output.  Returns the output. */
 static var_t
 system_builtin(const call_info_t *call_info)
 {
-	return execute_cmd(call_info, 0);
+	return execute_cmd(call_info->argv[0], call_info->interactive, 0);
 }
 
 /* Retrieves number of current or last tab page.  Returns integer value with the
@@ -402,21 +402,21 @@ tabpagenr_builtin(const call_info_t *call_info)
 	                          : tabs_count(curr_view));
 }
 
-/* Runs interactive command in shell and returns its output (joined standard
+/* Runs interactive command in a shell and returns its output (joined standard
  * output and standard error streams).  All trailing newline characters are
  * stripped to allow easy appending to command output.  Returns the output. */
 static var_t
 term_builtin(const call_info_t *call_info)
 {
 	ui_shutdown();
-	return execute_cmd(call_info, 1);
+	return execute_cmd(call_info->argv[0], call_info->interactive, 1);
 }
 
-/* Runs interactive command in shell and returns its output (joined standard
+/* Runs interactive command in a shell and returns its output (joined standard
  * output and standard error streams).  All trailing newline characters are
  * stripped to allow easy appending to command output.  Returns the output. */
 static var_t
-execute_cmd(const call_info_t *call_info, int preserve_stdin)
+execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 {
 	var_t result;
 	char *cmd;
@@ -424,12 +424,12 @@ execute_cmd(const call_info_t *call_info, int preserve_stdin)
 	size_t cmd_out_len;
 	char *result_str;
 
-	cmd = var_to_str(call_info->argv[0]);
+	cmd = var_to_str(cmd_arg);
 	cmd_stream = read_cmd_output(cmd, preserve_stdin);
 	free(cmd);
 
 	int cancellation_state = 0;
-	if(call_info->interactive)
+	if(interactive)
 	{
 		ui_cancellation_enable();
 	}
@@ -441,7 +441,7 @@ execute_cmd(const call_info_t *call_info, int preserve_stdin)
 	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
 	fclose(cmd_stream);
 
-	if(call_info->interactive)
+	if(interactive)
 	{
 		ui_cancellation_disable();
 	}
