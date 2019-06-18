@@ -140,6 +140,7 @@ redraw_file_info_dialog(void)
 		return;
 	}
 
+	ui_set_attr(menu_win, &cfg.cs.color[WIN_COLOR], cfg.cs.pair[WIN_COLOR]);
 	werase(menu_win);
 
 	curr = get_current_entry(view);
