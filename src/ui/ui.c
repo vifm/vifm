@@ -1278,6 +1278,12 @@ ui_setup_for_menu_like(void)
 static void
 update_term_size(void)
 {
+	if(curr_stats.load_stage < 1)
+	{
+		/* No terminal in tests. */
+		return;
+	}
+
 #ifndef _WIN32
 	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
 
