@@ -483,7 +483,6 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	int len;
 	size_t ctrl_msg_n;
 	size_t wctrl_msg;
-	size_t i;
 	int first_line_x = 1;
 	const int first_line_y = 2;
 
@@ -570,7 +569,8 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	}
 
 	/* Print control message line by line. */
-	for(i = ctrl_msg_n;;)
+	size_t i = ctrl_msg_n;
+	while(1)
 	{
 		const size_t len = strcspn(ctrl_msg, "\n");
 		mvwaddnstr(error_win, h - i - 1, MAX(0, (w - (int)len)/2), ctrl_msg, len);
