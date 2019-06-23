@@ -285,7 +285,7 @@ output_handler(const char line[], void *arg)
 		}
 		else if(skip_prefix(&line, "label="))
 		{
-			replace_string(&infos[info_count - 1].text,
+			put_string(&infos[info_count - 1].text,
 					format_str("[%s]", line));
 		}
 		else if(skip_prefix(&line, "mount-point="))
