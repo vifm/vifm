@@ -79,6 +79,18 @@ TEARDOWN()
 	curr_stats.load_stage = 0;
 }
 
+TEST(menu_not_created_if_no_devices)
+{
+	FILE *fp = fopen("script", "w");
+	fputs(SHEBANG_ECHO "\n\
+mount-point=no-device\n\
+nothing", fp);
+	fclose(fp);
+
+	assert_failure(exec_commands("media", &lwin, CIT_COMMAND));
+	assert_true(vle_mode_is(NORMAL_MODE));
+}
+
 TEST(menu_aborts_if_mediaprg_is_not_set)
 {
 	update_string(&cfg.media_prg, "");
