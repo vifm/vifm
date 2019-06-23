@@ -23,6 +23,7 @@
 SETUP()
 {
 	update_string(&cfg.shell, "");
+	update_string(&cfg.slow_fs_list, "");
 	assert_success(stats_init(&cfg));
 }
 
