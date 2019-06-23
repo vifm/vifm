@@ -570,10 +570,16 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	}
 
 	/* Print control message line by line. */
-	for(i = ctrl_msg_n; i > 0U; --i)
+	for(i = ctrl_msg_n;;)
 	{
 		const size_t len = strcspn(ctrl_msg, "\n");
 		mvwaddnstr(error_win, h - i - 1, MAX(0, (w - (int)len)/2), ctrl_msg, len);
+
+		if(--i == 0)
+		{
+			break;
+		}
+
 		ctrl_msg = skip_char(ctrl_msg + len + 1U, '/');
 	}
 
