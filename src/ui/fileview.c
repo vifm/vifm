@@ -1346,7 +1346,7 @@ mix_in_file_name_hi(const view_t *view, dir_entry_t *entry, col_attr_t *col)
 TSTATIC void
 format_name(int id, const void *data, size_t buf_len, char buf[])
 {
-	size_t len, i;
+	size_t len;
 	dir_entry_t *child, *parent;
 
 	const column_data_t *cdt = data;
@@ -1379,15 +1379,15 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 	while(parent != child)
 	{
 		const char *prefix;
-		/* To avoid prepending, strings are reversed here and whole tree prefix is
-		 * reversed below to compensate for it. */
+		/* To avoid prepending, whole tree prefix is reversed below to compensate
+		 * for it. */
 		if(parent->child_count == child->child_pos + child->child_count)
 		{
-			prefix = (child == cdt->entry ? " --`" : "    ");
+			prefix = (child == cdt->entry ? "`-- " : "    ");
 		}
 		else
 		{
-			prefix = (child == cdt->entry ? " --|" : "   |");
+			prefix = (child == cdt->entry ? "|-- " : "|   ");
 		}
 		(void)sstrappend(buf, &len, buf_len + 1U, prefix);
 
@@ -1395,11 +1395,14 @@ format_name(int id, const void *data, size_t buf_len, char buf[])
 		parent -= parent->child_pos;
 	}
 
-	for(i = 0U; i < len/2U; ++i)
+	/* Reversing can be performed on chunks of four chars. */
+	uint32_t *left  = (uint32_t *)(buf),
+	         *right = (uint32_t *)(buf + len);
+	for(; left < --right; ++left)
 	{
-		const char t = buf[i];
-		buf[i] = buf[len - 1U - i];
-		buf[len - 1U - i] = t;
+		*left  ^= *right;
+		*right ^= *left;
+		*left  ^= *right;
 	}
 
 	get_short_path_of(view, cdt->entry, fmt, 1, buf_len + 1U - len, buf + len);
