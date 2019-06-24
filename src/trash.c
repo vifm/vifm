@@ -22,7 +22,7 @@
 #include <unistd.h> /* getuid() */
 
 #include <assert.h> /* assert() */
-#include <errno.h> /* errno */
+#include <errno.h> /* EROFS errno */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* remove() snprintf() */
 #include <stdlib.h> /* free() realloc() */
@@ -233,9 +233,9 @@ try_create_trash_dir(const char trash_dir[], int user_specific)
 		if(make_path(trash_dir, 0777) != 0)
 		{
 #ifndef _WIN32
-			/* Do not treat it an error if trash is not writable because
+			/* Do not treat it as an error if trash is not writable because
 			 * file-system is mounted read-only.  User should be aware of it. */
-			return errno != EROFS;
+			return (errno != EROFS);
 #else
 			return 1;
 #endif

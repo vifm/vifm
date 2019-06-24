@@ -307,8 +307,7 @@ vifm_main(int argc, char *argv[])
 	if(cfg.use_trash)
 	{
 		/* Ensure trash directories exist, it might not have been called during
-		 * configuration file sourcing if there is no `set trashdir=...` command.
-		 * */
+		 * configuration file sourcing if there is no `set trashdir=...` command. */
 		(void)set_trash_dir(cfg.trash_dir);
 	}
 
