@@ -153,6 +153,12 @@
 
 	Properly remove FUSE mount points if they are symbolic links.
 
+	Don't create trash directory on startup if 'trash' is off.  Patch by
+	zsugabubus.
+
+	Don't error on trash creation failure due to read-only file system.  Patch
+	by zsugabubus.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

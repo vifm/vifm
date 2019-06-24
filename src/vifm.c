@@ -304,9 +304,12 @@ vifm_main(int argc, char *argv[])
 	cs_write();
 	setup_signals();
 
-	/* Ensure trash directories exist, it might not have been called during
-	 * configuration file sourcing if there is no `set trashdir=...` command. */
-	(void)set_trash_dir(cfg.trash_dir);
+	if(cfg.use_trash)
+	{
+		/* Ensure trash directories exist, it might not have been called during
+		 * configuration file sourcing if there is no `set trashdir=...` command. */
+		(void)set_trash_dir(cfg.trash_dir);
+	}
 
 	check_path_for_file(&lwin, vifm_args.lwin_path, vifm_args.lwin_handle);
 	check_path_for_file(&rwin, vifm_args.rwin_path, vifm_args.rwin_handle);
