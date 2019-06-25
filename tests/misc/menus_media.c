@@ -386,7 +386,6 @@ mount-point=mount-point1\n", fp);
 	fp = fopen("script", "w");
 	fputs("#!/bin/sh\n\
 echo \"$@\" >> out\n\
-echo Things went bad 1>&2\n\
 exit 10\n", fp);
 	fclose(fp);
 

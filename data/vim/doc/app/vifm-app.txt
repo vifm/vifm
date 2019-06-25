@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 17
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3322,9 +3322,9 @@ one of the following prefixes:
 All other lines are ignored.  Each `device=` starts a new section
 describing a device which should include two other possible prefixes.
 
-`list` subcommand is assumed to always succeed, while error stream and exit
-code of `mount` and `unmount` is taken into account to determine whether
-operation was performed successfully.
+`list` subcommand is assumed to always succeed, while exit code of `mount`
+and `unmount` is taken into account to determine whether operation was
+performed successfully.
 
                                                *vifm-'lsoptions'*
 lsoptions

@@ -153,6 +153,10 @@
 
 	Properly remove FUSE mount points if they are symbolic links.
 
+	Error stream from 'mediaprg' isn't considered anymore when deciding if
+	mounting/unmounting was successful.  While technically an incompatible
+	change, it's unlikely to cause any issues.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical
