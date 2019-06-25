@@ -27,41 +27,47 @@
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../ui/cancellation.h"
 #include "../ui/statusbar.h"
+#include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
-#include "../background.h"
+#include "../running.h"
 #include "menus.h"
 
 /* Example state of the menu:
  *
  *    Items                              Data            Action
  *
- *    /dev/sdc
- *     -- not mounted                    m/dev/sda3      mount /dev/sda3
+ *    /dev/sdc                                           mount /dev/sda3
+ *    `-- (not mounted)                  m/dev/sda3      mount /dev/sda3
  *
- *    /dev/sdd [label]
- *     -- /                              u/              unmount /
- *     -- /root/tmp                      u/root/tmp      unmount /root/tmp
+ *    /dev/sdd {text}
+ *    |-- /                              u/              unmount /
+ *    `-- /root/tmp                      u/root/tmp      unmount /root/tmp
+ *
+ *    /dev/sde                                           unmount /media
+ *    `-- /media                         u/media         unmount /media
  *
  * Additional keys:
  *  - r -- reload list
+ *  - [ -- previous device
+ *  - ] -- next device
  *  - m -- mount/unmount
  *
  * Behaviour on Enter:
- *  - for lines with mount-point: navigate inside it
- *  - for all other lines: just close the menu
+ *  - navigate inside mount-point or,
+ *  - mount device if there are no mount-points or,
+ *  - do nothing and keep menu open
  */
 
 /* Description of a single device. */
 typedef struct
 {
 	char *device;   /* Device name in the system. */
-	char *label;    /* Label of the device (can be NULL). */
+	char *text;     /* Arbitrary text next to device name (can be NULL). */
 	char **paths;   /* List of paths at which the device is mounted. */
 	int path_count; /* Number of elements in the paths array. */
 }
@@ -74,6 +80,10 @@ static int reload_list(menu_data_t *m);
 static void output_handler(const char line[], void *arg);
 static void free_info_array(void);
 static void position_cursor(menu_data_t *m);
+static const char * get_selected_data(menu_data_t *m);
+static void path_get_decors(const char path[], FileType type,
+		const char **prefix, const char **suffix);
+static int mediaprg_mount(const char data[], menu_data_t *m);
 
 /* List of media devices. */
 static media_info_t *infos;
@@ -103,13 +113,21 @@ show_media_menu(struct view_t *view)
 static int
 execute_media_cb(struct view_t *view, menu_data_t *m)
 {
-	const char *data = m->data[m->pos];
-	if(data != NULL && *data == 'u')
+	const char *data = get_selected_data(m);
+	if(data != NULL)
 	{
-		const char *path = m->data[m->pos] + 1;
-		menus_goto_dir(view, path);
+		if(*data == 'u')
+		{
+			const char *path = data + 1;
+			menus_goto_dir(view, path);
+			return 0;
+		}
+		else if(*data == 'm')
+		{
+			(void)mediaprg_mount(data, m);
+		}
 	}
-	return 0;
+	return 1;
 }
 
 /* Menu-specific shortcut handler.  Returns code that specifies both taken
@@ -122,51 +140,38 @@ media_khandler(struct view_t *view, menu_data_t *m, const wchar_t keys[])
 		reload_list(m);
 		return KHR_REFRESH_WINDOW;
 	}
-	else if(wcscmp(keys, L"m") == 0)
+	else if(wcscmp(keys, L"[") == 0)
 	{
-		const char *data = m->data[m->pos];
-		if(is_null_or_empty(data) || (*data != 'm' && *data != 'u') ||
-				cfg.media_prg[0] == '\0')
+		int i = m->pos;
+		while(i-- > 0)
 		{
-			return KHR_REFRESH_WINDOW;
-		}
-
-		int mount = (*data == 'm');
-		const char *path = data + 1;
-
-		if(!mount)
-		{
-			/* Try to get out of mount point before trying to unmount it. */
-			char cwd[PATH_MAX + 1];
-			if(get_cwd(cwd, sizeof(cwd)) == cwd && is_in_subtree(cwd, path, 1))
+			if(m->data[i] == NULL && m->data[i + 1] != NULL)
 			{
-				char out_of_mount_path[PATH_MAX + 1];
-				snprintf(out_of_mount_path, sizeof(out_of_mount_path), "%s/..", path);
-				(void)vifm_chdir(out_of_mount_path);
+				menus_set_pos(m->state, i);
+				menus_partial_redraw(m->state);
+				break;
 			}
 		}
-
-		const char *action = (mount ? "mount" : "unmount");
-		const char *description = (mount ? "Mounting" : "Unmounting");
-
-		ui_sb_msgf("%s %s...", description, path);
-
-		char *escaped_path = shell_like_escape(path, 0);
-		char *cmd = format_str("%s %s %s", cfg.media_prg, action, escaped_path);
-		if(bg_and_wait_for_errors(cmd, &ui_cancellation_info) == 0)
+		return KHR_REFRESH_WINDOW;
+	}
+	else if(wcscmp(keys, L"]") == 0)
+	{
+		int i = m->pos;
+		while(++i < m->len - 1)
 		{
-			reload_list(m);
+			if(m->data[i] == NULL && m->data[i + 1] != NULL)
+			{
+				menus_set_pos(m->state, i);
+				menus_partial_redraw(m->state);
+				break;
+			}
 		}
-		else
-		{
-			show_error_msgf("Media operation error", "%s has failed", description);
-		}
-		free(escaped_path);
-		free(cmd);
-
-		ui_sb_clear();
-
-		menus_partial_redraw(m->state);
+		return KHR_REFRESH_WINDOW;
+	}
+	else if(wcscmp(keys, L"m") == 0)
+	{
+		const char *data = get_selected_data(m);
+		(void)mediaprg_mount(data, m);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;
@@ -201,25 +206,32 @@ reload_list(menu_data_t *m)
 	free(cmd);
 
 	int i;
+	const int menu_rows = (menu_win != NULL ? (getmaxy(menu_win) + 1) - 3 : 100);
+	int max_rows_with_blanks = info_count       /* Device lines. */
+		                       + (info_count - 1) /* Blank lines. */;
 	for(i = 0; i < info_count; ++i)
 	{
+		max_rows_with_blanks += infos[i].path_count > 0
+		                      ? infos[i].path_count /* Mount-points. */
+		                      : 1;                  /* "Not mounted" line. */
+	}
+
+	for(i = 0; i < info_count; ++i)
+	{
+		const char *prefix, *suffix;
 		media_info_t *info = &infos[i];
 
 		put_into_string_array(&m->data, m->len, NULL);
-		if(is_null_or_empty(info->label))
-		{
-			m->len = add_to_string_array(&m->items, m->len, 1, info->device);
-		}
-		else
-		{
-			m->len = put_into_string_array(&m->items, m->len,
-					format_str("%s [%s]", info->device, info->label));
-		}
+
+		path_get_decors(info->device, FT_BLOCK_DEV, &prefix, &suffix);
+		m->len = put_into_string_array(&m->items, m->len,
+				format_str("%s%s%s %s", prefix, info->device, suffix,
+						info->text ? info->text : ""));
 
 		if(info->path_count == 0)
 		{
 			put_into_string_array(&m->data, m->len, format_str("m%s", info->device));
-			m->len = add_to_string_array(&m->items, m->len, 1, "  -- not mounted");
+			m->len = add_to_string_array(&m->items, m->len, 1, "`-- (not mounted)");
 		}
 		else
 		{
@@ -228,12 +240,18 @@ reload_list(menu_data_t *m)
 			{
 				put_into_string_array(&m->data, m->len,
 						format_str("u%s", info->paths[j]));
+
+				path_get_decors(info->paths[j], FT_DIR, &prefix, &suffix);
+				const char *path = (is_root_dir(info->paths[j]) && suffix[0] == '/')
+				                 ? ""
+				                 : info->paths[j];
 				m->len = put_into_string_array(&m->items, m->len,
-						format_str("  -- %s", info->paths[j]));
+						format_str("%c-- %s%s%s", j + 1 == info->path_count ? '`' : '|',
+								prefix, path, suffix));
 			}
 		}
 
-		if(i != info_count - 1)
+		if(i != info_count - 1 && max_rows_with_blanks <= menu_rows)
 		{
 			put_into_string_array(&m->data, m->len, NULL);
 			m->len = add_to_string_array(&m->items, m->len, 1, "");
@@ -254,19 +272,26 @@ output_handler(const char line[], void *arg)
 		infos = reallocarray(infos, ++info_count, sizeof(*infos));
 		media_info_t *info = &infos[info_count - 1];
 		info->device = strdup(line);
-		info->label = NULL;
+		info->text = NULL;
 		info->paths = NULL;
 		info->path_count = 0;
 	}
-	else if(skip_prefix(&line, "label=") && info_count != 0)
-	{
-		replace_string(&infos[info_count - 1].label, line);
-	}
-	else if(skip_prefix(&line, "mount-point=") && info_count != 0)
+	else if(info_count > 0)
 	{
 		media_info_t *info = &infos[info_count - 1];
-		info->path_count = add_to_string_array(&info->paths, info->path_count, 1,
-				line);
+		if(skip_prefix(&line, "info="))
+		{
+			replace_string(&info->text, line);
+		}
+		else if(skip_prefix(&line, "label="))
+		{
+			put_string(&info->text, format_str("[%s]", line));
+		}
+		else if(skip_prefix(&line, "mount-point="))
+		{
+			info->path_count = add_to_string_array(&info->paths, info->path_count, 1,
+					line);
+		}
 	}
 }
 
@@ -279,7 +304,7 @@ free_info_array(void)
 	{
 		media_info_t *info = &infos[i];
 		free(info->device);
-		free(info->label);
+		free(info->text);
 		free_string_array(info->paths, info->path_count);
 	}
 	free(infos);
@@ -302,6 +327,104 @@ position_cursor(menu_data_t *m)
 			break;
 		}
 	}
+}
+
+/* Retrieves decorations for path.  See ui_get_decors(). */
+static void
+path_get_decors(const char path[], FileType type, const char **prefix,
+		const char **suffix)
+{
+	dir_entry_t entry;
+
+	entry.name = get_last_path_component(path);
+	/* Avoid memory allocation. */
+	if(entry.name != path)
+	{
+		entry.name[-1] = '\0';
+		entry.origin = entry.name;
+	}
+	else
+	{
+		entry.origin = (type == FT_BLOCK_DEV ? "/dev" : "/");
+	}
+	entry.type = type;
+	entry.name_dec_num = -1;
+
+	ui_get_decors(&entry, prefix, suffix);
+
+	/* Restore original path. */
+	if(entry.name != path)
+	{
+		entry.name[-1] = '/';
+	}
+}
+
+/* Retrieves appropriate data for selected item in a human-friendly way. */
+static const char *
+get_selected_data(menu_data_t *m)
+{
+	const char *data = m->data[m->pos];
+	if(data == NULL)
+	{
+		char *next_data      = (m->pos + 1 < m->len ? m->data[m->pos + 1] : NULL);
+		char *next_next_data = (m->pos + 2 < m->len ? m->data[m->pos + 2] : NULL);
+		if(next_data != NULL && next_next_data == NULL)
+		{
+			data = next_data;
+		}
+	}
+	return data;
+}
+
+/* Executes "mount" or "unmount" command on data.  Returns non-zero if program
+ * executed successfully and zero otherwise. */
+static int
+mediaprg_mount(const char data[], menu_data_t *m)
+{
+	if(data == NULL || (*data != 'm' && *data != 'u') || cfg.media_prg[0] == '\0')
+	{
+		return 1;
+	}
+
+	int error = 0;
+	int mount = (*data == 'm');
+	const char *path = data + 1;
+
+	if(!mount)
+	{
+		/* Try to get out of mount point before trying to unmount it. */
+		char cwd[PATH_MAX + 1];
+		if(get_cwd(cwd, sizeof(cwd)) == cwd && is_in_subtree(cwd, path, 1))
+		{
+			char out_of_mount_path[PATH_MAX + 1];
+			snprintf(out_of_mount_path, sizeof(out_of_mount_path), "%s/..", path);
+			(void)vifm_chdir(out_of_mount_path);
+		}
+	}
+
+	const char *action = (mount ? "mount" : "unmount");
+	const char *description = (mount ? "Mounting" : "Unmounting");
+
+	ui_sb_msgf("%s %s...", description, path);
+
+	char *escaped_path = shell_like_escape(path, 0);
+	char *cmd = format_str("%s %s %s", cfg.media_prg, action, escaped_path);
+	if(shellout(cmd, PAUSE_NEVER, 0, SHELL_BY_APP) == 0)
+	{
+		reload_list(m);
+	}
+	else
+	{
+		error = 1;
+		show_error_msgf("Media operation error", "%s has failed", description);
+	}
+	free(escaped_path);
+	free(cmd);
+
+	ui_sb_clear();
+
+	menus_partial_redraw(m->state);
+	return error;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -68,6 +68,14 @@
 	doesn't perform unmounting.  Helpful to use something like avfs.  Thanks
 	to Jose Riha (a.k.a. jose1711).
 
+	Added "info=" field to parser of 'mediaprg' output.  It provides custom
+	message for the media.  Patch by zsugabubus.
+
+	Added [ and ] bindings to :media menu that provide navigation between
+	devices.  Patch by zsugabubus.
+
+	Added decorations to :media menu.  Patch by zsugabubus.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
@@ -157,6 +165,19 @@
 	zsugabubus.
 
 	Don't error on trash creation failure due to read-only file system.  Patch
+	by zsugabubus.
+
+	Error stream from 'mediaprg' isn't considered anymore when deciding if
+	mounting/unmounting was successful.  While technically an incompatible
+	change, it's unlikely to cause any issues.
+
+	Spawn 'mediaprg' in foreground to allow interactions with the user, like
+	providing a password.  Patch by zsugabubus.
+
+	React to Enter in :media menu on device lines, mount on "not mounted" line
+	and do nothing otherwise.  Patch by zsugabubus.
+
+	Show empty lines in :media only if there is enough vertical space.  Patch
 	by zsugabubus.
 
 	Fixed `:tabnew ..` not working due to use of uninitialized data.

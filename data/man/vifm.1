@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 17, 2019" "vifm 0.10"
+.TH VIFM 1 "June 25, 2019" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3990,15 +3990,17 @@ The output of `list` subcommand is parsed in search of lines that start with
 one of the following prefixes:
  - device=      - specifies device path (e.g., "/dev/sde")
  - label=       - specifies optional device label (e.g., "Memory card")
+ - info=        - specifies arbitrary text to display next to device (by
+                  default "[label]" is used, if label is provided)
  - mount-point= - specifies a mount point (can be absent or appear more than
 once)
 
 All other lines are ignored.  Each `device=` starts a new section describing a
 device which should include two other possible prefixes.
 
-`list` subcommand is assumed to always succeed, while error stream and exit
-code of `mount` and `unmount` is taken into account to determine whether
-operation was performed successfully.
+`list` subcommand is assumed to always succeed, while exit code of `mount` and
+`unmount` is taken into account to determine whether operation was performed
+successfully.
 .TP
 .BI 'lsoptions'
 type: string list
@@ -5676,10 +5678,23 @@ r \- reset undo position to group under the cursor.
 .LP
 .B Media menu
 
+Selecting a device either mounts (if it wasn't mounted yet) or navigates to
+its first mount point.
+
+Selecting a mount point navigates to it.
+
+Selecting "not mounted" line causes mounting.
+
+Selecting any other line does nothing.
+
 r \- reload the list.
 
 m \- mount/unmount device (cursor should be positioned on lines under device
 information).
+
+[ \- put cursor on the previous device.
+
+] \- put cursor on the next device.
 
 .\" ---------------------------------------------------------------------------
 .SH Custom views
