@@ -27,8 +27,8 @@
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../ui/ui.h"
 #include "../ui/statusbar.h"
+#include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -80,10 +80,10 @@ static int reload_list(menu_data_t *m);
 static void output_handler(const char line[], void *arg);
 static void free_info_array(void);
 static void position_cursor(menu_data_t *m);
-static const char *get_selected_data(menu_data_t *m);
-static void path_get_decors(const char path[], FileType type, const char **prefix,
-		const char **suffix);
-static int mediaprg_mount(const char *data, menu_data_t *m);
+static const char * get_selected_data(menu_data_t *m);
+static void path_get_decors(const char path[], FileType type,
+		const char **prefix, const char **suffix);
+static int mediaprg_mount(const char data[], menu_data_t *m);
 
 /* List of media devices. */
 static media_info_t *infos;
@@ -142,8 +142,8 @@ media_khandler(struct view_t *view, menu_data_t *m, const wchar_t keys[])
 	}
 	else if(wcscmp(keys, L"[") == 0)
 	{
-		int i;
-		for(i = m->pos; i-- > 0; )
+		int i = m->pos;
+		while(i-- > 0)
 		{
 			if(m->data[i] == NULL && m->data[i + 1] != NULL)
 			{
@@ -156,8 +156,8 @@ media_khandler(struct view_t *view, menu_data_t *m, const wchar_t keys[])
 	}
 	else if(wcscmp(keys, L"]") == 0)
 	{
-		int i;
-		for(i = m->pos; ++i < m->len - 1; )
+		int i = m->pos;
+		while(++i < m->len - 1)
 		{
 			if(m->data[i] == NULL && m->data[i + 1] != NULL)
 			{
@@ -206,14 +206,14 @@ reload_list(menu_data_t *m)
 	free(cmd);
 
 	int i;
-	const int menu_rows = menu_win != NULL ? (getmaxy(menu_win) + 1) - 3 : 100;
+	const int menu_rows = (menu_win != NULL ? (getmaxy(menu_win) + 1) - 3 : 100);
 	int max_rows_with_blanks = info_count       /* Device lines. */
 		                       + (info_count - 1) /* Blank lines. */;
 	for(i = 0; i < info_count; ++i)
 	{
-		max_rows_with_blanks += infos[i].path_count > 0 ?
-				infos[i].path_count : /* Mount-points. */
-				1;                    /* "Not mounted" line. */
+		max_rows_with_blanks += infos[i].path_count > 0
+		                      ? infos[i].path_count /* Mount-points. */
+		                      : 1;                  /* "Not mounted" line. */
 	}
 
 	for(i = 0; i < info_count; ++i)
@@ -242,13 +242,12 @@ reload_list(menu_data_t *m)
 						format_str("u%s", info->paths[j]));
 
 				path_get_decors(info->paths[j], FT_DIR, &prefix, &suffix);
+				const char *path = (is_root_dir(info->paths[j]) && suffix[0] == '/')
+				                 ? ""
+				                 : info->paths[j];
 				m->len = put_into_string_array(&m->items, m->len,
-						format_str("%c-- %s%s%s",
-								j + 1 == info->path_count ? '`' : '|',
-								prefix,
-								(is_root_dir(info->paths[j]) && suffix[0] == '/') ? "" : info->paths[j],
-								suffix));
-
+						format_str("%c-- %s%s%s", j + 1 == info->path_count ? '`' : '|',
+								prefix, path, suffix));
 			}
 		}
 
@@ -279,18 +278,17 @@ output_handler(const char line[], void *arg)
 	}
 	else if(info_count > 0)
 	{
+		media_info_t *info = &infos[info_count - 1];
 		if(skip_prefix(&line, "info="))
 		{
-			replace_string(&infos[info_count - 1].text, line);
+			replace_string(&info->text, line);
 		}
 		else if(skip_prefix(&line, "label="))
 		{
-			put_string(&infos[info_count - 1].text,
-					format_str("[%s]", line));
+			put_string(&info->text, format_str("[%s]", line));
 		}
 		else if(skip_prefix(&line, "mount-point="))
 		{
-			media_info_t *info = &infos[info_count - 1];
 			info->path_count = add_to_string_array(&info->paths, info->path_count, 1,
 					line);
 		}
@@ -331,7 +329,7 @@ position_cursor(menu_data_t *m)
 	}
 }
 
-/* Retrieves decorations for path. See: ui_get_decors(). */
+/* Retrieves decorations for path.  See ui_get_decors(). */
 static void
 path_get_decors(const char path[], FileType type, const char **prefix,
 		const char **suffix)
@@ -347,7 +345,7 @@ path_get_decors(const char path[], FileType type, const char **prefix,
 	}
 	else
 	{
-		entry.origin = type == FT_BLOCK_DEV ? "/dev" : "/";
+		entry.origin = (type == FT_BLOCK_DEV ? "/dev" : "/");
 	}
 	entry.type = type;
 	entry.name_dec_num = -1;
@@ -368,9 +366,9 @@ get_selected_data(menu_data_t *m)
 	const char *data = m->data[m->pos];
 	if(data == NULL)
 	{
-		const char *next_data     = m->pos + 1 < m->len ? m->data[m->pos + 1] : NULL;
-		const char *nextnext_data = m->pos + 2 < m->len ? m->data[m->pos + 2] : NULL;
-		if(next_data != NULL && nextnext_data == NULL)
+		char *next_data      = (m->pos + 1 < m->len ? m->data[m->pos + 1] : NULL);
+		char *next_next_data = (m->pos + 2 < m->len ? m->data[m->pos + 2] : NULL);
+		if(next_data != NULL && next_next_data == NULL)
 		{
 			data = next_data;
 		}
@@ -381,10 +379,9 @@ get_selected_data(menu_data_t *m)
 /* Executes "mount" or "unmount" command on data.  Returns non-zero if program
  * executed successfully and zero otherwise. */
 static int
-mediaprg_mount(const char *data, menu_data_t *m)
+mediaprg_mount(const char data[], menu_data_t *m)
 {
-	if(data == NULL || (*data != 'm' && *data != 'u') ||
-			cfg.media_prg[0] == '\0')
+	if(data == NULL || (*data != 'm' && *data != 'u') || cfg.media_prg[0] == '\0')
 	{
 		return 1;
 	}
