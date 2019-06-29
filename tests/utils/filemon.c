@@ -8,13 +8,26 @@
 
 #include "utils.h"
 
+TEST(uninitialized_is_not_equal_even_to_itself)
+{
+	filemon_t mon = {};
+	assert_false(filemon_equal(&mon, &mon));
+}
+
+TEST(uninitialized_are_not_equal)
+{
+	filemon_t mon1 = {};
+	filemon_t mon2 = {};
+	assert_false(filemon_equal(&mon1, &mon2));
+}
+
 TEST(equal_after_two_independent_reads)
 {
 	filemon_t mon1;
-	filemon_from_file(TEST_DATA_PATH "/existing-files/a", &mon1);
+	filemon_from_file(TEST_DATA_PATH "/existing-files/a", FMT_MODIFIED, &mon1);
 
 	filemon_t mon2;
-	filemon_from_file(TEST_DATA_PATH "/existing-files/a", &mon2);
+	filemon_from_file(TEST_DATA_PATH "/existing-files/a", FMT_MODIFIED, &mon2);
 
 	assert_true(filemon_equal(&mon1, &mon2));
 }
@@ -22,7 +35,7 @@ TEST(equal_after_two_independent_reads)
 TEST(equal_after_assignment)
 {
 	filemon_t mon1;
-	filemon_from_file(TEST_DATA_PATH "/existing-files/a", &mon1);
+	filemon_from_file(TEST_DATA_PATH "/existing-files/a", FMT_MODIFIED, &mon1);
 
 	filemon_t mon2;
 	filemon_assign(&mon2, &mon1);
@@ -36,7 +49,7 @@ TEST(modification_is_detected, IF(not_windows))
 	fclose(f);
 
 	filemon_t mon1;
-	filemon_from_file(SANDBOX_PATH "/file", &mon1);
+	filemon_from_file(SANDBOX_PATH "/file", FMT_MODIFIED, &mon1);
 
 #ifndef _WIN32
 	struct timeval tvs[2] = {};
@@ -44,7 +57,7 @@ TEST(modification_is_detected, IF(not_windows))
 #endif
 
 	filemon_t mon2;
-	filemon_from_file(SANDBOX_PATH "/file", &mon2);
+	filemon_from_file(SANDBOX_PATH "/file", FMT_MODIFIED, &mon2);
 
 	assert_false(filemon_equal(&mon1, &mon2));
 }
