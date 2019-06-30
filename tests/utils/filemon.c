@@ -32,6 +32,17 @@ TEST(equal_after_two_independent_reads)
 	assert_true(filemon_equal(&mon1, &mon2));
 }
 
+TEST(change_monitor_is_equal_after_two_independent_reads)
+{
+	filemon_t mon1;
+	filemon_from_file(TEST_DATA_PATH "/existing-files/a", FMT_CHANGED, &mon1);
+
+	filemon_t mon2;
+	filemon_from_file(TEST_DATA_PATH "/existing-files/a", FMT_CHANGED, &mon2);
+
+	assert_true(filemon_equal(&mon1, &mon2));
+}
+
 TEST(equal_after_assignment)
 {
 	filemon_t mon1;

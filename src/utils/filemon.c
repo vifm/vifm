@@ -38,9 +38,23 @@ filemon_from_file(const char path[], FileMonType type, filemon_t *timestamp)
 	}
 
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
-	memcpy(&timestamp->ts, &s.st_mtim, sizeof(s.st_mtim));
+	if(type == FMT_MODIFIED)
+	{
+		memcpy(&timestamp->ts, &s.st_mtim, sizeof(s.st_mtim));
+	}
+	else
+	{
+		memcpy(&timestamp->ts, &s.st_ctim, sizeof(s.st_ctim));
+	}
 #else
-	memcpy(&timestamp->ts, &s.st_mtime, sizeof(s.st_mtime));
+	if(type == FMT_MODIFIED)
+	{
+		memcpy(&timestamp->ts, &s.st_mtime, sizeof(s.st_mtime));
+	}
+	else
+	{
+		memcpy(&timestamp->ts, &s.st_ctime, sizeof(s.st_ctime));
+	}
 #endif
 	timestamp->dev = s.st_dev;
 	timestamp->inode = s.st_ino;

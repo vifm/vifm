@@ -29,7 +29,8 @@
 typedef enum
 {
 	FMT_UNINITIALIZED, /* Compares false with any monitor (even with itself). */
-	FMT_MODIFIED       /* File modification time monitor. */
+	FMT_MODIFIED,      /* File modification time monitor. */
+	FMT_CHANGED        /* File change time monitor. */
 }
 FileMonType;
 
