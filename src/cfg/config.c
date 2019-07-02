@@ -32,6 +32,12 @@
 #define SAMPLE_VIFMRC "vifmrc-osx"
 #endif
 
+#ifdef _WIN32
+#define FIND_DEFAULT_PREDICATE "-iname"
+#else
+#define FIND_DEFAULT_PREDICATE "-name"
+#endif
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL size_t */
@@ -154,8 +160,9 @@ cfg_init(void)
 	cfg.filter_inverted_by_default = 1;
 
 	cfg.apropos_prg = strdup("apropos %a");
-	cfg.find_prg = strdup("find %s %a -print , "
-			"-type d \\( ! -readable -o ! -executable \\) -prune");
+	cfg.find_prg = strdup("find %s "FIND_DEFAULT_PREDICATE" %a -print , "
+  			"-type d \\( ! -readable -o ! -executable \\) -prune");
+
 	cfg.grep_prg = strdup("grep -n -H -I -r %i %a %s");
 	cfg.locate_prg = strdup("locate %a");
 	cfg.delete_prg = strdup("");

@@ -32,11 +32,6 @@
 #include "../macros.h"
 #include "menus.h"
 
-#ifdef _WIN32
-#define DEFAULT_PREDICATE "-iname"
-#else
-#define DEFAULT_PREDICATE "-name"
-#endif
 
 static int execute_find_cb(view_t *view, menu_data_t *m);
 
@@ -86,7 +81,7 @@ show_find_menu(view_t *view, int with_path, const char args[])
 		else
 		{
 			char *const escaped_args = shell_like_escape(args, 0);
-			custom_args = format_str("%s %s", DEFAULT_PREDICATE, escaped_args);
+			custom_args = format_str("%s", escaped_args); 
 			macros[M_a].value = custom_args;
 			free(escaped_args);
 		}
