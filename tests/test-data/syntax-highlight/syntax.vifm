@@ -479,6 +479,11 @@ echo tabpagenr('$')
 " "fnameescape" should be highlighted as a function()
 echo fnameescape('path name')
 
+" "extcached" and "expand" should be highlighted as a function()
+" "'uses'", "'%c'" and 'stat --format=%%bx%%B %c' should be highlighted as a
+" string literal
+echo extcached('uses', expand('%c'), expand('stat --format=%%bx%%B %c'))
+
 " "let" should be highlighted as a :command
 " "unlet" should be highlighted as a :command
 " "term" should be highlighted as a function()

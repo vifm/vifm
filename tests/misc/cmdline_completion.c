@@ -351,6 +351,7 @@ TEST(function_name_completion)
 {
 	ASSERT_COMPLETION(L"echo e", L"echo executable(");
 	ASSERT_NEXT_MATCH("expand(");
+	ASSERT_NEXT_MATCH("extcached(");
 	ASSERT_NEXT_MATCH("e");
 }
 

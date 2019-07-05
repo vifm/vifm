@@ -20,13 +20,16 @@
 
 #include <sys/stat.h> /* stat */
 
+#include <assert.h> /* assert() */
 #include <string.h> /* memcmp() memcpy() */
 
 #include "../compat/os.h"
 
 int
-filemon_from_file(const char path[], filemon_t *timestamp)
+filemon_from_file(const char path[], FileMonType type, filemon_t *timestamp)
 {
+	assert(type != FMT_UNINITIALIZED && "Wrong type for a file monitor.");
+
 	struct stat s;
 
 	if(os_stat(path, &s) != 0)
@@ -35,12 +38,27 @@ filemon_from_file(const char path[], filemon_t *timestamp)
 	}
 
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
-	memcpy(&timestamp->ts, &s.st_mtim, sizeof(s.st_mtim));
+	if(type == FMT_MODIFIED)
+	{
+		memcpy(&timestamp->ts, &s.st_mtim, sizeof(s.st_mtim));
+	}
+	else
+	{
+		memcpy(&timestamp->ts, &s.st_ctim, sizeof(s.st_ctim));
+	}
 #else
-	memcpy(&timestamp->ts, &s.st_mtime, sizeof(s.st_mtime));
+	if(type == FMT_MODIFIED)
+	{
+		memcpy(&timestamp->ts, &s.st_mtime, sizeof(s.st_mtime));
+	}
+	else
+	{
+		memcpy(&timestamp->ts, &s.st_ctime, sizeof(s.st_ctime));
+	}
 #endif
 	timestamp->dev = s.st_dev;
 	timestamp->inode = s.st_ino;
+	timestamp->type = type;
 
 	return 0;
 }
@@ -48,7 +66,13 @@ filemon_from_file(const char path[], filemon_t *timestamp)
 int
 filemon_equal(const filemon_t *a, const filemon_t *b)
 {
-	return memcmp(&a->ts, &b->ts, sizeof(a->ts)) == 0
+	if(a->type == FMT_UNINITIALIZED || b->type == FMT_UNINITIALIZED)
+	{
+		return 0;
+	}
+
+	return a->type == b->type
+	    && memcmp(&a->ts, &b->ts, sizeof(a->ts)) == 0
 	    && a->dev == b->dev
 	    && a->inode == b->inode;
 }

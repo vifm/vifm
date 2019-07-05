@@ -25,6 +25,15 @@
 
 /* Various time stamp service functions. */
 
+/* Type of file monitor. */
+typedef enum
+{
+	FMT_UNINITIALIZED, /* Compares false with any monitor (even with itself). */
+	FMT_MODIFIED,      /* File modification time monitor. */
+	FMT_CHANGED        /* File change time monitor. */
+}
+FileMonType;
+
 /* Storage for file monitoring information. */
 typedef struct
 {
@@ -38,12 +47,15 @@ typedef struct
 	 * timestamp can remain the same. */
 	dev_t dev;
 	ino_t inode;
+
+	FileMonType type; /* What exactly is being monitored. */
 }
 filemon_t;
 
 /* Sets file monitor from a file.  Returns zero on success, otherwise non-zero
  * is returned. */
-int filemon_from_file(const char path[], filemon_t *timestamp);
+int filemon_from_file(const char path[], FileMonType type,
+		filemon_t *timestamp);
 
 /* Checks whether two timestamps are equal.  Returns non-zero if so, otherwise
  * zero is returned. */

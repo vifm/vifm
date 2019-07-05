@@ -1069,7 +1069,7 @@ ensure_dir_map_exists(void)
 {
 	if(dir_map == NULL)
 	{
-		dir_map = fsddata_create(1);
+		dir_map = fsddata_create(1, 1);
 	}
 }
 

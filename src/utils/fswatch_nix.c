@@ -256,7 +256,7 @@ fswatch_create(const char path[])
 		return NULL;
 	}
 
-	if(filemon_from_file(path, &w->filemon) != 0)
+	if(filemon_from_file(path, FMT_MODIFIED, &w->filemon) != 0)
 	{
 		free(w);
 		return NULL;
@@ -288,7 +288,7 @@ fswatch_changed(fswatch_t *w, int *error)
 	int changed;
 
 	filemon_t filemon;
-	if(filemon_from_file(w->path, &filemon) != 0)
+	if(filemon_from_file(w->path, FMT_MODIFIED, &filemon) != 0)
 	{
 		*error = 1;
 		return 1;

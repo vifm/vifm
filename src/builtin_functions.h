@@ -19,8 +19,18 @@
 #ifndef VIFM__BUILTIN_FUNCTIONS_H__
 #define VIFM__BUILTIN_FUNCTIONS_H__
 
+#include "utils/test_helpers.h"
+
 /* Initializes builtin functions. */
 void init_builtin_functions(void);
+
+#ifdef TEST
+#include "utils/filemon.h"
+#endif
+
+TSTATIC_DEFS(
+	void set_extcached_monitor_type(FileMonType type);
+)
 
 #endif /* VIFM__BUILTIN_FUNCTIONS_H__ */
 

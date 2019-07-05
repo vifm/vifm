@@ -25,6 +25,7 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strdup() strpbrk() */
 
+#include "compat/fs_limits.h"
 #include "compat/os.h"
 #include "engine/functions.h"
 #include "engine/text_buffer.h"
@@ -32,18 +33,33 @@
 #include "ui/cancellation.h"
 #include "ui/tabs.h"
 #include "ui/ui.h"
+#include "utils/filemon.h"
 #include "utils/fs.h"
+#include "utils/fsddata.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
+#include "utils/trie.h"
 #include "utils/utils.h"
 #include "filelist.h"
 #include "macros.h"
 #include "types.h"
 
+/* A single entry of cache of external commands. */
+typedef struct
+{
+	fsddata_t *caches; /* A set of named caches. */
+	filemon_t mon;     /* File monitor. */
+}
+extcache_t;
+
 static var_t chooseopt_builtin(const call_info_t *call_info);
 static var_t executable_builtin(const call_info_t *call_info);
 static var_t expand_builtin(const call_info_t *call_info);
+static var_t extcached_builtin(const call_info_t *call_info);
+TSTATIC void set_extcached_monitor_type(FileMonType type);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(var_t fnum);
 static const char * type_of_link_target(const dir_entry_t *entry);
@@ -55,13 +71,15 @@ static var_t paneisat_builtin(const call_info_t *call_info);
 static var_t system_builtin(const call_info_t *call_info);
 static var_t tabpagenr_builtin(const call_info_t *call_info);
 static var_t term_builtin(const call_info_t *call_info);
-static var_t execute_cmd(const call_info_t *call_info, int preserve_stdin);
+static var_t execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin);
 
+/* Function descriptions. */
 static const function_t functions[] = {
 	/* Name          Description                    Args   Handler  */
 	{ "chooseopt",   "query choose options",       {1,1}, &chooseopt_builtin },
 	{ "executable",  "check for executable file",  {1,1}, &executable_builtin },
 	{ "expand",      "expand macros in a string",  {1,1}, &expand_builtin },
+	{ "extcached",   "caches result of a command", {3,3}, &extcached_builtin },
 	{ "filetype",    "retrieve type of a file",    {1,2}, &filetype_builtin },
 	{ "fnameescape", "escapes string for a :cmd",  {1,1}, &fnameescape_builtin },
 	{ "getpanetype", "retrieve type of file list", {0,0}, &getpanetype_builtin},
@@ -72,6 +90,9 @@ static const function_t functions[] = {
 	{ "tabpagenr",   "number of current/last tab", {0,1}, &tabpagenr_builtin },
 	{ "term",        "run interactive command",    {1,1}, &term_builtin },
 };
+
+/* Kind of monitor used by the extcached(). */
+static FileMonType extcached_mon_type = FMT_CHANGED;
 
 void
 init_builtin_functions(void)
@@ -159,6 +180,104 @@ expand_builtin(const call_info_t *call_info)
 	free(result_str);
 
 	return result;
+}
+
+/* Returns cached value of an external command.  Cache validity is bound to a
+ * file. */
+static var_t
+extcached_builtin(const call_info_t *call_info)
+{
+	static trie_t *cache;
+	if(cache == NULL)
+	{
+		cache = trie_create();
+	}
+
+	char *cache_name = var_to_str(call_info->argv[0]);
+	if(cache_name == NULL)
+	{
+		return var_error();
+	}
+
+	char *path = var_to_str(call_info->argv[1]);
+	if(path == NULL)
+	{
+		return var_error();
+	}
+
+	char canonic[PATH_MAX + 1];
+	to_canonic_path(path, flist_get_dir(curr_view), canonic, sizeof(canonic));
+	replace_string(&path, canonic);
+
+	extcache_t *cached = NULL;
+	void *data;
+	if(trie_get(cache, path, &data) == 0)
+	{
+		cached = data;
+	}
+
+	filemon_t current_mon = {};
+	if(filemon_from_file(path, extcached_mon_type, &current_mon) == 0 &&
+			cached != NULL)
+	{
+		if(filemon_equal(&current_mon, &cached->mon))
+		{
+			void *cached_output;
+			if(fsddata_get(cached->caches, cache_name, &cached_output) == 0)
+			{
+				free(cache_name);
+				free(path);
+				return var_from_str(cached_output);
+			}
+		}
+		else
+		{
+			fsddata_free(cached->caches);
+			cached->caches = NULL;
+		}
+	}
+
+	if(cached == NULL)
+	{
+		cached = malloc(sizeof(*cached));
+		if(cached == NULL)
+		{
+			free(cache_name);
+			free(path);
+			return var_error();
+		}
+
+		cached->caches = NULL;
+
+		if(trie_set(cache, path, cached) < 0)
+		{
+			free(cached);
+			free(cache_name);
+			free(path);
+			return var_error();
+		}
+	}
+
+	if(cached->caches == NULL)
+	{
+		cached->caches = fsddata_create(0, 0);
+	}
+
+	filemon_assign(&cached->mon, &current_mon);
+	free(path);
+
+	var_t output = execute_cmd(call_info->argv[2], call_info->interactive, 0);
+	(void)fsddata_set(cached->caches, cache_name, var_to_str(output));
+	free(cache_name);
+
+	return output;
+}
+
+/* Modifies kind of monitor used by the extcached(). */
+TSTATIC void
+set_extcached_monitor_type(FileMonType type)
+{
+	extcached_mon_type = type;
 }
 
 /* Gets string representation of file type.  Returns the string. */
@@ -368,13 +487,13 @@ paneisat_builtin(const call_info_t *call_info)
 	return var_from_bool(result);
 }
 
-/* Runs the command in shell and returns its output (joined standard output and
- * standard error streams).  All trailing newline characters are stripped to
+/* Runs the command in a shell and returns its output (joined standard output
+ * and standard error streams).  All trailing newline characters are stripped to
  * allow easy appending to command output.  Returns the output. */
 static var_t
 system_builtin(const call_info_t *call_info)
 {
-	return execute_cmd(call_info, 0);
+	return execute_cmd(call_info->argv[0], call_info->interactive, 0);
 }
 
 /* Retrieves number of current or last tab page.  Returns integer value with the
@@ -402,21 +521,21 @@ tabpagenr_builtin(const call_info_t *call_info)
 	                          : tabs_count(curr_view));
 }
 
-/* Runs interactive command in shell and returns its output (joined standard
+/* Runs interactive command in a shell and returns its output (joined standard
  * output and standard error streams).  All trailing newline characters are
  * stripped to allow easy appending to command output.  Returns the output. */
 static var_t
 term_builtin(const call_info_t *call_info)
 {
 	ui_shutdown();
-	return execute_cmd(call_info, 1);
+	return execute_cmd(call_info->argv[0], call_info->interactive, 1);
 }
 
-/* Runs interactive command in shell and returns its output (joined standard
+/* Runs interactive command in a shell and returns its output (joined standard
  * output and standard error streams).  All trailing newline characters are
  * stripped to allow easy appending to command output.  Returns the output. */
 static var_t
-execute_cmd(const call_info_t *call_info, int preserve_stdin)
+execute_cmd(var_t cmd_arg, int interactive, int preserve_stdin)
 {
 	var_t result;
 	char *cmd;
@@ -424,12 +543,12 @@ execute_cmd(const call_info_t *call_info, int preserve_stdin)
 	size_t cmd_out_len;
 	char *result_str;
 
-	cmd = var_to_str(call_info->argv[0]);
+	cmd = var_to_str(cmd_arg);
 	cmd_stream = read_cmd_output(cmd, preserve_stdin);
 	free(cmd);
 
 	int cancellation_state = 0;
-	if(call_info->interactive)
+	if(interactive)
 	{
 		ui_cancellation_enable();
 	}
@@ -441,7 +560,7 @@ execute_cmd(const call_info_t *call_info, int preserve_stdin)
 	result_str = read_nonseekable_stream(cmd_stream, &cmd_out_len, NULL, NULL);
 	fclose(cmd_stream);
 
-	if(call_info->interactive)
+	if(interactive)
 	{
 		ui_cancellation_disable();
 	}

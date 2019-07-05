@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 25, 2019" "vifm 0.10"
+.TH VIFM 1 "July 5, 2019" "vifm 0.10"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5259,6 +5259,10 @@ executable({expr})    Integer     Checks whether {expr} command available.
 .br
 expand({expr})        String      Expands special keywords in {expr}.
 .br
+extcached({cache}, {path}, {extcmd})
+                      String      Caches output of {extcmd} per {cache} and
+                                  {path} combination.
+.br
 filetype({fnum} [, {resolve}])
                       String      Returns file type from position.
 .br
@@ -5324,7 +5328,25 @@ Examples:
   :echo expand('$PATH')
 .EE
 
-.BI filetype({fnum} [, {resolve}])
+.BI "extcached({cache}, {path}, {extcmd})"
+
+Caches value of {extcmd} external command automatically updating it as
+necessary based on monitoring change date of a {path}.  The cache is
+invalidated when file or its meta-data is updated.  A single path can have
+multiple caches associated with it.
+
+{path} value is normalized, but symbolic links in it aren't resolved.
+
+Example:
+
+.EX
+  " display number and size of blocks actually used by a file or directory
+  set statusline+=" Uses: %{ extcached('uses',
+                                     \ expand('%c'),
+                                     \ expand('stat \-\-format=%%bx%%B %c')) }"
+.EE
+
+.BI "filetype({fnum} [, {resolve}])"
 
 The result is a string, which represents file type and is one of the list:
     exe     executables

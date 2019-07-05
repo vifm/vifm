@@ -395,7 +395,8 @@ is_cache_valid(const quickview_cache_t *cache, const char path[],
 
 	filemon_t filemon;
 	if(same_viewer &&
-			filemon_from_file(path, &filemon) == 0 && cache->path != NULL &&
+			filemon_from_file(path, FMT_MODIFIED, &filemon) == 0 &&
+			cache->path != NULL &&
 			paths_are_equal(cache->path, path) &&
 			filemon_equal(&cache->filemon, &filemon))
 	{
@@ -421,7 +422,7 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
 {
 	/* File monitor must always be initialized, because it's used below. */
 	filemon_t filemon = {};
-	(void)filemon_from_file(path, &filemon);
+	(void)filemon_from_file(path, FMT_MODIFIED, &filemon);
 	filemon_assign(&cache->filemon, &filemon);
 
 	replace_string(&cache->path, path);

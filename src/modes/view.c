@@ -1634,7 +1634,7 @@ forward_if_changed(view_info_t *vi)
 		return 0;
 	}
 
-	if(filemon_from_file(vi->filename, &mon) != 0)
+	if(filemon_from_file(vi->filename, FMT_MODIFIED, &mon) != 0)
 	{
 		return 0;
 	}
