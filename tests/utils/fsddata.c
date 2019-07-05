@@ -14,7 +14,7 @@ TEST(freeing_null_fsddata_is_ok)
 
 TEST(memory_is_handled_by_fsddata_correctly_on_free)
 {
-	fsddata_t *const fsdd = fsddata_create(0);
+	fsddata_t *const fsdd = fsddata_create(0, 1);
 	assert_success(fsddata_set(fsdd, ".", strdup("str")));
 	/* Freeing the structure should free the string (absence of leaks should be
 	 * checked by external tools). */
@@ -23,7 +23,7 @@ TEST(memory_is_handled_by_fsddata_correctly_on_free)
 
 TEST(memory_is_handled_by_fsddata_correctly_on_set)
 {
-	fsddata_t *const fsdd = fsddata_create(0);
+	fsddata_t *const fsdd = fsddata_create(0, 1);
 	assert_success(fsddata_set(fsdd, ".", strdup("str1")));
 	/* Overwriting the value should replace the old one (absence of leaks should
 	 * be checked by external tools). */
@@ -33,7 +33,7 @@ TEST(memory_is_handled_by_fsddata_correctly_on_set)
 
 TEST(pointer_to_the_same_memory_is_returned)
 {
-	fsddata_t *const fsdd = fsddata_create(0);
+	fsddata_t *const fsdd = fsddata_create(0, 1);
 	char *const str = strdup("str");
 	void *ptr;
 	assert_success(fsddata_set(fsdd, ".", str));
