@@ -1,5 +1,6 @@
 #include <stic.h>
 
+#include <sys/time.h> /* timeval utimes() */
 #include <unistd.h> /* symlink() */
 
 #include <stddef.h> /* NULL */
@@ -370,6 +371,56 @@ TEST(has)
 	ASSERT_OK("has('anythingelse')", "0");
 	ASSERT_OK("has('nix')", "0");
 	ASSERT_OK("has('windows')", "0");
+}
+
+TEST(extcached)
+{
+	/* Testing with FMT_MODIFIED is problematic, because change time is not
+	 * programmatically accessible. */
+	set_extcached_monitor_type(FMT_MODIFIED);
+
+	/* For directories. */
+	ASSERT_OK("extcached('cache1', '.', 'echo 1')", "1");
+	/* Unchanged. */
+	ASSERT_OK("extcached('cache1', '.', 'echo 2')", "1");
+#ifndef _WIN32
+	/* Changed. */
+	struct timeval tvs[2] = {};
+	assert_success(utimes(".", tvs));
+	ASSERT_OK("extcached('cache1', '.', 'echo 3')", "3");
+	/* Unchanged again. */
+	ASSERT_OK("extcached('cache1', '.', 'echo 4')", "3");
+#endif
+
+	create_file("file");
+
+	/* For files. */
+	ASSERT_OK("extcached('cache1', 'file', 'echo 5')", "5");
+	/* Unchanged. */
+	ASSERT_OK("extcached('cache1', 'file', 'echo 6')", "5");
+#ifndef _WIN32
+	/* Changed. */
+	assert_success(utimes("file", tvs));
+	ASSERT_OK("extcached('cache1', 'file', 'echo 7')", "7");
+	/* Unchanged again. */
+	ASSERT_OK("extcached('cache1', 'file', 'echo 8')", "7");
+#endif
+
+	/* Caches don't mix. */
+	ASSERT_OK("extcached('cache2', '.', 'echo a')", "a");
+	ASSERT_OK("extcached('cache3', '.', 'echo b')", "b");
+
+#ifndef _WIN32
+	/* Change resets all caches. */
+	assert_success(utimes(".", tvs));
+	ASSERT_OK("extcached('cache1', '.', 'echo 00')", "00");
+	ASSERT_OK("extcached('cache2', '.', 'echo aa')", "aa");
+	ASSERT_OK("extcached('cache3', '.', 'echo bb')", "bb");
+#endif
+
+	assert_success(remove("file"));
+
+	set_extcached_monitor_type(FMT_CHANGED);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

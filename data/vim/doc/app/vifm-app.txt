@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jun 25
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jul 5
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4361,6 +4361,9 @@ USAGE                 RESULT      DESCRIPTION	~
 chooseopt({opt})      String      Queries choose parameters passed on startup.
 executable({expr})    Integer     Checks whether {expr} command available.
 expand({expr})        String      Expands special keywords in {expr}.
+extcached({cache}, {path}, {extcmd})
+                      String      Caches output of {extcmd} per {cache} and
+                                  {path} combination.
 filetype({fnum} [, {resolve}])
                       String      Returns file type from position.
 fnameescape({expr})   String      Escapes {expr} for use in a :command.
@@ -4413,6 +4416,20 @@ Examples: >
   " $PATH environment variable (same as `:echo $PATH`)
   :echo expand('$PATH')
 
+extcached({cache}, {path}, {extcmd})           *vifm-extcached()*
+
+Caches value of {extcmd} external command automatically updating it as
+necessary based on monitoring change date of a {path}.  The cache is
+invalidated when file or its meta-data is updated.  A single path can have
+multiple caches associated with it.
+
+{path} value is normalized, but symbolic links in it aren't resolved.
+
+Example: >
+  " display number and size of blocks actually used by a file or directory
+  set statusline+=" Uses: %{ extcached('uses',
+                                     \ expand('%c'),
+                                     \ expand('stat --format=%%bx%%B %c')) }"
 
 filetype({fnum} [, {resolve}])                 *vifm-filetype()*
 
