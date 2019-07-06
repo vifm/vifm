@@ -43,17 +43,20 @@ static int execute_find_cb(view_t *view, menu_data_t *m);
 int
 show_find_menu(view_t *view, int with_path, const char args[])
 {
-	enum { M_s, M_a, M_A, M_u, M_U, };
+	enum { M_s, M_a, M_A, M_p, M_u, M_U, };
 
 	int save_msg;
 	char *custom_args = NULL;
+	char *escaped_args = NULL;
 	char *targets = NULL;
 	char *cmd;
 
 	custom_macro_t macros[] = {
 		[M_s] = { .letter = 's', .value = NULL, .uses_left = 1, .group = -1 },
+
 		[M_a] = { .letter = 'a', .value = NULL, .uses_left = 1, .group =  1 },
 		[M_A] = { .letter = 'A', .value = NULL, .uses_left = 0, .group =  1 },
+		[M_p] = { .letter = 'p', .value = NULL, .uses_left = 0, .group =  1 },
 
 		[M_u] = { .letter = 'u', .value = "",   .uses_left = 1, .group = -1 },
 		[M_U] = { .letter = 'U', .value = "",   .uses_left = 1, .group = -1 },
@@ -66,6 +69,7 @@ show_find_menu(view_t *view, int with_path, const char args[])
 		macros[M_s].value = args;
 		macros[M_a].value = "";
 		macros[M_A].value = "";
+		macros[M_p].value = "";
 	}
 	else
 	{
@@ -82,13 +86,15 @@ show_find_menu(view_t *view, int with_path, const char args[])
 		if(args[0] == '-')
 		{
 			macros[M_a].value = args;
+			macros[M_p].value = args;
 		}
 		else
 		{
-			char *const escaped_args = shell_like_escape(args, 0);
+			escaped_args = shell_like_escape(args, 0);
+			macros[M_p].value = escaped_args;
+
 			custom_args = format_str("%s %s", DEFAULT_PREDICATE, escaped_args);
 			macros[M_a].value = custom_args;
-			free(escaped_args);
 		}
 	}
 
@@ -102,6 +108,7 @@ show_find_menu(view_t *view, int with_path, const char args[])
 	cmd = ma_expand_custom(cfg.find_prg, ARRAY_LEN(macros), macros);
 
 	free(targets);
+	free(escaped_args);
 	free(custom_args);
 
 	ui_sb_msg("find...");
