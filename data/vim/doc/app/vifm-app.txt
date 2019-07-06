@@ -3122,9 +3122,6 @@ option and %% sequence for inserting percent sign literally.  The macros are:
    %a     empty or
           literal arguments of :find or
           predicate followed by escaped arguments of :find
-   %p     empty or
-          literal arguments of :find or
-          escaped arguments (parameters) of :find
 
    %u     redirect output to custom view instead of showing a menu
    %U     redirect output to unsorted custom view instead of showing a menu
@@ -3135,20 +3132,20 @@ If both %u and %U are specified, %U is chosen.
 
 Some macros can be added implicitly:
  - if %s isn't present, it's appended
- - if neither of %a, %A and %p is present, %a is appended
- - if neither of %s, %a, %A and %p is present, %s and %a are appended in this
+ - if neither of %a and %A is present, %a is appended
+ - if neither of %s, %a and %A is present, %s and %a are appended in this
    order
 
 The macros slightly change their meaning depending on format of :find's
 arguments:
  - if the first argument points to an existing directory, %s is assigned all
-   arguments while %a, %A and %p are left empty
+   arguments while %a and %A are left empty
  - otherwise:
     - %s is assigned a dot (".") meaning current directory or list of
       selected file names, if any
-    - %a, %A and %p are assigned literal arguments when first argument starts
+    - %a and %A are assigned literal arguments when first argument starts
       with a dash ("-"), otherwise %a gets an escaped version of the arguments
-      with a predicate and %p contains escaped version of the arguments
+      with a predicate
 
 Starting with Windows Server 2003 a `where` command is available.  One can
 configure vifm to use it in the following way: >

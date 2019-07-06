@@ -80,6 +80,11 @@
 	performance of file queries by caching results of external commands.
 	Thanks to Matthias Braun (a.k.a. mb720).
 
+	Added %p macro to 'findprg' option.  It works as a mix between %a and %A
+	macros: usually contains arguments passed to :find command, but unlike %a
+	doesn't include any predicates.  Thanks to Sitaram Chamarty and Tuan
+	Bui (a.k.a. tuanbass).
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by

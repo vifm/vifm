@@ -107,5 +107,16 @@ TEST(enter_navigates_to_found_file, IF(not_windows))
 	(void)vle_keys_exec(WK_ESC);
 }
 
+TEST(p_macro_works, IF(not_windows))
+{
+	assert_success(exec_commands("set findprg='find %s -name %p'", &lwin,
+				CIT_COMMAND));
+
+	assert_success(chdir(TEST_DATA_PATH));
+	strcpy(lwin.curr_dir, test_data);
+
+	assert_failure(exec_commands("find a$NO_SUCH_VAR", &lwin, CIT_COMMAND));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
