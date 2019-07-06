@@ -184,6 +184,8 @@
 	Show empty lines in :media only if there is enough vertical space.  Patch
 	by zsugabubus.
 
+	Make documentation of 'findprg' more readable.
+
 	Fixed `:tabnew ..` not working due to use of uninitialized data.
 
 	Fixed access to uninitialized memory on clearing view after graphical

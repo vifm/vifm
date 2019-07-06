@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jul 5
+*vifm-app.txt*    For Vifm version 0.10  Last change: 2019 Jul 6
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3102,7 +3102,7 @@ Sets characters used to fill borders.
     vborder:c     ' '             left, middle and right vertical borders
 
 If value is omitted, its default value is used.  Example: >
- set fillchars=vborder:.
+    set fillchars=vborder:.
 <
                                                *vifm-'findprg'*
 findprg
@@ -3110,38 +3110,53 @@ type: string
 default: "find %s %a -print , -type d \( ! -readable -o ! -executable \) -prune"
 
 Specifies format for an external command to be invoked by the |vifm-:find|
-command.  The format supports expanding of macros, specific for a particular
-*prg option, and %% sequence for inserting percent sign literally.  This
-option should include the %s macro to specify placement of list of paths to
-search in and %a or %A macro to specify placement of arguments passed to the
-|vifm-:find| command.  If some of the macros are not used, they will be
-implicitly added after a space to the value of the option in the following
-order: %s, %a.  Note that when neither %a nor %A are specified, it's %a which
-is added implicitly.
+command.  The format supports expansion of macros specific for this particular
+option and %% sequence for inserting percent sign literally.  The macros are:
 
-The macros can slightly change their meaning depending on |vifm-:find| command
-arguments.  When the first argument points to an existing directory, %s is
-assigned all arguments and %a/%A are left empty.  Otherwise, %s is assigned
-a dot (".") meaning current directory or list of selected file names, if any.
-%a/%A are assigned arguments when first argument starts with a dash ("-"),
-otherwise %a gets an escaped version of arguments, prepended by "-name"
-(on *nix) or "-iname" (on Windows) predicate.
+  macro   value/meaning~
+   %s     literal arguments of :find or
+          list of paths to search in
 
-%a and %A macros contain almost the same value, the difference is that %a can
-be escaped and %A is never escaped.  %A is to be used mainly on Windows, where
-shell escaping is a mess and can break command execution.
+   %A     empty or
+          literal arguments of :find
+   %a     empty or
+          literal arguments of :find or
+          predicate followed by escaped arguments of :find
+   %p     empty or
+          literal arguments of :find or
+          escaped arguments (parameters) of :find
 
-Optional %u or %U macro could be used (if both specified %U is chosen) to
-force redirection to custom or unsorted custom view respectively.
+   %u     redirect output to custom view instead of showing a menu
+   %U     redirect output to unsorted custom view instead of showing a menu
 
-Starting from Windows Server 2003 a where command is available, one can
+Predicate in %a is "-name" on *nix and "-iname" on Windows.
+
+If both %u and %U are specified, %U is chosen.
+
+Some macros can be added implicitly:
+ - if %s isn't present, it's appended
+ - if neither of %a, %A and %p is present, %a is appended
+ - if neither of %s, %a, %A and %p is present, %s and %a are appended in this
+   order
+
+The macros slightly change their meaning depending on format of :find's
+arguments:
+ - if the first argument points to an existing directory, %s is assigned all
+   arguments while %a, %A and %p are left empty
+ - otherwise:
+    - %s is assigned a dot (".") meaning current directory or list of
+      selected file names, if any
+    - %a, %A and %p are assigned literal arguments when first argument starts
+      with a dash ("-"), otherwise %a gets an escaped version of the arguments
+      with a predicate and %p contains escaped version of the arguments
+
+Starting with Windows Server 2003 a `where` command is available.  One can
 configure vifm to use it in the following way: >
-
     set findprg="where /R %s %A"
 <
 As the syntax of this command is rather limited, one can't use |vifm-:find|
-command with selection of more than one item in this case.  The command looks
-for files only completely ignoring directories.
+command with selection of more than one item because the command ignores all
+directory paths except for the last one.
 
 When using find port on Windows, another option is to setup 'findprg' like
 this: >
