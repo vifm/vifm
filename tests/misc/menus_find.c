@@ -2,12 +2,17 @@
 
 #include <unistd.h> /* chdir() */
 
+#include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 
@@ -25,6 +30,8 @@ SETUP_ONCE()
 
 SETUP()
 {
+	init_modes();
+
 	view_setup(&lwin);
 	view_setup(&rwin);
 
@@ -34,6 +41,8 @@ SETUP()
 	opt_handlers_setup();
 
 	init_commands();
+
+	curr_stats.load_stage = -1;
 }
 
 TEARDOWN()
@@ -41,6 +50,12 @@ TEARDOWN()
 	opt_handlers_teardown();
 
 	vle_cmds_reset();
+	vle_keys_reset();
+
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+
+	curr_stats.load_stage = 0;
 }
 
 TEST(find_command, IF(not_windows))
@@ -73,6 +88,23 @@ TEST(find_command, IF(not_windows))
 	strcpy(lwin.curr_dir, test_data);
 	assert_success(exec_commands("find", &lwin, CIT_COMMAND));
 	assert_int_equal(9, lwin.list_rows);
+}
+
+TEST(enter_navigates_to_found_file, IF(not_windows))
+{
+	assert_success(exec_commands("set findprg='find %s %a'", &lwin, CIT_COMMAND));
+
+	assert_success(chdir(TEST_DATA_PATH));
+	strcpy(lwin.curr_dir, test_data);
+
+	assert_success(exec_commands("find dir1", &lwin, CIT_COMMAND));
+
+	char dst[PATH_MAX + 1];
+	snprintf(dst, sizeof(dst), "%s/tree", test_data);
+
+	(void)vle_keys_exec(WK_CR);
+	assert_true(paths_are_equal(lwin.curr_dir, dst));
+	(void)vle_keys_exec(WK_ESC);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
