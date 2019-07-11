@@ -163,9 +163,6 @@
 	Removed empty line from :file and similar menus for case when vifm was
 	configured with --disable-desktop-files flag (second time).
 
-	Print "Mounting..."/"Unmounting..." message during the corresponding
-	process in the :media menu.
-
 	Document more details about expansion of FUSE macros.
 
 	Properly remove FUSE mount points if they are symbolic links.
