@@ -181,6 +181,7 @@ syntax region vifmStatementCN start='\(\s\|:\)*'
 		\,vifmComment,vifmInlineComment,vifmNotComment,vifmExprCommandSt,vifmNormalCommandSt
 		\,vifmNotation,vifmCdCommandStN,vifmSetN,vifmArgument,vifmSoCommand
 		\,vifmSoCommandStN,vifmInvertCommand,vifmInvertCommandStN,vifmPrefixCommands
+		\,vifmLetCN
 " Contained statement without highlighting of angle-brace notation.
 syntax region vifmStatementC start='\(\s\|:\)*'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend contained
@@ -368,16 +369,24 @@ syntax region vifmSetAssignNSN contained
 		\ extend
 		\ contains=vifmNumber,vifmComment,vifmInlineComment,vifmNotation
 
+" :let command with highlighting of angle-brace notation.
 syntax region vifmLet
 		\ start='^\(\s\|:\)*\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
 		\ contains=vifmLetCommand,vifmEnvVar,vifmString,vifmStringInExpr,vifmComment
 		\,vifmInlineComment,vifmNotComment
+" Contained :let command without highlighting of angle-brace notation.
 syntax region vifmLetC
 		\ start='\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$\||'
 		\ keepend
 		\ contains=vifmLetCommand,vifmEnvVar,vifmString,vifmStringInExpr,vifmComment
 		\,vifmInlineComment,vifmNotComment,vifmBuiltinFunction
+" Contained :let command with highlighting of angle-brace notation.
+syntax region vifmLetCN
+		\ start='\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$\||'
+		\ keepend
+		\ contains=vifmLetCommand,vifmEnvVar,vifmString,vifmStringInExpr,vifmComment
+		\,vifmInlineComment,vifmNotComment,vifmBuiltinFunction,vifmNotation
 syntax region vifmUnlet
 		\ start='^\(\s\|:\)*\<unl\%[et]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend

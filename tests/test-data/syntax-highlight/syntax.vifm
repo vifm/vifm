@@ -27,6 +27,12 @@ nnoremap ,b :set viewcolumns=-{name}..,6{}.<cr>
 nnoremap ,b :set viewcolumns='-{name}..,6{}.'<cr>
 nnoremap ,b :set viewcolumns="-{name}..,6{}."<cr>
 
+" ":nnoremap" and ":let" should be highlighted as :commands
+" "$a" as environment variable
+" "'a'" as a string
+" "<left>" and "<cr>" should be highlighted as angle bracket notation
+nnoremap s :let $a <left>= 'a'<cr>
+
 " "<silent>" should be highlighted as angle bracket notation
 " "<wait>" should be highlighted as angle bracket notation
 map <silent> ,b :set viewcolumns="-{name}..,6{}."<cr>
@@ -515,12 +521,6 @@ echo v:servername
 echo &sort
 echo &l:sort
 echo &g:sort
-
-" ":nnoremap" and ":let" should be highlighted as :commands
-" "$a" as environment variable
-" "'a'" as a string
-" "<cr>" should be highlighted as angle bracket notation
-nnoremap s :let $a = 'a'<cr>
 
 " :set highlight spreads across too many lines!
 nnoremap s :if $size_sort != ''
