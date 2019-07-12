@@ -224,8 +224,9 @@ highlight clear2
 " "nnoremap" should be highlighted as a :command
 " "<f7>" should be highlighted as angle bracket notation
 " "mkdir" should be highlighted as a :command
-" "<space>" should be highlighted as angle bracket notation
+" "<space>" and "<left>" should be highlighted as angle bracket notation
 nnoremap <f7> :mkdir<space>
+nnoremap ,s :restart<left><left><left><left><left><left><left><left><left>
 
 " "{*.h,*.c}" and "!{*.h,*.c}" should be highlighted as a 'string'
 highlight {*.h,*.c}  cterm=bold ctermfg=yellow
