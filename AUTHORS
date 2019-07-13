@@ -125,3 +125,5 @@ rbong authored a number of changes that extend functionality of the Vim plugin
 originally as a separate plugin for neovim, later merged into the main one.
 
 zsugabubus provided multiple patches.
+
+Richard Benson provided icon for the project.
