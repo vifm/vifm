@@ -802,8 +802,12 @@ redraw_view(view_t *view)
 	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress &&
 			window_shows_dirlist(view))
 	{
-		/* Make sure cursor is visible and relevant part of the view is displayed. */
+		/* Make sure cursor is visible and relevant part of the view is
+		 * displayed. */
 		(void)move_curr_line(view);
+		/* Update cursor position cache as it might have been moved outside this
+		 * unit. */
+		(void)cache_cursor_pos(view);
 		/* And then redraw the view unconditionally as requested. */
 		draw_dir_list(view);
 	}
@@ -1840,6 +1844,7 @@ cache_cursor_pos(view_t *view)
 
 	if(view->list_pos == view->last_seen_pos &&
 		 view->curr_line == view->last_curr_line &&
+		 view->last_curr_file != NULL &&
 		 strcmp(view->last_curr_file, path) == 0)
 	{
 		return 1;
