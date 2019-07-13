@@ -1,3 +1,213 @@
+July 15, 2019
+=============
+
+vifm v0.10.1 beta
+-----------------
+
+This version provides additions and improvements for media management feature,
+several enhancements related to text user interface, extra features to Vim
+plugin thanks to merging in neovim-vifm plugin and various small changes.
+
+The beta stage will last about two weeks.  In case any serious bugs are found
+during this period, another beta version might be released.
+
+Main changes:
+ - added file preview to miller mode
+ - added preview macro to directly output to terminal, which enables use of
+   Sixel graphics for previewing;
+ - added udisks2 backend to vifm-media script (bundled script for managing
+   media) and version of the script for OS X;
+ - updated code to make use of large amount of color pairs when available;
+ - functionality of previously separate neovim-vifm plugin got merged into the
+   main plugin;
+ - multiple improvements to :media menu;
+ - improved performance in several use cases (quickview, lots of unhighlighted
+   files, unnecessary cursor updates and redraws).
+
+More detailed list of changes.
+
+Command-line mode:
+ - added :cds command that navigates to path obtained by substitution in the
+   current path (thanks to j-xella);
+ - added :hideui command that hides interface to show previous commands'
+   output (thanks to dikiy);
+ - added one more invocation format of :colorscheme command, which picks the
+   first available color scheme that is supported by the terminal (thanks to
+   Jose Riha, a.k.a. jose1711);
+ - always preserve tabs on :restart (thanks to mwgkgk);
+ - refuse to compare directory against itself via :compare command (thanks to
+   Jose Riha, a.k.a. jose1711).
+
+:set command and options:
+ - added fileroot view column, which displays full name of directories and
+   symbolic links to directories and only root of name for everything
+   else (thanks to chelovechishko);
+ - added 'shellcmdflag' option that allows customizing how shell is invoked.
+   Enables running it in interactive mode, which can make shell aliases and
+   functions work (thanks to Ink (a.k.a. inknoir), John Shea (a.k.a. coachshea)
+   and randomizedthinking);
+ - added L flag to 'shortmess' option to display only last directory in tab
+   line instead of full path (thanks to chelovechishko);
+ - added ^= operation for string list options (thanks to SearyBlue);
+ - added ^= operation for options of set kind;
+ - added rpreview: key to 'milleroptions' option that allows enabling preview
+   of files (thanks to Svadkos and Tom Jansen);
+ - added %p macro to 'findprg' option.  It works as a mix between %a and %A
+   macros: usually contains arguments passed to :find command, but unlike %a
+   doesn't include any predicates (thanks to Sitaram Chamarty and Tuan Bui,
+   a.k.a. tuanbass);
+ - do not add leading comma to string list options on set opt+=item;
+ - don't create trash directory on startup if 'trash' is off (patch by
+   zsugabubus).
+
+Key bindings:
+ - improved <silent> to do not forcefully update screen after the mapping if no
+   screen updates were skipped.
+
+Completion:
+ - complete user name in paths after initial tilde (e.g., :cd ~r<tab> =>
+   :cd ~root).
+
+Macros:
+ - added %pd macro that makes preview output directly affect terminal
+   circumventing curses interface, which could be used to display sixel
+   images (thanks to Tom Jansen).
+
+Color schemes:
+ - added OtherWin highlight group for highlighting inactive pane (thanks to
+   John Fred Fadrigalan, a.k.a. cevhyruz).
+
+Menus and dialogs:
+ - added indication of entry's availability to :file, :file[x]type and
+   :fileviewer menus;
+ - added [ and ] bindings to :media menu that provide navigation between
+   devices (patch by zsugabubus);
+ - added decorations to :media menu (patch by zsugabubus);
+ - react to Enter in :media menu on device lines, mount on "not mounted" line
+   and do nothing otherwise (patch by zsugabubus);
+ - show empty lines in :media only if there is enough vertical space (patch by
+   zsugabubus);
+ - removed empty line from :file and similar menus for case when vifm was
+   configured with --disable-desktop-files flag (second time).
+
+Scripting:
+ - added extcached() builtin function, which can be used to improve performance
+   of file queries by caching results of external commands (thanks to Matthias
+   Braun, a.k.a. mb720).
+
+Invocation:
+ - try to preserve symbolic links in current path when starting vifm by
+   checking value of $PWD (thanks to Vigi).
+
+Core:
+ - resolve symbolic links for mime-type matchers (thanks to Vigi);
+ - do not check for view changes while suggestions are visible.  It can mess up
+   TUI, especially in combination with preview (thanks to ks1c).
+
+File operations:
+ - preserve extended attributes on copying files (thanks to hutou);
+ - don't throw away errors that were ignored by the user, display them at the
+   end of operation;
+ - consume input during foreground file operations.  Otherwise it remains
+   buffered and is processed after the operation is over, which might not be
+   the intent of the user;
+ - reduce number of options available on file conflict when source and
+   destination are the same to avoid confusion (options that overwrite do
+   nothing in this case) (thanks to aleksejrs).
+
+File preview:
+ - do not complain about empty output of a graphics previewer for view mode;
+ - clear preview before displaying suggestions (thanks to ks1c).
+
+TUI (Text User Interface):
+ - renamed filename filter to "permanent filter" consisting of
+   "explicit" (ex-manual) and "implicit" (ex-automatic) parts (thanks to
+   Sitaram Chamarty);
+ - changed file rename prompt to indicate whether full name or only its root is
+   being changed;
+ - try to determine widths of printed character more accurately;
+ - drop leading space implicitly added to time columns in views (thanks to
+   laggardkernel).
+
+Integration:
+ - added info= field to parser of 'mediaprg' output.  It provides custom
+   message for the media (patch by zsugabubus);
+ - added udisks2 backend to vifm-media script (bundled script for managing
+   media).  Requires python and dbus module for it to be installed (because
+   udisks2 and dbus are too shitty to be used on command-line) (thanks to
+   Tykin);
+ - added FUSE_MOUNT3 filetype format, which is equivalent to FUSE_MOUNT, but
+   doesn't perform unmounting.  Helpful to use something like avfs (thanks to
+   Jose Riha, a.k.a. jose1711);
+ - added vifm-media-osx script that is configured to be used (via 'mediaprg')
+   on OS X (patch by Von Welch);
+ - error stream from 'mediaprg' isn't considered anymore when deciding if
+   mounting/unmounting was successful.  While technically an incompatible
+   change, it's unlikely to cause any issues;
+ - spawn 'mediaprg' in foreground to allow interactions with the user, like
+   providing a password (patch by zsugabubus);
+ - properly remove FUSE mount points if they are symbolic links.
+
+Documentation:
+ - better documentation for TabLine and TabLineSel highlighting groups (thanks
+   to mwgkgk);
+ - clearer documentation/description for :*unmap commands and 'vicmd'/'vixcmd'
+   options (thanks to chelovechishko);
+ - improve documentation of patterns and globs (thanks to afsheenb);
+ - improved documentation on filters (thanks to Sitaram Chamarty);
+ - document more details about expansion of FUSE macros;
+ - make documentation of 'findprg' more readable.
+
+Vim-plugin:
+ - added :Vifm command as an alias for :EditVifm (patch by rbong);
+ - added optional splitting of the embedded terminal (g:vifm_embed_split).  Has
+   support for Vim's <mods> and <count> (patch by rbong);
+ - added option to synchronize working directory of the embedded instance of
+   vifm with the Vim host (g:vifm_embed_cwd) (patch by rbong);
+ - added ability to replace netrw with vifm (g:vifm_replace_netrw and
+   g:vifm_replace_netrw_cmd) (patch by rbong).
+
+Configuration:
+ - added example of using xsel to sample vifmrc file (thanks to chelovechishko);
+ - enabled 'vimhelp' in sample vifmrc file by default.
+
+Performance:
+ - added caching to quickview for a single file to avoid fileviewer being called
+   more often than needed (thanks to agguser);
+ - try to avoid superfluous screen updates related to cursor position;
+ - remember when file doesn't match any file-specific highlighting groups for
+   better performance (thanks to Gomme Bidule);
+ - generate faster regular expressions by vifm-convert-dircolors (thanks to
+   Gomme Bidule).
+
+Only on Windows:
+ - upgraded to PDCurses 3.8 (was 3.4) for Windows.  This allows using 256 colors
+   inside ConEmu.  Note that ConEmu has issues processing 256 colors on the last
+   line of the screen, so avoid using them for status line (thanks to dancread).
+
+Other changes:
+ - don't error on trash creation failure due to read-only file system (patch by
+   zsugabubus).
+
+Important fixes:
+ - fixed losing files on failed move operation.  Source files were deleted
+   assuming they were copied successfully, even when errors regarding some of
+   them were ignored by the user (thanks to zsugabubus);
+ - fixed vifm not making use of large number of color pairs when they are
+   available (thanks to Jose Riha (a.k.a. jose1711) and Hans Petter
+   Jansson (a.k.a. hpjansson));
+ - fixed color pairs being exhausted on Windows when default color ends up being
+   used often, this caused highlighting to go awry (thanks to dancread);
+ - fixed textual output of graphical previewers not being displayed in view
+   mode (thanks to agguser);
+ - fixed DirEnter autocommand being called with view being in a mixed state of
+   old and new location (thanks to Kendrick Taylor, a.k.a. sixcircuit).
+
+See change log for the full list of changes and by whom they were suggested or
+implemented.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 November 11, 2018
 =================
 
