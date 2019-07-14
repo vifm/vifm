@@ -6,12 +6,13 @@
 # the script is expected to be run from the root of the repository
 #
 # configuration:
-#  * REMOTE_NAME   -- ssh-friendly remote Windows machine address
-#  * REMOTE_DIR    -- absolute path on remote Windows machine
-#  * W32_DIR       -- root directory where Win32 build happens
-#  * W64_DIR       -- root directory where Win64 build happens
-#  * W32_BUILD_SCR -- script that builds Win32 release
-#  * W64_BUILD_SCR -- script that builds Win64 release
+#  * REMOTE_NAME    -- ssh-friendly remote Windows machine address
+#  * REMOTE_DIR     -- absolute path on remote Windows machine
+#  * REMOTE_WIN_DIR -- absolute path on remote Windows machine in Windows format
+#  * W32_DIR        -- root directory where Win32 build happens
+#  * W64_DIR        -- root directory where Win64 build happens
+#  * W32_BUILD_SCR  -- script that builds Win32 release
+#  * W64_BUILD_SCR  -- script that builds Win64 release
 
 if [ $# -ne 1 ]; then
     echo "Usage: $(basename $0) version"
@@ -21,7 +22,8 @@ fi
 version="$1"
 
 REMOTE_NAME="${REMOTE_NAME:-win}"
-REMOTE_DIR="${REMOTE_DIR:-/cygdrive/c/dev/vifm}"
+REMOTE_DIR="${REMOTE_DIR:-/c/repos/vifm}"
+REMOTE_WIN_DIR="${REMOTE_WIN_DIR:-c:/repos/vifm}"
 W32_DIR="${W32_DIR:-../vifm-mxe-w32/}"
 W64_DIR="${W64_DIR:-../vifm-mxe-w64}"
 W32_BUILD_SCR="${W32_BUILD_SCR:-../build_release_x86}"
@@ -43,8 +45,8 @@ EOF
 
 echo ::: COPYING EXECUTABLES TO THE REMOTE... :::
 
-scp "$W32_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_DIR/w32/"
-scp "$W64_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_DIR/w64/"
+scp "$W32_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_WIN_DIR/w32/"
+scp "$W64_DIR"/src/*.exe "$REMOTE_NAME:$REMOTE_WIN_DIR/w64/"
 
 echo ::: PACKAGING SINGLE-EXECUTABLE VERSIONS... :::
 
@@ -72,7 +74,8 @@ EOF
 
 echo ::: COPYING SINGLE-EXECUTABLE VERSIONS LOCALLY... :::
 
-scp "$REMOTE_NAME:$REMOTE_DIR/$w32.zip" "$REMOTE_NAME:$REMOTE_DIR/$w64.zip" .
+scp "$REMOTE_NAME:$REMOTE_WIN_DIR/$w32.zip" \
+    "$REMOTE_NAME:$REMOTE_WIN_DIR/$w64.zip" .
 chmod -x "$w32.zip" "$w64.zip"
 
 echo ::: VERIFYING PACKAGES... :::
@@ -117,9 +120,9 @@ echo ::: COPYING TESTS... :::
 rm -r "$W32_DIR/tests/bin/build" "$W64_DIR/tests/bin/build"
 
 scp -r "$W32_DIR/tests/bin" "$W32_DIR/tests/test-data" \
-       "$REMOTE_NAME:$REMOTE_DIR/w32/"
+       "$REMOTE_NAME:$REMOTE_WIN_DIR/w32/"
 scp -r "$W64_DIR/tests/bin" "$W64_DIR/tests/test-data" \
-       "$REMOTE_NAME:$REMOTE_DIR/w64/"
+       "$REMOTE_NAME:$REMOTE_WIN_DIR/w64/"
 
 echo ::: RUNNING TESTS... :::
 
