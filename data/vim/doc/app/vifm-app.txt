@@ -3315,6 +3315,7 @@ mediaprg
 type: string
 default: path to bundled script that supports udevil, udisks and udisks2
          (using udisks2 requires python with dbus module installed)
+         OS X: path points to a python script that uses diskutil
 
 Specifies command to be used to manage media devices.  Used by |vifm-:media|
 command.

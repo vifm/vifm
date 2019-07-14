@@ -85,6 +85,9 @@
 	doesn't include any predicates.  Thanks to Sitaram Chamarty and Tuan
 	Bui (a.k.a. tuanbass).
 
+	Added vifm-media-osx script that is configured to be used (via 'mediaprg')
+	on OS X.  Patch by Von Welch.
+
 	Resolve symbolic links for mime-type matchers.  Thanks to Vigi.
 
 	Try to preserve symbolic links in current path when starting vifm by
