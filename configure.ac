@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(vifm, 0.10, xaizek@posteo.net, vifm, https://vifm.info)
+AC_INIT(vifm, 0.10.1-beta, xaizek@posteo.net, vifm, https://vifm.info)
 AC_CONFIG_SRCDIR(src/vifm.c)
 AC_CONFIG_AUX_DIR(build-aux)
 AC_CONFIG_MACRO_DIR(build-aux/m4)
