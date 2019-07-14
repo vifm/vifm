@@ -3,11 +3,11 @@
 	Added example of using xsel to sample vifmrc file.  Thanks to
 	chelovechishko.
 
-	Added fileroot view column, which displays full name of directories and
+	Added "fileroot" view column, which displays full name of directories and
 	symbolic links to directories and only root of name for everything else.
 	Thanks to chelovechishko.
 
-	Added :cds command that navigates to path obtained by substitution in
+	Added :cds command that navigates to path obtained by substitution in the
 	current path.  Thanks to j-xella.
 
 	Added one more invocation format of :colorscheme command, which picks the
@@ -26,7 +26,7 @@
 	line instead of full path.  Thanks to chelovechishko.
 
 	Added caching to quickview for a single file to avoid fileviewer being
-	called more than needed.  Thanks to agguser.
+	called more often than needed.  Thanks to agguser.
 
 	Added "rpreview:" key to 'milleroptions' option that allows enabling
 	preview of files.  Thanks to Svadkos and Tom Jansen.
@@ -163,9 +163,6 @@
 	Removed empty line from :file and similar menus for case when vifm was
 	configured with --disable-desktop-files flag (second time).
 
-	Print "Mounting..."/"Unmounting..." message during the corresponding
-	process in the :media menu.
-
 	Document more details about expansion of FUSE macros.
 
 	Properly remove FUSE mount points if they are symbolic links.
@@ -251,7 +248,7 @@
 	Fixed issues (could lead to crash) on resizing on Windows.  Thanks to Tim
 	Schaeffer (a.k.a. Numeromancer).
 
-	Fixed wrapped lines in quickview/view mode sometimes loosing their
+	Fixed wrapped lines in quickview/view mode sometimes losing their
 	colorization.
 
 	Fixed occasional test failures due to use of uninitialized curses.  Thanks
@@ -300,6 +297,13 @@
 
 	Fixed reading data past initialized region on printing control message of
 	dialogs.  Patch by zsugabubus.
+
+	Fixed syntax highlighting of angle-bracket notation inside right-hand side
+	of mappings that contain some :commands (they were highlighted, but for
+	fewer number of commands).
+
+	Fixed missing syntax highlighting of :let command in right-hand side of
+	mappings.
 
 0.10-beta to 0.10 (2018-11-11)
 

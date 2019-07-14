@@ -27,6 +27,12 @@ nnoremap ,b :set viewcolumns=-{name}..,6{}.<cr>
 nnoremap ,b :set viewcolumns='-{name}..,6{}.'<cr>
 nnoremap ,b :set viewcolumns="-{name}..,6{}."<cr>
 
+" ":nnoremap" and ":let" should be highlighted as :commands
+" "$a" as environment variable
+" "'a'" as a string
+" "<left>" and "<cr>" should be highlighted as angle bracket notation
+nnoremap s :let $a <left>= 'a'<cr>
+
 " "<silent>" should be highlighted as angle bracket notation
 " "<wait>" should be highlighted as angle bracket notation
 map <silent> ,b :set viewcolumns="-{name}..,6{}."<cr>
@@ -224,8 +230,9 @@ highlight clear2
 " "nnoremap" should be highlighted as a :command
 " "<f7>" should be highlighted as angle bracket notation
 " "mkdir" should be highlighted as a :command
-" "<space>" should be highlighted as angle bracket notation
+" "<space>" and "<left>" should be highlighted as angle bracket notation
 nnoremap <f7> :mkdir<space>
+nnoremap ,s :restart<left><left><left><left><left><left><left><left><left>
 
 " "{*.h,*.c}" and "!{*.h,*.c}" should be highlighted as a 'string'
 highlight {*.h,*.c}  cterm=bold ctermfg=yellow
@@ -514,12 +521,6 @@ echo v:servername
 echo &sort
 echo &l:sort
 echo &g:sort
-
-" ":nnoremap" and ":let" should be highlighted as :commands
-" "$a" as environment variable
-" "'a'" as a string
-" "<cr>" should be highlighted as angle bracket notation
-nnoremap s :let $a = 'a'<cr>
 
 " :set highlight spreads across too many lines!
 nnoremap s :if $size_sort != ''

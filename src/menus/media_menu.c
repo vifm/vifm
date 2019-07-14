@@ -27,7 +27,6 @@
 #include "../compat/fs_limits.h"
 #include "../compat/reallocarray.h"
 #include "../modes/dialogs/msg_dialog.h"
-#include "../ui/statusbar.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
 #include "../utils/path.h"
@@ -405,8 +404,6 @@ mediaprg_mount(const char data[], menu_data_t *m)
 	const char *action = (mount ? "mount" : "unmount");
 	const char *description = (mount ? "Mounting" : "Unmounting");
 
-	ui_sb_msgf("%s %s...", description, path);
-
 	char *escaped_path = shell_like_escape(path, 0);
 	char *cmd = format_str("%s %s %s", cfg.media_prg, action, escaped_path);
 	if(shellout(cmd, PAUSE_NEVER, 0, SHELL_BY_APP) == 0)
@@ -420,8 +417,6 @@ mediaprg_mount(const char data[], menu_data_t *m)
 	}
 	free(escaped_path);
 	free(cmd);
-
-	ui_sb_clear();
 
 	menus_partial_redraw(m->state);
 	return error;
