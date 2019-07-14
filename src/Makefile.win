@@ -132,11 +132,7 @@ vifmres.o: vifm.res
 	echo '#define ENABLE_REMOTE_CMDS 1' >> $@; \
 	echo '#define WITH_BUILD_TIMESTAMP 1' >> $@; \
 #	echo '#define HAVE_FILE_PROG' >> $@;
-ifeq ($(OS),Windows_NT) # this is for MinGW (probably fixed in MinGW-w64)
-ifneq ($(APPVEYOR),1) # don't need this for MSYS2
-	@echo '#define BROKEN_SWPRINTF' >> $@
-endif
-else
+ifneq ($(OS),Windows_NT)
 	@echo '#define __USE_MINGW_ANSI_STDIO 1' >> $@
 endif
 
