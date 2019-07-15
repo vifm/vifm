@@ -310,6 +310,8 @@ typedef struct config_t
 		int precision;     /* Number of digits after dot to consider (0 for old
 		                      behaviour). */
 		int ieci_prefixes; /* When base is 1024, whether to say KiB instead of K. */
+		int space;         /* Whether a space should be displayed between numbers
+		                      and unit symbols. */
 	}
 	sizefmt;
 

@@ -34,6 +34,7 @@ SETUP_ONCE()
 	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.base = 1024;
 	cfg.sizefmt.precision = 0;
+	cfg.sizefmt.space = 1;
 }
 
 SETUP()

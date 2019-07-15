@@ -404,6 +404,8 @@ static const char *milleroptions_enum[][2] = {
 static const char *sizefmt_enum[][2] = {
 	{ "units:",     "iec (1024) or si (1000) unit size" },
 	{ "precision:", "maximum width of fraction part" },
+	{ "space",      "show separator space" },
+	{ "nospace",    "hide separator space" },
 };
 
 /* Possible values of 'sort' option. */
@@ -2321,7 +2323,7 @@ sizefmt_handler(OPT_OP op, optval_t val)
 	char *const new_val = strdup(val.str_val);
 	char *part = new_val, *state = NULL;
 
-	int base = -1, precision = 0;
+	int base = -1, precision = 0, space = 1;
 
 	while((part = split_and_get(part, ',', &state)) != NULL)
 	{
@@ -2351,6 +2353,14 @@ sizefmt_handler(OPT_OP op, optval_t val)
 				break;
 			}
 		}
+		else if(strcmp(part, "space") == 0)
+		{
+			space = 1;
+		}
+		else if(strcmp(part, "nospace") == 0)
+		{
+			space = 0;
+		}
 		else
 		{
 			break_at(part, ':');
@@ -2365,6 +2375,7 @@ sizefmt_handler(OPT_OP op, optval_t val)
 	{
 		cfg.sizefmt.base = base;
 		cfg.sizefmt.precision = precision;
+		cfg.sizefmt.space = space;
 
 		curr_stats.need_update = UT_REDRAW;
 	}
@@ -2386,12 +2397,16 @@ make_sizefmt_value(void)
 	static char value[128];
 	static const optval_t val = { .str_val = value };
 
-	const int len = snprintf(value, sizeof(value), "units:%s",
+	int len = snprintf(value, sizeof(value), "units:%s",
 			cfg.sizefmt.base == 1024 ? "iec" : "si");
 	if(cfg.sizefmt.precision != 0)
 	{
-		snprintf(value + len, sizeof(value) - len, ",precision:%d",
+		len += snprintf(value + len, sizeof(value) - len, ",precision:%d",
 				cfg.sizefmt.precision);
+	}
+	if(cfg.sizefmt.space == 0)
+	{
+		len += snprintf(value + len, sizeof(value) - len, ",nospace");
 	}
 
 	return val;

@@ -410,38 +410,52 @@ TEST(sizefmt_is_set_on_correct_input)
 
 	assert_int_equal(1024, cfg.sizefmt.base);
 	assert_int_equal(0, cfg.sizefmt.precision);
+	assert_int_equal(1, cfg.sizefmt.space);
 
-	assert_success(exec_commands("set sizefmt=units:si,precision:1", &lwin,
+	assert_success(exec_commands("set sizefmt=units:si,precision:1,space", &lwin,
 				CIT_COMMAND));
 
 	assert_int_equal(1000, cfg.sizefmt.base);
 	assert_int_equal(1, cfg.sizefmt.precision);
+	assert_int_equal(1, cfg.sizefmt.space);
+
+	assert_success(exec_commands("set sizefmt=units:iec,precision:2,nospace", &lwin,
+				CIT_COMMAND));
+
+	assert_int_equal(1024, cfg.sizefmt.base);
+	assert_int_equal(2, cfg.sizefmt.precision);
+	assert_int_equal(0, cfg.sizefmt.space);
 }
 
 TEST(sizefmt_not_changed_on_wrong_input)
 {
 	cfg.sizefmt.base = -1;
 	cfg.sizefmt.precision = -1;
+	cfg.sizefmt.space = -1;
 
 	assert_failure(exec_commands("set sizefmt=wrong", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("set sizefmt=units:wrong", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("set sizefmt=precision:0", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("set sizefmt=precision:,units:si", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("set sizefmt=space", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("set sizefmt=nospace", &lwin, CIT_COMMAND));
 
 	assert_int_equal(-1, cfg.sizefmt.base);
 	assert_int_equal(-1, cfg.sizefmt.precision);
+	assert_int_equal(-1, cfg.sizefmt.space);
 }
 
 TEST(values_in_sizefmt_are_deduplicated)
 {
 	(void)replace_string(&cfg.border_filler, "x");
 
-	assert_success(exec_commands("set sizefmt=units:si", &lwin, CIT_COMMAND));
-	assert_success(exec_commands("set sizefmt+=units:iec,precision:10", &lwin,
+	assert_success(exec_commands("set sizefmt=units:si,space", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("set sizefmt+=nospace,units:iec,precision:10", &lwin,
 				CIT_COMMAND));
 
 	vle_tb_clear(vle_err);
 	assert_success(vle_opts_set("sizefmt?", OPT_GLOBAL));
-	assert_string_equal("  sizefmt=units:iec,precision:10",
+	assert_string_equal("  sizefmt=units:iec,precision:10,nospace",
 			vle_tb_get_data(vle_err));
 }
 
