@@ -1,4 +1,4 @@
-0.10 to current
+0.10 to 0.10.1-beta (2019-07-15)
 
 	Added example of using xsel to sample vifmrc file.  Thanks to
 	chelovechishko.
@@ -65,8 +65,8 @@
 	Tykin.
 
 	Added FUSE_MOUNT3 filetype format, which is equivalent to FUSE_MOUNT, but
-	doesn't perform unmounting.  Helpful to use something like avfs.  Thanks
-	to Jose Riha (a.k.a. jose1711).
+	doesn't perform unmounting.  Helpful to use with something like avfs.
+	Thanks to Jose Riha (a.k.a. jose1711).
 
 	Added "info=" field to parser of 'mediaprg' output.  It provides custom
 	message for the media.  Patch by zsugabubus.

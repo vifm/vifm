@@ -70,7 +70,7 @@ if [ "$target" = all -o "$target" = update ]; then
     sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimappdoc}"
 
     # update date in README
-    sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
+    sed -i "/^This file last updated:/s/:.*/:$(date '+ %d %B, %Y')/" README
     # update version in README
     sed -i "/^Version:/s/ .*/ $ver/" README
     # update year in README
@@ -125,7 +125,7 @@ if [ "$target" = all -o "$target" = archive ]; then
             echo "ERROR: Building project failed."
             exit 3
         fi
-        if ! RELEASE=1 make -C src/ -f Makefile.win check; then
+        if ! RELEASE=1 make -C tests/ check; then
             echo "ERROR: Testing project failed."
             exit 4
         fi
