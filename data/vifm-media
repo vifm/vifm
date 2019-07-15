@@ -42,7 +42,7 @@ function list() {
     done <<< "$("$monitor" --enumerate-device-files)"
 }
 
-if type -P devmon udevil >/dev/null 2>/dev/null; then
+if type -P devmon udevil &>/dev/null; then
     monitor=devmon
 
     function info() {
@@ -54,7 +54,7 @@ if type -P devmon udevil >/dev/null 2>/dev/null; then
     function unmount() {
         devmon --unmount "$1"
     }
-elif type -P udisks umount >/dev/null 2>/dev/null; then
+elif type -P udisks umount &>/dev/null; then
     monitor=udisks
 
     function info() {
@@ -66,10 +66,12 @@ elif type -P udisks umount >/dev/null 2>/dev/null; then
     function unmount() {
         umount "$1"
     }
-elif type -P udisksctl >/dev/null 2>/dev/null &&
-     python -c 'import dbus' 2>/dev/null; then
+elif python2 -c 'import dbus' &>/dev/null ||
+     ${python3:=python3} -c 'import dbus' &>/dev/null &&
+     type -P udisksctl &>/dev/null; then
+    python=${python3:-python2}
     function udisks2() {
-        python - "$@" <<EOF
+        $python - "$@" <<"EOF"
 import dbus
 import sys
 
@@ -81,7 +83,7 @@ def devs():
     ud_manager_obj = bus.get_object('org.freedesktop.UDisks2',
                                     '/org/freedesktop/UDisks2')
     om = dbus.Interface(ud_manager_obj, 'org.freedesktop.DBus.ObjectManager')
-    for v in om.GetManagedObjects().itervalues():
+    for v in om.GetManagedObjects().values():
         drive_info = v.get('org.freedesktop.UDisks2.Block', {})
         usage = drive_info.get('IdUsage')
         hint = drive_info.get('HintSystem')
@@ -95,11 +97,11 @@ def devs():
 
 def list_usb():
     for (device, label, fs) in devs():
-        print 'device=%s' % device
-        print 'label=%s' % label
+        print('device=%s' % device)
+        print('label=%s' % label)
         for point in fs.get('MountPoints', {}):
             point = decode(point)
-            print "mount-point=%s" % point
+            print("mount-point=%s" % point)
 
 def path_to_dev(path):
     import os
@@ -115,7 +117,7 @@ def mount(device):
     bus = dbus.SystemBus()
     obj = bus.get_object('org.freedesktop.UDisks2',
                          '/org/freedesktop/UDisks2/block_devices%s'%device[4:])
-    print obj.Mount({}, dbus_interface='org.freedesktop.UDisks2.Filesystem')
+    print(obj.Mount({}, dbus_interface='org.freedesktop.UDisks2.Filesystem'))
 
 def unmount(path):
     device = path_to_dev(path)
@@ -146,7 +148,7 @@ EOF
     }
 else
     echo "Neither of the supported backends were found" \
-         "(udevil, udisks, udisks2)" 1>&2
+         "(udevil, udisks, udisks2)" >&2
     exit 1
 fi
 
