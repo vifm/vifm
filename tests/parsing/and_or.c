@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <stdlib.h> /* free() */
-#include <string.h> /* memset() */
+#include <string.h> /* memset() strcpy() */
 
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/var.h"
@@ -83,9 +83,9 @@ TEST(and_handles_errors_correctly)
 	var_t res_var = var_false();
 
 	char expr[8192];
-	memset(expr, '3', sizeof(expr) - 2U);
+	strcpy(expr, "1&&1==");
+	memset(expr + strlen(expr), '3', sizeof(expr) - strlen(expr));
 	expr[sizeof(expr) - 1U] = '\0';
-	strncpy(expr, "1&&1==", sizeof("1&&1==") - 1U);
 
 	assert_int_equal(PE_INTERNAL, parse(expr, 0, &res_var));
 	var_free(res_var);
@@ -96,9 +96,9 @@ TEST(or_handles_errors_correctly)
 	var_t res_var = var_false();
 
 	char expr[8192];
-	memset(expr, '3', sizeof(expr) - 2U);
+	strcpy(expr, "1||1==");
+	memset(expr + strlen(expr), '3', sizeof(expr) - strlen(expr));
 	expr[sizeof(expr) - 1U] = '\0';
-	strncpy(expr, "1||1==", sizeof("1||1==") - 1U);
 
 	assert_int_equal(PE_INTERNAL, parse(expr, 0, &res_var));
 	var_free(res_var);
