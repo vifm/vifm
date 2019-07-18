@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1-beta  Last change: 2019 Jul 15
+*vifm-app.txt*    For Vifm version 0.10.1-beta  Last change: 2019 Jul 18
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3575,11 +3575,14 @@ Configures the way size is formatted in human-friendly way.
     precision:    i > 0         How many fraction digits to consider.
                   {not set}     Precision of 1 for integer part < 10,
                                 0 otherwise (provides old behaviour).
+    space         {present}     Insert space before unit symbols.
+                                This is the default.
+    nospace       {present}     Do not insert space before unit symbols.
 
 Numbers are rounded from zero.  Trailing zeros are dropped.
 
 Example: >
- set sizefmt=units:iec,precision:2
+ set sizefmt=units:iec,precision:2,nospace
 <
                                                *vifm-'slowfs'*
                                                {only for *nix}

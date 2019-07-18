@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 15, 2019" "vifm 0.10.1-beta"
+.TH VIFM 1 "July 18, 2019" "vifm 0.10.1-beta"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4290,13 +4290,16 @@ Configures the way size is formatted in human-friendly way.
     precision:    i > 0         How many fraction digits to consider.
                   {not set}     Precision of 1 for integer part < 10,
                                 0 otherwise (provides old behaviour).
+    space         {present}     Insert space before unit symbols.
+                                This is the default.
+    nospace       {present}     Do not insert space before unit symbols.
 
 Numbers are rounded from zero.  Trailing zeros are dropped.
 
 Example:
 .EX
 
-  set sizefmt=units:iec,precision:2
+  set sizefmt=units:iec,precision:2,nospace
 .EE
 
 .TP

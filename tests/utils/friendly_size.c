@@ -9,6 +9,7 @@ SETUP()
 	cfg.sizefmt.ieci_prefixes = 0;
 	cfg.sizefmt.base = 1024;
 	cfg.sizefmt.precision = 0;
+	cfg.sizefmt.space = 1;
 }
 
 TEST(removing_useless_trailing_zero)
@@ -123,6 +124,30 @@ TEST(huge_precision)
 	friendly_size_notation(231093, sizeof(buf), buf);
 	assert_true(starts_with_lit(buf, "225.676757812"));
 	assert_true(ends_with(buf, " K"));
+}
+
+TEST(nospace)
+{
+	char buf[16];
+
+	cfg.sizefmt.ieci_prefixes = 1;
+	cfg.sizefmt.precision = 0;
+	cfg.sizefmt.space = 0;
+
+	friendly_size_notation(10301024, sizeof(buf), buf);
+	assert_string_equal("10MiB", buf);
+}
+
+TEST(nospace_with_precision)
+{
+	char buf[16];
+
+	cfg.sizefmt.ieci_prefixes = 1;
+	cfg.sizefmt.precision = 2;
+	cfg.sizefmt.space = 0;
+
+	friendly_size_notation(10301024, sizeof(buf), buf);
+	assert_string_equal("9.83MiB", buf);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
