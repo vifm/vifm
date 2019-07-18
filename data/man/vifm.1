@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 16, 2019" "vifm 0.10.1-beta"
+.TH VIFM 1 "July 18, 2019" "vifm 0.10.1-beta"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4279,7 +4279,7 @@ Alternatively 0, 1 and 2 Vim-like values  are also accepted and correspond to
 .BI 'sizefmt'
 type: string list
 .br
-default: "units:iec,space"
+default: "units:iec"
 .br
 Configures the way size is formatted in human-friendly way.
 
@@ -4290,7 +4290,9 @@ Configures the way size is formatted in human-friendly way.
     precision:    i > 0         How many fraction digits to consider.
                   {not set}     Precision of 1 for integer part < 10,
                                 0 otherwise (provides old behaviour).
-    space         {boolean}     Show space before unit symbols.
+    space         {present}     Insert space before unit symbols.
+                                This is the default.
+    nospace       {present}     Do not insert space before unit symbols.
 
 Numbers are rounded from zero.  Trailing zeros are dropped.
 

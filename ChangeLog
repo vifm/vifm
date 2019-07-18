@@ -1,3 +1,8 @@
+0.10.1-beta to current
+
+	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
+	zsugabubus.
+
 0.10 to 0.10.1-beta (2019-07-15)
 
 	Added example of using xsel to sample vifmrc file.  Thanks to
