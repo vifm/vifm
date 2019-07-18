@@ -1657,6 +1657,27 @@ ui_get_decors(const dir_entry_t *entry, const char **prefix,
 	}
 }
 
+void
+ui_view_reset_decor_cache(const view_t *view)
+{
+	int i;
+
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		view->dir_entry[i].name_dec_num = -1;
+	}
+
+	for(i = 0; i < view->left_column.entries.nentries; ++i)
+	{
+		view->left_column.entries.entries[i].name_dec_num = -1;
+	}
+
+	for(i = 0; i < view->right_column.entries.nentries; ++i)
+	{
+		view->right_column.entries.entries[i].name_dec_num = -1;
+	}
+}
+
 /* Gets real type of file view entry.  Returns type of entry, resolving symbolic
  * link if needed. */
 static FileType
