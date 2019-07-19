@@ -29,7 +29,6 @@
 #include <sys/ioctl.h>
 #include <termios.h> /* struct winsize */
 #endif
-#include <sys/time.h> /* gettimeofday() */
 #include <unistd.h>
 
 #include <assert.h> /* assert() */
@@ -40,7 +39,6 @@
 #include <stdlib.h> /* abs() free() */
 #include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h> /* memset() strcat() strcmp() strcpy() strdup() strlen() */
-#include <time.h> /* time() */
 #include <wchar.h> /* wint_t wcslen() */
 
 #include "../cfg/config.h"
@@ -138,7 +136,6 @@ static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
 static int is_in_miller_view(const view_t *view);
 static int is_forced_list_mode(const view_t *view);
-static uint64_t get_updated_time(uint64_t prev);
 
 void
 ui_ruler_update(view_t *view, int lazy_redraw)
@@ -2385,7 +2382,7 @@ void
 ui_view_schedule_redraw(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);
-	view->postponed_redraw = get_updated_time(view->postponed_redraw);
+	view->need_redraw = 1;
 	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
@@ -2393,28 +2390,15 @@ void
 ui_view_schedule_reload(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);
-	view->postponed_reload = get_updated_time(view->postponed_reload);
+	view->need_reload = 1;
 	pthread_mutex_unlock(view->timestamps_mutex);
-}
-
-/* Gets updated timestamp ensuring that it's always greater than the previous
- * value.  Returns the timestamp. */
-static uint64_t
-get_updated_time(uint64_t prev)
-{
-	/* XXX: why use time if simple counter should do? */
-	struct timeval tv = {0};
-	(void)gettimeofday(&tv, NULL);
-
-	uint64_t new = tv.tv_sec*1000000ULL + tv.tv_usec;
-	return (new <= prev ? prev + 1 : new);
 }
 
 void
 ui_view_redrawn(view_t *view)
 {
 	pthread_mutex_lock(view->timestamps_mutex);
-	view->last_redraw = view->postponed_redraw;
+	view->need_redraw = 0;
 	pthread_mutex_unlock(view->timestamps_mutex);
 }
 
@@ -2425,11 +2409,11 @@ ui_view_query_scheduled_event(view_t *view)
 
 	pthread_mutex_lock(view->timestamps_mutex);
 
-	if(view->postponed_reload != view->last_reload)
+	if(view->need_reload)
 	{
 		event = UUE_RELOAD;
 	}
-	else if(view->postponed_redraw != view->last_redraw)
+	else if(view->need_redraw)
 	{
 		event = UUE_REDRAW;
 	}
@@ -2438,8 +2422,8 @@ ui_view_query_scheduled_event(view_t *view)
 		event = UUE_NONE;
 	}
 
-	view->last_redraw = view->postponed_redraw;
-	view->last_reload = view->postponed_reload;
+	view->need_redraw = 0;
+	view->need_reload = 0;
 
 	pthread_mutex_unlock(view->timestamps_mutex);
 
