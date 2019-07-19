@@ -442,18 +442,11 @@ struct view_t
 	int num_width, num_width_g;
 	int real_num_width; /* Real character count reserved for number field. */
 
-	/* Timestamps for controlling of scheduling update requests.  They are in
-	 * microseconds.  Real resolution is bigger than microsecond, but it's not
-	 * critical. */
-
-	uint64_t postponed_redraw;         /* Time of last redraw request. */
-	uint64_t postponed_reload;         /* Time of last reload request. */
+	int need_redraw;                   /* Whether view should be redrawn. */
+	int need_reload;                   /* Whether view should be reloaded. */
 	pthread_mutex_t *timestamps_mutex; /* Protects access to above variables.
 	                                      This is a pointer, because mutexes
 	                                      shouldn't be copied. */
-
-	uint64_t last_redraw; /* Time of last redraw. */
-	uint64_t last_reload; /* Time of last [full] reload. */
 
 	int on_slow_fs; /* Whether current directory has access penalties. */
 	int has_dups;   /* Whether current directory has duplicated file entries (FS
