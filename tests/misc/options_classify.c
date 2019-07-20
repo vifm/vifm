@@ -3,9 +3,15 @@
 #include <string.h> /* memcmp() */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/fs_limits.h"
 #include "../../src/engine/options.h"
+#include "../../src/ui/column_view.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
+#include "../../src/filelist.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -183,6 +189,35 @@ TEST(classify_does_not_stop_on_empty_prefix)
 	ui_get_decors(&entry, &prefix, &suffix);
 	assert_string_equal("", prefix);
 	assert_string_equal("|", suffix);
+}
+
+TEST(changing_classify_invalidates_decors_cache)
+{
+	static char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", cwd);
+	load_dir_list(&lwin, 1);
+
+	assert_success(exec_commands("set millerview milleroptions=lsize:1,rsize:1",
+				&lwin, CIT_COMMAND));
+	assert_success(exec_commands("set classify=::*.vifm::*|", &lwin,
+				CIT_COMMAND));
+
+	fview_setup();
+	lwin.window_cols = 100;
+	lwin.window_rows = 10;
+	lwin.columns = columns_create();
+
+	curr_stats.need_update = UT_NONE;
+	curr_stats.load_stage = 2;
+	redraw_view(curr_view);
+	assert_success(exec_commands("set classify=", &lwin, CIT_COMMAND));
+	redraw_view(curr_view);
+	curr_stats.load_stage = 0;
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	columns_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

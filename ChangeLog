@@ -3,7 +3,14 @@
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
 	zsugabubus.
 
+	Added autodetection of *.vifm files as files with "vifm" filetype to the
+	plugin.  Patch by Anton Kochkov (a.k.a. XVilka).
+
 	Made udisks2 part of vifm-media script compatible with python3.  Patch by
+	zsugabubus.
+
+	Fixed assertion failure on resetting 'classify' option when 'millerview'
+	is on (reproducing it is harder than that, but that's the idea).  Patch by
 	zsugabubus.
 
 0.10 to 0.10.1-beta (2019-07-15)
