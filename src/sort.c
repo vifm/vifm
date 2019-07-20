@@ -520,9 +520,9 @@ compare_group(const char f[], const char s[], regex_t *regex)
 	regmatch_t fmatch = get_group_match(regex, f);
 	regmatch_t smatch = get_group_match(regex, s);
 
-	copy_str(fname, MIN(sizeof(fname), fmatch.rm_eo - fmatch.rm_so + 1U),
+	copy_str(fname, MIN(sizeof(fname), (size_t)fmatch.rm_eo - fmatch.rm_so + 1U),
 			f + fmatch.rm_so);
-	copy_str(sname, MIN(sizeof(sname), smatch.rm_eo - smatch.rm_so + 1U),
+	copy_str(sname, MIN(sizeof(sname), (size_t)smatch.rm_eo - smatch.rm_so + 1U),
 			s + smatch.rm_so);
 
 	return strcmp(fname, sname);

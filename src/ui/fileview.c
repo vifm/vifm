@@ -1419,7 +1419,7 @@ format_primary_group(int id, const void *data, size_t buf_len, char buf[])
 	const view_t *view = cdt->view;
 	regmatch_t match = get_group_match(&view->primary_group, cdt->entry->name);
 
-	copy_str(buf, MIN(buf_len + 1U, match.rm_eo - match.rm_so + 1U),
+	copy_str(buf, MIN(buf_len + 1U, (size_t)match.rm_eo - match.rm_so + 1U),
 			cdt->entry->name + match.rm_so);
 }
 
