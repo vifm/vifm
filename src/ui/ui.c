@@ -2354,7 +2354,8 @@ ui_set_bg(WINDOW *win, const col_attr_t *col, int pair)
 void
 ui_set_attr(WINDOW *win, const col_attr_t *col, int pair)
 {
-	if(curr_stats.load_stage < 1)
+	/* win can be NULL in tests. */
+	if(curr_stats.load_stage < 1 || win == NULL)
 	{
 		return;
 	}
