@@ -822,9 +822,9 @@ redraw_current_view(void)
 void
 fview_cursor_redraw(view_t *view)
 {
-	// fview_cursor_redraw() is also called in situations when file list has
-	// changed, so just let fview_position_updated() deal with it.  With a cache
-	// of last position, it should be fine.
+	/* fview_cursor_redraw() is also called in situations when file list has
+	 * changed, so just let fview_position_updated() deal with it.  With a cache
+	 * of last position, it should be fine. */
 	fview_position_updated(view);
 }
 

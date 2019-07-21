@@ -489,7 +489,7 @@ update_cursor_position(view_t *view)
 {
 	if(put_confirm.last_conflict == NULL && put_confirm.put.nitems == 0)
 	{
-		// Apparently, nothing has changed.
+		/* Apparently, nothing has changed. */
 		return;
 	}
 
