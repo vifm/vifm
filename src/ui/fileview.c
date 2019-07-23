@@ -826,6 +826,16 @@ fview_cursor_redraw(view_t *view)
 	 * changed, so just let fview_position_updated() deal with it.  With a cache
 	 * of last position, it should be fine. */
 	fview_position_updated(view);
+
+	/* Always redrawing the cell won't hurt and will account for the case when
+	 * selection state of item under the cursor has changed. */
+	if(!ui_view_displays_columns(view))
+	{
+		/* Inactive cell in ls-like view usually takes less space than an active
+		 * one.  Need to clear the cell before drawing over it. */
+		redraw_cell(view, view->top_line, view->curr_line, 0);
+	}
+	redraw_cell(view, view->top_line, view->curr_line, 1);
 }
 
 void
