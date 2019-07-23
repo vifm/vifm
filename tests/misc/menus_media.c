@@ -134,8 +134,8 @@ device=/dev/label-2mounts\n\
 mount-point=mount-point1\n\
 mount-point=mount-point2\n\
 mount-point=mount-point3\n\
-label=ignored label\n\
-info=device info [my label]\n", fp);
+info=device info [my label]\n\
+label=ignored label\n", fp);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));

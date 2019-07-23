@@ -13,6 +13,8 @@
 	is on (reproducing it is harder than that, but that's the idea).  Patch by
 	zsugabubus.
 
+	Fixed info= not having higher priority than label= in 'mediaprg'.
+
 0.10 to 0.10.1-beta (2019-07-15)
 
 	Added example of using xsel to sample vifmrc file.  Thanks to

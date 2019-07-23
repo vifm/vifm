@@ -69,6 +69,7 @@ typedef struct
 	char *text;     /* Arbitrary text next to device name (can be NULL). */
 	char **paths;   /* List of paths at which the device is mounted. */
 	int path_count; /* Number of elements in the paths array. */
+	int has_info;   /* Set when text is set via info=. */
 }
 media_info_t;
 
@@ -274,6 +275,7 @@ output_handler(const char line[], void *arg)
 		info->text = NULL;
 		info->paths = NULL;
 		info->path_count = 0;
+		info->has_info = 0;
 	}
 	else if(info_count > 0)
 	{
@@ -281,8 +283,9 @@ output_handler(const char line[], void *arg)
 		if(skip_prefix(&line, "info="))
 		{
 			replace_string(&info->text, line);
+			info->has_info = 1;
 		}
-		else if(skip_prefix(&line, "label="))
+		else if(skip_prefix(&line, "label=") && !info->has_info)
 		{
 			put_string(&info->text, format_str("[%s]", line));
 		}
