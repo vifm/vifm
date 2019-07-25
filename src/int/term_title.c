@@ -52,7 +52,7 @@ typedef enum
 TitleKind;
 
 static void ensure_initialized(void);
-static TitleKind get_title_kind(void);
+static TitleKind get_title_kind(const char term[]);
 static void save_term_title(void);
 static void restore_term_title(void);
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -150,7 +150,7 @@ ensure_initialized(void)
 		return;
 	}
 
-	title_state.kind = get_title_kind();
+	title_state.kind = get_title_kind(env_get("TERM"));
 	if(title_state.kind == TK_REGULAR)
 	{
 		save_term_title();
@@ -161,7 +161,7 @@ ensure_initialized(void)
 /* Checks if we can alter terminal emulator title.  Returns kind of writes we
  * should do. */
 static TitleKind
-get_title_kind(void)
+get_title_kind(const char term[])
 {
 #ifdef _WIN32
 	return TK_REGULAR;
@@ -176,8 +176,6 @@ get_title_kind(void)
 	static char *SCREEN_LIKE[] = {
 		"screen", "screen-bce", "screen-256color", "screen-256color-bce"
 	};
-
-	const char *const term = env_get("TERM");
 
 	if(is_in_string_array(XTERM_LIKE, ARRAY_LEN(XTERM_LIKE), term))
 	{
