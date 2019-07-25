@@ -35,11 +35,11 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* stdout fflush() */
 #include <stdlib.h> /* atol() free() */
+#include <string.h> /* strcmp() */
 
 #include "../utils/env.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
-#include "../utils/string_array.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 
@@ -167,23 +167,14 @@ get_title_kind(const char term[])
 #ifdef _WIN32
 	return TK_REGULAR;
 #else
-	/* These have "char *" because of is_in_string_array() prototype. */
-
-	static char *XTERM_LIKE[] = {
-		"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
-		"aterm", "Eterm",
-	};
-
-	static char *SCREEN_LIKE[] = {
-		"screen", "screen-bce", "screen-256color", "screen-256color-bce"
-	};
-
-	if(is_in_string_array(XTERM_LIKE, ARRAY_LEN(XTERM_LIKE), term))
+	if(strcmp(term, "xterm") == 0 || starts_with_lit(term, "xterm-") ||
+			strcmp(term, "rxvt") == 0 || starts_with_lit(term, "rxvt-") ||
+			strcmp(term, "aterm") == 0 || strcmp(term, "Eterm") == 0)
 	{
 		return TK_REGULAR;
 	}
 
-	if(is_in_string_array(SCREEN_LIKE, ARRAY_LEN(SCREEN_LIKE), term))
+	if(strcmp(term, "screen") == 0 || starts_with_lit(term, "screen-"))
 	{
 		return TK_SCREEN;
 	}

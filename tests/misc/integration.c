@@ -259,12 +259,14 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 TEST(title_support_is_detected_correctly)
 {
 	static char *XTERM_LIKE[] = {
-		"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
-		"aterm", "Eterm",
+		"xterm", "xterm-256color", "xterm-termite", "xterm-anything",
+		"rxvt", "rxvt-256color", "rxvt-unicode", "rxvt-anything",
+		"aterm", "Eterm"
 	};
 
 	static char *SCREEN_LIKE[] = {
-		"screen", "screen-bce", "screen-256color", "screen-256color-bce"
+		"screen", "screen-bce", "screen-256color", "screen-256color-bce",
+		"screen-anything"
 	};
 
 #ifdef _WIN32
