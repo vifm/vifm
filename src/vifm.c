@@ -618,6 +618,11 @@ exec_startup_commands(const args_t *args)
 
 		(void)exec_commands(args->cmds[i], curr_view, CIT_COMMAND);
 	}
+
+	if(curr_stats.need_update != UT_NONE)
+	{
+		update_screen(curr_stats.need_update);
+	}
 }
 
 void
