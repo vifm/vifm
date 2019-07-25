@@ -35,11 +35,12 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* stdout fflush() */
 #include <stdlib.h> /* atol() free() */
+#include <string.h> /* strcmp() */
 
 #include "../utils/env.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
-#include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 
 /* Kind of title we're working with. */
@@ -52,7 +53,7 @@ typedef enum
 TitleKind;
 
 static void ensure_initialized(void);
-static TitleKind get_title_kind(void);
+TSTATIC TitleKind get_title_kind(const char term[]);
 static void save_term_title(void);
 static void restore_term_title(void);
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -150,7 +151,7 @@ ensure_initialized(void)
 		return;
 	}
 
-	title_state.kind = get_title_kind();
+	title_state.kind = get_title_kind(env_get("TERM"));
 	if(title_state.kind == TK_REGULAR)
 	{
 		save_term_title();
@@ -160,31 +161,20 @@ ensure_initialized(void)
 
 /* Checks if we can alter terminal emulator title.  Returns kind of writes we
  * should do. */
-static TitleKind
-get_title_kind(void)
+TSTATIC TitleKind
+get_title_kind(const char term[])
 {
 #ifdef _WIN32
 	return TK_REGULAR;
 #else
-	/* These have "char *" because of is_in_string_array() prototype. */
-
-	static char *XTERM_LIKE[] = {
-		"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
-		"aterm", "Eterm",
-	};
-
-	static char *SCREEN_LIKE[] = {
-		"screen", "screen-bce", "screen-256color", "screen-256color-bce"
-	};
-
-	const char *const term = env_get("TERM");
-
-	if(is_in_string_array(XTERM_LIKE, ARRAY_LEN(XTERM_LIKE), term))
+	if(strcmp(term, "xterm") == 0 || starts_with_lit(term, "xterm-") ||
+			strcmp(term, "rxvt") == 0 || starts_with_lit(term, "rxvt-") ||
+			strcmp(term, "aterm") == 0 || strcmp(term, "Eterm") == 0)
 	{
 		return TK_REGULAR;
 	}
 
-	if(is_in_string_array(SCREEN_LIKE, ARRAY_LEN(SCREEN_LIKE), term))
+	if(strcmp(term, "screen") == 0 || starts_with_lit(term, "screen-"))
 	{
 		return TK_SCREEN;
 	}
@@ -193,7 +183,7 @@ get_title_kind(void)
 #endif
 }
 
-/* stores current terminal title into title_state.title */
+/* Stores current terminal title into title_state.title. */
 static void
 save_term_title(void)
 {
@@ -208,7 +198,7 @@ save_term_title(void)
 	try_dynload_xlib();
 #endif
 
-	/* use X to determine current window title */
+	/* Use X to determine current window title. */
 	if(get_x11_disp_and_win(&x11_display, &x11_window))
 		get_x11_window_title(x11_display, x11_window, title_state.title,
 				sizeof(title_state.title));
@@ -216,7 +206,7 @@ save_term_title(void)
 #endif
 }
 
-/* restores terminal title from title_state.title */
+/* Restores terminal title from title_state.title. */
 static void
 restore_term_title(void)
 {
@@ -242,7 +232,7 @@ restore_term_title(void)
 }
 
 #if !defined(_WIN32) && defined(HAVE_X11)
-/* loads X specific variables */
+/* Loads X specific variables. */
 static int
 get_x11_disp_and_win(Display **disp, Window *win)
 {
@@ -259,7 +249,7 @@ get_x11_disp_and_win(Display **disp, Window *win)
 	return 1;
 }
 
-/* gets terminal title using X */
+/* Gets terminal title using X. */
 static void
 get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 {
@@ -278,7 +268,7 @@ get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 	XFreeWrapper(text_prop.value);
 }
 
-/* callback function for reporting X errors, should return 0 on success */
+/* Callback function for reporting X errors, should return 0 on success. */
 static int
 x_error_check(Display *dpy, XErrorEvent *error_event)
 {

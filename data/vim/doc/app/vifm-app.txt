@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1-beta  Last change: 2019 Jul 18
+*vifm-app.txt*    For Vifm version 0.10.1-beta  Last change: 2019 Jul 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3868,8 +3868,15 @@ title
 type: boolean
 default: true when title can be restored, false otherwise
 
-When enabled title of the terminal or terminal multiplexer's window is
-updated according to current location.
+When enabled, title of the terminal or terminal multiplexer's window is
+updated according to current location.  Because not all terminals support
+setting title, this works only if `$TERM` value matches one of the following
+conditions:
+ - equals "xterm" or starts with "xterm-"
+ - equals "rxvt" or starts with "rxvt-"
+ - equals "screen" or starts with "screen-"
+ - equals "aterm"
+ - equals "Eterm"
 
                                                *vifm-'tuioptions'* *vifm-'to'*
 tuioptions to

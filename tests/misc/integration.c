@@ -9,12 +9,14 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
+#include "../../src/int/term_title.h"
 #include "../../src/int/vim.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/fileview.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/macros.h"
 #include "../../src/utils/str.h"
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
@@ -32,6 +34,7 @@ SETUP()
 TEARDOWN()
 {
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.slow_fs_list, NULL);
 }
 
 /* Because of fmemopen(). */
@@ -251,6 +254,46 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 	columns_teardown();
 
 	restore_cwd(saved_cwd);
+}
+
+TEST(title_support_is_detected_correctly)
+{
+	static char *XTERM_LIKE[] = {
+		"xterm", "xterm-256color", "xterm-termite", "xterm-anything",
+		"rxvt", "rxvt-256color", "rxvt-unicode", "rxvt-anything",
+		"aterm", "Eterm"
+	};
+
+	static char *SCREEN_LIKE[] = {
+		"screen", "screen-bce", "screen-256color", "screen-256color-bce",
+		"screen-anything"
+	};
+
+#ifdef _WIN32
+	unsigned int i;
+	for(i = 0; i < ARRAY_LEN(XTERM_LIKE); ++i)
+	{
+		assert_int_equal(TK_REGULAR, get_title_kind(XTERM_LIKE[i]));
+	}
+	for(i = 0; i < ARRAY_LEN(SCREEN_LIKE); ++i)
+	{
+		assert_int_equal(TK_REGULAR, get_title_kind(SCREEN_LIKE[i]));
+	}
+	assert_int_equal(TK_REGULAR, get_title_kind("linux"));
+	assert_int_equal(TK_REGULAR, get_title_kind("unknown"));
+#else
+	unsigned int i;
+	for(i = 0; i < ARRAY_LEN(XTERM_LIKE); ++i)
+	{
+		assert_int_equal(TK_REGULAR, get_title_kind(XTERM_LIKE[i]));
+	}
+	for(i = 0; i < ARRAY_LEN(SCREEN_LIKE); ++i)
+	{
+		assert_int_equal(TK_SCREEN, get_title_kind(SCREEN_LIKE[i]));
+	}
+	assert_int_equal(TK_ABSENT, get_title_kind("linux"));
+	assert_int_equal(TK_ABSENT, get_title_kind("unknown"));
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
