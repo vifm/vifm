@@ -822,10 +822,20 @@ redraw_current_view(void)
 void
 fview_cursor_redraw(view_t *view)
 {
-	// fview_cursor_redraw() is also called in situations when file list has
-	// changed, so just let fview_position_updated() deal with it.  With a cache
-	// of last position, it should be fine.
+	/* fview_cursor_redraw() is also called in situations when file list has
+	 * changed, so just let fview_position_updated() deal with it.  With a cache
+	 * of last position, it should be fine. */
 	fview_position_updated(view);
+
+	/* Always redrawing the cell won't hurt and will account for the case when
+	 * selection state of item under the cursor has changed. */
+	if(!ui_view_displays_columns(view))
+	{
+		/* Inactive cell in ls-like view usually takes less space than an active
+		 * one.  Need to clear the cell before drawing over it. */
+		redraw_cell(view, view->top_line, view->curr_line, 0);
+	}
+	redraw_cell(view, view->top_line, view->curr_line, 1);
 }
 
 void
@@ -1419,7 +1429,7 @@ format_primary_group(int id, const void *data, size_t buf_len, char buf[])
 	const view_t *view = cdt->view;
 	regmatch_t match = get_group_match(&view->primary_group, cdt->entry->name);
 
-	copy_str(buf, MIN(buf_len + 1U, match.rm_eo - match.rm_so + 1U),
+	copy_str(buf, MIN(buf_len + 1U, (size_t)match.rm_eo - match.rm_so + 1U),
 			cdt->entry->name + match.rm_so);
 }
 

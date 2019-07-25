@@ -12,6 +12,8 @@
 #include "../../src/int/vim.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
+#include "../../src/ui/column_view.h"
+#include "../../src/ui/fileview.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
 #include "../../src/event_loop.h"
@@ -203,6 +205,8 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 	curr_view = &lwin;
 	other_view = &rwin;
 	view_setup(&lwin);
+	fview_setup();
+	lwin.columns = columns_create();
 
 	init_modes();
 	opt_handlers_setup();
@@ -238,9 +242,13 @@ TEST(externally_edited_local_filter_is_applied, IF(not_windows))
 	update_string(&cfg.shell, NULL);
 	assert_success(unlink(path));
 
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	view_teardown(&lwin);
+
 	vle_keys_reset();
 	opt_handlers_teardown();
-	view_teardown(&lwin);
+	columns_teardown();
 
 	restore_cwd(saved_cwd);
 }

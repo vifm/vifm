@@ -386,8 +386,8 @@ tabs_quit_on_close(void)
 void
 tabs_close(void)
 {
-	// XXX: FUSE filesystems aren't exited this way, but this might be OK because
-	//      usually we exit from them on explicit ".." by a user.
+	/* XXX: FUSE filesystems aren't exited this way, but this might be OK because
+	 *      usually we exit from them on explicit ".." by a user. */
 
 	if(cfg.pane_tabs)
 	{

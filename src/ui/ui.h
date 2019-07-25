@@ -615,7 +615,7 @@ void format_entry_name(const dir_entry_t *entry, NameFormat fmt, size_t buf_len,
 void ui_get_decors(const dir_entry_t *entry, const char **prefix,
 		const char **suffix);
 
-/* Reset cached indexes for name-dependent type_decs. */
+/* Resets cached indexes for name-dependent type_decs. */
 void ui_view_reset_decor_cache(const view_t *view);
 
 /* Moves cursor to position specified by coordinates checking result of the
