@@ -13,6 +13,9 @@
 	"screen-" supports terminal title.  Thanks to Matthias
 	Braun (a.k.a. mb720).
 
+	Documented $TERM values for which 'title' option works.  Thanks to Matthias
+	Braun (a.k.a. mb720).
+
 	Fixed assertion failure on resetting 'classify' option when 'millerview'
 	is on (reproducing it is harder than that, but that's the idea).  Patch by
 	zsugabubus.

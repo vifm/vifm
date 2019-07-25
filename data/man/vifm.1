@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 18, 2019" "vifm 0.10.1-beta"
+.TH VIFM 1 "July 25, 2019" "vifm 0.10.1-beta"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4606,8 +4606,15 @@ type: boolean
 .br
 default: true when title can be restored, false otherwise
 .br
-When enabled title of the terminal or terminal multiplexer's window is updated
-according to current location.
+When enabled, title of the terminal or terminal multiplexer's window is
+updated according to current location.  Because not all terminals support
+setting title, this works only if `$TERM` value matches one of the following
+conditions:
+ - equals "xterm" or starts with "xterm-"
+ - equals "rxvt" or starts with "rxvt-"
+ - equals "screen" or starts with "screen-"
+ - equals "aterm"
+ - equals "Eterm"
 .TP
 .BI 'trash'
 type: boolean
