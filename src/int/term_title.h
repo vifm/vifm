@@ -19,12 +19,28 @@
 #ifndef VIFM__INT__TERM_TITLE_H__
 #define VIFM__INT__TERM_TITLE_H__
 
+#include "../utils/test_helpers.h"
+
 /* Determines whether terminal title can be restored.  Returns non-zero if so,
  * otherwise zero is returned. */
 int term_title_restorable(void);
 
 /* Updates terminal title.  If title_part is NULL, resets terminal title. */
 void term_title_update(const char title_part[]);
+
+#ifdef TEST
+/* Kind of title we're working with. */
+typedef enum
+{
+	TK_ABSENT,  /* No title support. */
+	TK_REGULAR, /* Normal for the platform (xterm for *nix). */
+	TK_SCREEN,  /* GNU screen compatible. */
+}
+TitleKind;
+#endif
+TSTATIC_DEFS(
+	TitleKind get_title_kind(const char term[]);
+)
 
 #endif /* VIFM__INT__TERM_TITLE_H__ */
 

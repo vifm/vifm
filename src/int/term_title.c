@@ -40,6 +40,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
 
 /* Kind of title we're working with. */
@@ -52,7 +53,7 @@ typedef enum
 TitleKind;
 
 static void ensure_initialized(void);
-static TitleKind get_title_kind(const char term[]);
+TSTATIC TitleKind get_title_kind(const char term[]);
 static void save_term_title(void);
 static void restore_term_title(void);
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -160,7 +161,7 @@ ensure_initialized(void)
 
 /* Checks if we can alter terminal emulator title.  Returns kind of writes we
  * should do. */
-static TitleKind
+TSTATIC TitleKind
 get_title_kind(const char term[])
 {
 #ifdef _WIN32
