@@ -183,7 +183,7 @@ get_title_kind(const char term[])
 #endif
 }
 
-/* stores current terminal title into title_state.title */
+/* Stores current terminal title into title_state.title. */
 static void
 save_term_title(void)
 {
@@ -198,7 +198,7 @@ save_term_title(void)
 	try_dynload_xlib();
 #endif
 
-	/* use X to determine current window title */
+	/* Use X to determine current window title. */
 	if(get_x11_disp_and_win(&x11_display, &x11_window))
 		get_x11_window_title(x11_display, x11_window, title_state.title,
 				sizeof(title_state.title));
@@ -206,7 +206,7 @@ save_term_title(void)
 #endif
 }
 
-/* restores terminal title from title_state.title */
+/* Restores terminal title from title_state.title. */
 static void
 restore_term_title(void)
 {
@@ -232,7 +232,7 @@ restore_term_title(void)
 }
 
 #if !defined(_WIN32) && defined(HAVE_X11)
-/* loads X specific variables */
+/* Loads X specific variables. */
 static int
 get_x11_disp_and_win(Display **disp, Window *win)
 {
@@ -249,7 +249,7 @@ get_x11_disp_and_win(Display **disp, Window *win)
 	return 1;
 }
 
-/* gets terminal title using X */
+/* Gets terminal title using X. */
 static void
 get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 {
@@ -268,7 +268,7 @@ get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 	XFreeWrapper(text_prop.value);
 }
 
-/* callback function for reporting X errors, should return 0 on success */
+/* Callback function for reporting X errors, should return 0 on success. */
 static int
 x_error_check(Display *dpy, XErrorEvent *error_event)
 {
