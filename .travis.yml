@@ -26,7 +26,7 @@ addons:
   coverity_scan:
     project:
       name: vifm/vifm
-      version: 0.10.1-beta+
+      version: 0.10.1+
       description: "TUI file manager with vi like key bindings."
     notification_email: xaizek@posteo.net
     build_command_prepend: scripts/fix-timestamps fast && ./configure --disable-dependency-tracking

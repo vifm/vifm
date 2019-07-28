@@ -1,4 +1,4 @@
-0.10.1-beta to current
+0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
 	zsugabubus.

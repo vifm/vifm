@@ -125,7 +125,7 @@ vifmres.o: vifm.res
 ../build-aux/config.h:
 	@echo Creating sample $@
 	mkdir -p ../build-aux
-	echo '#define VERSION "0.10.1-beta"' > $@; \
+	echo '#define VERSION "0.10.1"' > $@; \
 	echo '#define ENABLE_EXTENDED_KEYS' >> $@; \
 	echo '#define _GNU_SOURCE 1' >> $@; \
 	echo '#define PACKAGE_SYSCONF_DIR ""' >> $@; \
