@@ -829,13 +829,20 @@ fview_cursor_redraw(view_t *view)
 
 	/* Always redrawing the cell won't hurt and will account for the case when
 	 * selection state of item under the cursor has changed. */
-	if(!ui_view_displays_columns(view))
+	if(view == other_view)
 	{
-		/* Inactive cell in ls-like view usually takes less space than an active
-		 * one.  Need to clear the cell before drawing over it. */
-		redraw_cell(view, view->top_line, view->curr_line, 0);
+		fview_draw_inactive_cursor(view);
 	}
-	redraw_cell(view, view->top_line, view->curr_line, 1);
+	else
+	{
+		if(!ui_view_displays_columns(view))
+		{
+			/* Inactive cell in ls-like view usually takes less space than an active
+			 * one.  Need to clear the cell before drawing over it. */
+			redraw_cell(view, view->top_line, view->curr_line, 0);
+		}
+		redraw_cell(view, view->top_line, view->curr_line, 1);
+	}
 }
 
 void
