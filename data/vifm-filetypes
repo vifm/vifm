@@ -99,6 +99,9 @@ filextype *.azw ebook-viewer
 filextype *.cbz,*.cbr,*.cbt,*.cb7 zathura, ebook-viewer, comix
 filextype *.epub zathura, FBReader, ebook-viewer
 
+" Mbox
+filetype *.mbox mutt -f
+
 " Gps track/points
 filextype *.gpx,*.gpx.gz gpsprune, gpxsee, routeconverter, gpxviewer
 
