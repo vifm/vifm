@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 21, 2019" "vifm 0.10.1"
+.TH VIFM 1 "August 22, 2019" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1628,6 +1628,9 @@ single trailing '?' or '!'.
 User commands are run in a shell by default (see below for syntax of other
 options).  To run a command in the background you must mark it as a background
 command by adding " &" after the command's action (e.g., `:com rm rm %f &`).
+.br
+User commands of all kinds have macros expanded in them.  See "Command macros"
+section for more information.
 .TP
 .BI ":com[mand] name /pattern"
 set search pattern.

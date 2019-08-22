@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Aug 21
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Aug 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1406,6 +1406,9 @@ The builtin commands are:
     other options).  To run a command in the background you must mark it as a
     background command by adding " &" after the command's action
     (e.g., `:com rm rm %f &`).
+
+    User commands of all kinds have macros expanded in them.  See
+    |vifm-macros| for more information.
 :com[mand] name /pattern
     set search pattern.
 :com[mand] name =pattern

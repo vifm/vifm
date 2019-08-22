@@ -2,6 +2,9 @@
 
 	Made documentation of :command more comprehensible.
 
+	Explicitly documented that macros are expanded in user defined commands.
+	Thanks to gcmt.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
