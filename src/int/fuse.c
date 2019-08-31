@@ -669,13 +669,15 @@ run_fuse_command(char cmd[], const cancellation_t *cancellation, int *cancelled)
 static void
 kill_mount_point(const char mount_point[])
 {
-	if(rmdir(mount_point) != 0 && errno == ENOTDIR)
-	{
-		/* unlink() will fail if there is a trailing slash. */
-		char no_slash[strlen(mount_point) + 1];
-		strcpy(no_slash, mount_point);
-		chosp(no_slash);
+	/* rmdir() on some systems (FreeBSD at least) can resolve symbolic links if
+	 * path ends with a slash and unlink() will also fail if there is a trailing
+	 * slash. */
+	char no_slash[strlen(mount_point) + 1];
+	strcpy(no_slash, mount_point);
+	chosp(no_slash);
 
+	if(rmdir(no_slash) != 0 && errno == ENOTDIR)
+	{
 		/* FUSE mounter might replace directory with a symbolic link, account for
 		 * this possibility. */
 		(void)unlink(no_slash);

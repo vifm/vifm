@@ -9,7 +9,7 @@
 #include <unistd.h> /* _Exit() lstat() */
 
 #include <signal.h> /* SIGXFSZ SIG_IGN signal() */
-#include <stdlib.h> /* EXIT_SUCCESS */
+#include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS */
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
@@ -506,8 +506,16 @@ TEST(append_truncates_destination_files_on_error, IF(not_windows))
 		const struct rlimit rlim = { .rlim_cur = 25, .rlim_max = 25 };
 
 		(void)signal(SIGXFSZ, SIG_IGN);
-		assert_success(setrlimit(RLIMIT_FSIZE, &rlim));
-		assert_failure(iop_cp(&args));
+		if(setrlimit(RLIMIT_FSIZE, &rlim) != 0)
+		{
+			_Exit(EXIT_FAILURE);
+		}
+
+		/* We expect copy operation to fail. */
+		if(iop_cp(&args) == 0)
+		{
+			_Exit(EXIT_FAILURE);
+		}
 
 		_Exit(EXIT_SUCCESS);
 	}

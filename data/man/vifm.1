@@ -1,4 +1,4 @@
-.TH VIFM 1 "July 29, 2019" "vifm 0.10.1"
+.TH VIFM 1 "August 22, 2019" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1612,21 +1612,25 @@ remove all user defined commands.
 .BI :com[mand]
 display a menu of user commands.
 .TP
-.BI ":com[mand] beginning"
-display user defined commands that start with the beginning.
+.BI ":com[mand] prefix"
+display user defined commands that start with the prefix.
 .TP
-.BI ":com[mand] name action"
-set a new user command.
+.BI ":com[mand] name action[ &]"
+set or redefine a user command.
 .br
-Trying to use a reserved command name will result in an error message.
+Use :com[mand]! to overwrite a previously set command of the same name.
+Builtin commands can't be redefined.
 .br
-Use :com[mand]! to overwrite a previously set command.
+Unlike in vim, user commands do not have to start with a capital letter.
+However, command name cannot contain numbers or special symbols except for
+single trailing '?' or '!'.
 .br
-Unlike vim user commands do not have to start with a capital letter.
-User commands are run in a shell by default.  To run a command in
-the background you must set it as a background command with & at the end
-of the commands action (:com rm rm %f &).  Command name cannot contain
-numbers or special symbols (except '?' and '!').
+User commands are run in a shell by default (see below for syntax of other
+options).  To run a command in the background you must mark it as a background
+command by adding " &" after the command's action (e.g., `:com rm rm %f &`).
+.br
+User commands of all kinds have macros expanded in them.  See "Command macros"
+section for more information.
 .TP
 .BI ":com[mand] name /pattern"
 set search pattern.
@@ -1644,8 +1648,8 @@ set file name filter (see :filter command description).  For example:
   :command noaudio filter!/.+\.\\(mp3|wav|mp3|flac|ogg|m4a|wma|ape\\)$/i
 .EE
 .TP
-.BI ":com[mand] cmd :commands"
-set kind of an alias for internal command (like in a shell).  Passes range
+.BI ":com[mand] name :commands"
+set kind of an alias for internal commands (like in a shell).  Passes range
 given to alias to an aliased command, so running :%cp after
   :command cp :copy %a
 .br
@@ -6533,7 +6537,7 @@ See "Startup" section above for more details.
 .TP
 .BI VIFM_FUSE_FILE
 On execution of external commands this variable is set to the full path of file
-used to initiate FUSE mount of the closes mount point from current pane
+used to initiate FUSE mount of the closest mount point from current pane's
 directory up.  It's not set when outside FUSE mount point.  When vifm is used
 inside terminal multiplexer, it tries to set this variable as well (it doesn't
 work this way on its own).
