@@ -8,6 +8,9 @@
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
+	Fixed confirmation dialog not working on systems with unsigned char.
+	Thanks to nandox.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

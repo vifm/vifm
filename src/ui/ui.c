@@ -2090,7 +2090,7 @@ fixup_titles_attributes(const view_t *view, int active_view)
 }
 
 int
-ui_view_sort_list_contains(const char sort[SK_COUNT], char key)
+ui_view_sort_list_contains(const signed char sort[SK_COUNT], char key)
 {
 	int i = -1;
 	while(++i < SK_COUNT)
@@ -2109,7 +2109,7 @@ ui_view_sort_list_contains(const char sort[SK_COUNT], char key)
 }
 
 void
-ui_view_sort_list_ensure_well_formed(view_t *view, char sort_keys[])
+ui_view_sort_list_ensure_well_formed(view_t *view, signed char sort_keys[])
 {
 	int found_name_key = 0;
 	int i = -1;
@@ -2140,12 +2140,12 @@ ui_view_sort_list_ensure_well_formed(view_t *view, char sort_keys[])
 	}
 }
 
-char *
-ui_view_sort_list_get(const view_t *view, const char sort[])
+signed char *
+ui_view_sort_list_get(const view_t *view, const signed char sort[])
 {
 	return (flist_custom_active(view) && ui_view_unsorted(view))
-	     ? (char *)view->custom.sort
-	     : (char *)sort;
+	     ? (signed char *)view->custom.sort
+	     : (signed char *)sort;
 }
 
 int

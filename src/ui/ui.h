@@ -273,7 +273,7 @@ struct cv_data_t
 	char *title;
 
 	/* Previous sorting value, before unsorted custom view was loaded. */
-	char sort[SK_COUNT];
+	signed char sort[SK_COUNT];
 
 	/* List of paths that should be ignored (including all nested paths).  Used
 	 * by tree-view. */
@@ -402,7 +402,7 @@ struct view_t
 	char *prev_auto_filter;
 
 	/* List of sorting keys. */
-	char sort[SK_COUNT], sort_g[SK_COUNT];
+	signed char sort[SK_COUNT], sort_g[SK_COUNT];
 	/* Sorting groups (comma-separated list of regular expressions). */
 	char *sort_groups, *sort_groups_g;
 	/* Primary group in compiled form. */
@@ -648,16 +648,18 @@ void ui_view_title_update(view_t *view);
 
 /* Looks for the given key in sort option.  Returns non-zero when found,
  * otherwise zero is returned. */
-int ui_view_sort_list_contains(const char sort[SK_COUNT], char key);
+int ui_view_sort_list_contains(const signed char sort[SK_COUNT], char key);
 
 /* Ensures that list of sorting keys is sensible (i.e. contains either "name" or
  * "iname" for views, except for unsorted custom view). */
-void ui_view_sort_list_ensure_well_formed(view_t *view, char sort_keys[]);
+void ui_view_sort_list_ensure_well_formed(view_t *view,
+		signed char sort_keys[]);
 
 /* Picks sort array for the view taking custom view into account.  sort should
  * point to sorting array preferred by default.  Returns pointer to the
  * array. */
-char * ui_view_sort_list_get(const view_t *view, const char sort[]);
+signed char * ui_view_sort_list_get(const view_t *view,
+		const signed char sort[]);
 
 /* Checks whether file numbers should be displayed for the view.  Returns
  * non-zero if so, otherwise zero is returned. */
