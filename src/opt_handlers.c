@@ -106,7 +106,7 @@ static void init_tuioptions(optval_t *val);
 static void init_wordchars(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
-static void load_sort_option_inner(view_t *view, char sort_keys[]);
+static void load_sort_option_inner(view_t *view, signed char sort_keys[]);
 static void aproposprg_handler(OPT_OP op, optval_t val);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void caseoptions_handler(OPT_OP op, optval_t val);
@@ -192,14 +192,14 @@ static void update_num_type(view_t *view, NumberingType *num_type,
 		NumberingType type, int enable);
 static void sort_global(OPT_OP op, optval_t val);
 static void sort_local(OPT_OP op, optval_t val);
-static void set_sort(view_t *view, char sort_keys[], char order[]);
+static void set_sort(view_t *view, signed char sort_keys[], char order[]);
 static void sortgroups_global(OPT_OP op, optval_t val);
 static void sortgroups_local(OPT_OP op, optval_t val);
 static void set_sortgroups(view_t *view, char **opt, char value[]);
 static void sorting_changed(view_t *view, int defer_slow);
 static void sortorder_global(OPT_OP op, optval_t val);
 static void sortorder_local(OPT_OP op, optval_t val);
-static void set_sortorder(view_t *view, int ascending, char sort_keys[]);
+static void set_sortorder(view_t *view, int ascending, signed char sort_keys[]);
 static void viewcolumns_global(OPT_OP op, optval_t val);
 static void viewcolumns_local(OPT_OP op, optval_t val);
 static void set_viewcolumns(view_t *view, const char view_columns[]);
@@ -1488,7 +1488,7 @@ load_sort_option(view_t *view)
 
 /* Loads sorting related options ("sort" and "sortorder"). */
 static void
-load_sort_option_inner(view_t *view, char sort_keys[])
+load_sort_option_inner(view_t *view, signed char sort_keys[])
 {
 	/* This approximate maximum length also includes "+" or "-" sign and a
 	 * comma (",") between items. */
@@ -2755,16 +2755,16 @@ sort_local(OPT_OP op, optval_t val)
 {
 	/* Make sure we don't sort unsorted custom view on :restart or when it's a
 	 * compare view. */
-	char *const sort = (curr_stats.restart_in_progress ||
-	                    cv_compare(curr_view->custom.type))
-	                 ? ui_view_sort_list_get(curr_view, curr_view->sort)
-	                 : curr_view->sort;
+	signed char *const sort = (curr_stats.restart_in_progress ||
+	                           cv_compare(curr_view->custom.type))
+	                        ? ui_view_sort_list_get(curr_view, curr_view->sort)
+	                        : curr_view->sort;
 	set_sort(curr_view, sort, val.str_val);
 }
 
 /* Sets sorting value for the view. */
 static void
-set_sort(view_t *view, char sort_keys[], char order[])
+set_sort(view_t *view, signed char sort_keys[], char order[])
 {
 	char *part = order, *state = NULL;
 	int key_count = 0;
@@ -2922,7 +2922,7 @@ sortorder_local(OPT_OP op, optval_t val)
 
 /* Updates sorting order for the view. */
 static void
-set_sortorder(view_t *view, int ascending, char sort_keys[])
+set_sortorder(view_t *view, int ascending, signed char sort_keys[])
 {
 	if((ascending ? +1 : -1)*sort_keys[0] < 0)
 	{
@@ -3038,7 +3038,7 @@ map_name(const char name[], void *arg)
 	if(*name == '\0')
 	{
 		const view_t *const view = arg;
-		const char *const sort = ui_view_sort_list_get(view, view->sort);
+		const signed char *const sort = ui_view_sort_list_get(view, view->sort);
 		return (int)get_secondary_key((SortingKey)abs(sort[0]));
 	}
 

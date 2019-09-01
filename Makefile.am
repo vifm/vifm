@@ -11,6 +11,9 @@ distcheck-hook:
 	mkdir -p $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
 	chmod u+w $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
 
+mostlyclean-local:
+	+make -C "$(abs_top_srcdir)/tests" "B=$(abs_builddir)/tests/" clean
+
 coverage: force
 	$(MAKE) -C src $@
 

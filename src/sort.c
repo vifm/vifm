@@ -68,9 +68,9 @@ static int compare_group(const char f[], const char s[], regex_t *regex);
 static int compare_targets(const dir_entry_t *f, const dir_entry_t *s);
 
 /* View which is being sorted. */
-static view_t* view;
+static view_t *view;
 /* Picked sort array of the view. */
-static const char *view_sort;
+static const signed char *view_sort;
 /* Picked sort groups setting of the view. */
 static const char *view_sort_groups;
 /* Whether the view displays custom file list. */

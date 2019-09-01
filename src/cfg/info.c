@@ -373,9 +373,9 @@ read_info_file(int reread)
 static void
 get_sort_info(view_t *view, const char line[])
 {
-	char *const sort = curr_stats.restart_in_progress
-	                 ? ui_view_sort_list_get(view, view->sort)
-	                 : view->sort;
+	signed char *const sort = curr_stats.restart_in_progress
+	                        ? ui_view_sort_list_get(view, view->sort)
+	                        : view->sort;
 
 	int j = 0;
 	while(*line != '\0' && j < SK_COUNT)
@@ -1430,7 +1430,7 @@ static void
 put_sort_info(FILE *fp, char leading_char, const view_t *view)
 {
 	int i = -1;
-	const char *const sort = ui_view_sort_list_get(view, view->sort_g);
+	const signed char *const sort = ui_view_sort_list_get(view, view->sort_g);
 
 	fputc(leading_char, fp);
 	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)
