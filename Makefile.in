@@ -760,7 +760,7 @@ maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-generic
+mostlyclean-am: mostlyclean-generic mostlyclean-local
 
 pdf: pdf-recursive
 
@@ -787,8 +787,8 @@ uninstall-am:
 	install-pdf-am install-ps install-ps-am install-strip \
 	installcheck installcheck-am installdirs installdirs-am \
 	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am
+	mostlyclean-generic mostlyclean-local pdf pdf-am ps ps-am tags \
+	tags-am uninstall uninstall-am
 
 .PRECIOUS: Makefile
 
@@ -799,6 +799,9 @@ dist-hook:
 distcheck-hook:
 	mkdir -p $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
 	chmod u+w $(distdir)/data/vim/doc/app/ $(distdir)/data/vim/doc/plugin/
+
+mostlyclean-local:
+	+make -C "$(abs_top_srcdir)/tests" "B=$(abs_builddir)/tests/" clean
 
 coverage: force
 	$(MAKE) -C src $@
