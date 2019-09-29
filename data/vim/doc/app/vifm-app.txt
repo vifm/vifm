@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Aug 22
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Sep 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3960,7 +3960,7 @@ default: bookmarks,bmarks
 Controls what will be saved in the $VIFM/vifminfo file:
 
    bmarks    - named bookmarks
-   bookmarks - marks (name is obsolete), except special ones like '< and '>
+   bookmarks - marks, except special ones like '< and '>
    tui       - state of the user interface (sorting, number of windows, quick
                view state, active view)
    dhistory  - directory history
