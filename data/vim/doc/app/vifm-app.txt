@@ -3959,7 +3959,7 @@ default: bookmarks,bmarks
 
 Controls what will be saved in the $VIFM/vifminfo file:
 
-   bmarks    - named bookmarks
+   bmarks    - named bookmarks (see |vifm-:bmark|)
    bookmarks - marks, except special ones like '< and '>
    tui       - state of the user interface (sorting, number of windows, quick
                view state, active view)
