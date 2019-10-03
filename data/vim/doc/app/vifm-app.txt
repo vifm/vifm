@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Sep 29
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Oct 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4559,7 +4559,7 @@ terminal and are capable of handling stream redirection.
 
 Usage example: >
   " command to enter .git/ directory of git-repository (when ran inside one)
-  command! cdgit :execute 'cd' system('git rev-parse --git-dir')
+  command! cdgit :execute 'cd' fnameescape(system('git rev-parse --git-dir'))
 
 tabpagenr([{arg}])                             *vifm-tabpagenr()*
 
@@ -4576,7 +4576,8 @@ affect the way terminal is used by vifm.
 
 Usage example: >
   " command to change directory by picking it via fzf
-  command! fzfcd :execute 'cd' "'".term('find -type d | fzf 2> /dev/tty')."'"
+  command! fzfcd :execute 'cd'
+                        \ fnameescape(term('find -type d | fzf 2> /dev/tty'))
 
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
