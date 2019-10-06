@@ -103,8 +103,8 @@ ui_cancellation_disable(void)
 	 * curses. */
 	if(curr_stats.load_stage > 2)
 	{
-		/* Restore raw mode of terminal so that Ctrl-C is be handled as regular
-		 * input character rather than as SIGINT signal. */
+		/* Restore raw mode of terminal so that Ctrl-C is handled as regular input
+		 * character rather than as SIGINT signal. */
 		raw();
 	}
 
