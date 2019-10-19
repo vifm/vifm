@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Oct 3
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Oct 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3252,7 +3252,7 @@ hlsearch hls
 type: boolean
 default: true
 
-Highlight all matches of search pattern.
+Automatically select files that are search matches.
 
                                                *vifm-'iec'*
 iec
