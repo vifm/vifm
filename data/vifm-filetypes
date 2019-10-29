@@ -32,7 +32,7 @@
 
 " Pdf
 filextype *.pdf zathura %c %i &, llpp, atril, apvlv %c, xpdf %c, evince %c
-filetype *.pdf fbpdf, fimgs, fbgs
+filetype *.pdf fimgs, fbgs, fbpdf, fbpdf2, pdftotext %c - | less
 
 " PostScript
 filextype *.ps,*.eps,*.ps.gz
@@ -60,6 +60,7 @@ filetype *.xlsx xlsx2csv %c | less
 filetype *.doc antiword -t %c | less || catdoc -w %c  | less || word2x -f text %c -  | less || strings %c | less
 filetype *.docx docx2txt %c - | less
 filetype *.tex pdflatex
+filetype *.xls xls2csv -s cp1250 %c | less
 
 " Executable Windows/DOS files
 filextype *.exe wine, dosbox -c "mount c %d" -c "c:" -c "%c"
@@ -69,7 +70,7 @@ filextype *.dvi xdvi
 filetype *.dvi fimgs, fbgs
 
 " Audio
-filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.3gp
+filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.3gp,*.og[agx]
        \ {Play using ffplay}
        \ ffplay -hide_banner -nodisp -autoexit %c,
        \ {Play using MPlayer}
@@ -83,15 +84,28 @@ filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.3gp
 filetype *.mid,*.midi timidity, wildmidi
 
 " Video
-filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
         \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
-        \*.as[fx],*.ra
+        \*.as[fx],*.ra,*.flv
+        \ {Play using mpv}
+        \ mpv %f,
+        \ {Play using mplayer}
+        \ mplayer %f,
+        \ {Play using mplayer on bg}
+        \ mplayer -really-quiet %f &,
         \ {View using ffplay}
         \ ffplay -fs -hide_banner -autoexit %f,
         \ {View using Dragon}
-        \ dragon %f:p,
-        \ {View using mplayer}
-        \ mplayer %f,
+        \ dragon %f:p
+
+filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+        \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+        \*.as[fx],*.ra,*.flv
+        \ {Play using mpv}
+        \ mpv -vo caca %f,
+        \ {Play using mplayer}
+        \ mplayer -vo caca %f
+
 
 " Ebook, Comic book archives
 filextype *.mobi,*.pdb ebook-viewer, FBReader
@@ -166,7 +180,9 @@ filetype *.o nm %f | less
 filetype *.[1-8],*.[1-8].gz,*.man.gz man -l ./%c
 
 " Images
-filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif
+filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif,*.tga
+        \ {View in feh}
+        \ /usr/bin/feh --action1 ';[copy filename to clipboard]echo %%F | xclip -i' --action2 ';[copy image contents to clipboard]xclip -selection CLIPBOARD -t image/png -i %%F' --action3 ';[resize to 50 %% and copy to clipboard]convert %%F -resize 50%% - | xclip -selection CLIPBOARD -t image/png -i' --action4 ';[open in gimp]gimp %%F' --action5 ';[open in geeqie]geeqie %%F' -GFZ %d --auto-rotate --start-at %d/%c 2>/dev/null &,
         \ {View in vimiv}
         \ vimiv -f %f,
         \ {View in sxiv}
@@ -178,7 +194,8 @@ filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif
 filextype *.xcf gimp
 filextype *.svg inkscape, geeqie, display
 filextype *.pcx display
-filetype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif fim %c >/dev/null 2>&1 || fbi %c >/dev/null 2>&1 || feh -FZ %d --auto-rotate --start-at %d/%c >/dev/null 2>&1 || fbvis || fbv || { shellpic %c; read; }
+filetype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.tif,*.tga fim >/dev/null 2>&1, fbi -a %c >/dev/null 2>&1, fbvis, fbv, shellpic %c; read, chafa %c; read
+
 
 " OpenRaster
 filextype *.ora
@@ -228,9 +245,13 @@ filetype *.zip,*.jar,*.war,*.ear,*.oxt,*.apkg,*.apk,*.fzz,*.kmz,*.joz,*.cbz,*.pp
        \ tar -xf %c,
 
 " ArchiveMount
-filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.7z,*.xz,*.rpm,*.deb,*.cpio,*.cbt,*.cb7
-       \ {Mount with archivemount}
-       \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+" filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.7z,*.xz,*.rpm,*.deb,*.cpio,*.cbt,*.cb7
+       " \ {Mount with archivemount}
+       " \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+
+filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.deb,*.7z
+       \ {Mount with avfs}
+       \ FUSE_MOUNT3|mount-avfs %DESTINATION_DIR %SOURCE_FILE
 
 " Rar2FsMount and rar archives
 filetype *.rar,*.cbr
