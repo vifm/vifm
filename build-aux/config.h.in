@@ -65,6 +65,9 @@
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
 
+/* Define to 1 if you have the `reallocarray' function. */
+#undef HAVE_REALLOCARRAY
+
 /* set_escdelay() function is available. */
 #undef HAVE_SET_ESCDELAY_FUNC
 

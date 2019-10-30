@@ -19,11 +19,19 @@
 #ifndef VIFM__COMPAT__REALLOCARRAY_H__
 #define VIFM__COMPAT__REALLOCARRAY_H__
 
+#ifndef HAVE_REALLOCARRAY
+
 #include <stddef.h> /* size_t */
 
 /* Almost the same as realloc(), but with a different way of specifying size
  * and checks for integer overflow in the calculation of nmemb * size. */
 void * reallocarray(void *optr, size_t nmemb, size_t size);
+
+#else
+
+#include <stdlib.h> /* reallocarray() */
+
+#endif
 
 #endif /* VIFM__COMPAT__REALLOCARRAY_H__ */
 
