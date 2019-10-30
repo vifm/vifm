@@ -98,7 +98,6 @@ vifm_SOURCES = \
 	compat/mntent.c compat/mntent.h \
 	compat/os.c compat/os.h \
 	compat/pthread.c compat/pthread.h \
-	compat/reallocarray.c compat/reallocarray.h \
 	\
 	engine/abbrevs.c engine/abbrevs.h \
 	engine/autocmds.c engine/autocmds.h \
@@ -262,6 +261,12 @@ vifm_SOURCES = \
 	version.c version.h \
 	viewcolumns_parser.c viewcolumns_parser.h \
 	vifm.c vifm.h
+
+if !HAVE_REALLOCARRAY_FUNC
+vifm_SOURCES += \
+	compat/reallocarray.c compat/reallocarray.h
+endif
+
 nodist_vifm_SOURCES = \
 	compile_info.c
 
