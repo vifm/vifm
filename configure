@@ -7110,6 +7110,17 @@ else
   as_fn_error $? "realloc() function not found." "$LINENO" 5
 fi
 
+for ac_func in reallocarray
+do :
+  ac_fn_c_check_func "$LINENO" "reallocarray" "ac_cv_func_reallocarray"
+if test "x$ac_cv_func_reallocarray" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_REALLOCARRAY 1
+_ACEOF
+
+fi
+done
+
 ac_fn_c_check_func "$LINENO" "realpath" "ac_cv_func_realpath"
 if test "x$ac_cv_func_realpath" = xyes; then :
 

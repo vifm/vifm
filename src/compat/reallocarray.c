@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef HAVE_REALLOCARRAY
+
 #include <sys/types.h>
 
 #include <errno.h> /* errno EINVAL ENOMEM */
@@ -41,6 +43,8 @@ reallocarray(void *optr, size_t nmemb, size_t size)
 	}
 	return realloc(optr, size*nmemb);
 }
+
+#endif /* HAVE_REALLOCARRAY */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
