@@ -1,4 +1,4 @@
-.TH VIFM 1 "August 22, 2019" "vifm 0.10.1"
+.TH VIFM 1 "October 19, 2019" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3927,7 +3927,7 @@ type: boolean
 .br
 default: true
 .br
-Highlight all matches of search pattern.
+Automatically select files that are search matches.
 .TP
 .BI 'iec'
 type: boolean
@@ -4739,7 +4739,7 @@ default: bookmarks,bmarks
 .br
 Controls what will be saved in the $VIFM/vifminfo file.
 
-   bmarks    \- named bookmarks
+   bmarks    \- named bookmarks (see :bmark command)
    bookmarks \- marks, except special ones like '< and '>
    tui       \- state of the user interface (sorting, number of windows, quick
                view state, active view)
@@ -5482,7 +5482,7 @@ Usage example:
 
 .EX
   " command to enter .git/ directory of git-repository (when ran inside one)
-  command! cdgit :execute 'cd' system('git rev-parse \-\-git-dir')
+  command! cdgit :execute 'cd' fnameescape(system('git rev-parse \-\-git-dir'))
 .EE
 
 .BI tabpagenr([{arg}])
@@ -5502,7 +5502,8 @@ Usage example:
 
 .EX
   " command to change directory by picking it via fzf
-  command! fzfcd :execute 'cd' "'".term('find \-type d | fzf 2> /dev/tty')."'"
+  command! fzfcd :execute 'cd'
+                        \ fnameescape(term('find \-type d | fzf 2> /dev/tty'))
 .EE
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Aug 22
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Oct 19
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3252,7 +3252,7 @@ hlsearch hls
 type: boolean
 default: true
 
-Highlight all matches of search pattern.
+Automatically select files that are search matches.
 
                                                *vifm-'iec'*
 iec
@@ -3959,8 +3959,8 @@ default: bookmarks,bmarks
 
 Controls what will be saved in the $VIFM/vifminfo file:
 
-   bmarks    - named bookmarks
-   bookmarks - marks (name is obsolete), except special ones like '< and '>
+   bmarks    - named bookmarks (see |vifm-:bmark|)
+   bookmarks - marks, except special ones like '< and '>
    tui       - state of the user interface (sorting, number of windows, quick
                view state, active view)
    dhistory  - directory history
@@ -4559,7 +4559,7 @@ terminal and are capable of handling stream redirection.
 
 Usage example: >
   " command to enter .git/ directory of git-repository (when ran inside one)
-  command! cdgit :execute 'cd' system('git rev-parse --git-dir')
+  command! cdgit :execute 'cd' fnameescape(system('git rev-parse --git-dir'))
 
 tabpagenr([{arg}])                             *vifm-tabpagenr()*
 
@@ -4576,7 +4576,8 @@ affect the way terminal is used by vifm.
 
 Usage example: >
   " command to change directory by picking it via fzf
-  command! fzfcd :execute 'cd' "'".term('find -type d | fzf 2> /dev/tty')."'"
+  command! fzfcd :execute 'cd'
+                        \ fnameescape(term('find -type d | fzf 2> /dev/tty'))
 
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
