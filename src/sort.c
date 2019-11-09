@@ -46,7 +46,7 @@
 static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 		size_t nchildren, int root);
 static void sort_sequence(dir_entry_t *entries, size_t nentries);
-static void sort_by_groups(dir_entry_t *entries, size_t nentries);
+static void sort_by_groups(dir_entry_t *entries, char key, size_t nentries);
 static void sort_by_key(dir_entry_t *entries, size_t nentries, char key,
 		void *data);
 static int sort_dir_list(const void *one, const void *two);
@@ -208,7 +208,7 @@ sort_sequence(dir_entry_t *entries, size_t nentries)
 
 		if(sorting_type == SK_BY_GROUPS)
 		{
-			sort_by_groups(entries, nentries);
+			sort_by_groups(entries, sorting_key, nentries);
 			continue;
 		}
 
@@ -223,7 +223,7 @@ sort_sequence(dir_entry_t *entries, size_t nentries)
 
 /* Sorts specified range of entries according to sorting groups option. */
 static void
-sort_by_groups(dir_entry_t *entries, size_t nentries)
+sort_by_groups(dir_entry_t *entries, char key, size_t nentries)
 {
 	char **groups = NULL;
 	int ngroups = 0;
@@ -242,12 +242,12 @@ sort_by_groups(dir_entry_t *entries, size_t nentries)
 	{
 		regex_t regex;
 		(void)regcomp(&regex, groups[i], REG_EXTENDED | REG_ICASE);
-		sort_by_key(entries, nentries, SK_BY_GROUPS, &regex);
+		sort_by_key(entries, nentries, key, &regex);
 		regfree(&regex);
 	}
 	if(optimize && ngroups != 0)
 	{
-		sort_by_key(entries, nentries, SK_BY_GROUPS, &view->primary_group);
+		sort_by_key(entries, nentries, key, &view->primary_group);
 	}
 
 	free_string_array(groups, ngroups);

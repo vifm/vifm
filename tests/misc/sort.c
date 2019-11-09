@@ -438,6 +438,14 @@ TEST(groups_sorting_works)
 
 	sort_view(&lwin);
 
+	assert_string_equal("2-todo-replace", lwin.dir_entry[0].name);
+	assert_string_equal("4-todo-edit", lwin.dir_entry[1].name);
+	assert_string_equal("5-todo-publish", lwin.dir_entry[2].name);
+	assert_string_equal("10-bla-todo-edit", lwin.dir_entry[3].name);
+	assert_string_equal("11-todo-publish", lwin.dir_entry[4].name);
+	assert_string_equal("1-done", lwin.dir_entry[5].name);
+	assert_string_equal("3-done", lwin.dir_entry[6].name);
+
 	regfree(&lwin.primary_group);
 	update_string(&lwin.sort_groups, NULL);
 }
