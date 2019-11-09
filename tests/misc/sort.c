@@ -410,18 +410,17 @@ TEST(groups_sorting_works)
 	lwin.dir_entry[6].type = FT_REG;
 	lwin.dir_entry[6].origin = lwin.curr_dir;
 
-	lwin.sort[0] = SK_BY_GROUPS;
-	lwin.sort[1] = SK_BY_NAME;
-	memset(&lwin.sort[2], SK_NONE, sizeof(lwin.sort) - 2);
-
 	update_string(&lwin.sort_groups, "-(done|todo).*");
 	(void)regcomp(&lwin.primary_group, "-(done|todo).*",
 			REG_EXTENDED | REG_ICASE);
 
-	sort_view(&lwin);
+	/* Ascending sorting. */
 
-	regfree(&lwin.primary_group);
-	update_string(&lwin.sort_groups, NULL);
+	lwin.sort[0] = SK_BY_GROUPS;
+	lwin.sort[1] = SK_BY_NAME;
+	memset(&lwin.sort[2], SK_NONE, sizeof(lwin.sort) - 2);
+
+	sort_view(&lwin);
 
 	assert_string_equal("1-done", lwin.dir_entry[0].name);
 	assert_string_equal("3-done", lwin.dir_entry[1].name);
@@ -430,6 +429,25 @@ TEST(groups_sorting_works)
 	assert_string_equal("5-todo-publish", lwin.dir_entry[4].name);
 	assert_string_equal("10-bla-todo-edit", lwin.dir_entry[5].name);
 	assert_string_equal("11-todo-publish", lwin.dir_entry[6].name);
+
+	/* Descending sorting. */
+
+	lwin.sort[0] = -SK_BY_GROUPS;
+	lwin.sort[1] = SK_BY_NAME;
+	memset(&lwin.sort[2], SK_NONE, sizeof(lwin.sort) - 2);
+
+	sort_view(&lwin);
+
+	assert_string_equal("2-todo-replace", lwin.dir_entry[0].name);
+	assert_string_equal("4-todo-edit", lwin.dir_entry[1].name);
+	assert_string_equal("5-todo-publish", lwin.dir_entry[2].name);
+	assert_string_equal("10-bla-todo-edit", lwin.dir_entry[3].name);
+	assert_string_equal("11-todo-publish", lwin.dir_entry[4].name);
+	assert_string_equal("1-done", lwin.dir_entry[5].name);
+	assert_string_equal("3-done", lwin.dir_entry[6].name);
+
+	regfree(&lwin.primary_group);
+	update_string(&lwin.sort_groups, NULL);
 }
 
 #ifndef _WIN32
