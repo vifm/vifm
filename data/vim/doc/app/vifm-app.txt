@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Oct 19
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Nov 10
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3690,16 +3690,26 @@ type: string
 default: ""
 scope: local
 
-Sets comma-separated list of regular expressions to use for group sorting,
-double comma is literal comma.  Each expression should contain at least one
-group or its value will be considered to be always empty.  Only first match of
-each regular expression is considered.  Groups are considered from right to
-first similar to |vifm-'sort'|, first group divides list of files into
-sub-groups, each of which is sorted by the second group and so on.
+Sets comma-separated list of regular expressions for group type of sorting.
+Double the comma to insert it literally.
+
+The regular expressions are used to extract substrings of file names to serve
+as keys for sorting.  It is essentially a way to ignore uninteresting parts
+of file names during sorting by name.
+
+Each expression should contain at least one group or its value will be
+considered to be always empty.  Also, only the first match of regular
+expression is processed.
+
+The first group divides list of files into sub-groups, each of which is then
+sorted by substrings extracted using second regular expression and so on
+recursively.
 
 Example: >
- set sortgroups=-(done|todo).*
-this would put files with "-done" in their names above all files with "-todo".
+ set sortgroups=-(todo|done).*
+this would group files with "-done" in their names and files with "-todo"
+separately.  On ascending sorting, group containing "-done" would appear
+before the other one.
 
                                                *vifm-'sortorder'*
 sortorder
