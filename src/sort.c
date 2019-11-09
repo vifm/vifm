@@ -199,13 +199,14 @@ sort_sequence(dir_entry_t *entries, size_t nentries)
 	while(--i >= 0)
 	{
 		const char sorting_key = view_sort[i];
+		const int sorting_type = abs(sorting_key);
 
-		if(abs(sorting_key) > SK_LAST)
+		if(sorting_type > SK_LAST)
 		{
 			continue;
 		}
 
-		if(sorting_key == SK_BY_GROUPS)
+		if(sorting_type == SK_BY_GROUPS)
 		{
 			sort_by_groups(entries, nentries);
 			continue;
