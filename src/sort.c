@@ -46,8 +46,9 @@
 static void sort_tree_slice(dir_entry_t *entries, const dir_entry_t *children,
 		size_t nchildren, int root);
 static void sort_sequence(dir_entry_t *entries, size_t nentries);
-static void sort_by_groups(dir_entry_t *entries, char key, size_t nentries);
-static void sort_by_key(dir_entry_t *entries, size_t nentries, char key,
+static void sort_by_groups(dir_entry_t *entries, signed char key,
+		size_t nentries);
+static void sort_by_key(dir_entry_t *entries, size_t nentries, signed char key,
 		void *data);
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
@@ -198,7 +199,7 @@ sort_sequence(dir_entry_t *entries, size_t nentries)
 	int i = SK_COUNT;
 	while(--i >= 0)
 	{
-		const char sorting_key = view_sort[i];
+		const signed char sorting_key = view_sort[i];
 		const int sorting_type = abs(sorting_key);
 
 		if(sorting_type > SK_LAST)
@@ -223,7 +224,7 @@ sort_sequence(dir_entry_t *entries, size_t nentries)
 
 /* Sorts specified range of entries according to sorting groups option. */
 static void
-sort_by_groups(dir_entry_t *entries, char key, size_t nentries)
+sort_by_groups(dir_entry_t *entries, signed char key, size_t nentries)
 {
 	char **groups = NULL;
 	int ngroups = 0;
@@ -255,7 +256,7 @@ sort_by_groups(dir_entry_t *entries, char key, size_t nentries)
 
 /* Sorts specified range of entries by the key in a stable way. */
 static void
-sort_by_key(dir_entry_t *entries, size_t nentries, char key, void *data)
+sort_by_key(dir_entry_t *entries, size_t nentries, signed char key, void *data)
 {
 	sort_descending = (key < 0);
 	sort_type = (SortingKey)abs(key);

@@ -1430,8 +1430,6 @@ load_view_options(view_t *view)
 void
 clone_local_options(const view_t *from, view_t *to, int defer_slow)
 {
-	const char *sort;
-
 	replace_string(&to->view_columns, from->view_columns);
 	replace_string(&to->view_columns_g, from->view_columns_g);
 
@@ -1447,9 +1445,9 @@ clone_local_options(const view_t *from, view_t *to, int defer_slow)
 	replace_string(&to->sort_groups, from->sort_groups);
 	replace_string(&to->sort_groups_g, from->sort_groups_g);
 
-	sort = (flist_custom_active(from) && ui_view_unsorted(from))
-	     ? (char *)from->custom.sort
-	     : (char *)from->sort;
+	const signed char *sort =
+	  (flist_custom_active(from) && ui_view_unsorted(from)) ? from->custom.sort
+	                                                        : from->sort;
 	memcpy(to->sort, sort, sizeof(to->sort));
 	memcpy(to->sort_g, from->sort_g, sizeof(to->sort_g));
 	sorting_changed(to, defer_slow);
