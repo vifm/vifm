@@ -7,6 +7,9 @@
 
 	Clean up tests directory on "make clean" in the top of the tree.
 
+	Avoid interposing system's reallocarray(), when it's present.
+	Thanks to Ben Boeckel (a.k.a. mathstuf).
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
