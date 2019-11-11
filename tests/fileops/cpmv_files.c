@@ -327,6 +327,62 @@ TEST(copying_is_aborted_if_we_can_not_read_a_file, IF(not_windows))
 	assert_success(unlink("can-not-read"));
 }
 
+TEST(cpmv_can_copy_or_move_files_to_a_subdirectory)
+{
+	char dir[] = "dir";
+	char *list[] = { dir };
+
+	int bg;
+	for(bg = 0; bg < 2; ++bg)
+	{
+		create_empty_dir("dir");
+		create_empty_file("file1");
+		create_empty_file("file2");
+
+		populate_dir_list(&lwin, 0);
+		assert_int_equal(3, lwin.list_rows);
+		assert_string_equal("file1", lwin.dir_entry[1].name);
+		assert_string_equal("file2", lwin.dir_entry[2].name);
+
+		/* Copy. */
+
+		lwin.dir_entry[1].marked = 1;
+		lwin.dir_entry[2].marked = 1;
+
+		if(!bg)
+		{
+			(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 0);
+		}
+		else
+		{
+			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_COPY, 0);
+			wait_for_bg();
+		}
+
+		assert_success(unlink("dir/file1"));
+		assert_success(unlink("dir/file2"));
+
+		/* Move. */
+
+		lwin.dir_entry[1].marked = 1;
+		lwin.dir_entry[2].marked = 1;
+
+		if(!bg)
+		{
+			(void)fops_cpmv(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
+		}
+		else
+		{
+			(void)fops_cpmv_bg(&lwin, list, ARRAY_LEN(list), CMLO_MOVE, 0);
+			wait_for_bg();
+		}
+
+		assert_success(unlink("dir/file1"));
+		assert_success(unlink("dir/file2"));
+		assert_success(rmdir("dir"));
+	}
+}
+
 static void
 check_directory_clash(int parent_to_child, CopyMoveLikeOp op)
 {

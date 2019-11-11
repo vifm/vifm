@@ -123,7 +123,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		char src_full[PATH_MAX + 1];
 
 		char dst_full[PATH_MAX + 1];
-		const char *dst = custom_fnames ? list[i] : entry->name;
+		const char *dst = (custom_fnames ? list[i] : entry->name);
 		int err, from_trash;
 
 		get_full_path_of(entry, sizeof(src_full), src_full);
@@ -279,7 +279,8 @@ fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int force)
 		return err > 0;
 	}
 
-	args->list = args->from_file ? list : copy_string_array(list, nlines);
+	args->list = args->from_file ? list :
+	             args->nlines > 0 ? copy_string_array(list, nlines) : NULL;
 
 	fops_prepare_for_bg_task(view, args);
 
