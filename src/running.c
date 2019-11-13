@@ -697,7 +697,7 @@ follow_link(view_t *view, int follow_dirs)
 		return;
 	}
 
-	if(!path_exists(linkto, DEREF))
+	if(!path_exists(linkto, NODEREF))
 	{
 		show_error_msg("Broken Link",
 				"Can't access link destination.  It might be broken.");

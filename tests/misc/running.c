@@ -166,6 +166,32 @@ TEST(following_resolves_links_in_origin, IF(not_windows))
 	assert_success(rmdir(SANDBOX_PATH "/A"));
 }
 
+TEST(following_to_a_broken_symlink_is_possible, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("no-file", SANDBOX_PATH "/bad"));
+	assert_success(symlink("bad", SANDBOX_PATH "/to-bad"));
+#endif
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	populate_dir_list(&lwin, 0);
+
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("to-bad", lwin.dir_entry[1].name);
+	lwin.list_pos = 1;
+
+	char *saved_cwd = save_cwd();
+	follow_file(&lwin);
+	restore_cwd(saved_cwd);
+
+	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH));
+	assert_string_equal("bad", lwin.dir_entry[lwin.list_pos].name);
+
+	assert_success(remove(SANDBOX_PATH "/bad"));
+	assert_success(remove(SANDBOX_PATH "/to-bad"));
+}
+
 static int
 prog_exists(const char name[])
 {
