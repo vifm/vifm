@@ -87,7 +87,10 @@ SymLinkType get_symlink_type(const char path[]);
 int get_link_target_abs(const char link[], const char cwd[], char buf[],
 		size_t buf_len);
 
-int get_link_target(const char *link, char *buf, size_t buf_len);
+/* Fills the buf of size buf_len with the path symbolic link specified by link
+ * parameter points to.  Returns zero on success, otherwise non-zero is
+ * returned. */
+int get_link_target(const char link[], char buf[], size_t buf_len);
 
 /* Creates directory and all intermediate directories if needed using specified
  * access mode.  If target directory already exists, no error will be raised.

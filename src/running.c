@@ -666,9 +666,9 @@ view_current_file(const view_t *view)
 	(void)vim_view_file(full_path, -1, -1, 1);
 }
 
-/* Resolve link target and either navigate inside directory link points to or
- * navigate to directory where target is located pointing cursor on
- * it (the follow_dirs flag controls behaviour). */
+/* Resolves link target and either navigates inside directory the link points to
+ * or navigates to directory where target is located placing cursor at it (the
+ * follow_dirs flag controls the behaviour). */
 static void
 follow_link(view_t *view, int follow_dirs)
 {
