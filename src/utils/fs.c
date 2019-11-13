@@ -322,7 +322,7 @@ get_link_target_abs(const char link[], const char cwd[], char buf[],
 }
 
 int
-get_link_target(const char *link, char *buf, size_t buf_len)
+get_link_target(const char link[], char buf[], size_t buf_len)
 {
 #ifndef _WIN32
 	char *filename;

@@ -25,6 +25,11 @@
 	Fixed `:move subdir &` renaming file in the process and doing weird stuff
 	to multiple files.  Thanks to 45jqlakjrf87ayte7hy34ter4nguijauzl4eitk.
 
+	Fixed gf key on relative symbolic links when current path has symbolic
+	links in it.  Thanks to emarsk.
+
+	Fixed gf key on symbolic links that point to broken symbolic links.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

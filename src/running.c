@@ -666,26 +666,38 @@ view_current_file(const view_t *view)
 	(void)vim_view_file(full_path, -1, -1, 1);
 }
 
-/* Resolve link target and either navigate inside directory link points to or
- * navigate to directory where target is located pointing cursor on
- * it (the follow_dirs flag controls behaviour). */
+/* Resolves link target and either navigates inside directory the link points to
+ * or navigates to directory where target is located placing cursor at it (the
+ * follow_dirs flag controls the behaviour). */
 static void
 follow_link(view_t *view, int follow_dirs)
 {
 	char *dir, *file;
-	char full_path[PATH_MAX + 1];
-	char linkto[PATH_MAX + NAME_MAX];
+	char linkto[PATH_MAX + NAME_MAX + 1];
 	const dir_entry_t *const curr = get_current_entry(curr_view);
 
+	char full_path[PATH_MAX + 1];
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	if(get_link_target_abs(full_path, curr->origin, linkto, sizeof(linkto)) != 0)
+	/* We resolve origin to a real path because relative symbolic links are
+	 * relative to real location of the link.  Can't simply do realpath() on full
+	 * path as it would resolve symbolic links recursively, while we want to
+	 * follow only one level deep. */
+
+	char origin_real[PATH_MAX + 1];
+	if(os_realpath(curr->origin, origin_real) != origin_real)
+	{
+		show_error_msg("Error", "Can't resolve origin of the link.");
+		return;
+	}
+
+	if(get_link_target_abs(full_path, origin_real, linkto, sizeof(linkto)) != 0)
 	{
 		show_error_msg("Error", "Can't read link.");
 		return;
 	}
 
-	if(!path_exists(linkto, DEREF))
+	if(!path_exists(linkto, NODEREF))
 	{
 		show_error_msg("Broken Link",
 				"Can't access link destination.  It might be broken.");

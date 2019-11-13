@@ -1,12 +1,13 @@
 #include <stic.h>
 
-#include <unistd.h> /* chdir() */
+#include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* remove() snprintf() */
 #include <string.h> /* strdup() */
 
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -18,7 +19,16 @@
 #include "../../src/running.h"
 #include "../../src/status.h"
 
+#include "utils.h"
+
 static int prog_exists(const char name[]);
+
+static char cwd[PATH_MAX + 1];
+
+SETUP_ONCE()
+{
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+}
 
 SETUP()
 {
@@ -31,8 +41,12 @@ SETUP()
 #endif
 
 	update_string(&cfg.vi_command, "echo");
+	update_string(&cfg.slow_fs_list, "");
+	update_string(&cfg.fuse_home, "");
 
 	stats_update_shell_type(cfg.shell);
+
+	view_setup(&lwin);
 
 	lwin.list_rows = 2;
 	lwin.list_pos = 0;
@@ -45,7 +59,9 @@ SETUP()
 	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 2;
+
 	curr_view = &lwin;
+	other_view = &rwin;
 
 	ft_init(&prog_exists);
 
@@ -56,9 +72,6 @@ SETUP()
 	}
 	else
 	{
-		char cwd[PATH_MAX + 1];
-		assert_non_null(get_cwd(cwd, sizeof(cwd)));
-
 		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s/existing-files", cwd,
 				TEST_DATA_PATH);
 	}
@@ -70,15 +83,12 @@ TEARDOWN()
 	update_string(&cfg.shell_cmd_flag, NULL);
 	stats_update_shell_type("/bin/sh");
 
-	int i;
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		fentry_free(&lwin, &lwin.dir_entry[i]);
-	}
-	dynarray_free(lwin.dir_entry);
+	view_teardown(&lwin);
 
 	ft_reset(0);
 	update_string(&cfg.vi_command, NULL);
+	update_string(&cfg.slow_fs_list, NULL);
+	update_string(&cfg.fuse_home, NULL);
 }
 
 TEST(full_path_regexps_are_handled_for_selection)
@@ -122,6 +132,64 @@ TEST(full_path_regexps_are_handled_for_selection2)
 	open_file(&lwin, FHE_NO_RUN);
 
 	/* If we don't crash, then everything is fine. */
+}
+
+TEST(following_resolves_links_in_origin, IF(not_windows))
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/A", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/A/B", 0700));
+	assert_success(os_mkdir(SANDBOX_PATH "/A/C", 0700));
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("../C", SANDBOX_PATH "/A/B/c"));
+	assert_success(symlink("A/B", SANDBOX_PATH "/B"));
+#endif
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "B", cwd);
+	populate_dir_list(&lwin, 0);
+
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("c", lwin.dir_entry[0].name);
+	lwin.list_pos = 0;
+
+	char *saved_cwd = save_cwd();
+	follow_file(&lwin);
+	restore_cwd(saved_cwd);
+
+	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH "/A"));
+	assert_string_equal("C", lwin.dir_entry[lwin.list_pos].name);
+
+	assert_success(remove(SANDBOX_PATH "/B"));
+	assert_success(remove(SANDBOX_PATH "/A/B/c"));
+	assert_success(rmdir(SANDBOX_PATH "/A/C"));
+	assert_success(rmdir(SANDBOX_PATH "/A/B"));
+	assert_success(rmdir(SANDBOX_PATH "/A"));
+}
+
+TEST(following_to_a_broken_symlink_is_possible, IF(not_windows))
+{
+	/* symlink() is not available on Windows, but the rest of the code is fine. */
+#ifndef _WIN32
+	assert_success(symlink("no-file", SANDBOX_PATH "/bad"));
+	assert_success(symlink("bad", SANDBOX_PATH "/to-bad"));
+#endif
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "", cwd);
+	populate_dir_list(&lwin, 0);
+
+	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("to-bad", lwin.dir_entry[1].name);
+	lwin.list_pos = 1;
+
+	char *saved_cwd = save_cwd();
+	follow_file(&lwin);
+	restore_cwd(saved_cwd);
+
+	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH));
+	assert_string_equal("bad", lwin.dir_entry[lwin.list_pos].name);
+
+	assert_success(remove(SANDBOX_PATH "/bad"));
+	assert_success(remove(SANDBOX_PATH "/to-bad"));
 }
 
 static int
