@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Nov 10
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Nov 14
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2260,7 +2260,7 @@ yet supported) and might be changed in future releases, or get an alias.
 
 :sor[t]                                        *vifm-:sort* *vifm-:sor*
     display dialog with different sorting methods, where one can select
-    primary sorting key.  When |vifm-'viewcolumns'| options is empty and
+    the primary sorting key.  When |vifm-'viewcolumns'| options is empty and
     |vifm-'lsview'| is off, changing primary sorting key also affects view
     look (in particular the second column of the view is changed).
 
