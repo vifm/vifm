@@ -75,7 +75,11 @@ static void size_updater(void *data, void *arg);
 
 status_t curr_stats;
 
+/* Whether redraw operation is scheduled. */
 static int pending_redraw;
+/* Whether reload operation is scheduled.  Redrawing is then assumed to be
+ * scheduled too, as it's part of reloading. */
+static int pending_reload;
 static int inside_screen;
 static int inside_tmux;
 
@@ -120,11 +124,9 @@ stats_init(config_t *config)
 static void
 load_def_values(status_t *stats, config_t *config)
 {
-	size_t i;
-
 	pending_redraw = 0;
+	pending_reload = 0;
 
-	stats->need_update = UT_NONE;
 	stats->last_char = 0;
 	stats->save_msg = 0;
 	stats->use_register = 0;
@@ -150,6 +152,7 @@ load_def_values(status_t *stats, config_t *config)
 	stats->msg_tail = 0;
 	stats->save_msg_in_list = 1;
 	stats->allow_sb_msg_truncation = 1;
+	size_t i;
 	for(i = 0U; i < ARRAY_LEN(stats->msgs); ++i)
 	{
 		update_string(&stats->msgs[i], NULL);
@@ -257,15 +260,34 @@ stats_redraw_schedule(void)
 	pending_redraw = 1;
 }
 
-int
-stats_redraw_fetch(void)
+void
+stats_reload_schedule(void)
 {
+	pending_reload = 1;
+}
+
+UpdateType
+stats_update_fetch(void)
+{
+	if(pending_reload)
+	{
+		pending_reload = 0;
+		pending_redraw = 0;
+		return UT_FULL;
+	}
 	if(pending_redraw)
 	{
 		pending_redraw = 0;
-		return 1;
+		return UT_REDRAW;
 	}
-	return 0;
+	return UT_NONE;
+}
+
+int
+stats_redraw_planned(void)
+{
+	return pending_reload != 0
+	    || pending_redraw != 0;
 }
 
 void

@@ -874,7 +874,7 @@ shellout(const char command[], ShellPause pause, int use_term_multiplexer,
 	if(!curr_stats.skip_shellout_redraw)
 	{
 		/* Redraw to handle resizing of terminal that we could have missed. */
-		curr_stats.need_update = UT_REDRAW;
+		stats_redraw_schedule();
 	}
 
 	if(curr_stats.load_stage > 0)

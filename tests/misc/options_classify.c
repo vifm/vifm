@@ -208,7 +208,7 @@ TEST(changing_classify_invalidates_decors_cache)
 	lwin.window_rows = 10;
 	lwin.columns = columns_create();
 
-	curr_stats.need_update = UT_NONE;
+	(void)stats_update_fetch();
 	curr_stats.load_stage = 2;
 	redraw_view(curr_view);
 	assert_success(exec_commands("set classify=", &lwin, CIT_COMMAND));

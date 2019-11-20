@@ -431,7 +431,7 @@ view_pre(void)
 void
 view_post(void)
 {
-	update_screen(curr_stats.need_update);
+	update_screen(stats_update_fetch());
 	view_ruler_update();
 }
 

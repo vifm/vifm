@@ -64,7 +64,7 @@ received_sigwinch(void)
 	}
 	else
 	{
-		curr_stats.need_update = UT_FULL;
+		stats_reload_schedule();
 	}
 }
 

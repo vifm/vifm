@@ -161,7 +161,7 @@ modes_post(void)
 		return;
 	}
 
-	update_screen(curr_stats.need_update);
+	update_screen(stats_update_fetch());
 
 	if(curr_stats.save_msg)
 	{
@@ -247,7 +247,15 @@ modes_redraw(void)
 		goto finish;
 	}
 
-	update_screen(UT_REDRAW);
+	UpdateType update = stats_update_fetch();
+	if(update == UT_NONE)
+	{
+		update_screen(UT_REDRAW);
+	}
+	else
+	{
+		update_screen(update);
+	}
 
 	if(curr_stats.save_msg)
 	{

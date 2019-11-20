@@ -305,7 +305,7 @@ menu_enter_mode(menu_data_t *m, view_t *active_view)
 	view = active_view;
 	menu = m;
 	vle_mode_set(MENU_MODE, VMT_PRIMARY);
-	curr_stats.need_update = UT_FULL;
+	stats_reload_schedule();
 	was_redraw = 0;
 
 	vle_cmds_init(0, &cmds_conf);
@@ -332,10 +332,9 @@ menu_pre(void)
 void
 menu_post(void)
 {
-	if(curr_stats.need_update != UT_NONE)
+	if(stats_update_fetch() != UT_NONE)
 	{
 		menu_full_redraw();
-		curr_stats.need_update = UT_NONE;
 	}
 	ui_sb_msg(curr_stats.save_msg ? NULL : "");
 }
@@ -812,7 +811,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	ui_shutdown();
-	curr_stats.need_update = UT_FULL;
+	stats_reload_schedule();
 
 	vi_cmd = cfg_get_vicmd(&bg);
 	if(!qf)

@@ -1998,7 +1998,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 	if(part == NULL)
 	{
 		/* Schedule a redraw if option was set successfully. */
-		curr_stats.need_update = UT_REDRAW;
+		stats_redraw_schedule();
 	}
 }
 
@@ -2122,7 +2122,7 @@ laststatus_handler(OPT_OP op, optval_t val)
 		scroll_line_down(&rwin);
 	}
 
-	curr_stats.need_update = UT_REDRAW;
+	stats_redraw_schedule();
 }
 
 /* Handles updates of the global 'lines' option, which reflects height of
@@ -2366,7 +2366,7 @@ sizefmt_handler(OPT_OP op, optval_t val)
 		cfg.sizefmt.precision = precision;
 		cfg.sizefmt.space = space;
 
-		curr_stats.need_update = UT_REDRAW;
+		stats_redraw_schedule();
 	}
 	else if(base == -1)
 	{
@@ -2703,7 +2703,7 @@ static void
 previewprg_local(OPT_OP op, optval_t val)
 {
 	replace_string(&curr_view->preview_prg, val.str_val);
-	curr_stats.need_update = UT_REDRAW;
+	stats_redraw_schedule();
 }
 
 /* Handles relative file numbers displaying toggle in global option. */
@@ -3239,7 +3239,7 @@ tabscope_handler(OPT_OP op, optval_t val)
 	tabs_rename(curr_view, NULL);
 
 	cfg.pane_tabs = val.bool_val;
-	curr_stats.need_update = UT_REDRAW;
+	stats_redraw_schedule();
 }
 
 static void
@@ -3353,7 +3353,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	curr_stats.ellipsis = (cfg.use_unicode_characters ? "…" : "...");
 	columns_set_ellipsis(curr_stats.ellipsis);
 
-	curr_stats.need_update = UT_REDRAW;
+	stats_redraw_schedule();
 }
 
 static void

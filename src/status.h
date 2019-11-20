@@ -117,7 +117,6 @@ preview_t;
 
 typedef struct
 {
-	UpdateType need_update; /* Postponed way of doing an update. */
 	int last_char;
 	int save_msg; /* zero - don't save, 2 - save after resize, other - save */
 	int use_register;
@@ -226,9 +225,16 @@ int stats_reset(const struct config_t *config);
 /* Sets internal flag to schedule postponed redraw operation of the UI. */
 void stats_redraw_schedule(void);
 
-/* Checks for postponed redraw operations of the UI.  Has side effects.  Returns
- * non-zero if redraw operation was scheduled and resets internal flag. */
-int stats_redraw_fetch(void);
+/* Sets internal flag to schedule postponed reload operation of the UI. */
+void stats_reload_schedule(void);
+
+/* Queries state of scheduled updates while resetting them at the same time.
+ * Returns the state. */
+UpdateType stats_update_fetch(void);
+
+/* Checks whether redraw is scheduled without resetting it.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int stats_redraw_planned(void);
 
 /* Updates curr_stats to reflect whether terminal multiplexers support is
  * enabled. */

@@ -413,7 +413,7 @@ process_scheduled_updates(void)
 		need_redraw += (process_scheduled_updates_of_view(other_view) != 0);
 	}
 
-	need_redraw += (stats_redraw_fetch() != 0);
+	need_redraw += (stats_update_fetch() != UT_NONE);
 
 	if(need_redraw)
 	{
