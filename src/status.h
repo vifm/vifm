@@ -223,20 +223,6 @@ int stats_init(struct config_t *config);
  * Returns non-zero on error. */
 int stats_reset(const struct config_t *config);
 
-/* Sets internal flag to schedule postponed redraw operation of the UI. */
-void stats_redraw_later(void);
-
-/* Sets internal flag to schedule postponed refresh operation of the UI. */
-void stats_refresh_later(void);
-
-/* Queries state of scheduled updates while resetting them at the same time.
- * Returns the state. */
-UpdateType stats_update_fetch(void);
-
-/* Checks whether redraw is scheduled without resetting it.  Returns non-zero if
- * so, otherwise zero is returned. */
-int stats_redraw_planned(void);
-
 /* Updates curr_stats to reflect whether terminal multiplexers support is
  * enabled. */
 void stats_set_use_multiplexer(int use_term_multiplexer);
@@ -274,6 +260,22 @@ void stats_save_msg(const char msg[]);
 /* Updates curr_stats.preview.on field and performs necessary updates in other
  * parts of the application. */
 void stats_set_quickview(int on);
+
+/* Scheduled updates. */
+
+/* Sets internal flag to schedule postponed redraw operation of the UI. */
+void stats_redraw_later(void);
+
+/* Sets internal flag to schedule postponed refresh operation of the UI. */
+void stats_refresh_later(void);
+
+/* Queries state of scheduled updates while resetting them at the same time.
+ * Returns the state. */
+UpdateType stats_update_fetch(void);
+
+/* Checks whether redraw is scheduled without resetting it.  Returns non-zero if
+ * so, otherwise zero is returned. */
+int stats_redraw_planned(void);
 
 /* UI silencing. */
 

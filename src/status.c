@@ -255,42 +255,6 @@ reset_dircache(void)
 }
 
 void
-stats_redraw_later(void)
-{
-	pending_redraw = 1;
-}
-
-void
-stats_refresh_later(void)
-{
-	pending_refresh = 1;
-}
-
-UpdateType
-stats_update_fetch(void)
-{
-	if(pending_refresh)
-	{
-		pending_refresh = 0;
-		pending_redraw = 0;
-		return UT_FULL;
-	}
-	if(pending_redraw)
-	{
-		pending_redraw = 0;
-		return UT_REDRAW;
-	}
-	return UT_NONE;
-}
-
-int
-stats_redraw_planned(void)
-{
-	return pending_refresh != 0
-	    || pending_redraw != 0;
-}
-
-void
 stats_set_use_multiplexer(int use_term_multiplexer)
 {
 	if(!use_term_multiplexer)
@@ -391,6 +355,42 @@ stats_set_quickview(int on)
 {
 	curr_stats.preview.on = on;
 	load_quickview_option();
+}
+
+void
+stats_redraw_later(void)
+{
+	pending_redraw = 1;
+}
+
+void
+stats_refresh_later(void)
+{
+	pending_refresh = 1;
+}
+
+UpdateType
+stats_update_fetch(void)
+{
+	if(pending_refresh)
+	{
+		pending_refresh = 0;
+		pending_redraw = 0;
+		return UT_FULL;
+	}
+	if(pending_redraw)
+	{
+		pending_redraw = 0;
+		return UT_REDRAW;
+	}
+	return UT_NONE;
+}
+
+int
+stats_redraw_planned(void)
+{
+	return pending_refresh != 0
+	    || pending_redraw != 0;
 }
 
 void
