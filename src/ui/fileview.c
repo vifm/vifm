@@ -799,7 +799,7 @@ consider_scroll_bind(view_t *view)
 void
 redraw_view(view_t *view)
 {
-	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress &&
+	if(!stats_redraw_planned() && !curr_stats.restart_in_progress &&
 			window_shows_dirlist(view))
 	{
 		/* Make sure cursor is visible and relevant part of the view is

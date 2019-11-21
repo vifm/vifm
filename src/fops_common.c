@@ -143,7 +143,7 @@ io_progress_changed(const io_progress_t *state)
 	/* Don't query for scheduled redraw or input for background operations. */
 	if(!pdata->bg)
 	{
-		redraw = stats_redraw_fetch();
+		redraw = (stats_update_fetch() != UT_NONE);
 
 		if(!pdata->dialog)
 		{

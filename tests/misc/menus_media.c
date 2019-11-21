@@ -28,7 +28,7 @@
 static char sandbox[PATH_MAX + 1];
 static char *saved_cwd;
 
-#define SHEBANG_ECHO "#!/usr/bin/tail -n+2"
+#define SHEBANG_ECHO "#!/usr/bin/tail -n+2\n"
 
 SETUP_ONCE()
 {
@@ -82,9 +82,9 @@ TEARDOWN()
 TEST(menu_not_created_if_no_devices)
 {
 	FILE *fp = fopen("script", "w");
-	fputs(SHEBANG_ECHO "\n\
-mount-point=no-device\n\
-nothing", fp);
+	fputs(SHEBANG_ECHO
+	      "mount-point=no-device\n"
+	      "nothing", fp);
 	fclose(fp);
 
 	assert_failure(exec_commands("media", &lwin, CIT_COMMAND));
@@ -109,8 +109,8 @@ TEST(script_failure_is_handled)
 TEST(menu_is_loaded)
 {
 	FILE *fp = fopen("script", "w");
-	fputs(SHEBANG_ECHO "\n\
-device=/dev/sdf", fp);
+	fputs(SHEBANG_ECHO
+	      "device=/dev/sdf", fp);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -122,20 +122,20 @@ device=/dev/sdf", fp);
 TEST(entries_are_formatted_correctly)
 {
 	FILE *fp = fopen("script", "w");
-	fputs(SHEBANG_ECHO "\n\
-device=/dev/label-1mount\n\
-label=ignored label\n\
-label=label\n\
-garbage lines\n\n\n\n\
-mount-point=mount-point\n\
-device=/dev/nolabel-nomount\n\
-\n\
-device=/dev/label-2mounts\n\
-mount-point=mount-point1\n\
-mount-point=mount-point2\n\
-mount-point=mount-point3\n\
-info=device info [my label]\n\
-label=ignored label\n", fp);
+	fputs(SHEBANG_ECHO
+	      "device=/dev/label-1mount\n"
+	      "label=ignored label\n"
+	      "label=label\n"
+	      "garbage lines\n\n\n\n"
+	      "mount-point=mount-point\n"
+	      "device=/dev/nolabel-nomount\n"
+	      "\n"
+	      "device=/dev/label-2mounts\n"
+	      "mount-point=mount-point1\n"
+	      "mount-point=mount-point2\n"
+	      "mount-point=mount-point3\n"
+	      "info=device info [my label]\n"
+	      "label=ignored label\n", fp);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -171,9 +171,9 @@ label=ignored label\n", fp);
 TEST(enter_navigates_to_mount_point)
 {
 	FILE *fp = fopen("script", "w");
-	fprintf(fp, SHEBANG_ECHO "\n\
-device=/dev/sdf\n\
-mount-point=%s\n", sandbox);
+	fprintf(fp, SHEBANG_ECHO
+	            "device=/dev/sdf\n"
+	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -187,9 +187,9 @@ mount-point=%s\n", sandbox);
 TEST(enter_navigates_to_mount_point_on_device_line)
 {
 	FILE *fp = fopen("script", "w");
-	fprintf(fp, SHEBANG_ECHO "\n\
-device=/dev/sdf\n\
-mount-point=%s\n", sandbox);
+	fprintf(fp, SHEBANG_ECHO
+	            "device=/dev/sdf\n"
+	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -202,9 +202,11 @@ mount-point=%s\n", sandbox);
 TEST(enter_mounts_unmounted_device)
 {
 	FILE *fp = fopen("script", "w");
-	fputs("#!/bin/sh\n\
-echo device=/dev/sdf1\n\
-echo \"$@\" >> out\n", fp);
+	fputs("#!/bin/sh\n"
+	      "if [ \"$1\" = list ]; then\n"
+	      "  echo device=/dev/sdf1\n"
+	      "fi\n"
+	      "echo \"$@\" >> out\n", fp);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -236,11 +238,11 @@ echo \"$@\" >> out\n", fp);
 TEST(enter_does_nothing_on_device_lines_with_multiple_mounts)
 {
 	FILE *fp = fopen("script", "w");
-	fputs(SHEBANG_ECHO "\n\
-device=/dev/sdf\n\
-label=sdf-label\n\
-mount-point=mount-point1\n\
-mount-point=mount-point2\n", fp);
+	fputs(SHEBANG_ECHO
+	      "device=/dev/sdf\n"
+	      "label=sdf-label\n"
+	      "mount-point=mount-point1\n"
+	      "mount-point=mount-point2\n", fp);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -253,10 +255,10 @@ mount-point=mount-point2\n", fp);
 TEST(unhandled_key_is_ignored)
 {
 	FILE *fp = fopen("script", "w");
-	fprintf(fp, SHEBANG_ECHO "\n\
-device=/dev/sdf\n\
-label=sdf-label\n\
-mount-point=%s\n", sandbox);
+	fprintf(fp, SHEBANG_ECHO
+	            "device=/dev/sdf\n"
+	            "label=sdf-label\n"
+	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -268,10 +270,10 @@ mount-point=%s\n", sandbox);
 TEST(r_reloads_list)
 {
 	FILE *fp = fopen("script", "w");
-	fprintf(fp, SHEBANG_ECHO "\n\
-device=/dev/sdf\n\
-label=sdf-label\n\
-mount-point=%s\n", sandbox);
+	fprintf(fp, SHEBANG_ECHO
+	            "device=/dev/sdf\n"
+	            "label=sdf-label\n"
+	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -296,19 +298,20 @@ mount-point=%s\n", sandbox);
 TEST(m_toggles_mounts)
 {
 	FILE *fp = fopen("script", "w");
-	fputs("#!/bin/sh\n\
-cat <<EOF\n\
-device=/dev/sdf1\n\
-\
-\n\
-device=/dev/sdf2\n\
-mount-point=sdf2-mp1\n\
-\n\
-device=/dev/sdf3\n\
-mount-point=sdf3-mp1\n\
-mount-point=sdf3-mp2\n\
-EOF\n\
-echo \"$@\" >> out\n", fp);
+	fputs("#!/bin/sh\n"
+	      "if [ \"$1\" = list ]; then\n"
+	      "cat <<EOF\n"
+	      "device=/dev/sdf1\n"
+	      "\n"
+	      "device=/dev/sdf2\n"
+	      "mount-point=sdf2-mp1\n"
+	      "\n"
+	      "device=/dev/sdf3\n"
+	      "mount-point=sdf3-mp1\n"
+	      "mount-point=sdf3-mp2\n"
+	      "EOF\n"
+	      "fi\n"
+	      "echo \"$@\" >> out\n", fp);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
@@ -376,17 +379,17 @@ echo \"$@\" >> out\n", fp);
 TEST(mounting_failure_is_handled)
 {
 	FILE *fp = fopen("script", "w");
-	fputs(SHEBANG_ECHO "\n\
-device=/dev/sdf\n\
-mount-point=mount-point1\n", fp);
+	fputs(SHEBANG_ECHO
+	      "device=/dev/sdf\n"
+	      "mount-point=mount-point1\n", fp);
 	fclose(fp);
 
 	assert_success(exec_commands("media", &lwin, CIT_COMMAND));
 
 	fp = fopen("script", "w");
-	fputs("#!/bin/sh\n\
-echo \"$@\" >> out\n\
-exit 10\n", fp);
+	fputs("#!/bin/sh\n"
+	      "echo \"$@\" >> out\n"
+	      "exit 10\n", fp);
 	fclose(fp);
 
 	(void)vle_keys_exec(WK_j);
@@ -406,10 +409,12 @@ exit 10\n", fp);
 TEST(mount_directory_is_left_before_unmounting)
 {
 	FILE *fp = fopen("script", "w");
-	fprintf(fp, "#!/bin/sh\n\
-pwd >> %s/out\n\
-echo device=/dev/sdf\n\
-echo mount-point=%s\n", sandbox, sandbox);
+	fprintf(fp, "#!/bin/sh\n"
+	            "pwd >> %s/out\n"
+	            "if [ \"$1\" = list ]; then\n"
+	            "  echo device=/dev/sdf\n"
+	            "  echo mount-point=%s\n"
+	            "fi", sandbox, sandbox);
 	fclose(fp);
 
 	free(cfg.media_prg);
@@ -443,11 +448,11 @@ echo mount-point=%s\n", sandbox, sandbox);
 TEST(mount_matching_current_path_is_picked_by_default)
 {
 	FILE *fp = fopen("script", "w");
-	fprintf(fp, SHEBANG_ECHO "\n\
-device=/dev/sdd\n\
-mount-point=/bla\n\
-device=/dev/sdf\n\
-mount-point=%s\n", sandbox);
+	fprintf(fp, SHEBANG_ECHO
+	            "device=/dev/sdd\n"
+	            "mount-point=/bla\n"
+	            "device=/dev/sdf\n"
+	            "mount-point=%s\n", sandbox);
 	fclose(fp);
 
 	strcpy(lwin.curr_dir, sandbox);
@@ -461,17 +466,17 @@ mount-point=%s\n", sandbox);
 TEST(barckets_navigates_between_devices)
 {
 	FILE *fp = fopen("script", "w");
-	fputs(SHEBANG_ECHO "\n\
-device=dev\n\
-\
-\n\
-device=dev\n\
-mount-point=/\n\
-mount-point=/\n\
-mount-point=/\n\
-\n\
-device=dev\n\
-mount-point=/", fp);
+	fputs(SHEBANG_ECHO
+	      "device=dev\n"
+	      ""
+	      "\n"
+	      "device=dev\n"
+	      "mount-point=/\n"
+	      "mount-point=/\n"
+	      "mount-point=/\n"
+	      "\n"
+	      "device=dev\n"
+	      "mount-point=/", fp);
 	fclose(fp);
 
 	strcpy(lwin.curr_dir, sandbox);

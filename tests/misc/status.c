@@ -30,10 +30,10 @@ TEST(stats_silence_ui_operates_correctly)
 
 TEST(redraw_flag_resets_on_query)
 {
-	assert_false(stats_redraw_fetch());
-	stats_redraw_schedule();
-	assert_true(stats_redraw_fetch());
-	assert_false(stats_redraw_fetch());
+	assert_int_equal(UT_NONE, stats_update_fetch());
+	stats_redraw_later();
+	assert_int_equal(UT_REDRAW, stats_update_fetch());
+	assert_int_equal(UT_NONE, stats_update_fetch());
 }
 
 TEST(stats_update_term_state_operates_correctly)

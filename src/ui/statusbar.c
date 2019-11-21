@@ -63,7 +63,7 @@ ui_sb_clear(void)
 	if(curr_stats.load_stage <= 2)
 	{
 		multiline_status_bar = 0;
-		curr_stats.need_update = UT_FULL;
+		stats_refresh_later();
 		return;
 	}
 

@@ -60,11 +60,11 @@ received_sigwinch(void)
 
 	if(!isendwin())
 	{
-		stats_redraw_schedule();
+		stats_redraw_later();
 	}
 	else
 	{
-		curr_stats.need_update = UT_FULL;
+		stats_refresh_later();
 	}
 }
 
@@ -72,7 +72,7 @@ static void
 received_sigcont(void)
 {
 	reset_prog_mode();
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 static void
