@@ -79,7 +79,7 @@ status_t curr_stats;
 static int pending_redraw;
 /* Whether reload operation is scheduled.  Redrawing is then assumed to be
  * scheduled too, as it's part of reloading. */
-static int pending_reload;
+static int pending_refresh;
 static int inside_screen;
 static int inside_tmux;
 
@@ -125,7 +125,7 @@ static void
 load_def_values(status_t *stats, config_t *config)
 {
 	pending_redraw = 0;
-	pending_reload = 0;
+	pending_refresh = 0;
 
 	stats->last_char = 0;
 	stats->save_msg = 0;
@@ -255,23 +255,23 @@ reset_dircache(void)
 }
 
 void
-stats_redraw_schedule(void)
+stats_redraw_later(void)
 {
 	pending_redraw = 1;
 }
 
 void
-stats_reload_schedule(void)
+stats_refresh_later(void)
 {
-	pending_reload = 1;
+	pending_refresh = 1;
 }
 
 UpdateType
 stats_update_fetch(void)
 {
-	if(pending_reload)
+	if(pending_refresh)
 	{
-		pending_reload = 0;
+		pending_refresh = 0;
 		pending_redraw = 0;
 		return UT_FULL;
 	}
@@ -286,7 +286,7 @@ stats_update_fetch(void)
 int
 stats_redraw_planned(void)
 {
-	return pending_reload != 0
+	return pending_refresh != 0
 	    || pending_redraw != 0;
 }
 

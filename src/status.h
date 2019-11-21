@@ -72,7 +72,8 @@ typedef enum
 {
 	UT_NONE,   /* No update needed. */
 	UT_REDRAW, /* Screen redraw requested. */
-	UT_FULL,   /* File lists reload followed by screen redraw requested. */
+	UT_FULL,   /* File lists reload (when visible) followed by screen redraw
+	              requested. */
 }
 UpdateType;
 
@@ -223,10 +224,10 @@ int stats_init(struct config_t *config);
 int stats_reset(const struct config_t *config);
 
 /* Sets internal flag to schedule postponed redraw operation of the UI. */
-void stats_redraw_schedule(void);
+void stats_redraw_later(void);
 
-/* Sets internal flag to schedule postponed reload operation of the UI. */
-void stats_reload_schedule(void);
+/* Sets internal flag to schedule postponed refresh operation of the UI. */
+void stats_refresh_later(void);
 
 /* Queries state of scheduled updates while resetting them at the same time.
  * Returns the state. */

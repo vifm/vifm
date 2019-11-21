@@ -155,7 +155,7 @@ qv_toggle(void)
 	if(!curr_stats.preview.on)
 	{
 		stats_set_quickview(1);
-		stats_redraw_schedule();
+		stats_redraw_later();
 		return;
 	}
 

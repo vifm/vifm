@@ -305,7 +305,7 @@ menu_enter_mode(menu_data_t *m, view_t *active_view)
 	view = active_view;
 	menu = m;
 	vle_mode_set(MENU_MODE, VMT_PRIMARY);
-	stats_reload_schedule();
+	stats_refresh_later();
 	was_redraw = 0;
 
 	vle_cmds_init(0, &cmds_conf);
@@ -811,7 +811,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	ui_shutdown();
-	stats_reload_schedule();
+	stats_refresh_later();
 
 	vi_cmd = cfg_get_vicmd(&bg);
 	if(!qf)

@@ -1494,7 +1494,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	/* In some cases two redraw operations are needed, otherwise TUI is not fully
 	 * redrawn. */
 	update_screen(UT_REDRAW);
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 static void
@@ -1618,7 +1618,7 @@ view_check_for_updates(void)
 
 	if(need_redraw)
 	{
-		stats_redraw_schedule();
+		stats_redraw_later();
 	}
 }
 

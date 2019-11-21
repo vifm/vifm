@@ -31,7 +31,7 @@ TEST(stats_silence_ui_operates_correctly)
 TEST(redraw_flag_resets_on_query)
 {
 	assert_int_equal(UT_NONE, stats_update_fetch());
-	stats_redraw_schedule();
+	stats_redraw_later();
 	assert_int_equal(UT_REDRAW, stats_update_fetch());
 	assert_int_equal(UT_NONE, stats_update_fetch());
 }

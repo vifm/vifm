@@ -1998,7 +1998,7 @@ fillchars_handler(OPT_OP op, optval_t val)
 	if(part == NULL)
 	{
 		/* Schedule a redraw if option was set successfully. */
-		stats_redraw_schedule();
+		stats_redraw_later();
 	}
 }
 
@@ -2122,7 +2122,7 @@ laststatus_handler(OPT_OP op, optval_t val)
 		scroll_line_down(&rwin);
 	}
 
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 /* Handles updates of the global 'lines' option, which reflects height of
@@ -2212,7 +2212,7 @@ static void
 quickview_handler(OPT_OP op, optval_t val)
 {
 	curr_stats.preview.on = val.bool_val;
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 static void
@@ -2301,7 +2301,7 @@ static void
 showtabline_handler(OPT_OP op, optval_t val)
 {
 	cfg.show_tab_line = (val.enum_item > 2 ? val.enum_item - 3 : val.enum_item);
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 /* Handles changes of 'sizefmt' option by parsing string value and updating
@@ -2366,7 +2366,7 @@ sizefmt_handler(OPT_OP op, optval_t val)
 		cfg.sizefmt.precision = precision;
 		cfg.sizefmt.space = space;
 
-		stats_redraw_schedule();
+		stats_redraw_later();
 	}
 	else if(base == -1)
 	{
@@ -2703,7 +2703,7 @@ static void
 previewprg_local(OPT_OP op, optval_t val)
 {
 	replace_string(&curr_view->preview_prg, val.str_val);
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 /* Handles relative file numbers displaying toggle in global option. */
@@ -3239,7 +3239,7 @@ tabscope_handler(OPT_OP op, optval_t val)
 	tabs_rename(curr_view, NULL);
 
 	cfg.pane_tabs = val.bool_val;
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 static void
@@ -3353,7 +3353,7 @@ tuioptions_handler(OPT_OP op, optval_t val)
 	curr_stats.ellipsis = (cfg.use_unicode_characters ? "…" : "...");
 	columns_set_ellipsis(curr_stats.ellipsis);
 
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 static void
@@ -3517,7 +3517,7 @@ wrap_handler(OPT_OP op, optval_t val)
 static void
 text_option_changed(void)
 {
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 static void

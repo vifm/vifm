@@ -813,7 +813,7 @@ leave_cmdline_mode(void)
 	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH());
 	if(multiline_status_bar)
 	{
-		stats_redraw_schedule();
+		stats_redraw_later();
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 		if(prev_mode == MENU_MODE)
 		{
@@ -1348,7 +1348,7 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 				}
 			case CLS_MENU_FSEARCH:
 			case CLS_MENU_BSEARCH:
-				stats_reload_schedule();
+				stats_refresh_later();
 				curr_stats.save_msg = menus_search(pattern, sub_mode_ptr, 1);
 				break;
 

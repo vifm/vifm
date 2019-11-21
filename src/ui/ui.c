@@ -910,7 +910,7 @@ change_window(void)
 	}
 	else
 	{
-		stats_redraw_schedule();
+		stats_redraw_later();
 	}
 }
 
@@ -1455,7 +1455,7 @@ switch_panes_content(void)
 
 	view_panes_swapped();
 
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 void
@@ -1510,7 +1510,7 @@ split_view(SPLIT orientation)
 	curr_stats.split = orientation;
 	curr_stats.number_of_windows = 2;
 
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 void
@@ -2328,7 +2328,7 @@ ui_pause(void)
 			pressed == KEY_RESIZE);
 
 	/* Redraw UI to account for all things including graphical preview. */
-	stats_redraw_schedule();
+	stats_redraw_later();
 }
 
 void
