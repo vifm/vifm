@@ -203,7 +203,9 @@ TEST(enter_mounts_unmounted_device)
 {
 	FILE *fp = fopen("script", "w");
 	fputs("#!/bin/sh\n"
-	      "echo device=/dev/sdf1\n"
+	      "if [ \"$1\" = list ]; then\n"
+	      "  echo device=/dev/sdf1\n"
+	      "fi\n"
 	      "echo \"$@\" >> out\n", fp);
 	fclose(fp);
 
@@ -297,6 +299,7 @@ TEST(m_toggles_mounts)
 {
 	FILE *fp = fopen("script", "w");
 	fputs("#!/bin/sh\n"
+	      "if [ \"$1\" = list ]; then\n"
 	      "cat <<EOF\n"
 	      "device=/dev/sdf1\n"
 	      "\n"
@@ -307,6 +310,7 @@ TEST(m_toggles_mounts)
 	      "mount-point=sdf3-mp1\n"
 	      "mount-point=sdf3-mp2\n"
 	      "EOF\n"
+	      "fi\n"
 	      "echo \"$@\" >> out\n", fp);
 	fclose(fp);
 
@@ -407,8 +411,10 @@ TEST(mount_directory_is_left_before_unmounting)
 	FILE *fp = fopen("script", "w");
 	fprintf(fp, "#!/bin/sh\n"
 	            "pwd >> %s/out\n"
-	            "echo device=/dev/sdf\n"
-	            "echo mount-point=%s\n", sandbox, sandbox);
+	            "if [ \"$1\" = list ]; then\n"
+	            "  echo device=/dev/sdf\n"
+	            "  echo mount-point=%s\n"
+	            "fi", sandbox, sandbox);
 	fclose(fp);
 
 	free(cfg.media_prg);
