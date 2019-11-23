@@ -627,9 +627,9 @@ get_tip(void)
 	  "Trailing slash in :file[x]type, :filter and = matches directories only",
 	  ":edit forwards arguments to editor, e.g.: :edit +set\\ filetype=sh script",
 	  "Use :nmap/:vmap/etc. for short information on available mappings",
+	  "c key in :file menu puts command into command-line to edit before running",
+	  ":copen reopens the last list of files found by a :grep-like command",
 	};
-
-	time_t now;
 
 	if(need_to_shuffle)
 	{
@@ -647,7 +647,7 @@ get_tip(void)
 		need_to_shuffle = 0;
 	}
 
-	now = time(NULL);
+	time_t now = time(NULL);
 	if(now > last_time + SECS_PER_MIN)
 	{
 		last_time = now;
