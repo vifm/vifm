@@ -627,6 +627,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 SANITIZERS_CFLAGS
+DATA_SUFFIX
 IN_GIT_REPO
 GIT_PROG
 VIM_PROG
@@ -8337,6 +8338,11 @@ _ACEOF
 
   fi
 fi
+
+if test -n "$OSX_HOST" ; then
+    DATA_SUFFIX=-osx
+fi
+
 
 packagesrcdir=`cd $srcdir && pwd`
 cat >>confdefs.h <<_ACEOF

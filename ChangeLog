@@ -10,6 +10,10 @@
 	Avoid interposing system's reallocarray(), when it's present.
 	Thanks to Ben Boeckel (a.k.a. mathstuf).
 
+	Install only one version of sample config and media script, the one which
+	corresponds to operating system being used.  Thanks to Michael
+	Vetter (a.k.a. jubalh) and Ondrej Novy (a.k.a. onovy).
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

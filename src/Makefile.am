@@ -40,10 +40,8 @@ dist_vim_syntax__DATA = ../data/vim/syntax/vifm.vim
 dist_vimdoc_doc__DATA = ../data/vim/doc/app/vifm-app.txt
 nodist_vimdoc_doc__DATA = $(abs_srcdir)/../data/vim/doc/app/tags
 
-dist_pkgdata_DATA = ../data/vifmrc \
-							 ../data/vifmrc-osx
-dist_pkgdata_SCRIPTS = ../data/vifm-media \
-							 ../data/vifm-media-osx
+dist_pkgdata_DATA = ../data/vifmrc@DATA_SUFFIX@
+dist_pkgdata_SCRIPTS = ../data/vifm-media@DATA_SUFFIX@
 nodist_pkgdata_DATA = ../data/vifm-help.txt
 
 bin_PROGRAMS = vifm
