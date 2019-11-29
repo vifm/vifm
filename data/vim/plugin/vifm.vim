@@ -148,7 +148,11 @@ function! s:StartVifm(mods, count, editcmd, ...)
 					\ .rdir.' '.pickargsstr
 
 		if !has('nvim')
-			keepalt let buf = term_start(['/bin/sh', '-c', termcmd], options)
+			if has('win32')
+				keepalt let buf = term_start(termcmd, options)
+			else
+				keepalt let buf = term_start(['/bin/sh', '-c', termcmd], options)
+			endif
 
 			call setbufvar(buf, 'data', data)
 		else
