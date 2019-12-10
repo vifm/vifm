@@ -196,7 +196,8 @@ char *
 win_make_sh_cmd(const char cmd[], ShellRequester by)
 {
 	const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
-  const char *fmt = 0;
+
+	const char *fmt;
 	if(curr_stats.shell_type == ST_CMD)
 	{
 		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
@@ -205,18 +206,18 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 	}
 	else
 	{
-    fmt = "%s %s \'%s\'";
+		fmt = "%s %s \'%s\'";
 	}
-	// size of format minus the size of the %s-s
-  int buf_size = strlen(fmt) - 3 * 2 + \
-                    strlen(cfg.shell) + \
-                    strlen(sh_flag) + \
-                    strlen(cmd)*4 + \
-										// leading "
-                    1 + \
-                    1; // trailing "
-  char buf[buf_size];
-  snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
+
+	/* Size of format minus the size of the %s-s. */
+	int buf_size = strlen(fmt) - 3*2
+	             + strlen(cfg.shell)
+	             + strlen(sh_flag)
+	             + strlen(cmd)*4
+	             + 1  /* Leading ". */
+	             + 1; /* Trailing ". */
+	char buf[buf_size];
+	snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
 	return strdup(buf);
 }
 
