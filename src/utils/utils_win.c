@@ -196,6 +196,7 @@ char *
 win_make_sh_cmd(const char cmd[], ShellRequester by)
 {
 	const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
+	char *free_me = NULL;
 
 	const char *fmt;
 	if(curr_stats.shell_type == ST_CMD)
@@ -207,6 +208,20 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 	else
 	{
 		fmt = "%s %s \'%s\'";
+
+		free_me = malloc(strlen(cmd)*2 + 1);
+		char *p = free_me;
+		while(*cmd != '\0')
+		{
+			if(*cmd == '\\')
+			{
+				*p++ = '\\';
+			}
+			*p++ = *cmd++;
+		}
+		*p = '\0';
+
+		cmd = free_me;
 	}
 
 	/* Size of format minus the size of the %s-s. */
@@ -217,6 +232,7 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 	             + 1; /* Trailing '\0'. */
 	char buf[buf_size];
 	snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
+	free(free_me);
 	return strdup(buf);
 }
 
