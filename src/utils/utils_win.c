@@ -213,9 +213,8 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 	int buf_size = strlen(fmt) - 3*2
 	             + strlen(cfg.shell)
 	             + strlen(sh_flag)
-	             + strlen(cmd)*4
-	             + 1  /* Leading ". */
-	             + 1; /* Trailing ". */
+	             + strlen(cmd)
+	             + 1; /* Trailing '\0'. */
 	char buf[buf_size];
 	snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
 	return strdup(buf);
