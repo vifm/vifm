@@ -195,35 +195,28 @@ win_exec_cmd(char cmd[], int *returned_exit_code)
 char *
 win_make_sh_cmd(const char cmd[], ShellRequester by)
 {
-	char buf[strlen(cfg.shell) + 5 + strlen(cmd)*4 + 1 + 1];
-
+	const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
+  const char *fmt = 0;
 	if(curr_stats.shell_type == ST_CMD)
 	{
 		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
 		 * special characters work at the same time. */
-		const char *const fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
-		const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
-		snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
+		fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
 	}
 	else
 	{
-		const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
-		snprintf(buf, sizeof(buf), "%s %s '", cfg.shell, sh_flag);
-
-		char *p = buf + strlen(buf);
-		while(*cmd != '\0')
-		{
-			if(*cmd == '\\')
-			{
-				*p++ = '\\';
-			}
-			*p++ = *cmd++;
-		}
-		*p = '\0';
-
-		strcat(buf, "'");
+    fmt = "%s %s \'%s\'";
 	}
-
+	// size of format minus the size of the %s-s
+  int buf_size = strlen(fmt) - 3 * 2 + \
+                    strlen(cfg.shell) + \
+                    strlen(sh_flag) + \
+                    strlen(cmd)*4 + \
+										// leading "
+                    1 + \
+                    1; // trailing "
+  char buf[buf_size];
+  snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
 	return strdup(buf);
 }
 
