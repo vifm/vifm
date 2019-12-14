@@ -195,18 +195,20 @@ win_exec_cmd(char cmd[], int *returned_exit_code)
 char *
 win_make_sh_cmd(const char cmd[], ShellRequester by)
 {
-	const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
+	const char *sh_flag;
 	char *free_me = NULL;
 
 	const char *fmt;
 	if(curr_stats.shell_type == ST_CMD)
 	{
+		sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
 		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
 		 * special characters work at the same time. */
 		fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
 	}
 	else
 	{
+		sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
 		fmt = "%s %s \'%s\'";
 
 		free_me = malloc(strlen(cmd)*2 + 1);
