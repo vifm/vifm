@@ -60,6 +60,9 @@
 
 	Fixed Alt key combinations being broken on Windows since v0.9.
 
+	Fixed running non-cmd shells on Windows broken by adding 'shellcmdflag' in
+	0.10.1.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
