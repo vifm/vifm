@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 2 June, 2019)
+" Sample configuration file for vifm on OSX (last updated: 18 December, 2019)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -360,12 +360,7 @@ nnoremap yd :!printf %d | pbcopy<cr>
 nnoremap yf :!printf %c:p | pbcopy<cr>
 
 " View preview in Quick Look
-nnoremap q :!qlmanage -p %f > /dev/null 2>&1<cr>
-" Unhide builtin q* keymaps
-nnoremap q: q:
-nnoremap q/ q/
-nnoremap q? q?
-nnoremap q= q=
+nnoremap <space> :!qlmanage -p %f > /dev/null 2>&1<cr>
 
 " Mappings for faster renaming
 nnoremap I cw<c-a>
