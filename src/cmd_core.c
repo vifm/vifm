@@ -371,7 +371,7 @@ commands_escape_for_insertion(const char cmd_line[], int pos, const char str[])
 static void
 post(int id)
 {
-	if(id != COM_GOTO && curr_view->selected_files > 0 && !keep_view_selection)
+	if(curr_view->selected_files > 0 && !keep_view_selection)
 	{
 		flist_sel_stash(curr_view);
 	}
