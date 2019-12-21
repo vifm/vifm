@@ -373,7 +373,7 @@ post(int id)
 {
 	if(id != COM_GOTO && curr_view->selected_files > 0 && !keep_view_selection)
 	{
-		ui_view_reset_selection_and_reload(curr_view);
+		flist_sel_stash(curr_view);
 	}
 }
 
