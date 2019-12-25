@@ -248,13 +248,14 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	let opentype = file_readable(a:typef) ? readfile(a:typef) : []
 	call delete(a:typef)
 
-	call map(flist, 'fnameescape(v:val)')
-
 	" User exits vifm without selecting a file.
 	if empty(flist)
 		echohl WarningMsg | echo 'No file selected' | echohl None
 		return
 	endif
+
+	let unescaped_firstfile = flist[0]
+	call map(flist, 'fnameescape(v:val)')
 
 	if !empty(opentype) && !empty(opentype[0]) &&
 		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
@@ -286,6 +287,11 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	" Go to the first file working around possibility that :drop command is not
 	" evailable, if possible
 	if editcmd == 'edit'
+		" Linked folders must be resolved to successfully call 'buffer'
+		let firstfile = unescaped_firstfile
+		let firstfile = resolve(fnamemodify(firstfile, ':h'))
+					\ .'/'.fnamemodify(firstfile, ':t')
+		let firstfile = fnameescape(firstfile)
 		execute 'buffer' fnamemodify(firstfile, ':.')
 	elseif s:has_drop
 		" Mind that drop replaces arglist, so don't use it with :edit.
