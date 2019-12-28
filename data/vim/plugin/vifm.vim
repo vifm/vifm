@@ -256,6 +256,7 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 
 	let unescaped_firstfile = flist[0]
 	call map(flist, 'fnameescape(v:val)')
+	let firstfile = flist[0]
 
 	if !empty(opentype) && !empty(opentype[0]) &&
 		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
@@ -265,7 +266,6 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	endif
 
 	" Don't split if current window is empty
-	let firstfile = flist[0]
 	if empty(expand('%')) && editcmd =~ '^v\?split$'
 		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
