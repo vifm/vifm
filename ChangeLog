@@ -10,6 +10,18 @@
 	Avoid interposing system's reallocarray(), when it's present.
 	Thanks to Ben Boeckel (a.k.a. mathstuf).
 
+	Install only one version of sample config and media script, the one which
+	corresponds to operating system being used.  Thanks to Michael
+	Vetter (a.k.a. jubalh) and Ondrej Novy (a.k.a. onovy).
+
+	Don't force view reload after every :command that resets selection when
+	there was non-empty selection.  This might make metadata of files less
+	up-to-date, but should increase overall performance.  Thanks to Jose
+	Riha (a.k.a. jose1711).
+
+	Avoid reloading source file list after copy or move operation when
+	possible.  Thanks to Jose Riha (a.k.a. jose1711).
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

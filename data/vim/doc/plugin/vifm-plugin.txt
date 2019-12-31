@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.10.1  Last change: 2019 Jul 29
+*vifm-plugin.txt*    For Vifm version 0.10.1  Last change: 2019 Nov 29
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -77,6 +77,7 @@ terminal, it will be run inside a new split.  This allows commands to support
 split.  False by default.
 
                                                *g:vifm_embed_cwd*
+                                               {not on MS-Windows}
 A boolean variable.  When evaluates to true and Vifm is embedded in a
 terminal, vifm will change the active directory in vim while navigating.
 False by default.

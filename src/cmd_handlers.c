@@ -931,6 +931,7 @@ const size_t cmds_list_size = ARRAY_LEN(cmds_list);
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
+	cmds_preserve_selection();
 	fpos_set_pos(curr_view, cmd_info->end);
 	return 0;
 }

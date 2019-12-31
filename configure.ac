@@ -356,6 +356,12 @@ else
   fi
 fi
 
+dnl Setup suffix for data files.
+if test -n "$OSX_HOST" ; then
+    DATA_SUFFIX=-osx
+fi
+AC_SUBST([DATA_SUFFIX])
+
 dnl Set PACKAGE_SOURCE_DIR in config.h.
 packagesrcdir=`cd $srcdir && pwd`
 AC_DEFINE_UNQUOTED(PACKAGE_SOURCE_DIR, "${packagesrcdir}")

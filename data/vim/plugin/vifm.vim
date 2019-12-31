@@ -148,7 +148,11 @@ function! s:StartVifm(mods, count, editcmd, ...)
 					\ .rdir.' '.pickargsstr
 
 		if !has('nvim')
-			keepalt let buf = term_start(['/bin/sh', '-c', termcmd], options)
+			if has('win32')
+				keepalt let buf = term_start(termcmd, options)
+			else
+				keepalt let buf = term_start(['/bin/sh', '-c', termcmd], options)
+			endif
 
 			call setbufvar(buf, 'data', data)
 		else
@@ -244,13 +248,15 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	let opentype = file_readable(a:typef) ? readfile(a:typef) : []
 	call delete(a:typef)
 
-	call map(flist, 'fnameescape(v:val)')
-
 	" User exits vifm without selecting a file.
 	if empty(flist)
 		echohl WarningMsg | echo 'No file selected' | echohl None
 		return
 	endif
+
+	let unescaped_firstfile = flist[0]
+	call map(flist, 'fnameescape(v:val)')
+	let firstfile = flist[0]
 
 	if !empty(opentype) && !empty(opentype[0]) &&
 		\ opentype[0] != '"%VIFM_OPEN_TYPE%"'
@@ -260,7 +266,6 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	endif
 
 	" Don't split if current window is empty
-	let firstfile = flist[0]
 	if empty(expand('%')) && editcmd =~ '^v\?split$'
 		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
@@ -282,6 +287,11 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd)
 	" Go to the first file working around possibility that :drop command is not
 	" evailable, if possible
 	if editcmd == 'edit'
+		" Linked folders must be resolved to successfully call 'buffer'
+		let firstfile = unescaped_firstfile
+		let firstfile = resolve(fnamemodify(firstfile, ':h'))
+					\ .'/'.fnamemodify(firstfile, ':t')
+		let firstfile = fnameescape(firstfile)
 		execute 'buffer' fnamemodify(firstfile, ':.')
 	elseif s:has_drop
 		" Mind that drop replaces arglist, so don't use it with :edit.
