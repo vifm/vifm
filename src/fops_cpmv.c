@@ -83,7 +83,8 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		return err > 0;
 	}
 
-	if(pane_in_dir(view, path) && force)
+	const int same_dir = pane_in_dir(view, path);
+	if(same_dir && force)
 	{
 		show_error_msg("Operation Error",
 				"Forcing overwrite when destination and source is same directory will "
@@ -171,7 +172,12 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	}
 	un_group_close();
 
-	ui_views_reload_filelists();
+	if(same_dir || flist_custom_active(view))
+	{
+		ui_view_schedule_reload(view);
+	}
+	ui_view_schedule_reload(view == curr_view ? other_view : curr_view);
+
 	if(from_file)
 	{
 		free_string_array(list, nlines);
@@ -195,6 +201,7 @@ fops_replace(view_t *view, const char dst[], int force)
 	const char *const fname = get_last_path_component(dst);
 	ops_t *ops;
 	void *cp = (void *)(size_t)1;
+	view_t *const other = (view == curr_view) ? other_view : curr_view;
 
 	copy_str(dst_dir, sizeof(dst_dir), dst);
 	remove_last_path_component(dst_dir);
@@ -219,7 +226,6 @@ fops_replace(view_t *view, const char dst[], int force)
 
 	if(path_exists(dst, NODEREF) && force)
 	{
-		view_t *const other = (view == curr_view) ? other_view : curr_view;
 		(void)fops_delete_current(other, 1, 1);
 	}
 
@@ -239,7 +245,7 @@ fops_replace(view_t *view, const char dst[], int force)
 
 	un_group_close();
 
-	ui_views_reload_filelists();
+	ui_view_schedule_reload(other);
 
 	fops_free_ops(ops);
 }

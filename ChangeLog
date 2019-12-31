@@ -19,6 +19,9 @@
 	up-to-date, but should increase overall performance.  Thanks to Jose
 	Riha (a.k.a. jose1711).
 
+	Avoid reloading source file list after copy or move operation when
+	possible.  Thanks to Jose Riha (a.k.a. jose1711).
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
