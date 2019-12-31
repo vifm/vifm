@@ -65,7 +65,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	int i;
 	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 	dir_entry_t *entry;
-	char path[PATH_MAX + 1];
+	char dst_dir[PATH_MAX + 1];
 	int from_file;
 	ops_t *ops;
 
@@ -77,13 +77,13 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	}
 
 	err = cpmv_prepare(view, &list, &nlines, op, force, undo_msg,
-			sizeof(undo_msg), path, sizeof(path), &from_file);
+			sizeof(undo_msg), dst_dir, sizeof(dst_dir), &from_file);
 	if(err != 0)
 	{
 		return err > 0;
 	}
 
-	const int same_dir = pane_in_dir(view, path);
+	const int same_dir = pane_in_dir(view, dst_dir);
 	if(same_dir && force)
 	{
 		show_error_msg("Operation Error",
@@ -95,14 +95,14 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 	switch(op)
 	{
 		case CMLO_COPY:
-			ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_COPY, "Copying", flist_get_dir(view), dst_dir);
 			break;
 		case CMLO_MOVE:
-			ops = fops_get_ops(OP_MOVE, "Moving", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_MOVE, "Moving", flist_get_dir(view), dst_dir);
 			break;
 		case CMLO_LINK_REL:
 		case CMLO_LINK_ABS:
-			ops = fops_get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), path);
+			ops = fops_get_ops(OP_SYMLINK, "Linking", flist_get_dir(view), dst_dir);
 			break;
 
 		default:
@@ -112,7 +112,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 
 	ui_cancellation_reset();
 
-	nmarked_files = fops_enqueue_marked_files(ops, view, path, 0);
+	nmarked_files = fops_enqueue_marked_files(ops, view, dst_dir, 0);
 
 	un_group_open(undo_msg);
 	i = 0;
@@ -137,7 +137,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 			dst = get_real_name_from_trash_name(src_full);
 		}
 
-		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
+		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
 		if(path_exists(dst_full, NODEREF) && !from_trash)
 		{
 			(void)perform_operation(OP_REMOVESL, NULL, NULL, dst_full, NULL);
@@ -154,7 +154,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 
 		if(op == CMLO_MOVE)
 		{
-			err = fops_mv_file(entry->name, entry->origin, dst, path, OP_MOVE, 1,
+			err = fops_mv_file(entry->name, entry->origin, dst, dst_dir, OP_MOVE, 1,
 					ops);
 			if(err != 0)
 			{
@@ -163,7 +163,8 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		}
 		else
 		{
-			err = cp_file(entry->origin, path, entry->name, dst, op, 1, ops, force);
+			err = cp_file(entry->origin, dst_dir, entry->name, dst, op, 1, ops,
+					force);
 		}
 
 		ops_advance(ops, err == 0);
