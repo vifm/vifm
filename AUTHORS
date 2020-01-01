@@ -129,3 +129,6 @@ zsugabubus provided multiple patches.
 Von Welch submitted vifm-media-osx script.
 
 Richard Benson provided icon for the project.
+
+Roman Plášil (a.k.a. Quiark) authored script for converting Vim's color scheme
+into a Vifm's one.
