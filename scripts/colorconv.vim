@@ -39,7 +39,7 @@ function! s:onegroup(gr, to, defg, debg)
 endfun
 
 function! s:ConvertOne()
-	let result = []
+	let result = ["highlight clear"]
 	let result += s:onegroup("Normal", "Win", 7, 0)
 	let result += s:onegroup("NonText", "OtherWin", 8, 0)
 	let result += s:onegroup("VertSplit", "Border", 0, 17)
