@@ -34,6 +34,8 @@ function! s:onegroup(gr, to, defg, debg)
 	" handle bold
 	if bold
 		let result = result." cterm=bold"
+	else
+		let result .= " cterm=none"
 	endif
 	return [result]
 endfun
