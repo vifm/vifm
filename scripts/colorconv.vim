@@ -14,6 +14,7 @@ function! s:onegroup(gr, to, defg, debg)
 	let fg = synIDattr(syn, "fg")
 	let bg = synIDattr(syn, "bg")
 	let bold = (synIDattr(syn, "bold") == "1")
+	let reverse = (synIDattr(syn, "reverse") == "1")
 	let result = "highlight ".a:to
 
 	" handle foreground
@@ -31,9 +32,16 @@ function! s:onegroup(gr, to, defg, debg)
 	let result = result." ctermbg=".bg
 
 
-	" handle bold
-	if bold
-		let result = result." cterm=bold"
+	" handle attributes
+	if bold || reverse
+		let attrs = []
+		if bold
+			let attrs += ["bold"]
+		endif
+		if reverse
+			let attrs += ["reverse"]
+		endif
+		let result .= " cterm=".join(attrs, ',')
 	else
 		let result .= " cterm=none"
 	endif
