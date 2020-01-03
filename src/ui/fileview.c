@@ -822,11 +822,6 @@ redraw_current_view(void)
 void
 fview_cursor_redraw(view_t *view)
 {
-	/* fview_cursor_redraw() is also called in situations when file list has
-	 * changed, so just let fview_position_updated() deal with it.  With a cache
-	 * of last position, it should be fine. */
-	fview_position_updated(view);
-
 	/* Always redrawing the cell won't hurt and will account for the case when
 	 * selection state of item under the cursor has changed. */
 	if(view == other_view)
@@ -843,6 +838,11 @@ fview_cursor_redraw(view_t *view)
 		}
 		redraw_cell(view, view->top_line, view->curr_line, 1);
 	}
+
+	/* fview_cursor_redraw() is also called in situations when file list has
+	 * changed, so just let fview_position_updated() deal with it.  With a cache
+	 * of last position, it should be fine. */
+	fview_position_updated(view);
 }
 
 void
