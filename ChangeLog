@@ -45,6 +45,9 @@
 
 	Fixed gf key on symbolic links that point to broken symbolic links.
 
+	Fixed incorrect displaying of size of files larger than 4 GiB on Windows.
+	Got broken in 0.8.1.  Thanks to Allison McNulty (a.k.a. allora).
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

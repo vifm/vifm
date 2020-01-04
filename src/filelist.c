@@ -975,7 +975,7 @@ static int
 fill_dir_entry(dir_entry_t *entry, const char path[],
 		const WIN32_FIND_DATAW *ffd)
 {
-	entry->size = ((uintmax_t)ffd->nFileSizeHigh*(MAXDWORD + 1))
+	entry->size = (ffd->nFileSizeHigh*((uint64_t)MAXDWORD + 1))
 	            + ffd->nFileSizeLow;
 	entry->attrs = ffd->dwFileAttributes;
 	entry->mtime = win_to_unix_time(ffd->ftLastWriteTime);
