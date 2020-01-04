@@ -48,6 +48,9 @@
 	Fixed incorrect displaying of size of files larger than 4 GiB on Windows.
 	Got broken in 0.8.1.  Thanks to Allison McNulty (a.k.a. allora).
 
+	Fixed positioning of hardware cursor after startup and switching panes.
+	Got broken in 0.10.1.  Thanks to Daniel Mueller (a.k.a. d-e-s-o).
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
