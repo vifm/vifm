@@ -823,8 +823,8 @@ void
 fview_cursor_redraw(view_t *view)
 {
 	/* fview_cursor_redraw() is also called in situations when file list has
-	 * changed, so just let fview_position_updated() deal with it.  With a cache
-	 * of last position, it should be fine. */
+	 * changed, let fview_position_updated() deal with it.  With a cache of last
+	 * position, it should be fine. */
 	fview_position_updated(view);
 
 	/* Always redrawing the cell won't hurt and will account for the case when
@@ -842,6 +842,10 @@ fview_cursor_redraw(view_t *view)
 			redraw_cell(view, view->top_line, view->curr_line, 0);
 		}
 		redraw_cell(view, view->top_line, view->curr_line, 1);
+
+		/* redraw_cell() naturally moves hardware cursor after current entry (to the
+		 * next line when not in ls-like view).  Fix it up. */
+		position_hardware_cursor(view);
 	}
 }
 
@@ -1894,6 +1898,12 @@ position_hardware_cursor(view_t *view)
 		.entry = get_current_entry(view),
 		.prefix_len = &prefix_len,
 	};
+
+	if(cdt.entry == NULL)
+	{
+		/* Happens in tests. */
+		return;
+	}
 
 	calculate_table_conf(view, &col_count, &col_width);
 	current_line = view->curr_line/col_count;
