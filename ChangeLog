@@ -51,6 +51,9 @@
 	Fixed positioning of hardware cursor after startup and switching panes.
 	Got broken in 0.10.1.  Thanks to Daniel Mueller (a.k.a. d-e-s-o).
 
+	Fixed test for very long file name hitting dynamic file-system limit on
+	file name length.  Thanks to ovk.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

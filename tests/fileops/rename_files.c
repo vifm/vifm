@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
-#include <unistd.h> /* rmdir() symlink() unlink() */
+#include <unistd.h> /* pathconf() rmdir() symlink() unlink() */
 
 #include <string.h> /* memset() */
 
@@ -198,15 +198,23 @@ broken_link_name(const char prompt[], const char filename[], fo_prompt_cb cb,
 
 TEST(file_list_can_be_edited_including_long_fnames, IF(not_windows))
 {
-	char long_name[NAME_MAX + 1];
-	FILE *fp;
-
 	assert_success(chdir(SANDBOX_PATH));
+
+#ifndef _WIN32
+	long name_max = pathconf(".", _PC_NAME_MAX);
+#else
+	long name_max = -1;
+#endif
+	if(name_max == -1)
+	{
+		name_max = NAME_MAX;
+	}
+	char long_name[name_max + 1];
 
 	update_string(&cfg.shell, "/bin/sh");
 	stats_update_shell_type(cfg.shell);
 
-	fp = fopen("script", "w");
+	FILE *fp = fopen("script", "w");
 	fputs("#!/bin/sh\n", fp);
 	fputs("sed 'y/1/2/' < $2 > $2_out\n", fp);
 	fputs("mv $2_out $2\n", fp);
