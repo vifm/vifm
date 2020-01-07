@@ -279,10 +279,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_ESC WK_f,     {{&cmd_meta_f}, .descr = "move cursor to next word"}},
 	{WK_ESC WK_DOT,   {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
 #else
-	{{ALT_B},         {{&cmd_meta_b}, .descr = "move cursor to previous word"}},
-	{{ALT_D},         {{&cmd_meta_d}, .descr = "remove next word"}},
-	{{ALT_F},         {{&cmd_meta_f}, .descr = "move cursor to next word"}},
-	{{ALT_PERIOD},    {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
+	{{K(ALT_B)},      {{&cmd_meta_b}, .descr = "move cursor to previous word"}},
+	{{K(ALT_D)},      {{&cmd_meta_d}, .descr = "remove next word"}},
+	{{K(ALT_F)},      {{&cmd_meta_f}, .descr = "move cursor to next word"}},
+	{{K(ALT_PERIOD)}, {{&cmd_meta_dot}, .descr = "start/continue last arg completion"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
 	{{K(KEY_BACKSPACE)}, {{&cmd_ctrl_h}, .descr = "remove char to the left"}},

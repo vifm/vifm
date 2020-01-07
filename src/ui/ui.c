@@ -935,16 +935,12 @@ update_all_windows(void)
 void
 touch_all_windows(void)
 {
-	int in_menu;
-
 	if(curr_stats.load_stage < 2)
 	{
 		return;
 	}
 
-	in_menu = is_in_menu_like_mode();
-
-	if(!in_menu)
+	if(!is_in_menu_like_mode())
 	{
 		update_window_lazy(tab_line);
 
@@ -962,6 +958,13 @@ touch_all_windows(void)
 			update_view(&lwin);
 			update_view(&rwin);
 		}
+
+		/* This needs to be updated before things like status bar and status line to
+		 * account for cases when they hide the top line. */
+		update_window_lazy(ltop_line1);
+		update_window_lazy(ltop_line2);
+		update_window_lazy(rtop_line1);
+		update_window_lazy(rtop_line2);
 
 		if(cfg.side_borders_visible)
 		{
@@ -983,14 +986,6 @@ touch_all_windows(void)
 	update_window_lazy(ruler_win);
 	update_window_lazy(input_win);
 	update_window_lazy(status_bar);
-
-	if(!in_menu)
-	{
-		update_window_lazy(ltop_line1);
-		update_window_lazy(ltop_line2);
-		update_window_lazy(rtop_line1);
-		update_window_lazy(rtop_line2);
-	}
 
 	if(vle_mode_is(MSG_MODE))
 	{

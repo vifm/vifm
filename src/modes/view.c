@@ -278,7 +278,7 @@ static keys_add_info_t builtin_cmds[] = {
 #ifndef __PDCURSES__
 	{WK_ALT WK_v,      {{&cmd_b}, .descr = "scroll page up"}},
 #else
-	{{ALT_V},          {{&cmd_b}, .descr = "scroll page up"}},
+	{{K(ALT_V)},       {{&cmd_b}, .descr = "scroll page up"}},
 #endif
 #ifdef ENABLE_EXTENDED_KEYS
 	{{WC_C_w, K(KEY_BACKSPACE)}, {{&cmd_ctrl_wh}, .descr = "go to left window"}},

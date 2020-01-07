@@ -54,6 +54,12 @@
 	Fixed test for very long file name hitting dynamic file-system limit on
 	file name length.  Thanks to ovk.
 
+	Fixed UI glitches on top left and right when top line got hidden by status
+	bar or status line on status line taking up all or all but one lines of the
+	screen.
+
+	Fixed Alt key combinations being broken on Windows since v0.9.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
