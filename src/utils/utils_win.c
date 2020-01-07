@@ -209,7 +209,7 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 	else
 	{
 		sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
-		fmt = "%s %s \'%s\'";
+		fmt = "%s %s '%s'";
 
 		free_me = malloc(strlen(cmd)*2 + 1);
 		char *p = free_me;
