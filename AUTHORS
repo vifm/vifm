@@ -132,3 +132,6 @@ Richard Benson provided icon for the project.
 
 Roman Plášil (a.k.a. Quiark) authored script for converting Vim's color scheme
 into a Vifm's one.
+
+Bas Bossink (a.k.a. basbossink) fixed issues with non-tiny 'shellcmdflag' on
+Windows.
