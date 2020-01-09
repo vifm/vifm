@@ -195,22 +195,24 @@ win_exec_cmd(char cmd[], int *returned_exit_code)
 char *
 win_make_sh_cmd(const char cmd[], ShellRequester by)
 {
-	char buf[strlen(cfg.shell) + 5 + strlen(cmd)*4 + 1 + 1];
+	const char *sh_flag;
+	char *free_me = NULL;
 
+	const char *fmt;
 	if(curr_stats.shell_type == ST_CMD)
 	{
+		sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
 		/* Documentation in `cmd /?` seems to LIE, can't make both spaces and
 		 * special characters work at the same time. */
-		const char *const fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
-		const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
-		snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
+		fmt = (cmd[0] == '"') ? "%s %s \"%s\"" : "%s %s %s";
 	}
 	else
 	{
-		const char *sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "/C");
-		snprintf(buf, sizeof(buf), "%s %s '", cfg.shell, sh_flag);
+		sh_flag = (by == SHELL_BY_USER ? cfg.shell_cmd_flag : "-c");
+		fmt = "%s %s '%s'";
 
-		char *p = buf + strlen(buf);
+		free_me = malloc(strlen(cmd)*2 + 1);
+		char *p = free_me;
 		while(*cmd != '\0')
 		{
 			if(*cmd == '\\')
@@ -221,9 +223,18 @@ win_make_sh_cmd(const char cmd[], ShellRequester by)
 		}
 		*p = '\0';
 
-		strcat(buf, "'");
+		cmd = free_me;
 	}
 
+	/* Size of format minus the size of the %s-s. */
+	int buf_size = strlen(fmt) - 3*2
+	             + strlen(cfg.shell)
+	             + strlen(sh_flag)
+	             + strlen(cmd)
+	             + 1; /* Trailing '\0'. */
+	char buf[buf_size];
+	snprintf(buf, sizeof(buf), fmt, cfg.shell, sh_flag, cmd);
+	free(free_me);
 	return strdup(buf);
 }
 
