@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2019 May 26
+" Last Change: 2020 January 12
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -54,6 +54,25 @@ endfunction
 
 call vifm#globals#Init()
 
+if !has('nvim') && exists('*term_start')
+	function! VifmExitCb(job, code)
+		let data = b:data
+		if bufnr('%') == bufnr('#') && !data.split
+			enew
+		else
+			buffer #
+		endif
+		silent! bdelete! #
+		if data.split
+			silent! close
+		endif
+		if has('job') && type(data.cwdjob) == v:t_job
+			call job_stop(data.cwdjob)
+		endif
+		call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
+	endfunction
+endif
+
 function! s:StartVifm(mods, count, editcmd, ...)
 	if a:0 > 2
 		echohl WarningMsg | echo 'Too many arguments' | echohl None
@@ -103,23 +122,6 @@ function! s:StartVifm(mods, count, editcmd, ...)
 			          \          &term =~ 256 ? 'xterm-256color' : &term }
 			let options = { 'term_name' : 'vifm: '.a:editcmd, 'curwin' : 1,
 			              \ 'exit_cb': 'VifmExitCb', 'env' : env }
-
-			function! VifmExitCb(job, code)
-				let data = b:data
-				if bufnr('%') == bufnr('#') && !data.split
-					enew
-				else
-					buffer #
-				endif
-				silent! bdelete! #
-				if data.split
-					silent! close
-				endif
-				if has('job') && type(data.cwdjob) == v:t_job
-					call job_stop(data.cwdjob)
-				endif
-				call s:HandleRunResults(a:code, data.listf, data.typef, data.editcmd)
-			endfunction
 		else
 			function! data.on_exit(id, code, event)
 				if bufnr('%') == bufnr('#') && !self.split
