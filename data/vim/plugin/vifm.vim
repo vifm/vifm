@@ -55,8 +55,8 @@ endfunction
 call vifm#globals#Init()
 
 if !has('nvim') && exists('*term_start')
-	function! VifmExitCb(job, code) abort
-		let data = b:data
+	function! VifmExitCb(data, job, code) abort
+		let data = a:data
 		if bufnr('%') == bufnr('#') && !data.split
 			enew
 		else
@@ -121,7 +121,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 			let env = { 'TERM' : has('gui_running') ? $TERM :
 			          \          &term =~ 256 ? 'xterm-256color' : &term }
 			let options = { 'term_name' : 'vifm: '.a:editcmd, 'curwin' : 1,
-			              \ 'exit_cb': 'VifmExitCb', 'env' : env }
+			              \ 'exit_cb': funcref('VifmExitCb', [data]), 'env' : env }
 		else
 			function! data.on_exit(id, code, event) abort
 				if bufnr('%') == bufnr('#') && !self.split
@@ -155,8 +155,6 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 			else
 				keepalt let buf = term_start(['/bin/sh', '-c', termcmd], options)
 			endif
-
-			call setbufvar(buf, 'data', data)
 		else
 			call termopen(termcmd, data)
 
