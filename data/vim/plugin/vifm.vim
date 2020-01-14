@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 January 13
+" Last Change: 2020 January 14
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -158,9 +158,9 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 		else
 			call termopen(termcmd, data)
 
-			let oldbuf = bufname('%')
+			let oldbufnr = bufnr('%')
 			execute 'keepalt file' escape('vifm: '.a:editcmd, ' |')
-			execute bufnr(oldbuf).'bwipeout'
+			execute oldbufnr.'bwipeout'
 			" Use execute to not break highlighting.
 			execute 'startinsert'
 		endif
