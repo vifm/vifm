@@ -1,4 +1,4 @@
-*vifm-plugin.txt*    For Vifm version 0.10.1  Last change: 2019 Nov 29
+*vifm-plugin.txt*    For Vifm version 0.10.1  Last change: 2020 Jan 15
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -83,8 +83,9 @@ terminal, vifm will change the active directory in vim while navigating.
 False by default.
 
                                                *g:vifm_replace_netrw*
-A boolean variable.  When enabled, the the |netrw| plugin will be disabled. In
-its place, folders will be opened using vifm.  Defaults to false.
+A boolean variable.  When enabling this, don't forget to disable the |netrw|
+plugin (see `:h netrw-noload`), otherwise it can interfere with this plugin
+opening directories using vifm.  Defaults to false.
 
                                                *g:vifm_replace_netrw_cmd*
 A string variable.  The command to use to open folders when

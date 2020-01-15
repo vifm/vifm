@@ -387,7 +387,6 @@ if get(g:, 'vifm_replace_netrw')
 		endif
 	endfunction
 
-	let g:loaded_netrwPlugin = 'disable'
 	augroup neovimvifm
 		au BufEnter * silent call s:HandleBufEnter(expand('<amatch>'))
 	augroup END
