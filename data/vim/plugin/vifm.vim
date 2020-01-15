@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 January 14
+" Last Change: 2020 January 16
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -24,14 +24,8 @@ let s:script_path = expand('<sfile>')
 " :DiffVifm - load file for :vert diffsplit.
 " :TabVifm - load file or files in tabs.
 
-" Check whether :drop command is available
-try
-	drop
-catch E471
-	let s:has_drop = 1
-catch E319
-	let s:has_drop = 0
-endtry
+" Whether :drop command is available
+let s:has_drop = (exists(':drop') == 2)
 
 let s:tab_drop_cmd = (s:has_drop ? 'tablast | tab drop' : 'tabedit')
 
