@@ -25,6 +25,10 @@
 	Avoid reloading source file list after copy or move operation when
 	possible.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Document that user must disable netrw plugin on his own when enabling
+	g:vifm_replace_netrw.  Vifm's plugin can't do it, because it's loaded
+	after plugins shipped with Vim.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

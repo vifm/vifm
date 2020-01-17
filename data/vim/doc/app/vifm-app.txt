@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2019 Nov 14
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Jan 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2409,7 +2409,8 @@ yet supported) and might be changed in future releases, or get an alias.
 
                                                *vifm-:view* *vifm-:vie*
 :vie[w]
-    toggle quick file view.  See also |vifm-'quickview'| option.
+    toggle on and off the quick file view (preview of file's contents).
+    See also |vifm-'quickview'| option.
 :vie[w]!
     turn on quick file view if it's off.
 
@@ -4536,7 +4537,7 @@ layoutis({type})                               *vifm-layoutis()*
 Checks whether current interface layout is {type} or not, where {type} can
 be:
     only    single-pane mode
-    split   double-pane mode (either vertical or horizon split)
+    split   double-pane mode (either vertical or horizontal split)
     vsplit  vertical split (left and right panes)
     hsplit  horizontal split (top and bottom panes)
 

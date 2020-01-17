@@ -1,4 +1,4 @@
-.TH VIFM 1 "November 14, 2019" "vifm 0.10.1"
+.TH VIFM 1 "January 17, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2843,8 +2843,8 @@ for trees built out of custom view file-system tracking isn't performed.
 To leave tree view go up from its root or use gh at any level of the tree.  Any
 command that changes directory will also do, in particular, `:cd ..`.
 
-Tree structure is incompatible with alternative representations, so values of
-\'lsview' and 'millerview' options are ignored.
+Tree structure is incompatible with alternative representations, so values
+of 'lsview' and 'millerview' options are ignored.
 .TP
 .BI :tree!
 toggle current view in and out of tree mode.
@@ -2890,7 +2890,8 @@ same as :version.
 .BI "                                         :view"
 .TP
 .BI :vie[w]
-toggle on and off the quick file view.  See also 'quickview' option.
+toggle on and off the quick file view (preview of file's contents).  See
+also 'quickview' option.
 .TP
 .BI :vie[w]!
 turn on quick file view if it's off.
@@ -3603,8 +3604,8 @@ upper case letters that configure specific aspect of behaviour:
 
 At most one item of each pair takes affect, if both or more are present, only
 the last one matters.  When none of pair's elements are present, the behaviour
-is default (depends on operating system for path completion and on values of
-\'ignorecase' and 'smartcase' options for file navigation).
+is default (depends on operating system for path completion and on values
+of 'ignorecase' and 'smartcase' options for file navigation).
 .TP
 .BI "'cdpath' 'cd'"
 type: string list
@@ -5457,7 +5458,7 @@ Usage example:
 
 Checks whether current interface layout is {type} or not, where {type} can be:
     only    single-pane mode
-    split   double-pane mode (either vertical or horizon split)
+    split   double-pane mode (either vertical or horizontal split)
     vsplit  vertical split (left and right panes)
     hsplit  horizontal split (top and bottom panes)
 .br
