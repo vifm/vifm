@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Jan 15
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Jan 17
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2409,7 +2409,8 @@ yet supported) and might be changed in future releases, or get an alias.
 
                                                *vifm-:view* *vifm-:vie*
 :vie[w]
-    toggle quick file view.  See also |vifm-'quickview'| option.
+    toggle on and off the quick file view (preview of file's contents).
+    See also |vifm-'quickview'| option.
 :vie[w]!
     turn on quick file view if it's off.
 
