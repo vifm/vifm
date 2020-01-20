@@ -49,7 +49,7 @@ void trash_empty_all(void);
  * move/rename. */
 void trash_file_moved(const char src[], const char dst[]);
 
-int add_to_trash(const char path[], const char trash_name[]);
+int add_to_trash(const char original_path[], const char trash_name[]);
 
 /* Checks whether given original path of the file is registered.  Returns
  * non-zero if so, otherwise zero is returned. */

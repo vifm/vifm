@@ -368,11 +368,11 @@ trash_file_moved(const char src[], const char dst[])
 }
 
 int
-add_to_trash(const char path[], const char trash_name[])
+add_to_trash(const char original_path[], const char trash_name[])
 {
 	void *p;
 
-	if(trash_includes(path))
+	if(trash_includes(original_path))
 	{
 		return 0;
 	}
@@ -384,7 +384,7 @@ add_to_trash(const char path[], const char trash_name[])
 	}
 	trash_list = p;
 
-	trash_list[nentries].path = strdup(path);
+	trash_list[nentries].path = strdup(original_path);
 	trash_list[nentries].trash_name = strdup(trash_name);
 	trash_list[nentries].real_trash_name = NULL;
 	if(trash_list[nentries].path == NULL ||
