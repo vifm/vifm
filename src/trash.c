@@ -741,11 +741,11 @@ path_is(PathCheckType check, const char path[], const char other[])
 static int
 entry_is(PathCheckType check, trash_entry_t *entry, const char other[])
 {
-	char real[PATH_MAX*2];
+	char real[PATH_MAX*2 + 1];
 
 	if(entry->real_trash_name == NULL)
 	{
-		char real[PATH_MAX*2];
+		char real[PATH_MAX*2 + 1];
 		make_real_path(entry->trash_name, real, sizeof(real));
 		entry->real_trash_name = strdup(real);
 	}
