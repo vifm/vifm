@@ -724,7 +724,8 @@ regs_sync_from_shared_memory(void)
 		int i;
 		for(i = 0; i < NUM_REGISTERS; ++i)
 		{
-			if(shmem->reg_metadata[i].generation != seen_generation) {
+			if(shmem->reg_metadata[i].generation != seen_generation)
+			{
 				free_string_array(registers[i].files, registers[i].nfiles);
 
 				registers[i].nfiles = shmem->reg_metadata[i].num_entries;
