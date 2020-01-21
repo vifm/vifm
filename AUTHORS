@@ -135,3 +135,6 @@ into a Vifm's one.
 
 Bas Bossink (a.k.a. basbossink) fixed issues with non-tiny 'shellcmdflag' on
 Windows.
+
+Stephen Horst (a.k.a. sjhorst) fixed adding files with spaces in their names
+as e-mail attachments in the plugin.
