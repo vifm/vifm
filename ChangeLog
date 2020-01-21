@@ -29,6 +29,10 @@
 	g:vifm_replace_netrw.  Vifm's plugin can't do it, because it's loaded
 	after plugins shipped with Vim.
 
+	Significantly improved performance of adding files to registers that
+	contain thousands of files.  As a result contents of registers is sorted
+	now.  Thanks to Typo.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
