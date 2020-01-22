@@ -33,6 +33,10 @@
 	contain thousands of files.  As a result contents of registers is sorted
 	now.  Thanks to Typo.
 
+	Significantly improved performance of adding files to trash that contains
+	thousands of files.  As a result contents of trash is sorted now.  Thanks
+	to Typo.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
