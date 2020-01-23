@@ -115,6 +115,7 @@ static int is_trash_directory_traverser(const char path[],
 static int path_is(PathCheckType check, const char path[], const char other[]);
 static int entry_is(PathCheckType check, trash_entry_t *entry,
 		const char other[]);
+static const char * get_real_trash_name(trash_entry_t *entry);
 static void make_real_path(const char path[], char buf[], size_t buf_len);
 static void traverse_specs(const char base_path[], traverser client, void *arg);
 static char * expand_uid(const char spec[], int *expanded);
@@ -765,20 +766,28 @@ path_is(PathCheckType check, const char path[], const char other[])
 static int
 entry_is(PathCheckType check, trash_entry_t *entry, const char other[])
 {
-	char real[PATH_MAX*2 + 1];
+	char other_real[PATH_MAX*2 + 1];
+	make_real_path(other, other_real, sizeof(other_real));
 
+	const char *entry_real = get_real_trash_name(entry);
+
+	return (check == PREFIXED_WITH)
+	     ? path_starts_with(entry_real, other_real)
+	     : (stroscmp(entry_real, other_real) == 0);
+}
+
+/* Retrieves path to the entry with all symbolic but last one resolved.
+ * Returns the path. */
+static const char *
+get_real_trash_name(trash_entry_t *entry)
+{
 	if(entry->real_trash_name == NULL)
 	{
 		char real[PATH_MAX*2 + 1];
 		make_real_path(entry->trash_name, real, sizeof(real));
 		entry->real_trash_name = strdup(real);
 	}
-
-	make_real_path(other, real, sizeof(real));
-
-	return (check == PREFIXED_WITH)
-	     ? path_starts_with(entry->real_trash_name, real)
-	     : (stroscmp(entry->real_trash_name, real) == 0);
+	return entry->real_trash_name;
 }
 
 /* Resolves all but last path components in the path.  Permanently caches
