@@ -96,7 +96,7 @@ static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[], int can_delete);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
 static void remove_trash_entries(const char trash_dir[]);
-static int find_in_trash(const char original_path[]);
+static int find_in_trash(const char original_path[], const char trash_path[]);
 static trashes_list get_list_of_trashes(int allow_empty);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[], int allow_empty);
@@ -372,7 +372,7 @@ trash_file_moved(const char src[], const char dst[])
 int
 add_to_trash(const char original_path[], const char trash_name[])
 {
-	int pos = find_in_trash(original_path);
+	int pos = find_in_trash(original_path, trash_name);
 	if(pos >= 0)
 	{
 		return 0;
@@ -405,23 +405,37 @@ add_to_trash(const char original_path[], const char trash_name[])
 }
 
 int
-trash_includes(const char original_path[])
+trash_includes(const char original_path[], const char trash_path[])
 {
-	return (find_in_trash(original_path) >= 0);
+	return (find_in_trash(original_path, trash_path) >= 0);
 }
 
-/* Finds position of a file in trash_list or whereto it should be inserted in
+/* Finds position of an entry in trash_list or whereto it should be inserted in
  * it.  Returns non-negative number of successful search and negative index
  * offset by one otherwise (0 -> -1, 1 -> -2, etc.). */
 static int
-find_in_trash(const char original_path[])
+find_in_trash(const char original_path[], const char trash_path[])
 {
+	char real_trash_path[PATH_MAX*2 + 1];
+	real_trash_path[0] = '\0';
+
 	int l = 0;
 	int u = nentries - 1;
 	while(l <= u)
 	{
 		const int i = l + (u - l)/2;
-		const int cmp = stroscmp(trash_list[i].path, original_path);
+
+		int cmp = stroscmp(trash_list[i].path, original_path);
+		if(cmp == 0)
+		{
+			const char *entry_real = get_real_trash_name(&trash_list[i]);
+			if(real_trash_path[0] == '\0')
+			{
+				make_real_path(trash_path, real_trash_path, sizeof(real_trash_path));
+			}
+			cmp = stroscmp(entry_real, real_trash_path);
+		}
+
 		if(cmp == 0)
 		{
 			return i;

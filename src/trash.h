@@ -28,7 +28,8 @@ typedef struct
 }
 trash_entry_t;
 
-/* List of items in trashes. */
+/* List of items in all trashes.  Sorted by a compound key or path and
+ * real_trash_name. */
 trash_entry_t *trash_list;
 
 /* Number of items in the trash_list. */
@@ -51,9 +52,9 @@ void trash_file_moved(const char src[], const char dst[]);
 
 int add_to_trash(const char original_path[], const char trash_name[]);
 
-/* Checks whether given original path of the file is registered.  Returns
- * non-zero if so, otherwise zero is returned. */
-int trash_includes(const char original_path[]);
+/* Checks whether given combination of original and trash paths is registered.
+ * Returns non-zero if so, otherwise zero is returned. */
+int trash_includes(const char original_path[], const char trash_path[]);
 
 /* Lists all non-empty trash directories.  Puts number of elements to *ntrashes.
  * Caller should free array and all its elements using free().  On error returns
