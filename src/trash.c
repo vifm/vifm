@@ -758,7 +758,7 @@ path_is(PathCheckType check, const char path[], const char other[])
 
 	return (check == PREFIXED_WITH)
 	     ? path_starts_with(path_real, other_real)
-	     : paths_are_same(path_real, other_real);
+	     : (stroscmp(path_real, other_real) == 0);
 }
 
 /* An optimized for entries version of path_is(). */
@@ -778,7 +778,7 @@ entry_is(PathCheckType check, trash_entry_t *entry, const char other[])
 
 	return (check == PREFIXED_WITH)
 	     ? path_starts_with(entry->real_trash_name, real)
-	     : paths_are_same(entry->real_trash_name, real);
+	     : (stroscmp(entry->real_trash_name, real) == 0);
 }
 
 /* Resolves all but last path components in the path.  Permanently caches
