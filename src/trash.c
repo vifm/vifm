@@ -633,7 +633,7 @@ trash_gen_path(const char base_path[], const char name[])
 	struct stat st;
 	char buf[PATH_MAX + 1];
 	int i;
-	char *const trash_dir = pick_trash_dir(base_path);
+	char *const trash_dir = trash_pick_dir(base_path);
 
 	if(trash_dir == NULL)
 	{
@@ -654,7 +654,7 @@ trash_gen_path(const char base_path[], const char name[])
 }
 
 char *
-pick_trash_dir(const char base_path[])
+trash_pick_dir(const char base_path[])
 {
 	char real_path[PATH_MAX + 1];
 	char *trash_dir = NULL;

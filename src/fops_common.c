@@ -613,7 +613,7 @@ fops_enqueue_marked_files(ops_t *ops, view_t *view, const char dst_hint[],
 
 		if(to_trash)
 		{
-			char *const trash_dir = pick_trash_dir(entry->origin);
+			char *const trash_dir = trash_pick_dir(entry->origin);
 			ops_enqueue(ops, full_path, trash_dir);
 			free(trash_dir);
 		}

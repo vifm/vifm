@@ -77,7 +77,7 @@ char * trash_gen_path(const char base_path[], const char name[]);
 /* Picks trash directory basing on original path for a file that is being
  * trashed.  Returns absolute path to picked trash directory on success which
  * should be freed by the caller, otherwise NULL is returned. */
-char * pick_trash_dir(const char base_path[]);
+char * trash_pick_dir(const char base_path[]);
 
 /* Checks whether given absolute path points to a file under trash directory.
  * Returns non-zero if so, otherwise zero is returned. */

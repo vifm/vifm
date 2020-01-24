@@ -412,7 +412,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const src = args->sel_list[i];
-			char *trash_dir = args->use_trash ? pick_trash_dir(src) : args->path;
+			char *trash_dir = (args->use_trash ? trash_pick_dir(src) : args->path);
 			ops_enqueue(ops, src, trash_dir);
 			if(trash_dir != args->path)
 			{
