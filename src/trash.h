@@ -57,7 +57,7 @@ int trash_add_entry(const char original_path[], const char trash_name[]);
 
 /* Checks whether given combination of original and trash paths is registered.
  * Returns non-zero if so, otherwise zero is returned. */
-int trash_includes(const char original_path[], const char trash_path[]);
+int trash_has_entry(const char original_path[], const char trash_path[]);
 
 /* Lists all non-empty trash directories.  Puts number of elements to *ntrashes.
  * Caller should free array and all its elements using free().  On error returns

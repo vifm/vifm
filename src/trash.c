@@ -413,7 +413,7 @@ trash_add_entry(const char original_path[], const char trash_name[])
 }
 
 int
-trash_includes(const char original_path[], const char trash_path[])
+trash_has_entry(const char original_path[], const char trash_path[])
 {
 	return (find_in_trash(original_path, trash_path) >= 0);
 }
