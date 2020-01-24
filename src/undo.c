@@ -665,7 +665,7 @@ change_filename_in_trash(cmd_t *cmd, const char filename[])
 	remove_last_path_component(base_dir);
 
 	name_tail = get_real_name_from_trash_name(filename);
-	new = gen_trash_name(base_dir, name_tail);
+	new = trash_gen_path(base_dir, name_tail);
 	assert(new != NULL && "Should always get trash name here.");
 
 	free(base_dir);

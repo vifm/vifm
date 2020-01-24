@@ -628,7 +628,7 @@ free_entry(const trash_entry_t *entry)
 }
 
 char *
-gen_trash_name(const char base_path[], const char name[])
+trash_gen_path(const char base_path[], const char name[])
 {
 	struct stat st;
 	char buf[PATH_MAX + 1];

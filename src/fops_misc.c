@@ -273,7 +273,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 	else
 	{
 		const OPS op = nested ? OP_MOVETMP4 : OP_MOVE;
-		char *const dest = gen_trash_name(entry->origin, entry->name);
+		char *const dest = trash_gen_path(entry->origin, entry->name);
 		if(dest != NULL)
 		{
 			result = perform_operation(op, ops, NULL, full_path, dest);
@@ -445,7 +445,7 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 	if(!is_trash_directory(path))
 	{
 		const char *const fname = get_last_path_component(path);
-		char *const trash_name = gen_trash_name(path, fname);
+		char *const trash_name = trash_gen_path(path, fname);
 		const char *const dest = (trash_name != NULL) ? trash_name : fname;
 		(void)perform_operation(OP_MOVE, ops, NULL, path, dest);
 		free(trash_name);
