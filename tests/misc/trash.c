@@ -16,7 +16,7 @@ SETUP_ONCE()
 {
 	saved_cwd = save_cwd();
 	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", saved_cwd);
-	assert_success(set_trash_dir(sandbox));
+	assert_success(trash_set_specs(sandbox));
 }
 
 SETUP()

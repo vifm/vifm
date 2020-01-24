@@ -35,10 +35,10 @@ trash_entry_t *trash_list;
 /* Number of items in the trash_list. */
 int nentries;
 
-/* Parses trash directory name specification.  Sets value of cfg.trash_dir as a
+/* Parses trash directory specifications.  Sets value of cfg.trash_dir as a
  * side effect.  Returns non-zero in case of error, otherwise zero is
  * returned. */
-int set_trash_dir(const char trash_dir[]);
+int trash_set_specs(const char new_specs[]);
 
 /* Empties specified trash directory. */
 void trash_empty(const char trash_dir[]);

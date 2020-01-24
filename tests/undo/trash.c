@@ -25,7 +25,7 @@ SETUP()
 	assert_non_null(get_cwd(trash_path, sizeof(trash_path)));
 	restore_cwd(saved_cwd);
 
-	set_trash_dir(trash_path);
+	trash_set_specs(trash_path);
 
 	snprintf(full_src, sizeof(full_src), "%s/src", trash_path);
 	snprintf(full_dst, sizeof(full_dst), "%s/dst", trash_path);

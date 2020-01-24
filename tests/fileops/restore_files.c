@@ -30,7 +30,7 @@ SETUP()
 
 	cfg.use_trash = 1;
 	make_abs_path(trash_dir, sizeof(trash_dir), SANDBOX_PATH, "trash", saved_cwd);
-	set_trash_dir(trash_dir);
+	trash_set_specs(trash_dir);
 	lwin.dir_entry[0].marked = 1;
 	(void)fops_delete(&lwin, 'a', 1);
 }
@@ -44,7 +44,7 @@ TEARDOWN()
 
 TEST(files_not_directly_in_trash_are_not_restored)
 {
-	set_trash_dir(lwin.curr_dir);
+	trash_set_specs(lwin.curr_dir);
 
 	strcat(lwin.curr_dir, "/trash");
 	populate_dir_list(&lwin, 0);

@@ -126,7 +126,7 @@ static char **specs;
 static int nspecs;
 
 int
-set_trash_dir(const char new_specs[])
+trash_set_specs(const char new_specs[])
 {
 	char **dirs = NULL;
 	int ndirs = 0;

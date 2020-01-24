@@ -3307,7 +3307,7 @@ static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
 	char *const expanded_path = expand_path(val.str_val);
-	if(set_trash_dir(expanded_path) != 0)
+	if(trash_set_specs(expanded_path) != 0)
 	{
 		/* Reset the 'trashdir' option to its previous value. */
 		val.str_val = cfg.trash_dir;

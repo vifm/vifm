@@ -159,7 +159,7 @@ typedef struct config_t
 	char colors_dir[PATH_MAX + 8]; /* Where local color files are stored. */
 	char data_dir[PATH_MAX + 1];   /* Where to store data files. */
 
-	/* This one should be set using set_trash_dir() function. */
+	/* This one should be set using trash_set_specs() function. */
 	char trash_dir[PATH_MAX + 1];
 	char log_file[PATH_MAX + 1];
 	char *vi_command;
