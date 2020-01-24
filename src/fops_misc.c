@@ -1054,7 +1054,7 @@ fops_restore(view_t *view)
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(is_trash_directory(entry->origin) && restore_from_trash(full_path) == 0)
+		if(is_trash_directory(entry->origin) && trash_restore(full_path) == 0)
 		{
 			++m;
 		}

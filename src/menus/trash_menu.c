@@ -90,9 +90,9 @@ restore_current(menu_data_t *m)
 	un_group_open("restore: ");
 	un_group_close();
 
-	/* The string is freed in restore_from_trash(), thus must be cloned. */
+	/* The string is freed in trash_restore(), thus must be cloned. */
 	trash_path = strdup(trash_list[m->pos].trash_name);
-	err = restore_from_trash(trash_path);
+	err = trash_restore(trash_path);
 	free(trash_path);
 
 	if(err != 0)

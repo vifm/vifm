@@ -66,7 +66,7 @@ char ** trash_list_trashes(int *ntrashes);
 
 /* Restores a file specified by its trash_name (from trash_list array).  Returns
  * zero on success, otherwise non-zero is returned. */
-int restore_from_trash(const char trash_name[]);
+int trash_restore(const char trash_name[]);
 
 /* Generates unique name for a file at base_path location named name (doesn't
  * have to be base_path/name as long as base_path is at same mount) in a trash

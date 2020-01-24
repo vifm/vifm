@@ -545,7 +545,7 @@ is_trash_valid(const char trash_dir[], int allow_empty)
 }
 
 int
-restore_from_trash(const char trash_name[])
+trash_restore(const char trash_name[])
 {
 	int i;
 	char full[PATH_MAX + 1];
