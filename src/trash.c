@@ -461,7 +461,7 @@ find_in_trash(const char original_path[], const char trash_path[])
 }
 
 char **
-list_trashes(int *ntrashes)
+trash_list_trashes(int *ntrashes)
 {
 	trashes_list list = get_list_of_trashes(0);
 	free(list.can_delete);

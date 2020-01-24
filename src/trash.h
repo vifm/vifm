@@ -62,7 +62,7 @@ int trash_includes(const char original_path[], const char trash_path[]);
 /* Lists all non-empty trash directories.  Puts number of elements to *ntrashes.
  * Caller should free array and all its elements using free().  On error returns
  * NULL and sets *ntrashes to zero. */
-char ** list_trashes(int *ntrashes);
+char ** trash_list_trashes(int *ntrashes);
 
 /* Restores a file specified by its trash_name (from trash_list array).  Returns
  * zero on success, otherwise non-zero is returned. */
