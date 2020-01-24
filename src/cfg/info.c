@@ -743,7 +743,7 @@ update_info_file(const char filename[], int merge)
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					char *const trash_name = convert_old_trash_path(line_val);
-					if(!trash_includes(line2))
+					if(!trash_includes(line2, trash_name))
 					{
 						ntrash = add_to_string_array(&trash, ntrash, 2, trash_name, line2);
 					}

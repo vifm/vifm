@@ -5,28 +5,36 @@
 #include "../../src/utils/fs.h"
 #include "../../src/trash.h"
 
+#include <stdio.h> /* snprintf() */
+
 #include "utils.h"
 
+static char sandbox[PATH_MAX + 1];
 static char *saved_cwd;
+
+SETUP_ONCE()
+{
+	saved_cwd = save_cwd();
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", saved_cwd);
+	assert_success(set_trash_dir(sandbox));
+}
 
 SETUP()
 {
+	restore_cwd(saved_cwd);
 	saved_cwd = save_cwd();
+
 	assert_success(chdir(SANDBOX_PATH));
 }
 
 TEARDOWN()
 {
 	restore_cwd(saved_cwd);
+	saved_cwd = NULL;
 }
 
 TEST(nonempty_ro_dir_is_removed, IF(not_windows))
 {
-	char sandbox[PATH_MAX + 1];
-	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", saved_cwd);
-
-	assert_success(set_trash_dir(sandbox));
-
 	assert_success(os_mkdir("dir", 0777));
 	create_file("dir/a");
 	assert_success(os_chmod("dir", 0555));
@@ -38,6 +46,19 @@ TEST(nonempty_ro_dir_is_removed, IF(not_windows))
 	assert_failure(os_chmod("dir", 0777));
 	assert_failure(unlink("dir/a"));
 	assert_failure(rmdir("dir"));
+}
+
+TEST(trash_allows_multiple_files_with_same_original_path)
+{
+	char path[PATH_MAX + 1];
+
+	snprintf(path, sizeof(path), "%s/trashed_1", sandbox);
+	assert_success(add_to_trash("/some/path/src", path));
+	assert_int_equal(1, nentries);
+
+	snprintf(path, sizeof(path), "%s/trashed_2", sandbox);
+	assert_success(add_to_trash("/some/path/src", path));
+	assert_int_equal(2, nentries);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

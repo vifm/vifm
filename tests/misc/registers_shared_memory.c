@@ -38,8 +38,8 @@ static pid_t popen2(const char cmd[], FILE **in, FILE **out);
 #define TEST_REGISTERS_MINUS_DEF  "abcghijklmnopqrstuvwxyz"
 #define TEST_REGISTERS_MINUS_DEFG "abchijklmnopqrstuvwxyz"
 
-#define TEST_EXPECT_FOR_D "d,3,newd,nd1,nd2,"
-#define TEST_EXPECT_FOR_E "e,4,longerthanbeforee,le1,le2,le3,"
+#define TEST_EXPECT_FOR_D "d,3,nd1,nd2,newd,"
+#define TEST_EXPECT_FOR_E "e,4,le1,le2,le3,longerthanbeforee,"
 #define TEST_EXPECT_FOR_G "g,1,G,"
 
 static FILE *instance_stdin[NUM_INSTANCES];
@@ -65,7 +65,7 @@ SETUP_ONCE()
 	const char *curletr;
 	for(curletr = TEST_REGISTERS; *curletr != '\0'; ++curletr)
 	{
-		fprintf(instance_stdin[0], "set,%c,initial%c,i%c1,i%c2,i%c3\n",
+		fprintf(instance_stdin[0], "set,%c,_initial%c,i%c1,i%c2,i%c3\n",
 			*curletr, *curletr, *curletr, *curletr, *curletr);
 		fprintf(instance_stdin[1], "set,%c,lossval%c,l%c1,l%c2,l%c3\n",
 			*curletr, *curletr, *curletr, *curletr, *curletr);
@@ -131,8 +131,8 @@ check_is_initial(int instance, const char reglist[])
 	const char *curletr;
 	for(curletr = reglist; *curletr != '\0'; ++curletr)
 	{
-		char cmp[26];
-		snprintf(cmp, sizeof(cmp), "%c,4,initial%c,i%c1,i%c2,i%c3,",
+		char cmp[27];
+		snprintf(cmp, sizeof(cmp), "%c,4,_initial%c,i%c1,i%c2,i%c3,",
 			*curletr, *curletr, *curletr, *curletr, *curletr);
 		check_register_contents(instance, *curletr, cmp);
 	}

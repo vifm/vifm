@@ -21,7 +21,7 @@
 
 #include <stddef.h>   /* NULL size_t */
 #include <stdio.h>    /* snprintf() */
-#include <string.h>
+#include <string.h>   /* memmove() */
 #include <stdlib.h>   /* free */
 
 #include <fcntl.h>    /* O_RDWR, O_EXCL, O_CREAT, ... */
@@ -162,6 +162,7 @@ static unsigned int seen_generation;
 /* Whether we're in debug mode. */
 static int debug_print_to_stdout;
 
+static int find_in_reg(const reg_t *reg, const char file[]);
 static void regs_sync_error(const char msg[]);
 static int regs_sync_to_shared_memory_critical(void);
 static int regs_sync_enter_critical_section(void);
@@ -217,39 +218,38 @@ regs_find(int reg_name)
 	return NULL;
 }
 
-static int
-check_for_duplicate_file_names(reg_t *reg, const char file[])
-{
-	int i;
-	for(i = 0; i < reg->nfiles; ++i)
-	{
-		if(stroscmp(file, reg->files[i]) == 0)
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-
 int
 regs_append(int reg_name, const char file[])
 {
-	reg_t *reg;
-
 	if(reg_name == BLACKHOLE_REG_NAME)
 	{
 		return 0;
 	}
-	if((reg = regs_find(reg_name)) == NULL)
-	{
-		return 1;
-	}
-	if(check_for_duplicate_file_names(reg, file))
+
+	reg_t *reg = regs_find(reg_name);
+	if(reg == NULL)
 	{
 		return 1;
 	}
 
-	reg->nfiles = add_to_string_array(&reg->files, reg->nfiles, 1, file);
+	int pos = find_in_reg(reg, file);
+	if(pos >= 0)
+	{
+		return 1;
+	}
+	pos = -(pos + 1);
+
+	const int nfiles = add_to_string_array(&reg->files, reg->nfiles, 1, file);
+	if(nfiles == reg->nfiles)
+	{
+		return 1;
+	}
+	reg->nfiles = nfiles;
+
+	char *file_copy = reg->files[nfiles - 1];
+	memmove(reg->files + pos + 1, reg->files + pos,
+			sizeof(*reg->files)*(nfiles - 1 - pos));
+	reg->files[pos] = file_copy;
 	return 0;
 }
 
@@ -335,18 +335,42 @@ regs_rename_contents(const char old[], const char new[])
 	int i;
 	for(i = 0; i < NUM_REGISTERS; ++i)
 	{
-		int j;
-		const int n = registers[i].nfiles;
-		for(j = 0; j < n; ++j)
+		/* Registers don't contain duplicates, so updating single element is
+		 * enough. */
+		const int pos = find_in_reg(&registers[i], old);
+		if(pos >= 0)
 		{
-			if(stroscmp(registers[i].files[j], old) != 0)
-				continue;
-
-			(void)replace_string(&registers[i].files[j], new);
-			/* Registers don't contain duplicates, so exit this loop. */
-			break;
+			(void)replace_string(&registers[i].files[pos], new);
 		}
 	}
+}
+
+/* Finds position of a file in a register or whereto it should be inserted in
+ * its files array.  Returns non-negative number of successful search and
+ * negative index offset by one otherwise (0 -> -1, 1 -> -2, etc.). */
+static int
+find_in_reg(const reg_t *reg, const char file[])
+{
+	int l = 0;
+	int u = reg->nfiles - 1;
+	while(l <= u)
+	{
+		const int i = l + (u - l)/2;
+		const int cmp = stroscmp(reg->files[i], file);
+		if(cmp == 0)
+		{
+			return i;
+		}
+		else if(cmp < 0)
+		{
+			l = i + 1;
+		}
+		else
+		{
+			u = i - 1;
+		}
+	}
+	return -l - 1;
 }
 
 void
@@ -724,7 +748,8 @@ regs_sync_from_shared_memory(void)
 		int i;
 		for(i = 0; i < NUM_REGISTERS; ++i)
 		{
-			if(shmem->reg_metadata[i].generation != seen_generation) {
+			if(shmem->reg_metadata[i].generation != seen_generation)
+			{
 				free_string_array(registers[i].files, registers[i].nfiles);
 
 				registers[i].nfiles = shmem->reg_metadata[i].num_entries;

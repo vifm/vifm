@@ -29,6 +29,14 @@
 	g:vifm_replace_netrw.  Vifm's plugin can't do it, because it's loaded
 	after plugins shipped with Vim.
 
+	Significantly improved performance of adding files to registers that
+	contain thousands of files.  As a result contents of registers is sorted
+	now.  Thanks to Typo.
+
+	Significantly improved performance of adding files to trash that contains
+	thousands of files.  As a result contents of trash is sorted now.  Thanks
+	to Typo.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
@@ -69,6 +77,12 @@
 
 	Fixed issues with non-tiny 'shellcmdflag' on Windows.  Patch by Bas
 	Bossink (a.k.a. basbossink).
+
+	Fixed adding files with spaces in their names as e-mail attachments in the
+	plugin.  Thanks to Stephen Horst (a.k.a. sjhorst).
+
+	Fixed trash "forgetting" about deleted file when there it already contains
+	a file deleted at the same path.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

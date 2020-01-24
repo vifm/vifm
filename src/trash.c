@@ -26,7 +26,7 @@
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* remove() snprintf() */
 #include <stdlib.h> /* free() realloc() */
-#include <string.h> /* strchr() strcmp() strdup() strlen() strspn() */
+#include <string.h> /* memmove() strchr() strcmp() strdup() strlen() strspn() */
 
 #include "cfg/config.h"
 #include "compat/fs_limits.h"
@@ -96,6 +96,7 @@ static void empty_trash_dirs(void);
 static void empty_trash_dir(const char trash_dir[], int can_delete);
 static void empty_trash_in_bg(bg_op_t *bg_op, void *arg);
 static void remove_trash_entries(const char trash_dir[]);
+static int find_in_trash(const char original_path[], const char trash_path[]);
 static trashes_list get_list_of_trashes(int allow_empty);
 static int get_list_of_trashes_traverser(struct mntent *entry, void *arg);
 static int is_trash_valid(const char trash_dir[], int allow_empty);
@@ -114,6 +115,7 @@ static int is_trash_directory_traverser(const char path[],
 static int path_is(PathCheckType check, const char path[], const char other[]);
 static int entry_is(PathCheckType check, trash_entry_t *entry,
 		const char other[]);
+static const char * get_real_trash_name(trash_entry_t *entry);
 static void make_real_path(const char path[], char buf[], size_t buf_len);
 static void traverse_specs(const char base_path[], traverser client, void *arg);
 static char * expand_uid(const char spec[], int *expanded);
@@ -368,49 +370,86 @@ trash_file_moved(const char src[], const char dst[])
 }
 
 int
-add_to_trash(const char path[], const char trash_name[])
+add_to_trash(const char original_path[], const char trash_name[])
 {
-	void *p;
-
-	if(trash_includes(path))
+	int pos = find_in_trash(original_path, trash_name);
+	if(pos >= 0)
 	{
 		return 0;
 	}
+	pos = -(pos + 1);
 
-	p = reallocarray(trash_list, nentries + 1, sizeof(*trash_list));
+	void *p = reallocarray(trash_list, nentries + 1, sizeof(*trash_list));
 	if(p == NULL)
 	{
 		return -1;
 	}
 	trash_list = p;
 
-	trash_list[nentries].path = strdup(path);
-	trash_list[nentries].trash_name = strdup(trash_name);
-	trash_list[nentries].real_trash_name = NULL;
-	if(trash_list[nentries].path == NULL ||
-			trash_list[nentries].trash_name == NULL)
+	trash_entry_t entry = {
+		.path = strdup(original_path),
+		.trash_name = strdup(trash_name),
+		.real_trash_name = NULL,
+	};
+	if(entry.path == NULL || entry.trash_name == NULL)
 	{
-		free_entry(&trash_list[nentries]);
+		free_entry(&entry);
 		return -1;
 	}
 
-	nentries++;
+	++nentries;
+	memmove(trash_list + pos + 1, trash_list + pos,
+			sizeof(*trash_list)*(nentries - 1 - pos));
+	trash_list[pos] = entry;
 	return 0;
 }
 
 int
-trash_includes(const char original_path[])
+trash_includes(const char original_path[], const char trash_path[])
 {
-	int i;
-	for(i = 0; i < nentries; ++i)
+	return (find_in_trash(original_path, trash_path) >= 0);
+}
+
+/* Finds position of an entry in trash_list or whereto it should be inserted in
+ * it.  Returns non-negative number of successful search and negative index
+ * offset by one otherwise (0 -> -1, 1 -> -2, etc.). */
+static int
+find_in_trash(const char original_path[], const char trash_path[])
+{
+	char real_trash_path[PATH_MAX*2 + 1];
+	real_trash_path[0] = '\0';
+
+	int l = 0;
+	int u = nentries - 1;
+	while(l <= u)
 	{
-		/* Assuming canonicalized paths for this unit. */
-		if(stroscmp(original_path, trash_list[i].path) == 0)
+		const int i = l + (u - l)/2;
+
+		int cmp = stroscmp(trash_list[i].path, original_path);
+		if(cmp == 0)
 		{
-			return 1;
+			const char *entry_real = get_real_trash_name(&trash_list[i]);
+			if(real_trash_path[0] == '\0')
+			{
+				make_real_path(trash_path, real_trash_path, sizeof(real_trash_path));
+			}
+			cmp = stroscmp(entry_real, real_trash_path);
+		}
+
+		if(cmp == 0)
+		{
+			return i;
+		}
+		else if(cmp < 0)
+		{
+			l = i + 1;
+		}
+		else
+		{
+			u = i - 1;
 		}
 	}
-	return 0;
+	return -l - 1;
 }
 
 char **
@@ -734,27 +773,35 @@ path_is(PathCheckType check, const char path[], const char other[])
 
 	return (check == PREFIXED_WITH)
 	     ? path_starts_with(path_real, other_real)
-	     : paths_are_same(path_real, other_real);
+	     : (stroscmp(path_real, other_real) == 0);
 }
 
 /* An optimized for entries version of path_is(). */
 static int
 entry_is(PathCheckType check, trash_entry_t *entry, const char other[])
 {
-	char real[PATH_MAX*2];
+	char other_real[PATH_MAX*2 + 1];
+	make_real_path(other, other_real, sizeof(other_real));
 
+	const char *entry_real = get_real_trash_name(entry);
+
+	return (check == PREFIXED_WITH)
+	     ? path_starts_with(entry_real, other_real)
+	     : (stroscmp(entry_real, other_real) == 0);
+}
+
+/* Retrieves path to the entry with all symbolic but last one resolved.
+ * Returns the path. */
+static const char *
+get_real_trash_name(trash_entry_t *entry)
+{
 	if(entry->real_trash_name == NULL)
 	{
-		char real[PATH_MAX*2];
+		char real[PATH_MAX*2 + 1];
 		make_real_path(entry->trash_name, real, sizeof(real));
 		entry->real_trash_name = strdup(real);
 	}
-
-	make_real_path(other, real, sizeof(real));
-
-	return (check == PREFIXED_WITH)
-	     ? path_starts_with(entry->real_trash_name, real)
-	     : paths_are_same(entry->real_trash_name, real);
+	return entry->real_trash_name;
 }
 
 /* Resolves all but last path components in the path.  Permanently caches
