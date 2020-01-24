@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 January 22
+" Last Change: 2020 January 25
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -51,7 +51,7 @@ call vifm#globals#Init()
 if !has('nvim') && exists('*term_start')
 	function! VifmExitCb(data, job, code) abort
 		let data = a:data
-		if bufnr('%') == bufnr('#') && !data.split
+		if (bufnr('%') == bufnr('#') || !bufexists(0)) && !data.split
 			enew
 		else
 			buffer #
@@ -118,7 +118,7 @@ function! s:StartVifm(mods, count, editcmd, ...) abort
 			              \ 'exit_cb': funcref('VifmExitCb', [data]), 'env' : env }
 		else
 			function! data.on_exit(id, code, event) abort
-				if bufnr('%') == bufnr('#') && !self.split
+				if (bufnr('%') == bufnr('#') || !bufexists(0)) && !self.split
 					enew
 				else
 					buffer #
