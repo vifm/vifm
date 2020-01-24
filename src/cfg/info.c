@@ -317,7 +317,7 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *const trash_name = convert_old_trash_path(line_val);
-				(void)add_to_trash(line2, trash_name);
+				(void)trash_add_entry(line2, trash_name);
 				free(trash_name);
 			}
 		}

@@ -361,7 +361,10 @@ trash_file_moved(const char src[], const char dst[])
 {
 	if(is_under_trash(dst))
 	{
-		add_to_trash(src, dst);
+		if(trash_add_entry(src, dst) != 0)
+		{
+			LOG_ERROR_MSG("Failed to add to trash: (`%s`, `%s`)", src, dst);
+		}
 	}
 	else if(is_under_trash(src))
 	{
@@ -370,11 +373,16 @@ trash_file_moved(const char src[], const char dst[])
 }
 
 int
-add_to_trash(const char original_path[], const char trash_name[])
+trash_add_entry(const char original_path[], const char trash_name[])
 {
+	/* XXX: we check duplicates by original_path+trash_name, which allows
+	 *      multiple original path to be mapped to one trash file, might want to
+	 *      forbid this.  */
 	int pos = find_in_trash(original_path, trash_name);
 	if(pos >= 0)
 	{
+		LOG_INFO_MSG("File is already in trash: (`%s`, `%s`)", original_path,
+				trash_name);
 		return 0;
 	}
 	pos = -(pos + 1);

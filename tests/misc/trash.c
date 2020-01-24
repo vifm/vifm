@@ -53,11 +53,11 @@ TEST(trash_allows_multiple_files_with_same_original_path)
 	char path[PATH_MAX + 1];
 
 	snprintf(path, sizeof(path), "%s/trashed_1", sandbox);
-	assert_success(add_to_trash("/some/path/src", path));
+	assert_success(trash_add_entry("/some/path/src", path));
 	assert_int_equal(1, nentries);
 
 	snprintf(path, sizeof(path), "%s/trashed_2", sandbox);
-	assert_success(add_to_trash("/some/path/src", path));
+	assert_success(trash_add_entry("/some/path/src", path));
 	assert_int_equal(2, nentries);
 }
 
