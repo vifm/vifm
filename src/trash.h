@@ -88,9 +88,9 @@ int trash_has_path(const char path[]);
  * otherwise zero is returned. */
 int trash_has_path_at(const char trash_dir[], const char path[]);
 
-/* Checks whether given absolute path points to a trash directory.  Returns
- * non-zero if so, otherwise zero is returned. */
-int is_trash_directory(const char path[]);
+/* Checks whether given absolute path points directly to a trash directory.
+ * Returns non-zero if so, otherwise zero is returned. */
+int trash_is_at_path(const char path[]);
 
 /* Gets pointer to real name part of the trash path (which must be absolute).
  * Returns that pointer. */

@@ -258,7 +258,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 			un_group_add_op(OP_REMOVE, NULL, NULL, full_path, "");
 		}
 	}
-	else if(is_trash_directory(full_path))
+	else if(trash_is_at_path(full_path))
 	{
 		show_error_msg("Can't perform deletion",
 				"You cannot delete trash directory to trash");
@@ -340,7 +340,7 @@ fops_delete_bg(view_t *view, int use_trash)
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const full_file_path = args->sel_list[i];
-			if(is_trash_directory(full_file_path))
+			if(trash_is_at_path(full_file_path))
 			{
 				show_error_msg("Can't perform deletion",
 						"You cannot delete trash directory to trash");
@@ -442,7 +442,7 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 		return;
 	}
 
-	if(!is_trash_directory(path))
+	if(!trash_is_at_path(path))
 	{
 		const char *const fname = get_last_path_component(path);
 		char *const trash_name = trash_gen_path(path, fname);
@@ -1033,7 +1033,7 @@ fops_restore(view_t *view)
 	dir_entry_t *entry;
 
 	/* This is general check for regular views only. */
-	if(!flist_custom_active(view) && !is_trash_directory(view->curr_dir))
+	if(!flist_custom_active(view) && !trash_is_at_path(view->curr_dir))
 	{
 		show_error_msg("Restore error", "Not a top-level trash directory.");
 		return 0;
@@ -1054,7 +1054,7 @@ fops_restore(view_t *view)
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(is_trash_directory(entry->origin) && trash_restore(full_path) == 0)
+		if(trash_is_at_path(entry->origin) && trash_restore(full_path) == 0)
 		{
 			++m;
 		}

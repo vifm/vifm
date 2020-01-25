@@ -746,7 +746,7 @@ get_resident_type_traverser(const char path[], const char trash_dir[],
 }
 
 int
-is_trash_directory(const char path[])
+trash_is_at_path(const char path[])
 {
 	int trash_directory = 0;
 	traverse_specs(path, &is_trash_directory_traverser, &trash_directory);
