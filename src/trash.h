@@ -19,6 +19,12 @@
 #ifndef VIFM__TRASH_H__
 #define VIFM__TRASH_H__
 
+/* This unit keeps track of files inside potentially multiple trash
+ * directories.  That's almost all of its responsibilities.  The only operation
+ * on files that it performs is restoring a file.  Other than that, files are
+ * moved by other units using information provided by this one and updating
+ * this information in the process. */
+
 /* Description of a single trash item. */
 typedef struct
 {
