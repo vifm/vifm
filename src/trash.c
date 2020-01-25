@@ -938,7 +938,7 @@ format_root_spec(const char spec[], const char mount_point[])
 }
 
 const char *
-get_real_name_from_trash_name(const char trash_path[])
+trash_get_real_name_of(const char trash_path[])
 {
 	const char *real_name = after_last(trash_path, '/');
 

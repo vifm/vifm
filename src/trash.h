@@ -94,7 +94,7 @@ int trash_is_at_path(const char path[]);
 
 /* Gets pointer to real name part of the trash path (which must be absolute).
  * Returns that pointer. */
-const char * get_real_name_from_trash_name(const char trash_path[]);
+const char * trash_get_real_name_of(const char trash_path[]);
 
 /* Removes entries that correspond to nonexistent files in trashes. */
 void trash_prune_dead_entries(void);

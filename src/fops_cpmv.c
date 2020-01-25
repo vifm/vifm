@@ -134,7 +134,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		{
 			snprintf(src_full, sizeof(src_full), "%s/%s", entry->origin, dst);
 			chosp(src_full);
-			dst = get_real_name_from_trash_name(src_full);
+			dst = trash_get_real_name_of(src_full);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
