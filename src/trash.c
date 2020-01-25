@@ -359,14 +359,14 @@ remove_trash_entries(const char trash_dir[])
 void
 trash_file_moved(const char src[], const char dst[])
 {
-	if(is_under_trash(dst))
+	if(trash_has_path(dst))
 	{
 		if(trash_add_entry(src, dst) != 0)
 		{
 			LOG_ERROR_MSG("Failed to add to trash: (`%s`, `%s`)", src, dst);
 		}
 	}
-	else if(is_under_trash(src))
+	else if(trash_has_path(src))
 	{
 		remove_from_trash(src);
 	}
@@ -697,7 +697,7 @@ is_rooted_trash_dir(const char spec[])
 }
 
 int
-is_under_trash(const char path[])
+trash_has_path(const char path[])
 {
 	return get_resident_type(path) != TRT_OUT_OF_TRASH;
 }
@@ -707,7 +707,7 @@ trash_contains(const char trash_dir[], const char path[])
 {
 	if(trash_dir == NULL)
 	{
-		return is_under_trash(path);
+		return trash_has_path(path);
 	}
 
 	return path_is(PREFIXED_WITH, path, trash_dir);

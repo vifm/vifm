@@ -125,7 +125,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 	free_string_array(marked.items, marked.nitems);
 
 	/* This check for the case when we are for sure in the trash. */
-	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
+	if(use_trash && top_dir != NULL && trash_has_path(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under trash directory");
@@ -197,7 +197,7 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 	use_trash = use_trash && cfg.use_trash;
 
 	/* This check for the case when we are for sure in the trash. */
-	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
+	if(use_trash && top_dir != NULL && trash_has_path(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under trash directory");
@@ -264,7 +264,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 				"You cannot delete trash directory to trash");
 		result = -1;
 	}
-	else if(is_under_trash(full_path))
+	else if(trash_has_path(full_path))
 	{
 		show_error_msgf("Skipping file deletion",
 				"File is already in trash: %s", full_path);
@@ -316,7 +316,7 @@ fops_delete_bg(view_t *view, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
-	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
+	if(use_trash && top_dir != NULL && trash_has_path(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under trash directory");
@@ -347,7 +347,7 @@ fops_delete_bg(view_t *view, int use_trash)
 				fops_free_bg_args(args);
 				return 0;
 			}
-			else if(is_under_trash(full_file_path))
+			else if(trash_has_path(full_file_path))
 			{
 				show_error_msgf("Skipping file deletion",
 						"File is already in trash: %s", full_file_path);

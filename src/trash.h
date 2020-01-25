@@ -81,10 +81,10 @@ char * trash_pick_dir(const char base_path[]);
 
 /* Checks whether given absolute path points to a file under trash directory.
  * Returns non-zero if so, otherwise zero is returned. */
-int is_under_trash(const char path[]);
+int trash_has_path(const char path[]);
 
 /* Checks whether given path belongs to the trash directory.  NULL trash_dir
- * makes this function act as is_under_trash().  Returns non-zero if so,
+ * makes this function act as trash_has_path().  Returns non-zero if so,
  * otherwise zero is returned. */
 int trash_contains(const char trash_dir[], const char path[]);
 
