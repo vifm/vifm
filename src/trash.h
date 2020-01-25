@@ -33,7 +33,7 @@ trash_entry_t;
 trash_entry_t *trash_list;
 
 /* Number of items in the trash_list. */
-int nentries;
+int trash_list_size;
 
 /* Parses trash directory specifications.  Sets value of cfg.trash_dir as a
  * side effect.  Returns non-zero in case of error, otherwise zero is

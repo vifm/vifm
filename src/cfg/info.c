@@ -1352,7 +1352,7 @@ write_trash(FILE *fp, char *trash[], int ntrash)
 {
 	int i;
 	fputs("\n# Trash content:\n", fp);
-	for(i = 0; i < nentries; i++)
+	for(i = 0; i < trash_list_size; i++)
 	{
 		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
 	}

@@ -54,11 +54,11 @@ TEST(trash_allows_multiple_files_with_same_original_path)
 
 	snprintf(path, sizeof(path), "%s/trashed_1", sandbox);
 	assert_success(trash_add_entry("/some/path/src", path));
-	assert_int_equal(1, nentries);
+	assert_int_equal(1, trash_list_size);
 
 	snprintf(path, sizeof(path), "%s/trashed_2", sandbox);
 	assert_success(trash_add_entry("/some/path/src", path));
-	assert_int_equal(2, nentries);
+	assert_int_equal(2, trash_list_size);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

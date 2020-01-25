@@ -52,7 +52,7 @@ show_trash_menu(view_t *view)
 
 	trash_prune_dead_entries();
 
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		const trash_entry_t *const entry = &trash_list[i];
 		if(trash_has_path(entry->trash_name))

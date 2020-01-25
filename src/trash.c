@@ -337,7 +337,7 @@ remove_trash_entries(const char trash_dir[])
 	int i;
 	int j = 0;
 
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(trash_dir == NULL || entry_is(PREFIXED_WITH, &trash_list[i], trash_dir))
 		{
@@ -348,8 +348,8 @@ remove_trash_entries(const char trash_dir[])
 		trash_list[j++] = trash_list[i];
 	}
 
-	nentries = j;
-	if(nentries == 0)
+	trash_list_size = j;
+	if(trash_list_size == 0)
 	{
 		free(trash_list);
 		trash_list = NULL;
@@ -387,7 +387,7 @@ trash_add_entry(const char original_path[], const char trash_name[])
 	}
 	pos = -(pos + 1);
 
-	void *p = reallocarray(trash_list, nentries + 1, sizeof(*trash_list));
+	void *p = reallocarray(trash_list, trash_list_size + 1, sizeof(*trash_list));
 	if(p == NULL)
 	{
 		return -1;
@@ -405,9 +405,9 @@ trash_add_entry(const char original_path[], const char trash_name[])
 		return -1;
 	}
 
-	++nentries;
+	++trash_list_size;
 	memmove(trash_list + pos + 1, trash_list + pos,
-			sizeof(*trash_list)*(nentries - 1 - pos));
+			sizeof(*trash_list)*(trash_list_size - 1 - pos));
 	trash_list[pos] = entry;
 	return 0;
 }
@@ -428,7 +428,7 @@ find_in_trash(const char original_path[], const char trash_path[])
 	real_trash_path[0] = '\0';
 
 	int l = 0;
-	int u = nentries - 1;
+	int u = trash_list_size - 1;
 	while(l <= u)
 	{
 		const int i = l + (u - l)/2;
@@ -551,14 +551,14 @@ trash_restore(const char trash_name[])
 	char full[PATH_MAX + 1];
 	char path[PATH_MAX + 1];
 
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(entry_is(SAME_AS, &trash_list[i], trash_name))
 		{
 			break;
 		}
 	}
-	if(i >= nentries)
+	if(i >= trash_list_size)
 	{
 		return -1;
 	}
@@ -599,23 +599,23 @@ static void
 remove_from_trash(const char trash_name[])
 {
 	int i;
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(entry_is(SAME_AS, &trash_list[i], trash_name))
 		{
 			break;
 		}
 	}
-	if(i >= nentries)
+	if(i >= trash_list_size)
 	{
 		return;
 	}
 
 	free_entry(&trash_list[i]);
 	memmove(trash_list + i, trash_list + i + 1,
-			sizeof(*trash_list)*((nentries - 1) - i));
+			sizeof(*trash_list)*((trash_list_size - 1) - i));
 
-	--nentries;
+	--trash_list_size;
 }
 
 /* Frees memory allocated by given trash entry. */
@@ -962,7 +962,7 @@ trash_prune_dead_entries(void)
 	int i, j;
 
 	j = 0;
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(!path_exists(trash_list[i].trash_name, NODEREF))
 		{
@@ -973,7 +973,7 @@ trash_prune_dead_entries(void)
 
 		trash_list[j++] = trash_list[i];
 	}
-	nentries = j;
+	trash_list_size = j;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
