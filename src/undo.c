@@ -935,7 +935,7 @@ un_clear_cmds_with_trash(const char trash_dir[])
 		if(cur->group->balance < 0)
 		{
 			if(cur->do_op.exists != NULL &&
-					trash_contains(trash_dir, cur->do_op.exists))
+					trash_has_path_at(trash_dir, cur->do_op.exists))
 			{
 				remove_cmd(cur);
 			}
@@ -943,7 +943,7 @@ un_clear_cmds_with_trash(const char trash_dir[])
 		else
 		{
 			if(cur->undo_op.exists != NULL &&
-					trash_contains(trash_dir, cur->undo_op.exists))
+					trash_has_path_at(trash_dir, cur->undo_op.exists))
 			{
 				remove_cmd(cur);
 			}

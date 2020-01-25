@@ -703,7 +703,7 @@ trash_has_path(const char path[])
 }
 
 int
-trash_contains(const char trash_dir[], const char path[])
+trash_has_path_at(const char trash_dir[], const char path[])
 {
 	if(trash_dir == NULL)
 	{
