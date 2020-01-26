@@ -225,7 +225,7 @@ TEST(cpmv_can_move_files_from_and_out_of_trash_at_the_same_time)
 	int bg;
 
 	strcat(lwin.curr_dir, "/trash");
-	set_trash_dir(lwin.curr_dir);
+	trash_set_specs(lwin.curr_dir);
 	remove_last_path_component(lwin.curr_dir);
 
 	strcat(lwin.curr_dir, "/dir");

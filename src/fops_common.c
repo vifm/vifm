@@ -613,7 +613,7 @@ fops_enqueue_marked_files(ops_t *ops, view_t *view, const char dst_hint[],
 
 		if(to_trash)
 		{
-			char *const trash_dir = pick_trash_dir(entry->origin);
+			char *const trash_dir = trash_pick_dir(entry->origin);
 			ops_enqueue(ops, full_path, trash_dir);
 			free(trash_dir);
 		}
@@ -669,7 +669,7 @@ fops_get_dst_name(const char src_path[], int from_trash)
 {
 	if(from_trash)
 	{
-		return get_real_name_from_trash_name(src_path);
+		return trash_get_real_name_of(src_path);
 	}
 	return get_last_path_component(src_path);
 }

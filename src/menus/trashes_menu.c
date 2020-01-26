@@ -51,7 +51,7 @@ show_trashes_menu(view_t *view, int calc_size)
 	m.key_handler = &trashes_khandler;
 	m.extra_data = calc_size;
 
-	trashes = list_trashes(&ntrashes);
+	trashes = trash_list_trashes(&ntrashes);
 
 	show_progress(NULL, 0);
 	for(i = 0; i < ntrashes; i++)

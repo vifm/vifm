@@ -649,7 +649,7 @@ is_op_possible(const op_t *op)
 	if(op->dont_exist != NULL && path_exists(op->dont_exist, NODEREF) &&
 			!is_case_change(op->src, op->dst))
 	{
-		return is_under_trash(op->dst) ? -1 : 0;
+		return (trash_has_path(op->dst) ? -1 : 0);
 	}
 	return 1;
 }
@@ -664,8 +664,8 @@ change_filename_in_trash(cmd_t *cmd, const char filename[])
 
 	remove_last_path_component(base_dir);
 
-	name_tail = get_real_name_from_trash_name(filename);
-	new = gen_trash_name(base_dir, name_tail);
+	name_tail = trash_get_real_name_of(filename);
+	new = trash_gen_path(base_dir, name_tail);
 	assert(new != NULL && "Should always get trash name here.");
 
 	free(base_dir);
@@ -935,7 +935,7 @@ un_clear_cmds_with_trash(const char trash_dir[])
 		if(cur->group->balance < 0)
 		{
 			if(cur->do_op.exists != NULL &&
-					trash_contains(trash_dir, cur->do_op.exists))
+					trash_has_path_at(trash_dir, cur->do_op.exists))
 			{
 				remove_cmd(cur);
 			}
@@ -943,7 +943,7 @@ un_clear_cmds_with_trash(const char trash_dir[])
 		else
 		{
 			if(cur->undo_op.exists != NULL &&
-					trash_contains(trash_dir, cur->undo_op.exists))
+					trash_has_path_at(trash_dir, cur->undo_op.exists))
 			{
 				remove_cmd(cur);
 			}

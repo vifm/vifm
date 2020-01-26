@@ -16,7 +16,7 @@ SETUP_ONCE()
 {
 	saved_cwd = save_cwd();
 	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", saved_cwd);
-	assert_success(set_trash_dir(sandbox));
+	assert_success(trash_set_specs(sandbox));
 }
 
 SETUP()
@@ -53,12 +53,12 @@ TEST(trash_allows_multiple_files_with_same_original_path)
 	char path[PATH_MAX + 1];
 
 	snprintf(path, sizeof(path), "%s/trashed_1", sandbox);
-	assert_success(add_to_trash("/some/path/src", path));
-	assert_int_equal(1, nentries);
+	assert_success(trash_add_entry("/some/path/src", path));
+	assert_int_equal(1, trash_list_size);
 
 	snprintf(path, sizeof(path), "%s/trashed_2", sandbox);
-	assert_success(add_to_trash("/some/path/src", path));
-	assert_int_equal(2, nentries);
+	assert_success(trash_add_entry("/some/path/src", path));
+	assert_int_equal(2, trash_list_size);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

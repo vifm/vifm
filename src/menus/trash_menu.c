@@ -52,10 +52,10 @@ show_trash_menu(view_t *view)
 
 	trash_prune_dead_entries();
 
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		const trash_entry_t *const entry = &trash_list[i];
-		if(is_under_trash(entry->trash_name))
+		if(trash_has_path(entry->trash_name))
 		{
 			m.len = add_to_string_array(&m.items, m.len, 1, entry->path);
 		}
@@ -90,9 +90,9 @@ restore_current(menu_data_t *m)
 	un_group_open("restore: ");
 	un_group_close();
 
-	/* The string is freed in restore_from_trash(), thus must be cloned. */
+	/* The string is freed in trash_restore(), thus must be cloned. */
 	trash_path = strdup(trash_list[m->pos].trash_name);
-	err = restore_from_trash(trash_path);
+	err = trash_restore(trash_path);
 	free(trash_path);
 
 	if(err != 0)

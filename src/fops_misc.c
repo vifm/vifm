@@ -125,7 +125,7 @@ fops_delete(view_t *view, int reg, int use_trash)
 	free_string_array(marked.items, marked.nitems);
 
 	/* This check for the case when we are for sure in the trash. */
-	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
+	if(use_trash && top_dir != NULL && trash_has_path(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under trash directory");
@@ -197,7 +197,7 @@ fops_delete_current(view_t *view, int use_trash, int nested)
 	use_trash = use_trash && cfg.use_trash;
 
 	/* This check for the case when we are for sure in the trash. */
-	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
+	if(use_trash && top_dir != NULL && trash_has_path(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under trash directory");
@@ -258,13 +258,13 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 			un_group_add_op(OP_REMOVE, NULL, NULL, full_path, "");
 		}
 	}
-	else if(is_trash_directory(full_path))
+	else if(trash_is_at_path(full_path))
 	{
 		show_error_msg("Can't perform deletion",
 				"You cannot delete trash directory to trash");
 		result = -1;
 	}
-	else if(is_under_trash(full_path))
+	else if(trash_has_path(full_path))
 	{
 		show_error_msgf("Skipping file deletion",
 				"File is already in trash: %s", full_path);
@@ -273,7 +273,7 @@ delete_file(dir_entry_t *entry, ops_t *ops, int reg, int use_trash, int nested)
 	else
 	{
 		const OPS op = nested ? OP_MOVETMP4 : OP_MOVE;
-		char *const dest = gen_trash_name(entry->origin, entry->name);
+		char *const dest = trash_gen_path(entry->origin, entry->name);
 		if(dest != NULL)
 		{
 			result = perform_operation(op, ops, NULL, full_path, dest);
@@ -316,7 +316,7 @@ fops_delete_bg(view_t *view, int use_trash)
 
 	use_trash = use_trash && cfg.use_trash;
 
-	if(use_trash && top_dir != NULL && is_under_trash(top_dir))
+	if(use_trash && top_dir != NULL && trash_has_path(top_dir))
 	{
 		show_error_msg("Can't perform deletion",
 				"Current directory is under trash directory");
@@ -340,14 +340,14 @@ fops_delete_bg(view_t *view, int use_trash)
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const full_file_path = args->sel_list[i];
-			if(is_trash_directory(full_file_path))
+			if(trash_is_at_path(full_file_path))
 			{
 				show_error_msg("Can't perform deletion",
 						"You cannot delete trash directory to trash");
 				fops_free_bg_args(args);
 				return 0;
 			}
-			else if(is_under_trash(full_file_path))
+			else if(trash_has_path(full_file_path))
 			{
 				show_error_msgf("Skipping file deletion",
 						"File is already in trash: %s", full_file_path);
@@ -412,7 +412,7 @@ delete_files_in_bg(bg_op_t *bg_op, void *arg)
 		for(i = 0U; i < args->sel_list_len; ++i)
 		{
 			const char *const src = args->sel_list[i];
-			char *trash_dir = args->use_trash ? pick_trash_dir(src) : args->path;
+			char *trash_dir = (args->use_trash ? trash_pick_dir(src) : args->path);
 			ops_enqueue(ops, src, trash_dir);
 			if(trash_dir != args->path)
 			{
@@ -442,10 +442,10 @@ delete_file_in_bg(ops_t *ops, const char path[], int use_trash)
 		return;
 	}
 
-	if(!is_trash_directory(path))
+	if(!trash_is_at_path(path))
 	{
 		const char *const fname = get_last_path_component(path);
-		char *const trash_name = gen_trash_name(path, fname);
+		char *const trash_name = trash_gen_path(path, fname);
 		const char *const dest = (trash_name != NULL) ? trash_name : fname;
 		(void)perform_operation(OP_MOVE, ops, NULL, path, dest);
 		free(trash_name);
@@ -1033,7 +1033,7 @@ fops_restore(view_t *view)
 	dir_entry_t *entry;
 
 	/* This is general check for regular views only. */
-	if(!flist_custom_active(view) && !is_trash_directory(view->curr_dir))
+	if(!flist_custom_active(view) && !trash_is_at_path(view->curr_dir))
 	{
 		show_error_msg("Restore error", "Not a top-level trash directory.");
 		return 0;
@@ -1054,7 +1054,7 @@ fops_restore(view_t *view)
 		char full_path[PATH_MAX + 1];
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(is_trash_directory(entry->origin) && restore_from_trash(full_path) == 0)
+		if(trash_is_at_path(entry->origin) && trash_restore(full_path) == 0)
 		{
 			++m;
 		}

@@ -205,7 +205,7 @@ TEST(put_files_bg_demangles_names_of_trashed_files)
 	char path[PATH_MAX + 1];
 	make_abs_path(path, sizeof(path), SANDBOX_PATH, "trash", saved_cwd);
 
-	set_trash_dir(path);
+	trash_set_specs(path);
 
 	create_empty_dir(SANDBOX_PATH "/trash");
 	create_empty_file(SANDBOX_PATH "/trash/000_b");

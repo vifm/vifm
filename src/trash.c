@@ -126,7 +126,7 @@ static char **specs;
 static int nspecs;
 
 int
-set_trash_dir(const char new_specs[])
+trash_set_specs(const char new_specs[])
 {
 	char **dirs = NULL;
 	int ndirs = 0;
@@ -337,7 +337,7 @@ remove_trash_entries(const char trash_dir[])
 	int i;
 	int j = 0;
 
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(trash_dir == NULL || entry_is(PREFIXED_WITH, &trash_list[i], trash_dir))
 		{
@@ -348,8 +348,8 @@ remove_trash_entries(const char trash_dir[])
 		trash_list[j++] = trash_list[i];
 	}
 
-	nentries = j;
-	if(nentries == 0)
+	trash_list_size = j;
+	if(trash_list_size == 0)
 	{
 		free(trash_list);
 		trash_list = NULL;
@@ -359,27 +359,35 @@ remove_trash_entries(const char trash_dir[])
 void
 trash_file_moved(const char src[], const char dst[])
 {
-	if(is_under_trash(dst))
+	if(trash_has_path(dst))
 	{
-		add_to_trash(src, dst);
+		if(trash_add_entry(src, dst) != 0)
+		{
+			LOG_ERROR_MSG("Failed to add to trash: (`%s`, `%s`)", src, dst);
+		}
 	}
-	else if(is_under_trash(src))
+	else if(trash_has_path(src))
 	{
 		remove_from_trash(src);
 	}
 }
 
 int
-add_to_trash(const char original_path[], const char trash_name[])
+trash_add_entry(const char original_path[], const char trash_name[])
 {
+	/* XXX: we check duplicates by original_path+trash_name, which allows
+	 *      multiple original path to be mapped to one trash file, might want to
+	 *      forbid this.  */
 	int pos = find_in_trash(original_path, trash_name);
 	if(pos >= 0)
 	{
+		LOG_INFO_MSG("File is already in trash: (`%s`, `%s`)", original_path,
+				trash_name);
 		return 0;
 	}
 	pos = -(pos + 1);
 
-	void *p = reallocarray(trash_list, nentries + 1, sizeof(*trash_list));
+	void *p = reallocarray(trash_list, trash_list_size + 1, sizeof(*trash_list));
 	if(p == NULL)
 	{
 		return -1;
@@ -397,15 +405,15 @@ add_to_trash(const char original_path[], const char trash_name[])
 		return -1;
 	}
 
-	++nentries;
+	++trash_list_size;
 	memmove(trash_list + pos + 1, trash_list + pos,
-			sizeof(*trash_list)*(nentries - 1 - pos));
+			sizeof(*trash_list)*(trash_list_size - 1 - pos));
 	trash_list[pos] = entry;
 	return 0;
 }
 
 int
-trash_includes(const char original_path[], const char trash_path[])
+trash_has_entry(const char original_path[], const char trash_path[])
 {
 	return (find_in_trash(original_path, trash_path) >= 0);
 }
@@ -420,7 +428,7 @@ find_in_trash(const char original_path[], const char trash_path[])
 	real_trash_path[0] = '\0';
 
 	int l = 0;
-	int u = nentries - 1;
+	int u = trash_list_size - 1;
 	while(l <= u)
 	{
 		const int i = l + (u - l)/2;
@@ -453,7 +461,7 @@ find_in_trash(const char original_path[], const char trash_path[])
 }
 
 char **
-list_trashes(int *ntrashes)
+trash_list_trashes(int *ntrashes)
 {
 	trashes_list list = get_list_of_trashes(0);
 	free(list.can_delete);
@@ -537,20 +545,20 @@ is_trash_valid(const char trash_dir[], int allow_empty)
 }
 
 int
-restore_from_trash(const char trash_name[])
+trash_restore(const char trash_name[])
 {
 	int i;
 	char full[PATH_MAX + 1];
 	char path[PATH_MAX + 1];
 
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(entry_is(SAME_AS, &trash_list[i], trash_name))
 		{
 			break;
 		}
 	}
-	if(i >= nentries)
+	if(i >= trash_list_size)
 	{
 		return -1;
 	}
@@ -591,23 +599,23 @@ static void
 remove_from_trash(const char trash_name[])
 {
 	int i;
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(entry_is(SAME_AS, &trash_list[i], trash_name))
 		{
 			break;
 		}
 	}
-	if(i >= nentries)
+	if(i >= trash_list_size)
 	{
 		return;
 	}
 
 	free_entry(&trash_list[i]);
 	memmove(trash_list + i, trash_list + i + 1,
-			sizeof(*trash_list)*((nentries - 1) - i));
+			sizeof(*trash_list)*((trash_list_size - 1) - i));
 
-	--nentries;
+	--trash_list_size;
 }
 
 /* Frees memory allocated by given trash entry. */
@@ -620,12 +628,12 @@ free_entry(const trash_entry_t *entry)
 }
 
 char *
-gen_trash_name(const char base_path[], const char name[])
+trash_gen_path(const char base_path[], const char name[])
 {
 	struct stat st;
 	char buf[PATH_MAX + 1];
 	int i;
-	char *const trash_dir = pick_trash_dir(base_path);
+	char *const trash_dir = trash_pick_dir(base_path);
 
 	if(trash_dir == NULL)
 	{
@@ -646,7 +654,7 @@ gen_trash_name(const char base_path[], const char name[])
 }
 
 char *
-pick_trash_dir(const char base_path[])
+trash_pick_dir(const char base_path[])
 {
 	char real_path[PATH_MAX + 1];
 	char *trash_dir = NULL;
@@ -689,17 +697,17 @@ is_rooted_trash_dir(const char spec[])
 }
 
 int
-is_under_trash(const char path[])
+trash_has_path(const char path[])
 {
 	return get_resident_type(path) != TRT_OUT_OF_TRASH;
 }
 
 int
-trash_contains(const char trash_dir[], const char path[])
+trash_has_path_at(const char trash_dir[], const char path[])
 {
 	if(trash_dir == NULL)
 	{
-		return is_under_trash(path);
+		return trash_has_path(path);
 	}
 
 	return path_is(PREFIXED_WITH, path, trash_dir);
@@ -738,7 +746,7 @@ get_resident_type_traverser(const char path[], const char trash_dir[],
 }
 
 int
-is_trash_directory(const char path[])
+trash_is_at_path(const char path[])
 {
 	int trash_directory = 0;
 	traverse_specs(path, &is_trash_directory_traverser, &trash_directory);
@@ -930,7 +938,7 @@ format_root_spec(const char spec[], const char mount_point[])
 }
 
 const char *
-get_real_name_from_trash_name(const char trash_path[])
+trash_get_real_name_of(const char trash_path[])
 {
 	const char *real_name = after_last(trash_path, '/');
 
@@ -954,7 +962,7 @@ trash_prune_dead_entries(void)
 	int i, j;
 
 	j = 0;
-	for(i = 0; i < nentries; ++i)
+	for(i = 0; i < trash_list_size; ++i)
 	{
 		if(!path_exists(trash_list[i].trash_name, NODEREF))
 		{
@@ -965,7 +973,7 @@ trash_prune_dead_entries(void)
 
 		trash_list[j++] = trash_list[i];
 	}
-	nentries = j;
+	trash_list_size = j;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

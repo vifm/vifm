@@ -383,7 +383,7 @@ regs_remove_trashed_files(const char trash_dir[])
 		const int n = registers[i].nfiles;
 		for(j = 0; j < n; ++j)
 		{
-			if(!trash_contains(trash_dir, registers[i].files[j]))
+			if(!trash_has_path_at(trash_dir, registers[i].files[j]))
 				continue;
 			if(!path_exists(registers[i].files[j], DEREF))
 				continue;

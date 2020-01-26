@@ -69,7 +69,7 @@ TEST(marked_files_are_removed_permanently)
 TEST(files_in_trash_are_not_removed_to_trash)
 {
 	cfg.use_trash = 1;
-	set_trash_dir(lwin.curr_dir);
+	trash_set_specs(lwin.curr_dir);
 
 	create_empty_file("a");
 
@@ -86,7 +86,7 @@ TEST(files_in_trash_are_not_removed_to_trash)
 TEST(trash_is_not_removed_to_trash)
 {
 	cfg.use_trash = 1;
-	set_trash_dir("trash");
+	trash_set_specs("trash");
 
 	create_empty_dir("trash");
 
@@ -106,7 +106,7 @@ TEST(marked_files_are_removed_to_trash)
 	make_abs_path(trash_dir, sizeof(trash_dir), SANDBOX_PATH, "trash", saved_cwd);
 
 	cfg.use_trash = 1;
-	set_trash_dir(trash_dir);
+	trash_set_specs(trash_dir);
 
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
@@ -148,7 +148,7 @@ TEST(marked_files_are_removed_to_trash)
 TEST(nested_file_is_removed)
 {
 	cfg.use_trash = 1;
-	set_trash_dir("trash");
+	trash_set_specs("trash");
 
 	for(cfg.use_system_calls = 0; cfg.use_system_calls < 2;
 			++cfg.use_system_calls)
@@ -205,7 +205,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_cv)
 {
 	cfg.use_trash = 1;
 	strcat(lwin.curr_dir, "/dir");
-	set_trash_dir(lwin.curr_dir);
+	trash_set_specs(lwin.curr_dir);
 	remove_last_path_component(lwin.curr_dir);
 
 	create_empty_dir("dir");
@@ -230,7 +230,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_cv)
 TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 {
 	cfg.use_trash = 1;
-	set_trash_dir("dir");
+	trash_set_specs("dir");
 
 	create_empty_dir("dir");
 	create_empty_file("dir/a");
@@ -249,7 +249,7 @@ TEST(files_in_trash_are_not_removed_to_trash_in_tree)
 
 TEST(trash_is_not_checked_on_permanent_bg_remove)
 {
-	assert_success(set_trash_dir(lwin.curr_dir));
+	assert_success(trash_set_specs(lwin.curr_dir));
 	create_empty_dir("dir");
 
 	populate_dir_list(&lwin, 0);

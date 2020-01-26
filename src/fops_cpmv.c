@@ -128,13 +128,13 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		int err, from_trash;
 
 		get_full_path_of(entry, sizeof(src_full), src_full);
-		from_trash = is_under_trash(src_full);
+		from_trash = trash_has_path(src_full);
 
 		if(from_trash && !custom_fnames)
 		{
 			snprintf(src_full, sizeof(src_full), "%s/%s", entry->origin, dst);
 			chosp(src_full);
-			dst = get_real_name_from_trash_name(src_full);
+			dst = trash_get_real_name_of(src_full);
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", dst_dir, dst);
@@ -294,7 +294,7 @@ fops_cpmv_bg(view_t *view, char *list[], int nlines, int move, int force)
 	args->is_in_trash = malloc(args->sel_list_len);
 	for(i = 0U; i < args->sel_list_len; ++i)
 	{
-		args->is_in_trash[i] = is_under_trash(args->sel_list[i]);
+		args->is_in_trash[i] = trash_has_path(args->sel_list[i]);
 	}
 
 	if(args->list == NULL)

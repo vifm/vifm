@@ -19,6 +19,12 @@
 #ifndef VIFM__TRASH_H__
 #define VIFM__TRASH_H__
 
+/* This unit keeps track of files inside potentially multiple trash
+ * directories.  That's almost all of its responsibilities.  The only operation
+ * on files that it performs is restoring a file.  Other than that, files are
+ * moved by other units using information provided by this one and updating
+ * this information in the process. */
+
 /* Description of a single trash item. */
 typedef struct
 {
@@ -33,12 +39,12 @@ trash_entry_t;
 trash_entry_t *trash_list;
 
 /* Number of items in the trash_list. */
-int nentries;
+int trash_list_size;
 
-/* Parses trash directory name specification.  Sets value of cfg.trash_dir as a
+/* Parses trash directory specifications.  Sets value of cfg.trash_dir as a
  * side effect.  Returns non-zero in case of error, otherwise zero is
  * returned. */
-int set_trash_dir(const char trash_dir[]);
+int trash_set_specs(const char new_specs[]);
 
 /* Empties specified trash directory. */
 void trash_empty(const char trash_dir[]);
@@ -50,48 +56,51 @@ void trash_empty_all(void);
  * move/rename. */
 void trash_file_moved(const char src[], const char dst[]);
 
-int add_to_trash(const char original_path[], const char trash_name[]);
+/* Registers file in trash that has a particular original path.  Returns zero
+ * on success and non-zero otherwise.  Refusing to add an entry second time is
+ * considered to be a success. */
+int trash_add_entry(const char original_path[], const char trash_name[]);
 
 /* Checks whether given combination of original and trash paths is registered.
  * Returns non-zero if so, otherwise zero is returned. */
-int trash_includes(const char original_path[], const char trash_path[]);
+int trash_has_entry(const char original_path[], const char trash_path[]);
 
 /* Lists all non-empty trash directories.  Puts number of elements to *ntrashes.
  * Caller should free array and all its elements using free().  On error returns
  * NULL and sets *ntrashes to zero. */
-char ** list_trashes(int *ntrashes);
+char ** trash_list_trashes(int *ntrashes);
 
 /* Restores a file specified by its trash_name (from trash_list array).  Returns
  * zero on success, otherwise non-zero is returned. */
-int restore_from_trash(const char trash_name[]);
+int trash_restore(const char trash_name[]);
 
 /* Generates unique name for a file at base_path location named name (doesn't
  * have to be base_path/name as long as base_path is at same mount) in a trash
  * directory.  Returns string containing full path that needs to be freed by
- * caller, if no trash directory available NULL is returned. */
-char * gen_trash_name(const char base_path[], const char name[]);
+ * the caller, if no trash directory is available, NULL is returned. */
+char * trash_gen_path(const char base_path[], const char name[]);
 
 /* Picks trash directory basing on original path for a file that is being
  * trashed.  Returns absolute path to picked trash directory on success which
  * should be freed by the caller, otherwise NULL is returned. */
-char * pick_trash_dir(const char base_path[]);
+char * trash_pick_dir(const char base_path[]);
 
 /* Checks whether given absolute path points to a file under trash directory.
  * Returns non-zero if so, otherwise zero is returned. */
-int is_under_trash(const char path[]);
+int trash_has_path(const char path[]);
 
 /* Checks whether given path belongs to the trash directory.  NULL trash_dir
- * makes this function act as is_under_trash().  Returns non-zero if so,
+ * makes this function act as trash_has_path().  Returns non-zero if so,
  * otherwise zero is returned. */
-int trash_contains(const char trash_dir[], const char path[]);
+int trash_has_path_at(const char trash_dir[], const char path[]);
 
-/* Checks whether given absolute path points to a trash directory.  Returns
- * non-zero if so, otherwise zero is returned. */
-int is_trash_directory(const char path[]);
+/* Checks whether given absolute path points directly to a trash directory.
+ * Returns non-zero if so, otherwise zero is returned. */
+int trash_is_at_path(const char path[]);
 
 /* Gets pointer to real name part of the trash path (which must be absolute).
  * Returns that pointer. */
-const char * get_real_name_from_trash_name(const char trash_path[]);
+const char * trash_get_real_name_of(const char trash_path[]);
 
 /* Removes entries that correspond to nonexistent files in trashes. */
 void trash_prune_dead_entries(void);

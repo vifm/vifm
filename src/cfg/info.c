@@ -317,7 +317,7 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *const trash_name = convert_old_trash_path(line_val);
-				(void)add_to_trash(line2, trash_name);
+				(void)trash_add_entry(line2, trash_name);
 				free(trash_name);
 			}
 		}
@@ -743,7 +743,7 @@ update_info_file(const char filename[], int merge)
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					char *const trash_name = convert_old_trash_path(line_val);
-					if(!trash_includes(line2, trash_name))
+					if(!trash_has_entry(line2, trash_name))
 					{
 						ntrash = add_to_string_array(&trash, ntrash, 2, trash_name, line2);
 					}
@@ -1352,7 +1352,7 @@ write_trash(FILE *fp, char *trash[], int ntrash)
 {
 	int i;
 	fputs("\n# Trash content:\n", fp);
-	for(i = 0; i < nentries; i++)
+	for(i = 0; i < trash_list_size; i++)
 	{
 		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
 	}

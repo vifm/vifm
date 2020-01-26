@@ -156,7 +156,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 		args->sel_list_len = add_to_string_array(&args->sel_list,
 				args->sel_list_len, 1, src);
 
-		dst_name = fops_get_dst_name(src, is_under_trash(src));
+		dst_name = fops_get_dst_name(src, trash_has_path(src));
 
 		/* Check that no destination files have the same name. */
 		for(j = 0; j < args->nlines; ++j)
@@ -407,7 +407,7 @@ is_dir_clash(const char src_path[], const char dst_dir[])
 	char dst_path[PATH_MAX + 1];
 
 	snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir,
-			fops_get_dst_name(src_path, is_under_trash(src_path)));
+			fops_get_dst_name(src_path, trash_has_path(src_path)));
 	chosp(dst_path);
 
 	return is_dir(dst_path);
@@ -422,7 +422,7 @@ put_files_i(view_t *view, int start)
 		char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
 		const char *descr;
 		const int from_trash =
-			is_under_trash(put_confirm.reg->files[put_confirm.file_order[0]]);
+			trash_has_path(put_confirm.reg->files[put_confirm.file_order[0]]);
 
 		if(put_confirm.op == CMLO_LINK_ABS)
 		{
@@ -571,7 +571,7 @@ put_next(int force)
 		return 0;
 	}
 
-	from_trash = is_under_trash(filename);
+	from_trash = trash_has_path(filename);
 	move = from_trash || put_confirm.op == CMLO_MOVE;
 
 	copy_str(src_buf, sizeof(src_buf), filename);
