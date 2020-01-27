@@ -146,7 +146,7 @@ command! reload :write | restart
 " :filetype pattern1,pattern2 defaultprogram,program2
 " :fileviewer pattern1,pattern2 consoleviewer
 " The other programs for the file type can be accessed with the :file command
-" The command macros %f, %F, %d, %D may be used in the commands.
+" The command macros like %f, %F, %d, %D may be used in the commands.
 " Spaces in an app name will have to be escaped e.g. QuickTime\ Player.app
 " The %a macro is ignored.  To use a % you must put %%.
 
