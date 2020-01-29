@@ -381,7 +381,6 @@ run_selection(view_t *view, int dont_execute)
 	/* TODO: refactor this function run_selection() */
 
 	char *typed_fname;
-	const char *multi_prog_cmd;
 	int undef;
 	int same;
 	dir_entry_t *entry;
@@ -400,10 +399,10 @@ run_selection(view_t *view, int dont_execute)
 	}
 
 	typed_fname = get_typed_entry_fpath(get_current_entry(view));
-	multi_prog_cmd = ft_get_program(typed_fname);
+	const char *common_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
-	no_multi_run = !is_multi_run_compat(view, multi_prog_cmd);
+	no_multi_run = !is_multi_run_compat(view, common_prog_cmd);
 	undef = 0;
 	same = 1;
 
@@ -431,17 +430,17 @@ run_selection(view_t *view, int dont_execute)
 		}
 
 		no_multi_run += !is_multi_run_compat(view, entry_prog_cmd);
-		if(multi_prog_cmd == NULL)
+		if(common_prog_cmd == NULL)
 		{
-			multi_prog_cmd = entry_prog_cmd;
+			common_prog_cmd = entry_prog_cmd;
 		}
-		else if(strcmp(entry_prog_cmd, multi_prog_cmd) != 0)
+		else if(strcmp(entry_prog_cmd, common_prog_cmd) != 0)
 		{
 			same = 0;
 		}
 	}
 
-	if(undef > 0 || multi_prog_cmd == NULL)
+	if(undef > 0 || common_prog_cmd == NULL)
 	{
 		run_with_defaults(view);
 		return;
@@ -455,7 +454,7 @@ run_selection(view_t *view, int dont_execute)
 
 	if(no_multi_run)
 	{
-		run_using_prog(view, multi_prog_cmd, dont_execute, 0);
+		run_using_prog(view, common_prog_cmd, dont_execute, 0);
 	}
 	else
 	{
