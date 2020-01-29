@@ -378,8 +378,6 @@ execute_file(const char full_path[], int elevate)
 static void
 run_selection(view_t *view, int dont_execute)
 {
-	/* TODO: refactor this function run_selection() */
-
 	if(!selection_is_consistent(view))
 	{
 		show_error_msg("Selection error",
@@ -397,8 +395,8 @@ run_selection(view_t *view, int dont_execute)
 	free(typed_fname);
 
 	int can_multi_run = (is_multi_run_compat(view, common_prog_cmd) != 0);
-	int undef = (common_prog_cmd == NULL);
-	int same = 1;
+	int files_without_handler = (common_prog_cmd == NULL);
+	int identical_handlers = 1;
 
 	dir_entry_t *entry = NULL;
 	while(iter_selected_entries(view, &entry))
@@ -416,7 +414,7 @@ run_selection(view_t *view, int dont_execute)
 
 		if(entry_prog_cmd == NULL)
 		{
-			++undef;
+			++files_without_handler;
 			continue;
 		}
 
@@ -427,11 +425,11 @@ run_selection(view_t *view, int dont_execute)
 		}
 		else if(strcmp(entry_prog_cmd, common_prog_cmd) != 0)
 		{
-			same = 0;
+			identical_handlers = 0;
 		}
 	}
 
-	if(undef > 0)
+	if(files_without_handler > 0)
 	{
 		run_with_defaults(view);
 	}
@@ -439,7 +437,7 @@ run_selection(view_t *view, int dont_execute)
 	{
 		run_selection_separately(view, dont_execute);
 	}
-	else if(same)
+	else if(identical_handlers)
 	{
 		run_using_prog(view, common_prog_cmd, dont_execute, 0);
 	}
