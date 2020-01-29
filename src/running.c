@@ -384,7 +384,6 @@ run_selection(view_t *view, int dont_execute)
 	int undef;
 	int same;
 	dir_entry_t *entry;
-	int no_multi_run;
 
 	if(!selection_is_consistent(view))
 	{
@@ -402,7 +401,7 @@ run_selection(view_t *view, int dont_execute)
 	const char *common_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
-	no_multi_run = !is_multi_run_compat(view, common_prog_cmd);
+	int can_multi_run = (is_multi_run_compat(view, common_prog_cmd) != 0);
 	undef = 0;
 	same = 1;
 
@@ -429,7 +428,7 @@ run_selection(view_t *view, int dont_execute)
 			continue;
 		}
 
-		no_multi_run += !is_multi_run_compat(view, entry_prog_cmd);
+		can_multi_run &= (is_multi_run_compat(view, entry_prog_cmd) != 0);
 		if(common_prog_cmd == NULL)
 		{
 			common_prog_cmd = entry_prog_cmd;
@@ -446,13 +445,13 @@ run_selection(view_t *view, int dont_execute)
 		return;
 	}
 
-	if(!same && no_multi_run)
+	if(!same && !can_multi_run)
 	{
 		show_error_msg("Run error", "Handlers of selected files are incompatible.");
 		return;
 	}
 
-	if(no_multi_run)
+	if(!can_multi_run)
 	{
 		run_using_prog(view, common_prog_cmd, dont_execute, 0);
 	}
