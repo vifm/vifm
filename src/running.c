@@ -446,12 +446,8 @@ run_selection(view_t *view, int dont_execute)
 		show_error_msg("Run error", "Handlers of selected files are incompatible.");
 		return;
 	}
-	if(undef > 0)
-	{
-		multi_prog_cmd = NULL;
-	}
 
-	if(multi_prog_cmd == NULL)
+	if(undef > 0 || multi_prog_cmd == NULL)
 	{
 		run_with_defaults(view);
 		return;
