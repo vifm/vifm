@@ -402,7 +402,7 @@ run_selection(view_t *view, int dont_execute)
 	free(typed_fname);
 
 	int can_multi_run = (is_multi_run_compat(view, common_prog_cmd) != 0);
-	undef = 0;
+	undef = (common_prog_cmd == NULL);
 	same = 1;
 
 	entry = NULL;
@@ -439,7 +439,7 @@ run_selection(view_t *view, int dont_execute)
 		}
 	}
 
-	if(undef > 0 || common_prog_cmd == NULL)
+	if(undef > 0)
 	{
 		run_with_defaults(view);
 	}
