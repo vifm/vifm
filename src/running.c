@@ -451,8 +451,6 @@ run_selection(view_t *view, int dont_execute)
 		multi_prog_cmd = NULL;
 	}
 
-	/* Check for a filetype */
-	/* vi is set as the default for any extension without a program */
 	if(multi_prog_cmd == NULL)
 	{
 		run_with_defaults(view);
