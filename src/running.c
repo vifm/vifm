@@ -441,15 +441,15 @@ run_selection(view_t *view, int dont_execute)
 		}
 	}
 
-	if(!same && undef == 0 && no_multi_run)
-	{
-		show_error_msg("Run error", "Handlers of selected files are incompatible.");
-		return;
-	}
-
 	if(undef > 0 || multi_prog_cmd == NULL)
 	{
 		run_with_defaults(view);
+		return;
+	}
+
+	if(!same && no_multi_run)
+	{
+		show_error_msg("Run error", "Handlers of selected files are incompatible.");
 		return;
 	}
 
