@@ -1,9 +1,10 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* remove() snprintf() */
+#include <stdio.h> /* FILE fclose() fopen() fprintf() remove() snprintf() */
 #include <string.h> /* strdup() */
 
 #include "../../src/compat/fs_limits.h"
@@ -11,9 +12,11 @@
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/macros.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/string_array.h"
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/running.h"
@@ -22,8 +25,16 @@
 #include "utils.h"
 
 static int prog_exists(const char name[]);
+static void start_use_script(void);
+static void stop_use_script(void);
+static void assoc_a(char macro);
+static void assoc_b(char macro);
+static void assoc_common(void);
+static void assoc(const char pattern[], const char cmd[]);
+static void file_is(const char path[], const char *lines[], int nlines);
 
 static char cwd[PATH_MAX + 1];
+static char script_path[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
@@ -192,10 +203,195 @@ TEST(following_to_a_broken_symlink_is_possible, IF(not_windows))
 	assert_success(remove(SANDBOX_PATH "/to-bad"));
 }
 
+TEST(selection_uses_vim_on_all_undefs, IF(not_windows))
+{
+	start_use_script();
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	const char *lines[] = { "a", "b" };
+	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
+
+	assert_success(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(selection_uses_vim_on_at_least_one_undef_non_current, IF(not_windows))
+{
+	start_use_script();
+	assoc_a('c');
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	const char *lines[] = { "a", "b" };
+	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
+
+	assert_failure(remove(SANDBOX_PATH "/a-list"));
+	assert_success(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(selection_uses_vim_on_at_least_one_undef_current, IF(not_windows))
+{
+	start_use_script();
+	assoc_b('c');
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	const char *lines[] = { "a", "b" };
+	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
+
+	assert_failure(remove(SANDBOX_PATH "/b-list"));
+	assert_success(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(selection_uses_common_handler, IF(not_windows))
+{
+	start_use_script();
+	assoc_common();
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	const char *lines[] = { "a", "b" };
+	file_is(SANDBOX_PATH "/common-list", lines, ARRAY_LEN(lines));
+
+	assert_success(remove(SANDBOX_PATH "/common-list"));
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(selection_is_incompatible, IF(not_windows))
+{
+	start_use_script();
+	assoc_a('c');
+	assoc_b('f');
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	assert_failure(remove(SANDBOX_PATH "/a-list"));
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(selection_is_compatible, IF(not_windows))
+{
+	start_use_script();
+	assoc("{a}", "echo > /dev/null %c &");
+	assoc("{b}", "echo > /dev/null %c &");
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
 static int
 prog_exists(const char name[])
 {
 	return 1;
+}
+
+static void
+start_use_script(void)
+{
+	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", cwd);
+
+	char vi_cmd[PATH_MAX + 1];
+	snprintf(vi_cmd, sizeof(vi_cmd), "%s vi", script_path);
+	update_string(&cfg.vi_command, vi_cmd);
+
+	FILE *fp = fopen(SANDBOX_PATH "/script", "w");
+	fprintf(fp, "#!/bin/sh\n");
+	fprintf(fp, "prefix=$1\n");
+	fprintf(fp, "shift\n");
+	fprintf(fp, "for arg; do echo \"$arg\" >> %s/${prefix}-list; done\n",
+			SANDBOX_PATH);
+	fclose(fp);
+	assert_success(chmod(SANDBOX_PATH "/script", 0777));
+}
+
+static void
+stop_use_script(void)
+{
+	assert_success(remove(script_path));
+}
+
+static void
+assoc_a(char macro)
+{
+	char *error;
+	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);
+	assert_non_null(ms);
+
+	char cmd[PATH_MAX + 1];
+	snprintf(cmd, sizeof(cmd), "%s a %%%c", script_path, macro);
+	ft_set_programs(ms, cmd, 0, 0);
+}
+
+static void
+assoc_b(char macro)
+{
+	char *error;
+	matchers_t *ms = matchers_alloc("{b}", 0, 1, "", &error);
+	assert_non_null(ms);
+
+	char cmd[PATH_MAX + 1];
+	snprintf(cmd, sizeof(cmd), "%s b %%%c", script_path, macro);
+	ft_set_programs(ms, cmd, 0, 0);
+}
+
+static void
+assoc_common(void)
+{
+	char *error;
+	matchers_t *ms = matchers_alloc("{a,b}", 0, 1, "", &error);
+	assert_non_null(ms);
+
+	char cmd[PATH_MAX + 1];
+	snprintf(cmd, sizeof(cmd), "%s common %%f", script_path);
+	ft_set_programs(ms, cmd, 0, 0);
+}
+
+static void
+assoc(const char pattern[], const char cmd[])
+{
+	char *error;
+	matchers_t *ms = matchers_alloc(pattern, 0, 1, "", &error);
+	assert_non_null(ms);
+
+	ft_set_programs(ms, cmd, 0, 0);
+}
+
+static void
+file_is(const char path[], const char *lines[], int nlines)
+{
+	FILE *fp = fopen(path, "r");
+	if(fp == NULL)
+	{
+		assert_non_null(fp);
+		return;
+	}
+
+	int actual_nlines;
+	char **actual_lines = read_file_lines(fp, &actual_nlines);
+	fclose(fp);
+
+	assert_int_equal(nlines, actual_nlines);
+
+	int i;
+	for(i = 0; i < actual_nlines; ++i)
+	{
+		assert_string_equal(lines[i], actual_lines[i]);
+	}
+
+	free_string_array(actual_lines, actual_nlines);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
