@@ -445,19 +445,18 @@ run_selection(view_t *view, int dont_execute)
 		return;
 	}
 
-	if(!same && !can_multi_run)
+	if(can_multi_run)
 	{
-		show_error_msg("Run error", "Handlers of selected files are incompatible.");
-		return;
+		run_selection_separately(view, dont_execute);
 	}
-
-	if(!can_multi_run)
+	else if(same)
 	{
 		run_using_prog(view, common_prog_cmd, dont_execute, 0);
 	}
 	else
 	{
-		run_selection_separately(view, dont_execute);
+		show_error_msg("Run error", "Handlers of selected files are "
+		                            "incompatible.");
 	}
 }
 
