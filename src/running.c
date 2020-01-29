@@ -90,7 +90,6 @@ static int is_runnable(const view_t *view, const char full_path[], int type,
 		int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
-static int is_dir_entry(const char full_path[], int type);
 #ifdef _WIN32
 static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
@@ -192,7 +191,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 		vifm_choose_files(view, 0, NULL);
 	}
 
-	if(executable && !is_dir_entry(full_path, curr->type))
+	if(executable && !fentry_is_dir(curr))
 	{
 		execute_file(full_path, exec == FHE_ELEVATE_AND_RUN);
 	}
@@ -242,14 +241,6 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 	executable = curr->type == FT_EXEC;
 #endif
 	return executable && !dont_execute && cfg.auto_execute;
-}
-
-/* Returns non-zero if entry is directory or link to a directory, otherwise zero
- * is returned. */
-static int
-is_dir_entry(const char full_path[], int type)
-{
-	return type == FT_DIR || (type == FT_LINK && is_dir(full_path));
 }
 
 #ifdef _WIN32
@@ -351,9 +342,7 @@ selection_is_consistent(view_t *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char full[PATH_MAX + 1];
-		get_full_path_of(entry, sizeof(full), full);
-		if(is_dir_entry(full, entry->type))
+		if(fentry_is_dir(entry))
 		{
 			++dirs;
 		}
