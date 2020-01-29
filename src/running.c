@@ -380,11 +380,6 @@ run_selection(view_t *view, int dont_execute)
 {
 	/* TODO: refactor this function run_selection() */
 
-	char *typed_fname;
-	int undef;
-	int same;
-	dir_entry_t *entry;
-
 	if(!selection_is_consistent(view))
 	{
 		show_error_msg("Selection error",
@@ -397,20 +392,17 @@ run_selection(view_t *view, int dont_execute)
 		flist_sel_stash(view);
 	}
 
-	typed_fname = get_typed_entry_fpath(get_current_entry(view));
+	char *typed_fname = get_typed_entry_fpath(get_current_entry(view));
 	const char *common_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
 	int can_multi_run = (is_multi_run_compat(view, common_prog_cmd) != 0);
-	undef = (common_prog_cmd == NULL);
-	same = 1;
+	int undef = (common_prog_cmd == NULL);
+	int same = 1;
 
-	entry = NULL;
+	dir_entry_t *entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char *typed_fname;
-		const char *entry_prog_cmd;
-
 		if(!path_exists_at(entry->origin, entry->name, DEREF))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
@@ -418,8 +410,8 @@ run_selection(view_t *view, int dont_execute)
 			return;
 		}
 
-		typed_fname = get_typed_entry_fpath(entry);
-		entry_prog_cmd = ft_get_program(typed_fname);
+		char *typed_fname = get_typed_entry_fpath(entry);
+		const char *entry_prog_cmd = ft_get_program(typed_fname);
 		free(typed_fname);
 
 		if(entry_prog_cmd == NULL)
