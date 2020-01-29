@@ -442,10 +442,8 @@ run_selection(view_t *view, int dont_execute)
 	if(undef > 0 || common_prog_cmd == NULL)
 	{
 		run_with_defaults(view);
-		return;
 	}
-
-	if(can_multi_run)
+	else if(can_multi_run)
 	{
 		run_selection_separately(view, dont_execute);
 	}
