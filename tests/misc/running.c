@@ -284,6 +284,87 @@ TEST(selection_is_compatible, IF(not_windows))
 	stop_use_script();
 }
 
+TEST(inconsistent_selection, IF(not_windows))
+{
+	start_use_script();
+	lwin.dir_entry[0].type = FT_DIR;
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(selection_with_broken_link, IF(not_windows))
+{
+	start_use_script();
+	/* Simulate broken link using incorrect name of a file. */
+	update_string(&lwin.dir_entry[0].name, "no-such-file");
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(current_file_not_part_of_selection, IF(not_windows))
+{
+	start_use_script();
+	lwin.dir_entry[0].selected = 0;
+	--lwin.selected_files;
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a", cwd);
+
+	const char *lines[] = { path };
+	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
+
+	assert_success(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(entering_parent_directory, IF(not_windows))
+{
+	start_use_script();
+	update_string(&lwin.dir_entry[0].name, "..");
+	lwin.dir_entry[0].type = FT_DIR;
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(entering_a_directory, IF(not_windows))
+{
+	start_use_script();
+	update_string(&lwin.dir_entry[0].name, "existing-files");
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", cwd);
+
+	lwin.dir_entry[0].type = FT_DIR;
+	lwin.dir_entry[1].selected = 0;
+
+	open_file(&lwin, FHE_NO_RUN);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
 static int
 prog_exists(const char name[])
 {

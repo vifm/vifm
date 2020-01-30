@@ -505,6 +505,7 @@ is_multi_run_compat(view_t *view, const char prog_cmd[])
 		return 0;
 	if((len = strlen(prog_cmd)) == 0)
 		return 0;
+	/* XXX: should the check be for " &" and not just "&"? */
 	if(prog_cmd[len - 1] != '&')
 		return 0;
 	if(strstr(prog_cmd, "%f") != NULL || strstr(prog_cmd, "%F") != NULL)
