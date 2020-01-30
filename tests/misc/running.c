@@ -76,16 +76,8 @@ SETUP()
 
 	ft_init(&prog_exists);
 
-	if(is_path_absolute(TEST_DATA_PATH))
-	{
-		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/existing-files",
-				TEST_DATA_PATH);
-	}
-	else
-	{
-		snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/%s/existing-files", cwd,
-				TEST_DATA_PATH);
-	}
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH,
+			"existing-files", cwd);
 }
 
 TEARDOWN()
