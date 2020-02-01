@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Jan 17
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Feb 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -153,7 +153,7 @@ h                                              *vifm-h*
     when |vifm-'lsview'| is off move up one directory (moves to parent
     directory node in tree view), otherwise move left one file.
 l                                              *vifm-l*
-    when |vifm-'lsview'| is off move into a directory or launches a file,
+    when |vifm-'lsview'| is off move into a directory or launch a file,
     otherwise move right one file.
 
 gg - move to the first line of the file list.  *vifm-gg*
