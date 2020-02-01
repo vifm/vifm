@@ -13,6 +13,7 @@
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-cancellation|       Cancellation of commands.
+|vifm-selection|          How selection is handled on launching.
 |vifm-patterns|           Description of file match patterns.
 |vifm-globs|              How globs work in vifm.
 |vifm-set-options|        Available options.
@@ -154,7 +155,7 @@ h                                              *vifm-h*
     directory node in tree view), otherwise move left one file.
 l                                              *vifm-l*
     when |vifm-'lsview'| is off move into a directory or launch a file,
-    otherwise move right one file.
+    otherwise move right one file.  See |vifm-selection|.
 
 gg - move to the first line of the file list.  *vifm-gg*
 G  - move to the last line in the file list.   *vifm-G*
@@ -163,7 +164,7 @@ gh                                             *vifm-gh*
     go up one directory regardless of view representation (regular,
     ls-like).  Also can be used to leave custom views including tree view.
 gl or Enter                                    *vifm-gl* *vifm-Enter*
-    enter directory or launch a file.
+    enter directory or launch a file.  See |vifm-selection|.
 
 
 H                                              *vifm-H*
@@ -1553,7 +1554,8 @@ The builtin commands are:
     name of current file is appended as if program entry ended with %c macro
     on *nix and %"c on Windows.  On Windows path to executables containing
     spaces can (and should be for correct work with such paths) be double
-    quoted.  See |vifm-globs| for pattern definition.  See also |vifm-fuse|.
+    quoted.  See |vifm-globs| for pattern definition and |vifm-selection| for
+    how selection is handled.  See also |vifm-fuse|.
     Example for zip archives and several actions: >
 
     filetype *.zip,*.jar,*.war,*.ear
@@ -1577,7 +1579,8 @@ The builtin commands are:
 :filex[type] pattern-list [{ description }] def_program,program2,...
     same as :filetype, but this command is ignored if not running in X.  In
     X :filextype is equal to :filetype.  See |vifm-globs| for pattern
-    definition.  See also |vifm-fuse|.
+    definition and |vifm-selection| for how selection is handled.  See also
+    |vifm-fuse|.
 
     For example, consider the following settings (the order might seem
     strange, but it's for the demonstration purpose): >
@@ -2586,9 +2589,10 @@ The command macros may be used in user commands.
                                                                *vifm-%C*
   %C  %"C   the current file under the cursor in the other directory.
                                                                *vifm-%f*
-  %f  %"f   all of the selected files.
+  %f  %"f   all of the selected files, but see |vifm-selection|.
                                                                *vifm-%F*
-  %F  %"F   all of the selected files in the other directory list.
+  %F  %"F   all of the selected files in the other directory list,
+            but see |vifm-selection|.
                                                                *vifm-%b*
   %b  %"b   same as %f %F.
                                                                *vifm-%d*
@@ -2778,6 +2782,41 @@ External application calls~
 
 Each of this operations can be cancelled: |vifm-:apropos|, |vifm-:find|,
 |vifm-:grep|, |vifm-:locate|.
+
+--------------------------------------------------------------------------------
+*vifm-selection*
+
+If there is a selection, it's stashed before proceeding further unless file
+under the cursor is part of that selection.  This means that when macros are
+expanded for |vifm-:filetype| or |vifm-:filextype| programs, `%f` and `%F`
+become equivalent to `%c` and `%C` respectively if current file is not selected.
+So you run selection by running one of selected files, otherwise you're
+running a single file even if there are other selected entries.
+
+When running a selection it must not include broken symbolic links, has to be
+consistent and set of file handlers must be compatible.  Consistency means
+that selection contains either only directories (including links to them) or
+only files, but not their mix.
+
+Compatibility is a more sophisticated check, but it's defined in a natural way
+so that you get what you'd expect.  The following properties of selection are
+taken into account while checking it for compatibility and deciding how to
+handle it:
+
+    1. If there any files for which handler isn't defined, then all files are
+       opened using |vifm-'vicmd'| or |vifm-'vixcmd'|.
+
+    2. If all handlers match the following criteria:
+        - backgrounded
+        - include `%c` and/or `%C`
+        - include neither `%f` nor `%F`
+       then each file is executed independently of the rest.
+
+    3. If all handlers are equal, the common handler is executed.  This
+       handler might ignore selection and process only file under the cursor.
+
+    4. Otherwise, an error is reported, because handlers differ and they
+       don't support parallel execution.
 
 --------------------------------------------------------------------------------
 *vifm-patterns*
