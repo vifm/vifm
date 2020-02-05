@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 1, 2020" "vifm 0.10.1"
+.TH VIFM 1 "February 6, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -542,10 +542,10 @@ if 'cpoptions' contains "t" flag, <tab> and <c-i> switch active pane just like
 view.  Nonexistent directories are automatically skipped.
 .TP
 .BI Ctrl-G
-create a window showing detailed information about the current file.
+show a dialog with detailed information about current file.
 .TP
 .BI "Shift-Tab"
-enters view mode (works only after activating view pane with :view command).
+enter view mode (works only after activating view pane with :view command).
 .TP
 .BI ga
 calculate directory size.  Uses cached directory sizes when possible for better
@@ -1530,7 +1530,7 @@ characters can be used as separators.
 .BI "                                         :change"
 .TP
 .BI :c[hange]
-create a menu window to alter a files properties.
+show a dialog to alter properties of files.
 .TP
 .BI "                                         :chmod"
 .TP
@@ -2257,24 +2257,25 @@ important in certain cases.
 .BI "                                         :history"
 .TP
 .BI :his[tory]
-creates a pop-up menu of directories visited.
+display a menu with list of visited directories.
 .TP
 .BI ":his[tory] x"
 x can be:
 .br
-d[ir]     or . show directory history.
+  d[ir]     or . show directory history.
 .br
-c[md]     or : show command line history.
+  c[md]     or : show command line history.
 .br
-s[earch]  or / show search history and search forward on l key.
+  s[earch]  or / show search history and search forward on l key.
 .br
-f[search] or / show search history and search forward on l key.
+  f[search] or / show search history and search forward on l key.
 .br
-b[search] or ? show search history and search backward on l key.
+  b[search] or ? show search history and search backward on l key.
 .br
-i[nput]   or @ show prompt history (e.g. on one file renaming).
+  i[nput]   or @ show prompt history (e.g. on one file renaming).
 .br
-fi[lter]  or = show filter history (see description of the "=" normal mode command).
+  fi[lter]  or = show filter history (see description of the "=" normal mode
+command).
 .TP
 .BI "                                         :histnext"
 .TP
@@ -2293,7 +2294,7 @@ same as <c-o>.
 .BI "                                         :if"
 .TP
 .BI ":if {expr1}"
-starts conditional block.  Commands are executed until next matching :elseif,
+start conditional block.  Commands are executed until next matching :elseif,
 :else or :endif command if {expr1} evaluates to non-zero, otherwise they are
 ignored.  See also help on :else and :endif commands.
 
@@ -2329,12 +2330,12 @@ show sorting order of the primary sorting key.
 .BI "                                         :jobs"
 .TP
 .BI :jobs
-shows menu of current backgrounded processes.
+display menu of current backgrounded processes.
 .TP
 .BI "                                         :let"
 .TP
 .BI ":let $ENV_VAR = <expr>"
-sets environment variable.  Warning: setting environment variable to an empty
+set an environment variable.  Warning: setting environment variable to an empty
 string on Windows removes it.
 .TP
 .BI ":let $ENV_VAR .= <expr>"
@@ -2366,7 +2367,7 @@ to show the selected file.  By default the command relies on the external
 customized by altering value of the 'locateprg' option.
 .TP
 .BI :locate
-repeats last :locate command.
+repeat last :locate command.
 .TP
 .BI "                                         :ls"
 .TP
@@ -2378,7 +2379,7 @@ multiplexer, thus the list is not handled by vifm.
 .BI "                                         :lstrash"
 .TP
 .BI :lstrash
-displays a menu with list of files in trash.  Each element of the list is
+display a menu with list of files in trash.  Each element of the list is
 original path of a deleted file, thus the list can contain duplicates.
 .TP
 .BI "                                         :mark"
@@ -5683,7 +5684,7 @@ r on a file name to restore it from trash.
 
 dd deletes file under the cursor.
 
-.B Trashes menu
+.B Trashes (:trashes) menu
 
 dd empties selected trash in background.
 
@@ -5697,7 +5698,7 @@ command was used.
 Selecting directory name will rotate stack to put selected directory pair at the
 top of the stack.
 
-.B Filetype menu
+.B File (:file) menu
 
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.
