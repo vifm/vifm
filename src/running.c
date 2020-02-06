@@ -567,7 +567,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	bg = !pause && (bg || force_bg);
 
 	save_msg = 0;
-	if(run_ext_command(cmd, flags, bg, &save_msg) != 0)
+	if(rn_ext(cmd, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
@@ -576,7 +576,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	}
 	else if(bg)
 	{
-		assert(flags != MF_IGNORE && "This case is for run_ext_command()");
+		assert(flags != MF_IGNORE && "This case is for rn_ext()");
 		(void)bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER);
 	}
 	else
@@ -1165,7 +1165,7 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 }
 
 int
-run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
+rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 {
 	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
 	{
