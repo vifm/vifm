@@ -82,7 +82,7 @@ execute_apropos_cb(view_t *view, menu_data_t *m)
 	snprintf(command, sizeof(command), "man %s %s", section, topic);
 
 	curr_stats.skip_shellout_redraw = 1;
-	exit_code = shellout(command, PAUSE_NEVER, 1, SHELL_BY_APP);
+	exit_code = rn_shell(command, PAUSE_NEVER, 1, SHELL_BY_APP);
 	curr_stats.skip_shellout_redraw = 0;
 
 	if(exit_code != 0)

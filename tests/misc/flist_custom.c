@@ -351,7 +351,7 @@ TEST(location_is_saved_on_entering_custom_view)
 	curr_stats.load_stage = 0;
 
 	/* Return to previous directory and check that last location was used. */
-	cd_updir(&lwin, 1);
+	rn_leave(&lwin, 1);
 	assert_string_equal("c", lwin.dir_entry[lwin.list_pos].name);
 
 	cfg_resize_histories(0U);
@@ -458,7 +458,7 @@ TEST(files_with_newline_in_names, IF(filenames_can_include_newline))
 
 	create_file("a\nb");
 	assert_non_null(get_cwd(lwin.curr_dir, sizeof(lwin.curr_dir)));
-	assert_success(output_to_custom_flist(&lwin, "cat list", 0, 0));
+	assert_success(rn_for_flist(&lwin, "cat list", 0, 0));
 	assert_success(unlink("a\nb"));
 	assert_success(unlink("list"));
 
@@ -487,7 +487,7 @@ TEST(current_directory_can_be_added_via_dot)
 #endif
 	stats_update_shell_type(cfg.shell);
 
-	assert_success(output_to_custom_flist(&lwin, "echo ../misc", 0, 0));
+	assert_success(rn_for_flist(&lwin, "echo ../misc", 0, 0));
 
 	stats_update_shell_type("/bin/sh");
 	update_string(&cfg.shell, NULL);

@@ -968,7 +968,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 
 	flags = (MacroFlags)cmd_info->usr1;
-	handled = run_ext_command(com, flags, cmd_info->bg, &save_msg);
+	handled = rn_ext(com, flags, cmd_info->bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -991,14 +991,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 			char *const buf = fast_run_complete(com);
 			if(buf != NULL)
 			{
-				(void)shellout(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+				(void)rn_shell(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 						use_term_mux, SHELL_BY_USER);
 				free(buf);
 			}
 		}
 		else
 		{
-			(void)shellout(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+			(void)rn_shell(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 					use_term_mux, SHELL_BY_USER);
 		}
 	}
@@ -2205,7 +2205,7 @@ file_cmd(const cmd_info_t *cmd_info)
 		return show_file_menu(curr_view, cmd_info->bg) != 0;
 	}
 
-	if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
+	if(rn_open_with_match(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
 	{
 		ui_sb_err("Can't find associated program with requested beginning");
 		return 1;
@@ -3650,7 +3650,7 @@ regular_cmd(const cmd_info_t *cmd_info)
 {
 	if(flist_custom_active(curr_view))
 	{
-		cd_updir(curr_view, 1);
+		rn_leave(curr_view, 1);
 	}
 	return 0;
 }
@@ -3815,7 +3815,7 @@ shell_cmd(const cmd_info_t *cmd_info)
 
 	/* Run shell with clean PATH environment variable. */
 	load_clean_path_env();
-	shellout(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1, SHELL_BY_APP);
+	rn_shell(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1, SHELL_BY_APP);
 	load_real_path_env();
 
 	return 0;
@@ -4355,7 +4355,7 @@ tree_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark && in_tree)
 	{
-		cd_updir(curr_view, 1);
+		rn_leave(curr_view, 1);
 	}
 	else
 	{
@@ -4917,7 +4917,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	flist_sel_stash(curr_view);
 
-	handled = run_ext_command(expanded_com, flags, bg, &save_msg);
+	handled = rn_ext(expanded_com, flags, bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -4952,7 +4952,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(com_beginning) > 0)
 		{
-			shellout(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+			rn_shell(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 					flags != MF_NO_TERM_MUX, SHELL_BY_USER);
 		}
 	}
@@ -4975,7 +4975,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
+		rn_shell(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
 				SHELL_BY_USER);
 	}
 

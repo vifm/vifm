@@ -43,7 +43,6 @@
 
 static const char * form_filetype_menu_entry(assoc_record_t prog,
 		int descr_width);
-static const char * form_filetype_data_entry(assoc_record_t prog);
 static int execute_filetype_cb(view_t *view, menu_data_t *m);
 static KHandlerResponse filetypes_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
@@ -84,8 +83,7 @@ show_file_menu(view_t *view, int background)
 
 	for(i = 0; i < ft.count; ++i)
 	{
-		(void)add_to_string_array(&m.data, m.len, 1,
-				form_filetype_data_entry(ft.list[i]));
+		(void)add_to_string_array(&m.data, m.len, 1, ft.list[i].command);
 		m.len = add_to_string_array(&m.items, m.len, 1,
 				form_filetype_menu_entry(ft.list[i], max_len));
 	}
@@ -95,8 +93,7 @@ show_file_menu(view_t *view, int background)
 	 * kind. */
 	if(ft.count > 0 || magic.count > 0)
 	{
-		(void)add_to_string_array(&m.data, m.len, 1,
-				form_filetype_data_entry(NONE_PSEUDO_PROG));
+		(void)add_to_string_array(&m.data, m.len, 1, NONE_PSEUDO_PROG.command);
 		m.len = add_to_string_array(&m.items, m.len, 1, "");
 	}
 #endif
@@ -105,8 +102,7 @@ show_file_menu(view_t *view, int background)
 
 	for(i = 0; i < magic.count; ++i)
 	{
-		(void)add_to_string_array(&m.data, m.len, 1,
-				form_filetype_data_entry(magic.list[i]));
+		(void)add_to_string_array(&m.data, m.len, 1, magic.list[i].command);
 		m.len = add_to_string_array(&m.items, m.len, 1,
 				form_filetype_menu_entry(magic.list[i], max_len));
 	}
@@ -144,32 +140,16 @@ form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 	return result;
 }
 
-/* Returns pointer to a statically allocated buffer */
-static const char *
-form_filetype_data_entry(assoc_record_t prog)
-{
-	static char result[PATH_MAX + 1];
-	snprintf(result, sizeof(result), "%s|%s", prog.description, prog.command);
-	return result;
-}
-
 /* Callback that is invoked when menu item is selected.  Should return non-zero
  * to stay in menu mode. */
 static int
 execute_filetype_cb(view_t *view, menu_data_t *m)
 {
-	if(get_current_entry(view)->type == FT_DIR && m->pos == 0)
+	const char *const prog_str = m->data[m->pos];
+	if(prog_str[0] != '\0')
 	{
-		open_dir(view);
-	}
-	else
-	{
-		const char *const prog_str = strchr(m->data[m->pos], '|') + 1;
-		if(prog_str[0] != '\0')
-		{
-			int background = m->extra_data & 1;
-			run_using_prog(view, prog_str, 0, background);
-		}
+		int background = m->extra_data & 1;
+		rn_open_with(view, prog_str, 0, background);
 	}
 
 	flist_sel_stash(view);
@@ -184,7 +164,7 @@ filetypes_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"c") == 0)
 	{
-		const char *const prog_str = after_first(m->data[m->pos], '|');
+		const char *const prog_str = m->data[m->pos];
 		if(prog_str[0] != '\0')
 		{
 			menu_morph_into_cmdline(CLS_COMMAND, prog_str, 1);

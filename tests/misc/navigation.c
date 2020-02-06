@@ -130,7 +130,7 @@ TEST(following_resets_cv)
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	follow_file(&lwin);
+	rn_follow(&lwin);
 	assert_false(flist_custom_active(&lwin));
 }
 

@@ -706,7 +706,7 @@ change_directory(view_t *view, const char directory[])
 			/* Leave compare mode in both views at the same time. */
 			if(other->custom.type == CV_DIFF)
 			{
-				cd_updir(other, 1);
+				rn_leave(other, 1);
 			}
 		}
 	}
@@ -1234,7 +1234,7 @@ exclude_in_compare(view_t *view, int selection_only)
 	if(double_compare && exclude_temporary_entries(other) == n)
 	{
 		/* Leave compare mode if we excluded all files. */
-		cd_updir(view, 1);
+		rn_leave(view, 1);
 	}
 }
 
@@ -1847,7 +1847,7 @@ filter_in_compare(view_t *view, void *arg, zap_filter filter)
 	{
 		/* Load views before showing the message as event loop in message dialog can
 		 * try to reload views. */
-		cd_updir(view, 1);
+		rn_leave(view, 1);
 		show_error_msg("Comparison", "No files left in the views, left the mode.");
 		return 1;
 	}
@@ -2967,7 +2967,7 @@ cd(view_t *view, const char base_dir[], const char path[])
 
 	if(updir)
 	{
-		cd_updir(view, 1);
+		rn_leave(view, 1);
 	}
 	else if(!cd_is_possible(canonic_dir) ||
 			change_directory(view, canonic_dir) < 0)

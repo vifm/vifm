@@ -90,7 +90,6 @@ static int is_runnable(const view_t *view, const char full_path[], int type,
 		int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
-static int is_dir_entry(const char full_path[], int type);
 #ifdef _WIN32
 static void run_win_executable(char full_path[], int elevate);
 static int run_win_executable_as_evaluated(const char full_path[]);
@@ -106,6 +105,7 @@ static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
 		int force_bg);
 static void view_current_file(const view_t *view);
 static void follow_link(view_t *view, int follow_dirs);
+static void enter_dir(struct view_t *view);
 static int cd_to_parent_dir(view_t *view);
 static void extract_last_path_component(const char path[], char buf[]);
 static void setup_shellout_env(void);
@@ -132,13 +132,13 @@ static void line_handler(const char line[], void *arg);
 static const char *const FUSE_FILE_ENVVAR = "VIFM_FUSE_FILE";
 
 void
-open_file(view_t *view, FileHandleExec exec)
+rn_open(view_t *view, FileHandleExec exec)
 {
 	handle_file(view, exec, FHL_NO_FOLLOW);
 }
 
 void
-follow_file(view_t *view)
+rn_follow(view_t *view)
 {
 	if(flist_custom_active(view))
 	{
@@ -178,7 +178,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		if(!curr->selected && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
 		{
-			open_dir(view);
+			enter_dir(view);
 			return;
 		}
 	}
@@ -192,7 +192,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 		vifm_choose_files(view, 0, NULL);
 	}
 
-	if(executable && !is_dir_entry(full_path, curr->type))
+	if(executable && !fentry_is_dir(curr))
 	{
 		execute_file(full_path, exec == FHE_ELEVATE_AND_RUN);
 	}
@@ -242,14 +242,6 @@ is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
 	executable = curr->type == FT_EXEC;
 #endif
 	return executable && !dont_execute && cfg.auto_execute;
-}
-
-/* Returns non-zero if entry is directory or link to a directory, otherwise zero
- * is returned. */
-static int
-is_dir_entry(const char full_path[], int type)
-{
-	return type == FT_DIR || (type == FT_LINK && is_dir(full_path));
 }
 
 #ifdef _WIN32
@@ -351,9 +343,7 @@ selection_is_consistent(view_t *view)
 	entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char full[PATH_MAX + 1];
-		get_full_path_of(entry, sizeof(full), full);
-		if(is_dir_entry(full, entry->type))
+		if(fentry_is_dir(entry))
 		{
 			++dirs;
 		}
@@ -372,7 +362,7 @@ execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
 	char *const escaped = shell_like_escape(full_path, 0);
-	shellout(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
+	rn_shell(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
 	free(escaped);
 #else
 	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
@@ -389,15 +379,6 @@ execute_file(const char full_path[], int elevate)
 static void
 run_selection(view_t *view, int dont_execute)
 {
-	/* TODO: refactor this function run_selection() */
-
-	char *typed_fname;
-	const char *multi_prog_cmd;
-	int undef;
-	int same;
-	dir_entry_t *entry;
-	int no_multi_run;
-
 	if(!selection_is_consistent(view))
 	{
 		show_error_msg("Selection error",
@@ -410,20 +391,17 @@ run_selection(view_t *view, int dont_execute)
 		flist_sel_stash(view);
 	}
 
-	typed_fname = get_typed_entry_fpath(get_current_entry(view));
-	multi_prog_cmd = ft_get_program(typed_fname);
+	char *typed_fname = get_typed_entry_fpath(get_current_entry(view));
+	const char *common_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
 
-	no_multi_run = !is_multi_run_compat(view, multi_prog_cmd);
-	undef = 0;
-	same = 1;
+	int can_multi_run = (is_multi_run_compat(view, common_prog_cmd) != 0);
+	int files_without_handler = (common_prog_cmd == NULL);
+	int identical_handlers = 1;
 
-	entry = NULL;
+	dir_entry_t *entry = NULL;
 	while(iter_selected_entries(view, &entry))
 	{
-		char *typed_fname;
-		const char *entry_prog_cmd;
-
 		if(!path_exists_at(entry->origin, entry->name, DEREF))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
@@ -431,52 +409,43 @@ run_selection(view_t *view, int dont_execute)
 			return;
 		}
 
-		typed_fname = get_typed_entry_fpath(entry);
-		entry_prog_cmd = ft_get_program(typed_fname);
+		char *typed_fname = get_typed_entry_fpath(entry);
+		const char *entry_prog_cmd = ft_get_program(typed_fname);
 		free(typed_fname);
 
 		if(entry_prog_cmd == NULL)
 		{
-			++undef;
+			++files_without_handler;
 			continue;
 		}
 
-		no_multi_run += !is_multi_run_compat(view, entry_prog_cmd);
-		if(multi_prog_cmd == NULL)
+		can_multi_run &= (is_multi_run_compat(view, entry_prog_cmd) != 0);
+		if(common_prog_cmd == NULL)
 		{
-			multi_prog_cmd = entry_prog_cmd;
+			common_prog_cmd = entry_prog_cmd;
 		}
-		else if(strcmp(entry_prog_cmd, multi_prog_cmd) != 0)
+		else if(strcmp(entry_prog_cmd, common_prog_cmd) != 0)
 		{
-			same = 0;
+			identical_handlers = 0;
 		}
 	}
 
-	if(!same && undef == 0 && no_multi_run)
-	{
-		show_error_msg("Run error", "Handlers of selected files are incompatible.");
-		return;
-	}
-	if(undef > 0)
-	{
-		multi_prog_cmd = NULL;
-	}
-
-	/* Check for a filetype */
-	/* vi is set as the default for any extension without a program */
-	if(multi_prog_cmd == NULL)
+	if(files_without_handler > 0)
 	{
 		run_with_defaults(view);
-		return;
 	}
-
-	if(no_multi_run)
+	else if(can_multi_run)
 	{
-		run_using_prog(view, multi_prog_cmd, dont_execute, 0);
+		run_selection_separately(view, dont_execute);
+	}
+	else if(identical_handlers)
+	{
+		rn_open_with(view, common_prog_cmd, dont_execute, 0);
 	}
 	else
 	{
-		run_selection_separately(view, dont_execute);
+		show_error_msg("Run error", "Handlers of selected files are "
+		                            "incompatible.");
 	}
 }
 
@@ -487,7 +456,7 @@ run_with_defaults(view_t *view)
 {
 	if(get_current_entry(view)->type == FT_DIR)
 	{
-		open_dir(view);
+		enter_dir(view);
 	}
 	else if(view->selected_files <= 1)
 	{
@@ -518,7 +487,7 @@ run_selection_separately(view_t *view, int dont_execute)
 		free(typed_fname);
 
 		view->list_pos = entry_to_pos(view, entry);
-		run_using_prog(view, entry_prog_cmd, dont_execute, 0);
+		rn_open_with(view, entry_prog_cmd, dont_execute, 0);
 	}
 
 	view->list_pos = pos;
@@ -537,6 +506,7 @@ is_multi_run_compat(view_t *view, const char prog_cmd[])
 		return 0;
 	if((len = strlen(prog_cmd)) == 0)
 		return 0;
+	/* XXX: should the check be for " &" and not just "&"? */
 	if(prog_cmd[len - 1] != '&')
 		return 0;
 	if(strstr(prog_cmd, "%f") != NULL || strstr(prog_cmd, "%F") != NULL)
@@ -547,7 +517,7 @@ is_multi_run_compat(view_t *view, const char prog_cmd[])
 }
 
 void
-run_using_prog(view_t *view, const char prog_spec[], int dont_execute,
+rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 		int force_bg)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
@@ -572,7 +542,7 @@ run_using_prog(view_t *view, const char prog_spec[], int dont_execute,
 	}
 	else if(strcmp(prog_spec, VIFM_PSEUDO_CMD) == 0)
 	{
-		open_dir(view);
+		enter_dir(view);
 	}
 	else if(strchr(prog_spec, '%') != NULL)
 	{
@@ -598,7 +568,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	bg = !pause && (bg || force_bg);
 
 	save_msg = 0;
-	if(run_ext_command(cmd, flags, bg, &save_msg) != 0)
+	if(rn_ext(cmd, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
@@ -607,12 +577,12 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	}
 	else if(bg)
 	{
-		assert(flags != MF_IGNORE && "This case is for run_ext_command()");
+		assert(flags != MF_IGNORE && "This case is for rn_ext()");
 		(void)bg_run_external(cmd, flags == MF_IGNORE, SHELL_BY_USER);
 	}
 	else
 	{
-		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+		(void)rn_shell(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 				flags != MF_NO_TERM_MUX, SHELL_BY_USER);
 	}
 
@@ -652,7 +622,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	}
 	else
 	{
-		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR, 1,
+		(void)rn_shell(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR, 1,
 				SHELL_BY_USER);
 	}
 }
@@ -736,14 +706,15 @@ follow_link(view_t *view, int follow_dirs)
 	free(dir);
 }
 
-void
-open_dir(view_t *view)
+/* Handles opening of current entry of the view as a directory. */
+static void
+enter_dir(view_t *view)
 {
 	char full_path[PATH_MAX + 1];
 
 	if(is_parent_dir(get_current_file_name(view)))
 	{
-		cd_updir(view, 1);
+		rn_leave(view, 1);
 		return;
 	}
 
@@ -758,7 +729,7 @@ open_dir(view_t *view)
 }
 
 void
-cd_updir(view_t *view, int levels)
+rn_leave(view_t *view, int levels)
 {
 	/* Do not save intermediate directories in directory history. */
 	curr_stats.drop_new_dir_hist = 1;
@@ -825,7 +796,7 @@ extract_last_path_component(const char path[], char buf[])
 }
 
 int
-shellout(const char command[], ShellPause pause, int use_term_multiplexer,
+rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by)
 {
 	char *cmd;
@@ -1150,7 +1121,7 @@ set_pwd_in_screen(const char path[])
 }
 
 int
-run_with_filetype(view_t *view, const char beginning[], int background)
+rn_open_with_match(view_t *view, const char beginning[], int background)
 {
 	dir_entry_t *const curr = get_current_entry(view);
 	assoc_records_t ft, magic;
@@ -1188,7 +1159,7 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 	{
 		if(strncmp(assocs.list[i].command, start, len) == 0)
 		{
-			run_using_prog(view, assocs.list[i].command, 0, background);
+			rn_open_with(view, assocs.list[i].command, 0, background);
 			return 1;
 		}
 	}
@@ -1196,7 +1167,7 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 }
 
 int
-run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
+rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 {
 	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
 	{
@@ -1258,7 +1229,7 @@ run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
 		const int interactive =
 			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		output_to_custom_flist(curr_view, cmd, very, interactive);
+		rn_for_flist(curr_view, cmd, very, interactive);
 	}
 	else
 	{
@@ -1388,8 +1359,7 @@ run_in_split(const view_t *view, const char cmd[])
 }
 
 int
-output_to_custom_flist(view_t *view, const char cmd[], int very,
-		int interactive)
+rn_for_flist(view_t *view, const char cmd[], int very, int interactive)
 {
 	char *title;
 	int error;
@@ -1428,7 +1398,7 @@ path_handler(const char line[], void *arg)
 }
 
 int
-run_cmd_for_output(const char cmd[], char ***files, int *nfiles)
+rn_for_lines(const char cmd[], char ***lines, int *nlines)
 {
 	int error;
 	strlist_t list = {};
@@ -1444,8 +1414,8 @@ run_cmd_for_output(const char cmd[], char ***files, int *nfiles)
 		return 1;
 	}
 
-	*files = list.items;
-	*nfiles = list.nitems;
+	*lines = list.items;
+	*nlines = list.nitems;
 	return 0;
 }
 

@@ -1,4 +1,4 @@
-.TH VIFM 1 "January 17, 2020" "vifm 0.10.1"
+.TH VIFM 1 "February 6, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -137,8 +137,8 @@ when 'lsview' is off move up one directory (moves to parent directory node in
 tree view), otherwise move left one file.
 .TP
 .BI l
-when 'lsview' is off move into a directory or launches a file, otherwise move
-right one file.
+when 'lsview' is off move into a directory or launch a file, otherwise move
+right one file.  See "Selection" section below.
 .TP
 .BI gg
 move to the first line of the file list.
@@ -151,7 +151,7 @@ go up one directory regardless of view representation (regular, ls-like).  Also
 can be used to leave custom views including tree view.
 .TP
 .BI "gl or Enter"
-enter directory or launch a file.
+enter directory or launch a file.  See "Selection" section below.
 .TP
 .BI H
 move to the first file in the window.
@@ -542,10 +542,11 @@ if 'cpoptions' contains "t" flag, <tab> and <c-i> switch active pane just like
 view.  Nonexistent directories are automatically skipped.
 .TP
 .BI Ctrl-G
-create a window showing detailed information about the current file.
+show a dialog with detailed information about current file.  See
+"Menus and dialogs" section for controls.
 .TP
 .BI "Shift-Tab"
-enters view mode (works only after activating view pane with :view command).
+enter view mode (works only after activating view pane with :view command).
 .TP
 .BI ga
 calculate directory size.  Uses cached directory sizes when possible for better
@@ -621,7 +622,8 @@ change file group.
 .BI [count]cp
 change file attributes (permission on *nix and properties on Windows).  If
 [count] is specified, it's treated as numerical argument for non-recursive
-`chmod` command (of the form [0-7]{3,4}).
+`chmod` command (of the form [0-7]{3,4}).  See "Menus and dialogs" section for
+controls.
 .TP
 .BI [count]C
 clone file [count] times.
@@ -1386,7 +1388,7 @@ next link a corresponding name from the argument list.
 create a menu of items returned by the apropos command.  Selecting an item in
 the menu opens corresponding man page.  By default the command relies on the
 external "apropos" utility, which can be customized by altering value of
-the 'aproposprg' option.
+the 'aproposprg' option.  See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :autocmd"
 .TP
@@ -1453,7 +1455,8 @@ should be escaped.
 display all bookmarks in a menu.
 .TP
 .BI ":bmarks [tag1 [tag2...]]"
-display menu of bookmarks that include all of the specified tags.
+display menu of bookmarks that include all of the specified tags.  See "Menus
+and dialogs" section for controls.
 .TP
 .BI "                                         :bmgo"
 .TP
@@ -1464,7 +1467,8 @@ navigates to single match immediately (and fails if there is no match).
 .BI "                                         :cabbrev"
 .TP
 .BI ":ca[bbrev]"
-display menu of command-line mode abbreviations.
+display menu of command-line mode abbreviations.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI ":ca[bbrev] lhs-prefix"
 display command-line mode abbreviations which left-hand side starts with
@@ -1478,7 +1482,8 @@ can contain spaces and any special sequences accepted in rhs of mappings (see
 .BI "                                         :cnoreabbrev"
 .TP
 .BI ":cnorea[bbrev]"
-display menu of command-line mode abbreviations.
+display menu of command-line mode abbreviations.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI ":cnorea[bbrev] lhs-prefix"
 display command-line mode abbreviations which left-hand side starts with
@@ -1530,7 +1535,7 @@ characters can be used as separators.
 .BI "                                         :change"
 .TP
 .BI :c[hange]
-create a menu window to alter a files properties.
+show a dialog to alter properties of files.
 .TP
 .BI "                                         :chmod"
 .TP
@@ -1580,7 +1585,7 @@ print current color scheme name on the status bar.
 display a menu with a list of available color schemes.  You can choose primary
 color scheme here.  It is used for view if no directory specific colorscheme
 fits current path.  It's also used to set border color (except view titles) and
-colors in menus and dialogs.
+colors in menus and dialogs.  See "Menus and dialogs" section for controls.
 .TP
 .BI ":colo[rscheme] color_scheme_name"
 change primary color scheme to color_scheme_name.  In case of errors (e.g. some
@@ -1610,7 +1615,7 @@ remove all user defined commands.
 .BI "                                         :command"
 .TP
 .BI :com[mand]
-display a menu of user commands.
+display a menu of user commands.  See "Menus and dialogs" section for controls.
 .TP
 .BI ":com[mand] prefix"
 display user defined commands that start with the prefix.
@@ -1748,7 +1753,8 @@ list (for example "az to display "", "a and "z content).
 .BI "                                         :dirs"
 .TP
 .BI :dirs
-display directory stack.
+display directory stack in a menu.  See "Menus and dialogs" section for
+controls.
 .TP
 .BI "                                         :echo"
 .TP
@@ -1806,7 +1812,8 @@ same as :quit.
 .TP
 .BI ":f[ile][ &]"
 display menu of programs set for the file type of the current file.  " &" forces
-running associated program in background.
+running associated program in background.  See "Menus and dialogs" section for
+controls.
 .TP
 .BI ":f[ile] arg[ &]"
 run associated command that begins with the arg skipping opening menu.  " &"
@@ -1826,9 +1833,9 @@ the default isn't found.  When program entry doesn't contain any of vifm
 macros, name of current file is appended as if program entry ended with %c
 macro on *nix and %"c on Windows.  On Windows path to executables containing
 spaces can (and should be for correct work with such paths) be double quoted.
-See "Patterns" section below for pattern definition.  See also
-"Automatic FUSE mounts" section below.  Example for zip archives and several
-actions:
+See "Patterns" section below for pattern definition and "Selection" section for
+how selection is handled.  See also "Automatic FUSE mounts" section below.
+Example for zip archives and several actions:
 
 .EX
   filetype *.zip,*.jar,*.war,*.ear
@@ -1854,7 +1861,8 @@ name.  Same as ":filextype filename".
 .BI ":filex[type] pattern-list [{ description }] def_program,program2,..."
 same as :filetype, but this command is ignored if not running in X.
 In X :filextype is equal to :filetype.  See "Patterns" section below for pattern
-definition.  See also "Automatic FUSE mounts" section below.
+definition and "Selection" section for how selection is handled.  See
+also "Automatic FUSE mounts" section below.
 
 For example, consider the following settings (the order might seem strange,
 but it's for the demonstration purpose):
@@ -2256,24 +2264,28 @@ important in certain cases.
 .BI "                                         :history"
 .TP
 .BI :his[tory]
-creates a pop-up menu of directories visited.
+display a menu with list of visited directories.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI ":his[tory] x"
 x can be:
 .br
-d[ir]     or . show directory history.
+  d[ir]     or . show directory history.
 .br
-c[md]     or : show command line history.
+  c[md]     or : show command line history.
 .br
-s[earch]  or / show search history and search forward on l key.
+  s[earch]  or / show search history and search forward on l key.
 .br
-f[search] or / show search history and search forward on l key.
+  f[search] or / show search history and search forward on l key.
 .br
-b[search] or ? show search history and search backward on l key.
+  b[search] or ? show search history and search backward on l key.
 .br
-i[nput]   or @ show prompt history (e.g. on one file renaming).
+  i[nput]   or @ show prompt history (e.g. on one file renaming).
 .br
-fi[lter]  or = show filter history (see description of the "=" normal mode command).
+  fi[lter]  or = show filter history (see description of the "=" normal mode
+command).
+.br
+See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :histnext"
 .TP
@@ -2292,7 +2304,7 @@ same as <c-o>.
 .BI "                                         :if"
 .TP
 .BI ":if {expr1}"
-starts conditional block.  Commands are executed until next matching :elseif,
+start conditional block.  Commands are executed until next matching :elseif,
 :else or :endif command if {expr1} evaluates to non-zero, otherwise they are
 ignored.  See also help on :else and :endif commands.
 
@@ -2328,12 +2340,13 @@ show sorting order of the primary sorting key.
 .BI "                                         :jobs"
 .TP
 .BI :jobs
-shows menu of current backgrounded processes.
+display menu of current backgrounded processes.  See "Menus and dialogs" section
+for controls.
 .TP
 .BI "                                         :let"
 .TP
 .BI ":let $ENV_VAR = <expr>"
-sets environment variable.  Warning: setting environment variable to an empty
+set an environment variable.  Warning: setting environment variable to an empty
 string on Windows removes it.
 .TP
 .BI ":let $ENV_VAR .= <expr>"
@@ -2362,10 +2375,11 @@ use "locate" command to create a menu of filenames.
 Selecting a file from the menu will reload the current file list in vifm
 to show the selected file.  By default the command relies on the external
 "locate" utility (it's assumed that its database is already built), which can be
-customized by altering value of the 'locateprg' option.
+customized by altering value of the 'locateprg' option.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI :locate
-repeats last :locate command.
+repeat last :locate command.
 .TP
 .BI "                                         :ls"
 .TP
@@ -2377,8 +2391,9 @@ multiplexer, thus the list is not handled by vifm.
 .BI "                                         :lstrash"
 .TP
 .BI :lstrash
-displays a menu with list of files in trash.  Each element of the list is
-original path of a deleted file, thus the list can contain duplicates.
+display a menu with list of files in trash.  Each element of the list is
+original path of a deleted file, thus the list can contain duplicates.  See
+"Menus and dialogs" section for controls.
 .TP
 .BI "                                         :mark"
 .TP
@@ -2391,7 +2406,7 @@ Question mark will stop command from overwriting existing marks.
 .BI "                                         :marks"
 .TP
 .BI :marks
-create a pop-up menu of marks.
+create a pop-up menu of marks.  See "Menus and dialogs" section for controls.
 .TP
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
@@ -2401,7 +2416,8 @@ display the contents of the marks that are mentioned in list.
 .BI :media
 only for *nix
 .br
-display media management menu.  See also 'mediaprg' option.
+display media management menu.  See "Menus and dialogs" section for controls.
+See also 'mediaprg' option.
 .TP
 .BI "                                         :messages"
 .TP
@@ -2684,7 +2700,7 @@ same as :siblnext, but in the opposite direction.
 display dialog with different sorting methods, where one can select the primary
 sorting key.  When 'viewcolumns' options is empty and 'lsview' is off, changing
 primary sorting key will also affect view look (in particular the second column
-of the view will be changed).
+of the view will be changed).  See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :source"
 .TP
@@ -2852,7 +2868,8 @@ toggle current view in and out of tree mode.
 .BI "                                         :undolist"
 .TP
 .BI :undol[ist]
-display list of latest changes.  Use "!" to see actual commands.
+display list of latest changes.  Use "!" to see actual commands.  See "Menus and
+dialogs" section for controls.
 .TP
 .BI "                                         :unlet"
 .TP
@@ -2902,7 +2919,7 @@ turn on quick file view if it's off.
 only for MS-Windows
 .br
 display menu with volume list.  Hitting l (or Enter) key opens appropriate
-volume in the current pane.
+volume in the current pane.  See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :vsplit"
 .TP
@@ -3149,10 +3166,11 @@ The current file under the cursor.
 The current file under the cursor in the other directory.
 .TP
 .BI "%f %""f"
-All of the selected files.
+All of the selected files, but see "Selection" section below.
 .TP
 .BI "%F %""F"
-All of the selected files in the other directory list.
+All of the selected files in the other directory list, but see "Selection"
+section below.
 .TP
 .BI "%b %""b"
 Same as %f %F.
@@ -3373,6 +3391,47 @@ shown.
 .B External application calls
 
 Each of this operations can be cancelled: :apropos, :find, :grep, :locate.
+.\" ---------------------------------------------------------------------------
+.SH Selection
+.\" ---------------------------------------------------------------------------
+If there is a selection, it's stashed before proceeding further unless file
+under the cursor is part of that selection.  This means that when macros are
+expanded for :filetype or :filextype programs, `%f` and `%F`
+become equivalent to `%c` and `%C` respectively if current file is not selected.
+So you run selection by running one of selected files, otherwise you're running
+a single file even if there are other selected entries.
+
+When running a selection it must not include broken symbolic links, has to be
+consistent and set of file handlers must be compatible.  Consistency means
+that selection contains either only directories (including links to them) or
+only files, but not their mix.
+
+Compatibility is a more sophisticated check, but it's defined in a natural way
+so that you get what you'd expect.  The following properties of selection are
+taken into account while checking it for compatibility and deciding how to
+handle it:
+
+.RS 2
+.IP 1. 3
+If there any files for which handler isn't defined, then all files are opened
+using 'vicmd' or 'vixcmd'.
+
+.IP 2. 3
+If all handlers match the following criteria:
+ - backgrounded
+ - include `%c` and/or `%C`
+ - include neither `%f` nor `%F`
+.br
+then each file is executed independently of the rest.
+
+.IP 3. 3
+If all handlers are equal, the common handler is executed.  This handler might
+ignore selection and process only file under the cursor.
+
+.IP 4. 3
+Otherwise, an error is reported, because handlers differ and they don't support
+parallel execution.
+.RE
 .\" ---------------------------------------------------------------------------
 .SH Patterns
 .\" ---------------------------------------------------------------------------
@@ -5640,7 +5699,7 @@ r on a file name to restore it from trash.
 
 dd deletes file under the cursor.
 
-.B Trashes menu
+.B Trashes (:trashes) menu
 
 dd empties selected trash in background.
 
@@ -5654,7 +5713,7 @@ command was used.
 Selecting directory name will rotate stack to put selected directory pair at the
 top of the stack.
 
-.B Filetype menu
+.B File (:file) menu
 
 Commands from vifmrc or typed in command-line are displayed above empty line.
 All commands below empty line are from .desktop files.

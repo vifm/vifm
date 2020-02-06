@@ -801,7 +801,7 @@ format_help_cmd(char cmd[], size_t cmd_size)
 void
 display_help(const char cmd[])
 {
-	(void)shellout(cmd, PAUSE_ON_ERROR, 1, SHELL_BY_APP);
+	(void)rn_shell(cmd, PAUSE_ON_ERROR, 1, SHELL_BY_APP);
 }
 
 void

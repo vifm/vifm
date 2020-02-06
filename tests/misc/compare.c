@@ -400,7 +400,7 @@ TEST(two_panes_are_left_in_sync)
 	assert_true(flist_custom_active(&lwin));
 	assert_true(flist_custom_active(&rwin));
 
-	cd_updir(&lwin, 1);
+	rn_leave(&lwin, 1);
 	assert_false(flist_custom_active(&lwin));
 	assert_false(flist_custom_active(&rwin));
 }
@@ -581,7 +581,7 @@ TEST(two_independent_compare_views_are_not_bound)
 	assert_int_equal(2, lwin.list_pos);
 	assert_int_equal(3, rwin.list_pos);
 
-	cd_updir(&lwin, 1);
+	rn_leave(&lwin, 1);
 	assert_true(flist_custom_active(&rwin));
 }
 

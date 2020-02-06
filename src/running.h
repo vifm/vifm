@@ -32,7 +32,7 @@ typedef enum
 }
 FileHandleExec;
 
-/* When and why should we pause on shellout(). */
+/* When and why should we pause on rn_shell(). */
 typedef enum
 {
 	PAUSE_ALWAYS,   /* Execute command and pause. */
@@ -44,48 +44,46 @@ ShellPause;
 struct view_t;
 
 /* Handles opening of current file/selection of the view. */
-void open_file(struct view_t *view, FileHandleExec exec);
+void rn_open(struct view_t *view, FileHandleExec exec);
 
 /* Follows file to find its true location (e.g. target of symbolic link) or just
  * opens it. */
-void follow_file(struct view_t *view);
+void rn_follow(struct view_t *view);
 
 /* Runs current file of the view guided by program specification with additional
  * options. */
-void run_using_prog(struct view_t *view, const char prog_spec[],
-		int dont_execute, int force_bg);
-
-/* Handles opening of current file of the view as directory. */
-void open_dir(struct view_t *view);
+void rn_open_with(struct view_t *view, const char prog_spec[], int dont_execute,
+		int force_bg);
 
 /* Moves the view to levels-th parent directory taking care of special cases
  * like root of FUSE mount. */
-void cd_updir(struct view_t *view, int levels);
+void rn_leave(struct view_t *view, int levels);
 
 /* Executes command in a shell.  Returns zero on success, otherwise non-zero is
  * returned. */
-int shellout(const char command[], ShellPause pause, int use_term_multiplexer,
+int rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by);
 
-/* Returns zero on successful running. */
-int run_with_filetype(struct view_t *view, const char beginning[],
+/* Looks for a unique program match for a given prefix and uses it.  Returns
+ * zero on success and non-zero otherwise.  */
+int rn_open_with_match(struct view_t *view, const char beginning[],
 		int background);
 
 /* Handles most of command handling variants.  Returns:
  *  - > 0 -- handled, good to go;
  *  - = 0 -- not handled at all;
  *  - < 0 -- handled, exit. */
-int run_ext_command(const char cmd[], MacroFlags flags, int bg, int *save_msg);
+int rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg);
 
 /* Runs the cmd and parses its output as list of paths to compose custom view.
  * Very custom view implies unsorted list.  Returns zero on success, otherwise
  * non-zero is returned. */
-int output_to_custom_flist(struct view_t *view, const char cmd[], int very,
+int rn_for_flist(struct view_t *view, const char cmd[], int very,
 		int interactive);
 
-/* Executes external command capturing its output as list of lines.  Sets *files
- * and *nfiles.  Returns zero on success, otherwise non-zero is returned. */
-int run_cmd_for_output(const char cmd[], char ***files, int *nfiles);
+/* Executes external command capturing its output as list of lines.  Sets *lines
+ * and *nlines.  Returns zero on success, otherwise non-zero is returned. */
+int rn_for_lines(const char cmd[], char ***lines, int *nlines);
 
 #endif /* VIFM__RUNNING_H__ */
 

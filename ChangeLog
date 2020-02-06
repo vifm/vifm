@@ -3,6 +3,9 @@
 	Added script for converting Vim's color scheme into a Vifm's one.  Thanks
 	to Roman Plášil (a.k.a. Quiark).
 
+	Added references to "Menus and dialogs" section of documentation from
+	:commands and keys which open menus and dialogs detailed there.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
@@ -36,6 +39,9 @@
 	Significantly improved performance of adding files to trash that contains
 	thousands of files.  As a result contents of trash is sorted now.  Thanks
 	to Typo.
+
+	Documented how selection is handled on launching files (like on l or Enter
+	keys).
 
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
