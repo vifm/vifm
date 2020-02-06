@@ -160,7 +160,7 @@ execute_filetype_cb(view_t *view, menu_data_t *m)
 {
 	if(get_current_entry(view)->type == FT_DIR && m->pos == 0)
 	{
-		open_dir(view);
+		rn_enter(view);
 	}
 	else
 	{
