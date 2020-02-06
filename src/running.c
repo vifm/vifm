@@ -1396,7 +1396,7 @@ path_handler(const char line[], void *arg)
 }
 
 int
-run_cmd_for_output(const char cmd[], char ***files, int *nfiles)
+rn_for_lines(const char cmd[], char ***lines, int *nlines)
 {
 	int error;
 	strlist_t list = {};
@@ -1412,8 +1412,8 @@ run_cmd_for_output(const char cmd[], char ***files, int *nfiles)
 		return 1;
 	}
 
-	*files = list.items;
-	*nfiles = list.nitems;
+	*lines = list.items;
+	*nlines = list.nitems;
 	return 0;
 }
 

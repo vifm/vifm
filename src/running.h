@@ -84,9 +84,9 @@ int rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg);
 int rn_for_flist(struct view_t *view, const char cmd[], int very,
 		int interactive);
 
-/* Executes external command capturing its output as list of lines.  Sets *files
- * and *nfiles.  Returns zero on success, otherwise non-zero is returned. */
-int run_cmd_for_output(const char cmd[], char ***files, int *nfiles);
+/* Executes external command capturing its output as list of lines.  Sets *lines
+ * and *nlines.  Returns zero on success, otherwise non-zero is returned. */
+int rn_for_lines(const char cmd[], char ***lines, int *nlines);
 
 #endif /* VIFM__RUNNING_H__ */
 
