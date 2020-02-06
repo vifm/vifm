@@ -991,14 +991,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 			char *const buf = fast_run_complete(com);
 			if(buf != NULL)
 			{
-				(void)shellout(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+				(void)rn_shell(buf, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 						use_term_mux, SHELL_BY_USER);
 				free(buf);
 			}
 		}
 		else
 		{
-			(void)shellout(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+			(void)rn_shell(com, cmd_info->emark ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 					use_term_mux, SHELL_BY_USER);
 		}
 	}
@@ -3815,7 +3815,7 @@ shell_cmd(const cmd_info_t *cmd_info)
 
 	/* Run shell with clean PATH environment variable. */
 	load_clean_path_env();
-	shellout(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1, SHELL_BY_APP);
+	rn_shell(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1, SHELL_BY_APP);
 	load_real_path_env();
 
 	return 0;
@@ -4952,7 +4952,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(com_beginning) > 0)
 		{
-			shellout(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+			rn_shell(com_beginning, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 					flags != MF_NO_TERM_MUX, SHELL_BY_USER);
 		}
 	}
@@ -4975,7 +4975,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
+		rn_shell(expanded_com, PAUSE_ON_ERROR, flags != MF_NO_TERM_MUX,
 				SHELL_BY_USER);
 	}
 

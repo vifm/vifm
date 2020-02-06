@@ -361,7 +361,7 @@ execute_file(const char full_path[], int elevate)
 {
 #ifndef _WIN32
 	char *const escaped = shell_like_escape(full_path, 0);
-	shellout(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
+	rn_shell(escaped, PAUSE_ALWAYS, 1, SHELL_BY_APP);
 	free(escaped);
 #else
 	char *const dquoted_full_path = strdup(enclose_in_dquotes(full_path));
@@ -581,7 +581,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	}
 	else
 	{
-		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
+		(void)rn_shell(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR,
 				flags != MF_NO_TERM_MUX, SHELL_BY_USER);
 	}
 
@@ -621,7 +621,7 @@ run_implicit_prog(view_t *view, const char prog_spec[], int pause, int force_bg)
 	}
 	else
 	{
-		(void)shellout(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR, 1,
+		(void)rn_shell(cmd, pause ? PAUSE_ALWAYS : PAUSE_ON_ERROR, 1,
 				SHELL_BY_USER);
 	}
 }
@@ -794,7 +794,7 @@ extract_last_path_component(const char path[], char buf[])
 }
 
 int
-shellout(const char command[], ShellPause pause, int use_term_multiplexer,
+rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by)
 {
 	char *cmd;

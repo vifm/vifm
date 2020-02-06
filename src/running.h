@@ -32,7 +32,7 @@ typedef enum
 }
 FileHandleExec;
 
-/* When and why should we pause on shellout(). */
+/* When and why should we pause on rn_shell(). */
 typedef enum
 {
 	PAUSE_ALWAYS,   /* Execute command and pause. */
@@ -64,7 +64,7 @@ void rn_leave(struct view_t *view, int levels);
 
 /* Executes command in a shell.  Returns zero on success, otherwise non-zero is
  * returned. */
-int shellout(const char command[], ShellPause pause, int use_term_multiplexer,
+int rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by);
 
 /* Returns zero on successful running. */

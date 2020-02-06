@@ -409,7 +409,7 @@ mediaprg_mount(const char data[], menu_data_t *m)
 
 	char *escaped_path = shell_like_escape(path, 0);
 	char *cmd = format_str("%s %s %s", cfg.media_prg, action, escaped_path);
-	if(shellout(cmd, PAUSE_NEVER, 0, SHELL_BY_APP) == 0)
+	if(rn_shell(cmd, PAUSE_NEVER, 0, SHELL_BY_APP) == 0)
 	{
 		reload_list(m);
 	}
