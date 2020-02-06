@@ -137,7 +137,7 @@ rn_open(view_t *view, FileHandleExec exec)
 }
 
 void
-follow_file(view_t *view)
+rn_follow(view_t *view)
 {
 	if(flist_custom_active(view))
 	{

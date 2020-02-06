@@ -1045,7 +1045,7 @@ static void
 cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 {
 	flist_sel_stash(curr_view);
-	follow_file(curr_view);
+	rn_follow(curr_view);
 	redraw_current_view();
 }
 

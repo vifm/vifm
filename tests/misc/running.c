@@ -156,7 +156,7 @@ TEST(following_resolves_links_in_origin, IF(not_windows))
 	lwin.list_pos = 0;
 
 	char *saved_cwd = save_cwd();
-	follow_file(&lwin);
+	rn_follow(&lwin);
 	restore_cwd(saved_cwd);
 
 	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH "/A"));
@@ -185,7 +185,7 @@ TEST(following_to_a_broken_symlink_is_possible, IF(not_windows))
 	lwin.list_pos = 1;
 
 	char *saved_cwd = save_cwd();
-	follow_file(&lwin);
+	rn_follow(&lwin);
 	restore_cwd(saved_cwd);
 
 	assert_true(paths_are_same(lwin.curr_dir, SANDBOX_PATH));
