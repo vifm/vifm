@@ -1227,7 +1227,7 @@ rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
 		const int interactive =
 			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		output_to_custom_flist(curr_view, cmd, very, interactive);
+		rn_for_flist(curr_view, cmd, very, interactive);
 	}
 	else
 	{
@@ -1357,8 +1357,7 @@ run_in_split(const view_t *view, const char cmd[])
 }
 
 int
-output_to_custom_flist(view_t *view, const char cmd[], int very,
-		int interactive)
+rn_for_flist(view_t *view, const char cmd[], int very, int interactive)
 {
 	char *title;
 	int error;

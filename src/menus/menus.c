@@ -841,7 +841,7 @@ menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 	if(custom_view || very_custom_view)
 	{
 		menus_reset_data(m);
-		output_to_custom_flist(view, cmd, very_custom_view, 0);
+		rn_for_flist(view, cmd, very_custom_view, 0);
 		return 0;
 	}
 
