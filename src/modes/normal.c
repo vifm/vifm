@@ -1060,7 +1060,7 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gh(key_info_t key_info, keys_info_t *keys_info)
 {
-	cd_updir(curr_view, def_count(key_info.count));
+	rn_leave(curr_view, def_count(key_info.count));
 }
 
 #ifdef _WIN32

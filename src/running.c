@@ -712,7 +712,7 @@ rn_enter(view_t *view)
 
 	if(is_parent_dir(get_current_file_name(view)))
 	{
-		cd_updir(view, 1);
+		rn_leave(view, 1);
 		return;
 	}
 
@@ -727,7 +727,7 @@ rn_enter(view_t *view)
 }
 
 void
-cd_updir(view_t *view, int levels)
+rn_leave(view_t *view, int levels)
 {
 	/* Do not save intermediate directories in directory history. */
 	curr_stats.drop_new_dir_hist = 1;

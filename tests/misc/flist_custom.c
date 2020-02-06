@@ -351,7 +351,7 @@ TEST(location_is_saved_on_entering_custom_view)
 	curr_stats.load_stage = 0;
 
 	/* Return to previous directory and check that last location was used. */
-	cd_updir(&lwin, 1);
+	rn_leave(&lwin, 1);
 	assert_string_equal("c", lwin.dir_entry[lwin.list_pos].name);
 
 	cfg_resize_histories(0U);

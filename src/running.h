@@ -60,7 +60,7 @@ void rn_enter(struct view_t *view);
 
 /* Moves the view to levels-th parent directory taking care of special cases
  * like root of FUSE mount. */
-void cd_updir(struct view_t *view, int levels);
+void rn_leave(struct view_t *view, int levels);
 
 /* Executes command in a shell.  Returns zero on success, otherwise non-zero is
  * returned. */

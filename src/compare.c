@@ -455,7 +455,7 @@ compare_one_pane(view_t *view, CompareType ct, ListType lt, int skip_empty)
 	 * this. */
 	if(other->custom.type == CV_DIFF)
 	{
-		cd_updir(other, 1);
+		rn_leave(other, 1);
 	}
 
 	view->list_pos = 0;

@@ -3650,7 +3650,7 @@ regular_cmd(const cmd_info_t *cmd_info)
 {
 	if(flist_custom_active(curr_view))
 	{
-		cd_updir(curr_view, 1);
+		rn_leave(curr_view, 1);
 	}
 	return 0;
 }
@@ -4355,7 +4355,7 @@ tree_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark && in_tree)
 	{
-		cd_updir(curr_view, 1);
+		rn_leave(curr_view, 1);
 	}
 	else
 	{
