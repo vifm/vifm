@@ -365,6 +365,54 @@ TEST(entering_a_directory, IF(not_windows))
 	stop_use_script();
 }
 
+TEST(macro_can_be_added_implicitly, IF(not_windows))
+{
+	start_use_script();
+	lwin.dir_entry[1].selected = 0;
+
+	char *error;
+	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);
+	assert_non_null(ms);
+
+	char cmd[PATH_MAX + 1];
+	snprintf(cmd, sizeof(cmd), "%s a", script_path);
+	ft_set_programs(ms, cmd, 0, 0);
+
+	rn_open(&lwin, FHE_NO_RUN);
+
+	const char *lines[] = { "a" };
+	file_is(SANDBOX_PATH "/a-list", lines, ARRAY_LEN(lines));
+
+	assert_success(remove(SANDBOX_PATH "/a-list"));
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(handler_can_be_matched_by_a_prefix, IF(not_windows))
+{
+	start_use_script();
+	lwin.dir_entry[1].selected = 0;
+
+	char *error;
+	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);
+	assert_non_null(ms);
+
+	char cmd[PATH_MAX + 1];
+	snprintf(cmd, sizeof(cmd), "{wrong}no-such-cmd a, {right}%s a", script_path);
+	ft_set_programs(ms, cmd, 0, 0);
+
+	rn_open_with_match(&lwin, script_path, 0);
+
+	const char *lines[] = { "a" };
+	file_is(SANDBOX_PATH "/a-list", lines, ARRAY_LEN(lines));
+
+	assert_success(remove(SANDBOX_PATH "/a-list"));
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
 static int
 prog_exists(const char name[])
 {
