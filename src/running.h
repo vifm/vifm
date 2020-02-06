@@ -55,9 +55,6 @@ void rn_follow(struct view_t *view);
 void rn_open_with(struct view_t *view, const char prog_spec[], int dont_execute,
 		int force_bg);
 
-/* Handles opening of current entry of the view as directory. */
-void rn_enter(struct view_t *view);
-
 /* Moves the view to levels-th parent directory taking care of special cases
  * like root of FUSE mount. */
 void rn_leave(struct view_t *view, int levels);

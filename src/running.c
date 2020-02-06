@@ -105,6 +105,7 @@ static void run_implicit_prog(view_t *view, const char prog_spec[], int pause,
 		int force_bg);
 static void view_current_file(const view_t *view);
 static void follow_link(view_t *view, int follow_dirs);
+static void enter_dir(struct view_t *view);
 static int cd_to_parent_dir(view_t *view);
 static void extract_last_path_component(const char path[], char buf[]);
 static void setup_shellout_env(void);
@@ -177,7 +178,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		if(!curr->selected && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
 		{
-			rn_enter(view);
+			enter_dir(view);
 			return;
 		}
 	}
@@ -455,7 +456,7 @@ run_with_defaults(view_t *view)
 {
 	if(get_current_entry(view)->type == FT_DIR)
 	{
-		rn_enter(view);
+		enter_dir(view);
 	}
 	else if(view->selected_files <= 1)
 	{
@@ -541,7 +542,7 @@ rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 	}
 	else if(strcmp(prog_spec, VIFM_PSEUDO_CMD) == 0)
 	{
-		rn_enter(view);
+		enter_dir(view);
 	}
 	else if(strchr(prog_spec, '%') != NULL)
 	{
@@ -705,8 +706,9 @@ follow_link(view_t *view, int follow_dirs)
 	free(dir);
 }
 
-void
-rn_enter(view_t *view)
+/* Handles opening of current entry of the view as a directory. */
+static void
+enter_dir(view_t *view)
 {
 	char full_path[PATH_MAX + 1];
 

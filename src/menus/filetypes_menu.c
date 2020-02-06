@@ -158,18 +158,11 @@ form_filetype_data_entry(assoc_record_t prog)
 static int
 execute_filetype_cb(view_t *view, menu_data_t *m)
 {
-	if(get_current_entry(view)->type == FT_DIR && m->pos == 0)
+	const char *const prog_str = strchr(m->data[m->pos], '|') + 1;
+	if(prog_str[0] != '\0')
 	{
-		rn_enter(view);
-	}
-	else
-	{
-		const char *const prog_str = strchr(m->data[m->pos], '|') + 1;
-		if(prog_str[0] != '\0')
-		{
-			int background = m->extra_data & 1;
-			rn_open_with(view, prog_str, 0, background);
-		}
+		int background = m->extra_data & 1;
+		rn_open_with(view, prog_str, 0, background);
 	}
 
 	flist_sel_stash(view);
