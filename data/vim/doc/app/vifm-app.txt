@@ -449,6 +449,7 @@ Ctrl-I or Tab                                  *vifm-CTRL-I* *vifm-Tab*
 
 Ctrl-G                                         *vifm-CTRL-G*
     show a dialog with detailed information about current file.
+    See |vifm-menus-and-dialogs| for controls.
 
 Shift-Tab                                      *vifm-SHIFT-Tab*
     enter view mode (|vifm-view|, works only after activating view pane
@@ -527,7 +528,8 @@ cg - change file group.                        {only for *nix}
 [count]cp                                      *vifm-cp*
     change file attributes (permission on *nix and properties on
     Windows).  If [count] is specified, it's treated as numerical argument
-    for non-recursive `chmod` command (of the form `[0-7]{3,4}`).
+    for non-recursive `chmod` command (of the form `[0-7]{3,4}`).  See
+    |vifm-menus-and-dialogs| for controls.
 
 
 [count]C                                       *vifm-C*
@@ -1215,7 +1217,8 @@ The builtin commands are:
     create a menu of items returned by the apropos command.  Selecting an item
     in the menu opens corresponding man page.  By default the command relies
     on the external "apropos" utility, which can be customized by altering
-    value of the |vifm-'aproposprg'| option.
+    value of the |vifm-'aproposprg'| option.  See |vifm-menus-and-dialogs| for
+    controls.
 :apropos
     repeat last :apropos command.
 
@@ -1271,9 +1274,11 @@ The builtin commands are:
 
                                                *vifm-:bmarks*
 :bmarks
-    display all bookmarks in a menu.
+    display all bookmarks in a menu.  See |vifm-menus-and-dialogs| for
+    controls.
 :bmarks [tag1 [tag2...]]
-    display menu of bookmarks that include all of the specified tags.
+    display menu of bookmarks that include all of the specified tags.  See
+    |vifm-menus-and-dialogs| for controls.
 
                                                *vifm-:bmgo*
 :bmgo [tag1 [tag2...]]
@@ -1282,7 +1287,8 @@ The builtin commands are:
 
                                                *vifm-:cabbrev* *vifm-:ca*
 :ca[bbrev]
-    display menu of command-line mode abbreviations.
+    display menu of command-line mode abbreviations.  See
+    |vifm-menus-and-dialogs| for controls.
 :ca[bbrev] lhs-prefix
     display command-line mode abbreviations which left-hand side starts with
     specified prefix.
@@ -1294,7 +1300,8 @@ The builtin commands are:
                                                *vifm-:cnoreabbrev*
                                                *vifm-:cnorea*
 :cnorea[bbrev]
-    display menu of command-line mode abbreviations.
+    display menu of command-line mode abbreviations.  See
+    |vifm-menus-and-dialogs| for controls.
 :cnorea[bbrev] lhs-prefix
     display command-line mode abbreviations which left-hand side starts with
     specified prefix.
@@ -1367,7 +1374,8 @@ The builtin commands are:
     display a menu with a list of available color schemes.  You can choose
     primary color scheme here.  It is used for view if no directory specific
     colorscheme fits current path.  It's also used to set border color (except
-    view titles) and colors in menus and dialogs.
+    view titles) and colors in menus and dialogs.  See
+    |vifm-menus-and-dialogs| for controls.
 :colo[rscheme] color_scheme_name
     change primary color scheme to color_scheme_name.  In case of errors
     (e.g. some colors are not supported by terminal) either nothing is
@@ -1391,7 +1399,8 @@ The builtin commands are:
 
                                                *vifm-:command* *vifm-:com*
 :com[mand]
-    display a menu of user commands.
+    display a menu of user commands.  See |vifm-menus-and-dialogs| for
+    controls.
 :com[mand] prefix
     display user defined commands that start with the prefix.
 :com[mand][!] name action[ &]
@@ -1495,7 +1504,8 @@ The builtin commands are:
     mentioned in list (for example "az to display "", "a and "z content).
 
 :dirs                                          *vifm-:dirs*
-    display directory stack in a menu.
+    display directory stack in a menu.  See |vifm-menus-and-dialogs| for
+    controls.
 
 :ec[ho] [<expr>...]                            *vifm-:echo* *vifm-:ec*
     evaluate each argument as an expression and output them separated with a
@@ -1536,7 +1546,8 @@ The builtin commands are:
                                                *vifm-:file* *vifm-:f*
 :f[ile][ &]
     display menu of programs set for the file type of the current file.  " &"
-    forces running associated program in background.
+    forces running associated program in background.  See
+    |vifm-menus-and-dialogs| for controls.
 :f[ile] arg[ &]
     run associated command that begins with the arg skipping opening menu.  " &"
     forces running associated program in background.
@@ -1677,7 +1688,8 @@ The builtin commands are:
     display results of find command in the menu.  Searche among selected
     files if any and no range given.  Macros are accepted.  By default the
     command relies on the external "find" utility, which can be customized
-    by altering value of the |vifm-'findprg'| option.
+    by altering value of the |vifm-'findprg'| option.  See
+    |vifm-menus-and-dialogs| for controls.
 :[range]fin[d] -opt...
     same as :find above, but user defines all find arguments.  Searches among
     selected files if any and no range given.
@@ -1704,6 +1716,7 @@ The builtin commands are:
     among selected files if any and no range given.  Ignores binary files by
     default.  By default the command relies on the external "grep" utility,
     which can be customized by altering value of the |vifm-'grepprg'| option.
+    See |vifm-menus-and-dialogs| for controls.
 :[range]gr[ep][!] -opt...
     same as :grep above, but user defines all grep arguments, which are not
     escaped.  Searches among selected files if any.
@@ -1954,7 +1967,8 @@ important in certain cases.
 
                                                *vifm-:history* *vifm-:his*
 :his[tory]
-    display a menu with list of visited directories.
+    display a menu with list of visited directories.  See
+    |vifm-menus-and-dialogs| for controls.
 :his[tory] x
     where x can be:
       d[ir]     or .  show directory history.
@@ -1964,6 +1978,7 @@ important in certain cases.
       b[search] or ?  show search history and search backward on l key.
       i[nput]   or @  show prompt history (e.g. on one file renaming).
       fi[lter]  or =  show filter history (see |vifm-=|).
+    See |vifm-menus-and-dialogs| for controls.
 
 :histprev                                      *vifm-:histprev*
     same as <c-o>.
@@ -1996,7 +2011,8 @@ important in certain cases.
     display sorting order of the primary sorting key.
 
 :jobs                                          *vifm-:jobs*
-    display menu of current backgrounded processes.
+    display menu of current backgrounded processes.  See
+    |vifm-menus-and-dialogs| for controls.
 
                                                *vifm-:let*
 :let $ENV_VAR = <expr>
@@ -2023,7 +2039,8 @@ order using the '.' operator.  Any whitespace is ignored.
     from the menu reloads current file list in vifm to navigate to the file.
     By default the command relies on the external "locate" utility (it's
     assumed that its database is already built), which can be customized by
-    altering value of the |vifm-'locateprg'| option.
+    altering value of the |vifm-'locateprg'| option.  See
+    |vifm-menus-and-dialogs| for controls.
 :locate
     repeat last :locate command.
 
@@ -2035,6 +2052,7 @@ order using the '.' operator.  Any whitespace is ignored.
 :lstrash                                       *vifm-:lstrash*
     display a menu with list of files in trash.  Each element of the list is
     original path of a deleted file, thus the list can contain duplicates.
+    See |vifm-menus-and-dialogs| for controls.
 
 :[range]ma[rk][?] x /full/path [filename]      *vifm-:mark* *vifm-:ma*
     set mark x (a-zA-Z0-9) at /full/path and filename.  By default current
@@ -2044,13 +2062,14 @@ order using the '.' operator.  Any whitespace is ignored.
 
                                                *vifm-:marks*
 :marks
-    display menu of all marks.
+    display menu of all marks.  See |vifm-menus-and-dialogs| for controls.
 :marks list ...
     display the contents of the marks that are mentioned in list.
 
                                                *vifm-:media*
 :media                                         {only for *nix}
-    display media management menu.  See also |vifm-'mediaprg'| option.
+    display media management menu.  See |vifm-menus-and-dialogs| for
+    controls.  See also |vifm-'mediaprg'| option.
 
 :mes[sages]                                    *vifm-:messages* *vifm-:mes*
     display previously given status bar messages (up to 50).
@@ -2266,6 +2285,7 @@ yet supported) and might be changed in future releases, or get an alias.
     the primary sorting key.  When |vifm-'viewcolumns'| options is empty and
     |vifm-'lsview'| is off, changing primary sorting key also affects view
     look (in particular the second column of the view is changed).
+    See |vifm-menus-and-dialogs| for controls.
 
 :so[urce] file                                 *vifm-:source* *vifm-:so*
     read command-line commands from the file.
@@ -2363,7 +2383,8 @@ yet supported) and might be changed in future releases, or get an alias.
     trash directories are shown.  This is exactly the list of directories that
     are cleared when |vifm-:empty| command is executed.
 :trashes?
-    same as :trashes, but also displays size of each trash directory.
+    same as :trashes, but also displays size of each trash directory.  See
+    |vifm-menus-and-dialogs| for controls.
 
                                                *vifm-:tree*
 :tree
@@ -2385,6 +2406,7 @@ yet supported) and might be changed in future releases, or get an alias.
 
 :undol[ist]                                    *vifm-:undolist* *vifm-:undol*
     display list of latest changes.  Use "!" to see actual commands.
+    See |vifm-menus-and-dialogs| for controls.
 
 :unl[et][!] $ENV_VAR1 $ENV_VAR2 ...            *vifm-:unlet* *vifm-:unl*
     remove environment variables.  Use "!" to omit displaying of warnings
@@ -2420,7 +2442,8 @@ yet supported) and might be changed in future releases, or get an alias.
                                                *vifm-:volume*
 :volumes                                       {only for MS-Windows}
     display menu with volume list.  Hitting l (or Enter) key opens
-    appropriate volume in the current pane.
+    appropriate volume in the current pane.  See |vifm-menus-and-dialogs| for
+    controls.
 
                                                *vifm-:vsplit* *vifm-:vs*
 :vs[plit]

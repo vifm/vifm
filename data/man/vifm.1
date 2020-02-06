@@ -542,7 +542,8 @@ if 'cpoptions' contains "t" flag, <tab> and <c-i> switch active pane just like
 view.  Nonexistent directories are automatically skipped.
 .TP
 .BI Ctrl-G
-show a dialog with detailed information about current file.
+show a dialog with detailed information about current file.  See
+"Menus and dialogs" section for controls.
 .TP
 .BI "Shift-Tab"
 enter view mode (works only after activating view pane with :view command).
@@ -621,7 +622,8 @@ change file group.
 .BI [count]cp
 change file attributes (permission on *nix and properties on Windows).  If
 [count] is specified, it's treated as numerical argument for non-recursive
-`chmod` command (of the form [0-7]{3,4}).
+`chmod` command (of the form [0-7]{3,4}).  See "Menus and dialogs" section for
+controls.
 .TP
 .BI [count]C
 clone file [count] times.
@@ -1386,7 +1388,7 @@ next link a corresponding name from the argument list.
 create a menu of items returned by the apropos command.  Selecting an item in
 the menu opens corresponding man page.  By default the command relies on the
 external "apropos" utility, which can be customized by altering value of
-the 'aproposprg' option.
+the 'aproposprg' option.  See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :autocmd"
 .TP
@@ -1453,7 +1455,8 @@ should be escaped.
 display all bookmarks in a menu.
 .TP
 .BI ":bmarks [tag1 [tag2...]]"
-display menu of bookmarks that include all of the specified tags.
+display menu of bookmarks that include all of the specified tags.  See "Menus
+and dialogs" section for controls.
 .TP
 .BI "                                         :bmgo"
 .TP
@@ -1464,7 +1467,8 @@ navigates to single match immediately (and fails if there is no match).
 .BI "                                         :cabbrev"
 .TP
 .BI ":ca[bbrev]"
-display menu of command-line mode abbreviations.
+display menu of command-line mode abbreviations.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI ":ca[bbrev] lhs-prefix"
 display command-line mode abbreviations which left-hand side starts with
@@ -1478,7 +1482,8 @@ can contain spaces and any special sequences accepted in rhs of mappings (see
 .BI "                                         :cnoreabbrev"
 .TP
 .BI ":cnorea[bbrev]"
-display menu of command-line mode abbreviations.
+display menu of command-line mode abbreviations.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI ":cnorea[bbrev] lhs-prefix"
 display command-line mode abbreviations which left-hand side starts with
@@ -1580,7 +1585,7 @@ print current color scheme name on the status bar.
 display a menu with a list of available color schemes.  You can choose primary
 color scheme here.  It is used for view if no directory specific colorscheme
 fits current path.  It's also used to set border color (except view titles) and
-colors in menus and dialogs.
+colors in menus and dialogs.  See "Menus and dialogs" section for controls.
 .TP
 .BI ":colo[rscheme] color_scheme_name"
 change primary color scheme to color_scheme_name.  In case of errors (e.g. some
@@ -1610,7 +1615,7 @@ remove all user defined commands.
 .BI "                                         :command"
 .TP
 .BI :com[mand]
-display a menu of user commands.
+display a menu of user commands.  See "Menus and dialogs" section for controls.
 .TP
 .BI ":com[mand] prefix"
 display user defined commands that start with the prefix.
@@ -1748,7 +1753,8 @@ list (for example "az to display "", "a and "z content).
 .BI "                                         :dirs"
 .TP
 .BI :dirs
-display directory stack.
+display directory stack in a menu.  See "Menus and dialogs" section for
+controls.
 .TP
 .BI "                                         :echo"
 .TP
@@ -1806,7 +1812,8 @@ same as :quit.
 .TP
 .BI ":f[ile][ &]"
 display menu of programs set for the file type of the current file.  " &" forces
-running associated program in background.
+running associated program in background.  See "Menus and dialogs" section for
+controls.
 .TP
 .BI ":f[ile] arg[ &]"
 run associated command that begins with the arg skipping opening menu.  " &"
@@ -2257,7 +2264,8 @@ important in certain cases.
 .BI "                                         :history"
 .TP
 .BI :his[tory]
-display a menu with list of visited directories.
+display a menu with list of visited directories.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI ":his[tory] x"
 x can be:
@@ -2276,6 +2284,8 @@ x can be:
 .br
   fi[lter]  or = show filter history (see description of the "=" normal mode
 command).
+.br
+See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :histnext"
 .TP
@@ -2330,7 +2340,8 @@ show sorting order of the primary sorting key.
 .BI "                                         :jobs"
 .TP
 .BI :jobs
-display menu of current backgrounded processes.
+display menu of current backgrounded processes.  See "Menus and dialogs" section
+for controls.
 .TP
 .BI "                                         :let"
 .TP
@@ -2364,7 +2375,8 @@ use "locate" command to create a menu of filenames.
 Selecting a file from the menu will reload the current file list in vifm
 to show the selected file.  By default the command relies on the external
 "locate" utility (it's assumed that its database is already built), which can be
-customized by altering value of the 'locateprg' option.
+customized by altering value of the 'locateprg' option.  See "Menus and dialogs"
+section for controls.
 .TP
 .BI :locate
 repeat last :locate command.
@@ -2380,7 +2392,8 @@ multiplexer, thus the list is not handled by vifm.
 .TP
 .BI :lstrash
 display a menu with list of files in trash.  Each element of the list is
-original path of a deleted file, thus the list can contain duplicates.
+original path of a deleted file, thus the list can contain duplicates.  See
+"Menus and dialogs" section for controls.
 .TP
 .BI "                                         :mark"
 .TP
@@ -2393,7 +2406,7 @@ Question mark will stop command from overwriting existing marks.
 .BI "                                         :marks"
 .TP
 .BI :marks
-create a pop-up menu of marks.
+create a pop-up menu of marks.  See "Menus and dialogs" section for controls.
 .TP
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
@@ -2403,7 +2416,8 @@ display the contents of the marks that are mentioned in list.
 .BI :media
 only for *nix
 .br
-display media management menu.  See also 'mediaprg' option.
+display media management menu.  See "Menus and dialogs" section for controls.
+See also 'mediaprg' option.
 .TP
 .BI "                                         :messages"
 .TP
@@ -2686,7 +2700,7 @@ same as :siblnext, but in the opposite direction.
 display dialog with different sorting methods, where one can select the primary
 sorting key.  When 'viewcolumns' options is empty and 'lsview' is off, changing
 primary sorting key will also affect view look (in particular the second column
-of the view will be changed).
+of the view will be changed).  See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :source"
 .TP
@@ -2854,7 +2868,8 @@ toggle current view in and out of tree mode.
 .BI "                                         :undolist"
 .TP
 .BI :undol[ist]
-display list of latest changes.  Use "!" to see actual commands.
+display list of latest changes.  Use "!" to see actual commands.  See "Menus and
+dialogs" section for controls.
 .TP
 .BI "                                         :unlet"
 .TP
@@ -2904,7 +2919,7 @@ turn on quick file view if it's off.
 only for MS-Windows
 .br
 display menu with volume list.  Hitting l (or Enter) key opens appropriate
-volume in the current pane.
+volume in the current pane.  See "Menus and dialogs" section for controls.
 .TP
 .BI "                                         :vsplit"
 .TP
