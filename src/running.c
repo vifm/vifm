@@ -1119,7 +1119,7 @@ set_pwd_in_screen(const char path[])
 }
 
 int
-run_with_filetype(view_t *view, const char beginning[], int background)
+rn_open_with_match(view_t *view, const char beginning[], int background)
 {
 	dir_entry_t *const curr = get_current_entry(view);
 	assoc_records_t ft, magic;

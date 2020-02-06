@@ -2205,7 +2205,7 @@ file_cmd(const cmd_info_t *cmd_info)
 		return show_file_menu(curr_view, cmd_info->bg) != 0;
 	}
 
-	if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
+	if(rn_open_with_match(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
 	{
 		ui_sb_err("Can't find associated program with requested beginning");
 		return 1;

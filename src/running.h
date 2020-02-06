@@ -67,8 +67,9 @@ void rn_leave(struct view_t *view, int levels);
 int rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by);
 
-/* Returns zero on successful running. */
-int run_with_filetype(struct view_t *view, const char beginning[],
+/* Looks for a unique program match for a given prefix and uses it.  Returns
+ * zero on success and non-zero otherwise.  */
+int rn_open_with_match(struct view_t *view, const char beginning[],
 		int background);
 
 /* Handles most of command handling variants.  Returns:
