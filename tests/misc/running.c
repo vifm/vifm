@@ -108,7 +108,7 @@ TEST(full_path_regexps_are_handled_for_selection)
 	assert_non_null(ms);
 	ft_set_programs(ms, "echo %f >> " SANDBOX_PATH "/run", 0, 1);
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	/* Checking for file existence on its removal. */
 	assert_success(remove(SANDBOX_PATH "/run"));
@@ -132,7 +132,7 @@ TEST(full_path_regexps_are_handled_for_selection2)
 	ft_set_programs(ms, "echo > NUL %c &", 0, 1);
 #endif
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	/* If we don't crash, then everything is fine. */
 }
@@ -199,7 +199,7 @@ TEST(selection_uses_vim_on_all_undefs, IF(not_windows))
 {
 	start_use_script();
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	const char *lines[] = { "a", "b" };
 	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
@@ -214,7 +214,7 @@ TEST(selection_uses_vim_on_at_least_one_undef_non_current, IF(not_windows))
 	start_use_script();
 	assoc_a('c');
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	const char *lines[] = { "a", "b" };
 	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
@@ -230,7 +230,7 @@ TEST(selection_uses_vim_on_at_least_one_undef_current, IF(not_windows))
 	start_use_script();
 	assoc_b('c');
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	const char *lines[] = { "a", "b" };
 	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
@@ -246,7 +246,7 @@ TEST(selection_uses_common_handler, IF(not_windows))
 	start_use_script();
 	assoc_common();
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	const char *lines[] = { "a", "b" };
 	file_is(SANDBOX_PATH "/common-list", lines, ARRAY_LEN(lines));
@@ -263,7 +263,7 @@ TEST(selection_is_incompatible, IF(not_windows))
 	assoc_a('c');
 	assoc_b('f');
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	assert_failure(remove(SANDBOX_PATH "/a-list"));
 	assert_failure(remove(SANDBOX_PATH "/vi-list"));
@@ -277,7 +277,7 @@ TEST(selection_is_compatible, IF(not_windows))
 	assoc("{a}", "echo > /dev/null %c &");
 	assoc("{b}", "echo > /dev/null %c &");
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	assert_failure(remove(SANDBOX_PATH "/vi-list"));
 
@@ -289,7 +289,7 @@ TEST(inconsistent_selection, IF(not_windows))
 	start_use_script();
 	lwin.dir_entry[0].type = FT_DIR;
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	assert_failure(remove(SANDBOX_PATH "/vi-list"));
 
@@ -302,7 +302,7 @@ TEST(selection_with_broken_link, IF(not_windows))
 	/* Simulate broken link using incorrect name of a file. */
 	update_string(&lwin.dir_entry[0].name, "no-such-file");
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	assert_failure(remove(SANDBOX_PATH "/vi-list"));
 
@@ -315,7 +315,7 @@ TEST(current_file_not_part_of_selection, IF(not_windows))
 	lwin.dir_entry[0].selected = 0;
 	--lwin.selected_files;
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	char path[PATH_MAX + 1];
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a", cwd);
@@ -334,7 +334,7 @@ TEST(entering_parent_directory, IF(not_windows))
 	update_string(&lwin.dir_entry[0].name, "..");
 	lwin.dir_entry[0].type = FT_DIR;
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	char path[PATH_MAX + 1];
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "", cwd);
@@ -354,7 +354,7 @@ TEST(entering_a_directory, IF(not_windows))
 	lwin.dir_entry[0].type = FT_DIR;
 	lwin.dir_entry[1].selected = 0;
 
-	open_file(&lwin, FHE_NO_RUN);
+	rn_open(&lwin, FHE_NO_RUN);
 
 	char path[PATH_MAX + 1];
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files", cwd);

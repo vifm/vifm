@@ -44,7 +44,7 @@ ShellPause;
 struct view_t;
 
 /* Handles opening of current file/selection of the view. */
-void open_file(struct view_t *view, FileHandleExec exec);
+void rn_open(struct view_t *view, FileHandleExec exec);
 
 /* Follows file to find its true location (e.g. target of symbolic link) or just
  * opens it. */

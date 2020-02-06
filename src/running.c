@@ -131,7 +131,7 @@ static void line_handler(const char line[], void *arg);
 static const char *const FUSE_FILE_ENVVAR = "VIFM_FUSE_FILE";
 
 void
-open_file(view_t *view, FileHandleExec exec)
+rn_open(view_t *view, FileHandleExec exec)
 {
 	handle_file(view, exec, FHL_NO_FOLLOW);
 }

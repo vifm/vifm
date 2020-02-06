@@ -466,7 +466,7 @@ check_path_for_file(view_t *view, const char path[], int handle)
 	{
 		if(handle)
 		{
-			open_file(view, FHE_RUN);
+			rn_open(view, FHE_RUN);
 		}
 	}
 }

@@ -669,7 +669,7 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_return(key_info_t key_info, keys_info_t *keys_info)
 {
-	open_file(curr_view, FHE_RUN);
+	rn_open(curr_view, FHE_RUN);
 	flist_sel_stash(curr_view);
 	redraw_current_view();
 }
@@ -1067,7 +1067,7 @@ cmd_gh(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 {
-	open_file(curr_view, FHE_ELEVATE_AND_RUN);
+	rn_open(curr_view, FHE_ELEVATE_AND_RUN);
 	flist_sel_stash(curr_view);
 	redraw_current_view();
 }
@@ -1638,7 +1638,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	open_file(curr_view, FHE_NO_RUN);
+	rn_open(curr_view, FHE_NO_RUN);
 	flist_sel_stash(curr_view);
 	redraw_current_view();
 }
