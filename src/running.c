@@ -439,7 +439,7 @@ run_selection(view_t *view, int dont_execute)
 	}
 	else if(identical_handlers)
 	{
-		run_using_prog(view, common_prog_cmd, dont_execute, 0);
+		rn_open_with(view, common_prog_cmd, dont_execute, 0);
 	}
 	else
 	{
@@ -486,7 +486,7 @@ run_selection_separately(view_t *view, int dont_execute)
 		free(typed_fname);
 
 		view->list_pos = entry_to_pos(view, entry);
-		run_using_prog(view, entry_prog_cmd, dont_execute, 0);
+		rn_open_with(view, entry_prog_cmd, dont_execute, 0);
 	}
 
 	view->list_pos = pos;
@@ -516,7 +516,7 @@ is_multi_run_compat(view_t *view, const char prog_cmd[])
 }
 
 void
-run_using_prog(view_t *view, const char prog_spec[], int dont_execute,
+rn_open_with(view_t *view, const char prog_spec[], int dont_execute,
 		int force_bg)
 {
 	const dir_entry_t *const curr = get_current_entry(view);
@@ -1157,7 +1157,7 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 	{
 		if(strncmp(assocs.list[i].command, start, len) == 0)
 		{
-			run_using_prog(view, assocs.list[i].command, 0, background);
+			rn_open_with(view, assocs.list[i].command, 0, background);
 			return 1;
 		}
 	}

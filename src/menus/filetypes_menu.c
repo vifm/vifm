@@ -168,7 +168,7 @@ execute_filetype_cb(view_t *view, menu_data_t *m)
 		if(prog_str[0] != '\0')
 		{
 			int background = m->extra_data & 1;
-			run_using_prog(view, prog_str, 0, background);
+			rn_open_with(view, prog_str, 0, background);
 		}
 	}
 
