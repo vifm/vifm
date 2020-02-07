@@ -722,5 +722,11 @@ vifm_exit(int exit_code)
 	exit(exit_code);
 }
 
+int
+vifm_testing(void)
+{
+	return 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

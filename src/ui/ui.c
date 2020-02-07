@@ -2315,7 +2315,7 @@ ui_view_unsorted(const view_t *view)
 void
 ui_shutdown(void)
 {
-	if(curr_stats.load_stage > 0 && !isendwin())
+	if(curr_stats.load_stage >= 0 && !vifm_testing() && !isendwin())
 	{
 		def_prog_mode();
 		endwin();

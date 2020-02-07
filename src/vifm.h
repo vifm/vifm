@@ -42,6 +42,10 @@ void _gnuc_noreturn vifm_finish(const char message[]);
  * This function should be used instead of using exit() directly. */
 void _gnuc_noreturn vifm_exit(int exit_code);
 
+/* Whether code is being run as part of a test suite.  Returns non-zero if
+ * so. */
+int vifm_testing(void);
+
 #endif /* VIFM__VIFM_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
