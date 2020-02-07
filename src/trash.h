@@ -36,10 +36,10 @@ trash_entry_t;
 
 /* List of items in all trashes.  Sorted by a compound key or path and
  * real_trash_name. */
-trash_entry_t *trash_list;
+extern trash_entry_t *trash_list;
 
 /* Number of items in the trash_list. */
-int trash_list_size;
+extern int trash_list_size;
 
 /* Parses trash directory specifications.  Sets value of cfg.trash_dir as a
  * side effect.  Returns non-zero in case of error, otherwise zero is

@@ -122,6 +122,9 @@ static char * expand_uid(const char spec[], int *expanded);
 static char * get_rooted_trash_dir(const char base_path[], const char spec[]);
 static char * format_root_spec(const char spec[], const char mount_point[]);
 
+trash_entry_t *trash_list;
+int trash_list_size;
+
 static char **specs;
 static int nspecs;
 

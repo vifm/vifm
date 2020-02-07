@@ -101,6 +101,26 @@ static pthread_mutex_t rwin_timestamps_mutex = PTHREAD_MUTEX_INITIALIZER;
 view_t lwin = { .timestamps_mutex = &lwin_timestamps_mutex };
 view_t rwin = { .timestamps_mutex = &rwin_timestamps_mutex };
 
+view_t *other_view;
+view_t *curr_view;
+
+WINDOW *status_bar;
+WINDOW *stat_win;
+WINDOW *job_bar;
+WINDOW *ruler_win;
+WINDOW *input_win;
+WINDOW *menu_win;
+WINDOW *sort_win;
+WINDOW *change_win;
+WINDOW *error_win;
+
+static WINDOW *top_line;
+static WINDOW *tab_line;
+
+static WINDOW *lborder;
+static WINDOW *mborder;
+static WINDOW *rborder;
+
 static int pair_in_use(short int pair);
 static void move_pair(short int from, short int to);
 static void create_windows(void);
