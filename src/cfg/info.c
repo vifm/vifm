@@ -46,6 +46,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/toml.h"
 #include "../utils/utils.h"
 #include "../bmarks.h"
 #include "../cmd_core.h"
@@ -62,6 +63,8 @@
 #include "config.h"
 #include "info_chars.h"
 
+static void load_gtab(TOMLTable *tab, int reread);
+static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
@@ -73,6 +76,7 @@ static void set_view_property(view_t *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *src, FILE *dst);
 static void update_info_file(const char filename[], int merge);
+static void update_info_file_toml(const char filename[], int merge);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -91,6 +95,7 @@ static void write_bmark(const char path[], const char tags[], time_t timestamp,
 static void write_tui_state(FILE *fp);
 static void write_view_history(FILE *fp, view_t *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
+static void write_view_history_toml(TOMLTable *tbl, view_t *view);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
 static void write_registers(FILE *fp, char *regs[], int nregs);
@@ -105,6 +110,7 @@ static void put_sort_info(FILE *fp, char leading_char, const view_t *view);
 static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
+static int get_bool(TOMLTable *tbl, const char key[], int def);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -124,6 +130,37 @@ read_info_file(int reread)
 		return;
 
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
+
+	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *outer_tabs = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "tabs", outer_tabs);
+
+	TOMLTable *outer_tab = TOML_alloc(TOML_TABLE);
+	TOMLArray_append(outer_tabs, outer_tab);
+
+	TOMLArray *panes = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(outer_tab, "panes", panes);
+
+	TOMLTable *left = TOML_alloc(TOML_TABLE);
+	TOMLTable *right = TOML_alloc(TOML_TABLE);
+
+	TOMLArray_append(panes, left);
+	TOMLArray_append(panes, right);
+
+	TOMLTable *left_tab = TOML_alloc(TOML_TABLE);
+	TOMLArray *left_tabs = TOML_allocArray(TOML_TABLE, left_tab, NULL);
+	TOMLTable_setKey(left, "tabs", left_tabs);
+
+	TOMLTable *right_tab = TOML_alloc(TOML_TABLE);
+	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
+	TOMLTable_setKey(right, "tabs", right_tabs);
+
+	TOMLArray *left_history = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(left_tab, "history", left_history);
+
+	TOMLArray *right_history = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(right_tab, "history", right_history);
 
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
@@ -228,14 +265,8 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_ACTIVE_VIEW)
 		{
-			/* Don't change active view on :restart command. */
-			if(line_val[0] == 'r' && !reread)
-			{
-				ui_views_update_titles();
-
-				curr_view = &rwin;
-				other_view = &lwin;
-			}
+			TOMLTable_setKey(outer_tab, "active-pane",
+					TOML_allocInt(line_val[0] == 'l' ? 0 : 1));
 		}
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
@@ -268,19 +299,23 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
-			view_t *const view = (type == LINE_TYPE_LWIN_HIST) ? &lwin : &rwin;
 			if(line_val[0] == '\0')
 			{
-				if(!reread && view->history_num > 0)
-				{
-					copy_str(view->curr_dir, sizeof(view->curr_dir),
-							view->history[view->history_pos].dir);
-				}
+				TOMLTable *itab = (type == LINE_TYPE_LWIN_HIST ? left_tab : right_tab);
+				TOMLTable_setKey(itab, "restore-last-location", TOML_allocBoolean(1));
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				const int rel_pos = read_optional_number(fp);
-				get_history(view, reread, line_val, line2, rel_pos < 0 ? 0 : rel_pos);
+
+				TOMLArray *hist = (type == LINE_TYPE_LWIN_HIST) ? left_history
+				                                                : right_history;
+				TOMLTable *entry = TOML_allocTable(
+						TOML_allocString("dir"), TOML_allocString(line_val),
+						TOML_allocString("file"), TOML_allocString(line2),
+						TOML_allocString("relpos"), TOML_allocInt(rel_pos),
+						NULL, NULL);
+				TOMLArray_append(hist, entry);
 			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
@@ -366,7 +401,57 @@ read_info_file(int reread)
 	free(line4);
 	fclose(fp);
 
+	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
+	TOML_free(root);
+
 	dir_stack_freeze();
+}
+
+/* Loads a global tab from TOML. */
+static void
+load_gtab(TOMLTable *tab, int reread)
+{
+	load_pane(TOML_find(tab, "panes", "0", NULL), &lwin, reread);
+	load_pane(TOML_find(tab, "panes", "1", NULL), &rwin, reread);
+
+	/* Don't change active view on :restart command. */
+	if(!reread && TOML_toInt(TOMLTable_getKey(tab, "active-pane")) == 1)
+	{
+		// TODO: why is this not the last statement in the block?
+		ui_views_update_titles();
+
+		curr_view = &rwin;
+		other_view = &lwin;
+	}
+}
+
+/* Loads a pane (consists of pane tabs) from TOML. */
+static void
+load_pane(TOMLTable *info, view_t *view, int reread)
+{
+	info = TOML_find(info, "tabs", "0", NULL);
+
+	TOMLArray *history = TOMLTable_getKey(info, "history");
+
+	int i = 0;
+	TOMLTable *entry, *last_entry = NULL;
+	while((entry = TOMLArray_getIndex(history, i++)) != NULL)
+	{
+		const char *dir = TOML_getString(TOMLTable_getKey(entry, "dir"));
+		const char *file = TOML_getString(TOMLTable_getKey(entry, "file"));
+		int rel_pos = TOML_toInt(TOMLTable_getKey(entry, "relpos"));
+		get_history(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
+
+		last_entry = entry;
+	}
+
+	int restore_last_location = get_bool(info, "restore-last-location", 0);
+
+	if(!reread && restore_last_location && last_entry != NULL)
+	{
+		copy_str(view->curr_dir, sizeof(view->curr_dir),
+				TOML_getString(TOMLTable_getKey(last_entry, "dir")));
+	}
 }
 
 /* Parses sort description line of the view and initialized its sort field. */
@@ -520,6 +605,10 @@ write_info_file(void)
 			(void)remove(tmp_file);
 		}
 	}
+
+	char toml_path[PATH_MAX + 1];
+	snprintf(toml_path, sizeof(toml_path), "%s.toml", info_file);
+	update_info_file_toml(toml_path, 0);
 }
 
 /* Copies the src file to the dst location.  Returns zero on success. */
@@ -927,6 +1016,58 @@ update_info_file(const char filename[], int merge)
 	free(non_conflicting_marks);
 }
 
+/* Reads contents of the filename file as a TOML info file and updates it with
+ * the state of current instance. */
+static void
+update_info_file_toml(const char filename[], int merge)
+{
+	FILE *fp = os_fopen(filename, "w");
+	if(fp == NULL)
+	{
+		return;
+	}
+
+	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *outer_tabs = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "tabs", outer_tabs);
+
+	TOMLTable *outer_tab = TOML_alloc(TOML_TABLE);
+	TOMLArray_append(outer_tabs, outer_tab);
+
+	TOMLArray *panes = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(outer_tab, "panes", panes);
+
+	TOMLTable *left = TOML_alloc(TOML_TABLE);
+	TOMLTable *right = TOML_alloc(TOML_TABLE);
+
+	TOMLArray_append(panes, left);
+	TOMLArray_append(panes, right);
+
+	TOMLTable *left_tab = TOML_alloc(TOML_TABLE);
+	TOMLArray *left_tabs = TOML_allocArray(TOML_TABLE, left_tab, NULL);
+	TOMLTable_setKey(left, "tabs", left_tabs);
+
+	TOMLTable *right_tab = TOML_alloc(TOML_TABLE);
+	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
+	TOMLTable_setKey(right, "tabs", right_tabs);
+
+	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
+	{
+		write_view_history_toml(left_tab, &lwin);
+		write_view_history_toml(right_tab, &rwin);
+	}
+
+	char *buffer;
+	TOML_stringify(&buffer, root, NULL);
+	fputs(buffer, fp);
+	free(buffer);
+
+	TOML_free(root);
+
+	fclose(fp);
+}
+
 /* Handles single directory history entry, possibly skipping merging it in. */
 static void
 process_hist_entry(view_t *view, const char dir[], const char file[], int pos,
@@ -1272,6 +1413,30 @@ write_view_history(FILE *fp, view_t *view, const char str[], char mark,
 	}
 }
 
+/* Stores history of the view into TOML representation. */
+static void
+write_view_history_toml(TOMLTable *tbl, view_t *view)
+{
+	flist_hist_save(view, NULL, NULL, -1);
+
+	TOMLArray *history = TOML_allocArray(TOML_TABLE, NULL);
+
+	int i;
+	for(i = 0; i <= view->history_pos && i < view->history_num; ++i)
+	{
+		TOMLTable *entry = TOML_allocTable(
+				TOML_allocString("dir"), TOML_allocString(view->history[i].dir),
+				TOML_allocString("file"), TOML_allocString(view->history[i].file),
+				TOML_allocString("relpos"), TOML_allocInt(view->history[i].rel_pos),
+				NULL, NULL);
+		TOMLArray_append(history, entry);
+	}
+
+	TOMLTable_setKey(tbl, "history", history);
+	TOMLTable_setKey(tbl, "restore-last-location",
+			TOML_allocBoolean(cfg.vifm_info & VINFO_SAVEDIRS));
+}
+
 /* Stores history items to the file. */
 static void
 write_history(FILE *fp, const char str[], char mark, int prev_count,
@@ -1500,6 +1665,15 @@ add_to_int_array(int **array, size_t len, int what)
 	}
 
 	return len;
+}
+
+/* Retrieves value of a boolean key from a table or provided default.  Returns
+ * the value. */
+static int
+get_bool(TOMLTable *tbl, const char key[], int def)
+{
+	TOMLRef ref = TOMLTable_getKey(tbl, key);
+	return (ref != NULL ? TOML_toBoolean(ref) : def);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

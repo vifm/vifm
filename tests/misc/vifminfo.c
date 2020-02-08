@@ -91,6 +91,7 @@ TEST(filetypes_are_deduplicated)
 	assert_true(first.st_size == second.st_size);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+	assert_success(remove(SANDBOX_PATH "/vifminfo.toml"));
 	vle_cmds_reset();
 }
 

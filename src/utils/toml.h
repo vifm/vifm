@@ -179,7 +179,7 @@ int TOML_isNumber( TOMLRef );
 TOMLRef TOML_find( TOMLRef, ... );
 
 // Get the value at the given key.
-TOMLRef TOMLTable_getKey( TOMLTable *, char * );
+TOMLRef TOMLTable_getKey( TOMLTable *, const char * );
 
 // Set the value at the given key. If the key is already set, the replaced
 // value will be freed.

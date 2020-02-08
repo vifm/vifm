@@ -2738,7 +2738,7 @@ TOMLRef TOML_find( TOMLRef self, ... ) {
   return self;
 }
 
-TOMLRef TOMLTable_getKey( TOMLTable *self, char *key ) {
+TOMLRef TOMLTable_getKey( TOMLTable *self, const char *key ) {
   int keyLength = strlen( key );
   int i;
   for ( i = 0; i < self->keys->size; ++i ) {
