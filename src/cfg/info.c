@@ -78,6 +78,7 @@ static int copy_file_internal(FILE *src, FILE *dst);
 static void update_info_file(const char filename[], int merge);
 static void update_info_file_toml(const char filename[], int merge);
 static void store_gtab(TOMLTable *gtab);
+static void store_view(TOMLTable *view_data, view_t *view);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -1097,6 +1098,9 @@ store_gtab(TOMLTable *gtab)
 	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
 	TOMLTable_setKey(right, "tabs", right_tabs);
 
+	store_view(left_tab, &lwin);
+	store_view(right_tab, &rwin);
+
 	if(cfg.vifm_info & VINFO_TUI)
 	{
 		TOMLTable_setKey(splitter, "pos", TOML_allocInt(curr_stats.splitter_pos));
@@ -1105,15 +1109,18 @@ store_gtab(TOMLTable *gtab)
 		TOMLTable_setKey(splitter, "expanded",
 				TOML_allocBoolean(curr_stats.number_of_windows == 1));
 	}
+}
 
+/* Serializes a view into TOML table. */
+static void
+store_view(TOMLTable *view_data, view_t *view)
+{
 	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
-		write_view_history_toml(left_tab, &lwin);
-		write_view_history_toml(right_tab, &rwin);
+		write_view_history_toml(view_data, view);
 	}
 
-	put_sort_info_toml(left_tab, &lwin);
-	put_sort_info_toml(right_tab, &rwin);
+	put_sort_info_toml(view_data, view);
 }
 
 /* Handles single directory history entry, possibly skipping merging it in. */
