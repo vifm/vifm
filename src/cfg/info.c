@@ -77,6 +77,7 @@ static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *src, FILE *dst);
 static void update_info_file(const char filename[], int merge);
 static void update_info_file_toml(const char filename[], int merge);
+static void store_gtab(TOMLTable *gtab);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -1044,8 +1045,24 @@ update_info_file_toml(const char filename[], int merge)
 	TOMLTable *outer_tab = TOML_alloc(TOML_TABLE);
 	TOMLArray_append(outer_tabs, outer_tab);
 
+	store_gtab(outer_tab);
+
+	char *buffer;
+	TOML_stringify(&buffer, root, NULL);
+	fputs(buffer, fp);
+	free(buffer);
+
+	TOML_free(root);
+
+	fclose(fp);
+}
+
+/* Serializes a global tab into TOML table. */
+static void
+store_gtab(TOMLTable *gtab)
+{
 	TOMLArray *panes = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(outer_tab, "panes", panes);
+	TOMLTable_setKey(gtab, "panes", panes);
 
 	TOMLTable *left = TOML_alloc(TOML_TABLE);
 	TOMLTable *right = TOML_alloc(TOML_TABLE);
@@ -1069,15 +1086,6 @@ update_info_file_toml(const char filename[], int merge)
 
 	put_sort_info_toml(left_tab, &lwin);
 	put_sort_info_toml(right_tab, &rwin);
-
-	char *buffer;
-	TOML_stringify(&buffer, root, NULL);
-	fputs(buffer, fp);
-	free(buffer);
-
-	TOML_free(root);
-
-	fclose(fp);
 }
 
 /* Handles single directory history entry, possibly skipping merging it in. */
