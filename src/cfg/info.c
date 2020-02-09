@@ -1050,6 +1050,9 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_gtab(outer_tab);
 
+	TOMLTable_setKey(outer_tab, "active-pane",
+			TOML_allocInt(curr_view == &lwin ? 0 : 1));
+
 	char *buffer;
 	TOML_stringify(&buffer, root, NULL);
 	fputs(buffer, fp);
