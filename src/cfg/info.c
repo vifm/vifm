@@ -118,6 +118,7 @@ static size_t add_to_int_array(int **array, size_t len, int what);
 static int get_bool(TOMLTable *tbl, const char key[], int def);
 static int get_int(TOMLTable *tbl, const char key[], int def);
 static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
+static void set_bool(TOMLTable *tbl, const char key[], int value);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -280,12 +281,11 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
-			TOMLTable_setKey(outer_tab, "preview", TOML_allocBoolean(atoi(line_val)));
+			set_bool(outer_tab, "preview", atoi(line_val));
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
-			const int i = atoi(line_val);
-			TOMLTable_setKey(splitter, "expanded", TOML_allocBoolean(i == 1));
+			set_bool(splitter, "expanded", atoi(line_val) == 1);
 		}
 		else if(type == LINE_TYPE_SPLIT_ORIENTATION)
 		{
@@ -309,7 +309,7 @@ read_info_file(int reread)
 			if(line_val[0] == '\0')
 			{
 				TOMLTable *itab = (type == LINE_TYPE_LWIN_HIST ? left_tab : right_tab);
-				TOMLTable_setKey(itab, "restore-last-location", TOML_allocBoolean(1));
+				set_bool(itab, "restore-last-location", 1);
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -387,8 +387,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_USE_SCREEN)
 		{
-			TOMLTable_setKey(root, "use-term-multiplexer",
-					TOML_allocBoolean(atoi(line_val)));
+			set_bool(root, "use-term-multiplexer", atoi(line_val));
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{
@@ -1078,8 +1077,7 @@ update_info_file_toml(const char filename[], int merge)
 
 	if(cfg.vifm_info & VINFO_STATE)
 	{
-		TOMLTable_setKey(root, "use-term-multiplexer",
-				TOML_allocBoolean(cfg.use_term_multiplexer));
+		set_bool(root, "use-term-multiplexer", cfg.use_term_multiplexer);
 	}
 
 	char *buffer;
@@ -1119,7 +1117,7 @@ store_gtab(TOMLTable *gtab)
 	TOMLTable_setKey(gtab, "active-pane",
 			TOML_allocInt(curr_view == &lwin ? 0 : 1));
 
-	TOMLTable_setKey(gtab, "preview", TOML_allocBoolean(curr_stats.preview.on));
+	set_bool(gtab, "preview", curr_stats.preview.on);
 
 	store_view(left_tab, &lwin);
 	store_view(right_tab, &rwin);
@@ -1129,8 +1127,7 @@ store_gtab(TOMLTable *gtab)
 		TOMLTable_setKey(splitter, "pos", TOML_allocInt(curr_stats.splitter_pos));
 		TOMLTable_setKey(splitter, "orientation",
 				TOML_allocString(curr_stats.split == VSPLIT ? "v" : "h"));
-		TOMLTable_setKey(splitter, "expanded",
-				TOML_allocBoolean(curr_stats.number_of_windows == 1));
+		set_bool(splitter, "expanded", curr_stats.number_of_windows == 1);
 	}
 }
 
@@ -1513,8 +1510,7 @@ write_view_history_toml(TOMLTable *tbl, view_t *view)
 	}
 
 	TOMLTable_setKey(tbl, "history", history);
-	TOMLTable_setKey(tbl, "restore-last-location",
-			TOML_allocBoolean(cfg.vifm_info & VINFO_SAVEDIRS));
+	set_bool(tbl, "restore-last-location", cfg.vifm_info & VINFO_SAVEDIRS);
 }
 
 /* Stores history items to the file. */
@@ -1801,6 +1797,12 @@ get_str(TOMLTable *tbl, const char key[], const char def[])
 	return (ref != NULL ? TOML_getString(ref) : def);
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 :
- * */
+/* Assigns value to a boolean key in a table. */
+static void
+set_bool(TOMLTable *tbl, const char key[], int value)
+{
+	TOMLTable_setKey(tbl, key, TOML_allocBoolean(value));
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

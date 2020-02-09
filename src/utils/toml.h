@@ -183,7 +183,7 @@ TOMLRef TOMLTable_getKey( TOMLTable *, const char * );
 
 // Set the value at the given key. If the key is already set, the replaced
 // value will be freed.
-void TOMLTable_setKey( TOMLTable *, char *, TOMLRef );
+void TOMLTable_setKey( TOMLTable *, const char *, TOMLRef );
 
 // Return the value stored at the index or NULL.
 TOMLRef TOMLArray_getIndex( TOMLArray *, int index );

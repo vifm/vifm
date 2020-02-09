@@ -2751,7 +2751,7 @@ TOMLRef TOMLTable_getKey( TOMLTable *self, const char *key ) {
   return NULL;
 }
 
-void TOMLTable_setKey( TOMLTable *self, char *key, TOMLRef value ) {
+void TOMLTable_setKey( TOMLTable *self, const char *key, TOMLRef value ) {
   int keyLength = strlen( key );
   int i;
   for ( i = 0; i < self->keys->size; ++i ) {
