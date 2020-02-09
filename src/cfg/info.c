@@ -107,10 +107,13 @@ static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const view_t *view);
+static void put_sort_info_toml(TOMLTable *tbl, const view_t *view);
+static void make_sort_info(const view_t *view, char buf[], size_t buf_size);
 static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
 static int get_bool(TOMLTable *tbl, const char key[], int def);
+static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -291,11 +294,11 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_SORT)
 		{
-			get_sort_info(&lwin, line_val);
+			TOMLTable_setKey(left_tab, "sorting", TOML_allocString(line_val));
 		}
 		else if(type == LINE_TYPE_RWIN_SORT)
 		{
-			get_sort_info(&rwin, line_val);
+			TOMLTable_setKey(right_tab, "sorting", TOML_allocString(line_val));
 		}
 		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
@@ -446,6 +449,12 @@ load_pane(TOMLTable *info, view_t *view, int reread)
 	}
 
 	int restore_last_location = get_bool(info, "restore-last-location", 0);
+
+	const char *sorting = get_str(info, "sorting", NULL);
+	if(sorting != NULL)
+	{
+		get_sort_info(view, sorting);
+	}
 
 	if(!reread && restore_last_location && last_entry != NULL)
 	{
@@ -1058,6 +1067,9 @@ update_info_file_toml(const char filename[], int merge)
 		write_view_history_toml(right_tab, &rwin);
 	}
 
+	put_sort_info_toml(left_tab, &lwin);
+	put_sort_info_toml(right_tab, &rwin);
+
 	char *buffer;
 	TOML_stringify(&buffer, root, NULL);
 	fputs(buffer, fp);
@@ -1386,8 +1398,8 @@ write_tui_state(FILE *fp)
 	fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
 	fprintf(fp, "m%d\n", curr_stats.splitter_pos);
 
-	put_sort_info(fp, 'l', &lwin);
-	put_sort_info(fp, 'r', &rwin);
+	put_sort_info(fp, LINE_TYPE_LWIN_SORT, &lwin);
+	put_sort_info(fp, LINE_TYPE_RWIN_SORT, &rwin);
 }
 
 /* Stores history of the view to the file. */
@@ -1594,16 +1606,40 @@ escape_spaces(const char str[])
 static void
 put_sort_info(FILE *fp, char leading_char, const view_t *view)
 {
-	int i = -1;
+	char buf[SK_LAST*5 + 1];
+	make_sort_info(view, buf, sizeof(buf));
+
+	fprintf(fp, "%c%s\n", leading_char, buf);
+}
+
+/* Puts sort description line of the view into TOML representation. */
+static void
+put_sort_info_toml(TOMLTable *tbl, const view_t *view)
+{
+	char buf[SK_LAST*5 + 1];
+	make_sort_info(view, buf, sizeof(buf));
+
+	TOMLTable_setKey(tbl, "sorting", TOML_allocString(buf));
+}
+
+/* Builds a string describing sorting state of a view in the buffer. */
+static void
+make_sort_info(const view_t *view, char buf[], size_t buf_size)
+{
+	size_t len = 0U;
+
 	const signed char *const sort = ui_view_sort_list_get(view, view->sort_g);
 
-	fputc(leading_char, fp);
+	int i = -1;
 	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)
 	{
 		int is_last_option = i >= SK_COUNT - 1 || abs(sort[i + 1]) > SK_LAST;
-		fprintf(fp, "%d%s", sort[i], is_last_option ? "" : ",");
+
+		char piece[10];
+		snprintf(piece, sizeof(piece), "%d%s", sort[i], is_last_option ? "" : ",");
+
+		sstrappend(buf, &len, buf_size, piece);
 	}
-	fputc('\n', fp);
 }
 
 /* Ensures that the next character of the stream is a digit and reads a number.
@@ -1676,5 +1712,15 @@ get_bool(TOMLTable *tbl, const char key[], int def)
 	return (ref != NULL ? TOML_toBoolean(ref) : def);
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* Retrieves value of a string key from a table or provided default.  Returns
+ * the value. */
+static const char *
+get_str(TOMLTable *tbl, const char key[], const char def[])
+{
+	TOMLRef ref = TOMLTable_getKey(tbl, key);
+	return (ref != NULL ? TOML_getString(ref) : def);
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 :
+ * */
 /* vim: set cinoptions+=t0 filetype=c : */
