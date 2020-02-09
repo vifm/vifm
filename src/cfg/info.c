@@ -63,7 +63,7 @@
 #include "config.h"
 #include "info_chars.h"
 
-static void load_gtab(TOMLTable *tab, int reread);
+static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
@@ -413,19 +413,22 @@ read_info_file(int reread)
 
 /* Loads a global tab from TOML. */
 static void
-load_gtab(TOMLTable *tab, int reread)
+load_gtab(TOMLTable *gtab, int reread)
 {
-	load_pane(TOML_find(tab, "panes", "0", NULL), &lwin, reread);
-	load_pane(TOML_find(tab, "panes", "1", NULL), &rwin, reread);
+	load_pane(TOML_find(gtab, "panes", "0", NULL), &lwin, reread);
+	load_pane(TOML_find(gtab, "panes", "1", NULL), &rwin, reread);
 
 	/* Don't change active view on :restart command. */
-	if(!reread && TOML_toInt(TOMLTable_getKey(tab, "active-pane")) == 1)
+	if(!reread)
 	{
-		// TODO: why is this not the last statement in the block?
-		ui_views_update_titles();
+		if(TOML_toInt(TOMLTable_getKey(gtab, "active-pane")) == 1)
+		{
+			/* TODO: why is this not the last statement in the block? */
+			ui_views_update_titles();
 
-		curr_view = &rwin;
-		other_view = &lwin;
+			curr_view = &rwin;
+			other_view = &lwin;
+		}
 	}
 }
 
