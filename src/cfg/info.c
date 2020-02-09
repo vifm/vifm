@@ -114,6 +114,7 @@ static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
 static int get_bool(TOMLTable *tbl, const char key[], int def);
+static int get_int(TOMLTable *tbl, const char key[], int def);
 static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
 
 /* Monitor to check for changes of vifminfo file. */
@@ -145,6 +146,9 @@ read_info_file(int reread)
 
 	TOMLArray *panes = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(outer_tab, "panes", panes);
+
+	TOMLTable *splitter = TOML_alloc(TOML_TABLE);
+	TOMLTable_setKey(outer_tab, "splitter", splitter);
 
 	TOMLTable *left = TOML_alloc(TOML_TABLE);
 	TOMLTable *right = TOML_alloc(TOML_TABLE);
@@ -279,19 +283,17 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
-			if(!reread)
-			{
-				const int i = atoi(line_val);
-				curr_stats.number_of_windows = (i == 1) ? 1 : 2;
-			}
+			const int i = atoi(line_val);
+			TOMLTable_setKey(splitter, "expanded", TOML_allocBoolean(i == 1));
 		}
 		else if(type == LINE_TYPE_SPLIT_ORIENTATION)
 		{
-			curr_stats.split = (line_val[0] == 'v') ? VSPLIT : HSPLIT;
+			const char *kind = (line_val[0] == 'v' ? "v" : "h");
+			TOMLTable_setKey(splitter, "orientation", TOML_allocString(kind));
 		}
 		else if(type == LINE_TYPE_SPLIT_POSITION)
 		{
-			curr_stats.splitter_pos = atof(line_val);
+			TOMLTable_setKey(splitter, "pos", TOML_allocInt(atoi(line_val)));
 		}
 		else if(type == LINE_TYPE_LWIN_SORT)
 		{
@@ -418,7 +420,13 @@ load_gtab(TOMLTable *gtab, int reread)
 	load_pane(TOML_find(gtab, "panes", "0", NULL), &lwin, reread);
 	load_pane(TOML_find(gtab, "panes", "1", NULL), &rwin, reread);
 
-	/* Don't change active view on :restart command. */
+	TOMLTable *splitter = TOMLTable_getKey(gtab, "splitter");
+
+	curr_stats.split = (get_str(splitter, "orientation", "v")[0] == 'v')
+	                 ? VSPLIT : HSPLIT;
+	curr_stats.splitter_pos = get_int(splitter, "pos", -1);
+
+	/* Don't change some properties on :restart command. */
 	if(!reread)
 	{
 		if(TOML_toInt(TOMLTable_getKey(gtab, "active-pane")) == 1)
@@ -429,6 +437,8 @@ load_gtab(TOMLTable *gtab, int reread)
 			curr_view = &rwin;
 			other_view = &lwin;
 		}
+
+		curr_stats.number_of_windows = (get_bool(splitter, "expanded", 0) ? 1 : 2);
 	}
 }
 
@@ -1067,6 +1077,9 @@ update_info_file_toml(const char filename[], int merge)
 static void
 store_gtab(TOMLTable *gtab)
 {
+	TOMLTable *splitter = TOML_alloc(TOML_TABLE);
+	TOMLTable_setKey(gtab, "splitter", splitter);
+
 	TOMLArray *panes = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(gtab, "panes", panes);
 
@@ -1083,6 +1096,15 @@ store_gtab(TOMLTable *gtab)
 	TOMLTable *right_tab = TOML_alloc(TOML_TABLE);
 	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
 	TOMLTable_setKey(right, "tabs", right_tabs);
+
+	if(cfg.vifm_info & VINFO_TUI)
+	{
+		TOMLTable_setKey(splitter, "pos", TOML_allocInt(curr_stats.splitter_pos));
+		TOMLTable_setKey(splitter, "orientation",
+				TOML_allocString(curr_stats.split == VSPLIT ? "v" : "h"));
+		TOMLTable_setKey(splitter, "expanded",
+				TOML_allocBoolean(curr_stats.number_of_windows == 1));
+	}
 
 	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
@@ -1408,9 +1430,10 @@ write_tui_state(FILE *fp)
 	fputs("\n# TUI:\n", fp);
 	fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
 	fprintf(fp, "q%u\n", curr_stats.preview.on);
-	fprintf(fp, "v%d\n", curr_stats.number_of_windows);
-	fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
-	fprintf(fp, "m%d\n", curr_stats.splitter_pos);
+	fprintf(fp, "%c%d\n", LINE_TYPE_WIN_COUNT, curr_stats.number_of_windows);
+	fprintf(fp, "%c%c\n", LINE_TYPE_SPLIT_ORIENTATION,
+			(curr_stats.split == VSPLIT) ? 'v' : 'h');
+	fprintf(fp, "%c%d\n", LINE_TYPE_SPLIT_POSITION, curr_stats.splitter_pos);
 
 	put_sort_info(fp, LINE_TYPE_LWIN_SORT, &lwin);
 	put_sort_info(fp, LINE_TYPE_RWIN_SORT, &rwin);
@@ -1724,6 +1747,15 @@ get_bool(TOMLTable *tbl, const char key[], int def)
 {
 	TOMLRef ref = TOMLTable_getKey(tbl, key);
 	return (ref != NULL ? TOML_toBoolean(ref) : def);
+}
+
+/* Retrieves value of an integer key from a table or provided default.  Returns
+ * the value. */
+static int
+get_int(TOMLTable *tbl, const char key[], int def)
+{
+	TOMLRef ref = TOMLTable_getKey(tbl, key);
+	return (ref != NULL ? TOML_toInt(ref) : def);
 }
 
 /* Retrieves value of a string key from a table or provided default.  Returns
