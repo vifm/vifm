@@ -63,6 +63,7 @@
 #include "config.h"
 #include "info_chars.h"
 
+static void load_state(TOMLTable *root, int reread);
 static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void get_sort_info(view_t *view, const char line[]);
@@ -386,8 +387,8 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_USE_SCREEN)
 		{
-			const int i = atoi(line_val);
-			cfg_set_use_term_multiplexer(i != 0);
+			TOMLTable_setKey(root, "use-term-multiplexer",
+					TOML_allocBoolean(atoi(line_val)));
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{
@@ -407,10 +408,19 @@ read_info_file(int reread)
 	free(line4);
 	fclose(fp);
 
-	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
+	load_state(root, reread);
 	TOML_free(root);
 
 	dir_stack_freeze();
+}
+
+/* Loads state of the application from TOML. */
+static void
+load_state(TOMLTable *root, int reread)
+{
+	cfg_set_use_term_multiplexer(get_bool(root, "use-term-multiplexer", 0));
+
+	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 }
 
 /* Loads a global tab from TOML. */
@@ -1066,6 +1076,12 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_gtab(outer_tab);
 
+	if(cfg.vifm_info & VINFO_STATE)
+	{
+		TOMLTable_setKey(root, "use-term-multiplexer",
+				TOML_allocBoolean(cfg.use_term_multiplexer));
+	}
+
 	char *buffer;
 	TOML_stringify(&buffer, root, NULL);
 	fputs(buffer, fp);
@@ -1596,15 +1612,18 @@ static void
 write_general_state(FILE *fp)
 {
 	fputs("\n# State:\n", fp);
+
 	fprintf(fp, "f%s\n", matcher_get_expr(lwin.manual_filter));
 	fprintf(fp, "i%d\n", lwin.invert);
 	fprintf(fp, "[.%d\n", lwin.hide_dot);
 	fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
+
 	fprintf(fp, "F%s\n", matcher_get_expr(rwin.manual_filter));
 	fprintf(fp, "I%d\n", rwin.invert);
 	fprintf(fp, "].%d\n", rwin.hide_dot);
 	fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
-	fprintf(fp, "s%d\n", cfg.use_term_multiplexer);
+
+	fprintf(fp, "%c%d\n", LINE_TYPE_USE_SCREEN, cfg.use_term_multiplexer);
 }
 
 /* Reads line from configuration file.  Takes care of trailing newline character
