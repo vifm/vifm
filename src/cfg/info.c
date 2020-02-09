@@ -120,6 +120,7 @@ static int get_int(TOMLTable *tbl, const char key[], int def);
 static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
 static void set_bool(TOMLTable *tbl, const char key[], int value);
 static void set_int(TOMLTable *tbl, const char key[], int value);
+static void set_str(TOMLTable *tbl, const char key[], const char value[]);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -289,8 +290,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_SPLIT_ORIENTATION)
 		{
-			const char *kind = (line_val[0] == 'v' ? "v" : "h");
-			TOMLTable_setKey(splitter, "orientation", TOML_allocString(kind));
+			set_str(splitter, "orientation", line_val[0] == 'v' ? "v" : "h");
 		}
 		else if(type == LINE_TYPE_SPLIT_POSITION)
 		{
@@ -298,11 +298,11 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_SORT)
 		{
-			TOMLTable_setKey(left_tab, "sorting", TOML_allocString(line_val));
+			set_str(left_tab, "sorting", line_val);
 		}
 		else if(type == LINE_TYPE_RWIN_SORT)
 		{
-			TOMLTable_setKey(right_tab, "sorting", TOML_allocString(line_val));
+			set_str(right_tab, "sorting", line_val);
 		}
 		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
@@ -1124,8 +1124,7 @@ store_gtab(TOMLTable *gtab)
 	if(cfg.vifm_info & VINFO_TUI)
 	{
 		set_int(splitter, "pos", curr_stats.splitter_pos);
-		TOMLTable_setKey(splitter, "orientation",
-				TOML_allocString(curr_stats.split == VSPLIT ? "v" : "h"));
+		set_str(splitter, "orientation", curr_stats.split == VSPLIT ? "v" : "h");
 		set_bool(splitter, "expanded", curr_stats.number_of_windows == 1);
 	}
 }
@@ -1685,7 +1684,7 @@ put_sort_info_toml(TOMLTable *tbl, const view_t *view)
 	char buf[SK_LAST*5 + 1];
 	make_sort_info(view, buf, sizeof(buf));
 
-	TOMLTable_setKey(tbl, "sorting", TOML_allocString(buf));
+	set_str(tbl, "sorting", buf);
 }
 
 /* Builds a string describing sorting state of a view in the buffer. */
@@ -1808,6 +1807,13 @@ static void
 set_int(TOMLTable *tbl, const char key[], int value)
 {
 	TOMLTable_setKey(tbl, key, TOML_allocInt(value));
+}
+
+/* Assigns value to a string key in a table. */
+static void
+set_str(TOMLTable *tbl, const char key[], const char value[])
+{
+	TOMLTable_setKey(tbl, key, TOML_allocString(value));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
