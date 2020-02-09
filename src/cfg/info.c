@@ -279,8 +279,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
-			const int i = atoi(line_val);
-			stats_set_quickview(i == 1);
+			TOMLTable_setKey(outer_tab, "preview", TOML_allocBoolean(atoi(line_val)));
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
@@ -421,6 +420,12 @@ load_gtab(TOMLTable *gtab, int reread)
 	load_pane(TOML_find(gtab, "panes", "0", NULL), &lwin, reread);
 	load_pane(TOML_find(gtab, "panes", "1", NULL), &rwin, reread);
 
+	TOMLRef ref = TOMLTable_getKey(gtab, "preview");
+	if(ref != NULL)
+	{
+		stats_set_quickview(TOML_toBoolean(ref));
+	}
+
 	TOMLTable *splitter = TOMLTable_getKey(gtab, "splitter");
 
 	curr_stats.split = (get_str(splitter, "orientation", "v")[0] == 'v')
@@ -430,7 +435,7 @@ load_gtab(TOMLTable *gtab, int reread)
 	/* Don't change some properties on :restart command. */
 	if(!reread)
 	{
-		if(TOML_toInt(TOMLTable_getKey(gtab, "active-pane")) == 1)
+		if(get_int(gtab, "active-pane", 0) == 1)
 		{
 			/* TODO: why is this not the last statement in the block? */
 			ui_views_update_titles();
@@ -1061,9 +1066,6 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_gtab(outer_tab);
 
-	TOMLTable_setKey(outer_tab, "active-pane",
-			TOML_allocInt(curr_view == &lwin ? 0 : 1));
-
 	char *buffer;
 	TOML_stringify(&buffer, root, NULL);
 	fputs(buffer, fp);
@@ -1097,6 +1099,11 @@ store_gtab(TOMLTable *gtab)
 	TOMLTable *right_tab = TOML_alloc(TOML_TABLE);
 	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
 	TOMLTable_setKey(right, "tabs", right_tabs);
+
+	TOMLTable_setKey(gtab, "active-pane",
+			TOML_allocInt(curr_view == &lwin ? 0 : 1));
+
+	TOMLTable_setKey(gtab, "preview", TOML_allocBoolean(curr_stats.preview.on));
 
 	store_view(left_tab, &lwin);
 	store_view(right_tab, &rwin);
@@ -1435,8 +1442,9 @@ static void
 write_tui_state(FILE *fp)
 {
 	fputs("\n# TUI:\n", fp);
-	fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
-	fprintf(fp, "q%u\n", curr_stats.preview.on);
+	fprintf(fp, "%c%c\n", LINE_TYPE_ACTIVE_VIEW,
+			(curr_view == &rwin) ? 'r' : 'l');
+	fprintf(fp, "%c%u\n", LINE_TYPE_QUICK_VIEW_STATE, curr_stats.preview.on);
 	fprintf(fp, "%c%d\n", LINE_TYPE_WIN_COUNT, curr_stats.number_of_windows);
 	fprintf(fp, "%c%c\n", LINE_TYPE_SPLIT_ORIENTATION,
 			(curr_stats.split == VSPLIT) ? 'v' : 'h');
