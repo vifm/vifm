@@ -119,6 +119,7 @@ static int get_bool(TOMLTable *tbl, const char key[], int def);
 static int get_int(TOMLTable *tbl, const char key[], int def);
 static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
 static void set_bool(TOMLTable *tbl, const char key[], int value);
+static void set_int(TOMLTable *tbl, const char key[], int value);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -276,8 +277,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_ACTIVE_VIEW)
 		{
-			TOMLTable_setKey(outer_tab, "active-pane",
-					TOML_allocInt(line_val[0] == 'l' ? 0 : 1));
+			set_int(outer_tab, "active-pane", (line_val[0] == 'l' ? 0 : 1));
 		}
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
@@ -294,7 +294,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_SPLIT_POSITION)
 		{
-			TOMLTable_setKey(splitter, "pos", TOML_allocInt(atoi(line_val)));
+			set_int(splitter, "pos", atoi(line_val));
 		}
 		else if(type == LINE_TYPE_LWIN_SORT)
 		{
@@ -1114,8 +1114,7 @@ store_gtab(TOMLTable *gtab)
 	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
 	TOMLTable_setKey(right, "tabs", right_tabs);
 
-	TOMLTable_setKey(gtab, "active-pane",
-			TOML_allocInt(curr_view == &lwin ? 0 : 1));
+	set_int(gtab, "active-pane", (curr_view == &lwin ? 0 : 1));
 
 	set_bool(gtab, "preview", curr_stats.preview.on);
 
@@ -1124,7 +1123,7 @@ store_gtab(TOMLTable *gtab)
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
-		TOMLTable_setKey(splitter, "pos", TOML_allocInt(curr_stats.splitter_pos));
+		set_int(splitter, "pos", curr_stats.splitter_pos);
 		TOMLTable_setKey(splitter, "orientation",
 				TOML_allocString(curr_stats.split == VSPLIT ? "v" : "h"));
 		set_bool(splitter, "expanded", curr_stats.number_of_windows == 1);
@@ -1802,6 +1801,13 @@ static void
 set_bool(TOMLTable *tbl, const char key[], int value)
 {
 	TOMLTable_setKey(tbl, key, TOML_allocBoolean(value));
+}
+
+/* Assigns value to an integer key in a table. */
+static void
+set_int(TOMLTable *tbl, const char key[], int value)
+{
+	TOMLTable_setKey(tbl, key, TOML_allocInt(value));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
