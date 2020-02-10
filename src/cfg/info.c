@@ -75,7 +75,6 @@ static void ensure_history_not_full(hist_t *hist);
 static void get_history(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
 static void set_manual_filter(view_t *view, const char value[]);
-static void set_view_property(view_t *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *src, FILE *dst);
 static void update_info_file(const char filename[], int merge);
@@ -403,8 +402,17 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
 		{
-			view_t *view = (type == LINE_TYPE_LWIN_SPECIFIC) ? &lwin : &rwin;
-			set_view_property(view, line_val[0], line_val + 1);
+			TOMLTable *info = (type == LINE_TYPE_LWIN_SPECIFIC)
+			                ? left_tab : right_tab;
+
+			if(line_val[0] == PROP_TYPE_DOTFILES)
+			{
+				set_bool(info, "dot", atoi(line_val + 1));
+			}
+			else if(line_val[0] == PROP_TYPE_AUTO_FILTER)
+			{
+				set_str(info, "auto", line_val + 1);
+			}
 		}
 	}
 
@@ -532,10 +540,25 @@ load_filters(TOMLTable *filters, view_t *view)
 
 	get_bool(filters, "invert", &view->invert);
 
+	int dot;
+	if(get_bool(filters, "invert", &dot))
+	{
+		dot_filter_set(view, !dot);
+	}
+
 	const char *filter;
+
 	if(get_str(filters, "manual", &filter))
 	{
 		set_manual_filter(view, filter);
+	}
+
+	if(get_str(filters, "auto", &filter))
+	{
+		if(filter_set(&view->auto_filter, filter) != 0)
+		{
+			LOG_ERROR_MSG("Error setting auto filename filter to: %s", filter);
+		}
 	}
 }
 
@@ -639,28 +662,6 @@ set_manual_filter(view_t *view, const char value[])
 
 	matcher_free(view->manual_filter);
 	view->manual_filter = matcher;
-}
-
-/* Sets view property specified by the type to the value. */
-static void
-set_view_property(view_t *view, char type, const char value[])
-{
-	if(type == PROP_TYPE_DOTFILES)
-	{
-		dot_filter_set(view, !atoi(value));
-	}
-	else if(type == PROP_TYPE_AUTO_FILTER)
-	{
-		if(filter_set(&view->auto_filter, value) != 0)
-		{
-			LOG_ERROR_MSG("Error setting auto filename filter to: %s", value);
-		}
-	}
-	else
-	{
-		LOG_ERROR_MSG("Unknown view property type (%c) with value: %s", type,
-				value);
-	}
 }
 
 void
@@ -1201,7 +1202,9 @@ store_filters(TOMLTable *view_data, view_t *view)
 	TOMLTable_setKey(view_data, "filters", filters);
 
 	set_bool(filters, "invert", view->invert);
+	set_bool(filters, "dot", view->hide_dot);
 	set_str(filters, "manual", matcher_get_expr(view->manual_filter));
+	set_str(filters, "auto", view->auto_filter.raw);
 }
 
 /* Handles single directory history entry, possibly skipping merging it in. */
@@ -1673,14 +1676,18 @@ write_general_state(FILE *fp)
 	fprintf(fp, "%c%s\n", LINE_TYPE_LWIN_FILT,
 			matcher_get_expr(lwin.manual_filter));
 	fprintf(fp, "%c%d\n", LINE_TYPE_LWIN_FILT_INV, lwin.invert);
-	fprintf(fp, "[.%d\n", lwin.hide_dot);
-	fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
+	fprintf(fp, "%c%c%d\n", LINE_TYPE_LWIN_SPECIFIC, PROP_TYPE_DOTFILES,
+			lwin.hide_dot);
+	fprintf(fp, "%c%c%s\n", LINE_TYPE_LWIN_SPECIFIC, PROP_TYPE_AUTO_FILTER,
+			lwin.auto_filter.raw);
 
 	fprintf(fp, "%c%s\n", LINE_TYPE_RWIN_FILT,
 			matcher_get_expr(rwin.manual_filter));
 	fprintf(fp, "%c%d\n", LINE_TYPE_RWIN_FILT_INV, rwin.invert);
-	fprintf(fp, "].%d\n", rwin.hide_dot);
-	fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
+	fprintf(fp, "%c%c%d\n", LINE_TYPE_RWIN_SPECIFIC, PROP_TYPE_DOTFILES,
+			rwin.hide_dot);
+	fprintf(fp, "%c%c%s\n", LINE_TYPE_RWIN_SPECIFIC, PROP_TYPE_AUTO_FILTER,
+			rwin.auto_filter.raw);
 
 	fprintf(fp, "%c%d\n", LINE_TYPE_USE_SCREEN, cfg.use_term_multiplexer);
 }
