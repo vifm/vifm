@@ -118,7 +118,7 @@ static void make_sort_info(const view_t *view, char buf[], size_t buf_size);
 static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
-static int get_bool(TOMLTable *tbl, const char key[], int def);
+static int get_bool(TOMLTable *tbl, const char key[], int *value);
 static int get_int(TOMLTable *tbl, const char key[], int def);
 static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
 static void set_bool(TOMLTable *tbl, const char key[], int value);
@@ -424,7 +424,11 @@ read_info_file(int reread)
 static void
 load_state(TOMLTable *root, int reread)
 {
-	cfg_set_use_term_multiplexer(get_bool(root, "use-term-multiplexer", 0));
+	int use_term_multiplexer;
+	if(get_bool(root, "use-term-multiplexer", &use_term_multiplexer))
+	{
+		cfg_set_use_term_multiplexer(use_term_multiplexer);
+	}
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 }
@@ -460,7 +464,11 @@ load_gtab(TOMLTable *gtab, int reread)
 			other_view = &lwin;
 		}
 
-		curr_stats.number_of_windows = (get_bool(splitter, "expanded", 0) ? 1 : 2);
+		int expanded;
+		if(get_bool(splitter, "expanded", &expanded))
+		{
+			curr_stats.number_of_windows = (expanded ? 1 : 2);
+		}
 	}
 }
 
@@ -498,11 +506,14 @@ load_dhistory(TOMLTable *info, view_t *view, int reread)
 		last_entry = entry;
 	}
 
-	int restore_last_location = get_bool(info, "restore-last-location", 0);
-	if(!reread && restore_last_location && last_entry != NULL)
+	int restore_last_location;
+	if(get_bool(info, "restore-last-location", &restore_last_location))
 	{
-		copy_str(view->curr_dir, sizeof(view->curr_dir),
-				TOML_getString(TOMLTable_getKey(last_entry, "dir")));
+		if(!reread && restore_last_location && last_entry != NULL)
+		{
+			copy_str(view->curr_dir, sizeof(view->curr_dir),
+					TOML_getString(TOMLTable_getKey(last_entry, "dir")));
+		}
 	}
 }
 
@@ -1813,13 +1824,17 @@ add_to_int_array(int **array, size_t len, int what)
 	return len;
 }
 
-/* Retrieves value of a boolean key from a table or provided default.  Returns
- * the value. */
+/* Assigns value of a boolean key from a table to *value.  Returns non-zero if
+ * value was assigned and zero otherwise and doesn't change *value. */
 static int
-get_bool(TOMLTable *tbl, const char key[], int def)
+get_bool(TOMLTable *tbl, const char key[], int *value)
 {
 	TOMLRef ref = TOMLTable_getKey(tbl, key);
-	return (ref != NULL ? TOML_toBoolean(ref) : def);
+	if(ref != NULL)
+	{
+		*value = TOML_toBoolean(ref);
+	}
+	return (ref != NULL);
 }
 
 /* Retrieves value of an integer key from a table or provided default.  Returns
