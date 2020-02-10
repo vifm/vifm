@@ -120,7 +120,7 @@ static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
 static int get_bool(TOMLTable *tbl, const char key[], int *value);
 static int get_int(TOMLTable *tbl, const char key[], int *value);
-static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
+static int get_str(TOMLTable *tbl, const char key[], const char **value);
 static void set_bool(TOMLTable *tbl, const char key[], int value);
 static void set_int(TOMLTable *tbl, const char key[], int value);
 static void set_str(TOMLTable *tbl, const char key[], const char value[]);
@@ -448,8 +448,11 @@ load_gtab(TOMLTable *gtab, int reread)
 
 	TOMLTable *splitter = TOMLTable_getKey(gtab, "splitter");
 
-	curr_stats.split = (get_str(splitter, "orientation", "v")[0] == 'v')
-	                 ? VSPLIT : HSPLIT;
+	const char *split_kind;
+	if(get_str(splitter, "orientation", &split_kind))
+	{
+		curr_stats.split = (split_kind[0] == 'v' ? VSPLIT : HSPLIT);
+	}
 	get_int(splitter, "pos", &curr_stats.splitter_pos);
 
 	/* Don't change some properties on :restart command. */
@@ -482,8 +485,8 @@ load_pane(TOMLTable *info, view_t *view, int reread)
 	load_dhistory(info, view, reread);
 	load_filters(TOMLTable_getKey(info, "filters"), view);
 
-	const char *sorting = get_str(info, "sorting", NULL);
-	if(sorting != NULL)
+	const char *sorting;
+	if(get_str(info, "sorting", &sorting))
 	{
 		get_sort_info(view, sorting);
 	}
@@ -1851,13 +1854,17 @@ get_int(TOMLTable *tbl, const char key[], int *value)
 	return (ref != NULL);
 }
 
-/* Retrieves value of a string key from a table or provided default.  Returns
- * the value. */
-static const char *
-get_str(TOMLTable *tbl, const char key[], const char def[])
+/* Assigns value of a string key from a table to *value.  Returns non-zero if
+ * value was assigned and zero otherwise and doesn't change *value. */
+static int
+get_str(TOMLTable *tbl, const char key[], const char **value)
 {
 	TOMLRef ref = TOMLTable_getKey(tbl, key);
-	return (ref != NULL ? TOML_getString(ref) : def);
+	if(ref != NULL)
+	{
+		*value = TOML_getString(ref);
+	}
+	return (ref != NULL);
 }
 
 /* Assigns value to a boolean key in a table. */
