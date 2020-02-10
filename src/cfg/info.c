@@ -66,6 +66,7 @@
 static void load_state(TOMLTable *root, int reread);
 static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
+static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
@@ -463,6 +464,19 @@ load_pane(TOMLTable *info, view_t *view, int reread)
 {
 	info = TOML_find(info, "tabs", "0", NULL);
 
+	load_dhistory(info, view, reread);
+
+	const char *sorting = get_str(info, "sorting", NULL);
+	if(sorting != NULL)
+	{
+		get_sort_info(view, sorting);
+	}
+}
+
+/* Loads directory history of a view from TOML. */
+static void
+load_dhistory(TOMLTable *info, view_t *view, int reread)
+{
 	TOMLArray *history = TOMLTable_getKey(info, "history");
 
 	int i = 0;
@@ -478,13 +492,6 @@ load_pane(TOMLTable *info, view_t *view, int reread)
 	}
 
 	int restore_last_location = get_bool(info, "restore-last-location", 0);
-
-	const char *sorting = get_str(info, "sorting", NULL);
-	if(sorting != NULL)
-	{
-		get_sort_info(view, sorting);
-	}
-
 	if(!reread && restore_last_location && last_entry != NULL)
 	{
 		copy_str(view->curr_dir, sizeof(view->curr_dir),
