@@ -119,7 +119,7 @@ static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
 static int get_bool(TOMLTable *tbl, const char key[], int *value);
-static int get_int(TOMLTable *tbl, const char key[], int def);
+static int get_int(TOMLTable *tbl, const char key[], int *value);
 static const char * get_str(TOMLTable *tbl, const char key[], const char def[]);
 static void set_bool(TOMLTable *tbl, const char key[], int value);
 static void set_int(TOMLTable *tbl, const char key[], int value);
@@ -450,12 +450,13 @@ load_gtab(TOMLTable *gtab, int reread)
 
 	curr_stats.split = (get_str(splitter, "orientation", "v")[0] == 'v')
 	                 ? VSPLIT : HSPLIT;
-	curr_stats.splitter_pos = get_int(splitter, "pos", -1);
+	get_int(splitter, "pos", &curr_stats.splitter_pos);
 
 	/* Don't change some properties on :restart command. */
 	if(!reread)
 	{
-		if(get_int(gtab, "active-pane", 0) == 1)
+		int active_pane;
+		if(get_int(gtab, "active-pane", &active_pane) && active_pane == 1)
 		{
 			/* TODO: why is this not the last statement in the block? */
 			ui_views_update_titles();
@@ -1837,13 +1838,17 @@ get_bool(TOMLTable *tbl, const char key[], int *value)
 	return (ref != NULL);
 }
 
-/* Retrieves value of an integer key from a table or provided default.  Returns
- * the value. */
+/* Assigns value of an integer key from a table to *value.  Returns non-zero if
+ * value was assigned and zero otherwise and doesn't change *value. */
 static int
-get_int(TOMLTable *tbl, const char key[], int def)
+get_int(TOMLTable *tbl, const char key[], int *value)
 {
 	TOMLRef ref = TOMLTable_getKey(tbl, key);
-	return (ref != NULL ? TOML_toInt(ref) : def);
+	if(ref != NULL)
+	{
+		*value = TOML_toInt(ref);
+	}
+	return (ref != NULL);
 }
 
 /* Retrieves value of a string key from a table or provided default.  Returns
