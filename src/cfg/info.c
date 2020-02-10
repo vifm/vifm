@@ -378,11 +378,11 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_FILT)
 		{
-			set_manual_filter(&lwin, line_val);
+			set_str(left_filters, "manual", line_val);
 		}
 		else if(type == LINE_TYPE_RWIN_FILT)
 		{
-			set_manual_filter(&rwin, line_val);
+			set_str(right_filters, "manual", line_val);
 		}
 		else if(type == LINE_TYPE_LWIN_FILT_INV)
 		{
@@ -530,10 +530,12 @@ load_filters(TOMLTable *filters, view_t *view)
 		return;
 	}
 
-	TOMLRef ref = TOMLTable_getKey(filters, "invert");
-	if(ref != NULL)
+	get_bool(filters, "invert", &view->invert);
+
+	const char *filter;
+	if(get_str(filters, "manual", &filter))
 	{
-		view->invert = TOML_toBoolean(ref);
+		set_manual_filter(view, filter);
 	}
 }
 
@@ -1199,6 +1201,7 @@ store_filters(TOMLTable *view_data, view_t *view)
 	TOMLTable_setKey(view_data, "filters", filters);
 
 	set_bool(filters, "invert", view->invert);
+	set_str(filters, "manual", matcher_get_expr(view->manual_filter));
 }
 
 /* Handles single directory history entry, possibly skipping merging it in. */
@@ -1667,12 +1670,14 @@ write_general_state(FILE *fp)
 {
 	fputs("\n# State:\n", fp);
 
-	fprintf(fp, "f%s\n", matcher_get_expr(lwin.manual_filter));
+	fprintf(fp, "%c%s\n", LINE_TYPE_LWIN_FILT,
+			matcher_get_expr(lwin.manual_filter));
 	fprintf(fp, "%c%d\n", LINE_TYPE_LWIN_FILT_INV, lwin.invert);
 	fprintf(fp, "[.%d\n", lwin.hide_dot);
 	fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
 
-	fprintf(fp, "F%s\n", matcher_get_expr(rwin.manual_filter));
+	fprintf(fp, "%c%s\n", LINE_TYPE_RWIN_FILT,
+			matcher_get_expr(rwin.manual_filter));
 	fprintf(fp, "%c%d\n", LINE_TYPE_RWIN_FILT_INV, rwin.invert);
 	fprintf(fp, "].%d\n", rwin.hide_dot);
 	fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
