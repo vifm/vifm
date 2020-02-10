@@ -67,6 +67,7 @@ static void load_state(TOMLTable *root, int reread);
 static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
+static void load_filters(TOMLTable *filters, view_t *view);
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
@@ -81,6 +82,7 @@ static void update_info_file(const char filename[], int merge);
 static void update_info_file_toml(const char filename[], int merge);
 static void store_gtab(TOMLTable *gtab);
 static void store_view(TOMLTable *view_data, view_t *view);
+static void store_filters(TOMLTable *view_data, view_t *view);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -175,6 +177,12 @@ read_info_file(int reread)
 
 	TOMLArray *right_history = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(right_tab, "history", right_history);
+
+	TOMLTable *left_filters = TOML_alloc(TOML_TABLE);
+	TOMLTable_setKey(left_tab, "filters", left_filters);
+
+	TOMLTable *right_filters = TOML_alloc(TOML_TABLE);
+	TOMLTable_setKey(right_tab, "filters", right_filters);
 
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
@@ -378,13 +386,11 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_FILT_INV)
 		{
-			const int i = atoi(line_val);
-			lwin.invert = (i != 0);
+			set_bool(left_filters, "invert", atoi(line_val));
 		}
 		else if(type == LINE_TYPE_RWIN_FILT_INV)
 		{
-			const int i = atoi(line_val);
-			rwin.invert = (i != 0);
+			set_bool(right_filters, "invert", atoi(line_val));
 		}
 		else if(type == LINE_TYPE_USE_SCREEN)
 		{
@@ -465,6 +471,7 @@ load_pane(TOMLTable *info, view_t *view, int reread)
 	info = TOML_find(info, "tabs", "0", NULL);
 
 	load_dhistory(info, view, reread);
+	load_filters(TOMLTable_getKey(info, "filters"), view);
 
 	const char *sorting = get_str(info, "sorting", NULL);
 	if(sorting != NULL)
@@ -496,6 +503,22 @@ load_dhistory(TOMLTable *info, view_t *view, int reread)
 	{
 		copy_str(view->curr_dir, sizeof(view->curr_dir),
 				TOML_getString(TOMLTable_getKey(last_entry, "dir")));
+	}
+}
+
+/* Loads state of filters of a view from TOML. */
+static void
+load_filters(TOMLTable *filters, view_t *view)
+{
+	if(filters == NULL)
+	{
+		return;
+	}
+
+	TOMLRef ref = TOMLTable_getKey(filters, "invert");
+	if(ref != NULL)
+	{
+		view->invert = TOML_toBoolean(ref);
 	}
 }
 
@@ -1145,7 +1168,22 @@ store_view(TOMLTable *view_data, view_t *view)
 		write_view_history_toml(view_data, view);
 	}
 
+	if(cfg.vifm_info & VINFO_STATE)
+	{
+		store_filters(view_data, view);
+	}
+
 	put_sort_info_toml(view_data, view);
+}
+
+/* Serializes filters of a view into TOML table. */
+static void
+store_filters(TOMLTable *view_data, view_t *view)
+{
+	TOMLTable *filters = TOML_alloc(TOML_TABLE);
+	TOMLTable_setKey(view_data, "filters", filters);
+
+	set_bool(filters, "invert", view->invert);
 }
 
 /* Handles single directory history entry, possibly skipping merging it in. */
@@ -1615,12 +1653,12 @@ write_general_state(FILE *fp)
 	fputs("\n# State:\n", fp);
 
 	fprintf(fp, "f%s\n", matcher_get_expr(lwin.manual_filter));
-	fprintf(fp, "i%d\n", lwin.invert);
+	fprintf(fp, "%c%d\n", LINE_TYPE_LWIN_FILT_INV, lwin.invert);
 	fprintf(fp, "[.%d\n", lwin.hide_dot);
 	fprintf(fp, "[F%s\n", lwin.auto_filter.raw);
 
 	fprintf(fp, "F%s\n", matcher_get_expr(rwin.manual_filter));
-	fprintf(fp, "I%d\n", rwin.invert);
+	fprintf(fp, "%c%d\n", LINE_TYPE_RWIN_FILT_INV, rwin.invert);
 	fprintf(fp, "].%d\n", rwin.hide_dot);
 	fprintf(fp, "]F%s\n", rwin.auto_filter.raw);
 
