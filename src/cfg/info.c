@@ -397,8 +397,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_COLORSCHEME)
 		{
-			copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme),
-					line_val);
+			set_str(root, "color-scheme", line_val);
 		}
 		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
 		{
@@ -436,6 +435,12 @@ load_state(TOMLTable *root, int reread)
 	if(get_bool(root, "use-term-multiplexer", &use_term_multiplexer))
 	{
 		cfg_set_use_term_multiplexer(use_term_multiplexer);
+	}
+
+	const char *cs;
+	if(get_str(root, "color-scheme", &cs))
+	{
+		copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme), cs);
 	}
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
@@ -1126,6 +1131,11 @@ update_info_file_toml(const char filename[], int merge)
 	if(cfg.vifm_info & VINFO_STATE)
 	{
 		set_bool(root, "use-term-multiplexer", cfg.use_term_multiplexer);
+	}
+
+	if(cfg.vifm_info & VINFO_CS)
+	{
+		set_str(root, "color-scheme", cfg.cs.name);
 	}
 
 	char *buffer;
