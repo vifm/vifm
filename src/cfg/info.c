@@ -69,6 +69,7 @@ static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
 static void load_regs(TOMLTable *root);
+static void load_trash(TOMLTable *root);
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
@@ -84,6 +85,7 @@ static void store_gtab(TOMLTable *gtab);
 static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
 static void store_regs(TOMLTable *root);
+static void store_trash(TOMLTable *root);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -146,6 +148,9 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *trash = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "trash", trash);
 
 	TOMLArray *regs = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(root, "regs", regs);
@@ -374,7 +379,13 @@ read_info_file(int reread)
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *const trash_name = convert_old_trash_path(line_val);
-				(void)trash_add_entry(line2, trash_name);
+
+				TOMLTable *entry = TOML_alloc(TOML_TABLE);
+				set_str(entry, "trashed", trash_name);
+				set_str(entry, "original", line2);
+
+				TOMLArray_append(trash, entry);
+
 				free(trash_name);
 			}
 		}
@@ -470,6 +481,7 @@ load_state(TOMLTable *root, int reread)
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 
 	load_regs(root);
+	load_trash(root);
 }
 
 /* Loads a global tab from TOML. */
@@ -619,6 +631,29 @@ load_regs(TOMLTable *root)
 		while((file = TOMLArray_getIndex(files, j++)) != NULL)
 		{
 			regs_append(name[0], TOML_getString(file));
+		}
+	}
+}
+
+/* Loads trash from TOML. */
+static void
+load_trash(TOMLTable *root)
+{
+	TOMLArray *trash = TOMLTable_getKey(root, "trash");
+	if(trash == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLTable *entry;
+	while((entry = TOMLArray_getIndex(trash, i++)) != NULL)
+	{
+		const char *trashed, *original;
+		if(get_str(entry, "trashed", &trashed) &&
+				get_str(entry, "original", &original))
+		{
+			(void)trash_add_entry(original, trashed);
 		}
 	}
 }
@@ -1184,6 +1219,8 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_gtab(outer_tab);
 
+	store_trash(root);
+
 	if(cfg.vifm_info & VINFO_REGISTERS)
 	{
 		store_regs(root);
@@ -1315,6 +1352,24 @@ store_regs(TOMLTable *root)
 				TOMLArray_append(regs, reg);
 			}
 		}
+	}
+}
+
+/* Serializes trash into TOML table. */
+static void
+store_trash(TOMLTable *root)
+{
+	TOMLArray *trash = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "trash", trash);
+
+	int i;
+	for(i = 0; i < trash_list_size; ++i)
+	{
+		TOMLTable *entry = TOML_alloc(TOML_TABLE);
+		set_str(entry, "trashed", trash_list[i].trash_name);
+		set_str(entry, "original", trash_list[i].path);
+
+		TOMLArray_append(trash, entry);
 	}
 }
 
@@ -1770,11 +1825,12 @@ write_trash(FILE *fp, char *trash[], int ntrash)
 	fputs("\n# Trash content:\n", fp);
 	for(i = 0; i < trash_list_size; i++)
 	{
-		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
+		fprintf(fp, "%c%s\n\t%s\n", LINE_TYPE_TRASH, trash_list[i].trash_name,
+				trash_list[i].path);
 	}
 	for(i = 0; i < ntrash; i += 2)
 	{
-		fprintf(fp, "t%s\n\t%s\n", trash[i], trash[i + 1]);
+		fprintf(fp, "%c%s\n\t%s\n", LINE_TYPE_TRASH, trash[i], trash[i + 1]);
 	}
 }
 

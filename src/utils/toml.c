@@ -2784,18 +2784,12 @@ void TOMLArray_append( TOMLArray *self, TOMLRef value ) {
   assert( self->memberType == TOML_NOTYPE ||
           TOML_isType(value, self->memberType) );
 
-  TOMLRef *oldMembers = self->members;
-
-  self->members = malloc( ( self->size + 1 ) * sizeof(TOMLRef) );
-  int i = 0;
-  for ( ; i < self->size; ++i ) {
-    self->members[ i ] = oldMembers[ i ];
+  TOMLRef *newMembers = realloc(self->members,
+                                ( self->size + 1 ) * sizeof(TOMLRef) );
+  if (newMembers != NULL) {
+      self->members = newMembers;
+      self->members[ self->size++ ] = value;
   }
-  // memcpy( self->members, oldMembers, self->size * sizeof(TOMLRef) );
-  self->members[ self->size ] = value;
-  self->size++;
-
-  free( oldMembers );
 }
 
 char * TOML_toString( TOMLString *self ) {
@@ -2859,19 +2853,16 @@ void TOML_strcpy( char *buffer, TOMLString *self, int size ) {
 
 char * _TOML_increaseBuffer( char *oldBuffer, int *size ) {
   int newSize = *size + 1024;
-  char *newBuffer = malloc( newSize + 1 );
-  // Always have a null terminator so TOMLScan can exit without segfault.
-  newBuffer[ *size ] = 0;
-  newBuffer[ newSize ] = 0;
+  char *newBuffer = realloc( oldBuffer, newSize + 1 );
 
-  if ( oldBuffer ) {
-    strncpy( newBuffer, oldBuffer, *size + 1 );
-    free( oldBuffer );
+  if ( newBuffer ) {
+    // Always have a null terminator so TOMLScan can exit without segfault.
+    newBuffer[*size] = 0;
+    *size = newSize;
+    return newBuffer;
   }
 
-  *size = newSize;
-
-  return newBuffer;
+  return oldBuffer;
 }
 
 int TOML_load( char *filename, TOMLTable **dest, TOMLError *error ) {
