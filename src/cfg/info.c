@@ -68,6 +68,7 @@ static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
+static void load_regs(TOMLTable *root);
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
@@ -82,6 +83,7 @@ static void update_info_file_toml(const char filename[], int merge);
 static void store_gtab(TOMLTable *gtab);
 static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
+static void store_regs(TOMLTable *root);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -144,6 +146,11 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *regs = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "regs", regs);
+	TOMLTable *reg[strlen(valid_registers)];
+	memset(reg, 0, sizeof(reg));
 
 	TOMLArray *outer_tabs = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(root, "tabs", outer_tabs);
@@ -373,7 +380,24 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_REG)
 		{
-			regs_append(line_val[0], line_val + 1);
+			char *pos = strchr(valid_registers, line_val[0]);
+			if(pos != NULL)
+			{
+				int index = pos - valid_registers;
+				if(reg[index] == NULL)
+				{
+					reg[index] = TOML_alloc(TOML_TABLE);
+
+					char name[] = { line_val[0], '\0' };
+					set_str(reg[index], "name", name);
+
+					TOMLTable_setKey(reg[index], "files",
+							TOML_allocArray(TOML_STRING, NULL));
+					TOMLArray_append(regs, reg[index]);
+				}
+				TOMLArray_append(TOMLTable_getKey(reg[index], "files"),
+						TOML_allocString(line_val + 1));
+			}
 		}
 		else if(type == LINE_TYPE_LWIN_FILT)
 		{
@@ -444,6 +468,8 @@ load_state(TOMLTable *root, int reread)
 	}
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
+
+	load_regs(root);
 }
 
 /* Loads a global tab from TOML. */
@@ -563,6 +589,36 @@ load_filters(TOMLTable *filters, view_t *view)
 		if(filter_set(&view->auto_filter, filter) != 0)
 		{
 			LOG_ERROR_MSG("Error setting auto filename filter to: %s", filter);
+		}
+	}
+}
+
+/* Loads registers from TOML. */
+static void
+load_regs(TOMLTable *root)
+{
+	TOMLArray *regs = TOMLTable_getKey(root, "regs");
+	if(regs == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLTable *reg;
+	while((reg = TOMLArray_getIndex(regs, i++)) != NULL)
+	{
+		const char *name;
+		if(!get_str(reg, "name", &name))
+		{
+			continue;
+		}
+
+		TOMLArray *files = TOMLTable_getKey(reg, "files");
+		int j = 0;
+		TOMLString *file;
+		while((file = TOMLArray_getIndex(files, j++)) != NULL)
+		{
+			regs_append(name[0], TOML_getString(file));
 		}
 	}
 }
@@ -1128,6 +1184,11 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_gtab(outer_tab);
 
+	if(cfg.vifm_info & VINFO_REGISTERS)
+	{
+		store_regs(root);
+	}
+
 	if(cfg.vifm_info & VINFO_STATE)
 	{
 		set_bool(root, "use-term-multiplexer", cfg.use_term_multiplexer);
@@ -1215,6 +1276,46 @@ store_filters(TOMLTable *view_data, view_t *view)
 	set_bool(filters, "dot", view->hide_dot);
 	set_str(filters, "manual", matcher_get_expr(view->manual_filter));
 	set_str(filters, "auto", view->auto_filter.raw);
+}
+
+/* Serializes registers into TOML table. */
+static void
+store_regs(TOMLTable *root)
+{
+	TOMLArray *regs = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "regs", regs);
+
+	int i;
+	for(i = 0; valid_registers[i] != '\0'; ++i)
+	{
+		const reg_t *const reg = regs_find(valid_registers[i]);
+		if(reg != NULL)
+		{
+			TOMLArray *files = TOML_allocArray(TOML_STRING, NULL);
+
+			int j;
+			for(j = 0; j < reg->nfiles; ++j)
+			{
+				if(reg->files[j] != NULL)
+				{
+					TOMLArray_append(files, TOML_allocString(reg->files[j]));
+				}
+			}
+
+			if(files->size == 0)
+			{
+				TOML_free(files);
+			}
+			else
+			{
+				TOMLTable *reg = TOML_alloc(TOML_TABLE);
+				char name[] = { valid_registers[i], '\0' };
+				set_str(reg, "name", name);
+				TOMLTable_setKey(reg, "files", files);
+				TOMLArray_append(regs, reg);
+			}
+		}
+	}
 }
 
 /* Handles single directory history entry, possibly skipping merging it in. */
@@ -1626,7 +1727,7 @@ write_registers(FILE *fp, char *regs[], int nregs)
 			{
 				if(reg->files[j] != NULL)
 				{
-					fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
+					fprintf(fp, "%c%c%s\n", LINE_TYPE_REG, reg->name, reg->files[j]);
 				}
 			}
 		}
