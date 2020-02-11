@@ -70,6 +70,8 @@ static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
 static void load_regs(TOMLTable *root);
 static void load_trash(TOMLTable *root);
+static void load_history(TOMLTable *root, const char node[], hist_t *hist,
+		void (*saver)(const char[]));
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
 		const char item[]);
@@ -84,6 +86,8 @@ static void update_info_file_toml(const char filename[], int merge);
 static void store_gtab(TOMLTable *gtab);
 static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
+static void store_history(TOMLTable *root, const char node[],
+		const hist_t *hist);
 static void store_regs(TOMLTable *root);
 static void store_trash(TOMLTable *root);
 static void process_hist_entry(view_t *view, const char dir[],
@@ -148,6 +152,18 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *cmd_hist = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(root, "cmd-hist", cmd_hist);
+
+	TOMLArray *search_hist = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(root, "search-hist", search_hist);
+
+	TOMLArray *prompt_hist = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(root, "prompt-hist", prompt_hist);
+
+	TOMLArray *lfilt_hist = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(root, "lfilt-hist", lfilt_hist);
 
 	TOMLArray *trash = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(root, "trash", trash);
@@ -347,19 +363,19 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			append_to_history(&curr_stats.cmd_hist, &hists_commands_save, line_val);
+			TOMLArray_append(cmd_hist, TOML_allocString(line_val));
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			append_to_history(&curr_stats.search_hist, &hists_search_save, line_val);
+			TOMLArray_append(search_hist, TOML_allocString(line_val));
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			append_to_history(&curr_stats.prompt_hist, &hists_prompt_save, line_val);
+			TOMLArray_append(prompt_hist, TOML_allocString(line_val));
 		}
 		else if(type == LINE_TYPE_FILTER_HIST)
 		{
-			append_to_history(&curr_stats.filter_hist, &hists_filter_save, line_val);
+			TOMLArray_append(lfilt_hist, TOML_allocString(line_val));
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
@@ -482,6 +498,10 @@ load_state(TOMLTable *root, int reread)
 
 	load_regs(root);
 	load_trash(root);
+	load_history(root, "cmd-hist", &curr_stats.cmd_hist, &hists_commands_save);
+	load_history(root, "search-hist", &curr_stats.search_hist, &hists_search_save);
+	load_history(root, "prompt-hist", &curr_stats.prompt_hist, &hists_prompt_save);
+	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
 }
 
 /* Loads a global tab from TOML. */
@@ -655,6 +675,25 @@ load_trash(TOMLTable *root)
 		{
 			(void)trash_add_entry(original, trashed);
 		}
+	}
+}
+
+/* Loads history data from TOML. */
+static void
+load_history(TOMLTable *root, const char node[], hist_t *hist,
+		void (*saver)(const char[]))
+{
+	TOMLArray *entries = TOMLTable_getKey(root, node);
+	if(entries == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLString *entry;
+	while((entry = TOMLArray_getIndex(entries, i++)) != NULL)
+	{
+		append_to_history(&curr_stats.filter_hist, saver, TOML_getString(entry));
 	}
 }
 
@@ -1221,6 +1260,26 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_trash(root);
 
+	if(cfg.vifm_info & VINFO_CHISTORY)
+	{
+		store_history(root, "cmd-hist", &curr_stats.cmd_hist);
+	}
+
+	if(cfg.vifm_info & VINFO_SHISTORY)
+	{
+		store_history(root, "search-hist", &curr_stats.search_hist);
+	}
+
+	if(cfg.vifm_info & VINFO_PHISTORY)
+	{
+		store_history(root, "prompt-hist", &curr_stats.prompt_hist);
+	}
+
+	if(cfg.vifm_info & VINFO_FHISTORY)
+	{
+		store_history(root, "lfilt-hist", &curr_stats.filter_hist);
+	}
+
 	if(cfg.vifm_info & VINFO_REGISTERS)
 	{
 		store_regs(root);
@@ -1313,6 +1372,25 @@ store_filters(TOMLTable *view_data, view_t *view)
 	set_bool(filters, "dot", view->hide_dot);
 	set_str(filters, "manual", matcher_get_expr(view->manual_filter));
 	set_str(filters, "auto", view->auto_filter.raw);
+}
+
+/* Serializes a history into TOML. */
+static void
+store_history(TOMLTable *root, const char node[], const hist_t *hist)
+{
+	if(hist->pos < 0)
+	{
+		return;
+	}
+
+	TOMLArray *entries = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(root, node, entries);
+
+	int i;
+	for(i = hist->pos; i >= 0; i--)
+	{
+		TOMLArray_append(entries, TOML_allocString(hist->items[i]));
+	}
 }
 
 /* Serializes registers into TOML table. */

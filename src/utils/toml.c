@@ -2411,7 +2411,9 @@ void _TOMLTable_partition( TOMLTable *self ) {
   int i;
   for ( i = 0; i < self->keys->size; ++i ) {
     TOMLBasic *value = TOMLArray_getIndex( self->values, i );
-    if (value->type != TOML_ARRAY && value->type != TOML_TABLE) {
+    if ((value->type != TOML_ARRAY ||
+         ((TOMLArray *)value)->memberType != TOML_TABLE) &&
+        value->type != TOML_TABLE) {
         if (i != j) {
             TOMLArray *k = TOMLArray_getIndex(self->keys, j);
             TOMLArray *v = TOMLArray_getIndex(self->values, j);
@@ -3246,7 +3248,6 @@ int _TOML_stringify(
     // print array densely
     _TOML_stringifyText( self, "[", 1 );
     for ( int i = 0; i < array->size; ++i ) {
-      _TOML_stringifyText( self, " ", 1 );
       TOMLBasic *arrayValue = TOMLArray_getIndex( array, i );
       if ( arrayValue->type == TOML_STRING ) {
         _TOML_stringifyText( self, "\"", 1 );
@@ -3257,8 +3258,6 @@ int _TOML_stringify(
       }
       if ( i != array->size - 1 ) {
         _TOML_stringifyText( self, ",", 1 );
-      } else {
-        _TOML_stringifyText( self, " ", 1 );
       }
     }
     _TOML_stringifyText( self, "]", 1 );
