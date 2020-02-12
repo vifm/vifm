@@ -68,6 +68,7 @@ static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
+static void load_bmarks(TOMLTable *root);
 static void load_regs(TOMLTable *root);
 static void load_trash(TOMLTable *root);
 static void load_history(TOMLTable *root, const char node[], hist_t *hist,
@@ -88,6 +89,9 @@ static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
 static void store_history(TOMLTable *root, const char node[],
 		const hist_t *hist);
+static void store_bmarks(TOMLTable *root);
+static void store_bmark(const char path[], const char tags[], time_t timestamp,
+		void *arg);
 static void store_regs(TOMLTable *root);
 static void store_trash(TOMLTable *root);
 static void process_hist_entry(view_t *view, const char dir[],
@@ -127,9 +131,11 @@ static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
 static int get_bool(TOMLTable *tbl, const char key[], int *value);
 static int get_int(TOMLTable *tbl, const char key[], int *value);
+static int get_double(TOMLTable *tbl, const char key[], double *value);
 static int get_str(TOMLTable *tbl, const char key[], const char **value);
 static void set_bool(TOMLTable *tbl, const char key[], int value);
 static void set_int(TOMLTable *tbl, const char key[], int value);
+static void set_double(TOMLTable *tbl, const char key[], double value);
 static void set_str(TOMLTable *tbl, const char key[], const char value[]);
 
 /* Monitor to check for changes of vifminfo file. */
@@ -152,6 +158,9 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *bmarks = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "bmarks", bmarks);
 
 	TOMLArray *cmd_hist = TOML_allocArray(TOML_STRING, NULL);
 	TOMLTable_setKey(root, "cmd-hist", cmd_hist);
@@ -308,7 +317,12 @@ read_info_file(int reread)
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL &&
 						read_number(line3, &timestamp))
 				{
-					(void)bmarks_setup(line_val, line2, (size_t)timestamp);
+					TOMLTable *bmark = TOML_alloc(TOML_TABLE);
+					set_str(bmark, "path", line_val);
+					set_str(bmark, "tags", line2);
+					set_double(bmark, "ts", timestamp);
+
+					TOMLArray_append(bmarks, bmark);
 				}
 			}
 		}
@@ -496,6 +510,7 @@ load_state(TOMLTable *root, int reread)
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 
+	load_bmarks(root);
 	load_regs(root);
 	load_trash(root);
 	load_history(root, "cmd-hist", &curr_stats.cmd_hist, &hists_commands_save);
@@ -621,6 +636,35 @@ load_filters(TOMLTable *filters, view_t *view)
 		if(filter_set(&view->auto_filter, filter) != 0)
 		{
 			LOG_ERROR_MSG("Error setting auto filename filter to: %s", filter);
+		}
+	}
+}
+
+/* Loads bookmarks from TOML. */
+static void
+load_bmarks(TOMLTable *root)
+{
+	TOMLArray *bmarks = TOMLTable_getKey(root, "bmarks");
+	if(bmarks == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLTable *bmark;
+	while((bmark = TOMLArray_getIndex(bmarks, i++)) != NULL)
+	{
+		const char *path, *tags;
+		double ts;
+		if(!get_str(bmark, "path", &path) || !get_str(bmark, "tags", &tags) ||
+				!get_double(bmark, "ts", &ts))
+		{
+			continue;
+		}
+
+		if(bmarks_setup(path, tags, (time_t)ts) != 0)
+		{
+			LOG_ERROR_MSG("Can't add a bookmark for (%s, %s)", path, tags);
 		}
 	}
 }
@@ -1260,6 +1304,11 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_trash(root);
 
+	if(cfg.vifm_info & VINFO_BOOKMARKS)
+	{
+		store_bmarks(root);
+	}
+
 	if(cfg.vifm_info & VINFO_CHISTORY)
 	{
 		store_history(root, "cmd-hist", &curr_stats.cmd_hist);
@@ -1391,6 +1440,30 @@ store_history(TOMLTable *root, const char node[], const hist_t *hist)
 	{
 		TOMLArray_append(entries, TOML_allocString(hist->items[i]));
 	}
+}
+
+/* Serializes bookmarks into TOML table. */
+static void
+store_bmarks(TOMLTable *root)
+{
+	TOMLArray *bmarks = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "bmarks", bmarks);
+
+	bmarks_list(&store_bmark, bmarks);
+}
+
+/* bmarks_list() callback that writes a bookmark into TOML. */
+static void
+store_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
+{
+	TOMLArray *bmarks = arg;
+
+	TOMLTable *bmark = TOML_alloc(TOML_TABLE);
+	set_str(bmark, "path", path);
+	set_str(bmark, "tags", tags);
+	set_double(bmark, "ts", timestamp);
+
+	TOMLArray_append(bmarks, bmark);
 }
 
 /* Serializes registers into TOML table. */
@@ -1731,8 +1804,7 @@ write_marks(FILE *fp, const char non_conflicting_marks[],
 /* Writes bookmarks to vifminfo file.  bmarks is a list of length nbmarks marks
  * read from vifminfo. */
 static void
-write_bmarks(FILE *fp, char *bmarks[], const int timestamps[],
-		int nbmarks)
+write_bmarks(FILE *fp, char *bmarks[], const int timestamps[], int nbmarks)
 {
 	int i;
 
@@ -2111,6 +2183,19 @@ get_int(TOMLTable *tbl, const char key[], int *value)
 	return (ref != NULL);
 }
 
+/* Assigns value of a double key from a table to *value.  Returns non-zero if
+ * value was assigned and zero otherwise and doesn't change *value. */
+static int
+get_double(TOMLTable *tbl, const char key[], double *value)
+{
+	TOMLRef ref = TOMLTable_getKey(tbl, key);
+	if(ref != NULL)
+	{
+		*value = TOML_toDouble(ref);
+	}
+	return (ref != NULL);
+}
+
 /* Assigns value of a string key from a table to *value.  Returns non-zero if
  * value was assigned and zero otherwise and doesn't change *value. */
 static int
@@ -2136,6 +2221,13 @@ static void
 set_int(TOMLTable *tbl, const char key[], int value)
 {
 	TOMLTable_setKey(tbl, key, TOML_allocInt(value));
+}
+
+/* Assigns value to a double key in a table. */
+static void
+set_double(TOMLTable *tbl, const char key[], double value)
+{
+	TOMLTable_setKey(tbl, key, TOML_allocDouble(value));
 }
 
 /* Assigns value to a string key in a table. */
