@@ -68,6 +68,7 @@ static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
+static void load_marks(TOMLTable *root);
 static void load_bmarks(TOMLTable *root);
 static void load_regs(TOMLTable *root);
 static void load_trash(TOMLTable *root);
@@ -89,6 +90,7 @@ static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
 static void store_history(TOMLTable *root, const char node[],
 		const hist_t *hist);
+static void store_marks(TOMLTable *root);
 static void store_bmarks(TOMLTable *root);
 static void store_bmark(const char path[], const char tags[], time_t timestamp,
 		void *arg);
@@ -158,6 +160,9 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *marks = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "marks", marks);
 
 	TOMLArray *bmarks = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(root, "bmarks", bmarks);
@@ -304,8 +309,20 @@ read_info_file(int reread)
 			{
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					const int timestamp = read_optional_number(fp);
-					setup_user_mark(line_val[0], line2, line3, timestamp);
+					int timestamp = read_optional_number(fp);
+					if(timestamp == -1)
+					{
+						timestamp = time(NULL);
+					}
+
+					TOMLTable *mark = TOML_alloc(TOML_TABLE);
+					char name[] = { line_val[0], '\0' };
+					set_str(mark, "name", name);
+					set_str(mark, "dir", line2);
+					set_str(mark, "file", line3);
+					set_double(mark, "ts", timestamp);
+
+					TOMLArray_append(marks, mark);
 				}
 			}
 		}
@@ -510,6 +527,7 @@ load_state(TOMLTable *root, int reread)
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 
+	load_marks(root);
 	load_bmarks(root);
 	load_regs(root);
 	load_trash(root);
@@ -636,6 +654,30 @@ load_filters(TOMLTable *filters, view_t *view)
 		if(filter_set(&view->auto_filter, filter) != 0)
 		{
 			LOG_ERROR_MSG("Error setting auto filename filter to: %s", filter);
+		}
+	}
+}
+
+/* Loads marks from TOML. */
+static void
+load_marks(TOMLTable *root)
+{
+	TOMLArray *marks = TOMLTable_getKey(root, "marks");
+	if(marks == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLTable *mark;
+	while((mark = TOMLArray_getIndex(marks, i++)) != NULL)
+	{
+		const char *name, *dir, *file;
+		double ts;
+		if(get_str(mark, "name", &name) && get_str(mark, "dir", &dir) &&
+				get_str(mark, "file", &file) && get_double(mark, "ts", &ts))
+		{
+			setup_user_mark(name[0], dir, file, (time_t)ts);
 		}
 	}
 }
@@ -1304,6 +1346,11 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_trash(root);
 
+	if(cfg.vifm_info & VINFO_MARKS)
+	{
+		store_marks(root);
+	}
+
 	if(cfg.vifm_info & VINFO_BOOKMARKS)
 	{
 		store_bmarks(root);
@@ -1439,6 +1486,37 @@ store_history(TOMLTable *root, const char node[], const hist_t *hist)
 	for(i = hist->pos; i >= 0; i--)
 	{
 		TOMLArray_append(entries, TOML_allocString(hist->items[i]));
+	}
+}
+
+/* Serializes marks into TOML table. */
+static void
+store_marks(TOMLTable *root)
+{
+	TOMLArray *marks = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "marks", marks);
+
+	int active_marks[NUM_MARKS];
+	const int len = init_active_marks(valid_marks, active_marks);
+
+	int i;
+	for(i = 0; i < len; ++i)
+	{
+		const int index = active_marks[i];
+		const char m = index2mark(index);
+		if(!is_spec_mark(index))
+		{
+			const mark_t *const mark = get_mark(index);
+
+			TOMLTable *entry = TOML_alloc(TOML_TABLE);
+			char name[] = { m, '\0' };
+			set_str(entry, "name", name);
+			set_str(entry, "dir", mark->directory);
+			set_str(entry, "file", mark->file);
+			set_double(entry, "ts", (double)mark->timestamp);
+
+			TOMLArray_append(marks, entry);
+		}
 	}
 }
 
@@ -1770,8 +1848,8 @@ write_commands(FILE *fp, char *cmds_list[], char *cmds[], int ncmds)
 /* Writes marks to vifminfo file.  marks is a list of length nmarks marks read
  * from vifminfo. */
 static void
-write_marks(FILE *fp, const char non_conflicting_marks[],
-		char *marks[], const int timestamps[], int nmarks)
+write_marks(FILE *fp, const char non_conflicting_marks[], char *marks[],
+		const int timestamps[], int nmarks)
 {
 	int active_marks[NUM_MARKS];
 	const int len = init_active_marks(valid_marks, active_marks);
