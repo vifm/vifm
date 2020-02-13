@@ -68,6 +68,8 @@ static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
+static void load_assocs(TOMLTable *root, const char node[], int for_x);
+static void load_viewers(TOMLTable *root);
 static void load_cmds(TOMLTable *root);
 static void load_marks(TOMLTable *root);
 static void load_bmarks(TOMLTable *root);
@@ -91,6 +93,8 @@ static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
 static void store_history(TOMLTable *root, const char node[],
 		const hist_t *hist);
+static void store_assocs(TOMLTable *root, const char node[],
+		assoc_list_t *assocs);
 static void store_cmds(TOMLTable *root);
 static void store_marks(TOMLTable *root);
 static void store_bmarks(TOMLTable *root);
@@ -162,6 +166,15 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *assocs = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "assocs", assocs);
+
+	TOMLArray *xassocs = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "xassocs", xassocs);
+
+	TOMLArray *viewers = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "viewers", viewers);
 
 	TOMLArray *cmds = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(root, "cmds", cmds);
@@ -252,48 +265,31 @@ read_info_file(int reread)
 				process_set_args(line_val, 1, 1);
 			}
 		}
-		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE)
+		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE ||
+				type == LINE_TYPE_FILEVIEWER)
 		{
+			TOMLArray *array;
+			switch(type)
+			{
+				case LINE_TYPE_FILETYPE:   array = assocs; break;
+				case LINE_TYPE_XFILETYPE:  array = xassocs; break;
+				case LINE_TYPE_FILEVIEWER: array = viewers; break;
+			}
+
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				char *error;
-				matchers_t *ms;
-				const int x = (type == LINE_TYPE_XFILETYPE);
-
 				/* Prevent loading of old builtin fake associations. */
-				if(ends_with(line2, "}" VIFM_PSEUDO_CMD))
+				if(type != LINE_TYPE_FILEVIEWER &&
+						ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
 					continue;
 				}
 
-				ms = matchers_alloc(line_val, 0, 1, "", &error);
-				if(ms == NULL)
-				{
-					/* Ignore error description. */
-					free(error);
-				}
-				else
-				{
-					ft_set_programs(ms, line2, x,
-							curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
-				}
-			}
-		}
-		else if(type == LINE_TYPE_FILEVIEWER)
-		{
-			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
-			{
-				char *error;
-				matchers_t *const ms = matchers_alloc(line_val, 0, 1, "", &error);
-				if(ms == NULL)
-				{
-					/* Ignore error description. */
-					free(error);
-				}
-				else
-				{
-					ft_set_viewers(ms, line2);
-				}
+				TOMLTable *entry = TOML_alloc(TOML_TABLE);
+				set_str(entry, "matchers", line_val);
+				set_str(entry, "cmd", line2);
+
+				TOMLArray_append(array, entry);
 			}
 		}
 		else if(type == LINE_TYPE_COMMAND)
@@ -531,6 +527,9 @@ load_state(TOMLTable *root, int reread)
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 
+	load_assocs(root, "assocs", 0);
+	load_assocs(root, "xassocs", 1);
+	load_viewers(root);
 	load_cmds(root);
 	load_marks(root);
 	load_bmarks(root);
@@ -659,6 +658,73 @@ load_filters(TOMLTable *filters, view_t *view)
 		if(filter_set(&view->auto_filter, filter) != 0)
 		{
 			LOG_ERROR_MSG("Error setting auto filename filter to: %s", filter);
+		}
+	}
+}
+
+/* Loads file associations from TOML. */
+static void
+load_assocs(TOMLTable *root, const char node[], int for_x)
+{
+	TOMLArray *entries = TOMLTable_getKey(root, node);
+	if(entries == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLTable *entry;
+	int in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
+	while((entry = TOMLArray_getIndex(entries, i++)) != NULL)
+	{
+		const char *matchers, *cmd;
+		if(get_str(entry, "matchers", &matchers) && get_str(entry, "cmd", &cmd))
+		{
+			char *error;
+			matchers_t *const ms = matchers_alloc(matchers, 0, 1, "", &error);
+			if(ms == NULL)
+			{
+				LOG_ERROR_MSG("Error with matchers of an assoc `%s`: %s", matchers,
+						error);
+				free(error);
+			}
+			else
+			{
+				ft_set_programs(ms, cmd, for_x, in_x);
+			}
+		}
+	}
+}
+
+/* Loads file viewers from TOML. */
+static void
+load_viewers(TOMLTable *root)
+{
+	TOMLArray *viewers = TOMLTable_getKey(root, "viewers");
+	if(viewers == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLTable *viewer;
+	while((viewer = TOMLArray_getIndex(viewers, i++)) != NULL)
+	{
+		const char *matchers, *cmd;
+		if(get_str(viewer, "matchers", &matchers) && get_str(viewer, "cmd", &cmd))
+		{
+			char *error;
+			matchers_t *const ms = matchers_alloc(matchers, 0, 1, "", &error);
+			if(ms == NULL)
+			{
+				LOG_ERROR_MSG("Error with matchers of a viewer `%s`: %s", matchers,
+						error);
+				free(error);
+			}
+			else
+			{
+				ft_set_viewers(ms, cmd);
+			}
 		}
 	}
 }
@@ -1378,6 +1444,13 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_trash(root);
 
+	if(cfg.vifm_info & VINFO_FILETYPES)
+	{
+		store_assocs(root, "assocs", &filetypes);
+		store_assocs(root, "xassocs", &xfiletypes);
+		store_assocs(root, "viewers", &fileviewers);
+	}
+
 	if(cfg.vifm_info & VINFO_COMMANDS)
 	{
 		store_cmds(root);
@@ -1523,6 +1596,52 @@ store_history(TOMLTable *root, const char node[], const hist_t *hist)
 	for(i = hist->pos; i >= 0; i--)
 	{
 		TOMLArray_append(entries, TOML_allocString(hist->items[i]));
+	}
+}
+
+/* Serializes file associations into TOML table. */
+static void
+store_assocs(TOMLTable *root, const char node[], assoc_list_t *assocs)
+{
+	TOMLArray *entries = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, node, entries);
+
+	int i;
+	for(i = 0; i < assocs->count; ++i)
+	{
+		int j;
+		assoc_t assoc = assocs->list[i];
+		for(j = 0; j < assoc.records.count; ++j)
+		{
+			assoc_record_t ft_record = assoc.records.list[j];
+
+			/* The type check is to prevent builtin fake associations to be written
+			 * into vifminfo file. */
+			if(ft_record.command[0] == '\0' || ft_record.type == ART_BUILTIN)
+			{
+				continue;
+			}
+
+			TOMLTable *entry = TOML_alloc(TOML_TABLE);
+			set_str(entry, "matchers", matchers_get_expr(assoc.matchers));
+
+			if(ft_record.description[0] == '\0')
+			{
+				set_str(entry, "cmd", ft_record.command);
+			}
+			else
+			{
+				char *cmd = format_str("{%s}%s", ft_record.description,
+						ft_record.command);
+				if(cmd != NULL)
+				{
+					set_str(entry, "cmd", cmd);
+					free(cmd);
+				}
+			}
+
+			TOMLArray_append(entries, entry);
+		}
 	}
 }
 
