@@ -68,6 +68,7 @@ static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
+static void load_cmds(TOMLTable *root);
 static void load_marks(TOMLTable *root);
 static void load_bmarks(TOMLTable *root);
 static void load_regs(TOMLTable *root);
@@ -90,6 +91,7 @@ static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
 static void store_history(TOMLTable *root, const char node[],
 		const hist_t *hist);
+static void store_cmds(TOMLTable *root);
 static void store_marks(TOMLTable *root);
 static void store_bmarks(TOMLTable *root);
 static void store_bmark(const char path[], const char tags[], time_t timestamp,
@@ -160,6 +162,9 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *cmds = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "cmds", cmds);
 
 	TOMLArray *marks = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(root, "marks", marks);
@@ -295,12 +300,11 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				char *cmdadd_cmd;
-				if((cmdadd_cmd = format_str("command %s %s", line_val, line2)) != NULL)
-				{
-					exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
-					free(cmdadd_cmd);
-				}
+				TOMLTable *cmd = TOML_alloc(TOML_TABLE);
+				set_str(cmd, "name", line_val);
+				set_str(cmd, "cmd", line2);
+
+				TOMLArray_append(cmds, cmd);
 			}
 		}
 		else if(type == LINE_TYPE_MARK)
@@ -527,6 +531,7 @@ load_state(TOMLTable *root, int reread)
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 
+	load_cmds(root);
 	load_marks(root);
 	load_bmarks(root);
 	load_regs(root);
@@ -654,6 +659,33 @@ load_filters(TOMLTable *filters, view_t *view)
 		if(filter_set(&view->auto_filter, filter) != 0)
 		{
 			LOG_ERROR_MSG("Error setting auto filename filter to: %s", filter);
+		}
+	}
+}
+
+/* Loads :commands from TOML. */
+static void
+load_cmds(TOMLTable *root)
+{
+	TOMLArray *cmds = TOMLTable_getKey(root, "cmds");
+	if(cmds == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLTable *entry;
+	while((entry = TOMLArray_getIndex(cmds, i++)) != NULL)
+	{
+		const char *name, *cmd;
+		if(get_str(entry, "name", &name) && get_str(entry, "cmd", &cmd))
+		{
+			char *cmdadd_cmd = format_str("command %s %s", name, cmd);
+			if(cmdadd_cmd != NULL)
+			{
+				exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
+				free(cmdadd_cmd);
+			}
 		}
 	}
 }
@@ -1346,6 +1378,11 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_trash(root);
 
+	if(cfg.vifm_info & VINFO_COMMANDS)
+	{
+		store_cmds(root);
+	}
+
 	if(cfg.vifm_info & VINFO_MARKS)
 	{
 		store_marks(root);
@@ -1486,6 +1523,25 @@ store_history(TOMLTable *root, const char node[], const hist_t *hist)
 	for(i = hist->pos; i >= 0; i--)
 	{
 		TOMLArray_append(entries, TOML_allocString(hist->items[i]));
+	}
+}
+
+/* Serializes :commands into TOML table. */
+static void
+store_cmds(TOMLTable *root)
+{
+	TOMLArray *cmds = TOML_allocArray(TOML_TABLE, NULL);
+	TOMLTable_setKey(root, "cmds", cmds);
+
+	int i;
+	char **cmds_list = vle_cmds_list_udcs();
+	for(i = 0; cmds_list[i] != NULL; i += 2)
+	{
+		TOMLTable *cmd = TOML_alloc(TOML_TABLE);
+		set_str(cmd, "name", cmds_list[i]);
+		set_str(cmd, "cmd", cmds_list[i + 1]);
+
+		TOMLArray_append(cmds, cmd);
 	}
 }
 
