@@ -68,6 +68,7 @@ static void load_gtab(TOMLTable *gtab, int reread);
 static void load_pane(TOMLTable *info, view_t *view, int reread);
 static void load_dhistory(TOMLTable *info, view_t *view, int reread);
 static void load_filters(TOMLTable *filters, view_t *view);
+static void load_options(TOMLTable *parent);
 static void load_assocs(TOMLTable *root, const char node[], int for_x);
 static void load_viewers(TOMLTable *root);
 static void load_cmds(TOMLTable *root);
@@ -93,6 +94,8 @@ static void store_view(TOMLTable *view_data, view_t *view);
 static void store_filters(TOMLTable *view_data, view_t *view);
 static void store_history(TOMLTable *root, const char node[],
 		const hist_t *hist);
+static void store_global_options(TOMLTable *root);
+static void store_view_options(TOMLTable *parent, view_t *view);
 static void store_assocs(TOMLTable *root, const char node[],
 		assoc_list_t *assocs);
 static void store_cmds(TOMLTable *root);
@@ -145,6 +148,7 @@ static void set_bool(TOMLTable *tbl, const char key[], int value);
 static void set_int(TOMLTable *tbl, const char key[], int value);
 static void set_double(TOMLTable *tbl, const char key[], double value);
 static void set_str(TOMLTable *tbl, const char key[], const char value[]);
+static void append_dstr(TOMLArray *array, char value[]);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -166,6 +170,9 @@ read_info_file(int reread)
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
 	TOMLTable *root = TOML_alloc(TOML_TABLE);
+
+	TOMLArray *options = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(root, "options", options);
 
 	TOMLArray *assocs = TOML_allocArray(TOML_TABLE, NULL);
 	TOMLTable_setKey(root, "assocs", assocs);
@@ -243,6 +250,12 @@ read_info_file(int reread)
 	TOMLTable *right_filters = TOML_alloc(TOML_TABLE);
 	TOMLTable_setKey(right_tab, "filters", right_filters);
 
+	TOMLArray *left_options = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(left_tab, "options", left_options);
+
+	TOMLArray *right_options = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(right_tab, "options", right_options);
+
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
 		const char type = line[0];
@@ -253,16 +266,17 @@ read_info_file(int reread)
 
 		if(type == LINE_TYPE_OPTION)
 		{
-			if(line_val[0] == '[' || line_val[0] == ']')
+			if(line_val[0] == '[')
 			{
-				view_t *v = curr_view;
-				curr_view = (line_val[0] == '[') ? &lwin : &rwin;
-				process_set_args(line_val + 1, 1, 1);
-				curr_view = v;
+				TOMLArray_append(left_options, TOML_allocString(line_val + 1));
+			}
+			else if(line_val[0] == ']')
+			{
+				TOMLArray_append(right_options, TOML_allocString(line_val + 1));
 			}
 			else
 			{
-				process_set_args(line_val, 1, 1);
+				TOMLArray_append(options, TOML_allocString(line_val));
 			}
 		}
 		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE ||
@@ -527,6 +541,7 @@ load_state(TOMLTable *root, int reread)
 
 	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
 
+	load_options(root);
 	load_assocs(root, "assocs", 0);
 	load_assocs(root, "xassocs", 1);
 	load_viewers(root);
@@ -592,6 +607,11 @@ load_pane(TOMLTable *info, view_t *view, int reread)
 
 	load_dhistory(info, view, reread);
 	load_filters(TOMLTable_getKey(info, "filters"), view);
+
+	view_t *v = curr_view;
+	curr_view = view;
+	load_options(info);
+	curr_view = v;
 
 	const char *sorting;
 	if(get_str(info, "sorting", &sorting))
@@ -659,6 +679,24 @@ load_filters(TOMLTable *filters, view_t *view)
 		{
 			LOG_ERROR_MSG("Error setting auto filename filter to: %s", filter);
 		}
+	}
+}
+
+/* Loads options from TOML. */
+static void
+load_options(TOMLTable *parent)
+{
+	TOMLArray *options = TOMLTable_getKey(parent, "options");
+	if(options == NULL)
+	{
+		return;
+	}
+
+	int i = 0;
+	TOMLString *option;
+	while((option = TOMLArray_getIndex(options, i++)) != NULL)
+	{
+		process_set_args(TOML_getString(option), 1, 1);
 	}
 }
 
@@ -1444,6 +1482,11 @@ update_info_file_toml(const char filename[], int merge)
 
 	store_trash(root);
 
+	if(cfg.vifm_info & VINFO_OPTIONS)
+	{
+		store_global_options(root);
+	}
+
 	if(cfg.vifm_info & VINFO_FILETYPES)
 	{
 		store_assocs(root, "assocs", &filetypes);
@@ -1564,6 +1607,11 @@ store_view(TOMLTable *view_data, view_t *view)
 		store_filters(view_data, view);
 	}
 
+	if(cfg.vifm_info & VINFO_OPTIONS)
+	{
+		store_view_options(view_data, view);
+	}
+
 	put_sort_info_toml(view_data, view);
 }
 
@@ -1597,6 +1645,154 @@ store_history(TOMLTable *root, const char node[], const hist_t *hist)
 	{
 		TOMLArray_append(entries, TOML_allocString(hist->items[i]));
 	}
+}
+
+/* Serializes options into TOML table. */
+static void
+store_global_options(TOMLTable *root)
+{
+	TOMLArray *options = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(root, "options", options);
+
+	append_dstr(options, format_str("aproposprg=%s",
+				escape_spaces(cfg.apropos_prg)));
+	append_dstr(options, format_str("%sautochpos", cfg.auto_ch_pos ? "" : "no"));
+	append_dstr(options, format_str("cdpath=%s", cfg.cd_path));
+	append_dstr(options, format_str("%schaselinks", cfg.chase_links ? "" : "no"));
+	append_dstr(options, format_str("columns=%d", cfg.columns));
+	append_dstr(options, format_str("cpoptions=%s",
+			escape_spaces(vle_opts_get("cpoptions", OPT_GLOBAL))));
+	append_dstr(options, format_str("deleteprg=%s",
+				escape_spaces(cfg.delete_prg)));
+	append_dstr(options, format_str("%sfastrun", cfg.fast_run ? "" : "no"));
+	if(strcmp(cfg.border_filler, " ") != 0)
+	{
+		append_dstr(options, format_str("fillchars+=vborder:%s",
+					cfg.border_filler));
+	}
+	append_dstr(options, format_str("findprg=%s", escape_spaces(cfg.find_prg)));
+	append_dstr(options, format_str("%sfollowlinks",
+				cfg.follow_links ? "" : "no"));
+	append_dstr(options, format_str("fusehome=%s", escape_spaces(cfg.fuse_home)));
+	append_dstr(options, format_str("%sgdefault", cfg.gdefault ? "" : "no"));
+	append_dstr(options, format_str("grepprg=%s", escape_spaces(cfg.grep_prg)));
+	append_dstr(options, format_str("histcursor=%s",
+			escape_spaces(vle_opts_get("histcursor", OPT_GLOBAL))));
+	append_dstr(options, format_str("history=%d", cfg.history_len));
+	append_dstr(options, format_str("%shlsearch", cfg.hl_search ? "" : "no"));
+	append_dstr(options, format_str("%siec",
+				cfg.sizefmt.ieci_prefixes ? "" : "no"));
+	append_dstr(options, format_str("%signorecase", cfg.ignore_case ? "" : "no"));
+	append_dstr(options, format_str("%sincsearch", cfg.inc_search ? "" : "no"));
+	append_dstr(options, format_str("%slaststatus",
+				cfg.display_statusline ? "" : "no"));
+	append_dstr(options, format_str("%stitle", cfg.set_title ? "" : "no"));
+	append_dstr(options, format_str("lines=%d", cfg.lines));
+	append_dstr(options, format_str("locateprg=%s",
+				escape_spaces(cfg.locate_prg)));
+	append_dstr(options, format_str("mediaprg=%s",
+				escape_spaces(cfg.media_prg)));
+	append_dstr(options, format_str("mintimeoutlen=%d", cfg.min_timeout_len));
+	append_dstr(options, format_str("%squickview",
+				curr_stats.preview.on ? "" : "no"));
+	append_dstr(options, format_str("rulerformat=%s",
+				escape_spaces(cfg.ruler_format)));
+	append_dstr(options, format_str("%srunexec", cfg.auto_execute ? "" : "no"));
+	append_dstr(options, format_str("%sscrollbind", cfg.scroll_bind ? "" : "no"));
+	append_dstr(options, format_str("scrolloff=%d", cfg.scroll_off));
+	append_dstr(options, format_str("shell=%s", escape_spaces(cfg.shell)));
+	append_dstr(options, format_str("shellcmdflag=%s",
+				escape_spaces(cfg.shell_cmd_flag)));
+	append_dstr(options, format_str("shortmess=%s",
+			escape_spaces(vle_opts_get("shortmess", OPT_GLOBAL))));
+	append_dstr(options, format_str("showtabline=%s",
+			escape_spaces(vle_opts_get("showtabline", OPT_GLOBAL))));
+	append_dstr(options, format_str("sizefmt=%s",
+			escape_spaces(vle_opts_get("sizefmt", OPT_GLOBAL))));
+#ifndef _WIN32
+	append_dstr(options, format_str("slowfs=%s",
+				escape_spaces(cfg.slow_fs_list)));
+#endif
+	append_dstr(options, format_str("%ssmartcase", cfg.smart_case ? "" : "no"));
+	append_dstr(options, format_str("%ssortnumbers",
+				cfg.sort_numbers ? "" : "no"));
+	append_dstr(options, format_str("statusline=%s",
+				escape_spaces(cfg.status_line)));
+	append_dstr(options, format_str("syncregs=%s",
+			escape_spaces(vle_opts_get("syncregs", OPT_GLOBAL))));
+	append_dstr(options, format_str("tabscope=%s",
+			escape_spaces(vle_opts_get("tabscope", OPT_GLOBAL))));
+	append_dstr(options, format_str("tabstop=%d", cfg.tab_stop));
+	append_dstr(options, format_str("timefmt=%s",
+				escape_spaces(cfg.time_format)));
+	append_dstr(options, format_str("timeoutlen=%d", cfg.timeout_len));
+	append_dstr(options, format_str("%strash", cfg.use_trash ? "" : "no"));
+	append_dstr(options, format_str("tuioptions=%s",
+			escape_spaces(vle_opts_get("tuioptions", OPT_GLOBAL))));
+	append_dstr(options, format_str("undolevels=%d", cfg.undo_levels));
+	append_dstr(options, format_str("vicmd=%s%s", escape_spaces(cfg.vi_command),
+			cfg.vi_cmd_bg ? " &" : ""));
+	append_dstr(options, format_str("vixcmd=%s%s",
+				escape_spaces(cfg.vi_x_command), cfg.vi_cmd_bg ? " &" : ""));
+	append_dstr(options, format_str("%swrapscan", cfg.wrap_scan ? "" : "no"));
+
+	append_dstr(options, format_str("confirm=%s",
+			escape_spaces(vle_opts_get("confirm", OPT_GLOBAL))));
+	append_dstr(options, format_str("dotdirs=%s",
+			escape_spaces(vle_opts_get("dotdirs", OPT_GLOBAL))));
+	append_dstr(options, format_str("caseoptions=%s",
+			escape_spaces(vle_opts_get("caseoptions", OPT_GLOBAL))));
+	append_dstr(options, format_str("suggestoptions=%s",
+			escape_spaces(vle_opts_get("suggestoptions", OPT_GLOBAL))));
+	append_dstr(options, format_str("iooptions=%s",
+			escape_spaces(vle_opts_get("iooptions", OPT_GLOBAL))));
+
+	append_dstr(options, format_str("dirsize=%s",
+				cfg.view_dir_size == VDS_SIZE ? "size" : "nitems"));
+
+	const char *str = classify_to_str();
+	append_dstr(options, format_str("classify=%s",
+				escape_spaces(str == NULL ? "" : str)));
+
+	append_dstr(options, format_str("vifminfo=%s",
+			escape_spaces(vle_opts_get("vifminfo", OPT_GLOBAL))));
+
+	append_dstr(options, format_str("%svimhelp", cfg.use_vim_help ? "" : "no"));
+	append_dstr(options, format_str("%swildmenu", cfg.wild_menu ? "" : "no"));
+	append_dstr(options, format_str("wildstyle=%s",
+				cfg.wild_popup ? "popup" : "bar"));
+	append_dstr(options, format_str("wordchars=%s",
+			escape_spaces(vle_opts_get("wordchars", OPT_GLOBAL))));
+	append_dstr(options, format_str("%swrap", cfg.wrap_quick_view ? "" : "no"));
+}
+
+/* Serializes view-specific options into TOML table. */
+static void
+store_view_options(TOMLTable *parent, view_t *view)
+{
+	TOMLArray *options = TOML_allocArray(TOML_STRING, NULL);
+	TOMLTable_setKey(parent, "options", options);
+
+	append_dstr(options, format_str("viewcolumns=%s",
+				escape_spaces(lwin.view_columns_g)));
+	append_dstr(options, format_str("sortgroups=%s",
+				escape_spaces(lwin.sort_groups_g)));
+	append_dstr(options, format_str("lsoptions=%s",
+				lwin.ls_transposed_g ? "transposed" : ""));
+	append_dstr(options, format_str("%slsview", lwin.ls_view_g ? "" : "no"));
+	append_dstr(options, format_str("milleroptions=lsize:%d,csize:%d,rsize:%d",
+			lwin.miller_ratios_g[0], lwin.miller_ratios_g[1],
+			lwin.miller_ratios_g[2]));
+	append_dstr(options, format_str("%smillerview",
+				lwin.miller_view_g ? "" : "no"));
+	append_dstr(options, format_str("%snumber",
+				(lwin.num_type_g & NT_SEQ) ? "" : "no"));
+	append_dstr(options, format_str("numberwidth=%d", lwin.num_width_g));
+	append_dstr(options, format_str("%srelativenumber",
+				(lwin.num_type_g & NT_REL) ? "" : "no"));
+	append_dstr(options, format_str("%sdotfiles", lwin.hide_dot_g ? "" : "no"));
+	append_dstr(options, format_str("previewprg=%s",
+				escape_spaces(lwin.preview_prg_g)));
 }
 
 /* Serializes file associations into TOML table. */
@@ -2488,6 +2684,15 @@ static void
 set_str(TOMLTable *tbl, const char key[], const char value[])
 {
 	TOMLTable_setKey(tbl, key, TOML_allocString(value));
+}
+
+/* Appends value of a dynamically allocated string to an array, freeing the
+ * string afterwards. */
+static void
+append_dstr(TOMLArray *array, char value[])
+{
+	TOMLArray_append(array, TOML_allocString(value));
+	free(value);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
