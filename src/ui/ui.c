@@ -1120,6 +1120,11 @@ show_progress(const char msg[], int period)
 void
 redraw_lists(void)
 {
+	if(curr_stats.load_stage == 0)
+	{
+		return;
+	}
+
 	redraw_current_view();
 	if(curr_stats.number_of_windows == 2)
 	{
