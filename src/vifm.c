@@ -66,6 +66,7 @@
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/parson.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
@@ -166,6 +167,9 @@ vifm_main(int argc, char *argv[])
 	{
 		return -1;
 	}
+
+	/* Configure it once. */
+	json_set_escape_slashes(0);
 
 	args_parse(&vifm_args, argc, argv, dir);
 	args_process(&vifm_args, 1);

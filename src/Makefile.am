@@ -206,13 +206,13 @@ vifm_SOURCES = \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
 	utils/matchers.c utils/matchers.h \
+	utils/parson.c utils/parson.h \
 	utils/path.c utils/path.h \
 	utils/regexp.c utils/regexp.h \
 	utils/shmem_nix.c utils/shmem.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/test_helpers.h \
-	utils/toml.c utils/toml.h \
 	utils/trie.c utils/trie.h \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \

@@ -43,10 +43,10 @@
 #include "../utils/macros.h"
 #include "../utils/matcher.h"
 #include "../utils/matchers.h"
+#include "../utils/parson.h"
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/toml.h"
 #include "../utils/utils.h"
 #include "../bmarks.h"
 #include "../cmd_core.h"
@@ -63,20 +63,20 @@
 #include "config.h"
 #include "info_chars.h"
 
-static void load_state(TOMLTable *root, int reread);
-static void load_gtab(TOMLTable *gtab, int reread);
-static void load_pane(TOMLTable *info, view_t *view, int reread);
-static void load_dhistory(TOMLTable *info, view_t *view, int reread);
-static void load_filters(TOMLTable *filters, view_t *view);
-static void load_options(TOMLTable *parent);
-static void load_assocs(TOMLTable *root, const char node[], int for_x);
-static void load_viewers(TOMLTable *root);
-static void load_cmds(TOMLTable *root);
-static void load_marks(TOMLTable *root);
-static void load_bmarks(TOMLTable *root);
-static void load_regs(TOMLTable *root);
-static void load_trash(TOMLTable *root);
-static void load_history(TOMLTable *root, const char node[], hist_t *hist,
+static void load_state(JSON_Object *root, int reread);
+static void load_gtab(JSON_Object *gtab, int reread);
+static void load_pane(JSON_Object *pane, view_t *view, int reread);
+static void load_dhistory(JSON_Object *info, view_t *view, int reread);
+static void load_filters(JSON_Object *pane, view_t *view);
+static void load_options(JSON_Object *parent);
+static void load_assocs(JSON_Object *root, const char node[], int for_x);
+static void load_viewers(JSON_Object *root);
+static void load_cmds(JSON_Object *root);
+static void load_marks(JSON_Object *root);
+static void load_bmarks(JSON_Object *root);
+static void load_regs(JSON_Object *root);
+static void load_trash(JSON_Object *root);
+static void load_history(JSON_Object *root, const char node[], hist_t *hist,
 		void (*saver)(const char[]));
 static void get_sort_info(view_t *view, const char line[]);
 static void append_to_history(hist_t *hist, void (*saver)(const char[]),
@@ -88,23 +88,23 @@ static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *src, FILE *dst);
 static void update_info_file(const char filename[], int merge);
-static void update_info_file_toml(const char filename[], int merge);
-static void store_gtab(TOMLTable *gtab);
-static void store_view(TOMLTable *view_data, view_t *view);
-static void store_filters(TOMLTable *view_data, view_t *view);
-static void store_history(TOMLTable *root, const char node[],
+static void update_info_file_json(const char filename[], int merge);
+static void store_gtab(JSON_Object *gtab);
+static void store_view(JSON_Object *view_data, view_t *view);
+static void store_filters(JSON_Object *view_data, view_t *view);
+static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
-static void store_global_options(TOMLTable *root);
-static void store_view_options(TOMLTable *parent, view_t *view);
-static void store_assocs(TOMLTable *root, const char node[],
+static void store_global_options(JSON_Object *root);
+static void store_view_options(JSON_Object *parent, view_t *view);
+static void store_assocs(JSON_Object *root, const char node[],
 		assoc_list_t *assocs);
-static void store_cmds(TOMLTable *root);
-static void store_marks(TOMLTable *root);
-static void store_bmarks(TOMLTable *root);
+static void store_cmds(JSON_Object *root);
+static void store_marks(JSON_Object *root);
+static void store_bmarks(JSON_Object *root);
 static void store_bmark(const char path[], const char tags[], time_t timestamp,
 		void *arg);
-static void store_regs(TOMLTable *root);
-static void store_trash(TOMLTable *root);
+static void store_regs(JSON_Object *root);
+static void store_trash(JSON_Object *root);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
 static char * convert_old_trash_path(const char trash_path[]);
@@ -123,7 +123,7 @@ static void write_bmark(const char path[], const char tags[], time_t timestamp,
 static void write_tui_state(FILE *fp);
 static void write_view_history(FILE *fp, view_t *view, const char str[],
 		char mark, int prev_count, char *prev[], int pos[]);
-static void write_view_history_toml(TOMLTable *tbl, view_t *view);
+static void store_dhistory(JSON_Object *obj, view_t *view);
 static void write_history(FILE *fp, const char str[], char mark, int prev_count,
 		char *prev[], const hist_t *hist);
 static void write_registers(FILE *fp, char *regs[], int nregs);
@@ -135,20 +135,23 @@ static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const view_t *view);
-static void put_sort_info_toml(TOMLTable *tbl, const view_t *view);
+static void store_sort_info(JSON_Object *obj, const view_t *view);
 static void make_sort_info(const view_t *view, char buf[], size_t buf_size);
 static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static size_t add_to_int_array(int **array, size_t len, int what);
-static int get_bool(TOMLTable *tbl, const char key[], int *value);
-static int get_int(TOMLTable *tbl, const char key[], int *value);
-static int get_double(TOMLTable *tbl, const char key[], double *value);
-static int get_str(TOMLTable *tbl, const char key[], const char **value);
-static void set_bool(TOMLTable *tbl, const char key[], int value);
-static void set_int(TOMLTable *tbl, const char key[], int value);
-static void set_double(TOMLTable *tbl, const char key[], double value);
-static void set_str(TOMLTable *tbl, const char key[], const char value[]);
-static void append_dstr(TOMLArray *array, char value[]);
+static JSON_Array * add_array(JSON_Object *obj, const char key[]);
+static JSON_Object * add_object(JSON_Object *obj, const char key[]);
+static JSON_Object * append_object(JSON_Array *arr);
+static int get_bool(const JSON_Object *obj, const char key[], int *value);
+static int get_int(const JSON_Object *obj, const char key[], int *value);
+static int get_double(const JSON_Object *obj, const char key[], double *value);
+static int get_str(const JSON_Object *obj, const char key[], const char **value);
+static void set_bool(JSON_Object *obj, const char key[], int value);
+static void set_int(JSON_Object *obj, const char key[], int value);
+static void set_double(JSON_Object *obj, const char key[], double value);
+static void set_str(JSON_Object *obj, const char key[], const char value[]);
+static void append_dstr(JSON_Array *array, char value[]);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -169,92 +172,48 @@ read_info_file(int reread)
 
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
 
-	TOMLTable *root = TOML_alloc(TOML_TABLE);
+	JSON_Value *root_value = json_value_init_object();
+	JSON_Object *root = json_object(root_value);
 
-	TOMLArray *options = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(root, "options", options);
-
-	TOMLArray *assocs = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "assocs", assocs);
-
-	TOMLArray *xassocs = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "xassocs", xassocs);
-
-	TOMLArray *viewers = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "viewers", viewers);
-
-	TOMLArray *cmds = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "cmds", cmds);
-
-	TOMLArray *marks = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "marks", marks);
-
-	TOMLArray *bmarks = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "bmarks", bmarks);
-
-	TOMLArray *cmd_hist = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(root, "cmd-hist", cmd_hist);
-
-	TOMLArray *search_hist = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(root, "search-hist", search_hist);
-
-	TOMLArray *prompt_hist = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(root, "prompt-hist", prompt_hist);
-
-	TOMLArray *lfilt_hist = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(root, "lfilt-hist", lfilt_hist);
-
-	TOMLArray *trash = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "trash", trash);
-
-	TOMLArray *regs = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "regs", regs);
-	TOMLTable *reg[strlen(valid_registers)];
+	JSON_Array *options = add_array(root, "options");
+	JSON_Array *assocs = add_array(root, "assocs");
+	JSON_Array *xassocs = add_array(root, "xassocs");
+	JSON_Array *viewers = add_array(root, "viewers");
+	JSON_Array *cmds = add_array(root, "cmds");
+	JSON_Array *marks = add_array(root, "marks");
+	JSON_Array *bmarks = add_array(root, "bmarks");
+	JSON_Array *cmd_hist = add_array(root, "cmd-hist");
+	JSON_Array *search_hist = add_array(root, "search-hist");
+	JSON_Array *prompt_hist = add_array(root, "prompt-hist");
+	JSON_Array *lfilt_hist = add_array(root, "lfilt-hist");
+	JSON_Array *trash = add_array(root, "trash");
+	JSON_Array *regs = add_array(root, "regs");
+	JSON_Array *reg[strlen(valid_registers)];
 	memset(reg, 0, sizeof(reg));
 
-	TOMLArray *outer_tabs = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "tabs", outer_tabs);
+	JSON_Array *outer_tabs = add_array(root, "tabs");
+	JSON_Object *outer_tab = append_object(outer_tabs);
 
-	TOMLTable *outer_tab = TOML_alloc(TOML_TABLE);
-	TOMLArray_append(outer_tabs, outer_tab);
+	JSON_Object *splitter = add_object(outer_tab, "splitter");
 
-	TOMLArray *panes = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(outer_tab, "panes", panes);
+	JSON_Array *panes = add_array(outer_tab, "panes");
+	JSON_Object *left = append_object(panes);
+	JSON_Object *right = append_object(panes);
 
-	TOMLTable *splitter = TOML_alloc(TOML_TABLE);
-	TOMLTable_setKey(outer_tab, "splitter", splitter);
+	JSON_Array *left_tabs = add_array(left, "tabs");
+	JSON_Object *left_tab = append_object(left_tabs);
 
-	TOMLTable *left = TOML_alloc(TOML_TABLE);
-	TOMLTable *right = TOML_alloc(TOML_TABLE);
+	JSON_Array *right_tabs = add_array(right, "tabs");
+	JSON_Object *right_tab = append_object(right_tabs);
 
-	TOMLArray_append(panes, left);
-	TOMLArray_append(panes, right);
+	JSON_Array *left_history = add_array(left_tab, "history");
+	JSON_Array *right_history = add_array(right_tab, "history");
 
-	TOMLTable *left_tab = TOML_alloc(TOML_TABLE);
-	TOMLArray *left_tabs = TOML_allocArray(TOML_TABLE, left_tab, NULL);
-	TOMLTable_setKey(left, "tabs", left_tabs);
+	JSON_Object *left_filters = add_object(left_tab, "filters");
+	JSON_Object *right_filters = add_object(right_tab, "filters");
 
-	TOMLTable *right_tab = TOML_alloc(TOML_TABLE);
-	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
-	TOMLTable_setKey(right, "tabs", right_tabs);
-
-	TOMLArray *left_history = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(left_tab, "history", left_history);
-
-	TOMLArray *right_history = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(right_tab, "history", right_history);
-
-	TOMLTable *left_filters = TOML_alloc(TOML_TABLE);
-	TOMLTable_setKey(left_tab, "filters", left_filters);
-
-	TOMLTable *right_filters = TOML_alloc(TOML_TABLE);
-	TOMLTable_setKey(right_tab, "filters", right_filters);
-
-	TOMLArray *left_options = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(left_tab, "options", left_options);
-
-	TOMLArray *right_options = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(right_tab, "options", right_options);
+	JSON_Array *left_options = add_array(left_tab, "options");
+	JSON_Array *right_options = add_array(right_tab, "options");
 
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
@@ -268,21 +227,21 @@ read_info_file(int reread)
 		{
 			if(line_val[0] == '[')
 			{
-				TOMLArray_append(left_options, TOML_allocString(line_val + 1));
+				json_array_append_string(left_options, line_val + 1);
 			}
 			else if(line_val[0] == ']')
 			{
-				TOMLArray_append(right_options, TOML_allocString(line_val + 1));
+				json_array_append_string(right_options, line_val + 1);
 			}
 			else
 			{
-				TOMLArray_append(options, TOML_allocString(line_val));
+				json_array_append_string(options, line_val);
 			}
 		}
 		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE ||
 				type == LINE_TYPE_FILEVIEWER)
 		{
-			TOMLArray *array;
+			JSON_Array *array;
 			switch(type)
 			{
 				case LINE_TYPE_FILETYPE:   array = assocs; break;
@@ -299,22 +258,18 @@ read_info_file(int reread)
 					continue;
 				}
 
-				TOMLTable *entry = TOML_alloc(TOML_TABLE);
+				JSON_Object *entry = append_object(array);
 				set_str(entry, "matchers", line_val);
 				set_str(entry, "cmd", line2);
-
-				TOMLArray_append(array, entry);
 			}
 		}
 		else if(type == LINE_TYPE_COMMAND)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				TOMLTable *cmd = TOML_alloc(TOML_TABLE);
+				JSON_Object *cmd = append_object(cmds);
 				set_str(cmd, "name", line_val);
 				set_str(cmd, "cmd", line2);
-
-				TOMLArray_append(cmds, cmd);
 			}
 		}
 		else if(type == LINE_TYPE_MARK)
@@ -329,14 +284,12 @@ read_info_file(int reread)
 						timestamp = time(NULL);
 					}
 
-					TOMLTable *mark = TOML_alloc(TOML_TABLE);
+					JSON_Object *mark = append_object(marks);
 					char name[] = { line_val[0], '\0' };
 					set_str(mark, "name", name);
 					set_str(mark, "dir", line2);
 					set_str(mark, "file", line3);
 					set_double(mark, "ts", timestamp);
-
-					TOMLArray_append(marks, mark);
 				}
 			}
 		}
@@ -348,12 +301,10 @@ read_info_file(int reread)
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL &&
 						read_number(line3, &timestamp))
 				{
-					TOMLTable *bmark = TOML_alloc(TOML_TABLE);
+					JSON_Object *bmark = append_object(bmarks);
 					set_str(bmark, "path", line_val);
 					set_str(bmark, "tags", line2);
 					set_double(bmark, "ts", timestamp);
-
-					TOMLArray_append(bmarks, bmark);
 				}
 			}
 		}
@@ -389,38 +340,37 @@ read_info_file(int reread)
 		{
 			if(line_val[0] == '\0')
 			{
-				TOMLTable *itab = (type == LINE_TYPE_LWIN_HIST ? left_tab : right_tab);
+				JSON_Object *itab = (type == LINE_TYPE_LWIN_HIST)
+				                  ? left_tab : right_tab;
 				set_bool(itab, "restore-last-location", 1);
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				const int rel_pos = read_optional_number(fp);
 
-				TOMLArray *hist = (type == LINE_TYPE_LWIN_HIST) ? left_history
-				                                                : right_history;
-				TOMLTable *entry = TOML_allocTable(
-						TOML_allocString("dir"), TOML_allocString(line_val),
-						TOML_allocString("file"), TOML_allocString(line2),
-						TOML_allocString("relpos"), TOML_allocInt(rel_pos),
-						NULL, NULL);
-				TOMLArray_append(hist, entry);
+				JSON_Array *hist = (type == LINE_TYPE_LWIN_HIST) ? left_history
+				                                                 : right_history;
+				JSON_Object *entry = append_object(hist);
+				set_str(entry, "dir", line_val);
+				set_str(entry, "file", line2);
+				set_int(entry, "relpos", rel_pos);
 			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			TOMLArray_append(cmd_hist, TOML_allocString(line_val));
+			json_array_append_string(cmd_hist, line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			TOMLArray_append(search_hist, TOML_allocString(line_val));
+			json_array_append_string(search_hist, line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			TOMLArray_append(prompt_hist, TOML_allocString(line_val));
+			json_array_append_string(prompt_hist, line_val);
 		}
 		else if(type == LINE_TYPE_FILTER_HIST)
 		{
-			TOMLArray_append(lfilt_hist, TOML_allocString(line_val));
+			json_array_append_string(lfilt_hist, line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
@@ -441,11 +391,9 @@ read_info_file(int reread)
 			{
 				char *const trash_name = convert_old_trash_path(line_val);
 
-				TOMLTable *entry = TOML_alloc(TOML_TABLE);
+				JSON_Object *entry = append_object(trash);
 				set_str(entry, "trashed", trash_name);
 				set_str(entry, "original", line2);
-
-				TOMLArray_append(trash, entry);
 
 				free(trash_name);
 			}
@@ -458,17 +406,14 @@ read_info_file(int reread)
 				int index = pos - valid_registers;
 				if(reg[index] == NULL)
 				{
-					reg[index] = TOML_alloc(TOML_TABLE);
+					JSON_Object *reg_info = append_object(regs);
 
 					char name[] = { line_val[0], '\0' };
-					set_str(reg[index], "name", name);
+					set_str(reg_info, "name", name);
 
-					TOMLTable_setKey(reg[index], "files",
-							TOML_allocArray(TOML_STRING, NULL));
-					TOMLArray_append(regs, reg[index]);
+					reg[index] = add_array(reg_info, "files");
 				}
-				TOMLArray_append(TOMLTable_getKey(reg[index], "files"),
-						TOML_allocString(line_val + 1));
+				json_array_append_string(reg[index], line_val + 1);
 			}
 		}
 		else if(type == LINE_TYPE_LWIN_FILT)
@@ -497,8 +442,8 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
 		{
-			TOMLTable *info = (type == LINE_TYPE_LWIN_SPECIFIC)
-			                ? left_tab : right_tab;
+			JSON_Object *info = (type == LINE_TYPE_LWIN_SPECIFIC)
+			                  ? left_tab : right_tab;
 
 			if(line_val[0] == PROP_TYPE_DOTFILES)
 			{
@@ -518,14 +463,14 @@ read_info_file(int reread)
 	fclose(fp);
 
 	load_state(root, reread);
-	TOML_free(root);
+	json_value_free(root_value);
 
 	dir_stack_freeze();
 }
 
-/* Loads state of the application from TOML. */
+/* Loads state of the application from JSON. */
 static void
-load_state(TOMLTable *root, int reread)
+load_state(JSON_Object *root, int reread)
 {
 	int use_term_multiplexer;
 	if(get_bool(root, "use-term-multiplexer", &use_term_multiplexer))
@@ -539,7 +484,13 @@ load_state(TOMLTable *root, int reread)
 		copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme), cs);
 	}
 
-	load_gtab(TOML_find(root, "tabs", "0", NULL), reread);
+	JSON_Array *gtabs = json_object_get_array(root, "tabs");
+	int i, n;
+	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)
+	{
+		/* TODO: switch to appropriate global tab. */
+		load_gtab(json_array_get_object(gtabs, i), reread);
+	}
 
 	load_options(root);
 	load_assocs(root, "assocs", 0);
@@ -556,20 +507,21 @@ load_state(TOMLTable *root, int reread)
 	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
 }
 
-/* Loads a global tab from TOML. */
+/* Loads a global tab from JSON. */
 static void
-load_gtab(TOMLTable *gtab, int reread)
+load_gtab(JSON_Object *gtab, int reread)
 {
-	load_pane(TOML_find(gtab, "panes", "0", NULL), &lwin, reread);
-	load_pane(TOML_find(gtab, "panes", "1", NULL), &rwin, reread);
+	JSON_Array *panes = json_object_get_array(gtab, "panes");
+	load_pane(json_array_get_object(panes, 0), &lwin, reread);
+	load_pane(json_array_get_object(panes, 1), &rwin, reread);
 
-	TOMLRef ref = TOMLTable_getKey(gtab, "preview");
-	if(ref != NULL)
+	int preview;
+	if(get_bool(gtab, "preview", &preview))
 	{
-		stats_set_quickview(TOML_toBoolean(ref));
+		stats_set_quickview(preview);
 	}
 
-	TOMLTable *splitter = TOMLTable_getKey(gtab, "splitter");
+	JSON_Object *splitter = json_object_get_object(gtab, "splitter");
 
 	const char *split_kind;
 	if(get_str(splitter, "orientation", &split_kind))
@@ -599,60 +551,71 @@ load_gtab(TOMLTable *gtab, int reread)
 	}
 }
 
-/* Loads a pane (consists of pane tabs) from TOML. */
+/* Loads a pane (consists of pane tabs) from JSON. */
 static void
-load_pane(TOMLTable *info, view_t *view, int reread)
+load_pane(JSON_Object *pane, view_t *view, int reread)
 {
-	info = TOML_find(info, "tabs", "0", NULL);
-
-	load_dhistory(info, view, reread);
-	load_filters(TOMLTable_getKey(info, "filters"), view);
-
-	view_t *v = curr_view;
-	curr_view = view;
-	load_options(info);
-	curr_view = v;
-
-	const char *sorting;
-	if(get_str(info, "sorting", &sorting))
+	JSON_Array *panes = json_object_get_array(pane, "tabs");
+	int i, n;
+	for(i = 0, n = json_array_get_count(panes); i < n; ++i)
 	{
-		get_sort_info(view, sorting);
+		/* TODO: switch to appropriate pane tab. */
+
+		JSON_Object *itab = json_array_get_object(panes, i);
+
+		load_dhistory(itab, view, reread);
+		load_filters(itab, view);
+
+		view_t *v = curr_view;
+		curr_view = view;
+		load_options(itab);
+		curr_view = v;
+
+		const char *sorting;
+		if(get_str(itab, "sorting", &sorting))
+		{
+			get_sort_info(view, sorting);
+		}
 	}
 }
 
-/* Loads directory history of a view from TOML. */
+/* Loads directory history of a view from JSON. */
 static void
-load_dhistory(TOMLTable *info, view_t *view, int reread)
+load_dhistory(JSON_Object *info, view_t *view, int reread)
 {
-	TOMLArray *history = TOMLTable_getKey(info, "history");
+	JSON_Array *history = json_object_get_array(info, "history");
 
-	int i = 0;
-	TOMLTable *entry, *last_entry = NULL;
-	while((entry = TOMLArray_getIndex(history, i++)) != NULL)
+	int i, n;
+	const char *last_dir = NULL;
+	for(i = 0, n = json_array_get_count(history); i < n; ++i)
 	{
-		const char *dir = TOML_getString(TOMLTable_getKey(entry, "dir"));
-		const char *file = TOML_getString(TOMLTable_getKey(entry, "file"));
-		int rel_pos = TOML_toInt(TOMLTable_getKey(entry, "relpos"));
-		get_history(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
+		JSON_Object *entry = json_array_get_object(history, i);
 
-		last_entry = entry;
+		const char *dir, *file;
+		int rel_pos;
+		if(get_str(entry, "dir", &dir) && get_str(entry, "file", &file) &&
+				get_int(entry, "relpos", &rel_pos));
+		{
+			get_history(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
+			last_dir = dir;
+		}
 	}
 
 	int restore_last_location;
 	if(get_bool(info, "restore-last-location", &restore_last_location))
 	{
-		if(!reread && restore_last_location && last_entry != NULL)
+		if(!reread && restore_last_location && last_dir != NULL)
 		{
-			copy_str(view->curr_dir, sizeof(view->curr_dir),
-					TOML_getString(TOMLTable_getKey(last_entry, "dir")));
+			copy_str(view->curr_dir, sizeof(view->curr_dir), last_dir);
 		}
 	}
 }
 
-/* Loads state of filters of a view from TOML. */
+/* Loads state of filters of a view from JSON. */
 static void
-load_filters(TOMLTable *filters, view_t *view)
+load_filters(JSON_Object *pane, view_t *view)
 {
+	JSON_Object *filters = json_object_get_object(pane, "filters");
 	if(filters == NULL)
 	{
 		return;
@@ -682,39 +645,31 @@ load_filters(TOMLTable *filters, view_t *view)
 	}
 }
 
-/* Loads options from TOML. */
+/* Loads options from JSON. */
 static void
-load_options(TOMLTable *parent)
+load_options(JSON_Object *parent)
 {
-	TOMLArray *options = TOMLTable_getKey(parent, "options");
-	if(options == NULL)
-	{
-		return;
-	}
+	JSON_Array *options = json_object_get_array(parent, "options");
 
-	int i = 0;
-	TOMLString *option;
-	while((option = TOMLArray_getIndex(options, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(options); i < n; ++i)
 	{
-		process_set_args(TOML_getString(option), 1, 1);
+		process_set_args(json_array_get_string(options, i), 1, 1);
 	}
 }
 
-/* Loads file associations from TOML. */
+/* Loads file associations from JSON. */
 static void
-load_assocs(TOMLTable *root, const char node[], int for_x)
+load_assocs(JSON_Object *root, const char node[], int for_x)
 {
-	TOMLArray *entries = TOMLTable_getKey(root, node);
-	if(entries == NULL)
-	{
-		return;
-	}
+	JSON_Array *entries = json_object_get_array(root, node);
 
-	int i = 0;
-	TOMLTable *entry;
+	int i, n;
 	int in_x = (curr_stats.exec_env_type == EET_EMULATOR_WITH_X);
-	while((entry = TOMLArray_getIndex(entries, i++)) != NULL)
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
+		JSON_Object *entry = json_array_get_object(entries, i);
+
 		const char *matchers, *cmd;
 		if(get_str(entry, "matchers", &matchers) && get_str(entry, "cmd", &cmd))
 		{
@@ -734,20 +689,17 @@ load_assocs(TOMLTable *root, const char node[], int for_x)
 	}
 }
 
-/* Loads file viewers from TOML. */
+/* Loads file viewers from JSON. */
 static void
-load_viewers(TOMLTable *root)
+load_viewers(JSON_Object *root)
 {
-	TOMLArray *viewers = TOMLTable_getKey(root, "viewers");
-	if(viewers == NULL)
-	{
-		return;
-	}
+	JSON_Array *viewers = json_object_get_array(root, "viewers");
 
-	int i = 0;
-	TOMLTable *viewer;
-	while((viewer = TOMLArray_getIndex(viewers, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(viewers); i < n; ++i)
 	{
+		JSON_Object *viewer = json_array_get_object(viewers, i);
+
 		const char *matchers, *cmd;
 		if(get_str(viewer, "matchers", &matchers) && get_str(viewer, "cmd", &cmd))
 		{
@@ -767,20 +719,17 @@ load_viewers(TOMLTable *root)
 	}
 }
 
-/* Loads :commands from TOML. */
+/* Loads :commands from JSON. */
 static void
-load_cmds(TOMLTable *root)
+load_cmds(JSON_Object *root)
 {
-	TOMLArray *cmds = TOMLTable_getKey(root, "cmds");
-	if(cmds == NULL)
-	{
-		return;
-	}
+	JSON_Array *cmds = json_object_get_array(root, "cmds");
 
-	int i = 0;
-	TOMLTable *entry;
-	while((entry = TOMLArray_getIndex(cmds, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(cmds); i < n; ++i)
 	{
+		JSON_Object *entry = json_array_get_object(cmds, i);
+
 		const char *name, *cmd;
 		if(get_str(entry, "name", &name) && get_str(entry, "cmd", &cmd))
 		{
@@ -794,20 +743,17 @@ load_cmds(TOMLTable *root)
 	}
 }
 
-/* Loads marks from TOML. */
+/* Loads marks from JSON. */
 static void
-load_marks(TOMLTable *root)
+load_marks(JSON_Object *root)
 {
-	TOMLArray *marks = TOMLTable_getKey(root, "marks");
-	if(marks == NULL)
-	{
-		return;
-	}
+	JSON_Array *marks = json_object_get_array(root, "marks");
 
-	int i = 0;
-	TOMLTable *mark;
-	while((mark = TOMLArray_getIndex(marks, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(marks); i < n; ++i)
 	{
+		JSON_Object *mark = json_array_get_object(marks, i);
+
 		const char *name, *dir, *file;
 		double ts;
 		if(get_str(mark, "name", &name) && get_str(mark, "dir", &dir) &&
@@ -818,20 +764,17 @@ load_marks(TOMLTable *root)
 	}
 }
 
-/* Loads bookmarks from TOML. */
+/* Loads bookmarks from JSON. */
 static void
-load_bmarks(TOMLTable *root)
+load_bmarks(JSON_Object *root)
 {
-	TOMLArray *bmarks = TOMLTable_getKey(root, "bmarks");
-	if(bmarks == NULL)
-	{
-		return;
-	}
+	JSON_Array *bmarks = json_object_get_array(root, "bmarks");
 
-	int i = 0;
-	TOMLTable *bmark;
-	while((bmark = TOMLArray_getIndex(bmarks, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(bmarks); i < n; ++i)
 	{
+		JSON_Object *bmark = json_array_get_object(bmarks, i);
+
 		const char *path, *tags;
 		double ts;
 		if(!get_str(bmark, "path", &path) || !get_str(bmark, "tags", &tags) ||
@@ -847,50 +790,43 @@ load_bmarks(TOMLTable *root)
 	}
 }
 
-/* Loads registers from TOML. */
+/* Loads registers from JSON. */
 static void
-load_regs(TOMLTable *root)
+load_regs(JSON_Object *root)
 {
-	TOMLArray *regs = TOMLTable_getKey(root, "regs");
-	if(regs == NULL)
-	{
-		return;
-	}
+	JSON_Array *regs = json_object_get_array(root, "regs");
 
-	int i = 0;
-	TOMLTable *reg;
-	while((reg = TOMLArray_getIndex(regs, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(regs); i < n; ++i)
 	{
+		JSON_Object *reg = json_array_get_object(regs, i);
+
 		const char *name;
 		if(!get_str(reg, "name", &name))
 		{
 			continue;
 		}
 
-		TOMLArray *files = TOMLTable_getKey(reg, "files");
-		int j = 0;
-		TOMLString *file;
-		while((file = TOMLArray_getIndex(files, j++)) != NULL)
+		int j, m;
+		JSON_Array *files = json_object_get_array(reg, "files");
+		for(j = 0, m = json_array_get_count(files); j < m; ++j)
 		{
-			regs_append(name[0], TOML_getString(file));
+			regs_append(name[0], json_array_get_string(files, j));
 		}
 	}
 }
 
-/* Loads trash from TOML. */
+/* Loads trash from JSON. */
 static void
-load_trash(TOMLTable *root)
+load_trash(JSON_Object *root)
 {
-	TOMLArray *trash = TOMLTable_getKey(root, "trash");
-	if(trash == NULL)
-	{
-		return;
-	}
+	JSON_Array *trash = json_object_get_array(root, "trash");
 
-	int i = 0;
-	TOMLTable *entry;
-	while((entry = TOMLArray_getIndex(trash, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(trash); i < n; ++i)
 	{
+		JSON_Object *entry = json_array_get_object(trash, i);
+
 		const char *trashed, *original;
 		if(get_str(entry, "trashed", &trashed) &&
 				get_str(entry, "original", &original))
@@ -900,22 +836,18 @@ load_trash(TOMLTable *root)
 	}
 }
 
-/* Loads history data from TOML. */
+/* Loads history data from JSON. */
 static void
-load_history(TOMLTable *root, const char node[], hist_t *hist,
+load_history(JSON_Object *root, const char node[], hist_t *hist,
 		void (*saver)(const char[]))
 {
-	TOMLArray *entries = TOMLTable_getKey(root, node);
-	if(entries == NULL)
-	{
-		return;
-	}
+	JSON_Array *entries = json_object_get_array(root, node);
 
-	int i = 0;
-	TOMLString *entry;
-	while((entry = TOMLArray_getIndex(entries, i++)) != NULL)
+	int i, n;
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
-		append_to_history(&curr_stats.filter_hist, saver, TOML_getString(entry));
+		const char *item = json_array_get_string(entries, i);
+		append_to_history(&curr_stats.filter_hist, saver, item);
 	}
 }
 
@@ -1049,9 +981,9 @@ write_info_file(void)
 		}
 	}
 
-	char toml_path[PATH_MAX + 1];
-	snprintf(toml_path, sizeof(toml_path), "%s.toml", info_file);
-	update_info_file_toml(toml_path, 0);
+	char json_path[PATH_MAX + 1];
+	snprintf(json_path, sizeof(json_path), "%s.json", info_file);
+	update_info_file_json(json_path, 0);
 }
 
 /* Copies the src file to the dst location.  Returns zero on success. */
@@ -1459,24 +1391,16 @@ update_info_file(const char filename[], int merge)
 	free(non_conflicting_marks);
 }
 
-/* Reads contents of the filename file as a TOML info file and updates it with
+/* Reads contents of the filename file as a JSON info file and updates it with
  * the state of current instance. */
 static void
-update_info_file_toml(const char filename[], int merge)
+update_info_file_json(const char filename[], int merge)
 {
-	FILE *fp = os_fopen(filename, "w");
-	if(fp == NULL)
-	{
-		return;
-	}
+	JSON_Value *root_value = json_value_init_object();
+	JSON_Object *root = json_object(root_value);
 
-	TOMLTable *root = TOML_alloc(TOML_TABLE);
-
-	TOMLArray *outer_tabs = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "tabs", outer_tabs);
-
-	TOMLTable *outer_tab = TOML_alloc(TOML_TABLE);
-	TOMLArray_append(outer_tabs, outer_tab);
+	JSON_Array *outer_tabs = add_array(root, "tabs");
+	JSON_Object *outer_tab = append_object(outer_tabs);
 
 	store_gtab(outer_tab);
 
@@ -1544,39 +1468,29 @@ update_info_file_toml(const char filename[], int merge)
 		set_str(root, "color-scheme", cfg.cs.name);
 	}
 
-	char *buffer;
-	TOML_stringify(&buffer, root, NULL);
-	fputs(buffer, fp);
-	free(buffer);
+	if(json_serialize_to_file(root_value, filename) == JSONError)
+	{
+		LOG_ERROR_MSG("Error storing state to: %s", filename);
+	}
 
-	TOML_free(root);
-
-	fclose(fp);
+	json_value_free(root_value);
 }
 
-/* Serializes a global tab into TOML table. */
+/* Serializes a global tab into JSON table. */
 static void
-store_gtab(TOMLTable *gtab)
+store_gtab(JSON_Object *gtab)
 {
-	TOMLTable *splitter = TOML_alloc(TOML_TABLE);
-	TOMLTable_setKey(gtab, "splitter", splitter);
+	JSON_Object *splitter = add_object(gtab, "splitter");
 
-	TOMLArray *panes = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(gtab, "panes", panes);
+	JSON_Array *panes = add_array(gtab, "panes");
 
-	TOMLTable *left = TOML_alloc(TOML_TABLE);
-	TOMLTable *right = TOML_alloc(TOML_TABLE);
+	JSON_Object *left = append_object(panes);
+	JSON_Array *left_tabs = add_array(left, "tabs");
+	JSON_Object *left_tab = append_object(left_tabs);
 
-	TOMLArray_append(panes, left);
-	TOMLArray_append(panes, right);
-
-	TOMLTable *left_tab = TOML_alloc(TOML_TABLE);
-	TOMLArray *left_tabs = TOML_allocArray(TOML_TABLE, left_tab, NULL);
-	TOMLTable_setKey(left, "tabs", left_tabs);
-
-	TOMLTable *right_tab = TOML_alloc(TOML_TABLE);
-	TOMLArray *right_tabs = TOML_allocArray(TOML_TABLE, right_tab, NULL);
-	TOMLTable_setKey(right, "tabs", right_tabs);
+	JSON_Object *right = append_object(panes);
+	JSON_Array *right_tabs = add_array(right, "tabs");
+	JSON_Object *right_tab = append_object(right_tabs);
 
 	set_int(gtab, "active-pane", (curr_view == &lwin ? 0 : 1));
 
@@ -1593,13 +1507,13 @@ store_gtab(TOMLTable *gtab)
 	}
 }
 
-/* Serializes a view into TOML table. */
+/* Serializes a view into JSON table. */
 static void
-store_view(TOMLTable *view_data, view_t *view)
+store_view(JSON_Object *view_data, view_t *view)
 {
 	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
-		write_view_history_toml(view_data, view);
+		store_dhistory(view_data, view);
 	}
 
 	if(cfg.vifm_info & VINFO_STATE)
@@ -1612,47 +1526,42 @@ store_view(TOMLTable *view_data, view_t *view)
 		store_view_options(view_data, view);
 	}
 
-	put_sort_info_toml(view_data, view);
+	store_sort_info(view_data, view);
 }
 
-/* Serializes filters of a view into TOML table. */
+/* Serializes filters of a view into JSON table. */
 static void
-store_filters(TOMLTable *view_data, view_t *view)
+store_filters(JSON_Object *view_data, view_t *view)
 {
-	TOMLTable *filters = TOML_alloc(TOML_TABLE);
-	TOMLTable_setKey(view_data, "filters", filters);
-
+	JSON_Object *filters = add_object(view_data, "filters");
 	set_bool(filters, "invert", view->invert);
 	set_bool(filters, "dot", view->hide_dot);
 	set_str(filters, "manual", matcher_get_expr(view->manual_filter));
 	set_str(filters, "auto", view->auto_filter.raw);
 }
 
-/* Serializes a history into TOML. */
+/* Serializes a history into JSON. */
 static void
-store_history(TOMLTable *root, const char node[], const hist_t *hist)
+store_history(JSON_Object *root, const char node[], const hist_t *hist)
 {
 	if(hist->pos < 0)
 	{
 		return;
 	}
 
-	TOMLArray *entries = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(root, node, entries);
-
 	int i;
+	JSON_Array *entries = add_array(root, node);
 	for(i = hist->pos; i >= 0; i--)
 	{
-		TOMLArray_append(entries, TOML_allocString(hist->items[i]));
+		json_array_append_string(entries, hist->items[i]);
 	}
 }
 
-/* Serializes options into TOML table. */
+/* Serializes options into JSON table. */
 static void
-store_global_options(TOMLTable *root)
+store_global_options(JSON_Object *root)
 {
-	TOMLArray *options = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(root, "options", options);
+	JSON_Array *options = add_array(root, "options");
 
 	append_dstr(options, format_str("aproposprg=%s",
 				escape_spaces(cfg.apropos_prg)));
@@ -1766,12 +1675,11 @@ store_global_options(TOMLTable *root)
 	append_dstr(options, format_str("%swrap", cfg.wrap_quick_view ? "" : "no"));
 }
 
-/* Serializes view-specific options into TOML table. */
+/* Serializes view-specific options into JSON table. */
 static void
-store_view_options(TOMLTable *parent, view_t *view)
+store_view_options(JSON_Object *parent, view_t *view)
 {
-	TOMLArray *options = TOML_allocArray(TOML_STRING, NULL);
-	TOMLTable_setKey(parent, "options", options);
+	JSON_Array *options = add_array(parent, "options");
 
 	append_dstr(options, format_str("viewcolumns=%s",
 				escape_spaces(lwin.view_columns_g)));
@@ -1795,14 +1703,12 @@ store_view_options(TOMLTable *parent, view_t *view)
 				escape_spaces(lwin.preview_prg_g)));
 }
 
-/* Serializes file associations into TOML table. */
+/* Serializes file associations into JSON table. */
 static void
-store_assocs(TOMLTable *root, const char node[], assoc_list_t *assocs)
+store_assocs(JSON_Object *root, const char node[], assoc_list_t *assocs)
 {
-	TOMLArray *entries = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, node, entries);
-
 	int i;
+	JSON_Array *entries = add_array(root, node);
 	for(i = 0; i < assocs->count; ++i)
 	{
 		int j;
@@ -1818,7 +1724,7 @@ store_assocs(TOMLTable *root, const char node[], assoc_list_t *assocs)
 				continue;
 			}
 
-			TOMLTable *entry = TOML_alloc(TOML_TABLE);
+			JSON_Object *entry = append_object(entries);
 			set_str(entry, "matchers", matchers_get_expr(assoc.matchers));
 
 			if(ft_record.description[0] == '\0')
@@ -1835,37 +1741,30 @@ store_assocs(TOMLTable *root, const char node[], assoc_list_t *assocs)
 					free(cmd);
 				}
 			}
-
-			TOMLArray_append(entries, entry);
 		}
 	}
 }
 
-/* Serializes :commands into TOML table. */
+/* Serializes :commands into JSON table. */
 static void
-store_cmds(TOMLTable *root)
+store_cmds(JSON_Object *root)
 {
-	TOMLArray *cmds = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "cmds", cmds);
-
 	int i;
+	JSON_Array *cmds = add_array(root, "cmds");
 	char **cmds_list = vle_cmds_list_udcs();
 	for(i = 0; cmds_list[i] != NULL; i += 2)
 	{
-		TOMLTable *cmd = TOML_alloc(TOML_TABLE);
+		JSON_Object *cmd = append_object(cmds);
 		set_str(cmd, "name", cmds_list[i]);
 		set_str(cmd, "cmd", cmds_list[i + 1]);
-
-		TOMLArray_append(cmds, cmd);
 	}
 }
 
-/* Serializes marks into TOML table. */
+/* Serializes marks into JSON table. */
 static void
-store_marks(TOMLTable *root)
+store_marks(JSON_Object *root)
 {
-	TOMLArray *marks = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "marks", marks);
+	JSON_Array *marks = add_array(root, "marks");
 
 	int active_marks[NUM_MARKS];
 	const int len = init_active_marks(valid_marks, active_marks);
@@ -1879,97 +1778,78 @@ store_marks(TOMLTable *root)
 		{
 			const mark_t *const mark = get_mark(index);
 
-			TOMLTable *entry = TOML_alloc(TOML_TABLE);
+			JSON_Object *entry = append_object(marks);
 			char name[] = { m, '\0' };
 			set_str(entry, "name", name);
 			set_str(entry, "dir", mark->directory);
 			set_str(entry, "file", mark->file);
 			set_double(entry, "ts", (double)mark->timestamp);
-
-			TOMLArray_append(marks, entry);
 		}
 	}
 }
 
-/* Serializes bookmarks into TOML table. */
+/* Serializes bookmarks into JSON table. */
 static void
-store_bmarks(TOMLTable *root)
+store_bmarks(JSON_Object *root)
 {
-	TOMLArray *bmarks = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "bmarks", bmarks);
-
+	JSON_Array *bmarks = add_array(root, "bmarks");
 	bmarks_list(&store_bmark, bmarks);
 }
 
-/* bmarks_list() callback that writes a bookmark into TOML. */
+/* bmarks_list() callback that writes a bookmark into JSON. */
 static void
 store_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
 {
-	TOMLArray *bmarks = arg;
+	JSON_Array *bmarks = arg;
 
-	TOMLTable *bmark = TOML_alloc(TOML_TABLE);
+	JSON_Object *bmark = append_object(bmarks);
 	set_str(bmark, "path", path);
 	set_str(bmark, "tags", tags);
 	set_double(bmark, "ts", timestamp);
-
-	TOMLArray_append(bmarks, bmark);
 }
 
-/* Serializes registers into TOML table. */
+/* Serializes registers into JSON table. */
 static void
-store_regs(TOMLTable *root)
+store_regs(JSON_Object *root)
 {
-	TOMLArray *regs = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "regs", regs);
-
 	int i;
+	JSON_Array *regs = add_array(root, "regs");
 	for(i = 0; valid_registers[i] != '\0'; ++i)
 	{
 		const reg_t *const reg = regs_find(valid_registers[i]);
-		if(reg != NULL)
+		if(reg == NULL || reg->nfiles == 0)
 		{
-			TOMLArray *files = TOML_allocArray(TOML_STRING, NULL);
+			continue;
+		}
 
-			int j;
-			for(j = 0; j < reg->nfiles; ++j)
-			{
-				if(reg->files[j] != NULL)
-				{
-					TOMLArray_append(files, TOML_allocString(reg->files[j]));
-				}
-			}
+		JSON_Object *info = append_object(regs);
 
-			if(files->size == 0)
+		char name[] = { valid_registers[i], '\0' };
+		set_str(info, "name", name);
+
+		int j;
+		JSON_Array *files = add_array(info, "files");
+		for(j = 0; j < reg->nfiles; ++j)
+		{
+			if(reg->files[j] != NULL)
 			{
-				TOML_free(files);
-			}
-			else
-			{
-				TOMLTable *reg = TOML_alloc(TOML_TABLE);
-				char name[] = { valid_registers[i], '\0' };
-				set_str(reg, "name", name);
-				TOMLTable_setKey(reg, "files", files);
-				TOMLArray_append(regs, reg);
+				json_array_append_string(files, reg->files[j]);
 			}
 		}
 	}
 }
 
-/* Serializes trash into TOML table. */
+/* Serializes trash into JSON table. */
 static void
-store_trash(TOMLTable *root)
+store_trash(JSON_Object *root)
 {
-	TOMLArray *trash = TOML_allocArray(TOML_TABLE, NULL);
-	TOMLTable_setKey(root, "trash", trash);
-
 	int i;
+	JSON_Array *trash = add_array(root, "trash");
 	for(i = 0; i < trash_list_size; ++i)
 	{
-		TOMLTable *entry = TOML_alloc(TOML_TABLE);
+		JSON_Object *entry = append_object(trash);
 		set_str(entry, "trashed", trash_list[i].trash_name);
 		set_str(entry, "original", trash_list[i].path);
-
-		TOMLArray_append(trash, entry);
 	}
 }
 
@@ -2319,27 +2199,24 @@ write_view_history(FILE *fp, view_t *view, const char str[], char mark,
 	}
 }
 
-/* Stores history of the view into TOML representation. */
+/* Stores history of the view into JSON representation. */
 static void
-write_view_history_toml(TOMLTable *tbl, view_t *view)
+store_dhistory(JSON_Object *obj, view_t *view)
 {
 	flist_hist_save(view, NULL, NULL, -1);
 
-	TOMLArray *history = TOML_allocArray(TOML_TABLE, NULL);
+	JSON_Array *history = add_array(obj, "history");
 
 	int i;
 	for(i = 0; i <= view->history_pos && i < view->history_num; ++i)
 	{
-		TOMLTable *entry = TOML_allocTable(
-				TOML_allocString("dir"), TOML_allocString(view->history[i].dir),
-				TOML_allocString("file"), TOML_allocString(view->history[i].file),
-				TOML_allocString("relpos"), TOML_allocInt(view->history[i].rel_pos),
-				NULL, NULL);
-		TOMLArray_append(history, entry);
+		JSON_Object *entry = append_object(history);
+		set_str(entry, "dir", view->history[i].dir);
+		set_str(entry, "file", view->history[i].file);
+		set_int(entry, "relpos", view->history[i].rel_pos);
 	}
 
-	TOMLTable_setKey(tbl, "history", history);
-	set_bool(tbl, "restore-last-location", cfg.vifm_info & VINFO_SAVEDIRS);
+	set_bool(obj, "restore-last-location", cfg.vifm_info & VINFO_SAVEDIRS);
 }
 
 /* Stores history items to the file. */
@@ -2515,14 +2392,14 @@ put_sort_info(FILE *fp, char leading_char, const view_t *view)
 	fprintf(fp, "%c%s\n", leading_char, buf);
 }
 
-/* Puts sort description line of the view into TOML representation. */
+/* Puts sort description line of the view into JSON representation. */
 static void
-put_sort_info_toml(TOMLTable *tbl, const view_t *view)
+store_sort_info(JSON_Object *obj, const view_t *view)
 {
 	char buf[SK_LAST*5 + 1];
 	make_sort_info(view, buf, sizeof(buf));
 
-	set_str(tbl, "sorting", buf);
+	set_str(obj, "sorting", buf);
 }
 
 /* Builds a string describing sorting state of a view in the buffer. */
@@ -2606,92 +2483,119 @@ add_to_int_array(int **array, size_t len, int what)
 	return len;
 }
 
+/* Adds a new child array to an object and returns a pointer to it. */
+static JSON_Array *
+add_array(JSON_Object *obj, const char key[])
+{
+	JSON_Value *array = json_value_init_array();
+	json_object_set_value(obj, key, array);
+	return json_array(array);
+}
+
+/* Adds a new child object to an object and returns a pointer to it. */
+static JSON_Object *
+add_object(JSON_Object *obj, const char key[])
+{
+	JSON_Value *object = json_value_init_object();
+	json_object_set_value(obj, key, object);
+	return json_object(object);
+}
+
+/* Appends a new object to an array and returns a pointer to it. */
+static JSON_Object *
+append_object(JSON_Array *arr)
+{
+	JSON_Value *object = json_value_init_object();
+	json_array_append_value(arr, object);
+	return json_object(object);
+}
+
 /* Assigns value of a boolean key from a table to *value.  Returns non-zero if
  * value was assigned and zero otherwise and doesn't change *value. */
 static int
-get_bool(TOMLTable *tbl, const char key[], int *value)
+get_bool(const JSON_Object *obj, const char key[], int *value)
 {
-	TOMLRef ref = TOMLTable_getKey(tbl, key);
-	if(ref != NULL)
+	JSON_Value *val = json_object_get_value(obj, key);
+	if(json_value_get_type(val) == JSONBoolean)
 	{
-		*value = TOML_toBoolean(ref);
+		*value = json_value_get_boolean(val);
 	}
-	return (ref != NULL);
+	return (val != NULL);
 }
 
 /* Assigns value of an integer key from a table to *value.  Returns non-zero if
  * value was assigned and zero otherwise and doesn't change *value. */
 static int
-get_int(TOMLTable *tbl, const char key[], int *value)
+get_int(const JSON_Object *obj, const char key[], int *value)
 {
-	TOMLRef ref = TOMLTable_getKey(tbl, key);
-	if(ref != NULL)
+	JSON_Value *val = json_object_get_value(obj, key);
+	if(json_value_get_type(val) == JSONNumber)
 	{
-		*value = TOML_toInt(ref);
+		*value = json_value_get_number(val);
 	}
-	return (ref != NULL);
+	return (val != NULL);
 }
 
 /* Assigns value of a double key from a table to *value.  Returns non-zero if
  * value was assigned and zero otherwise and doesn't change *value. */
 static int
-get_double(TOMLTable *tbl, const char key[], double *value)
+get_double(const JSON_Object *obj, const char key[], double *value)
 {
-	TOMLRef ref = TOMLTable_getKey(tbl, key);
-	if(ref != NULL)
+	JSON_Value *val = json_object_get_value(obj, key);
+	if(json_value_get_type(val) == JSONNumber)
 	{
-		*value = TOML_toDouble(ref);
+		*value = json_value_get_number(val);
 	}
-	return (ref != NULL);
+	return (val != NULL);
 }
 
 /* Assigns value of a string key from a table to *value.  Returns non-zero if
  * value was assigned and zero otherwise and doesn't change *value. */
 static int
-get_str(TOMLTable *tbl, const char key[], const char **value)
+get_str(const JSON_Object *obj, const char key[], const char **value)
 {
-	TOMLRef ref = TOMLTable_getKey(tbl, key);
-	if(ref != NULL)
+	JSON_Value *val = json_object_get_value(obj, key);
+	if(json_value_get_type(val) == JSONString)
 	{
-		*value = TOML_getString(ref);
+		*value = json_value_get_string(val);
 	}
-	return (ref != NULL);
+	return (val != NULL);
 }
 
 /* Assigns value to a boolean key in a table. */
 static void
-set_bool(TOMLTable *tbl, const char key[], int value)
+set_bool(JSON_Object *obj, const char key[], int value)
 {
-	TOMLTable_setKey(tbl, key, TOML_allocBoolean(value));
+	json_object_set_boolean(obj, key, value);
 }
 
 /* Assigns value to an integer key in a table. */
 static void
-set_int(TOMLTable *tbl, const char key[], int value)
+set_int(JSON_Object *obj, const char key[], int value)
 {
-	TOMLTable_setKey(tbl, key, TOML_allocInt(value));
+	json_object_set_number(obj, key, value);
 }
 
 /* Assigns value to a double key in a table. */
 static void
-set_double(TOMLTable *tbl, const char key[], double value)
+set_double(JSON_Object *obj, const char key[], double value)
 {
-	TOMLTable_setKey(tbl, key, TOML_allocDouble(value));
+	json_object_set_number(obj, key, value);
 }
 
 /* Assigns value to a string key in a table. */
 static void
-set_str(TOMLTable *tbl, const char key[], const char value[])
+set_str(JSON_Object *obj, const char key[], const char value[])
 {
-	TOMLTable_setKey(tbl, key, TOML_allocString(value));
+	json_object_set_string(obj, key, value);
 }
 
 /* Appends value of a dynamically allocated string to an array, freeing the
  * string afterwards. */
 static void
-append_dstr(TOMLArray *array, char value[])
+append_dstr(JSON_Array *array, char value[])
 {
-	TOMLArray_append(array, TOML_allocString(value));
+	json_array_append_string(array, value);
 	free(value);
 }
 
