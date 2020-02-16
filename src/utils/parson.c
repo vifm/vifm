@@ -1421,7 +1421,7 @@ JSON_Value * json_value_init_null(void) {
 }
 
 JSON_Value * json_value_deep_copy(const JSON_Value *value) {
-    size_t i = 0;
+    size_t i = 0, n = 0;
     JSON_Value *return_value = NULL, *temp_value_copy = NULL, *temp_value = NULL;
     const char *temp_string = NULL, *temp_key = NULL;
     char *temp_string_copy = NULL;
@@ -1436,7 +1436,7 @@ JSON_Value * json_value_deep_copy(const JSON_Value *value) {
                 return NULL;
             }
             temp_array_copy = json_value_get_array(return_value);
-            for (i = 0; i < json_array_get_count(temp_array); i++) {
+            for (i = 0, n = json_array_get_count(temp_array); i < n; i++) {
                 temp_value = json_array_get_value(temp_array, i);
                 temp_value_copy = json_value_deep_copy(temp_value);
                 if (temp_value_copy == NULL) {
@@ -1694,11 +1694,11 @@ JSON_Status json_array_replace_null(JSON_Array *array, size_t i) {
 }
 
 JSON_Status json_array_clear(JSON_Array *array) {
-    size_t i = 0;
+    size_t i = 0, n = 0;
     if (array == NULL) {
         return JSONFailure;
     }
-    for (i = 0; i < json_array_get_count(array); i++) {
+    for (i = 0, n = json_array_get_count(array); i < n; i++) {
         json_value_free(json_array_get_value(array, i));
     }
     array->count = 0;
@@ -1934,7 +1934,7 @@ JSON_Status json_validate(const JSON_Value *schema, const JSON_Value *value) {
     JSON_Object *schema_object = NULL, *value_object = NULL;
     JSON_Value_Type schema_type = JSONError, value_type = JSONError;
     const char *key = NULL;
-    size_t i = 0, count = 0;
+    size_t i = 0, n = 0, count = 0;
     if (schema == NULL || value == NULL) {
         return JSONFailure;
     }
@@ -1953,7 +1953,7 @@ JSON_Status json_validate(const JSON_Value *schema, const JSON_Value *value) {
             }
             /* Get first value from array, rest is ignored */
             temp_schema_value = json_array_get_value(schema_array, 0);
-            for (i = 0; i < json_array_get_count(value_array); i++) {
+            for (i = 0, n = json_array_get_count(value_array); i < n; i++) {
                 temp_value = json_array_get_value(value_array, i);
                 if (json_validate(temp_schema_value, temp_value) == JSONFailure) {
                     return JSONFailure;
