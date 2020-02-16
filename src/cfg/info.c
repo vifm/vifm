@@ -187,9 +187,7 @@ read_info_file(int reread)
 	JSON_Array *prompt_hist = add_array(root, "prompt-hist");
 	JSON_Array *lfilt_hist = add_array(root, "lfilt-hist");
 	JSON_Array *trash = add_array(root, "trash");
-	JSON_Array *regs = add_array(root, "regs");
-	JSON_Array *reg[strlen(valid_registers)];
-	memset(reg, 0, sizeof(reg));
+	JSON_Object *regs = add_object(root, "regs");
 
 	JSON_Array *outer_tabs = add_array(root, "tabs");
 	JSON_Object *outer_tab = append_object(outer_tabs);
@@ -402,17 +400,14 @@ read_info_file(int reread)
 			char *pos = strchr(valid_registers, line_val[0]);
 			if(pos != NULL)
 			{
-				int index = pos - valid_registers;
-				if(reg[index] == NULL)
+				char name[] = { line_val[0], '\0' };
+				JSON_Array *files = json_object_get_array(regs, name);
+				if(files == NULL)
 				{
-					JSON_Object *reg_info = append_object(regs);
-
-					char name[] = { line_val[0], '\0' };
-					set_str(reg_info, "name", name);
-
-					reg[index] = add_array(reg_info, "files");
+					files = add_array(regs, name);
 				}
-				json_array_append_string(reg[index], line_val + 1);
+
+				json_array_append_string(files, line_val + 1);
 			}
 		}
 		else if(type == LINE_TYPE_LWIN_FILT)
@@ -794,21 +789,14 @@ load_bmarks(JSON_Object *root)
 static void
 load_regs(JSON_Object *root)
 {
-	JSON_Array *regs = json_object_get_array(root, "regs");
+	JSON_Object *regs = json_object_get_object(root, "regs");
 
 	int i, n;
-	for(i = 0, n = json_array_get_count(regs); i < n; ++i)
+	for(i = 0, n = json_object_get_count(regs); i < n; ++i)
 	{
-		JSON_Object *reg = json_array_get_object(regs, i);
-
-		const char *name;
-		if(!get_str(reg, "name", &name))
-		{
-			continue;
-		}
-
 		int j, m;
-		JSON_Array *files = json_object_get_array(reg, "files");
+		const char *name = json_object_get_name(regs, i);
+		JSON_Array *files = json_array(json_object_get_value_at(regs, i));
 		for(j = 0, m = json_array_get_count(files); j < m; ++j)
 		{
 			regs_append(name[0], json_array_get_string(files, j));
@@ -1812,7 +1800,7 @@ static void
 store_regs(JSON_Object *root)
 {
 	int i;
-	JSON_Array *regs = add_array(root, "regs");
+	JSON_Object *regs = add_object(root, "regs");
 	for(i = 0; valid_registers[i] != '\0'; ++i)
 	{
 		const reg_t *const reg = regs_find(valid_registers[i]);
@@ -1821,13 +1809,10 @@ store_regs(JSON_Object *root)
 			continue;
 		}
 
-		JSON_Object *info = append_object(regs);
-
 		char name[] = { valid_registers[i], '\0' };
-		set_str(info, "name", name);
+		JSON_Array *files = add_array(regs, name);
 
 		int j;
-		JSON_Array *files = add_array(info, "files");
 		for(j = 0; j < reg->nfiles; ++j)
 		{
 			if(reg->files[j] != NULL)
