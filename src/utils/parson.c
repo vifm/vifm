@@ -1094,10 +1094,11 @@ static int append_indent(char *buf, int level) {
 }
 
 static int append_string(char *buf, const char *string) {
-    if (buf == NULL) {
-        return (int)strlen(string);
+    int len = strlen(string);
+    if (buf != NULL) {
+        memcpy(buf, string, len + 1);
     }
-    return sprintf(buf, "%s", string);
+    return len;
 }
 
 #undef APPEND_STRING
