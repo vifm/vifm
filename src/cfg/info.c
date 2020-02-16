@@ -180,7 +180,7 @@ read_info_file(int reread)
 	JSON_Array *xassocs = add_array(root, "xassocs");
 	JSON_Array *viewers = add_array(root, "viewers");
 	JSON_Array *cmds = add_array(root, "cmds");
-	JSON_Array *marks = add_array(root, "marks");
+	JSON_Object *marks = add_object(root, "marks");
 	JSON_Array *bmarks = add_array(root, "bmarks");
 	JSON_Array *cmd_hist = add_array(root, "cmd-hist");
 	JSON_Array *search_hist = add_array(root, "search-hist");
@@ -284,9 +284,8 @@ read_info_file(int reread)
 						timestamp = time(NULL);
 					}
 
-					JSON_Object *mark = append_object(marks);
 					char name[] = { line_val[0], '\0' };
-					set_str(mark, "name", name);
+					JSON_Object *mark = add_object(marks, name);
 					set_str(mark, "dir", line2);
 					set_str(mark, "file", line3);
 					set_double(mark, "ts", timestamp);
@@ -747,17 +746,18 @@ load_cmds(JSON_Object *root)
 static void
 load_marks(JSON_Object *root)
 {
-	JSON_Array *marks = json_object_get_array(root, "marks");
+	JSON_Object *marks = json_object_get_object(root, "marks");
 
 	int i, n;
-	for(i = 0, n = json_array_get_count(marks); i < n; ++i)
+	for(i = 0, n = json_object_get_count(marks); i < n; ++i)
 	{
-		JSON_Object *mark = json_array_get_object(marks, i);
+		const char *name = json_object_get_name(marks, i);
+		JSON_Object *mark =  json_object(json_object_get_value_at(marks, i));
 
-		const char *name, *dir, *file;
+		const char *dir, *file;
 		double ts;
-		if(get_str(mark, "name", &name) && get_str(mark, "dir", &dir) &&
-				get_str(mark, "file", &file) && get_double(mark, "ts", &ts))
+		if(get_str(mark, "dir", &dir) && get_str(mark, "file", &file) &&
+				get_double(mark, "ts", &ts))
 		{
 			setup_user_mark(name[0], dir, file, (time_t)ts);
 		}
@@ -1764,7 +1764,7 @@ store_cmds(JSON_Object *root)
 static void
 store_marks(JSON_Object *root)
 {
-	JSON_Array *marks = add_array(root, "marks");
+	JSON_Object *marks = add_object(root, "marks");
 
 	int active_marks[NUM_MARKS];
 	const int len = init_active_marks(valid_marks, active_marks);
@@ -1778,9 +1778,8 @@ store_marks(JSON_Object *root)
 		{
 			const mark_t *const mark = get_mark(index);
 
-			JSON_Object *entry = append_object(marks);
 			char name[] = { m, '\0' };
-			set_str(entry, "name", name);
+			JSON_Object *entry = add_object(marks, name);
 			set_str(entry, "dir", mark->directory);
 			set_str(entry, "file", mark->file);
 			set_double(entry, "ts", (double)mark->timestamp);
