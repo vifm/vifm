@@ -1,7 +1,7 @@
 /*
  SPDX-License-Identifier: MIT
 
- Parson 1.0.2 ( http://kgabis.github.com/parson/ )
+ Parson 1.0.2~vifm ( http://kgabis.github.com/parson/ )
  Copyright (c) 2012 - 2019 Krzysztof Gabis
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -65,6 +65,7 @@ static JSON_Malloc_Function parson_malloc = malloc;
 static JSON_Free_Function parson_free = free;
 
 static int parson_escape_slashes = 1;
+static int parson_check_strings = 1;
 
 #define IS_CONT(b) (((unsigned char)(b) & 0xC0) == 0x80) /* is utf-8 continuation byte */
 
@@ -249,6 +250,10 @@ static int verify_utf8_sequence(const unsigned char *string, int *len) {
 }
 
 static int is_valid_utf8(const char *string, size_t string_len) {
+    if (!parson_check_strings) {
+        return 1;
+    }
+
     int len = 0;
     const char *string_end =  string + string_len;
     while (string < string_end) {
@@ -2077,4 +2082,8 @@ void json_set_allocation_functions(JSON_Malloc_Function malloc_fun, JSON_Free_Fu
 
 void json_set_escape_slashes(int escape_slashes) {
     parson_escape_slashes = escape_slashes;
+}
+
+void json_set_check_strings(int check_strings) {
+    parson_check_strings = check_strings;
 }

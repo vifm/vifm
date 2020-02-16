@@ -170,6 +170,7 @@ vifm_main(int argc, char *argv[])
 
 	/* Configure it once. */
 	json_set_escape_slashes(0);
+	json_set_check_strings(0);
 
 	args_parse(&vifm_args, argc, argv, dir);
 	args_process(&vifm_args, 1);

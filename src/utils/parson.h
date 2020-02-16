@@ -1,7 +1,7 @@
 /*
  SPDX-License-Identifier: MIT
 
- Parson 1.0.2 ( http://kgabis.github.com/parson/ )
+ Parson 1.0.2~vifm ( http://kgabis.github.com/parson/ )
  Copyright (c) 2012 - 2019 Krzysztof Gabis
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -65,6 +65,10 @@ void json_set_allocation_functions(JSON_Malloc_Function malloc_fun, JSON_Free_Fu
 /* Sets if slashes should be escaped or not when serializing JSON. By default slashes are escaped.
  This function sets a global setting and is not thread safe. */
 void json_set_escape_slashes(int escape_slashes);
+
+/* Sets if strings should be checked for being UTF-8 encoded.  By default they are checked.
+ This function sets a global setting and is not thread safe. */
+void json_set_check_strings(int check_strings);
 
 /* Parses first JSON value in a file, returns NULL in case of error */
 JSON_Value * json_parse_file(const char *filename);
