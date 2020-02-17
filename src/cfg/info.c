@@ -23,7 +23,7 @@
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fpos_t fclose() fgetpos() fgets() fprintf() fputc()
-                      fread() fscanf() fsetpos() fwrite() snprintf() */
+                      fscanf() fsetpos() snprintf() */
 #include <stdlib.h> /* abs() free() */
 #include <string.h> /* memcpy() memset() strtol() strcmp() strchr() strlen() */
 
@@ -32,6 +32,7 @@
 #include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
 #include "../engine/options.h"
+#include "../io/iop.h"
 #include "../ui/fileview.h"
 #include "../ui/ui.h"
 #include "../utils/file_streams.h"
@@ -86,7 +87,6 @@ static void get_history(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
-static int copy_file_internal(FILE *src, FILE *dst);
 static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
 static void store_gtab(JSON_Object *gtab);
@@ -978,51 +978,13 @@ write_info_file(void)
 static int
 copy_file(const char src[], const char dst[])
 {
-	FILE *const src_fp = os_fopen(src, "rb");
-	FILE *const dst_fp = os_fopen(dst, "wb");
-	int result;
+	io_args_t args = {
+		.arg1.src = src,
+		.arg2.dst = dst,
+		.arg3.crs = IO_CRS_REPLACE_FILES,
+	};
 
-	result = copy_file_internal(src_fp, dst_fp);
-
-	if(dst_fp != NULL)
-	{
-		(void)fclose(dst_fp);
-	}
-	if(src_fp != NULL)
-	{
-		(void)fclose(src_fp);
-	}
-
-	if(result != 0)
-	{
-		(void)remove(dst);
-	}
-
-	return result;
-}
-
-/* Internal sub-function of the copy_file() function.  Returns zero on
- * success. */
-static int
-copy_file_internal(FILE *src, FILE *dst)
-{
-	char buffer[4*1024];
-	size_t nread;
-
-	if(src == NULL || dst == NULL)
-	{
-		return 1;
-	}
-
-	while((nread = fread(&buffer[0], 1, sizeof(buffer), src)))
-	{
-		if(fwrite(&buffer[0], 1, nread, dst) != nread)
-		{
-			break;
-		}
-	}
-
-	return nread > 0;
+	return iop_cp(&args);
 }
 
 /* Reads contents of the filename file as an info file and updates it with the
