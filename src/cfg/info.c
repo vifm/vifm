@@ -76,6 +76,7 @@ static void load_cmds(JSON_Object *root);
 static void load_marks(JSON_Object *root);
 static void load_bmarks(JSON_Object *root);
 static void load_regs(JSON_Object *root);
+static void load_dir_stack(JSON_Object *root);
 static void load_trash(JSON_Object *root);
 static void load_history(JSON_Object *root, const char node[], hist_t *hist,
 		void (*saver)(const char[]));
@@ -104,6 +105,7 @@ static void store_bmarks(JSON_Object *root);
 static void store_bmark(const char path[], const char tags[], time_t timestamp,
 		void *arg);
 static void store_regs(JSON_Object *root);
+static void store_dir_stack(JSON_Object *root);
 static void store_trash(JSON_Object *root);
 static void process_hist_entry(view_t *view, const char dir[],
 		const char file[], int pos, char ***lh, int *nlh, int **lhp, size_t *nlhp);
@@ -186,6 +188,7 @@ read_info_file(int reread)
 	JSON_Array *search_hist = add_array(root, "search-hist");
 	JSON_Array *prompt_hist = add_array(root, "prompt-hist");
 	JSON_Array *lfilt_hist = add_array(root, "lfilt-hist");
+	JSON_Array *dir_stack = add_array(root, "dir-stack");
 	JSON_Array *trash = add_array(root, "trash");
 	JSON_Object *regs = add_object(root, "regs");
 
@@ -377,7 +380,11 @@ read_info_file(int reread)
 				{
 					if((line4 = read_vifminfo_line(fp, line4)) != NULL)
 					{
-						dir_stack_push(line_val, line2, line3 + 1, line4);
+						JSON_Object *entry = append_object(dir_stack);
+						set_str(entry, "left-dir", line_val);
+						set_str(entry, "left-file", line2);
+						set_str(entry, "right-dir", line3 + 1);
+						set_str(entry, "right-file", line4);
 					}
 				}
 			}
@@ -494,6 +501,7 @@ load_state(JSON_Object *root, int reread)
 	load_marks(root);
 	load_bmarks(root);
 	load_regs(root);
+	load_dir_stack(root);
 	load_trash(root);
 	load_history(root, "cmd-hist", &curr_stats.cmd_hist, &hists_commands_save);
 	load_history(root, "search-hist", &curr_stats.search_hist, &hists_search_save);
@@ -800,6 +808,28 @@ load_regs(JSON_Object *root)
 		for(j = 0, m = json_array_get_count(files); j < m; ++j)
 		{
 			regs_append(name[0], json_array_get_string(files, j));
+		}
+	}
+}
+
+/* Loads directory stack from JSON. */
+static void
+load_dir_stack(JSON_Object *root)
+{
+	JSON_Array *entries = json_object_get_array(root, "dir-stack");
+
+	int i, n;
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
+	{
+		JSON_Object *entry = json_array_get_object(entries, i);
+
+		const char *left_dir, *left_file, *right_dir, *right_file;
+		if(get_str(entry, "left-dir", &left_dir) &&
+				get_str(entry, "left-file", &left_file) &&
+				get_str(entry, "right-dir", &right_dir) &&
+				get_str(entry, "right-file", &right_file))
+		{
+			dir_stack_push(left_dir, left_file, right_dir, right_file);
 		}
 	}
 }
@@ -1408,6 +1438,11 @@ update_info_file_json(const char filename[], int merge)
 		store_regs(root);
 	}
 
+	if(cfg.vifm_info & VINFO_DIRSTACK)
+	{
+		store_dir_stack(root);
+	}
+
 	if(cfg.vifm_info & VINFO_STATE)
 	{
 		set_bool(root, "use-term-multiplexer", cfg.use_term_multiplexer);
@@ -1782,6 +1817,24 @@ store_regs(JSON_Object *root)
 				json_array_append_string(files, reg->files[j]);
 			}
 		}
+	}
+}
+
+/* Serializes directory stack into JSON table. */
+static void
+store_dir_stack(JSON_Object *root)
+{
+	unsigned int i;
+	JSON_Array *entries = add_array(root, "dir-stack");
+	for(i = 0U; i < dir_stack_top; ++i)
+	{
+		dir_stack_entry_t *const entry = &dir_stack[i];
+
+		JSON_Object *info = append_object(entries);
+		set_str(info, "left-dir", entry->lpane_dir);
+		set_str(info, "left-file", entry->lpane_file);
+		set_str(info, "right-dir", entry->rpane_dir);
+		set_str(info, "right-file", entry->rpane_file);
 	}
 }
 
