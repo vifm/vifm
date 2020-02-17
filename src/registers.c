@@ -193,15 +193,7 @@ regs_init(void)
 int
 regs_exists(int reg_name)
 {
-	int i;
-	for(i = 0; i < NUM_REGISTERS; ++i)
-	{
-		if(valid_registers[i] == reg_name)
-		{
-			return 1;
-		}
-	}
-	return 0;
+	return char_is_one_of(valid_registers, reg_name);
 }
 
 reg_t *
