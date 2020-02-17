@@ -361,7 +361,15 @@ op_removesl(ops_t *ops, void *data, const char *src, const char *dst)
 
 			/* SHFileOperationW requires pFrom to be double-nul terminated. */
 			const size_t len = wcslen(utf16_path);
-			utf16_path = reallocarray(utf16_path, len + 1U + 1U, sizeof(*utf16_path));
+			wchar_t *new_utf16_path = reallocarray(utf16_path, len + 1U + 1U,
+					sizeof(*utf16_path));
+			if(new_utf16_path == NULL)
+			{
+				free(utf16_path);
+				return -1;
+			}
+
+			utf16_path = new_utf16_path;
 			utf16_path[len + 1U] = L'\0';
 
 			SHFILEOPSTRUCTW fo = {
