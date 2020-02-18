@@ -90,6 +90,8 @@ static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
+static JSON_Value * serialize_state(void);
+static void merge_states(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab);
 static void store_view(JSON_Object *view_data, view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
@@ -1001,7 +1003,7 @@ write_info_file(void)
 
 	char json_path[PATH_MAX + 1];
 	snprintf(json_path, sizeof(json_path), "%s.json", info_file);
-	update_info_file_json(json_path, 0);
+	update_info_file_json(json_path, 1);
 }
 
 /* Copies the src file to the dst location.  Returns zero on success. */
@@ -1376,6 +1378,28 @@ update_info_file(const char filename[], int merge)
 static void
 update_info_file_json(const char filename[], int merge)
 {
+	JSON_Value *current = serialize_state();
+
+	if(merge)
+	{
+		JSON_Value *admixture = json_parse_file(filename);
+		merge_states(json_object(current), json_object(admixture));
+		json_value_free(admixture);
+	}
+
+	if(json_serialize_to_file(current, filename) == JSONError)
+	{
+		LOG_ERROR_MSG("Error storing state to: %s", filename);
+	}
+
+	json_value_free(current);
+}
+
+/* Serializes state of current instance into a JSON object.  Returns the
+ * object. */
+static JSON_Value *
+serialize_state(void)
+{
 	JSON_Value *root_value = json_value_init_object();
 	JSON_Object *root = json_object(root_value);
 
@@ -1453,12 +1477,14 @@ update_info_file_json(const char filename[], int merge)
 		set_str(root, "color-scheme", cfg.cs.name);
 	}
 
-	if(json_serialize_to_file(root_value, filename) == JSONError)
-	{
-		LOG_ERROR_MSG("Error storing state to: %s", filename);
-	}
+	return root_value;
+}
 
-	json_value_free(root_value);
+/* Adds parts of admixture to current state to avoid losing state stored by
+ * other instances. */
+static void
+merge_states(JSON_Object *current, JSON_Object *admixture)
+{
 }
 
 /* Serializes a global tab into JSON table. */
