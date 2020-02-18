@@ -1709,23 +1709,27 @@ store_assocs(JSON_Object *root, const char node[], assoc_list_t *assocs)
 				continue;
 			}
 
+			char *doubled_commas_cmd = double_char(ft_record.command, ',');
+
 			JSON_Object *entry = append_object(entries);
 			set_str(entry, "matchers", matchers_get_expr(assoc.matchers));
 
 			if(ft_record.description[0] == '\0')
 			{
-				set_str(entry, "cmd", ft_record.command);
+				set_str(entry, "cmd", doubled_commas_cmd);
 			}
 			else
 			{
 				char *cmd = format_str("{%s}%s", ft_record.description,
-						ft_record.command);
+						doubled_commas_cmd);
 				if(cmd != NULL)
 				{
 					set_str(entry, "cmd", cmd);
 					free(cmd);
 				}
 			}
+
+			free(doubled_commas_cmd);
 		}
 	}
 }
