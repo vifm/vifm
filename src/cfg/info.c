@@ -92,6 +92,7 @@ static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
 static JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, JSON_Object *admixture);
+static void merge_regs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab);
 static void store_view(JSON_Object *view_data, view_t *view);
@@ -1486,9 +1487,33 @@ serialize_state(void)
 static void
 merge_states(JSON_Object *current, JSON_Object *admixture)
 {
+	if(cfg.vifm_info & VINFO_REGISTERS)
+	{
+		merge_regs(current, admixture);
+	}
+
 	if(cfg.vifm_info & VINFO_DIRSTACK)
 	{
 		merge_dir_stack(current, admixture);
+	}
+}
+
+/* Merges two states of registers. */
+static void
+merge_regs(JSON_Object *current, JSON_Object *admixture)
+{
+	JSON_Object *regs = json_object_get_object(current, "regs");
+	JSON_Object *updated = json_object_get_object(admixture, "regs");
+
+	int i, n;
+	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
+	{
+		const char *name = json_object_get_name(updated, i);
+		if(!json_object_has_value(regs, name))
+		{
+			JSON_Value *reg = json_object_get_value_at(updated, i);
+			json_object_set_value(regs, name, json_value_deep_copy(reg));
+		}
 	}
 }
 
