@@ -92,6 +92,7 @@ static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
 static JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, JSON_Object *admixture);
+static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab);
 static void store_view(JSON_Object *view_data, view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
@@ -1485,6 +1486,22 @@ serialize_state(void)
 static void
 merge_states(JSON_Object *current, JSON_Object *admixture)
 {
+	if(cfg.vifm_info & VINFO_DIRSTACK)
+	{
+		merge_dir_stack(current, admixture);
+	}
+}
+
+/* Merges two directory stack states. */
+static void
+merge_dir_stack(JSON_Object *current, JSON_Object *admixture)
+{
+	/* Just leave new state as is if was changed since startup. */
+	if(!dir_stack_changed())
+	{
+		JSON_Value *updated = json_object_get_value(admixture, "dir-stack");
+		json_object_set_value(current, "dir-stack", json_value_deep_copy(updated));
+	}
 }
 
 /* Serializes a global tab into JSON table. */
