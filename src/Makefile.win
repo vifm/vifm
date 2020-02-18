@@ -173,7 +173,7 @@ $(out_dirs) $(abspath ../data/):
 	mkdir -p $@
 
 # only builds tests without running them
-tests: ../build-aux/config.h
+tests: | ../build-aux/config.h $(vifm_EXECUTABLE)
 	mkdir -p "$(abspath ../tests)"
 	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
 	     TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)' build
