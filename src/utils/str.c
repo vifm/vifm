@@ -1090,6 +1090,23 @@ chars_in_str(const char s[], char c)
 	return char_count;
 }
 
+char *
+double_char(const char str[], char c)
+{
+	char *doubled = malloc(strlen(str) + chars_in_str(str, c) + 1);
+	char *p = doubled;
+	while(*str != '\0')
+	{
+		if(*str == c)
+		{
+			*p++ = c;
+		}
+		*p++ = *str++;
+	}
+	*p = '\0';
+	return doubled;
+}
+
 #ifdef _WIN32
 
 char *
