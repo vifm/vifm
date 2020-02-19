@@ -93,6 +93,7 @@ static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
 static JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, JSON_Object *admixture);
+static void merge_marks(JSON_Object *current, JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, JSON_Object *admixture);
 static void merge_history(JSON_Object *current, JSON_Object *admixture,
 		const char node[]);
@@ -1489,6 +1490,11 @@ serialize_state(void)
 static void
 merge_states(JSON_Object *current, JSON_Object *admixture)
 {
+	if(cfg.vifm_info & VINFO_MARKS)
+	{
+		merge_marks(current, admixture);
+	}
+
 	if(cfg.vifm_info & VINFO_BOOKMARKS)
 	{
 		merge_bmarks(current, admixture);
@@ -1525,6 +1531,28 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 	}
 
 	merge_trash(current, admixture);
+}
+
+/* Merges two sets of marks. */
+static void
+merge_marks(JSON_Object *current, JSON_Object *admixture)
+{
+	JSON_Object *bmarks = json_object_get_object(current, "marks");
+	JSON_Object *updated = json_object_get_object(admixture, "marks");
+
+	int i, n;
+	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
+	{
+		JSON_Object *mark = json_object(json_object_get_value_at(updated, i));
+
+		double ts;
+		const char *name = json_object_get_name(updated, i);
+		if(get_double(mark, "ts", &ts) && is_mark_older(name[0], (time_t)ts))
+		{
+			JSON_Value *value = json_object_get_wrapping_value(mark);
+			json_object_set_value(bmarks, name, json_value_deep_copy(value));
+		}
+	}
 }
 
 /* Merges two sets of bookmarks. */
