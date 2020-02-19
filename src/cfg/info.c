@@ -97,6 +97,7 @@ static void merge_history(JSON_Object *current, JSON_Object *admixture,
 		const char node[]);
 static void merge_regs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
+static void merge_trash(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab);
 static void store_view(JSON_Object *view_data, view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
@@ -1519,6 +1520,8 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 	{
 		merge_dir_stack(current, admixture);
 	}
+
+	merge_trash(current, admixture);
 }
 
 /* Merges two states of a particular kind of history. */
@@ -1592,6 +1595,31 @@ merge_dir_stack(JSON_Object *current, JSON_Object *admixture)
 	{
 		JSON_Value *updated = json_object_get_value(admixture, "dir-stack");
 		json_object_set_value(current, "dir-stack", json_value_deep_copy(updated));
+	}
+}
+
+/* Merges two trash states. */
+static void
+merge_trash(JSON_Object *current, JSON_Object *admixture)
+{
+	JSON_Array *trash = json_object_get_array(current, "trash");
+	JSON_Array *updated = json_object_get_array(admixture, "trash");
+
+	int i, n;
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		JSON_Object *entry = json_array_get_object(updated, i);
+
+		const char *trashed, *original;
+		if(get_str(entry, "trashed", &trashed) &&
+				get_str(entry, "original", &original))
+		{
+			if(!trash_has_entry(original, trashed))
+			{
+				JSON_Value *value = json_object_get_wrapping_value(entry);
+				json_array_append_value(trash, json_value_deep_copy(value));
+			}
+		}
 	}
 }
 
