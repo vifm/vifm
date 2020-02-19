@@ -48,6 +48,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/trie.h"
 #include "../utils/utils.h"
 #include "../bmarks.h"
 #include "../cmd_core.h"
@@ -92,6 +93,8 @@ static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
 static JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, JSON_Object *admixture);
+static void merge_history(JSON_Object *current, JSON_Object *admixture,
+		const char node[]);
 static void merge_regs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab);
@@ -1487,6 +1490,26 @@ serialize_state(void)
 static void
 merge_states(JSON_Object *current, JSON_Object *admixture)
 {
+	if(cfg.vifm_info & VINFO_CHISTORY)
+	{
+		merge_history(current, admixture, "cmd-hist");
+	}
+
+	if(cfg.vifm_info & VINFO_SHISTORY)
+	{
+		merge_history(current, admixture, "search-hist");
+	}
+
+	if(cfg.vifm_info & VINFO_PHISTORY)
+	{
+		merge_history(current, admixture, "prompt-hist");
+	}
+
+	if(cfg.vifm_info & VINFO_FHISTORY)
+	{
+		merge_history(current, admixture, "lfilt-hist");
+	}
+
 	if(cfg.vifm_info & VINFO_REGISTERS)
 	{
 		merge_regs(current, admixture);
@@ -1496,6 +1519,49 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 	{
 		merge_dir_stack(current, admixture);
 	}
+}
+
+/* Merges two states of a particular kind of history. */
+static void
+merge_history(JSON_Object *current, JSON_Object *admixture, const char node[])
+{
+	JSON_Array *updated = json_object_get_array(admixture, node);
+	if(json_array_get_count(updated) == 0)
+	{
+		return;
+	}
+
+	int i, n;
+	JSON_Array *entries = json_object_get_array(current, node);
+	trie_t *trie = trie_create();
+
+	JSON_Value *merged_value = json_value_init_array();
+	JSON_Array *merged = json_array(merged_value);
+
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
+	{
+		const char *entry = json_array_get_string(entries, i);
+		trie_put(trie, entry);
+	}
+
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		void *data;
+		const char *entry = json_array_get_string(updated, i);
+		if(trie_get(trie, entry, &data) != 0)
+		{
+			json_array_append_string(merged, entry);
+		}
+	}
+
+	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
+	{
+		json_array_append_string(merged, json_array_get_string(entries, i));
+	}
+
+	trie_free(trie);
+
+	json_object_set_value(current, node, merged_value);
 }
 
 /* Merges two states of registers. */
