@@ -191,7 +191,7 @@ read_info_file(int reread)
 	JSON_Array *viewers = add_array(root, "viewers");
 	JSON_Array *cmds = add_array(root, "cmds");
 	JSON_Object *marks = add_object(root, "marks");
-	JSON_Array *bmarks = add_array(root, "bmarks");
+	JSON_Object *bmarks = add_object(root, "bmarks");
 	JSON_Array *cmd_hist = add_array(root, "cmd-hist");
 	JSON_Array *search_hist = add_array(root, "search-hist");
 	JSON_Array *prompt_hist = add_array(root, "prompt-hist");
@@ -309,8 +309,7 @@ read_info_file(int reread)
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL &&
 						read_number(line3, &timestamp))
 				{
-					JSON_Object *bmark = append_object(bmarks);
-					set_str(bmark, "path", line_val);
+					JSON_Object *bmark = add_object(bmarks, line_val);
 					set_str(bmark, "tags", line2);
 					set_double(bmark, "ts", timestamp);
 				}
@@ -779,24 +778,22 @@ load_marks(JSON_Object *root)
 static void
 load_bmarks(JSON_Object *root)
 {
-	JSON_Array *bmarks = json_object_get_array(root, "bmarks");
+	JSON_Object *bmarks = json_object_get_object(root, "bmarks");
 
 	int i, n;
-	for(i = 0, n = json_array_get_count(bmarks); i < n; ++i)
+	for(i = 0, n = json_object_get_count(bmarks); i < n; ++i)
 	{
-		JSON_Object *bmark = json_array_get_object(bmarks, i);
+		const char *path = json_object_get_name(bmarks, i);
+		JSON_Object *bmark =  json_object(json_object_get_value_at(bmarks, i));
 
-		const char *path, *tags;
+		const char *tags;
 		double ts;
-		if(!get_str(bmark, "path", &path) || !get_str(bmark, "tags", &tags) ||
-				!get_double(bmark, "ts", &ts))
+		if(get_str(bmark, "tags", &tags) && get_double(bmark, "ts", &ts))
 		{
-			continue;
-		}
-
-		if(bmarks_setup(path, tags, (time_t)ts) != 0)
-		{
-			LOG_ERROR_MSG("Can't add a bookmark for (%s, %s)", path, tags);
+			if(bmarks_setup(path, tags, (time_t)ts) != 0)
+			{
+				LOG_ERROR_MSG("Can't add a bookmark: %s (%s)", path, tags);
+			}
 		}
 	}
 }
@@ -1942,7 +1939,7 @@ store_marks(JSON_Object *root)
 static void
 store_bmarks(JSON_Object *root)
 {
-	JSON_Array *bmarks = add_array(root, "bmarks");
+	JSON_Object *bmarks = add_object(root, "bmarks");
 	bmarks_list(&store_bmark, bmarks);
 }
 
@@ -1950,10 +1947,9 @@ store_bmarks(JSON_Object *root)
 static void
 store_bmark(const char path[], const char tags[], time_t timestamp, void *arg)
 {
-	JSON_Array *bmarks = arg;
+	JSON_Object *bmarks = arg;
 
-	JSON_Object *bmark = append_object(bmarks);
-	set_str(bmark, "path", path);
+	JSON_Object *bmark = add_object(bmarks, path);
 	set_str(bmark, "tags", tags);
 	set_double(bmark, "ts", timestamp);
 }
