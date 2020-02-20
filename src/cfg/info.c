@@ -194,7 +194,7 @@ read_info_file(int reread)
 	JSON_Array *assocs = add_array(root, "assocs");
 	JSON_Array *xassocs = add_array(root, "xassocs");
 	JSON_Array *viewers = add_array(root, "viewers");
-	JSON_Array *cmds = add_array(root, "cmds");
+	JSON_Object *cmds = add_object(root, "cmds");
 	JSON_Object *marks = add_object(root, "marks");
 	JSON_Object *bmarks = add_object(root, "bmarks");
 	JSON_Array *cmd_hist = add_array(root, "cmd-hist");
@@ -281,9 +281,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				JSON_Object *cmd = append_object(cmds);
-				set_str(cmd, "name", line_val);
-				set_str(cmd, "cmd", line2);
+				json_object_set_string(cmds, line_val, line2);
 			}
 		}
 		else if(type == LINE_TYPE_MARK)
@@ -737,22 +735,19 @@ load_viewers(JSON_Object *root)
 static void
 load_cmds(JSON_Object *root)
 {
-	JSON_Array *cmds = json_object_get_array(root, "cmds");
+	JSON_Object *cmds = json_object_get_object(root, "cmds");
 
 	int i, n;
-	for(i = 0, n = json_array_get_count(cmds); i < n; ++i)
+	for(i = 0, n = json_object_get_count(cmds); i < n; ++i)
 	{
-		JSON_Object *entry = json_array_get_object(cmds, i);
+		const char *name = json_object_get_name(cmds, i);
+		const char *cmd = json_string(json_object_get_value_at(cmds, i));
 
-		const char *name, *cmd;
-		if(get_str(entry, "name", &name) && get_str(entry, "cmd", &cmd))
+		char *cmdadd_cmd = format_str("command %s %s", name, cmd);
+		if(cmdadd_cmd != NULL)
 		{
-			char *cmdadd_cmd = format_str("command %s %s", name, cmd);
-			if(cmdadd_cmd != NULL)
-			{
-				exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
-				free(cmdadd_cmd);
-			}
+			exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
+			free(cmdadd_cmd);
 		}
 	}
 }
@@ -2045,13 +2040,11 @@ static void
 store_cmds(JSON_Object *root)
 {
 	int i;
-	JSON_Array *cmds = add_array(root, "cmds");
+	JSON_Object *cmds = add_object(root, "cmds");
 	char **cmds_list = vle_cmds_list_udcs();
 	for(i = 0; cmds_list[i] != NULL; i += 2)
 	{
-		JSON_Object *cmd = append_object(cmds);
-		set_str(cmd, "name", cmds_list[i]);
-		set_str(cmd, "cmd", cmds_list[i + 1]);
+		json_object_set_string(cmds, cmds_list[i], cmds_list[i + 1]);
 	}
 }
 
