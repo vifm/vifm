@@ -45,7 +45,7 @@ void flist_hist_save(view_t *view, const char path[], const char file[],
 
 /* Checks whether given path to directory is in view history.  Returns non-zero
  * if so, otherwise zero is returned. */
-int flist_hist_contains(view_t *view, const char path[]);
+int flist_hist_contains(const view_t *view, const char path[]);
 
 /* Empties history of the view. */
 void flist_hist_clear(view_t *view);
