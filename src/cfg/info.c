@@ -96,6 +96,7 @@ static void merge_states(JSON_Object *current, JSON_Object *admixture);
 static void merge_tabs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dhistory(JSON_Object *current, JSON_Object *admixture,
 		const view_t *view);
+static void merge_commands(JSON_Object *current, JSON_Object *admixture);
 static void merge_marks(JSON_Object *current, JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, JSON_Object *admixture);
 static void merge_history(JSON_Object *current, JSON_Object *admixture,
@@ -1490,6 +1491,11 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 {
 	merge_tabs(current, admixture);
 
+	if(cfg.vifm_info & VINFO_COMMANDS)
+	{
+		merge_commands(current, admixture);
+	}
+
 	if(cfg.vifm_info & VINFO_MARKS)
 	{
 		merge_marks(current, admixture);
@@ -1617,6 +1623,25 @@ merge_dhistory(JSON_Object *current, JSON_Object *admixture, const view_t *view)
 	}
 
 	json_object_set_value(current, "history", merged_value);
+}
+
+/* Merges two sets of :commands. */
+static void
+merge_commands(JSON_Object *current, JSON_Object *admixture)
+{
+	JSON_Object *cmds = json_object_get_object(current, "cmds");
+	JSON_Object *updated = json_object_get_object(admixture, "cmds");
+
+	int i, n;
+	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
+	{
+		const char *name = json_object_get_name(updated, i);
+		if(!json_object_has_value(cmds, name))
+		{
+			JSON_Value *value = json_object_get_value_at(updated, i);
+			json_object_set_string(cmds, name, json_string(value));
+		}
+	}
 }
 
 /* Merges two sets of marks. */
