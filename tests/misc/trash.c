@@ -19,6 +19,12 @@ SETUP_ONCE()
 	assert_success(trash_set_specs(sandbox));
 }
 
+TEARDOWN_ONCE()
+{
+	trash_empty_all();
+	wait_for_bg();
+}
+
 SETUP()
 {
 	restore_cwd(saved_cwd);
