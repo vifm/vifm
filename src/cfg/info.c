@@ -1791,8 +1791,6 @@ merge_trash(JSON_Object *current, JSON_Object *admixture)
 static void
 store_gtab(JSON_Object *gtab)
 {
-	JSON_Object *splitter = add_object(gtab, "splitter");
-
 	JSON_Array *panes = add_array(gtab, "panes");
 
 	JSON_Object *left = append_object(panes);
@@ -1803,15 +1801,15 @@ store_gtab(JSON_Object *gtab)
 	JSON_Array *right_tabs = add_array(right, "tabs");
 	JSON_Object *right_tab = append_object(right_tabs);
 
-	set_int(gtab, "active-pane", (curr_view == &lwin ? 0 : 1));
-
-	set_bool(gtab, "preview", curr_stats.preview.on);
-
 	store_view(left_tab, &lwin);
 	store_view(right_tab, &rwin);
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
+		set_int(gtab, "active-pane", (curr_view == &lwin ? 0 : 1));
+		set_bool(gtab, "preview", curr_stats.preview.on);
+
+		JSON_Object *splitter = add_object(gtab, "splitter");
 		set_int(splitter, "pos", curr_stats.splitter_pos);
 		set_str(splitter, "orientation", curr_stats.split == VSPLIT ? "v" : "h");
 		set_bool(splitter, "expanded", curr_stats.number_of_windows == 1);
@@ -1837,7 +1835,10 @@ store_view(JSON_Object *view_data, view_t *view)
 		store_view_options(view_data, view);
 	}
 
-	store_sort_info(view_data, view);
+	if(cfg.vifm_info & VINFO_TUI)
+	{
+		store_sort_info(view_data, view);
+	}
 }
 
 /* Serializes filters of a view into JSON table. */
