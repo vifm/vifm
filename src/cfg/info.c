@@ -48,6 +48,7 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "../utils/trie.h"
 #include "../utils/utils.h"
 #include "../bmarks.h"
@@ -91,7 +92,7 @@ static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
-static JSON_Value * serialize_state(void);
+TSTATIC JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, JSON_Object *admixture);
 static void merge_tabs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dhistory(JSON_Object *current, JSON_Object *admixture,
@@ -1401,7 +1402,7 @@ update_info_file_json(const char filename[], int merge)
 
 /* Serializes state of current instance into a JSON object.  Returns the
  * object. */
-static JSON_Value *
+TSTATIC JSON_Value *
 serialize_state(void)
 {
 	JSON_Value *root_value = json_value_init_object();
@@ -2170,13 +2171,16 @@ store_dir_stack(JSON_Object *root)
 static void
 store_trash(JSON_Object *root)
 {
-	int i;
-	JSON_Array *trash = add_array(root, "trash");
-	for(i = 0; i < trash_list_size; ++i)
+	if(trash_list_size > 0)
 	{
-		JSON_Object *entry = append_object(trash);
-		set_str(entry, "trashed", trash_list[i].trash_name);
-		set_str(entry, "original", trash_list[i].path);
+		int i;
+		JSON_Array *trash = add_array(root, "trash");
+		for(i = 0; i < trash_list_size; ++i)
+		{
+			JSON_Object *entry = append_object(trash);
+			set_str(entry, "trashed", trash_list[i].trash_name);
+			set_str(entry, "original", trash_list[i].path);
+		}
 	}
 }
 

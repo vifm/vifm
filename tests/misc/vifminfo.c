@@ -11,6 +11,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/matchers.h"
+#include "../../src/utils/parson.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filetype.h"
@@ -193,6 +194,21 @@ TEST(history_is_automatically_extended)
 	assert_int_equal(12, lwin.history_num);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+}
+
+TEST(empty_vifminfo_option_produces_empty_state)
+{
+	cfg.vifm_info = 0;
+
+	JSON_Value *value = serialize_state();
+	char *as_string = json_serialize_to_string(value);
+
+	assert_string_equal("{\"tabs\":"
+	                       "[{\"panes\":[{\"tabs\":[{}]},{\"tabs\":[{}]}]}]"
+	                    "}", as_string);
+
+	free(as_string);
+	json_value_free(value);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
