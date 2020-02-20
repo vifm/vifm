@@ -97,6 +97,8 @@ static void merge_states(JSON_Object *current, JSON_Object *admixture);
 static void merge_tabs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dhistory(JSON_Object *current, JSON_Object *admixture,
 		const view_t *view);
+static void merge_assocs(JSON_Object *current, JSON_Object *admixture,
+		const char node[], assoc_list_t *assocs);
 static void merge_commands(JSON_Object *current, JSON_Object *admixture);
 static void merge_marks(JSON_Object *current, JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, JSON_Object *admixture);
@@ -1492,6 +1494,13 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 {
 	merge_tabs(current, admixture);
 
+	if(cfg.vifm_info & VINFO_FILETYPES)
+	{
+		merge_assocs(current, admixture, "assocs", &filetypes);
+		merge_assocs(current, admixture, "xassocs", &xfiletypes);
+		merge_assocs(current, admixture, "viewers", &fileviewers);
+	}
+
 	if(cfg.vifm_info & VINFO_COMMANDS)
 	{
 		merge_commands(current, admixture);
@@ -1624,6 +1633,31 @@ merge_dhistory(JSON_Object *current, JSON_Object *admixture, const view_t *view)
 	}
 
 	json_object_set_value(current, "history", merged_value);
+}
+
+/* Merges two lists of associations. */
+static void
+merge_assocs(JSON_Object *current, JSON_Object *admixture, const char node[],
+		assoc_list_t *assocs)
+{
+	JSON_Array *entries = json_object_get_array(current, node);
+	JSON_Array *updated = json_object_get_array(admixture, node);
+
+	int i, n;
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		JSON_Object *entry = json_array_get_object(updated, i);
+
+		const char *matchers, *cmd;
+		if(get_str(entry, "matchers", &matchers) && get_str(entry, "cmd", &cmd))
+		{
+			if(!ft_assoc_exists(assocs, matchers, cmd))
+			{
+				JSON_Value *value = json_object_get_wrapping_value(entry);
+				json_array_append_value(entries, json_value_deep_copy(value));
+			}
+		}
+	}
 }
 
 /* Merges two sets of :commands. */
