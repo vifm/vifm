@@ -93,6 +93,9 @@ static void update_info_file(const char filename[], int merge);
 static void update_info_file_json(const char filename[], int merge);
 static JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, JSON_Object *admixture);
+static void merge_tabs(JSON_Object *current, JSON_Object *admixture);
+static void merge_dhistory(JSON_Object *current, JSON_Object *admixture,
+		const view_t *view);
 static void merge_marks(JSON_Object *current, JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, JSON_Object *admixture);
 static void merge_history(JSON_Object *current, JSON_Object *admixture,
@@ -566,13 +569,13 @@ load_gtab(JSON_Object *gtab, int reread)
 static void
 load_pane(JSON_Object *pane, view_t *view, int reread)
 {
-	JSON_Array *panes = json_object_get_array(pane, "tabs");
+	JSON_Array *itabs = json_object_get_array(pane, "tabs");
 	int i, n;
-	for(i = 0, n = json_array_get_count(panes); i < n; ++i)
+	for(i = 0, n = json_array_get_count(itabs); i < n; ++i)
 	{
 		/* TODO: switch to appropriate pane tab. */
 
-		JSON_Object *itab = json_array_get_object(panes, i);
+		JSON_Object *itab = json_array_get_object(itabs, i);
 
 		load_dhistory(itab, view, reread);
 		load_filters(itab, view);
@@ -1490,6 +1493,8 @@ serialize_state(void)
 static void
 merge_states(JSON_Object *current, JSON_Object *admixture)
 {
+	merge_tabs(current, admixture);
+
 	if(cfg.vifm_info & VINFO_MARKS)
 	{
 		merge_marks(current, admixture);
@@ -1531,6 +1536,92 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 	}
 
 	merge_trash(current, admixture);
+}
+
+/* Merges two sets of tabs if there is only one tab at each level (global and
+ * pane). */
+static void
+merge_tabs(JSON_Object *current, JSON_Object *admixture)
+{
+	if(!(cfg.vifm_info & VINFO_DHISTORY))
+	{
+		/* There is nothing to merge accept for directory history. */
+		return;
+	}
+
+	JSON_Array *current_gtabs = json_object_get_array(current, "tabs");
+	JSON_Array *updated_gtabs = json_object_get_array(admixture, "tabs");
+	if(json_array_get_count(current_gtabs) != 1 ||
+			json_array_get_count(updated_gtabs) != 1)
+	{
+		return;
+	}
+
+	JSON_Object *current_gtab = json_array_get_object(current_gtabs, 0);
+	JSON_Object *updated_gtab = json_array_get_object(updated_gtabs, 0);
+
+	JSON_Array *current_panes = json_object_get_array(current_gtab, "panes");
+	JSON_Array *updated_panes = json_object_get_array(updated_gtab, "panes");
+
+	int i;
+	for(i = 0; i < 2; ++i)
+	{
+		JSON_Object *current_pane = json_array_get_object(current_panes, i);
+		JSON_Object *updated_pane = json_array_get_object(updated_panes, i);
+
+		JSON_Array *current_itabs = json_object_get_array(current_pane, "tabs");
+		JSON_Array *updated_itabs = json_object_get_array(updated_pane, "tabs");
+
+		if(json_array_get_count(current_itabs) == 1 &&
+				json_array_get_count(updated_itabs) == 1)
+		{
+			const view_t *view = (i == 0 ? &lwin : &rwin);
+			merge_dhistory(json_array_get_object(current_itabs, 0),
+					json_array_get_object(updated_itabs, 0), view);
+		}
+	}
+}
+
+/* Merges two directory histories. */
+static void
+merge_dhistory(JSON_Object *current, JSON_Object *admixture, const view_t *view)
+{
+	JSON_Array *history = json_object_get_array(current, "history");
+	JSON_Array *updated = json_object_get_array(admixture, "history");
+
+	int extra_space = cfg.history_len - 1 - view->history_pos;
+	if(extra_space == 0 || json_array_get_count(updated) == 0)
+	{
+		return;
+	}
+
+	int i, n;
+	JSON_Value *merged_value = json_value_init_array();
+	JSON_Array *merged = json_array(merged_value);
+
+	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	{
+		JSON_Object *entry = json_array_get_object(updated, i);
+
+		const char *dir;
+		if(get_str(entry, "dir", &dir))
+		{
+			if(!flist_hist_contains(view, dir) && is_dir(dir))
+			{
+				JSON_Value *value = json_object_get_wrapping_value(entry);
+				json_array_append_value(merged, json_value_deep_copy(value));
+			}
+		}
+	}
+
+	for(i = 0, n = json_array_get_count(history); i < n; ++i)
+	{
+		JSON_Object *entry = json_array_get_object(history, i);
+		JSON_Value *value = json_object_get_wrapping_value(entry);
+		json_array_append_value(merged, json_value_deep_copy(value));
+	}
+
+	json_object_set_value(current, "history", merged_value);
 }
 
 /* Merges two sets of marks. */
