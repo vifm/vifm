@@ -58,7 +58,7 @@ show_volumes_menu(view_t *view)
 			{
 				char item_buf[PATH_MAX + 5];
 				snprintf(item_buf, sizeof(item_buf), "%s  %s ", drive, vol_name);
-				m.len = add_to_string_array(&m.items, m.len, 1, item_buf);
+				m.len = add_to_string_array(&m.items, m.len, item_buf);
 			}
 		}
 	}

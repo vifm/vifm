@@ -1157,7 +1157,7 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	{
 		/* Exploring absent output gives error, add an empty line to allow empty
 		 * output for graphical previewers. */
-		vi->nlines = add_to_string_array(&vi->lines, vi->nlines, 1, "");
+		vi->nlines = add_to_string_array(&vi->lines, vi->nlines, "");
 	}
 	if(vi->lines == NULL || vi->nlines == 0)
 	{

@@ -49,7 +49,7 @@ env_list(int *count)
 		if(equal != NULL)
 		{
 			*equal = '\0';
-			*count = add_to_string_array(&lst, *count, 1, *env);
+			*count = add_to_string_array(&lst, *count, *env);
 			*equal = '=';
 		}
 	}
@@ -108,7 +108,7 @@ env_get(const char name[])
 	int pos = string_array_pos(names, ncached, name);
 	if(pos == -1)
 	{
-		if(add_to_string_array(&names, ncached, 1, name) == ncached + 1)
+		if(add_to_string_array(&names, ncached, name) == ncached + 1)
 		{
 			if(put_into_string_array(&values, ncached, NULL) == ncached + 1)
 			{

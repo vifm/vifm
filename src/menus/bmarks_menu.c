@@ -80,7 +80,7 @@ bmarks_cb(const char path[], const char tags[], time_t timestamp, void *arg)
 	}
 	free(dup);
 
-	(void)add_to_string_array(&m->data, m->len, 1, path);
+	(void)add_to_string_array(&m->data, m->len, path);
 	m->len = put_into_string_array(&m->items, m->len, line);
 
 	/* Insertion into sorted array items while simultaneously updating data

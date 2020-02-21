@@ -463,7 +463,7 @@ handle_pkg(ipc_t *ipc, const char pkg[], const char *end)
 	{
 		if(in_body)
 		{
-			len = add_to_string_array(&array, len, 1, pkg);
+			len = add_to_string_array(&array, len, pkg);
 		}
 		else if(starts_with_lit(pkg, "version:"))
 		{
@@ -852,7 +852,7 @@ add_to_list(const char name[], const void *data, void *param)
 	}
 #endif
 
-	list_data->len = add_to_string_array(&list_data->lst, list_data->len, 1,
+	list_data->len = add_to_string_array(&list_data->lst, list_data->len,
 			name + strlen(PREFIX));
 	return 0;
 }

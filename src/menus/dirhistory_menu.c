@@ -91,7 +91,7 @@ list_dir_history(view_t *view, int *pos)
 			*pos = list.nitems;
 		}
 
-		list.nitems = add_to_string_array(&list.items, list.nitems, 1,
+		list.nitems = add_to_string_array(&list.items, list.nitems,
 				view->history[i].dir);
 	}
 

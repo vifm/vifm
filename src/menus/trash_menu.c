@@ -57,7 +57,7 @@ show_trash_menu(view_t *view)
 		const trash_entry_t *const entry = &trash_list[i];
 		if(trash_has_path(entry->trash_name))
 		{
-			m.len = add_to_string_array(&m.items, m.len, 1, entry->path);
+			m.len = add_to_string_array(&m.items, m.len, entry->path);
 		}
 	}
 

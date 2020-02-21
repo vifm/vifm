@@ -312,7 +312,7 @@ break_into_matchers(const char concat[], int *count, int is_list)
 		{
 			free_string_array(list, len);
 			list = NULL;
-			*count = add_to_string_array(&list, 0, 1, concat);
+			*count = add_to_string_array(&list, 0, concat);
 			return list;
 		}
 

@@ -293,7 +293,7 @@ get_patterns(const char patterns[], int *len)
 			}
 
 			*--path = negated ? '!' : '=';
-			*len = add_to_string_array(&pats, *len, 1, path);
+			*len = add_to_string_array(&pats, *len, path);
 			free(expanded_pat);
 		}
 

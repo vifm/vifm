@@ -85,7 +85,7 @@ show_jobs_menu(view_t *view)
 
 			snprintf(item_buf, sizeof(item_buf), "%-8s  %s%s", info_buf, p->cmd,
 					bg_job_cancelled(p) ? " (cancelling...)" : "");
-			i = add_to_string_array(&jobs_m.items, i, 1, item_buf);
+			i = add_to_string_array(&jobs_m.items, i, item_buf);
 			jobs_m.void_data = reallocarray(jobs_m.void_data, i,
 					sizeof(*jobs_m.void_data));
 			jobs_m.void_data[i - 1] = p;

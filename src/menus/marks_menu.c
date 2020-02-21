@@ -109,7 +109,7 @@ show_marks_menu(view_t *view, const char marks[])
 				(int)(max_len + overhead), display_path, file, suffix);
 		free(display_path);
 
-		i = add_to_string_array(&m.items, i, 1, item_buf);
+		i = add_to_string_array(&m.items, i, item_buf);
 	}
 	m.len = i;
 

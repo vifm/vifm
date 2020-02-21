@@ -154,7 +154,7 @@ trash_set_specs(const char new_specs[])
 			break;
 		}
 
-		ndirs = add_to_string_array(&dirs, ndirs, 1, spec);
+		ndirs = add_to_string_array(&dirs, ndirs, spec);
 
 		if(last_element)
 		{
@@ -533,8 +533,7 @@ add_trash_to_list(trashes_list *list, const char path[], int can_delete)
 	size_t len = list->ntrashes;
 	if(strappendch(&list->can_delete, &len, can_delete ? '1' : '0') == 0)
 	{
-		list->ntrashes = add_to_string_array(&list->trashes, list->ntrashes, 1,
-				path);
+		list->ntrashes = add_to_string_array(&list->trashes, list->ntrashes, path);
 	}
 }
 
@@ -843,9 +842,9 @@ make_real_path(const char path[], char buf[], size_t buf_len)
 	}
 	else
 	{
-		if(add_to_string_array(&link, nrecords, 1, copy) == nrecords + 1)
+		if(add_to_string_array(&link, nrecords, copy) == nrecords + 1)
 		{
-			if(add_to_string_array(&real, nrecords, 1, real_dir) == nrecords + 1)
+			if(add_to_string_array(&real, nrecords, real_dir) == nrecords + 1)
 			{
 				++nrecords;
 			}

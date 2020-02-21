@@ -35,8 +35,9 @@ strlist_t;
  * data. */
 typedef void (*progress_cb)(const void *arg);
 
-/* Input pointers can be NULL.  Returns new length of the array. */
-int add_to_string_array(char ***array, int len, int count, ...);
+/* Adds copy of a string to a string array.  Input pointer can be NULL.  Returns
+ * new length of the array, which is unchanged on allocation failure. */
+int add_to_string_array(char ***array, int len, const char item[]);
 
 /* Puts pointer into string array without making a copy.  Reallocates *array.
  * item can be NULL.  Returns new size of the array, which can be equal to len
