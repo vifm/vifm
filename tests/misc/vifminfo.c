@@ -78,7 +78,7 @@ TEST(filetypes_are_deduplicated)
 	/* Write it first time. */
 	write_info_file();
 	/* And remember size of the file. */
-	assert_success(stat(SANDBOX_PATH "/vifminfo", &first));
+	assert_success(stat(SANDBOX_PATH "/vifminfo.json", &first));
 
 	/* Add filetype again (as if it was read from vifmrc). */
 	ms = matchers_alloc("*.c", 0, 1, "", &error);
@@ -88,10 +88,9 @@ TEST(filetypes_are_deduplicated)
 	/* Update vifminfo second time. */
 	write_info_file();
 	/* Check that size hasn't changed. */
-	assert_success(stat(SANDBOX_PATH "/vifminfo", &second));
+	assert_success(stat(SANDBOX_PATH "/vifminfo.json", &second));
 	assert_true(first.st_size == second.st_size);
 
-	assert_success(remove(SANDBOX_PATH "/vifminfo"));
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 	vle_cmds_reset();
 }

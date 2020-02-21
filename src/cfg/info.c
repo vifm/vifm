@@ -66,6 +66,7 @@
 #include "config.h"
 #include "info_chars.h"
 
+static JSON_Value * read_legacy_info_file(const char info_file[]);
 static void load_state(JSON_Object *root, int reread);
 static void load_gtab(JSON_Object *gtab, int reread);
 static void load_pane(JSON_Object *pane, view_t *view, int reread);
@@ -178,18 +179,40 @@ static filemon_t vifminfo_mon;
 void
 read_info_file(int reread)
 {
-	/* TODO: refactor this function read_info_file() */
-
-	FILE *fp;
 	char info_file[PATH_MAX + 16];
-	char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
+	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
 
-	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
-
-	if((fp = os_fopen(info_file, "r")) == NULL)
+	JSON_Value *state = json_parse_file(info_file);
+	if(state == NULL)
+	{
+		char legacy_info_file[PATH_MAX + 16];
+		snprintf(legacy_info_file, sizeof(legacy_info_file), "%s/vifminfo",
+				cfg.config_dir);
+		state = read_legacy_info_file(legacy_info_file);
+	}
+	if(state == NULL)
+	{
 		return;
+	}
+
+	load_state(json_object(state), reread);
+	json_value_free(state);
 
 	(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
+
+	dir_stack_freeze();
+}
+
+/* Reads legacy barely-structured vifminfo format as a JSON.  Returns JSON
+ * value or NULL on error. */
+static JSON_Value *
+read_legacy_info_file(const char info_file[])
+{
+	FILE *fp = os_fopen(info_file, "r");
+	if(fp == NULL)
+	{
+		return NULL;
+	}
 
 	JSON_Value *root_value = json_value_init_object();
 	JSON_Object *root = json_object(root_value);
@@ -233,6 +256,7 @@ read_info_file(int reread)
 	JSON_Array *left_options = add_array(left_tab, "options");
 	JSON_Array *right_options = add_array(right_tab, "options");
 
+	char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
 		const char type = line[0];
@@ -477,10 +501,7 @@ read_info_file(int reread)
 	free(line4);
 	fclose(fp);
 
-	load_state(root, reread);
-	json_value_free(root_value);
-
-	dir_stack_freeze();
+	return root_value;
 }
 
 /* Loads state of the application from JSON. */
@@ -986,31 +1007,25 @@ write_info_file(void)
 	char info_file[PATH_MAX + 16];
 	char tmp_file[PATH_MAX + 16];
 
-	(void)snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
-	(void)snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());
+	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
+	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());
 
 	if(os_access(info_file, R_OK) != 0 || copy_file(info_file, tmp_file) == 0)
 	{
 		filemon_t current_vifminfo_mon;
-		int vifminfo_changed;
-
-		vifminfo_changed =
+		int vifminfo_changed =
 			filemon_from_file(info_file, FMT_MODIFIED, &current_vifminfo_mon) != 0 ||
 			!filemon_equal(&vifminfo_mon, &current_vifminfo_mon);
 
-		update_info_file(tmp_file, vifminfo_changed);
+		update_info_file_json(tmp_file, vifminfo_changed);
 		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &vifminfo_mon);
 
 		if(rename_file(tmp_file, info_file) != 0)
 		{
-			LOG_ERROR_MSG("Can't replace vifminfo file with its temporary copy");
+			LOG_ERROR_MSG("Can't replace vifminfo.json file with its temporary copy");
 			(void)remove(tmp_file);
 		}
 	}
-
-	char json_path[PATH_MAX + 1];
-	snprintf(json_path, sizeof(json_path), "%s.json", info_file);
-	update_info_file_json(json_path, 1);
 }
 
 /* Copies the src file to the dst location.  Returns zero on success. */
