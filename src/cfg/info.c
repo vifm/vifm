@@ -91,7 +91,7 @@ static void get_history(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
-static void update_info_file_json(const char filename[], int merge);
+static void update_info_file(const char filename[], int merge);
 TSTATIC JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, JSON_Object *admixture);
 static void merge_tabs(JSON_Object *current, JSON_Object *admixture);
@@ -990,7 +990,7 @@ write_info_file(void)
 			filemon_from_file(info_file, FMT_MODIFIED, &current_vifminfo_mon) != 0 ||
 			!filemon_equal(&vifminfo_mon, &current_vifminfo_mon);
 
-		update_info_file_json(tmp_file, vifminfo_changed);
+		update_info_file(tmp_file, vifminfo_changed);
 		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &vifminfo_mon);
 
 		if(rename_file(tmp_file, info_file) != 0)
@@ -1017,7 +1017,7 @@ copy_file(const char src[], const char dst[])
 /* Reads contents of the filename file as a JSON info file and updates it with
  * the state of current instance. */
 static void
-update_info_file_json(const char filename[], int merge)
+update_info_file(const char filename[], int merge)
 {
 	JSON_Value *current = serialize_state();
 
