@@ -256,7 +256,7 @@ read_legacy_info_file(const char info_file[])
 		else if(type == LINE_TYPE_FILETYPE || type == LINE_TYPE_XFILETYPE ||
 				type == LINE_TYPE_FILEVIEWER)
 		{
-			JSON_Array *array;
+			JSON_Array *array = NULL;
 			switch(type)
 			{
 				case LINE_TYPE_FILETYPE:   array = assocs; break;
@@ -604,7 +604,7 @@ load_dhistory(JSON_Object *info, view_t *view, int reread)
 		const char *dir, *file;
 		int rel_pos;
 		if(get_str(entry, "dir", &dir) && get_str(entry, "file", &file) &&
-				get_int(entry, "relpos", &rel_pos));
+				get_int(entry, "relpos", &rel_pos))
 		{
 			get_history(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
 			last_dir = dir;
