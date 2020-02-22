@@ -1464,17 +1464,8 @@ static void
 store_gtab(JSON_Object *gtab)
 {
 	JSON_Array *panes = add_array(gtab, "panes");
-
-	JSON_Object *left = append_object(panes);
-	JSON_Array *left_tabs = add_array(left, "ptabs");
-	JSON_Object *left_tab = append_object(left_tabs);
-
-	JSON_Object *right = append_object(panes);
-	JSON_Array *right_tabs = add_array(right, "ptabs");
-	JSON_Object *right_tab = append_object(right_tabs);
-
-	store_view(left_tab, &lwin);
-	store_view(right_tab, &rwin);
+	store_view(append_object(panes), &lwin);
+	store_view(append_object(panes), &rwin);
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
@@ -1492,24 +1483,27 @@ store_gtab(JSON_Object *gtab)
 static void
 store_view(JSON_Object *view_data, view_t *view)
 {
+	JSON_Array *ptabs = add_array(view_data, "ptabs");
+	JSON_Object *ptab = append_object(ptabs);
+
 	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
-		store_dhistory(view_data, view);
+		store_dhistory(ptab, view);
 	}
 
 	if(cfg.vifm_info & VINFO_STATE)
 	{
-		store_filters(view_data, view);
+		store_filters(ptab, view);
 	}
 
 	if(cfg.vifm_info & VINFO_OPTIONS)
 	{
-		store_view_options(view_data, view);
+		store_view_options(ptab, view);
 	}
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
-		store_sort_info(view_data, view);
+		store_sort_info(ptab, view);
 	}
 }
 
