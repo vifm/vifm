@@ -139,7 +139,8 @@ static JSON_Object * append_object(JSON_Array *arr);
 static int get_bool(const JSON_Object *obj, const char key[], int *value);
 static int get_int(const JSON_Object *obj, const char key[], int *value);
 static int get_double(const JSON_Object *obj, const char key[], double *value);
-static int get_str(const JSON_Object *obj, const char key[], const char **value);
+static int get_str(const JSON_Object *obj, const char key[],
+		const char **value);
 static void set_bool(JSON_Object *obj, const char key[], int value);
 static void set_int(JSON_Object *obj, const char key[], int value);
 static void set_double(JSON_Object *obj, const char key[], double value);
@@ -512,8 +513,10 @@ load_state(JSON_Object *root, int reread)
 	load_dir_stack(root);
 	load_trash(root);
 	load_history(root, "cmd-hist", &curr_stats.cmd_hist, &hists_commands_save);
-	load_history(root, "search-hist", &curr_stats.search_hist, &hists_search_save);
-	load_history(root, "prompt-hist", &curr_stats.prompt_hist, &hists_prompt_save);
+	load_history(root, "search-hist", &curr_stats.search_hist,
+			&hists_search_save);
+	load_history(root, "prompt-hist", &curr_stats.prompt_hist,
+			&hists_prompt_save);
 	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
 }
 
