@@ -206,19 +206,19 @@ read_legacy_info_file(const char info_file[])
 	JSON_Array *trash = add_array(root, "trash");
 	JSON_Object *regs = add_object(root, "regs");
 
-	JSON_Array *outer_tabs = add_array(root, "tabs");
-	JSON_Object *outer_tab = append_object(outer_tabs);
+	JSON_Array *gtabs = add_array(root, "gtabs");
+	JSON_Object *gtab = append_object(gtabs);
 
-	JSON_Object *splitter = add_object(outer_tab, "splitter");
+	JSON_Object *splitter = add_object(gtab, "splitter");
 
-	JSON_Array *panes = add_array(outer_tab, "panes");
+	JSON_Array *panes = add_array(gtab, "panes");
 	JSON_Object *left = append_object(panes);
 	JSON_Object *right = append_object(panes);
 
-	JSON_Array *left_tabs = add_array(left, "tabs");
+	JSON_Array *left_tabs = add_array(left, "ptabs");
 	JSON_Object *left_tab = append_object(left_tabs);
 
-	JSON_Array *right_tabs = add_array(right, "tabs");
+	JSON_Array *right_tabs = add_array(right, "ptabs");
 	JSON_Object *right_tab = append_object(right_tabs);
 
 	JSON_Array *left_history = add_array(left_tab, "history");
@@ -322,11 +322,11 @@ read_legacy_info_file(const char info_file[])
 		}
 		else if(type == LINE_TYPE_ACTIVE_VIEW)
 		{
-			set_int(outer_tab, "active-pane", (line_val[0] == 'l' ? 0 : 1));
+			set_int(gtab, "active-pane", (line_val[0] == 'l' ? 0 : 1));
 		}
 		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
-			set_bool(outer_tab, "preview", atoi(line_val));
+			set_bool(gtab, "preview", atoi(line_val));
 		}
 		else if(type == LINE_TYPE_WIN_COUNT)
 		{
@@ -352,9 +352,9 @@ read_legacy_info_file(const char info_file[])
 		{
 			if(line_val[0] == '\0')
 			{
-				JSON_Object *itab = (type == LINE_TYPE_LWIN_HIST)
+				JSON_Object *ptab = (type == LINE_TYPE_LWIN_HIST)
 				                  ? left_tab : right_tab;
-				set_bool(itab, "restore-last-location", 1);
+				set_bool(ptab, "restore-last-location", 1);
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -494,7 +494,7 @@ load_state(JSON_Object *root, int reread)
 		copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme), cs);
 	}
 
-	JSON_Array *gtabs = json_object_get_array(root, "tabs");
+	JSON_Array *gtabs = json_object_get_array(root, "gtabs");
 	int i, n;
 	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)
 	{
@@ -568,24 +568,24 @@ load_gtab(JSON_Object *gtab, int reread)
 static void
 load_pane(JSON_Object *pane, view_t *view, int reread)
 {
-	JSON_Array *itabs = json_object_get_array(pane, "tabs");
+	JSON_Array *ptabs = json_object_get_array(pane, "ptabs");
 	int i, n;
-	for(i = 0, n = json_array_get_count(itabs); i < n; ++i)
+	for(i = 0, n = json_array_get_count(ptabs); i < n; ++i)
 	{
 		/* TODO: switch to appropriate pane tab. */
 
-		JSON_Object *itab = json_array_get_object(itabs, i);
+		JSON_Object *ptab = json_array_get_object(ptabs, i);
 
-		load_dhistory(itab, view, reread);
-		load_filters(itab, view);
+		load_dhistory(ptab, view, reread);
+		load_filters(ptab, view);
 
 		view_t *v = curr_view;
 		curr_view = view;
-		load_options(itab);
+		load_options(ptab);
 		curr_view = v;
 
 		const char *sorting;
-		if(get_str(itab, "sorting", &sorting))
+		if(get_str(ptab, "sorting", &sorting))
 		{
 			get_sort_info(view, sorting);
 		}
@@ -1047,10 +1047,10 @@ serialize_state(void)
 	JSON_Value *root_value = json_value_init_object();
 	JSON_Object *root = json_object(root_value);
 
-	JSON_Array *outer_tabs = add_array(root, "tabs");
-	JSON_Object *outer_tab = append_object(outer_tabs);
+	JSON_Array *gtabs = add_array(root, "gtabs");
+	JSON_Object *gtab = append_object(gtabs);
 
-	store_gtab(outer_tab);
+	store_gtab(gtab);
 
 	store_trash(root);
 
@@ -1197,8 +1197,8 @@ merge_tabs(JSON_Object *current, JSON_Object *admixture)
 		return;
 	}
 
-	JSON_Array *current_gtabs = json_object_get_array(current, "tabs");
-	JSON_Array *updated_gtabs = json_object_get_array(admixture, "tabs");
+	JSON_Array *current_gtabs = json_object_get_array(current, "gtabs");
+	JSON_Array *updated_gtabs = json_object_get_array(admixture, "gtabs");
 	if(json_array_get_count(current_gtabs) != 1 ||
 			json_array_get_count(updated_gtabs) != 1)
 	{
@@ -1217,15 +1217,15 @@ merge_tabs(JSON_Object *current, JSON_Object *admixture)
 		JSON_Object *current_pane = json_array_get_object(current_panes, i);
 		JSON_Object *updated_pane = json_array_get_object(updated_panes, i);
 
-		JSON_Array *current_itabs = json_object_get_array(current_pane, "tabs");
-		JSON_Array *updated_itabs = json_object_get_array(updated_pane, "tabs");
+		JSON_Array *current_ptabs = json_object_get_array(current_pane, "ptabs");
+		JSON_Array *updated_ptabs = json_object_get_array(updated_pane, "ptabs");
 
-		if(json_array_get_count(current_itabs) == 1 &&
-				json_array_get_count(updated_itabs) == 1)
+		if(json_array_get_count(current_ptabs) == 1 &&
+				json_array_get_count(updated_ptabs) == 1)
 		{
 			const view_t *view = (i == 0 ? &lwin : &rwin);
-			merge_dhistory(json_array_get_object(current_itabs, 0),
-					json_array_get_object(updated_itabs, 0), view);
+			merge_dhistory(json_array_get_object(current_ptabs, 0),
+					json_array_get_object(updated_ptabs, 0), view);
 		}
 	}
 }
@@ -1466,11 +1466,11 @@ store_gtab(JSON_Object *gtab)
 	JSON_Array *panes = add_array(gtab, "panes");
 
 	JSON_Object *left = append_object(panes);
-	JSON_Array *left_tabs = add_array(left, "tabs");
+	JSON_Array *left_tabs = add_array(left, "ptabs");
 	JSON_Object *left_tab = append_object(left_tabs);
 
 	JSON_Object *right = append_object(panes);
-	JSON_Array *right_tabs = add_array(right, "tabs");
+	JSON_Array *right_tabs = add_array(right, "ptabs");
 	JSON_Object *right_tab = append_object(right_tabs);
 
 	store_view(left_tab, &lwin);

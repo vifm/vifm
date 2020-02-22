@@ -202,8 +202,8 @@ TEST(empty_vifminfo_option_produces_empty_state)
 	JSON_Value *value = serialize_state();
 	char *as_string = json_serialize_to_string(value);
 
-	assert_string_equal("{\"tabs\":"
-	                       "[{\"panes\":[{\"tabs\":[{}]},{\"tabs\":[{}]}]}]"
+	assert_string_equal("{\"gtabs\":"
+	                       "[{\"panes\":[{\"ptabs\":[{}]},{\"ptabs\":[{}]}]}]"
 	                    "}", as_string);
 
 	free(as_string);
