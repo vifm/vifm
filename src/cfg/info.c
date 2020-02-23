@@ -66,6 +66,87 @@
 #include "config.h"
 #include "info_chars.h"
 
+/**
+ * Schema-like description of vifminfo.json data:
+ *  gtabs = [ {
+ *      panes = [ {
+ *          ptabs = [ {
+ *              history = [ {
+ *                  dir = "/some/directory"
+ *                  file = "file.png"
+ *                  relpos = 28
+ *              } ]
+ *              filters = {
+ *                  dot = true
+ *                  manual = ""
+ *                  auto = ""
+ *                  invert = false
+ *              }
+ *              options = [ "opt1=val1", "opt2=val2" ]
+ *              restore-last-location = true
+ *              sorting = "1,-2,3"
+ *          } ]
+ *      } ]
+ *      splitter = {
+ *          pos = -1
+ *          orientation = "v" # or "h"
+ *          expanded = false  # only mode
+ *      }
+ *      active-pane = 0
+ *      preview = false
+ *  } ]
+ *  regs = {
+ *      "a" = [ "/path1", "/path2" ]
+ *  }
+ *  trash = [ {
+ *      trashed = "/trash/0_file"
+ *      original = "/file"
+ *  } ]
+ *  bmarks = {
+ *      "/bookmarked/path" = {
+ *          tags = "tag1,tag2"
+ *          ts = 1440801895 # timestamp
+ *      }
+ *  }
+ *  marks = {
+ *      "h" = {
+ *          dir = "/path"
+ *          file = "file.jpg"
+ *          ts = 1440801895 # timestamp
+ *      }
+ *  }
+ *  cmds = {
+ *      cmd-name = "echo hi"
+ *  }
+ *  viewers = [ {
+ *      matchers = "{*.jpg}"
+ *      cmd = "echo hi"
+ *  } ]
+ *  assocs = [ {
+ *      matchers = "{*.jpg}"
+ *      cmd = "echo hi"
+ *  } ]
+ *  xassocs = [ {
+ *      matchers = "{*.jpg}"
+ *      cmd = "echo hi"
+ *  } ]
+ *  dir-stack = [ {
+ *      left-dir = "/left/dir"
+ *      left-file = "left-file"
+ *      right-dir = "/right/dir"
+ *      right-file = "right-file"
+ *  } ]
+ *  options = [ "opt1=val1", "opt2=val2" ]
+ *  cmd-hist = [ "item1", "item2" ]
+ *  search-hist = [ "item1", "item2" ]
+ *  prompt-hist = [ "item1", "item2" ]
+ *  lfilt-hist = [ "item1", "item2" ]
+ *  use-term-multiplexer = true
+ *  color-scheme = "almost-default"
+ *
+ * Elements in history arrays are stored oldest to newest.
+ */
+
 static JSON_Value * read_legacy_info_file(const char info_file[]);
 static void load_state(JSON_Object *root, int reread);
 static void load_gtab(JSON_Object *gtab, int reread);
