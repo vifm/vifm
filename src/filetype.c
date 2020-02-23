@@ -56,11 +56,14 @@ static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 static int is_assoc_record_empty(const assoc_record_t *record);
 
-/* Predefined builtin command. */
 const assoc_record_t NONE_PSEUDO_PROG = {
 	.command = "",
 	.description = "",
 };
+
+assoc_list_t filetypes;
+assoc_list_t xfiletypes;
+assoc_list_t fileviewers;
 
 /* Internal list that stores only currently active associations.
  * Since it holds only copies of structures from filetype and filextype lists,

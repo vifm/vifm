@@ -269,13 +269,17 @@ output_handler(const char line[], void *arg)
 {
 	if(skip_prefix(&line, "device="))
 	{
-		infos = reallocarray(infos, ++info_count, sizeof(*infos));
-		media_info_t *info = &infos[info_count - 1];
-		info->device = strdup(line);
-		info->text = NULL;
-		info->paths = NULL;
-		info->path_count = 0;
-		info->has_info = 0;
+		media_info_t *new_infos = reallocarray(infos, ++info_count, sizeof(*infos));
+		if(new_infos != NULL)
+		{
+			infos = new_infos;
+			media_info_t *info = &infos[info_count - 1];
+			info->device = strdup(line);
+			info->text = NULL;
+			info->paths = NULL;
+			info->path_count = 0;
+			info->has_info = 0;
+		}
 	}
 	else if(info_count > 0)
 	{

@@ -292,8 +292,6 @@ iop_cp_internal(io_args_t *args)
 
 	char block[BLOCK_SIZE];
 	FILE *in, *out;
-	/* Suppress possible false-positive compiler warning. */
-	size_t nread = (size_t)-1;
 	int error;
 	int cloned;
 	struct stat src_st;
@@ -545,6 +543,8 @@ iop_cp_internal(io_args_t *args)
 
 	if(!error && !cloned)
 	{
+		/* Suppress possible false-positive compiler warning. */
+		size_t nread = (size_t)-1;
 		while((nread = fread(&block, 1, sizeof(block), in)) != 0U)
 		{
 			if(io_cancelled(args))

@@ -77,11 +77,15 @@ assoc_list_t;
  * name.  Should return non-zero if it exists and zero otherwise. */
 typedef int (*external_command_exists_t)(const char name[]);
 
-const assoc_record_t NONE_PSEUDO_PROG;
+/* Predefined fake builtin command. */
+extern const assoc_record_t NONE_PSEUDO_PROG;
 
-assoc_list_t filetypes;
-assoc_list_t xfiletypes;
-assoc_list_t fileviewers;
+/* All registered non-X filetypes. */
+extern assoc_list_t filetypes;
+/* All registered X filetypes. */
+extern assoc_list_t xfiletypes;
+/* All registered viewers. */
+extern assoc_list_t fileviewers;
 
 /* Unit setup. */
 

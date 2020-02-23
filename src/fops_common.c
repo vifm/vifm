@@ -459,7 +459,8 @@ fops_is_name_list_ok(int count, int nlines, char *list[], char *files[])
 			char *list_s = find_slashr(list[i]);
 			if(list_s != NULL || file_s != NULL)
 			{
-				if(list_s - list[i] != file_s - files[i] ||
+				if(list_s == NULL || file_s == NULL ||
+						list_s - list[i] != file_s - files[i] ||
 						strnoscmp(files[i], list[i], list_s - list[i]) != 0)
 				{
 					if(file_s == NULL)

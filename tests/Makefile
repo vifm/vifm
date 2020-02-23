@@ -160,6 +160,7 @@ ifdef win_env
         override LDFLAGS += -lcurses
     endif
 endif
+override CFLAGS += -fcommon
 ifeq (,$(findstring -lpthread,$(LDFLAGS)))
     override LDFLAGS += -pthread
 endif

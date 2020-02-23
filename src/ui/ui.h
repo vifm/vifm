@@ -459,24 +459,18 @@ struct view_t
 
 extern view_t lwin;
 extern view_t rwin;
-view_t *other_view;
-view_t *curr_view;
+extern view_t *other_view;
+extern view_t *curr_view;
 
-WINDOW *status_bar;
-WINDOW *stat_win;
-WINDOW *job_bar;
-WINDOW *ruler_win;
-WINDOW *input_win;
-WINDOW *menu_win;
-WINDOW *sort_win;
-WINDOW *change_win;
-WINDOW *error_win;
-WINDOW *top_line;
-WINDOW *tab_line;
-
-WINDOW *lborder;
-WINDOW *mborder;
-WINDOW *rborder;
+extern WINDOW *status_bar;
+extern WINDOW *stat_win;
+extern WINDOW *job_bar;
+extern WINDOW *ruler_win;
+extern WINDOW *input_win;
+extern WINDOW *menu_win;
+extern WINDOW *sort_win;
+extern WINDOW *change_win;
+extern WINDOW *error_win;
 
 /* Updates the ruler with information from the view (possibly lazily). */
 void ui_ruler_update(view_t *view, int lazy_redraw);

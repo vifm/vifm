@@ -601,8 +601,8 @@ append_to_expanded(char expanded[], const char str[])
 	t = realloc(expanded, len + strlen(str) + 1);
 	if(t == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return NULL;
 	}
 	strcpy(t + len, str);

@@ -961,6 +961,8 @@ compute_and_draw_cell(column_data_t *cdt, int cell, size_t col_width)
 
 	draw_cell(get_view_columns(cdt->view, cell >= cdt->view->window_cells), cdt,
 			col_width, print_width);
+
+	cdt->prefix_len = NULL;
 }
 
 int
