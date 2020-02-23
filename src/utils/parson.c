@@ -425,8 +425,8 @@ static JSON_Status json_object_resize(JSON_Object *object, size_t new_capacity) 
 }
 
 static JSON_Value * json_object_getn_value(const JSON_Object *object, const char *name, size_t name_len) {
-    size_t i, name_length;
-    for (i = 0; i < json_object_get_count(object); i++) {
+    size_t i, n, name_length;
+    for (i = 0, n = json_object_get_count(object); i < n; i++) {
         name_length = strlen(object->names[i]);
         if (name_length != name_len) {
             continue;
@@ -444,7 +444,7 @@ static JSON_Status json_object_remove_internal(JSON_Object *object, const char *
         return JSONFailure;
     }
     last_item_index = json_object_get_count(object) - 1;
-    for (i = 0; i < json_object_get_count(object); i++) {
+    for (i = 0; i <= last_item_index; i++) {
         if (strcmp(object->names[i], name) == 0) {
             parson_free(object->names[i]);
             if (free_value) {
@@ -1457,7 +1457,7 @@ JSON_Value * json_value_deep_copy(const JSON_Value *value) {
                 return NULL;
             }
             temp_object_copy = json_value_get_object(return_value);
-            for (i = 0; i < json_object_get_count(temp_object); i++) {
+            for (i = 0, n = json_object_get_count(temp_object); i < n; i++) {
                 temp_key = json_object_get_name(temp_object, i);
                 temp_value = json_object_get_value(temp_object, temp_key);
                 temp_value_copy = json_value_deep_copy(temp_value);
@@ -1761,7 +1761,7 @@ JSON_Status json_array_append_null(JSON_Array *array) {
 }
 
 JSON_Status json_object_set_value(JSON_Object *object, const char *name, JSON_Value *value) {
-    size_t i = 0;
+    size_t i = 0, n = 0;
     JSON_Value *old_value;
     if (object == NULL || name == NULL || value == NULL || value->parent != NULL) {
         return JSONFailure;
@@ -1769,7 +1769,7 @@ JSON_Status json_object_set_value(JSON_Object *object, const char *name, JSON_Va
     old_value = json_object_get_value(object, name);
     if (old_value != NULL) { /* free and overwrite old value */
         json_value_free(old_value);
-        for (i = 0; i < json_object_get_count(object); i++) {
+        for (i = 0, n = json_object_get_count(object); i < n; i++) {
             if (strcmp(object->names[i], name) == 0) {
                 value->parent = json_object_get_wrapping_value(object);
                 object->values[i] = value;
@@ -1916,11 +1916,11 @@ JSON_Status json_object_dotremove(JSON_Object *object, const char *name) {
 }
 
 JSON_Status json_object_clear(JSON_Object *object) {
-    size_t i = 0;
+    size_t i = 0, n = 0;
     if (object == NULL) {
         return JSONFailure;
     }
-    for (i = 0; i < json_object_get_count(object); i++) {
+    for (i = 0, n = json_object_get_count(object); i < n; i++) {
         parson_free(object->names[i]);
         json_value_free(object->values[i]);
     }
