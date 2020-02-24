@@ -103,6 +103,9 @@
 	Fixed documentation on external background commands and not that it's not
 	implemented on Windows.  Thanks to Gene Zharov.
 
+	Fixed possible crash after changing 'history' when there are inactive tabs
+	and then populating history of those tabs.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

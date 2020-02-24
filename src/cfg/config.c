@@ -47,6 +47,7 @@
 #include "../io/iop.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../ui/statusbar.h"
+#include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../utils/env.h"
 #include "../utils/file_streams.h"
@@ -845,15 +846,32 @@ cfg_resize_histories(int new_size)
 	const int old_size = MAX(cfg.history_len, 0);
 
 	hists_resize(new_size);
-	flist_hist_resize(&lwin, new_size);
-	flist_hist_resize(&rwin, new_size);
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum(&lwin, i, &tab_info); ++i)
+	{
+		flist_hist_resize(tab_info.view, new_size);
+	}
+	for(i = 0; tabs_enum(&rwin, i, &tab_info); ++i)
+	{
+		flist_hist_resize(tab_info.view, new_size);
+	}
 
 	cfg.history_len = new_size;
 
 	if(old_size == 0 && new_size > 0)
 	{
-		flist_hist_save(&lwin, NULL, NULL, -1);
-		flist_hist_save(&rwin, NULL, NULL, -1);
+		int i;
+		tab_info_t tab_info;
+		for(i = 0; tabs_enum(&lwin, i, &tab_info); ++i)
+		{
+			flist_hist_save(tab_info.view, NULL, NULL, -1);
+		}
+		for(i = 0; tabs_enum(&rwin, i, &tab_info); ++i)
+		{
+			flist_hist_save(tab_info.view, NULL, NULL, -1);
+		}
 	}
 }
 
