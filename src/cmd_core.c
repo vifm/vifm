@@ -791,7 +791,7 @@ break_cmdline(const char cmdline[], int for_menu)
 
 	if(*cmdline == '\0')
 	{
-		len = add_to_string_array(&cmds, len, 1, cmdline);
+		len = add_to_string_array(&cmds, len, cmdline);
 		goto finish;
 	}
 
@@ -862,7 +862,7 @@ break_cmdline(const char cmdline[], int for_menu)
 				processed = raw;
 			}
 
-			len = add_to_string_array(&cmds, len, 1, cmdline);
+			len = add_to_string_array(&cmds, len, cmdline);
 
 			if(args_kind == CAT_UNTIL_THE_END)
 			{

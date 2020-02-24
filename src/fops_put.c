@@ -154,7 +154,7 @@ fops_put_bg(view_t *view, int at, int reg_name, int move)
 		task_desc_len = strlen(task_desc);
 
 		args->sel_list_len = add_to_string_array(&args->sel_list,
-				args->sel_list_len, 1, src);
+				args->sel_list_len, src);
 
 		dst_name = fops_get_dst_name(src, trash_has_path(src));
 
@@ -760,7 +760,7 @@ put_next(int force)
 		char dst_path[PATH_MAX + 1];
 		snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, dst_name);
 		put_confirm.put.nitems = add_to_string_array(&put_confirm.put.items,
-				put_confirm.put.nitems, 1, dst_path);
+				put_confirm.put.nitems, dst_path);
 	}
 
 	return 0;

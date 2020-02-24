@@ -193,7 +193,7 @@ fops_rename(view_t *view, char *list[], int nlines, int recursive)
 		}
 		else
 		{
-			nfiles = add_to_string_array(&files, nfiles, 1, path);
+			nfiles = add_to_string_array(&files, nfiles, path);
 		}
 	}
 
@@ -257,7 +257,7 @@ add_files_to_list(const char base[], const char path[], char *files[], int *len)
 
 	if(!is_dir(full_path))
 	{
-		*len = add_to_string_array(&files, *len, 1, path);
+		*len = add_to_string_array(&files, *len, path);
 		return files;
 	}
 
@@ -425,8 +425,8 @@ fops_incdec(view_t *view, int k)
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		names_len = add_to_string_array(&names, names_len, 1, full_path);
-		tmp_len = add_to_string_array(&tmp_names, tmp_len, 1,
+		names_len = add_to_string_array(&names, names_len, full_path);
+		tmp_len = add_to_string_array(&tmp_names, tmp_len,
 				make_name_unique(entry->name));
 	}
 
@@ -636,7 +636,7 @@ fops_case(view_t *view, int to_upper)
 			break;
 		}
 
-		ndest = add_to_string_array(&dest, ndest, 1, new_fname);
+		ndest = add_to_string_array(&dest, ndest, new_fname);
 	}
 
 	if(err)
@@ -724,7 +724,7 @@ fops_subst(view_t *view, const char pattern[], const char sub[], int ic,
 				err = 1;
 				break;
 			case RA_RENAME:
-				ndest = add_to_string_array(&dest, ndest, 1, new_fname);
+				ndest = add_to_string_array(&dest, ndest, new_fname);
 				break;
 
 			default:
@@ -785,7 +785,7 @@ fops_tr(view_t *view, const char from[], const char to[])
 				err = 1;
 				break;
 			case RA_RENAME:
-				ndest = add_to_string_array(&dest, ndest, 1, new_fname);
+				ndest = add_to_string_array(&dest, ndest, new_fname);
 				break;
 
 			default:

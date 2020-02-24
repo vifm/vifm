@@ -531,7 +531,7 @@ list_regular_files(const char path[], char *list[], int *len)
 
 		if(is_regular_file(full_path))
 		{
-			*len = add_to_string_array(&list, *len, 1, d->d_name);
+			*len = add_to_string_array(&list, *len, d->d_name);
 		}
 	}
 	os_closedir(dir);
@@ -558,7 +558,7 @@ list_all_files(const char path[], int *len)
 	{
 		if(!is_builtin_dir(d->d_name))
 		{
-			*len = add_to_string_array(&list, *len, 1, d->d_name);
+			*len = add_to_string_array(&list, *len, d->d_name);
 		}
 	}
 	os_closedir(dir);

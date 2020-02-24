@@ -107,14 +107,13 @@ fops_delete(view_t *view, int reg, int use_trash)
 		{
 			char name[NAME_MAX + 1];
 			format_entry_name(entry, NF_FULL, sizeof(name), name);
-			marked.nitems = add_to_string_array(&marked.items, marked.nitems, 1,
-					name);
+			marked.nitems = add_to_string_array(&marked.items, marked.nitems, name);
 			continue;
 		}
 
 		char short_path[PATH_MAX + 1];
 		get_short_path_of(view, entry, NF_FULL, 0, sizeof(short_path), short_path);
-		marked.nitems = add_to_string_array(&marked.items, marked.nitems, 1,
+		marked.nitems = add_to_string_array(&marked.items, marked.nitems,
 				short_path);
 	}
 	if(!confirm_deletion(marked.items, marked.nitems, use_trash))

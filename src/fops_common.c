@@ -572,7 +572,7 @@ fops_grab_marked_files(view_t *view, size_t *nmarked)
 	*nmarked = 0;
 	while(iter_marked_entries(view, &entry))
 	{
-		*nmarked = add_to_string_array(&marked, *nmarked, 1, entry->name);
+		*nmarked = add_to_string_array(&marked, *nmarked, entry->name);
 	}
 	return marked;
 }
@@ -919,7 +919,7 @@ fops_prepare_for_bg_task(view_t *view, bg_args_t *args)
 
 		get_full_path_of(entry, sizeof(full_path), full_path);
 		args->sel_list_len = add_to_string_array(&args->sel_list,
-				args->sel_list_len, 1, full_path);
+				args->sel_list_len, full_path);
 	}
 
 	ui_view_reset_selection_and_reload(view);

@@ -174,15 +174,16 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	utils/gmux_nix.$(OBJEXT) utils/hist.$(OBJEXT) \
 	utils/int_stack.$(OBJEXT) utils/log.$(OBJEXT) \
 	utils/matcher.$(OBJEXT) utils/matchers.$(OBJEXT) \
-	utils/path.$(OBJEXT) utils/regexp.$(OBJEXT) \
-	utils/shmem_nix.$(OBJEXT) utils/str.$(OBJEXT) \
-	utils/string_array.$(OBJEXT) utils/trie.$(OBJEXT) \
-	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
-	utils/utils_nix.$(OBJEXT) args.$(OBJEXT) background.$(OBJEXT) \
-	bmarks.$(OBJEXT) bracket_notation.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) cmd_completion.$(OBJEXT) \
-	cmd_core.$(OBJEXT) cmd_handlers.$(OBJEXT) compare.$(OBJEXT) \
-	dir_stack.$(OBJEXT) event_loop.$(OBJEXT) filelist.$(OBJEXT) \
+	utils/parson.$(OBJEXT) utils/path.$(OBJEXT) \
+	utils/regexp.$(OBJEXT) utils/shmem_nix.$(OBJEXT) \
+	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
+	utils/trie.$(OBJEXT) utils/utf8.$(OBJEXT) \
+	utils/utils.$(OBJEXT) utils/utils_nix.$(OBJEXT) args.$(OBJEXT) \
+	background.$(OBJEXT) bmarks.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	cmd_completion.$(OBJEXT) cmd_core.$(OBJEXT) \
+	cmd_handlers.$(OBJEXT) compare.$(OBJEXT) dir_stack.$(OBJEXT) \
+	event_loop.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fops_common.$(OBJEXT) \
 	fops_cpmv.$(OBJEXT) fops_misc.$(OBJEXT) fops_put.$(OBJEXT) \
 	fops_rename.$(OBJEXT) filetype.$(OBJEXT) filtering.$(OBJEXT) \
@@ -767,6 +768,7 @@ vifm_SOURCES = \
 	utils/macros.h \
 	utils/matcher.c utils/matcher.h \
 	utils/matchers.c utils/matchers.h \
+	utils/parson.c utils/parson.h \
 	utils/path.c utils/path.h \
 	utils/regexp.c utils/regexp.h \
 	utils/shmem_nix.c utils/shmem.h \
@@ -1190,6 +1192,8 @@ utils/matcher.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/matchers.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/parson.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/regexp.$(OBJEXT): utils/$(am__dirstamp) \
@@ -1442,6 +1446,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matcher.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/matchers.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/parson.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/regexp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/shmem_nix.Po@am__quote@

@@ -11,6 +11,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/matchers.h"
+#include "../../src/utils/parson.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filetype.h"
@@ -77,7 +78,7 @@ TEST(filetypes_are_deduplicated)
 	/* Write it first time. */
 	write_info_file();
 	/* And remember size of the file. */
-	assert_success(stat(SANDBOX_PATH "/vifminfo", &first));
+	assert_success(stat(SANDBOX_PATH "/vifminfo.json", &first));
 
 	/* Add filetype again (as if it was read from vifmrc). */
 	ms = matchers_alloc("*.c", 0, 1, "", &error);
@@ -87,10 +88,10 @@ TEST(filetypes_are_deduplicated)
 	/* Update vifminfo second time. */
 	write_info_file();
 	/* Check that size hasn't changed. */
-	assert_success(stat(SANDBOX_PATH "/vifminfo", &second));
+	assert_success(stat(SANDBOX_PATH "/vifminfo.json", &second));
 	assert_true(first.st_size == second.st_size);
 
-	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 	vle_cmds_reset();
 }
 
@@ -192,6 +193,21 @@ TEST(history_is_automatically_extended)
 	assert_int_equal(12, lwin.history_num);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
+}
+
+TEST(empty_vifminfo_option_produces_empty_state)
+{
+	cfg.vifm_info = 0;
+
+	JSON_Value *value = serialize_state();
+	char *as_string = json_serialize_to_string(value);
+
+	assert_string_equal("{\"gtabs\":"
+	                       "[{\"panes\":[{\"ptabs\":[{}]},{\"ptabs\":[{}]}]}]"
+	                    "}", as_string);
+
+	free(as_string);
+	json_value_free(value);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

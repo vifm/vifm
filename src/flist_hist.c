@@ -242,7 +242,7 @@ free_view_history_items(const history_t history[], size_t len)
 }
 
 int
-flist_hist_contains(view_t *view, const char path[])
+flist_hist_contains(const view_t *view, const char path[])
 {
 	int i;
 

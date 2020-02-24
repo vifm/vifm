@@ -1424,7 +1424,7 @@ static void
 line_handler(const char line[], void *arg)
 {
 	strlist_t *const list = arg;
-	list->nitems = add_to_string_array(&list->items, list->nitems, 1, line);
+	list->nitems = add_to_string_array(&list->items, list->nitems, line);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

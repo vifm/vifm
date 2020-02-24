@@ -83,7 +83,6 @@ optinit_t;
 
 static void uni_handler(const char name[], optval_t val, OPT_SCOPE scope);
 static void init_classify(optval_t *val);
-static char * double_commas(const char str[]);
 static void init_cpoptions(optval_t *val);
 static void init_dirsize(optval_t *val);
 static const char * to_endpoint(int i, char buffer[]);
@@ -1009,15 +1008,16 @@ classify_to_str(void)
 	for(i = 0; i < cfg.name_dec_count && !memerr; ++i)
 	{
 		const file_dec_t *const name_dec = &cfg.name_decs[i];
-		char *const doubled = double_commas(matchers_get_expr(name_dec->matchers));
+		char *const doubled_commas_pat =
+			double_char(matchers_get_expr(name_dec->matchers), ',');
 		char *const addition = format_str("%s%s::%s::%s",
-				classify[0] != '\0' ? "," : "", name_dec->prefix, doubled,
+				classify[0] != '\0' ? "," : "", name_dec->prefix, doubled_commas_pat,
 				name_dec->suffix);
 
 		memerr |= (addition == NULL || strappend(&classify, &len, addition) != 0);
 
 		free(addition);
-		free(doubled);
+		free(doubled_commas_pat);
 	}
 
 	/* Type-dependent decorations. */
@@ -1039,25 +1039,6 @@ classify_to_str(void)
 	}
 
 	return memerr ? NULL : classify;
-}
-
-/* Clones string passed as the argument doubling commas in the process.  Returns
- * cloned value. */
-static char *
-double_commas(const char str[])
-{
-	char *const doubled = malloc(strlen(str)*2 + 1);
-	char *p = doubled;
-	while(*str != '\0')
-	{
-		*p++ = *str++;
-		if(p[-1] == ',')
-		{
-			*p++ = ',';
-		}
-	}
-	*p = '\0';
-	return doubled;
 }
 
 /* Composes initial value for 'cpoptions' option from a set of configuration

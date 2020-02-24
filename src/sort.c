@@ -235,7 +235,7 @@ sort_by_groups(dir_entry_t *entries, signed char key, size_t nentries)
 	char *group = copy, *state = NULL;
 	while((group = split_and_get(group, ',', &state)) != NULL)
 	{
-		ngroups = add_to_string_array(&groups, ngroups, 1, group);
+		ngroups = add_to_string_array(&groups, ngroups, group);
 	}
 	free(copy);
 

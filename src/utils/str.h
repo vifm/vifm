@@ -293,6 +293,10 @@ int count_lines(const char text[], int max_width);
 /* Counts number of c char occurrences in the s string.  Returns the number. */
 size_t chars_in_str(const char s[], char c);
 
+/* Clones string passed as the argument doubling specified character in the
+ * process.  Returns cloned value. */
+char * double_char(const char str[], char c);
+
 #ifdef _WIN32
 
 /* Same as strstr(), but in case insensitive way. */

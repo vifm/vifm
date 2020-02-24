@@ -193,15 +193,7 @@ regs_init(void)
 int
 regs_exists(int reg_name)
 {
-	int i;
-	for(i = 0; i < NUM_REGISTERS; ++i)
-	{
-		if(valid_registers[i] == reg_name)
-		{
-			return 1;
-		}
-	}
-	return 0;
+	return char_is_one_of(valid_registers, reg_name);
 }
 
 reg_t *
@@ -239,7 +231,7 @@ regs_append(int reg_name, const char file[])
 	}
 	pos = -(pos + 1);
 
-	const int nfiles = add_to_string_array(&reg->files, reg->nfiles, 1, file);
+	const int nfiles = add_to_string_array(&reg->files, reg->nfiles, file);
 	if(nfiles == reg->nfiles)
 	{
 		return 1;
@@ -316,12 +308,12 @@ regs_list(const char registers[])
 		}
 
 		snprintf(reg_str, sizeof(reg_str), "\"%c", reg->name);
-		len = add_to_string_array(&list, len, 1, reg_str);
+		len = add_to_string_array(&list, len, reg_str);
 
 		i = reg->nfiles;
 		while(i-- > 0)
 		{
-			len = add_to_string_array(&list, len, 1, reg->files[i]);
+			len = add_to_string_array(&list, len, reg->files[i]);
 		}
 	}
 

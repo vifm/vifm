@@ -19,7 +19,6 @@
 #include "string_array.h"
 
 #include <assert.h> /* assert() */
-#include <stdarg.h>
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE SEEK_END SEEK_SET fclose() fprintf() fread()
                       ftell() fseek() */
@@ -37,27 +36,23 @@ static char ** text_to_lines(char text[], size_t text_len, int *nlines,
 		int null_sep);
 
 int
-add_to_string_array(char ***array, int len, int count, ...)
+add_to_string_array(char ***array, int len, const char item[])
 {
-	char **p;
-	va_list va;
-
-	p = reallocarray(*array, len + count, sizeof(char *));
+	char **p = reallocarray(*array, len + 1, sizeof(*p));
 	if(p == NULL)
+	{
 		return len;
+	}
 	*array = p;
 
-	va_start(va, count);
-	while(count-- > 0)
+	if(item == NULL)
 	{
-		char *arg = va_arg(va, char *);
-		if(arg == NULL)
-			p[len] = NULL;
-		else if((p[len] = strdup(arg)) == NULL)
-			break;
-		len++;
+		p[len++] = NULL;
 	}
-	va_end(va);
+	else if((p[len] = strdup(item)) != NULL)
+	{
+		++len;
+	}
 
 	return len;
 }
@@ -388,7 +383,7 @@ break_into_lines(char text[], size_t text_len, int *nlines, int null_sep)
 		}
 
 		text[line_len] = '\0';
-		*nlines = add_to_string_array(&list, *nlines, 1, text);
+		*nlines = add_to_string_array(&list, *nlines, text);
 
 		text = after_line;
 	}

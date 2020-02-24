@@ -48,7 +48,7 @@ show_undolist_menu(view_t *view, int with_details)
 	/* Add additional entry before setting position. */
 	if(m.len > 0)
 	{
-		m.len = add_to_string_array(&m.items, m.len, 1, " <<< list end >>>");
+		m.len = add_to_string_array(&m.items, m.len, " <<< list end >>>");
 	}
 
 	menus_set_pos(m.state, un_get_list_pos(with_details));

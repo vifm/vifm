@@ -134,7 +134,7 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 				break;
 
 			case 'c': /* -c <cmd> */
-				args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1, optarg);
+				args->ncmds = add_to_string_array(&args->cmds, args->ncmds, optarg);
 				break;
 			case 'l': /* --logging */
 				args->logging = 1;
@@ -158,7 +158,7 @@ args_parse(args_t *args, int argc, char *argv[], const char dir[])
 					{
 						cmd = "$";
 					}
-					args->ncmds = add_to_string_array(&args->cmds, args->ncmds, 1, cmd);
+					args->ncmds = add_to_string_array(&args->cmds, args->ncmds, cmd);
 				}
 				else
 				{

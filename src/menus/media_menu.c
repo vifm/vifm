@@ -231,7 +231,7 @@ reload_list(menu_data_t *m)
 		if(info->path_count == 0)
 		{
 			put_into_string_array(&m->data, m->len, format_str("m%s", info->device));
-			m->len = add_to_string_array(&m->items, m->len, 1, "`-- (not mounted)");
+			m->len = add_to_string_array(&m->items, m->len, "`-- (not mounted)");
 		}
 		else
 		{
@@ -254,7 +254,7 @@ reload_list(menu_data_t *m)
 		if(i != info_count - 1 && max_rows_with_blanks <= menu_rows)
 		{
 			put_into_string_array(&m->data, m->len, NULL);
-			m->len = add_to_string_array(&m->items, m->len, 1, "");
+			m->len = add_to_string_array(&m->items, m->len, "");
 		}
 	}
 
@@ -295,7 +295,7 @@ output_handler(const char line[], void *arg)
 		}
 		else if(skip_prefix(&line, "mount-point="))
 		{
-			info->path_count = add_to_string_array(&info->paths, info->path_count, 1,
+			info->path_count = add_to_string_array(&info->paths, info->path_count,
 					line);
 		}
 	}

@@ -96,7 +96,7 @@ show_history(view_t *view, HistoryType type, hist_t *hist, const char title[])
 
 	for(i = 0; i <= hist->pos; ++i)
 	{
-		m.len = add_to_string_array(&m.items, m.len, 1, hist->items[i]);
+		m.len = add_to_string_array(&m.items, m.len, hist->items[i]);
 	}
 
 	return menus_enter(m.state, view);

@@ -1329,7 +1329,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				argvp[DA_SIZE(argvp) - 1U][1] = end;
 			}
 
-			*count = add_to_string_array(&params, *count, 1, &cmdstr[st]);
+			*count = add_to_string_array(&params, *count, &cmdstr[st]);
 			if(*count == 0)
 			{
 				break;

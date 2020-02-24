@@ -24,9 +24,9 @@ SETUP()
 {
 	menus_init_data(&m, &lwin, strdup("test"), strdup("No matches"));
 
-	m.len = add_to_string_array(&m.items, m.len, 1, "a");
-	m.len = add_to_string_array(&m.items, m.len, 1, "b");
-	m.len = add_to_string_array(&m.items, m.len, 1, "c");
+	m.len = add_to_string_array(&m.items, m.len, "a");
+	m.len = add_to_string_array(&m.items, m.len, "b");
+	m.len = add_to_string_array(&m.items, m.len, "c");
 }
 
 TEARDOWN()
