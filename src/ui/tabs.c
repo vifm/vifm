@@ -71,7 +71,7 @@ global_tab_t;
 
 static int tabs_new_global(const char name[], const char path[], int at);
 static pane_tab_t * tabs_new_pane(pane_tabs_t *ptabs, view_t *view,
-		const char name[], const char path[]);
+		const char name[], const char path[], int at);
 static void clone_view(view_t *dst, view_t *src, const char path[]);
 static void tabs_goto_pane(int idx);
 static void tabs_goto_global(int idx);
@@ -111,14 +111,15 @@ tabs_new(const char name[], const char path[])
 	if(cfg.pane_tabs)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
-		pane_tab_t *const ptab = tabs_new_pane(ptabs, curr_view, name, path);
+		int idx = DA_SIZE(ptabs->tabs);
+		pane_tab_t *const ptab = tabs_new_pane(ptabs, curr_view, name, path, idx);
 		if(ptab == NULL)
 		{
 			return 1;
 		}
 
 		ptab->preview.on = curr_stats.preview.on;
-		tabs_goto(ptab - ptabs->tabs);
+		tabs_goto(idx);
 		return 0;
 	}
 
@@ -148,8 +149,8 @@ tabs_new_global(const char name[], const char path[], int at)
 
 	const char *leftPath = (curr_view == &lwin ? path : NULL);
 	const char *rightPath = (curr_view == &rwin ? path : NULL);
-	if(tabs_new_pane(&new_tab.left, &lwin, NULL, leftPath) == NULL ||
-			tabs_new_pane(&new_tab.right, &rwin, NULL, rightPath) == NULL)
+	if(tabs_new_pane(&new_tab.left, &lwin, NULL, leftPath, 0) == NULL ||
+			tabs_new_pane(&new_tab.right, &rwin, NULL, rightPath, 0) == NULL)
 	{
 		free_global_tab(&new_tab);
 		return 1;
@@ -166,13 +167,16 @@ tabs_new_global(const char name[], const char path[], int at)
 	return 0;
 }
 
-/* Creates new tab with the specified name, which might be NULL.  Path specifies
- * location of active pane and can be NULL.  Returns newly created tab on
- * success or NULL on error. */
+/* Creates new tab at position with the specified name, which might be NULL.
+ * Path specifies location of active pane and can be NULL.  Returns newly
+ * created tab on success or NULL on error. */
 static pane_tab_t *
 tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
-		const char path[])
+		const char path[], int at)
 {
+	assert(at >= 0 && "Pane tab position is too small.");
+	assert(at <= (int)DA_SIZE(ptabs->tabs) && "Pane tab position is too big.");
+
 	pane_tab_t new_tab = {};
 
 	if(DA_EXTEND(ptabs->tabs) == NULL)
@@ -199,11 +203,11 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
 		return &ptabs->tabs[0];
 	}
 
-	memmove(ptabs->tabs + ptabs->current + 2, ptabs->tabs + ptabs->current + 1,
-			sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (ptabs->current + 2)));
-	ptabs->tabs[ptabs->current + 1] = new_tab;
+	memmove(ptabs->tabs + at + 1, ptabs->tabs + at,
+			sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (at + 1)));
+	ptabs->tabs[at] = new_tab;
 
-	return &ptabs->tabs[ptabs->current + 1];
+	return &ptabs->tabs[at];
 }
 
 /* Clones one view into another.  Path specifies location of active pane and can
