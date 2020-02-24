@@ -77,6 +77,7 @@ static void tabs_goto_pane(int idx);
 static void tabs_goto_global(int idx);
 static void capture_global_state(global_tab_t *gtab);
 static void assign_preview(preview_t *dst, const preview_t *src);
+static void assign_view(view_t *dst, const view_t *src);
 static void free_global_tab(global_tab_t *gtab);
 static void free_pane_tabs(pane_tabs_t *ptabs);
 static void free_pane_tab(pane_tab_t *ptab);
@@ -216,8 +217,6 @@ clone_view(view_t *dst, view_t *src, const char path[])
 {
 	strcpy(dst->curr_dir, path == NULL ? flist_get_dir(src) : path);
 	dst->timestamps_mutex = src->timestamps_mutex;
-	dst->win = src->win;
-	dst->title = src->title;
 
 	flist_init_view(dst);
 	dst->dir_entry[0].origin = src->curr_dir;
@@ -305,7 +304,7 @@ tabs_goto_pane(int idx)
 
 	ptabs->tabs[ptabs->current].view = *curr_view;
 	assign_preview(&ptabs->tabs[ptabs->current].preview, &curr_stats.preview);
-	*curr_view = ptabs->tabs[idx].view;
+	assign_view(curr_view, &ptabs->tabs[idx].view);
 	assign_preview(&curr_stats.preview, &ptabs->tabs[idx].preview);
 	ptabs->current = idx;
 
@@ -336,8 +335,8 @@ tabs_goto_global(int idx)
 	capture_global_state(&gtabs[current_tab]);
 	assign_preview(&gtabs[current_tab].preview, &curr_stats.preview);
 
-	lwin = gtabs[idx].left.tabs[gtabs[idx].left.current].view;
-	rwin = gtabs[idx].right.tabs[gtabs[idx].right.current].view;
+	assign_view(&lwin, &gtabs[idx].left.tabs[gtabs[idx].left.current].view);
+	assign_view(&rwin, &gtabs[idx].right.tabs[gtabs[idx].right.current].view);
 	if(gtabs[idx].active_pane != (curr_view == &rwin))
 	{
 		swap_view_roles();
@@ -379,6 +378,19 @@ assign_preview(preview_t *dst, const preview_t *src)
 	 * bit, which isn't really a problem given that we're probably out of
 	 * memory. */
 	update_string(&dst->cleanup_cmd, src->cleanup_cmd);
+}
+
+/* Assigns a view preserving UI-related data. */
+static void
+assign_view(view_t *dst, const view_t *src)
+{
+	WINDOW *win = dst->win;
+	WINDOW *title = dst->title;
+
+	*dst = *src;
+
+	dst->win = win;
+	dst->title = title;
 }
 
 int
