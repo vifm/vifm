@@ -69,7 +69,7 @@ typedef struct
 }
 global_tab_t;
 
-static int tabs_new_global(const char name[], const char path[]);
+static int tabs_new_global(const char name[], const char path[], int at);
 static pane_tab_t * tabs_new_pane(pane_tabs_t *ptabs, view_t *view,
 		const char name[], const char path[]);
 static void clone_view(view_t *dst, view_t *src, const char path[]);
@@ -100,7 +100,7 @@ static int current_tab;
 void
 tabs_init(void)
 {
-	const int result = tabs_new_global(NULL, NULL);
+	const int result = tabs_new_global(NULL, NULL, 0);
 	assert(result == 0 && "Failed to initialize first tab.");
 	(void)result;
 }
@@ -122,7 +122,7 @@ tabs_new(const char name[], const char path[])
 		return 0;
 	}
 
-	if(tabs_new_global(name, path) == 0)
+	if(tabs_new_global(name, path, current_tab + 1) == 0)
 	{
 		tabs_goto(current_tab + 1);
 		return 0;
@@ -130,12 +130,15 @@ tabs_new(const char name[], const char path[])
 	return 1;
 }
 
-/* Creates new global tab with the specified name, which might be NULL.  Path
- * specifies location of active pane and can be NULL.  Returns zero on success,
- * otherwise non-zero is returned. */
+/* Creates new global tab at position with the specified name, which might be
+ * NULL.  Path specifies location of active pane and can be NULL.  Returns zero
+ * on success, otherwise non-zero is returned. */
 static int
-tabs_new_global(const char name[], const char path[])
+tabs_new_global(const char name[], const char path[], int at)
 {
+	assert(at >= 0 && "Global tab position is too small.");
+	assert(at <= (int)DA_SIZE(gtabs) && "Global tab position is too big.");
+
 	global_tab_t new_tab = {};
 
 	if(DA_EXTEND(gtabs) == NULL)
@@ -157,16 +160,9 @@ tabs_new_global(const char name[], const char path[])
 
 	DA_COMMIT(gtabs);
 
-	/* We're called from tabs_init(). */
-	if(DA_SIZE(gtabs) == 1U)
-	{
-		gtabs[0U] = new_tab;
-		return 0;
-	}
-
-	memmove(gtabs + current_tab + 2, gtabs + current_tab + 1,
-			sizeof(*gtabs)*(DA_SIZE(gtabs) - (current_tab + 2)));
-	gtabs[current_tab + 1] = new_tab;
+	memmove(gtabs + at + 1, gtabs + at,
+			sizeof(*gtabs)*(DA_SIZE(gtabs) - (at + 1)));
+	gtabs[at] = new_tab;
 	return 0;
 }
 
