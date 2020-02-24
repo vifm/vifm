@@ -121,7 +121,12 @@ tabs_new(const char name[], const char path[])
 		return 0;
 	}
 
-	return tabs_new_global(name, path);
+	if(tabs_new_global(name, path) == 0)
+	{
+		tabs_goto(current_tab + 1);
+		return 0;
+	}
+	return 1;
 }
 
 /* Creates new global tab with the specified name, which might be NULL.  Path
@@ -161,7 +166,6 @@ tabs_new_global(const char name[], const char path[])
 	memmove(gtabs + current_tab + 2, gtabs + current_tab + 1,
 			sizeof(*gtabs)*(DA_SIZE(gtabs) - (current_tab + 2)));
 	gtabs[current_tab + 1] = new_tab;
-	tabs_goto(current_tab + 1);
 	return 0;
 }
 
