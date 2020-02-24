@@ -41,7 +41,7 @@ int tabs_new(const char name[], const char path[]);
 /* Sets name of the current tab.  Name can be NULL. */
 void tabs_rename(struct view_t *view, const char name[]);
 
-/* Switches to tab specified by its index if the index is valid. */
+/* Switches to tab specified by its zero-based index if it's valid. */
 void tabs_goto(int idx);
 
 /* Checks whether closing a tab should result in closing the application.
