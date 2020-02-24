@@ -731,5 +731,18 @@ tabs_enum(view_t *view, int idx, tab_info_t *tab_info)
 	                     : get_global_tab(view, idx, tab_info, 0);
 }
 
+int
+tabs_enum_all(int idx, tab_info_t *tab_info)
+{
+	if(tabs_enum(&lwin, idx, tab_info))
+	{
+		return 1;
+	}
+
+	int offset = cfg.pane_tabs ? DA_SIZE(get_pane_tabs(&lwin)->tabs)
+	                           : DA_SIZE(gtabs);
+	return tabs_enum(&rwin, idx - offset, tab_info);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

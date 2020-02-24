@@ -66,6 +66,10 @@ int tabs_get(struct view_t *view, int idx, tab_info_t *tab_info);
  * depending on value of the view parameter. */
 int tabs_enum(struct view_t *view, int idx, tab_info_t *tab_info);
 
+/* Like tabs_enum(), but enumerates all tabs (first all left ones and then the
+ * right ones).  */
+int tabs_enum_all(int idx, tab_info_t *tab_info);
+
 /* Retrieves index of the current tab.  Returns the index. */
 int tabs_current(const struct view_t *view);
 

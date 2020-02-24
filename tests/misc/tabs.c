@@ -409,5 +409,53 @@ TEST(tabs_enum_ignores_active_pane_for_global_tabs)
 	assert_true(ltab_info.view != rtab_info.view);
 }
 
+TEST(tabs_enum_all_lists_all_global_tabs)
+{
+	tabs_new(NULL, NULL);
+
+	tab_info_t tab_info1, tab_info2;
+
+	assert_true(tabs_enum_all(0, &tab_info1));
+	assert_true(tabs_enum(&lwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(1, &tab_info1));
+	assert_true(tabs_enum(&lwin, 1, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(2, &tab_info1));
+	assert_true(tabs_enum(&rwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(3, &tab_info1));
+	assert_true(tabs_enum(&rwin, 1, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+}
+
+TEST(tabs_enum_all_lists_all_pane_tabs)
+{
+	cfg.pane_tabs = 1;
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
+
+	tab_info_t tab_info1, tab_info2;
+
+	assert_true(tabs_enum_all(0, &tab_info1));
+	assert_true(tabs_enum(&lwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(1, &tab_info1));
+	assert_true(tabs_enum(&lwin, 1, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(2, &tab_info1));
+	assert_true(tabs_enum(&lwin, 2, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(3, &tab_info1));
+	assert_true(tabs_enum(&rwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

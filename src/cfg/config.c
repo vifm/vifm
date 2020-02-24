@@ -849,11 +849,7 @@ cfg_resize_histories(int new_size)
 
 	int i;
 	tab_info_t tab_info;
-	for(i = 0; tabs_enum(&lwin, i, &tab_info); ++i)
-	{
-		flist_hist_resize(tab_info.view, new_size);
-	}
-	for(i = 0; tabs_enum(&rwin, i, &tab_info); ++i)
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
 		flist_hist_resize(tab_info.view, new_size);
 	}
@@ -864,11 +860,7 @@ cfg_resize_histories(int new_size)
 	{
 		int i;
 		tab_info_t tab_info;
-		for(i = 0; tabs_enum(&lwin, i, &tab_info); ++i)
-		{
-			flist_hist_save(tab_info.view, NULL, NULL, -1);
-		}
-		for(i = 0; tabs_enum(&rwin, i, &tab_info); ++i)
+		for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 		{
 			flist_hist_save(tab_info.view, NULL, NULL, -1);
 		}
