@@ -69,10 +69,11 @@ typedef struct
 }
 global_tab_t;
 
-static int tabs_new_global(const char name[], const char path[], int at);
+static int tabs_new_global(const char name[], const char path[], int at,
+		int clean);
 static pane_tab_t * tabs_new_pane(pane_tabs_t *ptabs, view_t *view,
-		const char name[], const char path[], int at);
-static void clone_view(view_t *dst, view_t *src, const char path[]);
+		const char name[], const char path[], int at, int clean);
+static void clone_view(view_t *dst, view_t *src, const char path[], int clean);
 static void tabs_goto_pane(int idx);
 static void tabs_goto_global(int idx);
 static void capture_global_state(global_tab_t *gtab);
@@ -100,7 +101,7 @@ static int current_gtab;
 void
 tabs_init(void)
 {
-	const int result = tabs_new_global(NULL, NULL, 0);
+	const int result = tabs_new_global(NULL, NULL, 0, 0);
 	assert(result == 0 && "Failed to initialize first tab.");
 	(void)result;
 }
@@ -112,7 +113,7 @@ tabs_new(const char name[], const char path[])
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
 		int idx = DA_SIZE(ptabs->tabs);
-		pane_tab_t *const ptab = tabs_new_pane(ptabs, curr_view, name, path, idx);
+		pane_tab_t *ptab = tabs_new_pane(ptabs, curr_view, name, path, idx, 0);
 		if(ptab == NULL)
 		{
 			return 1;
@@ -123,7 +124,7 @@ tabs_new(const char name[], const char path[])
 		return 0;
 	}
 
-	if(tabs_new_global(name, path, current_gtab + 1) == 0)
+	if(tabs_new_global(name, path, current_gtab + 1, 0) == 0)
 	{
 		tabs_goto(current_gtab + 1);
 		return 0;
@@ -132,10 +133,11 @@ tabs_new(const char name[], const char path[])
 }
 
 /* Creates new global tab at position with the specified name, which might be
- * NULL.  Path specifies location of active pane and can be NULL.  Returns zero
- * on success, otherwise non-zero is returned. */
+ * NULL.  Path specifies location of active pane and can be NULL.  Non-zero
+ * clean parameter requests clean cloning.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
-tabs_new_global(const char name[], const char path[], int at)
+tabs_new_global(const char name[], const char path[], int at, int clean)
 {
 	assert(at >= 0 && "Global tab position is too small.");
 	assert(at <= (int)DA_SIZE(gtabs) && "Global tab position is too big.");
@@ -149,8 +151,8 @@ tabs_new_global(const char name[], const char path[], int at)
 
 	const char *leftPath = (curr_view == &lwin ? path : NULL);
 	const char *rightPath = (curr_view == &rwin ? path : NULL);
-	if(tabs_new_pane(&new_tab.left, &lwin, NULL, leftPath, 0) == NULL ||
-			tabs_new_pane(&new_tab.right, &rwin, NULL, rightPath, 0) == NULL)
+	if(tabs_new_pane(&new_tab.left, &lwin, NULL, leftPath, 0, clean) == NULL ||
+			tabs_new_pane(&new_tab.right, &rwin, NULL, rightPath, 0, clean) == NULL)
 	{
 		free_global_tab(&new_tab);
 		return 1;
@@ -168,11 +170,12 @@ tabs_new_global(const char name[], const char path[], int at)
 }
 
 /* Creates new tab at position with the specified name, which might be NULL.
- * Path specifies location of active pane and can be NULL.  Returns newly
- * created tab on success or NULL on error. */
+ * Path specifies location of active pane and can be NULL.  Non-zero clean
+ * parameter requests clean cloning.  Returns newly created tab on success or
+ * NULL on error. */
 static pane_tab_t *
 tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
-		const char path[], int at)
+		const char path[], int at, int clean)
 {
 	assert(at >= 0 && "Pane tab position is too small.");
 	assert(at <= (int)DA_SIZE(ptabs->tabs) && "Pane tab position is too big.");
@@ -194,7 +197,7 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
 		return &ptabs->tabs[0];
 	}
 
-	clone_view(&new_tab.view, view, path);
+	clone_view(&new_tab.view, view, path, clean);
 	update_string(&new_tab.name, name);
 
 	if(DA_SIZE(ptabs->tabs) == 1U)
@@ -210,15 +213,18 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
 	return &ptabs->tabs[at];
 }
 
-/* Clones one view into another.  Path specifies location of active pane and can
- * be NULL.  The destination view is assumed to not own any resources. */
+/* Clones one view into another.  Path specifies new location and can be NULL.
+ * The destination view is assumed to not own any resources.  Clean cloning
+ * produces a copy without populating file list and with empty history. */
 static void
-clone_view(view_t *dst, view_t *src, const char path[])
+clone_view(view_t *dst, view_t *src, const char path[], int clean)
 {
 	strcpy(dst->curr_dir, path == NULL ? flist_get_dir(src) : path);
 	dst->timestamps_mutex = src->timestamps_mutex;
 
 	flist_init_view(dst);
+	/* This is for replace_dir_entries() below due to check in fentry_free(),
+	 * should adjust the check instead? */
 	dst->dir_entry[0].origin = src->curr_dir;
 
 	clone_local_options(src, dst, 1);
@@ -241,21 +247,24 @@ clone_view(view_t *dst, view_t *src, const char path[])
 	dst->window_cells = src->window_cells;
 
 	flist_hist_resize(dst, cfg.history_len);
-	flist_hist_clone(dst, src);
-	if(path != NULL && !flist_custom_active(src))
+
+	if(!clean)
 	{
-		/* Record location we're leaving. */
-		flist_hist_save(dst, src->curr_dir, get_current_file_name(src),
-				src->list_pos - src->top_line);
+		flist_hist_clone(dst, src);
+		if(path != NULL && !flist_custom_active(src))
+		{
+			/* Record location we're leaving. */
+			flist_hist_save(dst, src->curr_dir, get_current_file_name(src),
+					src->list_pos - src->top_line);
+		}
+
+		(void)populate_dir_list(dst, path == NULL);
+		/* XXX: do we need to update origins or is this a leftover? */
+		flist_update_origins(dst, &dst->curr_dir[0], &src->curr_dir[0]);
+
+		/* Record new location. */
+		flist_hist_save(dst, NULL, NULL, -1);
 	}
-
-	(void)populate_dir_list(dst, path == NULL);
-	/* XXX: do we need to update origins or is this a leftover from before list
-	 *      population was introduced? */
-	flist_update_origins(dst, &dst->curr_dir[0], &src->curr_dir[0]);
-
-	/* Record new location. */
-	flist_hist_save(dst, NULL, NULL, -1);
 }
 
 void
@@ -734,7 +743,7 @@ reload_views(view_t *side)
 			char *path = strdup(flist_get_dir(tab_info.view));
 			flist_free_view(tab_info.view);
 			memset(tab_info.view, 0, sizeof(*tab_info.view));
-			clone_view(tab_info.view, side, path);
+			clone_view(tab_info.view, side, path, 0);
 			free(path);
 		}
 	}
