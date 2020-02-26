@@ -34,6 +34,7 @@
 #include "../engine/options.h"
 #include "../io/iop.h"
 #include "../ui/fileview.h"
+#include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../utils/file_streams.h"
 #include "../utils/filemon.h"
@@ -149,8 +150,10 @@
 
 static JSON_Value * read_legacy_info_file(const char info_file[]);
 static void load_state(JSON_Object *root, int reread);
-static void load_gtab(JSON_Object *gtab, int reread);
-static void load_pane(JSON_Object *pane, view_t *view, int reread);
+static void load_gtab(JSON_Object *gtab, view_t *left, view_t *right,
+		int reread);
+static void load_pane(JSON_Object *pane, view_t *view, int right, int reread);
+static void load_ptab(JSON_Object *ptab, view_t *view, int reread);
 static void load_dhistory(JSON_Object *info, view_t *view, int reread);
 static void load_filters(JSON_Object *pane, view_t *view);
 static void load_options(JSON_Object *parent);
@@ -188,8 +191,9 @@ static void merge_history(JSON_Object *current, JSON_Object *admixture,
 static void merge_regs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void merge_trash(JSON_Object *current, JSON_Object *admixture);
-static void store_gtab(JSON_Object *gtab);
-static void store_view(JSON_Object *view_data, view_t *view);
+static void store_gtab(JSON_Object *gtab, view_t *left, view_t *right);
+static void store_pane(JSON_Object *view_data, view_t *view);
+static void store_ptab(JSON_Object *ptab, view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
 static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
@@ -577,10 +581,18 @@ load_state(JSON_Object *root, int reread)
 
 	JSON_Array *gtabs = json_object_get_array(root, "gtabs");
 	int i, n;
+	view_t *left = &lwin, *right = &rwin;
 	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)
 	{
-		/* TODO: switch to appropriate global tab. */
-		load_gtab(json_array_get_object(gtabs, i), reread);
+		load_gtab(json_array_get_object(gtabs, i), left, right, reread);
+
+		if(i != n - 1)
+		{
+			if(tabs_setup_gtab(NULL, &left, &right) != 0)
+			{
+				break;
+			}
+		}
 	}
 
 	load_options(root);
@@ -603,11 +615,11 @@ load_state(JSON_Object *root, int reread)
 
 /* Loads a global tab from JSON. */
 static void
-load_gtab(JSON_Object *gtab, int reread)
+load_gtab(JSON_Object *gtab, view_t *left, view_t *right, int reread)
 {
 	JSON_Array *panes = json_object_get_array(gtab, "panes");
-	load_pane(json_array_get_object(panes, 0), &lwin, reread);
-	load_pane(json_array_get_object(panes, 1), &rwin, reread);
+	load_pane(json_array_get_object(panes, 0), left, 0, reread);
+	load_pane(json_array_get_object(panes, 1), right, 1, reread);
 
 	int preview;
 	if(get_bool(gtab, "preview", &preview))
@@ -647,29 +659,46 @@ load_gtab(JSON_Object *gtab, int reread)
 
 /* Loads a pane (consists of pane tabs) from JSON. */
 static void
-load_pane(JSON_Object *pane, view_t *view, int reread)
+load_pane(JSON_Object *pane, view_t *view, int right, int reread)
 {
 	JSON_Array *ptabs = json_object_get_array(pane, "ptabs");
 	int i, n;
 	for(i = 0, n = json_array_get_count(ptabs); i < n; ++i)
 	{
-		/* TODO: switch to appropriate pane tab. */
-
 		JSON_Object *ptab = json_array_get_object(ptabs, i);
+		load_ptab(ptab, view, reread);
 
-		load_dhistory(ptab, view, reread);
-		load_filters(ptab, view);
-
-		view_t *v = curr_view;
-		curr_view = view;
-		load_options(ptab);
-		curr_view = v;
-
-		const char *sorting;
-		if(get_str(ptab, "sorting", &sorting))
+		if(i != n - 1)
 		{
-			get_sort_info(view, sorting);
+			view = tabs_setup_ptab(right ? &rwin : &lwin, NULL);
+			if(view == NULL)
+			{
+				break;
+			}
+
+			/* At least one pane tab means that we need to change tab scope option. */
+			cfg.pane_tabs = 1;
+			load_tabscope_option();
 		}
+	}
+}
+
+/* Loads a pane tab  from JSON. */
+static void
+load_ptab(JSON_Object *ptab, view_t *view, int reread)
+{
+	load_dhistory(ptab, view, reread);
+	load_filters(ptab, view);
+
+	view_t *v = curr_view;
+	curr_view = view;
+	load_options(ptab);
+	curr_view = v;
+
+	const char *sorting;
+	if(get_str(ptab, "sorting", &sorting))
+	{
+		get_sort_info(view, sorting);
 	}
 }
 
@@ -1129,9 +1158,22 @@ serialize_state(void)
 	JSON_Object *root = json_object(root_value);
 
 	JSON_Array *gtabs = add_array(root, "gtabs");
-	JSON_Object *gtab = append_object(gtabs);
 
-	store_gtab(gtab);
+	if(cfg.pane_tabs)
+	{
+		store_gtab(append_object(gtabs), &lwin, &rwin);
+	}
+	else
+	{
+		int i;
+		for(i = 0; i < tabs_count(&lwin); ++i)
+		{
+			tab_info_t left_tab_info, right_tab_info;
+			tabs_enum(&lwin, i, &left_tab_info);
+			tabs_enum(&rwin, i, &right_tab_info);
+			store_gtab(append_object(gtabs), left_tab_info.view, right_tab_info.view);
+		}
+	}
 
 	store_trash(root);
 
@@ -1542,15 +1584,15 @@ merge_trash(JSON_Object *current, JSON_Object *admixture)
 
 /* Serializes a global tab into JSON table. */
 static void
-store_gtab(JSON_Object *gtab)
+store_gtab(JSON_Object *gtab, view_t *left, view_t *right)
 {
 	JSON_Array *panes = add_array(gtab, "panes");
-	store_view(append_object(panes), &lwin);
-	store_view(append_object(panes), &rwin);
+	store_pane(append_object(panes), left);
+	store_pane(append_object(panes), right);
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
-		set_int(gtab, "active-pane", (curr_view == &lwin ? 0 : 1));
+		set_int(gtab, "active-pane", (curr_view == left ? 0 : 1));
 		set_bool(gtab, "preview", curr_stats.preview.on);
 
 		JSON_Object *splitter = add_object(gtab, "splitter");
@@ -1562,11 +1604,29 @@ store_gtab(JSON_Object *gtab)
 
 /* Serializes a view into JSON table. */
 static void
-store_view(JSON_Object *view_data, view_t *view)
+store_pane(JSON_Object *view_data, view_t *view)
 {
 	JSON_Array *ptabs = add_array(view_data, "ptabs");
-	JSON_Object *ptab = append_object(ptabs);
 
+	if(cfg.pane_tabs)
+	{
+		int i;
+		tab_info_t tab_info;
+		for(i = 0; tabs_enum(view, i, &tab_info); ++i)
+		{
+			store_ptab(append_object(ptabs), tab_info.view);
+		}
+	}
+	else
+	{
+		store_ptab(append_object(ptabs), view);
+	}
+}
+
+/* Serializes a pane tab into JSON table. */
+static void
+store_ptab(JSON_Object *ptab, view_t *view)
+{
 	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
 		store_dhistory(ptab, view);

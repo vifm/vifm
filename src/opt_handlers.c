@@ -3035,6 +3035,13 @@ load_quickview_option(void)
 }
 
 void
+load_tabscope_option(void)
+{
+	optval_t val = { .enum_item = (cfg.pane_tabs ? 1 : 0) };
+	vle_opts_assign("tabscope", val, OPT_GLOBAL);
+}
+
+void
 load_geometry(void)
 {
 	optval_t val;
