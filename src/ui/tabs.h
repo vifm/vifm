@@ -94,6 +94,15 @@ void tabs_switch_panes(void);
  * views, but preserving their current locations. */
 void tabs_reload(void);
 
+/* Appends new incompletely configured global tab and sets input pointers to its
+ * views.  Returns zero on success, otherwise non-zero is returned. */
+int tabs_setup_gtab(const char name[], struct view_t **left,
+		struct view_t **right);
+
+/* Appends new incompletely configured pane tab on the specified side.  Returns
+ * pointer to view on the new tab or NULL on error. */
+struct view_t * tabs_setup_ptab(struct view_t *view, const char name[]);
+
 #endif /* VIFM__UI__TABS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -457,5 +457,51 @@ TEST(tabs_enum_all_lists_all_pane_tabs)
 	assert_true(tab_info1.view == tab_info2.view);
 }
 
+TEST(new_global_tabs_are_appended_on_setup)
+{
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &left, &right));
+	assert_success(tabs_setup_gtab("2", &left, &right));
+
+	tab_info_t tab_info;
+	assert_true(tabs_enum(&lwin, 0, &tab_info));
+	assert_string_equal(NULL, tab_info.name);
+	assert_true(tabs_enum(&lwin, 1, &tab_info));
+	assert_string_equal("1", tab_info.name);
+	assert_true(tabs_enum(&lwin, 2, &tab_info));
+	assert_string_equal("2", tab_info.name);
+}
+
+TEST(new_pane_tabs_are_appended_on_setup)
+{
+	cfg.pane_tabs = 1;
+	assert_non_null(tabs_setup_ptab(&lwin, "1"));
+	assert_non_null(tabs_setup_ptab(&lwin, "2"));
+
+	tab_info_t tab_info;
+	assert_true(tabs_enum(&lwin, 0, &tab_info));
+	assert_string_equal(NULL, tab_info.name);
+	assert_true(tabs_enum(&lwin, 1, &tab_info));
+	assert_string_equal("1", tab_info.name);
+	assert_true(tabs_enum(&lwin, 2, &tab_info));
+	assert_string_equal("2", tab_info.name);
+}
+
+TEST(newly_setup_global_tabs_have_empty_history)
+{
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &left, &right));
+	assert_int_equal(0, left->history_num);
+	assert_int_equal(0, right->history_num);
+}
+
+TEST(newly_setup_pane_tabs_have_empty_history)
+{
+	cfg.pane_tabs = 1;
+	view_t *view = tabs_setup_ptab(&lwin, "1");
+	assert_non_null(view);
+	assert_int_equal(0, view->history_num);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

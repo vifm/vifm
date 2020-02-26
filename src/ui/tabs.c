@@ -769,5 +769,28 @@ tabs_enum_all(int idx, tab_info_t *tab_info)
 	return tabs_enum(&rwin, idx - offset, tab_info);
 }
 
+int
+tabs_setup_gtab(const char name[], struct view_t **left, struct view_t **right)
+{
+	int idx = DA_SIZE(gtabs);
+	if(tabs_new_global(name, NULL, idx, 1) != 0)
+	{
+		return 1;
+	}
+
+	*left = &gtabs[idx].left.tabs[0].view;
+	*right = &gtabs[idx].right.tabs[0].view;
+	return 0;
+}
+
+view_t *
+tabs_setup_ptab(view_t *view, const char name[])
+{
+	pane_tabs_t *ptabs = get_pane_tabs(view);
+	int idx = DA_SIZE(ptabs->tabs);
+	pane_tab_t *ptab = tabs_new_pane(ptabs, view, name, NULL, idx, 1);
+	return (ptab == NULL ? NULL : &ptab->view);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
