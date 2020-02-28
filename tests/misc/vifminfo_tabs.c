@@ -118,10 +118,34 @@ TEST(active_global_tab_is_restored)
 
 	write_info_file();
 	tabs_only(&lwin);
-	tabs_rename(&lwin, NULL);
 	read_info_file(0);
 
 	assert_int_equal(1, tabs_current(&lwin));
+}
+
+TEST(active_pane_tab_is_restored)
+{
+	cfg.pane_tabs = 1;
+
+	assert_success(tabs_new("ltab1", NULL));
+	tabs_goto(2);
+
+	curr_view = &rwin;
+	assert_success(tabs_new("rtab1", NULL));
+	assert_success(tabs_new("rtab2", NULL));
+	tabs_goto(2);
+	curr_view = &lwin;
+
+	assert_int_equal(1, tabs_current(&lwin));
+	assert_int_equal(2, tabs_current(&rwin));
+
+	write_info_file();
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+	read_info_file(0);
+
+	assert_int_equal(1, tabs_current(&lwin));
+	assert_int_equal(2, tabs_current(&rwin));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

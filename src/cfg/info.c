@@ -88,6 +88,7 @@
  *              restore-last-location = true
  *              sorting = "1,-2,3"
  *          } ]
+ *          active-ptab = 0
  *      } ]
  *      splitter = {
  *          pos = -1
@@ -196,7 +197,7 @@ static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void merge_trash(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab, const char name[], view_t *left,
 		view_t *right);
-static void store_pane(JSON_Object *view_data, view_t *view);
+static void store_pane(JSON_Object *pane, view_t *view, int right);
 static void store_ptab(JSON_Object *ptab, const char name[], view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
 static void store_history(JSON_Object *root, const char node[],
@@ -716,6 +717,15 @@ load_pane(JSON_Object *pane, view_t *view, int right, int reread)
 		}
 
 		load_ptab(ptab, view, reread);
+	}
+
+	int active_ptab;
+	if(cfg.pane_tabs && get_int(pane, "active-ptab", &active_ptab))
+	{
+		view_t *v = curr_view;
+		curr_view = (right ? &rwin : &lwin);
+		tabs_goto(active_ptab);
+		curr_view = v;
 	}
 }
 
@@ -1627,8 +1637,8 @@ store_gtab(JSON_Object *gtab, const char name[], view_t *left, view_t *right)
 	set_str(gtab, "name", name);
 
 	JSON_Array *panes = add_array(gtab, "panes");
-	store_pane(append_object(panes), left);
-	store_pane(append_object(panes), right);
+	store_pane(append_object(panes), left, 0);
+	store_pane(append_object(panes), right, 1);
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
@@ -1644,9 +1654,9 @@ store_gtab(JSON_Object *gtab, const char name[], view_t *left, view_t *right)
 
 /* Serializes a view into JSON table. */
 static void
-store_pane(JSON_Object *view_data, view_t *view)
+store_pane(JSON_Object *pane, view_t *view, int right)
 {
-	JSON_Array *ptabs = add_array(view_data, "ptabs");
+	JSON_Array *ptabs = add_array(pane, "ptabs");
 
 	if(cfg.pane_tabs)
 	{
@@ -1661,6 +1671,8 @@ store_pane(JSON_Object *view_data, view_t *view)
 	{
 		store_ptab(append_object(ptabs), NULL, view);
 	}
+
+	set_int(pane, "active-ptab", tabs_current(right ? &rwin : &lwin));
 }
 
 /* Serializes a pane tab into JSON table. */
