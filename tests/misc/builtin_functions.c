@@ -1,7 +1,7 @@
 #include <stic.h>
 
 #include <sys/time.h> /* timeval utimes() */
-#include <unistd.h> /* symlink() */
+#include <unistd.h> /* rmdir() symlink() */
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() remove() */
@@ -9,6 +9,7 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/compat/os.h"
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/engine/variables.h"
@@ -375,24 +376,25 @@ TEST(has)
 
 TEST(extcached)
 {
-	/* Testing with FMT_MODIFIED is problematic, because change time is not
-	 * programmatically accessible. */
+	/* Testing with FMT_CHANGED is problematic, because change time is not
+	 * programmatically accessible for writing. */
 	set_extcached_monitor_type(FMT_MODIFIED);
 
+	create_file("file");
+	assert_success(os_mkdir("dir", 0700));
+
 	/* For directories. */
-	ASSERT_OK("extcached('cache1', '.', 'echo 1')", "1");
+	ASSERT_OK("extcached('cache1', 'dir', 'echo 1')", "1");
 	/* Unchanged. */
-	ASSERT_OK("extcached('cache1', '.', 'echo 2')", "1");
+	ASSERT_OK("extcached('cache1', 'dir', 'echo 2')", "1");
 #ifndef _WIN32
 	/* Changed. */
 	struct timeval tvs[2] = {};
-	assert_success(utimes(".", tvs));
-	ASSERT_OK("extcached('cache1', '.', 'echo 3')", "3");
+	assert_success(utimes("dir", tvs));
+	ASSERT_OK("extcached('cache1', 'dir', 'echo 3')", "3");
 	/* Unchanged again. */
-	ASSERT_OK("extcached('cache1', '.', 'echo 4')", "3");
+	ASSERT_OK("extcached('cache1', 'dir', 'echo 4')", "3");
 #endif
-
-	create_file("file");
 
 	/* For files. */
 	ASSERT_OK("extcached('cache1', 'file', 'echo 5')", "5");
@@ -407,18 +409,21 @@ TEST(extcached)
 #endif
 
 	/* Caches don't mix. */
-	ASSERT_OK("extcached('cache2', '.', 'echo a')", "a");
-	ASSERT_OK("extcached('cache3', '.', 'echo b')", "b");
+	ASSERT_OK("extcached('cache2', 'dir', 'echo a')", "a");
+	ASSERT_OK("extcached('cache3', 'dir', 'echo b')", "b");
 
 #ifndef _WIN32
 	/* Change resets all caches. */
-	assert_success(utimes(".", tvs));
-	ASSERT_OK("extcached('cache1', '.', 'echo 00')", "00");
-	ASSERT_OK("extcached('cache2', '.', 'echo aa')", "aa");
-	ASSERT_OK("extcached('cache3', '.', 'echo bb')", "bb");
+	tvs[0].tv_sec = 1;
+	tvs[1].tv_sec = 1;
+	assert_success(utimes("dir", tvs));
+	ASSERT_OK("extcached('cache1', 'dir', 'echo 00')", "00");
+	ASSERT_OK("extcached('cache2', 'dir', 'echo aa')", "aa");
+	ASSERT_OK("extcached('cache3', 'dir', 'echo bb')", "bb");
 #endif
 
 	assert_success(remove("file"));
+	assert_success(rmdir("dir"));
 
 	set_extcached_monitor_type(FMT_CHANGED);
 }
