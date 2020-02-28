@@ -338,6 +338,13 @@ setup_transposed_grid(view_t *view, int column_count, int list_rows, int init)
 	}
 }
 
+void
+init_view_list(view_t *view)
+{
+	view->list_rows = 1;
+	init_list(view);
+}
+
 static void
 init_list(view_t *view)
 {

@@ -93,6 +93,7 @@
  *          orientation = "v" # or "h"
  *          expanded = false  # only mode
  *      }
+ *      name = "gtab-name"
  *      active-pane = 0
  *      preview = false
  *  } ]
@@ -191,7 +192,8 @@ static void merge_history(JSON_Object *current, JSON_Object *admixture,
 static void merge_regs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void merge_trash(JSON_Object *current, JSON_Object *admixture);
-static void store_gtab(JSON_Object *gtab, view_t *left, view_t *right);
+static void store_gtab(JSON_Object *gtab, const char name[], view_t *left,
+		view_t *right);
 static void store_pane(JSON_Object *view_data, view_t *view);
 static void store_ptab(JSON_Object *ptab, view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
@@ -584,15 +586,24 @@ load_state(JSON_Object *root, int reread)
 	view_t *left = &lwin, *right = &rwin;
 	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)
 	{
-		load_gtab(json_array_get_object(gtabs, i), left, right, reread);
+		JSON_Object *gtab = json_array_get_object(gtabs, i);
 
-		if(i != n - 1)
+		const char *name = NULL;
+		(void)get_str(gtab, "name", &name);
+
+		if(i == 0)
 		{
-			if(tabs_setup_gtab(NULL, &left, &right) != 0)
+			tabs_rename(&lwin, name);
+		}
+		else
+		{
+			if(tabs_setup_gtab(name, &left, &right) != 0)
 			{
 				break;
 			}
 		}
+
+		load_gtab(gtab, left, right, reread);
 	}
 
 	load_options(root);
@@ -1161,7 +1172,7 @@ serialize_state(void)
 
 	if(cfg.pane_tabs)
 	{
-		store_gtab(append_object(gtabs), &lwin, &rwin);
+		store_gtab(append_object(gtabs), NULL, &lwin, &rwin);
 	}
 	else
 	{
@@ -1171,7 +1182,8 @@ serialize_state(void)
 			tab_info_t left_tab_info, right_tab_info;
 			tabs_enum(&lwin, i, &left_tab_info);
 			tabs_enum(&rwin, i, &right_tab_info);
-			store_gtab(append_object(gtabs), left_tab_info.view, right_tab_info.view);
+			store_gtab(append_object(gtabs), left_tab_info.name, left_tab_info.view,
+					right_tab_info.view);
 		}
 	}
 
@@ -1584,8 +1596,10 @@ merge_trash(JSON_Object *current, JSON_Object *admixture)
 
 /* Serializes a global tab into JSON table. */
 static void
-store_gtab(JSON_Object *gtab, view_t *left, view_t *right)
+store_gtab(JSON_Object *gtab, const char name[], view_t *left, view_t *right)
 {
+	set_str(gtab, "name", name);
+
 	JSON_Array *panes = add_array(gtab, "panes");
 	store_pane(append_object(panes), left);
 	store_pane(append_object(panes), right);
