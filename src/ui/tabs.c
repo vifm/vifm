@@ -587,7 +587,7 @@ tabs_only(view_t *view)
 {
 	if(cfg.pane_tabs)
 	{
-		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
+		pane_tabs_t *const ptabs = get_pane_tabs(view);
 		while(DA_SIZE(ptabs->tabs) != 1U)
 		{
 			pane_tab_t *const ptab = &ptabs->tabs[ptabs->current == 0 ? 1 : 0];
