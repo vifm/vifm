@@ -203,7 +203,8 @@ TEST(empty_vifminfo_option_produces_empty_state)
 	char *as_string = json_serialize_to_string(value);
 
 	assert_string_equal("{\"gtabs\":"
-	                       "[{\"panes\":[{\"ptabs\":[{}]},{\"ptabs\":[{}]}]}]"
+	                       "[{\"panes\":[{\"ptabs\":[{}]},{\"ptabs\":[{}]}]}],"
+	                       "\"active-gtab\":0"
 	                    "}", as_string);
 
 	free(as_string);

@@ -108,5 +108,21 @@ TEST(names_of_pane_tabs_are_restored)
 	assert_string_equal("rtab1", tab_info.name);
 }
 
+TEST(active_global_tab_is_restored)
+{
+	assert_success(tabs_new("gtab1", NULL));
+	assert_success(tabs_new("gtab2", NULL));
+
+	tabs_goto(1);
+	assert_int_equal(1, tabs_current(&lwin));
+
+	write_info_file();
+	tabs_only(&lwin);
+	tabs_rename(&lwin, NULL);
+	read_info_file(0);
+
+	assert_int_equal(1, tabs_current(&lwin));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

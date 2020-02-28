@@ -144,6 +144,7 @@
  *  search-hist = [ "item1", "item2" ]
  *  prompt-hist = [ "item1", "item2" ]
  *  lfilt-hist = [ "item1", "item2" ]
+ *  active-gtab = 0
  *  use-term-multiplexer = true
  *  color-scheme = "almost-default"
  *
@@ -605,6 +606,12 @@ load_state(JSON_Object *root, int reread)
 		}
 
 		load_gtab(gtab, left, right, reread);
+	}
+
+	int active_gtab;
+	if(!cfg.pane_tabs && get_int(root, "active-gtab", &active_gtab))
+	{
+		tabs_goto(active_gtab);
 	}
 
 	load_options(root);
@@ -1203,6 +1210,7 @@ serialize_state(void)
 			store_gtab(append_object(gtabs), left_tab_info.name, left_tab_info.view,
 					right_tab_info.view);
 		}
+		set_int(root, "active-gtab", tabs_current(&lwin));
 	}
 
 	store_trash(root);
