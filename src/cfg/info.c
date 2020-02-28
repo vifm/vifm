@@ -83,6 +83,7 @@
  *                  auto = ""
  *                  invert = false
  *              }
+ *              name = "ptab-name"
  *              options = [ "opt1=val1", "opt2=val2" ]
  *              restore-last-location = true
  *              sorting = "1,-2,3"
@@ -195,7 +196,7 @@ static void merge_trash(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab, const char name[], view_t *left,
 		view_t *right);
 static void store_pane(JSON_Object *view_data, view_t *view);
-static void store_ptab(JSON_Object *ptab, view_t *view);
+static void store_ptab(JSON_Object *ptab, const char name[], view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
 static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
@@ -673,24 +674,41 @@ static void
 load_pane(JSON_Object *pane, view_t *view, int right, int reread)
 {
 	JSON_Array *ptabs = json_object_get_array(pane, "ptabs");
-	int i, n;
-	for(i = 0, n = json_array_get_count(ptabs); i < n; ++i)
+
+	int n = json_array_get_count(ptabs);
+	if(n > 1)
+	{
+		/* More than one pane tab means that we need to change tab scope option. */
+		cfg.pane_tabs = 1;
+		load_tabscope_option();
+	}
+
+	int i;
+	view_t *side = (right ? &rwin : &lwin);
+	for(i = 0; i < n; ++i)
 	{
 		JSON_Object *ptab = json_array_get_object(ptabs, i);
-		load_ptab(ptab, view, reread);
 
-		if(i != n - 1)
+		const char *name = NULL;
+		(void)get_str(ptab, "name", &name);
+
+		if(i == 0)
 		{
-			view = tabs_setup_ptab(right ? &rwin : &lwin, NULL);
+			if(cfg.pane_tabs)
+			{
+				tabs_rename(side, name);
+			}
+		}
+		else
+		{
+			view = tabs_setup_ptab(side, name);
 			if(view == NULL)
 			{
 				break;
 			}
-
-			/* At least one pane tab means that we need to change tab scope option. */
-			cfg.pane_tabs = 1;
-			load_tabscope_option();
 		}
+
+		load_ptab(ptab, view, reread);
 	}
 }
 
@@ -1628,19 +1646,21 @@ store_pane(JSON_Object *view_data, view_t *view)
 		tab_info_t tab_info;
 		for(i = 0; tabs_enum(view, i, &tab_info); ++i)
 		{
-			store_ptab(append_object(ptabs), tab_info.view);
+			store_ptab(append_object(ptabs), tab_info.name, tab_info.view);
 		}
 	}
 	else
 	{
-		store_ptab(append_object(ptabs), view);
+		store_ptab(append_object(ptabs), NULL, view);
 	}
 }
 
 /* Serializes a pane tab into JSON table. */
 static void
-store_ptab(JSON_Object *ptab, view_t *view)
+store_ptab(JSON_Object *ptab, const char name[], view_t *view)
 {
+	set_str(ptab, "name", name);
+
 	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
 		store_dhistory(ptab, view);
