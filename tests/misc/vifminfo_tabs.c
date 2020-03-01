@@ -5,6 +5,7 @@
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
@@ -171,6 +172,36 @@ TEST(layout_of_global_tab_is_restored)
 	assert_int_equal(1, curr_stats.number_of_windows);
 	assert_int_equal(HSPLIT, curr_stats.split);
 
+	cfg.vifm_info = 0;
+}
+
+TEST(layout_of_pane_tab_is_restored)
+{
+	cfg.vifm_info = VINFO_TUI;
+	lwin.sort_g[0] = SK_BY_NAME;
+	rwin.sort_g[0] = SK_BY_NAME;
+	lwin.columns = columns_create();
+	rwin.columns = columns_create();
+
+	cfg.pane_tabs = 1;
+
+	curr_stats.preview.on = 0;
+	assert_success(tabs_new("ltab1", NULL));
+	curr_stats.preview.on = 1;
+
+	write_info_file();
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+	read_info_file(0);
+
+	assert_true(curr_stats.preview.on);
+	tabs_goto(0);
+	assert_false(curr_stats.preview.on);
+
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	columns_free(rwin.columns);
+	rwin.columns = NULL;
 	cfg.vifm_info = 0;
 }
 

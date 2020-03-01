@@ -87,6 +87,7 @@
  *              options = [ "opt1=val1", "opt2=val2" ]
  *              restore-last-location = true
  *              sorting = "1,-2,3"
+ *              preview = false
  *          } ]
  *          active-ptab = 0
  *      } ]
@@ -198,7 +199,8 @@ static void merge_trash(JSON_Object *current, JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab, const char name[],
 		const tab_layout_t *layout, view_t *left, view_t *right);
 static void store_pane(JSON_Object *pane, view_t *view, int right);
-static void store_ptab(JSON_Object *ptab, const char name[], view_t *view);
+static void store_ptab(JSON_Object *ptab, const char name[], int preview,
+		view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
 static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
@@ -703,6 +705,9 @@ load_pane(JSON_Object *pane, view_t *view, int right, int reread)
 		load_tabscope_option();
 	}
 
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+
 	int i;
 	view_t *side = (right ? &rwin : &lwin);
 	for(i = 0; i < n; ++i)
@@ -712,16 +717,20 @@ load_pane(JSON_Object *pane, view_t *view, int right, int reread)
 		const char *name = NULL;
 		(void)get_str(ptab, "name", &name);
 
+		int preview = layout.preview;
+		(void)get_bool(ptab, "preview", &preview);
+
 		if(i == 0)
 		{
 			if(cfg.pane_tabs)
 			{
 				tabs_rename(side, name);
+				stats_set_quickview(preview);
 			}
 		}
 		else
 		{
-			view = tabs_setup_ptab(side, name, 0);
+			view = tabs_setup_ptab(side, name, preview);
 			if(view == NULL)
 			{
 				break;
@@ -1658,7 +1667,10 @@ store_gtab(JSON_Object *gtab, const char name[], const tab_layout_t *layout,
 	if(cfg.vifm_info & VINFO_TUI)
 	{
 		set_int(gtab, "active-pane", layout->active_pane);
-		set_bool(gtab, "preview", layout->preview);
+		if(!cfg.pane_tabs)
+		{
+			set_bool(gtab, "preview", layout->preview);
+		}
 
 		JSON_Object *splitter = add_object(gtab, "splitter");
 		set_int(splitter, "pos", layout->splitter_pos);
@@ -1679,12 +1691,15 @@ store_pane(JSON_Object *pane, view_t *view, int right)
 		tab_info_t tab_info;
 		for(i = 0; tabs_enum(view, i, &tab_info); ++i)
 		{
-			store_ptab(append_object(ptabs), tab_info.name, tab_info.view);
+			store_ptab(append_object(ptabs), tab_info.name, tab_info.layout.preview,
+					tab_info.view);
 		}
 	}
 	else
 	{
-		store_ptab(append_object(ptabs), NULL, view);
+		tab_layout_t layout;
+		tabs_layout_fill(&layout);
+		store_ptab(append_object(ptabs), NULL, layout.preview, view);
 	}
 
 	set_int(pane, "active-ptab", tabs_current(right ? &rwin : &lwin));
@@ -1692,7 +1707,7 @@ store_pane(JSON_Object *pane, view_t *view, int right)
 
 /* Serializes a pane tab into JSON table. */
 static void
-store_ptab(JSON_Object *ptab, const char name[], view_t *view)
+store_ptab(JSON_Object *ptab, const char name[], int preview, view_t *view)
 {
 	set_str(ptab, "name", name);
 
@@ -1714,6 +1729,7 @@ store_ptab(JSON_Object *ptab, const char name[], view_t *view)
 	if(cfg.vifm_info & VINFO_TUI)
 	{
 		store_sort_info(ptab, view);
+		set_bool(ptab, "preview", preview);
 	}
 }
 
