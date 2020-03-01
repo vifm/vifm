@@ -459,9 +459,12 @@ TEST(tabs_enum_all_lists_all_pane_tabs)
 
 TEST(new_global_tabs_are_appended_on_setup)
 {
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+
 	view_t *left, *right;
-	assert_success(tabs_setup_gtab("1", &left, &right));
-	assert_success(tabs_setup_gtab("2", &left, &right));
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
+	assert_success(tabs_setup_gtab("2", &layout, &left, &right));
 
 	tab_info_t tab_info;
 	assert_true(tabs_enum(&lwin, 0, &tab_info));
@@ -489,8 +492,11 @@ TEST(new_pane_tabs_are_appended_on_setup)
 
 TEST(newly_setup_global_tabs_have_empty_history)
 {
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+
 	view_t *left, *right;
-	assert_success(tabs_setup_gtab("1", &left, &right));
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
 	assert_int_equal(0, left->history_num);
 	assert_int_equal(0, right->history_num);
 }
@@ -501,6 +507,28 @@ TEST(newly_setup_pane_tabs_have_empty_history)
 	view_t *view = tabs_setup_ptab(&lwin, "1");
 	assert_non_null(view);
 	assert_int_equal(0, view->history_num);
+}
+
+TEST(layout_of_global_tab_is_applied)
+{
+	tab_layout_t layout = {
+		.active_pane = 0,
+		.only_mode = 1,
+		.split = HSPLIT,
+		.splitter_pos = -1,
+		.preview = 0,
+	};
+
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
+
+	curr_stats.number_of_windows = 2;
+	curr_stats.split = VSPLIT;
+
+	tabs_goto(1);
+
+	assert_int_equal(1, curr_stats.number_of_windows);
+	assert_int_equal(HSPLIT, curr_stats.split);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

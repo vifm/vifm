@@ -600,7 +600,9 @@ load_state(JSON_Object *root, int reread)
 		}
 		else
 		{
-			if(tabs_setup_gtab(name, &left, &right) != 0)
+			tab_layout_t layout;
+			tabs_layout_fill(&layout);
+			if(tabs_setup_gtab(name, &layout, &left, &right) != 0)
 			{
 				break;
 			}

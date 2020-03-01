@@ -19,7 +19,21 @@
 #ifndef VIFM__UI__TABS_H__
 #define VIFM__UI__TABS_H__
 
+#include "../status.h"
+
 /* Implementation of combination of global and pane tabs. */
+
+/* Information about UI configuration of a tab.  For pane tabs preview is the
+ * only field that can differ from current state. */
+typedef struct
+{
+	int active_pane;  /* 0 -- left, 1 -- right. */
+	int only_mode;    /* Whether in single-pane mode. */
+	SPLIT split;      /* State of window split. */
+	int splitter_pos; /* Splitter position. */
+	int preview;      /* Whether preview mode is active. */
+}
+tab_layout_t;
 
 /* Information about a tab. */
 typedef struct
@@ -94,13 +108,17 @@ void tabs_switch_panes(void);
  * views, but preserving their current locations. */
 void tabs_reload(void);
 
-/* Appends new incompletely configured global tab and sets input pointers to its
- * views.  Returns zero on success, otherwise non-zero is returned. */
-int tabs_setup_gtab(const char name[], struct view_t **left,
-		struct view_t **right);
+/* Fills layout structure with current information. */
+void tabs_layout_fill(tab_layout_t *layout);
 
-/* Appends new incompletely configured pane tab on the specified side.  Returns
- * pointer to view on the new tab or NULL on error. */
+/* Appends new incompletely configured global tab and sets input pointers to its
+ * views.  Name can be NULL.  Returns zero on success, otherwise non-zero is
+ * returned. */
+int tabs_setup_gtab(const char name[], const tab_layout_t *layout,
+		struct view_t **left, struct view_t **right);
+
+/* Appends new incompletely configured pane tab on the specified side.  Name can
+ * be NULL.  Returns pointer to view on the new tab or NULL on error. */
 struct view_t * tabs_setup_ptab(struct view_t *view, const char name[]);
 
 #endif /* VIFM__UI__TABS_H__ */

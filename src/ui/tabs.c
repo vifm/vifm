@@ -769,8 +769,19 @@ tabs_enum_all(int idx, tab_info_t *tab_info)
 	return tabs_enum(&rwin, idx - offset, tab_info);
 }
 
+void
+tabs_layout_fill(tab_layout_t *layout)
+{
+	layout->active_pane = (curr_view == &rwin);
+	layout->only_mode = (curr_stats.number_of_windows == 1);
+	layout->split = curr_stats.split;
+	layout->splitter_pos = curr_stats.splitter_pos;
+	layout->preview = curr_stats.preview.on;
+}
+
 int
-tabs_setup_gtab(const char name[], struct view_t **left, struct view_t **right)
+tabs_setup_gtab(const char name[], const tab_layout_t *layout, view_t **left,
+		view_t **right)
 {
 	int idx = DA_SIZE(gtabs);
 	if(tabs_new_global(name, NULL, idx, 1) != 0)
@@ -778,8 +789,16 @@ tabs_setup_gtab(const char name[], struct view_t **left, struct view_t **right)
 		return 1;
 	}
 
-	*left = &gtabs[idx].left.tabs[0].view;
-	*right = &gtabs[idx].right.tabs[0].view;
+	global_tab_t *gtab = &gtabs[idx];
+
+	gtab->active_pane = layout->active_pane;
+	gtab->only_mode = layout->only_mode;
+	gtab->split = layout->split;
+	gtab->splitter_pos = layout->splitter_pos;
+	gtab->preview.on = layout->preview;
+
+	*left = &gtab->left.tabs[0].view;
+	*right = &gtab->right.tabs[0].view;
 	return 0;
 }
 
