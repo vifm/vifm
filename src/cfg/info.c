@@ -154,6 +154,8 @@
 
 static JSON_Value * read_legacy_info_file(const char info_file[]);
 static void load_state(JSON_Object *root, int reread);
+static tab_layout_t load_gtab_layout(const JSON_Object *gtab, int apply,
+		int reread);
 static void load_gtab(JSON_Object *gtab, view_t *left, view_t *right,
 		int reread);
 static void load_pane(JSON_Object *pane, view_t *view, int right, int reread);
@@ -591,6 +593,8 @@ load_state(JSON_Object *root, int reread)
 	{
 		JSON_Object *gtab = json_array_get_object(gtabs, i);
 
+		tab_layout_t layout = load_gtab_layout(gtab, i == 0, reread);
+
 		const char *name = NULL;
 		(void)get_str(gtab, "name", &name);
 
@@ -600,8 +604,6 @@ load_state(JSON_Object *root, int reread)
 		}
 		else
 		{
-			tab_layout_t layout;
-			tabs_layout_fill(&layout);
 			if(tabs_setup_gtab(name, &layout, &left, &right) != 0)
 			{
 				break;
@@ -635,34 +637,42 @@ load_state(JSON_Object *root, int reread)
 	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
 }
 
-/* Loads a global tab from JSON. */
-static void
-load_gtab(JSON_Object *gtab, view_t *left, view_t *right, int reread)
+/* Loads (possibly applying it in the progress) layout information of a global
+ * tab. */
+static tab_layout_t
+load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
 {
-	JSON_Array *panes = json_object_get_array(gtab, "panes");
-	load_pane(json_array_get_object(panes, 0), left, 0, reread);
-	load_pane(json_array_get_object(panes, 1), right, 1, reread);
+	tab_layout_t layout = {
+		.active_pane = 0,
+		.only_mode = 0,
+		.split = VSPLIT,
+		.splitter_pos = -1,
+		.preview = 0,
+	};
 
-	int preview;
-	if(get_bool(gtab, "preview", &preview))
-	{
-		stats_set_quickview(preview);
-	}
-
-	JSON_Object *splitter = json_object_get_object(gtab, "splitter");
+	const JSON_Object *splitter = json_object_get_object(gtab, "splitter");
 
 	const char *split_kind;
 	if(get_str(splitter, "orientation", &split_kind))
 	{
-		curr_stats.split = (split_kind[0] == 'v' ? VSPLIT : HSPLIT);
+		layout.split = (split_kind[0] == 'v' ? VSPLIT : HSPLIT);
+		if(apply)
+		{
+			curr_stats.split = layout.split;
+		}
 	}
-	get_int(splitter, "pos", &curr_stats.splitter_pos);
-
-	/* Don't change some properties on :restart command. */
-	if(!reread)
+	if(get_int(splitter, "pos", &layout.splitter_pos) && apply)
 	{
-		int active_pane;
-		if(get_int(gtab, "active-pane", &active_pane) && active_pane == 1)
+		curr_stats.splitter_pos = layout.splitter_pos;
+	}
+	if(get_bool(splitter, "expanded", &layout.only_mode) && apply && !reread)
+	{
+		curr_stats.number_of_windows = (layout.only_mode ? 1 : 2);
+	}
+
+	if(get_int(gtab, "active-pane", &layout.active_pane) && apply && !reread)
+	{
+		if(layout.active_pane == 1)
 		{
 			/* TODO: why is this not the last statement in the block? */
 			ui_views_update_titles();
@@ -670,13 +680,22 @@ load_gtab(JSON_Object *gtab, view_t *left, view_t *right, int reread)
 			curr_view = &rwin;
 			other_view = &lwin;
 		}
-
-		int expanded;
-		if(get_bool(splitter, "expanded", &expanded))
-		{
-			curr_stats.number_of_windows = (expanded ? 1 : 2);
-		}
 	}
+	if(get_bool(gtab, "preview", &layout.preview) && apply)
+	{
+		stats_set_quickview(layout.preview);
+	}
+
+	return layout;
+}
+
+/* Loads a global tab from JSON. */
+static void
+load_gtab(JSON_Object *gtab, view_t *left, view_t *right, int reread)
+{
+	JSON_Array *panes = json_object_get_array(gtab, "panes");
+	load_pane(json_array_get_object(panes, 0), left, 0, reread);
+	load_pane(json_array_get_object(panes, 1), right, 1, reread);
 }
 
 /* Loads a pane (consists of pane tabs) from JSON. */
