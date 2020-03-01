@@ -156,8 +156,6 @@ static JSON_Value * read_legacy_info_file(const char info_file[]);
 static void load_state(JSON_Object *root, int reread);
 static tab_layout_t load_gtab_layout(const JSON_Object *gtab, int apply,
 		int reread);
-static void load_gtab(JSON_Object *gtab, view_t *left, view_t *right,
-		int reread);
 static void load_pane(JSON_Object *pane, view_t *view, int right, int reread);
 static void load_ptab(JSON_Object *ptab, view_t *view, int reread);
 static void load_dhistory(JSON_Object *info, view_t *view, int reread);
@@ -610,7 +608,9 @@ load_state(JSON_Object *root, int reread)
 			}
 		}
 
-		load_gtab(gtab, left, right, reread);
+		JSON_Array *panes = json_object_get_array(gtab, "panes");
+		load_pane(json_array_get_object(panes, 0), left, 0, reread);
+		load_pane(json_array_get_object(panes, 1), right, 1, reread);
 	}
 
 	int active_gtab;
@@ -687,15 +687,6 @@ load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
 	}
 
 	return layout;
-}
-
-/* Loads a global tab from JSON. */
-static void
-load_gtab(JSON_Object *gtab, view_t *left, view_t *right, int reread)
-{
-	JSON_Array *panes = json_object_get_array(gtab, "panes");
-	load_pane(json_array_get_object(panes, 0), left, 0, reread);
-	load_pane(json_array_get_object(panes, 1), right, 1, reread);
 }
 
 /* Loads a pane (consists of pane tabs) from JSON. */
