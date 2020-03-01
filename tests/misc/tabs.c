@@ -478,8 +478,8 @@ TEST(new_global_tabs_are_appended_on_setup)
 TEST(new_pane_tabs_are_appended_on_setup)
 {
 	cfg.pane_tabs = 1;
-	assert_non_null(tabs_setup_ptab(&lwin, "1"));
-	assert_non_null(tabs_setup_ptab(&lwin, "2"));
+	assert_non_null(tabs_setup_ptab(&lwin, "1", 0));
+	assert_non_null(tabs_setup_ptab(&lwin, "2", 0));
 
 	tab_info_t tab_info;
 	assert_true(tabs_enum(&lwin, 0, &tab_info));
@@ -504,7 +504,7 @@ TEST(newly_setup_global_tabs_have_empty_history)
 TEST(newly_setup_pane_tabs_have_empty_history)
 {
 	cfg.pane_tabs = 1;
-	view_t *view = tabs_setup_ptab(&lwin, "1");
+	view_t *view = tabs_setup_ptab(&lwin, "1", 0);
 	assert_non_null(view);
 	assert_int_equal(0, view->history_num);
 }
@@ -529,6 +529,18 @@ TEST(layout_of_global_tab_is_applied)
 
 	assert_int_equal(1, curr_stats.number_of_windows);
 	assert_int_equal(HSPLIT, curr_stats.split);
+}
+
+TEST(layout_of_pane_tab_is_applied)
+{
+	cfg.pane_tabs = 1;
+	assert_non_null(tabs_setup_ptab(&lwin, "1", 1));
+
+	curr_stats.preview.on = 0;
+
+	tabs_goto(1);
+
+	assert_true(curr_stats.preview.on);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

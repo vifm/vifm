@@ -803,12 +803,18 @@ tabs_setup_gtab(const char name[], const tab_layout_t *layout, view_t **left,
 }
 
 view_t *
-tabs_setup_ptab(view_t *view, const char name[])
+tabs_setup_ptab(view_t *view, const char name[], int preview)
 {
 	pane_tabs_t *ptabs = get_pane_tabs(view);
 	int idx = DA_SIZE(ptabs->tabs);
 	pane_tab_t *ptab = tabs_new_pane(ptabs, view, name, NULL, idx, 1);
-	return (ptab == NULL ? NULL : &ptab->view);
+	if(ptab == NULL)
+	{
+		return NULL;
+	}
+
+	ptab->preview.on = preview;
+	return &ptab->view;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

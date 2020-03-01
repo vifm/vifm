@@ -711,7 +711,7 @@ load_pane(JSON_Object *pane, view_t *view, int right, int reread)
 		}
 		else
 		{
-			view = tabs_setup_ptab(side, name);
+			view = tabs_setup_ptab(side, name, 0);
 			if(view == NULL)
 			{
 				break;

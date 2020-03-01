@@ -119,7 +119,8 @@ int tabs_setup_gtab(const char name[], const tab_layout_t *layout,
 
 /* Appends new incompletely configured pane tab on the specified side.  Name can
  * be NULL.  Returns pointer to view on the new tab or NULL on error. */
-struct view_t * tabs_setup_ptab(struct view_t *view, const char name[]);
+struct view_t * tabs_setup_ptab(struct view_t *view, const char name[],
+		int preview);
 
 #endif /* VIFM__UI__TABS_H__ */
 
