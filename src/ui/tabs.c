@@ -91,6 +91,7 @@ static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		const view_t *view);
 static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view);
 static void reload_views(view_t *side);
+static void apply_layout(global_tab_t *gtab, const tab_layout_t *layout);
 
 /* List of global tabs. */
 static global_tab_t *gtabs;
@@ -160,7 +161,6 @@ tabs_new_global(const char name[], const char path[], int at, int clean)
 	}
 	update_string(&new_tab.name, name);
 	capture_global_state(&new_tab);
-	new_tab.preview.on = curr_stats.preview.on;
 
 	DA_COMMIT(gtabs);
 
@@ -371,10 +371,9 @@ tabs_goto_global(int idx)
 static void
 capture_global_state(global_tab_t *gtab)
 {
-	gtab->active_pane = (curr_view == &rwin);
-	gtab->only_mode = (curr_stats.number_of_windows == 1);
-	gtab->split = curr_stats.split;
-	gtab->splitter_pos = curr_stats.splitter_pos;
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+	apply_layout(gtab, &layout);
 }
 
 /* Assigns one instance of preview_t to another managing dynamic resources on
@@ -817,16 +816,22 @@ tabs_setup_gtab(const char name[], const tab_layout_t *layout, view_t **left,
 	}
 
 	global_tab_t *gtab = &gtabs[idx];
+	apply_layout(gtab, layout);
 
+	*left = &gtab->left.tabs[0].view;
+	*right = &gtab->right.tabs[0].view;
+	return 0;
+}
+
+/* Applies layout data to a global tab. */
+static void
+apply_layout(global_tab_t *gtab, const tab_layout_t *layout)
+{
 	gtab->active_pane = layout->active_pane;
 	gtab->only_mode = layout->only_mode;
 	gtab->split = layout->split;
 	gtab->splitter_pos = layout->splitter_pos;
 	gtab->preview.on = layout->preview;
-
-	*left = &gtab->left.tabs[0].view;
-	*right = &gtab->right.tabs[0].view;
-	return 0;
 }
 
 view_t *
