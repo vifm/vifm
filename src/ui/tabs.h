@@ -40,6 +40,7 @@ typedef struct
 {
 	struct view_t *view; /* View associated with the tab. */
 	const char *name;    /* Name of the view or NULL. */
+	tab_layout_t layout; /* UI configuration information. */
 	int last;            /* This is the last tab. */
 }
 tab_info_t;

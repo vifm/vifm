@@ -528,7 +528,18 @@ tabs_get(view_t *view, int idx, tab_info_t *tab_info)
 		{
 			return 0;
 		}
-		tab_info->view = (idx == ptabs->current ? view : &ptabs->tabs[idx].view);
+
+		tabs_layout_fill(&tab_info->layout);
+		if(idx == ptabs->current)
+		{
+			tab_info->view = view;
+		}
+		else
+		{
+			tab_info->view = &ptabs->tabs[idx].view;
+			tab_info->layout.preview = ptabs->tabs[idx].preview.on;
+		}
+
 		tab_info->name = ptabs->tabs[idx].name;
 		tab_info->last = (idx == n - 1);
 		return 1;
@@ -556,12 +567,18 @@ get_global_tab(view_t *view, int idx, tab_info_t *tab_info, int return_active)
 	if(idx == current_gtab)
 	{
 		tab_info->view = view;
+		tabs_layout_fill(&tab_info->layout);
 		return 1;
 	}
 	tab_info->view = (return_active && !gtab->active_pane)
 	              || (!return_active && view == &lwin)
 	               ? &gtab->left.tabs[gtab->left.current].view
 	               : &gtab->right.tabs[gtab->right.current].view;
+	tab_info->layout.active_pane = gtab->active_pane;
+	tab_info->layout.only_mode = gtab->only_mode;
+	tab_info->layout.split = gtab->split;
+	tab_info->layout.splitter_pos = gtab->splitter_pos;
+	tab_info->layout.preview = gtab->preview.on;
 	return 1;
 }
 

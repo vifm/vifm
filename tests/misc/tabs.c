@@ -543,5 +543,34 @@ TEST(layout_of_pane_tab_is_applied)
 	assert_true(curr_stats.preview.on);
 }
 
+TEST(layout_of_global_tab_is_returned)
+{
+	tab_layout_t layout = {
+		.active_pane = 0,
+		.only_mode = 1,
+		.split = HSPLIT,
+		.splitter_pos = -1,
+		.preview = 0,
+	};
+
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_true(tab_info.layout.only_mode);
+	assert_int_equal(HSPLIT, tab_info.layout.split);
+}
+
+TEST(layout_of_pane_tab_is_returned)
+{
+	cfg.pane_tabs = 1;
+	assert_non_null(tabs_setup_ptab(&lwin, "1", 1));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_true(tab_info.layout.preview);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
