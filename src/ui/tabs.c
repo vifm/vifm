@@ -84,6 +84,7 @@ static void free_pane_tabs(pane_tabs_t *ptabs);
 static void free_pane_tab(pane_tab_t *ptab);
 static void free_preview(preview_t *preview);
 static pane_tabs_t * get_pane_tabs(const view_t *view);
+static int get_pane_tab(view_t *view, int idx, tab_info_t *tab_info);
 static int get_global_tab(view_t *view, int idx, tab_info_t *tab_info,
 		int return_active);
 static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
@@ -522,30 +523,39 @@ tabs_get(view_t *view, int idx, tab_info_t *tab_info)
 {
 	if(cfg.pane_tabs)
 	{
-		pane_tabs_t *const ptabs = get_pane_tabs(view);
-		const int n = (int)DA_SIZE(ptabs->tabs);
-		if(idx < 0 || idx >= n)
-		{
-			return 0;
-		}
-
-		tabs_layout_fill(&tab_info->layout);
-		if(idx == ptabs->current)
-		{
-			tab_info->view = view;
-		}
-		else
-		{
-			tab_info->view = &ptabs->tabs[idx].view;
-			tab_info->layout.preview = ptabs->tabs[idx].preview.on;
-		}
-
-		tab_info->name = ptabs->tabs[idx].name;
-		tab_info->last = (idx == n - 1);
-		return 1;
+		return get_pane_tab(view, idx, tab_info);
 	}
 
 	return get_global_tab(view, idx, tab_info, 1);
+}
+
+/* Fills *tab_info for the pane tab specified by its index and side (view
+ * parameter).  Returns non-zero on success, otherwise zero is returned. */
+static int
+get_pane_tab(view_t *view, int idx, tab_info_t *tab_info)
+{
+	pane_tabs_t *const ptabs = get_pane_tabs(view);
+	const int n = (int)DA_SIZE(ptabs->tabs);
+	if(idx < 0 || idx >= n)
+	{
+		return 0;
+	}
+
+	tabs_layout_fill(&tab_info->layout);
+
+	if(idx == ptabs->current)
+	{
+		tab_info->view = view;
+	}
+	else
+	{
+		tab_info->view = &ptabs->tabs[idx].view;
+		tab_info->layout.preview = ptabs->tabs[idx].preview.on;
+	}
+
+	tab_info->name = ptabs->tabs[idx].name;
+	tab_info->last = (idx == n - 1);
+	return 1;
 }
 
 /* Fills *tab_info for the global tab specified by its index and side (view
@@ -769,7 +779,7 @@ reload_views(view_t *side)
 int
 tabs_enum(view_t *view, int idx, tab_info_t *tab_info)
 {
-	return cfg.pane_tabs ? tabs_get(view, idx, tab_info)
+	return cfg.pane_tabs ? get_pane_tab(view, idx, tab_info)
 	                     : get_global_tab(view, idx, tab_info, 0);
 }
 
