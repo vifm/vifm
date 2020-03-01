@@ -195,8 +195,8 @@ static void merge_history(JSON_Object *current, JSON_Object *admixture,
 static void merge_regs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void merge_trash(JSON_Object *current, JSON_Object *admixture);
-static void store_gtab(JSON_Object *gtab, const char name[], view_t *left,
-		view_t *right);
+static void store_gtab(JSON_Object *gtab, const char name[],
+		const tab_layout_t *layout, view_t *left, view_t *right);
 static void store_pane(JSON_Object *pane, view_t *view, int right);
 static void store_ptab(JSON_Object *ptab, const char name[], view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
@@ -1219,7 +1219,9 @@ serialize_state(void)
 
 	if(cfg.pane_tabs)
 	{
-		store_gtab(append_object(gtabs), NULL, &lwin, &rwin);
+		tab_layout_t layout;
+		tabs_layout_fill(&layout);
+		store_gtab(append_object(gtabs), NULL, &layout, &lwin, &rwin);
 	}
 	else
 	{
@@ -1229,8 +1231,8 @@ serialize_state(void)
 			tab_info_t left_tab_info, right_tab_info;
 			tabs_enum(&lwin, i, &left_tab_info);
 			tabs_enum(&rwin, i, &right_tab_info);
-			store_gtab(append_object(gtabs), left_tab_info.name, left_tab_info.view,
-					right_tab_info.view);
+			store_gtab(append_object(gtabs), left_tab_info.name,
+					&left_tab_info.layout, left_tab_info.view, right_tab_info.view);
 		}
 		set_int(root, "active-gtab", tabs_current(&lwin));
 	}
@@ -1644,7 +1646,8 @@ merge_trash(JSON_Object *current, JSON_Object *admixture)
 
 /* Serializes a global tab into JSON table. */
 static void
-store_gtab(JSON_Object *gtab, const char name[], view_t *left, view_t *right)
+store_gtab(JSON_Object *gtab, const char name[], const tab_layout_t *layout,
+		view_t *left, view_t *right)
 {
 	set_str(gtab, "name", name);
 
@@ -1654,13 +1657,13 @@ store_gtab(JSON_Object *gtab, const char name[], view_t *left, view_t *right)
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
-		set_int(gtab, "active-pane", (curr_view == left ? 0 : 1));
-		set_bool(gtab, "preview", curr_stats.preview.on);
+		set_int(gtab, "active-pane", layout->active_pane);
+		set_bool(gtab, "preview", layout->preview);
 
 		JSON_Object *splitter = add_object(gtab, "splitter");
-		set_int(splitter, "pos", curr_stats.splitter_pos);
-		set_str(splitter, "orientation", curr_stats.split == VSPLIT ? "v" : "h");
-		set_bool(splitter, "expanded", curr_stats.number_of_windows == 1);
+		set_int(splitter, "pos", layout->splitter_pos);
+		set_str(splitter, "orientation", layout->split == VSPLIT ? "v" : "h");
+		set_bool(splitter, "expanded", layout->only_mode);
 	}
 }
 

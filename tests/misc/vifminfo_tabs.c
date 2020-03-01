@@ -148,5 +148,31 @@ TEST(active_pane_tab_is_restored)
 	assert_int_equal(2, tabs_current(&rwin));
 }
 
+TEST(layout_of_global_tab_is_restored)
+{
+	cfg.vifm_info = VINFO_TUI;
+	lwin.sort_g[0] = SK_BY_NAME;
+	rwin.sort_g[0] = SK_BY_NAME;
+
+	curr_stats.number_of_windows = 2;
+	curr_stats.split = VSPLIT;
+	assert_success(tabs_new("gtab1", NULL));
+	curr_stats.number_of_windows = 1;
+	curr_stats.split = HSPLIT;
+
+	write_info_file();
+	tabs_only(&lwin);
+	read_info_file(0);
+
+	tabs_goto(0);
+	assert_int_equal(2, curr_stats.number_of_windows);
+	assert_int_equal(VSPLIT, curr_stats.split);
+	tabs_goto(1);
+	assert_int_equal(1, curr_stats.number_of_windows);
+	assert_int_equal(HSPLIT, curr_stats.split);
+
+	cfg.vifm_info = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
