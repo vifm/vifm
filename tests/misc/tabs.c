@@ -608,14 +608,22 @@ TEST(global_local_dotfilter_and_tabs)
 	rwin.hide_dot_g = rwin.hide_dot = 1;
 
 	tabs_new(NULL, NULL);
-	assert_success(exec_commands("normal zo", &lwin, CIT_COMMAND));
 
 	int i;
 	tab_info_t tab_info;
+
+	assert_success(exec_commands("normal zo", &lwin, CIT_COMMAND));
 	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
 		assert_false(tab_info.view->hide_dot_g);
 		assert_false(tab_info.view->hide_dot);
+	}
+
+	assert_success(exec_commands("normal za", &lwin, CIT_COMMAND));
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_true(tab_info.view->hide_dot_g);
+		assert_true(tab_info.view->hide_dot);
 	}
 
 	vle_keys_reset();
