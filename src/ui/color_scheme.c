@@ -638,18 +638,19 @@ cs_write(void)
 	for(i = 0U; i < ARRAY_LEN(default_cs); ++i)
 	{
 		char fg_buf[16], bg_buf[16];
-
-		if(i == OTHER_LINE_COLOR)
-		{
-			/* Skip OtherLine as there is no way to express defaults. */
-			continue;
-		}
-
 		cs_color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf);
 		cs_color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf);
 
-		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
-				cs_attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
+		if(default_cs[i].attr == -1)
+		{
+			fprintf(fp, "highlight %s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i], fg_buf,
+					bg_buf);
+		}
+		else
+		{
+			fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
+					cs_attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
+		}
 	}
 
 	fclose(fp);
@@ -1030,9 +1031,13 @@ const char *
 cs_attrs_to_str(int attrs)
 {
 	static char result[64];
+
+	if(attrs == 0 || attrs == -1)
+	{
+		return strcpy(result, "none");
+	}
+
 	result[0] = '\0';
-	if(attrs == 0)
-		strcpy(result, "none,");
 	if((attrs & A_BOLD) == A_BOLD)
 		strcat(result, "bold,");
 	if((attrs & A_UNDERLINE) == A_UNDERLINE)

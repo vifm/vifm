@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Feb 6
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 3
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1190,10 +1190,10 @@ The builtin commands are:
     execute command via shell.  Accepts macros.
 :[range]!command &
     Same as above, but the command is run in the background using vifm's means.
-    Programs that write to stdout like "ls" create error messages showing
-    partial output of the command.  Note the space before ampersand symbol, if
-    you omit it, command is run in the background using job control of your
-    shell.
+    When not on Windows, programs that write to stderr create error dialogs
+    showing errors of the command.  Note the space before ampersand symbol,
+    if you omit it, command is run in the background using job control of
+    your shell.
                                                *vifm-:!!*
 :[range]!!command
     same as :!, but pauses before returning.

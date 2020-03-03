@@ -1,4 +1,4 @@
-.TH VIFM 1 "February 6, 2020" "vifm 0.10.1"
+.TH VIFM 1 "March 3, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1352,8 +1352,8 @@ execute command via shell.  Accepts macros.
 .LP
 same as above, but the command is run in the background using vifm's means.
 
-Programs that write to stdout like "ls" create an error message
-showing partial output of the command.
+When not on Windows, programs that write to stderr create error dialogs showing
+errors of the command.
 
 Note the space before ampersand symbol, if you omit it, command
 will be run in the background using job control of your shell.
