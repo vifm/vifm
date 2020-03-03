@@ -1031,9 +1031,13 @@ const char *
 cs_attrs_to_str(int attrs)
 {
 	static char result[64];
+
+	if(attrs == 0 || attrs == -1)
+	{
+		return strcpy(result, "none");
+	}
+
 	result[0] = '\0';
-	if(attrs == 0)
-		strcpy(result, "none,");
 	if((attrs & A_BOLD) == A_BOLD)
 		strcat(result, "bold,");
 	if((attrs & A_UNDERLINE) == A_UNDERLINE)

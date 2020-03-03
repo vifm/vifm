@@ -59,6 +59,11 @@ TEST(various_attributes_are_parsed)
 
 TEST(attributes_are_printed_back_correctly)
 {
+	ui_sb_msg("");
+	assert_failure(exec_commands("highlight AuxWin", &lwin, CIT_COMMAND));
+	assert_string_equal("AuxWin     cterm=none ctermfg=default ctermbg=default",
+			ui_sb_last());
+
 	assert_success(exec_commands("highlight Win cterm=underline,inverse", &lwin,
 				CIT_COMMAND));
 

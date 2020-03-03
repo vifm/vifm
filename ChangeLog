@@ -97,6 +97,9 @@
 	$VIFM/colors/Default.vifm.  The bug caused white background of inactive
 	pane.  Thanks to Stas Malavin.
 
+	Fixed confusing printing of attributes of OtherLine, OtherWin, AuxWin and
+	User1..User9 highlight groups by :highlight command.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
