@@ -638,19 +638,19 @@ cs_write(void)
 	for(i = 0U; i < ARRAY_LEN(default_cs); ++i)
 	{
 		char fg_buf[16], bg_buf[16];
-
-		if(i == OTHER_LINE_COLOR || i == AUX_WIN_COLOR || i == OTHER_WIN_COLOR ||
-				(i >= USER1_COLOR && i <= USER9_COLOR))
-		{
-			/* Skip as there is no way to express defaults. */
-			continue;
-		}
-
 		cs_color_to_str(default_cs[i].fg, sizeof(fg_buf), fg_buf);
 		cs_color_to_str(default_cs[i].bg, sizeof(bg_buf), bg_buf);
 
-		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
-				cs_attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
+		if(default_cs[i].attr == -1)
+		{
+			fprintf(fp, "highlight %s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i], fg_buf,
+					bg_buf);
+		}
+		else
+		{
+			fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[i],
+					cs_attrs_to_str(default_cs[i].attr), fg_buf, bg_buf);
+		}
 	}
 
 	fclose(fp);
