@@ -10,6 +10,7 @@
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -624,6 +625,27 @@ TEST(global_local_dotfilter_and_tabs)
 	{
 		assert_true(tab_info.view->hide_dot_g);
 		assert_true(tab_info.view->hide_dot);
+	}
+
+	vle_keys_reset();
+	vle_cmds_reset();
+	curr_stats.global_local_settings = 0;
+}
+
+TEST(global_local_manualfilter_and_tabs)
+{
+	curr_stats.global_local_settings = 1;
+	init_modes();
+	init_commands();
+
+	tabs_new(NULL, NULL);
+	assert_success(exec_commands("filter /y/", &lwin, CIT_COMMAND));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_string_equal("/y/", matcher_get_expr(tab_info.view->manual_filter));
 	}
 
 	vle_keys_reset();

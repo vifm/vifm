@@ -2304,7 +2304,15 @@ filter_cmd(const cmd_info_t *cmd_info)
 	ret = update_filter(curr_view, cmd_info);
 	if(curr_stats.global_local_settings)
 	{
-		ret = update_filter(other_view, cmd_info);
+		int i;
+		tab_info_t tab_info;
+		for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+		{
+			if(tab_info.view != curr_view)
+			{
+				ret |= update_filter(tab_info.view, cmd_info);
+			}
+		}
 	}
 
 	return ret;
