@@ -4,10 +4,14 @@
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/str.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
 #include "../../src/flist_pos.h"
@@ -591,6 +595,31 @@ TEST(global_local_options_and_tabs)
 		assert_true(tab_info.view->hide_dot);
 	}
 
+	curr_stats.global_local_settings = 0;
+}
+
+TEST(global_local_dotfilter_and_tabs)
+{
+	curr_stats.global_local_settings = 1;
+	init_modes();
+	init_commands();
+
+	lwin.hide_dot_g = lwin.hide_dot = 1;
+	rwin.hide_dot_g = rwin.hide_dot = 1;
+
+	tabs_new(NULL, NULL);
+	assert_success(exec_commands("normal zo", &lwin, CIT_COMMAND));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_false(tab_info.view->hide_dot_g);
+		assert_false(tab_info.view->hide_dot);
+	}
+
+	vle_keys_reset();
+	vle_cmds_reset();
 	curr_stats.global_local_settings = 0;
 }
 

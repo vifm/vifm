@@ -24,6 +24,7 @@
 
 #include "cfg/config.h"
 #include "compat/reallocarray.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/dynarray.h"
 #include "utils/matcher.h"
@@ -95,14 +96,22 @@ dot_filter_set(view_t *view, int visible)
 	{
 		load_dot_filter_option(view);
 	}
+
 	if(curr_stats.global_local_settings)
 	{
-		view_t *other = (view == curr_view) ? other_view : curr_view;
-		other->hide_dot_g = other->hide_dot = !visible;
-		ui_view_schedule_reload(other);
-		if(other == curr_view)
+		int i;
+		tab_info_t tab_info;
+		for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 		{
-			load_dot_filter_option(other);
+			if(tab_info.view != view)
+			{
+				tab_info.view->hide_dot_g = tab_info.view->hide_dot = !visible;
+				ui_view_schedule_reload(tab_info.view);
+				if(tab_info.view == curr_view)
+				{
+					load_dot_filter_option(tab_info.view);
+				}
+			}
 		}
 	}
 }
