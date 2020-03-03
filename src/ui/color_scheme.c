@@ -639,9 +639,10 @@ cs_write(void)
 	{
 		char fg_buf[16], bg_buf[16];
 
-		if(i == OTHER_LINE_COLOR)
+		if(i == OTHER_LINE_COLOR || i == AUX_WIN_COLOR || i == OTHER_WIN_COLOR ||
+				(i >= USER1_COLOR && i <= USER9_COLOR))
 		{
-			/* Skip OtherLine as there is no way to express defaults. */
+			/* Skip as there is no way to express defaults. */
 			continue;
 		}
 
