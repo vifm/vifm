@@ -11,6 +11,7 @@
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
 #include "../../src/flist_pos.h"
+#include "../../src/opt_handlers.h"
 #include "../../src/status.h"
 
 #include "utils.h"
@@ -570,6 +571,27 @@ TEST(layout_of_pane_tab_is_returned)
 	tab_info_t tab_info;
 	assert_true(tabs_get(&lwin, 1, &tab_info));
 	assert_true(tab_info.layout.preview);
+}
+
+TEST(global_local_options_and_tabs)
+{
+	curr_stats.global_local_settings = 1;
+
+	lwin.hide_dot_g = lwin.hide_dot = 0;
+	rwin.hide_dot_g = rwin.hide_dot = 0;
+
+	tabs_new(NULL, NULL);
+	assert_success(process_set_args("nodotfiles", 1, 1));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_true(tab_info.view->hide_dot_g);
+		assert_true(tab_info.view->hide_dot);
+	}
+
+	curr_stats.global_local_settings = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

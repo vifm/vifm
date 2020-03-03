@@ -910,13 +910,13 @@ init_option_handlers(void)
 }
 
 /* Additional handler for processing of global-local options, namely for
- * updating the other view. */
+ * updating inactive view(s). */
 static void
 uni_handler(const char name[], optval_t val, OPT_SCOPE scope)
 {
-	/* += and similar operators act in their way only for the current view, the
-	 * other view just gets value resulted from the operation.  The behaviour is
-	 * fine and doesn't seem to be a bug. */
+	/* += and similar operators act in their way only for the current view, other
+	 * views just get value resulted from the operation.  The behaviour is fine
+	 * and doesn't seem to be a bug. */
 
 	static size_t first_local = (size_t)-1;
 
@@ -942,19 +942,33 @@ uni_handler(const char name[], optval_t val, OPT_SCOPE scope)
 	/* Look up option name and update it in the other view if found. */
 	for(i = first_local; i < ARRAY_LEN(options); ++i)
 	{
-		if(strcmp(options[i].name, name) == 0)
+		if(strcmp(options[i].name, name) != 0)
 		{
-			view_t *const tmp_view = curr_view;
-			curr_view = other_view;
+			continue;
+		}
 
-			/* Make sure option value remains valid even if updated in the handler.
-			 * Do this before calling load_view_options(), because it can change the
-			 * value. */
-			if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
+		view_t *const tmp_view = curr_view;
+
+		/* Make sure option value remains valid even if updated in the handler.
+		 * Do this before calling load_view_options(), because it can change the
+		 * value. */
+		if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
+		{
+			val.str_val = strdup(val.str_val);
+		}
+
+		int j;
+		tab_info_t tab_info;
+		for(j = 0; tabs_enum_all(j, &tab_info); ++j)
+		{
+			if(tab_info.view == curr_view)
 			{
-				val.str_val = strdup(val.str_val);
+				continue;
 			}
 
+			curr_view = tab_info.view;
+			/* XXX: do we actually need to load options?  We're calling handlers
+			 *      directly anyway.  */
 			load_view_options(curr_view);
 
 			if(scope == OPT_LOCAL)
@@ -965,16 +979,16 @@ uni_handler(const char name[], optval_t val, OPT_SCOPE scope)
 			{
 				options[i].global_handler(OP_SET, val);
 			}
-
-			if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
-			{
-				free(val.str_val);
-			}
-
-			curr_view = tmp_view;
-			load_view_options(curr_view);
-			break;
 		}
+
+		if(ONE_OF(options[i].type, OPT_STR, OPT_STRLIST, OPT_CHARSET))
+		{
+			free(val.str_val);
+		}
+
+		curr_view = tmp_view;
+		load_view_options(curr_view);
+		break;
 	}
 }
 
