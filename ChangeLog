@@ -100,8 +100,8 @@
 	Fixed confusing printing of attributes of OtherLine, OtherWin, AuxWin and
 	User1..User9 highlight groups by :highlight command.
 
-	Fixed documentation on external background commands.  Thanks to Gene
-	Zharov.
+	Fixed documentation on external background commands and not that it's not
+	implemented on Windows.  Thanks to Gene Zharov.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 
