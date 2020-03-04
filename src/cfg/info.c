@@ -155,6 +155,7 @@
 
 static JSON_Value * read_legacy_info_file(const char info_file[]);
 static void load_state(JSON_Object *root, int reread);
+static void load_gtabs(JSON_Object *root, int reread);
 static tab_layout_t load_gtab_layout(const JSON_Object *gtab, int apply,
 		int reread);
 static void load_pane(JSON_Object *pane, view_t *view, int right, int reread);
@@ -586,6 +587,30 @@ load_state(JSON_Object *root, int reread)
 		copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme), cs);
 	}
 
+	load_gtabs(root, reread);
+
+	load_options(root);
+	load_assocs(root, "assocs", 0);
+	load_assocs(root, "xassocs", 1);
+	load_viewers(root);
+	load_cmds(root);
+	load_marks(root);
+	load_bmarks(root);
+	load_regs(root);
+	load_dir_stack(root);
+	load_trash(root);
+	load_history(root, "cmd-hist", &curr_stats.cmd_hist, &hists_commands_save);
+	load_history(root, "search-hist", &curr_stats.search_hist,
+			&hists_search_save);
+	load_history(root, "prompt-hist", &curr_stats.prompt_hist,
+			&hists_prompt_save);
+	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
+}
+
+/* Loads global tabs from JSON. */
+static void
+load_gtabs(JSON_Object *root, int reread)
+{
 	JSON_Array *gtabs = json_object_get_array(root, "gtabs");
 	int i, n;
 	view_t *left = &lwin, *right = &rwin;
@@ -620,23 +645,6 @@ load_state(JSON_Object *root, int reread)
 	{
 		tabs_goto(active_gtab);
 	}
-
-	load_options(root);
-	load_assocs(root, "assocs", 0);
-	load_assocs(root, "xassocs", 1);
-	load_viewers(root);
-	load_cmds(root);
-	load_marks(root);
-	load_bmarks(root);
-	load_regs(root);
-	load_dir_stack(root);
-	load_trash(root);
-	load_history(root, "cmd-hist", &curr_stats.cmd_hist, &hists_commands_save);
-	load_history(root, "search-hist", &curr_stats.search_hist,
-			&hists_search_save);
-	load_history(root, "prompt-hist", &curr_stats.prompt_hist,
-			&hists_prompt_save);
-	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
 }
 
 /* Loads (possibly applying it in the progress) layout information of a global
