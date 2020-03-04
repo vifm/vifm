@@ -105,10 +105,6 @@ int tabs_visitor_count(const char path[]);
 /* Swaps pane tabs and does nothing for global tabs. */
 void tabs_switch_panes(void);
 
-/* Reloads non-current tabs by copying state of lwin and rwin into corresponding
- * views, but preserving their current locations. */
-void tabs_reload(void);
-
 /* Fills layout structure with current information. */
 void tabs_layout_fill(tab_layout_t *layout);
 

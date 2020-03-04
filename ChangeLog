@@ -43,6 +43,8 @@
 	Documented how selection is handled on launching files (like on l or Enter
 	keys).
 
+	Don't reset histories of views in inactive tabs on :restart.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

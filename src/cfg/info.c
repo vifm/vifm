@@ -612,6 +612,27 @@ static void
 load_gtabs(JSON_Object *root, int reread)
 {
 	JSON_Array *gtabs = json_object_get_array(root, "gtabs");
+
+	if(reread)
+	{
+		if(json_array_get_count(gtabs) > 1)
+		{
+			return;
+		}
+
+		JSON_Object *gtab = json_array_get_object(gtabs, 0);
+		JSON_Array *panes = json_object_get_array(gtab, "panes");
+		JSON_Object *lpane = json_array_get_object(panes, 0);
+		JSON_Object *rpane = json_array_get_object(panes, 1);
+		JSON_Array *lptabs = json_object_get_array(lpane, "ptabs");
+		JSON_Array *rptabs = json_object_get_array(rpane, "ptabs");
+
+		if(json_array_get_count(lptabs) > 1 || json_array_get_count(rptabs) > 1)
+		{
+			return;
+		}
+	}
+
 	int i, n;
 	view_t *left = &lwin, *right = &rwin;
 	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)

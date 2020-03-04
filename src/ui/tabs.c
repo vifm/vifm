@@ -20,7 +20,7 @@
 
 #include <assert.h> /* assert() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memmove() strdup() */
+#include <string.h> /* memmove() */
 
 #include "../cfg/config.h"
 #include "../modes/view.h"
@@ -90,7 +90,6 @@ static int get_global_tab(view_t *view, int idx, tab_info_t *tab_info,
 static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		const view_t *view);
 static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view);
-static void reload_views(view_t *side);
 static void apply_layout(global_tab_t *gtab, const tab_layout_t *layout);
 
 /* List of global tabs. */
@@ -744,33 +743,6 @@ normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view)
 			ui_swap_view_data(v, &tmp);
 			*v = tmp;
 			flist_update_origins(v, &other->curr_dir[0], &view->curr_dir[0]);
-		}
-	}
-}
-
-void
-tabs_reload(void)
-{
-	reload_views(&lwin);
-	reload_views(&rwin);
-}
-
-/* Reloads all views in all tabs on one side (left/top or right/bottom). */
-static void
-reload_views(view_t *side)
-{
-	int i;
-	tab_info_t tab_info;
-
-	for(i = 0; tabs_enum(side, i, &tab_info); ++i)
-	{
-		if(tab_info.view != side)
-		{
-			char *path = strdup(flist_get_dir(tab_info.view));
-			flist_free_view(tab_info.view);
-			memset(tab_info.view, 0, sizeof(*tab_info.view));
-			clone_view(tab_info.view, side, path, 0);
-			free(path);
 		}
 	}
 }
