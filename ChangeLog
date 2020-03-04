@@ -6,6 +6,10 @@
 	Added references to "Menus and dialogs" section of documentation from
 	:commands and keys which open menus and dialogs detailed there.
 
+	Added "tabs" value to 'vifminfo' option.  It enables persistent tabs.
+	Thanks to Cosmin Popescu (a.k.a. cosminadrianpopescu), filterfalse and
+	Neil Griffin (a.k.a. ngriffin7a).
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

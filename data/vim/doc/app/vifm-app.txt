@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 3
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 4
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4048,6 +4048,7 @@ Controls what will be saved in the $VIFM/vifminfo file:
    dirstack  - directory stack overwrites previous stack, unless stack of
                current session is empty
    registers - registers content
+   tabs      - global or pane tabs
    options   - all options that can be set with the :set command (obsolete)
    filetypes - associated programs and viewers (obsolete)
    commands  - user defined commands (see :command description) (obsolete)

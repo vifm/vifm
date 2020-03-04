@@ -1255,7 +1255,7 @@ serialize_state(void)
 
 	JSON_Array *gtabs = add_array(root, "gtabs");
 
-	if(cfg.pane_tabs)
+	if(cfg.pane_tabs || !(cfg.vifm_info & VINFO_TABS))
 	{
 		tab_layout_t layout;
 		tabs_layout_fill(&layout);
@@ -1714,7 +1714,7 @@ store_pane(JSON_Object *pane, view_t *view, int right)
 {
 	JSON_Array *ptabs = add_array(pane, "ptabs");
 
-	if(cfg.pane_tabs)
+	if(cfg.pane_tabs && (cfg.vifm_info & VINFO_TABS))
 	{
 		int i;
 		tab_info_t tab_info;
@@ -1723,6 +1723,7 @@ store_pane(JSON_Object *pane, view_t *view, int right)
 			store_ptab(append_object(ptabs), tab_info.name, tab_info.layout.preview,
 					tab_info.view);
 		}
+		set_int(pane, "active-ptab", tabs_current(right ? &rwin : &lwin));
 	}
 	else
 	{
@@ -1730,8 +1731,6 @@ store_pane(JSON_Object *pane, view_t *view, int right)
 		tabs_layout_fill(&layout);
 		store_ptab(append_object(ptabs), NULL, layout.preview, view);
 	}
-
-	set_int(pane, "active-ptab", tabs_current(right ? &rwin : &lwin));
 }
 
 /* Serializes a pane tab into JSON table. */

@@ -42,6 +42,8 @@ SETUP()
 
 	init_view_list(&lwin);
 	init_view_list(&rwin);
+
+	cfg.vifm_info = VINFO_TABS;
 }
 
 TEARDOWN()
@@ -55,6 +57,8 @@ TEARDOWN()
 	tabs_only(&lwin);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
+
+	cfg.vifm_info = 0;
 }
 
 TEST(names_of_global_tabs_are_restored)
@@ -151,7 +155,7 @@ TEST(active_pane_tab_is_restored)
 
 TEST(layout_of_global_tab_is_restored)
 {
-	cfg.vifm_info = VINFO_TUI;
+	cfg.vifm_info |= VINFO_TUI;
 	lwin.sort_g[0] = SK_BY_NAME;
 	rwin.sort_g[0] = SK_BY_NAME;
 
@@ -171,13 +175,11 @@ TEST(layout_of_global_tab_is_restored)
 	tabs_goto(1);
 	assert_int_equal(1, curr_stats.number_of_windows);
 	assert_int_equal(HSPLIT, curr_stats.split);
-
-	cfg.vifm_info = 0;
 }
 
 TEST(layout_of_pane_tab_is_restored)
 {
-	cfg.vifm_info = VINFO_TUI;
+	cfg.vifm_info |= VINFO_TUI;
 	lwin.sort_g[0] = SK_BY_NAME;
 	rwin.sort_g[0] = SK_BY_NAME;
 	lwin.columns = columns_create();
@@ -202,7 +204,6 @@ TEST(layout_of_pane_tab_is_restored)
 	lwin.columns = NULL;
 	columns_free(rwin.columns);
 	rwin.columns = NULL;
-	cfg.vifm_info = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

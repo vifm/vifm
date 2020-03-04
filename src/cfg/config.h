@@ -129,7 +129,8 @@ enum
 	VINFO_PHISTORY  = 1 << 13, /* Prompt history. */
 	VINFO_SHISTORY  = 1 << 14, /* Search history. */
 	VINFO_SAVEDIRS  = 1 << 15, /* Restore last used directories on startup. */
-	NUM_VINFO       = 16,      /* Number of VINFO_* constants. */
+	VINFO_TABS      = 1 << 16, /* Restore global or pane tabs. */
+	NUM_VINFO       = 17,      /* Number of VINFO_* constants. */
 };
 
 /* When cursor position should be adjusted according to directory history. */
