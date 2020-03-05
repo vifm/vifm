@@ -1114,9 +1114,13 @@ aucmd_action_handler(const char action[], void *arg)
 {
 	view_t *view = arg;
 	view_t *tmp_curr, *tmp_other;
-
 	ui_view_pick(view, &tmp_curr, &tmp_other);
+
+	char *saved_cwd = save_cwd();
+	(void)vifm_chdir(flist_get_dir(view));
 	(void)exec_commands(action, view, CIT_COMMAND);
+	restore_cwd(saved_cwd);
+
 	ui_view_unpick(view, tmp_curr, tmp_other);
 }
 
