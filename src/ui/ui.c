@@ -2267,16 +2267,7 @@ ui_invalidate_cs(const col_scheme_t *cs)
 {
 	int i;
 	tab_info_t tab_info;
-
-	for(i = 0; tabs_enum(curr_view, i, &tab_info); ++i)
-	{
-		if(ui_view_get_cs(tab_info.view) == cs)
-		{
-			fview_reset_cs(tab_info.view);
-		}
-	}
-
-	for(i = 0; tabs_enum(other_view, i, &tab_info); ++i)
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
 		if(ui_view_get_cs(tab_info.view) == cs)
 		{
