@@ -168,6 +168,11 @@ vifm_main(int argc, char *argv[])
 		return -1;
 	}
 
+	/* Default values for persistent tabs for case when location isn't stored in
+	 * vifminfo. */
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), dir);
+	copy_str(rwin.curr_dir, sizeof(rwin.curr_dir), dir);
+
 	/* Configure it once. */
 	json_set_escape_slashes(0);
 	json_set_check_strings(0);
