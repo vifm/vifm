@@ -323,6 +323,8 @@ tabs_goto_pane(int idx)
 		return;
 	}
 
+	const int prev = ptabs->current;
+
 	/* Mark the tab we started at as visited. */
 	ptabs->tabs[ptabs->current].visited = (curr_stats.load_stage >= 3);
 
@@ -340,6 +342,7 @@ tabs_goto_pane(int idx)
 	if(!ptabs->tabs[ptabs->current].visited &&
 			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
 	{
+		clone_viewport(curr_view, &ptabs->tabs[prev].view);
 		populate_dir_list(curr_view, 0);
 		vle_aucmd_execute("DirEnter", flist_get_dir(curr_view), curr_view);
 		ptabs->tabs[ptabs->current].visited = 1;
@@ -392,6 +395,10 @@ tabs_goto_global(int idx)
 	if(!gtabs[current_gtab].visited &&
 			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
 	{
+		if(curr_stats.load_stage >= 3)
+		{
+			ui_resize_all();
+		}
 		populate_dir_list(&lwin, 0);
 		populate_dir_list(&rwin, 0);
 		vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
