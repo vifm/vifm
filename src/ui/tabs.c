@@ -23,6 +23,7 @@
 #include <string.h> /* memmove() */
 
 #include "../cfg/config.h"
+#include "../engine/autocmds.h"
 #include "../modes/view.h"
 #include "../utils/darray.h"
 #include "../utils/filter.h"
@@ -42,6 +43,7 @@ typedef struct
 	view_t view;       /* Buffer holding state of the view when it's hidden. */
 	preview_t preview; /* Information about state of the quickview. */
 	char *name;        /* Name of the tab.  Might be NULL. */
+	int visited;       /* Whether this tab has already been active. */
 }
 pane_tab_t;
 
@@ -66,6 +68,7 @@ typedef struct
 	int splitter_pos;  /* Splitter position. */
 	preview_t preview; /* Information about state of the quickview. */
 	char *name;        /* Name of the tab.  Might be NULL. */
+	int visited;       /* Whether this tab has already been active. */
 }
 global_tab_t;
 
@@ -313,6 +316,9 @@ tabs_goto_pane(int idx)
 		return;
 	}
 
+	/* Mark the tab we started at as visited. */
+	ptabs->tabs[ptabs->current].visited = (curr_stats.load_stage >= 3);
+
 	ptabs->tabs[ptabs->current].view = *curr_view;
 	assign_preview(&ptabs->tabs[ptabs->current].preview, &curr_stats.preview);
 	assign_view(curr_view, &ptabs->tabs[idx].view);
@@ -323,6 +329,14 @@ tabs_goto_pane(int idx)
 	ui_view_schedule_redraw(curr_view);
 
 	load_view_options(curr_view);
+
+	if(!ptabs->tabs[ptabs->current].visited &&
+			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
+	{
+		populate_dir_list(curr_view, 0);
+		vle_aucmd_execute("DirEnter", flist_get_dir(curr_view), curr_view);
+		ptabs->tabs[ptabs->current].visited = 1;
+	}
 
 	(void)vifm_chdir(flist_get_dir(curr_view));
 }
@@ -340,6 +354,9 @@ tabs_goto_global(int idx)
 	{
 		return;
 	}
+
+	/* Mark the tab we started at as visited. */
+	gtabs[current_gtab].visited = (curr_stats.load_stage >= 3);
 
 	gtabs[current_gtab].left.tabs[gtabs[current_gtab].left.current].view = lwin;
 	gtabs[current_gtab].right.tabs[gtabs[current_gtab].right.current].view = rwin;
@@ -364,6 +381,16 @@ tabs_goto_global(int idx)
 	ui_view_schedule_redraw(&rwin);
 
 	load_view_options(curr_view);
+
+	if(!gtabs[current_gtab].visited &&
+			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
+	{
+		populate_dir_list(&lwin, 0);
+		populate_dir_list(&rwin, 0);
+		vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
+		vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
+		gtabs[current_gtab].visited = 1;
+	}
 
 	(void)vifm_chdir(flist_get_dir(curr_view));
 }

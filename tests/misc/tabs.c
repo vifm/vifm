@@ -624,5 +624,28 @@ TEST(local_options_are_reset_if_path_is_changing)
 	assert_false(lwin.hide_dot);
 }
 
+TEST(direnter_is_called_for_new_tab)
+{
+	curr_stats.load_stage = -1;
+	init_modes();
+	init_commands();
+
+	assert_success(process_set_args("dotfiles", 1, 1));
+
+	assert_success(exec_commands("autocmd DirEnter * setlocal nodotfiles", &lwin,
+				CIT_COMMAND));
+
+	tabs_new(NULL, SANDBOX_PATH);
+
+	assert_false(lwin.hide_dot_g);
+	assert_true(lwin.hide_dot);
+
+	assert_success(exec_commands("autocmd!", &lwin, CIT_COMMAND));
+
+	vle_keys_reset();
+	vle_cmds_reset();
+	curr_stats.load_stage = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
