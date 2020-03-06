@@ -228,6 +228,8 @@ clone_view(view_t *dst, view_t *src, const char path[], int clean)
 	dst->dir_entry[0].origin = src->curr_dir;
 
 	clone_local_options(src, dst, 1);
+	reset_local_options(dst);
+
 	matcher_free(dst->manual_filter);
 	dst->manual_filter = matcher_clone(src->manual_filter);
 	filter_assign(&dst->auto_filter, &src->auto_filter);

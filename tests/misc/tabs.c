@@ -602,7 +602,7 @@ TEST(global_local_manualfilter_and_tabs)
 	curr_stats.global_local_settings = 0;
 }
 
-TEST(local_options_are_copied_if_path_is_not_changing)
+TEST(local_options_are_reset_if_path_is_not_changing)
 {
 	assert_success(process_set_args("dotfiles", 1, 0));
 	assert_success(process_set_args("nodotfiles", 0, 1));
@@ -610,7 +610,18 @@ TEST(local_options_are_copied_if_path_is_not_changing)
 	tabs_new(NULL, NULL);
 
 	assert_false(lwin.hide_dot_g);
-	assert_true(lwin.hide_dot);
+	assert_false(lwin.hide_dot);
+}
+
+TEST(local_options_are_reset_if_path_is_changing)
+{
+	assert_success(process_set_args("dotfiles", 1, 0));
+	assert_success(process_set_args("nodotfiles", 0, 1));
+
+	tabs_new(NULL, SANDBOX_PATH);
+
+	assert_false(lwin.hide_dot_g);
+	assert_false(lwin.hide_dot);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

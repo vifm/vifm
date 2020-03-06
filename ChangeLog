@@ -112,6 +112,9 @@
 	Fixed possible crash after changing 'history' when there are inactive tabs
 	and then populating history of those tabs.
 
+	Fixed local options being copied on creating tabs even when target path is
+	different.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
