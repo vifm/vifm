@@ -77,6 +77,7 @@ static int tabs_new_global(const char name[], const char path[], int at,
 static pane_tab_t * tabs_new_pane(pane_tabs_t *ptabs, view_t *view,
 		const char name[], const char path[], int at, int clean);
 static void clone_view(view_t *dst, view_t *src, const char path[], int clean);
+static void clone_viewport(view_t *dst, const view_t *src);
 static void tabs_goto_pane(int idx);
 static void tabs_goto_global(int idx);
 static void capture_global_state(global_tab_t *gtab);
@@ -244,12 +245,7 @@ clone_view(view_t *dst, view_t *src, const char path[], int clean)
 	replace_dir_entries(dst, &dst->dir_entry, &dst->list_rows,
 			get_current_entry(src), 1);
 	dst->list_pos = 0;
-	/* Clone viewport configuration. */
-	dst->curr_line = src->curr_line;
-	dst->top_line = src->top_line;
-	dst->window_rows = src->window_rows;
-	dst->window_cols = src->window_cols;
-	dst->window_cells = src->window_cells;
+	clone_viewport(dst, src);
 
 	flist_hist_resize(dst, cfg.history_len);
 
@@ -270,6 +266,17 @@ clone_view(view_t *dst, view_t *src, const char path[], int clean)
 		/* Record new location. */
 		flist_hist_save(dst, NULL, NULL, -1);
 	}
+}
+
+/* Clones viewport configuration. */
+static void
+clone_viewport(view_t *dst, const view_t *src)
+{
+	dst->curr_line = src->curr_line;
+	dst->top_line = src->top_line;
+	dst->window_rows = src->window_rows;
+	dst->window_cols = src->window_cols;
+	dst->window_cells = src->window_cells;
 }
 
 void
