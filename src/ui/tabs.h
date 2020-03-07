@@ -54,7 +54,7 @@ void tabs_init(void);
 int tabs_new(const char name[], const char path[]);
 
 /* Sets name of the current tab.  Name can be NULL. */
-void tabs_rename(struct view_t *view, const char name[]);
+void tabs_rename(struct view_t *side, const char name[]);
 
 /* Switches to tab specified by its zero-based index if it's valid. */
 void tabs_goto(int idx);
@@ -73,31 +73,31 @@ void tabs_next(int n);
  * tabs. */
 void tabs_previous(int n);
 
-/* Fills *tab_info for the tab specified by its index and side (view parameter).
- * Returns non-zero on success, otherwise zero is returned. */
-int tabs_get(struct view_t *view, int idx, tab_info_t *tab_info);
+/* Fills *tab_info for the tab specified by its index and side.  Returns
+ * non-zero on success, otherwise zero is returned. */
+int tabs_get(struct view_t *side, int idx, tab_info_t *tab_info);
 
 /* tabs_get() equivalent that returns left or right pane for global tabs
- * depending on value of the view parameter. */
-int tabs_enum(struct view_t *view, int idx, tab_info_t *tab_info);
+ * depending on value of the side parameter. */
+int tabs_enum(struct view_t *side, int idx, tab_info_t *tab_info);
 
 /* Like tabs_enum(), but enumerates all tabs (first all left ones and then the
  * right ones). */
 int tabs_enum_all(int idx, tab_info_t *tab_info);
 
 /* Retrieves index of the current tab.  Returns the index. */
-int tabs_current(const struct view_t *view);
+int tabs_current(const struct view_t *side);
 
 /* Retrieves number of tabs.  Returns the count. */
-int tabs_count(const struct view_t *view);
+int tabs_count(const struct view_t *side);
 
 /* Closes all tabs except for the current one. */
-void tabs_only(struct view_t *view);
+void tabs_only(struct view_t *side);
 
 /* Moves current tab to a different position.  Zero position signifies "before
  * first tab" and non-zero position means "after Nth tab".  Position is
  * normalized to be in allowed bounds. */
-void tabs_move(struct view_t *view, int where_to);
+void tabs_move(struct view_t *side, int where_to);
 
 /* Counts how many tabs are in subtree defined by the path. */
 int tabs_visitor_count(const char path[]);
