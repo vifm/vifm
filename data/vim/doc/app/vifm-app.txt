@@ -744,7 +744,7 @@ multiplied. So:
 --------------------------------------------------------------------------------
 *vifm-visual*
 
-Visual mode has to generic operating submodes:
+Visual mode has two generic operating submodes:
  - plain selection as it is in Vim;
  - selection editing submode.
 
