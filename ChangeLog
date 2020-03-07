@@ -49,6 +49,9 @@
 
 	Don't reset histories of views in inactive tabs on :restart.
 
+	Invalidate textual quickview cache if it contains fewer lines than window
+	height and is incomplete.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

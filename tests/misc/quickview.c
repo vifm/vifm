@@ -189,8 +189,10 @@ TEST(can_read_only_specified_number_of_lines)
 	assert_non_null(get_line(fp, line, sizeof(line)));
 	assert_string_equal("first line\n", line);
 
-	strlist_t lines = read_lines(fp, 1);
+	int complete;
+	strlist_t lines = read_lines(fp, 1, &complete);
 	assert_int_equal(1, lines.nitems);
+	assert_false(complete);
 	assert_string_equal("second line", lines.items[0]);
 	free_string_array(lines.items, lines.nitems);
 
