@@ -167,6 +167,7 @@ view_setup(view_t *view)
 
 	view->sort[0] = SK_BY_NAME;
 	memset(&view->sort[1], SK_NONE, sizeof(view->sort) - 1);
+	memcpy(view->sort_g, view->sort, sizeof(view->sort_g));
 
 	view->custom.entry_count = 0;
 	view->custom.entries = NULL;
