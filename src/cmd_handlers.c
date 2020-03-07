@@ -280,6 +280,7 @@ static int tabmove_cmd(const cmd_info_t *cmd_info);
 static int tabname_cmd(const cmd_info_t *cmd_info);
 static int tabnew_cmd(const cmd_info_t *cmd_info);
 static int tabnext_cmd(const cmd_info_t *cmd_info);
+static int tabonly_cmd(const cmd_info_t *cmd_info);
 static int tabprevious_cmd(const cmd_info_t *cmd_info);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int get_at(const view_t *view, const cmd_info_t *cmd_info);
@@ -806,6 +807,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "go to next or n-th tab",
 	  .flags = HAS_COMMENT,
 	  .handler = &tabnext_cmd,     .min_args = 0,   .max_args = 1, },
+	{ .name = "tabonly",           .abbr = "tabo",  .id = -1,
+	  .descr = "close all tabs but the current one",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabonly_cmd,     .min_args = 0,   .max_args = 0, },
 	{ .name = "tabprevious",       .abbr = "tabp",  .id = -1,
 	  .descr = "go to previous or n-th previous tab",
 	  .flags = HAS_COMMENT,
@@ -4276,6 +4281,15 @@ tabnext_cmd(const cmd_info_t *cmd_info)
 	}
 
 	tabs_goto(n - 1);
+	return 0;
+}
+
+/* Closes all tabs but the current one. */
+static int
+tabonly_cmd(const cmd_info_t *cmd_info)
+{
+	tabs_only(curr_view);
+	stats_redraw_later();
 	return 0;
 }
 

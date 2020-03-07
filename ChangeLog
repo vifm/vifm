@@ -10,6 +10,8 @@
 	Thanks to Cosmin Popescu (a.k.a. cosminadrianpopescu), filterfalse and
 	Neil Griffin (a.k.a. ngriffin7a).
 
+	Added :tabo[nly] command that closes all tabs but the current one.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

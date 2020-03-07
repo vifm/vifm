@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 4
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 7
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2359,6 +2359,11 @@ yet supported) and might be changed in future releases, or get an alias.
     switch to the next tab (wrapping around).
 :tabn[ext] {n}
     go to the tab number {n}.  Tab numeration starts with 1.
+
+                                               *vifm-:tabonly* *vifm-:tabo*
+:tabo[nly]
+    close all tabs but the current one.  Closes pane tabs only at the active
+    side.
 
                                                *vifm-:tabprevious* *vifm-:tabp*
 :tabp[revious]
