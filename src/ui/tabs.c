@@ -260,7 +260,8 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 		}
 
 		(void)populate_dir_list(dst, path == NULL);
-		/* XXX: do we need to update origins or is this a leftover? */
+		/* Redirect origins from tab's view to lwin or rwin, which is how they
+		 * should end up after loading a tab into lwin or rwin. */
 		flist_update_origins(dst, &dst->curr_dir[0], &side->curr_dir[0]);
 
 		/* Record new location. */
