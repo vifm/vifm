@@ -423,5 +423,62 @@ TEST(hidden_tabs_are_updated_on_cs_invalidation)
 	assert_int_equal(-1, rwin.dir_entry[0].hi_num);
 }
 
+TEST(setting_tabscope_drops_previous_tabs)
+{
+	assert_false(cfg.pane_tabs);
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("set tabscope=pane", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+	assert_int_equal(1, tabs_count(&rwin));
+	assert_true(cfg.pane_tabs);
+
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	swap_view_roles();
+	assert_success(exec_commands("tabnew", &rwin, CIT_COMMAND));
+
+	assert_success(exec_commands("set tabscope=global", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+	assert_false(cfg.pane_tabs);
+
+	assert_success(exec_commands("set tabscope=pane", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+	assert_int_equal(1, tabs_count(&rwin));
+	assert_true(cfg.pane_tabs);
+}
+
+TEST(tabonly_leave_only_one_global_tab)
+{
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tabnew", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("tabonly", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(&lwin));
+}
+
+TEST(tabonly_leaves_only_one_pane_tab)
+{
+	cfg.pane_tabs = 1;
+	assert_success(exec_commands("tabnew", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("tabnew", curr_view, CIT_COMMAND));
+
+	assert_success(exec_commands("tabonly", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(curr_view));
+}
+
+TEST(tabonly_keeps_inactive_side_intact)
+{
+	cfg.pane_tabs = 1;
+	assert_success(exec_commands("tabnew", curr_view, CIT_COMMAND));
+	assert_success(exec_commands("tabnew", curr_view, CIT_COMMAND));
+	swap_view_roles();
+	assert_success(exec_commands("tabnew", curr_view, CIT_COMMAND));
+	swap_view_roles();
+
+	assert_success(exec_commands("tabonly", &lwin, CIT_COMMAND));
+	assert_int_equal(1, tabs_count(curr_view));
+	assert_int_equal(2, tabs_count(other_view));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

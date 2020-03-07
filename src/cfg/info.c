@@ -34,6 +34,7 @@
 #include "../engine/options.h"
 #include "../io/iop.h"
 #include "../ui/fileview.h"
+#include "../ui/tabs.h"
 #include "../ui/ui.h"
 #include "../utils/file_streams.h"
 #include "../utils/filemon.h"
@@ -82,16 +83,20 @@
  *                  auto = ""
  *                  invert = false
  *              }
+ *              name = "ptab-name"
  *              options = [ "opt1=val1", "opt2=val2" ]
  *              restore-last-location = true
  *              sorting = "1,-2,3"
+ *              preview = false
  *          } ]
+ *          active-ptab = 0
  *      } ]
  *      splitter = {
  *          pos = -1
  *          orientation = "v" # or "h"
  *          expanded = false  # only mode
  *      }
+ *      name = "gtab-name"
  *      active-pane = 0
  *      preview = false
  *  } ]
@@ -141,6 +146,7 @@
  *  search-hist = [ "item1", "item2" ]
  *  prompt-hist = [ "item1", "item2" ]
  *  lfilt-hist = [ "item1", "item2" ]
+ *  active-gtab = 0
  *  use-term-multiplexer = true
  *  color-scheme = "almost-default"
  *
@@ -149,8 +155,11 @@
 
 static JSON_Value * read_legacy_info_file(const char info_file[]);
 static void load_state(JSON_Object *root, int reread);
-static void load_gtab(JSON_Object *gtab, int reread);
-static void load_pane(JSON_Object *pane, view_t *view, int reread);
+static void load_gtabs(JSON_Object *root, int reread);
+static tab_layout_t load_gtab_layout(const JSON_Object *gtab, int apply,
+		int reread);
+static void load_pane(JSON_Object *pane, view_t *view, int right, int reread);
+static void load_ptab(JSON_Object *ptab, view_t *view, int reread);
 static void load_dhistory(JSON_Object *info, view_t *view, int reread);
 static void load_filters(JSON_Object *pane, view_t *view);
 static void load_options(JSON_Object *parent);
@@ -188,8 +197,11 @@ static void merge_history(JSON_Object *current, JSON_Object *admixture,
 static void merge_regs(JSON_Object *current, JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
 static void merge_trash(JSON_Object *current, JSON_Object *admixture);
-static void store_gtab(JSON_Object *gtab);
-static void store_view(JSON_Object *view_data, view_t *view);
+static void store_gtab(JSON_Object *gtab, const char name[],
+		const tab_layout_t *layout, view_t *left, view_t *right);
+static void store_pane(JSON_Object *pane, view_t *view, int right);
+static void store_ptab(JSON_Object *ptab, const char name[], int preview,
+		view_t *view);
 static void store_filters(JSON_Object *view_data, view_t *view);
 static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
@@ -575,13 +587,7 @@ load_state(JSON_Object *root, int reread)
 		copy_str(curr_stats.color_scheme, sizeof(curr_stats.color_scheme), cs);
 	}
 
-	JSON_Array *gtabs = json_object_get_array(root, "gtabs");
-	int i, n;
-	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)
-	{
-		/* TODO: switch to appropriate global tab. */
-		load_gtab(json_array_get_object(gtabs, i), reread);
-	}
+	load_gtabs(root, reread);
 
 	load_options(root);
 	load_assocs(root, "assocs", 0);
@@ -601,34 +607,103 @@ load_state(JSON_Object *root, int reread)
 	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
 }
 
-/* Loads a global tab from JSON. */
+/* Loads global tabs from JSON. */
 static void
-load_gtab(JSON_Object *gtab, int reread)
+load_gtabs(JSON_Object *root, int reread)
 {
-	JSON_Array *panes = json_object_get_array(gtab, "panes");
-	load_pane(json_array_get_object(panes, 0), &lwin, reread);
-	load_pane(json_array_get_object(panes, 1), &rwin, reread);
+	JSON_Array *gtabs = json_object_get_array(root, "gtabs");
 
-	int preview;
-	if(get_bool(gtab, "preview", &preview))
+	if(reread)
 	{
-		stats_set_quickview(preview);
+		if(json_array_get_count(gtabs) > 1)
+		{
+			return;
+		}
+
+		JSON_Object *gtab = json_array_get_object(gtabs, 0);
+		JSON_Array *panes = json_object_get_array(gtab, "panes");
+		JSON_Object *lpane = json_array_get_object(panes, 0);
+		JSON_Object *rpane = json_array_get_object(panes, 1);
+		JSON_Array *lptabs = json_object_get_array(lpane, "ptabs");
+		JSON_Array *rptabs = json_object_get_array(rpane, "ptabs");
+
+		if(json_array_get_count(lptabs) > 1 || json_array_get_count(rptabs) > 1)
+		{
+			return;
+		}
 	}
 
-	JSON_Object *splitter = json_object_get_object(gtab, "splitter");
+	int i, n;
+	view_t *left = &lwin, *right = &rwin;
+	for(i = 0, n = json_array_get_count(gtabs); i < n; ++i)
+	{
+		JSON_Object *gtab = json_array_get_object(gtabs, i);
+
+		tab_layout_t layout = load_gtab_layout(gtab, i == 0, reread);
+
+		const char *name = NULL;
+		(void)get_str(gtab, "name", &name);
+
+		if(i == 0)
+		{
+			tabs_rename(&lwin, name);
+		}
+		else
+		{
+			if(tabs_setup_gtab(name, &layout, &left, &right) != 0)
+			{
+				break;
+			}
+		}
+
+		JSON_Array *panes = json_object_get_array(gtab, "panes");
+		load_pane(json_array_get_object(panes, 0), left, 0, reread);
+		load_pane(json_array_get_object(panes, 1), right, 1, reread);
+	}
+
+	int active_gtab;
+	if(!cfg.pane_tabs && get_int(root, "active-gtab", &active_gtab))
+	{
+		tabs_goto(active_gtab);
+	}
+}
+
+/* Loads (possibly applying it in the progress) layout information of a global
+ * tab. */
+static tab_layout_t
+load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
+{
+	tab_layout_t layout = {
+		.active_pane = 0,
+		.only_mode = 0,
+		.split = VSPLIT,
+		.splitter_pos = -1,
+		.preview = 0,
+	};
+
+	const JSON_Object *splitter = json_object_get_object(gtab, "splitter");
 
 	const char *split_kind;
 	if(get_str(splitter, "orientation", &split_kind))
 	{
-		curr_stats.split = (split_kind[0] == 'v' ? VSPLIT : HSPLIT);
+		layout.split = (split_kind[0] == 'v' ? VSPLIT : HSPLIT);
+		if(apply)
+		{
+			curr_stats.split = layout.split;
+		}
 	}
-	get_int(splitter, "pos", &curr_stats.splitter_pos);
-
-	/* Don't change some properties on :restart command. */
-	if(!reread)
+	if(get_int(splitter, "pos", &layout.splitter_pos) && apply)
 	{
-		int active_pane;
-		if(get_int(gtab, "active-pane", &active_pane) && active_pane == 1)
+		curr_stats.splitter_pos = layout.splitter_pos;
+	}
+	if(get_bool(splitter, "expanded", &layout.only_mode) && apply && !reread)
+	{
+		curr_stats.number_of_windows = (layout.only_mode ? 1 : 2);
+	}
+
+	if(get_int(gtab, "active-pane", &layout.active_pane) && apply && !reread)
+	{
+		if(layout.active_pane == 1)
 		{
 			/* TODO: why is this not the last statement in the block? */
 			ui_views_update_titles();
@@ -636,40 +711,90 @@ load_gtab(JSON_Object *gtab, int reread)
 			curr_view = &rwin;
 			other_view = &lwin;
 		}
-
-		int expanded;
-		if(get_bool(splitter, "expanded", &expanded))
-		{
-			curr_stats.number_of_windows = (expanded ? 1 : 2);
-		}
 	}
+	if(get_bool(gtab, "preview", &layout.preview) && apply)
+	{
+		stats_set_quickview(layout.preview);
+	}
+
+	return layout;
 }
 
 /* Loads a pane (consists of pane tabs) from JSON. */
 static void
-load_pane(JSON_Object *pane, view_t *view, int reread)
+load_pane(JSON_Object *pane, view_t *view, int right, int reread)
 {
 	JSON_Array *ptabs = json_object_get_array(pane, "ptabs");
-	int i, n;
-	for(i = 0, n = json_array_get_count(ptabs); i < n; ++i)
-	{
-		/* TODO: switch to appropriate pane tab. */
 
+	int n = json_array_get_count(ptabs);
+	if(n > 1)
+	{
+		/* More than one pane tab means that we need to change tab scope option. */
+		cfg.pane_tabs = 1;
+		load_tabscope_option();
+	}
+
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+
+	int i;
+	view_t *side = (right ? &rwin : &lwin);
+	for(i = 0; i < n; ++i)
+	{
 		JSON_Object *ptab = json_array_get_object(ptabs, i);
 
-		load_dhistory(ptab, view, reread);
-		load_filters(ptab, view);
+		const char *name = NULL;
+		(void)get_str(ptab, "name", &name);
 
-		view_t *v = curr_view;
-		curr_view = view;
-		load_options(ptab);
-		curr_view = v;
+		int preview = layout.preview;
+		(void)get_bool(ptab, "preview", &preview);
 
-		const char *sorting;
-		if(get_str(ptab, "sorting", &sorting))
+		if(i == 0)
 		{
-			get_sort_info(view, sorting);
+			if(cfg.pane_tabs)
+			{
+				tabs_rename(side, name);
+				stats_set_quickview(preview);
+			}
 		}
+		else
+		{
+			view = tabs_setup_ptab(side, name, preview);
+			if(view == NULL)
+			{
+				break;
+			}
+		}
+
+		load_ptab(ptab, view, reread);
+	}
+
+	int active_ptab;
+	if(cfg.pane_tabs && get_int(pane, "active-ptab", &active_ptab))
+	{
+		view_t *v = curr_view;
+		curr_view = (right ? &rwin : &lwin);
+		tabs_goto(active_ptab);
+		curr_view = v;
+	}
+}
+
+/* Loads a pane tab  from JSON. */
+static void
+load_ptab(JSON_Object *ptab, view_t *view, int reread)
+{
+	load_dhistory(ptab, view, reread);
+	load_filters(ptab, view);
+
+	view_t *v = curr_view;
+	curr_view = view;
+	load_options(ptab);
+	curr_view = v;
+
+	const char *sorting;
+	if(get_str(ptab, "sorting", &sorting))
+	{
+		get_sort_info(view, sorting);
 	}
 }
 
@@ -1129,9 +1254,26 @@ serialize_state(void)
 	JSON_Object *root = json_object(root_value);
 
 	JSON_Array *gtabs = add_array(root, "gtabs");
-	JSON_Object *gtab = append_object(gtabs);
 
-	store_gtab(gtab);
+	if(cfg.pane_tabs || !(cfg.vifm_info & VINFO_TABS))
+	{
+		tab_layout_t layout;
+		tabs_layout_fill(&layout);
+		store_gtab(append_object(gtabs), NULL, &layout, &lwin, &rwin);
+	}
+	else
+	{
+		int i;
+		for(i = 0; i < tabs_count(&lwin); ++i)
+		{
+			tab_info_t left_tab_info, right_tab_info;
+			tabs_enum(&lwin, i, &left_tab_info);
+			tabs_enum(&rwin, i, &right_tab_info);
+			store_gtab(append_object(gtabs), left_tab_info.name,
+					&left_tab_info.layout, left_tab_info.view, right_tab_info.view);
+		}
+		set_int(root, "active-gtab", tabs_current(&lwin));
+	}
 
 	store_trash(root);
 
@@ -1542,30 +1684,60 @@ merge_trash(JSON_Object *current, JSON_Object *admixture)
 
 /* Serializes a global tab into JSON table. */
 static void
-store_gtab(JSON_Object *gtab)
+store_gtab(JSON_Object *gtab, const char name[], const tab_layout_t *layout,
+		view_t *left, view_t *right)
 {
+	set_str(gtab, "name", name);
+
 	JSON_Array *panes = add_array(gtab, "panes");
-	store_view(append_object(panes), &lwin);
-	store_view(append_object(panes), &rwin);
+	store_pane(append_object(panes), left, 0);
+	store_pane(append_object(panes), right, 1);
 
 	if(cfg.vifm_info & VINFO_TUI)
 	{
-		set_int(gtab, "active-pane", (curr_view == &lwin ? 0 : 1));
-		set_bool(gtab, "preview", curr_stats.preview.on);
+		set_int(gtab, "active-pane", layout->active_pane);
+		if(!cfg.pane_tabs)
+		{
+			set_bool(gtab, "preview", layout->preview);
+		}
 
 		JSON_Object *splitter = add_object(gtab, "splitter");
-		set_int(splitter, "pos", curr_stats.splitter_pos);
-		set_str(splitter, "orientation", curr_stats.split == VSPLIT ? "v" : "h");
-		set_bool(splitter, "expanded", curr_stats.number_of_windows == 1);
+		set_int(splitter, "pos", layout->splitter_pos);
+		set_str(splitter, "orientation", layout->split == VSPLIT ? "v" : "h");
+		set_bool(splitter, "expanded", layout->only_mode);
 	}
 }
 
 /* Serializes a view into JSON table. */
 static void
-store_view(JSON_Object *view_data, view_t *view)
+store_pane(JSON_Object *pane, view_t *view, int right)
 {
-	JSON_Array *ptabs = add_array(view_data, "ptabs");
-	JSON_Object *ptab = append_object(ptabs);
+	JSON_Array *ptabs = add_array(pane, "ptabs");
+
+	if(cfg.pane_tabs && (cfg.vifm_info & VINFO_TABS))
+	{
+		int i;
+		tab_info_t tab_info;
+		for(i = 0; tabs_enum(view, i, &tab_info); ++i)
+		{
+			store_ptab(append_object(ptabs), tab_info.name, tab_info.layout.preview,
+					tab_info.view);
+		}
+		set_int(pane, "active-ptab", tabs_current(right ? &rwin : &lwin));
+	}
+	else
+	{
+		tab_layout_t layout;
+		tabs_layout_fill(&layout);
+		store_ptab(append_object(ptabs), NULL, layout.preview, view);
+	}
+}
+
+/* Serializes a pane tab into JSON table. */
+static void
+store_ptab(JSON_Object *ptab, const char name[], int preview, view_t *view)
+{
+	set_str(ptab, "name", name);
 
 	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
@@ -1585,6 +1757,7 @@ store_view(JSON_Object *view_data, view_t *view)
 	if(cfg.vifm_info & VINFO_TUI)
 	{
 		store_sort_info(ptab, view);
+		set_bool(ptab, "preview", preview);
 	}
 }
 

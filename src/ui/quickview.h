@@ -91,7 +91,7 @@ void qv_ui_updated(void);
 
 TSTATIC_DEFS(
 	struct strlist_t;
-	struct strlist_t read_lines(FILE *fp, int max_lines);
+	struct strlist_t read_lines(FILE *fp, int max_lines, int *complete);
 )
 
 #endif /* VIFM__UI__QUICKVIEW_H__ */

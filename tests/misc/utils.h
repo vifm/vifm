@@ -88,6 +88,10 @@ void setup_grid(struct view_t *view, int column_count, int list_rows, int init);
 void setup_transposed_grid(struct view_t *view, int column_count, int list_rows,
 		int init);
 
+/* Loads dummy list of files into a view.  It consists of a single fake
+ * entry. */
+void init_view_list(struct view_t *view);
+
 /* Waits termination of all background tasks. */
 void wait_for_bg(void);
 

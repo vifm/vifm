@@ -4,13 +4,19 @@
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/matcher.h"
 #include "../../src/utils/str.h"
+#include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
 #include "../../src/flist_pos.h"
+#include "../../src/opt_handlers.h"
 #include "../../src/status.h"
 
 #include "utils.h"
@@ -347,57 +353,6 @@ TEST(opening_tab_in_new_location_records_new_location_in_history)
 	cfg_resize_histories(0);
 }
 
-TEST(reloading_propagates_values_of_current_views_with_global_tabs)
-{
-	cfg.pane_tabs = 0;
-
-	lwin.miller_view = 1;
-	rwin.miller_view = 0;
-	tabs_new(NULL, NULL);
-	lwin.miller_view = 0;
-	rwin.miller_view = 1;
-
-	tabs_reload();
-
-	tabs_goto(0);
-	assert_false(lwin.miller_view);
-	assert_true(rwin.miller_view);
-
-	tabs_goto(1);
-	assert_false(lwin.miller_view);
-	assert_true(rwin.miller_view);
-}
-
-TEST(reloading_propagates_values_of_current_views_with_pane_tabs)
-{
-	cfg.pane_tabs = 1;
-
-	lwin.miller_view = 1;
-	tabs_new(NULL, NULL);
-	lwin.miller_view = 0;
-
-	curr_view = &rwin;
-	other_view = &lwin;
-
-	rwin.miller_view = 0;
-	tabs_new(NULL, NULL);
-	rwin.miller_view = 1;
-
-	tabs_reload();
-
-	tab_info_t tab_info;
-
-	assert_true(tabs_get(&lwin, 0, &tab_info));
-	assert_false(tab_info.view->miller_view);
-	assert_true(tabs_get(&lwin, 1, &tab_info));
-	assert_false(tab_info.view->miller_view);
-
-	assert_true(tabs_get(&rwin, 0, &tab_info));
-	assert_true(tab_info.view->miller_view);
-	assert_true(tabs_get(&rwin, 1, &tab_info));
-	assert_true(tab_info.view->miller_view);
-}
-
 TEST(tabs_enum_ignores_active_pane_for_global_tabs)
 {
 	tabs_new(NULL, NULL);
@@ -407,6 +362,289 @@ TEST(tabs_enum_ignores_active_pane_for_global_tabs)
 	assert_true(tabs_enum(&rwin, 0, &rtab_info));
 
 	assert_true(ltab_info.view != rtab_info.view);
+}
+
+TEST(tabs_enum_all_lists_all_global_tabs)
+{
+	tabs_new(NULL, NULL);
+
+	tab_info_t tab_info1, tab_info2;
+
+	assert_true(tabs_enum_all(0, &tab_info1));
+	assert_true(tabs_enum(&lwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(1, &tab_info1));
+	assert_true(tabs_enum(&lwin, 1, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(2, &tab_info1));
+	assert_true(tabs_enum(&rwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(3, &tab_info1));
+	assert_true(tabs_enum(&rwin, 1, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+}
+
+TEST(tabs_enum_all_lists_all_pane_tabs)
+{
+	cfg.pane_tabs = 1;
+	tabs_new(NULL, NULL);
+	tabs_new(NULL, NULL);
+
+	tab_info_t tab_info1, tab_info2;
+
+	assert_true(tabs_enum_all(0, &tab_info1));
+	assert_true(tabs_enum(&lwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(1, &tab_info1));
+	assert_true(tabs_enum(&lwin, 1, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(2, &tab_info1));
+	assert_true(tabs_enum(&lwin, 2, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+
+	assert_true(tabs_enum_all(3, &tab_info1));
+	assert_true(tabs_enum(&rwin, 0, &tab_info2));
+	assert_true(tab_info1.view == tab_info2.view);
+}
+
+TEST(new_global_tabs_are_appended_on_setup)
+{
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
+	assert_success(tabs_setup_gtab("2", &layout, &left, &right));
+
+	tab_info_t tab_info;
+	assert_true(tabs_enum(&lwin, 0, &tab_info));
+	assert_string_equal(NULL, tab_info.name);
+	assert_true(tabs_enum(&lwin, 1, &tab_info));
+	assert_string_equal("1", tab_info.name);
+	assert_true(tabs_enum(&lwin, 2, &tab_info));
+	assert_string_equal("2", tab_info.name);
+}
+
+TEST(new_pane_tabs_are_appended_on_setup)
+{
+	cfg.pane_tabs = 1;
+	assert_non_null(tabs_setup_ptab(&lwin, "1", 0));
+	assert_non_null(tabs_setup_ptab(&lwin, "2", 0));
+
+	tab_info_t tab_info;
+	assert_true(tabs_enum(&lwin, 0, &tab_info));
+	assert_string_equal(NULL, tab_info.name);
+	assert_true(tabs_enum(&lwin, 1, &tab_info));
+	assert_string_equal("1", tab_info.name);
+	assert_true(tabs_enum(&lwin, 2, &tab_info));
+	assert_string_equal("2", tab_info.name);
+}
+
+TEST(newly_setup_global_tabs_have_empty_history)
+{
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
+	assert_int_equal(0, left->history_num);
+	assert_int_equal(0, right->history_num);
+}
+
+TEST(newly_setup_pane_tabs_have_empty_history)
+{
+	cfg.pane_tabs = 1;
+	view_t *view = tabs_setup_ptab(&lwin, "1", 0);
+	assert_non_null(view);
+	assert_int_equal(0, view->history_num);
+}
+
+TEST(layout_of_global_tab_is_applied)
+{
+	tab_layout_t layout = {
+		.active_pane = 0,
+		.only_mode = 1,
+		.split = HSPLIT,
+		.splitter_pos = -1,
+		.preview = 0,
+	};
+
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
+
+	curr_stats.number_of_windows = 2;
+	curr_stats.split = VSPLIT;
+
+	tabs_goto(1);
+
+	assert_int_equal(1, curr_stats.number_of_windows);
+	assert_int_equal(HSPLIT, curr_stats.split);
+}
+
+TEST(layout_of_pane_tab_is_applied)
+{
+	cfg.pane_tabs = 1;
+	assert_non_null(tabs_setup_ptab(&lwin, "1", 1));
+
+	curr_stats.preview.on = 0;
+
+	tabs_goto(1);
+
+	assert_true(curr_stats.preview.on);
+}
+
+TEST(layout_of_global_tab_is_returned)
+{
+	tab_layout_t layout = {
+		.active_pane = 0,
+		.only_mode = 1,
+		.split = HSPLIT,
+		.splitter_pos = -1,
+		.preview = 0,
+	};
+
+	view_t *left, *right;
+	assert_success(tabs_setup_gtab("1", &layout, &left, &right));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_true(tab_info.layout.only_mode);
+	assert_int_equal(HSPLIT, tab_info.layout.split);
+}
+
+TEST(layout_of_pane_tab_is_returned)
+{
+	cfg.pane_tabs = 1;
+	assert_non_null(tabs_setup_ptab(&lwin, "1", 1));
+
+	tab_info_t tab_info;
+	assert_true(tabs_get(&lwin, 1, &tab_info));
+	assert_true(tab_info.layout.preview);
+}
+
+TEST(global_local_options_and_tabs)
+{
+	curr_stats.global_local_settings = 1;
+
+	lwin.hide_dot_g = lwin.hide_dot = 0;
+	rwin.hide_dot_g = rwin.hide_dot = 0;
+
+	tabs_new(NULL, NULL);
+	assert_success(process_set_args("nodotfiles", 1, 1));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_true(tab_info.view->hide_dot_g);
+		assert_true(tab_info.view->hide_dot);
+	}
+
+	curr_stats.global_local_settings = 0;
+}
+
+TEST(global_local_dotfilter_and_tabs)
+{
+	curr_stats.global_local_settings = 1;
+	init_modes();
+	init_commands();
+
+	lwin.hide_dot_g = lwin.hide_dot = 1;
+	rwin.hide_dot_g = rwin.hide_dot = 1;
+
+	tabs_new(NULL, NULL);
+
+	int i;
+	tab_info_t tab_info;
+
+	assert_success(exec_commands("normal zo", &lwin, CIT_COMMAND));
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_false(tab_info.view->hide_dot_g);
+		assert_false(tab_info.view->hide_dot);
+	}
+
+	assert_success(exec_commands("normal za", &lwin, CIT_COMMAND));
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_true(tab_info.view->hide_dot_g);
+		assert_true(tab_info.view->hide_dot);
+	}
+
+	vle_keys_reset();
+	vle_cmds_reset();
+	curr_stats.global_local_settings = 0;
+}
+
+TEST(global_local_manualfilter_and_tabs)
+{
+	curr_stats.global_local_settings = 1;
+	init_modes();
+	init_commands();
+
+	tabs_new(NULL, NULL);
+	assert_success(exec_commands("filter /y/", &lwin, CIT_COMMAND));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		assert_string_equal("/y/", matcher_get_expr(tab_info.view->manual_filter));
+	}
+
+	vle_keys_reset();
+	vle_cmds_reset();
+	curr_stats.global_local_settings = 0;
+}
+
+TEST(local_options_are_reset_if_path_is_not_changing)
+{
+	assert_success(process_set_args("dotfiles", 1, 0));
+	assert_success(process_set_args("nodotfiles", 0, 1));
+
+	tabs_new(NULL, NULL);
+
+	assert_false(lwin.hide_dot_g);
+	assert_false(lwin.hide_dot);
+}
+
+TEST(local_options_are_reset_if_path_is_changing)
+{
+	assert_success(process_set_args("dotfiles", 1, 0));
+	assert_success(process_set_args("nodotfiles", 0, 1));
+
+	tabs_new(NULL, SANDBOX_PATH);
+
+	assert_false(lwin.hide_dot_g);
+	assert_false(lwin.hide_dot);
+}
+
+TEST(direnter_is_called_for_new_tab)
+{
+	curr_stats.load_stage = -1;
+	init_modes();
+	init_commands();
+
+	assert_success(process_set_args("dotfiles", 1, 1));
+
+	assert_success(exec_commands("autocmd DirEnter * setlocal nodotfiles", &lwin,
+				CIT_COMMAND));
+
+	tabs_new(NULL, SANDBOX_PATH);
+
+	assert_false(lwin.hide_dot_g);
+	assert_true(lwin.hide_dot);
+
+	assert_success(exec_commands("autocmd!", &lwin, CIT_COMMAND));
+
+	vle_keys_reset();
+	vle_cmds_reset();
+	curr_stats.load_stage = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

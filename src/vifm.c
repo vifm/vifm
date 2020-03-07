@@ -168,6 +168,11 @@ vifm_main(int argc, char *argv[])
 		return -1;
 	}
 
+	/* Default values for persistent tabs for case when location isn't stored in
+	 * vifminfo. */
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), dir);
+	copy_str(rwin.curr_dir, sizeof(rwin.curr_dir), dir);
+
 	/* Configure it once. */
 	json_set_escape_slashes(0);
 	json_set_check_strings(0);
@@ -332,12 +337,10 @@ vifm_main(int argc, char *argv[])
 	/* Trigger auto-commands for initial directories. */
 	if(!lwin_cv)
 	{
-		(void)vifm_chdir(flist_get_dir(&lwin));
 		vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
 	}
 	if(!rwin_cv)
 	{
-		(void)vifm_chdir(flist_get_dir(&rwin));
 		vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
 	}
 
@@ -594,18 +597,12 @@ vifm_restart(void)
 
 	cfg_load();
 
-	/* Reloading of tabs needs to happen after configuration is read so that new
-	 * values from lwin and rwin got propagated. */
-	tabs_reload();
-
 	exec_startup_commands(&vifm_args);
 
 	curr_stats.restart_in_progress = 0;
 
 	/* Trigger auto-commands for initial directories. */
-	(void)vifm_chdir(flist_get_dir(&lwin));
 	vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
-	(void)vifm_chdir(flist_get_dir(&rwin));
 	vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
 
 	update_screen(UT_REDRAW);

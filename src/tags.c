@@ -358,6 +358,8 @@ const char *tags[] = {
 	"vifm-:tabname",
 	"vifm-:tabnew",
 	"vifm-:tabnext",
+	"vifm-:tabo",
+	"vifm-:tabonly",
 	"vifm-:tabp",
 	"vifm-:tabprevious",
 	"vifm-:touch",

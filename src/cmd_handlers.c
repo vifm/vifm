@@ -280,6 +280,7 @@ static int tabmove_cmd(const cmd_info_t *cmd_info);
 static int tabname_cmd(const cmd_info_t *cmd_info);
 static int tabnew_cmd(const cmd_info_t *cmd_info);
 static int tabnext_cmd(const cmd_info_t *cmd_info);
+static int tabonly_cmd(const cmd_info_t *cmd_info);
 static int tabprevious_cmd(const cmd_info_t *cmd_info);
 static int touch_cmd(const cmd_info_t *cmd_info);
 static int get_at(const view_t *view, const cmd_info_t *cmd_info);
@@ -806,6 +807,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "go to next or n-th tab",
 	  .flags = HAS_COMMENT,
 	  .handler = &tabnext_cmd,     .min_args = 0,   .max_args = 1, },
+	{ .name = "tabonly",           .abbr = "tabo",  .id = -1,
+	  .descr = "close all tabs but the current one",
+	  .flags = HAS_COMMENT,
+	  .handler = &tabonly_cmd,     .min_args = 0,   .max_args = 0, },
 	{ .name = "tabprevious",       .abbr = "tabp",  .id = -1,
 	  .descr = "go to previous or n-th previous tab",
 	  .flags = HAS_COMMENT,
@@ -1114,9 +1119,13 @@ aucmd_action_handler(const char action[], void *arg)
 {
 	view_t *view = arg;
 	view_t *tmp_curr, *tmp_other;
-
 	ui_view_pick(view, &tmp_curr, &tmp_other);
+
+	char *saved_cwd = save_cwd();
+	(void)vifm_chdir(flist_get_dir(view));
 	(void)exec_commands(action, view, CIT_COMMAND);
+	restore_cwd(saved_cwd);
+
 	ui_view_unpick(view, tmp_curr, tmp_other);
 }
 
@@ -2304,7 +2313,15 @@ filter_cmd(const cmd_info_t *cmd_info)
 	ret = update_filter(curr_view, cmd_info);
 	if(curr_stats.global_local_settings)
 	{
-		ret = update_filter(other_view, cmd_info);
+		int i;
+		tab_info_t tab_info;
+		for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+		{
+			if(tab_info.view != curr_view)
+			{
+				ret |= update_filter(tab_info.view, cmd_info);
+			}
+		}
 	}
 
 	return ret;
@@ -4264,6 +4281,15 @@ tabnext_cmd(const cmd_info_t *cmd_info)
 	}
 
 	tabs_goto(n - 1);
+	return 0;
+}
+
+/* Closes all tabs but the current one. */
+static int
+tabonly_cmd(const cmd_info_t *cmd_info)
+{
+	tabs_only(curr_view);
+	stats_redraw_later();
 	return 0;
 }
 

@@ -34,10 +34,11 @@
 struct config_t;
 struct dir_entry_t;
 
+/* Orientation of a split. */
 typedef enum
 {
-	HSPLIT,
-	VSPLIT,
+	HSPLIT, /* Top and bottom panes. */
+	VSPLIT, /* Left and right panes. */
 }
 SPLIT;
 

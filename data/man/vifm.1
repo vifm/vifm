@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 3, 2020" "vifm 0.10.1"
+.TH VIFM 1 "March 7, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2814,6 +2814,11 @@ switch to the next tab (wrapping around).
 .BI ":tabn[ext] {n}"
 go to the tab number {n}.  Tab numeration starts with 1.
 .TP
+.BI "                                         :tabonly"
+.TP
+.BI ":tabo[nly]"
+close all tabs but the current one.  Closes pane tabs only at the active side.
+.TP
 .BI "                                         :tabprevious"
 .TP
 .BI ":tabp[revious]"
@@ -4827,6 +4832,7 @@ Controls what will be saved in the $VIFM/vifminfo file.
    dirstack  \- directory stack overwrites previous stack, unless stack of
                current session is empty
    registers \- registers content
+   tabs      \- global or pane tabs
    options   \- all options that can be set with the :set command (obsolete)
    filetypes \- associated programs and viewers (obsolete)
    commands  \- user defined commands (see :command description) (obsolete)

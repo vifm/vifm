@@ -20,9 +20,10 @@
 
 #include <assert.h> /* assert() */
 #include <stdlib.h> /* free() */
-#include <string.h> /* memmove() strdup() */
+#include <string.h> /* memmove() */
 
 #include "../cfg/config.h"
+#include "../engine/autocmds.h"
 #include "../modes/view.h"
 #include "../utils/darray.h"
 #include "../utils/filter.h"
@@ -42,6 +43,7 @@ typedef struct
 	view_t view;       /* Buffer holding state of the view when it's hidden. */
 	preview_t preview; /* Information about state of the quickview. */
 	char *name;        /* Name of the tab.  Might be NULL. */
+	int visited;       /* Whether this tab has already been active. */
 }
 pane_tab_t;
 
@@ -66,40 +68,45 @@ typedef struct
 	int splitter_pos;  /* Splitter position. */
 	preview_t preview; /* Information about state of the quickview. */
 	char *name;        /* Name of the tab.  Might be NULL. */
+	int visited;       /* Whether this tab has already been active. */
 }
 global_tab_t;
 
-static int tabs_new_global(const char name[], const char path[]);
-static pane_tab_t * tabs_new_pane(pane_tabs_t *ptabs, view_t *view,
-		const char name[], const char path[]);
-static void clone_view(view_t *dst, view_t *src, const char path[]);
+static int tabs_new_global(const char name[], const char path[], int at,
+		int clean);
+static pane_tab_t * tabs_new_pane(pane_tabs_t *ptabs, view_t *side,
+		const char name[], const char path[], int at, int clean);
+static void clone_view(view_t *dst, view_t *side, const char path[], int clean);
+static void clone_viewport(view_t *dst, const view_t *src);
 static void tabs_goto_pane(int idx);
 static void tabs_goto_global(int idx);
 static void capture_global_state(global_tab_t *gtab);
 static void assign_preview(preview_t *dst, const preview_t *src);
+static void assign_view(view_t *dst, const view_t *src);
 static void free_global_tab(global_tab_t *gtab);
 static void free_pane_tabs(pane_tabs_t *ptabs);
 static void free_pane_tab(pane_tab_t *ptab);
 static void free_preview(preview_t *preview);
-static pane_tabs_t * get_pane_tabs(const view_t *view);
-static int get_global_tab(view_t *view, int idx, tab_info_t *tab_info,
+static pane_tabs_t * get_pane_tabs(const view_t *side);
+static int get_pane_tab(view_t *side, int idx, tab_info_t *tab_info);
+static int get_global_tab(view_t *side, int idx, tab_info_t *tab_info,
 		int return_active);
 static int count_pane_visitors(const pane_tabs_t *ptabs, const char path[],
 		const view_t *view);
-static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view);
-static void reload_views(view_t *side);
+static void normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side);
+static void apply_layout(global_tab_t *gtab, const tab_layout_t *layout);
 
 /* List of global tabs. */
 static global_tab_t *gtabs;
 /* Declarations to enable use of DA_* on gtabs. */
 static DA_INSTANCE(gtabs);
 /* Index of current global tab. */
-static int current_tab;
+static int current_gtab;
 
 void
 tabs_init(void)
 {
-	const int result = tabs_new_global(NULL, NULL);
+	const int result = tabs_new_global(NULL, NULL, 0, 0);
 	assert(result == 0 && "Failed to initialize first tab.");
 	(void)result;
 }
@@ -110,26 +117,36 @@ tabs_new(const char name[], const char path[])
 	if(cfg.pane_tabs)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
-		pane_tab_t *const ptab = tabs_new_pane(ptabs, curr_view, name, path);
+		int idx = DA_SIZE(ptabs->tabs);
+		pane_tab_t *ptab = tabs_new_pane(ptabs, curr_view, name, path, idx, 0);
 		if(ptab == NULL)
 		{
 			return 1;
 		}
 
 		ptab->preview.on = curr_stats.preview.on;
-		tabs_goto(ptab - ptabs->tabs);
+		tabs_goto_pane(idx);
 		return 0;
 	}
 
-	return tabs_new_global(name, path);
+	if(tabs_new_global(name, path, current_gtab + 1, 0) == 0)
+	{
+		tabs_goto_global(current_gtab + 1);
+		return 0;
+	}
+	return 1;
 }
 
-/* Creates new global tab with the specified name, which might be NULL.  Path
- * specifies location of active pane and can be NULL.  Returns zero on success,
- * otherwise non-zero is returned. */
+/* Creates new global tab at position with the specified name, which might be
+ * NULL.  Path specifies location of active pane and can be NULL.  Non-zero
+ * clean parameter requests clean cloning.  Returns zero on success, otherwise
+ * non-zero is returned. */
 static int
-tabs_new_global(const char name[], const char path[])
+tabs_new_global(const char name[], const char path[], int at, int clean)
 {
+	assert(at >= 0 && "Global tab position is too small.");
+	assert(at <= (int)DA_SIZE(gtabs) && "Global tab position is too big.");
+
 	global_tab_t new_tab = {};
 
 	if(DA_EXTEND(gtabs) == NULL)
@@ -139,39 +156,34 @@ tabs_new_global(const char name[], const char path[])
 
 	const char *leftPath = (curr_view == &lwin ? path : NULL);
 	const char *rightPath = (curr_view == &rwin ? path : NULL);
-	if(tabs_new_pane(&new_tab.left, &lwin, NULL, leftPath) == NULL ||
-			tabs_new_pane(&new_tab.right, &rwin, NULL, rightPath) == NULL)
+	if(tabs_new_pane(&new_tab.left, &lwin, NULL, leftPath, 0, clean) == NULL ||
+			tabs_new_pane(&new_tab.right, &rwin, NULL, rightPath, 0, clean) == NULL)
 	{
 		free_global_tab(&new_tab);
 		return 1;
 	}
 	update_string(&new_tab.name, name);
 	capture_global_state(&new_tab);
-	new_tab.preview.on = curr_stats.preview.on;
 
 	DA_COMMIT(gtabs);
 
-	/* We're called from tabs_init(). */
-	if(DA_SIZE(gtabs) == 1U)
-	{
-		gtabs[0U] = new_tab;
-		return 0;
-	}
-
-	memmove(gtabs + current_tab + 2, gtabs + current_tab + 1,
-			sizeof(*gtabs)*(DA_SIZE(gtabs) - (current_tab + 2)));
-	gtabs[current_tab + 1] = new_tab;
-	tabs_goto(current_tab + 1);
+	memmove(gtabs + at + 1, gtabs + at,
+			sizeof(*gtabs)*(DA_SIZE(gtabs) - (at + 1)));
+	gtabs[at] = new_tab;
 	return 0;
 }
 
-/* Creates new tab with the specified name, which might be NULL.  Path specifies
- * location of active pane and can be NULL.  Returns newly created tab on
- * success or NULL on error. */
+/* Creates new tab at position with the specified name, which might be NULL.
+ * Path specifies location of active pane and can be NULL.  Non-zero clean
+ * parameter requests clean cloning.  Returns newly created tab on success or
+ * NULL on error. */
 static pane_tab_t *
-tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
-		const char path[])
+tabs_new_pane(pane_tabs_t *ptabs, view_t *side, const char name[],
+		const char path[], int at, int clean)
 {
+	assert(at >= 0 && "Pane tab position is too small.");
+	assert(at <= (int)DA_SIZE(ptabs->tabs) && "Pane tab position is too big.");
+
 	pane_tab_t new_tab = {};
 
 	if(DA_EXTEND(ptabs->tabs) == NULL)
@@ -189,7 +201,7 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
 		return &ptabs->tabs[0];
 	}
 
-	clone_view(&new_tab.view, view, path);
+	clone_view(&new_tab.view, side, path, clean);
 	update_string(&new_tab.name, name);
 
 	if(DA_SIZE(ptabs->tabs) == 1U)
@@ -198,74 +210,87 @@ tabs_new_pane(pane_tabs_t *ptabs, view_t *view, const char name[],
 		return &ptabs->tabs[0];
 	}
 
-	memmove(ptabs->tabs + ptabs->current + 2, ptabs->tabs + ptabs->current + 1,
-			sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (ptabs->current + 2)));
-	ptabs->tabs[ptabs->current + 1] = new_tab;
+	memmove(ptabs->tabs + at + 1, ptabs->tabs + at,
+			sizeof(*ptabs->tabs)*(DA_SIZE(ptabs->tabs) - (at + 1)));
+	ptabs->tabs[at] = new_tab;
 
-	return &ptabs->tabs[ptabs->current + 1];
+	return &ptabs->tabs[at];
 }
 
-/* Clones one view into another.  Path specifies location of active pane and can
- * be NULL.  The destination view is assumed to not own any resources. */
+/* Clones one view into another.  Path specifies new location and can be NULL.
+ * The destination view is assumed to not own any resources.  Clean cloning
+ * produces a copy without populating file list and with empty history. */
 static void
-clone_view(view_t *dst, view_t *src, const char path[])
+clone_view(view_t *dst, view_t *side, const char path[], int clean)
 {
-	strcpy(dst->curr_dir, path == NULL ? flist_get_dir(src) : path);
-	dst->timestamps_mutex = src->timestamps_mutex;
-	dst->win = src->win;
-	dst->title = src->title;
+	strcpy(dst->curr_dir, path == NULL ? flist_get_dir(side) : path);
+	dst->timestamps_mutex = side->timestamps_mutex;
 
 	flist_init_view(dst);
-	dst->dir_entry[0].origin = src->curr_dir;
+	/* This is for replace_dir_entries() below due to check in fentry_free(),
+	 * should adjust the check instead? */
+	dst->dir_entry[0].origin = side->curr_dir;
 
-	clone_local_options(src, dst, 1);
+	clone_local_options(side, dst, 1);
+	reset_local_options(dst);
+
 	matcher_free(dst->manual_filter);
-	dst->manual_filter = matcher_clone(src->manual_filter);
-	filter_assign(&dst->auto_filter, &src->auto_filter);
-	dst->prev_invert = src->prev_invert;
-	dst->invert = src->invert;
+	dst->manual_filter = matcher_clone(side->manual_filter);
+	filter_assign(&dst->auto_filter, &side->auto_filter);
+	dst->prev_invert = side->prev_invert;
+	dst->invert = side->invert;
 
 	/* Clone current entry even though we populate file list later to give
 	 * reloading reference point for cursor. */
 	replace_dir_entries(dst, &dst->dir_entry, &dst->list_rows,
-			get_current_entry(src), 1);
+			get_current_entry(side), 1);
 	dst->list_pos = 0;
-	/* Clone viewport configuration. */
+	clone_viewport(dst, side);
+
+	flist_hist_resize(dst, cfg.history_len);
+
+	if(!clean)
+	{
+		flist_hist_clone(dst, side);
+		if(path != NULL && !flist_custom_active(side))
+		{
+			/* Record location we're leaving. */
+			flist_hist_save(dst, side->curr_dir, get_current_file_name(side),
+					side->list_pos - side->top_line);
+		}
+
+		(void)populate_dir_list(dst, path == NULL);
+		/* Redirect origins from tab's view to lwin or rwin, which is how they
+		 * should end up after loading a tab into lwin or rwin. */
+		flist_update_origins(dst, &dst->curr_dir[0], &side->curr_dir[0]);
+
+		/* Record new location. */
+		flist_hist_save(dst, NULL, NULL, -1);
+	}
+}
+
+/* Clones viewport configuration. */
+static void
+clone_viewport(view_t *dst, const view_t *src)
+{
 	dst->curr_line = src->curr_line;
 	dst->top_line = src->top_line;
 	dst->window_rows = src->window_rows;
 	dst->window_cols = src->window_cols;
 	dst->window_cells = src->window_cells;
-
-	flist_hist_resize(dst, cfg.history_len);
-	flist_hist_clone(dst, src);
-	if(path != NULL && !flist_custom_active(src))
-	{
-		/* Record location we're leaving. */
-		flist_hist_save(dst, src->curr_dir, get_current_file_name(src),
-				src->list_pos - src->top_line);
-	}
-
-	(void)populate_dir_list(dst, path == NULL);
-	/* XXX: do we need to update origins or is this a leftover from before list
-	 *      population was introduced? */
-	flist_update_origins(dst, &dst->curr_dir[0], &src->curr_dir[0]);
-
-	/* Record new location. */
-	flist_hist_save(dst, NULL, NULL, -1);
 }
 
 void
-tabs_rename(view_t *view, const char name[])
+tabs_rename(view_t *side, const char name[])
 {
 	if(cfg.pane_tabs)
 	{
-		pane_tabs_t *const ptabs = get_pane_tabs(view);
+		pane_tabs_t *const ptabs = get_pane_tabs(side);
 		update_string(&ptabs->tabs[ptabs->current].name, name);;
 	}
 	else
 	{
-		global_tab_t *const gtab = &gtabs[current_tab];
+		global_tab_t *const gtab = &gtabs[current_gtab];
 		update_string(&gtab->name, name);
 	}
 }
@@ -299,9 +324,14 @@ tabs_goto_pane(int idx)
 		return;
 	}
 
+	const int prev = ptabs->current;
+
+	/* Mark the tab we started at as visited. */
+	ptabs->tabs[ptabs->current].visited = (curr_stats.load_stage >= 3);
+
 	ptabs->tabs[ptabs->current].view = *curr_view;
 	assign_preview(&ptabs->tabs[ptabs->current].preview, &curr_stats.preview);
-	*curr_view = ptabs->tabs[idx].view;
+	assign_view(curr_view, &ptabs->tabs[idx].view);
 	assign_preview(&curr_stats.preview, &ptabs->tabs[idx].preview);
 	ptabs->current = idx;
 
@@ -310,6 +340,15 @@ tabs_goto_pane(int idx)
 
 	load_view_options(curr_view);
 
+	if(!ptabs->tabs[ptabs->current].visited &&
+			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
+	{
+		clone_viewport(curr_view, &ptabs->tabs[prev].view);
+		populate_dir_list(curr_view, 0);
+		vle_aucmd_execute("DirEnter", flist_get_dir(curr_view), curr_view);
+		ptabs->tabs[ptabs->current].visited = 1;
+	}
+
 	(void)vifm_chdir(flist_get_dir(curr_view));
 }
 
@@ -317,7 +356,7 @@ tabs_goto_pane(int idx)
 static void
 tabs_goto_global(int idx)
 {
-	if(current_tab == idx)
+	if(current_gtab == idx)
 	{
 		return;
 	}
@@ -327,13 +366,16 @@ tabs_goto_global(int idx)
 		return;
 	}
 
-	gtabs[current_tab].left.tabs[gtabs[current_tab].left.current].view = lwin;
-	gtabs[current_tab].right.tabs[gtabs[current_tab].right.current].view = rwin;
-	capture_global_state(&gtabs[current_tab]);
-	assign_preview(&gtabs[current_tab].preview, &curr_stats.preview);
+	/* Mark the tab we started at as visited. */
+	gtabs[current_gtab].visited = (curr_stats.load_stage >= 3);
 
-	lwin = gtabs[idx].left.tabs[gtabs[idx].left.current].view;
-	rwin = gtabs[idx].right.tabs[gtabs[idx].right.current].view;
+	gtabs[current_gtab].left.tabs[gtabs[current_gtab].left.current].view = lwin;
+	gtabs[current_gtab].right.tabs[gtabs[current_gtab].right.current].view = rwin;
+	capture_global_state(&gtabs[current_gtab]);
+	assign_preview(&gtabs[current_gtab].preview, &curr_stats.preview);
+
+	assign_view(&lwin, &gtabs[idx].left.tabs[gtabs[idx].left.current].view);
+	assign_view(&rwin, &gtabs[idx].right.tabs[gtabs[idx].right.current].view);
 	if(gtabs[idx].active_pane != (curr_view == &rwin))
 	{
 		swap_view_roles();
@@ -343,13 +385,27 @@ tabs_goto_global(int idx)
 	curr_stats.splitter_pos = gtabs[idx].splitter_pos;
 	assign_preview(&curr_stats.preview, &gtabs[idx].preview);
 
-	current_tab = idx;
+	current_gtab = idx;
 
 	stats_set_quickview(curr_stats.preview.on);
 	ui_view_schedule_redraw(&lwin);
 	ui_view_schedule_redraw(&rwin);
 
 	load_view_options(curr_view);
+
+	if(!gtabs[current_gtab].visited &&
+			(curr_stats.load_stage >= 3 || curr_stats.load_stage < 0))
+	{
+		if(curr_stats.load_stage >= 3)
+		{
+			ui_resize_all();
+		}
+		populate_dir_list(&lwin, 0);
+		populate_dir_list(&rwin, 0);
+		vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
+		vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
+		gtabs[current_gtab].visited = 1;
+	}
 
 	(void)vifm_chdir(flist_get_dir(curr_view));
 }
@@ -358,10 +414,9 @@ tabs_goto_global(int idx)
 static void
 capture_global_state(global_tab_t *gtab)
 {
-	gtab->active_pane = (curr_view == &rwin);
-	gtab->only_mode = (curr_stats.number_of_windows == 1);
-	gtab->split = curr_stats.split;
-	gtab->splitter_pos = curr_stats.splitter_pos;
+	tab_layout_t layout;
+	tabs_layout_fill(&layout);
+	apply_layout(gtab, &layout);
 }
 
 /* Assigns one instance of preview_t to another managing dynamic resources on
@@ -375,6 +430,19 @@ assign_preview(preview_t *dst, const preview_t *src)
 	 * bit, which isn't really a problem given that we're probably out of
 	 * memory. */
 	update_string(&dst->cleanup_cmd, src->cleanup_cmd);
+}
+
+/* Assigns a view preserving UI-related data. */
+static void
+assign_view(view_t *dst, const view_t *src)
+{
+	WINDOW *win = dst->win;
+	WINDOW *title = dst->title;
+
+	*dst = *src;
+
+	dst->win = win;
+	dst->title = title;
 }
 
 int
@@ -396,7 +464,7 @@ tabs_close(void)
 		const int n = (int)DA_SIZE(ptabs->tabs);
 		if(n != 1)
 		{
-			tabs_goto(ptabs->current + (ptabs->current == n - 1 ? -1 : +1));
+			tabs_goto_pane(ptabs->current + (ptabs->current == n - 1 ? -1 : +1));
 			if(ptabs->current > ptab - ptabs->tabs)
 			{
 				--ptabs->current;
@@ -407,14 +475,15 @@ tabs_close(void)
 	}
 	else
 	{
-		global_tab_t *const gtab = &gtabs[current_tab];
+		global_tab_t *const gtab = &gtabs[current_gtab];
 		const int n = (int)DA_SIZE(gtabs);
 		if(n != 1)
 		{
-			tabs_goto(current_tab == n - 1 ? current_tab - 1 : current_tab + 1);
-			if(current_tab > gtab - gtabs)
+			int idx = (current_gtab == n - 1 ? current_gtab - 1 : current_gtab + 1);
+			tabs_goto_global(idx);
+			if(current_gtab > gtab - gtabs)
 			{
-				--current_tab;
+				--current_gtab;
 			}
 			free_global_tab(gtab);
 			DA_REMOVE(gtabs, gtab);
@@ -468,11 +537,11 @@ tabs_next(int n)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
 		const int count = (int)DA_SIZE(ptabs->tabs);
-		tabs_goto((ptabs->current + n)%count);
+		tabs_goto_pane((ptabs->current + n)%count);
 	}
 	else
 	{
-		tabs_goto((current_tab + 1)%(int)DA_SIZE(gtabs));
+		tabs_goto_global((current_gtab + 1)%(int)DA_SIZE(gtabs));
 	}
 }
 
@@ -483,40 +552,60 @@ tabs_previous(int n)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
 		const int count = (int)DA_SIZE(ptabs->tabs);
-		tabs_goto((ptabs->current + count - n)%count);
+		tabs_goto_pane((ptabs->current + count - n)%count);
 	}
 	else
 	{
 		const int count = DA_SIZE(gtabs);
-		tabs_goto((current_tab + count - n)%count);
+		tabs_goto_global((current_gtab + count - n)%count);
 	}
 }
 
 int
-tabs_get(view_t *view, int idx, tab_info_t *tab_info)
+tabs_get(view_t *side, int idx, tab_info_t *tab_info)
 {
 	if(cfg.pane_tabs)
 	{
-		pane_tabs_t *const ptabs = get_pane_tabs(view);
-		const int n = (int)DA_SIZE(ptabs->tabs);
-		if(idx < 0 || idx >= n)
-		{
-			return 0;
-		}
-		tab_info->view = (idx == ptabs->current ? view : &ptabs->tabs[idx].view);
-		tab_info->name = ptabs->tabs[idx].name;
-		tab_info->last = (idx == n - 1);
-		return 1;
+		return get_pane_tab(side, idx, tab_info);
 	}
 
-	return get_global_tab(view, idx, tab_info, 1);
+	return get_global_tab(side, idx, tab_info, 1);
 }
 
-/* Fills *tab_info for the global tab specified by its index and side (view
- * parameter) when return_active is zero, otherwise active one is used.  Returns
+/* Fills *tab_info for the pane tab specified by its index and side.  Returns
  * non-zero on success, otherwise zero is returned. */
 static int
-get_global_tab(view_t *view, int idx, tab_info_t *tab_info, int return_active)
+get_pane_tab(view_t *side, int idx, tab_info_t *tab_info)
+{
+	pane_tabs_t *const ptabs = get_pane_tabs(side);
+	const int n = (int)DA_SIZE(ptabs->tabs);
+	if(idx < 0 || idx >= n)
+	{
+		return 0;
+	}
+
+	tabs_layout_fill(&tab_info->layout);
+
+	if(idx == ptabs->current)
+	{
+		tab_info->view = side;
+	}
+	else
+	{
+		tab_info->view = &ptabs->tabs[idx].view;
+		tab_info->layout.preview = ptabs->tabs[idx].preview.on;
+	}
+
+	tab_info->name = ptabs->tabs[idx].name;
+	tab_info->last = (idx == n - 1);
+	return 1;
+}
+
+/* Fills *tab_info for the global tab specified by its index and side when
+ * return_active is zero, otherwise active one is used.  Returns non-zero on
+ * success, otherwise zero is returned. */
+static int
+get_global_tab(view_t *side, int idx, tab_info_t *tab_info, int return_active)
 {
 	const int n = (int)DA_SIZE(gtabs);
 	if(idx < 0 || idx >= n)
@@ -528,41 +617,47 @@ get_global_tab(view_t *view, int idx, tab_info_t *tab_info, int return_active)
 	tab_info->name = gtab->name;
 	tab_info->last = (idx == n - 1);
 
-	if(idx == current_tab)
+	if(idx == current_gtab)
 	{
-		tab_info->view = view;
+		tab_info->view = side;
+		tabs_layout_fill(&tab_info->layout);
 		return 1;
 	}
 	tab_info->view = (return_active && !gtab->active_pane)
-	              || (!return_active && view == &lwin)
+	              || (!return_active && side == &lwin)
 	               ? &gtab->left.tabs[gtab->left.current].view
 	               : &gtab->right.tabs[gtab->right.current].view;
+	tab_info->layout.active_pane = gtab->active_pane;
+	tab_info->layout.only_mode = gtab->only_mode;
+	tab_info->layout.split = gtab->split;
+	tab_info->layout.splitter_pos = gtab->splitter_pos;
+	tab_info->layout.preview = gtab->preview.on;
 	return 1;
 }
 
 int
-tabs_current(const view_t *view)
+tabs_current(const view_t *side)
 {
-	return (cfg.pane_tabs ? get_pane_tabs(view)->current : current_tab);
+	return (cfg.pane_tabs ? get_pane_tabs(side)->current : current_gtab);
 }
 
 int
-tabs_count(const view_t *view)
+tabs_count(const view_t *side)
 {
 	if(cfg.pane_tabs)
 	{
-		pane_tabs_t *const ptabs = get_pane_tabs(view);
+		pane_tabs_t *const ptabs = get_pane_tabs(side);
 		return (int)DA_SIZE(ptabs->tabs);
 	}
 	return (int)DA_SIZE(gtabs);
 }
 
 void
-tabs_only(view_t *view)
+tabs_only(view_t *side)
 {
 	if(cfg.pane_tabs)
 	{
-		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
+		pane_tabs_t *const ptabs = get_pane_tabs(side);
 		while(DA_SIZE(ptabs->tabs) != 1U)
 		{
 			pane_tab_t *const ptab = &ptabs->tabs[ptabs->current == 0 ? 1 : 0];
@@ -575,8 +670,8 @@ tabs_only(view_t *view)
 	{
 		while(DA_SIZE(gtabs) != 1U)
 		{
-			global_tab_t *const gtab = &gtabs[current_tab == 0 ? 1 : 0];
-			current_tab -= (current_tab == 0 ? 0 : 1);
+			global_tab_t *const gtab = &gtabs[current_gtab == 0 ? 1 : 0];
+			current_gtab -= (current_gtab == 0 ? 0 : 1);
 			free_global_tab(gtab);
 			DA_REMOVE(gtabs, gtab);
 		}
@@ -586,41 +681,41 @@ tabs_only(view_t *view)
 /* Retrieves pane tab that corresponds to the specified view (must be &lwin or
  * &rwin).  Returns the pane tab. */
 static pane_tabs_t *
-get_pane_tabs(const view_t *view)
+get_pane_tabs(const view_t *side)
 {
-	global_tab_t *const gtab = &gtabs[current_tab];
-	return (view == &lwin ? &gtab->left : &gtab->right);
+	global_tab_t *const gtab = &gtabs[current_gtab];
+	return (side == &lwin ? &gtab->left : &gtab->right);
 }
 
 void
-tabs_move(view_t *view, int where_to)
+tabs_move(view_t *side, int where_to)
 {
-	int future = MAX(0, MIN(tabs_count(view) - 1, where_to));
-	const int current = tabs_current(view);
+	int future = MAX(0, MIN(tabs_count(side) - 1, where_to));
+	const int current = tabs_current(side);
 	const int from = (current <= future ? current + 1 : future);
 	const int to = (current <= future ? current : future + 1);
 
 	/* Second check is for the case when the value was already truncated by MIN()
 	 * above. */
-	if(current < future && where_to < tabs_count(view))
+	if(current < future && where_to < tabs_count(side))
 	{
 		--future;
 	}
 
 	if(cfg.pane_tabs)
 	{
-		pane_tab_t *const ptabs = get_pane_tabs(view)->tabs;
+		pane_tab_t *const ptabs = get_pane_tabs(side)->tabs;
 		const pane_tab_t ptab = ptabs[current];
 		memmove(ptabs + to, ptabs + from, sizeof(*ptabs)*abs(future - current));
 		ptabs[future] = ptab;
-		get_pane_tabs(view)->current = future;
+		get_pane_tabs(side)->current = future;
 	}
 	else
 	{
 		const global_tab_t gtab = gtabs[current];
 		memmove(gtabs + to, gtabs + from, sizeof(*gtabs)*abs(future - current));
 		gtabs[future] = gtab;
-		current_tab = future;
+		current_gtab = future;
 	}
 }
 
@@ -632,8 +727,8 @@ tabs_visitor_count(const char path[])
 	for(i = 0; i < (int)DA_SIZE(gtabs); ++i)
 	{
 		global_tab_t *const gtab = &gtabs[i];
-		view_t *const lview = (i == current_tab ? &lwin : NULL);
-		view_t *const rview = (i == current_tab ? &rwin : NULL);
+		view_t *const lview = (i == current_gtab ? &lwin : NULL);
+		view_t *const rview = (i == current_gtab ? &rwin : NULL);
 		count += count_pane_visitors(&gtab->left, path, lview);
 		count += count_pane_visitors(&gtab->right, path, rview);
 	}
@@ -668,22 +763,22 @@ tabs_switch_panes(void)
 {
 	if(cfg.pane_tabs)
 	{
-		const pane_tabs_t tmp = gtabs[current_tab].left;
-		gtabs[current_tab].left = gtabs[current_tab].right;
-		gtabs[current_tab].right = tmp;
+		const pane_tabs_t tmp = gtabs[current_gtab].left;
+		gtabs[current_gtab].left = gtabs[current_gtab].right;
+		gtabs[current_gtab].right = tmp;
 
-		normalize_pane_tabs(&gtabs[current_tab].left, &lwin);
-		normalize_pane_tabs(&gtabs[current_tab].right, &rwin);
+		normalize_pane_tabs(&gtabs[current_gtab].left, &lwin);
+		normalize_pane_tabs(&gtabs[current_gtab].right, &rwin);
 	}
 }
 
-/* Fixes data fields of views after they got moved from one pane to another. The
- * view parameter indicates destination pane. */
+/* Fixes data fields of views after they got moved from one pane to another.
+ * The side parameter indicates destination pane. */
 static void
-normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view)
+normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *side)
 {
-	view_t tmp = *view;
-	view_t *const other = (view == &rwin ? &lwin : &rwin);
+	view_t tmp = *side;
+	view_t *const other = (side == &rwin ? &lwin : &rwin);
 	int i;
 	for(i = 0; i < (int)DA_SIZE(ptabs->tabs); ++i)
 	{
@@ -692,43 +787,83 @@ normalize_pane_tabs(const pane_tabs_t *ptabs, view_t *view)
 			view_t *const v = &ptabs->tabs[i].view;
 			ui_swap_view_data(v, &tmp);
 			*v = tmp;
-			flist_update_origins(v, &other->curr_dir[0], &view->curr_dir[0]);
-		}
-	}
-}
-
-void
-tabs_reload(void)
-{
-	reload_views(&lwin);
-	reload_views(&rwin);
-}
-
-/* Reloads all views in all tabs on one side (left/top or right/bottom). */
-static void
-reload_views(view_t *side)
-{
-	int i;
-	tab_info_t tab_info;
-
-	for(i = 0; tabs_enum(side, i, &tab_info); ++i)
-	{
-		if(tab_info.view != side)
-		{
-			char *path = strdup(flist_get_dir(tab_info.view));
-			flist_free_view(tab_info.view);
-			memset(tab_info.view, 0, sizeof(*tab_info.view));
-			clone_view(tab_info.view, side, path);
-			free(path);
+			flist_update_origins(v, &other->curr_dir[0], &side->curr_dir[0]);
 		}
 	}
 }
 
 int
-tabs_enum(view_t *view, int idx, tab_info_t *tab_info)
+tabs_enum(view_t *side, int idx, tab_info_t *tab_info)
 {
-	return cfg.pane_tabs ? tabs_get(view, idx, tab_info)
-	                     : get_global_tab(view, idx, tab_info, 0);
+	return cfg.pane_tabs ? get_pane_tab(side, idx, tab_info)
+	                     : get_global_tab(side, idx, tab_info, 0);
+}
+
+int
+tabs_enum_all(int idx, tab_info_t *tab_info)
+{
+	if(tabs_enum(&lwin, idx, tab_info))
+	{
+		return 1;
+	}
+
+	int offset = cfg.pane_tabs ? DA_SIZE(get_pane_tabs(&lwin)->tabs)
+	                           : DA_SIZE(gtabs);
+	return tabs_enum(&rwin, idx - offset, tab_info);
+}
+
+void
+tabs_layout_fill(tab_layout_t *layout)
+{
+	layout->active_pane = (curr_view == &rwin);
+	layout->only_mode = (curr_stats.number_of_windows == 1);
+	layout->split = curr_stats.split;
+	layout->splitter_pos = curr_stats.splitter_pos;
+	layout->preview = curr_stats.preview.on;
+}
+
+int
+tabs_setup_gtab(const char name[], const tab_layout_t *layout, view_t **left,
+		view_t **right)
+{
+	int idx = DA_SIZE(gtabs);
+	if(tabs_new_global(name, NULL, idx, 1) != 0)
+	{
+		return 1;
+	}
+
+	global_tab_t *gtab = &gtabs[idx];
+	apply_layout(gtab, layout);
+
+	*left = &gtab->left.tabs[0].view;
+	*right = &gtab->right.tabs[0].view;
+	return 0;
+}
+
+/* Applies layout data to a global tab. */
+static void
+apply_layout(global_tab_t *gtab, const tab_layout_t *layout)
+{
+	gtab->active_pane = layout->active_pane;
+	gtab->only_mode = layout->only_mode;
+	gtab->split = layout->split;
+	gtab->splitter_pos = layout->splitter_pos;
+	gtab->preview.on = layout->preview;
+}
+
+view_t *
+tabs_setup_ptab(view_t *view, const char name[], int preview)
+{
+	pane_tabs_t *ptabs = get_pane_tabs(view);
+	int idx = DA_SIZE(ptabs->tabs);
+	pane_tab_t *ptab = tabs_new_pane(ptabs, view, name, NULL, idx, 1);
+	if(ptab == NULL)
+	{
+		return NULL;
+	}
+
+	ptab->preview.on = preview;
+	return &ptab->view;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

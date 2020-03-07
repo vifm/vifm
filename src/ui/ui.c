@@ -126,7 +126,6 @@ static void move_pair(short int from, short int to);
 static void create_windows(void);
 static void update_geometry(void);
 static int get_working_area_height(void);
-static void resize_all(void);
 static void clear_border(WINDOW *border);
 static int middle_border_is_visible(void);
 static void update_views(int reload);
@@ -250,7 +249,7 @@ setup_ncurses_interface(void)
 #endif
 #endif
 
-	resize_all();
+	ui_resize_all();
 
 	return 1;
 }
@@ -649,7 +648,7 @@ update_screen(UpdateType update_kind)
 	if(update_kind == UT_NONE)
 		return;
 
-	resize_all();
+	ui_resize_all();
 
 	if(curr_stats.restart_in_progress)
 	{
@@ -729,10 +728,8 @@ update_screen(UpdateType update_kind)
 	ui_stat_job_bar_redraw();
 }
 
-/* Resizes all windows according to current screen size and TUI
- * configuration. */
-static void
-resize_all(void)
+void
+ui_resize_all(void)
 {
 	static float prev_w = -1.f, prev_h = -1.f;
 
@@ -2267,16 +2264,7 @@ ui_invalidate_cs(const col_scheme_t *cs)
 {
 	int i;
 	tab_info_t tab_info;
-
-	for(i = 0; tabs_enum(curr_view, i, &tab_info); ++i)
-	{
-		if(ui_view_get_cs(tab_info.view) == cs)
-		{
-			fview_reset_cs(tab_info.view);
-		}
-	}
-
-	for(i = 0; tabs_enum(other_view, i, &tab_info); ++i)
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 	{
 		if(ui_view_get_cs(tab_info.view) == cs)
 		{

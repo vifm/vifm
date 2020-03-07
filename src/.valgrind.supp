@@ -39,28 +39,13 @@
 }
 
 {
-   there-is-no-leak-of-origin-1
+   there-is-no-leak-of-origin
    Memcheck:Leak
    match-leak-kinds: possible
    fun:malloc
    fun:strdup
    fun:replace_dir_entries
    fun:clone_view
-   fun:reload_views
-   fun:tabs_reload
-   fun:reloading_propagates_values_of_current_views_with_pane_tabs
-}
-{
-   there-is-no-leak-of-origin-2
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:malloc
-   fun:strdup
-   fun:replace_dir_entries
-   fun:clone_view
-   fun:reload_views
-   fun:tabs_reload
-   fun:reloading_propagates_values_of_current_views_with_pane_tabs
 }
 {
    there-is-no-leak-of-entry-array
@@ -71,7 +56,4 @@
    fun:dynarray_extend
    fun:replace_dir_entries
    fun:clone_view
-   fun:reload_views
-   fun:tabs_reload
-   fun:reloading_propagates_values_of_current_views_with_pane_tabs
 }
