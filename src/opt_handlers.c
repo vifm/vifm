@@ -3239,6 +3239,7 @@ tabscope_handler(OPT_OP op, optval_t val)
 
 	/* Erase tabs on current scope before switching it. */
 	tabs_only(curr_view);
+	tabs_only(other_view);
 	tabs_rename(curr_view, NULL);
 
 	cfg.pane_tabs = val.bool_val;
