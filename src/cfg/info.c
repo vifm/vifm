@@ -174,8 +174,6 @@ static void load_trash(JSON_Object *root);
 static void load_history(JSON_Object *root, const char node[], hist_t *hist,
 		void (*saver)(const char[]));
 static void get_sort_info(view_t *view, const char line[]);
-static void append_to_history(hist_t *hist, void (*saver)(const char[]),
-		const char item[]);
 static void ensure_history_not_full(hist_t *hist);
 static void get_history(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
@@ -1076,7 +1074,8 @@ load_history(JSON_Object *root, const char node[], hist_t *hist,
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
 		const char *item = json_array_get_string(entries, i);
-		append_to_history(hist, saver, item);
+		ensure_history_not_full(hist);
+		saver(item);
 	}
 }
 
@@ -1112,15 +1111,6 @@ get_sort_info(view_t *view, const char line[])
 	memcpy(sort, view->sort_g, sizeof(view->sort));
 
 	fview_sorting_updated(view);
-}
-
-/* Appends item to the hist extending the history to fit it if needed. */
-static void
-append_to_history(hist_t *hist, void (*saver)(const char[]),
-		const char item[])
-{
-	ensure_history_not_full(hist);
-	saver(item);
 }
 
 /* Checks that history has at least one more empty slot or extends history by
