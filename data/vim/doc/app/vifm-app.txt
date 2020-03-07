@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 7
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 8
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4045,7 +4045,7 @@ Controls what will be saved in the $VIFM/vifminfo file:
    state     - file name and dot filters and terminal multiplexers integration
                state
    cs        - primary color scheme
-   savedirs  - save last visited directory (requires dhistory)
+   savedirs  - save last visited directory
    chistory  - command line history
    shistory  - search history (/ and ? commands)
    phistory  - prompt history

@@ -85,7 +85,7 @@
  *              }
  *              name = "ptab-name"
  *              options = [ "opt1=val1", "opt2=val2" ]
- *              restore-last-location = true
+ *              last-location = "/some/path"
  *              sorting = "1,-2,3"
  *              preview = false
  *          } ]
@@ -323,6 +323,7 @@ read_legacy_info_file(const char info_file[])
 	JSON_Array *left_options = add_array(left_tab, "options");
 	JSON_Array *right_options = add_array(right_tab, "options");
 
+	char *last_location = NULL;
 	char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
@@ -447,7 +448,7 @@ read_legacy_info_file(const char info_file[])
 			{
 				JSON_Object *ptab = (type == LINE_TYPE_LWIN_HIST)
 				                  ? left_tab : right_tab;
-				set_bool(ptab, "restore-last-location", 1);
+				set_str(ptab, "last-location", last_location);
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -459,6 +460,8 @@ read_legacy_info_file(const char info_file[])
 				set_str(entry, "dir", line_val);
 				set_str(entry, "file", line2);
 				set_int(entry, "relpos", rel_pos);
+
+				replace_string(&last_location, line_val);
 			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
@@ -566,6 +569,7 @@ read_legacy_info_file(const char info_file[])
 	free(line2);
 	free(line3);
 	free(line4);
+	free(last_location);
 	fclose(fp);
 
 	return root_value;
@@ -805,7 +809,6 @@ load_dhistory(JSON_Object *info, view_t *view, int reread)
 	JSON_Array *history = json_object_get_array(info, "history");
 
 	int i, n;
-	const char *last_dir = NULL;
 	for(i = 0, n = json_array_get_count(history); i < n; ++i)
 	{
 		JSON_Object *entry = json_array_get_object(history, i);
@@ -816,17 +819,13 @@ load_dhistory(JSON_Object *info, view_t *view, int reread)
 				get_int(entry, "relpos", &rel_pos))
 		{
 			get_history(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
-			last_dir = dir;
 		}
 	}
 
-	int restore_last_location;
-	if(get_bool(info, "restore-last-location", &restore_last_location))
+	const char *last_location;
+	if(!reread && get_str(info, "last-location", &last_location))
 	{
-		if(!reread && restore_last_location && last_dir != NULL)
-		{
-			copy_str(view->curr_dir, sizeof(view->curr_dir), last_dir);
-		}
+		copy_str(view->curr_dir, sizeof(view->curr_dir), last_location);
 	}
 }
 
@@ -2138,7 +2137,10 @@ store_dhistory(JSON_Object *obj, view_t *view)
 		set_int(entry, "relpos", view->history[i].rel_pos);
 	}
 
-	set_bool(obj, "restore-last-location", cfg.vifm_info & VINFO_SAVEDIRS);
+	if(cfg.vifm_info & VINFO_SAVEDIRS)
+	{
+		set_str(obj, "last-location", flist_get_dir(view));
+	}
 }
 
 /* Reads line from configuration file.  Takes care of trailing newline character
