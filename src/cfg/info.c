@@ -1076,7 +1076,7 @@ load_history(JSON_Object *root, const char node[], hist_t *hist,
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
 		const char *item = json_array_get_string(entries, i);
-		append_to_history(&curr_stats.filter_hist, saver, item);
+		append_to_history(hist, saver, item);
 	}
 }
 
