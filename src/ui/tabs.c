@@ -125,13 +125,13 @@ tabs_new(const char name[], const char path[])
 		}
 
 		ptab->preview.on = curr_stats.preview.on;
-		tabs_goto(idx);
+		tabs_goto_pane(idx);
 		return 0;
 	}
 
 	if(tabs_new_global(name, path, current_gtab + 1, 0) == 0)
 	{
-		tabs_goto(current_gtab + 1);
+		tabs_goto_global(current_gtab + 1);
 		return 0;
 	}
 	return 1;
@@ -463,7 +463,7 @@ tabs_close(void)
 		const int n = (int)DA_SIZE(ptabs->tabs);
 		if(n != 1)
 		{
-			tabs_goto(ptabs->current + (ptabs->current == n - 1 ? -1 : +1));
+			tabs_goto_pane(ptabs->current + (ptabs->current == n - 1 ? -1 : +1));
 			if(ptabs->current > ptab - ptabs->tabs)
 			{
 				--ptabs->current;
@@ -478,7 +478,8 @@ tabs_close(void)
 		const int n = (int)DA_SIZE(gtabs);
 		if(n != 1)
 		{
-			tabs_goto(current_gtab == n - 1 ? current_gtab - 1 : current_gtab + 1);
+			int idx = (current_gtab == n - 1 ? current_gtab - 1 : current_gtab + 1);
+			tabs_goto_global(idx);
 			if(current_gtab > gtab - gtabs)
 			{
 				--current_gtab;
@@ -535,11 +536,11 @@ tabs_next(int n)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
 		const int count = (int)DA_SIZE(ptabs->tabs);
-		tabs_goto((ptabs->current + n)%count);
+		tabs_goto_pane((ptabs->current + n)%count);
 	}
 	else
 	{
-		tabs_goto((current_gtab + 1)%(int)DA_SIZE(gtabs));
+		tabs_goto_global((current_gtab + 1)%(int)DA_SIZE(gtabs));
 	}
 }
 
@@ -550,12 +551,12 @@ tabs_previous(int n)
 	{
 		pane_tabs_t *const ptabs = get_pane_tabs(curr_view);
 		const int count = (int)DA_SIZE(ptabs->tabs);
-		tabs_goto((ptabs->current + count - n)%count);
+		tabs_goto_pane((ptabs->current + count - n)%count);
 	}
 	else
 	{
 		const int count = DA_SIZE(gtabs);
-		tabs_goto((current_gtab + count - n)%count);
+		tabs_goto_global((current_gtab + count - n)%count);
 	}
 }
 
