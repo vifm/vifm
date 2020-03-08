@@ -18,6 +18,7 @@
 	assert_string_equal(str, curr_stats.cmd_hist.items[i]); \
 	assert_string_equal(str, curr_stats.search_hist.items[i]); \
 	assert_string_equal(str, curr_stats.prompt_hist.items[i]); \
+	assert_string_equal(str, curr_stats.filter_hist.items[i]); \
 	\
 	assert_string_equal(str, lwin.history[(i) + 1].dir); \
 	assert_string_equal((str) + 1, lwin.history[(i) + 1].file); \
@@ -84,6 +85,7 @@ save_to_history(const char str[])
 	hists_commands_save(str);
 	hists_search_save(str);
 	hists_prompt_save(str);
+	hists_filter_save(str);
 
 	flist_hist_save(&lwin, str, str + 1, 0);
 	flist_hist_save(&rwin, str, str + 1, 0);
