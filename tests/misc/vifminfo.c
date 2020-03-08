@@ -5,10 +5,12 @@
 #include <unistd.h> /* stat() */
 
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
+#include <string.h> /* memset() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/matchers.h"
@@ -270,6 +272,73 @@ TEST(histories_are_merged_correctly)
 	assert_string_equal("lfilter2", curr_stats.filter_hist.items[0]);
 	assert_string_equal("lfilter1", curr_stats.filter_hist.items[1]);
 	assert_string_equal("lfilter0", curr_stats.filter_hist.items[2]);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
+}
+
+TEST(view_sorting_round_trip)
+{
+	cfg.vifm_info = VINFO_TUI;
+
+	opt_handlers_setup();
+	lwin.columns = columns_create();
+	rwin.columns = columns_create();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+	columns_setup_column(SK_BY_NITEMS);
+	columns_setup_column(SK_BY_EXTENSION);
+	columns_setup_column(SK_BY_DIR);
+	columns_setup_column(SK_BY_FILEEXT);
+	columns_setup_column(SK_BY_TARGET);
+	columns_setup_column(SK_BY_TYPE);
+	columns_setup_column(SK_BY_INAME);
+	columns_setup_column(SK_BY_TIME_CHANGED);
+
+	write_info_file();
+	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
+	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
+	read_info_file(0);
+
+	assert_int_equal(SK_BY_NAME, lwin.sort_g[0]);
+	assert_int_equal(SK_BY_NAME, rwin.sort_g[0]);
+
+	lwin.sort_g[0] = SK_BY_NITEMS;
+	lwin.sort_g[1] = -SK_BY_EXTENSION;
+	lwin.sort_g[2] = SK_BY_SIZE;
+	lwin.sort_g[3] = -SK_BY_NAME;
+	lwin.sort_g[4] = SK_BY_DIR;
+
+	rwin.sort_g[0] = -SK_BY_TIME_CHANGED;
+	rwin.sort_g[1] = SK_BY_TARGET;
+	rwin.sort_g[2] = SK_BY_INAME;
+	rwin.sort_g[3] = SK_BY_FILEEXT;
+	rwin.sort_g[4] = -SK_BY_TYPE;
+	rwin.sort_g[5] = -SK_BY_NAME;
+
+	write_info_file();
+	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
+	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
+	read_info_file(0);
+
+	assert_int_equal(SK_BY_NITEMS, lwin.sort_g[0]);
+	assert_int_equal(-SK_BY_EXTENSION, lwin.sort_g[1]);
+	assert_int_equal(SK_BY_SIZE, lwin.sort_g[2]);
+	assert_int_equal(-SK_BY_NAME, lwin.sort_g[3]);
+	assert_int_equal(SK_BY_DIR, lwin.sort_g[4]);
+
+	assert_int_equal(-SK_BY_TIME_CHANGED, rwin.sort_g[0]);
+	assert_int_equal(SK_BY_TARGET, rwin.sort_g[1]);
+	assert_int_equal(SK_BY_INAME, rwin.sort_g[2]);
+	assert_int_equal(SK_BY_FILEEXT, rwin.sort_g[3]);
+	assert_int_equal(-SK_BY_TYPE, rwin.sort_g[4]);
+	assert_int_equal(-SK_BY_NAME, rwin.sort_g[5]);
+
+	opt_handlers_teardown();
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	columns_free(rwin.columns);
+	rwin.columns = NULL;
+	columns_teardown();
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }
