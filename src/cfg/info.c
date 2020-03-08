@@ -121,7 +121,7 @@
  *      }
  *  }
  *  cmds = {
- *      cmd-name = "echo hi"
+ *      "cmd-name" = "echo hi"
  *  }
  *  viewers = [ {
  *      matchers = "{*.jpg}"
@@ -142,10 +142,10 @@
  *      right-file = "right-file"
  *  } ]
  *  options = [ "opt1=val1", "opt2=val2" ]
- *  cmd-hist = [ "item1", "item2" ]
- *  search-hist = [ "item1", "item2" ]
- *  prompt-hist = [ "item1", "item2" ]
- *  lfilt-hist = [ "item1", "item2" ]
+ *  cmd-hist = [ { text = "item1" } ]
+ *  search-hist = [ { text = "item1" } ]
+ *  prompt-hist = [ { text = "item1" } ]
+ *  lfilt-hist = [ { text = "item1" } ]
  *  active-gtab = 0
  *  use-term-multiplexer = true
  *  color-scheme = "almost-default"
@@ -464,19 +464,19 @@ read_legacy_info_file(const char info_file[])
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			json_array_append_string(cmd_hist, line_val);
+			set_str(append_object(cmd_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			json_array_append_string(search_hist, line_val);
+			set_str(append_object(search_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			json_array_append_string(prompt_hist, line_val);
+			set_str(append_object(prompt_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_FILTER_HIST)
 		{
-			json_array_append_string(lfilt_hist, line_val);
+			set_str(append_object(lfilt_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
@@ -1073,9 +1073,13 @@ load_history(JSON_Object *root, const char node[], hist_t *hist,
 	int i, n;
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
-		const char *item = json_array_get_string(entries, i);
-		ensure_history_not_full(hist);
-		saver(item);
+		JSON_Object *entry = json_array_get_object(entries, i);
+		const char *text;
+		if(get_str(entry, "text", &text))
+		{
+			ensure_history_not_full(hist);
+			saver(text);
+		}
 	}
 }
 
@@ -1591,23 +1595,30 @@ merge_history(JSON_Object *current, JSON_Object *admixture, const char node[])
 
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
-		const char *entry = json_array_get_string(entries, i);
-		trie_put(trie, entry);
+		const char *text;
+		if(get_str(json_array_get_object(entries, i), "text", &text))
+		{
+			trie_put(trie, text);
+		}
 	}
 
 	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
 	{
-		void *data;
-		const char *entry = json_array_get_string(updated, i);
-		if(trie_get(trie, entry, &data) != 0)
+		const char *text;
+		if(get_str(json_array_get_object(updated, i), "text", &text))
 		{
-			json_array_append_string(merged, entry);
+			void *data;
+			if(trie_get(trie, text, &data) != 0)
+			{
+				set_str(append_object(merged), "text", text);
+			}
 		}
 	}
 
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
-		json_array_append_string(merged, json_array_get_string(entries, i));
+		JSON_Value *entry = json_array_get_value(entries, i);
+		json_array_append_value(merged, json_value_deep_copy(entry));
 	}
 
 	trie_free(trie);
@@ -1774,7 +1785,7 @@ store_history(JSON_Object *root, const char node[], const hist_t *hist)
 	JSON_Array *entries = add_array(root, node);
 	for(i = hist->pos; i >= 0; i--)
 	{
-		json_array_append_string(entries, hist->items[i]);
+		set_str(append_object(entries), "text", hist->items[i]);
 	}
 }
 
