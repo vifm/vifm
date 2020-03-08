@@ -870,7 +870,11 @@ load_options(JSON_Object *parent)
 	int i, n;
 	for(i = 0, n = json_array_get_count(options); i < n; ++i)
 	{
-		process_set_args(json_array_get_string(options, i), 1, 1);
+		const char *opt_str = json_array_get_string(options, i);
+		if(opt_str != NULL)
+		{
+			process_set_args(opt_str, 1, 1);
+		}
 	}
 }
 
@@ -946,12 +950,14 @@ load_cmds(JSON_Object *root)
 	{
 		const char *name = json_object_get_name(cmds, i);
 		const char *cmd = json_string(json_object_get_value_at(cmds, i));
-
-		char *cmdadd_cmd = format_str("command %s %s", name, cmd);
-		if(cmdadd_cmd != NULL)
+		if(cmd != NULL)
 		{
-			exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
-			free(cmdadd_cmd);
+			char *cmdadd_cmd = format_str("command %s %s", name, cmd);
+			if(cmdadd_cmd != NULL)
+			{
+				exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
+				free(cmdadd_cmd);
+			}
 		}
 	}
 }
@@ -1016,7 +1022,11 @@ load_regs(JSON_Object *root)
 		JSON_Array *files = json_array(json_object_get_value_at(regs, i));
 		for(j = 0, m = json_array_get_count(files); j < m; ++j)
 		{
-			regs_append(name[0], json_array_get_string(files, j));
+			const char *file = json_array_get_string(files, j);
+			if(file != NULL)
+			{
+				regs_append(name[0], file);
+			}
 		}
 	}
 }
@@ -1527,7 +1537,7 @@ merge_commands(JSON_Object *current, JSON_Object *admixture)
 		if(!json_object_has_value(cmds, name))
 		{
 			JSON_Value *value = json_object_get_value_at(updated, i);
-			json_object_set_string(cmds, name, json_string(value));
+			json_object_set_value(cmds, name, json_value_deep_copy(value));
 		}
 	}
 }
