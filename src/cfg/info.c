@@ -2312,8 +2312,9 @@ get_bool(const JSON_Object *obj, const char key[], int *value)
 	if(json_value_get_type(val) == JSONBoolean)
 	{
 		*value = json_value_get_boolean(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value of an integer key from a table to *value.  Returns non-zero if
@@ -2325,8 +2326,9 @@ get_int(const JSON_Object *obj, const char key[], int *value)
 	if(json_value_get_type(val) == JSONNumber)
 	{
 		*value = json_value_get_number(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value of a double key from a table to *value.  Returns non-zero if
@@ -2338,8 +2340,9 @@ get_double(const JSON_Object *obj, const char key[], double *value)
 	if(json_value_get_type(val) == JSONNumber)
 	{
 		*value = json_value_get_number(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value of a string key from a table to *value.  Returns non-zero if
@@ -2351,8 +2354,9 @@ get_str(const JSON_Object *obj, const char key[], const char **value)
 	if(json_value_get_type(val) == JSONString)
 	{
 		*value = json_value_get_string(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value to a boolean key in a table. */
