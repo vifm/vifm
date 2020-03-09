@@ -86,7 +86,7 @@
  *              name = "ptab-name"
  *              options = [ "opt1=val1", "opt2=val2" ]
  *              last-location = "/some/path"
- *              sorting = "1,-2,3"
+ *              sorting = [ 1, -2, 3 ]
  *              preview = false
  *          } ]
  *          active-ptab = 0
@@ -173,7 +173,7 @@ static void load_dir_stack(JSON_Object *root);
 static void load_trash(JSON_Object *root);
 static void load_history(JSON_Object *root, const char node[], hist_t *hist,
 		void (*saver)(const char[]));
-static void get_sort_info(view_t *view, const char line[]);
+static void load_sorting(JSON_Object *ptab, view_t *view);
 static void ensure_history_not_full(hist_t *hist);
 static void get_history(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
@@ -221,7 +221,6 @@ static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void store_sort_info(JSON_Object *obj, const view_t *view);
-static void make_sort_info(const view_t *view, char buf[], size_t buf_size);
 static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static JSON_Array * add_array(JSON_Object *obj, const char key[]);
@@ -236,6 +235,7 @@ static void set_bool(JSON_Object *obj, const char key[], int value);
 static void set_int(JSON_Object *obj, const char key[], int value);
 static void set_double(JSON_Object *obj, const char key[], double value);
 static void set_str(JSON_Object *obj, const char key[], const char value[]);
+static void append_int(JSON_Array *array, int value);
 static void append_dstr(JSON_Array *array, char value[]);
 
 /* Monitor to check for changes of vifminfo file. */
@@ -432,13 +432,20 @@ read_legacy_info_file(const char info_file[])
 		{
 			set_int(splitter, "pos", atoi(line_val));
 		}
-		else if(type == LINE_TYPE_LWIN_SORT)
+		else if(type == LINE_TYPE_LWIN_SORT || type == LINE_TYPE_RWIN_SORT)
 		{
-			set_str(left_tab, "sorting", line_val);
-		}
-		else if(type == LINE_TYPE_RWIN_SORT)
-		{
-			set_str(right_tab, "sorting", line_val);
+			JSON_Object *tab = (type == LINE_TYPE_LWIN_SORT ? left_tab : right_tab);
+			JSON_Array *sorting = add_array(tab, "sorting");
+			char *part = line + 1, *state = NULL;
+			while((part = split_and_get(part, ',', &state)) != NULL)
+			{
+				char *endptr;
+				int sort_key = strtol(part, &endptr, 10);
+				if(*endptr == '\0')
+				{
+					append_int(sorting, sort_key);
+				}
+			}
 		}
 		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
@@ -793,11 +800,7 @@ load_ptab(JSON_Object *ptab, view_t *view, int reread)
 	load_options(ptab);
 	curr_view = v;
 
-	const char *sorting;
-	if(get_str(ptab, "sorting", &sorting))
-	{
-		get_sort_info(view, sorting);
-	}
+	load_sorting(ptab, view);
 }
 
 /* Loads directory history of a view from JSON. */
@@ -1093,30 +1096,32 @@ load_history(JSON_Object *root, const char node[], hist_t *hist,
 	}
 }
 
-/* Parses sort description line of the view and initialized its sort field. */
+/* Loads view sorting from JSON. */
 static void
-get_sort_info(view_t *view, const char line[])
+load_sorting(JSON_Object *ptab, view_t *view)
 {
+	JSON_Array *sorting = json_object_get_array(ptab, "sorting");
+	if(sorting == NULL)
+	{
+		return;
+	}
+
 	signed char *const sort = curr_stats.restart_in_progress
 	                        ? ui_view_sort_list_get(view, view->sort)
 	                        : view->sort;
 
+	int i, n;
 	int j = 0;
-	while(*line != '\0' && j < SK_COUNT)
+	for(i = 0, n = json_array_get_count(sorting); i < n && i < SK_COUNT; ++i)
 	{
-		char *endptr;
-		const int sort_opt = strtol(line, &endptr, 10);
-		if(endptr != line)
+		JSON_Value *val = json_array_get_value(sorting, i);
+		if(json_value_get_type(val) == JSONNumber)
 		{
-			line = endptr;
-			view->sort_g[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_opt));
+			int sort_key = json_value_get_number(val);
+			view->sort_g[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_key));
 		}
-		else
-		{
-			line++;
-		}
-		line = skip_char(line, ',');
 	}
+
 	memset(&view->sort_g[j], SK_NONE, sizeof(view->sort_g) - j);
 	if(j == 0)
 	{
@@ -2204,29 +2209,12 @@ escape_spaces(const char str[])
 static void
 store_sort_info(JSON_Object *obj, const view_t *view)
 {
-	char buf[SK_LAST*5 + 1];
-	make_sort_info(view, buf, sizeof(buf));
-
-	set_str(obj, "sorting", buf);
-}
-
-/* Builds a string describing sorting state of a view in the buffer. */
-static void
-make_sort_info(const view_t *view, char buf[], size_t buf_size)
-{
-	size_t len = 0U;
-
+	int i = 0;
+	JSON_Array *sorting = add_array(obj, "sorting");
 	const signed char *const sort = ui_view_sort_list_get(view, view->sort_g);
-
-	int i = -1;
-	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)
+	while(i < SK_COUNT && abs(sort[i]) <= SK_LAST)
 	{
-		int is_last_option = i >= SK_COUNT - 1 || abs(sort[i + 1]) > SK_LAST;
-
-		char piece[10];
-		snprintf(piece, sizeof(piece), "%d%s", sort[i], is_last_option ? "" : ",");
-
-		sstrappend(buf, &len, buf_size, piece);
+		append_int(sorting, sort[i++]);
 	}
 }
 
@@ -2385,6 +2373,13 @@ static void
 set_str(JSON_Object *obj, const char key[], const char value[])
 {
 	json_object_set_string(obj, key, value);
+}
+
+/* Appends an integer to an array. */
+static void
+append_int(JSON_Array *array, int value)
+{
+	json_array_append_number(array, value);
 }
 
 /* Appends value of a dynamically allocated string to an array, freeing the
