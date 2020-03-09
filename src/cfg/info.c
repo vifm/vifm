@@ -181,30 +181,30 @@ static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int merge);
 TSTATIC JSON_Value * serialize_state(void);
-static void merge_states(JSON_Object *current, JSON_Object *admixture);
-static void merge_tabs(JSON_Object *current, JSON_Object *admixture);
-static void merge_dhistory(JSON_Object *current, JSON_Object *admixture,
+static void merge_states(JSON_Object *current, const JSON_Object *admixture);
+static void merge_tabs(JSON_Object *current, const JSON_Object *admixture);
+static void merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
 		const view_t *view);
-static void merge_assocs(JSON_Object *current, JSON_Object *admixture,
+static void merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 		const char node[], assoc_list_t *assocs);
-static void merge_commands(JSON_Object *current, JSON_Object *admixture);
-static void merge_marks(JSON_Object *current, JSON_Object *admixture);
-static void merge_bmarks(JSON_Object *current, JSON_Object *admixture);
-static void merge_history(JSON_Object *current, JSON_Object *admixture,
+static void merge_commands(JSON_Object *current, const JSON_Object *admixture);
+static void merge_marks(JSON_Object *current, const JSON_Object *admixture);
+static void merge_bmarks(JSON_Object *current, const JSON_Object *admixture);
+static void merge_history(JSON_Object *current, const JSON_Object *admixture,
 		const char node[]);
-static void merge_regs(JSON_Object *current, JSON_Object *admixture);
-static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
-static void merge_trash(JSON_Object *current, JSON_Object *admixture);
+static void merge_regs(JSON_Object *current, const JSON_Object *admixture);
+static void merge_dir_stack(JSON_Object *current, const JSON_Object *admixture);
+static void merge_trash(JSON_Object *current, const JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab, const char name[],
 		const tab_layout_t *layout, view_t *left, view_t *right);
 static void store_pane(JSON_Object *pane, view_t *view, int right);
 static void store_ptab(JSON_Object *ptab, const char name[], int preview,
 		view_t *view);
-static void store_filters(JSON_Object *view_data, view_t *view);
+static void store_filters(JSON_Object *view_data, const view_t *view);
 static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
 static void store_global_options(JSON_Object *root);
-static void store_view_options(JSON_Object *parent, view_t *view);
+static void store_view_options(JSON_Object *parent, const view_t *view);
 static void store_assocs(JSON_Object *root, const char node[],
 		assoc_list_t *assocs);
 static void store_cmds(JSON_Object *root);
@@ -1358,7 +1358,7 @@ serialize_state(void)
 /* Adds parts of admixture to current state to avoid losing state stored by
  * other instances. */
 static void
-merge_states(JSON_Object *current, JSON_Object *admixture)
+merge_states(JSON_Object *current, const JSON_Object *admixture)
 {
 	merge_tabs(current, admixture);
 
@@ -1420,7 +1420,7 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 /* Merges two sets of tabs if there is only one tab at each level (global and
  * pane). */
 static void
-merge_tabs(JSON_Object *current, JSON_Object *admixture)
+merge_tabs(JSON_Object *current, const JSON_Object *admixture)
 {
 	if(!(cfg.vifm_info & VINFO_DHISTORY))
 	{
@@ -1463,7 +1463,8 @@ merge_tabs(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two directory histories. */
 static void
-merge_dhistory(JSON_Object *current, JSON_Object *admixture, const view_t *view)
+merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
+		const view_t *view)
 {
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
@@ -1505,8 +1506,8 @@ merge_dhistory(JSON_Object *current, JSON_Object *admixture, const view_t *view)
 
 /* Merges two lists of associations. */
 static void
-merge_assocs(JSON_Object *current, JSON_Object *admixture, const char node[],
-		assoc_list_t *assocs)
+merge_assocs(JSON_Object *current, const JSON_Object *admixture,
+		const char node[], assoc_list_t *assocs)
 {
 	JSON_Array *entries = json_object_get_array(current, node);
 	JSON_Array *updated = json_object_get_array(admixture, node);
@@ -1530,7 +1531,7 @@ merge_assocs(JSON_Object *current, JSON_Object *admixture, const char node[],
 
 /* Merges two sets of :commands. */
 static void
-merge_commands(JSON_Object *current, JSON_Object *admixture)
+merge_commands(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *cmds = json_object_get_object(current, "cmds");
 	JSON_Object *updated = json_object_get_object(admixture, "cmds");
@@ -1549,7 +1550,7 @@ merge_commands(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two sets of marks. */
 static void
-merge_marks(JSON_Object *current, JSON_Object *admixture)
+merge_marks(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *bmarks = json_object_get_object(current, "marks");
 	JSON_Object *updated = json_object_get_object(admixture, "marks");
@@ -1571,7 +1572,7 @@ merge_marks(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two sets of bookmarks. */
 static void
-merge_bmarks(JSON_Object *current, JSON_Object *admixture)
+merge_bmarks(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *bmarks = json_object_get_object(current, "bmarks");
 	JSON_Object *updated = json_object_get_object(admixture, "bmarks");
@@ -1593,7 +1594,8 @@ merge_bmarks(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two states of a particular kind of history. */
 static void
-merge_history(JSON_Object *current, JSON_Object *admixture, const char node[])
+merge_history(JSON_Object *current, const JSON_Object *admixture,
+		const char node[])
 {
 	JSON_Array *updated = json_object_get_array(admixture, node);
 	if(json_array_get_count(updated) == 0)
@@ -1643,7 +1645,7 @@ merge_history(JSON_Object *current, JSON_Object *admixture, const char node[])
 
 /* Merges two states of registers. */
 static void
-merge_regs(JSON_Object *current, JSON_Object *admixture)
+merge_regs(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *regs = json_object_get_object(current, "regs");
 	JSON_Object *updated = json_object_get_object(admixture, "regs");
@@ -1662,7 +1664,7 @@ merge_regs(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two directory stack states. */
 static void
-merge_dir_stack(JSON_Object *current, JSON_Object *admixture)
+merge_dir_stack(JSON_Object *current, const JSON_Object *admixture)
 {
 	/* Just leave new state as is if was changed since startup. */
 	if(!dir_stack_changed())
@@ -1674,7 +1676,7 @@ merge_dir_stack(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two trash states. */
 static void
-merge_trash(JSON_Object *current, JSON_Object *admixture)
+merge_trash(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Array *trash = json_object_get_array(current, "trash");
 	JSON_Array *updated = json_object_get_array(admixture, "trash");
@@ -1778,7 +1780,7 @@ store_ptab(JSON_Object *ptab, const char name[], int preview, view_t *view)
 
 /* Serializes filters of a view into JSON table. */
 static void
-store_filters(JSON_Object *view_data, view_t *view)
+store_filters(JSON_Object *view_data, const view_t *view)
 {
 	JSON_Object *filters = add_object(view_data, "filters");
 	set_bool(filters, "invert", view->invert);
@@ -1924,7 +1926,7 @@ store_global_options(JSON_Object *root)
 
 /* Serializes view-specific options into JSON table. */
 static void
-store_view_options(JSON_Object *parent, view_t *view)
+store_view_options(JSON_Object *parent, const view_t *view)
 {
 	JSON_Array *options = add_array(parent, "options");
 
