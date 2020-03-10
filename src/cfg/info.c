@@ -714,11 +714,9 @@ load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
 	{
 		if(layout.active_pane == 1)
 		{
-			/* TODO: why is this not the last statement in the block? */
-			ui_views_update_titles();
-
 			curr_view = &rwin;
 			other_view = &lwin;
+			ui_views_update_titles();
 		}
 	}
 	if(get_bool(gtab, "preview", &layout.preview) && apply)
