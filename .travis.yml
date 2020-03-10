@@ -1,7 +1,6 @@
 language: c
-sudo: false
 
-matrix:
+jobs:
   include:
     - os: linux
       compiler: gcc
