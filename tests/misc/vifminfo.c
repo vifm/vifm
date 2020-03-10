@@ -1,13 +1,16 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* stat */
+#include <sys/time.h> /* timeval utimes() */
 #include <unistd.h> /* stat() */
 
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
+#include <string.h> /* memset() */
 
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
+#include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/matchers.h"
@@ -16,6 +19,7 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filetype.h"
 #include "../../src/opt_handlers.h"
+#include "../../src/status.h"
 
 #include "utils.h"
 
@@ -26,6 +30,8 @@ SETUP()
 	curr_view = &lwin;
 
 	cfg_resize_histories(10);
+
+	cfg.vifm_info = 0;
 }
 
 TEARDOWN()
@@ -34,6 +40,8 @@ TEARDOWN()
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
+
+	cfg.vifm_info = 0;
 }
 
 TEST(view_sorting_is_read_from_vifminfo)
@@ -209,6 +217,130 @@ TEST(empty_vifminfo_option_produces_empty_state)
 
 	free(as_string);
 	json_value_free(value);
+}
+
+TEST(histories_are_merged_correctly)
+{
+	cfg.vifm_info = VINFO_CHISTORY | VINFO_SHISTORY | VINFO_PHISTORY
+	              | VINFO_FHISTORY;
+
+	hists_commands_save("command0");
+	hists_commands_save("command1");
+	hists_search_save("search0");
+	hists_search_save("search1");
+	hists_prompt_save("prompt0");
+	hists_prompt_save("prompt1");
+	hists_filter_save("lfilter0");
+	hists_filter_save("lfilter1");
+
+	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
+
+	/* First time, no merging is necessary. */
+	write_info_file();
+
+	hists_commands_save("command2");
+	hists_search_save("search2");
+	hists_prompt_save("prompt2");
+	hists_filter_save("lfilter2");
+
+	/* Second time, touched vifminfo.json file, merging is necessary. */
+#ifndef _WIN32
+	struct timeval tvs[2] = {};
+	assert_success(utimes(SANDBOX_PATH "/vifminfo.json", tvs));
+#endif
+	write_info_file();
+
+	/* Clear histories. */
+	cfg_resize_histories(0);
+	cfg_resize_histories(10);
+
+	read_info_file(0);
+
+	assert_int_equal(2, curr_stats.cmd_hist.pos);
+	assert_int_equal(2, curr_stats.search_hist.pos);
+	assert_int_equal(2, curr_stats.prompt_hist.pos);
+	assert_int_equal(2, curr_stats.filter_hist.pos);
+	assert_string_equal("command2", curr_stats.cmd_hist.items[0]);
+	assert_string_equal("command1", curr_stats.cmd_hist.items[1]);
+	assert_string_equal("command0", curr_stats.cmd_hist.items[2]);
+	assert_string_equal("search2", curr_stats.search_hist.items[0]);
+	assert_string_equal("search1", curr_stats.search_hist.items[1]);
+	assert_string_equal("search0", curr_stats.search_hist.items[2]);
+	assert_string_equal("prompt2", curr_stats.prompt_hist.items[0]);
+	assert_string_equal("prompt1", curr_stats.prompt_hist.items[1]);
+	assert_string_equal("prompt0", curr_stats.prompt_hist.items[2]);
+	assert_string_equal("lfilter2", curr_stats.filter_hist.items[0]);
+	assert_string_equal("lfilter1", curr_stats.filter_hist.items[1]);
+	assert_string_equal("lfilter0", curr_stats.filter_hist.items[2]);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
+}
+
+TEST(view_sorting_round_trip)
+{
+	cfg.vifm_info = VINFO_TUI;
+
+	opt_handlers_setup();
+	lwin.columns = columns_create();
+	rwin.columns = columns_create();
+	columns_setup_column(SK_BY_NAME);
+	columns_setup_column(SK_BY_SIZE);
+	columns_setup_column(SK_BY_NITEMS);
+	columns_setup_column(SK_BY_EXTENSION);
+	columns_setup_column(SK_BY_DIR);
+	columns_setup_column(SK_BY_FILEEXT);
+	columns_setup_column(SK_BY_TARGET);
+	columns_setup_column(SK_BY_TYPE);
+	columns_setup_column(SK_BY_INAME);
+	columns_setup_column(SK_BY_TIME_CHANGED);
+
+	write_info_file();
+	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
+	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
+	read_info_file(0);
+
+	assert_int_equal(SK_BY_NAME, lwin.sort_g[0]);
+	assert_int_equal(SK_BY_NAME, rwin.sort_g[0]);
+
+	lwin.sort_g[0] = SK_BY_NITEMS;
+	lwin.sort_g[1] = -SK_BY_EXTENSION;
+	lwin.sort_g[2] = SK_BY_SIZE;
+	lwin.sort_g[3] = -SK_BY_NAME;
+	lwin.sort_g[4] = SK_BY_DIR;
+
+	rwin.sort_g[0] = -SK_BY_TIME_CHANGED;
+	rwin.sort_g[1] = SK_BY_TARGET;
+	rwin.sort_g[2] = SK_BY_INAME;
+	rwin.sort_g[3] = SK_BY_FILEEXT;
+	rwin.sort_g[4] = -SK_BY_TYPE;
+	rwin.sort_g[5] = -SK_BY_NAME;
+
+	write_info_file();
+	memset(lwin.sort_g, SK_NONE, sizeof(lwin.sort_g));
+	memset(rwin.sort_g, SK_NONE, sizeof(rwin.sort_g));
+	read_info_file(0);
+
+	assert_int_equal(SK_BY_NITEMS, lwin.sort_g[0]);
+	assert_int_equal(-SK_BY_EXTENSION, lwin.sort_g[1]);
+	assert_int_equal(SK_BY_SIZE, lwin.sort_g[2]);
+	assert_int_equal(-SK_BY_NAME, lwin.sort_g[3]);
+	assert_int_equal(SK_BY_DIR, lwin.sort_g[4]);
+
+	assert_int_equal(-SK_BY_TIME_CHANGED, rwin.sort_g[0]);
+	assert_int_equal(SK_BY_TARGET, rwin.sort_g[1]);
+	assert_int_equal(SK_BY_INAME, rwin.sort_g[2]);
+	assert_int_equal(SK_BY_FILEEXT, rwin.sort_g[3]);
+	assert_int_equal(-SK_BY_TYPE, rwin.sort_g[4]);
+	assert_int_equal(-SK_BY_NAME, rwin.sort_g[5]);
+
+	opt_handlers_teardown();
+	columns_free(lwin.columns);
+	lwin.columns = NULL;
+	columns_free(rwin.columns);
+	rwin.columns = NULL;
+	columns_teardown();
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

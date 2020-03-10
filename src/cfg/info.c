@@ -85,8 +85,8 @@
  *              }
  *              name = "ptab-name"
  *              options = [ "opt1=val1", "opt2=val2" ]
- *              restore-last-location = true
- *              sorting = "1,-2,3"
+ *              last-location = "/some/path"
+ *              sorting = [ 1, -2, 3 ]
  *              preview = false
  *          } ]
  *          active-ptab = 0
@@ -121,7 +121,7 @@
  *      }
  *  }
  *  cmds = {
- *      cmd-name = "echo hi"
+ *      "cmd-name" = "echo hi"
  *  }
  *  viewers = [ {
  *      matchers = "{*.jpg}"
@@ -142,10 +142,10 @@
  *      right-file = "right-file"
  *  } ]
  *  options = [ "opt1=val1", "opt2=val2" ]
- *  cmd-hist = [ "item1", "item2" ]
- *  search-hist = [ "item1", "item2" ]
- *  prompt-hist = [ "item1", "item2" ]
- *  lfilt-hist = [ "item1", "item2" ]
+ *  cmd-hist = [ { text = "item1" } ]
+ *  search-hist = [ { text = "item1" } ]
+ *  prompt-hist = [ { text = "item1" } ]
+ *  lfilt-hist = [ { text = "item1" } ]
  *  active-gtab = 0
  *  use-term-multiplexer = true
  *  color-scheme = "almost-default"
@@ -173,9 +173,7 @@ static void load_dir_stack(JSON_Object *root);
 static void load_trash(JSON_Object *root);
 static void load_history(JSON_Object *root, const char node[], hist_t *hist,
 		void (*saver)(const char[]));
-static void get_sort_info(view_t *view, const char line[]);
-static void append_to_history(hist_t *hist, void (*saver)(const char[]),
-		const char item[]);
+static void load_sorting(JSON_Object *ptab, view_t *view);
 static void ensure_history_not_full(hist_t *hist);
 static void get_history(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
@@ -183,30 +181,30 @@ static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int merge);
 TSTATIC JSON_Value * serialize_state(void);
-static void merge_states(JSON_Object *current, JSON_Object *admixture);
-static void merge_tabs(JSON_Object *current, JSON_Object *admixture);
-static void merge_dhistory(JSON_Object *current, JSON_Object *admixture,
+static void merge_states(JSON_Object *current, const JSON_Object *admixture);
+static void merge_tabs(JSON_Object *current, const JSON_Object *admixture);
+static void merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
 		const view_t *view);
-static void merge_assocs(JSON_Object *current, JSON_Object *admixture,
+static void merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 		const char node[], assoc_list_t *assocs);
-static void merge_commands(JSON_Object *current, JSON_Object *admixture);
-static void merge_marks(JSON_Object *current, JSON_Object *admixture);
-static void merge_bmarks(JSON_Object *current, JSON_Object *admixture);
-static void merge_history(JSON_Object *current, JSON_Object *admixture,
+static void merge_commands(JSON_Object *current, const JSON_Object *admixture);
+static void merge_marks(JSON_Object *current, const JSON_Object *admixture);
+static void merge_bmarks(JSON_Object *current, const JSON_Object *admixture);
+static void merge_history(JSON_Object *current, const JSON_Object *admixture,
 		const char node[]);
-static void merge_regs(JSON_Object *current, JSON_Object *admixture);
-static void merge_dir_stack(JSON_Object *current, JSON_Object *admixture);
-static void merge_trash(JSON_Object *current, JSON_Object *admixture);
+static void merge_regs(JSON_Object *current, const JSON_Object *admixture);
+static void merge_dir_stack(JSON_Object *current, const JSON_Object *admixture);
+static void merge_trash(JSON_Object *current, const JSON_Object *admixture);
 static void store_gtab(JSON_Object *gtab, const char name[],
 		const tab_layout_t *layout, view_t *left, view_t *right);
 static void store_pane(JSON_Object *pane, view_t *view, int right);
 static void store_ptab(JSON_Object *ptab, const char name[], int preview,
 		view_t *view);
-static void store_filters(JSON_Object *view_data, view_t *view);
+static void store_filters(JSON_Object *view_data, const view_t *view);
 static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
 static void store_global_options(JSON_Object *root);
-static void store_view_options(JSON_Object *parent, view_t *view);
+static void store_view_options(JSON_Object *parent, const view_t *view);
 static void store_assocs(JSON_Object *root, const char node[],
 		assoc_list_t *assocs);
 static void store_cmds(JSON_Object *root);
@@ -223,7 +221,6 @@ static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void store_sort_info(JSON_Object *obj, const view_t *view);
-static void make_sort_info(const view_t *view, char buf[], size_t buf_size);
 static int read_optional_number(FILE *f);
 static int read_number(const char line[], long *value);
 static JSON_Array * add_array(JSON_Object *obj, const char key[]);
@@ -238,6 +235,7 @@ static void set_bool(JSON_Object *obj, const char key[], int value);
 static void set_int(JSON_Object *obj, const char key[], int value);
 static void set_double(JSON_Object *obj, const char key[], double value);
 static void set_str(JSON_Object *obj, const char key[], const char value[]);
+static void append_int(JSON_Array *array, int value);
 static void append_dstr(JSON_Array *array, char value[]);
 
 /* Monitor to check for changes of vifminfo file. */
@@ -323,6 +321,7 @@ read_legacy_info_file(const char info_file[])
 	JSON_Array *left_options = add_array(left_tab, "options");
 	JSON_Array *right_options = add_array(right_tab, "options");
 
+	char *last_location = NULL;
 	char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
@@ -433,13 +432,20 @@ read_legacy_info_file(const char info_file[])
 		{
 			set_int(splitter, "pos", atoi(line_val));
 		}
-		else if(type == LINE_TYPE_LWIN_SORT)
+		else if(type == LINE_TYPE_LWIN_SORT || type == LINE_TYPE_RWIN_SORT)
 		{
-			set_str(left_tab, "sorting", line_val);
-		}
-		else if(type == LINE_TYPE_RWIN_SORT)
-		{
-			set_str(right_tab, "sorting", line_val);
+			JSON_Object *tab = (type == LINE_TYPE_LWIN_SORT ? left_tab : right_tab);
+			JSON_Array *sorting = add_array(tab, "sorting");
+			char *part = line + 1, *state = NULL;
+			while((part = split_and_get(part, ',', &state)) != NULL)
+			{
+				char *endptr;
+				int sort_key = strtol(part, &endptr, 10);
+				if(*endptr == '\0')
+				{
+					append_int(sorting, sort_key);
+				}
+			}
 		}
 		else if(type == LINE_TYPE_LWIN_HIST || type == LINE_TYPE_RWIN_HIST)
 		{
@@ -447,7 +453,7 @@ read_legacy_info_file(const char info_file[])
 			{
 				JSON_Object *ptab = (type == LINE_TYPE_LWIN_HIST)
 				                  ? left_tab : right_tab;
-				set_bool(ptab, "restore-last-location", 1);
+				set_str(ptab, "last-location", last_location);
 			}
 			else if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -459,23 +465,25 @@ read_legacy_info_file(const char info_file[])
 				set_str(entry, "dir", line_val);
 				set_str(entry, "file", line2);
 				set_int(entry, "relpos", rel_pos);
+
+				replace_string(&last_location, line_val);
 			}
 		}
 		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
-			json_array_append_string(cmd_hist, line_val);
+			set_str(append_object(cmd_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
-			json_array_append_string(search_hist, line_val);
+			set_str(append_object(search_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
-			json_array_append_string(prompt_hist, line_val);
+			set_str(append_object(prompt_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_FILTER_HIST)
 		{
-			json_array_append_string(lfilt_hist, line_val);
+			set_str(append_object(lfilt_hist), "text", line_val);
 		}
 		else if(type == LINE_TYPE_DIR_STACK)
 		{
@@ -566,6 +574,7 @@ read_legacy_info_file(const char info_file[])
 	free(line2);
 	free(line3);
 	free(line4);
+	free(last_location);
 	fclose(fp);
 
 	return root_value;
@@ -705,11 +714,9 @@ load_gtab_layout(const JSON_Object *gtab, int apply, int reread)
 	{
 		if(layout.active_pane == 1)
 		{
-			/* TODO: why is this not the last statement in the block? */
-			ui_views_update_titles();
-
 			curr_view = &rwin;
 			other_view = &lwin;
+			ui_views_update_titles();
 		}
 	}
 	if(get_bool(gtab, "preview", &layout.preview) && apply)
@@ -791,11 +798,7 @@ load_ptab(JSON_Object *ptab, view_t *view, int reread)
 	load_options(ptab);
 	curr_view = v;
 
-	const char *sorting;
-	if(get_str(ptab, "sorting", &sorting))
-	{
-		get_sort_info(view, sorting);
-	}
+	load_sorting(ptab, view);
 }
 
 /* Loads directory history of a view from JSON. */
@@ -805,7 +808,6 @@ load_dhistory(JSON_Object *info, view_t *view, int reread)
 	JSON_Array *history = json_object_get_array(info, "history");
 
 	int i, n;
-	const char *last_dir = NULL;
 	for(i = 0, n = json_array_get_count(history); i < n; ++i)
 	{
 		JSON_Object *entry = json_array_get_object(history, i);
@@ -816,17 +818,13 @@ load_dhistory(JSON_Object *info, view_t *view, int reread)
 				get_int(entry, "relpos", &rel_pos))
 		{
 			get_history(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
-			last_dir = dir;
 		}
 	}
 
-	int restore_last_location;
-	if(get_bool(info, "restore-last-location", &restore_last_location))
+	const char *last_location;
+	if(!reread && get_str(info, "last-location", &last_location))
 	{
-		if(!reread && restore_last_location && last_dir != NULL)
-		{
-			copy_str(view->curr_dir, sizeof(view->curr_dir), last_dir);
-		}
+		copy_str(view->curr_dir, sizeof(view->curr_dir), last_location);
 	}
 }
 
@@ -873,7 +871,11 @@ load_options(JSON_Object *parent)
 	int i, n;
 	for(i = 0, n = json_array_get_count(options); i < n; ++i)
 	{
-		process_set_args(json_array_get_string(options, i), 1, 1);
+		const char *opt_str = json_array_get_string(options, i);
+		if(opt_str != NULL)
+		{
+			process_set_args(opt_str, 1, 1);
+		}
 	}
 }
 
@@ -949,12 +951,14 @@ load_cmds(JSON_Object *root)
 	{
 		const char *name = json_object_get_name(cmds, i);
 		const char *cmd = json_string(json_object_get_value_at(cmds, i));
-
-		char *cmdadd_cmd = format_str("command %s %s", name, cmd);
-		if(cmdadd_cmd != NULL)
+		if(cmd != NULL)
 		{
-			exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
-			free(cmdadd_cmd);
+			char *cmdadd_cmd = format_str("command %s %s", name, cmd);
+			if(cmdadd_cmd != NULL)
+			{
+				exec_commands(cmdadd_cmd, curr_view, CIT_COMMAND);
+				free(cmdadd_cmd);
+			}
 		}
 	}
 }
@@ -1019,7 +1023,11 @@ load_regs(JSON_Object *root)
 		JSON_Array *files = json_array(json_object_get_value_at(regs, i));
 		for(j = 0, m = json_array_get_count(files); j < m; ++j)
 		{
-			regs_append(name[0], json_array_get_string(files, j));
+			const char *file = json_array_get_string(files, j);
+			if(file != NULL)
+			{
+				regs_append(name[0], file);
+			}
 		}
 	}
 }
@@ -1076,35 +1084,42 @@ load_history(JSON_Object *root, const char node[], hist_t *hist,
 	int i, n;
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
-		const char *item = json_array_get_string(entries, i);
-		append_to_history(&curr_stats.filter_hist, saver, item);
+		JSON_Object *entry = json_array_get_object(entries, i);
+		const char *text;
+		if(get_str(entry, "text", &text))
+		{
+			ensure_history_not_full(hist);
+			saver(text);
+		}
 	}
 }
 
-/* Parses sort description line of the view and initialized its sort field. */
+/* Loads view sorting from JSON. */
 static void
-get_sort_info(view_t *view, const char line[])
+load_sorting(JSON_Object *ptab, view_t *view)
 {
+	JSON_Array *sorting = json_object_get_array(ptab, "sorting");
+	if(sorting == NULL)
+	{
+		return;
+	}
+
 	signed char *const sort = curr_stats.restart_in_progress
 	                        ? ui_view_sort_list_get(view, view->sort)
 	                        : view->sort;
 
+	int i, n;
 	int j = 0;
-	while(*line != '\0' && j < SK_COUNT)
+	for(i = 0, n = json_array_get_count(sorting); i < n && i < SK_COUNT; ++i)
 	{
-		char *endptr;
-		const int sort_opt = strtol(line, &endptr, 10);
-		if(endptr != line)
+		JSON_Value *val = json_array_get_value(sorting, i);
+		if(json_value_get_type(val) == JSONNumber)
 		{
-			line = endptr;
-			view->sort_g[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_opt));
+			int sort_key = json_value_get_number(val);
+			view->sort_g[j++] = MIN(SK_LAST, MAX(-SK_LAST, sort_key));
 		}
-		else
-		{
-			line++;
-		}
-		line = skip_char(line, ',');
 	}
+
 	memset(&view->sort_g[j], SK_NONE, sizeof(view->sort_g) - j);
 	if(j == 0)
 	{
@@ -1113,15 +1128,6 @@ get_sort_info(view_t *view, const char line[])
 	memcpy(sort, view->sort_g, sizeof(view->sort));
 
 	fview_sorting_updated(view);
-}
-
-/* Appends item to the hist extending the history to fit it if needed. */
-static void
-append_to_history(hist_t *hist, void (*saver)(const char[]),
-		const char item[])
-{
-	ensure_history_not_full(hist);
-	saver(item);
 }
 
 /* Checks that history has at least one more empty slot or extends history by
@@ -1350,7 +1356,7 @@ serialize_state(void)
 /* Adds parts of admixture to current state to avoid losing state stored by
  * other instances. */
 static void
-merge_states(JSON_Object *current, JSON_Object *admixture)
+merge_states(JSON_Object *current, const JSON_Object *admixture)
 {
 	merge_tabs(current, admixture);
 
@@ -1412,7 +1418,7 @@ merge_states(JSON_Object *current, JSON_Object *admixture)
 /* Merges two sets of tabs if there is only one tab at each level (global and
  * pane). */
 static void
-merge_tabs(JSON_Object *current, JSON_Object *admixture)
+merge_tabs(JSON_Object *current, const JSON_Object *admixture)
 {
 	if(!(cfg.vifm_info & VINFO_DHISTORY))
 	{
@@ -1455,7 +1461,8 @@ merge_tabs(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two directory histories. */
 static void
-merge_dhistory(JSON_Object *current, JSON_Object *admixture, const view_t *view)
+merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
+		const view_t *view)
 {
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
@@ -1497,8 +1504,8 @@ merge_dhistory(JSON_Object *current, JSON_Object *admixture, const view_t *view)
 
 /* Merges two lists of associations. */
 static void
-merge_assocs(JSON_Object *current, JSON_Object *admixture, const char node[],
-		assoc_list_t *assocs)
+merge_assocs(JSON_Object *current, const JSON_Object *admixture,
+		const char node[], assoc_list_t *assocs)
 {
 	JSON_Array *entries = json_object_get_array(current, node);
 	JSON_Array *updated = json_object_get_array(admixture, node);
@@ -1522,7 +1529,7 @@ merge_assocs(JSON_Object *current, JSON_Object *admixture, const char node[],
 
 /* Merges two sets of :commands. */
 static void
-merge_commands(JSON_Object *current, JSON_Object *admixture)
+merge_commands(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *cmds = json_object_get_object(current, "cmds");
 	JSON_Object *updated = json_object_get_object(admixture, "cmds");
@@ -1534,14 +1541,14 @@ merge_commands(JSON_Object *current, JSON_Object *admixture)
 		if(!json_object_has_value(cmds, name))
 		{
 			JSON_Value *value = json_object_get_value_at(updated, i);
-			json_object_set_string(cmds, name, json_string(value));
+			json_object_set_value(cmds, name, json_value_deep_copy(value));
 		}
 	}
 }
 
 /* Merges two sets of marks. */
 static void
-merge_marks(JSON_Object *current, JSON_Object *admixture)
+merge_marks(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *bmarks = json_object_get_object(current, "marks");
 	JSON_Object *updated = json_object_get_object(admixture, "marks");
@@ -1563,7 +1570,7 @@ merge_marks(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two sets of bookmarks. */
 static void
-merge_bmarks(JSON_Object *current, JSON_Object *admixture)
+merge_bmarks(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *bmarks = json_object_get_object(current, "bmarks");
 	JSON_Object *updated = json_object_get_object(admixture, "bmarks");
@@ -1585,7 +1592,8 @@ merge_bmarks(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two states of a particular kind of history. */
 static void
-merge_history(JSON_Object *current, JSON_Object *admixture, const char node[])
+merge_history(JSON_Object *current, const JSON_Object *admixture,
+		const char node[])
 {
 	JSON_Array *updated = json_object_get_array(admixture, node);
 	if(json_array_get_count(updated) == 0)
@@ -1602,23 +1610,30 @@ merge_history(JSON_Object *current, JSON_Object *admixture, const char node[])
 
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
-		const char *entry = json_array_get_string(entries, i);
-		trie_put(trie, entry);
+		const char *text;
+		if(get_str(json_array_get_object(entries, i), "text", &text))
+		{
+			trie_put(trie, text);
+		}
 	}
 
 	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
 	{
-		void *data;
-		const char *entry = json_array_get_string(updated, i);
-		if(trie_get(trie, entry, &data) != 0)
+		const char *text;
+		if(get_str(json_array_get_object(updated, i), "text", &text))
 		{
-			json_array_append_string(merged, entry);
+			void *data;
+			if(trie_get(trie, text, &data) != 0)
+			{
+				set_str(append_object(merged), "text", text);
+			}
 		}
 	}
 
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
-		json_array_append_string(merged, json_array_get_string(entries, i));
+		JSON_Value *entry = json_array_get_value(entries, i);
+		json_array_append_value(merged, json_value_deep_copy(entry));
 	}
 
 	trie_free(trie);
@@ -1628,7 +1643,7 @@ merge_history(JSON_Object *current, JSON_Object *admixture, const char node[])
 
 /* Merges two states of registers. */
 static void
-merge_regs(JSON_Object *current, JSON_Object *admixture)
+merge_regs(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *regs = json_object_get_object(current, "regs");
 	JSON_Object *updated = json_object_get_object(admixture, "regs");
@@ -1647,7 +1662,7 @@ merge_regs(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two directory stack states. */
 static void
-merge_dir_stack(JSON_Object *current, JSON_Object *admixture)
+merge_dir_stack(JSON_Object *current, const JSON_Object *admixture)
 {
 	/* Just leave new state as is if was changed since startup. */
 	if(!dir_stack_changed())
@@ -1659,7 +1674,7 @@ merge_dir_stack(JSON_Object *current, JSON_Object *admixture)
 
 /* Merges two trash states. */
 static void
-merge_trash(JSON_Object *current, JSON_Object *admixture)
+merge_trash(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Array *trash = json_object_get_array(current, "trash");
 	JSON_Array *updated = json_object_get_array(admixture, "trash");
@@ -1763,7 +1778,7 @@ store_ptab(JSON_Object *ptab, const char name[], int preview, view_t *view)
 
 /* Serializes filters of a view into JSON table. */
 static void
-store_filters(JSON_Object *view_data, view_t *view)
+store_filters(JSON_Object *view_data, const view_t *view)
 {
 	JSON_Object *filters = add_object(view_data, "filters");
 	set_bool(filters, "invert", view->invert);
@@ -1785,7 +1800,7 @@ store_history(JSON_Object *root, const char node[], const hist_t *hist)
 	JSON_Array *entries = add_array(root, node);
 	for(i = hist->pos; i >= 0; i--)
 	{
-		json_array_append_string(entries, hist->items[i]);
+		set_str(append_object(entries), "text", hist->items[i]);
 	}
 }
 
@@ -1909,7 +1924,7 @@ store_global_options(JSON_Object *root)
 
 /* Serializes view-specific options into JSON table. */
 static void
-store_view_options(JSON_Object *parent, view_t *view)
+store_view_options(JSON_Object *parent, const view_t *view)
 {
 	JSON_Array *options = add_array(parent, "options");
 
@@ -2138,7 +2153,10 @@ store_dhistory(JSON_Object *obj, view_t *view)
 		set_int(entry, "relpos", view->history[i].rel_pos);
 	}
 
-	set_bool(obj, "restore-last-location", cfg.vifm_info & VINFO_SAVEDIRS);
+	if(cfg.vifm_info & VINFO_SAVEDIRS)
+	{
+		set_str(obj, "last-location", flist_get_dir(view));
+	}
 }
 
 /* Reads line from configuration file.  Takes care of trailing newline character
@@ -2191,29 +2209,12 @@ escape_spaces(const char str[])
 static void
 store_sort_info(JSON_Object *obj, const view_t *view)
 {
-	char buf[SK_LAST*5 + 1];
-	make_sort_info(view, buf, sizeof(buf));
-
-	set_str(obj, "sorting", buf);
-}
-
-/* Builds a string describing sorting state of a view in the buffer. */
-static void
-make_sort_info(const view_t *view, char buf[], size_t buf_size)
-{
-	size_t len = 0U;
-
+	int i = 0;
+	JSON_Array *sorting = add_array(obj, "sorting");
 	const signed char *const sort = ui_view_sort_list_get(view, view->sort_g);
-
-	int i = -1;
-	while(++i < SK_COUNT && abs(sort[i]) <= SK_LAST)
+	while(i < SK_COUNT && abs(sort[i]) <= SK_LAST)
 	{
-		int is_last_option = i >= SK_COUNT - 1 || abs(sort[i + 1]) > SK_LAST;
-
-		char piece[10];
-		snprintf(piece, sizeof(piece), "%d%s", sort[i], is_last_option ? "" : ",");
-
-		sstrappend(buf, &len, buf_size, piece);
+		append_int(sorting, sort[i++]);
 	}
 }
 
@@ -2299,8 +2300,9 @@ get_bool(const JSON_Object *obj, const char key[], int *value)
 	if(json_value_get_type(val) == JSONBoolean)
 	{
 		*value = json_value_get_boolean(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value of an integer key from a table to *value.  Returns non-zero if
@@ -2312,8 +2314,9 @@ get_int(const JSON_Object *obj, const char key[], int *value)
 	if(json_value_get_type(val) == JSONNumber)
 	{
 		*value = json_value_get_number(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value of a double key from a table to *value.  Returns non-zero if
@@ -2325,8 +2328,9 @@ get_double(const JSON_Object *obj, const char key[], double *value)
 	if(json_value_get_type(val) == JSONNumber)
 	{
 		*value = json_value_get_number(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value of a string key from a table to *value.  Returns non-zero if
@@ -2338,8 +2342,9 @@ get_str(const JSON_Object *obj, const char key[], const char **value)
 	if(json_value_get_type(val) == JSONString)
 	{
 		*value = json_value_get_string(val);
+		return 1;
 	}
-	return (val != NULL);
+	return 0;
 }
 
 /* Assigns value to a boolean key in a table. */
@@ -2368,6 +2373,13 @@ static void
 set_str(JSON_Object *obj, const char key[], const char value[])
 {
 	json_object_set_string(obj, key, value);
+}
+
+/* Appends an integer to an array. */
+static void
+append_int(JSON_Array *array, int value)
+{
+	json_array_append_number(array, value);
 }
 
 /* Appends value of a dynamically allocated string to an array, freeing the
