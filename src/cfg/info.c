@@ -21,6 +21,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
+#include <locale.h> /* setlocale() LC_ALL */
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* FILE fpos_t fclose() fgetpos() fgets() fprintf() fputc()
                       fscanf() fsetpos() snprintf() */
@@ -180,6 +181,8 @@ static void get_history(view_t *view, int reread, const char dir[],
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int merge);
+static char * drop_locale(void);
+static void restore_locale(char locale[]);
 TSTATIC JSON_Value * serialize_state(void);
 static void merge_states(JSON_Object *current, const JSON_Object *admixture);
 static void merge_tabs(JSON_Object *current, const JSON_Object *admixture);
@@ -247,7 +250,10 @@ read_info_file(int reread)
 	char info_file[PATH_MAX + 16];
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
 
+	char *locale = drop_locale();
 	JSON_Value *state = json_parse_file(info_file);
+	restore_locale(locale);
+
 	if(state == NULL)
 	{
 		char legacy_info_file[PATH_MAX + 16];
@@ -1234,6 +1240,7 @@ copy_file(const char src[], const char dst[])
 static void
 update_info_file(const char filename[], int merge)
 {
+	char *locale = drop_locale();
 	JSON_Value *current = serialize_state();
 
 	if(merge)
@@ -1249,6 +1256,34 @@ update_info_file(const char filename[], int merge)
 	}
 
 	json_value_free(current);
+	restore_locale(locale);
+}
+
+/* Replaces current locale with C locale and returns string to be passed to
+ * restore_locale() to get previous state back. */
+static char *
+drop_locale(void)
+{
+	char *current = setlocale(LC_ALL, NULL);
+	if(current != NULL)
+	{
+		current = strdup(current);
+	}
+
+	(void)setlocale(LC_ALL, "C");
+
+	return current;
+}
+
+/* Restores locale state stored by drop_locale(). */
+static void
+restore_locale(char locale[])
+{
+	if(locale != NULL)
+	{
+		(void)setlocale(LC_ALL, locale);
+		free(locale);
+	}
 }
 
 /* Serializes state of current instance into a JSON object.  Returns the
@@ -1769,6 +1804,11 @@ store_ptab(JSON_Object *ptab, const char name[], int preview, view_t *view)
 		store_view_options(ptab, view);
 	}
 
+	if(cfg.vifm_info & VINFO_SAVEDIRS)
+	{
+		set_str(ptab, "last-location", flist_get_dir(view));
+	}
+
 	if(cfg.vifm_info & VINFO_TUI)
 	{
 		store_sort_info(ptab, view);
@@ -2151,11 +2191,6 @@ store_dhistory(JSON_Object *obj, view_t *view)
 		set_str(entry, "dir", view->history[i].dir);
 		set_str(entry, "file", view->history[i].file);
 		set_int(entry, "relpos", view->history[i].rel_pos);
-	}
-
-	if(cfg.vifm_info & VINFO_SAVEDIRS)
-	{
-		set_str(obj, "last-location", flist_get_dir(view));
 	}
 }
 

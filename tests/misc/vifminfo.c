@@ -343,5 +343,21 @@ TEST(view_sorting_round_trip)
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }
 
+TEST(savedirs_works_on_its_own)
+{
+	cfg.vifm_info = VINFO_SAVEDIRS;
+
+	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), "/ldir");
+	copy_str(rwin.curr_dir, sizeof(rwin.curr_dir), "/rdir");
+
+	write_info_file();
+	lwin.curr_dir[0] = '\0';
+	rwin.curr_dir[0] = '\0';
+	read_info_file(0);
+
+	assert_string_equal("/ldir", lwin.curr_dir);
+	assert_string_equal("/rdir", rwin.curr_dir);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
