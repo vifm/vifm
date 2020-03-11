@@ -1769,6 +1769,11 @@ store_ptab(JSON_Object *ptab, const char name[], int preview, view_t *view)
 		store_view_options(ptab, view);
 	}
 
+	if(cfg.vifm_info & VINFO_SAVEDIRS)
+	{
+		set_str(ptab, "last-location", flist_get_dir(view));
+	}
+
 	if(cfg.vifm_info & VINFO_TUI)
 	{
 		store_sort_info(ptab, view);
@@ -2151,11 +2156,6 @@ store_dhistory(JSON_Object *obj, view_t *view)
 		set_str(entry, "dir", view->history[i].dir);
 		set_str(entry, "file", view->history[i].file);
 		set_int(entry, "relpos", view->history[i].rel_pos);
-	}
-
-	if(cfg.vifm_info & VINFO_SAVEDIRS)
-	{
-		set_str(obj, "last-location", flist_get_dir(view));
 	}
 }
 
