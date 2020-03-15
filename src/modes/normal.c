@@ -2007,7 +2007,6 @@ cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 	flist_custom_exclude(curr_view, key_info.count == 1);
 }
 
-/* Redraw with file in bottom of list. */
 void
 modnorm_zb(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -2189,7 +2188,6 @@ cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 	pick_or_move(keys_info, fpos_find_dir_group(curr_view, 1));
 }
 
-/* Redraw with file in top of list. */
 void
 modnorm_zt(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -2201,7 +2199,6 @@ modnorm_zt(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
-/* Redraw with file in center of list. */
 void
 modnorm_zz(key_info_t key_info, keys_info_t *keys_info)
 {

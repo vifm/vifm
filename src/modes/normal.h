@@ -27,13 +27,16 @@ struct view_t;
 /* Initializes normal mode. */
 void modnorm_init(void);
 
-/* Change file attributes (permissions or properties). */
+/* Changes file attributes (permissions or properties). */
 void modnorm_cp(struct view_t *view, key_info_t key_info);
 
+/* Redraws with file in bottom of list. */
 void modnorm_zb(key_info_t key_info, keys_info_t *keys_info);
 
+/* Redraws with file in top of list. */
 void modnorm_zt(key_info_t key_info, keys_info_t *keys_info);
 
+/* Redraws with file in center of list. */
 void modnorm_zz(key_info_t key_info, keys_info_t *keys_info);
 
 /* Centers the splitter. */
