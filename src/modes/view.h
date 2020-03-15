@@ -22,7 +22,7 @@
 struct view_t;
 
 /* Holds state of a single view mode window. */
-typedef struct view_info_t view_info_t;
+typedef struct modview_info_t modview_info_t;
 
 /* Initializes view mode. */
 void view_init_mode(void);
@@ -84,7 +84,7 @@ int view_detached_draw(void);
 const char * view_detached_get_viewer(void);
 
 /* Frees view info.  The parameter can be NULL. */
-void view_info_free(view_info_t *vi);
+void view_info_free(modview_info_t *vi);
 
 #endif /* VIFM__MODES__VIEW_H__ */
 

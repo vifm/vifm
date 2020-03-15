@@ -73,7 +73,7 @@ enum
 };
 
 /* Describes view state and its properties. */
-struct view_info_t
+struct modview_info_t
 {
 	/* Data of the view. */
 	char **lines;     /* List of real lines. */
@@ -117,13 +117,13 @@ enum
 
 static int try_resurrect_detached(const char full_path[], int explore);
 static void try_redraw_explore_view(const view_t *view);
-static void reset_view_info(view_info_t *vi);
-static void init_view_info(view_info_t *vi);
-static void free_view_info(view_info_t *vi);
+static void reset_view_info(modview_info_t *vi);
+static void init_view_info(modview_info_t *vi);
+static void free_view_info(modview_info_t *vi);
 static void redraw(void);
 static void calc_vlines(void);
-static void calc_vlines_wrapped(view_info_t *vi);
-static void calc_vlines_non_wrapped(view_info_t *vi);
+static void calc_vlines_wrapped(modview_info_t *vi);
+static void calc_vlines_non_wrapped(modview_info_t *vi);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
 static void display_error(const char error_msg[]);
@@ -157,10 +157,10 @@ static void cmd_F(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_R(key_info_t key_info, keys_info_t *keys_info);
-static int load_view_data(view_info_t *vi, const char action[],
+static int load_view_data(modview_info_t *vi, const char action[],
 		const char file_to_view[], int silent);
-static int get_view_data(view_info_t *vi, const char file_to_view[]);
-static void replace_vi(view_info_t *orig, view_info_t *new);
+static int get_view_data(modview_info_t *vi, const char file_to_view[]);
+static void replace_vi(modview_info_t *orig, modview_info_t *new);
 static void cmd_b(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
@@ -183,14 +183,14 @@ static void cmd_z(key_info_t key_info, keys_info_t *keys_info);
 static void update_with_win(key_info_t *key_info);
 static int is_trying_the_same_file(void);
 static int get_file_to_explore(const view_t *view, char buf[], size_t buf_len);
-static int forward_if_changed(view_info_t *vi);
-static int scroll_to_bottom(view_info_t *vi);
-static void reload_view(view_info_t *vi, int silent);
-static view_info_t * view_info_alloc(void);
+static int forward_if_changed(modview_info_t *vi);
+static int scroll_to_bottom(modview_info_t *vi);
+static void reload_view(modview_info_t *vi, int silent);
+static modview_info_t * view_info_alloc(void);
 
 /* Points to current (for quick view) or last used (for explore mode)
- * view_info_t structure. */
-static view_info_t *vi;
+ * modview_info_t structure. */
+static modview_info_t *vi;
 
 static keys_add_info_t builtin_cmds[] = {
 	{WK_C_b,           {{&cmd_b},      .descr = "scroll page up"}},
@@ -447,7 +447,7 @@ view_ruler_update(void)
 void
 view_redraw(void)
 {
-	view_info_t *saved_vi = vi;
+	modview_info_t *saved_vi = vi;
 
 	try_redraw_explore_view(&lwin);
 	try_redraw_explore_view(&rwin);
@@ -521,17 +521,17 @@ view_quit_explore_mode(view_t *view)
 	ui_view_title_update(view);
 }
 
-/* Frees and initializes anew view_info_t structure instance. */
+/* Frees and initializes anew modview_info_t structure instance. */
 static void
-reset_view_info(view_info_t *vi)
+reset_view_info(modview_info_t *vi)
 {
 	free_view_info(vi);
 	init_view_info(vi);
 }
 
-/* Initializes view_info_t structure instance with safe default values. */
+/* Initializes modview_info_t structure instance with safe default values. */
 static void
-init_view_info(view_info_t *vi)
+init_view_info(modview_info_t *vi)
 {
 	memset(vi, '\0', sizeof(*vi));
 	vi->win_size = -1;
@@ -546,9 +546,9 @@ init_view_info(view_info_t *vi)
 	vi->viewer = NULL;
 }
 
-/* Frees all resources allocated by view_info_t structure instance. */
+/* Frees all resources allocated by modview_info_t structure instance. */
 static void
-free_view_info(view_info_t *vi)
+free_view_info(modview_info_t *vi)
 {
 	free_string_array(vi->lines, vi->nlines);
 	free(vi->widths);
@@ -594,7 +594,7 @@ calc_vlines(void)
 
 /* Recalculates virtual lines of a view with line wrapping. */
 static void
-calc_vlines_wrapped(view_info_t *vi)
+calc_vlines_wrapped(modview_info_t *vi)
 {
 	int i;
 	vi->nlinesv = 0;
@@ -609,7 +609,7 @@ calc_vlines_wrapped(view_info_t *vi)
 
 /* Recalculates virtual lines of a view without line wrapping. */
 static void
-calc_vlines_non_wrapped(view_info_t *vi)
+calc_vlines_non_wrapped(modview_info_t *vi)
 {
 	int i;
 	vi->nlinesv = vi->nlines;
@@ -952,7 +952,8 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 static void
 pick_vi(int explore)
 {
-	view_info_t **ptr = (explore ? &curr_view->vi : &curr_stats.preview.explore);
+	modview_info_t **ptr = explore ? &curr_view->vi
+	                               : &curr_stats.preview.explore;
 
 	if(*ptr == NULL)
 	{
@@ -1020,12 +1021,12 @@ cmd_R(key_info_t key_info, keys_info_t *keys_info)
 	reload_view(vi, NOSILENT);
 }
 
-/* Loads list of strings and related data into view_info_t structure from
+/* Loads list of strings and related data into modview_info_t structure from
  * specified file.  The action parameter is a title to be used for error
  * messages.  Returns non-zero on error, otherwise zero is returned. */
 static int
-load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
-		int silent)
+load_view_data(modview_info_t *vi, const char action[],
+		const char file_to_view[], int silent)
 {
 	const int error = get_view_data(vi, file_to_view);
 
@@ -1073,7 +1074,7 @@ load_view_data(view_info_t *vi, const char action[], const char file_to_view[],
 /* Reads data to be displayed handling error cases.  Returns zero on success, 2
  * on file reading error, 3 on issues with viewer or 4 on empty input. */
 static int
-get_view_data(view_info_t *vi, const char file_to_view[])
+get_view_data(modview_info_t *vi, const char file_to_view[])
 {
 	FILE *fp;
 	const char *const viewer = qv_get_viewer(file_to_view);
@@ -1167,10 +1168,10 @@ get_view_data(view_info_t *vi, const char file_to_view[])
 	return 0;
 }
 
-/* Replaces view_info_t structure with another one preserving as much as
+/* Replaces modview_info_t structure with another one preserving as much as
  * possible. */
 static void
-replace_vi(view_info_t *orig, view_info_t *new)
+replace_vi(modview_info_t *orig, modview_info_t *new)
 {
 	new->filename = orig->filename;
 	orig->filename = NULL;
@@ -1625,7 +1626,7 @@ view_check_for_updates(void)
 /* Forwards the view if underlying file changed.  Returns non-zero if reload
  * occurred, otherwise zero is returned. */
 static int
-forward_if_changed(view_info_t *vi)
+forward_if_changed(modview_info_t *vi)
 {
 	filemon_t mon;
 
@@ -1652,7 +1653,7 @@ forward_if_changed(view_info_t *vi)
 /* Scrolls view to the bottom if there is any room for that.  Returns non-zero
  * if position was changed, otherwise zero is returned. */
 static int
-scroll_to_bottom(view_info_t *vi)
+scroll_to_bottom(modview_info_t *vi)
 {
 	if(vi->linev + 1 + ui_qv_height(vi->view) > vi->nlinesv)
 	{
@@ -1674,9 +1675,9 @@ scroll_to_bottom(view_info_t *vi)
 /* Reloads contents of the specified view by rerunning corresponding viewer or
  * just rereading a file. */
 static void
-reload_view(view_info_t *vi, int silent)
+reload_view(modview_info_t *vi, int silent)
 {
-	view_info_t new_vi;
+	modview_info_t new_vi;
 
 	init_view_info(&new_vi);
 	/* These fields are used in get_view_data(). */
@@ -1698,16 +1699,16 @@ view_detached_get_viewer(void)
 }
 
 /* Allocates and initializes view mode information.  Returns pointer to it. */
-static view_info_t *
+static modview_info_t *
 view_info_alloc(void)
 {
-	view_info_t *const vi = malloc(sizeof(*vi));
+	modview_info_t *const vi = malloc(sizeof(*vi));
 	init_view_info(vi);
 	return vi;
 }
 
 void
-view_info_free(view_info_t *info)
+view_info_free(modview_info_t *info)
 {
 	if(info != NULL)
 	{
