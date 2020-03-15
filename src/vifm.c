@@ -399,10 +399,10 @@ parse_received_arguments(char *argv[])
 	args_process(&args, 0);
 
 	exec_startup_commands(&args);
-	args_free(&args);
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
 	{
+		args_free(&args);
 		return;
 	}
 
@@ -426,6 +426,8 @@ parse_received_arguments(char *argv[])
 	{
 		change_window();
 	}
+
+	args_free(&args);
 
 	/* XXX: why force clearing of the statusbar? */
 	ui_sb_clear();
