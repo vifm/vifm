@@ -78,7 +78,7 @@ typedef void (*mode_init_func)(void);
 static mode_init_func mode_init_funcs[] = {
 	&init_normal_mode,        /* NORMAL_MODE */
 	&modcline_init,           /* CMDLINE_MODE */
-	&init_visual_mode,        /* VISUAL_MODE */
+	&modvis_init,             /* VISUAL_MODE */
 	&modmenu_init,            /* MENU_MODE */
 	&init_sort_dialog_mode,   /* SORT_MODE */
 	&init_attr_dialog_mode,   /* ATTR_MODE */
@@ -377,7 +377,7 @@ print_selected_msg(void)
 {
 	if(vle_mode_is(VISUAL_MODE))
 	{
-		ui_sb_msgf("-- %s -- ", describe_visual_mode());
+		ui_sb_msgf("-- %s -- ", modvis_describe());
 		update_vmode_input();
 	}
 	else

@@ -1082,7 +1082,7 @@ exec_command(const char cmd[], view_t *view, CmdInputType type)
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:
-			return find_vpattern(view, cmd, backward, 1);
+			return modvis_find(view, cmd, backward, 1);
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:
@@ -1124,7 +1124,7 @@ repeat_command(view_t *view, CmdInputType type)
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:
-			return find_vpattern(view, hists_search_last(), backward, 1);
+			return modvis_find(view, hists_search_last(), backward, 1);
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:

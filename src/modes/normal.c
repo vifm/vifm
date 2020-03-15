@@ -1172,7 +1172,7 @@ do_gu(key_info_t key_info, keys_info_t *keys_info, int upper)
 static void
 cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_visual_mode(VS_RESTORE);
+	modvis_enter(VS_RESTORE);
 }
 
 /* Go to the first file in window. */
@@ -1228,7 +1228,7 @@ cmd_P(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_V(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_visual_mode(VS_NORMAL);
+	modvis_enter(VS_NORMAL);
 }
 
 /* Possibly exits the application without saving vifminfo file or closes a
@@ -1416,7 +1416,7 @@ cmd_al(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_av(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_visual_mode(VS_AMEND);
+	modvis_enter(VS_AMEND);
 }
 
 /* Change word (rename file without extension). */

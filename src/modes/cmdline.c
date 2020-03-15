@@ -508,7 +508,7 @@ handle_nonempty_input(void)
 			break;
 		case CLS_VBSEARCH: backward = 1; /* Fall through. */
 		case CLS_VFSEARCH:
-			result = find_vpattern(curr_view, mbinput, backward, 0);
+			result = modvis_find(curr_view, mbinput, backward, 0);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_MENU_FSEARCH:
@@ -787,7 +787,7 @@ set_view_port(void)
 
 	if(prev_mode == VISUAL_MODE)
 	{
-		update_visual_mode();
+		modvis_update();
 	}
 }
 
@@ -880,7 +880,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(!input_stat.search_mode)
 		{
-			leave_visual_mode(curr_stats.save_msg, 1, 1);
+			modvis_leave(curr_stats.save_msg, 1, 1);
 			fpos_set_pos(curr_view, check_mark_directory(curr_view, '<'));
 		}
 	}
@@ -1283,7 +1283,9 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	if(prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
 			sub_mode != CLS_VBSEARCH)
-		leave_visual_mode(curr_stats.save_msg, 1, 0);
+	{
+		modvis_leave(curr_stats.save_msg, 1, 0);
+	}
 
 	save_input_to_history(keys_info, input);
 

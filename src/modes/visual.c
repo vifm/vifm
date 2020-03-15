@@ -275,7 +275,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_visual_mode(void)
+modvis_init(void)
 {
 	int ret_code;
 
@@ -286,7 +286,7 @@ init_visual_mode(void)
 }
 
 void
-enter_visual_mode(VisualSubmodes sub_mode)
+modvis_enter(VisualSubmodes sub_mode)
 {
 	const int ub = check_mark_directory(curr_view, '<');
 	const int lb = check_mark_directory(curr_view, '>');
@@ -325,7 +325,7 @@ enter_visual_mode(VisualSubmodes sub_mode)
 }
 
 void
-leave_visual_mode(int save_msg, int goto_top, int clear_selection)
+modvis_leave(int save_msg, int goto_top, int clear_selection)
 {
 	if(goto_top)
 	{
@@ -767,7 +767,7 @@ static void
 cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	leave_visual_mode(0, 1, 0);
+	modvis_leave(0, 1, 0);
 
 	check_marking(view, 0, NULL);
 	(void)fops_rename(view, NULL, 0, 0);
@@ -783,7 +783,7 @@ static void
 cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	leave_visual_mode(curr_stats.save_msg, 1, 0);
+	modvis_leave(curr_stats.save_msg, 1, 0);
 	rn_open(view, FHE_RUN);
 	flist_sel_stash(view);
 	redraw_view(view);
@@ -975,7 +975,7 @@ search(key_info_t key_info, int backward, int interactive)
 	if(view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = find_vpattern(view, pattern, backward, interactive);
+		curr_stats.save_msg = modvis_find(view, pattern, backward, interactive);
 		return;
 	}
 
@@ -1115,7 +1115,7 @@ static void
 leave_clearing_selection(int go_to_top, int save_msg)
 {
 	update_marks(view);
-	leave_visual_mode(save_msg, go_to_top, 1);
+	modvis_leave(save_msg, go_to_top, 1);
 }
 
 static void
@@ -1421,7 +1421,7 @@ revert_selection(int pos)
 }
 
 void
-update_visual_mode(void)
+modvis_update(void)
 {
 	const int pos = view->list_pos;
 
@@ -1436,8 +1436,7 @@ update_visual_mode(void)
 }
 
 int
-find_vpattern(view_t *view, const char pattern[], int backward,
-		int print_errors)
+modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
 	int i;
 	int result;
@@ -1525,7 +1524,7 @@ move_pos(int pos)
 }
 
 const char *
-describe_visual_mode(void)
+modvis_describe(void)
 {
 	static const char *descriptions[] = {
 		[AT_NONE]   = "VISUAL",

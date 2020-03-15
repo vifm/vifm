@@ -32,28 +32,28 @@ typedef enum
 VisualSubmodes;
 
 /* Initializes visual mode. */
-void init_visual_mode(void);
+void modvis_init(void);
 
 /* Starts visual mode in a given submode. */
-void enter_visual_mode(VisualSubmodes sub_mode);
+void modvis_enter(VisualSubmodes sub_mode);
 
 /* Leaves visual mode in various ways. */
-void leave_visual_mode(int save_msg, int goto_top, int clear_selection);
+void modvis_leave(int save_msg, int goto_top, int clear_selection);
 
 /* Should be used to ask visual mode to redraw file list correctly.
  * Intended to be used after setting list position from side. */
-void update_visual_mode(void);
+void modvis_update(void);
 
 /* Kind of callback to allow starting searches from the module and rely on other
  * modules.  Returns new value for status bar message flag, but when
  * print_errors isn't requested can return -1 to indicate issues with the
  * pattern. */
-int find_vpattern(struct view_t *view, const char pattern[], int backward,
+int modvis_find(struct view_t *view, const char pattern[], int backward,
 		int print_errors);
 
 /* Formats concise description of current visual mode state.  Returns pointer
  * to a statically allocated buffer. */
-const char * describe_visual_mode(void);
+const char * modvis_describe(void);
 
 #endif /* VIFM__MODES__VISUAL_H__ */
 
