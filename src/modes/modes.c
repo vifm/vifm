@@ -83,7 +83,7 @@ static mode_init_func mode_init_funcs[] = {
 	&init_sort_dialog_mode,   /* SORT_MODE */
 	&init_attr_dialog_mode,   /* ATTR_MODE */
 	&init_change_dialog_mode, /* CHANGE_MODE */
-	&view_init_mode,          /* VIEW_MODE */
+	&modview_init,            /* VIEW_MODE */
 	&modfinfo_init,           /* FILE_INFO_MODE */
 	&init_msg_dialog_mode,    /* MSG_MODE */
 	&modmore_init,            /* MORE_MODE */
@@ -121,7 +121,7 @@ modes_pre(void)
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
-		view_pre();
+		modview_pre();
 	}
 	else if(is_in_menu_like_mode())
 	{
@@ -138,7 +138,7 @@ void
 modes_periodic(void)
 {
 	/* Trigger possible view updates. */
-	view_check_for_updates();
+	modview_check_for_updates();
 }
 
 void
@@ -152,7 +152,7 @@ modes_post(void)
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
-		view_post();
+		modview_post();
 		return;
 	}
 	else if(is_in_menu_like_mode())
@@ -276,7 +276,7 @@ modes_redraw(void)
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
-		view_redraw();
+		modview_redraw();
 	}
 	else if(vle_mode_is(MSG_MODE))
 	{

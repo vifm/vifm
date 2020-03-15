@@ -1288,7 +1288,7 @@ output_to_preview(const char cmd[])
 	{
 		return 1;
 	}
-	view_detached_make(other_view, cmd);
+	modview_detached_make(other_view, cmd);
 	return 0;
 }
 

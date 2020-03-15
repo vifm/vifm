@@ -1086,7 +1086,7 @@ exec_command(const char cmd[], view_t *view, CmdInputType type)
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:
-			return view_find_pattern(cmd, backward);
+			return modview_find(cmd, backward);
 
 		case CIT_MENU_COMMAND: menu = 1; /* Fall through. */
 		case CIT_COMMAND:
@@ -1128,7 +1128,7 @@ repeat_command(view_t *view, CmdInputType type)
 
 		case CIT_VWBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VWFSEARCH_PATTERN:
-			return view_find_pattern(NULL, backward);
+			return modview_find(NULL, backward);
 
 		case CIT_COMMAND:
 			return execute_command(view, NULL, 0);

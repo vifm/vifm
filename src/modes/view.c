@@ -295,7 +295,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-view_init_mode(void)
+modview_init(void)
 {
 	int ret_code;
 
@@ -306,7 +306,7 @@ view_init_mode(void)
 }
 
 void
-view_enter_mode(view_t *view, int explore)
+modview_enter(view_t *view, int explore)
 {
 	char full_path[PATH_MAX + 1];
 
@@ -347,11 +347,11 @@ view_enter_mode(view_t *view, int explore)
 	}
 
 	ui_views_update_titles();
-	view_redraw();
+	modview_redraw();
 }
 
 void
-view_detached_make(view_t *view, const char cmd[])
+modview_detached_make(view_t *view, const char cmd[])
 {
 	char full_path[PATH_MAX + 1];
 
@@ -376,7 +376,7 @@ view_detached_make(view_t *view, const char cmd[])
 	}
 
 	ui_views_update_titles();
-	view_redraw();
+	modview_redraw();
 }
 
 /* Either makes use of detached view or prunes it.  Returns zero on success,
@@ -408,7 +408,7 @@ try_resurrect_detached(const char full_path[], int explore)
 }
 
 void
-view_try_activate_mode(void)
+modview_try_activate(void)
 {
 	if(curr_view->explore_mode)
 	{
@@ -418,7 +418,7 @@ view_try_activate_mode(void)
 }
 
 void
-view_pre(void)
+modview_pre(void)
 {
 	if(curr_stats.save_msg == 0)
 	{
@@ -429,14 +429,14 @@ view_pre(void)
 }
 
 void
-view_post(void)
+modview_post(void)
 {
 	update_screen(stats_update_fetch());
-	view_ruler_update();
+	modview_ruler_update();
 }
 
 void
-view_ruler_update(void)
+modview_ruler_update(void)
 {
 	char buf[POS_WIN_MIN_WIDTH + 1];
 	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
@@ -445,7 +445,7 @@ view_ruler_update(void)
 }
 
 void
-view_redraw(void)
+modview_redraw(void)
 {
 	modview_info_t *saved_vi = vi;
 
@@ -473,7 +473,7 @@ try_redraw_explore_view(const view_t *view)
 }
 
 void
-view_leave_mode(void)
+modview_leave(void)
 {
 	if(vi->kind != VK_TEXTUAL && vi->view->explore_mode)
 	{
@@ -500,12 +500,12 @@ view_leave_mode(void)
 
 	if(curr_view->explore_mode || other_view->explore_mode)
 	{
-		view_redraw();
+		modview_redraw();
 	}
 }
 
 void
-view_quit_explore_mode(view_t *view)
+modview_quit_exploring(view_t *view)
 {
 	assert(!vle_mode_is(VIEW_MODE) && "Unexpected mode.");
 	if(!view->explore_mode)
@@ -686,7 +686,7 @@ draw(void)
 }
 
 int
-view_find_pattern(const char pattern[], int backward)
+modview_find(const char pattern[], int backward)
 {
 	int err;
 
@@ -714,7 +714,7 @@ view_find_pattern(const char pattern[], int backward)
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	view_redraw();
+	modview_redraw();
 }
 
 static void
@@ -750,7 +750,7 @@ get_active_view(void)
 }
 
 void
-view_panes_swapped(void)
+modview_panes_swapped(void)
 {
 	if(curr_stats.preview.explore != NULL)
 	{
@@ -831,7 +831,7 @@ static void
 cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 {
 	split_view(HSPLIT);
-	view_redraw();
+	modview_redraw();
 }
 
 static void
@@ -864,7 +864,7 @@ static void
 cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 {
 	split_view(VSPLIT);
-	view_redraw();
+	modview_redraw();
 }
 
 static void
@@ -901,7 +901,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 {
-	view_leave_mode();
+	modview_leave();
 	qv_hide();
 }
 
@@ -933,7 +933,7 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!curr_view->explore_mode)
 	{
-		view_leave_mode();
+		modview_leave();
 		return;
 	}
 
@@ -1456,7 +1456,7 @@ display_error(const char error_msg[])
 static void
 cmd_q(key_info_t key_info, keys_info_t *keys_info)
 {
-	view_leave_mode();
+	modview_leave();
 }
 
 static void
@@ -1537,7 +1537,7 @@ set_from_default_win(key_info_t *key_info)
 }
 
 int
-view_detached_draw(void)
+modview_detached_draw(void)
 {
 	pick_vi(0);
 
@@ -1609,7 +1609,7 @@ get_file_to_explore(const view_t *view, char buf[], size_t buf_len)
 }
 
 void
-view_check_for_updates(void)
+modview_check_for_updates(void)
 {
 	int need_redraw = 0;
 
@@ -1688,12 +1688,12 @@ reload_view(modview_info_t *vi, int silent)
 			== 0)
 	{
 		replace_vi(vi, &new_vi);
-		view_redraw();
+		modview_redraw();
 	}
 }
 
 const char *
-view_detached_get_viewer(void)
+modview_detached_get_viewer(void)
 {
 	return (vi == NULL ? NULL : vi->viewer);
 }
@@ -1708,7 +1708,7 @@ view_info_alloc(void)
 }
 
 void
-view_info_free(modview_info_t *info)
+modview_info_free(modview_info_t *info)
 {
 	if(info != NULL)
 	{

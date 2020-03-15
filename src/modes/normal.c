@@ -962,7 +962,7 @@ try_switch_into_view_mode(void)
 {
 	if(curr_stats.preview.on)
 	{
-		view_enter_mode(other_view, 0);
+		modview_enter(other_view, 0);
 		return 1;
 	}
 	return 0;
@@ -1592,7 +1592,7 @@ cmd_e(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = 1;
 		return;
 	}
-	view_enter_mode(curr_view, 1);
+	modview_enter(curr_view, 1);
 }
 
 /* Navigates to next word which starts with specified character. */

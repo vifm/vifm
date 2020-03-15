@@ -198,7 +198,7 @@ qv_draw(view_t *view)
 	 * location. */
 	(void)vifm_chdir(flist_get_dir(view));
 
-	if(view_detached_draw())
+	if(modview_detached_draw())
 	{
 		/* View mode handled the drawing. */
 		return;
@@ -777,11 +777,11 @@ qv_hide(void)
 	}
 	if(lwin.explore_mode)
 	{
-		view_quit_explore_mode(&lwin);
+		modview_quit_exploring(&lwin);
 	}
 	if(rwin.explore_mode)
 	{
-		view_quit_explore_mode(&rwin);
+		modview_quit_exploring(&rwin);
 	}
 }
 

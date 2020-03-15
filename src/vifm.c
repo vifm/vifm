@@ -442,12 +442,12 @@ remote_cd(view_t *view, const char path[], int handle)
 
 	if(view->explore_mode)
 	{
-		view_leave_mode();
+		modview_leave();
 	}
 
 	if(view == other_view && vle_mode_is(VIEW_MODE))
 	{
-		view_leave_mode();
+		modview_leave();
 	}
 
 	if(curr_stats.preview.on && (handle || view == other_view))
