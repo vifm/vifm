@@ -32,7 +32,7 @@ TEARDOWN()
 	curr_stats.load_stage = 0;
 }
 
-TEST(chooseopt_options_are_not_set)
+TEST(empty_cmd)
 {
 	args_t args = { };
 	char *argv[] = { "vifm", "+", NULL };
@@ -41,6 +41,21 @@ TEST(chooseopt_options_are_not_set)
 
 	assert_int_equal(1, args.ncmds);
 	assert_string_equal("$", args.cmds[0]);
+
+	args_free(&args);
+}
+
+TEST(cmds_add_up)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "-ccmd0", "+cmd1", "-c", "cmd2", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+
+	assert_int_equal(3, args.ncmds);
+	assert_string_equal("cmd0", args.cmds[0]);
+	assert_string_equal("cmd1", args.cmds[1]);
+	assert_string_equal("cmd2", args.cmds[2]);
 
 	args_free(&args);
 }
@@ -86,6 +101,17 @@ TEST(select_accepts_dash_if_such_file_exists)
 	args_free(&args);
 }
 
+TEST(can_output_choice_on_stdout)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "--choose-dir", "-", "--choose-file", "-", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_string_equal("-", args.chosen_files_out);
+	assert_string_equal("-", args.chosen_dir_out);
+	args_free(&args);
+}
+
 TEST(select_accepts_dash_if_such_directory_exists)
 {
 	args_t args = { };
@@ -98,6 +124,56 @@ TEST(select_accepts_dash_if_such_directory_exists)
 	assert_string_equal("/-", args.lwin_path);
 
 	assert_success(rmdir("-"));
+	args_free(&args);
+}
+
+TEST(it_is_either_help_or_version_not_both)
+{
+	args_t help_args = { };
+	char *help_argv[] = { "vifm", "--help", "--version", NULL };
+	args_parse(&help_args, ARRAY_LEN(help_argv) - 1U, help_argv, "/");
+	assert_true(help_args.help);
+	assert_false(help_args.version);
+	args_free(&help_args);
+
+	args_t version_args = { };
+	char *version_argv[] = { "vifm", "--version", "--help", NULL };
+	args_parse(&version_args, ARRAY_LEN(version_argv) - 1U, version_argv, "/");
+	assert_false(version_args.help);
+	assert_true(version_args.version);
+	args_free(&version_args);
+}
+
+TEST(logging_without_arg)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "--logging", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_true(args.logging);
+	assert_string_equal(NULL, args.startup_log_path);
+	args_free(&args);
+}
+
+TEST(logging_with_arg)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "--logging=startup-log", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_true(args.logging);
+	assert_string_equal("startup-log", args.startup_log_path);
+	args_free(&args);
+}
+
+TEST(various_flags)
+{
+	args_t args = { };
+	char *argv[] = { "vifm", "-f", "--no-configs", NULL };
+
+	args_parse(&args, ARRAY_LEN(argv) - 1U, argv, "/");
+	assert_true(args.file_picker);
+	assert_true(args.no_configs);
 	args_free(&args);
 }
 
