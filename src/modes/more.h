@@ -25,6 +25,9 @@ void modmore_init(void);
 /* Enters more mode that will display the text. */
 void modmore_enter(const char txt[]);
 
+/* Aborts more mode. */
+void modmore_abort(void);
+
 /* Redraws more mode on the screen. */
 void modmore_redraw(void);
 

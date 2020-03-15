@@ -137,6 +137,12 @@ modmore_enter(const char txt[])
 	was_redraw = 0;
 }
 
+void
+modmore_abort(void)
+{
+	leave_more_mode();
+}
+
 /* Recalculates virtual lines of a view with line wrapping. */
 static void
 calc_vlines_wrapped(void)
@@ -275,7 +281,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_more_mode();
-	enter_cmdline_mode(CLS_COMMAND, "", NULL);
+	modcline_enter(CLS_COMMAND, "", NULL);
 }
 
 /* Navigate to the bottom. */

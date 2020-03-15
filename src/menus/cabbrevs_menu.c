@@ -67,7 +67,7 @@ commands_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 
 		break_at(m->items[m->pos], ' ');
 		snprintf(cmd_buf, sizeof(cmd_buf), "cunabbrev %s", m->items[m->pos]);
-		menu_run_command(cmd_buf);
+		modmenu_run_command(cmd_buf);
 
 		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;

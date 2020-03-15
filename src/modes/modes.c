@@ -76,15 +76,15 @@ ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 
 typedef void (*mode_init_func)(void);
 static mode_init_func mode_init_funcs[] = {
-	&init_normal_mode,        /* NORMAL_MODE */
-	&init_cmdline_mode,       /* CMDLINE_MODE */
-	&init_visual_mode,        /* VISUAL_MODE */
-	&menu_init_mode,          /* MENU_MODE */
+	&modnorm_init,            /* NORMAL_MODE */
+	&modcline_init,           /* CMDLINE_MODE */
+	&modvis_init,             /* VISUAL_MODE */
+	&modmenu_init,            /* MENU_MODE */
 	&init_sort_dialog_mode,   /* SORT_MODE */
 	&init_attr_dialog_mode,   /* ATTR_MODE */
 	&init_change_dialog_mode, /* CHANGE_MODE */
-	&view_init_mode,          /* VIEW_MODE */
-	&init_file_info_mode,     /* FILE_INFO_MODE */
+	&modview_init,            /* VIEW_MODE */
+	&modfinfo_init,           /* FILE_INFO_MODE */
 	&init_msg_dialog_mode,    /* MSG_MODE */
 	&modmore_init,            /* MORE_MODE */
 };
@@ -121,11 +121,11 @@ modes_pre(void)
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
-		view_pre();
+		modview_pre();
 	}
 	else if(is_in_menu_like_mode())
 	{
-		menu_pre();
+		modmenu_pre();
 	}
 	else if(!curr_stats.save_msg)
 	{
@@ -138,7 +138,7 @@ void
 modes_periodic(void)
 {
 	/* Trigger possible view updates. */
-	view_check_for_updates();
+	modview_check_for_updates();
 }
 
 void
@@ -152,12 +152,12 @@ modes_post(void)
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
-		view_post();
+		modview_post();
 		return;
 	}
 	else if(is_in_menu_like_mode())
 	{
-		menu_post();
+		modmenu_post();
 		return;
 	}
 
@@ -224,12 +224,12 @@ modes_redraw(void)
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		redraw_cmdline();
+		modcline_redraw();
 		goto finish;
 	}
 	else if(vle_primary_mode_is(MENU_MODE))
 	{
-		menu_full_redraw();
+		modmenu_full_redraw();
 		if(vle_mode_is(MSG_MODE))
 		{
 			redraw_msg_dialog(0);
@@ -238,7 +238,7 @@ modes_redraw(void)
 	}
 	else if(vle_mode_is(FILE_INFO_MODE))
 	{
-		redraw_file_info_dialog();
+		modfinfo_redraw();
 		goto finish;
 	}
 	else if(vle_mode_is(MORE_MODE))
@@ -276,7 +276,7 @@ modes_redraw(void)
 	}
 	else if(vle_mode_is(VIEW_MODE))
 	{
-		view_redraw();
+		modview_redraw();
 	}
 	else if(vle_mode_is(MSG_MODE))
 	{
@@ -295,17 +295,17 @@ modes_update(void)
 {
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		redraw_cmdline();
+		modcline_redraw();
 		return;
 	}
 	else if(vle_mode_is(MENU_MODE))
 	{
-		menu_full_redraw();
+		modmenu_full_redraw();
 		return;
 	}
 	else if(vle_mode_is(FILE_INFO_MODE))
 	{
-		redraw_file_info_dialog();
+		modfinfo_redraw();
 		return;
 	}
 
@@ -356,11 +356,28 @@ is_in_menu_like_mode(void)
 }
 
 void
+abort_menu_like_mode(void)
+{
+	if(vle_primary_mode_is(MENU_MODE))
+	{
+		modmenu_abort();
+	}
+	else if(vle_primary_mode_is(FILE_INFO_MODE))
+	{
+		modfinfo_abort();
+	}
+	else if(vle_primary_mode_is(MORE_MODE))
+	{
+		modmore_abort();
+	}
+}
+
+void
 print_selected_msg(void)
 {
 	if(vle_mode_is(VISUAL_MODE))
 	{
-		ui_sb_msgf("-- %s -- ", describe_visual_mode());
+		ui_sb_msgf("-- %s -- ", modvis_describe());
 		update_vmode_input();
 	}
 	else

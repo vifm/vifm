@@ -298,7 +298,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_cmdline_mode(void)
+modcline_init(void)
 {
 	int ret_code;
 
@@ -456,7 +456,7 @@ input_line_changed(void)
 	}
 	else if(prev_mode == MENU_MODE)
 	{
-		menu_full_redraw();
+		modmenu_full_redraw();
 	}
 
 	/* Hardware cursor is moved on the screen only on refresh, so refresh status
@@ -503,12 +503,12 @@ handle_nonempty_input(void)
 
 		case CLS_BSEARCH: backward = 1; /* Fall through. */
 		case CLS_FSEARCH:
-			result = find_npattern(curr_view, mbinput, backward, 0);
+			result = modnorm_find(curr_view, mbinput, backward, 0);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_VBSEARCH: backward = 1; /* Fall through. */
 		case CLS_VFSEARCH:
-			result = find_vpattern(curr_view, mbinput, backward, 0);
+			result = modvis_find(curr_view, mbinput, backward, 0);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_MENU_FSEARCH:
@@ -585,7 +585,7 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
+modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 {
 	wchar_t *wcmd;
 	const wchar_t *wprompt;
@@ -636,7 +636,7 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 }
 
 void
-enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
+modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee)
 {
 	wchar_t *wprompt;
@@ -662,11 +662,11 @@ enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
 }
 
 void
-redraw_cmdline(void)
+modcline_redraw(void)
 {
 	if(prev_mode == MENU_MODE)
 	{
-		menu_full_redraw();
+		modmenu_full_redraw();
 	}
 	else
 	{
@@ -760,7 +760,7 @@ save_view_port(void)
 	}
 	else
 	{
-		menu_save_pos();
+		modmenu_save_pos();
 	}
 }
 
@@ -770,7 +770,7 @@ set_view_port(void)
 {
 	if(prev_mode == MENU_MODE)
 	{
-		menu_restore_pos();
+		modmenu_restore_pos();
 		return;
 	}
 
@@ -787,7 +787,7 @@ set_view_port(void)
 
 	if(prev_mode == VISUAL_MODE)
 	{
-		update_visual_mode();
+		modvis_update();
 	}
 }
 
@@ -818,7 +818,7 @@ leave_cmdline_mode(void)
 		if(prev_mode == MENU_MODE)
 		{
 			wresize(menu_win, getmaxy(stdscr) - 1, getmaxx(stdscr));
-			menu_partial_redraw();
+			modmenu_partial_redraw();
 		}
 	}
 
@@ -880,7 +880,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	{
 		if(!input_stat.search_mode)
 		{
-			leave_visual_mode(curr_stats.save_msg, 1, 1);
+			modvis_leave(curr_stats.save_msg, 1, 1);
 			fpos_set_pos(curr_view, check_mark_directory(curr_view, '<'));
 		}
 	}
@@ -1283,7 +1283,9 @@ cmd_return(key_info_t key_info, keys_info_t *keys_info)
 
 	if(prev_mode == VISUAL_MODE && sub_mode != CLS_VFSEARCH &&
 			sub_mode != CLS_VBSEARCH)
-		leave_visual_mode(curr_stats.save_msg, 1, 0);
+	{
+		modvis_leave(curr_stats.save_msg, 1, 0);
+	}
 
 	save_input_to_history(keys_info, input);
 
@@ -2484,7 +2486,7 @@ update_cmdline_size(void)
 	else
 	{
 		wresize(menu_win, getmaxy(stdscr) - required_height, getmaxx(stdscr));
-		menu_partial_redraw();
+		modmenu_partial_redraw();
 	}
 }
 
@@ -2660,7 +2662,7 @@ stop_regular_completion(void)
 	{
 		if(sub_mode == CLS_MENU_COMMAND)
 		{
-			menu_full_redraw();
+			modmenu_full_redraw();
 		}
 		else
 		{

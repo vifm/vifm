@@ -259,7 +259,7 @@ menus_set_pos(menu_state_t *ms, int pos)
 	normalize_top(ms);
 
 	redraw = 0;
-	if(pos > menu_last_line(m))
+	if(pos > modmenu_last_line(m))
 	{
 		m->top = pos - (ms->win_rows - 2 - 1);
 		redraw = 1;
@@ -279,9 +279,9 @@ menus_set_pos(menu_state_t *ms, int pos)
 			normalize_top(ms);
 			redraw = 1;
 		}
-		if(pos > menu_last_line(m) - s)
+		if(pos > modmenu_last_line(m) - s)
 		{
-			m->top += s - (menu_last_line(m) - pos);
+			m->top += s - (modmenu_last_line(m) - pos);
 			normalize_top(ms);
 			redraw = 1;
 		}
@@ -662,7 +662,7 @@ menus_enter(menu_state_t *m, view_t *view)
 	ui_setup_for_menu_like();
 	menus_partial_redraw(m);
 	menus_set_pos(m, m->d->pos);
-	menu_enter_mode(m->d, view);
+	modmenu_enter(m->d, view);
 	return 0;
 }
 
@@ -740,7 +740,7 @@ menus_def_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 			show_error_msg("Command insertion", "No valid filename found");
 			return KHR_REFRESH_WINDOW;
 		}
-		menu_morph_into_cmdline(CLS_COMMAND, path, 1);
+		modmenu_morph_into_cline(CLS_COMMAND, path, 1);
 		free(path);
 		return KHR_MORPHED_MENU;
 	}

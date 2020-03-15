@@ -106,7 +106,7 @@ commands_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 
 		break_at(m->items[m->pos], ' ');
 		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos]);
-		menu_run_command(cmd_buf);
+		modmenu_run_command(cmd_buf);
 
 		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;
@@ -117,20 +117,20 @@ commands_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		/* Insert command RHS. */
 		if(rhs[0] == ':')
 		{
-			menu_morph_into_cmdline(CLS_COMMAND, skip_whitespace(rhs + 1), 0);
+			modmenu_morph_into_cline(CLS_COMMAND, skip_whitespace(rhs + 1), 0);
 		}
 		else if(rhs[0] == '/')
 		{
-			menu_morph_into_cmdline(CLS_FSEARCH, rhs + 1, 0);
+			modmenu_morph_into_cline(CLS_FSEARCH, rhs + 1, 0);
 		}
 		else if(rhs[0] == '=')
 		{
-			menu_morph_into_cmdline(CLS_FILTER, rhs + 1, 0);
+			modmenu_morph_into_cline(CLS_FILTER, rhs + 1, 0);
 		}
 		else
 		{
 			/* filter commands go here. */
-			menu_morph_into_cmdline(CLS_COMMAND, rhs, (rhs[0] != '!'));
+			modmenu_morph_into_cline(CLS_COMMAND, rhs, (rhs[0] != '!'));
 		}
 		return KHR_MORPHED_MENU;
 	}

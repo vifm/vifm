@@ -73,7 +73,7 @@ TEST(hjkl_in_ls_visual)
 	setup_grid(view, 2, 17, 1);
 	view->list_pos = 3;
 
-	enter_visual_mode(VS_NORMAL);
+	modvis_enter(VS_NORMAL);
 
 	(void)vle_keys_exec_timed_out(WK_h);
 	assert_int_equal(2, view->list_pos);
@@ -87,7 +87,7 @@ TEST(hjkl_in_ls_visual)
 	(void)vle_keys_exec_timed_out(WK_k);
 	assert_int_equal(3, view->list_pos);
 
-	leave_visual_mode(0, 1, 0);
+	modvis_leave(0, 1, 0);
 }
 
 TEST(line_beginend_in_ls_normal)
@@ -110,7 +110,7 @@ TEST(line_beginend_in_ls_visual)
 	setup_grid(view, 2, 17, 1);
 	view->list_pos = 3;
 
-	enter_visual_mode(VS_NORMAL);
+	modvis_enter(VS_NORMAL);
 
 	(void)vle_keys_exec_timed_out(WK_ZERO);
 	assert_int_equal(2, view->list_pos);
@@ -121,7 +121,7 @@ TEST(line_beginend_in_ls_visual)
 	(void)vle_keys_exec_timed_out(WK_CARET);
 	assert_int_equal(2, view->list_pos);
 
-	leave_visual_mode(0, 1, 0);
+	modvis_leave(0, 1, 0);
 }
 
 /* 0 row----file0----file8-----
@@ -160,7 +160,7 @@ TEST(hjkl_in_tls_visual)
 	setup_transposed_grid(view, 2, 16, 1);
 	view->list_pos = 3;
 
-	enter_visual_mode(VS_NORMAL);
+	modvis_enter(VS_NORMAL);
 
 	(void)vle_keys_exec_timed_out(WK_h);
 	assert_int_equal(0, view->list_pos);
@@ -177,7 +177,7 @@ TEST(hjkl_in_tls_visual)
 	(void)vle_keys_exec_timed_out(WK_l);
 	assert_int_equal(15, view->list_pos);
 
-	leave_visual_mode(0, 1, 0);
+	modvis_leave(0, 1, 0);
 }
 
 TEST(line_beginend_in_tls_normal)
@@ -200,7 +200,7 @@ TEST(line_beginend_in_tls_visual)
 	setup_transposed_grid(view, 2, 16, 1);
 	view->list_pos = 11;
 
-	enter_visual_mode(VS_NORMAL);
+	modvis_enter(VS_NORMAL);
 
 	(void)vle_keys_exec_timed_out(WK_ZERO);
 	assert_int_equal(3, view->list_pos);
@@ -211,7 +211,7 @@ TEST(line_beginend_in_tls_visual)
 	(void)vle_keys_exec_timed_out(WK_CARET);
 	assert_int_equal(3, view->list_pos);
 
-	leave_visual_mode(0, 1, 0);
+	modvis_leave(0, 1, 0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

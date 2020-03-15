@@ -255,7 +255,7 @@ vifm_main(int argc, char *argv[])
 
 	bg_init();
 
-	fops_init(&enter_prompt_mode, &prompt_msg_custom);
+	fops_init(&modcline_prompt, &prompt_msg_custom);
 
 	set_view_path(&lwin, vifm_args.lwin_path);
 	set_view_path(&rwin, vifm_args.rwin_path);
@@ -296,7 +296,7 @@ vifm_main(int argc, char *argv[])
 	curr_stats.load_stage = 1;
 
 	/* Make v:count exist during processing configuration. */
-	set_count_vars(0);
+	modnorm_set_count_vars(0);
 
 	if(!vifm_args.no_configs)
 	{
@@ -398,11 +398,12 @@ parse_received_arguments(char *argv[])
 	args_parse(&args, count_strings(argv), argv, argv[0]);
 	args_process(&args, 0);
 
+	abort_menu_like_mode();
 	exec_startup_commands(&args);
-	args_free(&args);
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))
 	{
+		args_free(&args);
 		return;
 	}
 
@@ -427,6 +428,8 @@ parse_received_arguments(char *argv[])
 		change_window();
 	}
 
+	args_free(&args);
+
 	/* XXX: why force clearing of the statusbar? */
 	ui_sb_clear();
 	curr_stats.save_msg = 0;
@@ -439,12 +442,12 @@ remote_cd(view_t *view, const char path[], int handle)
 
 	if(view->explore_mode)
 	{
-		view_leave_mode();
+		modview_leave();
 	}
 
 	if(view == other_view && vle_mode_is(VIEW_MODE))
 	{
-		view_leave_mode();
+		modview_leave();
 	}
 
 	if(curr_stats.preview.on && (handle || view == other_view))

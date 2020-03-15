@@ -698,7 +698,7 @@ update_screen(UpdateType update_kind)
 
 		if(vle_mode_is(VIEW_MODE))
 		{
-			view_ruler_update();
+			modview_ruler_update();
 		}
 		else
 		{
@@ -714,7 +714,7 @@ update_screen(UpdateType update_kind)
 	if(vle_mode_is(VIEW_MODE) ||
 			(curr_stats.number_of_windows == 2 && other_view->explore_mode))
 	{
-		view_redraw();
+		modview_redraw();
 	}
 
 	update_all_windows();
@@ -1427,7 +1427,7 @@ void
 switch_panes(void)
 {
 	switch_panes_content();
-	view_try_activate_mode();
+	modview_try_activate();
 }
 
 void
@@ -1470,7 +1470,7 @@ switch_panes_content(void)
 	flist_update_origins(&lwin, &rwin.curr_dir[0], &lwin.curr_dir[0]);
 	flist_update_origins(&rwin, &lwin.curr_dir[0], &rwin.curr_dir[0]);
 
-	view_panes_swapped();
+	modview_panes_swapped();
 
 	stats_redraw_later();
 }
@@ -1507,7 +1507,7 @@ void
 go_to_other_pane(void)
 {
 	change_window();
-	view_try_activate_mode();
+	modview_try_activate();
 }
 
 void
@@ -2031,7 +2031,7 @@ format_view_title(const view_t *view, path_func pf)
 	}
 	else if(curr_stats.preview.on && view == other_view)
 	{
-		const char *const viewer = view_detached_get_viewer();
+		const char *const viewer = modview_detached_get_viewer();
 		if(viewer != NULL)
 		{
 			return format_str("Command: %s", viewer);

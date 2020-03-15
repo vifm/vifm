@@ -25,40 +25,43 @@
 struct view_t;
 
 /* Initializes normal mode. */
-void init_normal_mode(void);
+void modnorm_init(void);
 
-/* Change file attributes (permissions or properties). */
-void normal_cmd_cp(struct view_t *view, key_info_t key_info);
+/* Changes file attributes (permissions or properties). */
+void modnorm_cp(struct view_t *view, key_info_t key_info);
 
-void normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info);
+/* Redraws with file in bottom of list. */
+void modnorm_zb(key_info_t key_info, keys_info_t *keys_info);
 
-void normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info);
+/* Redraws with file in top of list. */
+void modnorm_zt(key_info_t key_info, keys_info_t *keys_info);
 
-void normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info);
+/* Redraws with file in center of list. */
+void modnorm_zz(key_info_t key_info, keys_info_t *keys_info);
 
 /* Centers the splitter. */
-void normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info);
+void modnorm_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info);
 
-void normal_cmd_ctrl_wless(key_info_t key_info, keys_info_t *keys_info);
+void modnorm_ctrl_wless(key_info_t key_info, keys_info_t *keys_info);
 
-void normal_cmd_ctrl_wgreater(key_info_t key_info, keys_info_t *keys_info);
+void modnorm_ctrl_wgreater(key_info_t key_info, keys_info_t *keys_info);
 
-void normal_cmd_ctrl_wplus(key_info_t key_info, keys_info_t *keys_info);
+void modnorm_ctrl_wplus(key_info_t key_info, keys_info_t *keys_info);
 
-void normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info);
+void modnorm_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info);
 
-void normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
+void modnorm_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 
 /* Kind of callback to allow starting searches from the module and rely on other
  * modules.  Returns new value for status bar message flag, but when
  * print_errors isn't requested can return -1 to indicate issues with the
  * pattern. */
-int find_npattern(struct view_t *view, const char pattern[], int backward,
+int modnorm_find(struct view_t *view, const char pattern[], int backward,
 		int print_errors);
 
 /* Sets v:count and v:count1 variables.  The count parameter can be
  * NO_COUNT_GIVEN. */
-void set_count_vars(int count);
+void modnorm_set_count_vars(int count);
 
 #endif /* VIFM__MODES__NORMAL_H__ */
 

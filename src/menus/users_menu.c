@@ -70,7 +70,7 @@ users_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 	else if(wcscmp(keys, L"c") == 0)
 	{
 		/* Insert whole line. */
-		menu_morph_into_cmdline(CLS_COMMAND, m->items[m->pos], 1);
+		modmenu_morph_into_cline(CLS_COMMAND, m->items[m->pos], 1);
 		return KHR_MORPHED_MENU;
 	}
 	return KHR_UNHANDLED;

@@ -246,11 +246,11 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_u,          {{&cmd_gu}, .descr = "convert to lowercase"}},
 	{WK_v,          {{&cmd_v},  .descr = "leave/switch to regular visual mode"}},
 	{WK_y,          {{&cmd_y},  .descr = "yank files"}},
-	{WK_z WK_b,     {{&normal_cmd_zb}, .descr = "push cursor to the bottom"}},
+	{WK_z WK_b,     {{&modnorm_zb}, .descr = "push cursor to the bottom"}},
 	{WK_z WK_d,     {{&cmd_zd}, .descr = "exclude custom view entry"}},
 	{WK_z WK_f,     {{&cmd_zf}, .descr = "add selection to filter"}},
-	{WK_z WK_t,     {{&normal_cmd_zt},   .descr = "push cursor to the top"}},
-	{WK_z WK_z,     {{&normal_cmd_zz},   .descr = "center cursor position"}},
+	{WK_z WK_t,     {{&modnorm_zt},      .descr = "push cursor to the top"}},
+	{WK_z WK_z,     {{&modnorm_zz},      .descr = "center cursor position"}},
 	{WK_LP,         {{&cmd_left_paren},  .descr = "go to previous group of files"}},
 	{WK_RP,         {{&cmd_right_paren}, .descr = "go to next group of files"}},
 	{WK_z WK_k,     {{&cmd_z_k},  .descr = "go to previous sibling dir"}},
@@ -275,7 +275,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_visual_mode(void)
+modvis_init(void)
 {
 	int ret_code;
 
@@ -286,7 +286,7 @@ init_visual_mode(void)
 }
 
 void
-enter_visual_mode(VisualSubmodes sub_mode)
+modvis_enter(VisualSubmodes sub_mode)
 {
 	const int ub = check_mark_directory(curr_view, '<');
 	const int lb = check_mark_directory(curr_view, '>');
@@ -325,7 +325,7 @@ enter_visual_mode(VisualSubmodes sub_mode)
 }
 
 void
-leave_visual_mode(int save_msg, int goto_top, int clear_selection)
+modvis_leave(int save_msg, int goto_top, int clear_selection)
 {
 	if(goto_top)
 	{
@@ -657,8 +657,8 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	set_count_vars(key_info.count);
-	enter_cmdline_mode(CLS_COMMAND, "", NULL);
+	modnorm_set_count_vars(key_info.count);
+	modcline_enter(CLS_COMMAND, "", NULL);
 }
 
 /* Continues navigation to word which starts with specified character in initial
@@ -759,7 +759,7 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 		view->list_pos = ub;
 	}
 
-	normal_cmd_cp(view, key_info);
+	modnorm_cp(view, key_info);
 }
 
 /* Renames selected files of the view. */
@@ -767,7 +767,7 @@ static void
 cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	leave_visual_mode(0, 1, 0);
+	modvis_leave(0, 1, 0);
 
 	check_marking(view, 0, NULL);
 	(void)fops_rename(view, NULL, 0, 0);
@@ -783,7 +783,7 @@ static void
 cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	leave_visual_mode(curr_stats.save_msg, 1, 0);
+	modvis_leave(curr_stats.save_msg, 1, 0);
 	rn_open(view, FHE_RUN);
 	flist_sel_stash(view);
 	redraw_view(view);
@@ -975,7 +975,7 @@ search(key_info_t key_info, int backward, int interactive)
 	if(view->matches == 0)
 	{
 		const char *const pattern = hists_search_last();
-		curr_stats.save_msg = find_vpattern(view, pattern, backward, interactive);
+		curr_stats.save_msg = modvis_find(view, pattern, backward, interactive);
 		return;
 	}
 
@@ -1034,7 +1034,7 @@ activate_search(int count, int back, int external)
 	else
 	{
 		const CmdLineSubmode submode = back ? CLS_VBSEARCH : CLS_VFSEARCH;
-		enter_cmdline_mode(submode, "", NULL);
+		modcline_enter(submode, "", NULL);
 	}
 }
 
@@ -1115,7 +1115,7 @@ static void
 leave_clearing_selection(int go_to_top, int save_msg)
 {
 	update_marks(view);
-	leave_visual_mode(save_msg, go_to_top, 1);
+	modvis_leave(save_msg, go_to_top, 1);
 }
 
 static void
@@ -1421,7 +1421,7 @@ revert_selection(int pos)
 }
 
 void
-update_visual_mode(void)
+modvis_update(void)
 {
 	const int pos = view->list_pos;
 
@@ -1436,8 +1436,7 @@ update_visual_mode(void)
 }
 
 int
-find_vpattern(view_t *view, const char pattern[], int backward,
-		int print_errors)
+modvis_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
 	int i;
 	int result;
@@ -1525,7 +1524,7 @@ move_pos(int pos)
 }
 
 const char *
-describe_visual_mode(void)
+modvis_describe(void)
 {
 	static const char *descriptions[] = {
 		[AT_NONE]   = "VISUAL",

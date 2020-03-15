@@ -527,7 +527,7 @@ static void
 free_preview(preview_t *preview)
 {
 	update_string(&preview->cleanup_cmd, NULL);
-	view_info_free(preview->explore);
+	modview_info_free(preview->explore);
 }
 
 void

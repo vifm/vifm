@@ -313,7 +313,7 @@ flist_free_view(view_t *view)
 	update_string(&view->preview_prg, NULL);
 	update_string(&view->preview_prg_g, NULL);
 
-	view_info_free(view->vi);
+	modview_info_free(view->vi);
 	view->vi = NULL;
 
 	regfree(&view->primary_group);

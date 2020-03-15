@@ -27,49 +27,52 @@
 struct view_t;
 
 /* Initializes menu mode. */
-void menu_init_mode(void);
+void modmenu_init(void);
 
 /* Enters menu mode. */
-void menu_enter_mode(menu_data_t *m, struct view_t *active_view);
+void modmenu_enter(menu_data_t *m, struct view_t *active_view);
+
+/* Aborts menu mode. */
+void modmenu_abort(void);
 
 /* Replaces menu of the menu mode. */
-void menu_reenter_mode(menu_data_t *m);
+void modmenu_reenter(menu_data_t *m);
 
 /* Performs pre main loop actions for the menu mode, which is assumed to be
  * activated. */
-void menu_pre(void);
+void modmenu_pre(void);
 
 /* Performs post-actions (at the end of input processing loop) for the menu
  * mode. */
-void menu_post(void);
+void modmenu_post(void);
 
 /* Redraws menu mode. */
-void menu_full_redraw(void);
+void modmenu_full_redraw(void);
 
 /* Redraws only the main part of menu (window with elements) assuming that size
  * and other elements are handled elsewhere. */
-void menu_partial_redraw(void);
+void modmenu_partial_redraw(void);
 
 /* Saves information about position into temporary storage (can't store more
  * than one state). */
-void menu_save_pos(void);
+void modmenu_save_pos(void);
 
 /* Restores previously saved position information. */
-void menu_restore_pos(void);
+void modmenu_restore_pos(void);
 
 /* Leaves menu and starts command-line mode.  external flag shows whether
  * cmd should be prepended with ":!".  To be used from keyboard handlers, which
  * in this case must return KHR_MORPHED_MENU. */
-void menu_morph_into_cmdline(CmdLineSubmode submode, const char input[],
+void modmenu_morph_into_cline(CmdLineSubmode submode, const char input[],
 		int external);
 
 /* Allows running regular command-line mode commands from menu mode. */
-void menu_run_command(const char cmd[]);
+void modmenu_run_command(const char cmd[]);
 
 /* Returns index of last visible line in the menu.  Value returned may be
  * greater than or equal to number of lines in the menu, which should be
  * treated correctly. */
-int menu_last_line(const menu_data_t *m);
+int modmenu_last_line(const menu_data_t *m);
 
 TSTATIC_DEFS(
 	menu_data_t * menu_get_current(void);
