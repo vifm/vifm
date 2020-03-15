@@ -48,22 +48,21 @@ typedef void (*prompt_cb)(const char response[]);
 typedef int (*complete_cmd_func)(const char cmd[], void *arg);
 
 /* Initializes command-line mode. */
-void init_cmdline_mode(void);
+void modcline_init(void);
 
 /* Enters command-line editing mode with specified submode.  cmd specifies
  * initial value, ptr is submode-specific data to be passed back. */
-void enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[],
-		void *ptr);
+void modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr);
 
 /* Enters command-line editing mode with prompt submode activated.  cmd
  * specifies initial value, cb is callback called on success, complete is
  * completion function, allow_ee specifies whether issuing external editor is
  * allowed. */
-void enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
+void modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee);
 
 /* Redraws UI elements of the command-line mode. */
-void redraw_cmdline(void);
+void modcline_redraw(void);
 
 #ifdef TEST
 #include <stddef.h> /* size_t wchar_t */

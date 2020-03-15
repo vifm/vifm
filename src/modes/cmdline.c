@@ -298,7 +298,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_cmdline_mode(void)
+modcline_init(void)
 {
 	int ret_code;
 
@@ -585,7 +585,7 @@ wcsins(wchar_t src[], const wchar_t ins[], int pos)
 }
 
 void
-enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
+modcline_enter(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 {
 	wchar_t *wcmd;
 	const wchar_t *wprompt;
@@ -636,7 +636,7 @@ enter_cmdline_mode(CmdLineSubmode cl_sub_mode, const char cmd[], void *ptr)
 }
 
 void
-enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
+modcline_prompt(const char prompt[], const char cmd[], prompt_cb cb,
 		complete_cmd_func complete, int allow_ee)
 {
 	wchar_t *wprompt;
@@ -662,7 +662,7 @@ enter_prompt_mode(const char prompt[], const char cmd[], prompt_cb cb,
 }
 
 void
-redraw_cmdline(void)
+modcline_redraw(void)
 {
 	if(prev_mode == MENU_MODE)
 	{

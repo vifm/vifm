@@ -281,7 +281,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_more_mode();
-	enter_cmdline_mode(CLS_COMMAND, "", NULL);
+	modcline_enter(CLS_COMMAND, "", NULL);
 }
 
 /* Navigate to the bottom. */

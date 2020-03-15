@@ -552,7 +552,7 @@ cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 	last_search_backward = 0;
 	menus_search_reset(menu->state, last_search_backward,
 			def_count(key_info.count));
-	enter_cmdline_mode(CLS_MENU_FSEARCH, "", menu);
+	modcline_enter(CLS_MENU_FSEARCH, "", menu);
 }
 
 /* Jump to percent of list. */
@@ -575,7 +575,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	cmds_conf.begin = 1;
 	cmds_conf.current = menu->pos;
 	cmds_conf.end = menu->len;
-	enter_cmdline_mode(CLS_MENU_COMMAND, "", menu);
+	modcline_enter(CLS_MENU_COMMAND, "", menu);
 }
 
 static void
@@ -584,7 +584,7 @@ cmd_qmark(key_info_t key_info, keys_info_t *keys_info)
 	last_search_backward = 1;
 	menus_search_reset(menu->state, last_search_backward,
 			def_count(key_info.count));
-	enter_cmdline_mode(CLS_MENU_BSEARCH, "", menu);
+	modcline_enter(CLS_MENU_BSEARCH, "", menu);
 }
 
 /* Populates very custom (unsorted) view with list of files. */
@@ -1029,7 +1029,7 @@ menu_morph_into_cmdline(CmdLineSubmode submode, const char input[],
 	}
 
 	leave_menu_mode(0);
-	enter_cmdline_mode(submode, input_copy, NULL);
+	modcline_enter(submode, input_copy, NULL);
 
 	free(input_copy);
 }

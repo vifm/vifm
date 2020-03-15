@@ -658,7 +658,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	set_count_vars(key_info.count);
-	enter_cmdline_mode(CLS_COMMAND, "", NULL);
+	modcline_enter(CLS_COMMAND, "", NULL);
 }
 
 /* Continues navigation to word which starts with specified character in initial
@@ -1034,7 +1034,7 @@ activate_search(int count, int back, int external)
 	else
 	{
 		const CmdLineSubmode submode = back ? CLS_VBSEARCH : CLS_VFSEARCH;
-		enter_cmdline_mode(submode, "", NULL);
+		modcline_enter(submode, "", NULL);
 	}
 }
 

@@ -614,7 +614,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	set_count_vars(key_info.count);
-	enter_cmdline_mode(CLS_COMMAND, prefix, NULL);
+	modcline_enter(CLS_COMMAND, prefix, NULL);
 }
 
 /* Processes !<selector> normal mode command.  Processes results of applying
@@ -1315,7 +1315,7 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_equal(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_cmdline_mode(CLS_FILTER, curr_view->local_filter.filter.raw, NULL);
+	modcline_enter(CLS_FILTER, curr_view->local_filter.filter.raw, NULL);
 }
 
 /* Continues navigation to word which starts with specified character in
@@ -1360,7 +1360,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	set_count_vars(key_info.count);
-	enter_cmdline_mode(CLS_COMMAND, prefix, NULL);
+	modcline_enter(CLS_COMMAND, prefix, NULL);
 }
 
 void
@@ -1819,7 +1819,7 @@ activate_search(int count, int back, int external)
 	else
 	{
 		const CmdLineSubmode submode = back ? CLS_BSEARCH : CLS_FSEARCH;
-		enter_cmdline_mode(submode, "", NULL);
+		modcline_enter(submode, "", NULL);
 	}
 }
 

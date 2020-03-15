@@ -255,7 +255,7 @@ vifm_main(int argc, char *argv[])
 
 	bg_init();
 
-	fops_init(&enter_prompt_mode, &prompt_msg_custom);
+	fops_init(&modcline_prompt, &prompt_msg_custom);
 
 	set_view_path(&lwin, vifm_args.lwin_path);
 	set_view_path(&rwin, vifm_args.rwin_path);

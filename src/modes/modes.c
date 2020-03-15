@@ -77,7 +77,7 @@ ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 typedef void (*mode_init_func)(void);
 static mode_init_func mode_init_funcs[] = {
 	&init_normal_mode,        /* NORMAL_MODE */
-	&init_cmdline_mode,       /* CMDLINE_MODE */
+	&modcline_init,           /* CMDLINE_MODE */
 	&init_visual_mode,        /* VISUAL_MODE */
 	&menu_init_mode,          /* MENU_MODE */
 	&init_sort_dialog_mode,   /* SORT_MODE */
@@ -224,7 +224,7 @@ modes_redraw(void)
 
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		redraw_cmdline();
+		modcline_redraw();
 		goto finish;
 	}
 	else if(vle_primary_mode_is(MENU_MODE))
@@ -295,7 +295,7 @@ modes_update(void)
 {
 	if(vle_mode_is(CMDLINE_MODE))
 	{
-		redraw_cmdline();
+		modcline_redraw();
 		return;
 	}
 	else if(vle_mode_is(MENU_MODE))

@@ -29,7 +29,7 @@ SETUP_ONCE()
 SETUP()
 {
 	init_modes();
-	enter_cmdline_mode(CLS_COMMAND, "", NULL);
+	modcline_enter(CLS_COMMAND, "", NULL);
 
 	curr_view = &lwin;
 	view_setup(&lwin);
