@@ -296,7 +296,7 @@ vifm_main(int argc, char *argv[])
 	curr_stats.load_stage = 1;
 
 	/* Make v:count exist during processing configuration. */
-	set_count_vars(0);
+	modnorm_set_count_vars(0);
 
 	if(!vifm_args.no_configs)
 	{

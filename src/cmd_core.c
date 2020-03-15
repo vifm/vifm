@@ -1078,7 +1078,7 @@ exec_command(const char cmd[], view_t *view, CmdInputType type)
 	{
 		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_FSEARCH_PATTERN:
-			return find_npattern(view, cmd, backward, 1);
+			return modnorm_find(view, cmd, backward, 1);
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:
@@ -1120,7 +1120,7 @@ repeat_command(view_t *view, CmdInputType type)
 	{
 		case CIT_BSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_FSEARCH_PATTERN:
-			return find_npattern(view, hists_search_last(), backward, 1);
+			return modnorm_find(view, hists_search_last(), backward, 1);
 
 		case CIT_VBSEARCH_PATTERN: backward = 1; /* Fall through. */
 		case CIT_VFSEARCH_PATTERN:

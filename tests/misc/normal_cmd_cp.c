@@ -22,14 +22,14 @@ SETUP()
 TEST(incorrect_length_causes_error, IF(not_windows))
 {
 	key_info_t key_info = { .count = 77777 };
-	normal_cmd_cp(&lwin, key_info);
+	modnorm_cp(&lwin, key_info);
 	assert_true(curr_stats.save_msg);
 }
 
 TEST(incorrect_num_causes_error, IF(not_windows))
 {
 	key_info_t key_info = { .count = 9 };
-	normal_cmd_cp(&lwin, key_info);
+	modnorm_cp(&lwin, key_info);
 	assert_true(curr_stats.save_msg);
 }
 
@@ -57,7 +57,7 @@ TEST(file_mode_is_changed, IF(not_windows))
 
 	undo_setup();
 
-	normal_cmd_cp(&lwin, key_info);
+	modnorm_cp(&lwin, key_info);
 	assert_false(curr_stats.save_msg);
 
 	assert_success(os_stat(SANDBOX_PATH "/empty", &st));

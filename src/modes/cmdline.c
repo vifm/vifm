@@ -503,7 +503,7 @@ handle_nonempty_input(void)
 
 		case CLS_BSEARCH: backward = 1; /* Fall through. */
 		case CLS_FSEARCH:
-			result = find_npattern(curr_view, mbinput, backward, 0);
+			result = modnorm_find(curr_view, mbinput, backward, 0);
 			update_state(result, curr_view->matches);
 			break;
 		case CLS_VBSEARCH: backward = 1; /* Fall through. */

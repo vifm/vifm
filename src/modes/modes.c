@@ -76,7 +76,7 @@ ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 
 typedef void (*mode_init_func)(void);
 static mode_init_func mode_init_funcs[] = {
-	&init_normal_mode,        /* NORMAL_MODE */
+	&modnorm_init,            /* NORMAL_MODE */
 	&modcline_init,           /* CMDLINE_MODE */
 	&modvis_init,             /* VISUAL_MODE */
 	&modmenu_init,            /* MENU_MODE */

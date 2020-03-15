@@ -246,11 +246,11 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_u,          {{&cmd_gu}, .descr = "convert to lowercase"}},
 	{WK_v,          {{&cmd_v},  .descr = "leave/switch to regular visual mode"}},
 	{WK_y,          {{&cmd_y},  .descr = "yank files"}},
-	{WK_z WK_b,     {{&normal_cmd_zb}, .descr = "push cursor to the bottom"}},
+	{WK_z WK_b,     {{&modnorm_zb}, .descr = "push cursor to the bottom"}},
 	{WK_z WK_d,     {{&cmd_zd}, .descr = "exclude custom view entry"}},
 	{WK_z WK_f,     {{&cmd_zf}, .descr = "add selection to filter"}},
-	{WK_z WK_t,     {{&normal_cmd_zt},   .descr = "push cursor to the top"}},
-	{WK_z WK_z,     {{&normal_cmd_zz},   .descr = "center cursor position"}},
+	{WK_z WK_t,     {{&modnorm_zt},      .descr = "push cursor to the top"}},
+	{WK_z WK_z,     {{&modnorm_zz},      .descr = "center cursor position"}},
 	{WK_LP,         {{&cmd_left_paren},  .descr = "go to previous group of files"}},
 	{WK_RP,         {{&cmd_right_paren}, .descr = "go to next group of files"}},
 	{WK_z WK_k,     {{&cmd_z_k},  .descr = "go to previous sibling dir"}},
@@ -657,7 +657,7 @@ static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
-	set_count_vars(key_info.count);
+	modnorm_set_count_vars(key_info.count);
 	modcline_enter(CLS_COMMAND, "", NULL);
 }
 
@@ -759,7 +759,7 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 		view->list_pos = ub;
 	}
 
-	normal_cmd_cp(view, key_info);
+	modnorm_cp(view, key_info);
 }
 
 /* Renames selected files of the view. */

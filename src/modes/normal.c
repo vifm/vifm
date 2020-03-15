@@ -298,13 +298,13 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_C_w WK_x,      {{&cmd_ctrl_wx}, .descr = "exchange panes"}},
 	{WK_C_w WK_C_z,    {{&cmd_ctrl_wz}, .descr = "exit preview/view modes"}},
 	{WK_C_w WK_z,      {{&cmd_ctrl_wz}, .descr = "exit preview/view modes"}},
-	{WK_C_w WK_EQUALS, {{&normal_cmd_ctrl_wequal},   .nim = 1, .descr = "size panes equally"}},
-	{WK_C_w WK_LT,     {{&normal_cmd_ctrl_wless},    .nim = 1, .descr = "decrease pane size by one"}},
-	{WK_C_w WK_GT,     {{&normal_cmd_ctrl_wgreater}, .nim = 1, .descr = "increase pane size by one"}},
-	{WK_C_w WK_PLUS,   {{&normal_cmd_ctrl_wplus},    .nim = 1, .descr = "increase pane size by one"}},
-	{WK_C_w WK_MINUS,  {{&normal_cmd_ctrl_wminus},   .nim = 1, .descr = "decrease pane size by one"}},
-	{WK_C_w WK_BAR,    {{&normal_cmd_ctrl_wpipe},    .nim = 1, .descr = "maximize pane size"}},
-	{WK_C_w WK_USCORE, {{&normal_cmd_ctrl_wpipe},    .nim = 1, .descr = "maximize pane size"}},
+	{WK_C_w WK_EQUALS, {{&modnorm_ctrl_wequal},   .nim = 1, .descr = "size panes equally"}},
+	{WK_C_w WK_LT,     {{&modnorm_ctrl_wless},    .nim = 1, .descr = "decrease pane size by one"}},
+	{WK_C_w WK_GT,     {{&modnorm_ctrl_wgreater}, .nim = 1, .descr = "increase pane size by one"}},
+	{WK_C_w WK_PLUS,   {{&modnorm_ctrl_wplus},    .nim = 1, .descr = "increase pane size by one"}},
+	{WK_C_w WK_MINUS,  {{&modnorm_ctrl_wminus},   .nim = 1, .descr = "decrease pane size by one"}},
+	{WK_C_w WK_BAR,    {{&modnorm_ctrl_wpipe},    .nim = 1, .descr = "maximize pane size"}},
+	{WK_C_w WK_USCORE, {{&modnorm_ctrl_wpipe},    .nim = 1, .descr = "maximize pane size"}},
 	{WK_C_x,           {{&cmd_ctrl_x}, .descr = "decrement number in names"}},
 	{WK_C_y,           {{&cmd_ctrl_y}, .descr = "scroll one line up"}},
 	{WK_ESC,           {{&cmd_ctrl_c}, .descr = "reset selection and highlight"}},
@@ -392,13 +392,13 @@ static keys_add_info_t builtin_cmds[] = {
 	{WK_z WK_R,        {{&cmd_zR}, .descr = "save and reset all filters"}},
 	{WK_z WK_a,        {{&cmd_za}, .descr = "toggle dot files visibility"}},
 	{WK_z WK_d,        {{&cmd_zd}, .descr = "exclude custom view entry"}},
-	{WK_z WK_b,        {{&normal_cmd_zb}, .descr = "push cursor to the bottom"}},
+	{WK_z WK_b,        {{&modnorm_zb}, .descr = "push cursor to the bottom"}},
 	{WK_z WK_f,        {{&cmd_zf}, .descr = "add current file to filter"}},
 	{WK_z WK_m,        {{&cmd_zm}, .descr = "hide dot files"}},
 	{WK_z WK_o,        {{&cmd_zo}, .descr = "show dot files"}},
 	{WK_z WK_r,        {{&cmd_zr}, .descr = "clear local filter"}},
-	{WK_z WK_t,        {{&normal_cmd_zt},   .descr = "push cursor to the top"}},
-	{WK_z WK_z,        {{&normal_cmd_zz},   .descr = "center cursor position"}},
+	{WK_z WK_t,        {{&modnorm_zt},      .descr = "push cursor to the top"}},
+	{WK_z WK_z,        {{&modnorm_zz},      .descr = "center cursor position"}},
 	{WK_LP,            {{&cmd_left_paren},  .descr = "go to previous group of files"}},
 	{WK_RP,            {{&cmd_right_paren}, .descr = "go to next group of files"}},
 	{WK_z WK_k,        {{&cmd_z_k},  .descr = "go to previous sibling dir"}},
@@ -486,7 +486,7 @@ static keys_add_info_t selectors[] = {
 };
 
 void
-init_normal_mode(void)
+modnorm_init(void)
 {
 	int ret_code;
 
@@ -613,7 +613,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 		strcpy(prefix, ".!");
 	}
 
-	set_count_vars(key_info.count);
+	modnorm_set_count_vars(key_info.count);
 	modcline_enter(CLS_COMMAND, prefix, NULL);
 }
 
@@ -832,38 +832,38 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 }
 
 void
-normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
+modnorm_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.splitter_pos = -1;
 	update_screen(UT_REDRAW);
 }
 
 void
-normal_cmd_ctrl_wless(key_info_t key_info, keys_info_t *keys_info)
+modnorm_ctrl_wless(key_info_t key_info, keys_info_t *keys_info)
 {
 	move_splitter(def_count(key_info.count), is_left_or_top() ? -1 : +1);
 }
 
 void
-normal_cmd_ctrl_wgreater(key_info_t key_info, keys_info_t *keys_info)
+modnorm_ctrl_wgreater(key_info_t key_info, keys_info_t *keys_info)
 {
 	move_splitter(def_count(key_info.count), is_left_or_top() ? +1 : -1);
 }
 
 void
-normal_cmd_ctrl_wplus(key_info_t key_info, keys_info_t *keys_info)
+modnorm_ctrl_wplus(key_info_t key_info, keys_info_t *keys_info)
 {
 	move_splitter(def_count(key_info.count), is_left_or_top() ? +1 : -1);
 }
 
 void
-normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info)
+modnorm_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info)
 {
 	move_splitter(def_count(key_info.count), is_left_or_top() ? -1 : +1);
 }
 
 void
-normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
+modnorm_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
@@ -1359,12 +1359,12 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 		snprintf(prefix, ARRAY_LEN(prefix), ".,.+%d", key_info.count - 1);
 	}
 
-	set_count_vars(key_info.count);
+	modnorm_set_count_vars(key_info.count);
 	modcline_enter(CLS_COMMAND, prefix, NULL);
 }
 
 void
-set_count_vars(int count)
+modnorm_set_count_vars(int count)
 {
 	/* TODO: move this to a better place someday, nowhere to place right now. */
 
@@ -1455,11 +1455,11 @@ cmd_co(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 {
-	normal_cmd_cp(curr_view, key_info);
+	modnorm_cp(curr_view, key_info);
 }
 
 void
-normal_cmd_cp(view_t *view, key_info_t key_info)
+modnorm_cp(view_t *view, key_info_t key_info)
 {
 #ifndef _WIN32
 	char mode[32];
@@ -2009,7 +2009,7 @@ cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 
 /* Redraw with file in bottom of list. */
 void
-normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info)
+modnorm_zb(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
@@ -2191,7 +2191,7 @@ cmd_right_curly_bracket(key_info_t key_info, keys_info_t *keys_info)
 
 /* Redraw with file in top of list. */
 void
-normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
+modnorm_zt(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_down(curr_view))
 	{
@@ -2203,7 +2203,7 @@ normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 
 /* Redraw with file in center of list. */
 void
-normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info)
+modnorm_zz(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!fpos_are_all_files_visible(curr_view))
 	{
@@ -2325,8 +2325,7 @@ selector_s(key_info_t key_info, keys_info_t *keys_info)
 }
 
 int
-find_npattern(view_t *view, const char pattern[], int backward,
-		int print_errors)
+modnorm_find(view_t *view, const char pattern[], int backward, int print_errors)
 {
 	const int nrepeats = search_repeat - 1;
 	int i;

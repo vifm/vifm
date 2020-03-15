@@ -201,7 +201,7 @@ TEST(find_npattern_returns_zero_if_msg_is_not_printed)
 	cfg.hl_search = 1;
 	cfg.inc_search = 0;
 
-	assert_int_equal(0, find_npattern(&lwin, "dos", 0, 1));
+	assert_int_equal(0, modnorm_find(&lwin, "dos", 0, 1));
 
 	cfg.hl_search = 0;
 }
