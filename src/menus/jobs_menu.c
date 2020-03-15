@@ -203,7 +203,7 @@ show_job_errors(view_t *view, menu_data_t *m, bg_job_t *job)
 		m.key_handler = &errs_khandler;
 		m.items = break_into_lines(errors, errors_len, &m.len, 0);
 
-		menu_reenter_mode(&m);
+		modmenu_reenter(&m);
 	}
 	free(cmd);
 	free(errors);
@@ -216,7 +216,7 @@ errs_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"h") == 0)
 	{
-		menu_reenter_mode(&jobs_m);
+		modmenu_reenter(&jobs_m);
 		return KHR_REFRESH_WINDOW;
 	}
 	return KHR_UNHANDLED;

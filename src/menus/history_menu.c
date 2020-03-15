@@ -156,7 +156,7 @@ history_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 				return KHR_UNHANDLED;
 		}
 
-		menu_morph_into_cmdline(submode, m->items[m->pos], 0);
+		modmenu_morph_into_cline(submode, m->items[m->pos], 0);
 		return KHR_MORPHED_MENU;
 	}
 	return KHR_UNHANDLED;

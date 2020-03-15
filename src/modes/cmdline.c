@@ -456,7 +456,7 @@ input_line_changed(void)
 	}
 	else if(prev_mode == MENU_MODE)
 	{
-		menu_full_redraw();
+		modmenu_full_redraw();
 	}
 
 	/* Hardware cursor is moved on the screen only on refresh, so refresh status
@@ -666,7 +666,7 @@ modcline_redraw(void)
 {
 	if(prev_mode == MENU_MODE)
 	{
-		menu_full_redraw();
+		modmenu_full_redraw();
 	}
 	else
 	{
@@ -760,7 +760,7 @@ save_view_port(void)
 	}
 	else
 	{
-		menu_save_pos();
+		modmenu_save_pos();
 	}
 }
 
@@ -770,7 +770,7 @@ set_view_port(void)
 {
 	if(prev_mode == MENU_MODE)
 	{
-		menu_restore_pos();
+		modmenu_restore_pos();
 		return;
 	}
 
@@ -818,7 +818,7 @@ leave_cmdline_mode(void)
 		if(prev_mode == MENU_MODE)
 		{
 			wresize(menu_win, getmaxy(stdscr) - 1, getmaxx(stdscr));
-			menu_partial_redraw();
+			modmenu_partial_redraw();
 		}
 	}
 
@@ -2484,7 +2484,7 @@ update_cmdline_size(void)
 	else
 	{
 		wresize(menu_win, getmaxy(stdscr) - required_height, getmaxx(stdscr));
-		menu_partial_redraw();
+		modmenu_partial_redraw();
 	}
 }
 
@@ -2660,7 +2660,7 @@ stop_regular_completion(void)
 	{
 		if(sub_mode == CLS_MENU_COMMAND)
 		{
-			menu_full_redraw();
+			modmenu_full_redraw();
 		}
 		else
 		{

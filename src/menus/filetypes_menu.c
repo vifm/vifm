@@ -167,7 +167,7 @@ filetypes_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 		const char *const prog_str = m->data[m->pos];
 		if(prog_str[0] != '\0')
 		{
-			menu_morph_into_cmdline(CLS_COMMAND, prog_str, 1);
+			modmenu_morph_into_cline(CLS_COMMAND, prog_str, 1);
 			return KHR_MORPHED_MENU;
 		}
 	}
