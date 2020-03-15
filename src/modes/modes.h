@@ -58,6 +58,9 @@ void clear_input_bar(void);
 /* Returns non-zero if current mode is a menu like one. */
 int is_in_menu_like_mode(void);
 
+/* Aborts one of menu-like modes if any of them is currently active. */
+void abort_menu_like_mode(void);
+
 void print_selected_msg(void);
 
 #endif /* VIFM__MODES__MODES_H__ */

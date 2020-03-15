@@ -356,6 +356,23 @@ is_in_menu_like_mode(void)
 }
 
 void
+abort_menu_like_mode(void)
+{
+	if(vle_primary_mode_is(MENU_MODE))
+	{
+		menu_abort_mode();
+	}
+	else if(vle_primary_mode_is(FILE_INFO_MODE))
+	{
+		abort_file_info_mode();
+	}
+	else if(vle_primary_mode_is(MORE_MODE))
+	{
+		modmore_abort();
+	}
+}
+
+void
 print_selected_msg(void)
 {
 	if(vle_mode_is(VISUAL_MODE))

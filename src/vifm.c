@@ -398,6 +398,7 @@ parse_received_arguments(char *argv[])
 	args_parse(&args, count_strings(argv), argv, argv[0]);
 	args_process(&args, 0);
 
+	abort_menu_like_mode();
 	exec_startup_commands(&args);
 
 	if(NONE(vle_mode_is, NORMAL_MODE, VIEW_MODE))

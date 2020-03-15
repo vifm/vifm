@@ -137,6 +137,12 @@ modmore_enter(const char txt[])
 	was_redraw = 0;
 }
 
+void
+modmore_abort(void)
+{
+	leave_more_mode();
+}
+
 /* Recalculates virtual lines of a view with line wrapping. */
 static void
 calc_vlines_wrapped(void)

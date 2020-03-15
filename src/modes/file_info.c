@@ -104,6 +104,12 @@ enter_file_info_mode(view_t *v)
 	was_redraw = 0;
 }
 
+void
+abort_file_info_mode(void)
+{
+	leave_file_info_mode();
+}
+
 static void
 leave_file_info_mode(void)
 {

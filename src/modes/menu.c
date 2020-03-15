@@ -312,6 +312,12 @@ menu_enter_mode(menu_data_t *m, view_t *active_view)
 }
 
 void
+menu_abort_mode(void)
+{
+	leave_menu_mode(1);
+}
+
+void
 menu_reenter_mode(menu_data_t *m)
 {
 	assert(vle_mode_is(MENU_MODE) && "Can't reenter if not in menu mode.");

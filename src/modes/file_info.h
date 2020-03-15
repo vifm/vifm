@@ -25,8 +25,13 @@ struct view_t;
 /* Initializes file information dialog mode. */
 void init_file_info_mode(void);
 
+/* Enters file information dialog mode. */
 void enter_file_info_mode(struct view_t *view);
 
+/* Aborts file information dialog mode. */
+void abort_file_info_mode(void);
+
+/* Redraws file information dialog mode. */
 void redraw_file_info_dialog(void);
 
 #endif /* VIFM__MODES__FILE_INFO_H__ */
