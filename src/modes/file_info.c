@@ -76,7 +76,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_file_info_mode(void)
+modfinfo_init(void)
 {
 	int ret_code;
 
@@ -88,7 +88,7 @@ init_file_info_mode(void)
 }
 
 void
-enter_file_info_mode(view_t *v)
+modfinfo_enter(view_t *v)
 {
 	if(fentry_is_fake(get_current_entry(v)))
 	{
@@ -99,13 +99,13 @@ enter_file_info_mode(view_t *v)
 	vle_mode_set(FILE_INFO_MODE, VMT_PRIMARY);
 	view = v;
 	ui_setup_for_menu_like();
-	redraw_file_info_dialog();
+	modfinfo_redraw();
 
 	was_redraw = 0;
 }
 
 void
-abort_file_info_mode(void)
+modfinfo_abort(void)
 {
 	leave_file_info_mode();
 }
@@ -126,7 +126,7 @@ leave_file_info_mode(void)
 }
 
 void
-redraw_file_info_dialog(void)
+modfinfo_redraw(void)
 {
 	const dir_entry_t *curr;
 	char perm_buf[26];
@@ -405,7 +405,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	redraw_file_info_dialog();
+	modfinfo_redraw();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

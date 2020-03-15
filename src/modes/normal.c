@@ -582,7 +582,7 @@ page_scroll(int base, int direction)
 static void
 cmd_ctrl_g(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_file_info_mode(curr_view);
+	modfinfo_enter(curr_view);
 }
 
 static void

@@ -84,7 +84,7 @@ static mode_init_func mode_init_funcs[] = {
 	&init_attr_dialog_mode,   /* ATTR_MODE */
 	&init_change_dialog_mode, /* CHANGE_MODE */
 	&view_init_mode,          /* VIEW_MODE */
-	&init_file_info_mode,     /* FILE_INFO_MODE */
+	&modfinfo_init,           /* FILE_INFO_MODE */
 	&init_msg_dialog_mode,    /* MSG_MODE */
 	&modmore_init,            /* MORE_MODE */
 };
@@ -238,7 +238,7 @@ modes_redraw(void)
 	}
 	else if(vle_mode_is(FILE_INFO_MODE))
 	{
-		redraw_file_info_dialog();
+		modfinfo_redraw();
 		goto finish;
 	}
 	else if(vle_mode_is(MORE_MODE))
@@ -305,7 +305,7 @@ modes_update(void)
 	}
 	else if(vle_mode_is(FILE_INFO_MODE))
 	{
-		redraw_file_info_dialog();
+		modfinfo_redraw();
 		return;
 	}
 
@@ -364,7 +364,7 @@ abort_menu_like_mode(void)
 	}
 	else if(vle_primary_mode_is(FILE_INFO_MODE))
 	{
-		abort_file_info_mode();
+		modfinfo_abort();
 	}
 	else if(vle_primary_mode_is(MORE_MODE))
 	{
