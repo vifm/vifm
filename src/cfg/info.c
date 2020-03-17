@@ -1199,7 +1199,7 @@ void
 write_info_file(void)
 {
 	char info_file[PATH_MAX + 16];
-	char tmp_file[PATH_MAX + 16];
+	char tmp_file[PATH_MAX + 32];
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
 	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());

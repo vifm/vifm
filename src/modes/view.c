@@ -438,7 +438,7 @@ modview_post(void)
 void
 modview_ruler_update(void)
 {
-	char buf[POS_WIN_MIN_WIDTH + 1];
+	char buf[32];
 	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
 
 	ui_ruler_set(buf);

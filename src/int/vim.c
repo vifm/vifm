@@ -142,7 +142,7 @@ int
 vim_view_file(const char filename[], int line, int column, int allow_forking)
 {
 	char vicmd[PATH_MAX + 1];
-	char cmd[PATH_MAX + 5];
+	char cmd[2*PATH_MAX + 5];
 	/* Use `-f` and not `--nofork` here to make it for with nvim (and possibly
 	 * other flavours of vi). */
 	const char *fork_str = allow_forking ? "" : "-f";

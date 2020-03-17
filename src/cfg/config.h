@@ -154,15 +154,15 @@ file_dec_t;
 
 typedef struct config_t
 {
-	char home_dir[PATH_MAX + 1];       /* Ends with a slash. */
-	char config_dir[PATH_MAX + 1];     /* Where local configuration files are
-	                                      stored. */
-	char colors_dir[PATH_MAX + 8]; /* Where local color files are stored. */
-	char data_dir[PATH_MAX + 1];   /* Where to store data files. */
+	char home_dir[PATH_MAX + 1];    /* Ends with a slash. */
+	char config_dir[PATH_MAX + 1];  /* Where local configuration files are
+	                                   stored. */
+	char colors_dir[PATH_MAX + 16]; /* Where local color files are stored. */
+	char data_dir[PATH_MAX + 1];    /* Where to store data files. */
 
 	/* This one should be set using trash_set_specs() function. */
-	char trash_dir[PATH_MAX + 1];
-	char log_file[PATH_MAX + 1];
+	char trash_dir[PATH_MAX + 64];
+	char log_file[PATH_MAX + 8];
 	char *vi_command;
 	int vi_cmd_bg;
 	char *vi_x_command;

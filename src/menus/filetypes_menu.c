@@ -124,7 +124,7 @@ form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 
 	if(descr_width > 0)
 	{
-		char format[16];
+		char format[32];
 		if(prog.description[0] == '\0')
 		{
 			snprintf(format, sizeof(format), "%%-%ds  ", descr_width);

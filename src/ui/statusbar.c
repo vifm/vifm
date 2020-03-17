@@ -89,7 +89,7 @@ ui_sb_quick_msgf(const char format[], ...)
 
 	checked_wmove(status_bar, 0, 0);
 	werase(status_bar);
-	vwprintw(status_bar, format, ap);
+	vw_printw(status_bar, format, ap);
 	wnoutrefresh(status_bar);
 	doupdate();
 
