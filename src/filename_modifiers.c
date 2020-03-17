@@ -88,7 +88,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
 		int for_shell)
 {
 	char path_buf[PATH_MAX + 1];
-	static char buf[PATH_MAX + 1];
+	static char buf[PATH_MAX + 16];
 
 	copy_str(path_buf, sizeof(path_buf), path);
 	system_to_internal_slashes(path_buf);

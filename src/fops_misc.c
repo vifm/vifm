@@ -547,7 +547,7 @@ fops_retarget(view_t *view)
 static void
 change_link_cb(const char new_target[])
 {
-	char undo_msg[COMMAND_GROUP_INFO_LEN];
+	char undo_msg[2*PATH_MAX + 32];
 	char full_path[PATH_MAX + 1];
 	char linkto[PATH_MAX + 1];
 	const char *fname;
@@ -1115,7 +1115,7 @@ update_dir_entry_size(const view_t *view, int index, int force)
 static void
 start_dir_size_calc(const char path[], int force)
 {
-	char task_desc[PATH_MAX + 1];
+	char task_desc[PATH_MAX + 32];
 	dir_size_args_t *args;
 
 	args = malloc(sizeof(*args));

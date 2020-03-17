@@ -487,8 +487,8 @@ cs_rename_all(void)
 #ifndef _WIN32
 		unsigned char type;
 #endif
-		char full_old_path[PATH_MAX + 16 + NAME_MAX];
-		char full_new_path[PATH_MAX + 16 + NAME_MAX];
+		char full_old_path[PATH_MAX + 32 + NAME_MAX];
+		char full_new_path[PATH_MAX + 32 + NAME_MAX];
 		snprintf(full_old_path, sizeof(full_old_path), "%s/%s", cfg.colors_dir,
 				d->d_name);
 		snprintf(full_new_path, sizeof(full_new_path), "%s/%s.vifm", cfg.colors_dir,
@@ -561,7 +561,7 @@ list_cs_files(int *len)
 int
 cs_exists(const char name[])
 {
-	char cs_path[PATH_MAX + 1];
+	char cs_path[PATH_MAX + 32];
 	get_cs_path(name, cs_path, sizeof(cs_path));
 	return is_regular_file(cs_path);
 }

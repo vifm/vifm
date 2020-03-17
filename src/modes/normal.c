@@ -596,7 +596,7 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 {
-	char prefix[16];
+	char prefix[32];
 	if(key_info.count != NO_COUNT_GIVEN && key_info.count != 1)
 	{
 		if(curr_view->list_pos + key_info.count >= curr_view->list_rows)

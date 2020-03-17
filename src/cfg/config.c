@@ -488,7 +488,7 @@ try_exe_directory_for_vifmrc(void)
 	LOG_FUNC_ENTER;
 
 	char exe_dir[PATH_MAX + 1];
-	char vifmrc[PATH_MAX + 1];
+	char vifmrc[PATH_MAX + 8];
 
 	if(get_exe_dir(exe_dir, sizeof(exe_dir)) != 0)
 	{
@@ -620,7 +620,7 @@ static void
 create_scripts_dir(void)
 {
 	char scripts[PATH_MAX + 16];
-	char readme[PATH_MAX + 1];
+	char readme[PATH_MAX + 32];
 	FILE *fp;
 
 	snprintf(scripts, sizeof(scripts), "%s/" SCRIPTS_DIR, cfg.config_dir);

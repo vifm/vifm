@@ -123,7 +123,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 		/* Must be at this level as dst might point into this buffer. */
 		char src_full[PATH_MAX + 1];
 
-		char dst_full[PATH_MAX + 1];
+		char dst_full[PATH_MAX + 8];
 		const char *dst = (custom_fnames ? list[i] : entry->name);
 		int err, from_trash;
 
@@ -195,7 +195,7 @@ fops_cpmv(view_t *view, char *list[], int nlines, CopyMoveLikeOp op, int force)
 void
 fops_replace(view_t *view, const char dst[], int force)
 {
-	char undo_msg[COMMAND_GROUP_INFO_LEN + 1];
+	char undo_msg[2*PATH_MAX + 32];
 	dir_entry_t *entry;
 	char dst_dir[PATH_MAX + 1];
 	char src_full[PATH_MAX + 1];

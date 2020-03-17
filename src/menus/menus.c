@@ -307,7 +307,7 @@ menus_set_pos(menu_state_t *ms, int pos)
 static void
 show_position_in_menu(const menu_data_t *m)
 {
-	char pos_buf[POS_WIN_MIN_WIDTH + 1];
+	char pos_buf[32];
 	snprintf(pos_buf, sizeof(pos_buf), " %d-%d ", m->pos + 1, m->len);
 
 	ui_ruler_set(pos_buf);

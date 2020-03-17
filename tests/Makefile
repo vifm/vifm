@@ -128,7 +128,8 @@ override LD = $(LD_$(V))
 AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
-override CFLAGS := $(CFLAGS) -MMD -MP -pipe -Wall -Wno-char-subscripts \
+override CFLAGS := $(CFLAGS) -MMD -MP -pipe \
+                   -Wall -Wno-char-subscripts \
                    -Istic/ -include $(B)../build-aux/config.h \
                    -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
@@ -172,12 +173,14 @@ ifneq (,$(findstring --coverage, $(LDFLAGS)))
         override LDFLAGS += --coverage
     endif
 endif
-# don't precompile header with clang (on OS X gcc is likely to be a symlink to
-# clang) because it handles macros in a different way
 ifeq (,$(findstring clang,$(CC)))
+    # don't precompile header with clang (on OS X gcc is likely to be a symlink
+    # to clang) because it handles macros in a different way
     ifneq (Darwin,$(shell uname -s))
         GCH_DEP := $(B)stic/stic.h.gch
     endif
+    # this flag seems to be gcc-specific and clang freaks out on it with -Werror
+    override CFLAGS += -Wno-format-truncation
 endif
 
 ifdef DEBUG
