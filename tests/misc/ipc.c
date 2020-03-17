@@ -239,8 +239,6 @@ other_instance(bg_op_t *bg_op, void *arg)
 	{
 		/* Do nothing. */
 	}
-	/* To make sure we don't get same message again. */
-	assert_false(ipc_check(ipc));
 }
 
 static int
