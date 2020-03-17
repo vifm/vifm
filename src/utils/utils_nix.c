@@ -1046,7 +1046,10 @@ get_installed_data_dir(void)
 void
 clone_attribs(const char path[], const char from[], const struct stat *st)
 {
-	chown(path, st->st_uid, st->st_gid);
+	if(chown(path, st->st_uid, st->st_gid) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Failed to chown `%s`", path);
+	}
 	clone_timestamps(path, from, st);
 	clone_xattrs(path, from);
 }
