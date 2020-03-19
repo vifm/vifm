@@ -60,6 +60,9 @@
 	Abort menu, more or file information modes before processing remote
 	commands.  Thanks to kangshugang.
 
+	Improve navigation on gf key.  Do fewer refreshes and disable filters to
+	make target visible.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

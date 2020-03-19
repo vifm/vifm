@@ -689,18 +689,17 @@ follow_link(view_t *view, int follow_dirs)
 		file = get_last_path_component(linkto);
 	}
 
-	if(dir[0] != '\0')
+	if(dir[0] != '\0' && file != NULL)
+	{
+		navigate_to_file(view, dir, file, 1);
+	}
+	else if(dir[0] != '\0')
 	{
 		navigate_to(view, dir);
 	}
-
-	if(file != NULL)
+	else if(file != NULL)
 	{
-		const int pos = fpos_find_by_name(view, file);
-		if(pos >= 0)
-		{
-			fpos_set_pos(view, pos);
-		}
+		fpos_ensure_selected(view, file);
 	}
 
 	free(dir);
