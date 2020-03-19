@@ -348,58 +348,7 @@ get_link_target(const char link[], char buf[], size_t buf_len)
 	buf[len] = '\0';
 	return 0;
 #else
-	char filename[PATH_MAX + 1];
-	DWORD attr;
-	wchar_t *utf16_filename;
-	HANDLE hfile;
-	char rdb[2048];
-	char *t;
-	REPARSE_DATA_BUFFER *sbuf;
-	WCHAR *path;
-
-	if(!is_symlink(link))
-	{
-		return -1;
-	}
-
-	copy_str(filename, sizeof(filename), link);
-	chosp(filename);
-
-	utf16_filename = utf8_to_utf16(filename);
-	hfile = CreateFileW(utf16_filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
-			NULL, OPEN_EXISTING,
-			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
-	free(utf16_filename);
-
-	if(hfile == INVALID_HANDLE_VALUE)
-	{
-		LOG_WERROR(GetLastError());
-		return -1;
-	}
-
-	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
-			sizeof(rdb), &attr, NULL))
-	{
-		LOG_WERROR(GetLastError());
-		CloseHandle(hfile);
-		return -1;
-	}
-	CloseHandle(hfile);
-
-	sbuf = (REPARSE_DATA_BUFFER *)rdb;
-	path = sbuf->SymbolicLinkReparseBuffer.PathBuffer;
-	path[sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR) +
-			sbuf->SymbolicLinkReparseBuffer.PrintNameLength/sizeof(WCHAR)] = L'\0';
-	t = to_multibyte(path +
-			sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR));
-	if(strncmp(t, "\\??\\", 4) == 0)
-		strncpy(buf, t + 4, buf_len);
-	else
-		strncpy(buf, t, buf_len);
-	buf[buf_len - 1] = '\0';
-	free(t);
-	system_to_internal_slashes(buf);
-	return 0;
+	return win_symlink_read(link, buf, buf_len);
 #endif
 }
 
