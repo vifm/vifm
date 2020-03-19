@@ -348,7 +348,11 @@ get_link_target(const char link[], char buf[], size_t buf_len)
 	buf[len] = '\0';
 	return 0;
 #else
-	return win_symlink_read(link, buf, buf_len);
+	if(win_symlink_read(link, buf, buf_len) == 0)
+	{
+		return 0;
+	}
+	return win_shortcut_read(link, buf, buf_len);
 #endif
 }
 
