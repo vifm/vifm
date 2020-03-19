@@ -87,6 +87,10 @@ time_t win_to_unix_time(FILETIME ft);
  * parameter.  Returns zero on success, otherwise non-zero is returned. */
 int win_symlink_read(const char link[], char buf[], int buf_len);
 
+/* Resolves target of a .lnk-file.  Returns zero on success and non-zero
+ * otherwise. */
+int win_shortcut_read(const char shortcut[], char buf[], int buf_len);
+
 TSTATIC_DEFS(
 	int should_wait_for_program(const char cmd[]);
 )

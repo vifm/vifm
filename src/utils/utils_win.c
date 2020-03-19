@@ -20,8 +20,11 @@
 #include "utils.h"
 #include "utils_int.h"
 
-#include <windows.h>
 #include <ntdef.h>
+#include <objidl.h>
+#include <shlguid.h>
+#include <shobjidl.h>
+#include <windows.h>
 
 #include <curses.h>
 
@@ -1041,6 +1044,80 @@ win_symlink_read(const char link[], char buf[], int buf_len)
 	free(t);
 	system_to_internal_slashes(buf);
 	return 0;
+}
+
+int
+win_shortcut_read(const char shortcut[], char buf[], int buf_len)
+{
+	HRESULT hres;
+
+	static int initialized;
+	if(!initialized)
+	{
+		hres = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+		if(!SUCCEEDED(hres))
+		{
+			return 1;
+		}
+		initialized = 1;
+	}
+
+	static IShellLinkW *shlink;
+	if(shlink == NULL)
+	{
+		hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+				&IID_IShellLinkW, (void **)&shlink);
+		if(!SUCCEEDED(hres))
+		{
+			return 1;
+		}
+	}
+
+	static IPersistFile *pfile;
+	if(pfile == NULL)
+	{
+		hres = shlink->lpVtbl->QueryInterface(shlink, &IID_IPersistFile,
+				(void **)&pfile);
+		if(!SUCCEEDED(hres))
+		{
+			return 1;
+		}
+	}
+
+	wchar_t *wpath = to_wide(shortcut);
+	if(wpath == NULL)
+	{
+		return 1;
+	}
+
+	hres = pfile->lpVtbl->Load(pfile, wpath, STGM_READ);
+	free(wpath);
+
+	if(SUCCEEDED(hres))
+	{
+		hres = shlink->lpVtbl->Resolve(shlink, INVALID_HANDLE_VALUE, SLR_NO_UI);
+
+		if(SUCCEEDED(hres))
+		{
+			wchar_t target[PATH_MAX + 1];
+			hres = shlink->lpVtbl->GetPath(shlink, target, sizeof(target), NULL, 0);
+
+			if(hres == S_OK)
+			{
+				char *mb = to_multibyte(target);
+				if(mb == NULL)
+				{
+					return 1;
+				}
+				copy_str(buf, buf_len, mb);
+				system_to_internal_slashes(buf);
+				free(mb);
+				return 0;
+			}
+		}
+	}
+
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
