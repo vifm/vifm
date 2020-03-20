@@ -20,8 +20,11 @@
 #include "utils.h"
 #include "utils_int.h"
 
-#include <windows.h>
 #include <ntdef.h>
+#include <objidl.h>
+#include <shlguid.h>
+#include <shobjidl.h>
+#include <windows.h>
 
 #include <curses.h>
 
@@ -984,6 +987,137 @@ win_to_unix_time(FILETIME ft)
 	win_time = (win_time << 32) | ft.dwLowDateTime;
 
 	return win_time/WINDOWS_TICK - SEC_TO_UNIX_EPOCH;
+}
+
+int
+win_symlink_read(const char link[], char buf[], int buf_len)
+{
+	char filename[PATH_MAX + 1];
+	DWORD attr;
+	wchar_t *utf16_filename;
+	HANDLE hfile;
+	char rdb[2048];
+	char *t;
+	REPARSE_DATA_BUFFER *sbuf;
+	WCHAR *path;
+
+	if(!is_symlink(link))
+	{
+		return -1;
+	}
+
+	copy_str(filename, sizeof(filename), link);
+	chosp(filename);
+
+	utf16_filename = to_wide(filename);
+	hfile = CreateFileW(utf16_filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL, OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+	free(utf16_filename);
+
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+
+	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
+			sizeof(rdb), &attr, NULL))
+	{
+		LOG_WERROR(GetLastError());
+		CloseHandle(hfile);
+		return -1;
+	}
+	CloseHandle(hfile);
+
+	sbuf = (REPARSE_DATA_BUFFER *)rdb;
+	path = sbuf->SymbolicLinkReparseBuffer.PathBuffer;
+	path[sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR) +
+			sbuf->SymbolicLinkReparseBuffer.PrintNameLength/sizeof(WCHAR)] = L'\0';
+	t = to_multibyte(path +
+			sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR));
+	if(strncmp(t, "\\??\\", 4) == 0)
+		strncpy(buf, t + 4, buf_len);
+	else
+		strncpy(buf, t, buf_len);
+	buf[buf_len - 1] = '\0';
+	free(t);
+	system_to_internal_slashes(buf);
+	return 0;
+}
+
+int
+win_shortcut_read(const char shortcut[], char buf[], int buf_len)
+{
+	HRESULT hres;
+
+	static int initialized;
+	if(!initialized)
+	{
+		hres = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+		if(!SUCCEEDED(hres))
+		{
+			return 1;
+		}
+		initialized = 1;
+	}
+
+	static IShellLinkW *shlink;
+	if(shlink == NULL)
+	{
+		hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+				&IID_IShellLinkW, (void **)&shlink);
+		if(!SUCCEEDED(hres))
+		{
+			return 1;
+		}
+	}
+
+	static IPersistFile *pfile;
+	if(pfile == NULL)
+	{
+		hres = shlink->lpVtbl->QueryInterface(shlink, &IID_IPersistFile,
+				(void **)&pfile);
+		if(!SUCCEEDED(hres))
+		{
+			return 1;
+		}
+	}
+
+	wchar_t *wpath = to_wide(shortcut);
+	if(wpath == NULL)
+	{
+		return 1;
+	}
+
+	hres = pfile->lpVtbl->Load(pfile, wpath, STGM_READ);
+	free(wpath);
+
+	if(SUCCEEDED(hres))
+	{
+		hres = shlink->lpVtbl->Resolve(shlink, INVALID_HANDLE_VALUE, SLR_NO_UI);
+
+		if(SUCCEEDED(hres))
+		{
+			wchar_t target[PATH_MAX + 1];
+			hres = shlink->lpVtbl->GetPath(shlink, target, sizeof(target), NULL, 0);
+
+			if(hres == S_OK)
+			{
+				char *mb = to_multibyte(target);
+				if(mb == NULL)
+				{
+					return 1;
+				}
+				copy_str(buf, buf_len, mb);
+				system_to_internal_slashes(buf);
+				free(mb);
+				return 0;
+			}
+		}
+	}
+
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -76,6 +76,10 @@ int paths_are_same(const char s[], const char t[]);
  * it's so, otherwise zero is returned. */
 int is_symlink(const char path[]);
 
+/* Checks whether given path points to a shortcut file (link implemented as a
+ * regular file).  Returns non-zero if it's so, otherwise zero is returned. */
+int is_shortcut(const char path[]);
+
 /* Gets approximate symbolic link type: directory, won't check, anything else.
  * Returns one of SymLinkType values. */
 SymLinkType get_symlink_type(const char path[]);

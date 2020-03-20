@@ -35,6 +35,13 @@ SETUP_ONCE()
 	cfg.sizefmt.base = 1024;
 	cfg.sizefmt.precision = 0;
 	cfg.sizefmt.space = 1;
+
+	cfg.shell = strdup("");
+}
+
+TEARDOWN_ONCE()
+{
+	free(cfg.shell);
 }
 
 SETUP()
@@ -51,6 +58,9 @@ SETUP()
 	lwin.dir_entry = NULL;
 	rwin.list_rows = 0;
 	rwin.dir_entry = NULL;
+
+	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 TEARDOWN()

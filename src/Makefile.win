@@ -22,7 +22,7 @@ endif
 MANGEN := groff
 UNDER_VCS := $(shell [ "`which git 2> /dev/null`" -a -d ../.git ] && echo 1)
 
-LIBS := -lregex -lnetapi32 -lws2_32 -lm
+LIBS := -lregex -lnetapi32 -lws2_32 -lm -lole32 -luuid
 ifeq ($(OS),Windows_NT)
     LIBS += -lpdcurses
 else
@@ -175,12 +175,12 @@ $(out_dirs) $(abspath ../data/):
 # only builds tests without running them
 tests: | ../build-aux/config.h $(vifm_EXECUTABLE)
 	mkdir -p "$(abspath ../tests)"
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
+	+make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
 	     TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)' build
 
 # runs the tests, building them before if needed
 check: tests
-	make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
+	+make -C $(src_dir)/../tests/ B='$(abspath ../tests)/' CC='$(CC)' \
 	     TEST_RUN_PREFIX='$(TEST_RUN_PREFIX)'
 
 clean:

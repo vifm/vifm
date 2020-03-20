@@ -200,7 +200,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		run_selection(view, exec == FHE_NO_RUN);
 	}
-	else if(curr->type == FT_LINK)
+	else if(curr->type == FT_LINK || is_shortcut(curr->name))
 	{
 		follow_link(view, follow == FHL_FOLLOW);
 	}
@@ -212,21 +212,23 @@ static int
 is_runnable(const view_t *view, const char full_path[], int type,
 		int force_follow)
 {
-	int runnable = !cfg.follow_links && type == FT_LINK &&
-		get_symlink_type(full_path) != SLT_DIR;
-	if(runnable && force_follow)
-	{
-		runnable = 0;
-	}
 	if(view->selected_files > 0)
 	{
-		runnable = 1;
+		return 1;
 	}
-	if(!runnable)
+
+	if(!force_follow && !cfg.follow_links && type == FT_LINK &&
+			get_symlink_type(full_path) != SLT_DIR)
 	{
-		runnable = type == FT_REG || type == FT_EXEC || type == FT_DIR;
+		return 1;
 	}
-	return runnable;
+
+	if(type == FT_REG)
+	{
+		return (!force_follow || !is_shortcut(full_path));
+	}
+
+	return (type == FT_EXEC || type == FT_DIR);
 }
 
 /* Returns non-zero if file can be executed, otherwise zero is returned. */
@@ -689,18 +691,17 @@ follow_link(view_t *view, int follow_dirs)
 		file = get_last_path_component(linkto);
 	}
 
-	if(dir[0] != '\0')
+	if(dir[0] != '\0' && file != NULL)
+	{
+		navigate_to_file(view, dir, file, 1);
+	}
+	else if(dir[0] != '\0')
 	{
 		navigate_to(view, dir);
 	}
-
-	if(file != NULL)
+	else if(file != NULL)
 	{
-		const int pos = fpos_find_by_name(view, file);
-		if(pos >= 0)
-		{
-			fpos_set_pos(view, pos);
-		}
+		fpos_ensure_selected(view, file);
 	}
 
 	free(dir);

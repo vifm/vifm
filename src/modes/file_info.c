@@ -247,29 +247,44 @@ show_file_type(view_t *view, int curr_y)
 	curr = get_current_entry(view);
 
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
-	if(curr->type == FT_LINK)
+	if(curr->type == FT_LINK || is_shortcut(curr->name))
 	{
 		char full_path[PATH_MAX + 1];
 		char linkto[PATH_MAX + NAME_MAX];
 
 		get_current_full_path(view, sizeof(full_path), full_path);
 
-		mvwaddstr(menu_win, curr_y, 8, "Link");
-		curr_y += 2;
-		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
+		int broken_offset;
+		int target_offset;
+		if(curr->type == FT_LINK)
+		{
+			mvwaddstr(menu_win, curr_y, 8, "Link");
+			curr_y += 2;
+			mvwaddstr(menu_win, curr_y, 2, "Link To: ");
+			broken_offset = 12;
+			target_offset = 11;
+		}
+		else
+		{
+			mvwaddstr(menu_win, curr_y, 8, "Shortcut");
+			curr_y += 2;
+			mvwaddstr(menu_win, curr_y, 2, "Shortcut To: ");
+			broken_offset = 16;
+			target_offset = 15;
+		}
 
 		if(get_link_target(full_path, linkto, sizeof(linkto)) == 0)
 		{
-			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
+			mvwaddnstr(menu_win, curr_y, target_offset, linkto, x - target_offset);
 
 			if(!path_exists(linkto, DEREF))
 			{
-				mvwaddstr(menu_win, curr_y - 2, 12, " (BROKEN)");
+				mvwaddstr(menu_win, curr_y - 2, broken_offset, " (BROKEN)");
 			}
 		}
 		else
 		{
-			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
+			mvwaddstr(menu_win, curr_y, target_offset, "Couldn't Resolve Link");
 		}
 	}
 	else if(curr->type == FT_EXEC || curr->type == FT_REG)
