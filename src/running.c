@@ -217,20 +217,18 @@ is_runnable(const view_t *view, const char full_path[], int type,
 		return 1;
 	}
 
-	int runnable = !force_follow && !cfg.follow_links && type == FT_LINK &&
-		get_symlink_type(full_path) != SLT_DIR;
-	if(!runnable)
+	if(!force_follow && !cfg.follow_links && type == FT_LINK &&
+			get_symlink_type(full_path) != SLT_DIR)
 	{
-		if(type == FT_REG)
-		{
-			runnable = (!force_follow || !is_shortcut(full_path));
-		}
-		else
-		{
-			runnable = (type == FT_EXEC || type == FT_DIR);
-		}
+		return 1;
 	}
-	return runnable;
+
+	if(type == FT_REG)
+	{
+		return (!force_follow || !is_shortcut(full_path));
+	}
+
+	return (type == FT_EXEC || type == FT_DIR);
 }
 
 /* Returns non-zero if file can be executed, otherwise zero is returned. */
