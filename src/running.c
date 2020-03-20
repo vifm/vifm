@@ -212,15 +212,16 @@ static int
 is_runnable(const view_t *view, const char full_path[], int type,
 		int force_follow)
 {
+	if(view->selected_files > 0)
+	{
+		return 1;
+	}
+
 	int runnable = !cfg.follow_links && type == FT_LINK &&
 		get_symlink_type(full_path) != SLT_DIR;
 	if(runnable && force_follow)
 	{
 		runnable = 0;
-	}
-	if(view->selected_files > 0)
-	{
-		runnable = 1;
 	}
 	if(!runnable)
 	{
