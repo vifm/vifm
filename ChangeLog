@@ -65,6 +65,8 @@
 
 	Follow targets of .lnk-files on Windows.  Thanks to Alexandre Viau.
 
+	Display targets of .lnk-files in file information dialog on Windows.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
