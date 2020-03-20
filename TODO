@@ -54,7 +54,6 @@ Windows:
   * Add command to create .lnk files.
   * Sort completion items ignoring their case on Windows.
   * Handle numpad keys better, just like corresponding non-numpad keys.
-  * Follow targets of .lnk files.
   * Make 'fastrun' understand file extensions on Windows (to ignore them).
   * Make 'slowfs' option available on Windows
   * Support more of pdcurses specific keys (e.g. <a-bs>, <s-bs>).

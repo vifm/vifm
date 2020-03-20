@@ -253,6 +253,16 @@ is_symlink(const char path[])
 #endif
 }
 
+int
+is_shortcut(const char path[])
+{
+#ifndef _WIN32
+	return 0;
+#else
+	return (strcasecmp(get_ext(path), "lnk") == 0);
+#endif
+}
+
 SymLinkType
 get_symlink_type(const char path[])
 {

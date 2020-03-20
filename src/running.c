@@ -200,7 +200,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	{
 		run_selection(view, exec == FHE_NO_RUN);
 	}
-	else if(curr->type == FT_LINK)
+	else if(curr->type == FT_LINK || is_shortcut(curr->name))
 	{
 		follow_link(view, follow == FHL_FOLLOW);
 	}
@@ -224,7 +224,14 @@ is_runnable(const view_t *view, const char full_path[], int type,
 	}
 	if(!runnable)
 	{
-		runnable = type == FT_REG || type == FT_EXEC || type == FT_DIR;
+		if(type == FT_REG)
+		{
+			runnable = (!force_follow || !is_shortcut(full_path));
+		}
+		else
+		{
+			runnable = (type == FT_EXEC || type == FT_DIR);
+		}
 	}
 	return runnable;
 }
