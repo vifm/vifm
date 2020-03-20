@@ -217,12 +217,8 @@ is_runnable(const view_t *view, const char full_path[], int type,
 		return 1;
 	}
 
-	int runnable = !cfg.follow_links && type == FT_LINK &&
+	int runnable = !force_follow && !cfg.follow_links && type == FT_LINK &&
 		get_symlink_type(full_path) != SLT_DIR;
-	if(runnable && force_follow)
-	{
-		runnable = 0;
-	}
 	if(!runnable)
 	{
 		if(type == FT_REG)
