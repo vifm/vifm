@@ -960,7 +960,7 @@ go_to_other_window(void)
 static int
 try_switch_into_view_mode(void)
 {
-	if(curr_stats.preview.on)
+	if(curr_stats.preview.on && curr_stats.number_of_windows != 1)
 	{
 		modview_enter(other_view, 0);
 		return 1;

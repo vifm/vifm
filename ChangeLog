@@ -138,6 +138,9 @@
 	Fixed pane tabs of inactive pane reappearing after changing 'tabscope' to
 	"global" and then back to "pane".
 
+	Fixed it being possible to activate view mode while in a single pane mode.
+	Thanks to filterfalse.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
