@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 8
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Mar 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -469,7 +469,7 @@ otherwise only current file is updated.
 
 gf                                             *vifm-gf*
     find link destination (like l with |vifm-'followlinks'| off, but also
-    finds directories).
+    finds directories).  On Windows additionally follows .lnk-files.
 
                                                *vifm-gr*
 gr                                             {only for MS-Windows}
