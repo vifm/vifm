@@ -413,6 +413,14 @@ TEST(handler_can_be_matched_by_a_prefix, IF(not_windows))
 	stop_use_script();
 }
 
+TEST(shorten_cmd_works_as_expected)
+{
+	assert_int_equal(0, shorten_cmd("", 10));
+	assert_int_equal(0, shorten_cmd("a", 1));
+	assert_int_equal(3, shorten_cmd("a b c", 2));
+	assert_int_equal(0, shorten_cmd("a b\\ c", 2));
+}
+
 static int
 prog_exists(const char name[])
 {

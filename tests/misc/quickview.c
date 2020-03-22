@@ -5,12 +5,18 @@
 
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
+#include "../../src/engine/keys.h"
+#include "../../src/engine/mode.h"
+#include "../../src/modes/modes.h"
+#include "../../src/modes/wk.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/file_streams.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/matchers.h"
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
+#include "../../src/filelist.h"
 #include "../../src/filetype.h"
 
 #include "utils.h"
@@ -200,6 +206,35 @@ TEST(can_read_only_specified_number_of_lines)
 	assert_string_equal("third line\n", line);
 
 	fclose(fp);
+}
+
+TEST(no_switch_into_view_mode_of_hidden_pane)
+{
+	char cwd[PATH_MAX + 1];
+	assert_non_null(get_cwd(cwd, sizeof(cwd)));
+
+	curr_view = &lwin;
+	other_view = &rwin;
+	view_setup(&lwin);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", cwd);
+	populate_dir_list(&lwin, 0);
+	view_setup(&rwin);
+	make_abs_path(rwin.curr_dir, sizeof(rwin.curr_dir), TEST_DATA_PATH, "", cwd);
+	populate_dir_list(&rwin, 1);
+	init_modes();
+
+	curr_stats.preview.on = 1;
+	curr_stats.number_of_windows = 1;
+
+	(void)vle_keys_exec_timed_out(WK_C_w WK_w);
+	assert_true(vle_mode_is(NORMAL_MODE));
+	(void)vle_keys_exec_timed_out(WK_q);
+	assert_true(curr_view == &rwin);
+
+	curr_stats.preview.on = 0;
+	vle_keys_reset();
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

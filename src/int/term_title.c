@@ -52,6 +52,13 @@ typedef enum
 }
 TitleKind;
 
+enum
+{
+	/* Limit on the length of title message (variable part of the title).  It
+	 * would be smaller if it wasn't specified for a UTF-8 string. */
+	MAX_TITLE_MSG_LEN = 700,
+};
+
 static void ensure_initialized(void);
 TSTATIC TitleKind get_title_kind(const char term[]);
 static void save_term_title(void);
@@ -290,9 +297,9 @@ set_terminal_title(const char path[])
 	free(utf16);
 #else
 	char *const fmt = (title_state.kind == TK_REGULAR)
-	                ? "\033]2;%s - VIFM\007"
-	                : "\033k%s - VIFM\033\134";
-	char *const title = format_str(fmt, path);
+	                ? "\033]2;%.*s - VIFM\007"
+	                : "\033k%.*s - VIFM\033\134";
+	char *const title = format_str(fmt, MAX_TITLE_MSG_LEN, path);
 
 	putp(title);
 	fflush(stdout);

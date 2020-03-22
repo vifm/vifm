@@ -20,6 +20,7 @@
 #ifndef VIFM__RUNNING_H__
 #define VIFM__RUNNING_H__
 
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "macros.h"
 
@@ -84,6 +85,10 @@ int rn_for_flist(struct view_t *view, const char cmd[], int very,
 /* Executes external command capturing its output as list of lines.  Sets *lines
  * and *nlines.  Returns zero on success, otherwise non-zero is returned. */
 int rn_for_lines(const char cmd[], char ***lines, int *nlines);
+
+TSTATIC_DEFS(
+	int shorten_cmd(const char cmd[], int parts_to_leave);
+)
 
 #endif /* VIFM__RUNNING_H__ */
 
