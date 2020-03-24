@@ -63,6 +63,72 @@ TEST(nop_rhs_is_displayed)
 	abort_menu_like_mode();
 }
 
+TEST(space_in_rhs_is_displayed_without_notation)
+{
+	assert_success(exec_commands("nmap lhs s p a c e", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nmap lhs", &lwin, CIT_COMMAND));
+
+	assert_int_equal(2, menu_get_current()->len);
+	assert_string_equal("lhs         s p a c e", menu_get_current()->items[0]);
+	assert_string_equal("", menu_get_current()->items[1]);
+
+	abort_menu_like_mode();
+}
+
+TEST(single_space_is_displayed_using_notation)
+{
+	assert_success(exec_commands("nmap <space> <space>", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nmap <space>", &lwin, CIT_COMMAND));
+
+	assert_int_equal(3, menu_get_current()->len);
+	assert_string_equal("<space>     <space>", menu_get_current()->items[0]);
+	assert_string_equal("", menu_get_current()->items[1]);
+	assert_string_equal("<space>     switch pane", menu_get_current()->items[2]);
+
+	abort_menu_like_mode();
+}
+
+TEST(first_or_last_space_is_displayed_using_notation)
+{
+	assert_success(exec_commands("nmap <space>1 <space>1", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nmap <space>2 <space>2 x", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("nmap <space>", &lwin, CIT_COMMAND));
+	assert_int_equal(4, menu_get_current()->len);
+	assert_string_equal("<space>1    <space>1", menu_get_current()->items[0]);
+	assert_string_equal("<space>2    <space>2 x", menu_get_current()->items[1]);
+	assert_string_equal("", menu_get_current()->items[2]);
+	assert_string_equal("<space>     switch pane", menu_get_current()->items[3]);
+
+	assert_success(exec_commands("nunmap <space>1", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nunmap <space>2", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("nmap x1<space> 1<space>", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("nmap x2<space> 2 x<space>", &lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("nmap x", &lwin, CIT_COMMAND));
+	assert_int_equal(3, menu_get_current()->len);
+	assert_string_equal("x1<space>   1<space>", menu_get_current()->items[0]);
+	assert_string_equal("x2<space>   2 x<space>", menu_get_current()->items[1]);
+	assert_string_equal("", menu_get_current()->items[2]);
+
+	assert_success(exec_commands("nmap <space>1<space> <space>1<space>",
+				&lwin, CIT_COMMAND));
+	assert_success(exec_commands("nmap <space>2<space>2<space> <space>2 x<space>",
+				&lwin, CIT_COMMAND));
+
+	assert_success(exec_commands("nmap <space>", &lwin, CIT_COMMAND));
+	assert_int_equal(4, menu_get_current()->len);
+	assert_string_equal("<space>1<space> <space>1<space>",
+			menu_get_current()->items[0]);
+	assert_string_equal("<space>2 2<space> <space>2 x<space>",
+			menu_get_current()->items[1]);
+	assert_string_equal("", menu_get_current()->items[2]);
+	assert_string_equal("<space>     switch pane", menu_get_current()->items[3]);
+
+	abort_menu_like_mode();
+}
+
 TEST(builtin_key_description_is_displayed)
 {
 	assert_success(exec_commands("nmap j", &lwin, CIT_COMMAND));

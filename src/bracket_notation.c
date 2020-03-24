@@ -613,7 +613,7 @@ wstr_to_spec(const wchar_t str[])
 
 	for(i = 0U; i < str_len; i += seq_len)
 	{
-		if(str[i] == L' ')
+		if(str[i] == L' ' && i != 0U && i != str_len - 1)
 		{
 			vle_tb_append(descr, " ");
 			seq_len = 1U;
