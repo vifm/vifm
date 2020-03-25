@@ -54,11 +54,18 @@ void
 flist_sel_drop(view_t *view)
 {
 	int i;
+	int need_redraw = 0;
 	for(i = 0; i < view->list_rows; ++i)
 	{
+		need_redraw |= view->dir_entry[i].selected;
 		view->dir_entry[i].selected = 0;
 	}
 	view->selected_files = 0;
+
+	if(need_redraw)
+	{
+		ui_view_schedule_redraw(view);
+	}
 }
 
 void
@@ -148,7 +155,6 @@ flist_sel_stash_if_nonempty(view_t *view)
 	if(view->selected_files != 0)
 	{
 		flist_sel_stash(view);
-		ui_view_schedule_redraw(view);
 	}
 }
 

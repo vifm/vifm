@@ -365,6 +365,7 @@ popen2(const char cmd[], FILE **in, FILE **out)
 	if(*in == NULL)
 	{
 		close(in_pipe[1]);
+		close(out_pipe[0]);
 		kill(pid, SIGTERM);
 		return (pid_t)-1;
 	}
@@ -372,7 +373,7 @@ popen2(const char cmd[], FILE **in, FILE **out)
 	if(*out == NULL)
 	{
 		fclose(*in);
-		close(out_pipe[1]);
+		close(out_pipe[0]);
 		kill(pid, SIGTERM);
 		return (pid_t)-1;
 	}
