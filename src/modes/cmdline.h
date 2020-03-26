@@ -110,7 +110,7 @@ typedef struct
 	int old_top;              /* for search_mode */
 	int old_pos;              /* for search_mode */
 	int line_edited;          /* Cache for whether input line changed flag. */
-	int entered_by_mapping;   /* The mode was entered by a mapping. */
+	int enter_mapping_state;  /* The mapping state at entering the mode. */
 	int expanding_abbrev;     /* Abbreviation expansion is in progress. */
 	PromptState state;        /* Prompt state with regard to current input. */
 }
