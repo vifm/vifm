@@ -15,12 +15,12 @@
 #define printf(...) do {} while(0)
 #endif
 
-int last; /* 1 = k, 2 = j, 3 = yank, 4 = delete */
-int last_command_count; /* for ctrl+w <, dd and d + selector */
-int last_command_register; /* for dd */
-int last_selector_count; /* for k */
-int key_is_mapped; /* for : and m */
-int mapping_state; /* for : and m */
+int last;
+int last_command_count;
+int last_command_register;
+int last_selector_count;
+int key_is_mapped;
+int mapping_state;
 
 static void keys_colon(key_info_t key_info, keys_info_t *keys_info);
 static void keys_m(key_info_t key_info, keys_info_t *keys_info);

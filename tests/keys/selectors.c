@@ -4,6 +4,8 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 
+#include "builtin_keys.h"
+
 /* This should be a macro to see what test have failed. */
 #define check(wait, full, sel_count, cmd_count) \
 	{ \
@@ -16,9 +18,6 @@
 static void key_tail(key_info_t key_info, keys_info_t *keys_info);
 static void key_cmd(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
-
-extern int last_command_count;
-extern int last_selector_count;
 
 static int counter;
 static int tail_mark, cmd_mark, selector_mark;

@@ -4,10 +4,9 @@
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 
-static int handler(wchar_t key);
+#include "builtin_keys.h"
 
-extern int key_is_mapped;
-extern int mapping_state;
+static int handler(wchar_t key);
 
 static int mapping_states;
 
