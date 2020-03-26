@@ -718,7 +718,7 @@ prepare_cmdline_mode(const wchar_t prompt[], const wchar_t cmd[],
 	input_stat.search_mode = 0;
 	input_stat.dot_pos = -1;
 	input_stat.line_edited = 0;
-	input_stat.entered_by_mapping = vle_keys_inside_mapping();
+	input_stat.entered_by_mapping = (vle_keys_mapping_state() != 0);
 	input_stat.state = PS_NORMAL;
 
 	if((is_forward_search(sub_mode) || is_backward_search(sub_mode)) &&

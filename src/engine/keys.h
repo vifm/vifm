@@ -189,9 +189,10 @@ void vle_keys_list(int mode, vle_keys_list_cb cb, int user_only);
  * difference of returned values.  Returns the number. */
 size_t vle_keys_counter(void);
 
-/* Checks whether a mapping handler is currently been executed.  Returns
- * non-zero if so, otherwise zero is returned. */
-int vle_keys_inside_mapping(void);
+/* Retrieves current mapping state.  Entering a mapping at the top level (so not
+ * a nested mapping) increases state number.  Returns the state number or zero
+ * if no mapping is currently active. */
+int vle_keys_mapping_state(void);
 
 /* Invokes cb for each possible keys continuation.  Intended to be used on
  * KEYS_WAIT and KEYS_WAIT_SHORT returns.  The custom_only flag limits
