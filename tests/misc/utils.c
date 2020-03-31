@@ -15,6 +15,7 @@
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
@@ -234,6 +235,12 @@ make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
 	}
 	else
 	{
+		char cwd_buf[PATH_MAX + 1];
+		if(cwd == NULL)
+		{
+			assert_non_null(get_cwd(cwd_buf, sizeof(cwd_buf)));
+			cwd = cwd_buf;
+		}
 		snprintf(local_buf, buf_len, "%s/%s%s%s", cwd, base,
 				(sub[0] == '\0' ? "" : "/"), sub);
 	}
