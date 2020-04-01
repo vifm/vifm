@@ -1,26 +1,17 @@
 #include "builtin_keys.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/utils/macros.h"
 
-#ifdef TEST
-#define printf(...) do {} while(0)
-#endif
-
-int last; /* 1 = k, 2 = j, 3 = yank, 4 = delete */
-int last_command_count; /* for ctrl+w <, dd and d + selector */
-int last_command_register; /* for dd */
-int last_selector_count; /* for k */
-int key_is_mapped; /* for : and m */
-int is_in_maping_state; /* for : and m */
+int last;
+int last_command_count;
+int last_command_register;
+int last_selector_count;
+int key_is_mapped;
+int mapping_state;
 
 static void keys_colon(key_info_t key_info, keys_info_t *keys_info);
 static void keys_m(key_info_t key_info, keys_info_t *keys_info);
@@ -104,16 +95,14 @@ keys_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	vle_mode_set(CMDLINE_MODE, VMT_SECONDARY);
 	key_is_mapped = keys_info->mapped;
-	is_in_maping_state = vle_keys_inside_mapping();
+	mapping_state = vle_keys_mapping_state();
 }
 
 static void
 keys_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	key_is_mapped = keys_info->mapped;
-	is_in_maping_state = vle_keys_inside_mapping();
-	printf("(%d)m in register '%c' with multikey '%c'\n",
-			key_info.count, key_info.reg, key_info.multi);
+	mapping_state = vle_keys_mapping_state();
 }
 
 static void
@@ -126,10 +115,6 @@ m_suggest(vle_keys_list_cb cb)
 static void
 keys_quote(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->selector)
-		printf("as a selector: ");
-	printf("(%d)' in register '%c' with multikey '%c'\n",
-			key_info.count, key_info.reg, key_info.multi);
 }
 
 static void
@@ -146,18 +131,12 @@ static void
 keys_gu(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 2;
-	if(keys_info->selector)
-		printf("as a selector: ");
-	printf("(%d)gu in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
 keys_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 2;
-	if(keys_info->selector)
-		printf("as a selector: ");
-	printf("(%d)j in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
@@ -167,33 +146,22 @@ keys_k(key_info_t key_info, keys_info_t *keys_info)
 	if(keys_info->selector)
 	{
 		last_selector_count = key_info.count;
-		printf("as a selector: ");
 	}
-	printf("(%d)k in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
 keys_s(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->selector)
-		printf("as a selector: ");
-	printf("(%d)s in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
 keys_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->selector)
-		printf("as a selector: ");
-	printf("(%d)i in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
 keys_if(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(keys_info->selector)
-		printf("as a selector: ");
-	printf("(%d)if in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
@@ -215,8 +183,6 @@ keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 4;
 	last_command_count = key_info.count;
-	printf("(%d)delete with selector in register %c\n", key_info.count,
-			key_info.reg);
 }
 
 static void
@@ -224,7 +190,6 @@ keys_v(key_info_t key_info, keys_info_t *keys_info)
 {
 	vle_mode_set(vle_mode_is(NORMAL_MODE) ? VISUAL_MODE : NORMAL_MODE,
 			VMT_PRIMARY);
-	printf("v visual mode toggle\n");
 }
 
 static void
@@ -236,7 +201,6 @@ keys_yank_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_quit(key_info_t key_info, keys_info_t *keys_info)
 {
-	printf("(%d)quit in register %c\n", key_info.count, key_info.reg);
 }
 
 static void

@@ -2,7 +2,7 @@
 
 #include "../../src/engine/keys.h"
 
-extern int last_command_count;
+#include "builtin_keys.h"
 
 #define check(wait, full, cmd_count) \
 	{ \

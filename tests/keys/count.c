@@ -8,7 +8,7 @@
 #include "../../src/modes/modes.h"
 #include "../../src/utils/str.h"
 
-extern int last_command_count;
+#include "builtin_keys.h"
 
 SETUP()
 {

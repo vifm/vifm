@@ -17,7 +17,7 @@
  */
 
 /* WARNING: code implementing execution of keys deserves a prize in nomination
- *          "insanely perplexed control flow".  You have been warned.
+ *          "insanely perplex control flow".  You have been warned.
  * TODO: seriously, indirect recursion and jumps between routines is a horrible
  *       mess, even not touching tree representation this should be possible to
  *       rewrite with master loop that simply goes through the string in
@@ -86,8 +86,18 @@ static default_handler *def_handlers;
 static size_t counter;
 /* Main external functions enter recursion level. */
 static size_t enters_counter;
+/* Current (when inside) or previous (when outside) sequence number of entering
+ * input resolution machinery. */
+static size_t enter_seq;
 /* Shows whether a mapping handler is being executed at the moment. */
 static int inside_mapping;
+/* Current (when inside mapping) or previous (when outside) sequence number of a
+ * mapping state.  It gets updated when a mapping handling is started within
+ * current input resolution request (basically unit was entered from outside
+ * and hasn't left yet). */
+static int mapping_state;
+/* Value of enter_seq variable last seen on processing a mapping. */
+static size_t mapping_enter_seq;
 /* User-provided callback for silencing UI. */
 static vle_silence_func silence_ui;
 
@@ -282,11 +292,12 @@ static int
 execute_keys_general_wrapper(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap)
 {
-	int result;
-
-	enters_counter++;
-	result = execute_keys_general(keys, timed_out, mapped, no_remap);
-	enters_counter--;
+	if(++enters_counter == 1)
+	{
+		enter_seq = (enter_seq == INT_MAX ? 1 : enter_seq + 1);
+	}
+	int result = execute_keys_general(keys, timed_out, mapped, no_remap);
+	--enters_counter;
 
 	return result;
 }
@@ -787,6 +798,7 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 		}
 		if(key_info.count != NO_COUNT_GIVEN)
 		{
+			/* XXX: this can insert thousand separators in some locales... */
 			vifm_swprintf(buf + wcslen(buf), ARRAY_LEN(buf) - wcslen(buf), L"%d",
 					key_info.count);
 		}
@@ -797,6 +809,9 @@ execute_after_remapping(const wchar_t rhs[], const wchar_t left_keys[],
 		{
 			init_keys_info(&keys_info, 1);
 		}
+
+		/* XXX: keys_info.mapped now covers both RHS of a mapping and the rest of
+		 *      the keys (`left_keys`)!  This is bad. */
 
 		enter_chunk(curr);
 		result = dispatch_keys(buf, &keys_info, curr->no_remap, NO_COUNT_GIVEN);
@@ -1181,9 +1196,9 @@ is_recursive(void)
 }
 
 int
-vle_keys_inside_mapping(void)
+vle_keys_mapping_state(void)
 {
-	return (inside_mapping != 0);
+	return (inside_mapping ? mapping_state : 0);
 }
 
 /* Executes handler for a mapping, if any.  Error or success code is
@@ -1206,8 +1221,17 @@ execute_mapping_handler(const key_conf_t *info, key_info_t key_info,
 static void
 pre_execute_mapping_handler(const keys_info_t *keys_info)
 {
-	inside_mapping += keys_info->mapped != 0;
-	assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");
+	if(keys_info->mapped)
+	{
+		++inside_mapping;
+		assert(inside_mapping >= 0 && "Calls to pre/post funcs should be balanced");
+
+		if(inside_mapping == 1 && mapping_enter_seq != enter_seq)
+		{
+			mapping_state = (mapping_state == INT_MAX ? 1 : mapping_state + 1);
+			mapping_enter_seq = enter_seq;
+		}
+	}
 }
 
 /* Post-execution of a mapping handler callback. */

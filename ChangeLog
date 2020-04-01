@@ -151,6 +151,11 @@
 	Fixed 'title' messing up the TUI on very long title by limiting its
 	maximum length.  Thanks to filterfalse.
 
+	Fixed command-line commands not being saved in history when command-line
+	mode was entered and left by two different mappings (as opposed to a
+	single mapping in which case this behaviour is expected).  Thanks to
+	filterfalse.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

@@ -3,7 +3,7 @@
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 
-extern int last;
+#include "builtin_keys.h"
 
 SETUP()
 {

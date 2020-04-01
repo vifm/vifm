@@ -4,10 +4,9 @@
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 
-static void key_selfremove(key_info_t key_info, keys_info_t *keys_info);
+#include "builtin_keys.h"
 
-extern int last;
-extern int last_command_register;
+static void key_selfremove(key_info_t key_info, keys_info_t *keys_info);
 
 SETUP()
 {

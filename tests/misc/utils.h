@@ -54,7 +54,8 @@ void create_file(const char path[]);
 /* Creates executable file at the path. */
 void create_executable(const char path[]);
 
-/* Either puts base/sub or cwd/base/sub into the buf. */
+/* Either puts base/sub or cwd/base/sub into the buf.  If cwd is NULL, current
+ * working directory is used. */
 void make_abs_path(char buf[], size_t buf_len, const char base[],
 		const char sub[], const char cwd[]);
 
