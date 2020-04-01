@@ -38,6 +38,8 @@ static char test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
+	cfg.sizefmt.base = 1;
+
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
