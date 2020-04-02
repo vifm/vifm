@@ -70,18 +70,11 @@ SETUP()
 
 TEARDOWN()
 {
-	int i;
-
 	update_string(&cfg.shell, NULL);
 	update_string(&cfg.shell_cmd_flag, NULL);
 
-	for(i = 0; i < lwin.list_rows; i++)
-		free(lwin.dir_entry[i].name);
-	dynarray_free(lwin.dir_entry);
-
-	for(i = 0; i < rwin.list_rows; i++)
-		free(rwin.dir_entry[i].name);
-	dynarray_free(rwin.dir_entry);
+	view_teardown(&lwin);
+	view_teardown(&rwin);
 }
 
 TEST(f)
