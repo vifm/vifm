@@ -154,7 +154,6 @@ static dir_entry_t * pick_sibling(view_t *view, entries_t parent_dirs,
 		int offset, int wrap, int *wrapped);
 static int iter_entries(view_t *view, dir_entry_t **entry,
 		entry_predicate pred);
-static void clear_marking(view_t *view);
 static int set_position_by_path(view_t *view, const char path[]);
 static int flist_load_tree_internal(view_t *view, const char path[],
 		int reload);
@@ -3503,8 +3502,7 @@ mark_selection_or_current(view_t *view)
 	return mark_selected(view);
 }
 
-/* Unmarks all entries of the view. */
-static void
+void
 clear_marking(view_t *view)
 {
 	int i;

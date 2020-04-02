@@ -222,6 +222,8 @@ void get_short_path_of(const view_t *view, const dir_entry_t *entry,
 /* Ensures that either entries at specified positions, selected entries or file
  * under cursor is marked. */
 void check_marking(view_t *view, int count, const int indexes[]);
+/* Unmarks all entries of the view. */
+void clear_marking(view_t *view);
 /* Marks files at positions specified in the indexes array of size count. */
 void mark_files_at(view_t *view, int count, const int indexes[]);
 /* Marks selected files of the view.  Returns number of marked files. */
