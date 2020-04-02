@@ -1038,7 +1038,7 @@ fops_restore(view_t *view)
 		return 0;
 	}
 
-	fpos_move_out_of(view, FLS_SELECTION);
+	fpos_move_out_of(view, FLS_MARKING);
 
 	ui_cancellation_reset();
 

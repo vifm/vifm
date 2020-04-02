@@ -433,7 +433,7 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 
 	if(op == CMLO_MOVE)
 	{
-		fpos_move_out_of(view, FLS_SELECTION);
+		fpos_move_out_of(view, FLS_MARKING);
 	}
 
 	return 0;
