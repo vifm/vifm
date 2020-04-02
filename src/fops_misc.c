@@ -362,7 +362,7 @@ fops_delete_bg(view_t *view, int use_trash)
 		return 0;
 	}
 
-	fpos_move_out_of(view, FLS_MARKING);
+	fops_leave_marking(view);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
 			use_trash ? 'd' : 'D', replace_home_part(curr_dir));
@@ -1038,7 +1038,7 @@ fops_restore(view_t *view)
 		return 0;
 	}
 
-	fpos_move_out_of(view, FLS_MARKING);
+	fops_leave_marking(view);
 
 	ui_cancellation_reset();
 

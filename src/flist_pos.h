@@ -25,14 +25,6 @@
 
 struct view_t;
 
-/* Type of contiguous area within list of files. */
-typedef enum
-{
-	FLS_SELECTION, /* Of selected entries. */
-	FLS_MARKING,   /* Of marked entries. */
-}
-FileListScope;
-
 /* Finds index of the file within list of currently visible files of the view by
  * its name.  Returns file entry index or -1 if file wasn't found. */
 int fpos_find_by_name(const struct view_t *view, const char name[]);
@@ -58,8 +50,9 @@ void fpos_set_pos(struct view_t *view, int pos);
 /* Ensures that position in the list doesn't exceed its bounds. */
 void fpos_ensure_valid_pos(struct view_t *view);
 
-/* Ensures that cursor is moved outside of entries of certain type. */
-void fpos_move_out_of(struct view_t *view, FileListScope scope);
+/* Ensures that cursor is moved outside its immediate surrounding of marked
+ * entries. */
+void fops_leave_marking(struct view_t *view);
 
 /* Retrieves column number (base zero) of the specified position (cell number
  * base zero).  Returns the number. */
