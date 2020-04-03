@@ -1071,7 +1071,7 @@ fops_size_bg(const view_t *view, int force)
 {
 	int i;
 
-	if(!get_current_entry(view)->selected && view->user_selection)
+	if(!get_current_entry(view)->selected)
 	{
 		update_dir_entry_size(view, view->list_pos, force);
 		return;

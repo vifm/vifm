@@ -381,11 +381,6 @@ struct view_t
 	int nsaved_selection;   /* Number of items in saved_selection. */
 	char **saved_selection; /* Names of selected files. */
 
-	/* Whether files are selected by user or via range on the command-line.  Say
-	 * some commands (e.g. ga/gA) implement "smart selection", but it shouldn't
-	 * be applied for selected produced by a range. */
-	int user_selection;
-
 	/* Files were marked for processing, but haven't been processed yet. */
 	int pending_marking;
 

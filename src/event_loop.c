@@ -113,9 +113,6 @@ event_loop(const int *quit)
 		size_t counter;
 		int got_input;
 
-		lwin.user_selection = 1;
-		rwin.user_selection = 1;
-
 		modes_pre();
 
 		/* Waits for timeout then skips if no key press.  Short-circuit if we're not
