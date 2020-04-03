@@ -125,7 +125,7 @@ TEST(one_in_the_range)
 	cmds_conf.end = curr_view->list_rows - 1;
 	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(1, count_marked(&lwin));
-	assert_int_equal(1, lwin.dir_entry[1].selected);
+	assert_true(lwin.dir_entry[1].selected);
 
 	curr_view = &rwin;
 	cmds_conf.begin = 0;
@@ -133,7 +133,7 @@ TEST(one_in_the_range)
 	cmds_conf.end = curr_view->list_rows - 1;
 	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(1, count_marked(&rwin));
-	assert_int_equal(1, rwin.dir_entry[1].marked);
+	assert_true(rwin.dir_entry[1].marked);
 }
 
 TEST(parent_directory_is_not_selected)
@@ -150,21 +150,21 @@ TEST(parent_directory_is_not_selected)
 
 	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(0, count_marked(&lwin));
-	assert_int_equal(0, lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[0].selected);
 
 	flist_sel_drop(&lwin);
 
 	cmd_info.begin = NOT_DEF;
 	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(0, count_marked(&lwin));
-	assert_int_equal(0, lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[0].selected);
 
 	cmd_info.end = NOT_DEF;
 	cmds_conf.current = 0;
 	curr_view->list_pos = 0;
 	cmds_select_range(-1, &cmd_info);
 	assert_int_equal(0, count_marked(&lwin));
-	assert_int_equal(0, lwin.dir_entry[0].selected);
+	assert_false(lwin.dir_entry[0].selected);
 }
 
 TEST(range_of_previous_command_is_reset)
