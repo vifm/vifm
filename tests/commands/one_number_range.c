@@ -6,9 +6,12 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/cmd_core.h"
+#include "../../src/filelist.h"
+#include "../../src/flist_sel.h"
 
 static void setup_lwin(void);
 static void setup_rwin(void);
+static int count_marked(view_t *view);
 
 extern cmds_conf_t cmds_conf;
 
@@ -16,6 +19,9 @@ SETUP()
 {
 	setup_lwin();
 	setup_rwin();
+
+	lwin.pending_marking = 0;
+	rwin.pending_marking = 0;
 }
 
 TEARDOWN()
@@ -97,14 +103,14 @@ TEST(one_number_range)
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
 	cmds_select_range(-1, &cmd_info);
-	assert_int_equal(2, lwin.selected_files);
+	assert_int_equal(2, count_marked(&lwin));
 
 	curr_view = &rwin;
 	cmds_conf.begin = 0;
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
 	cmds_select_range(-1, &cmd_info);
-	assert_int_equal(3, rwin.selected_files);
+	assert_int_equal(3, count_marked(&rwin));
 }
 
 TEST(one_in_the_range)
@@ -118,7 +124,7 @@ TEST(one_in_the_range)
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
 	cmds_select_range(-1, &cmd_info);
-	assert_int_equal(1, lwin.selected_files);
+	assert_int_equal(1, count_marked(&lwin));
 	assert_int_equal(1, lwin.dir_entry[1].selected);
 
 	curr_view = &rwin;
@@ -126,8 +132,8 @@ TEST(one_in_the_range)
 	cmds_conf.current = curr_view->list_pos;
 	cmds_conf.end = curr_view->list_rows - 1;
 	cmds_select_range(-1, &cmd_info);
-	assert_int_equal(1, rwin.selected_files);
-	assert_int_equal(1, rwin.dir_entry[1].selected);
+	assert_int_equal(1, count_marked(&rwin));
+	assert_int_equal(1, rwin.dir_entry[1].marked);
 }
 
 TEST(parent_directory_is_not_selected)
@@ -143,20 +149,50 @@ TEST(parent_directory_is_not_selected)
 	cmds_conf.end = curr_view->list_rows - 1;
 
 	cmds_select_range(-1, &cmd_info);
-	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, count_marked(&lwin));
 	assert_int_equal(0, lwin.dir_entry[0].selected);
+
+	flist_sel_drop(&lwin);
 
 	cmd_info.begin = NOT_DEF;
 	cmds_select_range(-1, &cmd_info);
-	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, count_marked(&lwin));
 	assert_int_equal(0, lwin.dir_entry[0].selected);
 
 	cmd_info.end = NOT_DEF;
 	cmds_conf.current = 0;
 	curr_view->list_pos = 0;
 	cmds_select_range(-1, &cmd_info);
-	assert_int_equal(0, lwin.selected_files);
+	assert_int_equal(0, count_marked(&lwin));
 	assert_int_equal(0, lwin.dir_entry[0].selected);
+}
+
+TEST(range_of_previous_command_is_reset)
+{
+	curr_view = &lwin;
+	cmds_conf.begin = 0;
+	cmds_conf.current = curr_view->list_pos;
+	cmds_conf.end = curr_view->list_rows - 1;
+
+	cmd_info_t cmd_info1 = { .begin = 1, .end = 2 };
+	cmds_select_range(-1, &cmd_info1);
+	assert_int_equal(2, count_marked(&lwin));
+
+	cmd_info_t cmd_info2 = { .begin = 3, .end = 4 };
+	cmds_select_range(-1, &cmd_info2);
+	assert_int_equal(2, count_marked(&lwin));
+}
+
+static int
+count_marked(view_t *view)
+{
+	int i, n = 0;
+	check_marking(view, 0, NULL);
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		n += (view->dir_entry[i].marked != 0);
+	}
+	return n;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -386,6 +386,9 @@ struct view_t
 	 * be applied for selected produced by a range. */
 	int user_selection;
 
+	/* Files were marked for processing, but haven't been processed yet. */
+	int pending_marking;
+
 	int explore_mode;          /* Whether this view is used for file exploring. */
 	struct modview_info_t *vi; /* State of explore view (NULL initially). */
 

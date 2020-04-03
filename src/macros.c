@@ -160,6 +160,10 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		return strdup(command);
 	}
 
+	/* Turn selection into marking. */
+	check_marking(&lwin, 0, NULL);
+	check_marking(&rwin, 0, NULL);
+
 	if(strstr(command + x, "%r") != NULL)
 	{
 		regs_sync_from_shared_memory();
@@ -377,19 +381,20 @@ append_selected_files(view_t *view, char expanded[], int under_cursor,
 	size_t old_len = strlen(expanded);
 #endif
 
-	if(view->selected_files && !under_cursor)
+	if(!under_cursor)
 	{
-		int n = 0;
+		int first = 1;
 		dir_entry_t *entry = NULL;
-		while(iter_selected_entries(view, &entry))
+		while(iter_marked_entries(view, &entry))
 		{
-			expanded = append_entry(view, expanded, type, entry, quotes, mod,
-					for_shell);
-
-			if(++n != view->selected_files)
+			if(!first)
 			{
 				expanded = append_to_expanded(expanded, " ");
 			}
+
+			expanded = append_entry(view, expanded, type, entry, quotes, mod,
+					for_shell);
+			first = 0;
 		}
 	}
 	else

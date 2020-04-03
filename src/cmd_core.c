@@ -375,16 +375,18 @@ post(int id)
 	{
 		flist_sel_stash_if_nonempty(curr_view);
 	}
+
+	/* Marking made by this unit is for a single command only and shouldn't be
+	 * processed outside of that command. */
+	curr_view->pending_marking = 0;
 }
 
 TSTATIC void
 cmds_select_range(int id, const cmd_info_t *cmd_info)
 {
-	if(flist_sel_range(curr_view, cmd_info->begin, cmd_info->end,
-				(id != COM_FIND && id != COM_GREP)))
-	{
-		curr_view->user_selection = 0;
-	}
+	int mark_current = (id != COM_FIND && id != COM_GREP);
+	curr_view->pending_marking = flist_sel_range(curr_view, cmd_info->begin,
+			cmd_info->end, mark_current);
 }
 
 /* Command prefix remover for command parsing unit.  Returns < 0 to do nothing

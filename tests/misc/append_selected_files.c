@@ -32,9 +32,8 @@ SETUP()
 	lwin.dir_entry[3].name = strdup("lfile3");
 	lwin.dir_entry[3].origin = &lwin.curr_dir[0];
 
-	lwin.dir_entry[0].selected = 1;
-	lwin.dir_entry[2].selected = 1;
-	lwin.selected_files = 2;
+	lwin.dir_entry[0].marked = 1;
+	lwin.dir_entry[2].marked = 1;
 
 	/* rwin */
 	strcpy(rwin.curr_dir, "/rwin");
@@ -58,11 +57,10 @@ SETUP()
 	rwin.dir_entry[6].name = strdup("rdir6");
 	rwin.dir_entry[6].origin = &rwin.curr_dir[0];
 
-	rwin.dir_entry[1].selected = 1;
-	rwin.dir_entry[3].selected = 1;
-	rwin.dir_entry[5].selected = 1;
-	rwin.dir_entry[6].selected = 1;
-	rwin.selected_files = 4;
+	rwin.dir_entry[1].marked = 1;
+	rwin.dir_entry[3].marked = 1;
+	rwin.dir_entry[5].marked = 1;
+	rwin.dir_entry[6].marked = 1;
 
 	curr_view = &lwin;
 	other_view = &rwin;

@@ -395,55 +395,50 @@ flist_sel_count(view_t *view, int at, int count)
 }
 
 int
-flist_sel_range(view_t *view, int begin, int end, int select_current)
+flist_sel_range(view_t *view, int begin, int end, int mark_current)
 {
-	/* Both starting and ending range positions are given. */
+	/* Range was specified for a command. */
 	if(begin > -1)
 	{
 		int i;
-		flist_sel_stash(view);
-
+		clear_marking(view);
 		for(i = begin; i <= end; ++i)
 		{
 			if(fentry_is_valid(&view->dir_entry[i]))
 			{
-				view->dir_entry[i].selected = 1;
-				++view->selected_files;
+				view->dir_entry[i].marked = 1;
 			}
 		}
-		return view->selected_files > 0;
+		return 1;
 	}
 
+	/* Use user's selection. */
 	if(view->selected_files != 0)
 	{
 		return 0;
 	}
 
+	clear_marking(view);
+
 	/* XXX: is it possible that begin <= -1 and end > -1? */
 	if(end > -1)
 	{
-		flist_sel_stash(view);
-
 		if(fentry_is_valid(&view->dir_entry[end]))
 		{
-			view->dir_entry[end].selected = 1;
-			view->selected_files = 1;
+			view->dir_entry[end].marked = 1;
 		}
 	}
-	else if(select_current)
+	else if(mark_current)
 	{
-		flist_sel_stash(view);
-
 		/* The front check is for tests. */
 		if(view->list_pos < view->list_rows &&
 				fentry_is_valid(&view->dir_entry[view->list_pos]))
 		{
-			view->dir_entry[view->list_pos].selected = 1;
-			view->selected_files = 1;
+			view->dir_entry[view->list_pos].marked = 1;
 		}
 	}
 
-	return view->selected_files > 0;
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
