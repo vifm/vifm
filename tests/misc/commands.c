@@ -18,8 +18,10 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
+#include "../../src/filelist.h"
 #include "../../src/ops.h"
 #include "../../src/registers.h"
+#include "../../src/status.h"
 #include "../../src/undo.h"
 
 #include "utils.h"
@@ -300,6 +302,30 @@ TEST(conversion_failure_is_handled)
 	(void)exec_commands("wincmd \xee", &lwin, CIT_COMMAND);
 
 	vle_keys_reset();
+}
+
+TEST(usercmd_range_is_as_good_as_selection)
+{
+	stats_init(&cfg);
+	init_modes();
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", NULL);
+	populate_dir_list(&lwin, 0);
+
+	/* For gA. */
+
+	assert_success(exec_commands("command! size :normal gA", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("%size", &lwin, CIT_COMMAND));
+	wait_for_bg();
+
+	assert_string_equal("color-schemes", lwin.dir_entry[0].name);
+	assert_ulong_equal(107, fentry_get_size(&lwin, &lwin.dir_entry[0]));
+	assert_string_equal("various-sizes", lwin.dir_entry[lwin.list_rows - 1].name);
+	assert_ulong_equal(73728,
+			fentry_get_size(&lwin, &lwin.dir_entry[lwin.list_rows - 1]));
+
+	vle_keys_reset();
+	stats_reset(&cfg);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

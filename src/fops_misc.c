@@ -1067,11 +1067,15 @@ fops_restore(view_t *view)
 }
 
 void
-fops_size_bg(const view_t *view, int force)
+fops_size_bg(view_t *view, int force)
 {
+	/* flist_set_marking(view, 1) isn't helpful here as it won't mark "..". */
+	int user_selection = !view->pending_marking;
+	flist_set_marking(view, 0);
+
 	int i;
 
-	if(!get_current_entry(view)->selected)
+	if(!get_current_entry(view)->marked && user_selection)
 	{
 		update_dir_entry_size(view, view->list_pos, force);
 		return;
@@ -1081,7 +1085,7 @@ fops_size_bg(const view_t *view, int force)
 	{
 		const dir_entry_t *const entry = &view->dir_entry[i];
 
-		if(entry->selected && entry->type == FT_DIR)
+		if(entry->marked && entry->type == FT_DIR)
 		{
 			update_dir_entry_size(view, i, force);
 		}

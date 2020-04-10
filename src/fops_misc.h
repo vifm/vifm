@@ -69,7 +69,7 @@ int fops_restore(struct view_t *view);
 
 /* Initiates background calculation of directory sizes.  Forcing disables using
  * previously cached values. */
-void fops_size_bg(const struct view_t *view, int force);
+void fops_size_bg(struct view_t *view, int force);
 
 struct cancellation_t;
 
