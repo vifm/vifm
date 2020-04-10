@@ -346,6 +346,32 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
 
+#ifndef _WIN32
+
+	/* For cp. */
+
+	update_string(&cfg.shell, "/bin/sh");
+
+	assert_success(chdir(sandbox));
+	create_file("file1");
+	create_file("file2");
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), sandbox, "", NULL);
+	populate_dir_list(&lwin, 0);
+
+	assert_success(exec_commands("command! ex :normal 777cp", &lwin,
+				CIT_COMMAND));
+	assert_success(exec_commands("%ex", &lwin, CIT_COMMAND));
+
+	populate_dir_list(&lwin, 1);
+	assert_int_equal(FT_EXEC, lwin.dir_entry[0].type);
+	assert_int_equal(FT_EXEC, lwin.dir_entry[1].type);
+
+	assert_success(remove("file1"));
+	assert_success(remove("file2"));
+
+#endif
+
 	vle_keys_reset();
 	stats_reset(&cfg);
 }
