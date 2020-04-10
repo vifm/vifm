@@ -1572,7 +1572,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	mark_selection_or_current(curr_view);
+	flist_set_marking(curr_view, 0);
 	return fops_chown(u, g, uid, gid) != 0;
 }
 #endif
