@@ -4360,7 +4360,7 @@ tr_cmd(const cmd_info_t *cmd_info)
 		buf[sl] = '\0';
 	}
 
-	mark_selected(curr_view);
+	flist_set_marking(curr_view, 0);
 	return fops_tr(curr_view, cmd_info->argv[0], buf) != 0;
 }
 
