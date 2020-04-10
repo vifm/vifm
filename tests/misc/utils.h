@@ -96,6 +96,9 @@ void init_view_list(struct view_t *view);
 /* Waits termination of all background tasks. */
 void wait_for_bg(void);
 
+/* Verifies that file at specified path consists of specified list of lines. */
+void file_is(const char path[], const char *lines[], int nlines);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

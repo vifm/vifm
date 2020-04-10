@@ -19,6 +19,7 @@
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
+#include "../../src/utils/string_array.h"
 #include "../../src/utils/utils.h"
 #include "../../src/background.h"
 #include "../../src/filelist.h"
@@ -382,6 +383,31 @@ wait_for_bg(void)
 			break;
 		}
 	}
+}
+
+void
+file_is(const char path[], const char *lines[], int nlines)
+{
+	FILE *fp = fopen(path, "r");
+	if(fp == NULL)
+	{
+		assert_non_null(fp);
+		return;
+	}
+
+	int actual_nlines;
+	char **actual_lines = read_file_lines(fp, &actual_nlines);
+	fclose(fp);
+
+	assert_int_equal(nlines, actual_nlines);
+
+	int i;
+	for(i = 0; i < actual_nlines; ++i)
+	{
+		assert_string_equal(lines[i], actual_lines[i]);
+	}
+
+	free_string_array(actual_lines, actual_nlines);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
