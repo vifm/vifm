@@ -71,6 +71,7 @@ conf_teardown(void)
 	update_string(&cfg.media_prg, NULL);
 	update_string(&cfg.border_filler, NULL);
 	update_string(&cfg.shell, NULL);
+	update_string(&cfg.shell_cmd_flag, NULL);
 }
 
 void
