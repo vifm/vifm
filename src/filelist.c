@@ -1165,8 +1165,7 @@ enable_view_sorting(view_t *view)
 void
 flist_custom_exclude(view_t *view, int selection_only)
 {
-	dir_entry_t *entry;
-	trie_t *excluded;
+	flist_set_marking(view, 0);
 
 	if(!flist_custom_active(view))
 	{
@@ -1179,9 +1178,9 @@ flist_custom_exclude(view_t *view, int selection_only)
 		return;
 	}
 
-	entry = NULL;
-	excluded = trie_create();
-	while(iter_selection_or_current(view, &entry))
+	dir_entry_t *entry = NULL;
+	trie_t *excluded = trie_create();
+	while(iter_marked_entries(view, &entry))
 	{
 		char full_path[PATH_MAX + 1];
 
@@ -1205,7 +1204,7 @@ flist_custom_exclude(view_t *view, int selection_only)
 	(void)exclude_temporary_entries(view);
 }
 
-/* Removes selected files from compare view.  Zero selection_only enables
+/* Removes marked files from compare view.  Zero selection_only enables
  * excluding files that share ids with selected items. */
 static void
 exclude_in_compare(view_t *view, int selection_only)
@@ -1214,7 +1213,7 @@ exclude_in_compare(view_t *view, int selection_only)
 	const int double_compare = (view->custom.type == CV_DIFF);
 	const int n = other->list_rows;
 	dir_entry_t *entry = NULL;
-	while(iter_selection_or_current(view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		if(selection_only)
 		{

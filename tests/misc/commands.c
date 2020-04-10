@@ -333,6 +333,19 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
 
+	/* For zd. */
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_non_null(flist_custom_add(&lwin, "existing-files/b"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("command! exclude :normal zd", &lwin,
+				CIT_COMMAND));
+	assert_success(exec_commands("%exclude", &lwin, CIT_COMMAND));
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+
 	vle_keys_reset();
 	stats_reset(&cfg);
 }

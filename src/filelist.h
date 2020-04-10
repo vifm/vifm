@@ -139,8 +139,8 @@ void flist_custom_end(view_t *view, int very);
  * Exists with error message on failed attempt. */
 void flist_custom_set(view_t *view, const char title[], const char path[],
 		char *lines[], int nlines);
-/* Removes selected files or current one from custom view.  Zero selection_only
- * enables excluding files that share ids with selected items. */
+/* Removes active files from custom view.  Zero selection_only enables excluding
+ * files that share ids with selected items. */
 void flist_custom_exclude(view_t *view, int selection_only);
 /* Clones list of files from from view to to view. */
 void flist_custom_clone(view_t *to, const view_t *from, int as_tree);
