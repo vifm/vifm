@@ -230,9 +230,7 @@ void flist_set_marking(view_t *view, int prefer_current);
 void clear_marking(view_t *view);
 /* Marks files at positions specified in the indexes array of size count. */
 void mark_files_at(view_t *view, int count, const int indexes[]);
-/* Marks selected files of the view.  Returns number of marked files. */
-int mark_selected(view_t *view);
-/* Same as mark_selected() function, but when selection is absent current file
+/* Marks selected files of the view,  but when selection is absent current file
  * is marked.  Returns number of marked files. */
 int mark_selection_or_current(view_t *view);
 /* Removes dead entries (those that refer to non-existing files) or those that

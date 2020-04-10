@@ -154,6 +154,7 @@ static dir_entry_t * pick_sibling(view_t *view, entries_t parent_dirs,
 		int offset, int wrap, int *wrapped);
 static int iter_entries(view_t *view, dir_entry_t **entry,
 		entry_predicate pred);
+static int mark_selected(view_t *view);
 static int set_position_by_path(view_t *view, const char path[]);
 static int flist_load_tree_internal(view_t *view, const char path[],
 		int reload);
@@ -3494,7 +3495,8 @@ mark_files_at(view_t *view, int count, const int indexes[])
 	}
 }
 
-int
+/* Marks selected files of the view.  Returns number of marked files. */
+static int
 mark_selected(view_t *view)
 {
 	int i;
