@@ -324,6 +324,15 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_ulong_equal(73728,
 			fentry_get_size(&lwin, &lwin.dir_entry[lwin.list_rows - 1]));
 
+	/* For zf. */
+
+	assert_success(exec_commands("command! afilter :normal zf", &lwin,
+				CIT_COMMAND));
+	assert_success(exec_commands("%afilter", &lwin, CIT_COMMAND));
+	populate_dir_list(&lwin, 1);
+	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("..", lwin.dir_entry[0].name);
+
 	vle_keys_reset();
 	stats_reset(&cfg);
 }
