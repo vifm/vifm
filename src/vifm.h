@@ -31,7 +31,7 @@ void vifm_restart(void);
 void vifm_try_leave(int write_info, int cquit, int force);
 
 /* Communicates chosen files to something external. */
-void _gnuc_noreturn vifm_choose_files(const struct view_t *view, int nfiles,
+void _gnuc_noreturn vifm_choose_files(struct view_t *view, int nfiles,
 		char *files[]);
 
 /* Quits vifm with error after deinitializing ncurses, saving state to vifminfo

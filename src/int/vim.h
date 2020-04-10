@@ -47,7 +47,7 @@ int vim_view_file(const char filename[], int line, int column,
 /* Stores list of file names (taken from the view or the files) in a special
  * file for use by an external application.  Returns zero on success, otherwise
  * non-zero is returned. */
-int vim_write_file_list(const struct view_t *view, int nfiles, char *files[]);
+int vim_write_file_list(struct view_t *view, int nfiles, char *files[]);
 
 /* Writes empty output file list meaning that user choice is empty. */
 void vim_write_empty_file_list(void);
@@ -58,7 +58,7 @@ void vim_write_dir(const char path[]);
 
 /* Runs user-specified command on selection.  Returns zero on success, otherwise
  * non-zero is returned. */
-int vim_run_choose_cmd(const struct view_t *view);
+int vim_run_choose_cmd(struct view_t *view);
 
 /* Fills the buffer of length buf_size with path to default file list location
  * for the plugin. */

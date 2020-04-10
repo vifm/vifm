@@ -660,7 +660,7 @@ vifm_try_leave(int write_info, int cquit, int force)
 }
 
 void _gnuc_noreturn
-vifm_choose_files(const view_t *view, int nfiles, char *files[])
+vifm_choose_files(view_t *view, int nfiles, char *files[])
 {
 	int exit_code;
 
