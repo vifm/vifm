@@ -630,7 +630,7 @@ exec_startup_commands(const args_t *args)
 void
 vifm_try_leave(int write_info, int cquit, int force)
 {
-	if(!force && bg_has_active_jobs())
+	if(!force && bg_has_active_jobs(1))
 	{
 		if(!prompt_msg("Warning", "Some of backgrounded commands are still "
 					"working.  Quit?"))

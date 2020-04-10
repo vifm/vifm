@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* usleep() */
-
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
@@ -61,22 +59,10 @@ setup_single_entry(view_t *view, const char name[])
 static uint64_t
 wait_for_size(const char path[])
 {
+	wait_for_bg();
+
 	uint64_t size, nitems;
-	int counter;
-
 	dcache_get_at(path, &size, &nitems);
-	counter = 0;
-	while(size == DCACHE_UNKNOWN)
-	{
-		usleep(2000);
-		dcache_get_at(path, &size, &nitems);
-		if(++counter > 100)
-		{
-			assert_fail("Waiting for too long.");
-			break;
-		}
-	}
-
 	return size;
 }
 
