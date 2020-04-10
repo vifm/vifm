@@ -1462,16 +1462,14 @@ void
 modnorm_cp(view_t *view, key_info_t key_info)
 {
 #ifndef _WIN32
-	char mode[32];
-	int len;
-
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
 		enter_attr_mode(view);
 		return;
 	}
 
-	len = snprintf(mode, sizeof(mode), "%04d", key_info.count);
+	char mode[32];
+	int len = snprintf(mode, sizeof(mode), "%04d", key_info.count);
 	if(len != 4 || ((int)strspn(mode, "01234567") != len))
 	{
 		/* Update view because there might be not reflected changes of cursor
@@ -1483,6 +1481,7 @@ modnorm_cp(view_t *view, key_info_t key_info)
 		return;
 	}
 
+	flist_set_marking(view, 0);
 	files_chmod(view, mode, 0);
 #else
 	enter_attr_mode(view);

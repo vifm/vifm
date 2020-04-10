@@ -132,6 +132,8 @@ enter_attr_mode(view_t *active_view)
 	dir_entry_t *entry;
 	int first;
 
+	flist_set_marking(active_view, 0);
+
 	if(curr_stats.load_stage < 2)
 		return;
 
@@ -142,7 +144,7 @@ enter_attr_mode(view_t *active_view)
 	file_is_dir = 0;
 	diff = 0;
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		if(first)
 		{
@@ -463,7 +465,7 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 	ui_cancellation_reset();
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		if(len >= 2U && undo_msg[len - 2U] != ':')
 		{
@@ -477,7 +479,7 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 	un_group_open(undo_msg);
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		char inv[16];
 		snprintf(inv, sizeof(inv), "0%o", entry->mode & 0xff);

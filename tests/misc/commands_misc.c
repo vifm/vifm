@@ -286,6 +286,40 @@ TEST(substitute_works)
 	assert_success(remove(path));
 }
 
+TEST(chmod_works, IF(not_windows))
+{
+	char path[PATH_MAX + 1];
+
+	assert_success(chdir(sandbox));
+
+	strcpy(lwin.curr_dir, sandbox);
+
+	snprintf(path, sizeof(path), "%s/file1", sandbox);
+	create_file(path);
+	snprintf(path, sizeof(path), "%s/file2", sandbox);
+	create_file(path);
+
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("file1");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("file2");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	(void)exec_commands("1,2chmod +x", &lwin, CIT_COMMAND);
+
+	populate_dir_list(&lwin, 1);
+	assert_int_equal(FT_EXEC, lwin.dir_entry[0].type);
+	assert_int_equal(FT_EXEC, lwin.dir_entry[1].type);
+
+	snprintf(path, sizeof(path), "%s/file1", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/file2", sandbox);
+	assert_success(remove(path));
+}
+
 TEST(putting_files_works)
 {
 	char path[PATH_MAX + 1];

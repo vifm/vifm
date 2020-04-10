@@ -12,6 +12,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/modes/dialogs/attr_dialog.h"
+#include "../../src/filelist.h"
 
 #ifndef _WIN32
 
@@ -77,6 +78,7 @@ set_file_perms(const int perms[13])
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	alloc_file_list(&lwin, "file");
+	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
 	free_file_list(&lwin);
 
@@ -109,6 +111,7 @@ TEST(reset_executable_bits_from_files_only, IF(not_osx))
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	alloc_file_list(&lwin, "dir");
+	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
 	free_file_list(&lwin);
 
@@ -143,6 +146,7 @@ TEST(set_executable_bit_via_X_flag)
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 	alloc_file_list(&lwin, "dir");
+	flist_set_marking(&lwin, 0);
 	set_perm_string(&lwin, perms, origin_perms, adv_perms);
 	free_file_list(&lwin);
 

@@ -32,8 +32,8 @@ void enter_attr_mode(struct view_t *active_view);
 /* Redraws properties change dialog. */
 void redraw_attr_dialog(void);
 
-/* Changes permissions of selected (or just current) files of the view possibly
- * recurring in directories. */
+/* Changes permissions of marked files of the view possibly recursively in
+ * directories. */
 void files_chmod(struct view_t *view, const char mode[], int recurse_dirs);
 
 TSTATIC_DEFS(

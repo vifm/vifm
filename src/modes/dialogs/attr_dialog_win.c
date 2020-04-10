@@ -156,6 +156,8 @@ init_attr_dialog_mode(void)
 void
 enter_attr_mode(view_t *active_view)
 {
+	flist_set_marking(active_view, 0);
+
 	if(curr_stats.load_stage < 2)
 		return;
 
@@ -194,7 +196,7 @@ get_attrs(void)
 	int first = 1;
 
 	file_is_dir = 0;
-	while(iter_selection_or_current(view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		if(first)
 		{
@@ -399,7 +401,7 @@ files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 	ui_cancellation_reset();
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		if(len >= 2U && undo_msg[len - 2U] != ':')
 		{
@@ -413,7 +415,7 @@ files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 	un_group_open(undo_msg);
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		attrib_file_in_list(view, entry_to_pos(view, entry), add, sub,
 				recurse_dirs);

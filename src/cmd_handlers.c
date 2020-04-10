@@ -1525,6 +1525,7 @@ chmod_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	flist_set_marking(curr_view, 0);
 	files_chmod(curr_view, cmd_info->args, cmd_info->emark);
 #endif
 	return 0;
