@@ -3956,7 +3956,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	mark_selected(curr_view);
+	flist_set_marking(curr_view, 0);
 	return fops_subst(curr_view, last_pattern, last_sub, ic, glob) != 0;
 }
 

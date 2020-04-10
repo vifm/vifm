@@ -256,6 +256,36 @@ TEST(tr_extends_second_field)
 	assert_success(remove(path));
 }
 
+TEST(substitute_works)
+{
+	char path[PATH_MAX + 1];
+
+	assert_success(chdir(sandbox));
+
+	strcpy(lwin.curr_dir, sandbox);
+
+	snprintf(path, sizeof(path), "%s/a b b", sandbox);
+	create_file(path);
+	snprintf(path, sizeof(path), "%s/B c", sandbox);
+	create_file(path);
+
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a b b");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("B c");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	(void)exec_commands("%substitute/b/c/Iig", &lwin, CIT_COMMAND);
+
+	snprintf(path, sizeof(path), "%s/a c c", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/c c", sandbox);
+	assert_success(remove(path));
+}
+
 TEST(putting_files_works)
 {
 	char path[PATH_MAX + 1];
