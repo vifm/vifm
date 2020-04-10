@@ -161,8 +161,8 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 	}
 
 	/* Turn selection into marking. */
-	check_marking(&lwin, 0, NULL);
-	check_marking(&rwin, 0, NULL);
+	flist_set_marking(&lwin, 0);
+	flist_set_marking(&rwin, 0);
 
 	if(strstr(command + x, "%r") != NULL)
 	{

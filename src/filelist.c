@@ -3449,26 +3449,35 @@ check_marking(view_t *view, int count, const int indexes[])
 	{
 		mark_files_at(view, count, indexes);
 	}
-	else if(!view->pending_marking)
+	else
 	{
-		if(view->selected_files != 0)
-		{
-			mark_selected(view);
-		}
-		else
-		{
-			clear_marking(view);
+		flist_set_marking(view, 0);
+	}
+}
 
-			dir_entry_t *curr = get_current_entry(view);
-			if(curr != NULL && fentry_is_valid(curr))
-			{
-				curr->marked = 1;
-			}
-		}
+void
+flist_set_marking(view_t *view, int prefer_current)
+{
+	if(view->pending_marking)
+	{
+		view->pending_marking = 0;
+		return;
+	}
+
+	dir_entry_t *curr = get_current_entry(view);
+	if(view->selected_files != 0 &&
+			(!prefer_current || (curr != NULL && curr->selected)))
+	{
+		mark_selected(view);
 	}
 	else
 	{
-		view->pending_marking = 0;
+		clear_marking(view);
+
+		if(curr != NULL && fentry_is_valid(curr))
+		{
+			curr->marked = 1;
+		}
 	}
 }
 

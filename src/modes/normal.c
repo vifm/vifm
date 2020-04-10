@@ -505,7 +505,7 @@ modnorm_init(void)
 static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	curr_stats.save_msg = fops_incdec(curr_view, def_count(key_info.count));
 }
 
@@ -919,7 +919,7 @@ cmd_ctrl_wz(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	curr_stats.save_msg = fops_incdec(curr_view, -def_count(key_info.count));
 }
 
@@ -973,7 +973,7 @@ try_switch_into_view_mode(void)
 static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	curr_stats.save_msg = fops_clone(curr_view, NULL, 0, 0,
 			def_count(key_info.count));
 }
@@ -1495,7 +1495,7 @@ cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view->selected_files > 1)
 	{
-		check_marking(curr_view, 0, NULL);
+		flist_set_marking(curr_view, 0);
 		fops_rename(curr_view, NULL, 0, 0);
 		return;
 	}

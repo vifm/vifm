@@ -219,9 +219,13 @@ void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
  * Non-zero drop_prefix requests omitting file prefix for trees. */
 void get_short_path_of(const view_t *view, const dir_entry_t *entry,
 		NameFormat fmt, int drop_prefix, size_t buf_len, char buf[]);
-/* Ensures that either entries at specified positions, selected entries or file
- * under cursor is marked. */
+/* Ensures that either entries at specified positions, pending marking, selected
+ * entries or file under cursor is marked. */
 void check_marking(view_t *view, int count, const int indexes[]);
+/* Ensures that either pending marking, selected entries or file under cursor is
+ * marked.  Non-zero prefer_current parameter makes marking selection contingent
+ * on current file being selected. */
+void flist_set_marking(view_t *view, int prefer_current);
 /* Unmarks all entries of the view. */
 void clear_marking(view_t *view);
 /* Marks files at positions specified in the indexes array of size count. */

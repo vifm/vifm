@@ -1580,7 +1580,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 static int
 clone_cmd(const cmd_info_t *cmd_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 
 	if(cmd_info->qmark)
 	{
@@ -1786,7 +1786,7 @@ delete_cmd(const cmd_info_t *cmd_info)
 		return result;
 	}
 
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	if(cmd_info->bg)
 	{
 		result = fops_delete_bg(curr_view, !cmd_info->emark) != 0;
@@ -3416,7 +3416,7 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 
 	if(cmd_info->qmark)
 	{
@@ -3676,7 +3676,7 @@ regular_cmd(const cmd_info_t *cmd_info)
 static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	return fops_rename(curr_view, cmd_info->argv, cmd_info->argc,
 			cmd_info->emark) != 0;
 }
@@ -3692,7 +3692,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 static int
 restore_cmd(const cmd_info_t *cmd_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	return fops_restore(curr_view) != 0;
 }
 
@@ -3709,7 +3709,7 @@ link_cmd(const cmd_info_t *cmd_info, int absolute)
 {
 	const CopyMoveLikeOp op = absolute ? CMLO_LINK_ABS : CMLO_LINK_REL;
 
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 
 	if(cmd_info->qmark)
 	{
@@ -4831,7 +4831,7 @@ yank_cmd(const cmd_info_t *cmd_info)
 	result = get_reg_and_count(cmd_info, &reg);
 	if(result == 0)
 	{
-		check_marking(curr_view, 0, NULL);
+		flist_set_marking(curr_view, 0);
 		result = fops_yank(curr_view, reg) != 0;
 	}
 
