@@ -40,14 +40,13 @@ static const cmd_add_t commands[] = {
 static int called;
 static int bg;
 static char *arg;
-static char *saved_cwd;
 
-static char cwd[PATH_MAX + 1];
 static char sandbox[PATH_MAX + 1];
 static char test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
+	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
@@ -82,14 +81,10 @@ SETUP()
 	called = 0;
 
 	undo_setup();
-
-	saved_cwd = save_cwd();
 }
 
 TEARDOWN()
 {
-	restore_cwd(saved_cwd);
-
 	update_string(&cfg.cd_path, NULL);
 	update_string(&cfg.fuse_home, NULL);
 	update_string(&cfg.slow_fs_list, NULL);
