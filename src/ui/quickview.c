@@ -261,7 +261,15 @@ view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 	char path[PATH_MAX + 1];
 	qv_get_path_to_explore(entry, path, sizeof(path));
 
-	switch(entry->type)
+	FileType type = entry->type;
+
+	struct stat st;
+	if(os_stat(path, &st) == 0)
+	{
+		type = get_type_from_mode(st.st_mode);
+	}
+
+	switch(type)
 	{
 		case FT_CHAR_DEV:
 			write_message("File is a Character Device", parea);

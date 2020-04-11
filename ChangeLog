@@ -159,6 +159,9 @@
 	single mapping in which case this behaviour is expected).  Thanks to
 	filterfalse.
 
+	Fixed detection of non-regular files in quickview, when previewing
+	symbolic links.  Thanks to m-kru.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
