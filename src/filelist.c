@@ -3296,18 +3296,6 @@ iter_selected_entries(view_t *view, dir_entry_t **entry)
 }
 
 int
-iter_active_area(view_t *view, dir_entry_t **entry)
-{
-	dir_entry_t *const curr = get_current_entry(view);
-	if(!curr->selected)
-	{
-		*entry = (*entry == NULL && fentry_is_valid(curr)) ? curr : NULL;
-		return *entry != NULL;
-	}
-	return iter_selected_entries(view, entry);
-}
-
-int
 iter_marked_entries(view_t *view, dir_entry_t **entry)
 {
 	return iter_entries(view, entry, &is_entry_marked);

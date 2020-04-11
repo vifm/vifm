@@ -194,10 +194,6 @@ uint64_t fentry_get_size(const view_t *view, const dir_entry_t *entry);
  * returned.  List of entries shouldn't be reloaded between invocations of this
  * function. */
 int iter_selected_entries(view_t *view, dir_entry_t **entry);
-/* Same as iter_selected_entries() function, but traverses selected items only
- * if current element is selected, otherwise only current element is
- * processed. */
-int iter_active_area(view_t *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but checks for marks. */
 int iter_marked_entries(view_t *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but when selection is absent
