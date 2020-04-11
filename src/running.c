@@ -86,7 +86,7 @@ FileHandleLink;
 
 static void handle_file(view_t *view, FileHandleExec exec,
 		FileHandleLink follow);
-static int is_runnable(const view_t *view, const char full_path[], int type,
+static int is_runnable(view_t *view, const char full_path[], int type,
 		int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
 		int dont_execute, int runnable);
@@ -168,6 +168,8 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	int runnable;
 	const dir_entry_t *const curr = get_current_entry(view);
 
+	flist_set_marking(view, 1);
+
 	if(fentry_is_fake(curr))
 	{
 		return;
@@ -177,7 +179,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
-		if(!curr->selected && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
+		if(!curr->marked && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
 		{
 			enter_dir(view);
 			return;
@@ -189,6 +191,8 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 
 	if(stats_file_choose_action_set() && (executable || runnable))
 	{
+		/* Reuse marking second time. */
+		view->pending_marking = 1;
 		/* The call below does not return. */
 		vifm_choose_files(view, 0, NULL);
 	}
@@ -207,15 +211,19 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	}
 }
 
-/* Returns non-zero if file can be executed or it's link to a directory (it can
- * be entered), otherwise zero is returned. */
+/* Returns non-zero if file can be executed or it's a link to a directory (it
+ * can be entered), otherwise zero is returned. */
 static int
-is_runnable(const view_t *view, const char full_path[], int type,
-		int force_follow)
+is_runnable(view_t *view, const char full_path[], int type, int force_follow)
 {
-	if(view->selected_files > 0)
+	int count = 0;
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
-		return 1;
+		if(++count > 1)
+		{
+			return 1;
+		}
 	}
 
 	if(!force_follow && !cfg.follow_links && type == FT_LINK &&
@@ -336,15 +344,8 @@ static int
 selection_is_consistent(view_t *view)
 {
 	int files = 0, dirs = 0;
-	dir_entry_t *entry;
-
-	if(view->selected_files < 2)
-	{
-		return 1;
-	}
-
-	entry = NULL;
-	while(iter_selected_entries(view, &entry))
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
 		if(fentry_is_dir(entry))
 		{
@@ -389,11 +390,6 @@ run_selection(view_t *view, int dont_execute)
 		return;
 	}
 
-	if(!get_current_entry(view)->selected)
-	{
-		flist_sel_stash(view);
-	}
-
 	char *typed_fname = get_typed_entry_fpath(get_current_entry(view));
 	const char *common_prog_cmd = ft_get_program(typed_fname);
 	free(typed_fname);
@@ -401,10 +397,13 @@ run_selection(view_t *view, int dont_execute)
 	int can_multi_run = (is_multi_run_compat(view, common_prog_cmd) != 0);
 	int files_without_handler = (common_prog_cmd == NULL);
 	int identical_handlers = 1;
+	int nentries = 0;
 
 	dir_entry_t *entry = NULL;
-	while(iter_selected_entries(view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
+		++nentries;
+
 		if(!path_exists_at(entry->origin, entry->name, DEREF))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
@@ -433,6 +432,8 @@ run_selection(view_t *view, int dont_execute)
 		}
 	}
 
+	can_multi_run &= (nentries > 1);
+
 	if(files_without_handler > 0)
 	{
 		run_with_defaults(view);
@@ -460,12 +461,12 @@ run_with_defaults(view_t *view)
 	if(get_current_entry(view)->type == FT_DIR)
 	{
 		enter_dir(view);
+		return;
 	}
-	else if(view->selected_files <= 1)
-	{
-		view_current_file(view);
-	}
-	else if(vim_edit_marking() != 0)
+
+	/* Reuse marking second time. */
+	view->pending_marking = 1;
+	if(vim_edit_marking() != 0)
 	{
 		show_error_msg("Running error", "Can't edit selection");
 	}
@@ -475,12 +476,10 @@ run_with_defaults(view_t *view)
 static void
 run_selection_separately(view_t *view, int dont_execute)
 {
-	dir_entry_t *entry;
-
 	const int pos = view->list_pos;
 
-	entry = NULL;
-	while(iter_selected_entries(view, &entry))
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
 		char *typed_fname;
 		const char *entry_prog_cmd;
@@ -504,8 +503,6 @@ is_multi_run_compat(view_t *view, const char prog_cmd[])
 {
 	size_t len;
 	if(prog_cmd == NULL)
-		return 0;
-	if(view->selected_files <= 1)
 		return 0;
 	if((len = strlen(prog_cmd)) == 0)
 		return 0;

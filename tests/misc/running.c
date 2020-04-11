@@ -315,10 +315,7 @@ TEST(current_file_not_part_of_selection, IF(not_windows))
 
 	rn_open(&lwin, FHE_NO_RUN);
 
-	char path[PATH_MAX + 1];
-	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files/a", cwd);
-
-	const char *lines[] = { path };
+	const char *lines[] = { "a" };
 	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
 
 	assert_success(remove(SANDBOX_PATH "/vi-list"));
