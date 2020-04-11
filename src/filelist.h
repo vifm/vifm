@@ -139,8 +139,8 @@ void flist_custom_end(view_t *view, int very);
  * Exists with error message on failed attempt. */
 void flist_custom_set(view_t *view, const char title[], const char path[],
 		char *lines[], int nlines);
-/* Removes selected files or current one from custom view.  Zero selection_only
- * enables excluding files that share ids with selected items. */
+/* Removes active files from custom view.  Zero selection_only enables excluding
+ * files that share ids with selected items. */
 void flist_custom_exclude(view_t *view, int selection_only);
 /* Clones list of files from from view to to view. */
 void flist_custom_clone(view_t *to, const view_t *from, int as_tree);
@@ -194,10 +194,6 @@ uint64_t fentry_get_size(const view_t *view, const dir_entry_t *entry);
  * returned.  List of entries shouldn't be reloaded between invocations of this
  * function. */
 int iter_selected_entries(view_t *view, dir_entry_t **entry);
-/* Same as iter_selected_entries() function, but traverses selected items only
- * if current element is selected, otherwise only current element is
- * processed. */
-int iter_active_area(view_t *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but checks for marks. */
 int iter_marked_entries(view_t *view, dir_entry_t **entry);
 /* Same as iter_selected_entries() function, but when selection is absent
@@ -219,14 +215,18 @@ void get_full_path_of(const dir_entry_t *entry, size_t buf_len, char buf[]);
  * Non-zero drop_prefix requests omitting file prefix for trees. */
 void get_short_path_of(const view_t *view, const dir_entry_t *entry,
 		NameFormat fmt, int drop_prefix, size_t buf_len, char buf[]);
-/* Ensures that either entries at specified positions, selected entries or file
- * under cursor is marked. */
+/* Ensures that either entries at specified positions, pending marking, selected
+ * entries or file under cursor is marked. */
 void check_marking(view_t *view, int count, const int indexes[]);
+/* Ensures that either pending marking, selected entries or file under cursor is
+ * marked.  Non-zero prefer_current parameter makes marking selection contingent
+ * on current file being selected. */
+void flist_set_marking(view_t *view, int prefer_current);
+/* Unmarks all entries of the view. */
+void clear_marking(view_t *view);
 /* Marks files at positions specified in the indexes array of size count. */
 void mark_files_at(view_t *view, int count, const int indexes[]);
-/* Marks selected files of the view.  Returns number of marked files. */
-int mark_selected(view_t *view);
-/* Same as mark_selected() function, but when selection is absent current file
+/* Marks selected files of the view,  but when selection is absent current file
  * is marked.  Returns number of marked files. */
 int mark_selection_or_current(view_t *view);
 /* Removes dead entries (those that refer to non-existing files) or those that

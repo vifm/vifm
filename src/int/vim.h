@@ -34,9 +34,9 @@ int vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size);
  * list.  Returns zero on success, otherwise non-zero is returned. */
 int vim_edit_files(int nfiles, char *files[]);
 
-/* Opens external editor to edit selected files of the current view.  Returns
+/* Opens external editor to edit marked files of the current view.  Returns
  * non-zero on error, otherwise zero is returned. */
-int vim_edit_selection(void);
+int vim_edit_marking(void);
 
 /* Negative line/column means ignore parameter.  First line/column number has
  * number one, while zero means don't change it.  Returns zero on success, on
@@ -44,10 +44,10 @@ int vim_edit_selection(void);
 int vim_view_file(const char filename[], int line, int column,
 		int allow_forking);
 
-/* Stores list of file names (taken from the view or the files) in a special
- * file for use by an external application.  Returns zero on success, otherwise
- * non-zero is returned. */
-int vim_write_file_list(const struct view_t *view, int nfiles, char *files[]);
+/* Stores list of file names (active files taken from the view or the files) in
+ * a special file for use by an external application.  Returns zero on success,
+ * otherwise non-zero is returned. */
+int vim_write_file_list(struct view_t *view, int nfiles, char *files[]);
 
 /* Writes empty output file list meaning that user choice is empty. */
 void vim_write_empty_file_list(void);
@@ -58,14 +58,14 @@ void vim_write_dir(const char path[]);
 
 /* Runs user-specified command on selection.  Returns zero on success, otherwise
  * non-zero is returned. */
-int vim_run_choose_cmd(const struct view_t *view);
+int vim_run_choose_cmd(struct view_t *view);
 
 /* Fills the buffer of length buf_size with path to default file list location
  * for the plugin. */
 void vim_get_list_file_path(char buf[], size_t buf_size);
 
 TSTATIC_DEFS(
-	char * format_edit_selection_cmd(int *bg);
+	char * format_edit_marking_cmd(int *bg);
 	void trim_right(char str[]);
 )
 

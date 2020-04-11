@@ -38,7 +38,6 @@
 #include "filtering.h"
 #include "types.h"
 
-static void move_cursor_out_of_scope(view_t *view, entry_predicate pred);
 static int get_curr_col(const view_t *view);
 static int get_curr_line(const view_t *view);
 static int get_max_col(const view_t *view);
@@ -143,31 +142,15 @@ fpos_ensure_valid_pos(view_t *view)
 }
 
 void
-fpos_move_out_of(view_t *view, FileListScope scope)
+fops_leave_marking(view_t *view)
 {
 	/* XXX: this functionality might be unnecessary now that we have directory
 	 *      merging. */
-	switch(scope)
-	{
-		case FLS_SELECTION:
-			move_cursor_out_of_scope(view, &is_entry_selected);
-			return;
-		case FLS_MARKING:
-			move_cursor_out_of_scope(view, &is_entry_marked);
-			return;
-	}
-	assert(0 && "Unhandled file list scope type");
-}
 
-/* Ensures that cursor is moved outside of entries that satisfy the predicate if
- * that's possible. */
-static void
-move_cursor_out_of_scope(view_t *view, entry_predicate pred)
-{
 	/* TODO: if we reach bottom of the list and predicate holds try scanning to
-	 * the top. */
+	 *       the top. */
 	int i = view->list_pos;
-	while(i < view->list_rows - 1 && pred(&view->dir_entry[i]))
+	while(i < view->list_rows - 1 && is_entry_marked(&view->dir_entry[i]))
 	{
 		++i;
 	}

@@ -47,11 +47,10 @@
 /* File name known to Vim-plugin. */
 #define LIST_FILE "vimfiles"
 
-TSTATIC char * format_edit_selection_cmd(int *bg);
+TSTATIC char * format_edit_marking_cmd(int *bg);
 static int run_vim(const char cmd[], int bg, int use_term_multiplexer);
 TSTATIC void trim_right(char text[]);
-static void dump_filenames(const view_t *view, FILE *fp, int nfiles,
-		char *files[]);
+static void dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[]);
 
 int
 vim_format_help_cmd(const char topic[], char cmd[], size_t cmd_size)
@@ -113,11 +112,11 @@ vim_edit_files(int nfiles, char *files[])
 }
 
 int
-vim_edit_selection(void)
+vim_edit_marking(void)
 {
 	int error = 1;
 	int bg;
-	char *const cmd = format_edit_selection_cmd(&bg);
+	char *const cmd = format_edit_marking_cmd(&bg);
 	if(cmd != NULL)
 	{
 		error = run_vim(cmd, bg, 1);
@@ -126,10 +125,10 @@ vim_edit_selection(void)
 	return error;
 }
 
-/* Formats a command to edit selected files of the current view in an editor.
+/* Formats a command to edit marked files of the current view in an editor.
  * Returns a newly allocated string, which should be freed by the caller. */
 TSTATIC char *
-format_edit_selection_cmd(int *bg)
+format_edit_marking_cmd(int *bg)
 {
 	const char *const fmt = (get_env_type() == ET_WIN) ? "%\"f" : "%f";
 	char *const files = ma_expand(fmt, NULL, NULL, 1);
@@ -229,7 +228,7 @@ run_vim(const char cmd[], int bg, int use_term_multiplexer)
 }
 
 int
-vim_write_file_list(const view_t *view, int nfiles, char *files[])
+vim_write_file_list(view_t *view, int nfiles, char *files[])
 {
 	FILE *fp;
 	const char *const files_out = curr_stats.chosen_files_out;
@@ -263,7 +262,7 @@ vim_write_file_list(const view_t *view, int nfiles, char *files[])
  * is selected, if current file is not selected it's the only one that is
  * stored. */
 static void
-dump_filenames(const view_t *view, FILE *fp, int nfiles, char *files[])
+dump_filenames(view_t *view, FILE *fp, int nfiles, char *files[])
 {
 	/* Break delimiter in it's first character and the rest to be able to insert
 	 * null character via "%c%s" format string. */
@@ -275,7 +274,7 @@ dump_filenames(const view_t *view, FILE *fp, int nfiles, char *files[])
 	if(nfiles == 0)
 	{
 		dir_entry_t *entry = NULL;
-		while(iter_active_area((view_t *)view, &entry))
+		while(iter_marked_entries(view, &entry))
 		{
 			const char *const sep = (ends_with_slash(entry->origin) ? "" : "/");
 			fprintf(fp, "%s%s%s%c%s", entry->origin, sep, entry->name, delim_c,
@@ -356,18 +355,13 @@ vim_write_dir(const char path[])
 }
 
 int
-vim_run_choose_cmd(const view_t *view)
+vim_run_choose_cmd(view_t *view)
 {
 	char *expanded_cmd;
 
 	if(is_null_or_empty(curr_stats.on_choose))
 	{
 		return 0;
-	}
-
-	if(!get_current_entry(view)->selected)
-	{
-		flist_sel_drop(curr_view);
 	}
 
 	expanded_cmd = ma_expand(curr_stats.on_choose, NULL, NULL, 1);

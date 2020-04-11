@@ -1525,6 +1525,7 @@ chmod_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
+	flist_set_marking(curr_view, 0);
 	files_chmod(curr_view, cmd_info->args, cmd_info->emark);
 #endif
 	return 0;
@@ -1571,7 +1572,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	mark_selection_or_current(curr_view);
+	flist_set_marking(curr_view, 0);
 	return fops_chown(u, g, uid, gid) != 0;
 }
 #endif
@@ -1580,7 +1581,7 @@ chown_cmd(const cmd_info_t *cmd_info)
 static int
 clone_cmd(const cmd_info_t *cmd_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 
 	if(cmd_info->qmark)
 	{
@@ -1786,7 +1787,7 @@ delete_cmd(const cmd_info_t *cmd_info)
 		return result;
 	}
 
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	if(cmd_info->bg)
 	{
 		result = fops_delete_bg(curr_view, !cmd_info->emark) != 0;
@@ -2053,6 +2054,8 @@ echo_cmd(const cmd_info_t *cmd_info)
 static int
 edit_cmd(const cmd_info_t *cmd_info)
 {
+	flist_set_marking(curr_view, 1);
+
 	if(cmd_info->argc != 0)
 	{
 		if(stats_file_choose_action_set())
@@ -2065,48 +2068,34 @@ edit_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	if(!curr_view->selected_files || !get_current_entry(curr_view)->selected)
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(curr_view, &entry))
 	{
-		char file_to_view[PATH_MAX + 1];
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(stats_file_choose_action_set())
+		if(path_exists(full_path, DEREF) && !path_exists(full_path, NODEREF))
 		{
-			/* The call below does not return. */
-			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
+			show_error_msgf("Access error",
+					"Can't access destination of link \"%s\". It might be broken.",
+					full_path);
+			return 0;
 		}
-
-		get_current_full_path(curr_view, sizeof(file_to_view), file_to_view);
-		(void)vim_view_file(file_to_view, -1, -1, 1);
 	}
-	else
+
+	/* Reuse marking second time (for vifm_choose_files() or
+	 * vim_edit_marking()). */
+	curr_view->pending_marking = 1;
+
+	if(stats_file_choose_action_set())
 	{
-		int i;
+		/* The call below does not return. */
+		vifm_choose_files(curr_view, 0, NULL);
+	}
 
-		for(i = 0; i < curr_view->list_rows; ++i)
-		{
-			struct stat st;
-			if(curr_view->dir_entry[i].selected == 0)
-				continue;
-			if(os_lstat(curr_view->dir_entry[i].name, &st) == 0 &&
-					!path_exists(curr_view->dir_entry[i].name, DEREF))
-			{
-				show_error_msgf("Access error",
-						"Can't access destination of link \"%s\". It might be broken.",
-						curr_view->dir_entry[i].name);
-				return 0;
-			}
-		}
-
-		if(stats_file_choose_action_set())
-		{
-			/* The call below does not return. */
-			vifm_choose_files(curr_view, cmd_info->argc, cmd_info->argv);
-		}
-
-		if(vim_edit_selection() != 0)
-		{
-			show_error_msg("Edit error", "Can't edit selection");
-		}
+	if(vim_edit_marking() != 0)
+	{
+		show_error_msg("Edit error", "Can't edit selection");
 	}
 	return 0;
 }
@@ -3416,7 +3405,7 @@ cpmv_cmd(const cmd_info_t *cmd_info, int move)
 {
 	const CopyMoveLikeOp op = move ? CMLO_MOVE : CMLO_COPY;
 
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 
 	if(cmd_info->qmark)
 	{
@@ -3676,7 +3665,7 @@ regular_cmd(const cmd_info_t *cmd_info)
 static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	return fops_rename(curr_view, cmd_info->argv, cmd_info->argc,
 			cmd_info->emark) != 0;
 }
@@ -3692,7 +3681,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 static int
 restore_cmd(const cmd_info_t *cmd_info)
 {
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 	return fops_restore(curr_view) != 0;
 }
 
@@ -3709,7 +3698,7 @@ link_cmd(const cmd_info_t *cmd_info, int absolute)
 {
 	const CopyMoveLikeOp op = absolute ? CMLO_LINK_ABS : CMLO_LINK_REL;
 
-	check_marking(curr_view, 0, NULL);
+	flist_set_marking(curr_view, 0);
 
 	if(cmd_info->qmark)
 	{
@@ -3956,7 +3945,7 @@ substitute_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	mark_selected(curr_view);
+	flist_set_marking(curr_view, 0);
 	return fops_subst(curr_view, last_pattern, last_sub, ic, glob) != 0;
 }
 
@@ -4360,7 +4349,7 @@ tr_cmd(const cmd_info_t *cmd_info)
 		buf[sl] = '\0';
 	}
 
-	mark_selected(curr_view);
+	flist_set_marking(curr_view, 0);
 	return fops_tr(curr_view, cmd_info->argv[0], buf) != 0;
 }
 
@@ -4831,7 +4820,7 @@ yank_cmd(const cmd_info_t *cmd_info)
 	result = get_reg_and_count(cmd_info, &reg);
 	if(result == 0)
 	{
-		check_marking(curr_view, 0, NULL);
+		flist_set_marking(curr_view, 0);
 		result = fops_yank(curr_view, reg) != 0;
 	}
 

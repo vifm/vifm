@@ -140,9 +140,10 @@ void bg_check(void);
 int bg_execute(const char descr[], const char op_descr[], int total,
 		int important, bg_task_func task_func, void *args);
 
-/* Checks whether there are any internal jobs (not external applications tracked
- * by vifm) running in background. */
-int bg_has_active_jobs(void);
+/* Checks whether there are any internal jobs (important_only is non-zero) or
+ * jobs or tasks (important_only is zero) running in background.  External
+ * applications whose state is tracked are always ignored by this function. */
+int bg_has_active_jobs(int important_only);
 
 /* Performs preparations necessary for safe access of the bg_jobs list.  Effect
  * of calling this function must be reverted by calling bg_jobs_unfreeze().

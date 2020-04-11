@@ -69,8 +69,6 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 static void set_attrs(view_t *view, const int *attrs, const int *origin_attrs);
 static void files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs);
-static void attrib_file_in_list(view_t *view, int pos, DWORD add, DWORD sub,
-		int recurse_dirs);
 static void file_attrib(char *path, DWORD add, DWORD sub, int recurse_dirs);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
@@ -156,6 +154,8 @@ init_attr_dialog_mode(void)
 void
 enter_attr_mode(view_t *active_view)
 {
+	flist_set_marking(active_view, 0);
+
 	if(curr_stats.load_stage < 2)
 		return;
 
@@ -194,7 +194,7 @@ get_attrs(void)
 	int first = 1;
 
 	file_is_dir = 0;
-	while(iter_selection_or_current(view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		if(first)
 		{
@@ -399,7 +399,7 @@ files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 	ui_cancellation_reset();
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		if(len >= 2U && undo_msg[len - 2U] != ':')
 		{
@@ -413,23 +413,14 @@ files_attrib(view_t *view, DWORD add, DWORD sub, int recurse_dirs)
 	un_group_open(undo_msg);
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		attrib_file_in_list(view, entry_to_pos(view, entry), add, sub,
-				recurse_dirs);
+		char path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(path), path);
+		file_attrib(path, add, sub, recurse_dirs);
 	}
 
 	un_group_close();
-}
-
-/* Changes properties of a single file. */
-static void attrib_file_in_list(view_t *view, int pos, DWORD add, DWORD sub,
-		int recurse_dirs)
-{
-	char path_buf[PATH_MAX + 1];
-
-	get_full_path_at(view, pos, sizeof(path_buf), path_buf);
-	file_attrib(path_buf, add, sub, recurse_dirs);
 }
 
 /* performs properties change with support of undoing */

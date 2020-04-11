@@ -496,9 +496,8 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 static void
 call_incdec(int count)
 {
-	int save_msg;
-	check_marking(view, 0, NULL);
-	save_msg = fops_incdec(view, count);
+	flist_set_marking(view, 0);
+	int save_msg = fops_incdec(view, count);
 	accept_and_leave(save_msg);
 }
 
@@ -518,9 +517,8 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
-	int save_msg;
-	check_marking(view, 0, NULL);
-	save_msg = fops_clone(view, NULL, 0, 0, def_count(key_info.count));
+	flist_set_marking(view, 0);
+	int save_msg = fops_clone(view, NULL, 0, 0, def_count(key_info.count));
 	accept_and_leave(save_msg);
 }
 
@@ -712,7 +710,7 @@ cmd_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 delete(key_info_t key_info, int use_trash)
 {
-	check_marking(view, 0, NULL);
+	flist_set_marking(view, 0);
 	if(fops_delete(view, def_reg(key_info.reg), use_trash))
 	{
 		accept_and_leave(1);
@@ -769,7 +767,7 @@ cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 	update_marks(view);
 	modvis_leave(0, 1, 0);
 
-	check_marking(view, 0, NULL);
+	flist_set_marking(view, 0);
 	(void)fops_rename(view, NULL, 0, 0);
 }
 
@@ -807,10 +805,8 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 static void
 do_gu(int upper)
 {
-	int save_msg;
-
-	check_marking(view, 0, NULL);
-	save_msg = fops_case(view, upper);
+	flist_set_marking(view, 0);
+	int save_msg = fops_case(view, upper);
 	accept_and_leave(save_msg);
 }
 
@@ -1080,11 +1076,8 @@ change_amend_type(AmendType new_amend_type)
 static void
 cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	int save_msg;
-
-	check_marking(view, 0, NULL);
-	save_msg = fops_yank(view, def_reg(key_info.reg));
-
+	flist_set_marking(view, 0);
+	int save_msg = fops_yank(view, def_reg(key_info.reg));
 	accept_and_leave(save_msg);
 }
 

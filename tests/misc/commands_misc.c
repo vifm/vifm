@@ -1,7 +1,9 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* F_OK access() chdir() rmdir() symlink() unlink() */
 
+#include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
@@ -38,6 +40,8 @@ static char test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
+	cfg.sizefmt.base = 1;
+
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
@@ -247,13 +251,112 @@ TEST(tr_extends_second_field)
 			lwin.list_rows*sizeof(*lwin.dir_entry));
 	lwin.dir_entry[0].name = strdup("a b");
 	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
-	lwin.dir_entry[0].selected = 1;
-	lwin.selected_files = 1;
 
 	(void)exec_commands("tr/ ?<>\\\\:*|\"/_", &lwin, CIT_COMMAND);
 
 	snprintf(path, sizeof(path), "%s/a_b", sandbox);
 	assert_success(remove(path));
+}
+
+TEST(substitute_works)
+{
+	char path[PATH_MAX + 1];
+
+	assert_success(chdir(sandbox));
+
+	strcpy(lwin.curr_dir, sandbox);
+
+	snprintf(path, sizeof(path), "%s/a b b", sandbox);
+	create_file(path);
+	snprintf(path, sizeof(path), "%s/B c", sandbox);
+	create_file(path);
+
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("a b b");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("B c");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	(void)exec_commands("%substitute/b/c/Iig", &lwin, CIT_COMMAND);
+
+	snprintf(path, sizeof(path), "%s/a c c", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/c c", sandbox);
+	assert_success(remove(path));
+}
+
+TEST(chmod_works, IF(not_windows))
+{
+	char path[PATH_MAX + 1];
+
+	assert_success(chdir(sandbox));
+
+	strcpy(lwin.curr_dir, sandbox);
+
+	snprintf(path, sizeof(path), "%s/file1", sandbox);
+	create_file(path);
+	snprintf(path, sizeof(path), "%s/file2", sandbox);
+	create_file(path);
+
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("file1");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("file2");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	(void)exec_commands("1,2chmod +x", &lwin, CIT_COMMAND);
+
+	populate_dir_list(&lwin, 1);
+	assert_int_equal(FT_EXEC, lwin.dir_entry[0].type);
+	assert_int_equal(FT_EXEC, lwin.dir_entry[1].type);
+
+	snprintf(path, sizeof(path), "%s/file1", sandbox);
+	assert_success(remove(path));
+	snprintf(path, sizeof(path), "%s/file2", sandbox);
+	assert_success(remove(path));
+}
+
+TEST(edit_handles_ranges, IF(not_windows))
+{
+	create_file(SANDBOX_PATH "/file1");
+	create_file(SANDBOX_PATH "/file2");
+
+	char script_path[PATH_MAX + 1];
+	make_abs_path(script_path, sizeof(script_path), sandbox, "script", NULL);
+	update_string(&cfg.vi_command, script_path);
+	update_string(&cfg.vi_x_command, "");
+
+	FILE *fp = fopen(SANDBOX_PATH "/script", "w");
+	fprintf(fp, "#!/bin/sh\n");
+	fprintf(fp, "for arg; do echo \"$arg\" >> %s/vi-list; done\n", SANDBOX_PATH);
+	fclose(fp);
+	assert_success(chmod(SANDBOX_PATH "/script", 0777));
+
+	strcpy(lwin.curr_dir, sandbox);
+	lwin.list_rows = 2;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("file1");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].name = strdup("file2");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+
+	(void)exec_commands("%edit", &lwin, CIT_COMMAND);
+
+	const char *lines[] = { "file1", "file2" };
+	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
+
+	assert_success(remove(SANDBOX_PATH "/script"));
+	assert_success(remove(SANDBOX_PATH "/file1"));
+	assert_success(remove(SANDBOX_PATH "/file2"));
+	assert_success(remove(SANDBOX_PATH "/vi-list"));
 }
 
 TEST(putting_files_works)

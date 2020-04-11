@@ -61,7 +61,7 @@ void
 wait_for_bg(void)
 {
 	int counter = 0;
-	while(bg_has_active_jobs())
+	while(bg_has_active_jobs(0))
 	{
 		usleep(5000);
 		if(++counter > 100)

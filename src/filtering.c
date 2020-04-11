@@ -149,15 +149,14 @@ dot_filter_toggle(view_t *view)
 void
 name_filters_add_selection(view_t *view)
 {
-	dir_entry_t *entry;
 	filter_t filter;
-	int filtered;
-
 	(void)filter_init(&filter, FILTER_DEF_CASE_SENSITIVITY);
 
+	flist_set_marking(view, 0);
+
 	/* Traverse items and update/create filter values. */
-	entry = NULL;
-	while(iter_selection_or_current(view, &entry))
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
 		const char *name = entry->name;
 		char name_with_slash[NAME_MAX + 1 + 1];
@@ -190,7 +189,7 @@ name_filters_add_selection(view_t *view)
 
 	/* Update entry lists to remove entries that must be filtered out now.  No
 	 * view reload is needed. */
-	filtered = zap_entries(view, view->dir_entry, &view->list_rows,
+	int filtered = zap_entries(view, view->dir_entry, &view->list_rows,
 			&is_newly_filtered, &filter, 0, 1);
 	if(flist_custom_active(view))
 	{

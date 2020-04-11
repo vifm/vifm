@@ -70,12 +70,11 @@ int flist_sel_by_pattern(struct view_t *view, const char pattern[],
  * position, if at is negative). */
 void flist_sel_count(struct view_t *view, int at, int count);
 
-/* Selects entries in the range [begin; end].  If begin isn't given (negative),
- * end is selected.  Otherwise, if end is negative and select_current is
- * non-zero, current item is selected.  Returns non-zero if something was
- * selected by this method, otherwise zero is returned. */
-int flist_sel_range(struct view_t *view, int begin, int end,
-		int select_current);
+/* Marks entries in the range [begin; end].  If begin isn't given (negative),
+ * end is marked.  Otherwise, if end is negative and mark_current is non-zero,
+ * current item is marked.  Returns non-zero if marking was set up, otherwise
+ * zero is returned. */
+int flist_sel_range(struct view_t *view, int begin, int end, int mark_current);
 
 #endif /* VIFM__FLIST_SELECT_H__ */
 

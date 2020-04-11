@@ -68,7 +68,7 @@ static int clone_file(const dir_entry_t *entry, const char path[],
 		const char clone[], ops_t *ops);
 static void get_group_file_list(char *list[], int count, char buf[]);
 static void go_to_first_file(view_t *view, char *names[], int count);
-static void update_dir_entry_size(const view_t *view, int index, int force);
+static void update_dir_entry_size(dir_entry_t *entry, int force);
 static void start_dir_size_calc(const char path[], int force);
 static void dir_size_bg(bg_op_t *bg_op, void *arg);
 static void dir_size(bg_op_t *bg_op, char path[], int force);
@@ -362,7 +362,7 @@ fops_delete_bg(view_t *view, int use_trash)
 		return 0;
 	}
 
-	fpos_move_out_of(view, FLS_MARKING);
+	fops_leave_marking(view);
 
 	snprintf(task_desc, sizeof(task_desc), "%celete in %s: ",
 			use_trash ? 'd' : 'D', replace_home_part(curr_dir));
@@ -1038,7 +1038,7 @@ fops_restore(view_t *view)
 		return 0;
 	}
 
-	fpos_move_out_of(view, FLS_SELECTION);
+	fops_leave_marking(view);
 
 	ui_cancellation_reset();
 
@@ -1067,39 +1067,36 @@ fops_restore(view_t *view)
 }
 
 void
-fops_size_bg(const view_t *view, int force)
+fops_size_bg(view_t *view, int force)
 {
-	int i;
+	/* flist_set_marking(view, 1) isn't helpful here as it won't mark "..". */
+	int user_selection = !view->pending_marking;
+	flist_set_marking(view, 0);
 
-	if(!get_current_entry(view)->selected && view->user_selection)
+	dir_entry_t *curr = get_current_entry(view);
+	if(!curr->marked && user_selection)
 	{
-		update_dir_entry_size(view, view->list_pos, force);
+		update_dir_entry_size(curr, force);
 		return;
 	}
 
-	for(i = 0; i < view->list_rows; ++i)
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(view, &entry))
 	{
-		const dir_entry_t *const entry = &view->dir_entry[i];
-
-		if(entry->selected && entry->type == FT_DIR)
-		{
-			update_dir_entry_size(view, i, force);
-		}
+		update_dir_entry_size(entry, force);
 	}
 }
 
 /* Initiates background size calculation for view entry. */
 static void
-update_dir_entry_size(const view_t *view, int index, int force)
+update_dir_entry_size(dir_entry_t *entry, int force)
 {
-	char full_path[PATH_MAX + 1];
-	const dir_entry_t *const entry = &view->dir_entry[index];
-
-	if(fentry_is_fake(entry))
+	if(fentry_is_fake(entry) || entry->type != FT_DIR)
 	{
 		return;
 	}
 
+	char full_path[PATH_MAX + 1];
 	if(is_parent_dir(entry->name))
 	{
 		copy_str(full_path, sizeof(full_path), entry->origin);

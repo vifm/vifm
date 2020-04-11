@@ -102,7 +102,7 @@ TEST(selection)
 	char *cmd;
 	int bg;
 
-	cmd = format_edit_selection_cmd(&bg);
+	cmd = format_edit_marking_cmd(&bg);
 #ifdef _WIN32
 	assert_string_equal("vim -p \"lfile0\" \"lfile2\"", cmd);
 #else

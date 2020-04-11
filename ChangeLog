@@ -74,6 +74,9 @@
 	Make displaying of spaces in mappings more intelligent by using <space> at
 	the start or end of lhs or rhs.
 
+	Prevent internally selected files (e.g., via a range of a :command) from
+	appearing selected in user interface.  Thanks to filterfalse.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

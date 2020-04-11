@@ -1048,11 +1048,8 @@ make_current_job_key(void)
 }
 
 int
-bg_has_active_jobs(void)
+bg_has_active_jobs(int important_only)
 {
-	bg_job_t *job;
-	int running;
-
 	if(bg_jobs_freeze() != 0)
 	{
 		/* Failed to lock jobs list and using safe choice: pretend there are active
@@ -1060,10 +1057,12 @@ bg_has_active_jobs(void)
 		return 1;
 	}
 
-	running = 0;
+	bg_job_t *job;
+	int running = 0;
 	for(job = bg_jobs; job != NULL && !running; job = job->next)
 	{
-		if(job->type == BJT_OPERATION)
+		if((important_only && job->type == BJT_OPERATION) ||
+				(!important_only && job->type != BJT_COMMAND))
 		{
 			running |= bg_job_is_running(job);
 		}

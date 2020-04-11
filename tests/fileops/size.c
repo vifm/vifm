@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <unistd.h> /* usleep() */
-
 #include <string.h> /* strcpy() strdup() */
 
 #include "../../src/cfg/config.h"
@@ -41,7 +39,6 @@ TEST(parent_dir_entry_triggers_calculation_of_current_dir)
 {
 	strcpy(lwin.curr_dir, TEST_DATA_PATH "/various-sizes");
 	setup_single_entry(&lwin, "..");
-	lwin.user_selection = 1;
 
 	fops_size_bg(&lwin, 0);
 	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
@@ -50,7 +47,6 @@ TEST(parent_dir_entry_triggers_calculation_of_current_dir)
 static void
 setup_single_entry(view_t *view, const char name[])
 {
-	view->user_selection = 1;
 	view->list_rows = 1;
 	view->list_pos = 0;
 	view->dir_entry = dynarray_cextend(NULL,
@@ -63,22 +59,10 @@ setup_single_entry(view_t *view, const char name[])
 static uint64_t
 wait_for_size(const char path[])
 {
+	wait_for_bg();
+
 	uint64_t size, nitems;
-	int counter;
-
 	dcache_get_at(path, &size, &nitems);
-	counter = 0;
-	while(size == DCACHE_UNKNOWN)
-	{
-		usleep(2000);
-		dcache_get_at(path, &size, &nitems);
-		if(++counter > 100)
-		{
-			assert_fail("Waiting for too long.");
-			break;
-		}
-	}
-
 	return size;
 }
 

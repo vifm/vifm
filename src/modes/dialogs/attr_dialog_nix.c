@@ -62,8 +62,6 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_return(key_info_t key_info, keys_info_t *keys_info);
 TSTATIC void set_perm_string(view_t *view, const int perms[13],
 		const int origin_perms[13], int adv_perms[3]);
-static void chmod_file_in_list(view_t *view, int pos, const char *mode,
-		const char *inv_mode, int recurse_dirs);
 static void file_chmod(char *path, const char *mode, const char *inv_mode,
 		int recurse_dirs);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
@@ -132,6 +130,8 @@ enter_attr_mode(view_t *active_view)
 	dir_entry_t *entry;
 	int first;
 
+	flist_set_marking(active_view, 0);
+
 	if(curr_stats.load_stage < 2)
 		return;
 
@@ -142,7 +142,7 @@ enter_attr_mode(view_t *active_view)
 	file_is_dir = 0;
 	diff = 0;
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry))
+	while(iter_marked_entries(view, &entry))
 	{
 		if(first)
 		{
@@ -463,7 +463,7 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 	ui_cancellation_reset();
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
 		if(len >= 2U && undo_msg[len - 2U] != ':')
 		{
@@ -477,25 +477,17 @@ files_chmod(view_t *view, const char mode[], int recurse_dirs)
 	un_group_open(undo_msg);
 
 	entry = NULL;
-	while(iter_selection_or_current(view, &entry) && !ui_cancellation_requested())
+	while(iter_marked_entries(view, &entry) && !ui_cancellation_requested())
 	{
-		char inv[16];
-		snprintf(inv, sizeof(inv), "0%o", entry->mode & 0xff);
-		chmod_file_in_list(view, entry_to_pos(view, entry), mode, inv,
-				recurse_dirs);
+		char inv_mode[16];
+		snprintf(inv_mode, sizeof(inv_mode), "0%o", entry->mode & 0xff);
+
+		char path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(path), path);
+		file_chmod(path, mode, inv_mode, recurse_dirs);
 	}
 
 	un_group_close();
-}
-
-static void
-chmod_file_in_list(view_t *view, int pos, const char *mode,
-		const char *inv_mode, int recurse_dirs)
-{
-	char path_buf[PATH_MAX + 1];
-
-	get_full_path_at(view, pos, sizeof(path_buf), path_buf);
-	file_chmod(path_buf, mode, inv_mode, recurse_dirs);
 }
 
 static void
