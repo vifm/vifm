@@ -343,6 +343,43 @@ TEST(view_sorting_round_trip)
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }
 
+TEST(view_filters_round_trip)
+{
+	cfg.vifm_info = VINFO_STATE;
+	opt_handlers_setup();
+
+	lwin.invert = 0;
+	lwin.hide_dot = 1;
+	assert_success(filter_set(&lwin.auto_filter, "lauto-value"));
+	assert_success(replace_matcher(&lwin.manual_filter, "^lmanual-value$"));
+	rwin.invert = 1;
+	rwin.hide_dot = 0;
+	assert_success(filter_set(&rwin.auto_filter, "rauto-value"));
+	assert_success(replace_matcher(&rwin.manual_filter, "^rmanual-value$"));
+
+	write_info_file();
+	lwin.invert = -1;
+	lwin.hide_dot = -1;
+	assert_success(filter_set(&lwin.auto_filter, "auto-clear"));
+	assert_success(replace_matcher(&lwin.manual_filter, "^manual-clear$"));
+	rwin.invert = -1;
+	rwin.hide_dot = -1;
+	assert_success(filter_set(&rwin.auto_filter, "auto-clear"));
+	assert_success(replace_matcher(&rwin.manual_filter, "^manual-clear$"));
+	read_info_file(0);
+
+	assert_int_equal(0, lwin.invert);
+	assert_int_equal(1, lwin.hide_dot);
+	assert_string_equal("lauto-value", lwin.auto_filter.raw);
+	assert_string_equal("^lmanual-value$", matcher_get_expr(lwin.manual_filter));
+	assert_int_equal(1, rwin.invert);
+	assert_int_equal(0, rwin.hide_dot);
+	assert_string_equal("rauto-value", rwin.auto_filter.raw);
+	assert_string_equal("^rmanual-value$", matcher_get_expr(rwin.manual_filter));
+
+	opt_handlers_teardown();
+}
+
 TEST(savedirs_works_on_its_own)
 {
 	cfg.vifm_info = VINFO_SAVEDIRS;

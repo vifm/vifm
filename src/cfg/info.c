@@ -847,7 +847,7 @@ load_filters(JSON_Object *pane, view_t *view)
 	get_bool(filters, "invert", &view->invert);
 
 	int dot;
-	if(get_bool(filters, "invert", &dot))
+	if(get_bool(filters, "dot", &dot))
 	{
 		dot_filter_set(view, !dot);
 	}
