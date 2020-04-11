@@ -87,6 +87,7 @@ TEST(paths_in_root_do_not_have_extra_slash_on_choosing)
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
 
+	flist_set_marking(&lwin, 1);
 	vim_write_file_list(&lwin, 1, files);
 
 	fclose(curr_stats.original_stdout);
@@ -108,6 +109,7 @@ TEST(abs_paths_are_not_touched_on_choosing)
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
 
+	flist_set_marking(&lwin, 1);
 	vim_write_file_list(&lwin, 1, files);
 
 	fclose(curr_stats.original_stdout);
@@ -139,6 +141,7 @@ TEST(selection_can_be_chosen)
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
 
+	flist_set_marking(&lwin, 1);
 	vim_write_file_list(&lwin, 0, NULL);
 
 	fclose(curr_stats.original_stdout);
@@ -173,6 +176,7 @@ TEST(path_are_formed_right_on_choosing_in_cv)
 	curr_stats.chosen_files_out = out_spec;
 	curr_stats.original_stdout = fmemopen(out_buf, sizeof(out_buf), "w");
 
+	flist_set_marking(&lwin, 1);
 	vim_write_file_list(&lwin, 1, files);
 
 	fclose(curr_stats.original_stdout);

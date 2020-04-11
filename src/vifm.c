@@ -662,18 +662,22 @@ vifm_try_leave(int write_info, int cquit, int force)
 void _gnuc_noreturn
 vifm_choose_files(view_t *view, int nfiles, char *files[])
 {
-	int exit_code;
-
 	/* As curses can do something with terminal on shutting down, disable it
 	 * before writing anything to the screen. */
 	ui_shutdown();
 
-	exit_code = EXIT_SUCCESS;
+	flist_set_marking(view, 1);
+
+	int exit_code = EXIT_SUCCESS;
+
 	if(vim_write_file_list(view, nfiles, files) != 0)
 	{
 		exit_code = EXIT_FAILURE;
 	}
-	/* XXX: this ignores nfiles+files. */
+
+	/* Reuse marking second time. */
+	view->pending_marking = 1;
+	/* XXX: this ignores nfiles and files, expand them as %a? */
 	if(vim_run_choose_cmd(view) != 0)
 	{
 		exit_code = EXIT_FAILURE;

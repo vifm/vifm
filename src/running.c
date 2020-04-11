@@ -465,7 +465,7 @@ run_with_defaults(view_t *view)
 	{
 		view_current_file(view);
 	}
-	else if(vim_edit_selection() != 0)
+	else if(vim_edit_marking() != 0)
 	{
 		show_error_msg("Running error", "Can't edit selection");
 	}

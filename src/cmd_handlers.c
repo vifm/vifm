@@ -2104,7 +2104,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			vifm_choose_files(curr_view, 0, NULL);
 		}
 
-		if(vim_edit_selection() != 0)
+		if(vim_edit_marking() != 0)
 		{
 			show_error_msg("Edit error", "Can't edit selection");
 		}
