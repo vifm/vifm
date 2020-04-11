@@ -2054,6 +2054,8 @@ echo_cmd(const cmd_info_t *cmd_info)
 static int
 edit_cmd(const cmd_info_t *cmd_info)
 {
+	flist_set_marking(curr_view, 1);
+
 	if(cmd_info->argc != 0)
 	{
 		if(stats_file_choose_action_set())
@@ -2066,50 +2068,34 @@ edit_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	if(!curr_view->selected_files || !get_current_entry(curr_view)->selected)
+	dir_entry_t *entry = NULL;
+	while(iter_marked_entries(curr_view, &entry))
 	{
-		char file_to_view[PATH_MAX + 1];
+		char full_path[PATH_MAX + 1];
+		get_full_path_of(entry, sizeof(full_path), full_path);
 
-		if(stats_file_choose_action_set())
+		if(path_exists(full_path, DEREF) && !path_exists(full_path, NODEREF))
 		{
-			/* The call below does not return. */
-			vifm_choose_files(curr_view, 0, NULL);
+			show_error_msgf("Access error",
+					"Can't access destination of link \"%s\". It might be broken.",
+					full_path);
+			return 0;
 		}
-
-		get_current_full_path(curr_view, sizeof(file_to_view), file_to_view);
-		(void)vim_view_file(file_to_view, -1, -1, 1);
 	}
-	else
+
+	/* Reuse marking second time (for vifm_choose_files() or
+	 * vim_edit_marking()). */
+	curr_view->pending_marking = 1;
+
+	if(stats_file_choose_action_set())
 	{
-		int i;
+		/* The call below does not return. */
+		vifm_choose_files(curr_view, 0, NULL);
+	}
 
-		for(i = 0; i < curr_view->list_rows; ++i)
-		{
-			if(curr_view->dir_entry[i].selected == 0)
-				continue;
-
-			char full_path[PATH_MAX + 1];
-			get_full_path_at(curr_view, i, sizeof(full_path), full_path);
-
-			if(path_exists(full_path, DEREF) && !path_exists(full_path, NODEREF))
-			{
-				show_error_msgf("Access error",
-						"Can't access destination of link \"%s\". It might be broken.",
-						full_path);
-				return 0;
-			}
-		}
-
-		if(stats_file_choose_action_set())
-		{
-			/* The call below does not return. */
-			vifm_choose_files(curr_view, 0, NULL);
-		}
-
-		if(vim_edit_marking() != 0)
-		{
-			show_error_msg("Edit error", "Can't edit selection");
-		}
+	if(vim_edit_marking() != 0)
+	{
+		show_error_msg("Edit error", "Can't edit selection");
 	}
 	return 0;
 }
