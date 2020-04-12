@@ -1,4 +1,4 @@
-.TH VIFM 1 "March 21, 2020" "vifm 0.10.1"
+.TH VIFM 1 "April 13, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5941,7 +5941,9 @@ Which files to compare:
 How files are compared:
  \- byname     \- by their name only;
  \- bysize     \- only by their size;
- \- bycontents \- by combination of size and hash of file contents.
+ \- bycontents \- by data they contain (combination of size and hash of \
+small chunk of contents is used as first approximation, so don't worry too \
+much about large files).
 
 Which files to display:
  \- listall    \- all files;
