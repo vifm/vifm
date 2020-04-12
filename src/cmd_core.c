@@ -384,6 +384,12 @@ post(int id)
 TSTATIC void
 cmds_select_range(int id, const cmd_info_t *cmd_info)
 {
+	if(curr_view->pending_marking)
+	{
+		/* It must come from parent :command, so keep it. */
+		return;
+	}
+
 	int mark_current = (id != COM_FIND && id != COM_GREP);
 	curr_view->pending_marking = flist_sel_range(curr_view, cmd_info->begin,
 			cmd_info->end, mark_current);
