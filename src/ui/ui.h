@@ -703,7 +703,7 @@ void ui_invalidate_cs(const col_scheme_t *cs);
 const col_scheme_t * ui_view_get_cs(const view_t *view);
 
 /* Erases view window by filling it with the background color. */
-void ui_view_erase(view_t *view);
+void ui_view_erase(view_t *view, int use_global_cs);
 
 /* Figures out base color for the pane.  Returns the color. */
 col_attr_t ui_get_win_color(const view_t *view, const col_scheme_t *cs);

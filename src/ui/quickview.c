@@ -204,7 +204,7 @@ qv_draw(view_t *view)
 		return;
 	}
 
-	ui_view_erase(other_view);
+	ui_view_erase(other_view, 1);
 
 	curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
@@ -212,7 +212,7 @@ qv_draw(view_t *view)
 		const preview_area_t parea = {
 			.source = view,
 			.view = other_view,
-			.def_col = ui_view_get_cs(other_view)->color[WIN_COLOR],
+			.def_col = cfg.cs.color[WIN_COLOR],
 			.x = ui_qv_left(other_view),
 			.y = ui_qv_top(other_view),
 			.w = ui_qv_width(other_view),

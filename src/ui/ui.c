@@ -2280,9 +2280,9 @@ ui_view_get_cs(const view_t *view)
 }
 
 void
-ui_view_erase(view_t *view)
+ui_view_erase(view_t *view, int use_global_cs)
 {
-	const col_scheme_t *cs = ui_view_get_cs(view);
+	const col_scheme_t *cs = (use_global_cs ? &cfg.cs : ui_view_get_cs(view));
 	col_attr_t col = ui_get_win_color(view, cs);
 	ui_set_bg(view->win, &col, -1);
 	werase(view->win);
