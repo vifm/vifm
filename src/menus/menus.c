@@ -684,7 +684,8 @@ init_menu_state(menu_state_t *ms, view_t *view)
 char *
 menus_get_targets(view_t *view)
 {
-	if(view->selected_files > 0)
+	if(view->selected_files > 0 ||
+			(view->pending_marking && flist_count_marked(view) > 0))
 	{
 		return ma_expand("%f", NULL, NULL, 1);
 	}
