@@ -60,7 +60,7 @@ enum
 };
 
 static void ensure_initialized(void);
-TSTATIC TitleKind get_title_kind(const char term[]);
+TSTATIC TitleKind title_kind_for_termenv(const char term[]);
 static void save_term_title(void);
 static void restore_term_title(void);
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -158,7 +158,7 @@ ensure_initialized(void)
 		return;
 	}
 
-	title_state.kind = get_title_kind(env_get("TERM"));
+	title_state.kind = title_kind_for_termenv(env_get("TERM"));
 	if(title_state.kind == TK_REGULAR)
 	{
 		save_term_title();
@@ -166,10 +166,10 @@ ensure_initialized(void)
 	title_state.initialized = 1;
 }
 
-/* Checks if we can alter terminal emulator title.  Returns kind of writes we
- * should do. */
+/* Guesses how we can alter terminal emulator title based on the value of $TERM.
+ * Returns kind of terminal that was found. */
 TSTATIC TitleKind
-get_title_kind(const char term[])
+title_kind_for_termenv(const char term[])
 {
 #ifdef _WIN32
 	return TK_REGULAR;
