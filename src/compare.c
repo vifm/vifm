@@ -54,7 +54,7 @@
 #define BLOCK_SIZE (32*1024)
 
 /* Amount of data to hash for coarse comparison. */
-#define PREFIX_SIZE (256*1024)
+#define PREFIX_SIZE (4*1024)
 
 /* Entry in singly-bounded list of files that have matched fingerprints. */
 typedef struct compare_record_t
