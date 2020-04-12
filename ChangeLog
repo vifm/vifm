@@ -77,6 +77,17 @@
 	Prevent internally selected files (e.g., via a range of a :command) from
 	appearing selected in user interface.  Thanks to filterfalse.
 
+	Make 'title' option work in all terminals which contain "tsl" and "fsl"
+	capabilities.  Thanks to m-kru.
+
+	Use global color scheme for preview on the other pane ignoring its
+	directory-specific color scheme.
+
+	Improve documentation on "bycontents" of :compare.  Thanks to maxigaz.
+
+	Make comparing files by contents (`:compare bycontents`) somewhat faster.
+	Thanks to maxigaz.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
@@ -158,6 +169,12 @@
 	mode was entered and left by two different mappings (as opposed to a
 	single mapping in which case this behaviour is expected).  Thanks to
 	filterfalse.
+
+	Fixed detection of non-regular files in quickview, when previewing
+	symbolic links.  Thanks to m-kru.
+
+	Fixed directory-specific color scheme not being applied to newly created
+	tabs.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

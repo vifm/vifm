@@ -3512,6 +3512,17 @@ mark_selection_or_current(view_t *view)
 	return mark_selected(view);
 }
 
+int
+flist_count_marked(const view_t *view)
+{
+	int i, n = 0;
+	for(i = 0; i < view->list_rows; ++i)
+	{
+		n += (view->dir_entry[i].marked != 0);
+	}
+	return n;
+}
+
 void
 clear_marking(view_t *view)
 {

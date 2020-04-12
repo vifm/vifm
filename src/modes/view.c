@@ -624,7 +624,6 @@ static void
 draw(void)
 {
 	int l, vl;
-	const col_scheme_t *cs = ui_view_get_cs(vi->view);
 	const int height = ui_qv_height(vi->view);
 	const int width = ui_qv_width(vi->view);
 	const int max_l = MIN(vi->line + height, vi->nlines);
@@ -653,9 +652,9 @@ draw(void)
 		 * previewer that handles both textual and graphical previews. */
 	}
 
-	esc_state_init(&state, &cs->color[WIN_COLOR], COLORS);
+	esc_state_init(&state, &cfg.cs.color[WIN_COLOR], COLORS);
 
-	ui_view_erase(vi->view);
+	ui_view_erase(vi->view, 1);
 	ui_drop_attr(vi->view->win);
 
 	for(vl = 0, l = vi->line; l < max_l && vl < height; ++l)

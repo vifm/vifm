@@ -186,13 +186,8 @@ TEST(range_of_previous_command_is_reset)
 static int
 count_marked(view_t *view)
 {
-	int i, n = 0;
 	check_marking(view, 0, NULL);
-	for(i = 0; i < view->list_rows; ++i)
-	{
-		n += (view->dir_entry[i].marked != 0);
-	}
-	return n;
+	return flist_count_marked(view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

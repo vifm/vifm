@@ -292,7 +292,7 @@ draw_dir_list_only(view_t *view)
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
-	ui_view_erase(view);
+	ui_view_erase(view, 0);
 
 	draw_left_column(view);
 

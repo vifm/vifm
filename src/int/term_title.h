@@ -39,7 +39,7 @@ typedef enum
 TitleKind;
 #endif
 TSTATIC_DEFS(
-	TitleKind get_title_kind(const char term[]);
+	TitleKind title_kind_for_termenv(const char term[]);
 )
 
 #endif /* VIFM__INT__TERM_TITLE_H__ */

@@ -204,7 +204,7 @@ qv_draw(view_t *view)
 		return;
 	}
 
-	ui_view_erase(other_view);
+	ui_view_erase(other_view, 1);
 
 	curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
@@ -212,7 +212,7 @@ qv_draw(view_t *view)
 		const preview_area_t parea = {
 			.source = view,
 			.view = other_view,
-			.def_col = ui_view_get_cs(other_view)->color[WIN_COLOR],
+			.def_col = cfg.cs.color[WIN_COLOR],
 			.x = ui_qv_left(other_view),
 			.y = ui_qv_top(other_view),
 			.w = ui_qv_width(other_view),
@@ -261,7 +261,15 @@ view_entry(const dir_entry_t *entry, const preview_area_t *parea,
 	char path[PATH_MAX + 1];
 	qv_get_path_to_explore(entry, path, sizeof(path));
 
-	switch(entry->type)
+	FileType type = entry->type;
+
+	struct stat st;
+	if(os_stat(path, &st) == 0)
+	{
+		type = get_type_from_mode(st.st_mode);
+	}
+
+	switch(type)
 	{
 		case FT_CHAR_DEV:
 			write_message("File is a Character Device", parea);

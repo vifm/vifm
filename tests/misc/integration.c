@@ -277,26 +277,26 @@ TEST(title_support_is_detected_correctly)
 	unsigned int i;
 	for(i = 0; i < ARRAY_LEN(XTERM_LIKE); ++i)
 	{
-		assert_int_equal(TK_REGULAR, get_title_kind(XTERM_LIKE[i]));
+		assert_int_equal(TK_REGULAR, title_kind_for_termenv(XTERM_LIKE[i]));
 	}
 	for(i = 0; i < ARRAY_LEN(SCREEN_LIKE); ++i)
 	{
-		assert_int_equal(TK_REGULAR, get_title_kind(SCREEN_LIKE[i]));
+		assert_int_equal(TK_REGULAR, title_kind_for_termenv(SCREEN_LIKE[i]));
 	}
-	assert_int_equal(TK_REGULAR, get_title_kind("linux"));
-	assert_int_equal(TK_REGULAR, get_title_kind("unknown"));
+	assert_int_equal(TK_REGULAR, title_kind_for_termenv("linux"));
+	assert_int_equal(TK_REGULAR, title_kind_for_termenv("unknown"));
 #else
 	unsigned int i;
 	for(i = 0; i < ARRAY_LEN(XTERM_LIKE); ++i)
 	{
-		assert_int_equal(TK_REGULAR, get_title_kind(XTERM_LIKE[i]));
+		assert_int_equal(TK_REGULAR, title_kind_for_termenv(XTERM_LIKE[i]));
 	}
 	for(i = 0; i < ARRAY_LEN(SCREEN_LIKE); ++i)
 	{
-		assert_int_equal(TK_SCREEN, get_title_kind(SCREEN_LIKE[i]));
+		assert_int_equal(TK_SCREEN, title_kind_for_termenv(SCREEN_LIKE[i]));
 	}
-	assert_int_equal(TK_ABSENT, get_title_kind("linux"));
-	assert_int_equal(TK_ABSENT, get_title_kind("unknown"));
+	assert_int_equal(TK_ABSENT, title_kind_for_termenv("linux"));
+	assert_int_equal(TK_ABSENT, title_kind_for_termenv("unknown"));
 #endif
 }
 

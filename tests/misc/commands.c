@@ -304,6 +304,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 {
 	stats_init(&cfg);
 	init_modes();
+	regs_init();
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", NULL);
 	populate_dir_list(&lwin, 0);
@@ -341,6 +342,19 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_success(exec_commands("%exclude", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("..", lwin.dir_entry[0].name);
+
+	/* For :command in :usercmd. */
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_non_null(flist_custom_add(&lwin, "existing-files/b"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("command! myyank :yank", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("%myyank", &lwin, CIT_COMMAND));
+
+	reg_t *reg = regs_find('"');
+	assert_int_equal(2, reg->nfiles);
 
 #ifndef _WIN32
 
@@ -398,6 +412,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 
 #endif
 
+	regs_reset();
 	vle_keys_reset();
 	stats_reset(&cfg);
 }
