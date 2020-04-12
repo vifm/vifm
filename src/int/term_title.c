@@ -47,7 +47,7 @@
 typedef enum
 {
 	TK_ABSENT,  /* No title support. */
-	TK_REGULAR, /* Normal for the platform (xterm for *nix). */
+	TK_REGULAR, /* Normal title that can be saved and restored. */
 	TK_SCREEN,  /* GNU screen compatible. */
 }
 TitleKind;
@@ -60,7 +60,9 @@ enum
 };
 
 static void ensure_initialized(void);
+static TitleKind query_title_kind(void);
 TSTATIC TitleKind title_kind_for_termenv(const char term[]);
+static void apply_term_guess(TitleKind kind);
 static void save_term_title(void);
 static void restore_term_title(void);
 #if !defined(_WIN32) && defined(HAVE_X11)
@@ -108,8 +110,13 @@ static typeof(XFree) *XFreeWrapper = &XFree;
 /* Holds state of the unit. */
 static struct
 {
-	int initialized;    /* Whether state has already been initialized. */
-	TitleKind kind;     /* Type of title output. */
+	int initialized; /* Whether state has already been initialized. */
+	TitleKind kind;  /* Type of title output. */
+
+#ifndef _WIN32
+	char *tsl; /* Sequence that starts title. */
+	char *fsl; /* Sequence that ends title. */
+#endif
 
 	/* Original title or an empty string if failed to determine. */
 #ifndef _WIN32
@@ -158,12 +165,45 @@ ensure_initialized(void)
 		return;
 	}
 
-	title_state.kind = title_kind_for_termenv(env_get("TERM"));
+	title_state.kind = query_title_kind();
+	if(title_state.kind == TK_ABSENT)
+	{
+		title_state.kind = title_kind_for_termenv(env_get("TERM"));
+		apply_term_guess(title_state.kind);
+	}
+
 	if(title_state.kind == TK_REGULAR)
 	{
 		save_term_title();
 	}
 	title_state.initialized = 1;
+}
+
+/* Determines kind of title in a reliable, but not always available way.
+ * Returns the kind. */
+static TitleKind
+query_title_kind(void)
+{
+#ifndef _WIN32
+	(void)setupterm((char *)env_get("TERM"), 1, (int *)0);
+
+	char *tsl = tigetstr("tsl");
+	if(tsl == NULL || tsl == (char *)-1)
+	{
+		return TK_ABSENT;
+	}
+	update_string(&title_state.tsl, tsl);
+
+	const char *fsl = tigetstr("fsl");
+	if(tsl == NULL || tsl == (char *)-1)
+	{
+		update_string(&title_state.tsl, NULL);
+		return TK_ABSENT;
+	}
+	update_string(&title_state.fsl, fsl);
+#endif
+
+	return TK_REGULAR;
 }
 
 /* Guesses how we can alter terminal emulator title based on the value of $TERM.
@@ -187,6 +227,27 @@ title_kind_for_termenv(const char term[])
 	}
 
 	return TK_ABSENT;
+#endif
+}
+
+/* Adjusts title_state according to guessed terminal type. */
+static void
+apply_term_guess(TitleKind kind)
+{
+#ifndef _WIN32
+	switch(kind)
+	{
+		case TK_ABSENT:
+			break;
+		case TK_REGULAR:
+			update_string(&title_state.tsl, "\033]2;");
+			update_string(&title_state.fsl, "\007");
+			break;
+		case TK_SCREEN:
+			update_string(&title_state.tsl, "\033k");
+			update_string(&title_state.fsl, "\033\134");
+			break;
+	}
 #endif
 }
 
@@ -223,13 +284,11 @@ restore_term_title(void)
 #else
 	if(title_state.title[0] != '\0')
 	{
-		char *const fmt = (title_state.kind == TK_REGULAR)
-		                ? "\033]2;%s\007"
-		                : "\033k%s\033\134";
-		char *const title = format_str(fmt, title_state.title);
-		putp(title);
+		/* Apparently tsl can take column in some cases. */
+		putp(tgoto(title_state.tsl, 0, 0));
+		putp(title_state.title);
+		putp(title_state.fsl);
 		fflush(stdout);
-		free(title);
 	}
 
 #if defined(HAVE_X11) && defined(DYN_X11)

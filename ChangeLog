@@ -77,6 +77,9 @@
 	Prevent internally selected files (e.g., via a range of a :command) from
 	appearing selected in user interface.  Thanks to filterfalse.
 
+	Make 'title' option work in all terminals which contain "tsl" and "fsl"
+	capabilities.  Thanks to m-kru.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
