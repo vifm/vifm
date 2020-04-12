@@ -165,6 +165,9 @@
 	Fixed detection of non-regular files in quickview, when previewing
 	symbolic links.  Thanks to m-kru.
 
+	Fixed directory-specific color scheme not being applied to newly created
+	tabs.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

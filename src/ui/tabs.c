@@ -35,6 +35,7 @@
 #include "../flist_hist.h"
 #include "../opt_handlers.h"
 #include "../status.h"
+#include "fileview.h"
 #include "ui.h"
 
 /* Pane-specific tab (contains information about only one view). */
@@ -345,6 +346,7 @@ tabs_goto_pane(int idx)
 	{
 		clone_viewport(curr_view, &ptabs->tabs[prev].view);
 		populate_dir_list(curr_view, 0);
+		fview_dir_updated(curr_view);
 		vle_aucmd_execute("DirEnter", flist_get_dir(curr_view), curr_view);
 		ptabs->tabs[ptabs->current].visited = 1;
 	}
@@ -402,6 +404,8 @@ tabs_goto_global(int idx)
 		}
 		populate_dir_list(&lwin, 0);
 		populate_dir_list(&rwin, 0);
+		fview_dir_updated(other_view);
+		fview_dir_updated(curr_view);
 		vle_aucmd_execute("DirEnter", flist_get_dir(&lwin), &lwin);
 		vle_aucmd_execute("DirEnter", flist_get_dir(&rwin), &rwin);
 		gtabs[current_gtab].visited = 1;
