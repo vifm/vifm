@@ -350,10 +350,14 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_non_null(flist_custom_add(&lwin, "existing-files/b"));
 	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
 
+	reg_t *reg = regs_find('"');
+
 	assert_success(exec_commands("command! myyank :yank", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("%myyank", &lwin, CIT_COMMAND));
+	assert_int_equal(2, reg->nfiles);
 
-	reg_t *reg = regs_find('"');
+	assert_success(exec_commands("command! myyank :yank %a", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("%myyank", &lwin, CIT_COMMAND));
 	assert_int_equal(2, reg->nfiles);
 
 #ifndef _WIN32
