@@ -179,6 +179,9 @@
 	Fixed selection being lost or incorrectly preserved on changes of local
 	filter in custom views.  Thanks to filterfalse.
 
+	Fixed statusbar message not being cleared sometimes.  Thanks to
+	filterfalse.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

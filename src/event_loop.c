@@ -212,20 +212,21 @@ event_loop(const int *quit)
 			assert(counter <= input_buf_pos);
 			if(counter > 0)
 			{
+				curr_stats.save_msg = 0;
 				memmove(input_buf, input_buf + counter,
 						(wcslen(input_buf) - counter + 1)*sizeof(wchar_t));
 			}
 		}
 		else
 		{
-			if(got_input)
-			{
-				curr_stats.save_msg = 0;
-			}
-
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				hide_suggestion_box();
+			}
+
+			if(got_input)
+			{
+				curr_stats.save_msg = 0;
 			}
 
 			last_result = vle_keys_exec(input_buf);
