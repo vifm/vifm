@@ -51,10 +51,12 @@ PathType;
 
 /* Should return the same character if processing of the macro is allowed or
  * '\0' if it's not allowed. */
-typedef char (*macro_filter_func)(int *quoted, char c, char data);
+typedef char (*macro_filter_func)(int *quoted, char c, char data,
+		int ncurr, int nother);
 
-static char filter_all(int *quoted, char c, char data);
-static char filter_single(int *quoted, char c, char data);
+static char filter_all(int *quoted, char c, char data, int ncurr, int nother);
+static char filter_single(int *quoted, char c, char data,
+		int ncurr, int nother);
 static char * expand_macros_i(const char command[], const char args[],
 		MacroFlags *flags, int for_shell, macro_filter_func filter);
 static void set_flags(MacroFlags *flags, MacroFlags value);
@@ -84,7 +86,7 @@ ma_expand(const char command[], const char args[], MacroFlags *flags,
 /* macro_filter_func instantiation that allows all macros.  Returns the
  * argument. */
 static char
-filter_all(int *quoted, char c, char data)
+filter_all(int *quoted, char c, char data, int ncurr, int nother)
 {
 	return c;
 }
@@ -100,7 +102,7 @@ ma_expand_single(const char command[])
 /* macro_filter_func instantiation that filters out non-single element macros.
  * Returns the argument on allowed macro and '\0' otherwise. */
 static char
-filter_single(int *quoted, char c, char data)
+filter_single(int *quoted, char c, char data, int ncurr, int nother)
 {
 	if(strchr("cCdD", c) != NULL)
 	{
@@ -108,12 +110,12 @@ filter_single(int *quoted, char c, char data)
 		return c;
 	}
 
-	if(c == 'f' && curr_view->selected_files <= 1)
+	if(c == 'f' && ncurr <= 1)
 	{
 		return c;
 	}
 
-	if(c == 'F' && other_view->selected_files <= 1)
+	if(c == 'F' && nother <= 1)
 	{
 		return c;
 	}
@@ -164,6 +166,9 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 	flist_set_marking(&lwin, 0);
 	flist_set_marking(&rwin, 0);
 
+	int ncurr = flist_count_marked(curr_view);
+	int nother = flist_count_marked(other_view);
+
 	if(strstr(command + x, "%r") != NULL)
 	{
 		regs_sync_from_shared_memory();
@@ -186,7 +191,7 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 			++x;
 		}
 		switch(filter(&quotes, command[x],
-					command[x] == '\0' ? '\0' : command[x + 1]))
+					command[x] == '\0' ? '\0' : command[x + 1], ncurr, nother))
 		{
 			int well_formed;
 			char key;

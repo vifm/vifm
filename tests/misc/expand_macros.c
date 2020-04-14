@@ -454,17 +454,41 @@ TEST(singly_expanded_single_macros)
 
 TEST(singly_expanded_multiple_macros_single_file)
 {
+	char *expanded;
+
 	lwin.dir_entry[2].selected = 0;
 	lwin.selected_files = 1;
-	char *expanded = ma_expand_single("%f");
+	expanded = ma_expand_single("%f");
 	assert_string_equal("lfi le0", expanded);
+	free(expanded);
+
+	clear_marking(&rwin);
+	rwin.dir_entry[2].marked = 1;
+	rwin.pending_marking = 1;
+	expanded = ma_expand_single("%F");
+	assert_string_equal("/rwin/rfile2", expanded);
 	free(expanded);
 }
 
 TEST(singly_not_expanded_multiple_macros_multiple_files)
 {
+	char *expanded;
+
 	lwin.list_pos = 0;
-	char *expanded = ma_expand_single("%f");
+	expanded = ma_expand_single("%f");
+	assert_string_equal("", expanded);
+	free(expanded);
+
+	clear_marking(&rwin);
+	rwin.dir_entry[1].selected = 0;
+	rwin.dir_entry[1].marked = 1;
+	rwin.dir_entry[3].selected = 0;
+	rwin.dir_entry[3].marked = 1;
+	rwin.dir_entry[5].selected = 0;
+	rwin.dir_entry[5].marked = 1;
+	rwin.selected_files = 0;
+	rwin.pending_marking = 1;
+	expanded = ma_expand_single("%F");
 	assert_string_equal("", expanded);
 	free(expanded);
 }

@@ -15,6 +15,7 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
+#include "../../src/cmd_handlers.h"
 
 #include "utils.h"
 
@@ -70,6 +71,7 @@ TEST(find_command, IF(not_windows))
 				CIT_COMMAND));
 
 	/* Nothing to repeat. */
+	cmds_drop_state();
 	assert_failure(exec_commands("find", &lwin, CIT_COMMAND));
 
 	assert_success(exec_commands("find a", &lwin, CIT_COMMAND));

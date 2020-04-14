@@ -42,12 +42,12 @@ static int called;
 static int bg;
 static char *arg;
 
+static char cwd[PATH_MAX + 1];
 static char sandbox[PATH_MAX + 1];
 static char test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
@@ -306,7 +306,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 	init_modes();
 	regs_init();
 
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", NULL);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
 	populate_dir_list(&lwin, 0);
 
 	/* For gA. */
@@ -350,28 +350,33 @@ TEST(usercmd_range_is_as_good_as_selection)
 	assert_non_null(flist_custom_add(&lwin, "existing-files/b"));
 	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
 
+	reg_t *reg = regs_find('"');
+
 	assert_success(exec_commands("command! myyank :yank", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("%myyank", &lwin, CIT_COMMAND));
+	assert_int_equal(2, reg->nfiles);
 
-	reg_t *reg = regs_find('"');
+	assert_success(exec_commands("command! myyank :yank %a", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("%myyank", &lwin, CIT_COMMAND));
 	assert_int_equal(2, reg->nfiles);
 
 #ifndef _WIN32
-
-	/* For l. */
 
 	conf_setup();
 	update_string(&cfg.shell, "/bin/sh");
 
 	char script_path[PATH_MAX + 1];
-	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", NULL);
-	update_string(&cfg.vi_command, script_path);
+	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", cwd);
 
 	FILE *fp = fopen(SANDBOX_PATH "/script", "w");
 	fprintf(fp, "#!/bin/sh\n");
 	fprintf(fp, "for arg; do echo \"$arg\" >> %s/vi-list; done\n", SANDBOX_PATH);
 	fclose(fp);
 	assert_success(chmod(SANDBOX_PATH "/script", 0777));
+
+	/* For l. */
+
+	update_string(&cfg.vi_command, script_path);
 
 	flist_custom_start(&lwin, "test");
 	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
@@ -385,8 +390,6 @@ TEST(usercmd_range_is_as_good_as_selection)
 	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
 
 	assert_success(remove(SANDBOX_PATH "/vi-list"));
-	assert_success(remove(script_path));
-	conf_teardown();
 
 	/* For cp. */
 
@@ -396,7 +399,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 	create_file("file1");
 	create_file("file2");
 
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), sandbox, "", NULL);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), sandbox, "", cwd);
 	populate_dir_list(&lwin, 0);
 
 	assert_success(exec_commands("command! ex :normal 777cp", &lwin,
@@ -409,6 +412,28 @@ TEST(usercmd_range_is_as_good_as_selection)
 
 	assert_success(remove("file1"));
 	assert_success(remove("file2"));
+
+	/* For some :menus. */
+
+	put_string(&cfg.find_prg, format_str("%s %%s %%A", script_path));
+
+	assert_success(chdir(cwd));
+	strcpy(lwin.curr_dir, test_data);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_non_null(flist_custom_add(&lwin, "existing-files/b"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_failure(exec_commands(".find a", &lwin, CIT_COMMAND));
+
+	const char *find_lines[] = { "existing-files/a", "a" };
+	file_is(SANDBOX_PATH "/vi-list", find_lines, ARRAY_LEN(find_lines));
+
+	assert_success(remove(SANDBOX_PATH "/vi-list"));
+
+	assert_success(remove(script_path));
+	conf_teardown();
 
 #endif
 

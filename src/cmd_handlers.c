@@ -80,6 +80,7 @@
 #include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/trie.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -319,6 +320,7 @@ static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int get_reg(const char arg[], int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static int parse_bg_mark(char cmd[]);
+TSTATIC void cmds_drop_state(void);
 
 const cmd_add_t cmds_list[] = {
 	{ .name = "",                  .abbr = NULL,    .id = COM_GOTO,
@@ -926,6 +928,19 @@ const cmd_add_t cmds_list[] = {
 	  .handler = &usercmd_cmd,     .min_args = 0,   .max_args = NOT_DEF, },
 };
 const size_t cmds_list_size = ARRAY_LEN(cmds_list);
+
+/* Holds global state of command handlers. */
+static struct
+{
+	/* For :find command. */
+	struct
+	{
+		char *last_args;   /* Last arguments passed to the command */
+		int includes_path; /* Whether last_args contains path to search in. */
+	}
+	find;
+}
+cmds_state;
 
 /* Return value of all functions below which name ends with "_cmd" mean:
  *  - <0 -- one of CMDS_* errors from cmds.h;
@@ -2423,29 +2438,29 @@ set_view_filter(view_t *view, const char filter[], const char fallback[],
 	return 0;
 }
 
+/* Looks for files matching pattern. */
 static int
 find_cmd(const cmd_info_t *cmd_info)
 {
-	static char *last_args;
-	static int last_dir;
-
 	if(cmd_info->argc > 0)
 	{
 		if(cmd_info->argc == 1)
-			last_dir = 0;
+			cmds_state.find.includes_path = 0;
 		else if(is_dir(cmd_info->argv[0]))
-			last_dir = 1;
+			cmds_state.find.includes_path = 1;
 		else
-			last_dir = 0;
-		(void)replace_string(&last_args, cmd_info->args);
+			cmds_state.find.includes_path = 0;
+
+		(void)replace_string(&cmds_state.find.last_args, cmd_info->args);
 	}
-	else if(last_args == NULL)
+	else if(cmds_state.find.last_args == NULL)
 	{
 		ui_sb_err("Nothing to repeat");
 		return 1;
 	}
 
-	return show_find_menu(curr_view, last_dir, last_args) != 0;
+	return show_find_menu(curr_view, cmds_state.find.includes_path,
+			cmds_state.find.last_args) != 0;
 }
 
 static int
@@ -4906,17 +4921,23 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int save_msg = 0;
 	int handled;
 
+	int lpending_marking = lwin.pending_marking;
+	int rpending_marking = rwin.pending_marking;
+
 	/* Expand macros in a bound command. */
 	expanded_com = ma_expand(cmd_info->cmd, cmd_info->args, &flags,
 			vle_cmds_identify(cmd_info->cmd) == COM_EXECUTE);
 
 	if(expanded_com[0] == ':')
 	{
-		int sm;
+		/* ma_expand() could have reset the flags, restore them to restore range
+		 * selection. */
+		lwin.pending_marking = lpending_marking;
+		rwin.pending_marking = rpending_marking;
 
 		commands_scope_start();
 
-		sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
+		int sm = exec_commands(expanded_com, curr_view, CIT_COMMAND);
 		free(expanded_com);
 
 		if(commands_scope_finish() != 0)
@@ -5021,6 +5042,13 @@ parse_bg_mark(char cmd[])
 
 	amp[-1] = '\0';
 	return 1;
+}
+
+TSTATIC void
+cmds_drop_state(void)
+{
+	update_string(&cmds_state.find.last_args, NULL);
+	cmds_state.find.includes_path = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
