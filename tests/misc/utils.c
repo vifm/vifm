@@ -16,6 +16,7 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/macros.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
@@ -403,7 +404,7 @@ file_is(const char path[], const char *lines[], int nlines)
 	assert_int_equal(nlines, actual_nlines);
 
 	int i;
-	for(i = 0; i < actual_nlines; ++i)
+	for(i = 0; i < MIN(nlines, actual_nlines); ++i)
 	{
 		assert_string_equal(lines[i], actual_lines[i]);
 	}
