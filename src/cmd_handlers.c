@@ -80,6 +80,7 @@
 #include "utils/regexp.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/trie.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -319,6 +320,7 @@ static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int get_reg(const char arg[], int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
 static int parse_bg_mark(char cmd[]);
+TSTATIC void cmds_drop_state(void);
 
 const cmd_add_t cmds_list[] = {
 	{ .name = "",                  .abbr = NULL,    .id = COM_GOTO,
@@ -5040,6 +5042,13 @@ parse_bg_mark(char cmd[])
 
 	amp[-1] = '\0';
 	return 1;
+}
+
+TSTATIC void
+cmds_drop_state(void)
+{
+	update_string(&cmds_state.find.last_args, NULL);
+	cmds_state.find.includes_path = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
