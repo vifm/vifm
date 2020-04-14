@@ -362,20 +362,21 @@ TEST(usercmd_range_is_as_good_as_selection)
 
 #ifndef _WIN32
 
-	/* For l. */
-
 	conf_setup();
 	update_string(&cfg.shell, "/bin/sh");
 
 	char script_path[PATH_MAX + 1];
 	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", cwd);
-	update_string(&cfg.vi_command, script_path);
 
 	FILE *fp = fopen(SANDBOX_PATH "/script", "w");
 	fprintf(fp, "#!/bin/sh\n");
 	fprintf(fp, "for arg; do echo \"$arg\" >> %s/vi-list; done\n", SANDBOX_PATH);
 	fclose(fp);
 	assert_success(chmod(SANDBOX_PATH "/script", 0777));
+
+	/* For l. */
+
+	update_string(&cfg.vi_command, script_path);
 
 	flist_custom_start(&lwin, "test");
 	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
@@ -389,8 +390,6 @@ TEST(usercmd_range_is_as_good_as_selection)
 	file_is(SANDBOX_PATH "/vi-list", lines, ARRAY_LEN(lines));
 
 	assert_success(remove(SANDBOX_PATH "/vi-list"));
-	assert_success(remove(script_path));
-	conf_teardown();
 
 	/* For cp. */
 
@@ -413,6 +412,28 @@ TEST(usercmd_range_is_as_good_as_selection)
 
 	assert_success(remove("file1"));
 	assert_success(remove("file2"));
+
+	/* For some :menus. */
+
+	put_string(&cfg.find_prg, format_str("%s %%s %%A", script_path));
+
+	assert_success(chdir(cwd));
+	strcpy(lwin.curr_dir, test_data);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_non_null(flist_custom_add(&lwin, "existing-files/b"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_failure(exec_commands(".find a", &lwin, CIT_COMMAND));
+
+	const char *find_lines[] = { "existing-files/a", "a" };
+	file_is(SANDBOX_PATH "/vi-list", find_lines, ARRAY_LEN(find_lines));
+
+	assert_success(remove(SANDBOX_PATH "/vi-list"));
+
+	assert_success(remove(script_path));
+	conf_teardown();
 
 #endif
 
