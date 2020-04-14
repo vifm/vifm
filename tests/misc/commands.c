@@ -42,12 +42,12 @@ static int called;
 static int bg;
 static char *arg;
 
+static char cwd[PATH_MAX + 1];
 static char sandbox[PATH_MAX + 1];
 static char test_data[PATH_MAX + 1];
 
 SETUP_ONCE()
 {
-	char cwd[PATH_MAX + 1];
 	assert_non_null(get_cwd(cwd, sizeof(cwd)));
 
 	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", cwd);
@@ -306,7 +306,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 	init_modes();
 	regs_init();
 
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", NULL);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
 	populate_dir_list(&lwin, 0);
 
 	/* For gA. */
@@ -368,7 +368,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 	update_string(&cfg.shell, "/bin/sh");
 
 	char script_path[PATH_MAX + 1];
-	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", NULL);
+	make_abs_path(script_path, sizeof(script_path), SANDBOX_PATH, "script", cwd);
 	update_string(&cfg.vi_command, script_path);
 
 	FILE *fp = fopen(SANDBOX_PATH "/script", "w");
@@ -400,7 +400,7 @@ TEST(usercmd_range_is_as_good_as_selection)
 	create_file("file1");
 	create_file("file2");
 
-	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), sandbox, "", NULL);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), sandbox, "", cwd);
 	populate_dir_list(&lwin, 0);
 
 	assert_success(exec_commands("command! ex :normal 777cp", &lwin,
