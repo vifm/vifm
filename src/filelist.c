@@ -1809,15 +1809,20 @@ populate_custom_view(view_t *view, int reload)
 	{
 		if(custom_list_is_incomplete(view))
 		{
-			char selected_path[PATH_MAX + 1];
-			get_current_full_path(view, sizeof(selected_path), selected_path);
+			dir_entry_t *prev_dir_entries;
+			int prev_list_rows;
 
-			/* Replacing list of entries invalidates cursor position, so we remember
-			 * previously selected file and try to position at it again. */
+			start_dir_list_change(view, &prev_dir_entries, &prev_list_rows, reload);
+
 			replace_dir_entries(view, &view->dir_entry, &view->list_rows,
 					view->local_filter.entries, view->local_filter.entry_count);
+			/* Selection of the original list shouldn't be restored. */
+			flist_sel_drop(view);
 
-			(void)set_position_by_path(view, selected_path);
+			/* We're merging instead of simply replacing entries to account for
+			 * selection and possibly other attributes of entries.  Merging also takes
+			 * care of cursor position. */
+			finish_dir_list_change(view, prev_dir_entries, prev_list_rows);
 		}
 		else if(view->local_filter.entry_count == 0)
 		{

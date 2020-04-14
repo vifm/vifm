@@ -73,5 +73,32 @@ TEST(applying_local_filter_saves_custom_list)
 	assert_int_equal(2, lwin.list_rows);
 }
 
+TEST(selection_is_lost_when_file_disappears)
+{
+	lwin.dir_entry[0].selected = 1;
+
+	local_filter_apply(&lwin, "b");
+	load_dir_list(&lwin, 1);
+	local_filter_apply(&lwin, "");
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(2, lwin.list_rows);
+	assert_false(lwin.dir_entry[0].selected);
+	assert_int_equal(0, lwin.selected_files);
+}
+
+TEST(selection_is_preserved_on_filter_update)
+{
+	local_filter_apply(&lwin, "b");
+	load_dir_list(&lwin, 1);
+	lwin.dir_entry[0].selected = 1;
+	local_filter_apply(&lwin, "");
+	load_dir_list(&lwin, 1);
+
+	assert_int_equal(2, lwin.list_rows);
+	assert_true(lwin.dir_entry[1].selected);
+	assert_int_equal(1, lwin.selected_files);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
