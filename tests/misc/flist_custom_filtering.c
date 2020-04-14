@@ -53,10 +53,6 @@ TEST(reload_considers_local_filter)
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_string_equal("b", lwin.dir_entry[0].name);
-
-	matcher_free(lwin.manual_filter);
-	lwin.manual_filter = NULL;
-	filter_dispose(&lwin.auto_filter);
 }
 
 TEST(locally_filtered_files_are_not_lost_on_reload)
@@ -74,10 +70,6 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 
 	load_dir_list(&lwin, 1);
 	assert_int_equal(1, lwin.filtered);
-
-	matcher_free(lwin.manual_filter);
-	lwin.manual_filter = NULL;
-	filter_dispose(&lwin.auto_filter);
 }
 
 TEST(applying_local_filter_saves_custom_list)
@@ -98,10 +90,6 @@ TEST(applying_local_filter_saves_custom_list)
 	local_filter_remove(&lwin);
 	load_dir_list(&lwin, 1);
 	assert_int_equal(2, lwin.list_rows);
-
-	matcher_free(lwin.manual_filter);
-	lwin.manual_filter = NULL;
-	filter_dispose(&lwin.auto_filter);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
