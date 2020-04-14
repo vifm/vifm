@@ -25,8 +25,16 @@ SETUP()
 	update_string(&cfg.fuse_home, "no");
 
 	view_setup(&lwin);
+	filters_view_reset(&lwin);
 
 	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s/..", test_data);
+
+	assert_false(flist_custom_active(&lwin));
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
+	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 }
 
 TEARDOWN()
@@ -38,15 +46,6 @@ TEARDOWN()
 
 TEST(reload_considers_local_filter)
 {
-	filters_view_reset(&lwin);
-
-	assert_false(flist_custom_active(&lwin));
-
-	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
-
 	local_filter_apply(&lwin, "b");
 
 	load_dir_list(&lwin, 1);
@@ -57,15 +56,6 @@ TEST(reload_considers_local_filter)
 
 TEST(locally_filtered_files_are_not_lost_on_reload)
 {
-	filters_view_reset(&lwin);
-
-	assert_false(flist_custom_active(&lwin));
-
-	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
-
 	local_filter_apply(&lwin, "b");
 
 	load_dir_list(&lwin, 1);
@@ -74,15 +64,6 @@ TEST(locally_filtered_files_are_not_lost_on_reload)
 
 TEST(applying_local_filter_saves_custom_list)
 {
-	filters_view_reset(&lwin);
-
-	assert_false(flist_custom_active(&lwin));
-
-	flist_custom_start(&lwin, "test");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
-	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/b");
-	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
-
 	local_filter_apply(&lwin, "b");
 	load_dir_list(&lwin, 1);
 	assert_int_equal(1, lwin.list_rows);
