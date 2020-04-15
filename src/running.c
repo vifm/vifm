@@ -164,8 +164,6 @@ static void
 handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX + 1];
-	int executable;
-	int runnable;
 	const dir_entry_t *const curr = get_current_entry(view);
 
 	int user_selection = !view->pending_marking;
@@ -178,18 +176,20 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	if(is_dir(full_path) || is_unc_root(view->curr_dir))
+	int could_enter_entry = (curr->type != FT_LINK || follow == FHL_NO_FOLLOW);
+	int selected_entry = (curr->marked && (!user_selection || curr->selected));
+	if(!selected_entry && could_enter_entry)
 	{
-		if((!curr->marked || (user_selection && !curr->selected)) &&
-				(curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
+		int dir_like_entry = (is_dir(full_path) || is_unc_root(view->curr_dir));
+		if(dir_like_entry)
 		{
 			enter_dir(view);
 			return;
 		}
 	}
 
-	runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
-	executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
+	int runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
+	int executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
 	if(stats_file_choose_action_set() && (executable || runnable))
 	{
