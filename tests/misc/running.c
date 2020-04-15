@@ -340,7 +340,7 @@ TEST(entering_parent_directory, IF(not_windows))
 	stop_use_script();
 }
 
-TEST(entering_a_directory, IF(not_windows))
+TEST(entering_a_selected_directory, IF(not_windows))
 {
 	start_use_script();
 	update_string(&lwin.dir_entry[0].name, "existing-files");
@@ -348,6 +348,7 @@ TEST(entering_a_directory, IF(not_windows))
 
 	lwin.dir_entry[0].type = FT_DIR;
 	lwin.dir_entry[1].selected = 0;
+	--lwin.selected_files;
 
 	rn_open(&lwin, FHE_NO_RUN);
 
@@ -355,6 +356,47 @@ TEST(entering_a_directory, IF(not_windows))
 	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files", cwd);
 	assert_true(paths_are_same(lwin.curr_dir, path));
 
+	assert_failure(remove(SANDBOX_PATH "/vi-list"));
+
+	stop_use_script();
+}
+
+TEST(entering_an_unselected_directory, IF(not_windows))
+{
+	view_teardown(&lwin);
+	view_setup(&lwin);
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", cwd);
+
+	lwin.list_rows = 3;
+	lwin.list_pos = 0;
+	lwin.dir_entry = dynarray_cextend(NULL,
+			lwin.list_rows*sizeof(*lwin.dir_entry));
+	lwin.dir_entry[0].name = strdup("existing-files");
+	lwin.dir_entry[0].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[0].selected = 0;
+	lwin.dir_entry[0].type = FT_DIR;
+	lwin.dir_entry[1].name = strdup("b");
+	lwin.dir_entry[1].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[1].selected = 1;
+	lwin.dir_entry[2].name = strdup("c");
+	lwin.dir_entry[2].origin = &lwin.curr_dir[0];
+	lwin.dir_entry[2].selected = 1;
+	lwin.selected_files = 3;
+
+	char out_file[PATH_MAX + 1];
+	make_abs_path(out_file, sizeof(out_file), SANDBOX_PATH, "chosen", cwd);
+	curr_stats.chosen_files_out = out_file;
+
+	start_use_script();
+
+	rn_open(&lwin, FHE_NO_RUN);
+
+	char path[PATH_MAX + 1];
+	make_abs_path(path, sizeof(path), TEST_DATA_PATH, "existing-files", cwd);
+	assert_true(paths_are_same(lwin.curr_dir, path));
+
+	curr_stats.chosen_files_out = NULL;
+	assert_failure(remove(SANDBOX_PATH "/chosen"));
 	assert_failure(remove(SANDBOX_PATH "/vi-list"));
 
 	stop_use_script();

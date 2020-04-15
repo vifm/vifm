@@ -168,6 +168,7 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 	int runnable;
 	const dir_entry_t *const curr = get_current_entry(view);
 
+	int user_selection = !view->pending_marking;
 	flist_set_marking(view, 1);
 
 	if(fentry_is_fake(curr))
@@ -179,7 +180,8 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 
 	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
-		if(!curr->marked && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
+		if((!curr->marked || (user_selection && !curr->selected)) &&
+				(curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
 		{
 			enter_dir(view);
 			return;
