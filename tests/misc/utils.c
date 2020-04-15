@@ -15,6 +15,7 @@
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/env.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/matcher.h"
@@ -410,6 +411,29 @@ file_is(const char path[], const char *lines[], int nlines)
 	}
 
 	free_string_array(actual_lines, actual_nlines);
+}
+
+char *
+mock_env(const char env[], const char with[])
+{
+	char *value = NULL;
+	update_string(&value, env_get("TMPDIR"));
+	env_set("TMPDIR", with);
+	return value;
+}
+
+void
+unmock_env(const char env[], char old_value[])
+{
+	if(old_value != NULL)
+	{
+		env_set("TMPDIR", old_value);
+	}
+	else
+	{
+		env_remove("TMPDIR");
+	}
+	free(old_value);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -10,6 +10,8 @@
 #include "../../src/ui/fileview.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
+#include "../../src/utils/gmux.h"
+#include "../../src/utils/shmem.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
@@ -641,6 +643,12 @@ TEST(quickview)
 
 TEST(syncregs)
 {
+	/* Put all the temporary files into sandbox to avoid issues with running tests
+	 * from multiple accounts. */
+	char sandbox[PATH_MAX + 1];
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", NULL);
+	char *tmpdir_value = mock_env("TMPDIR", sandbox);
+
 	assert_false(regs_sync_enabled());
 	assert_success(exec_commands("set syncregs=test1", &lwin, CIT_COMMAND));
 	assert_true(regs_sync_enabled());
@@ -650,6 +658,14 @@ TEST(syncregs)
 	assert_true(regs_sync_enabled());
 	assert_success(exec_commands("set syncregs=", &lwin, CIT_COMMAND));
 	assert_false(regs_sync_enabled());
+
+	/* Make sure nothing is retained from the tests. */
+	gmux_destroy(gmux_create("regs-test1"));
+	shmem_destroy(shmem_create("regs-test1", 10, 10));
+	gmux_destroy(gmux_create("regs-test2"));
+	shmem_destroy(shmem_create("regs-test2", 10, 10));
+
+	unmock_env("TMPDIR", tmpdir_value);
 }
 
 TEST(mediaprg, IF(not_windows))

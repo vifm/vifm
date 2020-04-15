@@ -47,13 +47,21 @@ static FILE *instance_stdout[NUM_INSTANCES];
 
 static char pat4kib[4096 + 8];
 
+static char *tmpdir_value;
+
 /* All of the tests need to run in exactly the order given for correct
  * results. */
 
 /* Tests basic transfer of values from 0 to 1 and spawns processes. */
 SETUP_ONCE()
 {
-	/* Make sure nothing retained from previous tests. */
+	/* Put all the temporary files into sandbox to avoid issues with running tests
+	 * from multiple accounts. */
+	char sandbox[PATH_MAX + 1];
+	make_abs_path(sandbox, sizeof(sandbox), SANDBOX_PATH, "", NULL);
+	tmpdir_value = mock_env("TMPDIR", sandbox);
+
+	/* Make sure nothing is retained from previous tests. */
 	gmux_destroy(gmux_create("regs-test-shmem"));
 	shmem_destroy(shmem_create("regs-test-shmem", 10, 10));
 
@@ -76,6 +84,15 @@ SETUP_ONCE()
 	receive_ack(0);
 	send_query(1, "sync_enable,test-shmem\n");
 	receive_ack(1);
+}
+
+TEARDOWN_ONCE()
+{
+	/* Make sure nothing is retained from the tests. */
+	gmux_destroy(gmux_create("regs-test-shmem"));
+	shmem_destroy(shmem_create("regs-test-shmem", 10, 10));
+
+	unmock_env("TMPDIR", tmpdir_value);
 }
 
 static void

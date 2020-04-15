@@ -99,6 +99,13 @@ void wait_for_bg(void);
 /* Verifies that file at specified path consists of specified list of lines. */
 void file_is(const char path[], const char *lines[], int nlines);
 
+/* Replaces value of an environment variable.  Pass returned value to
+ * unmock_env() to restore its state.  Returns its old value. */
+char * mock_env(const char env[], const char with[]);
+
+/* Restores value of an environment variable changed by mock_env(). */
+void unmock_env(const char env[], char old_value[]);
+
 #endif /* VIFM_TESTS__UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
