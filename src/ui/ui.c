@@ -2260,6 +2260,15 @@ ui_qv_width(const view_t *view)
 }
 
 void
+ui_qv_cleanup_if_needed(void)
+{
+	if(curr_stats.preview.on && curr_stats.preview.cleanup_cmd != NULL)
+	{
+		qv_cleanup(other_view, curr_stats.preview.cleanup_cmd);
+	}
+}
+
+void
 ui_invalidate_cs(const col_scheme_t *cs)
 {
 	int i;
