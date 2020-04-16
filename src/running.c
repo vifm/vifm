@@ -116,7 +116,6 @@ static char * gen_term_multiplexer_cmd(const char cmd[], int pause,
 		ShellRequester by);
 static char * gen_term_multiplexer_title_arg(const char cmd[]);
 static char * gen_normal_cmd(const char cmd[], int pause);
-static char * gen_term_multiplexer_run_cmd(void);
 static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 		const char start[], int background);
@@ -917,37 +916,24 @@ cleanup_shellout_env(void)
 	free(cmd);
 }
 
-/* Composes shell command to run basing on parameters for execution.  NULL cmd
- * parameter opens shell.  Returns a newly allocated string, which should be
- * freed by the caller. */
+/* Composes shell command to run based on parameters for execution.  Returns a
+ * newly allocated string, which should be freed by the caller. */
 static char *
 gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
 		ShellRequester *by)
 {
-	char *shell_cmd = NULL;
+	char *shell_cmd;
 
-	if(cmd != NULL)
+	if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
 	{
-		if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
-		{
-			shell_cmd = gen_term_multiplexer_cmd(cmd, pause, *by);
-			/* User shell settings were taken into account in command for
-			 * multiplexer, don't use them to invoke the multiplexer itself. */
-			*by = SHELL_BY_APP;
-		}
-		else
-		{
-			shell_cmd = gen_normal_cmd(cmd, pause);
-		}
+		shell_cmd = gen_term_multiplexer_cmd(cmd, pause, *by);
+		/* User shell settings were taken into account in command for multiplexer,
+		 * don't use them to invoke the multiplexer itself. */
+		*by = SHELL_BY_APP;
 	}
-	else if(use_term_multiplexer)
+	else
 	{
-		shell_cmd = gen_term_multiplexer_run_cmd();
-	}
-
-	if(shell_cmd == NULL)
-	{
-		shell_cmd = strdup(cfg.shell);
+		shell_cmd = gen_normal_cmd(cmd, pause);
 	}
 
 	return shell_cmd;
@@ -1080,31 +1066,6 @@ gen_normal_cmd(const char cmd[], int pause)
 	{
 		return strdup(cmd);
 	}
-}
-
-/* Composes shell command to run active terminal multiplexer.  Returns a newly
- * allocated string, which should be freed by the caller. */
-static char *
-gen_term_multiplexer_run_cmd(void)
-{
-	char *shell_cmd = NULL;
-
-	if(curr_stats.term_multiplexer == TM_SCREEN)
-	{
-		set_pwd_in_screen(curr_view->curr_dir);
-
-		shell_cmd = strdup("screen");
-	}
-	else if(curr_stats.term_multiplexer == TM_TMUX)
-	{
-		shell_cmd = strdup("tmux new-window");
-	}
-	else
-	{
-		assert(0 && "Unexpected active terminal multiplexer value.");
-	}
-
-	return shell_cmd;
 }
 
 /* Changes $PWD in running GNU/screen session to the specified path.  Needed for
