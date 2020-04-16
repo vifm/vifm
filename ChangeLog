@@ -182,7 +182,8 @@
 	Fixed statusbar message not being cleared sometimes.  Thanks to
 	filterfalse.
 
-	Fixed graphics preview not being cleared on switching tabs.
+	Fixed graphics preview not being cleared on switching tabs or starting
+	external applications (including on :shell).
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

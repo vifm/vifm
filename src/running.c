@@ -804,6 +804,9 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	int result;
 	int ec;
 
+	/* Shutdown UI at this point, where $PATH isn't cleared. */
+	ui_shutdown();
+
 	int shellout = (command == NULL);
 	if(shellout)
 	{
@@ -823,7 +826,6 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	cmd = gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer,
 			&by);
 
-	ui_shutdown();
 	ec = vifm_system(cmd, by);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
