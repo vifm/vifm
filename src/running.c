@@ -48,6 +48,7 @@
 #include "compat/os.h"
 #include "int/file_magic.h"
 #include "int/fuse.h"
+#include "int/path_env.h"
 #include "int/vim.h"
 #include "menus/users_menu.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -803,6 +804,15 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	int result;
 	int ec;
 
+	int shellout = (command == NULL);
+	if(shellout)
+	{
+		command = env_get_def("SHELL", cfg.shell);
+
+		/* Run shell with clean $PATH environment variable. */
+		load_clean_path_env();
+	}
+
 	if(pause == PAUSE_ALWAYS && command != NULL && ends_with(command, "&"))
 	{
 		pause = PAUSE_ON_ERROR;
@@ -851,6 +861,11 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	if(curr_stats.load_stage > 0)
 	{
 		curs_set(0);
+	}
+
+	if(shellout)
+	{
+		load_real_path_env();
 	}
 
 	return result;
