@@ -60,7 +60,8 @@ void rn_open_with(struct view_t *view, const char prog_spec[], int dont_execute,
  * like root of FUSE mount. */
 void rn_leave(struct view_t *view, int levels);
 
-/* Executes command in a shell.  Returns zero on success, otherwise non-zero is
+/* Executes command in a shell.  Passing NULL for command parameter is a special
+ * case of launching a shell.  Returns zero on success, otherwise non-zero is
  * returned. */
 int rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 		ShellRequester by);

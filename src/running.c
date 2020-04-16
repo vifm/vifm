@@ -48,6 +48,7 @@
 #include "compat/os.h"
 #include "int/file_magic.h"
 #include "int/fuse.h"
+#include "int/path_env.h"
 #include "int/vim.h"
 #include "menus/users_menu.h"
 #include "modes/dialogs/msg_dialog.h"
@@ -116,7 +117,6 @@ static char * gen_term_multiplexer_cmd(const char cmd[], int pause,
 		ShellRequester by);
 static char * gen_term_multiplexer_title_arg(const char cmd[]);
 static char * gen_normal_cmd(const char cmd[], int pause);
-static char * gen_term_multiplexer_run_cmd(void);
 static void set_pwd_in_screen(const char path[]);
 static int try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 		const char start[], int background);
@@ -164,10 +164,9 @@ static void
 handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 {
 	char full_path[PATH_MAX + 1];
-	int executable;
-	int runnable;
 	const dir_entry_t *const curr = get_current_entry(view);
 
+	int user_selection = !view->pending_marking;
 	flist_set_marking(view, 1);
 
 	if(fentry_is_fake(curr))
@@ -177,17 +176,20 @@ handle_file(view_t *view, FileHandleExec exec, FileHandleLink follow)
 
 	get_full_path_of(curr, sizeof(full_path), full_path);
 
-	if(is_dir(full_path) || is_unc_root(view->curr_dir))
+	int could_enter_entry = (curr->type != FT_LINK || follow == FHL_NO_FOLLOW);
+	int selected_entry = (curr->marked && (!user_selection || curr->selected));
+	if(!selected_entry && could_enter_entry)
 	{
-		if(!curr->marked && (curr->type != FT_LINK || follow == FHL_NO_FOLLOW))
+		int dir_like_entry = (is_dir(full_path) || is_unc_root(view->curr_dir));
+		if(dir_like_entry)
 		{
 			enter_dir(view);
 			return;
 		}
 	}
 
-	runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
-	executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
+	int runnable = is_runnable(view, full_path, curr->type, follow == FHL_FOLLOW);
+	int executable = is_executable(full_path, curr, exec == FHE_NO_RUN, runnable);
 
 	if(stats_file_choose_action_set() && (executable || runnable))
 	{
@@ -802,6 +804,18 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	int result;
 	int ec;
 
+	/* Shutdown UI at this point, where $PATH isn't cleared. */
+	ui_shutdown();
+
+	int shellout = (command == NULL);
+	if(shellout)
+	{
+		command = env_get_def("SHELL", cfg.shell);
+
+		/* Run shell with clean $PATH environment variable. */
+		load_clean_path_env();
+	}
+
 	if(pause == PAUSE_ALWAYS && command != NULL && ends_with(command, "&"))
 	{
 		pause = PAUSE_ON_ERROR;
@@ -812,7 +826,6 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	cmd = gen_shell_cmd(command, pause == PAUSE_ALWAYS, use_term_multiplexer,
 			&by);
 
-	ui_shutdown();
 	ec = vifm_system(cmd, by);
 	/* No WIFEXITED(ec) check here, since vifm_system(...) shouldn't return until
 	 * subprocess exited. */
@@ -850,6 +863,11 @@ rn_shell(const char command[], ShellPause pause, int use_term_multiplexer,
 	if(curr_stats.load_stage > 0)
 	{
 		curs_set(0);
+	}
+
+	if(shellout)
+	{
+		load_real_path_env();
 	}
 
 	return result;
@@ -915,37 +933,24 @@ cleanup_shellout_env(void)
 	free(cmd);
 }
 
-/* Composes shell command to run basing on parameters for execution.  NULL cmd
- * parameter opens shell.  Returns a newly allocated string, which should be
- * freed by the caller. */
+/* Composes shell command to run based on parameters for execution.  Returns a
+ * newly allocated string, which should be freed by the caller. */
 static char *
 gen_shell_cmd(const char cmd[], int pause, int use_term_multiplexer,
 		ShellRequester *by)
 {
-	char *shell_cmd = NULL;
+	char *shell_cmd;
 
-	if(cmd != NULL)
+	if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
 	{
-		if(use_term_multiplexer && curr_stats.term_multiplexer != TM_NONE)
-		{
-			shell_cmd = gen_term_multiplexer_cmd(cmd, pause, *by);
-			/* User shell settings were taken into account in command for
-			 * multiplexer, don't use them to invoke the multiplexer itself. */
-			*by = SHELL_BY_APP;
-		}
-		else
-		{
-			shell_cmd = gen_normal_cmd(cmd, pause);
-		}
+		shell_cmd = gen_term_multiplexer_cmd(cmd, pause, *by);
+		/* User shell settings were taken into account in command for multiplexer,
+		 * don't use them to invoke the multiplexer itself. */
+		*by = SHELL_BY_APP;
 	}
-	else if(use_term_multiplexer)
+	else
 	{
-		shell_cmd = gen_term_multiplexer_run_cmd();
-	}
-
-	if(shell_cmd == NULL)
-	{
-		shell_cmd = strdup(cfg.shell);
+		shell_cmd = gen_normal_cmd(cmd, pause);
 	}
 
 	return shell_cmd;
@@ -1078,31 +1083,6 @@ gen_normal_cmd(const char cmd[], int pause)
 	{
 		return strdup(cmd);
 	}
-}
-
-/* Composes shell command to run active terminal multiplexer.  Returns a newly
- * allocated string, which should be freed by the caller. */
-static char *
-gen_term_multiplexer_run_cmd(void)
-{
-	char *shell_cmd = NULL;
-
-	if(curr_stats.term_multiplexer == TM_SCREEN)
-	{
-		set_pwd_in_screen(curr_view->curr_dir);
-
-		shell_cmd = strdup("screen");
-	}
-	else if(curr_stats.term_multiplexer == TM_TMUX)
-	{
-		shell_cmd = strdup("tmux new-window");
-	}
-	else
-	{
-		assert(0 && "Unexpected active terminal multiplexer value.");
-	}
-
-	return shell_cmd;
 }
 
 /* Changes $PWD in running GNU/screen session to the specified path.  Needed for

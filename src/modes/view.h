@@ -66,6 +66,9 @@ void modview_panes_swapped(void);
 /* Checks whether contents of either view should be updated. */
 void modview_check_for_updates(void);
 
+/* Hides graphics that needs special care (doesn't disappear on UI redraw). */
+void modview_hide_graphics(void);
+
 /* Detached views.  These are the views which were either created in detached
  * state or were detached from, but their state (position, etc.) is still
  * maintained. */

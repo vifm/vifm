@@ -3832,13 +3832,7 @@ setlocal_cmd(const cmd_info_t *cmd_info)
 static int
 shell_cmd(const cmd_info_t *cmd_info)
 {
-	const char *sh = env_get_def("SHELL", cfg.shell);
-
-	/* Run shell with clean PATH environment variable. */
-	load_clean_path_env();
-	rn_shell(sh, PAUSE_NEVER, cmd_info->emark ? 0 : 1, SHELL_BY_APP);
-	load_real_path_env();
-
+	rn_shell(NULL, PAUSE_NEVER, cmd_info->emark ? 0 : 1, SHELL_BY_APP);
 	return 0;
 }
 

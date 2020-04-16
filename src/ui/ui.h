@@ -695,6 +695,10 @@ int ui_qv_height(const view_t *view);
 /* Retrieves width of quickview area.  Returns the width. */
 int ui_qv_width(const view_t *view);
 
+/* If active preview needs special cleanup (i.e., simply redrawing a window
+ * isn't enough. */
+void ui_qv_cleanup_if_needed(void);
+
 /* Invalidates views-specific knowledge about given color scheme. */
 void ui_invalidate_cs(const col_scheme_t *cs);
 
