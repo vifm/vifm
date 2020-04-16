@@ -186,6 +186,7 @@ static int get_file_to_explore(const view_t *view, char buf[], size_t buf_len);
 static int forward_if_changed(modview_info_t *vi);
 static int scroll_to_bottom(modview_info_t *vi);
 static void reload_view(modview_info_t *vi, int silent);
+static void cleanup(modview_info_t *vi);
 static modview_info_t * view_info_alloc(void);
 
 /* Points to current (for quick view) or last used (for explore mode)
@@ -477,9 +478,7 @@ modview_leave(void)
 {
 	if(vi->kind != VK_TEXTUAL && vi->view->explore_mode)
 	{
-		const char *cmd = qv_get_viewer(vi->filename);
-		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
-		qv_cleanup(vi->view, cmd);
+		cleanup(vi);
 	}
 
 	reset_view_info(vi);
@@ -632,9 +631,7 @@ draw(void)
 
 	if(vi->kind != VK_TEXTUAL)
 	{
-		const char *cmd = qv_get_viewer(vi->filename);
-		cmd = (cmd != NULL) ? ma_get_clear_cmd(cmd) : NULL;
-		qv_cleanup(vi->view, cmd);
+		cleanup(vi);
 
 		free_string_array(vi->lines, vi->nlines);
 		(void)get_view_data(vi, vi->filename);
@@ -1689,6 +1686,15 @@ reload_view(modview_info_t *vi, int silent)
 		replace_vi(vi, &new_vi);
 		modview_redraw();
 	}
+}
+
+/* Cleans view area, possibly using an external application. */
+static void
+cleanup(modview_info_t *vi)
+{
+	const char *cmd = qv_get_viewer(vi->filename);
+	cmd = (cmd != NULL ? ma_get_clear_cmd(cmd) : NULL);
+	qv_cleanup(vi->view, cmd);
 }
 
 const char *
