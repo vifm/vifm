@@ -1688,6 +1688,19 @@ reload_view(modview_info_t *vi, int silent)
 	}
 }
 
+void
+modview_hide_graphics(void)
+{
+	if(lwin.vi != NULL && lwin.vi->kind != VK_TEXTUAL)
+	{
+		cleanup(lwin.vi);
+	}
+	if(rwin.vi != NULL && rwin.vi->kind != VK_TEXTUAL)
+	{
+		cleanup(rwin.vi);
+	}
+}
+
 /* Cleans view area, possibly using an external application. */
 static void
 cleanup(modview_info_t *vi)

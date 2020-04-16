@@ -325,6 +325,8 @@ tabs_goto_pane(int idx)
 		return;
 	}
 
+	ui_qv_cleanup_if_needed();
+
 	const int prev = ptabs->current;
 
 	/* Mark the tab we started at as visited. */
@@ -367,6 +369,9 @@ tabs_goto_global(int idx)
 	{
 		return;
 	}
+
+	ui_qv_cleanup_if_needed();
+	modview_hide_graphics();
 
 	/* Mark the tab we started at as visited. */
 	gtabs[current_gtab].visited = (curr_stats.load_stage >= 3);
