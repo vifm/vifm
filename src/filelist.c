@@ -1298,8 +1298,6 @@ exclude_temporary_entries(view_t *view)
 	fpos_ensure_valid_pos(view);
 	ui_view_schedule_redraw(view);
 
-	flist_sel_recount(view);
-
 	return n;
 }
 
