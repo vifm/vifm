@@ -1883,6 +1883,11 @@ zap_compare_view(view_t *view, view_t *other, zap_filter filter, void *arg)
 
 		if(!fentry_is_fake(entry) && !filter(view, entry, arg))
 		{
+			if(entry->selected)
+			{
+				--view->selected_files;
+			}
+
 			const int separator = find_separator(other, i);
 			if(separator >= 0)
 			{
@@ -2043,6 +2048,11 @@ zap_entries(view_t *view, dir_entry_t *entries, int *count, zap_filter filter,
 
 			++j;
 			continue;
+		}
+
+		if(entry->selected && view->dir_entry == entries)
+		{
+			--view->selected_files;
 		}
 
 		/* Reassign children of node about to be deleted to its parent.  Child count

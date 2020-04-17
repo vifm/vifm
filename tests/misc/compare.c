@@ -616,6 +616,7 @@ TEST(filtering_fake_entry_does_nothing)
 	name_filters_add_selection(&lwin);
 
 	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(1, lwin.selected_files);
 	assert_int_equal(4, rwin.list_rows);
 	assert_string_equal("", lwin.dir_entry[0].name);
 }
@@ -637,6 +638,7 @@ TEST(filtering_updates_two_bound_views)
 	rwin.dir_entry[0].selected = 1;
 	rwin.selected_files = 1;
 	name_filters_add_selection(&rwin);
+	assert_int_equal(0, rwin.selected_files);
 
 	basic_panes_check(4);
 	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
@@ -649,6 +651,7 @@ TEST(filtering_updates_two_bound_views)
 	rwin.dir_entry[2].selected = 1;
 	rwin.selected_files = 3;
 	name_filters_add_selection(&rwin);
+	assert_int_equal(0, rwin.selected_files);
 	basic_panes_check(3);
 
 	lwin.dir_entry[0].selected = 1;
@@ -656,6 +659,7 @@ TEST(filtering_updates_two_bound_views)
 	lwin.dir_entry[2].selected = 1;
 	lwin.selected_files = 3;
 	name_filters_add_selection(&lwin);
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	assert_int_equal(CV_REGULAR, rwin.custom.type);
 }

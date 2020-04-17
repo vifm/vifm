@@ -138,6 +138,7 @@ TEST(tree_accounts_for_auto_filter)
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(11, lwin.list_rows);
+	assert_int_equal(0, lwin.selected_files);
 	validate_tree(&lwin);
 }
 
