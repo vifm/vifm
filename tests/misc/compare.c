@@ -425,6 +425,7 @@ TEST(exclude_works_with_entries_or_their_groups)
 	lwin.selected_files = 1;
 	lwin.dir_entry[4].selected = 1;
 	flist_custom_exclude(&lwin, 1);
+	lwin.dir_entry[4].selected = 0;
 	basic_panes_check(5);
 
 	/* Exclude single file from a group. */
