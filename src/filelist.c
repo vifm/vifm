@@ -1856,10 +1856,7 @@ filter_in_compare(view_t *view, void *arg, zap_filter filter)
 		return 1;
 	}
 
-	(void)zap_entries(other, other->dir_entry, &other->list_rows, &is_temporary,
-			NULL, 0, 1);
-	ui_view_schedule_redraw(other);
-	flist_sel_recount(other);
+	exclude_temporary_entries(other);
 	return 0;
 }
 
