@@ -144,6 +144,7 @@ TEST(sync_syncs_trees)
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
 	flist_custom_exclude(curr_view, 1);
+	assert_int_equal(0, curr_view->selected_files);
 
 	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
 	assert_true(flist_custom_active(other_view));
@@ -233,6 +234,7 @@ TEST(tree_syncing_applies_properties_of_destination_view)
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
 	flist_custom_exclude(curr_view, 1);
+	assert_int_equal(0, curr_view->selected_files);
 
 	local_filter_apply(other_view, "d");
 	assert_success(exec_commands("sync! tree", curr_view, CIT_COMMAND));
@@ -326,6 +328,7 @@ TEST(sync_syncs_custom_trees)
 	curr_view->dir_entry[0].selected = 1;
 	curr_view->selected_files = 1;
 	flist_custom_exclude(curr_view, 1);
+	assert_int_equal(0, curr_view->selected_files);
 
 	/* As custom trees. */
 
