@@ -1153,10 +1153,11 @@ cmd_zd(key_info_t key_info, keys_info_t *keys_info)
 	accept_and_leave(0);
 }
 
+/* Filters selected files. */
 static void
 cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
-	name_filters_add_selection(view);
+	name_filters_add_active(view);
 	accept_and_leave(0);
 }
 

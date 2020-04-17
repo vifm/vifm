@@ -147,7 +147,7 @@ dot_filter_toggle(view_t *view)
 }
 
 void
-name_filters_add_selection(view_t *view)
+name_filters_add_active(view_t *view)
 {
 	filter_t filter;
 	(void)filter_init(&filter, FILTER_DEF_CASE_SENSITIVITY);

@@ -135,7 +135,7 @@ TEARDOWN()
 TEST(filtering)
 {
 	assert_int_equal(7, lwin.list_rows);
-	name_filters_add_selection(&lwin);
+	name_filters_add_active(&lwin);
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(0, lwin.selected_files);
 
@@ -151,7 +151,7 @@ TEST(filtering_file_does_not_filter_dir)
 	rwin.selected_files = 1;
 
 	assert_int_equal(8, rwin.list_rows);
-	name_filters_add_selection(&rwin);
+	name_filters_add_active(&rwin);
 	assert_int_equal(7, rwin.list_rows);
 	assert_int_equal(0, rwin.selected_files);
 
@@ -170,7 +170,7 @@ TEST(filtering_dir_does_not_filter_file)
 	rwin.selected_files = 1;
 
 	assert_int_equal(8, rwin.list_rows);
-	name_filters_add_selection(&rwin);
+	name_filters_add_active(&rwin);
 	assert_int_equal(7, rwin.list_rows);
 	assert_int_equal(0, rwin.selected_files);
 
@@ -241,7 +241,7 @@ TEST(file_after_directory_is_hidden)
 
 	lwin.dir_entry[1].selected = 1;
 	lwin.selected_files = 1;
-	name_filters_add_selection(&lwin);
+	name_filters_add_active(&lwin);
 
 	assert_int_equal(1, lwin.list_rows);
 	assert_int_equal(0, lwin.selected_files);

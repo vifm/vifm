@@ -2017,11 +2017,11 @@ modnorm_zb(key_info_t key_info, keys_info_t *keys_info)
 	}
 }
 
-/* Filter selected files. */
+/* Filters active files. */
 static void
 cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
-	name_filters_add_selection(curr_view);
+	name_filters_add_active(curr_view);
 }
 
 /* Hide dot files. */
