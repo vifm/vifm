@@ -988,7 +988,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 
 	flags = (MacroFlags)cmd_info->usr1;
-	handled = rn_ext(com, flags, cmd_info->bg, &save_msg);
+	handled = rn_ext(com, cmd_info->raw_args, flags, cmd_info->bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -4947,7 +4947,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	flist_sel_stash(curr_view);
 
-	handled = rn_ext(expanded_com, flags, bg, &save_msg);
+	handled = rn_ext(expanded_com, expanded_com, flags, bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */

@@ -69,8 +69,10 @@ SETUP()
 
 #ifndef _WIN32
 	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
 #else
 	replace_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
 #endif
 
 	stats_update_shell_type(cfg.shell);
@@ -268,6 +270,20 @@ TEST(user_command_is_executed_in_separated_scope)
 {
 	assert_success(exec_commands("command cmd :if 1 > 2", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("cmd", &lwin, CIT_COMMAND));
+}
+
+TEST(cv_is_built_by_emark)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("!echo %c %u", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+
+	assert_string_equal("!echo %c %u", lwin.custom.title);
 }
 
 TEST(put_bg_cmd_is_parsed_correctly)

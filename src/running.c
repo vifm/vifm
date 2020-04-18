@@ -570,7 +570,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	bg = !pause && (bg || force_bg);
 
 	save_msg = 0;
-	if(rn_ext(cmd, flags, bg, &save_msg) != 0)
+	if(rn_ext(cmd, cmd, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
@@ -1146,7 +1146,8 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 }
 
 int
-rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
+rn_ext(const char cmd[], const char unexpanded_cmd[], MacroFlags flags, int bg,
+		int *save_msg)
 {
 	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
 	{
@@ -1208,7 +1209,14 @@ rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
 		const int interactive =
 			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		rn_for_flist(curr_view, cmd, cmd, very, interactive);
+
+		char *title = format_str("!%s", unexpanded_cmd);
+		if(title == NULL)
+		{
+			return -1;
+		}
+		rn_for_flist(curr_view, cmd, title, very, interactive);
+		free(title);
 	}
 	else
 	{
