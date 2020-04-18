@@ -78,6 +78,11 @@ setup_rwin(void)
 	rwin.selected_files = 3;
 }
 
+SETUP_ONCE()
+{
+	stats_update_shell_type("/bin/sh");
+}
+
 SETUP()
 {
 	setup_lwin();

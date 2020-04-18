@@ -5,7 +5,7 @@
 
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
@@ -62,18 +62,8 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	cfg.cd_path = strdup("");
-	cfg.fuse_home = strdup("");
-	cfg.slow_fs_list = strdup("");
+	conf_setup();
 	cfg.use_system_calls = 1;
-
-#ifndef _WIN32
-	replace_string(&cfg.shell, "/bin/sh");
-	update_string(&cfg.shell_cmd_flag, "-c");
-#else
-	replace_string(&cfg.shell, "cmd");
-	update_string(&cfg.shell_cmd_flag, "/C");
-#endif
 
 	stats_update_shell_type(cfg.shell);
 
@@ -88,13 +78,7 @@ SETUP()
 
 TEARDOWN()
 {
-	update_string(&cfg.cd_path, NULL);
-	update_string(&cfg.fuse_home, NULL);
-	update_string(&cfg.slow_fs_list, NULL);
-
-	stats_update_shell_type("/bin/sh");
-	update_string(&cfg.shell, NULL);
-	update_string(&cfg.shell_cmd_flag, NULL);
+	conf_teardown();
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
