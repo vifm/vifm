@@ -91,8 +91,8 @@
 	Use the same label for :grep and :find custom lists as the one used for
 	:grep and :find menus.  Thanks to filterfalse.
 
-	Use `:!program %f %u` command as typed for title of custom file list
-	instead of using expanded command.  Thanks to filterfalse.
+	Use unexpanded command for title of custom file lists produced using %u or
+	%U macros.  Thanks to filterfalse.
 
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).

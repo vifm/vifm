@@ -286,6 +286,21 @@ TEST(cv_is_built_by_emark)
 	assert_string_equal("!echo %c %u", lwin.custom.title);
 }
 
+TEST(cv_is_built_by_usercmd)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("command cmd echo %c %u", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("cmd", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+
+	assert_string_equal("!echo %c %u", lwin.custom.title);
+}
+
 TEST(put_bg_cmd_is_parsed_correctly)
 {
 	/* Simulate custom view to force failure of the command. */

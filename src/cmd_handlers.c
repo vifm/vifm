@@ -4947,7 +4947,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	flist_sel_stash(curr_view);
 
-	handled = rn_ext(expanded_com, expanded_com, flags, bg, &save_msg);
+	handled = rn_ext(expanded_com, cmd_info->cmd, flags, bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
