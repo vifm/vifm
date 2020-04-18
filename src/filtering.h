@@ -66,9 +66,10 @@ void dot_filter_toggle(struct view_t *view);
 
 /* Filename filters related functions. */
 
-/* Adds currently selected entries of the view or just current file (if no file
- * is selected) to auto filename filter.  Performs necessary view updates. */
-void name_filters_add_selection(struct view_t *view);
+/* Adds currently active entries of the view (uses current file if there is no
+ * selection or marking) to auto filename filter.  Performs necessary view
+ * updates. */
+void name_filters_add_active(struct view_t *view);
 
 /* Clears both manual and auto filename filters remembering their state for
  * future restoration.  Does nothing if both filters are already reset.

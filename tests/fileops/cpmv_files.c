@@ -132,7 +132,7 @@ TEST(refuse_to_copy_or_move_to_source_files_with_the_same_name)
 
 	rwin.dir_entry[0].marked = 1;
 	rwin.dir_entry[1].marked = 1;
-	rwin.selected_files = 2;
+	rwin.pending_marking = 1;
 
 	check_marking(curr_view, 0, NULL);
 

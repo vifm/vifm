@@ -612,6 +612,7 @@ TEST(excluded_entries_do_not_return)
 	assert_int_equal(2, lwin.list_rows);
 
 	flist_custom_exclude(&lwin, 0);
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(1, lwin.list_rows);
 
 	load_dir_list(&lwin, 1);
@@ -639,6 +640,7 @@ TEST(excluding_entries_does_not_affect_local_filter_list)
 	assert_int_equal(2, lwin.list_rows);
 
 	flist_custom_exclude(&lwin, 0);
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(1, lwin.list_rows);
 
 	local_filter_remove(&lwin);

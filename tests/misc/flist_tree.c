@@ -44,8 +44,8 @@ SETUP_ONCE()
 
 SETUP()
 {
+	conf_setup();
 	update_string(&cfg.fuse_home, "no");
-	update_string(&cfg.slow_fs_list, "");
 
 	view_setup(&lwin);
 
@@ -59,9 +59,7 @@ SETUP()
 
 TEARDOWN()
 {
-	update_string(&cfg.slow_fs_list, NULL);
-	update_string(&cfg.fuse_home, NULL);
-
+	conf_teardown();
 	view_teardown(&lwin);
 
 	columns_set_line_print_func(NULL);
@@ -136,10 +134,11 @@ TEST(tree_accounts_for_auto_filter)
 	assert_int_equal(12, lwin.list_rows);
 	lwin.dir_entry[11].selected = 1;
 	lwin.selected_files = 1;
-	name_filters_add_selection(&lwin);
+	name_filters_add_active(&lwin);
 
 	assert_success(load_tree(&lwin, TEST_DATA_PATH "/tree"));
 	assert_int_equal(11, lwin.list_rows);
+	assert_int_equal(0, lwin.selected_files);
 	validate_tree(&lwin);
 }
 
@@ -269,8 +268,6 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 {
 	struct stat st;
 
-	update_string(&cfg.ruler_format, "");
-
 	create_file(SANDBOX_PATH "/a");
 	create_file(SANDBOX_PATH "/b");
 
@@ -295,15 +292,11 @@ TEST(tree_is_reloaded_automatically_with_file_updates)
 	validate_tree(&lwin);
 
 	assert_success(remove(SANDBOX_PATH "/a"));
-
-	update_string(&cfg.ruler_format, NULL);
 }
 
 TEST(nested_directory_change_detection)
 {
 	struct stat st1, st2;
-
-	update_string(&cfg.ruler_format, "");
 
 	assert_success(os_mkdir(SANDBOX_PATH "/nested-dir", 0700));
 	create_file(SANDBOX_PATH "/nested-dir/a");
@@ -341,8 +334,6 @@ TEST(nested_directory_change_detection)
 
 	assert_success(remove(SANDBOX_PATH "/nested-dir/a"));
 	assert_success(rmdir(SANDBOX_PATH "/nested-dir"));
-
-	update_string(&cfg.ruler_format, NULL);
 }
 
 TEST(excluding_dir_in_tree_excludes_its_children)

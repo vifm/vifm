@@ -406,6 +406,7 @@ TEST(macro_can_be_added_implicitly, IF(not_windows))
 {
 	start_use_script();
 	lwin.dir_entry[1].selected = 0;
+	--lwin.selected_files;
 
 	char *error;
 	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);
@@ -430,6 +431,7 @@ TEST(handler_can_be_matched_by_a_prefix, IF(not_windows))
 {
 	start_use_script();
 	lwin.dir_entry[1].selected = 0;
+	--lwin.selected_files;
 
 	char *error;
 	matchers_t *ms = matchers_alloc("{a}", 0, 1, "", &error);

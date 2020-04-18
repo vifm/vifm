@@ -425,28 +425,34 @@ TEST(exclude_works_with_entries_or_their_groups)
 	lwin.selected_files = 1;
 	lwin.dir_entry[4].selected = 1;
 	flist_custom_exclude(&lwin, 1);
+	lwin.dir_entry[4].selected = 0;
 	basic_panes_check(5);
+	assert_int_equal(1, lwin.selected_files);
 
 	/* Exclude single file from a group. */
 	lwin.selected_files = 1;
 	lwin.dir_entry[0].selected = 1;
 	flist_custom_exclude(&lwin, 1);
 	basic_panes_check(4);
+	assert_int_equal(0, lwin.selected_files);
 
 	/* Exclude the whole group. */
 	lwin.selected_files = 1;
 	lwin.dir_entry[2].selected = 1;
 	flist_custom_exclude(&lwin, 0);
 	basic_panes_check(2);
+	assert_int_equal(0, lwin.selected_files);
 
 	/* Exclusion of all files leaves the mode. */
 	lwin.selected_files = 1;
 	lwin.dir_entry[0].selected = 1;
 	flist_custom_exclude(&lwin, 0);
 	basic_panes_check(1);
+	assert_int_equal(0, lwin.selected_files);
 	rwin.selected_files = 1;
 	rwin.dir_entry[0].selected = 1;
 	flist_custom_exclude(&rwin, 0);
+	assert_int_equal(0, rwin.selected_files);
 	assert_false(flist_custom_active(&lwin));
 	assert_false(flist_custom_active(&rwin));
 
@@ -613,9 +619,10 @@ TEST(filtering_fake_entry_does_nothing)
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.selected_files = 1;
-	name_filters_add_selection(&lwin);
+	name_filters_add_active(&lwin);
 
 	assert_int_equal(4, lwin.list_rows);
+	assert_int_equal(1, lwin.selected_files);
 	assert_int_equal(4, rwin.list_rows);
 	assert_string_equal("", lwin.dir_entry[0].name);
 }
@@ -636,7 +643,8 @@ TEST(filtering_updates_two_bound_views)
 
 	rwin.dir_entry[0].selected = 1;
 	rwin.selected_files = 1;
-	name_filters_add_selection(&rwin);
+	name_filters_add_active(&rwin);
+	assert_int_equal(0, rwin.selected_files);
 
 	basic_panes_check(4);
 	assert_string_equal("same-content-different-name-1", lwin.dir_entry[0].name);
@@ -648,14 +656,16 @@ TEST(filtering_updates_two_bound_views)
 	rwin.dir_entry[1].selected = 1;
 	rwin.dir_entry[2].selected = 1;
 	rwin.selected_files = 3;
-	name_filters_add_selection(&rwin);
+	name_filters_add_active(&rwin);
+	assert_int_equal(0, rwin.selected_files);
 	basic_panes_check(3);
 
 	lwin.dir_entry[0].selected = 1;
 	lwin.dir_entry[1].selected = 1;
 	lwin.dir_entry[2].selected = 1;
 	lwin.selected_files = 3;
-	name_filters_add_selection(&lwin);
+	name_filters_add_active(&lwin);
+	assert_int_equal(0, lwin.selected_files);
 	assert_int_equal(CV_REGULAR, lwin.custom.type);
 	assert_int_equal(CV_REGULAR, rwin.custom.type);
 }
