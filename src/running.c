@@ -570,7 +570,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	bg = !pause && (bg || force_bg);
 
 	save_msg = 0;
-	if(rn_ext(cmd, cmd, flags, bg, &save_msg) != 0)
+	if(rn_ext(cmd, prog_spec, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
