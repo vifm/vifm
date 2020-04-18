@@ -524,10 +524,12 @@ TEST(grep_command, IF(not_windows))
 
 	assert_success(exec_commands("grep command", &lwin, CIT_COMMAND));
 	assert_int_equal(2, lwin.list_rows);
+	assert_string_equal("Grep command", lwin.custom.title);
 
 	/* Repeat last grep. */
 	assert_success(exec_commands("grep!", &lwin, CIT_COMMAND));
 	assert_int_equal(3, lwin.list_rows);
+	assert_string_equal("Grep command", lwin.custom.title);
 
 	opt_handlers_teardown();
 }

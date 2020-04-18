@@ -1208,7 +1208,7 @@ rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
 		const int interactive =
 			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		rn_for_flist(curr_view, cmd, very, interactive);
+		rn_for_flist(curr_view, cmd, cmd, very, interactive);
 	}
 	else
 	{
@@ -1338,22 +1338,21 @@ run_in_split(const view_t *view, const char cmd[])
 }
 
 int
-rn_for_flist(view_t *view, const char cmd[], int very, int interactive)
+rn_for_flist(struct view_t *view, const char cmd[], const char title[],
+		int very, int interactive)
 {
-	char *title;
-	int error;
-
-	int cut_point = shorten_cmd(cmd, 4);
+	char *final_title;
+	int cut_point = shorten_cmd(title, 4);
 	if(cut_point > 0)
 	{
-		title = format_str("!%.*s%s", cut_point, cmd, curr_stats.ellipsis);
+		final_title = format_str("%.*s%s", cut_point, title, curr_stats.ellipsis);
 	}
 	else
 	{
-		title = format_str("!%s", cmd);
+		final_title = strdup(title);
 	}
-	flist_custom_start(view, title);
-	free(title);
+	flist_custom_start(view, final_title);
+	free(final_title);
 
 	if(interactive && curr_stats.load_stage != 0)
 	{
@@ -1361,7 +1360,7 @@ rn_for_flist(view_t *view, const char cmd[], int very, int interactive)
 	}
 
 	setup_shellout_env();
-	error = (process_cmd_output("Loading custom view", cmd, 1, interactive,
+	int error = (process_cmd_output("Loading custom view", cmd, 1, interactive,
 				&path_handler, view) != 0);
 	cleanup_shellout_env();
 

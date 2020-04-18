@@ -76,12 +76,15 @@ TEST(find_command, IF(not_windows))
 
 	assert_success(exec_commands("find a", &lwin, CIT_COMMAND));
 	assert_int_equal(3, lwin.list_rows);
+	assert_string_equal("Find a", lwin.custom.title);
 
 	assert_success(exec_commands("find . -name aaa", &lwin, CIT_COMMAND));
 	assert_int_equal(1, lwin.list_rows);
+	assert_string_equal("Find . -name aaa", lwin.custom.title);
 
 	assert_success(exec_commands("find -name '*.vifm'", &lwin, CIT_COMMAND));
 	assert_int_equal(9, lwin.list_rows);
+	assert_string_equal("Find -name '*.vifm'", lwin.custom.title);
 
 	view_teardown(&lwin);
 	view_setup(&lwin);

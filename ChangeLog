@@ -88,6 +88,9 @@
 	Make comparing files by contents (`:compare bycontents`) somewhat faster.
 	Thanks to maxigaz.
 
+	Use the same label for :grep and :find custom lists as the one used for
+	:grep and :find menus.  Thanks to filterfalse.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

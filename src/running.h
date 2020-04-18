@@ -80,8 +80,8 @@ int rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg);
 /* Runs the cmd and parses its output as list of paths to compose custom view.
  * Very custom view implies unsorted list.  Returns zero on success, otherwise
  * non-zero is returned. */
-int rn_for_flist(struct view_t *view, const char cmd[], int very,
-		int interactive);
+int rn_for_flist(struct view_t *view, const char cmd[], const char title[],
+		int very, int interactive);
 
 /* Executes external command capturing its output as list of lines.  Sets *lines
  * and *nlines.  Returns zero on success, otherwise non-zero is returned. */
