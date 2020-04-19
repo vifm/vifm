@@ -94,6 +94,8 @@
 	Use unexpanded command for title of custom file lists produced using %u or
 	%U macros.  Thanks to filterfalse.
 
+	Use unexpanded command for title of a menus produced using %m or %M macros.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

@@ -1195,7 +1195,7 @@ rn_ext(const char cmd[], const char unexpanded_cmd[], MacroFlags flags, int bg,
 	{
 		const int navigate = flags == MF_MENU_NAV_OUTPUT;
 		setup_shellout_env();
-		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
+		*save_msg = show_user_menu(curr_view, cmd, unexpanded_cmd, navigate) != 0;
 		cleanup_shellout_env();
 	}
 	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
