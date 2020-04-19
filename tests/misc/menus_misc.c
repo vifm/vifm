@@ -4,25 +4,14 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
-#include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
 
 #include "utils.h"
-
-SETUP_ONCE()
-{
-	static char cwd[PATH_MAX + 1];
-	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-
-	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
-			"color-schemes/", cwd);
-}
 
 SETUP()
 {
@@ -52,6 +41,9 @@ TEARDOWN()
 
 TEST(enter_loads_selected_colorscheme)
 {
+	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
+			"color-schemes/", NULL);
+
 	assert_success(exec_commands("colorscheme", &lwin, CIT_COMMAND));
 
 	strcpy(cfg.cs.name, "test-scheme");
