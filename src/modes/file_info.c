@@ -38,6 +38,7 @@
 #include "../engine/keys.h"
 #include "../engine/mode.h"
 #include "../int/file_magic.h"
+#include "../int/term_title.h"
 #include "../menus/menus.h"
 #include "../ui/ui.h"
 #include "../utils/fs.h"
@@ -96,6 +97,7 @@ modfinfo_enter(view_t *v)
 		return;
 	}
 
+	term_title_update("File Information");
 	vle_mode_set(FILE_INFO_MODE, VMT_PRIMARY);
 	view = v;
 	ui_setup_for_menu_like();
@@ -121,6 +123,7 @@ leave_file_info_mode(void)
 	}
 	else
 	{
+		ui_view_title_update(curr_view);
 		update_all_windows();
 	}
 }

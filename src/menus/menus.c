@@ -33,6 +33,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "../int/term_title.h"
 #include "../int/vim.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/cmdline.h"
@@ -660,6 +661,7 @@ menus_enter(menu_state_t *m, view_t *view)
 	init_menu_state(m, view);
 
 	ui_setup_for_menu_like();
+	term_title_update(m->d->title);
 	menus_partial_redraw(m);
 	menus_set_pos(m, m->d->pos);
 	modmenu_enter(m->d, view);
