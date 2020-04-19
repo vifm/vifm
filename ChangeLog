@@ -67,9 +67,8 @@
 
 	Display targets of .lnk-files in file information dialog on Windows.
 
-	Limit length of title of custom filelist derived from :! command to four
-	first "words" (escaping is considered, but not quoting).  Thanks to
-	filterfalse.
+	Limit length of custom file list title to 80 character positions.  Thanks
+	to filterfalse.
 
 	Make displaying of spaces in mappings more intelligent by using <space> at
 	the start or end of lhs or rhs.

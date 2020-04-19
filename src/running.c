@@ -40,7 +40,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS free() realloc() */
 #include <string.h> /* strcmp() strerror() strrchr() strcat() strstr() strlen()
-                       strchr() strdup() strncmp() strcspn() strspn() */
+                       strchr() strdup() strncmp() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
@@ -62,7 +62,6 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "utils/utf8.h"
 #include "background.h"
@@ -124,7 +123,6 @@ static void output_to_statusbar(const char cmd[]);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
 static void run_in_split(const view_t *view, const char cmd[]);
-TSTATIC int shorten_cmd(const char cmd[], int parts_to_leave);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
 
@@ -1349,16 +1347,10 @@ int
 rn_for_flist(struct view_t *view, const char cmd[], const char title[],
 		int very, int interactive)
 {
-	char *final_title;
-	int cut_point = shorten_cmd(title, 4);
-	if(cut_point > 0)
-	{
-		final_title = format_str("%.*s%s", cut_point, title, curr_stats.ellipsis);
-	}
-	else
-	{
-		final_title = strdup(title);
-	}
+	enum { MAX_TITLE_WIDTH = 80 };
+
+	char *final_title = right_ellipsis(title, MAX_TITLE_WIDTH,
+			curr_stats.ellipsis);
 	flist_custom_start(view, final_title);
 	free(final_title);
 
@@ -1380,34 +1372,6 @@ rn_for_flist(struct view_t *view, const char cmd[], const char title[],
 
 	flist_custom_end(view, very);
 	return 0;
-}
-
-/* Computes length of the prefix of the command-line that contains only
- * parts_to_leave first "words" (escaping is accounted for, but not quoting).
- * The parts_to_leave should be greater than zero.  Returns the length or zero
- * if whole command fits. */
-TSTATIC int
-shorten_cmd(const char cmd[], int parts_to_leave)
-{
-	const char *ws = " \t";
-	const char *tail = cmd + strspn(cmd, ws);
-
-	while(parts_to_leave > 0 && *tail != '\0')
-	{
-		tail += strcspn(tail, ws);
-		while(tail != cmd && tail[-1] == '\\')
-		{
-			++tail;
-			tail += strcspn(tail, ws);
-		}
-
-		if(--parts_to_leave != 0)
-		{
-			tail += strspn(tail, ws);
-		}
-	}
-
-	return ((parts_to_leave > 0 || *tail == '\0') ? 0 : tail - cmd);
 }
 
 /* Implements process_cmd_output() callback that loads paths into custom
