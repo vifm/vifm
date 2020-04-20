@@ -93,7 +93,8 @@ ifndef win_env
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
-vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o) $(BUILD)stubs.o
+vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o) \
+            $(BUILD)test-support/stubs.o
 
 # make sure that there is one compile_info.c object file in the list
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
@@ -229,7 +230,7 @@ $(vifm_obj) ../src/./tags.c: $(vifm_src) | $(vifm_bin)
 $(vifm_bin): $(vifm_src)
 	$(MAKE) $(make_args) vifm$(exe_suffix)
 
-$(BUILD)stubs.o: stubs.c
+$(BUILD)test-support/stubs.o: test-support/stubs.c | $(BUILD)test-support
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(BUILD)stic.o: stic/stic.c
@@ -238,7 +239,7 @@ $(BUILD)stic.o: stic/stic.c
 $(B)stic/stic.h.gch: stic/stic.h | $(B)stic
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)stic $(B)bin/$(BINSUBDIR):
+$(B)stic $(B)bin/$(BINSUBDIR) $(BUILD)test-support:
 	$(AT)mkdir -p $@
 
 # this function of two arguments (array and element) returns index of the
@@ -340,4 +341,5 @@ misc: | $(regs_shmem_app.bin)
 
 # import dependencies calculated by the compiler
 include $(wildcard $(deps) \
-                   $(B)bin/build/stic.d $(B)stic/stic.h.d $(B)bin/build/stubs.d)
+                   $(B)bin/build/stic.d $(B)stic/stic.h.d \
+                   $(BUILD)test-support/stubs.d)

@@ -1,6 +1,6 @@
 #include <stdlib.h> /* abort() */
 
-#include "../src/ui/ui.h"
+#include "../../src/ui/ui.h"
 
 int vifm_tests_exited;
 
