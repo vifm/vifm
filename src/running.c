@@ -1349,8 +1349,11 @@ rn_for_flist(struct view_t *view, const char cmd[], const char title[],
 {
 	enum { MAX_TITLE_WIDTH = 80 };
 
-	char *final_title = right_ellipsis(title, MAX_TITLE_WIDTH,
+	char *escaped_title = escape_unreadable(title);
+	char *final_title = right_ellipsis(escaped_title, MAX_TITLE_WIDTH,
 			curr_stats.ellipsis);
+	free(escaped_title);
+
 	flist_custom_start(view, final_title);
 	free(final_title);
 

@@ -139,6 +139,10 @@ char * escape_for_squotes(const char string[], size_t offset);
  * quoted string, prefix is not escaped.  Returns newly allocated string. */
 char * escape_for_dquotes(const char string[], size_t offset);
 
+/* Escapes characters aren't visible or don't looks nice to the user.  Returns
+ * newly allocated string. */
+char * escape_unreadable(const char str[]);
+
 /* Expands double percent sequences into single percent character in place. */
 void expand_percent_escaping(char s[]);
 

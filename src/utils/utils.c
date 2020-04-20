@@ -30,7 +30,7 @@
 #include <sys/types.h> /* pid_t */
 #include <unistd.h>
 
-#include <ctype.h> /* isalnum() isalpha() */
+#include <ctype.h> /* isalnum() isalpha() iscntrl() */
 #include <errno.h> /* errno */
 #include <math.h> /* modf() pow() */
 #include <stddef.h> /* size_t */
@@ -518,6 +518,30 @@ escape_for_dquotes(const char string[], size_t offset)
 		++string;
 	}
 	*out = '\0';
+	return escaped;
+}
+
+char *
+escape_unreadable(const char str[])
+{
+	char *escaped = malloc(strlen(str)*2 + 1);
+
+	char *out = escaped;
+	while(*str != '\0')
+	{
+		if(iscntrl((unsigned char)*str))
+		{
+			*out++ = '^';
+			*out++ = *str ^ 64;
+		}
+		else
+		{
+			*out++ = *str;
+		}
+		++str;
+	}
+	*out = '\0';
+
 	return escaped;
 }
 

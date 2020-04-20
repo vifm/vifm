@@ -165,11 +165,13 @@ menus_init_data(menu_data_t *m, view_t *view, char title[], char empty_msg[])
 	}
 	menu_state.d = m;
 
+	m->title = escape_unreadable(title);
+	free(title);
+
 	m->top = 0;
 	m->len = 0;
 	m->pos = 0;
 	m->hor_pos = 0;
-	m->title = title;
 	m->items = NULL;
 	m->data = NULL;
 	m->void_data = NULL;

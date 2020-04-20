@@ -25,5 +25,12 @@ TEST(dquoted_escaping_escapes_double_quote)
 	free(escaped);
 }
 
+TEST(escape_unreadable_escapes_control_codes)
+{
+	char *const escaped = escape_unreadable("prefix\x01\x02\x03suffix");
+	assert_string_equal("prefix^A^B^Csuffix", escaped);
+	free(escaped);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
