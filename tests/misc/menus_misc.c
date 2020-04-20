@@ -4,25 +4,16 @@
 #include <string.h> /* strcpy() */
 
 #include "../../src/cfg/config.h"
-#include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
+#include "../../src/modes/menu.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
-#include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
+#include "../../src/filelist.h"
 #include "../../src/status.h"
 
 #include "utils.h"
-
-SETUP_ONCE()
-{
-	static char cwd[PATH_MAX + 1];
-	assert_non_null(get_cwd(cwd, sizeof(cwd)));
-
-	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
-			"color-schemes/", cwd);
-}
 
 SETUP()
 {
@@ -52,6 +43,9 @@ TEARDOWN()
 
 TEST(enter_loads_selected_colorscheme)
 {
+	make_abs_path(cfg.colors_dir, sizeof(cfg.colors_dir), TEST_DATA_PATH,
+			"color-schemes/", NULL);
+
 	assert_success(exec_commands("colorscheme", &lwin, CIT_COMMAND));
 
 	strcpy(cfg.cs.name, "test-scheme");
@@ -68,6 +62,34 @@ TEST(enter_loads_selected_colorscheme)
 	assert_int_equal(0, cfg.cs.color[WIN_COLOR].attr);
 
 	(void)vle_keys_exec(WK_ESC);
+}
+
+TEST(menu_is_built_from_a_command)
+{
+	undo_setup();
+
+	assert_success(exec_commands("!echo only-line %m", &lwin, CIT_COMMAND));
+
+	assert_int_equal(1, menu_get_current()->len);
+	assert_string_equal("only-line", menu_get_current()->items[0]);
+	assert_string_equal("echo only-line %m", menu_get_current()->title);
+
+	(void)vle_keys_exec(WK_ESC);
+	undo_teardown();
+}
+
+TEST(menu_is_turned_into_cv)
+{
+	undo_setup();
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+	assert_success(exec_commands("!echo existing-files/a%M", &lwin, CIT_COMMAND));
+
+	(void)vle_keys_exec(WK_b);
+	assert_true(flist_custom_active(&lwin));
+	assert_string_equal("echo existing-files/a%M", lwin.custom.title);
+
+	undo_teardown();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

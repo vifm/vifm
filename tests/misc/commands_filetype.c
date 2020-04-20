@@ -1,10 +1,15 @@
 #include <stic.h>
 
+#include "../../src/engine/keys.h"
 #include "../../src/int/file_magic.h"
+#include "../../src/modes/modes.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
+#include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/status.h"
+
+#include "utils.h"
 
 static void check_filetype(void);
 static int prog_exists(const char name[]);
@@ -13,6 +18,10 @@ static int has_mime_type_detection(void);
 SETUP()
 {
 	init_commands();
+	conf_setup();
+
+	view_setup(&lwin);
+	view_setup(&rwin);
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -20,6 +29,10 @@ SETUP()
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
+	view_teardown(&rwin);
+
+	conf_teardown();
 	vle_cmds_reset();
 }
 
@@ -111,6 +124,25 @@ TEST(pattern_anding_and_orring, IF(has_mime_type_detection))
 	assert_string_equal(NULL, ft_get_viewer(TEST_DATA_PATH "/read/utf8-bom"));
 
 	ft_reset(0);
+}
+
+TEST(cv_is_built_by_handler)
+{
+	init_modes();
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", NULL);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("filetype a echo %c %u", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("normal l", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+
+	assert_string_equal("!echo %c %u", lwin.custom.title);
+
+	vle_keys_reset();
 }
 
 static void

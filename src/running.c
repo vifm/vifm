@@ -40,7 +40,7 @@
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* EXIT_FAILURE EXIT_SUCCESS free() realloc() */
 #include <string.h> /* strcmp() strerror() strrchr() strcat() strstr() strlen()
-                       strchr() strdup() strncmp() strcspn() strspn() */
+                       strchr() strdup() strncmp() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
@@ -62,7 +62,6 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
-#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "utils/utf8.h"
 #include "background.h"
@@ -124,7 +123,6 @@ static void output_to_statusbar(const char cmd[]);
 static int output_to_preview(const char cmd[]);
 static void output_to_nowhere(const char cmd[]);
 static void run_in_split(const view_t *view, const char cmd[]);
-TSTATIC int shorten_cmd(const char cmd[], int parts_to_leave);
 static void path_handler(const char line[], void *arg);
 static void line_handler(const char line[], void *arg);
 
@@ -570,7 +568,7 @@ run_explicit_prog(const char prog_spec[], int pause, int force_bg)
 	bg = !pause && (bg || force_bg);
 
 	save_msg = 0;
-	if(rn_ext(cmd, flags, bg, &save_msg) != 0)
+	if(rn_ext(cmd, prog_spec, flags, bg, &save_msg) != 0)
 	{
 		if(save_msg)
 		{
@@ -1146,7 +1144,8 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 }
 
 int
-rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
+rn_ext(const char cmd[], const char unexpanded_cmd[], MacroFlags flags, int bg,
+		int *save_msg)
 {
 	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
 	{
@@ -1194,7 +1193,7 @@ rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 	{
 		const int navigate = flags == MF_MENU_NAV_OUTPUT;
 		setup_shellout_env();
-		*save_msg = show_user_menu(curr_view, cmd, navigate) != 0;
+		*save_msg = show_user_menu(curr_view, cmd, unexpanded_cmd, navigate) != 0;
 		cleanup_shellout_env();
 	}
 	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
@@ -1208,7 +1207,14 @@ rn_ext(const char cmd[], MacroFlags flags, int bg, int *save_msg)
 			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
 		const int interactive =
 			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-		rn_for_flist(curr_view, cmd, very, interactive);
+
+		char *title = format_str("!%s", unexpanded_cmd);
+		if(title == NULL)
+		{
+			return -1;
+		}
+		rn_for_flist(curr_view, cmd, title, very, interactive);
+		free(title);
 	}
 	else
 	{
@@ -1338,22 +1344,18 @@ run_in_split(const view_t *view, const char cmd[])
 }
 
 int
-rn_for_flist(view_t *view, const char cmd[], int very, int interactive)
+rn_for_flist(struct view_t *view, const char cmd[], const char title[],
+		int very, int interactive)
 {
-	char *title;
-	int error;
+	enum { MAX_TITLE_WIDTH = 80 };
 
-	int cut_point = shorten_cmd(cmd, 4);
-	if(cut_point > 0)
-	{
-		title = format_str("!%.*s%s", cut_point, cmd, curr_stats.ellipsis);
-	}
-	else
-	{
-		title = format_str("!%s", cmd);
-	}
-	flist_custom_start(view, title);
-	free(title);
+	char *escaped_title = escape_unreadable(title);
+	char *final_title = right_ellipsis(escaped_title, MAX_TITLE_WIDTH,
+			curr_stats.ellipsis);
+	free(escaped_title);
+
+	flist_custom_start(view, final_title);
+	free(final_title);
 
 	if(interactive && curr_stats.load_stage != 0)
 	{
@@ -1361,7 +1363,7 @@ rn_for_flist(view_t *view, const char cmd[], int very, int interactive)
 	}
 
 	setup_shellout_env();
-	error = (process_cmd_output("Loading custom view", cmd, 1, interactive,
+	int error = (process_cmd_output("Loading custom view", cmd, 1, interactive,
 				&path_handler, view) != 0);
 	cleanup_shellout_env();
 
@@ -1373,34 +1375,6 @@ rn_for_flist(view_t *view, const char cmd[], int very, int interactive)
 
 	flist_custom_end(view, very);
 	return 0;
-}
-
-/* Computes length of the prefix of the command-line that contains only
- * parts_to_leave first "words" (escaping is accounted for, but not quoting).
- * The parts_to_leave should be greater than zero.  Returns the length or zero
- * if whole command fits. */
-TSTATIC int
-shorten_cmd(const char cmd[], int parts_to_leave)
-{
-	const char *ws = " \t";
-	const char *tail = cmd + strspn(cmd, ws);
-
-	while(parts_to_leave > 0 && *tail != '\0')
-	{
-		tail += strcspn(tail, ws);
-		while(tail != cmd && tail[-1] == '\\')
-		{
-			++tail;
-			tail += strcspn(tail, ws);
-		}
-
-		if(--parts_to_leave != 0)
-		{
-			tail += strspn(tail, ws);
-		}
-	}
-
-	return ((parts_to_leave > 0 || *tail == '\0') ? 0 : tail - cmd);
 }
 
 /* Implements process_cmd_output() callback that loads paths into custom

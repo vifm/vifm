@@ -347,12 +347,26 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 		buf[0] = '\0';
 		switch(c)
 		{
+			char path[PATH_MAX + 1];
+			char *escaped;
+
 			case 'a':
 				friendly_size_notation(get_free_space(curr_view->curr_dir), sizeof(buf),
 						buf);
 				break;
 			case 't':
-				format_entry_name(curr, NF_FULL, sizeof(buf), buf);
+			case 'f':
+				if(c == 't')
+				{
+					format_entry_name(curr, NF_FULL, sizeof(path), path);
+				}
+				else
+				{
+					get_short_path_of(view, curr, NF_FULL, 0, sizeof(path), path);
+				}
+				escaped = escape_unreadable(path);
+				copy_str(buf, sizeof(buf), escaped);
+				free(escaped);
 				break;
 			case 'T':
 				if(curr->type == FT_LINK)
@@ -364,9 +378,6 @@ parse_view_macros(view_t *view, const char **format, const char macros[],
 						copy_str(buf, sizeof(buf), "Failed to resolve link");
 					}
 				}
-				break;
-			case 'f':
-				get_short_path_of(view, curr, NF_FULL, 0, sizeof(buf), buf);
 				break;
 			case 'A':
 #ifndef _WIN32

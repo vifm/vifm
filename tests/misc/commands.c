@@ -5,7 +5,7 @@
 
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */
-#include <string.h> /* strcpy() strdup() */
+#include <string.h> /* strcpy() */
 
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
@@ -62,16 +62,8 @@ SETUP()
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	cfg.cd_path = strdup("");
-	cfg.fuse_home = strdup("");
-	cfg.slow_fs_list = strdup("");
+	conf_setup();
 	cfg.use_system_calls = 1;
-
-#ifndef _WIN32
-	replace_string(&cfg.shell, "/bin/sh");
-#else
-	replace_string(&cfg.shell, "cmd");
-#endif
 
 	stats_update_shell_type(cfg.shell);
 
@@ -86,13 +78,7 @@ SETUP()
 
 TEARDOWN()
 {
-	update_string(&cfg.cd_path, NULL);
-	update_string(&cfg.fuse_home, NULL);
-	update_string(&cfg.slow_fs_list, NULL);
-
-	stats_update_shell_type("/bin/sh");
-	update_string(&cfg.shell, NULL);
-	update_string(&cfg.shell_cmd_flag, NULL);
+	conf_teardown();
 
 	view_teardown(&lwin);
 	view_teardown(&rwin);
@@ -268,6 +254,57 @@ TEST(user_command_is_executed_in_separated_scope)
 {
 	assert_success(exec_commands("command cmd :if 1 > 2", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("cmd", &lwin, CIT_COMMAND));
+}
+
+TEST(cv_is_built_by_emark)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("!echo %c %u", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+
+	assert_string_equal("!echo %c %u", lwin.custom.title);
+}
+
+TEST(title_of_cv_is_limited, IF(not_windows))
+{
+	const char *long_cmd = "!echo                                   "
+	                       "                                        "
+	                       "      %c%u";
+	const char *title = "!echo                                   "
+	                    "                                     ...";
+
+	assert_success(stats_init(&cfg));
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands(long_cmd, &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+
+	assert_string_equal(title, lwin.custom.title);
+}
+
+TEST(cv_is_built_by_usercmd)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("command cmd echo %c %u", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("cmd", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+
+	assert_string_equal("!echo %c %u", lwin.custom.title);
 }
 
 TEST(put_bg_cmd_is_parsed_correctly)

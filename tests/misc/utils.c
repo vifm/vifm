@@ -27,6 +27,7 @@
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
 #include "../../src/opt_handlers.h"
+#include "../../src/status.h"
 #include "../../src/undo.h"
 
 static int exec_func(OPS op, void *data, const char *src, const char *dst);
@@ -51,8 +52,15 @@ conf_setup(void)
 	update_string(&cfg.locate_prg, "");
 	update_string(&cfg.media_prg, "");
 	update_string(&cfg.border_filler, "");
-	update_string(&cfg.shell, "");
-	update_string(&cfg.shell_cmd_flag, "");
+
+#ifndef _WIN32
+	replace_string(&cfg.shell, "/bin/sh");
+	update_string(&cfg.shell_cmd_flag, "-c");
+#else
+	replace_string(&cfg.shell, "cmd");
+	update_string(&cfg.shell_cmd_flag, "/C");
+#endif
+	stats_update_shell_type(cfg.shell);
 }
 
 void

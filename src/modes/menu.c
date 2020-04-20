@@ -498,6 +498,7 @@ update_ui_on_leaving(void)
 	}
 	else
 	{
+		ui_view_title_update(curr_view);
 		update_all_windows();
 	}
 }

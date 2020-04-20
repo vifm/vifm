@@ -11,6 +11,7 @@
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
 #include "../../src/registers.h"
+#include "../../src/status.h"
 
 #ifdef _WIN32
 #define SL "\\\\"
@@ -80,6 +81,11 @@ setup_registers(void)
 	regs_append('z', "existing-files/a");
 	regs_append('z', "existing-files/b");
 	regs_append('z', "existing-files/c");
+}
+
+SETUP_ONCE()
+{
+	stats_update_shell_type("/bin/sh");
 }
 
 SETUP()

@@ -1,5 +1,5 @@
 " vim: filetype=vifm :
-" Sample configuration file for vifm on OSX (last updated: 27 January, 2020)
+" Sample configuration file for vifm on OSX (last updated: 20 April, 2020)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -58,7 +58,7 @@ set undolevels=100
 set vimhelp
 
 " If you would like to run an executable file when you
-" press return on the file name set this.
+" press Enter, l or Right Arrow, set this.
 
 set norunexec
 

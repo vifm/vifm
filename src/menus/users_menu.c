@@ -31,10 +31,11 @@ static KHandlerResponse users_khandler(view_t *view, menu_data_t *m,
 		const wchar_t keys[]);
 
 int
-show_user_menu(view_t *view, const char command[], int navigate)
+show_user_menu(view_t *view, const char command[], const char title[],
+		int navigate)
 {
 	static menu_data_t m;
-	menus_init_data(&m, view, strdup(command), strdup("No results found"));
+	menus_init_data(&m, view, strdup(title), strdup("No results found"));
 
 	m.extra_data = navigate;
 	m.stashable = navigate;

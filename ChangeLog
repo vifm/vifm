@@ -67,9 +67,8 @@
 
 	Display targets of .lnk-files in file information dialog on Windows.
 
-	Limit length of title of custom filelist derived from :! command to four
-	first "words" (escaping is considered, but not quoting).  Thanks to
-	filterfalse.
+	Limit length of custom file list title to 80 character positions.  Thanks
+	to filterfalse.
 
 	Make displaying of spaces in mappings more intelligent by using <space> at
 	the start or end of lhs or rhs.
@@ -87,6 +86,19 @@
 
 	Make comparing files by contents (`:compare bycontents`) somewhat faster.
 	Thanks to maxigaz.
+
+	Use the same label for :grep and :find custom lists as the one used for
+	:grep and :find menus.  Thanks to filterfalse.
+
+	Use unexpanded command for title of custom file lists produced using %u or
+	%U macros.  Thanks to filterfalse.
+
+	Use unexpanded command for title of a menus produced using %m or %M macros.
+
+	Update terminal title when in menus.  Thanks to filterfalse.
+
+	Escape some characters as ^X in custom view titles, custom menu titles and
+	on statusline.  Thanks to filterfalse.
 
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
@@ -187,6 +199,9 @@
 
 	Fixed number of selected files not being updated after filtering files out
 	using zd normal mode key.
+
+	Fixed omission in details about keys in documentation on 'runexec' option.
+	Thanks to m-kru.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

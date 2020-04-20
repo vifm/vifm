@@ -33,6 +33,7 @@
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
+#include "../int/term_title.h"
 #include "../int/vim.h"
 #include "../modes/dialogs/msg_dialog.h"
 #include "../modes/cmdline.h"
@@ -164,11 +165,13 @@ menus_init_data(menu_data_t *m, view_t *view, char title[], char empty_msg[])
 	}
 	menu_state.d = m;
 
+	m->title = escape_unreadable(title);
+	free(title);
+
 	m->top = 0;
 	m->len = 0;
 	m->pos = 0;
 	m->hor_pos = 0;
-	m->title = title;
 	m->items = NULL;
 	m->data = NULL;
 	m->void_data = NULL;
@@ -660,6 +663,7 @@ menus_enter(menu_state_t *m, view_t *view)
 	init_menu_state(m, view);
 
 	ui_setup_for_menu_like();
+	term_title_update(m->d->title);
 	menus_partial_redraw(m);
 	menus_set_pos(m, m->d->pos);
 	modmenu_enter(m->d, view);
@@ -841,8 +845,8 @@ menus_capture(view_t *view, const char cmd[], int user_sh, menu_data_t *m,
 {
 	if(custom_view || very_custom_view)
 	{
+		rn_for_flist(view, cmd, m->title, very_custom_view, 0);
 		menus_reset_data(m);
-		rn_for_flist(view, cmd, very_custom_view, 0);
 		return 0;
 	}
 
