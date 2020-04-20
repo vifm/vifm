@@ -131,7 +131,7 @@ AT = $(AT_$(V))
 # setup compile and link flags (partially depends on OS)
 override CFLAGS := $(CFLAGS) -MMD -MP -pipe \
                    -Wall -Wno-char-subscripts \
-                   -Istic/ -include $(B)../build-aux/config.h \
+                   -Itest-support/stic/ -include $(B)../build-aux/config.h \
                    -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
 override LDFLAGS := $(LDFLAGS)
@@ -178,7 +178,7 @@ ifeq (,$(findstring clang,$(CC)))
     # don't precompile header with clang (on OS X gcc is likely to be a symlink
     # to clang) because it handles macros in a different way
     ifneq (Darwin,$(shell uname -s))
-        GCH_DEP := $(B)stic/stic.h.gch
+        GCH_DEP := $(BUILD)test-support/stic/stic.h.gch
     endif
     # this flag seems to be gcc-specific and clang freaks out on it with -Werror
     override CFLAGS += -Wno-format-truncation
@@ -220,7 +220,6 @@ check: build
 
 clean:
 	$(RM) -r $(B)bin/ $(SANDBOX_PATH)/
-	$(RM) $(B)stic/stic.h.d $(B)stic/stic.h.gch
 
 # disable implicit rules to prevent compiling main sources here
 .SUFFIXES:
@@ -233,13 +232,15 @@ $(vifm_bin): $(vifm_src)
 $(BUILD)test-support/stubs.o: test-support/stubs.c | $(BUILD)test-support
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(BUILD)stic.o: stic/stic.c
+$(BUILD)test-support/stic/stic.o: test-support/stic/stic.c \
+                                | $(BUILD)test-support/stic
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)stic/stic.h.gch: stic/stic.h | $(B)stic
+$(BUILD)test-support/stic/stic.h.gch: test-support/stic/stic.h \
+                                    | $(BUILD)test-support/stic
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)stic $(B)bin/$(BINSUBDIR) $(BUILD)test-support:
+$(B)bin/$(BINSUBDIR) $(BUILD)test-support $(BUILD)test-support/stic:
 	$(AT)mkdir -p $@
 
 # this function of two arguments (array and element) returns index of the
@@ -280,13 +281,13 @@ $1.fixtures := $$(subst /,.,\
 
 deps += $$($1.obj:.o=.d)
 
-$$($1.bin): $$($1.obj) $(BUILD)stic.o $(vifm_obj) \
+$$($1.bin): $$($1.obj) $(BUILD)test-support/stic/stic.o $(vifm_obj) \
           | $(vifm_bin) $(B)bin/$(BINSUBDIR)
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
 $(BUILD)$1/%.o: $1/%.c $(GCH_DEP) $(BUILD)$1/filelist \
               | $(BUILD)$1 $(SANDBOX_PATH)/$1
-	$$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
+	$$(CC) -c -o $$@ -include test-support/stic/stic.h $(CFLAGS) \
 	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                 -DMAXTESTID=$$(words $$($1.obj)) $$< \
 	                 -DSUITE_NAME="$1" \
@@ -341,5 +342,5 @@ misc: | $(regs_shmem_app.bin)
 
 # import dependencies calculated by the compiler
 include $(wildcard $(deps) \
-                   $(B)bin/build/stic.d $(B)stic/stic.h.d \
+                   $(BUILD)test-support/stic/stic.h.d \
                    $(BUILD)test-support/stubs.d)
