@@ -93,8 +93,9 @@ ifndef win_env
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
-vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o) \
-            $(BUILD)test-support/stubs.o
+vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o)
+
+tests_lib := $(BUILD)/libtest-support.a
 
 # make sure that there is one compile_info.c object file in the list
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
@@ -108,7 +109,8 @@ ifdef win_env
     exe_suffix := .exe
 endif
 
-CC = gcc
+CC = $(CROSS)gcc
+AR = $(CROSS)ar
 
 # handling of verbosity (non-verbose by default)
 ifdef VERBOSE
@@ -240,7 +242,11 @@ $(BUILD)test-support/stic/stic.h.gch: test-support/stic/stic.h \
                                     | $(BUILD)test-support/stic
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)bin/$(BINSUBDIR) $(BUILD)test-support $(BUILD)test-support/stic:
+$(tests_lib): $(BUILD)test-support/stic/stic.o $(BUILD)test-support/stubs.o \
+            | $(BUILD)
+	$(AR) cr $@ $^
+
+$(BUILD) $(B)bin/$(BINSUBDIR) $(BUILD)test-support $(BUILD)test-support/stic:
 	$(AT)mkdir -p $@
 
 # this function of two arguments (array and element) returns index of the
@@ -281,7 +287,7 @@ $1.fixtures := $$(subst /,.,\
 
 deps += $$($1.obj:.o=.d)
 
-$$($1.bin): $$($1.obj) $(BUILD)test-support/stic/stic.o $(vifm_obj) \
+$$($1.bin): $$($1.obj) $(vifm_obj) $(tests_lib) \
           | $(vifm_bin) $(B)bin/$(BINSUBDIR)
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
