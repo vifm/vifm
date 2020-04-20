@@ -119,14 +119,18 @@ else
     V = 0
 endif
 ACTUAL_CC := $(CC)
+ACTUAL_AR := $(AR)
 CC_0 = @echo "Compiling $@..."; $(ACTUAL_CC)
 CC_1 = $(ACTUAL_CC)
+AR_0 = @echo "Archiving $@..."; $(ACTUAL_AR)
+AR_1 = $(ACTUAL_AR)
 LD_0 = @echo "Linking $@..."; $(ACTUAL_CC)
 LD_1 = $(ACTUAL_CC)
 AT_0 = @
 AT_1 =
 # redefine commands according to verbosity state
 override CC = $(CC_$(V))
+override AR = $(AR_$(V))
 override LD = $(LD_$(V))
 AT = $(AT_$(V))
 
