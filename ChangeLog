@@ -200,6 +200,9 @@
 	Fixed number of selected files not being updated after filtering files out
 	using zd normal mode key.
 
+	Fixed omission in details about keys in documentation on 'runexec' option.
+	Thanks to m-kru.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
