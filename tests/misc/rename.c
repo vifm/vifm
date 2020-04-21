@@ -6,6 +6,8 @@
 #include <stddef.h> /* size_t */
 #include <string.h> /* memset() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
@@ -15,8 +17,6 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/fops_common.h"
 #include "../../src/fops_rename.h"
-
-#include "utils.h"
 
 SETUP_ONCE()
 {

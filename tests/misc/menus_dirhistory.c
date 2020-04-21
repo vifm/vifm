@@ -2,6 +2,8 @@
 
 #include <string.h> /* strcpy() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/menus/dirhistory_menu.h"
 #include "../../src/ui/ui.h"
@@ -9,8 +11,6 @@
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
-
-#include "utils.h"
 
 SETUP()
 {

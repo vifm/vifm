@@ -4,9 +4,9 @@
 
 #include <stdio.h> /* FILE fclose() fopen() */
 
-#include "../../src/utils/filemon.h"
+#include <test-utils.h>
 
-#include "utils.h"
+#include "../../src/utils/filemon.h"
 
 TEST(uninitialized_is_not_equal_even_to_itself)
 {

@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/engine/keys.h"
 #include "../../src/int/file_magic.h"
 #include "../../src/modes/modes.h"
@@ -8,8 +10,6 @@
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static void check_filetype(void);
 static int prog_exists(const char name[]);

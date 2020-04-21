@@ -95,7 +95,9 @@ endif
 vifm_bin := $(B)../src/vifm$(exe_suffix)
 vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o)
 
-tests_lib := $(BUILD)/libtest-support.a
+tests_lib := $(BUILD)libtest-support.a
+tests_lib_src := $(wildcard test-support/*.c)
+tests_lib_obj := $(patsubst %.c,$(BUILD)%.o,$(tests_lib_src))
 
 # make sure that there is one compile_info.c object file in the list
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
@@ -137,7 +139,8 @@ AT = $(AT_$(V))
 # setup compile and link flags (partially depends on OS)
 override CFLAGS := $(CFLAGS) -MMD -MP -pipe \
                    -Wall -Wno-char-subscripts \
-                   -Itest-support/stic/ -include $(B)../build-aux/config.h \
+                   -Itest-support/ -Itest-support/stic/ \
+                   -include $(B)../build-aux/config.h \
                    -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
 override LDFLAGS := $(LDFLAGS)
@@ -235,7 +238,7 @@ $(vifm_obj) ../src/./tags.c: $(vifm_src) | $(vifm_bin)
 $(vifm_bin): $(vifm_src)
 	$(MAKE) $(make_args) vifm$(exe_suffix)
 
-$(BUILD)test-support/stubs.o: test-support/stubs.c | $(BUILD)test-support
+$(BUILD)test-support/%.o: test-support/%.c | $(BUILD)test-support
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 $(BUILD)test-support/stic/stic.o: test-support/stic/stic.c \
@@ -246,7 +249,7 @@ $(BUILD)test-support/stic/stic.h.gch: test-support/stic/stic.h \
                                     | $(BUILD)test-support/stic
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(tests_lib): $(BUILD)test-support/stic/stic.o $(BUILD)test-support/stubs.o \
+$(tests_lib): $(BUILD)test-support/stic/stic.o $(tests_lib_obj) \
             | $(BUILD)
 	$(AR) cr $@ $^
 
@@ -353,4 +356,4 @@ misc: | $(regs_shmem_app.bin)
 # import dependencies calculated by the compiler
 include $(wildcard $(deps) \
                    $(BUILD)test-support/stic/stic.h.d \
-                   $(BUILD)test-support/stubs.d)
+                   $(BUILD)test-support/*.d)

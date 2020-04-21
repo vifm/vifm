@@ -5,10 +5,10 @@
 #include <stdio.h> /* remove() */
 #include <stdlib.h> /* free() */
 
+#include <test-utils.h>
+
 #include "../../src/int/file_magic.h"
 #include "../../src/utils/matcher.h"
-
-#include "utils.h"
 
 static void check_glob(matcher_t *m);
 static void check_regexp(matcher_t *m);

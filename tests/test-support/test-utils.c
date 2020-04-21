@@ -1,4 +1,6 @@
-#include "utils.h"
+#include "test-utils.h"
+
+#include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* access() usleep() */
@@ -282,6 +284,16 @@ copy_file(const char src[], const char dst[])
 
 	fclose(out);
 	fclose(in);
+}
+
+int
+windows(void)
+{
+#ifdef _WIN32
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 int

@@ -2,6 +2,8 @@
 
 #include <stdio.h> /* remove() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
@@ -9,8 +11,6 @@
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
-
-#include "utils.h"
 
 SETUP_ONCE()
 {

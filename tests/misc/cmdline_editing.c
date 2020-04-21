@@ -4,6 +4,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
@@ -15,8 +17,6 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/matcher.h"
 #include "../../src/filelist.h"
-
-#include "utils.h"
 
 static line_stats_t *stats;
 

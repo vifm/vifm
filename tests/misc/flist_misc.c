@@ -5,6 +5,8 @@
 #include <string.h> /* memset() strcpy() */
 #include <time.h> /* time() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
@@ -19,8 +21,6 @@
 #include "../../src/flist_pos.h"
 #include "../../src/fops_misc.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static char cwd[PATH_MAX + 1];
 

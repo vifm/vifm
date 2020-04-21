@@ -4,14 +4,14 @@
 
 #include <stdio.h> /* remove() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/os.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/macros.h"
 #include "../../src/utils/path.h"
 #include "../../src/args.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static int with_remote_cmds(void);
 

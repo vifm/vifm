@@ -6,6 +6,8 @@
 #include <stdlib.h> /* remove() */
 #include <string.h> /* memset() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
@@ -21,8 +23,6 @@
 #include "../../src/marks.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static int load_tree(view_t *view, const char path[]);
 static void verify_tree_node(column_data_t *cdt, int idx,

@@ -3,6 +3,8 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/color_scheme.h"
@@ -11,8 +13,6 @@
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/cmd_core.h"
-
-#include "utils.h"
 
 static char *saved_cwd;
 

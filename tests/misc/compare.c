@@ -6,6 +6,8 @@
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/engine/mode.h"
@@ -20,8 +22,6 @@
 #include "../../src/filtering.h"
 #include "../../src/flist_pos.h"
 #include "../../src/running.h"
-
-#include "utils.h"
 
 static void basic_panes_check(int expected_len);
 

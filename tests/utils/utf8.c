@@ -5,10 +5,10 @@
 #include <string.h> /* strlen() */
 #include <wchar.h>
 
+#include <test-utils.h>
+
 #include "../../src/utils/str.h"
 #include "../../src/utils/utf8.h"
-
-#include "utils.h"
 
 SETUP_ONCE()
 {

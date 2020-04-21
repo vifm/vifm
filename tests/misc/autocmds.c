@@ -3,6 +3,8 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* snprintf() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/compat/fs_limits.h"
@@ -13,8 +15,6 @@
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
-
-#include "utils.h"
 
 static int change_view_directory(view_t *view, const char path[]);
 

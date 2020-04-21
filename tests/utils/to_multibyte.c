@@ -3,9 +3,9 @@
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stdlib.h> /* free() */
 
-#include "../../src/utils/str.h"
+#include <test-utils.h>
 
-#include "utils.h"
+#include "../../src/utils/str.h"
 
 SETUP_ONCE()
 {

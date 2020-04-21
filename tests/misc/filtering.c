@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
@@ -19,8 +21,6 @@
 #include "../../src/opt_handlers.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 #define assert_hidden(view, name, is_dir) \
 	assert_false( \

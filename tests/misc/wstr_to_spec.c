@@ -5,12 +5,12 @@
 #include <stddef.h> /* wchar_t */
 #include <stdlib.h> /* free() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/curses.h"
 #include "../../src/modes/wk.h"
 #include "../../src/utils/utils.h"
 #include "../../src/bracket_notation.h"
-
-#include "utils.h"
 
 SETUP_ONCE()
 {

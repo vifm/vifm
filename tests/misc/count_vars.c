@@ -2,6 +2,8 @@
 
 #include <string.h> /* strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/engine/keys.h"
 #include "../../src/engine/variables.h"
 #include "../../src/modes/modes.h"
@@ -9,8 +11,6 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
-
-#include "utils.h"
 
 SETUP()
 {

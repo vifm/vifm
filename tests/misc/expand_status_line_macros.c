@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strcmp() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/parsing.h"
 #include "../../src/ui/statusline.h"
@@ -11,8 +13,6 @@
 #include "../../src/utils/env.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 /* Checks that expanded string isn't equal to format string. */
 #define ASSERT_EXPANDED(format) \

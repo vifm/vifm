@@ -1,10 +1,10 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/flist_pos.h"
-
-#include "utils.h"
 
 static void ensure_all_visible(int odd);
 

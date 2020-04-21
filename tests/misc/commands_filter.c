@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/ui/statusbar.h"
@@ -7,8 +9,6 @@
 #include "../../src/utils/matcher.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filtering.h"
-
-#include "utils.h"
 
 SETUP()
 {

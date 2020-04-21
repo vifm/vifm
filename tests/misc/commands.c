@@ -7,6 +7,8 @@
 #include <stdio.h> /* FILE fclose() fopen() fprintf() remove() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
@@ -24,8 +26,6 @@
 #include "../../src/registers.h"
 #include "../../src/status.h"
 #include "../../src/undo.h"
-
-#include "utils.h"
 
 static int builtin_cmd(const cmd_info_t* cmd_info);
 

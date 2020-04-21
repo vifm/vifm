@@ -7,6 +7,8 @@
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
 #include <string.h> /* memset() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
@@ -20,8 +22,6 @@
 #include "../../src/filetype.h"
 #include "../../src/opt_handlers.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

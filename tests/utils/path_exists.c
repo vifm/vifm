@@ -4,9 +4,9 @@
 
 #include <stdio.h> /* FILE fclose() fopen() */
 
-#include "../../src/utils/fs.h"
+#include <test-utils.h>
 
-#include "utils.h"
+#include "../../src/utils/fs.h"
 
 TEST(empty_string_null_returned)
 {

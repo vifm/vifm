@@ -8,12 +8,12 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/utils/str.h"
 #include "../../src/utils/string_array.h"
 #include "../../src/background.h"
 #include "../../src/ipc.h"
-
-#include "utils.h"
 
 static void test_ipc_args(char *args[]);
 static void test_ipc_args2(char *args[]);

@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/macros.h"
-
-#include "utils.h"
 
 SETUP()
 {

@@ -7,6 +7,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
@@ -14,8 +16,6 @@
 #include "../../src/compare.h"
 #include "../../src/event_loop.h"
 #include "../../src/ops.h"
-
-#include "utils.h"
 
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);

@@ -6,6 +6,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/compat/fs_limits.h"
@@ -17,8 +19,6 @@
 #include "../../src/utils/path.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
-
-#include "utils.h"
 
 static void init_view(view_t *view);
 static void free_view(view_t *view);

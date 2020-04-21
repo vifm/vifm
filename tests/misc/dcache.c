@@ -4,12 +4,12 @@
 #include <string.h> /* memset() strcpy() */
 #include <time.h> /* time() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

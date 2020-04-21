@@ -5,6 +5,8 @@
 #include <stdlib.h> /* remove() */
 #include <string.h> /* strcpy() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/menus/menus.h"
@@ -12,8 +14,6 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
-
-#include "utils.h"
 
 static menu_data_t m;
 

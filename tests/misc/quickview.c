@@ -3,6 +3,8 @@
 #include <stdio.h> /* FILE fclose() fopen() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
@@ -18,8 +20,6 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
-
-#include "utils.h"
 
 SETUP()
 {

@@ -4,14 +4,14 @@
 
 #include <string.h> /* memset() strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
-
-#include "utils.h"
 
 static char cwd[PATH_MAX + 1];
 
