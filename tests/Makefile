@@ -64,8 +64,8 @@ B ?=
 BUILD := $(B)bin/build/$(BINSUBDIR)
 
 # engine
-suites += abbrevs autocmds cmds completion keys options parsing text_buffer
-suites += variables
+suites += abbrevs autocmds cmds commands completion keys options parsing
+suites += text_buffer variables
 # io
 suites += ioeta ionotif iop ior
 # ui
