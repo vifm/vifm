@@ -20,6 +20,10 @@
 
 struct view_t;
 
+/* _wenviron used on Windows gets created only if we invoke __wgetmainargs(), so
+ * do it here. */
+void fix_environ(void);
+
 /* Prepares configuration for use in tests. */
 void conf_setup(void);
 

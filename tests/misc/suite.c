@@ -2,6 +2,8 @@
 
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/ui/color_manager.h"
 #include "../../src/ui/tabs.h"
 #include "../../src/ui/ui.h"
@@ -19,14 +21,7 @@ DEFINE_SUITE();
 
 SETUP_ONCE()
 {
-#ifdef _WIN32
-	extern int _CRT_glob;
-	extern void __wgetmainargs(int *, wchar_t ***, wchar_t ***, int, int *);
-
-	wchar_t **envp, **argv;
-	int argc, si = 0;
-	__wgetmainargs(&argc, &argv, &envp, _CRT_glob, &si);
-#endif
+	fix_environ();
 
 	const colmgr_conf_t colmgr_conf = {
 		.max_color_pairs = 256,

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <test-utils.h>
+
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/completion.h"
 
@@ -41,17 +43,10 @@ int swap_range;
 
 DEFINE_SUITE();
 
-#ifdef _WIN32
 SETUP_ONCE()
 {
-	extern int _CRT_glob;
-	extern void __wgetmainargs(int *, wchar_t ***, wchar_t ***, int, int *);
-
-	wchar_t **envp, **argv;
-	int argc, si = 0;
-	__wgetmainargs(&argc, &argv, &envp, _CRT_glob, &si);
+	fix_environ();
 }
-#endif
 
 SETUP()
 {

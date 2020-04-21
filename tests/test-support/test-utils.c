@@ -38,6 +38,19 @@ static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void init_list(view_t *view);
 
 void
+fix_environ(void)
+{
+#ifdef _WIN32
+	extern int _CRT_glob;
+	extern void __wgetmainargs(int *, wchar_t ***, wchar_t ***, int, int *);
+
+	wchar_t **envp, **argv;
+	int argc, si = 0;
+	__wgetmainargs(&argc, &argv, &envp, _CRT_glob, &si);
+#endif
+}
+
+void
 conf_setup(void)
 {
 	update_string(&cfg.slow_fs_list, "");
