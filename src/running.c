@@ -1144,7 +1144,7 @@ try_run_with_filetype(view_t *view, const assoc_records_t assocs,
 }
 
 int
-rn_ext(const char cmd[], const char unexpanded_cmd[], MacroFlags flags, int bg,
+rn_ext(const char cmd[], const char title[], MacroFlags flags, int bg,
 		int *save_msg)
 {
 	if(bg && flags != MF_NONE && flags != MF_NO_TERM_MUX && flags != MF_IGNORE)
@@ -1193,7 +1193,7 @@ rn_ext(const char cmd[], const char unexpanded_cmd[], MacroFlags flags, int bg,
 	{
 		const int navigate = flags == MF_MENU_NAV_OUTPUT;
 		setup_shellout_env();
-		*save_msg = show_user_menu(curr_view, cmd, unexpanded_cmd, navigate) != 0;
+		*save_msg = show_user_menu(curr_view, cmd, title, navigate) != 0;
 		cleanup_shellout_env();
 	}
 	else if(flags == MF_SPLIT && curr_stats.term_multiplexer != TM_NONE)
@@ -1207,14 +1207,7 @@ rn_ext(const char cmd[], const char unexpanded_cmd[], MacroFlags flags, int bg,
 			ONE_OF(flags, MF_VERYCUSTOMVIEW_OUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
 		const int interactive =
 			ONE_OF(flags, MF_CUSTOMVIEW_IOUTPUT, MF_VERYCUSTOMVIEW_IOUTPUT);
-
-		char *title = format_str("!%s", unexpanded_cmd);
-		if(title == NULL)
-		{
-			return -1;
-		}
 		rn_for_flist(curr_view, cmd, title, very, interactive);
-		free(title);
 	}
 	else
 	{

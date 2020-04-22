@@ -140,7 +140,7 @@ TEST(cv_is_built_by_handler)
 	assert_success(exec_commands("normal l", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 
-	assert_string_equal("!echo %c %u", lwin.custom.title);
+	assert_string_equal("echo %c %u", lwin.custom.title);
 
 	vle_keys_reset();
 }
