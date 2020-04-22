@@ -1811,7 +1811,7 @@ ui_view_title_update(view_t *view)
 		return;
 	}
 
-	if(view == selected && cfg.set_title && !stats_silenced_ui())
+	if(view == selected && !stats_silenced_ui())
 	{
 		char *const term_title = format_view_title(view, pf);
 		term_title_update(term_title);
