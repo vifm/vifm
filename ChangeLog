@@ -97,8 +97,8 @@
 
 	Update terminal title when in menus.  Thanks to filterfalse.
 
-	Escape some characters as ^X in custom view titles, custom menu titles and
-	on statusline.  Thanks to filterfalse.
+	Escape some characters as ^X in custom view titles, custom menu titles, on
+	statusline and in terminal title.  Thanks to filterfalse.
 
 	Use name of user-defined command in titles of custom views and menus.
 	Thanks to filterfalse.

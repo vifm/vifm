@@ -42,6 +42,7 @@
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
+#include "../utils/utils.h"
 
 /* Kind of title we're working with. */
 typedef enum
@@ -151,7 +152,9 @@ term_title_update(const char title_part[])
 	}
 	else
 	{
-		set_terminal_title(title_part);
+		char *escaped = escape_unreadable(title_part);
+		set_terminal_title(escaped);
+		free(escaped);
 	}
 }
 
