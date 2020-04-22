@@ -100,6 +100,9 @@
 	Escape some characters as ^X in custom view titles, custom menu titles and
 	on statusline.  Thanks to filterfalse.
 
+	Use name of user-defined command in titles of custom views and menus.
+	Thanks to filterfalse.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

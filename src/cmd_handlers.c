@@ -4947,7 +4947,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	flist_sel_stash(curr_view);
 
-	char *title = format_str("!%s", cmd_info->user_action);
+	char *title = format_str(":%s%s%s", cmd_info->user_cmd,
+			(cmd_info->raw_args[0] == '\0' ? "" : " "), cmd_info->raw_args);
 	int handled = rn_ext(expanded_com, title, flags, bg, &save_msg);
 	free(title);
 

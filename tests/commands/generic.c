@@ -304,7 +304,7 @@ TEST(cv_is_built_by_usercmd)
 	assert_success(exec_commands("cmd", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 
-	assert_string_equal("!echo %c %u", lwin.custom.title);
+	assert_string_equal(":cmd", lwin.custom.title);
 }
 
 TEST(put_bg_cmd_is_parsed_correctly)
