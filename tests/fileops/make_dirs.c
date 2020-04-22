@@ -11,6 +11,7 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
 
@@ -25,22 +26,28 @@ SETUP()
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);
+
+	view_setup(&lwin);
+	update_string(&cfg.fuse_home, "");
 }
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
+	update_string(&cfg.fuse_home, NULL);
+
 	restore_cwd(saved_cwd);
 }
 
 TEST(make_dirs_does_nothing_for_custom_view)
 {
-	int i;
 	char path[] = "dir";
 	char *paths[] = {path};
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "",
 			saved_cwd);
 
+	filter_dispose(&lwin.local_filter.filter);
 	assert_int_equal(0, filter_init(&lwin.local_filter.filter, 0));
 
 	flist_custom_start(&lwin, "test");
@@ -49,14 +56,6 @@ TEST(make_dirs_does_nothing_for_custom_view)
 
 	fops_mkdirs(&lwin, -1, paths, 1, 0);
 	assert_false(path_exists("dir", NODEREF));
-
-	for(i = 0; i < lwin.list_rows; ++i)
-	{
-		fentry_free(&lwin, &lwin.dir_entry[i]);
-	}
-	dynarray_free(lwin.dir_entry);
-
-	filter_dispose(&lwin.local_filter.filter);
 }
 
 TEST(make_dirs_does_nothing_for_duplicated_names)
@@ -143,8 +142,6 @@ TEST(make_dirs_considers_tree_structure)
 	char path[] = "new-dir";
 	char *paths[] = { path };
 
-	view_setup(&lwin);
-
 	create_empty_dir("dir");
 
 	flist_load_tree(&lwin, lwin.curr_dir);
@@ -162,8 +159,6 @@ TEST(make_dirs_considers_tree_structure)
 	assert_success(rmdir("dir/new-dir"));
 
 	assert_success(rmdir("dir"));
-
-	view_teardown(&lwin);
 }
 
 TEST(check_by_absolute_path_is_performed_beforehand)
