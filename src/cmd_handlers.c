@@ -4919,8 +4919,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int rpending_marking = rwin.pending_marking;
 
 	/* Expand macros in a bound command. */
-	expanded_com = ma_expand(cmd_info->cmd, cmd_info->args, &flags,
-			vle_cmds_identify(cmd_info->cmd) == COM_EXECUTE);
+	expanded_com = ma_expand(cmd_info->user_action, cmd_info->args, &flags,
+			vle_cmds_identify(cmd_info->user_action) == COM_EXECUTE);
 
 	if(expanded_com[0] == ':')
 	{
@@ -4947,7 +4947,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	flist_sel_stash(curr_view);
 
-	handled = rn_ext(expanded_com, cmd_info->cmd, flags, bg, &save_msg);
+	handled = rn_ext(expanded_com, cmd_info->user_action, flags, bg, &save_msg);
 	if(handled > 0)
 	{
 		/* Do nothing. */
