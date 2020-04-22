@@ -2023,30 +2023,40 @@ make_tab_title(const tab_info_t *tab_info, path_func pf)
 static char *
 format_view_title(const view_t *view, path_func pf)
 {
+	char *unescaped_title;
+
 	if(view->explore_mode)
 	{
 		char full_path[PATH_MAX + 1];
 		get_current_full_path(view, sizeof(full_path), full_path);
-		return strdup(pf(full_path));
+		unescaped_title = strdup(pf(full_path));
 	}
 	else if(curr_stats.preview.on && view == other_view)
 	{
 		const char *const viewer = modview_detached_get_viewer();
 		if(viewer != NULL)
 		{
-			return format_str("Command: %s", viewer);
+			unescaped_title = format_str("Command: %s", viewer);
 		}
-		return format_str("File: %s", get_current_file_name(curr_view));
+		else
+		{
+			unescaped_title = format_str("File: %s",
+					get_current_file_name(curr_view));
+		}
 	}
 	else if(flist_custom_active(view))
 	{
-		return format_str("[%s] @ %s", view->custom.title,
+		unescaped_title = format_str("[%s] @ %s", view->custom.title,
 				pf(view->custom.orig_dir));
 	}
 	else
 	{
-		return strdup(pf(view->curr_dir));
+		unescaped_title = strdup(pf(view->curr_dir));
 	}
+
+	char *escaped_title = escape_unreadable(unescaped_title);
+	free(unescaped_title);
+	return escaped_title;
 }
 
 /* Prints view title (which can be changed for printing).  Takes care of setting
