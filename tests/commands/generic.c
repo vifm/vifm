@@ -307,6 +307,21 @@ TEST(cv_is_built_by_usercmd)
 	assert_string_equal(":cmd", lwin.custom.title);
 }
 
+TEST(tree_cv_keeps_title)
+{
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), test_data, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	assert_non_null(flist_custom_add(&lwin, "existing-files/a"));
+	assert_success(flist_custom_finish(&lwin, CV_REGULAR, 0));
+
+	assert_success(exec_commands("!echo %c %u", &lwin, CIT_COMMAND));
+	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
+	assert_true(flist_custom_active(&lwin));
+
+	assert_string_equal("tree|!echo %c %u", lwin.custom.title);
+}
+
 TEST(put_bg_cmd_is_parsed_correctly)
 {
 	/* Simulate custom view to force failure of the command. */

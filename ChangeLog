@@ -103,6 +103,9 @@
 	Use name of user-defined command in titles of custom views and menus.
 	Thanks to filterfalse.
 
+	Preserve more information in the title on turning custom view into tree
+	using :tree.  Thanks to filterfalse.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
