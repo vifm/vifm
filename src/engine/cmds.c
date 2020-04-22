@@ -274,6 +274,7 @@ vle_cmds_run(const char cmd[])
 
 		if(cur->type == USER_CMD)
 		{
+			cmd_info.user_cmd = cur->name;
 			cmd_info.user_action = cur->cmd;
 			execution_code = inner->user_cmd_handler.handler(&cmd_info);
 		}
@@ -432,6 +433,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 	cmd_info->args = NULL;
 	cmd_info->argc = 0;
 	cmd_info->argv = NULL;
+	cmd_info->user_cmd = NULL;
 	cmd_info->user_action = NULL;
 	cmd_info->sep = ' ';
 	cmd_info->bg = 0;

@@ -94,6 +94,7 @@ typedef struct cmd_info_t
 	int (*argvp)[2]; /* Start/end positions of arguments in args. */
 
 	/* For user defined commands. */
+	const char *user_cmd;    /* Name of user defined command. */
 	const char *user_action; /* Body of user defined command. */
 }
 cmd_info_t;
