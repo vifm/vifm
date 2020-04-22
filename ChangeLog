@@ -209,6 +209,9 @@
 	Fixed omission in details about keys in documentation on 'runexec' option.
 	Thanks to m-kru.
 
+	Fixed invalid background in more mode after opening a menu.  Thanks to
+	filterfalse.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

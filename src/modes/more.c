@@ -237,6 +237,11 @@ get_text_beginning(void)
 static void
 draw_all(const char text[])
 {
+	/* Setup correct attributes for the windows. */
+	ui_set_attr(menu_win, &cfg.cs.color[WIN_COLOR], cfg.cs.pair[WIN_COLOR]);
+	ui_set_attr(status_bar, &cfg.cs.color[CMD_LINE_COLOR],
+			cfg.cs.pair[CMD_LINE_COLOR]);
+
 	/* Clean up everything. */
 	werase(menu_win);
 	werase(status_bar);
@@ -246,8 +251,6 @@ draw_all(const char text[])
 	wprint(menu_win, text);
 
 	/* Draw status line. */
-	ui_set_attr(status_bar, &cfg.cs.color[CMD_LINE_COLOR],
-			cfg.cs.pair[CMD_LINE_COLOR]);
 	checked_wmove(status_bar, 0, 0);
 	mvwprintw(status_bar, 0, 0, "-- More -- %d-%d/%d", curr_vline + 1,
 			MIN(nvlines, curr_vline + viewport_height), nvlines);
