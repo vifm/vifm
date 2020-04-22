@@ -431,11 +431,6 @@ cpmv_prepare(view_t *view, char ***list, int *nlines, CopyMoveLikeOp op,
 			"%s: ", replace_home_part(dst_path));
 	fops_append_marked_files(view, undo_msg, (*nlines > 0) ? *list : NULL);
 
-	if(op == CMLO_MOVE)
-	{
-		fops_leave_marking(view);
-	}
-
 	return 0;
 }
 

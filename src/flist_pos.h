@@ -50,10 +50,6 @@ void fpos_set_pos(struct view_t *view, int pos);
 /* Ensures that position in the list doesn't exceed its bounds. */
 void fpos_ensure_valid_pos(struct view_t *view);
 
-/* Ensures that cursor is moved outside its immediate surrounding of marked
- * entries. */
-void fops_leave_marking(struct view_t *view);
-
 /* Retrieves column number (base zero) of the specified position (cell number
  * base zero).  Returns the number. */
 int fpos_get_col(const struct view_t *view, int pos);
