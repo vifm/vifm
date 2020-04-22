@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <ctype.h> /* isspace() */
-
 #include "../../src/int/vim.h"
 
 TEST(empty_string)

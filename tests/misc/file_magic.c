@@ -4,13 +4,13 @@
 
 #include <stdio.h> /* fopen() fclose() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/int/file_magic.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
-
-#include "utils.h"
 
 static void check_empty_file(const char fname[]);
 static int has_mime_type_detection_and_symlinks(void);

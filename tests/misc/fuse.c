@@ -5,6 +5,8 @@
 #include <stdio.h> /* fclose() fopen() fprintf() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
@@ -15,8 +17,6 @@
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static char *saved_cwd;
 

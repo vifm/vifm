@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
@@ -12,8 +14,6 @@
 #include "../../src/filtering.h"
 #include "../../src/marks.h"
 #include "../../src/running.h"
-
-#include "utils.h"
 
 static void init_view(view_t *view);
 static void free_view(view_t *view);

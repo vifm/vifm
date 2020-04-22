@@ -1,8 +1,8 @@
 #include <stic.h>
 
-#include "../../src/utils/str.h"
+#include <test-utils.h>
 
-#include "utils.h"
+#include "../../src/utils/str.h"
 
 SETUP_ONCE()
 {

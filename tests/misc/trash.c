@@ -1,13 +1,13 @@
 #include <stic.h>
 
+#include <stdio.h> /* snprintf() */
+
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/utils/fs.h"
 #include "../../src/trash.h"
-
-#include <stdio.h> /* snprintf() */
-
-#include "utils.h"
 
 static char sandbox[PATH_MAX + 1];
 static char *saved_cwd;

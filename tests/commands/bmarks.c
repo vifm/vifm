@@ -25,6 +25,7 @@ SETUP()
 	tags = NULL;
 
 	curr_view = &lwin;
+	other_view = &rwin;
 }
 
 TEARDOWN()

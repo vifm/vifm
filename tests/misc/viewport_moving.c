@@ -1,12 +1,12 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

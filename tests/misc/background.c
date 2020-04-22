@@ -1,12 +1,12 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/utils/cancellation.h"
 #include "../../src/utils/str.h"
 #include "../../src/ui/ui.h"
 #include "../../src/background.h"
-
-#include "utils.h"
 
 SETUP()
 {

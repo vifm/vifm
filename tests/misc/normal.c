@@ -2,14 +2,14 @@
 
 #include <string.h> /* memset() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
-
-#include "utils.h"
 
 static char cwd[PATH_MAX + 1];
 

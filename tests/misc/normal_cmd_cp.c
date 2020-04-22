@@ -1,5 +1,11 @@
 #include <stic.h>
 
+#include <stdio.h> /* remove() */
+#include <stdlib.h> /* free() */
+#include <string.h> /* strcpy() strdup() */
+
+#include <test-utils.h>
+
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
 #include "../../src/modes/normal.h"
@@ -7,12 +13,6 @@
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/status.h"
-
-#include <stdio.h> /* remove() */
-#include <stdlib.h> /* free() */
-#include <string.h> /* strcpy() strdup() */
-
-#include "utils.h"
 
 SETUP()
 {

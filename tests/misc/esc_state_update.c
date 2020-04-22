@@ -1,10 +1,10 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/escape.h"
 #include "../../src/utils/utils.h"
-
-#include "utils.h"
 
 static esc_state state;
 

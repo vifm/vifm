@@ -5,6 +5,8 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
 #include "../../src/engine/keys.h"
@@ -16,8 +18,6 @@
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/cmd_handlers.h"
-
-#include "utils.h"
 
 static char test_data[PATH_MAX + 1];
 

@@ -3,6 +3,8 @@
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* chdir() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/cmdline.h"
@@ -14,8 +16,6 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static line_stats_t *stats;
 

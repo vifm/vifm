@@ -8,6 +8,8 @@
 #include <stdio.h> /* remove() */
 #include <string.h> /* strcmp() strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
@@ -22,8 +24,6 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static char sandbox[PATH_MAX + 1];
 static char *saved_cwd;

@@ -6,6 +6,8 @@
 #include <stdio.h> /* fclose() fmemopen() remove() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
@@ -21,8 +23,6 @@
 #include "../../src/event_loop.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

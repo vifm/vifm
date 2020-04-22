@@ -3,6 +3,8 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/menu.h"
@@ -12,8 +14,6 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

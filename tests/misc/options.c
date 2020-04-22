@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* memcmp() strdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/options.h"
 #include "../../src/engine/text_buffer.h"
@@ -17,8 +19,6 @@
 #include "../../src/filelist.h"
 #include "../../src/opt_handlers.h"
 #include "../../src/registers.h"
-
-#include "utils.h"
 
 static void print_func(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);

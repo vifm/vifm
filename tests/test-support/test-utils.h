@@ -1,5 +1,7 @@
-#ifndef VIFM_TESTS__UTILS_H__
-#define VIFM_TESTS__UTILS_H__
+#ifndef VIFM_TESTS__TEST_SUPPORT__TEST_UTILS_H__
+#define VIFM_TESTS__TEST_SUPPORT__TEST_UTILS_H__
+
+#include <stddef.h> /* size_t */
 
 /* Executable suffixes. */
 #if defined(__CYGWIN__) || defined(_WIN32)
@@ -17,6 +19,10 @@
 #endif
 
 struct view_t;
+
+/* _wenviron used on Windows gets created only if we invoke __wgetmainargs(), so
+ * do it here. */
+void fix_environ(void);
 
 /* Prepares configuration for use in tests. */
 void conf_setup(void);
@@ -62,6 +68,10 @@ void make_abs_path(char buf[], size_t buf_len, const char base[],
 /* Copies file at src to dst. */
 void copy_file(const char src[], const char dst[]);
 
+/* Whether running on Windows.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int windows(void);
+
 /* Whether running on non-Windows.  Returns non-zero if so, otherwise zero is
  * returned. */
 int not_windows(void);
@@ -106,7 +116,10 @@ char * mock_env(const char env[], const char with[]);
 /* Restores value of an environment variable changed by mock_env(). */
 void unmock_env(const char env[], char old_value[]);
 
-#endif /* VIFM_TESTS__UTILS_H__ */
+/* Initializes color manager with functions that do nothing. */
+void stub_colmgr(void);
+
+#endif /* VIFM_TESTS__TEST_SUPPORT__TEST_UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

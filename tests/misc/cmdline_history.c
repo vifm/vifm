@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <wchar.h> /* wcsdup() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/cmdline.h"
@@ -13,8 +15,6 @@
 #include "../../src/utils/str.h"
 #include "../../src/fops_common.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static line_stats_t stats;
 

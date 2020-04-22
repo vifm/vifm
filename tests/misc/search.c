@@ -4,12 +4,13 @@
 
 #include <string.h> /* memset() strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/modes/normal.h"
 #include "../../src/utils/fs.h"
 #include "../../src/filelist.h"
 #include "../../src/search.h"
-#include "utils.h"
 
 static char *saved_cwd;
 

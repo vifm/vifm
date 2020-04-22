@@ -2,6 +2,8 @@
 
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/cfg/config.h"
 #include "../../src/engine/cmds.h"
@@ -18,8 +20,6 @@
 #include "../../src/flist_pos.h"
 #include "../../src/opt_handlers.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

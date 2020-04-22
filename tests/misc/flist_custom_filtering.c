@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
@@ -7,8 +9,6 @@
 #include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/filtering.h"
-
-#include "utils.h"
 
 static char cwd[PATH_MAX + 1];
 static char test_data[PATH_MAX + 1];

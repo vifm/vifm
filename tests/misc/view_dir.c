@@ -4,12 +4,12 @@
 
 #include <stdio.h> /* remove() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/os.h"
 #include "../../src/ui/quickview.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/string_array.h"
-
-#include "utils.h"
 
 static char *saved_cwd;
 

@@ -9,11 +9,11 @@
 #include <stdlib.h> /* exit() */
 #include <string.h> /* strerror() */
 
+#include <test-utils.h>
+
 #include "../../src/utils/gmux.h"
 #include "../../src/utils/shmem.h"
 #include "../../src/utils/utils.h"
-
-#include "utils.h"
 
 static void spawn_regcmd(int number);
 static void send_query(int instance, const char query[]);

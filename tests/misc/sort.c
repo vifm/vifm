@@ -5,14 +5,14 @@
 #include <locale.h> /* LC_ALL setlocale() */
 #include <string.h> /* memset() strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/sort.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 #define SIGN(n) ({__typeof(n) _n = (n); (_n < 0) ? -1 : (_n > 0);})
 #define ASSERT_STRCMP_EQUAL(a, b) \

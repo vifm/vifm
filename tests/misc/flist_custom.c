@@ -7,6 +7,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/cfg/info.h"
 #include "../../src/cfg/info_chars.h"
@@ -29,8 +31,6 @@
 #include "../../src/registers.h"
 #include "../../src/running.h"
 #include "../../src/sort.h"
-
-#include "utils.h"
 
 static void column_line_print(const void *data, int column_id, const char buf[],
 		size_t offset, AlignType align, const char full_column[]);

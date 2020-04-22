@@ -3,9 +3,9 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* memset() strcpy() */
 
-#include "../../src/utils/str.h"
+#include <test-utils.h>
 
-#include "utils.h"
+#include "../../src/utils/str.h"
 
 typedef char * (*func)(const char str[], size_t max_width, const char ell[]);
 

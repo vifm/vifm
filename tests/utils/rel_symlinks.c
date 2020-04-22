@@ -4,10 +4,10 @@
 
 #include <stdio.h> /* fclose() fopen() */
 
+#include <test-utils.h>
+
 #include "../../src/utils/str.h"
 #include "../../src/utils/path.h"
-
-#include "utils.h"
 
 TEST(in_one_dir)
 {

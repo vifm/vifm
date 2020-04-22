@@ -3,6 +3,8 @@
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* remove() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
@@ -17,8 +19,6 @@
 #include "../../src/bmarks.h"
 #include "../../src/cmd_core.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static int count_bmarks(void);
 static void bmarks_cb(const char p[], const char t[], time_t timestamp,

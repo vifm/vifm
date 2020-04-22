@@ -3,6 +3,8 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/engine/mode.h"
@@ -17,8 +19,6 @@
 #include "../../src/filelist.h"
 #include "../../src/filetype.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 static line_stats_t *stats;
 static char cwd[PATH_MAX + 1];

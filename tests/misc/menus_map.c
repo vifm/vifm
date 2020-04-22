@@ -2,6 +2,8 @@
 
 #include <stddef.h> /* NULL */
 
+#include <test-utils.h>
+
 #include "../../src/engine/keys.h"
 #include "../../src/menus/map_menu.h"
 #include "../../src/modes/menu.h"
@@ -10,8 +12,6 @@
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
-
-#include "utils.h"
 
 SETUP()
 {

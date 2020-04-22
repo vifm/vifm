@@ -64,8 +64,8 @@ B ?=
 BUILD := $(B)bin/build/$(BINSUBDIR)
 
 # engine
-suites += abbrevs autocmds commands completion keys options parsing text_buffer
-suites += variables
+suites += abbrevs autocmds cmds commands completion keys options parsing
+suites += text_buffer variables
 # io
 suites += ioeta ionotif iop ior
 # ui
@@ -93,7 +93,11 @@ ifndef win_env
 endif
 
 vifm_bin := $(B)../src/vifm$(exe_suffix)
-vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o) $(BUILD)stubs.o
+vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o)
+
+tests_lib := $(BUILD)libtest-support.a
+tests_lib_src := $(wildcard test-support/*.c)
+tests_lib_obj := $(patsubst %.c,$(BUILD)%.o,$(tests_lib_src))
 
 # make sure that there is one compile_info.c object file in the list
 vifm_obj := $(filter-out %/compile_info.o, $(vifm_obj))
@@ -107,7 +111,8 @@ ifdef win_env
     exe_suffix := .exe
 endif
 
-CC = gcc
+CC = $(CROSS)gcc
+AR = $(CROSS)ar
 
 # handling of verbosity (non-verbose by default)
 ifdef VERBOSE
@@ -116,21 +121,26 @@ else
     V = 0
 endif
 ACTUAL_CC := $(CC)
+ACTUAL_AR := $(AR)
 CC_0 = @echo "Compiling $@..."; $(ACTUAL_CC)
 CC_1 = $(ACTUAL_CC)
+AR_0 = @echo "Archiving $@..."; $(ACTUAL_AR)
+AR_1 = $(ACTUAL_AR)
 LD_0 = @echo "Linking $@..."; $(ACTUAL_CC)
 LD_1 = $(ACTUAL_CC)
 AT_0 = @
 AT_1 =
 # redefine commands according to verbosity state
 override CC = $(CC_$(V))
+override AR = $(AR_$(V))
 override LD = $(LD_$(V))
 AT = $(AT_$(V))
 
 # setup compile and link flags (partially depends on OS)
 override CFLAGS := $(CFLAGS) -MMD -MP -pipe \
                    -Wall -Wno-char-subscripts \
-                   -Istic/ -include $(B)../build-aux/config.h \
+                   -Itest-support/ -Itest-support/stic/ \
+                   -include $(B)../build-aux/config.h \
                    -DTEST -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED \
                    -D_FILE_OFFSET_BITS=64
 override LDFLAGS := $(LDFLAGS)
@@ -177,7 +187,7 @@ ifeq (,$(findstring clang,$(CC)))
     # don't precompile header with clang (on OS X gcc is likely to be a symlink
     # to clang) because it handles macros in a different way
     ifneq (Darwin,$(shell uname -s))
-        GCH_DEP := $(B)stic/stic.h.gch
+        GCH_DEP := $(BUILD)test-support/stic/stic.h.gch
     endif
     # this flag seems to be gcc-specific and clang freaks out on it with -Werror
     override CFLAGS += -Wno-format-truncation
@@ -219,7 +229,6 @@ check: build
 
 clean:
 	$(RM) -r $(B)bin/ $(SANDBOX_PATH)/
-	$(RM) $(B)stic/stic.h.d $(B)stic/stic.h.gch
 
 # disable implicit rules to prevent compiling main sources here
 .SUFFIXES:
@@ -229,16 +238,22 @@ $(vifm_obj) ../src/./tags.c: $(vifm_src) | $(vifm_bin)
 $(vifm_bin): $(vifm_src)
 	$(MAKE) $(make_args) vifm$(exe_suffix)
 
-$(BUILD)stubs.o: stubs.c
+$(BUILD)test-support/%.o: test-support/%.c | $(BUILD)test-support
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(BUILD)stic.o: stic/stic.c
+$(BUILD)test-support/stic/stic.o: test-support/stic/stic.c \
+                                | $(BUILD)test-support/stic
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)stic/stic.h.gch: stic/stic.h | $(B)stic
+$(BUILD)test-support/stic/stic.h.gch: test-support/stic/stic.h \
+                                    | $(BUILD)test-support/stic
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(B)stic $(B)bin/$(BINSUBDIR):
+$(tests_lib): $(BUILD)test-support/stic/stic.o $(tests_lib_obj) \
+            | $(BUILD)
+	$(AR) cr $@ $^
+
+$(BUILD) $(B)bin/$(BINSUBDIR) $(BUILD)test-support $(BUILD)test-support/stic:
 	$(AT)mkdir -p $@
 
 # this function of two arguments (array and element) returns index of the
@@ -279,13 +294,13 @@ $1.fixtures := $$(subst /,.,\
 
 deps += $$($1.obj:.o=.d)
 
-$$($1.bin): $$($1.obj) $(BUILD)stic.o $(vifm_obj) \
+$$($1.bin): $$($1.obj) $(vifm_obj) $(tests_lib) \
           | $(vifm_bin) $(B)bin/$(BINSUBDIR)
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
 $(BUILD)$1/%.o: $1/%.c $(GCH_DEP) $(BUILD)$1/filelist \
               | $(BUILD)$1 $(SANDBOX_PATH)/$1
-	$$(CC) -c -o $$@ -include stic/stic.h $(CFLAGS) \
+	$$(CC) -c -o $$@ -include test-support/stic/stic.h $(CFLAGS) \
 	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                 -DMAXTESTID=$$(words $$($1.obj)) $$< \
 	                 -DSUITE_NAME="$1" \
@@ -340,4 +355,5 @@ misc: | $(regs_shmem_app.bin)
 
 # import dependencies calculated by the compiler
 include $(wildcard $(deps) \
-                   $(B)bin/build/stic.d $(B)stic/stic.h.d $(B)bin/build/stubs.d)
+                   $(BUILD)test-support/stic/stic.h.d \
+                   $(BUILD)test-support/*.d)

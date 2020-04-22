@@ -1,4 +1,6 @@
-#include "utils.h"
+#include "test-utils.h"
+
+#include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
 #include <unistd.h> /* access() usleep() */
@@ -12,6 +14,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/os.h"
 #include "../../src/engine/options.h"
+#include "../../src/ui/color_manager.h"
 #include "../../src/ui/column_view.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
@@ -34,6 +37,23 @@ static int exec_func(OPS op, void *data, const char *src, const char *dst);
 static int op_avail(OPS op);
 static void format_none(int id, const void *data, size_t buf_len, char buf[]);
 static void init_list(view_t *view);
+static int init_pair_stub(short pair, short f, short b);
+static int pair_content_stub(short pair, short *f, short *b);
+static int pair_in_use_stub(short int pair);
+static void move_pair_stub(short int from, short int to);
+
+void
+fix_environ(void)
+{
+#ifdef _WIN32
+	extern int _CRT_glob;
+	extern void __wgetmainargs(int *, wchar_t ***, wchar_t ***, int, int *);
+
+	wchar_t **envp, **argv;
+	int argc, si = 0;
+	__wgetmainargs(&argc, &argv, &envp, _CRT_glob, &si);
+#endif
+}
 
 void
 conf_setup(void)
@@ -285,6 +305,16 @@ copy_file(const char src[], const char dst[])
 }
 
 int
+windows(void)
+{
+#ifdef _WIN32
+	return 1;
+#else
+	return 0;
+#endif
+}
+
+int
 not_windows(void)
 {
 #ifdef _WIN32
@@ -442,6 +472,45 @@ unmock_env(const char env[], char old_value[])
 		env_remove("TMPDIR");
 	}
 	free(old_value);
+}
+
+void
+stub_colmgr(void)
+{
+	const colmgr_conf_t colmgr_conf = {
+		.max_color_pairs = 256,
+		.max_colors = 16,
+		.init_pair = &init_pair_stub,
+		.pair_content = &pair_content_stub,
+		.pair_in_use = &pair_in_use_stub,
+		.move_pair = &move_pair_stub,
+	};
+	colmgr_init(&colmgr_conf);
+}
+
+static int
+init_pair_stub(short pair, short f, short b)
+{
+	return 0;
+}
+
+static int
+pair_content_stub(short pair, short *f, short *b)
+{
+	*f = 0;
+	*b = 0;
+	return 0;
+}
+
+static int
+pair_in_use_stub(short int pair)
+{
+	return 0;
+}
+
+static void
+move_pair_stub(short int from, short int to)
+{
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

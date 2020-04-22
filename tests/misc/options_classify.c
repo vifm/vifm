@@ -2,6 +2,8 @@
 
 #include <string.h> /* memcmp() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/options.h"
@@ -12,8 +14,6 @@
 #include "../../src/cmd_core.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

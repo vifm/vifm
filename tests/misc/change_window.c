@@ -4,11 +4,11 @@
 
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
-
-#include "utils.h"
 
 SETUP()
 {

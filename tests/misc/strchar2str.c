@@ -2,11 +2,11 @@
 
 #include <string.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/ui/escape.h"
 #include "../../src/utils/utils.h"
-
-#include "utils.h"
 
 SETUP_ONCE()
 {

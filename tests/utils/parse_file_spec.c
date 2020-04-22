@@ -5,12 +5,12 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/utils/fs.h"
 #include "../../src/utils/path.h"
 #include "../../src/utils/utils.h"
-
-#include "utils.h"
 
 #define DEFAULT_LINENUM 1
 

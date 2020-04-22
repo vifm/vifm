@@ -8,6 +8,8 @@
 #include <string.h> /* strdup() strstr() */
 #include <wchar.h> /* wcsdup() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/compat/os.h"
 #include "../../src/cfg/config.h"
@@ -27,8 +29,6 @@
 #include "../../src/bmarks.h"
 #include "../../src/builtin_functions.h"
 #include "../../src/cmd_core.h"
-
-#include "utils.h"
 
 #define ASSERT_COMPLETION(initial, expected) \
 	do \

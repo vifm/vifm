@@ -4,6 +4,8 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/modes.h"
@@ -17,8 +19,6 @@
 #include "../../src/compare.h"
 #include "../../src/filelist.h"
 #include "../../src/status.h"
-
-#include "utils.h"
 
 SETUP()
 {

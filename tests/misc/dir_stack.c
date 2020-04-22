@@ -3,6 +3,8 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strcpy() */
 
+#include <test-utils.h>
+
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
@@ -11,8 +13,6 @@
 #include "../../src/utils/string_array.h"
 #include "../../src/dir_stack.h"
 #include "../../src/filelist.h"
-
-#include "utils.h"
 
 static void load_view_pair(const char left_path[], const char right_path[]);
 

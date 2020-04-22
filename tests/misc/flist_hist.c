@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <test-utils.h>
+
 #include "../../src/cfg/config.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/str.h"
 #include "../../src/cmd_core.h"
 #include "../../src/flist_hist.h"
-
-#include "utils.h"
 
 #define INITIAL_SIZE 10
 
