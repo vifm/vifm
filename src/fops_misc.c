@@ -1010,10 +1010,9 @@ get_group_file_list(char *list[], int count, char buf[])
 static void
 go_to_first_file(view_t *view, char *names[], int count)
 {
+	load_dir_list(view, 1);
+
 	int i;
-
-	load_saving_pos(view);
-
 	for(i = 0; i < view->list_rows; ++i)
 	{
 		if(is_in_string_array(names, count, view->dir_entry[i].name))
@@ -1022,6 +1021,7 @@ go_to_first_file(view_t *view, char *names[], int count)
 			break;
 		}
 	}
+
 	redraw_view(view);
 }
 
