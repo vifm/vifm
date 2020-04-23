@@ -963,8 +963,6 @@ emark_cmd(const cmd_info_t *cmd_info)
 	int save_msg = 0;
 	const char *com = cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
-	MacroFlags flags;
-	int handled;
 
 	if(cmd_info->argc == 0)
 	{
@@ -987,8 +985,11 @@ emark_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
-	flags = (MacroFlags)cmd_info->usr1;
-	handled = rn_ext(com, cmd_info->raw_args, flags, cmd_info->bg, &save_msg);
+	MacroFlags flags = (MacroFlags)cmd_info->usr1;
+	char *title = format_str("!%s", cmd_info->raw_args);
+	int handled = rn_ext(com, title, flags, cmd_info->bg, &save_msg);
+	free(title);
+
 	if(handled > 0)
 	{
 		/* Do nothing. */
@@ -4913,14 +4914,13 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int external = 1;
 	int bg;
 	int save_msg = 0;
-	int handled;
 
 	int lpending_marking = lwin.pending_marking;
 	int rpending_marking = rwin.pending_marking;
 
 	/* Expand macros in a bound command. */
-	expanded_com = ma_expand(cmd_info->cmd, cmd_info->args, &flags,
-			vle_cmds_identify(cmd_info->cmd) == COM_EXECUTE);
+	expanded_com = ma_expand(cmd_info->user_action, cmd_info->args, &flags,
+			vle_cmds_identify(cmd_info->user_action) == COM_EXECUTE);
 
 	if(expanded_com[0] == ':')
 	{
@@ -4947,7 +4947,11 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	flist_sel_stash(curr_view);
 
-	handled = rn_ext(expanded_com, cmd_info->cmd, flags, bg, &save_msg);
+	char *title = format_str(":%s%s%s", cmd_info->user_cmd,
+			(cmd_info->raw_args[0] == '\0' ? "" : " "), cmd_info->raw_args);
+	int handled = rn_ext(expanded_com, title, flags, bg, &save_msg);
+	free(title);
+
 	if(handled > 0)
 	{
 		/* Do nothing. */

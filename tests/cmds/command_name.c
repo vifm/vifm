@@ -204,7 +204,7 @@ TEST(cant_register_same_builtin_twice)
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
-	return vle_cmds_run(cmd_info->cmd);
+	return vle_cmds_run(cmd_info->user_action);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

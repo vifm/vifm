@@ -32,16 +32,26 @@
 #endif
 #endif
 
+/* Headers above define these macros which messes up config.h. */
+#ifdef lines
+# undef lines
+#endif
+#ifdef columns
+# undef columns
+#endif
+
 #include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* stdout fflush() */
 #include <stdlib.h> /* atol() free() */
 #include <string.h> /* strcmp() */
 
+#include "../cfg/config.h"
 #include "../utils/env.h"
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
 #include "../utils/utf8.h"
+#include "../utils/utils.h"
 
 /* Kind of title we're working with. */
 typedef enum
@@ -149,9 +159,11 @@ term_title_update(const char title_part[])
 	{
 		restore_term_title();
 	}
-	else
+	else if(cfg.set_title)
 	{
-		set_terminal_title(title_part);
+		char *escaped = escape_unreadable(title_part);
+		set_terminal_title(escaped);
+		free(escaped);
 	}
 }
 

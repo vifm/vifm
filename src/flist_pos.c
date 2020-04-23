@@ -141,22 +141,6 @@ fpos_ensure_valid_pos(view_t *view)
 	}
 }
 
-void
-fops_leave_marking(view_t *view)
-{
-	/* XXX: this functionality might be unnecessary now that we have directory
-	 *      merging. */
-
-	/* TODO: if we reach bottom of the list and predicate holds try scanning to
-	 *       the top. */
-	int i = view->list_pos;
-	while(i < view->list_rows - 1 && is_entry_marked(&view->dir_entry[i]))
-	{
-		++i;
-	}
-	view->list_pos = i;
-}
-
 int
 fpos_get_col(const view_t *view, int pos)
 {

@@ -2,9 +2,11 @@
 
 #include <unistd.h> /* chdir() rmdir() unlink() */
 
+#include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
 #include "../../src/utils/fs.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
 
@@ -19,10 +21,16 @@ SETUP()
 
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), SANDBOX_PATH, "",
 			saved_cwd);
+
+	view_setup(&lwin);
+	update_string(&cfg.fuse_home, "");
 }
 
 TEARDOWN()
 {
+	view_teardown(&lwin);
+	update_string(&cfg.fuse_home, NULL);
+
 	restore_cwd(saved_cwd);
 }
 
@@ -82,8 +90,6 @@ TEST(make_files_considers_tree_structure)
 	char name[] = "new-file";
 	char *names[] = { name };
 
-	view_setup(&lwin);
-
 	create_empty_dir("dir");
 
 	flist_load_tree(&lwin, lwin.curr_dir);
@@ -101,8 +107,6 @@ TEST(make_files_considers_tree_structure)
 	assert_success(unlink("dir/new-file"));
 
 	assert_success(rmdir("dir"));
-
-	view_teardown(&lwin);
 }
 
 TEST(check_by_absolute_path_is_performed_beforehand)

@@ -3745,7 +3745,16 @@ make_tree(view_t *view, const char path[], int reload, trie_t *excluded_paths)
 	const int from_custom = flist_custom_active(view)
 	                     && ONE_OF(view->custom.type, CV_REGULAR, CV_VERY);
 
-	flist_custom_start(view, from_custom ? "custom tree" : "tree");
+	if(from_custom)
+	{
+		char *title = format_str("tree|%s", view->custom.title);
+		flist_custom_start(view, title);
+		free(title);
+	}
+	else
+	{
+		flist_custom_start(view, "tree");
+	}
 
 	show_progress("Building tree...", 0);
 

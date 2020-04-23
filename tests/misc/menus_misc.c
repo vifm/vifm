@@ -72,7 +72,7 @@ TEST(menu_is_built_from_a_command)
 
 	assert_int_equal(1, menu_get_current()->len);
 	assert_string_equal("only-line", menu_get_current()->items[0]);
-	assert_string_equal("echo only-line %m", menu_get_current()->title);
+	assert_string_equal("!echo only-line %m", menu_get_current()->title);
 
 	(void)vle_keys_exec(WK_ESC);
 	undo_teardown();
@@ -87,7 +87,7 @@ TEST(menu_is_turned_into_cv)
 
 	(void)vle_keys_exec(WK_b);
 	assert_true(flist_custom_active(&lwin));
-	assert_string_equal("echo existing-files/a%M", lwin.custom.title);
+	assert_string_equal("!echo existing-files/a%M", lwin.custom.title);
 
 	undo_teardown();
 }

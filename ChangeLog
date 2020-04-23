@@ -97,8 +97,19 @@
 
 	Update terminal title when in menus.  Thanks to filterfalse.
 
-	Escape some characters as ^X in custom view titles, custom menu titles and
-	on statusline.  Thanks to filterfalse.
+	Escape some characters as ^X in view and tab titles, custom menu titles,
+	on statusline and in terminal title.  Thanks to filterfalse.
+
+	Use name of user-defined command in titles of custom views and menus.
+	Thanks to filterfalse.
+
+	Preserve more information in the title on turning custom view into tree
+	using :tree.  Thanks to filterfalse.
+
+	Try to decrease number of UI updates on file operation to prevent cursor
+	flickering.
+
+	Try to improve cursor positioning after file operations.
 
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
@@ -202,6 +213,9 @@
 
 	Fixed omission in details about keys in documentation on 'runexec' option.
 	Thanks to m-kru.
+
+	Fixed invalid background in more mode after opening a menu.  Thanks to
+	filterfalse.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 
