@@ -319,7 +319,7 @@ TEST(tree_cv_keeps_title)
 	assert_success(exec_commands("tree", &lwin, CIT_COMMAND));
 	assert_true(flist_custom_active(&lwin));
 
-	assert_string_equal("tree|!echo %c %u", lwin.custom.title);
+	assert_string_equal("tree][!echo %c %u", lwin.custom.title);
 }
 
 TEST(put_bg_cmd_is_parsed_correctly)
