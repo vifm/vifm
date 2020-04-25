@@ -217,6 +217,10 @@
 	Fixed invalid background in more mode after opening a menu.  Thanks to
 	filterfalse.
 
+	Fixed mapped keys being reinterpreted as builtin keys if RHS of the
+	mapping failed at some point (e.g., contained an unmapped key).  Thanks to
+	Seok Won Lee (a.k.a. ijleesw).
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

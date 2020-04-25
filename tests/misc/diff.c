@@ -35,6 +35,7 @@ SETUP()
 
 	cfg.delete_prg = strdup("");
 	cfg.use_system_calls = 1;
+	cfg.sizefmt.base = 1;
 
 	undo_setup();
 

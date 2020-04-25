@@ -430,8 +430,19 @@ dispatch_keys_at_root(const wchar_t keys[], keys_info_t *keys_info,
 					contains_chain(&builtin_cmds_root[vle_mode_get()], keys_start, keys);
 			result = execute_next_keys(curr, curr->type == USER_CMD ? keys : L"",
 					&key_info, keys_info, has_duplicate, no_remap);
+
 			if(curr->type == USER_CMD)
-				return result;
+			{
+				/* We've at least attempted to execute a user mapping.  Maybe it did
+				 * nothing, but it's also possible that it executed something and failed
+				 * afterwards.  Either way, finishing processing successfully is the
+				 * best course of action.  We either really did succeed or we need to
+				 * avoid any further processing anyway (trying to interpret LHS of the
+				 * mapping in a different way would be a mistake and waiting of any kind
+				 * within a mapping can only be ignored). */
+				return 0;
+			}
+
 			if(IS_KEYS_RET_CODE(result))
 			{
 				return (result == KEYS_WAIT_SHORT) ? KEYS_UNKNOWN : result;
