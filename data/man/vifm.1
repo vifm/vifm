@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 20, 2020" "vifm 0.10.1"
+.TH VIFM 1 "April 25, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4742,7 +4742,7 @@ Will attempt to create the directory if it does not exist.  See
 .BI "'tuioptions' 'to'"
 type: charset
 .br
-default: "ps"
+default: "psv"
 .br
 Each flag configures some aspect of TUI appearance.  The flags are:
 .br
@@ -4755,6 +4755,8 @@ s \- when included, left and right borders (side borders, hence "s" character)
 are visible.
 .br
 u \- use Unicode characters in the TUI (Unicode ellipsis instead of "...").
+.br
+v \- vary width of middle border to equalize view sizes.
 .TP
 .BI "'undolevels' 'ul'"
 type: integer
