@@ -271,6 +271,10 @@ typedef struct config_t
 	/* Whether employing Unicode characters in the interface is allowed. */
 	int use_unicode_characters;
 
+	/* Whether vertical splitter should change its width to equalize view
+	 * sizes. */
+	int flexible_splitter;
+
 	/* Whether statusline is visible. */
 	int display_statusline;
 

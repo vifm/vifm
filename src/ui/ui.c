@@ -469,14 +469,12 @@ vertical_layout(int screen_x)
 	const int y = get_tabline_height();
 
 	int splitter_pos;
-	int splitter_width;
-
 	if(curr_stats.splitter_pos < 0)
 		splitter_pos = screen_x/2 - 1 + screen_x%2;
 	else
 		splitter_pos = curr_stats.splitter_pos;
 
-	splitter_width = 2 - screen_x%2;
+	int splitter_width = (cfg.flexible_splitter ? 2 - screen_x%2 : 1);
 	if(splitter_pos < 4)
 		splitter_pos = 4;
 	if(splitter_pos > screen_x - 4 - splitter_width)
