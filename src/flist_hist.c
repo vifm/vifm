@@ -165,7 +165,8 @@ reduce_view_history(view_t *view, int new_size)
 }
 
 void
-flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
+flist_hist_setup(view_t *view, const char path[], const char file[],
+		int rel_pos)
 {
 	int x;
 
@@ -435,7 +436,7 @@ flist_hist_clone(view_t *dst, const view_t *src)
 	for(i = 0; i < src->history_num; ++i)
 	{
 		const history_t *const hist_entry = &src->history[i];
-		flist_hist_save(dst, hist_entry->dir, hist_entry->file,
+		flist_hist_setup(dst, hist_entry->dir, hist_entry->file,
 				hist_entry->rel_pos);
 	}
 

@@ -1164,7 +1164,7 @@ put_dhistory_entry(view_t *view, int reread, const char dir[],
 	{
 		view->list_rows = 1;
 	}
-	flist_hist_save(view, dir, file, rel_pos);
+	flist_hist_setup(view, dir, file, rel_pos);
 	if(!reread)
 	{
 		view->list_rows = list_rows;
@@ -2180,7 +2180,7 @@ convert_old_trash_path(const char trash_path[])
 static void
 store_dhistory(JSON_Object *obj, view_t *view)
 {
-	flist_hist_save(view, NULL, NULL, -1);
+	flist_hist_setup(view, NULL, NULL, -1);
 
 	JSON_Array *history = add_array(obj, "history");
 

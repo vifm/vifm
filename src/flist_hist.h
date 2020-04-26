@@ -40,7 +40,7 @@ void flist_hist_resize(view_t *view, int new_size);
  * is negative, it's computed for current file.  Empty file name signifies
  * visiting directory, which shouldn't reset name of previously active file in
  * it. */
-void flist_hist_save(view_t *view, const char path[], const char file[],
+void flist_hist_setup(view_t *view, const char path[], const char file[],
 		int rel_pos);
 
 /* Checks whether given path to directory is in view history.  Returns non-zero

@@ -660,8 +660,8 @@ TEST(hist_next_and_prev)
 	cfg_resize_histories(0);
 	cfg_resize_histories(10);
 
-	flist_hist_save(&lwin, sandbox, ".", 0);
-	flist_hist_save(&lwin, test_data, ".", 0);
+	flist_hist_setup(&lwin, sandbox, ".", 0);
+	flist_hist_setup(&lwin, test_data, ".", 0);
 
 	assert_success(exec_commands("histprev", &lwin, CIT_COMMAND));
 	assert_true(paths_are_same(lwin.curr_dir, sandbox));

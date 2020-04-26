@@ -256,7 +256,7 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 		if(path != NULL && !flist_custom_active(side))
 		{
 			/* Record location we're leaving. */
-			flist_hist_save(dst, side->curr_dir, get_current_file_name(side),
+			flist_hist_setup(dst, side->curr_dir, get_current_file_name(side),
 					side->list_pos - side->top_line);
 		}
 
@@ -266,7 +266,7 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 		flist_update_origins(dst, &dst->curr_dir[0], &side->curr_dir[0]);
 
 		/* Record new location. */
-		flist_hist_save(dst, NULL, NULL, -1);
+		flist_hist_setup(dst, NULL, NULL, -1);
 	}
 }
 
