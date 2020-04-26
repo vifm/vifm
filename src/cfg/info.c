@@ -27,6 +27,7 @@
                       fscanf() fsetpos() snprintf() */
 #include <stdlib.h> /* abs() free() */
 #include <string.h> /* memcpy() memset() strtol() strcmp() strchr() strlen() */
+#include <time.h> /* time_t time() */
 
 #include "../compat/fs_limits.h"
 #include "../compat/os.h"
@@ -176,7 +177,7 @@ static void load_history(JSON_Object *root, const char node[], hist_t *hist,
 		void (*saver)(const char[]));
 static void load_sorting(JSON_Object *ptab, view_t *view);
 static void ensure_history_not_full(hist_t *hist);
-static void get_history(view_t *view, int reread, const char dir[],
+static void put_dhistory_entry(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos);
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
@@ -823,7 +824,7 @@ load_dhistory(JSON_Object *info, view_t *view, int reread)
 		if(get_str(entry, "dir", &dir) && get_str(entry, "file", &file) &&
 				get_int(entry, "relpos", &rel_pos))
 		{
-			get_history(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
+			put_dhistory_entry(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
 		}
 	}
 
@@ -1148,18 +1149,17 @@ ensure_history_not_full(hist_t *hist)
 	}
 }
 
-/* Loads single history entry from vifminfo into the view. */
+/* Puts single history entry from vifminfo into the view. */
 static void
-get_history(view_t *view, int reread, const char dir[], const char file[],
-		int rel_pos)
+put_dhistory_entry(view_t *view, int reread, const char dir[],
+		const char file[], int rel_pos)
 {
-	const int list_rows = view->list_rows;
-
 	if(view->history_num == cfg.history_len)
 	{
 		cfg_resize_histories(cfg.history_len + 1);
 	}
 
+	const int list_rows = view->list_rows;
 	if(!reread)
 	{
 		view->list_rows = 1;
