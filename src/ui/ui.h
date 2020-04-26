@@ -181,11 +181,13 @@ typedef enum
 }
 NameFormat;
 
+/* Single entry of directory history. */
 typedef struct
 {
-	int rel_pos;
-	char *dir;
-	char *file;
+	char *dir;        /* Directory path. */
+	char *file;       /* File name. */
+	time_t timestamp; /* Time of storing this entry persistently. */
+	int rel_pos;      /* Cursor position from the top. */
 }
 history_t;
 
@@ -408,7 +410,7 @@ struct view_t
 
 	int history_num;    /* Number of used history elements. */
 	int history_pos;    /* Current position in history. */
-	history_t *history; /* Directory history itself. */
+	history_t *history; /* Directory history itself (oldest to newest). */
 
 	int local_cs;    /* Whether directory-specific color scheme is in use. */
 	col_scheme_t cs; /* Storage of local (tree-specific) color scheme. */

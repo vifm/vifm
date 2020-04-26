@@ -167,12 +167,12 @@ reduce_view_history(view_t *view, int new_size)
 void
 flist_hist_save(view_t *view)
 {
-	flist_hist_setup(view, NULL, NULL, -1);
+	flist_hist_setup(view, NULL, NULL, -1, -1);
 }
 
 void
 flist_hist_setup(view_t *view, const char path[], const char file[],
-		int rel_pos)
+		int rel_pos, time_t timestamp)
 {
 	int x;
 
@@ -231,6 +231,7 @@ flist_hist_setup(view_t *view, const char path[], const char file[],
 	}
 	view->history[x].dir = strdup(path);
 	view->history[x].file = strdup(file);
+	view->history[x].timestamp = timestamp;
 	view->history[x].rel_pos = rel_pos;
 	++view->history_num;
 	view->history_pos = view->history_num - 1;
@@ -443,7 +444,7 @@ flist_hist_clone(view_t *dst, const view_t *src)
 	{
 		const history_t *const hist_entry = &src->history[i];
 		flist_hist_setup(dst, hist_entry->dir, hist_entry->file,
-				hist_entry->rel_pos);
+				hist_entry->rel_pos, hist_entry->timestamp);
 	}
 
 	dst->history_pos = MIN(src->history_pos, dst->history_num - 1);

@@ -115,6 +115,7 @@ list_dir_history(view_t *view, int *pos)
 
 				view->history[i].dir = NULL;
 				view->history[i].file = NULL;
+				view->history[i].timestamp = (time_t)-1;
 				view->history[i].rel_pos = -1;
 			}
 

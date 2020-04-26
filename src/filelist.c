@@ -686,7 +686,7 @@ change_directory(view_t *view, const char directory[])
 
 	if(is_dir_list_loaded(view))
 	{
-		flist_hist_setup(view, NULL, "", -1);
+		flist_hist_setup(view, NULL, "", -1, -1);
 	}
 
 	/* Perform additional actions on leaving custom view. */

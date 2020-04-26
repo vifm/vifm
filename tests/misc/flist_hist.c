@@ -87,8 +87,8 @@ save_to_history(const char str[])
 	hists_prompt_save(str);
 	hists_filter_save(str);
 
-	flist_hist_setup(&lwin, str, str + 1, 0);
-	flist_hist_setup(&rwin, str, str + 1, 0);
+	flist_hist_setup(&lwin, str, str + 1, 0, 1);
+	flist_hist_setup(&rwin, str, str + 1, 0, 1);
 }
 
 TEST(view_history_after_reset_contains_valid_data)
@@ -170,7 +170,7 @@ TEST(navigating_within_history)
 TEST(specified_file_position_is_unaffected_by_top_line)
 {
 	lwin.top_line = 3;
-	flist_hist_setup(&lwin, "/dir", "file", 0);
+	flist_hist_setup(&lwin, "/dir", "file", 0, 1);
 	assert_string_equal("/dir", lwin.history[1].dir);
 	assert_string_equal("file", lwin.history[1].file);
 	assert_int_equal(0, lwin.history[1].rel_pos);
@@ -179,8 +179,8 @@ TEST(specified_file_position_is_unaffected_by_top_line)
 TEST(history_size_reduction_leaves_correct_number_of_elements)
 {
 	assert_int_equal(1, lwin.history_num);
-	flist_hist_setup(&lwin, "/dir1", "file1", 1);
-	flist_hist_setup(&lwin, "/dir2", "file2", 2);
+	flist_hist_setup(&lwin, "/dir1", "file1", 1, 1);
+	flist_hist_setup(&lwin, "/dir2", "file2", 2, 1);
 	assert_int_equal(2, lwin.history_pos);
 	assert_int_equal(3, lwin.history_num);
 
@@ -214,7 +214,7 @@ TEST(defaults_are_returned_on_dir_lookup_failure)
 	entries_t entries = {};
 	int top, pos;
 
-	flist_hist_setup(&lwin, "/bin", "sh", 0);
+	flist_hist_setup(&lwin, "/bin", "sh", 0, 1);
 
 	pos = flist_hist_find(&lwin, entries, "/etc", &top);
 
@@ -228,7 +228,7 @@ TEST(defaults_are_is_returned_on_file_lookup_failure)
 	entries_t entries = { entry_list, 2 };
 	int top, pos;
 
-	flist_hist_setup(&lwin, "/bin", "x", 0);
+	flist_hist_setup(&lwin, "/bin", "x", 0, 1);
 
 	pos = flist_hist_find(&lwin, entries, "/bin", &top);
 
@@ -242,7 +242,7 @@ TEST(history_item_is_found)
 	entries_t entries = { entry_list, 2 };
 	int top, pos;
 
-	flist_hist_setup(&lwin, "/bin", "b", 0);
+	flist_hist_setup(&lwin, "/bin", "b", 0, 1);
 
 	pos = flist_hist_find(&lwin, entries, "/bin", &top);
 
@@ -256,7 +256,7 @@ TEST(top_value_can_not_be_negative)
 	entries_t entries = { entry_list, 2 };
 	int top, pos;
 
-	flist_hist_setup(&lwin, "/bin", "b", 2);
+	flist_hist_setup(&lwin, "/bin", "b", 2, 1);
 
 	pos = flist_hist_find(&lwin, entries, "/bin", &top);
 
@@ -266,8 +266,8 @@ TEST(top_value_can_not_be_negative)
 
 TEST(hist_update_performs_update_but_does_not_move_entry)
 {
-	flist_hist_setup(&lwin, "/bin", "a", 2);
-	flist_hist_setup(&lwin, "/etc", "b", 4);
+	flist_hist_setup(&lwin, "/bin", "a", 2, 1);
+	flist_hist_setup(&lwin, "/etc", "b", 4, 1);
 
 	flist_hist_update(&lwin, "/bin", "g", 8);
 
@@ -282,8 +282,8 @@ TEST(hist_update_performs_update_but_does_not_move_entry)
 TEST(history_without_suffix_is_cloned)
 {
 	assert_int_equal(1, lwin.history_num);
-	flist_hist_setup(&lwin, "/dir1", "file1", 1);
-	flist_hist_setup(&lwin, "/dir2", "file2", 2);
+	flist_hist_setup(&lwin, "/dir1", "file1", 1, 1);
+	flist_hist_setup(&lwin, "/dir2", "file2", 2, 1);
 
 	flist_hist_clone(&rwin, &lwin);
 
@@ -304,8 +304,8 @@ TEST(history_without_suffix_is_cloned)
 TEST(history_with_suffix_is_cloned)
 {
 	assert_int_equal(1, lwin.history_num);
-	flist_hist_setup(&lwin, "/dir1", "file1", 1);
-	flist_hist_setup(&lwin, "/dir2", "file2", 2);
+	flist_hist_setup(&lwin, "/dir1", "file1", 1, 1);
+	flist_hist_setup(&lwin, "/dir2", "file2", 2, 1);
 
 	lwin.history_pos = 1;
 

@@ -257,7 +257,7 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 		{
 			/* Record location we're leaving. */
 			flist_hist_setup(dst, side->curr_dir, get_current_file_name(side),
-					side->list_pos - side->top_line);
+					side->list_pos - side->top_line, -1);
 		}
 
 		(void)populate_dir_list(dst, path == NULL);

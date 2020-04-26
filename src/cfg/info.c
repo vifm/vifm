@@ -1164,7 +1164,7 @@ put_dhistory_entry(view_t *view, int reread, const char dir[],
 	{
 		view->list_rows = 1;
 	}
-	flist_hist_setup(view, dir, file, rel_pos);
+	flist_hist_setup(view, dir, file, rel_pos, -1);
 	if(!reread)
 	{
 		view->list_rows = list_rows;
