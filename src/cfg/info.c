@@ -78,6 +78,7 @@
  *                  dir = "/some/directory"
  *                  file = "file.png"
  *                  relpos = 28
+ *                  ts = 1440801895 # timestamp (optional)
  *              } ]
  *              filters = {
  *                  dot = true
@@ -153,6 +154,13 @@
  *  color-scheme = "almost-default"
  *
  * Elements in history arrays are stored oldest to newest.
+ *
+ * Timestamps are used for merging.  However, there are two kinds of merging
+ * that can happen:
+ *  - elements of dictionaries are merged individually with each other
+ *  - for elements of arrays timestamps act more like generation numbers and
+ *    while merging happens per element, effectively it's generations (defined
+ *    by time of storing of the array) which are being merged
  */
 
 static JSON_Value * read_legacy_info_file(const char info_file[]);
@@ -178,7 +186,7 @@ static void load_history(JSON_Object *root, const char node[], hist_t *hist,
 static void load_sorting(JSON_Object *ptab, view_t *view);
 static void ensure_history_not_full(hist_t *hist);
 static void put_dhistory_entry(view_t *view, int reread, const char dir[],
-		const char file[], int rel_pos);
+		const char file[], int rel_pos, time_t timestamp);
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int merge);
@@ -189,6 +197,10 @@ static void merge_states(JSON_Object *current, const JSON_Object *admixture);
 static void merge_tabs(JSON_Object *current, const JSON_Object *admixture);
 static void merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
 		const view_t *view);
+static JSON_Object ** merge_timestamped_data(const JSON_Array *current,
+		const JSON_Array *updated);
+static JSON_Object ** make_timestamp_ordering(const JSON_Array *array);
+static int timestamp_cmp(const void *a, const void *b);
 static void merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 		const char node[], assoc_list_t *assocs);
 static void merge_commands(JSON_Object *current, const JSON_Object *admixture);
@@ -824,7 +836,11 @@ load_dhistory(JSON_Object *info, view_t *view, int reread)
 		if(get_str(entry, "dir", &dir) && get_str(entry, "file", &file) &&
 				get_int(entry, "relpos", &rel_pos))
 		{
-			put_dhistory_entry(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos);
+			/* Timestamp is optional here. */
+			double ts = -1;
+			get_double(entry, "ts", &ts);
+			put_dhistory_entry(view, reread, dir, file, rel_pos < 0 ? 0 : rel_pos,
+					(time_t)ts);
 		}
 	}
 
@@ -1152,7 +1168,7 @@ ensure_history_not_full(hist_t *hist)
 /* Puts single history entry from vifminfo into the view. */
 static void
 put_dhistory_entry(view_t *view, int reread, const char dir[],
-		const char file[], int rel_pos)
+		const char file[], int rel_pos, time_t timestamp)
 {
 	if(view->history_num == cfg.history_len)
 	{
@@ -1164,7 +1180,7 @@ put_dhistory_entry(view_t *view, int reread, const char dir[],
 	{
 		view->list_rows = 1;
 	}
-	flist_hist_setup(view, dir, file, rel_pos, -1);
+	flist_hist_setup(view, dir, file, rel_pos, timestamp);
 	if(!reread)
 	{
 		view->list_rows = list_rows;
@@ -1502,39 +1518,117 @@ merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
 
-	int extra_space = cfg.history_len - 1 - view->history_pos;
-	if(extra_space == 0 || json_array_get_count(updated) == 0)
+	JSON_Object **combined = merge_timestamped_data(history, updated);
+	int total = json_array_get_count(history) + json_array_get_count(updated);
+
+	/* Squash adjacent entries that have the same directory leaving the latest
+	 * one. */
+	if(total > 0)
 	{
-		return;
+		const char *last_dir = "";
+		get_str(combined[0], "dir", &last_dir);
+
+		int i, j = 0;
+		for(i = 1; i < total; ++i)
+		{
+			const char *curr_dir = "";
+			get_str(combined[i], "dir", &curr_dir);
+			if(stroscmp(last_dir, curr_dir) != 0)
+			{
+				++j;
+				last_dir = curr_dir;
+			}
+
+			combined[j] = combined[i];
+		}
+		total = j + 1;
 	}
 
-	int i, n;
 	JSON_Value *merged_value = json_value_init_array();
 	JSON_Array *merged = json_array(merged_value);
 
-	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
+	int i;
+	for(i = MAX(0, total - cfg.history_len); i < total; ++i)
 	{
-		JSON_Object *entry = json_array_get_object(updated, i);
-
-		const char *dir;
-		if(get_str(entry, "dir", &dir))
-		{
-			if(!flist_hist_contains(view, dir) && is_dir(dir))
-			{
-				JSON_Value *value = json_object_get_wrapping_value(entry);
-				json_array_append_value(merged, json_value_deep_copy(value));
-			}
-		}
-	}
-
-	for(i = 0, n = json_array_get_count(history); i < n; ++i)
-	{
-		JSON_Object *entry = json_array_get_object(history, i);
-		JSON_Value *value = json_object_get_wrapping_value(entry);
+		JSON_Value *value = json_object_get_wrapping_value(combined[i]);
 		json_array_append_value(merged, json_value_deep_copy(value));
 	}
 
+	free(combined);
+
 	json_object_set_value(current, "history", merged_value);
+}
+
+/* Merges two arrays with elements that have "ts" keys with timestamps.  Returns
+ * merged array of pointers to children of original arrays. */
+static JSON_Object **
+merge_timestamped_data(const JSON_Array *current, const JSON_Array *updated)
+{
+	JSON_Object **current_sorted = make_timestamp_ordering(current);
+	JSON_Object **updated_sorted = make_timestamp_ordering(updated);
+
+	int n = json_array_get_count(current);
+	int m = json_array_get_count(updated);
+	int total = n + m;
+
+	JSON_Object **merged = reallocarray(NULL, total, sizeof(*merged));
+
+	int i = 0, j = 0, k = 0;
+	while(k < total && i < n && j < m)
+	{
+		if(timestamp_cmp(&current_sorted[i], &updated_sorted[j]) <= 0)
+		{
+			merged[k++] = current_sorted[i++];
+		}
+		else
+		{
+			merged[k++] = updated_sorted[j++];
+		}
+	}
+	while(k < total && i < n)
+	{
+		merged[k++] = current_sorted[i++];
+	}
+	while(k < total && j < m)
+	{
+		merged[k++] = updated_sorted[j++];
+	}
+
+	free(current_sorted);
+	free(updated_sorted);
+
+	return merged;
+}
+
+/* Sorts elements of an array of objects according to optional "ts" field of its
+ * elements (elements without the field are considered to be the smallest).
+ * Returns dynamically allocated array of sorted elements. */
+static JSON_Object **
+make_timestamp_ordering(const JSON_Array *array)
+{
+	int n = json_array_get_count(array);
+	JSON_Object **sorted = reallocarray(NULL, n, sizeof(*sorted));
+
+	int i;
+	for(i = 0; i < n; ++i)
+	{
+		sorted[i] = json_array_get_object(array, i);
+	}
+
+	safe_qsort(sorted, n, sizeof(*sorted), &timestamp_cmp);
+	return sorted;
+}
+
+/* qsort() comparer that compares JSON_Object's according to values of optional
+ * timestamp fields called "ts".  Returns standard -1, 0, 1 for comparisons. */
+static int
+timestamp_cmp(const void *a, const void *b)
+{
+	/* Timestamps can be optional. */
+	double lhs_ts = -1, rhs_ts = -1;
+	get_double(*(const JSON_Object **)a, "ts", &lhs_ts);
+	get_double(*(const JSON_Object **)b, "ts", &rhs_ts);
+	return lhs_ts - rhs_ts;
 }
 
 /* Merges two lists of associations. */
@@ -2184,6 +2278,9 @@ store_dhistory(JSON_Object *obj, view_t *view)
 
 	JSON_Array *history = add_array(obj, "history");
 
+	/* Same timestamp for all entries created during this session. */
+	time_t ts = time(NULL);
+
 	int i;
 	for(i = 0; i <= view->history_pos && i < view->history_num; ++i)
 	{
@@ -2191,6 +2288,15 @@ store_dhistory(JSON_Object *obj, view_t *view)
 		set_str(entry, "dir", view->history[i].dir);
 		set_str(entry, "file", view->history[i].file);
 		set_int(entry, "relpos", view->history[i].rel_pos);
+
+		if(view->history[i].timestamp == (time_t)-1)
+		{
+			set_double(entry, "ts", ts);
+		}
+		else
+		{
+			set_double(entry, "ts", view->history[i].timestamp);
+		}
 	}
 }
 

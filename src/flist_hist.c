@@ -249,30 +249,6 @@ free_view_history_items(const history_t history[], size_t len)
 	}
 }
 
-int
-flist_hist_contains(const view_t *view, const char path[])
-{
-	int i;
-
-	if(view->history == NULL || view->history_num <= 0)
-	{
-		return 0;
-	}
-
-	for(i = view->history_pos; i >= 0; --i)
-	{
-		if(strlen(view->history[i].dir) < 1)
-		{
-			break;
-		}
-		if(stroscmp(view->history[i].dir, path) == 0)
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-
 void
 flist_hist_clear(view_t *view)
 {
