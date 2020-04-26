@@ -92,7 +92,6 @@ ifndef win_env
     vifm_src := $(filter-out %/wcwidth.c %/volumes_menu.c %_win.c, $(vifm_src))
 endif
 
-vifm_bin := $(B)../src/vifm$(exe_suffix)
 vifm_obj := $(B)../src/./tags.o $(vifm_src:%.c=$(B)%.o)
 
 tests_lib := $(BUILD)libtest-support.a
@@ -217,7 +216,7 @@ ifdef DEBUG
     endif
 endif
 
-.PHONY: check build clean $(suites) $(apps)
+.PHONY: check build clean $(suites) $(apps) appsources
 
 # check and build targets are defined mostly in suite_template
 check: build
@@ -233,9 +232,11 @@ clean:
 # disable implicit rules to prevent compiling main sources here
 .SUFFIXES:
 
-$(vifm_obj) ../src/./tags.c: $(vifm_src) | $(vifm_bin)
+# sources target groups dependencies to avoid invoking nested make per target
+$(vifm_obj) ../src/./tags.c: appsources
+	@# this receipt is needed to make Make recognize that targets were updated
 
-$(vifm_bin): $(vifm_src)
+appsources: $(vifm_src)
 	$(MAKE) $(make_args) vifm$(exe_suffix)
 
 $(BUILD)test-support/%.o: test-support/%.c | $(BUILD)test-support
@@ -294,8 +295,7 @@ $1.fixtures := $$(subst /,.,\
 
 deps += $$($1.obj:.o=.d)
 
-$$($1.bin): $$($1.obj) $(vifm_obj) $(tests_lib) \
-          | $(vifm_bin) $(B)bin/$(BINSUBDIR)
+$$($1.bin): $$($1.obj) $(vifm_obj) $(tests_lib) | $(B)bin/$(BINSUBDIR)
 	$$(LD) -o $$@ $$^ $(LDFLAGS)
 
 $(BUILD)$1/%.o: $1/%.c $(GCH_DEP) $(BUILD)$1/filelist \

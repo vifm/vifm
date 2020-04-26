@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Apr 20
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Apr 25
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3968,7 +3968,7 @@ conditions:
                                                *vifm-'tuioptions'* *vifm-'to'*
 tuioptions to
 type: charset
-default: "ps"
+default: "psv"
 
 Each flag configures some aspect of TUI appearance.  The flags are:
                                                *vifm-to-p*
@@ -3981,6 +3981,8 @@ s - when included, left and right borders (side borders, hence "s" character)
 are visible.
                                                *vifm-to-u*
 u - use Unicode characters in the TUI (Unicode ellipsis instead of "...").
+                                               *vifm-to-v*
+v - vary width of middle border to equalize view sizes.
 
                                                *vifm-'undolevels'* *vifm-'ul'*
 undolevels ul

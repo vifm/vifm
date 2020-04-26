@@ -562,16 +562,25 @@ TEST(tuioptions)
 	assert_false(cfg.extra_padding);
 	assert_false(cfg.side_borders_visible);
 	assert_false(cfg.use_unicode_characters);
+	assert_false(cfg.flexible_splitter);
 
 	assert_success(vle_opts_set("tuioptions=pu", OPT_GLOBAL));
 	assert_true(cfg.extra_padding);
 	assert_false(cfg.side_borders_visible);
 	assert_true(cfg.use_unicode_characters);
+	assert_false(cfg.flexible_splitter);
 
 	assert_success(vle_opts_set("tuioptions+=s", OPT_GLOBAL));
 	assert_true(cfg.extra_padding);
 	assert_true(cfg.side_borders_visible);
 	assert_true(cfg.use_unicode_characters);
+	assert_false(cfg.flexible_splitter);
+
+	assert_success(vle_opts_set("tuioptions+=v", OPT_GLOBAL));
+	assert_true(cfg.extra_padding);
+	assert_true(cfg.side_borders_visible);
+	assert_true(cfg.use_unicode_characters);
+	assert_true(cfg.flexible_splitter);
 }
 
 TEST(setting_tabscope_works)

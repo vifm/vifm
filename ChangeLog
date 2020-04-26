@@ -12,6 +12,10 @@
 
 	Added :tabo[nly] command that closes all tabs but the current one.
 
+	Added "v" flag to the 'tuioptions' option.  It controls whether width of
+	middle border is adjusted to equalize view sizes.  Thanks to Matthias
+	Braun (a.k.a. mb720).
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
