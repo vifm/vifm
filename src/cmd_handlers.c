@@ -4151,7 +4151,7 @@ sync_location(const char path[], int cv, int sync_cursor_pos, int sync_filters,
 			(void)consider_scroll_offset(other_view);
 		}
 
-		flist_hist_setup(other_view, NULL, NULL, -1);
+		flist_hist_save(other_view);
 	}
 
 	ui_view_schedule_redraw(other_view);

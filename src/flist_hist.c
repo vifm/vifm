@@ -165,6 +165,12 @@ reduce_view_history(view_t *view, int new_size)
 }
 
 void
+flist_hist_save(view_t *view)
+{
+	flist_hist_setup(view, NULL, NULL, -1);
+}
+
+void
 flist_hist_setup(view_t *view, const char path[], const char file[],
 		int rel_pos)
 {

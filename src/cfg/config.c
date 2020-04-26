@@ -863,7 +863,7 @@ cfg_resize_histories(int new_size)
 		tab_info_t tab_info;
 		for(i = 0; tabs_enum_all(i, &tab_info); ++i)
 		{
-			flist_hist_setup(tab_info.view, NULL, NULL, -1);
+			flist_hist_save(tab_info.view);
 		}
 	}
 }

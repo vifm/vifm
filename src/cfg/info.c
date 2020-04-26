@@ -2180,7 +2180,7 @@ convert_old_trash_path(const char trash_path[])
 static void
 store_dhistory(JSON_Object *obj, view_t *view)
 {
-	flist_hist_setup(view, NULL, NULL, -1);
+	flist_hist_save(view);
 
 	JSON_Array *history = add_array(obj, "history");
 

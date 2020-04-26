@@ -266,7 +266,7 @@ clone_view(view_t *dst, view_t *side, const char path[], int clean)
 		flist_update_origins(dst, &dst->curr_dir[0], &side->curr_dir[0]);
 
 		/* Record new location. */
-		flist_hist_setup(dst, NULL, NULL, -1);
+		flist_hist_save(dst);
 	}
 }
 

@@ -105,8 +105,8 @@ TEST(view_history_avoids_duplicates)
 	assert_int_equal(1, lwin.history_num);
 	assert_int_equal(1, rwin.history_num);
 
-	flist_hist_setup(&lwin, NULL, NULL, -1);
-	flist_hist_setup(&rwin, NULL, NULL, -1);
+	flist_hist_save(&lwin);
+	flist_hist_save(&rwin);
 
 	assert_int_equal(1, lwin.history_num);
 	assert_int_equal(1, rwin.history_num);

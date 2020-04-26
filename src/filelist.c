@@ -539,7 +539,7 @@ change_directory(view_t *view, const char directory[])
 
 	if(is_dir_list_loaded(view))
 	{
-		flist_hist_setup(view, NULL, NULL, -1);
+		flist_hist_save(view);
 	}
 
 	if(is_path_absolute(directory))
@@ -1073,7 +1073,7 @@ flist_custom_finish_internal(view_t *view, CVType type, int reload,
 		 * view. */
 		if(is_dir_list_loaded(view))
 		{
-			flist_hist_setup(view, NULL, NULL, -1);
+			flist_hist_save(view);
 		}
 
 		(void)replace_string(&view->custom.orig_dir, dir);
