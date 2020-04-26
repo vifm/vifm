@@ -640,6 +640,7 @@ get_tip(void)
 	  "Use :nmap/:vmap/etc. for short information on available mappings",
 	  "c key in :file menu puts command into command-line to edit before running",
 	  ":copen reopens the last list of files found by a :grep-like command",
+	  "Up/down arrows on command-line load history entries with identical prefix",
 	};
 
 	if(need_to_shuffle)
