@@ -2077,24 +2077,18 @@ remove_previous_dot_completion(void)
 static wchar_t *
 next_dot_completion(void)
 {
-	size_t len;
-	char *last;
-	wchar_t *wide;
+	if(input_stat.dot_pos > curr_stats.cmd_hist.pos)
+	{
+		return vifm_wcsdup(L"");
+	}
 
-	if(input_stat.dot_pos <= curr_stats.cmd_hist.pos)
-	{
-		last = vle_cmds_last_arg(curr_stats.cmd_hist.items[input_stat.dot_pos++], 1,
-				&len);
-	}
-	else
-	{
-		last = "";
-		len = 0;
-	}
-	last = strdup(last);
-	last[len] = '\0';
-	wide = to_wide(last);
-	free(last);
+	size_t len;
+	const char *last_entry = curr_stats.cmd_hist.items[input_stat.dot_pos++];
+	const char *last_arg_pos = vle_cmds_last_arg(last_entry, 1, &len);
+
+	char *last_arg = format_str("%.*s", (int)len, last_arg_pos);
+	wchar_t *wide = to_wide(last_arg);
+	free(last_arg);
 
 	return wide;
 }
