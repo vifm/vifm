@@ -23,11 +23,18 @@
 
 #include <stddef.h> /* size_t */
 
+/* Single entry of hist_t. */
+typedef struct
+{
+	char *text; /* Text of the item. */
+}
+hist_item_t;
+
 /* History object structure.  Doesn't store its length. */
 typedef struct
 {
 	/* List of history items.  Can be NULL for empty list. */
-	char **items;
+	hist_item_t *items;
 	/* Position of the last item in the items list.  Undefined (likely to be
 	 * negative) for empty lists. */
 	int pos;

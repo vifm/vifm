@@ -496,7 +496,7 @@ hists_search_last(void)
 {
 	return hist_is_empty(&curr_stats.search_hist)
 	     ? ""
-	     : curr_stats.search_hist.items[0];
+	     : curr_stats.search_hist.items[0].text;
 }
 
 void

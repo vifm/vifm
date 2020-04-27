@@ -1641,7 +1641,7 @@ hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 		int len = stat->hist_search_len;
 		while(--pos >= 0)
 		{
-			wchar_t *const buf = to_wide(hist->items[pos]);
+			wchar_t *const buf = to_wide(hist->items[pos].text);
 			if(wcsncmp(stat->line, buf, len) == 0)
 			{
 				free(buf);
@@ -1657,7 +1657,7 @@ hist_next(line_stats_t *stat, const hist_t *hist, size_t len)
 		stat->cmd_pos = pos;
 	}
 
-	(void)replace_input_line(stat, hist->items[stat->cmd_pos]);
+	(void)replace_input_line(stat, hist->items[stat->cmd_pos].text);
 
 	update_cmdline(stat);
 
@@ -2083,7 +2083,7 @@ next_dot_completion(void)
 	}
 
 	size_t len;
-	const char *last_entry = curr_stats.cmd_hist.items[input_stat.dot_pos++];
+	const char *last_entry = curr_stats.cmd_hist.items[input_stat.dot_pos++].text;
 	const char *last_arg_pos = vle_cmds_last_arg(last_entry, 1, &len);
 
 	char *last_arg = format_str("%.*s", (int)len, last_arg_pos);
@@ -2328,7 +2328,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 		 * changed. */
 		if(stat->cmd_pos == 0 && hist->pos != 0)
 		{
-			wchar_t *const wide_item = to_wide(hist->items[0]);
+			wchar_t *const wide_item = to_wide(hist->items[0].text);
 			if(wcscmp(stat->line, wide_item) == 0)
 			{
 				++stat->cmd_pos;
@@ -2342,7 +2342,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 		int len = stat->hist_search_len;
 		while(++pos <= hist->pos)
 		{
-			wchar_t *const wide_item = to_wide(hist->items[pos]);
+			wchar_t *const wide_item = to_wide(hist->items[pos].text);
 			if(wcsncmp(stat->line, wide_item, len) == 0)
 			{
 				free(wide_item);
@@ -2355,7 +2355,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 		stat->cmd_pos = pos;
 	}
 
-	(void)replace_input_line(stat, hist->items[stat->cmd_pos]);
+	(void)replace_input_line(stat, hist->items[stat->cmd_pos].text);
 
 	update_cmdline(stat);
 

@@ -1934,7 +1934,7 @@ store_history(JSON_Object *root, const char node[], const hist_t *hist)
 	JSON_Array *entries = add_array(root, node);
 	for(i = hist->pos; i >= 0; i--)
 	{
-		set_str(append_object(entries), "text", hist->items[i]);
+		set_str(append_object(entries), "text", hist->items[i].text);
 	}
 }
 

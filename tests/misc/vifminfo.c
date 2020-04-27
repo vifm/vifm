@@ -261,18 +261,18 @@ TEST(histories_are_merged_correctly)
 	assert_int_equal(2, curr_stats.search_hist.pos);
 	assert_int_equal(2, curr_stats.prompt_hist.pos);
 	assert_int_equal(2, curr_stats.filter_hist.pos);
-	assert_string_equal("command2", curr_stats.cmd_hist.items[0]);
-	assert_string_equal("command1", curr_stats.cmd_hist.items[1]);
-	assert_string_equal("command0", curr_stats.cmd_hist.items[2]);
-	assert_string_equal("search2", curr_stats.search_hist.items[0]);
-	assert_string_equal("search1", curr_stats.search_hist.items[1]);
-	assert_string_equal("search0", curr_stats.search_hist.items[2]);
-	assert_string_equal("prompt2", curr_stats.prompt_hist.items[0]);
-	assert_string_equal("prompt1", curr_stats.prompt_hist.items[1]);
-	assert_string_equal("prompt0", curr_stats.prompt_hist.items[2]);
-	assert_string_equal("lfilter2", curr_stats.filter_hist.items[0]);
-	assert_string_equal("lfilter1", curr_stats.filter_hist.items[1]);
-	assert_string_equal("lfilter0", curr_stats.filter_hist.items[2]);
+	assert_string_equal("command2", curr_stats.cmd_hist.items[0].text);
+	assert_string_equal("command1", curr_stats.cmd_hist.items[1].text);
+	assert_string_equal("command0", curr_stats.cmd_hist.items[2].text);
+	assert_string_equal("search2", curr_stats.search_hist.items[0].text);
+	assert_string_equal("search1", curr_stats.search_hist.items[1].text);
+	assert_string_equal("search0", curr_stats.search_hist.items[2].text);
+	assert_string_equal("prompt2", curr_stats.prompt_hist.items[0].text);
+	assert_string_equal("prompt1", curr_stats.prompt_hist.items[1].text);
+	assert_string_equal("prompt0", curr_stats.prompt_hist.items[2].text);
+	assert_string_equal("lfilter2", curr_stats.filter_hist.items[0].text);
+	assert_string_equal("lfilter1", curr_stats.filter_hist.items[1].text);
+	assert_string_equal("lfilter0", curr_stats.filter_hist.items[2].text);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }

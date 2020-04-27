@@ -15,10 +15,10 @@
 
 /* This should be a macro to see what test have failed. */
 #define VALIDATE_HISTORY(i, str) \
-	assert_string_equal(str, curr_stats.cmd_hist.items[i]); \
-	assert_string_equal(str, curr_stats.search_hist.items[i]); \
-	assert_string_equal(str, curr_stats.prompt_hist.items[i]); \
-	assert_string_equal(str, curr_stats.filter_hist.items[i]); \
+	assert_string_equal(str, curr_stats.cmd_hist.items[i].text); \
+	assert_string_equal(str, curr_stats.search_hist.items[i].text); \
+	assert_string_equal(str, curr_stats.prompt_hist.items[i].text); \
+	assert_string_equal(str, curr_stats.filter_hist.items[i].text); \
 	\
 	assert_string_equal(str, lwin.history[(i) + 1].dir); \
 	assert_string_equal((str) + 1, lwin.history[(i) + 1].file); \

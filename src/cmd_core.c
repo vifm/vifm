@@ -248,7 +248,7 @@ prepare_extcmd_file(FILE *fp, const char beginning[], CmdInputType type)
 	fprintf(fp, "%s\n", beginning);
 	for(i = 0; i <= hist->pos; i++)
 	{
-		fprintf(fp, "%s\n", hist->items[i]);
+		fprintf(fp, "%s\n", hist->items[i].text);
 	}
 
 	if(is_cmd)
