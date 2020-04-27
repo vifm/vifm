@@ -7,6 +7,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/curses.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/engine/keys.h"
 #include "../../src/modes/cmdline.h"
@@ -193,6 +194,46 @@ TEST(broken_utf8_name, IF(utf8_locale))
 	(void)vle_keys_exec_timed_out(WK_C_x WK_c);
 
 	assert_true(stats->line != NULL && stats->line[0] != L'\0');
+}
+
+TEST(last_argument_is_inserted)
+{
+#ifndef __PDCURSES__
+	const wchar_t meta_dot[] = WK_ESC WK_DOT;
+#else
+	const wchar_t meta_dot[] = { K(ALT_PERIOD), L'\0' };
+#endif
+
+	/* Emulate proper history initialization (must happen after view
+	 * initialization). */
+	cfg_resize_histories(5);
+	cfg_resize_histories(0);
+
+	cfg_resize_histories(5);
+	hists_commands_save("a1");
+	hists_commands_save("b1 b2");
+	hists_commands_save("c1 c2 c3");
+	hists_commands_save("d1 d2 d3 d4");
+
+	(void)vle_keys_exec_timed_out(meta_dot);
+	assert_wstring_equal(L"d4", stats->line);
+	(void)vle_keys_exec_timed_out(meta_dot);
+	assert_wstring_equal(L"c3", stats->line);
+	(void)vle_keys_exec_timed_out(meta_dot);
+	assert_wstring_equal(L"b2", stats->line);
+	(void)vle_keys_exec_timed_out(meta_dot);
+	assert_wstring_equal(L"a1", stats->line);
+	(void)vle_keys_exec_timed_out(meta_dot);
+	assert_wstring_equal(L"", stats->line);
+	(void)vle_keys_exec_timed_out(meta_dot);
+	assert_wstring_equal(L"", stats->line);
+
+	(void)vle_keys_exec_timed_out(WK_SPACE);
+	assert_wstring_equal(L" ", stats->line);
+	(void)vle_keys_exec_timed_out(meta_dot);
+	assert_wstring_equal(L" d4", stats->line);
+
+	cfg_resize_histories(0);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
