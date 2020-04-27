@@ -28,7 +28,8 @@
 #define NO_POS (-1)
 
 static int move_to_first_position(hist_t *hist, const char item[]);
-static int insert_at_first_position(hist_t *hist, size_t size, const char item[]);
+static int insert_at_first_position(hist_t *hist, size_t size,
+		const char item[]);
 
 int
 hist_init(hist_t *hist, size_t size)
