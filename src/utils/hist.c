@@ -22,6 +22,7 @@
 #include <stdlib.h> /* calloc() free() */
 #include <string.h> /* memmove() */
 
+#include "../compat/reallocarray.h"
 #include "macros.h"
 #include "string_array.h"
 
@@ -54,10 +55,28 @@ hist_is_empty(const hist_t *hist)
 }
 
 void
-hist_trunc(hist_t *hist, size_t new_size, size_t removed_count)
+hist_resize(hist_t *hist, size_t old_size, size_t new_size)
 {
-	free_strings(hist->items + new_size, removed_count);
-	hist->pos = MIN(hist->pos, (int)new_size - 1);
+	if(new_size == 0)
+	{
+		hist_reset(hist, old_size);
+		return;
+	}
+
+	const int delta = (int)new_size - (int)old_size;
+
+	if(delta < 0)
+	{
+		free_strings(hist->items + new_size, -delta);
+		hist->pos = MIN(hist->pos, (int)new_size - 1);
+	}
+
+	hist->items = reallocarray(hist->items, new_size, sizeof(char *));
+
+	if(delta > 0)
+	{
+		memset(hist->items + old_size, 0, sizeof(char *)*delta);
+	}
 }
 
 int

@@ -46,10 +46,8 @@ void hist_reset(hist_t *hist, size_t size);
  * otherwise non-zero is returned. */
 int hist_is_empty(const hist_t *hist);
 
-/* Reduces amount of memory taken by the history.  The new_size specifies new
- * size of the history, while removed_count parameter designates number of
- * removed elements. */
-void hist_trunc(hist_t *hist, size_t new_size, size_t removed_count);
+/* Changes size of the history object from old value to the new one. */
+void hist_resize(hist_t *hist, size_t old_size, size_t new_size);
 
 /* Checks whether given item present in the history.  Returns non-zero if
  * present, otherwise non-zero is returned. */

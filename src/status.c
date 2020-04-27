@@ -427,47 +427,14 @@ stats_silenced_ui(void)
 void
 hists_resize(int new_size)
 {
-	const int old_size = curr_stats.history_size;
-	const int delta = new_size - old_size;
-
-	if(new_size <= 0)
-	{
-		hist_reset(&curr_stats.search_hist, old_size);
-		hist_reset(&curr_stats.cmd_hist, old_size);
-		hist_reset(&curr_stats.prompt_hist, old_size);
-		hist_reset(&curr_stats.filter_hist, old_size);
-		curr_stats.history_size = 0;
-		return;
-	}
-
+	const int old_size = MAX(curr_stats.history_size, 0);
 	curr_stats.history_size = new_size;
+	new_size = MAX(new_size, 0);
 
-	if(delta < 0)
-	{
-		hist_trunc(&curr_stats.search_hist, new_size, -delta);
-		hist_trunc(&curr_stats.cmd_hist, new_size, -delta);
-		hist_trunc(&curr_stats.prompt_hist, new_size, -delta);
-		hist_trunc(&curr_stats.filter_hist, new_size, -delta);
-	}
-
-	curr_stats.cmd_hist.items = reallocarray(curr_stats.cmd_hist.items, new_size,
-			sizeof(char *));
-	curr_stats.search_hist.items = reallocarray(curr_stats.search_hist.items,
-			new_size, sizeof(char *));
-	curr_stats.prompt_hist.items = reallocarray(curr_stats.prompt_hist.items,
-			new_size, sizeof(char *));
-	curr_stats.filter_hist.items = reallocarray(curr_stats.filter_hist.items,
-			new_size, sizeof(char *));
-
-	if(delta > 0)
-	{
-		const size_t str_item_len = sizeof(char *)*delta;
-
-		memset(curr_stats.cmd_hist.items + old_size, 0, str_item_len);
-		memset(curr_stats.search_hist.items + old_size, 0, str_item_len);
-		memset(curr_stats.prompt_hist.items + old_size, 0, str_item_len);
-		memset(curr_stats.filter_hist.items + old_size, 0, str_item_len);
-	}
+	hist_resize(&curr_stats.search_hist, old_size, new_size);
+	hist_resize(&curr_stats.cmd_hist, old_size, new_size);
+	hist_resize(&curr_stats.prompt_hist, old_size, new_size);
+	hist_resize(&curr_stats.filter_hist, old_size, new_size);
 }
 
 void
