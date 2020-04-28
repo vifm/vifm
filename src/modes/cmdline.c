@@ -2077,7 +2077,7 @@ remove_previous_dot_completion(void)
 static wchar_t *
 next_dot_completion(void)
 {
-	if(input_stat.dot_pos > curr_stats.cmd_hist.pos)
+	if(input_stat.dot_pos >= curr_stats.cmd_hist.size)
 	{
 		return vifm_wcsdup(L"");
 	}
@@ -2314,7 +2314,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 
 	if(stat->history_search != HIST_SEARCH)
 	{
-		if(stat->cmd_pos == hist->pos)
+		if(stat->cmd_pos == hist->size - 1)
 		{
 			return;
 		}
@@ -2326,7 +2326,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 		 * string.  Initially cmd_pos is -1, no need to check anything if history
 		 * contains only one element as even if it's equal input line won't be
 		 * changed. */
-		if(stat->cmd_pos == 0 && hist->pos != 0)
+		if(stat->cmd_pos == 0 && hist->size != 1)
 		{
 			wchar_t *const wide_item = to_wide(hist->items[0].text);
 			if(wcscmp(stat->line, wide_item) == 0)
@@ -2340,7 +2340,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 	{
 		int pos = stat->cmd_pos;
 		int len = stat->hist_search_len;
-		while(++pos <= hist->pos)
+		while(++pos < hist->size)
 		{
 			wchar_t *const wide_item = to_wide(hist->items[pos].text);
 			if(wcsncmp(stat->line, wide_item, len) == 0)
@@ -2350,7 +2350,7 @@ hist_prev(line_stats_t *stat, const hist_t *hist, size_t len)
 			}
 			free(wide_item);
 		}
-		if(pos > hist->pos)
+		if(pos >= hist->size)
 			return;
 		stat->cmd_pos = pos;
 	}

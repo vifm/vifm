@@ -257,10 +257,10 @@ TEST(histories_are_merged_correctly)
 
 	read_info_file(0);
 
-	assert_int_equal(2, curr_stats.cmd_hist.pos);
-	assert_int_equal(2, curr_stats.search_hist.pos);
-	assert_int_equal(2, curr_stats.prompt_hist.pos);
-	assert_int_equal(2, curr_stats.filter_hist.pos);
+	assert_int_equal(3, curr_stats.cmd_hist.size);
+	assert_int_equal(3, curr_stats.search_hist.size);
+	assert_int_equal(3, curr_stats.prompt_hist.size);
+	assert_int_equal(3, curr_stats.filter_hist.size);
 	assert_string_equal("command2", curr_stats.cmd_hist.items[0].text);
 	assert_string_equal("command1", curr_stats.cmd_hist.items[1].text);
 	assert_string_equal("command0", curr_stats.cmd_hist.items[2].text);

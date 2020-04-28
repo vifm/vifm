@@ -33,28 +33,25 @@ hist_item_t;
 /* History object structure.  Doesn't store its length. */
 typedef struct
 {
-	/* List of history items.  Can be NULL for empty list. */
-	hist_item_t *items;
-	/* Position of the last item in the items list.  Undefined (likely to be
-	 * negative) for empty lists. */
-	int pos;
+	hist_item_t *items; /* List of history items.  Can be NULL for empty list. */
+	int size;           /* Current size of the list. */
+	int capacity;       /* Maximum size of the list. */
 }
 hist_t;
 
-/* Initializes empty history structure of given size.  Return zero on success,
- * otherwise non-zero is returned. */
-int hist_init(hist_t *hist, int size);
+/* Initializes empty history structure of given capacity.  Return zero on
+ * success, otherwise non-zero is returned. */
+int hist_init(hist_t *hist, int capacity);
 
-/* Resets content of the history of given size and empties it.  All associated
- * resources are freed. */
-void hist_reset(hist_t *hist, int size);
+/* Resets content of the history.  All associated resources are freed. */
+void hist_reset(hist_t *hist);
 
 /* Checks whether history is empty.  Returns non-zero for empty history,
  * otherwise non-zero is returned. */
 int hist_is_empty(const hist_t *hist);
 
-/* Changes size of the history object from old value to the new one. */
-void hist_resize(hist_t *hist, int old_size, int new_size);
+/* Changes maximum size of the history object. */
+void hist_resize(hist_t *hist, int new_capacity);
 
 /* Checks whether given item present in the history.  Returns non-zero if
  * present, otherwise non-zero is returned. */
@@ -64,7 +61,7 @@ int hist_contains(const hist_t *hist, const char item[]);
  * element.  If item is already present in history list, it's moved.  Returns
  * zero when item is added/moved or rejected, on failure non-zero is
  * returned. */
-int hist_add(hist_t *hist, const char item[], int size);
+int hist_add(hist_t *hist, const char item[]);
 
 #endif /* VIFM__UTILS__HIST_H__ */
 

@@ -25,78 +25,84 @@
 #include "../compat/reallocarray.h"
 #include "macros.h"
 
-#define NO_POS (-1)
-
 static int move_to_first_position(hist_t *hist, const char item[]);
-static int insert_at_first_position(hist_t *hist, int size, const char item[]);
+static int insert_at_first_position(hist_t *hist, const char item[]);
 
 int
-hist_init(hist_t *hist, int size)
+hist_init(hist_t *hist, int capacity)
 {
-	hist->pos = NO_POS;
-	hist->items = calloc(size, sizeof(*hist->items));
-	return hist->items == NULL;
+	if(capacity < 0)
+	{
+		capacity = 0;
+	}
+
+	hist->size = 0;
+	hist->capacity = 0;
+
+	hist->items = calloc(capacity, sizeof(*hist->items));
+	if(hist->items == NULL)
+	{
+		return 1;
+	}
+
+	hist->capacity = capacity;
+	return 0;
 }
 
 void
-hist_reset(hist_t *hist, int size)
+hist_reset(hist_t *hist)
 {
 	int i;
-	for(i = 0; i < size; ++i)
+	for(i = 0; i < hist->size; ++i)
 	{
 		free(hist->items[i].text);
 	}
-
 	free(hist->items);
+
 	hist->items = NULL;
-	hist->pos = NO_POS;
+	hist->size = 0;
+	hist->capacity = 0;
 }
 
 int
 hist_is_empty(const hist_t *hist)
 {
-	return hist->pos == NO_POS;
+	return (hist->size == 0);
 }
 
 void
-hist_resize(hist_t *hist, int old_size, int new_size)
+hist_resize(hist_t *hist, int new_capacity)
 {
-	if(old_size < 0)
+	if(new_capacity <= 0)
 	{
-		old_size = 0;
-	}
-
-	if(new_size <= 0)
-	{
-		hist_reset(hist, old_size);
+		hist_reset(hist);
 		return;
 	}
 
-	const int delta = new_size - old_size;
-
-	if(delta < 0)
+	/* Free truncated elements, if any. */
+	int i;
+	for(i = new_capacity; i < hist->size; ++i)
 	{
-		int i;
-		for(i = new_size; i < new_size - delta; ++i)
-		{
-			free(hist->items[i].text);
-		}
-		hist->pos = MIN(hist->pos, new_size - 1);
+		free(hist->items[i].text);
 	}
 
-	hist->items = reallocarray(hist->items, new_size, sizeof(*hist->items));
+	hist->items = reallocarray(hist->items, new_capacity, sizeof(*hist->items));
 
+	const int delta = new_capacity - hist->capacity;
 	if(delta > 0)
 	{
-		memset(hist->items + old_size, 0, sizeof(*hist->items)*delta);
+		memset(hist->items + hist->capacity, 0, sizeof(*hist->items)*delta);
 	}
+
+	hist->size = MIN(hist->size, new_capacity);
+	hist->capacity = new_capacity;
 }
 
 int
 hist_contains(const hist_t *hist, const char item[])
 {
 	int i;
-	for(i = 0; i <= hist->pos; ++i)
+	for(i = 0; i < hist->size; ++i)
 	{
 		if(strcmp(hist->items[i].text, item) == 0)
 		{
@@ -107,13 +113,13 @@ hist_contains(const hist_t *hist, const char item[])
 }
 
 int
-hist_add(hist_t *hist, const char item[], int size)
+hist_add(hist_t *hist, const char item[])
 {
-	if(size > 0 && item[0] != '\0')
+	if(hist->capacity > 0 && item[0] != '\0')
 	{
 		if(move_to_first_position(hist, item) != 0)
 		{
-			return insert_at_first_position(hist, size, item);
+			return insert_at_first_position(hist, item);
 		}
 	}
 	return 0;
@@ -124,13 +130,13 @@ hist_add(hist_t *hist, const char item[], int size)
 static int
 move_to_first_position(hist_t *hist, const char item[])
 {
-	if(hist->pos >= 0 && strcmp(hist->items[0].text, item) == 0)
+	if(hist->size > 0 && strcmp(hist->items[0].text, item) == 0)
 	{
 		return 0;
 	}
 
 	int i;
-	for(i = 1; i <= hist->pos; ++i)
+	for(i = 1; i < hist->size; ++i)
 	{
 		if(strcmp(hist->items[i].text, item) == 0)
 		{
@@ -147,7 +153,7 @@ move_to_first_position(hist_t *hist, const char item[])
 /* Inserts item at the first position.  Returns zero on success or non-zero on
  * failure. */
 static int
-insert_at_first_position(hist_t *hist, int size, const char item[])
+insert_at_first_position(hist_t *hist, const char item[])
 {
 	char *const item_copy = strdup(item);
 	if(item_copy == NULL)
@@ -155,12 +161,16 @@ insert_at_first_position(hist_t *hist, int size, const char item[])
 		return 1;
 	}
 
-	hist->pos = MIN(hist->pos + 1, size - 1);
-	if(hist->pos > 0)
+	if(hist->size == hist->capacity)
 	{
-		free(hist->items[hist->pos].text);
-		memmove(hist->items + 1, hist->items, sizeof(*hist->items)*hist->pos);
+		free(hist->items[hist->size - 1].text);
 	}
+	else
+	{
+		++hist->size;
+	}
+	memmove(hist->items + 1, hist->items,
+			sizeof(*hist->items)*(hist->size - 1));
 
 	hist->items[0].text = item_copy;
 	return 0;

@@ -1158,10 +1158,10 @@ load_sorting(JSON_Object *ptab, view_t *view)
 static void
 ensure_history_not_full(hist_t *hist)
 {
-	if(hist->pos + 1 == cfg.history_len)
+	if(hist->size == cfg.history_len)
 	{
 		cfg_resize_histories(cfg.history_len + 1);
-		assert(hist->pos + 1 != cfg.history_len && "Failed to resize history.");
+		assert(hist->size < hist->capacity && "Failed to resize history.");
 	}
 }
 
@@ -1925,14 +1925,14 @@ store_filters(JSON_Object *view_data, const view_t *view)
 static void
 store_history(JSON_Object *root, const char node[], const hist_t *hist)
 {
-	if(hist->pos < 0)
+	if(hist->size <= 0)
 	{
 		return;
 	}
 
 	int i;
 	JSON_Array *entries = add_array(root, node);
-	for(i = hist->pos; i >= 0; i--)
+	for(i = hist->size - 1; i >= 0; i--)
 	{
 		set_str(append_object(entries), "text", hist->items[i].text);
 	}

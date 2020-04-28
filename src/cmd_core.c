@@ -246,7 +246,7 @@ prepare_extcmd_file(FILE *fp, const char beginning[], CmdInputType type)
 	int i;
 
 	fprintf(fp, "%s\n", beginning);
-	for(i = 0; i <= hist->pos; i++)
+	for(i = 0; i < hist->size; i++)
 	{
 		fprintf(fp, "%s\n", hist->items[i].text);
 	}
