@@ -145,10 +145,22 @@
  *      right-file = "right-file"
  *  } ]
  *  options = [ "opt1=val1", "opt2=val2" ]
- *  cmd-hist = [ { text = "item1" } ]
- *  search-hist = [ { text = "item1" } ]
- *  prompt-hist = [ { text = "item1" } ]
- *  lfilt-hist = [ { text = "item1" } ]
+ *  cmd-hist = [ {
+ *      text = "item1"
+ *      ts = 1440801895 # timestamp (optional)
+ *  } ]
+ *  search-hist = [ {
+ *      text = "item1"
+ *      ts = 1440801895 # timestamp (optional)
+ *  } ]
+ *  prompt-hist = [ {
+ *      text = "item1"
+ *      ts = 1440801895 # timestamp (optional)
+ *  } ]
+ *  lfilt-hist = [ {
+ *      text = "item1"
+ *      ts = 1440801895 # timestamp (optional)
+ *  } ]
  *  active-gtab = 0
  *  use-term-multiplexer = true
  *  color-scheme = "almost-default"
@@ -181,8 +193,7 @@ static void load_bmarks(JSON_Object *root);
 static void load_regs(JSON_Object *root);
 static void load_dir_stack(JSON_Object *root);
 static void load_trash(JSON_Object *root);
-static void load_history(JSON_Object *root, const char node[], hist_t *hist,
-		void (*saver)(const char[]));
+static void load_history(JSON_Object *root, const char node[], hist_t *hist);
 static void load_sorting(JSON_Object *ptab, view_t *view);
 static void ensure_history_not_full(hist_t *hist);
 static void put_dhistory_entry(view_t *view, int reread, const char dir[],
@@ -627,12 +638,10 @@ load_state(JSON_Object *root, int reread)
 	load_regs(root);
 	load_dir_stack(root);
 	load_trash(root);
-	load_history(root, "cmd-hist", &curr_stats.cmd_hist, &hists_commands_save);
-	load_history(root, "search-hist", &curr_stats.search_hist,
-			&hists_search_save);
-	load_history(root, "prompt-hist", &curr_stats.prompt_hist,
-			&hists_prompt_save);
-	load_history(root, "lfilt-hist", &curr_stats.filter_hist, &hists_filter_save);
+	load_history(root, "cmd-hist", &curr_stats.cmd_hist);
+	load_history(root, "search-hist", &curr_stats.search_hist);
+	load_history(root, "prompt-hist", &curr_stats.prompt_hist);
+	load_history(root, "lfilt-hist", &curr_stats.filter_hist);
 }
 
 /* Loads global tabs from JSON. */
@@ -1099,8 +1108,7 @@ load_trash(JSON_Object *root)
 
 /* Loads history data from JSON. */
 static void
-load_history(JSON_Object *root, const char node[], hist_t *hist,
-		void (*saver)(const char[]))
+load_history(JSON_Object *root, const char node[], hist_t *hist)
 {
 	JSON_Array *entries = json_object_get_array(root, node);
 
@@ -1111,8 +1119,12 @@ load_history(JSON_Object *root, const char node[], hist_t *hist,
 		const char *text;
 		if(get_str(entry, "text", &text))
 		{
+			/* Timestamp is optional here. */
+			double ts = -1;
+			get_double(entry, "ts", &ts);
+
 			ensure_history_not_full(hist);
-			saver(text);
+			hist_add(hist, text, (time_t)ts);
 		}
 	}
 }
@@ -1748,16 +1760,21 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 
 	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
 	{
+		JSON_Object *entry = json_array_get_object(updated, i);
+
 		const char *text;
-		if(get_str(json_array_get_object(updated, i), "text", &text))
+		if(get_str(entry, "text", &text))
 		{
 			void *data;
 			if(trie_get(trie, text, &data) != 0)
 			{
-				set_str(append_object(merged), "text", text);
+				JSON_Value *value = json_object_get_wrapping_value(entry);
+				json_array_append_value(merged, json_value_deep_copy(value));
 			}
 		}
 	}
+
+	trie_free(trie);
 
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
@@ -1765,7 +1782,6 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 		json_array_append_value(merged, json_value_deep_copy(entry));
 	}
 
-	trie_free(trie);
 
 	json_object_set_value(current, node, merged_value);
 }
@@ -1930,11 +1946,24 @@ store_history(JSON_Object *root, const char node[], const hist_t *hist)
 		return;
 	}
 
+	/* Same timestamp for all entries created during this session. */
+	time_t ts = time(NULL);
+
 	int i;
 	JSON_Array *entries = add_array(root, node);
 	for(i = hist->size - 1; i >= 0; i--)
 	{
-		set_str(append_object(entries), "text", hist->items[i].text);
+		JSON_Object *entry = append_object(entries);
+		set_str(entry, "text", hist->items[i].text);
+
+		if(hist->items[i].timestamp == (time_t)-1)
+		{
+			set_double(entry, "ts", ts);
+		}
+		else
+		{
+			set_double(entry, "ts", hist->items[i].timestamp);
+		}
 	}
 }
 
