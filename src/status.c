@@ -427,9 +427,8 @@ stats_silenced_ui(void)
 void
 hists_resize(int new_size)
 {
-	const int old_size = MAX(curr_stats.history_size, 0);
+	const int old_size = curr_stats.history_size;
 	curr_stats.history_size = new_size;
-	new_size = MAX(new_size, 0);
 
 	hist_resize(&curr_stats.search_hist, old_size, new_size);
 	hist_resize(&curr_stats.cmd_hist, old_size, new_size);

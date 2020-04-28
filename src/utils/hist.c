@@ -18,7 +18,7 @@
 
 #include "hist.h"
 
-#include <stddef.h> /* NULL size_t */
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* calloc() free() */
 #include <string.h> /* memmove() */
 
@@ -28,11 +28,10 @@
 #define NO_POS (-1)
 
 static int move_to_first_position(hist_t *hist, const char item[]);
-static int insert_at_first_position(hist_t *hist, size_t size,
-		const char item[]);
+static int insert_at_first_position(hist_t *hist, int size, const char item[]);
 
 int
-hist_init(hist_t *hist, size_t size)
+hist_init(hist_t *hist, int size)
 {
 	hist->pos = NO_POS;
 	hist->items = calloc(size, sizeof(*hist->items));
@@ -40,9 +39,9 @@ hist_init(hist_t *hist, size_t size)
 }
 
 void
-hist_reset(hist_t *hist, size_t size)
+hist_reset(hist_t *hist, int size)
 {
-	size_t i;
+	int i;
 	for(i = 0; i < size; ++i)
 	{
 		free(hist->items[i].text);
@@ -60,24 +59,29 @@ hist_is_empty(const hist_t *hist)
 }
 
 void
-hist_resize(hist_t *hist, size_t old_size, size_t new_size)
+hist_resize(hist_t *hist, int old_size, int new_size)
 {
-	if(new_size == 0)
+	if(old_size < 0)
+	{
+		old_size = 0;
+	}
+
+	if(new_size <= 0)
 	{
 		hist_reset(hist, old_size);
 		return;
 	}
 
-	const int delta = (int)new_size - (int)old_size;
+	const int delta = new_size - old_size;
 
 	if(delta < 0)
 	{
-		size_t i;
+		int i;
 		for(i = new_size; i < new_size - delta; ++i)
 		{
 			free(hist->items[i].text);
 		}
-		hist->pos = MIN(hist->pos, (int)new_size - 1);
+		hist->pos = MIN(hist->pos, new_size - 1);
 	}
 
 	hist->items = reallocarray(hist->items, new_size, sizeof(*hist->items));
@@ -103,7 +107,7 @@ hist_contains(const hist_t *hist, const char item[])
 }
 
 int
-hist_add(hist_t *hist, const char item[], size_t size)
+hist_add(hist_t *hist, const char item[], int size)
 {
 	if(size > 0 && item[0] != '\0')
 	{
@@ -143,7 +147,7 @@ move_to_first_position(hist_t *hist, const char item[])
 /* Inserts item at the first position.  Returns zero on success or non-zero on
  * failure. */
 static int
-insert_at_first_position(hist_t *hist, size_t size, const char item[])
+insert_at_first_position(hist_t *hist, int size, const char item[])
 {
 	char *const item_copy = strdup(item);
 	if(item_copy == NULL)
@@ -151,7 +155,7 @@ insert_at_first_position(hist_t *hist, size_t size, const char item[])
 		return 1;
 	}
 
-	hist->pos = MIN(hist->pos + 1, (int)size - 1);
+	hist->pos = MIN(hist->pos + 1, size - 1);
 	if(hist->pos > 0)
 	{
 		free(hist->items[hist->pos].text);

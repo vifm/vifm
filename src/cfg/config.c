@@ -844,8 +844,6 @@ cfg_get_vicmd(int *bg)
 void
 cfg_resize_histories(int new_size)
 {
-	const int old_size = MAX(cfg.history_len, 0);
-
 	hists_resize(new_size);
 
 	int i;
@@ -855,9 +853,10 @@ cfg_resize_histories(int new_size)
 		flist_hist_resize(tab_info.view, new_size);
 	}
 
+	const int old_size = cfg.history_len;
 	cfg.history_len = new_size;
 
-	if(old_size == 0 && new_size > 0)
+	if(old_size <= 0 && new_size > 0)
 	{
 		int i;
 		tab_info_t tab_info;
