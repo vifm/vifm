@@ -119,6 +119,9 @@ void unmock_env(const char env[], char old_value[]);
 /* Initializes color manager with functions that do nothing. */
 void stub_colmgr(void);
 
+/* Changes time attributes of a file to something "long time ago". */
+void reset_timestamp(const char path[]);
+
 #endif /* VIFM_TESTS__TEST_SUPPORT__TEST_UTILS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

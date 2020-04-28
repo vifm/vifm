@@ -1,7 +1,6 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* stat */
-#include <sys/time.h> /* timeval utimes() */
 #include <unistd.h> /* stat() */
 
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
@@ -220,8 +219,7 @@ TEST(empty_vifminfo_option_produces_empty_state)
 	json_value_free(value);
 }
 
-/* On Windows merging isn't forced. */
-TEST(histories_are_merged_correctly, IF(not_windows))
+TEST(histories_are_merged_correctly)
 {
 	cfg.vifm_info = VINFO_CHISTORY | VINFO_SHISTORY | VINFO_PHISTORY
 	              | VINFO_FHISTORY;
@@ -246,10 +244,7 @@ TEST(histories_are_merged_correctly, IF(not_windows))
 	hist_add(&curr_stats.filter_hist, "lfilter1", 1);
 
 	/* Second time, touched vifminfo.json file, merging is necessary. */
-#ifndef _WIN32
-	struct timeval tvs[2] = {};
-	assert_success(utimes(SANDBOX_PATH "/vifminfo.json", tvs));
-#endif
+	reset_timestamp(SANDBOX_PATH "/vifminfo.json");
 	write_info_file();
 
 	/* Clear histories. */
@@ -410,8 +405,7 @@ TEST(savedirs_works_on_its_own)
 	assert_string_equal("/rdir", rwin.curr_dir);
 }
 
-/* On Windows merging isn't forced. */
-TEST(dhistory_is_merged_correctly, IF(not_windows))
+TEST(dhistory_is_merged_correctly)
 {
 	cfg.vifm_info = VINFO_DHISTORY;
 
@@ -431,10 +425,7 @@ TEST(dhistory_is_merged_correctly, IF(not_windows))
 	flist_hist_setup(&lwin, "/dir1", "file4", 4, 4);
 
 	/* Second time, touched vifminfo.json file, merging is necessary. */
-#ifndef _WIN32
-	struct timeval tvs[2] = {};
-	assert_success(utimes(SANDBOX_PATH "/vifminfo.json", tvs));
-#endif
+	reset_timestamp(SANDBOX_PATH "/vifminfo.json");
 	write_info_file();
 
 	/* Clear histories. */
