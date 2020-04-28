@@ -53,10 +53,6 @@ int hist_is_empty(const hist_t *hist);
 /* Changes maximum size of the history object. */
 void hist_resize(hist_t *hist, int new_capacity);
 
-/* Checks whether given item present in the history.  Returns non-zero if
- * present, otherwise non-zero is returned. */
-int hist_contains(const hist_t *hist, const char item[]);
-
 /* Adds new item to the front of the history, thus it becomes its first
  * element.  If item is already present in history list, it's moved.  Returns
  * zero when item is added/moved or rejected, on failure non-zero is

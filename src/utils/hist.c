@@ -92,20 +92,6 @@ hist_resize(hist_t *hist, int new_capacity)
 }
 
 int
-hist_contains(const hist_t *hist, const char item[])
-{
-	int i;
-	for(i = 0; i < hist->size; ++i)
-	{
-		if(strcmp(hist->items[i].text, item) == 0)
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int
 hist_add(hist_t *hist, const char item[])
 {
 	if(hist->capacity > 0 && item[0] != '\0')
