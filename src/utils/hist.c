@@ -87,13 +87,6 @@ hist_resize(hist_t *hist, int new_capacity)
 	}
 
 	hist->items = reallocarray(hist->items, new_capacity, sizeof(*hist->items));
-
-	const int delta = new_capacity - hist->capacity;
-	if(delta > 0)
-	{
-		memset(hist->items + hist->capacity, 0, sizeof(*hist->items)*delta);
-	}
-
 	hist->size = MIN(hist->size, new_capacity);
 	hist->capacity = new_capacity;
 }
