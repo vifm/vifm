@@ -69,8 +69,8 @@ TEST(entry_matching_input_is_skipped)
 	hist_t hist;
 	assert_success(hist_init(&hist, 10U));
 
-	assert_success(hist_add(&hist, "older"));
-	assert_success(hist_add(&hist, "newer"));
+	assert_success(hist_add(&hist, "older", -1));
+	assert_success(hist_add(&hist, "newer", -1));
 
 	stats.line = wcsdup(L"newer");
 	stats.history_search = HIST_GO;

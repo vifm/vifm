@@ -21,12 +21,13 @@
 
 /* Generic implementation of history represented as list of strings. */
 
-#include <stddef.h> /* size_t */
+#include <time.h> /* time_t */
 
 /* Single entry of hist_t. */
 typedef struct
 {
-	char *text; /* Text of the item. */
+	char *text;       /* Text of the item. */
+	time_t timestamp; /* Time of storing this entry persistently. */
 }
 hist_item_t;
 
@@ -57,7 +58,7 @@ void hist_resize(hist_t *hist, int new_capacity);
  * element.  If item is already present in history list, it's moved.  Returns
  * zero when item is added/moved or rejected, on failure non-zero is
  * returned. */
-int hist_add(hist_t *hist, const char item[]);
+int hist_add(hist_t *hist, const char item[], time_t timestamp);
 
 #endif /* VIFM__UTILS__HIST_H__ */
 

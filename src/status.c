@@ -443,7 +443,7 @@ hists_commands_save(const char command[])
 		{
 			set_last_cmdline_command(command);
 		}
-		hist_add(&curr_stats.cmd_hist, command);
+		hist_add(&curr_stats.cmd_hist, command, -1);
 	}
 }
 
@@ -463,19 +463,19 @@ set_last_cmdline_command(const char cmd[])
 void
 hists_search_save(const char pattern[])
 {
-	hist_add(&curr_stats.search_hist, pattern);
+	hist_add(&curr_stats.search_hist, pattern, -1);
 }
 
 void
 hists_prompt_save(const char input[])
 {
-	hist_add(&curr_stats.prompt_hist, input);
+	hist_add(&curr_stats.prompt_hist, input, -1);
 }
 
 void
 hists_filter_save(const char input[])
 {
-	hist_add(&curr_stats.filter_hist, input);
+	hist_add(&curr_stats.filter_hist, input, -1);
 }
 
 const char *

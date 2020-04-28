@@ -21,12 +21,15 @@
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* calloc() free() */
 #include <string.h> /* memmove() */
+#include <time.h> /* time_t */
 
 #include "../compat/reallocarray.h"
 #include "macros.h"
 
-static int move_to_first_position(hist_t *hist, const char item[]);
-static int insert_at_first_position(hist_t *hist, const char item[]);
+static int move_to_first_position(hist_t *hist, const char item[],
+		time_t timestamp);
+static int insert_at_first_position(hist_t *hist, const char item[],
+		time_t timestamp);
 
 int
 hist_init(hist_t *hist, int capacity)
@@ -92,13 +95,13 @@ hist_resize(hist_t *hist, int new_capacity)
 }
 
 int
-hist_add(hist_t *hist, const char item[])
+hist_add(hist_t *hist, const char item[], time_t timestamp)
 {
 	if(hist->capacity > 0 && item[0] != '\0')
 	{
-		if(move_to_first_position(hist, item) != 0)
+		if(move_to_first_position(hist, item, timestamp) != 0)
 		{
-			return insert_at_first_position(hist, item);
+			return insert_at_first_position(hist, item, timestamp);
 		}
 	}
 	return 0;
@@ -107,7 +110,7 @@ hist_add(hist_t *hist, const char item[])
 /* Moves item to the first position.  Returns zero on success or non-zero when
  * item wasn't found in the history. */
 static int
-move_to_first_position(hist_t *hist, const char item[])
+move_to_first_position(hist_t *hist, const char item[], time_t timestamp)
 {
 	if(hist->size > 0 && strcmp(hist->items[0].text, item) == 0)
 	{
@@ -120,6 +123,7 @@ move_to_first_position(hist_t *hist, const char item[])
 		if(strcmp(hist->items[i].text, item) == 0)
 		{
 			hist_item_t item = hist->items[i];
+			item.timestamp = timestamp;
 			memmove(hist->items + 1, hist->items, sizeof(*hist->items)*i);
 			hist->items[0] = item;
 			return 0;
@@ -132,7 +136,7 @@ move_to_first_position(hist_t *hist, const char item[])
 /* Inserts item at the first position.  Returns zero on success or non-zero on
  * failure. */
 static int
-insert_at_first_position(hist_t *hist, const char item[])
+insert_at_first_position(hist_t *hist, const char item[], time_t timestamp)
 {
 	char *const item_copy = strdup(item);
 	if(item_copy == NULL)
@@ -152,6 +156,7 @@ insert_at_first_position(hist_t *hist, const char item[])
 			sizeof(*hist->items)*(hist->size - 1));
 
 	hist->items[0].text = item_copy;
+	hist->items[0].timestamp = timestamp;
 	return 0;
 }
 
