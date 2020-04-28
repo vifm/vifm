@@ -115,7 +115,8 @@
 
 	Improve cursor positioning after file operations.
 
-	More sensible merging of directory histories from multiple instances.
+	More sensible merging of histories from multiple instances in vifminfo
+	file.
 
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).

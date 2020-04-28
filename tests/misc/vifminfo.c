@@ -220,29 +220,30 @@ TEST(empty_vifminfo_option_produces_empty_state)
 	json_value_free(value);
 }
 
-TEST(histories_are_merged_correctly)
+/* On Windows merging isn't forced. */
+TEST(histories_are_merged_correctly, IF(not_windows))
 {
 	cfg.vifm_info = VINFO_CHISTORY | VINFO_SHISTORY | VINFO_PHISTORY
 	              | VINFO_FHISTORY;
 
-	hists_commands_save("command0");
-	hists_commands_save("command1");
-	hists_search_save("search0");
-	hists_search_save("search1");
-	hists_prompt_save("prompt0");
-	hists_prompt_save("prompt1");
-	hists_filter_save("lfilter0");
-	hists_filter_save("lfilter1");
+	hist_add(&curr_stats.cmd_hist, "command0", 0);
+	hist_add(&curr_stats.cmd_hist, "command2", 2);
+	hist_add(&curr_stats.search_hist, "search0", 0);
+	hist_add(&curr_stats.search_hist, "search2", 2);
+	hist_add(&curr_stats.prompt_hist, "prompt0", 0);
+	hist_add(&curr_stats.prompt_hist, "prompt2", 2);
+	hist_add(&curr_stats.filter_hist, "lfilter0", 0);
+	hist_add(&curr_stats.filter_hist, "lfilter2", 2);
 
 	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 
 	/* First time, no merging is necessary. */
 	write_info_file();
 
-	hists_commands_save("command2");
-	hists_search_save("search2");
-	hists_prompt_save("prompt2");
-	hists_filter_save("lfilter2");
+	hist_add(&curr_stats.cmd_hist, "command1", 1);
+	hist_add(&curr_stats.search_hist, "search1", 1);
+	hist_add(&curr_stats.prompt_hist, "prompt1", 1);
+	hist_add(&curr_stats.filter_hist, "lfilter1", 1);
 
 	/* Second time, touched vifminfo.json file, merging is necessary. */
 #ifndef _WIN32
@@ -262,17 +263,29 @@ TEST(histories_are_merged_correctly)
 	assert_int_equal(3, curr_stats.prompt_hist.size);
 	assert_int_equal(3, curr_stats.filter_hist.size);
 	assert_string_equal("command2", curr_stats.cmd_hist.items[0].text);
+	assert_int_equal(2, curr_stats.cmd_hist.items[0].timestamp);
 	assert_string_equal("command1", curr_stats.cmd_hist.items[1].text);
+	assert_int_equal(1, curr_stats.cmd_hist.items[1].timestamp);
 	assert_string_equal("command0", curr_stats.cmd_hist.items[2].text);
+	assert_int_equal(0, curr_stats.cmd_hist.items[2].timestamp);
 	assert_string_equal("search2", curr_stats.search_hist.items[0].text);
+	assert_int_equal(2, curr_stats.search_hist.items[0].timestamp);
 	assert_string_equal("search1", curr_stats.search_hist.items[1].text);
+	assert_int_equal(1, curr_stats.search_hist.items[1].timestamp);
 	assert_string_equal("search0", curr_stats.search_hist.items[2].text);
+	assert_int_equal(0, curr_stats.search_hist.items[2].timestamp);
 	assert_string_equal("prompt2", curr_stats.prompt_hist.items[0].text);
+	assert_int_equal(2, curr_stats.prompt_hist.items[0].timestamp);
 	assert_string_equal("prompt1", curr_stats.prompt_hist.items[1].text);
+	assert_int_equal(1, curr_stats.prompt_hist.items[1].timestamp);
 	assert_string_equal("prompt0", curr_stats.prompt_hist.items[2].text);
+	assert_int_equal(0, curr_stats.prompt_hist.items[2].timestamp);
 	assert_string_equal("lfilter2", curr_stats.filter_hist.items[0].text);
+	assert_int_equal(2, curr_stats.filter_hist.items[0].timestamp);
 	assert_string_equal("lfilter1", curr_stats.filter_hist.items[1].text);
+	assert_int_equal(1, curr_stats.filter_hist.items[1].timestamp);
 	assert_string_equal("lfilter0", curr_stats.filter_hist.items[2].text);
+	assert_int_equal(0, curr_stats.filter_hist.items[2].timestamp);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }

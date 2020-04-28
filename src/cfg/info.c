@@ -1746,8 +1746,8 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 	JSON_Array *entries = json_object_get_array(current, node);
 	trie_t *trie = trie_create();
 
-	JSON_Value *merged_value = json_value_init_array();
-	JSON_Array *merged = json_array(merged_value);
+	JSON_Value *combined_value = json_value_init_array();
+	JSON_Array *combined = json_array(combined_value);
 
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
@@ -1769,7 +1769,7 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 			if(trie_get(trie, text, &data) != 0)
 			{
 				JSON_Value *value = json_object_get_wrapping_value(entry);
-				json_array_append_value(merged, json_value_deep_copy(value));
+				json_array_append_value(combined, json_value_deep_copy(value));
 			}
 		}
 	}
@@ -1779,9 +1779,23 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 	for(i = 0, n = json_array_get_count(entries); i < n; ++i)
 	{
 		JSON_Value *entry = json_array_get_value(entries, i);
+		json_array_append_value(combined, json_value_deep_copy(entry));
+	}
+
+	JSON_Object **entries_sorted = make_timestamp_ordering(combined);
+
+	JSON_Value *merged_value = json_value_init_array();
+	JSON_Array *merged = json_array(merged_value);
+
+	for(n = json_array_get_count(combined), i = MAX(0, n - cfg.history_len);
+			i < n; ++i)
+	{
+		JSON_Value *entry = json_object_get_wrapping_value(entries_sorted[i]);
 		json_array_append_value(merged, json_value_deep_copy(entry));
 	}
 
+	json_value_free(combined_value);
+	free(entries_sorted);
 
 	json_object_set_value(current, node, merged_value);
 }
