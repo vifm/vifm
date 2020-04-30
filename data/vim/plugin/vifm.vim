@@ -24,8 +24,16 @@ let s:script_path = expand('<sfile>')
 " :DiffVifm - load file for :vert diffsplit.
 " :TabVifm - load file or files in tabs.
 
-" Whether :drop command is available
-let s:has_drop = (exists(':drop') == 2)
+" Check whether :drop command is available.  Do not use exist(':drop'), it's
+" deceptive.
+let s:has_drop = 0
+try
+	drop
+catch E471 " argument required
+	let s:has_drop = 1
+catch E319 " command is not available
+catch E492 " not an editor command
+endtry
 
 let s:tab_drop_cmd = (s:has_drop ? 'tablast | tab drop' : 'tabedit')
 
