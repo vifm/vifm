@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 January 25
+" Last Change: 2020 April 30
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -280,7 +280,7 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 
 	" Go to the first file working around possibility that :drop command is not
 	" evailable, if possible
-	if editcmd == 'edit'
+	if editcmd == 'edit' || !s:has_drop
 		" Linked folders must be resolved to successfully call 'buffer'
 		let firstfile = unescaped_firstfile
 		let firstfile = resolve(fnamemodify(firstfile, ':h'))
