@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 April 30
+" Last Change: 2020 May 1
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -29,10 +29,10 @@ let s:script_path = expand('<sfile>')
 let s:has_drop = 0
 try
 	drop
-catch E471 " argument required
+catch /E471:/ " argument required
 	let s:has_drop = 1
-catch E319 " command is not available
-catch E492 " not an editor command
+catch /E319:/ " command is not available
+catch /E492:/ " not an editor command
 endtry
 
 let s:tab_drop_cmd = (s:has_drop ? 'tablast | tab drop' : 'tabedit')
@@ -344,7 +344,7 @@ function! s:DisplayVifmHelp() abort
 
 	try
 		execute 'help '.s:GetVifmHelpTopic()
-	catch E149
+	catch /E149:/
 		let msg = substitute(v:exception, '[^:]\+:', '', '')
 		return 'echoerr "'.escape(msg, '\"').'"'
 	finally
