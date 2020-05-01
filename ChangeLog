@@ -228,6 +228,12 @@
 	mapping failed at some point (e.g., contained an unmapped key).  Thanks to
 	Seok Won Lee (a.k.a. ijleesw).
 
+	Fixed issues with the plugin when Vim has no :drop command.  Thanks to
+	Normen Hansen (a.k.a. normen).
+
+	Fixed use of :catch in Vim plugin.  Thanks to Normen
+	Hansen (a.k.a. normen).
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by

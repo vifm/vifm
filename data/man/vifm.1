@@ -1,4 +1,4 @@
-.TH VIFM 1 "April 25, 2020" "vifm 0.10.1"
+.TH VIFM 1 "May 1, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -5470,7 +5470,8 @@ The result is a string, which represents file type and is one of the list:
     block   block devices
     fifo    pipes
     sock    *nix domain sockets
-    ?       unknown file type (should not normally appear)
+    ?       unknown file type (should not normally happen) or
+            non-file (pseudo-entries in compare view)
 
 The result can also be an empty string in case of invalid argument.
 

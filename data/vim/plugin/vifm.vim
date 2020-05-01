@@ -2,7 +2,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@posteo.net>
-" Last Change: 2020 January 25
+" Last Change: 2020 May 1
 
 " vifm and vifm.vim can be found at https://vifm.info/
 
@@ -24,8 +24,16 @@ let s:script_path = expand('<sfile>')
 " :DiffVifm - load file for :vert diffsplit.
 " :TabVifm - load file or files in tabs.
 
-" Whether :drop command is available
-let s:has_drop = (exists(':drop') == 2)
+" Check whether :drop command is available.  Do not use exist(':drop'), it's
+" deceptive.
+let s:has_drop = 0
+try
+	drop
+catch /E471:/ " argument required
+	let s:has_drop = 1
+catch /E319:/ " command is not available
+catch /E492:/ " not an editor command
+endtry
 
 let s:tab_drop_cmd = (s:has_drop ? 'tablast | tab drop' : 'tabedit')
 
@@ -280,7 +288,7 @@ function! s:HandleRunResults(exitcode, listf, typef, editcmd) abort
 
 	" Go to the first file working around possibility that :drop command is not
 	" evailable, if possible
-	if editcmd == 'edit'
+	if editcmd == 'edit' || !s:has_drop
 		" Linked folders must be resolved to successfully call 'buffer'
 		let firstfile = unescaped_firstfile
 		let firstfile = resolve(fnamemodify(firstfile, ':h'))
@@ -336,7 +344,7 @@ function! s:DisplayVifmHelp() abort
 
 	try
 		execute 'help '.s:GetVifmHelpTopic()
-	catch E149
+	catch /E149:/
 		let msg = substitute(v:exception, '[^:]\+:', '', '')
 		return 'echoerr "'.escape(msg, '\"').'"'
 	finally
