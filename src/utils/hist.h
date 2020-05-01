@@ -21,44 +21,44 @@
 
 /* Generic implementation of history represented as list of strings. */
 
-#include <stddef.h> /* size_t */
+#include <time.h> /* time_t */
+
+/* Single entry of hist_t. */
+typedef struct
+{
+	char *text;       /* Text of the item. */
+	time_t timestamp; /* Time of storing this entry persistently. */
+}
+hist_item_t;
 
 /* History object structure.  Doesn't store its length. */
 typedef struct
 {
-	/* List of history items.  Can be NULL for empty list. */
-	char **items;
-	/* Position of the last item in the items list.  Undefined (likely to be
-	 * negative) for empty lists. */
-	int pos;
+	hist_item_t *items; /* List of history items.  Can be NULL for empty list. */
+	int size;           /* Current size of the list. */
+	int capacity;       /* Maximum size of the list. */
 }
 hist_t;
 
-/* Initializes empty history structure of given size.  Return zero on success,
- * otherwise non-zero is returned. */
-int hist_init(hist_t *hist, size_t size);
+/* Initializes empty history structure of given capacity.  Return zero on
+ * success, otherwise non-zero is returned. */
+int hist_init(hist_t *hist, int capacity);
 
-/* Resets content of the history of given size and empties it.  All associated
- * resources are freed. */
-void hist_reset(hist_t *hist, size_t size);
+/* Resets content of the history.  All associated resources are freed. */
+void hist_reset(hist_t *hist);
 
 /* Checks whether history is empty.  Returns non-zero for empty history,
  * otherwise non-zero is returned. */
 int hist_is_empty(const hist_t *hist);
 
-/* Reduces amount of memory taken by the history.  The new_size specifies new
- * size of the history, while removed_count parameter designates number of
- * removed elements. */
-void hist_trunc(hist_t *hist, size_t new_size, size_t removed_count);
-
-/* Checks whether given item present in the history.  Returns non-zero if
- * present, otherwise non-zero is returned. */
-int hist_contains(const hist_t *hist, const char item[]);
+/* Changes maximum size of the history object. */
+void hist_resize(hist_t *hist, int new_capacity);
 
 /* Adds new item to the front of the history, thus it becomes its first
- * element.  If item already present in history list, it's moved.  Returns zero
- * when item is added/moved or rejected, on failure non-zero is returned. */
-int hist_add(hist_t *hist, const char item[], size_t size);
+ * element.  If item is already present in history list, it's moved.  Returns
+ * zero when item is added/moved or rejected, on failure non-zero is
+ * returned. */
+int hist_add(hist_t *hist, const char item[], time_t timestamp);
 
 #endif /* VIFM__UTILS__HIST_H__ */
 

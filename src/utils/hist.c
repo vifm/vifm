@@ -18,65 +18,90 @@
 
 #include "hist.h"
 
-#include <stddef.h> /* NULL size_t */
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* calloc() free() */
 #include <string.h> /* memmove() */
+#include <time.h> /* time_t */
 
+#include "../compat/reallocarray.h"
 #include "macros.h"
-#include "string_array.h"
 
-#define NO_POS (-1)
-
-static int move_to_first_position(hist_t *hist, const char item[]);
-static int insert_at_first_position(hist_t *hist, size_t size, const char item[]);
+static int move_to_first_position(hist_t *hist, const char item[],
+		time_t timestamp);
+static int insert_at_first_position(hist_t *hist, const char item[],
+		time_t timestamp);
 
 int
-hist_init(hist_t *hist, size_t size)
+hist_init(hist_t *hist, int capacity)
 {
-	hist->pos = NO_POS;
-	hist->items = calloc(size, sizeof(char *));
-	return hist->items == NULL;
+	if(capacity < 0)
+	{
+		capacity = 0;
+	}
+
+	hist->size = 0;
+	hist->capacity = 0;
+
+	hist->items = calloc(capacity, sizeof(*hist->items));
+	if(hist->items == NULL)
+	{
+		return 1;
+	}
+
+	hist->capacity = capacity;
+	return 0;
 }
 
 void
-hist_reset(hist_t *hist, size_t size)
+hist_reset(hist_t *hist)
 {
-	free_string_array(hist->items, size);
+	int i;
+	for(i = 0; i < hist->size; ++i)
+	{
+		free(hist->items[i].text);
+	}
+	free(hist->items);
+
 	hist->items = NULL;
-	hist->pos = NO_POS;
+	hist->size = 0;
+	hist->capacity = 0;
 }
 
 int
 hist_is_empty(const hist_t *hist)
 {
-	return hist->pos == NO_POS;
+	return (hist->size == 0);
 }
 
 void
-hist_trunc(hist_t *hist, size_t new_size, size_t removed_count)
+hist_resize(hist_t *hist, int new_capacity)
 {
-	free_strings(hist->items + new_size, removed_count);
-	hist->pos = MIN(hist->pos, (int)new_size - 1);
-}
-
-int
-hist_contains(const hist_t *hist, const char item[])
-{
-	if(hist_is_empty(hist))
+	if(new_capacity <= 0)
 	{
-		return 0;
+		hist_reset(hist);
+		return;
 	}
-	return is_in_string_array(hist->items, hist->pos + 1, item);
+
+	/* Free truncated elements, if any. */
+	int i;
+	for(i = new_capacity; i < hist->size; ++i)
+	{
+		free(hist->items[i].text);
+	}
+
+	hist->items = reallocarray(hist->items, new_capacity, sizeof(*hist->items));
+	hist->size = MIN(hist->size, new_capacity);
+	hist->capacity = new_capacity;
 }
 
 int
-hist_add(hist_t *hist, const char item[], size_t size)
+hist_add(hist_t *hist, const char item[], time_t timestamp)
 {
-	if(size > 0 && item[0] != '\0')
+	if(hist->capacity > 0 && item[0] != '\0')
 	{
-		if(move_to_first_position(hist, item) != 0)
+		if(move_to_first_position(hist, item, timestamp) != 0)
 		{
-			return insert_at_first_position(hist, size, item);
+			return insert_at_first_position(hist, item, timestamp);
 		}
 	}
 	return 0;
@@ -85,27 +110,33 @@ hist_add(hist_t *hist, const char item[], size_t size)
 /* Moves item to the first position.  Returns zero on success or non-zero when
  * item wasn't found in the history. */
 static int
-move_to_first_position(hist_t *hist, const char item[])
+move_to_first_position(hist_t *hist, const char item[], time_t timestamp)
 {
-	const int pos = string_array_pos(hist->items, hist->pos + 1, item);
-	if(pos == 0)
+	if(hist->size > 0 && strcmp(hist->items[0].text, item) == 0)
 	{
 		return 0;
 	}
-	else if(pos > 0)
+
+	int i;
+	for(i = 1; i < hist->size; ++i)
 	{
-		char *const item = hist->items[pos];
-		memmove(hist->items + 1, hist->items, sizeof(char *)*pos);
-		hist->items[0] = item;
-		return 0;
+		if(strcmp(hist->items[i].text, item) == 0)
+		{
+			hist_item_t item = hist->items[i];
+			item.timestamp = timestamp;
+			memmove(hist->items + 1, hist->items, sizeof(*hist->items)*i);
+			hist->items[0] = item;
+			return 0;
+		}
 	}
+
 	return 1;
 }
 
 /* Inserts item at the first position.  Returns zero on success or non-zero on
  * failure. */
 static int
-insert_at_first_position(hist_t *hist, size_t size, const char item[])
+insert_at_first_position(hist_t *hist, const char item[], time_t timestamp)
 {
 	char *const item_copy = strdup(item);
 	if(item_copy == NULL)
@@ -113,15 +144,19 @@ insert_at_first_position(hist_t *hist, size_t size, const char item[])
 		return 1;
 	}
 
-	hist->pos = MIN(hist->pos + 1, (int)size - 1);
-	if(hist->pos > 0)
+	if(hist->size == hist->capacity)
 	{
-		free(hist->items[hist->pos]);
-		memmove(hist->items + 1, hist->items, sizeof(char *)*hist->pos);
-		hist->items[0] = NULL;
+		free(hist->items[hist->size - 1].text);
 	}
+	else
+	{
+		++hist->size;
+	}
+	memmove(hist->items + 1, hist->items,
+			sizeof(*hist->items)*(hist->size - 1));
 
-	hist->items[0] = item_copy;
+	hist->items[0].text = item_copy;
+	hist->items[0].timestamp = timestamp;
 	return 0;
 }
 

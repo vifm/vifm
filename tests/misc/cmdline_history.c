@@ -69,15 +69,15 @@ TEST(entry_matching_input_is_skipped)
 	hist_t hist;
 	assert_success(hist_init(&hist, 10U));
 
-	assert_success(hist_add(&hist, "older", 10U));
-	assert_success(hist_add(&hist, "newer", 10U));
+	assert_success(hist_add(&hist, "older", -1));
+	assert_success(hist_add(&hist, "newer", -1));
 
 	stats.line = wcsdup(L"newer");
 	stats.history_search = HIST_GO;
 	hist_prev(&stats, &hist, 10U);
 	assert_wstring_equal(L"older", stats.line);
 
-	hist_reset(&hist, 10U);
+	hist_reset(&hist);
 }
 
 TEST(entering_and_leaving_via_the_same_mapping_skips_cmdline_history)

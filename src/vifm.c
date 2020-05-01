@@ -331,8 +331,8 @@ vifm_main(int argc, char *argv[])
 	 * history.  This is not done automatically as history manipulation should be
 	 * postponed until views are fully loaded, otherwise there is no correct
 	 * information about current file and relative cursor position. */
-	flist_hist_save(&lwin, NULL, NULL, -1);
-	flist_hist_save(&rwin, NULL, NULL, -1);
+	flist_hist_save(&lwin);
+	flist_hist_save(&rwin);
 
 	/* Trigger auto-commands for initial directories. */
 	if(!lwin_cv)
@@ -583,8 +583,8 @@ vifm_restart(void)
 
 	reset_views();
 	read_info_file(1);
-	flist_hist_save(&lwin, NULL, NULL, -1);
-	flist_hist_save(&rwin, NULL, NULL, -1);
+	flist_hist_save(&lwin);
+	flist_hist_save(&rwin);
 
 	/* Color schemes. */
 	if(stroscmp(curr_stats.color_scheme, DEF_CS_NAME) != 0 &&

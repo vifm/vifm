@@ -335,7 +335,7 @@ TEST(location_is_saved_on_entering_custom_view)
 	copy_str(lwin.curr_dir, sizeof(lwin.curr_dir), cwd);
 
 	/* Put specific history entry and make sure it's used. */
-	flist_hist_save(&lwin, lwin.curr_dir, "b", 1);
+	flist_hist_setup(&lwin, lwin.curr_dir, "b", 1, 1);
 	load_dir_list(&lwin, 0);
 	assert_string_equal(lwin.curr_dir, cwd);
 	assert_string_equal("b", lwin.dir_entry[lwin.list_pos].name);

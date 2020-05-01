@@ -742,7 +742,7 @@ rn_leave(view_t *view, int levels)
 	}
 
 	curr_stats.drop_new_dir_hist = 0;
-	flist_hist_save(view, NULL, NULL, -1);
+	flist_hist_save(view);
 }
 
 /* Goes one directory up from current location.  Returns zero unless it won't

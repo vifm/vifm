@@ -3,7 +3,12 @@
 #include <stic.h>
 
 #include <sys/stat.h> /* chmod() */
+#include <sys/time.h> /* timeval utimes() */
 #include <unistd.h> /* access() usleep() */
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include <locale.h> /* LC_ALL setlocale() */
 #include <stddef.h> /* NULL */
@@ -511,6 +516,27 @@ pair_in_use_stub(short int pair)
 static void
 move_pair_stub(short int from, short int to)
 {
+}
+
+void
+reset_timestamp(const char path[])
+{
+#ifndef _WIN32
+	struct timeval tvs[2] = {};
+	assert_success(utimes(path, tvs));
+#else
+	HANDLE file = CreateFileA(path, GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
+
+	assert_true(file != INVALID_HANDLE_VALUE);
+	if(file != INVALID_HANDLE_VALUE)
+	{
+		FILETIME time = { 1, 0 };
+		assert_true(SetFileTime(file, &time, &time, &time));
+		CloseHandle(file);
+	}
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

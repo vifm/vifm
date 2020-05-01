@@ -86,7 +86,6 @@ show_filterhistory_menu(view_t *view)
 static int
 show_history(view_t *view, HistoryType type, hist_t *hist, const char title[])
 {
-	int i;
 	static menu_data_t m;
 
 	menus_init_data(&m, view, strdup(title), strdup("History disabled or empty"));
@@ -94,9 +93,10 @@ show_history(view_t *view, HistoryType type, hist_t *hist, const char title[])
 	m.key_handler = &history_khandler;
 	m.extra_data = type;
 
-	for(i = 0; i <= hist->pos; ++i)
+	int i;
+	for(i = 0; i < hist->size; ++i)
 	{
-		m.len = add_to_string_array(&m.items, m.len, hist->items[i]);
+		m.len = add_to_string_array(&m.items, m.len, hist->items[i].text);
 	}
 
 	return menus_enter(m.state, view);

@@ -21,6 +21,8 @@
 
 /* Directory history related functions. */
 
+#include <time.h> /* time_t */
+
 #include "ui/ui.h"
 
 /* Changes current directory of the view to next location backward in
@@ -34,18 +36,19 @@ void flist_hist_go_forward(view_t *view);
 /* Changes size of the history.  Zero or negative value disables it. */
 void flist_hist_resize(view_t *view, int new_size);
 
-/* Adds new entry to directory history of the view or updates an existing entry.
- * If path is NULL, current path is used.  If file is NULL current file is used.
- * rel_pos specifies position of file relative to top of the view.  If rel_pos
- * is negative, it's computed for current file.  Empty file name signifies
- * visiting directory, which shouldn't reset name of previously active file in
- * it. */
-void flist_hist_save(view_t *view, const char path[], const char file[],
-		int rel_pos);
+/* Adds new entry to directory history of the view or updates an existing
+ * entry.  Takes all information from the view. */
+void flist_hist_save(view_t *view);
 
-/* Checks whether given path to directory is in view history.  Returns non-zero
- * if so, otherwise zero is returned. */
-int flist_hist_contains(const view_t *view, const char path[]);
+/* Like flist_hist_save() adds new entry to directory history of the view or
+ * updates an existing entry, but allows to specify custom values.  If path is
+ * NULL, current path is used.  If file is NULL current file is used.  rel_pos
+ * specifies position of file relative to top of the view.  If rel_pos is
+ * negative, it's computed for current file.  Timestamp should be -1 for entries
+ * created during current session.  Empty file name signifies visiting
+ * directory, which shouldn't reset name of previously active file in it. */
+void flist_hist_setup(view_t *view, const char path[], const char file[],
+		int rel_pos, time_t timestamp);
 
 /* Empties history of the view. */
 void flist_hist_clear(view_t *view);

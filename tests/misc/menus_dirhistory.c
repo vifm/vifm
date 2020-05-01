@@ -53,8 +53,8 @@ TEST(history_of_a_view_is_listed_most_recent_first)
 	int pos;
 	strlist_t list;
 
-	flist_hist_save(&lwin, SANDBOX_PATH, "file1", 0);
-	flist_hist_save(&lwin, TEST_DATA_PATH, "file2", 0);
+	flist_hist_setup(&lwin, SANDBOX_PATH, "file1", 0, 1);
+	flist_hist_setup(&lwin, TEST_DATA_PATH, "file2", 0, 1);
 
 	list = list_dir_history(&lwin, &pos);
 
@@ -70,10 +70,10 @@ TEST(history_does_not_contain_duplicated_entries)
 	int pos;
 	strlist_t list;
 
-	flist_hist_save(&lwin, SANDBOX_PATH, "file1", 0);
-	flist_hist_save(&lwin, TEST_DATA_PATH, "file2", 0);
-	flist_hist_save(&lwin, SANDBOX_PATH, "file3", 0);
-	flist_hist_save(&lwin, TEST_DATA_PATH, "file4", 0);
+	flist_hist_setup(&lwin, SANDBOX_PATH, "file1", 0, 1);
+	flist_hist_setup(&lwin, TEST_DATA_PATH, "file2", 0, 1);
+	flist_hist_setup(&lwin, SANDBOX_PATH, "file3", 0, 1);
+	flist_hist_setup(&lwin, TEST_DATA_PATH, "file4", 0, 1);
 
 	list = list_dir_history(&lwin, &pos);
 
@@ -101,8 +101,8 @@ TEST(position_of_current_directory_is_determined)
 
 	strcpy(lwin.curr_dir, SANDBOX_PATH);
 
-	flist_hist_save(&lwin, SANDBOX_PATH, "file1", 0);
-	flist_hist_save(&lwin, TEST_DATA_PATH, "file2", 0);
+	flist_hist_setup(&lwin, SANDBOX_PATH, "file1", 0, 1);
+	flist_hist_setup(&lwin, TEST_DATA_PATH, "file2", 0, 1);
 
 	list = list_dir_history(&lwin, &pos);
 
@@ -122,9 +122,9 @@ TEST(position_of_current_directory_is_determined_in_custom_view)
 	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "..",
 			cwd);
 
-	flist_hist_save(&lwin, TEST_DATA_PATH, "file2", 0);
-	flist_hist_save(&lwin, lwin.curr_dir, "file1", 0);
-	flist_hist_save(&lwin, SANDBOX_PATH, "file3", 0);
+	flist_hist_setup(&lwin, TEST_DATA_PATH, "file2", 0, 1);
+	flist_hist_setup(&lwin, lwin.curr_dir, "file1", 0, 1);
+	flist_hist_setup(&lwin, SANDBOX_PATH, "file3", 0, 1);
 
 	flist_custom_start(&lwin, "test");
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");

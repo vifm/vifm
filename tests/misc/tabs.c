@@ -335,8 +335,8 @@ TEST(opening_tab_in_new_location_records_new_location_in_history)
 	curr_stats.load_stage = 2;
 	curr_stats.ch_pos = 1;
 
-	flist_hist_save(&lwin, test_data, "rename", 0);
-	flist_hist_save(&lwin, sandbox, "..", 0);
+	flist_hist_setup(&lwin, test_data, "rename", 0, 1);
+	flist_hist_setup(&lwin, sandbox, "..", 0, 1);
 
 	cfg.pane_tabs = 1;
 	tabs_new(NULL, test_data);

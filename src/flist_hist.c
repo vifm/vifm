@@ -165,7 +165,14 @@ reduce_view_history(view_t *view, int new_size)
 }
 
 void
-flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
+flist_hist_save(view_t *view)
+{
+	flist_hist_setup(view, NULL, NULL, -1, -1);
+}
+
+void
+flist_hist_setup(view_t *view, const char path[], const char file[],
+		int rel_pos, time_t timestamp)
 {
 	int x;
 
@@ -224,6 +231,7 @@ flist_hist_save(view_t *view, const char path[], const char file[], int rel_pos)
 	}
 	view->history[x].dir = strdup(path);
 	view->history[x].file = strdup(file);
+	view->history[x].timestamp = timestamp;
 	view->history[x].rel_pos = rel_pos;
 	++view->history_num;
 	view->history_pos = view->history_num - 1;
@@ -239,30 +247,6 @@ free_view_history_items(const history_t history[], size_t len)
 		free(history[i].dir);
 		free(history[i].file);
 	}
-}
-
-int
-flist_hist_contains(const view_t *view, const char path[])
-{
-	int i;
-
-	if(view->history == NULL || view->history_num <= 0)
-	{
-		return 0;
-	}
-
-	for(i = view->history_pos; i >= 0; --i)
-	{
-		if(strlen(view->history[i].dir) < 1)
-		{
-			break;
-		}
-		if(stroscmp(view->history[i].dir, path) == 0)
-		{
-			return 1;
-		}
-	}
-	return 0;
 }
 
 void
@@ -435,8 +419,8 @@ flist_hist_clone(view_t *dst, const view_t *src)
 	for(i = 0; i < src->history_num; ++i)
 	{
 		const history_t *const hist_entry = &src->history[i];
-		flist_hist_save(dst, hist_entry->dir, hist_entry->file,
-				hist_entry->rel_pos);
+		flist_hist_setup(dst, hist_entry->dir, hist_entry->file,
+				hist_entry->rel_pos, hist_entry->timestamp);
 	}
 
 	dst->history_pos = MIN(src->history_pos, dst->history_num - 1);
