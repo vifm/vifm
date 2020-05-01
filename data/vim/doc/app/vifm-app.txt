@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 Apr 25
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 May 1
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -4556,7 +4556,8 @@ The result is a string, which represents file type and is one of the list:
     block   block devices
     fifo    pipes
     sock    *nix domain sockets
-    ?       unknown file type (should not normally appear)
+    ?       unknown file type (should not normally happen) or
+            non-file (pseudo-entries in compare view)
 
 The result can also be an empty string in case of invalid argument.
 
