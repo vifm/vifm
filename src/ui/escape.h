@@ -81,6 +81,7 @@ void esc_state_init(esc_state *state, const col_attr_t *defaults,
 		int max_colors);
 
 TSTATIC_DEFS(
+	size_t get_char_width_esc(const char str[]);
 	void esc_state_update(esc_state *state, const char str[]);
 	const char * strchar2str(const char str[], int pos, size_t *screen_width);
 )

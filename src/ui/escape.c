@@ -46,7 +46,7 @@ static char * add_highlighted_substr(const char sub[], size_t sub_len,
 		char out[]);
 static char * add_highlighted_sym(const char sym[], size_t sym_width,
 		char out[]);
-static size_t get_char_width_esc(const char str[]);
+TSTATIC size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
 TSTATIC void esc_state_update(esc_state *state, const char str[]);
 static void esc_state_process_attr(esc_state *state, int n);
@@ -414,12 +414,36 @@ esc_print_line(const char line[], WINDOW *win, int column, int row,
 /* Returns number of characters at the beginning of the str which form one
  * logical symbol.  Takes UTF-8 encoding and terminal escape sequences into
  * account. */
-static size_t
+TSTATIC size_t
 get_char_width_esc(const char str[])
 {
-	return (*str == '\033')
-	     ? (size_t)(after_first(str, 'm') - str)
-	     : utf8_chrw(str);
+	if(*str != '\033')
+	{
+		return utf8_chrw(str);
+	}
+
+	/* Skip prefix. */
+	const char *p = str + 1;
+	if(*p == '[')
+	{
+		++p;
+	}
+
+	/* And sequences of numbers separated by ";". */
+	while(isdigit(*p))
+	{
+		do
+		{
+			++p;
+		}
+		while(isdigit(*p));
+
+		if(*p == ';')
+		{
+			++p;
+		}
+	}
+	return (*p == '\0' ? p - str : p - str + 1);
 }
 
 /* Prints the leading character of the str to the win window parsing terminal
@@ -593,7 +617,7 @@ esc_state_init(esc_state *state, const col_attr_t *defaults, int max_colors)
 TSTATIC const char *
 strchar2str(const char str[], int pos, size_t *screen_width)
 {
-	static char buf[32];
+	static char buf[128];
 
 	const size_t char_width = utf8_chrw(str);
 	if(char_width != 1 || (unsigned char)str[0] >= (unsigned char)' ')
@@ -637,19 +661,14 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	}
 	else if(str[0] == '\033')
 	{
-		char *dst = buf;
-		while(*str != 'm' && *str != '\0' && (size_t)(dst - buf) < sizeof(buf) - 2)
-		{
-			*dst++ = *str++;
-		}
-		if(*str != 'm')
+		size_t len = get_char_width_esc(str);
+		if(len >= sizeof(buf) || (len > 0 && str[len - 1] != 'm'))
 		{
 			buf[0] = '\0';
 		}
 		else
 		{
-			*dst++ = 'm';
-			*dst = '\0';
+			copy_str(buf, len + 1, str);
 		}
 		*screen_width = 0;
 	}
