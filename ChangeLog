@@ -237,6 +237,9 @@
 	Fixed use of :catch in Vim plugin.  Thanks to Normen
 	Hansen (a.k.a. normen).
 
+	Fixed %a 'statusline' macro on OS X producing wrong values.  Thanks to
+	yanzhang0219.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
