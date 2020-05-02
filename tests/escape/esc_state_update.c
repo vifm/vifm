@@ -110,5 +110,15 @@ TEST(colors_are_parsed)
 	assert_int_equal(-1, state.bg);
 }
 
+TEST(a_lot_of_attributes)
+{
+	col_attr_t def_color = { .fg = 1, .bg = 2, .attr = 0 };
+	esc_state_init(&state, &def_color, 256);
+
+	esc_state_update(&state, "\033[22;24;25;27;28;38;5;253;48;5;235m");
+	assert_int_equal(253, state.fg);
+	assert_int_equal(235, state.bg);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
