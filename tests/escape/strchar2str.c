@@ -123,5 +123,14 @@ TEST(long_sequence_is_not_ignored)
 	assert_int_equal(0, screen_width);
 }
 
+TEST(line_erasure_sequence_is_eaten)
+{
+	size_t screen_width;
+	const char *str = strchar2str("\033[K\033[22;24;25;27;28;38;5;247;48;5;235m",
+			0, &screen_width);
+	assert_string_equal("", str);
+	assert_int_equal(0, screen_width);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
