@@ -593,7 +593,7 @@ esc_state_init(esc_state *state, const col_attr_t *defaults, int max_colors)
 TSTATIC const char *
 strchar2str(const char str[], int pos, size_t *screen_width)
 {
-	static char buf[32];
+	static char buf[128];
 
 	const size_t char_width = utf8_chrw(str);
 	if(char_width != 1 || (unsigned char)str[0] >= (unsigned char)' ')
