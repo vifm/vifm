@@ -56,6 +56,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/path.h"
+#include "../utils/string_array.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
@@ -709,7 +710,8 @@ cfg_source_file(const char filename[])
 	int result;
 	SourcingState sourcing_state;
 
-	if((fp = os_fopen(filename, "r")) == NULL)
+	/* Binary mode is important on Windows. */
+	if((fp = os_fopen(filename, "rb")) == NULL)
 	{
 		return 1;
 	}
@@ -729,30 +731,31 @@ cfg_source_file(const char filename[])
 static int
 source_file_internal(FILE *fp, const char filename[])
 {
-	char line[MAX_VIFMRC_LINE_LEN + 1];
-	char *next_line = NULL;
-	int line_num;
-	int encoutered_errors = 0;
-
-	if(fgets(line, sizeof(line), fp) == NULL)
+	strlist_t lines;
+	lines.items = read_file_lines(fp, &lines.nitems);
+	if(lines.nitems == 0)
 	{
-		/* File is empty. */
 		return 0;
 	}
-	chomp(line);
 
 	commands_scope_start();
 
-	line_num = 1;
+	int encoutered_errors = 0;
+
+	char line[MAX_VIFMRC_LINE_LEN + 1];
+	line[0] = '\0';
+
+	int curr_line = 0;
+	int line_num = 0;
 	for(;;)
 	{
-		char *p;
+		char *p = NULL;
 		int line_num_delta = 0;
 
-		while((p = next_line = read_line(fp, next_line)) != NULL)
+		while(curr_line < lines.nitems)
 		{
 			line_num_delta++;
-			p = skip_whitespace(p);
+			p = skip_whitespace(lines.items[curr_line++]);
 			if(*p == '"')
 				continue;
 			else if(*p == '\\')
@@ -783,8 +786,6 @@ source_file_internal(FILE *fp, const char filename[])
 		line_num += line_num_delta;
 	}
 
-	free(next_line);
-
 	ui_sb_clear();
 
 	if(commands_scope_finish() != 0)
@@ -792,6 +793,8 @@ source_file_internal(FILE *fp, const char filename[])
 		show_sourcing_error(filename, line_num);
 		encoutered_errors = 1;
 	}
+
+	free_string_array(lines.items, lines.nitems);
 
 	return encoutered_errors;
 }
