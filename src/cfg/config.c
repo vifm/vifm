@@ -745,17 +745,14 @@ source_file_internal(FILE *fp, const char filename[])
 	char line[MAX_VIFMRC_LINE_LEN + 1];
 	line[0] = '\0';
 
-	int curr_line = 0;
 	int line_num = 0;
+	int next_line_num = 0;
 	for(;;)
 	{
 		char *p = NULL;
-		int line_num_delta = 0;
-
-		while(curr_line < lines.nitems)
+		while(next_line_num < lines.nitems)
 		{
-			line_num_delta++;
-			p = skip_whitespace(lines.items[curr_line++]);
+			p = skip_whitespace(lines.items[next_line_num++]);
 			if(*p == '"')
 				continue;
 			else if(*p == '\\')
@@ -783,7 +780,7 @@ source_file_internal(FILE *fp, const char filename[])
 		}
 
 		copy_str(line, sizeof(line), p);
-		line_num += line_num_delta;
+		line_num = next_line_num;
 	}
 
 	ui_sb_clear();
