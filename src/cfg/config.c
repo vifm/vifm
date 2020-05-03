@@ -761,8 +761,7 @@ source_file_internal(FILE *fp, const char filename[])
 				break;
 		}
 
-		/* Clear statusbar message. */
-		ui_sb_msg("");
+		ui_sb_clear();
 
 		if(exec_commands(line, curr_view, CIT_COMMAND) < 0)
 		{
