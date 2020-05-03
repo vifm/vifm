@@ -319,7 +319,7 @@ ensure_term_is_ready(void)
 		modes_redraw();
 
 		curr_stats.save_msg = 0;
-		ui_sb_msg("");
+		ui_sb_clear();
 	}
 
 	return 1;

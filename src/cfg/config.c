@@ -785,8 +785,8 @@ source_file_internal(FILE *fp, const char filename[])
 
 	free(next_line);
 
-	/* Clear statusbar message. */
-	ui_sb_msg("");
+	ui_sb_clear();
+
 	if(commands_scope_finish() != 0)
 	{
 		show_sourcing_error(filename, line_num);
