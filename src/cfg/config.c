@@ -104,7 +104,7 @@ static void copy_help_file(void);
 static void create_scripts_dir(void);
 static void copy_rc_file(void);
 static void add_default_marks(void);
-static int source_file_internal(FILE *fp, const char filename[]);
+static int source_file_internal(strlist_t lines, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
 
 void
@@ -706,33 +706,32 @@ cfg_source_file(const char filename[])
 {
 	/* TODO: maybe move this to commands.c or separate unit eventually. */
 
-	FILE *fp;
-	int result;
-	SourcingState sourcing_state;
-
 	/* Binary mode is important on Windows. */
-	if((fp = os_fopen(filename, "rb")) == NULL)
+	FILE *fp = os_fopen(filename, "rb");
+	if(fp == NULL)
 	{
 		return 1;
 	}
 
-	sourcing_state = curr_stats.sourcing_state;
+	strlist_t lines;
+	lines.items = read_file_lines(fp, &lines.nitems);
+	fclose(fp);
+
+	SourcingState sourcing_state = curr_stats.sourcing_state;
 	curr_stats.sourcing_state = SOURCING_PROCESSING;
 
-	result = source_file_internal(fp, filename);
+	int result = source_file_internal(lines, filename);
 
 	curr_stats.sourcing_state = sourcing_state;
 
-	fclose(fp);
+	free_string_array(lines.items, lines.nitems);
 	return result;
 }
 
 /* Returns non-zero on error. */
 static int
-source_file_internal(FILE *fp, const char filename[])
+source_file_internal(strlist_t lines, const char filename[])
 {
-	strlist_t lines;
-	lines.items = read_file_lines(fp, &lines.nitems);
 	if(lines.nitems == 0)
 	{
 		return 0;
@@ -790,8 +789,6 @@ source_file_internal(FILE *fp, const char filename[])
 		show_sourcing_error(filename, line_num);
 		encoutered_errors = 1;
 	}
-
-	free_string_array(lines.items, lines.nitems);
 
 	return encoutered_errors;
 }
