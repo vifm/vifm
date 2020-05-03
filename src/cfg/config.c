@@ -749,14 +749,14 @@ source_file_internal(FILE *fp, const char filename[])
 	int next_line_num = 0;
 	for(;;)
 	{
-		char *p = NULL;
+		char *next_line = NULL;
 		while(next_line_num < lines.nitems)
 		{
-			p = skip_whitespace(lines.items[next_line_num++]);
-			if(*p == '"')
+			next_line = skip_whitespace(lines.items[next_line_num++]);
+			if(*next_line == '"')
 				continue;
-			else if(*p == '\\')
-				strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
+			else if(*next_line == '\\')
+				strncat(line, next_line + 1, sizeof(line) - strlen(line) - 1);
 			else
 				break;
 		}
@@ -771,7 +771,7 @@ source_file_internal(FILE *fp, const char filename[])
 		if(curr_stats.sourcing_state == SOURCING_FINISHING)
 			break;
 
-		if(p == NULL)
+		if(next_line == NULL)
 		{
 			/* Artificially increment line number to simulate as if all that happens
 			 * after the loop relates to something past end of the file. */
@@ -779,7 +779,7 @@ source_file_internal(FILE *fp, const char filename[])
 			break;
 		}
 
-		copy_str(line, sizeof(line), p);
+		copy_str(line, sizeof(line), next_line);
 		line_num = next_line_num;
 	}
 
