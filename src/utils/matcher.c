@@ -287,9 +287,7 @@ parse_re(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 matcher_t *
 matcher_clone(const matcher_t *matcher)
 {
-	int err;
 	matcher_t *const clone = malloc(sizeof(*clone));
-
 	if(clone == NULL)
 	{
 		return NULL;
@@ -300,16 +298,20 @@ matcher_clone(const matcher_t *matcher)
 	clone->raw = strdup(matcher->raw);
 	clone->undec = strdup(matcher->undec);
 
-	/* Don't compile regex for empty matcher. */
-	err = (clone->raw != NULL && clone->raw[0] == '\0')
-	    ? 0
-	    : regcomp(&clone->regex, matcher->raw, matcher->cflags);
-
-	if(err != 0 || clone->expr == NULL || clone->raw == NULL ||
-			clone->undec == NULL)
+	if(clone->expr == NULL || clone->raw == NULL || clone->undec == NULL)
 	{
 		matcher_free(clone);
 		return NULL;
+	}
+
+	/* Don't compile regex for empty matcher. */
+	if(clone->raw[0] != '\0')
+	{
+		if(regcomp(&clone->regex, matcher->raw, matcher->cflags) != 0)
+		{
+			matcher_free(clone);
+			return NULL;
+		}
 	}
 
 	return clone;
