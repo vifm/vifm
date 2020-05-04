@@ -56,6 +56,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/path.h"
+#include "../utils/string_array.h"
 #include "../utils/utils.h"
 #include "../cmd_core.h"
 #include "../filelist.h"
@@ -103,7 +104,7 @@ static void copy_help_file(void);
 static void create_scripts_dir(void);
 static void copy_rc_file(void);
 static void add_default_marks(void);
-static int source_file_internal(FILE *fp, const char filename[]);
+static int source_file_internal(strlist_t lines, const char filename[]);
 static void show_sourcing_error(const char filename[], int line_num);
 
 void
@@ -705,64 +706,61 @@ cfg_source_file(const char filename[])
 {
 	/* TODO: maybe move this to commands.c or separate unit eventually. */
 
-	FILE *fp;
-	int result;
-	SourcingState sourcing_state;
-
-	if((fp = os_fopen(filename, "r")) == NULL)
+	/* Binary mode is important on Windows. */
+	FILE *fp = os_fopen(filename, "rb");
+	if(fp == NULL)
 	{
 		return 1;
 	}
 
-	sourcing_state = curr_stats.sourcing_state;
+	strlist_t lines;
+	lines.items = read_file_lines(fp, &lines.nitems);
+	fclose(fp);
+
+	SourcingState sourcing_state = curr_stats.sourcing_state;
 	curr_stats.sourcing_state = SOURCING_PROCESSING;
 
-	result = source_file_internal(fp, filename);
+	int result = source_file_internal(lines, filename);
 
 	curr_stats.sourcing_state = sourcing_state;
 
-	fclose(fp);
+	free_string_array(lines.items, lines.nitems);
 	return result;
 }
 
 /* Returns non-zero on error. */
 static int
-source_file_internal(FILE *fp, const char filename[])
+source_file_internal(strlist_t lines, const char filename[])
 {
-	char line[MAX_VIFMRC_LINE_LEN + 1];
-	char *next_line = NULL;
-	int line_num;
-	int encoutered_errors = 0;
-
-	if(fgets(line, sizeof(line), fp) == NULL)
+	if(lines.nitems == 0)
 	{
-		/* File is empty. */
 		return 0;
 	}
-	chomp(line);
 
 	commands_scope_start();
 
-	line_num = 1;
+	int encoutered_errors = 0;
+
+	char line[MAX_VIFMRC_LINE_LEN + 1];
+	line[0] = '\0';
+
+	int line_num = 0;
+	int next_line_num = 0;
 	for(;;)
 	{
-		char *p;
-		int line_num_delta = 0;
-
-		while((p = next_line = read_line(fp, next_line)) != NULL)
+		char *next_line = NULL;
+		while(next_line_num < lines.nitems)
 		{
-			line_num_delta++;
-			p = skip_whitespace(p);
-			if(*p == '"')
+			next_line = skip_whitespace(lines.items[next_line_num++]);
+			if(*next_line == '"')
 				continue;
-			else if(*p == '\\')
-				strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
+			else if(*next_line == '\\')
+				strncat(line, next_line + 1, sizeof(line) - strlen(line) - 1);
 			else
 				break;
 		}
 
-		/* Clear statusbar message. */
-		ui_sb_msg("");
+		ui_sb_clear();
 
 		if(exec_commands(line, curr_view, CIT_COMMAND) < 0)
 		{
@@ -772,7 +770,7 @@ source_file_internal(FILE *fp, const char filename[])
 		if(curr_stats.sourcing_state == SOURCING_FINISHING)
 			break;
 
-		if(p == NULL)
+		if(next_line == NULL)
 		{
 			/* Artificially increment line number to simulate as if all that happens
 			 * after the loop relates to something past end of the file. */
@@ -780,14 +778,12 @@ source_file_internal(FILE *fp, const char filename[])
 			break;
 		}
 
-		copy_str(line, sizeof(line), p);
-		line_num += line_num_delta;
+		copy_str(line, sizeof(line), next_line);
+		line_num = next_line_num;
 	}
 
-	free(next_line);
+	ui_sb_clear();
 
-	/* Clear statusbar message. */
-	ui_sb_msg("");
 	if(commands_scope_finish() != 0)
 	{
 		show_sourcing_error(filename, line_num);

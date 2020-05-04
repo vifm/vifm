@@ -1149,7 +1149,12 @@ get_free_space(const char at[])
 		return 0;
 	}
 
+#ifdef __APPLE__
+	/* Apple is so fucking different... */
+	return (uint64_t)st.f_frsize*st.f_bavail;
+#else
 	return (uint64_t)st.f_bsize*st.f_bavail;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

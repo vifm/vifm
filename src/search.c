@@ -264,7 +264,7 @@ print_search_fail_msg(const view_t *view, int backward)
 
 	if(regexp[0] == '\0')
 	{
-		ui_sb_msg("");
+		ui_sb_clear();
 		return;
 	}
 
