@@ -35,7 +35,7 @@ typedef enum
 {
 	MT_REGEX, /* Regular expression. */
 	MT_GLOBS, /* List of globs (translated to regular expression). */
-	MT_MIME,  /* List of mime types. */
+	MT_MIME,  /* List of mime types (translated to regular expression). */
 }
 MType;
 
