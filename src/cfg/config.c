@@ -753,11 +753,18 @@ source_file_internal(strlist_t lines, const char filename[])
 		{
 			next_line = skip_whitespace(lines.items[next_line_num++]);
 			if(*next_line == '"')
+			{
 				continue;
+			}
 			else if(*next_line == '\\')
+			{
 				strncat(line, next_line + 1, sizeof(line) - strlen(line) - 1);
+				next_line = NULL;
+			}
 			else
+			{
 				break;
+			}
 		}
 
 		ui_sb_clear();
