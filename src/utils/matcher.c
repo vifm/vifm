@@ -22,7 +22,7 @@
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strdup() strlen() strrchr() strspn() */
+#include <string.h> /* strcspn() strdup() strlen() strrchr() */
 
 #include "../int/file_magic.h"
 #include "globs.h"
@@ -59,6 +59,7 @@ static MType determine_type(const char expr[], int re, int glob,
 static int compile_expr(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
+static int is_fglobs(const char expr[]);
 static int parse_re(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static void free_matcher_items(matcher_t *matcher);
@@ -217,8 +218,6 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 static int
 parse_glob(matcher_t *m, int strip, char **error)
 {
-	char *re;
-
 	if(strip != 0)
 	{
 		/* Cut off trailing "}" or "}}". */
@@ -232,7 +231,13 @@ parse_glob(matcher_t *m, int strip, char **error)
 		return 1;
 	}
 
-	re = globs_to_regex(m->raw);
+	if(is_fglobs(m->raw))
+	{
+		m->fglobs = 1;
+		return 0;
+	}
+
+	char *re = globs_to_regex(m->raw);
 	if(re == NULL)
 	{
 		replace_string(error, "Failed to convert globs into regexp.");
@@ -243,6 +248,25 @@ parse_glob(matcher_t *m, int strip, char **error)
 	m->raw = re;
 
 	m->cflags = REG_EXTENDED | REG_ICASE;
+	return 0;
+}
+
+/* Checks whether expression (command-separated list of glob patterns) can be
+ * implemented without regular expressions.  Returns non-zero if so, otherwise
+ * zero is returned. */
+static int
+is_fglobs(const char expr[])
+{
+	if(expr[0] == '\0')
+	{
+		return 0;
+	}
+
+	if(expr[strcspn(expr, "[?*")] == '\0')
+	{
+		/* No special symbols are present. */
+		return 1;
+	}
 	return 0;
 }
 
@@ -380,7 +404,20 @@ matcher_matches(const matcher_t *matcher, const char path[])
 static int
 fglobs_matches(const matcher_t *matcher, const char path[])
 {
-	return matcher->negated;
+	int matched = 0;
+	char *glob = matcher->raw, *state = NULL;
+	while((glob = split_and_get(glob, ',', &state)) != NULL)
+	{
+		/* Need to walk to the end of the list. */
+		if(!matched)
+		{
+			if(strcasecmp(glob, path) == 0)
+			{
+				matched = 1;
+			}
+		}
+	}
+	return matched^matcher->negated;
 }
 
 int
