@@ -22,7 +22,7 @@
 
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strdup() strlen() strrchr() strspn() */
+#include <string.h> /* strcspn() strdup() strlen() strrchr() */
 
 #include "../int/file_magic.h"
 #include "globs.h"
@@ -35,20 +35,22 @@ typedef enum
 {
 	MT_REGEX, /* Regular expression. */
 	MT_GLOBS, /* List of globs (translated to regular expression). */
-	MT_MIME,  /* List of mime types. */
+	MT_MIME,  /* List of mime types (translated to regular expression). */
 }
 MType;
 
 /* Wrapper for a regular expression, its state and compiled form. */
 struct matcher_t
 {
-	MType type;    /* Type of the matcher's pattern. */
-	char *expr;    /* User-entered pattern. */
-	char *undec;   /* User-entered pattern with decoration stripped. */
-	char *raw;     /* Raw stripped value (regular expression). */
-	int full_path; /* Matches full path instead of just file name. */
-	int cflags;    /* Regular expression compilation flags. */
-	int negated;   /* Whether match is inverted. */
+	char *expr;  /* User-entered pattern. */
+	char *undec; /* User-entered pattern with decoration stripped. */
+	char *raw;   /* Raw stripped value (regular expression). */
+	int cflags;  /* Regular expression compilation flags. */
+	MType type : 2;             /* Type of the matcher's pattern. */
+	unsigned int full_path : 1; /* Matches full path instead of just file name. */
+	unsigned int negated : 1;   /* Whether match is inverted. */
+	unsigned int fglobs : 1;    /* Whether this matcher is a special case of
+	                               globs ("faster" globs) that is optimized. */
 	regex_t regex; /* The expression in compiled form, unless matcher is empty. */
 };
 
@@ -58,9 +60,12 @@ static MType determine_type(const char expr[], int re, int glob,
 static int compile_expr(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
+static int is_fglobs(char expr[]);
 static int parse_re(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static void free_matcher_items(matcher_t *matcher);
+static int fglobs_matches(const matcher_t *matcher, const char path[]);
+static int fglobs_includes(const matcher_t *matcher, const matcher_t *like);
 static int is_negated(const char **expr);
 static int is_re_expr(const char expr[], int allow_empty);
 static int is_globs_expr(const char expr[]);
@@ -76,8 +81,9 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 	int strip;
 	const int full_path = is_full_path(expr, re, glob, &strip);
 
+	MType type = determine_type(expr, re, glob, glob_by_def, &strip);
 	matcher_t *matcher, m = {
-		.type = determine_type(expr, re, glob, glob_by_def, &strip),
+		.type = type,
 		.raw = strdup(expr + strip),
 		.negated = negated,
 		.full_path = full_path,
@@ -192,9 +198,9 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 			break;
 	}
 
-	if(m->raw[0] == '\0')
+	if(m->fglobs || m->raw[0] == '\0')
 	{
-		/* This is an empty matcher and we don't compile "". */
+		/* This is a faster glob or an empty matcher and we don't compile "". */
 		return 0;
 	}
 
@@ -214,8 +220,6 @@ compile_expr(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 static int
 parse_glob(matcher_t *m, int strip, char **error)
 {
-	char *re;
-
 	if(strip != 0)
 	{
 		/* Cut off trailing "}" or "}}". */
@@ -229,7 +233,13 @@ parse_glob(matcher_t *m, int strip, char **error)
 		return 1;
 	}
 
-	re = globs_to_regex(m->raw);
+	if(is_fglobs(m->raw))
+	{
+		m->fglobs = 1;
+		return 0;
+	}
+
+	char *re = globs_to_regex(m->raw);
 	if(re == NULL)
 	{
 		replace_string(error, "Failed to convert globs into regexp.");
@@ -241,6 +251,40 @@ parse_glob(matcher_t *m, int strip, char **error)
 
 	m->cflags = REG_EXTENDED | REG_ICASE;
 	return 0;
+}
+
+/* Checks whether expression (command-separated list of glob patterns) can be
+ * implemented without regular expressions.  Returns non-zero if so, otherwise
+ * zero is returned. */
+static int
+is_fglobs(char expr[])
+{
+	if(expr[0] == '\0')
+	{
+		return 0;
+	}
+
+	int fglobs = 1;
+
+	char *glob = expr, *state = NULL;
+	while((glob = split_and_get(glob, ',', &state)) != NULL)
+	{
+		/* Need to walk to the end of the list. */
+		if(fglobs)
+		{
+			if(glob[strcspn(glob, "[?*")] == '\0')
+			{
+				continue;
+			}
+			if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+			{
+				continue;
+			}
+			fglobs = 0;
+		}
+	}
+
+	return fglobs;
 }
 
 /* Parses regexp flags.  Returns zero on success or non-zero on error with
@@ -287,9 +331,7 @@ parse_re(matcher_t *m, int strip, int cs_by_def, const char on_empty_re[],
 matcher_t *
 matcher_clone(const matcher_t *matcher)
 {
-	int err;
 	matcher_t *const clone = malloc(sizeof(*clone));
-
 	if(clone == NULL)
 	{
 		return NULL;
@@ -300,16 +342,20 @@ matcher_clone(const matcher_t *matcher)
 	clone->raw = strdup(matcher->raw);
 	clone->undec = strdup(matcher->undec);
 
-	/* Don't compile regex for empty matcher. */
-	err = (clone->raw != NULL && clone->raw[0] == '\0')
-	    ? 0
-	    : regcomp(&clone->regex, matcher->raw, matcher->cflags);
-
-	if(err != 0 || clone->expr == NULL || clone->raw == NULL ||
-			clone->undec == NULL)
+	if(clone->expr == NULL || clone->raw == NULL || clone->undec == NULL)
 	{
 		matcher_free(clone);
 		return NULL;
+	}
+
+	/* Don't compile regex for faster globs or empty matcher. */
+	if(!clone->fglobs && clone->raw[0] != '\0')
+	{
+		if(regcomp(&clone->regex, matcher->raw, matcher->cflags) != 0)
+		{
+			matcher_free(clone);
+			return NULL;
+		}
 	}
 
 	return clone;
@@ -330,9 +376,9 @@ matcher_free(matcher_t *matcher)
 static void
 free_matcher_items(matcher_t *matcher)
 {
-	if(matcher->raw != NULL && !matcher_is_empty(matcher))
+	if(!matcher->fglobs && matcher->raw != NULL && !matcher_is_empty(matcher))
 	{
-		/* Regex is compiled only for non-empty matchers. */
+		/* Regex is compiled only for non-empty matchers of unoptimized patterns. */
 		regfree(&matcher->regex);
 	}
 	free(matcher->expr);
@@ -362,7 +408,39 @@ matcher_matches(const matcher_t *matcher, const char path[])
 		path = get_last_path_component(path);
 	}
 
+	if(matcher->fglobs)
+	{
+		return fglobs_matches(matcher, path);
+	}
+
 	return (regexec(&matcher->regex, path, 0, NULL, 0) == 0)^matcher->negated;
+}
+
+/* Checks whether given path/name is matched by a fglobs matcher.  Returns
+ * non-zero if so, otherwise zero is returned. */
+static int
+fglobs_matches(const matcher_t *matcher, const char path[])
+{
+	int matched = 0;
+	char *glob = matcher->raw, *state = NULL;
+	while((glob = split_and_get(glob, ',', &state)) != NULL)
+	{
+		/* Need to walk to the end of the list. */
+		if(!matched)
+		{
+			if(glob[strcspn(glob, "[?*")] == '\0')
+			{
+				matched = (strcasecmp(path, glob) == 0);
+				continue;
+			}
+			if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+			{
+				matched = (path[0] != '.' && ends_with_case(path + 1, glob + 1));
+				continue;
+			}
+		}
+	}
+	return matched^matcher->negated;
 }
 
 int
@@ -386,15 +464,56 @@ matcher_get_undec(const matcher_t *matcher)
 int
 matcher_includes(const matcher_t *matcher, const matcher_t *like)
 {
-	if(matcher->type != like->type || matcher->cflags != like->cflags ||
-			matcher->full_path != like->full_path)
+	if(matcher->type != like->type || matcher->fglobs != like->fglobs ||
+			matcher->cflags != like->cflags || matcher->full_path != like->full_path)
 	{
 		return 0;
+	}
+
+	if(matcher->fglobs)
+	{
+		return fglobs_includes(matcher, like);
 	}
 
 	return (matcher->cflags & REG_ICASE)
 	     ? (strcasestr(matcher->raw, like->raw) != NULL)
 	     : (strstr(matcher->raw, like->raw) != NULL);
+}
+
+/* Checks whether matcher matches at least superset of what like is matching
+ * for two fglobs matchers.  Returns non-zero if so, otherwise zero is
+ * returned. */
+static int
+fglobs_includes(const matcher_t *matcher, const matcher_t *like)
+{
+	char *like_globs_copy = strdup(like->raw);
+	char *mglobs_copy = strdup(matcher->raw);
+
+	int all_matched = 1;
+	char *like_glob = like_globs_copy, *like_state = NULL;
+	while((like_glob = split_and_get(like_glob, ',', &like_state)) != NULL)
+	{
+		int matched = 0;
+		char *mglob = mglobs_copy, *mstate = NULL;
+		while((mglob = split_and_get(mglob, ',', &mstate)) != NULL)
+		{
+			/* Need to walk to the end of the list. */
+			if(!matched && strcasecmp(like_glob, mglob) == 0)
+			{
+				matched = 1;
+			}
+		}
+
+		if(!matched)
+		{
+			all_matched = 0;
+			break;
+		}
+	}
+
+	free(like_globs_copy);
+	free(mglobs_copy);
+	return all_matched;
 }
 
 /* Checks whether *expr specifies negated pattern.  Adjusts pointer if so.

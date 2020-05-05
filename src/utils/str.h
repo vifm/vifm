@@ -86,6 +86,10 @@ int starts_withn(const char str[], const char prefix[], size_t prefix_len);
  * otherwise zero is returned. */
 int ends_with(const char str[], const char suffix[]);
 
+/* Checks whether str ends with the given suffix in a case insensitive way.
+ * Returns non-zero if it's so, otherwise zero is returned. */
+int ends_with_case(const char str[], const char suffix[]);
+
 /* Checks whether the string starts and ends with specified mark characters.
  * Substring can't be empty.  The string can't consist of single mark character
  * when they are equal.  Returns non-zero if so, otherwise zero is returned. */

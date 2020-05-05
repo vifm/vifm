@@ -83,7 +83,7 @@ TEST(find_command, IF(not_windows))
 	assert_string_equal("Find . -name aaa", lwin.custom.title);
 
 	assert_success(exec_commands("find -name '*.vifm'", &lwin, CIT_COMMAND));
-	assert_int_equal(9, lwin.list_rows);
+	assert_int_equal(11, lwin.list_rows);
 	assert_string_equal("Find -name '*.vifm'", lwin.custom.title);
 
 	view_teardown(&lwin);
@@ -92,7 +92,7 @@ TEST(find_command, IF(not_windows))
 	/* Repeat last search. */
 	strcpy(lwin.curr_dir, test_data);
 	assert_success(exec_commands("find", &lwin, CIT_COMMAND));
-	assert_int_equal(9, lwin.list_rows);
+	assert_int_equal(11, lwin.list_rows);
 }
 
 TEST(enter_navigates_to_found_file, IF(not_windows))

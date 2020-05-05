@@ -56,7 +56,7 @@ const char * matcher_get_expr(const matcher_t *matcher);
  * expression. */
 const char * matcher_get_undec(const matcher_t *matcher);
 
-/* Checks whether everything matched by the matcher is also matched by the like.
+/* Checks whether matcher matches at least superset of what like is matching.
  * Returns non-zero if so, otherwise zero is returned. */
 int matcher_includes(const matcher_t *matcher, const matcher_t *like);
 

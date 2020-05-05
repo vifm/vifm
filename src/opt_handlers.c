@@ -1026,13 +1026,17 @@ classify_to_str(void)
 		const file_dec_t *const name_dec = &cfg.name_decs[i];
 		char *const doubled_commas_pat =
 			double_char(matchers_get_expr(name_dec->matchers), ',');
-		char *const addition = format_str("%s%s::%s::%s",
-				classify[0] != '\0' ? "," : "", name_dec->prefix, doubled_commas_pat,
-				name_dec->suffix);
 
-		memerr |= (addition == NULL || strappend(&classify, &len, addition) != 0);
+		if(classify[0] != '\0')
+		{
+			memerr |= strappendch(&classify, &len, ',');
+		}
+		memerr |= strappend(&classify, &len, name_dec->prefix);
+		memerr |= strappend(&classify, &len, "::");
+		memerr |= strappend(&classify, &len, doubled_commas_pat);
+		memerr |= strappend(&classify, &len, "::");
+		memerr |= strappend(&classify, &len, name_dec->suffix);
 
-		free(addition);
 		free(doubled_commas_pat);
 	}
 
@@ -1043,14 +1047,15 @@ classify_to_str(void)
 		const char *const suffix = cfg.type_decs[ft][DECORATION_SUFFIX];
 		if(prefix[0] != '\0' || suffix[0] != '\0')
 		{
-			char item[64];
 			if(classify[0] != '\0')
 			{
 				memerr |= strappendch(&classify, &len, ',');
 			}
-			(void)snprintf(item, sizeof(item), "%s:%s:%s", prefix,
-					get_type_str(ft), suffix);
-			memerr |= strappend(&classify, &len, item);
+			memerr |= strappend(&classify, &len, prefix);
+			memerr |= strappend(&classify, &len, ":");
+			memerr |= strappend(&classify, &len, get_type_str(ft));
+			memerr |= strappend(&classify, &len, ":");
+			memerr |= strappend(&classify, &len, suffix);
 		}
 	}
 
@@ -1786,14 +1791,20 @@ pick_out_decoration(char classify_item[], FileType *type, const char **expr)
 	int filetype;
 	for(filetype = 0; filetype < FT_COUNT; ++filetype)
 	{
+		/* Below is a faster version of (pick_out_decoration can be invoked a lot):
+		 * len = snprintf(name, sizeof(name), ":%s:", get_type_str(filetype)); */
 		char name[16];
-		char *item_name;
-		(void)snprintf(name, sizeof(name), ":%s:", get_type_str(filetype));
-		if((item_name = strstr(classify_item, name)) != NULL)
+		name[0] = ':';
+		int len = copy_str(name + 1, sizeof(name) - 1, get_type_str(filetype));
+		name[len++] = ':';
+		name[len] = '\0';
+
+		char *item_name = strstr(classify_item, name);
+		if(item_name != NULL)
 		{
 			*type = filetype;
 			item_name[0] = '\0';
-			return &item_name[strlen(name)];
+			return &item_name[len];
 		}
 	}
 

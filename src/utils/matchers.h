@@ -46,7 +46,7 @@ int matchers_match_dir(const matchers_t *matchers, const char path[]);
 /* Retrieves original matcher expression.  Returns the expression. */
 const char * matchers_get_expr(const matchers_t *matchers);
 
-/* Checks whether everything matched by the matcher is also matched by the like.
+/* Checks whether matchers matches at least superset of what like is matching.
  * Returns non-zero if so, otherwise zero is returned. */
 int matchers_includes(const matchers_t *matchers, const matchers_t *like);
 
