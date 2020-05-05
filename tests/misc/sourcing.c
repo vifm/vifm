@@ -13,12 +13,14 @@ SETUP()
 
 TEST(wrong_command_name_causes_error)
 {
-	assert_failure(cfg_source_file("test-data/scripts/wrong-cmd-name.vifm"));
+	const char *file = TEST_DATA_PATH "/scripts/wrong-cmd-name.vifm";
+	assert_failure(cfg_source_file(file));
 }
 
 TEST(wrong_user_defined_command_name_causes_error)
 {
-	assert_failure(cfg_source_file("test-data/scripts/wrong-udcmd-name.vifm"));
+	const char *file = TEST_DATA_PATH "/scripts/wrong-udcmd-name.vifm";
+	assert_failure(cfg_source_file(file));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
