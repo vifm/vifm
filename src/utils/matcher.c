@@ -42,14 +42,15 @@ MType;
 /* Wrapper for a regular expression, its state and compiled form. */
 struct matcher_t
 {
-	MType type;    /* Type of the matcher's pattern. */
-	char *expr;    /* User-entered pattern. */
-	char *undec;   /* User-entered pattern with decoration stripped. */
-	char *raw;     /* Raw stripped value (regular expression). */
-	int full_path; /* Matches full path instead of just file name. */
-	int cflags;    /* Regular expression compilation flags. */
-	int negated;   /* Whether match is inverted. */
-	int fglobs;    /* Whether this matcher is a special case of globs. */
+	char *expr;  /* User-entered pattern. */
+	char *undec; /* User-entered pattern with decoration stripped. */
+	char *raw;   /* Raw stripped value (regular expression). */
+	int cflags;  /* Regular expression compilation flags. */
+	MType type : 2;             /* Type of the matcher's pattern. */
+	unsigned int full_path : 1; /* Matches full path instead of just file name. */
+	unsigned int negated : 1;   /* Whether match is inverted. */
+	unsigned int fglobs : 1;    /* Whether this matcher is a special case of
+	                               globs ("faster" globs) that is optimized. */
 	regex_t regex; /* The expression in compiled form, unless matcher is empty. */
 };
 
@@ -80,8 +81,9 @@ matcher_alloc(const char expr[], int cs_by_def, int glob_by_def,
 	int strip;
 	const int full_path = is_full_path(expr, re, glob, &strip);
 
+	MType type = determine_type(expr, re, glob, glob_by_def, &strip);
 	matcher_t *matcher, m = {
-		.type = determine_type(expr, re, glob, glob_by_def, &strip),
+		.type = type,
 		.raw = strdup(expr + strip),
 		.negated = negated,
 		.full_path = full_path,
