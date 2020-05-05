@@ -59,7 +59,7 @@ static MType determine_type(const char expr[], int re, int glob,
 static int compile_expr(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static int parse_glob(matcher_t *m, int strip, char **error);
-static int is_fglobs(const char expr[]);
+static int is_fglobs(char expr[]);
 static int parse_re(matcher_t *m, int strip, int cs_by_def,
 		const char on_empty_re[], char **error);
 static void free_matcher_items(matcher_t *matcher);
@@ -255,19 +255,34 @@ parse_glob(matcher_t *m, int strip, char **error)
  * implemented without regular expressions.  Returns non-zero if so, otherwise
  * zero is returned. */
 static int
-is_fglobs(const char expr[])
+is_fglobs(char expr[])
 {
 	if(expr[0] == '\0')
 	{
 		return 0;
 	}
 
-	if(expr[strcspn(expr, "[?*")] == '\0')
+	int fglobs = 1;
+
+	char *glob = expr, *state = NULL;
+	while((glob = split_and_get(glob, ',', &state)) != NULL)
 	{
-		/* No special symbols are present. */
-		return 1;
+		/* Need to walk to the end of the list. */
+		if(fglobs)
+		{
+			if(glob[strcspn(glob, "[?*")] == '\0')
+			{
+				continue;
+			}
+			if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+			{
+				continue;
+			}
+			fglobs = 0;
+		}
 	}
-	return 0;
+
+	return fglobs;
 }
 
 /* Parses regexp flags.  Returns zero on success or non-zero on error with
@@ -411,9 +426,15 @@ fglobs_matches(const matcher_t *matcher, const char path[])
 		/* Need to walk to the end of the list. */
 		if(!matched)
 		{
-			if(strcasecmp(glob, path) == 0)
+			if(glob[strcspn(glob, "[?*")] == '\0')
 			{
-				matched = 1;
+				matched = (strcasecmp(path, glob) == 0);
+				continue;
+			}
+			if(glob[0] == '*' && glob[1 + strcspn(glob + 1, "[?*")] == '\0')
+			{
+				matched = (path[0] != '.' && ends_with_case(path + 1, glob + 1));
+				continue;
 			}
 		}
 	}

@@ -322,6 +322,22 @@ TEST(globs_are_cloned)
 	matcher_free(clone);
 }
 
+TEST(globs_are_case_insensitive)
+{
+	char *error;
+	matcher_t *m, *clone;
+
+	assert_non_null(m = matcher_alloc("{*.ExT}", 0, 1, "", &error));
+	assert_null(error);
+	assert_non_null(clone = matcher_clone(m));
+
+	check_glob(m);
+	matcher_free(m);
+
+	check_glob(clone);
+	matcher_free(clone);
+}
+
 TEST(regexps_are_cloned)
 {
 	char *error;

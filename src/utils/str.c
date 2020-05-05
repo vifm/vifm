@@ -189,6 +189,19 @@ ends_with(const char str[], const char suffix[])
 }
 
 int
+ends_with_case(const char str[], const char suffix[])
+{
+	size_t str_len = strlen(str);
+	size_t suffix_len = strlen(suffix);
+	if(str_len < suffix_len)
+	{
+		return 0;
+	}
+
+	return (strcasecmp(suffix, str + str_len - suffix_len) == 0);
+}
+
+int
 surrounded_with(const char str[], char left, char right)
 {
 	const size_t len = strlen(str);

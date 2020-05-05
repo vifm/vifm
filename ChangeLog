@@ -124,6 +124,10 @@
 	Significantly improved speed of sourcing files (includes processing
 	configuration on startup and :restart).
 
+	Significantly improved speed of handling typical globs (and therefore
+	mime-type matchers) and reduce amount of memory they take up.  Thanks to
+	yanzhang0219.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
