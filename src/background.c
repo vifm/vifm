@@ -121,7 +121,7 @@ static void report_error_msg(const char title[], const char text[]);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 #endif
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
-		uintptr_t data, BgJobType type);
+		uintptr_t err, uintptr_t data, BgJobType type);
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
@@ -303,6 +303,10 @@ job_free(bg_job_t *job)
 		close(job->err_stream);
 	}
 #else
+	if(job->err_stream != NO_JOB_ID)
+	{
+		CloseHandle(job->err_stream);
+	}
 	if(job->hprocess != NO_JOB_ID)
 	{
 		CloseHandle(job->hprocess);
@@ -834,7 +838,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		/* Close write end of pipe. */
 		close(error_pipe[1]);
 
-		job = add_background_job(pid, command, (uintptr_t)error_pipe[0],
+		job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
 				BJT_COMMAND);
 		if(job == NULL)
 		{
@@ -845,7 +849,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 	free(command);
 #else
 	BOOL ret;
-	STARTUPINFOW startup = {};
+	STARTUPINFOW startup = { .dwFlags = STARTF_USESTDHANDLES };
 	PROCESS_INFORMATION pinfo;
 	char *command;
 	char *sh_cmd;
@@ -857,19 +861,45 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		return -1;
 	}
 
+	SECURITY_ATTRIBUTES sec_attr = {
+		.nLength = sizeof(sec_attr),
+		.lpSecurityDescriptor = NULL,
+		.bInheritHandle = 1,
+	};
+
+	HANDLE hnul = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE, 0, &sec_attr,
+			OPEN_EXISTING, 0, NULL);
+	if(hnul == INVALID_HANDLE_VALUE)
+	{
+		free(command);
+		return -1;
+	}
+	startup.hStdInput = hnul;
+	startup.hStdOutput = hnul;
+
+	HANDLE herr;
+	if(!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
+	{
+		CloseHandle(hnul);
+		free(command);
+		return -1;
+	}
+
 	sh_cmd = win_make_sh_cmd(command, by);
 	free(command);
 
 	wide_cmd = to_wide(sh_cmd);
-	ret = CreateProcessW(NULL, wide_cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	ret = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL, &startup,
 			&pinfo);
 	free(wide_cmd);
+	CloseHandle(hnul);
+	CloseHandle(startup.hStdError);
 
 	if(ret != 0)
 	{
 		CloseHandle(pinfo.hThread);
 
-		job = add_background_job(pinfo.dwProcessId, sh_cmd,
+		job = add_background_job(pinfo.dwProcessId, sh_cmd, (uintptr_t)herr,
 				(uintptr_t)pinfo.hProcess, BJT_COMMAND);
 		if(job == NULL)
 		{
@@ -907,7 +937,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	task_args->func = task_func;
 	task_args->args = args;
 	task_args->job = add_background_job(WRONG_PID, descr, (uintptr_t)NO_JOB_ID,
-			important ? BJT_OPERATION : BJT_TASK);
+			(uintptr_t)NO_JOB_ID, important ? BJT_OPERATION : BJT_TASK);
 
 	if(task_args->job == NULL)
 	{
@@ -942,7 +972,8 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 /* Creates structure that describes background job and registers it in the list
  * of jobs. */
 static bg_job_t *
-add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
+add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
+		BgJobType type)
 {
 	bg_job_t *new = malloc(sizeof(*new));
 	if(new == NULL)
@@ -968,7 +999,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
 	new->exit_code = -1;
 
 #ifndef _WIN32
-	new->err_stream = (int)data;
+	new->err_stream = (int)err;
 	if(new->err_stream != -1)
 	{
 		pthread_mutex_lock(&new_err_jobs_lock);
@@ -978,6 +1009,7 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
 		pthread_cond_signal(&new_err_jobs_cond);
 	}
 #else
+	new->err_stream = (HANDLE)err;
 	new->hprocess = (HANDLE)data;
 #endif
 
