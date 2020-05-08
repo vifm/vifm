@@ -116,7 +116,7 @@ static void * error_thread(void *p);
 static void update_error_jobs(bg_job_t **jobs, selector_t *selector);
 static void free_drained_jobs(bg_job_t **jobs);
 static void import_error_jobs(bg_job_t **jobs);
-static void make_ready_list(bg_job_t **jobs, selector_t *selector);
+static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
 static void report_error_msg(const char title[], const char text[]);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 #endif
@@ -475,7 +475,7 @@ update_error_jobs(bg_job_t **jobs, selector_t *selector)
 {
 	free_drained_jobs(jobs);
 	import_error_jobs(jobs);
-	make_ready_list(jobs, selector);
+	make_ready_list(*jobs, selector);
 }
 
 /* Updates *jobs by removing finished tasks. */
@@ -541,16 +541,14 @@ import_error_jobs(bg_job_t **jobs)
 
 /* Reinitializes the selector with up-to-date list of objects to watch. */
 static void
-make_ready_list(bg_job_t **jobs, selector_t *selector)
+make_ready_list(const bg_job_t *jobs, selector_t *selector)
 {
 	selector_reset(selector);
 
-	bg_job_t **job = jobs;
-	while(*job != NULL)
+	while(jobs != NULL)
 	{
-		bg_job_t *const j = *job;
-		selector_add(selector, j->fd);
-		job = &j->err_next;
+		selector_add(selector, jobs->fd);
+		jobs = jobs->err_next;
 	}
 }
 
