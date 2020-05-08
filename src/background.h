@@ -87,9 +87,10 @@ typedef struct bg_job_t
 	bg_op_t bg_op;
 
 #ifndef _WIN32
-	int fd;
+	int err_stream;    /* stderr stream of the job or -1. */
 #else
-	HANDLE hprocess;
+	HANDLE err_stream; /* stderr stream of the job or invalid handle. */
+	HANDLE hprocess;   /* Handle to the process of the job or invalid handle. */
 #endif
 
 	struct bg_job_t *next;     /* Link to the next element in bg_jobs list. */

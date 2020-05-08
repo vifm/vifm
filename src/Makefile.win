@@ -75,7 +75,8 @@ ui := $(addprefix ui/, $(ui))
 utilities := cancellation.c dynarray.c env.c file_streams.c filemon.c filter.c \
              fs.c fsdata.c fsddata.c fswatch_win.c globs.c gmux_win.c hist.c \
              int_stack.c log.c matcher.c matchers.c parson.c path.c regexp.c \
-             shmem_win.c str.c string_array.c trie.c utf8.c utils.c utils_win.c
+             selector_win.c shmem_win.c str.c string_array.c trie.c utf8.c \
+             utils.c utils_win.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(compat) $(engine) $(int) $(io) $(menus) $(modes) \
@@ -131,6 +132,8 @@ vifmres.o: vifm.res
 	echo '#define PACKAGE_SYSCONF_DIR ""' >> $@; \
 	echo '#define ENABLE_REMOTE_CMDS 1' >> $@; \
 	echo '#define WITH_BUILD_TIMESTAMP 1' >> $@; \
+	echo '#define WINVER 0x0600' >> $@; \
+	echo '#define _WIN32_WINNT 0x0600' >> $@; \
 #	echo '#define HAVE_FILE_PROG' >> $@;
 ifneq ($(OS),Windows_NT)
 	@echo '#define __USE_MINGW_ANSI_STDIO 1' >> $@

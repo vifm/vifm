@@ -20,8 +20,6 @@
 #include "cmd_completion.h"
 
 #ifdef _WIN32
-#define REQUIRED_WINVER 0x0500 /* To get GetFileSizeEx() function. */
-#include "utils/windefs.h"
 #include <windows.h>
 #include <lm.h>
 #endif

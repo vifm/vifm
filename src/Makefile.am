@@ -209,6 +209,7 @@ vifm_SOURCES = \
 	utils/parson.c utils/parson.h \
 	utils/path.c utils/path.h \
 	utils/regexp.c utils/regexp.h \
+	utils/selector_nix.c utils/selector.h \
 	utils/shmem_nix.c utils/shmem.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
@@ -278,7 +279,6 @@ EXTRA_DIST = \
 						 utils/shmem_win.c \
 						 utils/utils_win.c \
 						 utils/utils_win.h \
-						 utils/windefs.h \
 						 utils/xxhash.c \
 						 modes/dialogs/attr_dialog_win.h \
 						 modes/dialogs/attr_dialog_win.c \

@@ -16,8 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define REQUIRED_WINVER 0x0600
-#include "utils/windefs.h"
 #include <windows.h>
 
 #include <stdio.h>

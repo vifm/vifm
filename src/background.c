@@ -27,19 +27,17 @@
 #include <sys/stat.h> /* O_RDONLY */
 #include <sys/types.h> /* pid_t ssize_t */
 #ifndef _WIN32
-#include <sys/select.h> /* FD_* select */
-#include <sys/time.h> /* timeval */
-#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 #endif
 #include <signal.h> /* kill() */
-#include <unistd.h> /* execve() fork() select() */
+#include <unistd.h> /* execve() fork() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdint.h> /* uintptr_t */
 #include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
-#include <string.h> /* memcpy() */
+#include <string.h> /* strdup() */
 
 #include "cfg/config.h"
 #include "compat/pthread.h"
@@ -51,6 +49,7 @@
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/path.h"
+#include "utils/selector.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "cmd_completion.h"
@@ -112,17 +111,17 @@ background_task_args;
 
 static void job_check(bg_job_t *job);
 static void job_free(bg_job_t *job);
-#ifndef _WIN32
 static void * error_thread(void *p);
-static int update_error_jobs(bg_job_t **jobs, fd_set *set);
+static void update_error_jobs(bg_job_t **jobs);
 static void free_drained_jobs(bg_job_t **jobs);
 static void import_error_jobs(bg_job_t **jobs);
-static int make_ready_list(bg_job_t **jobs, fd_set *set);
+static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
+#ifndef _WIN32
 static void report_error_msg(const char title[], const char text[]);
-static void append_error_msg(bg_job_t *job, const char err_msg[]);
 #endif
+static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
-		uintptr_t data, BgJobType type);
+		uintptr_t err, uintptr_t data, BgJobType type);
 static void * background_task_bootstrap(void *arg);
 static void set_current_job(bg_job_t *job);
 static void make_current_job_key(void);
@@ -130,14 +129,12 @@ static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
 
-#ifndef _WIN32
 /* Head of list of newly started jobs. */
 static bg_job_t *new_err_jobs;
 /* Mutex to protect new_err_jobs. */
 static pthread_mutex_t new_err_jobs_lock = PTHREAD_MUTEX_INITIALIZER;
 /* Conditional variable to signal availability of new jobs in new_err_jobs. */
 static pthread_cond_t new_err_jobs_cond = PTHREAD_COND_INITIALIZER;
-#endif
 
 /* Thread local storage for bg_job_t associated with active thread. */
 static pthread_key_t current_job;
@@ -145,12 +142,10 @@ static pthread_key_t current_job;
 void
 bg_init(void)
 {
-#ifndef _WIN32
 	pthread_t id;
 	const int err = pthread_create(&id, NULL, &error_thread, NULL);
 	assert(err == 0);
 	(void)err;
-#endif
 
 	/* Initialize state for the main thread. */
 	set_current_job(NULL);
@@ -247,7 +242,6 @@ bg_check(void)
 static void
 job_check(bg_job_t *job)
 {
-#ifndef _WIN32
 	char *new_errors;
 
 	/* Display portions of errors from the job while there are any. */
@@ -267,13 +261,16 @@ job_check(bg_job_t *job)
 		free(new_errors);
 	}
 	while(new_errors != NULL);
-#else
+
+#ifdef _WIN32
 	DWORD retcode;
 	if(GetExitCodeProcess(job->hprocess, &retcode) != 0)
 	{
 		if(retcode != STILL_ACTIVE)
 		{
+			pthread_spin_lock(&job->status_lock);
 			job->running = 0;
+			pthread_spin_unlock(&job->status_lock);
 		}
 	}
 #endif
@@ -297,11 +294,15 @@ job_free(bg_job_t *job)
 	}
 
 #ifndef _WIN32
-	if(job->fd != NO_JOB_ID)
+	if(job->err_stream != NO_JOB_ID)
 	{
-		close(job->fd);
+		close(job->err_stream);
 	}
 #else
+	if(job->err_stream != NO_JOB_ID)
+	{
+		CloseHandle(job->err_stream);
+	}
 	if(job->hprocess != NO_JOB_ID)
 	{
 		CloseHandle(job->hprocess);
@@ -389,7 +390,6 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 #endif
 }
 
-#ifndef _WIN32
 /* Entry point of a thread which reads input from input of active background
  * programs.  Does not return. */
 static void *
@@ -397,17 +397,20 @@ error_thread(void *p)
 {
 	bg_job_t *jobs = NULL;
 
+	selector_t *selector = selector_alloc();
+	if(selector == NULL)
+	{
+		return NULL;
+	}
+
 	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
 
 	while(1)
 	{
-		fd_set active, ready;
-		const int max_fd = update_error_jobs(&jobs, &active);
-		struct timeval timeout = { .tv_sec = 0, .tv_usec = 250*1000 }, ts = timeout;
-
-		while(select(max_fd + 1, memcpy(&ready, &active, sizeof(active)), NULL,
-					NULL, &ts) > 0)
+		update_error_jobs(&jobs);
+		make_ready_list(jobs, selector);
+		while(selector_wait(selector, 250))
 		{
 			int need_update_list = (jobs == NULL);
 
@@ -418,12 +421,22 @@ error_thread(void *p)
 				char err_msg[ERR_MSG_LEN];
 				ssize_t nread;
 
-				if(!FD_ISSET(j->fd, &ready))
+				if(!selector_is_ready(selector, j->err_stream))
 				{
 					goto next_job;
 				}
 
-				nread = read(j->fd, err_msg, sizeof(err_msg) - 1U);
+#ifndef _WIN32
+				nread = read(j->err_stream, err_msg, sizeof(err_msg) - 1U);
+#else
+				nread = -1;
+				DWORD bytes_read;
+				if(ReadFile(j->err_stream, err_msg, sizeof(err_msg) - 1U, &bytes_read,
+							NULL))
+				{
+					nread = bytes_read;
+				}
+#endif
 				if(nread < 0)
 				{
 					need_update_list = 1;
@@ -435,7 +448,7 @@ error_thread(void *p)
 				{
 					/* Reached EOF, exclude corresponding file descriptor from the set,
 					 * cut the job out of our list and allow its deletion. */
-					FD_CLR(j->fd, &active);
+					selector_remove(selector, j->err_stream);
 					*job = j->err_next;
 					pthread_spin_lock(&j->status_lock);
 					j->in_use = 0;
@@ -460,21 +473,19 @@ error_thread(void *p)
 			{
 				break;
 			}
-
-			ts = timeout;
 		}
 	}
+
+	selector_free(selector);
 	return NULL;
 }
 
-/* Updates *jobs by removing finished tasks and adding new ones.  Initializes
- * *set set.  Returns max file descriptor number of the set. */
-static int
-update_error_jobs(bg_job_t **jobs, fd_set *set)
+/* Updates *jobs by removing finished tasks and adding new ones. */
+static void
+update_error_jobs(bg_job_t **jobs)
 {
 	free_drained_jobs(jobs);
 	import_error_jobs(jobs);
-	return make_ready_list(jobs, set);
 }
 
 /* Updates *jobs by removing finished tasks. */
@@ -538,31 +549,20 @@ import_error_jobs(bg_job_t **jobs)
 	}
 }
 
-/* Initializes *set set.  Returns max file descriptor number of the set. */
-static int
-make_ready_list(bg_job_t **jobs, fd_set *set)
+/* Reinitializes the selector with up-to-date list of objects to watch. */
+static void
+make_ready_list(const bg_job_t *jobs, selector_t *selector)
 {
-	int max_fd = 0;
-	bg_job_t **job = jobs;
+	selector_reset(selector);
 
-	FD_ZERO(set);
-
-	while(*job != NULL)
+	while(jobs != NULL)
 	{
-		bg_job_t *const j = *job;
-
-		FD_SET(j->fd, set);
-		if(j->fd > max_fd)
-		{
-			max_fd = j->fd;
-		}
-
-		job = &j->err_next;
+		selector_add(selector, jobs->err_stream);
+		jobs = jobs->err_next;
 	}
-
-	return max_fd;
 }
 
+#ifndef _WIN32
 /* Either displays error message to the user for foreground operations or saves
  * it for displaying on the next invocation of bg_check(). */
 static void
@@ -580,6 +580,7 @@ report_error_msg(const char title[], const char text[])
 		append_error_msg(job, text);
 	}
 }
+#endif
 
 /* Appends message to error-related fields of the job. */
 static void
@@ -591,6 +592,7 @@ append_error_msg(bg_job_t *job, const char err_msg[])
 	pthread_spin_unlock(&job->errors_lock);
 }
 
+#ifndef _WIN32
 pid_t
 bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 {
@@ -844,7 +846,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		/* Close write end of pipe. */
 		close(error_pipe[1]);
 
-		job = add_background_job(pid, command, (uintptr_t)error_pipe[0],
+		job = add_background_job(pid, command, (uintptr_t)error_pipe[0], 0,
 				BJT_COMMAND);
 		if(job == NULL)
 		{
@@ -855,7 +857,7 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 	free(command);
 #else
 	BOOL ret;
-	STARTUPINFOW startup = {};
+	STARTUPINFOW startup = { .dwFlags = STARTF_USESTDHANDLES };
 	PROCESS_INFORMATION pinfo;
 	char *command;
 	char *sh_cmd;
@@ -867,19 +869,45 @@ bg_run_external(const char cmd[], int skip_errors, ShellRequester by)
 		return -1;
 	}
 
+	SECURITY_ATTRIBUTES sec_attr = {
+		.nLength = sizeof(sec_attr),
+		.lpSecurityDescriptor = NULL,
+		.bInheritHandle = 1,
+	};
+
+	HANDLE hnul = CreateFileA("NUL", GENERIC_READ | GENERIC_WRITE, 0, &sec_attr,
+			OPEN_EXISTING, 0, NULL);
+	if(hnul == INVALID_HANDLE_VALUE)
+	{
+		free(command);
+		return -1;
+	}
+	startup.hStdInput = hnul;
+	startup.hStdOutput = hnul;
+
+	HANDLE herr;
+	if(!CreatePipe(&herr, &startup.hStdError, &sec_attr, 16*1024))
+	{
+		CloseHandle(hnul);
+		free(command);
+		return -1;
+	}
+
 	sh_cmd = win_make_sh_cmd(command, by);
 	free(command);
 
 	wide_cmd = to_wide(sh_cmd);
-	ret = CreateProcessW(NULL, wide_cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	ret = CreateProcessW(NULL, wide_cmd, NULL, NULL, 1, 0, NULL, NULL, &startup,
 			&pinfo);
 	free(wide_cmd);
+	CloseHandle(hnul);
+	CloseHandle(startup.hStdError);
 
 	if(ret != 0)
 	{
 		CloseHandle(pinfo.hThread);
 
-		job = add_background_job(pinfo.dwProcessId, sh_cmd,
+		job = add_background_job(pinfo.dwProcessId, sh_cmd, (uintptr_t)herr,
 				(uintptr_t)pinfo.hProcess, BJT_COMMAND);
 		if(job == NULL)
 		{
@@ -917,7 +945,7 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 	task_args->func = task_func;
 	task_args->args = args;
 	task_args->job = add_background_job(WRONG_PID, descr, (uintptr_t)NO_JOB_ID,
-			important ? BJT_OPERATION : BJT_TASK);
+			(uintptr_t)NO_JOB_ID, important ? BJT_OPERATION : BJT_TASK);
 
 	if(task_args->job == NULL)
 	{
@@ -952,7 +980,8 @@ bg_execute(const char descr[], const char op_descr[], int total, int important,
 /* Creates structure that describes background job and registers it in the list
  * of jobs. */
 static bg_job_t *
-add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
+add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
+		BgJobType type)
 {
 	bg_job_t *new = malloc(sizeof(*new));
 	if(new == NULL)
@@ -978,8 +1007,13 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
 	new->exit_code = -1;
 
 #ifndef _WIN32
-	new->fd = (int)data;
-	if(new->fd != -1)
+	new->err_stream = (int)err;
+#else
+	new->err_stream = (HANDLE)err;
+	new->hprocess = (HANDLE)data;
+#endif
+
+	if(new->err_stream != NO_JOB_ID)
 	{
 		pthread_mutex_lock(&new_err_jobs_lock);
 		new->err_next = new_err_jobs;
@@ -987,9 +1021,6 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
 		pthread_mutex_unlock(&new_err_jobs_lock);
 		pthread_cond_signal(&new_err_jobs_cond);
 	}
-#else
-	new->hprocess = (HANDLE)data;
-#endif
 
 	if(type != BJT_COMMAND)
 	{

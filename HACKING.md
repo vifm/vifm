@@ -191,6 +191,8 @@ there for instructions.
     |  |  |-- matchers.c - list of matchers (which are ANDed together)
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- regexp.c - regexp related
+    |  |  |-- selector_nix.c - waiting for file descriptors to become readable
+    |  |  |-- selector_win.c - waiting for file handles to become readable
     |  |  |-- shmem_nix.c - implementation of named shared memory on *nix
     |  |  |-- shmem_win.c - implementation of named shared memory on Windows
     |  |  |-- str.c - various string functions

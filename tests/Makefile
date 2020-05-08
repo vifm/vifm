@@ -300,7 +300,7 @@ $$($1.bin): $$($1.obj) $(vifm_obj) $(tests_lib) | $(B)bin/$(BINSUBDIR)
 
 $(BUILD)$1/%.o: $1/%.c $(GCH_DEP) $(BUILD)$1/filelist \
               | $(BUILD)$1 $(SANDBOX_PATH)/$1
-	$$(CC) -c -o $$@ -include test-support/stic/stic.h $(CFLAGS) \
+	$$(CC) -c -o $$@ $(CFLAGS) -include test-support/stic/stic.h \
 	                 -DTESTID=$$(call pos, $$($1.obj), $$@) \
 	                 -DMAXTESTID=$$(words $$($1.obj)) $$< \
 	                 -DSUITE_NAME="$1" \

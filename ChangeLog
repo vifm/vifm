@@ -128,6 +128,9 @@
 	mime-type matchers) and reduce amount of memory they take up.  Thanks to
 	yanzhang0219.
 
+	Implemented capturing output of background applications on Windows.  Thanks
+	to Gene Zharov.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
@@ -185,8 +188,7 @@
 	Fixed confusing printing of attributes of OtherLine, OtherWin, AuxWin and
 	User1..User9 highlight groups by :highlight command.
 
-	Fixed documentation on external background commands and not that it's not
-	implemented on Windows.  Thanks to Gene Zharov.
+	Fixed documentation on external background commands.  Thanks to Gene Zharov.
 
 	Fixed possible crash after changing 'history' when there are inactive tabs
 	and then populating history of those tabs.

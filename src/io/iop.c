@@ -17,8 +17,6 @@
  */
 
 #ifdef _WIN32
-#define REQUIRED_WINVER 0x0600
-#include "../utils/windefs.h"
 #include <windows.h>
 #endif
 
