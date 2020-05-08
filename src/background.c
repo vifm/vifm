@@ -27,19 +27,17 @@
 #include <sys/stat.h> /* O_RDONLY */
 #include <sys/types.h> /* pid_t ssize_t */
 #ifndef _WIN32
-#include <sys/select.h> /* FD_* select */
-#include <sys/time.h> /* timeval */
-#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() waitpid() */
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 #endif
 #include <signal.h> /* kill() */
-#include <unistd.h> /* execve() fork() select() */
+#include <unistd.h> /* execve() fork() */
 
 #include <assert.h> /* assert() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL wchar_t */
 #include <stdint.h> /* uintptr_t */
 #include <stdlib.h> /* EXIT_FAILURE _Exit() free() malloc() */
-#include <string.h> /* memcpy() */
+#include <string.h> /* strdup() */
 
 #include "cfg/config.h"
 #include "compat/pthread.h"
@@ -51,6 +49,7 @@
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/path.h"
+#include "utils/selector.h"
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "cmd_completion.h"
@@ -114,10 +113,10 @@ static void job_check(bg_job_t *job);
 static void job_free(bg_job_t *job);
 #ifndef _WIN32
 static void * error_thread(void *p);
-static int update_error_jobs(bg_job_t **jobs, fd_set *set);
+static void update_error_jobs(bg_job_t **jobs, selector_t *selector);
 static void free_drained_jobs(bg_job_t **jobs);
 static void import_error_jobs(bg_job_t **jobs);
-static int make_ready_list(bg_job_t **jobs, fd_set *set);
+static void make_ready_list(bg_job_t **jobs, selector_t *selector);
 static void report_error_msg(const char title[], const char text[]);
 static void append_error_msg(bg_job_t *job, const char err_msg[]);
 #endif
@@ -397,17 +396,19 @@ error_thread(void *p)
 {
 	bg_job_t *jobs = NULL;
 
+	selector_t *selector = selector_alloc();
+	if(selector == NULL)
+	{
+		return NULL;
+	}
+
 	(void)pthread_detach(pthread_self());
 	block_all_thread_signals();
 
 	while(1)
 	{
-		fd_set active, ready;
-		const int max_fd = update_error_jobs(&jobs, &active);
-		struct timeval timeout = { .tv_sec = 0, .tv_usec = 250*1000 }, ts = timeout;
-
-		while(select(max_fd + 1, memcpy(&ready, &active, sizeof(active)), NULL,
-					NULL, &ts) > 0)
+		update_error_jobs(&jobs, selector);
+		while(selector_wait(selector, 250))
 		{
 			int need_update_list = (jobs == NULL);
 
@@ -418,7 +419,7 @@ error_thread(void *p)
 				char err_msg[ERR_MSG_LEN];
 				ssize_t nread;
 
-				if(!FD_ISSET(j->fd, &ready))
+				if(!selector_is_ready(selector, j->fd))
 				{
 					goto next_job;
 				}
@@ -435,7 +436,7 @@ error_thread(void *p)
 				{
 					/* Reached EOF, exclude corresponding file descriptor from the set,
 					 * cut the job out of our list and allow its deletion. */
-					FD_CLR(j->fd, &active);
+					selector_remove(selector, j->fd);
 					*job = j->err_next;
 					pthread_spin_lock(&j->status_lock);
 					j->in_use = 0;
@@ -460,21 +461,21 @@ error_thread(void *p)
 			{
 				break;
 			}
-
-			ts = timeout;
 		}
 	}
+
+	selector_free(selector);
 	return NULL;
 }
 
-/* Updates *jobs by removing finished tasks and adding new ones.  Initializes
- * *set set.  Returns max file descriptor number of the set. */
-static int
-update_error_jobs(bg_job_t **jobs, fd_set *set)
+/* Updates *jobs by removing finished tasks and adding new ones.  Reinitializes
+ * *selector. */
+static void
+update_error_jobs(bg_job_t **jobs, selector_t *selector)
 {
 	free_drained_jobs(jobs);
 	import_error_jobs(jobs);
-	return make_ready_list(jobs, set);
+	make_ready_list(jobs, selector);
 }
 
 /* Updates *jobs by removing finished tasks. */
@@ -538,29 +539,19 @@ import_error_jobs(bg_job_t **jobs)
 	}
 }
 
-/* Initializes *set set.  Returns max file descriptor number of the set. */
-static int
-make_ready_list(bg_job_t **jobs, fd_set *set)
+/* Reinitializes the selector with up-to-date list of objects to watch. */
+static void
+make_ready_list(bg_job_t **jobs, selector_t *selector)
 {
-	int max_fd = 0;
+	selector_reset(selector);
+
 	bg_job_t **job = jobs;
-
-	FD_ZERO(set);
-
 	while(*job != NULL)
 	{
 		bg_job_t *const j = *job;
-
-		FD_SET(j->fd, set);
-		if(j->fd > max_fd)
-		{
-			max_fd = j->fd;
-		}
-
+		selector_add(selector, j->fd);
 		job = &j->err_next;
 	}
-
-	return max_fd;
 }
 
 /* Either displays error message to the user for foreground operations or saves
