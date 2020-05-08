@@ -20,8 +20,6 @@
 #include "fs.h"
 
 #ifdef _WIN32
-#define REQUIRED_WINVER 0x0500
-#include "windefs.h"
 #include <windows.h>
 #include <ntdef.h>
 #include <winioctl.h>

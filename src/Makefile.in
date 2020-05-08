@@ -840,7 +840,6 @@ EXTRA_DIST = \
 						 utils/shmem_win.c \
 						 utils/utils_win.c \
 						 utils/utils_win.h \
-						 utils/windefs.h \
 						 utils/xxhash.c \
 						 modes/dialogs/attr_dialog_win.h \
 						 modes/dialogs/attr_dialog_win.c \

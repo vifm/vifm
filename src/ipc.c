@@ -31,8 +31,6 @@
 # include <sys/select.h> /* FD_* select() */
 #else
 # define O_NONBLOCK 0
-# define REQUIRED_WINVER 0x0600 /* To get PIPE_REJECT_REMOTE_CLIENTS. */
-# include "utils/windefs.h"
 # include <windows.h>
 # ifndef PIPE_REJECT_REMOTE_CLIENTS
 #  define PIPE_REJECT_REMOTE_CLIENTS 1
