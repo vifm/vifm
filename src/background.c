@@ -113,7 +113,7 @@ static void job_check(bg_job_t *job);
 static void job_free(bg_job_t *job);
 #ifndef _WIN32
 static void * error_thread(void *p);
-static void update_error_jobs(bg_job_t **jobs, selector_t *selector);
+static void update_error_jobs(bg_job_t **jobs);
 static void free_drained_jobs(bg_job_t **jobs);
 static void import_error_jobs(bg_job_t **jobs);
 static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
@@ -407,7 +407,8 @@ error_thread(void *p)
 
 	while(1)
 	{
-		update_error_jobs(&jobs, selector);
+		update_error_jobs(&jobs);
+		make_ready_list(jobs, selector);
 		while(selector_wait(selector, 250))
 		{
 			int need_update_list = (jobs == NULL);
@@ -468,14 +469,12 @@ error_thread(void *p)
 	return NULL;
 }
 
-/* Updates *jobs by removing finished tasks and adding new ones.  Reinitializes
- * *selector. */
+/* Updates *jobs by removing finished tasks and adding new ones. */
 static void
-update_error_jobs(bg_job_t **jobs, selector_t *selector)
+update_error_jobs(bg_job_t **jobs)
 {
 	free_drained_jobs(jobs);
 	import_error_jobs(jobs);
-	make_ready_list(*jobs, selector);
 }
 
 /* Updates *jobs by removing finished tasks. */
