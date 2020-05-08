@@ -296,9 +296,9 @@ job_free(bg_job_t *job)
 	}
 
 #ifndef _WIN32
-	if(job->fd != NO_JOB_ID)
+	if(job->err_stream != NO_JOB_ID)
 	{
-		close(job->fd);
+		close(job->err_stream);
 	}
 #else
 	if(job->hprocess != NO_JOB_ID)
@@ -420,12 +420,12 @@ error_thread(void *p)
 				char err_msg[ERR_MSG_LEN];
 				ssize_t nread;
 
-				if(!selector_is_ready(selector, j->fd))
+				if(!selector_is_ready(selector, j->err_stream))
 				{
 					goto next_job;
 				}
 
-				nread = read(j->fd, err_msg, sizeof(err_msg) - 1U);
+				nread = read(j->err_stream, err_msg, sizeof(err_msg) - 1U);
 				if(nread < 0)
 				{
 					need_update_list = 1;
@@ -437,7 +437,7 @@ error_thread(void *p)
 				{
 					/* Reached EOF, exclude corresponding file descriptor from the set,
 					 * cut the job out of our list and allow its deletion. */
-					selector_remove(selector, j->fd);
+					selector_remove(selector, j->err_stream);
 					*job = j->err_next;
 					pthread_spin_lock(&j->status_lock);
 					j->in_use = 0;
@@ -546,7 +546,7 @@ make_ready_list(const bg_job_t *jobs, selector_t *selector)
 
 	while(jobs != NULL)
 	{
-		selector_add(selector, jobs->fd);
+		selector_add(selector, jobs->err_stream);
 		jobs = jobs->err_next;
 	}
 }
@@ -966,8 +966,8 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t data, BgJobType type)
 	new->exit_code = -1;
 
 #ifndef _WIN32
-	new->fd = (int)data;
-	if(new->fd != -1)
+	new->err_stream = (int)data;
+	if(new->err_stream != -1)
 	{
 		pthread_mutex_lock(&new_err_jobs_lock);
 		new->err_next = new_err_jobs;
