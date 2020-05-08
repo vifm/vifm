@@ -272,7 +272,9 @@ job_check(bg_job_t *job)
 	{
 		if(retcode != STILL_ACTIVE)
 		{
+			pthread_spin_lock(&job->status_lock);
 			job->running = 0;
+			pthread_spin_unlock(&job->status_lock);
 		}
 	}
 #endif
