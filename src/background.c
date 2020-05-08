@@ -111,15 +111,15 @@ background_task_args;
 
 static void job_check(bg_job_t *job);
 static void job_free(bg_job_t *job);
-#ifndef _WIN32
 static void * error_thread(void *p);
 static void update_error_jobs(bg_job_t **jobs);
 static void free_drained_jobs(bg_job_t **jobs);
 static void import_error_jobs(bg_job_t **jobs);
 static void make_ready_list(const bg_job_t *jobs, selector_t *selector);
+#ifndef _WIN32
 static void report_error_msg(const char title[], const char text[]);
-static void append_error_msg(bg_job_t *job, const char err_msg[]);
 #endif
+static void append_error_msg(bg_job_t *job, const char err_msg[]);
 static bg_job_t * add_background_job(pid_t pid, const char cmd[],
 		uintptr_t err, uintptr_t data, BgJobType type);
 static void * background_task_bootstrap(void *arg);
@@ -129,14 +129,12 @@ static int bg_op_cancel(bg_op_t *bg_op);
 
 bg_job_t *bg_jobs = NULL;
 
-#ifndef _WIN32
 /* Head of list of newly started jobs. */
 static bg_job_t *new_err_jobs;
 /* Mutex to protect new_err_jobs. */
 static pthread_mutex_t new_err_jobs_lock = PTHREAD_MUTEX_INITIALIZER;
 /* Conditional variable to signal availability of new jobs in new_err_jobs. */
 static pthread_cond_t new_err_jobs_cond = PTHREAD_COND_INITIALIZER;
-#endif
 
 /* Thread local storage for bg_job_t associated with active thread. */
 static pthread_key_t current_job;
@@ -144,12 +142,10 @@ static pthread_key_t current_job;
 void
 bg_init(void)
 {
-#ifndef _WIN32
 	pthread_t id;
 	const int err = pthread_create(&id, NULL, &error_thread, NULL);
 	assert(err == 0);
 	(void)err;
-#endif
 
 	/* Initialize state for the main thread. */
 	set_current_job(NULL);
@@ -246,7 +242,6 @@ bg_check(void)
 static void
 job_check(bg_job_t *job)
 {
-#ifndef _WIN32
 	char *new_errors;
 
 	/* Display portions of errors from the job while there are any. */
@@ -266,7 +261,8 @@ job_check(bg_job_t *job)
 		free(new_errors);
 	}
 	while(new_errors != NULL);
-#else
+
+#ifdef _WIN32
 	DWORD retcode;
 	if(GetExitCodeProcess(job->hprocess, &retcode) != 0)
 	{
@@ -394,7 +390,6 @@ bg_and_wait_for_errors(char cmd[], const struct cancellation_t *cancellation)
 #endif
 }
 
-#ifndef _WIN32
 /* Entry point of a thread which reads input from input of active background
  * programs.  Does not return. */
 static void *
@@ -431,7 +426,17 @@ error_thread(void *p)
 					goto next_job;
 				}
 
+#ifndef _WIN32
 				nread = read(j->err_stream, err_msg, sizeof(err_msg) - 1U);
+#else
+				nread = -1;
+				DWORD bytes_read;
+				if(ReadFile(j->err_stream, err_msg, sizeof(err_msg) - 1U, &bytes_read,
+							NULL))
+				{
+					nread = bytes_read;
+				}
+#endif
 				if(nread < 0)
 				{
 					need_update_list = 1;
@@ -557,6 +562,7 @@ make_ready_list(const bg_job_t *jobs, selector_t *selector)
 	}
 }
 
+#ifndef _WIN32
 /* Either displays error message to the user for foreground operations or saves
  * it for displaying on the next invocation of bg_check(). */
 static void
@@ -574,6 +580,7 @@ report_error_msg(const char title[], const char text[])
 		append_error_msg(job, text);
 	}
 }
+#endif
 
 /* Appends message to error-related fields of the job. */
 static void
@@ -585,6 +592,7 @@ append_error_msg(bg_job_t *job, const char err_msg[])
 	pthread_spin_unlock(&job->errors_lock);
 }
 
+#ifndef _WIN32
 pid_t
 bg_run_and_capture(char cmd[], int user_sh, FILE **out, FILE **err)
 {
@@ -1000,7 +1008,12 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 
 #ifndef _WIN32
 	new->err_stream = (int)err;
-	if(new->err_stream != -1)
+#else
+	new->err_stream = (HANDLE)err;
+	new->hprocess = (HANDLE)data;
+#endif
+
+	if(new->err_stream != NO_JOB_ID)
 	{
 		pthread_mutex_lock(&new_err_jobs_lock);
 		new->err_next = new_err_jobs;
@@ -1008,10 +1021,6 @@ add_background_job(pid_t pid, const char cmd[], uintptr_t err, uintptr_t data,
 		pthread_mutex_unlock(&new_err_jobs_lock);
 		pthread_cond_signal(&new_err_jobs_cond);
 	}
-#else
-	new->err_stream = (HANDLE)err;
-	new->hprocess = (HANDLE)data;
-#endif
 
 	if(type != BJT_COMMAND)
 	{
