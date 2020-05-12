@@ -73,6 +73,8 @@ static preview_area_t get_preview_area(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
+static char * expand_custom(const char **pattern, size_t nmacros,
+		custom_macro_t macros[], int with_opt, int in_opt);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
 
@@ -634,27 +636,58 @@ ma_get_clear_cmd(const char cmd[])
 }
 
 char *
-ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[])
+ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[],
+		int with_opt)
+{
+	return expand_custom(&pattern, nmacros, macros, with_opt, 0);
+}
+
+/* Expands macros of form %x in the pattern (%% is expanded to %) according to
+ * macros specification and accounting for nesting inside %[ and %].  Updates
+ * *pattern pointer.  Returns expanded string. */
+static char *
+expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
+		int with_opt, int in_opt)
 {
 	char *expanded = strdup("");
 	size_t len = 0;
-	while(*pattern != '\0')
+	int nexpansions = 0;
+	while(**pattern != '\0')
 	{
-		if(pattern[0] != '%')
+		const char *pat = *pattern;
+		if(pat[0] != '%')
 		{
-			const char single_char[] = { *pattern, '\0' };
+			const char single_char[] = { *pat, '\0' };
 			expanded = extend_string(expanded, single_char, &len);
 		}
-		else if(pattern[1] == '%' || pattern[1] == '\0')
+		else if(pat[1] == '%' || pat[1] == '\0')
 		{
 			expanded = extend_string(expanded, "%", &len);
-			pattern += pattern[1] == '%';
+			*pattern += pat[1] == '%';
+		}
+		else if(with_opt && pat[1] == '[')
+		{
+			*pattern += 2;
+			char *nested = expand_custom(pattern, nmacros, macros, with_opt, 1);
+			expanded = extend_string(expanded, nested, &len);
+			nexpansions += (nested[0] != '\0');
+			free(nested);
+			continue;
+		}
+		else if(in_opt && pat[1] == ']')
+		{
+			*pattern += 2;
+			if(nexpansions == 0 && expanded != NULL)
+			{
+				expanded[0] = '\0';
+			}
+			return expanded;
 		}
 		else
 		{
 			size_t i = 0U;
-			++pattern;
-			while(i < nmacros && macros[i].letter != *pattern)
+			++*pattern;
+			while(i < nmacros && macros[i].letter != **pattern)
 			{
 				++i;
 			}
@@ -663,13 +696,22 @@ ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[])
 				expanded = extend_string(expanded, macros[i].value, &len);
 				--macros[i].uses_left;
 				macros[i].explicit_use = 1;
+				nexpansions += (macros[i].value[0] != '\0');
 			}
 		}
-		pattern++;
+		++*pattern;
 	}
 
-	expanded = add_missing_macros(expanded, len, nmacros, macros);
+	/* Unmatched %[. */
+	if(in_opt)
+	{
+		(void)strprepend(&expanded, &len, "%[");
+	}
 
+	if(!in_opt)
+	{
+		expanded = add_missing_macros(expanded, len, nmacros, macros);
+	}
 	return expanded;
 }
 

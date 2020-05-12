@@ -59,7 +59,7 @@ show_locate_menu(view_t *view, const char args[])
 	m.execute_handler = &execute_locate_cb;
 	m.key_handler = &menus_def_khandler;
 
-	cmd = ma_expand_custom(cfg.locate_prg, ARRAY_LEN(macros), macros);
+	cmd = ma_expand_custom(cfg.locate_prg, ARRAY_LEN(macros), macros, MA_NOOPT);
 
 	ui_sb_msg("locate...");
 	save_msg = menus_capture(view, cmd, 0, &m, macros[M_u].explicit_use,

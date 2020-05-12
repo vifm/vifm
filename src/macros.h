@@ -48,6 +48,14 @@ typedef enum
 }
 MacroFlags;
 
+/* Named boolean values of "with_opt" parameter for better readability. */
+enum
+{
+	MA_NOOPT, /* Do not parse %[ and %] macros. */
+	MA_OPT    /* Parse %[ and %] keeping their insides only with non-empty
+	             expansions. */
+};
+
 /* Description of a macro for the ma_expand_custom() function. */
 typedef struct
 {
@@ -74,9 +82,10 @@ char * ma_expand_single(const char command[]);
 const char * ma_get_clear_cmd(const char cmd[]);
 
 /* Expands macros of form %x in the pattern (%% is expanded to %) according to
- * macros specification. */
+ * macros specification.  Optionally handles %[opt%] nested expansions.  Returns
+ * expanded string. */
 char * ma_expand_custom(const char pattern[], size_t nmacros,
-		custom_macro_t macros[]);
+		custom_macro_t macros[], int with_opt);
 
 /* Maps flag to corresponding string representation of the macro using %-syntax.
  * Returns the string representation. */
