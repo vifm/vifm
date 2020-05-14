@@ -25,7 +25,10 @@
  * buffer containing result. */
 const char * apply_mods(const char path[], const char parent[],
 		const char mod[], int for_shell);
-size_t get_mods_len(const char *str);
+
+/* Computes length of filename modifier at the beginning of the passed string.
+ * Returns the length. */
+size_t get_mod_len(const char str[]);
 
 #endif /* VIFM__FILENAME_MODIFIERS_H__ */
 

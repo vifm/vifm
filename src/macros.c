@@ -764,7 +764,7 @@ get_all_mods_len(const char str[])
 	size_t total = 0;
 	while(str[total] != '\0')
 	{
-		size_t len = get_mods_len(&str[total]);
+		size_t len = get_mod_len(&str[total]);
 		if(len == 0)
 		{
 			break;

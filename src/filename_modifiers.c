@@ -274,7 +274,7 @@ apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
 }
 
 size_t
-get_mods_len(const char *str)
+get_mod_len(const char str[])
 {
 	static const char FIXED_LENGTH_FILEMODS[] = "p~.htre";
 	size_t result = 0;
