@@ -49,6 +49,7 @@ static int apply_r_mod(const char *path, char *buf, size_t buf_len);
 static int apply_e_mod(const char *path, char *buf, size_t buf_len);
 static int apply_s_gs_mod(const char *path, const char *mod,
 		char *buf, size_t buf_len);
+static size_t get_mod_len(const char str[]);
 static const char * find_nth_chr(const char *str, char c, int n);
 
 const char *
@@ -274,6 +275,24 @@ apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
 }
 
 size_t
+get_all_mods_len(const char str[])
+{
+	size_t total = 0;
+	while(str[total] != '\0')
+	{
+		size_t len = get_mod_len(&str[total]);
+		if(len == 0)
+		{
+			break;
+		}
+		total += len;
+	}
+	return total;
+}
+
+/* Computes length of filename modifier at the beginning of the passed string.
+ * Returns the length. */
+static size_t
 get_mod_len(const char str[])
 {
 	static const char FIXED_LENGTH_FILEMODS[] = "p~.htre";
