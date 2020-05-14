@@ -75,6 +75,7 @@ static char * append_path_to_expanded(char expanded[], int quotes,
 static char * append_to_expanded(char expanded[], const char str[]);
 static char * expand_custom(const char **pattern, size_t nmacros,
 		custom_macro_t macros[], int with_opt, int in_opt);
+static size_t get_all_mods_len(const char str[]);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
 
@@ -327,15 +328,7 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		if(command[x] != '\0')
 			x++;
 
-		while(x < cmd_len)
-		{
-			size_t len = get_mods_len(command + x);
-			if(len == 0)
-			{
-				break;
-			}
-			x += len;
-		}
+		x += get_all_mods_len(command + x);
 
 		y = x;
 
@@ -700,15 +693,7 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 							"Invalid parent for mods.");
 					value = apply_mods(value, macros[i].parent, *pattern, 0);
 
-					while(**pattern != '\0')
-					{
-						size_t len = get_mods_len(*pattern);
-						if(len == 0)
-						{
-							break;
-						}
-						*pattern += len;
-					}
+					*pattern += get_all_mods_len(*pattern);
 				}
 
 				expanded = extend_string(expanded, value, &len);
@@ -769,6 +754,24 @@ add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		}
 	}
 	return expanded;
+}
+
+/* Computes total length of all filename modifiers at the beginning of the
+ * passed string.  Returns the length. */
+static size_t
+get_all_mods_len(const char str[])
+{
+	size_t total = 0;
+	while(str[total] != '\0')
+	{
+		size_t len = get_mods_len(&str[total]);
+		if(len == 0)
+		{
+			break;
+		}
+		total += len;
+	}
+	return total;
 }
 
 const char *
