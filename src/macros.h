@@ -59,11 +59,15 @@ enum
 /* Description of a macro for the ma_expand_custom() function. */
 typedef struct
 {
-	char letter;       /* Macro identifier in the pattern. */
-	const char *value; /* A value to replace macro with. */
-	int uses_left;     /* Number of mandatory uses of the macro for group head. */
-	int group;         /* Index of macro group head or -1. */
-	int explicit_use;  /* Set to non-zero on explicit expansion. */
+	char letter;        /* Macro identifier in the pattern. */
+	const char *value;  /* A value to replace macro with. */
+	int uses_left;      /* Number of mandatory uses of the macro for group
+	                       head. */
+	int group;          /* Index of macro group head or -1. */
+	int explicit_use;   /* Set to non-zero on explicit expansion. */
+	int expand_mods;    /* Process file modifiers for this macro. */
+	const char *parent; /* Parent directory for expanding modifiers (must be an
+	                       absolute paths when expand_mods is non-zero). */
 }
 custom_macro_t;
 

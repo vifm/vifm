@@ -693,7 +693,25 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 			++*pattern;
 			if(i < nmacros)
 			{
-				expanded = extend_string(expanded, macros[i].value, &len);
+				const char *value = macros[i].value;
+				if(macros[i].expand_mods)
+				{
+					assert(is_path_absolute(macros[i].parent) &&
+							"Invalid parent for mods.");
+					value = apply_mods(value, macros[i].parent, *pattern, 0);
+
+					while(**pattern != '\0')
+					{
+						size_t len = get_mods_len(*pattern);
+						if(len == 0)
+						{
+							break;
+						}
+						*pattern += len;
+					}
+				}
+
+				expanded = extend_string(expanded, value, &len);
 				--macros[i].uses_left;
 				macros[i].explicit_use = 1;
 				nexpansions += (macros[i].value[0] != '\0');

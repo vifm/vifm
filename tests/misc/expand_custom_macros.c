@@ -279,5 +279,17 @@ TEST(nested_optional_with_nonempty_value)
 	free(expanded);
 }
 
+TEST(mods_are_applied)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'd', .value = "/a/b/<c>", .parent = "/", .expand_mods = 1 },
+	};
+
+	const char *pattern = "before%d:tafter";
+	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
+	assert_string_equal("before<c>after", expanded);
+	free(expanded);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
