@@ -327,7 +327,7 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		if(command[x] != '\0')
 			x++;
 
-		x += get_all_mods_len(command + x);
+		x += mods_length(command + x);
 
 		y = x;
 
@@ -441,7 +441,7 @@ append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
 			break;
 	}
 
-	modified = apply_mods(path, flist_get_dir(view), mod, for_shell);
+	modified = mods_apply(path, flist_get_dir(view), mod, for_shell);
 	expanded = append_path_to_expanded(expanded, quotes, modified);
 
 	return expanded;
@@ -451,7 +451,7 @@ static char *
 expand_directory_path(view_t *view, char *expanded, int quotes, const char *mod,
 		int for_shell)
 {
-	const char *modified = apply_mods(flist_get_dir(view), "/", mod, for_shell);
+	const char *modified = mods_apply(flist_get_dir(view), "/", mod, for_shell);
 	char *const result = append_path_to_expanded(expanded, quotes, modified);
 
 	if(for_shell && curr_stats.shell_type == ST_CMD)
@@ -485,7 +485,7 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 
 	for(i = 0; i < reg->nfiles; ++i)
 	{
-		const char *const modified = apply_mods(reg->files[i], curr_dir, mod,
+		const char *const modified = mods_apply(reg->files[i], curr_dir, mod,
 				for_shell);
 		expanded = append_path_to_expanded(expanded, quotes, modified);
 		if(i != reg->nfiles - 1)
@@ -690,9 +690,9 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 				{
 					assert(is_path_absolute(macros[i].parent) &&
 							"Invalid parent for mods.");
-					value = apply_mods(value, macros[i].parent, *pattern, 0);
+					value = mods_apply(value, macros[i].parent, *pattern, 0);
 
-					*pattern += get_all_mods_len(*pattern);
+					*pattern += mods_length(*pattern);
 				}
 
 				expanded = extend_string(expanded, value, &len);

@@ -53,7 +53,7 @@ static size_t get_mod_len(const char str[]);
 static const char * find_nth_chr(const char *str, char c, int n);
 
 const char *
-apply_mods(const char path[], const char parent[], const char mod[],
+mods_apply(const char path[], const char parent[], const char mod[],
 		int for_shell)
 {
 	static char buf[PATH_MAX + 1];
@@ -275,7 +275,7 @@ apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
 }
 
 size_t
-get_all_mods_len(const char str[])
+mods_length(const char str[])
 {
 	size_t total = 0;
 	while(str[total] != '\0')
