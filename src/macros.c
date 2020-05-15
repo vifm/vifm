@@ -655,7 +655,7 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 		else if(pat[1] == '%' || pat[1] == '\0')
 		{
 			expanded = extend_string(expanded, "%", &len);
-			*pattern += pat[1] == '%';
+			*pattern += (pat[1] == '%');
 		}
 		else if(with_opt && pat[1] == '[')
 		{
@@ -722,7 +722,7 @@ static char *
 add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[])
 {
-	int groups[nmacros];
+	int groups[nmacros == 0 ? 1 : nmacros];
 	size_t i;
 
 	memset(&groups, 0, sizeof(groups));
