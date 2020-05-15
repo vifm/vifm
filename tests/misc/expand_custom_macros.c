@@ -291,5 +291,55 @@ TEST(mods_are_applied)
 	free(expanded);
 }
 
+TEST(empty_flag)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'e', .value = "", .flag = 1 },
+	};
+
+	const char *pattern = "%[(empty)%e%]";
+	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
+	assert_string_equal("", expanded);
+	free(expanded);
+}
+
+TEST(non_empty_flag)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'n', .value = "value", .flag = 1 },
+	};
+
+	const char *pattern = "%[(non-empty)%n%]";
+	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
+	assert_string_equal("(non-empty)", expanded);
+	free(expanded);
+}
+
+TEST(empty_flag_after_mod)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'd', .value = "/a/b/<c>",
+		  .parent = "/", .expand_mods = 1, .flag = 1 },
+	};
+
+	const char *pattern = "%[(empty)%d:t:e%]";
+	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
+	assert_string_equal("", expanded);
+	free(expanded);
+}
+
+TEST(non_empty_flag_after_mod)
+{
+	custom_macro_t macros[] = {
+		{ .letter = 'd', .value = "/a/b/<c>",
+		  .parent = "/", .expand_mods = 1, .flag = 1 },
+	};
+
+	const char *pattern = "%[(non-empty)%d:t%]";
+	char *expanded = ma_expand_custom(pattern, ARRAY_LEN(macros), macros, MA_OPT);
+	assert_string_equal("(non-empty)", expanded);
+	free(expanded);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -695,10 +695,13 @@ expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
 					*pattern += mods_length(*pattern);
 				}
 
-				expanded = extend_string(expanded, value, &len);
+				if(!macros[i].flag)
+				{
+					expanded = extend_string(expanded, value, &len);
+				}
 				--macros[i].uses_left;
 				macros[i].explicit_use = 1;
-				nexpansions += (macros[i].value[0] != '\0');
+				nexpansions += (value[0] != '\0');
 			}
 		}
 	}

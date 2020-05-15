@@ -68,6 +68,7 @@ typedef struct
 	int expand_mods;    /* Process file modifiers for this macro. */
 	const char *parent; /* Parent directory for expanding modifiers (must be an
 	                       absolute paths when expand_mods is non-zero). */
+	int flag;           /* Value is ignored, but whether it's empty is noted. */
 }
 custom_macro_t;
 
