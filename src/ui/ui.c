@@ -2044,8 +2044,17 @@ format_view_title(const view_t *view, path_func pf)
 	}
 	else if(flist_custom_active(view))
 	{
-		unescaped_title = format_str("[%s] @ %s", view->custom.title,
-				pf(view->custom.orig_dir));
+		const char *tree_mark = (cv_tree(view->custom.type) ? "[tree]" : "");
+		const char *path = pf(view->custom.orig_dir);
+		if(view->custom.title[0] == '\0')
+		{
+			unescaped_title = format_str("%s @ %s", tree_mark, path);
+		}
+		else
+		{
+			unescaped_title = format_str("%s[%s] @ %s", tree_mark, view->custom.title,
+					path);
+		}
 	}
 	else
 	{
