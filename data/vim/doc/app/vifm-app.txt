@@ -3882,6 +3882,46 @@ operations, otherwise system calls are used instead (much faster and supports
 progress tracking).  The option should eventually be removed.  Mostly
 *nix-like systems are affected.
 
+                                               *vifm-'tablabel'*
+tablabel
+type: string
+default: ""
+
+When non-empty, determines format of a single tab's label, excluding tab
+number and tab delimiters.
+
+When empty, tab label is set to either tab name for named tabs or to view
+title (usually current path) for unnamed tabs.
+
+The following macros can appear in the format:
+    %T - flag of a tree mode (see below)
+    %c - description of a custom view
+    %n - name of the tab
+    %p - path of the view (handles |vifm-filename-modifiers|)
+    %t - title of the view (affected by |vifm-'shortmess'| flags)
+    %% - literal percent sign
+    %[ - designates beginning of an optional block
+    %] - designates end of an optional block
+
+In global tabs the view in bullets above refers to currently active view of that
+tab.
+
+Flag macros are a special kind of macros that always expand to an empty value
+and are ment to be used inside optional blocks to control their visibility.
+
+Optional blocks are ignored unless at least one macro inside of them is
+expanded to a non-empty value or is a set flag macro.
+
+Example: >
+ " %[(%n)%]        -- optional name of the tab
+ " %[              -- optional description of the view
+ "   %[%T{tree}%]  -- mark of tree mode
+ "   %[{%c}%]      -- description of custom view
+ "   @             -- just an extra separator before the path
+ ' %]
+ " %p:t            -- tail part of view's location
+ set tablabel=%[(%n)%]%[%[%T{tree}%]%[{%c}%]@%]%p:t
+<
                                                *vifm-'tabscope'*
 tabscope
 type: enumeration

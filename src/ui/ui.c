@@ -64,6 +64,7 @@
 #include "../event_loop.h"
 #include "../filelist.h"
 #include "../flist_sel.h"
+#include "../macros.h"
 #include "../opt_handlers.h"
 #include "../status.h"
 #include "../vifm.h"
@@ -149,7 +150,7 @@ static void print_tab_title(WINDOW *win, view_t *view, col_attr_t base_col,
 		path_func pf);
 static void compute_avg_width(int *avg_width, int *spare_width, int max_width,
 		view_t *view, path_func pf);
-static char * make_tab_title(const tab_info_t *tab_info, path_func pf);
+TSTATIC char * make_tab_title(const tab_info_t *tab_info, path_func pf);
 static char * format_view_title(const view_t *view, path_func pf);
 static void print_view_title(const view_t *view, int active_view, char title[]);
 static col_attr_t fixup_titles_attributes(const view_t *view, int active_view);
@@ -1997,13 +1998,10 @@ compute_avg_width(int *avg_width, int *spare_width, int max_width, view_t *view,
 }
 
 /* Gets title of the tab.  Returns newly allocated string. */
-static char *
+TSTATIC char *
 make_tab_title(const tab_info_t *tab_info, path_func pf)
 {
-	if(tab_info->name != NULL)
-	{
-		return strdup(tab_info->name);
-	}
+	view_t *view = tab_info->view;
 
 	if(cfg.tail_tab_line_paths)
 	{
@@ -2012,7 +2010,46 @@ make_tab_title(const tab_info_t *tab_info, path_func pf)
 		pf = &get_last_path_component;
 	}
 
-	return format_view_title(tab_info->view, pf);
+	if(is_null_or_empty(cfg.tab_label))
+	{
+		return (tab_info->name != NULL) ? strdup(tab_info->name)
+		                                : format_view_title(view, pf);
+	}
+
+	char path[PATH_MAX + 1];
+	if(view->explore_mode)
+	{
+		get_current_full_path(view, sizeof(path), path);
+	}
+	else
+	{
+		copy_str(path, sizeof(path), flist_get_dir(view));
+	}
+
+	const char *custom_title = "";
+	const char *tree_flag = "";
+	if(flist_custom_active(view))
+	{
+		custom_title = view->custom.title;
+		tree_flag = (cv_tree(view->custom.type) ? "*" : "");
+	}
+
+	char *view_title = format_view_title(view, pf);
+	custom_macro_t macros[] = {
+		{ .letter = 'n', .value = (tab_info->name == NULL ? "" : tab_info->name) },
+		{ .letter = 't', .value = view_title },
+		{ .letter = 'p', .value = path, .expand_mods = 1, .parent = "/" },
+		{ .letter = 'c', .value = custom_title },
+		{ .letter = 'T', .value = tree_flag, .flag = 1 },
+	};
+
+	char *unescaped_title = ma_expand_custom(cfg.tab_label, ARRAY_LEN(macros),
+			macros, MA_OPT);
+	free(view_title);
+
+	char *escaped_title = escape_unreadable(unescaped_title);
+	free(unescaped_title);
+	return escaped_title;
 }
 
 /* Formats title for the view.  The pf function will be applied to full paths.

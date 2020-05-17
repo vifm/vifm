@@ -16,6 +16,9 @@
 	middle border is adjusted to equalize view sizes.  Thanks to Matthias
 	Braun (a.k.a. mb720).
 
+	Added 'tablabel' option that specifies format of a single tab's label when
+	non-empty.  Thanks to aleksejrs.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.

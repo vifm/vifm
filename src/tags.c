@@ -117,6 +117,7 @@ const char *tags[] = {
 	"vifm-'suggestoptions'",
 	"vifm-'syncregs'",
 	"vifm-'syscalls'",
+	"vifm-'tablabel'",
 	"vifm-'tabscope'",
 	"vifm-'tabstop'",
 	"vifm-'timefmt'",

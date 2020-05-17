@@ -223,6 +223,7 @@ cfg_init(void)
 
 	cfg.pane_tabs = 0;
 	cfg.show_tab_line = STL_MULTIPLE;
+	cfg.tab_label = strdup("");
 
 	cfg.auto_ch_pos = 1;
 	cfg.ch_pos_on = CHPOS_STARTUP | CHPOS_DIRMARK | CHPOS_ENTER;

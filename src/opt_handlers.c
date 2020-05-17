@@ -212,6 +212,7 @@ static void suggestoptions_handler(OPT_OP op, optval_t val);
 static void reset_suggestoptions(void);
 static void syncregs_handler(OPT_OP op, optval_t val);
 static void syscalls_handler(OPT_OP op, optval_t val);
+static void tablabel_handler(OPT_OP op, optval_t val);
 static void tabscope_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
@@ -766,6 +767,10 @@ options[] = {
 	{ "syscalls", "", "use system calls for file operations",
 	  OPT_BOOL, 0, NULL, &syscalls_handler, NULL,
 	  { .ref.bool_val = &cfg.use_system_calls },
+	},
+	{ "tablabel", "", "format of a single tab's label",
+	  OPT_STR, 0, NULL, &tablabel_handler, NULL,
+	  { .ref.str_val = &cfg.tab_label },
 	},
 	{ "tabscope", "", "level at which tabs operate",
 	  OPT_ENUM, ARRAY_LEN(tabscope_vals), tabscope_vals, &tabscope_handler, NULL,
@@ -3239,6 +3244,14 @@ static void
 syscalls_handler(OPT_OP op, optval_t val)
 {
 	cfg.use_system_calls = val.bool_val;
+}
+
+/* Sets format string for tab label. */
+static void
+tablabel_handler(OPT_OP op, optval_t val)
+{
+	replace_string(&cfg.tab_label, val.str_val);
+	stats_redraw_later();
 }
 
 /* Sets scope of a single tab. */
