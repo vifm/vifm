@@ -23,9 +23,12 @@
 
 /* Applies all filename modifiers.  Returns pointer to statically allocated
  * buffer containing result. */
-const char * apply_mods(const char path[], const char parent[],
+const char * mods_apply(const char path[], const char parent[],
 		const char mod[], int for_shell);
-size_t get_mods_len(const char *str);
+
+/* Computes total length of all filename modifiers at the beginning of the
+ * passed string.  Returns the length. */
+size_t mods_length(const char str[]);
 
 #endif /* VIFM__FILENAME_MODIFIERS_H__ */
 

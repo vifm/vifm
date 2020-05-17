@@ -2053,6 +2053,8 @@ store_global_options(JSON_Object *root)
 				escape_spaces(cfg.status_line)));
 	append_dstr(options, format_str("syncregs=%s",
 			escape_spaces(vle_opts_get("syncregs", OPT_GLOBAL))));
+	append_dstr(options, format_str("tablabel=%s",
+			escape_spaces(vle_opts_get("tablabel", OPT_GLOBAL))));
 	append_dstr(options, format_str("tabscope=%s",
 			escape_spaces(vle_opts_get("tabscope", OPT_GLOBAL))));
 	append_dstr(options, format_str("tabstop=%d", cfg.tab_stop));

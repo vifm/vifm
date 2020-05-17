@@ -701,5 +701,12 @@ TEST(shellcmdflag)
 	assert_string_equal("-c", cfg.shell_cmd_flag);
 }
 
+TEST(tablabel)
+{
+	assert_success(exec_commands("set tablabel=%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t",
+				&lwin, CIT_COMMAND));
+	assert_string_equal("%[(%n)%]%[%[%T{tree}%]{%c}@%]%p:t", cfg.tab_label);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

@@ -73,6 +73,8 @@ static preview_area_t get_preview_area(view_t *view);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char expanded[], const char str[]);
+static char * expand_custom(const char **pattern, size_t nmacros,
+		custom_macro_t macros[], int with_opt, int in_opt);
 static char * add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[]);
 
@@ -325,15 +327,7 @@ expand_macros_i(const char command[], const char args[], MacroFlags *flags,
 		if(command[x] != '\0')
 			x++;
 
-		while(x < cmd_len)
-		{
-			size_t len = get_mods_len(command + x);
-			if(len == 0)
-			{
-				break;
-			}
-			x += len;
-		}
+		x += mods_length(command + x);
 
 		y = x;
 
@@ -447,7 +441,7 @@ append_entry(view_t *view, char expanded[], PathType type, dir_entry_t *entry,
 			break;
 	}
 
-	modified = apply_mods(path, flist_get_dir(view), mod, for_shell);
+	modified = mods_apply(path, flist_get_dir(view), mod, for_shell);
 	expanded = append_path_to_expanded(expanded, quotes, modified);
 
 	return expanded;
@@ -457,7 +451,7 @@ static char *
 expand_directory_path(view_t *view, char *expanded, int quotes, const char *mod,
 		int for_shell)
 {
-	const char *modified = apply_mods(flist_get_dir(view), "/", mod, for_shell);
+	const char *modified = mods_apply(flist_get_dir(view), "/", mod, for_shell);
 	char *const result = append_path_to_expanded(expanded, quotes, modified);
 
 	if(for_shell && curr_stats.shell_type == ST_CMD)
@@ -491,7 +485,7 @@ expand_register(const char curr_dir[], char expanded[], int quotes,
 
 	for(i = 0; i < reg->nfiles; ++i)
 	{
-		const char *const modified = apply_mods(reg->files[i], curr_dir, mod,
+		const char *const modified = mods_apply(reg->files[i], curr_dir, mod,
 				for_shell);
 		expanded = append_path_to_expanded(expanded, quotes, modified);
 		if(i != reg->nfiles - 1)
@@ -634,42 +628,94 @@ ma_get_clear_cmd(const char cmd[])
 }
 
 char *
-ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[])
+ma_expand_custom(const char pattern[], size_t nmacros, custom_macro_t macros[],
+		int with_opt)
+{
+	return expand_custom(&pattern, nmacros, macros, with_opt, 0);
+}
+
+/* Expands macros of form %x in the pattern (%% is expanded to %) according to
+ * macros specification and accounting for nesting inside %[ and %].  Updates
+ * *pattern pointer.  Returns expanded string. */
+static char *
+expand_custom(const char **pattern, size_t nmacros, custom_macro_t macros[],
+		int with_opt, int in_opt)
 {
 	char *expanded = strdup("");
 	size_t len = 0;
-	while(*pattern != '\0')
+	int nexpansions = 0;
+	while(**pattern != '\0')
 	{
-		if(pattern[0] != '%')
+		const char *pat = (*pattern)++;
+		if(pat[0] != '%')
 		{
-			const char single_char[] = { *pattern, '\0' };
+			const char single_char[] = { *pat, '\0' };
 			expanded = extend_string(expanded, single_char, &len);
 		}
-		else if(pattern[1] == '%' || pattern[1] == '\0')
+		else if(pat[1] == '%' || pat[1] == '\0')
 		{
 			expanded = extend_string(expanded, "%", &len);
-			pattern += pattern[1] == '%';
+			*pattern += (pat[1] == '%');
+		}
+		else if(with_opt && pat[1] == '[')
+		{
+			++*pattern;
+			char *nested = expand_custom(pattern, nmacros, macros, with_opt, 1);
+			expanded = extend_string(expanded, nested, &len);
+			nexpansions += (nested[0] != '\0');
+			free(nested);
+			continue;
+		}
+		else if(in_opt && pat[1] == ']')
+		{
+			++*pattern;
+			if(nexpansions == 0 && expanded != NULL)
+			{
+				expanded[0] = '\0';
+			}
+			return expanded;
 		}
 		else
 		{
 			size_t i = 0U;
-			++pattern;
-			while(i < nmacros && macros[i].letter != *pattern)
+			while(i < nmacros && macros[i].letter != **pattern)
 			{
 				++i;
 			}
+			++*pattern;
 			if(i < nmacros)
 			{
-				expanded = extend_string(expanded, macros[i].value, &len);
+				const char *value = macros[i].value;
+				if(macros[i].expand_mods)
+				{
+					assert(is_path_absolute(macros[i].parent) &&
+							"Invalid parent for mods.");
+					value = mods_apply(value, macros[i].parent, *pattern, 0);
+
+					*pattern += mods_length(*pattern);
+				}
+
+				if(!macros[i].flag)
+				{
+					expanded = extend_string(expanded, value, &len);
+				}
 				--macros[i].uses_left;
 				macros[i].explicit_use = 1;
+				nexpansions += (value[0] != '\0');
 			}
 		}
-		pattern++;
 	}
 
-	expanded = add_missing_macros(expanded, len, nmacros, macros);
+	/* Unmatched %[. */
+	if(in_opt)
+	{
+		(void)strprepend(&expanded, &len, "%[");
+	}
 
+	if(!in_opt)
+	{
+		expanded = add_missing_macros(expanded, len, nmacros, macros);
+	}
 	return expanded;
 }
 
@@ -679,7 +725,7 @@ static char *
 add_missing_macros(char expanded[], size_t len, size_t nmacros,
 		custom_macro_t macros[])
 {
-	int groups[nmacros];
+	int groups[nmacros == 0 ? 1 : nmacros];
 	size_t i;
 
 	memset(&groups, 0, sizeof(groups));

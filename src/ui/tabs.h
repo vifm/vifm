@@ -36,7 +36,7 @@ typedef struct
 tab_layout_t;
 
 /* Information about a tab. */
-typedef struct
+typedef struct tab_info_t
 {
 	struct view_t *view; /* View associated with the tab. */
 	const char *name;    /* Name of the view or NULL. */

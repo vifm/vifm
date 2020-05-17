@@ -35,6 +35,7 @@
 #include "../compat/pthread.h"
 #include "../utils/filter.h"
 #include "../utils/fswatch.h"
+#include "../utils/test_helpers.h"
 #include "../status.h"
 #include "../types.h"
 #include "color_scheme.h"
@@ -761,6 +762,12 @@ void ui_view_redrawn(view_t *view);
 /* Checks for scheduled update and marks it as fulfilled.  Returns kind of
  * scheduled event. */
 UiUpdateEvent ui_view_query_scheduled_event(view_t *view);
+
+TSTATIC_DEFS(
+	struct tab_info_t;
+	typedef char * (*path_func)(const char[]);
+	char * make_tab_title(const struct tab_info_t *tab_info, path_func pf);
+)
 
 #endif /* VIFM__UI__UI_H__ */
 

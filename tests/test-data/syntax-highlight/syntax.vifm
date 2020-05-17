@@ -466,6 +466,8 @@ hi User9
 " "*quickview" should be highlighted as 'option'
 " "syncregs" should be highlighted as 'option'
 " "mediaprg" should be highlighted as 'option'
+" "shellflagcmd" and "shcf" should be highlighted as 'option'
+" "tablabel" should be highlighted as 'option'
 set dotfiles nodotfiles invdotfiles dotfiles!
 set caseoptions
 set sizefmt
@@ -480,6 +482,7 @@ set quickview noquickview invquickview
 set syncregs
 set mediaprg
 set shellflagcmd shcf
+set tablabel
 
 " "term" should be highlighted as a function()
 echo term('cmd')

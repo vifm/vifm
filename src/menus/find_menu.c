@@ -105,7 +105,7 @@ show_find_menu(view_t *view, int with_path, const char args[])
 	m.execute_handler = &execute_find_cb;
 	m.key_handler = &menus_def_khandler;
 
-	cmd = ma_expand_custom(cfg.find_prg, ARRAY_LEN(macros), macros);
+	cmd = ma_expand_custom(cfg.find_prg, ARRAY_LEN(macros), macros, MA_NOOPT);
 
 	free(targets);
 	free(escaped_args);

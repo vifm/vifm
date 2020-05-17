@@ -80,7 +80,7 @@ show_grep_menu(view_t *view, const char args[], int invert)
 		macros[M_a].value = escaped_args;
 	}
 
-	cmd = ma_expand_custom(cfg.grep_prg, ARRAY_LEN(macros), macros);
+	cmd = ma_expand_custom(cfg.grep_prg, ARRAY_LEN(macros), macros, MA_NOOPT);
 
 	free(escaped_args);
 	free(targets);

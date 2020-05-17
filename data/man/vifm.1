@@ -1,4 +1,4 @@
-.TH VIFM 1 "May 8, 2020" "vifm 0.10.1"
+.TH VIFM 1 "May 17, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4255,7 +4255,7 @@ it's right aligned.  Following macros are supported:
 .br
  %=  \- separation point between left and right align items
 .br
- %%  \- percent sign
+ %%  \- literal percent sign
 .br
  %[  \- designates beginning of an optional block
 .br
@@ -4264,6 +4264,9 @@ it's right aligned.  Following macros are supported:
 
 Percent sign can be followed by optional minimum field width.  Add '\-' before
 minimum field width if you want field to be right aligned.
+
+Optional blocks are ignored unless at least one macro inside of them is
+expanded to a non-empty value.
 
 Example:
 
@@ -4650,6 +4653,59 @@ When disabled, vifm will rely on external applications to perform file-system
 operations, otherwise system calls are used instead (much faster and supports
 progress tracking).  The option should eventually be removed.  Mostly *nix-like
 systems are affected.
+.TP
+.BI 'tablabel'
+type: string
+.br
+default: ""
+.br
+When non-empty, determines format of a single tab's label, excluding tab number
+and tab delimiters.
+
+When empty, tab label is set to either tab name for named tabs or to view
+title (usually current path) for unnamed tabs.
+
+The following macros can appear in the format:
+.RS
+.IP \- 2
+%T \- flag of a tree mode (see below)
+.IP \- 2
+%c \- description of a custom view
+.IP \- 2
+%n \- name of the tab
+.IP \- 2
+%p \- path of the view (handles filename modifiers)
+.IP \- 2
+%t \- title of the view (affected by 'shortmess' flags)
+.IP \- 2
+%% \- literal percent sign
+.IP \- 2
+%[ \- designates beginning of an optional block
+.IP \- 2
+%] \- designates end of an optional block
+.RE
+
+.RS
+In global tabs the view in bullets above refers to currently active view of that
+tab.
+
+Flag macros are a special kind of macros that always expand to an empty value
+and are ment to be used inside optional blocks to control their visibility.
+
+Optional blocks are ignored unless at least one macro inside of them is
+expanded to a non-empty value or is a set flag macro.
+
+.EX
+  " %[(%n)%]        -- optional name of the tab
+  " %[              -- optional description of the view
+  "   %[%T{tree}%]  -- mark of tree mode
+  "   %[{%c}%]      -- description of custom view
+  "   @             -- just an extra separator before the path
+  ' %]
+  " %p:t            -- tail part of view's location
+  set tablabel=%[(%n)%]%[%[%T{tree}%]%[{%c}%]@%]%p:t
+.EE
+.RE
 .TP
 .BI 'tabscope'
 type: enumeration
