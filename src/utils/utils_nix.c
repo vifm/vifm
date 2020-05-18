@@ -770,8 +770,11 @@ get_exec_env_type(void)
 	}
 	else
 	{
-		const char *const display = env_get("DISPLAY");
-		return is_null_or_empty(display) ? EET_EMULATOR : EET_EMULATOR_WITH_X;
+		const char *display = env_get("DISPLAY");
+		const char *wayland_display = env_get("WAYLAND_DISPLAY");
+		return is_null_or_empty(display) && is_null_or_empty(wayland_display)
+		     ? EET_EMULATOR
+		     : EET_EMULATOR_WITH_X;
 	}
 }
 

@@ -134,6 +134,9 @@
 	Implemented capturing output of background applications on Windows.  Thanks
 	to Gene Zharov.
 
+	Detect being run under Wayland (relevant for :filextype commands).  Thanks
+	to mhdzli.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
