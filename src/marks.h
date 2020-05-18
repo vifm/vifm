@@ -25,7 +25,7 @@
 
 #include "utils/test_helpers.h"
 
-#define NUM_REGULAR_MARKS 61
+#define NUM_REGULAR_MARKS 62
 #define NUM_SPECIAL_MARKS 3
 #define NUM_MARKS (NUM_REGULAR_MARKS + NUM_SPECIAL_MARKS)
 

@@ -39,23 +39,27 @@ TEST(all_valid_marks_can_be_queried)
 
 TEST(regular_marks_are_global)
 {
-	const mark_t *mark;
+	char c;
+	for(c = 'a'; c <= 'z'; ++c)
+	{
+		const mark_t *mark;
 
-	curr_view = &lwin;
-	set_user_mark('a', "lpath", "lfile");
+		curr_view = &lwin;
+		set_user_mark(c, "lpath", "lfile");
 
-	curr_view = &rwin;
-	set_user_mark('a', "rpath", "rfile");
+		curr_view = &rwin;
+		set_user_mark(c, "rpath", "rfile");
 
-	curr_view = &lwin;
-	mark = get_mark_by_name('a');
-	assert_string_equal("rpath", mark->directory);
-	assert_string_equal("rfile", mark->file);
+		curr_view = &lwin;
+		mark = get_mark_by_name(c);
+		assert_string_equal("rpath", mark->directory);
+		assert_string_equal("rfile", mark->file);
 
-	curr_view = &rwin;
-	mark = get_mark_by_name('a');
-	assert_string_equal("rpath", mark->directory);
-	assert_string_equal("rfile", mark->file);
+		curr_view = &rwin;
+		mark = get_mark_by_name(c);
+		assert_string_equal("rpath", mark->directory);
+		assert_string_equal("rfile", mark->file);
+	}
 }
 
 TEST(sel_marks_are_local)
