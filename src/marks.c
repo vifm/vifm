@@ -51,6 +51,12 @@ static mark_t * find_mark(const int index);
 static int is_mark_valid(const mark_t *mark);
 static int is_empty(const mark_t *mark);
 
+/* User-writable marks. */
+#define USER_MARKS \
+	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+/* Marks that can't be explicitly set by the user. */
+#define SPECIAL_MARKS "<>'"
+
 /* Data of regular marks. */
 static mark_t regular_marks[NUM_REGULAR_MARKS];
 
@@ -58,23 +64,12 @@ static mark_t regular_marks[NUM_REGULAR_MARKS];
 static mark_t lspecial_marks[NUM_SPECIAL_MARKS];
 static mark_t rspecial_marks[NUM_SPECIAL_MARKS];
 
-const char valid_marks[] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-	'<', '>', '\'',
-	'\0'
-};
+const char valid_marks[] = USER_MARKS SPECIAL_MARKS;
 ARRAY_GUARD(valid_marks, NUM_MARKS + 1);
 
 /* List of special marks that can't be set manually, hence require special
- * treating in some cases. */
-static const char spec_marks[] = {
-	'<', '>', '\'',
-	'\0'
-};
+ * treatment in some cases. */
+static const char spec_marks[] = SPECIAL_MARKS;
 ARRAY_GUARD(spec_marks, NUM_SPECIAL_MARKS + 1);
 
 const mark_t *
