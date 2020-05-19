@@ -47,7 +47,8 @@ typedef struct
 }
 mark_t;
 
-extern const char valid_marks[];
+/* List of recognized marks. */
+extern const char marks_all[];
 
 /* Gets mark by its index.  Returns pointer to a statically allocated
  * mark_t structure or NULL for wrong index. */

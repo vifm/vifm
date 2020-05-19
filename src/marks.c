@@ -61,8 +61,8 @@ static int is_empty(const mark_t *mark);
 /* Data of regular marks. */
 static mark_t regular_marks[NUM_REGULAR_MARKS];
 
-const char valid_marks[] = USER_MARKS SPECIAL_MARKS;
-ARRAY_GUARD(valid_marks, NUM_MARKS + 1);
+const char marks_all[] = USER_MARKS SPECIAL_MARKS;
+ARRAY_GUARD(marks_all, NUM_MARKS + 1);
 
 /* List of special marks that can't be set manually, hence require special
  * treatment in some cases. */
@@ -80,7 +80,7 @@ index2mark(const int index)
 {
 	if(is_valid_index(index))
 	{
-		return valid_marks[index];
+		return marks_all[index];
 	}
 	return '\0';
 }
@@ -90,7 +90,7 @@ index2mark(const int index)
 static int
 is_valid_index(const int index)
 {
-	return index >= 0 && index < (int)ARRAY_LEN(valid_marks) - 1;
+	return index >= 0 && index < (int)ARRAY_LEN(marks_all) - 1;
 }
 
 int
@@ -214,7 +214,7 @@ setup_user_mark(view_t *view, const char mark, const char directory[],
 static int
 is_user_mark(const char mark)
 {
-	return char_is_one_of(valid_marks, mark)
+	return char_is_one_of(marks_all, mark)
 	    && !char_is_one_of(spec_marks, mark);
 }
 
@@ -336,7 +336,7 @@ navigate_to_mark(view_t *view, char m)
 		return 0;
 	}
 
-	if(!char_is_one_of(valid_marks, m))
+	if(!char_is_one_of(marks_all, m))
 	{
 		ui_sb_msg("Invalid mark name");
 	}
@@ -358,8 +358,8 @@ navigate_to_mark(view_t *view, char m)
 TSTATIC mark_t *
 get_mark_by_name(view_t *view, const char mark)
 {
-	const char *const pos = strchr(valid_marks, mark);
-	return (pos == NULL) ? NULL : find_mark(view, pos - valid_marks);
+	const char *const pos = strchr(marks_all, mark);
+	return (pos == NULL) ? NULL : find_mark(view, pos - marks_all);
 }
 
 /* Gets mark by its index.  Returns pointer to a statically allocated mark_t
@@ -423,7 +423,7 @@ void
 suggest_marks(view_t *view, mark_suggest_cb cb, int local_only)
 {
 	int active_marks[NUM_MARKS];
-	const int count = init_active_marks(view, valid_marks, active_marks);
+	const int count = init_active_marks(view, marks_all, active_marks);
 	int i;
 
 	for(i = 0; i < count; ++i)

@@ -29,7 +29,7 @@ TEST(unexistent_mark)
 
 TEST(all_valid_marks_can_be_queried)
 {
-	const int bookmark_count = strlen(valid_marks);
+	const int bookmark_count = strlen(marks_all);
 	int i;
 	for(i = 0; i < bookmark_count; ++i)
 	{

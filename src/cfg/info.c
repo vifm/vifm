@@ -2196,7 +2196,7 @@ store_marks(JSON_Object *root)
 	JSON_Object *marks = add_object(root, "marks");
 
 	int active_marks[NUM_MARKS];
-	const int len = init_active_marks(curr_view, valid_marks, active_marks);
+	const int len = init_active_marks(curr_view, marks_all, active_marks);
 
 	int i;
 	for(i = 0; i < len; ++i)

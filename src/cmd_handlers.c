@@ -1845,7 +1845,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			if(!char_is_one_of(valid_marks, cmd_info->argv[i][j]))
+			if(!char_is_one_of(marks_all, cmd_info->argv[i][j]))
 			{
 				return CMDS_ERR_INVALID_ARG;
 			}
@@ -3314,7 +3314,7 @@ marks_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc == 0)
 	{
-		return show_marks_menu(curr_view, valid_marks) != 0;
+		return show_marks_menu(curr_view, marks_all) != 0;
 	}
 
 	j = 0;
