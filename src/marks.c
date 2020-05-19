@@ -117,9 +117,9 @@ is_spec_mark(const int x)
 }
 
 void
-clear_mark(const int m)
+clear_mark(char mark)
 {
-	reset_mark(get_mark_by_name(m));
+	reset_mark(get_mark_by_name(mark));
 }
 
 void

@@ -86,7 +86,7 @@ void set_spec_mark(const char mark, const char directory[], const char file[]);
 int goto_mark(struct view_t *view, char mark);
 
 /* Clears a mark by its name. */
-void clear_mark(const int m);
+void clear_mark(char mark);
 
 /* Clears all marks. */
 void clear_all_marks(void);
