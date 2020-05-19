@@ -29,6 +29,7 @@
 #include "modes/wk.h"
 #include "ui/fileview.h"
 #include "ui/statusbar.h"
+#include "ui/tabs.h"
 #include "ui/ui.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
@@ -59,10 +60,6 @@ static int is_empty(const mark_t *mark);
 
 /* Data of regular marks. */
 static mark_t regular_marks[NUM_REGULAR_MARKS];
-
-/* Data of special marks. */
-static mark_t lspecial_marks[NUM_SPECIAL_MARKS];
-static mark_t rspecial_marks[NUM_SPECIAL_MARKS];
 
 const char valid_marks[] = USER_MARKS SPECIAL_MARKS;
 ARRAY_GUARD(valid_marks, NUM_MARKS + 1);
@@ -126,8 +123,19 @@ void
 clear_all_marks(void)
 {
 	clear_marks(regular_marks, ARRAY_LEN(regular_marks));
-	clear_marks(lspecial_marks, ARRAY_LEN(lspecial_marks));
-	clear_marks(rspecial_marks, ARRAY_LEN(rspecial_marks));
+
+	int i;
+	tab_info_t tab_info;
+	for(i = 0; tabs_enum_all(i, &tab_info); ++i)
+	{
+		clear_view_marks(tab_info.view);
+	}
+}
+
+void
+clear_view_marks(struct view_t *view)
+{
+	clear_marks(view->special_marks, ARRAY_LEN(view->special_marks));
 }
 
 static void
@@ -370,9 +378,7 @@ find_mark(const int index)
 	}
 
 	spec_mark_index = index - NUM_REGULAR_MARKS;
-	return (curr_view == &lwin)
-	     ? &lspecial_marks[spec_mark_index]
-	     : &rspecial_marks[spec_mark_index];
+	return &curr_view->special_marks[spec_mark_index];
 }
 
 /* Checks if a mark is valid (exists and points to an existing directory).  For

@@ -91,6 +91,9 @@ void clear_mark(char mark);
 /* Clears all marks. */
 void clear_all_marks(void);
 
+/* Clears marks stored inside the view. */
+void clear_view_marks(struct view_t *view);
+
 /* Looks up file specified by the mark m in the view.  Returns the position if
  * found, otherwise -1 is returned. */
 int check_mark_directory(struct view_t *view, char m);
