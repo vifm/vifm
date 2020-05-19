@@ -1274,7 +1274,7 @@ sug_cmd_quote(vle_keys_list_cb cb)
 {
 	if(cfg.sug.flags & SF_MARKS)
 	{
-		suggest_marks(cb, 0);
+		suggest_marks(curr_view, cb, 0);
 	}
 }
 
@@ -1284,7 +1284,7 @@ sug_sel_quote(vle_keys_list_cb cb)
 {
 	if(cfg.sug.flags & SF_MARKS)
 	{
-		suggest_marks(cb, 1);
+		suggest_marks(curr_view, cb, 1);
 	}
 }
 
@@ -1698,7 +1698,7 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 	const dir_entry_t *const curr = get_current_entry(curr_view);
 	if(!fentry_is_fake(curr))
 	{
-		curr_stats.save_msg = set_user_mark(key_info.multi, curr->origin,
+		curr_stats.save_msg = set_user_mark(curr_view, key_info.multi, curr->origin,
 				curr->name);
 	}
 }

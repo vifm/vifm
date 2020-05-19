@@ -97,8 +97,8 @@ TEST(custom_view_is_preserved_on_goto_mark)
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	curr_view = &lwin;
-	assert_success(set_user_mark('a', TEST_DATA_PATH "/existing-files", "a"));
+	assert_success(set_user_mark(&lwin, 'a', TEST_DATA_PATH "/existing-files",
+				"a"));
 
 	assert_success(goto_mark(&lwin, 'a'));
 	assert_true(flist_custom_active(&lwin));
@@ -110,8 +110,8 @@ TEST(local_filter_is_reset_in_cv_to_follow_mark)
 	flist_custom_add(&lwin, TEST_DATA_PATH "/existing-files/a");
 	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
 
-	curr_view = &lwin;
-	assert_success(set_user_mark('a', TEST_DATA_PATH "/existing-files", "a"));
+	assert_success(set_user_mark(&lwin, 'a', TEST_DATA_PATH "/existing-files",
+				"a"));
 	assert_true(flist_custom_active(&lwin));
 
 	local_filter_set(&lwin, "b");

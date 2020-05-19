@@ -33,7 +33,7 @@ TEST(all_valid_marks_can_be_queried)
 	int i;
 	for(i = 0; i < bookmark_count; ++i)
 	{
-		assert_true(get_mark(i) != NULL);
+		assert_true(get_mark(&lwin, i) != NULL);
 	}
 }
 
@@ -44,19 +44,14 @@ TEST(regular_marks_are_global)
 	{
 		const mark_t *mark;
 
-		curr_view = &lwin;
-		set_user_mark(c, "lpath", "lfile");
+		set_user_mark(&lwin, c, "lpath", "lfile");
+		set_user_mark(&rwin, c, "rpath", "rfile");
 
-		curr_view = &rwin;
-		set_user_mark(c, "rpath", "rfile");
-
-		curr_view = &lwin;
-		mark = get_mark_by_name(c);
+		mark = get_mark_by_name(&lwin, c);
 		assert_string_equal("rpath", mark->directory);
 		assert_string_equal("rfile", mark->file);
 
-		curr_view = &rwin;
-		mark = get_mark_by_name(c);
+		mark = get_mark_by_name(&rwin, c);
 		assert_string_equal("rpath", mark->directory);
 		assert_string_equal("rfile", mark->file);
 	}
@@ -66,27 +61,23 @@ TEST(sel_marks_are_local)
 {
 	const mark_t *mark;
 
-	curr_view = &lwin;
-	set_spec_mark('<', "lpath", "lfile<");
-	set_spec_mark('>', "lpath", "lfile>");
+	set_spec_mark(&lwin, '<', "lpath", "lfile<");
+	set_spec_mark(&lwin, '>', "lpath", "lfile>");
 
-	curr_view = &rwin;
-	set_spec_mark('<', "rpath", "rfile<");
-	set_spec_mark('>', "rpath", "rfile>");
+	set_spec_mark(&rwin, '<', "rpath", "rfile<");
+	set_spec_mark(&rwin, '>', "rpath", "rfile>");
 
-	curr_view = &lwin;
-	mark = get_mark_by_name('<');
+	mark = get_mark_by_name(&lwin, '<');
 	assert_string_equal("lpath", mark->directory);
 	assert_string_equal("lfile<", mark->file);
-	mark = get_mark_by_name('>');
+	mark = get_mark_by_name(&lwin, '>');
 	assert_string_equal("lpath", mark->directory);
 	assert_string_equal("lfile>", mark->file);
 
-	curr_view = &rwin;
-	mark = get_mark_by_name('<');
+	mark = get_mark_by_name(&rwin, '<');
 	assert_string_equal("rpath", mark->directory);
 	assert_string_equal("rfile<", mark->file);
-	mark = get_mark_by_name('>');
+	mark = get_mark_by_name(&rwin, '>');
 	assert_string_equal("rpath", mark->directory);
 	assert_string_equal("rfile>", mark->file);
 }

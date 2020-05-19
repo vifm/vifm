@@ -54,12 +54,12 @@ show_marks_menu(view_t *view, const char marks[])
 	m.execute_handler = &execute_mark_cb;
 	m.key_handler = &mark_khandler;
 
-	m.len = init_active_marks(marks, active_marks);
+	m.len = init_active_marks(view, marks, active_marks);
 
 	max_len = 0;
 	for(i = 0; i < m.len; ++i)
 	{
-		const mark_t *const mark = get_mark(active_marks[i]);
+		const mark_t *const mark = get_mark(view, active_marks[i]);
 		const size_t len = utf8_strsw(mark->directory);
 		if(len > max_len)
 		{
@@ -79,9 +79,9 @@ show_marks_menu(view_t *view, const char marks[])
 		const char *suffix = "";
 		const int mn = active_marks[i];
 
-		mark = get_mark(mn);
+		mark = get_mark(view, mn);
 
-		if(!is_valid_mark(mn))
+		if(!is_valid_mark(view, mn))
 		{
 			file = "[invalid]";
 		}
@@ -132,7 +132,7 @@ mark_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
-		clear_mark(m->items[m->pos][0]);
+		clear_mark(view, m->items[m->pos][0]);
 		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;
 	}

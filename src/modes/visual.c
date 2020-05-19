@@ -600,7 +600,7 @@ sug_quote(vle_keys_list_cb cb)
 {
 	if(cfg.sug.flags & SF_MARKS)
 	{
-		suggest_marks(cb, 1);
+		suggest_marks(view, cb, 1);
 	}
 }
 
@@ -946,7 +946,7 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 	const dir_entry_t *const curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
 	{
-		set_user_mark(key_info.multi, curr->origin, curr->name);
+		set_user_mark(view, key_info.multi, curr->origin, curr->name);
 	}
 }
 
@@ -1141,8 +1141,8 @@ update_marks(view_t *view)
 		end_entry -= delta;
 	}
 
-	set_spec_mark(start_mark, start_entry->origin, start_entry->name);
-	set_spec_mark(end_mark, end_entry->origin, end_entry->name);
+	set_spec_mark(view, start_mark, start_entry->origin, start_entry->name);
+	set_spec_mark(view, end_mark, end_entry->origin, end_entry->name);
 }
 
 /* Excludes entries from custom view. */
