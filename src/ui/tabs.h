@@ -36,14 +36,14 @@ typedef struct
 tab_layout_t;
 
 /* Information about a tab. */
-typedef struct tab_info_t
+typedef struct tab_info_t tab_info_t;
+struct tab_info_t
 {
 	struct view_t *view; /* View associated with the tab. */
 	const char *name;    /* Name of the view or NULL. */
 	tab_layout_t layout; /* UI configuration information. */
 	int last;            /* This is the last tab. */
-}
-tab_info_t;
+};
 
 /* Performs initialization of the unit. */
 void tabs_init(void);
