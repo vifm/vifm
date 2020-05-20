@@ -257,6 +257,13 @@ read_seekable_stream(FILE *fp, size_t *read)
 	skip_bom(fp);
 	len = get_remaining_stream_size(fp);
 
+	if(len == 0)
+	{
+		/* Give this file another shot in case it's a virtual file that doesn't
+		 * report its size ahead of time. */
+		return read_stream(fp, read, 0, NULL, NULL);
+	}
+
 	*read = 0UL;
 
 	if((content = malloc(len + 1U)) == NULL)

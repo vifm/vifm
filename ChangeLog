@@ -260,6 +260,9 @@
 
 	Fixed '< and '> marks being shared by views in different tabs.
 
+	Fixed exploring files on pseudo file systems which reported
+	"Nothing to explore" despite quickview showed file contents fine.
+
 0.10.1-beta to 0.10.1 (2019-07-29)
 
 	Added "space" and "nospace" values to 'sizefmt' option.  Patch by
