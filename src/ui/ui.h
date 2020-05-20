@@ -36,6 +36,7 @@
 #include "../utils/filter.h"
 #include "../utils/fswatch.h"
 #include "../utils/test_helpers.h"
+#include "../marks.h"
 #include "../status.h"
 #include "../types.h"
 #include "color_scheme.h"
@@ -401,6 +402,8 @@ struct view_t
 	/* Stores previous raw value of the auto_filter to make filter restoring
 	 * possible.  Not NULL. */
 	char *prev_auto_filter;
+
+	mark_t special_marks[NUM_SPECIAL_MARKS]; /* View-specific marks. */
 
 	/* List of sorting keys. */
 	signed char sort[SK_COUNT], sort_g[SK_COUNT];

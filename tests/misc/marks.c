@@ -24,65 +24,60 @@ TEARDOWN()
 
 TEST(unexistent_mark)
 {
-	assert_int_equal(1, goto_mark(&lwin, 'b'));
+	assert_int_equal(1, marks_goto(&lwin, 'b'));
 }
 
 TEST(all_valid_marks_can_be_queried)
 {
-	const int bookmark_count = strlen(valid_marks);
+	const int bookmark_count = strlen(marks_all);
 	int i;
 	for(i = 0; i < bookmark_count; ++i)
 	{
-		assert_true(get_mark(i) != NULL);
+		assert_true(marks_by_index(&lwin, i) != NULL);
 	}
 }
 
 TEST(regular_marks_are_global)
 {
-	const mark_t *mark;
+	char c;
+	for(c = 'a'; c <= 'z'; ++c)
+	{
+		const mark_t *mark;
 
-	curr_view = &lwin;
-	set_user_mark('a', "lpath", "lfile");
+		marks_set_user(&lwin, c, "lpath", "lfile");
+		marks_set_user(&rwin, c, "rpath", "rfile");
 
-	curr_view = &rwin;
-	set_user_mark('a', "rpath", "rfile");
+		mark = get_mark_by_name(&lwin, c);
+		assert_string_equal("rpath", mark->directory);
+		assert_string_equal("rfile", mark->file);
 
-	curr_view = &lwin;
-	mark = get_mark_by_name('a');
-	assert_string_equal("rpath", mark->directory);
-	assert_string_equal("rfile", mark->file);
-
-	curr_view = &rwin;
-	mark = get_mark_by_name('a');
-	assert_string_equal("rpath", mark->directory);
-	assert_string_equal("rfile", mark->file);
+		mark = get_mark_by_name(&rwin, c);
+		assert_string_equal("rpath", mark->directory);
+		assert_string_equal("rfile", mark->file);
+	}
 }
 
 TEST(sel_marks_are_local)
 {
 	const mark_t *mark;
 
-	curr_view = &lwin;
-	set_spec_mark('<', "lpath", "lfile<");
-	set_spec_mark('>', "lpath", "lfile>");
+	marks_set_special(&lwin, '<', "lpath", "lfile<");
+	marks_set_special(&lwin, '>', "lpath", "lfile>");
 
-	curr_view = &rwin;
-	set_spec_mark('<', "rpath", "rfile<");
-	set_spec_mark('>', "rpath", "rfile>");
+	marks_set_special(&rwin, '<', "rpath", "rfile<");
+	marks_set_special(&rwin, '>', "rpath", "rfile>");
 
-	curr_view = &lwin;
-	mark = get_mark_by_name('<');
+	mark = get_mark_by_name(&lwin, '<');
 	assert_string_equal("lpath", mark->directory);
 	assert_string_equal("lfile<", mark->file);
-	mark = get_mark_by_name('>');
+	mark = get_mark_by_name(&lwin, '>');
 	assert_string_equal("lpath", mark->directory);
 	assert_string_equal("lfile>", mark->file);
 
-	curr_view = &rwin;
-	mark = get_mark_by_name('<');
+	mark = get_mark_by_name(&rwin, '<');
 	assert_string_equal("rpath", mark->directory);
 	assert_string_equal("rfile<", mark->file);
-	mark = get_mark_by_name('>');
+	mark = get_mark_by_name(&rwin, '>');
 	assert_string_equal("rpath", mark->directory);
 	assert_string_equal("rfile>", mark->file);
 }

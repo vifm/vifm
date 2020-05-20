@@ -18,6 +18,7 @@
 #include "../../src/filelist.h"
 #include "../../src/flist_hist.h"
 #include "../../src/flist_pos.h"
+#include "../../src/marks.h"
 #include "../../src/opt_handlers.h"
 #include "../../src/status.h"
 
@@ -645,6 +646,25 @@ TEST(direnter_is_called_for_new_tab)
 	vle_keys_reset();
 	vle_cmds_reset();
 	curr_stats.load_stage = 0;
+}
+
+TEST(special_marks_are_not_shared_among_tabs)
+{
+	marks_set_special(curr_view, '<', "l0path", "l0file<");
+	tabs_new(NULL, SANDBOX_PATH);
+	marks_set_special(curr_view, '<', "l1path", "l1file<");
+
+	const mark_t *mark;
+
+	tabs_goto(0);
+	mark = get_mark_by_name(curr_view, '<');
+	assert_string_equal("l0path", mark->directory);
+	assert_string_equal("l0file<", mark->file);
+
+	tabs_goto(1);
+	mark = get_mark_by_name(curr_view, '<');
+	assert_string_equal("l1path", mark->directory);
+	assert_string_equal("l1file<", mark->file);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -736,8 +736,9 @@ TEST(marks_unit_is_able_to_find_leafs)
 
 	assert_success(load_tree(&lwin, SANDBOX_PATH));
 
-	set_spec_mark('<', lwin.dir_entry[1].origin, lwin.dir_entry[1].name);
-	assert_int_equal(1, check_mark_directory(&lwin, '<'));
+	marks_set_special(&lwin, '<', lwin.dir_entry[1].origin,
+			lwin.dir_entry[1].name);
+	assert_int_equal(1, marks_find_in_view(&lwin, '<'));
 
 	assert_success(rmdir(SANDBOX_PATH "/empty-dir"));
 }

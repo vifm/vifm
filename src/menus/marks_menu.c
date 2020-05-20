@@ -54,12 +54,12 @@ show_marks_menu(view_t *view, const char marks[])
 	m.execute_handler = &execute_mark_cb;
 	m.key_handler = &mark_khandler;
 
-	m.len = init_active_marks(marks, active_marks);
+	m.len = marks_list_active(view, marks, active_marks);
 
 	max_len = 0;
 	for(i = 0; i < m.len; ++i)
 	{
-		const mark_t *const mark = get_mark(active_marks[i]);
+		const mark_t *const mark = marks_by_index(view, active_marks[i]);
 		const size_t len = utf8_strsw(mark->directory);
 		if(len > max_len)
 		{
@@ -79,9 +79,9 @@ show_marks_menu(view_t *view, const char marks[])
 		const char *suffix = "";
 		const int mn = active_marks[i];
 
-		mark = get_mark(mn);
+		mark = marks_by_index(view, mn);
 
-		if(!is_valid_mark(mn))
+		if(!marks_is_valid(view, mn))
 		{
 			file = "[invalid]";
 		}
@@ -105,8 +105,9 @@ show_marks_menu(view_t *view, const char marks[])
 		display_path = right_ellipsis(replace_home_part(mark->directory),
 				max_len - 3, curr_stats.ellipsis);
 		overhead = utf8_strso(display_path);
-		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s", index2mark(mn),
-				(int)(max_len + overhead), display_path, file, suffix);
+		snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s%s",
+				marks_resolve_index(mn), (int)(max_len + overhead), display_path, file,
+				suffix);
 		free(display_path);
 
 		i = add_to_string_array(&m.items, i, item_buf);
@@ -121,7 +122,7 @@ show_marks_menu(view_t *view, const char marks[])
 static int
 execute_mark_cb(view_t *view, menu_data_t *m)
 {
-	goto_mark(view, m->items[m->pos][0]);
+	marks_goto(view, m->items[m->pos][0]);
 	return 0;
 }
 
@@ -132,7 +133,7 @@ mark_khandler(view_t *view, menu_data_t *m, const wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0)
 	{
-		clear_mark(m->items[m->pos][0]);
+		marks_clear_one(view, m->items[m->pos][0]);
 		menus_remove_current(m->state);
 		return KHR_REFRESH_WINDOW;
 	}

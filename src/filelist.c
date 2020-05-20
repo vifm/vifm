@@ -78,6 +78,7 @@
 #include "flist_sel.h"
 #include "fops_misc.h"
 #include "macros.h"
+#include "marks.h"
 #include "opt_handlers.h"
 #include "registers.h"
 #include "running.h"
@@ -317,6 +318,8 @@ flist_free_view(view_t *view)
 	view->vi = NULL;
 
 	regfree(&view->primary_group);
+
+	marks_clear_view(view);
 }
 
 void

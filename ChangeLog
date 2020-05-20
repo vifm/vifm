@@ -134,6 +134,9 @@
 	Implemented capturing output of background applications on Windows.  Thanks
 	to Gene Zharov.
 
+	Detect being run under Wayland (relevant for :filextype commands).  Thanks
+	to mhdzli.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
@@ -251,6 +254,11 @@
 
 	Fixed %a 'statusline' macro on OS X producing wrong values.  Thanks to
 	yanzhang0219.
+
+	Fixed 'z mark being treated as a special pane-specific mark (like '< and
+	'>).  Thanks to Marcos Cruz.
+
+	Fixed '< and '> marks being shared by views in different tabs.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

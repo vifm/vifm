@@ -571,7 +571,7 @@ vifm_restart(void)
 	regs_reset();
 
 	/* Clear all marks and bookmarks. */
-	clear_all_marks();
+	marks_clear_all();
 	bmarks_clear();
 
 	/* Reset variables. */
