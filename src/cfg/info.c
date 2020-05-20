@@ -1012,7 +1012,7 @@ load_marks(JSON_Object *root)
 		if(get_str(mark, "dir", &dir) && get_str(mark, "file", &file) &&
 				get_double(mark, "ts", &ts))
 		{
-			setup_user_mark(curr_view, name[0], dir, file, (time_t)ts);
+			marks_setup_user(curr_view, name[0], dir, file, (time_t)ts);
 		}
 	}
 }
@@ -1702,7 +1702,7 @@ merge_marks(JSON_Object *current, const JSON_Object *admixture)
 		double ts;
 		const char *name = json_object_get_name(updated, i);
 		if(get_double(mark, "ts", &ts) &&
-				is_mark_older(curr_view, name[0], (time_t)ts))
+				marks_is_older(curr_view, name[0], (time_t)ts))
 		{
 			JSON_Value *value = json_object_get_wrapping_value(mark);
 			json_object_set_value(bmarks, name, json_value_deep_copy(value));
@@ -2196,16 +2196,16 @@ store_marks(JSON_Object *root)
 	JSON_Object *marks = add_object(root, "marks");
 
 	int active_marks[NUM_MARKS];
-	const int len = init_active_marks(curr_view, marks_all, active_marks);
+	const int len = marks_list_active(curr_view, marks_all, active_marks);
 
 	int i;
 	for(i = 0; i < len; ++i)
 	{
 		const int index = active_marks[i];
-		const char m = index2mark(index);
-		if(!is_spec_mark(index))
+		const char m = marks_resolve_index(index);
+		if(!marks_is_special(index))
 		{
-			const mark_t *const mark = get_mark(curr_view, index);
+			const mark_t *const mark = marks_by_index(curr_view, index);
 
 			char name[] = { m, '\0' };
 			JSON_Object *entry = add_object(marks, name);

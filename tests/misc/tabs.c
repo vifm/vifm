@@ -650,9 +650,9 @@ TEST(direnter_is_called_for_new_tab)
 
 TEST(special_marks_are_not_shared_among_tabs)
 {
-	set_spec_mark(curr_view, '<', "l0path", "l0file<");
+	marks_set_special(curr_view, '<', "l0path", "l0file<");
 	tabs_new(NULL, SANDBOX_PATH);
-	set_spec_mark(curr_view, '<', "l1path", "l1file<");
+	marks_set_special(curr_view, '<', "l1path", "l1file<");
 
 	const mark_t *mark;
 

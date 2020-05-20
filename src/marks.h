@@ -34,7 +34,7 @@
 
 struct view_t;
 
-/* Callback for suggest_marks() function invoked per active mark. */
+/* Callback for marks_suggest() function invoked per active mark. */
 typedef void (*mark_suggest_cb)(const wchar_t text[], const wchar_t value[],
 		const char descr[]);
 
@@ -52,63 +52,65 @@ extern const char marks_all[];
 
 /* Gets mark by its index.  Returns pointer to a statically allocated
  * mark_t structure or NULL for wrong index. */
-const mark_t * get_mark(struct view_t *view, const int index);
+const mark_t * marks_by_index(struct view_t *view, const int index);
 
 /* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
  * index. */
-char index2mark(const int index);
+char marks_resolve_index(const int index);
 
 /* Checks if a mark specified by its index is valid (exists and points to an
  * existing directory).  Returns non-zero if so, otherwise zero is returned. */
-int is_valid_mark(struct view_t *view, const int index);
+int marks_is_valid(struct view_t *view, const int index);
 
 /* Checks whether given mark is empty.  Returns non-zero if so, otherwise zero
  * is returned. */
-int is_mark_empty(struct view_t *view, const char name);
+int marks_is_empty(struct view_t *view, const char name);
 
-int is_spec_mark(const int index);
+/* Checks whether given mark is a special mark.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int marks_is_special(const int index);
 
 /* Checks whether given mark is older than given time.  Returns non-zero if so,
  * otherwise zero is returned. */
-int is_mark_older(struct view_t *view, const char name, const time_t than);
+int marks_is_older(struct view_t *view, const char name, const time_t than);
 
 /* Sets user's mark interactively.  Returns non-zero if UI message was printed,
  * otherwise zero is returned. */
-int set_user_mark(struct view_t *view, const char name, const char directory[],
+int marks_set_user(struct view_t *view, const char name, const char directory[],
 		const char file[]);
 
 /* Sets all properties of user's mark (e.g. from saved configuration). */
-void setup_user_mark(struct view_t *view, const char name,
+void marks_setup_user(struct view_t *view, const char name,
 		const char directory[], const char file[], time_t timestamp);
 
 /* Sets special mark.  Does nothing for invalid mark value. */
-void set_spec_mark(struct view_t *view, const char name,
+void marks_set_special(struct view_t *view, const char name,
 		const char directory[], const char file[]);
 
 /* Handles all kinds of marks.  Returns new value for save_msg flag. */
-int goto_mark(struct view_t *view, char name);
+int marks_goto(struct view_t *view, char name);
 
 /* Clears a mark by its name. */
-void clear_mark(struct view_t *view, char name);
+void marks_clear_one(struct view_t *view, char name);
 
 /* Clears all marks. */
-void clear_all_marks(void);
+void marks_clear_all(void);
 
 /* Clears marks stored inside the view. */
-void clear_view_marks(struct view_t *view);
+void marks_clear_view(struct view_t *view);
 
-/* Looks up file specified by the mark m in the view.  Returns the position if
- * found, otherwise -1 is returned. */
-int check_mark_directory(struct view_t *view, char name);
+/* Looks up file specified by the name parameter in the view.  Returns the
+ * position if found, otherwise -1 is returned. */
+int marks_find_in_view(struct view_t *view, char name);
 
 /* Fills array of booleans (active_marks) each of which shows whether specified
  * mark index is active.  active_marks should be an array of at least NUM_MARKS
  * items.  Returns number of active marks. */
-int init_active_marks(struct view_t *view, const char name[],
+int marks_list_active(struct view_t *view, const char name[],
 		int active_marks[]);
 
 /* Lists active marks.  Local marks are those that point into current view. */
-void suggest_marks(struct view_t *view, mark_suggest_cb cb, int local_only);
+void marks_suggest(struct view_t *view, mark_suggest_cb cb, int local_only);
 
 TSTATIC_DEFS(
 	mark_t * get_mark_by_name(struct view_t *view, const char name);

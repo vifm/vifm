@@ -24,7 +24,7 @@ TEARDOWN()
 
 TEST(unexistent_mark)
 {
-	assert_int_equal(1, goto_mark(&lwin, 'b'));
+	assert_int_equal(1, marks_goto(&lwin, 'b'));
 }
 
 TEST(all_valid_marks_can_be_queried)
@@ -33,7 +33,7 @@ TEST(all_valid_marks_can_be_queried)
 	int i;
 	for(i = 0; i < bookmark_count; ++i)
 	{
-		assert_true(get_mark(&lwin, i) != NULL);
+		assert_true(marks_by_index(&lwin, i) != NULL);
 	}
 }
 
@@ -44,8 +44,8 @@ TEST(regular_marks_are_global)
 	{
 		const mark_t *mark;
 
-		set_user_mark(&lwin, c, "lpath", "lfile");
-		set_user_mark(&rwin, c, "rpath", "rfile");
+		marks_set_user(&lwin, c, "lpath", "lfile");
+		marks_set_user(&rwin, c, "rpath", "rfile");
 
 		mark = get_mark_by_name(&lwin, c);
 		assert_string_equal("rpath", mark->directory);
@@ -61,11 +61,11 @@ TEST(sel_marks_are_local)
 {
 	const mark_t *mark;
 
-	set_spec_mark(&lwin, '<', "lpath", "lfile<");
-	set_spec_mark(&lwin, '>', "lpath", "lfile>");
+	marks_set_special(&lwin, '<', "lpath", "lfile<");
+	marks_set_special(&lwin, '>', "lpath", "lfile>");
 
-	set_spec_mark(&rwin, '<', "rpath", "rfile<");
-	set_spec_mark(&rwin, '>', "rpath", "rfile>");
+	marks_set_special(&rwin, '<', "rpath", "rfile<");
+	marks_set_special(&rwin, '>', "rpath", "rfile>");
 
 	mark = get_mark_by_name(&lwin, '<');
 	assert_string_equal("lpath", mark->directory);

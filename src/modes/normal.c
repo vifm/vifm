@@ -1252,7 +1252,7 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(keys_info->selector)
 	{
-		const int pos = check_mark_directory(curr_view, key_info.multi);
+		const int pos = marks_find_in_view(curr_view, key_info.multi);
 		if(pos >= 0)
 		{
 			pick_files(curr_view, pos, keys_info);
@@ -1260,7 +1260,7 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		curr_stats.save_msg = goto_mark(curr_view, key_info.multi);
+		curr_stats.save_msg = marks_goto(curr_view, key_info.multi);
 		if(!cfg.auto_ch_pos)
 		{
 			fpos_set_pos(curr_view, 0);
@@ -1274,7 +1274,7 @@ sug_cmd_quote(vle_keys_list_cb cb)
 {
 	if(cfg.sug.flags & SF_MARKS)
 	{
-		suggest_marks(curr_view, cb, 0);
+		marks_suggest(curr_view, cb, 0);
 	}
 }
 
@@ -1284,7 +1284,7 @@ sug_sel_quote(vle_keys_list_cb cb)
 {
 	if(cfg.sug.flags & SF_MARKS)
 	{
-		suggest_marks(curr_view, cb, 1);
+		marks_suggest(curr_view, cb, 1);
 	}
 }
 
@@ -1698,8 +1698,8 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 	const dir_entry_t *const curr = get_current_entry(curr_view);
 	if(!fentry_is_fake(curr))
 	{
-		curr_stats.save_msg = set_user_mark(curr_view, key_info.multi, curr->origin,
-				curr->name);
+		curr_stats.save_msg = marks_set_user(curr_view, key_info.multi,
+				curr->origin, curr->name);
 	}
 }
 

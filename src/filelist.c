@@ -319,7 +319,7 @@ flist_free_view(view_t *view)
 
 	regfree(&view->primary_group);
 
-	clear_view_marks(view);
+	marks_clear_view(view);
 }
 
 void

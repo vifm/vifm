@@ -288,8 +288,8 @@ modvis_init(void)
 void
 modvis_enter(VisualSubmodes sub_mode)
 {
-	const int ub = check_mark_directory(curr_view, '<');
-	const int lb = check_mark_directory(curr_view, '>');
+	const int ub = marks_find_in_view(curr_view, '<');
+	const int lb = marks_find_in_view(curr_view, '>');
 
 	if(sub_mode == VS_RESTORE && (ub < 0 || lb < 0))
 	{
@@ -329,7 +329,7 @@ modvis_leave(int save_msg, int goto_top, int clear_selection)
 {
 	if(goto_top)
 	{
-		int ub = check_mark_directory(view, '<');
+		int ub = marks_find_in_view(view, '<');
 		if(ub != -1)
 			view->list_pos = ub;
 	}
@@ -587,7 +587,7 @@ cmd_O(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 {
-	const int pos = check_mark_directory(view, key_info.multi);
+	const int pos = marks_find_in_view(view, key_info.multi);
 	if(pos >= 0)
 	{
 		goto_pos(pos);
@@ -600,7 +600,7 @@ sug_quote(vle_keys_list_cb cb)
 {
 	if(cfg.sug.flags & SF_MARKS)
 	{
-		suggest_marks(view, cb, 1);
+		marks_suggest(view, cb, 1);
 	}
 }
 
@@ -751,7 +751,7 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 
 	vle_mode_set(NORMAL_MODE, VMT_PRIMARY);
 	update_marks(view);
-	ub = check_mark_directory(view, '<');
+	ub = marks_find_in_view(view, '<');
 	if(ub != -1)
 	{
 		view->list_pos = ub;
@@ -822,8 +822,8 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 static void
 restore_previous_selection(void)
 {
-	int ub = check_mark_directory(view, '<');
-	int lb = check_mark_directory(view, '>');
+	int ub = marks_find_in_view(view, '<');
+	int lb = marks_find_in_view(view, '>');
 
 	if(ub < 0 || lb < 0)
 		return;
@@ -946,7 +946,7 @@ cmd_m(key_info_t key_info, keys_info_t *keys_info)
 	const dir_entry_t *const curr = get_current_entry(view);
 	if(!fentry_is_fake(curr))
 	{
-		set_user_mark(view, key_info.multi, curr->origin, curr->name);
+		marks_set_user(view, key_info.multi, curr->origin, curr->name);
 	}
 }
 
@@ -1141,8 +1141,8 @@ update_marks(view_t *view)
 		end_entry -= delta;
 	}
 
-	set_spec_mark(view, start_mark, start_entry->origin, start_entry->name);
-	set_spec_mark(view, end_mark, end_entry->origin, end_entry->name);
+	marks_set_special(view, start_mark, start_entry->origin, start_entry->name);
+	marks_set_special(view, end_mark, end_entry->origin, end_entry->name);
 }
 
 /* Excludes entries from custom view. */
