@@ -791,7 +791,8 @@ local_filter_apply(view_t *view, const char filter[])
 		return;
 	}
 
-	(void)filter_set(&view->local_filter.filter, filter);
+	int case_sensitive = !regexp_should_ignore_case(filter);
+	(void)filter_change(&view->local_filter.filter, filter, case_sensitive);
 	hists_filter_save(view->local_filter.filter.raw);
 
 	if(flist_custom_active(view) && view->custom.type != CV_TREE &&
