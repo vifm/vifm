@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 May 18
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 May 21
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -307,7 +307,9 @@ typing pattern by hand.
 
 Matches are automatically selected if |vifm-'hlsearch'| is set.  Enabling
 |vifm-'incsearch'| makes search interactive.  |vifm-'ignorecase'| and
-|vifm-'smartcase'| options affect case sensitivity of search queries.
+|vifm-'smartcase'| options affect case sensitivity of search queries as well
+as local filter and other things detailed in the description of
+|vifm-'caseoptions'|.
 
 [count]n                                       *vifm-n*
     go to the next file matching last search pattern.  Takes last search
@@ -3335,8 +3337,9 @@ ignorecase ic
 type: boolean
 default: false
 
-Ignore case in search patterns (:substitute, / and ? commands) and
-characters after f and F commands.  It doesn't affect file filtering.
+Ignore case in search patterns (:substitute, / and ? commands), local filter
+(but not the rest of filters) and other things detailed in the description of
+|vifm-'caseoptions'|.
 
                                                *vifm-'incsearch'* *vifm-'is'*
 incsearch is
@@ -3689,9 +3692,8 @@ smartcase scs
 type: boolean
 default: false
 
-Overrides the |vifm-'ignorecase'| option if the search pattern contains at
-least one upper case character.  Only used when |vifm-'ignorecase'| option
-is enabled.  It doesn't affect file filtering.
+Overrides the |vifm-'ignorecase'| option if a pattern contains at least one
+upper case character.  Only used when |vifm-'ignorecase'| option is enabled.
 
                                                *vifm-'sort'*
 sort
