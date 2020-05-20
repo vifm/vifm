@@ -52,40 +52,40 @@ extern const char marks_all[];
 
 /* Gets mark by its index.  Returns pointer to a statically allocated
  * mark_t structure or NULL for wrong index. */
-const mark_t * marks_by_index(struct view_t *view, const int index);
+const mark_t * marks_by_index(struct view_t *view, int index);
 
 /* Transform an index to a mark.  Returns name of the mark or '\0' on invalid
  * index. */
-char marks_resolve_index(const int index);
+char marks_resolve_index(int index);
 
 /* Checks if a mark specified by its index is valid (exists and points to an
  * existing directory).  Returns non-zero if so, otherwise zero is returned. */
-int marks_is_valid(struct view_t *view, const int index);
+int marks_is_valid(struct view_t *view, int index);
 
 /* Checks whether given mark is empty.  Returns non-zero if so, otherwise zero
  * is returned. */
-int marks_is_empty(struct view_t *view, const char name);
+int marks_is_empty(struct view_t *view, char name);
 
 /* Checks whether given mark is a special mark.  Returns non-zero if so,
  * otherwise zero is returned. */
-int marks_is_special(const int index);
+int marks_is_special(int index);
 
 /* Checks whether given mark is older than given time.  Returns non-zero if so,
  * otherwise zero is returned. */
-int marks_is_older(struct view_t *view, const char name, const time_t than);
+int marks_is_older(struct view_t *view, char name, const time_t than);
 
 /* Sets user's mark interactively.  Returns non-zero if UI message was printed,
  * otherwise zero is returned. */
-int marks_set_user(struct view_t *view, const char name, const char directory[],
+int marks_set_user(struct view_t *view, char name, const char directory[],
 		const char file[]);
 
 /* Sets all properties of user's mark (e.g. from saved configuration). */
-void marks_setup_user(struct view_t *view, const char name,
-		const char directory[], const char file[], time_t timestamp);
+void marks_setup_user(struct view_t *view, char name, const char directory[],
+		const char file[], time_t timestamp);
 
 /* Sets special mark.  Does nothing for invalid mark value. */
-void marks_set_special(struct view_t *view, const char name,
-		const char directory[], const char file[]);
+void marks_set_special(struct view_t *view, char name, const char directory[],
+		const char file[]);
 
 /* Handles all kinds of marks.  Returns new value for save_msg flag. */
 int marks_goto(struct view_t *view, char name);
@@ -113,7 +113,7 @@ int marks_list_active(struct view_t *view, const char name[],
 void marks_suggest(struct view_t *view, mark_suggest_cb cb, int local_only);
 
 TSTATIC_DEFS(
-	mark_t * get_mark_by_name(struct view_t *view, const char name);
+	mark_t * get_mark_by_name(struct view_t *view, char name);
 )
 
 #endif /* VIFM__MARKS_H__ */

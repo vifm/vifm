@@ -41,13 +41,13 @@
 static int is_valid_index(const int index);
 static void clear_marks(mark_t marks[], int count);
 static void reset_mark(mark_t *mark);
-static int is_user_mark(const char name);
-static void set_mark(view_t *view, const char name, const char directory[],
+static int is_user_mark(char name);
+static void set_mark(view_t *view, char name, const char directory[],
 		const char file[], time_t timestamp, int force);
 static int is_mark_points_to(const mark_t *mark, const char directory[],
 		const char file[]);
-static int navigate_to_mark(view_t *view, const char name);
-TSTATIC mark_t * get_mark_by_name(view_t *view, const char name);
+static int navigate_to_mark(view_t *view, char name);
+TSTATIC mark_t * get_mark_by_name(view_t *view, char name);
 static mark_t * find_mark(view_t *view, const int index);
 static int is_mark_valid(const mark_t *mark);
 static int is_empty(const mark_t *mark);
@@ -166,7 +166,7 @@ reset_mark(mark_t *mark)
 }
 
 int
-marks_is_older(view_t *view, const char name, const time_t than)
+marks_is_older(view_t *view, char name, const time_t than)
 {
 	const mark_t *const mark = get_mark_by_name(view, name);
 	if(mark != NULL)
@@ -182,7 +182,7 @@ marks_is_older(view_t *view, const char name, const time_t than)
 }
 
 int
-marks_set_user(view_t *view, const char name, const char directory[],
+marks_set_user(view_t *view, char name, const char directory[],
 		const char file[])
 {
 	if(!is_user_mark(name))
@@ -196,7 +196,7 @@ marks_set_user(view_t *view, const char name, const char directory[],
 }
 
 void
-marks_setup_user(view_t *view, const char name, const char directory[],
+marks_setup_user(view_t *view, char name, const char directory[],
 		const char file[], time_t timestamp)
 {
 	if(is_user_mark(name))
@@ -212,14 +212,14 @@ marks_setup_user(view_t *view, const char name, const char directory[],
 /* Checks whether given mark corresponds to mark that can be set by a user.
  * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_user_mark(const char name)
+is_user_mark(char name)
 {
 	return char_is_one_of(marks_all, name)
 	    && !char_is_one_of(spec_marks, name);
 }
 
 void
-marks_set_special(view_t *view, const char name, const char directory[],
+marks_set_special(view_t *view, char name, const char directory[],
 		const char file[])
 {
 	if(char_is_one_of(spec_marks, name))
@@ -231,8 +231,8 @@ marks_set_special(view_t *view, const char name, const char directory[],
 /* Sets values of the mark.  The force parameter controls whether mark is
  * updated even when it already points to the specified directory-file pair. */
 static void
-set_mark(view_t *view, const char name, const char directory[],
-		const char file[], time_t timestamp, int force)
+set_mark(view_t *view, char name, const char directory[], const char file[],
+		time_t timestamp, int force)
 {
 	mark_t *const mark = get_mark_by_name(view, name);
 	if(mark != NULL && (force || !is_mark_points_to(mark, directory, file)))
@@ -356,7 +356,7 @@ navigate_to_mark(view_t *view, char name)
 /* Gets mark data structure by name of a mark.  Returns pointer to mark's data
  * structure or NULL. */
 TSTATIC mark_t *
-get_mark_by_name(view_t *view, const char name)
+get_mark_by_name(view_t *view, char name)
 {
 	const char *const pos = strchr(marks_all, name);
 	return (pos == NULL) ? NULL : find_mark(view, pos - marks_all);
