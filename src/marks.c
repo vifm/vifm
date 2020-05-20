@@ -41,13 +41,13 @@
 static int is_valid_index(const int index);
 static void clear_marks(mark_t marks[], int count);
 static void reset_mark(mark_t *mark);
-static int is_user_mark(const char mark);
-static void set_mark(view_t *view, const char m, const char directory[],
+static int is_user_mark(const char name);
+static void set_mark(view_t *view, const char name, const char directory[],
 		const char file[], time_t timestamp, int force);
 static int is_mark_points_to(const mark_t *mark, const char directory[],
 		const char file[]);
-static int navigate_to_mark(view_t *view, const char m);
-TSTATIC mark_t * get_mark_by_name(view_t *view, const char mark);
+static int navigate_to_mark(view_t *view, const char name);
+TSTATIC mark_t * get_mark_by_name(view_t *view, const char name);
 static mark_t * find_mark(view_t *view, const int index);
 static int is_mark_valid(const mark_t *mark);
 static int is_empty(const mark_t *mark);
@@ -102,21 +102,21 @@ is_valid_mark(view_t *view, const int index)
 }
 
 int
-is_mark_empty(view_t *view, const char m)
+is_mark_empty(view_t *view, const char name)
 {
-	return is_empty(get_mark_by_name(view, m));
+	return is_empty(get_mark_by_name(view, name));
 }
 
 int
-is_spec_mark(const int x)
+is_spec_mark(const int index)
 {
-	return char_is_one_of(spec_marks, index2mark(x));
+	return char_is_one_of(spec_marks, index2mark(index));
 }
 
 void
-clear_mark(view_t *view, char mark)
+clear_mark(view_t *view, char name)
 {
-	reset_mark(get_mark_by_name(view, mark));
+	reset_mark(get_mark_by_name(view, name));
 }
 
 void
@@ -166,9 +166,9 @@ reset_mark(mark_t *mark)
 }
 
 int
-is_mark_older(view_t *view, const char m, const time_t than)
+is_mark_older(view_t *view, const char name, const time_t than)
 {
-	const mark_t *const mark = get_mark_by_name(view, m);
+	const mark_t *const mark = get_mark_by_name(view, name);
 	if(mark != NULL)
 	{
 		static const time_t undef_time = (time_t)-1;
@@ -182,59 +182,59 @@ is_mark_older(view_t *view, const char m, const time_t than)
 }
 
 int
-set_user_mark(view_t *view, const char mark, const char directory[],
+set_user_mark(view_t *view, const char name, const char directory[],
 		const char file[])
 {
-	if(!is_user_mark(mark))
+	if(!is_user_mark(name))
 	{
 		ui_sb_msg("Invalid mark name");
 		return 1;
 	}
 
-	set_mark(view, mark, directory, file, time(NULL), 0);
+	set_mark(view, name, directory, file, time(NULL), 0);
 	return 0;
 }
 
 void
-setup_user_mark(view_t *view, const char mark, const char directory[],
+setup_user_mark(view_t *view, const char name, const char directory[],
 		const char file[], time_t timestamp)
 {
-	if(is_user_mark(mark))
+	if(is_user_mark(name))
 	{
-		set_mark(view, mark, directory, file, timestamp, 1);
+		set_mark(view, name, directory, file, timestamp, 1);
 	}
 	else
 	{
-		ui_sb_errf("Only user's marks can be loaded, but got: %c", mark);
+		ui_sb_errf("Only user's marks can be loaded, but got: %c", name);
 	}
 }
 
 /* Checks whether given mark corresponds to mark that can be set by a user.
  * Returns non-zero if so, otherwise zero is returned. */
 static int
-is_user_mark(const char mark)
+is_user_mark(const char name)
 {
-	return char_is_one_of(marks_all, mark)
-	    && !char_is_one_of(spec_marks, mark);
+	return char_is_one_of(marks_all, name)
+	    && !char_is_one_of(spec_marks, name);
 }
 
 void
-set_spec_mark(view_t *view, const char mark, const char directory[],
+set_spec_mark(view_t *view, const char name, const char directory[],
 		const char file[])
 {
-	if(char_is_one_of(spec_marks, mark))
+	if(char_is_one_of(spec_marks, name))
 	{
-		set_mark(view, mark, directory, file, time(NULL), 1);
+		set_mark(view, name, directory, file, time(NULL), 1);
 	}
 }
 
 /* Sets values of the mark.  The force parameter controls whether mark is
  * updated even when it already points to the specified directory-file pair. */
 static void
-set_mark(view_t *view, const char m, const char directory[], const char file[],
-		time_t timestamp, int force)
+set_mark(view_t *view, const char name, const char directory[],
+		const char file[], time_t timestamp, int force)
 {
-	mark_t *const mark = get_mark_by_name(view, m);
+	mark_t *const mark = get_mark_by_name(view, name);
 	if(mark != NULL && (force || !is_mark_points_to(mark, directory, file)))
 	{
 		reset_mark(mark);
@@ -261,10 +261,10 @@ is_mark_points_to(const mark_t *mark, const char directory[], const char file[])
 }
 
 int
-check_mark_directory(view_t *view, char m)
+check_mark_directory(view_t *view, char name)
 {
 	int custom;
-	const mark_t *const mark = get_mark_by_name(view, m);
+	const mark_t *const mark = get_mark_by_name(view, name);
 
 	if(is_empty(mark))
 	{
@@ -298,9 +298,9 @@ check_mark_directory(view_t *view, char m)
 }
 
 int
-goto_mark(view_t *view, char mark)
+goto_mark(view_t *view, char name)
 {
-	switch(mark)
+	switch(name)
 	{
 		case '\'':
 			navigate_back(view);
@@ -311,16 +311,16 @@ goto_mark(view_t *view, char mark)
 			return 0;
 
 		default:
-			return navigate_to_mark(view, mark);
+			return navigate_to_mark(view, name);
 	}
 }
 
 /* Navigates the view to given mark if it's valid.  Returns new value for
  * save_msg flag. */
 static int
-navigate_to_mark(view_t *view, char m)
+navigate_to_mark(view_t *view, char name)
 {
-	const mark_t *const mark = get_mark_by_name(view, m);
+	const mark_t *const mark = get_mark_by_name(view, name);
 
 	if(is_mark_valid(mark))
 	{
@@ -336,7 +336,7 @@ navigate_to_mark(view_t *view, char m)
 		return 0;
 	}
 
-	if(!char_is_one_of(marks_all, m))
+	if(!char_is_one_of(marks_all, name))
 	{
 		ui_sb_msg("Invalid mark name");
 	}
@@ -356,9 +356,9 @@ navigate_to_mark(view_t *view, char m)
 /* Gets mark data structure by name of a mark.  Returns pointer to mark's data
  * structure or NULL. */
 TSTATIC mark_t *
-get_mark_by_name(view_t *view, const char mark)
+get_mark_by_name(view_t *view, const char name)
 {
-	const char *const pos = strchr(marks_all, mark);
+	const char *const pos = strchr(marks_all, name);
 	return (pos == NULL) ? NULL : find_mark(view, pos - marks_all);
 }
 
