@@ -54,7 +54,6 @@ file_hi_t;
 typedef struct
 {
 	char name[NAME_MAX + 1];        /* Name of the color scheme. */
-	char dir[PATH_MAX + 1];         /* Associated root dir of the color scheme. */
 	ColorSchemeState state;         /* Current state. */
 	col_attr_t color[MAXNUM_COLOR]; /* Colors with their attributes. */
 	int pair[MAXNUM_COLOR];         /* Pairs for corresponding color. */
