@@ -210,6 +210,8 @@ init_flist(view_t *view)
 	view->on_slow_fs = 0;
 	view->has_dups = 0;
 
+	view->last_dir = NULL;
+
 	view->matches = 0;
 
 	view->custom.entries = NULL;
@@ -290,6 +292,8 @@ flist_free_view(view_t *view)
 
 	fswatch_free(view->watch);
 	view->watch = NULL;
+
+	update_string(&view->last_dir, NULL);
 
 	flist_free_cache(view, &view->left_column);
 	flist_free_cache(view, &view->right_column);
@@ -461,7 +465,10 @@ navigate_back(view_t *view)
 	const char *const dest = flist_custom_active(view)
 	                       ? view->custom.orig_dir
 	                       : view->last_dir;
-	navigate_to(view, dest);
+	if(dest != NULL)
+	{
+		navigate_to(view, dest);
+	}
 }
 
 void
@@ -617,7 +624,7 @@ change_directory(view_t *view, const char directory[])
 	/* Clean up any excess separators */
 	if(!is_root_dir(view->curr_dir))
 		chosp(view->curr_dir);
-	if(!is_root_dir(view->last_dir))
+	if(view->last_dir != NULL && !is_root_dir(view->last_dir))
 		chosp(view->last_dir);
 
 #ifndef _WIN32
@@ -681,7 +688,7 @@ change_directory(view_t *view, const char directory[])
 
 	if(location_changed)
 	{
-		copy_str(view->last_dir, sizeof(view->last_dir), flist_get_dir(view));
+		replace_string(&view->last_dir, flist_get_dir(view));
 		view->on_slow_fs = is_on_slow_fs(dir_dup, cfg.slow_fs_list);
 	}
 
@@ -3034,7 +3041,7 @@ flist_pick_cd_path(view_t *view, const char base_dir[], const char path[],
 		snprintf(buf, buf_size, "%c:%s", base_dir[0], arg);
 #endif
 	else if(strcmp(arg, "-") == 0)
-		copy_str(buf, buf_size, view->last_dir);
+		copy_str(buf, buf_size, view->last_dir == NULL ? "." : view->last_dir);
 	else if(is_parent_dir(arg) && stroscmp(base_dir, flist_get_dir(view)) == 0)
 		*updir = 1;
 	else

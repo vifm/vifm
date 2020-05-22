@@ -350,7 +350,8 @@ find_in_hist(const view_t *view, const view_t *source, int *pos, int *rel_pos)
 		return 1;
 	}
 
-	if(path_starts_with(view->last_dir, view->curr_dir) &&
+	if(view->last_dir != NULL &&
+			path_starts_with(view->last_dir, view->curr_dir) &&
 			stroscmp(view->last_dir, view->curr_dir) != 0 &&
 			strchr(view->last_dir + strlen(view->curr_dir) + 1, '/') == NULL)
 	{

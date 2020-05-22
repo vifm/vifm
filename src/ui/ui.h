@@ -357,7 +357,7 @@ struct view_t
 	fswatch_t *watch;
 	char watched_dir[PATH_MAX + 1];
 
-	char last_dir[PATH_MAX + 1];
+	char *last_dir; /* Location visited by the view before the current one. */
 
 	/* Number of files that match current search pattern. */
 	int matches;

@@ -5,6 +5,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/compat/fs_limits.h"
 #include "../../src/ui/ui.h"
+#include "../../src/utils/str.h"
 #include "../../src/filelist.h"
 
 #ifdef _WIN32
@@ -30,7 +31,7 @@ TEST(dash_chooses_previous_location)
 	int updir;
 	char dir[PATH_MAX + 1];
 
-	strcpy(lwin.last_dir, "--last--");
+	update_string(&lwin.last_dir, "--last--");
 	strcpy(lwin.curr_dir, "--cur--");
 
 	flist_pick_cd_path(&lwin, ".", "-", &updir, dir, sizeof(dir));
