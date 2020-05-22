@@ -353,9 +353,8 @@ struct view_t
 	cached_entries_t left_column;
 	cached_entries_t right_column;
 
-	/* Monitor that checks for directory changes. */
-	fswatch_t *watch;
-	char watched_dir[PATH_MAX + 1];
+	fswatch_t *watch;  /* Monitor that checks for directory changes. */
+	char *watched_dir; /* Path for which the monitor was created. */
 
 	char *last_dir; /* Location visited by the view before the current one. */
 

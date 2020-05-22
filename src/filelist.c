@@ -210,6 +210,7 @@ init_flist(view_t *view)
 	view->on_slow_fs = 0;
 	view->has_dups = 0;
 
+	view->watched_dir = NULL;
 	view->last_dir = NULL;
 
 	view->matches = 0;
@@ -292,6 +293,7 @@ flist_free_view(view_t *view)
 
 	fswatch_free(view->watch);
 	view->watch = NULL;
+	update_string(&view->watched_dir, NULL);
 
 	update_string(&view->last_dir, NULL);
 
@@ -1684,7 +1686,8 @@ populate_dir_list_internal(view_t *view, int reload)
 	}
 
 	/* If directory didn't change. */
-	if(view->watch != NULL && stroscmp(view->watched_dir, view->curr_dir) == 0)
+	if(view->watch != NULL && view->watched_dir != NULL &&
+			stroscmp(view->watched_dir, view->curr_dir) == 0)
 	{
 		int failed;
 		/* Drain all events that happened before this point. */
@@ -1955,7 +1958,8 @@ update_dir_watcher(view_t *view)
 {
 	const char *const curr_dir = flist_get_dir(view);
 
-	if(view->watch == NULL || stroscmp(view->watched_dir, curr_dir) != 0)
+	if(view->watch == NULL || view->watched_dir == NULL ||
+			stroscmp(view->watched_dir, curr_dir) != 0)
 	{
 		fswatch_free(view->watch);
 		view->watch = fswatch_create(curr_dir);
@@ -1964,7 +1968,7 @@ update_dir_watcher(view_t *view)
 		 * this doesn't feel like a reason to block anything else. */
 		if(view->watch != NULL)
 		{
-			copy_str(view->watched_dir, sizeof(view->watched_dir), curr_dir);
+			replace_string(&view->watched_dir, curr_dir);
 		}
 	}
 }
