@@ -19,6 +19,9 @@
 	Added 'tablabel' option that specifies format of a single tab's label when
 	non-empty.  Thanks to aleksejrs.
 
+	Added three MC-like shortcuts to sample vifmrc files (Alt-I, Alt-O and
+	Ctrl-U).  Thanks to Hans Bieshaar.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
