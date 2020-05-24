@@ -494,7 +494,6 @@ hists_search_last(void)
 void
 dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 {
-	/* Initialization to make condition false by default. */
 	dcache_data_t size_data, nitems_data;
 
 	pthread_mutex_lock(&dcache_size_mutex);
