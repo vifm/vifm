@@ -1539,7 +1539,8 @@ fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
 	assert((size != NULL || nitems != NULL) &&
 			"At least one of out parameters has to be non-NULL.");
 
-	dcache_get_of(entry, &size_res, &nitems_res);
+	dcache_get_of(entry, (size == NULL ? NULL : &size_res),
+			(nitems == NULL ? NULL : &nitems_res));
 
 	if(size != NULL)
 	{

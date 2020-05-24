@@ -316,7 +316,8 @@ const char * hists_search_last(void);
  * unknown values variables are set to DCACHE_UNKNOWN. */
 void dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems);
 
-/* Retrieves information about the entry checking whether it's outdated. */
+/* Retrieves information about the entry checking whether it's outdated.  size
+ * and/or nitems can be NULL. */
 void dcache_get_of(const struct dir_entry_t *entry, dcache_result_t *size,
 		dcache_result_t *nitems);
 

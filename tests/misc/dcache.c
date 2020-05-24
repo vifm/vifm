@@ -69,6 +69,22 @@ TEST(outdated_data_is_detected)
 	assert_false(nitems.is_valid);
 }
 
+TEST(can_query_one_parameter_at_a_time)
+{
+	dcache_result_t data;
+	dir_entry_t entry = { .name = "read", .origin = TEST_DATA_PATH };
+
+	dcache_set_at(TEST_DATA_PATH "/read", 0, 10, 11);
+
+	dcache_get_of(&entry, &data, NULL);
+	assert_true(data.is_valid);
+	assert_ulong_equal(10, data.value);
+
+	dcache_get_of(&entry, NULL, &data);
+	assert_true(data.is_valid);
+	assert_ulong_equal(11, data.value);
+}
+
 #ifndef _WIN32
 
 TEST(inode_is_taken_into_account)

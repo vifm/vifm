@@ -524,43 +524,54 @@ void
 dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 		dcache_result_t *nitems)
 {
-	dcache_data_t size_data, nitems_data;
+	if(size == NULL && nitems == NULL)
+	{
+		return;
+	}
 
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	size->value = DCACHE_UNKNOWN;
-	size->is_valid = 0;
-
-	nitems->value = DCACHE_UNKNOWN;
-	nitems->is_valid = 0;
-
-	pthread_mutex_lock(&dcache_size_mutex);
-	if(fsdata_get(dcache_size, full_path, &size_data, sizeof(size_data)) == 0)
+	if(size != NULL)
 	{
-		size->value = size_data.value;
-		/* We check strictly for less than to handle scenario when multiple changes
-		 * occurred during the same second. */
-		size->is_valid = (entry->mtime < size_data.timestamp);
-#ifndef _WIN32
-		size->is_valid &= (entry->inode == size_data.inode);
-#endif
-	}
-	pthread_mutex_unlock(&dcache_size_mutex);
+		size->value = DCACHE_UNKNOWN;
+		size->is_valid = 0;
 
-	pthread_mutex_lock(&dcache_nitems_mutex);
-	if(fsdata_get(dcache_nitems, full_path, &nitems_data,
-				sizeof(nitems_data)) == 0)
-	{
-		nitems->value = nitems_data.value;
-		/* We check strictly for less than to handle scenario when multiple changes
-		 * occurred during the same second. */
-		nitems->is_valid = (entry->mtime < nitems_data.timestamp);
+		pthread_mutex_lock(&dcache_size_mutex);
+		dcache_data_t size_data;
+		if(fsdata_get(dcache_size, full_path, &size_data, sizeof(size_data)) == 0)
+		{
+			size->value = size_data.value;
+			/* We check strictly for less than to handle scenario when multiple
+			 * changes occurred during the same second. */
+			size->is_valid = (entry->mtime < size_data.timestamp);
 #ifndef _WIN32
-		nitems->is_valid &= (entry->inode == nitems_data.inode);
+			size->is_valid &= (entry->inode == size_data.inode);
 #endif
+		}
+		pthread_mutex_unlock(&dcache_size_mutex);
 	}
-	pthread_mutex_unlock(&dcache_nitems_mutex);
+
+	if(nitems != NULL)
+	{
+		nitems->value = DCACHE_UNKNOWN;
+		nitems->is_valid = 0;
+
+		pthread_mutex_lock(&dcache_nitems_mutex);
+		dcache_data_t nitems_data;
+		if(fsdata_get(dcache_nitems, full_path, &nitems_data,
+					sizeof(nitems_data)) == 0)
+		{
+			nitems->value = nitems_data.value;
+			/* We check strictly for less than to handle scenario when multiple
+			 * changes occurred during the same second. */
+			nitems->is_valid = (entry->mtime < nitems_data.timestamp);
+#ifndef _WIN32
+			nitems->is_valid &= (entry->inode == nitems_data.inode);
+#endif
+		}
+		pthread_mutex_unlock(&dcache_nitems_mutex);
+	}
 }
 
 void
