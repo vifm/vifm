@@ -19,6 +19,7 @@
 
 #include "fops_misc.h"
 
+#include <sys/stat.h> /* stat */
 #include <sys/types.h> /* gid_t uid_t */
 
 #include <string.h> /* strdup() strlen() */
@@ -1183,6 +1184,15 @@ fops_dir_size(const char path[], int force_update,
 	const char *slash;
 	uint64_t size;
 
+	uint64_t inode = DCACHE_UNKNOWN;
+#ifndef _WIN32
+	struct stat s;
+	if(os_stat(path, &s) == 0)
+	{
+		inode = s.st_ino;
+	}
+#endif
+
 	DIR *dir = os_opendir(path);
 	if(dir == NULL)
 	{
@@ -1226,7 +1236,7 @@ fops_dir_size(const char path[], int force_update,
 
 	os_closedir(dir);
 
-	(void)dcache_set_at(path, size, DCACHE_UNKNOWN);
+	(void)dcache_set_at(path, inode, size, DCACHE_UNKNOWN);
 	return size;
 }
 

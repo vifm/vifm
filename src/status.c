@@ -26,6 +26,8 @@
 #undef MIN
 #endif
 
+#include <sys/types.h> /* ino_t */
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL */
@@ -61,6 +63,9 @@
 typedef struct
 {
 	uint64_t value;   /* Stored value. */
+#ifndef _WIN32
+	ino_t inode;      /* Inode number. */
+#endif
 	time_t timestamp; /* When the value was set. */
 }
 dcache_data_t;
@@ -538,6 +543,9 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 		/* We check strictly for less than to handle scenario when multiple changes
 		 * occurred during the same second. */
 		size->is_valid = (entry->mtime < size_data.timestamp);
+#ifndef _WIN32
+		size->is_valid &= (entry->inode == size_data.inode);
+#endif
 	}
 	pthread_mutex_unlock(&dcache_size_mutex);
 
@@ -549,6 +557,9 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 		/* We check strictly for less than to handle scenario when multiple changes
 		 * occurred during the same second. */
 		nitems->is_valid = (entry->mtime < nitems_data.timestamp);
+#ifndef _WIN32
+		nitems->is_valid &= (entry->inode == nitems_data.inode);
+#endif
 	}
 	pthread_mutex_unlock(&dcache_nitems_mutex);
 }
@@ -572,14 +583,17 @@ size_updater(void *data, void *arg)
 }
 
 int
-dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
+dcache_set_at(const char path[], uint64_t inode, uint64_t size, uint64_t nitems)
 {
 	int ret = 0;
 	const time_t ts = time(NULL);
 
 	if(size != DCACHE_UNKNOWN)
 	{
-		const dcache_data_t data = { .value = size, .timestamp = ts };
+		dcache_data_t data = { .value = size, .timestamp = ts };
+#ifndef _WIN32
+		data.inode = (ino_t)inode;
+#endif
 
 		pthread_mutex_lock(&dcache_size_mutex);
 		ret |= fsdata_set(dcache_size, path, &data, sizeof(data));
@@ -588,7 +602,10 @@ dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
 
 	if(nitems != DCACHE_UNKNOWN)
 	{
-		const dcache_data_t data = { .value = nitems, .timestamp = ts };
+		dcache_data_t data = { .value = nitems, .timestamp = ts };
+#ifndef _WIN32
+		data.inode = (ino_t)inode;
+#endif
 
 		pthread_mutex_lock(&dcache_nitems_mutex);
 		ret |= fsdata_set(dcache_nitems, path, &data, sizeof(data));

@@ -325,7 +325,8 @@ void dcache_update_parent_sizes(const char path[], uint64_t by);
 
 /* Updates information about the path.  Returns zero on success, otherwise
  * non-zero is returned. */
-int dcache_set_at(const char path[], uint64_t size, uint64_t nitems);
+int dcache_set_at(const char path[], uint64_t inode, uint64_t size,
+		uint64_t nitems);
 
 #endif /* VIFM__STATUS_H__ */
 

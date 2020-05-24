@@ -143,6 +143,9 @@
 	Somewhat improved documentation on 'ignorecase' and 'smartcase' options.
 	Thanks to filterfalse.
 
+	Invalidate cached directory information (size or number of files) on inode
+	change.  Thanks to Jose Riha (a.k.a. jose1711).
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 
