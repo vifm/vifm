@@ -31,6 +31,8 @@
 
 static char * read_whole_file(const char filepath[], size_t *read);
 static char * read_seekable_stream(FILE *fp, size_t *read);
+static char * read_stream(FILE *fp, size_t *read, int drop_bom, progress_cb cb,
+		const void *arg);
 static size_t get_remaining_stream_size(FILE *fp);
 static char ** text_to_lines(char text[], size_t text_len, int *nlines,
 		int null_sep);
@@ -239,6 +241,58 @@ read_stream_lines(FILE *f, int *nlines, int null_sep_heuristic, progress_cb cb,
 char *
 read_nonseekable_stream(FILE *fp, size_t *read, progress_cb cb, const void *arg)
 {
+	return read_stream(fp, read, 1, cb, arg);
+}
+
+/* Reads content of the fp stream that supports seek operation (points to a
+ * file) until end-of-file into null terminated string.  Returns string of
+ * length *read to be freed by caller on success, otherwise NULL is returned and
+ * *read is set to 0UL. */
+static char *
+read_seekable_stream(FILE *fp, size_t *read)
+{
+	char *content;
+	size_t len;
+
+	skip_bom(fp);
+	len = get_remaining_stream_size(fp);
+
+	if(len == 0)
+	{
+		/* Give this file another shot in case it's a virtual file that doesn't
+		 * report its size ahead of time. */
+		return read_stream(fp, read, 0, NULL, NULL);
+	}
+
+	*read = 0UL;
+
+	if((content = malloc(len + 1U)) == NULL)
+	{
+		return NULL;
+	}
+
+	if(fread(content, len, 1U, fp) == 1U)
+	{
+		content[len] = '\0';
+		*read = len;
+	}
+	else
+	{
+		free(content);
+		content = NULL;
+	}
+
+	return content;
+}
+
+/* Reads content of the fp stream that doesn't support seek operation (e.g. it
+ * points to a pipe) until end-of-file into null terminated string.  cb can be
+ * NULL.  Returns string of length *read to be freed by caller on success,
+ * otherwise NULL is returned. */
+static char *
+read_stream(FILE *fp, size_t *read, int drop_bom, progress_cb cb,
+		const void *arg)
+{
 	enum { PIECE_LEN = 4096 };
 	char *content = malloc(PIECE_LEN + 1);
 
@@ -246,7 +300,10 @@ read_nonseekable_stream(FILE *fp, size_t *read, progress_cb cb, const void *arg)
 	{
 		char *last_allocated_block = content;
 		size_t len = 0U, piece_len;
-		skip_bom(fp);
+		if(drop_bom)
+		{
+			skip_bom(fp);
+		}
 		while((piece_len = fread(content + len, 1, PIECE_LEN, fp)) != 0U)
 		{
 			const size_t new_size = len + piece_len + PIECE_LEN + 1U;
@@ -280,40 +337,6 @@ read_nonseekable_stream(FILE *fp, size_t *read, progress_cb cb, const void *arg)
 	if(content == NULL)
 	{
 		*read = 0U;
-	}
-
-	return content;
-}
-
-/* Reads content of the fp stream that supports seek operation (points to a
- * file) until end-of-file into null terminated string.  Returns string of
- * length *read to be freed by caller on success, otherwise NULL is returned and
- * *read is set to 0UL. */
-static char *
-read_seekable_stream(FILE *fp, size_t *read)
-{
-	char *content;
-	size_t len;
-
-	skip_bom(fp);
-	len = get_remaining_stream_size(fp);
-
-	*read = 0UL;
-
-	if((content = malloc(len + 1U)) == NULL)
-	{
-		return NULL;
-	}
-
-	if(fread(content, len, 1U, fp) == 1U)
-	{
-		content[len] = '\0';
-		*read = len;
-	}
-	else
-	{
-		free(content);
-		content = NULL;
 	}
 
 	return content;

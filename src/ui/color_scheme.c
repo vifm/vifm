@@ -803,7 +803,6 @@ reset_to_default_cs(col_scheme_t *cs)
 	reset_cs_colors(cs);
 
 	copy_str(cs->name, sizeof(cs->name), DEF_CS_NAME);
-	copy_str(cs->dir, sizeof(cs->dir), "/");
 
 	cs->state = CSS_NORMAL;
 }

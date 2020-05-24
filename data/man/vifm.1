@@ -1,4 +1,4 @@
-.TH VIFM 1 "May 18, 2020" "vifm 0.10.1"
+.TH VIFM 1 "May 21, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -375,7 +375,8 @@ typing pattern by hand.
 .TP
 Matches are automatically selected if 'hlsearch' is set.  Enabling 'incsearch' \
 makes search interactive.  'ignorecase' and 'smartcase' options affect case \
-sensitivity of search queries.
+sensitivity of search queries as well as local filter and other things \
+detailed in the description of 'caseoptions'.
 
 .TP
 .BI [count]n
@@ -4007,8 +4008,9 @@ type: boolean
 .br
 default: false
 .br
-Ignore case in search patterns (:substitute, / and ? commands) and characters
-after f and F commands.  It doesn't affect file filtering.
+Ignore case in search patterns (:substitute, / and ? commands), local filter
+(but not the rest of filters) and other things detailed in the description
+of 'caseoptions'.
 .TP
 .BI "'incsearch' 'is'"
 type: boolean
@@ -4405,9 +4407,8 @@ type: boolean
 .br
 default: false
 .br
-Overrides the ignorecase option if the search pattern contains at least one
-upper case character.  Only used when ignorecase option is enabled.  It doesn't
-affect file filtering.
+Overrides the ignorecase option if a pattern contains at least one
+upper case character.  Only used when 'ignorecase' option is enabled.
 .TP
 .BI 'sort'
 type: string list

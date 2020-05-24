@@ -19,6 +19,9 @@
 	Added 'tablabel' option that specifies format of a single tab's label when
 	non-empty.  Thanks to aleksejrs.
 
+	Added three MC-like shortcuts to sample vifmrc files (Alt-I, Alt-O and
+	Ctrl-U).  Thanks to Hans Bieshaar.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
@@ -136,6 +139,9 @@
 
 	Detect being run under Wayland (relevant for :filextype commands).  Thanks
 	to mhdzli.
+
+	Somewhat improved documentation on 'ignorecase' and 'smartcase' options.
+	Thanks to filterfalse.
 
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
@@ -259,6 +265,12 @@
 	'>).  Thanks to Marcos Cruz.
 
 	Fixed '< and '> marks being shared by views in different tabs.
+
+	Fixed exploring files on pseudo file systems which reported
+	"Nothing to explore" despite quickview showed file contents fine.
+
+	Fixed local filter not obeying updated values of 'ignorecase' and
+	'smartcase' options when 'incsearch' is off.  Thanks to filterfalse.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

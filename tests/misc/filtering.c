@@ -508,5 +508,23 @@ TEST(sorting_tree_preserves_parent_dot_dir)
 	cfg.dot_dirs = 0;
 }
 
+TEST(case_is_ignored_by_noninteractive_local_filter)
+{
+	cfg.ignore_case = 1;
+
+	make_abs_path(lwin.curr_dir, sizeof(lwin.curr_dir), TEST_DATA_PATH, "", cwd);
+
+	flist_custom_start(&lwin, "test");
+	flist_custom_add(&lwin, "compare");
+	assert_true(flist_custom_finish(&lwin, CV_REGULAR, 0) == 0);
+
+	local_filter_apply(&lwin, "CoMpArE");
+	load_dir_list(&lwin, 1);
+
+	assert_string_equal("compare", lwin.dir_entry[0].name);
+
+	cfg.ignore_case = 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */
