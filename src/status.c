@@ -494,28 +494,31 @@ hists_search_last(void)
 void
 dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
 {
-	dcache_data_t size_data, nitems_data;
-
-	pthread_mutex_lock(&dcache_size_mutex);
-	if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) != 0)
-	{
-		size_data.value = DCACHE_UNKNOWN;
-	}
-	pthread_mutex_unlock(&dcache_size_mutex);
-
-	pthread_mutex_lock(&dcache_nitems_mutex);
-	if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) != 0)
-	{
-		nitems_data.value = DCACHE_UNKNOWN;
-	}
-	pthread_mutex_unlock(&dcache_nitems_mutex);
-
 	if(size != NULL)
 	{
+		dcache_data_t size_data;
+
+		pthread_mutex_lock(&dcache_size_mutex);
+		if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) != 0)
+		{
+			size_data.value = DCACHE_UNKNOWN;
+		}
+		pthread_mutex_unlock(&dcache_size_mutex);
+
 		*size = size_data.value;
 	}
+
 	if(nitems != NULL)
 	{
+		dcache_data_t nitems_data;
+
+		pthread_mutex_lock(&dcache_nitems_mutex);
+		if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) != 0)
+		{
+			nitems_data.value = DCACHE_UNKNOWN;
+		}
+		pthread_mutex_unlock(&dcache_nitems_mutex);
+
 		*nitems = nitems_data.value;
 	}
 }
