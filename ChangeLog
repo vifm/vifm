@@ -146,6 +146,9 @@
 	Invalidate cached directory information (size or number of files) on inode
 	change.  Thanks to Jose Riha (a.k.a. jose1711).
 
+	Invalidate cached directory size when using it to compute size of some
+	parent directory.
+
 	Fixed symbolic link as FUSE mount point not being removed on systems
 	with FreeBSD kernel.  Thanks to Ondrej Novy (a.k.a. onovy).
 

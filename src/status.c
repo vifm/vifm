@@ -492,34 +492,47 @@ hists_search_last(void)
 }
 
 void
-dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
+dcache_get_at(const char path[], time_t mtime, uint64_t inode, uint64_t *size,
+		uint64_t *nitems)
 {
 	if(size != NULL)
 	{
 		dcache_data_t size_data;
+		int is_valid = 0;
 
 		pthread_mutex_lock(&dcache_size_mutex);
-		if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) != 0)
+		if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) == 0)
 		{
-			size_data.value = DCACHE_UNKNOWN;
+			/* We check strictly for less than to handle scenario when multiple
+			 * changes occurred during the same second. */
+			is_valid = (mtime < size_data.timestamp);
+#ifndef _WIN32
+			is_valid &= (inode == size_data.inode);
+#endif
 		}
 		pthread_mutex_unlock(&dcache_size_mutex);
 
-		*size = size_data.value;
+		*size = (is_valid ? size_data.value : DCACHE_UNKNOWN);
 	}
 
 	if(nitems != NULL)
 	{
 		dcache_data_t nitems_data;
+		int is_valid = 0;
 
 		pthread_mutex_lock(&dcache_nitems_mutex);
-		if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) != 0)
+		if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) == 0)
 		{
-			nitems_data.value = DCACHE_UNKNOWN;
+			/* We check strictly for less than to handle scenario when multiple
+			 * changes occurred during the same second. */
+			is_valid = (mtime < nitems_data.timestamp);
+#ifndef _WIN32
+			is_valid &= (inode == nitems_data.inode);
+#endif
 		}
 		pthread_mutex_unlock(&dcache_nitems_mutex);
 
-		*nitems = nitems_data.value;
+		*nitems = (is_valid ? nitems_data.value : DCACHE_UNKNOWN);
 	}
 }
 

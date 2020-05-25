@@ -1184,11 +1184,13 @@ fops_dir_size(const char path[], int force_update,
 	const char *slash;
 	uint64_t size;
 
+	time_t mtime = 0;
 	uint64_t inode = DCACHE_UNKNOWN;
 #ifndef _WIN32
 	struct stat s;
 	if(os_stat(path, &s) == 0)
 	{
+		mtime = s.st_mtime;
 		inode = s.st_ino;
 	}
 #endif
@@ -1215,7 +1217,7 @@ fops_dir_size(const char path[], int force_update,
 		if(fops_is_dir_entry(full_path, dentry))
 		{
 			uint64_t dir_size;
-			dcache_get_at(full_path, &dir_size, NULL);
+			dcache_get_at(full_path, mtime, inode, &dir_size, NULL);
 			if(dir_size == DCACHE_UNKNOWN || force_update)
 			{
 				dir_size = fops_dir_size(full_path, force_update, cancellation);

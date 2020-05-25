@@ -27,10 +27,11 @@ TEST(size_does_not_clobber_nitems)
 	uint64_t size;
 	uint64_t nitems;
 
-	dcache_set_at(TEST_DATA_PATH, DCACHE_UNKNOWN, 10, 11);
-	dcache_set_at(TEST_DATA_PATH, DCACHE_UNKNOWN, 13, DCACHE_UNKNOWN);
+	dcache_set_at(TEST_DATA_PATH, 0, 10, 11);
+	dcache_set_at(TEST_DATA_PATH, 0, 13, DCACHE_UNKNOWN);
 
-	dcache_get_at(TEST_DATA_PATH, &size, &nitems);
+	/* Tests are executed fast, so decrease mtime. */
+	dcache_get_at(TEST_DATA_PATH, time(NULL) - 10, 0, &size, &nitems);
 	assert_ulong_equal(13, size);
 	assert_ulong_equal(11, nitems);
 }
@@ -40,10 +41,11 @@ TEST(nitems_does_not_clobber_size)
 	uint64_t size;
 	uint64_t nitems;
 
-	dcache_set_at(TEST_DATA_PATH, DCACHE_UNKNOWN, 10, 11);
-	dcache_set_at(TEST_DATA_PATH, DCACHE_UNKNOWN, DCACHE_UNKNOWN, 12);
+	dcache_set_at(TEST_DATA_PATH, 0, 10, 11);
+	dcache_set_at(TEST_DATA_PATH, 0, DCACHE_UNKNOWN, 12);
 
-	dcache_get_at(TEST_DATA_PATH, &size, &nitems);
+	/* Tests are executed fast, so decrease mtime. */
+	dcache_get_at(TEST_DATA_PATH, time(NULL) - 10, 0, &size, &nitems);
 	assert_ulong_equal(10, size);
 	assert_ulong_equal(12, nitems);
 }
