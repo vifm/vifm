@@ -1,8 +1,13 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* stat */
+#include <unistd.h> /* rmdir() unlink() */
+
 #include <string.h> /* strcpy() strdup() */
+#include <time.h> /* time_t */
 
 #include "../../src/cfg/config.h"
+#include "../../src/compat/os.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/filelist.h"
 #include "../../src/fops_misc.h"
@@ -44,6 +49,36 @@ TEST(parent_dir_entry_triggers_calculation_of_current_dir)
 	assert_int_equal(73728, wait_for_size(TEST_DATA_PATH "/various-sizes"));
 }
 
+TEST(changed_directory_detected_on_size_calculation, IF(not_windows))
+{
+	assert_success(os_mkdir(SANDBOX_PATH "/dir", 0777));
+	assert_success(os_mkdir(SANDBOX_PATH "/dir/subdir", 0777));
+
+	FILE *f = fopen(SANDBOX_PATH "/dir/subdir/file", "w");
+	if(f != NULL)
+	{
+		fputs("text", f);
+		fclose(f);
+	}
+
+	strcpy(lwin.curr_dir, SANDBOX_PATH "/dir");
+	setup_single_entry(&lwin, "subdir");
+
+	fops_size_bg(&lwin, 0);
+	assert_int_equal(4, wait_for_size(SANDBOX_PATH "/dir/subdir"));
+
+	assert_success(unlink(SANDBOX_PATH "/dir/subdir/file"));
+	view_teardown(&lwin);
+	strcpy(lwin.curr_dir, SANDBOX_PATH);
+	setup_single_entry(&lwin, "dir");
+
+	fops_size_bg(&lwin, 0);
+	assert_int_equal(0, wait_for_size(SANDBOX_PATH "/dir"));
+
+	assert_success(rmdir(SANDBOX_PATH "/dir/subdir"));
+	assert_success(rmdir(SANDBOX_PATH "/dir"));
+}
+
 static void
 setup_single_entry(view_t *view, const char name[])
 {
@@ -61,8 +96,18 @@ wait_for_size(const char path[])
 {
 	wait_for_bg();
 
-	uint64_t size, nitems;
-	dcache_get_at(path, &size, &nitems);
+	time_t mtime = 10;
+	uint64_t inode = DCACHE_UNKNOWN;
+#ifndef _WIN32
+	struct stat s;
+	assert_success(os_stat(path, &s));
+	mtime = s.st_mtime;
+	inode = s.st_ino;
+#endif
+
+	uint64_t size;
+	/* Tests are executed fast, so decrement mtime. */
+	dcache_get_at(path, mtime - 10, inode, &size, NULL);
 	return size;
 }
 

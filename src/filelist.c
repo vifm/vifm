@@ -1539,7 +1539,8 @@ fentry_get_dir_info(const view_t *view, const dir_entry_t *entry,
 	assert((size != NULL || nitems != NULL) &&
 			"At least one of out parameters has to be non-NULL.");
 
-	dcache_get_of(entry, &size_res, &nitems_res);
+	dcache_get_of(entry, (size == NULL ? NULL : &size_res),
+			(nitems == NULL ? NULL : &nitems_res));
 
 	if(size != NULL)
 	{
@@ -1586,8 +1587,13 @@ entry_calc_nitems(const dir_entry_t *entry)
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
+	uint64_t inode = DCACHE_UNKNOWN;
+#ifndef _WIN32
+	inode = entry->inode;
+#endif
+
 	ret = count_dir_items(full_path);
-	dcache_set_at(full_path, DCACHE_UNKNOWN, ret);
+	dcache_set_at(full_path, inode, DCACHE_UNKNOWN, ret);
 
 	return ret;
 }

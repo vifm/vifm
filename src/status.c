@@ -26,6 +26,8 @@
 #undef MIN
 #endif
 
+#include <sys/types.h> /* ino_t */
+
 #include <assert.h> /* assert() */
 #include <limits.h> /* INT_MIN */
 #include <stddef.h> /* NULL */
@@ -61,6 +63,9 @@
 typedef struct
 {
 	uint64_t value;   /* Stored value. */
+#ifndef _WIN32
+	ino_t inode;      /* Inode number. */
+#endif
 	time_t timestamp; /* When the value was set. */
 }
 dcache_data_t;
@@ -70,6 +75,8 @@ static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
+static void dcache_get(const char path[], time_t mtime, uint64_t inode,
+		dcache_result_t *size, dcache_result_t *nitems);
 static void size_updater(void *data, void *arg);
 
 status_t curr_stats;
@@ -487,32 +494,20 @@ hists_search_last(void)
 }
 
 void
-dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems)
+dcache_get_at(const char path[], time_t mtime, uint64_t inode, uint64_t *size,
+		uint64_t *nitems)
 {
-	/* Initialization to make condition false by default. */
-	dcache_data_t size_data, nitems_data;
-
-	pthread_mutex_lock(&dcache_size_mutex);
-	if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) != 0)
-	{
-		size_data.value = DCACHE_UNKNOWN;
-	}
-	pthread_mutex_unlock(&dcache_size_mutex);
-
-	pthread_mutex_lock(&dcache_nitems_mutex);
-	if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) != 0)
-	{
-		nitems_data.value = DCACHE_UNKNOWN;
-	}
-	pthread_mutex_unlock(&dcache_nitems_mutex);
+	dcache_result_t size_res, nitems_res;
+	dcache_get(path, mtime, inode, (size == NULL ? NULL : &size_res),
+			(nitems == NULL ? NULL : &nitems_res));
 
 	if(size != NULL)
 	{
-		*size = size_data.value;
+		*size = (size_res.is_valid ? size_res.value : DCACHE_UNKNOWN);
 	}
 	if(nitems != NULL)
 	{
-		*nitems = nitems_data.value;
+		*nitems = (nitems_res.is_valid ? nitems_res.value : DCACHE_UNKNOWN);
 	}
 }
 
@@ -520,37 +515,66 @@ void
 dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 		dcache_result_t *nitems)
 {
-	dcache_data_t size_data, nitems_data;
+	if(size == NULL && nitems == NULL)
+	{
+		return;
+	}
 
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
-	size->value = DCACHE_UNKNOWN;
-	size->is_valid = 0;
+	uint64_t inode = 0;
+#ifndef _WIN32
+	inode = entry->inode;
+#endif
+	dcache_get(full_path, entry->mtime, inode, size, nitems);
+}
 
-	nitems->value = DCACHE_UNKNOWN;
-	nitems->is_valid = 0;
-
-	pthread_mutex_lock(&dcache_size_mutex);
-	if(fsdata_get(dcache_size, full_path, &size_data, sizeof(size_data)) == 0)
+/* Retrieves information about the path checking whether it's outdated.  size
+ * and/or nitems can be NULL. */
+static void
+dcache_get(const char path[], time_t mtime, uint64_t inode,
+		dcache_result_t *size, dcache_result_t *nitems)
+{
+	if(size != NULL)
 	{
-		size->value = size_data.value;
-		/* We check strictly for less than to handle scenario when multiple changes
-		 * occurred during the same second. */
-		size->is_valid = (entry->mtime < size_data.timestamp);
-	}
-	pthread_mutex_unlock(&dcache_size_mutex);
+		size->value = DCACHE_UNKNOWN;
+		size->is_valid = 0;
 
-	pthread_mutex_lock(&dcache_nitems_mutex);
-	if(fsdata_get(dcache_nitems, full_path, &nitems_data,
-				sizeof(nitems_data)) == 0)
-	{
-		nitems->value = nitems_data.value;
-		/* We check strictly for less than to handle scenario when multiple changes
-		 * occurred during the same second. */
-		nitems->is_valid = (entry->mtime < nitems_data.timestamp);
+		pthread_mutex_lock(&dcache_size_mutex);
+		dcache_data_t size_data;
+		if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) == 0)
+		{
+			size->value = size_data.value;
+			/* We check strictly for less than to handle scenario when multiple
+			 * changes occurred during the same second. */
+			size->is_valid = (mtime < size_data.timestamp);
+#ifndef _WIN32
+			size->is_valid &= (inode == size_data.inode);
+#endif
+		}
+		pthread_mutex_unlock(&dcache_size_mutex);
 	}
-	pthread_mutex_unlock(&dcache_nitems_mutex);
+
+	if(nitems != NULL)
+	{
+		nitems->value = DCACHE_UNKNOWN;
+		nitems->is_valid = 0;
+
+		pthread_mutex_lock(&dcache_nitems_mutex);
+		dcache_data_t nitems_data;
+		if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) == 0)
+		{
+			nitems->value = nitems_data.value;
+			/* We check strictly for less than to handle scenario when multiple
+			 * changes occurred during the same second. */
+			nitems->is_valid = (mtime < nitems_data.timestamp);
+#ifndef _WIN32
+			nitems->is_valid &= (inode == nitems_data.inode);
+#endif
+		}
+		pthread_mutex_unlock(&dcache_nitems_mutex);
+	}
 }
 
 void
@@ -572,14 +596,17 @@ size_updater(void *data, void *arg)
 }
 
 int
-dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
+dcache_set_at(const char path[], uint64_t inode, uint64_t size, uint64_t nitems)
 {
 	int ret = 0;
 	const time_t ts = time(NULL);
 
 	if(size != DCACHE_UNKNOWN)
 	{
-		const dcache_data_t data = { .value = size, .timestamp = ts };
+		dcache_data_t data = { .value = size, .timestamp = ts };
+#ifndef _WIN32
+		data.inode = (ino_t)inode;
+#endif
 
 		pthread_mutex_lock(&dcache_size_mutex);
 		ret |= fsdata_set(dcache_size, path, &data, sizeof(data));
@@ -588,7 +615,10 @@ dcache_set_at(const char path[], uint64_t size, uint64_t nitems)
 
 	if(nitems != DCACHE_UNKNOWN)
 	{
-		const dcache_data_t data = { .value = nitems, .timestamp = ts };
+		dcache_data_t data = { .value = nitems, .timestamp = ts };
+#ifndef _WIN32
+		data.inode = (ino_t)inode;
+#endif
 
 		pthread_mutex_lock(&dcache_nitems_mutex);
 		ret |= fsdata_set(dcache_nitems, path, &data, sizeof(data));

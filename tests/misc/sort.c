@@ -330,19 +330,26 @@ TEST(sorting_uses_dcache_for_dirs)
 	lwin.dir_entry[1].type = FT_DIR;
 	lwin.dir_entry[1].origin = lwin.curr_dir;
 
+#ifndef _WIN32
+	lwin.dir_entry[0].inode = 1;
+	lwin.dir_entry[1].inode = 2;
+#endif
+
 	lwin.sort[0] = SK_BY_SIZE;
 	memset(&lwin.sort[1], SK_NONE, sizeof(lwin.sort) - 1);
 
-	assert_success(dcache_set_at(TEST_DATA_PATH "/read", 10, DCACHE_UNKNOWN));
-	assert_success(dcache_set_at(TEST_DATA_PATH "/rename", 100, DCACHE_UNKNOWN));
+	assert_success(dcache_set_at(TEST_DATA_PATH "/read", 1, 10, DCACHE_UNKNOWN));
+	assert_success(dcache_set_at(TEST_DATA_PATH "/rename", 2, 100,
+				DCACHE_UNKNOWN));
 
 	sort_view(&lwin);
 
 	assert_string_equal("read", lwin.dir_entry[0].name);
 	assert_string_equal("rename", lwin.dir_entry[1].name);
 
-	assert_success(dcache_set_at(TEST_DATA_PATH "/rename", 10, DCACHE_UNKNOWN));
-	assert_success(dcache_set_at(TEST_DATA_PATH "/read", 100, DCACHE_UNKNOWN));
+	assert_success(dcache_set_at(TEST_DATA_PATH "/rename", 2, 10,
+				DCACHE_UNKNOWN));
+	assert_success(dcache_set_at(TEST_DATA_PATH "/read", 1, 100, DCACHE_UNKNOWN));
 
 	sort_view(&lwin);
 

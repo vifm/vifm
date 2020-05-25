@@ -22,6 +22,7 @@
 
 #include <stdint.h> /* uint64_t */
 #include <stdio.h> /* FILE */
+#include <time.h> /* time_t */
 
 #include "compat/fs_limits.h"
 #include "ui/color_scheme.h"
@@ -312,11 +313,14 @@ const char * hists_search_last(void);
 
 /* Caching of information about directories. */
 
-/* Retrieves information about the path.  size and/or nitems can be NULL.  On
- * unknown values variables are set to DCACHE_UNKNOWN. */
-void dcache_get_at(const char path[], uint64_t *size, uint64_t *nitems);
+/* Retrieves information about the path at specified state checking whether it's
+ * outdated.  size and/or nitems can be NULL.  On unknown or outdated values
+ * variables are set to DCACHE_UNKNOWN. */
+void dcache_get_at(const char path[], time_t mtime, uint64_t inode,
+		uint64_t *size, uint64_t *nitems);
 
-/* Retrieves information about the entry checking whether it's outdated. */
+/* Retrieves information about the entry checking whether it's outdated.  size
+ * and/or nitems can be NULL. */
 void dcache_get_of(const struct dir_entry_t *entry, dcache_result_t *size,
 		dcache_result_t *nitems);
 
@@ -325,7 +329,8 @@ void dcache_update_parent_sizes(const char path[], uint64_t by);
 
 /* Updates information about the path.  Returns zero on success, otherwise
  * non-zero is returned. */
-int dcache_set_at(const char path[], uint64_t size, uint64_t nitems);
+int dcache_set_at(const char path[], uint64_t inode, uint64_t size,
+		uint64_t nitems);
 
 #endif /* VIFM__STATUS_H__ */
 
