@@ -52,9 +52,9 @@ TEST(outdated_data_is_detected)
 {
 	dcache_result_t size, nitems;
 
-	dir_entry_t entry = { .name = ".", .origin = TEST_DATA_PATH };
+	dir_entry_t entry = { .name = "read", .origin = TEST_DATA_PATH };
 
-	dcache_set_at(TEST_DATA_PATH, 0, 10, 11);
+	dcache_set_at(TEST_DATA_PATH "/read", 0, 10, 11);
 
 	/* Entry was updated *while* it was being cached. */
 	entry.mtime = time(NULL);
