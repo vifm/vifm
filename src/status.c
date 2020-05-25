@@ -75,6 +75,8 @@ static void determine_fuse_umount_cmd(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static int reset_dircache(void);
 static void set_last_cmdline_command(const char cmd[]);
+static void dcache_get(const char path[], time_t mtime, uint64_t inode,
+		dcache_result_t *size, dcache_result_t *nitems);
 static void size_updater(void *data, void *arg);
 
 status_t curr_stats;
@@ -495,44 +497,17 @@ void
 dcache_get_at(const char path[], time_t mtime, uint64_t inode, uint64_t *size,
 		uint64_t *nitems)
 {
+	dcache_result_t size_res, nitems_res;
+	dcache_get(path, mtime, inode, (size == NULL ? NULL : &size_res),
+			(nitems == NULL ? NULL : &nitems_res));
+
 	if(size != NULL)
 	{
-		dcache_data_t size_data;
-		int is_valid = 0;
-
-		pthread_mutex_lock(&dcache_size_mutex);
-		if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) == 0)
-		{
-			/* We check strictly for less than to handle scenario when multiple
-			 * changes occurred during the same second. */
-			is_valid = (mtime < size_data.timestamp);
-#ifndef _WIN32
-			is_valid &= (inode == size_data.inode);
-#endif
-		}
-		pthread_mutex_unlock(&dcache_size_mutex);
-
-		*size = (is_valid ? size_data.value : DCACHE_UNKNOWN);
+		*size = (size_res.is_valid ? size_res.value : DCACHE_UNKNOWN);
 	}
-
 	if(nitems != NULL)
 	{
-		dcache_data_t nitems_data;
-		int is_valid = 0;
-
-		pthread_mutex_lock(&dcache_nitems_mutex);
-		if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) == 0)
-		{
-			/* We check strictly for less than to handle scenario when multiple
-			 * changes occurred during the same second. */
-			is_valid = (mtime < nitems_data.timestamp);
-#ifndef _WIN32
-			is_valid &= (inode == nitems_data.inode);
-#endif
-		}
-		pthread_mutex_unlock(&dcache_nitems_mutex);
-
-		*nitems = (is_valid ? nitems_data.value : DCACHE_UNKNOWN);
+		*nitems = (nitems_res.is_valid ? nitems_res.value : DCACHE_UNKNOWN);
 	}
 }
 
@@ -548,6 +523,19 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 	char full_path[PATH_MAX + 1];
 	get_full_path_of(entry, sizeof(full_path), full_path);
 
+	uint64_t inode = 0;
+#ifndef _WIN32
+	inode = entry->inode;
+#endif
+	dcache_get(full_path, entry->mtime, inode, size, nitems);
+}
+
+/* Retrieves information about the path checking whether it's outdated.  size
+ * and/or nitems can be NULL. */
+static void
+dcache_get(const char path[], time_t mtime, uint64_t inode,
+		dcache_result_t *size, dcache_result_t *nitems)
+{
 	if(size != NULL)
 	{
 		size->value = DCACHE_UNKNOWN;
@@ -555,14 +543,14 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 
 		pthread_mutex_lock(&dcache_size_mutex);
 		dcache_data_t size_data;
-		if(fsdata_get(dcache_size, full_path, &size_data, sizeof(size_data)) == 0)
+		if(fsdata_get(dcache_size, path, &size_data, sizeof(size_data)) == 0)
 		{
 			size->value = size_data.value;
 			/* We check strictly for less than to handle scenario when multiple
 			 * changes occurred during the same second. */
-			size->is_valid = (entry->mtime < size_data.timestamp);
+			size->is_valid = (mtime < size_data.timestamp);
 #ifndef _WIN32
-			size->is_valid &= (entry->inode == size_data.inode);
+			size->is_valid &= (inode == size_data.inode);
 #endif
 		}
 		pthread_mutex_unlock(&dcache_size_mutex);
@@ -575,15 +563,14 @@ dcache_get_of(const dir_entry_t *entry, dcache_result_t *size,
 
 		pthread_mutex_lock(&dcache_nitems_mutex);
 		dcache_data_t nitems_data;
-		if(fsdata_get(dcache_nitems, full_path, &nitems_data,
-					sizeof(nitems_data)) == 0)
+		if(fsdata_get(dcache_nitems, path, &nitems_data, sizeof(nitems_data)) == 0)
 		{
 			nitems->value = nitems_data.value;
 			/* We check strictly for less than to handle scenario when multiple
 			 * changes occurred during the same second. */
-			nitems->is_valid = (entry->mtime < nitems_data.timestamp);
+			nitems->is_valid = (mtime < nitems_data.timestamp);
 #ifndef _WIN32
-			nitems->is_valid &= (entry->inode == nitems_data.inode);
+			nitems->is_valid &= (inode == nitems_data.inode);
 #endif
 		}
 		pthread_mutex_unlock(&dcache_nitems_mutex);
