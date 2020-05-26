@@ -645,7 +645,7 @@ get_line_color(const view_t *view, const dir_entry_t *entry)
 			return EXECUTABLE_COLOR;
 
 		default:
-			return WIN_COLOR;
+			return (entry->nlinks > 1 ? HARD_LINK_COLOR : WIN_COLOR);
 	}
 }
 

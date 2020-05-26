@@ -1,4 +1,4 @@
-.TH VIFM 1 "May 21, 2020" "vifm 0.10.1"
+.TH VIFM 1 "May 26, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2091,6 +2091,7 @@ their content (e.g. regular files in views)
  \- Directory \- color of directories
  \- Link \- color of symbolic links in the views
  \- BrokenLink \- color of broken symbolic links
+ \- HardLink \- color of regular files with more than one hard link
  \- Socket \- color of sockets
  \- Device \- color of block and character devices
  \- Executable \- color of executable files
@@ -2241,6 +2242,7 @@ transparency:
           Directory
           Link
           BrokenLink
+          HardLink
           Socket
           Device
           Fifo
