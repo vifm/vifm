@@ -2580,6 +2580,7 @@ init_dir_entry(view_t *view, dir_entry_t *entry, const char name[])
 	entry->ctime = (time_t)0;
 
 	entry->type = FT_UNK;
+	entry->nlinks = 0;
 	entry->dir_link = 0;
 	entry->hi_num = -1;
 	entry->name_dec_num = -1;
