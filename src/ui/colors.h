@@ -37,6 +37,7 @@ enum
 	DIRECTORY_COLOR,    /* Directory. */
 	LINK_COLOR,         /* Symbolic link. */
 	BROKEN_LINK_COLOR,  /* Dangling symbolic link. */
+	HARD_LINK_COLOR,    /* Regular files with more than one hard link. */
 	SOCKET_COLOR,       /* Socket. */
 	DEVICE_COLOR,       /* Device file. */
 	FIFO_COLOR,         /* Named pipe. */

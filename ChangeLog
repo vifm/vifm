@@ -22,6 +22,9 @@
 	Added three MC-like shortcuts to sample vifmrc files (Alt-I, Alt-O and
 	Ctrl-U).  Thanks to Hans Bieshaar.
 
+	Added HardLink highlight group for regular files with more than one hard
+	link.  Patch by Hans Bieshaar.
+
 	Made documentation of :command more comprehensible.
 
 	Explicitly documented that macros are expanded in user defined commands.
@@ -277,6 +280,9 @@
 
 	Fixed local filter not obeying updated values of 'ignorecase' and
 	'smartcase' options when 'incsearch' is off.  Thanks to filterfalse.
+
+	Fixed dialogs not being visible when UI updates are silenced via <silent>
+	mappings.
 
 0.10.1-beta to 0.10.1 (2019-07-29)
 

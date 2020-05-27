@@ -442,6 +442,7 @@ hi AuxWin
 hi OtherWin
 hi TabLine
 hi TabLineSel
+hi HardLink
 hi User1
 hi User2
 hi User3
