@@ -349,6 +349,11 @@ enter(int result_mask)
 	const int prev_use_input_bar = curr_stats.use_input_bar;
 	const vle_mode_t prev_mode = vle_mode_get();
 
+	/* Message must be displayed to the user for him to close it.  It won't happen
+	 * without user interaction as new event loop is out of scope of a mapping
+	 * that started it. */
+	stats_unsilence_ui();
+
 	accept_mask = result_mask;
 	curr_stats.use_input_bar = 0;
 	vle_mode_set(MSG_MODE, VMT_SECONDARY);

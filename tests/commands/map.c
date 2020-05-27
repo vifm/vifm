@@ -5,6 +5,7 @@
 #include "../../src/modes/wk.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
+#include "../../src/status.h"
 
 static void silent_key(key_info_t key_info, keys_info_t *keys_info);
 static void silence_ui(int more);
@@ -85,6 +86,18 @@ TEST(map_parses_args)
 	/* <wait> */
 	assert_success(exec_commands("map <wait>xj j", &lwin, CIT_COMMAND));
 	assert_int_equal(KEYS_WAIT, vle_keys_exec(L"x"));
+}
+
+TEST(dialogs_exit_silent_mode)
+{
+	const char *cmd = "map <silent> b :cd /no-such-dir<cr>";
+	assert_success(exec_commands(cmd, &lwin, CIT_COMMAND));
+
+	curr_stats.load_stage = -1;
+	stats_silence_ui(1);
+	assert_false(IS_KEYS_RET_CODE(vle_keys_exec(L"b")));
+	assert_false(stats_silenced_ui());
+	curr_stats.load_stage = 0;
 }
 
 static void

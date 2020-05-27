@@ -289,6 +289,10 @@ void stats_silence_ui(int more);
 /* Checks whether UI is currently silenced. */
 int stats_silenced_ui(void);
 
+/* Disables ui silencing of any level (after multiple invocations of
+ * `stats_silence_ui(1)`). */
+void stats_unsilence_ui(void);
+
 /* Managing histories. */
 
 /* Changes size of histories stored in status_t.  Zero or negative value

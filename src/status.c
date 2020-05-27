@@ -408,15 +408,12 @@ stats_silence_ui(int more)
 	}
 	else if(--silent_ui == 0)
 	{
-		if(silence_skipped_updates)
-		{
-			silence_skipped_updates = 0;
-			pending_redraw = 0;
-			modes_redraw();
-		}
+		stats_unsilence_ui();
 	}
-
-	assert(silent_ui >= 0 && "Unbalanced calls to stats_silence_ui()");
+	else if(silent_ui < 0)
+	{
+		silent_ui = 0;
+	}
 }
 
 int
@@ -428,6 +425,18 @@ stats_silenced_ui(void)
 		return 1;
 	}
 	return 0;
+}
+
+void
+stats_unsilence_ui(void)
+{
+	silent_ui = 0;
+	if(silence_skipped_updates)
+	{
+		silence_skipped_updates = 0;
+		pending_redraw = 0;
+		modes_redraw();
+	}
 }
 
 void
