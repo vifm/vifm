@@ -285,7 +285,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 {
 	static int skip_until_started;
 
-	if(curr_stats.load_stage <= 0)
+	if(curr_stats.load_stage == 0)
 		return 1;
 	if(curr_stats.load_stage < 2 && skip_until_started)
 		return 1;
@@ -354,7 +354,11 @@ enter(int result_mask)
 	vle_mode_set(MSG_MODE, VMT_SECONDARY);
 
 	quit = 0;
-	event_loop(&quit);
+	/* Avoid starting nested loop in tests. */
+	if(curr_stats.load_stage > 0)
+	{
+		event_loop(&quit);
+	}
 
 	vle_mode_set(prev_mode, VMT_SECONDARY);
 	curr_stats.use_input_bar = prev_use_input_bar;
@@ -485,6 +489,11 @@ draw_msg(const char title[], const char msg[], const char ctrl_msg[],
 	size_t wctrl_msg;
 	int first_line_x = 1;
 	const int first_line_y = 2;
+
+	if(curr_stats.load_stage < 1)
+	{
+		return;
+	}
 
 	curs_set(0);
 
