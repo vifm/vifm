@@ -205,9 +205,7 @@ TEST(history_is_automatically_extended)
 
 TEST(empty_vifminfo_option_produces_empty_state)
 {
-	cfg.vifm_info = 0;
-
-	JSON_Value *value = serialize_state();
+	JSON_Value *value = serialize_state(0);
 	char *as_string = json_serialize_to_string(value);
 
 	assert_string_equal("{\"gtabs\":["

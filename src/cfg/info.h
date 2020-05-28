@@ -34,7 +34,7 @@ void write_info_file(void);
 #include "../utils/parson.h"
 #endif
 TSTATIC_DEFS(
-	JSON_Value * serialize_state(void);
+	JSON_Value * serialize_state(int vinfo);
 )
 
 #endif /* VIFM__CFG__INFO_H__ */
