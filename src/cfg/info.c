@@ -1281,8 +1281,11 @@ update_info_file(const char filename[], int vinfo, int merge)
 	if(merge)
 	{
 		JSON_Value *admixture = json_parse_file(filename);
-		merge_states(vinfo, json_object(current), json_object(admixture));
-		json_value_free(admixture);
+		if(admixture != NULL)
+		{
+			merge_states(vinfo, json_object(current), json_object(admixture));
+			json_value_free(admixture);
+		}
 	}
 
 	if(json_serialize_to_file(current, filename) == JSONError)
