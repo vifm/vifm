@@ -223,6 +223,7 @@ static void merge_history(JSON_Object *current, const JSON_Object *admixture,
 		const char node[]);
 static void merge_regs(JSON_Object *current, const JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, const JSON_Object *admixture);
+static void merge_options(JSON_Object *current, const JSON_Object *admixture);
 static void merge_trash(JSON_Object *current, const JSON_Object *admixture);
 static void store_gtab(int vinfo, JSON_Object *gtab, const char name[],
 		const tab_layout_t *layout, view_t *left, view_t *right);
@@ -1477,6 +1478,11 @@ merge_states(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 		merge_dir_stack(current, admixture);
 	}
 
+	if(vinfo & VINFO_OPTIONS)
+	{
+		merge_options(current, admixture);
+	}
+
 	merge_trash(current, admixture);
 }
 
@@ -1831,6 +1837,19 @@ merge_dir_stack(JSON_Object *current, const JSON_Object *admixture)
 	{
 		JSON_Value *updated = json_object_get_value(admixture, "dir-stack");
 		json_object_set_value(current, "dir-stack", json_value_deep_copy(updated));
+	}
+}
+
+/* Merges two options' states. */
+static void
+merge_options(JSON_Object *current, const JSON_Object *admixture)
+{
+	JSON_Array *options = json_object_get_array(current, "options");
+	JSON_Array *updated = json_object_get_array(admixture, "options");
+	if(options == NULL)
+	{
+		JSON_Value *value = json_array_get_wrapping_value(updated);
+		json_object_set_value(current, "options", json_value_deep_copy(value));
 	}
 }
 
