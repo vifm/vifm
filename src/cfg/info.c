@@ -208,8 +208,7 @@ TSTATIC void merge_states(int vinfo, JSON_Object *current,
 		const JSON_Object *admixture);
 static void merge_tabs(int vinfo, JSON_Object *current,
 		const JSON_Object *admixture);
-static void merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
-		const view_t *view);
+static void merge_dhistory(JSON_Object *current, const JSON_Object *admixture);
 static JSON_Object ** merge_timestamped_data(const JSON_Array *current,
 		const JSON_Array *updated);
 static JSON_Object ** make_timestamp_ordering(const JSON_Array *array);
@@ -1546,17 +1545,15 @@ merge_tabs(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 		if(json_array_get_count(current_ptabs) == 1 &&
 				json_array_get_count(updated_ptabs) == 1)
 		{
-			const view_t *view = (i == 0 ? &lwin : &rwin);
 			merge_dhistory(json_array_get_object(current_ptabs, 0),
-					json_array_get_object(updated_ptabs, 0), view);
+					json_array_get_object(updated_ptabs, 0));
 		}
 	}
 }
 
 /* Merges two directory histories. */
 static void
-merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
-		const view_t *view)
+merge_dhistory(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
