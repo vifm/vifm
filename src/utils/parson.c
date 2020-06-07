@@ -1229,7 +1229,7 @@ JSON_Value * json_object_get_value_at(const JSON_Object *object, size_t index) {
 }
 
 JSON_Value *json_object_get_wrapping_value(const JSON_Object *object) {
-    return object->wrapping_value;
+    return object ? object->wrapping_value : NULL;
 }
 
 int json_object_has_value (const JSON_Object *object, const char *name) {
@@ -1283,7 +1283,7 @@ size_t json_array_get_count(const JSON_Array *array) {
 }
 
 JSON_Value * json_array_get_wrapping_value(const JSON_Array *array) {
-    return array->wrapping_value;
+    return array ? array->wrapping_value : NULL;
 }
 
 /* JSON Value API */

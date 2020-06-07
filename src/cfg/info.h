@@ -35,6 +35,8 @@ void write_info_file(void);
 #endif
 TSTATIC_DEFS(
 	JSON_Value * serialize_state(int vinfo);
+	void merge_states(int vinfo, JSON_Object *current,
+		const JSON_Object *admixture);
 )
 
 #endif /* VIFM__CFG__INFO_H__ */

@@ -204,7 +204,7 @@ static void update_info_file(const char filename[], int merge);
 static char * drop_locale(void);
 static void restore_locale(char locale[]);
 TSTATIC JSON_Value * serialize_state(int vinfo);
-static void merge_states(int vinfo, JSON_Object *current,
+TSTATIC void merge_states(int vinfo, JSON_Object *current,
 		const JSON_Object *admixture);
 static void merge_tabs(int vinfo, JSON_Object *current,
 		const JSON_Object *admixture);
@@ -267,6 +267,10 @@ static void set_double(JSON_Object *obj, const char key[], double value);
 static void set_str(JSON_Object *obj, const char key[], const char value[]);
 static void append_int(JSON_Array *array, int value);
 static void append_dstr(JSON_Array *array, char value[]);
+static void clone_object(JSON_Object *parent, const JSON_Object *object,
+		const char node[]);
+static void clone_array(JSON_Object *parent, const JSON_Array *array,
+		const char node[]);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -1421,7 +1425,7 @@ serialize_state(int vinfo)
 
 /* Adds parts of admixture to current state to avoid losing state stored by
  * other instances. */
-static void
+TSTATIC void
 merge_states(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 {
 	merge_tabs(vinfo, current, admixture);
@@ -1499,6 +1503,12 @@ merge_tabs(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 
 	JSON_Array *current_gtabs = json_object_get_array(current, "gtabs");
 	JSON_Array *updated_gtabs = json_object_get_array(admixture, "gtabs");
+	if(current_gtabs == NULL || json_array_get_count(current_gtabs) == 0)
+	{
+		clone_array(current, updated_gtabs, "gtabs");
+		return;
+	}
+
 	if(json_array_get_count(current_gtabs) != 1 ||
 			json_array_get_count(updated_gtabs) != 1)
 	{
@@ -1510,6 +1520,11 @@ merge_tabs(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 
 	JSON_Array *current_panes = json_object_get_array(current_gtab, "panes");
 	JSON_Array *updated_panes = json_object_get_array(updated_gtab, "panes");
+	if(current_panes == NULL || json_array_get_count(current_panes) == 0)
+	{
+		clone_array(current_gtab, updated_panes , "panes");
+		return;
+	}
 
 	int i;
 	for(i = 0; i < 2; ++i)
@@ -1519,6 +1534,11 @@ merge_tabs(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 
 		JSON_Array *current_ptabs = json_object_get_array(current_pane, "ptabs");
 		JSON_Array *updated_ptabs = json_object_get_array(updated_pane, "ptabs");
+		if(current_ptabs == NULL)
+		{
+			clone_array(current_pane, updated_ptabs, "ptabs");
+			continue;
+		}
 
 		if(json_array_get_count(current_ptabs) == 1 &&
 				json_array_get_count(updated_ptabs) == 1)
@@ -1537,6 +1557,11 @@ merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
 {
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
+	if(history == NULL)
+	{
+		clone_array(current, updated, "history");
+		return;
+	}
 
 	JSON_Object **combined = merge_timestamped_data(history, updated);
 	int total = json_array_get_count(history) + json_array_get_count(updated);
@@ -1658,6 +1683,11 @@ merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 {
 	JSON_Array *entries = json_object_get_array(current, node);
 	JSON_Array *updated = json_object_get_array(admixture, node);
+	if(entries == NULL)
+	{
+		clone_array(current, updated, node);
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
@@ -1682,6 +1712,11 @@ merge_commands(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *cmds = json_object_get_object(current, "cmds");
 	JSON_Object *updated = json_object_get_object(admixture, "cmds");
+	if(cmds == NULL)
+	{
+		clone_object(current, updated, "cmds");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1699,8 +1734,13 @@ merge_commands(JSON_Object *current, const JSON_Object *admixture)
 static void
 merge_marks(JSON_Object *current, const JSON_Object *admixture)
 {
-	JSON_Object *bmarks = json_object_get_object(current, "marks");
+	JSON_Object *marks = json_object_get_object(current, "marks");
 	JSON_Object *updated = json_object_get_object(admixture, "marks");
+	if(marks == NULL)
+	{
+		clone_object(current, updated, "marks");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1713,7 +1753,7 @@ merge_marks(JSON_Object *current, const JSON_Object *admixture)
 				marks_is_older(curr_view, name[0], (time_t)ts))
 		{
 			JSON_Value *value = json_object_get_wrapping_value(mark);
-			json_object_set_value(bmarks, name, json_value_deep_copy(value));
+			json_object_set_value(marks, name, json_value_deep_copy(value));
 		}
 	}
 }
@@ -1724,6 +1764,11 @@ merge_bmarks(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *bmarks = json_object_get_object(current, "bmarks");
 	JSON_Object *updated = json_object_get_object(admixture, "bmarks");
+	if(bmarks == NULL)
+	{
+		clone_object(current, updated, "bmarks");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1751,9 +1796,15 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 		return;
 	}
 
-	int i, n;
 	JSON_Array *entries = json_object_get_array(current, node);
+	if(entries == NULL)
+	{
+		clone_array(current, updated, node);
+		return;
+	}
+
 	trie_t *trie = trie_create();
+	int i, n;
 
 	JSON_Value *combined_value = json_value_init_array();
 	JSON_Array *combined = json_array(combined_value);
@@ -1815,6 +1866,11 @@ merge_regs(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *regs = json_object_get_object(current, "regs");
 	JSON_Object *updated = json_object_get_object(admixture, "regs");
+	if(regs == NULL)
+	{
+		clone_object(current, updated, "regs");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1848,8 +1904,7 @@ merge_options(JSON_Object *current, const JSON_Object *admixture)
 	JSON_Array *updated = json_object_get_array(admixture, "options");
 	if(options == NULL)
 	{
-		JSON_Value *value = json_array_get_wrapping_value(updated);
-		json_object_set_value(current, "options", json_value_deep_copy(value));
+		clone_array(current, updated, "options");
 	}
 }
 
@@ -1859,6 +1914,11 @@ merge_trash(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Array *trash = json_object_get_array(current, "trash");
 	JSON_Array *updated = json_object_get_array(admixture, "trash");
+	if(trash == NULL)
+	{
+		clone_array(current, updated, "trash");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
@@ -2598,6 +2658,22 @@ append_dstr(JSON_Array *array, char value[])
 {
 	json_array_append_string(array, value);
 	free(value);
+}
+
+/* Clones some object (can be NULL) into specified node of another object. */
+static void
+clone_object(JSON_Object *parent, const JSON_Object *object, const char node[])
+{
+	JSON_Value *value = json_object_get_wrapping_value(object);
+	json_object_set_value(parent, node, json_value_deep_copy(value));
+}
+
+/* Clones some array (can be NULL) into specified node of another object. */
+static void
+clone_array(JSON_Object *parent, const JSON_Array *array, const char node[])
+{
+	JSON_Value *value = json_array_get_wrapping_value(array);
+	json_object_set_value(parent, node, json_value_deep_copy(value));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
