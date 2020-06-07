@@ -200,7 +200,7 @@ static void put_dhistory_entry(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos, time_t timestamp);
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
-static void update_info_file(const char filename[], int merge);
+static void update_info_file(const char filename[], int vinfo, int merge);
 static char * drop_locale(void);
 static void restore_locale(char locale[]);
 TSTATIC JSON_Value * serialize_state(int vinfo);
@@ -1246,7 +1246,7 @@ write_info_file(void)
 			filemon_from_file(info_file, FMT_MODIFIED, &current_vifminfo_mon) != 0 ||
 			!filemon_equal(&vifminfo_mon, &current_vifminfo_mon);
 
-		update_info_file(tmp_file, vifminfo_changed);
+		update_info_file(tmp_file, cfg.vifm_info, vifminfo_changed);
 		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &vifminfo_mon);
 
 		if(rename_file(tmp_file, info_file) != 0)
@@ -1273,15 +1273,15 @@ copy_file(const char src[], const char dst[])
 /* Reads contents of the filename file as a JSON info file and updates it with
  * the state of current instance. */
 static void
-update_info_file(const char filename[], int merge)
+update_info_file(const char filename[], int vinfo, int merge)
 {
 	char *locale = drop_locale();
-	JSON_Value *current = serialize_state(cfg.vifm_info);
+	JSON_Value *current = serialize_state(vinfo);
 
 	if(merge)
 	{
 		JSON_Value *admixture = json_parse_file(filename);
-		merge_states(cfg.vifm_info, json_object(current), json_object(admixture));
+		merge_states(vinfo, json_object(current), json_object(admixture));
 		json_value_free(admixture);
 	}
 
