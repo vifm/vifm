@@ -128,6 +128,36 @@ TEST(lfilt_hist_import)
 	admixture_is_moved(import);
 }
 
+TEST(fields_of_root_import)
+{
+	const char *import = "{"
+		"\"active-gtab\":0,"
+		"\"use-term-multiplexer\":true,"
+		"\"color-scheme\":\"almost-default\""
+		"}";
+	admixture_is_moved(import);
+}
+
+TEST(fields_of_gtab_import)
+{
+	admixture_is_inserted("{\"gtabs\":[{}]}", "{\"gtabs\":"
+			"[{\"name\":\"gtab-name\",\"active-pane\":0,\"preview\":false}]"
+			"}");
+
+	admixture_is_inserted("{\"gtabs\":[{\"panes\":[]}]}", "{\"gtabs\":"
+			"[{\"panes\":[{}],"
+			  "\"name\":\"gtab-name\",\"active-pane\":0,\"preview\":false}]"
+			"}");
+
+	admixture_is_inserted("{\"gtabs\":[{\"panes\":[{}]}]}", "{\"gtabs\":"
+			"[{\"panes\":[{}],"
+			  "\"name\":\"gtab-name\",\"active-pane\":0,\"preview\":false}]"
+			"}");
+
+	admixture_is_inserted("{\"gtabs\":[{\"panes\":[{\"ptabs\":[{}]},{}]}]}",
+			"{\"gtabs\":[{\"panes\":[{\"ptabs\":[{\"name\":\"ptab-name\"}]},{}]}]}");
+}
+
 static void
 admixture_is_moved(const char import[])
 {
@@ -140,7 +170,7 @@ admixture_is_inserted(const char source[], const char import[])
 	JSON_Value *current = json_parse_string(source);
 
 	JSON_Value *admixture = json_parse_string(import);
-	merge_states((1 << NUM_VINFO) - 1, json_object(current),
+	merge_states((1 << NUM_VINFO) - 1, 1, json_object(current),
 			json_object(admixture));
 	json_value_free(admixture);
 

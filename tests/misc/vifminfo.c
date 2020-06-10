@@ -451,5 +451,28 @@ TEST(dhistory_is_merged_correctly)
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }
 
+TEST(things_missing_from_vifminfo_option_are_dropped)
+{
+	cfg.vifm_info = VINFO_CS;
+	write_info_file();
+
+	reset_timestamp(SANDBOX_PATH "/vifminfo.json");
+
+	cfg.vifm_info = VINFO_TUI | VINFO_STATE;
+	write_info_file();
+
+	char *locale = drop_locale();
+	JSON_Value *json = json_parse_file(SANDBOX_PATH "/vifminfo.json");
+	if(json != NULL)
+	{
+		assert_false(json_object_has_value(json_object(json), "color-scheme"));
+		json_value_free(json);
+	}
+
+	restore_locale(locale);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 filetype=c : */

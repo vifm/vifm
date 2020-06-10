@@ -201,12 +201,12 @@ static void put_dhistory_entry(view_t *view, int reread, const char dir[],
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int vinfo, int merge);
-static char * drop_locale(void);
-static void restore_locale(char locale[]);
+TSTATIC char * drop_locale(void);
+TSTATIC void restore_locale(char locale[]);
 TSTATIC JSON_Value * serialize_state(int vinfo);
-TSTATIC void merge_states(int vinfo, JSON_Object *current,
+TSTATIC void merge_states(int vinfo, int copy_missing, JSON_Object *current,
 		const JSON_Object *admixture);
-static void merge_tabs(int vinfo, JSON_Object *current,
+static void merge_tabs(int vinfo, int copy_missing, JSON_Object *current,
 		const JSON_Object *admixture);
 static void merge_dhistory(JSON_Object *current, const JSON_Object *admixture);
 static JSON_Object ** merge_timestamped_data(const JSON_Array *current,
@@ -266,6 +266,7 @@ static void set_double(JSON_Object *obj, const char key[], double value);
 static void set_str(JSON_Object *obj, const char key[], const char value[]);
 static void append_int(JSON_Array *array, int value);
 static void append_dstr(JSON_Array *array, char value[]);
+static void clone_missing(JSON_Object *obj, const JSON_Object *source);
 static void clone_object(JSON_Object *parent, const JSON_Object *object,
 		const char node[]);
 static void clone_array(JSON_Object *parent, const JSON_Array *array,
@@ -1282,7 +1283,7 @@ update_info_file(const char filename[], int vinfo, int merge)
 		JSON_Value *admixture = json_parse_file(filename);
 		if(admixture != NULL)
 		{
-			merge_states(vinfo, json_object(current), json_object(admixture));
+			merge_states(vinfo, 0, json_object(current), json_object(admixture));
 			json_value_free(admixture);
 		}
 	}
@@ -1298,7 +1299,7 @@ update_info_file(const char filename[], int vinfo, int merge)
 
 /* Replaces current locale with C locale and returns string to be passed to
  * restore_locale() to get previous state back. */
-static char *
+TSTATIC char *
 drop_locale(void)
 {
 	char *current = setlocale(LC_ALL, NULL);
@@ -1313,7 +1314,7 @@ drop_locale(void)
 }
 
 /* Restores locale state stored by drop_locale(). */
-static void
+TSTATIC void
 restore_locale(char locale[])
 {
 	if(locale != NULL)
@@ -1428,9 +1429,10 @@ serialize_state(int vinfo)
 /* Adds parts of admixture to current state to avoid losing state stored by
  * other instances. */
 TSTATIC void
-merge_states(int vinfo, JSON_Object *current, const JSON_Object *admixture)
+merge_states(int vinfo, int copy_missing, JSON_Object *current,
+		const JSON_Object *admixture)
 {
-	merge_tabs(vinfo, current, admixture);
+	merge_tabs(vinfo, copy_missing, current, admixture);
 
 	if(vinfo & VINFO_FILETYPES)
 	{
@@ -1490,12 +1492,18 @@ merge_states(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 	}
 
 	merge_trash(current, admixture);
+
+	if(copy_missing)
+	{
+		clone_missing(current, admixture);
+	}
 }
 
 /* Merges two sets of tabs if there is only one tab at each level (global and
  * pane). */
 static void
-merge_tabs(int vinfo, JSON_Object *current, const JSON_Object *admixture)
+merge_tabs(int vinfo, int copy_missing, JSON_Object *current,
+		const JSON_Object *admixture)
 {
 	if(!(vinfo & VINFO_DHISTORY))
 	{
@@ -1524,7 +1532,11 @@ merge_tabs(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 	JSON_Array *updated_panes = json_object_get_array(updated_gtab, "panes");
 	if(current_panes == NULL || json_array_get_count(current_panes) == 0)
 	{
-		clone_array(current_gtab, updated_panes , "panes");
+		clone_array(current_gtab, updated_panes, "panes");
+		if(copy_missing)
+		{
+			clone_missing(current_gtab, updated_gtab);
+		}
 		return;
 	}
 
@@ -1545,9 +1557,19 @@ merge_tabs(int vinfo, JSON_Object *current, const JSON_Object *admixture)
 		if(json_array_get_count(current_ptabs) == 1 &&
 				json_array_get_count(updated_ptabs) == 1)
 		{
-			merge_dhistory(json_array_get_object(current_ptabs, 0),
-					json_array_get_object(updated_ptabs, 0));
+			JSON_Object *current_ptab = json_array_get_object(current_ptabs, 0);
+			JSON_Object *updated_ptab = json_array_get_object(updated_ptabs, 0);
+			merge_dhistory(current_ptab, updated_ptab);
+			if(copy_missing)
+			{
+				clone_missing(current_ptab, updated_ptab);
+			}
 		}
+	}
+
+	if(copy_missing)
+	{
+		clone_missing(current_gtab, updated_gtab);
 	}
 }
 
@@ -2658,6 +2680,22 @@ append_dstr(JSON_Array *array, char value[])
 {
 	json_array_append_string(array, value);
 	free(value);
+}
+
+/* Clones fields of source that are missing obj into obj. */
+static void
+clone_missing(JSON_Object *obj, const JSON_Object *source)
+{
+	int i, n;
+	for(i = 0, n = json_object_get_count(source); i < n; ++i)
+	{
+		const char *name = json_object_get_name(source, i);
+		if(!json_object_has_value(obj, name))
+		{
+			JSON_Value *value = json_object_get_value_at(source, i);
+			json_object_set_value(obj, name, json_value_deep_copy(value));
+		}
+	}
 }
 
 /* Clones some object (can be NULL) into specified node of another object. */
