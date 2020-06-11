@@ -11,12 +11,14 @@
 #include "../../src/ui/ui.h"
 #include "../../src/utils/dynarray.h"
 #include "../../src/utils/fs.h"
+#include "../../src/cmd_core.h"
 
 SETUP()
 {
 	curr_view = &lwin;
 
 	view_setup(&lwin);
+	init_commands();
 	init_modes();
 	opt_handlers_setup();
 }
