@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 May 26
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 12
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -3600,6 +3600,18 @@ Minimal number of screen lines to keep above and below the cursor.  If you
 want cursor line to always be in the middle of the view (except at the
 beginning or end of the file list), set this option to some large value
 (e.g. 999).
+
+                                               *vifm-'sessionoptions'*
+                                               *vifm-'ssop'*
+sessionoptions ssop
+type: set
+default: tui,state,tabs,savedirs,dhistory
+
+An equivalent of |vifm-'vifminfo'| for sessions, uses the same values.  When
+both options include the same value, data from session file has higher
+priority (data from vifminfo isn't necessarily completely discarded,
+instead it's merged with the state of a session the same way state of
+multiple instances is merged on exit).
 
                                                *vifm-'shell'* *vifm-'sh'*
 shell sh

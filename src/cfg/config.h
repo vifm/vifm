@@ -211,7 +211,10 @@ typedef struct config_t
 	int ignore_case;
 	int smart_case;
 	int hl_search;
-	int vifm_info;
+
+	/* Values of these two are combinations of VINFO_* flags. */
+	int vifm_info;       /* What is stored in vifminfo file. */
+	int session_options; /* What is stored in a session. */
 
 	char *shell;          /* Shell interpreter command. */
 	char *shell_cmd_flag; /* Argument for the shell to pass command. */

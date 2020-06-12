@@ -1,4 +1,4 @@
-.TH VIFM 1 "May 26, 2020" "vifm 0.10.1"
+.TH VIFM 1 "June 12, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -4303,6 +4303,19 @@ Minimal number of screen lines to keep above and below the cursor.  If you
 want cursor line to always be in the middle of the view (except at the
 beginning or end of the file list), set this option to some large value
 (e.g. 999).
+.TP
+.BI "'sessionoptions' 'ssop'"
+sessionoptions ssop
+.br
+type: set
+.br
+default: tui,state,tabs,savedirs,dhistory
+.br
+An equivalent of 'vifminfo' for sessions, uses the same values.  When
+both options include the same value, data from session file has higher
+priority (data from vifminfo isn't necessarily completely discarded,
+instead it's merged with the state of a session the same way state of
+multiple instances is merged on exit).
 .TP
 .BI "'shell' 'sh'"
 type: string

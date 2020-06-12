@@ -138,6 +138,8 @@ cfg_init(void)
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
 	cfg.vifm_info = VINFO_MARKS | VINFO_BOOKMARKS;
+	cfg.session_options = VINFO_TUI | VINFO_STATE | VINFO_TABS | VINFO_SAVEDIRS
+	                    | VINFO_DHISTORY;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
 	cfg.scroll_bind = 0;

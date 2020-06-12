@@ -2198,6 +2198,8 @@ store_global_options(JSON_Object *root)
 
 	append_dstr(options, format_str("vifminfo=%s",
 			escape_spaces(vle_opts_get("vifminfo", OPT_GLOBAL))));
+	append_dstr(options, format_str("sessionoptions=%s",
+			escape_spaces(vle_opts_get("sessionoptions", OPT_GLOBAL))));
 
 	append_dstr(options, format_str("%svimhelp", cfg.use_vim_help ? "" : "no"));
 	append_dstr(options, format_str("%swildmenu", cfg.wild_menu ? "" : "no"));
