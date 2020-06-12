@@ -34,7 +34,11 @@ void write_info_file(void);
 #include "../utils/parson.h"
 #endif
 TSTATIC_DEFS(
-	JSON_Value * serialize_state(void);
+	char * drop_locale(void);
+	void restore_locale(char locale[]);
+	JSON_Value * serialize_state(int vinfo);
+	void merge_states(int vinfo, int fullest, JSON_Object *current,
+		const JSON_Object *admixture);
 )
 
 #endif /* VIFM__CFG__INFO_H__ */

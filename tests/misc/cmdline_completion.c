@@ -633,7 +633,7 @@ TEST(builtinvars_are_completed_for_echo)
 {
 	init_variables();
 	assert_success(setvar("v:test", var_from_bool(1)));
-	ASSERT_COMPLETION(L"echo v:", L"echo v:test");
+	ASSERT_COMPLETION(L"echo v:t", L"echo v:test");
 	clear_variables();
 }
 

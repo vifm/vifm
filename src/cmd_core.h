@@ -149,6 +149,10 @@ int cmds_scoped_endif(void);
  * moment.  Returns non-zero if so, otherwise zero is returned. */
 int cmds_scoped_empty(void);
 
+/* Sets v:count and v:count1 variables.  The count parameter can be
+ * NO_COUNT_GIVEN. */
+void cmds_vars_set_count(int count);
+
 #ifdef TEST
 #include "engine/cmds.h"
 #endif

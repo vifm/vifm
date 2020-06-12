@@ -4,6 +4,7 @@
 #include <unistd.h> /* stat() */
 
 #include <stdio.h> /* fclose() fopen() fprintf() remove() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* memset() */
 
 #include <test-utils.h>
@@ -22,6 +23,16 @@
 #include "../../src/flist_hist.h"
 #include "../../src/opt_handlers.h"
 #include "../../src/status.h"
+
+SETUP_ONCE()
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+}
+
+TEARDOWN_ONCE()
+{
+	cfg.config_dir[0] = '\0';
+}
 
 SETUP()
 {
@@ -52,7 +63,6 @@ TEST(view_sorting_is_read_from_vifminfo)
 
 	/* ls-like view blocks view column updates. */
 	lwin.ls_view = 1;
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 	lwin.ls_view = 0;
 
@@ -74,7 +84,6 @@ TEST(filetypes_are_deduplicated)
 	char *error;
 	matchers_t *ms;
 
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	cfg.vifm_info = VINFO_FILETYPES;
 	init_commands();
 
@@ -110,7 +119,6 @@ TEST(correct_manual_filters_are_read_from_vifminfo)
 	fprintf(f, "%c%s\n", LINE_TYPE_RWIN_FILT, "cba");
 	fclose(f);
 
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
 	assert_string_equal("abc", lwin.prev_manual_filter);
@@ -128,7 +136,6 @@ TEST(incorrect_manual_filters_in_vifminfo_are_cleared)
 	fprintf(f, "%c%s\n", LINE_TYPE_RWIN_FILT, "?");
 	fclose(f);
 
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
 	assert_string_equal("", lwin.prev_manual_filter);
@@ -149,7 +156,6 @@ TEST(file_with_newline_and_dash_in_history_does_not_cause_abort)
 
 	cfg_resize_histories(1);
 
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo"));
@@ -166,7 +172,6 @@ TEST(optional_number_should_not_be_preceded_by_a_whitespace)
 	fputs(" 10\n", f);
 	fclose(f);
 
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
 	assert_int_equal(1, lwin.history_pos);
@@ -195,7 +200,6 @@ TEST(history_is_automatically_extended)
 	fputs("d/path2\n\tfile2\n", f);
 	fclose(f);
 
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 	read_info_file(1);
 
 	assert_int_equal(12, lwin.history_num);
@@ -205,9 +209,7 @@ TEST(history_is_automatically_extended)
 
 TEST(empty_vifminfo_option_produces_empty_state)
 {
-	cfg.vifm_info = 0;
-
-	JSON_Value *value = serialize_state();
+	JSON_Value *value = serialize_state(0);
 	char *as_string = json_serialize_to_string(value);
 
 	assert_string_equal("{\"gtabs\":["
@@ -232,8 +234,6 @@ TEST(histories_are_merged_correctly)
 	hist_add(&curr_stats.prompt_hist, "prompt2", 2);
 	hist_add(&curr_stats.filter_hist, "lfilter0", 0);
 	hist_add(&curr_stats.filter_hist, "lfilter2", 2);
-
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
 
 	/* First time, no merging is necessary. */
 	write_info_file();
@@ -412,8 +412,6 @@ TEST(dhistory_is_merged_correctly)
 	flist_hist_setup(&lwin, "/dir1", "file5", 5, 5);
 	flist_hist_setup(&lwin, "/dir2", "file6", 6, 6);
 
-	copy_str(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH);
-
 	/* First time, no merging is necessary. */
 	write_info_file();
 
@@ -449,6 +447,29 @@ TEST(dhistory_is_merged_correctly)
 	assert_string_equal("file6", lwin.history[2].file);
 	assert_int_equal(6, lwin.history[2].timestamp);
 	assert_int_equal(6, lwin.history[2].rel_pos);
+
+	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
+}
+
+TEST(things_missing_from_vifminfo_option_are_dropped)
+{
+	cfg.vifm_info = VINFO_CS;
+	write_info_file();
+
+	reset_timestamp(SANDBOX_PATH "/vifminfo.json");
+
+	cfg.vifm_info = VINFO_TUI | VINFO_STATE;
+	write_info_file();
+
+	char *locale = drop_locale();
+	JSON_Value *json = json_parse_file(SANDBOX_PATH "/vifminfo.json");
+	if(json != NULL)
+	{
+		assert_false(json_object_has_value(json_object(json), "color-scheme"));
+		json_value_free(json);
+	}
+
+	restore_locale(locale);
 
 	assert_success(remove(SANDBOX_PATH "/vifminfo.json"));
 }

@@ -112,6 +112,7 @@ static void save_extcmd(const char command[], CmdInputType type);
 static void post(int id);
 TSTATIC void cmds_select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char args[]);
+static void create_builtin_vars(void);
 static char * pattern_expand_hook(const char pattern[]);
 static int cmd_should_be_processed(int cmd_id);
 TSTATIC char ** break_cmdline(const char cmdline[], int for_menu);
@@ -434,7 +435,33 @@ init_commands(void)
 	init_bracket_notation();
 	init_variables();
 
+	create_builtin_vars();
+
 	vle_aucmd_set_expand_hook(&pattern_expand_hook);
+}
+
+/* Creates builtin variables with some default values. */
+static void
+create_builtin_vars(void)
+{
+	var_t var = var_from_int(0);
+	setvar("v:count", var);
+	setvar("v:count1", var);
+	var_free(var);
+}
+
+void
+cmds_vars_set_count(int count)
+{
+	var_t var;
+
+	var = var_from_int(count == NO_COUNT_GIVEN ? 0 : count);
+	setvar("v:count", var);
+	var_free(var);
+
+	var = var_from_int(count == NO_COUNT_GIVEN ? 1 : count);
+	setvar("v:count1", var);
+	var_free(var);
 }
 
 /* Performs custom pattern expansion.  Allocate new expanded string. */

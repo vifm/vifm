@@ -200,14 +200,16 @@ static void put_dhistory_entry(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos, time_t timestamp);
 static void set_manual_filter(view_t *view, const char value[]);
 static int copy_file(const char src[], const char dst[]);
-static void update_info_file(const char filename[], int merge);
-static char * drop_locale(void);
-static void restore_locale(char locale[]);
-TSTATIC JSON_Value * serialize_state(void);
-static void merge_states(JSON_Object *current, const JSON_Object *admixture);
-static void merge_tabs(JSON_Object *current, const JSON_Object *admixture);
-static void merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
-		const view_t *view);
+static void update_info_file(const char filename[], int vinfo, int merge);
+TSTATIC char * drop_locale(void);
+TSTATIC void restore_locale(char locale[]);
+TSTATIC JSON_Value * serialize_state(int vinfo);
+TSTATIC void merge_states(int vinfo, int fullest, JSON_Object *current,
+		const JSON_Object *admixture);
+static void merge_tabs(int vinfo, int fullest, JSON_Object *current,
+		const JSON_Object *admixture);
+static void merge_dhistory(int fullest, JSON_Object *current,
+		const JSON_Object *admixture);
 static JSON_Object ** merge_timestamped_data(const JSON_Array *current,
 		const JSON_Array *updated);
 static JSON_Object ** make_timestamp_ordering(const JSON_Array *array);
@@ -217,16 +219,17 @@ static void merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 static void merge_commands(JSON_Object *current, const JSON_Object *admixture);
 static void merge_marks(JSON_Object *current, const JSON_Object *admixture);
 static void merge_bmarks(JSON_Object *current, const JSON_Object *admixture);
-static void merge_history(JSON_Object *current, const JSON_Object *admixture,
-		const char node[]);
+static void merge_history(int fullest, JSON_Object *current,
+		const JSON_Object *admixture, const char node[]);
 static void merge_regs(JSON_Object *current, const JSON_Object *admixture);
 static void merge_dir_stack(JSON_Object *current, const JSON_Object *admixture);
+static void merge_options(JSON_Object *current, const JSON_Object *admixture);
 static void merge_trash(JSON_Object *current, const JSON_Object *admixture);
-static void store_gtab(JSON_Object *gtab, const char name[],
+static void store_gtab(int vinfo, JSON_Object *gtab, const char name[],
 		const tab_layout_t *layout, view_t *left, view_t *right);
-static void store_pane(JSON_Object *pane, view_t *view, int right);
-static void store_ptab(JSON_Object *ptab, const char name[], int preview,
-		view_t *view);
+static void store_pane(int vinfo, JSON_Object *pane, view_t *view, int right);
+static void store_ptab(int vinfo, JSON_Object *ptab, const char name[],
+		int preview, view_t *view);
 static void store_filters(JSON_Object *view_data, const view_t *view);
 static void store_history(JSON_Object *root, const char node[],
 		const hist_t *hist);
@@ -264,6 +267,11 @@ static void set_double(JSON_Object *obj, const char key[], double value);
 static void set_str(JSON_Object *obj, const char key[], const char value[]);
 static void append_int(JSON_Array *array, int value);
 static void append_dstr(JSON_Array *array, char value[]);
+static void clone_missing(JSON_Object *obj, const JSON_Object *source);
+static void clone_object(JSON_Object *parent, const JSON_Object *object,
+		const char node[]);
+static void clone_array(JSON_Object *parent, const JSON_Array *array,
+		const char node[]);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
@@ -1239,7 +1247,7 @@ write_info_file(void)
 			filemon_from_file(info_file, FMT_MODIFIED, &current_vifminfo_mon) != 0 ||
 			!filemon_equal(&vifminfo_mon, &current_vifminfo_mon);
 
-		update_info_file(tmp_file, vifminfo_changed);
+		update_info_file(tmp_file, cfg.vifm_info, vifminfo_changed);
 		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &vifminfo_mon);
 
 		if(rename_file(tmp_file, info_file) != 0)
@@ -1266,16 +1274,19 @@ copy_file(const char src[], const char dst[])
 /* Reads contents of the filename file as a JSON info file and updates it with
  * the state of current instance. */
 static void
-update_info_file(const char filename[], int merge)
+update_info_file(const char filename[], int vinfo, int merge)
 {
 	char *locale = drop_locale();
-	JSON_Value *current = serialize_state();
+	JSON_Value *current = serialize_state(vinfo);
 
 	if(merge)
 	{
 		JSON_Value *admixture = json_parse_file(filename);
-		merge_states(json_object(current), json_object(admixture));
-		json_value_free(admixture);
+		if(admixture != NULL)
+		{
+			merge_states(vinfo, 0, json_object(current), json_object(admixture));
+			json_value_free(admixture);
+		}
 	}
 
 	if(json_serialize_to_file(current, filename) == JSONError)
@@ -1289,7 +1300,7 @@ update_info_file(const char filename[], int merge)
 
 /* Replaces current locale with C locale and returns string to be passed to
  * restore_locale() to get previous state back. */
-static char *
+TSTATIC char *
 drop_locale(void)
 {
 	char *current = setlocale(LC_ALL, NULL);
@@ -1304,7 +1315,7 @@ drop_locale(void)
 }
 
 /* Restores locale state stored by drop_locale(). */
-static void
+TSTATIC void
 restore_locale(char locale[])
 {
 	if(locale != NULL)
@@ -1314,21 +1325,21 @@ restore_locale(char locale[])
 	}
 }
 
-/* Serializes state of current instance into a JSON object.  Returns the
- * object. */
+/* Serializes specified state of current instance into a JSON object.  Returns
+ * the object. */
 TSTATIC JSON_Value *
-serialize_state(void)
+serialize_state(int vinfo)
 {
 	JSON_Value *root_value = json_value_init_object();
 	JSON_Object *root = json_object(root_value);
 
 	JSON_Array *gtabs = add_array(root, "gtabs");
 
-	if(cfg.pane_tabs || !(cfg.vifm_info & VINFO_TABS))
+	if(cfg.pane_tabs || !(vinfo & VINFO_TABS))
 	{
 		tab_layout_t layout;
 		tabs_layout_fill(&layout);
-		store_gtab(append_object(gtabs), NULL, &layout, &lwin, &rwin);
+		store_gtab(vinfo, append_object(gtabs), NULL, &layout, &lwin, &rwin);
 	}
 	else
 	{
@@ -1338,7 +1349,7 @@ serialize_state(void)
 			tab_info_t left_tab_info, right_tab_info;
 			tabs_enum(&lwin, i, &left_tab_info);
 			tabs_enum(&rwin, i, &right_tab_info);
-			store_gtab(append_object(gtabs), left_tab_info.name,
+			store_gtab(vinfo, append_object(gtabs), left_tab_info.name,
 					&left_tab_info.layout, left_tab_info.view, right_tab_info.view);
 		}
 		set_int(root, "active-gtab", tabs_current(&lwin));
@@ -1346,69 +1357,69 @@ serialize_state(void)
 
 	store_trash(root);
 
-	if(cfg.vifm_info & VINFO_OPTIONS)
+	if(vinfo & VINFO_OPTIONS)
 	{
 		store_global_options(root);
 	}
 
-	if(cfg.vifm_info & VINFO_FILETYPES)
+	if(vinfo & VINFO_FILETYPES)
 	{
 		store_assocs(root, "assocs", &filetypes);
 		store_assocs(root, "xassocs", &xfiletypes);
 		store_assocs(root, "viewers", &fileviewers);
 	}
 
-	if(cfg.vifm_info & VINFO_COMMANDS)
+	if(vinfo & VINFO_COMMANDS)
 	{
 		store_cmds(root);
 	}
 
-	if(cfg.vifm_info & VINFO_MARKS)
+	if(vinfo & VINFO_MARKS)
 	{
 		store_marks(root);
 	}
 
-	if(cfg.vifm_info & VINFO_BOOKMARKS)
+	if(vinfo & VINFO_BOOKMARKS)
 	{
 		store_bmarks(root);
 	}
 
-	if(cfg.vifm_info & VINFO_CHISTORY)
+	if(vinfo & VINFO_CHISTORY)
 	{
 		store_history(root, "cmd-hist", &curr_stats.cmd_hist);
 	}
 
-	if(cfg.vifm_info & VINFO_SHISTORY)
+	if(vinfo & VINFO_SHISTORY)
 	{
 		store_history(root, "search-hist", &curr_stats.search_hist);
 	}
 
-	if(cfg.vifm_info & VINFO_PHISTORY)
+	if(vinfo & VINFO_PHISTORY)
 	{
 		store_history(root, "prompt-hist", &curr_stats.prompt_hist);
 	}
 
-	if(cfg.vifm_info & VINFO_FHISTORY)
+	if(vinfo & VINFO_FHISTORY)
 	{
 		store_history(root, "lfilt-hist", &curr_stats.filter_hist);
 	}
 
-	if(cfg.vifm_info & VINFO_REGISTERS)
+	if(vinfo & VINFO_REGISTERS)
 	{
 		store_regs(root);
 	}
 
-	if(cfg.vifm_info & VINFO_DIRSTACK)
+	if(vinfo & VINFO_DIRSTACK)
 	{
 		store_dir_stack(root);
 	}
 
-	if(cfg.vifm_info & VINFO_STATE)
+	if(vinfo & VINFO_STATE)
 	{
 		set_bool(root, "use-term-multiplexer", cfg.use_term_multiplexer);
 	}
 
-	if(cfg.vifm_info & VINFO_CS)
+	if(vinfo & VINFO_CS)
 	{
 		set_str(root, "color-scheme", cfg.cs.name);
 	}
@@ -1418,72 +1429,84 @@ serialize_state(void)
 
 /* Adds parts of admixture to current state to avoid losing state stored by
  * other instances. */
-static void
-merge_states(JSON_Object *current, const JSON_Object *admixture)
+TSTATIC void
+merge_states(int vinfo, int fullest, JSON_Object *current,
+		const JSON_Object *admixture)
 {
-	merge_tabs(current, admixture);
+	merge_tabs(vinfo, fullest, current, admixture);
 
-	if(cfg.vifm_info & VINFO_FILETYPES)
+	if(vinfo & VINFO_FILETYPES)
 	{
 		merge_assocs(current, admixture, "assocs", &filetypes);
 		merge_assocs(current, admixture, "xassocs", &xfiletypes);
 		merge_assocs(current, admixture, "viewers", &fileviewers);
 	}
 
-	if(cfg.vifm_info & VINFO_COMMANDS)
+	if(vinfo & VINFO_COMMANDS)
 	{
 		merge_commands(current, admixture);
 	}
 
-	if(cfg.vifm_info & VINFO_MARKS)
+	if(vinfo & VINFO_MARKS)
 	{
 		merge_marks(current, admixture);
 	}
 
-	if(cfg.vifm_info & VINFO_BOOKMARKS)
+	if(vinfo & VINFO_BOOKMARKS)
 	{
 		merge_bmarks(current, admixture);
 	}
 
-	if(cfg.vifm_info & VINFO_CHISTORY)
+	if(vinfo & VINFO_CHISTORY)
 	{
-		merge_history(current, admixture, "cmd-hist");
+		merge_history(fullest, current, admixture, "cmd-hist");
 	}
 
-	if(cfg.vifm_info & VINFO_SHISTORY)
+	if(vinfo & VINFO_SHISTORY)
 	{
-		merge_history(current, admixture, "search-hist");
+		merge_history(fullest, current, admixture, "search-hist");
 	}
 
-	if(cfg.vifm_info & VINFO_PHISTORY)
+	if(vinfo & VINFO_PHISTORY)
 	{
-		merge_history(current, admixture, "prompt-hist");
+		merge_history(fullest, current, admixture, "prompt-hist");
 	}
 
-	if(cfg.vifm_info & VINFO_FHISTORY)
+	if(vinfo & VINFO_FHISTORY)
 	{
-		merge_history(current, admixture, "lfilt-hist");
+		merge_history(fullest, current, admixture, "lfilt-hist");
 	}
 
-	if(cfg.vifm_info & VINFO_REGISTERS)
+	if(vinfo & VINFO_REGISTERS)
 	{
 		merge_regs(current, admixture);
 	}
 
-	if(cfg.vifm_info & VINFO_DIRSTACK)
+	if(vinfo & VINFO_DIRSTACK)
 	{
 		merge_dir_stack(current, admixture);
 	}
 
+	if(vinfo & VINFO_OPTIONS)
+	{
+		merge_options(current, admixture);
+	}
+
 	merge_trash(current, admixture);
+
+	if(fullest)
+	{
+		clone_missing(current, admixture);
+	}
 }
 
 /* Merges two sets of tabs if there is only one tab at each level (global and
  * pane). */
 static void
-merge_tabs(JSON_Object *current, const JSON_Object *admixture)
+merge_tabs(int vinfo, int fullest, JSON_Object *current,
+		const JSON_Object *admixture)
 {
-	if(!(cfg.vifm_info & VINFO_DHISTORY))
+	if(!(vinfo & VINFO_DHISTORY))
 	{
 		/* There is nothing to merge accept for directory history. */
 		return;
@@ -1491,6 +1514,12 @@ merge_tabs(JSON_Object *current, const JSON_Object *admixture)
 
 	JSON_Array *current_gtabs = json_object_get_array(current, "gtabs");
 	JSON_Array *updated_gtabs = json_object_get_array(admixture, "gtabs");
+	if(current_gtabs == NULL || json_array_get_count(current_gtabs) == 0)
+	{
+		clone_array(current, updated_gtabs, "gtabs");
+		return;
+	}
+
 	if(json_array_get_count(current_gtabs) != 1 ||
 			json_array_get_count(updated_gtabs) != 1)
 	{
@@ -1502,6 +1531,15 @@ merge_tabs(JSON_Object *current, const JSON_Object *admixture)
 
 	JSON_Array *current_panes = json_object_get_array(current_gtab, "panes");
 	JSON_Array *updated_panes = json_object_get_array(updated_gtab, "panes");
+	if(current_panes == NULL || json_array_get_count(current_panes) == 0)
+	{
+		clone_array(current_gtab, updated_panes, "panes");
+		if(fullest)
+		{
+			clone_missing(current_gtab, updated_gtab);
+		}
+		return;
+	}
 
 	int i;
 	for(i = 0; i < 2; ++i)
@@ -1511,24 +1549,42 @@ merge_tabs(JSON_Object *current, const JSON_Object *admixture)
 
 		JSON_Array *current_ptabs = json_object_get_array(current_pane, "ptabs");
 		JSON_Array *updated_ptabs = json_object_get_array(updated_pane, "ptabs");
+		if(current_ptabs == NULL)
+		{
+			clone_array(current_pane, updated_ptabs, "ptabs");
+			continue;
+		}
 
 		if(json_array_get_count(current_ptabs) == 1 &&
 				json_array_get_count(updated_ptabs) == 1)
 		{
-			const view_t *view = (i == 0 ? &lwin : &rwin);
-			merge_dhistory(json_array_get_object(current_ptabs, 0),
-					json_array_get_object(updated_ptabs, 0), view);
+			JSON_Object *current_ptab = json_array_get_object(current_ptabs, 0);
+			JSON_Object *updated_ptab = json_array_get_object(updated_ptabs, 0);
+			merge_dhistory(fullest, current_ptab, updated_ptab);
+			if(fullest)
+			{
+				clone_missing(current_ptab, updated_ptab);
+			}
 		}
+	}
+
+	if(fullest)
+	{
+		clone_missing(current_gtab, updated_gtab);
 	}
 }
 
 /* Merges two directory histories. */
 static void
-merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
-		const view_t *view)
+merge_dhistory(int fullest, JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Array *history = json_object_get_array(current, "history");
 	JSON_Array *updated = json_object_get_array(admixture, "history");
+	if(history == NULL)
+	{
+		clone_array(current, updated, "history");
+		return;
+	}
 
 	JSON_Object **combined = merge_timestamped_data(history, updated);
 	int total = json_array_get_count(history) + json_array_get_count(updated);
@@ -1560,7 +1616,8 @@ merge_dhistory(JSON_Object *current, const JSON_Object *admixture,
 	JSON_Array *merged = json_array(merged_value);
 
 	int i;
-	for(i = MAX(0, total - cfg.history_len); i < total; ++i)
+	int lower_limit = (fullest ? 0 : total - cfg.history_len);
+	for(i = MAX(0, lower_limit); i < total; ++i)
 	{
 		JSON_Value *value = json_object_get_wrapping_value(combined[i]);
 		json_array_append_value(merged, json_value_deep_copy(value));
@@ -1650,6 +1707,11 @@ merge_assocs(JSON_Object *current, const JSON_Object *admixture,
 {
 	JSON_Array *entries = json_object_get_array(current, node);
 	JSON_Array *updated = json_object_get_array(admixture, node);
+	if(entries == NULL)
+	{
+		clone_array(current, updated, node);
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
@@ -1674,6 +1736,11 @@ merge_commands(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *cmds = json_object_get_object(current, "cmds");
 	JSON_Object *updated = json_object_get_object(admixture, "cmds");
+	if(cmds == NULL)
+	{
+		clone_object(current, updated, "cmds");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1691,8 +1758,13 @@ merge_commands(JSON_Object *current, const JSON_Object *admixture)
 static void
 merge_marks(JSON_Object *current, const JSON_Object *admixture)
 {
-	JSON_Object *bmarks = json_object_get_object(current, "marks");
+	JSON_Object *marks = json_object_get_object(current, "marks");
 	JSON_Object *updated = json_object_get_object(admixture, "marks");
+	if(marks == NULL)
+	{
+		clone_object(current, updated, "marks");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1705,7 +1777,7 @@ merge_marks(JSON_Object *current, const JSON_Object *admixture)
 				marks_is_older(curr_view, name[0], (time_t)ts))
 		{
 			JSON_Value *value = json_object_get_wrapping_value(mark);
-			json_object_set_value(bmarks, name, json_value_deep_copy(value));
+			json_object_set_value(marks, name, json_value_deep_copy(value));
 		}
 	}
 }
@@ -1716,6 +1788,11 @@ merge_bmarks(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *bmarks = json_object_get_object(current, "bmarks");
 	JSON_Object *updated = json_object_get_object(admixture, "bmarks");
+	if(bmarks == NULL)
+	{
+		clone_object(current, updated, "bmarks");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1734,7 +1811,7 @@ merge_bmarks(JSON_Object *current, const JSON_Object *admixture)
 
 /* Merges two states of a particular kind of history. */
 static void
-merge_history(JSON_Object *current, const JSON_Object *admixture,
+merge_history(int fullest, JSON_Object *current, const JSON_Object *admixture,
 		const char node[])
 {
 	JSON_Array *updated = json_object_get_array(admixture, node);
@@ -1743,9 +1820,15 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 		return;
 	}
 
-	int i, n;
 	JSON_Array *entries = json_object_get_array(current, node);
+	if(entries == NULL)
+	{
+		clone_array(current, updated, node);
+		return;
+	}
+
 	trie_t *trie = trie_create();
+	int i, n;
 
 	JSON_Value *combined_value = json_value_init_array();
 	JSON_Array *combined = json_array(combined_value);
@@ -1788,8 +1871,8 @@ merge_history(JSON_Object *current, const JSON_Object *admixture,
 	JSON_Value *merged_value = json_value_init_array();
 	JSON_Array *merged = json_array(merged_value);
 
-	for(n = json_array_get_count(combined), i = MAX(0, n - cfg.history_len);
-			i < n; ++i)
+	int lower_limit = (fullest ? 0 : n - cfg.history_len);
+	for(n = json_array_get_count(combined), i = MAX(0, lower_limit); i < n; ++i)
 	{
 		JSON_Value *entry = json_object_get_wrapping_value(entries_sorted[i]);
 		json_array_append_value(merged, json_value_deep_copy(entry));
@@ -1807,6 +1890,11 @@ merge_regs(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Object *regs = json_object_get_object(current, "regs");
 	JSON_Object *updated = json_object_get_object(admixture, "regs");
+	if(regs == NULL)
+	{
+		clone_object(current, updated, "regs");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_object_get_count(updated); i < n; ++i)
@@ -1832,12 +1920,29 @@ merge_dir_stack(JSON_Object *current, const JSON_Object *admixture)
 	}
 }
 
+/* Merges two options' states. */
+static void
+merge_options(JSON_Object *current, const JSON_Object *admixture)
+{
+	JSON_Array *options = json_object_get_array(current, "options");
+	JSON_Array *updated = json_object_get_array(admixture, "options");
+	if(options == NULL)
+	{
+		clone_array(current, updated, "options");
+	}
+}
+
 /* Merges two trash states. */
 static void
 merge_trash(JSON_Object *current, const JSON_Object *admixture)
 {
 	JSON_Array *trash = json_object_get_array(current, "trash");
 	JSON_Array *updated = json_object_get_array(admixture, "trash");
+	if(trash == NULL)
+	{
+		clone_array(current, updated, "trash");
+		return;
+	}
 
 	int i, n;
 	for(i = 0, n = json_array_get_count(updated); i < n; ++i)
@@ -1859,16 +1964,16 @@ merge_trash(JSON_Object *current, const JSON_Object *admixture)
 
 /* Serializes a global tab into JSON table. */
 static void
-store_gtab(JSON_Object *gtab, const char name[], const tab_layout_t *layout,
-		view_t *left, view_t *right)
+store_gtab(int vinfo, JSON_Object *gtab, const char name[], const
+		tab_layout_t *layout, view_t *left, view_t *right)
 {
 	set_str(gtab, "name", name);
 
 	JSON_Array *panes = add_array(gtab, "panes");
-	store_pane(append_object(panes), left, 0);
-	store_pane(append_object(panes), right, 1);
+	store_pane(vinfo, append_object(panes), left, 0);
+	store_pane(vinfo, append_object(panes), right, 1);
 
-	if(cfg.vifm_info & VINFO_TUI)
+	if(vinfo & VINFO_TUI)
 	{
 		set_int(gtab, "active-pane", layout->active_pane);
 		if(!cfg.pane_tabs)
@@ -1885,18 +1990,18 @@ store_gtab(JSON_Object *gtab, const char name[], const tab_layout_t *layout,
 
 /* Serializes a view into JSON table. */
 static void
-store_pane(JSON_Object *pane, view_t *view, int right)
+store_pane(int vinfo, JSON_Object *pane, view_t *view, int right)
 {
 	JSON_Array *ptabs = add_array(pane, "ptabs");
 
-	if(cfg.pane_tabs && (cfg.vifm_info & VINFO_TABS))
+	if(cfg.pane_tabs && (vinfo & VINFO_TABS))
 	{
 		int i;
 		tab_info_t tab_info;
 		for(i = 0; tabs_enum(view, i, &tab_info); ++i)
 		{
-			store_ptab(append_object(ptabs), tab_info.name, tab_info.layout.preview,
-					tab_info.view);
+			store_ptab(vinfo, append_object(ptabs), tab_info.name,
+					tab_info.layout.preview, tab_info.view);
 		}
 		set_int(pane, "active-ptab", tabs_current(right ? &rwin : &lwin));
 	}
@@ -1904,37 +2009,38 @@ store_pane(JSON_Object *pane, view_t *view, int right)
 	{
 		tab_layout_t layout;
 		tabs_layout_fill(&layout);
-		store_ptab(append_object(ptabs), NULL, layout.preview, view);
+		store_ptab(vinfo, append_object(ptabs), NULL, layout.preview, view);
 	}
 }
 
 /* Serializes a pane tab into JSON table. */
 static void
-store_ptab(JSON_Object *ptab, const char name[], int preview, view_t *view)
+store_ptab(int vinfo, JSON_Object *ptab, const char name[], int preview,
+		view_t *view)
 {
 	set_str(ptab, "name", name);
 
-	if((cfg.vifm_info & VINFO_DHISTORY) && cfg.history_len > 0)
+	if((vinfo & VINFO_DHISTORY) && cfg.history_len > 0)
 	{
 		store_dhistory(ptab, view);
 	}
 
-	if(cfg.vifm_info & VINFO_STATE)
+	if(vinfo & VINFO_STATE)
 	{
 		store_filters(ptab, view);
 	}
 
-	if(cfg.vifm_info & VINFO_OPTIONS)
+	if(vinfo & VINFO_OPTIONS)
 	{
 		store_view_options(ptab, view);
 	}
 
-	if(cfg.vifm_info & VINFO_SAVEDIRS)
+	if(vinfo & VINFO_SAVEDIRS)
 	{
 		set_str(ptab, "last-location", flist_get_dir(view));
 	}
 
-	if(cfg.vifm_info & VINFO_TUI)
+	if(vinfo & VINFO_TUI)
 	{
 		store_sort_info(ptab, view);
 		set_bool(ptab, "preview", preview);
@@ -2576,6 +2682,38 @@ append_dstr(JSON_Array *array, char value[])
 {
 	json_array_append_string(array, value);
 	free(value);
+}
+
+/* Clones fields of source that are missing obj into obj. */
+static void
+clone_missing(JSON_Object *obj, const JSON_Object *source)
+{
+	int i, n;
+	for(i = 0, n = json_object_get_count(source); i < n; ++i)
+	{
+		const char *name = json_object_get_name(source, i);
+		if(!json_object_has_value(obj, name))
+		{
+			JSON_Value *value = json_object_get_value_at(source, i);
+			json_object_set_value(obj, name, json_value_deep_copy(value));
+		}
+	}
+}
+
+/* Clones some object (can be NULL) into specified node of another object. */
+static void
+clone_object(JSON_Object *parent, const JSON_Object *object, const char node[])
+{
+	JSON_Value *value = json_object_get_wrapping_value(object);
+	json_object_set_value(parent, node, json_value_deep_copy(value));
+}
+
+/* Clones some array (can be NULL) into specified node of another object. */
+static void
+clone_array(JSON_Object *parent, const JSON_Array *array, const char node[])
+{
+	JSON_Value *value = json_array_get_wrapping_value(array);
+	json_object_set_value(parent, node, json_value_deep_copy(value));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -613,7 +613,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 		strcpy(prefix, ".!");
 	}
 
-	modnorm_set_count_vars(key_info.count);
+	cmds_vars_set_count(key_info.count);
 	modcline_enter(CLS_COMMAND, prefix, NULL);
 }
 
@@ -1359,24 +1359,8 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 		snprintf(prefix, ARRAY_LEN(prefix), ".,.+%d", key_info.count - 1);
 	}
 
-	modnorm_set_count_vars(key_info.count);
+	cmds_vars_set_count(key_info.count);
 	modcline_enter(CLS_COMMAND, prefix, NULL);
-}
-
-void
-modnorm_set_count_vars(int count)
-{
-	/* TODO: move this to a better place someday, nowhere to place right now. */
-
-	var_t var;
-
-	var = var_from_int(count == NO_COUNT_GIVEN ? 0 : count);
-	setvar("v:count", var);
-	var_free(var);
-
-	var = var_from_int(count == NO_COUNT_GIVEN ? 1 : count);
-	setvar("v:count1", var);
-	var_free(var);
 }
 
 /* Continues navigation to word which starts with specified character in initial
