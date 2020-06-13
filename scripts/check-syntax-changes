@@ -12,7 +12,7 @@
 
 set -e
 
-dir="$(readlink -f "$(dirname "$0")")"
+dir=$(dirname "$(readlink -f "$0")")
 syntax_regression_file="$dir/../tests/test-data/syntax-highlight/syntax.vifm"
 
 if [ $# -eq 1 ]; then
