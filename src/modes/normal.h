@@ -59,10 +59,6 @@ void modnorm_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 int modnorm_find(struct view_t *view, const char pattern[], int backward,
 		int print_errors);
 
-/* Sets v:count and v:count1 variables.  The count parameter can be
- * NO_COUNT_GIVEN. */
-void modnorm_set_count_vars(int count);
-
 #endif /* VIFM__MODES__NORMAL_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
