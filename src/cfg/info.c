@@ -199,6 +199,7 @@ static void ensure_history_not_full(hist_t *hist);
 static void put_dhistory_entry(view_t *view, int reread, const char dir[],
 		const char file[], int rel_pos, time_t timestamp);
 static void set_manual_filter(view_t *view, const char value[]);
+TSTATIC void write_info_file(void);
 static int copy_file(const char src[], const char dst[]);
 static void update_info_file(const char filename[], int vinfo, int merge);
 TSTATIC char * drop_locale(void);
@@ -277,7 +278,13 @@ static void clone_array(JSON_Object *parent, const JSON_Array *array,
 static filemon_t vifminfo_mon;
 
 void
-read_info_file(int reread)
+state_store(void)
+{
+	write_info_file();
+}
+
+void
+state_load(int reread)
 {
 	char info_file[PATH_MAX + 16];
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
@@ -1231,7 +1238,8 @@ set_manual_filter(view_t *view, const char value[])
 	view->manual_filter = matcher;
 }
 
-void
+/* Writes vifminfo file updating it with state of the current instance. */
+TSTATIC void
 write_info_file(void)
 {
 	char info_file[PATH_MAX + 16];

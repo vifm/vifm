@@ -28,7 +28,7 @@ void vifm_restart(void);
 
 /* Tries to quit fully initialized vifm.  Might fail if background tasks are
  * present and user chooses not to stop them. */
-void vifm_try_leave(int write_info, int cquit, int force);
+void vifm_try_leave(int store_state, int cquit, int force);
 
 /* Communicates chosen files to something external. */
 void _gnuc_noreturn vifm_choose_files(struct view_t *view, int nfiles,

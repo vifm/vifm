@@ -4781,7 +4781,7 @@ winrun(view_t *view, const char cmd[])
 static int
 write_cmd(const cmd_info_t *cmd_info)
 {
-	write_info_file();
+	state_store();
 	return 0;
 }
 

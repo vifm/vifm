@@ -25,15 +25,16 @@
 /* Reads vifminfo file populating internal structures with information it
  * contains.  Reread should be set to non-zero value when vifminfo is read not
  * during startup process. */
-void read_info_file(int reread);
+void state_load(int reread);
 
-/* Writes vifminfo file updating it with state of the current instance. */
-void write_info_file(void);
+/* Stores state of the application. */
+void state_store(void);
 
 #ifdef TEST
 #include "../utils/parson.h"
 #endif
 TSTATIC_DEFS(
+	void write_info_file(void);
 	char * drop_locale(void);
 	void restore_locale(char locale[]);
 	JSON_Value * serialize_state(int vinfo);
