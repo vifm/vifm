@@ -273,14 +273,23 @@ static void clone_object(JSON_Object *parent, const JSON_Object *object,
 		const char node[]);
 static void clone_array(JSON_Object *parent, const JSON_Array *array,
 		const char node[]);
+static void write_session_file(void);
+static void get_session_dir(char buf[], size_t buf_size);
 
 /* Monitor to check for changes of vifminfo file. */
 static filemon_t vifminfo_mon;
+/* Monitor to check for changes of file that backs current session. */
+static filemon_t session_mon;
 
 void
 state_store(void)
 {
 	write_info_file();
+
+	if(sessions_active())
+	{
+		write_session_file();
+	}
 }
 
 void
@@ -2724,6 +2733,146 @@ clone_array(JSON_Object *parent, const JSON_Array *array, const char node[])
 {
 	JSON_Value *value = json_array_get_wrapping_value(array);
 	json_object_set_value(parent, node, json_value_deep_copy(value));
+}
+
+int
+sessions_create(const char name[])
+{
+	if(sessions_current_is(name))
+	{
+		/* Active session might not exist on a disk yet. */
+		return 1;
+	}
+
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+	if(path_exists(session_file, NODEREF))
+	{
+		return 1;
+	}
+
+	update_string(&cfg.session, name);
+	return 0;
+}
+
+int
+sessions_stop(void)
+{
+	if(!sessions_active())
+	{
+		return 1;
+	}
+
+	update_string(&cfg.session, NULL);
+	return 0;
+}
+
+const char *
+sessions_current(void)
+{
+	return (cfg.session == NULL ? "" : cfg.session);
+}
+
+int
+sessions_current_is(const char name[])
+{
+	return (sessions_active() && stroscmp(sessions_current(), name) == 0);
+}
+
+int
+sessions_active(void)
+{
+	return (cfg.session != NULL);
+}
+
+void
+sessions_load(const char name[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+
+	char *locale = drop_locale();
+	JSON_Value *session = json_parse_file(session_file);
+
+	if(session == NULL)
+	{
+		restore_locale(locale);
+		state_load(1);
+		return;
+	}
+
+	char info_file[PATH_MAX + 16];
+	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
+	JSON_Value *common = json_parse_file(info_file);
+	restore_locale(locale);
+
+	if(common != NULL)
+	{
+		merge_states(FULL_VINFO, 1, json_object(session), json_object(common));
+		json_value_free(common);
+
+		(void)filemon_from_file(info_file, FMT_MODIFIED, &vifminfo_mon);
+	}
+
+	load_state(json_object(session), 0);
+	json_value_free(session);
+
+	update_string(&cfg.session, name);
+	(void)filemon_from_file(session_file, FMT_MODIFIED, &session_mon);
+}
+
+/* Writes session file updating it with state of the current instance if
+ * necessary.  Writing is skipped if set state stored per session is empty. */
+static void
+write_session_file(void)
+{
+	if(cfg.session_options == EMPTY_VINFO)
+	{
+		return;
+	}
+
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	(void)create_path(sessions_dir, S_IRWXU);
+
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			cfg.session);
+
+	char tmp_file[PATH_MAX + 64];
+	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", session_file, get_pid());
+
+	if(os_access(session_file, R_OK) != 0 ||
+			copy_file(session_file, tmp_file) == 0)
+	{
+		filemon_t current_session_mon;
+		int session_changed =
+			filemon_from_file(session_file, FMT_MODIFIED, &current_session_mon) != 0
+			|| !filemon_equal(&session_mon, &current_session_mon);
+
+		update_info_file(tmp_file, cfg.session_options, session_changed);
+		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &session_mon);
+
+		if(rename_file(tmp_file, session_file) != 0)
+		{
+			LOG_ERROR_MSG("Can't replace %s session file with its temporary copy",
+					cfg.session);
+			(void)remove(tmp_file);
+		}
+	}
+}
+
+/* Fills buffer with the path at which sessions are stored. */
+static void
+get_session_dir(char buf[], size_t buf_size)
+{
+	snprintf(buf, buf_size, "%s/sessions", cfg.config_dir);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

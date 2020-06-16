@@ -27,8 +27,34 @@
  * during startup process. */
 void state_load(int reread);
 
-/* Stores state of the application. */
+/* Stores state of the application.  Always writes vifminfo and stores session
+ * if any is active. */
 void state_store(void);
+
+/* Starts a new session, its creation is completed when its stored, until then
+ * it exists only in memory.  Returns zero if it was started successfully,
+ * otherwise non-zero is returned (when session with such name already
+ * exists). */
+int sessions_create(const char name[]);
+
+/* Detaches from a session.  Returns zero after detaching and non-zero if no
+ * session was active. */
+int sessions_stop(void);
+
+/* Retrieves name of the current session.  Returns the name or empty string. */
+const char * sessions_current(void);
+
+/* Checks whether session specified by the name is the current one.  Returns
+ * non-zero if so, otherwise zero is returned. */
+int sessions_current_is(const char name[]);
+
+/* Checks whether a session is currently active.  Returns non-zero if so,
+ * otherwise zero is returned. */
+int sessions_active(void);
+
+/* Loads session.  This includes loading of vifminfo, so call either this one
+ * or state_load(). */
+void sessions_load(const char name[]);
 
 #ifdef TEST
 #include "../utils/parson.h"

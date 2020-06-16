@@ -110,6 +110,8 @@ static void show_sourcing_error(const char filename[], int line_num);
 void
 cfg_init(void)
 {
+	cfg.session = NULL;
+
 	cfg.history_len = 15;
 
 	cfg.auto_execute = 0;
