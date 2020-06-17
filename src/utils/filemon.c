@@ -40,6 +40,7 @@ filemon_from_file(const char path[], FileMonType type, filemon_t *timestamp)
 
 	if(os_stat(path, &s) != 0)
 	{
+		filemon_reset(timestamp);
 		return 1;
 	}
 

@@ -80,5 +80,17 @@ TEST(modification_is_detected, IF(not_windows))
 	assert_false(filemon_equal(&mon1, &mon2));
 }
 
+TEST(failed_read_from_file_resets_filemon)
+{
+	filemon_t mon = {};
+	assert_success(filemon_from_file(TEST_DATA_PATH "/existing-files/a",
+				FMT_MODIFIED, &mon));
+	assert_true(filemon_equal(&mon, &mon));
+
+	assert_failure(filemon_from_file("there/is/no/such/file", FMT_MODIFIED,
+				&mon));
+	assert_false(filemon_equal(&mon, &mon));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

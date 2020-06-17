@@ -57,7 +57,7 @@ filemon_t;
 void filemon_reset(filemon_t *timestamp);
 
 /* Sets file monitor from a file.  Returns zero on success, otherwise non-zero
- * is returned. */
+ * is returned and *timestamp is reset. */
 int filemon_from_file(const char path[], FileMonType type,
 		filemon_t *timestamp);
 

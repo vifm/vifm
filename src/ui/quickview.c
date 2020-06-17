@@ -434,8 +434,7 @@ fill_cache(quickview_cache_t *cache, FILE *fp, const char path[],
 		const char viewer[], ViewerKind kind, const preview_area_t *parea,
 		int max_lines)
 {
-	/* File monitor must always be initialized, because it's used below. */
-	filemon_t filemon = {};
+	filemon_t filemon;
 	(void)filemon_from_file(path, FMT_MODIFIED, &filemon);
 	filemon_assign(&cache->filemon, &filemon);
 
