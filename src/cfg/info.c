@@ -274,6 +274,7 @@ static void clone_object(JSON_Object *parent, const JSON_Object *object,
 static void clone_array(JSON_Object *parent, const JSON_Array *array,
 		const char node[]);
 static void write_session_file(void);
+static void store_file(const char path[], filemon_t *mon, int vinfo);
 static void get_session_dir(char buf[], size_t buf_size);
 
 /* Monitor to check for changes of vifminfo file. */
@@ -1252,27 +1253,9 @@ TSTATIC void
 write_info_file(void)
 {
 	char info_file[PATH_MAX + 16];
-	char tmp_file[PATH_MAX + 32];
-
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo.json", cfg.config_dir);
-	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());
 
-	if(os_access(info_file, R_OK) != 0 || copy_file(info_file, tmp_file) == 0)
-	{
-		filemon_t current_vifminfo_mon;
-		int vifminfo_changed =
-			filemon_from_file(info_file, FMT_MODIFIED, &current_vifminfo_mon) != 0 ||
-			!filemon_equal(&vifminfo_mon, &current_vifminfo_mon);
-
-		update_info_file(tmp_file, cfg.vifm_info, vifminfo_changed);
-		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &vifminfo_mon);
-
-		if(rename_file(tmp_file, info_file) != 0)
-		{
-			LOG_ERROR_MSG("Can't replace vifminfo.json file with its temporary copy");
-			(void)remove(tmp_file);
-		}
-	}
+	store_file(info_file, &vifminfo_mon, cfg.vifm_info);
 }
 
 /* Copies the src file to the dst location.  Returns zero on success. */
@@ -2846,24 +2829,28 @@ write_session_file(void)
 	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
 			cfg.session);
 
+	store_file(session_file, &session_mon, cfg.session_options);
+}
+
+/* Writes file updating it with state of the current instance if necessary. */
+static void
+store_file(const char path[], filemon_t *mon, int vinfo)
+{
 	char tmp_file[PATH_MAX + 64];
-	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", session_file, get_pid());
+	snprintf(tmp_file, sizeof(tmp_file), "%s_%u", path, get_pid());
 
-	if(os_access(session_file, R_OK) != 0 ||
-			copy_file(session_file, tmp_file) == 0)
+	if(os_access(path, R_OK) != 0 || copy_file(path, tmp_file) == 0)
 	{
-		filemon_t current_session_mon;
-		int session_changed =
-			filemon_from_file(session_file, FMT_MODIFIED, &current_session_mon) != 0
-			|| !filemon_equal(&session_mon, &current_session_mon);
+		filemon_t current_mon;
+		int file_changed = filemon_from_file(path, FMT_MODIFIED, &current_mon) != 0
+		                || !filemon_equal(mon, &current_mon);
 
-		update_info_file(tmp_file, cfg.session_options, session_changed);
-		(void)filemon_from_file(tmp_file, FMT_MODIFIED, &session_mon);
+		update_info_file(tmp_file, vinfo, file_changed);
+		(void)filemon_from_file(tmp_file, FMT_MODIFIED, mon);
 
-		if(rename_file(tmp_file, session_file) != 0)
+		if(rename_file(tmp_file, path) != 0)
 		{
-			LOG_ERROR_MSG("Can't replace %s session file with its temporary copy",
-					cfg.session);
+			LOG_ERROR_MSG("Can't replace \"%s\" file with updated temporary", path);
 			(void)remove(tmp_file);
 		}
 	}
