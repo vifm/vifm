@@ -52,6 +52,10 @@ typedef struct
 }
 filemon_t;
 
+/* Puts file monitor in an uninitialized state in which it's equal to no other
+ * instance. */
+void filemon_reset(filemon_t *timestamp);
+
 /* Sets file monitor from a file.  Returns zero on success, otherwise non-zero
  * is returned. */
 int filemon_from_file(const char path[], FileMonType type,

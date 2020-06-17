@@ -14,6 +14,13 @@ TEST(uninitialized_is_not_equal_even_to_itself)
 	assert_false(filemon_equal(&mon, &mon));
 }
 
+TEST(reset_filemon_is_not_equal_even_to_itself)
+{
+	filemon_t mon;
+	filemon_reset(&mon);
+	assert_false(filemon_equal(&mon, &mon));
+}
+
 TEST(uninitialized_are_not_equal)
 {
 	filemon_t mon1 = {};
