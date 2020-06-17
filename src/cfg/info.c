@@ -2755,6 +2755,7 @@ sessions_create(const char name[])
 	}
 
 	update_string(&cfg.session, name);
+	filemon_reset(&session_mon);
 	return 0;
 }
 

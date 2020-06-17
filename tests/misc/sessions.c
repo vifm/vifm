@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <stdio.h> /* rename() */
+
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -192,6 +194,37 @@ TEST(session_is_merged_on_storing)
 	assert_int_equal(0, curr_stats.cmd_hist.items[3].timestamp);
 
 	remove_file(SANDBOX_PATH "/sessions/session.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+	remove_file(SANDBOX_PATH "/vifminfo.json");
+}
+
+TEST(session_is_merged_after_switching)
+{
+	histories_init(10);
+	cfg.session_options = VINFO_CHISTORY;
+	assert_success(sessions_create("session-a"));
+
+	hist_add(&curr_stats.cmd_hist, "command0", 0);
+	hist_add(&curr_stats.cmd_hist, "command2", 2);
+
+	state_store();
+	assert_success(sessions_create("session-b"));
+
+	assert_success(rename(SANDBOX_PATH "/sessions/session-a.json",
+			SANDBOX_PATH "/sessions/session-b.json"));
+
+	histories_init(10);
+	hist_add(&curr_stats.cmd_hist, "command1", 1);
+	hist_add(&curr_stats.cmd_hist, "command3", 3);
+
+	state_store();
+
+	histories_init(10);
+	sessions_load("session-b");
+
+	assert_int_equal(4, curr_stats.cmd_hist.size);
+
+	remove_file(SANDBOX_PATH "/sessions/session-b.json");
 	remove_dir(SANDBOX_PATH "/sessions");
 	remove_file(SANDBOX_PATH "/vifminfo.json");
 }
