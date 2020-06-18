@@ -1,7 +1,5 @@
 #include <stic.h>
 
-#include <sys/time.h> /* timeval utimes() */
-
 #include <stdio.h> /* FILE fclose() fopen() */
 
 #include <test-utils.h>
@@ -61,7 +59,7 @@ TEST(equal_after_assignment)
 	assert_true(filemon_equal(&mon1, &mon2));
 }
 
-TEST(modification_is_detected, IF(not_windows))
+TEST(modification_is_detected)
 {
 	FILE *f = fopen(SANDBOX_PATH "/file", "w");
 	fclose(f);
@@ -69,10 +67,7 @@ TEST(modification_is_detected, IF(not_windows))
 	filemon_t mon1;
 	filemon_from_file(SANDBOX_PATH "/file", FMT_MODIFIED, &mon1);
 
-#ifndef _WIN32
-	struct timeval tvs[2] = {};
-	assert_success(utimes(SANDBOX_PATH "/file", tvs));
-#endif
+	reset_timestamp(SANDBOX_PATH "/file");
 
 	filemon_t mon2;
 	filemon_from_file(SANDBOX_PATH "/file", FMT_MODIFIED, &mon2);
