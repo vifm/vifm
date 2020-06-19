@@ -6180,7 +6180,13 @@ changed in vifm instance that performs merge;
 .IP \- 2
 each mark or bookmark is marked with a timestamp, so that newer value is not
 overwritten by older one, thus no matter from where it comes, the newer one
-wins.
+wins;
+.IP \- 2
+all histories are marked with timestamps on storing, this means that last
+instance to quit puts its elements on top of the list;
+.IP \- 2
+tabs are merged only if both current instance and stored state contain
+exactly one tab of any kind.
 .RE
 
 The $VIFM/scripts directory can contain shell scripts.  vifm modifies
