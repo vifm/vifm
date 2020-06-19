@@ -438,6 +438,7 @@ session
 
 " the words following ":" should be highlighted as :commands
 nnoremap lhs :session
+nnoremap lhs :tabonly
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine
