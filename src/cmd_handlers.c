@@ -257,6 +257,7 @@ static int rlink_cmd(const cmd_info_t *cmd_info);
 static int link_cmd(const cmd_info_t *cmd_info, int absolute);
 static int screen_cmd(const cmd_info_t *cmd_info);
 static int select_cmd(const cmd_info_t *cmd_info);
+static int session_cmd(const cmd_info_t *cmd_info);
 static int set_cmd(const cmd_info_t *cmd_info);
 static int setlocal_cmd(const cmd_info_t *cmd_info);
 static int setglobal_cmd(const cmd_info_t *cmd_info);
@@ -743,6 +744,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "select files matching pattern or range",
 	  .flags = HAS_EMARK | HAS_RANGE | HAS_REGEXP_ARGS,
 	  .handler = &select_cmd,      .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "session",           .abbr = NULL,    .id = COM_SESSION,
+	  .descr = "shows, detaches or switches active session",
+	  .flags = HAS_COMMENT | HAS_QMARK_NO_ARGS,
+	  .handler = &session_cmd,     .min_args = 0,   .max_args = 1, },
 	/* engine/options unit handles comments to resolve parsing ambiguity. */
 	{ .name = "set",               .abbr = "se",    .id = COM_SET,
 	  .descr = "set global and local options",
@@ -3690,7 +3695,7 @@ rename_cmd(const cmd_info_t *cmd_info)
 static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
-	vifm_restart();
+	vifm_restart(cfg.session);
 	return 0;
 }
 
@@ -3804,6 +3809,70 @@ select_cmd(const cmd_info_t *cmd_info)
 	}
 
 	return (error ? CMDS_ERR_CUSTOM : 0);
+}
+
+/* Displays current session, detaches from a session or switches to a (possibly
+ * new) session. */
+static int
+session_cmd(const cmd_info_t *cmd_info)
+{
+	if(cmd_info->qmark)
+	{
+		if(sessions_active())
+		{
+			ui_sb_msgf("Active session: %s", sessions_current());
+		}
+		else
+		{
+			ui_sb_msg("No active session");
+		}
+		return 1;
+	}
+
+	if(cmd_info->argc == 0)
+	{
+		char *current = strdup(sessions_current());
+		if(sessions_stop() == 0)
+		{
+			ui_sb_msgf("Detached from session without saving: %s", current);
+			free(current);
+			return 1;
+		}
+		ui_sb_msg("No active session");
+		free(current);
+		return 1;
+	}
+
+	const char *session_name = cmd_info->argv[0];
+	if(contains_slash(session_name))
+	{
+		ui_sb_err("Session name can't include path separators");
+		return 1;
+	}
+
+	if(sessions_active())
+	{
+		if(sessions_current_is(session_name))
+		{
+			ui_sb_msgf("Already active session: %s", session_name);
+			return 1;
+		}
+
+		state_store();
+	}
+
+	if(sessions_create(session_name) == 0)
+	{
+		ui_sb_msgf("Switched to a new session: %s", sessions_current());
+		return 1;
+	}
+
+	tabs_only(&lwin);
+	tabs_only(&rwin);
+	vifm_restart(session_name);
+
+	ui_sb_msgf("Loaded session: %s", sessions_current());
+	return 1;
 }
 
 /* Updates/displays global and local options. */

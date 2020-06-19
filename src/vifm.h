@@ -23,8 +23,10 @@
 
 struct view_t;
 
-/* Resets internal state and reloads configuration files. */
-void vifm_restart(void);
+/* Resets internal state and reloads configuration files.  When the session
+ * parameter is NULL, no session is loaded, otherwise specified session is
+ * started after a reset. */
+void vifm_restart(const char session[]);
 
 /* Tries to quit fully initialized vifm.  Might fail if background tasks are
  * present and user chooses not to stop them. */

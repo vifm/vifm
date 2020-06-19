@@ -524,7 +524,7 @@ load_scheme(void)
 }
 
 void
-vifm_restart(void)
+vifm_restart(const char session[])
 {
 	view_t *tmp_view;
 
@@ -578,7 +578,14 @@ vifm_restart(void)
 	update_path_env(1);
 
 	reset_views();
-	state_load(1);
+	if(session == NULL)
+	{
+		state_load(1);
+	}
+	else
+	{
+		sessions_load(session);
+	}
 	flist_hist_save(&lwin);
 	flist_hist_save(&rwin);
 

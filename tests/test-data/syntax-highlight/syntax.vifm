@@ -434,6 +434,10 @@ tabpreviou
 tabprevious
 cds
 hideui
+session
+
+" the words following ":" should be highlighted as :commands
+nnoremap lhs :session
 
 " "hi" should be highlighted as :command and its argument as highlight group
 hi CurrLine

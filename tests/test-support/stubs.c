@@ -1,13 +1,17 @@
 #include <stdlib.h> /* abort() */
 
+#include "../../src/cfg/info.h"
 #include "../../src/ui/ui.h"
 
 int vifm_tests_exited;
 
 void
-vifm_restart(void)
+vifm_restart(const char session[])
 {
-	/* Do nothing. */
+	if(session != NULL)
+	{
+		sessions_load(session);
+	}
 }
 
 void

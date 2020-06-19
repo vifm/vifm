@@ -336,6 +336,7 @@ const char *tags[] = {
 	"vifm-:screen",
 	"vifm-:se",
 	"vifm-:select",
+	"vifm-:session",
 	"vifm-:set",
 	"vifm-:setg",
 	"vifm-:setglobal",

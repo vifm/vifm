@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 12, 2020" "vifm 0.10.1"
+.TH VIFM 1 "June 19, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -36,8 +36,8 @@ Starts Vifm in the specified path.
 Starts Vifm in the specified paths.
 .LP
 Specifying two directories triggers split view even when vifm was in single-view
-mode on finishing previous session.  To suppress this behaviour :only command
-can be put in the vifmrc file.
+mode on finishing previous run.  To suppress this behaviour :only command can be
+put in the vifmrc file.
 .LP
 When only one path argument is found on command-line, the left/top pane is
 automatically set as the current view.
@@ -700,7 +700,7 @@ same as :quit!.
 same as :quit.
 .TP
 .BI .
-repeat last command-line command (not normal mode command) of this session (does
+repeat last command-line command (not normal mode command) of this run (does
 nothing right after startup or :restart command).  The command doesn't depend on
 command-line history and can be used with completely disabled history.
 .TP
@@ -2502,7 +2502,7 @@ commands).
 .TP
 .BI :q[uit][!]
 if there is more than one tab, close the current one, otherwise exit
-vifm (add ! to skip saving changes and checking for active backgrounded
+vifm (add ! to skip saving state and checking for active backgrounded
 commands).
 .TP
 .BI "                                         :redraw"
@@ -2535,10 +2535,10 @@ rename each of selected files to a corresponding name.
 .BI "                                         :restart"
 .TP
 .BI :restart
-free a lot of things (histories, commands, etc.), reread vifminfo and
-vifmrc files and run startup commands passed in the argument list, thus
-losing all unsaved changes (e.g. recent history or keys mapped in current
-session).
+free a lot of things (histories, commands, etc.), reread vifminfo,
+vifmrc and session files and run startup commands passed in the argument list,
+thus losing all unsaved changes (e.g. recent history or keys mapped after
+starting this instance).
 
 While many things get reset, some basic UI state and current locations are
 preserved, including tabs.
@@ -2607,6 +2607,20 @@ full paths, relative paths are converted to absolute ones beforehand.
 .TP
 .BI ":[range]select! [{pattern}]"
 same as above, but resets previously selected items before proceeding.
+.TP
+.BI "                                         :session"
+.TP
+.BI :session?
+print name of the current session.
+.TP
+.BI :session
+detach current session without saving it.
+.TP
+.BI ":session name"
+create or load and switch to a session with the specified name.  Name
+can't contain slashes.  Session active at the moment is saved before the
+switch.  Session is also automatically saved when quiting the application in
+usual ways.
 .TP
 .BI "                                         :set"
 .TP
@@ -2964,16 +2978,18 @@ execute command for pane(s), which is determined by type argument:
 .BI "                                         :write"
 .TP
 .BI :w[rite]
-write vifminfo file.
+write current state to vifminfo and session files (if a session is active).
 .TP
 .BI "                                         :wq"
 .TP
 .BI :wq[!]
-same as :quit, but ! only disables check of backgrounded commands.
+same as :quit, but ! disables only the check of backgrounded commands,
+while state of the application is always written.
 .BI "                                         :wqall"
 .TP
 .BI :wqa[ll][!]
-same as :qall, but ! only disables check of backgrounded commands.
+same as :qall, but ! disables only the check of backgrounded commands,
+while state of the application is always written.
 .TP
 .BI "                                         :xall"
 .TP
@@ -4905,7 +4921,7 @@ Controls what will be saved in the $VIFM/vifminfo file.
    fhistory  \- history of local filter (see description of the "=" normal mode
                command)
    dirstack  \- directory stack overwrites previous stack, unless stack of
-               current session is empty
+               current instance is empty
    registers \- registers content
    tabs      \- global or pane tabs
    options   \- all options that can be set with the :set command (obsolete)
@@ -6097,7 +6113,7 @@ Files are gathered in this way:
 .\" ---------------------------------------------------------------------------
 .SH Startup
 .\" ---------------------------------------------------------------------------
-On startup vifm determines several variables that are used during the session.
+On startup vifm determines several variables that are used during execution.
 They are determined in the order they appear below.
 
 On *nix systems $HOME is normally present and used as is.
@@ -6149,20 +6165,18 @@ equals "setsmartcase".  When
 
 equals "set  smartcase".
 
-The $VIFM/vifminfo file contains session settings.  You may edit it by hand
-to change the settings, but it's not recommended to do that, edit vifmrc
-instead.  You can control what settings will be saved in vifminfo by setting
-\(aqvifminfo\(aq option.  Vifm always writes this file on exit unless 'vifminfo'
-option is empty.  Marks, bookmarks, commands, histories, filetypes, fileviewers
-and registers in the file are merged with vifm configuration (which has bigger
-priority).
+The $VIFM/vifminfo file contains generic state of the application.  You can
+control what is stored in vifminfo by setting \(aqvifminfo\(aq option.
+Vifm always writes this file on exit unless 'vifminfo' option is empty.  Marks,
+bookmarks, commands, histories, filetypes, fileviewers and registers in the
+file are merged with vifm configuration (which has bigger priority).
 
 Generally, runtime configuration has bigger priority during merging, but there
 are some exceptions:
 .RS 2
 .IP \- 2
 directory stack stored in the file is not overwritten unless something is
-changed in vifm session that performs merge;
+changed in vifm instance that performs merge;
 .IP \- 2
 each mark or bookmark is marked with a timestamp, so that newer value is not
 overwritten by older one, thus no matter from where it comes, the newer one
