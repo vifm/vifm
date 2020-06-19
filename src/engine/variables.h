@@ -37,8 +37,8 @@ void init_variables(void);
  * requested variable doesn't exist. */
 const char * local_getenv(const char envname[]);
 
-/* Gets variables value by its name.  Returns the value, which is var_error() in
- * case requested variable doesn't exist. */
+/* Gets variables value by its name.  Returns the value (not a copy), which is
+ * var_error() in case requested variable doesn't exist. */
 var_t getvar(const char varname[]);
 
 /* Sets/creates builtin variables.  Variable is cloned.  Returns non-zero on
