@@ -39,6 +39,8 @@
 	} \
 	while (0)
 
+#define ASSERT_NO_COMPLETION(initial) ASSERT_COMPLETION((initial), (initial))
+
 #define ASSERT_NEXT_MATCH(str) \
 	do \
 	{ \
@@ -185,7 +187,7 @@ TEST(test_set_completion)
 
 TEST(no_sdquoted_completion_does_nothing)
 {
-	ASSERT_COMPLETION(L"command '", L"command '");
+	ASSERT_NO_COMPLETION(L"command '");
 }
 
 TEST(spaces_escaping_leading)
@@ -365,7 +367,7 @@ TEST(percent_completion)
 
 	/* Two percent symbols. */
 
-	ASSERT_COMPLETION(L"cd %%", L"cd %%");
+	ASSERT_NO_COMPLETION(L"cd %%");
 	ASSERT_NEXT_MATCH("%%");
 	ASSERT_NEXT_MATCH("%%");
 
@@ -384,7 +386,7 @@ TEST(abbreviations)
 	ASSERT_COMPLETION(L"cabbrev l", L"cabbrev lhs");
 	ASSERT_COMPLETION(L"cnoreabbrev l", L"cnoreabbrev lhs");
 	ASSERT_COMPLETION(L"cunabbrev l", L"cunabbrev lhs");
-	ASSERT_COMPLETION(L"cabbrev l l", L"cabbrev l l");
+	ASSERT_NO_COMPLETION(L"cabbrev l l");
 
 	vle_abbr_reset();
 }
@@ -479,7 +481,7 @@ TEST(bmark_tags_are_completed)
 
 	ASSERT_COMPLETION(L"bmark tag", L"bmark tag1");
 	ASSERT_COMPLETION(L"bmark! fake/path2 tag", L"bmark! fake/path2 tag1");
-	ASSERT_COMPLETION(L"bmark! fake/path2 ../", L"bmark! fake/path2 ../");
+	ASSERT_NO_COMPLETION(L"bmark! fake/path2 ../");
 	ASSERT_COMPLETION(L"bmark! fake/path2 ", L"bmark! fake/path2 tag1");
 }
 
@@ -509,7 +511,7 @@ TEST(delbmark_tags_are_completed)
 TEST(selective_sync_completion)
 {
 	ASSERT_COMPLETION(L"sync! a", L"sync! all");
-	ASSERT_COMPLETION(L"sync! ../", L"sync! ../");
+	ASSERT_NO_COMPLETION(L"sync! ../");
 }
 
 TEST(colorscheme_completion)
@@ -519,7 +521,7 @@ TEST(colorscheme_completion)
 	ASSERT_COMPLETION(L"colorscheme set-", L"colorscheme set-env");
 	ASSERT_COMPLETION(L"colorscheme set-env ../",
 			L"colorscheme set-env ../color-schemes/");
-	ASSERT_COMPLETION(L"colorscheme ../", L"colorscheme ../");
+	ASSERT_NO_COMPLETION(L"colorscheme ../");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
@@ -530,13 +532,13 @@ TEST(colorscheme_completion)
 TEST(wincmd_completion)
 {
 	ASSERT_COMPLETION(L"wincmd ", L"wincmd +");
-	ASSERT_COMPLETION(L"wincmd + ", L"wincmd + ");
+	ASSERT_NO_COMPLETION(L"wincmd + ");
 }
 
 TEST(grep_completion)
 {
-	ASSERT_COMPLETION(L"grep -", L"grep -");
-	ASSERT_COMPLETION(L"grep .", L"grep .");
+	ASSERT_NO_COMPLETION(L"grep -");
+	ASSERT_NO_COMPLETION(L"grep .");
 	ASSERT_COMPLETION(L"grep -o ..", L"grep -o ../");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
@@ -550,13 +552,13 @@ TEST(find_completion)
 {
 #ifdef _WIN32
 	/* Windows escaping code doesn't prepend "./". */
-	ASSERT_COMPLETION(L"find -", L"find -");
+	ASSERT_NO_COMPLETION(L"find -");
 #else
 	ASSERT_COMPLETION(L"find -", L"find ./-");
 #endif
 
 	ASSERT_COMPLETION(L"find ..", L"find ../");
-	ASSERT_COMPLETION(L"find . .", L"find . .");
+	ASSERT_NO_COMPLETION(L"find . .");
 
 	make_abs_path(curr_view->curr_dir, sizeof(curr_view->curr_dir),
 			TEST_DATA_PATH, "", saved_cwd);
@@ -570,7 +572,7 @@ TEST(aucmd_events_are_completed)
 	ASSERT_COMPLETION(L"autocmd ", L"autocmd DirEnter");
 	ASSERT_COMPLETION(L"autocmd Dir", L"autocmd DirEnter");
 	ASSERT_COMPLETION(L"autocmd! Dir", L"autocmd! DirEnter");
-	ASSERT_COMPLETION(L"autocmd DirEnter ", L"autocmd DirEnter ");
+	ASSERT_NO_COMPLETION(L"autocmd DirEnter ");
 }
 
 TEST(prefixless_option_name_is_completed)
@@ -642,9 +644,9 @@ TEST(select_is_completed)
 	env_set("RRRRRARE_VARIABLE1", "1");
 	env_set("RRRRRARE_VARIABLE2", "2");
 
-	ASSERT_COMPLETION(L"select $RRRRRARE_VARIA", L"select $RRRRRARE_VARIA");
-	ASSERT_COMPLETION(L"select !/$RRRRRARE_VARIA", L"select !/$RRRRRARE_VARIA");
-	ASSERT_COMPLETION(L"select !cmd some-arg", L"select !cmd some-arg");
+	ASSERT_NO_COMPLETION(L"select $RRRRRARE_VARIA");
+	ASSERT_NO_COMPLETION(L"select !/$RRRRRARE_VARIA");
+	ASSERT_NO_COMPLETION(L"select !cmd some-arg");
 
 	/* Check that not memory violations occur here. */
 	prepare_for_line_completion(L"select !cmd ");
@@ -726,10 +728,10 @@ TEST(session_is_completed)
 	ASSERT_NEXT_MATCH("session-b");
 	ASSERT_NEXT_MATCH("");
 
-	ASSERT_COMPLETION(L"session session-a ..", L"session session-a ..");
+	ASSERT_NO_COMPLETION(L"session session-a ..");
 
-	ASSERT_COMPLETION(L"session! ses", L"session! ses");
-	ASSERT_COMPLETION(L"session? ses", L"session? ses");
+	ASSERT_NO_COMPLETION(L"session! ses");
+	ASSERT_NO_COMPLETION(L"session? ses");
 
 	remove_file(SANDBOX_PATH "/sessions/session-b.json");
 	remove_file(SANDBOX_PATH "/sessions/session-a.json");
