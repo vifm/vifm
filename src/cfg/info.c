@@ -33,6 +33,7 @@
 #include "../compat/os.h"
 #include "../compat/reallocarray.h"
 #include "../engine/cmds.h"
+#include "../engine/completion.h"
 #include "../engine/options.h"
 #include "../io/iop.h"
 #include "../ui/fileview.h"
@@ -2854,6 +2855,35 @@ store_file(const char path[], filemon_t *mon, int vinfo)
 			(void)remove(tmp_file);
 		}
 	}
+}
+
+void
+sessions_complete(const char prefix[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+
+	int len = 0;
+	char **list = list_regular_files(sessions_dir, NULL, &len);
+
+	size_t prefix_len = strlen(prefix);
+	int i;
+	for(i = 0; i < len; ++i)
+	{
+		if(list[i][0] != '.' && cut_suffix(list[i], ".json"))
+		{
+			if(strnoscmp(list[i], prefix, prefix_len) == 0)
+			{
+				vle_compl_put_match(list[i], "");
+				list[i] = NULL;
+			}
+		}
+	}
+
+	free_string_array(list, len);
+
+	vle_compl_finish_group();
+	vle_compl_add_last_match(prefix);
 }
 
 /* Fills buffer with the path at which sessions are stored. */

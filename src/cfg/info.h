@@ -56,6 +56,9 @@ int sessions_active(void);
  * or state_load(). */
 void sessions_load(const char name[]);
 
+/* Performs completion of session names. */
+void sessions_complete(const char prefix[]);
+
 #ifdef TEST
 #include "../utils/parson.h"
 #endif

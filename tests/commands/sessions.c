@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <stdlib.h> /* free() */
+
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
@@ -145,20 +147,26 @@ TEST(can_load_a_session)
 
 TEST(vsession_is_empty_initially)
 {
-	assert_string_equal("", var_to_str(getvar("v:session")));
+	char *value = var_to_str(getvar("v:session"));
+	assert_string_equal("", value);
+	free(value);
 }
 
 TEST(vsession_is_set)
 {
 	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
-	assert_string_equal("sess", var_to_str(getvar("v:session")));
+	char *value = var_to_str(getvar("v:session"));
+	assert_string_equal("sess", value);
+	free(value);
 }
 
 TEST(vsession_is_empty_after_detaching)
 {
 	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
 	assert_failure(exec_commands("session", &lwin, CIT_COMMAND));
-	assert_string_equal("", var_to_str(getvar("v:session")));
+	char *value = var_to_str(getvar("v:session"));
+	assert_string_equal("", value);
+	free(value);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
