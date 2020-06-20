@@ -3,6 +3,7 @@
 #include <test-utils.h>
 
 #include "../../src/cfg/config.h"
+#include "../../src/engine/variables.h"
 #include "../../src/ui/statusbar.h"
 #include "../../src/ui/ui.h"
 #include "../../src/cmd_core.h"
@@ -140,6 +141,24 @@ TEST(can_load_a_session)
 	remove_file(SANDBOX_PATH "/vifminfo.json");
 
 	histories_init(0);
+}
+
+TEST(vsession_is_empty_initially)
+{
+	assert_string_equal("", var_to_str(getvar("v:session")));
+}
+
+TEST(vsession_is_set)
+{
+	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	assert_string_equal("sess", var_to_str(getvar("v:session")));
+}
+
+TEST(vsession_is_empty_after_detaching)
+{
+	assert_failure(exec_commands("session sess", &lwin, CIT_COMMAND));
+	assert_failure(exec_commands("session", &lwin, CIT_COMMAND));
+	assert_string_equal("", var_to_str(getvar("v:session")));
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

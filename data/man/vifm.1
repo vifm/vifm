@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 19, 2020" "vifm 0.10.1"
+.TH VIFM 1 "June 20, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2614,13 +2614,13 @@ same as above, but resets previously selected items before proceeding.
 print name of the current session.
 .TP
 .BI :session
-detach current session without saving it.
+detach current session without saving it.  Resets v:session.
 .TP
 .BI ":session name"
 create or load and switch to a session with the specified name.  Name
 can't contain slashes.  Session active at the moment is saved before the
 switch.  Session is also automatically saved when quiting the application in
-usual ways.
+usual ways.  Sets v:session.
 .TP
 .BI "                                         :set"
 .TP
@@ -5419,6 +5419,10 @@ Information exposed by vifm for use in scripting.
 .B "v:count1"
 .br
   same as v:count, but 1 by default.
+.br
+.B "v:session"
+.br
+  name of the current session or empty string.
 .br
 .B "v:servername"
 .br

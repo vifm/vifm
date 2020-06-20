@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 19
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 20
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -2216,12 +2216,12 @@ yet supported) and might be changed in future releases, or get an alias.
 :session?
     print name of the current session.
 :session
-    detach current session without saving it.
+    detach current session without saving it.  Resets |vifm-v:session|.
 :session name
     create or load and switch to a session with the specified name.  Name
     can't contain slashes.  Session active at the moment is saved before the
     switch.  Session is also automatically saved when quiting the
-    application in usual ways.
+    application in usual ways.  Sets |vifm-v:session|.
 
                                                *vifm-:set* *vifm-:se*
 :se[t]
@@ -4517,6 +4517,10 @@ v:count                                        *vifm-count-variable*
                                                *vifm-v:count1*
 v:count1                                       *vifm-count1-variable*
     same as v:count, but 1 by default.
+
+                                               *vifm-v:session*
+v:session                                      *vifm-session-variable*
+    name of the current session or empty string.
 
 See also |vifm-v:servername|.
 

@@ -448,6 +448,10 @@ create_builtin_vars(void)
 	setvar("v:count", var);
 	setvar("v:count1", var);
 	var_free(var);
+
+	var = var_from_str("");
+	setvar("v:session", var);
+	var_free(var);
 }
 
 void
