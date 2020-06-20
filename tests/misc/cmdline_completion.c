@@ -260,7 +260,7 @@ TEST(squoted_completion_escaping)
 
 TEST(dquoted_completion)
 {
-	ASSERT_COMPLETION(L"touch 'b", L"touch 'b");
+	ASSERT_COMPLETION(L"touch \"", L"touch \"a");
 }
 
 TEST(dquoted_completion_escaping, IF(dquotes_allowed_in_paths))
@@ -494,7 +494,7 @@ TEST(bmark_path_is_completed)
 	assert_success(chdir(curr_view->curr_dir));
 	create_executable("exec-for-completion" EXE_SUFFIX);
 
-	/* ASSERT_COMPLETION(L"bmark! exec", L"bmark! exec-for-completion" EXE_SUFFIX); */
+	ASSERT_COMPLETION(L"bmark! exec", L"bmark! exec-for-completion" EXE_SUFFIX);
 
 	assert_success(unlink("exec-for-completion" EXE_SUFFIX));
 }
@@ -505,7 +505,7 @@ TEST(delbmark_tags_are_completed)
 
 	assert_success(exec_commands("bmark! fake/path1 tag1", &lwin, CIT_COMMAND));
 
-	ASSERT_COMPLETION(L"delbmark ../", L"delbmark ../");
+	ASSERT_COMPLETION(L"delbmark ta", L"delbmark tag1");
 }
 
 TEST(selective_sync_completion)
