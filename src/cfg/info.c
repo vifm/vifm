@@ -2773,6 +2773,18 @@ sessions_active(void)
 	return (cfg.session != NULL);
 }
 
+int
+sessions_exists(const char name[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+
+	return (!is_dir(session_file) && path_exists(session_file, DEREF));
+}
+
 void
 sessions_load(const char name[])
 {

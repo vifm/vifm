@@ -229,5 +229,36 @@ TEST(session_is_merged_after_switching)
 	remove_file(SANDBOX_PATH "/vifminfo.json");
 }
 
+TEST(can_check_for_existing_session)
+{
+	create_dir(SANDBOX_PATH "/sessions");
+	create_file(SANDBOX_PATH "/sessions/session.json");
+
+	assert_true(sessions_exists("session"));
+
+	remove_file(SANDBOX_PATH "/sessions/session.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+}
+
+TEST(can_check_for_nonexisting_session)
+{
+	create_dir(SANDBOX_PATH "/sessions");
+
+	assert_false(sessions_exists("session"));
+
+	remove_dir(SANDBOX_PATH "/sessions");
+}
+
+TEST(directories_are_not_sessions)
+{
+	create_dir(SANDBOX_PATH "/sessions");
+	create_dir(SANDBOX_PATH "/sessions/session.json");
+
+	assert_false(sessions_exists("session"));
+
+	remove_dir(SANDBOX_PATH "/sessions/session.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

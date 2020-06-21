@@ -52,6 +52,10 @@ int sessions_current_is(const char name[]);
  * otherwise zero is returned. */
 int sessions_active(void);
 
+/* Checks whether a session exists.  Returns non-zero if so, otherwise zero is
+ * returned. */
+int sessions_exists(const char name[]);
+
 /* Loads session.  This includes loading of vifminfo, so call either this one
  * or state_load(). */
 void sessions_load(const char name[]);
