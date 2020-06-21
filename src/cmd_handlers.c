@@ -158,6 +158,7 @@ static void remove_bmark(const char path[], const char tags[], time_t timestamp,
 		void *arg);
 static char * get_bmark_dir(const cmd_info_t *cmd_info);
 static char * make_bmark_path(const char path[]);
+static int delsession_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int dmap_cmd(const cmd_info_t *cmd_info);
 static int dnoremap_cmd(const cmd_info_t *cmd_info);
@@ -452,6 +453,10 @@ const cmd_add_t cmds_list[] = {
 	  .descr = "delete bookmarks",
 	  .flags = HAS_EMARK | HAS_COMMENT,
 	  .handler = &delbmarks_cmd,   .min_args = 0,   .max_args = NOT_DEF, },
+	{ .name = "delsession",        .abbr = NULL,    .id = COM_DELSESSION,
+	  .descr = "remove a session",
+	  .flags = HAS_COMMENT,
+	  .handler = &delsession_cmd,  .min_args = 1,   .max_args = 1, },
 	{ .name = "display",           .abbr = "di",    .id = -1,
 	  .descr = "display registers",
 	  .flags = 0,
@@ -2003,6 +2008,27 @@ parse_compare_properties(const cmd_info_t *cmd_info, CompareType *ct,
 			ui_sb_errf("Unknown comparison property: %s", property);
 			return 1;
 		}
+	}
+
+	return 0;
+}
+
+/* Deletes a session. */
+static int
+delsession_cmd(const cmd_info_t *cmd_info)
+{
+	const char *session_name = cmd_info->argv[0];
+
+	if(!sessions_exists(session_name))
+	{
+		ui_sb_msgf("No stored sessions with such name: %s", session_name);
+		return 1;
+	}
+
+	if(sessions_remove(session_name) != 0)
+	{
+		ui_sb_msgf("Failed to delete a session: %s", session_name);
+		return 1;
 	}
 
 	return 0;

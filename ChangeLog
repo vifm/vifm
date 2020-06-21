@@ -28,7 +28,8 @@
 	Added 'sessionoptions' option, which is an alternative to 'vifminfo' for
 	session files.
 
-	Added :session command to manage sessions.  Thanks to Marcos Cruz.
+	Added :session and :delsession commands to manage sessions.  Thanks to
+	Marcos Cruz.
 
 	Added v:session builtin variable that provides name of current session or
 	is set to an empty string.

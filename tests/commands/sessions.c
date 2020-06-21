@@ -1,5 +1,7 @@
 #include <stic.h>
 
+#include <sys/stat.h> /* chmod() */
+
 #include <stdlib.h> /* free() */
 
 #include <test-utils.h>
@@ -143,6 +145,31 @@ TEST(can_load_a_session)
 	remove_file(SANDBOX_PATH "/vifminfo.json");
 
 	histories_init(0);
+}
+
+TEST(can_delete_a_session, IF(not_windows))
+{
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "", NULL);
+
+	ui_sb_msg("");
+	assert_failure(exec_commands("delsession sess", &lwin, CIT_COMMAND));
+	assert_string_equal("No stored sessions with such name: sess", ui_sb_last());
+
+	create_dir(SANDBOX_PATH "/sessions");
+	create_dir(SANDBOX_PATH "/sessions/not-a-session.json");
+	create_file(SANDBOX_PATH "/sessions/session.json");
+
+	assert_success(chmod(SANDBOX_PATH "/sessions", 0555));
+	ui_sb_msg("");
+	assert_failure(exec_commands("delsession session", &lwin, CIT_COMMAND));
+	assert_string_equal("Failed to delete a session: session", ui_sb_last());
+	assert_success(chmod(SANDBOX_PATH "/sessions", 0777));
+
+	assert_success(exec_commands("delsession session", &lwin, CIT_COMMAND));
+
+	no_remove_file(SANDBOX_PATH "/sessions/session.json");
+	remove_dir(SANDBOX_PATH "/sessions/not-a-session.json");
+	remove_dir(SANDBOX_PATH "/sessions");
 }
 
 TEST(vsession_is_empty_initially)

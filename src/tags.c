@@ -219,6 +219,7 @@ const char *tags[] = {
 	"vifm-:delete",
 	"vifm-:delm",
 	"vifm-:delmarks",
+	"vifm-:delsession",
 	"vifm-:di",
 	"vifm-:dirs",
 	"vifm-:display",

@@ -1,4 +1,4 @@
-.TH VIFM 1 "June 20, 2020" "vifm 0.10.1"
+.TH VIFM 1 "June 22, 2020" "vifm 0.10.1"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1741,6 +1741,12 @@ delete all marks.
 .TP
 .BI ":delm[arks] marks ..."
 delete specified marks, each argument is treated as a set of marks.
+.TP
+.BI "                                         :delsession"
+.TP
+.BI :delsession
+delete specified session if it was stored previously.  Deleting current
+session doesn't detach it.
 .TP
 .BI "                                         :display"
 .TP

@@ -1,4 +1,4 @@
-*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 20
+*vifm-app.txt*    For Vifm version 0.10.1  Last change: 2020 June 22
 
  Email for bugs and suggestions: <xaizek@posteo.net>
 
@@ -1496,6 +1496,11 @@ The builtin commands are:
     delete all marks.
 :delm[arks] marks ...
     delete specified marks, each argument is treated as a set of marks.
+
+                                               *vifm-:delsession*
+:delsession name
+    delete specified session if it was stored previously.  Deleting current
+    session doesn't detach it.
 
                                                *vifm-:display* *vifm-:di*
 :di[splay]
