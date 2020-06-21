@@ -260,5 +260,32 @@ TEST(directories_are_not_sessions)
 	remove_dir(SANDBOX_PATH "/sessions");
 }
 
+TEST(can_remove_a_session)
+{
+	create_dir(SANDBOX_PATH "/sessions");
+	create_file(SANDBOX_PATH "/sessions/session.json");
+
+	assert_success(sessions_remove("session"));
+
+	no_remove_file(SANDBOX_PATH "/sessions/session.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+}
+
+TEST(can_remove_nonexistent_session)
+{
+	assert_failure(sessions_remove("session"));
+}
+
+TEST(directories_are_not_considered_on_removal)
+{
+	create_dir(SANDBOX_PATH "/sessions");
+	create_dir(SANDBOX_PATH "/sessions/session.json");
+
+	assert_failure(sessions_remove("session"));
+
+	remove_dir(SANDBOX_PATH "/sessions/session.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

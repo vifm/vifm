@@ -2869,6 +2869,17 @@ store_file(const char path[], filemon_t *mon, int vinfo)
 	}
 }
 
+int
+sessions_remove(const char name[])
+{
+	char sessions_dir[PATH_MAX + 16];
+	get_session_dir(sessions_dir, sizeof(sessions_dir));
+	char session_file[PATH_MAX + 32];
+	snprintf(session_file, sizeof(session_file), "%s/%s.json", sessions_dir,
+			name);
+	return (is_dir(session_file) || remove(session_file) != 0);
+}
+
 void
 sessions_complete(const char prefix[])
 {

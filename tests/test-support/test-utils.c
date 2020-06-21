@@ -294,6 +294,12 @@ remove_file(const char path[])
 }
 
 void
+no_remove_file(const char path[])
+{
+	assert_failure(remove(path));
+}
+
+void
 make_abs_path(char buf[], size_t buf_len, const char base[], const char sub[],
 		const char cwd[])
 {

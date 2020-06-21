@@ -75,6 +75,9 @@ void no_remove_dir(const char path[]);
 /* Removes file at specified path. */
 void remove_file(const char path[]);
 
+/* Removes empty file at specified path checking that the removal fails. */
+void no_remove_file(const char path[]);
+
 /* Either puts base/sub or cwd/base/sub into the buf.  If cwd is NULL, current
  * working directory is used. */
 void make_abs_path(char buf[], size_t buf_len, const char base[],

@@ -60,6 +60,10 @@ int sessions_exists(const char name[]);
  * or state_load(). */
 void sessions_load(const char name[]);
 
+/* Deletes a session.  Returns zero on success and non-zero if something went
+ * wrong. */
+int sessions_remove(const char name[]);
+
 /* Performs completion of session names. */
 void sessions_complete(const char prefix[]);
 
