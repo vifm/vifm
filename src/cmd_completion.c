@@ -271,7 +271,7 @@ complete_args(int id, const cmd_info_t *cmd_info, int arg_pos, void *extra_arg)
 	{
 		cs_complete(arg);
 	}
-	else if(id == COM_SESSION)
+	else if(id == COM_SESSION || id == COM_DELSESSION)
 	{
 		if(earg_num(argc, args) <= 1 && !cmd_info->emark && !cmd_info->qmark)
 		{

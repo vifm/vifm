@@ -742,6 +742,38 @@ TEST(session_is_completed)
 	cfg.config_dir[0] = '\0';
 }
 
+TEST(delsession_is_completed)
+{
+	restore_cwd(saved_cwd);
+	saved_cwd = save_cwd();
+
+	make_abs_path(cfg.config_dir, sizeof(cfg.config_dir), SANDBOX_PATH, "",
+			saved_cwd);
+
+	create_dir(SANDBOX_PATH "/sessions");
+	create_dir(SANDBOX_PATH "/sessions/subdir.json");
+	create_file(SANDBOX_PATH "/sessions/subdir.json/file.json");
+	create_file(SANDBOX_PATH "/sessions/session-a.json");
+	create_file(SANDBOX_PATH "/sessions/session-b.json");
+
+	ASSERT_COMPLETION(L"delsession ", L"delsession session-a");
+	ASSERT_NEXT_MATCH("session-b");
+	ASSERT_NEXT_MATCH("");
+
+	ASSERT_NO_COMPLETION(L"delsession session-a ..");
+
+	ASSERT_NO_COMPLETION(L"delsession! ses");
+	ASSERT_NO_COMPLETION(L"delsession? ses");
+
+	remove_file(SANDBOX_PATH "/sessions/session-b.json");
+	remove_file(SANDBOX_PATH "/sessions/session-a.json");
+	remove_file(SANDBOX_PATH "/sessions/subdir.json/file.json");
+	remove_dir(SANDBOX_PATH "/sessions/subdir.json");
+	remove_dir(SANDBOX_PATH "/sessions");
+
+	cfg.config_dir[0] = '\0';
+}
+
 static int
 dquotes_allowed_in_paths(void)
 {
